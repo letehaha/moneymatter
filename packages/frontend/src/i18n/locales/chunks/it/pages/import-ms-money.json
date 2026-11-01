@@ -19,7 +19,7 @@
           "maxSize": ".mny file, up to 50 MB",
           "passwordLabel": "File password (optional)",
           "passwordPlaceholder": "Enter the file password",
-          "passwordHint": "Leave blank unless you set a password in Microsoft Money.",
+          "passwordHint": "Lasciare vuoto a meno che non sia impostata una password in Microsoft Money.",
           "parsing": "Reading file…",
           "continue": "Continue",
           "errors": {
@@ -35,7 +35,7 @@
           "accounts": {
             "sectionTitle": "Conti",
             "currentBalanceLabel": "Current balance",
-            "currentBalancePlaceholder": "Leave blank to use the imported total",
+            "currentBalancePlaceholder": "Lascia vuoto per usare il totale importato",
             "willCreateHint": "Will be created in {currency}.",
             "currencyNotInFile": "Not in file",
             "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."

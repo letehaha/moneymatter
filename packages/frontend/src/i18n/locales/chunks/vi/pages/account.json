@@ -245,6 +245,7 @@
       },
       "rightPanel": {
         "transactions": "Giao dịch",
+        "viewAll": "View all",
         "analyticsSoon": "Analytics (soon)"
       },
       "integrations": {

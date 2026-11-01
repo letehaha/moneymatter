@@ -145,26 +145,29 @@ export const neededMonthly = ({
 
   const daysLeft = daysBetween({ from: today, to: targetDate });
   const remainingCents = Math.max(0, toCents(remaining));
-  const monthsLeft = Math.max(0, daysLeft) / DAYS_PER_MONTH;
+  const averageMonthsLeft = Math.max(0, daysLeft) / DAYS_PER_MONTH;
 
-  return { neededMonthly: fromCents(monthsLeft >= 1 ? remainingCents / monthsLeft : remainingCents), daysLeft };
+  return {
+    neededMonthly: fromCents(averageMonthsLeft >= 1 ? remainingCents / averageMonthsLeft : remainingCents),
+    daysLeft,
+  };
 };
 
 /**
  * No tolerance band: early means reaching the target at least a month before the date.
- * Compares the whole-month `etaMonths` that is displayed, so status and ETA never disagree.
+ * Compares whole calendar months, the unit of the displayed ETA, so status and ETA never disagree.
  */
 export const scheduleOffset = ({
   etaMonths,
-  daysLeft,
+  monthsLeft,
 }: {
   etaMonths: number;
-  daysLeft: number;
+  monthsLeft: number;
 }): GoalScheduleOffset => {
-  const monthsLeft = daysLeft / DAYS_PER_MONTH;
-  if (etaMonths <= monthsLeft - 1) return { kind: 'early', months: Math.floor(monthsLeft - etaMonths) };
-  if (etaMonths <= monthsLeft) return { kind: 'onTime', months: 0 };
-  return { kind: 'late', months: Math.max(1, Math.ceil(etaMonths - monthsLeft)) };
+  const offset = monthsLeft - etaMonths;
+  if (offset > 0) return { kind: 'early', months: offset };
+  if (offset === 0) return { kind: 'onTime', months: 0 };
+  return { kind: 'late', months: -offset };
 };
 
 /** 'yyyy-MM-dd' `etaMonths` after `today`; a day past the month's end clamps to its last day. */
@@ -172,6 +175,14 @@ export const etaDate = ({ today, etaMonths }: { today: string; etaMonths: number
   const [year, month, day] = today.split('-').map(Number) as [number, number, number];
   const lastDay = new Date(Date.UTC(year, month + etaMonths, 0)).getUTCDate();
   return new Date(Date.UTC(year, month - 1 + etaMonths, Math.min(day, lastDay))).toISOString().slice(0, 10);
+};
+
+/** Whole months from `today` to `targetDate`, stepped like `etaDate`; negative when the date is past. */
+const wholeMonthsUntil = ({ today, targetDate }: { today: string; targetDate: string }): number => {
+  const [year, month] = today.split('-').map(Number) as [number, number];
+  const [targetYear, targetMonth] = targetDate.split('-').map(Number) as [number, number];
+  const months = (targetYear - year) * 12 + targetMonth - month;
+  return etaDate({ today, etaMonths: months }) > targetDate ? months - 1 : months;
 };
 
 const STATUS_BY_OFFSET: Record<GoalScheduleOffset['kind'], GoalProgressStatus> = {
@@ -183,25 +194,23 @@ const STATUS_BY_OFFSET: Record<GoalScheduleOffset['kind'], GoalProgressStatus> =
 const progressStatus = ({
   hasAccounts,
   remaining,
-  targetDate,
-  daysLeft,
+  monthsLeft,
   pace,
   eta,
 }: {
   hasAccounts: boolean;
   remaining: number;
-  targetDate: string | null;
-  daysLeft: number | null;
+  monthsLeft: number | null;
   pace: number | null;
   eta: number | null;
 }): GoalProgressStatus => {
   if (!hasAccounts) return 'no_accounts';
   if (toCents(remaining) <= 0) return 'reached';
-  if (daysLeft !== null && daysLeft < 0) return 'overdue';
-  if (!targetDate || daysLeft === null) return 'no_date';
+  if (monthsLeft === null) return 'no_date';
+  if (monthsLeft < 0) return 'overdue';
   if (pace === null) return 'insufficient_history';
   if (eta === null) return 'behind';
-  return STATUS_BY_OFFSET[scheduleOffset({ etaMonths: eta, daysLeft }).kind];
+  return STATUS_BY_OFFSET[scheduleOffset({ etaMonths: eta, monthsLeft }).kind];
 };
 
 /** Within `reachedHoldDays` of `achievedAt` a goal that dipped below target still reads as reached. */
@@ -254,13 +263,13 @@ export const computeGoalProgress = (input: GoalMathInput): GoalProgress => {
   const pace = plannedMonthly ?? history.pace;
   const needed = neededMonthly({ remaining, today, targetDate });
   const eta = etaMonths({ remaining, pace });
+  const monthsLeft = targetDate ? wholeMonthsUntil({ today, targetDate }) : null;
 
   return {
     status: progressStatus({
       hasAccounts: accounts.length > 0,
       remaining,
-      targetDate,
-      daysLeft: needed.daysLeft,
+      monthsLeft,
       pace,
       eta,
     }),
@@ -273,5 +282,6 @@ export const computeGoalProgress = (input: GoalMathInput): GoalProgress => {
     etaMonths: eta,
     neededMonthly: needed.neededMonthly,
     daysLeft: needed.daysLeft,
+    monthsLeft,
   };
 };

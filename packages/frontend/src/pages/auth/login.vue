@@ -7,6 +7,19 @@
       <card-content class="grid gap-5">
         <div class="grid gap-3">
           <OAuthButton
+            v-if="oidcProvider"
+            :provider="OAUTH_PROVIDER.oidc"
+            :provider-name="oidcProvider.name"
+            mode="signin"
+            :is-loading="isOAuthLoading"
+            :is-last-used="lastLoginMethod === OAUTH_PROVIDER.oidc"
+            @click="handleOAuthLogin({ provider: OAUTH_PROVIDER.oidc })"
+          >
+            <template #icon>
+              <ShieldUserIcon class="size-5" />
+            </template>
+          </OAuthButton>
+          <OAuthButton
             :provider="OAUTH_PROVIDER.google"
             mode="signin"
             :is-loading="isOAuthLoading"
@@ -26,6 +39,17 @@
           >
             <template #icon>
               <GithubIcon />
+            </template>
+          </OAuthButton>
+          <OAuthButton
+            :provider="OAUTH_PROVIDER.apple"
+            mode="signin"
+            :is-loading="isOAuthLoading"
+            :is-last-used="lastLoginMethod === OAUTH_PROVIDER.apple"
+            @click="handleOAuthLogin({ provider: OAUTH_PROVIDER.apple })"
+          >
+            <template #icon>
+              <AppleIcon />
             </template>
           </OAuthButton>
           <PasskeyButton
@@ -100,17 +124,17 @@
 </template>
 
 <script lang="ts" setup>
-import { getAuthFeatures, getSignupsOpen } from '@/api/auth';
+import { getSignupsOpen } from '@/api/auth';
 import { getOAuthAuthorizeUrl } from '@/api/mcp';
 import { DEMO_SESSION_EXPIRED_REASON } from '@/common/const';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const/vue-query';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import {
+  AppleIcon,
   AuthDivider,
   GithubIcon,
   GoogleIcon,
   LastUsedBadge,
-  OAUTH_PROVIDER_NAMES,
   OAuthButton,
   PasskeyButton,
 } from '@/components/auth';
@@ -120,13 +144,14 @@ import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/lib/ui/card';
 import { useNotificationCenter } from '@/components/notification-center';
-import { useFormValidation } from '@/composable';
+import { useAuthFeatures, useFormValidation } from '@/composable';
 import { OAuthProviderNotConfiguredError, getAuthErrorMessage } from '@/js/errors';
 import { email, required } from '@/js/helpers/validators';
 import { getLastLoginMethod } from '@/lib/last-login-method';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAuthStore } from '@/stores';
 import { OAUTH_PROVIDER } from '@bt/shared/types';
+import { ShieldUserIcon } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
 import { Ref, computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -165,11 +190,7 @@ const { data: signupsStatus } = useQuery({
 });
 const signupsOpen = computed(() => signupsStatus.value?.signupsOpen ?? true);
 
-const { data: authFeatures } = useQuery({
-  queryKey: VUE_QUERY_CACHE_KEYS.authFeatures,
-  queryFn: getAuthFeatures,
-});
-const isEmailEnabled = computed(() => authFeatures.value?.emailEnabled === true);
+const { isEmailEnabled, oidcProvider, getProviderName } = useAuthFeatures();
 
 // Check for OAuth error from callback redirect
 const oauthError = route.query.oauth_error as string | undefined;
@@ -253,11 +274,11 @@ const handleOAuthLogin = async ({ provider }: { provider: OAUTH_PROVIDER }) => {
   } catch (error) {
     addErrorNotification(
       error instanceof OAuthProviderNotConfiguredError
-        ? t('auth.login.errors.oauthNotConfigured', { provider: OAUTH_PROVIDER_NAMES[provider] })
+        ? t('auth.login.errors.oauthNotConfigured', { provider: getProviderName({ provider }) })
         : await getAuthErrorMessage({
             error,
             fallbackKey: 'auth.login.errors.oauthFailed',
-            params: { provider: OAUTH_PROVIDER_NAMES[provider] },
+            params: { provider: getProviderName({ provider }) },
           }),
     );
   } finally {

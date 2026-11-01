@@ -14,7 +14,7 @@
       "description": "This category has {count} transaction(s). Select a new category for \"{categoryName}\" transactions before deleting.",
       "newCategoryLabel": "New category",
       "newCategoryPlaceholder": "Select a category",
-      "cancelButton": "Cancella",
+      "cancelButton": "Annulla",
       "reassignButton": "Reassign & delete",
       "reassignButtonLoading": "Reassigning...",
       "notifications": {
@@ -26,7 +26,7 @@
       "title": "Sync recently completed",
       "description": "You synchronized your accounts {time} ago. Are you sure you want to sync again?",
       "syncAnyway": "Sync anyway",
-      "cancel": "Cancella",
+      "cancel": "Annulla",
       "timeUnits": {
         "someTime": "some time",
         "hours": "{count} hour | {count} hours",
@@ -67,7 +67,7 @@
     "deletePortfolio": {
       "title": "Delete portfolio",
       "description": "This portfolio will be moved to trash and can be restored within 30 days. After that, it will be permanently deleted along with all holdings and transactions.",
-      "cancelButton": "Cancella",
+      "cancelButton": "Annulla",
       "deleteButton": "Move to trash",
       "deleteButtonLoading": "Moving...",
       "notifications": {
@@ -76,7 +76,7 @@
       }
     },
     "manageTransaction": {
-      "addTitle": "Aggiungere Transazione",
+      "addTitle": "Aggiungi transazione",
       "editTitle": "Edit transaction",
       "detailsTitle": "Transaction details",
       "title": "Manage transaction",
@@ -107,7 +107,7 @@
         "paymentTypeLabel": "Payment type",
         "noteLabel": "Note",
         "notePlaceholder": "Note",
-        "addFieldsLabel": "Aggiungere",
+        "addFieldsLabel": "Aggiungi",
         "externalUrlLabel": "External URL",
         "externalUrlPlaceholder": "Link to the order, booking or receipt page",
         "externalReferenceLabel": "External reference",
@@ -153,7 +153,7 @@
         "selectCategoryPlaceholder": "Select a category",
         "targetAmountLabel": "Target amount",
         "targetAmountPlaceholder": "Target amount",
-        "plannedLabel": "Transazioni PianIficate",
+        "plannedLabel": "Transazioni pianificate",
         "plannedUnavailableNotification": "Planned transactions aren't available here, so the option was turned off.",
         "plannedTooltip": "Record an upcoming transaction. Your balance stays unchanged until it goes through.",
         "plannedConnectedAccountTooltip": "Only planned transactions can sit on a bank-connected account. Switching this off clears the account and the date.",
@@ -276,7 +276,7 @@
           "partDeleted": "Eliminato",
           "partKept": "Kept",
           "linkPicker": {
-            "title": "Collega transazioni esistenti",
+            "title": "Collegare transazioni esistenti",
             "windowHint": "Within {days} days of {date}",
             "loadError": "Couldn't load transactions",
             "emptyTitle": "No transactions to link",
@@ -322,13 +322,13 @@
         "mainCategoryLabel": "Main category",
         "selectCategoryPlaceholder": "Select category",
         "amountPlaceholder": "0",
-        "addCategoryButton": "Aggiungere categoria",
+        "addCategoryButton": "Aggiungi categoria",
         "removeRowLabel": "Remove category",
         "totalAmountLabel": "Total amount",
         "splitTotalLabel": "Split total",
         "mainCategoryKeepsLabel": "Main category keeps",
         "exceedsTransactionTotal": "Split amounts exceed transaction total",
-        "cancelButton": "Cancella",
+        "cancelButton": "Annulla",
         "removeSplitsButton": "Remove splits",
         "saveSplitsButton": "Save splits",
         "errors": {
@@ -407,7 +407,7 @@
           "title": "Examples:",
           "customerPayment": "Refunding a customer payment: Create an expense and link it to the original income.",
           "vendorRefund": "Receiving a refund from a vendor: Create an income and link it to the original expense.",
-          "noOriginalTx": "Registrazione di un rimborso senza una transazione originale: A volte potrebbe essere necessario registrare un rimborso per una transazione che non è nel sistema. Ad esempio, se stai registrando un rimborso per un pagamento in contanti che inizialmente non è stato registrato, puoi ancora creare una voce di rimborso. Questo aiuta a mantenere i record accurati anche quando la transazione originale non è digitalmente tracciata."
+          "noOriginalTx": "Registrazione di un rimborso senza transazione originale: a volte può essere necessario registrare un rimborso per una transazione non presente nel sistema. Ad esempio, per il rimborso di un pagamento in contanti mai registrato è comunque possibile creare una voce di rimborso. In questo modo i dati restano accurati anche quando la transazione originale non è tracciata digitalmente."
         }
       },
       "transferRecordsList": {
@@ -435,10 +435,10 @@
         "withdrawal": "withdrawal",
         "unlinkButton": "Unlink from portfolio",
         "unlinkWarning": "Unlinking will reduce the cash balance of {portfolio} portfolio.",
-        "unlinkWarningNoCash": "This transfer never changed {portfolio}'s cash balance, so unlinking leaves the balance untouched.",
+        "unlinkWarningNoCash": "Questo trasferimento non ha mai cambiato il saldo di {portfolio}, quindi lo scollegamento non varia il saldo.",
         "noCashBadge": "No cash impact",
         "unlinkDescription": "Original transaction details will be restored.",
-        "cancelButton": "Cancella",
+        "cancelButton": "Annulla",
         "confirmUnlink": "Confirm unlink"
       },
       "ventureLinked": {
@@ -550,7 +550,7 @@
     "deleteInvestmentTransaction": {
       "title": "Delete transaction",
       "description": "Are you sure you want to delete this transaction? This action cannot be undone.",
-      "cancelButton": "Cancella",
+      "cancelButton": "Annulla",
       "deleteButton": "Elimina",
       "deleteButtonLoading": "Deleting...",
       "notifications": {
@@ -561,7 +561,7 @@
     "categoryForm": {
       "title": {
         "edit": "Edit category",
-        "add": "Aggiungere Categoria"
+        "add": "Aggiungi categoria"
       },
       "description": {
         "addSubcategory": "Adding subcategory to {parentName}",
@@ -593,7 +593,7 @@
       "title": "Add new currency",
       "description": "Select one currency to add",
       "selectPlaceholder": "Select currency",
-      "addButton": "Aggiungere",
+      "addButton": "Aggiungi",
       "notifications": {
         "success": "Currency successfully added!",
         "error": "Unexpected error. Currency is not added."
@@ -723,7 +723,7 @@
       },
       "householdOverrideHint": "{invitee} is already in your household with {permission} access. This share will override the household grant for this specific account.",
       "householdLookupFailed": "Couldn't check household membership – proceeding without the override hint.",
-      "cancel": "Cancella",
+      "cancel": "Annulla",
       "send": "Send invitation",
       "success": "Invitation request submitted. If a user with that address is registered, they'll receive an invitation.",
       "error": "Could not send invitation. Please try again.",
@@ -740,7 +740,7 @@
         "write": "Attach own transactions",
         "manage": "Gestisci"
       },
-      "cancel": "Cancella",
+      "cancel": "Annulla",
       "send": "Send invitation",
       "success": "Invitation sent.",
       "error": "Couldn't send invitation.",
@@ -770,7 +770,7 @@
       "expiresLabel": "Expires",
       "permissions": {
         "read": "Read-only",
-        "write": "Read + write",
+        "write": "Lettura + Scrittura",
         "manage": "Gestisci"
       },
       "unknownOwner": "A MoneyMatter user",
@@ -788,10 +788,10 @@
       "backInvite": {
         "prompt": "Want to share your household with {owner} as well? They'll be able to see and act on your accounts.",
         "permissionLabel": "Their permission",
-        "writeScopeLabel": "Write scope",
+        "writeScopeLabel": "Ambito",
         "permissions": {
           "read": "Read only",
-          "write": "Scrivi"
+          "write": "Scrittura"
         },
         "writeScope": {
           "all": "Any account",

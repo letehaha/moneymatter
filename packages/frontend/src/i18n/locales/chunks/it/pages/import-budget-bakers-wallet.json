@@ -39,7 +39,7 @@
           "modeLinkExisting": "Link to existing account",
           "currentBalanceLabel": "Current balance (optional)",
           "currentBalancePlaceholder": "e.g. 1234.56",
-          "currentBalanceHint": "Leave blank to start from the sum of imported transactions.",
+          "currentBalanceHint": "Lascia vuoto per iniziare dalla somma delle transazioni importate.",
           "linkTargetLabel": "Existing account",
           "linkTargetPlaceholder": "Select account",
           "keepBalanceNote": "The existing account's current balance will be preserved. History will be back-filled."
@@ -96,7 +96,7 @@
           "accounts": {
             "sectionTitle": "Conti",
             "currentBalanceLabel": "Current balance (optional)",
-            "currentBalancePlaceholder": "Leave blank to use imported total",
+            "currentBalancePlaceholder": "Lascia vuoto per usare il totale importato",
             "willCreateHint": "Will create a new {currency} account",
             "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
           },

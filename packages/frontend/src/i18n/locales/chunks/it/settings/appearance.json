@@ -2,14 +2,14 @@
   "settings": {
     "appearance": {
       "title": "Aspetto",
-      "description": "Personalizza l'aspetto dell'app e quali sezioni appaiono nella barra laterale.",
+      "description": "Personalizzare l'aspetto dell'app e le sezioni visibili nella barra laterale.",
       "theme": {
         "title": "Tema",
-        "description": "Scegli tra tema chiaro e tema scuro. L'opzione Sistema corrisponde all'impostazione del tuo dispositivo."
+        "description": "Scegliere tra tema chiaro e tema scuro. L'opzione Sistema segue l'impostazione del dispositivo."
       },
       "sidebar": {
         "title": "Sezioni della barra laterale",
-        "description": "Scegli quali sezioni appaiono nella barra laterale.",
+        "description": "Scegliere quali sezioni mostrare nella barra laterale.",
         "alwaysVisibleTooltip": "Questa sezione è sempre visibile."
       },
       "sidebarNav": {
@@ -18,7 +18,7 @@
       },
       "header": {
         "title": "Intestazione",
-        "description": "Scegli quali azioni d'intestazione sono visibili.",
+        "description": "Scegliere quali azioni mostrare nell'intestazione.",
         "supportButton": "Supporto"
       },
       "currency": {

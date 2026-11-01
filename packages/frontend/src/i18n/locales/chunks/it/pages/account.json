@@ -51,7 +51,7 @@
         "transactionNote": "Transaction note",
         "optionalNote": "Optional note",
         "effectiveDate": "Effective date",
-        "cancel": "Cancella",
+        "cancel": "Annulla",
         "confirm": "Confirm",
         "saving": "Saving...",
         "successNotification": "Balance adjusted successfully",
@@ -245,6 +245,7 @@
       },
       "rightPanel": {
         "transactions": "Transactions",
+        "viewAll": "Visualizza tutto",
         "analyticsSoon": "Analytics (soon)"
       },
       "integrations": {
@@ -263,8 +264,8 @@
         "pendingHeading": "Richieste in attesa",
         "loadError": "Failed to load sharing details.",
         "permissions": {
-          "read": "Leggi",
-          "write": "Scrivi",
+          "read": "Lettura",
+          "write": "Scrittura",
           "manage": "Gestisci"
         },
         "writeScope": {
@@ -288,14 +289,14 @@
         "pending": {
           "empty": "Nessun invito in sospeso.",
           "resend": "Invia di nuovo",
-          "cancel": "Cancella invito",
-          "cancelTitle": "Cancellare l'invito?",
+          "cancel": "Annulla invito",
+          "cancelTitle": "Annullare l'invito?",
           "cancelDescription": "The invitation sent to {email} will be revoked.",
-          "cancelConfirm": "Cancella invito",
+          "cancelConfirm": "Annulla invito",
           "resendSuccess": "Invito reinviato",
           "resendDeliveryFailed": "Invitation updated but the email could not be delivered.",
           "resendError": "Could not resend invitation.",
-          "cancelSuccess": "Invito cancellato",
+          "cancelSuccess": "Invito annullato",
           "cancelError": "Could not cancel invitation."
         }
       }
@@ -346,7 +347,7 @@
         "errorNotification": "Failed to update vehicle value",
         "confirm": "Save value",
         "saving": "Saving...",
-        "cancel": "Cancella"
+        "cancel": "Annulla"
       },
       "overrideHistory": {
         "title": "Override history",

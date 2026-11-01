@@ -253,6 +253,10 @@
       "dialogTitle": "Changer de logo",
       "resetToAuto": "Rétablir en automatique",
       "remove": "Supprimer le logo",
+      "pickerDescription": "Pick a brand logo or use letters instead.",
+      "updatedToast": "Logo updated",
+      "resetToast": "Logo supprimé",
+      "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Lettres (1–2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Couleur",
@@ -299,6 +303,12 @@
         "backInReach": "Back within reach",
         "offTrack": "Off track"
       }
+    },
+    "pasteImage": {
+      "button": "Coller l'image",
+      "shortcutHint": "ou appuyez sur {shortcut}",
+      "noImage": "Aucune image trouvée dans le presse-papiers.",
+      "readFailed": "Impossible de lire le presse-papiers. Autorisez l'accès au presse-papiers ou collez à l'aide du raccourci clavier."
     }
   },
   "accountGroups": {
@@ -358,6 +368,9 @@
     "goalReached": {
       "title": "Objectif atteint : {name}",
       "message": "Vous avez épargné {amount}."
+    },
+    "unrealizedLossAlert": {
+      "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"
     }
   },
   "currencyNames": {

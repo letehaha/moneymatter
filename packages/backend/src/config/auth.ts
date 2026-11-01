@@ -2,9 +2,11 @@ import { expo } from '@better-auth/expo';
 import { oauthProvider } from '@better-auth/oauth-provider';
 import { passkey } from '@better-auth/passkey';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@bt/shared/const/auth';
-import { OAUTH_PROVIDERS_LIST } from '@bt/shared/types';
+import { OAUTH_PROVIDER } from '@bt/shared/types';
 import { EnvVar, isEnvConfigured } from '@common/utils/env';
+import { getAppleClientSecretFromEnv } from '@config/apple-client-secret';
 import { createSessionHooks } from '@config/auth-hooks/session-hooks';
+import { oidcConfig } from '@config/oidc';
 import { shouldUseSecureCookies } from '@config/should-use-secure-cookies';
 import { isAuthApiError } from '@controllers/helpers/error-handler';
 import { t } from '@i18n/index';
@@ -20,7 +22,7 @@ import { sendPasswordResetEmail } from '@services/user/send-password-reset-email
 import { areSignupsOpen } from '@services/user/signups-open.service';
 import bcrypt from 'bcryptjs';
 import { APIError, betterAuth } from 'better-auth';
-import { jwt } from 'better-auth/plugins';
+import { genericOAuth, jwt } from 'better-auth/plugins';
 import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
 
@@ -75,6 +77,10 @@ const DEV_TRUSTED_ORIGINS =
     ? ['http://localhost:8100', 'https://localhost:8100', 'http://127.0.0.1:8100', 'https://127.0.0.1:8100']
     : [];
 
+// ponytail: signed once at boot and valid for 6 months; a process running longer breaks web Apple sign-in.
+// Re-sign on a timer if deploys ever get that rare.
+const appleClientSecret = getAppleClientSecretFromEnv();
+
 export const auth = betterAuth({
   database: pool,
   basePath: '/api/v1/auth',
@@ -89,6 +95,8 @@ export const auth = betterAuth({
     // Native iOS app: callback scheme, and the `expo-origin` value its cookie-bearing requests must send.
     // Kept out of ALLOWED_ORIGINS, which also feeds browser CORS.
     'moneymatter://',
+    // Apple posts the OAuth callback (response_mode=form_post) from its own origin.
+    ...(appleClientSecret ? ['https://appleid.apple.com'] : []),
   ],
 
   // Custom table names with ba_ prefix to avoid conflicts
@@ -125,7 +133,11 @@ export const auth = betterAuth({
     // with a verified email, they're the legitimate owner of that email
     accountLinking: {
       enabled: true,
-      trustedProviders: [...OAUTH_PROVIDERS_LIST],
+      // `oidc` is left out because a self-hosted IdP may let users set any email. It can only
+      // link accounts when OIDC_TRUST_EMAIL is on and the IdP reports the email as verified.
+      trustedProviders: [OAUTH_PROVIDER.google, OAUTH_PROVIDER.github, OAUTH_PROVIDER.apple],
+      // Apple's Hide My Email relay addresses never match the user's own email.
+      allowDifferentEmails: true,
     },
   },
   verification: {
@@ -252,10 +264,44 @@ export const auth = betterAuth({
         isEnvConfigured(EnvVar.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_ID) &&
         isEnvConfigured(EnvVar.GITHUB_CLIENT_SECRET, process.env.GITHUB_CLIENT_SECRET),
     },
+    apple: {
+      clientId: process.env.APPLE_CLIENT_ID || '',
+      clientSecret: appleClientSecret ?? '',
+      // Web ID tokens are issued to the Services ID, native iOS ones to the app bundle ID.
+      audience: [EnvVar.APPLE_CLIENT_ID, EnvVar.APPLE_APP_BUNDLE_IDENTIFIER].flatMap((name) => {
+        const value = process.env[name];
+        return isEnvConfigured(name, value) ? [value!] : [];
+      }),
+      enabled: Boolean(appleClientSecret),
+    },
   },
 
   // Plugins
   plugins: [
+    ...(oidcConfig
+      ? [
+          genericOAuth({
+            config: [
+              {
+                providerId: OAUTH_PROVIDER.oidc,
+                discoveryUrl: oidcConfig.discoveryUrl,
+                clientId: oidcConfig.clientId,
+                clientSecret: oidcConfig.clientSecret,
+                scopes: ['openid', 'email', 'profile'],
+                pkce: true,
+                requireEmailVerification: isEmailEnabled,
+                requireIdTokenVerification: true,
+                // Off by default: sign-out ends only the MoneyMatter session and keeps the IdP session.
+                disableProviderLogout: !oidcConfig.providerLogout,
+                // better-auth passes the raw claim through and checks truthiness, so "false" would pass.
+                mapProfileToUser: (profile) => ({
+                  emailVerified: oidcConfig?.trustEmail === true && profile.email_verified === true,
+                }),
+              },
+            ],
+          }),
+        ]
+      : []),
     // jwt() must be loaded because @better-auth/oauth-provider references it
     // internally even when disableJwtPlugin is true (unguarded getJwtPlugin calls).
     jwt({

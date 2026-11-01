@@ -119,7 +119,7 @@
       },
       "categoryTracker": {
         "title": "Categories watchlist",
-        "addCategory": "Aggiungere categoria",
+        "addCategory": "Aggiungi categoria",
         "selectCategories": "Select categories",
         "showTrend": "Show 6-month trend",
         "sort": {
@@ -194,7 +194,7 @@
         "netWorth": "Net worth",
         "owesShare": "You owe {percent} of what you own",
         "noDebt": "No debt",
-        "assets": "Beni",
+        "assets": "Asset",
         "liabilities": "Passività",
         "loadFailed": "Couldn't load your assets and liabilities",
         "buckets": {
@@ -252,7 +252,7 @@
         }
       },
       "plannedOverview": {
-        "title": "Transazioni PianIficate",
+        "title": "Transazioni pianificate",
         "projectedBy": "Projected by {date}",
         "upcoming": "Upcoming · {count}",
         "loadFailed": "Couldn't load planned transactions"

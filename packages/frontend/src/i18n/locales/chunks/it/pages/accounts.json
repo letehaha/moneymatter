@@ -1,7 +1,7 @@
 {
   "accounts": {
     "title": "Conti",
-    "createAccount": "Crea un account",
+    "createAccount": "Crea un conto",
     "createVehicle": "Aggiungi veicolo",
     "actionsMenu": "Azioni del conto",
     "sections": {
@@ -13,22 +13,22 @@
     },
     "empty": {
       "title": "Nessun conto",
-      "description": "Collega la tua banca o crea un conto manuale per iniziare a tracciare le tue finanze, saldi e transazioni.",
+      "description": "Collegare la banca o creare un conto manuale per iniziare a monitorare finanze, saldi e transazioni.",
       "connectBank": "Collega il conto bancario",
       "createManual": "Crea un conto manuale"
     },
     "overview": {
       "totalBalance": "Saldo totale",
-      "assets": "Beni",
+      "assets": "Asset",
       "liabilities": "Passività",
       "vehicles": "Veicoli",
       "projected": "Pianificato {amount} · {count} previsto il {date} | Pianificato {amount} · {count} previsto il {date}"
     },
     "sharedBy": "Condiviso da {handle}",
-    "viaHousehold": "Condiviso tramite la famiglia di {handle}",
+    "viaHousehold": "Condiviso tramite il nucleo familiare di {handle}",
     "connect": "Connetti",
     "connectBank": "Collega banca",
-    "noBanksConnected": "Nessuna banca collegata - connettine una per sincronizzare i saldi automaticamente.",
+    "noBanksConnected": "Nessuna banca collegata: collegarne una per sincronizzare automaticamente i saldi.",
     "reconnect": "Riconnetti",
     "manageConnection": "Gestisci le connessioni",
     "accountsCount": "{count} conto | {count} conti",

@@ -18,6 +18,8 @@
           "accountName": "Обліковий запис {provider}",
           "notConnected": "Не підключено",
           "disconnect": "Відключити",
+          "disconnectConfirmTitle": "Відключити {provider}?",
+          "disconnectConfirmDescription": "Ви більше не зможете входити за допомогою цього облікового запису {provider}. Ви можете підключити його знову в будь-який момент.",
           "connect": "Підключити"
         },
         "password": {

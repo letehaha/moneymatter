@@ -37,10 +37,6 @@
         "invalidPdfNamed": "{name} scheint keine gültige PDF-Datei zu sein. Die Datei ist möglicherweise beschädigt oder umbenannt.",
         "invalidImageNamed": "{name} scheint kein gültiges JPG-, PNG- oder WebP-Bild zu sein. Die Datei ist möglicherweise beschädigt oder umbenannt.",
         "invalidTextNamed": "{name} scheint keine gültige {ext}-Datei zu sein. Die Datei ist möglicherweise eine Binärdatei oder umbenannt.",
-        "pasteImageButton": "Bild einfügen",
-        "pasteShortcutHint": "oder drücke {shortcut}",
-        "clipboardNoImage": "Kein Bild in der Zwischenablage gefunden.",
-        "clipboardReadFailed": "Die Zwischenablage konnte nicht gelesen werden. Erlaube den Zugriff auf die Zwischenablage oder füge es mit der Tastenkombination ein.",
         "unreadableFiles": "Konnte nicht gelesen werden: {files}",
         "fileStatus": {
           "pending": "Nicht analysiert",

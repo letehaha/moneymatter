@@ -2,13 +2,13 @@
   "pages": {
     "household": {
       "title": "Nucleo Familiare",
-      "description": "Condividi l'accesso a tutti i conti che possiedi ai contatti fidati. I membri vedono i tuoi conti e (con accesso in scrittura) possono registrare le transazioni su di essi.",
+      "description": "Condividere l'accesso a tutti i conti posseduti con persone di fiducia. I membri vedono i conti e, con accesso in scrittura, possono registrarvi transazioni.",
       "myHousehold": {
-        "title": "Nucleo Familiare",
-        "description": "Le persone qui elencate hanno accesso completo ai conti. I permessi del singolo account hanno sempre priorità sull'accesso del nucleo familiare."
+        "title": "Il mio Nucleo Familiare",
+        "description": "Le persone qui elencate hanno accesso a tutti i conti posseduti. Le condivisioni dei singoli conti hanno sempre la priorità sull'accesso del nucleo familiare."
       },
       "youOwner": "Tu — proprietario",
-      "noMembers": "Nessuno fa ancora parte del tuo nucleo familiare.",
+      "noMembers": "Nessuno fa ancora parte del nucleo familiare.",
       "loadMembersError": "Impossibile caricare il nucleo",
       "permissions": {
         "read": "Lettura",
@@ -16,15 +16,15 @@
         "manage": "Gestisci"
       },
       "writeScope": {
-        "all": "Può modificare qualsiasi transazione.",
-        "own": "Può modificare solo le proprie transazioni."
+        "all": "Può modificare qualsiasi transazione",
+        "own": "Può modificare solo le proprie transazioni"
       },
       "invite": {
         "emailLabel": "Email",
-        "emailPlaceholder": "Nome{'@'}esempio.com.",
+        "emailPlaceholder": "persona{'@'}esempio.com",
         "permissionLabel": "Permesso",
         "writeScopeLabel": "Livello di scrittura",
-        "submit": "Invia invito nucleo familiare",
+        "submit": "Invia invito al nucleo familiare",
         "sent": "Invito inviato.",
         "error": "Impossibile inviare l'invito.",
         "emailDeliveryFailed": "Invito creato, ma l'email non può essere consegnata. È possibile inviarlo nuovamente dal pannello inviti."
@@ -32,41 +32,41 @@
       "revoke": {
         "action": "Rimuovi",
         "title": "Rimuovere membro del nucleo familiare?",
-        "description": "{handle} perderà l'accesso ad ogni account del nucleo familiare. I permessi del singolo account non sono influenzati.",
+        "description": "{handle} perderà l'accesso a tutti i conti del nucleo familiare. Le condivisioni dei singoli conti (se presenti) non sono influenzate.",
         "confirm": "Rimuovi",
         "success": "Membro rimosso.",
         "error": "Impossibile rimuovere questo membro."
       },
       "permissionChange": {
-        "setRead": "Permetti accesso in sola lettura.",
+        "setRead": "Imposta sola lettura",
         "setWrite": "Consenti accesso in scrittura",
         "success": "Autorizzazioni aggiornate.",
         "error": "Impossibile aggiornare i permessi."
       },
       "imIn": {
-        "title": "Nuclei familiari del quale fai parte",
-        "description": "I nuclei familiari di altre persone a cui hai aderito. Lasciare un nucleo familiare fa perdere i permessi precedentemente assegnati.",
-        "empty": "Non sei parte di altri nuclei familiari.",
+        "title": "Nuclei Familiari di appartenenza",
+        "description": "Nuclei familiari di altre persone a cui si è aderito. Abbandonando un nucleo familiare si perde l'accesso a tutti i conti condivisi in questo modo.",
+        "empty": "Nessuna adesione ad altri nuclei familiari.",
         "unnamedHousehold": "Nucleo familiare di {'@'}{handle}",
-        "loadError": "Impossibile caricare i nuclei familiari del quale fai parte. Riprova più tardi."
+        "loadError": "Impossibile caricare i nuclei familiari di appartenenza. Riprovare più tardi."
       },
       "leave": {
-        "action": "Lascia",
-        "title": "Lasciare questo nucleo familiare?",
-        "description": "Perderai l'accesso a tutti conti che {owner} condivide sul proprio Nucleo Familiare. I permessi del singolo account non sono influenzati.",
-        "confirm": "Lascia",
-        "success": "Hai lasciato il nucleo familiare.",
-        "error": "Impossibile lasciare il nucleo familiare."
+        "action": "Abbandona",
+        "title": "Abbandonare questo nucleo familiare?",
+        "description": "L'accesso a tutti i conti che {owner} condivide tramite il proprio nucleo familiare verrà revocato. Le condivisioni dei singoli conti (se presenti) non sono influenzate.",
+        "confirm": "Abbandona",
+        "success": "Nucleo familiare abbandonato.",
+        "error": "Impossibile abbandonare il nucleo familiare."
       },
       "pending": {
         "badge": "In attesa",
         "resend": "Invia di nuovo",
-        "cancel": "Cancella",
-        "cancelTitle": "Cancellare l'invito?",
+        "cancel": "Annulla",
+        "cancelTitle": "Annullare l'invito?",
         "cancelDescription": "Annullare l'invito in sospeso inviato a {email}? Non sarà più in grado di accettarlo.",
-        "cancelConfirm": "Cancella invito",
-        "cancelSuccess": "Invito cancellato",
-        "cancelError": "Impossibile cancellare l'invito.",
+        "cancelConfirm": "Annulla invito",
+        "cancelSuccess": "Invito annullato",
+        "cancelError": "Impossibile annullare l'invito.",
         "resendSuccess": "Invito reinviato",
         "resendError": "Impossibile inviare l'invito.",
         "resendDeliveryFailed": "Invito aggiornato, ma l'email non può essere inviata. Riprova più tardi."

@@ -25,12 +25,16 @@ import { Switch } from '@/components/lib/ui/switch';
 import { useIncludePlannedConfig } from '@/components/widgets/use-include-planned-config';
 import { InfoIcon } from '@lucide/vue';
 
-defineProps<{
-  /** Namespaces the data-testid so two widgets on one page stay addressable. */
-  testIdPrefix: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    /** Namespaces the data-testid so two widgets on one page stay addressable. */
+    testIdPrefix: string;
+    defaultValue?: boolean;
+  }>(),
+  { defaultValue: true },
+);
 
-const { includePlanned, setIncludePlanned } = useIncludePlannedConfig();
+const { includePlanned, setIncludePlanned } = useIncludePlannedConfig({ defaultValue: props.defaultValue });
 
 const onToggle = async (value: boolean) => {
   await setIncludePlanned({ value });

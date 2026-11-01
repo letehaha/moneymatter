@@ -245,6 +245,7 @@
       },
       "rightPanel": {
         "transactions": "Transaksi",
+        "viewAll": "Lihat semua",
         "analyticsSoon": "Analitik (segera)"
       },
       "integrations": {

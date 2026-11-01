@@ -2,28 +2,37 @@
   "settings": {
     "general": {
       "title": "Generale",
-      "description": "Controlla come i tuoi dati finanziari vengono calcolati e visualizzati nell'app.",
+      "description": "Gestire il modo in cui i dati finanziari vengono calcolati e visualizzati nell'app.",
       "creditLimit": {
         "label": "Includi i limiti di credito nel saldo",
-        "description": "Se abilitata, i limiti di credito vengono sottratti dai saldi dei conti nelle statistiche e dal grafico delle tendenze dei saldi. Questo mostra la tua situazione finanziaria reale invece di credito disponibile.",
+        "description": "Se abilitata, i limiti di credito vengono sottratti dai saldi dei conti nelle statistiche e nel grafico dell'andamento dei saldi. In questo modo viene mostrata la reale situazione finanziaria invece del credito disponibile.",
         "successNotification": "Impostazioni aggiornate con successo",
         "errorNotification": "Impossibile aggiornare le impostazioni"
       },
       "payday": {
         "label": "Pay cycle starts on",
         "description": "Day of the month your pay cycle starts. The dashboard's default period runs from this day to the day before it next month.",
-        "placeholder": "Seleziona giorno",
+        "placeholder": "Selezionare il giorno",
         "successNotification": "Pay cycle start updated"
+      },
+      "unrealizedLossAlert": {
+        "label": "Unrealized loss alerts",
+        "description": "Get one notification when a holding's loss crosses either threshold. Checked daily after market prices update; it won't repeat until the holding recovers.",
+        "percentLabel": "Loss percentage",
+        "percentDescription": "Alert when a holding is down at least this much from its cost.",
+        "amountLabel": "Loss amount",
+        "amountDescription": "Or when the loss reaches this amount in your base currency, whatever the percentage.",
+        "successNotification": "Loss alert settings saved"
       },
       "manualTransferMatching": {
         "label": "Match transfers with manual accounts",
-        "description": "Consenti la sincronizzazione automatica tra i trasferimenti rilevati automaticamente dalla tua banca con quelli creati manualmente.",
+        "description": "Abbinare automaticamente i trasferimenti rilevati dalla banca a quelli creati manualmente.",
         "successNotification": "Transfer matching setting updated",
         "errorNotification": "Failed to update transfer matching setting"
       },
       "pendingBankTransactions": {
         "label": "Import pending bank transactions",
-        "description": "Memorizza le transazioni bancarie via EnableBanking prima della loro contabilizzazione. Sono contrassegnate come in sospeso, non cambiano mai il saldo del conto e spesso mancano i dettagli del venditore fino alla prenotazione. Gli altri provider di sincronizzazione bancaria non sono interessati: SimpleFIN e LunchFlow inseriscono le transazioni una volta contabilizzate mentre Monobank importano ogni transazione come un inserimento manuale.",
+        "description": "Importare le transazioni segnalate dalla banca prima della contabilizzazione. Vengono contrassegnate come in sospeso, non modificano il saldo del conto e possono essere prive del nome dell'esercente e dei dettagli definitivi. Quando la banca le contabilizza o le annulla, vengono aggiornate o rimosse.",
         "descriptionSelfHost": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
         "successNotification": "Pending transactions setting updated",
         "errorNotification": "Failed to update pending transactions setting"
@@ -90,7 +99,7 @@
         "fields": {
           "externalUrl": {
             "label": "URL esterno",
-            "description": "Collega la transazione a una pagina d'ordine, una conferma di prenotazione o uno scontrino."
+            "description": "Collegare la transazione a una pagina d'ordine, una conferma di prenotazione o uno scontrino."
           },
           "externalReference": {
             "label": "Riferimenti esterni",
@@ -102,7 +111,7 @@
           },
           "location": {
             "label": "Posizione",
-            "description": "Coordinate geografiche del luogo dove è stato fatto l'acquisto. Compila dalle posizioni del tuo dispositivo o digitale manualmente"
+            "description": "Coordinate geografiche del luogo dell'acquisto. Compilare tramite la posizione del dispositivo o inserirle manualmente."
           }
         },
         "mapPicker": {

@@ -120,6 +120,12 @@
       "tagModeAdd": "Додати до існуючих тегів",
       "tagModeReplace": "Замінити всі теги",
       "tagModeRemove": "Видалити ці теги",
+      "tagModeAddShort": "Додати",
+      "tagModeReplaceShort": "Замінити",
+      "tagModeRemoveShort": "Видалити",
+      "tagModeAddHint": "Зберігає поточні теги і додає ці.",
+      "tagModeReplaceHint": "Видаляє всі поточні теги, після чого додає ці.",
+      "tagModeRemoveHint": "Видаляє лише ці теги. Інші теги залишаються.",
       "totals": {
         "income": "Дохід",
         "expense": "Витрата",

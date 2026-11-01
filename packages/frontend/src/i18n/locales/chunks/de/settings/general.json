@@ -15,6 +15,15 @@
         "placeholder": "Tag auswählen",
         "successNotification": "Beginn des Abrechnungszyklus aktualisiert"
       },
+      "unrealizedLossAlert": {
+        "label": "Unrealized loss alerts",
+        "description": "Get one notification when a holding's loss crosses either threshold. Checked daily after market prices update; it won't repeat until the holding recovers.",
+        "percentLabel": "Loss percentage",
+        "percentDescription": "Alert when a holding is down at least this much from its cost.",
+        "amountLabel": "Loss amount",
+        "amountDescription": "Or when the loss reaches this amount in your base currency, whatever the percentage.",
+        "successNotification": "Loss alert settings saved"
+      },
       "manualTransferMatching": {
         "label": "Umbuchungen mit manuellen Konten abgleichen",
         "description": "Ermögliche es automatisch erkannten Umbuchungen, eine synchronisierte Banktransaktion mit einer manuell erstellten Transaktion zu verknüpfen.",

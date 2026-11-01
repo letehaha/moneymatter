@@ -12,21 +12,21 @@
 
     <template v-else>
       <!-- OAuth Providers -->
-      <div v-for="provider in OAUTH_PROVIDERS_LIST" :key="provider" class="border-border rounded-lg border p-4">
+      <div v-for="provider in visibleProviders" :key="provider" class="border-border rounded-lg border p-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="bg-muted flex size-10 items-center justify-center rounded-lg">
-              <component :is="providerConfig[provider].icon" />
+              <component :is="providerIcons[provider]" class="size-5" />
             </div>
             <div>
-              <p class="font-medium">{{ providerConfig[provider].name }}</p>
+              <p class="font-medium">{{ getProviderName({ provider }) }}</p>
               <p v-if="getAccountByProvider(provider)" class="text-muted-foreground text-sm">
                 {{
                   $t('settings.security.loginMethods.oauth.connectedAs', {
                     email:
                       getAccountByProvider(provider)?.email ||
                       $t('settings.security.loginMethods.oauth.accountName', {
-                        provider: providerConfig[provider].name,
+                        provider: getProviderName({ provider }),
                       }),
                   })
                 }}
@@ -41,7 +41,7 @@
             variant="outline"
             size="sm"
             :disabled="!canDisconnect || isDisconnecting"
-            @click="handleDisconnectOAuth({ provider })"
+            @click="providerToDisconnect = provider"
           >
             <Loader2Icon v-if="isDisconnecting" class="mr-2 size-4 animate-spin" />
             {{ $t('settings.security.loginMethods.oauth.disconnect') }}
@@ -177,6 +177,30 @@
       </div>
 
       <ResponsiveAlertDialog
+        :open="!!providerToDisconnect"
+        :confirm-label="$t('settings.security.loginMethods.oauth.disconnect')"
+        confirm-variant="destructive"
+        :confirm-disabled="isDisconnecting"
+        @update:open="(open) => !open && (providerToDisconnect = null)"
+        @confirm="handleDisconnectOAuth"
+      >
+        <template #title>
+          {{
+            $t('settings.security.loginMethods.oauth.disconnectConfirmTitle', {
+              provider: providerToDisconnect ? getProviderName({ provider: providerToDisconnect }) : '',
+            })
+          }}
+        </template>
+        <template #description>
+          {{
+            $t('settings.security.loginMethods.oauth.disconnectConfirmDescription', {
+              provider: providerToDisconnect ? getProviderName({ provider: providerToDisconnect }) : '',
+            })
+          }}
+        </template>
+      </ResponsiveAlertDialog>
+
+      <ResponsiveAlertDialog
         :open="!!passkeyToDelete"
         :confirm-label="$t('common.actions.delete')"
         confirm-variant="destructive"
@@ -204,13 +228,14 @@
 </template>
 
 <script setup lang="ts">
-import { GithubIcon, GoogleIcon } from '@/components/auth';
+import { AppleIcon, GithubIcon, GoogleIcon } from '@/components/auth';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import DemoRestricted from '@/components/demo/demo-restricted.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
+import { useAuthFeatures } from '@/composable';
 import { UnexpectedError, getAuthErrorMessage } from '@/js/errors';
 import { authClient } from '@/lib/auth-client';
 import { useAuthStore, useUserStore } from '@/stores';
@@ -224,6 +249,7 @@ import {
   LockIcon,
   PencilIcon,
   PlusIcon,
+  ShieldUserIcon,
   TrashIcon,
   XIcon,
 } from '@lucide/vue';
@@ -233,9 +259,11 @@ import { type Component, computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
-const providerConfig: Record<OAUTH_PROVIDER, { name: string; icon: Component }> = {
-  [OAUTH_PROVIDER.google]: { name: 'Google', icon: GoogleIcon },
-  [OAUTH_PROVIDER.github]: { name: 'GitHub', icon: GithubIcon },
+const providerIcons: Record<OAUTH_PROVIDER, Component> = {
+  [OAUTH_PROVIDER.google]: GoogleIcon,
+  [OAUTH_PROVIDER.github]: GithubIcon,
+  [OAUTH_PROVIDER.apple]: AppleIcon,
+  [OAUTH_PROVIDER.oidc]: ShieldUserIcon,
 };
 
 interface Passkey {
@@ -262,6 +290,7 @@ const { addErrorNotification, addSuccessNotification } = useNotificationCenter()
 const isLoading = ref(true);
 const isConnecting = ref(false);
 const isDisconnecting = ref(false);
+const providerToDisconnect = ref<OAUTH_PROVIDER | null>(null);
 const isAddingPasskey = ref(false);
 const isDeletingPasskey = ref<string | null>(null);
 const passkeyToDelete = ref<Passkey | null>(null);
@@ -274,6 +303,15 @@ const passkeys = ref<Passkey[]>([]);
 const hasPassword = ref(false);
 
 const getAccountByProvider = (provider: OAUTH_PROVIDER) => accounts.value.find((a) => a.providerId === provider);
+
+const { oidcProvider, getProviderName } = useAuthFeatures();
+
+// The OIDC row only makes sense on servers that configure it, or to let a user unlink a stale account.
+const visibleProviders = computed(() =>
+  OAUTH_PROVIDERS_LIST.filter(
+    (provider) => provider !== OAUTH_PROVIDER.oidc || oidcProvider.value || getAccountByProvider(provider),
+  ),
+);
 
 const hasAnyOAuthAccount = computed(() => OAUTH_PROVIDERS_LIST.some((p) => getAccountByProvider(p)));
 
@@ -314,7 +352,7 @@ const loadPasskeys = async () => {
 };
 
 const handleConnectOAuth = async ({ provider }: { provider: OAUTH_PROVIDER }) => {
-  const providerName = providerConfig[provider].name;
+  const providerName = getProviderName({ provider });
   try {
     isConnecting.value = true;
     sessionStorage.setItem('oauth_return_url', window.location.pathname);
@@ -336,9 +374,12 @@ const handleConnectOAuth = async ({ provider }: { provider: OAUTH_PROVIDER }) =>
   }
 };
 
-const handleDisconnectOAuth = async ({ provider }: { provider: OAUTH_PROVIDER }) => {
+const handleDisconnectOAuth = async () => {
+  const provider = providerToDisconnect.value;
+  if (!provider) return;
+
   const account = getAccountByProvider(provider);
-  const providerName = providerConfig[provider].name;
+  const providerName = getProviderName({ provider });
 
   if (!account || !canDisconnect.value) return;
 
@@ -349,6 +390,7 @@ const handleDisconnectOAuth = async ({ provider }: { provider: OAUTH_PROVIDER })
     addSuccessNotification(
       t('settings.security.loginMethods.notifications.oauthDisconnectSuccess', { provider: providerName }),
     );
+    providerToDisconnect.value = null;
     await loadAccounts();
   } catch (error) {
     addErrorNotification(

@@ -1,7 +1,9 @@
 /**
  * Controllers that wrap better-auth server-side only APIs.
  */
+import { AuthFeaturesResponse } from '@bt/shared/types';
 import { auth } from '@config/auth';
+import { oidcConfig } from '@config/oidc';
 import { createController } from '@controllers/helpers/controller-factory';
 import { isEmailEnabled } from '@services/email';
 import { areSignupsOpen } from '@services/user/signups-open.service';
@@ -13,7 +15,11 @@ export const signupsOpen = createController(z.object({}), async () => {
 });
 
 export const authFeatures = createController(z.object({}), async () => {
-  return { data: { emailEnabled: isEmailEnabled } };
+  const data: AuthFeaturesResponse = {
+    emailEnabled: isEmailEnabled,
+    oidc: oidcConfig ? { name: oidcConfig.displayName } : null,
+  };
+  return { data };
 });
 
 /**

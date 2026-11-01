@@ -1,36 +1,36 @@
 {
   "auth": {
     "login": {
-      "title": "Accedi all'account",
-      "divider": "Oppure continua con l'email",
+      "title": "Accesso al profilo",
+      "divider": "Oppure continuare con l'email",
       "submitButton": "Accedi",
-      "noAccount": "Non hai un account?",
-      "signupsDisabledTooltip": "Nuove iscrizioni sono state disabilitate dall'amministratore",
+      "noAccount": "Nuovo utente?",
+      "signupsDisabledTooltip": "Le nuove registrazioni sono state disabilitate dall'amministratore.",
       "forgotPassword": "Forgot password?",
       "errors": {
         "incorrectEmailOrPassword": "Email o password errati.",
         "incorrectPassword": "Password errata.",
         "userNotFound": "Utente non trovato.",
-        "emailNotVerified": "Verifica la tua email prima di accedere.",
-        "sessionExpired": "La sessione è scaduta. Effettua di nuovo il login.",
-        "noPasswordSet": "Nessuna password impostata per questo account. Prova ad accedere con Google.",
+        "emailNotVerified": "Verificare l'indirizzo email prima di accedere.",
+        "sessionExpired": "La sessione è scaduta. Accedere di nuovo.",
+        "noPasswordSet": "Nessuna password impostata per questo profilo. Provare ad accedere con Google.",
         "passwordInvalid": "Password non valida.",
         "genericError": "Si è verificato un errore.",
-        "genericErrorRetry": "Si è verificato un errore. Riprova.",
-        "oauthFailed": "Accesso con {provider} fallito. Per favore riprova.",
+        "genericErrorRetry": "Si è verificato un errore. Riprovare.",
+        "oauthFailed": "Accesso con {provider} non riuscito. Riprovare.",
         "oauthNotConfigured": "L'accesso {provider} non è configurato su questo server.",
-        "passkeyFailed": "Accesso con Passkey fallito. Per favore riprova."
+        "passkeyFailed": "Accesso con passkey non riuscito. Riprovare."
       }
     },
     "shared": {
-      "divider": "Oppure continua con",
+      "divider": "Oppure continuare con",
       "passkeyButton": {
         "signIn": "Accedi con Passkey",
         "register": "Aggiungi Passkey"
       },
       "oauthButton": {
         "signIn": "Accedi con {provider}",
-        "signUp": "Iscriviti con {provider}"
+        "signUp": "Registrati con {provider}"
       },
       "lastUsed": "Last used"
     }

@@ -255,6 +255,10 @@
       "tokenLimitExceededSuggestion": "Divida o envio em arquivos menores ou use um modelo com uma janela de contexto maior.",
       "extractFailed": "Não foi possível extrair as transações de investimento deste arquivo. Tente de novo.",
       "csvColumnNotFound": "A coluna “{{column}}” não foi encontrada nos cabeçalhos do CSV."
+    },
+    "unrealizedLossAlert": {
+      "title_one": "{{count}} holding crossed your loss alert",
+      "title_other": "{{count}} holdings crossed your loss alert"
     }
   },
   "landingFaq": {

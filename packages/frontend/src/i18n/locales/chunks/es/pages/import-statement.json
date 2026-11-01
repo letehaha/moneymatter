@@ -37,10 +37,6 @@
         "invalidPdfNamed": "{name} no parece ser un PDF válido. El archivo puede estar dañado o renombrado.",
         "invalidImageNamed": "{name} no parece ser una imagen JPG, PNG o WebP válida. El archivo puede estar corrupto o renombrado.",
         "invalidTextNamed": "{name} no parece ser un archivo {ext} válido. El archivo puede ser binario o renombrado.",
-        "pasteImageButton": "Pegar imagen",
-        "pasteShortcutHint": "o presiona {{shortcut}}",
-        "clipboardNoImage": "No se ha encontrado ninguna imagen en el portapapeles.",
-        "clipboardReadFailed": "No se pudo leer el portapapeles. Permitir el acceso al portapapeles o pegar con el acceso directo del teclado.",
         "unreadableFiles": "No se pudieron leer: {files}",
         "fileStatus": {
           "pending": "Sin analizar",

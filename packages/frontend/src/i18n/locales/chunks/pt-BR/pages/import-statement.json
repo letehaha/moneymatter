@@ -37,10 +37,6 @@
         "invalidPdfNamed": "{name} não parece ser um PDF válido. O arquivo pode estar corrompido ou ter sido renomeado.",
         "invalidImageNamed": "{name} não parece ser uma imagem JPG, PNG ou WebP válida. O arquivo pode estar corrompido ou ter sido renomeado.",
         "invalidTextNamed": "{name} não parece ser um arquivo {ext} válido. O arquivo pode ser binário ou ter sido renomeado.",
-        "pasteImageButton": "Colar imagem",
-        "pasteShortcutHint": "ou pressione {shortcut}",
-        "clipboardNoImage": "Nenhuma imagem encontrada na área de transferência.",
-        "clipboardReadFailed": "Não foi possível ler a área de transferência. Permita o acesso a ela ou cole com o atalho de teclado.",
         "unreadableFiles": "Não foi possível ler: {files}",
         "fileStatus": {
           "pending": "Não analisado",

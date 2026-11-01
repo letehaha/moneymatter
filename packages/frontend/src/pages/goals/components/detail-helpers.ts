@@ -152,10 +152,19 @@ export const getGoalNeed = ({ insights }: { insights: GoalInsights }): GoalNeed 
   return { kind: 'monthly', amount };
 };
 
-export const getPaceValueClass = ({ pace, need }: { pace: number | null; need: GoalNeed | null }) => {
+export const getPaceValueClass = ({
+  pace,
+  need,
+  status,
+}: {
+  pace: number | null;
+  need: GoalNeed | null;
+  status: GoalInsights['status'] | undefined;
+}) => {
   if (pace === null) return undefined;
   if (pace < 0) return 'text-destructive-text';
-  if (need?.kind === 'monthly' && pace < need.amount) return 'text-warning-text';
+  // The need is day-precise, so it can edge above a pace that still reaches the target on time.
+  if (status === 'behind' && need?.kind === 'monthly' && pace < need.amount) return 'text-warning-text';
   return undefined;
 };
 

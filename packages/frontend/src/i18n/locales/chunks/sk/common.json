@@ -253,6 +253,10 @@
       "dialogTitle": "Zmeniť logo",
       "resetToAuto": "Vrátiť na automatické",
       "remove": "Odstrániť logo",
+      "pickerDescription": "Pick a brand logo or use letters instead.",
+      "updatedToast": "Logo updated",
+      "resetToast": "Logo odstránené",
+      "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Písmená (1-2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Farba",
@@ -299,6 +303,12 @@
         "backInReach": "Znova dosiahnuteľný",
         "offTrack": "Na zlej ceste"
       }
+    },
+    "pasteImage": {
+      "button": "Vložte obrázok",
+      "shortcutHint": "alebo stlačte {shortcut}",
+      "noImage": "V schránke sa nenašiel žiadny obrázok.",
+      "readFailed": "Schránku sa nepodarilo prečítať. Povoľte prístup k schránke, alebo vložte obsah klávesovou skratkou."
     }
   },
   "accountGroups": {
@@ -358,6 +368,9 @@
     "goalReached": {
       "title": "Cieľ dosiahnutý: {name}",
       "message": "Usporili ste {amount}."
+    },
+    "unrealizedLossAlert": {
+      "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"
     }
   },
   "currencyNames": {

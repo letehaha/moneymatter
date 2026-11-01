@@ -245,6 +245,7 @@
       },
       "rightPanel": {
         "transactions": "Transakcie",
+        "viewAll": "Zobraziť všetko",
         "analyticsSoon": "Analytika (čoskoro)"
       },
       "integrations": {

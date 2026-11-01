@@ -4,27 +4,27 @@
       "title": "Condivisi con me",
       "loadError": "Impossibile caricare le risorse condivise.",
       "empty": {
-        "title": "Non c'è niente di condiviso con te al momento",
-        "description": "Quando qualcuno condivide un account con te, apparirà qui."
+        "title": "Al momento non ci sono elementi condivisi",
+        "description": "I conti condivisi da altri utenti appariranno qui."
       },
       "sections": {
         "account": "Conti",
-        "household": "Famiglie",
-        "budget": "Budget condivisi con te"
+        "household": "Nuclei Familiari",
+        "budget": "Budget condivisi"
       },
       "sharedBy": "Condiviso da {handle}",
-      "viaHousehold": "Tramite la famiglia {handle}",
+      "viaHousehold": "Tramite il nucleo familiare di {handle}",
       "unnamedResource": "Senza titolo",
       "permissions": {
-        "read": "Leggi",
-        "write": "Scrivi",
+        "read": "Lettura",
+        "write": "Scrittura",
         "manage": "Gestisci"
       },
       "leave": "Abbandona",
-      "leaveTitle": "Abbandona condivisione?",
-      "leaveDescription": "Perderai l'accesso a {resource} di {owner}. Il proprietario non sarà avvisato.",
+      "leaveTitle": "Abbandonare la condivisione?",
+      "leaveDescription": "L'accesso a {resource} di {owner} verrà revocato. Il proprietario non riceverà alcuna notifica.",
       "leaveConfirm": "Abbandona",
-      "leaveSuccess": "Hai abbandonato la condivisione.",
+      "leaveSuccess": "Condivisione abbandonata.",
       "leaveError": "Impossibile abbandonare la condivisione.",
       "pending": {
         "heading": "Richieste in attesa",

@@ -253,6 +253,10 @@
       "dialogTitle": "Cambiar logo",
       "resetToAuto": "Restablecer a automático",
       "remove": "Quitar logo",
+      "pickerDescription": "Pick a brand logo or use letters instead.",
+      "updatedToast": "Logo updated",
+      "resetToast": "Logo eliminado",
+      "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Letras (1–2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Color",
@@ -299,6 +303,12 @@
         "backInReach": "Volver a su alcance",
         "offTrack": "Fuera de lo previsto"
       }
+    },
+    "pasteImage": {
+      "button": "Pegar imagen",
+      "shortcutHint": "o presiona {{shortcut}}",
+      "noImage": "No se ha encontrado ninguna imagen en el portapapeles.",
+      "readFailed": "No se pudo leer el portapapeles. Permitir el acceso al portapapeles o pegar con el acceso directo del teclado."
     }
   },
   "accountGroups": {
@@ -358,6 +368,9 @@
     "goalReached": {
       "title": "Objetivo alcanzado: {name}",
       "message": "Has guardado {amount}."
+    },
+    "unrealizedLossAlert": {
+      "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"
     }
   },
   "currencyNames": {

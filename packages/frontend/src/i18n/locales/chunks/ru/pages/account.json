@@ -245,6 +245,7 @@
       },
       "rightPanel": {
         "transactions": "Транзакции",
+        "viewAll": "Показать всё",
         "analyticsSoon": "Аналитика (скоро)"
       },
       "integrations": {

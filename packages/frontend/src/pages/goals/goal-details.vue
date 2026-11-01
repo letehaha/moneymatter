@@ -170,7 +170,7 @@ const stripCells = computed<StripCell[]>(() => {
       label: t('goals.details.strip.pace'),
       value: pace === null ? '—' : formatAmount(pace),
       hint: paceHint,
-      valueClass: getPaceValueClass({ pace, need }),
+      valueClass: getPaceValueClass({ pace, need, status: insights?.status }),
     },
   ];
 });

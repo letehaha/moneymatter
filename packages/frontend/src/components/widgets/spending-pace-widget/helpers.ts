@@ -7,6 +7,9 @@ const TONE_THRESHOLD_PERCENT = 5;
 export const DEFAULT_SPIKE_PERCENT = 10;
 export const SPIKE_PERCENT_MIN = 1;
 export const SPIKE_PERCENT_MAX = 100;
+// The history-based forecast already contains repeating expenses, so plans for them count twice
+// unless the user opts in.
+export const INCLUDE_PLANNED_DEFAULT = false;
 const SPIKE_COVERAGE = 0.8;
 
 export const COMPARE_MODES = ['last', 'avg'] as const;
@@ -87,6 +90,31 @@ export const splitDailyExpenses = ({
   };
 };
 
+/** What planned rows add on top of actual spend, indexed by pay-month day; zero before today. */
+export const upcomingPlannedExpenses = ({
+  actualPeriods,
+  withPlannedPeriods,
+  now,
+  payday = 1,
+}: {
+  actualPeriods: DailyPeriod[];
+  withPlannedPeriods: DailyPeriod[];
+  now: Date;
+  payday?: number;
+}): number[] => {
+  const { start, daysInMonth, todayIndex } = getPayMonth({ now, payday });
+  const expensesByDate = ({ periods }: { periods: DailyPeriod[] }) =>
+    new Map(periods.map((period) => [period.periodStart, period.expenses]));
+  const actual = expensesByDate({ periods: actualPeriods });
+  const withPlanned = expensesByDate({ periods: withPlannedPeriods });
+
+  return Array.from({ length: daysInMonth }, (_, day) => {
+    if (day < todayIndex) return 0;
+    const date = format(addDays(start, day), 'yyyy-MM-dd');
+    return (withPlanned.get(date) ?? 0) - (actual.get(date) ?? 0);
+  });
+};
+
 /** Shorter months repeat their last day so every day of the current month has a value. */
 export const comparisonCumulative = ({
   months,
@@ -135,15 +163,20 @@ export const toneOf = ({ diffPercent }: { diffPercent: number | null }): PaceTon
   return 'neutral';
 };
 
-/** The forecast adds what the comparison spent from today to month end on top of the actual spend. */
+/**
+ * The forecast adds what the comparison spent from today to month end, plus pending plans, on top
+ * of the actual spend. Today's chart point stays the actual spend so the line starts at the today dot.
+ */
 export const computeSpendingPace = ({
   currentMonth,
   comparisonMonths,
   daysInMonth,
+  plannedExpenses = [],
 }: {
   currentMonth: number[];
   comparisonMonths: number[][];
   daysInMonth: number;
+  plannedExpenses?: number[];
 }): SpendingPace => {
   const spentCumulative = cumulative({ values: currentMonth });
   const spent = spentCumulative.at(-1) ?? 0;
@@ -153,7 +186,12 @@ export const computeSpendingPace = ({
 
   const byToday = comparison[todayIndex]!;
   const total = comparison.at(-1)!;
-  const forecastCumulative = comparison.map((value, day) => (day < todayIndex ? null : spent + value - byToday));
+  const plannedCumulative = cumulative({ values: plannedExpenses });
+  const forecastCumulative = comparison.map((value, day) => {
+    if (day < todayIndex) return null;
+    if (day === todayIndex) return spent;
+    return spent + value - byToday + (plannedCumulative[day] ?? 0);
+  });
   const forecast = forecastCumulative.at(-1)!;
   const diffPercent = total > 0 ? ((forecast - total) / total) * 100 : null;
 

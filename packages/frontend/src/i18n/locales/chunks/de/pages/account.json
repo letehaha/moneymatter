@@ -245,6 +245,7 @@
       },
       "rightPanel": {
         "transactions": "Transaktionen",
+        "viewAll": "Alle anzeigen",
         "analyticsSoon": "Analysen (demnächst)"
       },
       "integrations": {

@@ -120,7 +120,7 @@
       "selectColumn": "Select column…",
       "notMapped": "Not mapped",
       "pickCategory": "Pick category…",
-      "cashMovementsNote": "Cash deposits and withdrawals aren't supported yet. Pick 'Skip these rows' for those side values to leave them out of the import.",
+      "cashMovementsNote": "Depositi e Prelievi non sono ancora supportati. Selezione 'Salta queste righe' per i rispettivi valori per lasciarli fuori dall'importazione.",
       "extractButton": "Continue to review",
       "extracting": "Extracting…",
       "fields": {
@@ -150,7 +150,7 @@
       "transfer": "Transfer",
       "tax": "Tax",
       "fee": "Fee",
-      "cancel": "Cancella",
+      "cancel": "Annulla",
       "other": "Other",
       "skip": "Skip these rows"
     },

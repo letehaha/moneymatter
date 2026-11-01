@@ -37,10 +37,6 @@
         "invalidPdfNamed": "{name} nevyzerá ako platný súbor PDF. Súbor môže byť poškodený alebo premenovaný.",
         "invalidImageNamed": "{name} nevyzerá ako platný obrázok JPG, PNG alebo WebP. Súbor môže byť poškodený alebo premenovaný.",
         "invalidTextNamed": "{name} nevyzerá ako platný súbor {ext}. Súbor môže byť binárny alebo premenovaný.",
-        "pasteImageButton": "Vložte obrázok",
-        "pasteShortcutHint": "alebo stlačte {shortcut}",
-        "clipboardNoImage": "V schránke sa nenašiel žiadny obrázok.",
-        "clipboardReadFailed": "Schránku sa nepodarilo prečítať. Povoľte prístup k schránke, alebo vložte obsah klávesovou skratkou.",
         "unreadableFiles": "Nepodarilo sa prečítať: {files}",
         "fileStatus": {
           "pending": "Neanalyzované",

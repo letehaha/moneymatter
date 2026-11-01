@@ -8,7 +8,7 @@
       "addNew": {
         "loading": "Caricamento in corso...",
         "selectCurrency": "Select currency",
-        "addButton": "Aggiungere",
+        "addButton": "Aggiungi",
         "sectionLabel": "Add a currency",
         "successfullyAdded": "Currency added",
         "errors": {
@@ -81,7 +81,7 @@
           "title": "Change base currency?",
           "warningTitle": "Warning:",
           "warningText": "Changing the base currency should be a very well-considered decision. Ideally, this action should be performed only once, even though there are no actual restrictions.",
-          "descriptionText": "Ogni volta che cambi la valuta di base, tutte le transazioni saranno ricalcolate utilizzando i tassi di cambio storici. A causa delle variazioni aritmetiche in virgola mobile e normali tra i tassi di cambio base e di quotazione, i ricalcoli ripetuti possono introdurre piccole discrepanze negli importi di riferimento nel tempo. Gli importi di riferimento sono utilizzati per visualizzare le statistiche e per fissare i limiti del budget.",
+          "descriptionText": "Ogni volta che si cambia la valuta di base, tutte le transazioni vengono ricalcolate usando i tassi di cambio storici. A causa dell'aritmetica in virgola mobile e delle normali differenze tra i tassi della valuta di base e quelli della valuta di quotazione, ricalcoli ripetuti possono introdurre nel tempo piccole discrepanze negli importi di riferimento. Gli importi di riferimento servono a mostrare le statistiche e a impostare i limiti del budget.",
           "roundingTitle": "How exactly is rounding calculated?",
           "roundingIntro": "Currency conversions use Banker's rounding (IEEE 754 standard), also known as \"round half to even\". This minimizes cumulative rounding errors over many calculations.",
           "roundingHow": "How it works:",
@@ -93,12 +93,12 @@
           "restrictionWarning": "You won't be able to create new accounts, transactions, and anything related to \"amounts\" while the process is in progress.",
           "confirmation": "Are you sure you want to proceed?",
           "changeButton": "Change base currency",
-          "cancelButton": "Cancella"
+          "cancelButton": "Annulla"
         },
         "successMessage": "Base currency changed successfully.",
         "errors": {
           "changeFailed": "Unexpected error. Failed to change base currency.",
-          "lockedHousehold": "You're in {count} active household membership. Leave it from Settings → Household first. | You're in {count} active household memberships. Leave them from Settings → Household first.",
+          "lockedHousehold": "Sei parte di {count} nucleo famigliare attivo. Abbandonalo da Impostazioni → Nucleo Familiare. | Sei parte di {count} nucleo famigliare attivi. Abbandonali da Impostazioni → Nucleo Familiare.",
           "lockedShares": "You have {count} active account share. Revoke it from the account first. | You have {count} active account shares. Revoke them from each account first.",
           "lockedBudgetPlan": "An active budget plan is blocking the change. Delete it first. | {count} active budget plans are blocking the change. Delete them first."
         }
