@@ -137,14 +137,14 @@ export const getGoalStatusLabel = ({
   today,
 }: {
   status: GoalDisplayStatus;
-  progress: Pick<GoalProgress, 'etaMonths' | 'daysLeft'> | null;
+  progress: Pick<GoalProgress, 'etaMonths' | 'monthsLeft'> | null;
   today?: string;
 }): GoalStatusLabel => {
   const etaMonths = progress?.etaMonths ?? null;
-  const daysLeft = progress?.daysLeft ?? null;
+  const monthsLeft = progress?.monthsLeft ?? null;
 
-  if (status === 'behind' && etaMonths !== null && daysLeft !== null) {
-    return { key: 'goals.status.behindBy', count: scheduleOffset({ etaMonths, daysLeft }).months };
+  if (status === 'behind' && etaMonths !== null && monthsLeft !== null) {
+    return { key: 'goals.status.behindBy', count: scheduleOffset({ etaMonths, monthsLeft }).months };
   }
   if (status === 'no_date' && etaMonths !== null && today) {
     return { key: 'goals.status.around', date: etaDate({ today, etaMonths }) };
@@ -156,11 +156,11 @@ export const getGoalStatusLabel = ({
 export const getScheduleOffset = ({
   progress,
 }: {
-  progress: Pick<GoalProgress, 'status' | 'etaMonths' | 'daysLeft'>;
+  progress: Pick<GoalProgress, 'status' | 'etaMonths' | 'monthsLeft'>;
 }): GoalScheduleOffset | null => {
-  const { status, etaMonths, daysLeft } = progress;
-  if (etaMonths === null || daysLeft === null || !['ahead', 'on_track', 'behind'].includes(status)) return null;
-  return scheduleOffset({ etaMonths, daysLeft });
+  const { status, etaMonths, monthsLeft } = progress;
+  if (etaMonths === null || monthsLeft === null || !['ahead', 'on_track', 'behind'].includes(status)) return null;
+  return scheduleOffset({ etaMonths, monthsLeft });
 };
 
 export const isGoalBehind = ({ goal }: { goal: SectionFields }) => {

@@ -40,6 +40,7 @@ const buildInsights = (overrides: Partial<GoalInsights> = {}): GoalInsights => (
   etaMonths: null,
   neededMonthly: null,
   daysLeft: null,
+  monthsLeft: null,
   input: { today: '2026-10-20', months: [], accounts: [], targetAmount: 0, targetDate: null, plannedMonthly: null },
   rateToBase: 1,
   baseCurrencyCode: 'USD',
@@ -171,21 +172,21 @@ describe('getGoalDisplayKind / tones', () => {
 
 describe('getGoalStatusLabel', () => {
   it('counts the months a behind goal runs late', () => {
-    expect(getGoalStatusLabel({ status: 'behind', progress: { etaMonths: 30, daysLeft: 305 } })).toEqual({
+    expect(getGoalStatusLabel({ status: 'behind', progress: { etaMonths: 30, monthsLeft: 10 } })).toEqual({
       key: 'goals.status.behindBy',
       count: 20,
     });
   });
 
   it('falls back to a plain behind label without an ETA', () => {
-    expect(getGoalStatusLabel({ status: 'behind', progress: { etaMonths: null, daysLeft: 304 } })).toEqual({
+    expect(getGoalStatusLabel({ status: 'behind', progress: { etaMonths: null, monthsLeft: 10 } })).toEqual({
       key: 'goals.status.behind',
     });
   });
 
   it('projects an undated goal from the server today', () => {
     expect(
-      getGoalStatusLabel({ status: 'no_date', progress: { etaMonths: 10, daysLeft: null }, today: '2026-10-20' }),
+      getGoalStatusLabel({ status: 'no_date', progress: { etaMonths: 10, monthsLeft: null }, today: '2026-10-20' }),
     ).toEqual({ key: 'goals.status.around', date: '2027-08-20' });
   });
 
@@ -198,33 +199,33 @@ describe('getGoalStatusLabel', () => {
 });
 
 describe('getScheduleOffset', () => {
-  const daysLeft = 305;
+  const monthsLeft = 10;
 
   it('counts whole months early when ahead', () => {
-    expect(getScheduleOffset({ progress: { status: 'ahead', etaMonths: 6, daysLeft } })).toEqual({
+    expect(getScheduleOffset({ progress: { status: 'ahead', etaMonths: 6, monthsLeft } })).toEqual({
       kind: 'early',
       months: 4,
     });
   });
 
   it('is on time within the last month', () => {
-    expect(getScheduleOffset({ progress: { status: 'on_track', etaMonths: 10, daysLeft } })).toEqual({
+    expect(getScheduleOffset({ progress: { status: 'on_track', etaMonths: 10, monthsLeft } })).toEqual({
       kind: 'onTime',
       months: 0,
     });
   });
 
   it('counts months late when behind', () => {
-    expect(getScheduleOffset({ progress: { status: 'behind', etaMonths: 13, daysLeft } })).toEqual({
+    expect(getScheduleOffset({ progress: { status: 'behind', etaMonths: 13, monthsLeft } })).toEqual({
       kind: 'late',
       months: 3,
     });
   });
 
   it('is null without an ETA, a date, or a dated status', () => {
-    expect(getScheduleOffset({ progress: { status: 'behind', etaMonths: null, daysLeft } })).toBeNull();
-    expect(getScheduleOffset({ progress: { status: 'no_date', etaMonths: 4, daysLeft: null } })).toBeNull();
-    expect(getScheduleOffset({ progress: { status: 'reached', etaMonths: 0, daysLeft } })).toBeNull();
+    expect(getScheduleOffset({ progress: { status: 'behind', etaMonths: null, monthsLeft } })).toBeNull();
+    expect(getScheduleOffset({ progress: { status: 'no_date', etaMonths: 4, monthsLeft: null } })).toBeNull();
+    expect(getScheduleOffset({ progress: { status: 'reached', etaMonths: 0, monthsLeft } })).toBeNull();
   });
 });
 

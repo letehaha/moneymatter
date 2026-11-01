@@ -18,7 +18,7 @@ interface GoalFeasibilityItem {
 
 /** Due within a month or overdue (`daysLeft` < 0): the whole remainder is due, so it stays out of the monthly sum. */
 interface GoalFeasibilityDueItem {
-  goal: GoalModel;
+  goal: FeasibilityGoal;
   daysLeft: number;
 }
 

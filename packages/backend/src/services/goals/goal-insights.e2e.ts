@@ -84,6 +84,7 @@ describe('Goal insights', () => {
       pace: 100,
       etaMonths: 12,
       daysLeft: 380,
+      monthsLeft: 12,
       neededMonthly: Math.round(120_000 / (380 / 30.44)) / 100,
       rateToBase: 1,
       baseCurrencyCode: global.BASE_CURRENCY.code,
