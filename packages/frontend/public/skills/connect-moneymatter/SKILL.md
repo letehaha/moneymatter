@@ -2,11 +2,11 @@
 
 MoneyMatter exposes a remote Model Context Protocol (MCP) server. Connecting an
 agent to this server gives the agent OAuth-secured access to the user's
-financial data: accounts and account groups, transactions (including planned
+financial data: accounts, transactions (including planned
 ones, refunds, transfers, splits and attachments), categories, tags, tag
 reminders, payees, trackers, budget plans, savings goals, subscriptions,
 transaction automations and templates, loans, vehicles, currencies and exchange rates,
-notifications, app settings, investment portfolios, holdings, investment
+investment portfolios, holdings, investment
 transactions, venture deals, and duplicate cleanup. Bank connections and
 sharing are readable only; imports can be listed and undone. The agent can
 read these records and — when the user grants the corresponding scopes —
@@ -85,7 +85,6 @@ page.
 | `delete_budget_plan_line` | Permanently delete a line and its assignments (`finance:delete`) |
 | `archive_budget_plan_line` | Archive a line from the current period, or restore an archived one (`finance:write`) |
 | `add_suggested_budget_plan_lines` | Draft starter lines from spending history, with AI when the server has it (`finance:write`) |
-| `set_budget_plan_layout` | Reorder groups and move lines between them in one call (`finance:write`) |
 | `set_budget_plan_line_goal` | Set or replace a line's goal: frequency, behavior and amount (`finance:write`) |
 | `delete_budget_plan_line_goal` | Delete a line's goal (`finance:delete`) |
 | `snooze_budget_plan_line_goal` | Snooze a line's goal for one period, or wake it again (`finance:write`) |
@@ -161,13 +160,6 @@ page.
 | `archive_account` | Archive or unarchive an account; handles side effects (`finance:write`) |
 | `delete_account` | Permanently delete an account and all its transactions (`finance:delete`) |
 | `unlink_account_from_bank_connection` | Disconnect a bank-connected account; it becomes manual and keeps history (`finance:write`) |
-| `get_account_groups` | List account groups (nested folders) with parent, path, child groups and accounts |
-| `create_account_group` | Create an account group, optionally nested under a parent (`finance:write`) |
-| `update_account_group` | Rename an account group or change its parent or logo (`finance:write`) |
-| `move_account_group` | Move an account group under another group or to the top level (`finance:write`) |
-| `delete_account_group` | Delete an account group; its accounts are kept, only ungrouped (`finance:delete`) |
-| `add_account_to_group` | Put an account into a group; an account is in one group at a time (`finance:write`) |
-| `remove_accounts_from_group` | Take accounts out of a group (`finance:write`) |
 | `get_transaction_groups` | List transaction groups with counts/dates or full embedded transactions |
 | `create_transaction_group` | Bundle related transactions into a group (e.g. split bill) (`finance:write`) |
 | `update_transaction_group` | Rename or add a note to an existing group (`finance:write`) |
@@ -244,13 +236,6 @@ page.
 > > > > > > > | `archive_account` | Archive or unarchive an account; handles side effects (`finance:write`) |
 > > > > > > > | `delete_account` | Permanently delete an account and all its transactions (`finance:delete`) |
 > > > > > > > | `unlink_account_from_bank_connection` | Disconnect a bank-connected account; it becomes manual and keeps history (`finance:write`) |
-> > > > > > > | `get_account_groups` | List account groups (nested folders) with parent, path, child groups and accounts |
-> > > > > > > | `create_account_group` | Create an account group, optionally nested under a parent (`finance:write`) |
-> > > > > > > | `update_account_group` | Rename an account group or change its parent or logo (`finance:write`) |
-> > > > > > > | `move_account_group` | Move an account group under another group or to the top level (`finance:write`) |
-> > > > > > > | `delete_account_group` | Delete an account group; its accounts are kept, only ungrouped (`finance:delete`) |
-> > > > > > > | `add_account_to_group` | Put an account into a group; an account is in one group at a time (`finance:write`) |
-> > > > > > > | `remove_accounts_from_group` | Take accounts out of a group (`finance:write`) |
 > > > > > > > | `get_transaction_groups` | List transaction groups with counts/dates or full embedded transactions |
 > > > > > > > | `create_transaction_group` | Bundle related transactions into a group (e.g. split bill) (`finance:write`) |
 > > > > > > > | `update_transaction_group` | Rename or add a note to an existing group (`finance:write`) |
@@ -465,16 +450,6 @@ page.
 > > > > > > > | `update_tag_reminder` | Change a reminder; `null` clears the schedule, `isEnabled` pauses it (`finance:write`) |
 > > > > > > > | `delete_tag_reminder` | Permanently delete a tag reminder (`finance:delete`) |
 > > > > > > > | `delete_tag_reminder` | Permanently delete a tag reminder (`finance:delete`) |
-> > > > > > > | `get_notifications` | In-app notifications with total and unread count; filter by status or type, or read one by id |
-> > > > > > > | `get_notifications` | In-app notifications with total and unread count; filter by status or type, or read one by id |
-> > > > > > > | `mark_notifications_read` | Mark one notification read, or all if no id; read-only accounts allowed (`finance:write`) |
-> > > > > > > | `mark_notifications_read` | Mark one notification read, or all if no id; read-only accounts allowed (`finance:write`) |
-> > > > > > > | `dismiss_notification` | Dismiss a notification from the list and the unread count (`finance:write`) |
-> > > > > > > | `dismiss_notification` | Dismiss a notification from the list and the unread count (`finance:write`) |
-> > > > > > > | `get_user_settings` | App settings: language, notifications, dashboard, layout, saved views, FIRE inputs; no AI part |
-> > > > > > > | `get_user_settings` | App settings: language, notifications, dashboard, layout, saved views, FIRE inputs; no AI part |
-> > > > > > > | `update_user_settings` | Patch app settings; arrays replaced whole; `fire` needs the FIRE planner (`finance:write`) |
-> > > > > > > | `update_user_settings` | Patch app settings; arrays replaced whole; `fire` needs the FIRE planner (`finance:write`) |
 > > > > > > > | `get_payees` | List payees (merchants) with transaction count, net flow and top category; filter by name |
 > > > > > > > | `get_payees` | List payees (merchants) with transaction count, net flow and top category; filter by name |
 > > > > > > > | `get_payee` | One payee with its aliases and stats |
@@ -487,8 +462,6 @@ page.
 > > > > > > > | `delete_payee` | Permanently delete a payee; its transactions stay, unlinked (`finance:delete`) |
 > > > > > > > | `merge_payees` | Merge one payee into another; the source is deleted (`finance:delete`) |
 > > > > > > > | `merge_payees` | Merge one payee into another; the source is deleted (`finance:delete`) |
-> > > > > > > | `set_payees_categorization_mode` | Set the categorization mode of every payee at once (`finance:write`) |
-> > > > > > > | `set_payees_categorization_mode` | Set the categorization mode of every payee at once (`finance:write`) |
 > > > > > > > | `bulk_delete_payees` | Permanently delete up to 2000 payees, optionally ignoring their names later (`finance:delete`) |
 > > > > > > > | `bulk_delete_payees` | Permanently delete up to 2000 payees, optionally ignoring their names later (`finance:delete`) |
 > > > > > > > | `get_ignored_payee_names` | Names that are never turned into payees automatically |
@@ -550,14 +523,6 @@ page.
 > > > > > > > | `delete_user_currency` | Stop holding an unused ISO currency; not the base currency (`finance:delete`) |
 > > > > > > > | `delete_user_currency` | Stop holding an unused ISO currency; not the base currency (`finance:delete`) |
 > > > > > > > | `delete_user_currency` | Stop holding an unused ISO currency; not the base currency (`finance:delete`) |
-> > > > > > > | `change_base_currency` | Set the base currency; a change recalculates history and blocks edits until done (`finance:write`) |
-> > > > > > > | `change_base_currency` | Set the base currency; a change recalculates history and blocks edits until done (`finance:write`) |
-> > > > > > > | `change_base_currency` | Set the base currency; a change recalculates history and blocks edits until done (`finance:write`) |
-> > > > > > > | `change_base_currency` | Set the base currency; a change recalculates history and blocks edits until done (`finance:write`) |
-> > > > > > > | `get_base_currency_change_status` | State of the running or last base-currency change |
-> > > > > > > | `get_base_currency_change_status` | State of the running or last base-currency change |
-> > > > > > > | `get_base_currency_change_status` | State of the running or last base-currency change |
-> > > > > > > | `get_base_currency_change_status` | State of the running or last base-currency change |
 > > > > > > > | `get_category_transaction_count` | Count transactions filed under a category; check before `delete_category` |
 > > > > > > > | `get_budget` | One tracker with its limit, categories and stats (income, expense, balance, limit used) |
 > > > > > > > | `get_budget_transactions` | Transactions a category tracker counts, newest first; manual trackers use `search_transactions` with `budgetIds` |
@@ -603,13 +568,6 @@ page.
 | `archive_account` | Archive or unarchive an account; handles side effects (`finance:write`) |
 | `delete_account` | Permanently delete an account and all its transactions (`finance:delete`) |
 | `unlink_account_from_bank_connection` | Disconnect a bank-connected account; it becomes manual and keeps history (`finance:write`) |
-| `get_account_groups` | List account groups (nested folders) with parent, path, child groups and accounts |
-| `create_account_group` | Create an account group, optionally nested under a parent (`finance:write`) |
-| `update_account_group` | Rename an account group or change its parent or logo (`finance:write`) |
-| `move_account_group` | Move an account group under another group or to the top level (`finance:write`) |
-| `delete_account_group` | Delete an account group; its accounts are kept, only ungrouped (`finance:delete`) |
-| `add_account_to_group` | Put an account into a group; an account is in one group at a time (`finance:write`) |
-| `remove_accounts_from_group` | Take accounts out of a group (`finance:write`) |
 | `get_transaction_groups` | List transaction groups with counts/dates or full embedded transactions; `groupId` reads one group |
 | `create_transaction_group` | Bundle related transactions into a group (e.g. split bill) (`finance:write`) |
 | `update_transaction_group` | Rename or add a note to an existing group (`finance:write`) |
@@ -684,18 +642,12 @@ page.
 > > > > > > > | `create_tag_reminder` | Create a tag reminder (amount threshold in the base currency, or existence check) (`finance:write`) |
 > > > > > > > | `update_tag_reminder` | Change a reminder; `null` clears the schedule, `isEnabled` pauses it (`finance:write`) |
 > > > > > > > | `delete_tag_reminder` | Permanently delete a tag reminder (`finance:delete`) |
-> > > > > > > | `get_notifications` | In-app notifications with total and unread count; filter by status or type, or read one by id |
-> > > > > > > | `mark_notifications_read` | Mark one notification read, or all if no id; read-only accounts allowed (`finance:write`) |
-> > > > > > > | `dismiss_notification` | Dismiss a notification from the list and the unread count (`finance:write`) |
-> > > > > > > | `get_user_settings` | App settings: language, notifications, dashboard, layout, saved views, FIRE inputs; no AI part |
-> > > > > > > | `update_user_settings` | Patch app settings; arrays replaced whole; `fire` needs the FIRE planner (`finance:write`) |
 > > > > > > > | `get_payees` | List payees (merchants) with transaction count, net flow and top category; filter by name |
 > > > > > > > | `get_payee` | One payee with its aliases and stats |
 > > > > > > > | `create_payee` | Create a payee (`finance:write`) |
 > > > > > > > | `update_payee` | Rename a payee or change its default category, mode, default tags, location or logo (`finance:write`) |
 > > > > > > > | `delete_payee` | Permanently delete a payee; its transactions stay, unlinked (`finance:delete`) |
 > > > > > > > | `merge_payees` | Merge one payee into another; the source is deleted (`finance:delete`) |
-> > > > > > > | `set_payees_categorization_mode` | Set the categorization mode of every payee at once (`finance:write`) |
 > > > > > > > | `bulk_delete_payees` | Permanently delete up to 2000 payees, optionally ignoring their names later (`finance:delete`) |
 > > > > > > > | `get_ignored_payee_names` | Names that are never turned into payees automatically |
 > > > > > > > | `ignore_payee_name` | Add a name to the ignored list; `force` also deletes its payee (`finance:write` + `finance:delete` with `force`) |
@@ -719,21 +671,12 @@ page.
 > > > > > > > | `add_user_currencies` | Add currencies the user holds, with optional flat rate and live-rate flag (`finance:write`) |
 > > > > > > > | `update_user_currency` | Change a held currency's flat rate or market-vs-manual rate; re-values balances (`finance:write`) |
 > > > > > > > | `delete_user_currency` | Stop holding an unused ISO currency; not the base currency (`finance:delete`) |
-> > > > > > > | `change_base_currency` | Set the base currency; a change recalculates history and blocks edits until done (`finance:write`) |
-> > > > > > > | `get_base_currency_change_status` | State of the running or last base-currency change |
 > > > > > > > theirs
 > > > > > > > ||||||| base
 > > > > > > > | `adjust_account_balance` | Set an account to a target balance via an adjustment transaction (`finance:write`) |
 > > > > > > > | `archive_account` | Archive or unarchive an account; handles side effects (`finance:write`) |
 > > > > > > > | `delete_account` | Permanently delete an account and all its transactions (`finance:delete`) |
 > > > > > > > | `unlink_account_from_bank_connection` | Disconnect a bank-connected account; it becomes manual and keeps history (`finance:write`) |
-> > > > > > > | `get_account_groups` | List account groups (nested folders) with parent, path, child groups and accounts |
-> > > > > > > | `create_account_group` | Create an account group, optionally nested under a parent (`finance:write`) |
-> > > > > > > | `update_account_group` | Rename an account group or change its parent or logo (`finance:write`) |
-> > > > > > > | `move_account_group` | Move an account group under another group or to the top level (`finance:write`) |
-> > > > > > > | `delete_account_group` | Delete an account group; its accounts are kept, only ungrouped (`finance:delete`) |
-> > > > > > > | `add_account_to_group` | Put an account into a group; an account is in one group at a time (`finance:write`) |
-> > > > > > > | `remove_accounts_from_group` | Take accounts out of a group (`finance:write`) |
 > > > > > > > | `get_transaction_groups` | List transaction groups with counts/dates or full embedded transactions; `groupId` reads one group |
 > > > > > > > | `create_transaction_group` | Bundle related transactions into a group (e.g. split bill) (`finance:write`) |
 > > > > > > > | `update_transaction_group` | Rename or add a note to an existing group (`finance:write`) |
@@ -808,18 +751,12 @@ page.
 > > > > > > > | `create_tag_reminder` | Create a tag reminder (amount threshold in the base currency, or existence check) (`finance:write`) |
 > > > > > > > | `update_tag_reminder` | Change a reminder; `null` clears the schedule, `isEnabled` pauses it (`finance:write`) |
 > > > > > > > | `delete_tag_reminder` | Permanently delete a tag reminder (`finance:delete`) |
-> > > > > > > | `get_notifications` | In-app notifications with total and unread count; filter by status or type, or read one by id |
-> > > > > > > | `mark_notifications_read` | Mark one notification read, or all if no id; read-only accounts allowed (`finance:write`) |
-> > > > > > > | `dismiss_notification` | Dismiss a notification from the list and the unread count (`finance:write`) |
-> > > > > > > | `get_user_settings` | App settings: language, notifications, dashboard, layout, saved views, FIRE inputs; no AI part |
-> > > > > > > | `update_user_settings` | Patch app settings; arrays replaced whole; `fire` needs the FIRE planner (`finance:write`) |
 > > > > > > > | `get_payees` | List payees (merchants) with transaction count, net flow and top category; filter by name |
 > > > > > > > | `get_payee` | One payee with its aliases and stats |
 > > > > > > > | `create_payee` | Create a payee (`finance:write`) |
 > > > > > > > | `update_payee` | Rename a payee or change its default category, mode, default tags, location or logo (`finance:write`) |
 > > > > > > > | `delete_payee` | Permanently delete a payee; its transactions stay, unlinked (`finance:delete`) |
 > > > > > > > | `merge_payees` | Merge one payee into another; the source is deleted (`finance:delete`) |
-> > > > > > > | `set_payees_categorization_mode` | Set the categorization mode of every payee at once (`finance:write`) |
 > > > > > > > | `bulk_delete_payees` | Permanently delete up to 2000 payees, optionally ignoring their names later (`finance:delete`) |
 > > > > > > > | `get_ignored_payee_names` | Names that are never turned into payees automatically |
 > > > > > > > | `ignore_payee_name` | Add a name to the ignored list; `force` also deletes its payee (`finance:write` + `finance:delete` with `force`) |
@@ -843,8 +780,6 @@ page.
 > > > > > > > | `add_user_currencies` | Add currencies the user holds, with optional flat rate and live-rate flag (`finance:write`) |
 > > > > > > > | `update_user_currency` | Change a held currency's flat rate or market-vs-manual rate; re-values balances (`finance:write`) |
 > > > > > > > | `delete_user_currency` | Stop holding an unused ISO currency; not the base currency (`finance:delete`) |
-> > > > > > > | `change_base_currency` | Set the base currency; a change recalculates history and blocks edits until done (`finance:write`) |
-> > > > > > > | `get_base_currency_change_status` | State of the running or last base-currency change |
 > > > > > > > =======
 > > > > > > > theirs
 
@@ -937,13 +872,6 @@ Includes detected candidates and billing periods.
 | `archive_account`                        | Archive or unarchive an account; handles side effects (`finance:write`)                                          |
 | `delete_account`                         | Permanently delete an account and all its transactions (`finance:delete`)                                        |
 | `unlink_account_from_bank_connection`    | Disconnect a bank-connected account; it becomes manual and keeps history (`finance:write`)                       |
-| `get_account_groups`                     | List account groups (nested folders) with parent, path, child groups and accounts                                |
-| `create_account_group`                   | Create an account group, optionally nested under a parent (`finance:write`)                                      |
-| `update_account_group`                   | Rename an account group or change its parent or logo (`finance:write`)                                           |
-| `move_account_group`                     | Move an account group under another group or to the top level (`finance:write`)                                  |
-| `delete_account_group`                   | Delete an account group; its accounts are kept, only ungrouped (`finance:delete`)                                |
-| `add_account_to_group`                   | Put an account into a group; an account is in one group at a time (`finance:write`)                              |
-| `remove_accounts_from_group`             | Take accounts out of a group (`finance:write`)                                                                   |
 | `get_transaction_groups`                 | List transaction groups with counts/dates or full embedded transactions                                          |
 | `create_transaction_group`               | Bundle related transactions into a group (e.g. split bill) (`finance:write`)                                     |
 | `update_transaction_group`               | Rename or add a note to an existing group (`finance:write`)                                                      |
@@ -1007,8 +935,6 @@ Includes detected candidates and billing periods.
 | `add_user_currencies`                    | Add currencies the user holds, with optional flat rate and live-rate flag (`finance:write`)                      |
 | `update_user_currency`                   | Change a held currency's flat rate or market-vs-manual rate; re-values balances (`finance:write`)                |
 | `delete_user_currency`                   | Stop holding an unused ISO currency; not the base currency (`finance:delete`)                                    |
-| `change_base_currency`                   | Set the base currency; a change recalculates history and blocks edits until done (`finance:write`)               |
-| `get_base_currency_change_status`        | State of the running or last base-currency change                                                                |
 | Tool                                     | Purpose                                                                                                          |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `get_user_profile`                       | Base currency, configured currencies, profile basics                                                             |
@@ -1091,13 +1017,6 @@ Includes detected candidates and billing periods.
 | `archive_account`                        | Archive or unarchive an account; handles side effects (`finance:write`)                                          |
 | `delete_account`                         | Permanently delete an account and all its transactions (`finance:delete`)                                        |
 | `unlink_account_from_bank_connection`    | Disconnect a bank-connected account; it becomes manual and keeps history (`finance:write`)                       |
-| `get_account_groups`                     | List account groups (nested folders) with parent, path, child groups and accounts                                |
-| `create_account_group`                   | Create an account group, optionally nested under a parent (`finance:write`)                                      |
-| `update_account_group`                   | Rename an account group or change its parent or logo (`finance:write`)                                           |
-| `move_account_group`                     | Move an account group under another group or to the top level (`finance:write`)                                  |
-| `delete_account_group`                   | Delete an account group; its accounts are kept, only ungrouped (`finance:delete`)                                |
-| `add_account_to_group`                   | Put an account into a group; an account is in one group at a time (`finance:write`)                              |
-| `remove_accounts_from_group`             | Take accounts out of a group (`finance:write`)                                                                   |
 | `get_transaction_groups`                 | List transaction groups with counts/dates or full embedded transactions; `groupId` reads one group               |
 | `create_transaction_group`               | Bundle related transactions into a group (e.g. split bill) (`finance:write`)                                     |
 | `update_transaction_group`               | Rename or add a note to an existing group (`finance:write`)                                                      |
@@ -1189,18 +1108,12 @@ Includes detected candidates and billing periods.
 | `create_tag_reminder`                    | Create a tag reminder (amount threshold in the base currency, or existence check) (`finance:write`)              |
 | `update_tag_reminder`                    | Change a reminder; `null` clears the schedule, `isEnabled` pauses it (`finance:write`)                           |
 | `delete_tag_reminder`                    | Permanently delete a tag reminder (`finance:delete`)                                                             |
-| `get_notifications`                      | In-app notifications with total and unread count; filter by status or type, or read one by id                    |
-| `mark_notifications_read`                | Mark one notification read, or all if no id; read-only accounts allowed (`finance:write`)                        |
-| `dismiss_notification`                   | Dismiss a notification from the list and the unread count (`finance:write`)                                      |
-| `get_user_settings`                      | App settings: language, notifications, dashboard, layout, saved views, FIRE inputs; no AI part                   |
-| `update_user_settings`                   | Patch app settings; arrays replaced whole; `fire` needs the FIRE planner (`finance:write`)                       |
 | `get_payees`                             | List payees (merchants) with transaction count, net flow and top category; filter by name                        |
 | `get_payee`                              | One payee with its aliases and stats                                                                             |
 | `create_payee`                           | Create a payee (`finance:write`)                                                                                 |
 | `update_payee`                           | Rename a payee or change its default category, mode, default tags, location or logo (`finance:write`)            |
 | `delete_payee`                           | Permanently delete a payee; its transactions stay, unlinked (`finance:delete`)                                   |
 | `merge_payees`                           | Merge one payee into another; the source is deleted (`finance:delete`)                                           |
-| `set_payees_categorization_mode`         | Set the categorization mode of every payee at once (`finance:write`)                                             |
 | `bulk_delete_payees`                     | Permanently delete up to 2000 payees, optionally ignoring their names later (`finance:delete`)                   |
 | `get_ignored_payee_names`                | Names that are never turned into payees automatically                                                            |
 | `ignore_payee_name`                      | Add a name to the ignored list; `force` also deletes its payee (`finance:write` + `finance:delete` with `force`) |
@@ -1224,8 +1137,6 @@ Includes detected candidates and billing periods.
 | `add_user_currencies`                    | Add currencies the user holds, with optional flat rate and live-rate flag (`finance:write`)                      |
 | `update_user_currency`                   | Change a held currency's flat rate or market-vs-manual rate; re-values balances (`finance:write`)                |
 | `delete_user_currency`                   | Stop holding an unused ISO currency; not the base currency (`finance:delete`)                                    |
-| `change_base_currency`                   | Set the base currency; a change recalculates history and blocks edits until done (`finance:write`)               |
-| `get_base_currency_change_status`        | State of the running or last base-currency change                                                                |
 | Tool                                     | Purpose                                                                                                          |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `get_loans`                              | List loans with balance, terms and payoff projection; `loanId` reads one with its timeline                       |
@@ -1259,7 +1170,6 @@ Includes detected candidates and billing periods.
 | `delete_budget_plan_line`                | Permanently delete a line and its assignments (`finance:delete`)                                                 |
 | `archive_budget_plan_line`               | Archive a line from the current period, or restore an archived one (`finance:write`)                             |
 | `add_suggested_budget_plan_lines`        | Draft starter lines from spending history, with AI when the server has it (`finance:write`)                      |
-| `set_budget_plan_layout`                 | Reorder groups and move lines between them in one call (`finance:write`)                                         |
 | `set_budget_plan_line_goal`              | Set or replace a line's goal: frequency, behavior and amount (`finance:write`)                                   |
 | `delete_budget_plan_line_goal`           | Delete a line's goal (`finance:delete`)                                                                          |
 | `snooze_budget_plan_line_goal`           | Snooze a line's goal for one period, or wake it again (`finance:write`)                                          |
@@ -1378,20 +1288,18 @@ Platforms, deals and events.
 
 ### Currencies
 
-Exchange rates, held currencies and the base currency.
+Exchange rates and held currencies.
 
-| Tool                              | Purpose                                                                                            |
-| --------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `set_exchange_rates`              | Set the user's own rates for pairs, each with its opposite (`finance:write`)                       |
-| `delete_exchange_rates`           | Remove the user's own rates for pairs, each with its opposite (`finance:delete`)                   |
-| `get_user_currencies`             | Base currency, held currencies with their rate settings, and today's rates to the base             |
-| `list_supported_currencies`       | Every ISO currency the app supports (code, name, decimals)                                         |
-| `get_exchange_rate`               | Rate of a pair on a day, or the global rates of the day                                            |
-| `add_user_currencies`             | Add currencies the user holds, with optional flat rate and live-rate flag (`finance:write`)        |
-| `update_user_currency`            | Change a held currency's flat rate or market-vs-manual rate; re-values balances (`finance:write`)  |
-| `delete_user_currency`            | Stop holding an unused ISO currency; not the base currency (`finance:delete`)                      |
-| `change_base_currency`            | Set the base currency; a change recalculates history and blocks edits until done (`finance:write`) |
-| `get_base_currency_change_status` | State of the running or last base-currency change                                                  |
+| Tool                        | Purpose                                                                                           |
+| --------------------------- | ------------------------------------------------------------------------------------------------- |
+| `set_exchange_rates`        | Set the user's own rates for pairs, each with its opposite (`finance:write`)                      |
+| `delete_exchange_rates`     | Remove the user's own rates for pairs, each with its opposite (`finance:delete`)                  |
+| `get_user_currencies`       | Base currency, held currencies with their rate settings, and today's rates to the base            |
+| `list_supported_currencies` | Every ISO currency the app supports (code, name, decimals)                                        |
+| `get_exchange_rate`         | Rate of a pair on a day, or the global rates of the day                                           |
+| `add_user_currencies`       | Add currencies the user holds, with optional flat rate and live-rate flag (`finance:write`)       |
+| `update_user_currency`      | Change a held currency's flat rate or market-vs-manual rate; re-values balances (`finance:write`) |
+| `delete_user_currency`      | Stop holding an unused ISO currency; not the base currency (`finance:delete`)                     |
 
 ### Loans and vehicles
 
@@ -1435,7 +1343,6 @@ Period envelopes with lines, goals and assignments; not trackers.
 | `delete_budget_plan_line`            | Permanently delete a line and its assignments (`finance:delete`)                                        |
 | `archive_budget_plan_line`           | Archive a line from the current period, or restore an archived one (`finance:write`)                    |
 | `add_suggested_budget_plan_lines`    | Draft starter lines from spending history, with AI when the server has it (`finance:write`)             |
-| `set_budget_plan_layout`             | Reorder groups and move lines between them in one call (`finance:write`)                                |
 | `set_budget_plan_line_goal`          | Set or replace a line's goal: frequency, behavior and amount (`finance:write`)                          |
 | `delete_budget_plan_line_goal`       | Delete a line's goal (`finance:delete`)                                                                 |
 | `snooze_budget_plan_line_goal`       | Snooze a line's goal for one period, or wake it again (`finance:write`)                                 |
@@ -1595,14 +1502,11 @@ multi-currency data.
   A batch above 1000 rows answers with a `jobId`: the delete runs in the
   background and blocks writes until it ends, so follow it with
   `get_import_batch_delete_status`.
-- The base currency lock: while a base-currency change runs
-  (`change_base_currency`, then `get_base_currency_change_status`), the write
-  tools fail with a "change in progress" error; reads keep working, except
+- The base currency lock: while a base-currency change runs (the user starts
+  it in the app), the write tools fail with a "change in progress" error; reads keep working, except
   `preview_transaction_automation` and `list_transfer_suggestions`, which are
-  refused too. A few writes that touch no amounts (attachments) are exempt. Wait for the status to finish, then retry. A read-only account (expired plan) can read
-  and use only a few writes (`mark_notifications_read`, `update_user_settings`,
-  the first `change_base_currency`); every other write is refused whatever
-  scopes were granted.
+  refused too. A few writes that touch no amounts (attachments) are exempt. Wait for the change to finish, then retry. A read-only account (expired plan) can read;
+  every write is refused whatever scopes were granted.
 - Destructive calls are deliberately narrow. `bulk_delete_transactions` needs
   explicit `transactionIds` or at least one narrowing filter and refuses an
   empty filter (the REST API would delete everything); preview the count with
@@ -1610,7 +1514,8 @@ multi-currency data.
   (`ignore_payee_name` with `force`, `revert_subscription_period` when the
   app booked the transaction) need `finance:write`, plus `finance:delete` on
   that path.
-- Bank connections, sharing writes, file imports and downloads, the app's AI
+- Bank connections, sharing writes, file imports and downloads, account groups,
+  notifications, app settings, changing the base currency, the app's AI
   settings, billing, and deleting or wiping the account have no tools; send the
   user to the app for those.
 

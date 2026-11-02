@@ -15,8 +15,7 @@ const notificationStatusValues = Object.values(NOTIFICATION_STATUSES) as [
 ];
 
 /**
- * The notification list filters, shared by the REST controller and the MCP tools so both paths
- * accept exactly the same values.
+ * The notification list filters of the REST controller.
  */
 export const notificationTypeSchema = z.enum(notificationTypeValues);
 

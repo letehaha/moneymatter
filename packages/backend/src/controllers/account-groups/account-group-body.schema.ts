@@ -3,12 +3,10 @@ import { logoFieldsShape, refineLogoFields, refineLogoFieldsOnCreate } from '@co
 import { z } from 'zod';
 
 /**
- * The account group write bodies, shared by the REST controllers and the MCP account group tools
- * so the two paths accept exactly the same input. The MCP tools expose the `*Fields` objects as
- * their `inputSchema` and run the full schema in the handler, which adds the logo refinement.
+ * The account group write bodies of the REST controllers.
  */
 
-export const createAccountGroupBodyFields = {
+const createAccountGroupBodyFields = {
   name: z.string().min(1),
   parentGroupId: recordId().nullable().optional(),
   // Absent key → column stays null; a brand domain and monogram letters evict each other.
@@ -20,7 +18,7 @@ export const createAccountGroupBodySchema = z
   .strict()
   .superRefine((data, ctx) => refineLogoFieldsOnCreate({ data, ctx }));
 
-export const updateAccountGroupBodyFields = {
+const updateAccountGroupBodyFields = {
   name: z.string().min(1).optional(),
   parentGroupId: recordId().nullable().optional(),
   // Absent key → no change; a present key is written as given (null clears it), and a brand

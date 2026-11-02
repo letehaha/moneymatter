@@ -31,21 +31,9 @@ const LOCK_EXEMPT_TOOLS = [
   'create_attachment_upload_url',
   // GET /subscriptions/detect-candidates is a read in REST.
   'detect_subscription_candidates',
-  // POST /user/currencies/change-base has no lock: the enqueue takes its own NX lock. The tool is
-  // exempt in that branch only; its first-base branch (POST /user/currencies/base) carries the
-  // lock, so it is also in LOCK_EXEMPT_IN_ONE_BRANCH and calls it there.
-  'change_base_currency',
   // DELETE /attachments/:id has no lock: attachments touch no amounts.
   'delete_attachment',
-  // POST /notifications/read-all and POST /notifications/:id/read have no lock.
-  'mark_notifications_read',
-  // PUT and PATCH /user/settings have no lock: settings touch no amounts.
-  'update_user_settings',
 ];
-
-// Lock-exempt tools that still call `assertBaseCurrencyUnlocked` in one branch, because their
-// branches follow two REST routes with different guards.
-const LOCK_EXEMPT_IN_ONE_BRANCH = ['change_base_currency'];
 
 // Read-named tools whose REST route carries `checkBaseCurrencyLock`, so REST refuses them with
 // 423 during a base-currency change and the tool must too. They call no scope helper.
@@ -54,18 +42,6 @@ const LOCK_GUARDED_READ_TOOLS = [
   'preview_transaction_automation',
   // POST /transactions/transfer-recommendations/bulk-scan: a scan that writes nothing
   'list_transfer_suggestions',
-];
-
-// The only tools that may pass `allowReadOnly: true` to `requireScope`: each sits on a route in
-// `READ_ONLY_ROUTES` (`middlewares/entitlements.ts`), which a read-only user may call. Kept by
-// hand so the exemption cannot spread. The tools arrive with their tasks.
-const READ_ONLY_ROUTE_TOOLS = [
-  // POST /notifications/read-all and POST /notifications/:id/read
-  'mark_notifications_read',
-  // PUT and PATCH /user/settings
-  'update_user_settings',
-  // POST /user/currencies/base, the first base currency only
-  'change_base_currency',
 ];
 
 // Budget plan writes sit behind `requireFeature(FEATURES.budget_plan)` in REST, so every write tool
@@ -160,10 +136,9 @@ describe('MCP tool scopes', () => {
     expect(misplaced).toEqual([]);
   });
 
-  it('every lock-exempt tool exists, checks a scope and does not check the lock, except in a listed branch', () => {
+  it('every lock-exempt tool exists, checks a scope and does not check the lock', () => {
     const tools = readToolSources();
     expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(LOCK_EXEMPT_TOOLS));
-    expect(LOCK_EXEMPT_IN_ONE_BRANCH.filter((name) => !LOCK_EXEMPT_TOOLS.includes(name))).toEqual([]);
 
     const wrong = tools
       .filter((t) => LOCK_EXEMPT_TOOLS.includes(t.name))
@@ -175,7 +150,7 @@ describe('MCP tool scopes', () => {
       .filter((t) => LOCK_EXEMPT_TOOLS.includes(t.name))
       .filter((t) => t.content.includes('assertBaseCurrencyUnlocked('))
       .map((t) => t.name);
-    expect(checksLock.toSorted()).toEqual(LOCK_EXEMPT_IN_ONE_BRANCH.toSorted());
+    expect(checksLock).toEqual([]);
   });
 
   it('every read tool on a lock-carrying route checks the lock', () => {
@@ -188,15 +163,6 @@ describe('MCP tool scopes', () => {
       .filter((t) => !READ_TOOL_NAME.test(t.name) || !t.content.includes('await assertBaseCurrencyUnlocked({'))
       .map((t) => t.name);
     expect(unguarded).toEqual([]);
-  });
-
-  it('only the tools on READ_ONLY_ROUTES routes pass allowReadOnly', () => {
-    const spread = readToolSources()
-      .filter((t) => t.content.includes('allowReadOnly: true'))
-      .filter((t) => !READ_ONLY_ROUTE_TOOLS.includes(t.name))
-      .map((t) => t.name);
-
-    expect(spread).toEqual([]);
   });
 
   it('every budget plan write tool checks the budget_plan feature, except the ungated delete', () => {

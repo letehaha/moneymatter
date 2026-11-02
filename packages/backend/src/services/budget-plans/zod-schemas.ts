@@ -102,7 +102,7 @@ export const updateLineBodySchema = z
   });
 
 /** Body of `PUT /budget-plans/:planId/layout`. */
-export const setLayoutBodyFields = {
+const setLayoutBodyFields = {
   groups: z.array(z.strictObject({ id: recordId(), lineIds: uniqueRecordIds() })),
   ungroupedLineIds: uniqueRecordIds(),
 };

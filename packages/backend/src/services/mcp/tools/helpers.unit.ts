@@ -71,44 +71,6 @@ describe('requireScope', () => {
   });
 });
 
-describe('requireScope with allowReadOnly', () => {
-  it('lets a read-only user through when the scope is granted', () => {
-    const extra = authInfoFor({ role: USER_ROLES.common, scopes: ['finance:write'], readOnly: true });
-
-    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).not.toThrow();
-  });
-
-  it('lets a read-only user through when the entitlement info is missing', () => {
-    const extra = { authInfo: { scopes: ['finance:write'], extra: { role: USER_ROLES.common } } };
-
-    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).not.toThrow();
-  });
-
-  it('lets a demo user through, as the READ_ONLY_ROUTES have no demo block', () => {
-    const extra = authInfoFor({ role: USER_ROLES.demo, scopes: ['finance:write'] });
-
-    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).not.toThrow();
-  });
-
-  it('still rejects a missing scope', () => {
-    const extra = authInfoFor({ role: USER_ROLES.common, scopes: ['finance:read'], readOnly: true });
-
-    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).toThrow(
-      /Missing required scope/,
-    );
-  });
-
-  it('keeps rejecting read-only and demo users when the option is false or absent', () => {
-    const readOnly = authInfoFor({ role: USER_ROLES.common, scopes: ['finance:write'], readOnly: true });
-    const demo = authInfoFor({ role: USER_ROLES.demo, scopes: ['finance:write'] });
-
-    expect(() => requireScope({ extra: readOnly, scope: 'finance:write', allowReadOnly: false })).toThrow(
-      /no longer includes editing/,
-    );
-    expect(() => requireScope({ extra: demo, scope: 'finance:write', allowReadOnly: false })).toThrow(/demo mode/);
-  });
-});
-
 describe('assertNotDemoUser', () => {
   it('refuses a demo user whatever the scopes and plan', () => {
     const extra = authInfoFor({ role: USER_ROLES.demo, scopes: ['finance:read'], readOnly: true });

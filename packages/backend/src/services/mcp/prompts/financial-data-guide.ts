@@ -30,4 +30,4 @@ export const FINANCIAL_DATA_GUIDE_CONTENT = `You are connected to MoneyMatter, a
 - For spending analysis, prefer get_spending_by_categories or get_cash_flow over manually summing transactions
 - Tracker limits and spending are always in the user's base currency
 - Goal amounts (target, plannedMonthly, progress) are in the goal's own currencyCode, not the base currency
-- While a base currency change is running (get_base_currency_change_status), writes fail until it finishes; reads still work, so wait and retry`;
+- While a base currency change is running, writes fail until it finishes; reads still work, so wait and retry`;

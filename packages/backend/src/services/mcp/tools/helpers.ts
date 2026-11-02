@@ -39,28 +39,20 @@ export function assertNotDemoUser({ extra }: { extra: { authInfo?: { extra?: { r
  * Write and delete MCP tools call this after getUserId to enforce scope gating.
  * Demo and read-only users are rejected here regardless of granted scopes: read tools
  * never call this helper, so those accounts keep read access but cannot mutate via MCP.
- *
- * `allowReadOnly` is for the few tools on REST routes in `READ_ONLY_ROUTES`
- * (`middlewares/entitlements.ts`), which a read-only user may call, and which carry no
- * `blockDemoUsers`. It skips both rejections and still checks the scope.
  */
 export function requireScope({
   extra,
   scope,
-  allowReadOnly = false,
 }: {
   extra: { authInfo?: { scopes?: string[]; extra?: { role?: string; readOnly?: boolean } } };
   scope: string;
-  allowReadOnly?: boolean;
 }): void {
-  if (!allowReadOnly) {
-    assertNotDemoUser({ extra });
+  assertNotDemoUser({ extra });
 
-    // Missing entitlement info is treated as read-only: a write must never pass on an
-    // auth payload that failed to carry it.
-    if (extra?.authInfo?.extra?.readOnly !== false) {
-      throw new Error('Your plan no longer includes editing. Subscribe to keep editing your data.');
-    }
+  // Missing entitlement info is treated as read-only: a write must never pass on an
+  // auth payload that failed to carry it.
+  if (extra?.authInfo?.extra?.readOnly !== false) {
+    throw new Error('Your plan no longer includes editing. Subscribe to keep editing your data.');
   }
 
   const scopes = extra?.authInfo?.scopes ?? [];

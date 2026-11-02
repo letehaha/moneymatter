@@ -8,7 +8,6 @@ import {
 import { slimToolListing } from './tool-list-slimming';
 import { registerAcceptSubscriptionCandidate } from './tools/accept-subscription-candidate';
 import { registerAcceptTrackerSuggestions } from './tools/accept-tracker-suggestions';
-import { registerAddAccountToGroup } from './tools/add-account-to-group';
 import { registerAddLoanNote } from './tools/add-loan-note';
 import { registerAddSuggestedBudgetPlanLines } from './tools/add-suggested-budget-plan-lines';
 import { registerAddTransactionsToGroup } from './tools/add-transactions-to-group';
@@ -24,10 +23,8 @@ import { registerAssignTagsToTransaction } from './tools/assign-tags-to-transact
 import { registerBulkDeletePayees } from './tools/bulk-delete-payees';
 import { registerBulkDeleteTransactions } from './tools/bulk-delete-transactions';
 import { registerBulkUpdateTransactions } from './tools/bulk-update-transactions';
-import { registerChangeBaseCurrency } from './tools/change-base-currency';
 import { registerConfirmPlannedTransaction } from './tools/confirm-planned-transaction';
 import { registerCreateAccount } from './tools/create-account';
-import { registerCreateAccountGroup } from './tools/create-account-group';
 import { registerCreateAttachmentUploadUrl } from './tools/create-attachment-upload-url';
 import { registerCreateBudgetPlan } from './tools/create-budget-plan';
 import { registerCreateBudgetPlanGroup } from './tools/create-budget-plan-group';
@@ -52,7 +49,6 @@ import { registerCreateTransactionGroup } from './tools/create-transaction-group
 import { registerCreateTransactionTemplate } from './tools/create-transaction-template';
 import { registerCreateVehicle } from './tools/create-vehicle';
 import { registerDeleteAccount } from './tools/delete-account';
-import { registerDeleteAccountGroup } from './tools/delete-account-group';
 import { registerDeleteAttachment } from './tools/delete-attachment';
 import { registerDeleteBudgetPlan } from './tools/delete-budget-plan';
 import { registerDeleteBudgetPlanGroup } from './tools/delete-budget-plan-group';
@@ -83,16 +79,13 @@ import { registerDeleteUserCurrency } from './tools/delete-user-currency';
 import { registerDeleteVehicle } from './tools/delete-vehicle';
 import { registerDeleteVentureEventLink } from './tools/delete-venture-event-link';
 import { registerDetectSubscriptionCandidates } from './tools/detect-subscription-candidates';
-import { registerDismissNotification } from './tools/dismiss-notification';
 import { registerDismissSubscriptionCandidate } from './tools/dismiss-subscription-candidate';
 import { registerDismissTransferSuggestion } from './tools/dismiss-transfer-suggestion';
 import { registerExchangePortfolioCurrency } from './tools/exchange-portfolio-currency';
 import { registerGetAccount } from './tools/get-account';
-import { registerGetAccountGroups } from './tools/get-account-groups';
 import { registerGetAccounts } from './tools/get-accounts';
 import { registerGetBalanceHistory } from './tools/get-balance-history';
 import { registerGetBankSyncStatus } from './tools/get-bank-sync-status';
-import { registerGetBaseCurrencyChangeStatus } from './tools/get-base-currency-change-status';
 import { registerGetBudgetPlanPeriod } from './tools/get-budget-plan-period';
 import { registerGetBudgetPlanScheduled } from './tools/get-budget-plan-scheduled';
 import { registerGetBudgetPlanSuggestionContext } from './tools/get-budget-plan-suggestion-context';
@@ -113,7 +106,6 @@ import { registerGetLoanBalanceHistory } from './tools/get-loan-balance-history'
 import { registerGetLoans } from './tools/get-loans';
 import { registerGetNetWorthDrivers } from './tools/get-net-worth-drivers';
 import { registerGetNetWorthHistory } from './tools/get-net-worth-history';
-import { registerGetNotifications } from './tools/get-notifications';
 import { registerGetPayee } from './tools/get-payee';
 import { registerGetPayees } from './tools/get-payees';
 import { registerGetPivotReport } from './tools/get-pivot-report';
@@ -150,7 +142,6 @@ import { registerGetTransferRecommendations } from './tools/get-transfer-recomme
 import { registerGetUpcomingSubscriptionPayments } from './tools/get-upcoming-subscription-payments';
 import { registerGetUserCurrencies } from './tools/get-user-currencies';
 import { registerGetUserProfile } from './tools/get-user-profile';
-import { registerGetUserSettings } from './tools/get-user-settings';
 import { registerGetVehicles } from './tools/get-vehicles';
 import { registerGetVentureContributions } from './tools/get-venture-contributions';
 import { registerIgnorePayeeName } from './tools/ignore-payee-name';
@@ -176,15 +167,12 @@ import { registerListSupportedCurrencies } from './tools/list-supported-currenci
 import { registerListTrackerSuggestions } from './tools/list-tracker-suggestions';
 import { registerListTransactionAttachments } from './tools/list-transaction-attachments';
 import { registerListTransferSuggestions } from './tools/list-transfer-suggestions';
-import { registerMarkNotificationsRead } from './tools/mark-notifications-read';
 import { registerMergeDuplicateTransactions } from './tools/merge-duplicate-transactions';
 import { registerMergePayees } from './tools/merge-payees';
-import { registerMoveAccountGroup } from './tools/move-account-group';
 import { registerPaySubscriptionPeriod } from './tools/pay-subscription-period';
 import { registerPreviewSubscriptionPayment } from './tools/preview-subscription-payment';
 import { registerPreviewTransactionAutomation } from './tools/preview-transaction-automation';
 import { registerRejectTrackerSuggestions } from './tools/reject-tracker-suggestions';
-import { registerRemoveAccountsFromGroup } from './tools/remove-accounts-from-group';
 import { registerRemoveDuplicateTransactions } from './tools/remove-duplicate-transactions';
 import { registerRemoveTagsFromTransaction } from './tools/remove-tags-from-transaction';
 import { registerRemoveTransactionsFromGroup } from './tools/remove-transactions-from-group';
@@ -199,10 +187,8 @@ import { registerSearchSecurities } from './tools/search-securities';
 import { registerSearchTransactions } from './tools/search-transactions';
 import { registerSetBudgetPlanAccounts } from './tools/set-budget-plan-accounts';
 import { registerSetBudgetPlanAssignment } from './tools/set-budget-plan-assignment';
-import { registerSetBudgetPlanLayout } from './tools/set-budget-plan-layout';
 import { registerSetBudgetPlanLineGoal } from './tools/set-budget-plan-line-goal';
 import { registerSetExchangeRates } from './tools/set-exchange-rates';
-import { registerSetPayeesCategorizationMode } from './tools/set-payees-categorization-mode';
 import { registerSetPortfolioTransferAdjustment } from './tools/set-portfolio-transfer-adjustment';
 import { registerSkipSubscriptionPeriod } from './tools/skip-subscription-period';
 import { registerSnoozeBudgetPlanLineGoal } from './tools/snooze-budget-plan-line-goal';
@@ -220,7 +206,6 @@ import { registerUnlinkTransactionFromPortfolio } from './tools/unlink-transacti
 import { registerUnlinkTransactionsFromSubscription } from './tools/unlink-transactions-from-subscription';
 import { registerUnlinkTransfer } from './tools/unlink-transfer';
 import { registerUpdateAccount } from './tools/update-account';
-import { registerUpdateAccountGroup } from './tools/update-account-group';
 import { registerUpdateBudgetPlan } from './tools/update-budget-plan';
 import { registerUpdateBudgetPlanGroup } from './tools/update-budget-plan-group';
 import { registerUpdateBudgetPlanLine } from './tools/update-budget-plan-line';
@@ -240,7 +225,6 @@ import { registerUpdateTransactionAutomation } from './tools/update-transaction-
 import { registerUpdateTransactionGroup } from './tools/update-transaction-group';
 import { registerUpdateTransactionTemplate } from './tools/update-transaction-template';
 import { registerUpdateUserCurrency } from './tools/update-user-currency';
-import { registerUpdateUserSettings } from './tools/update-user-settings';
 import { registerUpdateVehicle } from './tools/update-vehicle';
 import {
   registerCreateVentureDeal,
@@ -307,15 +291,6 @@ export function createMcpServer(): McpServer {
   registerDeleteAccount(server);
   registerUnlinkAccountFromBankConnection(server);
 
-  // Account groups (nested folders of accounts)
-  registerGetAccountGroups(server);
-  registerCreateAccountGroup(server);
-  registerUpdateAccountGroup(server);
-  registerMoveAccountGroup(server);
-  registerDeleteAccountGroup(server);
-  registerAddAccountToGroup(server);
-  registerRemoveAccountsFromGroup(server);
-
   // Transactions (read + CRUD + splits + refunds + transfer linking)
   registerSearchTransactions(server);
   registerCreateTransaction(server);
@@ -369,13 +344,6 @@ export function createMcpServer(): McpServer {
   registerUpdateTagReminder(server);
   registerDeleteTagReminder(server);
 
-  // Notifications & settings
-  registerGetNotifications(server);
-  registerMarkNotificationsRead(server);
-  registerDismissNotification(server);
-  registerGetUserSettings(server);
-  registerUpdateUserSettings(server);
-
   // Payees
   registerGetPayees(server);
   registerGetPayee(server);
@@ -383,7 +351,6 @@ export function createMcpServer(): McpServer {
   registerUpdatePayee(server);
   registerDeletePayee(server);
   registerMergePayees(server);
-  registerSetPayeesCategorizationMode(server);
   registerBulkDeletePayees(server);
   registerGetIgnoredPayeeNames(server);
   registerIgnorePayeeName(server);
@@ -537,8 +504,6 @@ export function createMcpServer(): McpServer {
   registerAddUserCurrencies(server);
   registerUpdateUserCurrency(server);
   registerDeleteUserCurrency(server);
-  registerChangeBaseCurrency(server);
-  registerGetBaseCurrencyChangeStatus(server);
 
   // Loans & vehicles
   registerGetLoans(server);
@@ -574,7 +539,6 @@ export function createMcpServer(): McpServer {
   registerDeleteBudgetPlanLine(server);
   registerArchiveBudgetPlanLine(server);
   registerAddSuggestedBudgetPlanLines(server);
-  registerSetBudgetPlanLayout(server);
   registerSetBudgetPlanLineGoal(server);
   registerDeleteBudgetPlanLineGoal(server);
   registerSnoozeBudgetPlanLineGoal(server);

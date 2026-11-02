@@ -4,15 +4,12 @@ import { NotFoundError, ValidationError } from '@js/errors';
 import { archiveLine } from '@services/budget-plans/archive-line';
 import { createLine } from '@services/budget-plans/create-line';
 import { deleteLine } from '@services/budget-plans/delete-line';
-import { setLayout } from '@services/budget-plans/line-groups';
 import { restoreLine } from '@services/budget-plans/restore-line';
 import { addSuggestedLines } from '@services/budget-plans/suggested-lines';
 import { updateLine } from '@services/budget-plans/update-line';
 import {
   createLineBodyFields,
   createLineBodySchema,
-  setLayoutBodyFields,
-  setLayoutBodySchema,
   updateLineBodyFields,
   updateLineBodySchema,
 } from '@services/budget-plans/zod-schemas';
@@ -28,23 +25,19 @@ jest.mock('@services/budget-plans/delete-line', () => ({ deleteLine: jest.fn() }
 jest.mock('@services/budget-plans/archive-line', () => ({ archiveLine: jest.fn() }));
 jest.mock('@services/budget-plans/restore-line', () => ({ restoreLine: jest.fn() }));
 jest.mock('@services/budget-plans/suggested-lines', () => ({ addSuggestedLines: jest.fn() }));
-jest.mock('@services/budget-plans/line-groups', () => ({ setLayout: jest.fn() }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
 import { registerAddSuggestedBudgetPlanLines } from './add-suggested-budget-plan-lines';
 import { registerArchiveBudgetPlanLine } from './archive-budget-plan-line';
 import { registerCreateBudgetPlanLine } from './create-budget-plan-line';
 import { registerDeleteBudgetPlanLine } from './delete-budget-plan-line';
-import { registerSetBudgetPlanLayout } from './set-budget-plan-layout';
 import { registerUpdateBudgetPlanLine } from './update-budget-plan-line';
 
 const PLAN_ID = '11111111-1111-4111-8111-111111111111';
 const GROUP_ID = '22222222-2222-4222-8222-222222222222';
-const OTHER_GROUP_ID = '66666666-6666-4666-8666-666666666666';
 const CATEGORY_ID = '33333333-3333-4333-8333-333333333333';
 const OTHER_CATEGORY_ID = '44444444-4444-4444-8444-444444444444';
 const LINE_ID = '55555555-5555-4555-8555-555555555555';
-const OTHER_LINE_ID = '77777777-7777-4777-8777-777777777777';
 
 const WITH_PLAN = makeExtra({ features: [FEATURES.budget_plan] });
 
@@ -55,7 +48,6 @@ const deleteLineService = jest.mocked(deleteLine);
 const archiveLineService = jest.mocked(archiveLine);
 const restoreLineService = jest.mocked(restoreLine);
 const addSuggestedLinesService = jest.mocked(addSuggestedLines);
-const setLayoutService = jest.mocked(setLayout);
 
 const call = async ({
   tool,
@@ -444,78 +436,6 @@ describe('add_suggested_budget_plan_lines', () => {
   });
 });
 
-describe('set_budget_plan_layout', () => {
-  const tool = captureTools({ register: registerSetBudgetPlanLayout })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
-  const valid = {
-    planId: PLAN_ID,
-    groups: [{ id: GROUP_ID, lineIds: [LINE_ID] }],
-    ungroupedLineIds: [OTHER_LINE_ID],
-  };
-
-  it('registers under its name with the plan id and every field of the REST body', () => {
-    expect(tool.name).toBe('set_budget_plan_layout');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
-      ['planId', ...Object.keys(setLayoutBodyFields)].toSorted(),
-    );
-    expect(Object.keys(setLayoutBodyFields).toSorted()).toEqual(['groups', 'ungroupedLineIds']);
-  });
-
-  it('applies the REST validation', () => {
-    expect(schema.safeParse(valid).success).toBe(true);
-    expect(schema.safeParse({ planId: PLAN_ID, groups: [], ungroupedLineIds: [] }).success).toBe(true);
-
-    const invalid: Record<string, unknown>[] = [
-      { groups: undefined },
-      { ungroupedLineIds: undefined },
-      { groups: [{ id: 'nope', lineIds: [] }] },
-      { groups: [{ id: GROUP_ID }] },
-      { groups: [{ id: GROUP_ID, lineIds: [LINE_ID, LINE_ID] }] },
-      { groups: [{ id: GROUP_ID, lineIds: [], name: 'Fixed' }] },
-      { ungroupedLineIds: ['nope'] },
-      { ungroupedLineIds: [LINE_ID, LINE_ID] },
-    ];
-    for (const patch of invalid) {
-      expect([patch, schema.safeParse({ ...valid, ...patch }).success]).toEqual([patch, false]);
-    }
-    expect(setLayoutBodySchema.safeParse({ groups: [], ungroupedLineIds: [], extra: 1 }).success).toBe(false);
-  });
-
-  it('sets the layout of the caller plan and reports the counts', async () => {
-    const args = {
-      planId: PLAN_ID,
-      groups: [
-        { id: GROUP_ID, lineIds: [LINE_ID] },
-        { id: OTHER_GROUP_ID, lineIds: [] },
-      ],
-      ungroupedLineIds: [OTHER_LINE_ID],
-    };
-
-    const data = await call({ tool, args });
-
-    expect(setLayoutService).toHaveBeenCalledTimes(1);
-    expect(setLayoutService).toHaveBeenCalledWith({
-      userId: 42,
-      planId: PLAN_ID,
-      groups: args.groups,
-      ungroupedLineIds: [OTHER_LINE_ID],
-    });
-    expect(data).toEqual({ updated: true, planId: PLAN_ID });
-  });
-
-  it('passes an invalid layout refusal through', async () => {
-    setLayoutService.mockRejectedValue(new ValidationError({ message: 'budgetPlans.layoutInvalid' }));
-
-    await expect(call({ tool, args: valid })).rejects.toThrow('budgetPlans.layoutInvalid');
-  });
-
-  it('says every group must be listed once', () => {
-    expect(tool.config.description).toMatch(/every group/i);
-    expect(tool.config.description).toMatch(/once/i);
-    expect(tool.config.description).toMatch(/get_budget_plan_period/);
-  });
-});
-
 const LINE_TOOLS = [
   {
     register: registerCreateBudgetPlanLine,
@@ -563,14 +483,6 @@ const LINE_TOOLS = [
     result: { created: 2 },
     args: { planId: PLAN_ID },
     service: addSuggestedLinesService,
-    scopes: ['finance:read', 'finance:write'],
-  },
-  {
-    register: registerSetBudgetPlanLayout,
-    name: 'set_budget_plan_layout',
-    result: undefined,
-    args: { planId: PLAN_ID, groups: [], ungroupedLineIds: [] },
-    service: setLayoutService,
     scopes: ['finance:read', 'finance:write'],
   },
 ];

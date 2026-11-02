@@ -363,34 +363,6 @@
       "description": "Disconnect a bank-connected account from its bank; it becomes a manual account and keeps its history."
     },
     {
-      "name": "get_account_groups",
-      "description": "List the account groups (nested folders) with their parent, path, child groups and a short summary of each account (full fields with includeAccountDetails), or the account ids of one group."
-    },
-    {
-      "name": "create_account_group",
-      "description": "Create an account group, optionally nested under a parent group. Requires finance:write scope."
-    },
-    {
-      "name": "update_account_group",
-      "description": "Rename an account group, change its parent or its logo. Requires finance:write scope."
-    },
-    {
-      "name": "move_account_group",
-      "description": "Move an account group under another group or to the top level. Requires finance:write scope."
-    },
-    {
-      "name": "delete_account_group",
-      "description": "Delete an account group; its accounts are kept and only ungrouped. Requires finance:delete scope."
-    },
-    {
-      "name": "add_account_to_group",
-      "description": "Put an account into an account group (an account sits in one group at a time). Requires finance:write scope."
-    },
-    {
-      "name": "remove_accounts_from_group",
-      "description": "Take accounts out of an account group. Requires finance:write scope."
-    },
-    {
       "name": "get_transaction_groups",
       "description": "List all transaction groups with aggregate counts and date ranges, or with full embedded transactions. Pass groupId to read one group with its transactions."
     },
@@ -639,26 +611,6 @@
       "description": "Permanently delete a tag reminder. Requires finance:delete scope."
     },
     {
-      "name": "get_notifications",
-      "description": "List in-app notifications (budget alerts, reminders, bank sync messages), newest first, with the total and the unread count; filter by status or type, or read one by id."
-    },
-    {
-      "name": "mark_notifications_read",
-      "description": "Mark one notification read, or all unread ones when no id is given. Works for read-only accounts. Requires finance:write scope."
-    },
-    {
-      "name": "dismiss_notification",
-      "description": "Dismiss a notification so it leaves the default list and the unread count. Requires finance:write scope."
-    },
-    {
-      "name": "get_user_settings",
-      "description": "Read the user's app settings (language, notification preferences, dashboard, layout, saved views, import and bank sync options, FIRE planner inputs). The AI configuration is not included."
-    },
-    {
-      "name": "update_user_settings",
-      "description": "Change app settings with a partial patch merged into the stored ones; arrays replace the stored array whole; a fire key needs the FIRE planner plan. The AI configuration cannot be changed. Requires finance:write scope."
-    },
-    {
       "name": "get_payees",
       "description": "List Payees (merchants/counterparties) for the user, optionally filtered by a substring query. Returns Payee id, name, defaultCategoryId, and aggregated stats (transactionCount, netFlowRef, top category, last seen)."
     },
@@ -681,10 +633,6 @@
     {
       "name": "delete_payee",
       "description": "Delete a Payee, optionally adding its names to the ignore list. Linked transactions retain their categoryId but their payeeId is set to null. Requires finance:delete scope."
-    },
-    {
-      "name": "set_payees_categorization_mode",
-      "description": "Set the categorization mode of every payee the user has to the same value. Requires finance:write scope."
     },
     {
       "name": "bulk_delete_payees",
@@ -867,14 +815,6 @@
       "description": "Stop holding an ISO currency. Refused for the base currency and for currencies in use. Requires finance:delete scope."
     },
     {
-      "name": "change_base_currency",
-      "description": "Set the base currency: at once for a user with none, otherwise as a background change that recalculates all history and blocks other edits until it finishes. Requires finance:write scope."
-    },
-    {
-      "name": "get_base_currency_change_status",
-      "description": "Get the state of the running or last base-currency change: idle, queued, running, completed or failed."
-    },
-    {
       "name": "get_loans",
       "description": "List the loans with balance, terms and payoff projection, or read one with its timeline."
     },
@@ -997,10 +937,6 @@
     {
       "name": "add_suggested_budget_plan_lines",
       "description": "Draft starter lines for a budget plan from the spending history, using the server's AI when available. Requires finance:write scope."
-    },
-    {
-      "name": "set_budget_plan_layout",
-      "description": "Reorder a budget plan's groups and move lines between them in one call. Requires finance:write scope."
     },
     {
       "name": "set_budget_plan_line_goal",

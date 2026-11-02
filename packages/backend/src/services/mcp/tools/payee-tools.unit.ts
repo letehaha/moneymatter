@@ -2,7 +2,6 @@ import { CATEGORIZATION_MODE } from '@bt/shared/types';
 import {
   addIgnoredNameBodySchema,
   bulkDeletePayeesBodySchema,
-  bulkUpdateCategorizationModeBodySchema,
   createPayeeAliasBodySchema,
   MAX_BULK_DELETE_PAYEE_IDS,
   updatePayeeBodyShape,
@@ -12,7 +11,6 @@ import {
   addPayeeIgnoredName,
   applyPayeeTagsToExisting,
   bulkDeletePayees,
-  bulkUpdateCategorizationMode,
   createPayeeAlias,
   deletePayeeAlias,
   listPayeeIgnoredNames,
@@ -26,7 +24,6 @@ import { z } from 'zod';
 // connections in a unit test.
 jest.mock('@services/payees', () => ({
   updatePayee: jest.fn(),
-  bulkUpdateCategorizationMode: jest.fn(),
   bulkDeletePayees: jest.fn(),
   listPayeeIgnoredNames: jest.fn(),
   addPayeeIgnoredName: jest.fn(),
@@ -45,7 +42,6 @@ import { registerCreatePayeeAlias } from './create-payee-alias';
 import { registerDeletePayeeAlias } from './delete-payee-alias';
 import { registerGetIgnoredPayeeNames } from './get-ignored-payee-names';
 import { registerIgnorePayeeName } from './ignore-payee-name';
-import { registerSetPayeesCategorizationMode } from './set-payees-categorization-mode';
 import { registerUnignorePayeeName } from './unignore-payee-name';
 import { registerUpdatePayee } from './update-payee';
 
@@ -58,7 +54,6 @@ const LOCKED = /currencies.baseCurrencyChangeInProgress/;
 
 const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
 const update = jest.mocked(updatePayee);
-const setMode = jest.mocked(bulkUpdateCategorizationMode);
 const bulkDelete = jest.mocked(bulkDeletePayees);
 const listIgnored = jest.mocked(listPayeeIgnoredNames);
 const addIgnored = jest.mocked(addPayeeIgnoredName);
@@ -238,47 +233,6 @@ describe('update_payee', () => {
     lockCheck.mockResolvedValue(true);
     await expect(call({ tool, args: { id: PAYEE_ID }, extra: WRITE })).rejects.toThrow(LOCKED);
     expect(update).not.toHaveBeenCalled();
-  });
-});
-
-describe('set_payees_categorization_mode', () => {
-  const tool = captureTools({ register: registerSetPayeesCategorizationMode })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
-
-  it('registers under its name and declares the fields of the REST body schema', () => {
-    expect(tool.name).toBe('set_payees_categorization_mode');
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(
-      Object.keys(bulkUpdateCategorizationModeBodySchema.shape).toSorted(),
-    );
-    for (const mode of Object.values(CATEGORIZATION_MODE)) {
-      expect(schema.safeParse({ mode }).success).toBe(true);
-    }
-    expect(schema.safeParse({ mode: 'nope' }).success).toBe(false);
-    expect(schema.safeParse({}).success).toBe(false);
-  });
-
-  it('says in its description that it applies to every payee', () => {
-    expect(tool.config.description).toMatch(/every payee/i);
-  });
-
-  it('sets the mode for the caller and returns the count', async () => {
-    setMode.mockResolvedValue({ updatedCount: 7 });
-
-    const data = await call({ tool, args: { mode: CATEGORIZATION_MODE.off }, extra: WRITE });
-
-    expect(setMode).toHaveBeenCalledWith({ userId: 42, mode: CATEGORIZATION_MODE.off });
-    expect(data).toEqual({ updatedCount: 7 });
-  });
-
-  it('needs finance:write and an unlocked base currency, and refuses a read-only user', async () => {
-    await expect(call({ tool, args: { mode: 'off' }, extra: NO_WRITE_SCOPE })).rejects.toThrow(
-      /Missing required scope: finance:write/,
-    );
-    await expect(call({ tool, args: { mode: 'off' }, extra: READ_ONLY })).rejects.toThrow(/no longer includes editing/);
-
-    lockCheck.mockResolvedValue(true);
-    await expect(call({ tool, args: { mode: 'off' }, extra: WRITE })).rejects.toThrow(LOCKED);
-    expect(setMode).not.toHaveBeenCalled();
   });
 });
 
