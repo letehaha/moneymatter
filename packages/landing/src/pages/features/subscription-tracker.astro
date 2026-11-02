@@ -1,0 +1,99 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Find forgotten subscriptions in your transaction history',
+    text: 'Run discovery on the Subscriptions page and MoneyMatter checks the last 12 months of your expenses for charges that repeat at a regular interval and a similar amount. That is how a small app renewal you stopped noticing shows up.',
+    bullets: [
+      'Check the transactions behind a suggestion before you decide',
+      'Create a subscription with the details filled in, link the suggestion to one you already have, or dismiss it',
+    ],
+  },
+  {
+    heading: 'See what your subscriptions and bills cost each month and year',
+    text: 'For everything on your list, MoneyMatter shows the estimated monthly cost in your base currency, the projected yearly total, and that cost as a share of your average income. A yearly renewal counts as a twelfth of its price and a weekly charge is scaled up, so a $120 yearly renewal adds the same $10 to the estimate as a $10 monthly plan.',
+    bullets: [
+      'Choose a weekly, biweekly, monthly, quarterly, six-month or yearly schedule',
+      'Track regular income, such as a salary, the same way',
+      'Pause a payment for a while: it leaves the estimate and its reminders stop',
+      'Connect Claude or ChatGPT and ask "Which of my subscriptions got more expensive this year?"',
+    ],
+  },
+  {
+    heading: 'Bill reminders before a subscription renews',
+    text: 'Give a payment a due date and pick up to three reminders, from one month before up to the due date itself. Set one two weeks before an annual renewal and you have time to cancel before it charges. Reminders arrive in the app, and you can turn on email for each payment. A payment that passes its date unpaid moves to the overdue group at the top of your list, so a missed bill stays visible.',
+    bullets: ['Upcoming payments also appear in the Subscriptions & Bills dashboard widget and the budget side panel'],
+  },
+  {
+    heading: 'Track recurring payments with or without bank sync',
+    text: 'Set matching rules on note text, amount range or account, and each new transaction that fits, synced from your bank or typed in by hand, is linked to the subscription and settles that payment. For a fixed cost on an account you track by hand, such as rent or a gym fee, turn on automatic recording and the expense is booked on the due date. You can also mark any payment as paid yourself, or skip a period.',
+    bullets: [
+      "A linked transaction can pick up the subscription's category, payee and tags",
+      'MoneyMatter suggests transactions from the last 12 months that fit your rules, so you can link past payments too',
+    ],
+  },
+  {
+    heading: 'Track an installment plan to the last payment',
+    text: 'Bought a laptop in 12 payments? Enter the number of payments and the schedule, and MoneyMatter tracks how far through the plan you are. When the last payment is done, the plan is marked completed. The amount is optional, so a plan with varying payments still fits.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Discovery needs at least three charges with a note in those 12 months, so it will not suggest yearly or six-month renewals or payments with no note, and it can miss a bill whose amount swings a lot. Add those by hand.',
+  'Schedules are fixed, so a bill every two months or a phone plan every 28 days will not line up exactly.',
+  'On a self-hosted install, email reminders need a Resend API key. In-app reminders work without one.',
+];
+
+const FAQ = [
+  {
+    question: 'How do I find all my subscriptions?',
+    answer:
+      'Bring your past transactions into MoneyMatter by connecting your bank or importing a file, then run discovery on the Subscriptions page. Load at least three months of history so monthly charges show up. You confirm the ones you want to track.',
+  },
+  {
+    question: 'Is there a free subscription tracker app?',
+    answer:
+      'MoneyMatter is free for 40 days with no card, and free if you self-host the open-source app. After the trial, the subscription tracker is part of both paid plans: Essential at $5 a month or $30 a year, and Plus at $8 a month or $55 a year, before tax. Bank connections need Plus.',
+  },
+  {
+    question: 'Can MoneyMatter cancel a subscription for me?',
+    answer:
+      'No. MoneyMatter does not contact providers, so you cancel with the provider yourself. Afterward, pause or delete the subscription so it leaves your monthly estimate.',
+  },
+  {
+    question: 'Can I track subscriptions without connecting my bank?',
+    answer:
+      'Yes. Reminders and the monthly estimate need no transactions at all, and discovery works on transactions you add by hand or import from CSV, OFX, YNAB, Wallet or Microsoft Money files. That means the whole tracker works on the Essential plan.',
+  },
+  {
+    question: 'How do I track bills that change every month?',
+    answer:
+      'Add it as a bill and leave the expected amount empty, so a utility bill with a different total each month still fits. A matching rule on the note or an amount range can link each payment. A bill with no amount is left out of the monthly cost estimate.',
+  },
+  {
+    question: 'Can I track subscriptions billed in another currency?',
+    answer:
+      'Yes. Set the currency you are billed in, and the monthly estimate converts it to your base currency at the current rate. When you mark a payment as paid on an account in a different currency, the amount is pre-filled at the current rate, and you can correct it to what you were actually charged.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Dashboard widgets', href: 'https://docs.moneymatter.app/stats/dashboard/' },
+  { label: 'Scheduled payments in the budget side panel', href: 'https://docs.moneymatter.app/budgeting/side-panel/' },
+];
+
+const RELATED = ['/features/automation-rules', '/features/budgeting', '/features/dashboard'];
+---
+
+<FeatureLayout
+  title="Subscription Tracker App with Bill Reminders | MoneyMatter"
+  description="A subscription tracker app that finds recurring charges in your transactions, shows the monthly and yearly cost, and reminds you before each charge."
+  heading="A subscription tracker app that finds recurring charges in your history"
+  intro="This subscription tracker app keeps your subscriptions, bills and installment plans in one list, with what they cost you each month and year. MoneyMatter finds recurring charges in your past transactions and reminds you before the next one is due. It works with or without bank sync, on both paid plans and in the 40-day free trial."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

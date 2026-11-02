@@ -1,0 +1,107 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Track stock, ETF and crypto portfolios next to your everyday accounts',
+    text: 'If your budget lives in one app and your brokerage in a spreadsheet, you add them up yourself to see what you own. In MoneyMatter, create a portfolio for each broker or strategy, search for a symbol and add it as a holding. Past prices load when you add it. Then record your buys, sells and dividends, and the portfolio stays valued from there.',
+    bullets: ['Your portfolios count toward your net worth alongside your accounts'],
+    screenshot: {
+      name: 'investments',
+      alt: 'A portfolio page with total value, realized gain and total return above a holdings table showing total cost, market value, unrealized gain and realized gain per symbol, with Import transactions and Add Symbol buttons',
+      width: 758,
+      height: 671,
+    },
+  },
+  {
+    heading: 'Cost basis, realized and unrealized gains per holding',
+    text: 'Each portfolio shows its total value, cost basis, unrealized and realized gains, and total return. Each holding shows its own cost, market value and both kinds of gain, so you can see which positions make money and which lose it. Fees on buys count toward your cost, and fees on sells reduce your gain.',
+    bullets: ['Positions you have fully sold move to their own closed list and keep their realized gain'],
+  },
+  {
+    heading: 'Import your trade history from a broker statement, CSV or PDF',
+    text: "Entering years of trades by hand is slow, so start from your broker's export. Upload a CSV and map its columns yourself, which needs no AI, or let AI read a PDF, a text file or pasted text. Trades are grouped by holding for you to review, and anything that looks like a transaction you already have is marked, so you can skip it before saving.",
+  },
+  {
+    heading: 'Dividends and portfolio cash in multiple currencies',
+    text: 'A brokerage account holds cash as well as shares, so each portfolio keeps its own cash balance per currency. Moving 500 USD from checking to your broker is a transfer, so your spending reports do not count it as an expense. Dividends and sale proceeds add to the cash balance, and buys draw from it.',
+    bullets: [
+      'Buy a USD stock with EUR cash at the rate you actually paid, or record a currency exchange inside the portfolio',
+      'Choose which currency a portfolio displays its values in',
+      'Link an existing bank transaction to a portfolio instead of entering it twice',
+    ],
+  },
+  {
+    heading: 'Investment reports, growth projections and loss alerts',
+    text: 'Analytics has three investment reports, and General settings has an alert for losing positions.',
+    bullets: [
+      'Net Worth Drivers: how much of your growth you saved and how much the market returned',
+      'Contributions: how much cash you moved into your portfolios over time, and where it went',
+      "Investment Projection: project growth from a starting balance, monthly contributions and inflation, using your own portfolio's annualized return, a market preset such as the S&P 500, or a custom rate",
+      "Loss alerts: get notified when a holding's unrealized loss passes a percentage or amount you set",
+    ],
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Bonds, mutual funds and options cannot be added as holdings. For funds your bank manages, use an investment account and update its balance from your statement.',
+  'Total Return adds your unrealized and realized gains. Dividends go to your cash balance, so they raise the portfolio value without showing in that figure.',
+  'You cannot choose which lot a sale uses, and there is no capital-gains or tax report.',
+];
+
+const FAQ = [
+  {
+    question: 'Can MoneyMatter connect to my brokerage account?',
+    answer:
+      "No. MoneyMatter has no live connection to a broker or crypto exchange, so you keep holdings current by entering trades or importing a new file. Any broker's export can work, because you map its columns or review what AI extracted.",
+  },
+  {
+    question: 'Does MoneyMatter use average cost or FIFO for cost basis?',
+    answer:
+      "Both. In MoneyMatter, a holding's cost basis is the average cost of your current position, and realized gains use FIFO, matching each sale to your oldest shares first. Selling a whole position resets its cost basis, so buying back in starts fresh.",
+  },
+  {
+    question: 'Can I track dividends?',
+    answer:
+      "Yes. Record a dividend on the holding and it adds to the portfolio's cash balance, net of any fee. Dividends paid straight to your bank can be recorded on that account as income instead, so they count in your income reports.",
+  },
+  {
+    question: 'Are stock prices real time?',
+    answer:
+      "No. In MoneyMatter, stocks and ETFs update once a day from the last close, and crypto at least once an hour. If a holding's price stops updating, it gets a warning that its value may be out of date.",
+  },
+  {
+    question: 'Can I track international stocks and ETFs?',
+    answer:
+      "Often, yes. MoneyMatter's symbol search covers US stocks and many non-US listings, including European UCITS ETFs such as VWRA.L in London. Coverage of a given exchange is not guaranteed, so search for your symbols during the free trial.",
+  },
+  {
+    question: 'Which plans include investment tracking?',
+    answer:
+      'Investment tracking is part of Essential, at $5 a month or $30 a year before tax, Plus and the 40-day free trial. The only plan difference is AI import, which needs your own AI model on Essential and uses the included AI on Plus. A self-hosted install has every feature with no plan to buy, but crypto prices need your own CoinGecko API key.',
+  },
+];
+
+const GUIDES = [
+  {
+    label: 'Savings and investment accounts',
+    href: 'https://docs.moneymatter.app/accounts/savings-and-investment-accounts/',
+  },
+  { label: 'Analytics reports', href: 'https://docs.moneymatter.app/stats/analytics-reports/' },
+  { label: 'Plans and billing', href: 'https://docs.moneymatter.app/settings/plans-and-billing/' },
+];
+
+const RELATED = ['/features/net-worth-tracker', '/features/fire-planner', '/features/multi-currency'];
+---
+
+<FeatureLayout
+  title="Investment Portfolio Tracker with Cost Basis | MoneyMatter"
+  description="An investment portfolio tracker for stocks, ETFs and crypto. See cost basis and gains per holding, record dividends and import trades from broker files."
+  heading="Investment portfolio tracker for stocks, ETFs and crypto, next to your budget"
+  intro="MoneyMatter is an investment portfolio tracker that shows what your holdings cost, what they are worth and what they have returned, in the same app as your accounts and budget. Prices update automatically, and you can import past trades from a broker statement."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

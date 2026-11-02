@@ -5,8 +5,8 @@ const STEPS = [
   {
     title: 'Bring your money in',
     text: 'Connect your bank, or import your history from YNAB, Wallet, or a CSV file.',
-    image: { name: 'bank-providers', width: 1336, height: 846 },
-    alt: 'Bank provider picker listing LunchFlow, SimpleFIN, and Monobank',
+    image: { name: 'bank-providers', width: 1336, height: 891 },
+    alt: 'Bank provider picker listing LunchFlow, SimpleFIN, Akahu, and Monobank',
   },
   {
     title: 'It sorts itself',
@@ -35,7 +35,7 @@ const STEPS = [
         STEPS.map((step, index) => (
           <li class="border-border/50 bg-card overflow-hidden rounded-2xl border">
             <div class="bg-background relative aspect-3/2 overflow-hidden">
-              <Screenshot {...step.image} alt={step.alt} class="h-full object-cover object-left-top" />
+              <Screenshot {...step.image} alt={step.alt} class="h-full object-cover object-top-left" />
               <div class="from-card pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t to-transparent" />
             </div>
             <div class="p-6">

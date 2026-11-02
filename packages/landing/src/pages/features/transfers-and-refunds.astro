@@ -1,0 +1,128 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Transfers between accounts stay out of your income and expenses',
+    text: 'Record a move of 1,000 from checking to savings as two plain transactions and you see 1,000 spent and 1,000 earned. Add it as a transfer instead: enter the amount, pick both accounts and save. Both balances change, and your income and expense totals stay as they were.',
+    bullets: [
+      'Logged a transfer as an expense or income by mistake? Open it, switch to the Transfer tab and pick the other account',
+      'The same form sends money to an investment portfolio or a loan',
+    ],
+    screenshot: {
+      name: 'features/transfers-and-refunds/transfer-form-same-currency',
+      alt: 'The Add Transaction dialog on the Transfer tab, moving 500 USD from Main Checking to Savings, with Account, Portfolio and Loan as destination options',
+      width: 510,
+      height: 604,
+    },
+  },
+  {
+    heading: 'Link refunds to purchases so they lower your spending',
+    text: 'Spend 200 on a laptop and get 50 back, and a tracker that treats the 50 as income overstates both numbers. Open the refund, choose Link refund and pick the purchase. Your Electronics category then shows 150 spent, with no income added.',
+    bullets: [
+      'Returning items one at a time? One purchase can have several partial refunds, with a running total as you pick them',
+      'For a split purchase, choose which category the refund belongs to',
+      'The refund can land on a different card or in a different currency from the purchase',
+    ],
+    screenshot: {
+      name: 'features/transfers-and-refunds/refund-picker-refunded-by',
+      alt: 'The Link refund dialog on the Refunded by tab, with incomes of 30 and 20 euros selected and a footer reading 2 selected, €50.00 of €100.00',
+      width: 572,
+      height: 796,
+    },
+  },
+  {
+    heading: 'Find and link imported transfers with Transfer matching',
+    text: 'Import a few months of statements and each transfer arrives as an unrelated expense and income. Transfer matching scans a date range and lists likely pairs on different accounts, each with a confidence score. You link or reject each one, and a rejected pair stays out of later scans.',
+    bullets: [
+      'Finds transfers between currencies, transfers that took days to arrive, and amounts that differ because a fee was taken',
+      'Linking changes only the pairing, so your account balances stay as they were',
+      'AI review filters out coincidences, such as a restaurant bill that happens to match a salary',
+    ],
+    screenshot: {
+      name: 'features/transfers-and-refunds/transfer-matching-results',
+      alt: 'The Transfer matching page after a scan, with expenses on the left and, for an $800 expense, two 98% matches on the right with Reject and Link buttons, below a prompt to review with AI',
+      width: 1036,
+      height: 622,
+    },
+  },
+  {
+    heading: 'Automatic transfer linking between connected banks',
+    text: 'Connect two banks on the Plus plan and both report the same transfer. After each sync, MoneyMatter links the pair for you when it finds exactly one match with the same amount and currency, dated within a few days.',
+    bullets: [
+      'Transfers between currencies, and pairs with several possible matches, usually wait for you to link them by hand or in Transfer matching',
+      'Only one side at a connected bank? Open the imported transaction, switch to the Transfer tab and pick the other account, and MoneyMatter creates the missing side there',
+      'If a link is wrong, unlink it, and both sides go back to an ordinary expense and income',
+    ],
+  },
+  {
+    heading: 'Transfers between currencies: enter what left and what arrived',
+    text: 'Send 500 USD to a card that holds EUR and 460 EUR arrives? Enter both numbers. Each account moves by its own amount, and the exchange rate is whatever those two amounts imply, so it matches what your bank charged.',
+  },
+  {
+    heading: 'Transfers to an account you do not track',
+    text: 'Moving savings to a bank you have not added? Record it as Out of Wallet. That creates one transaction on your account, which changes its balance and stays out of your income and expense totals. If you add that account later, you can link the two records into a regular transfer.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Transfers cannot be planned or dated in the future, so you cannot schedule a move to savings ahead of time.',
+  'A transfer you enter by hand in one currency has one amount on both sides. If your bank took a fee, record it as a separate expense.',
+];
+
+const FAQ = [
+  {
+    question: 'Do transfers count as income or expenses?',
+    answer:
+      'No. In MoneyMatter, transfers between your own accounts, moves into an investment portfolio and Out of Wallet transfers stay out of income and expense totals, while still changing account balances. A payment to a loan you track is the exception: the money leaving your account counts as spending.',
+  },
+  {
+    question: 'How do I record a credit card payment in a budget app?',
+    answer:
+      'Record it as a transfer from your checking account to your credit card account. In MoneyMatter, card purchases count as spending when you make them, and the payment stays out of your income and expense totals, so nothing is counted twice.',
+  },
+  {
+    question: 'How do I stop imported transfers from inflating my income?',
+    answer:
+      'Link the two transactions into one transfer. In MoneyMatter, open either side, switch to the Transfer tab and use Link the other side. For many pairs, open Transactions, then Optimizations, and run Transfer matching on a date range.',
+  },
+  {
+    question: 'How do I record a refund in a budget app?',
+    answer:
+      'Record it as income, then link it to the original purchase so it lowers your spending. In MoneyMatter, you do this with Link refund, starting from either transaction, and it also works when you pay back money you received. A refund you leave unlinked counts as ordinary income.',
+  },
+  {
+    question: 'What happens when a refund arrives in a later month?',
+    answer:
+      'In MoneyMatter, the Cash Flow report takes a linked refund off the month the money came back, and the Expenses Structure chart takes it off the month of the purchase. Pay 100 in January and get 30 back in February: with both months selected, Cash Flow shows 100 of expenses in January and -30 in February, while Expenses Structure shows 70 for January. If you view only February in Cash Flow, the 30 shows as ordinary income.',
+  },
+  {
+    question: 'Are transfers and refunds included in every plan?',
+    answer:
+      'Yes. In MoneyMatter, transfers, refunds, manual linking and Transfer matching are on both Essential ($5 a month or $30 a year) and Plus ($8 a month or $55 a year), before tax. Bank connections and their automatic linking need Plus. AI review uses the AI included with Plus and the 40-day trial, or your own model on Essential. A self-hosted install has every feature with no plan to buy, and you provide the AI keys.',
+  },
+];
+
+const GUIDES = [
+  { label: 'How transfers work', href: 'https://docs.moneymatter.app/transfers-and-refunds/how-transfers-work/' },
+  {
+    label: 'Link existing transactions',
+    href: 'https://docs.moneymatter.app/transfers-and-refunds/link-existing-transactions/',
+  },
+  { label: 'Refunds', href: 'https://docs.moneymatter.app/transfers-and-refunds/refunds/' },
+];
+
+const RELATED = ['/features/multi-currency', '/features/analytics-and-reports', '/features/import-transactions'];
+---
+
+<FeatureLayout
+  title="Track Transfers and Refunds in a Budget App | MoneyMatter"
+  description="Track transfers and refunds in a budget app: keep account moves out of your spending, match imported pairs across currencies, link refunds to purchases."
+  heading="Track transfers and refunds in a budget app without skewing your totals"
+  intro="MoneyMatter is a budget app that lets you track transfers and refunds without inflating your income or spending. Moves between your own accounts stay out of both totals, and money back from a shop comes off the purchase."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>
