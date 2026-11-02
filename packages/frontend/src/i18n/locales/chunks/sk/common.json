@@ -253,10 +253,10 @@
       "dialogTitle": "Zmeniť logo",
       "resetToAuto": "Vrátiť na automatické",
       "remove": "Odstrániť logo",
-      "pickerDescription": "Pick a brand logo or use letters instead.",
-      "updatedToast": "Logo updated",
+      "pickerDescription": "Vyberte logo firmy alebo namiesto toho použite písmená.",
+      "updatedToast": "Logo aktualizované",
       "resetToast": "Logo odstránené",
-      "updateError": "Couldn't update the logo. Try again.",
+      "updateError": "Logo sa nepodarilo aktualizovať. Skúste to znova.",
       "lettersLabel": "Písmená (1-2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Farba",
@@ -370,7 +370,7 @@
       "message": "Usporili ste {amount}."
     },
     "unrealizedLossAlert": {
-      "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"
+      "title": "{{count}} pozícia prekročila vaše upozornenie na stratu | {{count}} pozície prekročili vaše upozornenie na stratu | {{count}} pozícií prekročilo vaše upozornenie na stratu"
     }
   },
   "currencyNames": {

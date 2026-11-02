@@ -118,7 +118,7 @@
         "maxOccurrencesPlaceholder": "Nechajte prázdne pre neurčitý počet",
         "maxOccurrencesInstallmentPlaceholder": "napr. 12",
         "remindBeforeLabel": "Upozorniť pred dátumom splatnosti",
-        "remindBeforeHelper": "Pripomienky sa zobrazujú v aplikácii. Ak ich chcete dostávať aj e-mailom, zapnite to nižšie. Vyberte najviac 3.",
+        "remindBeforeHelper": "Pripomienky sa zobrazujú v aplikácii. Ak ich chcete dostávať aj emailom, zapnite to nižšie. Vyberte najviac 3.",
         "notifyEmailLabel": "Poslať aj emailom",
         "remindPresets": {
           "0_days": "V deň splatnosti",

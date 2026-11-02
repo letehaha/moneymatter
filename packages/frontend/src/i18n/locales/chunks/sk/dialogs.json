@@ -727,7 +727,7 @@
       "send": "Odoslať pozvánku",
       "success": "Žiadosť o pozvanie bola odoslaná. Ak je s touto adresou zaregistrovaný nejaký používateľ, dostane pozvánku.",
       "error": "Pozvánku sa nepodarilo odoslať. Skúste to znova, prosím.",
-      "emailSendFailedWarning": "Pozvánka bola uložená, e-mail sa však nepodarilo odoslať. Príjemca nemusel dostať upozornenie — skúste to znova neskôr."
+      "emailSendFailedWarning": "Pozvánka bola uložená, email sa však nepodarilo odoslať. Príjemca nemusel dostať upozornenie — skúste to znova neskôr."
     },
     "shareBudgetDialog": {
       "title": "Zdieľať sledovač",

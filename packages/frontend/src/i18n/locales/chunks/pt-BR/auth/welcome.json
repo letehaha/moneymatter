@@ -41,7 +41,10 @@
           "link": "Não foi possível vincular a conta. Tente de novo."
         },
         "unauthorizedClient": "Este aplicativo não tem autorização para usar este método de autenticação",
-        "temporarilyUnavailable": "O serviço de autenticação está temporariamente indisponível. Tente de novo mais tarde."
+        "temporarilyUnavailable": "O serviço de autenticação está temporariamente indisponível. Tente de novo mais tarde.",
+        "unableToLinkAccount": "We couldn't link this account because this server doesn't treat the provider's email as verified. Contact your administrator.",
+        "emailDoesNotMatch": "The email on this provider account doesn't match your account email. Use a provider account with the same email.",
+        "emailNotVerified": "Check your email to verify your address, then sign in again."
       }
     }
   }

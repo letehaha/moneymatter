@@ -1,660 +1,660 @@
 {
   "analytics": {
-    "backToAnalytics": "Back to analytics",
+    "backToAnalytics": "Torna alle analisi",
     "timePeriods": {},
     "navigation": {
-      "cashFlow": "Cash flow",
-      "trendsComparison": "Trends comparison",
-      "investmentCalculator": "Investment projection",
+      "cashFlow": "Flusso di cassa",
+      "trendsComparison": "Confronto delle tendenze",
+      "investmentCalculator": "Proiezione degli investimenti",
       "pivotReport": "Pivot",
-      "netWorthDrivers": "Net worth drivers",
-      "investmentContributions": "Contributions",
-      "netWorthHistory": "Net worth history",
-      "collapse": "Collapse",
+      "netWorthDrivers": "Fattori del patrimonio netto",
+      "investmentContributions": "Versamenti",
+      "netWorthHistory": "Storico del patrimonio netto",
+      "collapse": "Comprimi",
       "sections": {
-        "investments": "Investments"
+        "investments": "Investimenti"
       },
       "fire": "FIRE"
     },
     "controls": {
-      "options": "Options"
+      "options": "Opzioni"
     },
     "cashFlow": {
-      "subtitle": "Income against expenses over time, and where the money went.",
-      "income": "Income",
-      "expenses": "Expenses",
-      "netSavings": "Net savings",
-      "netFlow": "Net flow",
-      "savingsRate": "Savings rate",
-      "loadError": "Failed to load cash flow data",
-      "noData": "No transactions found",
-      "noDataHint": "Try selecting a different period or check if you have any transactions",
-      "showTrendLine": "Show trend line",
-      "showTrendLineHint": "Smoothed average of net cash flow",
-      "trendLine": "Trend line",
-      "vsPreviousPeriod": "vs previous period",
+      "subtitle": "Entrate rispetto alle spese nel tempo, e dove è finito il denaro.",
+      "income": "Entrata",
+      "expenses": "Spese",
+      "netSavings": "Risparmio netto",
+      "netFlow": "Flusso netto",
+      "savingsRate": "Tasso di risparmio",
+      "loadError": "Caricamento dei dati del flusso di cassa non riuscito",
+      "noData": "Nessuna transazione trovata",
+      "noDataHint": "Provare a selezionare un periodo diverso o verificare la presenza di transazioni",
+      "showTrendLine": "Mostra linea di tendenza",
+      "showTrendLineHint": "Media livellata del flusso di cassa netto",
+      "trendLine": "Linea di tendenza",
+      "vsPreviousPeriod": "rispetto al periodo precedente",
       "chartTypes": {
-        "stacked": "Stacked",
-        "mirrored": "Mirrored",
-        "grouped": "Grouped"
+        "stacked": "In pila",
+        "mirrored": "Speculare",
+        "grouped": "Raggruppato"
       },
       "granularity": {
-        "monthly": "Monthly",
-        "biweekly": "Bi-weekly",
-        "weekly": "Weekly"
+        "monthly": "Mensile",
+        "biweekly": "Bisettimanale",
+        "weekly": "Settimanale"
       },
       "periods": {
-        "last3Months": "Last 3 months",
-        "last6Months": "Last 6 months",
-        "last12Months": "Last 12 months",
-        "thisYear": "This year",
-        "previousYear": "Previous year",
-        "allTime": "All time",
-        "currentPayPeriod": "Current pay period"
+        "last3Months": "Ultimi 3 mesi",
+        "last6Months": "Ultimi 6 mesi",
+        "last12Months": "Ultimi 12 mesi",
+        "thisYear": "Quest'anno",
+        "previousYear": "Anno precedente",
+        "allTime": "Sempre",
+        "currentPayPeriod": "Periodo di paga corrente"
       },
       "composition": {
-        "detail": "Detail",
-        "levelsSummary": "Sources L{sources} · Expenses L{expenses}",
-        "levelsHint": "Category nesting level per side: higher levels break flows into subcategories.",
-        "sources": "Sources",
-        "level": "Level {level}",
-        "topN": "Top {count}",
-        "totalIncome": "Total income",
-        "incomePlusDeficit": "Income + deficit",
-        "savings": "Savings",
+        "detail": "Dettaglio",
+        "levelsSummary": "Fonti L{sources} · Spese L{expenses}",
+        "levelsHint": "Livello di annidamento delle categorie per lato: i livelli più alti suddividono i flussi in sottocategorie.",
+        "sources": "Fonti",
+        "level": "Livello {level}",
+        "topN": "Primi {count}",
+        "totalIncome": "Entrate totali",
+        "incomePlusDeficit": "Entrate + disavanzo",
+        "savings": "Risparmio",
         "taxes": "Tasse & Imposte",
-        "deficit": "Deficit",
-        "other": "Other",
-        "noData": "No transactions in this period",
-        "noDataHint": "Pick another period or click a bar in the chart above",
-        "loadError": "Failed to load composition",
-        "amount": "Amount",
-        "shareOfIncome": "Share of income",
-        "shareOfExpenses": "Share of expenses",
-        "saved": "Saved",
-        "pctOfIncome": "{pct} of income",
-        "pctSavingsRate": "{pct} savings rate",
-        "keptAsCash": "Kept as cash",
-        "shareOfSavings": "Share of savings",
-        "deficitOverspend": "Expenses exceeded income by {amount}. The gap was covered from existing account balances.",
-        "deficitInvested": "Portfolio contributions ({invested}) exceeded this period's net savings ({saved}). The difference came from existing account balances.",
-        "deficitBoth": "Expenses exceeded income by {overspend}, and {invested} was still moved into portfolios. Both were covered from existing account balances.",
-        "andMore": "+{count} more",
-        "settings": "Chart settings"
+        "deficit": "Disavanzo",
+        "other": "Altro",
+        "noData": "Nessuna transazione in questo periodo",
+        "noDataHint": "Scegliere un altro periodo o fare clic su una barra del grafico qui sopra",
+        "loadError": "Caricamento della composizione non riuscito",
+        "amount": "Importo",
+        "shareOfIncome": "Quota delle entrate",
+        "shareOfExpenses": "Quota delle spese",
+        "saved": "Risparmiato",
+        "pctOfIncome": "{pct} delle entrate",
+        "pctSavingsRate": "{pct} tasso di risparmio",
+        "keptAsCash": "Mantenuto in liquidità",
+        "shareOfSavings": "Quota dei risparmi",
+        "deficitOverspend": "Le spese hanno superato le entrate di {amount}. La differenza è stata coperta dai saldi esistenti dei conti.",
+        "deficitInvested": "I versamenti nei portafogli ({invested}) hanno superato il risparmio netto del periodo ({saved}). La differenza è stata coperta dai saldi esistenti dei conti.",
+        "deficitBoth": "Le spese hanno superato le entrate di {overspend} e {invested} sono stati comunque spostati nei portafogli. Entrambi sono stati coperti dai saldi esistenti dei conti.",
+        "andMore": "+{count} altri",
+        "settings": "Impostazioni del grafico"
       }
     },
     "trends": {
-      "subtitle": "Compare spending, income and savings with the previous period.",
+      "subtitle": "Confrontare spese, entrate e risparmi con il periodo precedente.",
       "metrics": {
-        "expenses": "Expenses",
-        "income": "Income",
-        "savings": "Savings"
+        "expenses": "Spese",
+        "income": "Entrata",
+        "savings": "Risparmio"
       },
       "chart": {
-        "selectedPeriod": "Selected period",
-        "comparisonPeriod": "Previous period",
-        "cumulativeNote": "Cumulative total up to this point"
+        "selectedPeriod": "Periodo selezionato",
+        "comparisonPeriod": "Periodo precedente",
+        "cumulativeNote": "Totale cumulativo fino a questo punto"
       },
       "categoryBreakdown": {
-        "title": "Category breakdown",
-        "noData": "No data for this period",
-        "viewAll": "View all categories",
-        "moreCount": "{count} more"
+        "title": "Ripartizione per categoria",
+        "noData": "Nessun dato per questo periodo",
+        "viewAll": "Visualizza tutte le categorie",
+        "moreCount": "altre {count}"
       },
       "monthlyComparison": {
-        "title": "Monthly comparison",
-        "allCategories": "All categories",
+        "title": "Confronto mensile",
+        "allCategories": "Tutte le categorie",
         "average": "Medio",
         "total": "Totale",
-        "vsLastMonth": "vs previous month",
-        "viewTransactions": "View transactions"
+        "vsLastMonth": "rispetto al mese precedente",
+        "viewTransactions": "Visualizza transazioni"
       },
       "cumulativeProgress": {
-        "title": "Cumulative progress"
+        "title": "Andamento cumulativo"
       },
       "filters": {
-        "button": "Filters",
-        "title": "Filters",
+        "button": "Filtri",
+        "title": "Filtri",
         "categories": "Categorie",
-        "include": "Include",
-        "exclude": "Exclude",
+        "include": "Includi",
+        "exclude": "Escludi",
         "accounts": "Conti",
         "payees": "Beneficiari",
         "tags": "Etichette",
-        "reset": "Reset"
+        "reset": "Reimposta"
       },
       "legend": {
-        "hide": "Hide from chart",
-        "show": "Show in chart"
+        "hide": "Nascondi dal grafico",
+        "show": "Mostra nel grafico"
       },
-      "vsPreviousPeriod": "vs previous period",
-      "loadError": "Failed to load data",
-      "noData": "No data available",
-      "noDataHint": "No transactions recorded for this period"
+      "vsPreviousPeriod": "rispetto al periodo precedente",
+      "loadError": "Caricamento dei dati non riuscito",
+      "noData": "Nessun dato disponibile",
+      "noDataHint": "Nessuna transazione registrata in questo periodo"
     },
     "investmentCalculator": {
-      "subtitle": "Project how your portfolio could grow with regular contributions.",
-      "initialBalance": "Initial balance",
-      "useCurrentBalance": "Use current balance",
-      "monthlyContribution": "Monthly contribution",
-      "useAvgNetIncome": "Use avg net income →",
-      "timeHorizon": "Time horizon (years)",
-      "annualReturn": "Annual return (%)",
-      "annualReturnPlaceholder": "Select preset",
-      "annualInflation": "Annual inflation (%)",
-      "totalInvested": "Total invested",
-      "nominalFinalValue": "Nominal final value",
-      "growth": "growth",
-      "realFinalValue": "Real final value",
-      "realGrowth": "real growth",
-      "realMultiplier": "Real multiplier",
-      "realMultiplierTooltip": "How much your total investment grows after accounting for inflation. Unlike nominal returns, this shows real purchasing power. 1.5x means every $1 invested becomes $1.50 in today's money.",
-      "ofMoneyInvested": "of money invested",
-      "customIndicator": "Custom",
-      "customReturnRate": "Enter rate (%)",
-      "inflationAdjustedSuffix": "(Inflation adjusted)",
-      "yearN": "Year {n}",
-      "disclaimer": "Based on constant {rate}%/yr return. S&P 500 historical average is ~10%/yr. Does not account for taxes or fees.",
-      "useAvgNetIncomeTooltip": "Your average monthly net income (income minus expenses) over the selected period, based on your transaction history",
-      "inflationTooltip": "How fast prices rise each year, reducing your money's real value.\n\n~1–2% — very low, stable economy\n~2–3% — normal (typical target)\n~4–6% — above average\n~7%+ — crisis-level inflation",
-      "totalInvestedBreakdown": "{initial} initial + {contributions} contributions",
-      "configure": "Configure",
-      "hideInputs": "Hide",
-      "portfolioReturnOption": "{name} (your ~{rate}%/yr)",
-      "portfolioNoHistoryOption": "{name} — not enough history",
-      "presetReturnOption": "{label} (~{rate}%/yr)",
+      "subtitle": "Stimare come potrebbe crescere il portafoglio con versamenti regolari.",
+      "initialBalance": "Saldo iniziale",
+      "useCurrentBalance": "Usa saldo attuale",
+      "monthlyContribution": "Versamento mensile",
+      "useAvgNetIncome": "Usa entrate nette medie →",
+      "timeHorizon": "Orizzonte temporale (anni)",
+      "annualReturn": "Rendimento annuo (%)",
+      "annualReturnPlaceholder": "Seleziona preimpostazione",
+      "annualInflation": "Inflazione annua (%)",
+      "totalInvested": "Totale investito",
+      "nominalFinalValue": "Valore finale nominale",
+      "growth": "crescita",
+      "realFinalValue": "Valore finale reale",
+      "realGrowth": "crescita reale",
+      "realMultiplier": "Moltiplicatore reale",
+      "realMultiplierTooltip": "Quanto cresce l'investimento totale al netto dell'inflazione. A differenza dei rendimenti nominali, mostra il potere d'acquisto reale. 1,5x significa che ogni 1 $ investito diventa 1,50 $ in moneta di oggi.",
+      "ofMoneyInvested": "del denaro investito",
+      "customIndicator": "Personalizzato",
+      "customReturnRate": "Inserire il tasso (%)",
+      "inflationAdjustedSuffix": "(corretto per l'inflazione)",
+      "yearN": "Anno {n}",
+      "disclaimer": "Basato su un rendimento costante del {rate}%/anno. La media storica dell'S&P 500 è di circa il 10%/anno. Non tiene conto di imposte o commissioni.",
+      "useAvgNetIncomeTooltip": "Entrate nette mensili medie (entrate meno spese) nel periodo selezionato, in base allo storico delle transazioni",
+      "inflationTooltip": "Velocità con cui i prezzi aumentano ogni anno, riducendo il valore reale del denaro.\n\n~1–2% — molto bassa, economia stabile\n~2–3% — normale (obiettivo tipico)\n~4–6% — sopra la media\n~7%+ — inflazione da crisi",
+      "totalInvestedBreakdown": "{initial} iniziali + {contributions} versamenti",
+      "configure": "Configura",
+      "hideInputs": "Nascondi",
+      "portfolioReturnOption": "{name} (circa {rate}%/anno)",
+      "portfolioNoHistoryOption": "{name}: storico insufficiente",
+      "presetReturnOption": "{label} (~{rate}%/anno)",
       "rangeMin": "Min",
       "rangeMax": "Max",
       "indicators": {
-        "worldStock": "Total world stock",
-        "usTreasury": "US Treasury bonds",
-        "corporateBonds": "Corporate bonds"
+        "worldStock": "Azionario globale",
+        "usTreasury": "Titoli di Stato USA",
+        "corporateBonds": "Obbligazioni societarie"
       }
     },
     "portfolioFilter": {
-      "all": "All portfolios",
-      "selectedOne": "1 portfolio",
-      "selectedMany": "{n} portfolios",
-      "searchPlaceholder": "Search portfolios",
-      "noResults": "No portfolios match your search"
+      "all": "Tutti i portafogli",
+      "selectedOne": "1 portafoglio",
+      "selectedMany": "{n} portafogli",
+      "searchPlaceholder": "Cerca portafogli",
+      "noResults": "Nessun portafoglio corrisponde alla ricerca"
     },
     "fire": {
-      "subtitle": "When your savings could cover your spending for good",
-      "planLink": "Plan for FIRE",
-      "addToDashboard": "Add to dashboard",
-      "addedToDashboard": "FIRE progress added to your dashboard",
-      "addToDashboardFailed": "Couldn't add the widget. Try again.",
-      "saveFailed": "Couldn't save your FIRE assumptions. Try again to keep your changes.",
-      "loading": "Loading FIRE plan",
-      "loadFailed": "Couldn't load the data for your FIRE plan.",
-      "adjustAssumptions": "Adjust assumptions",
-      "disclaimer": "Projections use historical market averages and your recent spending. They are estimates, not advice. Returns will vary.",
+      "subtitle": "Quando i risparmi potrebbero coprire le spese per sempre",
+      "planLink": "Pianifica il FIRE",
+      "addToDashboard": "Aggiungi alla dashboard",
+      "addedToDashboard": "Avanzamento FIRE aggiunto alla dashboard",
+      "addToDashboardFailed": "Impossibile aggiungere il widget. Riprovare.",
+      "saveFailed": "Impossibile salvare le ipotesi FIRE. Riprovare per mantenere le modifiche.",
+      "loading": "Caricamento del piano FIRE",
+      "loadFailed": "Impossibile caricare i dati del piano FIRE.",
+      "adjustAssumptions": "Modifica ipotesi",
+      "disclaimer": "Le proiezioni usano medie storiche di mercato e le spese recenti. Sono stime, non consigli. I rendimenti varieranno.",
       "callouts": {
-        "contributionClamped": "You spent more than you earned over the last 12 months, so the projection assumes no new savings.",
-        "enterContribution": "Enter a contribution",
-        "returnBelowInflation": "Your return assumption doesn't beat inflation ({real} real), so the balance shrinks in today's money.",
-        "portfolioShortHistory": "Your portfolio's return is based on only {years} years. Short or bull-market history rarely repeats. Consider a market preset.",
-        "portfolioUnavailable": "The portfolio this plan used is gone or has too little history. Return switched to world stocks.",
-        "customMissing": "Enter a custom return. Until then, the plan uses world stocks.",
-        "historyDegraded": "Some holdings are valued at cost, or an exchange rate is missing. Your balance may be understated until prices sync.",
-        "hide": "Hide warning",
-        "hideTitle": "Hide this warning?",
-        "hideDescription": "It comes back the next time you open the planner.",
-        "dontShowAgain": "Don't show again",
-        "hideConfirm": "Hide"
+        "contributionClamped": "Negli ultimi 12 mesi le spese hanno superato le entrate, quindi la proiezione non prevede nuovi risparmi.",
+        "enterContribution": "Inserire un versamento",
+        "returnBelowInflation": "Il rendimento ipotizzato non supera l'inflazione ({real} reale), quindi il saldo si riduce in moneta di oggi.",
+        "portfolioShortHistory": "Il rendimento del portafoglio si basa su soli {years} anni. Uno storico breve o di mercato rialzista raramente si ripete. Valutare una preimpostazione di mercato.",
+        "portfolioUnavailable": "Il portafoglio usato da questo piano non esiste più o ha uno storico troppo breve. Il rendimento è passato all'azionario globale.",
+        "customMissing": "Inserire un rendimento personalizzato. Fino ad allora il piano usa l'azionario globale.",
+        "historyDegraded": "Alcune posizioni sono valutate al costo oppure manca un tasso di cambio. Il saldo potrebbe essere sottostimato finché i prezzi non si sincronizzano.",
+        "hide": "Nascondi avviso",
+        "hideTitle": "Nascondere questo avviso?",
+        "hideDescription": "Ricomparirà alla prossima apertura del pianificatore.",
+        "dontShowAgain": "Non mostrare più",
+        "hideConfirm": "Nascondi"
       },
       "assumptions": {
-        "title": "Assumptions",
-        "spendingLabel": "Yearly spending in retirement",
-        "spendingPlaceholder": "e.g. 40000",
-        "requiredBadge": "Required",
-        "autoSpendingHint": "Average of the last {n} full month × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments. | Average of the last {n} full months × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments.",
-        "backToAuto": "Back to auto ({amount})",
-        "excludedLabel": "Not counted as spending",
-        "excludedPlaceholder": "Exclude categories",
-        "savingsNote": "Savings categories are excluded too. {link}",
-        "savingsNoteLink": "Edit",
-        "contributionLabel": "Monthly contribution",
-        "contributionPlaceholder": "e.g. 1500",
-        "autoContributionHint": "Average net flow over the same {n} month. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return). | Average net flow over the same {n} months. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return).",
-        "savingsRate": "You save {pct} of your income",
-        "countsTitle": "What counts toward FIRE",
-        "countsCash": "Cash & bank accounts",
-        "countsPortfolios": "Investment portfolios",
+        "title": "Ipotesi",
+        "spendingLabel": "Spesa annua in pensione",
+        "spendingPlaceholder": "es. 40000",
+        "requiredBadge": "Obbligatorio",
+        "autoSpendingHint": "Media dell'ultimo mese completo × 12, solo conti di proprietà, esclusi trasferimenti e categorie di risparmio. Mese tipico: {typical}. Include le rate di prestiti e mutui. | Media degli ultimi {n} mesi completi × 12, solo conti di proprietà, esclusi trasferimenti e categorie di risparmio. Mese tipico: {typical}. Include le rate di prestiti e mutui.",
+        "backToAuto": "Torna ad automatico ({amount})",
+        "excludedLabel": "Non conteggiato come spesa",
+        "excludedPlaceholder": "Escludi categorie",
+        "savingsNote": "Anche le categorie di risparmio sono escluse. {link}",
+        "savingsNoteLink": "Modifica",
+        "contributionLabel": "Versamento mensile",
+        "contributionPlaceholder": "es. 1500",
+        "autoContributionHint": "Flusso netto medio nello stesso mese. I versamenti fatti direttamente in un portafoglio non rientrano nel flusso di cassa, quindi vanno aggiunti qui. I dividendi accreditati su un conto bancario contano due volte (entrata e rendimento). | Flusso netto medio negli stessi {n} mesi. I versamenti fatti direttamente in un portafoglio non rientrano nel flusso di cassa, quindi vanno aggiunti qui. I dividendi accreditati su un conto bancario contano due volte (entrata e rendimento).",
+        "savingsRate": "Si risparmia il {pct} delle entrate",
+        "countsTitle": "Cosa conta per il FIRE",
+        "countsCash": "Contanti e conti bancari",
+        "countsPortfolios": "Portafogli di investimento",
         "countsVentures": "Investimenti",
         "countsVehicles": "Veicoli",
         "countsLoans": "Prestiti & Finanziamenti",
-        "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
-        "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",
+        "countsHint": "Contanti e portafogli contano sempre. Le rate dei prestiti contano già come spesa, quindi i prestiti sono esclusi per impostazione predefinita.",
+        "archivedNote": "{count} conto archiviato escluso dalle statistiche contiene ancora {amount}. {link} | {count} conti archiviati esclusi dalle statistiche contengono ancora {amount}. {link}",
         "archivedNoteLink": "Revisiona",
-        "presetLabel": "{label} · ≈{real} real ({nominal} nominal, {inflation} US inflation)",
-        "inflationLabel": "Inflation",
-        "inflationBuiltIn": "{pct}% · built into this preset",
-        "inflationBuiltInHint": "Market presets are US and global nominal returns, so they come with US inflation. Pairing them with your local inflation would give misleading numbers. Pick a custom return or your portfolio to set inflation yourself.",
-        "withdrawalLabel": "Withdrawal rate",
-        "withdrawalCustom": "Custom",
-        "withdrawalPlaceholder": "e.g. 3.8",
-        "withdrawalHint": "The share of your savings you withdraw each year. A higher rate means a smaller FIRE number but a bigger risk of running out. The 4% rule comes from US data for 30-year retirements.",
-        "more": "More",
-        "moreSummary": "Lean {lean}× · Fat {fat}× · coast at {age}",
-        "leanLabel": "Lean FIRE multiplier",
-        "leanPlaceholder": "e.g. 0.7",
-        "fatLabel": "Fat FIRE multiplier",
-        "fatPlaceholder": "e.g. 1.5",
-        "baristaLabel": "Part-time income per month",
-        "baristaPlaceholder": "e.g. 1000",
-        "birthYearLabel": "Birth year",
-        "birthYearPlaceholder": "e.g. 1990",
-        "coastAgeLabel": "Coast FIRE target age",
-        "coastAgePlaceholder": "e.g. 65"
+        "presetLabel": "{label} · ≈{real} reale ({nominal} nominale, {inflation} inflazione USA)",
+        "inflationLabel": "Inflazione",
+        "inflationBuiltIn": "{pct}% · inclusa in questa preimpostazione",
+        "inflationBuiltInHint": "Le preimpostazioni di mercato sono rendimenti nominali USA e globali, quindi includono l'inflazione USA. Abbinarle all'inflazione locale darebbe numeri fuorvianti. Scegliere un rendimento personalizzato o il proprio portafoglio per impostare l'inflazione.",
+        "withdrawalLabel": "Tasso di prelievo",
+        "withdrawalCustom": "Personalizzato",
+        "withdrawalPlaceholder": "es. 3,8",
+        "withdrawalHint": "La quota dei risparmi prelevata ogni anno. Un tasso più alto significa un numero FIRE più basso ma un rischio maggiore di esaurire i fondi. La regola del 4% deriva da dati USA per pensionamenti di 30 anni.",
+        "more": "Altro",
+        "moreSummary": "Lean {lean}× · Fat {fat}× · coast a {age}",
+        "leanLabel": "Moltiplicatore Lean FIRE",
+        "leanPlaceholder": "es. 0,7",
+        "fatLabel": "Moltiplicatore Fat FIRE",
+        "fatPlaceholder": "es. 1,5",
+        "baristaLabel": "Reddito part-time mensile",
+        "baristaPlaceholder": "es. 1000",
+        "birthYearLabel": "Anno di nascita",
+        "birthYearPlaceholder": "es. 1990",
+        "coastAgeLabel": "Età obiettivo Coast FIRE",
+        "coastAgePlaceholder": "es. 65"
       },
-      "auto": "Auto",
-      "perYear": "{amount}/yr",
-      "perMonth": "{amount}/mo",
-      "notWithinHorizon": "not within 50 yrs",
+      "auto": "Automatico",
+      "perYear": "{amount}/anno",
+      "perMonth": "{amount}/mese",
+      "notWithinHorizon": "non entro 50 anni",
       "hero": {
-        "timeTo": "Time to {type}",
-        "unitYears": "{n} yrs | {n} yr | {n} yrs",
-        "unitMonths": "{n} mos | {n} mo | {n} mos",
-        "atAge": "at age {age}",
-        "alwaysCounted": "Always counted",
-        "range": "{earliest} to {latest} if returns run 2 points higher or lower",
-        "rangeOpen": "{earliest} to after {year} if returns run 2 points higher or lower",
+        "timeTo": "Tempo per {type}",
+        "unitYears": "{n} anni | {n} anno | {n} anni",
+        "unitMonths": "{n} mesi | {n} mese | {n} mesi",
+        "atAge": "a {age} anni",
+        "alwaysCounted": "Sempre conteggiati",
+        "range": "Da {earliest} a {latest} se i rendimenti sono di 2 punti più alti o più bassi",
+        "rangeOpen": "Da {earliest} a oltre il {year} se i rendimenti sono di 2 punti più alti o più bassi",
         "basedOn": {
-          "spending": "Spending: {amount}",
-          "saving": "Saving: {amount}",
-          "counting": "Counting: {buckets}"
+          "spending": "Spesa: {amount}",
+          "saving": "Risparmio: {amount}",
+          "counting": "Conteggiati: {buckets}"
         },
         "reached": {
-          "eyebrowFor": "{type} reached",
-          "title": "You're financially independent",
-          "supports": "Your money supports {amount}/mo",
-          "pctOfSpending": "{pct}% of your spending · at {rate}% withdrawal",
-          "yearsCovered": "Less than a year of spending covered | 1 year of spending covered | {n} years of spending covered",
-          "drawdown": "You're drawing down about {amount}/mo.",
-          "noNewSavings": "Projections assume no new savings."
+          "eyebrowFor": "{type} raggiunto",
+          "title": "Indipendenza finanziaria raggiunta",
+          "supports": "Il denaro sostiene {amount}/mese",
+          "pctOfSpending": "{pct}% delle spese · con prelievo al {rate}%",
+          "yearsCovered": "Coperto meno di un anno di spese | Coperto 1 anno di spese | Coperti {n} anni di spese",
+          "drawdown": "Si stanno prelevando circa {amount}/mese.",
+          "noNewSavings": "Le proiezioni non prevedono nuovi risparmi."
         },
         "unreachable": {
-          "title": "Not reachable at current savings",
-          "noSavingsTitle": "No new savings.",
-          "noSavingsClamped": "You spent more than you earned over the last 12 months, so the contribution is set to 0.",
-          "noSavings": "Your monthly contribution is 0 or less.",
-          "enterContribution": "Enter a contribution",
-          "lowReturnTitle": "Return doesn't beat inflation.",
-          "lowReturn": "The balance shrinks in today's money.",
-          "tooSlow": "At this pace it takes more than 50 years.",
-          "whatItTakes": "What it would take",
-          "whatItTakesDetail": "to reach {target} in {duration} at the current return."
+          "title": "Non raggiungibile con i risparmi attuali",
+          "noSavingsTitle": "Nessun nuovo risparmio.",
+          "noSavingsClamped": "Negli ultimi 12 mesi le spese hanno superato le entrate, quindi il versamento è impostato a 0.",
+          "noSavings": "Il versamento mensile è pari o inferiore a 0.",
+          "enterContribution": "Inserire un versamento",
+          "lowReturnTitle": "Il rendimento non supera l'inflazione.",
+          "lowReturn": "Il saldo si riduce in moneta di oggi.",
+          "tooSlow": "A questo ritmo servono più di 50 anni.",
+          "whatItTakes": "Cosa servirebbe",
+          "whatItTakesDetail": "per raggiungere {target} in {duration} con il rendimento attuale."
         }
       },
       "progress": {
-        "progressTo": "Progress to {type}",
-        "amountOfTarget": "{balance} of {target}",
-        "next": "Next: {goal} · {date}",
-        "nextGoal": "{goal} in {duration}",
-        "nextUnreachable": "Next: {goal} · not reached at these numbers",
-        "targetReached": "FIRE target reached",
-        "supportsToday": "Supports {amount}/mo today",
-        "negativeNetWorth": "Net worth is below zero. Your contributions pay down the gap first, then grow."
+        "progressTo": "Avanzamento verso {type}",
+        "amountOfTarget": "{balance} di {target}",
+        "next": "Prossimo: {goal} · {date}",
+        "nextGoal": "{goal} tra {duration}",
+        "nextUnreachable": "Prossimo: {goal} · non raggiunto con questi numeri",
+        "targetReached": "Traguardo FIRE raggiunto",
+        "supportsToday": "Sostiene {amount}/mese oggi",
+        "negativeNetWorth": "Il patrimonio netto è negativo. I versamenti coprono prima la differenza, poi crescono."
       },
       "chips": {
         "lean": {
           "name": "Lean FIRE",
-          "description": "{pct}% of your spending"
+          "description": "{pct}% delle spese"
         },
         "regular": {
           "name": "Regular FIRE",
-          "description": "current lifestyle"
+          "description": "stile di vita attuale"
         },
         "fat": {
           "name": "Fat FIRE",
-          "description": "{pct}% of your spending"
+          "description": "{pct}% delle spese"
         },
         "barista": {
           "name": "Barista FIRE",
-          "description": "part-time income covers part",
-          "withIncome": "with {amount}/mo part-time"
+          "description": "un reddito part-time ne copre una parte",
+          "withIncome": "con {amount}/mese di part-time"
         },
         "coast": {
           "name": "Coast FIRE",
-          "description": "needed today to retire at {age}",
-          "needsBirthYear": "needs your birth year",
-          "pastAge": "you're past your coast age of {age}",
-          "notMeaningful": "growth alone can't get there at 0% real return or less"
+          "description": "necessario oggi per andare in pensione a {age} anni",
+          "needsBirthYear": "serve l'anno di nascita",
+          "pastAge": "l'età coast di {age} anni è già superata",
+          "notMeaningful": "la sola crescita non basta con un rendimento reale pari o inferiore allo 0%"
         },
-        "others": "Others",
-        "nextGoal": "{name} · next",
-        "eta": "in {duration}",
-        "growthOnly": "growth only",
-        "reached": "Reached",
-        "reachedCoast": "Reached · saving is optional now",
-        "reachedBaristaCovers": "Part-time income covers your spending",
+        "others": "Altri",
+        "nextGoal": "{name} · prossimo",
+        "eta": "tra {duration}",
+        "growthOnly": "solo crescita",
+        "reached": "Raggiunto",
+        "reachedCoast": "Raggiunto · ora risparmiare è facoltativo",
+        "reachedBaristaCovers": "Il reddito part-time copre le spese",
         "actions": {
-          "enterSpending": "enter spending first",
-          "changeCoastAge": "Change coast age",
-          "changeReturn": "Change return",
-          "addPartTimeIncome": "Add part-time income",
-          "addBirthYear": "Add birth year"
+          "enterSpending": "inserire prima la spesa",
+          "changeCoastAge": "Modifica età coast",
+          "changeReturn": "Modifica rendimento",
+          "addPartTimeIncome": "Aggiungi reddito part-time",
+          "addBirthYear": "Aggiungi anno di nascita"
         }
       },
       "pace": {
-        "row": "{status} vs {anchor}",
-        "noHistory": "Not enough history before {month}",
-        "loadFailed": "Couldn't load the comparison",
-        "compareWith": "Compare with {month}",
+        "row": "{status} rispetto a {anchor}",
+        "noHistory": "Storico insufficiente prima di {month}",
+        "loadFailed": "Impossibile caricare il confronto",
+        "compareWith": "Confronta con {month}",
         "picker": {
-          "title": "Compare with",
-          "rollingLabel": "{month} · 1 year ago",
-          "rolling": "1 year ago",
-          "rollingHint": "Rolling · currently {month}",
-          "specific": "Specific month",
-          "specificHint": "Stays fixed",
-          "prevYear": "Previous year",
-          "nextYear": "Next year",
-          "earliest": "Earliest is {month}. FIRE needs 3 months of tracked spending before it."
+          "title": "Confronta con",
+          "rollingLabel": "{month} · 1 anno fa",
+          "rolling": "1 anno fa",
+          "rollingHint": "Mobile · attualmente {month}",
+          "specific": "Mese specifico",
+          "specificHint": "Resta fisso",
+          "prevYear": "Anno precedente",
+          "nextYear": "Anno successivo",
+          "earliest": "Il mese più lontano è {month}. Il FIRE richiede 3 mesi di spese monitorate prima di esso."
         },
         "details": {
-          "title": "Pace since {month}",
-          "moved": "Your FIRE date moved from {from} to {to}.",
-          "withinBand": "Your FIRE date is within {tolerance} of the {month} forecast ({date}).",
-          "backInReach": "On {month}'s numbers FIRE was out of reach. Now it's {date}.",
-          "offTrack": "The {month} forecast was {date}. On today's numbers FIRE is out of reach.",
-          "metric": "Metric",
-          "today": "Today",
-          "change": "Change",
-          "fireDate": "FIRE date",
-          "saved": "Saved by now",
-          "spending": "Spending",
-          "saving": "Saving",
-          "expected": "{amount} expected",
-          "sooner": "{duration} sooner",
-          "later": "{duration} later",
-          "sameMonth": "Same month",
-          "outOfReach": "Out of reach",
-          "band": "On pace means within {tolerance} (2% of the time left to FIRE).",
-          "recorded": "Balance, cash flow and assumptions as of {date} are recomputed live from your data.",
-          "notRecorded": "Balance and cash flow as of {date} are recomputed live from your data. Your assumptions from then weren't recorded, so today's are used."
+          "title": "Ritmo da {month}",
+          "moved": "La data FIRE è passata da {from} a {to}.",
+          "withinBand": "La data FIRE è entro {tolerance} dalla previsione di {month} ({date}).",
+          "backInReach": "Con i numeri di {month} il FIRE era irraggiungibile. Ora è previsto per {date}.",
+          "offTrack": "La previsione di {month} era {date}. Con i numeri di oggi il FIRE è irraggiungibile.",
+          "metric": "Metrica",
+          "today": "Oggi",
+          "change": "Variazione",
+          "fireDate": "Data FIRE",
+          "saved": "Risparmiato finora",
+          "spending": "Spesa",
+          "saving": "Risparmio",
+          "expected": "{amount} previsti",
+          "sooner": "{duration} prima",
+          "later": "{duration} dopo",
+          "sameMonth": "Stesso mese",
+          "outOfReach": "Irraggiungibile",
+          "band": "In linea significa entro {tolerance} (2% del tempo rimanente al FIRE).",
+          "recorded": "Saldo, flusso di cassa e ipotesi al {date} vengono ricalcolati in tempo reale dai dati.",
+          "notRecorded": "Saldo e flusso di cassa al {date} vengono ricalcolati in tempo reale dai dati. Le ipotesi di allora non sono state registrate, quindi si usano quelle attuali."
         }
       },
       "chart": {
-        "ariaLabel": "Net worth history and projected path to your FIRE number",
-        "actual": "Actual",
-        "projected": "Projected",
-        "range": "±2 pts return",
-        "today": "Today",
+        "ariaLabel": "Storico del patrimonio netto e percorso previsto verso il numero FIRE",
+        "actual": "Effettivo",
+        "projected": "Previsto",
+        "range": "±2 punti di rendimento",
+        "today": "Oggi",
         "typeTarget": "{type} · {amount}",
         "typeLabel": "{type} · {date}",
-        "forecast": "{month} forecast",
-        "forecastLabel": "{month} forecast · {date}",
-        "actualSince": "Actual since {month}"
+        "forecast": "Previsione di {month}",
+        "forecastLabel": "Previsione di {month} · {date}",
+        "actualSince": "Effettivo da {month}"
       },
       "milestones": {
-        "reached": "Reached",
-        "reachedOn": "Reached {date}",
-        "eta": "in {duration} · {date}"
+        "reached": "Raggiunto",
+        "reachedOn": "Raggiunto il {date}",
+        "eta": "tra {duration} · {date}"
       },
       "empty": {
         "noData": {
-          "title": "Plan your path to financial independence",
-          "description": "This page fills in from your accounts and transactions. Nothing is tracked yet, so start with your yearly spending. Once you add accounts, the plan switches to live figures."
+          "title": "Pianifica il percorso verso l'indipendenza finanziaria",
+          "description": "Questa pagina si compila a partire da conti e transazioni. Non c'è ancora nulla di monitorato, quindi iniziare dalla spesa annua. Dopo aver aggiunto i conti, il piano passerà ai dati reali."
         },
         "shortHistory": {
-          "title": "No full months of transactions yet | Only 1 full month of transactions | Only {n} full months of transactions",
-          "description": "Spending can't be worked out yet. It switches to Auto after 3 full months. Until then, enter it by hand."
+          "title": "Ancora nessun mese completo di transazioni | Solo 1 mese completo di transazioni | Solo {n} mesi completi di transazioni",
+          "description": "Non è ancora possibile calcolare la spesa. Passerà ad Automatico dopo 3 mesi completi. Fino ad allora, inserirla manualmente."
         },
         "noSpending": {
-          "title": "No spending recorded yet",
-          "description": "Your recent months have no expenses we can use. Enter your yearly spending to see your plan."
+          "title": "Ancora nessuna spesa registrata",
+          "description": "Negli ultimi mesi non ci sono spese utilizzabili. Inserire la spesa annua per vedere il piano."
         },
-        "enterSpending": "Enter spending",
-        "addAccount": "Add an account"
+        "enterSpending": "Inserisci spesa",
+        "addAccount": "Aggiungi un conto"
       },
       "trial": {
-        "daysLeft": "FIRE planner trial · {n} day left | FIRE planner trial · {n} days left",
-        "ended": "Your 14-day FIRE planner trial has ended. Upgrade to Plus to keep planning your path to FIRE.",
-        "startFailed": "Couldn't start the FIRE planner trial. Reload the page to try again."
+        "daysLeft": "Prova del pianificatore FIRE · {n} giorno rimanente | Prova del pianificatore FIRE · {n} giorni rimanenti",
+        "ended": "La prova di 14 giorni del pianificatore FIRE è terminata. Passare a Plus per continuare a pianificare il percorso verso il FIRE.",
+        "startFailed": "Impossibile avviare la prova del pianificatore FIRE. Ricaricare la pagina per riprovare."
       }
     }
   },
   "pivotReport": {
-    "subtitle": "Break spending down by any dimension, lay it across time, and compare.",
+    "subtitle": "Scomporre le spese per qualsiasi dimensione, distribuirle nel tempo e confrontarle.",
     "controls": {
-      "rows": "Rows",
-      "columns": "Columns",
-      "measure": "Measure",
-      "settings": "Settings"
+      "rows": "Righe",
+      "columns": "Colonne",
+      "measure": "Misura",
+      "settings": "Impostazioni"
     },
     "dimensions": {
-      "category": "Category",
-      "subcategory": "+ Subcategory",
-      "payee": "Payee",
-      "tag": "Tag"
+      "category": "Categoria",
+      "subcategory": "+ Sottocategoria",
+      "payee": "Beneficiario",
+      "tag": "Etichetta"
     },
     "granularity": {
-      "yearly": "Years",
-      "quarterly": "Quarters",
-      "monthly": "Months",
-      "weekly": "Weeks"
+      "yearly": "Anni",
+      "quarterly": "Trimestri",
+      "monthly": "Mesi",
+      "weekly": "Settimane"
     },
     "measure": {
-      "expense": "Expenses",
-      "income": "Income"
+      "expense": "Spese",
+      "income": "Entrata"
     },
     "display": {
-      "title": "Display options"
+      "title": "Opzioni di visualizzazione"
     },
     "toggles": {
-      "heatmap": "Heatmap",
-      "percentChange": "% change"
+      "heatmap": "Mappa di calore",
+      "percentChange": "Variazione %"
     },
     "filters": {
-      "period": "Period",
-      "allCategories": "All",
-      "button": "Filters",
+      "period": "Periodo",
+      "allCategories": "Tutte",
+      "button": "Filtri",
       "categories": "Categorie",
       "payees": "Beneficiari",
       "accounts": "Conti",
-      "reset": "Reset",
-      "resetTooltip": "Reset to defaults"
+      "reset": "Reimposta",
+      "resetTooltip": "Ripristina i valori predefiniti"
     },
     "periods": {
-      "last6Months": "Last 6 months",
-      "last12Months": "Last 12 months",
-      "thisYear": "This year",
-      "previousYear": "Previous year",
-      "last3Years": "Last 3 years",
-      "last5Years": "Last 5 years",
-      "allTime": "All time"
+      "last6Months": "Ultimi 6 mesi",
+      "last12Months": "Ultimi 12 mesi",
+      "thisYear": "Quest'anno",
+      "previousYear": "Anno precedente",
+      "last3Years": "Ultimi 3 anni",
+      "last5Years": "Ultimi 5 anni",
+      "allTime": "Sempre"
     },
     "savedViews": {
-      "trigger": "Views",
-      "empty": "No saved views yet",
-      "saveCurrent": "Save current view",
-      "customView": "Custom view",
-      "dialogTitle": "Save view",
-      "dialogDescription": "Save the current layout and filters as a reusable view.",
-      "nameLabel": "View name",
-      "namePlaceholder": "e.g. Grocery watch",
-      "savedToast": "View saved",
-      "deletedToast": "View deleted",
-      "saveError": "Could not save the view"
+      "trigger": "Viste",
+      "empty": "Ancora nessuna vista salvata",
+      "saveCurrent": "Salva vista attuale",
+      "customView": "Vista personalizzata",
+      "dialogTitle": "Salva vista",
+      "dialogDescription": "Salvare il layout e i filtri attuali come vista riutilizzabile.",
+      "nameLabel": "Nome della vista",
+      "namePlaceholder": "es. Controllo spesa alimentare",
+      "savedToast": "Vista salvata",
+      "deletedToast": "Vista eliminata",
+      "saveError": "Impossibile salvare la vista"
     },
     "table": {
       "total": "Totale",
-      "net": "Net",
-      "collapseAll": "Collapse all",
-      "expandAll": "Expand all",
-      "expandRow": "Expand",
-      "collapseRow": "Collapse"
+      "net": "Netto",
+      "collapseAll": "Comprimi tutto",
+      "expandAll": "Espandi tutto",
+      "expandRow": "Espandi",
+      "collapseRow": "Comprimi"
     },
     "states": {
-      "emptyTitle": "No data for this selection",
-      "emptyHint": "Try a wider period or different filters.",
-      "errorTitle": "Couldn't load the report",
-      "errorHint": "Something went wrong. Please try again."
+      "emptyTitle": "Nessun dato per questa selezione",
+      "emptyHint": "Provare un periodo più ampio o filtri diversi.",
+      "errorTitle": "Impossibile caricare il report",
+      "errorHint": "Si è verificato un problema. Riprovare."
     }
   },
   "netWorthDrivers": {
-    "subtitle": "How much of your growth you saved, and how much the market returned. Transfers between your own accounts count as neither.",
+    "subtitle": "Quanto della crescita deriva dal risparmio e quanto dal rendimento di mercato. I trasferimenti tra i propri conti non contano in nessuno dei due.",
     "portfolioFilter": {
-      "scopeHint": "Filters investment holdings and growth only. Saved amounts and account cash are not affected."
+      "scopeHint": "Filtra solo le posizioni di investimento e la crescita. Gli importi risparmiati e la liquidità dei conti non sono interessati."
     },
     "calcInfo": {
-      "trigger": "How this is calculated",
-      "title": "How this is calculated",
-      "savedHeading": "Saved",
-      "savedBody": "Money you set aside — income minus spending. Moving money between your own accounts, or into an investment portfolio, doesn't count as saving.",
-      "grownHeading": "Grown",
-      "grownBody": "What the market did to your holdings — price changes, plus dividends, minus fees. Money you put in is never counted as growth.",
-      "exampleHeading": "Example",
-      "exampleBody": "You earn $10,000, invest it, and it grows to $12,000. That's $10,000 Saved and $2,000 Grown — the $10,000 is counted once, as Saved, and only the $2,000 counts as Grown.",
-      "noteBody": "Growth is counted as prices move each period, not only when you sell. Selling something that already rose doesn't add to Grown a second time."
+      "trigger": "Come viene calcolato",
+      "title": "Come viene calcolato",
+      "savedHeading": "Risparmiato",
+      "savedBody": "Il denaro messo da parte: entrate meno spese. Spostare denaro tra i propri conti o in un portafoglio di investimento non conta come risparmio.",
+      "grownHeading": "Cresciuto",
+      "grownBody": "L'effetto del mercato sulle posizioni: variazioni di prezzo, più dividendi, meno commissioni. Il denaro versato non viene mai conteggiato come crescita.",
+      "exampleHeading": "Esempio",
+      "exampleBody": "Si guadagnano 10.000 $, li si investe e crescono fino a 12.000 $. Sono 10.000 $ Risparmiati e 2.000 $ Cresciuti: i 10.000 $ vengono contati una sola volta, come Risparmiati, e solo i 2.000 $ contano come Cresciuti.",
+      "noteBody": "La crescita viene conteggiata man mano che i prezzi variano in ogni periodo, non solo alla vendita. Vendere qualcosa che si è già apprezzato non aggiunge una seconda volta a Cresciuto."
     },
     "granularity": {
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
+      "monthly": "Mensile",
+      "quarterly": "Trimestrale",
       "yearly": "Annualmente"
     },
     "chart": {
-      "title": "Saved vs. grown",
-      "subtitle": "Cumulative totals over the selected period.",
-      "saved": "Saved",
-      "grown": "Grown",
-      "totalGained": "Total gained",
-      "thisPeriod": "This period",
-      "periodSavings": "Savings",
-      "periodGrowth": "Growth",
-      "allocationContext": "{share}% of your net worth sits in investments (was {reference}% in {date})",
-      "allocationContextNoReference": "{share}% of your net worth sits in investments"
+      "title": "Risparmiato vs cresciuto",
+      "subtitle": "Totali cumulativi nel periodo selezionato.",
+      "saved": "Risparmiato",
+      "grown": "Cresciuto",
+      "totalGained": "Guadagno totale",
+      "thisPeriod": "Questo periodo",
+      "periodSavings": "Risparmio",
+      "periodGrowth": "Crescita",
+      "allocationContext": "Il {share}% del patrimonio netto è in investimenti (era il {reference}% il {date})",
+      "allocationContextNoReference": "Il {share}% del patrimonio netto è in investimenti"
     },
     "breakdownChart": {
-      "title": "Per-period breakdown",
-      "subtitle": "How much you saved and how much the market returned in each period.",
-      "periodTotal": "Gained this period",
-      "others": "Others",
-      "grownTotal": "Grown total"
+      "title": "Ripartizione per periodo",
+      "subtitle": "Quanto è stato risparmiato e quanto ha reso il mercato in ciascun periodo.",
+      "periodTotal": "Guadagno del periodo",
+      "others": "Altri",
+      "grownTotal": "Totale cresciuto"
     },
     "degraded": {
-      "title": "Some values are estimated",
-      "unpricedSecurities": "No recent price data for {securities}, so their growth is estimated from cost.",
-      "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); their growth is estimated from cost.",
-      "fxFallback": "Missing exchange rates for {currencies}. Those amounts use the earliest available rate, or 1:1 when no rate exists."
+      "title": "Alcuni valori sono stimati",
+      "unpricedSecurities": "Nessun prezzo recente per {securities}, quindi la crescita è stimata dal costo.",
+      "unpricedSecuritiesTruncated": "Nessun prezzo recente per {securities} e altri ({count} titoli in totale); la loro crescita è stimata dal costo.",
+      "fxFallback": "Tassi di cambio mancanti per {currencies}. Per questi importi si usa il primo tasso disponibile, oppure 1:1 se non esiste alcun tasso."
     },
     "states": {
-      "loadError": "Couldn't load the report",
-      "noData": "Nothing to show for this period",
-      "noDataHint": "Once you have income, expenses, or investments in this range, they'll appear here.",
-      "noPortfoliosHint": "Investment growth appears once you add a portfolio with priced holdings.",
-      "noPortfoliosTitle": "No investments yet",
-      "noPortfoliosPlaceholder": "This report splits your net-worth change into what you saved and what your investments grew. Add a portfolio to start tracking growth.",
-      "noPortfoliosAction": "Add a portfolio"
+      "loadError": "Impossibile caricare il report",
+      "noData": "Nulla da mostrare per questo periodo",
+      "noDataHint": "Quando ci saranno entrate, spese o investimenti in questo intervallo, compariranno qui.",
+      "noPortfoliosHint": "La crescita degli investimenti compare dopo aver aggiunto un portafoglio con posizioni valorizzate.",
+      "noPortfoliosTitle": "Ancora nessun investimento",
+      "noPortfoliosPlaceholder": "Questo report suddivide la variazione del patrimonio netto tra quanto risparmiato e quanto sono cresciuti gli investimenti. Aggiungere un portafoglio per iniziare a monitorare la crescita.",
+      "noPortfoliosAction": "Aggiungi portafoglio"
     },
     "target": {
-      "title": "Growth crossover",
-      "subtitle": "The portfolio size where market growth — not your saving — does most of the work.",
-      "targetShareLabel": "Growth's share of your monthly gain",
-      "savingsLabel": "Expected monthly saving",
-      "savingsPlaceholder": "e.g. 1,000",
-      "savingsResetToAverage": "Use my average ({amount})",
-      "currentShareLine": "Today growth covers ~{current}% of your monthly gain — you're aiming for {target}%.",
-      "valueNeeded": "Portfolio value needed",
-      "progressLine": "You're {pct}% of the way — {current} of {needed}.",
-      "progressReached": "Target reached — your portfolio is already there.",
-      "gapLabel": "Gap",
-      "gapValue": "{amount} more needed",
-      "reached": "Target reached",
-      "timeLabel": "Time to target",
-      "etaValue": "~{years} yr",
-      "etaReached": "Reached",
-      "etaHint": "If you keep saving and the return holds.",
-      "noReturn": "Pick a positive expected return to see a target value.",
-      "assumptionsLabel": "Assumptions",
-      "disclaimer": "A straight projection from today's values and your assumptions — not financial advice."
+      "title": "Punto di svolta della crescita",
+      "subtitle": "La dimensione del portafoglio a cui è la crescita di mercato, e non il risparmio, a fare la maggior parte del lavoro.",
+      "targetShareLabel": "Quota della crescita sul guadagno mensile",
+      "savingsLabel": "Risparmio mensile previsto",
+      "savingsPlaceholder": "es. 1.000",
+      "savingsResetToAverage": "Usa la media ({amount})",
+      "currentShareLine": "Oggi la crescita copre circa il {current}% del guadagno mensile: l'obiettivo è il {target}%.",
+      "valueNeeded": "Valore del portafoglio necessario",
+      "progressLine": "Si è al {pct}% del percorso: {current} su {needed}.",
+      "progressReached": "Traguardo raggiunto: il portafoglio è già a quel livello.",
+      "gapLabel": "Differenza",
+      "gapValue": "Servono ancora {amount}",
+      "reached": "Traguardo raggiunto",
+      "timeLabel": "Tempo al traguardo",
+      "etaValue": "~{years} anni",
+      "etaReached": "Raggiunto",
+      "etaHint": "Se si continua a risparmiare e il rendimento si mantiene.",
+      "noReturn": "Scegliere un rendimento atteso positivo per vedere un valore obiettivo.",
+      "assumptionsLabel": "Ipotesi",
+      "disclaimer": "Una semplice proiezione basata sui valori di oggi e sulle ipotesi impostate: non è una consulenza finanziaria."
     }
   },
   "investmentContributions": {
-    "subtitle": "How much cash you've moved into your portfolios over time, and where it went.",
+    "subtitle": "Quanta liquidità è stata spostata nei portafogli nel tempo e dove è andata.",
     "average": "Medio",
     "portfolioFilter": {
-      "scopeHint": "Filters which portfolios count toward contributions."
+      "scopeHint": "Filtra quali portafogli contano per i versamenti."
     },
     "granularity": {
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
+      "monthly": "Mensile",
+      "quarterly": "Trimestrale",
       "yearly": "Annualmente"
     },
     "cards": {
-      "totalContributed": "Total contributed",
-      "shareOfSavings": "Share of savings",
-      "averagePerPeriod": "Average per period"
+      "totalContributed": "Totale versato",
+      "shareOfSavings": "Quota dei risparmi",
+      "averagePerPeriod": "Media per periodo"
     },
     "chart": {
-      "vsPrevious": "vs previous"
+      "vsPrevious": "rispetto al precedente"
     },
     "states": {
-      "noData": "No contributions in this range",
-      "noDataHint": "Move money into a portfolio during this period to see it here.",
-      "noPortfoliosTitle": "No portfolios yet",
-      "noPortfoliosPlaceholder": "Create a portfolio and start investing to track your contributions here.",
-      "noPortfoliosAction": "Add a portfolio",
-      "loadError": "Couldn't load contributions"
+      "noData": "Nessun versamento in questo intervallo",
+      "noDataHint": "Spostare denaro in un portafoglio in questo periodo per vederlo qui.",
+      "noPortfoliosTitle": "Ancora nessun portafoglio",
+      "noPortfoliosPlaceholder": "Creare un portafoglio e iniziare a investire per monitorare qui i versamenti.",
+      "noPortfoliosAction": "Aggiungi portafoglio",
+      "loadError": "Impossibile caricare i versamenti"
     }
   },
   "netWorthHistory": {
-    "subtitle": "How your assets, liabilities and net worth changed over time",
+    "subtitle": "Come sono cambiati nel tempo attività, passività e patrimonio netto",
     "granularity": {
-      "weekly": "Weekly",
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
+      "weekly": "Settimanale",
+      "monthly": "Mensile",
+      "quarterly": "Trimestrale",
       "yearly": "Annualmente"
     },
     "kindFilter": {
-      "all": "All liabilities",
-      "scopeHint": "Choose which debt types count as liabilities in this report.",
-      "selectedOne": "1 type",
-      "selectedMany": "{n} types"
+      "all": "Tutte le passività",
+      "scopeHint": "Scegliere quali tipi di debito contano come passività in questo report.",
+      "selectedOne": "1 tipo",
+      "selectedMany": "{n} tipi"
     },
     "assetKinds": {
-      "cash": "Cash & accounts",
-      "investments": "Investments",
+      "cash": "Liquidità e conti",
+      "investments": "Investimenti",
       "vehicles": "Veicoli",
       "ventures": "Investimenti"
     },
     "assetFilter": {
-      "all": "All assets",
-      "scopeHint": "Choose which asset types count in this report.",
-      "selectedOne": "1 type",
-      "selectedMany": "{n} types"
+      "all": "Tutti gli asset",
+      "scopeHint": "Scegliere quali tipi di asset contano in questo report.",
+      "selectedOne": "1 tipo",
+      "selectedMany": "{n} tipi"
     },
     "cards": {
-      "currentNetWorth": "Current net worth",
-      "periodChange": "Period change",
-      "annualized": "≈ {pct} / yr",
-      "averageLiabilities": "You have an average of {amount} in liabilities during the selected period.",
-      "noLiabilities": "You had no liabilities during the selected period."
+      "currentNetWorth": "Patrimonio netto attuale",
+      "periodChange": "Variazione nel periodo",
+      "annualized": "≈ {pct} / anno",
+      "averageLiabilities": "Nel periodo selezionato le passività medie sono state di {amount}.",
+      "noLiabilities": "Nel periodo selezionato non ci sono state passività."
     },
     "chart": {
       "assets": "Asset",
       "liabilities": "Passività",
-      "netWorth": "Net worth",
-      "averageLiabilities": "Avg. liabilities",
-      "liabilitiesZoomed": "Liabilities scale zoomed"
+      "netWorth": "Patrimonio netto",
+      "averageLiabilities": "Passività medie",
+      "liabilitiesZoomed": "Scala delle passività ingrandita"
     },
     "settings": {
-      "title": "Chart settings",
-      "zoomLiabilities": "Zoom liabilities scale",
-      "zoomLiabilitiesHint": "Enlarge small debts so they stay visible next to large assets."
+      "title": "Impostazioni del grafico",
+      "zoomLiabilities": "Ingrandisci scala delle passività",
+      "zoomLiabilitiesHint": "Ingrandire i debiti piccoli perché restino visibili accanto ad asset di grande entità."
     },
     "degraded": {
-      "title": "Some values are estimated",
-      "unpricedSecurities": "No recent price data for {securities}, so they're shown at cost and may understate your net worth.",
-      "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); they're shown at cost and may understate your net worth.",
-      "fxFallback": "Missing exchange rates for {currencies}. Those amounts use the earliest available rate, or 1:1 when no rate exists."
+      "title": "Alcuni valori sono stimati",
+      "unpricedSecurities": "Nessun prezzo recente per {securities}, quindi sono mostrati al costo e potrebbero sottostimare il patrimonio netto.",
+      "unpricedSecuritiesTruncated": "Nessun prezzo recente per {securities} e altri ({count} titoli in totale); sono mostrati al costo e potrebbero sottostimare il patrimonio netto.",
+      "fxFallback": "Tassi di cambio mancanti per {currencies}. Per questi importi si usa il primo tasso disponibile, oppure 1:1 se non esiste alcun tasso."
     },
     "states": {
-      "loadError": "Failed to load net worth history. Please try again later.",
-      "noData": "No history for this period",
-      "noDataHint": "Try a longer period, or add accounts and transactions so there are balances to snapshot."
+      "loadError": "Caricamento dello storico del patrimonio netto non riuscito. Riprovare più tardi.",
+      "noData": "Nessuno storico per questo periodo",
+      "noDataHint": "Provare un periodo più lungo, oppure aggiungere conti e transazioni affinché ci siano saldi da registrare."
     }
   }
 }

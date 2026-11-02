@@ -6,7 +6,7 @@
       "submitButton": "Accedi",
       "noAccount": "Nuovo utente?",
       "signupsDisabledTooltip": "Le nuove registrazioni sono state disabilitate dall'amministratore.",
-      "forgotPassword": "Forgot password?",
+      "forgotPassword": "Password dimenticata?",
       "errors": {
         "incorrectEmailOrPassword": "Email o password errati.",
         "incorrectPassword": "Password errata.",
@@ -32,7 +32,7 @@
         "signIn": "Accedi con {provider}",
         "signUp": "Registrati con {provider}"
       },
-      "lastUsed": "Last used"
+      "lastUsed": "Usato l'ultima volta"
     }
   }
 }

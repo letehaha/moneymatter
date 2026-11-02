@@ -238,6 +238,7 @@
         },
         "hints": {
           "noHistory": "Porovnanie sa zobrazí po vašom prvom celom mesiaci.",
+          "plannedFailed": "Plánované transakcie sa nepodarilo načítať. Predpoveď ich nemusí zahŕňať.",
           "fewMonths": "Priemer za {n} celý mesiac, ktorý zatiaľ máte. | Priemer za {n} celé mesiace, ktoré zatiaľ máte. | Priemer za {n} celých mesiacov, ktoré zatiaľ máte."
         },
         "loadFailed": "Vaše výdavky sa nepodarilo načítať.",

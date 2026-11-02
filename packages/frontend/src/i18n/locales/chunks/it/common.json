@@ -28,7 +28,7 @@
       "retry": "Riprova",
       "copyInviteLink": "Copia il link d'invito",
       "moveTo": "Sposta in…",
-      "learnMore": "Learn more"
+      "learnMore": "Maggiori informazioni"
     },
     "ui": {
       "close": "Chiudi",
@@ -55,7 +55,7 @@
     },
     "errors": {
       "copyToClipboardFailed": "Impossibile copiare negli appunti",
-      "settingsSaveFailed": "Couldn't save your settings. Please try again."
+      "settingsSaveFailed": "Impossibile salvare le impostazioni. Riprovare."
     },
     "notifications": {
       "subscriptionCurrencyNotConnected": "Il riepilogo abbonamenti non può convertire {currencies} nella valuta di base. Collegare la valuta in Impostazioni → Valute.",
@@ -104,7 +104,7 @@
       "mobilePayment": "Pagamento mobile",
       "voucher": "Voucher",
       "webPayment": "Pagamento web",
-      "none": "None"
+      "none": "Nessuno"
     },
     "vehicleClasses": {
       "sedan": "Berlina",
@@ -133,162 +133,162 @@
       },
       "investmentTransactionsParsing": {
         "name": "Importa i movimenti degli investimenti",
-        "description": "AI-extracted buy/sell transactions from exchange exports, broker statements, or pasted text."
+        "description": "Transazioni di acquisto/vendita estratte dall'IA da esportazioni di exchange, estratti del broker o testo incollato."
       },
       "receiptParsing": {
-        "name": "Invoice matching",
-        "description": "Reads an uploaded invoice or receipt and finds the transaction it belongs to."
+        "name": "Abbinamento delle fatture",
+        "description": "Legge una fattura o una ricevuta caricata e trova la transazione a cui appartiene."
       },
       "trackerMatching": {
-        "name": "Tracker matching",
-        "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
+        "name": "Abbinamento del tracker",
+        "description": "Analizza le nuove transazioni e suggerisce quelle che appartengono a un tracker intelligente."
       },
       "transferMatching": {
-        "name": "Transfer matching",
-        "description": "Checks transfer scan results and keeps the pairs that look like real transfers"
+        "name": "Abbinamento dei trasferimenti",
+        "description": "Verifica i risultati della ricerca dei trasferimenti e mantiene le coppie che sembrano trasferimenti reali"
       }
     },
     "transactions": {
       "delete": {
         "success": "Rimosso con successo",
-        "error": "Failed to delete transaction!"
+        "error": "Impossibile eliminare la transazione!"
       },
       "submit": {
-        "unexpectedError": "Unexpected error!"
+        "unexpectedError": "Errore imprevisto!"
       },
       "unlink": {
-        "error": "Failed to unlink transactions!"
+        "error": "Impossibile scollegare le transazioni!"
       },
       "record": {
-        "addedByTooltip": "This transaction was attached to the tracker by {handle}",
-        "addedByRule": "Added by the tracker's rules",
-        "matchedByAi": "Matched by AI",
-        "externalLinkTooltip": "Open external link",
-        "locationTooltip": "Open location on the map",
-        "attachmentsTooltip": "Has attachments",
-        "hiddenAccount": "Hidden account",
-        "selectRow": "Select transaction",
+        "addedByTooltip": "Questa transazione è stata associata al tracker da {handle}",
+        "addedByRule": "Aggiunta dalle regole del tracker",
+        "matchedByAi": "Abbinato dall'IA",
+        "externalLinkTooltip": "Apri link esterno",
+        "locationTooltip": "Apri posizione sulla mappa",
+        "attachmentsTooltip": "Con allegati",
+        "hiddenAccount": "Conto nascosto",
+        "selectRow": "Seleziona transazione",
         "unselectableReasons": {
-          "sharedAccount": "Can't be selected: this transaction is on an account shared with you, and only its owner can edit it."
+          "sharedAccount": "Non selezionabile: questa transazione si trova su un conto condiviso e solo il proprietario può modificarla."
         },
         "payment": {
-          "paidFrom": "Paid from {count} accounts",
-          "receivedInto": "Received into {count} accounts",
-          "partOf": "Part of a {total} payment",
-          "thisAccount": "(this account)",
-          "loadError": "Couldn't open this transaction. Try again."
+          "paidFrom": "Pagata da {count} conti",
+          "receivedInto": "Ricevuta su {count} conti",
+          "partOf": "Parte di un pagamento di {total}",
+          "thisAccount": "(questo conto)",
+          "loadError": "Impossibile aprire questa transazione. Riprovare."
         }
       }
     },
-    "outOfWallet": "Out of wallet",
+    "outOfWallet": "Fuori dai conti",
     "dateSelector": {
-      "dialogTitle": "Date range",
-      "dueDate": "Due date",
-      "quickSelect": "Quick select",
-      "apply": "Apply",
+      "dialogTitle": "Intervallo di date",
+      "dueDate": "Data di scadenza",
+      "quickSelect": "Selezione rapida",
+      "apply": "Applica",
       "periodTypes": {
-        "day": "Day",
-        "month": "Month",
-        "quarter": "Quarter",
-        "halfYear": "Half-year",
-        "year": "Year"
+        "day": "Giorno",
+        "month": "Mese",
+        "quarter": "Trimestre",
+        "halfYear": "Semestre",
+        "year": "Anno"
       },
       "filterModes": {
-        "is": "is",
-        "before": "before",
-        "after": "after",
-        "between": "between"
+        "is": "è",
+        "before": "prima del",
+        "after": "dopo il",
+        "between": "tra"
       },
-      "currentMonth": "Current month",
+      "currentMonth": "Mese corrente",
       "placeholders": {
-        "day": "Try: 2025-03-15, 03/15/2025",
-        "month": "Try: Jan 2025, 03/2025",
-        "quarter": "Try: Q1, Q4 2025",
-        "halfYear": "Try: H1, H2 2025",
-        "year": "Try: 2025, 2024",
-        "default": "Try: 2025, Q4, Jan 2025"
+        "day": "Es.: 2025-03-15, 03/15/2025",
+        "month": "Es.: Jan 2025, 03/2025",
+        "quarter": "Es.: Q1, Q4 2025",
+        "halfYear": "Es.: H1, H2 2025",
+        "year": "Es.: 2025, 2024",
+        "default": "Es.: 2025, Q4, Jan 2025"
       }
     },
     "appUpdate": {
-      "title": "Update available",
-      "description": "A new version is ready. Reload to get the latest improvements.",
-      "reload": "Reload"
+      "title": "Aggiornamento disponibile",
+      "description": "È disponibile una nuova versione. Ricaricare per ottenere gli ultimi miglioramenti.",
+      "reload": "Ricarica"
     },
     "resourceLease": {
-      "activeLabel": "Session active",
-      "expiredLabel": "Session expired",
-      "defaultResourceLabel": "This resource",
-      "activeTooltip": "{resource} is being kept on the server, and about {duration} of inactivity is allowed. Keep working and it stays available.",
-      "countingDownTooltip": "{resource} is released in {time} because you're inactive. Interact with the page to keep it.",
-      "cappedTooltip": "{resource} is released in {time}. The maximum session length has been reached, so this can no longer be extended.",
-      "expiredTooltip": "{resource} has been released from the server. Start again to continue.",
+      "activeLabel": "Sessione attiva",
+      "expiredLabel": "Sessione scaduta",
+      "defaultResourceLabel": "Questa risorsa",
+      "activeTooltip": "{resource} viene mantenuta sul server ed è consentita un'inattività di circa {duration}. Continuando a lavorare resta disponibile.",
+      "countingDownTooltip": "{resource} verrà rilasciata tra {time} per inattività. Interagire con la pagina per mantenerla.",
+      "cappedTooltip": "{resource} verrà rilasciata tra {time}. È stata raggiunta la durata massima della sessione, quindi non è più possibile prolungarla.",
+      "expiredTooltip": "{resource} è stata rilasciata dal server. Ricominciare per continuare.",
       "status": {
-        "active": "{resource} is being kept available.",
-        "countingDown": "{resource} will be released soon.",
-        "expired": "{resource} has been released."
+        "active": "{resource} viene mantenuta disponibile.",
+        "countingDown": "{resource} verrà rilasciata a breve.",
+        "expired": "{resource} è stata rilasciata."
       },
       "duration": {
-        "seconds": "{count} second | {count} seconds",
-        "minutes": "{count} minute | {count} minutes",
-        "hours": "{count} hour | {count} hours"
+        "seconds": "{count} secondo | {count} secondi",
+        "minutes": "{count} minuto | {count} minuti",
+        "hours": "{count} ora | {count} ore"
       }
     },
     "logo": {
       "tabs": {
-        "brand": "Brand",
-        "letters": "Letters",
-        "icon": "Icon",
-        "custom": "Image"
+        "brand": "Marchio",
+        "letters": "Lettere",
+        "icon": "Icona",
+        "custom": "Immagine"
       },
-      "searchPlaceholder": "Brand name or domain",
-      "searchHint": "Type a brand name, or a domain like amazon.com",
-      "noResults": "No matching brands found.",
-      "noResultsLettersHint": "Use letters instead",
-      "useDomainDirectly": "Use {domain}",
-      "autoLabel": "Automatic (from name)",
-      "domainHint": "To find the exact brand, type the company's website domain (e.g. amazon.com) – that always matches the right logo.",
-      "searchError": "Couldn't load logos – try again",
-      "brandNotConfigured": "Brand logos are not configured on this instance. Ask the admin to set VITE_LOGO_DEV_TOKEN, or use letters instead.",
-      "editAriaLabel": "Edit logo",
-      "dialogTitle": "Change logo",
-      "resetToAuto": "Reset to automatic",
-      "remove": "Remove logo",
-      "pickerDescription": "Pick a brand logo or use letters instead.",
-      "updatedToast": "Logo updated",
-      "resetToast": "Logo removed",
-      "updateError": "Couldn't update the logo. Try again.",
-      "lettersLabel": "Letters (1–2)",
+      "searchPlaceholder": "Nome del marchio o dominio",
+      "searchHint": "Digitare il nome di un marchio o un dominio come amazon.com",
+      "noResults": "Nessun marchio corrispondente.",
+      "noResultsLettersHint": "Usa le lettere",
+      "useDomainDirectly": "Usa {domain}",
+      "autoLabel": "Automatico (dal nome)",
+      "domainHint": "Per trovare il marchio esatto, digitare il dominio del sito web dell'azienda (es. amazon.com): corrisponde sempre al logo corretto.",
+      "searchError": "Impossibile caricare i loghi: riprovare",
+      "brandNotConfigured": "I loghi dei marchi non sono configurati su questa istanza. Chiedere all'amministratore di impostare VITE_LOGO_DEV_TOKEN, oppure usare le lettere.",
+      "editAriaLabel": "Modifica logo",
+      "dialogTitle": "Cambia logo",
+      "resetToAuto": "Ripristina automatico",
+      "remove": "Rimuovi logo",
+      "pickerDescription": "Scegliere il logo di un marchio oppure usare le lettere.",
+      "updatedToast": "Logo aggiornato",
+      "resetToast": "Logo rimosso",
+      "updateError": "Impossibile aggiornare il logo. Riprovare.",
+      "lettersLabel": "Lettere (1–2)",
       "lettersPlaceholder": "AB",
-      "colorLabel": "Color",
-      "colorSwatchAriaLabel": "Use color {color}",
-      "customColorAriaLabel": "Pick a custom color",
-      "lettersSelectedLabel": "Letters “{letters}”",
-      "lettersHint": "1–2 letters or an emoji",
-      "chooseImage": "Choose image",
-      "replaceImage": "Replace image",
-      "imageHint": "Cropped to a square and resized to 200×200 on your device.",
-      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
-      "imageUnreadable": "That file couldn't be read as an image."
+      "colorLabel": "Colore",
+      "colorSwatchAriaLabel": "Usa il colore {color}",
+      "customColorAriaLabel": "Scegli un colore personalizzato",
+      "lettersSelectedLabel": "Lettere «{letters}»",
+      "lettersHint": "1–2 lettere o un'emoji",
+      "chooseImage": "Scegli immagine",
+      "replaceImage": "Sostituisci immagine",
+      "imageHint": "Ritagliata in un quadrato e ridimensionata a 200×200 sul dispositivo.",
+      "imageTooLarge": "Dopo il ridimensionamento l'immagine supera ancora i 50 KB. Provare con un'immagine più semplice.",
+      "imageUnreadable": "Impossibile leggere il file come immagine."
     },
     "iconPicker": {
       "searchPlaceholder": "Cercare un'icona...",
       "clear": "Rimuovi icona"
     },
     "importBatchDeleteOverlay": {
-      "title": "Deleting imported transactions",
-      "description": "A large import batch is being removed. Balances are recalculated when it finishes, so the app is locked until then.",
-      "deleting": "Deleting transactions",
-      "preparing": "Getting ready",
-      "finishing": "Finishing up",
-      "takingLong": "This is taking longer than usual — large batches can take several minutes. Keep this page open.",
-      "unreachableTitle": "Can't reach the server",
-      "unreachableDescription": "The delete may still be running. Dismiss to keep using the app, and reload later to see the result.",
-      "failedTitle": "Delete failed",
-      "dismiss": "Dismiss"
+      "title": "Eliminazione delle transazioni importate",
+      "description": "È in corso la rimozione di un'importazione di grandi dimensioni. I saldi vengono ricalcolati al termine, quindi fino ad allora l'app resta bloccata.",
+      "deleting": "Eliminazione delle transazioni",
+      "preparing": "Preparazione in corso",
+      "finishing": "Completamento in corso",
+      "takingLong": "L'operazione richiede più tempo del solito: le importazioni di grandi dimensioni possono richiedere diversi minuti. Tenere aperta questa pagina.",
+      "unreachableTitle": "Impossibile raggiungere il server",
+      "unreachableDescription": "L'eliminazione potrebbe essere ancora in corso. Chiudere per continuare a usare l'app e ricaricare più tardi per vedere il risultato.",
+      "failedTitle": "Eliminazione non riuscita",
+      "dismiss": "Chiudi"
     },
     "duration": {
-      "years": "{n} yr | {n} yrs",
-      "months": "{n} mo | {n} mos"
+      "years": "{n} anno | {n} anni",
+      "months": "{n} mese | {n} mesi"
     },
     "fire": {
       "targets": {
@@ -297,210 +297,210 @@
         "fat": "Fat FIRE"
       },
       "pace": {
-        "ahead": "{duration} ahead",
-        "behind": "{duration} behind",
-        "onPace": "On pace",
-        "backInReach": "Back within reach",
-        "offTrack": "Off track"
+        "ahead": "{duration} in anticipo",
+        "behind": "{duration} in ritardo",
+        "onPace": "In linea",
+        "backInReach": "Di nuovo a portata",
+        "offTrack": "Fuori rotta"
       }
     },
     "pasteImage": {
-      "button": "Paste image",
-      "shortcutHint": "or press {shortcut}",
-      "noImage": "No image found in the clipboard.",
-      "readFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut."
+      "button": "Incolla immagine",
+      "shortcutHint": "o premere {shortcut}",
+      "noImage": "Nessuna immagine trovata negli appunti.",
+      "readFailed": "Impossibile leggere gli appunti. Consentire l'accesso agli appunti o incollare con la scorciatoia da tastiera."
     }
   },
   "accountGroups": {
     "create": {
-      "error": "Failed to create the group"
+      "error": "Impossibile creare il gruppo"
     },
     "update": {
-      "success": "Group updated",
-      "error": "Failed to update group"
+      "success": "Gruppo aggiornato",
+      "error": "Impossibile aggiornare il gruppo"
     },
     "delete": {
-      "success": "Group has been deleted",
-      "error": "Failed to delete the group"
+      "success": "Il gruppo è stato eliminato",
+      "error": "Impossibile eliminare il gruppo"
     },
     "link": {
-      "success": "Account has been added to the group",
-      "error": "Failed to add the account to the group"
+      "success": "Il conto è stato aggiunto al gruppo",
+      "error": "Impossibile aggiungere il conto al gruppo"
     },
     "linkMany": {
-      "success": "Accounts added to the group",
-      "error": "Failed to add accounts to the group"
+      "success": "Conti aggiunti al gruppo",
+      "error": "Impossibile aggiungere i conti al gruppo"
     },
     "unlink": {
-      "success": "Account has been removed from the group",
-      "error": "Failed to remove the account from the group"
+      "success": "Il conto è stato rimosso dal gruppo",
+      "error": "Impossibile rimuovere il conto dal gruppo"
     }
   },
   "validation": {
-    "required": "Field is required",
-    "minLength": "Minimal length is {length}.",
-    "emailInvalid": "Please enter a valid email address.",
-    "passwordsNoMatch": "Passwords don't match"
+    "required": "Campo obbligatorio",
+    "minLength": "La lunghezza minima è {length}.",
+    "emailInvalid": "Inserire un indirizzo email valido.",
+    "passwordsNoMatch": "Le password non corrispondono"
   },
   "notifications": {
-    "title": "Notifications",
-    "markAllAsRead": "Mark all as read",
-    "empty": "No notifications yet",
-    "containerAriaLabel": "Notifications",
-    "closeToast": "Close notification",
-    "viewOnGitHub": "View on GitHub",
-    "newVersion": "New version {version}",
-    "newRelease": "New release",
+    "title": "Notifiche",
+    "markAllAsRead": "Segna tutte come lette",
+    "empty": "Ancora nessuna notifica",
+    "containerAriaLabel": "Notifiche",
+    "closeToast": "Chiudi notifica",
+    "viewOnGitHub": "Visualizza su GitHub",
+    "newVersion": "Nuova versione {version}",
+    "newRelease": "Nuovo rilascio",
     "trackerAiMatches": {
       "title": "{name}: {summary}",
-      "added": "{count} transaction added | {count} transactions added",
-      "toReview": "{count} transaction to review | {count} transactions to review",
-      "toReviewShort": "{count} to review",
+      "added": "{count} transazione aggiunta | {count} transazioni aggiunte",
+      "toReview": "{count} transazione da rivedere | {count} transazioni da rivedere",
+      "toReviewShort": "{count} da rivedere",
       "both": "{added}, {toReview}"
     },
     "tagReminder": {
-      "thresholdMessage": "spent {amount} (threshold: {threshold})",
-      "existenceMessage": "{count} transaction | {count} transactions"
+      "thresholdMessage": "spesi {amount} (soglia: {threshold})",
+      "existenceMessage": "{count} transazione | {count} transazioni"
     },
     "share": {
-      "sendFailedHint": "Open the sharing panel to resend."
+      "sendFailedHint": "Aprire il pannello di condivisione per inviare di nuovo."
     },
     "goalReached": {
-      "title": "Goal reached: {name}",
-      "message": "You've saved {amount}."
+      "title": "Obiettivo raggiunto: {name}",
+      "message": "Risparmiati {amount}."
     },
     "unrealizedLossAlert": {
-      "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"
+      "title": "{count} posizione ha superato la soglia di perdita | {count} posizioni hanno superato la soglia di perdita"
     }
   },
   "currencyNames": {
-    "UAH": "Ukrainian Hryvnia",
-    "USD": "US Dollar",
+    "UAH": "Grivnia ucraina",
+    "USD": "Dollaro statunitense",
     "EUR": "Euro",
-    "GBP": "British Pound Sterling",
-    "JPY": "Japanese Yen",
-    "CHF": "Swiss Franc",
-    "CAD": "Canadian Dollar",
-    "AUD": "Australian Dollar",
-    "NZD": "New Zealand Dollar",
-    "CNY": "Chinese Yuan",
-    "HKD": "Hong Kong Dollar",
-    "SGD": "Singapore Dollar",
-    "SEK": "Swedish Krona",
-    "NOK": "Norwegian Krone",
-    "DKK": "Danish Krone",
-    "PLN": "Polish Zloty",
-    "CZK": "Czech Koruna",
-    "HUF": "Hungarian Forint",
-    "RON": "Romanian Leu",
-    "BGN": "Bulgarian Lev",
-    "HRK": "Croatian Kuna",
-    "RSD": "Serbian Dinar",
-    "TRY": "Turkish Lira",
-    "RUB": "Russian Ruble",
-    "BYN": "Belarusian Ruble",
-    "KZT": "Kazakhstani Tenge",
-    "INR": "Indian Rupee",
-    "IDR": "Indonesian Rupiah",
-    "MYR": "Malaysian Ringgit",
-    "PHP": "Philippine Peso",
-    "THB": "Thai Baht",
-    "VND": "Vietnamese Dong",
-    "KRW": "South Korean Won",
-    "TWD": "New Taiwan Dollar",
-    "BRL": "Brazilian Real",
-    "MXN": "Mexican Peso",
-    "ARS": "Argentine Peso",
-    "CLP": "Chilean Peso",
-    "COP": "Colombian Peso",
-    "PEN": "Peruvian Sol",
-    "ZAR": "South African Rand",
-    "EGP": "Egyptian Pound",
-    "AED": "UAE Dirham",
-    "SAR": "Saudi Riyal",
-    "ILS": "Israeli New Shekel",
-    "QAR": "Qatari Riyal",
-    "KWD": "Kuwaiti Dinar",
-    "BHD": "Bahraini Dinar",
-    "OMR": "Omani Rial",
-    "JOD": "Jordanian Dinar",
-    "MAD": "Moroccan Dirham",
-    "NGN": "Nigerian Naira",
-    "KES": "Kenyan Shilling",
-    "GHS": "Ghanaian Cedi",
-    "XOF": "CFA Franc BCEAO",
-    "XAF": "CFA Franc BEAC",
+    "GBP": "Sterlina britannica",
+    "JPY": "Yen giapponese",
+    "CHF": "Franco svizzero",
+    "CAD": "Dollaro canadese",
+    "AUD": "Dollaro australiano",
+    "NZD": "Dollaro neozelandese",
+    "CNY": "Yuan cinese",
+    "HKD": "Dollaro di Hong Kong",
+    "SGD": "Dollaro di Singapore",
+    "SEK": "Corona svedese",
+    "NOK": "Corona norvegese",
+    "DKK": "Corona danese",
+    "PLN": "Złoty polacco",
+    "CZK": "Corona ceca",
+    "HUF": "Fiorino ungherese",
+    "RON": "Leu rumeno",
+    "BGN": "Lev bulgaro",
+    "HRK": "Kuna croata",
+    "RSD": "Dinaro serbo",
+    "TRY": "Lira turca",
+    "RUB": "Rublo russo",
+    "BYN": "Rublo bielorusso",
+    "KZT": "Tenge kazako",
+    "INR": "Rupia indiana",
+    "IDR": "Rupia indonesiana",
+    "MYR": "Ringgit malese",
+    "PHP": "Peso filippino",
+    "THB": "Baht thailandese",
+    "VND": "Dong vietnamita",
+    "KRW": "Won sudcoreano",
+    "TWD": "Nuovo dollaro taiwanese",
+    "BRL": "Real brasiliano",
+    "MXN": "Peso messicano",
+    "ARS": "Peso argentino",
+    "CLP": "Peso cileno",
+    "COP": "Peso colombiano",
+    "PEN": "Sol peruviano",
+    "ZAR": "Rand sudafricano",
+    "EGP": "Sterlina egiziana",
+    "AED": "Dirham degli Emirati Arabi Uniti",
+    "SAR": "Riyal saudita",
+    "ILS": "Nuovo siclo israeliano",
+    "QAR": "Riyal qatariota",
+    "KWD": "Dinaro kuwaitiano",
+    "BHD": "Dinaro del Bahrein",
+    "OMR": "Rial omanita",
+    "JOD": "Dinaro giordano",
+    "MAD": "Dirham marocchino",
+    "NGN": "Naira nigeriana",
+    "KES": "Scellino keniota",
+    "GHS": "Cedi ghanese",
+    "XOF": "Franco CFA BCEAO",
+    "XAF": "Franco CFA BEAC",
     "BTC": "Bitcoin",
     "ETH": "Ethereum"
   },
   "fileDropzone": {
-    "clickOrDrag": "Click or drag a file here",
-    "clickOrDragMultiple": "Click or drag CSV files here",
-    "dropHere": "Drop file to upload",
-    "dropHereMultiple": "Drop files here",
-    "removeFile": "Remove file",
-    "fileTooLarge": "File is too large. Max size is {max}.",
-    "fileTooLargeNamed": "{name} is larger than {max}",
-    "filesSelected": "{count} file selected | {count} files selected",
-    "clearAll": "Clear all",
-    "onlyFirstFileTaken": "Multiple files dropped – only the first was used."
+    "clickOrDrag": "Fare clic o trascinare qui un file",
+    "clickOrDragMultiple": "Fare clic o trascinare qui i file CSV",
+    "dropHere": "Rilasciare il file per caricarlo",
+    "dropHereMultiple": "Rilasciare qui i file",
+    "removeFile": "Rimuovi file",
+    "fileTooLarge": "Il file è troppo grande. La dimensione massima è {max}.",
+    "fileTooLargeNamed": "{name} supera {max}",
+    "filesSelected": "{count} file selezionato | {count} file selezionati",
+    "clearAll": "Cancella tutto",
+    "onlyFirstFileTaken": "Sono stati rilasciati più file: è stato usato solo il primo."
   },
   "demo": {
-    "featureNotAvailable": "This feature is not available in demo mode",
-    "passwordChangeRestricted": "Password changes are not available in demo mode",
+    "featureNotAvailable": "Questa funzionalità non è disponibile in modalità demo",
+    "passwordChangeRestricted": "La modifica della password non è disponibile in modalità demo",
     "investmentsRestricted": {
-      "title": "Investments unavailable in demo",
-      "description": "The investments feature is not available in demo mode. Please sign up for a full account to access investments tracking."
+      "title": "Investimenti non disponibili nella demo",
+      "description": "La funzionalità investimenti non è disponibile in modalità demo. Registrare un profilo completo per accedere al monitoraggio degli investimenti."
     },
     "banner": {
-      "message": "You're exploring a demo with sample data{time}. {signUpLink} to create your own account.",
-      "resets": "resets in {time}",
+      "message": "Si sta esplorando una demo con dati di esempio{time}. {signUpLink} per creare il proprio profilo.",
+      "resets": "si azzera tra {time}",
       "signUp": "Registrati",
       "timeFormat": {
-        "hoursMinutes": "{hours}h {minutes}m",
-        "minutes": "{minutes}m"
+        "hoursMinutes": "{hours} h {minutes} min",
+        "minutes": "{minutes} min"
       }
     },
-    "sessionExpiredNotice": "Your demo session has ended. Create a free account to continue, or sign in below if you already have one."
+    "sessionExpiredNotice": "La sessione demo è terminata. Creare un profilo gratuito per continuare, oppure accedere qui sotto se se ne possiede già uno."
   },
   "billing": {
-    "seePlans": "See plans",
-    "trialStartFailed": "Couldn't start the free trial. Try again.",
-    "updatePaymentMethod": "Update your payment method",
+    "seePlans": "Vedi piani",
+    "trialStartFailed": "Impossibile avviare la prova gratuita. Riprovare.",
+    "updatePaymentMethod": "Aggiorna il metodo di pagamento",
     "planRequired": {
-      "essential": "Included in the Essential plan",
-      "plus": "Included in the Plus plan",
-      "hint": "Your current plan doesn't include this feature. Upgrade to unlock it."
+      "essential": "Incluso nel piano Essential",
+      "plus": "Incluso nel piano Plus",
+      "hint": "Il piano attuale non include questa funzionalità. Passare a un piano superiore per sbloccarla."
     },
     "banner": {
-      "trial": "{count} day left in your trial · {link} | {count} days left in your trial · {link}",
-      "readOnly": "Your trial has ended. You can view and export your data; subscribe to keep editing. {link}",
-      "subscriptionEnded": "Your subscription has ended. {link} to keep editing your data.",
-      "pastDue": "Your last payment failed. {link} to keep your plan."
+      "trial": "{count} giorno rimasto nella prova · {link} | {count} giorni rimasti nella prova · {link}",
+      "readOnly": "Il periodo di prova è terminato. È possibile visualizzare ed esportare i dati; abbonarsi per continuare a modificarli. {link}",
+      "subscriptionEnded": "L'abbonamento è terminato. {link} per continuare a modificare i dati.",
+      "pastDue": "L'ultimo pagamento non è riuscito. {link} per mantenere il piano."
     }
   },
   "settings": {
     "currencies": {
       "setBase": {
         "overlay": {
-          "title": "Changing your base currency",
-          "description": "We're recalculating every amount into your new base currency. This can take a few minutes — please keep this tab open.",
-          "takingLong": "This is taking longer than usual. Your data is safe — we're still working on it.",
-          "failedTitle": "Base currency change failed",
-          "unreachableTitle": "Can't verify the change status",
-          "unreachableDescription": "The server is not responding. You can dismiss this screen — if the change is still running, the app will lock again on your next action.",
-          "dismiss": "Dismiss",
-          "preparing": "Getting things ready…",
-          "finishing": "Finishing up…",
+          "title": "Modifica della valuta di base in corso",
+          "description": "Ogni importo viene ricalcolato nella nuova valuta di base. L'operazione può richiedere alcuni minuti: tenere aperta questa scheda.",
+          "takingLong": "L'operazione richiede più tempo del solito. I dati sono al sicuro: l'elaborazione è ancora in corso.",
+          "failedTitle": "Modifica della valuta di base non riuscita",
+          "unreachableTitle": "Impossibile verificare lo stato della modifica",
+          "unreachableDescription": "Il server non risponde. È possibile chiudere questa schermata: se la modifica è ancora in corso, l'app verrà bloccata di nuovo alla prossima azione.",
+          "dismiss": "Chiudi",
+          "preparing": "Preparazione in corso…",
+          "finishing": "Completamento in corso…",
           "steps": {
-            "transactions": "Updating transactions",
-            "accounts": "Updating accounts",
-            "loanDetails": "Updating loans",
-            "balances": "Rebuilding balance history",
-            "investmentTransactions": "Updating investment transactions",
-            "portfolioTransfers": "Updating portfolio transfers",
-            "holdings": "Updating holdings",
-            "portfolioBalances": "Rebuilding portfolio balances"
+            "transactions": "Aggiornamento delle transazioni",
+            "accounts": "Aggiornamento dei conti",
+            "loanDetails": "Aggiornamento dei prestiti",
+            "balances": "Ricostruzione dello storico dei saldi",
+            "investmentTransactions": "Aggiornamento delle transazioni di investimento",
+            "portfolioTransfers": "Aggiornamento dei trasferimenti di portafoglio",
+            "holdings": "Aggiornamento delle posizioni",
+            "portfolioBalances": "Ricostruzione dei saldi del portafoglio"
           }
         }
       }
@@ -508,77 +508,77 @@
   },
   "ai": {
     "estimatedCost": {
-      "yourApiKey": "(your API key)",
-      "setByEndpoint": "Priced by your provider"
+      "yourApiKey": "(chiave API personale)",
+      "setByEndpoint": "Prezzo stabilito dal fornitore"
     }
   },
   "aiUsage": {
-    "title": "Included AI usage",
-    "used": "used",
-    "percentUsed": "{percent}% used",
-    "resetsOn": "Resets on {date}",
-    "connectOwnModel": "Connect your own model",
-    "gotIt": "Got it",
+    "title": "Utilizzo IA incluso",
+    "used": "utilizzato",
+    "percentUsed": "{percent}% utilizzato",
+    "resetsOn": "Si azzera il {date}",
+    "connectOwnModel": "Connetti un proprio modello",
+    "gotIt": "Ho capito",
     "badge": {
-      "used": "{percent}% AI used",
-      "reached": "AI limit reached"
+      "used": "{percent}% IA utilizzata",
+      "reached": "Limite IA raggiunto"
     },
     "dialog": {
-      "description": "Statement parsing, categorization, receipts and budget suggestions share this allowance.",
+      "description": "Lettura degli estratti conto, classificazione, ricevute e suggerimenti di budget condividono questa quota.",
       "status": {
-        "plusWarning": "You've used most of this month's included AI. When it runs out, AI features pause until {date}.",
-        "plusReached": "You've used this month's included AI. AI features are paused until {date}.",
-        "trialWarning": "You've used most of the AI included in your plan this month. When it runs out, AI features pause.",
-        "trialReached": "You've used the AI included in your plan this month. Subscribe to Plus or connect your own model to keep using AI features."
+        "plusWarning": "È stata utilizzata la maggior parte dell'IA inclusa questo mese. Una volta esaurita, le funzionalità IA verranno sospese fino al {date}.",
+        "plusReached": "È stata utilizzata tutta l'IA inclusa questo mese. Le funzionalità IA sono sospese fino al {date}.",
+        "trialWarning": "È stata utilizzata la maggior parte dell'IA inclusa nel piano questo mese. Una volta esaurita, le funzionalità IA verranno sospese.",
+        "trialReached": "È stata utilizzata tutta l'IA inclusa nel piano questo mese. Abbonarsi a Plus o connettere un proprio modello per continuare a usare le funzionalità IA."
       }
     },
     "options": {
-      "connectDescription": "Use your own Anthropic, OpenAI, Gemini or local model. It's never counted toward this limit.",
-      "subscribeTitle": "Subscribe to Plus",
-      "subscribeDescription": "Get more included AI every month.",
-      "waitTitle": "Wait for the reset",
-      "waitDescription": "Included AI comes back on {date}."
+      "connectDescription": "Usare un proprio modello Anthropic, OpenAI, Gemini o locale. Non viene mai conteggiato in questo limite.",
+      "subscribeTitle": "Abbonati a Plus",
+      "subscribeDescription": "Più IA inclusa ogni mese.",
+      "waitTitle": "Attendere l'azzeramento",
+      "waitDescription": "L'IA inclusa torna disponibile il {date}."
     },
     "meter": {
-      "ok": "Resets on {date}. Your own connected models are never counted.",
-      "warning": "When it runs out, AI features pause until {date} unless you connect your own model.",
-      "reached": "Used up until {date}. AI features are paused."
+      "ok": "Si azzera il {date}. I modelli connessi personalmente non vengono mai conteggiati.",
+      "warning": "Una volta esaurita, le funzionalità IA verranno sospese fino al {date}, a meno di connettere un proprio modello.",
+      "reached": "Esaurita fino al {date}. Le funzionalità IA sono sospese."
     }
   },
   "transactionGroups": {
     "groupDialog": {
-      "editTitle": "Edit group",
-      "nameLabel": "Name",
-      "noteLabel": "Note (optional)",
-      "notePlaceholder": "Optional note...",
+      "editTitle": "Modifica gruppo",
+      "nameLabel": "Nome",
+      "noteLabel": "Nota (facoltativa)",
+      "notePlaceholder": "Nota facoltativa...",
       "loadingText": "Caricamento in corso...",
-      "savingAction": "Save",
+      "savingAction": "Salva",
       "cancelButton": "Annulla",
-      "editAction": "Edit",
-      "deleteAction": "Delete group",
-      "transactionsLabel": "Transactions",
-      "deleteGroupTitle": "Delete group",
-      "deleteGroupDescription": "Are you sure you want to delete \"{groupName}\"? The transactions will not be deleted.",
-      "removeTransactionTitle": "Remove transaction from group",
+      "editAction": "Modifica",
+      "deleteAction": "Elimina gruppo",
+      "transactionsLabel": "Transazioni",
+      "deleteGroupTitle": "Eliminare il gruppo",
+      "deleteGroupDescription": "Eliminare «{groupName}»? Le transazioni non verranno eliminate.",
+      "removeTransactionTitle": "Rimuovere la transazione dal gruppo",
       "removeTransactionDescription": "Questo lascerà meno di due transazioni nel gruppo, quindi il gruppo verrà eliminato. Continuare?",
-      "removeTransactionDescriptionNormal": "Are you sure you want to remove this transaction from the group?",
-      "removeButtonText": "Remove",
-      "removeAndDeleteButtonText": "Remove & delete group",
-      "removeFromGroup": "Remove from group",
-      "saveError": "Couldn't save the group",
-      "removeError": "Couldn't remove the transaction from the group",
-      "manageTransactions": "Gestisci",
-      "showMoreNote": "Show more",
-      "showLessNote": "Show less",
+      "removeTransactionDescriptionNormal": "Rimuovere questa transazione dal gruppo?",
+      "removeButtonText": "Rimuovi",
+      "removeAndDeleteButtonText": "Rimuovi ed elimina gruppo",
+      "removeFromGroup": "Rimuovi dal gruppo",
+      "saveError": "Impossibile salvare il gruppo",
+      "removeError": "Impossibile rimuovere la transazione dal gruppo",
+      "manageTransactions": "Gestione",
+      "showMoreNote": "Mostra altro",
+      "showLessNote": "Mostra meno",
       "summary": {
-        "transactions": "Transactions",
-        "net": "Net",
-        "moneyIn": "Money in",
-        "moneyOut": "Money out"
+        "transactions": "Transazioni",
+        "net": "Netto",
+        "moneyIn": "Entrate",
+        "moneyOut": "Uscite"
       }
     },
     "transactionGroupRecord": {
-      "transactionCountLabel": "transactions"
+      "transactionCountLabel": "transazioni"
     }
   }
 }

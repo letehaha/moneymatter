@@ -120,6 +120,12 @@
       "tagModeAdd": "Añadir a etiquetas existentes",
       "tagModeReplace": "Reemplazar todas las etiquetas",
       "tagModeRemove": "Eliminar estas etiquetas",
+      "tagModeAddShort": "Añadir",
+      "tagModeReplaceShort": "Reemplazar",
+      "tagModeRemoveShort": "Eliminar",
+      "tagModeAddHint": "Conserva las etiquetas actuales y añade estas.",
+      "tagModeReplaceHint": "Elimina todas las etiquetas actuales, luego añade estas",
+      "tagModeRemoveHint": "Elimina solamente estas etiquetas. Las otras etiquetas permanecen.",
       "totals": {
         "income": "Ingreso",
         "expense": "Gasto",

@@ -2,77 +2,77 @@
   "pages": {
     "importExport": {
       "ynabImport": {
-        "pageTitle": "Import from YNAB",
-        "pageDescription": "Upload your YNAB Register.csv export to bring accounts, transactions, categories, payees and tags into MoneyMatter.",
+        "pageTitle": "Importa da YNAB",
+        "pageDescription": "Caricare l'esportazione Register.csv di YNAB per portare in MoneyMatter conti, transazioni, categorie, beneficiari ed etichette.",
         "stepper": {
           "steps": {
-            "upload": "Upload",
+            "upload": "Caricamento",
             "preview": "Revisiona",
-            "results": "Done"
+            "results": "Fatto"
           }
         },
         "fileUpload": {
-          "stepTitle": "Drop your Register.csv here",
-          "description": "YNAB → Budget → Export budget → unzip → use the Register.csv file.",
-          "maxSize": "Up to 10 MB.",
-          "parsing": "Parsing…",
-          "continueToPreview": "Continue",
+          "stepTitle": "Trascinare qui il file Register.csv",
+          "description": "YNAB → Budget → Export budget → decomprimere → usare il file Register.csv.",
+          "maxSize": "Fino a 10 MB.",
+          "parsing": "Analisi…",
+          "continueToPreview": "Continua",
           "errors": {
-            "invalidFormat": "Please upload a .csv file."
+            "invalidFormat": "Caricare un file .csv."
           }
         },
         "preview": {
-          "emptyList": "Nothing to import here.",
+          "emptyList": "Nulla da importare qui.",
           "accounts": "Conti",
           "categories": "Categorie",
           "payees": "Beneficiari",
           "tags": "Etichette",
-          "transactions": "Transactions",
-          "transfers": "Transfers",
-          "dateRange": "Range: {from} → {to}",
-          "accountsHelper": "For each YNAB account, confirm the currency.",
-          "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported.",
-          "warningsTitle": "Warnings",
-          "rowPrefix": "Row {rowIndex}:",
-          "startOver": "Start over",
-          "continueToImport": "Start import"
+          "transactions": "Transazioni",
+          "transfers": "Trasferimenti",
+          "dateRange": "Intervallo: {from} → {to}",
+          "accountsHelper": "Confermare la valuta per ogni conto YNAB.",
+          "skippedNote": "{count} conti verranno saltati. Le relative transazioni, e i trasferimenti da o verso di essi, non verranno importati.",
+          "warningsTitle": "Avvisi",
+          "rowPrefix": "Riga {rowIndex}:",
+          "startOver": "Ricomincia",
+          "continueToImport": "Avvia importazione"
         },
         "accountRow": {
-          "transactionsCount": "{count} transactions",
-          "startingBalance": "Starting balance",
-          "currencyPlaceholder": "USD",
-          "currencyLabel": "Currency",
-          "currencyInvalid": "Enter a 3-letter currency code (e.g. USD)",
-          "autoDetected": "auto-detected: {code}",
-          "undoSkip": "Include in import"
+          "transactionsCount": "{count} transazioni",
+          "startingBalance": "Saldo iniziale",
+          "currencyPlaceholder": "EUR",
+          "currencyLabel": "Valuta",
+          "currencyInvalid": "Inserire un codice valuta di 3 lettere (es. EUR)",
+          "autoDetected": "rilevato automaticamente: {code}",
+          "undoSkip": "Includi nell'importazione"
         },
         "execute": {
-          "starting": "Starting the import…",
+          "starting": "Avvio dell'importazione…",
           "progressCount": "{processed} / {total}",
-          "statusQueued": "Queued",
-          "statusRunning": "Importing…",
-          "statusCompleted": "Done",
-          "statusFailed": "Failed",
-          "failed": "The import couldn't finish."
+          "statusQueued": "In coda",
+          "statusRunning": "Importazione…",
+          "statusCompleted": "Fatto",
+          "statusFailed": "Non riuscita",
+          "failed": "Impossibile completare l'importazione."
         },
         "done": {
-          "successTitle": "Import complete",
-          "successDescription": "Your YNAB data is now in MoneyMatter.",
-          "accountsCreated": "Accounts created",
+          "successTitle": "Importazione completata",
+          "successDescription": "I dati YNAB sono ora in MoneyMatter.",
+          "accountsCreated": "Conti creati",
           "accountsSkipped": "Conti omessi",
-          "categoriesCreated": "Categories created",
-          "payeesCreated": "Payees created",
-          "tagsCreated": "Tags created",
-          "transactionsImported": "Transactions imported",
-          "transfersImported": "Transfers imported",
-          "splitsDetected": "Split groups detected",
-          "errorsTitle": "{count} rows failed to import",
+          "categoriesCreated": "Categorie create",
+          "payeesCreated": "Beneficiari creati",
+          "tagsCreated": "Etichette create",
+          "transactionsImported": "Transazioni importate",
+          "transfersImported": "Trasferimenti importati",
+          "splitsDetected": "Gruppi di suddivisione rilevati",
+          "errorsTitle": "Importazione non riuscita per {count} righe",
           "errors": {
-            "payeeCreateFailed": "Could not create payee \"{payeeName}\". Its transactions were imported without a payee.",
-            "rowImportFailed": "This row could not be imported."
+            "payeeCreateFailed": "Impossibile creare il beneficiario \"{payeeName}\". Le relative transazioni sono state importate senza beneficiario.",
+            "rowImportFailed": "Impossibile importare questa riga."
           },
-          "viewTransactions": "View transactions",
-          "importAnother": "Import another file"
+          "viewTransactions": "Visualizza transazioni",
+          "importAnother": "Importa un altro file"
         }
       }
     }

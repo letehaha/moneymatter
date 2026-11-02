@@ -13,7 +13,7 @@
       "permissions": {
         "read": "Lettura",
         "write": "Scrittura",
-        "manage": "Gestisci"
+        "manage": "Gestione"
       },
       "writeScope": {
         "all": "Può modificare qualsiasi transazione",

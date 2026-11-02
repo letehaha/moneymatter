@@ -18,7 +18,7 @@
       "permissions": {
         "read": "Lettura",
         "write": "Scrittura",
-        "manage": "Gestisci"
+        "manage": "Gestione"
       },
       "leave": "Abbandona",
       "leaveTitle": "Abbandonare la condivisione?",

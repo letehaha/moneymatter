@@ -18,6 +18,8 @@
           "accountName": "Conta {provider}",
           "notConnected": "Não conectado",
           "disconnect": "Desconectar",
+          "disconnectConfirmTitle": "Disconnect {provider}?",
+          "disconnectConfirmDescription": "You won't be able to log in with this {provider} account anymore. You can reconnect it at any time.",
           "connect": "Conectar"
         },
         "password": {

@@ -41,7 +41,10 @@
           "link": "Prepojenie účtu zlyhalo. Skúste to znovu, prosím."
         },
         "unauthorizedClient": "Táto aplikácia nemá oprávnenie používať túto metódu overovania",
-        "temporarilyUnavailable": "Autentifikačná služba je dočasne nedostupná. Skúste to neskôr, prosím."
+        "temporarilyUnavailable": "Autentifikačná služba je dočasne nedostupná. Skúste to neskôr, prosím.",
+        "unableToLinkAccount": "Tento účet sa nepodarilo prepojiť, pretože tento server nepovažuje email poskytovateľa za overený. Kontaktujte svojho správcu.",
+        "emailDoesNotMatch": "Email na tomto účte poskytovateľa sa nezhoduje s emailom vášho účtu. Použite účet poskytovateľa s rovnakým emailom.",
+        "emailNotVerified": "Skontrolujte svoju emailovú schránku a overte svoju adresu, potom sa prihláste znova."
       }
     }
   }

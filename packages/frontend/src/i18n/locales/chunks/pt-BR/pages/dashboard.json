@@ -238,6 +238,7 @@
         },
         "hints": {
           "noHistory": "A comparação aparece depois do seu primeiro mês completo.",
+          "plannedFailed": "Couldn't load planned transactions. The forecast may not include them.",
           "fewMonths": "Média do {n} mês completo que você tem até agora. | Média dos {n} meses completos que você tem até agora."
         },
         "loadFailed": "Não foi possível carregar seus gastos.",

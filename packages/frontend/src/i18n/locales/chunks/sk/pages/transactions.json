@@ -120,6 +120,12 @@
       "tagModeAdd": "Pridať k existujúcim značkám",
       "tagModeReplace": "Nahradiť všetky značky",
       "tagModeRemove": "Odstrániť tieto značky",
+      "tagModeAddShort": "Pridať",
+      "tagModeReplaceShort": "Nahradiť",
+      "tagModeRemoveShort": "Odstrániť",
+      "tagModeAddHint": "Ponechá súčasné značky a pridá tieto.",
+      "tagModeReplaceHint": "Odstráni všetky súčasné značky a potom pridá tieto.",
+      "tagModeRemoveHint": "Odstráni len tieto značky. Ostatné značky zostanú.",
       "totals": {
         "income": "Príjmy",
         "expense": "Výdavky",

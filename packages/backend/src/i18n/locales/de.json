@@ -257,8 +257,8 @@
       "csvColumnNotFound": "Spalte \"{{column}}\" wurde in den CSV-Kopfzeilen nicht gefunden."
     },
     "unrealizedLossAlert": {
-      "title_one": "{{count}} holding crossed your loss alert",
-      "title_other": "{{count}} holdings crossed your loss alert"
+      "title_one": "{{count}} Position hat deinen Verlust-Warnschwellenwert überschritten",
+      "title_other": "{{count}} Positionen haben deinen Verlust-Warnschwellenwert überschritten"
     }
   },
   "landingFaq": {

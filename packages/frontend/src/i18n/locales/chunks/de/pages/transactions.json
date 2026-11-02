@@ -120,6 +120,12 @@
       "tagModeAdd": "Zu bestehenden Tags hinzufügen",
       "tagModeReplace": "Alle Tags ersetzen",
       "tagModeRemove": "Diese Tags entfernen",
+      "tagModeAddShort": "Hinzufügen",
+      "tagModeReplaceShort": "Ersetzen",
+      "tagModeRemoveShort": "Entfernen",
+      "tagModeAddHint": "Keeps current tags and adds these.",
+      "tagModeReplaceHint": "Removes all current tags, then adds these.",
+      "tagModeRemoveHint": "Removes only these tags. Other tags stay.",
       "totals": {
         "income": "Einnahmen",
         "expense": "Ausgaben",
