@@ -12,37 +12,39 @@ const currentYear = new Date().getFullYear();
 ---
 
 <BaseLayout title={title} description={description} noindex={true}>
-  <!-- Header -->
-  <header class="border-border/40 bg-background/80 sticky top-0 z-50 border-b backdrop-blur-xl">
-    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-      <div class="flex h-16 items-center justify-between">
-        <a href="/" class="flex items-center gap-2">
-          <img src="/img/logo.svg" class="size-8" alt="MoneyMatter logo" />
-          <span class="text-xl font-bold">MoneyMatter</span>
-        </a>
+  <div class="flex min-h-dvh flex-col">
+    <!-- Header -->
+    <header class="border-border/40 bg-background/80 sticky top-0 z-50 border-b backdrop-blur-xl">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-16 items-center justify-between">
+          <a href="/" class="flex items-center gap-2">
+            <img src="/img/logo.svg" class="size-8" alt="MoneyMatter logo" />
+            <span class="text-xl font-bold">MoneyMatter</span>
+          </a>
 
-        <a href="/" class="text-muted-foreground hover:text-foreground text-sm transition-colors">
-          Back to Home
-        </a>
+          <a href="/" class="text-muted-foreground hover:text-foreground text-sm transition-colors">
+            Back to Home
+          </a>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- Content -->
-  <main class="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-    <slot />
-  </main>
+    <!-- Content -->
+    <main class="mx-auto w-full max-w-4xl flex-1 px-4 py-12 sm:px-6 lg:px-8">
+      <slot />
+    </main>
 
-  <!-- Footer -->
-  <footer class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-    <div class="border-border/40 border-t py-8">
-      <div class="text-muted-foreground flex flex-wrap items-center justify-center gap-4 text-sm">
-        <a href="/" class="hover:text-foreground transition-colors">Home</a>
-        {crossLinks.map((link) => (
-          <a href={link.href} class="hover:text-foreground transition-colors">{link.label}</a>
-        ))}
-        <span>&copy; {currentYear} MoneyMatter</span>
+    <!-- Footer -->
+    <footer class="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
+      <div class="border-border/40 border-t py-8">
+        <div class="text-muted-foreground flex flex-wrap items-center justify-center gap-4 text-sm">
+          <a href="/" class="hover:text-foreground transition-colors">Home</a>
+          {crossLinks.map((link) => (
+            <a href={link.href} class="hover:text-foreground transition-colors">{link.label}</a>
+          ))}
+          <span>&copy; {currentYear} MoneyMatter</span>
+        </div>
       </div>
-    </div>
-  </footer>
+    </footer>
+  </div>
 </BaseLayout>
