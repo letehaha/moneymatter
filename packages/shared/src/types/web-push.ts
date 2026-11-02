@@ -23,6 +23,7 @@ export const NOTIFICATION_PUSH_GROUP: Record<NotificationType, PushGroup> = {
   [NOTIFICATION_TYPES.trackerAlert]: PUSH_GROUPS.reminders,
   [NOTIFICATION_TYPES.trackerAiMatches]: PUSH_GROUPS.reminders,
   [NOTIFICATION_TYPES.goalReached]: PUSH_GROUPS.reminders,
+  [NOTIFICATION_TYPES.unrealizedLossAlert]: PUSH_GROUPS.reminders,
 
   [NOTIFICATION_TYPES.plannedConfirmed]: PUSH_GROUPS.bankSync,
   [NOTIFICATION_TYPES.stuckPending]: PUSH_GROUPS.bankSync,
