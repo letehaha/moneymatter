@@ -1,0 +1,139 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Ask Claude or ChatGPT about your spending in plain language',
+    text: 'Skip building a report or exporting a CSV. Ask a question and the assistant answers from your own accounts, transactions, subscriptions, goals and investments. Amounts also come converted to your base currency, so it can total accounts in different currencies.',
+    bullets: [
+      '"Compare my dining out spending this month to my 3-month average."',
+      '"Which of my subscriptions got more expensive this year?"',
+      '"What was my savings rate each month this year?"',
+      '"Am I on track for my holiday goal? What would I need to save each month to get there by June?"',
+    ],
+    screenshot: {
+      name: 'features/mcp/chat-groceries',
+      alt: 'A Claude chat comparing grocery spending in October and September, explaining that a trip drove the September total, after a collapsed Used MoneyMatter step',
+      width: 755,
+      height: 485,
+    },
+  },
+  {
+    heading: 'Ask Claude for a chart of your spending',
+    text: 'Describe the chart you want and Claude builds it from your MoneyMatter data, then points out what stands out. You choose the months, the categories and the chart type in your own words, without setting up a report first.',
+    bullets: [
+      '"Make a stacked bar chart of my monthly spending by category for the last 6 months."',
+      '"Chart my dining out spending month by month this year."',
+    ],
+  },
+  {
+    heading: 'Connect Claude, ChatGPT or Claude Code with a URL and no API key',
+    text: 'Add https://mcp.moneymatter.app/mcp in the AI app, approve access in your browser, and start asking. The assistant signs in through MoneyMatter using OAuth, so you never paste a password or API key into the chat app.',
+    bullets: [
+      'Claude: add a custom connector once, then use it on the web, desktop and mobile apps',
+      'ChatGPT: add a custom MCP server on the web, then type @ in a new chat and pick MoneyMatter',
+      'Claude Code: run claude mcp add --transport http moneymatter https://mcp.moneymatter.app/mcp, then authenticate from /mcp',
+      'Other AI apps: any app that supports remote MCP servers with OAuth sign-in can connect',
+    ],
+    screenshot: {
+      name: 'features/mcp/oauth-authorize',
+      alt: 'The MoneyMatter approval page where Claude asks for access, listing view, edit and delete permissions with Approve and Deny buttons',
+      width: 508,
+      height: 1003,
+    },
+  },
+  {
+    heading: 'Let the assistant categorize, split and tag transactions',
+    text: 'With edit access, you can hand over the chores you keep putting off. Describe the job and the assistant makes the changes in MoneyMatter.',
+    bullets: [
+      '"Categorize the uncategorized transactions from last week."',
+      '"Split this $120 Costco charge into groceries and household."',
+      '"This $40 deposit is a refund of my Amazon order. Link them."',
+      '"Find recurring payments from the past 12 months and add them as subscriptions."',
+      '"Put every Uber or Bolt charge in Transport." It can test an automation rule on your recent transactions, show you the matches, and save it to handle new synced or imported ones',
+    ],
+  },
+  {
+    heading: 'Choose what the AI assistant can edit or delete',
+    text: 'Before an app gets access, MoneyMatter lists the permissions it asked for. Viewing your data is always granted. Editing starts ticked and deleting starts unticked, and you can change both before you approve. For questions and reports only, untick editing. MoneyMatter checks the permission on every change, so the assistant cannot get around your choice.',
+    bullets: [
+      'A deleted record is gone for good, so allow deleting only for an app you fully trust',
+      'Settings lists every connected app with when it was last used and what it may do',
+      'Revoke an app and it loses access immediately. To change its permissions, revoke it and connect it again',
+    ],
+    screenshot: {
+      name: 'features/mcp/connected-apps',
+      alt: 'The Active connectors list in Settings, showing Claude with its connected date, last used time, the permissions it was given and a Revoke button',
+      width: 842,
+      height: 204,
+    },
+  },
+  {
+    heading: 'Add transactions from a bank statement or receipt',
+    text: 'Give the assistant a statement PDF, a spreadsheet, a receipt photo or a screenshot, and ask it to add the transactions to an account you manage by hand. It adds them one at a time with no review screen in MoneyMatter, so for a long statement, use the built-in statement import, where you review everything first. An assistant that can run commands on your computer, such as Claude Code, can also attach the receipt file to the transaction.',
+  },
+  {
+    heading: 'Run the MCP server on a self-hosted install',
+    text: 'A self-hosted MoneyMatter runs its own MCP server at its own address, and nothing goes through moneymatter.app. Claude and ChatGPT connect from their own servers, so for those two your install must be reachable from the internet over HTTPS. Claude Code connects from your computer.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'What the assistant reads goes to the company behind that assistant, under its own terms.',
+  "ChatGPT's setup depends on your OpenAI plan. You may need Developer mode, and some plans let a custom MCP server read your data but not change it.",
+  "The assistant can't create accounts, connect banks or work with budgets. Set those up in MoneyMatter. Spending trackers and savings goals are available to it.",
+];
+
+const FAQ = [
+  {
+    question: 'What is an MCP server in a budget app?',
+    answer:
+      'An MCP server lets an AI assistant such as Claude or ChatGPT connect to the app and work with your data. MCP stands for Model Context Protocol, the standard for these connections. MoneyMatter has one built in.',
+  },
+  {
+    question: 'Can I connect ChatGPT or Claude to my budget app for free?',
+    answer:
+      'Yes on Claude: its Free plan allows one custom connector, which is enough for MoneyMatter. On ChatGPT it depends on your OpenAI plan. MoneyMatter itself is free during its 40-day trial and when you self-host, and otherwise needs a paid plan.',
+  },
+  {
+    question: 'Can ChatGPT or Claude change my financial data or move my money?',
+    answer:
+      'An assistant connected to MoneyMatter can change your records only if you allow it, and it cannot move money at your bank because it only works with your MoneyMatter data. By default, ChatGPT also asks you to confirm before it runs a tool that changes data.',
+  },
+  {
+    question: 'Which MoneyMatter plan includes the MCP server?',
+    answer:
+      'Every plan includes it, starting with Essential at $5 a month or $30 a year before tax, and so does the 40-day free trial. If your trial or plan ends and your account turns read-only, a connected assistant can still read your data, and every change it tries is refused.',
+  },
+  {
+    question: 'Do I pay for AI in MoneyMatter when I use Claude or ChatGPT?',
+    answer:
+      "No. The assistant runs on your own Claude or ChatGPT account, so your chats with it don't use MoneyMatter's included AI or its monthly allowance. Any usage limits come from your AI provider.",
+  },
+];
+
+const GUIDES = [
+  { label: 'Connect Claude or ChatGPT', href: 'https://docs.moneymatter.app/ai/connect-claude-chatgpt-mcp/' },
+  { label: 'AI features', href: 'https://docs.moneymatter.app/ai/ai-features/' },
+];
+
+const RELATED = ['/features/ai-categorization', '/features/analytics-and-reports', '/features/self-hosting'];
+---
+
+<FeatureLayout
+  title="Personal Finance MCP Server: Claude, ChatGPT | MoneyMatter"
+  description="A personal finance MCP server for Claude, ChatGPT and Claude Code. Ask about your spending, and choose what the assistant may edit or delete."
+  heading="A personal finance MCP server for Claude and ChatGPT"
+  intro="MoneyMatter has a personal finance MCP server built in, so you can ask Claude or ChatGPT about your real spending and let it categorize, split or add transactions if you allow that. It is included on every plan and in the 40-day free trial."
+  heroScreenshot={{
+    name: 'features/mcp/chat-spending-chart',
+    alt: 'A Claude chat where a request for a stacked bar chart of monthly spending returns a chart from May to October by category, after a collapsed Used MoneyMatter step',
+    width: 685,
+    height: 558,
+  }}
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

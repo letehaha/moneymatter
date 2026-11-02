@@ -1,0 +1,242 @@
+---
+import BaseLayout from './base-layout.astro';
+import BackgroundOrbs from '@/components/background-orbs.astro';
+import LandingHeader from '@/components/landing-header.astro';
+import CtaSection from '@/components/cta-section.astro';
+import LandingFooter from '@/components/landing-footer.astro';
+import ZoomableScreenshot from '@/components/zoomable-screenshot.astro';
+import XIcon from '@/components/icons/x-icon.astro';
+import FaqAsk from '@/components/faq-ask.vue';
+import FaqDetails from '@/components/faq-details.astro';
+import FeatureCard from '@/components/feature-card.astro';
+import { getCollection } from 'astro:content';
+import TryDemoButton from '@/components/try-demo-button.vue';
+import CheckIcon from '@/components/icons/check-icon.astro';
+import { FEATURE_PAGES } from '@/lib/features';
+
+type ScreenshotProps = { name: string; alt: string; width: number; height: number };
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  intro: string;
+  heroScreenshot?: ScreenshotProps;
+  sections: { heading: string; text: string; bullets?: string[]; screenshot?: ScreenshotProps }[];
+  goodToKnow?: string[];
+  faq: { question: string; answer: string }[];
+  guides: { label: string; href: string }[];
+  related: string[];
+}
+
+const { title, description, heading, intro, heroScreenshot, sections, goodToKnow, faq, guides, related } = Astro.props;
+
+const pathname = Astro.url.pathname.replace(/\/$/, '');
+const page = FEATURE_PAGES.find((item) => item.href === pathname);
+if (!page) throw new Error(`${pathname} is missing from FEATURE_GROUPS`);
+
+const relatedPages = related.map((href) => {
+  const relatedPage = FEATURE_PAGES.find((item) => item.href === href);
+  if (!relatedPage) throw new Error(`Unknown related feature: ${href}`);
+  return relatedPage;
+});
+
+const flowGuides = await getCollection('guides', (guide) => guide.data.related.includes(page.href));
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Features', item: new URL('/features', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: page.label, item: new URL(page.href, Astro.site).href },
+      ],
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faq.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: { '@type': 'Answer', text: item.answer },
+      })),
+    },
+  ],
+};
+---
+
+<BaseLayout title={title} description={description}>
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+  <div class="bg-background text-foreground landing-page min-h-screen">
+    <BackgroundOrbs />
+    <LandingHeader />
+
+    <main class="relative z-10 mx-auto max-w-6xl px-4 pt-28 pb-16 sm:px-6 sm:pt-36 lg:px-8">
+      <nav aria-label="Breadcrumb" class="text-muted-foreground flex justify-center gap-2 text-sm">
+        <a href="/features" class="hover:text-foreground transition-colors">Features</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page" class="text-foreground">{page.label}</span>
+      </nav>
+
+      <h1 class="mx-auto mt-6 max-w-4xl text-center text-3xl font-bold tracking-tight sm:text-5xl">{heading}</h1>
+      <p class="text-muted-foreground mx-auto mt-6 max-w-2xl text-center text-lg">{intro}</p>
+
+      <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-center">
+        <div class="flex flex-col items-center gap-2">
+          <a
+            href="/sign-up"
+            class="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center rounded-xl border-2 border-transparent px-8 py-3.5 text-base font-semibold transition-all sm:w-auto"
+            data-track="landing_cta_clicked"
+            data-track-location="hero"
+          >
+            Start Free Trial
+          </a>
+          <span class="text-muted-foreground text-xs">40-day free trial, no card needed</span>
+        </div>
+        <TryDemoButton client:load />
+      </div>
+
+      {
+        heroScreenshot && (
+          <div class="border-border/50 bg-background mx-auto mt-14 max-w-4xl overflow-hidden rounded-2xl border p-3 sm:p-4">
+            <ZoomableScreenshot {...heroScreenshot} />
+          </div>
+        )
+      }
+
+      <div class="mt-20 space-y-16 sm:space-y-24">
+        {
+          sections.map((section, index) => (
+            <section class:list={['grid items-center gap-8 lg:gap-16', section.screenshot ? 'lg:grid-cols-2' : 'max-w-3xl']}>
+              <div>
+                <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">{section.heading}</h2>
+                <p class="text-muted-foreground mt-4 leading-relaxed">{section.text}</p>
+                {section.bullets && (
+                  <ul class="mt-6 space-y-3">
+                    {section.bullets.map((bullet) => (
+                      <li class="text-muted-foreground flex gap-3 text-sm leading-relaxed">
+                        <CheckIcon class="text-primary-text mt-0.5 shrink-0" />
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              {section.screenshot && (
+                <div class:list={['border-border/50 bg-background overflow-hidden rounded-2xl border p-3 sm:p-4', index % 2 === 1 && 'lg:order-first']}>
+                  <ZoomableScreenshot {...section.screenshot} />
+                </div>
+              )}
+            </section>
+          ))
+        }
+      </div>
+
+      {
+        goodToKnow && (
+          <section class="border-primary/40 mt-20 max-w-3xl border-l-2 pl-5">
+            <h2 class="text-lg font-semibold">Good to know</h2>
+            <ul class="text-muted-foreground mt-3 space-y-2 text-sm leading-relaxed">
+              {goodToKnow.map((item) => <li>{item}</li>)}
+            </ul>
+          </section>
+        )
+      }
+
+      <section class="mx-auto mt-20 max-w-3xl">
+        <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">{page.label} questions</h2>
+        <div class="mt-6 space-y-3">
+          <FaqDetails items={faq} />
+          <FaqAsk client:visible />
+        </div>
+        <p class="text-muted-foreground mt-6 text-sm">
+          Step-by-step guides:{' '}
+          {
+            guides.map((guide, index) => (
+              <>
+                {index > 0 && ', '}
+                <a href={guide.href} class="text-primary-text hover:underline">
+                  {guide.label}
+                </a>
+              </>
+            ))
+          }.
+        </p>
+      </section>
+
+      <section class="mt-20">
+        <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Related features</h2>
+        <ul class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {
+            relatedPages.map((item) => (
+              <li>
+                <FeatureCard page={item} />
+              </li>
+            ))
+          }
+        </ul>
+        {
+          flowGuides.length > 0 && (
+            <>
+              <h2 class="mt-12 text-lg font-semibold">Guides that use this feature</h2>
+              <ul class="mt-3 space-y-2 text-sm">
+                {flowGuides.map((guide) => (
+                  <li>
+                    <a href={`/guides/${guide.id}`} class="text-primary-text hover:underline">
+                      {guide.data.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+        <p class="mt-6 text-sm">
+          <a href="/features" class="text-primary-text hover:underline">Browse all features</a>
+        </p>
+      </section>
+    </main>
+
+    <CtaSection />
+    <LandingFooter />
+  </div>
+
+  <dialog
+    id="screenshot-zoom"
+    aria-label="Enlarged screenshot"
+    class="m-auto max-h-none max-w-none cursor-zoom-out overflow-visible bg-transparent p-0 backdrop:bg-black/85"
+  >
+    <img alt="" class="h-auto max-h-[calc(100dvh-2rem)] w-auto max-w-[calc(100vw-2rem)] rounded-lg" />
+    <button type="button" aria-label="Close" class="fixed top-3 right-3 cursor-pointer rounded-full bg-black/60 p-2 text-white">
+      <XIcon />
+    </button>
+  </dialog>
+</BaseLayout>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('#screenshot-zoom')!;
+  const image = dialog.querySelector('img')!;
+
+  document.querySelectorAll<HTMLElement>('[data-zoom-src]').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      image.src = trigger.dataset.zoomSrc!;
+      image.alt = trigger.dataset.zoomAlt!;
+      dialog.showModal();
+    });
+  });
+
+  dialog.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => image.removeAttribute('src'));
+</script>
+
+<style>
+  .landing-page {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    overflow-y: auto;
+  }
+
+  :global(html:has(#screenshot-zoom[open])) {
+    overflow: hidden;
+  }
+</style>

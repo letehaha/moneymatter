@@ -1,0 +1,122 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'See how much you spend at each merchant',
+    text: "Category reports tell you what you spent on coffee. The payee list tells you that Dunkin' took $539 across 86 transactions. Each payee shows its transaction count and net flow in your base currency, so your employer shows money coming in and your landlord shows money going out. Transfers between your accounts and balance adjustments stay out of the totals.",
+    bullets: [
+      'Sort by transaction count or net flow to find your biggest merchants',
+      'Filter the transaction list by payee to see every purchase from one shop',
+      'Add payees as rows in the pivot report to compare them month by month',
+    ],
+    screenshot: {
+      name: 'features/transactions/payees-list',
+      alt: "The Manage tab of the Payees page, a table listing Dunkin', Safeway, Trader Joe's, Whole Foods Market and other payees with their logos, transaction counts, net flow, category and default tags.",
+      width: 870,
+      height: 721,
+    },
+  },
+  {
+    heading: 'Clean up messy merchant names from your bank',
+    text: 'Your bank may write the same coffee shop as "DUNKIN #349217" one day and "DUNKIN DONUTS 04521" the next. When a bank transaction arrives, MoneyMatter links a name that matches a payee or comes very close, and saves a new spelling as an alias. Spellings that differ as much as these two start out separate. Merge them once and both link to the same payee from then on.',
+    bullets: [
+      'A new name becomes a payee once it repeats, or on first sight if you prefer, and earlier transactions with that name link to it',
+      'Add noise such as "Card transfer" to your ignored names so bank sync does not turn it into a payee',
+      'If your bank sends no merchant name, turn on detection from transaction descriptions. Names can be noisier',
+      'CSV, OFX, YNAB, Wallet and Microsoft Money imports can bring in your payees. Names in a file link only on an exact match, so other spellings become new payees you can merge',
+    ],
+    screenshot: {
+      name: 'features/transactions/payee-detection-settings',
+      alt: 'The Settings tab of the Payees page with the description detection toggle, the occurrence setting at 2, the bulk categorization mode and an ignored merchant names list with Top-up and Card transfer',
+      width: 872,
+      height: 900,
+    },
+  },
+  {
+    heading: 'Merge duplicate payees and rename merchants',
+    text: 'If one shop ended up as two payees, merge them. Transactions, templates, subscriptions and automation rules move to the payee you keep, and the other name becomes an alias. Renaming also keeps the old name as an alias. Say your bank sends "AMZN Mktp": rename the payee to Amazon and those transactions keep linking.',
+    bullets: [
+      'Unlink a single transaction from a payee, and future syncs will not link it back',
+      'Detection never changes a payee you set or cleared on a transaction',
+    ],
+  },
+  {
+    heading: 'Set a default category and tags for each merchant',
+    text: 'Give your landlord the Rent category once, and every new payment linked to that payee gets it, whether you enter, sync or import it. Each payee has its own setting for how strictly the category applies. A shop that sells one thing can stay fixed, while a big online store can start with the default and let AI replace it based on the purchase.',
+    bullets: [
+      'Turn the setting off for a payee, and its category is only suggested when you pick that payee in the transaction form',
+      'Auto-apply tags go on new transactions, and Apply to existing transactions adds them to past ones',
+    ],
+    screenshot: {
+      name: 'features/transactions/payee-detail-page',
+      alt: "The Dunkin' payee page with 86 transactions, a net flow of -$539 and a top category of Bar, cafe, the Categorization section with a default category and auto-apply tag, and the aliases DUNKIN #349217 and DUNKIN DONUTS 04521",
+      width: 872,
+      height: 857,
+    },
+  },
+  {
+    heading: 'Use payees in automation rules, subscriptions and AI assistants',
+    text: 'Automation rules can match on a payee or set one, so you can tag or categorize one merchant under conditions you choose. A subscription can carry a payee and tags, which go on the transactions it matches. AI assistants connected over MCP can list, create, update and merge payees for you.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Payees are included on every plan. Cleanup of bank transactions needs bank sync, which comes with Plus, the 40-day trial and self-hosting. On Essential, payees come from imports and transactions you enter yourself.',
+  'With Always use payee category or Use as a hint, the default category replaces the one you picked in the form when you save a new transaction. Editing the transaction afterwards keeps your choice.',
+  'Default categories and new aliases only affect new transactions. To fix older ones, use bulk edit or run an automation rule over past transactions.',
+  'You can report on a payee, but you cannot set a budget for one.',
+];
+
+const FAQ = [
+  {
+    question: 'What is a payee in a budgeting app?',
+    answer:
+      'A payee is who you paid or who paid you, such as a supermarket, your landlord or your employer. Linking transactions to payees lets you total your spending per merchant, however your bank spells the name.',
+  },
+  {
+    question: 'How do I see how much I spent at one store each month?',
+    answer:
+      "Open the pivot report in MoneyMatter and set the rows to Payee and the columns to months, then filter to that store. You can switch to weeks, quarters or years. A linked refund counts against the original purchase's payee, in the period the money came back.",
+  },
+  {
+    question: 'Does MoneyMatter clean up merchant names automatically?',
+    answer:
+      'Yes, for bank transactions whose names match or come very close. Case, accents and punctuation are ignored, so "Café-Bar #1" and "cafe bar 1" count as the same name. A name that differs more, such as "AMZN Mktp" for Amazon, needs one merge or alias from you, and then it links automatically.',
+  },
+  {
+    question: 'How do I merge two payees for the same store?',
+    answer:
+      "Open the payee you want to remove and choose Merge into under Actions. Pick the payee to keep, and the other one's transactions, name and aliases move there. Auto-apply tags from both payees carry over, and the kept payee's default category stays.",
+  },
+  {
+    question: 'How do I make a merchant always use the same category?',
+    answer:
+      'Set a default category on the payee and keep the mode on Always use payee category. A category from a subscription match or an automation rule takes priority, and so does a category column you map in a CSV import.',
+  },
+  {
+    question: 'How do I stop a merchant name from becoming a payee?',
+    answer:
+      'Add the name to Ignored merchant names on the Settings tab of the Payees page, and bank sync will not create a payee from it. To remove an existing payee for good, use Delete & ignore, which also adds its name and aliases to the list. A plain Delete lets the payee come back when its name appears again.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Payees', href: 'https://docs.moneymatter.app/transactions/payees/' },
+  { label: 'Bank connections', href: 'https://docs.moneymatter.app/import/bank-connections/' },
+];
+
+const RELATED = ['/features/automation-rules', '/features/ai-categorization', '/features/bank-sync'];
+---
+
+<FeatureLayout
+  title="Track Spending by Merchant and Payee | MoneyMatter"
+  description="Track spending by merchant: see totals per payee, merge messy bank names into one, and set a default category and tags that fill in on new transactions."
+  heading="Track spending by merchant, under one clean name for each"
+  intro="Track spending by merchant with a payee list that shows what every shop, person and employer has cost or paid you. Merged bank spellings stay under one name, and each payee can set the category and tags on new transactions."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

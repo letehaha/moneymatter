@@ -1,0 +1,107 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'All your accounts on one dashboard, in one currency',
+    text: 'Say you hold a checking account in dollars, savings in euros and a brokerage portfolio. Open the app and you see your combined balance, recent transactions, upcoming payments and where your money went this month, with totals in your base currency. Moving money to your own savings account or correcting a balance does not count as spending.',
+    bullets: [
+      'Switch Balance trend between your total, accounts and portfolios, plus ventures, vehicles and loans if you have them',
+      'Click a marker on the balance chart to see the transactions behind a big change, or a slice of the spending chart to open the transactions in that category',
+    ],
+    screenshot: {
+      name: 'features/stats/dashboard-overview',
+      alt: 'The dashboard with the period selector, the Customize button and the Balance trend, Latest Transactions, Cash Flow, Expenses Structure and Categories Watchlist widgets',
+      width: 1440,
+      height: 900,
+    },
+  },
+  {
+    heading: 'Cash flow, net worth and spending forecast widgets',
+    text: 'How much did I save this month? Cash Flow shows income, expenses and your savings rate next to previous periods. Will I overspend? Spending Pace compares this month so far with last month or your 3-month average and estimates your month-end total. What am I spending on? Expenses Structure splits it by top-level category, and you can hide categories you do not want counted. Is my net worth growing? Net Worth shows the change over the period across accounts, investments, loans and other assets.',
+    bullets: [
+      'How long would my cash last? Cash & accounts shows your total and how many months of expenses it covers',
+      'What do I own and owe? Assets & liabilities breaks both down, from investments and vehicles to loans and credit cards',
+      'Categories Watchlist follows the categories you pick, with a 6-month trend line',
+      'Credit Utilization shows how much of your credit limits you use, per account and in total',
+      'Average tax rate shows the share of your income paid in taxes, with a 12-month trend',
+    ],
+  },
+  {
+    heading: 'Customize your dashboard: drag, resize, add or remove widgets',
+    text: 'If you only care about savings and one or two categories, make the dashboard show just that. Click Customize to drag widgets into order, resize them, remove them and add others. Your layout is saved to your account, so you get the same widgets in the same order on every device.',
+    screenshot: {
+      name: 'features/stats/dashboard-customize-mode',
+      alt: 'The dashboard in Customize mode, with drag handles, size buttons and remove buttons on each widget, an Add widgets panel, and Done and Cancel buttons',
+      width: 1440,
+      height: 900,
+    },
+  },
+  {
+    heading: 'Any date range, or months that run from payday to payday',
+    text: 'The dashboard opens on the current month. Step back with the arrows, choose a preset such as Last 3 Months or This Year, or select your own range of days, months, quarters, half-years or years. Paid on the 25th? Set that as your payday in General settings and months run from payday to payday instead of following the calendar.',
+    screenshot: {
+      name: 'features/stats/dashboard-period-selector',
+      alt: 'The dashboard date picker open, showing the preset list and the Day, Month, Quarter, Half-year and Year options',
+      width: 660,
+      height: 435,
+    },
+  },
+  {
+    heading: 'Budget, spending limit, goal and FIRE widgets',
+    text: 'Add the planning widgets to check your budget, limits and targets without opening each page. Budget shows what is left in the current period line by line, Trackers shows how much of each limit is used, Goals shows progress toward each savings target, and FIRE progress shows how close you are to financial independence.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Automatic bank updates need the Plus plan. On Essential, your dashboard fills from transactions you enter and files you import.',
+  'The FIRE progress widget needs Plus. On Essential you can try it through a one-time 14-day FIRE planner trial.',
+];
+
+const FAQ = [
+  {
+    question: 'Is the MoneyMatter dashboard free?',
+    answer:
+      'It is free during the 40-day trial, which needs no card, and free with every feature unlocked if you self-host MoneyMatter. After the trial, cloud plans start at $30 a year, and every paid plan includes the dashboard.',
+  },
+  {
+    question: 'Can I use the dashboard on my phone?',
+    answer:
+      'Yes, in your phone browser, or install MoneyMatter to your home screen as a web app. There is no native iOS or Android app. Widgets stack in a single column, in the order you set.',
+  },
+  {
+    question: 'Can I see my net worth on the dashboard?',
+    answer:
+      'Yes. Add the Net Worth widget to see your start and end values for the period, the change and the growth percentage. You can leave out loans, vehicles or ventures, and a link opens the full Net Worth History report.',
+  },
+  {
+    question: 'Can the dashboard forecast my spending or balance?',
+    answer:
+      'Yes, both. Spending Pace estimates your month-end spending by adding what you spent over the same remaining days last month, or on average over the last 3 months, to what you have spent so far. Balance trend continues past today as a dashed line, using only the planned transactions you have entered.',
+  },
+  {
+    question: 'Does the dashboard combine accounts in different currencies?',
+    answer:
+      "Yes. Totals are converted to your base currency. Each transaction uses the exchange rate for its own date, so a past expense does not change when rates move. Manually managed foreign-currency accounts are valued at each day's rate, so your net worth can move on a day with no transactions.",
+  },
+];
+
+const GUIDES = [
+  { label: 'Dashboard', href: 'https://docs.moneymatter.app/stats/dashboard/' },
+  { label: 'How stats are calculated', href: 'https://docs.moneymatter.app/stats/how-stats-are-calculated/' },
+];
+
+const RELATED = ['/features/analytics-and-reports', '/features/net-worth-tracker', '/features/subscription-tracker'];
+---
+
+<FeatureLayout
+  title="Personal Finance Dashboard You Can Customize | MoneyMatter"
+  description="See balances, spending, cash flow and net worth in one personal finance dashboard. Choose your widgets and period, and forecast month-end spending."
+  heading="A personal finance dashboard you can arrange yourself"
+  intro="This personal finance dashboard puts your balances, spending, savings and net worth on one page, in your base currency, for any period. You choose which widgets appear, how big they are and in what order."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

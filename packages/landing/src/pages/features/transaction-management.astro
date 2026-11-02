@@ -1,0 +1,133 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Track every expense in one list you can search and filter',
+    text: 'All your accounts share one transaction page, whether a transaction was typed in, imported or synced from your bank. Filter by date, account, category, amount, tag, payee or note, and the page totals income, expense and net for everything that matches. Filter by Groceries and a split receipt adds only its groceries part to that total, so the number tells you what you really spent on food.',
+    bullets: [
+      'Sort the table and choose which columns it shows',
+      'Use the full table on your computer and a compact list on your phone',
+    ],
+    screenshot: {
+      name: 'features/transactions/transactions-table-view',
+      alt: 'The transactions table with amount, base amount, account, payee, note, tags and split columns, below active date and category filters',
+      width: 975,
+      height: 511,
+    },
+  },
+  {
+    heading: 'Add expenses faster with templates',
+    text: 'Save the morning coffee or the rent payment as a template, and one click fills the form. Nothing is recorded until you save. Working through a stack of receipts? Turn on Create more, and the form stays open after each save with the account and date still in place.',
+    bullets: [
+      'Leave the amount or account out of a template when they change each time',
+      'Open a past transaction and click Duplicate to start from a copy dated now',
+    ],
+  },
+  {
+    heading: 'Split a transaction across several categories',
+    text: 'A 100 EUR supermarket receipt might include 30 EUR of groceries and 20 EUR of drugstore items. Split it, and it stays one 100 EUR transaction that matches your bank statement, while reports count each part under its own category. List only the parts that belong elsewhere, and the main category keeps the rest.',
+    bullets: [
+      'Bank-synced transactions can be split too',
+      'Link a refund to one part of a split, so it reduces only that category',
+    ],
+    screenshot: {
+      name: 'features/transactions/split-dialog',
+      alt: 'The Split into categories window for a 100.00 expense, with Groceries 30 and Drug-store, chemist 20 split off and the main category keeping 50.00',
+      width: 572,
+      height: 609,
+    },
+  },
+  {
+    heading: 'Bulk edit transactions, or fix one right in the table',
+    text: 'Spot a wrong category while you scan the table? Click the cell and change it, with no form to open. For a bigger cleanup, filter by one store, check Select all, and move hundreds of its transactions to a new category in one edit. Select all covers every match, including rows further down that have not loaded yet.',
+    bullets: [
+      'Change the category, payee, tags or note, or delete the selected rows',
+      'Add tags to the ones already there, replace all tags or remove specific ones',
+      'Review a summary of the change before it applies',
+    ],
+    screenshot: {
+      name: 'features/transactions/bulk-edit-dialog',
+      alt: 'The Edit 4 transactions window with two tags picked and the Add, Replace and Remove tabs above the Tags field',
+      width: 516,
+      height: 552,
+    },
+  },
+  {
+    heading: 'Attach receipts and invoices to transactions',
+    text: 'Attach a receipt photo or PDF invoice to its transaction, then pull it up when you need it for a return, a warranty claim or your tax return. The Attachments filter lists every transaction that has a file. Attach invoice works from the other direction: drop in an invoice, AI reads it and suggests the transaction it belongs to, or starts a new transaction from it if there is none.',
+    bullets: [
+      'Each transaction holds up to 10 files of up to 10 MB each, with 1 GB in total per user',
+      'Attach invoice is included in Plus and the free trial, and Essential gets 5 free tries',
+    ],
+  },
+  {
+    heading: 'Group related transactions to see their total cost',
+    text: 'Say a treatment plan meant four trips to two pharmacies, or a vacation was paid from three accounts. Select those transactions and group them to see their net total in your base currency. Add the money a friend or your insurer paid back, and the total shows what you really paid. Categories, tags and stats stay as they are, so you get a one-off answer without creating a new tag or category. A group holds up to 50 transactions.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Text search covers notes only. To find everything from one store, use the Payees filter.',
+  'You cannot delete bank-synced transactions or add new ones by hand on a bank-connected account. To clear a duplicate or a released hold, merge or remove it in Reconciliation.',
+];
+
+const FAQ = [
+  {
+    question: 'Do I have to enter every expense by hand?',
+    answer:
+      'No. On the Plus plan, a bank connection brings in transactions automatically, and on any plan you can import CSV, OFX or QFX files. Manual entry is there for cash and for any account you keep up to date yourself.',
+  },
+  {
+    question: 'Can I split one transaction across several categories?',
+    answer:
+      'Yes. Split any expense or income into up to 10 rows, each with its own category and amount. Tags, the payee and the note stay on the whole transaction, and transfers cannot be split.',
+  },
+  {
+    question: 'How do I change the category of many transactions at once?',
+    answer:
+      'Filter the All Transactions page to the rows you want, check Select all, click Edit, pick the new category and confirm. Fields you leave empty stay as they are, and a new note replaces the old one. The category change skips any transfers, because transfers do not use categories.',
+  },
+  {
+    question: 'Can I attach receipts to transactions?',
+    answer:
+      'Yes. Add JPEG, PNG, WebP or PDF files in the transaction form, then view or download them later. Attachments come with Essential, Plus, the free trial and self-hosting. Deleting a transaction also deletes its files.',
+  },
+  {
+    question: 'Can I edit transactions that came from my bank?',
+    answer:
+      'Yes, except for the amount, date, account and payment type, which stay locked so your records keep matching the bank. You can change the category, payee, note, tags, attachments and splits, and turn the transaction into a transfer.',
+  },
+  {
+    question: 'Is there an expense tracker app for iPhone or Android?',
+    answer:
+      'There is no native iOS or Android app. MoneyMatter runs in your phone browser with a compact layout, and you can add it to your home screen as a web app.',
+  },
+  {
+    question: 'How much does this expense tracker cost?',
+    answer:
+      'Every new account gets a 40-day free trial with no card needed. After that, Essential costs $5 a month or $30 a year and Plus costs $8 a month or $55 a year, both before tax. Bank connections need Plus, and self-hosting the open-source app is free.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Add and edit transactions', href: 'https://docs.moneymatter.app/transactions/add-and-edit/' },
+  { label: 'Search and filter', href: 'https://docs.moneymatter.app/transactions/search-and-filter/' },
+  { label: 'Split a transaction', href: 'https://docs.moneymatter.app/transactions/split-a-transaction/' },
+  { label: 'Transaction groups', href: 'https://docs.moneymatter.app/transactions/groups/' },
+];
+
+const RELATED = ['/features/categories-and-tags', '/features/transfers-and-refunds', '/features/analytics-and-reports'];
+---
+
+<FeatureLayout
+  title="Expense Tracker App with Splits and Receipts | MoneyMatter"
+  description="An expense tracker app for all your accounts: filter transactions, split purchases across categories, bulk edit hundreds of rows and attach receipts."
+  heading="Expense tracker app with split transactions, bulk editing and receipts"
+  intro="MoneyMatter is an expense tracker app that keeps every account's transactions on one page. Filter down to what you need, fix mistakes right in the table, split a receipt across categories and keep the file with its payment. Expense tracking is included in every plan and the 40-day free trial."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

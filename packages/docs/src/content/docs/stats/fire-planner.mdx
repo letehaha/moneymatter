@@ -31,12 +31,12 @@ With $40,000 of yearly spending and a 4% withdrawal rate, that's $40,000 ÷ 0.04
 
 <Screenshot
   src="/screenshots/stats/fire-planner-overview.png"
-  alt="The top of the FIRE planner: Time to FIRE of 19 years 4 months (January 2046, at age 54), the range line, the Spending, Saving and Counting rows, the Progress to FIRE bar at 14.7%, and the Lean, Regular, Fat, Barista and Coast FIRE cards."
-  hint="Open /analytics/fire on a wide screen with the analytics list collapsed (Collapse), so the Assumptions panel sits on the right. Use a profile with 12 months of income and expenses, an investment portfolio, Birth year and Part-time income per month filled in, and Regular FIRE selected. Crop to the first card, from Time to FIRE down to the type cards."
+  alt="The whole FIRE page on a wide screen: Time to FIRE of 20 years 4 months (March 2047, at age 54), a 1 yr 4 mos ahead chip next to the Mar 2026 comparison month, the Progress to FIRE bar at 13.2%, the five FIRE type cards, the chart with its forecast line, and the Assumptions panel on the right."
+  hint="Open /analytics/fire in a 1700px wide window with the analytics list collapsed (Collapse), so the Assumptions panel sits on the right. Use a profile with at least 6 months of income and expenses, Birth year and Part-time income per month filled in, Regular FIRE selected and a pinned comparison month (here Mar 2026). Crop from the analytics icon rail and the FIRE title to the bottom of the Assumptions panel, without the main sidebar."
 />
 
 - **Time to FIRE**: how long until you reach your target, the month, and your age then if you've entered your birth year.
-- The range line below it, for example "Oct 2042 to Apr 2051 if returns run 2 points higher or lower", shows how much the date moves if your return is 2 percentage points better or worse each year.
+- The range line below it, for example "Oct 2043 to Sep 2052 if returns run 2 points higher or lower", shows how much the date moves if your return is 2 percentage points better or worse each year.
 - **Spending**, **Saving** and **Counting**: the numbers the plan is built on. **Auto** means the figure comes from your transactions. Click an amount to jump to its field in **Assumptions**. The round icons next to **Counting** show what counts toward your net worth. Click the ventures, vehicles or loans icon to switch it on or off. Cash and portfolios are always counted.
 - **Progress to FIRE**: your net worth as a share of your target, with ticks at 25%, 50% and 75%. Below the bar you'll see your next milestone and **Supports … /mo today**, the monthly income your savings could pay you now at your withdrawal rate.
 - The five FIRE types, each with its target and how long it would take. See [The five FIRE types](#the-five-fire-types).
@@ -86,7 +86,7 @@ If an archived account that's excluded from statistics still holds money, a note
 <Screenshot
   src="/screenshots/stats/fire-planner-assumptions.png"
   alt="The Assumptions panel with Yearly spending in retirement and Monthly contribution on Auto, the What counts toward FIRE switches, Annual return set to Total World Stock with inflation built in at 3%, Withdrawal rate at 4.0%, and the collapsed More section."
-  hint="Open /analytics/fire on a wide screen with the analytics list collapsed, so the Assumptions panel sits on the right of the page. Leave every section open except More, with the default World stocks preset and 4% withdrawal rate. Crop to the Assumptions panel."
+  hint="Open /analytics/fire in a 1700px wide window with the analytics list collapsed, so the Assumptions panel sits on the right of the page. Leave every section open except More, with the default World stocks preset and 4% withdrawal rate. Crop to the Assumptions panel, without the neighbouring cards."
 />
 
 On a wide screen, **Assumptions** is on the right. On a narrower one, click **Adjust assumptions** below the plan to open it. Click a section's title to fold it away.
@@ -145,8 +145,8 @@ On a narrow screen, you see only your selected type. The others are under **Othe
 
 <Screenshot
   src="/screenshots/stats/fire-planner-chart.png"
-  alt="The FIRE chart: a solid net worth line up to Today, a dashed projection with a shaded range rising to the green FIRE $1.5M line in January 2046, markers at 25%, 50% and 75%, and the milestone list below."
-  hint="On /analytics/fire (same profile as the overview shot), crop to the chart card including the milestone list under the chart."
+  alt="The FIRE chart: a solid net worth line up to Today, a dashed projection with a shaded range rising to the green FIRE $1.5M line in March 2047, a dotted Mar 2026 forecast beside it with its own marker, markers at 25%, 50% and 75%, the Actual since Mar 2026 legend, and the milestone list below."
+  hint="On /analytics/fire (same profile and pinned comparison month as the overview shot), crop to the chart card including the legend and the milestone list under the chart."
 />
 
 The chart shows:
@@ -159,6 +159,37 @@ The chart shows:
 Hover the chart to see the **Actual** or **Projected** value for a month and the range. Past values are converted to today's money using the plan's inflation rate (3% with a market preset), so they line up with the projection.
 
 Below the chart, the milestones list 25%, 50%, 75% and your target, each with how long until you reach it and the month, or **Reached**.
+
+## Pace compared with an earlier month
+
+<Screenshot
+  src="/screenshots/stats/fire-planner-pace.png"
+  alt="The pace comparison open under Time to FIRE: Pace since Mar 2026, a 1 yr 4 mos ahead chip, a note that the FIRE date moved from Jul 2048 to Mar 2047, and a table of FIRE date, Saved by now, Spending and Saving for Mar 2026 and Today with the change in each."
+  hint="On /analytics/fire in a 1700px wide window with a comparison month pinned (here Mar 2026), click the verdict chip next to Time to FIRE. Crop from the Time to FIRE label to the bottom and right edge of the open popover."
+/>
+
+Next to **Time to FIRE**, a chip tells you whether your FIRE date is moving the right way. It compares today's plan with the plan as it stood in an earlier month, written after **vs**, for example "1 yr 4 mos ahead vs Mar 2026".
+
+- **Ahead** and **behind** show how much sooner or later your FIRE date is, for example "1 yr 4 mos behind".
+- **On pace** means the date is within 2% of the time left to FIRE (at least 1 month) of the earlier forecast.
+- **Back within reach** means FIRE was out of reach in the earlier month and isn't now. **Off track** is the reverse.
+
+Click the chip to open **Pace since** that month. It says how your FIRE date moved, for example "Your FIRE date moved from Jul 2048 to Mar 2047.", then lists what changed:
+
+| Row | Compares |
+|---|---|
+| **FIRE date** | The earlier forecast with today's, and how much **sooner** or **later** it is |
+| **Saved by now** | Your balance today with what the earlier forecast expected by today ("$214K expected") |
+| **Spending** | Yearly spending then and now |
+| **Saving** | Monthly contribution then and now |
+
+The earlier month isn't stored as a snapshot. Your balance and cash flow as of the end of that month are recomputed from your transactions each time. Assumptions come from what you had saved then. If none were recorded for that month, today's are used, and the note at the bottom of the popover says so.
+
+The chart draws your net worth since that month as **Actual since** that month, over a dotted forecast line from the earlier plan, labeled with its FIRE date, for example "Mar 2026 forecast · Jul 2048". Hover the chart to see the forecast value for a month.
+
+To change the month, click the button after **vs**. **1 year ago** is the default and moves forward as months pass. **Specific month** stays fixed: use the arrows to pick a year, then a month. Only past months work, and the earliest one is shown in the picker, for example "Earliest is Feb 2026. FIRE needs 3 months of tracked spending before it." Your choice saves with your other assumptions.
+
+If there isn't enough history before the month you chose, the row says "Not enough history before Nov 2025". Click the link next to it, for example **Compare with Feb 2026**, to use the earliest month the planner can work with.
 
 ## Special cases
 

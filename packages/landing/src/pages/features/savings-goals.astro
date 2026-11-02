@@ -1,0 +1,109 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Track savings goals from the accounts you already have',
+    text: 'Name what you are saving for, set a target and pick the accounts that hold the money. Saved amount, pace and finish date all come from those balances, so there is no separate progress figure to update. Add or import a deposit, or let bank sync bring it in, and the goal moves forward. Follow your goals on the dashboard with the Goals widget.',
+    screenshot: {
+      name: 'features/goals/goals-list',
+      alt: "The Goals page listing four goals with their linked accounts, percent saved, ahead or behind status and amounts, under a banner saying the goals need $684 a month against $520 saved",
+      width: 1015,
+      height: 621,
+    },
+  },
+  {
+    heading: 'Save for multiple goals from one bank account',
+    text: 'You do not need a separate account for each goal, because one account can work like a set of savings buckets or sinking funds. Count 60% of a savings account toward a vacation and 40% toward a new car, or combine parts of several accounts in one goal. You can also reserve a fixed amount: keep the first $5,000 of an account for your emergency fund, then split what is left by percentage.',
+  },
+  {
+    heading: 'See your savings pace and the month you will reach your target',
+    text: 'Your pace is the median monthly change over the last 6 full months, so one bonus or large withdrawal does not swing it. An account with history gives you a pace the day you create the goal, and the goal shows the month you will reach the target. Add a target date and it also shows whether you are ahead, on track or behind, and how much to save each month to arrive on time.',
+    bullets: [
+      'Just set up an automatic transfer, or is the account new? Enter your own monthly amount in place of your past pace',
+      'Review a timeline chart with your projection and the change month by month',
+      'Ask a connected AI assistant, for example "Am I on track for my vacation goal?"',
+    ],
+    screenshot: {
+      name: 'features/goals/goal-details',
+      alt: "The details page of a Trip to Japan goal with its target, saved amount, monthly pace, projected finish and a timeline chart projecting the balance to the target",
+      width: 1063,
+      height: 807,
+    },
+  },
+  {
+    heading: 'Test a higher monthly savings amount or a later date',
+    text: 'Behind on a goal? Open its What if tab and change the monthly amount, the date or the percentage shares. A table compares the result with the goal as it stands, so you can see what an extra $50 a month or a later date would do. If an account counts by only 25%, it tells you what to deposit: to count $100 a month, deposit $400. Nothing changes until you apply it and save.',
+  },
+  {
+    heading: 'Check whether you can afford all your savings goals at once',
+    text: 'A vacation, a car and an emergency fund can each look fine alone and still need more than you save. When your active goals need more each month than you typically save, the Goals page shows both numbers and how much you are short. Open the list to see which goals fit, funded from the nearest date first. Your typical saving is the median of income minus expenses over the last 12 full months.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Goals track money and never move it. Nothing is set aside or locked, so spending from a linked account lowers the goal.',
+  'A finish date from your pace needs 3 full months of balances in every account behind the goal.',
+  'An account a family member shared with you cannot back your goal, and goals themselves cannot be shared.',
+  'If your plan ends, you can still see your goals but not change them.',
+];
+
+const FAQ = [
+  {
+    question: 'Do I need a separate bank account for each savings goal?',
+    answer:
+      'No. One account can back several goals through percentage shares or fixed amounts. Percentage shares can add up to 100% at most across your active and paused goals.',
+  },
+  {
+    question: 'Do savings goals update automatically from my bank?',
+    answer:
+      'Yes, if the account is connected through bank sync, which needs the Plus plan or the trial. On the Essential plan, a goal updates when you add transactions or import a file, because it follows the balances of its accounts.',
+  },
+  {
+    question: 'Is this savings goal tracker free?',
+    answer:
+      'Only if you self-host MoneyMatter, which is free with every feature. The cloud version has a 40-day free trial with no card needed. After that, savings goals need Essential at $5 a month or $30 a year, or Plus at $8 a month or $55 a year, before tax.',
+  },
+  {
+    question: 'Can I count investments toward a savings goal?',
+    answer:
+      'Yes, through Investment and Crypto accounts, which count by their balance. When you update that balance to match your statement, gains and losses move the goal in both directions. A portfolio of stocks or ETFs cannot back a goal, and projections assume no market growth.',
+  },
+  {
+    question: 'Can a savings goal be in a different currency from my accounts?',
+    answer:
+      'Yes. A goal can have its own currency, such as a vacation in euros while your accounts are in dollars. Balances are converted at the latest exchange rate, so a change in the rate can move your progress even if you added nothing.',
+  },
+  {
+    question: 'What happens when I reach a savings goal?',
+    answer:
+      'The goal shows Reached, moves to the Ended section and you get an in-app notification. If the balance later drops below the target, the goal stays Reached until 30 days after you hit it, a period you can change for each goal, and then returns to Active.',
+  },
+  {
+    question: 'How are savings goals different from budget goals?',
+    answer:
+      'A savings goal reads the balances of your accounts, while a budget goal sits on a budget line and tells you how much to assign to it each period. They are separate features.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Goals', href: 'https://docs.moneymatter.app/goals/overview/' },
+  { label: 'Create and edit a goal', href: 'https://docs.moneymatter.app/goals/create-and-edit/' },
+  { label: 'How progress is calculated', href: 'https://docs.moneymatter.app/goals/how-progress-is-calculated/' },
+  { label: 'What if and feasibility', href: 'https://docs.moneymatter.app/goals/what-if-and-feasibility/' },
+];
+
+const RELATED = ['/features/budgeting', '/features/net-worth-tracker', '/features/fire-planner'];
+---
+
+<FeatureLayout
+  title="Savings Goal Tracker App | MoneyMatter"
+  description="A savings goal tracker app that reads your account balances. Split one account across goals, see your finish date and check that all your goals fit."
+  heading="A savings goal tracker app that reads your real account balances"
+  intro="This savings goal tracker app reads the balances of the accounts you choose, so you can save for a car, a vacation or an emergency fund without opening a new account or keeping a spreadsheet. It shows your pace, your finish date and what you need to save each month."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

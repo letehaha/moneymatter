@@ -7,6 +7,7 @@ sidebar:
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
 
 MoneyMatter has an MCP server. MCP (Model Context Protocol) is the standard way AI assistants such as Claude and ChatGPT connect to other apps. Once connected, you can ask the assistant about your money in plain language, and let it add or fix records if you allow that.
 
@@ -125,6 +126,12 @@ Any app that supports remote MCP servers with OAuth sign-in can connect. Add a s
 
 Before an app gets access, MoneyMatter shows a page titled "[app name] wants access to your MoneyMatter data". It lists the permissions the app asked for. You can turn two of them on or off:
 
+<Screenshot
+  src="/screenshots/ai/oauth-authorize.png"
+  alt="The MoneyMatter approval page titled Claude wants access to your MoneyMatter data, listing five permissions: view, create and edit (ticked), delete (unticked, with a warning) and the always-granted profile and background-access items, with Deny and Approve buttons."
+  hint="Mock GET /auth/oauth2/client-info to return the name Claude, then open /oauth/authorize?client_id=x&redirect_uri=https://claude.ai/cb&scope=finance:read finance:write finance:delete profile:read offline_access. Crop to the card."
+/>
+
 | Permission                              | On this page                                 | What it allows                                                                |
 | --------------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------- |
 | **View your financial data**            | **Always granted**                           | Read accounts, transactions, trackers, categories, tags, portfolios and stats. |
@@ -172,6 +179,12 @@ The assistant sees your [goals](/goals/overview/) with their progress: saved, le
 3. Click **Revoke**, then confirm with **Revoke Access**.
 
 </Steps>
+
+<Screenshot
+  src="/screenshots/ai/connected-apps.png"
+  alt="The Active connectors section listing Claude with its connected date, last used time, its permissions (read and edit financial data, read profile, offline access) and a Revoke button."
+  hint="Open /settings/ai/connected-apps. Needs a connected app, so mock the response of GET /user/settings/mcp/connected-apps with one app named Claude. Crop to the Active connectors section."
+/>
 
 The app loses access immediately. You can connect it again later.
 

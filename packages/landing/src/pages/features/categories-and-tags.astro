@@ -1,0 +1,116 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Custom budget categories and subcategories, up to three levels deep',
+    text: 'A new account starts with 80 categories and subcategories in the language you signed up in, from Food & Drinks and Housing to Vehicle and Investments, so you can record your first transaction right away. Rename, recolor or delete what you do not need, and add your own with a color and icon. Nest them up to three levels, for example Food & Drinks, then Restaurant, fast-food, then Lunch at work.',
+    bullets: [
+      'See spending by top-level category on the dashboard, or break it down by subcategory in a Pivot report',
+      'Mark a category such as Emergency fund as savings, so it counts toward your savings rate instead of your expenses',
+    ],
+    screenshot: {
+      name: 'features/transactions/categories-page',
+      alt: 'The Categories settings page with Food & Drinks expanded to show its subcategories, the menu of one category open, and the Other category marked as system',
+      width: 732,
+      height: 857,
+    },
+  },
+  {
+    heading: 'Expense tags for trips, projects and needs versus wants',
+    text: 'What did the whole trip to Rome cost? Tag the flights, hotel and restaurant bills with "Rome 2026", and each one still counts under its own category. Filter All Transactions by that tag and you see income, expenses and net for everything that matches. New accounts begin with Want, Need and Must tags for judging your spending.',
+    bullets: [
+      'Tag many transactions at once: select them, then add, replace or remove tags',
+      'Use tags as rows in a Pivot report to compare them month by month',
+      'Find what you have not tagged yet with the No tags filter',
+    ],
+    screenshot: {
+      name: 'features/transactions/tags-page',
+      alt: 'The Tags settings page listing Want, Need, Must, Reimbursable, Vacation and Subscription, with a bell icon and reminder count on Want',
+      width: 660,
+      height: 496,
+    },
+  },
+  {
+    heading: 'Rename, move or merge categories without losing history',
+    text: 'Your categories will look different after a few months of real use. Rename one and past transactions show the new name right away. Move one and its subcategories and transactions go with it. To restructure a lot at once, Organize mode lets you drag several categories to new parents and save them together.',
+    bullets: [
+      'Merge two categories in one step. Transactions, split parts, templates, rules, budget lines and spending trackers move to the category you keep, and your totals stay the same',
+    ],
+  },
+  {
+    heading: 'Fill in categories and tags on new transactions automatically',
+    text: 'The same merchants and purchases come up every month, so set the category and tags once and let the app fill them in. This matters most if you sync a bank or import statements, where many transactions arrive at once.',
+    bullets: [
+      'Give a payee a default category and auto-apply tags, used when you pick that payee and on its new bank-synced and imported transactions',
+      'Give a category default tags, added when you pick it in the transaction form and, if you choose, when AI categorizes a transaction',
+      'Write rules that set the category and add tags on new bank-synced and imported transactions',
+      'Let AI choose from your own category list',
+    ],
+  },
+  {
+    heading: 'Spending alerts when a tag goes over your limit',
+    text: 'Set a reminder to warn you when "Eating out" passes 200 EUR, or to tell you when new transactions get a tag. An immediate reminder checks shortly after a transaction is tagged and totals the current month, so you find out while you can still change course. Daily, weekly, monthly, quarterly and yearly reminders run on schedule and look back over that period. Spending in other currencies is converted to your base currency and counted. Alerts arrive as in-app notifications, with no email or push.',
+    screenshot: {
+      name: 'features/transactions/tag-reminder-form',
+      alt: 'The Create Reminder form with Amount Threshold selected, a threshold of 200, Monthly frequency and day 1 of the month',
+      width: 572,
+      height: 609,
+    },
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Budget lines are built from categories, so you cannot budget by tag. To put a limit on a tag, use a tag reminder or a spending tracker.',
+  'On a split transaction, tags apply to the whole transaction. Each split part has its own category, but you cannot tag just one part.',
+  'You cannot create a category or tag from the transaction form. Add it in Settings first.',
+  'An Amount Threshold reminder counts every transaction with the tag, including income, refunds and transfers. Keep the tag on expenses if you want a pure spending limit.',
+];
+
+const FAQ = [
+  {
+    question: 'What is the difference between categories and tags?',
+    answer:
+      'A category says what a transaction was, and your stats and budgets are built from it. A tag adds another angle, such as a trip, a project or whether a purchase was a need or a want. In MoneyMatter, each expense or income has one main category and can have up to 20 tags, and one tag can sit on transactions from any category.',
+  },
+  {
+    question: 'Can I merge two categories?',
+    answer:
+      'Yes. Delete the category you no longer want and choose the other as its replacement. If it has subcategories, move or delete those first. Payees that used the deleted category as their default lose it, so set a new default on those payees.',
+  },
+  {
+    question: 'Can I use tags to see what a trip or project cost?',
+    answer:
+      'Yes. Tag every related transaction, then filter by that tag to see the total. If you also want a limit and progress toward it, create a spending tracker that follows the tag. For a one-off question, such as one medical treatment, a transaction group adds up what you select without adding a tag to your list.',
+  },
+  {
+    question: 'Can I import categories and tags from YNAB or Wallet by BudgetBakers?',
+    answer:
+      'Yes. A YNAB import turns each group and category into a category with a subcategory, and its flags into tags. An import from Wallet by BudgetBakers lets you map each category to one of yours or create it, and turns labels into tags. A CSV import can also map categories from a column or create new ones.',
+  },
+  {
+    question: 'Do custom categories and tags cost extra?',
+    answer:
+      'No. Custom categories, tags and tag reminders come with every plan, from Essential at $5 a month or $30 a year before tax, and the free self-hosted version has every feature. AI categorization is the exception: it needs the AI included with Plus or your own AI model.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Categories', href: 'https://docs.moneymatter.app/transactions/categories/' },
+  { label: 'Tags', href: 'https://docs.moneymatter.app/transactions/tags/' },
+];
+
+const RELATED = ['/features/budgeting', '/features/analytics-and-reports', '/features/ai-categorization'];
+---
+
+<FeatureLayout
+  title="Custom Budget Categories and Expense Tags | MoneyMatter"
+  description="Create custom budget categories and subcategories. Reorganize them without losing history, total a trip by tag, and get alerts when a tag hits a limit."
+  heading="Custom budget categories, subcategories and expense tags"
+  intro="Custom budget categories in MoneyMatter nest up to three levels and can change later without damaging past reports. Tags add a second view across categories, so you can total one trip or project in one place."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

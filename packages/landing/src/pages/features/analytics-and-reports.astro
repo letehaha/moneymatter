@@ -1,0 +1,120 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Spending trends: compare this year with last year',
+    text: 'Pick January to December in Trends Comparison and it sets that year against the one before, for expenses, income or savings. Summary cards give both totals and the change. Below them, a monthly chart splits each bar by category, and a running total is drawn against the previous period, so you can spot the month your spending pulled ahead.',
+    bullets: [
+      'Exclude your travel category to compare everyday spending only, or narrow the report to certain categories, payees, tags or accounts',
+      'Click a bar, or one category within it, to open the transactions behind it',
+    ],
+  },
+  {
+    heading: 'Cash flow report with your savings rate',
+    text: 'Cash Flow answers how much came in, how much went out and how much you kept. Income, Expenses, Net Savings and Savings Rate each show the change against the same length of time just before. View it by month, two weeks or week, over anything from the last 3 months to all time.',
+    bullets: [
+      'Paid on the 25th? Set your payday in General settings and each monthly bar runs from payday to payday',
+      'Count categories such as Emergency Fund as savings, so that money raises your savings rate and stays out of your expenses',
+    ],
+    screenshot: {
+      name: 'features/stats/analytics-cash-flow',
+      alt: 'The Cash Flow report showing the Income, Expenses, Net Savings and Savings Rate cards above a mirrored monthly chart with a trend line',
+      width: 1440,
+      height: 815,
+    },
+  },
+  {
+    heading: 'Money flow diagram: from income sources to spending categories',
+    text: 'Under the cash flow chart, a money flow diagram (also called a Sankey chart) shows one period at a time. Salary and freelance income add up to your total, which then splits into taxes, expenses by category and savings. Click a bar in the chart above to jump to that period. Money moved into savings categories or investment portfolios gets its own destination, and whatever is left shows as Kept as cash.',
+    bullets: [
+      'Choose how many subcategory levels each side shows and how many top categories appear, with the rest grouped into Other',
+      'Pick your tax categories to see taxes as a separate branch with their share of income',
+      'Spent or invested more than came in? A Deficit appears, with a note on where the gap was covered from',
+    ],
+    screenshot: {
+      name: 'money-flow',
+      alt: 'Money flow diagram for July 2026, from wage and freelance income through total income to taxes, expenses by category and savings kept as cash, with income, taxes, expenses and saved totals above',
+      width: 752,
+      height: 707,
+    },
+  },
+  {
+    heading: 'Pivot tables for spending by category, payee or tag',
+    text: 'Pivot lays your expenses or income across time, with no spreadsheet to build. Use categories, subcategories, payees or tags as rows, and years, quarters, months or weeks as columns. Put payees against years and sort by the total to see who gets the most of your money. Turn on the heatmap to find the expensive months, or read the percentage change between columns.',
+    bullets: [
+      'Use tag rows to see what a trip or a project cost',
+      'Save a useful layout as a named view and reopen it from the list',
+    ],
+    screenshot: {
+      name: 'features/stats/analytics-pivot',
+      alt: 'The Pivot report with categories and subcategories as rows, twelve months as columns, the heatmap turned on and the percentage change under each amount',
+      width: 1700,
+      height: 1589,
+    },
+  },
+  {
+    heading: 'Net worth history, and how much your investments added',
+    text: 'Net Worth History charts your assets, debts and net worth by week, month, quarter or year, and you can limit it to asset types such as investments or vehicles. If you have portfolios, Net Worth Drivers separates what you saved from what the market returned, and Contributions shows what you paid in. Investment Projection estimates growth from a monthly contribution, an expected return and inflation.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Reports have no export button. To work with the numbers elsewhere, export your transactions as CSV, Excel or JSON from Settings.',
+  'A saved Pivot view keeps the exact dates of its period, so a saved "last 12 months" will not roll forward.',
+  'Two reports can show different totals for the same month, because they follow different rules. Cash Flow always counts planned transactions, for example, and Pivot never does. The How stats are calculated guide explains the rules.',
+];
+
+const FAQ = [
+  {
+    question: 'What financial reports does MoneyMatter have?',
+    answer:
+      'MoneyMatter has Trends Comparison, Cash Flow with a money flow diagram, Net Worth History, Pivot, Investment Projection and the FIRE planner. If you have investment portfolios, it adds Net Worth Drivers and Contributions.',
+  },
+  {
+    question: 'How is savings rate calculated?',
+    answer:
+      'Savings rate is net savings divided by income for the period. If you earn 3,000 and spend 2,000, your rate is 33%. If 500 of that spending goes to a category you count as savings, expenses drop to 1,500 and your rate becomes 50%.',
+  },
+  {
+    question: 'Does MoneyMatter have a Sankey chart of income and expenses?',
+    answer:
+      'Yes. The money flow diagram in the Cash Flow report is a Sankey chart of one period at a time. It counts a refund against the original purchase and leaves out uncategorized transactions, so its totals can differ slightly from the Cash Flow chart.',
+  },
+  {
+    question: 'Do reports count transfers between my accounts as spending?',
+    answer:
+      'No. Transfers between your own accounts and balance adjustments are never counted as income or expenses. The exception is a transfer into a loan, which counts as an expense. To leave a whole account out of your reports, turn on Exclude from statistics for it.',
+  },
+  {
+    question: 'Can reports combine accounts in different currencies?',
+    answer:
+      'Yes. Every report shows totals in your base currency. Each transaction is converted at the exchange rate for its date, so a past expense does not change when rates move later.',
+  },
+  {
+    question: 'Are all reports available on every plan?',
+    answer:
+      'Yes, except the FIRE planner, which needs Plus. Essential accounts can try it free for 14 days. All reports, including the FIRE planner, are in the 40-day trial and on a free self-hosted install.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Analytics reports', href: 'https://docs.moneymatter.app/stats/analytics-reports/' },
+  { label: 'How stats are calculated', href: 'https://docs.moneymatter.app/stats/how-stats-are-calculated/' },
+  { label: 'General settings', href: 'https://docs.moneymatter.app/settings/general-settings/' },
+];
+
+const RELATED = ['/features/dashboard', '/features/net-worth-tracker', '/features/budgeting'];
+---
+
+<FeatureLayout
+  title="Personal Finance Reports and Analytics | MoneyMatter"
+  description="Personal finance reports: compare spending trends, track cash flow, savings rate and net worth, and pivot by category, payee or tag without a spreadsheet."
+  heading="Personal finance reports that show where your money went"
+  intro="MoneyMatter's personal finance reports show if you are spending more than last year, how much of your income you keep, and which payees cost you the most. All reports except the FIRE planner come with both paid plans, and totals are in your base currency."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>
