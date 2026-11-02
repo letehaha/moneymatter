@@ -621,6 +621,12 @@ const routes: RouteRecordRaw[] = [
         meta: { i18nChunks: ['auth/welcome'] },
       },
       {
+        path: '/bank-login-done',
+        name: ROUTES_NAMES.bankLoginDone,
+        component: () => import('@/pages/accounts/integrations/bank-login-done.vue'),
+        meta: { i18nChunks: ['pages/account-integrations'] },
+      },
+      {
         path: '/oauth/authorize',
         name: ROUTES_NAMES.oauthAuthorize,
         component: () => import('@/pages/auth/oauth-authorize.vue'),

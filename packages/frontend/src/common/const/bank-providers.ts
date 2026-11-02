@@ -93,6 +93,16 @@ export const METAINFO_FROM_TYPE: Record<string, ProviderMetainfo> = {
     difficulty: 'easy',
     regions: [REGIONS.newZealand],
   },
+  [BANK_PROVIDER_TYPE.YAXI]: {
+    nameKey: 'pages.integrations.providers.yaxi.name',
+    descriptionKey: 'pages.integrations.providers.yaxi.description',
+    pricingLabelKey: 'pages.integrations.labels.free',
+    difficultyLabelKey: 'pages.integrations.labels.mediumSetup',
+    difficultyTooltipKey: 'pages.integrations.tooltips.yaxi',
+    pricing: 'free',
+    difficulty: 'medium',
+    regions: [REGIONS.eu],
+  },
 };
 
 interface RegionFilterGroup {
@@ -125,6 +135,7 @@ export const PROVIDER_DISPLAY_ORDER: readonly string[] = [
   BANK_PROVIDER_TYPE.LUNCHFLOW,
   BANK_PROVIDER_TYPE.SIMPLEFIN,
   BANK_PROVIDER_TYPE.AKAHU,
+  BANK_PROVIDER_TYPE.YAXI,
   BANK_PROVIDER_TYPE.MONOBANK,
   BANK_PROVIDER_TYPE.ENABLE_BANKING,
   BANK_PROVIDER_TYPE.WALUTOMAT,

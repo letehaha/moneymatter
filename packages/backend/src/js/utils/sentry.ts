@@ -79,7 +79,10 @@ export function initSentry(): void {
     // Integrations
     integrations: [
       // HTTP integration for tracing requests
-      Sentry.httpIntegration(),
+      Sentry.httpIntegration({
+        // These bodies carry bank provider keys and connection data.
+        ignoreIncomingRequestBody: (url) => url.includes('/bank-data-providers/'),
+      }),
       // Express integration
       Sentry.expressIntegration(),
       Sentry.postgresIntegration({ ignoreConnectSpans: true }),

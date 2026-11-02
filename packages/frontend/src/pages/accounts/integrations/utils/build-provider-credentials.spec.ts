@@ -35,6 +35,13 @@ describe('buildProviderCredentials', () => {
     });
   });
 
+  it('sends the key ID and secret for YAXI', () => {
+    expect(buildProviderCredentials({ providerType: BANK_PROVIDER_TYPE.YAXI, apiKey: 'id', privateKey: 's' })).toEqual({
+      keyId: 'id',
+      secret: 's',
+    });
+  });
+
   it('sends `apiKey` for LunchFlow', () => {
     expect(buildProviderCredentials({ providerType: BANK_PROVIDER_TYPE.LUNCHFLOW, apiKey: 'lf-key' })).toEqual({
       apiKey: 'lf-key',

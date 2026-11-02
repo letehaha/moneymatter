@@ -272,7 +272,8 @@ export default class Balances extends Model {
       case ACCOUNT_TYPES.lunchflow:
       case ACCOUNT_TYPES.walutomat:
       case ACCOUNT_TYPES.simplefin:
-      case ACCOUNT_TYPES.akahu: {
+      case ACCOUNT_TYPES.akahu:
+      case ACCOUNT_TYPES.yaxi: {
         // No per-tx balance from upstream – only the authoritative end-of-sync
         // `writeBankBalanceWithHistory` writes for these providers. Chart
         // gaps for past days fill in over time as new syncs land each day.

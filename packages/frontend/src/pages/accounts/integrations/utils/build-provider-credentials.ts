@@ -10,6 +10,7 @@ import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
  *   - SimpleFIN reconnects by claiming a fresh setup token, sent as `setupToken`.
  *   - Walutomat needs an API key plus a private key.
  *   - Akahu needs its User Access Token plus the App ID Token.
+ *   - YAXI needs its key ID plus the HMAC secret.
  *   - LunchFlow (and any other single-key provider) uses `apiKey`.
  */
 export function buildProviderCredentials({
@@ -30,6 +31,8 @@ export function buildProviderCredentials({
       return { apiKey, privateKey };
     case BANK_PROVIDER_TYPE.AKAHU:
       return { userToken: apiKey, appToken: privateKey };
+    case BANK_PROVIDER_TYPE.YAXI:
+      return { keyId: apiKey, secret: privateKey };
     default:
       return { apiKey };
   }

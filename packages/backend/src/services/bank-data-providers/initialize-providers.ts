@@ -8,6 +8,7 @@ import { ensureMonobankQueueRecovery } from './monobank/transaction-sync-queue';
 import { bankProviderRegistry } from './registry';
 import { SimplefinProvider } from './simplefin/simplefin.provider';
 import { WalutomatProvider } from './walutomat';
+import { YaxiProvider } from './yaxi';
 
 /**
  * Initialize and register all bank data providers
@@ -32,6 +33,9 @@ export function initializeBankProviders(): void {
 
     // Register Akahu (NZ open banking, personal apps) provider
     bankProviderRegistry.register(new AkahuProvider());
+
+    // Register YAXI (EU open banking, user-owned key) provider
+    bankProviderRegistry.register(new YaxiProvider());
 
     const registeredTypes = bankProviderRegistry.listTypes();
     logger.info(

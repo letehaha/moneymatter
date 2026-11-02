@@ -31,6 +31,10 @@
         "akahu": {
           "name": "Akahu",
           "description": "Sync transactions from New Zealand banks for free via an Akahu personal app"
+        },
+        "yaxi": {
+          "name": "YAXI",
+          "description": "European bank connections using your own free YAXI key"
         }
       },
       "monobank": {
@@ -326,6 +330,74 @@
           "importFailed": "Failed to import accounts"
         }
       },
+      "yaxi": {
+        "keyIdLabel": "Key ID",
+        "keyIdPlaceholder": "Paste your YAXI key ID",
+        "secretLabel": "Secret",
+        "secretPlaceholder": "Paste your YAXI secret",
+        "integrationKeyNote": "This is a test key. Only YAXI demo banks work with it.",
+        "backButton": "Back",
+        "connectButton": "Connect",
+        "continueButton": "Continue",
+        "confirmButton": "Confirm",
+        "skipButton": "Skip for now",
+        "searchLabel": "Find your bank",
+        "searchPlaceholder": "Bank name, BIC or IBAN",
+        "searching": "Searching...",
+        "noBanksFound": "No banks found",
+        "betaLabel": "Beta",
+        "redirectHint": "You will sign in on your bank's own page.",
+        "userIdLabel": "User ID",
+        "userIdPlaceholder": "Enter your user ID",
+        "userIdOptionalPlaceholder": "Enter your user ID (optional)",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "passwordNote": "Your password goes to the bank through YAXI's encrypted channel and is not sent to MoneyMatter servers.",
+        "redirectPrompt": "Open your bank to log in, then come back to this page.",
+        "openBankButton": "Open bank",
+        "waitingForBank": "Waiting for your bank login to finish...",
+        "waitingForYaxi": "Talking to your bank...",
+        "fieldLabel": "Your answer",
+        "fieldPlaceholder": "Enter the requested value",
+        "loadingAccounts": "Loading accounts...",
+        "accountsPreviewHint": "Accounts found: {count}",
+        "importButton": "Import accounts ({count})",
+        "importSuccess": "Accounts imported: {count}",
+        "noAccounts": "No accounts to import. Accounts without an IBAN can't be imported yet.",
+        "help": {
+          "trigger": "Where do I get a key?",
+          "title": "Get your YAXI key",
+          "step1": "Create a free account at {link}",
+          "step2": "Create an API key",
+          "step3": "Copy the key ID and the secret into the fields here"
+        },
+        "loginDone": {
+          "title": "Back from your bank",
+          "description": "Return to the MoneyMatter tab to continue. You can close this one."
+        },
+        "reconnect": {
+          "title": "Reconnect bank",
+          "button": "Reconnect",
+          "description": "This connection is not active. Log in to your bank to turn it on.",
+          "restoredDescription": "This connection came from a backup and has no saved key. Disconnect it and add a new YAXI connection.",
+          "success": "Bank reconnected"
+        },
+        "errors": {
+          "invalidSecret": "This secret is not valid base64. Copy it again from YAXI.",
+          "connectFailed": "Could not connect to YAXI",
+          "searchFailed": "Bank search failed. Try again.",
+          "loginFailed": "The bank login failed. Try again.",
+          "accountsFailed": "Could not load your accounts. You can connect them later from the connection page.",
+          "importFailed": "Could not import the accounts",
+          "pollingTimeout": "The bank login took too long. Try again.",
+          "invalidCredentials": "The bank rejected these login details.",
+          "canceledByBank": "The bank login was canceled.",
+          "expiredKey": "Your YAXI key has expired. Create a new one and update it here.",
+          "keyEnvironmentMismatch": "This YAXI key doesn't match the YAXI environment. Check that you copied the right key.",
+          "storedBankFailed": "Couldn't load your bank. Search for it below, and pick the same bank your accounts came from.",
+          "saveFailed": "Your bank login worked, but saving it failed. Please try again."
+        }
+      },
       "notifications": {
         "disconnectSuccess": "Integration disconnected successfully",
         "disconnectFailed": "Failed to disconnect integration",
@@ -483,7 +555,8 @@
         "lunchflow": "Just connect your banks on the LunchFlow side, then create and paste your LunchFlow API key",
         "simplefin": "SimpleFIN Bridge is a paid service. You create a bridge account, link your bank, and paste a setup token — no developer setup required.",
         "walutomat": "Requires generating an RSA key pair and uploading the public key to Walutomat dashboard",
-        "akahu": "Free for your own accounts: create an Akahu personal app at my.akahu.nz, connect your NZ banks there, then paste the two tokens"
+        "akahu": "Free for your own accounts: create an Akahu personal app at my.akahu.nz, connect your NZ banks there, then paste the two tokens",
+        "yaxi": "Create a free YAXI account and key, then log in to your bank. Your bank password stays in your browser."
       }
     },
     "connectionName": {

@@ -210,14 +210,14 @@
           </UiButton>
         </div>
 
-        <!-- Enable Banking is excluded: OAuth credentials can't be re-supplied inline. -->
         <div
-          v-if="needsReconnect && connectionDetails.providerType !== BANK_PROVIDER_TYPE.ENABLE_BANKING"
+          v-if="reconnectBannerDescription"
           class="border-destructive/25 bg-destructive/5 text-destructive-text mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border px-3 py-2.5 text-sm"
         >
           <CircleAlertIcon class="size-4 shrink-0" />
-          <p class="min-w-40 flex-1">{{ $t('pages.integrations.authFailure.description') }}</p>
+          <p class="min-w-40 flex-1">{{ reconnectBannerDescription }}</p>
           <UiButton
+            v-if="!isYaxiRestored"
             variant="outline"
             size="sm"
             class="w-full @sm/connection:w-auto"
@@ -225,6 +225,15 @@
           >
             <KeyRoundIcon class="size-4" />
             {{ $t('pages.integrations.authFailure.updateButton') }}
+          </UiButton>
+          <UiButton
+            v-if="connectionDetails.providerType === BANK_PROVIDER_TYPE.YAXI && !isYaxiRestored"
+            size="sm"
+            class="w-full @sm/connection:w-auto"
+            @click="isYaxiReconnectOpen = true"
+          >
+            <RefreshCwIcon class="size-4" />
+            {{ $t('pages.integrations.yaxi.reconnect.button') }}
           </UiButton>
         </div>
 
@@ -269,16 +278,8 @@
             <InputField
               v-model="newApiKey"
               type="password"
-              :label="
-                connectionDetails.providerType === BANK_PROVIDER_TYPE.AKAHU
-                  ? $t('pages.integrations.akahu.userTokenLabel')
-                  : $t('pages.integrations.updateCredentials.apiKeyLabel')
-              "
-              :placeholder="
-                connectionDetails.providerType === BANK_PROVIDER_TYPE.AKAHU
-                  ? $t('pages.integrations.akahu.userTokenPlaceholder')
-                  : $t('pages.integrations.updateCredentials.apiKeyPlaceholder')
-              "
+              :label="credentialFields.apiKeyLabel"
+              :placeholder="credentialFields.apiKeyPlaceholder"
             />
             <TextareaField
               v-if="connectionDetails.providerType === BANK_PROVIDER_TYPE.WALUTOMAT"
@@ -288,11 +289,11 @@
               :placeholder="$t('pages.integrations.walutomat.privateKeyPlaceholder')"
             />
             <InputField
-              v-else-if="connectionDetails.providerType === BANK_PROVIDER_TYPE.AKAHU"
+              v-else-if="credentialFields.privateKeyLabel"
               v-model="newPrivateKey"
               type="password"
-              :label="$t('pages.integrations.akahu.appTokenLabel')"
-              :placeholder="$t('pages.integrations.akahu.appTokenPlaceholder')"
+              :label="credentialFields.privateKeyLabel"
+              :placeholder="credentialFields.privateKeyPlaceholder"
             />
           </div>
           <DialogFooter class="mt-6 grid gap-3 sm:grid-cols-2">
@@ -310,6 +311,19 @@
         </DialogContent>
       </Dialog>
     </template>
+
+    <ResponsiveDialog v-model:open="isYaxiReconnectOpen" dialog-content-class="sm:max-w-2xl">
+      <template #title>{{ $t('pages.integrations.yaxi.reconnect.title') }}</template>
+      <YaxiConnector
+        v-if="isYaxiReconnectOpen"
+        :connection-id="connectionId"
+        :bank-connection-id="connectionDetails?.accounts.length ? connectionDetails.bankConnectionId : undefined"
+        :skip-import="!!connectionDetails?.accounts.length"
+        @login-saved="invalidateBankConnectionQueries"
+        @connected="handleYaxiReconnected"
+        @cancel="isYaxiReconnectOpen = false"
+      />
+    </ResponsiveDialog>
 
     <!-- Fetch Accounts Dialog -->
     <ConnectAccountsDialog
@@ -373,6 +387,7 @@ import {
 } from '@/components/common/dropdown-menu';
 import PageWrapper from '@/components/common/page-wrapper.vue';
 import ResourceNotFound from '@/components/common/resource-not-found.vue';
+import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import { Card } from '@/components/lib/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/lib/ui/dialog';
@@ -413,6 +428,7 @@ import DisconnectIntegrationDialog from './components/disconnect-integration-dia
 import EditConnectionNameDialog from './components/edit-connection-name-dialog.vue';
 import IntegrationDetailsSkeleton from './components/integration-details-skeleton.vue';
 import ReconnectConfirmationDialog from './components/reconnect-confirmation-dialog.vue';
+import YaxiConnector from './components/yaxi-connector.vue';
 import { buildProviderCredentials } from './utils/build-provider-credentials';
 
 const route = useRoute();
@@ -427,6 +443,7 @@ const isDisconnectDialogOpen = ref(false);
 const isEditNameDialogOpen = ref(false);
 const isReconnectDialogOpen = ref(false);
 const isUpdateCredentialsDialogOpen = ref(false);
+const isYaxiReconnectOpen = ref(false);
 const newApiKey = ref('');
 const newPrivateKey = ref('');
 
@@ -532,6 +549,27 @@ const needsReconnect = computed(
       connectionDetails.value.deactivationReason === DEACTIVATION_REASON.RESTORED),
 );
 
+const isYaxiRestored = computed(
+  () =>
+    connectionDetails.value?.providerType === BANK_PROVIDER_TYPE.YAXI &&
+    connectionDetails.value.deactivationReason === DEACTIVATION_REASON.RESTORED,
+);
+
+const reconnectBannerDescription = computed(() => {
+  const details = connectionDetails.value;
+  if (!details) return '';
+  // An abandoned first YAXI login has no deactivation reason, so any inactive connection counts.
+  if (details.providerType === BANK_PROVIDER_TYPE.YAXI) {
+    if (details.isActive) return '';
+    return isYaxiRestored.value
+      ? t('pages.integrations.yaxi.reconnect.restoredDescription')
+      : t('pages.integrations.yaxi.reconnect.description');
+  }
+  // Enable Banking is excluded: OAuth credentials can't be re-supplied inline.
+  if (!needsReconnect.value || details.providerType === BANK_PROVIDER_TYPE.ENABLE_BANKING) return '';
+  return t('pages.integrations.authFailure.description');
+});
+
 // Mutation for updating credentials
 const { mutate: updateCredentialsMutation, isPending: isUpdatingCredentials } = useMutation({
   mutationFn: (credentials: Record<string, unknown>) => updateConnectionDetails(connectionId.value, { credentials }),
@@ -553,11 +591,40 @@ const { mutate: updateCredentialsMutation, isPending: isUpdatingCredentials } = 
   },
 });
 
+const credentialFields = computed<{
+  apiKeyLabel: string;
+  apiKeyPlaceholder: string;
+  privateKeyLabel?: string;
+  privateKeyPlaceholder?: string;
+}>(() => {
+  switch (connectionDetails.value?.providerType) {
+    case BANK_PROVIDER_TYPE.AKAHU:
+      return {
+        apiKeyLabel: t('pages.integrations.akahu.userTokenLabel'),
+        apiKeyPlaceholder: t('pages.integrations.akahu.userTokenPlaceholder'),
+        privateKeyLabel: t('pages.integrations.akahu.appTokenLabel'),
+        privateKeyPlaceholder: t('pages.integrations.akahu.appTokenPlaceholder'),
+      };
+    case BANK_PROVIDER_TYPE.YAXI:
+      return {
+        apiKeyLabel: t('pages.integrations.yaxi.keyIdLabel'),
+        apiKeyPlaceholder: t('pages.integrations.yaxi.keyIdPlaceholder'),
+        privateKeyLabel: t('pages.integrations.yaxi.secretLabel'),
+        privateKeyPlaceholder: t('pages.integrations.yaxi.secretPlaceholder'),
+      };
+    default:
+      return {
+        apiKeyLabel: t('pages.integrations.updateCredentials.apiKeyLabel'),
+        apiKeyPlaceholder: t('pages.integrations.updateCredentials.apiKeyPlaceholder'),
+      };
+  }
+});
+
 const canUpdateCredentials = computed(() => {
   if (!newApiKey.value.trim()) return false;
   if (
     connectionDetails.value?.providerType === BANK_PROVIDER_TYPE.WALUTOMAT ||
-    connectionDetails.value?.providerType === BANK_PROVIDER_TYPE.AKAHU
+    credentialFields.value.privateKeyLabel
   ) {
     return !!newPrivateKey.value.trim();
   }
@@ -785,6 +852,18 @@ const handleDisconnectConfirm = (removeAssociatedAccounts: boolean) => {
     connectionId: connectionId.value,
     removeAssociatedAccounts,
   });
+};
+
+const invalidateBankConnectionQueries = () => {
+  queryClient.invalidateQueries({
+    predicate: (query) => (query.queryKey as string[]).includes(VUE_QUERY_GLOBAL_PREFIXES.bankConnectionChange),
+  });
+};
+
+const handleYaxiReconnected = () => {
+  isYaxiReconnectOpen.value = false;
+  addSuccessNotification(t('pages.integrations.yaxi.reconnect.success'));
+  invalidateBankConnectionQueries();
 };
 
 const handleReconnect = async () => {

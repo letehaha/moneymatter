@@ -76,6 +76,7 @@ interface BankConnectionDetails {
     isExpiringSoon: boolean;
   };
   deactivationReason?: string | null;
+  bankConnectionId: string | null;
 }
 
 /**
@@ -309,6 +310,26 @@ export const completeEnableBankingOAuth = async (
   });
   return response;
 };
+
+export const issueYaxiTicket = async ({
+  connectionId,
+}: {
+  connectionId: string;
+}): Promise<{ ticket: string; apiUrl: string }> =>
+  api.post(`/bank-data-providers/connections/${connectionId}/yaxi/ticket`);
+
+export const completeYaxiConnection = async ({
+  connectionId,
+  ...payload
+}: {
+  connectionId: string;
+  resultJwt: string;
+  connectionData: string;
+  bankConnectionId: string;
+  bankName: string;
+  logoId?: string;
+}): Promise<{ connectionId: string }> =>
+  api.post(`/bank-data-providers/connections/${connectionId}/yaxi/complete`, payload);
 
 // Bulk account sync APIs
 export enum SyncStatus {
