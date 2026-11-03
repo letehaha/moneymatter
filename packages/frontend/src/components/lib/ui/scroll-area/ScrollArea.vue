@@ -11,6 +11,7 @@ const props = withDefaults(
     ScrollAreaRootProps & {
       class?: string;
       viewportClass?: string;
+      scrollbarClass?: string;
       scrollY?: () => void;
       scrollAreaId?: SCROLL_AREA_IDS;
       /** Renders a horizontal scrollbar in addition to the vertical one (wide tables). */
@@ -20,6 +21,7 @@ const props = withDefaults(
   {
     class: '',
     viewportClass: '',
+    scrollbarClass: undefined,
     orientation: 'vertical',
     scrollY: undefined,
     withHorizontalScrollbar: false,
@@ -46,7 +48,7 @@ defineExpose({ viewportRef });
     >
       <slot />
     </ScrollAreaViewport>
-    <ScrollBar />
+    <ScrollBar :class="scrollbarClass" />
     <ScrollBar v-if="withHorizontalScrollbar" orientation="horizontal" />
     <ScrollAreaCorner />
   </ScrollAreaRoot>
