@@ -37,7 +37,7 @@
 import { api } from '@/api';
 import Button from '@/components/lib/ui/button/Button.vue';
 import * as Popover from '@/components/lib/ui/popover';
-import { getCurrentLocale, setLocale } from '@/i18n';
+import { FLAG_SRCS, getCurrentLocale, setLocale } from '@/i18n';
 import { trackAnalyticsEvent } from '@/lib/posthog';
 import { LOCALE_NAMES, SUPPORTED_LOCALES, type SupportedLocale } from '@bt/shared/i18n/locales';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -68,18 +68,6 @@ const props = withDefaults(
 const queryClient = useQueryClient();
 
 const currentLocale = ref<SupportedLocale>(getCurrentLocale() as SupportedLocale);
-
-const FLAG_SRCS: Record<SupportedLocale, string> = {
-  [SUPPORTED_LOCALES.ENGLISH]: '/img/flags/gb.svg',
-  [SUPPORTED_LOCALES.UKRAINIAN]: '/img/flags/ua.svg',
-  [SUPPORTED_LOCALES.SPANISH]: '/img/flags/es.png',
-  [SUPPORTED_LOCALES.INDONESIAN]: '/img/flags/id.svg',
-  [SUPPORTED_LOCALES.RUSSIAN]: '/img/flags/ru.svg',
-  [SUPPORTED_LOCALES.SLOVAK]: '/img/flags/sk.svg',
-  [SUPPORTED_LOCALES.GERMAN]: '/img/flags/de.svg',
-  [SUPPORTED_LOCALES.FRENCH]: '/img/flags/fr.svg',
-  [SUPPORTED_LOCALES.BRAZILIAN_PORTUGUESE]: '/img/flags/br.svg',
-};
 
 const currentFlagSrc = computed(() => FLAG_SRCS[currentLocale.value]);
 const currentLocaleNative = computed(() => LOCALE_NAMES[currentLocale.value].native);

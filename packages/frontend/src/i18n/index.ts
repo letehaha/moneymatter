@@ -16,6 +16,19 @@ import type { ChunkRegistry, I18nChunkName, LoadedChunksMap } from './types';
 
 const SUPPORTED_LOCALES = Object.values(LOCALES);
 
+export const FLAG_SRCS: Record<SupportedLocale, string> = {
+  [LOCALES.ENGLISH]: '/img/flags/gb.svg',
+  [LOCALES.UKRAINIAN]: '/img/flags/ua.svg',
+  [LOCALES.SPANISH]: '/img/flags/es.png',
+  [LOCALES.INDONESIAN]: '/img/flags/id.svg',
+  [LOCALES.RUSSIAN]: '/img/flags/ru.svg',
+  [LOCALES.SLOVAK]: '/img/flags/sk.svg',
+  [LOCALES.GERMAN]: '/img/flags/de.svg',
+  [LOCALES.FRENCH]: '/img/flags/fr.svg',
+  [LOCALES.BRAZILIAN_PORTUGUESE]: '/img/flags/br.svg',
+  [LOCALES.ITALIAN]: '/img/flags/it.svg',
+};
+
 // Track which chunks have been loaded per locale
 const loadedChunks: LoadedChunksMap = new Map([['en', new Set<I18nChunkName>(['common'])]]);
 
