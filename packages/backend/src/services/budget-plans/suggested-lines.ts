@@ -19,7 +19,7 @@ import Categories from '@models/categories.model';
 import {
   createCategoryClaims,
   expandCategoryIdsWithDescendants,
-  getAncestorIds,
+  getCategoryPathNames,
   getRootCategoryId,
 } from '@services/categories/category-hierarchy';
 import { withTransaction } from '@services/common/with-transaction';
@@ -249,11 +249,6 @@ const subtreeSpendCents = ({
     0,
   );
 
-const categoryPath = ({ category, byId }: { category: Categories; byId: Map<string, Categories> }): string =>
-  [...getAncestorIds({ categoryId: category.id, byId }).toReversed(), category.id]
-    .map((id) => byId.get(id)!.name)
-    .join(' › ');
-
 /**
  * Lines for the plan's spending categories, arranged by a model when one is
  * available and has spending or the user's answers to go on, and by spend rank
@@ -296,7 +291,7 @@ export const addSuggestedLines = async ({
       : [
           {
             id: category.id,
-            path: categoryPath({ category, byId }),
+            path: getCategoryPathNames({ categoryId: category.id, byId }).join(' › '),
             totalCents: subtreeCents({ categoryIds: [category.id] }),
           },
         ],

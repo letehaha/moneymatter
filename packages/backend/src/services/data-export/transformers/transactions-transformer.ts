@@ -11,6 +11,7 @@ import TransactionSplits from '@models/transaction-splits.model';
 import TransactionTags from '@models/transaction-tags.model';
 import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
+import { getCategoryPathNames } from '@services/categories/category-hierarchy';
 import { Op } from 'sequelize';
 
 import type { ExportDateRange, TransactionRow } from '../types';
@@ -19,7 +20,8 @@ import { buildAccountIdsClause, buildDateRangeClause, resolveRelationName } from
 interface CategoryView {
   id: string;
   name: string;
-  parentName: string | null;
+  category: string;
+  subcategory: string;
 }
 
 function deriveExportType({ tx }: { tx: Transactions }): 'income' | 'expense' | 'transfer_in' | 'transfer_out' {
@@ -101,16 +103,11 @@ export async function transformTransactions({
   const payeeNameById = new Map(payees.map((p) => [String(p.id), p.name]));
   const tagNameById = new Map(allTags.map((t) => [t.id, t.name]));
 
+  const categoryById = new Map<string, Categories>(categories.map((c) => [c.id, c]));
   const categoryViewById = new Map<string, CategoryView>();
   for (const cat of categories) {
-    categoryViewById.set(cat.id, { id: cat.id, name: cat.name, parentName: null });
-  }
-  for (const cat of categories) {
-    if (cat.parentId) {
-      const view = categoryViewById.get(cat.id);
-      const parent = categoryViewById.get(cat.parentId);
-      if (view && parent) view.parentName = parent.name;
-    }
+    const [root = cat.name, ...rest] = getCategoryPathNames({ categoryId: cat.id, byId: categoryById });
+    categoryViewById.set(cat.id, { id: cat.id, name: cat.name, category: root, subcategory: rest.join(' > ') });
   }
   // Resolve referenced categories that don't belong to the user (e.g. share recipient
   // transactions attributed to an owner-only category). Don't synthesize a fake row
@@ -123,7 +120,7 @@ export async function transformTransactions({
         attributes: ['id', 'name', 'parentId'],
       });
       for (const cat of externalCats) {
-        categoryViewById.set(cat.id, { id: cat.id, name: cat.name, parentName: null });
+        categoryViewById.set(cat.id, { id: cat.id, name: cat.name, category: cat.name, subcategory: '' });
       }
     }
   }
@@ -280,8 +277,8 @@ export async function transformTransactions({
       categoryName = resolveCategoryName({ id: tx.categoryId, context: `transaction ${tx.id}` });
       subcategoryName = '';
     } else {
-      categoryName = view.parentName ?? view.name;
-      subcategoryName = view.parentName ? view.name : '';
+      categoryName = view.category;
+      subcategoryName = view.subcategory;
     }
 
     const txSplits = splitsByTxId.get(tx.id) ?? [];

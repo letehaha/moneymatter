@@ -2,6 +2,7 @@ import {
   API_ERROR_CODES,
   BANK_PROVIDER_TYPE,
   PAYMENT_TYPES,
+  RecordId,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   VEHICLE_CLASS,
@@ -91,6 +92,46 @@ describe('Data export (POST /user/data-export)', () => {
       expect(stringified).not.toMatch(account.id);
       expect(stringified).not.toMatch(category.id);
       expect(exported?.tags).toEqual(['denorm-tag']);
+    });
+
+    it('exports the root as Category and the rest of the path as Subcategory for nested categories', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const categoryIdByNote: Record<string, RecordId> = {};
+      for (const rootName of ['Boy', 'Girl']) {
+        const root = await helpers.addCustomCategory({ name: rootName, color: '#123456', raw: true });
+        const food = await helpers.addCustomCategory({ name: 'Food', color: '#123456', parentId: root.id, raw: true });
+        const chicken = await helpers.addCustomCategory({
+          name: 'Chicken',
+          color: '#123456',
+          parentId: food.id,
+          raw: true,
+        });
+        categoryIdByNote[`${rootName}-root`] = root.id;
+        categoryIdByNote[`${rootName}-food`] = food.id;
+        categoryIdByNote[`${rootName}-chicken`] = chicken.id;
+      }
+      for (const [note, categoryId] of Object.entries(categoryIdByNote)) {
+        await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            categoryId,
+            amount: 10,
+            transactionType: TRANSACTION_TYPES.expense,
+            note,
+          }),
+          raw: true,
+        });
+      }
+
+      const response = await helpers.exportData({ format: 'json' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const data = archive.json as { transactions: Array<Record<string, unknown>> };
+      const byNote = (note: string) => data.transactions.find((t) => t.note === note);
+
+      expect(byNote('Boy-root')).toMatchObject({ category: 'Boy', subcategory: '' });
+      expect(byNote('Boy-food')).toMatchObject({ category: 'Boy', subcategory: 'Food' });
+      expect(byNote('Boy-chicken')).toMatchObject({ category: 'Boy', subcategory: 'Food > Chicken' });
+      expect(byNote('Girl-chicken')).toMatchObject({ category: 'Girl', subcategory: 'Food > Chicken' });
     });
 
     it('does NOT leak bank-provider credentials when a real provider connection exists', async () => {
