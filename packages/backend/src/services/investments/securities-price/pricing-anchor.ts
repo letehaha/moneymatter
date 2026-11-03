@@ -3,9 +3,8 @@ import { PriceData } from '../data-providers/base-provider';
 /**
  * Midnight UTC of the given date (00:00:00 UTC of the same calendar day in UTC).
  *
- * Stocks daily-sync and historical backfill both anchor rows here so the unique
- * `(securityId, date)` index dedupes per UTC day regardless of when the cron
- * actually fired. Crypto sync deliberately does NOT use this — it keeps the
+ * Stock price rows anchor here so the unique `(securityId, date)` index dedupes per
+ * UTC day regardless of when the write happened. Going-forward crypto rows keep the
  * provider's intraday timestamp so multiple snapshots per day coexist.
  */
 export const startOfDayUtc = (date: Date): Date =>
