@@ -224,10 +224,7 @@ const errorColumns = computed<MappingTableColumn[]>(() => [
 ]);
 
 const handleViewTransactions = () => {
-  // Deep-link to the batch when the result carries a batchId. The transactions
-  // route doesn't currently support a batch filter via query param, so we
-  // navigate to the transactions list directly.
-  router.push({ name: ROUTES_NAMES.transactions });
+  router.push({ name: ROUTES_NAMES.transactions, query: { batchId: summary.value?.batchId } });
 };
 
 const handleFindTransfers = () => {
