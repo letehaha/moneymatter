@@ -78,7 +78,7 @@ function mockYahooIsinSearch() {
         fullExchangeName: 'Paris',
         quoteType: 'ETF',
         regularMarketPrice: 92.5,
-        regularMarketTime: Math.floor(Date.now() / 1000),
+        regularMarketTime: new Date(),
       },
     },
   });
@@ -713,7 +713,7 @@ describe('Investment holdings', () => {
         const mockedYahooQuote = jest.fn<any>().mockResolvedValue({
           symbol: 'MEUD.PA',
           regularMarketPrice: 92.5,
-          regularMarketTime: Math.floor(Date.now() / 1000),
+          regularMarketTime: new Date(),
         });
         mockedYahooFinance.mockImplementation(
           () =>
@@ -767,10 +767,12 @@ describe('Investment holdings', () => {
       const SESSION_DAY_UTC_MIDNIGHT = '2026-10-30T00:00:00.000Z';
       const LAST_PRICE = 694.81;
       const PREVIOUS_SESSION_CLOSE = 707.32;
-      /** Daily bar for the session, as the background history sync receives it after the holding is created. */
+      // Differs from LAST_PRICE so a stored LAST_PRICE can only come from the first-price write,
+      // not from the background history sync filling the same day.
+      const SESSION_BAR_CLOSE = 693.5;
       const sessionBarChart = async () => ({
         meta: { currency: 'USD' },
-        quotes: [{ date: new Date('2026-10-30T13:30:00.000Z'), close: LAST_PRICE, adjclose: LAST_PRICE }],
+        quotes: [{ date: new Date('2026-10-30T13:30:00.000Z'), close: SESSION_BAR_CLOSE, adjclose: SESSION_BAR_CLOSE }],
       });
 
       const defaultFmpImplementation = jest.mocked(FmpClient).getMockImplementation()!;
@@ -897,6 +899,7 @@ describe('Investment holdings', () => {
         const rows = await SecurityPricing.findAll({ where: { securityId: security.id } });
         expect(rows).toHaveLength(1);
         expect(rows[0]!.date.toISOString()).toBe(lastUpdatedAt.toISOString());
+        expect(rows[0]!.priceClose.toNumber()).toBe(65000);
       });
     });
 

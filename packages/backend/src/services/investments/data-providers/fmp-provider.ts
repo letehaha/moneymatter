@@ -88,6 +88,9 @@ export class FmpDataProvider extends BaseSecurityDataProvider {
       }
 
       const quote = quotes[0]!;
+      if (!quote.price) {
+        throw new Error(`No price in quote for symbol: ${providerSymbol}`);
+      }
       const priceClose = quote.price;
       const latestTradingDay = new Date(quote.timestamp * 1000);
 

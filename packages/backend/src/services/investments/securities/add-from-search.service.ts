@@ -52,8 +52,7 @@ const addSecurityFromSearchImpl = async ({
       // close. Crypto stores intraday snapshots, so it keeps the provider's timestamp.
       const date = security.assetClass === ASSET_CLASS.crypto ? priceData.date : startOfDayUtc(priceData.date);
 
-      // Store the price in SecurityPricing table. The conflict update exists because the day's row
-      // may already exist when a security is added again.
+      // The day's row may already exist when a security is added again.
       await SecurityPricing.bulkCreate(
         [
           {
@@ -68,7 +67,7 @@ const addSecurityFromSearchImpl = async ({
 
       latestPrice = {
         price: priceData.priceClose,
-        date: priceData.date,
+        date,
       };
 
       // Update the security's last price sync timestamp

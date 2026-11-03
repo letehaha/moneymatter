@@ -3,11 +3,9 @@ import { PriceData } from '../data-providers/base-provider';
 /**
  * Midnight UTC of the given date (00:00:00 UTC of the same calendar day in UTC).
  *
- * Stocks daily-sync, historical backfill and the first price written when a
- * security is added all anchor rows here so the unique `(securityId, date)` index
- * dedupes per UTC day regardless of when the write actually happened. Crypto
- * prices deliberately do NOT use this outside backfill — they keep the provider's
- * intraday timestamp so multiple snapshots per day coexist.
+ * Stock price rows anchor here so the unique `(securityId, date)` index dedupes per
+ * UTC day regardless of when the write happened. Going-forward crypto rows keep the
+ * provider's intraday timestamp so multiple snapshots per day coexist.
  */
 export const startOfDayUtc = (date: Date): Date =>
   new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
