@@ -124,9 +124,13 @@ const displayItem = computed<T | null>(() => {
   return props.values.find((item) => getKeyFromItem(item) === key) ?? selectedValue.value;
 });
 
-function handleClear(event: Event) {
-  event.stopPropagation();
+const showClear = computed(() => props.clearable && Boolean(displayItem.value));
+const triggerWrapperRef = ref<HTMLElement | null>(null);
+
+function clearSelection(event: MouseEvent) {
   emit('update:modelValue', null);
+  // A keyboard-activated clear (detail 0) unmounts the focused X, so focus returns to the trigger.
+  if (event.detail === 0) triggerWrapperRef.value?.querySelector<HTMLElement>('[role="combobox"]')?.focus();
 }
 
 watch(
@@ -170,35 +174,45 @@ watch(
       </FieldLabel>
     </template>
 
-    <!-- SelectRoot renders no DOM element, so with `field-right` content the trigger button
+    <!-- SelectRoot renders no DOM element, so with `field-right` content the trigger's wrapper
          and the addon become direct flex children and share one joined outline. -->
     <div :class="cn($slots['field-right'] && 'flex items-stretch')">
       <Select.Select v-model="selectedKey" :open="isOpen" :disabled="disabled" @update:open="onOpenChange">
-        <Select.SelectTrigger
-          :class="cn('w-full', $slots['field-right'] && 'min-w-0 flex-1 rounded-r-none border-r-0', triggerClass)"
-          :aria-required="required || undefined"
-        >
-          <Select.SelectValue class="min-w-0 flex-1" :placeholder="placeholder ?? t('fields.select.selectOption')">
-            <template v-if="displayItem">
-              <slot name="trigger" :item="displayItem" :label="getLabelFromValue(displayItem)">
-                {{ getLabelFromValue(displayItem) }}
-              </slot>
-            </template>
-            <template v-else>{{ placeholder ?? t('fields.select.selectOption') }}</template>
-          </Select.SelectValue>
-          <!-- ml-auto is dead here: the flex-1 SelectValue absorbs the slack, so ml-1 provides the real gap. -->
+        <div ref="triggerWrapperRef" :class="cn('group relative', $slots['field-right'] && 'min-w-0 flex-1')">
+          <Select.SelectTrigger
+            :class="
+              cn(
+                'not-dark:group-hover:bg-accent w-full',
+                $slots['field-right'] && 'rounded-r-none border-r-0',
+                triggerClass,
+              )
+            "
+            :aria-required="required || undefined"
+          >
+            <Select.SelectValue
+              :class="cn('min-w-0 flex-1', showClear && 'pe-5.5')"
+              :placeholder="placeholder ?? t('fields.select.selectOption')"
+            >
+              <template v-if="displayItem">
+                <slot name="trigger" :item="displayItem" :label="getLabelFromValue(displayItem)">
+                  {{ getLabelFromValue(displayItem) }}
+                </slot>
+              </template>
+              <template v-else>{{ placeholder ?? t('fields.select.selectOption') }}</template>
+            </Select.SelectValue>
+          </Select.SelectTrigger>
+          <!-- Outside the trigger: reka's trigger opens on pointerdown, so a nested button can't receive the click. -->
           <button
-            v-if="clearable && displayItem"
+            v-if="showClear"
             type="button"
+            :disabled="disabled"
             :aria-label="t('common.components.selectField.clearSelection')"
-            class="text-muted-foreground hover:text-foreground focus-visible:ring-ring mr-1 ml-1 shrink-0 rounded focus:outline-none focus-visible:ring-1"
-            @click="handleClear"
-            @keydown.enter.stop="handleClear"
-            @keydown.space.stop="handleClear"
+            class="text-muted-foreground hover:text-foreground focus-visible:ring-ring absolute end-8 top-1/2 -translate-y-1/2 rounded focus:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50"
+            @click="clearSelection"
           >
             <XIcon class="size-3.5" />
           </button>
-        </Select.SelectTrigger>
+        </div>
 
         <Select.SelectContent>
           <template v-if="hasOpened && (withSearch || !!searchKeys)" #header>
