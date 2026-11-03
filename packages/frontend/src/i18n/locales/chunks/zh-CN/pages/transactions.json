@@ -120,6 +120,12 @@
       "tagModeAdd": "Add to existing tags",
       "tagModeReplace": "Replace all tags",
       "tagModeRemove": "Remove these tags",
+      "tagModeAddShort": "添加",
+      "tagModeReplaceShort": "Replace",
+      "tagModeRemoveShort": "Remove",
+      "tagModeAddHint": "Keeps current tags and adds these.",
+      "tagModeReplaceHint": "Removes all current tags, then adds these.",
+      "tagModeRemoveHint": "Removes only these tags. Other tags stay.",
       "totals": {
         "income": "Income",
         "expense": "Expense",

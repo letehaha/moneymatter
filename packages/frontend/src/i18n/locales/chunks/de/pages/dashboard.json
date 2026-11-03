@@ -238,6 +238,7 @@
         },
         "hints": {
           "noHistory": "Der Vergleich erscheint nach deinem ersten vollen Monat.",
+          "plannedFailed": "Couldn't load planned transactions. The forecast may not include them.",
           "fewMonths": "Durchschnitt des {n} vollen Monats, den du bisher hast. | Durchschnitt der {n} vollen Monate, die du bisher hast."
         },
         "loadFailed": "Deine Ausgaben konnten nicht geladen werden.",

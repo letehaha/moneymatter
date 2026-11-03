@@ -120,6 +120,12 @@
       "tagModeAdd": "Добавить к существующим тегам",
       "tagModeReplace": "Заменить все теги",
       "tagModeRemove": "Удалить эти теги",
+      "tagModeAddShort": "Добавить",
+      "tagModeReplaceShort": "Заменить",
+      "tagModeRemoveShort": "Remove",
+      "tagModeAddHint": "Keeps current tags and adds these.",
+      "tagModeReplaceHint": "Removes all current tags, then adds these.",
+      "tagModeRemoveHint": "Removes only these tags. Other tags stay.",
       "totals": {
         "income": "Доход",
         "expense": "Расход",

@@ -120,8 +120,8 @@
       "unavailable": "L'invio non è disponibile in questo momento. Usare il link qui sotto.",
       "or": "oppure",
       "reddit": {
-        "title": "Ask the community on Reddit",
-        "description": "Get help from other users, share how you set things up, and follow updates."
+        "title": "Chiedi alla community su Reddit",
+        "description": "Ricevere aiuto da altri utenti, condividere le proprie configurazioni e seguire gli aggiornamenti."
       },
       "board": {
         "title": "Posta sul Forum",
@@ -267,7 +267,7 @@
             "description": "Suddividere le uscite tra più categorie"
           },
           "mark-transfer-out": {
-            "title": "Segnare un trasferimento come \"fuori dal portafoglio\"",
+            "title": "Segnare un trasferimento come \"fuori dai conti\"",
             "description": "Monitorare il denaro che esce dai propri conti"
           },
           "create-category": {

@@ -3,104 +3,104 @@
     "currencies": {
       "page": {
         "title": "Valute",
-        "description": "Manage the currencies you track and the exchange rates used across your accounts."
+        "description": "Gestire le valute monitorate e i tassi di cambio usati nei conti."
       },
       "addNew": {
         "loading": "Caricamento in corso...",
-        "selectCurrency": "Select currency",
+        "selectCurrency": "Selezionare la valuta",
         "addButton": "Aggiungi",
-        "sectionLabel": "Add a currency",
-        "successfullyAdded": "Currency added",
+        "sectionLabel": "Aggiungi una valuta",
+        "successfullyAdded": "Valuta aggiunta",
         "errors": {
-          "addFailed": "Unexpected error. Currency is not added."
+          "addFailed": "Errore imprevisto. La valuta non è stata aggiunta."
         }
       },
       "howItWorks": {
-        "trigger": "How it works?",
-        "body": "Your base currency is the one every balance is converted into for totals and reports. Each added currency updates automatically from live market rates, or you can set a custom rate to override it."
+        "trigger": "Come funziona?",
+        "body": "La valuta di base è quella in cui vengono convertiti tutti i saldi per totali e report. Ogni valuta aggiunta si aggiorna automaticamente con i tassi di mercato in tempo reale, oppure è possibile impostare un tasso personalizzato."
       },
       "row": {
         "baseBadge": "Base",
-        "custom": "Custom",
-        "live": "Live",
-        "unused": "Unused",
+        "custom": "Personalizzato",
+        "live": "In tempo reale",
+        "unused": "Non usata",
         "accountsCount": "{count} conto | {count} conti"
       },
       "empty": {
-        "title": "No other currencies yet",
-        "description": "Add a currency above to track balances and exchange rates alongside your base currency."
+        "title": "Ancora nessun'altra valuta",
+        "description": "Aggiungere una valuta qui sopra per monitorare saldi e tassi di cambio accanto alla valuta di base."
       },
       "exchangeRate": {
-        "disableLiveUpdate": "Disable live updation to be able to set custom exchange rate.",
-        "liveUpdateInfo": "When enabled, custom rate is ignored.",
-        "liveUpdateLabel": "Live update",
+        "disableLiveUpdate": "Disattivare l'aggiornamento in tempo reale per impostare un tasso di cambio personalizzato.",
+        "liveUpdateInfo": "Se attivo, il tasso personalizzato viene ignorato.",
+        "liveUpdateLabel": "Aggiornamento in tempo reale",
         "ratePlaceholder": "0.00",
-        "saveButton": "Save",
-        "successfullyUpdated": "Successfully updated.",
-        "balancesNotRefreshed": "{count} account balance(s) could not be refreshed with the new rate yet — they'll update automatically once a rate is available.",
+        "saveButton": "Salva",
+        "successfullyUpdated": "Aggiornato con successo.",
+        "balancesNotRefreshed": "Non è stato ancora possibile aggiornare il saldo di {count} conti con il nuovo tasso: verrà aggiornato automaticamente quando sarà disponibile un tasso.",
         "errors": {
-          "unexpectedError": "Unexpected error",
-          "updateFailed": "Unexpected error. Currency is not updated."
+          "unexpectedError": "Errore imprevisto",
+          "updateFailed": "Errore imprevisto. La valuta non è stata aggiornata."
         }
       },
       "delete": {
-        "confirmTitle": "Delete currency?",
-        "description": "Currency can only be deleted/disconnected if there's no accounts and/or transactions associated with it.",
-        "button": "Delete currency",
+        "confirmTitle": "Eliminare la valuta?",
+        "description": "Una valuta può essere eliminata/scollegata solo se non ha conti e/o transazioni associati.",
+        "button": "Elimina valuta",
         "buttonShort": "Elimina",
-        "disabledTooltip": "You cannot delete this currency because it is still connected to account(s).",
-        "successfullyDeleted": "Successfully deleted.",
-        "foreignAmountsWarning": "Foreign amounts recorded in this currency will be removed from your transactions. Amounts in the account currency stay unchanged.",
+        "disabledTooltip": "Impossibile eliminare questa valuta perché è ancora collegata a uno o più conti.",
+        "successfullyDeleted": "Eliminata con successo.",
+        "foreignAmountsWarning": "Gli importi esteri registrati in questa valuta verranno rimossi dalle transazioni. Gli importi nella valuta del conto restano invariati.",
         "inUse": {
-          "title": "This currency is still in use. Remove or change these first:",
-          "trashed": "(in trash)",
+          "title": "Questa valuta è ancora in uso. Rimuovere o modificare prima questi elementi:",
+          "trashed": "(nel cestino)",
           "types": {
             "account": "Conti",
-            "portfolio": "Portfolio display currency",
-            "holding": "Holdings",
-            "portfolioCash": "Portfolio cash",
-            "portfolioTransfer": "Portfolio transfers",
-            "investmentTransaction": "Investment transactions",
-            "subscription": "Recurring payments",
-            "transactionTemplate": "Transaction templates",
-            "budget": "Budgets",
-            "goal": "Goals",
-            "ventureDeal": "Venture deals"
+            "portfolio": "Valuta di visualizzazione del portafoglio",
+            "holding": "Posizioni",
+            "portfolioCash": "Liquidità del portafoglio",
+            "portfolioTransfer": "Trasferimenti del portafoglio",
+            "investmentTransaction": "Transazioni di investimento",
+            "subscription": "Pagamenti ricorrenti",
+            "transactionTemplate": "Modelli di transazione",
+            "budget": "Budget",
+            "goal": "Obiettivi",
+            "ventureDeal": "Operazioni di venture capital"
           }
         },
         "errors": {
-          "deleteFailed": "Unexpected error. Currency is not deleted."
+          "deleteFailed": "Errore imprevisto. La valuta non è stata eliminata."
         }
       },
       "setBase": {
-        "button": "Set as base currency",
-        "buttonShort": "Set as base",
-        "processing": "Processing...",
-        "tooltip": "Mark as a base currency. All statistics and dashboard information will be displayed in this currency.\n\nTransactions will be recalculated by exchange rate as of date of when transaction was recorded.",
+        "button": "Imposta come valuta di base",
+        "buttonShort": "Imposta come base",
+        "processing": "Elaborazione...",
+        "tooltip": "Imposta come valuta di base. Tutte le statistiche e le informazioni della dashboard verranno mostrate in questa valuta.\n\nLe transazioni verranno ricalcolate con il tasso di cambio alla data in cui sono state registrate.",
         "dialog": {
-          "title": "Change base currency?",
-          "warningTitle": "Warning:",
-          "warningText": "Changing the base currency should be a very well-considered decision. Ideally, this action should be performed only once, even though there are no actual restrictions.",
+          "title": "Cambiare la valuta di base?",
+          "warningTitle": "Attenzione:",
+          "warningText": "Il cambio della valuta di base dovrebbe essere una decisione molto ponderata. Idealmente, questa azione andrebbe eseguita una sola volta, anche se non ci sono restrizioni effettive.",
           "descriptionText": "Ogni volta che si cambia la valuta di base, tutte le transazioni vengono ricalcolate usando i tassi di cambio storici. A causa dell'aritmetica in virgola mobile e delle normali differenze tra i tassi della valuta di base e quelli della valuta di quotazione, ricalcoli ripetuti possono introdurre nel tempo piccole discrepanze negli importi di riferimento. Gli importi di riferimento servono a mostrare le statistiche e a impostare i limiti del budget.",
-          "roundingTitle": "How exactly is rounding calculated?",
-          "roundingIntro": "Currency conversions use Banker's rounding (IEEE 754 standard), also known as \"round half to even\". This minimizes cumulative rounding errors over many calculations.",
-          "roundingHow": "How it works:",
-          "roundingRule1": "When a value is exactly halfway (e.g., 0.5), it rounds to the nearest even number",
-          "roundingRule2": "Example: 0.5 → 0, 1.5 → 2, 2.5 → 2, 3.5 → 4",
-          "roundingStandard": "This method is recommended by IFRS/GAAP accounting standards and used by major financial systems to prevent systematic bias in currency conversions.",
-          "untouchedWarning": "Original transactions amount will always remain untouched!",
-          "processingTimeInfo": "This might take a while if your currency is not widely-common.",
-          "restrictionWarning": "You won't be able to create new accounts, transactions, and anything related to \"amounts\" while the process is in progress.",
-          "confirmation": "Are you sure you want to proceed?",
-          "changeButton": "Change base currency",
+          "roundingTitle": "Come viene calcolato esattamente l'arrotondamento?",
+          "roundingIntro": "Le conversioni di valuta usano l'arrotondamento bancario (standard IEEE 754), noto anche come \"arrotondamento al pari\". Questo riduce al minimo gli errori di arrotondamento cumulativi su molti calcoli.",
+          "roundingHow": "Come funziona:",
+          "roundingRule1": "Quando un valore è esattamente a metà (es. 0,5), viene arrotondato al numero pari più vicino",
+          "roundingRule2": "Esempio: 0.5 → 0, 1.5 → 2, 2.5 → 2, 3.5 → 4",
+          "roundingStandard": "Questo metodo è raccomandato dagli standard contabili IFRS/GAAP ed è usato dai principali sistemi finanziari per evitare distorsioni sistematiche nelle conversioni di valuta.",
+          "untouchedWarning": "L'importo originale delle transazioni resterà sempre invariato!",
+          "processingTimeInfo": "L'operazione potrebbe richiedere del tempo se la valuta non è molto diffusa.",
+          "restrictionWarning": "Durante il processo non sarà possibile creare nuovi conti, transazioni o qualsiasi elemento legato agli importi.",
+          "confirmation": "Procedere davvero?",
+          "changeButton": "Cambia valuta di base",
           "cancelButton": "Annulla"
         },
-        "successMessage": "Base currency changed successfully.",
+        "successMessage": "Valuta di base cambiata con successo.",
         "errors": {
-          "changeFailed": "Unexpected error. Failed to change base currency.",
+          "changeFailed": "Errore imprevisto. Cambio della valuta di base non riuscito.",
           "lockedHousehold": "Sei parte di {count} nucleo famigliare attivo. Abbandonalo da Impostazioni → Nucleo Familiare. | Sei parte di {count} nucleo famigliare attivi. Abbandonali da Impostazioni → Nucleo Familiare.",
-          "lockedShares": "You have {count} active account share. Revoke it from the account first. | You have {count} active account shares. Revoke them from each account first.",
-          "lockedBudgetPlan": "An active budget plan is blocking the change. Delete it first. | {count} active budget plans are blocking the change. Delete them first."
+          "lockedShares": "C'è {count} condivisione di conto attiva. Revocarla prima dal conto. | Ci sono {count} condivisioni di conto attive. Revocarle prima da ciascun conto.",
+          "lockedBudgetPlan": "Un piano di budget attivo impedisce la modifica. Eliminarlo prima. | {count} piani di budget attivi impediscono la modifica. Eliminarli prima."
         }
       }
     }

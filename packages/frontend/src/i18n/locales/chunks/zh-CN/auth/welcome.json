@@ -41,7 +41,10 @@
           "link": "绑定帐号失败，请重试。"
         },
         "unauthorizedClient": "此应用无权使用此身份验证方式",
-        "temporarilyUnavailable": "验证服务暂时不可用。请稍后再试。"
+        "temporarilyUnavailable": "验证服务暂时不可用。请稍后再试。",
+        "unableToLinkAccount": "We couldn't link this account because this server doesn't treat the provider's email as verified. Contact your administrator.",
+        "emailDoesNotMatch": "The email on this provider account doesn't match your account email. Use a provider account with the same email.",
+        "emailNotVerified": "Check your email to verify your address, then sign in again."
       }
     }
   }

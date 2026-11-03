@@ -41,7 +41,10 @@
           "link": "فشل ربط الحساب. يرجى المحاولة مرة اخرى."
         },
         "unauthorizedClient": "هذا التطبيق غير مصرح له باستخدام طريقة المصادقة هذه",
-        "temporarilyUnavailable": "خدمة المصادقة غير متوفرة مؤقتاً. الرجاء المحاولة لاحقاً."
+        "temporarilyUnavailable": "خدمة المصادقة غير متوفرة مؤقتاً. الرجاء المحاولة لاحقاً.",
+        "unableToLinkAccount": "We couldn't link this account because this server doesn't treat the provider's email as verified. Contact your administrator.",
+        "emailDoesNotMatch": "The email on this provider account doesn't match your account email. Use a provider account with the same email.",
+        "emailNotVerified": "Check your email to verify your address, then sign in again."
       }
     }
   }

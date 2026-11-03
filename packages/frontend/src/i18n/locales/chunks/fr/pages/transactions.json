@@ -120,6 +120,12 @@
       "tagModeAdd": "Ajouter aux étiquettes existantes",
       "tagModeReplace": "Remplacer toutes les étiquettes",
       "tagModeRemove": "Supprimer ces étiquettes",
+      "tagModeAddShort": "Ajouter",
+      "tagModeReplaceShort": "Remplacer",
+      "tagModeRemoveShort": "Supprimer",
+      "tagModeAddHint": "Keeps current tags and adds these.",
+      "tagModeReplaceHint": "Removes all current tags, then adds these.",
+      "tagModeRemoveHint": "Removes only these tags. Other tags stay.",
       "totals": {
         "income": "Revenus",
         "expense": "Dépenses",

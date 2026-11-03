@@ -238,6 +238,7 @@
         },
         "hints": {
           "noHistory": "The comparison appears after your first full month.",
+          "plannedFailed": "Couldn't load planned transactions. The forecast may not include them.",
           "fewMonths": "Average of the {n} full month you have so far. | Average of the {n} full months you have so far."
         },
         "loadFailed": "Couldn't load your spending.",

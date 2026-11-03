@@ -16,13 +16,13 @@
         "successNotification": "Inicio del ciclo de pago actualizado"
       },
       "unrealizedLossAlert": {
-        "label": "Unrealized loss alerts",
-        "description": "Get one notification when a holding's loss crosses either threshold. Checked daily after market prices update; it won't repeat until the holding recovers.",
-        "percentLabel": "Loss percentage",
-        "percentDescription": "Alert when a holding is down at least this much from its cost.",
-        "amountLabel": "Loss amount",
-        "amountDescription": "Or when the loss reaches this amount in your base currency, whatever the percentage.",
-        "successNotification": "Loss alert settings saved"
+        "label": "Alertas de pérdida no realizadas",
+        "description": "Obtenga una notificación cuando la pérdida de una posición cruce cualquiera de los umbrales. Verificada diariamente después de la actualización de los precios del mercado; no se repetirá hasta que la tenencia se recupere.",
+        "percentLabel": "Porcentaje de pérdida",
+        "percentDescription": "Recibir una alerta cuando una posición haya bajado al menos esta cantidad respecto a su costo.",
+        "amountLabel": "Cantidad perdida",
+        "amountDescription": "O cuando la pérdida alcanza esta cantidad en su moneda base, sea cual sea el porcentaje.",
+        "successNotification": "Configuración de alerta de pérdida guardada"
       },
       "manualTransferMatching": {
         "label": "Asociar transferencias con cuentas manuales",

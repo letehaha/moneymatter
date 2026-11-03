@@ -18,6 +18,8 @@
           "accountName": "Účet {provider}",
           "notConnected": "Nepripojené",
           "disconnect": "Odpojiť",
+          "disconnectConfirmTitle": "Odpojiť {provider}?",
+          "disconnectConfirmDescription": "Pomocou tohto účtu {provider} sa už nebudete môcť prihlásiť. Môžete ho kedykoľvek znova pripojiť.",
           "connect": "Pripojiť"
         },
         "password": {

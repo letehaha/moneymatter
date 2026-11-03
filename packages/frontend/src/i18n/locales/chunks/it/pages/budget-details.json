@@ -2,7 +2,7 @@
   "pages": {
     "budgets": {
       "transactionsList": {
-        "loadError": "Couldn't load transactions.",
+        "loadError": "Impossibile caricare le transazioni.",
         "selectionModeWarning": "Selezione Diretta – Scegli transazioni da scollegare",
         "selectAll": "Seleziona tutto",
         "selected": "Selezionati: {count}",
@@ -17,8 +17,8 @@
         "addTransactions": "Aggiungi transazioni",
         "add": "Aggiungi",
         "loadingMore": "Caricamento di altri risultati...",
-        "unlinkError": "Failed to unlink transactions",
-        "addError": "Failed to add transactions"
+        "unlinkError": "Scollegamento delle transazioni non riuscito",
+        "addError": "Aggiunta delle transazioni non riuscita"
       }
     },
     "budgetDetails": {
@@ -62,43 +62,43 @@
         "incomeLabel": "Entrate:",
         "expensesLabel": "Uscite:",
         "kpi": {
-          "dailyPace": "Daily pace",
-          "perDay": "/ day",
-          "allowedPerDay": "allowed {amount} / day · {elapsed} of {total} days",
-          "neededPerDay": "needed {amount} / day · {elapsed} of {total} days",
-          "daysElapsed": "{elapsed} of {total} days",
-          "projectedTotal": "Projected total",
-          "projectedLimit": "at this pace · limit {amount}",
-          "averagePerDay": "Average per day",
-          "firstTransaction": "First transaction",
-          "lastTransaction": "Last transaction",
-          "transactions": "Transactions",
-          "avgAmount": "avg {amount}",
-          "biggestDay": "Biggest day",
-          "shareOfTotal": "{percent}% of total"
+          "dailyPace": "Ritmo giornaliero",
+          "perDay": "/ giorno",
+          "allowedPerDay": "consentiti {amount} / giorno · {elapsed} di {total} giorni",
+          "neededPerDay": "necessari {amount} / giorno · {elapsed} di {total} giorni",
+          "daysElapsed": "{elapsed} di {total} giorni",
+          "projectedTotal": "Totale previsto",
+          "projectedLimit": "a questo ritmo · limite {amount}",
+          "averagePerDay": "Media giornaliera",
+          "firstTransaction": "Prima transazione",
+          "lastTransaction": "Ultima transazione",
+          "transactions": "Transazioni",
+          "avgAmount": "media {amount}",
+          "biggestDay": "Giorno di spesa maggiore",
+          "shareOfTotal": "{percent}% del totale"
         },
-        "byCategory": "By category",
-        "categoriesCount": "{count} category | {count} categories",
-        "byCurrency": "By currency",
-        "asPaid": "as paid",
+        "byCategory": "Per categoria",
+        "categoriesCount": "{count} categoria | {count} categorie",
+        "byCurrency": "Per valuta",
+        "asPaid": "come pagato",
         "timeline": "Cronologia",
-        "todayMarker": "today {date}",
-        "timelineAria": "Cumulative spending over time with per-period bars",
-        "limitLabel": "{amount} limit",
-        "cumulativeLabel": "Cumulative",
+        "todayMarker": "oggi {date}",
+        "timelineAria": "Spesa cumulativa nel tempo con barre per periodo",
+        "limitLabel": "Limite di {amount}",
+        "cumulativeLabel": "Cumulativo",
         "legend": {
-          "cumulative": "Spent, cumulative",
-          "earnedCumulative": "Earned, cumulative",
-          "evenPace": "Even pace to the limit",
-          "projection": "Projection",
-          "daily": "Per day",
-          "weekly": "Per week",
-          "monthly": "Per month"
+          "cumulative": "Spesa cumulativa",
+          "earnedCumulative": "Guadagno cumulativo",
+          "evenPace": "Ritmo costante fino al limite",
+          "projection": "Proiezione",
+          "daily": "Al giorno",
+          "weekly": "A settimana",
+          "monthly": "Al mese"
         },
-        "topPayees": "Top payees",
-        "bySpend": "by spend",
-        "noPayee": "No payee",
-        "txCount": "{count} tx"
+        "topPayees": "Beneficiari principali",
+        "bySpend": "per spesa",
+        "noPayee": "Nessun beneficiario",
+        "txCount": "{count} trans."
       },
       "sharing": {
         "inviteAnother": "Invita qualcuno",
@@ -108,7 +108,7 @@
         "permissions": {
           "read": "Sola lettura",
           "write": "Allega le proprie transazioni",
-          "manage": "Gestisci"
+          "manage": "Gestione"
         },
         "member": {
           "you": "tu",

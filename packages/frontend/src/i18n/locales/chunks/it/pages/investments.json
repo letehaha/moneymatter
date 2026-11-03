@@ -1,40 +1,40 @@
 {
   "investments": {
-    "title": "Investments",
-    "createButton": "Create portfolio",
-    "loadError": "Failed to load portfolios",
-    "tryAgain": "Try again",
+    "title": "Investimenti",
+    "createButton": "Creare un portafoglio",
+    "loadError": "Caricamento dei portafogli non riuscito",
+    "tryAgain": "Riprova",
     "menu": {
-      "view": "View",
+      "view": "Visualizza",
       "delete": "Elimina"
     },
     "card": {
-      "hidden": "Hidden",
-      "portfolioType": "{type} Portfolio",
-      "costBasis": "Cost basis"
+      "hidden": "Nascosto",
+      "portfolioType": "Portafoglio {type}",
+      "costBasis": "Costo di carico"
     },
     "empty": {
-      "title": "No portfolios yet",
-      "description": "Create your first investment portfolio to start tracking your holdings, transactions, and performance.",
-      "createFirstButton": "Create your first portfolio"
+      "title": "Ancora nessun portafoglio",
+      "description": "Creare il primo portafoglio di investimento per iniziare a monitorare posizioni, transazioni e rendimento.",
+      "createFirstButton": "Crea il primo portafoglio"
     },
     "trash": {
-      "title": "Trash",
-      "retentionHint": "Items here are permanently deleted after {days} days",
-      "loadError": "Couldn't load trashed portfolios.",
-      "deletedAgo": "Deleted {time}",
-      "restoreButton": "Restore",
-      "restoringButton": "Restoring…",
-      "purgeButton": "Delete now",
-      "purgingButton": "Deleting…",
-      "confirmPurgeTitle": "Delete portfolio permanently?",
-      "confirmPurge": "Permanently delete \"{name}\"? This cannot be undone.",
-      "tryAgain": "Try again",
+      "title": "Cestino",
+      "retentionHint": "Gli elementi qui presenti vengono eliminati definitivamente dopo {days} giorni",
+      "loadError": "Impossibile caricare i portafogli nel cestino.",
+      "deletedAgo": "Eliminato {time}",
+      "restoreButton": "Ripristina",
+      "restoringButton": "Ripristino…",
+      "purgeButton": "Elimina ora",
+      "purgingButton": "Eliminazione…",
+      "confirmPurgeTitle": "Eliminare definitivamente il portafoglio?",
+      "confirmPurge": "Eliminare definitivamente \"{name}\"? L'operazione non può essere annullata.",
+      "tryAgain": "Riprova",
       "notifications": {
-        "restored": "Portfolio restored",
-        "restoreError": "Failed to restore portfolio",
-        "purged": "Portfolio permanently deleted",
-        "purgeError": "Failed to delete portfolio"
+        "restored": "Portafoglio ripristinato",
+        "restoreError": "Ripristino del portafoglio non riuscito",
+        "purged": "Portafoglio eliminato definitivamente",
+        "purgeError": "Eliminazione del portafoglio non riuscita"
       }
     }
   }

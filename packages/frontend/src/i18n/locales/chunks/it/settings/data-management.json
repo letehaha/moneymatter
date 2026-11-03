@@ -1,104 +1,104 @@
 {
   "settings": {
     "dataManagement": {
-      "title": "Import data",
-      "description": "Import your financial data from various sources",
+      "title": "Importa dati",
+      "description": "Importare i dati finanziari da varie fonti",
       "tabs": {
-        "import": "Import",
-        "export": "Export"
+        "import": "Importazione",
+        "export": "Esportazione"
       },
       "textSource": {
-        "title": "Import from any text source",
-        "aiBadge": "AI-powered",
-        "listDescription": "Bank statements, receipts, screenshots, or any text"
+        "title": "Importa da qualsiasi fonte di testo",
+        "aiBadge": "Con IA",
+        "listDescription": "Estratti conto, ricevute, screenshot o qualsiasi testo"
       },
       "csv": {
-        "title": "Import CSV",
-        "description": "Import transactions from a CSV file. You can map columns, handle duplicates, and create new accounts or categories as needed.",
-        "button": "Import CSV file",
-        "cta": "Import CSV file",
-        "listDescription": "Map columns and handle duplicates"
+        "title": "Importa CSV",
+        "description": "Importare transazioni da un file CSV. È possibile mappare le colonne, gestire i duplicati e creare nuovi conti o categorie se necessario.",
+        "button": "Importa file CSV",
+        "cta": "Importa file CSV",
+        "listDescription": "Mappare le colonne e gestire i duplicati"
       },
       "ofx": {
-        "title": "OFX or QFX statement",
-        "listDescription": "Import bank and credit card transactions"
+        "title": "Estratto conto OFX o QFX",
+        "listDescription": "Importare transazioni bancarie e della carta di credito"
       },
       "ynab": {
-        "title": "Import from YNAB",
+        "title": "Importa da YNAB",
         "listDescription": "Conti, transazioni, categorie e beneficiari"
       },
       "budget-bakers-wallet": {
         "title": "Wallet (BudgetBakers)",
-        "listDescription": "Multi-currency with automatic transfer pairing"
+        "listDescription": "Multivaluta con abbinamento automatico dei trasferimenti"
       },
       "ms-money": {
         "title": "Microsoft Money",
-        "listDescription": "Import a .mny file from Microsoft Money"
+        "listDescription": "Importare un file .mny da Microsoft Money"
       },
       "importHistory": {
-        "title": "Import history",
-        "listDescription": "View past imports and what they created"
+        "title": "Cronologia delle importazioni",
+        "listDescription": "Visualizzare le importazioni passate e cosa hanno creato"
       },
       "import": {
-        "back": "Back to import",
-        "whichImporterHint": "Not sure which one to use?",
+        "back": "Torna all'importazione",
+        "whichImporterHint": "Non si sa quale usare?",
         "groups": {
-          "filesAndText": "Files & text",
-          "fromOtherApps": "From other apps",
-          "history": "History"
+          "filesAndText": "File e testo",
+          "fromOtherApps": "Da altre app",
+          "history": "Cronologia"
         },
         "requestMore": {
-          "title": "Want more options? Request here"
+          "title": "Servono altre opzioni? Richiederle qui"
         }
       },
       "export": {
-        "cardTitle": "Export your data",
-        "backupOrExportHint": "Not sure whether you need Export or Backup?",
+        "cardTitle": "Esporta i dati",
+        "backupOrExportHint": "Non si sa se serve l'esportazione o il backup?",
         "form": {
-          "title": "Export your data",
-          "description": "Pick a format and the parts of your data you want. The download starts as soon as you confirm.",
-          "confirmLabel": "Download",
-          "confirmLoading": "Preparing…",
-          "back": "Back to export"
+          "title": "Esporta i dati",
+          "description": "Scegliere un formato e le parti dei dati desiderate. Il download parte non appena si conferma.",
+          "confirmLabel": "Scarica",
+          "confirmLoading": "Preparazione…",
+          "back": "Torna all'esportazione"
         },
         "format": {
-          "label": "Format",
+          "label": "Formato",
           "json": "JSON",
           "csv": "CSV",
           "xlsx": "Excel"
         },
         "groups": {
-          "label": "What to include",
-          "selectAll": "Select all",
-          "deselectAll": "Deselect all",
-          "transactions": "Transactions & accounts",
-          "transactionsDescription": "Transactions, accounts, balances history, categories, tags, vehicles",
-          "budgets": "Trackers",
-          "budgetsDescription": "Custom trackers with linked categories and spending totals",
-          "subscriptions": "Subscriptions & reminders",
-          "subscriptionsDescription": "Recurring subscriptions and bill reminders",
-          "investments": "Investments",
-          "investmentsDescription": "Portfolios, holdings, investment transactions, transfers"
+          "label": "Cosa includere",
+          "selectAll": "Seleziona tutto",
+          "deselectAll": "Deseleziona tutto",
+          "transactions": "Transazioni e conti",
+          "transactionsDescription": "Transazioni, conti, storico dei saldi, categorie, etichette, veicoli",
+          "budgets": "Tracker",
+          "budgetsDescription": "Tracker personalizzati con categorie collegate e totali di spesa",
+          "subscriptions": "Abbonamenti e promemoria",
+          "subscriptionsDescription": "Abbonamenti ricorrenti e promemoria delle bollette",
+          "investments": "Investimenti",
+          "investmentsDescription": "Portafogli, posizioni, transazioni di investimento, trasferimenti"
         },
         "notifications": {
-          "success": "Export ready – your download should start in a moment.",
-          "successWithCount": "Export ready – {count} rows exported.",
-          "failed": "Could not export your data. Please try again.",
-          "downloadBlocked": "Export ready, but your browser blocked the download. Check the address bar for a download prompt.",
-          "tooLarge": "Your data is too large for a single export. Please contact support."
+          "success": "Esportazione pronta: il download dovrebbe partire a breve.",
+          "successWithCount": "Esportazione pronta: {count} righe esportate.",
+          "failed": "Impossibile esportare i dati. Riprovare.",
+          "downloadBlocked": "Esportazione pronta, ma il browser ha bloccato il download. Controllare la barra degli indirizzi per la richiesta di download.",
+          "tooLarge": "I dati sono troppo grandi per un'unica esportazione. Contattare l'assistenza."
         },
         "dateRange": {
-          "label": "Date range (optional)",
-          "helper": "Only event tables (transactions, balance history, investment activity) get filtered. Accounts, categories, and other reference tables stay complete.",
-          "placeholder": "All time",
-          "clear": "Clear date range"
+          "label": "Intervallo di date (facoltativo)",
+          "helper": "Vengono filtrate solo le tabelle di eventi (transazioni, storico dei saldi, attività di investimento). Conti, categorie e altre tabelle di riferimento restano complete.",
+          "placeholder": "Sempre",
+          "clear": "Cancella intervallo di date"
         },
         "accounts": {
           "label": "Conti",
           "helper": "Esporta solo gli account selezionati con le loro transazioni e la cronologia. Lasciare vuoto per esportare tutti i conti.",
           "placeholder": "Tutti i conti"
         },
-        "listDescription": "Download a zip for spreadsheets, taxes, or migrating"
+        "listDescription": "Scaricare uno zip per fogli di calcolo, dichiarazioni dei redditi o migrazioni"
       }
     }
   }

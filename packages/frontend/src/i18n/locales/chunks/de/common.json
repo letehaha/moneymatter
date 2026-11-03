@@ -253,10 +253,10 @@
       "dialogTitle": "Logo ändern",
       "resetToAuto": "Auf automatisch zurücksetzen",
       "remove": "Logo entfernen",
-      "pickerDescription": "Pick a brand logo or use letters instead.",
-      "updatedToast": "Logo updated",
+      "pickerDescription": "Wähle ein Markenlogo oder verwende stattdessen Buchstaben.",
+      "updatedToast": "Logo aktualisiert",
       "resetToast": "Logo entfernt",
-      "updateError": "Couldn't update the logo. Try again.",
+      "updateError": "Logo konnte nicht aktualisiert werden. Bitte versuche es erneut.",
       "lettersLabel": "Buchstaben (1–2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Farbe",
@@ -370,7 +370,7 @@
       "message": "Du hast {amount} gespart."
     },
     "unrealizedLossAlert": {
-      "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"
+      "title": "{count} Position hat deinen Verlust-Warnschwellenwert überschritten | {count} Positionen haben deinen Verlust-Warnschwellenwert überschritten"
     }
   },
   "currencyNames": {

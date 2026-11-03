@@ -16,13 +16,13 @@
         "successNotification": "Beginn des Abrechnungszyklus aktualisiert"
       },
       "unrealizedLossAlert": {
-        "label": "Unrealized loss alerts",
-        "description": "Get one notification when a holding's loss crosses either threshold. Checked daily after market prices update; it won't repeat until the holding recovers.",
-        "percentLabel": "Loss percentage",
-        "percentDescription": "Alert when a holding is down at least this much from its cost.",
-        "amountLabel": "Loss amount",
-        "amountDescription": "Or when the loss reaches this amount in your base currency, whatever the percentage.",
-        "successNotification": "Loss alert settings saved"
+        "label": "Warnungen vor nicht realisierten Verlusten",
+        "description": "Erhalte eine Benachrichtigung, wenn der Verlust einer Position einen der beiden Schwellenwerte überschreitet. Wird täglich nach der Aktualisierung der Marktpreise überprüft; es erfolgt keine Wiederholung, bis sich die Position erholt hat.",
+        "percentLabel": "Verlustprozentsatz",
+        "percentDescription": "Warne, wenn eine Position mindestens um diesen Wert unter ihren Anschaffungskosten liegt.",
+        "amountLabel": "Verlustbetrag",
+        "amountDescription": "Oder wenn der Verlust diesen Betrag in deiner Basiswährung erreicht, unabhängig vom Prozentsatz.",
+        "successNotification": "Einstellungen für Verlustwarnungen gespeichert"
       },
       "manualTransferMatching": {
         "label": "Umbuchungen mit manuellen Konten abgleichen",
