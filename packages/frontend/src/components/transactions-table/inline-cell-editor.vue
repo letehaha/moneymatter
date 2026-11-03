@@ -23,12 +23,13 @@
       <CategorySelectField
         v-else
         ref="dropdownFieldRef"
-        v-model="form.category"
+        :model-value="form.category"
         :values="categories"
         :categories-map="isSharedWithCaller ? sharedCategories.map.value : undefined"
         :shared-owner-username="ownerHandle ?? undefined"
         :placeholder="$t('dialogs.manageTransaction.form.selectCategoryPlaceholder')"
         label-key="name"
+        @update:model-value="pickCategory"
       />
     </template>
     <PayeeSelectField
@@ -260,6 +261,12 @@ const onPointerDownOutside = (event: PointerDownOutsideEvent) => {
 
 const save = () => {
   if (canSave.value) emit('save', body.value!);
+};
+
+const pickCategory = (category: typeof form.category) => {
+  form.category = category;
+  if (category?.id === props.tx.categoryId) emit('close');
+  else save();
 };
 
 // Capture phase: field triggers act on Enter keydown before it could bubble here.
