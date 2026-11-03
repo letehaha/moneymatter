@@ -257,8 +257,8 @@
       "csvColumnNotFound": "Stĺpec „{{column}}” sa v hlavičkách CSV nenašiel."
     },
     "unrealizedLossAlert": {
-      "title_one": "{{count}} holding crossed your loss alert",
-      "title_other": "{{count}} holdings crossed your loss alert"
+      "title_one": "{{count}} pozícia prekročila vaše upozornenie na stratu",
+      "title_other": "{{count}} pozícií prekročilo vaše upozornenie na stratu"
     }
   },
   "landingFaq": {
@@ -872,6 +872,6 @@
     }
   },
   "backgroundJobs": {
-    "notFound": "This task is no longer running – the server may have restarted. Please try again."
+    "notFound": "Táto úloha už nebeží – server sa mohol reštartovať. Skúste to znova, prosím."
   }
 }

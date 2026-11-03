@@ -232,7 +232,7 @@ async function handleImport() {
 }
 
 function handleViewTransactions() {
-  router.push({ name: ROUTES_NAMES.transactions });
+  router.push({ name: ROUTES_NAMES.transactions, query: { batchId: store.importResult?.batchId } });
 }
 
 function handleFindTransfers() {

@@ -10,90 +10,90 @@
         "errorNotification": "Impossibile aggiornare le impostazioni"
       },
       "payday": {
-        "label": "Pay cycle starts on",
-        "description": "Day of the month your pay cycle starts. The dashboard's default period runs from this day to the day before it next month.",
+        "label": "Il ciclo dello stipendio inizia il",
+        "description": "Giorno del mese in cui inizia il ciclo dello stipendio. Il periodo predefinito della dashboard va da questo giorno al giorno precedente del mese successivo.",
         "placeholder": "Selezionare il giorno",
-        "successNotification": "Pay cycle start updated"
+        "successNotification": "Inizio del ciclo dello stipendio aggiornato"
       },
       "unrealizedLossAlert": {
-        "label": "Unrealized loss alerts",
-        "description": "Get one notification when a holding's loss crosses either threshold. Checked daily after market prices update; it won't repeat until the holding recovers.",
-        "percentLabel": "Loss percentage",
-        "percentDescription": "Alert when a holding is down at least this much from its cost.",
-        "amountLabel": "Loss amount",
-        "amountDescription": "Or when the loss reaches this amount in your base currency, whatever the percentage.",
-        "successNotification": "Loss alert settings saved"
+        "label": "Avvisi di perdita non realizzata",
+        "description": "Ricevere una notifica quando la perdita di una posizione supera una delle due soglie. Il controllo avviene ogni giorno dopo l'aggiornamento dei prezzi di mercato; l'avviso non si ripete finché la posizione non recupera.",
+        "percentLabel": "Percentuale di perdita",
+        "percentDescription": "Avvisare quando una posizione è scesa almeno di questa percentuale rispetto al costo.",
+        "amountLabel": "Importo della perdita",
+        "amountDescription": "Oppure quando la perdita raggiunge questo importo nella valuta di base, indipendentemente dalla percentuale.",
+        "successNotification": "Impostazioni degli avvisi di perdita salvate"
       },
       "manualTransferMatching": {
-        "label": "Match transfers with manual accounts",
+        "label": "Abbinamento dei trasferimenti con i conti manuali",
         "description": "Abbinare automaticamente i trasferimenti rilevati dalla banca a quelli creati manualmente.",
-        "successNotification": "Transfer matching setting updated",
-        "errorNotification": "Failed to update transfer matching setting"
+        "successNotification": "Impostazione di abbinamento dei trasferimenti aggiornata",
+        "errorNotification": "Impossibile aggiornare l'impostazione di abbinamento dei trasferimenti"
       },
       "pendingBankTransactions": {
-        "label": "Import pending bank transactions",
+        "label": "Importazione delle transazioni bancarie in sospeso",
         "description": "Importare le transazioni segnalate dalla banca prima della contabilizzazione. Vengono contrassegnate come in sospeso, non modificano il saldo del conto e possono essere prive del nome dell'esercente e dei dettagli definitivi. Quando la banca le contabilizza o le annulla, vengono aggiornate o rimosse.",
-        "descriptionSelfHost": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
-        "successNotification": "Pending transactions setting updated",
-        "errorNotification": "Failed to update pending transactions setting"
+        "descriptionSelfHost": "Memorizzare le transazioni di Enable Banking prima che la banca le contabilizzi. Vengono contrassegnate come in sospeso, non modificano mai il saldo del conto e spesso sono prive dei dettagli dell'esercente fino alla contabilizzazione. Gli altri fornitori non sono interessati: SimpleFIN e LunchFlow importano sempre solo transazioni contabilizzate, mentre Monobank importa ogni transazione come ordinaria.",
+        "successNotification": "Impostazione delle transazioni in sospeso aggiornata",
+        "errorNotification": "Impossibile aggiornare l'impostazione delle transazioni in sospeso"
       },
       "bankSyncSchedule": {
-        "label": "Bank sync schedule",
-        "description": "Connected bank accounts sync automatically at these times, shown in your local time. Pick the same time twice to sync once a day.",
-        "placeholder": "Select time",
-        "successNotification": "Bank sync schedule updated",
-        "errorNotification": "Failed to update bank sync schedule"
+        "label": "Orari di sincronizzazione bancaria",
+        "description": "I conti bancari collegati si sincronizzano automaticamente a questi orari, indicati nell'ora locale. Scegliere lo stesso orario due volte per sincronizzare una sola volta al giorno.",
+        "placeholder": "Selezionare l'orario",
+        "successNotification": "Orari di sincronizzazione bancaria aggiornati",
+        "errorNotification": "Impossibile aggiornare gli orari di sincronizzazione bancaria"
       },
       "quickStart": {
-        "label": "Quick start guide",
-        "description": "Show the onboarding checklist on the dashboard. Turn it off to hide the guide; turn it back on to bring it back at any time."
+        "label": "Guida rapida",
+        "description": "Mostrare la lista di controllo iniziale nella dashboard. Disattivarla per nascondere la guida; riattivarla per farla ricomparire in qualsiasi momento."
       },
       "savingsCategories": {
-        "label": "Count categories as savings",
-        "description": "Spending in these categories (and their subcategories) is excluded from expenses in cash-flow analytics, so it counts toward monthly savings and the savings rate.",
-        "successNotification": "Savings categories updated",
-        "errorNotification": "Failed to update savings categories"
+        "label": "Categorie conteggiate come risparmio",
+        "description": "Le spese in queste categorie (e nelle relative sottocategorie) sono escluse dalle uscite nelle analisi del flusso di cassa, quindi vengono conteggiate nei risparmi mensili e nel tasso di risparmio.",
+        "successNotification": "Categorie di risparmio aggiornate",
+        "errorNotification": "Impossibile aggiornare le categorie di risparmio"
       },
       "taxCategories": {
-        "label": "Tax categories",
-        "description": "Spending in these categories is shown as taxes in the money flow chart instead of as an expense. Subcategories are included.",
-        "successNotification": "Tax categories updated",
-        "errorNotification": "Failed to update tax categories"
+        "label": "Categorie fiscali",
+        "description": "Le spese in queste categorie vengono mostrate come imposte nel grafico dei flussi di denaro anziché come uscite. Le sottocategorie sono incluse.",
+        "successNotification": "Categorie fiscali aggiornate",
+        "errorNotification": "Impossibile aggiornare le categorie fiscali"
       },
       "filterCategoriesByType": {
-        "label": "Match categories to transaction type",
-        "description": "The transaction form lists only income categories for income and all other categories for expenses. Search still finds every category.",
-        "successNotification": "Category list setting updated",
-        "errorNotification": "Failed to update the category list setting"
+        "label": "Categorie in base al tipo di transazione",
+        "description": "Il modulo della transazione elenca solo le categorie di entrata per le entrate e tutte le altre per le uscite. La ricerca trova comunque ogni categoria.",
+        "successNotification": "Impostazione dell'elenco delle categorie aggiornata",
+        "errorNotification": "Impossibile aggiornare l'impostazione dell'elenco delle categorie"
       },
       "incomeCategories": {
-        "label": "Income categories",
-        "description": "Categories that count as income. Subcategories are included.",
-        "successNotification": "Income categories updated",
-        "errorNotification": "Failed to update income categories"
+        "label": "Categorie di entrata",
+        "description": "Categorie conteggiate come entrate. Le sottocategorie sono incluse.",
+        "successNotification": "Categorie di entrata aggiornate",
+        "errorNotification": "Impossibile aggiornare le categorie di entrata"
       },
       "accountDropdowns": {
         "defaultAccount": {
-          "label": "Default account",
-          "description": "Pre-selected when you create a transaction.",
-          "placeholder": "No default — first account"
+          "label": "Conto predefinito",
+          "description": "Preselezionato quando si crea una transazione.",
+          "placeholder": "Nessun predefinito: primo conto"
         },
         "showArchived": {
-          "label": "Show archived accounts",
-          "description": "When off, archived accounts are hidden from account pickers."
+          "label": "Visualizzazione dei conti archiviati",
+          "description": "Se disattivata, i conti archiviati vengono nascosti dai selettori dei conti."
         },
-        "successNotification": "Account dropdown settings updated",
-        "errorNotification": "Failed to update account dropdown settings"
+        "successNotification": "Impostazioni dei menu dei conti aggiornate",
+        "errorNotification": "Impossibile aggiornare le impostazioni dei menu dei conti"
       },
       "showUpcomingTransactions": {
-        "label": "Mostra transazioni programmate",
-        "description": "Pin a section with overdue scheduled payments and ones due within the next 3 days at the top of the transactions list.",
-        "successNotification": "Impostazioni delle transazioni programmate aggiornate",
-        "errorNotification": "Impossibile aggiornare le impostazioni delle transazioni programmate"
+        "label": "Mostra transazioni in scadenza",
+        "description": "Fissare in cima all'elenco delle transazioni una sezione con i pagamenti pianificati scaduti e quelli in scadenza nei prossimi 3 giorni.",
+        "successNotification": "Impostazione delle transazioni in scadenza aggiornata",
+        "errorNotification": "Impossibile aggiornare l'impostazione delle transazioni in scadenza"
       },
       "transactionFields": {
         "label": "Campi della transazione opzionali",
-        "description": "Offer a quick-add button for these fields in the transaction form. A field that already has a value is always shown.",
+        "description": "Offrire un pulsante di aggiunta rapida per questi campi nel modulo della transazione. Un campo che contiene già un valore viene sempre mostrato.",
         "successNotification": "Campi della transazione aggiornati",
         "errorNotification": "Errore imprevisto. Le impostazioni non sono state salvate",
         "fields": {
@@ -103,11 +103,11 @@
           },
           "externalReference": {
             "label": "Riferimenti esterni",
-            "description": "Keep an order number, invoice number or booking reference with the transaction."
+            "description": "Conservare con la transazione un numero d'ordine, un numero di fattura o un riferimento di prenotazione."
           },
           "originalAmount": {
             "label": "Importo originale",
-            "description": "The amount actually charged in another currency, when it differs from the account's currency."
+            "description": "L'importo effettivamente addebitato in un'altra valuta, quando differisce dalla valuta del conto."
           },
           "location": {
             "label": "Posizione",
@@ -116,15 +116,15 @@
         },
         "mapPicker": {
           "label": "Mostra mappa",
-          "description": "Pick transaction locations on a map and search addresses. Map tiles and search come from OpenStreetMap, which receives your IP address when the map opens."
+          "description": "Scegliere la posizione delle transazioni su una mappa e cercare indirizzi. Mappe e ricerca sono fornite da OpenStreetMap, che riceve l'indirizzo IP quando la mappa viene aperta."
         }
       },
       "defaultPaymentType": {
-        "label": "Default payment type",
-        "description": "Preselected when you add a new transaction.",
-        "placeholder": "Select a payment type",
-        "successNotification": "Default payment type updated",
-        "errorNotification": "Failed to update default payment type"
+        "label": "Tipo di pagamento predefinito",
+        "description": "Preselezionato quando si aggiunge una nuova transazione.",
+        "placeholder": "Selezionare un tipo di pagamento",
+        "successNotification": "Tipo di pagamento predefinito aggiornato",
+        "errorNotification": "Impossibile aggiornare il tipo di pagamento predefinito"
       }
     }
   }

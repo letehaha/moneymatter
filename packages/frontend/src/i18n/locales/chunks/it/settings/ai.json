@@ -1,7 +1,7 @@
 {
   "settings": {
     "ai": {
-      "title": "Impostazione IA",
+      "title": "Impostazioni IA",
       "description": "Scegliere quale modello IA alimenta ciascuna funzionalità, aggiungere modelli personalizzati e connettere applicazioni come Claude e ChatGPT.",
       "tabs": {
         "features": "Funzionalità IA",
@@ -68,35 +68,35 @@
           "title": "Ancora nessun modello IA",
           "description": "Aggiungere un modello IA per usare questa funzionalità."
         },
-        "allConnectionsDown": "Tutti i tuoi modelli ia hanno bisogno di attenzione, quindi questa funzione è in pausa. Correggi in {link}.",
+        "allConnectionsDown": "Tutti i modelli IA richiedono attenzione, quindi questa funzionalità è in pausa. Correggerne uno in {link}.",
         "allConnectionsDownLink": "Modelli IA"
       },
       "modelGuide": {
         "trigger": "Quale modello è adatto?",
         "tierHeading": "Il modello {tier} è sufficiente",
         "tiers": {
-          "light": "Chiaro",
-          "balanced": "Balanced",
-          "smart": "Smart"
+          "light": "Leggero",
+          "balanced": "Bilanciato",
+          "smart": "Avanzato"
         },
-        "needsLabel": "Needs",
-        "picksLabel": "Good picks",
-        "yourModel": "Your model",
-        "source": "Model details from models.dev",
+        "needsLabel": "Requisiti",
+        "picksLabel": "Scelte consigliate",
+        "yourModel": "Il modello in uso",
+        "source": "Dettagli dei modelli da models.dev",
         "needs": {
-          "textOnly": "Text only",
-          "runsOften": "Runs on every sync",
-          "longAnswers": "Long answers",
-          "readsFiles": "Reads images & PDFs",
-          "structuredAnswers": "Structured answers"
+          "textOnly": "Solo testo",
+          "runsOften": "Eseguito a ogni sincronizzazione",
+          "longAnswers": "Risposte lunghe",
+          "readsFiles": "Legge immagini e PDF",
+          "structuredAnswers": "Risposte strutturate"
         },
         "why": {
-          "categorization": "A short, repetitive job. A small model handles it well and keeps the cost down.",
-          "statementParsing": "Legge l'intera dichiarazione e ne trascrive ogni riga, quindi ha bisogno di un modello adatto per elaborare lunghi testi.",
-          "investmentTransactionsParsing": "Trasforma le esportazioni dei broker in righe di acquisto e vendita. Esportazioni prolungate hanno bisogno di un modello che può sostenerle.",
-          "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs.",
-          "trackerMatching": "A short, repetitive job that runs every day. A small model handles it well and keeps the cost down.",
-          "transferMatching": "Reads short pairs of transactions and answers with a one-word verdict, so a light, cheap model is enough."
+          "categorization": "Un'attività breve e ripetitiva. Un modello piccolo la gestisce bene e contiene i costi.",
+          "statementParsing": "Legge l'intero estratto conto e ne trascrive ogni riga, quindi richiede un modello che resti preciso su testi lunghi.",
+          "investmentTransactionsParsing": "Trasforma le esportazioni del broker in righe di acquisto e vendita. Le esportazioni lunghe richiedono un modello in grado di scrivere risposte lunghe.",
+          "receiptParsing": "Il modello esamina direttamente il file della fattura, quindi deve saper leggere immagini e PDF.",
+          "trackerMatching": "Un'attività breve e ripetitiva eseguita ogni giorno. Un modello piccolo la gestisce bene e contiene i costi.",
+          "transferMatching": "Legge brevi coppie di transazioni e risponde con un verdetto di una parola, quindi basta un modello leggero ed economico."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",
@@ -107,173 +107,173 @@
           "transferMatching": "Gemini Flash Lite · Claude Haiku"
         },
         "verdict": {
-          "fit": "Good fit",
-          "gaps": "{count} gap | {count} gaps",
-          "unknown": "Not checked"
+          "fit": "Adatto",
+          "gaps": "{count} lacuna | {count} lacune",
+          "unknown": "Non verificato"
         },
         "warning": {
-          "readsFiles": "Can't read files",
-          "readsText": "Can't read text",
-          "readsImages": "Can't read images",
-          "readsPdfs": "Can't read PDFs",
-          "longAnswers": "Short answers only",
-          "structuredAnswers": "No structured answers"
+          "readsFiles": "Non legge file",
+          "readsText": "Non legge testo",
+          "readsImages": "Non legge immagini",
+          "readsPdfs": "Non legge PDF",
+          "longAnswers": "Solo risposte brevi",
+          "structuredAnswers": "Nessuna risposta strutturata"
         },
         "checks": {
           "readsText": {
-            "label": "Reads text",
-            "fail": "This model doesn't take text."
+            "label": "Legge testo",
+            "fail": "Questo modello non accetta testo."
           },
           "readsImages": {
-            "label": "Reads images",
-            "fail": "Image files won't work."
+            "label": "Legge immagini",
+            "fail": "I file immagine non funzioneranno."
           },
           "readsPdfs": {
-            "label": "Reads PDFs",
-            "fail": "PDF files won't work."
+            "label": "Legge PDF",
+            "fail": "I file PDF non funzioneranno."
           },
           "longAnswers": {
-            "label": "Long answers",
-            "ok": "Utilizzati {tokens} token.",
-            "fail": "Utilizzati {tokens} token, i file complessi non sono stati elaborati."
+            "label": "Risposte lunghe",
+            "ok": "Scrive fino a {tokens} token.",
+            "fail": "Scrive fino a {tokens} token, quindi i file lunghi vengono troncati."
           },
           "structuredAnswers": {
-            "label": "Structured answers",
-            "fail": "Its answers may come back in a shape the app can't read."
+            "label": "Risposte strutturate",
+            "fail": "Le risposte potrebbero arrivare in un formato che l'app non riesce a leggere."
           }
         },
         "unknown": {
-          "title": "Can't check this model",
-          "detail": "models.dev has no details for this model right now, so we can't check it. Make sure it covers the needs above."
+          "title": "Impossibile verificare questo modello",
+          "detail": "Al momento models.dev non ha dettagli su questo modello, quindi non è possibile verificarlo. Assicurarsi che soddisfi i requisiti indicati sopra."
         }
       },
       "connections": {
         "title": "Modelli IA",
-        "description": "Connect OpenAI, Claude, Gemini, OpenRouter or a local model. Each entry is one model you can pick for any feature.",
+        "description": "Connettere OpenAI, Claude, Gemini, OpenRouter o un modello locale. Ogni voce è un modello selezionabile per qualsiasi funzionalità.",
         "tip": {
-          "ariaLabel": "About AI models",
-          "text": "You can add the same provider more than once with different models. Name them by how smart they are, like 'Claude smart' and 'Claude fast', then pick the right one for each feature."
+          "ariaLabel": "Informazioni sui modelli IA",
+          "text": "È possibile aggiungere lo stesso fornitore più volte con modelli diversi. Assegnare nomi in base alle capacità, come 'Claude avanzato' e 'Claude veloce', quindi scegliere quello giusto per ogni funzionalità."
         },
-        "addButton": "Add model",
-        "capReached": "You've reached the limit of {max} AI models. Remove one to add another.",
-        "duplicateName": "{name} copy",
+        "addButton": "Aggiungi modello",
+        "capReached": "È stato raggiunto il limite di {max} modelli IA. Rimuoverne uno per aggiungerne un altro.",
+        "duplicateName": "{name} copia",
         "empty": {
-          "title": "No AI models yet",
-          "description": "Add a model with your own API key, or connect a local one like Ollama or LM Studio."
+          "title": "Ancora nessun modello IA",
+          "description": "Aggiungere un modello con la propria chiave API o connetterne uno locale come Ollama o LM Studio."
         },
         "loadError": {
-          "title": "Couldn't load your AI models",
-          "description": "Your saved models are still there. Check your connection and try again."
+          "title": "Impossibile caricare i modelli IA",
+          "description": "I modelli salvati sono ancora presenti. Verificare la connessione e riprovare."
         },
         "badges": {
-          "default": "Default",
-          "defaultSkipped": "Default · skipped while it needs attention"
+          "default": "Predefinito",
+          "defaultSkipped": "Predefinito · ignorato finché richiede attenzione"
         },
         "status": {
           "model": "{provider} · {model}"
         },
         "actions": {
-          "menuAriaLabel": "AI model actions",
-          "duplicate": "Duplicate",
-          "setDefault": "Set as default",
-          "remove": "Remove",
+          "menuAriaLabel": "Azioni del modello IA",
+          "duplicate": "Duplica",
+          "setDefault": "Imposta come predefinito",
+          "remove": "Rimuovi",
           "reconnect": "Riconnetti",
-          "enterKey": "Enter API key"
+          "enterKey": "Inserisci chiave API"
         },
         "removeDialog": {
-          "title": "Remove this AI model?",
-          "description": "\"{name}\" and its saved API key will be removed.",
-          "pinnedFeatures": "These features will switch to automatic: {features}.",
-          "confirm": "Remove"
+          "title": "Rimuovere questo modello IA?",
+          "description": "«{name}» e la relativa chiave API salvata verranno rimossi.",
+          "pinnedFeatures": "Queste funzionalità passeranno alla modalità automatica: {features}.",
+          "confirm": "Rimuovi"
         },
         "removeKeyDialog": {
-          "title": "Remove the API key?",
-          "description": "Requests to this model will be sent without a key. Servers that need one will stop answering.",
-          "confirm": "Remove key"
+          "title": "Rimuovere la chiave API?",
+          "description": "Le richieste a questo modello verranno inviate senza chiave. I server che la richiedono smetteranno di rispondere.",
+          "confirm": "Rimuovi chiave"
         },
         "test": {
-          "success": "Connected. The model answered.",
-          "failed": "Couldn't reach the model."
+          "success": "Connesso. Il modello ha risposto.",
+          "failed": "Impossibile raggiungere il modello."
         },
         "notifications": {
-          "saveSuccess": "AI model saved",
-          "saveFailed": "Couldn't save the AI model",
-          "removeSuccess": "AI model removed",
-          "removeFailed": "Couldn't remove the AI model",
-          "setDefaultSuccess": "\"{name}\" is now your default model",
-          "setDefaultFailed": "Couldn't change the default model",
-          "removeKeySuccess": "API key removed",
-          "removeKeyFailed": "Couldn't remove the API key",
-          "removeKeyInvalid": "API key removed, but the model stopped answering: {reason}",
-          "editedConnectionGone": "This AI model was removed elsewhere, so the form was closed."
+          "saveSuccess": "Modello IA salvato",
+          "saveFailed": "Impossibile salvare il modello IA",
+          "removeSuccess": "Modello IA rimosso",
+          "removeFailed": "Impossibile rimuovere il modello IA",
+          "setDefaultSuccess": "«{name}» è ora il modello predefinito",
+          "setDefaultFailed": "Impossibile cambiare il modello predefinito",
+          "removeKeySuccess": "Chiave API rimossa",
+          "removeKeyFailed": "Impossibile rimuovere la chiave API",
+          "removeKeyInvalid": "Chiave API rimossa, ma il modello ha smesso di rispondere: {reason}",
+          "editedConnectionGone": "Questo modello IA è stato rimosso altrove, quindi il modulo è stato chiuso."
         },
         "form": {
-          "titleAdd": "Add AI model",
-          "titleEdit": "Edit AI model",
-          "titleDuplicate": "Duplicate AI model",
-          "providerLabel": "Provider",
-          "providerPlaceholder": "Select a provider",
-          "nameLabel": "Name",
-          "baseUrlLabel": "Base URL",
+          "titleAdd": "Aggiungere modello IA",
+          "titleEdit": "Modificare modello IA",
+          "titleDuplicate": "Duplicare modello IA",
+          "providerLabel": "Fornitore",
+          "providerPlaceholder": "Selezionare un fornitore",
+          "nameLabel": "Nome",
+          "baseUrlLabel": "URL di base",
           "baseUrlPlaceholder": "https://example.com/v1",
-          "apiKeyLabel": "API key",
-          "apiKeyPlaceholder": "Paste your API key",
-          "apiKeyGetHint": "Get a key at {link}.",
-          "apiKeyOptionalHint": "Opzionale. Lasciare vuoto se il tuo server non necessità di una chiave API.",
-          "apiKeySavedHint": "Lasciare vuoto per mantenere l'attuale Chiave API.",
-          "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
-          "removeApiKeyButton": "Remove API key",
+          "apiKeyLabel": "Chiave API",
+          "apiKeyPlaceholder": "Incollare la chiave API",
+          "apiKeyGetHint": "Ottenere una chiave su {link}.",
+          "apiKeyOptionalHint": "Facoltativa. Lasciare vuoto se il server non richiede una chiave.",
+          "apiKeySavedHint": "Lasciare vuoto per mantenere la chiave salvata.",
+          "apiKeyBorrowedHint": "Usa la chiave di «{name}». Digitare una nuova chiave per usarne una diversa.",
+          "removeApiKeyButton": "Rimuovi chiave API",
           "modelLabel": "Modello",
-          "modelPlaceholder": "Type or pick a model",
-          "modelListEmpty": "No models to pick from. Type the model name your server uses.",
-          "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
-          "testButton": "Test connection",
+          "modelPlaceholder": "Digitare o scegliere un modello",
+          "modelListEmpty": "Nessun modello da scegliere. Digitare il nome del modello usato dal server.",
+          "modelListNoMatch": "Nessun modello in elenco corrisponde. È comunque possibile usare il nome digitato.",
+          "testButton": "Prova connessione",
           "saveButton": "Salva modifiche",
-          "localNetworkOnly": "MoneyMatter can't reach a server on your own computer, like {hostname} or {ip}. Expose it through a tunnel such as ngrok or Cloudflare Tunnel, then paste the tunnel's URL here.",
-          "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
+          "localNetworkOnly": "MoneyMatter non può raggiungere un server sul computer locale, come {hostname} o {ip}. Esporlo tramite un tunnel come ngrok o Cloudflare Tunnel, quindi incollare qui l'URL del tunnel.",
+          "dockerHost": "Se l'app viene eseguita in Docker sulla stessa macchina del server del modello, usare {dockerHost} invece di {ip}."
         },
         "presets": {
           "openai": {
             "label": "OpenAI",
-            "namePlaceholder": "e.g. GPT fast"
+            "namePlaceholder": "es. GPT veloce"
           },
           "anthropic": {
             "label": "Anthropic (Claude)",
-            "namePlaceholder": "e.g. Claude smart"
+            "namePlaceholder": "es. Claude avanzato"
           },
           "google": {
             "label": "Google (Gemini)",
-            "namePlaceholder": "e.g. Gemini fast"
+            "namePlaceholder": "es. Gemini veloce"
           },
           "openrouter": {
             "label": "OpenRouter",
-            "namePlaceholder": "e.g. OpenRouter Llama"
+            "namePlaceholder": "es. OpenRouter Llama"
           },
           "ollama": {
             "label": "Ollama",
-            "namePlaceholder": "e.g. Local Llama"
+            "namePlaceholder": "es. Llama locale"
           },
           "lmStudio": {
             "label": "LM Studio",
-            "namePlaceholder": "e.g. LM Studio Qwen"
+            "namePlaceholder": "es. LM Studio Qwen"
           },
           "custom": {
-            "label": "Custom (OpenAI-compatible)",
-            "namePlaceholder": "e.g. My server"
+            "label": "Personalizzato (compatibile con OpenAI)",
+            "namePlaceholder": "es. Il mio server"
           }
         }
       },
       "customInstructions": {
-        "title": "Custom instructions",
-        "description": "Provide context to help AI categorize your transactions. These instructions are included when categorizing transactions during bank sync and manual import.",
-        "placeholder": "e.g., Transactions from 'Starbucks' should be 'Coffee'. My freelance income comes from 'Acme Corp'.",
-        "serverModelHint": "Custom instructions only apply when one of your own AI models handles categorization. Pick one above.",
-        "requiresOwnCredentials": "Add your own AI model to use custom instructions.",
-        "credentialsCheckFailed": "Couldn't check your AI models, so custom instructions are unavailable for now.",
-        "retryCredentialsCheck": "Try again",
-        "save": "Save",
-        "saved": "Saved!",
-        "saveFailed": "Failed to save custom instructions. Please try again."
+        "title": "Istruzioni personalizzate",
+        "description": "Fornire un contesto per aiutare l'IA a classificare le transazioni. Queste istruzioni vengono incluse nella classificazione delle transazioni durante la sincronizzazione bancaria e l'importazione manuale.",
+        "placeholder": "es. Le transazioni di 'Starbucks' vanno in 'Caffè'. Le entrate da libera professione provengono da 'Acme Corp'.",
+        "serverModelHint": "Le istruzioni personalizzate si applicano solo quando la classificazione è gestita da uno dei propri modelli IA. Sceglierne uno sopra.",
+        "requiresOwnCredentials": "Aggiungere un proprio modello IA per usare le istruzioni personalizzate.",
+        "credentialsCheckFailed": "Impossibile verificare i modelli IA, quindi le istruzioni personalizzate non sono al momento disponibili.",
+        "retryCredentialsCheck": "Riprova",
+        "save": "Salva",
+        "saved": "Salvato!",
+        "saveFailed": "Impossibile salvare le istruzioni personalizzate. Riprovare."
       }
     }
   }

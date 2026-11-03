@@ -516,8 +516,8 @@
         "unparseableAmount": "Impossibile interpretare l'importo \"{{value}}\"; riga saltata.",
         "unparseableRefAmount": "Impossibile interpretare ref_currency_amount \"{{value}}\"; riga saltata.",
         "unknownType": "Tipo sconosciuto \"{{value}}\"; riga saltata.",
-        "transferNoIncome": "L'uscita di trasferimento da \"{{account}}\" del {{date}} non ha un'entrata corrispondente; importata come trasferimento fuori dal portafoglio.",
-        "transferNoExpense": "L'entrata di trasferimento su \"{{account}}\" del {{date}} non ha un'uscita corrispondente; importata come trasferimento fuori dal portafoglio."
+        "transferNoIncome": "L'uscita di trasferimento da \"{{account}}\" del {{date}} non ha un'entrata corrispondente; importata come trasferimento fuori dai conti.",
+        "transferNoExpense": "L'entrata di trasferimento su \"{{account}}\" del {{date}} non ha un'uscita corrispondente; importata come trasferimento fuori dai conti."
       }
     },
     "msMoney": {

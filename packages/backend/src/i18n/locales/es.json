@@ -257,8 +257,8 @@
       "csvColumnNotFound": "No se encontró la columna \"{{column}}\" en las cabeceras CSV."
     },
     "unrealizedLossAlert": {
-      "title_one": "{{count}} holding crossed your loss alert",
-      "title_other": "{{count}} holdings crossed your loss alert"
+      "title_one": "La retención {{count}} cruzó tu alerta de pérdida",
+      "title_other": "Las existencias de {{count}} cruzaron tu alerta de pérdida"
     }
   },
   "landingFaq": {
@@ -872,6 +872,6 @@
     }
   },
   "backgroundJobs": {
-    "notFound": "This task is no longer running – the server may have restarted. Please try again."
+    "notFound": "Esta tarea ya no se está ejecutando. El servidor puede haber reiniciado. Por favor, inténtelo de nuevo."
   }
 }

@@ -2,110 +2,110 @@
   "settings": {
     "accountGroups": {
       "page": {
-        "title": "Account groups",
-        "description": "Organize accounts into groups. Bank connections create and manage their own groups automatically.",
-        "addButton": "Add group"
+        "title": "Gruppi di conti",
+        "description": "Organizzare i conti in gruppi. Le connessioni bancarie creano e gestiscono automaticamente i propri gruppi.",
+        "addButton": "Aggiungi gruppo"
       },
       "empty": {
-        "title": "No account groups yet",
-        "description": "Group accounts by bank, currency or purpose to keep your accounts list tidy."
+        "title": "Ancora nessun gruppo di conti",
+        "description": "Raggruppare i conti per banca, valuta o scopo per mantenere ordinato l'elenco dei conti."
       },
       "loadError": {
-        "title": "Couldn't load your groups",
-        "description": "Something went wrong while fetching your account groups. Check your connection and try again.",
-        "retry": "Try again"
+        "title": "Impossibile caricare i gruppi",
+        "description": "Si è verificato un problema durante il caricamento dei gruppi di conti. Verificare la connessione e riprovare.",
+        "retry": "Riprova"
       },
       "row": {
-        "bankBadgeTooltip": "This group was created when you connected the bank, but it doesn't represent the connection itself — you're free to rename it, move accounts, or delete it. Accounts will stay synced regardless.",
+        "bankBadgeTooltip": "Questo gruppo è stato creato al collegamento della banca, ma non rappresenta la connessione stessa: è possibile rinominarlo, spostarne i conti o eliminarlo. I conti resteranno comunque sincronizzati.",
         "accountsCount": "{count} conto | {count} conti",
-        "noAccounts": "No accounts",
-        "accountsElsewhere": "{count} synced account in other groups | {count} synced accounts in other groups",
+        "noAccounts": "Nessun conto",
+        "accountsElsewhere": "{count} conto sincronizzato in altri gruppi | {count} conti sincronizzati in altri gruppi",
         "manageConnection": "Gestisci le connessioni"
       },
       "update": {
-        "label": "Group name",
-        "placeholder": "Enter group name",
-        "emptyNameError": "Group name can't be empty"
+        "label": "Nome del gruppo",
+        "placeholder": "Inserire il nome del gruppo",
+        "emptyNameError": "Il nome del gruppo non può essere vuoto"
       },
       "accounts": {
-        "unlinkTooltip": "Remove from group",
-        "removeConfirmTitle": "Remove \"{name}\" from this group?",
-        "removeConfirmDescription": "L'account non è stato cancellato — lascia solo questo gruppo.",
-        "removeConfirmAction": "Remove"
+        "unlinkTooltip": "Rimuovi dal gruppo",
+        "removeConfirmTitle": "Rimuovere «{name}» da questo gruppo?",
+        "removeConfirmDescription": "Il conto non viene eliminato: esce solo da questo gruppo.",
+        "removeConfirmAction": "Rimuovi"
       },
       "delete": {
-        "button": "Delete group",
-        "confirmTitle": "Delete \"{name}\"?",
-        "accountsKept": "Accounts are kept — they simply become ungrouped.",
-        "syncContinues": "Bank syncing continues — the connection is separate from this group.",
-        "ungroupedHeading": "Becoming ungrouped"
+        "button": "Elimina gruppo",
+        "confirmTitle": "Eliminare «{name}»?",
+        "accountsKept": "I conti vengono mantenuti: semplicemente non appartengono più a un gruppo.",
+        "syncContinues": "La sincronizzazione bancaria continua: la connessione è separata da questo gruppo.",
+        "ungroupedHeading": "Conti che resteranno senza gruppo"
       },
       "dialogs": {
         "rename": {
-          "title": "Rename group",
-          "description": "Click the logo to pick a bank logo, initials or a color.",
+          "title": "Rinomina gruppo",
+          "description": "Fare clic sul logo per scegliere il logo di una banca, le iniziali o un colore.",
           "submit": "Salva modifiche"
         },
         "move": {
           "title": "Sposta «{name}»",
-          "description": "Its subgroups and accounts move with it.",
-          "parentLabel": "Parent group",
-          "parentPlaceholder": "Select a parent group",
-          "noParent": "No parent",
-          "hint": "Pick “No parent” to make it a top-level group.",
+          "description": "I sottogruppi e i conti vengono spostati insieme al gruppo.",
+          "parentLabel": "Gruppo Genitore",
+          "parentPlaceholder": "Selezionare un Gruppo Genitore",
+          "noParent": "Nessun genitore",
+          "hint": "Scegliere «Nessun genitore» per renderlo un gruppo di primo livello.",
           "submit": "Sposta"
         },
         "addAccounts": {
-          "title": "Add accounts to “{name}”",
-          "description": "An account belongs to one group. Picking one from another group moves it here.",
-          "searchPlaceholder": "Search accounts",
+          "title": "Aggiungere conti a «{name}»",
+          "description": "Un conto appartiene a un solo gruppo. Selezionandone uno da un altro gruppo, viene spostato qui.",
+          "searchPlaceholder": "Cercare conti",
           "sections": {
-            "ungrouped": "Not in a group",
-            "inOtherGroups": "In other groups",
-            "alreadyInGroup": "Already in {name}"
+            "ungrouped": "Senza gruppo",
+            "inOtherGroups": "In altri gruppi",
+            "alreadyInGroup": "Già in {name}"
           },
           "inGroupCaption": "In {path}",
-          "noResults": "No accounts match your search",
-          "noAccounts": "No accounts to add",
+          "noResults": "Nessun conto corrisponde alla ricerca",
+          "noAccounts": "Nessun conto da aggiungere",
           "summary": {
-            "selected": "{selected} selected",
-            "movesFromGroup": "{selected} selected, {count} move from {group} | {selected} selected, {count} moves from {group}",
-            "movesFromOtherGroups": "{selected} selected, {count} move from other groups | {selected} selected, {count} moves from other groups"
+            "selected": "{selected} selezionati",
+            "movesFromGroup": "{selected} selezionati, {count} spostato da {group} | {selected} selezionati, {count} spostati da {group}",
+            "movesFromOtherGroups": "{selected} selezionati, {count} spostato da altri gruppi | {selected} selezionati, {count} spostati da altri gruppi"
           },
-          "submit": "Add {count} account | Add {count} accounts"
+          "submit": "Aggiungi {count} conto | Aggiungi {count} conti"
         }
       },
       "tree": {
-        "groupsCount": "{count} group | {count} groups",
+        "groupsCount": "{count} gruppo | {count} gruppi",
         "syncedBadge": "Sincronizzato",
-        "expand": "Expand",
-        "collapse": "Collapse",
-        "renameTooltip": "Rename",
-        "moreActions": "More actions",
+        "expand": "Espandi",
+        "collapse": "Comprimi",
+        "renameTooltip": "Rinomina",
+        "moreActions": "Altre azioni",
         "menu": {
-          "rename": "Rename and change logo",
-          "move": "Move to another group",
-          "newSubgroup": "New subgroup",
-          "addAccounts": "Add accounts",
-          "delete": "Delete group"
+          "rename": "Rinomina e cambia logo",
+          "move": "Sposta in un altro gruppo",
+          "newSubgroup": "Nuovo sottogruppo",
+          "addAccounts": "Aggiungi conti",
+          "delete": "Elimina gruppo"
         }
       },
       "organize": {
-        "button": "Organize",
-        "hint": "Drag a group onto another to nest it",
+        "button": "Organizza",
+        "hint": "Trascinare un gruppo su un altro per annidarlo",
         "save": "Salva modifiche",
         "topLevel": "Categoria principale",
-        "dropToTopLevel": "Drop here to make “{name}” a top-level group",
-        "movesCount": "{count} move | {count} moves",
-        "moveInside": "Move inside",
-        "moved": "Moved",
-        "saveSuccess": "Groups reorganized",
-        "saveFailed": "Couldn't save {count} move. Try again. | Couldn't save {count} moves. Try again.",
-        "staleMovesRemoved": "Removed {count} queued move that no longer applies | Removed {count} queued moves that no longer apply",
+        "dropToTopLevel": "Rilasciare qui per rendere «{name}» un gruppo di primo livello",
+        "movesCount": "{count} spostamento | {count} spostamenti",
+        "moveInside": "Sposta all'interno",
+        "moved": "Spostato",
+        "saveSuccess": "Gruppi riorganizzati",
+        "saveFailed": "Impossibile salvare {count} spostamento. Riprovare. | Impossibile salvare {count} spostamenti. Riprovare.",
+        "staleMovesRemoved": "Rimosso {count} spostamento in coda non più valido | Rimossi {count} spostamenti in coda non più validi",
         "dropErrors": {
-          "currentParent": "Already in this group",
-          "insideItself": "Can't move a group inside its own subgroup",
-          "alreadyTopLevel": "Already a top-level group"
+          "currentParent": "Già in questo gruppo",
+          "insideItself": "Impossibile spostare un gruppo all'interno di un proprio sottogruppo",
+          "alreadyTopLevel": "Già un gruppo di primo livello"
         }
       }
     }

@@ -2,7 +2,7 @@
 import LegalLayout from '@/layouts/legal-layout.astro';
 import { GITHUB_URL } from '@/lib/github-api';
 
-const lastUpdated = 'September 15, 2026';
+const lastUpdated = 'November 3, 2026';
 ---
 
 <LegalLayout
@@ -26,25 +26,65 @@ const lastUpdated = 'September 15, 2026';
       <h2 class="text-xl font-semibold">2. Information We Collect</h2>
       <div class="text-muted-foreground mt-2 space-y-3">
         <p>
-          <strong class="text-foreground">Account Information:</strong> Email address and password for
-          authentication.
+          <strong class="text-foreground">Account Information:</strong> Email address and password if you sign up
+          with email. If you add a passkey, we store its public key.
         </p>
+        <div>
+          <p>
+            <strong class="text-foreground">Sign-In Providers:</strong> If you sign in with Apple, Google or GitHub,
+            the provider never shares your password with us. We store the tokens it issues for the sign-in, and we
+            receive:
+          </p>
+          <ul class="mt-2 list-disc pl-5 space-y-1">
+            <li>
+              Apple: a unique account identifier, your email address (or a private relay address if you choose Hide
+              My Email), whether it is verified, and your name if you share it.
+            </li>
+            <li>
+              Google: a unique account identifier, your name, email address, profile picture and whether the email
+              address is verified.
+            </li>
+            <li>
+              GitHub: a unique account identifier, your name or username, profile picture, and your email addresses
+              and whether they are verified. We keep one of them as your account email.
+            </li>
+          </ul>
+        </div>
         <p>
           <strong class="text-foreground">Financial Data:</strong> Transaction records, account balances,
           categories, and budgets that you enter or sync from connected banks.
+        </p>
+        <p>
+          <strong class="text-foreground">Precise Location (optional):</strong> If you choose to tag a transaction
+          with your current location, we receive your device's precise coordinates. The iOS app asks for this
+          permission only while the app is in use, and you can decline it and still use the app. We store the
+          coordinates with the transaction, or on a payee if you save them as its default location, to record where a
+          transaction happened. You can remove them at any time.
+        </p>
+        <p>
+          <strong class="text-foreground">Photos and Files (optional):</strong> Receipt or document photos and PDF
+          files you attach to a transaction, taken with your camera or chosen from your photos or files, along with
+          their file names. We receive only the files you choose to attach.
         </p>
         <p>
           <strong class="text-foreground">Bank Connection Credentials:</strong> If you use bank integrations, we
           store encrypted API credentials to maintain your connections.
         </p>
         <p>
-          <strong class="text-foreground">Usage Data:</strong> Basic analytics to improve the application
-          experience.
+          <strong class="text-foreground">Session Data:</strong> IP address and browser or device details for each
+          active session, so you can review your sessions and sign them out.
         </p>
         <p>
-          <strong class="text-foreground">Billing Data:</strong> If you subscribe, Stripe collects your payment
-          details and billing address directly; we never receive your card number. We store the Stripe customer and
-          subscription identifiers and the status, plan and renewal date of your subscription.
+          <strong class="text-foreground">Usage Data:</strong> Basic analytics to improve the application
+          experience, linked to your app user ID, email address and username.
+        </p>
+        <p>
+          <strong class="text-foreground">Billing Data:</strong> If you subscribe on the web, Stripe collects your
+          payment details and billing address directly; we never receive your card number. We store the Stripe
+          customer and subscription identifiers and the status, plan and renewal date of your subscription. If you
+          subscribe in the iOS app, Apple collects your payment details directly. We receive the signed transaction
+          and Apple's subscription updates, and we store the App Store transaction identifier, the status, plan and
+          renewal date of your subscription, and a random token that links the purchase to your account.
         </p>
       </div>
     </section>
@@ -53,6 +93,7 @@ const lastUpdated = 'September 15, 2026';
       <h2 class="text-xl font-semibold">3. How We Use Your Information</h2>
       <ul class="text-muted-foreground mt-2 list-disc pl-5 space-y-2">
         <li>To provide and maintain the MoneyMatter service</li>
+        <li>To sign you in and activate your subscription plan</li>
         <li>To sync your financial data from connected bank accounts</li>
         <li>To categorize and analyze your transactions</li>
         <li>To send important service-related notifications</li>
@@ -80,8 +121,8 @@ const lastUpdated = 'September 15, 2026';
         <p>We may use third-party services for:</p>
         <ul class="mt-2 list-disc pl-5 space-y-1">
           <li>
-            Payments and subscriptions: Stripe, acting as merchant of record under Stripe Managed Payments. Stripe
-            processes your payment, collects applicable taxes and issues receipts under its own
+            Payments and subscriptions on the web: Stripe, acting as merchant of record under Stripe Managed Payments.
+            Stripe processes your payment, collects applicable taxes and issues receipts under its own{' '}
             <a
               href="https://stripe.com/privacy"
               target="_blank"
@@ -91,10 +132,38 @@ const lastUpdated = 'September 15, 2026';
               privacy policy</a
             >
           </li>
-          <li>Bank data aggregation (Enable Banking, Monobank API)</li>
-          <li>AI-powered transaction categorization (optional)</li>
+          <li>
+            Payments and subscriptions in the iOS app: Apple In-App Purchase (StoreKit). Apple processes your payment
+            under its own{' '}
+            <a
+              href="https://www.apple.com/legal/privacy/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-primary hover:underline"
+            >
+              privacy policy</a
+            >, and our backend receives the signed transaction to activate your plan
+          </li>
+          <li>Sign-in (Apple, Google, GitHub), if you choose one of them</li>
+          <li>Bank data aggregation (Monobank API, Enable Banking, Lunch Flow, SimpleFIN, Walutomat, Akahu), if you connect them</li>
+          <li>
+            AI features, such as transaction categorization, invoice matching, statement import and spending tracker
+            scans. We send the transaction details these features need (such as amount, note, payee and account name)
+            and any files you run through them to OpenAI, Anthropic or Google, or to your own AI provider or custom
+            endpoint if you configure one
+          </li>
           <li>Transactional email (Resend), for sign-in, verification and account notices</li>
-          <li>Error monitoring (Sentry) and product analytics (PostHog), used only to run and improve the Service</li>
+          <li>File storage (Cloudflare R2), for transaction attachments</li>
+          <li>
+            Maps and address search (OpenStreetMap), only if you turn on the map picker. Your device then sends
+            coordinates and search text directly to OpenStreetMap
+          </li>
+          <li>
+            Error monitoring (Sentry) and product analytics (PostHog), used only to run and improve the Service. Both
+            receive your app user ID, email address and username, which we derive from your name or email address.
+            PostHog also receives product usage events and account properties such as your plan. Sentry also receives
+            error reports, which can include a session replay with text and media masked
+          </li>
         </ul>
         <p class="mt-3">
           These services have their own privacy policies. Bank connections are made using your own credentials, and
@@ -105,10 +174,22 @@ const lastUpdated = 'September 15, 2026';
 
     <section>
       <h2 class="text-xl font-semibold">6. Data Retention</h2>
-      <p class="text-muted-foreground mt-2">
-        We retain your data for as long as your account is active. You can request deletion of your account and all
-        associated data at any time through the application settings.
-      </p>
+      <div class="text-muted-foreground mt-2 space-y-3">
+        <p>
+          We retain your data for as long as your account is active. You can request deletion of your account and all
+          associated data at any time through the application settings.
+        </p>
+        <p>
+          After deletion we keep a one-way hash of your email address and the date it was first seen, so that a new
+          account cannot restart the free trial. Transactions you added to an account shared with you stay on that
+          account, with your username and profile picture. Attachment files are removed from storage by a periodic cleanup.
+          Records already sent to Sentry and PostHog are not removed automatically; email us to request their removal.
+        </p>
+        <p>
+          Deleting your account cancels a Stripe subscription, but it cannot cancel an App Store subscription. Cancel
+          that one in your Apple account.
+        </p>
+      </div>
     </section>
 
     <section>
@@ -119,7 +200,7 @@ const lastUpdated = 'September 15, 2026';
         <li>Request correction of inaccurate data</li>
         <li>Request deletion of your data</li>
         <li>Disconnect bank integrations at any time</li>
-        <li>Delete all your data at any time permanently</li>
+        <li>Delete all your data permanently at any time</li>
       </ul>
     </section>
 
@@ -127,7 +208,7 @@ const lastUpdated = 'September 15, 2026';
       <h2 class="text-xl font-semibold">8. Open Source</h2>
       <p class="text-muted-foreground mt-2">
         MoneyMatter is open source software. You can review exactly how we handle your data by examining our source
-        code on
+        code on{' '}
         <a
           href={GITHUB_URL}
           target="_blank"
@@ -150,7 +231,9 @@ const lastUpdated = 'September 15, 2026';
     <section>
       <h2 class="text-xl font-semibold">10. Contact Us</h2>
       <p class="text-muted-foreground mt-2">
-        If you have questions about this Privacy Policy, please open an issue on our
+        If you have questions about this Privacy Policy, email us at{' '}
+        <a href="mailto:support@moneymatter.app" class="text-primary hover:underline">support@moneymatter.app</a>{' '}
+        or open an issue on our{' '}
         <a
           href={`${GITHUB_URL}/issues`}
           target="_blank"

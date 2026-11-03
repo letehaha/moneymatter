@@ -41,7 +41,10 @@
           "link": "Échec de l'association du compte. Veuillez réessayer."
         },
         "unauthorizedClient": "Cette application n'est pas autorisée à utiliser cette méthode d'authentification",
-        "temporarilyUnavailable": "Le service d'authentification est temporairement indisponible. Veuillez réessayer plus tard."
+        "temporarilyUnavailable": "Le service d'authentification est temporairement indisponible. Veuillez réessayer plus tard.",
+        "unableToLinkAccount": "We couldn't link this account because this server doesn't treat the provider's email as verified. Contact your administrator.",
+        "emailDoesNotMatch": "The email on this provider account doesn't match your account email. Use a provider account with the same email.",
+        "emailNotVerified": "Check your email to verify your address, then sign in again."
       }
     }
   }

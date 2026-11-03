@@ -253,10 +253,10 @@
       "dialogTitle": "Cambiar logo",
       "resetToAuto": "Restablecer a automático",
       "remove": "Quitar logo",
-      "pickerDescription": "Pick a brand logo or use letters instead.",
-      "updatedToast": "Logo updated",
+      "pickerDescription": "Elige un logo de marca o usa letras en su lugar.",
+      "updatedToast": "Logo actualizado",
       "resetToast": "Logo eliminado",
-      "updateError": "Couldn't update the logo. Try again.",
+      "updateError": "No se pudo actualizar el logo. Vuelve a intentarlo.",
       "lettersLabel": "Letras (1–2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Color",
@@ -370,7 +370,7 @@
       "message": "Has guardado {amount}."
     },
     "unrealizedLossAlert": {
-      "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"
+      "title": "{count} sosteniendo tu alerta de pérdida | {count} existencias cruzaron tu alerta de pérdida"
     }
   },
   "currencyNames": {

@@ -1,6 +1,7 @@
 import { ASSET_CLASS, INVESTMENT_TRANSACTION_CATEGORY, SECURITY_PROVIDER } from '@bt/shared/types/investments';
+import Coingecko from '@coingecko/coingecko-typescript';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import { logger } from '@js/utils';
 import Holdings from '@models/investments/holdings.model';
@@ -9,6 +10,7 @@ import Portfolios from '@models/investments/portfolios.model';
 import Securities from '@models/investments/securities.model';
 import SecurityPricing from '@models/investments/security-pricing.model';
 import { restClient } from '@polygon.io/client-js';
+import { FmpClient } from '@services/investments/data-providers/clients/fmp-client';
 import { dataProviderFactory } from '@services/investments/data-providers/provider-factory';
 import * as helpers from '@tests/helpers';
 import { makeRequest } from '@tests/helpers/common';
@@ -75,8 +77,8 @@ function mockYahooIsinSearch() {
         exchange: 'PAR',
         fullExchangeName: 'Paris',
         quoteType: 'ETF',
-        regularMarketPreviousClose: 92.5,
-        regularMarketTime: Math.floor(Date.now() / 1000),
+        regularMarketPrice: 92.5,
+        regularMarketTime: new Date(),
       },
     },
   });
@@ -88,6 +90,41 @@ async function searchIsinListing() {
   if (!listing) throw new Error('ISIN listing missing from search results');
   return listing;
 }
+
+const seedSecurity = ({
+  providerName,
+  assetClass = ASSET_CLASS.stocks,
+  providerSymbol = 'IVV',
+}: {
+  providerName: SECURITY_PROVIDER;
+  assetClass?: ASSET_CLASS;
+  providerSymbol?: string;
+}) =>
+  Securities.create({
+    symbol: providerSymbol.toUpperCase(),
+    providerSymbol,
+    name: 'First price security',
+    currencyCode: 'USD',
+    providerName,
+    assetClass,
+  });
+
+const addHolding = ({ portfolioId, security }: { portfolioId: string; security: Securities }) =>
+  makeRequest({
+    method: 'post',
+    url: '/investments/holding',
+    payload: {
+      portfolioId,
+      searchResult: {
+        symbol: security.symbol,
+        providerSymbol: security.providerSymbol,
+        name: security.name,
+        assetClass: security.assetClass,
+        providerName: security.providerName,
+        currencyCode: security.currencyCode,
+      },
+    },
+  });
 
 describe('Investment holdings', () => {
   let investmentPortfolio: Portfolios;
@@ -675,8 +712,8 @@ describe('Investment holdings', () => {
       it("fetches the first price through the stored security's provider and symbol, not the ones in the request", async () => {
         const mockedYahooQuote = jest.fn<any>().mockResolvedValue({
           symbol: 'MEUD.PA',
-          regularMarketPreviousClose: 92.5,
-          regularMarketTime: Math.floor(Date.now() / 1000),
+          regularMarketPrice: 92.5,
+          regularMarketTime: new Date(),
         });
         mockedYahooFinance.mockImplementation(
           () =>
@@ -722,6 +759,147 @@ describe('Investment holdings', () => {
 
         const reloaded = await Securities.findByPk(seeded.id);
         expect(reloaded?.priceSourceSymbol).toBe('MEUD.PA');
+      });
+    });
+
+    describe('first price of a newly added security', () => {
+      const SESSION_END = new Date('2026-10-30T20:00:00.000Z');
+      const SESSION_DAY_UTC_MIDNIGHT = '2026-10-30T00:00:00.000Z';
+      const LAST_PRICE = 694.81;
+      const PREVIOUS_SESSION_CLOSE = 707.32;
+      // Differs from LAST_PRICE so a stored LAST_PRICE can only come from the first-price write,
+      // not from the background history sync filling the same day.
+      const SESSION_BAR_CLOSE = 693.5;
+      const sessionBarChart = async () => ({
+        meta: { currency: 'USD' },
+        quotes: [{ date: new Date('2026-10-30T13:30:00.000Z'), close: SESSION_BAR_CLOSE, adjclose: SESSION_BAR_CLOSE }],
+      });
+
+      const defaultFmpImplementation = jest.mocked(FmpClient).getMockImplementation()!;
+      const defaultCoingeckoImplementation = jest.mocked(Coingecko).getMockImplementation()!;
+
+      afterEach(() => {
+        jest.mocked(FmpClient).mockImplementation(defaultFmpImplementation);
+        jest.mocked(Coingecko).mockImplementation(defaultCoingeckoImplementation);
+        dataProviderFactory.clearCache();
+      });
+
+      const expectSingleSessionPrice = async ({ security, price }: { security: Securities; price: number }) => {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        const [holding] = await helpers.getHoldings({
+          portfolioId: investmentPortfolio.id,
+          payload: { securityId: security.id },
+          raw: true,
+        });
+        expect(Number(holding!.latestPrice)).toBeCloseTo(price, 5);
+        expect(new Date(holding!.priceDate!).toISOString()).toBe(SESSION_DAY_UTC_MIDNIGHT);
+
+        const rows = await SecurityPricing.findAll({ where: { securityId: security.id } });
+        expect(rows).toHaveLength(1);
+      };
+
+      it("stores Yahoo's last traded price on its session day, not the prior session's close", async () => {
+        mockYahoo({
+          search: () => ({ quotes: [] }),
+          quotes: {
+            IVV: {
+              symbol: 'IVV',
+              regularMarketPrice: LAST_PRICE,
+              regularMarketPreviousClose: PREVIOUS_SESSION_CLOSE,
+              regularMarketTime: SESSION_END,
+            },
+          },
+          chart: sessionBarChart,
+        });
+        const security = await seedSecurity({ providerName: SECURITY_PROVIDER.yahoo });
+
+        const response = await addHolding({ portfolioId: investmentPortfolio.id, security });
+        expect(response.statusCode).toBe(201);
+
+        await expectSingleSessionPrice({ security, price: LAST_PRICE });
+      });
+
+      it("stores FMP's last traded price on its session day, not the prior session's close", async () => {
+        mockYahoo({ search: () => ({ quotes: [] }), quotes: {}, chart: sessionBarChart });
+        jest.mocked(FmpClient).mockImplementation(
+          () =>
+            ({
+              getQuote: jest.fn<any>().mockResolvedValue([
+                {
+                  symbol: 'IVV',
+                  price: LAST_PRICE,
+                  previousClose: PREVIOUS_SESSION_CLOSE,
+                  timestamp: SESSION_END.getTime() / 1000,
+                },
+              ]),
+            }) as any,
+        );
+        dataProviderFactory.clearCache();
+        const security = await seedSecurity({ providerName: SECURITY_PROVIDER.fmp });
+
+        const response = await addHolding({ portfolioId: investmentPortfolio.id, security });
+        expect(response.statusCode).toBe(201);
+
+        await expectSingleSessionPrice({ security, price: LAST_PRICE });
+      });
+
+      it("replaces the day's price when the same security is added again later that day", async () => {
+        const quotes: Record<string, unknown> = {
+          IVV: { symbol: 'IVV', regularMarketPrice: 690, regularMarketTime: new Date('2026-10-30T15:00:00.000Z') },
+        };
+        mockYahoo({ search: () => ({ quotes: [] }), quotes, chart: sessionBarChart });
+        const security = await seedSecurity({ providerName: SECURITY_PROVIDER.yahoo });
+        const secondPortfolio = await helpers.createPortfolio({
+          payload: helpers.buildPortfolioPayload({ name: 'Second portfolio' }),
+          raw: true,
+        });
+
+        const first = await addHolding({ portfolioId: secondPortfolio.id, security });
+        expect(first.statusCode).toBe(201);
+
+        quotes.IVV = { symbol: 'IVV', regularMarketPrice: LAST_PRICE, regularMarketTime: SESSION_END };
+        const second = await addHolding({ portfolioId: investmentPortfolio.id, security });
+        expect(second.statusCode).toBe(201);
+
+        await expectSingleSessionPrice({ security, price: LAST_PRICE });
+      });
+
+      it('keeps the provider timestamp for crypto, which stores intraday snapshots', async () => {
+        const lastUpdatedAt = new Date('2026-10-30T15:42:10.000Z');
+        jest.mocked(Coingecko).mockImplementation(
+          () =>
+            ({
+              search: { get: jest.fn<any>().mockResolvedValue({ coins: [] }) },
+              simple: {
+                price: {
+                  get: jest.fn<any>().mockResolvedValue({
+                    bitcoin: { usd: 65000, last_updated_at: lastUpdatedAt.getTime() / 1000 },
+                  }),
+                },
+              },
+              coins: {
+                marketChart: {
+                  get: jest.fn<any>().mockResolvedValue({ prices: [] }),
+                  getRange: jest.fn<any>().mockResolvedValue({ prices: [] }),
+                },
+              },
+            }) as any,
+        );
+        dataProviderFactory.clearCache();
+        const security = await seedSecurity({
+          providerName: SECURITY_PROVIDER.coingecko,
+          assetClass: ASSET_CLASS.crypto,
+          providerSymbol: 'bitcoin',
+        });
+
+        const response = await addHolding({ portfolioId: investmentPortfolio.id, security });
+        expect(response.statusCode).toBe(201);
+
+        const rows = await SecurityPricing.findAll({ where: { securityId: security.id } });
+        expect(rows).toHaveLength(1);
+        expect(rows[0]!.date.toISOString()).toBe(lastUpdatedAt.toISOString());
+        expect(rows[0]!.priceClose.toNumber()).toBe(65000);
       });
     });
 

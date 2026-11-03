@@ -1,155 +1,155 @@
 {
   "portfolioDetail": {
     "loading": "Caricamento in corso...",
-    "loadingDetails": "Loading portfolio details...",
-    "loadError": "Failed to load portfolio details.",
-    "tryAgain": "Try again",
-    "notFoundTitle": "Portfolio not found",
-    "notFoundDescription": "We couldn't find this portfolio. It may have been deleted or you might not have access to it.",
-    "backToInvestments": "Back to investments",
-    "subtitle": "Portfolio overview",
+    "loadingDetails": "Caricamento dei dettagli del portafoglio...",
+    "loadError": "Caricamento dei dettagli del portafoglio non riuscito.",
+    "tryAgain": "Riprova",
+    "notFoundTitle": "Portafoglio non trovato",
+    "notFoundDescription": "Impossibile trovare questo portafoglio. Potrebbe essere stato eliminato oppure non si dispone dell'accesso.",
+    "backToInvestments": "Torna agli investimenti",
+    "subtitle": "Panoramica del portafoglio",
     "actions": {
-      "transfer": "Transfer",
-      "edit": "Edit",
+      "transfer": "Trasferisci",
+      "edit": "Modifica",
       "delete": "Elimina",
-      "exchangeCurrency": "Exchange currency"
+      "exchangeCurrency": "Cambio valuta"
     },
     "balance": {
-      "totalValue": "Total value",
+      "totalValue": "Valore totale",
       "baseCurrencyEquivalent": "≈ {value} in {code}",
-      "loadError": "Failed to load portfolio summary.",
+      "loadError": "Caricamento del riepilogo del portafoglio non riuscito.",
       "metrics": {
-        "costBasis": "Cost basis",
-        "unrealized": "Unrealized",
-        "realized": "Realized",
-        "totalReturn": "Total return"
+        "costBasis": "Costo di carico",
+        "unrealized": "Non realizzato",
+        "realized": "Realizzato",
+        "totalReturn": "Rendimento totale"
       }
     },
     "cashBalances": {
-      "title": "Cash balances",
-      "emptyState": "No cash balances",
+      "title": "Saldi di liquidità",
+      "emptyState": "Nessun saldo di liquidità",
       "tabs": {
-        "balances": "Balances",
-        "cashTransactions": "Transactions",
-        "buysSells": "Buys & sells"
+        "balances": "Saldi",
+        "cashTransactions": "Transazioni",
+        "buysSells": "Acquisti e vendite"
       },
       "cashTransactions": {
-        "addButton": "Add cash transaction",
-        "emptyState": "No cash transactions yet",
-        "deposit": "Deposit",
-        "withdrawal": "Withdrawal",
-        "transferIn": "Transfer in",
-        "transferOut": "Transfer out",
-        "exchange": "Currency exchange",
-        "deleteConfirm": "Delete this cash transaction?",
-        "linkedTransactionNote": "This transfer has a linked account transaction. What would you like to do with it?",
-        "keepLinkedTransaction": "Keep account transaction. Original transaction details will be restored.",
-        "deleteLinkedTransaction": "Also delete the linked account transaction",
-        "adjustmentBadge": "Adjustment",
-        "noCashBadge": "No cash impact",
-        "markedAsAdjustment": "Marked as a balance correction",
-        "markedAsContribution": "Marked as a real contribution",
-        "adjustmentError": "Failed to update this transfer",
-        "rowActions": "Transaction actions",
-        "emptyStateDescription": "Deposits, withdrawals and transfers for this portfolio will appear here.",
-        "edit": "Edit",
+        "addButton": "Aggiungi transazione di liquidità",
+        "emptyState": "Ancora nessuna transazione di liquidità",
+        "deposit": "Versamento",
+        "withdrawal": "Prelievo",
+        "transferIn": "Trasferimento in entrata",
+        "transferOut": "Trasferimento in uscita",
+        "exchange": "Cambio valuta",
+        "deleteConfirm": "Eliminare questa transazione di liquidità?",
+        "linkedTransactionNote": "Questo trasferimento ha una transazione del conto collegata. Cosa farne?",
+        "keepLinkedTransaction": "Mantieni la transazione del conto. Verranno ripristinati i dettagli originali della transazione.",
+        "deleteLinkedTransaction": "Elimina anche la transazione del conto collegata",
+        "adjustmentBadge": "Rettifica",
+        "noCashBadge": "Nessun impatto sulla liquidità",
+        "markedAsAdjustment": "Segnata come correzione del saldo",
+        "markedAsContribution": "Segnata come versamento effettivo",
+        "adjustmentError": "Aggiornamento del trasferimento non riuscito",
+        "rowActions": "Azioni della transazione",
+        "emptyStateDescription": "Versamenti, prelievi e trasferimenti di questo portafoglio compariranno qui.",
+        "edit": "Modifica",
         "editDialog": {
-          "title": "Edit cash transaction",
-          "description": "Change how this transaction is treated in reports.",
+          "title": "Modifica transazione di liquidità",
+          "description": "Modificare il modo in cui questa transazione viene trattata nei report.",
           "save": "Salva modifiche"
         }
       },
       "buysSells": {
-        "emptyState": "No buy/sell transactions",
-        "shares": "shares"
+        "emptyState": "Nessuna transazione di acquisto/vendita",
+        "shares": "quote"
       }
     },
     "holdings": {
-      "title": "Holdings",
-      "subtitle": "{count} symbols",
-      "filterPlaceholder": "Filter by symbol or name...",
-      "addButton": "Add symbol",
-      "importButton": "Import transactions",
-      "importButtonShort": "Import"
+      "title": "Posizioni",
+      "subtitle": "{count} simboli",
+      "filterPlaceholder": "Filtra per simbolo o nome...",
+      "addButton": "Aggiungi simbolo",
+      "importButton": "Importa transazioni",
+      "importButtonShort": "Importa"
     },
     "holdingsTable": {
-      "loadError": "Could not load holdings",
-      "empty": "No holdings yet",
-      "noFilterResults": "No matching holdings",
-      "noFilterResultsDescription": "No holdings match your search. Try a different symbol or name.",
-      "clearFilterButton": "Clear search",
+      "loadError": "Impossibile caricare le posizioni",
+      "empty": "Ancora nessuna posizione",
+      "noFilterResults": "Nessuna posizione corrispondente",
+      "noFilterResultsDescription": "Nessuna posizione corrisponde alla ricerca. Provare un simbolo o un nome diverso.",
+      "clearFilterButton": "Cancella ricerca",
       "headers": {
-        "symbol": "Symbol",
-        "name": "Name",
-        "shares": "Shares",
-        "price": "Price",
-        "avgCostPerShare": "AC/Share",
-        "totalCost": "Total cost",
-        "marketValue": "Market value",
-        "unrealizedGain": "Unrealized gain",
-        "realizedGain": "Realized gain"
+        "symbol": "Simbolo",
+        "name": "Nome",
+        "shares": "Quote",
+        "price": "Prezzo",
+        "avgCostPerShare": "PMC/quota",
+        "totalCost": "Costo totale",
+        "marketValue": "Valore di mercato",
+        "unrealizedGain": "Plusvalenza non realizzata",
+        "realizedGain": "Plusvalenza realizzata"
       },
       "transactions": {
-        "loading": "Loading transactions…",
-        "empty": "No transactions found.",
-        "addFirstButton": "Add first transaction"
+        "loading": "Caricamento transazioni…",
+        "empty": "Nessuna transazione trovata.",
+        "addFirstButton": "Aggiungi la prima transazione"
       },
-      "closedPositions": "Closed positions ({count})",
-      "stalePrice": "Last available price. Market value and gains may be outdated.",
+      "closedPositions": "Posizioni chiuse ({count})",
+      "stalePrice": "Ultimo prezzo disponibile. Valore di mercato e plusvalenze potrebbero non essere aggiornati.",
       "deleteHolding": {
-        "ariaLabel": "Delete holding",
-        "title": "Delete holding",
-        "description": "This will permanently delete the {symbol} holding and all of its transactions. This action cannot be undone.",
-        "confirmLabel": "Delete holding",
-        "success": "Holding deleted.",
-        "error": "Failed to delete the holding."
+        "ariaLabel": "Elimina posizione",
+        "title": "Elimina posizione",
+        "description": "La posizione {symbol} e tutte le sue transazioni verranno eliminate definitivamente. Questa azione non può essere annullata.",
+        "confirmLabel": "Elimina posizione",
+        "success": "Posizione eliminata.",
+        "error": "Eliminazione della posizione non riuscita."
       },
       "addTransactionDialog": {
         "title": "Aggiungi transazione",
-        "description": "Add a new transaction to your portfolio."
+        "description": "Aggiungere una nuova transazione al portafoglio."
       },
-      "tryAgainLater": "Please try again later",
+      "tryAgainLater": "Riprovare più tardi",
       "emptyDescription": "Aggiungere la prima operazione per iniziare a monitorare gli investimenti",
-      "addFirstHolding": "Add first holding",
-      "importTransactions": "Or import from a file"
+      "addFirstHolding": "Aggiungi la prima posizione",
+      "importTransactions": "Oppure importa da un file"
     },
     "transactionsList": {
-      "title": "Transactions",
+      "title": "Transazioni",
       "addButton": "Aggiungi transazione",
-      "loadingMore": "Loading more transactions…",
+      "loadingMore": "Caricamento di altre transazioni…",
       "headers": {
-        "date": "Date",
-        "type": "Type",
-        "note": "Note",
-        "quantity": "Quantity",
-        "price": "Price",
-        "fees": "Fees",
-        "amount": "Amount",
-        "refAmount": "Base amount",
-        "refFees": "Base fees",
+        "date": "Data",
+        "type": "Tipo",
+        "note": "Nota",
+        "quantity": "Quantità",
+        "price": "Prezzo",
+        "fees": "Commissioni",
+        "amount": "Importo",
+        "refAmount": "Importo base",
+        "refFees": "Commissioni base",
         "settlementAmount": "Contanti",
-        "settlementCurrency": "Cash ccy",
-        "settlementFees": "Cash fees",
-        "settlementRate": "FX rate",
-        "createdAt": "Added on"
+        "settlementCurrency": "Valuta liquidità",
+        "settlementFees": "Commissioni liquidità",
+        "settlementRate": "Tasso di cambio",
+        "createdAt": "Aggiunta il"
       },
       "categories": {
-        "buy": "Buy",
-        "sell": "Sell",
-        "dividend": "Dividend",
-        "transfer": "Transfer",
-        "tax": "Tax",
-        "fee": "Fee",
+        "buy": "Acquisto",
+        "sell": "Vendita",
+        "dividend": "Dividendo",
+        "transfer": "Trasferimento",
+        "tax": "Imposta",
+        "fee": "Commissione",
         "cancel": "Annulla",
-        "other": "Other"
+        "other": "Altro"
       },
       "headerTooltips": {
-        "amount": "Transaction total in the security's trading currency.",
-        "refAmount": "Transaction total converted to your base currency.",
-        "settlementAmount": "Cash actually paid or received in your account, in its settlement currency."
+        "amount": "Totale della transazione nella valuta di negoziazione del titolo.",
+        "refAmount": "Totale della transazione convertito nella valuta di base.",
+        "settlementAmount": "Liquidità effettivamente pagata o ricevuta sul conto, nella valuta di regolamento."
       },
       "deleteTransaction": {
-        "tooltip": "Delete transaction"
+        "tooltip": "Elimina transazione"
       }
     }
   }

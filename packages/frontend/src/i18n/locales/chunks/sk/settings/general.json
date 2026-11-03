@@ -16,13 +16,13 @@
         "successNotification": "Začiatok výplatného obdobia aktualizovaný"
       },
       "unrealizedLossAlert": {
-        "label": "Unrealized loss alerts",
-        "description": "Get one notification when a holding's loss crosses either threshold. Checked daily after market prices update; it won't repeat until the holding recovers.",
-        "percentLabel": "Loss percentage",
-        "percentDescription": "Alert when a holding is down at least this much from its cost.",
-        "amountLabel": "Loss amount",
-        "amountDescription": "Or when the loss reaches this amount in your base currency, whatever the percentage.",
-        "successNotification": "Loss alert settings saved"
+        "label": "Upozornenia na nerealizovanú stratu",
+        "description": "Dostanete jedno upozornenie, keď strata pozície prekročí niektorý z limitov. Kontroluje sa denne po aktualizácii trhových cien; neopakuje sa, kým sa pozícia nezotaví.",
+        "percentLabel": "Percento straty",
+        "percentDescription": "Upozorniť, keď je pozícia pod nákupnou cenou aspoň o toľko.",
+        "amountLabel": "Suma straty",
+        "amountDescription": "Alebo keď strata dosiahne túto sumu vo vašej základnej mene, bez ohľadu na percento.",
+        "successNotification": "Nastavenia upozornení na stratu uložené"
       },
       "manualTransferMatching": {
         "label": "Priraďovať prevody k manuálnym účtom",
