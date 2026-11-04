@@ -238,7 +238,7 @@
         },
         "hints": {
           "noHistory": "Il confronto compare dopo il primo mese completo.",
-          "plannedFailed": "Couldn't load planned transactions. The forecast may not include them.",
+          "plannedFailed": "Impossibile caricare le transazioni pianificate. La previsione potrebbe non includerle.",
           "fewMonths": "Media del {n} mese completo disponibile finora. | Media dei {n} mesi completi disponibili finora."
         },
         "loadFailed": "Impossibile caricare le spese.",

@@ -123,9 +123,9 @@
       "tagModeAddShort": "Aggiungi",
       "tagModeReplaceShort": "Sostituisci",
       "tagModeRemoveShort": "Rimuovi",
-      "tagModeAddHint": "Keeps current tags and adds these.",
-      "tagModeReplaceHint": "Removes all current tags, then adds these.",
-      "tagModeRemoveHint": "Removes only these tags. Other tags stay.",
+      "tagModeAddHint": "Mantiene le etichette attuali e aggiunge queste.",
+      "tagModeReplaceHint": "Rimuove tutte le etichette attuali, poi aggiunge queste.",
+      "tagModeRemoveHint": "Rimuove solo queste etichette. Le altre restano.",
       "totals": {
         "income": "Entrate",
         "expense": "Uscite",
