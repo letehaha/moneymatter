@@ -1,4 +1,8 @@
-import { NotificationModel } from '@bt/shared/types';
+import {
+  BroadcastSystemNotificationRequest,
+  BroadcastSystemNotificationResponse,
+  NotificationModel,
+} from '@bt/shared/types';
 import * as helpers from '@tests/helpers';
 import { Response } from 'express';
 
@@ -117,4 +121,19 @@ export async function dismissNotification({
   });
 
   return result;
+}
+
+export function adminBroadcastNotification<R extends boolean | undefined = false>({
+  payload,
+  raw,
+}: {
+  payload: BroadcastSystemNotificationRequest;
+  raw?: R;
+}) {
+  return helpers.makeRequest<BroadcastSystemNotificationResponse, R>({
+    method: 'post',
+    url: '/admin/notifications/broadcast',
+    payload,
+    raw,
+  });
 }

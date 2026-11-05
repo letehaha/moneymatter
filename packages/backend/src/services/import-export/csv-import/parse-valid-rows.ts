@@ -138,7 +138,7 @@ export async function parseValidRows({
     // Get category name (if from column)
     const categoryName = categoryIndex !== -1 ? row[categoryIndex]?.trim() || undefined : undefined;
 
-    // Get tag names (if a tag column is mapped). Comma-split, trimmed, blanks
+    // Get tag names (if a tag column is mapped). Comma/semicolon-split, trimmed, blanks
     // dropped. Absent when no tag column was mapped so the row behaves exactly
     // as it did before tags existed.
     const tagNames = tagIndex !== -1 ? splitTagCell(row[tagIndex]) : undefined;

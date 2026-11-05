@@ -36,9 +36,10 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   // better-auth extensions — account credential management, no monetary data.
   'POST /api/v1/auth/set-password',
 
-  // Notifications read-marking — high-frequency, non-monetary state.
+  // Notifications: read-marking and admin broadcasts, non-monetary state.
   'POST /api/v1/notifications/read-all',
   'POST /api/v1/notifications/:id/read',
+  'POST /api/v1/admin/notifications/broadcast',
 
   // Billing and admin plan grants: Stripe sessions and plan flags, no monetary data.
   'PATCH /api/v1/admin/users/:id/plan',

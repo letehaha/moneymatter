@@ -7,6 +7,11 @@ describe('splitTagCell', () => {
     expect(splitTagCell('food, travel')).toEqual(['food', 'travel']);
   });
 
+  it('splits on semicolons as well as commas', () => {
+    expect(splitTagCell('Trip to Europe 2026; food, travel')).toEqual(['Trip to Europe 2026', 'food', 'travel']);
+    expect(splitTagCell(';a;, b,;')).toEqual(['a', 'b']);
+  });
+
   it('drops empty segments produced by stray or trailing commas', () => {
     expect(splitTagCell('food,, travel,')).toEqual(['food', 'travel']);
   });

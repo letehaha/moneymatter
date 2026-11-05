@@ -28,29 +28,32 @@
       </template>
     </ResponsiveTooltip>
 
-    <div v-else class="flex items-center gap-1">
-      <span
-        v-for="tag in visibleTags"
-        :key="tag.id"
-        class="inline-flex max-w-12.5 items-center gap-0.5 truncate rounded-full px-1.5 py-0 text-[10px] font-medium text-white/90"
-        :style="{ backgroundColor: tag.color }"
-      >
-        {{ tag.name }}
-      </span>
-      <span v-if="hiddenTagsCount > 0" class="text-muted-foreground text-[10px]"> +{{ hiddenTagsCount }} </span>
+    <div v-else class="flex min-w-0 items-center gap-1">
+      <!-- Chips that don't fit wrap onto a clipped second line. max-w bounds the list so it can wrap in content-sized rows. -->
+      <div :ref="setListRef" class="flex h-4 max-w-28 min-w-0 flex-wrap gap-1 overflow-hidden">
+        <span
+          v-for="tag in tags"
+          :key="tag.id"
+          class="inline-block max-w-full truncate rounded-full px-1.5 text-[10px] leading-4 font-medium text-white/90"
+          :style="{ backgroundColor: tag.color }"
+        >
+          {{ tag.name }}
+        </span>
+      </div>
+      <span v-if="hiddenTagsCount > 0" class="text-muted-foreground shrink-0 text-[10px]">+{{ hiddenTagsCount }}</span>
     </div>
   </template>
 </template>
 
 <script lang="ts" setup>
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
+import { useFittingChips } from '@/composable/use-fitting-chips';
 import { TagModel } from '@bt/shared/types';
 import { useMediaQuery } from '@vueuse/core';
 import { computed } from 'vue';
 
 export type TagsIndicatorVariant = 'chips' | 'rails';
 
-const MAX_VISIBLE_TAGS = 2;
 const MAX_VISIBLE_RAILS = 4;
 
 // On touch the tooltip opens on tap, which would also open the transaction behind it.
@@ -64,8 +67,7 @@ const props = withDefaults(
   { variant: 'chips' },
 );
 
-const visibleTags = computed(() => props.tags.slice(0, MAX_VISIBLE_TAGS));
-const hiddenTagsCount = computed(() => Math.max(props.tags.length - MAX_VISIBLE_TAGS, 0));
+const { setListRef, hiddenCount: hiddenTagsCount } = useFittingChips({ items: () => props.tags });
 
 // Sorted by name so the same set of tags always renders in the same order.
 const sortedTags = computed(() => [...props.tags].sort((a, b) => a.name.localeCompare(b.name)));

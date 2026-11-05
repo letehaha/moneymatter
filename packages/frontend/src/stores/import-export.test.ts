@@ -1109,7 +1109,7 @@ describe('useImportExportStore – skipped accounts', () => {
     store.columnMapping.tags = { option: TagOptionValue.mapDataSourceColumn, columnName: 'labels' };
     store.csvDataRowHeaders = ['date', 'amount', 'account', 'labels'];
     store.csvDataRows = [
-      ['2026-01-01', '10', 'Checking', 'food, shared'],
+      ['2026-01-01', '10', 'Checking', 'food; shared'],
       ['2026-01-02', '20', 'Savings', 'travel'],
       ['2026-01-03', '30', 'Savings', 'shared'],
     ];

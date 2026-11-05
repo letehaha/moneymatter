@@ -3,6 +3,8 @@ import MultiSelectField from '@/components/fields/multi-select-field.vue';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import type { RecordId } from '@bt/shared/types';
+import MultiSelectItem from '@/components/fields/multi-select-item.vue';
+import { ListboxContent } from 'reka-ui';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -40,30 +42,26 @@ const toggle = ({ id }: { id: RecordId }) =>
     :label="placeholder"
     :selected-label="selectedLabel"
     :search-placeholder="$t('fields.select.searchPlaceholder')"
+    :selected="modelValue"
     @clear="emit('update:modelValue', [])"
   >
     <ScrollArea class="max-h-80" viewport-class="max-h-80">
-      <div class="p-2">
+      <ListboxContent class="p-2">
         <p v-if="!visibleOptions.length" class="text-muted-foreground py-4 text-center text-sm">
           {{ $t('automations.editor.noResults') }}
         </p>
 
-        <div
+        <MultiSelectItem
           v-for="option in visibleOptions"
           :key="option.id"
-          role="option"
-          :aria-selected="modelValue.includes(option.id)"
-          class="hover:bg-accent flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5"
-          @click="toggle({ id: option.id })"
+          :value="option.id"
+          class="gap-2.5 px-2 py-1.5"
+          @toggle="toggle({ id: option.id })"
         >
-          <Checkbox
-            :model-value="modelValue.includes(option.id)"
-            @click.stop
-            @update:model-value="toggle({ id: option.id })"
-          />
+          <Checkbox :model-value="modelValue.includes(option.id)" class="pointer-events-none" tabindex="-1" />
           <span class="min-w-0 flex-1 truncate text-sm">{{ option.name }}</span>
-        </div>
-      </div>
+        </MultiSelectItem>
+      </ListboxContent>
     </ScrollArea>
   </MultiSelectField>
 </template>

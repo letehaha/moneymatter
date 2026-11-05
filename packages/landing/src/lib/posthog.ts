@@ -11,6 +11,7 @@ type LandingAnalyticsEvent =
       properties: { location: 'header' | 'hero' | 'cta_section' | 'self_host' | 'pricing'; action: string };
     }
   | { event: 'landing_roadmap_clicked'; properties: { location: 'hero' | 'community' } }
+  | { event: 'landing_testflight_clicked'; properties: { location: 'hero' } }
   | { event: 'landing_premium_early_access_clicked'; properties: { location: 'pricing' } }
   | {
       event: 'landing_premium_early_access_submitted';

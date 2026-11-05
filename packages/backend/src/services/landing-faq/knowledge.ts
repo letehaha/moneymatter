@@ -189,8 +189,10 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 
 ## Apps, languages, sign-in
 
-- Web app only today. An iOS app is under development, with no release date yet. No Android or
-  desktop app. The web app can be added to a phone home screen as a PWA, but there is no offline mode.
+- Web app, plus an iPhone app in public beta on TestFlight: anyone can join at
+  https://testflight.apple.com/join/tm5q4V5H. It is not on the App Store yet, with no release date.
+  No Android or desktop app. The web app can be added to a phone home screen as a PWA, but has no
+  offline mode.
 - Languages: English, Ukrainian, Spanish, Indonesian, Russian. Spanish, Indonesian and Russian
   are community translations. Dark mode is supported.
 - Sign in with email and password, Google, GitHub or passkeys. You can see and log out active

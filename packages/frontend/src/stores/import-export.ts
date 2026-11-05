@@ -419,10 +419,10 @@ export const useImportExportStore = defineStore('importExport', () => {
     return name ? [name] : [];
   };
 
-  /** Must match the backend's `splitTagCell`: comma-separated names in one cell. */
+  /** Must match the backend's `splitTagCell`: comma- or semicolon-separated names in one cell. */
   const tagNamesInCell = (cell: string | undefined): string[] =>
     (cell ?? '')
-      .split(',')
+      .split(/[,;]/)
       .map((segment) => segment.trim())
       .filter((segment) => segment.length > 0);
 

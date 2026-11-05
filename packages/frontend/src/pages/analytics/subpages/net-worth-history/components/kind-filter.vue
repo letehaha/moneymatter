@@ -6,6 +6,7 @@
       :label="$t(allKey)"
       :selected-label="selectedLabel"
       :searchable="false"
+      :selected="includedKindList"
       content-class="w-64"
       @clear="clearSelection"
     >
@@ -13,25 +14,19 @@
         {{ $t(scopeHintKey) }}
       </div>
 
-      <div class="p-2">
-        <div
+      <ListboxContent class="p-2">
+        <MultiSelectItem
           v-for="kind in kinds"
           :key="kind"
-          role="option"
-          :aria-selected="isChecked(kind)"
-          :class="
-            cn(
-              'hover:bg-accent flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5',
-              isChecked(kind) && 'bg-primary/5',
-            )
-          "
-          @click="toggleKind(kind)"
+          :value="kind"
+          class="data-[state=checked]:bg-primary/5 gap-2.5 px-2 py-1.5"
+          @toggle="toggleKind(kind)"
         >
-          <Checkbox :model-value="isChecked(kind)" @click.stop @update:model-value="toggleKind(kind)" />
+          <Checkbox :model-value="isChecked(kind)" class="pointer-events-none" tabindex="-1" />
           <span v-if="colors" class="size-2.5 shrink-0 rounded-full" :style="{ backgroundColor: colors[kind] }" />
           <span class="min-w-0 flex-1 truncate text-sm">{{ $t(labelKeys[kind]) }}</span>
-        </div>
-      </div>
+        </MultiSelectItem>
+      </ListboxContent>
     </MultiSelectField>
   </div>
 </template>
@@ -39,7 +34,8 @@
 <script setup lang="ts" generic="T extends string">
 import MultiSelectField from '@/components/fields/multi-select-field.vue';
 import { Checkbox } from '@/components/lib/ui/checkbox';
-import { cn } from '@/lib/utils';
+import MultiSelectItem from '@/components/fields/multi-select-item.vue';
+import { ListboxContent } from 'reka-ui';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -89,6 +85,7 @@ const includedKinds = computed<Set<T>>(
   () => new Set(resolveSelectedKinds({ stored: props.modelValue ?? [], available: props.kinds })),
 );
 
+const includedKindList = computed(() => [...includedKinds.value]);
 const selectedCount = computed(() => includedKinds.value.size);
 
 // Narrowed only when a strict subset is included; "all included" and "none stored"

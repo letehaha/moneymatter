@@ -1,4 +1,5 @@
 import type { NotificationStruct } from '@/api/notifications';
+import { isHttpsUrl } from '@/common/utils/external-url';
 import { ROUTES_NAMES } from '@/routes/constants';
 import {
   type GoalReachedNotificationPayload,
@@ -7,6 +8,7 @@ import {
   type ShareInvitationNotificationPayload,
   type ShareInvitationSendFailedPayload,
   type ShareLifecycleNotificationPayload,
+  type SystemNotificationPayload,
   type TrackerAiMatchesNotificationPayload,
   type UnrealizedLossAlertNotificationPayload,
 } from '@bt/shared/types';
@@ -16,8 +18,8 @@ import {
  *
  * `spa` keeps the user inside the app — used for in-app deep-links so globally-mounted
  * dialogs (e.g. accept/decline) can pick up the query param without a full reload.
- * `external` falls back to a full navigation for targets that live outside the SPA router.
- * `null` means "not actionable" — changelog/system entries display content but don't deep-link.
+ * `external` opens in a new tab.
+ * `null` means "not actionable" — changelog entries and system entries without a url don't deep-link.
  */
 type NotificationRoute =
   | {
@@ -166,6 +168,12 @@ export const buildNotificationRoute = (notification: NotificationStruct): Notifi
         kind: 'spa',
         to: { name: ROUTES_NAMES.optimizationsReconciliation, query: { tab: 'stuck-pending' } },
       };
+
+    case NOTIFICATION_TYPES.system: {
+      const url = (notification.payload as SystemNotificationPayload | undefined)?.url;
+      if (!url || !isHttpsUrl(url)) return null;
+      return { kind: 'external', href: url };
+    }
 
     default:
       return null;

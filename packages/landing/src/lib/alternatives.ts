@@ -3,7 +3,7 @@ export const ALTERNATIVE_PAGES = [
     label: 'Wallet by BudgetBakers alternative',
     href: '/alternatives/wallet-by-budgetbakers',
     verdict:
-      'Switch if you want open-source code you can host yourself and your Wallet records, labels and transfers kept. Stay on Wallet if you want a native phone app that works offline: MoneyMatter is a web app and needs a connection.',
+      'Switch if you want open-source code you can host yourself and your Wallet records, labels and transfers kept. Stay on Wallet if you want a phone app that works offline: MoneyMatter needs a connection.',
     importer: 'Dedicated importer for Wallet CSV exports in English or Spanish.',
   },
   {

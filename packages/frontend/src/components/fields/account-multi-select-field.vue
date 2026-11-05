@@ -10,11 +10,12 @@
     :error-message="errorMessage"
     :disabled="disabled"
     :trigger-class="triggerClass"
+    :selected="modelValue"
     content-class="w-80"
     @clear="clearSelection"
   >
     <ScrollArea class="max-h-80" viewport-class="max-h-80">
-      <div class="p-2">
+      <ListboxContent class="p-2">
         <div v-if="isLoading" class="text-muted-foreground py-4 text-center text-sm">
           {{ $t('common.loading') }}
         </div>
@@ -25,7 +26,7 @@
         <template v-for="section in displaySections" :key="section.id">
           <!-- Grouped accounts: collapsible section with a tri-state select-all header. -->
           <Collapsible v-if="section.showHeader" :open="isSectionExpanded(section.id)" class="mb-0.5">
-            <div class="hover:bg-accent flex items-center gap-2 rounded-md pr-2">
+            <div class="hover:bg-accent flex items-center gap-2 rounded-md pr-2" @mousedown.prevent @keydown.enter.stop>
               <div class="flex shrink-0 cursor-pointer items-center py-2 pr-1 pl-2" @click="toggleSection(section)">
                 <Checkbox
                   :model-value="sectionCheckState(section)"
@@ -51,50 +52,38 @@
             </div>
 
             <CollapsibleContent>
-              <div
+              <MultiSelectItem
                 v-for="account in section.accounts"
                 :key="account.id"
-                role="option"
-                :aria-selected="isSelected(account)"
-                :class="
-                  cn(
-                    'hover:bg-accent flex w-full cursor-pointer items-center gap-2.5 rounded-md py-1.5 pr-2 pl-8',
-                    isSelected(account) && 'bg-primary/5',
-                  )
-                "
-                @click="toggleAccount(account)"
+                :value="account.id"
+                class="data-[state=checked]:bg-primary/5 gap-2.5 py-1.5 pr-2 pl-8"
+                @toggle="toggleAccount(account)"
               >
-                <Checkbox :model-value="isSelected(account)" @click.stop @update:model-value="toggleAccount(account)" />
+                <Checkbox :model-value="isSelected(account)" class="pointer-events-none" tabindex="-1" />
                 <AccountLogo :account="account" class="size-5 shrink-0" />
                 <span class="min-w-0 flex-1 truncate text-sm">{{ account.name }}</span>
                 <span class="text-muted-foreground shrink-0 text-xs">{{ account.currencyCode }}</span>
-              </div>
+              </MultiSelectItem>
             </CollapsibleContent>
           </Collapsible>
 
           <!-- No groups configured: flat account list, no section header. -->
           <template v-else>
-            <div
+            <MultiSelectItem
               v-for="account in section.accounts"
               :key="account.id"
-              role="option"
-              :aria-selected="isSelected(account)"
-              :class="
-                cn(
-                  'hover:bg-accent flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5',
-                  isSelected(account) && 'bg-primary/5',
-                )
-              "
-              @click="toggleAccount(account)"
+              :value="account.id"
+              class="data-[state=checked]:bg-primary/5 gap-2.5 px-2 py-1.5"
+              @toggle="toggleAccount(account)"
             >
-              <Checkbox :model-value="isSelected(account)" @click.stop @update:model-value="toggleAccount(account)" />
+              <Checkbox :model-value="isSelected(account)" class="pointer-events-none" tabindex="-1" />
               <AccountLogo :account="account" class="size-5 shrink-0" />
               <span class="min-w-0 flex-1 truncate text-sm">{{ account.name }}</span>
               <span class="text-muted-foreground shrink-0 text-xs">{{ account.currencyCode }}</span>
-            </div>
+            </MultiSelectItem>
           </template>
         </template>
-      </div>
+      </ListboxContent>
     </ScrollArea>
   </MultiSelectField>
 </template>
@@ -106,9 +95,10 @@ import { Checkbox, type CheckedState } from '@/components/lib/ui/checkbox';
 import { Collapsible, CollapsibleContent } from '@/components/lib/ui/collapsible';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { type GroupedAccountsGroup, useGroupedAccounts } from '@/composable/use-grouped-accounts';
-import { cn } from '@/lib/utils';
 import { AccountModel } from '@bt/shared/types';
 import { ChevronDownIcon } from '@lucide/vue';
+import MultiSelectItem from '@/components/fields/multi-select-item.vue';
+import { ListboxContent } from 'reka-ui';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 

@@ -86,9 +86,36 @@ export interface TrackerAlertPayload {
   currencyCode: string;
 }
 
+export const SYSTEM_NOTIFICATION_ICONS = {
+  info: 'info',
+  announcement: 'announcement',
+  success: 'success',
+  warning: 'warning',
+} as const;
+
+export type SystemNotificationIcon = (typeof SYSTEM_NOTIFICATION_ICONS)[keyof typeof SYSTEM_NOTIFICATION_ICONS];
+
 export interface SystemNotificationPayload {
   code?: string;
   details?: Record<string, unknown>;
+  /** https link opened on click. */
+  url?: string;
+  /** Defaults to `info`. */
+  icon?: SystemNotificationIcon;
+}
+
+export interface BroadcastSystemNotificationRequest {
+  title: string;
+  message?: string;
+  url?: string;
+  icon?: SystemNotificationIcon;
+  /** Either one replaces the default audience (users active in the last 30 days). Omit rather than send an empty array. */
+  userIds?: number[];
+  emails?: string[];
+}
+
+export interface BroadcastSystemNotificationResponse {
+  created: number;
 }
 
 export interface ChangelogNotificationPayload {
