@@ -143,9 +143,31 @@ describe('buildNotificationRoute', () => {
     });
   });
 
+  describe('system', () => {
+    it('opens the https url externally', () => {
+      const href = 'https://www.reddit.com/r/moneymatterapp/comments/abc/ios_beta/';
+      const route = buildNotificationRoute(
+        baseNotification({ type: NOTIFICATION_TYPES.system, payload: { url: href } }),
+      );
+      expect(route).toEqual({ kind: 'external', href });
+    });
+
+    it('returns null without a url', () => {
+      expect(buildNotificationRoute(baseNotification({ type: NOTIFICATION_TYPES.system, payload: {} }))).toBeNull();
+    });
+
+    it.each(['http://example.com', 'javascript:alert(1)', 'not a url'])(
+      'returns null for non-https url "%s"',
+      (url) => {
+        expect(
+          buildNotificationRoute(baseNotification({ type: NOTIFICATION_TYPES.system, payload: { url } })),
+        ).toBeNull();
+      },
+    );
+  });
+
   describe('non-actionable types', () => {
     it.each([
-      NOTIFICATION_TYPES.system,
       NOTIFICATION_TYPES.changelog,
       NOTIFICATION_TYPES.tagReminder,
       NOTIFICATION_TYPES.shareDeclined,

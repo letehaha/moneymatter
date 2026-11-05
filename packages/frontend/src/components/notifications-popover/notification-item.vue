@@ -11,12 +11,12 @@ import {
   type ShareInvitationNotificationPayload,
   type ShareInvitationSendFailedPayload,
   type ShareLifecycleNotificationPayload,
+  type SystemNotificationPayload,
   TagReminderNotificationPayload,
   type TrackerAiMatchesNotificationPayload,
   type UnrealizedLossAlertNotificationPayload,
 } from '@bt/shared/types';
 import {
-  AlertTriangleIcon,
   CalendarCheckIcon,
   CalendarClockIcon,
   ClockIcon,
@@ -43,6 +43,7 @@ import { useI18n } from 'vue-i18n';
 import ChangelogContent from './changelog-content.vue';
 import DefaultContent from './default-content.vue';
 import ShareContent from './share-content.vue';
+import { getSystemIconVisual } from './system-icons';
 import TagReminderContent from './tag-reminder-content.vue';
 
 const SHARE_NOTIFICATION_TYPES: NotificationType[] = [
@@ -79,12 +80,15 @@ const { t, locale } = useI18n();
 const { formatDistanceToNow } = useDateLocale();
 const { formatAmountByCurrencyCode } = useFormatCurrency();
 
-const getIcon = (type: NotificationType) => {
-  switch (type) {
+const getSystemVisual = (notification: NotificationStruct) =>
+  getSystemIconVisual((notification.payload as SystemNotificationPayload | undefined)?.icon);
+
+const getIcon = (notification: NotificationStruct) => {
+  switch (notification.type) {
     case NOTIFICATION_TYPES.trackerAlert:
       return WalletIcon;
     case NOTIFICATION_TYPES.system:
-      return AlertTriangleIcon;
+      return getSystemVisual(notification).icon;
     case NOTIFICATION_TYPES.changelog:
     case NOTIFICATION_TYPES.trackerAiMatches:
       return SparklesIcon;
@@ -133,12 +137,12 @@ const getIcon = (type: NotificationType) => {
   }
 };
 
-const getIconBg = (type: NotificationType) => {
-  switch (type) {
+const getIconBg = (notification: NotificationStruct) => {
+  switch (notification.type) {
     case NOTIFICATION_TYPES.trackerAlert:
       return 'bg-orange-500';
     case NOTIFICATION_TYPES.system:
-      return 'bg-blue-500';
+      return getSystemVisual(notification).bg;
     case NOTIFICATION_TYPES.changelog:
       return 'bg-purple-500';
     case NOTIFICATION_TYPES.trackerAiMatches:
@@ -269,10 +273,8 @@ const handleDismiss = (event: Event) => {
     @click="handleClick"
   >
     <div class="flex items-start gap-3">
-      <div
-        :class="['mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full', getIconBg(notification.type)]"
-      >
-        <component :is="getIcon(notification.type)" class="size-4 text-white" />
+      <div :class="['mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full', getIconBg(notification)]">
+        <component :is="getIcon(notification)" class="size-4 text-white" />
       </div>
       <div class="min-w-0 flex-1">
         <div class="flex items-start justify-between gap-2">

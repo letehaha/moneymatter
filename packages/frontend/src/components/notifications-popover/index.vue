@@ -43,7 +43,7 @@ const handleNotificationClick = (notification: NotificationStruct) => {
   if (route.kind === 'spa') {
     router.push(route.to);
   } else {
-    window.location.href = route.href;
+    window.open(route.href, '_blank', 'noopener');
   }
 };
 
