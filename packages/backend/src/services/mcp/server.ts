@@ -55,6 +55,7 @@ import { registerGetPortfolioBalances } from './tools/get-portfolio-balances';
 import { registerGetPortfolioHoldings } from './tools/get-portfolio-holdings';
 import { registerGetPortfolioSummary } from './tools/get-portfolio-summary';
 import { registerGetPortfolios } from './tools/get-portfolios';
+import { registerGetRefundLinks } from './tools/get-refund-links';
 import { registerGetSpendingByCategories } from './tools/get-spending-by-categories';
 import { registerGetSubscriptionById } from './tools/get-subscription-by-id';
 import { registerGetSubscriptions } from './tools/get-subscriptions';
@@ -170,6 +171,7 @@ export function createMcpServer(): McpServer {
   registerBulkUpdateTransactions(server);
   registerSplitTransaction(server);
   registerDeleteSplit(server);
+  registerGetRefundLinks(server);
   registerLinkRefund(server);
   registerUnlinkRefund(server);
   registerLinkTransfer(server);

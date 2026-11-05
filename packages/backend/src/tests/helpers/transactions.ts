@@ -122,7 +122,9 @@ interface UpdateTransactionBasePayload {
     destinationAccountId?: string;
     destinationTransactionId?: string;
     refundsTxId?: string | null;
-    refundedByTxIds?: string[] | null;
+    refundsSplitId?: string | null;
+    refundedByTxIds?: (string | { txId: string; amount?: number | null })[] | null;
+    refundsTargets?: { txId: string; splitId?: string | null; amount?: number | null }[] | null;
     splits?: SplitInput[] | null;
     originalAmount?: number | null;
     originalCurrencyCode?: string | null;

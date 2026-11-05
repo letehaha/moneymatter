@@ -6,6 +6,7 @@ import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
 
 import {
+  atLeastOneCentAmountSchema,
   nonNegativeAmountSchema,
   paymentLegsSchema,
   positiveAmountSchema,
@@ -32,6 +33,7 @@ const schema = z.object({
       transferNature: z.nativeEnum(TRANSACTION_TRANSFER_NATURE),
       refundForTxId: recordId().optional(),
       refundForSplitId: recordId().optional(),
+      refundForAmount: atLeastOneCentAmountSchema().optional(),
       splits: z.array(splitSchema).max(10, 'Maximum 10 splits allowed').optional(),
       tagIds: z.array(recordId()).max(20, 'Maximum 20 tags allowed').optional(),
       payeeId: recordId().nullable().optional(),
@@ -57,6 +59,10 @@ const schema = z.object({
     .refine((data) => !(data.refundForSplitId && !data.refundForTxId), {
       message: '"refundForSplitId" can only be provided when "refundForTxId" is specified',
       path: ['refundForSplitId', 'refundForTxId'],
+    })
+    .refine((data) => !(data.refundForAmount !== undefined && !data.refundForTxId), {
+      message: '"refundForAmount" can only be provided when "refundForTxId" is specified',
+      path: ['refundForAmount', 'refundForTxId'],
     })
     .refine(
       (data) => {

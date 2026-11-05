@@ -37,5 +37,5 @@ export const fetchSavingsTransactions = ({
       transactionType: { [Op.in]: [TRANSACTION_TYPES.income, TRANSACTION_TYPES.expense] },
       transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
     },
-    attributes: ['id', 'time', 'refAmount', 'transactionType', 'categoryId', 'refundLinked'],
+    attributes: ['id', 'time', 'amount', 'refAmount', 'transactionType', 'categoryId', 'refundLinked'],
   });

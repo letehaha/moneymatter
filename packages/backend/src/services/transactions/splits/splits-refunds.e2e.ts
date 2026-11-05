@@ -388,6 +388,42 @@ describe('Split-targeted refunds across transaction updates', () => {
     expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
   });
 
+  it('lets a split shrink down to its refunded share, but not below it', async () => {
+    const { account, splitCategory, expenseTx, split } = await createSplitExpense({ splitAmount: 50 });
+
+    const [refundTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        categoryId: splitCategory.id,
+        amount: 50,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+    await helpers.createSingleRefund(
+      { originalTxId: expenseTx.id, refundTxId: refundTx.id, splitId: split.id, amount: 20 },
+      true,
+    );
+
+    const toShare = await helpers.updateTransaction({
+      id: expenseTx.id,
+      payload: { splits: [{ categoryId: splitCategory.id, amount: 30 }] },
+      raw: false,
+    });
+    expect(toShare.statusCode).toBe(200);
+
+    const belowShare = await helpers.updateTransaction({
+      id: expenseTx.id,
+      payload: { splits: [{ categoryId: splitCategory.id, amount: 10 }] },
+      raw: false,
+    });
+    expect(belowShare.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(
+      helpers.extractResponse(belowShare as unknown as helpers.CustomResponse<helpers.ErrorResponse>).message,
+    ).toContain('cannot be greater than the split amount');
+    expect((await getFirstSplit({ transactionId: expenseTx.id })).amount).toBe(30);
+  });
+
   it('moves the refund to transaction level when its category is dropped from the update', async () => {
     const { account, primaryCategory, splitCategory, spareCategory, expenseTx, split } = await createSplitExpense({
       splitAmount: 4000,

@@ -164,7 +164,7 @@ async function getPeriodData({
         ...buildStatsScopeWhere({ accountId, accountIds, payeeIds, excludedPayeeIds, tagIds, excludedTagIds }),
       ],
     },
-    attributes: ['id', 'time', 'refAmount', 'transactionType', 'categoryId', 'refundLinked'],
+    attributes: ['id', 'time', 'amount', 'refAmount', 'transactionType', 'categoryId', 'refundLinked'],
   });
 
   // Build a map of year-month to aggregate values

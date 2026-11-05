@@ -59,7 +59,7 @@ const createForm = (overrides: Partial<UI_FORM_STRUCT> = {}): UI_FORM_STRUCT => 
   longitude: 30.52,
   type: FORM_TYPES.expense,
   refundedByTxs: [{ transaction: { id: 'r1' } as TransactionModel }],
-  refundsTx: { transaction: { id: 'r2' } as TransactionModel },
+  refundsTx: [{ transaction: { id: 'r2' } as TransactionModel }],
   tagIds: ['t1', 't2'],
   payeeId: 'p1',
   categoryUserTouched: false,

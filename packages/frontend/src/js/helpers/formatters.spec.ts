@@ -202,5 +202,12 @@ describe('js/helpers/formatters', () => {
     ])('%d → %s', (amount, expected) => {
       expect(formatCompactUIAmount({ amount, currency: 'USD' })).toBe(expected);
     });
+
+    it.each([
+      [42_600, '$42,600.00'],
+      [385_000, '$385k'],
+    ])('with from: 100_000, %d → %s', (amount, expected) => {
+      expect(formatCompactUIAmount({ amount, currency: 'USD', from: 100_000 })).toBe(expected);
+    });
   });
 });

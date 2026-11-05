@@ -147,15 +147,15 @@ export async function transformTransactions({
     tagNamesByTxId.set(link.transactionId, list);
   }
 
-  // refundLinks: row { originalTxId, refundTxId }. The refund row needs to point
-  // back at its original; the original row should optionally show "refunded by".
-  // For the export we only fill RefundOf on the refund side – surfacing both
-  // directions doubles the cell noise without adding information.
-  const refundOriginalByRefundId = new Map<string, RecordId>();
+  // RefundOf is filled on the refund side only – surfacing both directions
+  // doubles the cell noise without adding information. A refund can link to
+  // several originals, each covering `amount` of the refund (NULL = all of it).
+  const refundLinksByRefundId = new Map<string, RefundTransactions[]>();
   for (const link of refundLinks) {
-    if (link.refundTxId && link.originalTxId) {
-      refundOriginalByRefundId.set(String(link.refundTxId), link.originalTxId);
-    }
+    if (!link.refundTxId || !link.originalTxId) continue;
+    const list = refundLinksByRefundId.get(String(link.refundTxId)) ?? [];
+    list.push(link);
+    refundLinksByRefundId.set(String(link.refundTxId), list);
   }
 
   // Transfer pairs share a transferId. For a given tx, find the other tx with
@@ -180,8 +180,9 @@ export async function transformTransactions({
       .map(([transferId]) => transferId);
     const missingOriginalIds: RecordId[] = [];
     for (const tx of transactions) {
-      const originalId = refundOriginalByRefundId.get(String(tx.id));
-      if (originalId && !txById.has(originalId)) missingOriginalIds.push(originalId);
+      for (const link of refundLinksByRefundId.get(String(tx.id)) ?? []) {
+        if (!txById.has(link.originalTxId!)) missingOriginalIds.push(link.originalTxId!);
+      }
     }
 
     if (lonelyTransferIds.length || missingOriginalIds.length) {
@@ -301,18 +302,20 @@ export async function transformTransactions({
           .join(' | ')
       : '';
 
-    let refundOf = '';
-    const originalId = refundOriginalByRefundId.get(String(tx.id));
-    if (originalId) {
-      const original = txById.get(originalId);
-      if (original) {
+    const refundOf = (refundLinksByRefundId.get(String(tx.id)) ?? [])
+      .flatMap((link) => {
+        const original = txById.get(link.originalTxId!);
+        if (!original) return [];
         const originalAccountName = resolveAccountName({
           id: original.accountId,
           context: `transaction ${tx.id} refund-of`,
         });
-        refundOf = describeTransaction({ tx: original, accountName: originalAccountName });
-      }
-    }
+        const described = describeTransaction({ tx: original, accountName: originalAccountName });
+        return link.amount
+          ? [`${described} (${fmtAmount({ value: link.amount.toNumber() })} ${tx.currencyCode})`]
+          : [described];
+      })
+      .join(' | ');
 
     let linkedTransfer = '';
     if (tx.transferId) {

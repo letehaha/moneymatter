@@ -4,8 +4,10 @@ import { Money } from '@common/types/money';
 import { positiveAmountSchema } from '@controllers/transactions.controller/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { withTransaction } from '@services/common/with-transaction';
 import { getTransactionById } from '@services/transactions/get-by-id';
 import { manageSplits } from '@services/transactions/splits/manage-splits';
+import { validateRefundLinks } from '@services/tx-refunds/validate-refund-links';
 import { z } from 'zod';
 
 import { getUserId, jsonContent, requireScope } from './helpers';
@@ -37,30 +39,35 @@ export function registerSplitTransaction(server: McpServer) {
       requireScope({ extra, scope: 'finance:write' });
       trackMcpToolUsed({ userId, tool: 'split_transaction', clientId: extra.authInfo?.clientId });
 
-      const fetched = await getTransactionById({
-        id: args.transactionId,
-        userId,
-        requiredPermission: SHARE_PERMISSIONS.write,
-      });
-      if (!fetched) {
-        throw new Error(`Transaction ${args.transactionId} not found`);
-      }
-      const transaction = fetched.tx;
+      const result = await withTransaction(async () => {
+        const fetched = await getTransactionById({
+          id: args.transactionId,
+          userId,
+          requiredPermission: SHARE_PERMISSIONS.write,
+        });
+        if (!fetched) {
+          throw new Error(`Transaction ${args.transactionId} not found`);
+        }
+        const transaction = fetched.tx;
 
-      const result = await manageSplits({
-        transactionId: args.transactionId,
-        userId,
-        categoryOwnerUserId: fetched.access.ownerUserId,
-        splits: args.splits.map((s) => ({
-          categoryId: s.categoryId,
-          amount: Money.fromDecimal(s.amount),
-          note: s.note,
-        })),
-        transactionAmount: transaction.amount,
-        transactionCurrencyCode: transaction.currencyCode,
-        transactionTime: transaction.time,
-        transferNature: transaction.transferNature,
-      });
+        const splits = await manageSplits({
+          transactionId: args.transactionId,
+          userId,
+          categoryOwnerUserId: fetched.access.ownerUserId,
+          splits: args.splits.map((s) => ({
+            categoryId: s.categoryId,
+            amount: Money.fromDecimal(s.amount),
+            note: s.note,
+          })),
+          transactionAmount: transaction.amount,
+          transactionCurrencyCode: transaction.currencyCode,
+          transactionTime: transaction.time,
+          transferNature: transaction.transferNature,
+        });
+
+        await validateRefundLinks({ userId: transaction.userId, txId: transaction.id });
+        return splits;
+      })();
 
       return jsonContent({
         data: result.map((split) => ({

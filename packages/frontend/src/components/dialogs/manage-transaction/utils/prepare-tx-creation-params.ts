@@ -65,13 +65,19 @@ export const prepareTxCreationParams = ({
 
   // Only forward the refund link when its counterpart opposes the form's type —
   // the backend rejects a same-type link (422), so a stale post-toggle selection
-  // must not be sent.
+  // must not be sent. A plan carries no refund link either.
   const expectedRefundType = getOppositeTxType(getTxTypeFromFormType(formTxType));
-  if (form.refundsTx && form.refundsTx.transaction.transactionType === expectedRefundType) {
-    creationParams.refundForTxId = form.refundsTx.transaction.id;
-    if (form.refundsTx.splitId) {
-      creationParams.refundForSplitId = form.refundsTx.splitId as RecordId;
+  const refundTarget = form.refundsTx?.[0];
+  if (
+    refundTarget &&
+    refundTarget.transaction.transactionType === expectedRefundType &&
+    !resolveFormIsPlanned({ form })
+  ) {
+    creationParams.refundForTxId = refundTarget.transaction.id;
+    if (refundTarget.splitId) {
+      creationParams.refundForSplitId = refundTarget.splitId as RecordId;
     }
+    if (refundTarget.amount != null) creationParams.refundForAmount = refundTarget.amount;
   }
 
   // if (linkedTransaction) {

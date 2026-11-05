@@ -854,16 +854,42 @@ function buildNoneOrAnyJunctionCondition({
   return literal(`(${inNone} OR ${inAny})`);
 }
 
-// `refundLinked` can't express this filter: it is true for BOTH sides of a link, while
-// only the refund side is barred from being linked again.
-function buildExcludeRefundTxsCondition({ keepRefundsForTxId }: { keepRefundsForTxId?: string }) {
-  if (keepRefundsForTxId && !UUID_PATTERN.test(keepRefundsForTxId)) {
+// A row linked to `keepLinksWith` stays even when it also has links to other transactions.
+function noLinksOrLinkedToSql({
+  column,
+  otherColumn,
+  keepLinksWith,
+}: {
+  column: 'originalTxId' | 'refundTxId';
+  otherColumn: 'originalTxId' | 'refundTxId';
+  keepLinksWith?: string;
+}) {
+  const links = `SELECT 1 FROM "RefundTransactions" rt WHERE rt."${column}" = "Transactions"."id"`;
+  const noLinks = `NOT EXISTS (${links})`;
+  if (!keepLinksWith) return noLinks;
+  if (!UUID_PATTERN.test(keepLinksWith)) {
     throw new ValidationError({ message: '"keepRefundsForTxId" must be a valid record id' });
   }
-  // IS DISTINCT FROM: links with a null originalTxId (out-of-system originals) must stay excluded.
-  const keepClause = keepRefundsForTxId ? ` AND rt."originalTxId" IS DISTINCT FROM '${keepRefundsForTxId}'` : '';
+  return `(${noLinks} OR EXISTS (${links} AND rt."${otherColumn}" = '${keepLinksWith}'))`;
+}
+
+// `refundLinked` can't express this filter: it is true for BOTH sides of a link, while
+// only the refund side is barred from being linked again.
+function notARefundSql({ keepLinksWith }: { keepLinksWith?: string }) {
+  return noLinksOrLinkedToSql({ column: 'refundTxId', otherColumn: 'originalTxId', keepLinksWith });
+}
+
+function notRefundedSql({ keepLinksWith }: { keepLinksWith?: string }) {
+  return noLinksOrLinkedToSql({ column: 'originalTxId', otherColumn: 'refundTxId', keepLinksWith });
+}
+
+// Rows before the pivot day, and same-day expenses, are candidate originals and must not already
+// be a refund; everything else is a candidate refund and must not already be refunded.
+// `:refundPivotFrom` / `:refundPivotTo` are bound through the query's replacements.
+function buildRefundPivotCondition({ pivotTxId }: { pivotTxId?: string }) {
+  const isOriginal = `"Transactions"."time" < :refundPivotFrom OR ("Transactions"."time" <= :refundPivotTo AND "Transactions"."transactionType" = '${TRANSACTION_TYPES.expense}')`;
   return literal(
-    `NOT EXISTS (SELECT 1 FROM "RefundTransactions" rt WHERE rt."refundTxId" = "Transactions"."id"${keepClause})`,
+    `CASE WHEN ${isOriginal} THEN ${notARefundSql({ keepLinksWith: pivotTxId })} ELSE ${notRefundedSql({ keepLinksWith: pivotTxId })} END`,
   );
 }
 
@@ -901,6 +927,9 @@ export const findWithFilters = async ({
   excludeRefunds,
   excludeRefundTxs,
   keepRefundsForTxId,
+  excludeRefundedTxs,
+  refundPivotFrom,
+  refundPivotTo,
   hasAttachment,
   includeHasAttachments,
   excludePaymentLegsWithMainIn,
@@ -960,6 +989,14 @@ export const findWithFilters = async ({
   /** With `excludeRefundTxs`: keep refunds linked to this original, so an edit dialog
    *  can still list and deselect its own links. */
   keepRefundsForTxId?: string;
+  /** Excludes the original side of refund links: a row picked as a refund can't also be
+   *  an original (`validateRefundLinks` rejects refund-of-refund). */
+  excludeRefundedTxs?: boolean;
+  /** Local-day bounds of the transaction being linked (always both). Rows dated on or before
+   *  that day are kept only if they can still be an original, later rows only if they can
+   *  still be a refund; `keepRefundsForTxId` names the pivot tx so its own links don't count. */
+  refundPivotFrom?: string;
+  refundPivotTo?: string;
   /** Absent = both, `true` = only rows carrying attachments, `false` = only rows without. */
   hasAttachment?: boolean;
   /** Adds a `hasAttachments` boolean to every row. Costs an EXISTS subquery per row, so
@@ -1042,7 +1079,19 @@ export const findWithFilters = async ({
   }
 
   if (excludeRefundTxs) {
-    pushAndCondition(buildExcludeRefundTxsCondition({ keepRefundsForTxId }));
+    pushAndCondition(literal(notARefundSql({ keepLinksWith: keepRefundsForTxId })));
+  }
+
+  if (excludeRefundedTxs) {
+    pushAndCondition(literal(notRefundedSql({})));
+  }
+
+  const refundPivotReplacements =
+    refundPivotFrom && refundPivotTo
+      ? { refundPivotFrom: new Date(refundPivotFrom), refundPivotTo: new Date(refundPivotTo) }
+      : undefined;
+  if (refundPivotReplacements) {
+    pushAndCondition(buildRefundPivotCondition({ pivotTxId: keepRefundsForTxId }));
   }
 
   if (excludePaymentLegsWithMainIn?.length) {
@@ -1342,6 +1391,7 @@ export const findWithFilters = async ({
     // When raw is true and includeSplits/includeTags is requested, use nest to preserve nested structure
     nest: isRaw && (includeSplits || includeTags) ? true : undefined,
     attributes: resolvedAttributes,
+    replacements: refundPivotReplacements,
   });
 
   // `info`, not `warn`: warn ships every occurrence to Sentry as its own event.

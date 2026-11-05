@@ -19,7 +19,7 @@ import {
   resolveFormIsPlanned,
   resolveOriginalCurrencyPair,
 } from '../helpers';
-import { type FormSplit, UI_FORM_STRUCT } from '../types';
+import { type FormSplit, type RefundWithSplit, UI_FORM_STRUCT } from '../types';
 import { resolvePaymentLegsUpdate } from './payment-legs';
 import { resolveFormLocation } from './resolve-form-location';
 
@@ -56,6 +56,23 @@ const formSplitsToApiSplits = ({
 
   return validSplits;
 };
+
+// A zero share is what an amount change leaves for a purchase the refund no longer reaches.
+const toRefundsTargets = ({ links }: { links: RefundWithSplit[] }) =>
+  links
+    .filter((link) => link.amount !== 0)
+    .map((link) => ({
+      txId: link.transaction.id,
+      splitId: (link.splitId ?? null) as RecordId | null,
+      amount: link.amount ?? null,
+    }));
+
+const toRefundedByTxIds = ({ links }: { links: RefundWithSplit[] }) =>
+  links
+    .filter((link) => link.amount !== 0)
+    .map((link) =>
+      link.amount === undefined ? { txId: link.transaction.id } : { txId: link.transaction.id, amount: link.amount },
+    );
 
 export const prepareTxUpdationParams = ({
   form,
@@ -95,7 +112,9 @@ export const prepareTxUpdationParams = ({
     // link (422). Backstops the clearing watcher.
     const expectedRefundType = getOppositeTxType(getTxTypeFromFormType(formTxType));
     const refundsTx =
-      form.refundsTx && form.refundsTx.transaction.transactionType !== expectedRefundType ? undefined : form.refundsTx;
+      form.refundsTx && form.refundsTx.some((r) => r.transaction.transactionType !== expectedRefundType)
+        ? undefined
+        : form.refundsTx;
     const refundedByTxs =
       form.refundedByTxs && form.refundedByTxs.some((r) => r.transaction.transactionType !== expectedRefundType)
         ? undefined
@@ -103,44 +122,19 @@ export const prepareTxUpdationParams = ({
 
     // Make sure that only one non-nullish field is being sent to the API
     if (refundsTx && refundedByTxs === null) {
-      editionParams.refundsTxId = refundsTx ? refundsTx.transaction.id : null;
-      editionParams.refundsSplitId = (refundsTx?.splitId ?? null) as RecordId | null;
+      editionParams.refundsTargets = toRefundsTargets({ links: refundsTx });
     } else if (refundsTx === null && refundedByTxs) {
-      editionParams.refundedByTxIds = refundedByTxs ? refundedByTxs.map((i) => i.transaction.id) : null;
-      // Build splitId mapping for refunded-by transactions
-      if (refundedByTxs) {
-        const splitMapping: Record<string, string> = {};
-        refundedByTxs.forEach((r) => {
-          if (r.splitId) {
-            splitMapping[r.transaction.id] = r.splitId;
-          }
-        });
-        if (Object.keys(splitMapping).length > 0) {
-          editionParams.refundedBySplitIds = splitMapping;
-        }
-      }
+      editionParams.refundedByTxIds = toRefundedByTxIds({ links: refundedByTxs });
     } else if (refundsTx === null && refundedByTxs === undefined) {
-      editionParams.refundsTxId = null;
-      editionParams.refundsSplitId = null;
+      editionParams.refundsTargets = null;
     } else if (refundedByTxs === null && refundsTx === undefined) {
       editionParams.refundedByTxIds = null;
-      editionParams.refundedBySplitIds = null;
+    } else if (refundsTx === null && refundedByTxs === null) {
+      // Both sides cleared in one form session: a null target list removes links in either direction.
+      editionParams.refundsTargets = null;
     } else {
-      editionParams.refundsTxId = refundsTx ? refundsTx.transaction.id : undefined;
-      editionParams.refundsSplitId = (refundsTx?.splitId ?? undefined) as RecordId | undefined;
-      editionParams.refundedByTxIds = refundedByTxs ? refundedByTxs.map((i) => i.transaction.id) : undefined;
-      // Build splitId mapping for refunded-by transactions
-      if (refundedByTxs) {
-        const splitMapping: Record<string, string> = {};
-        refundedByTxs.forEach((r) => {
-          if (r.splitId) {
-            splitMapping[r.transaction.id] = r.splitId;
-          }
-        });
-        if (Object.keys(splitMapping).length > 0) {
-          editionParams.refundedBySplitIds = splitMapping;
-        }
-      }
+      if (refundsTx) editionParams.refundsTargets = toRefundsTargets({ links: refundsTx });
+      editionParams.refundedByTxIds = refundedByTxs ? toRefundedByTxIds({ links: refundedByTxs }) : undefined;
     }
   }
 

@@ -3,6 +3,7 @@ import { Money } from '@common/types/money';
 import RefundTransactions from '@models/refund-transactions.model';
 import TransactionSplits from '@models/transaction-splits.model';
 import { findTransactions } from '@models/transactions-query';
+import { refundShareRefAmount } from '@services/tx-refunds/refund-share';
 import { Op } from 'sequelize';
 
 /**
@@ -31,6 +32,7 @@ import { Op } from 'sequelize';
 /** Minimal transaction shape the engine needs; both stats consumers already load these columns. */
 interface AllocatableTransaction {
   id: string;
+  amount: Money;
   refAmount: Money;
   categoryId: string | null;
   transactionType: TRANSACTION_TYPES;
@@ -88,6 +90,7 @@ export interface CategoryRefundPair {
 }
 
 interface TxEntry {
+  amount: Money;
   refAmount: Money;
   categoryId: string | null;
   transactionType: TRANSACTION_TYPES;
@@ -95,11 +98,13 @@ interface TxEntry {
 }
 
 const toTxEntry = (tx: {
+  amount: Money;
   refAmount: Money;
   categoryId: string | null;
   transactionType: TRANSACTION_TYPES;
   time: Date | string;
 }): TxEntry => ({
+  amount: tx.amount,
   refAmount: tx.refAmount,
   categoryId: tx.categoryId,
   transactionType: tx.transactionType,
@@ -157,7 +162,7 @@ export const resolveRefundPairs = async ({
         id: { [Op.in]: [...missingTxIds] },
         userId: { [Op.in]: [...new Set(refunds.map((refund) => refund.userId))] },
       },
-      attributes: ['id', 'refAmount', 'categoryId', 'transactionType', 'time'],
+      attributes: ['id', 'amount', 'refAmount', 'categoryId', 'transactionType', 'time'],
     });
     for (const tx of missingTxs) txMap.set(tx.id, toTxEntry(tx));
   }
@@ -187,7 +192,7 @@ export const resolveRefundPairs = async ({
     const refundInScope = inScopeTxIds.has(refund.refundTxId);
 
     pairs.push({
-      cents: refundTx.refAmount.toCents(),
+      cents: refundShareRefAmount({ link: refund, refundTx }).toCents(),
       time: refundTx.time,
       expenseCategoryId: originalIsExpense ? originalCategoryId : refundTx.categoryId,
       incomeCategoryId: originalIsExpense ? refundTx.categoryId : originalCategoryId,

@@ -180,7 +180,17 @@ async function seedRichData() {
     raw: true,
   });
 
-  // Refund: an income transaction refunding the original expense.
+  const [secondExpense] = await helpers.createTransaction({
+    payload: helpers.buildTransactionPayload({
+      accountId: checking.id,
+      amount: 500,
+      transactionType: TRANSACTION_TYPES.expense,
+      categoryId: childCategory.id,
+    }),
+    raw: true,
+  });
+
+  // Refund: one income transaction split across both expenses.
   const [refundTx] = await helpers.createTransaction({
     payload: helpers.buildTransactionPayload({
       accountId: checking.id,
@@ -190,7 +200,8 @@ async function seedRichData() {
     }),
     raw: true,
   });
-  await helpers.createSingleRefund({ originalTxId: expense!.id, refundTxId: refundTx!.id }, true);
+  await helpers.createSingleRefund({ originalTxId: expense!.id, refundTxId: refundTx!.id, amount: 600 }, true);
+  await helpers.createSingleRefund({ originalTxId: secondExpense!.id, refundTxId: refundTx!.id, amount: 400 }, true);
 
   // Tracker over a category, with a linked transaction.
   const tracker = await helpers.createTracker({
@@ -276,7 +287,17 @@ async function seedRichData() {
     raw: true,
   });
 
-  return { checking, savings, parentCategory, childCategory, portfolio, security: security! };
+  return {
+    checking,
+    savings,
+    parentCategory,
+    childCategory,
+    portfolio,
+    security: security!,
+    expense: expense!,
+    secondExpense: secondExpense!,
+    refundTx: refundTx!,
+  };
 }
 
 /** A lighter dataset: two accounts, a category tree, a tagged transaction. */
@@ -426,7 +447,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
   describe('Round-trip', () => {
     it('restoring an export into the same user reproduces every table byte-for-byte, with no foreign-reference warnings', async () => {
-      await seedRichData();
+      const { expense, secondExpense, refundTx } = await seedRichData();
 
       const first = await exportArchive();
       const firstArchive = helpers.parseBackupArchive({ buffer: first.buffer });
@@ -496,6 +517,18 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       const restoredCategory = (await helpers.getCategoriesList()).find((row) => row.name === 'Living');
       expect(restoredCategory!.defaultTagIds).toEqual([restoredTag!.id]);
       expect(restoredCategory!.applyDefaultTagsOnAiCategorization).toBe(true);
+
+      const restoredLinks = await helpers.getRefundsForTransaction({ transactionId: refundTx.id, raw: true });
+      expect(restoredLinks.map(({ originalTxId, amount }) => ({ originalTxId, amount }))).toEqual(
+        expect.arrayContaining([
+          { originalTxId: expense.id, amount: 600 },
+          { originalTxId: secondExpense.id, amount: 400 },
+        ]),
+      );
+      expect(restoredLinks).toHaveLength(2);
+      for (const id of [refundTx.id, expense.id, secondExpense.id]) {
+        expect((await helpers.getTransactionById({ id, raw: true }))!.refundLinked).toBe(true);
+      }
     });
 
     it('keeps merged and removed bank rows in reconciliation history', async () => {
@@ -1481,6 +1514,170 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
           expect((await helpers.getCategoriesList()).some((c) => c.id === ids.categoryId)).toBe(true);
         },
       });
+    }, 30000);
+
+    it('drops the links of a multi-link refund whose originals are missing and keeps a lone one as a whole external link', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, transactionType }: { amount: number; transactionType: TRANSACTION_TYPES }) => {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType }),
+          raw: true,
+        });
+        return tx!;
+      };
+      const x1 = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const x2 = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const x3 = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const multiRefund = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.income });
+      const singleRefund = await createTx({ amount: 50, transactionType: TRANSACTION_TYPES.income });
+      await helpers.createSingleRefund({ originalTxId: x1.id, refundTxId: multiRefund.id, amount: 40 }, true);
+      await helpers.createSingleRefund({ originalTxId: x2.id, refundTxId: multiRefund.id, amount: 60 }, true);
+      await helpers.createSingleRefund({ originalTxId: x3.id, refundTxId: singleRefund.id, amount: 20 }, true);
+
+      // Strip the originals from the archive so the guard nulls every link's originalTxId.
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+      const missingIds = new Set([x1.id, x2.id, x3.id]);
+      const transactions = readArchiveJson({ files, path: 'data/transactions.json' }) as Row[];
+      writeArchiveJson({
+        files,
+        path: 'data/transactions.json',
+        value: transactions.filter((t) => !missingIds.has(t.id as RecordId)),
+      });
+      const base64 = await helpers.repackBackup({ files });
+
+      const restore = await helpers.restoreBackup({ fileContent: base64 });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+      expect(status.summary?.warnings).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'foreign_reference_dropped',
+            table: 'refund-transactions',
+            column: 'originalTxId',
+            count: 2,
+          }),
+          expect.objectContaining({
+            code: 'foreign_reference_nulled',
+            table: 'refund-transactions',
+            column: 'originalTxId',
+            count: 1,
+          }),
+        ]),
+      );
+
+      expect(await helpers.getRefundsForTransaction({ transactionId: multiRefund.id, raw: true })).toEqual([]);
+      expect((await helpers.getTransactionById({ id: multiRefund.id, raw: true }))!.refundLinked).toBe(false);
+
+      const singleLinks = await helpers.getRefundsForTransaction({ transactionId: singleRefund.id, raw: true });
+      expect(singleLinks).toHaveLength(1);
+      expect(singleLinks[0]).toMatchObject({ originalTxId: null, amount: null });
+      expect((await helpers.getTransactionById({ id: singleRefund.id, raw: true }))!.refundLinked).toBe(true);
+    }, 30000);
+
+    it('drops only the link whose original is missing and keeps the surviving link of a multi-link refund', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, transactionType }: { amount: number; transactionType: TRANSACTION_TYPES }) => {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType }),
+          raw: true,
+        });
+        return tx!;
+      };
+      const missingOriginal = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const keptOriginal = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const refund = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.income });
+      await helpers.createSingleRefund({ originalTxId: missingOriginal.id, refundTxId: refund.id, amount: 40 }, true);
+      await helpers.createSingleRefund({ originalTxId: keptOriginal.id, refundTxId: refund.id, amount: 60 }, true);
+
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+      const transactions = readArchiveJson({ files, path: 'data/transactions.json' }) as Row[];
+      writeArchiveJson({
+        files,
+        path: 'data/transactions.json',
+        value: transactions.filter((t) => t.id !== missingOriginal.id),
+      });
+      const base64 = await helpers.repackBackup({ files });
+
+      const restore = await helpers.restoreBackup({ fileContent: base64 });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+      expect(status.summary?.warnings).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'foreign_reference_dropped',
+            table: 'refund-transactions',
+            column: 'originalTxId',
+            count: 1,
+          }),
+        ]),
+      );
+
+      const links = await helpers.getRefundsForTransaction({ transactionId: refund.id, raw: true });
+      expect(links.map(({ originalTxId, amount }) => ({ originalTxId, amount }))).toEqual([
+        { originalTxId: keptOriginal.id, amount: 60 },
+      ]);
+      expect((await helpers.getTransactionById({ id: refund.id, raw: true }))!.refundLinked).toBe(true);
+      expect((await helpers.getTransactionById({ id: keptOriginal.id, raw: true }))!.refundLinked).toBe(true);
+    }, 30000);
+
+    it('restores refund links from an archive without link amounts as whole-refund links', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, transactionType }: { amount: number; transactionType: TRANSACTION_TYPES }) => {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType }),
+          raw: true,
+        });
+        return tx!;
+      };
+      const linkedOriginal = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const missingOriginal = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const linkedRefund = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.income });
+      const externalRefund = await createTx({ amount: 50, transactionType: TRANSACTION_TYPES.income });
+      await helpers.createSingleRefund(
+        { originalTxId: linkedOriginal.id, refundTxId: linkedRefund.id, amount: 30 },
+        true,
+      );
+      await helpers.createSingleRefund(
+        { originalTxId: missingOriginal.id, refundTxId: externalRefund.id, amount: 20 },
+        true,
+      );
+
+      // The stripped original makes the guard null its link, so the external-link path runs without an amount column.
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+      const transactions = readArchiveJson({ files, path: 'data/transactions.json' }) as Row[];
+      writeArchiveJson({
+        files,
+        path: 'data/transactions.json',
+        value: transactions.filter((t) => t.id !== missingOriginal.id),
+      });
+      const refundLinks = readArchiveJson({ files, path: 'data/refund-transactions.json' }) as Row[];
+      for (const link of refundLinks) delete link.amount;
+      writeArchiveJson({ files, path: 'data/refund-transactions.json', value: refundLinks });
+      const base64 = await helpers.repackBackup({ files });
+
+      const restore = await helpers.restoreBackup({ fileContent: base64 });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+
+      const linkedLinks = await helpers.getRefundsForTransaction({ transactionId: linkedRefund.id, raw: true });
+      expect(linkedLinks.map(({ originalTxId, amount }) => ({ originalTxId, amount }))).toEqual([
+        { originalTxId: linkedOriginal.id, amount: null },
+      ]);
+
+      const externalLinks = await helpers.getRefundsForTransaction({ transactionId: externalRefund.id, raw: true });
+      expect(externalLinks.map(({ originalTxId, amount }) => ({ originalTxId, amount }))).toEqual([
+        { originalTxId: null, amount: null },
+      ]);
+
+      for (const id of [linkedRefund.id, linkedOriginal.id, externalRefund.id]) {
+        expect((await helpers.getTransactionById({ id, raw: true }))!.refundLinked).toBe(true);
+      }
     }, 30000);
   });
 

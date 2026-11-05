@@ -8,6 +8,8 @@ import { z } from 'zod';
 import {
   amountRangeIssue,
   isAmountRangeOrdered,
+  isRefundPivotPaired,
+  refundPivotPairIssue,
   toServiceFilters,
   transactionFilterFields,
 } from './transaction-filters';
@@ -29,9 +31,11 @@ const schema = z.object({
         includeTags: booleanQuery().optional(),
         includeGroups: booleanQuery().optional(),
         includeHasAttachments: booleanQuery().optional(),
+        includeRefundedAmount: booleanQuery().optional(),
         ...transactionFilterFields,
       })
-      .refine(isAmountRangeOrdered, amountRangeIssue),
+      .refine(isAmountRangeOrdered, amountRangeIssue)
+      .refine(isRefundPivotPaired, refundPivotPairIssue),
   ),
 });
 

@@ -372,6 +372,235 @@ describe('Retrieve transactions with filters', () => {
     expect(ids).not.toContain(orphanRefund!.id);
   }, 60_000);
 
+  it('keepRefundsForTxId keeps a refund shared with another transaction', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const createExpense = async () => {
+      const [tx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 500,
+          transactionType: TRANSACTION_TYPES.expense,
+        }),
+        raw: true,
+      });
+      return tx!;
+    };
+    const purchase = await createExpense();
+    const otherPurchase = await createExpense();
+    const unrelatedPurchase = await createExpense();
+    const [sharedRefund] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 500,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+    await helpers.createSingleRefund({ originalTxId: purchase.id, refundTxId: sharedRefund!.id, amount: 200 }, true);
+    await helpers.createSingleRefund(
+      { originalTxId: otherPurchase.id, refundTxId: sharedRefund!.id, amount: 300 },
+      true,
+    );
+
+    const kept = await helpers.getTransactions({ excludeRefundTxs: true, keepRefundsForTxId: purchase.id, raw: true });
+    expect(kept.map((t) => t.id)).toContain(sharedRefund!.id);
+
+    const unrelated = await helpers.getTransactions({
+      excludeRefundTxs: true,
+      keepRefundsForTxId: unrelatedPurchase.id,
+      raw: true,
+    });
+    expect(unrelated.map((t) => t.id)).not.toContain(sharedRefund!.id);
+  }, 60_000);
+
+  it('excludeRefundedTxs drops originals that already have refunds', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const [refundedExpense] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 500,
+        transactionType: TRANSACTION_TYPES.expense,
+      }),
+      raw: true,
+    });
+    await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 500,
+          transactionType: TRANSACTION_TYPES.income,
+        }),
+        refundForTxId: refundedExpense!.id,
+      },
+      raw: true,
+    });
+    const [unlinkedExpense] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 200,
+        transactionType: TRANSACTION_TYPES.expense,
+      }),
+      raw: true,
+    });
+
+    const filtered = await helpers.getTransactions({
+      excludeRefundedTxs: true,
+      transactionType: TRANSACTION_TYPES.expense,
+      raw: true,
+    });
+    const filteredIds = filtered.map((t) => t.id);
+    expect(filteredIds).not.toContain(refundedExpense!.id);
+    expect(filteredIds).toContain(unlinkedExpense!.id);
+
+    const unfiltered = await helpers.getTransactions({ transactionType: TRANSACTION_TYPES.expense, raw: true });
+    const unfilteredIds = unfiltered.map((t) => t.id);
+    expect(unfilteredIds).toContain(refundedExpense!.id);
+    expect(unfilteredIds).toContain(unlinkedExpense!.id);
+  }, 60_000);
+
+  describe('refund pivot filter', () => {
+    const pivot = { refundPivotFrom: '2024-06-15T00:00:00.000Z', refundPivotTo: '2024-06-15T23:59:59.999Z' };
+    const before = '2024-06-10T10:00:00.000Z';
+    const sameDay = '2024-06-15T08:00:00.000Z';
+    const after = '2024-06-20T10:00:00.000Z';
+
+    const createTx = async ({
+      accountId,
+      time,
+      transactionType,
+      refundForTxId,
+    }: {
+      accountId: RecordId;
+      time: string;
+      transactionType: TRANSACTION_TYPES;
+      refundForTxId?: RecordId;
+    }) => {
+      const [tx] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({ accountId, amount: 100, time, transactionType }),
+          refundForTxId,
+        },
+        raw: true,
+      });
+      return tx!;
+    };
+
+    it('hides rows that could never take the role their date gives them', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const { id: accountId } = account;
+      const { income, expense } = TRANSACTION_TYPES;
+
+      const plainBefore = await createTx({ accountId, time: before, transactionType: income });
+      const plainAfter = await createTx({ accountId, time: after, transactionType: income });
+
+      // Before the pivot a row is an original, so an existing refund is out.
+      const otherExpenseA = await createTx({ accountId, time: before, transactionType: expense });
+      const refundBefore = await createTx({
+        accountId,
+        time: before,
+        transactionType: income,
+        refundForTxId: otherExpenseA.id,
+      });
+
+      // After the pivot a row is a refund, so a row that is already refunded is out...
+      const refundedAfter = await createTx({ accountId, time: after, transactionType: income });
+      await createTx({ accountId, time: after, transactionType: expense, refundForTxId: refundedAfter.id });
+      // ...while one that already refunds another purchase can still refund this one too (#819).
+      const otherExpenseB = await createTx({ accountId, time: before, transactionType: expense });
+      const multiRefundAfter = await createTx({
+        accountId,
+        time: after,
+        transactionType: income,
+        refundForTxId: otherExpenseB.id,
+      });
+
+      // Same day: the expense is the original, the income is the refund.
+      const otherIncome = await createTx({ accountId, time: before, transactionType: income });
+      const sameDayExpenseRefund = await createTx({
+        accountId,
+        time: sameDay,
+        transactionType: expense,
+        refundForTxId: otherIncome.id,
+      });
+      const sameDayIncomeRefunded = await createTx({ accountId, time: sameDay, transactionType: income });
+      await createTx({ accountId, time: sameDay, transactionType: expense, refundForTxId: sameDayIncomeRefunded.id });
+      const sameDayPlainExpense = await createTx({ accountId, time: sameDay, transactionType: expense });
+      const sameDayPlainIncome = await createTx({ accountId, time: sameDay, transactionType: income });
+
+      // An out-of-system original still marks the row as a refund.
+      const externalRefundBefore = await createTx({ accountId, time: before, transactionType: income });
+      await helpers.createSingleRefund({ originalTxId: null, refundTxId: externalRefundBefore.id }, true);
+
+      const ids = (await helpers.getTransactions({ ...pivot, limit: 100, raw: true })).map((t) => t.id);
+
+      expect(ids).toEqual(
+        expect.arrayContaining([
+          plainBefore.id,
+          plainAfter.id,
+          multiRefundAfter.id,
+          sameDayPlainExpense.id,
+          sameDayPlainIncome.id,
+        ]),
+      );
+      expect(ids).not.toContain(refundBefore.id);
+      expect(ids).not.toContain(refundedAfter.id);
+      expect(ids).not.toContain(sameDayExpenseRefund.id);
+      expect(ids).not.toContain(sameDayIncomeRefunded.id);
+      expect(ids).not.toContain(externalRefundBefore.id);
+    }, 60_000);
+
+    it('keeps rows linked to the pivot transaction itself, in either direction', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const { id: accountId } = account;
+      const { income, expense } = TRANSACTION_TYPES;
+
+      const pivotExpense = await createTx({ accountId, time: sameDay, transactionType: expense });
+      // Dated before the pivot yet already refunding it: a saved link the edit dialog must still list.
+      const ownRefundBefore = await createTx({
+        accountId,
+        time: before,
+        transactionType: income,
+        refundForTxId: pivotExpense.id,
+      });
+      // Dated after the pivot and already refunded by it.
+      const pivotRefund = await createTx({ accountId, time: before, transactionType: expense });
+      const ownOriginalAfter = await createTx({ accountId, time: after, transactionType: income });
+      await helpers.createSingleRefund({ originalTxId: ownOriginalAfter.id, refundTxId: pivotRefund.id }, true);
+
+      // Same shapes linked to a different transaction stay hidden.
+      const otherExpense = await createTx({ accountId, time: before, transactionType: expense });
+      const otherRefundBefore = await createTx({
+        accountId,
+        time: before,
+        transactionType: income,
+        refundForTxId: otherExpense.id,
+      });
+
+      const withPivotId = (
+        await helpers.getTransactions({ ...pivot, keepRefundsForTxId: pivotExpense.id, raw: true })
+      ).map((t) => t.id);
+      expect(withPivotId).toContain(ownRefundBefore.id);
+      expect(withPivotId).not.toContain(otherRefundBefore.id);
+
+      const withRefundPivotId = (
+        await helpers.getTransactions({ ...pivot, keepRefundsForTxId: pivotRefund.id, raw: true })
+      ).map((t) => t.id);
+      expect(withRefundPivotId).toContain(ownOriginalAfter.id);
+
+      const withoutPivotId = (await helpers.getTransactions({ ...pivot, raw: true })).map((t) => t.id);
+      expect(withoutPivotId).not.toContain(ownRefundBefore.id);
+      expect(withoutPivotId).not.toContain(ownOriginalAfter.id);
+    }, 60_000);
+
+    it('rejects one pivot bound without the other', async () => {
+      const onlyFrom = await helpers.getTransactions({ refundPivotFrom: pivot.refundPivotFrom });
+      expect(onlyFrom.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const onlyTo = await helpers.getTransactions({ refundPivotTo: pivot.refundPivotTo });
+      expect(onlyTo.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+  });
+
   it('filters and sorts the fixture by amount, account and time', async () => {
     const fixture = await createMockTransactions();
     const { income, expense } = fixture;

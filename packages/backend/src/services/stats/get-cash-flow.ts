@@ -187,7 +187,7 @@ export const getCashFlow = withTransaction(
           ...buildStatsScopeWhere({ accountId, accountIds, payeeIds, excludedPayeeIds, tagIds, excludedTagIds }),
         ],
       },
-      attributes: ['id', 'time', 'refAmount', 'transactionType', 'categoryId', 'refundLinked'],
+      attributes: ['id', 'time', 'amount', 'refAmount', 'transactionType', 'categoryId', 'refundLinked'],
     });
 
     // Each leg carries its transaction's type, so one call covers both directions.

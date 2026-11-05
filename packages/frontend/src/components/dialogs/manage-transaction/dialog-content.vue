@@ -323,7 +323,11 @@ const { addInfoNotification, addErrorNotification, addSuccessNotification } = us
 const {
   isInitialRefundsDataLoaded,
   initialRefundsFormSlice,
-  originalRefunds,
+  hasInAppRefundLinks,
+  isRefundsLoadFailed,
+  hasExternalRefundLink,
+  savedRefundShares,
+  isRefundSharesOverAssigned,
   isOriginalRefundsOverriden,
   refundTransactionsTypeBasedOnFormType,
 } = getRefundInfo({
@@ -1106,6 +1110,7 @@ const submit = ({ keepOpen = false }: { keepOpen?: boolean } = {}) => {
     showLegErrors.value = true;
     return;
   }
+  if (isRefundSharesOverAssigned.value) return;
 
   shouldKeepOpen = isCreateMoreAvailable.value && (keepOpen || Boolean(props.createMore));
   submitMutation.mutate({
@@ -1200,9 +1205,16 @@ const isAttachmentsAvailable = computed(() => !!transaction.value?.id || !form.v
 const isLocationFilled = computed(() => form.value.latitude != null || form.value.longitude != null);
 
 const isRefundAvailable = computed(
-  () => !isTransferTx.value && !isAccountSharedWithCaller.value && !isMultiAccount.value,
+  () => !isTransferTx.value && !isAccountSharedWithCaller.value && !isMultiAccount.value && !form.value.isPlanned,
 );
-const isRefundLinked = computed(() => !!(form.value.refundsTx || form.value.refundedByTxs?.length));
+const isRefundLinked = computed(() => !!(form.value.refundsTx?.length || form.value.refundedByTxs?.length));
+// The field is hidden then, so a kept link would be submitted unseen and its errors could not be shown.
+watch(isRefundAvailable, (isAvailable) => {
+  if (isAvailable) return;
+  const emptyValue = hasInAppRefundLinks.value ? null : undefined;
+  if (form.value.refundsTx?.length) form.value.refundsTx = emptyValue;
+  if (form.value.refundedByTxs?.length) form.value.refundedByTxs = emptyValue;
+});
 const refundFieldRef = ref<InstanceType<typeof MarkAsRefundField> | null>(null);
 
 const moreOptionsRef = ref<HTMLElement | null>(null);
@@ -1215,7 +1227,7 @@ const { shown: shownFields, chips: addFieldChips } = useFieldReveal({
   isTransferTx,
   isLoanDestination,
   isAttachmentsAvailable,
-  isRefundAvailable,
+  isRefundAvailable: () => isRefundAvailable.value && !isRefundsLoadFailed.value,
   isRefundLinked,
   isOptionalFieldEnabled,
   onLinkRefund: () => refundFieldRef.value!.open(),
@@ -1696,7 +1708,10 @@ onUnmounted(() => {
       <!-- Refund linking on accounts shared *with* the caller isn't supported by the
            backend yet — hide the field rather than offering a button that errors on
            submit. Owner-side shares (`share.isOwner === true`) keep full access. -->
-      <div v-if="isRefundAvailable" :class="cn(isRefundLinked && 'mb-3.5')">
+      <div
+        v-if="isRefundAvailable"
+        :class="cn((isRefundLinked || isRefundsLoadFailed || hasExternalRefundLink) && 'mb-3.5')"
+      >
         <MarkAsRefundField
           ref="refundFieldRef"
           v-model:refunds="form.refundsTx"
@@ -1704,13 +1719,16 @@ onUnmounted(() => {
           :transaction-id="transaction?.id"
           :is-record-creation="isFormCreation"
           :transaction-type="refundTransactionsTypeBasedOnFormType"
-          :disabled="isFormFieldsDisabled"
-          :is-there-original-refunds="Boolean(originalRefunds.length)"
-          :current-transaction-splits="transaction?.splits"
+          :disabled="isFormFieldsDisabled || isRefundsLoadFailed"
+          :is-load-failed="isRefundsLoadFailed"
+          :has-external-link="hasExternalRefundLink"
+          :is-there-original-refunds="hasInAppRefundLinks"
           :current-amount="form.amount ? Number(form.amount) : null"
           :current-currency-code="form.account?.currencyCode"
-          :current-category="form.category"
           :current-account-id="form.account?.id"
+          :current-time="form.time"
+          :saved-refund-shares="savedRefundShares"
+          :is-over-assigned="isRefundSharesOverAssigned"
         />
       </div>
       <div v-if="addFieldChips.length" class="flex flex-wrap items-center gap-1.5">

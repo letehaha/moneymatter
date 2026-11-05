@@ -381,6 +381,19 @@ describe('Shared account writes — S4', () => {
       });
       expect(refundsTxIdRes.statusCode).toBe(ERROR_CODES.ValidationError);
 
+      const refundsTargetsRes = await helpers.asUser({
+        cookies: recipient.cookies,
+        fn: () =>
+          helpers.updateTransaction({
+            id: refundCandidate.id,
+            payload: { refundsTargets: [{ txId: originalTx.id }] },
+          }),
+      });
+      expect(refundsTargetsRes.statusCode).toBe(ERROR_CODES.ValidationError);
+      const errorMessage = ({ response }: { response: unknown }) =>
+        helpers.extractResponse(response as helpers.CustomResponse<helpers.ErrorResponse>).message;
+      expect(errorMessage({ response: refundsTargetsRes })).toBe(errorMessage({ response: refundsTxIdRes }));
+
       const refundedByRes = await helpers.asUser({
         cookies: recipient.cookies,
         fn: () =>
