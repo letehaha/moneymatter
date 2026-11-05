@@ -74,13 +74,13 @@ const fillCategoryField = async (wrapper: ReturnType<typeof mountComponent>, cat
   await categoryFieldTrigger.trigger('click');
 
   let desiredCategoryBtn = wrapper
-    .findAll('[data-test="category-select-field"] button[role="option"]')
+    .findAll('[data-test="category-select-field"] [role="option"]')
     .find((item) => item.text().includes(categoryName));
   await desiredCategoryBtn!.trigger('click');
 
   // Since that's how category selector works, we need to select it one more time
   desiredCategoryBtn = wrapper
-    .findAll('[data-test="category-select-field"] button[role="option"]')
+    .findAll('[data-test="category-select-field"] [role="option"]')
     .find((item) => item.text().includes(categoryName));
   await desiredCategoryBtn!.trigger('click');
 };
