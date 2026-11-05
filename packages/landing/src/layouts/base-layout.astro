@@ -94,6 +94,11 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
           event: 'landing_roadmap_clicked',
           properties: { location: location as 'hero' | 'community' },
         });
+      } else if (event === 'landing_testflight_clicked' && location) {
+        trackAnalyticsEvent({
+          event: 'landing_testflight_clicked',
+          properties: { location: location as 'hero' },
+        });
       } else if (event === 'landing_github_clicked' && location) {
         trackAnalyticsEvent({
           event: 'landing_github_clicked',

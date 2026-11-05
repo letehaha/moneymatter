@@ -24,6 +24,7 @@ MoneyMatter is a privacy-first alternative to apps like Mint and YNAB. It is ope
 - Detailed analytics and spending reports
 - Full data export
 - Dark mode, mobile-friendly responsive design
+- iPhone app in public beta on TestFlight: https://testflight.apple.com/join/tm5q4V5H
 - PWA (Progressive Web App) support
 
 ## AI Integration (MCP)
