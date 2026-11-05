@@ -7,6 +7,7 @@
     :selected-label="selectedLabel"
     :search-placeholder="$t('fields.comboboxCategories.searchPlaceholder')"
     :trigger-class="triggerClass"
+    :selected="categoryIds"
     content-class="min-w-75"
     @clear="clearSelection"
   >
@@ -15,12 +16,13 @@
     </template>
 
     <ScrollArea class="max-h-85 lg:max-h-60" viewport-class="max-h-85 lg:max-h-60">
-      <div class="p-1.25" :class="{ 'select-none': isShiftPressed }">
+      <ListboxContent class="p-1.25" :class="{ 'select-none': isShiftPressed }">
         <p v-if="displayedItems.length === 0" class="text-muted-foreground py-2 text-center text-xs font-medium">
           {{ $t('fields.categoryMultiSelect.noCategoriesFound') }}
         </p>
 
-        <template v-for="(item, index) in displayedItems" :key="item.id">
+        <!-- ListboxItem memoizes its attrs, so rows remount when search toggles to update the indent. -->
+        <template v-for="(item, index) in displayedItems" :key="`${item.id}:${isSearching}`">
           <!-- Group separator (shown only when searching and root changes) -->
           <div
             v-if="shouldShowSeparator({ item, index })"
@@ -31,13 +33,11 @@
             <div class="bg-border h-px flex-1" />
           </div>
 
-          <button
-            type="button"
-            class="hover:bg-accent hover:text-accent-foreground flex w-full cursor-pointer items-center gap-2 rounded-md py-1.5 pr-2 text-left"
-            :class="{ 'bg-primary/5': isCategoryChecked(item) === true }"
+          <MultiSelectItem
+            :value="item.id"
+            class="data-highlighted:text-accent-foreground data-[state=checked]:bg-primary/5 gap-2 py-1.5 pr-2"
             :style="{ paddingLeft: `${8 + (isSearching ? 0 : item.depth) * 16}px` }"
-            @mousedown.prevent
-            @click="handleToggle({ item, index })"
+            @toggle="handleToggle({ item, index })"
           >
             <Checkbox :model-value="isCategoryChecked(item)" class="pointer-events-none size-3.5" tabindex="-1">
               <MinusIcon v-if="isCategoryChecked(item) === 'indeterminate'" class="size-3" />
@@ -48,9 +48,9 @@
             <span v-if="!isSearching && item.descendantIds.length > 0" class="text-muted-foreground text-xs">
               {{ item.descendantIds.length }}
             </span>
-          </button>
+          </MultiSelectItem>
         </template>
-      </div>
+      </ListboxContent>
     </ScrollArea>
   </MultiSelectField>
 </template>
@@ -58,11 +58,13 @@
 <script setup lang="ts">
 import CategoryCircle from '@/components/common/category-circle.vue';
 import MultiSelectField from '@/components/fields/multi-select-field.vue';
+import MultiSelectItem from '@/components/fields/multi-select-item.vue';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { useCategoriesStore } from '@/stores';
 import { CheckIcon, CircleOffIcon, MinusIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
+import { ListboxContent } from 'reka-ui';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 

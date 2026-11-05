@@ -35,45 +35,47 @@
           </button>
         </PopoverTrigger>
         <PopoverContent class="w-80 p-0" align="start">
-          <div class="border-border border-b p-2">
-            <div
-              class="border-input bg-input-background flex h-9 w-full items-center gap-2 rounded-md border px-3 text-sm"
-            >
-              <SearchIcon class="text-muted-foreground size-4" />
-              <input
-                v-model="searchQuery"
-                type="text"
-                class="min-w-0 flex-1 bg-transparent outline-none"
-                :placeholder="$t('fields.categoryMultiSelect.searchPlaceholder')"
-              />
-              <button
-                v-if="searchQuery.length"
-                type="button"
-                class="text-muted-foreground hover:text-foreground shrink-0"
-                @click="searchQuery = ''"
+          <ListboxRoot multiple :model-value="modelValue" highlight-on-hover>
+            <div class="border-border border-b p-2">
+              <div
+                class="border-input bg-input-background flex h-9 w-full items-center gap-2 rounded-md border px-3 text-sm"
               >
-                <XIcon class="size-4" />
-              </button>
+                <SearchIcon class="text-muted-foreground size-4" />
+                <ListboxFilter
+                  v-model="searchQuery"
+                  class="min-w-0 flex-1 bg-transparent outline-none"
+                  :placeholder="$t('fields.categoryMultiSelect.searchPlaceholder')"
+                />
+                <button
+                  v-if="searchQuery.length"
+                  type="button"
+                  class="text-muted-foreground hover:text-foreground shrink-0"
+                  @mousedown.prevent
+                  @click="searchQuery = ''"
+                >
+                  <XIcon class="size-4" />
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="max-h-75 overflow-auto p-2">
-            <div v-if="filteredCategories.length === 0" class="text-muted-foreground py-4 text-center text-sm">
-              {{ $t('fields.categoryMultiSelect.noCategoriesFound') }}
-            </div>
-            <div v-else class="space-y-1">
-              <CategoryItem
-                v-for="category in filteredCategories"
-                :key="category.id"
-                :category="category"
-                :depth="0"
-                :is-searching="isSearching"
-                :is-selected="isSelected"
-                :get-descendant-count="getDescendantCount"
-                :taken-by="takenBy"
-                @toggle="toggleCategory"
-              />
-            </div>
-          </div>
+            <ListboxContent class="max-h-75 overflow-auto p-2">
+              <div v-if="filteredCategories.length === 0" class="text-muted-foreground py-4 text-center text-sm">
+                {{ $t('fields.categoryMultiSelect.noCategoriesFound') }}
+              </div>
+              <div v-else class="space-y-1">
+                <CategoryItem
+                  v-for="category in filteredCategories"
+                  :key="category.id"
+                  :category="category"
+                  :depth="0"
+                  :is-searching="isSearching"
+                  :is-selected="isSelected"
+                  :get-descendant-count="getDescendantCount"
+                  :taken-by="takenBy"
+                  @toggle="toggleCategory"
+                />
+              </div>
+            </ListboxContent>
+          </ListboxRoot>
         </PopoverContent>
       </Popover>
     </FieldLabel>
@@ -93,6 +95,7 @@ import { useCategoriesStore } from '@/stores';
 import { CATEGORY_TYPES } from '@bt/shared/types';
 import { ChevronsUpDownIcon, SearchIcon, XIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
+import { ListboxContent, ListboxFilter, ListboxRoot } from 'reka-ui';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
