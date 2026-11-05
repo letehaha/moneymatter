@@ -1,5 +1,6 @@
 <template>
   <MultiSelectField
+    ref="fieldRef"
     v-model:open="isOpen"
     v-model:search-term="searchTerm"
     :active="selectedCount > 0"
@@ -8,6 +9,7 @@
     :search-placeholder="$t('fields.payeeMultiSelect.searchPlaceholder')"
     :hide-clear-button="hideClearButton"
     :trigger-class="triggerClass"
+    :selected="payeeIds"
     content-class="min-w-64"
     @clear="clearSelection"
   >
@@ -20,17 +22,17 @@
     </template>
 
     <ScrollArea class="max-h-85 lg:max-h-60" viewport-class="max-h-85 lg:max-h-60">
-      <div class="p-1.25">
+      <ListboxContent class="p-1.25">
         <template v-if="allowBlank && !debouncedQuery">
-          <button
-            type="button"
-            class="hover:bg-accent hover:text-accent-foreground text-muted-foreground mb-1 flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-left text-sm"
-            @click="toggleBlank"
+          <MultiSelectItem
+            :value="BLANK_FILTER_VALUE"
+            class="data-highlighted:text-accent-foreground text-muted-foreground mb-1 gap-2 px-2 py-1 text-sm"
+            @toggle="toggleBlank"
           >
             <CircleDashedIcon class="size-4 shrink-0" />
             <span class="min-w-0 grow truncate">{{ $t('fields.payeeMultiSelect.blankOption') }}</span>
             <CheckIcon v-if="isBlankSelected" class="size-4 shrink-0" />
-          </button>
+          </MultiSelectItem>
           <div class="bg-border mb-1 h-px" />
         </template>
         <div v-if="isFetching && displayedPayees.length === 0" class="text-muted-foreground py-3 text-center text-xs">
@@ -40,19 +42,19 @@
           {{ $t('fields.payeeMultiSelect.noResults') }}
         </p>
         <template v-else>
-          <button
+          <MultiSelectItem
             v-for="payee in displayedPayees"
             :key="payee.id"
-            type="button"
-            class="hover:bg-accent hover:text-accent-foreground flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-left text-sm"
-            @click="pickPayee(payee)"
+            :value="payee.id"
+            class="data-highlighted:text-accent-foreground gap-2 px-2 py-1 text-sm"
+            @toggle="!isSearchPending && pickPayee(payee)"
           >
             <BrandLogo v-bind="toEntityLogoDisplayProps(payee)" :name="payee.name" class="size-4 shrink-0" />
             <span class="min-w-0 grow truncate">{{ payee.name }}</span>
             <CheckIcon v-if="isPayeeSelected(payee.id)" class="size-4 shrink-0" />
-          </button>
+          </MultiSelectItem>
         </template>
-      </div>
+      </ListboxContent>
     </ScrollArea>
   </MultiSelectField>
 </template>
@@ -72,6 +74,8 @@ import { usePayees, usePayeesByIds } from '@/composable/data-queries/payees';
 import { BLANK_FILTER_VALUE, type EntityLogoFields, type RecordId } from '@bt/shared/types';
 import { isEqual } from 'lodash-es';
 import { CheckIcon, CircleDashedIcon } from '@lucide/vue';
+import MultiSelectItem from '@/components/fields/multi-select-item.vue';
+import { ListboxContent } from 'reka-ui';
 import { useDebounce } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -196,6 +200,12 @@ const displayedPayees = computed<SelectedPayee[]>(() => {
     .map<SelectedPayee>((p) => ({ id: p.id, name: p.name, ...pickLogoFields(p) }));
   return [...selected, ...rest];
 });
+
+// Results land after the debounced fetch, not on input: re-highlight then, and ignore
+// picks until then so Enter can't toggle a row from the previous query's list.
+const fieldRef = ref<{ highlightFirstItem: () => void } | null>(null);
+watch(serverPayees, () => fieldRef.value?.highlightFirstItem());
+const isSearchPending = computed(() => searchTerm.value.trim() !== debouncedQuery.value || isFetching.value);
 
 const isPayeeSelected = (payeeId: RecordId) => selectedPayees.value.some((p) => p.id === payeeId);
 

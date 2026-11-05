@@ -6,22 +6,22 @@
     :selected-label="selectedLabel"
     :search-placeholder="$t('fields.budgetMultiSelect.searchPlaceholder')"
     :hide-clear-button="hideClearButton"
+    :selected="trackerIds"
     content-class="min-w-64"
     @clear="emit('update:trackerIds', [])"
   >
     <ScrollArea class="max-h-85 lg:max-h-60" viewport-class="max-h-85 lg:max-h-60">
-      <div class="p-1.25">
+      <ListboxContent class="p-1.25">
         <template v-if="allowBlank && !searchTerm.trim()">
-          <Button
-            type="button"
-            variant="ghost"
-            class="text-muted-foreground mb-1 h-auto w-full justify-start px-2 py-1 font-normal"
-            @click="toggle(BLANK_FILTER_VALUE)"
+          <MultiSelectItem
+            :value="BLANK_FILTER_VALUE"
+            class="data-highlighted:text-accent-foreground text-muted-foreground mb-1 gap-2 px-2 py-1 text-sm"
+            @toggle="toggle(BLANK_FILTER_VALUE)"
           >
             <CircleDashedIcon class="size-4 shrink-0" />
-            <span class="min-w-0 grow truncate text-left">{{ $t('fields.budgetMultiSelect.blankOption') }}</span>
+            <span class="min-w-0 grow truncate">{{ $t('fields.budgetMultiSelect.blankOption') }}</span>
             <CheckIcon v-if="trackerIds.includes(BLANK_FILTER_VALUE)" class="size-4 shrink-0" />
-          </Button>
+          </MultiSelectItem>
           <div class="bg-border mb-1 h-px" />
         </template>
         <div v-if="isFetching && displayedTrackers.length === 0" class="text-muted-foreground py-3 text-center text-xs">
@@ -33,17 +33,17 @@
         >
           {{ $t(isError ? 'fields.budgetMultiSelect.loadError' : 'fields.budgetMultiSelect.noResults') }}
         </p>
-        <button
+        <MultiSelectItem
           v-for="tracker in displayedTrackers"
           :key="tracker.id"
-          type="button"
-          class="hover:bg-accent hover:text-accent-foreground flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1 text-left"
-          @click="toggle(tracker.id)"
+          :value="tracker.id"
+          class="data-highlighted:text-accent-foreground gap-2 px-2 py-1"
+          @toggle="toggle(tracker.id)"
         >
           <span class="min-w-0 grow truncate">{{ tracker.name }}</span>
           <CheckIcon v-if="trackerIds.includes(tracker.id)" class="size-4 shrink-0" />
-        </button>
-      </div>
+        </MultiSelectItem>
+      </ListboxContent>
     </ScrollArea>
   </MultiSelectField>
 </template>
@@ -52,12 +52,13 @@
 import { loadTrackers } from '@/api/trackers';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import MultiSelectField from '@/components/fields/multi-select-field.vue';
-import { Button } from '@/components/lib/ui/button';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { useNotificationCenter } from '@/components/notification-center';
 import { BLANK_FILTER_VALUE } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import { CheckIcon, CircleDashedIcon } from '@lucide/vue';
+import MultiSelectItem from '@/components/fields/multi-select-item.vue';
+import { ListboxContent } from 'reka-ui';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 

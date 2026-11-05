@@ -7,6 +7,7 @@
       :label="$t('analytics.portfolioFilter.all')"
       :selected-label="selectedLabel"
       :search-placeholder="$t('analytics.portfolioFilter.searchPlaceholder')"
+      :selected="includedIdList"
       content-class="w-72"
       @clear="clearSelection"
     >
@@ -15,32 +16,22 @@
       </div>
 
       <ScrollArea class="max-h-72" viewport-class="max-h-72">
-        <div class="p-2">
+        <ListboxContent class="p-2">
           <div v-if="!hasResults" class="text-muted-foreground py-4 text-center text-sm">
             {{ $t('analytics.portfolioFilter.noResults') }}
           </div>
 
-          <div
+          <MultiSelectItem
             v-for="portfolio in filteredPortfolios"
             :key="portfolio.id"
-            role="option"
-            :aria-selected="isChecked(portfolio.id)"
-            :class="
-              cn(
-                'hover:bg-accent flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5',
-                isChecked(portfolio.id) && 'bg-primary/5',
-              )
-            "
-            @click="togglePortfolio(portfolio.id)"
+            :value="portfolio.id"
+            class="data-[state=checked]:bg-primary/5 gap-2.5 px-2 py-1.5"
+            @toggle="togglePortfolio(portfolio.id)"
           >
-            <Checkbox
-              :model-value="isChecked(portfolio.id)"
-              @click.stop
-              @update:model-value="togglePortfolio(portfolio.id)"
-            />
+            <Checkbox :model-value="isChecked(portfolio.id)" class="pointer-events-none" tabindex="-1" />
             <span class="min-w-0 flex-1 truncate text-sm">{{ portfolio.name }}</span>
-          </div>
-        </div>
+          </MultiSelectItem>
+        </ListboxContent>
       </ScrollArea>
     </MultiSelectField>
   </div>
@@ -51,7 +42,8 @@ import MultiSelectField from '@/components/fields/multi-select-field.vue';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { usePortfolios } from '@/composable/data-queries/portfolios';
-import { cn } from '@/lib/utils';
+import MultiSelectItem from '@/components/fields/multi-select-item.vue';
+import { ListboxContent } from 'reka-ui';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -101,6 +93,7 @@ const includedIds = computed<Set<string>>(() => {
   return new Set(stored.filter((id) => enabledSet.has(id)));
 });
 
+const includedIdList = computed(() => [...includedIds.value]);
 const selectedCount = computed(() => includedIds.value.size);
 
 // The filter narrows only when a strict subset of the enabled portfolios is
