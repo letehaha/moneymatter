@@ -3,6 +3,9 @@ import {
   BANK_PROVIDER_TYPE,
   PAYMENT_TYPES,
   RecordId,
+  RESOURCE_TYPES,
+  SHARE_PERMISSIONS,
+  TRANSACTIONS_WRITE_SCOPES,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   VEHICLE_CLASS,
@@ -945,6 +948,46 @@ describe('Data export (POST /user/data-export)', () => {
       expect(stringified).not.toContain(foreignNeedle.note);
       expect(stringified).not.toContain(foreignNeedle.payee);
       expect(stringified).not.toContain(foreignNeedle.payeeAlias);
+    });
+
+    it("names the owner's shared account on a member's transaction instead of the unresolved sentinel", async () => {
+      const sharedAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Shared household account' }),
+        raw: true,
+      });
+      const member = await helpers.provisionSecondUserWithBaseCurrency();
+      const invitation = await helpers.createShareInvitation({
+        inviteeEmail: member.email,
+        resourceType: RESOURCE_TYPES.account,
+        resourceId: sharedAccount.id,
+        permission: SHARE_PERMISSIONS.write,
+        policy: { transactionsWriteScope: TRANSACTIONS_WRITE_SCOPES.all },
+        raw: true,
+      });
+
+      const response = await helpers.asUser({
+        cookies: member.cookies,
+        fn: async () => {
+          await helpers.acceptShareInvitation({ token: invitation.token, raw: true });
+          await helpers.createTransaction({
+            payload: helpers.buildTransactionPayload({
+              accountId: sharedAccount.id,
+              amount: 12,
+              transactionType: TRANSACTION_TYPES.expense,
+              note: 'Member row on shared account',
+            }),
+            raw: true,
+          });
+          return helpers.exportData({ format: 'json' });
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const data = archive.json as { transactions: Array<Record<string, unknown>> };
+      const row = data.transactions.find((t) => t.note === 'Member row on shared account');
+      expect(row).toBeDefined();
+      expect(row?.account).toBe('Shared household account');
     });
   });
 

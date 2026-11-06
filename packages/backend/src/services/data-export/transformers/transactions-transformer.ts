@@ -12,6 +12,7 @@ import TransactionTags from '@models/transaction-tags.model';
 import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { getCategoryPathNames } from '@services/categories/category-hierarchy';
+import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { Op } from 'sequelize';
 
 import type { ExportDateRange, TransactionRow } from '../types';
@@ -80,14 +81,17 @@ export async function transformTransactions({
   const categoryIds = [...new Set(transactions.map((t) => t.categoryId).filter((id): id is RecordId => Boolean(id)))];
   const payeeIds = [...new Set(transactions.map((t) => t.payeeId).filter((id): id is RecordId => Boolean(id)))];
 
+  // A member's transactions can sit on an owner's shared account, so names resolve against
+  // every account the user can read; the filter keeps a stray foreign id from leaking a name.
+  const accessibleAccountIds = new Set(await getAccessibleAccountIdsForUser({ userId }));
+  async function findAccountNames({ ids }: { ids: RecordId[] }): Promise<Accounts[]> {
+    const scoped = ids.filter((id) => accessibleAccountIds.has(String(id)));
+    if (!scoped.length) return [];
+    return Accounts.findAll({ where: { id: { [Op.in]: scoped } }, attributes: ['id', 'name'] });
+  }
+
   const [accounts, categories, payees, splits, tagLinks, allTags, refundLinks, subLinks] = await Promise.all([
-    // Scope the account lookup to the current user so a stray cross-user
-    // accountId (legacy data, future cross-account share, malformed row)
-    // cannot leak another user's account name into the export's Account
-    // column. Every other transformer in this module follows the same shape.
-    accountIds.length
-      ? Accounts.findAll({ where: { userId, id: { [Op.in]: accountIds } }, attributes: ['id', 'name'] })
-      : Promise.resolve([] as Accounts[]),
+    findAccountNames({ ids: accountIds }),
     Categories.findAll({ where: { userId }, attributes: ['id', 'name', 'parentId'] }),
     payeeIds.length
       ? Payees.findAll({ where: { userId, id: { [Op.in]: payeeIds } }, attributes: ['id', 'name'] })
@@ -214,12 +218,8 @@ export async function transformTransactions({
             .filter((id): id is RecordId => Boolean(id) && !accountNameById.has(String(id))),
         ),
       ];
-      if (extraAccountIds.length) {
-        const extraAccounts = await Accounts.findAll({
-          where: { userId, id: { [Op.in]: extraAccountIds } },
-          attributes: ['id', 'name'],
-        });
-        for (const account of extraAccounts) accountNameById.set(String(account.id), account.name);
+      for (const account of await findAccountNames({ ids: extraAccountIds })) {
+        accountNameById.set(String(account.id), account.name);
       }
     }
   }
