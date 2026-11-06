@@ -8,7 +8,7 @@ import * as helpers from '@tests/helpers';
 const postTransaction = (payload: ReturnType<typeof helpers.buildTransactionPayload>) =>
   helpers.createTransaction({ payload, raw: false });
 
-const readSplits = async () => (await helpers.getTransactions({ raw: true, includeSplits: true }))![0]!;
+const readSplits = async () => (await helpers.getTransactions({ raw: true }))![0]!;
 
 describe('Create transaction with splits', () => {
   it('should create transaction with a single split', async () => {
@@ -33,7 +33,6 @@ describe('Create transaction with splits', () => {
 
     const transactions = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
 
     expect(transactions).toHaveLength(1);
@@ -70,7 +69,6 @@ describe('Create transaction with splits', () => {
 
     const transactions = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
 
     expect(transactions).toHaveLength(1);
@@ -100,7 +98,6 @@ describe('Create transaction with splits', () => {
 
     const transactions = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
 
     expect(transactions![0]!.splits![0]!.note).toBe('Test split note');
@@ -195,7 +192,6 @@ describe('Create transaction with splits', () => {
 
     const transactions = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
     expect(transactions).toHaveLength(0);
   }, 30000);
@@ -221,7 +217,6 @@ describe('Create transaction with splits', () => {
 
     const transactions = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
 
     const txWithSplits = transactions![0]!;
@@ -259,7 +254,6 @@ describe('Create transaction with splits', () => {
 
     const transactions = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
 
     const txWithSplits = transactions![0]!;
@@ -386,7 +380,6 @@ describe('Update transaction with splits', () => {
 
     const transactions = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
     const txId = transactions![0]!.id;
 
@@ -435,7 +428,6 @@ describe('Delete transaction splits', () => {
 
     const transactions = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
     expect(transactions).toHaveLength(1);
     expect(transactions![0]!.splits).toHaveLength(2);
@@ -451,7 +443,6 @@ describe('Delete transaction splits', () => {
 
     const afterFirst = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
     expect(afterFirst![0]!.splits).toHaveLength(1);
     expect(afterFirst![0]!.splits![0]!.id).not.toBe(firstSplit.id);
@@ -464,7 +455,6 @@ describe('Delete transaction splits', () => {
 
     const afterLast = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
     expect(afterLast![0]!.splits).toHaveLength(0);
     expect(afterLast![0]!.amount).toBe(originalAmount);
@@ -497,7 +487,6 @@ describe('Delete transaction splits', () => {
 
       const transactions = await helpers.getTransactions({
         raw: true,
-        includeSplits: true,
       });
       const split = transactions![0]!.splits![0]!;
 
@@ -532,7 +521,6 @@ describe('Delete transaction splits', () => {
 
       const updatedTransactions = await helpers.getTransactions({
         raw: true,
-        includeSplits: true,
       });
 
       expect(updatedTransactions!.find((t) => t.id === expenseTx.id)!.splits).toHaveLength(0);
@@ -559,7 +547,6 @@ describe('Delete transaction splits', () => {
 
       const transactions = await helpers.getTransactions({
         raw: true,
-        includeSplits: true,
       });
       const split1 = transactions![0]!.splits![0]!;
       const split2 = transactions![0]!.splits![1]!;
@@ -589,7 +576,6 @@ describe('Delete transaction splits', () => {
       // Verify only split2 was deleted
       const updatedTransactions = await helpers.getTransactions({
         raw: true,
-        includeSplits: true,
       });
 
       const updatedExpenseTx = updatedTransactions!.find((t) => t.id === expenseTx.id);
@@ -600,7 +586,7 @@ describe('Delete transaction splits', () => {
 });
 
 describe('Query transactions with splits', () => {
-  it('should return splits only when includeSplits is requested', async () => {
+  it('returns splits with their category by default and an empty array for unsplit rows', async () => {
     const account = await helpers.createAccount({ raw: true });
     const categories = await helpers.getCategoriesList();
 
@@ -616,7 +602,6 @@ describe('Query transactions with splits', () => {
 
     const included = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
     expect(included).toHaveLength(1);
     expect(included![0]!.splits).toBeDefined();
@@ -629,16 +614,12 @@ describe('Query transactions with splits', () => {
     expect(split.category).toBeDefined();
     expect(split.category!.id).toBe(categories[1]!.id);
 
-    const excluded = await helpers.getTransactions({
+    const [plain] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id }),
       raw: true,
-      includeSplits: false,
     });
-    expect(excluded).toHaveLength(1);
-    expect(excluded![0]!.splits).toBeUndefined();
-
-    const omitted = await helpers.getTransactions({ raw: true });
-    expect(omitted).toHaveLength(1);
-    expect(omitted![0]!.splits).toBeUndefined();
+    const rows = await helpers.getTransactions({ raw: true });
+    expect(rows.find((tx) => tx.id === plain!.id)!.splits).toEqual([]);
   });
 
   it('should match on primary and split categories without duplicating the row', async () => {
@@ -660,7 +641,6 @@ describe('Query transactions with splits', () => {
     const bySplitCategory = await helpers.getTransactions({
       raw: true,
       categoryIds: [splitCategory.id],
-      includeSplits: true,
     });
     expect(bySplitCategory).toHaveLength(1);
     expect(bySplitCategory![0]!.categoryId).toBe(primaryCategory.id);
@@ -669,7 +649,6 @@ describe('Query transactions with splits', () => {
     const byPrimaryCategory = await helpers.getTransactions({
       raw: true,
       categoryIds: [primaryCategory.id],
-      includeSplits: true,
     });
     expect(byPrimaryCategory).toHaveLength(1);
     expect(byPrimaryCategory![0]!.categoryId).toBe(primaryCategory.id);
@@ -677,13 +656,11 @@ describe('Query transactions with splits', () => {
     const byBothCategories = await helpers.getTransactions({
       raw: true,
       categoryIds: [primaryCategory.id, splitCategory.id],
-      includeSplits: true,
     });
     expect(byBothCategories).toHaveLength(1);
 
     const withOtherFilters = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
       accountIds: [account.id],
       amountGte: Money.fromDecimal(100),
       amountLte: Money.fromDecimal(1000),
@@ -711,7 +688,6 @@ describe('Query transactions with splits', () => {
 
       const transactions = await helpers.getTransactions({
         raw: true,
-        includeSplits: true,
       });
 
       expect(transactions![0]!.splits).toHaveLength(2);
@@ -724,7 +700,6 @@ describe('Query transactions with splits', () => {
       // Verify transaction and splits are gone
       const remaining = await helpers.getTransactions({
         raw: true,
-        includeSplits: true,
       });
 
       expect(remaining).toHaveLength(0);
@@ -761,7 +736,6 @@ describe('Query transactions with splits', () => {
 
       const transactions = await helpers.getTransactions({
         raw: true,
-        includeSplits: true,
       });
 
       expect(transactions![0]!.splits).toHaveLength(10);

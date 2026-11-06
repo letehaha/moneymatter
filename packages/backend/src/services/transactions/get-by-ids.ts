@@ -1,6 +1,7 @@
 import type { RecordId } from '@bt/shared/types';
 import { ValidationError } from '@js/errors';
 import { findTransactions } from '@models/transactions-query';
+import { fullTransactionIncludes } from '@models/transactions.model';
 import { serializeTransactions } from '@root/serializers/transactions.serializer';
 import { Op } from 'sequelize';
 
@@ -31,6 +32,7 @@ export const getTransactionsByIds = withTransaction(async ({ userId, ids }: GetT
     balanceAdjustments: 'include',
     completeness: 'all',
     where: { id: { [Op.in]: ids } },
+    include: fullTransactionIncludes(),
   });
 
   return serializeTransactions(transactions);

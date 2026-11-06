@@ -2,9 +2,7 @@ import { ACCESS_SOURCES, RESOURCE_TYPES, SHARE_PERMISSIONS, SharePermission } fr
 import { t } from '@i18n/index';
 import { ForbiddenError, NotFoundError } from '@js/errors';
 import Accounts from '@models/accounts.model';
-import Tags from '@models/tags.model';
 import TrackerTransactions from '@models/tracker-transactions.model';
-import TransactionSplits from '@models/transaction-splits.model';
 import { findOneTransaction } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
 import { assertOwnScopeOk } from '@services/sharing/auth/authorize-account-write.service';
@@ -17,26 +15,9 @@ import { Includeable, Op } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
 
-const buildInclude = ({
-  includeSplits,
-  includeTags,
-}: {
-  includeSplits?: boolean;
-  includeTags?: boolean;
-}): Includeable[] => {
-  const include: Includeable[] = [];
-  if (includeSplits) include.push({ model: TransactionSplits, as: 'splits' });
-  if (includeTags) {
-    include.push({ model: Tags, through: { attributes: [] }, attributes: ['id', 'name', 'color', 'icon'] });
-  }
-  return include;
-};
-
 interface GetTransactionByIdParams {
   id: string;
   userId: number;
-  includeSplits?: boolean;
-  includeTags?: boolean;
   /** Defaults to `read`. Pass `write` from update/delete callers so the auth check happens once here instead of being re-run in the caller. */
   requiredPermission?: SharePermission;
 }
@@ -62,18 +43,17 @@ interface GetTransactionByIdParams {
  *      permission level (subject to `requiredPermission`).
  *   4. Anything else → `null` (404 territory).
  */
-export const getTransactionById = withTransaction(
+const findVisibleTransaction = withTransaction(
   async ({
     id,
     userId,
-    includeSplits,
-    includeTags,
+    include,
     requiredPermission = SHARE_PERMISSIONS.read,
-  }: GetTransactionByIdParams): Promise<{
+  }: GetTransactionByIdParams & { include?: Includeable[] }): Promise<{
     tx: Transactions.default;
     access: GrantedAccessResult;
   } | null> => {
-    const authored = await Transactions.getTransactionById({ id, userId, includeSplits, includeTags });
+    const authored = await Transactions.getTransactionById({ id, userId, include });
     if (authored) {
       // Verify the parent account also belongs to the caller before synthesizing the
       // owner-fast-path. A recipient who created a tx on a shared account would otherwise
@@ -117,7 +97,7 @@ export const getTransactionById = withTransaction(
       access: 'unscoped-internal',
       balanceAdjustments: 'include',
       where: { id },
-      include: buildInclude({ includeSplits, includeTags }),
+      include,
     });
     if (!tx) return null;
 
@@ -167,6 +147,10 @@ export const getTransactionById = withTransaction(
   },
 );
 
+/** Always returns the full transaction shape (tags, splits, groups). */
+export const getTransactionById = (params: GetTransactionByIdParams) =>
+  findVisibleTransaction({ ...params, include: Transactions.fullTransactionIncludes() });
+
 interface WritableTransactionAuthContext {
   /** Caller owns the parent account. */
   isOwner: boolean;
@@ -201,16 +185,16 @@ export const getWritableTransactionById = withTransaction(
   async ({
     id,
     userId,
-    includeSplits,
+    include,
   }: {
     id: string;
     userId: number;
-    includeSplits?: boolean;
+    include?: Includeable[];
   }): Promise<{ tx: Transactions.default; ctx: WritableTransactionAuthContext }> => {
-    const fetched = await getTransactionById({
+    const fetched = await findVisibleTransaction({
       id,
       userId,
-      includeSplits,
+      include,
       requiredPermission: SHARE_PERMISSIONS.write,
     });
     if (!fetched) {

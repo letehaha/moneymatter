@@ -15,7 +15,7 @@ import { addDays } from 'date-fns';
 const FUTURE_TIME = () => addDays(new Date(), 5).toISOString();
 
 const readSplits = async ({ id }: { id: RecordId }) =>
-  (await helpers.getTransactions({ raw: true, includeSplits: true }))!.find((tx) => tx.id === id)!.splits!;
+  (await helpers.getTransactions({ raw: true }))!.find((tx) => tx.id === id)!.splits!;
 
 describe('GET /categories/:id/transaction-count', () => {
   let category: CategoryModel;

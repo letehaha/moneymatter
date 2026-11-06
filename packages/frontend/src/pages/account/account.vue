@@ -245,9 +245,6 @@ const fetchTransactions = ({ pageParam }: { pageParam: number }) => {
     limit,
     offset,
     accountIds: [account.value!.id],
-    includeSplits: true,
-    includeTags: true,
-    includeGroups: true,
   });
 };
 

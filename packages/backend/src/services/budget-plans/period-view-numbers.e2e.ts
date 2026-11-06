@@ -357,7 +357,7 @@ describe('Budget plan period view: refunds', () => {
       time: at({ period: periods[0]! }),
       splits: [{ categoryId: food.id, amount: 30 }],
     });
-    const transactions = await helpers.getTransactions({ raw: true, includeSplits: true });
+    const transactions = await helpers.getTransactions({ raw: true });
     const split = transactions!.find((transaction) => transaction.id === original.id)!.splits![0]!;
 
     const [refund] = await income({

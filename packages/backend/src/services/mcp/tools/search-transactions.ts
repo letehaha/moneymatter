@@ -65,7 +65,6 @@ export function registerSearchTransactions(server: McpServer) {
         order: args.order === 'asc' ? SORT_DIRECTIONS.asc : SORT_DIRECTIONS.desc,
         excludeTransfer: args.excludeTransfers,
         excludeRefunds: args.excludeRefunds,
-        includeTags: true,
       };
 
       const transactions = await getTransactions(filterParams);

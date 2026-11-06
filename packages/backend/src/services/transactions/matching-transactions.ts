@@ -15,15 +15,7 @@ import { getTransactions } from './get-transactions';
 
 type ListFilters = Omit<
   Parameters<typeof getTransactions>[0],
-  | 'from'
-  | 'limit'
-  | 'order'
-  | 'sortBy'
-  | 'attributes'
-  | 'includeSplits'
-  | 'includeTags'
-  | 'includeGroups'
-  | 'includeHasAttachments'
+  'from' | 'limit' | 'order' | 'sortBy' | 'attributes' | 'isRaw'
 >;
 
 interface MatchingRow {
@@ -42,10 +34,9 @@ interface MatchingRow {
 const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> => {
   // ponytail: loads every matching row and aggregates in JS. Move to a SQL aggregate
   // if summaries get slow on very large ledgers.
-  // `getTransactions` reads raw exactly when no `include*` flag is passed, which is
-  // what makes `refAmount` a number here.
-  const rows = (await getTransactions({
+  return (await getTransactions({
     ...filters,
+    isRaw: true,
     limit: Infinity,
     attributes: [
       'id',
@@ -58,9 +49,6 @@ const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> =>
       'refAmount',
     ],
   })) as unknown as MatchingRow[];
-
-  // The tag filter joins TransactionTags, which repeats a row per matching tag.
-  return [...new Map(rows.map((row) => [row.id, row])).values()];
 };
 
 /** Under a category filter a split row counts only the share booked to those categories. */

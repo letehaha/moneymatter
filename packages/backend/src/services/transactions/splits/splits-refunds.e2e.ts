@@ -32,7 +32,6 @@ describe('Create transaction that refunds a specific split', () => {
     // Get the expense transaction with splits
     const expenseTransactions = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
 
     expect(expenseTransactions).toHaveLength(1);
@@ -90,7 +89,6 @@ describe('Create transaction that refunds a specific split', () => {
 
     const expenseTransactions = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
     const expenseTx = expenseTransactions![0]!;
     const shoppingSplit = expenseTx.splits![0]!;
@@ -177,7 +175,6 @@ describe('Create transaction that refunds a specific split', () => {
 
     const transactions = await helpers.getTransactions({
       raw: true,
-      includeSplits: true,
     });
     const tx1 = transactions!.find((t) => Number(t.amount) === 10000)!;
     const tx2 = transactions!.find((t) => Number(t.amount) === 5000)!;
@@ -242,7 +239,6 @@ describe('Create transaction that refunds a specific split', () => {
 const getFirstSplit = async ({ transactionId }: { transactionId: string }) => {
   const transactions = await helpers.getTransactions({
     raw: true,
-    includeSplits: true,
   });
   return transactions!.find((tx) => tx.id === transactionId)!.splits![0]!;
 };

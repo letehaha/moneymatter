@@ -30,7 +30,7 @@ const linkAmounts = async ({ transactionId }: { transactionId: string }) =>
 
 const getTx = async ({ id }: { id: string }) => (await helpers.getTransactionById({ id, raw: true }))!;
 
-const listTransactions = async (params: { includeRefundedAmount?: boolean; includeSplits?: boolean }) =>
+const listTransactions = async (params: { includeRefundedAmount?: boolean }) =>
   (await helpers.getTransactions({ raw: true, ...params })) as unknown as TransactionModel[];
 
 const createUahIncome = async ({ amount }: { amount: number }) => {
@@ -54,9 +54,7 @@ const createPurchaseWithSplit = async ({ amount, splitAmount }: { amount: number
     }),
     raw: true,
   });
-  const split = (await helpers.getTransactions({ raw: true, includeSplits: true }))!.find(
-    (tx) => tx.id === purchase.id,
-  )!.splits![0]!;
+  const split = (await helpers.getTransactions({ raw: true }))!.find((tx) => tx.id === purchase.id)!.splits![0]!;
   return { account, purchase, split };
 };
 
@@ -303,7 +301,7 @@ describe('Partial refund links', () => {
         }),
         raw: true,
       });
-      const [splitA, splitB] = (await helpers.getTransactions({ raw: true, includeSplits: true }))!.find(
+      const [splitA, splitB] = (await helpers.getTransactions({ raw: true }))!.find(
         (tx) => tx.id === purchase.id,
       )!.splits!;
       const income = await createTx({ amount: 50, transactionType: TRANSACTION_TYPES.income, accountId: account.id });
@@ -617,9 +615,7 @@ describe('Partial refund links', () => {
 
       expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
       expect(errorMessage({ response })).toContain('cannot be greater than the split amount');
-      const splits = (await helpers.getTransactions({ raw: true, includeSplits: true }))!.find(
-        (tx) => tx.id === purchase.id,
-      )!.splits!;
+      const splits = (await helpers.getTransactions({ raw: true }))!.find((tx) => tx.id === purchase.id)!.splits!;
       expect(splits.map((item) => item.amount)).toEqual([40]);
     });
 
@@ -905,18 +901,10 @@ describe('Partial refund links', () => {
       );
       await helpers.createSingleRefund({ originalTxId: purchase.id, refundTxId: txRefund.id, amount: 10 }, true);
 
-      const withSplits = (await listTransactions({ includeRefundedAmount: true, includeSplits: true })).find(
-        (tx) => tx.id === purchase.id,
-      )!;
+      const withSplits = (await listTransactions({ includeRefundedAmount: true })).find((tx) => tx.id === purchase.id)!;
 
       expect(withSplits.refundedAmount).toBe(40);
       expect(withSplits.splits!.find((item) => item.id === split.id)!.refundedAmount).toBe(30);
-
-      const withoutSplits = (await listTransactions({ includeRefundedAmount: true })).find(
-        (tx) => tx.id === purchase.id,
-      )!;
-
-      expect(withoutSplits.refundedAmount).toBe(40);
     });
 
     it('omits the field without the flag', async () => {
@@ -925,7 +913,7 @@ describe('Partial refund links', () => {
 
       await helpers.createSingleRefund({ originalTxId: purchase.id, refundTxId: income.id, amount: 30 }, true);
 
-      const tx = (await listTransactions({ includeSplits: true })).find((item) => item.id === purchase.id)!;
+      const tx = (await listTransactions({})).find((item) => item.id === purchase.id)!;
 
       expect(tx).not.toHaveProperty('refundedAmount');
     });

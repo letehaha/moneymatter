@@ -88,7 +88,7 @@ describe('Multi-account payments', () => {
       expect.objectContaining({ accountId: voucher!.id, amount: 30, paymentAmount: 30, isLinked: false }),
     ]);
 
-    const voucherRows = (await helpers.getTransactions({ accountIds: [voucher!.id], includeTags: true, raw: true }))!;
+    const voucherRows = (await helpers.getTransactions({ accountIds: [voucher!.id], raw: true }))!;
     expect(voucherRows).toHaveLength(1);
     const leg = voucherRows[0]!;
     expect(leg).toMatchObject({
@@ -335,9 +335,7 @@ const createRow = async ({
 };
 
 const rowOf = async ({ accountId, id }: { accountId: RecordId; id: RecordId }) =>
-  (await helpers.getTransactions({ accountIds: [accountId], includeTags: true, raw: true }))!.find(
-    (tx) => tx.id === id,
-  )!;
+  (await helpers.getTransactions({ accountIds: [accountId], raw: true }))!.find((tx) => tx.id === id)!;
 
 const setupLinkedPayment = async () => {
   const [card, cash, voucher] = await createManualAccounts({ count: 3 });

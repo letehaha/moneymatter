@@ -386,33 +386,26 @@ describe('Transaction attachments', () => {
       expect(bareIds).not.toContain(withFile!.id);
     });
 
-    it.each([{ includeSplits: false }, { includeSplits: true }])(
-      'flags each row with hasAttachments (includeSplits: $includeSplits)',
-      async ({ includeSplits }) => {
-        const account = await helpers.createAccount({ raw: true });
-        const [withFile] = await helpers.createTransaction({
-          payload: helpers.buildTransactionPayload({ accountId: account.id }),
-          raw: true,
-        });
-        const [withoutFile] = await helpers.createTransaction({
-          payload: helpers.buildTransactionPayload({ accountId: account.id }),
-          raw: true,
-        });
-        await helpers.uploadAttachment({ transactionId: withFile!.id, file: PNG_BYTES });
+    it('flags each row with hasAttachments', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const [withFile] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: account.id }),
+        raw: true,
+      });
+      const [withoutFile] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: account.id }),
+        raw: true,
+      });
+      await helpers.uploadAttachment({ transactionId: withFile!.id, file: PNG_BYTES });
 
-        // The helper types rows as the model, which lacks serializer-derived fields.
-        const rows = (await helpers.getTransactions({
-          includeSplits,
-          includeHasAttachments: true,
-          raw: true,
-        })) as unknown as Array<{
-          id: string;
-          hasAttachments?: boolean;
-        }>;
+      // The helper types rows as the model, which lacks serializer-derived fields.
+      const rows = (await helpers.getTransactions({ raw: true })) as unknown as Array<{
+        id: string;
+        hasAttachments?: boolean;
+      }>;
 
-        expect(rows.find((tx) => tx.id === withFile!.id)!.hasAttachments).toBe(true);
-        expect(rows.find((tx) => tx.id === withoutFile!.id)!.hasAttachments).toBe(false);
-      },
-    );
+      expect(rows.find((tx) => tx.id === withFile!.id)!.hasAttachments).toBe(true);
+      expect(rows.find((tx) => tx.id === withoutFile!.id)!.hasAttachments).toBe(false);
+    });
   });
 });

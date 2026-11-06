@@ -1,5 +1,5 @@
 import { SHARE_PERMISSIONS, TRANSACTIONS_WRITE_SCOPES } from '@bt/shared/types';
-import { booleanQuery, recordId } from '@common/lib/zod/custom-types';
+import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { serializeTransaction, serializeTransactions } from '@root/serializers';
 import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
@@ -13,23 +13,12 @@ export const getTransactionById = createController(
     params: z.object({
       id: recordId(),
     }),
-    query: z.object({
-      includeSplits: booleanQuery().optional(),
-    }),
   }),
-  async ({ user, params, query }) => {
+  async ({ user, params }) => {
     const { id } = params;
     const { id: userId } = user;
-    const { includeSplits } = query;
 
-    const fetched = await transactionsService.getTransactionById({
-      id,
-      userId,
-      includeSplits,
-      // The edit form seeds `tagIds` from this response; an absent `tags` array would make
-      // the next save submit an empty tag set.
-      includeTags: true,
-    });
+    const fetched = await transactionsService.getTransactionById({ id, userId });
 
     if (!fetched) return { data: null };
 

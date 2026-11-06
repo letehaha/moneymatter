@@ -546,7 +546,6 @@ describe('Shared account writes — S4', () => {
       // Owner can see the split
       const ownerView = await helpers.getTransactions({
         raw: true,
-        includeSplits: true,
       });
       const ownerTxView = ownerView!.find((t) => t.id === ownerTx.id);
       expect(ownerTxView).toBeDefined();
@@ -556,7 +555,7 @@ describe('Shared account writes — S4', () => {
       // Recipient can also see the split
       const recipientView = await helpers.asUser({
         cookies: recipient.cookies,
-        fn: () => helpers.getTransactions({ raw: true, includeSplits: true }),
+        fn: () => helpers.getTransactions({ raw: true }),
       });
       const recipientTxView = (recipientView as Array<{ id: string; splits?: Array<{ categoryId: string }> }>).find(
         (t) => t.id === ownerTx.id,
@@ -606,7 +605,7 @@ describe('Shared account writes — S4', () => {
       expect(res.statusCode).toBe(200);
 
       // Split still present after recipient edit
-      const view = await helpers.getTransactions({ raw: true, includeSplits: true });
+      const view = await helpers.getTransactions({ raw: true });
       const txView = view!.find((t) => t.id === ownerTx.id);
       expect(txView).toBeDefined();
       expect(txView!.splits).toHaveLength(1);

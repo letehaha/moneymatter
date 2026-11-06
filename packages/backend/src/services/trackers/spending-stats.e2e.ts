@@ -711,7 +711,7 @@ describe('Get tracker spending stats', () => {
         }),
       });
 
-      const txWithSplits = await helpers.getTransactions({ raw: true, includeSplits: true });
+      const txWithSplits = await helpers.getTransactions({ raw: true });
       const split = txWithSplits.find((t) => t.id === expenseTx.id)!.splits![0]!;
 
       // Refund-income $3 targeting the $3 split.

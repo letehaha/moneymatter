@@ -58,7 +58,6 @@ describe('Refund Transactions service', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split = transactions![0]!.splits![0]!;
 
@@ -145,7 +144,6 @@ describe('Refund Transactions service', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split = transactions![0]!.splits![0]!;
 
@@ -217,7 +215,6 @@ describe('Refund Transactions service', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split = transactions![0]!.splits![0]!;
 
@@ -272,7 +269,6 @@ describe('Refund Transactions service', () => {
         // Get split from first transaction
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const splitFromTx1 = transactions!.find((t) => t.splits && t.splits.length > 0)!.splits![0]!;
 
@@ -354,7 +350,6 @@ describe('Refund Transactions service', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split1 = transactions![0]!.splits![0]!;
         const split2 = transactions![0]!.splits![1]!;
@@ -1125,7 +1120,6 @@ describe('Refund Transactions service', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split = transactions![0]!.splits![0]!;
 

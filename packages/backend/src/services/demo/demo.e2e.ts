@@ -97,7 +97,27 @@ interface DemoTransactionRow {
   refundLinked: boolean;
   splits?: { amount: number }[];
   tags?: { id: string; name: string }[];
+  time: string;
 }
+
+const TRANSACTIONS_PAGE_SIZE = 1000;
+
+const fetchAllTransactions = async ({ params = {} }: { params?: Record<string, string | number> } = {}): Promise<
+  DemoTransactionRow[]
+> => {
+  const rows: DemoTransactionRow[] = [];
+  for (let offset = 0; ; offset += TRANSACTIONS_PAGE_SIZE) {
+    const page = await makeRequest({
+      method: 'get',
+      url: '/transactions',
+      payload: { limit: TRANSACTIONS_PAGE_SIZE, offset, ...params },
+      raw: true,
+    });
+    expect(Array.isArray(page)).toBe(true);
+    rows.push(...(page as DemoTransactionRow[]));
+    if (page.length < TRANSACTIONS_PAGE_SIZE) return rows;
+  }
+};
 
 /**
  * Demo Mode E2E Tests
@@ -275,28 +295,7 @@ describe('Demo Mode', () => {
         if (logoColor !== null) expect(logoColor).toMatch(/^#[0-9a-f]{6}$/);
       }
 
-      // Get transactions with high limit to ensure we get all of them
-      // Demo seeding creates ~1500+ transactions over 36 months
-      const transactionsRes = await makeRequest({
-        method: 'get',
-        url: '/transactions',
-        payload: { limit: 5000 },
-      });
-
-      // Ensure request was successful
-      expect(transactionsRes.statusCode).toBe(200);
-
-      // The getTransactions controller returns { data: serializeTransactions(transactions) }
-      // which gets wrapped by createController to: { status: 'success', response: { data: [...] } }
-      // However, serializeTransactions returns an array directly, so response.data is the array
-      const responseBody = transactionsRes.body.response;
-      expect(responseBody).toBeDefined();
-
-      // The response might be just the array (since serializeTransactions returns an array)
-      // Check both structures to understand the actual format
-      const txData = Array.isArray(responseBody) ? responseBody : responseBody?.data;
-      expect(txData).toBeDefined();
-      expect(Array.isArray(txData)).toBe(true);
+      const txData = await fetchAllTransactions();
 
       // Should have a significant number of transactions
       expect(txData.length).toBeGreaterThan(100);
@@ -463,21 +462,7 @@ describe('Demo Mode', () => {
       }
     });
 
-    /**
-     * One high-limit page of the demo history. The seeded dataset is ~1.5k rows,
-     * so a single fetch avoids paging logic in every assertion below.
-     */
-    const fetchTransactions = async (params: Record<string, string | number> = {}): Promise<DemoTransactionRow[]> => {
-      const rows = await makeRequest({
-        method: 'get',
-        url: '/transactions',
-        payload: { limit: 5000, ...params },
-        raw: true,
-      });
-
-      expect(Array.isArray(rows)).toBe(true);
-      return rows as DemoTransactionRow[];
-    };
+    const fetchTransactions = (params: Record<string, string | number> = {}) => fetchAllTransactions({ params });
 
     it('seeds payees, tags, transfers, splits, refunds, subscriptions, category trackers, groups, price series and automations', async () => {
       const payees = await makeRequest({
@@ -506,8 +491,8 @@ describe('Demo Mode', () => {
       );
       expect(withTransactions.length).toBeGreaterThan(0);
 
-      const payeeTransactions = await fetchTransactions();
-      expect(payeeTransactions.filter((tx) => tx.payeeId !== null).length).toBeGreaterThan(0);
+      const allTransactions = await fetchTransactions();
+      expect(allTransactions.filter((tx) => tx.payeeId !== null).length).toBeGreaterThan(0);
 
       const tags = await makeRequest({
         method: 'get',
@@ -521,8 +506,7 @@ describe('Demo Mode', () => {
       const tagNames = (tags as { name: string }[]).map((tag) => tag.name);
       expect(tagNames).toEqual(expect.arrayContaining(['Reimbursable', 'Vacation', 'Subscription']));
 
-      const taggedTransactions = await fetchTransactions({ includeTags: 'true' });
-      const tagged = taggedTransactions.filter((tx) => (tx.tags?.length ?? 0) > 0);
+      const tagged = allTransactions.filter((tx) => (tx.tags?.length ?? 0) > 0);
       expect(tagged.length).toBeGreaterThan(0);
 
       const usedTagIds = new Set(tagged.flatMap((tx) => tx.tags!.map((tag) => tag.id)));
@@ -567,8 +551,7 @@ describe('Demo Mode', () => {
 
       expect(crossCurrencyPairs).toBeGreaterThan(0);
 
-      const splitTransactions = await fetchTransactions({ includeSplits: 'true' });
-      const withSplits = splitTransactions.filter((tx) => (tx.splits?.length ?? 0) > 0);
+      const withSplits = allTransactions.filter((tx) => (tx.splits?.length ?? 0) > 0);
 
       expect(withSplits.length).toBeGreaterThan(0);
 

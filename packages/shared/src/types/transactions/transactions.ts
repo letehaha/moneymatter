@@ -128,7 +128,7 @@ export interface TransactionModel {
   refundLinked: boolean;
   /** Same-currency refunds linked to this tx, in its currency. Set on list reads with `includeRefundedAmount` and on each refund link's `originalTransaction`. */
   refundedAmount?: number;
-  /** Serializer-derived, list reads only. */
+  /** Present on the list endpoint only; absent on create/update responses. */
   hasAttachments?: boolean;
   isPlanned: boolean;
   /** Serializer-derived: set when a bank transaction merged into this row while it was planned. */
@@ -159,13 +159,12 @@ export interface TransactionModel {
    * edits, categorization rules, or any other column.
    */
   payeeLocked?: boolean;
-  /** Optional splits for multi-category transactions */
+  /** Present on transaction read endpoints; absent on create/update responses. */
   splits?: TransactionSplitModel[];
-  /** Optional tags associated with the transaction (loaded when includeTags=true) */
+  /** Present on transaction read endpoints; absent on create/update responses. */
   tags?: TagModel[];
-  /** Transaction groups this transaction belongs to (loaded when includeGroups=true).
-   *  transactionCount is the group's full membership size, independent of how many of the
-   *  group's members are in the current fetch window. */
+  /** Present on transaction read endpoints; absent on create/update responses.
+   *  transactionCount is the group's full membership size, not the members in the fetch window. */
   transactionGroups?: Array<{ id: RecordId; name: string; transactionCount: number }>;
   /** Who attached this tx to the tracker: the recipient who attached it, else the tracker owner
    *  (also for rule and AI links). Present on tracker-scoped tx fetches; absent elsewhere.
