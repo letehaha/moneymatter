@@ -1,7 +1,7 @@
 <template>
   <div class="h-dvh overflow-y-auto">
     <div class="flex min-h-full items-center justify-center p-4">
-      <Card class="w-full max-w-md">
+      <Card :class="cn('w-full', hasToolsetStep ? 'max-w-xl' : 'max-w-md')">
         <CardHeader class="text-center">
           <div class="bg-primary/10 mx-auto mb-4 flex size-16 items-center justify-center rounded-full">
             <ShieldCheckIcon class="text-primary-text size-8" />
@@ -19,10 +19,21 @@
               <span class="text-foreground font-medium break-all">{{ redirectTarget }}</span>
             </template>
           </i18n-t>
+
+          <WizardStepper
+            v-if="hasToolsetStep"
+            class="mt-4"
+            :steps="STEPS"
+            :current-step-key="step"
+            :completed-step-keys="completedSteps"
+            bare
+            always-show-labels
+            @navigate="(key) => (step = key as ConsentStep)"
+          />
         </CardHeader>
 
-        <CardContent class="flex flex-col gap-6">
-          <div>
+        <CardContent>
+          <div v-if="step === 'permissions'">
             <p class="text-muted-foreground mb-3 text-sm font-medium">
               {{ $t('oauth.authorize.description') }}
             </p>
@@ -73,10 +84,33 @@
             </ul>
           </div>
 
-          <Separator />
+          <template v-else>
+            <ToolsetPicker
+              v-if="offeredToolsets.length"
+              v-model="selectedToolsetScopes"
+              :toolsets="offeredToolsets"
+              :client-name="clientName"
+            />
+            <div v-else-if="isToolsetsLoading" class="flex flex-col gap-2" aria-busy="true">
+              <div v-for="n in LOADING_TILE_COUNT" :key="n" class="bg-muted h-16 animate-pulse rounded-md" />
+            </div>
+            <p v-else class="text-muted-foreground text-sm" data-testid="toolsets-load-error">
+              {{ $t('oauth.authorize.toolsets.load_error') }}
+            </p>
+          </template>
+        </CardContent>
 
-          <div class="flex gap-3">
+        <CardFooter class="bg-card sticky bottom-0 flex flex-col gap-4 rounded-b-lg border-t pt-4 sm:pt-4">
+          <ToolCountBar
+            v-if="step === 'tools' && toolSelection"
+            class="w-full"
+            :selection="toolSelection"
+            :cap="MCP_CLIENT_TOOL_CAP"
+          />
+
+          <div class="flex w-full gap-3">
             <UiButton
+              v-if="step === 'permissions'"
               variant="outline"
               class="flex-1"
               :disabled="isSubmitting"
@@ -84,7 +118,15 @@
             >
               {{ $t('oauth.authorize.deny') }}
             </UiButton>
+            <UiButton v-else variant="outline" class="flex-1" :disabled="isSubmitting" @click="step = 'permissions'">
+              {{ $t('oauth.authorize.back') }}
+            </UiButton>
+
+            <UiButton v-if="step === 'permissions' && hasToolsetStep" class="flex-1" @click="step = 'tools'">
+              {{ $t('oauth.authorize.continue') }}
+            </UiButton>
             <UiButton
+              v-else
               class="flex-1"
               :disabled="isSubmitting"
               :loading="isSubmitting"
@@ -97,25 +139,32 @@
           <p class="text-muted-foreground text-center text-xs">
             {{ $t('oauth.authorize.footer') }}
           </p>
-        </CardContent>
+        </CardFooter>
       </Card>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { getOAuthClientName, submitOAuthConsent } from '@/api/mcp';
+import { getMcpToolsets, getOAuthClientName, submitOAuthConsent } from '@/api/mcp';
 import { HIDDEN_OAUTH_SCOPES } from '@/common/const/oauth-scopes';
-import { Card, CardContent, CardHeader } from '@/components/lib/ui/card';
+import { VUE_QUERY_CACHE_KEYS } from '@/common/const/vue-query';
+import WizardStepper from '@/components/common/wizard-stepper.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/lib/ui/card';
 import { Checkbox } from '@/components/lib/ui/checkbox';
-import { Separator } from '@/components/lib/ui/separator';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { cn } from '@/lib/utils';
+import { MCP_CLIENT_TOOL_CAP, MCP_TOOLSET_SCOPE_PREFIX } from '@bt/shared/types';
 import { AlertTriangleIcon, CheckCircleIcon, ShieldCheckIcon } from '@lucide/vue';
+import { useQuery } from '@tanstack/vue-query';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
+
+import ToolCountBar from './oauth-authorize/tool-count-bar.vue';
+import ToolsetPicker from './oauth-authorize/toolset-picker.vue';
+import { summarizeToolSelection } from './oauth-authorize/toolset-selection';
 
 interface ScopeMeta {
   scope: string;
@@ -125,6 +174,15 @@ interface ScopeMeta {
   defaultOn: boolean;
   destructive?: boolean;
 }
+
+type ConsentStep = 'permissions' | 'tools';
+
+const STEPS: Array<{ key: ConsentStep; labelKey: string }> = [
+  { key: 'permissions', labelKey: 'oauth.authorize.steps.permissions' },
+  { key: 'tools', labelKey: 'oauth.authorize.steps.tools' },
+];
+
+const LOADING_TILE_COUNT = 4;
 
 const KNOWN_SCOPES: ScopeMeta[] = [
   {
@@ -167,11 +225,14 @@ const KNOWN_SCOPES: ScopeMeta[] = [
 
 const SCOPE_META_BY_KEY: Record<string, ScopeMeta> = Object.fromEntries(KNOWN_SCOPES.map((s) => [s.scope, s]));
 
+const isToolsetScope = (scope: string) => scope.startsWith(MCP_TOOLSET_SCOPE_PREFIX);
+
 const route = useRoute();
 const { t } = useI18n();
 const { addNotification } = useNotificationCenter();
 const isSubmitting = ref(false);
 const fetchedClientName = ref<string | null>(null);
+const step = ref<ConsentStep>('permissions');
 
 const clientId = computed(() => (route.query.client_id as string) || '');
 
@@ -194,9 +255,16 @@ const requestedScopes = computed<string[]>(() => {
   return raw.split(/\s+/).filter(Boolean);
 });
 
+const requestedToolsetScopes = computed(() => requestedScopes.value.filter(isToolsetScope));
+
+// A client that asks for no toolset scope gets `core` only, so there is nothing to pick.
+const hasToolsetStep = computed(() => requestedToolsetScopes.value.length > 0);
+
+const completedSteps = computed(() => new Set<string>(step.value === 'tools' ? ['permissions'] : []));
+
 const scopeItems = computed<ScopeMeta[]>(() =>
   requestedScopes.value
-    .filter((s) => !HIDDEN_OAUTH_SCOPES.has(s))
+    .filter((s) => !HIDDEN_OAUTH_SCOPES.has(s) && !isToolsetScope(s))
     .map(
       (s): ScopeMeta =>
         SCOPE_META_BY_KEY[s] ?? {
@@ -219,8 +287,37 @@ function initApprovals() {
 
 initApprovals();
 
+const { data: toolsetsData, isLoading: isToolsetsLoading } = useQuery({
+  queryKey: VUE_QUERY_CACHE_KEYS.mcpToolsets,
+  queryFn: getMcpToolsets,
+  enabled: hasToolsetStep,
+  staleTime: Infinity,
+});
+
+/** `core` plus the toolsets the client asked for: a scope it didn't request can't be granted. */
+const offeredToolsets = computed(() =>
+  (toolsetsData.value?.toolsets ?? []).filter(
+    (toolset) => toolset.scope === null || requestedToolsetScopes.value.includes(toolset.scope),
+  ),
+);
+
+// `core` only until the user adds more.
+const selectedToolsetScopes = ref<Set<string>>(new Set());
+
+const toolSelection = computed(() =>
+  offeredToolsets.value.length
+    ? summarizeToolSelection({
+        toolsets: offeredToolsets.value,
+        selectedScopes: selectedToolsetScopes.value,
+        cap: MCP_CLIENT_TOOL_CAP,
+      })
+    : null,
+);
+
 const approvedScopeString = computed(() => {
+  const offeredScopes = new Set<string | null>(offeredToolsets.value.map((toolset) => toolset.scope));
   const approved = requestedScopes.value.filter((s) => {
+    if (isToolsetScope(s)) return offeredScopes.has(s) && selectedToolsetScopes.value.has(s);
     if (HIDDEN_OAUTH_SCOPES.has(s)) return true;
     const meta = SCOPE_META_BY_KEY[s];
     if (!meta) return true;
