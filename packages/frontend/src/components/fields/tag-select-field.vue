@@ -16,7 +16,8 @@
                   disabled && 'cursor-not-allowed opacity-50',
                 )
               "
-              @click="focusInput"
+              @mousedown="keepInputFocus"
+              @click="openList"
               @keydown.enter.capture="onEnterCapture"
             >
               <div class="flex flex-1 flex-wrap items-center gap-1">
@@ -48,7 +49,9 @@
                   @keydown.backspace="!searchQuery && selectedTags.at(-1) && toggleTag(selectedTags.at(-1)!)"
                 />
               </div>
-              <ChevronsUpDownIcon class="text-muted-foreground size-4 shrink-0" />
+              <span class="-m-2 shrink-0 p-2" aria-hidden="true" @click.stop="toggleList">
+                <ChevronsUpDownIcon class="text-muted-foreground size-4" />
+              </span>
             </div>
           </PopoverAnchor>
           <PopoverContent
@@ -137,6 +140,18 @@ const isOpen = ref(false);
 const wrapperRef = ref<HTMLDivElement>();
 const inputRef = ref<{ $el: HTMLInputElement } | null>(null);
 const focusInput = () => inputRef.value?.$el.focus();
+// Sets isOpen directly: an already-focused input fires no focus event.
+const openList = () => {
+  if (props.disabled) return;
+  isOpen.value = true;
+  focusInput();
+};
+const toggleList = () => (isOpen.value ? (isOpen.value = false) : openList());
+
+// Taps inside the field keep focus in the input; a blur would count as focus-outside and close the list.
+const keepInputFocus = (event: MouseEvent) => {
+  if (event.target !== inputRef.value?.$el) event.preventDefault();
+};
 
 const searchQuery = ref('');
 watch(isOpen, () => (searchQuery.value = ''));
