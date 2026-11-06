@@ -112,6 +112,46 @@
           "uploadSuccess": "{count} record di prezzo caricato con successo | {count} record di prezzo caricati con successo",
           "uploadFailed": "Caricamento non riuscito: {error}"
         }
+      },
+      "broadcast": {
+        "title": "Notifica collettiva",
+        "description": "Inviare una notifica in-app a tutti gli utenti attivi negli ultimi 30 giorni, oppure solo agli ID utente e alle email indicati. Se è presente un link, facendo clic sulla notifica il link si apre in una nuova scheda; inviando di nuovo lo stesso link vengono esclusi gli utenti che l'hanno già ricevuto.",
+        "fields": {
+          "title": "Titolo",
+          "titlePlaceholder": "es. L'app iOS è in beta pubblica 📱",
+          "message": "Messaggio",
+          "messagePlaceholder": "Testo facoltativo mostrato sotto il titolo",
+          "url": "Collega",
+          "urlPlaceholder": "https://…  (facoltativo)",
+          "urlError": "Il link deve iniziare con https://",
+          "icon": "Icona",
+          "recipients": "Destinatari",
+          "recipientsPlaceholder": "ID utente o email facoltativi, separati da virgola, es. 12, jane@example.com. Vuoto = tutti gli utenti attivi",
+          "recipientsError": "Usare ID numerici interi positivi o email valide, separati da virgole"
+        },
+        "icons": {
+          "info": "Info",
+          "announcement": "Annuncio",
+          "success": "Successo",
+          "warning": "Avviso"
+        },
+        "button": "Invia notifica",
+        "confirm": {
+          "title": "Inviare a tutti gli utenti attivi?",
+          "titleSelected": "Inviare a {count} utenti?",
+          "description": "Verrà creata una notifica per ogni utente attivo negli ultimi 30 giorni. L'operazione non può essere annullata.",
+          "descriptionSelected": "Gli ID e le email sconosciuti vengono ignorati. L'operazione non può essere annullata.",
+          "button": "Invia"
+        },
+        "notifications": {
+          "success": "Notifica inviata a {count} utenti",
+          "failed": "Invio della notifica non riuscito",
+          "noneCreated": "Nessuna notifica inviata: nessun utente corrispondente, oppure gli utenti hanno già ricevuto questo link"
+        }
+      },
+      "tabs": {
+        "investments": "Investimenti",
+        "notifications": "Notifiche"
       }
     }
   }

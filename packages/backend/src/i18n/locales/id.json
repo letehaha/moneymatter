@@ -100,6 +100,16 @@
     "paymentLinkNotAllowed": "This transaction can't be linked to the payment. Only your own income or expense of the same type can be linked – not a transfer, refund, split, pending transaction or part of another payment.",
     "paymentLinkedAmountFixed": "The amount of a linked transaction can't be changed.",
     "paymentLinkedTypeMismatch": "Linked transactions must have the same type as the payment. Unlink them first.",
+    "refunds": {
+      "wholeLinkWithPartials": "A whole-refund link cannot be combined with partial links",
+      "externalLinkWithOthers": "A refund for a purchase outside the app cannot be combined with other refund links",
+      "externalLinkWithAmount": "A refund of a transaction outside the app cannot have a partial amount; it always covers the whole refund.",
+      "totalExceedsRefund": "Total refund link amounts cannot be greater than the refund transaction amount",
+      "totalExceedsSplit": "Total refund amount cannot be greater than the split amount",
+      "totalExceedsOriginal": "Total refund amount cannot be greater than the original transaction amount",
+      "refundOfRefund": "Cannot refund a \"refund\" transaction",
+      "duplicateLink": "This refund is already linked to that transaction"
+    },
     "splits": {
       "splitsOnTransfer": "Tidak dapat menambahkan split ke transaksi transfer",
       "splitLimitExceeded": "Maksimal {{max}} split per transaksi",
@@ -113,8 +123,7 @@
       "exceedTotal": "Total jumlah split ({{total}}) melebihi jumlah transaksi ({{transactionAmount}})",
       "invalidData": "Data split tidak valid",
       "splitNotFound": "Split tidak ditemukan",
-      "cannotDeleteWithRefunds": "Tidak dapat menghapus split yang memiliki refund yang menargetkannya",
-      "cannotReduceBelowRefunded": "Split ini memiliki refund sebesar {{refundsText}}. Anda tidak dapat menguranginya di bawah jumlah yang sudah direfund. Untuk mengurangi lebih lanjut, lepaskan tautan refund terlebih dahulu."
+      "cannotDeleteWithRefunds": "Tidak dapat menghapus split yang memiliki refund yang menargetkannya"
     },
     "reconciliation": {
       "systemNotAllowed": "Only bank-connected transactions can be merged or removed.",
@@ -478,6 +487,7 @@
     "aiRateLimited": "AI provider rate limit reached. Please try again in a few minutes.",
     "aiExtractionFailed": "AI extraction failed. Please try again.",
     "ynab": {
+      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
       "parse": {
         "fileEmpty": "YNAB Register.csv is empty.",
         "unparseable": "YNAB Register.csv could not be parsed as a CSV file.",
