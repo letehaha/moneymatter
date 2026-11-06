@@ -297,7 +297,8 @@ export const organizeLinesWithAi = async ({
       prompt,
       providerOptions: {
         anthropic: { thinking: { type: 'disabled' } } satisfies AnthropicProviderOptions,
-        google: { thinkingConfig: { thinkingLevel: 'minimal' } } satisfies GoogleGenerativeAIProviderOptions,
+        // FALLBACK_MODEL rejects 'minimal'
+        google: { thinkingConfig: { thinkingLevel: 'low' } } satisfies GoogleGenerativeAIProviderOptions,
       },
       abortSignal: AbortSignal.timeout(CALL_TIMEOUT_MS),
       maxRetries: 1,
