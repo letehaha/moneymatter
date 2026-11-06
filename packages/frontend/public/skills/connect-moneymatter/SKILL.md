@@ -87,7 +87,7 @@ Reading, planned transactions, create and edit, splits, refunds, transfer linkin
 | `unlink_refund`                | Remove the refund link between two transactions (`finance:write`)                                                |
 | `link_transfer`                | Link two existing transactions as a transfer pair (`finance:write`)                                              |
 | `unlink_transfer`              | Unlink a transfer pair by transferId (`finance:write`)                                                           |
-| `get_transactions`             | Read transactions by id (up to 50) or both legs of a transfer; optionally with splits and tags                   |
+| `get_transactions_by_id`       | Read transactions by id (up to 50) or both legs of a transfer; optionally with splits and tags                   |
 | `get_transactions_summary`     | Count and base-currency totals of the transactions matching the list filters                                     |
 | `get_planned_summary`          | Totals of planned (upcoming) transactions per account and currency                                               |
 | `confirm_planned_transaction`  | Confirm a planned transaction once the money moved; settles a subscription period (`finance:write`)              |
@@ -427,7 +427,7 @@ multi-currency data.
   Use them for cross-account totals when accounts have different currencies.
 - Transaction types: `income`, `expense`, `transfer`. Transfers are **not**
   income or expense — exclude them from spend/earn aggregations.
-- The two legs of a linked transfer share a `transferId`; `get_transactions` with that
+- The two legs of a linked transfer share a `transferId`; `get_transactions_by_id` with that
   `transferId` reads both. To find unlinked pairs, `list_transfer_suggestions` scans a
   period and `get_transfer_recommendations` suggests one transaction's other leg;
   `link_transfer` links a pair and `dismiss_transfer_suggestion` rejects a wrong one.

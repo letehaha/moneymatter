@@ -136,7 +136,7 @@ import { registerGetTransactionAutomations } from './tools/get-transaction-autom
 import { registerGetTransactionGroups } from './tools/get-transaction-groups';
 import { registerGetTransactionLinks } from './tools/get-transaction-links';
 import { registerGetTransactionTemplates } from './tools/get-transaction-templates';
-import { registerGetTransactions } from './tools/get-transactions';
+import { registerGetTransactionsById } from './tools/get-transactions-by-id';
 import { registerGetTransactionsSummary } from './tools/get-transactions-summary';
 import { registerGetTransferRecommendations } from './tools/get-transfer-recommendations';
 import { registerGetUpcomingSubscriptionPayments } from './tools/get-upcoming-subscription-payments';
@@ -305,7 +305,7 @@ export function createMcpServer(): McpServer {
   registerUnlinkRefund(server);
   registerLinkTransfer(server);
   registerUnlinkTransfer(server);
-  registerGetTransactions(server);
+  registerGetTransactionsById(server);
   registerGetTransactionsSummary(server);
   registerGetPlannedSummary(server);
   registerConfirmPlannedTransaction(server);

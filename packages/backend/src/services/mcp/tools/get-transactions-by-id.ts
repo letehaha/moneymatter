@@ -32,9 +32,9 @@ const inputSchema = {
     .describe("Include each transaction's splits (category, amount, note) and tags. Costs one read per transaction"),
 };
 
-export function registerGetTransactions(server: McpServer) {
+export function registerGetTransactionsById(server: McpServer) {
   server.registerTool(
-    'get_transactions',
+    'get_transactions_by_id',
     {
       description:
         'Read transactions by id (up to 50) or both legs of a transfer by transferId. Returns the same fields as search_transactions: amount (original + base currency), category, account, payee, note, date, type and planned state. Set includeSplits to also get splits, tags and, for a payment made from several accounts, its paymentParts. An id the caller cannot see is left out.',
@@ -42,7 +42,7 @@ export function registerGetTransactions(server: McpServer) {
     },
     async (args, extra) => {
       const userId = getUserId({ extra });
-      trackMcpToolUsed({ userId, tool: 'get_transactions', clientId: extra.authInfo?.clientId });
+      trackMcpToolUsed({ userId, tool: 'get_transactions_by_id', clientId: extra.authInfo?.clientId });
 
       if ((args.ids === undefined) === (args.transferId === undefined)) {
         throw new Error('Provide exactly one of "ids" and "transferId"');

@@ -91,7 +91,7 @@ export function slimPortfolioTransferForMcp(transfer: PortfolioTransfers) {
  * `payee: null`. It is required so no tool serializes a transaction without its payee.
  *
  * `transferId` is shared by the two legs of a linked transfer, so an assistant can see which rows
- * are paired and read both legs with `get_transactions`.
+ * are paired and read both legs with `get_transactions_by_id`.
  */
 export function slimTransactionsForMcp({
   transactions,

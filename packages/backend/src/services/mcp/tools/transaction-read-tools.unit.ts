@@ -62,7 +62,7 @@ import { registerDeleteAttachment } from './delete-attachment';
 import { registerGetPlannedSummary } from './get-planned-summary';
 import { registerGetTransactionGroups } from './get-transaction-groups';
 import { registerGetTransactionLinks } from './get-transaction-links';
-import { registerGetTransactions } from './get-transactions';
+import { registerGetTransactionsById } from './get-transactions-by-id';
 import { registerGetTransactionsSummary } from './get-transactions-summary';
 import { registerListTransactionAttachments } from './list-transaction-attachments';
 import { registerSearchTransactions } from './search-transactions';
@@ -227,8 +227,8 @@ describe('get_transaction_groups', () => {
   });
 });
 
-describe('get_transactions', () => {
-  const tool = captureTools({ register: registerGetTransactions })[0]!;
+describe('get_transactions_by_id', () => {
+  const tool = captureTools({ register: registerGetTransactionsById })[0]!;
   const schema = z.object(tool.config.inputSchema!);
 
   it('accepts 1 to 50 ids and refuses 0 or 51, the limit of the by-ids service', () => {
