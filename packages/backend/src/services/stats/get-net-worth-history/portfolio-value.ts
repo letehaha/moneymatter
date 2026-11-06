@@ -6,7 +6,6 @@ import InvestmentTransaction from '@models/investments/investment-transaction.mo
 import PortfolioBalances from '@models/investments/portfolio-balances.model';
 import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import Securities from '@models/investments/securities.model';
-import SecurityPricing from '@models/investments/security-pricing.model';
 import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { API_LAYER_BASE_CURRENCY_CODE } from '@services/exchange-rates/constants';
@@ -29,7 +28,10 @@ import {
   accumulateCashDeltas,
   computePortfolioCashByDate,
 } from '../get-combined-balance-history/portfolio-cash-replay';
-import { buildPriceLookupWithPreWindowAnchors } from '../get-combined-balance-history/security-price-anchors';
+import {
+  buildPriceLookupWithPreWindowAnchors,
+  loadDailySecurityPrices,
+} from '../get-combined-balance-history/security-price-anchors';
 import { createFindPriceForDate } from '../get-combined-balance-history/security-price-lookup';
 import type {
   CurrentBalanceRow,
@@ -206,18 +208,7 @@ export const calculatePortfolioValueByDate = async ({
   );
 
   const [securityPrices, userCustomExchangeRates, systemExchangeRates] = await Promise.all([
-    SecurityPricing.findAll({
-      where: {
-        securityId: { [Op.in]: securityIds },
-        date: { [Op.between]: [startOfDay(parseISO(dataFetchMinDate)), endOfDay(parseISO(maxDate))] },
-      },
-      order: [
-        ['securityId', 'ASC'],
-        ['date', 'ASC'],
-      ],
-      attributes: ['securityId', 'date', 'priceClose'],
-      raw: true,
-    }),
+    loadDailySecurityPrices({ securityIds, fromDate: dataFetchMinDate, toDate: maxDate }),
     UserExchangeRates.findAll({
       where: {
         userId,
