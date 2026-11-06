@@ -14,6 +14,7 @@ import changeBaseCurrency from '@controllers/currencies/change-base-currency.con
 import editCurrencyExchangeRate from '@controllers/currencies/edit-currency-exchange-rate';
 import { exportDataController } from '@controllers/data-export/export-data.controller';
 import { getConnectedAppsController, revokeConnectedAppController } from '@controllers/mcp/connected-apps.controller';
+import { getMcpToolsetsController } from '@controllers/mcp/toolsets.controller';
 import {
   createConnectionController,
   deleteConnectionController,
@@ -149,5 +150,7 @@ router.post(
 // MCP Connected Apps
 router.get('/settings/mcp/connected-apps', getConnectedAppsController);
 router.delete('/settings/mcp/connected-apps/:clientId', revokeConnectedAppController);
+// The consent screen reads the toolsets and their tool counts from here.
+router.get('/settings/mcp/toolsets', getMcpToolsetsController);
 
 export default router;
