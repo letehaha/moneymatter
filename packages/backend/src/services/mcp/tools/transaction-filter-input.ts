@@ -65,7 +65,20 @@ export const transactionFilterInput = {
     .boolean()
     .optional()
     .describe('Leave out the refund side of refund links; originals that carry refunds stay'),
-  keepRefundsForTxId: recordId().optional().describe('With excludeRefundTxs: keep refunds linked to this transaction'),
+  keepRefundsForTxId: recordId()
+    .optional()
+    .describe('With excludeRefundTxs or the refund pivot: keep the refund links of this transaction'),
+  excludeRefundedTxs: z.boolean().optional().describe('Leave out originals that already carry a refund link'),
+  refundPivotFrom: z
+    .string()
+    .optional()
+    .describe(
+      'Start of the local day of a transaction being refund-linked (ISO 8601 datetime), always paired with refundPivotTo: rows before that day (and same-day expenses) stay listed as possible originals, later rows as possible refunds',
+    ),
+  refundPivotTo: z
+    .string()
+    .optional()
+    .describe('End of that local day (ISO 8601 datetime); pairs with refundPivotFrom'),
   excludeBalanceAdjustments: z.boolean().optional().describe('Leave out balance adjustments'),
   transferFilter: z
     .nativeEnum(FILTER_OPERATION)
@@ -88,9 +101,10 @@ export function parseTransactionFilters({ filters }: { filters: unknown }) {
  * when it restricts the WHERE clause the service builds. So an empty or all-separator
  * `noteSearch` (the schema turns it into no terms), an empty list, an exclude flag that is off,
  * the `all` operation (including one that overrides a legacy `excludeTransfer`/`excludeRefunds`
- * flag) and a lone `keepRefundsForTxId` (only read together with `excludeRefundTxs`) all select
- * everything. REST lets a bulk action run with such filters, which selects every transaction
- * the caller owns; an AI client must not delete that much by sending nothing that filters.
+ * flag), a lone `keepRefundsForTxId` and the refund pivot bounds (they only decide which
+ * refund-linked rows stay linkable) all select everything. REST lets a bulk action run with such
+ * filters, which selects every transaction the caller owns; an AI client must not delete that
+ * much by sending nothing that filters.
  */
 export function hasNarrowingFilter({ filters }: { filters: ReturnType<typeof parseTransactionFilters> }): boolean {
   const hasItems = (list: readonly unknown[] | undefined) => !!list?.length;
@@ -132,6 +146,7 @@ export function hasNarrowingFilter({ filters }: { filters: ReturnType<typeof par
     filters.isPlanned,
     filters.hasAttachment,
     filters.excludeRefundTxs,
+    filters.excludeRefundedTxs,
     filters.excludeBalanceAdjustments,
   ].some((flag) => flag === true);
 
