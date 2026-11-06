@@ -391,7 +391,7 @@ describe('GET /stats/cash-flow — refunds and splits', () => {
       raw: true,
     });
 
-    const allTransactions = (await helpers.getTransactions({ raw: true, includeSplits: true }))!;
+    const allTransactions = (await helpers.getTransactions({ raw: true }))!;
     const targetSplit = allTransactions.find((tx) => tx.id === expenseTx.id)!.splits![0]!;
 
     const [refundTx] = await helpers.createTransaction({

@@ -91,7 +91,6 @@ export async function findInvoiceCandidates({
     // A date-only bound parses as midnight, which would drop everything later on the last day.
     endDate: `${format(addDays(issueDate, DAYS_AFTER_INVOICE), 'yyyy-MM-dd')}T23:59:59.999Z`,
     excludeTransfer: true,
-    includeHasAttachments: true,
     limit: CANDIDATE_LIMIT,
   };
   const rawRange = toleranceRange({ amount: Money.fromDecimal(invoice.totalAmount) });

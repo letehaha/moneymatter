@@ -10,7 +10,7 @@ const createPayee = ({ name }: { name: string }) =>
   helpers.createPayee({ payload: helpers.buildPayeePayload({ name }), raw: true });
 
 const tagIdsOfTransaction = async ({ transactionId }: { transactionId: string }) => {
-  const list = await helpers.getTransactions({ includeTags: true, raw: true });
+  const list = await helpers.getTransactions({ raw: true });
   return (list.find((tx) => tx.id === transactionId)?.tags ?? []).map((tag) => tag.id).toSorted();
 };
 

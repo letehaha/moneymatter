@@ -22,7 +22,7 @@ const DEFAULT_PAGE_SIZE = 20;
  * translates the endpoint's `isPlanned` / `excludeBalanceAdjustments` query params. */
 type GetTransactionsParams = Omit<
   FindWithFiltersParams,
-  'isRaw' | 'access' | 'planned' | 'completeness' | 'balanceAdjustments'
+  'access' | 'planned' | 'completeness' | 'balanceAdjustments' | 'fullShape'
 > & {
   userId: number;
   from?: number;
@@ -76,6 +76,7 @@ export const getTransactions = async (params: GetTransactionsParams) => {
     isPlanned,
     excludeBalanceAdjustments,
     includeRefundedAmount,
+    isRaw = false,
     ...rest
   } = params;
 
@@ -115,10 +116,6 @@ export const getTransactions = async (params: GetTransactionsParams) => {
     scopedAccountIds = accessibleAccounts;
   }
 
-  // When includeSplits, includeTags, or includeGroups is true, we need nested data (not raw) to preserve array structure
-  // Raw mode flattens nested includes into dot-notation keys which breaks access
-  const isRaw = !rest.includeSplits && !rest.includeTags && !rest.includeGroups;
-
   // Without an account filter the list shows one row per payment; an account view needs
   // each account's own row of a multi-account payment.
   const collapsePayments = !accountIds?.length;
@@ -140,6 +137,7 @@ export const getTransactions = async (params: GetTransactionsParams) => {
     // to hide them, so it opts out of the boundary's exclude-by-default.
     balanceAdjustments: excludeBalanceAdjustments ? 'exclude' : 'include',
     excludePaymentLegsWithMainIn: collapsePayments ? accessibleAccounts : undefined,
+    fullShape: !isRaw,
     isRaw,
   });
   const transactions = await attachPaymentParts({

@@ -174,7 +174,6 @@ describe('Payee ignore list — linking bypasses', () => {
 
     const [row] = await helpers.getTransactions({
       accountIds: [account.id],
-      includeTags: true,
       raw: true,
     });
     expect(row!.payeeId).toBeNull();

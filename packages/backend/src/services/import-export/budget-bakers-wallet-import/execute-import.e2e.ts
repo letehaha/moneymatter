@@ -745,7 +745,7 @@ describe('Execute Budget Bakers Wallet import endpoint', () => {
   /**
    * T7 — After a successful import the imported transaction must actually carry
    * the created tag, not just increment `tagsCreated`.  We verify this by
-   * fetching the transaction with `includeTags: true` and asserting that the
+   * fetching the transaction and asserting that the
    * tag id appears in the returned `tags` array.
    */
   it('imported transaction carries the tag created during import (not just tagsCreated count)', async () => {
@@ -777,10 +777,9 @@ describe('Execute Budget Bakers Wallet import endpoint', () => {
     expect(createdTag).toBeDefined();
 
     // Fetch transactions with tags included; the imported transaction must carry the tag.
-    const txs = await helpers.getTransactions({ includeTags: true, raw: true });
+    const txs = await helpers.getTransactions({ raw: true });
     const imported = txs.find((t) => t.note === 'Tagged tx');
     expect(imported).toBeDefined();
-    // The tags array is populated when includeTags is true.
     const importedTags = (imported as any).tags as Array<{ id: string }> | undefined;
     expect(importedTags).toBeDefined();
     expect(importedTags!.some((tag) => tag.id === createdTag!.id)).toBe(true);
@@ -825,7 +824,7 @@ describe('Execute Budget Bakers Wallet import endpoint', () => {
     expect(progress.summary.errors).toHaveLength(0);
 
     // The transaction must still carry the pre-existing tag.
-    const txs = await helpers.getTransactions({ includeTags: true, raw: true });
+    const txs = await helpers.getTransactions({ raw: true });
     const imported = txs.find((t) => t.note === 'Reuse tag tx');
     expect(imported).toBeDefined();
     const importedTags = (imported as any).tags as Array<{ id: string }> | undefined;
@@ -873,7 +872,7 @@ describe('Execute Budget Bakers Wallet import endpoint', () => {
     // The combined string must never become a tag of its own.
     expect(allTags.some((t) => t.name === `${labelA}, ${labelB}`)).toBe(false);
 
-    const txs = await helpers.getTransactions({ includeTags: true, raw: true });
+    const txs = await helpers.getTransactions({ raw: true });
     const imported = txs.find((t) => t.note === 'Multi tag tx');
     expect(imported).toBeDefined();
     const importedTags = (imported as any).tags as Array<{ id: string }> | undefined;

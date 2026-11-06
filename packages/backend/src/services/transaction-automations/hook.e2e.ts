@@ -77,7 +77,7 @@ const syncLunchFlow = async ({ transactions }: { transactions: LunchFlowApiTrans
 };
 
 const txByNote = async (note: string) => {
-  const list = await helpers.getTransactions({ includeTags: true, raw: true });
+  const list = await helpers.getTransactions({ raw: true });
   return list.find((tx) => tx.note === note);
 };
 
@@ -215,7 +215,7 @@ describe('Transaction automations hook', () => {
 
     const defaultCategoryId = await userDefaultCategoryId();
 
-    const transactions = await helpers.getTransactions({ includeTags: true, raw: true });
+    const transactions = await helpers.getTransactions({ raw: true });
     const byNote = (note: string) => transactions.find((tx) => tx.note === note);
 
     const uber = byNote('UBER TRIP 4521');

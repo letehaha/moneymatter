@@ -124,7 +124,6 @@ export default createController(schema, async ({ user, query }) => {
     excludeTransfer: true,
     excludeRefunds: true,
     isPlanned: false,
-    includeSplits: true,
     startDate: startDate.toISOString(),
     endDate: endDate.toISOString(),
     refAmountGte,

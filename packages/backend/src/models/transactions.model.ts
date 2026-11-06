@@ -83,7 +83,13 @@ import {
   HasMany,
 } from 'sequelize-typescript';
 
-const prepareTXInclude = ({ includeSplits, includeTags }: { includeSplits?: boolean; includeTags?: boolean }) => {
+export const prepareTXInclude = ({
+  includeSplits,
+  includeTags,
+}: {
+  includeSplits?: boolean;
+  includeTags?: boolean;
+}) => {
   const include: Includeable[] = [];
 
   if (includeSplits) {
@@ -99,11 +105,37 @@ const prepareTXInclude = ({ includeSplits, includeTags }: { includeSplits?: bool
       model: Tags,
       through: { attributes: [] },
       attributes: ['id', 'name', 'color', 'icon'],
+      required: false,
     });
   }
 
   return include;
 };
+
+// Top-level only: the literal hardcodes the "transactionGroups" alias. transactionCount is the
+// group's full membership size, not the members in the current fetch window.
+const groupsInclude = (): Includeable => ({
+  model: TransactionGroups,
+  through: { attributes: [] },
+  attributes: [
+    'id',
+    'name',
+    [
+      literal(`(
+        SELECT COUNT(*)::int
+        FROM "TransactionGroupItems"
+        WHERE "TransactionGroupItems"."groupId" = "transactionGroups"."id"
+      )`),
+      'transactionCount',
+    ],
+  ],
+  required: false,
+});
+
+export const fullTransactionIncludes = () => [
+  ...prepareTXInclude({ includeSplits: true, includeTags: true }),
+  groupsInclude(),
+];
 
 export interface TransactionsAttributes {
   id: string;
@@ -832,26 +864,29 @@ function toSqlIdList({ ids, paramName }: { ids: string[]; paramName: string }) {
   return ids.map((id) => `'${id}'`).join(', ');
 }
 
-// A required include can't express "in none", so the blank case is a correlated subquery.
+// Correlated subqueries instead of a required include: an include can't express "in none",
+// and joining the junction table would duplicate rows matching several ids.
 function buildNoneOrAnyJunctionCondition({
   ids,
   paramName,
   junctionTable,
   alias,
   column,
+  allowNone = true,
 }: {
   ids: string[];
   paramName: string;
   junctionTable: string;
   alias: string;
   column: string;
+  allowNone?: boolean;
 }) {
   const idList = toSqlIdList({ ids, paramName });
   const junction = `SELECT 1 FROM "${junctionTable}" ${alias} WHERE ${alias}."transactionId" = "Transactions"."id"`;
   const inNone = `NOT EXISTS (${junction})`;
   if (!ids.length) return literal(inNone);
   const inAny = `EXISTS (${junction} AND ${alias}."${column}" IN (${idList}))`;
-  return literal(`(${inNone} OR ${inAny})`);
+  return literal(allowNone ? `(${inNone} OR ${inAny})` : inAny);
 }
 
 // A row linked to `keepLinksWith` stays even when it also has links to other transactions.
@@ -919,9 +954,7 @@ export const findWithFilters = async ({
   sortBy,
   transferNatures,
   transactionType,
-  includeSplits,
-  includeTags,
-  includeGroups,
+  fullShape,
   isRaw = false,
   excludeTransfer,
   excludeRefunds,
@@ -931,7 +964,6 @@ export const findWithFilters = async ({
   refundPivotFrom,
   refundPivotTo,
   hasAttachment,
-  includeHasAttachments,
   excludePaymentLegsWithMainIn,
   transferFilter,
   refundFilter,
@@ -977,9 +1009,9 @@ export const findWithFilters = async ({
    * fully describes which natures it wants.
    */
   transferNatures?: TRANSACTION_TRANSFER_NATURE[];
-  includeSplits?: boolean;
-  includeTags?: boolean;
-  includeGroups?: boolean;
+  /** Adds splits, tags, groups and a `hasAttachments` flag. The flag costs an EXISTS
+   *  subquery per row, so only client-facing reads ask for it. */
+  fullShape?: boolean;
   isRaw?: boolean;
   excludeTransfer?: boolean;
   excludeRefunds?: boolean;
@@ -999,9 +1031,6 @@ export const findWithFilters = async ({
   refundPivotTo?: string;
   /** Absent = both, `true` = only rows carrying attachments, `false` = only rows without. */
   hasAttachment?: boolean;
-  /** Adds a `hasAttachments` boolean to every row. Costs an EXISTS subquery per row, so
-   *  only the user-facing list asks for it. */
-  includeHasAttachments?: boolean;
   /** Account ids: drops a multi-account payment's legs whose main row sits on one of
    *  them, leaving the main row to stand for the whole payment. */
   excludePaymentLegsWithMainIn?: string[];
@@ -1032,7 +1061,7 @@ export const findWithFilters = async ({
   // set the cap; only read when the result comes back full.
   const truncationProbe = cap ? new Error() : null;
 
-  const queryInclude: Includeable[] = prepareTXInclude({ includeSplits });
+  const queryInclude: Includeable[] = fullShape ? fullTransactionIncludes() : [];
 
   if (excludedAccounts === 'exclude') {
     queryInclude.push({ model: Accounts, where: { excludeFromStats: false }, attributes: [], required: true });
@@ -1239,7 +1268,7 @@ export const findWithFilters = async ({
 
   const hasBlankTag = !!requestedTagIds?.includes(BLANK_FILTER_VALUE);
   const tagIds = hasBlankTag ? requestedTagIds!.filter((id) => id !== BLANK_FILTER_VALUE) : requestedTagIds;
-  if (hasBlankTag) {
+  if (hasBlankTag || tagIds?.length) {
     pushAndCondition(
       buildNoneOrAnyJunctionCondition({
         ids: tagIds!,
@@ -1247,18 +1276,9 @@ export const findWithFilters = async ({
         junctionTable: 'TransactionTags',
         alias: 'tt',
         column: 'tagId',
+        allowNone: hasBlankTag,
       }),
     );
-  }
-
-  // Filter by tagIds - include only transactions with these tags
-  if (tagIds?.length && !hasBlankTag) {
-    queryInclude.push({
-      model: Tags,
-      through: { attributes: [], where: { tagId: { [Op.in]: tagIds } } },
-      attributes: [],
-      required: true,
-    });
   }
 
   // Exclude transactions with specific tags
@@ -1290,27 +1310,6 @@ export const findWithFilters = async ({
     }
   }
 
-  // Include tags in response if requested
-  // Note: when filtering by tagIds, we add a separate non-required include to get all tags
-  if (includeTags) {
-    // Remove any existing Tags include from tagIds filtering (which was required: true)
-    const tagFilterIndex = queryInclude.findIndex((inc) => (inc as { model?: unknown }).model === Tags);
-    if (tagFilterIndex !== -1) {
-      queryInclude.splice(tagFilterIndex, 1);
-    }
-
-    // Add tags include for display (with filtering if tagIds provided)
-    queryInclude.push({
-      model: Tags,
-      through: {
-        attributes: [],
-        ...(tagIds?.length ? { where: { tagId: { [Op.in]: tagIds } } } : {}),
-      },
-      attributes: ['id', 'name', 'color', 'icon'],
-      required: !!tagIds?.length && !hasBlankTag,
-    });
-  }
-
   // Add note search condition if provided
   if (noteSearch && noteSearch.length > 0) {
     whereClause.note = {
@@ -1318,31 +1317,6 @@ export const findWithFilters = async ({
         [Op.iLike]: `%${term}%`,
       })),
     };
-  }
-
-  // Include group membership info if requested. transactionCount is the group's full
-  // membership size (a correlated count over TransactionGroupItems), not the number of
-  // this group's members that happen to be in the current fetch window – so callers that
-  // only load a slice of transactions (e.g. the dashboard widget) can still show the
-  // group's true size.
-  if (includeGroups) {
-    queryInclude.push({
-      model: TransactionGroups,
-      through: { attributes: [] },
-      attributes: [
-        'id',
-        'name',
-        [
-          literal(`(
-            SELECT COUNT(*)::int
-            FROM "TransactionGroupItems"
-            WHERE "TransactionGroupItems"."groupId" = "transactionGroups"."id"
-          )`),
-          'transactionCount',
-        ],
-      ],
-      required: false,
-    });
   }
 
   // Op.and, never a bare key: the policy clauses must not collide with (or be clobbered
@@ -1375,7 +1349,7 @@ export const findWithFilters = async ({
   const { limit, offset } = completenessToPagination({ completeness });
 
   const hasAttachmentsAttribute: ProjectionAlias = [literal(HAS_ATTACHMENTS_SQL), 'hasAttachments'];
-  const resolvedAttributes: FindAttributeOptions | undefined = !includeHasAttachments
+  const resolvedAttributes: FindAttributeOptions | undefined = !fullShape
     ? attributes
     : attributes
       ? [...attributes, hasAttachmentsAttribute]
@@ -1388,8 +1362,6 @@ export const findWithFilters = async ({
     limit,
     order: buildOrderClause({ sortBy, order }),
     raw: isRaw,
-    // When raw is true and includeSplits/includeTags is requested, use nest to preserve nested structure
-    nest: isRaw && (includeSplits || includeTags) ? true : undefined,
     attributes: resolvedAttributes,
     replacements: refundPivotReplacements,
   });
@@ -1409,16 +1381,12 @@ export const findWithFilters = async ({
 export const getTransactionById = ({
   id,
   userId,
-  includeSplits,
-  includeTags,
+  include = [],
 }: {
   id: string;
   userId: number;
-  includeSplits?: boolean;
-  includeTags?: boolean;
+  include?: Includeable[];
 }): Promise<Transactions | null> => {
-  const include = prepareTXInclude({ includeSplits, includeTags });
-
   return Transactions.findOne({
     where: { id, userId },
     include,
@@ -1428,13 +1396,16 @@ export const getTransactionById = ({
 export const getTransactionsByTransferId = ({
   transferId,
   accountIds,
+  include = [],
 }: {
   transferId: string;
   accountIds: string[];
+  include?: Includeable[];
 }) => {
   if (accountIds.length === 0) return Promise.resolve([] as Transactions[]);
   return Transactions.findAll({
     where: { transferId, accountId: { [Op.in]: accountIds } },
+    include,
   });
 };
 

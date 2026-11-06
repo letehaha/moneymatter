@@ -62,7 +62,7 @@ describe('Update transaction controller', () => {
 
     const txsAfterUpdation = (await helpers.getTransactions({ raw: true }))!;
 
-    expect(res[0]).toStrictEqual(txsAfterUpdation[0]);
+    expect(txsAfterUpdation[0]).toMatchObject({ ...res[0] });
     expect(res[0].amount).toStrictEqual(expectedNewAmount);
     expect(res[0].transactionType).toStrictEqual(TRANSACTION_TYPES.income);
   });
@@ -658,8 +658,8 @@ describe('Update transaction controller', () => {
           [tx2, tx2AfterLinking],
         ].forEach(([tx, txAfter]) => {
           // Expect that only transferNature and transferId were changed
-          expect({ ...tx }).toEqual({
-            ...txAfter,
+          expect(txAfter).toMatchObject({
+            ...tx,
             transferNature: expect.toBeAnythingOrNull(),
             transferId: expect.toBeAnythingOrNull(),
             updatedAt: expect.toBeAnythingOrNull(),

@@ -138,7 +138,6 @@ export default createController(schema, async ({ user, query }) => {
     excludeTransfer: true,
     // Planned rows can't be refund-linked, so they are not valid candidates either.
     isPlanned: false,
-    includeSplits: true,
     includeRefundedAmount: query.includeRefundedAmount,
     startDate: startDate.toISOString(),
     endDate: endDate.toISOString(),

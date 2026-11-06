@@ -866,9 +866,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
             helpers.listPayees({ raw: true }),
             helpers.getTags({ raw: true }),
           ]);
-          const unlinked = (await helpers.getTransactions({ includeTags: true, raw: true }))!.find(
-            (tx) => tx.id === linkedId,
-          )!;
+          const unlinked = (await helpers.getTransactions({ raw: true }))!.find((tx) => tx.id === linkedId)!;
           expect(unlinked).toMatchObject({
             paymentParentId: null,
             categoryId: categories.find((category) => category.name === 'Snapshot category')!.id,

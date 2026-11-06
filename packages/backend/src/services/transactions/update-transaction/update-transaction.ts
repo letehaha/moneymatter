@@ -636,7 +636,7 @@ export const updateTransaction = withTransaction(
       const { tx: prevData, ctx: authCtx } = await getWritableTransactionById({
         id: payload.id,
         userId: payload.userId,
-        includeSplits: true,
+        include: Transactions.prepareTXInclude({ includeSplits: true }),
       });
 
       const ctx: UpdateAuthContext = {

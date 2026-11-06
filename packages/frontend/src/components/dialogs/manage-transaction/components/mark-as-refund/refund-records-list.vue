@@ -168,7 +168,6 @@ const fetchTransactions = ({
         ...roleFilters.value,
         // Planned rows can't be refund-linked, so they are not valid candidates either.
         isPlanned: false,
-        includeSplits: true, // Include splits so we can show split selector
         includeRefundedAmount: true,
         noteSearch: search,
         to: isDate(filter.end) ? filter.end!.toISOString() : undefined,

@@ -831,7 +831,7 @@ describe('GET /stats/pivot', () => {
     });
 
     // Resolve the split id so the refund can be linked to that exact split.
-    const allTransactions = (await helpers.getTransactions({ raw: true, includeSplits: true }))!;
+    const allTransactions = (await helpers.getTransactions({ raw: true }))!;
     const expenseWithSplits = allTransactions.find((tx) => tx.id === expenseTx.id)!;
     const targetSplit = expenseWithSplits.splits![0]!;
 

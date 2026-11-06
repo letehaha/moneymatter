@@ -92,7 +92,7 @@ describe('Create transaction controller', () => {
     expect(baseTx.refAmount).toBe(txPayload.amount);
     expect(baseTx.transactionType).toBe(txPayload.transactionType);
     expect(baseTx.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
-    expect(baseTx).toStrictEqual(transactions![0]);
+    expect(transactions![0]).toMatchObject({ ...baseTx });
   });
   it('accepts transaction amounts above the legacy 32-bit INTEGER ceiling', async () => {
     // Regression: SequelizeDatabaseError "value … is out of range for type integer".
@@ -152,7 +152,7 @@ describe('Create transaction controller', () => {
     expect(baseTx.refAmount).toEqualRefValue(txPayload.amount * currencyRate!.rate);
     expect(baseTx.transactionType).toBe(txPayload.transactionType);
     expect(baseTx.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
-    expect(baseTx).toStrictEqual(transactions![0]);
+    expect(transactions![0]).toMatchObject({ ...baseTx });
   });
   it('should successfully create a transfer transaction between accounts with same currency', async () => {
     const accountA = await helpers.createAccount({ raw: true });
@@ -198,8 +198,8 @@ describe('Create transaction controller', () => {
       txPayload.transactionType === TRANSACTION_TYPES.expense ? TRANSACTION_TYPES.income : TRANSACTION_TYPES.expense,
     );
 
-    expect(transactions).toContainEqual(baseTx);
-    expect(transactions).toContainEqual(oppositeTx);
+    expect(transactions).toContainEqual(expect.objectContaining({ ...baseTx }));
+    expect(transactions).toContainEqual(expect.objectContaining({ ...oppositeTx }));
   });
   it('rejects a transfer whose destination is a bank-linked account and creates neither leg', async () => {
     const { account: bankAccount } = await helpers.lunchflow.mockTransactions();
@@ -279,7 +279,7 @@ describe('Create transaction controller', () => {
     );
 
     [baseTx, oppositeTx].forEach((tx) => {
-      expect(transactions).toContainEqual(tx);
+      expect(transactions).toContainEqual(expect.objectContaining({ ...tx }));
     });
   });
   it('should successfully create a transfer transaction between accounts with both non-base currencies', async () => {
@@ -349,7 +349,7 @@ describe('Create transaction controller', () => {
     );
 
     [baseTx, oppositeTx].forEach((tx) => {
-      expect(transactions).toContainEqual(tx);
+      expect(transactions).toContainEqual(expect.objectContaining({ ...tx }));
     });
   });
   describe('create transfer via linking', () => {

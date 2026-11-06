@@ -360,6 +360,25 @@ describe('Invoice matching', () => {
       expect(result.response!.candidates[0]!.signals.amount).toBe('exact');
     });
 
+    it('flags which candidates already carry an attachment', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const payload = helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: INVOICE_DECIMAL,
+        time: PAYMENT_TIME,
+      });
+      const [attached] = await helpers.createTransaction({ payload, raw: true });
+      const [bare] = await helpers.createTransaction({ payload, raw: true });
+      expect((await helpers.uploadAttachment({ transactionId: attached.id, file: PNG_BYTES })).statusCode).toBe(201);
+
+      const result = await helpers.rematchInvoice({ invoice: correctedInvoice() });
+
+      const hasAttachmentsById = Object.fromEntries(
+        result.response!.candidates.map(({ transaction }) => [transaction.id, transaction.hasAttachments]),
+      );
+      expect(hasAttachmentsById).toEqual({ [attached.id]: true, [bare.id]: false });
+    });
+
     it('searches income once the corrected invoice is flipped to one the user issued', async () => {
       const account = await helpers.createAccount({ raw: true });
       const [payment] = await helpers.createTransaction({

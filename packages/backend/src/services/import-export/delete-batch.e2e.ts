@@ -541,12 +541,11 @@ describe('background delete for batches above the sync cap', () => {
       const status = await helpers.getImportBatchDeleteStatus({ raw: true });
       expect(status).toEqual({ state: 'idle' });
 
-      const stillThere = await helpers.getTransactions({
-        batchId: summary.batchId,
-        limit: OVERSIZED_BATCH_ROWS,
-        raw: true,
-      });
-      expect(stillThere).toHaveLength(OVERSIZED_BATCH_ROWS);
+      const [firstPage, secondPage] = await Promise.all([
+        helpers.getTransactions({ batchId: summary.batchId, limit: 1000, raw: true }),
+        helpers.getTransactions({ batchId: summary.batchId, limit: 1000, offset: 1000, raw: true }),
+      ]);
+      expect(firstPage.length + secondPage.length).toBe(OVERSIZED_BATCH_ROWS);
     },
     IMPORT_TIMEOUT_MS * 2,
   );

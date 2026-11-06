@@ -59,7 +59,7 @@ const importRows = async ({ descriptions, accountId }: { descriptions: string[];
 
   expectCsvImportCompleted(await waitForCsvImportCompletion({ jobId }));
 
-  const transactions = await helpers.getTransactions({ includeTags: true, raw: true });
+  const transactions = await helpers.getTransactions({ raw: true });
   return (note: string) => transactions.find((tx) => tx.note === note)!.id as RecordId;
 };
 
@@ -74,8 +74,7 @@ const uberRule = ({ actions, isEnabled }: { actions: AutomationAction[]; isEnabl
     raw: true,
   });
 
-const txByNote = async (note: string) =>
-  (await helpers.getTransactions({ includeTags: true, raw: true })).find((tx) => tx.note === note);
+const txByNote = async (note: string) => (await helpers.getTransactions({ raw: true })).find((tx) => tx.note === note);
 
 describe('POST /automations/:id/apply', () => {
   it('applies to a system-account row created via POST /transactions with applyAutomations', async () => {

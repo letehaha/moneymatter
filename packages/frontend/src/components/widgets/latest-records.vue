@@ -62,9 +62,6 @@ const { data: transactions, isFetching: isTxFetching } = useQuery({
     apiLoadTransactions({
       limit: 40,
       offset: 0,
-      includeSplits: true,
-      includeTags: true,
-      includeGroups: true,
       transferNatures: transferNatures.value,
       excludeBalanceAdjustments: excludeBalanceAdjustments.value || undefined,
       ...(includePlanned.value ? {} : { isPlanned: false }),

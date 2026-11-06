@@ -104,9 +104,6 @@ export const loadTransactions = async ({
   amountGte?: number;
   /** Case-insensitive substring match on the note field. Comma-separated terms are OR-ed. */
   noteSearch?: string;
-  includeSplits?: boolean;
-  includeTags?: boolean;
-  includeGroups?: boolean;
   /** Adds `refundedAmount` (same-currency refunds) to each row and its splits. */
   includeRefundedAmount?: boolean;
   /** true = only planned rows, false = exclude them, absent = both. */
@@ -118,7 +115,6 @@ export const loadTransactions = async ({
     ...params,
     isPlanned: keepFalse({ value: params.isPlanned }),
     hasAttachment: keepFalse({ value: params.hasAttachment }),
-    includeHasAttachments: true,
     from: from ? new Date(from).toISOString() : undefined,
     to: to ? new Date(to).toISOString() : undefined,
   });
@@ -126,7 +122,7 @@ export const loadTransactions = async ({
 
 export type TransactionFilterParams = Omit<
   Parameters<typeof loadTransactions>[0],
-  'offset' | 'limit' | 'order' | 'sortBy' | 'includeSplits' | 'includeTags' | 'includeGroups' | 'includeRefundedAmount'
+  'offset' | 'limit' | 'order' | 'sortBy' | 'includeRefundedAmount'
 >;
 
 export const loadTransactionsSummary = async (
