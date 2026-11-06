@@ -191,7 +191,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
       );
     }
 
-    return activeAccounts.reduce<ProviderAccount[]>((result, account, index) => {
+    const accounts = activeAccounts.reduce<ProviderAccount[]>((result, account, index) => {
       const balanceResult = balanceResults[index]!;
       let balance: Cents = asCents(0);
       // Use account-level currency as fallback; balance response takes precedence
@@ -206,9 +206,13 @@ export class LunchFlowProvider extends BaseBankDataProvider {
       }
 
       if (!currency) {
-        logger.error({
-          message: `[LunchFlow] Skipping account ${account.id} (${account.name}): no currency available from account or balance response`,
-        });
+        const balanceCurrency =
+          balanceResult.status === 'fulfilled'
+            ? JSON.stringify(balanceResult.value.balance.currency)
+            : 'balance fetch failed';
+        logger.info(
+          `[LunchFlow] Skipping account ${account.id} (${account.name}): no currency available from account or balance response (account.currency=${JSON.stringify(account.currency)}, balance.currency=${balanceCurrency})`,
+        );
         return result;
       }
 
@@ -227,6 +231,16 @@ export class LunchFlowProvider extends BaseBankDataProvider {
       });
       return result;
     }, []);
+
+    const skippedCount = activeAccounts.length - accounts.length;
+    if (skippedCount >= 2 && skippedCount / activeAccounts.length > 0.5) {
+      logger.error(
+        { message: '[LunchFlow] Majority of accounts skipped for missing currency. Possible API change.' },
+        { connectionId, skippedCount, accountCount: activeAccounts.length },
+      );
+    }
+
+    return accounts;
   }
 
   // ============================================================================
