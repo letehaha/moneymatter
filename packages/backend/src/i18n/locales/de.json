@@ -100,6 +100,16 @@
     "paymentLinkNotAllowed": "Diese Transaktion kann nicht mit der Zahlung verknüpft werden. Es können nur eigene Einnahmen oder Ausgaben desselben Typs verknüpft werden – keine Umbuchung, Rückerstattung, Aufteilung, ausstehende Transaktion oder Teil einer anderen Zahlung.",
     "paymentLinkedAmountFixed": "Der Betrag einer verknüpften Transaktion kann nicht geändert werden.",
     "paymentLinkedTypeMismatch": "Verknüpfte Transaktionen müssen denselben Typ haben wie die Zahlung. Hebe die Verknüpfung zuerst auf.",
+    "refunds": {
+      "wholeLinkWithPartials": "A whole-refund link cannot be combined with partial links",
+      "externalLinkWithOthers": "A refund for a purchase outside the app cannot be combined with other refund links",
+      "externalLinkWithAmount": "A refund of a transaction outside the app cannot have a partial amount; it always covers the whole refund.",
+      "totalExceedsRefund": "Total refund link amounts cannot be greater than the refund transaction amount",
+      "totalExceedsSplit": "Total refund amount cannot be greater than the split amount",
+      "totalExceedsOriginal": "Total refund amount cannot be greater than the original transaction amount",
+      "refundOfRefund": "Cannot refund a \"refund\" transaction",
+      "duplicateLink": "This refund is already linked to that transaction"
+    },
     "splits": {
       "splitsOnTransfer": "Umbuchungstransaktionen können keine Aufteilungen hinzugefügt werden",
       "splitLimitExceeded": "Maximal {{max}} Aufteilungen pro Transaktion erlaubt",
@@ -113,8 +123,7 @@
       "exceedTotal": "Gesamter Aufteilungsbetrag ({{total}}) übersteigt den Transaktionsbetrag ({{transactionAmount}})",
       "invalidData": "Ungültige Aufteilungsdaten",
       "splitNotFound": "Aufteilung nicht gefunden",
-      "cannotDeleteWithRefunds": "Aufteilung, auf die sich Rückerstattungen beziehen, kann nicht gelöscht werden",
-      "cannotReduceBelowRefunded": "Für diese Aufteilung liegen Rückerstattungen in Höhe von insgesamt {{refundsText}} vor. Du kannst sie nicht unter den erstatteten Betrag reduzieren. Um sie weiter zu reduzieren, hebe zuerst die Verknüpfung der Rückerstattungen auf."
+      "cannotDeleteWithRefunds": "Aufteilung, auf die sich Rückerstattungen beziehen, kann nicht gelöscht werden"
     },
     "reconciliation": {
       "systemNotAllowed": "Nur mit der Bank verbundene Transaktionen können zusammengeführt oder entfernt werden.",
@@ -478,6 +487,7 @@
     "aiRateLimited": "Ratenlimit des KI-Anbieters erreicht. Bitte versuche es in einigen Minuten erneut.",
     "aiExtractionFailed": "KI-Extrahierung fehlgeschlagen. Bitte versuche es erneut.",
     "ynab": {
+      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
       "parse": {
         "fileEmpty": "YNAB Register.csv ist leer.",
         "unparseable": "YNAB Register.csv konnte nicht als CSV-Datei verarbeitet werden.",

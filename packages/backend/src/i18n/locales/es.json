@@ -100,6 +100,16 @@
     "paymentLinkNotAllowed": "Esta transacción no puede ser vinculada al pago. Sólo sus propios ingresos o gastos del mismo tipo pueden ser vinculados – no una transferencia, reembolso, dividir, transacción pendiente o parte de otro pago.",
     "paymentLinkedAmountFixed": "La cantidad de una transacción vinculada no se puede cambiar.",
     "paymentLinkedTypeMismatch": "Las transacciones vinculadas deben tener el mismo tipo que el pago. Desvincularlas primero.",
+    "refunds": {
+      "wholeLinkWithPartials": "A whole-refund link cannot be combined with partial links",
+      "externalLinkWithOthers": "A refund for a purchase outside the app cannot be combined with other refund links",
+      "externalLinkWithAmount": "A refund of a transaction outside the app cannot have a partial amount; it always covers the whole refund.",
+      "totalExceedsRefund": "Total refund link amounts cannot be greater than the refund transaction amount",
+      "totalExceedsSplit": "Total refund amount cannot be greater than the split amount",
+      "totalExceedsOriginal": "Total refund amount cannot be greater than the original transaction amount",
+      "refundOfRefund": "Cannot refund a \"refund\" transaction",
+      "duplicateLink": "This refund is already linked to that transaction"
+    },
     "splits": {
       "splitsOnTransfer": "No se pueden agregar divisiones a transacciones de transferencia",
       "splitLimitExceeded": "Se permiten como máximo {{max}} divisiones por transacción",
@@ -113,8 +123,7 @@
       "exceedTotal": "El importe total de las divisiones ({{total}}) supera el importe de la transacción ({{transactionAmount}})",
       "invalidData": "Datos de división no válidos",
       "splitNotFound": "División no encontrada",
-      "cannotDeleteWithRefunds": "No se puede eliminar una división que tiene reembolsos asociados",
-      "cannotReduceBelowRefunded": "Esta división tiene reembolsos por un total de {{refundsText}}. No puede reducirla por debajo del importe reembolsado. Para reducir más, primero desvincule los reembolsos."
+      "cannotDeleteWithRefunds": "No se puede eliminar una división que tiene reembolsos asociados"
     },
     "reconciliation": {
       "systemNotAllowed": "Sólo las transacciones conectadas con el banco pueden ser fusionadas o eliminadas.",
@@ -478,6 +487,7 @@
     "aiRateLimited": "Se ha alcanzado la tasa límite de proveedor de IA. Por favor, inténtalo de nuevo en unos minutos.",
     "aiExtractionFailed": "La extracción de IA falló. Por favor, inténtalo de nuevo.",
     "ynab": {
+      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
       "parse": {
         "fileEmpty": "YNAB Register.csv está vacío.",
         "unparseable": "YNAB Register.csv no pudo ser analizado como un archivo CSV.",

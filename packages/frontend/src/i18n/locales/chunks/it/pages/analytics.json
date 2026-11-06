@@ -221,7 +221,7 @@
         "countsTitle": "Cosa conta per il FIRE",
         "countsCash": "Contanti e conti bancari",
         "countsPortfolios": "Portafogli di investimento",
-        "countsVentures": "Investimenti",
+        "countsVentures": "Venture capital",
         "countsVehicles": "Veicoli",
         "countsLoans": "Prestiti & Finanziamenti",
         "countsHint": "Contanti e portafogli contano sempre. Le rate dei prestiti contano già come spesa, quindi i prestiti sono esclusi per impostazione predefinita.",
@@ -618,7 +618,7 @@
       "cash": "Liquidità e conti",
       "investments": "Investimenti",
       "vehicles": "Veicoli",
-      "ventures": "Investimenti"
+      "ventures": "Venture capital"
     },
     "assetFilter": {
       "all": "Tutti gli asset",

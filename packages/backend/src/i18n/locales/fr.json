@@ -100,6 +100,16 @@
     "paymentLinkNotAllowed": "This transaction can't be linked to the payment. Only your own income or expense of the same type can be linked – not a transfer, refund, split, pending transaction or part of another payment.",
     "paymentLinkedAmountFixed": "The amount of a linked transaction can't be changed.",
     "paymentLinkedTypeMismatch": "Linked transactions must have the same type as the payment. Unlink them first.",
+    "refunds": {
+      "wholeLinkWithPartials": "A whole-refund link cannot be combined with partial links",
+      "externalLinkWithOthers": "A refund for a purchase outside the app cannot be combined with other refund links",
+      "externalLinkWithAmount": "A refund of a transaction outside the app cannot have a partial amount; it always covers the whole refund.",
+      "totalExceedsRefund": "Total refund link amounts cannot be greater than the refund transaction amount",
+      "totalExceedsSplit": "Total refund amount cannot be greater than the split amount",
+      "totalExceedsOriginal": "Total refund amount cannot be greater than the original transaction amount",
+      "refundOfRefund": "Cannot refund a \"refund\" transaction",
+      "duplicateLink": "This refund is already linked to that transaction"
+    },
     "splits": {
       "splitsOnTransfer": "Impossible de ventiler un virement",
       "splitLimitExceeded": "Maximum de {{max}} ventilations autorisé par opération",
@@ -113,8 +123,7 @@
       "exceedTotal": "Le montant total ventilé ({{total}}) dépasse le montant de l'opération ({{transactionAmount}})",
       "invalidData": "Données de ventilation non valides",
       "splitNotFound": "Ventilation introuvable",
-      "cannotDeleteWithRefunds": "Impossible de supprimer une ventilation associée à des remboursements",
-      "cannotReduceBelowRefunded": "Cette ventilation comporte des remboursements totalisant {{refundsText}}. Vous ne pouvez pas réduire son montant en dessous du total remboursé. Pour le réduire davantage, dissociez d'abord les remboursements."
+      "cannotDeleteWithRefunds": "Impossible de supprimer une ventilation associée à des remboursements"
     },
     "reconciliation": {
       "systemNotAllowed": "Seules les opérations synchronisées avec la banque peuvent être fusionnées ou supprimées.",
@@ -478,6 +487,7 @@
     "aiRateLimited": "Limite de requêtes du service d'IA atteinte. Veuillez réessayer dans quelques minutes.",
     "aiExtractionFailed": "Échec de l'extraction par l'IA. Veuillez réessayer.",
     "ynab": {
+      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
       "parse": {
         "fileEmpty": "Le fichier YNAB Register.csv est vide.",
         "unparseable": "Impossible d'analyser le fichier YNAB Register.csv au format CSV.",

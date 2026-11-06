@@ -1,8 +1,8 @@
 {
   "budgetPlans": {
-    "title": "Tracker",
+    "title": "Budget",
     "loadError": "Impossibile caricare il budget.",
-    "defaultName": "Tracker",
+    "defaultName": "Budget",
     "settings": {
       "title": "Impostazioni del budget",
       "description": "Le modifiche vengono salvate e applicate immediatamente.",

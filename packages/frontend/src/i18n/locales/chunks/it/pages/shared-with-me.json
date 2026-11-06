@@ -10,7 +10,7 @@
       "sections": {
         "account": "Conti",
         "household": "Nuclei Familiari",
-        "budget": "Budget condivisi"
+        "budget": "Tracker condivisi"
       },
       "sharedBy": "Condiviso da {handle}",
       "viaHousehold": "Tramite il nucleo familiare di {handle}",

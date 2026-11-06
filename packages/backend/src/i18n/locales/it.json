@@ -100,6 +100,16 @@
     "paymentLinkNotAllowed": "Questa transazione non può essere collegata al pagamento. Possono essere collegate solo entrate o uscite proprie dello stesso tipo, non trasferimenti, rimborsi, suddivisioni, transazioni in sospeso o parti di un altro pagamento.",
     "paymentLinkedAmountFixed": "L'importo di una transazione collegata non può essere modificato.",
     "paymentLinkedTypeMismatch": "Le transazioni collegate devono avere lo stesso tipo del pagamento. Scollegarle prima.",
+    "refunds": {
+      "wholeLinkWithPartials": "A whole-refund link cannot be combined with partial links",
+      "externalLinkWithOthers": "A refund for a purchase outside the app cannot be combined with other refund links",
+      "externalLinkWithAmount": "A refund of a transaction outside the app cannot have a partial amount; it always covers the whole refund.",
+      "totalExceedsRefund": "Total refund link amounts cannot be greater than the refund transaction amount",
+      "totalExceedsSplit": "Total refund amount cannot be greater than the split amount",
+      "totalExceedsOriginal": "Total refund amount cannot be greater than the original transaction amount",
+      "refundOfRefund": "Cannot refund a \"refund\" transaction",
+      "duplicateLink": "This refund is already linked to that transaction"
+    },
     "splits": {
       "splitsOnTransfer": "Impossibile aggiungere suddivisioni alle transazioni di trasferimento",
       "splitLimitExceeded": "Sono consentite al massimo {{max}} suddivisioni per transazione",
@@ -113,8 +123,7 @@
       "exceedTotal": "L'importo totale delle suddivisioni ({{total}}) supera l'importo della transazione ({{transactionAmount}})",
       "invalidData": "Dati della suddivisione non validi",
       "splitNotFound": "Suddivisione non trovata",
-      "cannotDeleteWithRefunds": "Impossibile eliminare una suddivisione collegata a dei rimborsi",
-      "cannotReduceBelowRefunded": "Questa suddivisione ha rimborsi per un totale di {{refundsText}}. Non è possibile ridurla al di sotto dell'importo rimborsato. Per ridurla ulteriormente, scollegare prima i rimborsi."
+      "cannotDeleteWithRefunds": "Impossibile eliminare una suddivisione collegata a dei rimborsi"
     },
     "reconciliation": {
       "systemNotAllowed": "Solo le transazioni collegate alla banca possono essere unite o rimosse.",
@@ -478,6 +487,7 @@
     "aiRateLimited": "Raggiunto il limite di richieste del provider IA. Riprovare tra qualche minuto.",
     "aiExtractionFailed": "Estrazione IA non riuscita. Riprovare.",
     "ynab": {
+      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
       "parse": {
         "fileEmpty": "Il file Register.csv di YNAB è vuoto.",
         "unparseable": "Impossibile analizzare il file Register.csv di YNAB come file CSV.",

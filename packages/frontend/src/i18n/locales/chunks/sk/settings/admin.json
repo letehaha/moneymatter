@@ -112,6 +112,46 @@
           "uploadSuccess": "Úspešne nahraný {count} cenový záznam | Úspešne nahrané {count} cenové záznamy | Úspešne nahraných {count} cenových záznamov",
           "uploadFailed": "Nahrávanie zlyhalo: {error}"
         }
+      },
+      "broadcast": {
+        "title": "Hromadné oznámenie",
+        "description": "Odošlite oznámenie v aplikácii každému používateľovi aktívnemu za posledných 30 dní alebo len používateľom s ID a emailami, ktoré uvediete. Ak je pripojený odkaz, kliknutím sa otvorí na novej karte a opätovné odoslanie rovnakého odkazu preskočí používateľov, ktorí ho už dostali.",
+        "fields": {
+          "title": "Názov",
+          "titlePlaceholder": "napr. Aplikácia pre iOS je vo verejnej beta verzii 📱",
+          "message": "Správa",
+          "messagePlaceholder": "Nepovinný text zobrazený pod nadpisom",
+          "url": "Odkaz",
+          "urlPlaceholder": "https://… (nepovinné)",
+          "urlError": "Odkaz musí začínať https://",
+          "icon": "Ikona",
+          "recipients": "Príjemcovia",
+          "recipientsPlaceholder": "Nepovinné ID používateľov alebo emaily oddelené čiarkami, napr. 12, jana@priklad.sk. Prázdne = všetci aktívni používatelia",
+          "recipientsError": "Použite kladné celé čísla ako ID alebo platné emaily oddelené čiarkami"
+        },
+        "icons": {
+          "info": "Informácia",
+          "announcement": "Oznam",
+          "success": "Úspech",
+          "warning": "Upozornenie"
+        },
+        "button": "Odoslať oznámenie",
+        "confirm": {
+          "title": "Odoslať všetkým aktívnym používateľom?",
+          "titleSelected": "Odoslať {count} používateľom?",
+          "description": "Týmto sa vytvorí oznámenie pre každého používateľa aktívneho za posledných 30 dní. Túto akciu nemožno vrátiť späť.",
+          "descriptionSelected": "Neznáme ID a emaily sa preskočia. Túto akciu nemožno vrátiť späť.",
+          "button": "Odoslať"
+        },
+        "notifications": {
+          "success": "Oznámenie odoslané {count} používateľom",
+          "failed": "Oznámenie sa nepodarilo odoslať",
+          "noneCreated": "Nebolo odoslané žiadne oznámenie: žiadni zodpovedajúci používatelia, alebo už tento odkaz dostali"
+        }
+      },
+      "tabs": {
+        "investments": "Investície",
+        "notifications": "Upozornenia"
       }
     }
   }
