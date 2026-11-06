@@ -241,7 +241,14 @@ const limit = 10;
 
 const fetchTransactions = ({ pageParam }: { pageParam: number }) => {
   const offset = pageParam * limit;
-  return loadTransactions({ limit, offset, accountIds: [account.value!.id] });
+  return loadTransactions({
+    limit,
+    offset,
+    accountIds: [account.value!.id],
+    includeSplits: true,
+    includeTags: true,
+    includeGroups: true,
+  });
 };
 
 const {
