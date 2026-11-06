@@ -195,6 +195,14 @@ async function executeYnabImportImpl({
       payeeIdByNormalized.set(normalized, created.id);
       summary.payeesCreated += 1;
     } catch (err) {
+      // A concurrent writer may have created it after the batched lookup. createPayee's own
+      // transaction has already rolled back, so the re-read runs on a clean connection.
+      const existing = await Payees.findOne({ where: { userId, normalizedName: normalized } });
+      if (existing) {
+        payeeByName.set(payeeName, existing.id);
+        payeeIdByNormalized.set(normalized, existing.id);
+        continue;
+      }
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error({ message: `[YNAB import] Failed to create payee "${payeeName}"`, error: err as Error });
       // Surface in summary.errors so the done-step callout tells the user the

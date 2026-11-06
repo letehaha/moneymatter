@@ -5,6 +5,7 @@ import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { withTransaction } from '@root/services/common/with-transaction';
 import { withLock } from '@services/common/lock';
+import { retryOnDeadlock } from '@services/common/retry-on-deadlock';
 
 import { bankProviderRegistry } from '../registry';
 
@@ -70,5 +71,10 @@ const runAccountSync = withTransaction(
   },
 );
 
+// Two syncs of one user can deadlock on rows they both write (payees, transfer pairs).
+// The retry stays inside the lock so another sync can't take the account in between.
 export const syncTransactionsForAccount = (params: { connectionId: string; userId: number; accountId: string }) =>
-  withAccountSyncLock({ accountIds: [params.accountId], fn: () => runAccountSync(params) });
+  withAccountSyncLock({
+    accountIds: [params.accountId],
+    fn: () => retryOnDeadlock({ fn: () => runAccountSync(params) }),
+  });

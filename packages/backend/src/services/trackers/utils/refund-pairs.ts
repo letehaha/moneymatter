@@ -3,10 +3,12 @@ import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import RefundTransactions from '@models/refund-transactions.model';
 import { findTransactions } from '@models/transactions-query';
+import { refundShareRefAmount } from '@services/tx-refunds/refund-share';
 import { Op } from 'sequelize';
 
 interface RefundTxData {
   id: string;
+  amount: Money;
   refAmount: Money;
   transactionType: TRANSACTION_TYPES;
   time: Date;
@@ -16,6 +18,8 @@ interface RefundTxData {
 export interface TrackerRefundPair {
   originalTx: RefundTxData;
   refundTx: RefundTxData;
+  /** Base-currency value of this link's share of `refundTx`; equals `refundTx.refAmount` for a whole refund. */
+  shareRefAmount: Money;
   /** True when originalTx was in `countedTransactions`, i.e. it contributed to the aggregation. */
   originalInScope: boolean;
   /** True when refundTx was in `countedTransactions`. */
@@ -31,7 +35,7 @@ export interface TrackerRefundPair {
  * of the pair are in the tracker.
  *
  * The returned pairs carry both transactions plus flags indicating which side(s) were counted,
- * so callers can decide where to apply `refundTx.refAmount` adjustments.
+ * so callers can decide where to apply `shareRefAmount`, the link's share of the refund tx.
  *
  * Stats' `resolveRefundPairs` answers the same question for its own reports but hands back a pair
  * already oriented into expense/income sides; trackers keep the raw transactions because each call
@@ -73,7 +77,7 @@ export const fetchTrackerRefundPairs = async ({
       id: { [Op.in]: [...allRefundTxIds] },
       userId: { [Op.in]: [...new Set(refunds.map((refund) => refund.userId))] },
     },
-    attributes: ['id', 'refAmount', 'transactionType', 'time', 'categoryId'],
+    attributes: ['id', 'amount', 'refAmount', 'transactionType', 'time', 'categoryId'],
   });
 
   const txById = new Map<string, RefundTxData>(
@@ -81,6 +85,7 @@ export const fetchTrackerRefundPairs = async ({
       t.id,
       {
         id: t.id,
+        amount: t.amount,
         refAmount: t.refAmount,
         transactionType: t.transactionType,
         time: t.time,
@@ -99,6 +104,7 @@ export const fetchTrackerRefundPairs = async ({
     pairs.push({
       originalTx,
       refundTx,
+      shareRefAmount: refundShareRefAmount({ link: refund, refundTx }),
       originalInScope: trackerTxIds.has(originalTx.id),
       refundInScope: trackerTxIds.has(refundTx.id),
     });

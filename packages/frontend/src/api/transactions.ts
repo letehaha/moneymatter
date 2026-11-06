@@ -81,6 +81,14 @@ export const loadTransactions = async ({
   excludeRefundTxs?: boolean;
   /** With `excludeRefundTxs`: keep refunds linked to this transaction visible. */
   keepRefundsForTxId?: string;
+  /** Excludes transactions that are the original side of a refund link. */
+  excludeRefundedTxs?: boolean;
+  /**
+   * Local-day bounds of the entry being linked (both or neither). Rows before it may only be originals,
+   * rows after it only refunds; `keepRefundsForTxId` names the entry so its own links stay listed.
+   */
+  refundPivotFrom?: string;
+  refundPivotTo?: string;
   /** Hide transactions created by the balance-adjustment flow. */
   excludeBalanceAdjustments?: boolean;
   excludeAccountIds?: string[];
@@ -96,9 +104,8 @@ export const loadTransactions = async ({
   amountGte?: number;
   /** Case-insensitive substring match on the note field. Comma-separated terms are OR-ed. */
   noteSearch?: string;
-  includeSplits?: boolean;
-  includeTags?: boolean;
-  includeGroups?: boolean;
+  /** Adds `refundedAmount` (same-currency refunds) to each row and its splits. */
+  includeRefundedAmount?: boolean;
   /** true = only planned rows, false = exclude them, absent = both. */
   isPlanned?: boolean;
   /** true = only rows with attachments, false = only rows without, absent = both. */
@@ -108,7 +115,6 @@ export const loadTransactions = async ({
     ...params,
     isPlanned: keepFalse({ value: params.isPlanned }),
     hasAttachment: keepFalse({ value: params.hasAttachment }),
-    includeHasAttachments: true,
     from: from ? new Date(from).toISOString() : undefined,
     to: to ? new Date(to).toISOString() : undefined,
   });
@@ -116,7 +122,7 @@ export const loadTransactions = async ({
 
 export type TransactionFilterParams = Omit<
   Parameters<typeof loadTransactions>[0],
-  'offset' | 'limit' | 'order' | 'sortBy' | 'includeSplits' | 'includeTags' | 'includeGroups'
+  'offset' | 'limit' | 'order' | 'sortBy' | 'includeRefundedAmount'
 >;
 
 export const loadTransactionsSummary = async (
@@ -221,8 +227,20 @@ export const keepAsBooked = async (payload: KeepAsBookedBody): Promise<KeepAsBoo
   return api.post('/transactions/reconciliation/keep-as-booked', payload);
 };
 
+/** Which side of a refund link the current entry is: it refunds the picked rows, or they refund it. */
+export type RefundRole = 'refund' | 'original';
+
 export const loadRefundRecommendations = async (
-  params: { transactionId: string } | { transactionType: TRANSACTION_TYPES; originAmount: number; accountId: string },
+  params: (
+    | { transactionId: string }
+    /** `transactionType` is the type of the entry being linked; the response holds the opposite type. */
+    | { transactionType: TRANSACTION_TYPES; originAmount: number; accountId: string }
+  ) & {
+    includeRefundedAmount?: boolean;
+    refundRole?: RefundRole;
+    refundPivotFrom?: string;
+    refundPivotTo?: string;
+  },
 ): Promise<GetRefundRecommendationsResponse> => {
   return api.get('/transactions/refund-recommendations', params);
 };

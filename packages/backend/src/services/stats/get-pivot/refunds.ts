@@ -2,6 +2,7 @@ import { TRANSACTION_TYPES } from '@bt/shared/types';
 import RefundTransactions from '@models/refund-transactions.model';
 import Tags from '@models/tags.model';
 import { findTransactions } from '@models/transactions-query';
+import { refundShareRefAmount } from '@services/tx-refunds/refund-share';
 import { Op } from 'sequelize';
 
 /** A refund resolved for a whole-transaction dimension (payee / tag). */
@@ -65,7 +66,7 @@ export const resolveWholeTxRefunds = async ({
       id: { [Op.in]: [...neededTxIds] },
       userId: { [Op.in]: [...new Set(refunds.map((refund) => refund.userId))] },
     },
-    attributes: ['id', 'refAmount', 'transactionType', 'payeeId', 'time'],
+    attributes: ['id', 'amount', 'refAmount', 'transactionType', 'payeeId', 'time'],
     include: needTags ? [{ model: Tags, through: { attributes: [] }, attributes: ['id'], required: false }] : [],
   });
   const byId = new Map(txs.map((tx) => [tx.id, tx]));
@@ -81,7 +82,7 @@ export const resolveWholeTxRefunds = async ({
     result.push({
       payeeId: sideTx.payeeId,
       tagIds: needTags ? (sideTx.tags ?? []).map((tag) => tag.id) : [],
-      refundCents: refundTx.refAmount.toCents(),
+      refundCents: refundShareRefAmount({ link: refund, refundTx }).toCents(),
       refundTime: new Date(refundTx.time),
     });
   }

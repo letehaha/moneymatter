@@ -25,6 +25,7 @@ import {
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 import { settlePeriodOnConfirm } from '@services/subscriptions/settle-period-on-match';
 import * as refundsService from '@services/tx-refunds';
+import { validateRefundLinks } from '@services/tx-refunds/validate-refund-links';
 
 import { withTransaction } from '../../common/with-transaction';
 import { calcTransferTransactionRefAmount, createOppositeTransaction } from '../create-transaction';
@@ -61,6 +62,38 @@ const clearOriginalSourceProvider = ({ externalData }: { externalData: Transacti
   externalData?.originalSource
     ? { ...externalData, originalSource: { ...externalData.originalSource, importedFrom: null } }
     : undefined;
+
+// Links saved under looser rules may fail `validateRefundLinks` now, so an edit that leaves
+// refund-relevant state untouched must not be blocked by them.
+const touchesRefundState = ({
+  payload,
+  prevData,
+  baseTransaction,
+}: {
+  payload: UpdateTransactionParams;
+  prevData: Transactions.default;
+  baseTransaction: Transactions.default;
+}) => {
+  const prevSplits = prevData.splits ?? [];
+  const nextSplits = payload.splits ?? [];
+  const splitsChanged =
+    payload.splits !== undefined &&
+    (nextSplits.length !== prevSplits.length ||
+      nextSplits.some(
+        (split) => !prevSplits.some((prev) => prev.categoryId === split.categoryId && prev.amount.equals(split.amount)),
+      ));
+
+  return (
+    payload.refundedByTxIds !== undefined ||
+    payload.refundsTargets !== undefined ||
+    splitsChanged ||
+    (payload.amount !== undefined && !payload.amount.equals(prevData.amount)) ||
+    baseTransaction.currencyCode !== prevData.currencyCode ||
+    (payload.transactionType !== undefined && payload.transactionType !== prevData.transactionType) ||
+    (payload.transferNature !== undefined && payload.transferNature !== prevData.transferNature) ||
+    (payload.isPlanned !== undefined && payload.isPlanned !== prevData.isPlanned)
+  );
+};
 
 export const EXTERNAL_ACCOUNT_RESTRICTED_UPDATION_FIELDS = ['amount', 'time', 'transactionType', 'accountId'];
 
@@ -122,7 +155,7 @@ const validateTransaction = async (
     });
   }
 
-  if (newData.refundedByTxIds !== undefined && newData.refundsTxId !== undefined) {
+  if (newData.refundedByTxIds !== undefined && newData.refundsTargets !== undefined) {
     throw new ValidationError({
       message: t({ key: 'transactions.bothRefundFieldsNotAllowed' }),
     });
@@ -304,58 +337,61 @@ const makeBasicBaseTxUpdation = async (
 
   if (newData.refundedByTxIds !== undefined) {
     const refundsShouldBeRemoved = prevData.refundLinked && newData.refundedByTxIds === null;
-    const refundsShouldBeSetOrOverriden = Array.isArray(newData.refundedByTxIds) && newData.refundedByTxIds.length;
+    const refundedByTxIds = newData.refundedByTxIds ?? [];
 
-    if (refundsShouldBeRemoved || refundsShouldBeSetOrOverriden) {
-      // Remove old refunds first (before update)
+    if (refundsShouldBeRemoved || refundedByTxIds.length) {
       const previousRefunds = await refundsService.getRefundsForTransactionById({
         userId: newData.userId,
         transactionId: newData.id,
       });
+      const previousAsOriginal = previousRefunds.filter((refund) => refund.originalTxId === newData.id);
       await removeRefunds(previousRefunds);
 
-      if (refundsShouldBeRemoved) baseTransactionUpdateParams.refundLinked = false;
-      if (refundsShouldBeSetOrOverriden) {
-        // A repeated id would be rejected by `createSingleRefund`'s already-linked check.
-        const refundedByTxIds = [...new Set(newData.refundedByTxIds!)];
+      baseTransactionUpdateParams.refundLinked = refundedByTxIds.length > 0;
 
-        baseTransactionUpdateParams.refundLinked = true;
-        // Defer refund creation until after transaction is updated
+      if (refundedByTxIds.length) {
+        // Recreated rather than kept so the structural checks run against the updated row;
+        // a re-listed refund keeps its share and split.
         pendingRefundOperation = async () => {
           // Sequential: each link's running-sum check must see the ones created before it.
-          for (const id of refundedByTxIds) {
+          for (const { txId, amount } of refundedByTxIds) {
+            const previousLink = previousAsOriginal.find((refund) => refund.refundTxId === txId);
             await refundsService.createSingleRefund({
               originalTxId: newData.id,
-              refundTxId: id,
+              refundTxId: txId,
               userId: newData.userId,
+              splitId: previousLink?.splitId ?? undefined,
+              amount: amount === undefined ? (previousLink?.amount ?? null) : amount,
             });
           }
         };
       }
     }
-  } else if (newData.refundsTxId !== undefined) {
-    const refundShouldBeRemoved = prevData.refundLinked && newData.refundsTxId === null;
-    const refundShouldBeSetOrOverriden = newData.refundsTxId;
+  } else if (newData.refundsTargets !== undefined) {
+    const refundsTargets = newData.refundsTargets ?? [];
+    const targetsShouldBeRemoved = prevData.refundLinked && newData.refundsTargets === null;
 
-    if (refundShouldBeRemoved || refundShouldBeSetOrOverriden) {
-      // Remove old refunds first (before update)
+    if (targetsShouldBeRemoved || refundsTargets.length) {
       const previousRefunds = await refundsService.getRefundsForTransactionById({
         userId: newData.userId,
         transactionId: newData.id,
       });
       await removeRefunds(previousRefunds);
 
-      if (refundShouldBeRemoved) baseTransactionUpdateParams.refundLinked = false;
-      if (refundShouldBeSetOrOverriden) {
+      if (targetsShouldBeRemoved) baseTransactionUpdateParams.refundLinked = false;
+      if (refundsTargets.length) {
         baseTransactionUpdateParams.refundLinked = true;
-        // Defer refund creation until after transaction is updated
         pendingRefundOperation = async () => {
-          await refundsService.createSingleRefund({
-            originalTxId: newData.refundsTxId!,
-            refundTxId: newData.id,
-            userId: newData.userId,
-            splitId: newData.refundsSplitId ?? undefined,
-          });
+          // Sequential: each link's amount check must see the ones created before it.
+          for (const target of refundsTargets) {
+            await refundsService.createSingleRefund({
+              originalTxId: target.txId,
+              refundTxId: newData.id,
+              userId: newData.userId,
+              splitId: target.splitId ?? undefined,
+              amount: target.amount,
+            });
+          }
         };
       }
     }
@@ -600,6 +636,7 @@ export const updateTransaction = withTransaction(
       const { tx: prevData, ctx: authCtx } = await getWritableTransactionById({
         id: payload.id,
         userId: payload.userId,
+        include: Transactions.prepareTXInclude({ includeSplits: true }),
       });
 
       const ctx: UpdateAuthContext = {
@@ -644,7 +681,7 @@ export const updateTransaction = withTransaction(
       assertSharedWritePhase1Guards({
         isOwner: authCtx.isOwner,
         involvesTransfer: isCreatingTransfer(payload, prevData) || isDiscardingTransfer(payload, prevData),
-        involvesRefund: payload.refundedByTxIds !== undefined || payload.refundsTxId !== undefined,
+        involvesRefund: payload.refundedByTxIds !== undefined || payload.refundsTargets !== undefined,
         changesAccountId: payload.accountId !== undefined && payload.accountId !== prevData.accountId,
       });
 
@@ -803,6 +840,10 @@ export const updateTransaction = withTransaction(
         legs: payload.paymentLegs,
         mainCurrencyChanged: baseTransaction.currencyCode !== prevData.currencyCode,
       });
+
+      if (touchesRefundState({ payload, prevData, baseTransaction })) {
+        await validateRefundLinks({ userId: ctx.txCreatorUserId, txId: payload.id });
+      }
 
       return updatedTransactions;
     } catch (e) {

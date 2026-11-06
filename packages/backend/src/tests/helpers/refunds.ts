@@ -5,7 +5,7 @@ import * as helpers from '@tests/helpers';
 import { MakeRequestReturn } from './common';
 
 export const createSingleRefund = async (
-  payload: { originalTxId: string | null; refundTxId: string; splitId?: string },
+  payload: { originalTxId: string | null; refundTxId: string; splitId?: string; amount?: number },
   raw = false,
 ) => {
   const result = await helpers.makeRequest({
@@ -62,6 +62,10 @@ interface GetRefundRecommendationsParams {
   transactionType?: TRANSACTION_TYPES;
   originAmount?: number;
   accountId?: string;
+  includeRefundedAmount?: boolean;
+  refundRole?: 'refund' | 'original';
+  refundPivotFrom?: string;
+  refundPivotTo?: string;
 }
 
 export function getRefundRecommendations<R extends boolean | undefined = undefined>({
@@ -72,6 +76,30 @@ export function getRefundRecommendations<R extends boolean | undefined = undefin
     method: 'get',
     url: '/transactions/refund-recommendations',
     payload: params,
+    raw,
+  });
+}
+
+interface RefundLinkResponse {
+  id: string;
+  originalTxId: string | null;
+  refundTxId: string;
+  splitId: string | null;
+  amount: number | null;
+  originalTransaction?: TransactionModel;
+}
+
+export function getRefundsForTransaction<R extends boolean | undefined = undefined>({
+  transactionId,
+  raw,
+}: {
+  transactionId: string;
+  raw?: R;
+}): Promise<MakeRequestReturn<RefundLinkResponse[], R>> {
+  return helpers.makeRequest<RefundLinkResponse[], R>({
+    method: 'get',
+    url: `/transactions/${transactionId}/refunds`,
+    payload: { transactionId },
     raw,
   });
 }

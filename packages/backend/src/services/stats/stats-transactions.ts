@@ -83,7 +83,7 @@ const windowWhere = ({ window }: { window: StatsWindow }): WhereOptions | null =
 };
 
 /**
- * `refunds: 'net'` needs the projection to carry `id`, `refAmount`, `categoryId`,
+ * `refunds: 'net'` needs the projection to carry `id`, `amount`, `refAmount`, `categoryId`,
  * `transactionType`, `time` and `refundLinked` — the pair resolver reads them off the rows.
  */
 export const statsTransactions = async ({

@@ -56,7 +56,7 @@
     "idCannotBeChanged": "ID nemožno zmeniť",
     "editReadonlyFields": "Pokus o úpravu polí externého účtu, ktoré sú len na čítanie",
     "changeTypeNotAllowed": "Zmena „transactionType\" pri nesystémovom účte nie je povolená",
-    "bothRefundFieldsNotAllowed": "Nemožno použiť súčasne „refundedByTxIds\" aj „refundsTxId\". Vyberte jedno z nich, prosím.",
+    "bothRefundFieldsNotAllowed": "Nemožno použiť súčasne „refundedByTxIds\" aj „refundsTargets\". Vyberte jedno z nich, prosím.",
     "oppositeTransactionNotFound": "Opačnú transakciu na aktualizáciu sa nepodarilo nájsť",
     "transactionIdNotExist": "Transakcia so zadaným id neexistuje!",
     "notAuthorizedToEdit": "Nemáte oprávnenie upravovať túto transakciu.",
@@ -100,6 +100,16 @@
     "paymentLinkNotAllowed": "Táto transakcia sa nedá prepojiť s platbou. Prepojiť možno len vlastný príjem alebo výdavok rovnakého typu – nie prevod, vrátenie platby, rozdelenú transakciu, nezaúčtovanú transakciu ani súčasť inej platby.",
     "paymentLinkedAmountFixed": "Sumu prepojenej transakcie nemožno zmeniť.",
     "paymentLinkedTypeMismatch": "Prepojené transakcie musia mať rovnaký typ ako platba. Najprv ich odpojte.",
+    "refunds": {
+      "wholeLinkWithPartials": "Prepojenie celého vrátenia platby nemožno kombinovať s čiastočnými prepojeniami",
+      "externalLinkWithOthers": "Vrátenie platby za nákup mimo aplikácie nemožno kombinovať s inými prepojeniami vrátenia",
+      "externalLinkWithAmount": "Vrátenie platby za transakciu mimo aplikácie nemôže mať čiastočnú sumu; vždy pokrýva celé vrátenie.",
+      "totalExceedsRefund": "Súčet súm prepojení vrátenia nemôže byť vyšší ako suma transakcie vrátenia",
+      "totalExceedsSplit": "Celková suma vrátenia nemôže byť vyššia ako suma rozdelenej časti",
+      "totalExceedsOriginal": "Celková suma vrátenia nemôže byť vyššia ako suma pôvodnej transakcie",
+      "refundOfRefund": "Transakciu typu „vrátenie platby“ nemožno vrátiť",
+      "duplicateLink": "Toto vrátenie platby je už prepojené s touto transakciou"
+    },
     "splits": {
       "splitsOnTransfer": "K prevodovým transakciám nemožno pridať rozdelenie",
       "splitLimitExceeded": "Povolený je najviac {{max}} rozdelení na transakciu",
@@ -113,8 +123,7 @@
       "exceedTotal": "Celková suma rozdelenia ({{total}}) prevyšuje sumu transakcie ({{transactionAmount}})",
       "invalidData": "Neplatné údaje rozdelenia",
       "splitNotFound": "Rozdelenie sa nenašlo",
-      "cannotDeleteWithRefunds": "Rozdelenie, na ktoré mieria vrátenia platby, nemožno zmazať",
-      "cannotReduceBelowRefunded": "Toto rozdelenie má vrátenia platby v celkovej výške {{refundsText}}. Nemôžete ho znížiť pod vrátenú sumu. Ak ho chcete znížiť viac, najprv odpojte vrátenia platby."
+      "cannotDeleteWithRefunds": "Rozdelenie, na ktoré mieria vrátenia platby, nemožno zmazať"
     },
     "reconciliation": {
       "systemNotAllowed": "Zlučovať alebo odstraňovať možno len transakcie prepojené s bankou.",
@@ -478,6 +487,7 @@
     "aiRateLimited": "Dosiahnutý limit požiadaviek poskytovateľa AI. Skúste to znova o pár minút, prosím.",
     "aiExtractionFailed": "Vyťaženie pomocou AI zlyhalo. Skúste to znova, prosím.",
     "ynab": {
+      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
       "parse": {
         "fileEmpty": "Súbor YNAB Register.csv je prázdny.",
         "unparseable": "Súbor YNAB Register.csv sa nepodarilo spracovať ako súbor CSV.",

@@ -37,7 +37,7 @@ export const getPlanActivity = async ({
   const rows: RawActivityRow[] = await connection.sequelize.query(
     `
     WITH scoped AS (
-      SELECT t.id, t."time", t."categoryId", t."refAmount", t."transactionType"
+      SELECT t.id, t."time", t."categoryId", t."amount", t."refAmount", t."transactionType"
       FROM real_transactions t
       JOIN "BudgetPlanAccounts" pa ON pa."accountId" = t."accountId" AND pa."planId" = :planId
       JOIN "Accounts" a ON a.id = t."accountId" AND a."excludeFromStats" = false AND a."userId" = :ownerId
@@ -60,25 +60,62 @@ export const getPlanActivity = async ({
     ),
     units AS (
       -- Splits may sum to LESS than the transaction; the parent keeps the remainder.
-      SELECT s.id AS "txId", s."time", s."transactionType", s."categoryId",
+      SELECT s.id AS "txId", NULL::uuid AS "splitId", s."time", s."transactionType", s."categoryId",
              s."refAmount" - COALESCE(st.total, 0) AS "refAmount"
       FROM scoped s LEFT JOIN split_totals st ON st."transactionId" = s.id
       WHERE s."refAmount" - COALESCE(st.total, 0) > 0
       UNION ALL
-      SELECT s.id, s."time", s."transactionType", sp."categoryId", sp."refAmount"
+      SELECT s.id, sp.id, s."time", s."transactionType", sp."categoryId", sp."refAmount"
       FROM scoped s JOIN "TransactionSplits" sp ON sp."transactionId" = s.id
+    ),
+    unit_spans AS (
+      SELECT u.*,
+             SUM(u."refAmount") OVER (PARTITION BY u."txId" ORDER BY u."splitId" NULLS FIRST) AS "unitEnd",
+             NULLIF(SUM(u."refAmount") OVER (PARTITION BY u."txId"), 0) AS "unitsTotal"
+      FROM units u
+    ),
+    link_spans AS (
+      -- Rounded once per link, as refundShareRefAmount does, so plan and stats net the same cents.
+      SELECT l.*, SUM(l."share") OVER (PARTITION BY l."refundTxId" ORDER BY l.id) AS "linkEnd"
+      FROM (
+        SELECT r.id, r."refundTxId", r."originalTxId", r."splitId", r.amount,
+               COALESCE(ROUND(s."refAmount" * r.amount::numeric / NULLIF(s."amount", 0)), 0) AS "share"
+        FROM "RefundTransactions" r JOIN scoped s ON s.id = r."refundTxId"
+      ) l
+    ),
+    unit_shares AS (
+      -- With F(x, y) = ROUND(x * y / total) over running unit (x) and link (y) totals, a cell is
+      -- F's difference over its box: each link's cells sum to its share, and no unit gives more than it holds.
+      SELECT u."txId", u."splitId", u."time", u."transactionType", u."categoryId", u."refAmount",
+             r."originalTxId", r."splitId" AS "refundSplitId",
+             CASE WHEN r.amount IS NULL THEN u."refAmount"
+                  ELSE COALESCE(
+                      ROUND(u."unitEnd"::numeric * r."linkEnd" / u."unitsTotal")
+                    - ROUND((u."unitEnd" - u."refAmount")::numeric * r."linkEnd" / u."unitsTotal")
+                    - ROUND(u."unitEnd"::numeric * (r."linkEnd" - r."share") / u."unitsTotal")
+                    + ROUND((u."unitEnd" - u."refAmount")::numeric * (r."linkEnd" - r."share") / u."unitsTotal"),
+                  0) END AS "shareRefAmount",
+             r.amount IS NOT NULL AS "isPartial"
+      FROM unit_spans u
+      LEFT JOIN link_spans r ON r."refundTxId" = u."txId"
     ),
     attributed AS (
       -- A refund lands in ITS period. On an original this plan counted it takes
       -- that original's category, NULL included, so it can never credit a line
       -- the original never charged. Otherwise it keeps its own category.
-      SELECT u."time", u."transactionType", u."refAmount",
+      SELECT u."time", u."transactionType", u."shareRefAmount" AS "refAmount",
              CASE WHEN o.id IS NULL THEN u."categoryId"
                   ELSE COALESCE(osp."categoryId", o."categoryId") END AS "categoryId"
-      FROM units u
-      LEFT JOIN "RefundTransactions" r ON r."refundTxId" = u."txId"
-      LEFT JOIN scoped o ON o.id = r."originalTxId"
-      LEFT JOIN "TransactionSplits" osp ON osp.id = r."splitId"
+      FROM unit_shares u
+      LEFT JOIN scoped o ON o.id = u."originalTxId"
+      LEFT JOIN "TransactionSplits" osp ON osp.id = u."refundSplitId"
+      UNION ALL
+      -- Whatever the shares leave unassigned stays under the refund's own category.
+      SELECT u."time", u."transactionType", u."refAmount" - SUM(u."shareRefAmount"), u."categoryId"
+      FROM unit_shares u
+      WHERE u."isPartial"
+      GROUP BY u."txId", u."splitId", u."time", u."transactionType", u."categoryId", u."refAmount"
+      HAVING u."refAmount" > SUM(u."shareRefAmount")
     )
     SELECT p.id AS "periodId", x."categoryId",
            SUM(CASE WHEN x."transactionType" = 'expense' THEN -x."refAmount" ELSE x."refAmount" END) AS "activity"

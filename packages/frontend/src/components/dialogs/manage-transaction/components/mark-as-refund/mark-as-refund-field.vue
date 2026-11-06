@@ -1,14 +1,17 @@
 <script lang="ts" setup>
-import type { FormattedCategory } from '@/common/types';
+import type { RefundRole } from '@/api/transactions';
 import FieldLabel from '@/components/fields/components/field-label.vue';
+import { useExchangeRates } from '@/composable/data-queries/currencies';
+import { cn } from '@/lib/utils';
 import { useCategoriesStore } from '@/stores';
-import { TRANSACTION_TYPES, TransactionSplitModel } from '@bt/shared/types';
+import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { SplitIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { RefundWithSplit, RefundedByAnotherTxs, RefundsAnoterTx } from '../../types';
+import { finalizeRefundShares, refillRefundSide } from '../../utils/refund-shares';
 import LinkedTransactionRow from '../linked-transaction-row.vue';
 import MarkAsRefundDialog from './mark-as-refund-dialog.vue';
 
@@ -20,18 +23,21 @@ const props = defineProps<{
   refunds: RefundsAnoterTx;
   refundedBy: RefundedByAnotherTxs;
   disabled?: boolean;
+  isLoadFailed?: boolean;
+  hasExternalLink?: boolean;
   isThereOriginalRefunds: boolean;
   isRecordCreation: boolean;
-  /** Current transaction's splits (for display purposes) */
-  currentTransactionSplits?: TransactionSplitModel[];
   /** Current form amount (live value from the form) */
   currentAmount?: number | null;
   /** Current form's currency code */
   currentCurrencyCode?: string;
-  /** Current form's category (shown in the picker's link card) */
-  currentCategory?: FormattedCategory | null;
   /** Current account ID (for recommendations) */
   currentAccountId?: string | null;
+  /** Live form time; pivot for which side of a refund link the picked rows fall on. */
+  currentTime: Date;
+  /** This refund's saved same-currency share per `refundShareKey` target. */
+  savedRefundShares?: Record<string, number>;
+  isOverAssigned?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -40,6 +46,7 @@ const emit = defineEmits<{
 }>();
 
 const { categoriesMap } = storeToRefs(useCategoriesStore());
+const { convert } = useExchangeRates();
 
 const dialogRef = ref<InstanceType<typeof MarkAsRefundDialog> | null>(null);
 defineExpose({ open: () => dialogRef.value?.open() });
@@ -47,29 +54,50 @@ defineExpose({ open: () => dialogRef.value?.open() });
 // `null` marks an existing link as deliberately removed; `undefined` means "never had one".
 const clearedValue = () => (props.isThereOriginalRefunds ? null : undefined);
 
+const withoutRefund = ({
+  list,
+  removed,
+  role,
+}: {
+  list: RefundWithSplit[];
+  removed: RefundWithSplit;
+  role: RefundRole;
+}) => {
+  const remaining = list.filter((item) => item.transaction.id !== removed.transaction.id);
+  if (!remaining.length) return clearedValue();
+  const refilled = refillRefundSide({
+    links: remaining,
+    role,
+    amount: props.currentAmount,
+    currencyCode: props.currentCurrencyCode,
+    savedShares: props.savedRefundShares,
+    convert,
+  });
+  return role === 'refund' ? finalizeRefundShares({ links: refilled, refundAmount: props.currentAmount }) : refilled;
+};
+
 const removeRefund = (removed: RefundWithSplit) => {
-  if (props.refunds) {
-    emit('update:refunds', clearedValue());
+  if (props.refunds?.length) {
+    emit('update:refunds', withoutRefund({ list: props.refunds, removed, role: 'refund' }));
     return;
   }
-  const remaining = (props.refundedBy ?? []).filter((item) => item.transaction.id !== removed.transaction.id);
-  emit('update:refundedBy', remaining.length > 0 ? remaining : clearedValue());
+  emit('update:refundedBy', withoutRefund({ list: props.refundedBy ?? [], removed, role: 'original' }));
 };
 
 // The picker only ever reports the side it was saved in, so the opposite side has to be
 // dropped here; otherwise reopening a linked row and switching mode submits both.
 const onRefundsUpdate = (value: RefundsAnoterTx) => {
-  emit('update:refunds', value);
+  emit('update:refunds', value?.length ? value : clearedValue());
   if (props.refundedBy) emit('update:refundedBy', clearedValue());
 };
 
 const onRefundedByUpdate = (value: RefundedByAnotherTxs) => {
-  emit('update:refundedBy', value);
+  emit('update:refundedBy', value?.length ? value : clearedValue());
   if (props.refunds) emit('update:refunds', clearedValue());
 };
 
 const refundTransactions = computed<RefundWithSplit[]>(() => {
-  if (props.refunds) return [props.refunds];
+  if (props.refunds?.length) return props.refunds;
   if (props.refundedBy) return props.refundedBy;
   return [];
 });
@@ -103,12 +131,13 @@ const getSplitInfo = (refund: RefundWithSplit) => {
     :refunded-by="refundedBy"
     :transaction-type="transactionType"
     :is-record-creation="isRecordCreation"
-    :current-transaction-splits="currentTransactionSplits"
     :current-amount="currentAmount"
     :current-currency-code="currentCurrencyCode"
-    :current-category="currentCategory"
     :current-account-id="currentAccountId"
+    :current-time="currentTime"
     :current-transaction-id="transactionId"
+    :has-external-link="hasExternalLink"
+    :saved-refund-shares="savedRefundShares"
     @update:refunds="onRefundsUpdate"
     @update:refunded-by="onRefundedByUpdate"
   >
@@ -136,8 +165,25 @@ const getSplitInfo = (refund: RefundWithSplit) => {
                 </span>
               </div>
             </template>
+            <p v-if="refund.amount === 0" class="text-muted-foreground mt-1 ml-4 text-sm">
+              {{ $t('dialogs.manageTransaction.markAsRefund.notCoveredWillUnlink') }}
+            </p>
           </div>
+          <p v-if="isOverAssigned" class="text-destructive-text text-sm">
+            {{ $t('dialogs.manageTransaction.markAsRefund.sharesOverRefund') }}
+          </p>
         </div>
+      </FieldLabel>
+    </template>
+    <template v-else-if="isLoadFailed || hasExternalLink" #trigger>
+      <FieldLabel :label="$t('dialogs.manageTransaction.markAsRefund.linkedRefunds')" only-template>
+        <p :class="cn('text-sm', isLoadFailed ? 'text-warning-text' : 'text-muted-foreground')">
+          {{
+            isLoadFailed
+              ? $t('dialogs.manageTransaction.markAsRefund.loadFailed')
+              : $t('dialogs.manageTransaction.markAsRefund.externalLink')
+          }}
+        </p>
       </FieldLabel>
     </template>
   </MarkAsRefundDialog>

@@ -16,6 +16,7 @@ import {
 import { Money } from '@common/types/money';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
+import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
 import * as helpers from '@tests/helpers';
 import { expectCsvImportCompleted, waitForCsvImportCompletion } from '@tests/helpers/import-export';
 import { VALID_GEMINI_API_KEY, createGeminiMock } from '@tests/mocks/gemini/mock-api';
@@ -372,6 +373,235 @@ describe('Retrieve transactions with filters', () => {
     expect(ids).not.toContain(orphanRefund!.id);
   }, 60_000);
 
+  it('keepRefundsForTxId keeps a refund shared with another transaction', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const createExpense = async () => {
+      const [tx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 500,
+          transactionType: TRANSACTION_TYPES.expense,
+        }),
+        raw: true,
+      });
+      return tx!;
+    };
+    const purchase = await createExpense();
+    const otherPurchase = await createExpense();
+    const unrelatedPurchase = await createExpense();
+    const [sharedRefund] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 500,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+    await helpers.createSingleRefund({ originalTxId: purchase.id, refundTxId: sharedRefund!.id, amount: 200 }, true);
+    await helpers.createSingleRefund(
+      { originalTxId: otherPurchase.id, refundTxId: sharedRefund!.id, amount: 300 },
+      true,
+    );
+
+    const kept = await helpers.getTransactions({ excludeRefundTxs: true, keepRefundsForTxId: purchase.id, raw: true });
+    expect(kept.map((t) => t.id)).toContain(sharedRefund!.id);
+
+    const unrelated = await helpers.getTransactions({
+      excludeRefundTxs: true,
+      keepRefundsForTxId: unrelatedPurchase.id,
+      raw: true,
+    });
+    expect(unrelated.map((t) => t.id)).not.toContain(sharedRefund!.id);
+  }, 60_000);
+
+  it('excludeRefundedTxs drops originals that already have refunds', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const [refundedExpense] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 500,
+        transactionType: TRANSACTION_TYPES.expense,
+      }),
+      raw: true,
+    });
+    await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 500,
+          transactionType: TRANSACTION_TYPES.income,
+        }),
+        refundForTxId: refundedExpense!.id,
+      },
+      raw: true,
+    });
+    const [unlinkedExpense] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 200,
+        transactionType: TRANSACTION_TYPES.expense,
+      }),
+      raw: true,
+    });
+
+    const filtered = await helpers.getTransactions({
+      excludeRefundedTxs: true,
+      transactionType: TRANSACTION_TYPES.expense,
+      raw: true,
+    });
+    const filteredIds = filtered.map((t) => t.id);
+    expect(filteredIds).not.toContain(refundedExpense!.id);
+    expect(filteredIds).toContain(unlinkedExpense!.id);
+
+    const unfiltered = await helpers.getTransactions({ transactionType: TRANSACTION_TYPES.expense, raw: true });
+    const unfilteredIds = unfiltered.map((t) => t.id);
+    expect(unfilteredIds).toContain(refundedExpense!.id);
+    expect(unfilteredIds).toContain(unlinkedExpense!.id);
+  }, 60_000);
+
+  describe('refund pivot filter', () => {
+    const pivot = { refundPivotFrom: '2024-06-15T00:00:00.000Z', refundPivotTo: '2024-06-15T23:59:59.999Z' };
+    const before = '2024-06-10T10:00:00.000Z';
+    const sameDay = '2024-06-15T08:00:00.000Z';
+    const after = '2024-06-20T10:00:00.000Z';
+
+    const createTx = async ({
+      accountId,
+      time,
+      transactionType,
+      refundForTxId,
+    }: {
+      accountId: RecordId;
+      time: string;
+      transactionType: TRANSACTION_TYPES;
+      refundForTxId?: RecordId;
+    }) => {
+      const [tx] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({ accountId, amount: 100, time, transactionType }),
+          refundForTxId,
+        },
+        raw: true,
+      });
+      return tx!;
+    };
+
+    it('hides rows that could never take the role their date gives them', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const { id: accountId } = account;
+      const { income, expense } = TRANSACTION_TYPES;
+
+      const plainBefore = await createTx({ accountId, time: before, transactionType: income });
+      const plainAfter = await createTx({ accountId, time: after, transactionType: income });
+
+      // Before the pivot a row is an original, so an existing refund is out.
+      const otherExpenseA = await createTx({ accountId, time: before, transactionType: expense });
+      const refundBefore = await createTx({
+        accountId,
+        time: before,
+        transactionType: income,
+        refundForTxId: otherExpenseA.id,
+      });
+
+      // After the pivot a row is a refund, so a row that is already refunded is out...
+      const refundedAfter = await createTx({ accountId, time: after, transactionType: income });
+      await createTx({ accountId, time: after, transactionType: expense, refundForTxId: refundedAfter.id });
+      // ...while one that already refunds another purchase can still refund this one too (#819).
+      const otherExpenseB = await createTx({ accountId, time: before, transactionType: expense });
+      const multiRefundAfter = await createTx({
+        accountId,
+        time: after,
+        transactionType: income,
+        refundForTxId: otherExpenseB.id,
+      });
+
+      // Same day: the expense is the original, the income is the refund.
+      const otherIncome = await createTx({ accountId, time: before, transactionType: income });
+      const sameDayExpenseRefund = await createTx({
+        accountId,
+        time: sameDay,
+        transactionType: expense,
+        refundForTxId: otherIncome.id,
+      });
+      const sameDayIncomeRefunded = await createTx({ accountId, time: sameDay, transactionType: income });
+      await createTx({ accountId, time: sameDay, transactionType: expense, refundForTxId: sameDayIncomeRefunded.id });
+      const sameDayPlainExpense = await createTx({ accountId, time: sameDay, transactionType: expense });
+      const sameDayPlainIncome = await createTx({ accountId, time: sameDay, transactionType: income });
+
+      // An out-of-system original still marks the row as a refund.
+      const externalRefundBefore = await createTx({ accountId, time: before, transactionType: income });
+      await helpers.createSingleRefund({ originalTxId: null, refundTxId: externalRefundBefore.id }, true);
+
+      const ids = (await helpers.getTransactions({ ...pivot, limit: 100, raw: true })).map((t) => t.id);
+
+      expect(ids).toEqual(
+        expect.arrayContaining([
+          plainBefore.id,
+          plainAfter.id,
+          multiRefundAfter.id,
+          sameDayPlainExpense.id,
+          sameDayPlainIncome.id,
+        ]),
+      );
+      expect(ids).not.toContain(refundBefore.id);
+      expect(ids).not.toContain(refundedAfter.id);
+      expect(ids).not.toContain(sameDayExpenseRefund.id);
+      expect(ids).not.toContain(sameDayIncomeRefunded.id);
+      expect(ids).not.toContain(externalRefundBefore.id);
+    }, 60_000);
+
+    it('keeps rows linked to the pivot transaction itself, in either direction', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const { id: accountId } = account;
+      const { income, expense } = TRANSACTION_TYPES;
+
+      const pivotExpense = await createTx({ accountId, time: sameDay, transactionType: expense });
+      // Dated before the pivot yet already refunding it: a saved link the edit dialog must still list.
+      const ownRefundBefore = await createTx({
+        accountId,
+        time: before,
+        transactionType: income,
+        refundForTxId: pivotExpense.id,
+      });
+      // Dated after the pivot and already refunded by it.
+      const pivotRefund = await createTx({ accountId, time: before, transactionType: expense });
+      const ownOriginalAfter = await createTx({ accountId, time: after, transactionType: income });
+      await helpers.createSingleRefund({ originalTxId: ownOriginalAfter.id, refundTxId: pivotRefund.id }, true);
+
+      // Same shapes linked to a different transaction stay hidden.
+      const otherExpense = await createTx({ accountId, time: before, transactionType: expense });
+      const otherRefundBefore = await createTx({
+        accountId,
+        time: before,
+        transactionType: income,
+        refundForTxId: otherExpense.id,
+      });
+
+      const withPivotId = (
+        await helpers.getTransactions({ ...pivot, keepRefundsForTxId: pivotExpense.id, raw: true })
+      ).map((t) => t.id);
+      expect(withPivotId).toContain(ownRefundBefore.id);
+      expect(withPivotId).not.toContain(otherRefundBefore.id);
+
+      const withRefundPivotId = (
+        await helpers.getTransactions({ ...pivot, keepRefundsForTxId: pivotRefund.id, raw: true })
+      ).map((t) => t.id);
+      expect(withRefundPivotId).toContain(ownOriginalAfter.id);
+
+      const withoutPivotId = (await helpers.getTransactions({ ...pivot, raw: true })).map((t) => t.id);
+      expect(withoutPivotId).not.toContain(ownRefundBefore.id);
+      expect(withoutPivotId).not.toContain(ownOriginalAfter.id);
+    }, 60_000);
+
+    it('rejects one pivot bound without the other', async () => {
+      const onlyFrom = await helpers.getTransactions({ refundPivotFrom: pivot.refundPivotFrom });
+      expect(onlyFrom.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const onlyTo = await helpers.getTransactions({ refundPivotTo: pivot.refundPivotTo });
+      expect(onlyTo.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+  });
+
   it('filters and sorts the fixture by amount, account and time', async () => {
     const fixture = await createMockTransactions();
     const { income, expense } = fixture;
@@ -545,11 +775,15 @@ describe('Retrieve transactions with filters', () => {
 
       const blankOrA = await helpers.getTransactions({
         tagIds: [BLANK_FILTER_VALUE, tagA.id],
-        includeTags: true,
         raw: true,
       });
       expect(sortedIds(blankOrA)).toEqual(sortedIds([taggedA, untagged]));
-      expect(blankOrA.find((tx) => tx.id === taggedA.id)!.tags!.map((t) => t.id)).toEqual([tagA.id]);
+      expect(
+        blankOrA
+          .find((tx) => tx.id === taggedA.id)!
+          .tags!.map((t) => t.id)
+          .toSorted(),
+      ).toEqual([tagA.id, tagB.id].toSorted());
       expect(blankOrA.find((tx) => tx.id === untagged.id)!.tags).toEqual([]);
     });
 
@@ -978,4 +1212,107 @@ describe('GET /transactions — categorizedAt filter', () => {
     },
     TEST_TIMEOUT_MS,
   );
+});
+
+describe('GET /transactions — response shape', () => {
+  it.each([
+    { variant: 'no filters', isPlanned: false, query: (_: { accountId: string }) => ({}) },
+    {
+      variant: 'account view',
+      isPlanned: false,
+      query: ({ accountId }: { accountId: string }) => ({ accountIds: [accountId] }),
+    },
+    { variant: 'planned only', isPlanned: true, query: (_: { accountId: string }) => ({ isPlanned: true }) },
+  ])('returns tags, splits with their category, groups and hasAttachments ($variant)', async ({ isPlanned, query }) => {
+    const account = await helpers.createAccount({ raw: true });
+    const [primary, splitCategory] = await helpers.getCategoriesList();
+    const tag = await helpers.createTag({ payload: { name: 'A', color: '#ff0000' }, raw: true });
+    const [rich] = await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 100,
+          categoryId: primary!.id,
+          splits: [{ categoryId: splitCategory!.id, amount: 40 }],
+          isPlanned,
+        }),
+        tagIds: [tag.id],
+      },
+      raw: true,
+    });
+    const [sibling] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id, isPlanned }),
+      raw: true,
+    });
+    const [plain] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id, isPlanned }),
+      raw: true,
+    });
+    const group = await helpers.createTransactionGroup({
+      payload: helpers.buildTransactionGroupPayload({ transactionIds: [rich.id, sibling.id] }),
+      raw: true,
+    });
+
+    // The helper types rows as the model, which lacks serializer-derived fields.
+    const rows = (await helpers.getTransactions({
+      ...query({ accountId: account.id }),
+      raw: true,
+    })) as unknown as TransactionApiResponse[];
+    const richRow = rows.find((tx) => tx.id === rich.id)!;
+
+    expect(richRow.tags!.map((t) => t.id)).toEqual([tag.id]);
+    expect(richRow.splits).toHaveLength(1);
+    expect(richRow.splits![0]!.category!.id).toBe(splitCategory!.id);
+    expect(richRow.transactionGroups!.map((g) => ({ id: g.id, transactionCount: g.transactionCount }))).toEqual([
+      { id: group.id, transactionCount: 2 },
+    ]);
+    expect(richRow.hasAttachments).toBe(false);
+    expect(rows.find((tx) => tx.id === plain.id)).toMatchObject({
+      tags: [],
+      splits: [],
+      transactionGroups: [],
+      hasAttachments: false,
+    });
+  });
+
+  it('keeps the full tag set on tag-filtered rows', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const tagA = await helpers.createTag({ payload: { name: 'A', color: '#ff0000' }, raw: true });
+    const tagB = await helpers.createTag({ payload: { name: 'B', color: '#00ff00' }, raw: true });
+    const [tx] = await helpers.createTransaction({
+      payload: { ...helpers.buildTransactionPayload({ accountId: account.id }), tagIds: [tagA.id, tagB.id] },
+      raw: true,
+    });
+
+    const [row] = await helpers.getTransactions({ tagIds: [tagA.id], raw: true });
+
+    expect(row!.id).toBe(tx.id);
+    expect(row!.tags!.map((t) => t.id).toSorted()).toEqual([tagA.id, tagB.id].toSorted());
+  });
+
+  it('returns exactly `limit` distinct rows when rows match several filtered tags', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const tagA = await helpers.createTag({ payload: { name: 'A', color: '#ff0000' }, raw: true });
+    const tagB = await helpers.createTag({ payload: { name: 'B', color: '#00ff00' }, raw: true });
+    const created: { id: string }[] = [];
+    for (let i = 0; i < 3; i++) {
+      const [tx] = await helpers.createTransaction({
+        payload: { ...helpers.buildTransactionPayload({ accountId: account.id }), tagIds: [tagA.id, tagB.id] },
+        raw: true,
+      });
+      created.push(tx);
+    }
+
+    const page = await helpers.getTransactions({ tagIds: [tagA.id, tagB.id], limit: 2, raw: true });
+    expect(page).toHaveLength(2);
+    expect(new Set(page.map((tx) => tx.id)).size).toBe(2);
+
+    const all = await helpers.getTransactions({ tagIds: [tagA.id, tagB.id], raw: true });
+    expect(sortedIds(all)).toEqual(sortedIds(created));
+  });
+
+  it('caps limit at 1000', async () => {
+    expect((await helpers.getTransactions({ limit: 1000 })).statusCode).toBe(200);
+    expect((await helpers.getTransactions({ limit: 1001 })).statusCode).toBe(ERROR_CODES.ValidationError);
+  });
 });

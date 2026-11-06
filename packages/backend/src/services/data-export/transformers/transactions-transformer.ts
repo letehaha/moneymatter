@@ -12,6 +12,7 @@ import TransactionTags from '@models/transaction-tags.model';
 import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { getCategoryPathNames } from '@services/categories/category-hierarchy';
+import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { Op } from 'sequelize';
 
 import type { ExportDateRange, TransactionRow } from '../types';
@@ -80,14 +81,17 @@ export async function transformTransactions({
   const categoryIds = [...new Set(transactions.map((t) => t.categoryId).filter((id): id is RecordId => Boolean(id)))];
   const payeeIds = [...new Set(transactions.map((t) => t.payeeId).filter((id): id is RecordId => Boolean(id)))];
 
+  // A member's transactions can sit on an owner's shared account, so names resolve against
+  // every account the user can read; the filter keeps a stray foreign id from leaking a name.
+  const accessibleAccountIds = new Set(await getAccessibleAccountIdsForUser({ userId }));
+  async function findAccountNames({ ids }: { ids: RecordId[] }): Promise<Accounts[]> {
+    const scoped = ids.filter((id) => accessibleAccountIds.has(String(id)));
+    if (!scoped.length) return [];
+    return Accounts.findAll({ where: { id: { [Op.in]: scoped } }, attributes: ['id', 'name'] });
+  }
+
   const [accounts, categories, payees, splits, tagLinks, allTags, refundLinks, subLinks] = await Promise.all([
-    // Scope the account lookup to the current user so a stray cross-user
-    // accountId (legacy data, future cross-account share, malformed row)
-    // cannot leak another user's account name into the export's Account
-    // column. Every other transformer in this module follows the same shape.
-    accountIds.length
-      ? Accounts.findAll({ where: { userId, id: { [Op.in]: accountIds } }, attributes: ['id', 'name'] })
-      : Promise.resolve([] as Accounts[]),
+    findAccountNames({ ids: accountIds }),
     Categories.findAll({ where: { userId }, attributes: ['id', 'name', 'parentId'] }),
     payeeIds.length
       ? Payees.findAll({ where: { userId, id: { [Op.in]: payeeIds } }, attributes: ['id', 'name'] })
@@ -147,15 +151,15 @@ export async function transformTransactions({
     tagNamesByTxId.set(link.transactionId, list);
   }
 
-  // refundLinks: row { originalTxId, refundTxId }. The refund row needs to point
-  // back at its original; the original row should optionally show "refunded by".
-  // For the export we only fill RefundOf on the refund side – surfacing both
-  // directions doubles the cell noise without adding information.
-  const refundOriginalByRefundId = new Map<string, RecordId>();
+  // RefundOf is filled on the refund side only – surfacing both directions
+  // doubles the cell noise without adding information. A refund can link to
+  // several originals, each covering `amount` of the refund (NULL = all of it).
+  const refundLinksByRefundId = new Map<string, RefundTransactions[]>();
   for (const link of refundLinks) {
-    if (link.refundTxId && link.originalTxId) {
-      refundOriginalByRefundId.set(String(link.refundTxId), link.originalTxId);
-    }
+    if (!link.refundTxId || !link.originalTxId) continue;
+    const list = refundLinksByRefundId.get(String(link.refundTxId)) ?? [];
+    list.push(link);
+    refundLinksByRefundId.set(String(link.refundTxId), list);
   }
 
   // Transfer pairs share a transferId. For a given tx, find the other tx with
@@ -180,8 +184,9 @@ export async function transformTransactions({
       .map(([transferId]) => transferId);
     const missingOriginalIds: RecordId[] = [];
     for (const tx of transactions) {
-      const originalId = refundOriginalByRefundId.get(String(tx.id));
-      if (originalId && !txById.has(originalId)) missingOriginalIds.push(originalId);
+      for (const link of refundLinksByRefundId.get(String(tx.id)) ?? []) {
+        if (!txById.has(link.originalTxId!)) missingOriginalIds.push(link.originalTxId!);
+      }
     }
 
     if (lonelyTransferIds.length || missingOriginalIds.length) {
@@ -213,12 +218,8 @@ export async function transformTransactions({
             .filter((id): id is RecordId => Boolean(id) && !accountNameById.has(String(id))),
         ),
       ];
-      if (extraAccountIds.length) {
-        const extraAccounts = await Accounts.findAll({
-          where: { userId, id: { [Op.in]: extraAccountIds } },
-          attributes: ['id', 'name'],
-        });
-        for (const account of extraAccounts) accountNameById.set(String(account.id), account.name);
+      for (const account of await findAccountNames({ ids: extraAccountIds })) {
+        accountNameById.set(String(account.id), account.name);
       }
     }
   }
@@ -301,18 +302,20 @@ export async function transformTransactions({
           .join(' | ')
       : '';
 
-    let refundOf = '';
-    const originalId = refundOriginalByRefundId.get(String(tx.id));
-    if (originalId) {
-      const original = txById.get(originalId);
-      if (original) {
+    const refundOf = (refundLinksByRefundId.get(String(tx.id)) ?? [])
+      .flatMap((link) => {
+        const original = txById.get(link.originalTxId!);
+        if (!original) return [];
         const originalAccountName = resolveAccountName({
           id: original.accountId,
           context: `transaction ${tx.id} refund-of`,
         });
-        refundOf = describeTransaction({ tx: original, accountName: originalAccountName });
-      }
-    }
+        const described = describeTransaction({ tx: original, accountName: originalAccountName });
+        return link.amount
+          ? [`${described} (${fmtAmount({ value: link.amount.toNumber() })} ${tx.currencyCode})`]
+          : [described];
+      })
+      .join(' | ');
 
     let linkedTransfer = '';
     if (tx.transferId) {

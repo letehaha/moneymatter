@@ -268,7 +268,7 @@ describe('Category default tags', () => {
     };
 
     const tagsOf = async ({ transactionId }: { transactionId: string }) => {
-      const list = await helpers.getTransactions({ includeTags: true, raw: true });
+      const list = await helpers.getTransactions({ raw: true });
       return list.find((item) => item.id === transactionId)?.tags?.map((tag) => tag.id) ?? [];
     };
 

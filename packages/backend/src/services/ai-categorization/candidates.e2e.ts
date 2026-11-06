@@ -163,6 +163,40 @@ describe('GET /user/ai/categorization/candidates', () => {
     expect(stamped?.categorizationMeta?.source).toBe(CATEGORIZATION_SOURCE.payeeRule);
   });
 
+  it('returns tags, splits with their category and groups on each candidate', async () => {
+    const user = await helpers.getUserInfo({ raw: true });
+    const defaultCategoryId = user.defaultCategoryId as RecordId;
+    const splitCategory = await helpers.addCustomCategory({ name: 'Groceries', color: '#FF0000', raw: true });
+    const account = await helpers.createAccount({ raw: true });
+    const tag = await helpers.createTag({ payload: helpers.buildTagPayload({ name: 'Trip' }), raw: true });
+    const [tx] = await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({
+          accountId: account.id,
+          categoryId: defaultCategoryId,
+          amount: 100,
+          splits: [{ categoryId: splitCategory.id, amount: 40 }],
+        }),
+        tagIds: [tag.id],
+      },
+      raw: true,
+    });
+    const [siblingId] = await seedTransactions({ count: 1, categoryId: defaultCategoryId, accountId: account.id });
+    const group = await helpers.createTransactionGroup({
+      payload: helpers.buildTransactionGroupPayload({ transactionIds: [tx.id, siblingId!] }),
+      raw: true,
+    });
+
+    const row = (await getCandidates()).find((candidate) => candidate.id === tx.id)!;
+
+    expect(row.tags!.map((t) => t.id)).toEqual([tag.id]);
+    expect(row.splits).toHaveLength(1);
+    expect(row.splits![0]!.category!.id).toBe(splitCategory.id);
+    expect(row.transactionGroups!.map((g) => ({ id: g.id, transactionCount: g.transactionCount }))).toEqual([
+      { id: group.id, transactionCount: 2 },
+    ]);
+  });
+
   it('slices the same ordered list across limit and offset, reporting the total only on the first page', async () => {
     const user = await helpers.getUserInfo({ raw: true });
     const account = await helpers.createAccount({ raw: true });

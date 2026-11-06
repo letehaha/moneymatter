@@ -112,7 +112,7 @@ describe('Bulk update transactions controller', () => {
 
       expect(result.updatedCount).toBe(2);
 
-      const transactions = (await helpers.getTransactions({ includeTags: true, raw: true }))!;
+      const transactions = (await helpers.getTransactions({ raw: true }))!;
       const updatedTx1 = transactions.find((t) => t.id === tx1.id);
       const updatedTx2 = transactions.find((t) => t.id === tx2.id);
 
@@ -204,7 +204,7 @@ describe('Bulk update transactions controller', () => {
       });
 
       // Get updated transaction to capture new updatedAt
-      let transactions = (await helpers.getTransactions({ includeTags: true, raw: true }))!;
+      let transactions = (await helpers.getTransactions({ raw: true }))!;
       const txWithTag = transactions.find((t) => t.id === tx.id);
       const originalUpdatedAt = txWithTag!.updatedAt;
 
@@ -220,7 +220,7 @@ describe('Bulk update transactions controller', () => {
         raw: true,
       });
 
-      transactions = (await helpers.getTransactions({ includeTags: true, raw: true }))!;
+      transactions = (await helpers.getTransactions({ raw: true }))!;
       const updatedTx = transactions.find((t) => t.id === tx.id);
 
       // Verify tags were replaced
@@ -253,7 +253,7 @@ describe('Bulk update transactions controller', () => {
       });
 
       // Get updated transaction to capture new updatedAt
-      let transactions = (await helpers.getTransactions({ includeTags: true, raw: true }))!;
+      let transactions = (await helpers.getTransactions({ raw: true }))!;
       const txWithTags = transactions.find((t) => t.id === tx.id);
       const originalUpdatedAt = txWithTags!.updatedAt;
 
@@ -269,7 +269,7 @@ describe('Bulk update transactions controller', () => {
         raw: true,
       });
 
-      transactions = (await helpers.getTransactions({ includeTags: true, raw: true }))!;
+      transactions = (await helpers.getTransactions({ raw: true }))!;
       const updatedTx = transactions.find((t) => t.id === tx.id);
 
       // Verify only tag2 remains

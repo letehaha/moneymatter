@@ -368,6 +368,12 @@ describe('[Stats] Combined balance history', () => {
       const fromDate = format(subDays(new Date(), 8), 'yyyy-MM-dd');
       const toDate = format(new Date(), 'yyyy-MM-dd');
 
+      // No price row yet: the holding is valued at cost basis.
+      const costBasisData = await helpers.getCombinedBalanceHistory({ from: fromDate, to: toDate, raw: true });
+      const costBasisPortfolio = (costBasisData as CombinedBalanceHistoryItem[]).find(
+        (e) => e.date === dayKey,
+      )!.portfoliosBalance;
+
       // Phase 1: only the 22:00 row exists — baseline expected value.
       await SecurityPricing.create({
         securityId: cryptoSecurity.id,
@@ -384,6 +390,7 @@ describe('[Stats] Combined balance history', () => {
       const baselineEntry = (baselineData as CombinedBalanceHistoryItem[]).find((e) => e.date === dayKey);
       expect(baselineEntry).toBeDefined();
       const baselinePortfolio = baselineEntry!.portfoliosBalance;
+      expect(baselinePortfolio).not.toBe(costBasisPortfolio);
 
       // Phase 2: add an EARLIER intraday row on the same UTC day. With correct
       // bucketing (the new `formatDate(price.date)` key + last-write-wins on
@@ -406,6 +413,11 @@ describe('[Stats] Combined balance history', () => {
       const bothEntry = (bothData as CombinedBalanceHistoryItem[]).find((e) => e.date === dayKey);
       expect(bothEntry).toBeDefined();
       expect(bothEntry!.portfoliosBalance).toBe(baselinePortfolio);
+
+      // The following day has no price row, so it carries forward that day's latest close.
+      const nextDayKey = format(new Date(pickedDayUtcMidnight + 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
+      const nextDayEntry = (bothData as CombinedBalanceHistoryItem[]).find((e) => e.date === nextDayKey);
+      expect(nextDayEntry?.portfoliosBalance).toBe(baselinePortfolio);
     });
   });
 

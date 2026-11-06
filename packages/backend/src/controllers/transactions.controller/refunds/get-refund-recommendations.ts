@@ -1,5 +1,5 @@
 import { TRANSACTION_TYPES } from '@bt/shared/types';
-import { recordId } from '@common/lib/zod/custom-types';
+import { booleanQuery, dateBound, recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
 import { createController } from '@controllers/helpers/controller-factory';
 import Accounts from '@models/accounts.model';
@@ -8,6 +8,8 @@ import { serializeTransactions } from '@root/serializers';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
+
+import { isRefundPivotPaired, refundPivotPairIssue } from '../transaction-filters';
 
 // ±50 in base currency for refund recommendations
 const RECOMMENDATION_REF_AMOUNT_RANGE = 5000;
@@ -19,10 +21,18 @@ const schema = z.object({
     .object({
       // Option 1: Provide transaction ID - backend derives everything
       transactionId: recordId().optional(),
-      // Option 2: Provide form data for new transactions
+      // Option 2: form data of a transaction being created. `transactionType` is the type of
+      // that transaction itself; candidates are always of the opposite type.
       transactionType: z.enum(Object.values(TRANSACTION_TYPES) as [string, ...string[]]).optional(),
       originAmount: z.preprocess((val) => (val ? Number(val) : undefined), z.number().positive().optional()),
       accountId: recordId().optional(),
+      includeRefundedAmount: booleanQuery().optional(),
+      // Role of the requested transaction relative to the candidates: 'refund' lists rows it
+      // could refund, 'original' lists rows that could refund it. Without it the pivot bounds
+      // decide per row, and without those too 'refund' is assumed.
+      refundRole: z.enum(['refund', 'original']).optional(),
+      refundPivotFrom: dateBound({ precision: 'datetime' }).optional(),
+      refundPivotTo: dateBound({ precision: 'datetime' }).optional(),
     })
     .refine(
       (data) => {
@@ -35,8 +45,30 @@ const schema = z.object({
       {
         message: 'Either transactionId OR (transactionType, originAmount, accountId) must be provided',
       },
-    ),
+    )
+    .refine(isRefundPivotPaired, refundPivotPairIssue),
 });
+
+const buildLinkabilityFilters = ({
+  refundRole,
+  refundPivotFrom,
+  refundPivotTo,
+  transactionId,
+}: {
+  refundRole?: 'refund' | 'original';
+  refundPivotFrom?: string;
+  refundPivotTo?: string;
+  transactionId?: string;
+}) => {
+  // Shares are set from the refund side, so a refund already linked elsewhere can't be added here.
+  if (refundRole === 'original') {
+    return { excludeRefundTxs: true, excludeRefundedTxs: true, keepRefundsForTxId: transactionId };
+  }
+  if (refundRole === 'refund' || !refundPivotFrom) {
+    return { excludeRefundTxs: true, keepRefundsForTxId: transactionId };
+  }
+  return { refundPivotFrom, refundPivotTo, keepRefundsForTxId: transactionId };
+};
 
 export default createController(schema, async ({ user, query }) => {
   const { id: userId } = user;
@@ -104,18 +136,14 @@ export default createController(schema, async ({ user, query }) => {
     limit: RECOMMENDATION_LIMIT,
     transactionType: searchTransactionType,
     excludeTransfer: true,
-    // Rows already acting as a refund can't be linked again, so they are dropped —
-    // except refunds of the requested tx itself, which the edit dialog still lists.
-    // Originals that merely carry partial refunds remain valid candidates.
-    excludeRefundTxs: true,
-    keepRefundsForTxId: query.transactionId,
     // Planned rows can't be refund-linked, so they are not valid candidates either.
     isPlanned: false,
-    includeSplits: true,
+    includeRefundedAmount: query.includeRefundedAmount,
     startDate: startDate.toISOString(),
     endDate: endDate.toISOString(),
     refAmountGte,
     refAmountLte,
+    ...buildLinkabilityFilters(query),
   });
 
   return { data: serializeTransactions(transactions) };

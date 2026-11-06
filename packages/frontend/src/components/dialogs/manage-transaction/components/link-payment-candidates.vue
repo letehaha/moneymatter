@@ -93,7 +93,6 @@ const {
       isPlanned: false,
       from: startOfDay(subDays(props.time, PAYMENT_LINK_WINDOW_DAYS)).toISOString(),
       to: endOfDay(addDays(props.time, PAYMENT_LINK_WINDOW_DAYS)).toISOString(),
-      includeSplits: true,
       limit: RECOMMENDED_LIMIT,
     }),
   enabled: computed(() => !isAnyFiltersApplied.value),

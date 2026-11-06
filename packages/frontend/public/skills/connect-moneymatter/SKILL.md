@@ -132,7 +132,8 @@ page.
 | `delete_split`                          | Delete a single split by split ID (`finance:delete`)                                                             |
 | `link_transfer`                         | Link two existing transactions as a transfer pair (`finance:write`)                                              |
 | `unlink_transfer`                       | Unlink a transfer pair by transferId (`finance:write`)                                                           |
-| `link_refund`                           | Mark a transaction as a refund of another (`finance:write`)                                                      |
+| `get_refund_links`                      | List refund links on a transaction, either side, with each link's share of the refund                            |
+| `link_refund`                           | Mark a transaction as a refund of another; optional amount to split one refund (`finance:write`)                 |
 | `unlink_refund`                         | Remove the refund link between two transactions (`finance:write`)                                                |
 | `assign_tags_to_transaction`            | Assign tags to a transaction (`finance:write`)                                                                   |
 | `remove_tags_from_transaction`          | Remove tags from one or more transactions (`finance:write`)                                                      |

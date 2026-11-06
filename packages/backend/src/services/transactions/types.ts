@@ -23,6 +23,8 @@ export type CreateTransactionParams = Omit<
   destinationTransactionId?: string;
   refundsTxId?: string;
   refundsSplitId?: string;
+  /** Share of the new refund tx linked to `refundsTxId`; omitted means the whole refund. */
+  refundsAmount?: Money;
   splits?: SplitInput[];
   tagIds?: string[];
   /**
@@ -72,9 +74,9 @@ interface UpdateParams {
   accountId?: string;
   categoryId?: string;
   transferNature?: TRANSACTION_TRANSFER_NATURE;
-  refundsTxId?: string | null;
-  refundsSplitId?: string | null;
-  refundedByTxIds?: string[] | null;
+  /** `amount` undefined keeps the share of an existing link, null links the whole refund. */
+  refundedByTxIds?: { txId: string; amount?: Money | null }[] | null;
+  refundsTargets?: { txId: string; splitId?: string | null; amount?: Money | null }[] | null;
   splits?: SplitInput[] | null; // null to clear all splits
   tagIds?: string[] | null; // null to clear all tags
   payeeId?: string | null;

@@ -100,7 +100,6 @@ describe('Payee default tags', () => {
       });
 
       const list = await helpers.getTransactions({
-        includeTags: true,
         raw: true,
       });
       const tagsOf = (id: string) => list.find((item) => item.id === id)?.tags?.map((t) => t.id) ?? [];
@@ -170,7 +169,6 @@ describe('Payee default tags', () => {
       expect(aliasTx.payeeId).toBe(payee.id);
 
       const list = await helpers.getTransactions({
-        includeTags: true,
         raw: true,
       });
       const tagsOf = (id: string) => list.find((item) => item.id === id)?.tags?.map((t) => t.id) ?? [];
@@ -228,7 +226,6 @@ describe('Payee default tags', () => {
       expect(result.updatedTransactionsCount).toBe(2);
 
       const list = await helpers.getTransactions({
-        includeTags: true,
         raw: true,
       });
       const tagsOf = (id: string) => list.find((item) => item.id === id)?.tags?.map((t) => t.id) ?? [];

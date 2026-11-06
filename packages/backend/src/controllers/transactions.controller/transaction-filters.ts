@@ -6,7 +6,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
-import { booleanQuery, dateRange, recordId, withDateOrder } from '@common/lib/zod/custom-types';
+import { booleanQuery, dateBound, dateRange, recordId, withDateOrder } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
 import { z } from 'zod';
 
@@ -43,6 +43,13 @@ export const transactionFilterFields = {
   excludeRefundTxs: booleanQuery().optional(),
   // With excludeRefundTxs: keep refunds linked to this transaction visible.
   keepRefundsForTxId: recordId().optional(),
+  // Excludes originals that already carry a refund link.
+  excludeRefundedTxs: booleanQuery().optional(),
+  // Local-day bounds of the transaction being linked, always as a pair: rows before them
+  // (and same-day expenses) must still be linkable as originals, later rows as refunds.
+  // keepRefundsForTxId names that transaction so its own links don't exclude their rows.
+  refundPivotFrom: dateBound({ precision: 'datetime' }).optional(),
+  refundPivotTo: dateBound({ precision: 'datetime' }).optional(),
   excludeBalanceAdjustments: booleanQuery().optional(),
   // Absent = both, true = only with attachments, false = only without.
   hasAttachment: booleanQuery().optional(),
@@ -76,8 +83,19 @@ export const amountRangeIssue = {
   path: ['amountGte'],
 };
 
+export const isRefundPivotPaired = (data: { refundPivotFrom?: string; refundPivotTo?: string }) =>
+  (data.refundPivotFrom === undefined) === (data.refundPivotTo === undefined);
+
+export const refundPivotPairIssue = {
+  message: 'refundPivotFrom and refundPivotTo must be provided together',
+  path: ['refundPivotFrom'],
+};
+
 export const transactionFiltersSchema = withDateOrder(
-  z.object(transactionFilterFields).refine(isAmountRangeOrdered, amountRangeIssue),
+  z
+    .object(transactionFilterFields)
+    .refine(isAmountRangeOrdered, amountRangeIssue)
+    .refine(isRefundPivotPaired, refundPivotPairIssue),
 );
 
 /**
@@ -105,7 +123,13 @@ export const bulkTargetFields = {
   selection: z
     .object({
       // Strict: an unknown key silently dropped here would widen a destructive action.
-      filters: withDateOrder(z.object(transactionFilterFields).strict().refine(isAmountRangeOrdered, amountRangeIssue)),
+      filters: withDateOrder(
+        z
+          .object(transactionFilterFields)
+          .strict()
+          .refine(isAmountRangeOrdered, amountRangeIssue)
+          .refine(isRefundPivotPaired, refundPivotPairIssue),
+      ),
       excludedIds: z.array(recordId()).optional().default([]),
     })
     .optional(),

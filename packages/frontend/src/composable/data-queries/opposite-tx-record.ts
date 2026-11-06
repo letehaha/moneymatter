@@ -38,5 +38,3 @@ export function useOppositeTxRecord(transaction: MaybeRefOrGetter<OppositeTxSour
     staleTime: Infinity,
   });
 }
-
-export const getInvalidationQueryKey = (transactionId: string) => [BASE_QUERY_KEY, transactionId];

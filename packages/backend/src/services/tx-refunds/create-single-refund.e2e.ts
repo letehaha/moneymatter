@@ -58,7 +58,6 @@ describe('Refund Transactions service', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split = transactions![0]!.splits![0]!;
 
@@ -145,7 +144,6 @@ describe('Refund Transactions service', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split = transactions![0]!.splits![0]!;
 
@@ -217,7 +215,6 @@ describe('Refund Transactions service', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split = transactions![0]!.splits![0]!;
 
@@ -272,7 +269,6 @@ describe('Refund Transactions service', () => {
         // Get split from first transaction
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const splitFromTx1 = transactions!.find((t) => t.splits && t.splits.length > 0)!.splits![0]!;
 
@@ -354,7 +350,6 @@ describe('Refund Transactions service', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split1 = transactions![0]!.splits![0]!;
         const split2 = transactions![0]!.splits![1]!;
@@ -713,6 +708,59 @@ describe('Refund Transactions service', () => {
         expect(helpers.extractResponse(result).message).toContain('Cannot refund a "refund" transaction');
       });
 
+      describe('fails when an already-refunded transaction is linked as a refund', () => {
+        const setupRefundedPurchase = async () => {
+          const account = await helpers.createAccount({ raw: true });
+          const createTx = async ({
+            amount,
+            transactionType,
+          }: {
+            amount: number;
+            transactionType: TRANSACTION_TYPES;
+          }) =>
+            (
+              await helpers.createTransaction({
+                payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType }),
+                raw: true,
+              })
+            )[0];
+
+          const purchase = await createTx({ amount: 50, transactionType: TRANSACTION_TYPES.expense });
+          const purchaseRefund = await createTx({ amount: 30, transactionType: TRANSACTION_TYPES.income });
+          const income = await createTx({ amount: 80, transactionType: TRANSACTION_TYPES.income });
+
+          const linked = await helpers.createSingleRefund({ originalTxId: purchase.id, refundTxId: purchaseRefund.id });
+          expect(linked.statusCode).toEqual(200);
+
+          return { purchase, income };
+        };
+
+        it('via POST /transactions/refund', async () => {
+          const { purchase, income } = await setupRefundedPurchase();
+
+          const result = await helpers.createSingleRefund({ originalTxId: income.id, refundTxId: purchase.id });
+
+          expect(result.statusCode).toEqual(ERROR_CODES.ValidationError);
+          expect(helpers.extractResponse(result).message).toContain('Cannot refund a "refund" transaction');
+          expect(await helpers.getRefundsForTransaction({ transactionId: income.id, raw: true })).toEqual([]);
+        });
+
+        it('via PUT /transactions/:id with refundedByTxIds', async () => {
+          const { purchase, income } = await setupRefundedPurchase();
+
+          const result = await helpers.updateTransaction({
+            id: income.id,
+            payload: { refundedByTxIds: [purchase.id] },
+          });
+
+          expect(result.statusCode).toEqual(ERROR_CODES.ValidationError);
+          expect((result as unknown as helpers.CustomResponse<{ message?: string }>).body.response?.message).toContain(
+            'Cannot refund a "refund" transaction',
+          );
+          expect(await helpers.getRefundsForTransaction({ transactionId: income.id, raw: true })).toEqual([]);
+        });
+      });
+
       it('fails when trying to link transcation to itself', async () => {
         const account1 = await helpers.createAccount({ raw: true });
 
@@ -781,7 +829,48 @@ describe('Refund Transactions service', () => {
         });
 
         expect(result.statusCode).toEqual(ERROR_CODES.ValidationError);
-        expect(helpers.extractResponse(result).message).toContain('"refundTxId" already marked as a refund');
+        expect(helpers.extractResponse(result).message).toContain(
+          'A whole-refund link cannot be combined with partial links',
+        );
+      });
+
+      it('fails when the same partial link is created twice', async () => {
+        const account = await helpers.createAccount({ raw: true });
+
+        const [originalTx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 100,
+            transactionType: TRANSACTION_TYPES.expense,
+          }),
+          raw: true,
+        });
+
+        const [refundTx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 50,
+            transactionType: TRANSACTION_TYPES.income,
+          }),
+          raw: true,
+        });
+
+        const first = await helpers.createSingleRefund({
+          originalTxId: originalTx.id,
+          refundTxId: refundTx.id,
+          amount: 10,
+        });
+        const second = await helpers.createSingleRefund({
+          originalTxId: originalTx.id,
+          refundTxId: refundTx.id,
+          amount: 10,
+        });
+
+        expect(first.statusCode).toEqual(200);
+        expect(second.statusCode).toEqual(ERROR_CODES.ValidationError);
+        expect(helpers.extractResponse(second).message).toContain('This refund is already linked to that transaction');
+        const links = await helpers.getRefundsForTransaction({ transactionId: refundTx.id, raw: true });
+        expect(links.map((link) => link.amount)).toEqual([10]);
       });
     });
 
@@ -886,7 +975,9 @@ describe('Refund Transactions service', () => {
           });
 
           expect(result.statusCode).toEqual(ERROR_CODES.ValidationError);
-          expect(helpers.extractResponse(result).message).toContain('"refundTxId" already marked as a refund');
+          expect(helpers.extractResponse(result).message).toContain(
+            'This refund is already linked to that transaction',
+          );
         });
       });
     });
@@ -1029,7 +1120,6 @@ describe('Refund Transactions service', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split = transactions![0]!.splits![0]!;
 

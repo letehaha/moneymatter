@@ -25,8 +25,8 @@
       "budgets": "Tracker",
       "goals": "Obiettivi"
     },
-    "venture": "Investimenti",
-    "budget": "Tracker"
+    "venture": "Venture capital",
+    "budget": "Budget"
   },
   "sidebar": {
     "collapse": "Nascondi barra laterale",
@@ -51,7 +51,7 @@
       "portfolios": "Portafoglio",
       "newPortfolio": "Nuovo portafoglio",
       "noPortfolios": "Ancora nessun portafoglio",
-      "ventures": "Investimenti",
+      "ventures": "Venture capital",
       "cars": "Veicoli",
       "loans": "Prestiti & Finanziamenti",
       "collapseNavigation": "Nascondi barra di navigazione",
@@ -279,7 +279,7 @@
             "description": "Aggiungere un'etichetta per raggruppare transazioni correlate"
           },
           "create-budget": {
-            "title": "Impostare un budget",
+            "title": "Configura un tracker",
             "description": "Creare limiti di spesa per ogni categoria"
           },
           "create-subscription": {

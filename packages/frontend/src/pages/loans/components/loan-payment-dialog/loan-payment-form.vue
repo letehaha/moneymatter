@@ -257,7 +257,6 @@ const submit = () => {
     isOriginalRefundsOverriden: false,
     isRecordExternal: false,
     transaction: props.transaction,
-    oppositeTransaction: props.oppositeTransaction,
     linkedTransaction: null,
   });
 };

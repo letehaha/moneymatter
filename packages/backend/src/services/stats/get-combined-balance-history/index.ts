@@ -8,7 +8,6 @@ import PortfolioBalances from '@models/investments/portfolio-balances.model';
 import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import Portfolios from '@models/investments/portfolios.model';
 import Securities from '@models/investments/securities.model';
-import SecurityPricing from '@models/investments/security-pricing.model';
 import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { withTransaction } from '@services/common/with-transaction';
@@ -25,7 +24,7 @@ import { resolveOldestEventDate } from './date-range';
 import { buildUserRatesMap, createFindLatestUsdRate, createGetExchangeRate } from './exchange-rate-lookup';
 import { computeHoldingsValueByDate } from './holdings-replay';
 import { accumulateCashDeltas, computePortfolioCashByDate } from './portfolio-cash-replay';
-import { buildPriceLookupWithPreWindowAnchors } from './security-price-anchors';
+import { buildPriceLookupWithPreWindowAnchors, loadDailySecurityPrices } from './security-price-anchors';
 import { createFindPriceForDate } from './security-price-lookup';
 import type { CombinedBalanceHistoryItem, CurrentBalanceRow, SecurityRow, TransactionRow, TransferRow } from './types';
 
@@ -176,19 +175,7 @@ const calculatePortfolioBalanceHistory = async ({
   );
 
   const [securityPrices, userCustomExchangeRates, systemExchangeRates] = await Promise.all([
-    SecurityPricing.findAll({
-      where: {
-        securityId: { [Op.in]: securityIds },
-        // `date` is TIMESTAMPTZ; end-of-day bound keeps the final day's intraday rows.
-        date: { [Op.between]: [startOfDay(parseISO(dataFetchMinDate)), endOfDay(parseISO(maxDate))] },
-      },
-      order: [
-        ['securityId', 'ASC'],
-        ['date', 'ASC'],
-      ],
-      attributes: ['securityId', 'date', 'priceClose'],
-      raw: true,
-    }),
+    loadDailySecurityPrices({ securityIds, fromDate: dataFetchMinDate, toDate: maxDate }),
     UserExchangeRates.findAll({
       where: {
         userId,

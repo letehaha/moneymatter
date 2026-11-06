@@ -12,7 +12,7 @@
         "noMatchingTransactions": "Nessuna transazione corrispondente",
         "noTransactionsLinked": "Nessuna transazione collegata",
         "filterAdjustmentHint": "Provare a modificare i filtri per vedere più transazioni.",
-        "addTransactionsHint": "Aggiungere transazioni a questo budget per iniziare a monitorare la spesa.",
+        "addTransactionsHint": "Aggiungere transazioni a questo tracker per iniziare a monitorare la spesa.",
         "resetFilters": "Reimposta filtri",
         "addTransactions": "Aggiungi transazioni",
         "add": "Aggiungi",
@@ -33,13 +33,13 @@
         "netBalance": "Saldo Netto"
       },
       "utilization": {
-        "title": "Utilizzo Budget",
+        "title": "Utilizzo del tracker",
         "summary": "Speso {spent} su {limit}",
         "na": "N/D"
       },
       "noTransactionsYet": "Non ci sono ancora transazioni",
       "transactions": "Transazioni",
-      "transactionsLinked": "{count} transazione collegata a questo budget | {count} transazioni collegate a questo budget",
+      "transactionsLinked": "{count} transazione collegata a questo tracker | {count} transazioni collegate a questo tracker",
       "tabs": {
         "statistics": "Statistiche",
         "transactions": "Transazioni",
@@ -53,7 +53,7 @@
         "errorTitle": "Impossibile caricare le statistiche",
         "errorDescription": "Qualcosa è andato storto durante il caricamento dei dati. Riprovare.",
         "noDataTitle": "Nessun dato di spesa",
-        "noDataDescription": "Non ci sono movimenti in questo budget.",
+        "noDataDescription": "Non ci sono ancora dati di spesa per questo tracker.",
         "noCategoryData": "Non ci sono categorie per i movimenti.",
         "noTimelineData": "Nessun dato nella cronologia.",
         "total": "Totale",
@@ -114,7 +114,7 @@
           "you": "tu",
           "roleOwner": "Proprietario",
           "roleRecipient": "Membro",
-          "ownerHint": "Controllo completo di questo bilancio",
+          "ownerHint": "Controllo completo di questo tracker",
           "updateSuccess": "Autorizzazioni aggiornate.",
           "updateError": "Impossibile aggiornare i permessi.",
           "revoke": "Revoca accesso",

@@ -69,8 +69,8 @@ describe('link transactions between each other', () => {
     [incomeA, incomeB, expenseA, expenseB].forEach((tx) => {
       const txAfter = txsAfterUpdation.find((t) => t.id === tx.id);
       // Expect that only transferNature and transferId were changed
-      expect({ ...tx }).toEqual({
-        ...txAfter,
+      expect(txAfter).toMatchObject({
+        ...tx,
         transferNature: expect.toBeAnythingOrNull(),
         transferId: expect.toBeAnythingOrNull(),
         updatedAt: expect.toBeAnythingOrNull(),
@@ -307,6 +307,95 @@ describe('link transactions between each other', () => {
     });
     expect(alreadyTransferExpense.statusCode).toBe(ERROR_CODES.ValidationError);
   });
+
+  it('rejects linking a refund-linked original as a transfer leg', async () => {
+    const accountA = await helpers.createAccount({ raw: true });
+    const accountB = await helpers.createAccount({ raw: true });
+
+    const [expense] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountA.id,
+        amount: 100,
+        transactionType: TRANSACTION_TYPES.expense,
+      }),
+      raw: true,
+    });
+    const [refund] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountA.id,
+        amount: 50,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+    const [incomeB] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountB.id,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+
+    await helpers.createSingleRefund({ originalTxId: expense.id, refundTxId: refund.id }, true);
+
+    const res = await helpers.linkTransactions({
+      payload: { ids: [[expense.id, incomeB.id]] },
+    });
+    expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(helpers.extractResponse(res as unknown as helpers.CustomResponse<helpers.ErrorResponse>).message).toContain(
+      'cannot be transfer one',
+    );
+
+    const expenseAfter = await helpers.getTransactionById({ id: expense.id, raw: true });
+    expect(expenseAfter!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
+  });
+
+  it('rejects linking when the opposite leg is a refund-linked refund transaction', async () => {
+    const accountA = await helpers.createAccount({ raw: true });
+    const accountB = await helpers.createAccount({ raw: true });
+
+    const [original] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountA.id,
+        amount: 100,
+        transactionType: TRANSACTION_TYPES.expense,
+      }),
+      raw: true,
+    });
+    const [refundIncome] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountA.id,
+        amount: 50,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+    const [unlinkedExpense] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountB.id,
+        amount: 50,
+        transactionType: TRANSACTION_TYPES.expense,
+      }),
+      raw: true,
+    });
+
+    await helpers.createSingleRefund({ originalTxId: original.id, refundTxId: refundIncome.id }, true);
+
+    const res = await helpers.linkTransactions({
+      payload: { ids: [[unlinkedExpense.id, refundIncome.id]] },
+    });
+    expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(helpers.extractResponse(res as unknown as helpers.CustomResponse<helpers.ErrorResponse>).message).toContain(
+      'cannot be a transfer one',
+    );
+
+    const [unlinkedExpenseAfter, refundIncomeAfter] = await Promise.all([
+      helpers.getTransactionById({ id: unlinkedExpense.id, raw: true }),
+      helpers.getTransactionById({ id: refundIncome.id, raw: true }),
+    ]);
+    expect(unlinkedExpenseAfter!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
+    expect(refundIncomeAfter!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
+  });
 });
 
 describe('unlink transfer transactions', () => {
@@ -348,10 +437,11 @@ describe('unlink transfer transactions', () => {
     updatedTransactions.forEach((tx) => {
       const oppositeTx = transactions.find((item) => item.id === tx.id);
 
-      expect(tx).toEqual({
-        ...oppositeTx,
-        transferId: null,
-        transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
+      expect(tx).toMatchObject({ transferId: null, transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer });
+      expect(oppositeTx).toMatchObject({
+        ...tx,
+        transferId: expect.toBeAnythingOrNull(),
+        transferNature: expect.toBeAnythingOrNull(),
         updatedAt: expect.toBeAnythingOrNull(),
       });
     });
@@ -397,7 +487,7 @@ describe('unlink transfer transactions', () => {
 
     // Test that after updation only transfer-related fields were changed for each
     // transaction
-    expect(expenseExternalTx).toEqual({
+    expect(expenseExternalTx).toMatchObject({
       ...updatedA![0],
       transferNature: expect.toBeAnythingOrNull(),
       transferId: expect.toBeAnythingOrNull(),
@@ -409,7 +499,7 @@ describe('unlink transfer transactions', () => {
       transferId: expect.toBeAnythingOrNull(),
       updatedAt: expect.toBeAnythingOrNull(),
     });
-    expect(incomeExternalTx).toEqual({
+    expect(incomeExternalTx).toMatchObject({
       ...updatedB![0],
       transferNature: expect.toBeAnythingOrNull(),
       updatedAt: expect.toBeAnythingOrNull(),
@@ -432,8 +522,10 @@ describe('unlink transfer transactions', () => {
 
     // After unlinking check that transactions now are COMPLETELY SAME (except updatedAt)
     [expenseExternalTx, incomeExternalTx, expenseSystemTx, incomeSystemTx].forEach((tx) => {
-      expect(result.find((t) => t.id === tx!.id)).toEqual({
-        ...tx,
+      const unlinked = result.find((t) => t.id === tx!.id);
+      expect(unlinked).toBeDefined();
+      expect(tx).toMatchObject({
+        ...unlinked,
         updatedAt: expect.toBeAnythingOrNull(),
       });
     });

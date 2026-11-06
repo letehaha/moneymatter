@@ -622,7 +622,6 @@ describe('Planned transactions – merge on sync', () => {
 
       const survivor = await helpers.getTransactionById({
         id: planId,
-        includeSplits: true,
         raw: true,
       });
       expect(survivor).not.toBeNull();

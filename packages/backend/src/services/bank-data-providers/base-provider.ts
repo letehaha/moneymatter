@@ -6,6 +6,7 @@ import { ForbiddenError, ServiceUnavailableError } from '@js/errors';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
+import { isDeadlockError } from '@services/common/retry-on-deadlock';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
 import { SyncStatus, setAccountSyncStatus } from './sync/sync-status-tracker';
@@ -301,6 +302,9 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
           connectionId,
           reason: error.message,
         });
+      } else if (isDeadlockError(error)) {
+        // Propagates to syncTransactionsForAccount, which retries it; a failed retry is reported upstream.
+        logger.info('[Bank Sync] Sync deadlocked with a concurrent sync', { accountId: systemAccountId, connectionId });
       } else {
         logger.error({ message: errorLogMessage, error: error as Error });
       }

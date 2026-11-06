@@ -16,9 +16,16 @@ export interface RefundWithSplit {
   transaction: TransactionModel;
   /** The split ID this refund targets. Required when the original transaction has splits. */
   splitId?: string;
+  /**
+   * Share of the refund tx (in its currency) assigned to this original. `null` = the whole refund;
+   * `undefined` on a "refunded by" link = keep the share the server already has.
+   */
+  amount?: number | null;
+  /** `true` = share set by the user, `false` = filled by the app, unset = as saved. UI-only. */
+  isAdjusted?: boolean;
 }
 
-export type RefundsAnoterTx = RefundWithSplit | null | undefined;
+export type RefundsAnoterTx = RefundWithSplit[] | null | undefined;
 export type RefundedByAnotherTxs = RefundWithSplit[] | null | undefined;
 
 /**

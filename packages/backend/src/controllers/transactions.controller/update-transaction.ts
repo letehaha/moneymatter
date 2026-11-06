@@ -5,9 +5,11 @@ import { createController } from '@controllers/helpers/controller-factory';
 import { removeUndefinedKeys } from '@js/helpers';
 import { deserializePaymentLegs, serializeTransactionTuple } from '@root/serializers';
 import * as transactionsService from '@services/transactions';
+import { type UpdateTransactionParams } from '@services/transactions/types';
 import { z } from 'zod';
 
 import {
+  atLeastOneCentAmountSchema,
   nonNegativeAmountSchema,
   paymentLegsSchema,
   positiveAmountSchema,
@@ -30,9 +32,21 @@ const bodyZodSchema = z
     destinationTransactionId: recordId().optional(),
     categoryId: recordId().optional(),
     transferNature: z.nativeEnum(TRANSACTION_TRANSFER_NATURE).optional(),
-    refundedByTxIds: z.array(recordId()).nullish(),
+    refundedByTxIds: z
+      .array(z.union([recordId(), z.object({ txId: recordId(), amount: atLeastOneCentAmountSchema().nullish() })]))
+      .nullish(),
     refundsTxId: recordId().nullish(),
     refundsSplitId: recordId().nullish(),
+    refundsTargets: z
+      .array(
+        z.object({
+          txId: recordId(),
+          splitId: recordId().nullish(),
+          amount: atLeastOneCentAmountSchema().nullish(),
+        }),
+      )
+      .min(1)
+      .nullish(),
     splits: z.array(splitSchema).max(10, 'Maximum 10 splits allowed').nullish(),
     tagIds: z.array(recordId()).max(20, 'Maximum 20 tags allowed').nullish(),
     payeeId: recordId().nullable().optional(),
@@ -46,9 +60,30 @@ const bodyZodSchema = z
     message: '"refundsSplitId" can only be provided when "refundsTxId" is specified',
     path: ['refundsSplitId', 'refundsTxId'],
   })
-  .refine((data) => !(data.refundedByTxIds !== undefined && data.refundsTxId !== undefined), {
-    message: "Both 'refundedByTxIds' and 'refundsTxId' are not allowed simultaneously",
-  })
+  .refine(
+    (data) =>
+      [data.refundedByTxIds, data.refundsTxId, data.refundsTargets].filter((field) => field !== undefined).length <= 1,
+    { message: "Only one of 'refundedByTxIds', 'refundsTxId' and 'refundsTargets' can be provided" },
+  )
+  .refine(
+    (data) =>
+      !data.refundsTargets ||
+      new Set(data.refundsTargets.map((target) => target.txId)).size === data.refundsTargets.length,
+    {
+      message: "Each transaction can appear only once in 'refundsTargets'",
+      path: ['refundsTargets'],
+    },
+  )
+  .refine(
+    (data) =>
+      !data.refundedByTxIds ||
+      new Set(data.refundedByTxIds.map((item) => (typeof item === 'string' ? item : item.txId))).size ===
+        data.refundedByTxIds.length,
+    {
+      message: "Each transaction can appear only once in 'refundedByTxIds'",
+      path: ['refundedByTxIds'],
+    },
+  )
   .refine(
     // Loan payments only link via destinationAccountId, never destinationTransactionId.
     (data) => !(data.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_to_loan && data.destinationTransactionId),
@@ -151,6 +186,7 @@ export default createController(schema, async ({ user, params, body }) => {
     refundedByTxIds,
     refundsTxId,
     refundsSplitId,
+    refundsTargets,
     splits,
     tagIds,
     payeeId,
@@ -170,6 +206,26 @@ export default createController(schema, async ({ user, params, body }) => {
     amount: Money.fromDecimal(split.amount),
   }));
 
+  const normalizedRefundedByTxIds: UpdateTransactionParams['refundedByTxIds'] =
+    refundedByTxIds &&
+    refundedByTxIds.map((item) =>
+      typeof item === 'string'
+        ? { txId: item }
+        : { txId: item.txId, amount: item.amount == null ? item.amount : Money.fromDecimal(item.amount) },
+    );
+
+  let normalizedRefundsTargets: UpdateTransactionParams['refundsTargets'] =
+    refundsTargets &&
+    refundsTargets.map((target) => ({
+      ...target,
+      amount: target.amount == null ? null : Money.fromDecimal(target.amount),
+    }));
+  if (refundsTxId === null) {
+    normalizedRefundsTargets = null;
+  } else if (refundsTxId !== undefined) {
+    normalizedRefundsTargets = [{ txId: refundsTxId, splitId: refundsSplitId ?? null, amount: null }];
+  }
+
   const transactions = await transactionsService.updateTransaction({
     id,
     ...removeUndefinedKeys({
@@ -188,9 +244,8 @@ export default createController(schema, async ({ user, params, body }) => {
       destinationAccountId,
       categoryId,
       transferNature,
-      refundedByTxIds,
-      refundsTxId,
-      refundsSplitId,
+      refundedByTxIds: normalizedRefundedByTxIds,
+      refundsTargets: normalizedRefundsTargets,
       payeeLocked,
       isPlanned,
     }),

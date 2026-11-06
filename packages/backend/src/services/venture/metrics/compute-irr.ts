@@ -106,9 +106,9 @@ export function computeIrr({
     // surfaced as Errors with specific messages; treat them as "uncomputable"
     // and return null. Anything else is a real bug and we want it visible.
     const message = err instanceof Error ? err.message : String(err);
-    const isExpectedConvergenceFailure = /converge|sign|out_of_bounds|range|iterations/i.test(message);
+    const isExpectedConvergenceFailure = /converge/i.test(message);
     if (isExpectedConvergenceFailure) {
-      logger.warn(`[computeIrr] xirr could not converge (deal=${deal.id}, points=${series.length}): ${message}`);
+      logger.info(`[computeIrr] xirr could not converge (deal=${deal.id}, points=${series.length}): ${message}`);
     } else {
       logger.error(`[computeIrr] unexpected xirr failure (deal=${deal.id}, points=${series.length}): ${message}`);
     }

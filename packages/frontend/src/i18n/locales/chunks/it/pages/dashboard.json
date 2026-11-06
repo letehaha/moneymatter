@@ -18,7 +18,7 @@
           "total": "Totale",
           "accounts": "Conti",
           "portfolios": "Portafoglio",
-          "ventures": "Investimenti",
+          "ventures": "Venture capital",
           "vehicles": "Veicoli",
           "loans": "Prestiti & Finanziamenti"
         },
@@ -69,7 +69,7 @@
         "componentsSettings": {
           "description": "Scegliere quali componenti contano nella linea del saldo totale.",
           "vehicles": "Veicoli",
-          "ventures": "Investimenti",
+          "ventures": "Venture capital",
           "loans": "Prestiti & Finanziamenti",
           "loansTooltip": "Se attivo, i debiti residui dei prestiti vengono sottratti dal totale (patrimonio netto reale). Se disattivo, i prestiti vengono ignorati e il totale mostra solo gli asset.",
           "allIncluded": "Tutti i componenti",
@@ -156,7 +156,7 @@
         "viewHistory": "Vedi storico",
         "loadFailed": "Impossibile caricare i dati del patrimonio netto.",
         "components": {
-          "ventures": "Investimenti",
+          "ventures": "Venture capital",
           "vehicles": "Veicoli",
           "loans": "Prestiti & Finanziamenti"
         },
@@ -164,7 +164,7 @@
           "title": "Includi nel patrimonio netto",
           "loans": "Prestiti & Finanziamenti",
           "vehicles": "Veicoli",
-          "ventures": "Investimenti"
+          "ventures": "Venture capital"
         },
         "trendTooltip": {
           "change": "Variazione",
@@ -200,7 +200,7 @@
         "buckets": {
           "cash": "Contanti",
           "investments": "Investimenti",
-          "ventures": "Investimenti",
+          "ventures": "Venture capital",
           "vehicles": "Veicoli",
           "loans": "Prestiti & Finanziamenti",
           "creditAndOverdrafts": "Credito e scoperti"
@@ -238,7 +238,7 @@
         },
         "hints": {
           "noHistory": "Il confronto compare dopo il primo mese completo.",
-          "plannedFailed": "Couldn't load planned transactions. The forecast may not include them.",
+          "plannedFailed": "Impossibile caricare le transazioni pianificate. La previsione potrebbe non includerle.",
           "fewMonths": "Media del {n} mese completo disponibile finora. | Media dei {n} mesi completi disponibili finora."
         },
         "loadFailed": "Impossibile caricare le spese.",
@@ -374,7 +374,7 @@
           "description": "Quota delle entrate pagata in imposte, con andamento a 12 mesi"
         },
         "budget": {
-          "name": "Tracker",
+          "name": "Budget",
           "description": "Quanto resta nel periodo di budget corrente, voce per voce"
         },
         "trackers": {

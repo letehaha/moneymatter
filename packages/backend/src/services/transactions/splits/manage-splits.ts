@@ -1,13 +1,10 @@
-import { Money } from '@common/types/money';
-import { t } from '@i18n/index';
-import { ValidationError } from '@js/errors';
+import type { Money } from '@common/types/money';
 import RefundTransactions from '@models/refund-transactions.model';
 import TransactionSplits, {
   CreateSplitPayload,
   bulkCreateSplits,
   deleteSplitsForTransaction,
 } from '@models/transaction-splits.model';
-import Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 
@@ -33,7 +30,8 @@ interface ManageSplitsParams {
 /**
  * Creates or updates splits for a transaction.
  * Validates splits, deletes existing ones, and creates new ones.
- * Also handles refund link migration when splits are recreated.
+ * Also handles refund link migration when splits are recreated. Refund caps are not checked
+ * here: callers run `validateRefundLinks` afterwards, in the same DB transaction.
  *
  * Auth is gated by the parent transaction's account (callers run this only after
  * confirming write access). Lookups inside this helper key off `transactionId`
@@ -57,36 +55,19 @@ export const manageSplits = async ({
     where: { transactionId },
   });
 
-  // Build a map of categoryId -> refund info for existing splits.
-  // `refundIds` holds the RefundTransactions row ids: the old splits get deleted further
-  // down, and the FK is ON DELETE SET NULL, so `splitId` stops identifying these rows.
-  const refundsByCategoryId = new Map<
-    string,
-    {
-      totalRefundedRefAmount: Money;
-      refundIds: string[];
-      refundAmounts: { amount: Money; currencyCode: string }[];
-    }
-  >();
+  // categoryId -> RefundTransactions row ids. The old splits get deleted further down, and
+  // the FK is ON DELETE SET NULL, so `splitId` stops identifying these rows.
+  const refundsByCategoryId = new Map<string, { refundIds: string[] }>();
 
   // Query refunds for each split that exists
   for (const existingSplit of existingSplits) {
     const refunds = await RefundTransactions.findAll({
       where: { splitId: existingSplit.id },
-      include: [{ model: Transactions, as: 'refundTransaction' }],
+      attributes: ['id'],
     });
 
     if (refunds.length > 0) {
-      const totalRefunded = Money.sum(refunds.map((r) => r.refundTransaction.refAmount.abs()));
-      const refundAmounts = refunds.map((r) => ({
-        amount: r.refundTransaction.amount.abs(),
-        currencyCode: r.refundTransaction.currencyCode,
-      }));
-      refundsByCategoryId.set(existingSplit.categoryId, {
-        totalRefundedRefAmount: totalRefunded,
-        refundIds: refunds.map((r) => r.id),
-        refundAmounts,
-      });
+      refundsByCategoryId.set(existingSplit.categoryId, { refundIds: refunds.map((r) => r.id) });
     }
   }
 
@@ -137,19 +118,6 @@ export const manageSplits = async ({
             date: transactionTime,
           });
         }
-      }
-
-      // Validate: if this category had refunds, new refAmount must be >= total refunded
-      const existingRefundInfo = refundsByCategoryId.get(split.categoryId);
-      if (existingRefundInfo && refAmount.lessThan(existingRefundInfo.totalRefundedRefAmount)) {
-        // Format refund amounts in their original currencies for user-friendly display
-        const refundDescriptions = existingRefundInfo.refundAmounts.map(
-          (r) => `${r.amount.toNumber().toFixed(2)} ${r.currencyCode}`,
-        );
-        const refundsText = refundDescriptions.join(', ');
-        throw new ValidationError({
-          message: t({ key: 'transactions.splits.cannotReduceBelowRefunded', variables: { refundsText } }),
-        });
       }
 
       return {

@@ -365,7 +365,7 @@ describeWithFixture('Microsoft Money import execution', () => {
       const voidTag = allTags.find((tag) => tag.name === MS_MONEY_VOID_TAG.name);
       expect(voidTag).toBeDefined();
 
-      const transactions = await helpers.getTransactions({ limit: 500, includeTags: true, raw: true });
+      const transactions = await helpers.getTransactions({ limit: 500, raw: true });
       const zeroRows = transactions.filter((tx) => Number(tx.amount) === 0);
       expect(zeroRows).toHaveLength(voidedRows.length);
       for (const row of zeroRows) {

@@ -1,5 +1,5 @@
 import { updateTransactions } from '@models/transactions-query';
-import { Op, literal } from 'sequelize';
+import { Op, type UpdateOptions, literal } from 'sequelize';
 
 /**
  * Recomputes `Transactions.refundLinked` for the given ids from the links that actually exist.
@@ -17,11 +17,15 @@ import { Op, literal } from 'sequelize';
  * No `userId` filter: callers pass ids they have already authorized, and the flag has exactly one
  * correct value per row regardless of who wrote it.
  */
-export const syncRefundLinkedFlags = async ({ transactionIds }: { transactionIds: (string | null)[] }) => {
+export const syncRefundLinkedFlags = async ({
+  transactionIds,
+  ...options
+}: { transactionIds: (string | null)[] } & Pick<UpdateOptions, 'transaction' | 'paranoid' | 'silent'>) => {
   const ids = [...new Set(transactionIds.filter((id): id is string => Boolean(id)))];
   if (ids.length === 0) return;
 
   await updateTransactions({
+    ...options,
     values: {
       refundLinked: literal(`EXISTS (
         SELECT 1 FROM "RefundTransactions" r

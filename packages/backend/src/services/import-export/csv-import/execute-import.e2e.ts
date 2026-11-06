@@ -1217,7 +1217,7 @@ describe('Execute Import endpoint (async)', () => {
 
   describe('tags import', () => {
     const tagsOf = async (transactionId: string): Promise<string[]> => {
-      const list = await helpers.getTransactions({ includeTags: true, raw: true });
+      const list = await helpers.getTransactions({ raw: true });
       const tx = list.find((item) => item.id === transactionId);
       return (tx?.tags ?? []).map((t) => t.name);
     };

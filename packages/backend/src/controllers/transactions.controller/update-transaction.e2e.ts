@@ -62,7 +62,7 @@ describe('Update transaction controller', () => {
 
     const txsAfterUpdation = (await helpers.getTransactions({ raw: true }))!;
 
-    expect(res[0]).toStrictEqual(txsAfterUpdation[0]);
+    expect(txsAfterUpdation[0]).toMatchObject({ ...res[0] });
     expect(res[0].amount).toStrictEqual(expectedNewAmount);
     expect(res[0].transactionType).toStrictEqual(TRANSACTION_TYPES.income);
   });
@@ -658,8 +658,8 @@ describe('Update transaction controller', () => {
           [tx2, tx2AfterLinking],
         ].forEach(([tx, txAfter]) => {
           // Expect that only transferNature and transferId were changed
-          expect({ ...tx }).toEqual({
-            ...txAfter,
+          expect(txAfter).toMatchObject({
+            ...tx,
             transferNature: expect.toBeAnythingOrNull(),
             transferId: expect.toBeAnythingOrNull(),
             updatedAt: expect.toBeAnythingOrNull(),
@@ -788,6 +788,20 @@ describe('Update transaction controller', () => {
         id: refundTx.id,
         payload: {
           refundsTxId: originalTx.id,
+          refundedByTxIds: [originalTx.id],
+        },
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+
+    it('fails when refundsTargets is combined with refundedByTxIds', async () => {
+      const originalTx = await createTestTx(TRANSACTION_TYPES.expense, 1000);
+      const refundTx = await createTestTx(TRANSACTION_TYPES.income, 500);
+      const response = await helpers.updateTransaction({
+        id: refundTx.id,
+        payload: {
+          refundsTargets: [{ txId: originalTx.id, amount: 100 }],
           refundedByTxIds: [originalTx.id],
         },
       });

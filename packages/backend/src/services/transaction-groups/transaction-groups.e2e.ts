@@ -197,7 +197,7 @@ describe('Transaction Groups API', () => {
       expect(groups.find((g) => g.name === 'Negative')!.netRefAmount).toBe(-95.1);
     });
 
-    it('includeGroups reports the full group size even when only a slice of members is fetched', async () => {
+    it('reports the full group size even when only a slice of members is fetched', async () => {
       const account = await helpers.createAccount({ raw: true });
       const txs = await createTransactions({ accountId: account.id, count: 5 });
 
@@ -211,7 +211,6 @@ describe('Transaction Groups API', () => {
 
       // Fetch a window smaller than the group so only some members are returned.
       const windowed = await helpers.getTransactions({
-        includeGroups: true,
         limit: 2,
         raw: true,
       });
@@ -250,6 +249,40 @@ describe('Transaction Groups API', () => {
       expect(group.id).toBe(created.id);
       expect(group.name).toBe('Detail Group');
       expect(group.transactions).toHaveLength(2);
+    });
+
+    it('returns member transactions with their tags and splits', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const [primary, splitCategory] = await helpers.getCategoriesList();
+      const tag = await helpers.createTag({ payload: helpers.buildTagPayload({ name: 'Trip' }), raw: true });
+      const [rich] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 100,
+            categoryId: primary!.id,
+            splits: [{ categoryId: splitCategory!.id, amount: 40 }],
+          }),
+          tagIds: [tag.id],
+        },
+        raw: true,
+      });
+      const [plain] = await createTransactions({ accountId: account.id, count: 1 });
+
+      const created = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({ transactionIds: [rich!.id, plain!.id] }),
+        raw: true,
+      });
+
+      const { transactions } = await helpers.getTransactionGroupById({ id: created.id, raw: true });
+      const richRow = transactions!.find((tx) => tx.id === rich!.id)!;
+      const plainRow = transactions!.find((tx) => tx.id === plain!.id)!;
+
+      expect(richRow.tags!.map((t) => t.id)).toEqual([tag.id]);
+      expect(richRow.splits).toHaveLength(1);
+      expect(richRow.splits![0]!.category!.id).toBe(splitCategory!.id);
+      expect(plainRow.tags).toEqual([]);
+      expect(plainRow.splits).toEqual([]);
     });
   });
 

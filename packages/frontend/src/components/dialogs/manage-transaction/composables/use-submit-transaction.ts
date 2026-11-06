@@ -3,7 +3,6 @@ import { uploadTransactionAttachment } from '@/api/attachments';
 import { accountToPortfolioTransfer, linkTransactionToPortfolio } from '@/api/portfolios';
 import { OUT_OF_WALLET_ACCOUNT_MOCK, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import { useNotificationCenter } from '@/components/notification-center';
-import { getInvalidationQueryKey } from '@/composable/data-queries/opposite-tx-record';
 import { invalidateTransferRelatedQueries } from '@/composable/data-queries/portfolio-transfers';
 import { i18n } from '@/i18n';
 import { ApiErrorResponseError, extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
@@ -31,7 +30,6 @@ interface SubmitTransactionParams {
   isRecordExternal: boolean;
   transaction?: TransactionModel;
   linkedTransaction?: TransactionModel | null;
-  oppositeTransaction?: TransactionModel;
   /** Files picked before the row existed; uploaded right after creation. */
   pendingAttachments?: File[];
 }
@@ -173,22 +171,6 @@ export function useSubmitTransaction({
       // transactionChange, so the blanket invalidation above already covers
       // both the new destination and any previous loan the payment moved off.
 
-      if (params.transaction?.id) {
-        queryClient.invalidateQueries({
-          queryKey: getInvalidationQueryKey(params.transaction.id),
-        });
-      }
-      if (params.oppositeTransaction?.id) {
-        queryClient.invalidateQueries({
-          queryKey: getInvalidationQueryKey(params.oppositeTransaction.id),
-        });
-      }
-      if (params.linkedTransaction?.id) {
-        queryClient.invalidateQueries({
-          queryKey: getInvalidationQueryKey(params.linkedTransaction.id),
-        });
-      }
-
       // Mark onboarding tasks as complete
       const onboardingStore = useOnboardingStore();
 
@@ -217,7 +199,7 @@ export function useSubmitTransaction({
       }
 
       // Mark link-refund task when refund relationships are set
-      if (params.form.refundsTx || (params.form.refundedByTxs && params.form.refundedByTxs.length > 0)) {
+      if (params.form.refundsTx?.length || params.form.refundedByTxs?.length) {
         onboardingStore.completeTask('link-refund');
       }
 

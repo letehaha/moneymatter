@@ -62,6 +62,8 @@ export interface TransactionSplitModel {
   refAmount: number;
   note: string | null;
   category?: EmbeddedCategoryModel;
+  /** Same-currency refunds linked to this split. Set on list reads with `includeRefundedAmount` and on each refund link's `originalTransaction` splits. */
+  refundedAmount?: number;
 }
 
 /**
@@ -124,7 +126,9 @@ export interface TransactionModel {
   originalAmount: number | null;
   originalCurrencyCode: string | null;
   refundLinked: boolean;
-  /** Serializer-derived, list reads only. */
+  /** Same-currency refunds linked to this tx, in its currency. Set on list reads with `includeRefundedAmount` and on each refund link's `originalTransaction`. */
+  refundedAmount?: number;
+  /** Present on the list endpoint only; absent on create/update responses. */
   hasAttachments?: boolean;
   isPlanned: boolean;
   /** Serializer-derived: set when a bank transaction merged into this row while it was planned. */
@@ -155,13 +159,12 @@ export interface TransactionModel {
    * edits, categorization rules, or any other column.
    */
   payeeLocked?: boolean;
-  /** Optional splits for multi-category transactions */
+  /** Present on transaction read endpoints; absent on create/update responses. */
   splits?: TransactionSplitModel[];
-  /** Optional tags associated with the transaction (loaded when includeTags=true) */
+  /** Present on transaction read endpoints; absent on create/update responses. */
   tags?: TagModel[];
-  /** Transaction groups this transaction belongs to (loaded when includeGroups=true).
-   *  transactionCount is the group's full membership size, independent of how many of the
-   *  group's members are in the current fetch window. */
+  /** Present on transaction read endpoints; absent on create/update responses.
+   *  transactionCount is the group's full membership size, not the members in the fetch window. */
   transactionGroups?: Array<{ id: RecordId; name: string; transactionCount: number }>;
   /** Who attached this tx to the tracker: the recipient who attached it, else the tracker owner
    *  (also for rule and AI links). Present on tracker-scoped tx fetches; absent elsewhere.
@@ -276,6 +279,8 @@ export interface CreateTransactionBody {
   refundForTxId?: RecordId;
   // When refunding a split specifically (required when original tx has splits)
   refundForSplitId?: RecordId;
+  // Share of this refund linked to `refundForTxId`, in this tx currency; omitted means the whole refund
+  refundForAmount?: number;
   // Optional splits for multi-category transactions
   splits?: SplitInput[];
   // Optional tag IDs to associate with the transaction
@@ -313,10 +318,12 @@ export interface UpdateTransactionBody {
   refundsTxId?: RecordId | null;
   // When refunding a split specifically (required when original tx has splits)
   refundsSplitId?: RecordId | null;
-  // Pass tx ids that will refund the source tx (with optional splitId for each)
-  refundedByTxIds?: string[] | null;
-  // Mapping of refundTxId -> splitId for split-specific refunds
-  refundedBySplitIds?: Record<string, string> | null;
+  // Tx ids that refund the source tx. `amount` is the share of that refund, null for the whole one;
+  // a bare id or a missing amount keeps the share of an existing link.
+  refundedByTxIds?: (RecordId | { txId: RecordId; amount?: number | null })[] | null;
+  // Splits this refund across several purchases; `amount` is the share of this tx each one covers.
+  // A missing amount means the whole tx and is allowed only for a single target.
+  refundsTargets?: { txId: RecordId; splitId?: RecordId | null; amount?: number | null }[] | null;
   // Optional splits for multi-category transactions (null to clear all splits)
   splits?: SplitInput[] | null;
   // Optional tag IDs to associate with the transaction (null to clear all tags)
