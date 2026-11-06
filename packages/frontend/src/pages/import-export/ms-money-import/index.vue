@@ -46,7 +46,7 @@
 
     <!-- Numbered stepper. Container-query driven so it reacts to the content width, not the
          viewport (sidebar). Shared with the other wizards via the common container identifier. -->
-    <ImportWizardStepper
+    <WizardStepper
       class="mb-6"
       :steps="stepperSteps"
       :current-step-key="store.currentStepKey"
@@ -86,7 +86,7 @@ import { storeToRefs } from 'pinia';
 import { computed, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 
-import ImportWizardStepper from '../components/import-wizard-stepper.vue';
+import WizardStepper from '@/components/common/wizard-stepper.vue';
 import DoneStep from './components/done-step.vue';
 import ExecuteStep from './components/execute-step.vue';
 import FileUploadStep from './components/file-upload-step.vue';

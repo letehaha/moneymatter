@@ -1,13 +1,15 @@
 <script setup lang="ts">
 /**
- * Numbered step header shared by the CSV and Wallet import wizards. Labels come
- * in as localized `labelKey`s (the stepper holds no copy). Layout is container-
- * query driven; both wizards tag their wrapper with the same container name
- * `csv-wizard` because Tailwind can't interpolate a name into the `@3xl/<name>`
- * variant used below.
+ * Numbered step header shared by the import wizards, the budget suggestion wizard and
+ * the OAuth consent screen. Labels come in as localized `labelKey`s (the stepper holds
+ * no copy). Layout is container-query driven; hosts tag their wrapper with the
+ * container name `csv-wizard` because Tailwind can't interpolate a name into the
+ * `@3xl/<name>` variant used below. A host with few steps sets `alwaysShowLabels`
+ * instead, since every label fits on one line there.
  */
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
+import { cn } from '@/lib/utils';
 import { CheckIcon } from '@lucide/vue';
 import { computed } from 'vue';
 
@@ -22,6 +24,8 @@ const props = defineProps<{
   completedStepKeys: Set<string>;
   /** Drops the card frame, for hosts that are already a card (e.g. a dialog). */
   bare?: boolean;
+  /** Labels every step at any width, not only the current one below `@3xl`. */
+  alwaysShowLabels?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -68,7 +72,7 @@ function onStepClick({ step }: { step: WizardStep }) {
               variant="ghost"
               type="button"
               class="h-auto shrink-0 gap-2 rounded-md p-0 transition-colors"
-              :disabled="!isStepNavigable({ step, index })"
+              :disabled="!isStepNavigable({ step, index }) && currentStepKey !== step.key"
               :aria-current="currentStepKey === step.key ? 'step' : undefined"
               :aria-label="$t(step.labelKey)"
               @click="isStepNavigable({ step, index }) ? onStepClick({ step }) : undefined"
@@ -88,11 +92,14 @@ function onStepClick({ step }: { step: WizardStep }) {
               <span
                 class="text-sm whitespace-nowrap"
                 :class="
-                  currentStepKey === step.key
-                    ? 'text-foreground inline font-semibold'
-                    : completedStepKeys.has(step.key)
-                      ? 'text-foreground hidden font-medium @3xl/csv-wizard:inline'
-                      : 'text-muted-foreground hidden font-medium @3xl/csv-wizard:inline'
+                  cn(
+                    currentStepKey === step.key
+                      ? 'text-foreground inline font-semibold'
+                      : completedStepKeys.has(step.key)
+                        ? 'text-foreground hidden font-medium @3xl/csv-wizard:inline'
+                        : 'text-muted-foreground hidden font-medium @3xl/csv-wizard:inline',
+                    alwaysShowLabels && 'inline',
+                  )
                 "
               >
                 {{ $t(step.labelKey) }}
