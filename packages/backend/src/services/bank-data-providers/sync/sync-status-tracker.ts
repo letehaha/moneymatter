@@ -1,5 +1,6 @@
 import type { RecordId } from '@bt/shared/types';
 import { logger } from '@js/utils';
+import { namespace } from '@models/connection';
 import { REDIS_KEY_PREFIX, redisClient } from '@root/redis-client';
 
 import { SSE_EVENT_TYPES, sseManager } from '../../common/sse';
@@ -121,7 +122,11 @@ async function emitSyncStatus({ userId }: { userId: number }): Promise<void> {
   try {
     // Import dynamically to avoid circular dependency
     const { getUserAccountsSyncStatus } = await import('./get-user-sync-status');
-    const fullStatus = await getUserAccountsSyncStatus(userId);
+    // Off the ambient transaction: after a failed sync statement it is aborted and every query on it throws.
+    const fullStatus = await namespace.runPromise(async () => {
+      namespace.set('transaction', null);
+      return getUserAccountsSyncStatus(userId);
+    });
     sseManager.sendToUser({
       userId,
       event: SSE_EVENT_TYPES.SYNC_STATUS_CHANGED,
