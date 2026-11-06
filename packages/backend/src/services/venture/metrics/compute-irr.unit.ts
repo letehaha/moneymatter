@@ -1,11 +1,21 @@
 import { VENTURE_DEAL_STATUS } from '@bt/shared/types/venture';
 import { Money } from '@common/types/money';
-import { describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+
+jest.mock('@js/utils/logger', () => ({
+  logger: { warn: jest.fn(), error: jest.fn(), info: jest.fn() },
+}));
+
+import { logger } from '@js/utils/logger';
 import VentureDeals from '@models/venture/venture-deals.model';
 
 import { computeIrr } from './compute-irr';
 
 describe('computeIrr', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('all cash-flow points on the same day → null', () => {
     const deal = {
       id: 'deal-1',
@@ -23,5 +33,21 @@ describe('computeIrr', () => {
     });
 
     expect(result).toBeNull();
+  });
+
+  it('open deal whose value collapsed within a month (xirr does not converge) → null, logged below warn', () => {
+    const asOfDate = new Date('2026-06-01T00:00:00.000Z');
+    const deal = {
+      id: 'deal-2',
+      status: VENTURE_DEAL_STATUS.outstanding,
+      investmentDate: new Date(asOfDate.getTime() - 32 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      principal: Money.fromDecimal('1000'),
+      entryFee: Money.fromDecimal('0'),
+    } as unknown as VentureDeals;
+
+    expect(computeIrr({ deal, events: [], currentValue: '1', asOfDate })).toBeNull();
+    expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('could not converge'));
+    expect(logger.warn).not.toHaveBeenCalled();
+    expect(logger.error).not.toHaveBeenCalled();
   });
 });
