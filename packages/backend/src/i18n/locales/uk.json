@@ -491,6 +491,7 @@
     "aiRateLimited": "Досягнуто ліміту запитів постачальника AI. Спробуйте ще раз за кілька хвилин.",
     "aiExtractionFailed": "Не вдалося вилучити дані за допомогою AI. Спробуйте ще раз.",
     "ynab": {
+      "importAlreadyInProgress": "Імпорт YNAB вже виконується. Дочекайтеся завершення, перш ніж розпочинати ще один.",
       "parse": {
         "fileEmpty": "Файл YNAB Register.csv порожній.",
         "unparseable": "Не вдалося розібрати YNAB Register.csv як CSV-файл.",

@@ -176,6 +176,55 @@ describe('Execute YNAB import endpoint', () => {
     expect(Number(mainPln.initialBalance)).toBe(2050.95);
   }, 30000);
 
+  describe('concurrent imports for one user', () => {
+    it('accepts exactly one of two simultaneous imports, without blocking other users', async () => {
+      // The comprehensive fixture keeps the worker busy for seconds, so the accepted job
+      // is still in flight when user B's request lands.
+      const fileContent = helpers.loadYnabFixture('register-comprehensive.csv');
+      const parsed = await helpers.parseYnab({ payload: { fileContent }, raw: true });
+      const accountMapping = Object.fromEntries(
+        parsed.result.accounts.map((a) => [a.originalName, { currencyCode: a.detectedCurrency! }]),
+      );
+
+      const responses = await Promise.all([
+        helpers.executeYnab({ payload: { fileContent, accountMapping } }),
+        helpers.executeYnab({ payload: { fileContent, accountMapping } }),
+      ]);
+      expect(responses.map((r) => r.statusCode).toSorted()).toEqual([200, ERROR_CODES.Locked]);
+      const { jobId } = helpers.extractResponse(responses.find((r) => r.statusCode === 200)!);
+
+      const otherUser = await signUpSecondUser();
+      await asUser({
+        cookies: otherUser.cookies,
+        fn: async () => {
+          const basic = helpers.loadYnabFixture('register-basic.csv');
+          const basicParsed = await helpers.parseYnab({ payload: { fileContent: basic }, raw: true });
+          const basicMapping = Object.fromEntries(
+            basicParsed.result.accounts.map((a) => [a.originalName, { currencyCode: a.detectedCurrency! }]),
+          );
+          const other = await helpers.executeYnab({ payload: { fileContent: basic, accountMapping: basicMapping } });
+          expect(other.statusCode).toBe(200);
+          await waitForYnabImportCompletion({ jobId: helpers.extractResponse(other).jobId });
+        },
+      });
+
+      const progress = await waitForYnabImportCompletion({ jobId, timeoutMs: 60_000 });
+      expectYnabImportCompleted(progress);
+      const { items } = await helpers.getBatchesHistory({ raw: true });
+      expect(items).toHaveLength(1);
+    }, 60_000);
+
+    it('accepts a new import once the previous one has finished', async () => {
+      const first = await helpers.runYnabImport();
+      expect(first.summary.payeesCreated).toBe(4);
+
+      const second = await helpers.runYnabImport();
+      expect(second.summary.transactionsImported).toBe(4);
+      expect(second.summary.payeesCreated).toBe(0);
+      expect(second.summary.errors).toHaveLength(0);
+    });
+  });
+
   it('returns 404 for an unknown job id', async () => {
     const response = await helpers.getYnabImportStatus({ jobId: 'no-such-job' });
     expect(response.statusCode).toBe(404);
@@ -227,6 +276,8 @@ describe('Execute YNAB import endpoint', () => {
       fn: () => helpers.getYnabImportStatus({ jobId }),
     });
     expect(statusAsOther.statusCode).toBe(ERROR_CODES.NotFoundError);
+    // Drained so the in-flight guard doesn't reject the next test's import (user ids restart per test).
+    await waitForYnabImportCompletion({ jobId });
   });
 
   it('skips a mapped-to-skip account: no account, no rows, no orphan entities', async () => {

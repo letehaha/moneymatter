@@ -487,6 +487,7 @@
     "aiRateLimited": "AI provider rate limit reached. Please try again in a few minutes.",
     "aiExtractionFailed": "AI extraction failed. Please try again.",
     "ynab": {
+      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
       "parse": {
         "fileEmpty": "YNAB Register.csv is empty.",
         "unparseable": "YNAB Register.csv could not be parsed as a CSV file.",
