@@ -15,7 +15,6 @@ import { skipPeriod } from '@services/subscriptions/skip-period';
 import { suggestHistoricalMatches } from '@services/subscriptions/suggest-historical-matches';
 import { unlinkTransaction } from '@services/subscriptions/unlink-transaction';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -32,14 +31,14 @@ jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChan
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerAcceptSubscriptionCandidate } from './accept-subscription-candidate';
-import { registerGetSubscriptionPeriods } from './get-subscription-periods';
-import { registerListSubscriptionMatchSuggestions } from './list-subscription-match-suggestions';
-import { registerPaySubscriptionPeriod } from './pay-subscription-period';
-import { registerPreviewSubscriptionPayment } from './preview-subscription-payment';
-import { registerRevertSubscriptionPeriod } from './revert-subscription-period';
-import { registerSkipSubscriptionPeriod } from './skip-subscription-period';
-import { registerUnlinkSubscriptionPeriodTransaction } from './unlink-subscription-period-transaction';
+import { acceptSubscriptionCandidateTool } from './accept-subscription-candidate';
+import { getSubscriptionPeriodsTool } from './get-subscription-periods';
+import { listSubscriptionMatchSuggestionsTool } from './list-subscription-match-suggestions';
+import { paySubscriptionPeriodTool } from './pay-subscription-period';
+import { previewSubscriptionPaymentTool } from './preview-subscription-payment';
+import { revertSubscriptionPeriodTool } from './revert-subscription-period';
+import { skipSubscriptionPeriodTool } from './skip-subscription-period';
+import { unlinkSubscriptionPeriodTransactionTool } from './unlink-subscription-period-transaction';
 
 const READ_ONLY = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -82,15 +81,15 @@ beforeEach(() => {
 });
 
 describe('accept_subscription_candidate', () => {
-  const tool = captureTools({ register: registerAcceptSubscriptionCandidate })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: acceptSubscriptionCandidateTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name', () => {
     expect(tool.name).toBe('accept_subscription_candidate');
   });
 
   it('declares the candidate id plus the fields of the REST body schema', () => {
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['candidateId', ...Object.keys(acceptCandidateBodySchema.shape)].toSorted(),
     );
     expect(schema.safeParse({ candidateId: CANDIDATE_ID }).success).toBe(true);
@@ -132,8 +131,8 @@ describe('accept_subscription_candidate', () => {
 });
 
 describe('list_subscription_match_suggestions', () => {
-  const tool = captureTools({ register: registerListSubscriptionMatchSuggestions })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: listSubscriptionMatchSuggestionsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   const makeTx = (patch: Record<string, unknown> = {}) => ({
     id: TX_ID,
@@ -192,12 +191,12 @@ describe('list_subscription_match_suggestions', () => {
 });
 
 describe('get_subscription_periods', () => {
-  const tool = captureTools({ register: registerGetSubscriptionPeriods })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: getSubscriptionPeriodsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and declares the id plus the fields of the REST query schema', () => {
     expect(tool.name).toBe('get_subscription_periods');
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['subscriptionId', ...Object.keys(getPeriodsQuerySchema.shape)].toSorted(),
     );
   });
@@ -239,8 +238,8 @@ describe('get_subscription_periods', () => {
 });
 
 describe('preview_subscription_payment', () => {
-  const tool = captureTools({ register: registerPreviewSubscriptionPayment })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: previewSubscriptionPaymentTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name; the period is optional', () => {
     expect(tool.name).toBe('preview_subscription_payment');
@@ -263,13 +262,13 @@ describe('preview_subscription_payment', () => {
 });
 
 describe('pay_subscription_period', () => {
-  const tool = captureTools({ register: registerPaySubscriptionPeriod })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: paySubscriptionPeriodTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const base = { subscriptionId: SUB_ID, periodId: PERIOD_ID };
 
   it('registers under its name and declares the ids plus the fields of the REST body schema', () => {
     expect(tool.name).toBe('pay_subscription_period');
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['subscriptionId', 'periodId', ...Object.keys(markPeriodPaidBodySchema.shape)].toSorted(),
     );
     expect(tool.config.description).toMatch(/createTransaction/);
@@ -370,15 +369,15 @@ describe('pay_subscription_period', () => {
 });
 
 describe.each([
-  { name: 'skip_subscription_period', register: registerSkipSubscriptionPeriod, service: skip },
+  { name: 'skip_subscription_period', register: skipSubscriptionPeriodTool, service: skip },
   {
     name: 'unlink_subscription_period_transaction',
-    register: registerUnlinkSubscriptionPeriodTransaction,
+    register: unlinkSubscriptionPeriodTransactionTool,
     service: unlink,
   },
 ])('$name', ({ name, register, service }) => {
   const tool = captureTools({ register })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const schema = tool.config.inputSchema!;
   const args = { subscriptionId: SUB_ID, periodId: PERIOD_ID };
 
   it('registers under its name and takes both ids', () => {
@@ -408,8 +407,8 @@ describe.each([
 });
 
 describe('revert_subscription_period', () => {
-  const tool = captureTools({ register: registerRevertSubscriptionPeriod })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: revertSubscriptionPeriodTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const args = { subscriptionId: SUB_ID, periodId: PERIOD_ID };
   const WRITE_ONLY = makeExtra({ scopes: ['finance:read', 'finance:write'] });
 

@@ -5,8 +5,8 @@ import { MCP_TOOLSET_SCOPES } from '@bt/shared/types';
  * narrows them down on the consent screen: `finance:write` / `finance:delete` gate the mutation
  * tools, and each `toolset:<id>` adds that toolset's tools to `core`.
  *
- * Keep in sync with the static mirrors and the server card under packages/frontend/public/.well-known;
- * ./toolsets-drift.unit.ts checks them.
+ * The static mirrors and the server card under packages/frontend/public/.well-known are generated
+ * from it by `npm run mcp:generate-metadata`.
  */
 export const MCP_SCOPES_SUPPORTED: readonly string[] = [
   'finance:read',

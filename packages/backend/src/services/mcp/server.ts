@@ -9,42 +9,37 @@ import {
 import { slimToolListing } from './tool-list-slimming';
 import { registerToolsets } from './toolsets';
 
+export const MCP_SERVER_INFO = {
+  name: 'MoneyMatter Finance Tracker',
+  version: '2.0.0',
+};
+
+export const MCP_PROMPTS = [
+  {
+    name: FINANCIAL_DATA_GUIDE_NAME,
+    description: FINANCIAL_DATA_GUIDE_DESCRIPTION,
+    text: FINANCIAL_DATA_GUIDE_CONTENT,
+  },
+];
+
 /**
  * Creates a new MCP server instance with the prompts, the `core` tools and the tools of the given
  * toolsets. Each MCP session gets its own server instance; the toolsets come from the scopes the
  * user granted on the consent screen.
  *
- * When adding, removing, or renaming tools / prompts, also update:
- *   packages/frontend/public/.well-known/mcp/server-card.json
- * The drift test at ./server-card-drift.unit.ts will fail otherwise. Tools are registered
- * through ./toolsets.ts.
+ * After changing the tools, prompts or server info, run `npm run mcp:generate-metadata`.
  */
 export function createMcpServer({ toolsets }: { toolsets: readonly McpOptionalToolset[] }): McpServer {
-  const server = new McpServer(
-    {
-      name: 'MoneyMatter Finance Tracker',
-      version: '2.0.0',
+  const server = new McpServer(MCP_SERVER_INFO, {
+    capabilities: {
+      logging: {},
     },
-    {
-      capabilities: {
-        logging: {},
-      },
-    },
-  );
+  });
   slimToolListing({ server });
 
-  // Register the financial data guide prompt
-  server.prompt(FINANCIAL_DATA_GUIDE_NAME, FINANCIAL_DATA_GUIDE_DESCRIPTION, () => ({
-    messages: [
-      {
-        role: 'user',
-        content: {
-          type: 'text',
-          text: FINANCIAL_DATA_GUIDE_CONTENT,
-        },
-      },
-    ],
-  }));
+  for (const { name, description, text } of MCP_PROMPTS) {
+    server.prompt(name, description, () => ({ messages: [{ role: 'user', content: { type: 'text', text } }] }));
+  }
 
   registerToolsets({ server, toolsets });
 

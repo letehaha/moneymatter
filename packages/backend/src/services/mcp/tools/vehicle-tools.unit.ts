@@ -11,7 +11,6 @@ import { getVehicles } from '@services/vehicles/get-vehicles.service';
 import { updateVehicle } from '@services/vehicles/update-vehicle.service';
 import { createVehicleBodyFields, updateVehicleBodyFields } from '@services/vehicles/zod-schemas';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -22,10 +21,10 @@ jest.mock('@services/vehicles/get-vehicle.service', () => ({ getVehicle: jest.fn
 jest.mock('@services/vehicles/get-vehicles.service', () => ({ getVehicles: jest.fn() }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
-import { registerCreateVehicle } from './create-vehicle';
-import { registerDeleteVehicle } from './delete-vehicle';
-import { registerGetVehicles } from './get-vehicles';
-import { registerUpdateVehicle } from './update-vehicle';
+import { createVehicleTool } from './create-vehicle';
+import { deleteVehicleTool } from './delete-vehicle';
+import { getVehiclesTool } from './get-vehicles';
+import { updateVehicleTool } from './update-vehicle';
 
 const READ_ONLY = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -148,12 +147,12 @@ beforeEach(() => {
 });
 
 describe('get_vehicles', () => {
-  const tool = captureTools({ register: registerGetVehicles })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getVehiclesTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and takes only an optional vehicle id', () => {
     expect(tool.name).toBe('get_vehicles');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['vehicleId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['vehicleId']);
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ vehicleId: VEHICLE_ID }).success).toBe(true);
     expect(schema.safeParse({ vehicleId: 'nope' }).success).toBe(false);
@@ -224,12 +223,12 @@ describe('get_vehicles', () => {
 });
 
 describe('create_vehicle', () => {
-  const tool = captureTools({ register: registerCreateVehicle })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: createVehicleTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with every field of the REST body', () => {
     expect(tool.name).toBe('create_vehicle');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       Object.keys(createVehicleBodyFields).toSorted(),
     );
     expect(Object.keys(createVehicleBodyFields).length).toBeGreaterThan(10);
@@ -339,16 +338,16 @@ describe('create_vehicle', () => {
 });
 
 describe('update_vehicle', () => {
-  const tool = captureTools({ register: registerUpdateVehicle })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: updateVehicleTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the vehicle id and every editable field of the REST body, and none of the fixed ones', () => {
     expect(tool.name).toBe('update_vehicle');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['vehicleId', ...Object.keys(updateVehicleBodyFields)].toSorted(),
     );
     for (const locked of ['purchasePrice', 'purchaseDate', 'currencyCode']) {
-      expect(tool.config.inputSchema).not.toHaveProperty(locked);
+      expect(tool.config.inputSchema!.shape).not.toHaveProperty(locked);
     }
     expect(tool.config.description).toMatch(/purchase price/i);
     expect(tool.config.description).toMatch(/purchase date/i);
@@ -397,16 +396,22 @@ describe('update_vehicle', () => {
     expect(data).toEqual(presentedVehicle({ currentMileage: 50_000 }));
   });
 
-  it('ignores a fixed field the model sends anyway', async () => {
-    updateService.mockResolvedValue(makeVehicle() as never);
+  it('rejects a fixed field the model sends anyway, before the service', async () => {
+    await expect(
+      call({
+        tool,
+        args: {
+          vehicleId: VEHICLE_ID,
+          make: 'Honda',
+          purchasePrice: 1,
+          purchaseDate: '2000-01-01',
+          currencyCode: 'EUR',
+        },
+        extra: WRITE,
+      }),
+    ).rejects.toThrow(/purchasePrice/);
 
-    await call({
-      tool,
-      args: { vehicleId: VEHICLE_ID, make: 'Honda', purchasePrice: 1, purchaseDate: '2000-01-01', currencyCode: 'EUR' },
-      extra: WRITE,
-    });
-
-    expect(updateService.mock.calls[0]![0]).toEqual({ userId: 42, vehicleId: VEHICLE_ID, make: 'Honda' });
+    expect(updateService).not.toHaveBeenCalled();
   });
 
   it("passes another user's vehicle through as the service not-found error", async () => {
@@ -429,12 +434,12 @@ describe('update_vehicle', () => {
 });
 
 describe('delete_vehicle', () => {
-  const tool = captureTools({ register: registerDeleteVehicle })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: deleteVehicleTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name, takes a vehicle id and warns that it is irreversible', () => {
     expect(tool.name).toBe('delete_vehicle');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['vehicleId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['vehicleId']);
     expect(schema.safeParse({ vehicleId: VEHICLE_ID }).success).toBe(true);
     expect(schema.safeParse({}).success).toBe(false);
     expect(tool.config.description).toMatch(/irreversible|permanent/i);

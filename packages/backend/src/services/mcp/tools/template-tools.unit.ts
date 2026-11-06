@@ -16,7 +16,6 @@ import {
   updateTransactionTemplate,
 } from '@services/transaction-templates';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test. The serializers pass the already API-shaped fakes through.
@@ -43,14 +42,14 @@ jest.mock('@root/serializers/transactions.serializer', () => ({
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerApplyTransactionAutomation } from './apply-transaction-automation';
-import { registerCreateTransactionTemplate } from './create-transaction-template';
-import { registerDeleteTransactionTemplate } from './delete-transaction-template';
-import { registerGetCategoryTransactionCount } from './get-category-transaction-count';
-import { registerGetTags } from './get-tags';
-import { registerGetTransactionGroups } from './get-transaction-groups';
-import { registerGetTransactionTemplates } from './get-transaction-templates';
-import { registerUpdateTransactionTemplate } from './update-transaction-template';
+import { applyTransactionAutomationTool } from './apply-transaction-automation';
+import { createTransactionTemplateTool } from './create-transaction-template';
+import { deleteTransactionTemplateTool } from './delete-transaction-template';
+import { getCategoryTransactionCountTool } from './get-category-transaction-count';
+import { getTagsTool } from './get-tags';
+import { getTransactionGroupsTool } from './get-transaction-groups';
+import { getTransactionTemplatesTool } from './get-transaction-templates';
+import { updateTransactionTemplateTool } from './update-transaction-template';
 
 const READ_ONLY = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -134,7 +133,7 @@ beforeEach(() => {
 });
 
 describe('get_transaction_templates', () => {
-  const tool = captureTools({ register: registerGetTransactionTemplates })[0]!;
+  const tool = captureTools({ register: getTransactionTemplatesTool })[0]!;
 
   it('registers under its name and explains that templates are named presets for new transactions', () => {
     expect(tool.name).toBe('get_transaction_templates');
@@ -175,12 +174,12 @@ describe('get_transaction_templates', () => {
 });
 
 describe('create_transaction_template', () => {
-  const tool = captureTools({ register: registerCreateTransactionTemplate })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: createTransactionTemplateTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and declares exactly the fields of the REST body schema', () => {
     expect(tool.name).toBe('create_transaction_template');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       Object.keys(templateBodySchema.shape).toSorted(),
     );
   });
@@ -281,12 +280,12 @@ describe('create_transaction_template', () => {
 });
 
 describe('update_transaction_template', () => {
-  const tool = captureTools({ register: registerUpdateTransactionTemplate })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: updateTransactionTemplateTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and declares the id plus every field of the REST update schema', () => {
     expect(tool.name).toBe('update_transaction_template');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['templateId', ...Object.keys(updateTemplateBodySchema.shape)].toSorted(),
     );
   });
@@ -356,12 +355,12 @@ describe('update_transaction_template', () => {
 });
 
 describe('delete_transaction_template', () => {
-  const tool = captureTools({ register: registerDeleteTransactionTemplate })[0]!;
+  const tool = captureTools({ register: deleteTransactionTemplateTool })[0]!;
 
   it('registers under its name with a template id', () => {
     expect(tool.name).toBe('delete_transaction_template');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['templateId']);
-    expect(z.object(tool.config.inputSchema ?? {}).safeParse({ templateId: 'nope' }).success).toBe(false);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['templateId']);
+    expect(tool.config.inputSchema!.safeParse({ templateId: 'nope' }).success).toBe(false);
   });
 
   it('deletes the template of the caller and reports it', async () => {
@@ -393,12 +392,12 @@ describe('delete_transaction_template', () => {
 });
 
 describe('apply_transaction_automation', () => {
-  const tool = captureTools({ register: registerApplyTransactionAutomation })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: applyTransactionAutomationTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and declares the id plus the transactionIds of the REST body schema', () => {
     expect(tool.name).toBe('apply_transaction_automation');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['automationId', ...Object.keys(applyAutomationBodySchema.shape)].toSorted(),
     );
   });
@@ -453,12 +452,12 @@ describe('apply_transaction_automation', () => {
 });
 
 describe('get_category_transaction_count', () => {
-  const tool = captureTools({ register: registerGetCategoryTransactionCount })[0]!;
+  const tool = captureTools({ register: getCategoryTransactionCountTool })[0]!;
 
   it('registers under its name, takes a category id and points to delete_category', () => {
     expect(tool.name).toBe('get_category_transaction_count');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['categoryId']);
-    expect(z.object(tool.config.inputSchema ?? {}).safeParse({ categoryId: 'nope' }).success).toBe(false);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['categoryId']);
+    expect(tool.config.inputSchema!.safeParse({ categoryId: 'nope' }).success).toBe(false);
     expect(tool.config.description).toMatch(/delete_category/);
   });
 
@@ -480,12 +479,12 @@ describe('get_category_transaction_count', () => {
 });
 
 describe('get_tags', () => {
-  const tool = captureTools({ register: registerGetTags })[0]!;
+  const tool = captureTools({ register: getTagsTool })[0]!;
 
   it('declares an optional tagId', () => {
-    const schema = z.object(tool.config.inputSchema ?? {});
+    const schema = tool.config.inputSchema!;
 
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['tagId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['tagId']);
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ tagId: TAG_ID }).success).toBe(true);
     expect(schema.safeParse({ tagId: 'nope' }).success).toBe(false);
@@ -528,12 +527,12 @@ describe('get_tags', () => {
 });
 
 describe('get_transaction_groups', () => {
-  const tool = captureTools({ register: registerGetTransactionGroups })[0]!;
+  const tool = captureTools({ register: getTransactionGroupsTool })[0]!;
 
   it('declares an optional groupId next to includeTransactions', () => {
-    const schema = z.object(tool.config.inputSchema ?? {});
+    const schema = tool.config.inputSchema!;
 
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['groupId', 'includeTransactions']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['groupId', 'includeTransactions']);
     expect(schema.safeParse({ groupId: GROUP_ID }).success).toBe(true);
     expect(schema.safeParse({ groupId: 'nope' }).success).toBe(false);
   });

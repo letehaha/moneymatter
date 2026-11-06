@@ -16,10 +16,10 @@ import { deleteTag } from '@services/tags/delete-tag';
 import { previewAutomation } from '@services/transaction-automations/preview';
 import { createTransaction } from '@services/transactions/create-transaction';
 
-import { registerArchiveAccount } from './archive-account';
-import { registerCreateTransaction } from './create-transaction';
-import { registerDeleteTag } from './delete-tag';
-import { registerPreviewTransactionAutomation } from './preview-transaction-automation';
+import { archiveAccountTool } from './archive-account';
+import { createTransactionTool } from './create-transaction';
+import { deleteTagTool } from './delete-tag';
+import { previewTransactionAutomationTool } from './preview-transaction-automation';
 
 const ID = '019f7e9e-b5f4-729c-9881-9544b15f4e3d';
 
@@ -27,21 +27,21 @@ const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
 
 const WRITE_TOOLS = [
   {
-    register: registerArchiveAccount,
+    register: archiveAccountTool,
     name: 'archive_account',
-    args: { id: ID, archived: true },
+    args: { accountId: ID, archived: true },
     service: updateAccount,
     scopes: ['finance:read', 'finance:write'],
   },
   {
-    register: registerDeleteTag,
+    register: deleteTagTool,
     name: 'delete_tag',
     args: { id: ID },
     service: deleteTag,
     scopes: ['finance:read', 'finance:delete'],
   },
   {
-    register: registerCreateTransaction,
+    register: createTransactionTool,
     name: 'create_transaction',
     args: {
       accountId: ID,
@@ -84,8 +84,10 @@ describe.each(WRITE_TOOLS)('$name write guards', ({ register, name, args, servic
 });
 
 describe('preview_transaction_automation lock', () => {
-  const tool = captureTools({ register: registerPreviewTransactionAutomation })[0]!;
-  const args = { conditions: { operator: 'and', rules: [] } };
+  const tool = captureTools({ register: previewTransactionAutomationTool })[0]!;
+  const args = {
+    conditions: { match: 'all', items: [{ field: 'dayOfMonth', operator: 'between', value: { min: 1, max: 31 } }] },
+  };
 
   it('is refused while the base-currency lock is set, with the service not called', async () => {
     lockCheck.mockResolvedValueOnce(true);

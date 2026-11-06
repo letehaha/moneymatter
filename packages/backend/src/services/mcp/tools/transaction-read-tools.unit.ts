@@ -56,16 +56,16 @@ jest.mock('@root/serializers/transactions.serializer', () => ({
 import { deleteAttachment, listAttachments } from '@services/attachments/attachments.service';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerBulkDeleteTransactions } from './bulk-delete-transactions';
-import { registerConfirmPlannedTransaction } from './confirm-planned-transaction';
-import { registerDeleteAttachment } from './delete-attachment';
-import { registerGetPlannedSummary } from './get-planned-summary';
-import { registerGetTransactionGroups } from './get-transaction-groups';
-import { registerGetTransactionLinks } from './get-transaction-links';
-import { registerGetTransactionsById } from './get-transactions-by-id';
-import { registerGetTransactionsSummary } from './get-transactions-summary';
-import { registerListTransactionAttachments } from './list-transaction-attachments';
-import { registerSearchTransactions } from './search-transactions';
+import { bulkDeleteTransactionsTool } from './bulk-delete-transactions';
+import { confirmPlannedTransactionTool } from './confirm-planned-transaction';
+import { deleteAttachmentTool } from './delete-attachment';
+import { getPlannedSummaryTool } from './get-planned-summary';
+import { getTransactionGroupsTool } from './get-transaction-groups';
+import { getTransactionLinksTool } from './get-transaction-links';
+import { getTransactionsByIdTool } from './get-transactions-by-id';
+import { getTransactionsSummaryTool } from './get-transactions-summary';
+import { listTransactionAttachmentsTool } from './list-transaction-attachments';
+import { searchTransactionsTool } from './search-transactions';
 
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
 const DELETE = makeExtra({ scopes: ['finance:read', 'finance:delete'], features: [FEATURES.attachments] });
@@ -130,8 +130,8 @@ beforeEach(() => {
 });
 
 describe('search_transactions', () => {
-  const tool = captureTools({ register: registerSearchTransactions })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: searchTransactionsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('accepts the isPlanned and payeeIds filters and rejects a payee id that is not an id', () => {
     expect(schema.safeParse({ isPlanned: true, payeeIds: [PAYEE_ID] }).success).toBe(true);
@@ -187,7 +187,7 @@ describe('search_transactions', () => {
     const description = tool.config.description!;
 
     expect(description).toMatch(/payee/i);
-    const field = (name: string) => (tool.config.inputSchema![name] as z.ZodType).description;
+    const field = (name: string) => (tool.config.inputSchema!.shape[name] as z.ZodType).description;
     expect(field('payeeIds')).toMatch(/get_payees/);
     expect(field('isPlanned')).toMatch(/endDate/);
     expect(field('endDate')).toMatch(/future|planned/i);
@@ -195,7 +195,7 @@ describe('search_transactions', () => {
 });
 
 describe('get_transaction_groups', () => {
-  const tool = captureTools({ register: registerGetTransactionGroups })[0]!;
+  const tool = captureTools({ register: getTransactionGroupsTool })[0]!;
 
   it('returns the embedded transactions with their payee, from one name lookup', async () => {
     groupsService.mockResolvedValue([
@@ -228,8 +228,8 @@ describe('get_transaction_groups', () => {
 });
 
 describe('get_transactions_by_id', () => {
-  const tool = captureTools({ register: registerGetTransactionsById })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: getTransactionsByIdTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('accepts 1 to 50 ids and refuses 0 or 51, the limit of the by-ids service', () => {
     expect(schema.safeParse({ ids: makeIds(1) }).success).toBe(true);
@@ -319,11 +319,11 @@ describe('get_transactions_by_id', () => {
 });
 
 describe('get_transactions_summary', () => {
-  const tool = captureTools({ register: registerGetTransactionsSummary })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: getTransactionsSummaryTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('offers every filter field of the transaction list', () => {
-    const missing = Object.keys(transactionFilterFields).filter((field) => !(field in tool.config.inputSchema!));
+    const missing = Object.keys(transactionFilterFields).filter((field) => !(field in tool.config.inputSchema!.shape));
 
     expect(missing).toEqual([]);
   });
@@ -388,7 +388,7 @@ describe('get_transactions_summary', () => {
 });
 
 describe('get_planned_summary', () => {
-  const tool = captureTools({ register: registerGetPlannedSummary })[0]!;
+  const tool = captureTools({ register: getPlannedSummaryTool })[0]!;
 
   it('returns the planned totals of the caller', async () => {
     const entries = [
@@ -409,8 +409,8 @@ describe('get_planned_summary', () => {
 });
 
 describe('confirm_planned_transaction', () => {
-  const tool = captureTools({ register: registerConfirmPlannedTransaction })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: confirmPlannedTransactionTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   const planned = ({ time }: { time: Date }) => ({ tx: { id: ID_1, isPlanned: true, time }, access: {} }) as never;
   const HOUR = 60 * 60 * 1000;
@@ -510,7 +510,7 @@ describe('confirm_planned_transaction', () => {
 });
 
 describe('bulk_delete_transactions', () => {
-  const tool = captureTools({ register: registerBulkDeleteTransactions })[0]!;
+  const tool = captureTools({ register: bulkDeleteTransactionsTool })[0]!;
 
   beforeEach(() => {
     resolveTargets.mockResolvedValue([ID_1, ID_2]);
@@ -645,7 +645,7 @@ describe('bulk_delete_transactions', () => {
 });
 
 describe('get_transaction_links', () => {
-  const tool = captureTools({ register: registerGetTransactionLinks })[0]!;
+  const tool = captureTools({ register: getTransactionLinksTool })[0]!;
 
   const PORTFOLIO = { transferId: 't1', portfolioId: 'p1', portfolioName: 'Brokerage' };
   const VENTURE = {
@@ -695,7 +695,7 @@ describe('get_transaction_links', () => {
 });
 
 describe('list_transaction_attachments', () => {
-  const tool = captureTools({ register: registerListTransactionAttachments })[0]!;
+  const tool = captureTools({ register: listTransactionAttachmentsTool })[0]!;
 
   it('lists the files of a transaction without the owner id, and needs no feature', async () => {
     attachmentsList.mockResolvedValue([
@@ -727,7 +727,7 @@ describe('list_transaction_attachments', () => {
 });
 
 describe('delete_attachment', () => {
-  const tool = captureTools({ register: registerDeleteAttachment })[0]!;
+  const tool = captureTools({ register: deleteAttachmentTool })[0]!;
   const ATTACHMENT_ID = '66666666-6666-4666-8666-666666666666';
 
   it('deletes the attachment', async () => {

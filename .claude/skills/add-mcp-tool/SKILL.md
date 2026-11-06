@@ -16,23 +16,32 @@ Adds a new tool to the MCP server at `https://mcp.moneymatter.app/mcp` without b
 
 ## Architecture at a glance
 
-Each MCP tool is a thin wrapper over an existing backend service:
+Each MCP tool is a `defineTool` def wrapping an existing backend service:
 
 ```
 Service (@services/...)
-  ↓ called by
-MCP tool file (packages/backend/src/services/mcp/tools/<name>.ts)
-  ↓ listed in its toolset
-TOOLSET_REGISTRARS (packages/backend/src/services/mcp/toolsets.ts)
-  ↓ registered by
+  ↓ called by run()
+Tool def (packages/backend/src/services/mcp/tools/<name>.ts, `export const fooBarTool = defineTool({...})`)
+  ↓ listed in
+ALL_TOOLS (packages/backend/src/services/mcp/toolsets.ts), grouped by def.toolset
+  ↓ registered by registerDefinedTool via
 createMcpServer({ toolsets }) (packages/backend/src/services/mcp/server.ts)
 ```
 
-Three metafiles stay in sync via drift tests (more drift tests check that every tool file is listed in exactly one toolset in `toolsets.ts`):
+`registerDefinedTool` (`define-tool.ts`) runs the guards, in this fixed order, then wraps the result:
 
-- `packages/frontend/public/.well-known/mcp/server-card.json` — machine-readable tool list
-- `packages/frontend/public/skills/connect-moneymatter/SKILL.md` — human-readable agent skill
-- `packages/frontend/public/.well-known/agent-skills/index.json` — contains `sha256` of the SKILL.md above
+```
+getUserId → requireScope(finance:<access>) [write/delete] → requireFeature [feature] → assertBaseCurrencyUnlocked [lock] → trackMcpToolUsed → run → jsonContent({ data })
+```
+
+It also appends ` Requires finance:<access> scope.` to the description (plus the `conditionalDelete` path), wraps `input` in `z.strictObject` (built once per def) and sets `readOnlyHint: true` on reads and `destructiveHint: true` on deletes; writes leave `destructiveHint` unset, which the spec reads as destructive.
+
+`npm run mcp:generate-metadata` (in `packages/backend`) generates these from `ALL_TOOLS`, `TOOLSET_DESCRIPTIONS`, `MCP_SCOPES_SUPPORTED` and `MCP_SERVER_INFO`; never edit them by hand:
+
+- `packages/frontend/public/.well-known/mcp/server-card.json` — machine-readable tool list (each description is the first sentence of the def's)
+- `scopes_supported` in `packages/frontend/public/.well-known/oauth-authorization-server` and `oauth-protected-resource`
+- the tool tables between the `GENERATED TOOL TABLES` markers in `packages/frontend/public/skills/connect-moneymatter/SKILL.md`
+- the `sha256` of that SKILL.md in `packages/frontend/public/.well-known/agent-skills/index.json`
 
 ## Checklist (complete every step)
 
@@ -42,142 +51,76 @@ When adding tool `my_new_tool`:
 
 Path: `packages/backend/src/services/mcp/tools/my-new-tool.ts` (kebab-case filename)
 
-Use this template. Adjust imports, tool name, description, `inputSchema`, service call, and `tool:` string in `trackMcpToolUsed`. A read tool drops the guard lines; a write tool keeps the ones its REST route has (see "Mirror the REST route" and "Write guard order" below).
-
 ```typescript
 import { FEATURES } from '@bt/shared/types'; // only for a feature-gated tool
 import { recordId } from '@common/lib/zod/custom-types';
-import { trackMcpToolUsed } from '@js/utils/posthog';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { myService } from '@services/path/to/my-service';
 import { z } from 'zod';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
+import { defineTool } from '../define-tool';
 
-const inputSchema = {
-  someId: recordId().describe('...'),
-  optionalFilter: z.string().optional().describe('...'),
-};
-
-export function registerMyNewTool(server: McpServer) {
-  server.registerTool(
-    'my_new_tool',
-    {
-      description: 'What it returns and when an agent should call it. One sentence plus a hint on key fields.',
-      inputSchema,
-    },
-    async (args, extra) => {
-      const userId = getUserId({ extra });
-      requireScope({ extra, scope: 'finance:write' }); // write and delete tools only
-      await requireFeature({ userId, feature: FEATURES.budget_plan }); // only when the REST route has requireFeature
-      await assertBaseCurrencyUnlocked({ userId }); // unless the REST route has no checkBaseCurrencyLock
-      trackMcpToolUsed({ userId, tool: 'my_new_tool', clientId: extra.authInfo?.clientId });
-
-      const result = await myService({ userId, ...args });
-      return jsonContent({ data: result });
-    },
-  );
-}
+export const myNewToolTool = defineTool({
+  name: 'my_new_tool',
+  toolset: 'investments',
+  access: 'write',
+  feature: FEATURES.budget_plan, // only when the REST route has requireFeature
+  description: 'What it returns and when an agent should call it. One sentence plus a hint on key fields.',
+  input: {
+    someId: recordId().describe('...'),
+    optionalFilter: z.string().optional().describe('...'),
+  },
+  run: ({ userId, args }) => myService({ userId, ...args }),
+});
 ```
 
 Rules:
 
-- Tool name is **snake_case** (matches MCP convention) and must exactly equal the string in `server-card.json`.
-- Register function is `register<PascalCase>`. File is `<kebab-case>.ts`.
-- `inputSchema` is a **plain object of Zod schemas** (no outer `z.object(...)`), declared as a **module-scope `const`**, never inline inside `registerTool()`. Every MCP session builds its own `McpServer`, so an inline shape is rebuilt per session (zod v4 schemas are ~30 KB each).
-- For tools with no inputs: omit `inputSchema` and drop the `args` parameter — handler becomes `async (extra) => {...}`.
-- Always call `getUserId({ extra })` first — it enforces auth and returns `userId`.
-- Write guard order: `getUserId` → `requireScope` → `requireFeature` (when gated) → `assertBaseCurrencyUnlocked` (unless exempt) → `trackMcpToolUsed` → service.
-- Always call `trackMcpToolUsed({ userId, tool, clientId: extra.authInfo?.clientId })` after the guards, before the service call.
-- Wrap the final response in `jsonContent({ data })`. Money instances auto-serialize to decimals via `toJSON()` in `JSON.stringify`.
-- Use `z.enum([...])` for enum args — match the style in `search-transactions.ts`.
-- Dates: pass ISO strings in and convert with `new Date(args.date)` if the underlying service expects a `Date`.
+- Tool name is **snake_case**. The export is `<camelName>Tool`, the file `<kebab-name>.ts`.
+- `input` is a **plain shape of Zod fields** (no outer `z.object(...)`). Omit it for a tool with no inputs.
+- `run` gets `{ userId, args, extra }` and returns the data; never call `jsonContent`, `getUserId`, `requireScope`, `requireFeature`, `assertBaseCurrencyUnlocked` or `trackMcpToolUsed` for the def's own guards. Money instances serialize to decimals via `toJSON()`.
+- `description` leaves out the `Requires finance:X scope.` sentence; it is appended from `access`. Its first sentence must stand alone: it is what the server card and the skill tables show.
+- Checks that are not guards stay at the top of `run`: a conditional scope (`if (args.force) requireScope({ extra, scope: 'finance:delete' })`), `assertNotDemoUser({ extra })`, argument checks that throw, and REST schema re-parses with refines.
+- Use `z.enum([...])` for enum args. Dates come in as ISO strings; convert with `new Date(args.date)` if the service expects a `Date`.
 
-### Naming, scopes and guards
+### Naming, access and guards
 
-- **Names:** read tools start with `get_`, `list_`, `search_` or `preview_`, and nothing else does. Read tools call no scope helper (the `/mcp` route already requires `finance:read`).
-- **Scopes:** every other tool calls `requireScope`. `finance:write` is the default. `delete_*` tools, and tools that permanently remove data without `delete_` in the name (`merge_payees`, `bulk_delete_*`), use `finance:delete` and are listed in `DESTRUCTIVE_TOOLS` in `tool-scopes-drift.unit.ts` when the name lacks the prefix. A soft delete that a restore tool undoes is a `finance:write` tool. A tool whose delete path is optional (for example `ignore_payee_name` with `force`) uses `finance:write` normally and `finance:delete` on the delete path; list it in `CONDITIONAL_DELETE_TOOLS` in `tool-scopes-drift.unit.ts` (beside `DESTRUCTIVE_TOOLS`) instead.
-- **Read-only and demo users:** `requireScope` rejects both, on every write tool.
-- **Base-currency lock:** `assertBaseCurrencyUnlocked({ userId })` after `requireScope` and, when the tool is gated, after `requireFeature` mirrors `checkBaseCurrencyLock`. The lock follows the REST route, not the tool's name or scope:
-  - a write tool whose route has no lock goes into `LOCK_EXEMPT_TOOLS` (with the route in a comment);
-  - a read-named tool whose route carries the lock (`preview_transaction_automation`) calls `getUserId` → `assertBaseCurrencyUnlocked` → `trackMcpToolUsed`, and goes into `LOCK_GUARDED_READ_TOOLS`.
-- **Feature gates:** `await requireFeature({ userId, feature })` where the route has `requireFeature`. It reads the user's entitlements, active trials included, and throws the same message as REST's 402.
+- **Names:** read tools start with `get_`, `list_`, `search_` or `preview_` and have `access: 'read'`; nothing else does (the `/mcp` route already requires `finance:read`).
+- **Access:** `'write'` is the default. `delete_*` tools, and tools that permanently remove data without `delete_` in the name (`merge_payees`, `bulk_delete_*`), use `'delete'`, and the name goes into `DESTRUCTIVE_TOOLS` in `tool-scopes-drift.unit.ts` when it lacks the prefix. A soft delete that a restore tool undoes is `'write'`. A tool whose delete path is optional (`ignore_payee_name` with `force`) is `'write'`, checks `finance:delete` in `run`, names that path in `conditionalDelete` (`'with force'`), and goes into `CONDITIONAL_DELETE_TOOLS`.
+- **Read-only and demo users:** the scope check rejects both, on every write and delete tool.
+- **Base-currency lock:** `lock` defaults to `access !== 'read'` and follows the REST route's `checkBaseCurrencyLock`, not the tool's name. Set it only to override the default, with the route in a comment above it: `lock: false` for a write whose route has no lock (`delete_attachment`), `lock: true` for a read whose route carries it (`preview_transaction_automation`).
+- **Feature gates:** `feature` where the route has `requireFeature`. Every budget-plan write needs `FEATURES.budget_plan` except `delete_budget_plan`, and goal writes need `FEATURES.goals`.
 
 ### Mirror the REST route
 
 Every tool is a thin wrapper over the service its REST route uses. Parity with REST is the rule: the same service, validation, lock and feature gate, and the same serializer (slimmed for MCP in `serializers.ts` where the output is large). When a controller holds logic a tool needs (validation, orchestration), move it into a service or a shared schema that both the controller and the tool call. Never copy it into the tool.
 
-**Refined inputs:** the SDK's `inputSchema` is a plain shape of Zod fields, so a rule that spans fields (an either-or, a mutually exclusive pair, a `superRefine`) cannot sit in it. Expose the shared schema's `.shape` as `inputSchema` and run the full shared schema (or an `assert…Args` helper like `assertOriginalCurrencyArgs`) in the handler, on the schema's own fields only: when the tool adds ids beside a strict body schema, destructure them off first (`const { planId, ...body } = args; schema.parse(body)`), or the strict parse rejects the ids. The unit test asserts that the **tool** rejects, not the shape.
+**Refined inputs:** `input` is a plain shape, so a rule that spans fields (an either-or, a mutually exclusive pair, a `superRefine`) cannot sit in it. Use the shared schema's `.shape` as `input` and run the full shared schema in `run`, on the schema's own fields only: when the tool adds ids beside a strict body schema, destructure them off first (`const { planId, ...body } = args; schema.parse(body)`). The unit test asserts that the **tool** rejects, not the shape.
 
-### 2. Add the tool to a toolset in `toolsets.ts`
+### 2. Add the def to `ALL_TOOLS` in `toolsets.ts`
 
-Add the import (alphabetical) and list the register function in its toolset in `TOOLSET_REGISTRARS`:
+Import it (alphabetical) and add it to `ALL_TOOLS`. Its `toolset` field decides where it is registered.
 
-```typescript
-import { registerMyNewTool } from './tools/my-new-tool';
-// ...
-investments: [
-  // ...
-  registerMyNewTool,
-],
-```
+`core` is what every client loads, so it stays at 60 tools or fewer (`toolsets-drift`). Put a new tool in the optional toolset of its feature; it goes in `core` only when it's about accounts, transactions, categories, tags, payees or reports. A new toolset needs its id in `MCP_OPTIONAL_TOOLSETS` (`packages/shared/src/types/mcp.ts`), which gives it a `toolset:<id>` scope, plus its entry in `TOOLSET_DESCRIPTIONS` (`toolsets.ts`), its labels in `MCP_TOOLSET_LABELS` on the frontend, a row in the hand-written "Toolsets" table of the connect-moneymatter SKILL.md, and a row on the docs page.
 
-`core` is what every client loads, so it stays at 60 tools or fewer (`toolsets-drift`). Put a new tool in the optional toolset of its feature; it goes in `core` only when it's about accounts, transactions, categories, tags, payees or reports. A new toolset needs its id in `MCP_OPTIONAL_TOOLSETS` (`packages/shared/src/types/mcp.ts`), which gives it a `toolset:<id>` scope, plus an entry in `toolsets` in `server-card.json`, its scope in the static `.well-known/oauth-*` mirrors, its labels in `MCP_TOOLSET_LABELS` on the frontend, and a row on the docs page.
-
-### 3. Update `server-card.json`
-
-Path: `packages/frontend/public/.well-known/mcp/server-card.json`
-
-Append to the `tools[]` array:
-
-```json
-{
-  "name": "my_new_tool",
-  "toolset": "investments",
-  "description": "Short third-person description. Match what clients see."
-}
-```
-
-The `name` MUST match the string in step 1 exactly, and `toolset` the toolset you listed it in. The drift test compares sorted arrays by string equality.
-
-### 4. Update the connect-moneymatter SKILL.md
-
-Path: `packages/frontend/public/skills/connect-moneymatter/SKILL.md`
-
-Add a row to the "Available tools" table in the `###` section that matches the tool's area. Use the SAME column layout (keep table alignment padded) and state the scope as the existing rows do.
-
-If the new tool introduces a new data convention (e.g. investments vs regular transactions), also add a bullet under "Data conventions".
-
-### 5. Recompute SKILL.md sha256
+### 3. Regenerate the metadata
 
 ```bash
-shasum -a 256 packages/frontend/public/skills/connect-moneymatter/SKILL.md
+cd packages/backend
+npm run mcp:generate-metadata
 ```
 
-Take the hex digest and update it in `packages/frontend/public/.well-known/agent-skills/index.json`:
+It rewrites the server card, the OAuth mirrors, the SKILL.md tool tables and the SKILL.md `sha256`. Commit the regenerated files with the tool.
 
-```json
-{
-  "skills": [
-    {
-      "name": "connect-moneymatter",
-      ...
-      "sha256": "<paste digest here>"
-    }
-  ]
-}
-```
+If the new tool introduces a new data convention (e.g. investments vs regular transactions), add a bullet under "Data conventions" in `packages/frontend/public/skills/connect-moneymatter/SKILL.md` (outside the generated region), then run the script again so the `sha256` follows.
 
-Forgetting this step breaks `agent-skills-drift.unit.ts`.
-
-### 6. Write the unit test and run the gate
+### 4. Write the unit test and run the gate
 
 Add `tools/<area>-tools.unit.ts` with the capture helper from `@tests/helpers/mcp-tools`, and `jest.mock` the services (their import chains open Redis connections at module scope):
 
 ```typescript
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
 
-const [tool] = captureTools({ register: registerMyNewTool });
+const [tool] = captureTools({ register: myNewToolTool });
 const result = await tool.handler(
   { someId },
   makeExtra({ scopes: ['finance:read', 'finance:write'], features: [FEATURES.budget_plan] }),
@@ -186,73 +129,58 @@ const result = await tool.handler(
 
 For every tool, cover:
 
-- the input schema accepts a valid input and rejects an invalid one (`z.object(tool.config.inputSchema!)`);
+- the input schema accepts a valid input and rejects an invalid one (`tool.config.inputSchema!.safeParse(...)`; `.shape` for its keys);
 - a write tool throws without its scope, while the lock is set (unless exempt), without the feature when gated, and when its limiter refuses, with the service mock not called, and for a read-only user;
-- the handler calls the service with `userId` and the mapped arguments, and returns `jsonContent` of the result.
+- the handler calls the service with `userId` and the mapped arguments, and returns its result.
 
 Run the gate:
 
 ```bash
 cd packages/backend
-npm run test:unit -- --testPathPattern='services/mcp/'
+npm run test:unit -- --testPathPattern='(services/mcp/|scripts/generate-mcp-metadata)'
 ```
 
-It covers four drift suites and every tool unit test:
+It covers the drift suites and every tool unit test:
 
-- `server-card-drift` — tool names in the files equal `server-card.json`;
+- `generate-mcp-metadata` (`src/scripts/generate-mcp-metadata.unit.ts`) — the committed server card, OAuth mirrors and SKILL.md equal what the generator produces, and the registry `server.json` matches the server version;
 - `agent-skills-drift` — the SKILL.md sha256;
-- `tool-scopes-drift` — scopes, `DESTRUCTIVE_TOOLS`, and the lock lists;
-- `server-registration-drift` — every `registerX` is imported and listed exactly once in `toolsets.ts`;
-- `toolsets-drift` — every tool in exactly one toolset, `core` within its size, and the toolset scopes and `toolset` fields in the server card and the `.well-known` mirrors.
+- `tool-scopes-drift` — `access`, `feature` and `lock` on the defs;
+- `toolsets-drift` — every exported def in `ALL_TOOLS` once, `core` within its size, and the toolset scopes accepted by the OAuth provider.
 
 If any fail:
 
-- **`tools array` mismatch** → name in source and `server-card.json` don't match. Check for typos.
-- **`every tool has a non-empty description`** → description missing in `server-card.json`.
-- **`sha256 matches`** → re-run `shasum -a 256` and paste again.
+- **`Stale MCP metadata`** or **`sha256 matches`** → run `npm run mcp:generate-metadata`.
 - **`every skill URL resolves`** → `SKILL.md` file path is wrong.
-- **lock or scope case** → the tool lacks `assertBaseCurrencyUnlocked` or `requireScope`; or it belongs in `LOCK_EXEMPT_TOOLS`, `LOCK_GUARDED_READ_TOOLS`, or `DESTRUCTIVE_TOOLS` after you checked its route.
-- **registration case** → `toolsets.ts` lacks the import or the `registerX` entry in `TOOLSET_REGISTRARS`.
-- **toolset case** → the tool's `toolset` in `server-card.json` differs from the toolset that lists it, or `core` went over 60 tools.
+- **access, lock or feature case** → fix the def's field after checking its REST route, or list the name in `DESTRUCTIVE_TOOLS`.
+- **registration case** → the def is exported but not in `ALL_TOOLS`.
+- **toolset case** → `core` went over 60 tools.
 
 Delegate to the `test-runner` subagent (per CLAUDE.md rules).
 
 **e2e:** the gate also runs the MCP e2e suites (`services/mcp/(connected-apps|mcp-scope-gate)`) plus the REST suites of the routes the tool wraps, in one batched run: `lockf -t 7200 /tmp/mm-e2e.lock npm run test:e2e -- --testPathPattern='...'`. Tools themselves cannot be called end to end, so a check that moves out of a controller into a service gets an e2e case first, run green against the unmoved code, and stays green after the move.
 
-### 7. Lint check (optional but cheap)
+### 5. Lint check (optional but cheap)
 
 Delegate to the `linter` subagent. Existing MCP tool files may show 4 `TS1005`-style errors from an `ioredis` env issue — that's pre-existing noise and not caused by new tools. Real errors look different (unused imports, mistyped service args, wrong Zod shape).
 
 ## Anti-patterns
 
-- **Do not** bypass `getUserId` or skip `trackMcpToolUsed`. These are enforced across all existing tools.
-- **Do not** skip `requireScope` on a write tool, or the lock check on a route that carries `checkBaseCurrencyLock`. The drift tests fail for both.
+- **Do not** run the def's own guards or `trackMcpToolUsed` inside `run`; `registerDefinedTool` does.
+- **Do not** set `lock` to its default, or override it without reading the REST route.
 - **Do not** copy controller logic into a tool. Move it into a service or shared schema that both call.
 - **Do not** call services with `raw: true` or reach past the service layer. Use the `@services/*` function as-is.
 - **Do not** add custom auth logic — all auth flows through the OAuth bearer token resolved by `extra.authInfo`.
-- **Do not** version-bump `serverInfo.version` unless the change is breaking (removing/renaming a tool, removing a field). Adding a new tool is additive and needs no version bump. The drift test compares `serverInfo.version` to the version constant in `server.ts` — keep them identical either way.
+- **Do not** version-bump `serverInfo.version` unless the change is breaking (removing/renaming a tool, removing a field). Adding a new tool is additive and needs no version bump. The version lives in `MCP_SERVER_INFO` (`server.ts`); the generator copies it into the card.
 - **Do not** add an e2e test per tool: tools cannot be called end to end. The e2e gate is the MCP suites plus the REST suites of the wrapped routes.
 
 ## Reference examples
 
-Representative tools to copy from:
-
 - **No args**: `tools/get-user-profile.ts`
-- **Single filter + pagination**: `tools/get-accounts.ts`
+- **Read with an argument branch**: `tools/get-tags.ts`
 - **Many optional filters + pagination + enum**: `tools/search-transactions.ts`
-- **Conditional branch based on args**: `tools/get-balance-history.ts`
-- **Consolidated read** (one call assembles a view from a service): `tools/get-budget-plan-period.ts`
-- **Gated write** (scope, feature gate, base-currency lock, shared body schema): `tools/create-budget-plan-group.ts`
-- **Lock-exempt write** (no `assertBaseCurrencyUnlocked`, with the REST route named in a comment; also feature-gated): `tools/delete-attachment.ts`
+- **Gated write with a REST re-parse**: `tools/update-budget-plan-group.ts`
+- **Lock-exempt write**: `tools/create-attachment-upload-url.ts`, `tools/delete-attachment.ts`
+- **Lock-guarded read**: `tools/preview-transaction-automation.ts`
+- **Conditional delete scope**: `tools/ignore-payee-name.ts`
 
-Helpers available from `./helpers`:
-
-- `getUserId({ extra })` — throws if unauthenticated
-- `requireScope({ extra, scope })` — scope check; rejects demo and read-only users
-- `assertBaseCurrencyUnlocked({ userId })` — refuses while a base-currency change runs; fails closed if Redis is down
-- `requireFeature({ userId, feature })` — refuses when the plan lacks the feature
-- `jsonContent({ data })` — wraps in MCP content envelope
-- `assertOriginalCurrencyArgs({ args })` — the original-currency pair rule of the transaction tools
-- `parseScopes({ scopes })` — only useful in auth-adjacent code, not individual tools
-
-Analytics: `trackMcpToolUsed` lives at `@js/utils/posthog`. It's a no-op outside production.
+Helpers `run` may still use from `./helpers`: `requireScope` (conditional scopes only), `assertNotDemoUser`, `goalsForMcp`.

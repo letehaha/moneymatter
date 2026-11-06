@@ -11,8 +11,8 @@ jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChan
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerCreateSubscription } from './create-subscription';
-import { registerUpdateSubscription } from './update-subscription';
+import { createSubscriptionTool } from './create-subscription';
+import { updateSubscriptionTool } from './update-subscription';
 
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
 const NO_WRITE_SCOPE = makeExtra({ scopes: ['finance:read'] });
@@ -43,20 +43,20 @@ beforeEach(() => {
 describe.each([
   {
     name: 'create_subscription',
-    register: registerCreateSubscription,
+    register: createSubscriptionTool,
     base: { name: 'Netflix', frequency: 'monthly', startDate: '2026-01-01' },
   },
-  { name: 'update_subscription', register: registerUpdateSubscription, base: { id: SUB_ID } },
+  { name: 'update_subscription', register: updateSubscriptionTool, base: { id: SUB_ID } },
 ])('$name', ({ name, register, base }) => {
   const tool = captureTools({ register })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name', () => {
     expect(tool.name).toBe(name);
   });
 
   it('declares every field of the service that REST exposes', () => {
-    expect(Object.keys(tool.config.inputSchema!)).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(
       expect.arrayContaining(['matchingRules', 'payeeId', 'tagIds', 'remindBefore', 'notifyEmail', 'autoRecord']),
     );
   });
@@ -91,7 +91,7 @@ describe.each([
   });
 
   it('describes the rule shapes for the agent', () => {
-    const { description } = tool.config.inputSchema!.matchingRules as unknown as z.ZodType;
+    const { description } = tool.config.inputSchema!.shape.matchingRules as unknown as z.ZodType;
     expect(description).toContain('contains_any');
     expect(description).toContain('between');
   });
@@ -104,7 +104,7 @@ describe.each([
 });
 
 describe('create_subscription handler', () => {
-  const tool = captureTools({ register: registerCreateSubscription })[0]!;
+  const tool = captureTools({ register: createSubscriptionTool })[0]!;
 
   it('passes the matching rules, payee, tags, reminders and auto-record to the service', async () => {
     create.mockResolvedValue({ id: SUB_ID } as never);
@@ -115,6 +115,8 @@ describe('create_subscription handler', () => {
           name: 'Netflix',
           frequency: 'monthly',
           startDate: '2026-01-01',
+          expectedAmount: 9.99,
+          expectedCurrencyCode: 'USD',
           matchingRules: RULES,
           payeeId: PAYEE_ID,
           tagIds: [TAG_ID],
@@ -141,8 +143,67 @@ describe('create_subscription handler', () => {
   });
 });
 
+describe('create_subscription REST validation', () => {
+  const tool = captureTools({ register: createSubscriptionTool })[0]!;
+  const schema = tool.config.inputSchema!;
+  const noAmount = { name: 'Netflix', frequency: 'monthly', startDate: '2026-01-01' };
+  const base = { ...noAmount, expectedAmount: 9.99, expectedCurrencyCode: 'USD' };
+
+  it('rejects the field values the REST body rejects', () => {
+    expect(schema.safeParse(base).success).toBe(true);
+    expect(schema.safeParse({ ...base, name: '' }).success).toBe(false);
+    expect(schema.safeParse({ ...base, name: 'x'.repeat(201) }).success).toBe(false);
+    expect(schema.safeParse({ ...base, startDate: 'next monday' }).success).toBe(false);
+    expect(schema.safeParse({ ...base, dueDate: '2026-02-30' }).success).toBe(false);
+    expect(schema.safeParse({ ...base, notes: 'x'.repeat(5001) }).success).toBe(false);
+    expect(schema.safeParse({ ...base, expectedAmount: -1 }).success).toBe(false);
+  });
+
+  it('refuses the combinations the REST body refuses, with the service not called', async () => {
+    for (const args of [
+      noAmount,
+      { ...noAmount, type: 'bill', expectedAmount: 10 },
+      { ...base, type: 'installment', dueDate: '2026-02-01' },
+      { ...base, type: 'installment', maxOccurrences: 12 },
+      { ...base, endDate: '2025-12-31' },
+      { ...base, autoRecord: true },
+      { ...base, autoRecord: true, accountId: ACCOUNT_ID, matchingRules: RULES },
+    ]) {
+      await expect(tool.handler(args, WRITE)).rejects.toThrow();
+    }
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it('accepts a bill without an amount and an installment with its count and schedule', async () => {
+    create.mockResolvedValue({ id: SUB_ID } as never);
+
+    await tool.handler({ ...noAmount, type: 'bill' }, WRITE);
+    await tool.handler({ ...base, type: 'installment', maxOccurrences: 12, dueDate: '2026-02-01' }, WRITE);
+
+    expect(create).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('update_subscription REST validation', () => {
+  const tool = captureTools({ register: updateSubscriptionTool })[0]!;
+
+  it('refuses the combinations the REST body refuses, with the service not called', async () => {
+    for (const args of [
+      { id: SUB_ID, name: '' },
+      { id: SUB_ID, startDate: '2026-13-01' },
+      { id: SUB_ID, startDate: '2026-03-01', endDate: '2026-02-01' },
+      { id: SUB_ID, expectedAmount: 10, expectedCurrencyCode: null },
+      { id: SUB_ID, type: 'installment', maxOccurrences: 12 },
+      { id: SUB_ID, autoRecord: true, accountId: null },
+    ]) {
+      await expect(tool.handler(args, WRITE)).rejects.toThrow();
+    }
+    expect(update).not.toHaveBeenCalled();
+  });
+});
+
 describe('update_subscription handler', () => {
-  const tool = captureTools({ register: registerUpdateSubscription })[0]!;
+  const tool = captureTools({ register: updateSubscriptionTool })[0]!;
 
   it('passes only the fields that were sent, matching rules included', async () => {
     update.mockResolvedValue({ id: SUB_ID } as never);

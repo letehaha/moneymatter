@@ -5,7 +5,6 @@ import { getAllSystemCurrencies } from '@services/system-currencies';
 import * as userExchangeRateService from '@services/user-exchange-rate';
 import * as userService from '@services/user.service';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues and Redis clients at module scope.
 jest.mock('@services/user.service', () => ({
@@ -23,12 +22,12 @@ jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChan
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerAddUserCurrencies } from './add-user-currencies';
-import { registerDeleteUserCurrency } from './delete-user-currency';
-import { registerGetExchangeRate } from './get-exchange-rate';
-import { registerGetUserCurrencies } from './get-user-currencies';
-import { registerListSupportedCurrencies } from './list-supported-currencies';
-import { registerUpdateUserCurrency } from './update-user-currency';
+import { addUserCurrenciesTool } from './add-user-currencies';
+import { deleteUserCurrencyTool } from './delete-user-currency';
+import { getExchangeRateTool } from './get-exchange-rate';
+import { getUserCurrenciesTool } from './get-user-currencies';
+import { listSupportedCurrenciesTool } from './list-supported-currencies';
+import { updateUserCurrencyTool } from './update-user-currency';
 
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
 const DELETE = makeExtra({ scopes: ['finance:read', 'finance:delete'] });
@@ -50,7 +49,7 @@ beforeEach(() => {
 });
 
 describe('get_user_currencies', () => {
-  const tool = captureTools({ register: registerGetUserCurrencies })[0]!;
+  const tool = captureTools({ register: getUserCurrenciesTool })[0]!;
 
   it('returns the currencies, the base currency and the pair rates in one result, with no scope helper', async () => {
     const eur = { currencyCode: 'EUR', isDefaultCurrency: true, currency: { code: 'EUR', digits: 2 } };
@@ -86,7 +85,7 @@ describe('get_user_currencies', () => {
 });
 
 describe('list_supported_currencies', () => {
-  const tool = captureTools({ register: registerListSupportedCurrencies })[0]!;
+  const tool = captureTools({ register: listSupportedCurrenciesTool })[0]!;
 
   it('lists code, name and decimals of every ISO currency the app supports', async () => {
     systemCurrencies.mockResolvedValueOnce([
@@ -104,8 +103,8 @@ describe('list_supported_currencies', () => {
 });
 
 describe('get_exchange_rate', () => {
-  const tool = captureTools({ register: registerGetExchangeRate })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: getExchangeRateTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const readOnly = makeExtra({ scopes: ['finance:read'], readOnly: true });
 
   it('accepts a date alone or with both codes, and rejects a malformed or impossible date', () => {
@@ -186,8 +185,8 @@ describe('get_exchange_rate', () => {
 });
 
 describe('add_user_currencies', () => {
-  const tool = captureTools({ register: registerAddUserCurrencies })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: addUserCurrenciesTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const args = {
     currencies: [{ currencyCode: 'EUR', exchangeRate: 2, liveRateUpdate: true }, { currencyCode: 'USD' }],
   };
@@ -213,8 +212,8 @@ describe('add_user_currencies', () => {
 });
 
 describe('update_user_currency', () => {
-  const tool = captureTools({ register: registerUpdateUserCurrency })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: updateUserCurrencyTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('requires a code and accepts the optional rate fields', () => {
     expect(schema.safeParse({ currencyCode: 'EUR', exchangeRate: 1.5, liveRateUpdate: false }).success).toBe(true);
@@ -238,10 +237,10 @@ describe('update_user_currency', () => {
 });
 
 describe('delete_user_currency', () => {
-  const tool = captureTools({ register: registerDeleteUserCurrency })[0]!;
+  const tool = captureTools({ register: deleteUserCurrencyTool })[0]!;
 
   it('requires a code', () => {
-    const schema = z.object(tool.config.inputSchema!);
+    const schema = tool.config.inputSchema!;
     expect(schema.safeParse({ currencyCode: 'EUR' }).success).toBe(true);
     expect(schema.safeParse({}).success).toBe(false);
   });
@@ -267,13 +266,13 @@ describe('write guards', () => {
   const cases = [
     {
       name: 'add_user_currencies',
-      register: registerAddUserCurrencies,
+      register: addUserCurrenciesTool,
       args: { currencies: [{ currencyCode: 'EUR' }] },
       mocked: () => addCurrencies,
     },
     {
       name: 'update_user_currency',
-      register: registerUpdateUserCurrency,
+      register: updateUserCurrencyTool,
       args: { currencyCode: 'EUR', liveRateUpdate: true },
       mocked: () => users.editUserCurrency,
     },
@@ -295,7 +294,7 @@ describe('write guards', () => {
     ...cases,
     {
       name: 'delete_user_currency',
-      register: registerDeleteUserCurrency,
+      register: deleteUserCurrencyTool,
       args: { currencyCode: 'EUR' },
       mocked: () => users.deleteUserCurrency,
     },
@@ -308,7 +307,7 @@ describe('write guards', () => {
   });
 
   it('delete_user_currency is refused for read-only and demo users', async () => {
-    const tool = captureTools({ register: registerDeleteUserCurrency })[0]!;
+    const tool = captureTools({ register: deleteUserCurrencyTool })[0]!;
 
     await expect(tool.handler({ currencyCode: 'EUR' }, makeExtra({ readOnly: true }))).rejects.toThrow(
       /no longer includes editing/,

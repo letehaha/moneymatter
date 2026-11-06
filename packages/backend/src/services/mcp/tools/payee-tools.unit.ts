@@ -18,7 +18,6 @@ import {
   updatePayee,
 } from '@services/payees';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real service, whose import chain builds queues at module scope and would open Redis
 // connections in a unit test.
@@ -36,14 +35,14 @@ jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChan
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerApplyPayeeTagsToTransactions } from './apply-payee-tags-to-transactions';
-import { registerBulkDeletePayees } from './bulk-delete-payees';
-import { registerCreatePayeeAlias } from './create-payee-alias';
-import { registerDeletePayeeAlias } from './delete-payee-alias';
-import { registerGetIgnoredPayeeNames } from './get-ignored-payee-names';
-import { registerIgnorePayeeName } from './ignore-payee-name';
-import { registerUnignorePayeeName } from './unignore-payee-name';
-import { registerUpdatePayee } from './update-payee';
+import { applyPayeeTagsToTransactionsTool } from './apply-payee-tags-to-transactions';
+import { bulkDeletePayeesTool } from './bulk-delete-payees';
+import { createPayeeAliasTool } from './create-payee-alias';
+import { deletePayeeAliasTool } from './delete-payee-alias';
+import { getIgnoredPayeeNamesTool } from './get-ignored-payee-names';
+import { ignorePayeeNameTool } from './ignore-payee-name';
+import { unignorePayeeNameTool } from './unignore-payee-name';
+import { updatePayeeTool } from './update-payee';
 
 const READ_ONLY = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -104,12 +103,12 @@ beforeEach(() => {
 });
 
 describe('update_payee', () => {
-  const tool = captureTools({ register: registerUpdatePayee })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: updatePayeeTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and declares the id plus every field of the REST body schema', () => {
     expect(tool.name).toBe('update_payee');
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['id', ...Object.keys(updatePayeeBodyShape)].toSorted(),
     );
   });
@@ -237,12 +236,12 @@ describe('update_payee', () => {
 });
 
 describe('bulk_delete_payees', () => {
-  const tool = captureTools({ register: registerBulkDeletePayees })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: bulkDeletePayeesTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and declares the fields of the REST body schema', () => {
     expect(tool.name).toBe('bulk_delete_payees');
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       Object.keys(bulkDeletePayeesBodySchema.shape).toSorted(),
     );
   });
@@ -290,7 +289,7 @@ describe('bulk_delete_payees', () => {
 });
 
 describe('get_ignored_payee_names', () => {
-  const tool = captureTools({ register: registerGetIgnoredPayeeNames })[0]!;
+  const tool = captureTools({ register: getIgnoredPayeeNamesTool })[0]!;
 
   it('registers under its name and takes no input', () => {
     expect(tool.name).toBe('get_ignored_payee_names');
@@ -331,8 +330,8 @@ describe('get_ignored_payee_names', () => {
 });
 
 describe('ignore_payee_name', () => {
-  const tool = captureTools({ register: registerIgnorePayeeName })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: ignorePayeeNameTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const row = {
     id: IGNORED_ID,
     userId: 42,
@@ -343,7 +342,7 @@ describe('ignore_payee_name', () => {
 
   it('registers under its name and declares the fields of the REST body schema', () => {
     expect(tool.name).toBe('ignore_payee_name');
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       Object.keys(addIgnoredNameBodySchema.shape).toSorted(),
     );
     expect(schema.safeParse({ rawName: 'Glovo' }).success).toBe(true);
@@ -422,12 +421,12 @@ describe('ignore_payee_name', () => {
 });
 
 describe('unignore_payee_name', () => {
-  const tool = captureTools({ register: registerUnignorePayeeName })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: unignorePayeeNameTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and takes the ignored-name id', () => {
     expect(tool.name).toBe('unignore_payee_name');
-    expect(Object.keys(tool.config.inputSchema!)).toEqual(['ignoredNameId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['ignoredNameId']);
     expect(schema.safeParse({ ignoredNameId: IGNORED_ID }).success).toBe(true);
     expect(schema.safeParse({ ignoredNameId: 'nope' }).success).toBe(false);
     expect(schema.safeParse({}).success).toBe(false);
@@ -457,12 +456,12 @@ describe('unignore_payee_name', () => {
 });
 
 describe('apply_payee_tags_to_transactions', () => {
-  const tool = captureTools({ register: registerApplyPayeeTagsToTransactions })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: applyPayeeTagsToTransactionsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and takes the payee id', () => {
     expect(tool.name).toBe('apply_payee_tags_to_transactions');
-    expect(Object.keys(tool.config.inputSchema!)).toEqual(['payeeId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['payeeId']);
     expect(schema.safeParse({ payeeId: PAYEE_ID }).success).toBe(true);
     expect(schema.safeParse({ payeeId: 'nope' }).success).toBe(false);
   });
@@ -495,12 +494,12 @@ describe('apply_payee_tags_to_transactions', () => {
 });
 
 describe('create_payee_alias', () => {
-  const tool = captureTools({ register: registerCreatePayeeAlias })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: createPayeeAliasTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and declares the payee id plus the fields of the REST body schema', () => {
     expect(tool.name).toBe('create_payee_alias');
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['payeeId', ...Object.keys(createPayeeAliasBodySchema.shape)].toSorted(),
     );
     expect(schema.safeParse({ payeeId: PAYEE_ID, rawName: 'NFLX' }).success).toBe(true);
@@ -535,12 +534,12 @@ describe('create_payee_alias', () => {
 });
 
 describe('delete_payee_alias', () => {
-  const tool = captureTools({ register: registerDeletePayeeAlias })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: deletePayeeAliasTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and takes the payee id and the alias id', () => {
     expect(tool.name).toBe('delete_payee_alias');
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(['aliasId', 'payeeId']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['aliasId', 'payeeId']);
     expect(schema.safeParse({ payeeId: PAYEE_ID, aliasId: ALIAS_ID }).success).toBe(true);
     expect(schema.safeParse({ payeeId: PAYEE_ID }).success).toBe(false);
     expect(schema.safeParse({ payeeId: PAYEE_ID, aliasId: 'nope' }).success).toBe(false);

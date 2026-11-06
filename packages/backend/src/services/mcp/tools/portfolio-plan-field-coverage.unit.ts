@@ -6,7 +6,6 @@ import { updatePortfolio } from '@services/investments/portfolios/update.service
 import { editTracker } from '@services/trackers/edit-tracker';
 import { createVentureDeal } from '@services/venture/deals/create.service';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -23,12 +22,12 @@ jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChan
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerCreatePortfolio } from './create-portfolio';
-import { registerCreateVentureDeal } from './create-venture-deal';
-import { registerLinkTransactionToPortfolio } from './link-transaction-to-portfolio';
-import { registerTransferPortfolioToAccount } from './transfer-portfolio-to-account';
-import { registerUpdatePortfolio } from './update-portfolio';
-import { registerUpdateTracker } from './update-tracker';
+import { createPortfolioTool } from './create-portfolio';
+import { createVentureDealTool } from './create-venture-deal';
+import { linkTransactionToPortfolioTool } from './link-transaction-to-portfolio';
+import { transferPortfolioToAccountTool } from './transfer-portfolio-to-account';
+import { updatePortfolioTool } from './update-portfolio';
+import { updateTrackerTool } from './update-tracker';
 
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
 
@@ -46,7 +45,7 @@ const ID_C = '33333333-3333-4333-8333-333333333333';
 
 const toolOf = (register: Parameters<typeof captureTools>[0]['register']) => {
   const tool = captureTools({ register })[0]!;
-  return { tool, schema: z.object(tool.config.inputSchema ?? {}) };
+  return { tool, schema: tool.config.inputSchema! };
 };
 
 const makeTransfer = () => ({
@@ -73,7 +72,7 @@ beforeEach(() => {
 });
 
 describe('create_portfolio displayCurrencyCode', () => {
-  const { tool, schema } = toolOf(registerCreatePortfolio);
+  const { tool, schema } = toolOf(createPortfolioTool);
   const base = { name: 'Brokerage', portfolioType: 'investment' };
 
   it('accepts an ISO code or null and rejects a malformed one', () => {
@@ -90,7 +89,7 @@ describe('create_portfolio displayCurrencyCode', () => {
 });
 
 describe('update_portfolio displayCurrencyCode', () => {
-  const { tool, schema } = toolOf(registerUpdatePortfolio);
+  const { tool, schema } = toolOf(updatePortfolioTool);
 
   it('accepts an ISO code or null and rejects a malformed one', () => {
     expect(schema.safeParse({ portfolioId: ID_A, displayCurrencyCode: 'EUR' }).success).toBe(true);
@@ -108,7 +107,7 @@ describe('update_portfolio displayCurrencyCode', () => {
 });
 
 describe('create_venture_deal vehicleType', () => {
-  const { tool, schema } = toolOf(registerCreateVentureDeal);
+  const { tool, schema } = toolOf(createVentureDealTool);
   const base = { name: 'Deal', currencyCode: 'USD', principal: '1000', investmentDate: '2026-01-01' };
 
   it('accepts spv and rejects an unknown vehicle type', () => {
@@ -124,7 +123,7 @@ describe('create_venture_deal vehicleType', () => {
 });
 
 describe('update_tracker nullable dates', () => {
-  const { tool, schema } = toolOf(registerUpdateTracker);
+  const { tool, schema } = toolOf(updateTrackerTool);
 
   it('accepts null dates so an end date can be cleared', () => {
     expect(schema.safeParse({ trackerId: ID_A, startDate: null, endDate: null }).success).toBe(true);
@@ -138,7 +137,7 @@ describe('update_tracker nullable dates', () => {
 });
 
 describe('link_transaction_to_portfolio affectsCash', () => {
-  const { tool, schema } = toolOf(registerLinkTransactionToPortfolio);
+  const { tool, schema } = toolOf(linkTransactionToPortfolioTool);
 
   it('accepts a boolean and rejects other values', () => {
     expect(schema.safeParse({ transactionId: ID_B, portfolioId: ID_A, affectsCash: false }).success).toBe(true);
@@ -154,7 +153,7 @@ describe('link_transaction_to_portfolio affectsCash', () => {
 });
 
 describe('transfer_portfolio_to_account existingTransactionId', () => {
-  const { tool, schema } = toolOf(registerTransferPortfolioToAccount);
+  const { tool, schema } = toolOf(transferPortfolioToAccountTool);
   const base = { portfolioId: ID_A, accountId: ID_C, amount: '10', currencyCode: 'USD', date: '2026-10-05' };
 
   it('accepts a record id and rejects garbage', () => {

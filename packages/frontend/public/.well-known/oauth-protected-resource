@@ -1,6 +1,8 @@
 {
   "resource": "https://mcp.moneymatter.app/mcp",
-  "authorization_servers": ["https://api.moneymatter.app/api/v1/auth"],
+  "authorization_servers": [
+    "https://api.moneymatter.app/api/v1/auth"
+  ],
   "scopes_supported": [
     "finance:read",
     "finance:write",
@@ -19,5 +21,7 @@
     "toolset:currencies",
     "toolset:imports"
   ],
-  "bearer_methods_supported": ["header"]
+  "bearer_methods_supported": [
+    "header"
+  ]
 }

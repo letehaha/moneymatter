@@ -1,30 +1,21 @@
-import { trackMcpToolUsed } from '@js/utils/posthog';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { slimSubscriptionDetailForMcp } from '@services/mcp/serializers';
 import { getSubscriptionById } from '@services/subscriptions';
 import { z } from 'zod';
 
-import { getUserId, jsonContent } from './helpers';
+import { defineTool } from '../define-tool';
 
-const inputSchema = {
-  id: z.string().describe('UUID of the subscription to retrieve'),
-};
+export const getSubscriptionByIdTool = defineTool({
+  name: 'get_subscription_by_id',
+  toolset: 'subscriptions',
+  access: 'read',
+  description:
+    'Retrieve a single subscription by its ID including all linked transactions (with match source and date) and the computed next expected payment date.',
+  input: {
+    id: z.string().describe('UUID of the subscription to retrieve'),
+  },
+  run: async ({ userId, args }) => {
+    const result = await getSubscriptionById({ id: args.id, userId });
 
-export function registerGetSubscriptionById(server: McpServer) {
-  server.registerTool(
-    'get_subscription_by_id',
-    {
-      description:
-        'Retrieve a single subscription by its ID including all linked transactions (with match source and date) and the computed next expected payment date.',
-      inputSchema,
-    },
-    async (args, extra) => {
-      const userId = getUserId({ extra });
-      trackMcpToolUsed({ userId, tool: 'get_subscription_by_id', clientId: extra.authInfo?.clientId });
-
-      const result = await getSubscriptionById({ id: args.id, userId });
-
-      return jsonContent({ data: slimSubscriptionDetailForMcp(result) });
-    },
-  );
-}
+    return slimSubscriptionDetailForMcp(result);
+  },
+});

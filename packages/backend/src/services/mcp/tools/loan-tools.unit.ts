@@ -18,7 +18,6 @@ import {
   updateLoanBodyFields,
 } from '@services/loans/zod-schemas';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -35,14 +34,14 @@ jest.mock('@services/loans/get-loan-views.service', () => ({
 }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
-import { registerAddLoanNote } from './add-loan-note';
-import { registerCreateLoan } from './create-loan';
-import { registerDeleteLoan } from './delete-loan';
-import { registerGetLoanBalanceHistory } from './get-loan-balance-history';
-import { registerGetLoans } from './get-loans';
-import { registerLinkLoanPayments } from './link-loan-payments';
-import { registerUnlinkLoanPayment } from './unlink-loan-payment';
-import { registerUpdateLoan } from './update-loan';
+import { addLoanNoteTool } from './add-loan-note';
+import { createLoanTool } from './create-loan';
+import { deleteLoanTool } from './delete-loan';
+import { getLoanBalanceHistoryTool } from './get-loan-balance-history';
+import { getLoansTool } from './get-loans';
+import { linkLoanPaymentsTool } from './link-loan-payments';
+import { unlinkLoanPaymentTool } from './unlink-loan-payment';
+import { updateLoanTool } from './update-loan';
 
 const READ_ONLY = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -188,12 +187,12 @@ beforeEach(() => {
 });
 
 describe('get_loans', () => {
-  const tool = captureTools({ register: registerGetLoans })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getLoansTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and takes only an optional loan id', () => {
     expect(tool.name).toBe('get_loans');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['loanId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['loanId']);
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ loanId: LOAN_ID }).success).toBe(true);
     expect(schema.safeParse({ loanId: 'nope' }).success).toBe(false);
@@ -253,12 +252,12 @@ describe('get_loans', () => {
 });
 
 describe('get_loan_balance_history', () => {
-  const tool = captureTools({ register: registerGetLoanBalanceHistory })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getLoanBalanceHistoryTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name, requires a loan id and bounds the limit', () => {
     expect(tool.name).toBe('get_loan_balance_history');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['limit', 'loanId']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['limit', 'loanId']);
     expect(schema.safeParse({ loanId: LOAN_ID }).success).toBe(true);
     expect(schema.safeParse({ loanId: LOAN_ID, limit: 500 }).success).toBe(true);
     expect(schema.safeParse({ loanId: LOAN_ID, limit: 501 }).success).toBe(false);
@@ -310,12 +309,14 @@ describe('get_loan_balance_history', () => {
 });
 
 describe('create_loan', () => {
-  const tool = captureTools({ register: registerCreateLoan })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: createLoanTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with every field of the REST body', () => {
     expect(tool.name).toBe('create_loan');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(Object.keys(createLoanBodyFields).toSorted());
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
+      Object.keys(createLoanBodyFields).toSorted(),
+    );
   });
 
   it('applies the REST validation', () => {
@@ -411,12 +412,12 @@ describe('create_loan', () => {
 });
 
 describe('update_loan', () => {
-  const tool = captureTools({ register: registerUpdateLoan })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: updateLoanTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the loan id and every field of the REST body', () => {
     expect(tool.name).toBe('update_loan');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['loanId', ...Object.keys(updateLoanBodyFields)].toSorted(),
     );
     expect(tool.config.description).toMatch(/currencyCode|currency/);
@@ -494,12 +495,12 @@ describe('update_loan', () => {
 });
 
 describe('delete_loan', () => {
-  const tool = captureTools({ register: registerDeleteLoan })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: deleteLoanTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name, takes a loan id and warns that it is irreversible and blocked by payments', () => {
     expect(tool.name).toBe('delete_loan');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['loanId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['loanId']);
     expect(schema.safeParse({ loanId: LOAN_ID }).success).toBe(true);
     expect(schema.safeParse({}).success).toBe(false);
     expect(tool.config.description).toMatch(/irreversible|permanent/i);
@@ -533,12 +534,12 @@ describe('delete_loan', () => {
 });
 
 describe('add_loan_note', () => {
-  const tool = captureTools({ register: registerAddLoanNote })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: addLoanNoteTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the loan id and the REST note text', () => {
     expect(tool.name).toBe('add_loan_note');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['loanId', ...Object.keys(loanNoteEventSchema.shape)].toSorted(),
     );
   });
@@ -584,12 +585,12 @@ describe('add_loan_note', () => {
 });
 
 describe('link_loan_payments', () => {
-  const tool = captureTools({ register: registerLinkLoanPayments })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: linkLoanPaymentsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the loan id and every field of the REST body', () => {
     expect(tool.name).toBe('link_loan_payments');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['loanId', ...Object.keys(linkLoanPaymentsBodySchema.shape)].toSorted(),
     );
     expect(tool.config.description).toMatch(/confirmOverpay/);
@@ -654,12 +655,12 @@ describe('link_loan_payments', () => {
 });
 
 describe('unlink_loan_payment', () => {
-  const tool = captureTools({ register: registerUnlinkLoanPayment })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: unlinkLoanPaymentTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the loan id and every field of the REST body', () => {
     expect(tool.name).toBe('unlink_loan_payment');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['loanId', ...Object.keys(unlinkLoanPaymentBodySchema.shape)].toSorted(),
     );
     expect(schema.safeParse({ loanId: LOAN_ID, transactionId: TX_ID }).success).toBe(true);

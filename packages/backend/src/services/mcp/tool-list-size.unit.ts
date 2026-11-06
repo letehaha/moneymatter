@@ -1,4 +1,9 @@
-import { MCP_CORE_TOOLSET, MCP_OPTIONAL_TOOLSETS, type McpOptionalToolset } from '@bt/shared/types';
+import {
+  MCP_CORE_TOOLSET,
+  MCP_OPTIONAL_TOOLSETS,
+  type McpOptionalToolset,
+  mcpToolsetsFromScopes,
+} from '@bt/shared/types';
 import { describe, expect, it, jest } from '@jest/globals';
 
 // The unit suite maps the MCP SDK to a stub; these checks need the real server and the real
@@ -62,5 +67,35 @@ describe('MCP tools/list', () => {
     const result = await listTools({ toolsets: MCP_OPTIONAL_TOOLSETS });
 
     expect(result.tools).toHaveLength(Object.values(getToolNamesByToolset()).flat().length);
+  });
+});
+
+describe('mcpToolsetsFromScopes', () => {
+  it('returns no toolset when no toolset scope is granted', () => {
+    expect(mcpToolsetsFromScopes({ scopes: ['finance:read', 'finance:write', 'profile:read'] })).toEqual([]);
+  });
+
+  it('returns the granted toolsets once each, in MCP_OPTIONAL_TOOLSETS order', () => {
+    const scopes = ['toolset:loans-vehicles', 'finance:read', 'toolset:subscriptions', 'toolset:loans-vehicles'];
+
+    expect(mcpToolsetsFromScopes({ scopes })).toEqual(['subscriptions', 'loans-vehicles']);
+  });
+
+  it('ignores unknown toolset scopes and non-toolset scopes', () => {
+    const scopes = ['toolset:bogus', 'toolset:', 'core', 'toolset:core', 'investments', 'toolset:investments'];
+
+    expect(mcpToolsetsFromScopes({ scopes })).toEqual(['investments']);
+  });
+});
+
+describe('MCP tools/list from granted scopes', () => {
+  it('lists the tools of a granted toolset scope and not those of an ungranted one', async () => {
+    const result = await listTools({
+      toolsets: mcpToolsetsFromScopes({ scopes: ['finance:read', 'toolset:loans-vehicles'] }),
+    });
+    const names = result.tools.map((tool) => tool.name);
+
+    expect(names).toContain('get_vehicles');
+    expect(names).not.toContain('get_portfolios');
   });
 });

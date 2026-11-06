@@ -2,6 +2,7 @@ import { type Feature, USER_ROLES } from '@bt/shared/types';
 import { jest } from '@jest/globals';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as entitlementsService from '@services/entitlements/resolve-entitlements.service';
+import { registerDefinedTool, type ToolDef } from '@services/mcp/define-tool';
 import type { z } from 'zod';
 
 /**
@@ -26,7 +27,11 @@ export type ToolHandler = (...params: [args: unknown, extra: McpExtra] | [extra:
 
 export interface CapturedTool {
   name: string;
-  config: { description?: string; inputSchema?: z.ZodRawShape };
+  config: {
+    description?: string;
+    inputSchema?: z.ZodObject;
+    annotations?: { readOnlyHint?: boolean; destructiveHint?: boolean };
+  };
   handler: ToolHandler;
 }
 
@@ -45,20 +50,23 @@ function withPlanOfExtra({ handler }: { handler: ToolHandler }): ToolHandler {
   };
 }
 
-/** Runs the register function(s) against a fake server and returns what they registered. */
-export function captureTools({
-  register,
-}: {
-  register: ((server: McpServer) => void) | ((server: McpServer) => void)[];
-}): CapturedTool[] {
+/** Registers the tool def(s) against a fake server; its handlers parse args with the input schema, as the SDK does. */
+export function captureTools({ register }: { register: ToolDef | ToolDef[] }): CapturedTool[] {
   const tools: CapturedTool[] = [];
   const server = {
     registerTool: (name: string, config: CapturedTool['config'], handler: ToolHandler) => {
-      tools.push({ name, config, handler: withPlanOfExtra({ handler }) });
+      const parsed: ToolHandler = async (...params) =>
+        config.inputSchema
+          ? handler(
+              config.inputSchema.parse(params.length > 1 ? (params[0] ?? {}) : {}),
+              params[params.length - 1] as McpExtra,
+            )
+          : handler(...params);
+      tools.push({ name, config, handler: withPlanOfExtra({ handler: parsed }) });
     },
   } as unknown as McpServer;
 
-  for (const fn of Array.isArray(register) ? register : [register]) fn(server);
+  for (const def of Array.isArray(register) ? register : [register]) registerDefinedTool({ server, def });
   return tools;
 }
 

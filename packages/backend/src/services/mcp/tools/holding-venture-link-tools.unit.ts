@@ -22,7 +22,6 @@ import { linkTxsToEvent } from '@services/venture/linking/link-txs-to-event.serv
 import { replaceEventLinks } from '@services/venture/linking/replace-event-links.service';
 import { unlinkTxFromEvent } from '@services/venture/linking/unlink-tx-from-event.service';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test. No test here can reach a price provider.
@@ -41,13 +40,13 @@ jest.mock('@services/venture/linking/replace-event-links.service', () => ({ repl
 jest.mock('@services/venture/linking/unlink-tx-from-event.service', () => ({ unlinkTxFromEvent: jest.fn() }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
-import { registerCreateHolding } from './create-holding';
-import { registerDeleteHolding } from './delete-holding';
-import { registerDeleteVentureEventLink } from './delete-venture-event-link';
-import { registerGetSecurityPrices } from './get-security-prices';
-import { registerLinkTransactionsToVentureEvent } from './link-transactions-to-venture-event';
-import { registerReplaceVentureEventLinks } from './replace-venture-event-links';
-import { registerSearchSecurities } from './search-securities';
+import { createHoldingTool } from './create-holding';
+import { deleteHoldingTool } from './delete-holding';
+import { deleteVentureEventLinkTool } from './delete-venture-event-link';
+import { getSecurityPricesTool } from './get-security-prices';
+import { linkTransactionsToVentureEventTool } from './link-transactions-to-venture-event';
+import { replaceVentureEventLinksTool } from './replace-venture-event-links';
+import { searchSecuritiesTool } from './search-securities';
 
 const READ_ONLY = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -130,11 +129,11 @@ beforeEach(() => {
 });
 
 describe('search_securities', () => {
-  const tool = captureTools({ register: registerSearchSecurities })[0]!;
+  const tool = captureTools({ register: searchSecuritiesTool })[0]!;
 
   it('keeps its input and tells the agent how a result reaches create_holding', () => {
     expect(tool.name).toBe('search_securities');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['limit', 'portfolioId', 'query']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['limit', 'portfolioId', 'query']);
     expect(tool.config.description).toMatch(/create_holding/);
     expect(tool.config.description).toMatch(/searchResult/);
     expect(tool.config.description).toMatch(/securityId/);
@@ -244,7 +243,7 @@ describe('search_securities', () => {
     createFromInput.mockResolvedValue(makeHolding() as never);
 
     const [item] = (await call({ tool, args: { query: 'VOO' } })) as unknown[];
-    const createTool = captureTools({ register: registerCreateHolding })[0]!;
+    const createTool = captureTools({ register: createHoldingTool })[0]!;
     await call({ tool: createTool, args: { portfolioId: PORTFOLIO_ID, searchResult: item }, extra: WRITE });
 
     expect(createFromInput).toHaveBeenCalledWith({ userId: 42, portfolioId: PORTFOLIO_ID, searchResult: result });
@@ -252,13 +251,13 @@ describe('search_securities', () => {
 });
 
 describe('create_holding', () => {
-  const tool = captureTools({ register: registerCreateHolding })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: createHoldingTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const searchResult = makeSearchResult();
 
   it('registers under its name and says where the securityId comes from', () => {
     expect(tool.name).toBe('create_holding');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual([
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual([
       'portfolioId',
       'searchResult',
       'securityId',
@@ -359,12 +358,12 @@ describe('create_holding', () => {
 });
 
 describe('delete_holding', () => {
-  const tool = captureTools({ register: registerDeleteHolding })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: deleteHoldingTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the fields of the REST body, and warns about force', () => {
     expect(tool.name).toBe('delete_holding');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       Object.keys(deleteHoldingBodySchema.shape).toSorted(),
     );
     expect(tool.config.description).toMatch(/force/);
@@ -418,8 +417,8 @@ describe('delete_holding', () => {
 });
 
 describe('get_security_prices', () => {
-  const tool = captureTools({ register: registerGetSecurityPrices })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getSecurityPricesTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const row = (patch: Record<string, unknown> = {}) => ({
     id: LINK_ID,
     securityId: SECURITY_ID,
@@ -434,7 +433,7 @@ describe('get_security_prices', () => {
 
   it('registers under its name with the REST query fields plus a limit and the symbol lookup', () => {
     expect(tool.name).toBe('get_security_prices');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       [...Object.keys(securityPricesQuerySchema.shape), 'limit', 'providerName', 'symbol'].toSorted(),
     );
     expect(schema.safeParse({ securityId: SECURITY_ID }).success).toBe(true);
@@ -621,12 +620,12 @@ describe('get_security_prices', () => {
 });
 
 describe('link_transactions_to_venture_event', () => {
-  const tool = captureTools({ register: registerLinkTransactionsToVentureEvent })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: linkTransactionsToVentureEventTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the event id plus the REST body fields, and states the linking rules', () => {
     expect(tool.name).toBe('link_transactions_to_venture_event');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['eventId', ...Object.keys(appendLinksBodySchema.shape)].toSorted(),
     );
     expect(tool.config.description).toMatch(/same currency/i);
@@ -680,12 +679,12 @@ describe('link_transactions_to_venture_event', () => {
 });
 
 describe('replace_venture_event_links', () => {
-  const tool = captureTools({ register: registerReplaceVentureEventLinks })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: replaceVentureEventLinksTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the event id plus the REST body fields', () => {
     expect(tool.name).toBe('replace_venture_event_links');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['eventId', ...Object.keys(replaceLinksBodySchema.shape)].toSorted(),
     );
     expect(tool.config.description).toMatch(/empty/i);
@@ -725,12 +724,12 @@ describe('replace_venture_event_links', () => {
 });
 
 describe('delete_venture_event_link', () => {
-  const tool = captureTools({ register: registerDeleteVentureEventLink })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: deleteVentureEventLinkTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and says the transaction is restored', () => {
     expect(tool.name).toBe('delete_venture_event_link');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['eventId', 'linkId']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['eventId', 'linkId']);
     expect(tool.config.description).toMatch(/restore/i);
     expect(schema.safeParse({ eventId: EVENT_ID, linkId: LINK_ID }).success).toBe(true);
     expect(schema.safeParse({ eventId: EVENT_ID }).success).toBe(false);

@@ -628,7 +628,7 @@
     },
     "imports": {
       "label": "Imports and sharing",
-      "description": "Import batches, bank connections and who you share with (read only)"
+      "description": "Import batches (list, undo) and bank connections (status, unlink an account); sharing is read only."
     }
   }
 }

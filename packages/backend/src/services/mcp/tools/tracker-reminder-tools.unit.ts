@@ -14,7 +14,6 @@ import {
 import { getTrackerById } from '@services/trackers/get-trackers';
 import { getTrackerStats } from '@services/trackers/stats';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test. The serializers run for real on the fakes below.
@@ -32,11 +31,11 @@ jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChan
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerCreateTagReminder } from './create-tag-reminder';
-import { registerDeleteTagReminder } from './delete-tag-reminder';
-import { registerGetTagReminders } from './get-tag-reminders';
-import { registerGetTracker } from './get-tracker';
-import { registerUpdateTagReminder } from './update-tag-reminder';
+import { createTagReminderTool } from './create-tag-reminder';
+import { deleteTagReminderTool } from './delete-tag-reminder';
+import { getTagRemindersTool } from './get-tag-reminders';
+import { getTrackerTool } from './get-tracker';
+import { updateTagReminderTool } from './update-tag-reminder';
 
 const READ_ONLY = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -125,12 +124,12 @@ beforeEach(() => {
 });
 
 describe('get_tracker', () => {
-  const tool = captureTools({ register: registerGetTracker })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getTrackerTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name, takes only a tracker id and says it reads one tracker with its stats', () => {
     expect(tool.name).toBe('get_tracker');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['trackerId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['trackerId']);
     expect(schema.safeParse({ trackerId: TRACKER_ID }).success).toBe(true);
     expect(schema.safeParse({}).success).toBe(false);
     expect(schema.safeParse({ trackerId: 'nope' }).success).toBe(false);
@@ -213,12 +212,12 @@ describe('get_tracker', () => {
 });
 
 describe('get_tag_reminders', () => {
-  const tool = captureTools({ register: registerGetTagReminders })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getTagRemindersTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with optional tagId and reminderId, and says reminderId needs tagId', () => {
     expect(tool.name).toBe('get_tag_reminders');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['reminderId', 'tagId']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['reminderId', 'tagId']);
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ tagId: TAG_ID }).success).toBe(true);
     expect(schema.safeParse({ tagId: TAG_ID, reminderId: REMINDER_ID }).success).toBe(true);
@@ -300,13 +299,13 @@ describe('get_tag_reminders', () => {
 });
 
 describe('create_tag_reminder', () => {
-  const tool = captureTools({ register: registerCreateTagReminder })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: createTagReminderTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const base = { tagId: TAG_ID, type: TAG_REMINDER_TYPES.amountThreshold, amountThreshold: 500 };
 
   it('registers under its name and flattens the REST settings into amountThreshold', () => {
     expect(tool.name).toBe('create_tag_reminder');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['amountThreshold', 'dayOfMonth', 'frequency', 'isEnabled', 'tagId', 'type'].toSorted(),
     );
     expect(Object.keys(createReminderBodySchema.shape).toSorted()).toEqual(
@@ -432,13 +431,13 @@ describe('create_tag_reminder', () => {
 });
 
 describe('update_tag_reminder', () => {
-  const tool = captureTools({ register: registerUpdateTagReminder })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: updateTagReminderTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const base = { tagId: TAG_ID, reminderId: REMINDER_ID };
 
   it('registers under its name with both ids plus every REST update field, the settings flattened', () => {
     expect(tool.name).toBe('update_tag_reminder');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['amountThreshold', 'dayOfMonth', 'frequency', 'isEnabled', 'reminderId', 'tagId', 'type'].toSorted(),
     );
     expect(Object.keys(updateReminderBodySchema.shape).toSorted()).toEqual(
@@ -551,13 +550,13 @@ describe('update_tag_reminder', () => {
 });
 
 describe('delete_tag_reminder', () => {
-  const tool = captureTools({ register: registerDeleteTagReminder })[0]!;
+  const tool = captureTools({ register: deleteTagReminderTool })[0]!;
   const args = { tagId: TAG_ID, reminderId: REMINDER_ID };
 
   it('registers under its name with both ids', () => {
     expect(tool.name).toBe('delete_tag_reminder');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['reminderId', 'tagId']);
-    const schema = z.object(tool.config.inputSchema ?? {}).strict();
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['reminderId', 'tagId']);
+    const schema = tool.config.inputSchema!;
     expect(schema.safeParse(args).success).toBe(true);
     expect(schema.safeParse({ tagId: TAG_ID }).success).toBe(false);
     expect(schema.safeParse({ ...args, tagId: 'nope' }).success).toBe(false);

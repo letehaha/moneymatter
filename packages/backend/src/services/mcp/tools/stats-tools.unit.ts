@@ -53,18 +53,18 @@ jest.mock('@services/stats/get-spendings-by-categories', () => ({
 jest.mock('@services/stats/get-total-balance', () => ({ getTotalBalance: jest.fn() }));
 jest.mock('@services/stats/get-venture-contributions', () => ({ getVentureContributions: jest.fn() }));
 
-import { registerGetBalanceHistory } from './get-balance-history';
-import { registerGetCashFlow } from './get-cash-flow';
-import { registerGetCumulativeStats } from './get-cumulative-stats';
-import { registerGetEarliestTransactionDate } from './get-earliest-transaction-date';
-import { registerGetExpensesForPeriod } from './get-expenses-for-period';
-import { registerGetInvestmentContributions } from './get-investment-contributions';
-import { registerGetNetWorthDrivers } from './get-net-worth-drivers';
-import { registerGetNetWorthHistory } from './get-net-worth-history';
-import { registerGetPivotReport } from './get-pivot-report';
-import { registerGetSpendingByCategories } from './get-spending-by-categories';
-import { registerGetTotalBalance } from './get-total-balance';
-import { registerGetVentureContributions } from './get-venture-contributions';
+import { getBalanceHistoryTool } from './get-balance-history';
+import { getCashFlowTool } from './get-cash-flow';
+import { getCumulativeStatsTool } from './get-cumulative-stats';
+import { getEarliestTransactionDateTool } from './get-earliest-transaction-date';
+import { getExpensesForPeriodTool } from './get-expenses-for-period';
+import { getInvestmentContributionsTool } from './get-investment-contributions';
+import { getNetWorthDriversTool } from './get-net-worth-drivers';
+import { getNetWorthHistoryTool } from './get-net-worth-history';
+import { getPivotReportTool } from './get-pivot-report';
+import { getSpendingByCategoriesTool } from './get-spending-by-categories';
+import { getTotalBalanceTool } from './get-total-balance';
+import { getVentureContributionsTool } from './get-venture-contributions';
 
 const READ = makeExtra({ scopes: ['finance:read'] });
 
@@ -92,18 +92,18 @@ const RANGE = { from: '2026-01-01', to: '2026-03-31' };
 
 const tools = captureTools({
   register: [
-    registerGetBalanceHistory,
-    registerGetCashFlow,
-    registerGetCumulativeStats,
-    registerGetEarliestTransactionDate,
-    registerGetExpensesForPeriod,
-    registerGetInvestmentContributions,
-    registerGetNetWorthDrivers,
-    registerGetNetWorthHistory,
-    registerGetPivotReport,
-    registerGetSpendingByCategories,
-    registerGetTotalBalance,
-    registerGetVentureContributions,
+    getBalanceHistoryTool,
+    getCashFlowTool,
+    getCumulativeStatsTool,
+    getEarliestTransactionDateTool,
+    getExpensesForPeriodTool,
+    getInvestmentContributionsTool,
+    getNetWorthDriversTool,
+    getNetWorthHistoryTool,
+    getPivotReportTool,
+    getSpendingByCategoriesTool,
+    getTotalBalanceTool,
+    getVentureContributionsTool,
   ],
 });
 
@@ -121,7 +121,7 @@ const call = async ({ name, args }: { name: string; args?: unknown }) => {
 };
 
 const accepts = ({ name, args }: { name: string; args: unknown }) =>
-  z.object(tool({ name }).config.inputSchema ?? {}).safeParse(args).success;
+  (tool({ name }).config.inputSchema ?? z.object({})).safeParse(args).success;
 
 const setSettings = ({ includeCreditLimitInStats }: { includeCreditLimitInStats: boolean }) =>
   settingsOf.mockResolvedValue({ includeCreditLimitInStats } as Awaited<ReturnType<typeof getUserSettings>>);

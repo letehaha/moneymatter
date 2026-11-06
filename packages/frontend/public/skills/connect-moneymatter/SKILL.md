@@ -7,8 +7,9 @@ ones, refunds, transfers, splits and attachments), categories, tags, tag
 reminders, payees, trackers, budget plans, savings goals, subscriptions,
 transaction automations and templates, loans, vehicles, currencies and exchange rates,
 investment portfolios, holdings, investment
-transactions, venture deals, and duplicate cleanup. Bank connections and
-sharing are readable only; imports can be listed and undone. The agent can
+transactions, venture deals, and duplicate cleanup. Bank connections can
+be read and an account unlinked from its bank; sharing is read only; imports can be
+listed and undone. The agent can
 read these records and — when the user grants the corresponding scopes —
 create, edit, and delete them.
 
@@ -60,7 +61,7 @@ user didn't grant its toolset; ask them to reconnect the app and tick it.
 | `ventures`         | `toolset:ventures`         | Venture platforms, deals and events                                                                      |
 | `loans-vehicles`   | `toolset:loans-vehicles`   | Loans and vehicles                                                                                       |
 | `currencies`       | `toolset:currencies`       | User currencies and exchange rates                                                                       |
-| `imports`          | `toolset:imports`          | Import batches, bank connections, sharing (read-only)                                                    |
+| `imports`          | `toolset:imports`          | Import batches (list, undo), bank connections (status, unlink an account), sharing (read only)           |
 
 The server card gives each tool's toolset in its `toolset` field.
 
@@ -79,369 +80,331 @@ The server card gives each tool's toolset in its `toolset` field.
 
 ## Available tools
 
-Tools are grouped by area. Tools marked with a scope need that OAuth scope; the rest only read.
+Tools are grouped by toolset. Tools marked with a scope need that OAuth scope; the rest only read.
 
-### Profile and accounts
+<!-- BEGIN GENERATED TOOL TABLES: npm run mcp:generate-metadata -->
 
-| Tool                                  | Purpose                                                                                          |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `get_user_profile`                    | Base currency, configured currencies, profile basics                                             |
-| `get_accounts`                        | List accounts with balances, types, currencies                                                   |
-| `get_account`                         | Read one account: balances, opening balance, bank link, logo, transaction count                  |
-| `create_account`                      | Create a manual account with currency, category, opening balance, credit limit (`finance:write`) |
-| `update_account`                      | Update an account's name, category, credit limit, logo or balance (`finance:write`)              |
-| `adjust_account_balance`              | Set an account to a target balance via an adjustment transaction (`finance:write`)               |
-| `archive_account`                     | Archive or unarchive an account; handles side effects (`finance:write`)                          |
-| `delete_account`                      | Permanently delete an account and all its transactions (`finance:delete`)                        |
-| `unlink_account_from_bank_connection` | Disconnect a bank-connected account; it becomes manual and keeps history (`finance:write`)       |
+### `core`
 
-### Transactions
+Accounts, transactions, transfers and refunds, attachments, categories, tags, payees and reports. Always on, needs no scope.
 
-Reading, planned transactions, create and edit, splits, refunds, transfer linking, attachments.
+| Tool                             | Purpose                                                                                                                                                                                                                                      |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `adjust_account_balance`         | Set an account to a specific balance by creating an adjustment transaction for the difference (`finance:write`)                                                                                                                              |
+| `archive_account`                | Archive or unarchive a user account (`finance:write`)                                                                                                                                                                                        |
+| `assign_tags_to_transaction`     | Assign one or more tags to a transaction (`finance:write`)                                                                                                                                                                                   |
+| `bulk_delete_payees`             | Permanently delete many payees at once (`finance:delete`)                                                                                                                                                                                    |
+| `bulk_delete_transactions`       | Permanently delete many transactions at once, by ids or by filters (`finance:delete`)                                                                                                                                                        |
+| `bulk_update_transactions`       | Update multiple transactions at once (`finance:write`)                                                                                                                                                                                       |
+| `create_account`                 | Create a manual account (`finance:write`)                                                                                                                                                                                                    |
+| `create_attachment_upload_url`   | Get a short-lived upload URL for attaching receipt/invoice files (JPEG, PNG, WebP, PDF) to a transaction (`finance:write`)                                                                                                                   |
+| `create_category`                | Create a new transaction category (`finance:write`)                                                                                                                                                                                          |
+| `create_payee`                   | Create a Payee (merchant/counterparty) for the user (`finance:write`)                                                                                                                                                                        |
+| `create_tag`                     | Create a new tag that can be assigned to transactions (`finance:write`)                                                                                                                                                                      |
+| `create_transaction`             | Create a new transaction (income, expense, or transfer) (`finance:write`)                                                                                                                                                                    |
+| `delete_account`                 | Permanently delete an account together with all its transactions (`finance:delete`)                                                                                                                                                          |
+| `delete_attachment`              | Permanently delete a file attached to a transaction (`finance:delete`, Attachments feature)                                                                                                                                                  |
+| `delete_category`                | Permanently delete a category by ID (`finance:delete`)                                                                                                                                                                                       |
+| `delete_payee`                   | Delete a Payee (`finance:delete`)                                                                                                                                                                                                            |
+| `delete_split`                   | Delete a single split from a transaction by its split ID (UUID string) (`finance:delete`)                                                                                                                                                    |
+| `delete_tag`                     | Permanently delete a tag by ID (`finance:delete`)                                                                                                                                                                                            |
+| `delete_transaction`             | Permanently delete a transaction by ID (`finance:delete`)                                                                                                                                                                                    |
+| `get_account`                    | Read one account: balances (original and base currency), opening balance, credit limit, category, status, bank link and logo, plus transactionCount, the number of transactions the account holds (null for an account shared with the user) |
+| `get_accounts`                   | List all user accounts with current balances                                                                                                                                                                                                 |
+| `get_balance_history`            | Get account balance over time                                                                                                                                                                                                                |
+| `get_cash_flow`                  | Get income, expenses, and net cash flow for a period with configurable granularity (monthly/biweekly/weekly)                                                                                                                                 |
+| `get_categories`                 | List all transaction categories                                                                                                                                                                                                              |
+| `get_category_transaction_count` | Count the transactions filed under a category, planned ones and split lines included                                                                                                                                                         |
+| `get_cumulative_stats`           | Get running totals of expenses, income or savings by month for a period, next to the period of the same length right before it, plus the percent change, in the base currency                                                                |
+| `get_earliest_transaction_date`  | Get the date (YYYY-MM-DD) of the first transaction on record, or null when there are none                                                                                                                                                    |
+| `get_expenses_for_period`        | Get total expense amount for a date range                                                                                                                                                                                                    |
+| `get_net_worth_drivers`          | Explain what moved net worth, period by period, in the base currency: savings (income, expenses, net), investment growth (price effect, dividends, fees and taxes, per portfolio) and the holdings and cash values at the end of the period  |
+| `get_net_worth_history`          | Get net worth over time as points, each with assets by kind (cash, investments, vehicles, ventures), liabilities by kind (credit-card, loan, overdraft) and the net worth, in the base currency                                              |
+| `get_payee`                      | Fetch a single Payee with aliases and computed stats                                                                                                                                                                                         |
+| `get_payees`                     | List Payees (merchants/counterparties) for the user, optionally filtered by a substring query                                                                                                                                                |
+| `get_pivot_report`               | Cross-tab spending or income: rows by category, subcategory, payee or tag against time columns (yearly, quarterly, monthly, weekly), with row and column totals, in the base currency                                                        |
+| `get_refund_links`               | List every refund link touching a transaction, on either side (as the refund or as the original)                                                                                                                                             |
+| `get_refunds`                    | Read refund links, the pairs of an original transaction and the transaction that refunds it                                                                                                                                                  |
+| `get_spending_by_categories`     | Get spending breakdown by category for a date range                                                                                                                                                                                          |
+| `get_tags`                       | List all user tags                                                                                                                                                                                                                           |
+| `get_total_balance`              | Get the user's total balance across all accounts on one date, as { amount, currencyCode, date }, where amount is a number in the base currency and currencyCode is that currency                                                             |
+| `get_transaction_links`          | Read what a transaction is linked to: the portfolio transfer it funds or pays out (portfolioLink: portfolio, deposit or withdrawal, amount) and the venture event it belongs to (ventureLink: deal)                                          |
+| `get_transactions_by_id`         | Read transactions by id (up to 50) or both legs of a transfer by transferId                                                                                                                                                                  |
+| `get_transactions_summary`       | Count and totals of the transactions that match the filters, in the base currency: income, expense, net and transfers                                                                                                                        |
+| `get_user_profile`               | Get the user's base currency, configured currencies with exchange rates, and basic profile info                                                                                                                                              |
+| `link_refund`                    | Mark an existing transaction as a refund of another transaction (`finance:write`)                                                                                                                                                            |
+| `link_transfer`                  | Link two existing transactions as a transfer pair (`finance:write`)                                                                                                                                                                          |
+| `list_transaction_attachments`   | List the files attached to a transaction (receipts, invoices): id, filename, mimeType, size in bytes and upload time                                                                                                                         |
+| `merge_payees`                   | Merge a source Payee into a target Payee (`finance:delete`)                                                                                                                                                                                  |
+| `remove_tags_from_transaction`   | Remove a tag from one or more transactions (`finance:write`)                                                                                                                                                                                 |
+| `search_transactions`            | Search and filter transactions                                                                                                                                                                                                               |
+| `split_transaction`              | Split a transaction across multiple categories (`finance:write`)                                                                                                                                                                             |
+| `unlink_refund`                  | Remove one refund link, identified by refundTxId + originalTxId; both transactions stay (`finance:write`)                                                                                                                                    |
+| `unlink_transfer`                | Unlink transfer transactions by their shared transferId (UUID string) (`finance:write`)                                                                                                                                                      |
+| `update_account`                 | Update an account: name, accountCategory, defaultPaymentType (null clears it), creditLimit, excludeFromStats, logo, and balances (`finance:write`)                                                                                           |
+| `update_category`                | Update an existing category by ID (`finance:write`)                                                                                                                                                                                          |
+| `update_payee`                   | Update a Payee (`finance:write`)                                                                                                                                                                                                             |
+| `update_tag`                     | Update an existing tag by ID (`finance:write`)                                                                                                                                                                                               |
+| `update_transaction`             | Update an existing transaction by ID (`finance:write`)                                                                                                                                                                                       |
 
-| Tool                           | Purpose                                                                                                          |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `search_transactions`          | Filter transactions by date, category, tag, payee, planned state, amount, etc.; each carries its payee           |
-| `create_transaction`           | Create income, expense, or transfer; optional splits/tags/payee/original amount/other accounts (`finance:write`) |
-| `create_attachment_upload_url` | Get a short-lived URL to upload receipt files (JPEG/PNG/WebP/PDF) to a transaction over HTTP (`finance:write`)   |
-| `update_transaction`           | Update amount, date, category, payee, tags, note, splits, original amount, other accounts (`finance:write`)      |
-| `delete_transaction`           | Permanently delete a transaction; transfer pairs are deleted together (`finance:delete`)                         |
-| `bulk_update_transactions`     | Update category, payee, note, or tags on multiple transactions at once (`finance:write`)                         |
-| `split_transaction`            | Split a transaction across multiple categories (`finance:write`)                                                 |
-| `delete_split`                 | Delete a single split by split ID (`finance:delete`)                                                             |
-| `link_refund`                  | Mark a transaction as a refund of another; optional amount to split one refund (`finance:write`)                 |
-| `unlink_refund`                | Remove the refund link between two transactions (`finance:write`)                                                |
-| `link_transfer`                | Link two existing transactions as a transfer pair (`finance:write`)                                              |
-| `unlink_transfer`              | Unlink a transfer pair by transferId (`finance:write`)                                                           |
-| `get_transactions_by_id`       | Read transactions by id (up to 50) or both legs of a transfer; optionally with splits and tags                   |
-| `get_transactions_summary`     | Count and base-currency totals of the transactions matching the list filters                                     |
-| `get_planned_summary`          | Totals of planned (upcoming) transactions per account and currency                                               |
-| `confirm_planned_transaction`  | Confirm a planned transaction once the money moved; settles a subscription period (`finance:write`)              |
-| `bulk_delete_transactions`     | Permanently delete many by ids or non-empty filters; preview with get_transactions_summary (`finance:delete`)    |
-| `get_transaction_links`        | A transaction's portfolio-transfer and venture-event links                                                       |
-| `list_transaction_attachments` | Files attached to a transaction (id, name, type, size)                                                           |
-| `delete_attachment`            | Permanently delete a transaction attachment (`finance:delete`)                                                   |
-| `get_refunds`                  | Refund links: of one transaction, one pair, or a paged list; both sides carry their payee                        |
-| `get_refund_links`             | Refund links on a transaction, either side, with each link's share of the refund                                 |
-| `get_refund_recommendations`   | Suggest transactions a refund could link to (saved transaction or form data)                                     |
-| `get_transfer_recommendations` | Suggest the other leg of a transfer (saved transaction or form data)                                             |
-| `list_transfer_suggestions`    | Scan a period for likely transfer pairs with a confidence score; reads only                                      |
-| `dismiss_transfer_suggestion`  | Dismiss a suggested pair as not a transfer (`finance:write`)                                                     |
+### `subscriptions`
 
-### Reconciliation
+Recurring payments, their periods and candidates, and planned transactions.
 
-Duplicate cleanup and bank rows stuck in pending.
+| Tool                                     | Purpose                                                                                                                                                                                                                                                                                                                           |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `accept_subscription_candidate`          | Accept a pending subscription candidate (`finance:write`)                                                                                                                                                                                                                                                                         |
+| `confirm_planned_transaction`            | Confirm a planned (upcoming) transaction once the money has moved: it becomes a real transaction and counts toward the account balance (`finance:write`)                                                                                                                                                                          |
+| `create_subscription`                    | Create a new subscription, recurring bill, or installment plan (`finance:write`)                                                                                                                                                                                                                                                  |
+| `delete_subscription`                    | Permanently delete a subscription or recurring bill (`finance:delete`)                                                                                                                                                                                                                                                            |
+| `detect_subscription_candidates`         | Scan the past 12 months of transactions to detect recurring payment patterns and generate subscription candidates (`finance:write`)                                                                                                                                                                                               |
+| `dismiss_subscription_candidate`         | Dismiss a pending subscription candidate so it no longer appears in the candidate list (`finance:write`)                                                                                                                                                                                                                          |
+| `get_planned_summary`                    | Totals of the planned (upcoming, not yet confirmed) transactions per account and currency: plannedDelta in the account currency, refPlannedDelta in the base currency, the number of plans and the latest plan date                                                                                                               |
+| `get_subscription_by_id`                 | Retrieve a single subscription by its ID including all linked transactions (with match source and date) and the computed next expected payment date                                                                                                                                                                               |
+| `get_subscription_periods`               | List a subscription’s billing periods, newest due date first, with the status of each (upcoming, overdue, paid, skipped) and the transaction behind a paid one                                                                                                                                                                    |
+| `get_subscriptions_summary`              | Aggregate summary across all active subscriptions with an expected amount, split by direction                                                                                                                                                                                                                                     |
+| `get_subscriptions`                      | List all subscriptions and recurring bills for the user                                                                                                                                                                                                                                                                           |
+| `get_upcoming_subscription_payments`     | List upcoming subscription payments sorted by next expected payment date (soonest first)                                                                                                                                                                                                                                          |
+| `link_transactions_to_subscription`      | Link one or more transactions to a subscription to mark them as payment instances (`finance:write`)                                                                                                                                                                                                                               |
+| `list_subscription_candidates`           | List auto-detected subscription candidates sorted by confidence score                                                                                                                                                                                                                                                             |
+| `list_subscription_match_suggestions`    | List past transactions (the last 12 months, at most 100, newest first) that a subscription’s matching rules would match but that are not linked to it yet                                                                                                                                                                         |
+| `pay_subscription_period`                | Mark a subscription period as paid and open the next one (`finance:write`)                                                                                                                                                                                                                                                        |
+| `preview_subscription_payment`           | Preview what paying a subscription period would book: the amount in the account’s currency (converted at today’s rate when the subscription is billed in another currency), and, with periodId, the transactions already linked to the subscription that fall inside the period and could be linked instead of creating a new one |
+| `revert_subscription_period`             | Undo a paid or skipped period: it becomes upcoming (or overdue when its due date has passed) again, and the open period the app generated after it is removed unless a later period was already paid or skipped (`finance:write` + `finance:delete` when it deletes the transaction the app created)                              |
+| `skip_subscription_period`               | Skip a subscription period, for a billing cycle that is not paid, and open the next one (`finance:write`)                                                                                                                                                                                                                         |
+| `toggle_subscription_active`             | Activate or deactivate a subscription (`finance:write`)                                                                                                                                                                                                                                                                           |
+| `unlink_subscription_period_transaction` | Detach the transaction a period points at: the transaction is kept (even one the app created for the period) and the period keeps its paid status, but it no longer points at any payment, so a later revert deletes nothing (`finance:write`)                                                                                    |
+| `unlink_transactions_from_subscription`  | Unlink transactions from a subscription without deleting them (`finance:write`)                                                                                                                                                                                                                                                   |
+| `update_subscription`                    | Update fields on an existing subscription or bill (`finance:write`)                                                                                                                                                                                                                                                               |
 
-| Tool                              | Purpose                                                                                         |
-| --------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `get_reconciliation_history`      | Past duplicate removals and merges, newest first, with the removed rows and survivors           |
-| `list_stuck_pending_transactions` | Bank transactions pending over 7 days, each with the booked row that likely replaced it         |
-| `remove_duplicate_transactions`   | Remove duplicates from the books; restorable, but without their links (`finance:write`)         |
-| `restore_removed_transactions`    | Bring back removed or merged transactions, without the links they lost (`finance:write`)        |
-| `merge_duplicate_transactions`    | Merge 2 to 4 duplicates of one account into a survivor that takes their links (`finance:write`) |
-| `keep_pending_as_booked`          | Confirm stuck pending bank transactions as booked (`finance:write`)                             |
+### `budget-plans`
 
-### Categories and tags
+Budget plans with their groups, lines and line goals, and savings goals.
 
-Includes tag reminders.
+| Tool                                 | Purpose                                                                                                                                                                                                          |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add_suggested_budget_plan_lines`    | Draft starter lines (and groups) for a budget plan from the spending history of its accounts, skipping categories another line already covers (`finance:write`, Budget plan feature)                             |
+| `archive_budget_plan_line`           | Archive a line of a budget plan (archived: true) or bring an archived one back (archived: false) (`finance:write`, Budget plan feature)                                                                          |
+| `create_budget_plan_group`           | Add a group to a budget plan: a named section that lines sit in, shown after the existing groups (`finance:write`, Budget plan feature)                                                                          |
+| `create_budget_plan_line`            | Add a line (an envelope for one or more categories) to a budget plan (`finance:write`, Budget plan feature)                                                                                                      |
+| `create_budget_plan`                 | Create a budget plan (the "Budget" in the app: period envelopes where money is assigned to lines, not the trackers behind create_tracker) (`finance:write`, Budget plan feature)                                 |
+| `create_goal`                        | Create a savings goal: a target amount (optionally by a date) funded by percent shares or fixed amounts of one or more accounts (`finance:write`, Goals feature)                                                 |
+| `delete_budget_plan_group`           | Delete a group of a budget plan (`finance:delete`, Budget plan feature)                                                                                                                                          |
+| `delete_budget_plan_line_goal`       | Delete the goal of a budget plan line (`finance:delete`, Budget plan feature)                                                                                                                                    |
+| `delete_budget_plan_line`            | Permanently delete a line of a budget plan with all its category memberships and assignments in every period, so its categories become unbudgeted (`finance:delete`, Budget plan feature)                        |
+| `delete_budget_plan`                 | Delete a budget plan (`finance:delete`)                                                                                                                                                                          |
+| `delete_goal`                        | Permanently delete a savings goal and free its account shares (`finance:delete`, Goals feature)                                                                                                                  |
+| `get_budget_plan_period`             | Read one period of a budget plan: the figures behind the Budget screen                                                                                                                                           |
+| `get_budget_plan_scheduled`          | List what is still scheduled in a period of a budget plan, from today on: subscription payments and planned transactions dated in the period                                                                     |
+| `get_budget_plan_suggestion_context` | Read what a new budget plan could start from, before creating one: the top spending categories of the given accounts over the last three full months                                                             |
+| `get_budget_plan_trends`             | Compare the last periods of a budget plan: for each, in order from oldest to newest, what was assigned, the activity (spending is negative), the amount carried in and what was available, in total and per line |
+| `get_goals`                          | List savings goals (active, paused, archived) in the user's order                                                                                                                                                |
+| `list_budget_plan_periods`           | List the periods of a budget plan, newest first                                                                                                                                                                  |
+| `list_budget_plans`                  | List the budget plans (the "Budget" in the app: period envelopes where money is assigned to lines, not the trackers behind get_trackers), or read one with planId                                                |
+| `restore_budget_plan`                | Bring a budget plan back from the trash (`finance:write`, Budget plan feature)                                                                                                                                   |
+| `set_budget_plan_accounts`           | Replace the set of accounts a budget plan counts activity from (`finance:write`, Budget plan feature)                                                                                                            |
+| `set_budget_plan_assignment`         | Assign money to a budget plan line in a period, or change its carry policy there (`finance:write`, Budget plan feature)                                                                                          |
+| `set_budget_plan_line_goal`          | Set the goal of a budget plan line: how much it should hold or receive and when (`finance:write`, Budget plan feature)                                                                                           |
+| `snooze_budget_plan_line_goal`       | Snooze the goal of a budget plan line for one period, so it asks for nothing from that period (`finance:write`, Budget plan feature)                                                                             |
+| `update_budget_plan_group`           | Rename a group of a budget plan (`finance:write`, Budget plan feature)                                                                                                                                           |
+| `update_budget_plan_line`            | Change a line of a budget plan (`finance:write`, Budget plan feature)                                                                                                                                            |
+| `update_budget_plan`                 | Change the settings of a budget plan (`finance:write`, Budget plan feature)                                                                                                                                      |
+| `update_goal`                        | Update a savings goal (`finance:write`, Goals feature)                                                                                                                                                           |
 
-| Tool                             | Purpose                                                                                               |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `get_categories`                 | List spending/income categories                                                                       |
-| `get_category_transaction_count` | Count transactions filed under a category; check before `delete_category`                             |
-| `create_category`                | Create a new category, optionally nested (`finance:write`)                                            |
-| `update_category`                | Rename, recolor, or change a category's icon (`finance:write`)                                        |
-| `delete_category`                | Delete a category; supply replacement for linked transactions (`finance:delete`)                      |
-| `get_tags`                       | List transaction tags                                                                                 |
-| `create_tag`                     | Create a new transaction tag (`finance:write`)                                                        |
-| `update_tag`                     | Rename, recolor, or update a tag (`finance:write`)                                                    |
-| `delete_tag`                     | Permanently delete a tag and unlink it from all transactions (`finance:delete`)                       |
-| `assign_tags_to_transaction`     | Assign tags to a transaction (`finance:write`)                                                        |
-| `remove_tags_from_transaction`   | Remove tags from one or more transactions (`finance:write`)                                           |
-| `get_tag_reminders`              | Tag reminders: amount threshold or existence check, scheduled or real-time; filter by tag or reminder |
-| `create_tag_reminder`            | Create a tag reminder (amount threshold in the base currency, or existence check) (`finance:write`)   |
-| `update_tag_reminder`            | Change a reminder; `null` clears the schedule, `isEnabled` pauses it (`finance:write`)                |
-| `delete_tag_reminder`            | Permanently delete a tag reminder (`finance:delete`)                                                  |
+### `trackers`
 
-### Payees
+Spending trackers, their lines and suggestions.
 
-| Tool                               | Purpose                                                                                                          |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `get_payees`                       | List payees (merchants) with transaction count, net flow and top category; filter by name                        |
-| `get_payee`                        | One payee with its aliases and stats                                                                             |
-| `create_payee`                     | Create a payee (`finance:write`)                                                                                 |
-| `update_payee`                     | Rename a payee or change its default category, mode, default tags, location or logo (`finance:write`)            |
-| `delete_payee`                     | Permanently delete a payee; its transactions stay, unlinked (`finance:delete`)                                   |
-| `merge_payees`                     | Merge one payee into another; the source is deleted (`finance:delete`)                                           |
-| `bulk_delete_payees`               | Permanently delete up to 2000 payees, optionally ignoring their names later (`finance:delete`)                   |
-| `get_ignored_payee_names`          | Names that are never turned into payees automatically                                                            |
-| `ignore_payee_name`                | Add a name to the ignored list; `force` also deletes its payee (`finance:write` + `finance:delete` with `force`) |
-| `unignore_payee_name`              | Remove a name from the ignored list (`finance:write`)                                                            |
-| `apply_payee_tags_to_transactions` | Add a payee's default tags to all its existing transactions; adds only (`finance:write`)                         |
-| `create_payee_alias`               | Add another name that links to a payee (`finance:write`)                                                         |
-| `delete_payee_alias`               | Delete one alias of a payee (`finance:delete`)                                                                   |
+| Tool                               | Purpose                                                                                                                                                                                                                                                                                                                                              |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `accept_tracker_suggestions`       | Accept pending smart-tracking suggestions of a tracker the user owns: each suggested transaction is linked to the tracker (`finance:write`)                                                                                                                                                                                                          |
+| `add_transactions_to_tracker`      | Manually link one or more transactions to a tracker, alongside any links its category and tag rules add (`finance:write`)                                                                                                                                                                                                                            |
+| `archive_tracker`                  | Archive or unarchive a tracker (`finance:write`)                                                                                                                                                                                                                                                                                                     |
+| `create_tracker_line`              | Add a line to a tracker: a named category set with its own optional limit (`finance:write`)                                                                                                                                                                                                                                                          |
+| `create_tracker`                   | Create a tracker with an optional spending limit, date range and logo (`finance:write`)                                                                                                                                                                                                                                                              |
+| `delete_tracker_line`              | Permanently delete a line from a tracker (`finance:delete`)                                                                                                                                                                                                                                                                                          |
+| `delete_tracker`                   | Permanently delete a tracker and all its transaction links (`finance:delete`)                                                                                                                                                                                                                                                                        |
+| `get_tracker_spending_stats`       | Get spending statistics for a tracker: spending broken down by category and a time-series of expense vs income over the tracker period                                                                                                                                                                                                               |
+| `get_tracker`                      | Get one tracker with its progress: the tracker itself (name, status, type, date range, limit, linked categories, and the share details when it is shared with the user) and its stats (income, expense and balance over the tracker period, how much of the limit is used, how many transactions it covers, and the first and last transaction date) |
+| `get_trackers`                     | List trackers: spending watchers over a date range with an optional limit, holding hand-picked transactions plus those their category and tag rules link                                                                                                                                                                                             |
+| `list_tracker_suggestions`         | Smart-tracking state of a tracker the user owns                                                                                                                                                                                                                                                                                                      |
+| `reject_tracker_suggestions`       | Reject smart-tracking suggestions of a tracker the user owns: pending ones are dismissed, and AI-linked or accepted ones are also unlinked from the tracker (`finance:write`)                                                                                                                                                                        |
+| `remove_transactions_from_tracker` | Unlink one or more transactions from a tracker (`finance:write`)                                                                                                                                                                                                                                                                                     |
+| `update_tracker_line`              | Update a tracker line: name, categories, limit, or position (`finance:write`)                                                                                                                                                                                                                                                                        |
+| `update_tracker`                   | Update the name, date range, spending limit, or rules (categories, tags, auto-add) of an existing tracker (`finance:write`)                                                                                                                                                                                                                          |
 
-### Trackers
+### `automations`
 
-A tracker is a limit on categories over a date range; budget plans are a separate section below.
+Transaction rules, payee aliases, ignored payee names and tag reminders.
 
-| Tool                               | Purpose                                                                                                       |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `get_trackers`                     | Trackers with limits, category/tag rules and lines                                                            |
-| `get_tracker`                      | One tracker with its limit, categories and stats (income, expense, balance, limit used)                       |
-| `create_tracker`                   | Create a new tracker with limit, date range, category/tag rules, smart tracking (`finance:write`)             |
-| `update_tracker`                   | Update name, dates, limit (null clears), category/tag rules, or smart tracking of a tracker (`finance:write`) |
-| `delete_tracker`                   | Permanently delete a tracker and its transaction links (`finance:delete`)                                     |
-| `archive_tracker`                  | Archive or restore a tracker — active ↔ archived (`finance:write`)                                            |
-| `add_transactions_to_tracker`      | Link transactions to a tracker (`finance:write`)                                                              |
-| `remove_transactions_from_tracker` | Unlink transactions from a tracker (`finance:write`)                                                          |
-| `get_tracker_spending_stats`       | Category breakdown, time-series, per-line spent and "other" spending for a tracker                            |
-| `create_tracker_line`              | Add a line (category set + optional limit) to a tracker (`finance:write`)                                     |
-| `update_tracker_line`              | Update a tracker line's name, categories, limit, or position (`finance:write`)                                |
-| `delete_tracker_line`              | Permanently delete a tracker line (`finance:delete`)                                                          |
-| `list_tracker_suggestions`         | Smart-tracking suggestions (score, AI reason), AI-matched transactions, scan status of an owned tracker       |
-| `accept_tracker_suggestions`       | Accept pending suggestions, linking their transactions (`finance:write`)                                      |
-| `reject_tracker_suggestions`       | Reject suggestions; also unlinks AI-linked or accepted ones (`finance:write`)                                 |
+| Tool                               | Purpose                                                                                                                                                                                                                      |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apply_payee_tags_to_transactions` | Add a payee's default tags (set with update_payee) to every transaction already linked to it, planned ones included (`finance:write`)                                                                                        |
+| `apply_transaction_automation`     | Run one saved automation rule on existing transactions, writing the rule's actions to them (`finance:write`)                                                                                                                 |
+| `create_payee_alias`               | Add an alias to a payee: another name that links future transactions to it (`finance:write`)                                                                                                                                 |
+| `create_tag_reminder`              | Create a reminder on a tag (`finance:write`)                                                                                                                                                                                 |
+| `create_transaction_automation`    | Create a transaction automation rule that categorizes, tags, sets a payee, or edits the note of matching transactions (`finance:write`)                                                                                      |
+| `delete_payee_alias`               | Delete one alias of a payee (`finance:delete`)                                                                                                                                                                               |
+| `delete_tag_reminder`              | Permanently delete a tag reminder (`finance:delete`)                                                                                                                                                                         |
+| `delete_transaction_automation`    | Permanently delete a transaction automation rule (`finance:delete`)                                                                                                                                                          |
+| `get_ignored_payee_names`          | List the names on the ignored list, newest first                                                                                                                                                                             |
+| `get_tag_reminders`                | List tag reminders: rules that notify the user about the transactions of a tag, either when the tag total in a period passes an amount (amount_threshold) or when the tag has no transaction in the period (existence_check) |
+| `get_transaction_automations`      | List the transaction automation rules (rules engine) of the user, ordered by evaluation order                                                                                                                                |
+| `ignore_payee_name`                | Add a name to the ignored list, so it is never turned into a payee automatically when transactions are imported or synced (`finance:write` + `finance:delete` with force)                                                    |
+| `preview_transaction_automation`   | Dry-run a set of automation conditions against up to the last 1000 eligible existing transactions and return { matchedCount, scannedCount, matches } where matches is capped at 5 sample transactions                        |
+| `reorder_transaction_automations`  | Reorder the transaction automation rules of the user (`finance:write`)                                                                                                                                                       |
+| `unignore_payee_name`              | Remove a name from the ignored list, so imports and syncs may turn it into a payee again (`finance:write`)                                                                                                                   |
+| `update_tag_reminder`              | Update a tag reminder (`finance:write`)                                                                                                                                                                                      |
+| `update_transaction_automation`    | Update a transaction automation rule (`finance:write`)                                                                                                                                                                       |
 
-### Savings goals
+### `review`
 
-| Tool          | Purpose                                                                                            |
-| ------------- | -------------------------------------------------------------------------------------------------- |
-| `get_goals`   | Savings goals with backing accounts, shares, progress, pace, ETA, needed per month (goal currency) |
-| `create_goal` | Create a savings goal funded by % shares of accounts (`finance:write`, Goals feature)              |
-| `update_goal` | Update target, date, monthly plan, accounts, or status of a goal (`finance:write`, Goals feature)  |
-| `delete_goal` | Permanently delete a goal and free its account shares (`finance:delete`, Goals feature)            |
+Refund and transfer matches, duplicate cleanup and stuck pending transactions.
 
-### Analytics
+| Tool                              | Purpose                                                                                                                                                                                                                                                                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dismiss_transfer_suggestion`     | Tell MoneyMatter that a suggested expense/income pair is not a transfer, so list_transfer_suggestions stops offering that pair (`finance:write`)                                                                                                                                                                                            |
+| `get_reconciliation_history`      | List the duplicate cleanups that removed transactions, newest first                                                                                                                                                                                                                                                                         |
+| `get_refund_recommendations`      | Suggest transactions that a refund could be linked to: up to 5 of the opposite type (income for an expense, expense for an income) from the last 6 months, within 50 of the amount in the base currency, leaving out transfers, planned rows and rows that already act as refunds                                                           |
+| `get_transfer_recommendations`    | Suggest the other leg of a transfer: up to 7 transactions of the opposite type (income for an expense, expense for an income) on other accounts, within 10% of the amount in the base currency and 14 days of the date, leaving out transfers, refunds, planned rows and split parents; same currency and closer amount and date rank first |
+| `keep_pending_as_booked`          | Confirm that bank-synced pending transactions are real and booked, so they stop showing as stuck (`finance:write`)                                                                                                                                                                                                                          |
+| `list_stuck_pending_transactions` | List bank-synced transactions that have been pending for more than 7 days, so the bank probably booked them under a different row                                                                                                                                                                                                           |
+| `list_transfer_suggestions`       | Scan a period for expenses that look like one leg of a transfer between the caller's accounts                                                                                                                                                                                                                                               |
+| `merge_duplicate_transactions`    | Merge duplicate transactions of one account into a survivor: the other rows are removed and their tracker, group and subscription links move to the survivor, which keeps its own data (`finance:write`)                                                                                                                                    |
+| `remove_duplicate_transactions`   | Remove duplicate transactions from the books: they disappear from lists, trackers and reports, and the account balance is left as it is (`finance:delete`)                                                                                                                                                                                  |
+| `restore_removed_transactions`    | Bring back transactions that remove_duplicate_transactions or merge_duplicate_transactions took out of the books (`finance:write`)                                                                                                                                                                                                          |
 
-| Tool                            | Purpose                                                                                   |
-| ------------------------------- | ----------------------------------------------------------------------------------------- |
-| `get_spending_by_categories`    | Aggregate spending by category over a range                                               |
-| `get_cash_flow`                 | Income vs expenses over a range                                                           |
-| `get_balance_history`           | Time-series of account balances                                                           |
-| `get_expenses_for_period`       | Expenses summary for a time period                                                        |
-| `get_total_balance`             | Total balance on one date across all accounts, net of credit limits if that setting is on |
-| `get_net_worth_history`         | Net worth over a range: assets and liabilities by kind, weekly to yearly points           |
-| `get_net_worth_drivers`         | What moved net worth per period: savings, investment growth, dividends, fees              |
-| `get_investment_contributions`  | Money moved into portfolios per period, split per portfolio                               |
-| `get_venture_contributions`     | Net contributed to each venture deal over a range                                         |
-| `get_pivot_report`              | Spending or income as rows (category, payee, tag) by time columns, with totals            |
-| `get_cumulative_stats`          | Running monthly totals of expenses, income or savings vs the previous period              |
-| `get_earliest_transaction_date` | Date of the first transaction on record; start date for reports                           |
+### `groups-templates`
 
-### Investments
+Transaction groups and transaction templates.
 
-Portfolios, holdings, securities and investment transactions.
+| Tool                             | Purpose                                                                                                                                                                                                            |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `add_transactions_to_group`      | Add one or more transactions to an existing transaction group (`finance:write`)                                                                                                                                    |
+| `create_transaction_group`       | Create a new transaction group that bundles related transactions together (e.g. a split bill) (`finance:write`)                                                                                                    |
+| `create_transaction_template`    | Create a transaction template: a named preset to fill new transactions from (`finance:write`)                                                                                                                      |
+| `delete_transaction_group`       | Permanently delete a transaction group (`finance:delete`)                                                                                                                                                          |
+| `delete_transaction_template`    | Permanently delete a transaction template (`finance:delete`)                                                                                                                                                       |
+| `get_transaction_groups`         | List all transaction groups for the user                                                                                                                                                                           |
+| `get_transaction_templates`      | List the transaction templates: named presets the user fills a new transaction from (type, and optionally an account, a pinned amount, a category, a payee, a payment type, a note, an original currency and tags) |
+| `remove_transactions_from_group` | Remove transactions from a group (`finance:write`)                                                                                                                                                                 |
+| `update_transaction_group`       | Update the name or note of an existing transaction group (`finance:write`)                                                                                                                                         |
+| `update_transaction_template`    | Update a transaction template (`finance:write`)                                                                                                                                                                    |
 
-| Tool                            | Purpose                                                                                                                |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `get_portfolios`                | List investment portfolios (types, enabled state)                                                                      |
-| `get_portfolio`                 | Read one portfolio by id                                                                                               |
-| `get_portfolios_overview`       | Summaries and annualized returns of all portfolios                                                                     |
-| `get_portfolio_summary`         | Portfolio totals, P&L, cash balances                                                                                   |
-| `get_portfolio_holdings`        | Positions with market value and gains/losses                                                                           |
-| `get_portfolio_balances`        | Portfolio cash balances per currency                                                                                   |
-| `get_investment_transactions`   | Buy/sell/dividend/fee history for investments                                                                          |
-| `search_securities`             | Search securities by ticker/name; each result can be passed to `create_holding`; a stored one carries its `securityId` |
-| `get_security_prices`           | Stored closing prices of one security; last 365 days by default, newest `limit` rows (500, max 5000)                   |
-| `create_holding`                | Add a security to a portfolio from a search result or securityId (`finance:write`)                                     |
-| `delete_holding`                | Remove a security from a portfolio, with `force` its transactions too (`finance:delete`)                               |
-| `create_portfolio`              | Create a new investment portfolio (`finance:write`)                                                                    |
-| `update_portfolio`              | Rename, recategorize, or disable a portfolio (`finance:write`)                                                         |
-| `delete_portfolio`              | Delete a portfolio and optionally all its data (`finance:delete`)                                                      |
-| `restore_portfolio`             | Restore a deleted portfolio (`finance:write`)                                                                          |
-| `create_investment_transaction` | Record a buy/sell/dividend/fee transaction (`finance:write`)                                                           |
-| `update_investment_transaction` | Correct a transaction's date, quantity, price, or fees (`finance:write`)                                               |
-| `delete_investment_transaction` | Delete an investment transaction (`finance:delete`)                                                                    |
+### `investments`
 
-### Portfolio cash transfers
+Portfolios, holdings, securities, investment transactions and portfolio transfers.
 
-| Tool                                | Purpose                                                                             |
-| ----------------------------------- | ----------------------------------------------------------------------------------- |
-| `link_transaction_to_portfolio`     | Link an existing transaction to a portfolio as a cash transfer (`finance:write`)    |
-| `unlink_transaction_from_portfolio` | Remove a transaction's portfolio link and reverse the cash change (`finance:write`) |
-| `transfer_account_to_portfolio`     | Move cash from an account into a portfolio (`finance:write`)                        |
-| `transfer_portfolio_to_account`     | Withdraw portfolio cash into an account (`finance:write`)                           |
-| `create_portfolio_cash_transaction` | Direct portfolio cash deposit/withdrawal, no account involved (`finance:write`)     |
-| `transfer_between_portfolios`       | Move cash from one portfolio to another (`finance:write`)                           |
-| `exchange_portfolio_currency`       | Exchange one cash currency for another inside a portfolio (`finance:write`)         |
-| `list_portfolio_transfers`          | Cash movement history of a portfolio (transfers, deposits, exchanges)               |
-| `set_portfolio_transfer_adjustment` | Flag a transfer as an adjustment, not a contribution (`finance:write`)              |
-| `delete_portfolio_transfer`         | Delete a portfolio transfer and reverse its cash effect (`finance:delete`)          |
+| Tool                                | Purpose                                                                                                                                                                                                                                                                    |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `create_holding`                    | Add a security to a portfolio, so investment transactions can be recorded against it (`finance:write`)                                                                                                                                                                     |
+| `create_investment_transaction`     | Record a new investment transaction (buy, sell, dividend, fee, etc.) in a portfolio (`finance:write`)                                                                                                                                                                      |
+| `create_portfolio_cash_transaction` | Record a direct cash deposit into or withdrawal from an investment portfolio without touching any regular account — no bank transaction is created (`finance:write`)                                                                                                       |
+| `create_portfolio`                  | Create a new investment portfolio for the user (`finance:write`)                                                                                                                                                                                                           |
+| `delete_holding`                    | Remove a security from a portfolio (`finance:delete`)                                                                                                                                                                                                                      |
+| `delete_investment_transaction`     | Permanently delete an investment transaction (`finance:delete`)                                                                                                                                                                                                            |
+| `delete_portfolio_transfer`         | Permanently delete a portfolio transfer, a direct deposit/withdrawal or a currency exchange, and reverse its effect on the portfolio cash balances (`finance:delete`)                                                                                                      |
+| `delete_portfolio`                  | Permanently delete a portfolio and, if force is true, all its holdings, transactions, and cash balances (`finance:delete`)                                                                                                                                                 |
+| `exchange_portfolio_currency`       | Record a currency exchange inside a portfolio: sells fromAmount of one cash currency and buys toAmount of another (`finance:write`)                                                                                                                                        |
+| `get_investment_contributions`      | Get the money moved into portfolios (net of withdrawals) per period, in the base currency, with the split per portfolio and the net savings of the same period for comparison                                                                                              |
+| `get_investment_transactions`       | Investment transaction history: buy, sell, dividend, transfer, tax, fee, cancel, other                                                                                                                                                                                     |
+| `get_portfolio_balances`            | Cash balances held in a portfolio, broken down per currency                                                                                                                                                                                                                |
+| `get_portfolio_holdings`            | Positions held in a portfolio with dynamically calculated market value, cost basis, and realized/unrealized gain (value and percent)                                                                                                                                       |
+| `get_portfolio_summary`             | Portfolio-level aggregates for a single portfolio: total current market value, total cost basis, realized and unrealized gains (value and percent), cash balances, and total portfolio value (holdings + cash)                                                             |
+| `get_portfolio`                     | Read one portfolio by id: name, portfolio type (investment/retirement/savings/other), description, enabled state and creation date                                                                                                                                         |
+| `get_portfolios_overview`           | Overview of all portfolios in one call                                                                                                                                                                                                                                     |
+| `get_portfolios`                    | List the user's investment portfolios                                                                                                                                                                                                                                      |
+| `get_security_prices`               | Stored closing prices of one security, found by securityId or by symbol with providerName (a security that is stored, even without a holding; not found otherwise), oldest first, each with the date, the close, when it was recorded and its source, as { prices, total } |
+| `link_transaction_to_portfolio`     | Link an existing regular transaction to an investment portfolio as a cash transfer (`finance:write`)                                                                                                                                                                       |
+| `list_portfolio_transfers`          | Cash movement history of a portfolio: account↔portfolio transfers, direct deposits/withdrawals, linked bank transactions, and currency exchanges                                                                                                                           |
+| `restore_portfolio`                 | Restore a portfolio that was deleted without force, with its holdings, transactions and cash balances (`finance:write`)                                                                                                                                                    |
+| `search_securities`                 | Search for securities (stocks, ETFs, crypto, etc.) by ticker symbol or company name                                                                                                                                                                                        |
+| `set_portfolio_transfer_adjustment` | Flag a portfolio transfer as an adjustment, or clear the flag (`finance:write`)                                                                                                                                                                                            |
+| `transfer_account_to_portfolio`     | Move cash from a regular account into an investment portfolio (`finance:write`)                                                                                                                                                                                            |
+| `transfer_between_portfolios`       | Move cash from one portfolio to another, in one currency (`finance:write`)                                                                                                                                                                                                 |
+| `transfer_portfolio_to_account`     | Withdraw cash from an investment portfolio into a regular account (`finance:write`)                                                                                                                                                                                        |
+| `unlink_transaction_from_portfolio` | Remove the portfolio link from a transaction: deletes the portfolio transfer, reverses the portfolio cash balance change, and restores the transaction to a regular income/expense (`finance:write`)                                                                       |
+| `update_investment_transaction`     | Update an existing investment transaction — correct the date, quantity, price, fees, settlement leg, category, or label (`finance:write`)                                                                                                                                  |
+| `update_portfolio`                  | Update an existing portfolio's name, type, description, or enabled state (`finance:write`)                                                                                                                                                                                 |
 
-### Transaction groups
+### `ventures`
 
-| Tool                             | Purpose                                                                                            |
-| -------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `get_transaction_groups`         | List transaction groups with counts/dates or full embedded transactions; `groupId` reads one group |
-| `create_transaction_group`       | Bundle related transactions into a group (e.g. split bill) (`finance:write`)                       |
-| `update_transaction_group`       | Rename or add a note to an existing group (`finance:write`)                                        |
-| `delete_transaction_group`       | Delete a group — transactions kept (`finance:delete`)                                              |
-| `add_transactions_to_group`      | Add transactions to an existing group (`finance:write`)                                            |
-| `remove_transactions_from_group` | Remove transactions from a group, optionally dissolving it (`finance:write`)                       |
+Venture platforms, deals and events.
 
-### Subscriptions
+| Tool                                 | Purpose                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `create_venture_deal`                | Create a venture deal (private/illiquid investment record) (`finance:write`)                                                                                                                                                                                                                                                                            |
+| `create_venture_event`               | Record an event on a venture deal (`finance:write`)                                                                                                                                                                                                                                                                                                     |
+| `create_venture_platform`            | Create a venture investment platform (e.g. AngelList, a syndicate, a fund manager) so its default fees can be auto-applied when creating new deals (`finance:write`)                                                                                                                                                                                    |
+| `delete_venture_deal`                | Delete a venture deal (`finance:delete`)                                                                                                                                                                                                                                                                                                                |
+| `delete_venture_event_link`          | Remove one transaction link from a venture event (`finance:delete`)                                                                                                                                                                                                                                                                                     |
+| `delete_venture_event`               | Delete a venture event (`finance:delete`)                                                                                                                                                                                                                                                                                                               |
+| `delete_venture_platform`            | Delete a venture platform (`finance:delete`)                                                                                                                                                                                                                                                                                                            |
+| `get_venture_contributions`          | Get the net amount contributed to each venture deal in a date range, in the base currency                                                                                                                                                                                                                                                               |
+| `get_venture_deal_metrics`           | Compute aggregated metrics for a venture deal: cost basis, current value (latest NAV), total distributions, absolute and percent P&L, TVPI (total value to paid-in), DPI (distributions to paid-in), and IRR                                                                                                                                            |
+| `get_venture_deal`                   | Retrieve a single venture deal by id, including its platform and currency                                                                                                                                                                                                                                                                               |
+| `get_venture_event`                  | Retrieve a single venture event by id, including its link rows (bank transactions linked to this event)                                                                                                                                                                                                                                                 |
+| `get_venture_platform`               | Retrieve a single venture platform by id                                                                                                                                                                                                                                                                                                                |
+| `link_transactions_to_venture_event` | Link existing bank transactions to a venture event as the cash behind it (`finance:write`)                                                                                                                                                                                                                                                              |
+| `list_venture_deals`                 | List the user's venture deals (private/illiquid investments through SPVs, syndicates, or direct vehicles)                                                                                                                                                                                                                                               |
+| `list_venture_events`                | List events for a venture deal in chronological order (oldest first)                                                                                                                                                                                                                                                                                    |
+| `list_venture_platforms`             | List the user's venture investment platforms (SPV syndicators, fund managers)                                                                                                                                                                                                                                                                           |
+| `replace_venture_event_links`        | Replace the whole set of bank transactions linked to a venture event: every current link is removed (each transaction gets its original state back), then the given transactions are linked under the rules of link_transactions_to_venture_event (same currency, not already linked elsewhere, sum equal to the event's lpNetAmount) (`finance:write`) |
+| `update_venture_deal`                | Update a venture deal (`finance:write`)                                                                                                                                                                                                                                                                                                                 |
+| `update_venture_event`               | Update a venture event (`finance:write`)                                                                                                                                                                                                                                                                                                                |
+| `update_venture_platform`            | Update an existing venture platform's name, website, description, or default fees (`finance:write`)                                                                                                                                                                                                                                                     |
 
-Includes detected candidates and billing periods.
+### `loans-vehicles`
 
-| Tool                                     | Purpose                                                                                                          |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `get_subscriptions`                      | List subscriptions/bills with frequency, amount, and linked count                                                |
-| `get_subscription_by_id`                 | Single subscription with linked transactions and next payment date                                               |
-| `create_subscription`                    | Create a subscription, bill, or installment, expense or income with matchingRules, payee, tags (`finance:write`) |
-| `update_subscription`                    | Update subscription fields, matching rules, payee, tags, reminders, auto-record (`finance:write`)                |
-| `delete_subscription`                    | Delete a subscription and its transaction links (`finance:delete`)                                               |
-| `toggle_subscription_active`             | Activate or deactivate a subscription (`finance:write`)                                                          |
-| `detect_subscription_candidates`         | Scan 12 months of transactions to auto-detect recurring patterns (`finance:write`)                               |
-| `list_subscription_candidates`           | List auto-detected candidates sorted by confidence score                                                         |
-| `dismiss_subscription_candidate`         | Dismiss a pending candidate (`finance:write`)                                                                    |
-| `link_transactions_to_subscription`      | Mark transactions as payment instances of a subscription (`finance:write`)                                       |
-| `unlink_transactions_from_subscription`  | Remove transaction links from a subscription (`finance:write`)                                                   |
-| `get_upcoming_subscription_payments`     | Upcoming payments sorted by next expected date                                                                   |
-| `get_subscriptions_summary`              | Monthly/yearly cost, expected monthly income, and per-direction active counts in base currency                   |
-| `accept_subscription_candidate`          | Accept a detected candidate, optionally linking its samples to a subscription (`finance:write`)                  |
-| `list_subscription_match_suggestions`    | Past transactions a subscription's matching rules would match but that are not linked yet                        |
-| `get_subscription_periods`               | A subscription's billing periods with status and the transaction behind each paid one                            |
-| `preview_subscription_payment`           | What paying a period would book (converted amount, already-recorded payments); changes nothing                   |
-| `pay_subscription_period`                | Mark a period paid by linking a transaction or booking a new one (`finance:write`)                               |
-| `skip_subscription_period`               | Skip a billing cycle without paying it (`finance:write`)                                                         |
-| `unlink_subscription_period_transaction` | Detach a period's transaction; the transaction and the paid status stay (`finance:write`)                        |
-| `revert_subscription_period`             | Undo a paid or skipped period; may delete the transaction the app booked (`finance:write` + `finance:delete`)    |
+Loans with their payments and notes, and vehicles.
 
-### Transaction automations
+| Tool                       | Purpose                                                                                                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add_loan_note`            | Add a note to the timeline of a loan (for example "rate fixed until 2030") (`finance:write`)                                                                        |
+| `create_loan`              | Create a loan: a liability account with the loan terms (`finance:write`)                                                                                            |
+| `create_vehicle`           | Create a vehicle: an asset account whose value follows a depreciation curve from the purchase price and date (`finance:write`)                                      |
+| `delete_loan`              | Permanently delete a loan and its account (`finance:delete`)                                                                                                        |
+| `delete_vehicle`           | Permanently delete a vehicle together with its account and the account's history (`finance:delete`)                                                                 |
+| `get_loan_balance_history` | The outstanding balance of a loan over time, in the loan currency: the opening balance followed by one end-of-day point per day that has payments, oldest first     |
+| `get_loans`                | List the loans (mortgage, auto, student, personal), or read one with loanId                                                                                         |
+| `get_vehicles`             | List the vehicles (cars and other vehicles tracked as an asset), or read one with vehicleId                                                                         |
+| `link_loan_payments`       | Record existing expense transactions as payments on a loan (`finance:write`)                                                                                        |
+| `unlink_loan_payment`      | Undo a loan payment: the loan-side leg is deleted, the source transaction is restored to a plain expense and the outstanding balance goes back up (`finance:write`) |
+| `update_loan`              | Update a loan (`finance:write`)                                                                                                                                     |
+| `update_vehicle`           | Update a vehicle (`finance:write`)                                                                                                                                  |
 
-Rules that set a category, tags, payee or note.
+### `currencies`
 
-| Tool                              | Purpose                                                                                             |
-| --------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `get_transaction_automations`     | List automation rules with evaluation order, enabled state, match counts, and pause reason          |
-| `preview_transaction_automation`  | Dry-run automation conditions against recent transactions; nothing is modified                      |
-| `create_transaction_automation`   | Create a rule that sets category, tags, payee, or note on matching transactions (`finance:write`)   |
-| `update_transaction_automation`   | Change a rule name, conditions, actions, or enabled state (`finance:write`)                         |
-| `delete_transaction_automation`   | Permanently delete an automation rule (`finance:delete`)                                            |
-| `reorder_transaction_automations` | Set the top-to-bottom evaluation order of the automation rules (`finance:write`)                    |
-| `apply_transaction_automation`    | Run a saved rule on up to 500 existing transactions; non-matching ids are skipped (`finance:write`) |
+Your currencies and exchange rates.
 
-### Transaction templates
+| Tool                        | Purpose                                                                                                                                                                                                                                             |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `add_user_currencies`       | Add currencies to the ones the user holds, so accounts and transactions can use them (`finance:write`)                                                                                                                                              |
+| `delete_exchange_rates`     | Remove the user's own exchange rates for currency pairs, so the pair falls back to the market rate (`finance:delete`)                                                                                                                               |
+| `delete_user_currency`      | Stop holding a currency (`finance:delete`)                                                                                                                                                                                                          |
+| `get_exchange_rate`         | Read an exchange rate for a day                                                                                                                                                                                                                     |
+| `get_user_currencies`       | Get the currencies the user holds: baseCurrency (the reporting currency, null before one is set), currencies (every held currency with its settings: liveRateUpdate and exchangeRate) and exchangeRates (today's rate of each currency to the base) |
+| `list_supported_currencies` | List every ISO 4217 currency the app supports, with its code, name and decimals                                                                                                                                                                     |
+| `set_exchange_rates`        | Set the user's own exchange rates for currency pairs (`finance:write`)                                                                                                                                                                              |
+| `update_user_currency`      | Change how one held currency is valued: exchangeRate (the flat rate to the base currency) and liveRateUpdate (true follows the market rate, false keeps the manual one) (`finance:write`)                                                           |
 
-Named presets for new transactions.
+### `imports`
 
-| Tool                          | Purpose                                                                                  |
-| ----------------------------- | ---------------------------------------------------------------------------------------- |
-| `get_transaction_templates`   | List transaction templates: named presets for new transactions                           |
-| `create_transaction_template` | Create a template: type, account, pinned amount, category, payee, tags (`finance:write`) |
-| `update_transaction_template` | Change a template; `null` clears a field, `tagIds` replaces the tags (`finance:write`)   |
-| `delete_transaction_template` | Permanently delete a template (`finance:delete`)                                         |
+Import batches (list, undo) and bank connections (status, unlink an account); sharing is read only.
 
-### Venture investments
+| Tool                                  | Purpose                                                                                                                                                                                                                                                                                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `delete_import_batch`                 | Undo an import: permanently delete every transaction the batch created, reverse the balance shift the import absorbed, and remove accounts the import created once they are empty (`finance:delete`)                                                                                                                                 |
+| `get_bank_sync_status`                | Read the sync state of the bank-connected accounts: the last automatic sync, a summary (total, syncing, queued, completed, failed, idle), per account its status, startedAt, completedAt and error, the connections that need reconnecting (connectionsNeedingReauth) and the consent state of every connection (connectionStatuses) |
+| `get_import_batch_delete_status`      | Read the state of the latest background import batch delete of the signed-in user, the job delete_import_batch starts for a batch above 1000 rows                                                                                                                                                                                    |
+| `list_bank_connections`               | List the bank connections of the signed-in user (a bank or data provider linked to MoneyMatter), or read one with connectionId                                                                                                                                                                                                       |
+| `list_import_batches`                 | List the import batches of the signed-in user, newest first: every CSV, YNAB, statement, Wallet, MS Money and OFX import that still has transactions to undo                                                                                                                                                                         |
+| `list_share_invitations`              | List the sharing invitations of the signed-in user: the ones they sent (every status: pending, accepted, declined, revoked, expired) and the pending ones addressed to them                                                                                                                                                          |
+| `list_share_members`                  | List who has access to an account, household or tracker the signed-in user manages: the owner and every member who accepted                                                                                                                                                                                                          |
+| `list_shared_with_me`                 | List the accounts, households and trackers other people shared with the signed-in user                                                                                                                                                                                                                                               |
+| `unlink_account_from_bank_connection` | Disconnect a bank-connected account from its bank (`finance:write`)                                                                                                                                                                                                                                                                  |
 
-Platforms, deals and events.
-
-| Tool                                 | Purpose                                                                                                          |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `list_venture_platforms`             | List venture platforms (syndicators, fund managers) with their default fees                                      |
-| `get_venture_platform`               | Read one venture platform by id, including its default fees                                                      |
-| `create_venture_platform`            | Create a venture platform whose default fees apply to new deals (`finance:write`)                                |
-| `update_venture_platform`            | Change a platform's name, website, description or default fees; existing deals keep their fees (`finance:write`) |
-| `delete_venture_platform`            | Delete a venture platform; its deals lose the platform; `force` hard-deletes (`finance:delete`)                  |
-| `list_venture_deals`                 | List venture deals (illiquid private investments) with status, platform, currency, principal, fees and dates     |
-| `get_venture_deal`                   | Read one venture deal with its platform and currency, optionally with its event history                          |
-| `get_venture_deal_metrics`           | Cost basis, current value, distributions, P&L, TVPI, DPI and IRR of a deal, as of an optional date               |
-| `create_venture_deal`                | Create a venture deal; can create its initial investment event in the same call (`finance:write`)                |
-| `update_venture_deal`                | Update a deal; its terms are locked once it has events (`finance:write`)                                         |
-| `delete_venture_deal`                | Delete a deal and its events; linked bank transactions are restored (`finance:delete`)                           |
-| `list_venture_events`                | Events of a venture deal in time order, with amounts, cash-flow modes and linked bank transactions               |
-| `get_venture_event`                  | Read one venture event with its linked bank transactions                                                         |
-| `create_venture_event`               | Record an event on a deal; the initial investment comes first; carry is computed (`finance:write`)               |
-| `update_venture_event`               | Update an event; manual carry or net values override the automatic ones (`finance:write`)                        |
-| `delete_venture_event`               | Delete an event and unlink its transactions; the initial investment goes last (`finance:delete`)                 |
-| `link_transactions_to_venture_event` | Link bank transactions to a venture event as its cash (`finance:write`)                                          |
-| `replace_venture_event_links`        | Replace the transactions linked to a venture event (`finance:write`)                                             |
-| `delete_venture_event_link`          | Remove one transaction link from a venture event (`finance:delete`)                                              |
-
-### Currencies
-
-Exchange rates and held currencies.
-
-| Tool                        | Purpose                                                                                           |
-| --------------------------- | ------------------------------------------------------------------------------------------------- |
-| `set_exchange_rates`        | Set the user's own rates for pairs, each with its opposite (`finance:write`)                      |
-| `delete_exchange_rates`     | Remove the user's own rates for pairs, each with its opposite (`finance:delete`)                  |
-| `get_user_currencies`       | Base currency, held currencies with their rate settings, and today's rates to the base            |
-| `list_supported_currencies` | Every ISO currency the app supports (code, name, decimals)                                        |
-| `get_exchange_rate`         | Rate of a pair on a day, or the global rates of the day                                           |
-| `add_user_currencies`       | Add currencies the user holds, with optional flat rate and live-rate flag (`finance:write`)       |
-| `update_user_currency`      | Change a held currency's flat rate or market-vs-manual rate; re-values balances (`finance:write`) |
-| `delete_user_currency`      | Stop holding an unused ISO currency; not the base currency (`finance:delete`)                     |
-
-### Loans and vehicles
-
-| Tool                       | Purpose                                                                                     |
-| -------------------------- | ------------------------------------------------------------------------------------------- |
-| `get_loans`                | List loans with balance, terms and payoff projection; `loanId` reads one with its timeline  |
-| `get_loan_balance_history` | Outstanding balance of a loan over time, one point per payment day                          |
-| `create_loan`              | Create a loan with its terms (`finance:write`)                                              |
-| `update_loan`              | Correct a loan's balance, rate, term, payments or lender details (`finance:write`)          |
-| `delete_loan`              | Permanently delete a loan that has no payments (`finance:delete`)                           |
-| `add_loan_note`            | Add a note to a loan's timeline (`finance:write`)                                           |
-| `link_loan_payments`       | Record expense transactions as payments on a loan (`finance:write`)                         |
-| `unlink_loan_payment`      | Undo a loan payment; the expense is restored (`finance:write`)                              |
-| `get_vehicles`             | List vehicles with their estimated value and depreciation settings; `vehicleId` reads one   |
-| `create_vehicle`           | Create a vehicle whose value depreciates from its purchase price and date (`finance:write`) |
-| `update_vehicle`           | Update a vehicle's name, details, depreciation settings or mileage (`finance:write`)        |
-| `delete_vehicle`           | Permanently delete a vehicle and its account (`finance:delete`)                             |
-
-### Budget plans
-
-Period envelopes with lines, goals and assignments; not trackers.
-
-| Tool                                 | Purpose                                                                                                 |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------- |
-| `list_budget_plans`                  | List budget plans (period envelopes, not trackers); `planId` reads one with its accounts and lines      |
-| `get_budget_plan_suggestion_context` | Top spending categories of given accounts, to start a new budget plan from                              |
-| `list_budget_plan_periods`           | Periods of a budget plan, newest first, the current one marked                                          |
-| `get_budget_plan_period`             | One period: assigned, activity and available per line, the pool, goals and coverage                     |
-| `get_budget_plan_scheduled`          | Subscription payments and planned transactions still scheduled in a period                              |
-| `get_budget_plan_trends`             | Assigned, activity and available over the last periods, in total and per line                           |
-| `create_budget_plan`                 | Create the budget plan from accounts, cadence and anchor date; only one can be active (`finance:write`) |
-| `update_budget_plan`                 | Change a plan's name, carry policy, pool, zero-sum or expected income (`finance:write`)                 |
-| `delete_budget_plan`                 | Trash a plan, or erase a trashed one with `permanent` (`finance:delete`)                                |
-| `restore_budget_plan`                | Bring a plan back from the trash; `replace` swaps out the active one (`finance:write`)                  |
-| `set_budget_plan_accounts`           | Replace the accounts a plan counts activity from (`finance:write`)                                      |
-| `create_budget_plan_group`           | Add a named group for a plan's lines (`finance:write`)                                                  |
-| `update_budget_plan_group`           | Rename a plan's group (`finance:write`)                                                                 |
-| `delete_budget_plan_group`           | Delete an empty group of a plan (`finance:delete`)                                                      |
-| `create_budget_plan_line`            | Add a line for one or more categories to a plan (`finance:write`)                                       |
-| `update_budget_plan_line`            | Rename a line, move it to a group or change its categories (`finance:write`)                            |
-| `delete_budget_plan_line`            | Permanently delete a line and its assignments (`finance:delete`)                                        |
-| `archive_budget_plan_line`           | Archive a line from the current period, or restore an archived one (`finance:write`)                    |
-| `add_suggested_budget_plan_lines`    | Draft starter lines from spending history, with AI when the server has it (`finance:write`)             |
-| `set_budget_plan_line_goal`          | Set or replace a line's goal: frequency, behavior and amount (`finance:write`)                          |
-| `delete_budget_plan_line_goal`       | Delete a line's goal (`finance:delete`)                                                                 |
-| `snooze_budget_plan_line_goal`       | Snooze a line's goal for one period, or wake it again (`finance:write`)                                 |
-| `set_budget_plan_assignment`         | Assign money to a line from a period on or for one period, or set its carry policy (`finance:write`)    |
-
-### Sharing and bank connections
-
-Read-only.
-
-| Tool                     | Purpose                                                                        |
-| ------------------------ | ------------------------------------------------------------------------------ |
-| `list_share_invitations` | Sharing invitations you sent and the pending ones sent to you                  |
-| `list_share_members`     | Owner and members of an account, household or tracker you manage               |
-| `list_shared_with_me`    | Accounts, households and trackers others shared with you                       |
-| `list_bank_connections`  | Bank connections, or one with its accounts and consent window                  |
-| `get_bank_sync_status`   | Sync state of bank-connected accounts, connections to reconnect, running syncs |
-
-### Imports
-
-List and undo only; imports run in the app.
-
-| Tool                             | Purpose                                                                                        |
-| -------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `list_import_batches`            | Import batches (source, row count, accounts), newest first                                     |
-| `delete_import_batch`            | Undo an import: delete one batch's transactions; large batches run as a job (`finance:delete`) |
-| `get_import_batch_delete_status` | State of the background import batch delete (idle, queued, running, completed, failed)         |
+<!-- END GENERATED TOOL TABLES -->
 
 Call `get_user_profile` **first** — it reveals the user's base currency, which
 is required to interpret `ref*` fields (refAmount, refBalance) that normalize
@@ -563,7 +526,8 @@ multi-currency data.
   (`from_here` sets a baseline that runs on, `this_period` a one-period
   override). A line's goal is set with `set_budget_plan_line_goal`; the
   combinations it accepts are listed in that tool's description.
-- Sharing and bank connections are read-only here. `list_share_invitations`,
+- Sharing is read-only here, and bank connections are read-only apart from
+  `unlink_account_from_bank_connection`. `list_share_invitations`,
   `list_share_members` and `list_shared_with_me` show who has access to what
   (never an invitation's accept link); `list_bank_connections` and
   `get_bank_sync_status` show the state of linked banks (never credentials).

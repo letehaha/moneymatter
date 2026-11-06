@@ -2,7 +2,6 @@ import { CATEGORIZATION_MODE } from '@bt/shared/types';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { createPayee, deletePayee, deletePayeeAndIgnoreFuture } from '@services/payees';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real service, whose import chain builds queues at module scope and would open Redis
 // connections in a unit test.
@@ -15,8 +14,8 @@ jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChan
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerCreatePayee } from './create-payee';
-import { registerDeletePayee } from './delete-payee';
+import { createPayeeTool } from './create-payee';
+import { deletePayeeTool } from './delete-payee';
 
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
 const WRITE_DELETE = makeExtra({ scopes: ['finance:read', 'finance:write', 'finance:delete'] });
@@ -31,8 +30,8 @@ beforeEach(() => {
 });
 
 describe('create_payee', () => {
-  const tool = captureTools({ register: registerCreatePayee })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: createPayeeTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('accepts the categorization mode, the default tags and the default location like the REST body', () => {
     expect(
@@ -89,8 +88,8 @@ describe('create_payee', () => {
 });
 
 describe('delete_payee', () => {
-  const tool = captureTools({ register: registerDeletePayee })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: deletePayeeTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('takes an optional ignoreFuture flag', () => {
     expect(schema.safeParse({ id: PAYEE_ID, ignoreFuture: true }).success).toBe(true);

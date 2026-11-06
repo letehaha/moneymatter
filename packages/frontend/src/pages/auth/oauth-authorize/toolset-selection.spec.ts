@@ -1,7 +1,8 @@
+import { HIDDEN_OAUTH_SCOPES } from '@/common/const/oauth-scopes';
 import type { McpToolsetSummary } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
-import { summarizeToolSelection } from './toolset-selection';
+import { approveScopes, summarizeToolSelection } from './toolset-selection';
 
 const TOOLSETS: McpToolsetSummary[] = [
   { id: 'core', scope: null, toolCount: 55 },
@@ -64,5 +65,80 @@ describe('summarizeToolSelection', () => {
     const result = summarizeToolSelection({ toolsets: [], selectedScopes: new Set(), cap: 128 });
 
     expect(result).toEqual({ selectedCount: 0, totalCount: 0, selectedPercent: 0, capPercent: null, overCap: false });
+  });
+});
+
+describe('approveScopes', () => {
+  const TOGGLABLE = new Set(['finance:write', 'finance:delete']);
+  const approve = (overrides: Partial<Parameters<typeof approveScopes>[0]> = {}) =>
+    approveScopes({
+      requestedScopes: ['finance:read', 'toolset:investments', 'toolset:ventures'],
+      offeredToolsets: TOOLSETS,
+      selectedToolsetScopes: new Set(),
+      togglableScopes: TOGGLABLE,
+      approvals: {},
+      ...overrides,
+    });
+
+  it('never grants a toolset scope the client did not request', () => {
+    const result = approve({ selectedToolsetScopes: new Set(['toolset:investments', 'toolset:budget-plans']) });
+
+    expect(result).toEqual(['finance:read', 'toolset:investments']);
+  });
+
+  it('drops an offered toolset the user left unticked and keeps a ticked one', () => {
+    const result = approve({ selectedToolsetScopes: new Set(['toolset:ventures']) });
+
+    expect(result).toEqual(['finance:read', 'toolset:ventures']);
+  });
+
+  it('drops a requested and ticked toolset the backend does not offer', () => {
+    const result = approve({
+      offeredToolsets: [],
+      selectedToolsetScopes: new Set(['toolset:investments', 'toolset:ventures']),
+    });
+
+    expect(result).toEqual(['finance:read']);
+  });
+
+  it('drops a togglable scope the user turned off or never approved', () => {
+    const result = approve({
+      requestedScopes: ['finance:read', 'finance:write', 'finance:delete'],
+      approvals: { 'finance:write': false },
+    });
+
+    expect(result).toEqual(['finance:read']);
+  });
+
+  it('keeps a togglable scope the user approved', () => {
+    const result = approve({
+      requestedScopes: ['finance:read', 'finance:write', 'finance:delete'],
+      approvals: { 'finance:write': true, 'finance:delete': true },
+    });
+
+    expect(result).toEqual(['finance:read', 'finance:write', 'finance:delete']);
+  });
+
+  it('keeps hidden and unknown scopes', () => {
+    const [hidden] = HIDDEN_OAUTH_SCOPES;
+    const result = approve({ requestedScopes: [hidden!, 'some:unknown', 'profile:read'] });
+
+    expect(result).toEqual([hidden, 'some:unknown', 'profile:read']);
+  });
+
+  it('follows the requested order', () => {
+    const result = approve({
+      requestedScopes: ['toolset:ventures', 'offline_access', 'finance:write', 'toolset:investments', 'finance:read'],
+      selectedToolsetScopes: new Set(['toolset:investments', 'toolset:ventures']),
+      approvals: { 'finance:write': true },
+    });
+
+    expect(result).toEqual([
+      'toolset:ventures',
+      'offline_access',
+      'finance:write',
+      'toolset:investments',
+      'finance:read',
+    ]);
   });
 });

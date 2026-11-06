@@ -19,7 +19,6 @@ import {
 } from '@services/budget-plans/zod-schemas';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -35,14 +34,14 @@ jest.mock('@services/budget-plans/line-groups', () => ({
 }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
-import { registerCreateBudgetPlan } from './create-budget-plan';
-import { registerCreateBudgetPlanGroup } from './create-budget-plan-group';
-import { registerDeleteBudgetPlan } from './delete-budget-plan';
-import { registerDeleteBudgetPlanGroup } from './delete-budget-plan-group';
-import { registerRestoreBudgetPlan } from './restore-budget-plan';
-import { registerSetBudgetPlanAccounts } from './set-budget-plan-accounts';
-import { registerUpdateBudgetPlan } from './update-budget-plan';
-import { registerUpdateBudgetPlanGroup } from './update-budget-plan-group';
+import { createBudgetPlanTool } from './create-budget-plan';
+import { createBudgetPlanGroupTool } from './create-budget-plan-group';
+import { deleteBudgetPlanTool } from './delete-budget-plan';
+import { deleteBudgetPlanGroupTool } from './delete-budget-plan-group';
+import { restoreBudgetPlanTool } from './restore-budget-plan';
+import { setBudgetPlanAccountsTool } from './set-budget-plan-accounts';
+import { updateBudgetPlanTool } from './update-budget-plan';
+import { updateBudgetPlanGroupTool } from './update-budget-plan-group';
 
 const PLAN_ID = '11111111-1111-4111-8111-111111111111';
 const GROUP_ID = '22222222-2222-4222-8222-222222222222';
@@ -153,12 +152,14 @@ beforeEach(() => {
 });
 
 describe('create_budget_plan', () => {
-  const tool = captureTools({ register: registerCreateBudgetPlan })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: createBudgetPlanTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with every field of the REST body', () => {
     expect(tool.name).toBe('create_budget_plan');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(Object.keys(createPlanBodyFields).toSorted());
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
+      Object.keys(createPlanBodyFields).toSorted(),
+    );
     expect(Object.keys(createPlanBodyFields).length).toBeGreaterThan(10);
   });
 
@@ -259,12 +260,12 @@ describe('create_budget_plan', () => {
 });
 
 describe('update_budget_plan', () => {
-  const tool = captureTools({ register: registerUpdateBudgetPlan })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: updateBudgetPlanTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the plan id and every field of the REST patch', () => {
     expect(tool.name).toBe('update_budget_plan');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['planId', ...Object.keys(updatePlanBodyFields)].toSorted(),
     );
     expect(Object.keys(updatePlanBodyFields).toSorted()).toEqual([
@@ -346,12 +347,12 @@ describe('update_budget_plan', () => {
 });
 
 describe('delete_budget_plan', () => {
-  const tool = captureTools({ register: registerDeleteBudgetPlan })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: deleteBudgetPlanTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the plan id and permanent', () => {
     expect(tool.name).toBe('delete_budget_plan');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['planId', 'permanent']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['planId', 'permanent']);
     expect(schema.safeParse({ planId: PLAN_ID }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID, permanent: true }).success).toBe(true);
     expect(schema.safeParse({}).success).toBe(false);
@@ -412,12 +413,12 @@ describe('delete_budget_plan', () => {
 });
 
 describe('restore_budget_plan', () => {
-  const tool = captureTools({ register: registerRestoreBudgetPlan })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: restoreBudgetPlanTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the plan id and every field of the REST body', () => {
     expect(tool.name).toBe('restore_budget_plan');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['planId', ...Object.keys(restorePlanBodyFields)].toSorted(),
     );
     expect(Object.keys(restorePlanBodyFields)).toEqual(['replace']);
@@ -455,12 +456,12 @@ describe('restore_budget_plan', () => {
 });
 
 describe('set_budget_plan_accounts', () => {
-  const tool = captureTools({ register: registerSetBudgetPlanAccounts })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: setBudgetPlanAccountsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the plan id and the REST account list', () => {
     expect(tool.name).toBe('set_budget_plan_accounts');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['planId', ...Object.keys(setPlanAccountsBodyFields)].toSorted(),
     );
     expect(Object.keys(setPlanAccountsBodyFields)).toEqual(['accountIds']);
@@ -499,12 +500,12 @@ describe('set_budget_plan_accounts', () => {
 });
 
 describe('create_budget_plan_group', () => {
-  const tool = captureTools({ register: registerCreateBudgetPlanGroup })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: createBudgetPlanGroupTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the plan id and the REST group fields', () => {
     expect(tool.name).toBe('create_budget_plan_group');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['planId', ...Object.keys(createGroupBodyFields)].toSorted(),
     );
     expect(Object.keys(createGroupBodyFields)).toEqual(['name']);
@@ -539,12 +540,12 @@ describe('create_budget_plan_group', () => {
 });
 
 describe('update_budget_plan_group', () => {
-  const tool = captureTools({ register: registerUpdateBudgetPlanGroup })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: updateBudgetPlanGroupTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the plan id, the group id and the REST group fields', () => {
     expect(tool.name).toBe('update_budget_plan_group');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['groupId', 'planId', ...Object.keys(updateGroupBodyFields)].toSorted(),
     );
     expect(schema.safeParse({ planId: PLAN_ID, groupId: GROUP_ID, name: 'Fixed' }).success).toBe(true);
@@ -578,12 +579,12 @@ describe('update_budget_plan_group', () => {
 });
 
 describe('delete_budget_plan_group', () => {
-  const tool = captureTools({ register: registerDeleteBudgetPlanGroup })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: deleteBudgetPlanGroupTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the plan id and the group id', () => {
     expect(tool.name).toBe('delete_budget_plan_group');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['groupId', 'planId']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['groupId', 'planId']);
     expect(schema.safeParse({ planId: PLAN_ID, groupId: GROUP_ID }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID }).success).toBe(false);
     expect(schema.safeParse({ groupId: GROUP_ID }).success).toBe(false);
@@ -613,7 +614,7 @@ const GROUP = { id: GROUP_ID, name: 'Fixed', sortOrder: 0 };
 
 const SETUP_TOOLS = [
   {
-    register: registerCreateBudgetPlan,
+    register: createBudgetPlanTool,
     name: 'create_budget_plan',
     result: makeDetails(),
     args: VALID_CREATE,
@@ -622,7 +623,7 @@ const SETUP_TOOLS = [
     gated: true,
   },
   {
-    register: registerUpdateBudgetPlan,
+    register: updateBudgetPlanTool,
     name: 'update_budget_plan',
     result: makeDetails(),
     args: { planId: PLAN_ID, name: 'Home' },
@@ -631,7 +632,7 @@ const SETUP_TOOLS = [
     gated: true,
   },
   {
-    register: registerDeleteBudgetPlan,
+    register: deleteBudgetPlanTool,
     name: 'delete_budget_plan',
     result: undefined,
     args: { planId: PLAN_ID },
@@ -640,7 +641,7 @@ const SETUP_TOOLS = [
     gated: false,
   },
   {
-    register: registerRestoreBudgetPlan,
+    register: restoreBudgetPlanTool,
     name: 'restore_budget_plan',
     result: makeDetails(),
     args: { planId: PLAN_ID },
@@ -649,7 +650,7 @@ const SETUP_TOOLS = [
     gated: true,
   },
   {
-    register: registerSetBudgetPlanAccounts,
+    register: setBudgetPlanAccountsTool,
     name: 'set_budget_plan_accounts',
     result: makeDetails(),
     args: { planId: PLAN_ID, accountIds: [ACCOUNT_ID] },
@@ -658,7 +659,7 @@ const SETUP_TOOLS = [
     gated: true,
   },
   {
-    register: registerCreateBudgetPlanGroup,
+    register: createBudgetPlanGroupTool,
     name: 'create_budget_plan_group',
     result: GROUP,
     args: { planId: PLAN_ID, name: 'Fixed' },
@@ -667,7 +668,7 @@ const SETUP_TOOLS = [
     gated: true,
   },
   {
-    register: registerUpdateBudgetPlanGroup,
+    register: updateBudgetPlanGroupTool,
     name: 'update_budget_plan_group',
     result: GROUP,
     args: { planId: PLAN_ID, groupId: GROUP_ID, name: 'Fixed' },
@@ -676,7 +677,7 @@ const SETUP_TOOLS = [
     gated: true,
   },
   {
-    register: registerDeleteBudgetPlanGroup,
+    register: deleteBudgetPlanGroupTool,
     name: 'delete_budget_plan_group',
     result: undefined,
     args: { planId: PLAN_ID, groupId: GROUP_ID },

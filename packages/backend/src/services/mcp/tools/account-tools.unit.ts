@@ -5,7 +5,6 @@ import Accounts from '@models/accounts.model';
 import * as accountsService from '@services/accounts.service';
 import { getAccountTransactionCount } from '@services/accounts/transaction-count';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Blocks the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test. The account model is mocked so the shared update checks run
@@ -23,11 +22,11 @@ jest.mock('@models/accounts.model', () => ({ __esModule: true, default: { findOn
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerCreateAccount } from './create-account';
-import { registerDeleteAccount } from './delete-account';
-import { registerGetAccount } from './get-account';
-import { registerUnlinkAccountFromBankConnection } from './unlink-account-from-bank-connection';
-import { registerUpdateAccount } from './update-account';
+import { createAccountTool } from './create-account';
+import { deleteAccountTool } from './delete-account';
+import { getAccountTool } from './get-account';
+import { unlinkAccountFromBankConnectionTool } from './unlink-account-from-bank-connection';
+import { updateAccountTool } from './update-account';
 
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
 const DELETE = makeExtra({ scopes: ['finance:read', 'finance:delete'] });
@@ -75,8 +74,8 @@ beforeEach(() => {
 });
 
 describe('get_account', () => {
-  const tool = captureTools({ register: registerGetAccount })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: getAccountTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('accepts a record id and rejects a missing or malformed one', () => {
     expect(schema.safeParse({ accountId: ACCOUNT_ID }).success).toBe(true);
@@ -129,8 +128,8 @@ describe('get_account', () => {
 });
 
 describe('create_account', () => {
-  const tool = captureTools({ register: registerCreateAccount })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: createAccountTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const input = { name: 'Savings', currencyCode: 'eur' };
 
   it('accepts a minimal and a full definition, and has no type or status field', () => {
@@ -144,8 +143,8 @@ describe('create_account', () => {
         logoDomain: 'example.com',
       }).success,
     ).toBe(true);
-    expect(Object.keys(tool.config.inputSchema!)).not.toContain('type');
-    expect(Object.keys(tool.config.inputSchema!)).not.toContain('status');
+    expect(Object.keys(tool.config.inputSchema!.shape)).not.toContain('type');
+    expect(Object.keys(tool.config.inputSchema!.shape)).not.toContain('status');
   });
 
   it.each([
@@ -220,8 +219,8 @@ describe('create_account', () => {
 });
 
 describe('update_account', () => {
-  const tool = captureTools({ register: registerUpdateAccount })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: updateAccountTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   beforeEach(() => {
     accountModel.findOne.mockResolvedValue(makeAccountRow() as never);
@@ -243,7 +242,7 @@ describe('update_account', () => {
         logoColor: null,
       }).success,
     ).toBe(true);
-    expect(Object.keys(tool.config.inputSchema!)).not.toContain('status');
+    expect(Object.keys(tool.config.inputSchema!.shape)).not.toContain('status');
   });
 
   it.each([
@@ -372,8 +371,8 @@ describe('update_account', () => {
 });
 
 describe('delete_account', () => {
-  const tool = captureTools({ register: registerDeleteAccount })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: deleteAccountTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('accepts an id with an optional flag and rejects a missing or malformed id', () => {
     expect(schema.safeParse({ accountId: ACCOUNT_ID }).success).toBe(true);
@@ -420,8 +419,8 @@ describe('delete_account', () => {
 });
 
 describe('unlink_account_from_bank_connection', () => {
-  const tool = captureTools({ register: registerUnlinkAccountFromBankConnection })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: unlinkAccountFromBankConnectionTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('accepts a record id and rejects a missing or malformed one', () => {
     expect(schema.safeParse({ accountId: ACCOUNT_ID }).success).toBe(true);

@@ -1,4 +1,7 @@
-import type { McpToolsetSummary } from '@bt/shared/types';
+import { HIDDEN_OAUTH_SCOPES } from '@/common/const/oauth-scopes';
+import { MCP_TOOLSET_SCOPE_PREFIX, type McpToolsetSummary } from '@bt/shared/types';
+
+export const isToolsetScope = (scope: string) => scope.startsWith(MCP_TOOLSET_SCOPE_PREFIX);
 
 export interface ToolSelection {
   selectedCount: number;
@@ -39,4 +42,30 @@ export function summarizeToolSelection({
     capPercent: totalCount > cap ? percentOf(cap) : null,
     overCap: selectedCount > cap,
   };
+}
+
+/**
+ * The scopes sent on consent, in requested order. A toolset scope needs to be offered and ticked;
+ * a togglable scope needs an explicit approval; anything else the client requested is kept.
+ */
+export function approveScopes({
+  requestedScopes,
+  offeredToolsets,
+  selectedToolsetScopes,
+  togglableScopes,
+  approvals,
+}: {
+  requestedScopes: readonly string[];
+  offeredToolsets: readonly McpToolsetSummary[];
+  selectedToolsetScopes: ReadonlySet<string>;
+  togglableScopes: ReadonlySet<string>;
+  approvals: Readonly<Record<string, boolean>>;
+}): string[] {
+  const offeredScopes = new Set<string | null>(offeredToolsets.map((toolset) => toolset.scope));
+  return requestedScopes.filter((scope) => {
+    if (isToolsetScope(scope)) return offeredScopes.has(scope) && selectedToolsetScopes.has(scope);
+    if (HIDDEN_OAUTH_SCOPES.has(scope)) return true;
+    if (!togglableScopes.has(scope)) return true;
+    return approvals[scope] === true;
+  });
 }

@@ -15,7 +15,6 @@ import { getRefundRecommendations } from '@services/tx-refunds/get-refund-recomm
 import { getRefund } from '@services/tx-refunds/get-refund.service';
 import { getRefundTransactions } from '@services/tx-refunds/get-refunds.service';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test. The serializers pass the already API-shaped fakes through.
@@ -43,11 +42,11 @@ jest.mock('@root/serializers/transactions.serializer', () => ({
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerDismissTransferSuggestion } from './dismiss-transfer-suggestion';
-import { registerGetRefundRecommendations } from './get-refund-recommendations';
-import { registerGetRefunds } from './get-refunds';
-import { registerGetTransferRecommendations } from './get-transfer-recommendations';
-import { registerListTransferSuggestions } from './list-transfer-suggestions';
+import { dismissTransferSuggestionTool } from './dismiss-transfer-suggestion';
+import { getRefundRecommendationsTool } from './get-refund-recommendations';
+import { getRefundsTool } from './get-refunds';
+import { getTransferRecommendationsTool } from './get-transfer-recommendations';
+import { listTransferSuggestionsTool } from './list-transfer-suggestions';
 
 const READ = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -104,8 +103,8 @@ beforeEach(() => {
 });
 
 describe('get_refunds', () => {
-  const tool = captureTools({ register: registerGetRefunds })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: getRefundsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   const makeRefund = (patch: Record<string, unknown> = {}) => ({
     id: 'refund-1',
@@ -236,24 +235,24 @@ describe('get_refunds', () => {
 describe.each([
   {
     name: 'get_refund_recommendations',
-    register: registerGetRefundRecommendations,
+    register: getRefundRecommendationsTool,
     service: refundRecommendations,
   },
   {
     name: 'get_transfer_recommendations',
-    register: registerGetTransferRecommendations,
+    register: getTransferRecommendationsTool,
     service: transferRecommendations,
   },
 ])('$name', ({ name, register, service }) => {
   const tool = captureTools({ register })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name', () => {
     expect(tool.name).toBe(name);
   });
 
   it('declares the same fields as the REST query schema', () => {
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       Object.keys(recommendationQuerySchema.shape).toSorted(),
     );
   });
@@ -324,15 +323,15 @@ describe.each([
 });
 
 describe('list_transfer_suggestions', () => {
-  const tool = captureTools({ register: registerListTransferSuggestions })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: listTransferSuggestionsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   const RANGE = { from: '2026-09-01T00:00:00.000Z', to: '2026-10-01T00:00:00.000Z' };
 
   it('declares the same fields as the REST body schema', () => {
     // AI review spends the user's AI allowance on every scan, so it stays a choice made in the app.
     const { aiReview: _aiReview, ...restBody } = bulkScanBodySchema.shape;
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(Object.keys(restBody).toSorted());
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(Object.keys(restBody).toSorted());
   });
 
   it('accepts a range with a limit up to 50 and refuses 51, 0 or a missing bound', () => {
@@ -423,11 +422,13 @@ describe('list_transfer_suggestions', () => {
 });
 
 describe('dismiss_transfer_suggestion', () => {
-  const tool = captureTools({ register: registerDismissTransferSuggestion })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: dismissTransferSuggestionTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('declares the same fields as the REST body schema', () => {
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(Object.keys(dismissBodySchema.shape).toSorted());
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
+      Object.keys(dismissBodySchema.shape).toSorted(),
+    );
   });
 
   it('accepts two ids and refuses a missing or malformed one', () => {

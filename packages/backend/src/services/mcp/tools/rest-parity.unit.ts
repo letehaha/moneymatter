@@ -9,7 +9,6 @@ import { updateVentureDeal } from '@services/venture/deals/update.service';
 import { createVenturePlatform } from '@services/venture/platforms/create.service';
 import { updateVenturePlatform } from '@services/venture/platforms/update.service';
 import { captureTools, makeExtra } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -27,15 +26,15 @@ jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChan
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerCreateInvestmentTransaction } from './create-investment-transaction';
-import { registerCreatePortfolio } from './create-portfolio';
-import { registerCreateTracker } from './create-tracker';
-import { registerCreateVenturePlatform } from './create-venture-platform';
-import { registerUpdateInvestmentTransaction } from './update-investment-transaction';
-import { registerUpdatePortfolio } from './update-portfolio';
-import { registerUpdateTracker } from './update-tracker';
-import { registerUpdateVentureDeal } from './update-venture-deal';
-import { registerUpdateVenturePlatform } from './update-venture-platform';
+import { createInvestmentTransactionTool } from './create-investment-transaction';
+import { createPortfolioTool } from './create-portfolio';
+import { createTrackerTool } from './create-tracker';
+import { createVenturePlatformTool } from './create-venture-platform';
+import { updateInvestmentTransactionTool } from './update-investment-transaction';
+import { updatePortfolioTool } from './update-portfolio';
+import { updateTrackerTool } from './update-tracker';
+import { updateVentureDealTool } from './update-venture-deal';
+import { updateVenturePlatformTool } from './update-venture-platform';
 
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
 const ID_A = '11111111-1111-4111-8111-111111111111';
@@ -43,7 +42,7 @@ const ID_B = '22222222-2222-4222-8222-222222222222';
 
 const toolOf = (register: Parameters<typeof captureTools>[0]['register']) => {
   const tool = captureTools({ register })[0]!;
-  return { tool, schema: z.object(tool.config.inputSchema!) };
+  return { tool, schema: tool.config.inputSchema! };
 };
 
 beforeEach(() => {
@@ -52,7 +51,7 @@ beforeEach(() => {
 });
 
 describe('create_investment_transaction settlement leg', () => {
-  const { tool, schema } = toolOf(registerCreateInvestmentTransaction);
+  const { tool, schema } = toolOf(createInvestmentTransactionTool);
   const base = {
     portfolioId: ID_A,
     securityId: ID_B,
@@ -98,7 +97,7 @@ describe('create_investment_transaction settlement leg', () => {
 });
 
 describe('update_investment_transaction', () => {
-  const { tool, schema } = toolOf(registerUpdateInvestmentTransaction);
+  const { tool, schema } = toolOf(updateInvestmentTransactionTool);
 
   it('validates quantity, price and fees like the REST body', () => {
     expect(schema.safeParse({ transactionId: ID_A, quantity: '0' }).success).toBe(false);
@@ -118,14 +117,14 @@ describe('update_investment_transaction', () => {
 
 describe('portfolio limits and empty updates', () => {
   it('create_portfolio applies the REST name and description limits', () => {
-    const { schema } = toolOf(registerCreatePortfolio);
+    const { schema } = toolOf(createPortfolioTool);
     expect(schema.safeParse({ name: 'Main' }).success).toBe(true);
     expect(schema.safeParse({ name: 'x'.repeat(101) }).success).toBe(false);
     expect(schema.safeParse({ name: 'Main', description: 'x'.repeat(501) }).success).toBe(false);
   });
 
   it('update_portfolio refuses an update without fields and a name over 255 characters', async () => {
-    const { tool, schema } = toolOf(registerUpdatePortfolio);
+    const { tool, schema } = toolOf(updatePortfolioTool);
     expect(schema.safeParse({ portfolioId: ID_A, name: 'x'.repeat(256) }).success).toBe(false);
     await expect(tool.handler({ portfolioId: ID_A }, WRITE)).rejects.toThrow();
     expect(jest.mocked(updatePortfolio)).not.toHaveBeenCalled();
@@ -139,7 +138,7 @@ describe('portfolio limits and empty updates', () => {
 
 describe('venture limits and empty updates', () => {
   it('create_venture_platform needs a valid website url', () => {
-    const { schema } = toolOf(registerCreateVenturePlatform);
+    const { schema } = toolOf(createVenturePlatformTool);
     expect(schema.safeParse({ name: 'AngelList', website: 'https://angel.co' }).success).toBe(true);
     expect(schema.safeParse({ name: 'AngelList', website: 'not a url' }).success).toBe(false);
     expect(schema.safeParse({ name: '   ' }).success).toBe(false);
@@ -147,11 +146,11 @@ describe('venture limits and empty updates', () => {
   });
 
   it('update_venture_platform and update_venture_deal refuse an update without fields', async () => {
-    const platform = toolOf(registerUpdateVenturePlatform);
+    const platform = toolOf(updateVenturePlatformTool);
     await expect(platform.tool.handler({ platformId: ID_A }, WRITE)).rejects.toThrow();
     expect(jest.mocked(updateVenturePlatform)).not.toHaveBeenCalled();
 
-    const deal = toolOf(registerUpdateVentureDeal);
+    const deal = toolOf(updateVentureDealTool);
     expect(deal.schema.safeParse({ dealId: ID_A, notes: 'x'.repeat(5001) }).success).toBe(false);
     await expect(deal.tool.handler({ dealId: ID_A }, WRITE)).rejects.toThrow();
     expect(jest.mocked(updateVentureDeal)).not.toHaveBeenCalled();
@@ -160,7 +159,7 @@ describe('venture limits and empty updates', () => {
 
 describe('tracker dates, limit, categories and logo', () => {
   it('create_tracker refuses a non-positive limit, dates out of order and a logo with two sources', async () => {
-    const { tool, schema } = toolOf(registerCreateTracker);
+    const { tool, schema } = toolOf(createTrackerTool);
     expect(schema.safeParse({ name: 'Trip', limitAmount: 0 }).success).toBe(false);
     await expect(
       tool.handler({ name: 'Trip', startDate: '2026-10-05T00:00:00Z', endDate: '2026-10-01T00:00:00Z' }, WRITE),
@@ -170,7 +169,7 @@ describe('tracker dates, limit, categories and logo', () => {
   });
 
   it('create_tracker passes the logo and the limit as money to the service', async () => {
-    const { tool } = toolOf(registerCreateTracker);
+    const { tool } = toolOf(createTrackerTool);
     jest.mocked(createTracker).mockResolvedValue({ id: ID_A } as never);
 
     await tool.handler({ name: 'Trip', limitAmount: 500, logoDomain: 'airbnb.com' }, WRITE);
@@ -181,7 +180,7 @@ describe('tracker dates, limit, categories and logo', () => {
   });
 
   it('update_tracker refuses a logo with two sources, and clears the dates with null', async () => {
-    const { tool } = toolOf(registerUpdateTracker);
+    const { tool } = toolOf(updateTrackerTool);
     await expect(tool.handler({ trackerId: ID_A, logoDomain: 'a.com', logoIcon: 'x' }, WRITE)).rejects.toThrow();
 
     jest.mocked(editTracker).mockResolvedValue({ id: ID_A } as never);

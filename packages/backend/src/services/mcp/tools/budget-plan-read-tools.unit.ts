@@ -10,7 +10,6 @@ import { listPeriods } from '@services/budget-plans/list-periods';
 import { getSuggestionContext } from '@services/budget-plans/suggested-lines';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -22,12 +21,12 @@ jest.mock('@services/budget-plans/get-trends', () => ({ getTrends: jest.fn() }))
 jest.mock('@services/budget-plans/suggested-lines', () => ({ getSuggestionContext: jest.fn() }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
-import { registerGetBudgetPlanPeriod } from './get-budget-plan-period';
-import { registerGetBudgetPlanScheduled } from './get-budget-plan-scheduled';
-import { registerGetBudgetPlanSuggestionContext } from './get-budget-plan-suggestion-context';
-import { registerGetBudgetPlanTrends } from './get-budget-plan-trends';
-import { registerListBudgetPlanPeriods } from './list-budget-plan-periods';
-import { registerListBudgetPlans } from './list-budget-plans';
+import { getBudgetPlanPeriodTool } from './get-budget-plan-period';
+import { getBudgetPlanScheduledTool } from './get-budget-plan-scheduled';
+import { getBudgetPlanSuggestionContextTool } from './get-budget-plan-suggestion-context';
+import { getBudgetPlanTrendsTool } from './get-budget-plan-trends';
+import { listBudgetPlanPeriodsTool } from './list-budget-plan-periods';
+import { listBudgetPlansTool } from './list-budget-plans';
 
 // A reader with no plan feature and a read-only plan: reads are neither feature-gated nor
 // write-gated in REST, so neither limits the tools.
@@ -116,12 +115,12 @@ beforeEach(() => {
 });
 
 describe('list_budget_plans', () => {
-  const tool = captureTools({ register: registerListBudgetPlans })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: listBudgetPlansTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and takes an optional plan id and includeDeleted', () => {
     expect(tool.name).toBe('list_budget_plans');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['planId', 'includeDeleted']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['planId', 'includeDeleted']);
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID, includeDeleted: true }).success).toBe(true);
     expect(schema.safeParse({ planId: 'nope' }).success).toBe(false);
@@ -211,12 +210,12 @@ describe('list_budget_plans', () => {
 });
 
 describe('get_budget_plan_suggestion_context', () => {
-  const tool = captureTools({ register: registerGetBudgetPlanSuggestionContext })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getBudgetPlanSuggestionContextTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and takes only optional account ids', () => {
     expect(tool.name).toBe('get_budget_plan_suggestion_context');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['accountIds']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['accountIds']);
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ accountIds: [ACCOUNT_ID, OTHER_ACCOUNT_ID] }).success).toBe(true);
     expect(schema.safeParse({ accountIds: ['nope'] }).success).toBe(false);
@@ -250,12 +249,12 @@ describe('get_budget_plan_suggestion_context', () => {
 });
 
 describe('list_budget_plan_periods', () => {
-  const tool = captureTools({ register: registerListBudgetPlanPeriods })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: listBudgetPlanPeriodsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and bounds limit and offset', () => {
     expect(tool.name).toBe('list_budget_plan_periods');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['planId', 'limit', 'offset']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['planId', 'limit', 'offset']);
     expect(schema.safeParse({ planId: PLAN_ID }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID, limit: 200, offset: 5 }).success).toBe(true);
     expect(schema.safeParse({}).success).toBe(false);
@@ -307,12 +306,12 @@ describe('list_budget_plan_periods', () => {
 });
 
 describe('get_budget_plan_period', () => {
-  const tool = captureTools({ register: registerGetBudgetPlanPeriod })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getBudgetPlanPeriodTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and needs a plan id and a period id', () => {
     expect(tool.name).toBe('get_budget_plan_period');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['planId', 'periodId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['planId', 'periodId']);
     expect(schema.safeParse({ planId: PLAN_ID, periodId: PERIOD_ID }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID }).success).toBe(false);
     expect(schema.safeParse({ periodId: PERIOD_ID }).success).toBe(false);
@@ -349,12 +348,12 @@ describe('get_budget_plan_period', () => {
 });
 
 describe('get_budget_plan_scheduled', () => {
-  const tool = captureTools({ register: registerGetBudgetPlanScheduled })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getBudgetPlanScheduledTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and needs a plan id and a period id', () => {
     expect(tool.name).toBe('get_budget_plan_scheduled');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['planId', 'periodId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['planId', 'periodId']);
     expect(schema.safeParse({ planId: PLAN_ID, periodId: PERIOD_ID }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID }).success).toBe(false);
     expect(schema.safeParse({ planId: PLAN_ID, periodId: 'nope' }).success).toBe(false);
@@ -414,12 +413,12 @@ describe('get_budget_plan_scheduled', () => {
 });
 
 describe('get_budget_plan_trends', () => {
-  const tool = captureTools({ register: registerGetBudgetPlanTrends })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getBudgetPlanTrendsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and bounds count to 1..24', () => {
     expect(tool.name).toBe('get_budget_plan_trends');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['planId', 'until', 'count']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['planId', 'until', 'count']);
     expect(schema.safeParse({ planId: PLAN_ID }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID, until: PERIOD_ID, count: 24 }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID, count: 1 }).success).toBe(true);
@@ -474,12 +473,12 @@ describe('get_budget_plan_trends', () => {
 describe('every budget plan read tool', () => {
   const tools = captureTools({
     register: [
-      registerListBudgetPlans,
-      registerGetBudgetPlanSuggestionContext,
-      registerListBudgetPlanPeriods,
-      registerGetBudgetPlanPeriod,
-      registerGetBudgetPlanScheduled,
-      registerGetBudgetPlanTrends,
+      listBudgetPlansTool,
+      getBudgetPlanSuggestionContextTool,
+      listBudgetPlanPeriodsTool,
+      getBudgetPlanPeriodTool,
+      getBudgetPlanScheduledTool,
+      getBudgetPlanTrendsTool,
     ],
   });
 
@@ -496,8 +495,12 @@ describe('every budget plan read tool', () => {
 
   it('refuses an unauthenticated call', async () => {
     for (const tool of tools) {
+      const shape = tool.config.inputSchema?.shape ?? {};
+      const args = Object.fromEntries(
+        Object.entries({ planId: PLAN_ID, periodId: PERIOD_ID }).filter(([key]) => key in shape),
+      );
       await expect(
-        tool.handler({ planId: PLAN_ID, periodId: PERIOD_ID }, {
+        tool.handler(args, {
           authInfo: { scopes: [], extra: {} },
         } as never),
       ).rejects.toThrow(/Authentication required/);

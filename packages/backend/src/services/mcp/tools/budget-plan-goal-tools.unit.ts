@@ -7,7 +7,6 @@ import { setAssignment } from '@services/budget-plans/set-assignment';
 import { setAssignmentBodyFields, setAssignmentBodySchema } from '@services/budget-plans/zod-schemas';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -19,10 +18,10 @@ jest.mock('@services/budget-plans/line-goals', () => ({
 jest.mock('@services/budget-plans/set-assignment', () => ({ setAssignment: jest.fn() }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
-import { registerDeleteBudgetPlanLineGoal } from './delete-budget-plan-line-goal';
-import { registerSetBudgetPlanAssignment } from './set-budget-plan-assignment';
-import { registerSetBudgetPlanLineGoal } from './set-budget-plan-line-goal';
-import { registerSnoozeBudgetPlanLineGoal } from './snooze-budget-plan-line-goal';
+import { deleteBudgetPlanLineGoalTool } from './delete-budget-plan-line-goal';
+import { setBudgetPlanAssignmentTool } from './set-budget-plan-assignment';
+import { setBudgetPlanLineGoalTool } from './set-budget-plan-line-goal';
+import { snoozeBudgetPlanLineGoalTool } from './snooze-budget-plan-line-goal';
 
 const PLAN_ID = '11111111-1111-4111-8111-111111111111';
 const PERIOD_ID = '22222222-2222-4222-8222-222222222222';
@@ -66,14 +65,14 @@ beforeEach(() => {
 });
 
 describe('set_budget_plan_line_goal', () => {
-  const tool = captureTools({ register: registerSetBudgetPlanLineGoal })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: setBudgetPlanLineGoalTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const base = { planId: PLAN_ID, lineId: LINE_ID };
   const goal = { frequency: 'every_period', behavior: 'budget_another', amount: 100 };
 
   it('registers under its name with both ids and every field of the REST goal body, as a plain shape', () => {
     expect(tool.name).toBe('set_budget_plan_line_goal');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['lineId', 'planId', ...Object.keys(lineGoalSchema.shape)].toSorted(),
     );
     expect(Object.keys(lineGoalSchema.shape).toSorted()).toEqual([
@@ -295,12 +294,12 @@ describe('set_budget_plan_line_goal', () => {
 });
 
 describe('delete_budget_plan_line_goal', () => {
-  const tool = captureTools({ register: registerDeleteBudgetPlanLineGoal })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: deleteBudgetPlanLineGoalTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with both ids', () => {
     expect(tool.name).toBe('delete_budget_plan_line_goal');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['lineId', 'planId']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['lineId', 'planId']);
     expect(schema.safeParse({ planId: PLAN_ID, lineId: LINE_ID }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID }).success).toBe(false);
     expect(schema.safeParse({ lineId: LINE_ID }).success).toBe(false);
@@ -336,13 +335,13 @@ describe('delete_budget_plan_line_goal', () => {
 });
 
 describe('snooze_budget_plan_line_goal', () => {
-  const tool = captureTools({ register: registerSnoozeBudgetPlanLineGoal })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: snoozeBudgetPlanLineGoalTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const args = { planId: PLAN_ID, lineId: LINE_ID, periodId: PERIOD_ID };
 
   it('registers under its name with the two ids and the period, all required', () => {
     expect(tool.name).toBe('snooze_budget_plan_line_goal');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['lineId', 'periodId', 'planId']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['lineId', 'periodId', 'planId']);
     expect(schema.safeParse(args).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID, lineId: LINE_ID }).success).toBe(false);
     expect(schema.safeParse({ ...args, periodId: 'nope' }).success).toBe(false);
@@ -370,14 +369,14 @@ describe('snooze_budget_plan_line_goal', () => {
 });
 
 describe('set_budget_plan_assignment', () => {
-  const tool = captureTools({ register: registerSetBudgetPlanAssignment })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: setBudgetPlanAssignmentTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const base = { planId: PLAN_ID, periodId: PERIOD_ID, lineId: LINE_ID, scope: 'from_here' };
   const VIEW = { id: PERIOD_ID, lines: [] };
 
   it('registers under its name with the three ids and every field of the REST body', () => {
     expect(tool.name).toBe('set_budget_plan_assignment');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['lineId', 'periodId', 'planId', ...Object.keys(setAssignmentBodyFields)].toSorted(),
     );
     expect(Object.keys(setAssignmentBodyFields).toSorted()).toEqual(['amount', 'carryPolicy', 'scope']);
@@ -482,7 +481,7 @@ describe('set_budget_plan_assignment', () => {
 
 const GOAL_TOOLS = [
   {
-    register: registerSetBudgetPlanLineGoal,
+    register: setBudgetPlanLineGoalTool,
     name: 'set_budget_plan_line_goal',
     result: GOAL_ENTRY,
     args: { planId: PLAN_ID, lineId: LINE_ID, frequency: 'every_period', behavior: 'budget_another', amount: 100 },
@@ -490,7 +489,7 @@ const GOAL_TOOLS = [
     scopes: ['finance:read', 'finance:write'],
   },
   {
-    register: registerDeleteBudgetPlanLineGoal,
+    register: deleteBudgetPlanLineGoalTool,
     name: 'delete_budget_plan_line_goal',
     result: undefined,
     args: { planId: PLAN_ID, lineId: LINE_ID },
@@ -498,7 +497,7 @@ const GOAL_TOOLS = [
     scopes: ['finance:read', 'finance:delete'],
   },
   {
-    register: registerSnoozeBudgetPlanLineGoal,
+    register: snoozeBudgetPlanLineGoalTool,
     name: 'snooze_budget_plan_line_goal',
     result: GOAL_ENTRY,
     args: { planId: PLAN_ID, lineId: LINE_ID, periodId: PERIOD_ID },
@@ -506,7 +505,7 @@ const GOAL_TOOLS = [
     scopes: ['finance:read', 'finance:write'],
   },
   {
-    register: registerSetBudgetPlanAssignment,
+    register: setBudgetPlanAssignmentTool,
     name: 'set_budget_plan_assignment',
     result: { id: PERIOD_ID },
     args: { planId: PLAN_ID, periodId: PERIOD_ID, lineId: LINE_ID, scope: 'from_here', amount: 5 },

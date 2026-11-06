@@ -1,28 +1,19 @@
-import { trackMcpToolUsed } from '@js/utils/posthog';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { getAllSystemCurrencies } from '@services/system-currencies';
 
-import { getUserId, jsonContent } from './helpers';
+import { defineTool } from '../define-tool';
 
-export function registerListSupportedCurrencies(server: McpServer) {
-  server.registerTool(
-    'list_supported_currencies',
-    {
-      description:
-        'List every ISO 4217 currency the app supports, with its code, name and decimals. These are the codes add_user_currencies accepts.',
-    },
-    async (extra) => {
-      const userId = getUserId({ extra });
-      trackMcpToolUsed({ userId, tool: 'list_supported_currencies', clientId: extra.authInfo?.clientId });
-
-      const currencies = await getAllSystemCurrencies();
-      return jsonContent({
-        data: currencies.map((currency) => ({
-          code: currency.code,
-          name: currency.currency,
-          decimals: currency.digits,
-        })),
-      });
-    },
-  );
-}
+export const listSupportedCurrenciesTool = defineTool({
+  name: 'list_supported_currencies',
+  toolset: 'currencies',
+  access: 'read',
+  description:
+    'List every ISO 4217 currency the app supports, with its code, name and decimals. These are the codes add_user_currencies accepts.',
+  run: async () => {
+    const currencies = await getAllSystemCurrencies();
+    return currencies.map((currency) => ({
+      code: currency.code,
+      name: currency.currency,
+      decimals: currency.digits,
+    }));
+  },
+});

@@ -4,7 +4,6 @@ import { bulkUpdate } from '@services/transactions/bulk-update';
 import { createTransaction } from '@services/transactions/create-transaction';
 import { updateTransaction } from '@services/transactions/update-transaction';
 import { captureTools, makeExtra } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Blocks the real services, whose import chains build queues at module scope and
 // would open Redis connections in a unit test.
@@ -23,17 +22,17 @@ jest.mock('@root/serializers/transactions.serializer', () => ({
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerBulkUpdateTransactions } from './bulk-update-transactions';
-import { registerCreateTransaction } from './create-transaction';
-import { registerUpdateTransaction } from './update-transaction';
+import { bulkUpdateTransactionsTool } from './bulk-update-transactions';
+import { createTransactionTool } from './create-transaction';
+import { updateTransactionTool } from './update-transaction';
 
 const ID = '019f7e9e-b5f4-729c-9881-9544b15f4e3d';
 const PAYEE_ID = '019f7e9e-b5f4-729c-9881-9544b15f4e4e';
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
 
-const create = captureTools({ register: registerCreateTransaction })[0]!;
-const update = captureTools({ register: registerUpdateTransaction })[0]!;
-const bulk = captureTools({ register: registerBulkUpdateTransactions })[0]!;
+const create = captureTools({ register: createTransactionTool })[0]!;
+const update = captureTools({ register: updateTransactionTool })[0]!;
+const bulk = captureTools({ register: bulkUpdateTransactionsTool })[0]!;
 
 const createArgs = {
   accountId: ID,
@@ -41,6 +40,7 @@ const createArgs = {
   transactionType: 'expense',
   paymentType: 'cash',
   transferNature: 'not_transfer',
+  categoryId: ID,
 };
 
 beforeEach(() => {
@@ -52,7 +52,7 @@ beforeEach(() => {
 });
 
 describe('create_transaction payee inputs', () => {
-  const schema = z.object(create.config.inputSchema!);
+  const schema = create.config.inputSchema!;
 
   it('accepts a payeeId, a null payeeId and a merchantName, and rejects a payeeId that is not an id', () => {
     expect(schema.safeParse({ ...createArgs, payeeId: PAYEE_ID }).success).toBe(true);
@@ -87,7 +87,7 @@ describe('create_transaction payee inputs', () => {
 });
 
 describe('update_transaction payee input', () => {
-  const schema = z.object(update.config.inputSchema!);
+  const schema = update.config.inputSchema!;
 
   it('accepts a payeeId and null, and rejects a payeeId that is not an id', () => {
     expect(schema.safeParse({ id: ID, payeeId: PAYEE_ID }).success).toBe(true);
@@ -115,7 +115,7 @@ describe('update_transaction payee input', () => {
 });
 
 describe('bulk_update_transactions payee input', () => {
-  const schema = z.object(bulk.config.inputSchema!);
+  const schema = bulk.config.inputSchema!;
 
   it('accepts a payeeId and null, and rejects a payeeId that is not an id', () => {
     expect(schema.safeParse({ transactionIds: [ID], payeeId: PAYEE_ID }).success).toBe(true);
@@ -144,17 +144,7 @@ describe('MCP transaction tools forward paymentLegs', () => {
   });
 
   it('create_transaction forwards paymentLegs', async () => {
-    await create.handler(
-      {
-        accountId: ID,
-        amount: 10,
-        transactionType: 'expense',
-        paymentType: 'cash',
-        transferNature: 'not_transfer',
-        paymentLegs: [{ transactionId: PAYEE_ID }],
-      },
-      WRITE,
-    );
+    await create.handler({ ...createArgs, paymentLegs: [{ transactionId: PAYEE_ID }] }, WRITE);
     expect(createTransaction).toHaveBeenLastCalledWith(
       expect.objectContaining({ paymentLegs: [{ transactionId: PAYEE_ID }] }),
     );

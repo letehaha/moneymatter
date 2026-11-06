@@ -18,7 +18,6 @@ import {
   setTransferAdjustment,
 } from '@services/investments/portfolios/transfers';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -40,13 +39,13 @@ jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChan
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerDeletePortfolioTransfer } from './delete-portfolio-transfer';
-import { registerExchangePortfolioCurrency } from './exchange-portfolio-currency';
-import { registerGetPortfolio } from './get-portfolio';
-import { registerGetPortfoliosOverview } from './get-portfolios-overview';
-import { registerRestorePortfolio } from './restore-portfolio';
-import { registerSetPortfolioTransferAdjustment } from './set-portfolio-transfer-adjustment';
-import { registerTransferBetweenPortfolios } from './transfer-between-portfolios';
+import { deletePortfolioTransferTool } from './delete-portfolio-transfer';
+import { exchangePortfolioCurrencyTool } from './exchange-portfolio-currency';
+import { getPortfolioTool } from './get-portfolio';
+import { getPortfoliosOverviewTool } from './get-portfolios-overview';
+import { restorePortfolioTool } from './restore-portfolio';
+import { setPortfolioTransferAdjustmentTool } from './set-portfolio-transfer-adjustment';
+import { transferBetweenPortfoliosTool } from './transfer-between-portfolios';
 
 const READ_ONLY = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -121,12 +120,12 @@ beforeEach(() => {
 });
 
 describe('get_portfolio', () => {
-  const tool = captureTools({ register: registerGetPortfolio })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getPortfolioTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and takes only a portfolio id', () => {
     expect(tool.name).toBe('get_portfolio');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['portfolioId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['portfolioId']);
     expect(schema.safeParse({ portfolioId: PORTFOLIO_ID }).success).toBe(true);
     expect(schema.safeParse({ portfolioId: 'nope' }).success).toBe(false);
     expect(schema.safeParse({}).success).toBe(false);
@@ -158,11 +157,11 @@ describe('get_portfolio', () => {
 });
 
 describe('get_portfolios_overview', () => {
-  const tool = captureTools({ register: registerGetPortfoliosOverview })[0]!;
+  const tool = captureTools({ register: getPortfoliosOverviewTool })[0]!;
 
   it('registers under its name with an optional asOf day', () => {
     expect(tool.name).toBe('get_portfolios_overview');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['asOf']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['asOf']);
     expect(tool.config.description).toMatch(/summar/i);
     expect(tool.config.description).toMatch(/annualized/i);
   });
@@ -205,8 +204,8 @@ describe('get_portfolios_overview', () => {
 });
 
 describe('transfer_between_portfolios', () => {
-  const tool = captureTools({ register: registerTransferBetweenPortfolios })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: transferBetweenPortfoliosTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const base = {
     fromPortfolioId: PORTFOLIO_ID,
     toPortfolioId: OTHER_PORTFOLIO_ID,
@@ -217,7 +216,7 @@ describe('transfer_between_portfolios', () => {
 
   it('registers under its name and declares the source id plus every field of the REST body schema', () => {
     expect(tool.name).toBe('transfer_between_portfolios');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['fromPortfolioId', ...Object.keys(portfolioTransferBodySchema.shape)].toSorted(),
     );
   });
@@ -286,8 +285,8 @@ describe('transfer_between_portfolios', () => {
 });
 
 describe('exchange_portfolio_currency', () => {
-  const tool = captureTools({ register: registerExchangePortfolioCurrency })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: exchangePortfolioCurrencyTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const base = {
     portfolioId: PORTFOLIO_ID,
     fromCurrencyCode: 'USD',
@@ -299,7 +298,7 @@ describe('exchange_portfolio_currency', () => {
 
   it('registers under its name and declares the portfolio id plus every field of the REST body schema', () => {
     expect(tool.name).toBe('exchange_portfolio_currency');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['portfolioId', ...Object.keys(exchangeCurrencyBodySchema.shape)].toSorted(),
     );
   });
@@ -367,12 +366,12 @@ describe('exchange_portfolio_currency', () => {
 });
 
 describe('set_portfolio_transfer_adjustment', () => {
-  const tool = captureTools({ register: registerSetPortfolioTransferAdjustment })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: setPortfolioTransferAdjustmentTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and declares the transfer id plus every field of the REST body schema', () => {
     expect(tool.name).toBe('set_portfolio_transfer_adjustment');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['transferId', ...Object.keys(transferAdjustmentBodySchema.shape)].toSorted(),
     );
     expect(tool.config.description).toMatch(/contribution/i);
@@ -415,12 +414,12 @@ describe('set_portfolio_transfer_adjustment', () => {
 });
 
 describe('delete_portfolio_transfer', () => {
-  const tool = captureTools({ register: registerDeletePortfolioTransfer })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: deletePortfolioTransferTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and says what happens to the linked bank transaction', () => {
     expect(tool.name).toBe('delete_portfolio_transfer');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['deleteLinkedTransaction', 'transferId']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['deleteLinkedTransaction', 'transferId']);
     expect(tool.config.description).toMatch(/linked/i);
     expect(tool.config.description).toMatch(/irreversible|permanent/i);
   });
@@ -466,12 +465,12 @@ describe('delete_portfolio_transfer', () => {
 });
 
 describe('restore_portfolio', () => {
-  const tool = captureTools({ register: registerRestorePortfolio })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: restorePortfolioTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and takes only a portfolio id', () => {
     expect(tool.name).toBe('restore_portfolio');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['portfolioId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['portfolioId']);
     expect(schema.safeParse({ portfolioId: 'nope' }).success).toBe(false);
   });
 

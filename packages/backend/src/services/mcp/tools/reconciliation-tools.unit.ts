@@ -18,7 +18,6 @@ import { removeTransactions } from '@services/transactions/reconciliation/remove
 import { restoreTransactions } from '@services/transactions/reconciliation/restore-transactions';
 import { getStuckPending, keepAsBooked } from '@services/transactions/reconciliation/stuck-pending';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test. The services return API-shaped transactions already.
@@ -35,12 +34,12 @@ jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChan
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { registerGetReconciliationHistory } from './get-reconciliation-history';
-import { registerKeepPendingAsBooked } from './keep-pending-as-booked';
-import { registerListStuckPendingTransactions } from './list-stuck-pending-transactions';
-import { registerMergeDuplicateTransactions } from './merge-duplicate-transactions';
-import { registerRemoveDuplicateTransactions } from './remove-duplicate-transactions';
-import { registerRestoreRemovedTransactions } from './restore-removed-transactions';
+import { getReconciliationHistoryTool } from './get-reconciliation-history';
+import { keepPendingAsBookedTool } from './keep-pending-as-booked';
+import { listStuckPendingTransactionsTool } from './list-stuck-pending-transactions';
+import { mergeDuplicateTransactionsTool } from './merge-duplicate-transactions';
+import { removeDuplicateTransactionsTool } from './remove-duplicate-transactions';
+import { restoreRemovedTransactionsTool } from './restore-removed-transactions';
 
 const READ = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -102,8 +101,8 @@ beforeEach(() => {
 });
 
 describe('get_reconciliation_history', () => {
-  const tool = captureTools({ register: registerGetReconciliationHistory })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: getReconciliationHistoryTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   const makeEvents = () => [
     {
@@ -197,7 +196,7 @@ describe('get_reconciliation_history', () => {
 });
 
 describe('list_stuck_pending_transactions', () => {
-  const tool = captureTools({ register: registerListStuckPendingTransactions })[0]!;
+  const tool = captureTools({ register: listStuckPendingTransactionsTool })[0]!;
 
   it('registers under its name and takes no input', () => {
     expect(tool.name).toBe('list_stuck_pending_transactions');
@@ -262,32 +261,37 @@ describe('list_stuck_pending_transactions', () => {
 describe.each([
   {
     name: 'remove_duplicate_transactions',
-    register: registerRemoveDuplicateTransactions,
+    register: removeDuplicateTransactionsTool,
     service: remove,
     result: { removedIds: [ID_1, ID_2] },
+    scope: 'finance:delete',
   },
   {
     name: 'restore_removed_transactions',
-    register: registerRestoreRemovedTransactions,
+    register: restoreRemovedTransactionsTool,
     service: restore,
     result: { restoredIds: [ID_1, ID_2] },
+    scope: 'finance:write',
   },
   {
     name: 'keep_pending_as_booked',
-    register: registerKeepPendingAsBooked,
+    register: keepPendingAsBookedTool,
     service: keepBooked,
     result: { updatedIds: [ID_1, ID_2] },
+    scope: 'finance:write',
   },
-])('$name', ({ name, register, service, result }) => {
+])('$name', ({ name, register, service, result, scope }) => {
   const tool = captureTools({ register })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const scopes = ['finance:read', 'finance:write', ...(scope === 'finance:delete' ? [scope] : [])];
+  const GRANTED = makeExtra({ scopes });
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name', () => {
     expect(tool.name).toBe(name);
   });
 
   it('declares the same fields as the REST body schema', () => {
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       Object.keys(reconciliationIdsBodySchema.shape).toSorted(),
     );
   });
@@ -305,7 +309,7 @@ describe.each([
   it('calls the service for the caller with the ids and returns its result', async () => {
     service.mockResolvedValue(result as never);
 
-    const data = await call({ tool, args: { transactionIds: [ID_1, ID_2] }, extra: WRITE });
+    const data = await call({ tool, args: { transactionIds: [ID_1, ID_2] }, extra: GRANTED });
 
     expect(service).toHaveBeenCalledWith({ userId: 42, transactionIds: [ID_1, ID_2] });
     expect(data).toEqual(result);
@@ -313,45 +317,49 @@ describe.each([
 
   it('passes the service refusals through with their messages', async () => {
     service.mockRejectedValueOnce(new ValidationError({ message: 'Transfers cannot be reconciled' }));
-    await expect(call({ tool, args: { transactionIds: [ID_1] }, extra: WRITE })).rejects.toThrow(
+    await expect(call({ tool, args: { transactionIds: [ID_1] }, extra: GRANTED })).rejects.toThrow(
       'Transfers cannot be reconciled',
     );
 
     service.mockRejectedValueOnce(new NotFoundError({ message: 'Transaction not found' }));
-    await expect(call({ tool, args: { transactionIds: [ID_1] }, extra: WRITE })).rejects.toThrow(
+    await expect(call({ tool, args: { transactionIds: [ID_1] }, extra: GRANTED })).rejects.toThrow(
       'Transaction not found',
     );
   });
 
-  it('needs finance:write, an editing plan and an unlocked base currency, with nothing changed otherwise', async () => {
+  it('needs its scope, an editing plan and an unlocked base currency, with nothing changed otherwise', async () => {
     const args = { transactionIds: [ID_1] };
 
-    await expect(call({ tool, args, extra: READ })).rejects.toThrow(/no longer includes editing|finance:write/);
-    await expect(call({ tool, args, extra: makeExtra({ scopes: ['finance:read'] }) })).rejects.toThrow(/finance:write/);
-    await expect(
-      call({ tool, args, extra: makeExtra({ scopes: ['finance:read', 'finance:write'], readOnly: true }) }),
-    ).rejects.toThrow(/no longer includes editing/);
+    await expect(call({ tool, args, extra: READ })).rejects.toThrow(new RegExp(`no longer includes editing|${scope}`));
+    await expect(call({ tool, args, extra: makeExtra({ scopes: ['finance:read'] }) })).rejects.toThrow(
+      new RegExp(scope),
+    );
+    await expect(call({ tool, args, extra: makeExtra({ scopes, readOnly: true }) })).rejects.toThrow(
+      /no longer includes editing/,
+    );
     lockCheck.mockResolvedValue(true);
-    await expect(call({ tool, args, extra: WRITE })).rejects.toThrow(LOCKED);
+    await expect(call({ tool, args, extra: GRANTED })).rejects.toThrow(LOCKED);
 
     expect(service).not.toHaveBeenCalled();
   });
 
-  it('works with finance:write alone, not finance:delete', async () => {
+  it('needs finance:delete only when it removes rows', async () => {
     service.mockResolvedValue(result as never);
-
-    await call({
+    const pending = call({
       tool,
       args: { transactionIds: [ID_1] },
       extra: makeExtra({ scopes: ['finance:read', 'finance:write'] }),
     });
 
-    expect(service).toHaveBeenCalledTimes(1);
+    if (scope === 'finance:delete') await expect(pending).rejects.toThrow(/finance:delete/);
+    else await pending;
+
+    expect(service).toHaveBeenCalledTimes(scope === 'finance:delete' ? 0 : 1);
   });
 });
 
 describe('remove_duplicate_transactions description', () => {
-  const tool = captureTools({ register: registerRemoveDuplicateTransactions })[0]!;
+  const tool = captureTools({ register: removeDuplicateTransactionsTool })[0]!;
 
   it('says removed rows can be restored and that their links are dropped', () => {
     expect(tool.config.description).toMatch(/restore_removed_transactions/);
@@ -360,7 +368,7 @@ describe('remove_duplicate_transactions description', () => {
 });
 
 describe('restore_removed_transactions description', () => {
-  const tool = captureTools({ register: registerRestoreRemovedTransactions })[0]!;
+  const tool = captureTools({ register: restoreRemovedTransactionsTool })[0]!;
 
   it('points at the history that lists removed rows', () => {
     expect(tool.config.description).toMatch(/get_reconciliation_history/);
@@ -368,7 +376,7 @@ describe('restore_removed_transactions description', () => {
 });
 
 describe('keep_pending_as_booked description', () => {
-  const tool = captureTools({ register: registerKeepPendingAsBooked })[0]!;
+  const tool = captureTools({ register: keepPendingAsBookedTool })[0]!;
 
   it('points at the list of stuck pending rows', () => {
     expect(tool.config.description).toMatch(/list_stuck_pending_transactions/);
@@ -376,15 +384,15 @@ describe('keep_pending_as_booked description', () => {
 });
 
 describe('merge_duplicate_transactions', () => {
-  const tool = captureTools({ register: registerMergeDuplicateTransactions })[0]!;
-  const schema = z.object(tool.config.inputSchema!);
+  const tool = captureTools({ register: mergeDuplicateTransactionsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name', () => {
     expect(tool.name).toBe('merge_duplicate_transactions');
   });
 
   it('declares the same fields as the REST body schema', () => {
-    expect(Object.keys(tool.config.inputSchema!).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       Object.keys(reconciliationMergeBodySchema.shape).toSorted(),
     );
   });

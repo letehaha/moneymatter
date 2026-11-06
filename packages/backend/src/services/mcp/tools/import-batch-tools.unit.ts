@@ -6,7 +6,6 @@ import { getUserActiveImportBatchDeleteStatus } from '@services/import-export/de
 import { deleteOrQueueImportBatch } from '@services/import-export/delete-or-queue-batch.service';
 import { listBatchesHistory } from '@services/import-export/get-batches-history.service';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -15,9 +14,9 @@ jest.mock('@services/import-export/delete-batch-queue', () => ({ getUserActiveIm
 jest.mock('@services/import-export/get-batches-history.service', () => ({ listBatchesHistory: jest.fn() }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
-import { registerDeleteImportBatch } from './delete-import-batch';
-import { registerGetImportBatchDeleteStatus } from './get-import-batch-delete-status';
-import { registerListImportBatches } from './list-import-batches';
+import { deleteImportBatchTool } from './delete-import-batch';
+import { getImportBatchDeleteStatusTool } from './get-import-batch-delete-status';
+import { listImportBatchesTool } from './list-import-batches';
 
 const READER = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -57,12 +56,12 @@ beforeEach(() => {
 });
 
 describe('list_import_batches', () => {
-  const tool = captureTools({ register: registerListImportBatches })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: listImportBatchesTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and bounds limit and offset', () => {
     expect(tool.name).toBe('list_import_batches');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['limit', 'offset']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['limit', 'offset']);
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ limit: 100, offset: 0 }).success).toBe(true);
     expect(schema.safeParse({ limit: 0 }).success).toBe(false);
@@ -98,11 +97,11 @@ describe('list_import_batches', () => {
 });
 
 describe('get_import_batch_delete_status', () => {
-  const tool = captureTools({ register: registerGetImportBatchDeleteStatus })[0]!;
+  const tool = captureTools({ register: getImportBatchDeleteStatusTool })[0]!;
 
   it('registers under its name and takes no input', () => {
     expect(tool.name).toBe('get_import_batch_delete_status');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual([]);
+    expect(tool.config.inputSchema).toBeUndefined();
   });
 
   const STATUSES: ImportBatchDeleteActiveStatus[] = [
@@ -130,12 +129,12 @@ describe('get_import_batch_delete_status', () => {
 });
 
 describe('delete_import_batch', () => {
-  const tool = captureTools({ register: registerDeleteImportBatch })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: deleteImportBatchTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name, takes a uuid batch id and says it undoes an import and may run as a job', () => {
     expect(tool.name).toBe('delete_import_batch');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['batchId', 'deleteLinkedTransfers']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['batchId', 'deleteLinkedTransfers']);
     expect(schema.safeParse({ batchId: BATCH_ID }).success).toBe(true);
     expect(schema.safeParse({ batchId: BATCH_ID, deleteLinkedTransfers: true }).success).toBe(true);
     expect(schema.safeParse({}).success).toBe(false);

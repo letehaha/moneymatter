@@ -1,4 +1,4 @@
-import { type Feature, type GoalModel, TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
+import { type Feature, type GoalModel, USER_ROLES } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
@@ -95,42 +95,6 @@ export async function assertBaseCurrencyUnlocked({ userId }: { userId: number })
 
   if (locked) {
     throw new Error(t({ key: 'currencies.baseCurrencyChangeInProgress' }));
-  }
-}
-
-/**
- * Mirrors the REST transaction schemas: the original-currency pair is set (or cleared)
- * together, and never rides on a payload that makes the transaction a transfer.
- */
-export function assertOriginalCurrencyArgs({
-  args,
-}: {
-  args: {
-    originalAmount?: number | null;
-    originalCurrencyCode?: string | null;
-    transferNature?: TRANSACTION_TRANSFER_NATURE;
-    destinationAccountId?: unknown;
-    destinationAmount?: unknown;
-    destinationTransactionId?: unknown;
-  };
-}): void {
-  const { originalAmount, originalCurrencyCode } = args;
-
-  if (
-    (originalAmount === undefined) !== (originalCurrencyCode === undefined) ||
-    (originalAmount === null) !== (originalCurrencyCode === null)
-  ) {
-    throw new Error('"originalAmount" and "originalCurrencyCode" must be set, or cleared, together');
-  }
-  if (originalAmount == null) return;
-
-  const isTransfer =
-    (args.transferNature && args.transferNature !== TRANSACTION_TRANSFER_NATURE.not_transfer) ||
-    args.destinationAccountId ||
-    args.destinationAmount ||
-    args.destinationTransactionId;
-  if (isTransfer) {
-    throw new Error('Original currency metadata cannot be added to transfer transactions');
   }
 }
 

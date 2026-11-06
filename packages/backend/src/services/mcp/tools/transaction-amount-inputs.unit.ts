@@ -1,7 +1,6 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { ToolDef } from '@services/mcp/define-tool';
 import { captureTools } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Blocks the real services, whose import chains build queues at module scope and
 // would open Redis connections in a unit test.
@@ -10,16 +9,16 @@ jest.mock('@services/transactions/update-transaction', () => ({ updateTransactio
 jest.mock('@services/transactions/get-by-id', () => ({ getTransactionById: jest.fn() }));
 jest.mock('@services/transactions/splits/manage-splits', () => ({ manageSplits: jest.fn() }));
 
-import { registerCreateTransaction } from './create-transaction';
-import { registerSplitTransaction } from './split-transaction';
-import { registerUpdateTransaction } from './update-transaction';
+import { createTransactionTool } from './create-transaction';
+import { splitTransactionTool } from './split-transaction';
+import { updateTransactionTool } from './update-transaction';
 
 const ID = '019f7e9e-b5f4-729c-9881-9544b15f4e3d';
 
-const inputSchemaOf = ({ register }: { register: (server: McpServer) => void }) => {
-  const shape = captureTools({ register })[0]?.config.inputSchema;
-  if (!shape) throw new Error('Tool did not register an input schema');
-  return z.object(shape);
+const inputSchemaOf = ({ register }: { register: ToolDef }) => {
+  const schema = captureTools({ register })[0]?.config.inputSchema;
+  if (!schema) throw new Error('Tool did not register an input schema');
+  return schema;
 };
 
 const createInput = {
@@ -31,9 +30,9 @@ const createInput = {
 };
 
 describe('MCP transaction tools amount validation', () => {
-  const create = inputSchemaOf({ register: registerCreateTransaction });
-  const update = inputSchemaOf({ register: registerUpdateTransaction });
-  const split = inputSchemaOf({ register: registerSplitTransaction });
+  const create = inputSchemaOf({ register: createTransactionTool });
+  const update = inputSchemaOf({ register: updateTransactionTool });
+  const split = inputSchemaOf({ register: splitTransactionTool });
 
   it('create_transaction accepts an unsigned amount', () => {
     expect(create.safeParse(createInput).success).toBe(true);

@@ -12,7 +12,6 @@ import { listReceivedInvitations, listSentInvitations } from '@services/sharing/
 import { listMembers } from '@services/sharing/members/list-members.service';
 import { listSharedWithMe } from '@services/sharing/members/list-shared-with-me.service';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -32,11 +31,11 @@ jest.mock('@services/bank-data-providers/monobank/transaction-sync-queue', () =>
   getJobGroupProgress: jest.fn(),
 }));
 
-import { registerGetBankSyncStatus } from './get-bank-sync-status';
-import { registerListBankConnections } from './list-bank-connections';
-import { registerListShareInvitations } from './list-share-invitations';
-import { registerListShareMembers } from './list-share-members';
-import { registerListSharedWithMe } from './list-shared-with-me';
+import { getBankSyncStatusTool } from './get-bank-sync-status';
+import { listBankConnectionsTool } from './list-bank-connections';
+import { listShareInvitationsTool } from './list-share-invitations';
+import { listShareMembersTool } from './list-share-members';
+import { listSharedWithMeTool } from './list-shared-with-me';
 
 // Reads need only finance:read: a read-only plan and no write scope must not limit any of them.
 const READER = makeExtra({ scopes: ['finance:read'], readOnly: true });
@@ -123,12 +122,12 @@ beforeEach(() => {
 });
 
 describe('list_share_invitations', () => {
-  const tool = captureTools({ register: registerListShareInvitations })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: listShareInvitationsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name and bounds direction and limit', () => {
     expect(tool.name).toBe('list_share_invitations');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['direction', 'limit']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['direction', 'limit']);
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ direction: 'sent', limit: 200 }).success).toBe(true);
     expect(schema.safeParse({ direction: 'received' }).success).toBe(true);
@@ -229,8 +228,8 @@ describe('list_share_invitations', () => {
 });
 
 describe('list_share_members', () => {
-  const tool = captureTools({ register: registerListShareMembers })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: listShareMembersTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   const makeMembers = () => ({
     resourceType: 'account',
@@ -258,7 +257,7 @@ describe('list_share_members', () => {
 
   it('registers under its name and takes a shareable resource type and id', () => {
     expect(tool.name).toBe('list_share_members');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['resourceType', 'resourceId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['resourceType', 'resourceId']);
     expect(schema.safeParse({ resourceType: 'account', resourceId: ACCOUNT_ID }).success).toBe(true);
     expect(schema.safeParse({ resourceType: 'household', resourceId: '9' }).success).toBe(true);
     expect(schema.safeParse({ resourceType: 'tracker', resourceId: '9' }).success).toBe(true);
@@ -301,8 +300,8 @@ describe('list_share_members', () => {
 });
 
 describe('list_shared_with_me', () => {
-  const tool = captureTools({ register: registerListSharedWithMe })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: listSharedWithMeTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   const makeShare = (patch: Record<string, unknown> = {}) => ({
     shareId: INVITATION_ID,
@@ -319,7 +318,7 @@ describe('list_shared_with_me', () => {
 
   it('registers under its name and bounds limit', () => {
     expect(tool.name).toBe('list_shared_with_me');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['limit']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['limit']);
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ limit: 200 }).success).toBe(true);
     expect(schema.safeParse({ limit: 0 }).success).toBe(false);
@@ -365,8 +364,8 @@ describe('list_shared_with_me', () => {
 });
 
 describe('list_bank_connections', () => {
-  const tool = captureTools({ register: registerListBankConnections })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: listBankConnectionsTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   /** A list row plus the fields no service returns today but a future change might: they must not leak. */
   const makeConnection = (patch: Record<string, unknown> = {}) => ({
@@ -432,7 +431,7 @@ describe('list_bank_connections', () => {
 
   it('registers under its name and takes an optional connection id and a bounded limit', () => {
     expect(tool.name).toBe('list_bank_connections');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['connectionId', 'limit']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['connectionId', 'limit']);
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ connectionId: CONNECTION_ID, limit: 200 }).success).toBe(true);
     expect(schema.safeParse({ connectionId: 'nope' }).success).toBe(false);
@@ -550,8 +549,8 @@ describe('list_bank_connections', () => {
 });
 
 describe('get_bank_sync_status', () => {
-  const tool = captureTools({ register: registerGetBankSyncStatus })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: getBankSyncStatusTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   const makeStatus = () => ({
     lastSyncAt: 1_760_688_000_000,
@@ -629,7 +628,7 @@ describe('get_bank_sync_status', () => {
 
   it('registers under its name, takes an optional job group id and says syncing is done in the app', () => {
     expect(tool.name).toBe('get_bank_sync_status');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['jobGroupId']);
+    expect(Object.keys(tool.config.inputSchema!.shape)).toEqual(['jobGroupId']);
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ jobGroupId: '42-abc-1' }).success).toBe(true);
     expect(schema.safeParse({ jobGroupId: '' }).success).toBe(false);

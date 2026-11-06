@@ -13,23 +13,27 @@ jest.mock('@services/user-exchange-rate', () => ({
 }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
-import { registerDeleteExchangeRates } from './delete-exchange-rates';
-import { registerSetExchangeRates } from './set-exchange-rates';
+import { registerDefinedTool, type ToolDef } from '../define-tool';
+import { deleteExchangeRatesTool } from './delete-exchange-rates';
+import { setExchangeRatesTool } from './set-exchange-rates';
 
 type Extra = {
   authInfo: { scopes: string[]; extra: { userId: number; role: string; readOnly: boolean } };
 };
 type Handler = (args: unknown, extra: Extra) => Promise<{ content: { type: 'text'; text: string }[] }>;
-type CapturedTool = { name: string; inputSchema?: z.ZodRawShape; handler: Handler };
+type CapturedTool = { name: string; inputSchema?: z.ZodObject; handler: Handler };
 
-const capture = ({ register }: { register: (server: McpServer) => void }): CapturedTool => {
+const capture = ({ register }: { register: ToolDef }): CapturedTool => {
   const tools: CapturedTool[] = [];
-  register({
-    registerTool: (name: string, config: { inputSchema?: z.ZodRawShape }, handler: Handler) => {
-      tools.push({ name, inputSchema: config.inputSchema, handler });
-    },
-  } as unknown as McpServer);
-  if (tools.length !== 1) throw new Error('Expected the register function to add exactly one tool');
+  registerDefinedTool({
+    server: {
+      registerTool: (name: string, config: { inputSchema?: z.ZodObject }, handler: Handler) => {
+        tools.push({ name, inputSchema: config.inputSchema, handler });
+      },
+    } as unknown as McpServer,
+    def: register,
+  });
+  if (tools.length !== 1) throw new Error('Expected the def to register exactly one tool');
   return tools[0]!;
 };
 
@@ -59,8 +63,8 @@ beforeEach(() => {
 });
 
 describe('set_exchange_rates', () => {
-  const tool = capture({ register: registerSetExchangeRates });
-  const schema = z.object(tool.inputSchema!);
+  const tool = capture({ register: setExchangeRatesTool });
+  const schema = tool.inputSchema!;
 
   const pairs = [
     { baseCode: 'EUR', quoteCode: 'USD', rate: 1.01 },
@@ -93,6 +97,17 @@ describe('set_exchange_rates', () => {
 
   it('refuses a pair without its opposite and a pair with the same base and quote, as the REST route does', async () => {
     await expect(tool.handler({ pairs: [pairs[0]] }, WRITE)).rejects.toThrow('opposite pair');
+    await expect(
+      tool.handler(
+        {
+          pairs: [
+            { baseCode: 'USD', quoteCode: 'EUR', rate: 0.9 },
+            { baseCode: 'EUR', quoteCode: 'GBP', rate: 0.85 },
+          ],
+        },
+        WRITE,
+      ),
+    ).rejects.toThrow('opposite pair');
     await expect(tool.handler({ pairs: [{ baseCode: 'USD', quoteCode: 'USD', rate: 1 }] }, WRITE)).rejects.toThrow(
       'same base and quote',
     );
@@ -113,8 +128,8 @@ describe('set_exchange_rates', () => {
 });
 
 describe('delete_exchange_rates', () => {
-  const tool = capture({ register: registerDeleteExchangeRates });
-  const schema = z.object(tool.inputSchema!);
+  const tool = capture({ register: deleteExchangeRatesTool });
+  const schema = tool.inputSchema!;
 
   const pairs = [
     { baseCode: 'EUR', quoteCode: 'USD' },
@@ -140,6 +155,17 @@ describe('delete_exchange_rates', () => {
 
   it('refuses a pair without its opposite, as the REST route does', async () => {
     await expect(tool.handler({ pairs: [pairs[0]] }, DELETE)).rejects.toThrow('opposite pair');
+    await expect(
+      tool.handler(
+        {
+          pairs: [
+            { baseCode: 'USD', quoteCode: 'EUR' },
+            { baseCode: 'EUR', quoteCode: 'GBP' },
+          ],
+        },
+        DELETE,
+      ),
+    ).rejects.toThrow('opposite pair');
     expect(ratesService.removeUserExchangeRates).not.toHaveBeenCalled();
   });
 

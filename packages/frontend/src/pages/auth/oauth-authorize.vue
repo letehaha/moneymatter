@@ -155,7 +155,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/lib/ui/c
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { cn } from '@/lib/utils';
-import { MCP_CLIENT_TOOL_CAP, MCP_TOOLSET_SCOPE_PREFIX } from '@bt/shared/types';
+import { MCP_CLIENT_TOOL_CAP } from '@bt/shared/types';
 import { AlertTriangleIcon, CheckCircleIcon, ShieldCheckIcon } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
 import { computed, onMounted, reactive, ref } from 'vue';
@@ -164,7 +164,7 @@ import { useRoute } from 'vue-router';
 
 import ToolCountBar from './oauth-authorize/tool-count-bar.vue';
 import ToolsetPicker from './oauth-authorize/toolset-picker.vue';
-import { summarizeToolSelection } from './oauth-authorize/toolset-selection';
+import { approveScopes, isToolsetScope, summarizeToolSelection } from './oauth-authorize/toolset-selection';
 
 interface ScopeMeta {
   scope: string;
@@ -225,7 +225,7 @@ const KNOWN_SCOPES: ScopeMeta[] = [
 
 const SCOPE_META_BY_KEY: Record<string, ScopeMeta> = Object.fromEntries(KNOWN_SCOPES.map((s) => [s.scope, s]));
 
-const isToolsetScope = (scope: string) => scope.startsWith(MCP_TOOLSET_SCOPE_PREFIX);
+const TOGGLABLE_SCOPES = new Set(KNOWN_SCOPES.filter((s) => s.togglable).map((s) => s.scope));
 
 const route = useRoute();
 const { t } = useI18n();
@@ -314,18 +314,15 @@ const toolSelection = computed(() =>
     : null,
 );
 
-const approvedScopeString = computed(() => {
-  const offeredScopes = new Set<string | null>(offeredToolsets.value.map((toolset) => toolset.scope));
-  const approved = requestedScopes.value.filter((s) => {
-    if (isToolsetScope(s)) return offeredScopes.has(s) && selectedToolsetScopes.value.has(s);
-    if (HIDDEN_OAUTH_SCOPES.has(s)) return true;
-    const meta = SCOPE_META_BY_KEY[s];
-    if (!meta) return true;
-    if (!meta.togglable) return true;
-    return approvals[s] === true;
-  });
-  return approved.join(' ');
-});
+const approvedScopeString = computed(() =>
+  approveScopes({
+    requestedScopes: requestedScopes.value,
+    offeredToolsets: offeredToolsets.value,
+    selectedToolsetScopes: selectedToolsetScopes.value,
+    togglableScopes: TOGGLABLE_SCOPES,
+    approvals,
+  }).join(' '),
+);
 
 // Must be the raw query string: better-auth signs it verbatim and emits
 // repeated keys (ba_param), which route.query would collapse into one value.

@@ -15,7 +15,6 @@ import {
 } from '@services/budget-plans/zod-schemas';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
-import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
@@ -27,11 +26,11 @@ jest.mock('@services/budget-plans/restore-line', () => ({ restoreLine: jest.fn()
 jest.mock('@services/budget-plans/suggested-lines', () => ({ addSuggestedLines: jest.fn() }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
-import { registerAddSuggestedBudgetPlanLines } from './add-suggested-budget-plan-lines';
-import { registerArchiveBudgetPlanLine } from './archive-budget-plan-line';
-import { registerCreateBudgetPlanLine } from './create-budget-plan-line';
-import { registerDeleteBudgetPlanLine } from './delete-budget-plan-line';
-import { registerUpdateBudgetPlanLine } from './update-budget-plan-line';
+import { addSuggestedBudgetPlanLinesTool } from './add-suggested-budget-plan-lines';
+import { archiveBudgetPlanLineTool } from './archive-budget-plan-line';
+import { createBudgetPlanLineTool } from './create-budget-plan-line';
+import { deleteBudgetPlanLineTool } from './delete-budget-plan-line';
+import { updateBudgetPlanLineTool } from './update-budget-plan-line';
 
 const PLAN_ID = '11111111-1111-4111-8111-111111111111';
 const GROUP_ID = '22222222-2222-4222-8222-222222222222';
@@ -75,13 +74,13 @@ beforeEach(() => {
 });
 
 describe('create_budget_plan_line', () => {
-  const tool = captureTools({ register: registerCreateBudgetPlanLine })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: createBudgetPlanLineTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const valid = { planId: PLAN_ID, name: 'Groceries', categoryIds: [CATEGORY_ID] };
 
   it('registers under its name with the plan id and every field of the REST body', () => {
     expect(tool.name).toBe('create_budget_plan_line');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['planId', ...Object.keys(createLineBodyFields)].toSorted(),
     );
     expect(Object.keys(createLineBodyFields).toSorted()).toEqual([
@@ -180,13 +179,13 @@ describe('create_budget_plan_line', () => {
 });
 
 describe('update_budget_plan_line', () => {
-  const tool = captureTools({ register: registerUpdateBudgetPlanLine })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: updateBudgetPlanLineTool })[0]!;
+  const schema = tool.config.inputSchema!;
   const base = { planId: PLAN_ID, lineId: LINE_ID };
 
   it('registers under its name with both ids and every field of the REST patch', () => {
     expect(tool.name).toBe('update_budget_plan_line');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(
       ['lineId', 'planId', ...Object.keys(updateLineBodyFields)].toSorted(),
     );
     expect(Object.keys(updateLineBodyFields).toSorted()).toEqual([
@@ -297,12 +296,12 @@ describe('update_budget_plan_line', () => {
 });
 
 describe('delete_budget_plan_line', () => {
-  const tool = captureTools({ register: registerDeleteBudgetPlanLine })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: deleteBudgetPlanLineTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with both ids', () => {
     expect(tool.name).toBe('delete_budget_plan_line');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['lineId', 'planId']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['lineId', 'planId']);
     expect(schema.safeParse({ planId: PLAN_ID, lineId: LINE_ID }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID }).success).toBe(false);
     expect(schema.safeParse({ lineId: LINE_ID }).success).toBe(false);
@@ -333,12 +332,12 @@ describe('delete_budget_plan_line', () => {
 });
 
 describe('archive_budget_plan_line', () => {
-  const tool = captureTools({ register: registerArchiveBudgetPlanLine })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: archiveBudgetPlanLineTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with both ids and archived, all required', () => {
     expect(tool.name).toBe('archive_budget_plan_line');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['archived', 'lineId', 'planId']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['archived', 'lineId', 'planId']);
     expect(schema.safeParse({ planId: PLAN_ID, lineId: LINE_ID, archived: true }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID, lineId: LINE_ID, archived: false }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID, lineId: LINE_ID }).success).toBe(false);
@@ -378,12 +377,12 @@ describe('archive_budget_plan_line', () => {
 });
 
 describe('add_suggested_budget_plan_lines', () => {
-  const tool = captureTools({ register: registerAddSuggestedBudgetPlanLines })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
+  const tool = captureTools({ register: addSuggestedBudgetPlanLinesTool })[0]!;
+  const schema = tool.config.inputSchema!;
 
   it('registers under its name with the plan id and the optional answers', () => {
     expect(tool.name).toBe('add_suggested_budget_plan_lines');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['answers', 'planId']);
+    expect(Object.keys(tool.config.inputSchema!.shape).toSorted()).toEqual(['answers', 'planId']);
     expect(schema.safeParse({ planId: PLAN_ID }).success).toBe(true);
     expect(schema.safeParse({ planId: PLAN_ID, answers: {} }).success).toBe(true);
     expect(
@@ -438,7 +437,7 @@ describe('add_suggested_budget_plan_lines', () => {
 
 const LINE_TOOLS = [
   {
-    register: registerCreateBudgetPlanLine,
+    register: createBudgetPlanLineTool,
     name: 'create_budget_plan_line',
     result: LINE_ENTRY,
     args: { planId: PLAN_ID, name: 'Groceries', categoryIds: [CATEGORY_ID] },
@@ -446,7 +445,7 @@ const LINE_TOOLS = [
     scopes: ['finance:read', 'finance:write'],
   },
   {
-    register: registerUpdateBudgetPlanLine,
+    register: updateBudgetPlanLineTool,
     name: 'update_budget_plan_line',
     result: LINE_ENTRY,
     args: { planId: PLAN_ID, lineId: LINE_ID, name: 'Food' },
@@ -454,7 +453,7 @@ const LINE_TOOLS = [
     scopes: ['finance:read', 'finance:write'],
   },
   {
-    register: registerDeleteBudgetPlanLine,
+    register: deleteBudgetPlanLineTool,
     name: 'delete_budget_plan_line',
     result: undefined,
     args: { planId: PLAN_ID, lineId: LINE_ID },
@@ -462,7 +461,7 @@ const LINE_TOOLS = [
     scopes: ['finance:read', 'finance:delete'],
   },
   {
-    register: registerArchiveBudgetPlanLine,
+    register: archiveBudgetPlanLineTool,
     name: 'archive_budget_plan_line',
     result: undefined,
     args: { planId: PLAN_ID, lineId: LINE_ID, archived: true },
@@ -470,7 +469,7 @@ const LINE_TOOLS = [
     scopes: ['finance:read', 'finance:write'],
   },
   {
-    register: registerArchiveBudgetPlanLine,
+    register: archiveBudgetPlanLineTool,
     name: 'archive_budget_plan_line',
     result: LINE_ENTRY,
     args: { planId: PLAN_ID, lineId: LINE_ID, archived: false },
@@ -478,7 +477,7 @@ const LINE_TOOLS = [
     scopes: ['finance:read', 'finance:write'],
   },
   {
-    register: registerAddSuggestedBudgetPlanLines,
+    register: addSuggestedBudgetPlanLinesTool,
     name: 'add_suggested_budget_plan_lines',
     result: { created: 2 },
     args: { planId: PLAN_ID },
