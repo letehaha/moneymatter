@@ -1,6 +1,6 @@
 <template>
   <!-- Shared `csv-wizard` CSS container identifier (a plain CSS token, not CSV-specific
-       semantics): the stepper + quick-action toolbar resolve their responsive variants
+       semantics): its step components resolve their responsive variants
        against it, so both import wizards mark their root with the same name. -->
   <div class="@container/csv-wizard flex flex-col gap-0">
     <!-- Page header -->

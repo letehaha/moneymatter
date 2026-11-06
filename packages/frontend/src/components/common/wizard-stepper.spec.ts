@@ -3,6 +3,14 @@ import { createI18n } from 'vue-i18n';
 
 import WizardStepper from './wizard-stepper.vue';
 
+// jsdom has no layout, so the stepper measures 0px wide unless a test overrides it.
+const stepperWidth = vi.hoisted(() => ({ value: 0 }));
+vi.mock('@vueuse/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@vueuse/core')>();
+  const { ref } = await import('vue');
+  return { ...actual, useElementSize: () => ({ width: ref(stepperWidth.value), height: ref(0), stop: () => {} }) };
+});
+
 // Labels resolve to their raw keys (no messages registered), which is all the
 // navigability assertions below need — they key off aria-label, not copy.
 const i18n = createI18n({ legacy: false, locale: 'en', messages: { en: {} }, missingWarn: false, fallbackWarn: false });
@@ -99,18 +107,32 @@ describe('WizardStepper — current step', () => {
 });
 
 describe('WizardStepper — labels', () => {
-  const label = (wrapper: ReturnType<typeof mountStepper>, key: string) =>
-    stepButton(wrapper, key).findAll('span').at(-1)!;
+  const hasLabel = (wrapper: ReturnType<typeof mountStepper>, key: string) =>
+    stepButton(wrapper, key).text().includes(key);
 
-  it('hides the labels of the other steps below the container breakpoint', () => {
-    const wrapper = mountStepper({ currentStepKey: 'map', completedStepKeys: new Set(['upload']) });
-
-    expect(label(wrapper, 'map').classes()).toContain('inline');
-    expect(label(wrapper, 'upload').classes()).toContain('hidden');
-    expect(label(wrapper, 'review').classes()).toContain('hidden');
+  afterEach(() => {
+    stepperWidth.value = 0;
   });
 
-  it('labels every step with alwaysShowLabels', () => {
+  it('renders only the current label on a narrow stepper, keeping aria-label on every step', () => {
+    const wrapper = mountStepper({ currentStepKey: 'map', completedStepKeys: new Set(['upload']) });
+
+    expect(hasLabel(wrapper, 'map')).toBe(true);
+    expect(hasLabel(wrapper, 'upload')).toBe(false);
+    expect(hasLabel(wrapper, 'review')).toBe(false);
+    expect(wrapper.findAll('button[aria-label]')).toHaveLength(3);
+  });
+
+  it('renders every label on a wide stepper', () => {
+    stepperWidth.value = 768;
+    const wrapper = mountStepper({ currentStepKey: 'map', completedStepKeys: new Set(['upload']) });
+
+    for (const key of ['upload', 'map', 'review']) {
+      expect(hasLabel(wrapper, key)).toBe(true);
+    }
+  });
+
+  it('renders every label with alwaysShowLabels on a narrow stepper', () => {
     const wrapper = mountStepper({
       currentStepKey: 'map',
       completedStepKeys: new Set(['upload']),
@@ -118,8 +140,20 @@ describe('WizardStepper — labels', () => {
     });
 
     for (const key of ['upload', 'map', 'review']) {
-      expect(label(wrapper, key).classes()).toContain('inline');
-      expect(label(wrapper, key).classes()).not.toContain('hidden');
+      expect(hasLabel(wrapper, key)).toBe(true);
     }
+  });
+});
+
+describe('WizardStepper — back-navigation hover state', () => {
+  it('marks only navigable completed steps behind the current one as group/step', () => {
+    const wrapper = mountStepper({
+      currentStepKey: 'map',
+      completedStepKeys: new Set(['upload', 'map', 'review']),
+    });
+
+    expect(stepButton(wrapper, 'upload').classes()).toContain('group/step');
+    expect(stepButton(wrapper, 'map').classes()).not.toContain('group/step');
+    expect(stepButton(wrapper, 'review').classes()).not.toContain('group/step');
   });
 });

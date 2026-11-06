@@ -17,8 +17,6 @@
       </p>
     </div>
 
-    <!-- Numbered stepper. Container-query driven so it reacts to the content width, not the
-         viewport (sidebar). Shared with the Wallet wizard via the common container identifier. -->
     <WizardStepper
       class="mb-6"
       :steps="stepperSteps"

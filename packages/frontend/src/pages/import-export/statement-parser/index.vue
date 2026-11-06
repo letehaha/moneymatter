@@ -1,6 +1,6 @@
 <template>
   <!-- Shared `csv-wizard` CSS container identifier (a plain CSS token, not CSV-specific
-       semantics): the stepper resolves its responsive variants against it, so every
+       semantics): its step components resolve their responsive variants against it, so every
        import wizard marks its root with the same name. -->
   <div class="@container/csv-wizard flex flex-col gap-0">
     <!-- Page header -->
