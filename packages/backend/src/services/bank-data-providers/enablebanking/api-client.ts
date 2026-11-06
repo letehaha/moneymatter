@@ -6,7 +6,14 @@
  */
 import { requestContext } from '@common/request-context';
 import { t } from '@i18n/index';
-import { BadGateway, BadRequestError, ForbiddenError, TooManyRequests, ValidationError } from '@js/errors';
+import {
+  BadGateway,
+  BadRequestError,
+  ForbiddenError,
+  ServiceUnavailableError,
+  TooManyRequests,
+  ValidationError,
+} from '@js/errors';
 import { logger } from '@js/utils/logger';
 import axios, { AxiosInstance } from 'axios';
 
@@ -256,8 +263,17 @@ export class EnableBankingApiClient {
         status,
         httpMethod,
         httpUrl,
+        code: error.code,
         rawData: safeStringify(data),
       };
+
+      // Transient network failures are expected outages; other no-response errors (TLS, cancel) stay BadGateway.
+      if (!status && error.code && RETRYABLE_AXIOS_CODES.has(error.code)) {
+        throw new ServiceUnavailableError({
+          message: t({ key: 'bankDataProviders.enableBanking.apiGeneralError', variables: { message } }),
+          details: errorDetails,
+        });
+      }
 
       if (status === 401 || status === 403) {
         throw new ForbiddenError({
