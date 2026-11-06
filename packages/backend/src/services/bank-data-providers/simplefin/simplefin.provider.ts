@@ -676,12 +676,11 @@ export class SimplefinProvider extends BaseBankDataProvider {
     let balance: string | null = null;
     let currency: string | null = null;
 
-    for (const [index, window] of windows.entries()) {
+    for (const window of windows) {
       const accountSet = await this.getAccountsTracked({
         connectionId,
         apiClient,
         params: { accountId: accountExternalId, startDate: window.from, endDate: window.to },
-        quietBridgeWarnings: index > 0,
       });
       const account = accountSet.accounts.find((acc) => acc.id === accountExternalId);
       if (!account) {
@@ -731,12 +730,11 @@ export class SimplefinProvider extends BaseBankDataProvider {
     const byAccount = new Map<string, Map<string, SimplefinTransaction>>();
     const meta = new Map<string, { balance: string | null; currency: string | null }>();
 
-    for (const [index, window] of windows.entries()) {
+    for (const window of windows) {
       const accountSet = await this.getAccountsTracked({
         connectionId,
         apiClient,
         params: { startDate: window.from, endDate: window.to },
-        quietBridgeWarnings: index > 0,
       });
 
       for (const account of accountSet.accounts) {
@@ -935,16 +933,14 @@ export class SimplefinProvider extends BaseBankDataProvider {
     connectionId,
     apiClient,
     params,
-    quietBridgeWarnings,
   }: {
     connectionId: string;
     apiClient: SimplefinApiClient;
     params?: SimplefinGetAccountsParams;
-    quietBridgeWarnings?: boolean;
   }): Promise<SimplefinAccountSet> {
     try {
       const accountSet = await apiClient.getAccounts(params);
-      this.surfaceAccountSetErrors({ accountSet, quietBridgeWarnings });
+      this.surfaceAccountSetErrors({ accountSet });
       await this.resetAuthFailures(connectionId);
       return accountSet;
     } catch (error) {
@@ -960,13 +956,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
    * Logs every bridge error and throws ForbiddenError only for gen.auth, the one code meaning
    * our Access URL is rejected. con.auth and other entries leave the returned accounts processable.
    */
-  private surfaceAccountSetErrors({
-    accountSet,
-    quietBridgeWarnings = false,
-  }: {
-    accountSet: SimplefinAccountSet;
-    quietBridgeWarnings?: boolean;
-  }): void {
+  private surfaceAccountSetErrors({ accountSet }: { accountSet: SimplefinAccountSet }): void {
     const structured = accountSet.errlist ?? [];
     const legacy = accountSet.errors ?? [];
 
@@ -979,12 +969,10 @@ export class SimplefinProvider extends BaseBankDataProvider {
         logger.warn(`[SimpleFIN] Bridge error ${err.code}`, { bridgeMessage: err.msg });
       }
     }
-    // v2 bridges repeat every errlist entry as a legacy `errors` string.
-    // Legacy strings repeat on every window of a sync and every warn is a Sentry event, so they
-    // are reported as one fixed-message warn and only for the first window.
+    // v2 bridges repeat every errlist entry as a legacy `errors` string. Legacy strings are
+    // per-institution notices repeated on every window of a sync, so they stay out of Sentry.
     if (structured.length === 0 && legacy.length > 0) {
-      const log = quietBridgeWarnings ? logger.info : logger.warn;
-      log('[SimpleFIN] Bridge warning', { bridgeMessages: legacy });
+      logger.info('[SimpleFIN] Bridge warning', { bridgeMessages: legacy });
     }
 
     const authErrors = structured.filter((e) => e.code === 'gen.auth');

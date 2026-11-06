@@ -126,6 +126,8 @@ const waitForCompletedSync = async ({ accountId }: { accountId: string }): Promi
   expect(accounts.find((account) => account.accountId === accountId)?.status).toBe(SyncStatus.COMPLETED);
 };
 
+const isBridgeWarning = ([message]: unknown[]) => message === '[SimpleFIN] Bridge warning';
+
 describe('SimpleFIN Data Provider E2E', () => {
   describe('Complete connection flow', () => {
     it('completes: list providers -> connect -> list connections -> list external accounts -> import -> details', async () => {
@@ -607,7 +609,7 @@ describe('SimpleFIN Data Provider E2E', () => {
       expect(result.createdCount).toBe(3);
     });
 
-    it('warns once per load for legacy bridge errors repeated on every window', async () => {
+    it('logs legacy bridge errors at info, never warn, so they stay out of Sentry', async () => {
       const connectionId = await connectSimplefin();
       const accountId = await importFirstAccount(connectionId);
 
@@ -616,6 +618,7 @@ describe('SimpleFIN Data Provider E2E', () => {
       );
 
       const warnSpy = jest.spyOn(logger, 'warn');
+      const infoSpy = jest.spyOn(logger, 'info');
       try {
         const result = (await helpers.bankDataProviders.loadTransactionsForPeriod({
           connectionId,
@@ -626,10 +629,14 @@ describe('SimpleFIN Data Provider E2E', () => {
         })) as unknown as { totalBatches: number };
         expect(result.totalBatches).toBeGreaterThanOrEqual(3);
 
-        const bridgeWarnings = warnSpy.mock.calls.filter(([message]) => message === '[SimpleFIN] Bridge warning');
-        expect(bridgeWarnings).toEqual([['[SimpleFIN] Bridge warning', { bridgeMessages: ['bridge text'] }]]);
+        expect(warnSpy.mock.calls.filter(isBridgeWarning)).toEqual([]);
+        expect(infoSpy.mock.calls.filter(isBridgeWarning)[0]).toEqual([
+          '[SimpleFIN] Bridge warning',
+          { bridgeMessages: ['bridge text'] },
+        ]);
       } finally {
         warnSpy.mockRestore();
+        infoSpy.mockRestore();
       }
     });
   });
