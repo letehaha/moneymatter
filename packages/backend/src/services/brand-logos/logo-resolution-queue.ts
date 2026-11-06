@@ -78,6 +78,11 @@ export const logoResolutionWorker = new Worker<LogoResolutionJobData>(
 );
 
 logoResolutionWorker.on('failed', (job, err) => {
+  // BullMQ fires `failed` per attempt; finishedOn is set only once it stops retrying (incl. UnrecoverableError).
+  if (job && !job.finishedOn) {
+    logger.info(`[Brand Logo Worker] Job ${job.id} attempt ${job.attemptsMade} failed: ${err.message}`);
+    return;
+  }
   logger.error({ message: `[Brand Logo Worker] Job ${job?.id} failed`, error: err });
 });
 
