@@ -38,6 +38,32 @@ sufficient for the job — read-only agents should not request write or delete.
 Users can revoke a connected app at any time from the MoneyMatter settings
 page.
 
+## Toolsets
+
+Tools come in toolsets. `core` is always registered; every other toolset is
+granted with its own `toolset:<id>` scope, which the user ticks on the consent
+screen (none are ticked by default). Request every toolset scope you might
+need: the user narrows them down. A session lists only the tools of the
+toolsets its token was granted, so a tool missing from `tools/list` means the
+user didn't grant its toolset; ask them to reconnect the app and tick it.
+
+| Toolset            | Scope                      | Covers                                                                                                   |
+| ------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `core`             | none, always on            | Profile, accounts, transactions, transfers and refunds, attachments, categories, tags, payees, analytics |
+| `subscriptions`    | `toolset:subscriptions`    | Subscriptions, their periods and candidates, planned transactions                                        |
+| `budget-plans`     | `toolset:budget-plans`     | Budget plans, their groups, lines and line goals, savings goals                                          |
+| `trackers`         | `toolset:trackers`         | Trackers, their lines and suggestions                                                                    |
+| `automations`      | `toolset:automations`      | Transaction automations, payee aliases, ignored payee names, tag reminders                               |
+| `review`           | `toolset:review`           | Refund and transfer matches, duplicate cleanup, stuck pending transactions                               |
+| `groups-templates` | `toolset:groups-templates` | Transaction groups and transaction templates                                                             |
+| `investments`      | `toolset:investments`      | Portfolios, holdings, securities, investment transactions, portfolio transfers                           |
+| `ventures`         | `toolset:ventures`         | Venture platforms, deals and events                                                                      |
+| `loans-vehicles`   | `toolset:loans-vehicles`   | Loans and vehicles                                                                                       |
+| `currencies`       | `toolset:currencies`       | User currencies and exchange rates                                                                       |
+| `imports`          | `toolset:imports`          | Import batches, bank connections, sharing (read-only)                                                    |
+
+The server card gives each tool's toolset in its `toolset` field.
+
 ## Setup steps (Claude Desktop, Claude.ai, ChatGPT, OpenClaw)
 
 1. Ensure the user has a MoneyMatter account. If not: direct them to
@@ -83,7 +109,7 @@ Reading, planned transactions, create and edit, splits, refunds, transfer linkin
 | `bulk_update_transactions`     | Update category, payee, note, or tags on multiple transactions at once (`finance:write`)                         |
 | `split_transaction`            | Split a transaction across multiple categories (`finance:write`)                                                 |
 | `delete_split`                 | Delete a single split by split ID (`finance:delete`)                                                             |
-| `link_refund`                  | Mark a transaction as a refund of another (`finance:write`)                                                      |
+| `link_refund`                  | Mark a transaction as a refund of another; optional amount to split one refund (`finance:write`)                 |
 | `unlink_refund`                | Remove the refund link between two transactions (`finance:write`)                                                |
 | `link_transfer`                | Link two existing transactions as a transfer pair (`finance:write`)                                              |
 | `unlink_transfer`              | Unlink a transfer pair by transferId (`finance:write`)                                                           |
@@ -96,6 +122,7 @@ Reading, planned transactions, create and edit, splits, refunds, transfer linkin
 | `list_transaction_attachments` | Files attached to a transaction (id, name, type, size)                                                           |
 | `delete_attachment`            | Permanently delete a transaction attachment (`finance:delete`)                                                   |
 | `get_refunds`                  | Refund links: of one transaction, one pair, or a paged list; both sides carry their payee                        |
+| `get_refund_links`             | Refund links on a transaction, either side, with each link's share of the refund                                 |
 | `get_refund_recommendations`   | Suggest transactions a refund could link to (saved transaction or form data)                                     |
 | `get_transfer_recommendations` | Suggest the other leg of a transfer (saved transaction or form data)                                             |
 | `list_transfer_suggestions`    | Scan a period for likely transfer pairs with a confidence score; reads only                                      |

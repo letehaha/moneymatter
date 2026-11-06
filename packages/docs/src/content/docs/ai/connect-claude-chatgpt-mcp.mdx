@@ -124,7 +124,11 @@ Any app that supports remote MCP servers with OAuth sign-in can connect. Add a s
 
 ## Choose what the assistant can do
 
-Before an app gets access, MoneyMatter shows a page titled "[app name] wants access to your MoneyMatter data". It lists the permissions the app asked for. You can turn two of them on or off:
+Before an app gets access, MoneyMatter shows a page titled "[app name] wants access to your MoneyMatter data". It has two steps: **Permissions**, what the app may do, and **Tools**, what it can work with.
+
+### Permissions
+
+The first step lists the permissions the app asked for. You can turn two of them on or off:
 
 <Screenshot
   src="/screenshots/ai/oauth-authorize.png"
@@ -140,7 +144,7 @@ Before an app gets access, MoneyMatter shows a page titled "[app name] wants acc
 | **View your profile**                   | **Always granted**                           | See your name, email and base currency.                                       |
 | **Stay connected in the background**    | **Always granted**                           | Keep access without asking you to approve again each session.                 |
 
-Click **Approve** to connect, or **Deny** to cancel.
+Click **Continue** to pick the tools, or **Deny** to cancel.
 
 For questions and reports only, untick **Create and edit your financial data** before you approve. The assistant can then read your data but can't change anything.
 
@@ -149,13 +153,40 @@ For questions and reports only, untick **Create and edit your financial data** b
   record is gone for good.
 </Aside>
 
-To change the access level later, [revoke the app](#disconnect-an-app) and connect it again.
+### Tools
+
+The second step picks which sets of tools the app gets. **Core** is always on. Every other set is off when the page opens; tick the ones you want, or use **Add all** and **Core only**. Click **Approve** to connect, or **Back** to return to the permissions.
+
+The app loads every tool you pick into each chat, so pick only what you use. The counter at the bottom shows how many tools you picked. ChatGPT and VS Code Copilot load at most 128 tools, and the counter warns you when you go over that. Claude and Claude Code have no such limit.
+
+| Set                      | Scope                      | What it covers                                                                                   |
+| ------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------ |
+| **Core**                 | none, always on            | Accounts, transactions, transfers and refunds, attachments, categories, tags, payees and reports. |
+| **Recurring payments**   | `toolset:subscriptions`    | Recurring payments, their periods and candidates, and planned transactions.                       |
+| **Budget plans**         | `toolset:budget-plans`     | Budget plans with their groups, lines and line goals, and savings goals.                          |
+| **Trackers**             | `toolset:trackers`         | Spending trackers, their lines and suggestions.                                                   |
+| **Automations**          | `toolset:automations`      | Transaction rules, payee aliases, ignored payee names and tag reminders.                          |
+| **Review and cleanup**   | `toolset:review`           | Refund and transfer matches, duplicate cleanup and stuck pending transactions.                    |
+| **Groups and templates** | `toolset:groups-templates` | Transaction groups and transaction templates.                                                     |
+| **Investments**          | `toolset:investments`      | Portfolios, holdings, securities, investment transactions and portfolio transfers.                |
+| **Ventures**             | `toolset:ventures`         | Venture platforms, deals and events.                                                              |
+| **Loans and vehicles**   | `toolset:loans-vehicles`   | Loans with their payments and notes, and vehicles.                                                |
+| **Currencies**           | `toolset:currencies`       | Your currencies and exchange rates.                                                               |
+| **Imports and sharing**  | `toolset:imports`          | Import batches, bank connections and who you share with, read only.                               |
+
+The [server card](https://moneymatter.app/.well-known/mcp/server-card.json) lists every tool with the set it belongs to.
+
+An app connected before tool sets existed has **Core** only. To add more, [revoke the app](#disconnect-an-app) and connect it again.
+
+### Change what you approved
+
+To change the permissions or the tools later, [revoke the app](#disconnect-an-app) and connect it again.
 
 If your account is in [read-only mode](/settings/plans-and-billing/#read-only-mode), a connected assistant can still read your data, but every change it tries is refused, whatever you approved.
 
 ## What you can ask
 
-The assistant can work with:
+With the tool sets for them, the assistant can work with:
 
 - accounts;
 - transactions, including planned ones, refunds, transfers and attachments;
@@ -210,7 +241,7 @@ Some things stay in the app, and the assistant can't do them even with every per
 
 ### Goals
 
-The assistant sees your [goals](/goals/overview/) with their progress: saved, left, pace, projected finish, monthly need and status. With edit access it can create a goal, change it, and pause, archive or restore it. Deleting a goal needs **Delete your financial data**. Creating, changing and deleting goals also need goals on your plan or a running goals trial. The tools are `get_goals`, `create_goal`, `update_goal` and `delete_goal`.
+The assistant sees your [goals](/goals/overview/) with their progress: saved, left, pace, projected finish, monthly need and status. With edit access it can create a goal, change it, and pause, archive or restore it. Deleting a goal needs **Delete your financial data**. Creating, changing and deleting goals also need goals on your plan or a running goals trial. The tools are `get_goals`, `create_goal`, `update_goal` and `delete_goal`, in the **Budget plans** set.
 
 ## Disconnect an app
 
@@ -241,6 +272,7 @@ A self-hosted MoneyMatter runs its own MCP server, and nothing goes through mone
 ## If something goes wrong
 
 - **The assistant says it can't change or delete something.** You didn't grant that permission, or your account is in read-only mode. Revoke the app and connect it again with the permission ticked.
+- **The assistant says it has no tool for something.** The tool is in a set you didn't pick, such as **Investments** or **Budget plans**. Revoke the app and connect it again with that set ticked.
 - **You can't add a connector in Claude at work.** Ask an owner of your organization to add it.
 - **You need to change how a Claude connector signs in.** Claude doesn't let you edit that. Remove the connector and add it again.
 - **Claude Code doesn't return from the browser after you approve.** Copy the full address from the browser's address bar and paste it into the prompt Claude Code shows.

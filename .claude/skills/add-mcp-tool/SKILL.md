@@ -22,11 +22,13 @@ Each MCP tool is a thin wrapper over an existing backend service:
 Service (@services/...)
   ↓ called by
 MCP tool file (packages/backend/src/services/mcp/tools/<name>.ts)
-  ↓ registered in
-createMcpServer() (packages/backend/src/services/mcp/server.ts)
+  ↓ listed in its toolset
+TOOLSET_REGISTRARS (packages/backend/src/services/mcp/toolsets.ts)
+  ↓ registered by
+createMcpServer({ toolsets }) (packages/backend/src/services/mcp/server.ts)
 ```
 
-Three metafiles stay in sync via drift tests (a fourth drift test checks that every tool file is registered in `server.ts`):
+Three metafiles stay in sync via drift tests (more drift tests check that every tool file is listed in exactly one toolset in `toolsets.ts`):
 
 - `packages/frontend/public/.well-known/mcp/server-card.json` — machine-readable tool list
 - `packages/frontend/public/skills/connect-moneymatter/SKILL.md` — human-readable agent skill
@@ -107,15 +109,20 @@ Every tool is a thin wrapper over the service its REST route uses. Parity with R
 
 **Refined inputs:** the SDK's `inputSchema` is a plain shape of Zod fields, so a rule that spans fields (an either-or, a mutually exclusive pair, a `superRefine`) cannot sit in it. Expose the shared schema's `.shape` as `inputSchema` and run the full shared schema (or an `assert…Args` helper like `assertOriginalCurrencyArgs`) in the handler, on the schema's own fields only: when the tool adds ids beside a strict body schema, destructure them off first (`const { planId, ...body } = args; schema.parse(body)`), or the strict parse rejects the ids. The unit test asserts that the **tool** rejects, not the shape.
 
-### 2. Register the tool in `server.ts`
+### 2. Add the tool to a toolset in `toolsets.ts`
 
-Add the import (alphabetical) and call it inside `createMcpServer()`:
+Add the import (alphabetical) and list the register function in its toolset in `TOOLSET_REGISTRARS`:
 
 ```typescript
 import { registerMyNewTool } from './tools/my-new-tool';
 // ...
-registerMyNewTool(server);
+investments: [
+  // ...
+  registerMyNewTool,
+],
 ```
+
+`core` is what every client loads, so it stays at 60 tools or fewer (`toolsets-drift`). Put a new tool in the optional toolset of its feature; it goes in `core` only when it's about accounts, transactions, categories, tags, payees or reports. A new toolset needs its id in `MCP_OPTIONAL_TOOLSETS` (`packages/shared/src/types/mcp.ts`), which gives it a `toolset:<id>` scope, plus an entry in `toolsets` in `server-card.json`, its scope in the static `.well-known/oauth-*` mirrors, its labels in `MCP_TOOLSET_LABELS` on the frontend, and a row on the docs page.
 
 ### 3. Update `server-card.json`
 
@@ -126,17 +133,18 @@ Append to the `tools[]` array:
 ```json
 {
   "name": "my_new_tool",
+  "toolset": "investments",
   "description": "Short third-person description. Match what clients see."
 }
 ```
 
-The `name` MUST match the string in step 1 exactly. The drift test compares sorted arrays by string equality.
+The `name` MUST match the string in step 1 exactly, and `toolset` the toolset you listed it in. The drift test compares sorted arrays by string equality.
 
 ### 4. Update the connect-moneymatter SKILL.md
 
 Path: `packages/frontend/public/skills/connect-moneymatter/SKILL.md`
 
-Add a row to the "Available tools" table in the section that matches the `// comment` group the tool is registered under in `server.ts` (one `###` section per group, in the same order). Use the SAME column layout (keep table alignment padded) and state the scope as the existing rows do.
+Add a row to the "Available tools" table in the `###` section that matches the tool's area. Use the SAME column layout (keep table alignment padded) and state the scope as the existing rows do.
 
 If the new tool introduces a new data convention (e.g. investments vs regular transactions), also add a bullet under "Data conventions".
 
@@ -194,7 +202,8 @@ It covers four drift suites and every tool unit test:
 - `server-card-drift` — tool names in the files equal `server-card.json`;
 - `agent-skills-drift` — the SKILL.md sha256;
 - `tool-scopes-drift` — scopes, `DESTRUCTIVE_TOOLS`, and the lock lists;
-- `server-registration-drift` — every `registerX` is imported and called exactly once in `server.ts`.
+- `server-registration-drift` — every `registerX` is imported and listed exactly once in `toolsets.ts`;
+- `toolsets-drift` — every tool in exactly one toolset, `core` within its size, and the toolset scopes and `toolset` fields in the server card and the `.well-known` mirrors.
 
 If any fail:
 
@@ -203,7 +212,8 @@ If any fail:
 - **`sha256 matches`** → re-run `shasum -a 256` and paste again.
 - **`every skill URL resolves`** → `SKILL.md` file path is wrong.
 - **lock or scope case** → the tool lacks `assertBaseCurrencyUnlocked` or `requireScope`; or it belongs in `LOCK_EXEMPT_TOOLS`, `LOCK_GUARDED_READ_TOOLS`, or `DESTRUCTIVE_TOOLS` after you checked its route.
-- **registration case** → `server.ts` lacks the import or the `registerX(server)` call.
+- **registration case** → `toolsets.ts` lacks the import or the `registerX` entry in `TOOLSET_REGISTRARS`.
+- **toolset case** → the tool's `toolset` in `server-card.json` differs from the toolset that lists it, or `core` went over 60 tools.
 
 Delegate to the `test-runner` subagent (per CLAUDE.md rules).
 
