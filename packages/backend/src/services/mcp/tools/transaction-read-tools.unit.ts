@@ -285,8 +285,8 @@ describe('get_transactions_by_id', () => {
       transactions: { id: string; splits?: unknown[] }[];
     };
 
-    expect(byId).toHaveBeenCalledWith({ id: ID_1, userId: 42, includeSplits: true, includeTags: true });
-    expect(byId).toHaveBeenCalledWith({ id: ID_2, userId: 42, includeSplits: true, includeTags: true });
+    expect(byId).toHaveBeenCalledWith({ id: ID_1, userId: 42 });
+    expect(byId).toHaveBeenCalledWith({ id: ID_2, userId: 42 });
     expect(byIds).not.toHaveBeenCalled();
     expect(data.transactions.map((tx) => tx.id)).toEqual([ID_1]);
     expect(data.transactions[0]!.splits).toEqual([{ categoryId: 'c1', amount: 5, note: null }]);

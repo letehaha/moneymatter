@@ -40,15 +40,14 @@ export const getTransactionsByIdTool = defineTool({
       throw new Error('Provide exactly one of "ids" and "transferId"');
     }
 
-    // The list reads carry no splits or tags; the by-id read does, so a caller that wants them
-    // reads each transaction through it. An id the caller cannot see comes back as `null`.
+    // An id the caller cannot see comes back as `null`.
     const readWithSplits = async ({ ids }: { ids: string[] }) => {
       const accessibleAccountIds = await getAccessibleAccountIdsForUser({ userId });
 
       return (
         await Promise.all(
           ids.map(async (id) => {
-            const fetched = await getTransactionById({ id, userId, includeSplits: true, includeTags: true });
+            const fetched = await getTransactionById({ id, userId });
             if (!fetched) return null;
             // As the REST detail read does: the other accounts a multi-account payment is paid from.
             await attachPaymentParts({ transactions: [fetched.tx], collapsed: false, accessibleAccountIds });
