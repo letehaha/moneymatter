@@ -3,7 +3,7 @@
     "name": "MoneyMatter Finance Tracker",
     "version": "2.0.0",
     "title": "MoneyMatter — Personal Finance MCP Server",
-    "description": "OAuth-secured read/write access to your MoneyMatter financial data: accounts, transactions (including splits, refunds, transfers, and groups), trackers, savings goals, subscriptions, transaction automations (rules engine), categories, tags, cash flow, balance history, spending analytics, and investment portfolios (holdings, cash balances, and investment transactions). Supports creating, editing, and deleting records when the corresponding scopes are granted. Enables natural-language queries and automation of your personal finances.",
+    "description": "OAuth-secured read/write access to your MoneyMatter financial data: accounts, transactions (including splits, refunds, transfers, and groups), trackers, savings goals, subscriptions, transaction automations (rules engine), categories, tags, cash flow, balance history, spending analytics, and investment portfolios (holdings, cash balances, and investment transactions). Supports creating, editing, and deleting records when the corresponding scopes are granted. Enables natural-language queries and automation of your personal finances. Tools come in toolsets: core is always on, and each other toolset is granted with its toolset:<id> scope on the consent screen.",
     "website": "https://moneymatter.app",
     "documentation": "https://moneymatter.app/llms-full.txt",
     "vendor": {
@@ -38,952 +38,1267 @@
       "authorizationServer": "https://api.moneymatter.app/api/v1/auth",
       "metadata": "https://moneymatter.app/.well-known/oauth-authorization-server",
       "protectedResourceMetadata": "https://moneymatter.app/.well-known/oauth-protected-resource",
-      "scopes": ["finance:read", "finance:write", "finance:delete", "profile:read", "offline_access"]
+      "scopes": [
+        "finance:read",
+        "finance:write",
+        "finance:delete",
+        "profile:read",
+        "offline_access",
+        "toolset:subscriptions",
+        "toolset:budget-plans",
+        "toolset:trackers",
+        "toolset:automations",
+        "toolset:review",
+        "toolset:groups-templates",
+        "toolset:investments",
+        "toolset:ventures",
+        "toolset:loans-vehicles",
+        "toolset:currencies",
+        "toolset:imports"
+      ]
     }
   },
+  "toolsets": [
+    {
+      "name": "core",
+      "scope": null,
+      "description": "Accounts, transactions, transfers and refunds, attachments, categories, tags, payees and reports. Always on, needs no scope."
+    },
+    {
+      "name": "subscriptions",
+      "scope": "toolset:subscriptions",
+      "description": "Recurring payments, their periods and candidates, and planned transactions."
+    },
+    {
+      "name": "budget-plans",
+      "scope": "toolset:budget-plans",
+      "description": "Budget plans with their groups, lines and line goals, and savings goals."
+    },
+    {
+      "name": "trackers",
+      "scope": "toolset:trackers",
+      "description": "Spending trackers, their lines and suggestions."
+    },
+    {
+      "name": "automations",
+      "scope": "toolset:automations",
+      "description": "Transaction rules, payee aliases, ignored payee names and tag reminders."
+    },
+    {
+      "name": "review",
+      "scope": "toolset:review",
+      "description": "Refund and transfer matches, duplicate cleanup and stuck pending transactions."
+    },
+    {
+      "name": "groups-templates",
+      "scope": "toolset:groups-templates",
+      "description": "Transaction groups and transaction templates."
+    },
+    {
+      "name": "investments",
+      "scope": "toolset:investments",
+      "description": "Portfolios, holdings, securities, investment transactions and portfolio transfers."
+    },
+    {
+      "name": "ventures",
+      "scope": "toolset:ventures",
+      "description": "Venture platforms, deals and events."
+    },
+    {
+      "name": "loans-vehicles",
+      "scope": "toolset:loans-vehicles",
+      "description": "Loans with their payments and notes, and vehicles."
+    },
+    {
+      "name": "currencies",
+      "scope": "toolset:currencies",
+      "description": "Your currencies and exchange rates."
+    },
+    {
+      "name": "imports",
+      "scope": "toolset:imports",
+      "description": "Import batches, bank connections and sharing (read-only)."
+    }
+  ],
   "tools": [
     {
       "name": "get_user_profile",
+      "toolset": "core",
       "description": "Retrieve the authenticated user's profile (name, email, default currency)."
     },
     {
       "name": "get_accounts",
+      "toolset": "core",
       "description": "List the user's financial accounts with balances, types, and currencies."
     },
     {
       "name": "get_account",
+      "toolset": "core",
       "description": "Read one account: balances, opening balance, credit limit, bank link, logo and its transaction count."
     },
     {
       "name": "create_account",
+      "toolset": "core",
       "description": "Create a manual account with a currency, category, opening balance, credit limit and logo."
     },
     {
       "name": "update_account",
+      "toolset": "core",
       "description": "Update an account's name, category, credit limit, stats exclusion, logo or balance."
     },
     {
       "name": "search_transactions",
+      "toolset": "core",
       "description": "Search and filter transactions across accounts by date, category, tag, payee, planned state, amount, or merchant; each result carries its payee."
     },
     {
       "name": "get_transactions_by_id",
+      "toolset": "core",
       "description": "Read transactions by id (up to 50) or both legs of a transfer by transferId, with payee, optionally with splits and tags."
     },
     {
       "name": "get_transactions_summary",
+      "toolset": "core",
       "description": "Count and base-currency totals (income, expense, net, transfers) of the transactions matching the list filters."
     },
     {
       "name": "get_planned_summary",
+      "toolset": "subscriptions",
       "description": "Totals of planned (upcoming, unconfirmed) transactions per account and currency."
     },
     {
       "name": "confirm_planned_transaction",
+      "toolset": "subscriptions",
       "description": "Confirm a planned transaction once the money has moved; settles a linked subscription period. Bank-account plans are confirmed by sync. Requires finance:write scope."
     },
     {
       "name": "bulk_delete_transactions",
+      "toolset": "core",
       "description": "Permanently delete many transactions by ids or by filters (at least one filter is required). Irreversible. Requires finance:delete scope."
     },
     {
       "name": "get_transaction_links",
+      "toolset": "core",
       "description": "Read a transaction's portfolio transfer link and venture event link (each null when absent)."
     },
     {
       "name": "list_transaction_attachments",
+      "toolset": "core",
       "description": "List the files attached to a transaction: id, filename, type and size."
     },
     {
       "name": "delete_attachment",
+      "toolset": "core",
       "description": "Permanently delete a file attached to a transaction. Requires finance:delete scope."
     },
     {
       "name": "get_categories",
+      "toolset": "core",
       "description": "List spending and income categories, including custom user-defined categories."
     },
     {
       "name": "get_category_transaction_count",
+      "toolset": "core",
       "description": "Count the transactions filed under a category (planned and split lines included); check it before delete_category."
     },
     {
       "name": "get_tags",
+      "toolset": "core",
       "description": "List transaction tags used to annotate spending. Pass tagId to read one tag with its description."
     },
     {
       "name": "get_trackers",
+      "toolset": "trackers",
       "description": "Retrieve active and historical trackers with their limits, category and tag rules, and lines."
     },
     {
       "name": "get_tracker",
+      "toolset": "trackers",
       "description": "Read one tracker with its date range, limit, categories and stats: income, expense, balance and how much of the limit is used."
     },
     {
       "name": "create_tracker",
+      "toolset": "trackers",
       "description": "Create a new tracker with an optional spending limit, date range, category and tag rules, and smart tracking."
     },
     {
       "name": "update_tracker",
+      "toolset": "trackers",
       "description": "Update an existing tracker's name, date range, spending limit, category and tag rules, or smart tracking settings."
     },
     {
       "name": "delete_tracker",
+      "toolset": "trackers",
       "description": "Permanently delete a tracker and all its transaction links."
     },
     {
       "name": "archive_tracker",
+      "toolset": "trackers",
       "description": "Archive or restore a tracker (sets status to archived or active)."
     },
     {
       "name": "add_transactions_to_tracker",
+      "toolset": "trackers",
       "description": "Manually link transactions to a tracker."
     },
     {
       "name": "remove_transactions_from_tracker",
+      "toolset": "trackers",
       "description": "Unlink transactions from a tracker without deleting them."
     },
     {
       "name": "get_tracker_spending_stats",
+      "toolset": "trackers",
       "description": "Spending breakdown by category, time-series of expense vs income, and per-line spent for a tracker."
     },
     {
       "name": "create_tracker_line",
+      "toolset": "trackers",
       "description": "Add a line (named category set with an optional limit) to a tracker."
     },
     {
       "name": "update_tracker_line",
+      "toolset": "trackers",
       "description": "Update a tracker line's name, categories, limit, or position."
     },
     {
       "name": "delete_tracker_line",
+      "toolset": "trackers",
       "description": "Permanently delete a line from a tracker."
     },
     {
       "name": "list_tracker_suggestions",
+      "toolset": "trackers",
       "description": "Smart-tracking suggestions, AI-matched transactions, and scan status for a tracker the user owns."
     },
     {
       "name": "accept_tracker_suggestions",
+      "toolset": "trackers",
       "description": "Accept pending smart-tracking suggestions, linking their transactions to the tracker."
     },
     {
       "name": "reject_tracker_suggestions",
+      "toolset": "trackers",
       "description": "Reject smart-tracking suggestions; AI-linked or accepted ones are also unlinked from the tracker."
     },
     {
       "name": "get_goals",
+      "toolset": "budget-plans",
       "description": "List savings goals with target, backing accounts and their shares, and progress (current value, pace, ETA, needed per month) in the goal currency."
     },
     {
       "name": "create_goal",
+      "toolset": "budget-plans",
       "description": "Create a savings goal funded by percentage shares of one or more accounts."
     },
     {
       "name": "update_goal",
+      "toolset": "budget-plans",
       "description": "Update a savings goal's target, date, monthly plan, accounts, or status (active, paused, archived)."
     },
     {
       "name": "delete_goal",
+      "toolset": "budget-plans",
       "description": "Permanently delete a savings goal and free its account shares."
     },
     {
       "name": "get_spending_by_categories",
+      "toolset": "core",
       "description": "Aggregate spending by category over a specified date range."
     },
     {
       "name": "get_cash_flow",
+      "toolset": "core",
       "description": "Summarize income vs expenses over a specified date range."
     },
     {
       "name": "get_balance_history",
+      "toolset": "core",
       "description": "Time-series of account balances for a given range and granularity."
     },
     {
       "name": "get_expenses_for_period",
+      "toolset": "core",
       "description": "Summarize expenses for a given time period with breakdowns."
     },
     {
       "name": "get_total_balance",
+      "toolset": "core",
       "description": "Total balance across all accounts on one date as { amount, currencyCode, date } in the base currency, net of credit limits when the user setting is on."
     },
     {
       "name": "get_net_worth_history",
+      "toolset": "core",
       "description": "Net worth over time with assets (cash, investments, vehicles, ventures) and liabilities (credit-card, loan, overdraft) by kind, weekly to yearly points, in the base currency."
     },
     {
       "name": "get_net_worth_drivers",
+      "toolset": "core",
       "description": "What moved net worth per period: savings, investment growth, dividends, fees and the holdings and cash values, optionally for some portfolios."
     },
     {
       "name": "get_investment_contributions",
+      "toolset": "investments",
       "description": "Money moved into portfolios per period with the split per portfolio and the period's net savings."
     },
     {
       "name": "get_venture_contributions",
+      "toolset": "ventures",
       "description": "Net amount contributed to each venture deal over a date range."
     },
     {
       "name": "get_pivot_report",
+      "toolset": "core",
       "description": "Cross-tab of spending or income: categories, subcategories, payees or tags against time columns, with totals."
     },
     {
       "name": "get_cumulative_stats",
+      "toolset": "core",
       "description": "Running monthly totals of expenses, income or savings for a period next to the period before it, with the percent change."
     },
     {
       "name": "get_earliest_transaction_date",
+      "toolset": "core",
       "description": "Date of the first transaction on record, or null when there are none."
     },
     {
       "name": "get_portfolios",
+      "toolset": "investments",
       "description": "List the user's investment portfolios with type, enabled state, and metadata."
     },
     {
       "name": "get_portfolio",
+      "toolset": "investments",
       "description": "Read one portfolio by id: name, type, description, enabled state and creation date."
     },
     {
       "name": "get_portfolios_overview",
+      "toolset": "investments",
       "description": "Summaries and annualized returns of all portfolios in one call."
     },
     {
       "name": "get_portfolio_summary",
+      "toolset": "investments",
       "description": "Portfolio-level aggregates: total value, cost basis, realized and unrealized gains, and cash balances in the user's base currency."
     },
     {
       "name": "get_portfolio_holdings",
+      "toolset": "investments",
       "description": "Positions held in a portfolio with market value, cost basis, and realized/unrealized gains. Includes embedded security details."
     },
     {
       "name": "get_portfolio_balances",
+      "toolset": "investments",
       "description": "Cash balances held in a portfolio, broken down per currency (original and base-currency equivalents)."
     },
     {
       "name": "get_investment_transactions",
+      "toolset": "investments",
       "description": "Investment transaction history (buy, sell, dividend, transfer, tax, fee) with security and portfolio details."
     },
     {
       "name": "search_securities",
+      "toolset": "investments",
       "description": "Search for securities by ticker or company name. Each result can be passed unchanged to create_holding, which returns the securityId that create_investment_transaction needs; a result already stored carries its securityId."
     },
     {
       "name": "get_security_prices",
+      "toolset": "investments",
       "description": "Stored closing prices of one security (by securityId, or symbol with providerName), oldest first, as { prices, total }; the range defaults to the last 365 days and at most limit rows (default 500, max 5000) come back, the newest."
     },
     {
       "name": "create_holding",
+      "toolset": "investments",
       "description": "Add a security to a portfolio, from a known securityId or a search_securities result (requires finance:write scope)."
     },
     {
       "name": "delete_holding",
+      "toolset": "investments",
       "description": "Remove a security from a portfolio; force=true also deletes its investment transactions and reverses their cash effect (requires finance:delete scope)."
     },
     {
       "name": "create_portfolio",
+      "toolset": "investments",
       "description": "Create a new investment portfolio (requires finance:write scope)."
     },
     {
       "name": "update_portfolio",
+      "toolset": "investments",
       "description": "Update portfolio name, type, description, or enabled state (requires finance:write scope)."
     },
     {
       "name": "delete_portfolio",
+      "toolset": "investments",
       "description": "Permanently delete a portfolio and optionally all its data (requires finance:delete scope)."
     },
     {
       "name": "restore_portfolio",
+      "toolset": "investments",
       "description": "Restore a portfolio that was deleted without force, with its holdings and balances (requires finance:write scope)."
     },
     {
       "name": "create_investment_transaction",
+      "toolset": "investments",
       "description": "Record a new investment transaction (buy, sell, dividend, fee, etc.) in a portfolio (requires finance:write scope)."
     },
     {
       "name": "update_investment_transaction",
+      "toolset": "investments",
       "description": "Update an existing investment transaction's category, date, quantity, price, or fees (requires finance:write scope)."
     },
     {
       "name": "delete_investment_transaction",
+      "toolset": "investments",
       "description": "Permanently delete an investment transaction and recalculate affected holding (requires finance:delete scope)."
     },
     {
       "name": "link_transaction_to_portfolio",
+      "toolset": "investments",
       "description": "Link an existing transaction to a portfolio as a cash transfer (expense = cash in, income = cash out) (requires finance:write scope)."
     },
     {
       "name": "unlink_transaction_from_portfolio",
+      "toolset": "investments",
       "description": "Remove a transaction's portfolio link, reversing the portfolio cash balance change (requires finance:write scope)."
     },
     {
       "name": "transfer_account_to_portfolio",
+      "toolset": "investments",
       "description": "Move cash from a regular account into a portfolio, creating the expense transaction (requires finance:write scope)."
     },
     {
       "name": "transfer_portfolio_to_account",
+      "toolset": "investments",
       "description": "Withdraw portfolio cash into a regular account, creating the income transaction (requires finance:write scope)."
     },
     {
       "name": "create_portfolio_cash_transaction",
+      "toolset": "investments",
       "description": "Record a direct portfolio cash deposit or withdrawal with no linked account transaction (requires finance:write scope)."
     },
     {
       "name": "transfer_between_portfolios",
+      "toolset": "investments",
       "description": "Move cash from one portfolio to another in one currency, creating no account transaction (requires finance:write scope)."
     },
     {
       "name": "exchange_portfolio_currency",
+      "toolset": "investments",
       "description": "Record a currency exchange inside a portfolio: sell one cash currency, buy another (requires finance:write scope)."
     },
     {
       "name": "list_portfolio_transfers",
+      "toolset": "investments",
       "description": "Cash movement history of a portfolio: transfers, deposits/withdrawals, linked transactions, and currency exchanges."
     },
     {
       "name": "set_portfolio_transfer_adjustment",
+      "toolset": "investments",
       "description": "Flag a portfolio transfer as an adjustment, which drops it from the contributions report, or clear the flag (requires finance:write scope)."
     },
     {
       "name": "delete_portfolio_transfer",
+      "toolset": "investments",
       "description": "Permanently delete a portfolio transfer and reverse its cash effect, optionally with the linked account transaction (requires finance:delete scope)."
     },
     {
       "name": "adjust_account_balance",
+      "toolset": "core",
       "description": "Set an account to a specific balance by creating an adjustment transaction for the difference."
     },
     {
       "name": "archive_account",
+      "toolset": "core",
       "description": "Archive or unarchive a user account, with full side-effect handling (group removal, subscription unlinking)."
     },
     {
       "name": "delete_account",
+      "toolset": "core",
       "description": "Permanently delete an account together with all its transactions."
     },
     {
       "name": "unlink_account_from_bank_connection",
+      "toolset": "imports",
       "description": "Disconnect a bank-connected account from its bank; it becomes a manual account and keeps its history."
     },
     {
       "name": "get_transaction_groups",
+      "toolset": "groups-templates",
       "description": "List all transaction groups with aggregate counts and date ranges, or with full embedded transactions. Pass groupId to read one group with its transactions."
     },
     {
       "name": "create_transaction_group",
+      "toolset": "groups-templates",
       "description": "Create a new transaction group bundling related transactions (e.g. a split bill). Requires finance:write scope."
     },
     {
       "name": "update_transaction_group",
+      "toolset": "groups-templates",
       "description": "Update the name or note of an existing transaction group. Requires finance:write scope."
     },
     {
       "name": "delete_transaction_group",
+      "toolset": "groups-templates",
       "description": "Permanently delete a transaction group (transactions themselves are kept). Requires finance:delete scope."
     },
     {
       "name": "add_transactions_to_group",
+      "toolset": "groups-templates",
       "description": "Add transactions to an existing transaction group. Requires finance:write scope."
     },
     {
       "name": "remove_transactions_from_group",
+      "toolset": "groups-templates",
       "description": "Remove transactions from a group, optionally dissolving it if too few remain. Requires finance:write scope."
     },
     {
       "name": "get_subscriptions",
+      "toolset": "subscriptions",
       "description": "List all subscriptions and recurring bills with frequency, expected amount, and linked transaction count."
     },
     {
       "name": "get_subscription_by_id",
+      "toolset": "subscriptions",
       "description": "Retrieve a single subscription with all linked transactions and the computed next expected payment date."
     },
     {
       "name": "create_subscription",
+      "toolset": "subscriptions",
       "description": "Create a new subscription, recurring bill, or installment plan — an expense by default, or a recurring income (e.g. salary) via transactionType. Accepts matching rules, payee, tags, reminders and auto-record. Requires finance:write scope."
     },
     {
       "name": "update_subscription",
+      "toolset": "subscriptions",
       "description": "Update fields on an existing subscription or bill, including matching rules, payee, tags, reminders and auto-record. Requires finance:write scope."
     },
     {
       "name": "delete_subscription",
+      "toolset": "subscriptions",
       "description": "Permanently delete a subscription and its transaction links. Requires finance:delete scope."
     },
     {
       "name": "toggle_subscription_active",
+      "toolset": "subscriptions",
       "description": "Activate or deactivate a subscription to include or exclude it from upcoming payment calculations. Requires finance:write scope."
     },
     {
       "name": "detect_subscription_candidates",
+      "toolset": "subscriptions",
       "description": "Scan past 12 months of transactions to detect recurring payment patterns. Cached for 1 hour. Requires finance:write scope."
     },
     {
       "name": "list_subscription_candidates",
+      "toolset": "subscriptions",
       "description": "List auto-detected subscription candidates sorted by confidence score."
     },
     {
       "name": "dismiss_subscription_candidate",
+      "toolset": "subscriptions",
       "description": "Dismiss a pending subscription candidate so it no longer appears in the list. Requires finance:write scope."
     },
     {
       "name": "link_transactions_to_subscription",
+      "toolset": "subscriptions",
       "description": "Link transactions to a subscription to mark them as payment instances. Requires finance:write scope."
     },
     {
       "name": "unlink_transactions_from_subscription",
+      "toolset": "subscriptions",
       "description": "Unlink transactions from a subscription without deleting them. Requires finance:write scope."
     },
     {
       "name": "get_upcoming_subscription_payments",
+      "toolset": "subscriptions",
       "description": "List upcoming subscription payments sorted by next expected payment date."
     },
     {
       "name": "get_subscriptions_summary",
+      "toolset": "subscriptions",
       "description": "Aggregate summary across all active subscriptions, split by direction: estimated monthly and projected yearly cost from expense subscriptions, expected monthly income from income subscriptions, and active counts as { expense, income }, all in the user's base currency."
     },
     {
       "name": "accept_subscription_candidate",
+      "toolset": "subscriptions",
       "description": "Accept a pending subscription candidate, optionally attaching its sample transactions to an existing subscription. Requires finance:write scope."
     },
     {
       "name": "list_subscription_match_suggestions",
+      "toolset": "subscriptions",
       "description": "List past transactions that a subscription's matching rules would match but that are not linked to it yet."
     },
     {
       "name": "get_subscription_periods",
+      "toolset": "subscriptions",
       "description": "List a subscription's billing periods, newest first, with the status of each and the transaction behind a paid one."
     },
     {
       "name": "preview_subscription_payment",
+      "toolset": "subscriptions",
       "description": "Preview what paying a subscription period would book, and the payments already recorded for it. Changes nothing."
     },
     {
       "name": "pay_subscription_period",
+      "toolset": "subscriptions",
       "description": "Mark a subscription period as paid, linking an existing transaction or booking a new one. Requires finance:write scope."
     },
     {
       "name": "skip_subscription_period",
+      "toolset": "subscriptions",
       "description": "Skip a subscription period without paying it and open the next one. Requires finance:write scope."
     },
     {
       "name": "unlink_subscription_period_transaction",
+      "toolset": "subscriptions",
       "description": "Detach the transaction a subscription period points at, keeping the transaction and the paid status. Requires finance:write scope."
     },
     {
       "name": "revert_subscription_period",
+      "toolset": "subscriptions",
       "description": "Undo a paid or skipped subscription period. Deletes the transaction the app created for the payment, which also needs finance:delete scope. Requires finance:write scope."
     },
     {
       "name": "create_transaction",
+      "toolset": "core",
       "description": "Create a new income, expense, or transfer transaction with optional splits, tags, category, payee (payeeId, or merchantName resolved like bank sync), original (foreign-currency) amount, and parts paid from other accounts."
     },
     {
       "name": "create_attachment_upload_url",
+      "toolset": "core",
       "description": "Returns a short-lived URL and headers for uploading receipt/invoice files (JPEG, PNG, WebP, PDF) to a transaction over HTTP. Requires finance:write scope."
     },
     {
       "name": "update_transaction",
+      "toolset": "core",
       "description": "Update an existing transaction's amount, date, category, payee (null clears it), tags, note, splits, original (foreign-currency) amount, or the other accounts it is paid from. Requires finance:write scope."
     },
     {
       "name": "delete_transaction",
+      "toolset": "core",
       "description": "Permanently delete a transaction. For transfers, both sides are deleted. Requires finance:delete scope."
     },
     {
       "name": "bulk_update_transactions",
+      "toolset": "core",
       "description": "Update multiple transactions at once — set category, note, payee (null clears it), or add/replace/remove tags. Requires finance:write scope."
     },
     {
       "name": "split_transaction",
+      "toolset": "core",
       "description": "Split a transaction across multiple categories; amounts must sum to the transaction total. Requires finance:write scope."
     },
     {
       "name": "delete_split",
+      "toolset": "core",
       "description": "Delete a single split from a transaction by its split ID. Requires finance:delete scope."
     },
     {
       "name": "link_transfer",
+      "toolset": "core",
       "description": "Link two existing transactions as a transfer pair (opposite types, different accounts). Requires finance:write scope."
     },
     {
       "name": "unlink_transfer",
+      "toolset": "core",
       "description": "Unlink a transfer pair by transferId; both transactions become independent entries. Requires finance:write scope."
     },
     {
-      "name": "get_refund_links",
-      "description": "List every refund link touching a transaction, on either side, with each link's share of the refund amount (null means the whole refund)."
-    },
-    {
       "name": "link_refund",
+      "toolset": "core",
       "description": "Mark an existing transaction as a refund of another transaction, optionally covering only an amount of the refund so one refund can span several purchases. Requires finance:write scope."
     },
     {
       "name": "unlink_refund",
+      "toolset": "core",
       "description": "Remove a refund link between two transactions. Requires finance:write scope."
     },
     {
       "name": "get_refunds",
+      "toolset": "core",
       "description": "Read refund links: the refunds of one transaction, one refund pair, or a paged list filtered by category, account and type. Each link carries both transactions with their payee."
     },
     {
+      "name": "get_refund_links",
+      "toolset": "core",
+      "description": "List every refund link touching a transaction, on either side, with each link's share of the refund amount (null means the whole refund)."
+    },
+    {
       "name": "get_refund_recommendations",
+      "toolset": "review",
       "description": "Suggest up to 5 transactions a refund could be linked to (opposite type, last 6 months, within 50 in the base currency), for a saved transaction or for form data."
     },
     {
       "name": "get_transfer_recommendations",
+      "toolset": "review",
       "description": "Suggest up to 7 transactions that could be the other leg of a transfer (opposite type, other account, within 10% and 14 days), for a saved transaction or for form data."
     },
     {
       "name": "list_transfer_suggestions",
+      "toolset": "review",
       "description": "Scan a period for expenses that look like one leg of a transfer, each with up to 4 scored candidate incomes. Reads only; refused while a base-currency change runs."
     },
     {
       "name": "dismiss_transfer_suggestion",
+      "toolset": "review",
       "description": "Dismiss a suggested expense/income pair as not a transfer, so scans stop offering it. Requires finance:write scope."
     },
     {
       "name": "get_reconciliation_history",
+      "toolset": "review",
       "description": "List past duplicate removals and merges, newest first, with the removed rows and the survivor of each merge."
     },
     {
       "name": "list_stuck_pending_transactions",
+      "toolset": "review",
       "description": "List bank transactions pending for over 7 days with the booked row that likely replaced each."
     },
     {
       "name": "remove_duplicate_transactions",
+      "toolset": "review",
       "description": "Remove duplicate transactions from the books; restorable, but their budget, group and subscription links are not. Requires finance:write scope."
     },
     {
       "name": "restore_removed_transactions",
+      "toolset": "review",
       "description": "Bring back transactions removed or merged by reconciliation, without the links they lost. Requires finance:write scope."
     },
     {
       "name": "merge_duplicate_transactions",
+      "toolset": "review",
       "description": "Merge 2 to 4 duplicates of one account into a survivor that takes their links; restorable. Requires finance:write scope."
     },
     {
       "name": "keep_pending_as_booked",
+      "toolset": "review",
       "description": "Confirm stuck pending bank transactions as booked so they stop showing as stuck. Requires finance:write scope."
     },
     {
       "name": "assign_tags_to_transaction",
+      "toolset": "core",
       "description": "Assign one or more tags to a transaction; already-assigned tags are silently skipped. Requires finance:write scope."
     },
     {
       "name": "remove_tags_from_transaction",
+      "toolset": "core",
       "description": "Remove tags from one or more transactions. Requires finance:write scope."
     },
     {
       "name": "create_category",
+      "toolset": "core",
       "description": "Create a new transaction category, optionally nested under a parent. Requires finance:write scope."
     },
     {
       "name": "update_category",
+      "toolset": "core",
       "description": "Rename, recolor, or change the icon of a category. Requires finance:write scope."
     },
     {
       "name": "delete_category",
+      "toolset": "core",
       "description": "Permanently delete a category; supply replaceWithCategoryId to reassign linked transactions (see get_category_transaction_count). Requires finance:delete scope."
     },
     {
       "name": "create_tag",
+      "toolset": "core",
       "description": "Create a new tag that can be assigned to transactions. Requires finance:write scope."
     },
     {
       "name": "update_tag",
+      "toolset": "core",
       "description": "Rename, recolor, or update the description of a tag. Requires finance:write scope."
     },
     {
       "name": "delete_tag",
+      "toolset": "core",
       "description": "Permanently delete a tag and unlink it from all transactions. Requires finance:delete scope."
     },
     {
       "name": "get_tag_reminders",
+      "toolset": "automations",
       "description": "List tag reminders (notify when a tag total passes an amount, or when a tag has no transaction in a period); optionally for one tag or one reminder."
     },
     {
       "name": "create_tag_reminder",
+      "toolset": "automations",
       "description": "Create a reminder on a tag: an amount threshold in the base currency or an existence check, scheduled or real-time. Requires finance:write scope."
     },
     {
       "name": "update_tag_reminder",
+      "toolset": "automations",
       "description": "Update a tag reminder; null clears the schedule, isEnabled pauses it. Requires finance:write scope."
     },
     {
       "name": "delete_tag_reminder",
+      "toolset": "automations",
       "description": "Permanently delete a tag reminder. Requires finance:delete scope."
     },
     {
       "name": "get_payees",
+      "toolset": "core",
       "description": "List Payees (merchants/counterparties) for the user, optionally filtered by a substring query. Returns Payee id, name, defaultCategoryId, and aggregated stats (transactionCount, netFlowRef, top category, last seen)."
     },
     {
       "name": "get_payee",
+      "toolset": "core",
       "description": "Fetch a single Payee with aliases and computed stats. Useful when the user references a merchant by id and wants its full record."
     },
     {
       "name": "create_payee",
+      "toolset": "core",
       "description": "Create a Payee (merchant/counterparty) for the user. Use when the user wants to register a new merchant before linking transactions. Requires finance:write scope."
     },
     {
       "name": "update_payee",
+      "toolset": "core",
       "description": "Update a Payee: rename it (the old name is kept as an alias), set its default category and categorization mode, default tags, default location and logo. Requires finance:write scope."
     },
     {
       "name": "merge_payees",
+      "toolset": "core",
       "description": "Merge a source Payee into a target Payee. Transactions and aliases move to the target; the target wins silently on defaultCategoryId conflict; the source is deleted. Requires finance:delete scope."
     },
     {
       "name": "delete_payee",
+      "toolset": "core",
       "description": "Delete a Payee, optionally adding its names to the ignore list. Linked transactions retain their categoryId but their payeeId is set to null. Requires finance:delete scope."
     },
     {
       "name": "bulk_delete_payees",
+      "toolset": "core",
       "description": "Permanently delete many payees at once, all or nothing, optionally adding their names to the ignored list. Requires finance:delete scope."
     },
     {
       "name": "get_ignored_payee_names",
+      "toolset": "automations",
       "description": "List the names that are never turned into payees automatically."
     },
     {
       "name": "ignore_payee_name",
+      "toolset": "automations",
       "description": "Add a name to the ignored list. With force it also permanently deletes the payee the name resolves to, which needs finance:delete scope. Requires finance:write scope."
     },
     {
       "name": "unignore_payee_name",
+      "toolset": "automations",
       "description": "Remove a name from the ignored list. Requires finance:write scope."
     },
     {
       "name": "apply_payee_tags_to_transactions",
+      "toolset": "automations",
       "description": "Add a payee's default tags to every transaction already linked to it; it only adds tags. Requires finance:write scope."
     },
     {
       "name": "create_payee_alias",
+      "toolset": "automations",
       "description": "Add an alias to a payee, another name that links future transactions to it. Requires finance:write scope."
     },
     {
       "name": "delete_payee_alias",
+      "toolset": "automations",
       "description": "Delete one alias of a payee. Requires finance:delete scope."
     },
     {
       "name": "get_transaction_automations",
+      "toolset": "automations",
       "description": "List the user's transaction automation rules with their evaluation order (position), enabled state, match counts, and pausedReason when a referenced record was deleted."
     },
     {
       "name": "preview_transaction_automation",
+      "toolset": "automations",
       "description": "Dry-run a set of automation conditions against up to the last 1000 eligible existing transactions and return matchedCount, scannedCount, and up to 5 sample matches. Nothing is modified."
     },
     {
       "name": "create_transaction_automation",
+      "toolset": "automations",
       "description": "Create a transaction automation rule that sets a category, tags, payee, or note on newly synced or imported bank transactions that match its conditions. Requires finance:write scope."
     },
     {
       "name": "update_transaction_automation",
+      "toolset": "automations",
       "description": "Update the name, enabled state, conditions, or actions of an automation rule. Re-validates referenced records and clears pausedReason. Requires finance:write scope."
     },
     {
       "name": "delete_transaction_automation",
+      "toolset": "automations",
       "description": "Permanently delete a transaction automation rule. Transactions it already changed keep their values. Requires finance:delete scope."
     },
     {
       "name": "reorder_transaction_automations",
+      "toolset": "automations",
       "description": "Set the top-to-bottom evaluation order of the automation rules. Requires the full current id set. Requires finance:write scope."
     },
     {
       "name": "apply_transaction_automation",
+      "toolset": "automations",
       "description": "Run one saved automation rule on up to 500 existing transactions; ids that no longer match are skipped. Requires finance:write scope."
     },
     {
       "name": "get_transaction_templates",
+      "toolset": "groups-templates",
       "description": "List transaction templates: named presets for filling new transactions."
     },
     {
       "name": "create_transaction_template",
+      "toolset": "groups-templates",
       "description": "Create a transaction template (named preset: type, account, pinned amount, category, payee, tags). Requires finance:write scope."
     },
     {
       "name": "update_transaction_template",
+      "toolset": "groups-templates",
       "description": "Update a transaction template; null clears a field and tagIds replaces the tag set. Requires finance:write scope."
     },
     {
       "name": "delete_transaction_template",
+      "toolset": "groups-templates",
       "description": "Permanently delete a transaction template. Requires finance:delete scope."
     },
     {
       "name": "list_venture_platforms",
+      "toolset": "ventures",
       "description": "List the user's venture investment platforms with their default fee fractions (entry fee, mgmt fee, carry, hurdle)."
     },
     {
       "name": "get_venture_platform",
+      "toolset": "ventures",
       "description": "Retrieve a single venture platform by id, including its default fee fractions."
     },
     {
       "name": "create_venture_platform",
+      "toolset": "ventures",
       "description": "Create a venture investment platform (syndicator, fund manager) with default fees that auto-apply to new deals. Requires finance:write scope."
     },
     {
       "name": "update_venture_platform",
+      "toolset": "ventures",
       "description": "Update a venture platform's name, website, description, or default fees. Does not change fees on existing deals. Requires finance:write scope."
     },
     {
       "name": "delete_venture_platform",
+      "toolset": "ventures",
       "description": "Delete a venture platform; deals referencing it have their platformId cleared. Supports soft-delete or hard-delete via force. Requires finance:delete scope."
     },
     {
       "name": "list_venture_deals",
+      "toolset": "ventures",
       "description": "List the user's venture deals (illiquid private investments) with status, platform, currency, principal, fees, and dates."
     },
     {
       "name": "get_venture_deal",
+      "toolset": "ventures",
       "description": "Retrieve a single venture deal by id with platform and currency; optionally embed its event history."
     },
     {
       "name": "get_venture_deal_metrics",
+      "toolset": "ventures",
       "description": "Compute aggregated metrics for a venture deal: cost basis, current value, distributions, P&L, TVPI, DPI, and IRR (as of an optional date)."
     },
     {
       "name": "create_venture_deal",
+      "toolset": "ventures",
       "description": "Create a venture deal. Snapshots platform fees by default. Optionally creates the initial_investment event in the same operation. Requires finance:write scope."
     },
     {
       "name": "update_venture_deal",
+      "toolset": "ventures",
       "description": "Update a venture deal. Terms (principal, fees, dates, currency) are locked once events exist. Requires finance:write scope."
     },
     {
       "name": "delete_venture_deal",
+      "toolset": "ventures",
       "description": "Delete a venture deal; cascade-deletes its events. Linked bank transactions are unlinked and restored. Requires finance:delete scope."
     },
     {
       "name": "list_venture_events",
+      "toolset": "ventures",
       "description": "List events for a venture deal in chronological order, with their amounts, cash-flow modes, and linked bank transactions."
     },
     {
       "name": "get_venture_event",
+      "toolset": "ventures",
       "description": "Retrieve a single venture event by id, including its linked bank transactions."
     },
     {
       "name": "create_venture_event",
+      "toolset": "ventures",
       "description": "Record an event on a venture deal (initial_investment must come first). Auto-computes carry on distributions and exits. Requires finance:write scope."
     },
     {
       "name": "update_venture_event",
+      "toolset": "ventures",
       "description": "Update a venture event. Manual gpCarry/lpNet values set override flags; resetOverrides=true re-runs auto-compute. Requires finance:write scope."
     },
     {
       "name": "delete_venture_event",
+      "toolset": "ventures",
       "description": "Delete a venture event; unlinks bank transactions first. Cannot delete initial_investment while other events exist. Requires finance:delete scope."
     },
     {
       "name": "link_transactions_to_venture_event",
+      "toolset": "ventures",
       "description": "Link bank transactions to a venture event as its cash; same currency, not linked elsewhere, summing to the event's lpNetAmount. Requires finance:write scope."
     },
     {
       "name": "replace_venture_event_links",
+      "toolset": "ventures",
       "description": "Replace all bank transactions linked to a venture event with a new set, or none. Requires finance:write scope."
     },
     {
       "name": "delete_venture_event_link",
+      "toolset": "ventures",
       "description": "Remove one transaction link from a venture event; the transaction gets its original state back. Requires finance:delete scope."
     },
     {
       "name": "set_exchange_rates",
+      "toolset": "currencies",
       "description": "Set exchange rates for currency pairs, each pair with its opposite in the same call. Requires finance:write scope."
     },
     {
       "name": "delete_exchange_rates",
+      "toolset": "currencies",
       "description": "Remove the user's own exchange rates for pairs, each with its opposite, so they fall back to market rates. Requires finance:delete scope."
     },
     {
       "name": "get_user_currencies",
+      "toolset": "currencies",
       "description": "Get the user's held currencies, base currency and today's rates to the base in one result."
     },
     {
       "name": "list_supported_currencies",
+      "toolset": "currencies",
       "description": "List every ISO currency the app supports, with code, name and decimals."
     },
     {
       "name": "get_exchange_rate",
+      "toolset": "currencies",
       "description": "Read the rate of one currency pair for a day as the app values it, or the global market rates stored for that day."
     },
     {
       "name": "add_user_currencies",
+      "toolset": "currencies",
       "description": "Add currencies to the ones the user holds, with an optional flat rate and live-rate flag. Requires finance:write scope."
     },
     {
       "name": "update_user_currency",
+      "toolset": "currencies",
       "description": "Change a held currency's flat rate or switch it between the market rate and a manual one; re-values stored balances. Requires finance:write scope."
     },
     {
       "name": "delete_user_currency",
+      "toolset": "currencies",
       "description": "Stop holding an ISO currency. Refused for the base currency and for currencies in use. Requires finance:delete scope."
     },
     {
       "name": "get_loans",
+      "toolset": "loans-vehicles",
       "description": "List the loans with balance, terms and payoff projection, or read one with its timeline."
     },
     {
       "name": "get_loan_balance_history",
+      "toolset": "loans-vehicles",
       "description": "Outstanding balance of a loan over time, one point per payment day, newest points when limited."
     },
     {
       "name": "create_loan",
+      "toolset": "loans-vehicles",
       "description": "Create a loan with its terms; returns it with a payoff projection. Requires finance:write scope."
     },
     {
       "name": "update_loan",
+      "toolset": "loans-vehicles",
       "description": "Update a loan's balance, rate, term, payments or lender details. Requires finance:write scope."
     },
     {
       "name": "delete_loan",
+      "toolset": "loans-vehicles",
       "description": "Permanently delete a loan with no recorded payments. Requires finance:delete scope."
     },
     {
       "name": "add_loan_note",
+      "toolset": "loans-vehicles",
       "description": "Add a note to the timeline of a loan. Requires finance:write scope."
     },
     {
       "name": "link_loan_payments",
+      "toolset": "loans-vehicles",
       "description": "Record existing expense transactions as payments on a loan. Requires finance:write scope."
     },
     {
       "name": "unlink_loan_payment",
+      "toolset": "loans-vehicles",
       "description": "Undo a loan payment; the source transaction is restored. Requires finance:write scope."
     },
     {
       "name": "get_vehicles",
+      "toolset": "loans-vehicles",
       "description": "List the vehicles with their estimated value and depreciation settings, or read one."
     },
     {
       "name": "create_vehicle",
+      "toolset": "loans-vehicles",
       "description": "Create a vehicle whose value depreciates from its purchase price and date. Requires finance:write scope."
     },
     {
       "name": "update_vehicle",
+      "toolset": "loans-vehicles",
       "description": "Update a vehicle's name, details, depreciation settings or mileage. Requires finance:write scope."
     },
     {
       "name": "delete_vehicle",
+      "toolset": "loans-vehicles",
       "description": "Permanently delete a vehicle with its account. Requires finance:delete scope."
     },
     {
       "name": "list_budget_plans",
+      "toolset": "budget-plans",
       "description": "List the budget plans (period envelopes, not trackers), or read one with its accounts and lines."
     },
     {
       "name": "get_budget_plan_suggestion_context",
+      "toolset": "budget-plans",
       "description": "Read the top spending categories of given accounts to start a new budget plan from."
     },
     {
       "name": "list_budget_plan_periods",
+      "toolset": "budget-plans",
       "description": "List the periods of a budget plan, newest first, with the current one marked."
     },
     {
       "name": "get_budget_plan_period",
+      "toolset": "budget-plans",
       "description": "Read one budget plan period: assigned, activity and available per line, the pool, goals and coverage."
     },
     {
       "name": "get_budget_plan_scheduled",
+      "toolset": "budget-plans",
       "description": "List the subscription payments and planned transactions still scheduled in a budget plan period."
     },
     {
       "name": "get_budget_plan_trends",
+      "toolset": "budget-plans",
       "description": "Compare assigned, activity and available over the last periods of a budget plan, in total and per line."
     },
     {
       "name": "create_budget_plan",
+      "toolset": "budget-plans",
       "description": "Create the budget plan (period envelopes, not trackers) from accounts, cadence and anchor date, with optional starter lines. Requires finance:write scope."
     },
     {
       "name": "update_budget_plan",
+      "toolset": "budget-plans",
       "description": "Change a budget plan's name, carry policy, pool, zero-sum or expected income. Requires finance:write scope."
     },
     {
       "name": "delete_budget_plan",
+      "toolset": "budget-plans",
       "description": "Move a budget plan to the trash, or erase a trashed one for good with permanent. Requires finance:delete scope."
     },
     {
       "name": "restore_budget_plan",
+      "toolset": "budget-plans",
       "description": "Bring a budget plan back from the trash, optionally replacing the active plan. Requires finance:write scope."
     },
     {
       "name": "set_budget_plan_accounts",
+      "toolset": "budget-plans",
       "description": "Replace the accounts a budget plan counts activity from. Requires finance:write scope."
     },
     {
       "name": "create_budget_plan_group",
+      "toolset": "budget-plans",
       "description": "Add a named group to a budget plan for its lines. Requires finance:write scope."
     },
     {
       "name": "update_budget_plan_group",
+      "toolset": "budget-plans",
       "description": "Rename a group of a budget plan. Requires finance:write scope."
     },
     {
       "name": "delete_budget_plan_group",
+      "toolset": "budget-plans",
       "description": "Delete an empty group of a budget plan. Requires finance:delete scope."
     },
     {
       "name": "create_budget_plan_line",
+      "toolset": "budget-plans",
       "description": "Add a line to a budget plan for one or more categories. Requires finance:write scope."
     },
     {
       "name": "update_budget_plan_line",
+      "toolset": "budget-plans",
       "description": "Rename a budget plan line, move it to another group or change its categories. Requires finance:write scope."
     },
     {
       "name": "delete_budget_plan_line",
+      "toolset": "budget-plans",
       "description": "Permanently delete a budget plan line with its assignments. Requires finance:delete scope."
     },
     {
       "name": "archive_budget_plan_line",
+      "toolset": "budget-plans",
       "description": "Archive a budget plan line from the current period, or restore an archived one. Requires finance:write scope."
     },
     {
       "name": "add_suggested_budget_plan_lines",
+      "toolset": "budget-plans",
       "description": "Draft starter lines for a budget plan from the spending history, using the server's AI when available. Requires finance:write scope."
     },
     {
       "name": "set_budget_plan_line_goal",
+      "toolset": "budget-plans",
       "description": "Set or replace the goal of a budget plan line: its frequency, behavior and amount. Requires finance:write scope."
     },
     {
       "name": "delete_budget_plan_line_goal",
+      "toolset": "budget-plans",
       "description": "Delete the goal of a budget plan line. Requires finance:delete scope."
     },
     {
       "name": "snooze_budget_plan_line_goal",
+      "toolset": "budget-plans",
       "description": "Snooze a budget plan line goal for one period, or wake it up again. Requires finance:write scope."
     },
     {
       "name": "set_budget_plan_assignment",
+      "toolset": "budget-plans",
       "description": "Assign money to a budget plan line from a period on or for one period, or set its carry policy. Requires finance:write scope."
     },
     {
       "name": "list_share_invitations",
+      "toolset": "imports",
       "description": "List the sharing invitations you sent and the pending ones sent to you."
     },
     {
       "name": "list_share_members",
+      "toolset": "imports",
       "description": "List the owner and members of an account, household or budget you manage."
     },
     {
       "name": "list_shared_with_me",
+      "toolset": "imports",
       "description": "List the accounts, households and budgets other people shared with you."
     },
     {
       "name": "list_bank_connections",
+      "toolset": "imports",
       "description": "List your bank connections, or read one with its accounts and consent window."
     },
     {
       "name": "get_bank_sync_status",
+      "toolset": "imports",
       "description": "Read the sync state of the bank-connected accounts, the connections to reconnect and the running syncs."
     },
     {
       "name": "list_import_batches",
+      "toolset": "imports",
       "description": "List your import batches, newest first, with their source, row count and accounts."
     },
     {
       "name": "delete_import_batch",
+      "toolset": "imports",
       "description": "Undo an import by deleting every transaction of one batch. Large batches run as a background job. Requires finance:delete scope."
     },
     {
       "name": "get_import_batch_delete_status",
+      "toolset": "imports",
       "description": "Read the state of a background import batch delete: idle, queued, running, completed or failed."
     }
   ],

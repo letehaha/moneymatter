@@ -10,5 +10,22 @@
   "grant_types_supported": ["authorization_code", "refresh_token"],
   "token_endpoint_auth_methods_supported": ["client_secret_basic", "client_secret_post", "none"],
   "code_challenge_methods_supported": ["S256"],
-  "scopes_supported": ["finance:read", "finance:write", "finance:delete", "profile:read", "offline_access"]
+  "scopes_supported": [
+    "finance:read",
+    "finance:write",
+    "finance:delete",
+    "profile:read",
+    "offline_access",
+    "toolset:subscriptions",
+    "toolset:budget-plans",
+    "toolset:trackers",
+    "toolset:automations",
+    "toolset:review",
+    "toolset:groups-templates",
+    "toolset:investments",
+    "toolset:ventures",
+    "toolset:loans-vehicles",
+    "toolset:currencies",
+    "toolset:imports"
+  ]
 }

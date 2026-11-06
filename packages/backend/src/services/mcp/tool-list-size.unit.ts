@@ -1,6 +1,7 @@
+import { MCP_CORE_TOOLSET, MCP_OPTIONAL_TOOLSETS, type McpOptionalToolset } from '@bt/shared/types';
 import { describe, expect, it, jest } from '@jest/globals';
 
-// The unit suite maps the MCP SDK to a stub; this budget needs the real server and the real
+// The unit suite maps the MCP SDK to a stub; these checks need the real server and the real
 // `tools/list` handler, so the stub is swapped for the SDK's own CommonJS build.
 const SDK_DIST = '../../../../../node_modules/@modelcontextprotocol/sdk/dist/cjs';
 jest.mock('@modelcontextprotocol/sdk/server/mcp.js', () =>
@@ -8,30 +9,58 @@ jest.mock('@modelcontextprotocol/sdk/server/mcp.js', () =>
 );
 
 /**
- * A client that loads every tool up front pays for the whole `tools/list` result. 320,000 bytes
- * is about 80k tokens; the budget leaves room for the Apple Pay tools. Lazy clients such as
- * Claude Code only pay for names. It was 300,000 until the write tools gained the REST fields they
- * lacked (a subscription's matching rules, the payee and transaction details, the settlement leg of an investment trade, a tracker's logo, ...), which added
- * about 20,000 bytes.
+ * A client that loads every tool up front pays for the whole `tools/list` result of `core` on
+ * every conversation, so the budget covers `core`; the optional toolsets are the user's choice
+ * on the consent screen. 80,000 bytes is about 20k tokens; core came to about 66,000 when the
+ * budget was set.
  */
-const TOOLS_LIST_BUDGET_BYTES = 320_000;
+const CORE_TOOLS_LIST_BUDGET_BYTES = 80_000;
 
-describe('MCP tools/list size', () => {
-  it('stays within the budget', async () => {
-    const { createMcpServer } = await import('./server');
-    const { InMemoryTransport } = jest.requireActual(`${SDK_DIST}/inMemory.js`) as any;
-    const { Client } = jest.requireActual(`${SDK_DIST}/client/index.js`) as any;
+async function listTools({ toolsets }: { toolsets: readonly McpOptionalToolset[] }) {
+  const { createMcpServer } = await import('./server');
+  const { InMemoryTransport } = jest.requireActual(`${SDK_DIST}/inMemory.js`) as any;
+  const { Client } = jest.requireActual(`${SDK_DIST}/client/index.js`) as any;
 
-    const server = createMcpServer();
-    const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
-    const client = new Client({ name: 'size-check', version: '1.0.0' });
-    await Promise.all([server.connect(serverSide), client.connect(clientSide)]);
+  const server = createMcpServer({ toolsets });
+  const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
+  const client = new Client({ name: 'size-check', version: '1.0.0' });
+  await Promise.all([server.connect(serverSide), client.connect(clientSide)]);
 
-    const result = await client.listTools();
-    const bytes = Buffer.byteLength(JSON.stringify(result), 'utf8');
-    await client.close();
+  const result = (await client.listTools()) as { tools: Array<{ name: string }> };
+  await client.close();
+  return result;
+}
 
-    expect(result.tools.length).toBeGreaterThan(200);
-    expect(bytes).toBeLessThanOrEqual(TOOLS_LIST_BUDGET_BYTES);
+describe('MCP tools/list', () => {
+  it('keeps core within the budget', async () => {
+    const result = await listTools({ toolsets: [] });
+
+    expect(Buffer.byteLength(JSON.stringify(result), 'utf8')).toBeLessThanOrEqual(CORE_TOOLS_LIST_BUDGET_BYTES);
+  });
+
+  it('lists only core when no toolset is granted', async () => {
+    const { getToolNamesByToolset } = await import('./toolsets');
+    const result = await listTools({ toolsets: [] });
+
+    expect(result.tools.map((tool) => tool.name).toSorted()).toEqual(
+      getToolNamesByToolset()[MCP_CORE_TOOLSET].toSorted(),
+    );
+  });
+
+  it('adds the tools of the granted toolsets to core, and only those', async () => {
+    const { getToolNamesByToolset } = await import('./toolsets');
+    const names = getToolNamesByToolset();
+    const result = await listTools({ toolsets: ['investments', 'budget-plans'] });
+
+    expect(result.tools.map((tool) => tool.name).toSorted()).toEqual(
+      [...names[MCP_CORE_TOOLSET], ...names.investments, ...names['budget-plans']].toSorted(),
+    );
+  });
+
+  it('registers every tool when every toolset is granted', async () => {
+    const { getToolNamesByToolset } = await import('./toolsets');
+    const result = await listTools({ toolsets: MCP_OPTIONAL_TOOLSETS });
+
+    expect(result.tools).toHaveLength(Object.values(getToolNamesByToolset()).flat().length);
   });
 });

@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const TOOLS_DIR = path.join(__dirname, 'tools');
-const SERVER_SOURCE = fs.readFileSync(path.join(__dirname, 'server.ts'), 'utf-8');
+const TOOLSETS_SOURCE = fs.readFileSync(path.join(__dirname, 'toolsets.ts'), 'utf-8');
 
 const isToolSourceFile = (entry: string) =>
   entry.endsWith('.ts') && !entry.includes('.unit.') && !entry.includes('.e2e.');
@@ -23,14 +23,19 @@ function exportedRegisterFunctions(): string[] {
   return [...names].toSorted();
 }
 
-/** Every `registerX(server)` call in `createMcpServer`, one entry per call. */
-const calledRegisterFunctions = () =>
-  [...SERVER_SOURCE.matchAll(/\b(register[A-Z]\w*)\(server\)/g)].map((match) => match[1]!);
+/** Every register function listed in `TOOLSET_REGISTRARS`, one entry per listing. */
+function calledRegisterFunctions(): string[] {
+  const start = TOOLSETS_SOURCE.indexOf('export const TOOLSET_REGISTRARS');
+  const end = TOOLSETS_SOURCE.indexOf('\n};', start);
+  if (start === -1 || end === -1) throw new Error('Could not find TOOLSET_REGISTRARS in toolsets.ts');
 
-/** Every name `server.ts` imports from the tool files. */
+  return [...TOOLSETS_SOURCE.slice(start, end).matchAll(/\b(register[A-Z]\w*)\b/g)].map((match) => match[1]!);
+}
+
+/** Every name `toolsets.ts` imports from the tool files. */
 function importedRegisterFunctions(): string[] {
   const names: string[] = [];
-  for (const match of SERVER_SOURCE.matchAll(/import \{([^}]*)\} from '\.\/tools\/[^']+';/g)) {
+  for (const match of TOOLSETS_SOURCE.matchAll(/import \{([^}]*)\} from '\.\/tools\/[^']+';/g)) {
     names.push(
       ...match[1]!
         .split(',')
@@ -46,7 +51,7 @@ describe('MCP server registration', () => {
     expect(exportedRegisterFunctions().length).toBeGreaterThan(100);
   });
 
-  it('calls every exported register function exactly once', () => {
+  it('lists every exported register function in exactly one toolset', () => {
     const calls = calledRegisterFunctions();
     const notCalled = exportedRegisterFunctions().filter((name) => !calls.includes(name));
     const calledTwice = [...new Set(calls.filter((name, index) => calls.indexOf(name) !== index))];
