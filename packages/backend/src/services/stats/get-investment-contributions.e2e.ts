@@ -342,6 +342,21 @@ describe('GET /stats/investment-contributions', () => {
 
       expect(response.statusCode).toBe(404);
     });
+
+    it('rejects a non-boolean isAdjustment and leaves the contribution untouched', async () => {
+      const portfolio = await createNamedPortfolio({ name: 'Bad flag' });
+      const transfer = await deposit({ portfolioId: portfolio.id, amount: '300', date: '2026-01-12' });
+
+      const response = await helpers.setTransferAdjustment({
+        portfolioId: portfolio.id,
+        transferId: transfer.id,
+        payload: { isAdjustment: 'yes' as unknown as boolean },
+      });
+      expect(response.statusCode).toBe(422);
+
+      const after = await helpers.getInvestmentContributions({ ...RANGE, raw: true });
+      expect(after.buckets[0]!.total).toBe(300);
+    }, 60_000);
   });
 
   describe('validation', () => {

@@ -1,6 +1,27 @@
 {
   "resource": "https://mcp.moneymatter.app/mcp",
-  "authorization_servers": ["https://api.moneymatter.app/api/v1/auth"],
-  "scopes_supported": ["finance:read", "finance:write", "finance:delete", "profile:read", "offline_access"],
-  "bearer_methods_supported": ["header"]
+  "authorization_servers": [
+    "https://api.moneymatter.app/api/v1/auth"
+  ],
+  "scopes_supported": [
+    "finance:read",
+    "finance:write",
+    "finance:delete",
+    "profile:read",
+    "offline_access",
+    "toolset:subscriptions",
+    "toolset:budget-plans",
+    "toolset:trackers",
+    "toolset:automations",
+    "toolset:review",
+    "toolset:groups-templates",
+    "toolset:investments",
+    "toolset:ventures",
+    "toolset:loans-vehicles",
+    "toolset:currencies",
+    "toolset:imports"
+  ],
+  "bearer_methods_supported": [
+    "header"
+  ]
 }

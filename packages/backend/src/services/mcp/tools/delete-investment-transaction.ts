@@ -1,33 +1,20 @@
-import { trackMcpToolUsed } from '@js/utils/posthog';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { deleteInvestmentTransaction } from '@services/investments/transactions/delete.service';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { defineTool } from '../define-tool';
 
-const inputSchema = {
-  transactionId: z.string().uuid().describe('Investment transaction ID to delete (from get_investment_transactions)'),
-};
-
-export function registerDeleteInvestmentTransaction(server: McpServer) {
-  server.registerTool(
-    'delete_investment_transaction',
-    {
-      description:
-        'Permanently delete an investment transaction. The holding and portfolio cash balance are automatically recalculated after deletion. This action is irreversible — confirm with the user before calling. Obtain transactionId from get_investment_transactions.',
-      inputSchema,
-    },
-    async (args, extra) => {
-      const userId = getUserId({ extra });
-      requireScope({ extra, scope: 'finance:delete' });
-      trackMcpToolUsed({ userId, tool: 'delete_investment_transaction', clientId: extra.authInfo?.clientId });
-
-      const result = await deleteInvestmentTransaction({
-        userId,
-        transactionId: args.transactionId,
-      });
-
-      return jsonContent({ data: result });
-    },
-  );
-}
+export const deleteInvestmentTransactionTool = defineTool({
+  name: 'delete_investment_transaction',
+  toolset: 'investments',
+  access: 'delete',
+  description:
+    'Permanently delete an investment transaction. The holding and portfolio cash balance are automatically recalculated after deletion. This action is irreversible — confirm with the user before calling. Obtain transactionId from get_investment_transactions.',
+  input: {
+    transactionId: z.string().uuid().describe('Investment transaction ID to delete (from get_investment_transactions)'),
+  },
+  run: ({ userId, args }) =>
+    deleteInvestmentTransaction({
+      userId,
+      transactionId: args.transactionId,
+    }),
+});

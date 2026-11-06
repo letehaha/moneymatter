@@ -147,6 +147,45 @@ describe('Portfolio to Account Transfer (POST /investments/portfolios/:id/transf
     expect(relinkResponse.statusCode).toBe(ERROR_CODES.ValidationError);
   }, 30000);
 
+  it('should reject linking an income transaction that belongs to a different account', async () => {
+    const otherAccount = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ name: 'Other Account' }),
+      raw: true,
+    });
+
+    const [incomeTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 500,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+
+    const response = await helpers.portfolioToAccountTransfer({
+      portfolioId: portfolio.id,
+      payload: {
+        accountId: otherAccount.id,
+        amount: '500',
+        currencyCode,
+        date: '2025-06-15',
+        existingTransactionId: incomeTx!.id,
+      },
+    });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const { data: transfers } = await helpers.listPortfolioTransfers({
+      portfolioId: portfolio.id,
+      raw: true,
+    });
+    expect(transfers.length).toBe(0);
+
+    const transactions = await helpers.getTransactions({ raw: true });
+    expect(transactions.length).toBe(1);
+    expect(transactions[0]!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
+  }, 30000);
+
   it('should reject a bank-linked destination account when no existing transaction is linked', async () => {
     const { account: bankAccount } = await helpers.lunchflow.mockTransactions();
     const rowsBefore = (await helpers.getTransactions({ accountIds: [bankAccount.id], raw: true })).length;

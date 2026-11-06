@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 
-import ImportWizardStepper from './import-wizard-stepper.vue';
+import WizardStepper from './wizard-stepper.vue';
 
 // Labels resolve to their raw keys (no messages registered), which is all the
 // navigability assertions below need — they key off aria-label, not copy.
@@ -13,11 +13,13 @@ const i18n = createI18n({ legacy: false, locale: 'en', messages: { en: {} }, mis
 const mountStepper = ({
   currentStepKey,
   completedStepKeys,
+  alwaysShowLabels = false,
 }: {
   currentStepKey: string;
   completedStepKeys: Set<string>;
+  alwaysShowLabels?: boolean;
 }) =>
-  mount(ImportWizardStepper, {
+  mount(WizardStepper, {
     props: {
       steps: [
         { key: 'upload', labelKey: 'upload' },
@@ -26,6 +28,7 @@ const mountStepper = ({
       ],
       currentStepKey,
       completedStepKeys,
+      alwaysShowLabels,
     },
     global: {
       plugins: [i18n],
@@ -36,7 +39,7 @@ const mountStepper = ({
 const stepButton = (wrapper: ReturnType<typeof mountStepper>, key: string) =>
   wrapper.get(`button[aria-label="${key}"]`);
 
-describe('ImportWizardStepper — forward-jump guard', () => {
+describe('WizardStepper — forward-jump guard', () => {
   it('disables a completed step that sits ahead of the current step', () => {
     // Review was completed on a prior run; user has since jumped back to Map.
     const wrapper = mountStepper({
@@ -82,5 +85,41 @@ describe('ImportWizardStepper — forward-jump guard', () => {
     });
 
     expect(stepButton(wrapper, 'review').attributes('disabled')).toBeDefined();
+  });
+});
+
+describe('WizardStepper — current step', () => {
+  it('leaves the current step enabled before it is completed, without emitting navigate on click', async () => {
+    const wrapper = mountStepper({ currentStepKey: 'upload', completedStepKeys: new Set() });
+
+    expect(stepButton(wrapper, 'upload').attributes('disabled')).toBeUndefined();
+    await stepButton(wrapper, 'upload').trigger('click');
+    expect(wrapper.emitted('navigate')).toBeUndefined();
+  });
+});
+
+describe('WizardStepper — labels', () => {
+  const label = (wrapper: ReturnType<typeof mountStepper>, key: string) =>
+    stepButton(wrapper, key).findAll('span').at(-1)!;
+
+  it('hides the labels of the other steps below the container breakpoint', () => {
+    const wrapper = mountStepper({ currentStepKey: 'map', completedStepKeys: new Set(['upload']) });
+
+    expect(label(wrapper, 'map').classes()).toContain('inline');
+    expect(label(wrapper, 'upload').classes()).toContain('hidden');
+    expect(label(wrapper, 'review').classes()).toContain('hidden');
+  });
+
+  it('labels every step with alwaysShowLabels', () => {
+    const wrapper = mountStepper({
+      currentStepKey: 'map',
+      completedStepKeys: new Set(['upload']),
+      alwaysShowLabels: true,
+    });
+
+    for (const key of ['upload', 'map', 'review']) {
+      expect(label(wrapper, key).classes()).toContain('inline');
+      expect(label(wrapper, key).classes()).not.toContain('hidden');
+    }
   });
 });

@@ -1,11 +1,11 @@
-import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { serializeVehicle } from '@root/serializers/vehicles.serializer';
 import { getVehicle } from '@services/vehicles/get-vehicle.service';
+import { vehicleIdParamsSchema } from '@services/vehicles/zod-schemas';
 import { z } from 'zod';
 
 const schema = z.object({
-  params: z.object({ id: recordId() }),
+  params: vehicleIdParamsSchema,
 });
 
 export default createController(schema, async ({ user, params }) => {

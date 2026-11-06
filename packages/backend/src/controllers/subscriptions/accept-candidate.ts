@@ -3,15 +3,13 @@ import { createController } from '@controllers/helpers/controller-factory';
 import { resolveCandidate } from '@services/subscriptions/resolve-candidate';
 import { z } from 'zod';
 
+import { acceptCandidateBodySchema } from './shared-schemas';
+
 const schema = z.object({
   params: z.object({
     id: recordId(),
   }),
-  body: z
-    .object({
-      subscriptionId: recordId().optional(),
-    })
-    .optional(),
+  body: acceptCandidateBodySchema.optional(),
 });
 
 export default createController(schema, async ({ user, params, body }) => {

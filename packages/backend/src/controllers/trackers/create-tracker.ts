@@ -1,37 +1,12 @@
-import { TRACKER_LIMIT_KINDS, TRACKER_STATUSES } from '@bt/shared/types';
-import { dateBound, decimalMoney, recordArrayIds, withDateOrder } from '@common/lib/zod/custom-types';
-import { logoFieldsShape, logoImageSchema, refineLogoFieldsOnCreate } from '@controllers/common/logo-fields.schema';
+import { TRACKER_STATUSES } from '@bt/shared/types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { serializeTracker } from '@root/serializers';
 import * as trackersService from '@root/services/trackers/create-tracker';
 import { z } from 'zod';
 
-import { smartTrackingFieldsShape } from './smart-tracking-fields.schema';
+import { createTrackerBodySchema } from './shared-schemas';
 
-const schema = z.object({
-  body: withDateOrder(
-    z
-      .object({
-        name: z.string().min(1, 'Name is required').max(200, 'The name must not exceed 200 characters').trim(),
-        categoryIds: recordArrayIds().optional(),
-        tagIds: recordArrayIds().optional(),
-        rulesEnabled: z.boolean().optional(),
-        rulesCleanup: z.boolean().optional(),
-        startDate: dateBound({ precision: 'datetime' }).nullable().optional(),
-        endDate: dateBound({ precision: 'datetime' }).nullable().optional(),
-        limitAmount: decimalMoney()
-          .refine((m) => m.isPositive(), { message: 'Limit amount must be positive' })
-          .nullable()
-          .optional(),
-        limitKind: z.nativeEnum(TRACKER_LIMIT_KINDS).optional(),
-        ...logoFieldsShape,
-        logoImage: logoImageSchema,
-        ...smartTrackingFieldsShape,
-      })
-      .superRefine((data, ctx) => refineLogoFieldsOnCreate({ data, ctx })),
-    ['startDate', 'endDate'],
-  ),
-});
+const schema = z.object({ body: createTrackerBodySchema });
 
 export default createController(schema, async ({ user, body }) => {
   const { id: userId } = user;

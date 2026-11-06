@@ -1,11 +1,15 @@
 import { API_ERROR_CODES, DAY_TRIALABLE_FEATURES, UserInfoResponse } from '@bt/shared/types';
 import { currencyCode } from '@common/lib/zod/custom-types';
+import { removeExchangeRatePairsSchema } from '@controllers/currencies/exchange-rate-pairs.schema';
+import {
+  deleteUserCurrencyBodySchema,
+  editUserCurrencyBodySchema,
+} from '@controllers/currencies/user-currency-body.schema';
 import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { ConflictError, NotFoundError, ValidationError } from '@js/errors';
 import { isAdminUsername } from '@middlewares/admin-only';
 import { invalidateAppUserCache } from '@middlewares/better-auth';
-import { ExchangeRatePair } from '@models/user-exchange-rates.model';
 import { resolveEntitlements } from '@services/entitlements/resolve-entitlements.service';
 import { startFeatureTrial as startFeatureTrialService } from '@services/entitlements/start-feature-trial.service';
 import { getEmailForUser } from '@services/sharing/find-user-by-email.service';
@@ -159,11 +163,7 @@ export const setBaseUserCurrency = createController(
 
 export const editUserCurrency = createController(
   z.object({
-    body: z.object({
-      currencyCode: currencyCode(),
-      exchangeRate: z.number().optional(),
-      liveRateUpdate: z.boolean().optional(),
-    }),
+    body: editUserCurrencyBodySchema,
   }),
   async ({ user, body }) => {
     const result = await userService.editUserCurrency({
@@ -178,9 +178,7 @@ export const editUserCurrency = createController(
 
 export const deleteUserCurrency = createController(
   z.object({
-    body: z.object({
-      currencyCode: currencyCode(),
-    }),
+    body: deleteUserCurrencyBodySchema,
   }),
   async ({ user, body }) => {
     await userService.deleteUserCurrency({
@@ -195,32 +193,16 @@ export const getCurrenciesExchangeRates = createController(z.object({}), async (
   return { data };
 });
 
-const exchangeRatePairSchema = z.object({
-  baseCode: z.string(),
-  quoteCode: z.string(),
-  rate: z.number().optional(),
-});
-
 export const removeUserCurrencyExchangeRate = createController(
   z.object({
     body: z.object({
-      pairs: z.array(exchangeRatePairSchema),
+      pairs: removeExchangeRatePairsSchema,
     }),
   }),
   async ({ user, body }) => {
-    const { pairs } = body;
-
-    pairs.forEach((pair) => {
-      if (!pairs.some((item) => item.baseCode === pair.quoteCode)) {
-        throw new ValidationError({
-          message: "When removing base-qoute pair rate, you need to also remove opposite pair's rate.",
-        });
-      }
-    });
-
     const data = await userExchangeRates.removeUserExchangeRates({
       userId: user.id,
-      pairs: pairs as ExchangeRatePair[],
+      pairs: body.pairs,
     });
 
     return { data };

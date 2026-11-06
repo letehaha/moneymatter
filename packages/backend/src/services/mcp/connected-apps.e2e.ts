@@ -1,3 +1,4 @@
+import { MCP_TOOLSET_SCOPES } from '@bt/shared/types';
 import { API_RESPONSE_STATUS } from '@bt/shared/types/api';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import { app } from '@root/app';
@@ -179,7 +180,7 @@ describe('OAuth Discovery Endpoints', () => {
         response_types_supported: ['code'],
         grant_types_supported: expect.arrayContaining(['authorization_code', 'refresh_token']),
         code_challenge_methods_supported: ['S256'],
-        scopes_supported: expect.arrayContaining(['finance:read', 'profile:read']),
+        scopes_supported: expect.arrayContaining(['finance:read', 'profile:read', ...MCP_TOOLSET_SCOPES]),
       });
       expect(res.body.token_endpoint_auth_methods_supported).toEqual(
         expect.arrayContaining(['client_secret_basic', 'none']),
@@ -196,7 +197,12 @@ describe('OAuth Discovery Endpoints', () => {
       expect(res.body).toMatchObject({
         resource: expect.stringContaining('/mcp'),
         authorization_servers: expect.any(Array),
-        scopes_supported: expect.arrayContaining(['finance:read', 'profile:read', 'offline_access']),
+        scopes_supported: expect.arrayContaining([
+          'finance:read',
+          'profile:read',
+          'offline_access',
+          ...MCP_TOOLSET_SCOPES,
+        ]),
         bearer_methods_supported: ['header'],
       });
       expect(res.body.authorization_servers).toEqual([`${BETTER_AUTH_BASE_URL}${API_PREFIX}/auth`]);

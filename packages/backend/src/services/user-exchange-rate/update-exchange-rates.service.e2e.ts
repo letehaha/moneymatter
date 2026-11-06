@@ -144,6 +144,42 @@ describe('Edit currency exchange rate controller', () => {
       expect(missingOpposite.statusCode).toEqual(ERROR_CODES.ValidationError);
     });
 
+    it('rejects editing and removing a pair set whose pairs are not exact inverses', async () => {
+      const edit = await helpers.editCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'USD', quoteCode: 'EUR', rate: 0.85 },
+          { baseCode: 'EUR', quoteCode: 'GBP', rate: 0.86 },
+        ],
+      });
+      expect(edit.statusCode).toEqual(ERROR_CODES.ValidationError);
+
+      const remove = await helpers.removeCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'USD', quoteCode: 'EUR' },
+          { baseCode: 'EUR', quoteCode: 'GBP' },
+        ],
+      });
+      expect(remove.statusCode).toEqual(ERROR_CODES.ValidationError);
+    });
+
+    it('removes custom rates when the pair set contains the exact inverse pair', async () => {
+      await helpers.editCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'USD', quoteCode: 'EUR', rate: 0.85 },
+          { baseCode: 'EUR', quoteCode: 'USD', rate: 1.18 },
+        ],
+        raw: true,
+      });
+
+      const res = await helpers.removeCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'USD', quoteCode: 'EUR' },
+          { baseCode: 'EUR', quoteCode: 'USD' },
+        ],
+      });
+      expect(res.statusCode).toEqual(200);
+    });
+
     it('should return error when trying to edit non-existent currency pair', async () => {
       const pairs = [
         { baseCode: 'USD', quoteCode: 'JPY', rate: 110 },

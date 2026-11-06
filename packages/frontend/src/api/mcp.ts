@@ -1,5 +1,6 @@
 import { api, API_HTTP } from '@/api/_api';
 import { config } from '@/common/config';
+import type { GetMcpToolsetsResponse } from '@bt/shared/types';
 
 interface ConnectedApp {
   clientId: string;
@@ -16,6 +17,11 @@ export const getConnectedApps = async (): Promise<ConnectedApp[]> => {
 
 export const revokeConnectedApp = async ({ clientId }: { clientId: string }): Promise<{ success: boolean }> => {
   return api.delete(`/user/settings/mcp/connected-apps/${clientId}`);
+};
+
+/** Each MCP toolset with its OAuth scope and tool count, `core` first. */
+export const getMcpToolsets = async (): Promise<GetMcpToolsetsResponse> => {
+  return api.get('/user/settings/mcp/toolsets');
 };
 
 export const getOAuthClientName = async ({ clientId }: { clientId: string }): Promise<{ name: string | null }> => {

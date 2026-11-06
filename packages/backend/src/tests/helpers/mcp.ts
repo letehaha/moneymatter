@@ -1,3 +1,4 @@
+import type { GetMcpToolsetsResponse } from '@bt/shared/types';
 import { authPool } from '@config/auth';
 import { app } from '@root/app';
 import { API_PREFIX } from '@root/config';
@@ -50,6 +51,20 @@ export async function getConnectedApps({
   });
 
   return result;
+}
+
+export async function getMcpToolsets({ raw }: { raw?: false }): Promise<CustomResponse<GetMcpToolsetsResponse>>;
+export async function getMcpToolsets({ raw }: { raw?: true }): Promise<GetMcpToolsetsResponse>;
+export async function getMcpToolsets({
+  raw = true,
+}: {
+  raw?: boolean;
+} = {}): Promise<CustomResponse<GetMcpToolsetsResponse> | GetMcpToolsetsResponse> {
+  return helpers.makeRequest({
+    method: 'get',
+    url: '/user/settings/mcp/toolsets',
+    raw,
+  });
 }
 
 export async function revokeConnectedApp({

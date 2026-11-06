@@ -6,7 +6,7 @@ import { Button } from '@/components/lib/ui/button';
 import { Label } from '@/components/lib/ui/label';
 import { Switch } from '@/components/lib/ui/switch';
 import { useFormatCurrency } from '@/composable';
-import ImportWizardStepper from '@/pages/import-export/components/import-wizard-stepper.vue';
+import WizardStepper from '@/components/common/wizard-stepper.vue';
 import { useCategoriesStore } from '@/stores';
 import {
   BUDGET_SUGGESTION_DETAILS,
@@ -212,7 +212,7 @@ const goNext = () => {
     </p>
 
     <fieldset :disabled="isSubmitting" class="contents">
-      <ImportWizardStepper
+      <WizardStepper
         bare
         :steps="stepperSteps"
         :current-step-key="step ?? ''"
