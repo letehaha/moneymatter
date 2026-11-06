@@ -1,7 +1,10 @@
 import { loadUserData } from '@/api';
-import { signOut } from '@/lib/auth-client';
+import { ApiErrorResponseError } from '@/js/errors';
+import { getSession, signOut } from '@/lib/auth-client';
 import { resetUser } from '@/lib/posthog';
 import { resetQueryCaches } from '@/lib/query-persister';
+import { captureException } from '@/lib/sentry';
+import { API_ERROR_CODES } from '@bt/shared/types';
 import { USER } from '@tests/mocks';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -122,5 +125,35 @@ describe('useAuthStore logout', () => {
 
     expect(resetQueryCaches).toHaveBeenCalled();
     expect(assign).not.toHaveBeenCalled();
+  });
+});
+
+describe('useAuthStore validateSession', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    vi.mocked(getSession).mockResolvedValue({ data: { session: {} } } as never);
+  });
+
+  it('signs out without reporting a server-side failure', async () => {
+    vi.mocked(loadUserData).mockRejectedValue(
+      new ApiErrorResponseError('500', { code: API_ERROR_CODES.unexpected, message: '500' }),
+    );
+    const store = useAuthStore();
+
+    expect(await store.validateSession()).toBe(false);
+    expect(store.isSessionChecked).toBe(true);
+    expect(captureException).not.toHaveBeenCalled();
+  });
+
+  it('reports a client-side API error', async () => {
+    vi.mocked(loadUserData).mockRejectedValue(
+      new ApiErrorResponseError('400', { code: API_ERROR_CODES.validationError, message: '400' }),
+    );
+
+    expect(await useAuthStore().validateSession()).toBe(false);
+    expect(captureException).toHaveBeenCalledWith(
+      expect.objectContaining({ context: { scope: 'auth:validate-session' } }),
+    );
   });
 });

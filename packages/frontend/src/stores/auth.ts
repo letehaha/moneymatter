@@ -4,7 +4,7 @@ import type { DemoEndReason } from '@/common/const/demo';
 import { getDeviceName } from '@/common/utils/device-name';
 import { dismissPersistentNotifications } from '@/components/notification-center';
 import { isMobileSheetOpen } from '@/composable/global-state/mobile-sheet';
-import { OAuthProviderNotConfiguredError, UnexpectedError } from '@/js/errors';
+import { OAuthProviderNotConfiguredError, UnexpectedError, isApiErrorWithCode } from '@/js/errors';
 import { authClient, getSession, signIn, signOut, signUp } from '@/lib/auth-client';
 import {
   consumeDemoOriginProperties,
@@ -18,7 +18,7 @@ import { collectPersistedQueryGarbage, resetQueryCaches } from '@/lib/query-pers
 import { captureException, clearSentryUser, setSentryUser } from '@/lib/sentry';
 import { ROUTES_NAMES, router } from '@/routes';
 import { useCategoriesStore, useCurrenciesStore, useUserStore } from '@/stores';
-import { OAUTH_PROVIDER, USER_ROLES, UserInfoResponse } from '@bt/shared/types';
+import { API_ERROR_CODES, OAUTH_PROVIDER, USER_ROLES, UserInfoResponse } from '@bt/shared/types';
 import { useQueryClient } from '@tanstack/vue-query';
 import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
@@ -72,6 +72,12 @@ const HAS_EVER_LOGGED_IN_KEY = 'has-ever-logged-in';
 // Compared on every auth entry so a session swap without an explicit logout
 // (expiry, logging into a different account) can't restore the prior user's data.
 const PERSISTED_QUERIES_USER_KEY = 'persisted-queries-user-id';
+
+const SERVER_FAILURE_CODES = [
+  API_ERROR_CODES.unexpected,
+  API_ERROR_CODES.badGateway,
+  API_ERROR_CODES.serviceUnavailable,
+];
 
 export const useAuthStore = defineStore('auth', () => {
   const userStore = useUserStore();
@@ -243,9 +249,11 @@ export const useAuthStore = defineStore('auth', () => {
       isSessionChecked.value = true;
       return true;
     } catch (error) {
-      // Everything above returns a result object or is our own code; a throw here signals a
-      // network failure or bug that the catch below reports as an ordinary signed-out state.
-      captureException({ error, context: { scope: 'auth:validate-session' } });
+      // Server-side failures (incl. a gateway 5xx page) aren't client bugs; any other throw is a
+      // network failure or bug. Either way the user lands in an ordinary signed-out state.
+      if (!SERVER_FAILURE_CODES.some((code) => isApiErrorWithCode(error, code))) {
+        captureException({ error, context: { scope: 'auth:validate-session' } });
+      }
       isLoggedIn.value = false;
       isSessionChecked.value = true;
       return false;
