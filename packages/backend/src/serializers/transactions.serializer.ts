@@ -40,6 +40,7 @@ interface TransactionSplitApiResponse {
     color: string;
     icon: string;
   };
+  refundedAmount?: number;
 }
 
 export interface TransactionApiResponse {
@@ -68,6 +69,8 @@ export interface TransactionApiResponse {
   transferId: string | null;
   originalId: string | null;
   refundLinked: boolean;
+  /** Set on list reads with `includeRefundedAmount` and on each refund link's `originalTransaction`. */
+  refundedAmount?: number;
   /** Present on list reads only. */
   hasAttachments?: boolean;
   isPlanned: boolean;
@@ -138,6 +141,7 @@ interface CreateTransactionRequest {
   transferNature: TRANSACTION_TRANSFER_NATURE;
   refundForTxId?: string;
   refundForSplitId?: string;
+  refundForAmount?: number;
   splits?: Array<{
     categoryId: RecordId;
     amount: number; // decimal from API
@@ -176,6 +180,7 @@ interface CreateTransactionInternal {
   transferNature: TRANSACTION_TRANSFER_NATURE;
   refundsTxId?: string;
   refundsSplitId?: string;
+  refundsAmount?: Money;
   splits?: Array<{
     categoryId: RecordId;
     amount: Money;
@@ -199,9 +204,12 @@ interface CreateTransactionInternal {
 /**
  * Serialize a transaction split from DB format to API response
  */
-function serializeTransactionSplit(
-  split: TransactionSplits & { category?: { id: string; name: string; color: string; icon: string } },
-): TransactionSplitApiResponse {
+type SerializableSplit = TransactionSplits & {
+  category?: { id: string; name: string; color: string; icon: string };
+  refundedAmount?: Money;
+};
+
+function serializeTransactionSplit(split: SerializableSplit): TransactionSplitApiResponse {
   return {
     id: split.id,
     categoryId: split.categoryId,
@@ -216,6 +224,7 @@ function serializeTransactionSplit(
         icon: split.category.icon,
       },
     }),
+    ...(split.refundedAmount && { refundedAmount: centsToApiDecimal(split.refundedAmount) }),
   };
 }
 
@@ -237,6 +246,7 @@ export function serializeTransaction(
     canEdit?: boolean;
     paymentParts?: PaymentPart[];
     paymentTotal?: Money;
+    refundedAmount?: Money;
   },
 ): TransactionApiResponse {
   // Aliased literal: a plain property on raw rows, dataValues-only on model instances.
@@ -269,6 +279,7 @@ export function serializeTransaction(
     transferId: tx.transferId,
     originalId: tx.originalId,
     refundLinked: tx.refundLinked,
+    ...(tx.refundedAmount && { refundedAmount: centsToApiDecimal(tx.refundedAmount) }),
     isPlanned: tx.isPlanned ?? false,
     plannedMerge: extractPlannedMerge({ externalData: tx.externalData }),
     isPending: isPreBookingStatus({ status: getRawTransactionStatus({ externalData: tx.externalData }) }),
@@ -279,11 +290,7 @@ export function serializeTransaction(
     createdAt: tx.createdAt,
     updatedAt: tx.updatedAt,
     ...(tx.splits && {
-      splits: tx.splits.map((split) =>
-        serializeTransactionSplit(
-          split as TransactionSplits & { category?: { id: string; name: string; color: string; icon: string } },
-        ),
-      ),
+      splits: tx.splits.map((split) => serializeTransactionSplit(split as SerializableSplit)),
     }),
     ...(tx.tags && {
       tags: tx.tags.map((tag) => ({
@@ -341,6 +348,7 @@ export function serializeTransactions(
       canEdit?: boolean;
       paymentParts?: PaymentPart[];
       paymentTotal?: Money;
+      refundedAmount?: Money;
     }
   >,
 ): TransactionApiResponse[] {
@@ -384,6 +392,7 @@ export function deserializeCreateTransaction(req: CreateTransactionRequest, user
     transferNature: req.transferNature,
     refundsTxId: req.refundForTxId,
     refundsSplitId: req.refundForSplitId,
+    refundsAmount: req.refundForAmount !== undefined ? Money.fromDecimal(req.refundForAmount) : undefined,
     splits: req.splits?.map((split) => ({
       categoryId: split.categoryId,
       amount: Money.fromDecimal(split.amount),

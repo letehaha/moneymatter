@@ -290,7 +290,7 @@ describe('prepareTxCreationParams', () => {
       });
       const form = createBaseForm({
         type: FORM_TYPES.expense,
-        refundsTx: { transaction: refundedTransaction },
+        refundsTx: [{ transaction: refundedTransaction }],
       });
 
       const result = prepareTxCreationParams({
@@ -309,10 +309,12 @@ describe('prepareTxCreationParams', () => {
       });
       const form = createBaseForm({
         type: FORM_TYPES.expense,
-        refundsTx: {
-          transaction: refundedTransaction,
-          splitId: 'split-uuid-123',
-        },
+        refundsTx: [
+          {
+            transaction: refundedTransaction,
+            splitId: 'split-uuid-123',
+          },
+        ],
       });
 
       const result = prepareTxCreationParams({
@@ -332,7 +334,7 @@ describe('prepareTxCreationParams', () => {
       });
       const form = createBaseForm({
         type: FORM_TYPES.expense,
-        refundsTx: { transaction: refundedTransaction },
+        refundsTx: [{ transaction: refundedTransaction }],
       });
 
       const result = prepareTxCreationParams({
@@ -345,6 +347,37 @@ describe('prepareTxCreationParams', () => {
       expect(result.refundForSplitId).toBeUndefined();
     });
 
+    it('sends refundForAmount when only part of the refund goes to the original', () => {
+      const refundedTransaction = createMockTransaction({
+        id: '00000000-0000-0000-0000-000000000050' as RecordId,
+        transactionType: TRANSACTION_TYPES.income,
+      });
+      const form = createBaseForm({
+        type: FORM_TYPES.expense,
+        refundsTx: [{ transaction: refundedTransaction, amount: 40 }],
+      });
+
+      const result = prepareTxCreationParams({ form, isTransferTx: false, isCurrenciesDifferent: false });
+
+      expect(result.refundForTxId).toBe('00000000-0000-0000-0000-000000000050');
+      expect(result.refundForAmount).toBe(40);
+    });
+
+    it('omits refundForAmount for a whole-refund link', () => {
+      const refundedTransaction = createMockTransaction({
+        id: '00000000-0000-0000-0000-000000000050' as RecordId,
+        transactionType: TRANSACTION_TYPES.income,
+      });
+      const form = createBaseForm({
+        type: FORM_TYPES.expense,
+        refundsTx: [{ transaction: refundedTransaction, amount: null }],
+      });
+
+      const result = prepareTxCreationParams({ form, isTransferTx: false, isCurrenciesDifferent: false });
+
+      expect(result.refundForAmount).toBeUndefined();
+    });
+
     it('includes refundForTxId for an income form refunding an expense original', () => {
       const refundedTransaction = createMockTransaction({
         id: '00000000-0000-0000-0000-000000000050' as RecordId,
@@ -352,7 +385,7 @@ describe('prepareTxCreationParams', () => {
       });
       const form = createBaseForm({
         type: FORM_TYPES.income,
-        refundsTx: { transaction: refundedTransaction },
+        refundsTx: [{ transaction: refundedTransaction }],
       });
 
       const result = prepareTxCreationParams({
@@ -373,7 +406,7 @@ describe('prepareTxCreationParams', () => {
       });
       const form = createBaseForm({
         type: FORM_TYPES.expense,
-        refundsTx: { transaction: refundedTransaction },
+        refundsTx: [{ transaction: refundedTransaction }],
       });
 
       const result = prepareTxCreationParams({
@@ -384,6 +417,25 @@ describe('prepareTxCreationParams', () => {
 
       expect(result.refundForTxId).toBeUndefined();
       expect(result.refundForSplitId).toBeUndefined();
+    });
+
+    it('never sends the refund link for a planned transaction', () => {
+      const refundedTransaction = createMockTransaction({
+        id: '00000000-0000-0000-0000-000000000050' as RecordId,
+        transactionType: TRANSACTION_TYPES.income,
+      });
+      const form = createBaseForm({
+        type: FORM_TYPES.expense,
+        isPlanned: true,
+        refundsTx: [{ transaction: refundedTransaction, splitId: 'split-uuid-123', amount: 40 }],
+      });
+
+      const result = prepareTxCreationParams({ form, isTransferTx: false, isCurrenciesDifferent: false });
+
+      expect(result.isPlanned).toBe(true);
+      expect(result).not.toHaveProperty('refundForTxId');
+      expect(result).not.toHaveProperty('refundForSplitId');
+      expect(result).not.toHaveProperty('refundForAmount');
     });
 
     it('does not include refundForTxId when refundsTx is undefined', () => {

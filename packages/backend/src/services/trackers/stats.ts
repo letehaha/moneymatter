@@ -176,7 +176,7 @@ const updateDateRange = (result: StatsResponse, time: Date) => {
 /**
  * Nets out refund pairs from actualIncome/actualExpense so a refund-income doesn't inflate
  * income and the matching expense reflects net spend (matching the global "Expenses Structure"
- * widget). For each refund where a side is in the tracker, we subtract `refundTx.refAmount`
+ * widget). For each refund where a side is in the tracker, we subtract the pair's `shareRefAmount`
  * from that side. Balance and utilizationRate are recomputed from the adjusted totals.
  */
 const applyRefundAdjustments = async ({
@@ -192,7 +192,7 @@ const applyRefundAdjustments = async ({
   if (pairs.length === 0) return;
 
   for (const pair of pairs) {
-    const adjustment = pair.refundTx.refAmount.toCents();
+    const adjustment = pair.shareRefAmount.toCents();
 
     if (pair.originalInScope) {
       if (pair.originalTx.transactionType === TRANSACTION_TYPES.expense) {

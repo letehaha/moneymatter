@@ -426,7 +426,7 @@ const aggregateTransactionData = async ({
 /**
  * Builds negative `NormalizedTxData` entries from refund pairs so `aggregateTransactionData`
  * nets them out of the period income/expense and per-category expense aggregations. For each
- * side of a pair that's in the tracker, we subtract `refundTx.refAmount` — matching the global
+ * side of a pair that's in the tracker, we subtract its `shareRefAmount` — matching the global
  * "Expenses Structure" widget's refund handling.
  */
 const buildRefundAdjustments = ({
@@ -441,7 +441,7 @@ const buildRefundAdjustments = ({
   const adjustments: NormalizedTxData[] = [];
 
   for (const pair of pairs) {
-    const adjustmentAmount = pair.refundTx.refAmount.toCents();
+    const adjustmentAmount = pair.shareRefAmount.toCents();
 
     // A split transaction is counted whole under its primary category, so a split-targeted refund nets there too.
     const pushSide = ({ tx }: { tx: TrackerRefundPair['originalTx'] }) => {

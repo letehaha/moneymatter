@@ -217,7 +217,7 @@ export function useSubmitTransaction({
       }
 
       // Mark link-refund task when refund relationships are set
-      if (params.form.refundsTx || (params.form.refundedByTxs && params.form.refundedByTxs.length > 0)) {
+      if (params.form.refundsTx?.length || params.form.refundedByTxs?.length) {
         onboardingStore.completeTask('link-refund');
       }
 

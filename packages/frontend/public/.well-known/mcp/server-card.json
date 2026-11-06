@@ -343,8 +343,12 @@
       "description": "Unlink a transfer pair by transferId; both transactions become independent entries. Requires finance:write scope."
     },
     {
+      "name": "get_refund_links",
+      "description": "List every refund link touching a transaction, on either side, with each link's share of the refund amount (null means the whole refund)."
+    },
+    {
       "name": "link_refund",
-      "description": "Mark an existing transaction as a refund of another transaction. Requires finance:write scope."
+      "description": "Mark an existing transaction as a refund of another transaction, optionally covering only an amount of the refund so one refund can span several purchases. Requires finance:write scope."
     },
     {
       "name": "unlink_refund",

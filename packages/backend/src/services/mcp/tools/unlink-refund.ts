@@ -20,7 +20,7 @@ export function registerUnlinkRefund(server: McpServer) {
     'unlink_refund',
     {
       description:
-        'Remove the refund link between two transactions. DESTRUCTIVE: both transactions will no longer be marked as refund-linked. Requires both originalTxId and refundTxId that were previously linked.',
+        'Remove one refund link, identified by refundTxId + originalTxId. DESTRUCTIVE. Other links on either transaction stay as they are, with their shares. A transaction is unmarked as refund-linked only when it has no links left.',
       inputSchema,
     },
     async (args, extra) => {

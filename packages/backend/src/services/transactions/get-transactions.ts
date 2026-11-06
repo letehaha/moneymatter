@@ -9,6 +9,7 @@ import Users from '@models/users.model';
 import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { getAccessibleTrackerIdsForUser } from '@services/sharing/auth/get-accessible-tracker-ids.service';
 import { attachPaymentParts } from '@services/transactions/payment-legs';
+import { attachRefundedAmounts } from '@services/tx-refunds/attach-refunded-amounts';
 import { Op } from 'sequelize';
 
 type FindWithFiltersParams = Parameters<typeof Transactions.findWithFilters>[0];
@@ -29,6 +30,7 @@ type GetTransactionsParams = Omit<
   /** Absent = real rows + the caller's own plans; `true` = only the caller's plans; `false` = real rows only. */
   isPlanned?: boolean;
   excludeBalanceAdjustments?: boolean;
+  includeRefundedAmount?: boolean;
 };
 
 /** Internal snapshot of the user who attached a tx to a shared tracker. `null` for
@@ -65,7 +67,17 @@ interface TransactionAddedBy {
  * stats, etc.) call `Transactions.findWithFilters` directly with `access: { creator }`.
  */
 export const getTransactions = async (params: GetTransactionsParams) => {
-  const { userId, accountIds, trackerIds, from, limit, isPlanned, excludeBalanceAdjustments, ...rest } = params;
+  const {
+    userId,
+    accountIds,
+    trackerIds,
+    from,
+    limit,
+    isPlanned,
+    excludeBalanceAdjustments,
+    includeRefundedAmount,
+    ...rest
+  } = params;
 
   // Tracker-share path: when the caller asks for transactions in specific trackers, we
   // scope visibility through tracker-share (in addition to any account-share lookup,
@@ -135,6 +147,7 @@ export const getTransactions = async (params: GetTransactionsParams) => {
     collapsed: collapsePayments,
     accessibleAccountIds: accessibleAccounts,
   });
+  if (includeRefundedAmount) await attachRefundedAmounts({ transactions });
 
   if (!transactions.length || !trackerGrantsVisibility) return transactions;
 

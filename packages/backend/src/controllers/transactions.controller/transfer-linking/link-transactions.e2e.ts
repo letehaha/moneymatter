@@ -307,6 +307,95 @@ describe('link transactions between each other', () => {
     });
     expect(alreadyTransferExpense.statusCode).toBe(ERROR_CODES.ValidationError);
   });
+
+  it('rejects linking a refund-linked original as a transfer leg', async () => {
+    const accountA = await helpers.createAccount({ raw: true });
+    const accountB = await helpers.createAccount({ raw: true });
+
+    const [expense] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountA.id,
+        amount: 100,
+        transactionType: TRANSACTION_TYPES.expense,
+      }),
+      raw: true,
+    });
+    const [refund] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountA.id,
+        amount: 50,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+    const [incomeB] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountB.id,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+
+    await helpers.createSingleRefund({ originalTxId: expense.id, refundTxId: refund.id }, true);
+
+    const res = await helpers.linkTransactions({
+      payload: { ids: [[expense.id, incomeB.id]] },
+    });
+    expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(helpers.extractResponse(res as unknown as helpers.CustomResponse<helpers.ErrorResponse>).message).toContain(
+      'cannot be transfer one',
+    );
+
+    const expenseAfter = await helpers.getTransactionById({ id: expense.id, raw: true });
+    expect(expenseAfter!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
+  });
+
+  it('rejects linking when the opposite leg is a refund-linked refund transaction', async () => {
+    const accountA = await helpers.createAccount({ raw: true });
+    const accountB = await helpers.createAccount({ raw: true });
+
+    const [original] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountA.id,
+        amount: 100,
+        transactionType: TRANSACTION_TYPES.expense,
+      }),
+      raw: true,
+    });
+    const [refundIncome] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountA.id,
+        amount: 50,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+    const [unlinkedExpense] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: accountB.id,
+        amount: 50,
+        transactionType: TRANSACTION_TYPES.expense,
+      }),
+      raw: true,
+    });
+
+    await helpers.createSingleRefund({ originalTxId: original.id, refundTxId: refundIncome.id }, true);
+
+    const res = await helpers.linkTransactions({
+      payload: { ids: [[unlinkedExpense.id, refundIncome.id]] },
+    });
+    expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(helpers.extractResponse(res as unknown as helpers.CustomResponse<helpers.ErrorResponse>).message).toContain(
+      'cannot be a transfer one',
+    );
+
+    const [unlinkedExpenseAfter, refundIncomeAfter] = await Promise.all([
+      helpers.getTransactionById({ id: unlinkedExpense.id, raw: true }),
+      helpers.getTransactionById({ id: refundIncome.id, raw: true }),
+    ]);
+    expect(unlinkedExpenseAfter!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
+    expect(refundIncomeAfter!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
+  });
 });
 
 describe('unlink transfer transactions', () => {

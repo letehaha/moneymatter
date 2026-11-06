@@ -431,6 +431,69 @@ describe('Data export (POST /user/data-export)', () => {
       expect(refundRow?.RefundOf).not.toContain(originalTx!.id);
     });
 
+    it('names every original with its share in RefundOf when a refund has several partial links', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, type, note }: { amount: number; type: TRANSACTION_TYPES; note: string }) => {
+        const result = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType: type, note }),
+          raw: true,
+        });
+        return (Array.isArray(result) ? result[0] : result)!;
+      };
+      const firstOriginal = await createTx({ amount: 60, type: TRANSACTION_TYPES.expense, note: 'First purchase' });
+      const secondOriginal = await createTx({ amount: 50, type: TRANSACTION_TYPES.expense, note: 'Second purchase' });
+      const refundTx = await createTx({ amount: 100, type: TRANSACTION_TYPES.income, note: 'Combined refund' });
+
+      await helpers.createSingleRefund({ originalTxId: firstOriginal.id, refundTxId: refundTx.id, amount: 60 }, true);
+      await helpers.createSingleRefund({ originalTxId: secondOriginal.id, refundTxId: refundTx.id, amount: 40 }, true);
+
+      const response = await helpers.exportData({ format: 'csv' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('transactions.csv')! });
+      const refundRow = rows.find((r) => r.Note === 'Combined refund');
+      const parts = (refundRow?.RefundOf ?? '').split(' | ');
+
+      expect(parts).toHaveLength(2);
+      expect(parts).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(new RegExp(`${account.name} -60\\.00 \\w+ \\(60\\.00 ${refundTx.currencyCode}\\)$`)),
+          expect.stringMatching(new RegExp(`${account.name} -50\\.00 \\w+ \\(40\\.00 ${refundTx.currencyCode}\\)$`)),
+        ]),
+      );
+    });
+
+    it('renders a full-refund link in RefundOf without a share suffix next to a partial link on another refund', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, type, note }: { amount: number; type: TRANSACTION_TYPES; note: string }) => {
+        const result = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType: type, note }),
+          raw: true,
+        });
+        return (Array.isArray(result) ? result[0] : result)!;
+      };
+      const fullOriginal = await createTx({ amount: 80, type: TRANSACTION_TYPES.expense, note: 'Fully refunded' });
+      const fullRefund = await createTx({ amount: 30, type: TRANSACTION_TYPES.income, note: 'Full refund' });
+      const partialOriginal = await createTx({ amount: 50, type: TRANSACTION_TYPES.expense, note: 'Partly refunded' });
+      const partialRefund = await createTx({ amount: 50, type: TRANSACTION_TYPES.income, note: 'Partial refund' });
+
+      await helpers.createSingleRefund({ originalTxId: fullOriginal.id, refundTxId: fullRefund.id }, true);
+      await helpers.createSingleRefund(
+        { originalTxId: partialOriginal.id, refundTxId: partialRefund.id, amount: 20 },
+        true,
+      );
+
+      const response = await helpers.exportData({ format: 'csv' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('transactions.csv')! });
+
+      expect(rows.find((r) => r.Note === 'Full refund')?.RefundOf).toMatch(
+        new RegExp(`^\\d{4}-\\d{2}-\\d{2} ${account.name} -80\\.00 ${fullOriginal.currencyCode}$`),
+      );
+      expect(rows.find((r) => r.Note === 'Partial refund')?.RefundOf).toMatch(
+        new RegExp(`${account.name} -50\\.00 \\w+ \\(20\\.00 ${partialRefund.currencyCode}\\)$`),
+      );
+    });
+
     it('classifies transfer-nature transactions as transfer_in/transfer_out in the Type column', async () => {
       const source = await helpers.createAccount({ raw: true });
       const destPayload = helpers.buildAccountPayload({ name: 'Transfer dest' });
@@ -1344,6 +1407,75 @@ describe('Data export (POST /user/data-export)', () => {
       expect(transferRows[0]!.Account).toBe(source.name);
       expect(transferRows[0]!.LinkedTransfer).toContain(dest.name);
       expect(transferRows[0]!.LinkedTransfer).toBe(unfilteredOutLeg!.LinkedTransfer);
+    });
+
+    it('still names every original with its share in RefundOf when the originals sit on a filtered-out account', async () => {
+      const originAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Refund origin' }),
+        raw: true,
+      });
+      const refundAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Refund target' }),
+        raw: true,
+      });
+      const createTx = async ({
+        accountId,
+        amount,
+        type,
+        note,
+      }: {
+        accountId: RecordId;
+        amount: number;
+        type: TRANSACTION_TYPES;
+        note: string;
+      }) => {
+        const result = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId, amount, transactionType: type, note }),
+          raw: true,
+        });
+        return (Array.isArray(result) ? result[0] : result)!;
+      };
+      const firstOriginal = await createTx({
+        accountId: originAccount.id,
+        amount: 60,
+        type: TRANSACTION_TYPES.expense,
+        note: 'Filtered first purchase',
+      });
+      const secondOriginal = await createTx({
+        accountId: originAccount.id,
+        amount: 50,
+        type: TRANSACTION_TYPES.expense,
+        note: 'Filtered second purchase',
+      });
+      const refundTx = await createTx({
+        accountId: refundAccount.id,
+        amount: 100,
+        type: TRANSACTION_TYPES.income,
+        note: 'Cross-account refund',
+      });
+
+      await helpers.createSingleRefund({ originalTxId: firstOriginal.id, refundTxId: refundTx.id, amount: 60 }, true);
+      await helpers.createSingleRefund({ originalTxId: secondOriginal.id, refundTxId: refundTx.id, amount: 40 }, true);
+
+      const response = await helpers.exportData({ format: 'csv', accountIds: [refundAccount.id] });
+      expect(response.statusCode).toBe(200);
+      const rows = helpers.parseExportCsv({
+        buffer: helpers.parseExportArchive({ buffer: response.body }).files.get('transactions.csv')!,
+      });
+
+      expect(rows.map((r) => r.Note)).toEqual(['Cross-account refund']);
+      const parts = (rows[0]!.RefundOf ?? '').split(' | ');
+      expect(parts).toHaveLength(2);
+      expect(parts).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(
+            new RegExp(`${originAccount.name} -60\\.00 \\w+ \\(60\\.00 ${refundTx.currencyCode}\\)$`),
+          ),
+          expect.stringMatching(
+            new RegExp(`${originAccount.name} -50\\.00 \\w+ \\(40\\.00 ${refundTx.currencyCode}\\)$`),
+          ),
+        ]),
+      );
     });
   });
 

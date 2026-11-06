@@ -94,7 +94,17 @@ export const getPivotReport = async ({
         : {}),
     },
     include: strategy.buildInclude(),
-    attributes: ['id', 'time', 'refAmount', 'transactionType', 'categoryId', 'payeeId', 'accountId', 'refundLinked'],
+    attributes: [
+      'id',
+      'time',
+      'amount',
+      'refAmount',
+      'transactionType',
+      'categoryId',
+      'payeeId',
+      'accountId',
+      'refundLinked',
+    ],
   });
 
   // rowKey -> (columnKey -> cents). Filled by the dimension strategy.

@@ -31,37 +31,43 @@ To find refunds in the list, open the **Filters** menu above it and add **Refund
 
 You can start from either transaction. Both ways use the **Link refund** button under **More options** in the transaction dialog. On a computer, **More options** is the right-hand column; on a phone, it's a button at the bottom of the dialog.
 
+The **Link refund** dialog shows one list, and you don't choose a direction. If the transaction already has refund links, they decide which side it's on. Otherwise the first record you tick decides, by date: the earlier record is the purchase and the later one is the refund. If both are on the same day, the expense is the purchase.
+
+At the top, a meter shows how much is linked out of this transaction's amount, for example "€50.00 / €100.00".
+
 ### Start from the refund
 
 <Steps>
 
 1. Open the refund in the transaction list, or add it with **Add transaction**.
 2. Under **More options**, click **Link refund**.
-3. Make sure **Refunds a transaction** is selected. It's already selected for an income or a new transaction. This entry is the refund, and you pick the one transaction it refunds.
-4. Select the original purchase in the list.
-5. Click **Save**.
+3. Tick the original purchase in the list. On a saved refund you can tick several purchases.
+4. Optional: to set how much of the refund goes to each purchase, click **Adjust amounts** next to the meter.
+5. Click **Save**. The footer shows how many you ticked, for example "2 purchases ticked".
 6. Back in the transaction dialog, **Linked refunds** shows your pick. Click **Edit** (the save button at the bottom of the dialog), or **Create** for a new transaction, to save the link.
 
 </Steps>
+
+While you're adding the refund as a new transaction, you can link it to one purchase only, dated on or before the refund. Its share stops at what's left of the purchase, and you can change it in **Adjust amounts**.
 
 ### Start from the purchase
 
 <Steps>
 
 1. Open the original purchase in the transaction list.
-2. Under **More options**, click **Link refund**. For a saved expense, the dialog opens on **Refunded by**.
-3. Select every transaction that refunds this one. You can pick several. The footer keeps a running total, for example "2 selected · €50.00 of €100.00".
+2. Under **More options**, click **Link refund**.
+3. Tick every transaction that refunds this one. You can tick several. The meter shows how much of the purchase they pay back, and the footer reads, for example, "2 refunds ticked".
 4. Click **Save**.
 5. Back in the transaction dialog, click **Edit** to save the links.
 
 </Steps>
 
-**Refunded by** is turned off while you're adding a new transaction. It becomes available once the transaction is saved.
+The purchase has to be saved first. While you're adding a new transaction, records dated after it are greyed out with "Save this record first to link refunds dated after it".
 
 <Screenshot
   src="/screenshots/transfers-and-refunds/refund-picker-refunded-by.png"
-  alt="The Link refund dialog on the Refunded by tab, with two incomes of 20 and 30 selected and the footer reading 2 selected, €50.00 of €100.00, next to the Save button."
-  hint="Have a 100 EUR expense and two incomes of 20 EUR and 30 EUR. Open the expense, click Link refund under More options, stay on Refunded by and select both incomes. Show the whole dialog including the mode tabs, the list with both selected, and the footer '2 selected · €50.00 of €100.00' with Save."
+  alt="The Link refund dialog opened from a 100 EUR purchase, with incomes of 20 and 30 EUR ticked and the Save button in the footer."
+  hint="Have a 100 EUR expense and two later incomes of 20 EUR and 30 EUR. Open the expense, click Link refund under More options and tick both incomes. Show the whole dialog: the meter reading '€50.00 / €100.00', the list with both ticked, and the footer '2 refunds ticked' with Save."
 />
 
 <Aside type="caution" title="Don't forget the last click">
@@ -77,9 +83,11 @@ The list only shows transactions of the opposite type, from any of your accounts
 
 ## Partial and multiple refunds
 
-A purchase can have several refunds, but each refund belongs to one purchase. For example, you order three items for 100 EUR and return two of them separately, getting 20 EUR and 30 EUR back. Link both refunds to the same purchase, and 50 EUR of it is treated as refunded.
+A purchase can have several refunds, and one saved refund can be shared across several purchases. Each link carries a **share**: how much of the refund goes to that purchase. For example, you order three items for 100 EUR and return two of them separately, getting 20 EUR and 30 EUR back. Link both refunds to the same purchase, and 50 EUR of it is treated as refunded.
 
-**When the purchase and its refunds use the same currency**, the refunds together can't be more than the purchase. If your selection goes over, the footer says it "exceeds the original" and **Save** is turned off. In the same way, you can't link a refund to a purchase that's smaller than the refund.
+In the other direction, say a single 40 EUR refund covers returns from two orders. Open the saved refund, tick both purchases, click **Adjust amounts** and enter each one's share, for example 25 EUR and 15 EUR. The shares can't add up to more than the refund. A new transaction can be linked to only one purchase, so save it first, then share it.
+
+**When the purchase and its refunds use the same currency**, the refunds together can't be more than the purchase. The limit applies per purchase (or split) and counts only each refund's share linked to it. When you tick a record, its share stops at what's left of the purchase. In **Adjust amounts**, a share bigger than that shows "More than what is left of this purchase" and **Done** is turned off. From the purchase's side, if the refunds add up to more than the purchase, for example after you lower its amount, the footer says "These refunds add up to more than the purchase. Untick one." and **Save** is turned off.
 
 **When the currencies differ**, there's no limit. Each side is converted at the exchange rate for its own date, so a genuine refund can be worth more than the purchase once converted. The dialog only warns you. Refunds in a different currency also don't count toward the limit for same-currency refunds.
 
@@ -89,26 +97,26 @@ If the purchase is [split across categories](/transactions/split-a-transaction/)
 
 <Steps>
 
-1. Open the refund, click **Link refund** and keep **Refunds a transaction** selected.
-2. Select the split purchase. **Select which part to refund** opens.
+1. Open the refund and click **Link refund**.
+2. Tick the split purchase. **Select which part to refund** opens.
 3. Pick the main category, marked **(main)** and shown with the amount left for it after the splits, or one of the splits.
 4. Click **Confirm**, then **Save**, then **Edit** in the transaction dialog.
 
 </Steps>
 
-When both are in the same currency, parts smaller than your refund are turned off. If you picked a split, the linked row shows "Refunds _category_ portion" below it.
+You can pick any part that still has something left to refund. A part with nothing left can't be linked, and you'll see "This purchase is already fully refunded by other refunds." If the refund is bigger than what's left of that part, its share stops there, and you can check it in **Adjust amounts**. If you picked a split, the linked row shows "Refunds _category_ portion" below it.
 
 <Screenshot
   src="/screenshots/transfers-and-refunds/refund-split-part.png"
   alt="The Select which part to refund dialog, listing the main category (Groceries, marked (main)) with its remaining amount and a split category (Home, garden), with the Confirm button."
-  hint="Have a split expense of 120 EUR (main category Groceries 80, split Home, garden 40) and a 25 EUR income. Open the income, click Link refund, stay on Refunds a transaction and select the split expense. Show the 'Select which part to refund' dialog with the (main) row, the split row and Confirm."
+  hint="Have a split expense of 120 EUR (main category Groceries 80, split Home, garden 40) and a later 25 EUR income. Open the income, click Link refund and tick the split expense. Show the 'Select which part to refund' dialog with the (main) row, the split row and Confirm."
 />
 
-**Refunded by** can't target a single split: refunds linked from the purchase always apply to the whole purchase. To refund one part, start from the refund.
+Refunds you tick from the purchase's side apply to the whole purchase, while refunds already linked keep their split and share. To refund one part, start from the refund.
 
-If you edit the purchase's splits later:
+If you edit the purchase or its splits later:
 
-- You can't lower a refunded split below what's been refunded. You'll see "This split has refunds totaling … You cannot reduce it below the refunded amount. To reduce further, first unlink the refunds."
+- For refunds in the same currency as the purchase, you can't lower a refunded split below what's been refunded from it. You'll see "Total refund amount cannot be greater than the split amount". Lowering the whole purchase below its refunds fails the same way, with "Total refund amount cannot be greater than the original transaction amount". To go lower, first unlink the refunds or lower their shares. Refunds in a different currency don't block the change.
 - If you remove a refunded split, or remove all splits, its refunds move to the purchase as a whole.
 
 ## Rules for refund links
@@ -118,7 +126,6 @@ If you edit the purchase's splits later:
 - **No transfers.** Neither side can be a transfer, including Out of Wallet ones. The **Link refund** button doesn't appear on the **Transfer** tab.
 - **No planned transactions.**
 - **No refunds of refunds.** A transaction that is itself a refund can't be refunded.
-- **A refund belongs to one transaction.** A transaction that is already a refund can't be linked as a refund again. In the **Link refund** dialog, switching between **Refunds a transaction** and **Refunded by** replaces the links you had on this transaction.
 - **Changing the type removes the link.** If you switch a transaction between **Expense** and **Income**, its refund links are cleared and you'll see "Refund link removed because the transaction type changed." The links are removed when you save.
 
 ## How refunds affect your stats
@@ -144,10 +151,6 @@ For more on how each report is calculated, see [How stats are calculated](/stats
 ## Unlink or delete a refund
 
 **To unlink**, open either transaction, click the ✕ (**Unlink refund**) on the row under **Linked refunds**, then click **Edit**. Both transactions stay, and any other refunds of the same purchase stay linked.
-
-<Aside type="caution" title="Refunds of one part of a split purchase">
-If a refund was linked to one part of a split purchase, change or unlink refunds from the refund's side. Editing the refund list from the purchase (**Refunded by**) re-links every remaining refund to the whole purchase.
-</Aside>
 
 **To delete**, delete either transaction as usual. Its refund links are removed automatically, and the confirmation dialog says so. If you delete a purchase, its refunds become ordinary income in your stats.
 

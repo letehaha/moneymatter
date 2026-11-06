@@ -358,6 +358,7 @@ export const createTransaction = withTransaction(
     destinationTransactionId,
     refundsTxId,
     refundsSplitId,
+    refundsAmount,
     splits,
     tagIds,
     rawMerchantName,
@@ -572,6 +573,7 @@ export const createTransaction = withTransaction(
           originalTxId: refundsTxId,
           refundTxId: baseTransaction!.id,
           splitId: refundsSplitId,
+          amount: refundsAmount,
         });
       } else if (isTwoLegTransfer(transferNature)) {
         logger.info('Transfer transaction creation');

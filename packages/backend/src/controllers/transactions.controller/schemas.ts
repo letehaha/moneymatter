@@ -1,5 +1,6 @@
 import { MAX_PAYMENT_LEGS } from '@bt/shared/types';
 import { recordId } from '@common/lib/zod/custom-types';
+import { Money } from '@common/types/money';
 import { z } from 'zod';
 
 // Amount fields carry decimals (e.g. 100.50); callers convert them to cents after validation.
@@ -11,6 +12,10 @@ export const nonNegativeAmountSchema = () => z.number().nonnegative('Amount must
 // For amounts that carry no meaning at zero: a transfer leg that moves nothing,
 // a fee that costs nothing, a split that holds no share of its parent.
 export const positiveAmountSchema = () => z.number().positive('Amount must be greater than 0').finite();
+
+// For amounts stored in a cents column that rejects zero: 0.004 passes `positive` but rounds to 0.
+export const atLeastOneCentAmountSchema = () =>
+  positiveAmountSchema().refine((amount) => Money.fromDecimal(amount).toCents() > 0, 'Amount must be at least 0.01');
 
 // A year below 2000 is always a fat-fingered date ("26" for 2026): no ledger
 // predates 2000, and such dates poison exchange-rate lookups.

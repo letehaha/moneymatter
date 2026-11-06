@@ -795,6 +795,20 @@ describe('Update transaction controller', () => {
       expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
     });
 
+    it('fails when refundsTargets is combined with refundedByTxIds', async () => {
+      const originalTx = await createTestTx(TRANSACTION_TYPES.expense, 1000);
+      const refundTx = await createTestTx(TRANSACTION_TYPES.income, 500);
+      const response = await helpers.updateTransaction({
+        id: refundTx.id,
+        payload: {
+          refundsTargets: [{ txId: originalTx.id, amount: 100 }],
+          refundedByTxIds: [originalTx.id],
+        },
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+
     it('change from refundsTxId to refundedByTxIds', async () => {
       const [original, refund] = await Promise.all([
         // Use the same amount, so transactions can refund another in both directions

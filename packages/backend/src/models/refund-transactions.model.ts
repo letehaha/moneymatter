@@ -1,5 +1,7 @@
 import { RecordId } from '@bt/shared/types';
 import { IdColumn } from '@common/types/id-column';
+import { Money } from '@common/types/money';
+import { MoneyField } from '@common/types/money-column';
 import { Table, Column, Model, ForeignKey, BelongsTo, DataType } from 'sequelize-typescript';
 
 import TransactionSplits from './transaction-splits.model';
@@ -18,8 +20,15 @@ import Users from './users.model';
       fields: ['originalTxId'],
     },
     {
+      name: 'refund_transactions_refund_tx_original_tx_unique_idx',
+      fields: ['refundTxId', 'originalTxId'],
+      unique: true,
+    },
+    {
+      name: 'refund_transactions_refund_tx_no_original_unique_idx',
       fields: ['refundTxId'],
       unique: true,
+      where: { originalTxId: null },
     },
   ],
 })
@@ -47,10 +56,13 @@ export default class RefundTransactions extends Model {
   @ForeignKey(() => Transactions)
   @Column({
     allowNull: false,
-    unique: true,
     type: DataType.UUID,
   })
   refundTxId!: RecordId;
+
+  // Share of the refund transaction, in its currency. NULL means the whole refund transaction.
+  @MoneyField({ storage: 'cents', allowNull: true })
+  declare amount: Money | null;
 
   // Optional: when set, the refund applies to a specific split rather than the whole transaction
   @ForeignKey(() => TransactionSplits)
@@ -78,11 +90,13 @@ export const createRefundTransaction = async ({
   originalTxId,
   refundTxId,
   splitId,
+  amount,
 }: {
   userId: number;
   originalTxId: string | null;
   refundTxId: string;
   splitId?: string | null;
+  amount?: Money | null;
 }) => {
-  return RefundTransactions.create({ userId, originalTxId, refundTxId, splitId });
+  return RefundTransactions.create({ userId, originalTxId, refundTxId, splitId, amount: amount ?? null });
 };

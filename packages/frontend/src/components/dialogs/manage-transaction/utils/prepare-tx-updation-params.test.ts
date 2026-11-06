@@ -738,7 +738,7 @@ describe('prepareTxUpdationParams', () => {
         account: sourceAccount as AccountModel,
         amount: 1500,
         category: USER_CATEGORIES[0]!,
-        refundsTx: { transaction: refundTx },
+        refundsTx: [{ transaction: refundTx }],
         refundedByTxs: null,
       };
 
@@ -762,8 +762,7 @@ describe('prepareTxUpdationParams', () => {
         accountId: formMock.account!.id,
         categoryId: formMock.category!.id,
         transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-        refundsTxId: refundTx.id,
-        refundsSplitId: null,
+        refundsTargets: [{ txId: refundTx.id, splitId: null, amount: null }],
       });
     });
 
@@ -777,7 +776,7 @@ describe('prepareTxUpdationParams', () => {
         amount: 1500,
         category: USER_CATEGORIES[0]!,
         refundsTx: null,
-        refundedByTxs: refundingTxs.map((tx) => ({ transaction: tx })),
+        refundedByTxs: refundingTxs.map((tx, i) => ({ transaction: tx, splitId: i === 0 ? 'split-1' : undefined })),
       };
 
       expect(
@@ -800,13 +799,159 @@ describe('prepareTxUpdationParams', () => {
         accountId: formMock.account!.id,
         categoryId: formMock.category!.id,
         transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-        refundedByTxIds: [refundingTxs[0]!.id, refundingTxs[1]!.id],
+        refundedByTxIds: [{ txId: refundingTxs[0]!.id }, { txId: refundingTxs[1]!.id }],
+      });
+    });
+
+    it('sends each refunded-by share, omitting the amount only when the server keeps it', () => {
+      const expenseTx = buildSystemExpenseTransaction();
+      const [partial, whole, kept, dropped] = [
+        buildSystemIncomeTransaction(),
+        buildSystemIncomeTransaction(),
+        buildSystemIncomeTransaction(),
+        buildSystemIncomeTransaction(),
+      ];
+      const result = prepareTxUpdationParams({
+        form: {
+          ...buildBaseFormMock(expenseTx),
+          type: FORM_TYPES.expense,
+          account: sourceAccount as AccountModel,
+          amount: 1500,
+          category: USER_CATEGORIES[0]!,
+          refundsTx: null,
+          refundedByTxs: [
+            { transaction: partial!, amount: 500 },
+            { transaction: whole!, amount: null },
+            { transaction: kept!, amount: undefined },
+            { transaction: dropped!, amount: 0 },
+          ],
+        },
+        transaction: expenseTx,
+        linkedTransaction: null,
+        isTransferTx: false,
+        isRecordExternal: false,
+        isCurrenciesDifferent: false,
+        isOriginalRefundsOverriden: true,
+      });
+
+      expect(result.refundedByTxIds).toEqual([
+        { txId: partial!.id, amount: 500 },
+        { txId: whole!.id, amount: null },
+        { txId: kept!.id },
+      ]);
+    });
+
+    it('sends a full clear when both sides were cleared in one session', () => {
+      const expenseTx = buildSystemExpenseTransaction();
+      const result = prepareTxUpdationParams({
+        form: {
+          ...buildBaseFormMock(expenseTx),
+          type: FORM_TYPES.expense,
+          account: sourceAccount as AccountModel,
+          amount: 1500,
+          category: USER_CATEGORIES[0]!,
+          refundsTx: null,
+          refundedByTxs: null,
+        },
+        transaction: expenseTx,
+        linkedTransaction: null,
+        isTransferTx: false,
+        isRecordExternal: false,
+        isCurrenciesDifferent: false,
+        isOriginalRefundsOverriden: true,
+      });
+
+      expect(result.refundsTargets).toBeNull();
+      expect(result).not.toHaveProperty('refundedByTxIds');
+    });
+
+    describe('refund targets payload', () => {
+      const buildRefundForm = ({ refundsTx }: { refundsTx: UI_FORM_STRUCT['refundsTx'] }): UI_FORM_STRUCT => ({
+        ...buildBaseFormMock(buildSystemExpenseTransaction()),
+        type: FORM_TYPES.expense,
+        account: sourceAccount as AccountModel,
+        amount: 100,
+        category: USER_CATEGORIES[0]!,
+        refundsTx,
+        refundedByTxs: null,
+      });
+
+      const prepare = (form: UI_FORM_STRUCT) =>
+        prepareTxUpdationParams({
+          form,
+          transaction: buildSystemExpenseTransaction(),
+          linkedTransaction: null,
+          isTransferTx: false,
+          isRecordExternal: false,
+          isCurrenciesDifferent: false,
+          isOriginalRefundsOverriden: true,
+        });
+
+      it('sends a single whole-refund target with a null amount', () => {
+        const original = buildSystemIncomeTransaction();
+        const result = prepare(
+          buildRefundForm({ refundsTx: [{ transaction: original, splitId: 'split-1', amount: null }] }),
+        );
+
+        expect(result.refundsTxId).toBeUndefined();
+        expect(result.refundsTargets).toEqual([{ txId: original.id, splitId: 'split-1', amount: null }]);
+      });
+
+      it('clears the link with refundsTargets null', () => {
+        const result = prepare({ ...buildRefundForm({ refundsTx: null }), refundedByTxs: undefined });
+
+        expect(result.refundsTxId).toBeUndefined();
+        expect(result.refundsTargets).toBeNull();
+      });
+
+      it('sends refundsTargets for a single partial share', () => {
+        const original = buildSystemIncomeTransaction();
+        const result = prepare(buildRefundForm({ refundsTx: [{ transaction: original, amount: 40 }] }));
+
+        expect(result.refundsTxId).toBeUndefined();
+        expect(result.refundsTargets).toEqual([{ txId: original.id, splitId: null, amount: 40 }]);
+      });
+
+      it('leaves out a target whose share dropped to zero', () => {
+        const first = buildSystemIncomeTransaction();
+        const second = buildSystemIncomeTransaction();
+        const result = prepare(
+          buildRefundForm({
+            refundsTx: [
+              { transaction: first, amount: 100, isAdjusted: false },
+              { transaction: second, amount: 0, isAdjusted: false },
+            ],
+          }),
+        );
+
+        expect(result.refundsTargets).toEqual([{ txId: first.id, splitId: null, amount: 100 }]);
+      });
+
+      it('sends refundsTargets with every share for several targets', () => {
+        const first = buildSystemIncomeTransaction();
+        const second = buildSystemIncomeTransaction();
+        const result = prepare(
+          buildRefundForm({
+            refundsTx: [
+              { transaction: first, amount: 60 },
+              { transaction: second, splitId: 'split-2', amount: 40 },
+            ],
+          }),
+        );
+
+        expect(result.refundsTxId).toBeUndefined();
+        expect(result.refundsSplitId).toBeUndefined();
+        expect(result.refundedByTxIds).toBeUndefined();
+        expect(result.refundsTargets).toEqual([
+          { txId: first.id, splitId: null, amount: 60 },
+          { txId: second.id, splitId: 'split-2', amount: 40 },
+        ]);
       });
     });
 
     // Defense-in-depth: a stale same-type link left over from a type toggle must never
     // be forwarded, since the backend rejects it with a 422.
-    it('omits refundsTxId when the linked transaction has the same type as the form', () => {
+    it('omits refundsTargets when the linked transaction has the same type as the form', () => {
       const expenseTx = buildSystemExpenseTransaction();
       const sameTypeRefund = buildSystemExpenseTransaction();
       const formMock: UI_FORM_STRUCT = {
@@ -815,7 +960,7 @@ describe('prepareTxUpdationParams', () => {
         account: sourceAccount as AccountModel,
         amount: 1500,
         category: USER_CATEGORIES[0]!,
-        refundsTx: { transaction: sameTypeRefund },
+        refundsTx: [{ transaction: sameTypeRefund }],
         refundedByTxs: null,
       };
 
@@ -829,7 +974,7 @@ describe('prepareTxUpdationParams', () => {
         isOriginalRefundsOverriden: true,
       });
 
-      expect(result.refundsTxId).toBeUndefined();
+      expect(result.refundsTargets).toBeUndefined();
     });
 
     it('omits refundedByTxIds when a linked transaction has the same type as the form', () => {

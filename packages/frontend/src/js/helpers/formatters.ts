@@ -195,11 +195,19 @@ export const formatShortFiat = ({ amount, currency }: { amount: number; currency
 const compactRoundingStep = (abs: number) => (abs >= 1e9 ? 1e7 : abs >= 1e6 ? 1e4 : abs >= 1e5 ? 1e3 : 10);
 
 /**
- * Full amount with cents under 10,000. From there k/M/B with up to 2 decimals
+ * Full amount with cents under `from` (default 10,000). From there k/M/B with up to 2 decimals
  * ("₴42.6k", "₴1.24M"), except 100k–1M, which drops them ("₴385k").
  */
-export const formatCompactUIAmount = ({ amount, currency }: { amount: number; currency?: string }) => {
-  if (!(Math.abs(amount) >= 10_000)) return formatUIAmount(amount, { currency });
+export const formatCompactUIAmount = ({
+  amount,
+  currency,
+  from = 10_000,
+}: {
+  amount: number;
+  currency?: string;
+  from?: number;
+}) => {
+  if (!(Math.abs(amount) >= from)) return formatUIAmount(amount, { currency });
 
   // Rounds before the suffix is picked, so 999,600 reads "₴1M" rather than "₴1000k".
   const step = compactRoundingStep(Math.abs(amount));

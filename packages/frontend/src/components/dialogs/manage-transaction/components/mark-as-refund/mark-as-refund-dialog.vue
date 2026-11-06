@@ -1,41 +1,54 @@
 <script lang="ts" setup>
-import type { FormattedCategory } from '@/common/types';
+import type { RefundRole } from '@/api/transactions';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import { Button } from '@/components/lib/ui/button';
-import { PillTabs, type PillTabItem } from '@/components/lib/ui/pill-tabs';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
-import { formatUIAmount } from '@/js/helpers';
-import { useCategoriesStore, useCurrenciesStore } from '@/stores';
+import { formatCompactUIAmount, formatUIAmount } from '@/js/helpers';
+import { cn } from '@/lib/utils';
+import { useCategoriesStore } from '@/stores';
 import { TRANSACTION_TYPES, TransactionModel, TransactionSplitModel } from '@bt/shared/types';
 import { CheckIcon, SplitIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { RefundedByAnotherTxs, RefundsAnoterTx } from '../../types';
-import { computeRefundLinkTotals } from '../../utils/refund-link-totals';
+import { RefundWithSplit, RefundedByAnotherTxs, RefundsAnoterTx } from '../../types';
+import { deriveRefundRole } from '../../utils/derive-refund-role';
+import {
+  finalizeRefundShares,
+  getRefundTargetBase,
+  getRefundTargetCap,
+  isRefundShareAdjusted,
+  refillRefundSide,
+  round2,
+  validateRefundShares,
+} from '../../utils/refund-shares';
+import { getRefundTargetLabel } from '../../utils/refund-target-label';
 import MarkAsRefundInfo from './mark-as-refund-info.vue';
-import RefundLinkCard from './refund-link-card.vue';
 import RecordsList from './refund-records-list.vue';
+import RefundShareMeter from './refund-share-meter.vue';
+import RefundSharesAdjustDialog, { type AdjustShareRow } from './refund-shares-adjust-dialog.vue';
 
 const props = defineProps<{
   transactionType: TRANSACTION_TYPES;
   isRecordCreation: boolean;
   refunds: RefundsAnoterTx;
   refundedBy: RefundedByAnotherTxs;
-  /** Current transaction's splits (for "refunded by" mode - to know which split is being refunded) */
-  currentTransactionSplits?: TransactionSplitModel[];
   /** Current form amount (live value) */
   currentAmount?: number | null;
   /** Current form's currency code */
   currentCurrencyCode?: string;
-  /** Current form's category (shown in the link card) */
-  currentCategory?: FormattedCategory | null;
   /** Current account ID (for recommendations) */
   currentAccountId?: string | null;
   /** Current transaction ID (for recommendations when editing) */
   currentTransactionId?: string;
+  /** Live form time; the pivot that decides which side of the link a ticked row is on. */
+  currentTime: Date;
+  /** The refund is saved as paying back a purchase outside the app. */
+  hasExternalLink?: boolean;
+  /** This refund's saved same-currency share per `refundShareKey` target. */
+  savedRefundShares?: Record<string, number>;
 }>();
 
 const emit = defineEmits<{
@@ -43,29 +56,25 @@ const emit = defineEmits<{
   'update:refundedBy': [value: RefundedByAnotherTxs];
 }>();
 
+const KEY = 'dialogs.manageTransaction.markAsRefund';
+
 const { t } = useI18n();
 const { categoriesMap } = storeToRefs(useCategoriesStore());
-const { baseCurrency } = storeToRefs(useCurrenciesStore());
-const { ratesMap } = useExchangeRates();
+const { convert } = useExchangeRates();
 const isMobileView = useWindowBreakpoints(CUSTOM_BREAKPOINTS.uiMobile);
 
-const selectionState = reactive<{
-  refunds: RefundsAnoterTx;
-  refundedBy: RefundedByAnotherTxs;
-}>({
-  refunds: undefined,
-  refundedBy: undefined,
-});
+// `undefined` = untouched since the dialog opened; `[]` = everything unticked.
+const selection = ref<RefundWithSplit[] | undefined>(undefined);
+// The row whose date decided the role; stays until the set empties so later ticks join its side.
+const firstTicked = ref<TransactionModel | null>(null);
 
-// Track which split is selected for the "refunds" mode (when target tx has splits)
-const selectedSplitId = ref<string | null>(null);
-// Track selected transaction for split selection dialog
+const tickHint = ref<string | null>(null);
 const pendingTransaction = ref<TransactionModel | null>(null);
-// Temporary split selection state (before confirming in split dialog)
 const tempSplitSelection = ref<{ splitId: string | null } | null>(null);
 
 const isDialogOpen = ref(false);
 const isSplitDialogOpen = ref(false);
+const isAdjustDialogOpen = ref(false);
 
 const openDialog = () => {
   isDialogOpen.value = true;
@@ -73,201 +82,286 @@ const openDialog = () => {
 
 defineExpose({ open: openDialog });
 
-const selectedOption = ref<'refunds' | 'refunded'>('refunds');
-
-const onModeChange = (value: string) => {
-  selectedOption.value = value as 'refunds' | 'refunded';
-};
-
-const modeItems = computed<PillTabItem[]>(() => [
-  { value: 'refunds', label: t('dialogs.manageTransaction.markAsRefund.modeRefunds') },
-  {
-    value: 'refunded',
-    label: t('dialogs.manageTransaction.markAsRefund.refundedByLabel'),
-    disabled: props.isRecordCreation,
-  },
-]);
-
 // The picker lists candidates of the opposite type, so the current entry's own type is the inverse.
 const currentEntryType = computed(() =>
   props.transactionType === TRANSACTION_TYPES.income ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income,
 );
 
-// Keep flush 'sync': with the default flush this wipe runs after the open handler
-// and clobbers the selection it just seeded from props.
-watch(
-  selectedOption,
-  () => {
-    selectionState.refunds = undefined;
-    selectionState.refundedBy = undefined;
-    selectedSplitId.value = null;
-    pendingTransaction.value = null;
-  },
-  { flush: 'sync' },
-);
+const roleFor = ({ row }: { row: TransactionModel | null }): RefundRole | null =>
+  deriveRefundRole({
+    savedRefunds: props.refunds,
+    savedRefundedBy: props.refundedBy,
+    hasExternalLink: props.hasExternalLink,
+    isRecordCreation: props.isRecordCreation,
+    firstTicked: row,
+    currentTime: props.currentTime,
+  });
+
+const role = computed(() => roleFor({ row: firstTicked.value }));
+const ticked = computed(() => selection.value ?? []);
+const tickedCount = computed(() => ticked.value.length);
+
+const refundAmount = computed(() => (props.currentAmount && props.currentAmount > 0 ? props.currentAmount : 0));
+
+const refill = ({ links, role: side }: { links: RefundWithSplit[]; role: RefundRole | null }) =>
+  refillRefundSide({
+    links,
+    role: side,
+    amount: props.currentAmount,
+    currencyCode: props.currentCurrencyCode,
+    savedShares: props.savedRefundShares,
+    convert,
+  });
+
+const refillRefunds = ({ links }: { links: RefundWithSplit[] }) => refill({ links, role: 'refund' });
+
+const refillRefundedBy = ({ links }: { links: RefundWithSplit[] }) => refill({ links, role: 'original' });
 
 watch(isDialogOpen, (open) => {
-  if (open) {
-    // An expense is almost always the original that incomes refund, so a saved one opens on that tab.
-    const defaultsToRefunded = currentEntryType.value === TRANSACTION_TYPES.expense && !props.isRecordCreation;
-    selectedOption.value = props.refundedBy?.length || (defaultsToRefunded && !props.refunds) ? 'refunded' : 'refunds';
-    selectionState.refunds = props.refunds ?? undefined;
-    selectionState.refundedBy = props.refundedBy?.length ? [...props.refundedBy] : undefined;
-    selectedSplitId.value = props.refunds?.splitId ?? null;
-  } else {
-    selectionState.refunds = undefined;
-    selectionState.refundedBy = undefined;
-    selectedSplitId.value = null;
-    pendingTransaction.value = null;
-  }
-});
-
-// Reset temp selection when split dialog closes without confirming
-watch(isSplitDialogOpen, (open) => {
-  if (!open) {
-    tempSplitSelection.value = null;
-  }
-});
-
-const onSelectValue = (v: TransactionModel) => {
-  if (selectedOption.value === 'refunds') {
-    // Check if this transaction has splits
-    if (v.splits && v.splits.length > 0) {
-      // If clicking on already selected transaction, deselect it
-      if (selectionState.refunds?.transaction.id === v.id) {
-        selectionState.refunds = undefined;
-        pendingTransaction.value = null;
-        selectedSplitId.value = null;
-        return;
-      }
-      // Open split selection dialog
-      pendingTransaction.value = v;
-      tempSplitSelection.value = null;
-      isSplitDialogOpen.value = true;
-    } else {
-      // No splits - traditional behavior
-      if (selectionState.refunds?.transaction.id === v.id) {
-        selectionState.refunds = undefined;
-      } else {
-        selectionState.refunds = { transaction: v };
-      }
-      pendingTransaction.value = null;
-      selectedSplitId.value = null;
-    }
-    selectionState.refundedBy = undefined;
-  } else if (selectedOption.value === 'refunded') {
-    const existingValues = Array.isArray(selectionState.refundedBy) ? selectionState.refundedBy : [];
-
-    if (existingValues.some((i) => i.transaction.id === v.id)) {
-      selectionState.refundedBy = existingValues.filter((i) => i.transaction.id !== v.id);
-    } else {
-      // For "refunded by" mode, we need to select which split of CURRENT transaction is being refunded
-      // For now, add without splitId - the split selection will be shown separately
-      selectionState.refundedBy = [...existingValues, { transaction: v }];
-    }
-    selectionState.refunds = undefined;
-  }
-};
-
-const clearSelection = () => {
-  selectionState.refunds = undefined;
-  selectionState.refundedBy = undefined;
-  selectedSplitId.value = null;
+  firstTicked.value = null;
   pendingTransaction.value = null;
+  tickHint.value = null;
+  if (!open) {
+    selection.value = undefined;
+    return;
+  }
+  if (props.refunds?.length) selection.value = refillRefunds({ links: props.refunds });
+  else if (props.refundedBy?.length) selection.value = [...props.refundedBy];
+  else selection.value = undefined;
+});
+
+watch(isSplitDialogOpen, (open) => {
+  if (!open) tempSplitSelection.value = null;
+});
+
+const setLinks = ({ next }: { next: RefundWithSplit[] }) => {
+  selection.value = next;
+  if (!next.length) firstTicked.value = null;
 };
 
-// Handle temporary split selection in the dialog
+const sumShares = ({ links }: { links: RefundWithSplit[] }) =>
+  round2({ value: links.reduce((sum, link) => sum + (link.amount ?? 0), 0) });
+
+const addRefundTarget = ({ target }: { target: RefundWithSplit }) => {
+  const others = props.isRecordCreation ? [] : ticked.value;
+  const next = refillRefunds({ links: [...others, { ...target, isAdjusted: false }] });
+  if (refundAmount.value && !next[next.length - 1]!.amount) {
+    tickHint.value =
+      sumShares({ links: others }) >= refundAmount.value
+        ? t(`${KEY}.nothingLeftHint`)
+        : t(`${KEY}.purchaseFullyRefundedHint`);
+    return;
+  }
+  firstTicked.value ??= target.transaction;
+  setLinks({ next });
+};
+
+const addRefundedBy = ({ tx }: { tx: TransactionModel }) => {
+  // Re-ticking a saved link brings back its saved share, which may be split with other purchases.
+  const saved = props.refundedBy?.find((link) => link.transaction.id === tx.id);
+  const next = refillRefundedBy({ links: [...ticked.value, saved ?? { transaction: tx, isAdjusted: false }] });
+  const added = next[next.length - 1]!;
+  if (refundAmount.value && added.transaction.currencyCode === props.currentCurrencyCode && added.amount === 0) {
+    tickHint.value = t(`${KEY}.purchasePaidBackHint`);
+    return;
+  }
+  firstTicked.value ??= tx;
+  setLinks({ next });
+};
+
+const onSelectValue = (tx: TransactionModel) => {
+  tickHint.value = null;
+  const current = ticked.value;
+  if (current.some((link) => link.transaction.id === tx.id)) {
+    setLinks({ next: refill({ links: current.filter((link) => link.transaction.id !== tx.id), role: role.value }) });
+    return;
+  }
+
+  if ((role.value ?? roleFor({ row: tx })) === 'original') {
+    addRefundedBy({ tx });
+  } else if (tx.splits?.length) {
+    pendingTransaction.value = tx;
+    tempSplitSelection.value = null;
+    isSplitDialogOpen.value = true;
+  } else {
+    addRefundTarget({ target: { transaction: tx } });
+  }
+};
+
 const selectTempSplit = (splitId: string | null) => {
   tempSplitSelection.value = { splitId };
 };
 
-// Confirm split selection and close split dialog
 const confirmSplitSelection = () => {
   if (!pendingTransaction.value) return;
 
   if (tempSplitSelection.value) {
-    selectedSplitId.value = tempSplitSelection.value.splitId;
-    selectionState.refunds = {
-      transaction: pendingTransaction.value,
-      splitId: tempSplitSelection.value.splitId ?? undefined,
-    };
+    addRefundTarget({
+      target: {
+        transaction: pendingTransaction.value,
+        splitId: tempSplitSelection.value.splitId ?? undefined,
+      },
+    });
   }
 
   isSplitDialogOpen.value = false;
   tempSplitSelection.value = null;
 };
 
-const selectedTransactions = computed(() => {
-  if (selectionState.refunds) return [selectionState.refunds.transaction];
-  if (selectionState.refundedBy) return selectionState.refundedBy.map((r) => r.transaction);
-  return [];
-});
+const selectedTransactions = computed(() => ticked.value.map((link) => link.transaction));
+const savedRefundedByTransactions = computed(() => (props.refundedBy ?? []).map((link) => link.transaction));
 
-const totals = computed(() =>
-  computeRefundLinkTotals({
-    mode: selectedOption.value,
-    transactions: selectedTransactions.value,
-    currentAmount: props.currentAmount,
-    currentCurrencyCode: props.currentCurrencyCode,
-    ratesMap: ratesMap.value,
-    baseCurrencyCode: baseCurrency.value?.currencyCode,
+const refundRows = computed(() =>
+  role.value === 'refund'
+    ? ticked.value.map((link) => ({
+        link,
+        base: getRefundTargetBase({ link }),
+        ...getRefundTargetCap({
+          link,
+          refundCurrencyCode: props.currentCurrencyCode,
+          savedShares: props.savedRefundShares,
+          convert,
+        }),
+      }))
+    : [],
+);
+
+const isShareCheckActive = computed(() => refundAmount.value > 0 && refundRows.value.length > 0);
+
+const shareValidation = computed(() =>
+  validateRefundShares({
+    refundAmount: refundAmount.value,
+    targets: refundRows.value.map((row) => ({
+      share: row.link.amount,
+      cap: row.cap,
+      isSameCurrency: row.isSameCurrency,
+    })),
   }),
 );
 
-const totalLabel = computed(() => {
-  if (totals.value.total === null || !totals.value.currencyCode) return null;
-  const formatted = formatUIAmount(totals.value.total, { currency: totals.value.currencyCode });
-  return totals.value.isTotalConverted ? `≈ ${formatted}` : formatted;
+const refundedByRows = computed(() =>
+  role.value === 'original'
+    ? ticked.value.map((link) => {
+        const { currencyCode, amount } = link.transaction;
+        const isSameCurrency = currencyCode === props.currentCurrencyCode;
+        const share = link.amount ?? amount;
+        const contribution = isSameCurrency
+          ? share
+          : props.currentCurrencyCode
+            ? convert({ amount: share, from: currencyCode, to: props.currentCurrencyCode })
+            : null;
+        return { link, isSameCurrency, share, contribution };
+      })
+    : [],
+);
+
+const refundedByTotals = computed(() => {
+  const rows = refundedByRows.value;
+  return {
+    paid: round2({ value: rows.reduce((sum, row) => sum + (row.contribution ?? 0), 0) }),
+    sameCurrencyPaid: round2({ value: rows.reduce((sum, row) => sum + (row.isSameCurrency ? row.share : 0), 0) }),
+    isApprox: rows.some((row) => !row.isSameCurrency),
+  };
 });
 
-const limitLabel = computed(() => {
-  if (!props.currentAmount || props.currentAmount <= 0) return null;
-  return formatUIAmount(props.currentAmount, { currency: props.currentCurrencyCode });
+const isRefundedByOverPurchase = computed(
+  () =>
+    role.value === 'original' && refundAmount.value > 0 && refundedByTotals.value.sameCurrencyPaid > refundAmount.value,
+);
+
+const meter = computed(() => {
+  const total = refundAmount.value;
+  const currency = props.currentCurrencyCode;
+  if (!total || !currency) return null;
+
+  const compact = ({ amount }: { amount: number }) => formatCompactUIAmount({ amount, currency, from: 100_000 });
+  const label = ({ linked }: { linked: string }) => `${linked} / ${compact({ amount: total })}`;
+
+  if (!role.value) {
+    return {
+      segments: [],
+      tone: 'default' as const,
+      label: label({ linked: compact({ amount: 0 }) }),
+    };
+  }
+
+  if (role.value === 'refund') {
+    const { assigned, isOverAssigned } = shareValidation.value;
+    return {
+      segments: refundRows.value.map((row) => ((row.link.amount ?? 0) / total) * 100),
+      tone: isOverAssigned ? ('error' as const) : ('default' as const),
+      label: label({ linked: compact({ amount: assigned }) }),
+    };
+  }
+
+  const { paid, isApprox } = refundedByTotals.value;
+  const approx = ({ amount }: { amount: number }) => `${isApprox ? '≈ ' : ''}${compact({ amount })}`;
+  return {
+    segments: refundedByRows.value.map((row) => ((row.contribution ?? 0) / total) * 100),
+    tone: isRefundedByOverPurchase.value
+      ? ('error' as const)
+      : paid > total
+        ? ('warning' as const)
+        : ('default' as const),
+    label: label({ linked: approx({ amount: paid }) }),
+  };
 });
 
-const helperText = computed(() => {
-  if (selectedOption.value === 'refunds') return t('dialogs.manageTransaction.markAsRefund.helperRefunds');
-  if (limitLabel.value) {
-    return t('dialogs.manageTransaction.markAsRefund.helperRefundedBy', { amount: limitLabel.value });
-  }
-  return t('dialogs.manageTransaction.markAsRefund.helperRefundedByNoLimit');
-});
+const canAdjust = computed(
+  () => role.value === 'refund' && isShareCheckActive.value && Boolean(props.currentCurrencyCode),
+);
 
-const summaryText = computed(() => {
-  const count = selectedTransactions.value.length;
-  const keyBase = 'dialogs.manageTransaction.markAsRefund';
-  if (!count) return t(`${keyBase}.summaryEmpty`);
-  if (!totalLabel.value) return t(`${keyBase}.summaryCountOnly`, { count });
+const adjustRows = computed<AdjustShareRow[]>(() =>
+  refundRows.value.map((row) => ({
+    transaction: row.link.transaction,
+    categoryId: row.base.categoryId,
+    label: getRefundTargetLabel({
+      transaction: row.link.transaction,
+      categoryId: row.base.categoryId,
+      categoriesMap: categoriesMap.value,
+      unknownLabel: t('common.labels.unknown'),
+    }),
+    purchaseAmount: row.purchaseAmount,
+    cap: row.cap,
+    isCapApprox: row.isCapApprox,
+    isSameCurrency: row.isSameCurrency,
+    refundedByOthers: row.refundedByOthers,
+    share: row.link.amount ?? null,
+    isAdjusted: isRefundShareAdjusted({ link: row.link }),
+  })),
+);
 
-  const amount = totalLabel.value;
-  if (selectedOption.value === 'refunds') {
-    if (totals.value.isOverLimit && limitLabel.value) {
-      return t(`${keyBase}.summaryBelowRefund`, { amount, limit: limitLabel.value });
-    }
-    return t(`${keyBase}.summarySelected`, { count, amount });
-  }
+const applyAdjustedShares = ({ shares, adjusted }: { shares: number[]; adjusted: boolean[] }) => {
+  selection.value = ticked.value.map((link, index) => ({
+    ...link,
+    amount: shares[index] ?? link.amount,
+    isAdjusted: adjusted[index] ?? false,
+  }));
+};
 
-  if (totals.value.isOverLimit) {
-    if (totals.value.isExactComparison && totals.value.total !== null && props.currentAmount) {
-      const excess = formatUIAmount(totals.value.total - props.currentAmount, {
-        currency: props.currentCurrencyCode,
-      });
-      return t(`${keyBase}.summaryExceedsBy`, { count, amount, excess });
-    }
-    return t(`${keyBase}.summaryExceeds`, { count, amount });
+const footerStatus = computed(() => {
+  if (role.value === 'refund' && isShareCheckActive.value && !shareValidation.value.isValid) {
+    return { isError: true, text: t(`${KEY}.sharesInvalid`) };
   }
-  if (limitLabel.value) return t(`${keyBase}.summaryOfLimit`, { count, amount, limit: limitLabel.value });
-  return t(`${keyBase}.summarySelected`, { count, amount });
+  if (isRefundedByOverPurchase.value) return { isError: true, text: t(`${KEY}.refundsOverPurchase`) };
+
+  const count = tickedCount.value;
+  if (!count || !role.value) return { isError: false, text: t(`${KEY}.summaryEmpty`) };
+  return {
+    isError: false,
+    text:
+      role.value === 'refund'
+        ? t(`${KEY}.footerPurchasesTicked`, { count }, count)
+        : t(`${KEY}.footerRefundsTicked`, { count }, count),
+  };
 });
 
 const isSaveDisabled = computed(() => {
-  if (selectionState.refunds === undefined && selectionState.refundedBy === undefined) return true;
-  // Cross-currency totals only warn: the backend caps native amounts within one currency and
-  // leaves cross-currency refunds uncapped, since each side converts at its own date.
-  return totals.value.isOverLimit && totals.value.isExactComparison;
+  if (selection.value === undefined) return true;
+  if (role.value === 'refund') return isShareCheckActive.value && !shareValidation.value.isValid;
+  return isRefundedByOverPurchase.value;
 });
 
-// Get main category info for transaction
 const getMainCategoryInfo = (tx: TransactionModel) => {
   const category = categoriesMap.value[tx.categoryId];
   const splitsTotal = tx.splits?.reduce((sum, s) => sum + s.amount, 0) ?? 0;
@@ -281,7 +375,6 @@ const getMainCategoryInfo = (tx: TransactionModel) => {
   };
 };
 
-// Get split category info
 const getSplitCategoryInfo = (split: TransactionSplitModel) => {
   const category = categoriesMap.value[split.categoryId];
   return {
@@ -291,79 +384,19 @@ const getSplitCategoryInfo = (split: TransactionSplitModel) => {
   };
 };
 
+// An empty set clears only the side that was saved; clearing both at once would send no change at all.
 const saveState = () => {
-  if (selectionState.refunds !== undefined) {
-    emit('update:refunds', selectionState.refunds);
-  } else if (selectionState.refundedBy !== undefined) {
-    emit('update:refundedBy', selectionState.refundedBy);
+  const next = ticked.value;
+  if (!next.length) {
+    if (props.refunds?.length) emit('update:refunds', []);
+    else if (props.refundedBy?.length) emit('update:refundedBy', []);
+  } else if (role.value === 'original') {
+    emit('update:refundedBy', next);
+  } else {
+    emit('update:refunds', finalizeRefundShares({ links: next, refundAmount: props.currentAmount }));
   }
   isDialogOpen.value = false;
 };
-
-// Check if confirm button should be disabled (no selection made)
-const isSplitConfirmDisabled = computed(() => {
-  return tempSplitSelection.value === null;
-});
-
-// Check if currencies match
-const isSameCurrency = computed(() => {
-  if (!pendingTransaction.value || !props.currentCurrencyCode) return false;
-  return pendingTransaction.value.currencyCode === props.currentCurrencyCode;
-});
-
-// Convert amount to base currency using exchange rate
-const convertToBase = (amount: number, currencyCode: string): number | null => {
-  const rate = ratesMap.value[currencyCode];
-  if (!rate) return null;
-  return amount * rate.rate;
-};
-
-// Get refund amount in base currency (for cross-currency comparison)
-const currentRefundInBase = computed(() => {
-  if (!props.currentAmount || props.currentAmount <= 0 || !props.currentCurrencyCode) return null;
-  return convertToBase(props.currentAmount, props.currentCurrencyCode);
-});
-
-// Check if an amount is too small for the current refund
-// For same currency: direct comparison. For different currencies: convert to base and compare.
-const isAmountTooSmall = (targetAmount: number, targetCurrencyCode?: string) => {
-  if (!props.currentAmount || props.currentAmount <= 0) return false;
-
-  // Same currency - direct comparison
-  if (!targetCurrencyCode || targetCurrencyCode === props.currentCurrencyCode) {
-    return targetAmount < props.currentAmount;
-  }
-
-  // Different currency - convert both to base currency
-  const targetInBase = convertToBase(targetAmount, targetCurrencyCode);
-  if (targetInBase === null || currentRefundInBase.value === null) return false;
-
-  return targetInBase < currentRefundInBase.value;
-};
-
-// Check if main category amount is too small
-const isMainCategoryTooSmall = computed(() => {
-  if (!pendingTransaction.value) return false;
-  const mainAmount = getMainCategoryInfo(pendingTransaction.value).amount;
-  return isAmountTooSmall(mainAmount, pendingTransaction.value.currencyCode);
-});
-
-// Check if a split amount is too small
-const isSplitTooSmall = (split: TransactionSplitModel) => {
-  return isAmountTooSmall(split.amount, pendingTransaction.value?.currencyCode);
-};
-
-// For same currency: disable options. For different currency: just warn (backend validates)
-const shouldDisableOption = (tooSmall: boolean) => {
-  return isSameCurrency.value && tooSmall;
-};
-
-// Check if any option would trigger a warning (used for showing warning message)
-const hasSmallOptions = computed(() => {
-  if (!pendingTransaction.value) return false;
-  if (isMainCategoryTooSmall.value) return true;
-  return pendingTransaction.value.splits?.some((s) => isSplitTooSmall(s)) ?? false;
-});
 </script>
 
 <template>
@@ -379,26 +412,28 @@ const hasSmallOptions = computed(() => {
       dialog-content-class="h-[min(85dvh,46rem)] max-h-[90dvh] gap-0 overflow-hidden p-0"
       drawer-content-class="h-[calc(100dvh-1.25rem)] max-h-[calc(100dvh-1.25rem)] px-0"
     >
-      <template #title>{{ $t('dialogs.manageTransaction.markAsRefund.linkRefund') }}</template>
-      <template #description>{{ helperText }}</template>
+      <template #title>{{ $t(`${KEY}.linkRefund`) }}</template>
+      <template #description>{{ $t(`${KEY}.directionEmpty`) }}</template>
 
-      <div class="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
-        <!-- Chrome: strip, header, mode switch, link card -->
+      <div class="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
+        <!-- Chrome: strip, header, meter -->
         <div class="px-4 pt-3 pb-3 md:px-6 md:pt-0">
           <div
             v-if="!isMobileView"
-            :class="[
-              '-mx-6 mb-4 h-3 rounded-t-lg',
-              currentEntryType === TRANSACTION_TYPES.income ? 'bg-app-income-color' : 'bg-app-expense-color',
-            ]"
+            :class="
+              cn(
+                '-mx-6 mb-4 h-3 rounded-t-lg',
+                currentEntryType === TRANSACTION_TYPES.income ? 'bg-app-income-color' : 'bg-app-expense-color',
+              )
+            "
           />
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <p class="text-lg leading-none font-semibold tracking-tight">
-                {{ $t('dialogs.manageTransaction.markAsRefund.linkRefund') }}
+                {{ $t(`${KEY}.linkRefund`) }}
               </p>
-              <p class="text-muted-foreground mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm">
-                {{ helperText }}
+              <p class="text-muted-foreground mt-1.5 text-sm">
+                {{ $t(`${KEY}.directionEmpty`) }}
                 <MarkAsRefundInfo />
               </p>
             </div>
@@ -407,38 +442,36 @@ const hasSmallOptions = computed(() => {
             </Button>
           </div>
 
-          <PillTabs
-            :model-value="selectedOption"
-            :items="modeItems"
-            size="lg"
-            full-width
-            class="mt-4"
-            @update:model-value="onModeChange"
-          />
-          <p v-if="isRecordCreation" class="text-muted-foreground mt-1.5 text-xs">
-            {{ $t('dialogs.manageTransaction.markAsRefund.refundedByCreationHint') }}
+          <p v-if="hasExternalLink && tickedCount" class="text-muted-foreground mt-2 text-sm">
+            {{ $t(`${KEY}.externalLinkReplaceNotice`) }}
           </p>
 
-          <RefundLinkCard
-            class="mt-3"
-            :mode="selectedOption"
-            :current-entry-type="currentEntryType"
-            :current-amount="currentAmount"
-            :current-currency-code="currentCurrencyCode"
-            :current-category="currentCategory"
-            :selected="selectedTransactions"
-            :totals="totals"
-            @clear="clearSelection"
-          />
+          <div v-if="meter" class="border-border bg-card mt-3 rounded-xl border px-3.5 py-3">
+            <RefundShareMeter v-bind="meter">
+              <Button
+                v-if="canAdjust"
+                variant="link"
+                size="sm"
+                class="h-auto shrink-0 px-0"
+                @click="isAdjustDialogOpen = true"
+              >
+                {{ $t(`${KEY}.adjustAmountsLink`) }}
+              </Button>
+            </RefundShareMeter>
+          </div>
+          <p v-if="tickHint" role="status" class="text-warning-text mt-2 text-sm">{{ tickHint }}</p>
         </div>
 
         <!-- Scrollable records list -->
         <div class="flex min-h-0 flex-col px-2 md:px-4">
           <RecordsList
             :transaction-type="transactionType"
+            :role="role"
+            :current-time="currentTime"
+            :is-record-creation="isRecordCreation"
             :on-select="onSelectValue"
             :selected-transactions="selectedTransactions"
-            :multi-select="selectedOption === 'refunded'"
+            :saved-transactions="savedRefundedByTransactions"
             :origin-amount="currentAmount"
             :origin-account-id="currentAccountId"
             :origin-transaction-id="currentTransactionId"
@@ -447,15 +480,26 @@ const hasSmallOptions = computed(() => {
 
         <!-- Footer -->
         <div class="border-border bg-dialog flex items-center gap-3 border-t px-4 py-3 md:px-6">
-          <p :class="['min-w-0 text-[13px]', totals.isOverLimit ? 'text-destructive-text' : 'text-muted-foreground']">
-            {{ summaryText }}
+          <p
+            role="status"
+            :class="cn('min-w-0 text-sm', footerStatus.isError ? 'text-destructive-text' : 'text-muted-foreground')"
+          >
+            {{ footerStatus.text }}
           </p>
           <Button class="ml-auto min-w-25 shrink-0" :disabled="isSaveDisabled" @click="saveState">
-            {{ $t('dialogs.manageTransaction.markAsRefund.saveButton') }}
+            {{ $t(`${KEY}.saveButton`) }}
           </Button>
         </div>
       </div>
     </ResponsiveDialog>
+
+    <RefundSharesAdjustDialog
+      v-model:open="isAdjustDialogOpen"
+      :rows="adjustRows"
+      :refund-amount="refundAmount"
+      :refund-currency-code="currentCurrencyCode ?? ''"
+      @apply="applyAdjustedShares"
+    />
 
     <!-- Split Selection Dialog -->
     <ResponsiveDialog
@@ -467,55 +511,40 @@ const hasSmallOptions = computed(() => {
       <template #title>
         <span class="flex items-center gap-2">
           <SplitIcon class="text-muted-foreground size-4" />
-          {{ $t('dialogs.manageTransaction.markAsRefund.selectWhichPartToRefund') }}
+          {{ $t(`${KEY}.selectWhichPartToRefund`) }}
         </span>
       </template>
       <template #description>
-        {{ $t('dialogs.manageTransaction.markAsRefund.transactionSplitInfo') }}
+        {{ $t(`${KEY}.transactionSplitInfo`) }}
       </template>
 
       <template v-if="pendingTransaction">
-        <p v-if="hasSmallOptions && currentAmount" class="text-warning-text mb-4 text-xs italic">
-          <template v-if="isSameCurrency">
-            {{ $t('dialogs.manageTransaction.markAsRefund.amountTooSmallWarning') }}
-            {{ formatUIAmount(currentAmount, { currency: currentCurrencyCode }) }}
-            {{ $t('dialogs.manageTransaction.markAsRefund.amountDisabled') }}
-          </template>
-          <template v-else>
-            {{ $t('dialogs.manageTransaction.markAsRefund.amountMayBeSmaller') }} ({{
-              formatUIAmount(currentAmount, { currency: currentCurrencyCode })
-            }}). {{ $t('dialogs.manageTransaction.markAsRefund.finalValidationWarning') }}
-          </template>
-        </p>
-
         <div class="space-y-2">
           <!-- Main category (remaining amount) -->
-          <button
-            type="button"
-            :disabled="shouldDisableOption(isMainCategoryTooSmall)"
-            :class="[
-              'border-border flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors',
-              shouldDisableOption(isMainCategoryTooSmall) ? 'cursor-not-allowed opacity-50' : 'hover:bg-muted/50',
-              tempSplitSelection?.splitId === null &&
-                !shouldDisableOption(isMainCategoryTooSmall) &&
-                'border-primary bg-primary/10',
-            ]"
-            @click="!shouldDisableOption(isMainCategoryTooSmall) && selectTempSplit(null)"
+          <Button
+            variant="outline"
+            :class="
+              cn(
+                'h-auto w-full justify-between rounded-lg p-3 text-left',
+                tempSplitSelection?.splitId === null && 'border-primary bg-primary/10',
+              )
+            "
+            @click="selectTempSplit(null)"
           >
             <div class="flex items-center gap-2">
               <div
                 class="size-3 shrink-0 rounded-full"
                 :style="{ backgroundColor: getMainCategoryInfo(pendingTransaction).color }"
               />
-              <span :class="['text-sm font-medium', shouldDisableOption(isMainCategoryTooSmall) && 'line-through']">
+              <span class="text-sm font-medium">
                 {{ getMainCategoryInfo(pendingTransaction).name }}
               </span>
               <span class="text-muted-foreground text-xs">
-                {{ $t('dialogs.manageTransaction.markAsRefund.mainCategoryLabel') }}
+                {{ $t(`${KEY}.mainCategoryLabel`) }}
               </span>
             </div>
             <div class="flex items-center gap-2">
-              <span :class="['text-sm tabular-nums', isMainCategoryTooSmall && 'text-warning-text']">
+              <span class="text-sm tabular-nums">
                 {{
                   formatUIAmount(getMainCategoryInfo(pendingTransaction).amount, {
                     currency: pendingTransaction.currencyCode,
@@ -524,44 +553,42 @@ const hasSmallOptions = computed(() => {
               </span>
               <CheckIcon v-if="tempSplitSelection?.splitId === null" class="text-primary-text size-4" />
             </div>
-          </button>
+          </Button>
 
           <!-- Splits -->
-          <button
+          <Button
             v-for="split in pendingTransaction.splits"
             :key="split.id"
-            type="button"
-            :disabled="shouldDisableOption(isSplitTooSmall(split))"
-            :class="[
-              'border-border flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors',
-              shouldDisableOption(isSplitTooSmall(split)) ? 'cursor-not-allowed opacity-50' : 'hover:bg-muted/50',
-              tempSplitSelection?.splitId === split.id &&
-                !shouldDisableOption(isSplitTooSmall(split)) &&
-                'border-primary bg-primary/10',
-            ]"
-            @click="!shouldDisableOption(isSplitTooSmall(split)) && selectTempSplit(split.id)"
+            variant="outline"
+            :class="
+              cn(
+                'h-auto w-full justify-between rounded-lg p-3 text-left',
+                tempSplitSelection?.splitId === split.id && 'border-primary bg-primary/10',
+              )
+            "
+            @click="selectTempSplit(split.id)"
           >
             <div class="flex items-center gap-2">
               <div
                 class="size-3 shrink-0 rounded-full"
                 :style="{ backgroundColor: getSplitCategoryInfo(split).color }"
               />
-              <span :class="['text-sm font-medium', shouldDisableOption(isSplitTooSmall(split)) && 'line-through']">
+              <span class="text-sm font-medium">
                 {{ getSplitCategoryInfo(split).name }}
               </span>
             </div>
             <div class="flex items-center gap-2">
-              <span :class="['text-sm tabular-nums', isSplitTooSmall(split) && 'text-warning-text']">
+              <span class="text-sm tabular-nums">
                 {{ formatUIAmount(split.amount, { currency: pendingTransaction.currencyCode }) }}
               </span>
               <CheckIcon v-if="tempSplitSelection?.splitId === split.id" class="text-primary-text size-4" />
             </div>
-          </button>
+          </Button>
         </div>
 
         <div class="mt-6 flex justify-end">
-          <Button :disabled="isSplitConfirmDisabled" @click="confirmSplitSelection">
-            {{ $t('dialogs.manageTransaction.markAsRefund.confirmButton') }}
+          <Button :disabled="tempSplitSelection === null" @click="confirmSplitSelection">
+            {{ $t(`${KEY}.confirmButton`) }}
           </Button>
         </div>
       </template>
