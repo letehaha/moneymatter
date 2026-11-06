@@ -1122,7 +1122,6 @@ const submit = ({ keepOpen = false }: { keepOpen?: boolean } = {}) => {
     isRecordExternal: isRecordExternal.value,
     transaction: transaction.value,
     linkedTransaction: linkedTransaction.value,
-    oppositeTransaction: oppositeTransaction.value,
     pendingAttachments: pendingAttachments.value,
   });
 };
@@ -1131,8 +1130,6 @@ const unlinkTransactions = () => {
   if (!transaction.value) return;
   unlinkMutation.mutate({
     transferIds: [transaction.value.transferId],
-    transactionId: transaction.value.id,
-    oppositeTransactionId: oppositeTransaction.value?.id,
   });
 };
 
