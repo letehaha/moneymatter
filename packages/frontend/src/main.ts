@@ -1,5 +1,4 @@
 import '@/styles/global.css';
-import './registerServiceWorker';
 
 import { installChunkReloadHandler } from '@/common/utils/chunk-reload-handler';
 import { identifyCurrentTheme } from '@/common/utils/color-theme';
