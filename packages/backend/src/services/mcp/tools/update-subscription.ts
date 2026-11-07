@@ -34,10 +34,9 @@ export const updateSubscriptionTool = defineTool({
     ...subscriptionExtraInputs,
     isActive: shape.isActive.describe('Active state (prefer toggle_subscription_active instead)'),
   },
-  run: ({ userId, args }) => {
+  validate: ({ args }) => {
     const { id, ...fields } = args;
-    const body = updateSubscriptionBodySchema.parse(fields);
-
-    return updateSubscription({ id, userId, ...body });
+    return { id, body: updateSubscriptionBodySchema.parse(fields) };
   },
+  run: ({ userId, args: { id, body } }) => updateSubscription({ id, userId, ...body }),
 });

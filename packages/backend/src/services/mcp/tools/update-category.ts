@@ -25,10 +25,9 @@ export const updateCategoryTool = defineTool({
       'true also applies defaultTagIds when AI categorization picks this category',
     ),
   },
-  run: ({ userId, args }) => {
+  validate: ({ args }) => {
     const { categoryId, ...fields } = args;
-    const body = updateCategoryBodySchema.parse(fields);
-
-    return editCategory({ userId, categoryId, ...body });
+    return { categoryId, ...updateCategoryBodySchema.parse(fields) };
   },
+  run: ({ userId, args }) => editCategory({ userId, ...args }),
 });

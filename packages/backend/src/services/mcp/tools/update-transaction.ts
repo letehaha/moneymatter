@@ -69,11 +69,12 @@ export const updateTransactionTool = defineTool({
       'true marks it planned, false marks it as happened (see also confirm_planned_transaction in the subscriptions toolset)',
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     const { id, ...fields } = args;
     // The transfer, split and original-currency rules span fields, so they run on the REST body schema.
-    const body = updateTransactionBodySchema.parse(fields);
-
+    return { id, body: updateTransactionBodySchema.parse(fields) };
+  },
+  run: async ({ userId, args: { id, body } }) => {
     const result = await updateTransaction({
       id,
       userId,

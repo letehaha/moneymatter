@@ -78,14 +78,15 @@ export const createTransactionTool = defineTool({
       "true runs the user's enabled automation rules on this transaction. Default false",
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     const { merchantName, ...fields } = args;
     if (fields.payeeId != null && merchantName) {
       throw new Error('"payeeId" and "merchantName" cannot be used together');
     }
     // The transfer, split and original-currency rules span fields, so they run on the REST body schema.
-    const body = createTransactionBodySchema.parse(fields);
-
+    return { merchantName, body: createTransactionBodySchema.parse(fields) };
+  },
+  run: async ({ userId, args: { merchantName, body } }) => {
     const params = deserializeCreateTransaction(body, userId);
 
     const result = await createTransaction({ ...params, rawMerchantName: merchantName });
