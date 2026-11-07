@@ -65,11 +65,12 @@ export const createTrackerTool = defineTool({
       `Days before startDate the AI also scans, for things booked in advance. One of ${TRACKER_AI_PRE_WINDOW_DAYS.join(', ')}. Default: ${TRACKER_AI_DEFAULT_PRE_WINDOW_DAYS}`,
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     // The date-order and logo either-or rules span fields, so they run on the REST body schema.
     const { status, ...fields } = args;
-    const body = createTrackerBodySchema.parse(fields);
-
+    return { status, body: createTrackerBodySchema.parse(fields) };
+  },
+  run: async ({ userId, args: { status, body } }) => {
     const tracker = await createTracker({
       userId,
       name: body.name,

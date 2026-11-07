@@ -1,4 +1,4 @@
-import { AINativeProvider, AI_FEATURE, AI_PROVIDER, hasServerAiEntitlement } from '@bt/shared/types';
+import { AIFeatureConfig, AINativeProvider, AI_FEATURE, AI_PROVIDER, hasServerAiEntitlement } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import type { StoredConnection } from '@models/user-settings.model';
 
@@ -7,10 +7,22 @@ import { decryptConnectionKey, getStoredAiSettings, markConnectionInvalid } from
 import { isWithinAiAllowance } from './ai-allowance';
 import type { ProviderModelSpec } from './ai-client-factory';
 import { CONNECTION_KEY_UNREADABLE_ERROR_MESSAGE } from './connection-failure';
-import { buildConnectionModelId, getServerApiKey, pickResolutionStep } from './resolution-ladder';
+import {
+  buildConnectionModelId,
+  findStoredFeatureConfig,
+  getServerApiKey,
+  pickResolutionStep,
+} from './resolution-ladder';
 
 type AIConfigResolution =
-  | (ProviderModelSpec & { kind: 'connection'; modelId: string; connectionId: string; usingUserKey: true })
+  | (ProviderModelSpec & {
+      kind: 'connection';
+      modelId: string;
+      connectionId: string;
+      usingUserKey: true;
+      /** The run uses a model picked for the feature or thread, not the connection's own */
+      modelOverridden?: true;
+    })
   | { kind: 'server'; provider: AINativeProvider; model: string; modelId: string; apiKey: string; usingUserKey: false };
 
 /**
@@ -18,12 +30,17 @@ type AIConfigResolution =
  * out keyless and blame a key the user never touched, and a native provider has no keyless mode.
  */
 function toProviderModelSpec({
-  connection,
+  connection: stored,
+  model,
   apiKey,
 }: {
   connection: StoredConnection;
+  /** The model to dial: the connection's own, or the override picked for the feature or thread. */
+  model: string;
   apiKey: string | null;
 }): ProviderModelSpec | null {
+  const connection = { ...stored, model };
+
   if (connection.keyEncrypted && apiKey === null) return null;
 
   if (connection.provider !== AI_PROVIDER.custom) {
@@ -47,15 +64,27 @@ export async function resolveAIConfiguration({
   userId,
   feature,
   allowOperatorKey = false,
+  pinnedConnectionId,
+  pinnedModelId,
 }: {
   userId: number;
   feature: AI_FEATURE;
   /** Grants the server key for this one call, for a feature the caller gates itself. */
   allowOperatorKey?: boolean;
+  /**
+   * Stands in for the stored feature config: a connection id, or null for the included server model.
+   * Omitted, the stored config applies (chat has none: its threads carry the pick).
+   */
+  pinnedConnectionId?: string | null;
+  /** With a pinned connection: a model of that connection's provider to run instead of its own. */
+  pinnedModelId?: string | null;
 }): Promise<AIConfigResolution | null> {
   const aiSettings = await getStoredAiSettings({ userId });
   const connections = aiSettings?.connections ?? [];
-  const config = aiSettings?.featureConfigs?.find((candidate) => candidate.feature === feature) ?? null;
+  const config: AIFeatureConfig | null =
+    pinnedConnectionId === undefined
+      ? findStoredFeatureConfig({ aiSettings, feature })
+      : { feature, connectionId: pinnedConnectionId, ...(pinnedModelId ? { modelId: pinnedModelId } : {}) };
   const entitlements = await getEntitlementsByUserId({ userId });
   const entitled = allowOperatorKey || hasServerAiEntitlement({ entitlements, feature });
   const withinAllowance = entitled ? await isWithinAiAllowance({ userId, entitlements }) : undefined;
@@ -85,7 +114,14 @@ export async function resolveAIConfiguration({
       case 'configured':
       case 'default-connection': {
         const { connection } = step;
-        const spec = toProviderModelSpec({ connection, apiKey: decryptConnectionKey({ connection, userId }) });
+
+        // Only the picked connection takes the override. A walk that landed on another one runs its own model.
+        const model = (step.kind === 'configured' && step.modelId) || connection.model;
+        const spec = toProviderModelSpec({
+          connection,
+          model,
+          apiKey: decryptConnectionKey({ connection, userId }),
+        });
 
         if (!spec) {
           // An already-flagged connection keeps its message, which may be more specific than this one.
@@ -103,9 +139,10 @@ export async function resolveAIConfiguration({
         return {
           ...spec,
           kind: 'connection',
-          modelId: buildConnectionModelId(connection),
+          modelId: buildConnectionModelId({ provider: connection.provider, model }),
           connectionId: connection.id,
           usingUserKey: true,
+          ...(model === connection.model ? {} : { modelOverridden: true as const }),
         };
       }
 

@@ -19,9 +19,12 @@ export const restoreBudgetPlanTool = defineTool({
       'true: if another plan is active, move it to the trash and restore this one in its place. Default false: restoring fails while another plan is active',
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     const body = restorePlanBodySchema.parse({ replace: args.replace });
-    const details = await restorePlan({ userId, planId: args.planId, replace: body?.replace });
+    return { planId: args.planId, replace: body?.replace };
+  },
+  run: async ({ userId, args: { planId, replace } }) => {
+    const details = await restorePlan({ userId, planId, replace });
 
     return presentBudgetPlanDetails({ details });
   },

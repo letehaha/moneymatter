@@ -110,7 +110,7 @@ const { addInfoNotification } = useNotificationCenter();
 
 const { connections, isLoadingConnections, isConnectionsError, isFetchingConnections, refetchConnections } =
   useAiConnectionsList();
-const { featuresStatus } = useAiSettings();
+const { configurableFeaturesStatus } = useAiSettings();
 
 const isDialogOpen = ref(false);
 // Held as ids, not objects, so the dialog keeps seeing the live copy after a write invalidates the list.
@@ -128,7 +128,7 @@ const duplicateSource = computed(() => findConnection({ id: duplicateSourceId.va
 /** Features pinned to each connection; removing it switches them to automatic. */
 const pinnedFeatureNames = computed(() => {
   const byConnection: Record<string, string[]> = {};
-  for (const status of featuresStatus.value) {
+  for (const status of configurableFeaturesStatus.value) {
     const id = status.isConfigured ? status.configuredConnectionId : null;
     if (!id) continue;
     (byConnection[id] ??= []).push(t(getAIFeatureDisplayInfo({ feature: status.feature }).nameKey));

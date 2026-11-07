@@ -10,7 +10,12 @@ const mockSonnetProfile: ModelProfile = {
   name: 'Claude Sonnet 5',
   contextWindow: 1_000_000,
   pricing: { inputPerMillion: 2, outputPerMillion: 10 },
-  capabilities: { inputs: ['text', 'image', 'pdf'], maxOutputTokens: 64_000, structuredOutput: true },
+  capabilities: {
+    inputs: ['text', 'image', 'pdf'],
+    maxOutputTokens: 64_000,
+    structuredOutput: true,
+    toolCalling: true,
+  },
 };
 
 jest.mock('../ai/model-catalog', () => ({
@@ -24,7 +29,7 @@ jest.mock('../ai/model-catalog', () => ({
 const SERVER_KEY_ENV_VARS = ['GEMINI_API_KEY', 'ANTHROPIC_API_KEY'] as const;
 
 const FEATURE = AI_FEATURE.categorization;
-const SERVER_MODEL = FALLBACK_SERVER_MODELS[FEATURE];
+const SERVER_MODEL = FALLBACK_SERVER_MODELS[FEATURE]!;
 const NOW = new Date().toISOString();
 
 const OLLAMA: StoredConnection = {
@@ -111,6 +116,32 @@ describe('resolveFeatureStatus', () => {
       connectionName: CLAUDE.name,
       serverModelName: null,
     });
+  });
+
+  it('names the model override of the configured connection and reports it as configured', async () => {
+    expect(
+      await status({
+        connections: [OLLAMA, CLAUDE],
+        config: { feature: FEATURE, connectionId: CLAUDE.id, modelId: 'claude-haiku-5-5' },
+      }),
+    ).toMatchObject({
+      isConfigured: true,
+      configuredConnectionId: CLAUDE.id,
+      configuredModelId: 'claude-haiku-5-5',
+      modelId: 'anthropic/claude-haiku-5-5',
+      modelName: 'claude-haiku-5-5',
+      connectionId: CLAUDE.id,
+    });
+  });
+
+  it('reports no configured model for a pick that keeps the connection default', async () => {
+    const result = await status({
+      connections: [CLAUDE],
+      config: { feature: FEATURE, connectionId: CLAUDE.id },
+    });
+
+    expect(result.configuredModelId).toBeUndefined();
+    expect(result.modelId).toBe('anthropic/claude-sonnet-5');
   });
 
   it('names the default connection for an unconfigured feature, with the free-text model name', async () => {

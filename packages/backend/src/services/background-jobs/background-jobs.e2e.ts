@@ -6,7 +6,7 @@ import { GEMINI_API_URL, VALID_GEMINI_API_KEY, rejectIfWrongModel } from '@tests
 import { randomUUID } from 'crypto';
 import { HttpResponse, delay, http } from 'msw';
 
-const EXPECTED_MODEL = FALLBACK_SERVER_MODELS[AI_FEATURE.categorization].model;
+const EXPECTED_MODEL = FALLBACK_SERVER_MODELS[AI_FEATURE.categorization]!.model;
 
 function mockGeminiAnswer({ text, delayMs = 0 }: { text: string; delayMs?: number }) {
   global.mswMockServer.use(

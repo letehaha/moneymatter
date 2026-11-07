@@ -1,6 +1,8 @@
 import { HouseholdSharePermission, RecordId, RESOURCE_TYPES } from '@bt/shared/types';
 import * as Accounts from '@models/accounts.model';
 import BudgetPlans from '@models/budget-plans.model';
+import ChatAttachments from '@models/chat-attachments.model';
+import ChatThreads from '@models/chat-threads.model';
 import ResourceShares from '@models/resource-shares.model';
 import ShareInvitations from '@models/share-invitations.model';
 import * as Users from '@models/users.model';
@@ -80,8 +82,9 @@ const WIPE_ORDER = BACKUP_TABLES.toReversed();
  * invoke it from `runUserDestroyLifecycle`'s `destroyInTx` hook so the
  * surrounding spine handles share-target snapshots and notification fan-out.
  *
- * Walks the backup registry's `userColumn` tables; `viaParent` children go
- * with their parents via FK cascade. Leaves the Users + `ba_user` rows intact
+ * Deletes the user's chat history (excluded from backups, so the registry never reaches it) and
+ * walks the backup registry's `userColumn` tables; `viaParent` children go with their parents via
+ * FK cascade. Leaves the Users + `ba_user` rows intact
  * (identity is preserved); only the domain data + per-user settings go.
  */
 export const destroyUserOwnedData = async ({ user }: { user: Users.default }) => {
@@ -98,6 +101,12 @@ export const destroyUserOwnedData = async ({ user }: { user: Users.default }) =>
   await ShareInvitations.destroy({
     where: { [Op.or]: [{ ownerUserId: user.id }, { inviteeUserId: user.id }] },
   });
+
+  // Chat history is not backup-registered, so the registry walk below never reaches it. A thread
+  // takes its messages, cards and attachments with it through FK cascade; the second delete covers
+  // an attachment row that outlived its thread's message.
+  await ChatThreads.destroy({ where: { userId: user.id } });
+  await ChatAttachments.destroy({ where: { userId: user.id } });
 
   await BudgetPlans.destroy({ where: { userId: user.id }, force: true });
   for (const def of WIPE_ORDER) {

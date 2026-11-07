@@ -70,6 +70,17 @@
             </template>
           </SelectField>
 
+          <ConnectionModelSelect
+            v-if="pickedConnection"
+            class="mt-3"
+            :connection="pickedConnection"
+            :model-id="featureStatus.configuredModelId ?? null"
+            :label="$t('ai.connectionModel.label')"
+            :disabled="isUpdating"
+            @select="handleModelChange"
+            @update:has-choice="(value) => (hasModelChoice = value)"
+          />
+
           <Callout
             v-if="!featureStatus.servedBy && featureStatus.connectionId"
             variant="destructive"
@@ -108,7 +119,8 @@
 </template>
 
 <script setup lang="ts">
-import { getAIFeatureDisplayInfo } from '@/common/const';
+import { type ConfigurableAIFeatureStatus, getAIFeatureDisplayInfo } from '@/common/const';
+import ConnectionModelSelect from '@/components/common/ai-connection-model/connection-model-select.vue';
 import AiUsageBadge from '@/components/common/ai-usage/ai-usage-badge.vue';
 import ApiKeySourceBadge from '@/components/common/api-key-source-badge.vue';
 import SelectField from '@/components/fields/select-field.vue';
@@ -120,17 +132,22 @@ import { useAiSettings } from '@/composable/data-queries/ai-settings';
 import { useAiConnectionsList } from '@/composable/data-queries/use-ai-connections';
 import { extractApiErrorMessage } from '@/js/errors';
 import { ROUTES_NAMES } from '@/routes';
-import { AIFeatureStatus, AIModelPricing, getModelNameFromModelId } from '@bt/shared/types';
+import { AIFeatureStatus, AIModelPricing } from '@bt/shared/types';
 import { BrainIcon, ChevronRightIcon, PlusIcon, TriangleAlertIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { type FeatureModelOption, buildFeatureModelOptions, readFeatureSelectValue } from './feature-model-options';
+import {
+  type FeatureModelOption,
+  buildFeatureModelOptions,
+  formatAnsweringModel,
+  readFeatureSelectValue,
+} from './feature-model-options';
 import { type ModelFitWarning, checkModelFit } from './model-fit';
 import ModelGuidePopover from './model-guide-popover.vue';
 
 const props = defineProps<{
-  featureStatus: AIFeatureStatus;
+  featureStatus: ConfigurableAIFeatureStatus;
 }>();
 
 const { t } = useI18n();
@@ -142,6 +159,13 @@ const isUpdating = computed(() => isSettingFeatureConfig.value || isResettingFea
 
 const hasNothingToPick = computed(
   () => !props.featureStatus.connectionId && props.featureStatus.serverModelName === null,
+);
+
+/** The connection the feature is pinned to: the one whose model can be chosen. Automatic has none. */
+const pickedConnection = computed(() =>
+  props.featureStatus.isConfigured && props.featureStatus.configuredConnectionId
+    ? (connections.value.find(({ id }) => id === props.featureStatus.configuredConnectionId) ?? null)
+    : null,
 );
 
 const options = computed(() =>
@@ -175,6 +199,7 @@ const FIT_WARNING_KEYS: Record<ModelFitWarning, string> = {
   readsPdfs: 'settings.ai.modelGuide.warning.readsPdfs',
   longAnswers: 'settings.ai.modelGuide.warning.longAnswers',
   structuredAnswers: 'settings.ai.modelGuide.warning.structuredAnswers',
+  toolCalling: 'settings.ai.modelGuide.warning.toolCalling',
 };
 
 const FIT_WARNING_BADGE_CLASS =
@@ -187,8 +212,17 @@ const fitWarningKey = computed(() => {
 
 const serverLabel = computed(() => t('settings.ai.modelSelector.serverOption'));
 
+// While the model select below names the model, the connection is named alone.
+const hasModelChoice = ref(false);
+const showsModelSelect = computed(() => hasModelChoice.value && pickedConnection.value !== null);
+
 const formatOptionLabel = (option: FeatureModelOption) => {
   if (option.kind === 'server') return serverLabel.value;
+  if (option.kind === 'connection' && showsModelSelect.value) {
+    return option.needsAttention
+      ? t('settings.ai.modelSelector.connectionNameNeedsAttention', { name: option.name })
+      : option.name;
+  }
   if (option.kind === 'connection') {
     const params = { name: option.name, model: option.model };
     return option.needsAttention
@@ -196,18 +230,22 @@ const formatOptionLabel = (option: FeatureModelOption) => {
       : t('settings.ai.modelSelector.connectionOption', params);
   }
   if (!option.target) return t('settings.ai.modelSelector.automaticOption');
-  return t('settings.ai.modelSelector.automaticOptionWithTarget', {
-    target: option.target.kind === 'server' ? serverLabel.value : option.target.name,
+  if (option.target.kind === 'server') {
+    return t('settings.ai.modelSelector.automaticOptionWithTarget', { target: serverLabel.value });
+  }
+  return t('settings.ai.modelSelector.automaticOptionWithConnection', {
+    name: option.target.name,
+    model: option.target.model,
   });
 };
 
 const collapsedModelLabel = computed(() => {
-  const { servedBy, connectionName, modelId } = props.featureStatus;
+  const { servedBy, connectionName } = props.featureStatus;
   if (servedBy === 'server') return serverLabel.value;
   if (servedBy === 'connection' && connectionName) {
     return t('settings.ai.modelSelector.connectionOption', {
       name: connectionName,
-      model: getModelNameFromModelId({ modelId }),
+      model: formatAnsweringModel({ status: props.featureStatus }),
     });
   }
   return '';
@@ -258,6 +296,23 @@ const handleSelectChange = async (option: FeatureModelOption | null) => {
       ? 'settings.ai.modelSelector.notifications.resetFailed'
       : 'settings.ai.modelSelector.notifications.updateFailed';
     addErrorNotification(extractApiErrorMessage(error) ?? t(fallbackKey));
+  }
+};
+
+/** The model within the picked connection; null returns to the connection's own model. */
+const handleModelChange = async (modelId: string | null) => {
+  const connection = pickedConnection.value;
+  if (!connection) return;
+
+  try {
+    await setFeatureConfig({
+      feature: props.featureStatus.feature,
+      connectionId: connection.id,
+      modelId: modelId ?? undefined,
+    });
+    addSuccessNotification(t('settings.ai.modelSelector.notifications.updateSuccess'));
+  } catch (error) {
+    addErrorNotification(extractApiErrorMessage(error) ?? t('settings.ai.modelSelector.notifications.updateFailed'));
   }
 };
 </script>

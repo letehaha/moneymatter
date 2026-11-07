@@ -19,9 +19,12 @@ export const setBudgetPlanAccountsTool = defineTool({
       'The full list of accounts the plan counts activity from (from get_accounts): unique ids, your own accounts of categories a plan can attach. An empty list detaches every account',
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     const { accountIds } = setPlanAccountsBodySchema.parse({ accountIds: args.accountIds });
-    const details = await setPlanAccounts({ userId, planId: args.planId, accountIds });
+    return { planId: args.planId, accountIds };
+  },
+  run: async ({ userId, args: { planId, accountIds } }) => {
+    const details = await setPlanAccounts({ userId, planId, accountIds });
 
     return presentBudgetPlanDetails({ details });
   },

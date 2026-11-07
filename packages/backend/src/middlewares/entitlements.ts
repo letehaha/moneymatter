@@ -30,12 +30,35 @@ const READ_ONLY_ROUTES = new Set([
 
 const READ_ONLY_PREFIXES = ['/billing/', '/auth/', '/tests/', '/admin/'];
 
-const NOTIFICATION_READ = /^\/notifications\/[^/]+\/read$/;
+interface ReadOnlyRoutePattern {
+  method: string;
+  /** Matched against the path after the API prefix, query string removed. */
+  pattern: RegExp;
+}
 
-const isReadOnlyAllowed = ({ method, path }: { method: string; path: string }): boolean =>
+/**
+ * Writes the exact-match set cannot list because their paths carry an id, and the chat writes. A
+ * read-only user keeps everything that writes no financial data: threads, attachments, messages, comments,
+ * runs, refreshing and rejecting a card, retention. Editing, approving and approving all cards
+ * stay blocked, as a write tool would be for them. Those routes match no rule here.
+ */
+const READ_ONLY_ROUTE_PATTERNS: ReadOnlyRoutePattern[] = [
+  { method: 'POST', pattern: /^\/notifications\/[^/]+\/read$/ },
+
+  { method: 'POST', pattern: /^\/chat\/threads$/ },
+  { method: 'PATCH', pattern: /^\/chat\/threads\/[^/]+$/ },
+  { method: 'DELETE', pattern: /^\/chat\/threads\/[^/]+$/ },
+  { method: 'POST', pattern: /^\/chat\/threads\/[^/]+\/attachments$/ },
+  { method: 'POST', pattern: /^\/chat\/threads\/[^/]+\/messages$/ },
+  { method: 'POST', pattern: /^\/chat\/runs\/[^/]+\/cancel$/ },
+  { method: 'POST', pattern: /^\/chat\/proposals\/[^/]+\/(refresh|reject|comment)$/ },
+  { method: 'PUT', pattern: /^\/chat\/settings$/ },
+];
+
+export const isReadOnlyAllowed = ({ method, path }: { method: string; path: string }): boolean =>
   READ_ONLY_ROUTES.has(`${method} ${path}`) ||
   READ_ONLY_PREFIXES.some((prefix) => path.startsWith(prefix)) ||
-  NOTIFICATION_READ.test(path);
+  READ_ONLY_ROUTE_PATTERNS.some((rule) => rule.method === method && rule.pattern.test(path));
 
 const planRequired = ({ res, message }: { res: Response; message: string }) =>
   res.status(ERROR_CODES.PaymentRequired).json({

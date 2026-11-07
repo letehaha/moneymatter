@@ -7,6 +7,7 @@ const capabilities = (overrides: Partial<AIModelCapabilities> = {}): AIModelCapa
   inputs: ['text', 'image', 'pdf'],
   maxOutputTokens: 65_536,
   structuredOutput: true,
+  toolCalling: true,
   ...overrides,
 });
 
@@ -61,9 +62,23 @@ describe('checkModelFit', () => {
   it('leaves out a need the catalog does not list instead of failing it', () => {
     expect(
       checkModelFit({
-        needs: ['longAnswers', 'structuredAnswers'],
-        capabilities: capabilities({ maxOutputTokens: null, structuredOutput: null }),
+        needs: ['longAnswers', 'structuredAnswers', 'toolCalling'],
+        capabilities: capabilities({ maxOutputTokens: null, structuredOutput: null, toolCalling: null }),
       }),
     ).toEqual({ verdict: 'fit', checks: [], warning: null });
+  });
+
+  it('fails a model the catalog lists without tool calling', () => {
+    const fit = checkModelFit({ needs: ['toolCalling'], capabilities: capabilities({ toolCalling: false }) });
+
+    expect(fit).toEqual({ verdict: 'gaps', checks: [{ kind: 'toolCalling', ok: false }], warning: 'toolCalling' });
+  });
+
+  it('passes a model the catalog lists with tool calling', () => {
+    expect(checkModelFit({ needs: ['toolCalling'], capabilities: capabilities() })).toEqual({
+      verdict: 'fit',
+      checks: [{ kind: 'toolCalling', ok: true }],
+      warning: null,
+    });
   });
 });

@@ -3,7 +3,13 @@ import { t } from '@i18n/index';
 import { TooManyRequests } from '@js/errors';
 import { logger } from '@js/utils';
 import Users from '@models/users.model';
+import {
+  AI_PROBE_RATE_LIMIT_MAX_ATTEMPTS,
+  AI_PROBE_RATE_LIMIT_WINDOW_SECONDS,
+  aiProbeRateLimitKey,
+} from '@services/ai/probe-rate-limit';
 import { RateLimitService } from '@services/common/rate-limit.service';
+import { CHAT_ATTACHMENT_LIMIT, type UserRateLimit } from '@services/common/user-rate-limits';
 import { getMaxSendInvitationsPerOwnerPer24h } from '@services/sharing/limits';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -299,12 +305,9 @@ export const shareInvitationSendRateLimit = createRateLimit({
  * a connection depends on a probe succeeding.
  */
 export const aiConnectionProbeRateLimit = createRateLimit({
-  windowSeconds: 60,
-  maxAttempts: 15,
-  keyGenerator: (req: Request) => {
-    const user = req.user as Users;
-    return `ai-connection-probe:user:${user.id}`;
-  },
+  windowSeconds: AI_PROBE_RATE_LIMIT_WINDOW_SECONDS,
+  maxAttempts: AI_PROBE_RATE_LIMIT_MAX_ATTEMPTS,
+  keyGenerator: (req: Request) => aiProbeRateLimitKey({ userId: (req.user as Users).id }),
 });
 
 /**
@@ -333,3 +336,17 @@ export const logoSearchRateLimit = createRateLimit({
     return `logo-search:user:${user.id}`;
   },
 });
+
+/**
+ * Builds the middleware of a per-user budget that the MCP tools draw from too, so the two paths
+ * share one counter per user.
+ */
+const createUserRateLimit = ({ limit }: { limit: UserRateLimit }) =>
+  createRateLimit({
+    windowSeconds: limit.windowSeconds,
+    maxAttempts: limit.maxAttempts,
+    keyGenerator: (req: Request) => limit.key({ userId: (req.user as Users).id }),
+  });
+
+/** Chat attachment upload limit; the budget and its reason are on `CHAT_ATTACHMENT_LIMIT`. */
+export const chatAttachmentRateLimit = createUserRateLimit({ limit: CHAT_ATTACHMENT_LIMIT });

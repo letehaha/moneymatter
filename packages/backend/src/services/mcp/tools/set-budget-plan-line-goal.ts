@@ -46,10 +46,11 @@ export const setBudgetPlanLineGoalTool = defineTool({
       'Period the goal starts in (from get_budget_plan_period). A new goal starts in the current period by default; an existing goal keeps its start',
     ),
   },
-  run: ({ userId, args }) => {
+  validate: ({ args }) => {
     // A plain shape cannot carry the schema's refinement, so the goal body is parsed with the
-    // full `lineGoalSchema` before calling the service.
+    // full `lineGoalSchema`.
     const { planId, lineId, ...goal } = args;
-    return setLineGoal({ userId, planId, lineId, ...lineGoalSchema.parse(goal) });
+    return { planId, lineId, ...lineGoalSchema.parse(goal) };
   },
+  run: ({ userId, args }) => setLineGoal({ userId, ...args }),
 });

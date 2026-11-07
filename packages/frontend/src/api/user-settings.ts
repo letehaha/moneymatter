@@ -12,6 +12,7 @@ import type {
   SavedTransactionView,
   CurrencyDisplayPreference,
   UnrealizedLossAlertsSettings,
+  ChatRetentionDays,
 } from '@bt/shared/types';
 
 export interface DashboardWidgetConfig {
@@ -159,6 +160,16 @@ export interface UserSettingsSchema {
   fire?: FireSettings;
   /** Server-written monthly FIRE settings snapshots, read by the pace comparison. */
   fireHistory?: FireSettingsSnapshot[];
+  /**
+   * Read-only here: the chat's history retention is written by `PUT /chat/settings`, which also
+   * recomputes the thread expiries, and the server drops it from settings writes.
+   */
+  ai?: {
+    chat?: {
+      /** `null` keeps conversations until the user deletes them; unset is the 30-day default. */
+      retentionDays?: ChatRetentionDays | null;
+    };
+  };
 }
 
 export const getUserSettings = async (): Promise<UserSettingsSchema> => {

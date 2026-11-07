@@ -27,8 +27,9 @@ export const updateBudgetPlanLineTool = defineTool({
       'Period start (YYYY-MM-DD) the new categories apply from, within the line lifetime and up to the current period. Only with categoryIds; default: the current period',
     ),
   },
-  run: ({ userId, args }) => {
+  validate: ({ args }) => {
     const { planId, lineId, ...patch } = args;
-    return updateLine({ userId, planId, lineId, ...updateLineBodySchema.parse(patch) });
+    return { planId, lineId, ...updateLineBodySchema.parse(patch) };
   },
+  run: ({ userId, args }) => updateLine({ userId, ...args }),
 });

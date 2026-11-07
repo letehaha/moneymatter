@@ -32,9 +32,7 @@ export const updateVentureDealTool = defineTool({
     expectedExitDate: updateVentureDealBodyShape.expectedExitDate.describe('New expected exit date (or null to clear)'),
     notes: updateVentureDealBodyShape.notes.describe('New notes (or null to clear)'),
   },
-  run: ({ userId, args: { dealId, ...fields } }) => {
-    // The at-least-one-field rule spans fields, so it runs on the REST body schema.
-    const body = updateVentureDealBodySchema.parse(fields);
-    return updateVentureDeal({ userId, dealId, ...body });
-  },
+  // The at-least-one-field rule spans fields, so it runs on the REST body schema.
+  validate: ({ args: { dealId, ...fields } }) => ({ dealId, ...updateVentureDealBodySchema.parse(fields) }),
+  run: ({ userId, args }) => updateVentureDeal({ userId, ...args }),
 });

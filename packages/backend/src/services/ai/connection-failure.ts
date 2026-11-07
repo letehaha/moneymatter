@@ -83,7 +83,11 @@ function suspendDeadServerKey({ aiClient, message }: { aiClient: AIClientResult;
   return SERVER_MODEL_SUSPENDED_ERROR_MESSAGE;
 }
 
-/** A saved model passed the live check, so the provider has since dropped or renamed it. */
+/**
+ * A saved model passed the live check, so the provider has since dropped or renamed it. A model picked
+ * for one feature or thread says nothing about the connection's own model, so only the message is
+ * returned and the connection stays as it is.
+ */
 export async function markModelNotServed({
   userId,
   aiClient,
@@ -93,7 +97,7 @@ export async function markModelNotServed({
 }): Promise<string> {
   const message = buildModelNotServedMessage({ modelId: aiClient.modelId });
 
-  if (aiClient.connectionId) {
+  if (aiClient.connectionId && !aiClient.modelOverridden) {
     await markConnectionInvalid({ userId, connectionId: aiClient.connectionId, errorMessage: message });
   }
 
