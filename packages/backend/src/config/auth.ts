@@ -17,6 +17,7 @@ import { CLIENT_IP_HEADER } from '@middlewares/client-ip-header';
 import { redisClient } from '@root/redis-client';
 import { appName, fromEmail, isEmailEnabled } from '@services/email';
 import { sendEmail } from '@services/email/send-email';
+import { OAUTH_PROVIDER_SCOPES } from '@services/mcp/oauth-scopes';
 import { createAppUserWithUniqueUsername, seedUserDefaults } from '@services/user/create-user-with-defaults.service';
 import { sendPasswordResetEmail } from '@services/user/send-password-reset-email';
 import { areSignupsOpen } from '@services/user/signups-open.service';
@@ -315,13 +316,8 @@ export const auth = betterAuth({
     oauthProvider({
       loginPage: `${process.env.AUTH_ORIGIN || 'https://localhost:8100'}/sign-in`,
       consentPage: `${process.env.AUTH_ORIGIN || 'https://localhost:8100'}/oauth/authorize`,
-      // 'claudeai' is a no-op scope required as a workaround: Claude.ai adds it to
-      // client registration requests and better-auth rejects unknown scopes with 400.
-      // See: https://github.com/anthropics/claude-ai-mcp/issues/111
-      // finance:write and finance:delete gate mutation tools. They're accepted by the
-      // consent flow but not advertised in public metadata until the first tool using
-      // them ships – see oauth-metadata.route.ts and the static .well-known mirrors.
-      scopes: ['finance:read', 'finance:write', 'finance:delete', 'profile:read', 'offline_access', 'claudeai'],
+      // The MCP scopes plus the 'claudeai' workaround; see oauth-scopes.ts.
+      scopes: [...OAUTH_PROVIDER_SCOPES],
       accessTokenExpiresIn: 72 * 60 * 60, // 72 hours
       refreshTokenExpiresIn: 60 * 24 * 60 * 60, // 60 days
       allowDynamicClientRegistration: true,

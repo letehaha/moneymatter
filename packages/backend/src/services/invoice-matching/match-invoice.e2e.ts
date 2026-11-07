@@ -48,6 +48,9 @@ const invoiceAnswer = (overrides: Record<string, unknown> = {}) =>
     issueDate: ISSUE_DATE,
     invoiceNumber: 'INV-2026-0042',
     invoiceUrl: 'https://acme.test/invoices/42',
+    issueTime: null,
+    payeeName: null,
+    categoryName: null,
     ...overrides,
   });
 
@@ -60,6 +63,9 @@ const notAnInvoiceAnswer = JSON.stringify({
   issueDate: null,
   invoiceNumber: null,
   invoiceUrl: null,
+  issueTime: null,
+  payeeName: null,
+  categoryName: null,
 });
 
 const correctedInvoice = (overrides: Record<string, unknown> = {}) => ({

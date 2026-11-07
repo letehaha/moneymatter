@@ -1,3 +1,4 @@
+import { mcpToolsetsFromScopes } from '@bt/shared/types';
 import { CustomError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
@@ -169,7 +170,8 @@ router.post('/', async (req: Request, res: Response) => {
 
     // New session — must be an initialization request
     if (req.body?.method === 'initialize') {
-      const userId = req.mcpAuthInfo!.extra.userId;
+      const { scopes, extra } = req.mcpAuthInfo!;
+      const userId = extra.userId;
 
       const transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: () => randomUUID(),
@@ -184,7 +186,9 @@ router.post('/', async (req: Request, res: Response) => {
         if (sid) removeSession({ sessionId: sid });
       };
 
-      const server = createMcpServer();
+      // The session keeps the toolsets of the token it started with; picking others on the consent
+      // screen means reconnecting the app.
+      const server = createMcpServer({ toolsets: mcpToolsetsFromScopes({ scopes }) });
       await server.connect(transport);
       await runWithBalanceRevalueBatch(() => transport.handleRequest(req, res, req.body));
       return;

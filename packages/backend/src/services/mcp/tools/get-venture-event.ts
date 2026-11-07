@@ -1,29 +1,16 @@
 import { recordId } from '@common/lib/zod/custom-types';
-import { trackMcpToolUsed } from '@js/utils/posthog';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { getVentureEvent } from '@services/venture/events/get.service';
 
-import { getUserId, jsonContent } from './helpers';
+import { defineTool } from '../define-tool';
 
-const inputSchema = {
-  eventId: recordId().describe('Venture event ID (from list_venture_events)'),
-};
-
-export function registerGetVentureEvent(server: McpServer) {
-  server.registerTool(
-    'get_venture_event',
-    {
-      description:
-        'Retrieve a single venture event by id, including its link rows (bank transactions linked to this event). Obtain the eventId from list_venture_events.',
-      inputSchema,
-    },
-    async (args, extra) => {
-      const userId = getUserId({ extra });
-      trackMcpToolUsed({ userId, tool: 'get_venture_event', clientId: extra.authInfo?.clientId });
-
-      const event = await getVentureEvent({ userId, eventId: args.eventId });
-
-      return jsonContent({ data: event });
-    },
-  );
-}
+export const getVentureEventTool = defineTool({
+  name: 'get_venture_event',
+  toolset: 'ventures',
+  access: 'read',
+  description:
+    'Retrieve a single venture event by id, including its link rows (bank transactions linked to this event). Obtain the eventId from list_venture_events.',
+  input: {
+    eventId: recordId().describe('Venture event ID (from list_venture_events)'),
+  },
+  run: ({ userId, args }) => getVentureEvent({ userId, eventId: args.eventId }),
+});

@@ -3,7 +3,7 @@ import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
-import { endOfDay, startOfDay, subDays } from 'date-fns';
+import { endOfDay, startOfDay, subDays, subMonths } from 'date-fns';
 
 // 50.00 sits inside its own ±5000-cent recommendation window, so every row is a candidate by amount.
 const createFiftyOf =
@@ -120,6 +120,44 @@ describe('getRefundRecommendations', () => {
 
         expect(response.some((tx) => tx.id === incomeInRange.id)).toBe(true);
         expect(response.some((tx) => tx.id === incomeOutOfRange.id)).toBe(false);
+      });
+    });
+
+    describe('date window', () => {
+      it('only recommends candidates from the last 6 months', async () => {
+        const account = await helpers.createAccount({ raw: true });
+
+        const [expenseTx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 50,
+            transactionType: TRANSACTION_TYPES.expense,
+          }),
+          raw: true,
+        });
+        const [recentIncome] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 50,
+            transactionType: TRANSACTION_TYPES.income,
+            time: subMonths(new Date(), 3).toISOString(),
+          }),
+          raw: true,
+        });
+        const [staleIncome] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 50,
+            transactionType: TRANSACTION_TYPES.income,
+            time: subMonths(new Date(), 8).toISOString(),
+          }),
+          raw: true,
+        });
+
+        const response = await helpers.getRefundRecommendations({ transactionId: expenseTx.id, raw: true });
+
+        expect(response.some((tx) => tx.id === recentIncome.id)).toBe(true);
+        expect(response.some((tx) => tx.id === staleIncome.id)).toBe(false);
       });
     });
 
@@ -496,6 +534,37 @@ describe('getRefundRecommendations', () => {
         });
 
         expect(unknownAccount).toEqual([]);
+      });
+
+      it("returns an empty array for another user's transaction or account", async () => {
+        const otherUser = await helpers.provisionSecondUserWithBaseCurrency();
+        const foreign = await helpers.asUser({
+          cookies: otherUser.cookies,
+          fn: async () => {
+            const account = await helpers.createAccount({ raw: true });
+            const category = await helpers.addCustomCategory({ name: 'Other', color: '#0000FF', raw: true });
+            const [expense] = await helpers.createTransaction({
+              payload: helpers.buildTransactionPayload({
+                accountId: account.id,
+                categoryId: category.id,
+                amount: 50,
+                transactionType: TRANSACTION_TYPES.expense,
+              }),
+              raw: true,
+            });
+            return { accountId: account.id, transactionId: expense.id };
+          },
+        });
+
+        expect(await helpers.getRefundRecommendations({ transactionId: foreign.transactionId, raw: true })).toEqual([]);
+        expect(
+          await helpers.getRefundRecommendations({
+            transactionType: TRANSACTION_TYPES.expense,
+            originAmount: 50,
+            accountId: foreign.accountId,
+            raw: true,
+          }),
+        ).toEqual([]);
       });
     });
 

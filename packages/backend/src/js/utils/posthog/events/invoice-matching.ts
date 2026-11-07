@@ -31,3 +31,35 @@ export function trackInvoiceMatchRequested({
     },
   });
 }
+
+/** Fired once per successfully read receipt; the flags show how often each suggestion lands. */
+export function trackReceiptScanned({
+  userId,
+  transactionType,
+  provider,
+  modelId,
+  hasAccount,
+  hasPayee,
+  hasCategory,
+}: {
+  userId: string | number;
+  transactionType: string;
+  provider: string;
+  modelId: string;
+  hasAccount: boolean;
+  hasPayee: boolean;
+  hasCategory: boolean;
+}): void {
+  trackEvent({
+    userId,
+    event: 'receipt_scanned',
+    properties: {
+      transaction_type: transactionType,
+      provider,
+      model_id: modelId,
+      has_suggested_account: hasAccount,
+      has_suggested_payee: hasPayee,
+      has_suggested_category: hasCategory,
+    },
+  });
+}

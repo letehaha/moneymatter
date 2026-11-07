@@ -258,6 +258,7 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
 
   // MCP connected apps
   mcpConnectedApps: ['mcp-connected-apps'] as const,
+  mcpToolsets: ['mcp-toolsets'] as const,
 
   // AI settings
   aiFeaturesStatus: ['ai-settings', 'features'] as const,

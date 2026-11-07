@@ -10,8 +10,9 @@ jest.mock('@services/tx-refunds/get-refund-for-transaction-by-id.service', () =>
   getRefundsForTransactionById: jest.fn(),
 }));
 
-import { registerGetRefundLinks } from './get-refund-links';
-import { registerLinkRefund } from './link-refund';
+import { registerDefinedTool, type ToolDef } from '../define-tool';
+import { getRefundLinksTool } from './get-refund-links';
+import { linkRefundTool } from './link-refund';
 
 const REFUND_ID = '019f7e9e-b5f4-729c-9881-9544b15f4e3d';
 const PURCHASE_A = '019f7e9e-b5f4-729c-9881-9544b15f4e3e';
@@ -19,13 +20,16 @@ const PURCHASE_B = '019f7e9e-b5f4-729c-9881-9544b15f4e3f';
 
 type Handler = (args: Record<string, unknown>, extra: unknown) => Promise<{ content: Array<{ text: string }> }>;
 
-const toolOf = ({ register }: { register: (server: McpServer) => void }) => {
-  let tool: { schema: z.ZodObject<z.ZodRawShape>; handler: Handler } | undefined;
-  register({
-    registerTool: (_name: string, config: { inputSchema: z.ZodRawShape }, handler: Handler) => {
-      tool = { schema: z.object(config.inputSchema), handler };
-    },
-  } as unknown as McpServer);
+const toolOf = ({ register }: { register: ToolDef }) => {
+  let tool: { schema: z.ZodObject; handler: Handler } | undefined;
+  registerDefinedTool({
+    server: {
+      registerTool: (_name: string, config: { inputSchema: z.ZodObject }, handler: Handler) => {
+        tool = { schema: config.inputSchema, handler };
+      },
+    } as unknown as McpServer,
+    def: register,
+  });
   if (!tool) throw new Error('Tool did not register');
   return tool;
 };
@@ -38,8 +42,8 @@ const call = async ({ tool, args }: { tool: ReturnType<typeof toolOf>; args: Rec
 };
 
 describe('MCP refund link tools', () => {
-  const link = toolOf({ register: registerLinkRefund });
-  const getLinks = toolOf({ register: registerGetRefundLinks });
+  const link = toolOf({ register: linkRefundTool });
+  const getLinks = toolOf({ register: getRefundLinksTool });
 
   it('link_refund rejects a share below one cent', () => {
     const base = { originalTxId: PURCHASE_A, refundTxId: REFUND_ID };

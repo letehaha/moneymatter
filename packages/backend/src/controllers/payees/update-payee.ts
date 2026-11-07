@@ -1,29 +1,16 @@
-import { CATEGORIZATION_MODE } from '@bt/shared/types';
 import { recordId } from '@common/lib/zod/custom-types';
-import { logoFieldsShape, refineLogoFields } from '@controllers/common/logo-fields.schema';
 import { createController } from '@controllers/helpers/controller-factory';
-import { locationSchema } from '@controllers/transactions.controller/schemas';
 import * as payeesService from '@services/payees';
 import { z } from 'zod';
 
 import { serializePayee } from './serializer';
+import { updatePayeeBodySchema } from './shared-schemas';
 
 const schema = z.object({
   params: z.object({
     id: recordId(),
   }),
-  body: z
-    .object({
-      name: z.string().trim().min(1).max(200).optional(),
-      defaultCategoryId: recordId().nullable().optional(),
-      categorizationMode: z.nativeEnum(CATEGORIZATION_MODE).optional(),
-      defaultTagIds: z.array(recordId()).optional(),
-      defaultLocation: locationSchema.nullable().optional(),
-      // Absent key → no change; a key that changes the stored value stamps
-      // logoSource 'manual'; a null that clears nothing writes nothing.
-      ...logoFieldsShape,
-    })
-    .superRefine((data, ctx) => refineLogoFields({ data, ctx })),
+  body: updatePayeeBodySchema,
 });
 
 export default createController(schema, async ({ user, params, body }) => {

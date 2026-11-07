@@ -1,6 +1,7 @@
 import { app } from '@root/app';
 import { API_PREFIX } from '@root/config';
 import type { matchInvoice as apiMatchInvoice } from '@services/invoice-matching/match-invoice.service';
+import type { ReceiptScanResult } from '@services/invoice-matching/scan-receipt.service';
 import request from 'supertest';
 
 import { followBackgroundJob, makeRequest } from './common';
@@ -13,24 +14,26 @@ export interface MatchInvoiceResult {
   errorMessage: string | null;
 }
 
-/** POSTs raw invoice bytes the way the frontend uploads them. */
-export async function matchInvoice({
-  file,
-  transactionType,
-  contentType = 'application/octet-stream',
-}: {
+interface UploadParams {
   file: Buffer;
   transactionType?: string;
   contentType?: string;
-}): Promise<MatchInvoiceResult> {
+}
+
+async function uploadDocument<T>({
+  url,
+  file,
+  transactionType,
+  contentType = 'application/octet-stream',
+}: UploadParams & { url: string }): Promise<{ statusCode: number; response: T | null; errorMessage: string | null }> {
   const base = request(app)
-    .post(`${API_PREFIX}/transactions/match-invoice`)
+    .post(`${API_PREFIX}${url}`)
     .query(transactionType ? { transactionType } : {})
     .set('Content-Type', contentType);
   if (global.APP_AUTH_COOKIES) base.set('Cookie', global.APP_AUTH_COOKIES);
 
   const result = await followBackgroundJob({ response: await base.send(file) });
-  const body = result.body as { response?: MatchInvoiceResponse & { message?: string } };
+  const body = result.body as { response?: T & { message?: string } };
 
   return {
     statusCode: result.status,
@@ -38,6 +41,16 @@ export async function matchInvoice({
     errorMessage: result.status === 200 ? null : (body.response?.message ?? null),
   };
 }
+
+/** POSTs raw invoice bytes the way the frontend uploads them. */
+export const matchInvoice = (params: UploadParams): Promise<MatchInvoiceResult> =>
+  uploadDocument<MatchInvoiceResponse>({ url: '/transactions/match-invoice', ...params });
+
+export const extractReceipt = (params: UploadParams) =>
+  uploadDocument<ReceiptScanResult>({
+    url: '/transactions/extract-receipt',
+    ...params,
+  });
 
 /** Re-ranks candidates for invoice fields the user corrected; no file and no AI involved. */
 export async function rematchInvoice({ invoice }: { invoice: Record<string, unknown> }): Promise<MatchInvoiceResult> {

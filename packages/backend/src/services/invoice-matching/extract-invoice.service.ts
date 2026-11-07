@@ -21,6 +21,9 @@ const SYSTEM_PROMPT = [
   'currencyCode is the ISO 4217 code of that total, e.g. USD, EUR, SEK.',
   'vendorName is the party that issued the document; customerName is the party it is billed to, null when none is named.',
   'issueDate is the date the document was issued or the order was placed, in YYYY-MM-DD, never the due or delivery date.',
+  'issueTime is the time of day printed next to that date, in 24-hour HH:mm, null when none is printed.',
+  'payeeName is the entry from the known payees list that names the same merchant as vendorName, copied exactly; null when none clearly does or no list is given.',
+  'categoryName is the entry from the known categories list that best fits what was bought, copied exactly; null when no list is given.',
   'invoiceUrl is an https link printed in the document that opens this exact document or its payment page, so it carries an identifier or token unique to it.',
   'A vendor homepage, customer account, order-status, FAQ, support or terms page is not an invoice link: report null for those.',
   'Never invent a URL and never guess one from the vendor name; report null when none is printed.',
@@ -30,6 +33,11 @@ const SYSTEM_PROMPT = [
 // ponytail: a link to one invoice carries an id or token, so a digit-free path is taken for
 // a generic page (order status, FAQ) and dropped. Revisit if a real invoice link gets lost.
 const DOCUMENT_SPECIFIC_URL = /^https:\/\/[^/]+\/.*\d/;
+
+const TIME_OF_DAY = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+// ponytail: names past this cap are never offered to the AI. Rank by usage if large payee lists miss matches.
+const MAX_KNOWN_ENTRIES = 1000;
 
 // ponytail: a long scan loses every page past this cap. Raise it if totals get missed.
 const MAX_SCANNED_PDF_PAGES = 3;
@@ -42,8 +50,11 @@ const aiAnswerSchema = z.object({
   totalAmount: z.number().nullable(),
   currencyCode: z.string().nullable(),
   issueDate: z.string().nullable(),
+  issueTime: z.string().nullable(),
   invoiceNumber: z.string().nullable(),
   invoiceUrl: z.string().nullable(),
+  payeeName: z.string().nullable(),
+  categoryName: z.string().nullable(),
 });
 
 export const invoiceSchema = z.object({
@@ -87,8 +98,17 @@ async function renderPdfPages({ bytes }: { bytes: Buffer }): Promise<FilePart[]>
   }
 }
 
+const knownListParts = ({ label, names }: { label: string; names: string[] }): TextPart[] =>
+  names.length ? [{ type: 'text', text: `${label}:\n${names.slice(0, MAX_KNOWN_ENTRIES).join('\n')}` }] : [];
+
 interface ExtractInvoiceResult {
   invoice: ExtractedInvoice;
+  /** `HH:mm` as printed, in the document's local time. */
+  issueTime: string | null;
+  /** One of `knownPayeeNames`, as the AI returned it. */
+  payeeName: string | null;
+  /** One of `knownCategoryNames`, as the AI returned it. */
+  categoryName: string | null;
   provider: string;
   modelId: string;
 }
@@ -102,11 +122,15 @@ export async function extractInvoice({
   bytes,
   transactionType,
   allowOperatorKey,
+  knownPayeeNames = [],
+  knownCategoryNames = [],
 }: {
   userId: number;
   bytes: Buffer;
   transactionType: TRANSACTION_TYPES;
   allowOperatorKey?: boolean;
+  knownPayeeNames?: string[];
+  knownCategoryNames?: string[];
 }): Promise<ExtractInvoiceResult> {
   const mimeType = detectMimeType({ bytes });
   if (!mimeType) {
@@ -143,7 +167,12 @@ export async function extractInvoice({
       messages: [
         {
           role: 'user',
-          content: [{ type: 'text', text: 'Report the invoice fields for the attached document.' }, ...documentParts],
+          content: [
+            { type: 'text', text: 'Report the invoice fields for the attached document.' },
+            ...knownListParts({ label: 'Known payees', names: knownPayeeNames }),
+            ...knownListParts({ label: 'Known categories', names: knownCategoryNames }),
+            ...documentParts,
+          ],
         },
       ],
       abortSignal,
@@ -185,5 +214,12 @@ export async function extractInvoice({
     throw new ValidationError({ message: t({ key: 'invoiceMatching.incompleteInvoice' }) });
   }
 
-  return { invoice: parsed.data, provider: aiClient.provider, modelId: aiClient.modelId };
+  return {
+    invoice: parsed.data,
+    issueTime: answer.issueTime && TIME_OF_DAY.test(answer.issueTime) ? answer.issueTime : null,
+    payeeName: answer.payeeName,
+    categoryName: answer.categoryName,
+    provider: aiClient.provider,
+    modelId: aiClient.modelId,
+  };
 }

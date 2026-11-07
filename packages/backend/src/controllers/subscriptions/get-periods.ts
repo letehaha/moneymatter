@@ -3,16 +3,13 @@ import { createController } from '@controllers/helpers/controller-factory';
 import { getPeriods } from '@services/subscriptions/get-periods';
 import { z } from 'zod';
 
+import { getPeriodsQuerySchema } from './shared-schemas';
+
 const schema = z.object({
   params: z.object({
     id: recordId(),
   }),
-  query: z
-    .object({
-      limit: z.coerce.number().int().positive().max(50).optional(),
-      offset: z.coerce.number().int().nonnegative().optional(),
-    })
-    .optional(),
+  query: getPeriodsQuerySchema.optional(),
 });
 
 export default createController(schema, async ({ user, params, query }) => {

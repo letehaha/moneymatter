@@ -1,32 +1,22 @@
-import { trackMcpToolUsed } from '@js/utils/posthog';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { createTagBodyShape } from '@controllers/tags/shared-schemas';
 import { createTag } from '@services/tags/create-tag';
-import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { defineTool } from '../define-tool';
 
-const inputSchema = {
-  name: z.string().describe('Tag name (must be unique for this user).'),
-  color: z.string().describe('Hex color code for the tag (e.g. "#FF5733").'),
-  icon: z.string().optional().describe('Optional icon identifier for the tag.'),
-  description: z.string().optional().describe('Optional description of the tag.'),
-};
-
-export function registerCreateTag(server: McpServer) {
-  server.registerTool(
-    'create_tag',
-    {
-      description:
-        'Create a new tag that can be assigned to transactions. Use when the user wants to label or categorize transactions with a custom tag. Returns the created tag with its ID.',
-      inputSchema,
-    },
-    async (args, extra) => {
-      const userId = getUserId({ extra });
-      requireScope({ extra, scope: 'finance:write' });
-      trackMcpToolUsed({ userId, tool: 'create_tag', clientId: extra.authInfo?.clientId });
-
-      const tag = await createTag({ userId, ...args });
-      return jsonContent({ data: tag });
-    },
-  );
-}
+export const createTagTool = defineTool({
+  name: 'create_tag',
+  toolset: 'core',
+  access: 'write',
+  description:
+    'Create a new tag that can be assigned to transactions. Use when the user wants to label or categorize transactions with a custom tag. Returns the created tag with its ID.',
+  input: {
+    name: createTagBodyShape.name.describe('Tag name (must be unique for this user).'),
+    color: createTagBodyShape.color.describe('Hex color code for the tag (e.g. "#FF5733").'),
+    icon: createTagBodyShape.icon.describe('Optional icon identifier for the tag.'),
+    description: createTagBodyShape.description.describe('Optional description of the tag.'),
+  },
+  run: async ({ userId, args }) => {
+    const tag = await createTag({ userId, ...args });
+    return tag;
+  },
+});
