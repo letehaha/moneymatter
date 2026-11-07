@@ -9,6 +9,7 @@ import bulkDelete from '@controllers/transactions.controller/bulk-delete';
 import bulkUpdate from '@controllers/transactions.controller/bulk-update';
 import createTransaction from '@controllers/transactions.controller/create-transaction';
 import deleteTransaction from '@controllers/transactions.controller/delete-transaction';
+import extractReceipt from '@controllers/transactions.controller/extract-receipt';
 import getPlannedSummary from '@controllers/transactions.controller/get-planned-summary';
 import getPortfolioLink from '@controllers/transactions.controller/get-portfolio-link';
 import getTransactions from '@controllers/transactions.controller/get-transaction';
@@ -72,6 +73,14 @@ router.post(
   attachmentUploadRateLimit,
   express.raw({ type: 'application/octet-stream', limit: ATTACHMENT_MAX_FILE_BYTES }),
   matchInvoice,
+);
+router.post(
+  '/extract-receipt',
+  requireFeature(FEATURES.attachments),
+  requireFeatureOrTrial(FEATURES.invoice_matching),
+  attachmentUploadRateLimit,
+  express.raw({ type: 'application/octet-stream', limit: ATTACHMENT_MAX_FILE_BYTES }),
+  extractReceipt,
 );
 router.post(
   '/match-invoice/candidates',
