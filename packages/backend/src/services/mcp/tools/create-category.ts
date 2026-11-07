@@ -32,11 +32,12 @@ export const createCategoryTool = defineTool({
       'true also applies defaultTagIds when AI categorization picks this category',
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     // A top-level category needs a color, a rule that spans fields, so it runs on the REST body schema.
     const { type, ...fields } = args;
-    const body = createCategoryBodySchema.parse(fields);
-
+    return { type, body: createCategoryBodySchema.parse(fields) };
+  },
+  run: async ({ userId, args: { type, body } }) => {
     const category = await createCategory({
       userId,
       name: body.name,

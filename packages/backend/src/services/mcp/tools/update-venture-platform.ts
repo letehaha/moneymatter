@@ -28,9 +28,7 @@ export const updateVenturePlatformTool = defineTool({
       'New default hurdle rate as a decimal fraction in [0,1].',
     ),
   },
-  run: ({ userId, args: { platformId, ...fields } }) => {
-    // The at-least-one-field rule spans fields, so it runs on the REST body schema.
-    const body = updateVenturePlatformBodySchema.parse(fields);
-    return updateVenturePlatform({ userId, platformId, ...body });
-  },
+  // The at-least-one-field rule spans fields, so it runs on the REST body schema.
+  validate: ({ args: { platformId, ...fields } }) => ({ platformId, ...updateVenturePlatformBodySchema.parse(fields) }),
+  run: ({ userId, args }) => updateVenturePlatform({ userId, ...args }),
 });

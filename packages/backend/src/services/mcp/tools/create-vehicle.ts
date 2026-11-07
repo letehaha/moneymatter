@@ -38,8 +38,9 @@ export const createVehicleTool = defineTool({
       'Odometer reading, a whole number; null for unknown',
     ),
   },
+  validate: ({ args }) => createVehicleBodySchema.parse(args),
   run: async ({ userId, args }) => {
-    const vehicle = await createVehicle({ userId, ...createVehicleBodySchema.parse(args) });
+    const vehicle = await createVehicle({ userId, ...args });
 
     return presentVehicle({ vehicle, userId });
   },

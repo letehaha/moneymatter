@@ -19,8 +19,6 @@ export const setExchangeRatesTool = defineTool({
       .nonempty()
       .describe('Pairs to set: { baseCode, quoteCode, rate > 0 }. Each pair needs its opposite in the same call.'),
   },
-  run: ({ userId, args }) => {
-    const pairs = setExchangeRatePairsSchema.parse(args.pairs);
-    return editUserExchangeRates({ userId, pairs });
-  },
+  validate: ({ args }) => ({ pairs: setExchangeRatePairsSchema.parse(args.pairs) }),
+  run: ({ userId, args: { pairs } }) => editUserExchangeRates({ userId, pairs }),
 });
