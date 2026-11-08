@@ -6,6 +6,7 @@ const ROUTER_LAYOUTS = Object.freeze({
 export const ROUTES_NAMES = Object.freeze({
   dashboard: ROUTER_LAYOUTS.dashboard,
   home: `${ROUTER_LAYOUTS.dashboard}.home`,
+  notificationOpen: `${ROUTER_LAYOUTS.dashboard}.notification-open`,
   accounts: `${ROUTER_LAYOUTS.dashboard}.accounts`,
   account: `${ROUTER_LAYOUTS.dashboard}.account`,
   accountsVehicleDetails: `${ROUTER_LAYOUTS.dashboard}.accounts.vehicle-details`,
@@ -65,6 +66,7 @@ export const ROUTES_NAMES = Object.freeze({
   settingsAppearance: `${ROUTER_LAYOUTS.dashboard}.settings.appearance`,
   settingsLanguage: `${ROUTER_LAYOUTS.dashboard}.settings.language`,
   settingsGeneral: `${ROUTER_LAYOUTS.dashboard}.settings.general`,
+  settingsNotifications: `${ROUTER_LAYOUTS.dashboard}.settings.notifications`,
   settingsAi: `${ROUTER_LAYOUTS.dashboard}.settings.ai`,
   settingsAiFeatures: `${ROUTER_LAYOUTS.dashboard}.settings.ai.features`,
   settingsAiModels: `${ROUTER_LAYOUTS.dashboard}.settings.ai.models`,

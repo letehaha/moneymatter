@@ -12,6 +12,7 @@ import type {
   SavedTransactionView,
   CurrencyDisplayPreference,
   UnrealizedLossAlertsSettings,
+  PushGroup,
 } from '@bt/shared/types';
 
 export interface DashboardWidgetConfig {
@@ -159,6 +160,12 @@ export interface UserSettingsSchema {
   fire?: FireSettings;
   /** Server-written monthly FIRE settings snapshots, read by the pace comparison. */
   fireHistory?: FireSettingsSnapshot[];
+  notifications?: {
+    push?: {
+      /** Web Push groups the user switched. A group that was never set takes `PUSH_GROUP_DEFAULTS`. */
+      groups?: Partial<Record<PushGroup, boolean>>;
+    };
+  };
 }
 
 export const getUserSettings = async (): Promise<UserSettingsSchema> => {

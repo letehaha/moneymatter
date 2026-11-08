@@ -25,4 +25,17 @@ describe('getDeviceName', () => {
   ])('%s -> %s', (userAgent, expected) => {
     expect(getDeviceName({ userAgent })).toBe(expected);
   });
+
+  it('uses the given fallback for an unknown agent', () => {
+    expect(getDeviceName({ userAgent: 'curl/8.0', fallback: 'Browser' })).toBe('Browser');
+  });
+
+  it('keeps a recognised agent when a fallback is given', () => {
+    expect(
+      getDeviceName({
+        userAgent: 'Mozilla/5.0 (X11; Linux x86_64; rv:129.0) Gecko/20100101 Firefox/129.0',
+        fallback: 'Browser',
+      }),
+    ).toBe('Firefox on Linux');
+  });
 });

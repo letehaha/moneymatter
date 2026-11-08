@@ -48,4 +48,10 @@ case "$(curl -sS -w '\n%{http_code}' "$BASE/demo")" in
   *) echo "FAIL /demo: not the noindex landing page"; fail=1 ;;
 esac
 
+# The push service worker must be revalidated on every check, or a fixed worker never reaches users.
+sw_headers=$(curl -sS -o /dev/null -D - -w 'status:%{http_code}\n' "$BASE/sw.js" | tr -d '\r')
+case "$sw_headers" in *'status:200'*) ;; *) echo "FAIL /sw.js: not HTTP 200"; fail=1 ;; esac
+printf '%s\n' "$sw_headers" | grep -iq '^cache-control:.*no-cache' || { echo "FAIL /sw.js: Cache-Control is not no-cache"; fail=1; }
+printf '%s\n' "$sw_headers" | grep -iq '^content-type:.*javascript' || { echo "FAIL /sw.js: not a JavaScript content type"; fail=1; }
+
 exit "$fail"

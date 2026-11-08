@@ -26,6 +26,7 @@ export * from './fire';
 export * from './stats';
 export * from './sharing';
 export * from './notifications';
+export * from './web-push';
 export * from './attachments';
 export * from './invoice-matching';
 export * from './entity-logo';
