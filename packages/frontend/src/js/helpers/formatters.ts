@@ -5,6 +5,7 @@ export const formatFiat = (value: unknown): string => Number(value).toFixed(2);
 
 // Module-level so plain helpers, not just composables, follow the user's setting.
 export const currencyDisplayPreference = ref<CurrencyDisplayPreference>('symbol');
+export const numberFormatLocale = ref('en-US');
 
 export function toLocalNumber(
   value: string | number | undefined | null,
@@ -13,7 +14,7 @@ export function toLocalNumber(
   } = {},
 ): string {
   if (value !== undefined && value !== null) {
-    return Number(value).toLocaleString(options.locale ?? 'en-US', {
+    return Number(value).toLocaleString(options.locale ?? numberFormatLocale.value, {
       ...options,
       maximumFractionDigits: options.maximumFractionDigits ?? 5,
       minimumFractionDigits: options.minimumFractionDigits ?? 2,

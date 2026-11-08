@@ -115,6 +115,7 @@
 </template>
 
 <script lang="ts" setup>
+import { numberFormatLocale } from '@/js/helpers/formatters';
 import {
   type AvailableAccount,
   connectProvider,
@@ -252,7 +253,7 @@ const getErrorMessage = (error: unknown): string | undefined => {
 };
 
 const formatBalance = (balance: number, currency: string) => {
-  return new Intl.NumberFormat(undefined, {
+  return new Intl.NumberFormat(numberFormatLocale.value, {
     style: 'currency',
     currency,
   }).format(balance);
