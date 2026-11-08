@@ -3,6 +3,7 @@ import { t } from '@i18n/index';
 import { NotFoundError } from '@js/errors';
 import Accounts from '@models/accounts.model';
 import { findTransactions, updateTransactions } from '@models/transactions-query';
+import { reconciliationRemovedWhere } from '@models/transactions-query/deletion-where';
 import { withTransaction } from '@services/common/with-transaction';
 import { Op } from 'sequelize';
 
@@ -17,7 +18,7 @@ export const restoreTransactions = withTransaction(
     transactionIds: RecordId[];
   }): Promise<ReconciliationRestoreResponse> => {
     const rows = await findTransactions({
-      where: { id: { [Op.in]: transactionIds }, deletedAt: { [Op.ne]: null } },
+      where: { id: { [Op.in]: transactionIds }, deletedAt: { [Op.ne]: null }, ...reconciliationRemovedWhere },
       paranoid: false,
       planned: 'include',
       access: { creator: userId },
@@ -41,7 +42,7 @@ export const restoreTransactions = withTransaction(
     });
 
     await updateTransactions({
-      values: { deletedAt: null, mergedIntoId: null },
+      values: { deletedAt: null, mergedIntoId: null, deletionReason: null },
       where: { id: { [Op.in]: transactionIds } },
       paranoid: false,
       planned: 'include',

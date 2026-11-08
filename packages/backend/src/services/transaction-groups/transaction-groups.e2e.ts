@@ -10,6 +10,11 @@ import * as helpers from '@tests/helpers';
 // so the fixture is built in bounded batches rather than one unbounded Promise.all.
 const CREATE_BATCH_SIZE = 10;
 
+// transactionCount is attached via a correlated subquery on the include, so it is not
+// part of the TransactionGroups model type – read it through a narrowed shape.
+const readGroups = ({ transactionGroups }: { transactionGroups?: unknown }) =>
+  (transactionGroups ?? []) as { name: string; transactionCount: number }[];
+
 describe('Transaction Groups API', () => {
   const createTransactions = async ({ accountId, count }: { accountId: RecordId; count: number }) => {
     const txs: { id: string }[] = [];
@@ -214,11 +219,6 @@ describe('Transaction Groups API', () => {
         limit: 2,
         raw: true,
       });
-
-      // transactionCount is attached via a correlated subquery on the include, so it is not
-      // part of the TransactionGroups model type – read it through a narrowed shape.
-      const readGroups = (tx: (typeof windowed)[number]) =>
-        (tx.transactionGroups ?? []) as unknown as { name: string; transactionCount: number }[];
 
       const grouped = windowed.filter((tx) => readGroups(tx).some((g) => g.name === 'Windowed Group'));
       expect(grouped.length).toBeGreaterThan(0);
@@ -520,7 +520,7 @@ describe('Transaction Groups API', () => {
   });
 
   describe('Auto-dissolve on transaction deletion', () => {
-    it('auto-dissolves group when deleting a transaction leaves < 2 members', async () => {
+    it('keeps a group whose member is trashed and dissolves it once that member is deleted for good', async () => {
       const account = await helpers.createAccount({ raw: true });
       const txs = await createTransactions({ accountId: account.id, count: 2 });
 
@@ -532,10 +532,13 @@ describe('Transaction Groups API', () => {
         raw: true,
       });
 
-      // Delete one transaction
       await helpers.deleteTransaction({ id: txs[0]!.id });
 
-      // Group should be auto-dissolved
+      const whileTrashed = await helpers.getTransactionGroupById({ id: group.id, raw: true });
+      expect(whileTrashed.transactions!.map((tx) => tx.id)).toEqual([txs[1]!.id]);
+
+      await helpers.deleteTrash({ transactionIds: [txs[0]!.id as RecordId], raw: true });
+
       const check = await helpers.getTransactionGroupById({ id: group.id, raw: false });
       expect(check.statusCode).toBe(ERROR_CODES.NotFoundError);
     });

@@ -11,7 +11,7 @@ export const bulkDeleteTransactionsTool = defineTool({
   toolset: 'core',
   access: 'delete',
   description:
-    'Permanently delete many transactions at once, by ids or by filters. DESTRUCTIVE: this cannot be undone, and balances change. Before using filters, call get_transactions_summary with the same filters and check the count. Unlike the REST endpoint, empty filters are refused: give at least one filter (a date range, account, category, …) or explicit transactionIds. Deleting one leg of a transfer deletes both. Transactions on bank-connected accounts are refused (planned ones excepted), and so is a delete over the service maximum. Ids you cannot access are skipped; returns deletedIds.',
+    'Move many transactions to Trash at once, by ids or by filters. Balances change; the user can restore them in the app within 30 days, after which they are deleted for good. Before using filters, call get_transactions_summary with the same filters and check the count. Unlike the REST endpoint, empty filters are refused: give at least one filter (a date range, account, category, …) or explicit transactionIds. Deleting one leg of a transfer moves both. Transactions on bank-connected accounts are refused (planned ones excepted), and so is a delete over the service maximum. Ids you cannot access are skipped; transactions that belong to a payment, a portfolio or a venture are skipped too and listed in skippedIds. Returns deletedCount, deletedIds and skippedIds.',
   input: {
     transactionIds: z
       .array(recordId())

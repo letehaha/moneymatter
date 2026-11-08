@@ -1,7 +1,7 @@
 import * as apiMethods from '@/api';
 import { OUT_OF_WALLET_ACCOUNT_MOCK } from '@/common/const';
 import { router } from '@/routes';
-import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, type RecordId } from '@bt/shared/types';
 import { faker } from '@faker-js/faker';
 import { createTestingPinia } from '@pinia/testing';
 import { VueQueryPlugin } from '@tanstack/vue-query';
@@ -632,6 +632,12 @@ describe.skip('transactions create/update/delete form', () => {
         dataMocks.buildExternalTransferTransaction(TRANSACTION_TYPES.expense),
       ],
       ['cannot delete external income transfer', dataMocks.buildExternalTransferTransaction(TRANSACTION_TYPES.income)],
+      [
+        'cannot delete payment leg',
+        dataMocks.buildSystemExpenseTransaction({
+          paymentParentId: '00000000-0000-0000-0000-000000000077' as RecordId,
+        }),
+      ],
     ])('%s', async (descr, mock) => {
       const wrapper = await mountComponent({ props: { transaction: mock } });
       expect(await wrapper.find('[aria-label="Delete transaction"]').exists()).toBe(false);

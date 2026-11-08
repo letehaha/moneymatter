@@ -514,18 +514,18 @@ describe('bulk_delete_transactions', () => {
 
   beforeEach(() => {
     resolveTargets.mockResolvedValue([ID_1, ID_2]);
-    bulkDeleteService.mockResolvedValue({ deletedCount: 2, deletedIds: [ID_1, ID_2] });
+    bulkDeleteService.mockResolvedValue({ deletedCount: 2, deletedIds: [ID_1, ID_2], skippedIds: [] });
   });
 
   it('deletes explicit ids', async () => {
     resolveTargets.mockResolvedValue([ID_1]);
-    bulkDeleteService.mockResolvedValue({ deletedCount: 1, deletedIds: [ID_1] });
+    bulkDeleteService.mockResolvedValue({ deletedCount: 1, deletedIds: [ID_1], skippedIds: [] });
 
     const data = await call({ tool, args: { transactionIds: [ID_1] }, extra: DELETE });
 
     expect(resolveTargets).toHaveBeenCalledWith({ userId: 42, transactionIds: [ID_1], selection: undefined });
     expect(bulkDeleteService).toHaveBeenCalledWith({ userId: 42, transactionIds: [ID_1] });
-    expect(data).toEqual({ deletedCount: 1, deletedIds: [ID_1] });
+    expect(data).toEqual({ deletedCount: 1, deletedIds: [ID_1], skippedIds: [] });
   });
 
   it('deletes what the filters match, less the excluded ids, with the filters mapped for the service', async () => {

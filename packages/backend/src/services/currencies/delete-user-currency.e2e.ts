@@ -259,8 +259,7 @@ describe('DELETE /user/currency', () => {
     await helpers.addUserCurrencyByCode({ code: CURRENCY, raw: true });
     const account = await helpers.createAccount({ raw: true });
     const tx = await createTx({ accountId: account.id, originalAmount: 27.5, originalCurrencyCode: CURRENCY });
-    // The delete endpoint hard-deletes, so the trashed state is set directly.
-    await Transactions.update({ deletedAt: new Date() }, { where: { id: tx.id } });
+    await helpers.deleteTransaction({ id: tx.id });
 
     const response = await helpers.deleteUserCurrency({ currencyCode: CURRENCY });
     expect(response.statusCode).toBe(200);

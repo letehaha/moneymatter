@@ -53,7 +53,9 @@ export const validateRefundLinks = async ({ userId, txId }: { userId: number; tx
     lock: sequelizeTx.LOCK.NO_KEY_UPDATE,
   });
 
-  const links = await RefundTransactions.findAll({
+  // Links whose counterpart is in the Trash come back null from the paranoid includes; they are
+  // ignored here and re-checked when that transaction is restored.
+  const allLinks = await RefundTransactions.findAll({
     where: {
       userId,
       [Op.or]: [{ refundTxId: { [Op.in]: touchedTxIds } }, { originalTxId: { [Op.in]: touchedTxIds } }],
@@ -64,6 +66,9 @@ export const validateRefundLinks = async ({ userId, txId }: { userId: number; tx
       { model: TransactionSplits, as: 'split' },
     ],
   });
+  const links = allLinks.filter(
+    (link) => link.refundTransaction && (link.originalTxId === null || link.originalTransaction),
+  );
 
   for (const link of links) {
     const { refundTransaction: refundTx, originalTransaction: originalTx } = link;
@@ -94,6 +99,7 @@ export const validateRefundLinks = async ({ userId, txId }: { userId: number; tx
 
   for (const refundTxId of refundTxIds) {
     const group = links.filter((link) => link.refundTxId === refundTxId);
+    if (!group.length) continue;
     const refundTx = group[0]!.refundTransaction;
 
     if (group.length > 1 && group.some((link) => link.originalTxId === null)) {

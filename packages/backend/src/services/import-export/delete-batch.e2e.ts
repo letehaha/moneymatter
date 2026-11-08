@@ -130,8 +130,15 @@ describe('DELETE /import/batch/:batchId', () => {
     const accountAfterManualDelete = await helpers.getAccount({ id: account.id, raw: true });
     expect(accountAfterManualDelete.initialBalance).not.toBe(account.initialBalance);
 
+    expect((await helpers.getTrash({ raw: true })).map((entry) => entry.id).toSorted()).toEqual(
+      summary.newTransactionIds.toSorted(),
+    );
+
+    // The undo also removes the batch rows sitting in the trash, without moving the balance again.
     const result = await helpers.deleteImportBatch({ batchId: summary.batchId, raw: true });
-    expect(result).toEqual({ deletedCount: 0, deletedIds: [] });
+    expect(result.deletedCount).toBe(summary.newTransactionIds.length);
+    expect(result.deletedIds.toSorted()).toEqual(summary.newTransactionIds.toSorted());
+    expect(await helpers.getTrash({ raw: true })).toEqual([]);
 
     const accountAfterDelete = await helpers.getAccount({ id: account.id, raw: true });
     expect(accountAfterDelete.currentBalance).toBe(account.currentBalance);
@@ -344,7 +351,8 @@ describe('DELETE /import/batch/:batchId', () => {
     expect(historyBeforeUndo.items.map((item) => item.batchId)).toEqual([summary.batchId]);
 
     const result = await helpers.deleteImportBatch({ batchId: summary.batchId, raw: true });
-    expect(result).toEqual({ deletedCount: 0, deletedIds: [] });
+    expect(result.deletedIds.toSorted()).toEqual(summary.newTransactionIds.toSorted());
+    expect(await helpers.getTrash({ raw: true })).toEqual([]);
 
     expect(await helpers.getBatchesHistory({ raw: true })).toEqual({ items: [], totalCount: 0 });
     expect((await helpers.getAccounts()).some((account) => account.id === created.id)).toBe(true);
@@ -412,6 +420,39 @@ describe('DELETE /import/batch/:batchId', () => {
 
     const manualTxAfter = await helpers.getTransactions({ accountIds: [otherAccount.id], raw: true });
     expect(manualTxAfter).toHaveLength(0);
+  });
+
+  it('deletes a trashed linked external transaction too when deleteLinkedTransfers is true', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const summary = await helpers.runCsvImport({ accountId: account.id, currencyCode: account.currencyCode });
+
+    const otherAccount = await helpers.createAccount({ raw: true });
+    const [manualTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: otherAccount.id,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+
+    const linkedBatchTxId = summary.newTransactionIds[0]!;
+    await helpers.linkTransactions({
+      payload: { ids: [[manualTx!.id as RecordId, linkedBatchTxId as RecordId]] },
+      raw: true,
+    });
+    expect((await helpers.deleteTransaction({ id: linkedBatchTxId })).statusCode).toBe(200);
+    const [trashEntry, ...otherEntries] = await helpers.getTrash({ raw: true });
+    expect(otherEntries).toEqual([]);
+    expect(trashEntry!.transactions.map((tx) => tx.id).toSorted()).toEqual([linkedBatchTxId, manualTx!.id].toSorted());
+
+    const result = await helpers.deleteImportBatch({
+      batchId: summary.batchId,
+      deleteLinkedTransfers: true,
+      raw: true,
+    });
+    expect(result.deletedCount).toBe(3);
+    expect(result.deletedIds.toSorted()).toEqual([...summary.newTransactionIds, manualTx!.id].toSorted());
+    expect(await helpers.getTrash({ raw: true })).toEqual([]);
   });
 
   it('deletes an intra-batch transfer pair fully and counts both legs', async () => {

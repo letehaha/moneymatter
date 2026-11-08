@@ -1,4 +1,4 @@
-import { SUBSCRIPTION_PERIOD_STATUSES } from '@bt/shared/types';
+import { SUBSCRIPTION_PERIOD_STATUSES, TRANSACTION_DELETION_REASON } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { ConflictError, NotFoundError } from '@js/errors';
 import { isBankLinkedAccount } from '@models/accounts.model';
@@ -6,6 +6,7 @@ import SubscriptionPeriods from '@models/subscription-periods.model';
 import Transactions from '@models/transactions.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { deleteTransaction } from '@services/transactions/delete-transaction';
+import { deleteTrashed } from '@services/transactions/trash/delete-trashed';
 import { Op } from 'sequelize';
 
 import { findSubscriptionOrThrow } from './helpers';
@@ -88,21 +89,32 @@ export const revertPeriod = withTransaction(
     // (transactionAutoCreated === false) is never deleted — the user keeps their own
     // row, the period just stops pointing at it.
     if (period.transactionId != null && period.transactionAutoCreated) {
-      const tx = await Transactions.findByPk(period.transactionId, { attributes: ['accountId', 'isPlanned'] });
-
+      const tx = await Transactions.findByPk(period.transactionId, {
+        attributes: ['accountId', 'isPlanned', 'deletedAt', 'deletionReason'],
+        paranoid: false,
+      });
+      const isTrashed = tx?.deletionReason === TRANSACTION_DELETION_REASON.trash;
       // A real transaction on a bank-linked account cannot be deleted, so it stays
       // and the period only stops pointing at it.
-      if (tx && (tx.isPlanned || !(await isBankLinkedAccount({ id: tx.accountId })))) {
+      const isDeletableLive =
+        !!tx && !tx.deletedAt && (tx.isPlanned || !(await isBankLinkedAccount({ id: tx.accountId })));
+
+      if (isTrashed || isDeletableLive) {
         // The caller's say on the delete, taken on the state this transaction holds the lock for.
         assertCanDeleteTransaction?.();
 
-        try {
-          // deleteTransaction joins the active transaction via `withTransaction`, so the
-          // balance reversal commits/rolls back together with the period update below.
-          await deleteTransaction({ id: period.transactionId, userId });
-        } catch (error) {
-          if (!(error instanceof NotFoundError)) {
-            throw error;
+        // Both deletes join the active transaction via `withTransaction`, so the
+        // balance reversal commits/rolls back together with the period update below.
+        if (isTrashed) {
+          // The row was just read, so a NotFoundError here is an access failure and must surface.
+          await deleteTrashed({ userId, transactionIds: [period.transactionId] });
+        } else {
+          try {
+            await deleteTransaction({ id: period.transactionId, userId, permanent: true });
+          } catch (error) {
+            if (!(error instanceof NotFoundError)) {
+              throw error;
+            }
           }
         }
       }

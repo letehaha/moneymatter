@@ -1,4 +1,4 @@
-import { ACCOUNT_TYPES } from '@bt/shared/types';
+import { ACCOUNT_TYPES, type BulkDeleteTransactionsResponse, TRANSACTION_TRASH_ACTION_MAX } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import Accounts from '@models/accounts.model';
@@ -8,20 +8,18 @@ import { Op } from 'sequelize';
 import { withTransaction } from '../common/with-transaction';
 import { deleteTransaction } from './delete-transaction';
 import { isLinkedLeg } from './payment-legs';
+import { findNonTrashableIds } from './trash/find-non-trashable-ids';
 
 /** Each row is deleted one by one inside a single DB transaction, so a request stays bounded. */
-const MAX_BULK_DELETE = 500;
+const MAX_BULK_DELETE = TRANSACTION_TRASH_ACTION_MAX;
 
 interface BulkDeleteParams {
   userId: number;
   transactionIds: string[];
   /** Background jobs pass `Infinity`; they hold no HTTP request open. */
   maxCount?: number;
-}
-
-interface BulkDeleteResult {
-  deletedCount: number;
-  deletedIds: string[];
+  /** Hard-delete instead of moving to Trash. */
+  permanent?: boolean;
 }
 
 /**
@@ -37,14 +35,18 @@ interface BulkDeleteResult {
  * Each row goes through `deleteTransaction`, which handles per-row write
  * authorization, transfer-pair cleanup, refund unlinking, and portfolio
  * transfer reversal. When a common-transfer leg is deleted its twin goes with
- * it, so a twin that was also selected is skipped instead of failing with 404. The same
- * goes for a payment's created rows whose main row was selected.
+ * it, so a twin that was also selected is skipped instead of failing with 404.
+ *
+ * Rows that cannot go to Trash (payment, portfolio, venture links) are skipped and
+ * returned in `skippedIds`. With `permanent`, a payment's created rows whose main row
+ * was selected are skipped instead, since the main takes them along.
  */
 const bulkDeleteImpl = async ({
   userId,
   transactionIds,
   maxCount = MAX_BULK_DELETE,
-}: BulkDeleteParams): Promise<BulkDeleteResult> => {
+  permanent = false,
+}: BulkDeleteParams): Promise<BulkDeleteTransactionsResponse> => {
   const uniqueIds = [...new Set(transactionIds)];
 
   if (uniqueIds.length > maxCount) {
@@ -88,21 +90,24 @@ const bulkDeleteImpl = async ({
   const deletedTransferIds = new Set<string>();
 
   const selectedIds = new Set(rows.map((row) => row.id));
+  const nonTrashable = permanent ? new Map() : await findNonTrashableIds({ transactionIds: rows.map((row) => row.id) });
+  const skippedIds = rows.filter((row) => nonTrashable.has(row.id)).map((row) => row.id);
 
   for (const row of rows) {
+    if (nonTrashable.has(row.id)) continue;
     if (row.transferId && deletedTransferIds.has(row.transferId)) continue;
-    if (row.paymentParentId && !isLinkedLeg(row) && selectedIds.has(row.paymentParentId)) {
+    if (permanent && row.paymentParentId && !isLinkedLeg(row) && selectedIds.has(row.paymentParentId)) {
       deletedIds.push(row.id);
       continue;
     }
 
-    await deleteTransaction({ id: row.id, userId });
+    await deleteTransaction({ id: row.id, userId, permanent });
     deletedIds.push(row.id);
 
     if (row.transferId) deletedTransferIds.add(row.transferId);
   }
 
-  return { deletedCount: deletedIds.length, deletedIds };
+  return { deletedCount: deletedIds.length, deletedIds, skippedIds };
 };
 
 export const bulkDelete = withTransaction(bulkDeleteImpl);

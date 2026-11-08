@@ -643,28 +643,31 @@ describe('Transaction ↔ Portfolio link (/transactions/:transactionId/*-portfol
       expect(link.statusCode).toBe(ERROR_CODES.NotFoundError);
     });
 
-    it('should delete a transaction linked to a soft-deleted portfolio', async () => {
+    it('should reject deleting a transaction linked to a soft-deleted portfolio until it is unlinked', async () => {
       const expenseTx = await linkExpenseThenTrashPortfolio();
 
-      const response = await helpers.deleteTransaction({ id: expenseTx.id });
-      expect(response.statusCode).toBe(200);
+      const rejected = await helpers.deleteTransaction({ id: expenseTx.id });
+      expect(rejected.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      expect((await helpers.unlinkTransactionFromPortfolio({ transactionId: expenseTx.id })).statusCode).toBe(204);
+      expect((await helpers.deleteTransaction({ id: expenseTx.id })).statusCode).toBe(200);
 
       const transactions = await helpers.getTransactions({ raw: true });
       expect(transactions.find((t) => t.id === expenseTx.id)).toBeUndefined();
     });
 
-    it('should bulk-delete a transaction linked to a soft-deleted portfolio', async () => {
+    it('should skip a transaction linked to a soft-deleted portfolio in a bulk delete', async () => {
       const expenseTx = await linkExpenseThenTrashPortfolio();
 
       const response = await helpers.bulkDeleteTransactions({ payload: { transactionIds: [expenseTx.id] } });
       expect(response.statusCode).toBe(200);
 
       const result = helpers.extractResponse(response);
-      expect(result.deletedCount).toBe(1);
-      expect(result.deletedIds).toEqual([expenseTx.id]);
+      expect(result.deletedCount).toBe(0);
+      expect(result.skippedIds).toEqual([expenseTx.id]);
 
       const transactions = await helpers.getTransactions({ raw: true });
-      expect(transactions.find((t) => t.id === expenseTx.id)).toBeUndefined();
+      expect(transactions.find((t) => t.id === expenseTx.id)).toBeDefined();
     });
 
     it('should reverse the cash on a soft-deleted portfolio so a later restore shows the pre-link balance', async () => {

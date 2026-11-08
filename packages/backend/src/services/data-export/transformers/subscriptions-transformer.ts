@@ -1,10 +1,11 @@
-import { RecordId } from '@bt/shared/types';
+import { RecordId, SUBSCRIPTION_LINK_STATUS } from '@bt/shared/types';
 import { centsToApiDecimalOrNull } from '@common/types/money';
 import Accounts from '@models/accounts.model';
 import Categories from '@models/categories.model';
 import SubscriptionTransactions from '@models/subscription-transactions.model';
 import Subscriptions from '@models/subscriptions.model';
-import { Op } from 'sequelize';
+import { liveTransactionExistsSql } from '@models/transactions-query/deletion-where';
+import { Op, literal } from 'sequelize';
 
 import type { SubscriptionRow } from '../types';
 import { resolveRelationName } from './utils';
@@ -27,7 +28,14 @@ export async function transformSubscriptions({ userId }: { userId: number }): Pr
     categoryIds.length
       ? Categories.findAll({ where: { userId, id: { [Op.in]: categoryIds } }, attributes: ['id', 'name'] })
       : Promise.resolve([] as Categories[]),
-    SubscriptionTransactions.findAll({ where: { subscriptionId: { [Op.in]: subscriptionIds } } }),
+    SubscriptionTransactions.findAll({
+      where: {
+        subscriptionId: { [Op.in]: subscriptionIds },
+        status: SUBSCRIPTION_LINK_STATUS.active,
+        [Op.and]: literal(liveTransactionExistsSql({ idColumnSql: '"SubscriptionTransactions"."transactionId"' })),
+      },
+      attributes: ['subscriptionId'],
+    }),
   ]);
 
   const accountNameById = new Map(accounts.map((a) => [String(a.id), a.name]));

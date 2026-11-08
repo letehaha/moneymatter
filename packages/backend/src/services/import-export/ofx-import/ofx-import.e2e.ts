@@ -189,6 +189,39 @@ describe('OFX import HTTP endpoints', () => {
     expect(history.items.map((item) => item.batchId)).toEqual([first.summary.batchId]);
   });
 
+  it('treats a trashed row as already imported in both the preview and the re-import', async () => {
+    const account = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ name: `OFX trashed ${Date.now()}`, currencyCode: 'EUR' }),
+      raw: true,
+    });
+
+    const firstUpload = await helpers.uploadOfxFixture({ filename: 'bank-v2.ofx' });
+    const sourceKey = firstUpload.result.accounts[0]!.sourceAccountKey;
+    const accountMapping = { [sourceKey]: { action: 'link-existing' as const, accountId: account.id } };
+    const first = await runImport({ uploadId: firstUpload.uploadId, accountMapping, skipDuplicateIndices: [] });
+    helpers.expectOfxCompleted(first);
+
+    const [imported] = await helpers.getTransactions({ accountIds: [account.id], raw: true });
+    expect((await helpers.deleteTransaction({ id: imported!.id })).statusCode).toBe(200);
+    const balanceAfterTrash = (await helpers.getAccount({ id: account.id, raw: true })).currentBalance;
+
+    const secondUpload = await helpers.uploadOfxFixture({ filename: 'bank-v2.ofx' });
+    const duplicateResult = await helpers.detectOfxDuplicates({
+      payload: { uploadId: secondUpload.uploadId, accountMapping },
+      raw: true,
+    });
+    expect(duplicateResult.duplicates).toHaveLength(1);
+    expect(duplicateResult.duplicates[0]).toMatchObject({ matchType: 'originalId' });
+
+    const second = await runImport({ uploadId: secondUpload.uploadId, accountMapping, skipDuplicateIndices: [] });
+    helpers.expectOfxCompleted(second);
+    expect(second.summary).toMatchObject({ transactionsImported: 0, duplicatesSkipped: 1, errors: [] });
+
+    expect(await helpers.getTransactions({ accountIds: [account.id], raw: true })).toHaveLength(0);
+    expect((await helpers.getTrash({ raw: true })).map((entry) => entry.id)).toEqual([imported!.id]);
+    expect((await helpers.getAccount({ id: account.id, raw: true })).currentBalance).toBe(balanceAfterTrash);
+  });
+
   it('restores a linked non-base-currency account in both currencies when a recalc-off import is undone', async () => {
     // Non-zero opening balance plus a seeded row keeps every ref balance non-zero.
     const account = await helpers.createAccount({

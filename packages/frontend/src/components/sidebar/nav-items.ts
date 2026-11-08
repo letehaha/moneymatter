@@ -65,7 +65,12 @@ export const SIDEBAR_NAV_CHILDREN = {
     },
   ],
   transactions: [
-    { routeName: ROUTES_NAMES.transactions, labelKey: 'navigation.allTransactions', icon: CreditCardIcon },
+    {
+      routeName: ROUTES_NAMES.transactions,
+      labelKey: 'navigation.allTransactions',
+      icon: CreditCardIcon,
+      activeRouteNames: [ROUTES_NAMES.transactionsTrash],
+    },
     { routeName: ROUTES_NAMES.transactionGroups, labelKey: 'navigation.transactionGroups', icon: GroupIcon },
     {
       routeName: ROUTES_NAMES.optimizations,

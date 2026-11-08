@@ -28,7 +28,8 @@
       "retry": "Try again",
       "copyInviteLink": "Copy invite link",
       "moveTo": "Move to…",
-      "learnMore": "Learn more"
+      "learnMore": "Learn more",
+      "undo": "Undo"
     },
     "ui": {
       "close": "Close",
@@ -150,7 +151,9 @@
     },
     "transactions": {
       "delete": {
-        "success": "Successfully removed",
+        "success": "Moved to Trash",
+        "undoSuccess": "Restored",
+        "undoError": "Couldn't undo. You can still restore it from the Trash.",
         "error": "Failed to delete transaction!"
       },
       "submit": {

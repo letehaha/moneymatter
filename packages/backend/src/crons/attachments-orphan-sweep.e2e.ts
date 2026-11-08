@@ -31,12 +31,17 @@ beforeEach(async () => {
 });
 
 describe('Attachments orphan sweep', () => {
-  it('deletes a blob whose row is gone and keeps one whose row is alive', async () => {
+  it('keeps the blob of a trashed transaction and deletes it once the transaction is deleted for good', async () => {
     const account = await helpers.createAccount({ raw: true });
     const orphaned = await attachTo({ accountId: account.id });
     const live = await attachTo({ accountId: account.id });
 
     expect((await helpers.deleteTransaction({ id: orphaned.transactionId })).statusCode).toBe(200);
+
+    expect(await attachmentsOrphanSweepCron.triggerManualSync({ minAgeMs: 0 })).toEqual({ deleted: 0, scanned: 2 });
+    expect((await storedIds()).toSorted()).toEqual([orphaned.attachmentId, live.attachmentId].toSorted());
+
+    await helpers.deleteTrash({ transactionIds: [orphaned.transactionId], raw: true });
 
     const result = await attachmentsOrphanSweepCron.triggerManualSync({ minAgeMs: 0 });
 
@@ -69,6 +74,7 @@ describe('Attachments orphan sweep', () => {
     const orphaned = await attachTo({ accountId: account.id });
 
     expect((await helpers.deleteTransaction({ id: orphaned.transactionId })).statusCode).toBe(200);
+    await helpers.deleteTrash({ transactionIds: [orphaned.transactionId], raw: true });
 
     const result = await attachmentsOrphanSweepCron.triggerManualSync();
 

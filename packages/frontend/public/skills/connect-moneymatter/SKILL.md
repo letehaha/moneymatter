@@ -94,7 +94,7 @@ Accounts, transactions, transfers and refunds, attachments, categories, tags, pa
 | `archive_account`                | Archive or unarchive a user account (`finance:write`)                                                                                                                                                                                        |
 | `assign_tags_to_transaction`     | Assign one or more tags to a transaction (`finance:write`)                                                                                                                                                                                   |
 | `bulk_delete_payees`             | Permanently delete many payees at once (`finance:delete`)                                                                                                                                                                                    |
-| `bulk_delete_transactions`       | Permanently delete many transactions at once, by ids or by filters (`finance:delete`)                                                                                                                                                        |
+| `bulk_delete_transactions`       | Move many transactions to Trash at once, by ids or by filters (`finance:delete`)                                                                                                                                                             |
 | `bulk_update_transactions`       | Update multiple transactions at once (`finance:write`)                                                                                                                                                                                       |
 | `create_account`                 | Create a manual account (`finance:write`)                                                                                                                                                                                                    |
 | `create_attachment_upload_url`   | Get a short-lived upload URL for attaching receipt/invoice files (JPEG, PNG, WebP, PDF) to a transaction (`finance:write`)                                                                                                                   |
@@ -108,7 +108,7 @@ Accounts, transactions, transfers and refunds, attachments, categories, tags, pa
 | `delete_payee`                   | Delete a Payee (`finance:delete`)                                                                                                                                                                                                            |
 | `delete_split`                   | Delete a single split from a transaction by its split ID (UUID string) (`finance:delete`)                                                                                                                                                    |
 | `delete_tag`                     | Permanently delete a tag by ID (`finance:delete`)                                                                                                                                                                                            |
-| `delete_transaction`             | Permanently delete a transaction by ID (`finance:delete`)                                                                                                                                                                                    |
+| `delete_transaction`             | Move a transaction to Trash by ID (`finance:delete`)                                                                                                                                                                                         |
 | `get_account`                    | Read one account: balances (original and base currency), opening balance, credit limit, category, status, bank link and logo, plus transactionCount, the number of transactions the account holds (null for an account shared with the user) |
 | `get_accounts`                   | List all user accounts with current balances                                                                                                                                                                                                 |
 | `get_balance_history`            | Get account balance over time                                                                                                                                                                                                                |
@@ -432,6 +432,11 @@ multi-currency data.
   get back the tracker, group and subscription links it lost. Bank rows pending for over
   a week show up in `list_stuck_pending_transactions` with the booked row that likely
   replaced each.
+- Deleting a transaction is reversible for 30 days. `delete_transaction` and
+  `bulk_delete_transactions` move rows to Trash, where the user restores them in the app
+  (there is no restore tool); after 30 days they are deleted for good. Rows in a payment,
+  a portfolio or a venture cannot be trashed: `delete_transaction` rejects them and the bulk
+  tool skips them, returning their ids in `skippedIds`.
 - A subscription's `matchingRules` (`create_subscription`, `update_subscription`) link imported
   transactions to it automatically: `{ rules: [...] }`, every rule must pass. A rule is a note
   keyword list (`contains_any`), an amount range (`between`, optional `currencyCode` to match
@@ -546,7 +551,7 @@ multi-currency data.
   every write is refused whatever scopes were granted.
 - Destructive calls are deliberately narrow. `bulk_delete_transactions` needs
   explicit `transactionIds` or at least one narrowing filter and refuses an
-  empty filter (the REST API would delete everything); preview the count with
+  empty filter (the REST API would trash everything); preview the count with
   `get_transactions_summary` first. Tools that delete only on one path
   (`ignore_payee_name` with `force`, `revert_subscription_period` when the
   app booked the transaction) need `finance:write`, plus `finance:delete` on

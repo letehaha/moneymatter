@@ -5,6 +5,7 @@ import { connection } from '@models/connection';
 import TrackerSuggestions from '@models/tracker-suggestions.model';
 import TrackerTransactions, { isRuleLinkMetadata } from '@models/tracker-transactions.model';
 import Trackers from '@models/trackers.model';
+import { liveTransactionExistsSql } from '@models/transactions-query/deletion-where';
 import { withTransaction } from '@services/common/with-transaction';
 import { statsTransactions } from '@services/stats/stats-transactions';
 import { subMinutes } from 'date-fns';
@@ -66,7 +67,14 @@ export const syncTrackerRules = withTransaction(
 
     const [matchIds, links, rejected] = await Promise.all([
       findRuleMatchIds({ tracker }),
-      TrackerTransactions.findAll({ where: { trackerId }, attributes: ['transactionId', 'metadata'] }),
+      // Trashed rows never match, so their rule links must stay out of cleanup to survive until restore.
+      TrackerTransactions.findAll({
+        where: {
+          trackerId,
+          [Op.and]: literal(liveTransactionExistsSql({ idColumnSql: '"TrackerTransactions"."transactionId"' })),
+        },
+        attributes: ['transactionId', 'metadata'],
+      }),
       TrackerSuggestions.findAll({
         where: { trackerId, status: TRACKER_SUGGESTION_STATUS.rejected },
         attributes: ['transactionId'],

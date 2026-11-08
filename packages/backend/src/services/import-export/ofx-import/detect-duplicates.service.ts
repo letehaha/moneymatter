@@ -1,10 +1,23 @@
 import type { DuplicateMatch, ParsedTransactionRow } from '@bt/shared/types';
 import { asCents, TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { findTransactions } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
 import { importDayKey } from '@services/import-export/core/duplicates/import-day-key';
+import { Op } from 'sequelize';
 
 import { readOfxUpload } from './upload-cache';
+
+// Trashed and reconciliation-removed rows still hold their (accountId, originalId) unique slot.
+export const findTransactionsByOriginalIds = ({ userId, originalIds }: { userId: number; originalIds: string[] }) =>
+  findTransactions({
+    where: { originalId: { [Op.in]: originalIds } },
+    paranoid: false,
+    planned: 'include',
+    access: { creator: userId },
+    balanceAdjustments: 'include',
+    completeness: 'all',
+  });
 
 export async function detectOfxDuplicates({
   userId,
@@ -69,11 +82,7 @@ async function findOfxDuplicates({
 
   if (rowsByOriginalId.size > 0) {
     const originalIds = [...new Set([...rowsByOriginalId.values()].map((row) => row.originalId!))];
-    const matches = await Transactions.getTransactionsByArrayOfField({
-      fieldValues: originalIds,
-      fieldName: 'originalId',
-      userId,
-    });
+    const matches = await findTransactionsByOriginalIds({ userId, originalIds });
 
     for (const transaction of matches) {
       if (!transaction.originalId) continue;

@@ -5,11 +5,13 @@ import {
   RecordId,
   SUBSCRIPTION_FREQUENCIES,
   SUBSCRIPTION_PERIOD_STATUSES,
+  TRANSACTION_TRASH_RETENTION_DAYS,
   TRANSACTION_TYPES,
   TransactionModel,
 } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
+import { transactionsTrashPurgeCron } from '@root/crons/transactions-trash-purge';
 import * as helpers from '@tests/helpers';
 import { useSelfHost } from '@tests/helpers/self-host';
 import {
@@ -296,6 +298,25 @@ describe('Transactions reconciliation', () => {
         const res = await helpers.reconciliationRemove({ transactionIds: [id as RecordId] });
         expect(res.statusCode).toBe(422);
       }
+    });
+
+    it('rejects a refund whose original is in the Trash', async () => {
+      const { byAmount } = await setupEnableBanking({
+        transactions: [{ ...booked({ ref: 'r1', amount: '5.00' }), isExpense: false }],
+      });
+      const systemAccount = await helpers.createAccount({ raw: true });
+      const [purchase] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: systemAccount.id, amount: 30 }),
+        raw: true,
+      });
+      const refund = byAmount({ amount: 5 });
+      expect((await helpers.createSingleRefund({ originalTxId: purchase.id, refundTxId: refund.id })).statusCode).toBe(
+        200,
+      );
+      expect((await helpers.deleteTransaction({ id: purchase.id })).statusCode).toBe(200);
+
+      const res = await helpers.reconciliationRemove({ transactionIds: [refund.id as RecordId] });
+      expect(res.statusCode).toBe(422);
     });
 
     it('validates the payload and unknown ids', async () => {
@@ -758,13 +779,32 @@ describe('Transactions reconciliation', () => {
       expect(await listIds({ accountId })).toEqual([removed.id]);
     });
 
-    it('does not record a normal delete, which stays permanent', async () => {
+    it('sends a normal delete to the Trash, never to reconciliation history', async () => {
       const [tx] = await helpers.createTransaction({ raw: true });
 
       expect((await helpers.deleteTransaction({ id: tx.id })).statusCode).toBe(200);
 
       expect(await helpers.getReconciliationHistory({ raw: true })).toEqual([]);
       expect((await helpers.reconciliationRestore({ transactionIds: [tx.id as RecordId] })).statusCode).toBe(404);
+      expect((await helpers.getTrash({ raw: true })).map((entry) => entry.id)).toEqual([tx.id]);
+    });
+
+    it('keeps removed rows out of the Trash and away from its purge', async () => {
+      const fixture = booked({ ref: 'trash-1', amount: '14.00' });
+      const { accountId, byAmount } = await setupEnableBanking({ transactions: [fixture] });
+      const removed = byAmount({ amount: 14 });
+      await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
+
+      expect(await helpers.getTrash({ raw: true })).toEqual([]);
+      expect((await helpers.restoreTrash({ transactionIds: [removed.id] })).statusCode).toBe(404);
+      expect((await helpers.deleteTrash({ transactionIds: [removed.id] })).statusCode).toBe(404);
+
+      await helpers.backdateTrashedTransaction({ id: removed.id, days: TRANSACTION_TRASH_RETENTION_DAYS + 1 });
+      expect(await transactionsTrashPurgeCron.triggerManualSync()).toEqual({ purged: 0 });
+
+      expect(await historyEvents()).toEqual([{ type: 'remove', survivorId: null, ids: [removed.id] }]);
+      expect((await helpers.reconciliationRestore({ transactionIds: [removed.id] })).statusCode).toBe(200);
+      expect(await listIds({ accountId })).toEqual([removed.id]);
     });
   });
 

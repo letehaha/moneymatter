@@ -59,10 +59,7 @@ const toastOptions = computed<ToasterProps['toastOptions']>(() => ({
     title: 'line-clamp-4 text-sm leading-snug font-medium text-foreground',
     description: 'line-clamp-4 text-sm leading-snug',
     closeButton: 'absolute top-2.5 right-2.5 flex size-6 cursor-pointer items-center justify-center rounded-md',
-    actionButton: cn(
-      buttonVariants({ variant: 'soft-primary' }),
-      'h-8 shrink-0 cursor-pointer self-center px-3 text-xs',
-    ),
+    actionButton: cn(buttonVariants({ variant: 'secondary' }), 'h-8 shrink-0 cursor-pointer self-center px-3 text-xs'),
   },
 }));
 
@@ -329,6 +326,15 @@ onBeforeUnmount(() => {
 </script>
 
 <style>
+button[data-action].toast-action-icon-undo::before {
+  content: '';
+  width: 0.875rem;
+  height: 0.875rem;
+  background-color: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 14 4 9l5-5'/%3E%3Cpath d='M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+}
+
 ol[data-sonner-toaster] {
   z-index: var(--z-notifications);
   font-family: inherit;

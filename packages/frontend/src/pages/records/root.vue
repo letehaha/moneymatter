@@ -26,6 +26,16 @@
       </ColumnConfigPopover>
     </DefineTableSettings>
 
+    <DefineTrashLink>
+      <DesktopOnlyTooltip :content="$t('navigation.trash')">
+        <Button variant="secondary" size="icon" as-child>
+          <RouterLink :to="{ name: ROUTES_NAMES.transactionsTrash }" :aria-label="$t('navigation.trash')">
+            <Trash2Icon class="size-4" />
+          </RouterLink>
+        </Button>
+      </DesktopOnlyTooltip>
+    </DefineTrashLink>
+
     <div
       ref="pageContentRef"
       :class="[
@@ -92,6 +102,7 @@
 
           <div class="flex items-center gap-2">
             <TableSettings v-if="activeView === 'table'" />
+            <TrashLink />
             <DesktopOnlyTooltip :content="$t('transactions.table.fullscreen.enter')">
               <Button
                 variant="secondary"
@@ -163,6 +174,7 @@
             </div>
 
             <SavedViewsMenu v-model:filters="filters" v-model:sorting="sorting" block @applied="applyFilters" />
+            <TrashLink />
           </div>
 
           <ScrollArea class="-mx-4 min-h-0 flex-1">
@@ -244,6 +256,7 @@
 
           <template #actions>
             <TableSettings />
+            <TrashLink />
             <DesktopOnlyTooltip :content="$t('transactions.table.fullscreen.enter')">
               <Button
                 variant="secondary"
@@ -371,6 +384,7 @@ import { Switch } from '@/components/lib/ui/switch';
 import { Card } from '@/components/lib/ui/card';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { SCROLL_AREA_IDS } from '@/components/lib/ui/scroll-area/types';
+import { ROUTES_NAMES } from '@/routes/constants';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { isAnyGroupDissolvingFilterActive } from '@/components/records-filters/filter-registry';
 import FiltersDialog from '@/components/records-filters/filters-dialog.vue';
@@ -379,10 +393,10 @@ import { useActiveView } from '@/components/records-filters/saved-views';
 import { parseStoredFilters, useTransactionsWithFilters } from '@/components/records-filters/transactions-with-filters';
 import { useFiltersFromQuery } from '@/components/records-filters/use-filters-from-query';
 import TransactionsList from '@/components/transactions-list/transactions-list.vue';
-import { ListIcon, Maximize2Icon, Minimize2Icon, Table2Icon } from '@lucide/vue';
+import { ListIcon, Maximize2Icon, Minimize2Icon, Table2Icon, Trash2Icon } from '@lucide/vue';
 import { createReusableTemplate, useDebounceFn, useElementSize, useEventListener, useMediaQuery } from '@vueuse/core';
 import { computed, onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import type { TransactionsView } from '@/api/user-settings';
 
@@ -431,6 +445,7 @@ const { mobileView, setMobileView, desktopView, setDesktopView, alwaysShowLocked
   useTransactionsView();
 
 const [DefineTableSettings, TableSettings] = createReusableTemplate();
+const [DefineTrashLink, TrashLink] = createReusableTemplate();
 
 const { data: userSettings, patch: patchSettings } = useUserSettings();
 

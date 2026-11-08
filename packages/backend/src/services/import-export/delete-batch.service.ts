@@ -10,13 +10,15 @@ import { logger } from '@js/utils/logger';
 import ImportBatchAccountEffects from '@models/import-batch-account-effects.model';
 import ImportBatches from '@models/import-batches.model';
 import { countTransactions, findTransactions, updateTransactions } from '@models/transactions-query';
+import { trashedWhere } from '@models/transactions-query/deletion-where';
 import * as Transactions from '@models/transactions.model';
 import { deleteAccountById } from '@services/accounts.service';
 import { absorbBalanceAdjustment } from '@services/accounts/absorb-balance-adjustment';
 import { lockAccountRow } from '@services/accounts/lock-account-row';
 import { withTransaction } from '@services/common/with-transaction';
 import { bulkDelete } from '@services/transactions/bulk-delete';
-import { Op } from 'sequelize';
+import { destroyTrashedRows } from '@services/transactions/trash/delete-trashed';
+import { Op, literal, where as sequelizeWhere } from 'sequelize';
 
 interface DeleteImportBatchParams {
   userId: number;
@@ -63,6 +65,8 @@ export class ImportBatchTooLargeError extends Error {
  * A batchId with no matching rows and no batch row is a no-op success, not a 404: it's
  * already deleted or belongs to another user, not a mistaken id to correct.
  */
+type BatchLeg = { id: string; transferId: string | null; transferNature: TRANSACTION_TRANSFER_NATURE };
+
 const deleteImportBatchImpl = async ({
   userId,
   batchId,
@@ -94,7 +98,27 @@ const deleteImportBatchImpl = async ({
     transferNature: TRANSACTION_TRANSFER_NATURE;
   }[];
 
-  if (rows.length === 0 && !batch) {
+  // Trashed rows of the batch go for good too; their balance was taken back when they were trashed.
+  const trashedRows = await findTransactions({
+    planned: 'exclude',
+    access: { creator: userId },
+    completeness: 'all',
+    balanceAdjustments: 'include',
+    paranoid: false,
+    where: {
+      ...trashedWhere,
+      [Op.and]: [
+        sequelizeWhere(
+          literal(`"Transactions"."externalData"->'importDetails'->>'batchId'`),
+          batch?.batchId ?? batchId,
+        ),
+      ],
+    },
+    attributes: ['id', 'transferId', 'transferNature'],
+  });
+  const trashedIds = trashedRows.map((row) => row.id);
+
+  if (rows.length === 0 && trashedIds.length === 0 && !batch) {
     return { deletedCount: 0, deletedIds: [], createdAccountIds: [] };
   }
 
@@ -134,31 +158,41 @@ const deleteImportBatchImpl = async ({
   // row linked to a pre-existing manual transaction would silently destroy it too, uncounted.
   // Transfers created entirely within this batch (both legs present) are exempt: their
   // normal cascade-delete-together destroys nothing external.
-  const transactionIds = rows.map((row) => row.id);
-  const batchRowIds = new Set(transactionIds);
-  const linkedLegs = rows.filter((row) => isTwoLegTransfer(row.transferNature) && row.transferId);
+  // Pairs are trashed together, so a trashed leg's twin is a trashed row, and a live leg's twin a live one.
+  const findExternalTwins = async ({ legs, trashed }: { legs: BatchLeg[]; trashed: boolean }) => {
+    const linkedLegs = legs.filter((row) => isTwoLegTransfer(row.transferNature) && row.transferId);
+    if (linkedLegs.length === 0) return { twinIds: [] as string[], legsWithTwin: [] as BatchLeg[] };
 
-  let externalTwinIds: string[] = [];
-  let legsWithExternalTwin: typeof linkedLegs = [];
-  if (linkedLegs.length > 0) {
+    const ownIds = new Set(legs.map((row) => row.id));
     // Unauthenticated on purpose, mirroring `deleteTransaction`'s own cascade lookup: a
     // cross-user (shared-account) transfer's twin can belong to a different userId.
-    const transferIds = [...new Set(linkedLegs.map((row) => row.transferId!))];
     const twins = (await findTransactions({
       planned: 'include',
       access: 'unscoped-internal',
       balanceAdjustments: 'include',
       completeness: 'all',
-      where: { transferId: { [Op.in]: transferIds } },
+      paranoid: !trashed,
+      where: {
+        transferId: { [Op.in]: [...new Set(linkedLegs.map((row) => row.transferId!))] },
+        ...(trashed ? trashedWhere : {}),
+      },
       attributes: ['id', 'transferId'],
       raw: true,
     })) as unknown as { id: string; transferId: string }[];
 
-    const externalTwins = twins.filter((twin) => !batchRowIds.has(twin.id));
+    const externalTwins = twins.filter((twin) => !ownIds.has(twin.id));
     const transferIdsWithExternalTwin = new Set(externalTwins.map((twin) => twin.transferId));
-    externalTwinIds = externalTwins.map((twin) => twin.id);
-    legsWithExternalTwin = linkedLegs.filter((row) => transferIdsWithExternalTwin.has(row.transferId!));
-  }
+    return {
+      twinIds: externalTwins.map((twin) => twin.id),
+      legsWithTwin: linkedLegs.filter((row) => transferIdsWithExternalTwin.has(row.transferId!)),
+    };
+  };
+
+  const transactionIds = rows.map((row) => row.id);
+  const liveTwins = await findExternalTwins({ legs: rows, trashed: false });
+  const trashedTwins = await findExternalTwins({ legs: trashedRows, trashed: true });
+  const externalTwinIds = [...liveTwins.twinIds, ...trashedTwins.twinIds];
+  const legsWithExternalTwin = [...liveTwins.legsWithTwin, ...trashedTwins.legsWithTwin];
 
   const unlinkExternalTwins = externalTwinIds.length > 0 && !deleteLinkedTransfers;
 
@@ -192,15 +226,19 @@ const deleteImportBatchImpl = async ({
       values: { transferId: null, transferNature: TRANSACTION_TRANSFER_NATURE.transfer_out_wallet },
       where: {
         transferId: { [Op.in]: [...new Set(legsWithExternalTwin.map((row) => row.transferId!))] },
+        [Op.or]: [{ deletedAt: null }, trashedWhere],
       },
+      paranoid: false,
     });
   }
 
   // Never chunk this list: `bulkDelete` skips a cascade-deleted transfer twin only
   // within one call. A twin in a later chunk gets re-queried after deletion and 404s.
   if (transactionIds.length > 0) {
-    await bulkDelete({ userId, transactionIds, maxCount: Infinity });
+    await bulkDelete({ userId, transactionIds, maxCount: Infinity, permanent: true });
   }
+  const trashedToDestroy = [...trashedIds, ...(deleteLinkedTransfers ? trashedTwins.twinIds : [])];
+  await destroyTrashedRows({ transactionIds: trashedToDestroy });
 
   for (const effect of absorbedEffects) {
     await absorbBalanceAdjustment({
@@ -216,7 +254,7 @@ const deleteImportBatchImpl = async ({
 
   // `bulkDelete`'s result omits cascade-deleted twins. Once it returns, every batch row
   // plus the opted-in twins is gone, so report the full list.
-  const deletedIds = deleteLinkedTransfers ? [...transactionIds, ...externalTwinIds] : transactionIds;
+  const deletedIds = [...transactionIds, ...(deleteLinkedTransfers ? liveTwins.twinIds : []), ...trashedToDestroy];
   return {
     deletedCount: deletedIds.length,
     deletedIds,

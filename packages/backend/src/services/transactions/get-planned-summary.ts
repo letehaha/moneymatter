@@ -27,6 +27,7 @@ export const getPlannedSummary = async ({ userId }: { userId: number }): Promise
       FROM "Transactions"
      WHERE "userId" = :userId
        AND "isPlanned" = true
+       AND "deletedAt" IS NULL
      GROUP BY "accountId", "currencyCode"
      ORDER BY "accountId"
     `,

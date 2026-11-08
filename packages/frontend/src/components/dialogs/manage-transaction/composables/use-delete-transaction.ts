@@ -1,6 +1,7 @@
 import { deleteTransaction } from '@/api';
 import { VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import { useNotificationCenter } from '@/components/notification-center';
+import { useNotifyTrashed } from '@/composable/use-notify-trashed';
 import { i18n } from '@/i18n';
 import { ApiErrorResponseError } from '@/js/errors';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
@@ -11,15 +12,16 @@ interface DeleteTransactionParams {
 
 export function useDeleteTransaction({ onSuccess }: { onSuccess: () => void }) {
   const queryClient = useQueryClient();
-  const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
+  const { addErrorNotification } = useNotificationCenter();
+  const notifyTrashed = useNotifyTrashed();
 
   return useMutation({
     mutationFn: async (params: DeleteTransactionParams) => {
       return deleteTransaction(params.transactionId);
     },
-    onSuccess: () => {
+    onSuccess: (_data, { transactionId }) => {
       queryClient.invalidateQueries({ queryKey: [VUE_QUERY_GLOBAL_PREFIXES.transactionChange] });
-      addSuccessNotification(i18n.global.t('common.transactions.delete.success'));
+      notifyTrashed({ text: i18n.global.t('common.transactions.delete.success'), transactionIds: [transactionId] });
       onSuccess();
     },
     onError: (error) => {

@@ -23,6 +23,7 @@ import { subscriptionRemindersCron } from './crons/subscription-reminders-check'
 import { tagRemindersCron } from './crons/tag-reminders-check';
 import { trackerRulesSyncCron } from './crons/tracker-rules-sync';
 import { trackerSmartScanCron } from './crons/tracker-smart-scan';
+import { transactionsTrashPurgeCron } from './crons/transactions-trash-purge';
 import { initializeHistoricalRates } from './services/exchange-rates/initialize-historical-rates.service';
 
 const allEnvCrons = [demoCleanupCron, demoTemplateRefreshCron];
@@ -40,6 +41,7 @@ const prodOnlyCrons = [
   shareResourceOrphanCleanupCron,
   purgeDeletedPortfoliosCron,
   budgetPlansPurgeCron,
+  transactionsTrashPurgeCron,
   balanceRevalueSweepCron,
   attachmentsOrphanSweepCron,
   bankAccountsSyncCron,
