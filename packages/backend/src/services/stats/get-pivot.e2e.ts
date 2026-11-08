@@ -703,11 +703,12 @@ describe('GET /stats/pivot', () => {
     expect(result.grandTotal).toBe(40);
   });
 
-  it('cross-bucket refund: a refund nets into its own month, pushing that bucket negative', async () => {
+  it('cross-bucket refund: the expense measure nets the refund in the expense month on every dimension', async () => {
     const account = await helpers.createAccount({ raw: true });
     const category = await helpers.addCustomCategory({ name: uniqueName('Returns'), color: '#0000ff', raw: true });
+    const payee = await helpers.createPayee({ payload: { name: uniqueName('Shop') }, raw: true });
+    const tag = await helpers.createTag({ payload: { name: uniqueName('Returned'), color: '#abcdef' }, raw: true });
 
-    // $100 expense in January.
     const [expenseTx] = await helpers.createTransaction({
       payload: {
         ...helpers.buildTransactionPayload({
@@ -715,12 +716,13 @@ describe('GET /stats/pivot', () => {
           amount: 100,
           transactionType: TRANSACTION_TYPES.expense,
           categoryId: category.id,
+          payeeId: payee.id,
         }),
         time: '2025-01-10T12:00:00.000Z',
       },
       raw: true,
     });
-    // $30 refund in February — no other February expense sits on this category.
+    await helpers.addTransactionsToTag({ tagId: tag.id, transactionIds: [expenseTx.id] });
     const [refundTx] = await helpers.createTransaction({
       payload: {
         ...helpers.buildTransactionPayload({
@@ -728,12 +730,165 @@ describe('GET /stats/pivot', () => {
           amount: 30,
           transactionType: TRANSACTION_TYPES.income,
           categoryId: category.id,
+          payeeId: payee.id,
         }),
         time: '2025-02-20T12:00:00.000Z',
       },
       raw: true,
     });
     await helpers.createSingleRefund({ originalTxId: expenseTx.id, refundTxId: refundTx.id });
+
+    const dimensions = [
+      { rowDimension: 'category', rowId: category.id },
+      { rowDimension: 'payee', rowId: payee.id },
+      { rowDimension: 'tag', rowId: tag.id },
+    ] as const;
+
+    for (const { rowDimension, rowId } of dimensions) {
+      const pivot = ({ from, to }: { from: string; to: string }) =>
+        helpers.getPivotReport({ from, to, granularity: 'monthly', rowDimension, measure: 'expense', raw: true });
+
+      const both = await pivot({ from: '2025-01-01', to: '2025-02-28' });
+      const bothRow = both.rows.find((candidate) => candidate.id === rowId);
+      expect(bothRow!.values).toEqual({ '2025-01': 70 });
+      expect(bothRow!.total).toBe(70);
+      expect(both.columnTotals).toEqual({ '2025-01': 70, '2025-02': 0 });
+      expect(both.grandTotal).toBe(70);
+
+      const january = await pivot({ from: '2025-01-01', to: '2025-01-31' });
+      expect(january.rows.find((candidate) => candidate.id === rowId)!.values).toEqual({ '2025-01': 70 });
+      expect(january.grandTotal).toBe(70);
+
+      const february = await pivot({ from: '2025-02-01', to: '2025-02-28' });
+      expect(february.rows.find((candidate) => candidate.id === rowId)).toBeUndefined();
+      expect(february.grandTotal).toBe(0);
+    }
+  });
+
+  it('cross-bucket refund: an income original refunded by an earlier expense nets on each measure in its own month on every dimension', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const category = await helpers.addCustomCategory({ name: uniqueName('Lent'), color: '#00aaff', raw: true });
+    const payee = await helpers.createPayee({ payload: { name: uniqueName('Friend') }, raw: true });
+    const tag = await helpers.createTag({ payload: { name: uniqueName('Loan'), color: '#abcdef' }, raw: true });
+
+    const createTx = async ({
+      amount,
+      transactionType,
+      time,
+    }: {
+      amount: number;
+      transactionType: TRANSACTION_TYPES;
+      time: string;
+    }) => {
+      const [tx] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount,
+            transactionType,
+            categoryId: category.id,
+            payeeId: payee.id,
+          }),
+          time,
+        },
+        raw: true,
+      });
+      return tx!;
+    };
+
+    const lent = await createTx({
+      amount: 100,
+      transactionType: TRANSACTION_TYPES.expense,
+      time: '2025-01-10T12:00:00.000Z',
+    });
+    const otherExpense = await createTx({
+      amount: 40,
+      transactionType: TRANSACTION_TYPES.expense,
+      time: '2025-01-15T12:00:00.000Z',
+    });
+    const repaid = await createTx({
+      amount: 250,
+      transactionType: TRANSACTION_TYPES.income,
+      time: '2025-02-10T12:00:00.000Z',
+    });
+    const otherIncome = await createTx({
+      amount: 300,
+      transactionType: TRANSACTION_TYPES.income,
+      time: '2025-02-15T12:00:00.000Z',
+    });
+    await helpers.addTransactionsToTag({
+      tagId: tag.id,
+      transactionIds: [lent.id, otherExpense.id, repaid.id, otherIncome.id],
+    });
+    await helpers.createSingleRefund({ originalTxId: repaid.id, refundTxId: lent.id });
+
+    const dimensions = [
+      { rowDimension: 'category', rowId: category.id },
+      { rowDimension: 'payee', rowId: payee.id },
+      { rowDimension: 'tag', rowId: tag.id },
+    ] as const;
+
+    for (const { rowDimension, rowId } of dimensions) {
+      const pivot = ({ from, to, measure }: { from: string; to: string; measure: 'expense' | 'income' }) =>
+        helpers.getPivotReport({ from, to, granularity: 'monthly', rowDimension, measure, raw: true });
+      const row = async (params: Parameters<typeof pivot>[0]) =>
+        (await pivot(params)).rows.find((candidate) => candidate.id === rowId);
+
+      expect((await row({ from: '2025-01-01', to: '2025-02-28', measure: 'expense' }))!.values).toEqual({
+        '2025-01': 40,
+      });
+      expect((await row({ from: '2025-01-01', to: '2025-02-28', measure: 'income' }))!.values).toEqual({
+        '2025-02': 450,
+      });
+      expect((await row({ from: '2025-01-01', to: '2025-01-31', measure: 'expense' }))!.values).toEqual({
+        '2025-01': 40,
+      });
+      expect((await row({ from: '2025-02-01', to: '2025-02-28', measure: 'income' }))!.values).toEqual({
+        '2025-02': 450,
+      });
+      expect(await row({ from: '2025-01-01', to: '2025-01-31', measure: 'income' })).toBeUndefined();
+      expect(await row({ from: '2025-02-01', to: '2025-02-28', measure: 'expense' })).toBeUndefined();
+    }
+  });
+
+  it('cross-bucket split-targeted refund: nets the split category in the purchase month', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const primaryCategory = await helpers.addCustomCategory({
+      name: uniqueName('Primary'),
+      color: '#aa1100',
+      raw: true,
+    });
+    const splitCategory = await helpers.addCustomCategory({ name: uniqueName('Split'), color: '#0011aa', raw: true });
+
+    const [expenseTx] = await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 100,
+          transactionType: TRANSACTION_TYPES.expense,
+          categoryId: primaryCategory.id,
+          splits: [{ categoryId: splitCategory.id, amount: 30 }],
+        }),
+        time: '2025-01-10T12:00:00.000Z',
+      },
+      raw: true,
+    });
+    const allTransactions = (await helpers.getTransactions({ raw: true }))!;
+    const targetSplit = allTransactions.find((tx) => tx.id === expenseTx.id)!.splits![0]!;
+
+    const [refundTx] = await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 20,
+          transactionType: TRANSACTION_TYPES.income,
+          categoryId: splitCategory.id,
+        }),
+        time: '2025-02-20T12:00:00.000Z',
+      },
+      raw: true,
+    });
+    await helpers.createSingleRefund({ originalTxId: expenseTx.id, refundTxId: refundTx.id, splitId: targetSplit.id });
 
     const result = await helpers.getPivotReport({
       from: '2025-01-01',
@@ -744,15 +899,9 @@ describe('GET /stats/pivot', () => {
       raw: true,
     });
 
-    const row = result.rows.find((candidate) => candidate.id === category.id);
-    expect(row).toBeDefined();
-    expect(row!.values['2025-01']).toBe(100); // expense stays in January
-    expect(row!.values['2025-02']).toBe(-30); // refund buckets into February, going negative
-    expect(row!.total).toBe(70);
-
-    expect(result.columnTotals['2025-01']).toBe(100);
-    expect(result.columnTotals['2025-02']).toBe(-30);
-    expect(result.grandTotal).toBe(70);
+    expect(result.rows.find((row) => row.id === primaryCategory.id)!.values).toEqual({ '2025-01': 70 });
+    expect(result.rows.find((row) => row.id === splitCategory.id)!.values).toEqual({ '2025-01': 10 });
+    expect(result.columnTotals).toEqual({ '2025-01': 80, '2025-02': 0 });
   });
 
   it('cross-currency: row values use the base-currency refAmount, not the raw foreign amount', async () => {

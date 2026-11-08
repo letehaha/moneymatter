@@ -50,7 +50,6 @@ The charts don't all count things the same way:
 
 - **Monthly Comparison** leaves out [savings categories](/stats/how-stats-are-calculated/#savings-categories). The summary cards and **Category Breakdown** count that money as spending.
 - **Monthly Comparison** and **Category Breakdown** count planned transactions. The summary cards and **Cumulative Progress** don't.
-- A [refund](/stats/how-stats-are-calculated/#refunds) lowers **Category Breakdown** in the month of the purchase, but **Monthly Comparison** and the summary cards in the month the money came back.
 - With a **Categories** filter, [split transactions](/transactions/split-a-transaction/) count differently. The summary cards and **Cumulative Progress** go by each transaction's main category and count its full amount, split parts included. **Category Breakdown** counts each split part under its own category. **Monthly Comparison** counts only the parts in the categories your filter keeps, and with **Include** it also skips a transaction whose main category isn't one you picked.
 - **Monthly Comparison** always shows whole calendar months, so it can include days before your start date and after today. The summary cards and **Category Breakdown** use your exact dates.
 </Aside>
@@ -89,7 +88,7 @@ Below the chart, a flow diagram shows where income came from and where it went, 
 - Spending in your [tax categories](/settings/general-settings/#tax-categories) shows as **Taxes**, a branch of its own next to expenses. Nothing is bought with taxes, so the branch ends there. Hover it to see its share of income and, with more than one tax category, how much went to each. A **Taxes** total with its share of income also appears above the diagram.
 - A **Deficit** appears when your expenses and taxes plus the money moved into those savings destinations are more than your income. Its note says where the gap was covered from, for example "Expenses exceeded income by 200 EUR. The gap was covered from existing account balances."
 
-The diagram counts a refund against the original purchase's category and period, and leaves out uncategorized transactions, so its totals can differ slightly from the chart above.
+The diagram counts a refund against the original purchase's category, and leaves out uncategorized transactions, so its totals can differ slightly from the chart above.
 
 <Screenshot
   src="/screenshots/stats/analytics-cash-flow-money-flow.png"
@@ -100,7 +99,7 @@ The diagram counts a refund against the original purchase's category and period,
 <Aside type="note" title="Good to know">
 - Categories you set in **Count categories as savings** under [General settings](/settings/general-settings/) are left out of income and expenses here, so they count toward **Net Savings** and the **Savings Rate**.
 - This report always counts planned transactions.
-- In the cards and the chart, a linked refund lowers expenses in the period the money came back, as long as the original purchase is within the selected dates. Otherwise it counts as income. See [Refunds](/stats/how-stats-are-calculated/#refunds).
+- In the cards and the chart, a linked refund lowers expenses in the purchase's own period, and is taken off income in the period the money came back, as long as each side is within the selected dates. See [Refunds](/stats/how-stats-are-calculated/#refunds).
 </Aside>
 
 ## Net Worth History
@@ -163,7 +162,7 @@ In the table, use **Expand all** and **Collapse all** to open or close subcatego
 - A transaction with several tags appears under each of its tags.
 - Rows by **Payee** or **Tag** use whole transactions, because split parts don't have their own payee or tags.
 - Planned transactions are never included.
-- A linked refund lowers **Expenses** in the column where the money came back. It uses the original purchase's payee and tags.
+- A linked refund is netted on the side **Measure** shows, in the column of that transaction's own date. It uses the payee and tags of that same transaction.
 </Aside>
 
 ## Related

@@ -57,7 +57,7 @@ export const getInvestmentContributions = async ({
 
   // One read transaction pins a single Postgres connection across the fan-out
   // below, rather than each branch checking out its own connection.
-  const { portfolios, transfers, savingsTransactions } = await withTransaction(async () => {
+  const { portfolios, transfers, savingsIntake } = await withTransaction(async () => {
     const scopedPortfolios = await getScopedEnabledPortfolios({ userId, portfolioIds });
 
     const scopeIds = scopedPortfolios.map((portfolio) => portfolio.id);
@@ -84,9 +84,7 @@ export const getInvestmentContributions = async ({
       fetchSavingsTransactions({ userId, from, to }),
     ]);
 
-    // Only the net of the intake is read here, and refund netting subtracts the same
-    // amount from both sides of a bucket, so the resolved pairs cannot move it.
-    return { portfolios: scopedPortfolios, transfers: transferRows, savingsTransactions: savingsRows.rows };
+    return { portfolios: scopedPortfolios, transfers: transferRows, savingsIntake: savingsRows };
   })();
 
   const scope = new Set<string>(portfolios.map((portfolio) => portfolio.id));
@@ -103,7 +101,11 @@ export const getInvestmentContributions = async ({
     scope,
   });
 
-  const savingsNet = accumulateSavingsNet({ transactions: savingsTransactions, buckets });
+  const savingsNet = accumulateSavingsNet({
+    transactions: savingsIntake.rows,
+    refundPairs: savingsIntake.refundPairs,
+    buckets,
+  });
 
   const legend = orderLegend({ byBucket, activePortfolioIds, nameById });
 

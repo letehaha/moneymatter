@@ -74,26 +74,25 @@ When you [link a refund](/transfers-and-refunds/refunds/) to the original transa
 
 ### When the refund arrives in a later period
 
-Reports place a refund in time in one of two ways.
+Each side of a refund pair is netted in its own period. The purchase is taken off expenses in the period it happened, and the refund is taken off income in the period it arrived. A side is netted only when its transaction is inside the dates and filters you're looking at.
 
-In cash-flow reports, the refund is subtracted in the period the money came back. This applies to the **Cash Flow** widget, the **Cash Flow** report, and the **Monthly Comparison** chart, summary cards and **Cumulative Progress** in **Trends Comparison**. A report does this only when the original purchase is also inside the dates it's looking at. If the purchase is outside those dates, the refund shows as ordinary income.
-
-The **Cash Flow** widget, with a whole month selected, also looks at the five months before it. So there, a refund of a purchase from those months still lowers this month's expenses.
+This is the same in every report: the **Cash Flow** widget and report, **Monthly Comparison**, the summary cards, **Cumulative Progress**, **Pivot**, and the spending-by-category views such as **Expenses Structure** and **Category Breakdown**.
 
 Here's an example. You spend 100 EUR on January 10, and a 30 EUR refund linked to it arrives on February 5.
 
-| Viewing in the **Cash Flow** report | January | February | Total |
-|---|---|---|---|
-| January to February | Expenses 100 | Expenses **−30**, income 0 | Expenses 70 |
-| February only | | Income 30 (the purchase is outside the range) | Income 30 |
+| Viewing | January | February |
+|---|---|---|
+| January to February, or each month on its own | Expenses 70 | Expenses 0, income 0 |
+
+A refund doesn't push a period's expenses below what you bought in it. Only small exchange-rate differences between the purchase and the refund can do that.
 
 <Aside type="note" title="Good to know">
-A period can show **negative expenses**. It happens when refunds arriving in that period are bigger than what you bought in it. Your net cash for the period is still correct: the money came back, it just counts as less spending instead of more income.
+A past period's numbers can change when you link a refund to it later. In the example above, January shows 100 EUR of expenses until you link the February refund, then 70 EUR.
 </Aside>
 
-In spending-by-category views, the refund is subtracted from the original purchase's category in the purchase's own period, whenever the refund arrives. This applies to the **Expenses Structure** widget, the **Category Breakdown** in **Trends Comparison** and the flow diagram in the **Cash Flow** report. In the example above, January shows 70 EUR for that category, and February shows nothing for it. A category never goes below zero.
+A category never goes below zero in spending-by-category views.
 
-**Pivot** subtracts refunds only when **Measure** is **Expenses**, in the column where the money came back.
+**Pivot** nets a linked refund on whichever side **Measure** shows, in the column of that transaction's own date.
 
 ## Split transactions
 

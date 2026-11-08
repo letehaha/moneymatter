@@ -136,13 +136,13 @@ A linked refund is treated as money you never really spent, rather than money yo
 
 **Cash flow.** On the **Cash Flow** page in [Analytics](/stats/analytics-reports/) and the **Cash Flow** widget on the [dashboard](/stats/dashboard/), the refund lowers your expenses instead of raising your income. Your net result is the same either way; only where the money shows up changes. You pay 100 EUR on 10 January and get 30 EUR back on 20 January: January shows 70 EUR of expenses, no income, and a net of −70 EUR.
 
-**Refunds in a later month.** In Cash Flow, the reduction lands in the month the money came back. You pay 100 EUR in January and get 30 EUR back on 5 February. If you view January and February together, January shows 100 EUR of expenses, February shows −30 EUR of expenses, and the two months together show 70 EUR. If you view February on its own, the purchase is outside the period, so the 30 EUR shows up as ordinary income.
+**Refunds in a later month.** Each side is netted in its own month. You pay 100 EUR in January and get 30 EUR back on 5 February: January shows 70 EUR of expenses, and February shows 0 expenses and no income. That's true whether you view January and February together or each month on its own. Cash Flow, Monthly Comparison, the summary cards and the category charts all agree.
 
-<Aside type="note" title="Both sides need to be in view">
-Cash flow only nets a refund against its purchase when both are inside the period and filters you're looking at. If the purchase happened before the selected period, the refund shows up as ordinary income. If you filter to one account and the refund went to a different account, that account's figures aren't adjusted either.
+<Aside type="note" title="Each side is netted only when it's in view">
+Each side of the pair is netted only when its own transaction is inside the period and filters you're looking at. If you view only February, it still shows no income from the 30 EUR refund, even though the purchase is in January. The same goes for account filters: if the refund went to a different account and you filter to the purchase's account, the purchase's spending is still lowered, and the refund doesn't show as income there.
 </Aside>
 
-**Category charts use the purchase's period.** In spending-by-category charts, such as the **Expenses Structure** widget on the [dashboard](/stats/dashboard/), a refund is always taken off the period that contains the original purchase, even if the money came back later. In the example above, January shows 70 EUR for the category and February shows no change. This is why Cash Flow and category charts can disagree for a refund that crosses months.
+**Past periods can change.** If you link a refund later, the month of the purchase shows the lower spending from then on.
 
 **Category charts never go below zero.** A category's spending stops at zero, and a refund only reduces a category that has spending in the period shown.
 
