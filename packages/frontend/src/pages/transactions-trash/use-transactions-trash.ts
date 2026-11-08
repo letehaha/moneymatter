@@ -60,7 +60,6 @@ export const useTrashActions = () => {
 
 export interface TrashEntryDisplay {
   title: string;
-  categoryLabel: string;
   accountName: string;
   amountText: string;
   amountClass: string;
@@ -100,7 +99,6 @@ export const useTrashEntryDisplay = () => {
 
     return {
       title,
-      categoryLabel: isTransfer ? t('transactions.trashPage.transferLabel') : categoryName,
       accountName,
       amountText,
       amountClass,

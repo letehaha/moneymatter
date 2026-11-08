@@ -16,7 +16,10 @@ interface OppositeTxSource {
 // transaction it tracks is replaced — e.g. a list row transitioning from
 // transfer_out_wallet (no transferId) to common_transfer after being linked.
 // A plain object is still accepted via toValue for non-reactive callers.
-export function useOppositeTxRecord(transaction: MaybeRefOrGetter<OppositeTxSource>) {
+export function useOppositeTxRecord(
+  transaction: MaybeRefOrGetter<OppositeTxSource>,
+  { enabled = true }: { enabled?: MaybeRefOrGetter<boolean> } = {},
+) {
   const isTransferTransaction = computed(() => {
     const nature = toValue(transaction).transferNature;
     return isTwoLegTransfer(nature) || nature === TRANSACTION_TRANSFER_NATURE.transfer_out_wallet;
@@ -34,7 +37,7 @@ export function useOppositeTxRecord(transaction: MaybeRefOrGetter<OppositeTxSour
       if (!transactions) return null;
       return transactions.find((item) => item.id !== tx.id) || null;
     },
-    enabled: isTransferTransaction,
+    enabled: computed(() => isTransferTransaction.value && toValue(enabled)),
     staleTime: Infinity,
   });
 }

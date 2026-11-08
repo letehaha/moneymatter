@@ -140,7 +140,7 @@ describe('Transactions Trash', () => {
       expect(entry!.links).toEqual([]);
     });
 
-    it('orders entries by expiry, soonest first', async () => {
+    it('orders entries by deletion, newest first', async () => {
       const account = await createAccount();
       const recent = await createExpense({ accountId: account.id });
       const older = await createExpense({ accountId: account.id });
@@ -150,7 +150,7 @@ describe('Transactions Trash', () => {
 
       const entries = await helpers.getTrash({ raw: true });
 
-      expect(entries.map((entry) => entry.id)).toEqual([older.id, recent.id]);
+      expect(entries.map((entry) => entry.id)).toEqual([recent.id, older.id]);
     });
 
     it('shows a transfer pair as one entry with both legs', async () => {

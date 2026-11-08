@@ -19,8 +19,8 @@ const props = defineProps<{
   readonly: boolean;
   isRestoring: boolean;
   isDeleting: boolean;
-  /** Bottom-sheet layout: stacked, taller buttons. */
-  stacked?: boolean;
+  /** Bottom-sheet layout: taller buttons. */
+  tall?: boolean;
 }>();
 
 defineEmits<{ restore: []; delete: [] }>();
@@ -102,22 +102,17 @@ const items = computed<ComesBackItem[]>(() => {
       </ul>
     </div>
 
-    <div v-if="!readonly" :class="cn('flex gap-2', stacked ? 'flex-col' : 'flex-wrap')">
-      <Button :size="stacked ? 'lg' : 'default'" class="flex-[1_1_140px]" :disabled="isBusy" @click="$emit('restore')">
-        <Loader2Icon v-if="isRestoring" class="size-4 animate-spin" />
-        <Undo2Icon v-else class="size-4" />
+    <div v-if="!readonly" class="@container grid grid-cols-2 gap-2">
+      <Button variant="secondary" :size="tall ? 'lg' : 'default'" :disabled="isBusy" @click="$emit('restore')">
+        <Loader2Icon v-if="isRestoring" class="size-4 shrink-0 animate-spin" />
+        <Undo2Icon v-else class="size-4 shrink-0" />
         {{ $t('transactions.trashPage.restore') }}
       </Button>
-      <Button
-        variant="soft-destructive"
-        :size="stacked ? 'lg' : 'default'"
-        class="flex-[1_1_140px]"
-        :disabled="isBusy"
-        @click="$emit('delete')"
-      >
-        <Loader2Icon v-if="isDeleting" class="size-4 animate-spin" />
-        <Trash2Icon v-else class="size-4" />
-        {{ $t('transactions.trashPage.deletePermanently') }}
+      <Button variant="soft-destructive" :size="tall ? 'lg' : 'default'" :disabled="isBusy" @click="$emit('delete')">
+        <Loader2Icon v-if="isDeleting" class="size-4 shrink-0 animate-spin" />
+        <Trash2Icon v-else class="size-4 shrink-0" />
+        <span class="@md:hidden">{{ $t('common.actions.delete') }}</span>
+        <span class="hidden @md:inline">{{ $t('transactions.trashPage.deletePermanently') }}</span>
       </Button>
     </div>
   </div>

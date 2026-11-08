@@ -21,7 +21,7 @@ interface TxSource {
 
 const makeTx = (id: string): TransactionModel => ({ id }) as unknown as TransactionModel;
 
-const setup = (initial: TxSource) => {
+const setup = (initial: TxSource, { enabled = ref(true) }: { enabled?: Ref<boolean> } = {}) => {
   const source = ref<TxSource>(initial) as Ref<TxSource>;
 
   const queryClient = new QueryClient({
@@ -34,7 +34,7 @@ const setup = (initial: TxSource) => {
     setup() {
       // Pass a getter so the query tracks the live source, mirroring how
       // transaction-record.vue passes `() => props.tx`.
-      result = useOppositeTxRecord(() => source.value);
+      result = useOppositeTxRecord(() => source.value, { enabled });
       return {};
     },
     template: '<div />',
@@ -124,6 +124,25 @@ describe('useOppositeTxRecord', () => {
 
     await vi.waitFor(() => {
       expect(mockLoadByTransferId).toHaveBeenCalledWith('transfer-2');
+    });
+  });
+
+  it('skips the lookup while the caller disables it, and fetches once re-enabled', async () => {
+    mockLoadByTransferId.mockResolvedValue([makeTx('tx-3-opposite'), makeTx('tx-3')]);
+    const enabled = ref(false);
+
+    setup(
+      { id: 'tx-3', transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer, transferId: 'transfer-3' },
+      { enabled },
+    );
+
+    await flushMicroTasks();
+    expect(mockLoadByTransferId).not.toHaveBeenCalled();
+
+    enabled.value = true;
+
+    await vi.waitFor(() => {
+      expect(mockLoadByTransferId).toHaveBeenCalledWith('transfer-3');
     });
   });
 });

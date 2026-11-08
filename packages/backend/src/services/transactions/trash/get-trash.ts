@@ -73,5 +73,5 @@ export const getTrash = async ({ userId }: { userId: number }): Promise<GetTrash
         links: legs.flatMap((leg) => linksByLeg.get(leg.id) ?? []),
       };
     })
-    .toSorted((a, b) => a.expiresAt.localeCompare(b.expiresAt));
+    .toSorted((a, b) => b.deletedAt.localeCompare(a.deletedAt));
 };
