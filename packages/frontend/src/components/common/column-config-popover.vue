@@ -1,19 +1,24 @@
 <template>
   <Popover v-model:open="isOpen">
+    <PopoverAnchor v-if="anchor" :reference="anchor" as="template" />
     <!-- Trigger outside, tooltip inside: Tooltip spawns its own popper context,
          so a PopoverTrigger nested in it would anchor the popover content to the
          tooltip instead of the button. The span gives as-child a single element
          root to merge onto (the tooltip's root is a fragment). -->
-    <PopoverTrigger as-child>
+    <PopoverTrigger v-else as-child>
       <span class="inline-flex">
         <DesktopOnlyTooltip :content="$t(titleKey)">
-          <Button size="icon-sm" variant="ghost" :aria-label="$t(titleKey)">
-            <SettingsIcon class="text-muted-foreground size-4" />
+          <Button
+            :size="triggerVariant === 'secondary' ? 'icon' : 'icon-sm'"
+            :variant="triggerVariant"
+            :aria-label="$t(titleKey)"
+          >
+            <SettingsIcon :class="cn('size-4', triggerVariant === 'ghost' && 'text-muted-foreground')" />
           </Button>
         </DesktopOnlyTooltip>
       </span>
     </PopoverTrigger>
-    <PopoverContent class="w-72 overflow-hidden p-0" align="end">
+    <PopoverContent class="w-72 overflow-hidden p-0" align="end" @close-auto-focus="onCloseAutoFocus">
       <SlidingPanels v-model="view" :panels="['main', 'columns']">
         <template #main>
           <div class="flex flex-col">
@@ -100,7 +105,9 @@ import { Checkbox } from '@/components/lib/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { cn } from '@/lib/utils';
 import { ArrowLeftIcon, ChevronRightIcon, GripVerticalIcon, SettingsIcon } from '@lucide/vue';
+import { PopoverAnchor } from 'reka-ui';
 import { computed, ref, watch } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 
@@ -118,8 +125,11 @@ const props = withDefaults(
     configurableColumns: { definition: ConfigurableColumnDefinition; visible: boolean }[];
     /** i18n key shown in the trigger tooltip, aria-label, and main-panel header. */
     titleKey?: string;
+    triggerVariant?: 'ghost' | 'secondary';
+    /** Renders no trigger; the popover is positioned against this element and opened via v-model:open. */
+    anchor?: HTMLElement | null;
   }>(),
-  { titleKey: 'transactions.table.columnConfig.title' },
+  { titleKey: 'transactions.table.columnConfig.title', triggerVariant: 'ghost', anchor: null },
 );
 
 const emit = defineEmits<{
@@ -128,7 +138,14 @@ const emit = defineEmits<{
   reset: [];
 }>();
 
-const isOpen = ref(false);
+const isOpen = defineModel<boolean>('open', { default: false });
+
+// Without a PopoverTrigger, reka has nothing to return focus to on close.
+const onCloseAutoFocus = (event: Event) => {
+  if (!props.anchor) return;
+  event.preventDefault();
+  props.anchor.querySelector<HTMLElement>('button')?.focus();
+};
 const view = ref<'main' | 'columns'>('main');
 
 const POPOVER_CLOSE_ANIMATION_MS = 320;

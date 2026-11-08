@@ -29,7 +29,8 @@
       "copyInviteLink": "Copy invite link",
       "moveTo": "Move to…",
       "learnMore": "Learn more",
-      "undo": "Undo"
+      "undo": "Undo",
+      "more": "More"
     },
     "ui": {
       "close": "Close",
