@@ -26,6 +26,14 @@ export function useShiftMultiSelect<K>(selectedItems: Set<K>, onUpdate?: () => v
     }
   });
 
+  // The Shift keyup never arrives when focus leaves the window mid-press (e.g. the Cmd+Shift+4 screenshot shortcut).
+  useEventListener(window, 'blur', () => {
+    isShiftKeyPressed.value = false;
+  });
+  useEventListener(window, 'pointerdown', (e: PointerEvent) => (isShiftKeyPressed.value = e.shiftKey), {
+    capture: true,
+  });
+
   /**
    * Handle item selection with shift-click support
    * @param value Whether the item is being selected or deselected
