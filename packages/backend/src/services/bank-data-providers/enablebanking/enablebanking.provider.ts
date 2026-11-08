@@ -6,6 +6,7 @@ import {
   DEACTIVATION_REASON,
   NO_CURRENCY_CODE,
   PAYMENT_TYPES,
+  TRANSACTION_DELETION_REASON,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
@@ -951,14 +952,17 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             // A removed pending row the bank now books is a real charge: it comes back and is upgraded below.
             if (
               existingTx?.deletedAt &&
+              existingTx.deletionReason === TRANSACTION_DELETION_REASON.reconciliation &&
               !existingTx.mergedIntoId &&
               incomingStatus === TransactionStatus.BOOK &&
               isPreBookingRow({ tx: existingTx })
             ) {
+              // `deletedAt` is read-only on the instance, so only restore() can clear it.
+              existingTx.set({ deletionReason: null });
               await existingTx.restore();
             }
 
-            // Soft-deleted: the user removed it via reconciliation, so the bank copy must not come back.
+            // Soft-deleted: the user removed it via reconciliation or Trash, so the bank copy must not come back.
             // Only a booking is handed to a still-pending merge survivor: any other payload would
             // re-anchor the survivor onto the removed row's identity and break its own matching.
             if (existingTx?.deletedAt) {

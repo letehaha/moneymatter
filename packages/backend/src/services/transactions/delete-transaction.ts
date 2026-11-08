@@ -1,6 +1,6 @@
 import { isTwoLegTransfer, TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
 import { t } from '@i18n/index';
-import { UnexpectedError, ValidationError } from '@js/errors';
+import { NotFoundError, UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import RefundTransactions from '@models/refund-transactions.model';
@@ -14,33 +14,48 @@ import { withTransaction } from '../common/with-transaction';
 import { getWritableTransactionById } from './get-by-id';
 import { isLinkedLeg, syncPaymentLegs } from './payment-legs';
 import { assertPlannedWriteAllowed } from './planned-matching/assert-planned-invariants';
+import { trashTransaction } from './trash/trash-transaction';
 
+// Phase-1 guards block recipient deletes that cross into linking semantics
+// (transfers, refunds) — owners pass through and use the existing flows.
+const assertPhase1Guards = ({ tx, isOwner }: { tx: Transactions.default; isOwner: boolean }) =>
+  assertSharedWritePhase1Guards({
+    isOwner,
+    involvesTransfer:
+      isTwoLegTransfer(tx.transferNature) ||
+      tx.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_to_portfolio ||
+      tx.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_to_venture,
+    involvesRefund: Boolean(tx.refundLinked),
+  });
+
+/**
+ * Moves the row (and its transfer twin) to Trash. `permanent` hard-deletes instead, for
+ * internal callers removing something the app itself created.
+ */
 export const deleteTransaction = withTransaction(
-  async ({ id, userId }: { id: string; userId: number }): Promise<void> => {
+  async ({ id, userId, permanent = false }: { id: string; userId: number; permanent?: boolean }): Promise<void> => {
     try {
       // Single fetch + write-authorization gate. `getWritableTransactionById` throws 404
       // when the caller has no claim, 401 when scope: 'own' is violated. Returns a
       // pre-resolved `ctx` so the call site doesn't reassemble auth primitives.
       const { tx, ctx } = await getWritableTransactionById({ id, userId });
-      const { transferNature, transferId, refundLinked } = tx;
 
       assertPlannedWriteAllowed({ transaction: tx, callerUserId: userId });
+
+      if (!permanent) {
+        assertPhase1Guards({ tx, isOwner: ctx.isOwner });
+        await trashTransaction({ tx });
+        return;
+      }
+
+      const { transferNature, transferId } = tx;
 
       // A linked row is the user's own and just leaves its payment; a created one goes with its main.
       if (tx.paymentParentId && !isLinkedLeg(tx)) {
         throw new ValidationError({ message: t({ key: 'transactions.paymentLegEditThroughMain' }) });
       }
 
-      // Phase-1 guards block recipient deletes that cross into linking semantics
-      // (transfers, refunds) — owners pass through and use the existing flows.
-      assertSharedWritePhase1Guards({
-        isOwner: ctx.isOwner,
-        involvesTransfer:
-          isTwoLegTransfer(transferNature) ||
-          transferNature === TRANSACTION_TRANSFER_NATURE.transfer_to_portfolio ||
-          transferNature === TRANSACTION_TRANSFER_NATURE.transfer_to_venture,
-        involvesRefund: Boolean(refundLinked),
-      });
+      assertPhase1Guards({ tx, isOwner: ctx.isOwner });
 
       // Not gated on `refundLinked` — the flag is a cache of the link rows, and a row whose flag
       // drifted false would otherwise keep its links and leave the other end flagged forever.
@@ -103,7 +118,8 @@ export const deleteTransaction = withTransaction(
         throw new UnexpectedError({ message: t({ key: 'transactions.unexpectedDeleteIssue' }) });
       }
     } catch (e) {
-      if (process.env.NODE_ENV !== 'test') {
+      const isExpected = e instanceof ValidationError || e instanceof NotFoundError;
+      if (process.env.NODE_ENV !== 'test' && !isExpected) {
         logger.error(e as Error);
       }
       throw e;

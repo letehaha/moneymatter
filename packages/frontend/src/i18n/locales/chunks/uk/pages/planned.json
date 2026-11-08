@@ -262,6 +262,7 @@
         "dueOn": "Термін оплати {date}",
         "paidAt": "Сплачено {date}",
         "viewTransaction": "Переглянути транзакцію",
+        "paymentInTrash": "Платіж у смітнику",
         "actions": {
           "markPaid": "Позначити як сплачено",
           "skip": "Пропустити"

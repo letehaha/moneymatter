@@ -4,7 +4,7 @@ import type { RefundWithSplit } from '../types';
 
 export type ConvertAmount = (params: { amount: number; from: string; to: string }) => number | null;
 
-export interface RefundShareTarget {
+interface RefundShareTarget {
   /** Most the default fill may give this target. `null` = no known bound. */
   cap: number | null;
   /** `cap` is an exchange-rate estimate. */
@@ -13,7 +13,7 @@ export interface RefundShareTarget {
   share?: number | null;
 }
 
-export type RefundShareError = 'nonPositive' | 'exceedsPurchase';
+type RefundShareError = 'nonPositive' | 'exceedsPurchase';
 
 const ORPHAN_CENT = 0.01;
 

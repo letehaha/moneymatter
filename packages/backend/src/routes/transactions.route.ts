@@ -31,6 +31,7 @@ import bulkScanTransferRecommendations from '@controllers/transactions.controlle
 import dismissTransferSuggestion from '@controllers/transactions.controller/transfer-linking/dismiss-transfer-suggestion';
 import getTransferRecommendations from '@controllers/transactions.controller/transfer-linking/get-transfer-recommendations';
 import unlinkTransferTransactions from '@controllers/transactions.controller/transfer-linking/unlink-transfer-transactions';
+import * as trash from '@controllers/transactions.controller/trash';
 import unlinkFromPortfolio from '@controllers/transactions.controller/unlink-from-portfolio';
 import updateTransaction from '@controllers/transactions.controller/update-transaction';
 import { authenticateSessionOrUploadToken } from '@middlewares/attachment-upload-auth';
@@ -105,6 +106,10 @@ router.post(
   checkBaseCurrencyLock,
   reconciliation.checkStuckPendingController,
 );
+
+router.get('/trash', trash.getTrashController);
+router.post('/trash/restore', checkBaseCurrencyLock, trash.restoreTrashController);
+router.post('/trash/delete', checkBaseCurrencyLock, trash.deleteTrashController);
 
 // Split routes
 router.delete('/splits/:splitId', checkBaseCurrencyLock, deleteSplit);

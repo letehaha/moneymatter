@@ -19,8 +19,11 @@ interface Notification {
   visibilityTime?: number;
   /** Never auto-hides. Use for actionable errors the user must not miss. */
   persistent?: boolean;
-  /** Renders a button inside the toast, e.g. a link to the record that failed. */
-  action?: Action;
+  /**
+   * Renders a button inside the toast, e.g. a link to the record that failed. Sonner renders the label
+   * as text only, so `icon` is drawn by the `toast-action-icon-*` rules in the toaster styles.
+   */
+  action?: Action & { icon?: 'undo' };
 }
 
 const DEFAULT_VISIBILITY_TIME = 4000;
@@ -132,6 +135,7 @@ export const useNotificationCenter = (): {
       testId: String(baseId),
       description,
       action,
+      classes: action?.icon ? { actionButton: `toast-action-icon-${action.icon}` } : undefined,
       duration: Infinity,
       onDismiss: () => {
         releaseActiveId({ baseId, sonnerId });

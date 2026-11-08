@@ -26,11 +26,9 @@ import { Checkbox } from '@/components/lib/ui/checkbox';
 import { Switch } from '@/components/lib/ui/switch';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
-import { StatusBadge } from '@/components/lib/ui/status-badge';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
-import { useAccountName } from '@/composable/use-account-name';
 import { useFormValidation } from '@/composable/form-validator';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
@@ -64,6 +62,7 @@ import {
   MapIcon,
   MapPinIcon,
   SplitIcon,
+  Trash2Icon,
   XIcon,
 } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
@@ -124,6 +123,7 @@ import { useUserSettings } from '@/composable/data-queries/user-settings';
 import {
   canDeleteTransaction,
   getUnlistedCategoryIds,
+  isPaymentTransaction,
   isConnectedAccount,
   isTxEditableAsManual,
   prepopulateForm,
@@ -183,7 +183,6 @@ const isVentureLinkedView = computed(
 
 const route = useRoute();
 const { t } = useI18n();
-const getAccountName = useAccountName();
 watch(() => route.path, closeModal);
 
 const { currenciesMap, systemCurrencies } = storeToRefs(useCurrenciesStore());
@@ -1158,16 +1157,9 @@ const paymentLegsHint = computed(() => {
   if (isSavedMultiAccount.value) return t('dialogs.manageTransaction.form.paymentLegs.editHint');
   return undefined;
 });
-const deletedPaymentParts = computed(() =>
-  isSavedMultiAccount.value
-    ? transaction.value!.paymentParts!.map((part) => ({
-        ...part,
-        accountName: getAccountName({ accountId: part.accountId }),
-        signedAmount: transaction.value!.transactionType === TRANSACTION_TYPES.expense ? -part.amount : part.amount,
-      }))
-    : [],
+const isDeleteBlockedByPayment = computed(
+  () => !!transaction.value && isMutable.value && isPaymentTransaction({ transaction: transaction.value }),
 );
-const hasLinkedPaymentParts = computed(() => deletedPaymentParts.value.some((part) => part.isLinked));
 
 const deleteTransactionHandler = () => {
   if (!canDelete.value) return;
@@ -2148,61 +2140,14 @@ onUnmounted(() => {
         variant="destructive"
         @click="isDeleteConfirmOpen = true"
       >
+        <Trash2Icon class="size-4" />
         {{ $t('dialogs.manageTransaction.form.deleteButton') }}
       </Button>
+      <p v-else-if="isDeleteBlockedByPayment" class="text-muted-foreground text-sm">
+        {{ $t('dialogs.manageTransaction.form.deleteBlockedByPayment') }}
+      </p>
       <ResponsiveAlertDialog
-        v-if="deletedPaymentParts.length"
-        v-model:open="isDeleteConfirmOpen"
-        :confirm-label="
-          deletedPaymentParts.length === 2
-            ? $t('dialogs.manageTransaction.form.paymentLegs.deleteBoth')
-            : $t('dialogs.manageTransaction.form.paymentLegs.deleteAll')
-        "
-        confirm-variant="destructive"
-        :confirm-disabled="isFormFieldsDisabled"
-        @confirm="deleteTransactionHandler"
-      >
-        <template #title>{{ $t('dialogs.manageTransaction.form.paymentLegs.deleteTitle') }}</template>
-        <template #description>
-          {{
-            hasLinkedPaymentParts
-              ? $t('dialogs.manageTransaction.form.paymentLegs.deleteLinkedDescription')
-              : $t('dialogs.manageTransaction.form.paymentLegs.deleteDescription', {
-                  count: deletedPaymentParts.length,
-                })
-          }}
-        </template>
-        <ul class="border-border divide-border divide-y rounded-lg border text-sm">
-          <li
-            v-for="part in deletedPaymentParts"
-            :key="part.transactionId"
-            class="flex items-center justify-between gap-3 px-3 py-2"
-          >
-            <span class="flex min-w-0 items-center gap-2">
-              <span class="truncate">{{ part.accountName }}</span>
-              <StatusBadge v-if="hasLinkedPaymentParts" :variant="part.isLinked ? 'success' : 'destructive'">
-                {{
-                  part.isLinked
-                    ? $t('dialogs.manageTransaction.form.paymentLegs.partKept')
-                    : $t('dialogs.manageTransaction.form.paymentLegs.partDeleted')
-                }}
-              </StatusBadge>
-            </span>
-            <span class="text-amount tabular-nums">
-              {{
-                formatUIAmount(part.signedAmount, {
-                  currency: part.currencyCode,
-                })
-              }}
-            </span>
-          </li>
-        </ul>
-        <p class="text-muted-foreground mt-2 text-xs">
-          {{ $t('dialogs.manageTransaction.form.paymentLegs.deleteSinglePartHint') }}
-        </p>
-      </ResponsiveAlertDialog>
-      <ResponsiveAlertDialog
-        v-else
+        v-if="canDelete"
         v-model:open="isDeleteConfirmOpen"
         :confirm-label="$t('dialogs.manageTransaction.form.deleteButton')"
         confirm-variant="destructive"

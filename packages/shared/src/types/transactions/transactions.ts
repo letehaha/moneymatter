@@ -360,6 +360,8 @@ export type BulkDeleteTransactionsBody = BulkTarget;
 export interface BulkDeleteTransactionsResponse {
   deletedCount: number;
   deletedIds: string[];
+  /** Selected rows that cannot go to Trash (payment, portfolio or venture links) and were left untouched. */
+  skippedIds: string[];
 }
 
 // Refund Recommendations

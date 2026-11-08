@@ -12,6 +12,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   TransactionCreatorSnapshot,
+  TransactionDeletionReason,
   TransactionLocation,
   TransactionModel,
 } from '@bt/shared/types';
@@ -36,6 +37,11 @@ import TransactionGroups, { dissolveUndersizedGroups } from '@models/transaction
 import TransactionSplits from '@models/transaction-splits.model';
 import TransactionTags from '@models/transaction-tags.model';
 import { hasBalanceRelevantChange } from '@models/transactions-balance-relevance';
+import {
+  liveOrExternalTransactionSql,
+  liveTransactionExistsSql,
+  trashedWhere,
+} from '@models/transactions-query/deletion-where';
 import {
   BalanceAdjustmentsPolicy,
   CompletenessPolicy,
@@ -113,7 +119,7 @@ export const prepareTXInclude = ({
 };
 
 // Top-level only: the literal hardcodes the "transactionGroups" alias. transactionCount is the
-// group's full membership size, not the members in the current fetch window.
+// group's live membership size (trashed members excluded), not the members in the current fetch window.
 const groupsInclude = (): Includeable => ({
   model: TransactionGroups,
   through: { attributes: [] },
@@ -125,6 +131,7 @@ const groupsInclude = (): Includeable => ({
         SELECT COUNT(*)::int
         FROM "TransactionGroupItems"
         WHERE "TransactionGroupItems"."groupId" = "transactionGroups"."id"
+          AND ${liveTransactionExistsSql({ idColumnSql: '"TransactionGroupItems"."transactionId"' })}
       )`),
       'transactionCount',
     ],
@@ -191,6 +198,7 @@ export interface TransactionsAttributes {
   paymentParentId: string | null;
   paymentAmount: Money | null;
   paymentLinkSnapshot: PaymentLinkSnapshot | null;
+  deletionReason: TransactionDeletionReason | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -417,6 +425,10 @@ export default class Transactions extends Model {
   // A linked row's own values from before the link, restored on unlink. Null on rows the payment created.
   @Column({ allowNull: true, type: DataType.JSONB })
   paymentLinkSnapshot!: PaymentLinkSnapshot | null;
+
+  // Required whenever `deletedAt` is set (DB CHECK): 'trash' for user deletes, 'reconciliation' for rows it hid.
+  @Column({ allowNull: true, type: DataType.STRING(20) })
+  deletionReason!: TransactionDeletionReason | null;
 
   // Managed by Sequelize (timestamps: true)
   declare createdAt: Date;
@@ -708,13 +720,23 @@ export default class Transactions extends Model {
     }
   }
 
+  /**
+   * Re-applies the balance effect of a trashed row once its `deletedAt` is cleared,
+   * the same way creating it did.
+   */
+  static async applyRestoredBalance(instance: Transactions) {
+    await Transactions.updateAccountBalanceAfterCreate(instance);
+    await Transactions.reconcileVehicleAnchorOnDelete(instance);
+  }
+
   @BeforeDestroy
   static async updateAccountBalanceBeforeDestroy(instance: Transactions) {
     const { accountType, accountId, amount, transactionType } = instance;
 
-    // Planned rows never moved a balance, so there is nothing to take back. Group
-    // bookkeeping below still has to run so groups keep auto-dissolving.
-    if (!instance.isPlanned) {
+    // Planned rows never moved a balance, so there is nothing to take back. A row that is
+    // already soft-deleted had its balance taken back then. Group bookkeeping below still
+    // has to run so groups keep auto-dissolving.
+    if (!instance.isPlanned && !instance.deletedAt) {
       if (accountType === ACCOUNT_TYPES.system) {
         await updateAccountBalanceForChangedTx({
           accountId,
@@ -899,7 +921,8 @@ function noLinksOrLinkedToSql({
   otherColumn: 'originalTxId' | 'refundTxId';
   keepLinksWith?: string;
 }) {
-  const links = `SELECT 1 FROM "RefundTransactions" rt WHERE rt."${column}" = "Transactions"."id"`;
+  const links = `SELECT 1 FROM "RefundTransactions" rt WHERE rt."${column}" = "Transactions"."id"
+    AND ${liveOrExternalTransactionSql({ idColumnSql: `rt."${otherColumn}"` })}`;
   const noLinks = `NOT EXISTS (${links})`;
   if (!keepLinksWith) return noLinks;
   if (!UUID_PATTERN.test(keepLinksWith)) {
@@ -1560,7 +1583,19 @@ export const updateTransactions = (
   });
 };
 
-export const deleteTransactionById = async ({ id, userId }: { id: string; userId: number }) => {
+/**
+ * `trash` soft-deletes the row into Trash; the destroy then runs without `force`, so the
+ * destroy hooks still take the balance back.
+ */
+export const deleteTransactionById = async ({
+  id,
+  userId,
+  trash = false,
+}: {
+  id: string;
+  userId: number;
+  trash?: boolean;
+}) => {
   const tx = await getTransactionById({ id, userId });
 
   if (!tx) return true;
@@ -1573,10 +1608,14 @@ export const deleteTransactionById = async ({ id, userId }: { id: string; userId
     });
   }
 
+  if (trash) {
+    await Transactions.update({ ...trashedWhere }, { where: { id, userId }, hooks: false });
+  }
+
   return Transactions.destroy({
     where: { id, userId },
     // So that BeforeDestroy will be triggered
     individualHooks: true,
-    force: true,
+    force: !trash,
   });
 };

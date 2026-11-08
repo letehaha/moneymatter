@@ -1,7 +1,10 @@
 <template>
   <PageWrapper>
-    <DefineTableSettings>
+    <DefineTableSettings v-slot="{ anchor }">
       <ColumnConfigPopover
+        v-model:open="isTableSettingsOpen"
+        trigger-variant="secondary"
+        :anchor="anchor"
         :configurable-columns="configurableColumns"
         @toggle="toggleColumn"
         @reorder="reorderColumns"
@@ -26,6 +29,15 @@
       </ColumnConfigPopover>
     </DefineTableSettings>
 
+    <DefineTrashLink>
+      <Button variant="secondary" as-child>
+        <RouterLink :to="{ name: ROUTES_NAMES.transactionsTrash }">
+          <Trash2Icon class="size-4" />
+          {{ $t('navigation.trash') }}
+        </RouterLink>
+      </Button>
+    </DefineTrashLink>
+
     <div
       ref="pageContentRef"
       :class="[
@@ -46,29 +58,6 @@
       <template v-if="showMobileLayout">
         <div class="flex shrink-0 items-center justify-between gap-2">
           <div class="flex min-w-0 items-center gap-2">
-            <div class="bg-card flex shrink-0 items-center gap-0.5 rounded-md border p-0.5">
-              <DesktopOnlyTooltip :content="$t('transactions.table.viewToggle.list')">
-                <Button
-                  :variant="activeView === 'list' ? 'secondary' : 'ghost'"
-                  size="icon-sm"
-                  :aria-label="$t('transactions.table.viewToggle.list')"
-                  @click="setActiveView('list')"
-                >
-                  <ListIcon class="size-4" />
-                </Button>
-              </DesktopOnlyTooltip>
-              <DesktopOnlyTooltip :content="$t('transactions.table.viewToggle.table')">
-                <Button
-                  :variant="activeView === 'table' ? 'secondary' : 'ghost'"
-                  size="icon-sm"
-                  :aria-label="$t('transactions.table.viewToggle.table')"
-                  @click="setActiveView('table')"
-                >
-                  <Table2Icon class="size-4" />
-                </Button>
-              </DesktopOnlyTooltip>
-            </div>
-
             <!-- Scrolling is handled by ResponsiveDialog's internal scroll wrapper –
                  an extra scroll container here would clip the panel instead -->
             <FiltersDialog v-model:open="isFiltersDialogOpen" :is-any-filters-applied="isAnyFiltersApplied">
@@ -90,19 +79,50 @@
             />
           </div>
 
-          <div class="flex items-center gap-2">
-            <TableSettings v-if="activeView === 'table'" />
-            <DesktopOnlyTooltip :content="$t('transactions.table.fullscreen.enter')">
-              <Button
-                variant="secondary"
-                size="icon"
-                :aria-label="$t('transactions.table.fullscreen.enter')"
-                @click="enterFullscreen"
-              >
-                <Maximize2Icon class="size-4" />
-              </Button>
-            </DesktopOnlyTooltip>
-          </div>
+          <span ref="moreMenuAnchor" class="inline-flex shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <span class="inline-flex">
+                  <DesktopOnlyTooltip :content="$t('common.actions.more')">
+                    <Button variant="secondary" size="icon" :aria-label="$t('common.actions.more')">
+                      <EllipsisIcon class="size-4" />
+                    </Button>
+                  </DesktopOnlyTooltip>
+                </span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" @close-auto-focus="onMoreMenuCloseAutoFocus">
+                <DropdownMenuRadioGroup
+                  :model-value="activeView"
+                  @update:model-value="(view) => setActiveView(view as TransactionsView)"
+                >
+                  <DropdownMenuRadioItem value="list">
+                    <ListIcon class="size-4" />
+                    {{ $t('transactions.table.viewToggle.list') }}
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="table">
+                    <Table2Icon class="size-4" />
+                    {{ $t('transactions.table.viewToggle.table') }}
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem v-if="activeView === 'table'" @select="isTableSettingsRequested = true">
+                  <SettingsIcon class="size-4" />
+                  {{ $t('transactions.table.columnConfig.title') }}
+                </DropdownMenuItem>
+                <DropdownMenuItem @select="enterFullscreen">
+                  <Maximize2Icon class="size-4" />
+                  {{ $t('transactions.table.fullscreen.enter') }}
+                </DropdownMenuItem>
+                <DropdownMenuItem as-child>
+                  <RouterLink :to="{ name: ROUTES_NAMES.transactionsTrash }">
+                    <Trash2Icon class="size-4" />
+                    {{ $t('navigation.trash') }}
+                  </RouterLink>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <TableSettings v-if="activeView === 'table' && moreMenuAnchor" :anchor="moreMenuAnchor" />
+          </span>
         </div>
 
         <template v-if="activeView === 'list'">
@@ -163,6 +183,7 @@
             </div>
 
             <SavedViewsMenu v-model:filters="filters" v-model:sorting="sorting" block @applied="applyFilters" />
+            <TrashLink />
           </div>
 
           <ScrollArea class="-mx-4 min-h-0 flex-1">
@@ -244,6 +265,7 @@
 
           <template #actions>
             <TableSettings />
+            <TrashLink />
             <DesktopOnlyTooltip :content="$t('transactions.table.fullscreen.enter')">
               <Button
                 variant="secondary"
@@ -371,6 +393,7 @@ import { Switch } from '@/components/lib/ui/switch';
 import { Card } from '@/components/lib/ui/card';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { SCROLL_AREA_IDS } from '@/components/lib/ui/scroll-area/types';
+import { ROUTES_NAMES } from '@/routes/constants';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { isAnyGroupDissolvingFilterActive } from '@/components/records-filters/filter-registry';
 import FiltersDialog from '@/components/records-filters/filters-dialog.vue';
@@ -379,10 +402,27 @@ import { useActiveView } from '@/components/records-filters/saved-views';
 import { parseStoredFilters, useTransactionsWithFilters } from '@/components/records-filters/transactions-with-filters';
 import { useFiltersFromQuery } from '@/components/records-filters/use-filters-from-query';
 import TransactionsList from '@/components/transactions-list/transactions-list.vue';
-import { ListIcon, Maximize2Icon, Minimize2Icon, Table2Icon } from '@lucide/vue';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/common/dropdown-menu';
+import {
+  EllipsisIcon,
+  ListIcon,
+  Maximize2Icon,
+  Minimize2Icon,
+  SettingsIcon,
+  Table2Icon,
+  Trash2Icon,
+} from '@lucide/vue';
 import { createReusableTemplate, useDebounceFn, useElementSize, useEventListener, useMediaQuery } from '@vueuse/core';
-import { computed, onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { RouterLink, useRoute, useRouter } from 'vue-router';
 
 import type { TransactionsView } from '@/api/user-settings';
 
@@ -430,7 +470,8 @@ const isMobileMode = computed(() => pageContentWidth.value > 0 && pageContentWid
 const { mobileView, setMobileView, desktopView, setDesktopView, alwaysShowLockedCells, setAlwaysShowLockedCells } =
   useTransactionsView();
 
-const [DefineTableSettings, TableSettings] = createReusableTemplate();
+const [DefineTableSettings, TableSettings] = createReusableTemplate<{ anchor?: HTMLElement | null }>();
+const [DefineTrashLink, TrashLink] = createReusableTemplate();
 
 const { data: userSettings, patch: patchSettings } = useUserSettings();
 
@@ -473,6 +514,19 @@ const showDesktopToolbar = computed(
 );
 
 const isFiltersDialogOpen = ref(false);
+
+// Only one layout renders TableSettings at a time, so they share this state.
+const isTableSettingsOpen = ref(false);
+const isTableSettingsRequested = ref(false);
+const moreMenuAnchor = useTemplateRef<HTMLElement>('moreMenuAnchor');
+// Opening the popover while the menu still holds focus would make it dismiss itself on
+// focus-outside, so it opens once the menu has closed and its focus return is suppressed.
+const onMoreMenuCloseAutoFocus = (event: Event) => {
+  if (!isTableSettingsRequested.value) return;
+  event.preventDefault();
+  isTableSettingsRequested.value = false;
+  isTableSettingsOpen.value = true;
+};
 
 // Focus mode: a fixed-inset overlay that shows only the filters button and the
 // table, hiding the surrounding page chrome (app header, sidebar/toolbar, view

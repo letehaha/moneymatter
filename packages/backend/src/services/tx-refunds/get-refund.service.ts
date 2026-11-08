@@ -26,10 +26,12 @@ export const getRefund = withTransaction(
             {
               model: Transactions.default,
               as: 'originalTransaction',
+              required: true,
             },
             {
               model: Transactions.default,
               as: 'refundTransaction',
+              required: true,
             },
           ],
         }),

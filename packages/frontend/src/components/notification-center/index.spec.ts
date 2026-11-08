@@ -205,6 +205,26 @@ describe('notification center sonner ids', () => {
   });
 });
 
+describe('notification center action icon', () => {
+  test('styles the action button by its icon', () => {
+    addNotification({
+      text: 'Moved',
+      type: NotificationType.success,
+      action: { label: 'Undo', icon: 'undo', onClick: () => {} },
+    });
+
+    expect(lastRaisedOptions({ raiseToast: mockedToast.success })?.classes).toEqual({
+      actionButton: 'toast-action-icon-undo',
+    });
+  });
+
+  test('leaves the action button unstyled without an icon', () => {
+    addNotification({ text: 'Moved', type: NotificationType.success, action: { label: 'Undo', onClick: () => {} } });
+
+    expect(lastRaisedOptions({ raiseToast: mockedToast.success })?.classes).toBeUndefined();
+  });
+});
+
 describe('notification center explicit-id dedup', () => {
   const raisePlanRequired = () =>
     addNotification({

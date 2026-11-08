@@ -42,6 +42,7 @@ export const ROUTES_NAMES = Object.freeze({
   ventureDealDetail: `${ROUTER_LAYOUTS.dashboard}.venture.deal-detail`,
   transactions: `${ROUTER_LAYOUTS.dashboard}.transactions`,
   transactionGroups: `${ROUTER_LAYOUTS.dashboard}.transaction-groups`,
+  transactionsTrash: `${ROUTER_LAYOUTS.dashboard}.transactions.trash`,
   optimizations: `${ROUTER_LAYOUTS.dashboard}.optimizations`,
   optimizationsTransfers: `${ROUTER_LAYOUTS.dashboard}.optimizations.transfers`,
   optimizationsAiCategorization: `${ROUTER_LAYOUTS.dashboard}.optimizations.ai-categorization`,

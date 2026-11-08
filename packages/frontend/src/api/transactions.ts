@@ -34,6 +34,10 @@ import {
   type BulkTransferScanBody,
   type BulkTransferScanResponse,
   type DismissTransferSuggestionBody,
+  type GetTrashResponse,
+  type TrashActionBody,
+  type RestoreTrashResponse,
+  type DeleteTrashResponse,
 } from '@bt/shared/types';
 
 const formatTransactionPayload = <T extends CreateTransactionBody | UpdateTransactionBody>(transaction: T): T => {
@@ -194,6 +198,14 @@ export const bulkDeleteTransactions = async (
 ): Promise<BulkDeleteTransactionsResponse> => {
   return api.post('/transactions/bulk-delete', payload);
 };
+
+export const loadTrash = async (): Promise<GetTrashResponse> => api.get('/transactions/trash');
+
+export const restoreTrash = async (payload: TrashActionBody): Promise<RestoreTrashResponse> =>
+  api.post('/transactions/trash/restore', payload);
+
+export const deleteTrash = async (payload: TrashActionBody): Promise<DeleteTrashResponse> =>
+  api.post('/transactions/trash/delete', payload);
 
 export const reconciliationRemove = async (
   payload: ReconciliationRemoveBody,

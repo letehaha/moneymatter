@@ -5,9 +5,10 @@ import TrackerCategories from '@models/tracker-categories.model';
 import TrackerTransactions from '@models/tracker-transactions.model';
 import Trackers from '@models/trackers.model';
 import { findTransactions } from '@models/transactions-query';
+import { liveTransactionExistsSql } from '@models/transactions-query/deletion-where';
 import Transactions from '@models/transactions.model';
 import { getBaseCurrency } from '@models/users-currencies.model';
-import { Op } from 'sequelize';
+import { Op, literal } from 'sequelize';
 
 import type { TrackerRow } from '../types';
 import { toDateOnly } from './utils';
@@ -28,7 +29,12 @@ export async function transformTrackers({ userId }: { userId: number }): Promise
 
   const [trackerCategoriesLinks, trackerTransactionLinks] = await Promise.all([
     TrackerCategories.findAll({ where: { trackerId: { [Op.in]: trackerIds } } }),
-    TrackerTransactions.findAll({ where: { trackerId: { [Op.in]: trackerIds } } }),
+    TrackerTransactions.findAll({
+      where: {
+        trackerId: { [Op.in]: trackerIds },
+        [Op.and]: literal(liveTransactionExistsSql({ idColumnSql: '"TrackerTransactions"."transactionId"' })),
+      },
+    }),
   ]);
 
   const categoryIds = [...new Set(trackerCategoriesLinks.map((l) => l.categoryId))];

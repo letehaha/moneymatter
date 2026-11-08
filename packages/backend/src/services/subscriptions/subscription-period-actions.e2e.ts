@@ -195,7 +195,7 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
     expect(activeAfter[0]!.id).toBe(period.id);
   });
 
-  it('succeeds even when the generated transaction was already deleted by the user', async () => {
+  it('removes for good a generated transaction the user moved to the trash', async () => {
     const dueDate = futureDate({ monthsAhead: 1, day: 15 });
     const { sub, period, account } = await createSubWithPeriod({ dueDate });
 
@@ -208,14 +208,22 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
 
     const generatedTxId = paid.transactionId!;
 
-    // User deletes the generated transaction themselves.
     const deleteRes = await helpers.deleteTransaction({ id: generatedTxId });
     expect(deleteRes.statusCode).toBe(200);
 
-    // Balance already restored by the manual deletion.
+    // Trashing takes the balance back; the period stays paid and points at the trashed row.
     expect((await helpers.getAccount({ id: account.id, raw: true })).currentBalance).toBe(1000);
+    const whileTrashed = (await helpers.getSubscriptionPeriods({ id: sub.id, raw: true })).periods.find(
+      (p) => p.id === period.id,
+    )!;
+    expect(whileTrashed.status).toBe(SUBSCRIPTION_PERIOD_STATUSES.paid);
+    expect(whileTrashed.transactionId).toBe(generatedTxId);
+    expect(whileTrashed.transactionInTrash).toBe(true);
+    const detailPeriod = (await helpers.getSubscriptionById({ id: sub.id, raw: true })).periods.find(
+      (p) => p.id === period.id,
+    )!;
+    expect(detailPeriod.transactionInTrash).toBe(true);
 
-    // Revert must not 500 — treats missing transaction as a no-op.
     const reverted = await helpers.revertSubscriptionPeriod({
       id: sub.id,
       periodId: period.id,
@@ -225,9 +233,10 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
     expect([SUBSCRIPTION_PERIOD_STATUSES.upcoming, SUBSCRIPTION_PERIOD_STATUSES.overdue]).toContain(reverted.status);
     expect(reverted.transactionId).toBeNull();
 
-    // Balance not double-restored.
+    // Purged from the trash without reversing the balance a second time.
     const accountAfter = await helpers.getAccount({ id: account.id, raw: true });
     expect(accountAfter.currentBalance).toBe(1000);
+    expect(await helpers.getTrash({ raw: true })).toEqual([]);
   });
 
   it('keeps the auto-created transaction, detached, when its account is bank-linked', async () => {

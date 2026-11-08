@@ -510,6 +510,37 @@ describe('components/modals/modify-record/helpers', () => {
         false,
       );
     });
+
+    it('returns false for a payment leg', () => {
+      const transaction = buildSystemExpenseTransaction({
+        accountId: sourceAccount.id!,
+        paymentParentId: '00000000-0000-0000-0000-000000000077' as RecordId,
+      });
+      expect(canDeleteTransaction({ transaction, oppositeTransaction: undefined, accounts, canMutate: true })).toBe(
+        false,
+      );
+    });
+
+    it('returns false for a payment main row with parts', () => {
+      const transaction = buildSystemExpenseTransaction({ accountId: sourceAccount.id! });
+      transaction.paymentParts = [
+        { transactionId: transaction.id },
+        { transactionId: '00000000-0000-0000-0000-000000000078' },
+      ] as TransactionModel['paymentParts'];
+      expect(canDeleteTransaction({ transaction, oppositeTransaction: undefined, accounts, canMutate: true })).toBe(
+        false,
+      );
+    });
+
+    it.each([TRANSACTION_TRANSFER_NATURE.transfer_to_portfolio, TRANSACTION_TRANSFER_NATURE.transfer_to_venture])(
+      'leaves a %s row to the backend',
+      (transferNature) => {
+        const transaction = buildSystemExpenseTransaction({ accountId: sourceAccount.id!, transferNature });
+        expect(canDeleteTransaction({ transaction, oppositeTransaction: undefined, accounts, canMutate: true })).toBe(
+          true,
+        );
+      },
+    );
   });
 
   describe('isTxEditableAsManual', () => {
