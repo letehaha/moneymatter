@@ -30,7 +30,6 @@
         :metric="metric"
         :filters="filters"
         :colors="colors"
-        :selected="selected"
         :detail="detail"
         :granularity="granularity"
         @hide-category="emit('hide-category', $event)"
@@ -81,7 +80,6 @@ import MonthlyComparisonChart from './monthly-comparison-chart.vue';
 
 const props = defineProps<{
   chartWindow: Period;
-  selected: Period;
   metric: MetricType;
   filters: TrendsFilters;
   colors: Record<string, string>;
