@@ -47,7 +47,8 @@ jest.mock('@models/transactions.model', () => ({
 jest.mock('@models/transactions-query', () => ({
   __esModule: true,
   countTransactions: async () => 0,
-  findTransactions: () => transactionsFindAllMock(),
+  findTransactions: async (params: { paranoid?: boolean }) =>
+    params.paranoid === false ? [] : transactionsFindAllMock(),
   updateTransactions: (params: unknown) => updateTransactionsMock(params),
 }));
 

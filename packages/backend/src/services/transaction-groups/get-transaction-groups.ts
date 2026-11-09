@@ -1,6 +1,7 @@
 import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import TransactionGroups from '@models/transaction-groups.model';
+import { liveTransactionExistsSql } from '@models/transactions-query/deletion-where';
 import type Transactions from '@models/transactions.model';
 import { literal } from 'sequelize';
 
@@ -34,6 +35,7 @@ const AGGREGATE_COUNT = literal(`(
   SELECT COUNT(*)
   FROM "TransactionGroupItems"
   WHERE "TransactionGroupItems"."groupId" = "TransactionGroups"."id"
+    AND ${liveTransactionExistsSql({ idColumnSql: '"TransactionGroupItems"."transactionId"' })}
 )`);
 
 const AGGREGATE_DATE_FROM = literal(`(
@@ -41,6 +43,7 @@ const AGGREGATE_DATE_FROM = literal(`(
   FROM "TransactionGroupItems"
   INNER JOIN "Transactions" ON "Transactions"."id" = "TransactionGroupItems"."transactionId"
   WHERE "TransactionGroupItems"."groupId" = "TransactionGroups"."id"
+    AND "Transactions"."deletedAt" IS NULL
 )`);
 
 const AGGREGATE_DATE_TO = literal(`(
@@ -48,6 +51,7 @@ const AGGREGATE_DATE_TO = literal(`(
   FROM "TransactionGroupItems"
   INNER JOIN "Transactions" ON "Transactions"."id" = "TransactionGroupItems"."transactionId"
   WHERE "TransactionGroupItems"."groupId" = "TransactionGroups"."id"
+    AND "Transactions"."deletedAt" IS NULL
 )`);
 
 const AGGREGATE_NET_REF_AMOUNT = literal(`(
@@ -60,6 +64,7 @@ const AGGREGATE_NET_REF_AMOUNT = literal(`(
   FROM "TransactionGroupItems"
   INNER JOIN "Transactions" ON "Transactions"."id" = "TransactionGroupItems"."transactionId"
   WHERE "TransactionGroupItems"."groupId" = "TransactionGroups"."id"
+    AND "Transactions"."deletedAt" IS NULL
 )`);
 
 export const getTransactionGroups = async ({

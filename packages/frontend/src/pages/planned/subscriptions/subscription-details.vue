@@ -913,8 +913,15 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
                   <p v-if="period.paidAt" class="text-muted-foreground text-xs">
                     {{ $t('planned.subscriptions.periods.paidAt', { date: format(new Date(period.paidAt), 'PP') }) }}
                   </p>
+                  <p
+                    v-if="period.transactionId && period.transactionInTrash"
+                    class="text-muted-foreground flex items-center gap-1 text-xs"
+                  >
+                    <Trash2Icon class="size-3" />
+                    {{ $t('planned.subscriptions.periods.paymentInTrash') }}
+                  </p>
                   <Button
-                    v-if="period.transactionId"
+                    v-else-if="period.transactionId"
                     type="button"
                     variant="link"
                     size="sm"

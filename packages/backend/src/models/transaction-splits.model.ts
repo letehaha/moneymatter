@@ -122,6 +122,9 @@ export const deleteSplitById = async ({ id, userId }: { id: string; userId: numb
 export const getSplitById = async ({ id, userId }: { id: string; userId: number }) => {
   return TransactionSplits.findOne({
     where: { id, userId },
-    include: [{ model: Categories, as: 'category' }],
+    include: [
+      { model: Categories, as: 'category' },
+      { model: Transactions, as: 'transaction', attributes: [], required: true },
+    ],
   });
 };

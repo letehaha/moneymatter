@@ -79,7 +79,7 @@ watch(
       @click="emit('update:modelValue', item.value)"
     >
       <component :is="item.icon" v-if="item.icon" :class="cn('mr-1.5 inline size-4 align-[-3px]', item.iconClass)" />
-      {{ item.label }}
+      <span :class="item.labelClass">{{ item.label }}</span>
       <span
         v-if="item.count !== undefined"
         class="bg-foreground/10 text-muted-foreground ml-1.5 inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full px-1.5 align-[1px] text-xs font-semibold tabular-nums"

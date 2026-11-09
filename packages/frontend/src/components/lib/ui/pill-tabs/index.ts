@@ -13,6 +13,8 @@ export type PillTabItem = {
   label: string;
   disabled?: boolean;
   count?: number;
+  /** E.g. a container query that turns the label `sr-only`, leaving an icon-only tab. */
+  labelClass?: string;
 } & ({ icon?: undefined; iconClass?: never } | { icon: Component; iconClass?: string });
 
 export const pillTabsContainerVariants = cva(

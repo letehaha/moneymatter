@@ -1,11 +1,12 @@
 import type { RecordId } from '@bt/shared/types';
 import { findTransactions } from '@models/transactions-query';
+import { reconciliationRemovedWhere } from '@models/transactions-query/deletion-where';
 import { serializeTransaction, serializeTransactions } from '@root/serializers/transactions.serializer';
 import { Op } from 'sequelize';
 
 export const getReconciliationHistory = async ({ userId }: { userId: number }) => {
   const removed = await findTransactions({
-    where: { deletedAt: { [Op.ne]: null } },
+    where: { deletedAt: { [Op.ne]: null }, ...reconciliationRemovedWhere },
     paranoid: false,
     planned: 'include',
     access: { creator: userId },

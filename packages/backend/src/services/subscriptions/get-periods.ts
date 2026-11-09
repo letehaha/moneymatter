@@ -20,8 +20,9 @@ export async function getPeriods({ userId, subscriptionId, limit = 6, offset = 0
       {
         model: Transactions,
         as: 'transaction',
-        attributes: ['id', 'amount', 'note', 'time'],
+        attributes: ['id', 'amount', 'note', 'time', 'deletedAt'],
         required: false,
+        paranoid: false,
       },
     ],
     order: [['dueDate', 'DESC']],
@@ -29,5 +30,12 @@ export async function getPeriods({ userId, subscriptionId, limit = 6, offset = 0
     offset,
   });
 
-  return { periods: rows, total: count };
+  const periods = rows.map((row) => {
+    const { transaction, ...period } = row.get({ plain: true }) as SubscriptionPeriods;
+    if (!transaction) return { ...period, transaction, transactionInTrash: false };
+    const { deletedAt, ...liveFields } = transaction;
+    return { ...period, transaction: liveFields, transactionInTrash: Boolean(deletedAt) };
+  });
+
+  return { periods, total: count };
 }

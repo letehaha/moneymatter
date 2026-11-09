@@ -69,8 +69,7 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
 
   // widget expenses structure
   widgetExpensesStructureTotal: [transactionChange, 'widget-expenses-structure-total'] as const,
-  widgetExpensesStructureCurrentAmount: [transactionChange, 'widget-expenses-structure-current-amount'] as const,
-  widgetExpensesStructurePrevAmount: [transactionChange, 'widget-expenses-structure-prev-amount'] as const,
+  widgetExpensesStructurePrevTotal: [transactionChange, 'widget-expenses-structure-prev-total'] as const,
 
   // widget latest records
   widgetLatestRecords: [transactionChange, 'widget-latest-records'] as const,
@@ -135,6 +134,7 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   fireVentureContributions: [transactionChange, ventureChange, 'fire-venture-contributions'] as const,
   analyticsCumulative: [transactionChange, 'analytics-cumulative'] as const,
   analyticsSpendingsByCategories: [transactionChange, 'analytics-spendings-by-categories'] as const,
+  analyticsLargestTransactions: [transactionChange, 'analytics-largest-transactions'] as const,
   earliestTransactionDate: [transactionChange, 'earliest-transaction-date'] as const,
 
   recordsPageRecordsList: [transactionChange, 'records-page-records-list'] as const,
@@ -275,6 +275,7 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
 
   reconciliationStuckPending: [transactionChange, 'reconciliation-stuck-pending'] as const,
   reconciliationHistory: [transactionChange, 'reconciliation-history'] as const,
+  transactionsTrash: [transactionChange, 'transactions-trash'] as const,
 
   // A completed import creates transactions, so the transactionChange invalidation
   // refreshes the batch list alongside everything else it creates/moves.

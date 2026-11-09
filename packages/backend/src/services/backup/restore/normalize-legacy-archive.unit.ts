@@ -19,4 +19,17 @@ describe('normalizeLegacyArchive', () => {
     expect(parsedByPath.has('data/user-merchant-category-codes.json')).toBe(false);
     expect(transactions.map((row) => row.categorizationMeta?.source ?? null)).toEqual([null, 'manual', null]);
   });
+
+  it('stamps legacy soft-deleted rows as reconciliation and leaves other rows alone', () => {
+    const transactions: Record<string, unknown>[] = [
+      { id: 1, deletedAt: '2024-01-01T00:00:00.000Z' },
+      { id: 2, deletedAt: '2024-01-01T00:00:00.000Z', deletionReason: 'trash' },
+      { id: 3, deletedAt: null, deletionReason: null },
+    ];
+    const parsedByPath = new Map<string, unknown>([['data/transactions.json', transactions]]);
+
+    normalizeLegacyArchive({ formatVersion: 99, parsedByPath });
+
+    expect(transactions.map((row) => row.deletionReason)).toEqual(['reconciliation', 'trash', null]);
+  });
 });

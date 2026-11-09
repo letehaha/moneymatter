@@ -19,6 +19,7 @@ import Balances from '@models/balances.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
 import { countTransactions } from '@models/transactions-query';
+import { trashedWhere } from '@models/transactions-query/deletion-where';
 import { getBaseCurrency } from '@models/users-currencies.model';
 import Users from '@models/users.model';
 import { isRevaluedAccount, scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
@@ -509,16 +510,24 @@ const deleteAccountByIdInTx = withTransaction(
     // Cascade-deleting would wipe the source legs of loan payments made from this
     // account; the model hooks would treat that as reversals and silently restore
     // the loan's owed balance. Block until those payments are cleared.
-    const loanPaymentCount = await countTransactions({
-      planned: 'exclude',
-      access: { creator: userId },
-      transfers: { natures: [TRANSACTION_TRANSFER_NATURE.transfer_to_loan] },
-      balanceAdjustments: 'include',
-      where: { accountId: id },
-    });
-    if (loanPaymentCount > 0) {
+    const countLoanPayments = ({ trashed }: { trashed: boolean }) =>
+      countTransactions({
+        planned: 'exclude',
+        access: { creator: userId },
+        transfers: { natures: [TRANSACTION_TRANSFER_NATURE.transfer_to_loan] },
+        balanceAdjustments: 'include',
+        where: trashed ? { accountId: id, ...trashedWhere } : { accountId: id },
+        paranoid: !trashed,
+      });
+    if ((await countLoanPayments({ trashed: false })) > 0) {
       throw new ValidationError({
         message: t({ key: 'accounts.deleteBlockedByLoanPayments' }),
+      });
+    }
+    // Restoring a trashed loan leg whose cash leg was cascaded away would orphan it.
+    if ((await countLoanPayments({ trashed: true })) > 0) {
+      throw new ValidationError({
+        message: t({ key: 'accounts.deleteBlockedByTrashedLoanPayments' }),
       });
     }
 

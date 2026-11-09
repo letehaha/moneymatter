@@ -161,6 +161,34 @@ describe('GET /stats/investment-contributions', () => {
     expect(portfolios).toEqual([]);
   });
 
+  it('nets each side of a cross-month refund out of savings in its own month', async () => {
+    const account = await helpers.createAccount({ raw: true });
+
+    const [expenseTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 2000,
+        transactionType: TRANSACTION_TYPES.expense,
+        time: '2026-01-10T10:00:00.000Z',
+      }),
+      raw: true,
+    });
+    const [refundTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 500,
+        transactionType: TRANSACTION_TYPES.income,
+        time: '2026-02-05T10:00:00.000Z',
+      }),
+      raw: true,
+    });
+    await helpers.createSingleRefund({ originalTxId: expenseTx.id, refundTxId: refundTx.id });
+
+    const { buckets } = await helpers.getInvestmentContributions({ ...RANGE, raw: true });
+
+    expect(buckets.map((bucket) => bucket.savingsNet)).toEqual([-1500, 0]);
+  });
+
   it('returns zeroed buckets and an empty legend for a user with no portfolios', async () => {
     const { buckets, portfolios } = await helpers.getInvestmentContributions({ ...RANGE, raw: true });
 

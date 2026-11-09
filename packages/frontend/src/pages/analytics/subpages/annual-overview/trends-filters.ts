@@ -1,3 +1,7 @@
+import { type MetricType, metricTransactionType } from '@/common/utils/analytics-metric';
+import { type CategoryNode, collectSubtreeIds, getLevelCategoryIds } from '@/common/utils/category-tree';
+import type { TrendsDeepLink } from '@/common/utils/trends-deep-link';
+
 export interface FilterGroup {
   mode: 'include' | 'exclude';
   ids: string[];
@@ -10,7 +14,7 @@ export interface TrendsFilters {
   accountIds: string[];
 }
 
-export type TrendsFilterGroupKey = 'categories' | 'payees' | 'tags';
+export type TrendsFilterGroupKey = 'payees' | 'tags';
 
 export const emptyTrendsFilters = (): TrendsFilters => ({
   categories: { mode: 'include', ids: [] },
@@ -29,7 +33,22 @@ interface StatsFilterParams {
   accountIds?: string[];
 }
 
-export const toStatsFilterParams = ({ filters }: { filters: TrendsFilters }): StatsFilterParams => {
+/** The one category the page is drilled into, if the selection is exactly one included category. */
+export const getScopeCategoryId = ({ filters }: { filters: TrendsFilters }): string | undefined => {
+  const { mode, ids } = filters.categories;
+  return mode === 'include' && ids.length === 1 ? ids[0] : undefined;
+};
+
+/** `detail` sends every category in the selection, so each comes back with only its own amount. */
+export const toStatsFilterParams = ({
+  filters,
+  categories = [],
+  detail = false,
+}: {
+  filters: TrendsFilters;
+  categories?: CategoryNode[];
+  detail?: boolean;
+}): StatsFilterParams => {
   const params: StatsFilterParams = {};
 
   const apply = ({
@@ -46,6 +65,17 @@ export const toStatsFilterParams = ({ filters }: { filters: TrendsFilters }): St
   };
 
   apply({ group: filters.categories, includeKey: 'categoryIds', excludeKey: 'excludedCategoryIds' });
+  const scopeId = getScopeCategoryId({ filters });
+  if (scopeId) {
+    params.categoryIds = getLevelCategoryIds({ scopeId, categories });
+  }
+
+  if (detail) {
+    delete params.excludedCategoryIds;
+    params.categoryIds =
+      getTransactionCategoryIds({ filters, categories }) ?? categories.map((category) => category.id);
+  }
+
   apply({ group: filters.payees, includeKey: 'payeeIds', excludeKey: 'excludedPayeeIds' });
   apply({ group: filters.tags, includeKey: 'tagIds', excludeKey: 'excludedTagIds' });
 
@@ -54,9 +84,72 @@ export const toStatsFilterParams = ({ filters }: { filters: TrendsFilters }): St
   return params;
 };
 
+/** Categories live in the category bar, so the Filters badge counts only the other groups. */
 export const countActiveFilters = ({ filters }: { filters: TrendsFilters }): number =>
-  [filters.categories.ids, filters.payees.ids, filters.tags.ids, filters.accountIds].filter((ids) => ids.length > 0)
-    .length;
+  [filters.payees.ids, filters.tags.ids, filters.accountIds].filter((ids) => ids.length > 0).length;
+
+/** Category ids for the Transactions list, which has no exclude param and no roll-up. */
+export const getTransactionCategoryIds = ({
+  filters,
+  categories,
+}: {
+  filters: TrendsFilters;
+  categories: CategoryNode[];
+}): string[] | undefined => {
+  const { mode, ids } = filters.categories;
+  if (ids.length === 0) return undefined;
+
+  const subtrees = new Set(ids.flatMap((rootId) => collectSubtreeIds({ rootId, categories })));
+  if (mode === 'include') return [...subtrees];
+  return categories.filter((c) => !subtrees.has(c.id)).map((c) => c.id);
+};
+
+/** Only what the Transactions page reads from its URL; payees and tags have no param there. */
+export const toTransactionFilterParams = ({
+  filters,
+  categories,
+  metric,
+}: {
+  filters: TrendsFilters;
+  categories: CategoryNode[];
+  metric: MetricType;
+}) => {
+  const categoryIds = getTransactionCategoryIds({ filters, categories });
+  return {
+    ...(categoryIds && { categoryIds }),
+    ...(filters.accountIds.length > 0 && { accountIds: filters.accountIds }),
+    transactionType: metricTransactionType({ metric }),
+  };
+};
+
+export const scopeTo = ({
+  filters,
+  categoryIds,
+}: {
+  filters: TrendsFilters;
+  categoryIds: string[];
+}): TrendsFilters => ({
+  ...filters,
+  categories: { mode: 'include', ids: categoryIds },
+});
+
+/** A link with `metric` replaces every filter; without it, `categoryIds` only rescope the current filters. */
+export const filtersFromDeepLink = ({
+  filters,
+  link,
+}: {
+  filters: TrendsFilters;
+  link: Pick<TrendsDeepLink, 'categoryIds' | 'excludedCategoryIds' | 'metric'>;
+}): TrendsFilters => {
+  const { categoryIds, excludedCategoryIds, metric } = link;
+
+  if (!metric) return categoryIds.length > 0 ? scopeTo({ filters, categoryIds }) : filters;
+
+  const empty = emptyTrendsFilters();
+  if (categoryIds.length > 0) return scopeTo({ filters: empty, categoryIds });
+  if (excludedCategoryIds.length > 0) return { ...empty, categories: { mode: 'exclude', ids: excludedCategoryIds } };
+  return empty;
+};
 
 export const hideCategory = ({
   filters,

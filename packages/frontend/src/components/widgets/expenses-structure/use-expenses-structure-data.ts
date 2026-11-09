@@ -1,29 +1,33 @@
-import { getExpensesAmountForPeriod, getSpendingsByCategories } from '@/api';
+import { getSpendingsByCategories } from '@/api';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { type MetricType, metricTransactionType } from '@/common/utils/analytics-metric';
+import { getLevelCategoryIds } from '@/common/utils/category-tree';
 import { useAnimatedNumber } from '@/composable/use-animated-number';
 import { calculatePercentageDifference } from '@/js/helpers';
-import { useQuery } from '@tanstack/vue-query';
+import { useCategoriesStore } from '@/stores';
+import { keepPreviousData, useQuery } from '@tanstack/vue-query';
 import { differenceInDays, endOfMonth, format, isSameMonth, startOfMonth, subDays, subMonths } from 'date-fns';
+import { storeToRefs } from 'pinia';
 import { type Ref, computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-export interface ChartDataItem {
-  categoryId: string;
-  name: string;
-  color: string;
-  amount: number;
-}
+import { buildLevelSlices, getLevelTotal } from './drill-down';
 
 export function useExpensesStructureData({
   selectedPeriod,
   excludedCategoryIds,
   includePlanned,
+  metric,
+  drilledCategoryId,
 }: {
   selectedPeriod: () => { from: Date; to: Date };
   excludedCategoryIds: Ref<string[]>;
   includePlanned: Ref<boolean>;
+  metric: Ref<MetricType>;
+  drilledCategoryId: Ref<string | null>;
 }) {
   const { t } = useI18n();
+  const { categories, categoriesMap } = storeToRefs(useCategoriesStore());
 
   const periodQueryKey = ref(`${new Date().getTime()}-${new Date().getTime()}`);
 
@@ -63,31 +67,39 @@ export function useExpensesStructureData({
 
   const excludedKey = computed(() => `${excludedCategoryIds.value.join(',')}:planned-${includePlanned.value}`);
   const excludePlannedParam = computed(() => !includePlanned.value || undefined);
+  // `undefined` at the root keeps the stats endpoint's default roll-up to root categories.
+  const levelCategoryIds = computed(() =>
+    drilledCategoryId.value
+      ? getLevelCategoryIds({
+          scopeId: drilledCategoryId.value,
+          categories: categories.value,
+          excludedIds: excludedCategoryIds.value,
+        })
+      : undefined,
+  );
+  const levelKey = computed(() => `${metric.value}:${levelCategoryIds.value?.join(',') ?? 'root'}`);
 
-  const { data: spendingsByCategories, isFetching: isSpendingsByCategoriesFetching } = useQuery({
-    queryKey: [...VUE_QUERY_CACHE_KEYS.widgetExpensesStructureTotal, periodQueryKey, excludedKey],
-    queryFn: () =>
-      getSpendingsByCategories({
-        from: selectedPeriod().from,
-        to: selectedPeriod().to,
-        excludedCategoryIds: excludedCategoryIds.value.length > 0 ? excludedCategoryIds.value : undefined,
-        excludePlanned: excludePlannedParam.value,
-      }),
-    staleTime: Infinity,
-    placeholderData: (previousData) => previousData || {},
-  });
+  const fetchSpendings = ({ from, to }: { from: Date; to: Date }) =>
+    getSpendingsByCategories({
+      from,
+      to,
+      type: metricTransactionType({ metric: metric.value }),
+      categoryIds: levelCategoryIds.value,
+      excludedCategoryIds: excludedCategoryIds.value.length > 0 ? excludedCategoryIds.value : undefined,
+      excludePlanned: excludePlannedParam.value,
+    });
 
-  const { data: currentMonthExpense, isFetching: isCurrentMonthExpenseFetching } = useQuery({
-    queryKey: [...VUE_QUERY_CACHE_KEYS.widgetExpensesStructureCurrentAmount, periodQueryKey, excludedKey],
-    queryFn: () =>
-      getExpensesAmountForPeriod({
-        from: selectedPeriod().from,
-        to: selectedPeriod().to,
-        excludedCategoryIds: excludedCategoryIds.value.length > 0 ? excludedCategoryIds.value : undefined,
-        excludePlanned: excludePlannedParam.value,
-      }),
+  const {
+    data: spendingsByCategories,
+    isFetching: isSpendingsByCategoriesFetching,
+    isError,
+    isPlaceholderData,
+    refetch: refetchCurrent,
+  } = useQuery({
+    queryKey: [...VUE_QUERY_CACHE_KEYS.widgetExpensesStructureTotal, periodQueryKey, excludedKey, levelKey],
+    queryFn: () => fetchSpendings(selectedPeriod()),
     staleTime: Infinity,
-    placeholderData: (previousData) => previousData || 0,
+    placeholderData: keepPreviousData,
   });
 
   // Calculate previous period. For full-month selections, use the full previous month
@@ -110,62 +122,70 @@ export function useExpensesStructureData({
     return { from: prevFrom, to: prevTo };
   });
 
-  const { data: prevMonthExpense, isFetching: isPrevMonthExpenseFetching } = useQuery({
-    queryKey: [...VUE_QUERY_CACHE_KEYS.widgetExpensesStructurePrevAmount, periodQueryKey, excludedKey],
-    queryFn: () =>
-      getExpensesAmountForPeriod({
-        from: prevPeriod.value.from,
-        to: prevPeriod.value.to,
-        excludedCategoryIds: excludedCategoryIds.value.length > 0 ? excludedCategoryIds.value : undefined,
-        excludePlanned: excludePlannedParam.value,
-      }),
+  const {
+    data: prevSpendingsByCategories,
+    isFetching: isPrevSpendingsFetching,
+    isError: isPrevError,
+    refetch: refetchPrev,
+  } = useQuery({
+    queryKey: [...VUE_QUERY_CACHE_KEYS.widgetExpensesStructurePrevTotal, periodQueryKey, excludedKey, levelKey],
+    queryFn: () => fetchSpendings(prevPeriod.value),
     staleTime: Infinity,
-    placeholderData: (previousData) => previousData || 0,
+    placeholderData: keepPreviousData,
   });
 
-  const isWidgetDataFetching = computed(
-    () =>
-      isSpendingsByCategoriesFetching.value || isCurrentMonthExpenseFetching.value || isPrevMonthExpenseFetching.value,
+  const isWidgetDataFetching = computed(() => isSpendingsByCategoriesFetching.value || isPrevSpendingsFetching.value);
+
+  // Placeholder rows belong to the previous level, so slices keep that level's drill until fresh data lands.
+  const dataDrillId = ref(drilledCategoryId.value);
+  watch([spendingsByCategories, isPlaceholderData], () => {
+    if (!isPlaceholderData.value) dataDrillId.value = drilledCategoryId.value;
+  });
+
+  const chartData = computed(() =>
+    buildLevelSlices({
+      spendings: spendingsByCategories.value ?? {},
+      drilledCategoryId: dataDrillId.value,
+      categoriesMap: categoriesMap.value,
+      excludedCategoryIds: excludedCategoryIds.value,
+    }),
   );
 
-  const { displayValue: animatedExpense } = useAnimatedNumber({
-    value: computed(() => -(currentMonthExpense.value || 0)),
+  const totalAmount = computed(() =>
+    getLevelTotal({ spendings: spendingsByCategories.value ?? {}, excludedCategoryIds: excludedCategoryIds.value }),
+  );
+
+  const { displayValue: animatedTotal } = useAnimatedNumber({
+    value: totalAmount,
   });
 
-  const expensesDiff = computed(() => {
-    const percentage = Number(
-      calculatePercentageDifference(currentMonthExpense.value || 0, prevMonthExpense.value || 0),
-    ).toFixed(2);
-    return Number(percentage);
-  });
-
-  const chartData = computed<ChartDataItem[]>(() => {
-    const excludedSet = new Set(excludedCategoryIds.value);
-    return Object.entries(spendingsByCategories.value || {})
-      .filter(([id]) => !excludedSet.has(id))
-      .map(([id, value]) => ({
-        categoryId: id,
-        name: value.name,
-        color: value.color,
-        amount: value.amount,
-      }));
+  const periodDiff = computed<number | null>(() => {
+    if (isPrevError.value || !prevSpendingsByCategories.value) return null;
+    const prevTotal = getLevelTotal({
+      spendings: prevSpendingsByCategories.value,
+      excludedCategoryIds: excludedCategoryIds.value,
+    });
+    return Number(Number(calculatePercentageDifference(totalAmount.value, prevTotal)).toFixed(2));
   });
 
   const isDataEmpty = computed(() => chartData.value.length === 0);
-  const hasData = computed(() => currentMonthExpense.value !== undefined && prevMonthExpense.value !== undefined);
-  const totalAmount = computed(() => chartData.value.reduce((sum, item) => sum + item.amount, 0));
+  const hasData = computed(() => spendingsByCategories.value !== undefined);
+  const showError = computed(() => isError.value && !hasData.value);
+
+  const refetch = () => Promise.all([refetchCurrent(), refetchPrev()]);
 
   return {
-    excludedCategoryIds,
     hasExcludedStats,
     periodLabel,
-    spendingsByCategories,
     isWidgetDataFetching,
-    animatedExpense,
-    expensesDiff,
+    animatedTotal,
+    periodDiff,
+    showError,
+    refetch,
     chartData,
     isDataEmpty,
     hasData,
+    isPlaceholderData,
     totalAmount,
   };
 }

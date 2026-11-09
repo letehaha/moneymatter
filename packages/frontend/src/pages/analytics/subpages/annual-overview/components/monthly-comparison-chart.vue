@@ -1,159 +1,132 @@
 <template>
-  <div class="border-border bg-card rounded-lg border p-4">
-    <div class="flex min-h-14 flex-wrap items-center gap-x-6 gap-y-2">
-      <h3 class="text-lg font-semibold">
-        {{ t('analytics.trends.monthlyComparison.title') }}
-        <span class="text-muted-foreground font-normal">({{ metricLabel }})</span>
-      </h3>
-    </div>
+  <div class="flex flex-col">
+    <div ref="containerRef" class="relative h-80 w-full">
+      <svg ref="svgRef" :class="['h-full w-full', { 'pointer-events-none': isTooltipInteracting }]"></svg>
 
-    <!-- Loading skeleton -->
-    <ChartSkeleton v-if="isLoading" />
-
-    <!-- Error state -->
-    <div v-else-if="isError" class="flex h-80 items-center justify-center">
-      <div class="text-destructive-text">{{ t('analytics.trends.loadError') }}</div>
-    </div>
-
-    <!-- Empty state -->
-    <div v-else-if="!chartData.length" class="flex h-80 items-center justify-center">
-      <div class="text-center">
-        <div class="text-muted-foreground">{{ t('analytics.trends.noData') }}</div>
-        <div class="text-muted-foreground mt-1 text-sm">{{ t('analytics.trends.noDataHint') }}</div>
-      </div>
-    </div>
-
-    <!-- Chart -->
-    <template v-else>
-      <div class="flex flex-col">
-        <div ref="containerRef" class="relative h-80 w-full">
-          <svg ref="svgRef" :class="['h-full w-full', { 'pointer-events-none': isTooltipInteracting }]"></svg>
-
-          <!-- Tooltip -->
-          <div
-            v-show="tooltip.visible"
-            ref="tooltipRef"
-            :class="[
-              'absolute',
-              !isTouchDevice || tooltip.isAverage ? 'pointer-events-none z-10' : 'pointer-events-auto z-50',
-            ]"
-            :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
-            @mouseenter="isTooltipInteracting = true"
-            @mouseleave="handleTooltipMouseLeave"
-            @touchstart.stop="isTooltipInteracting = true"
-          >
-            <ChartTooltip>
-              <!-- Average line tooltip -->
-              <template v-if="tooltip.isAverage">
-                <ChartTooltipRow
-                  :color="AVERAGE_LINE_COLOR"
-                  :label="t('analytics.trends.monthlyComparison.average')"
-                  :value="formatBaseCurrency(tooltip.value)"
-                />
-              </template>
-              <!-- Bar tooltips -->
-              <template v-else>
-                <ChartTooltipHeader>{{ tooltip.period }}</ChartTooltipHeader>
-                <!-- Category-specific tooltip with total -->
-                <template v-if="tooltip.categoryName">
-                  <ChartTooltipRow
-                    :color="tooltip.categoryColor"
-                    :label="tooltip.categoryName"
-                    :value="formatBaseCurrency(tooltip.value)"
-                  />
-                  <ChartTooltipRow
-                    v-if="tooltip.totalValue !== undefined"
-                    :label="t('analytics.trends.monthlyComparison.total')"
-                    :value="formatBaseCurrency(tooltip.totalValue)"
-                  />
-                </template>
-                <!-- Total tooltip (non-stacked bars) -->
-                <ChartTooltipRow v-else :label="metricLabel" :value="formatBaseCurrency(tooltip.value)" />
-
-                <template v-if="tooltip.momChange !== undefined">
-                  <ChartTooltipDivider />
-                  <ChartTooltipRow
-                    :label="t('analytics.trends.monthlyComparison.vsLastMonth')"
-                    :value="`${tooltip.momChange > 0 ? '+' : ''}${tooltip.momChange}%`"
-                    :value-class="getChangeColorClass(tooltip.momChange)"
-                  />
-                </template>
-                <!-- View transactions link (shown on touch devices) -->
-                <button
-                  v-if="isTouchDevice && tooltip.periodStart && tooltip.periodEnd"
-                  type="button"
-                  class="text-primary-text mt-2 block w-full text-left text-sm font-medium underline"
-                  @touchstart.stop
-                  @touchend.stop="handleViewTransactionsClick"
-                  @click.stop.prevent="handleViewTransactionsClick"
-                >
-                  {{ t('analytics.trends.monthlyComparison.viewTransactions') }} →
-                </button>
-              </template>
-            </ChartTooltip>
-          </div>
-        </div>
-
-        <!-- Legend -->
-        <div class="mt-3 flex flex-wrap items-center justify-center gap-x-1 gap-y-1 text-xs">
-          <template v-if="hasStackedBars">
-            <DesktopOnlyTooltip
-              v-for="cat in chartCategories"
-              :key="cat.categoryId"
-              :content="$t('analytics.trends.legend.hide')"
-            >
-              <Button
-                variant="ghost"
-                size="sm"
-                class="h-7 gap-1.5 px-2 text-xs"
-                @click="emit('hide-category', { categoryId: cat.categoryId })"
-              >
-                <span class="inline-block size-2.5 shrink-0 rounded-sm" :style="{ backgroundColor: cat.color }"></span>
-                <span class="text-muted-foreground">{{ cat.name }}</span>
-              </Button>
-            </DesktopOnlyTooltip>
+      <!-- Tooltip -->
+      <div
+        v-show="tooltip.visible"
+        ref="tooltipRef"
+        :class="[
+          'absolute',
+          !isTouchDevice || tooltip.isAverage ? 'pointer-events-none z-10' : 'pointer-events-auto z-50',
+        ]"
+        :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
+        @mouseenter="isTooltipInteracting = true"
+        @mouseleave="handleTooltipMouseLeave"
+        @touchstart.stop="isTooltipInteracting = true"
+      >
+        <ChartTooltip>
+          <!-- Average line tooltip -->
+          <template v-if="tooltip.isAverage">
+            <ChartTooltipRow
+              :color="AVERAGE_LINE_COLOR"
+              :label="t('analytics.trends.monthlyComparison.average')"
+              :value="formatBaseCurrency(tooltip.value)"
+            />
           </template>
+          <!-- Bar tooltips -->
           <template v-else>
-            <div class="flex items-center gap-1.5 px-2">
-              <span class="inline-block size-2.5 rounded-sm" :style="{ backgroundColor: singleBarColor }"></span>
-              <span class="text-muted-foreground">{{ metricLabel }}</span>
-            </div>
-          </template>
+            <ChartTooltipHeader>{{ tooltip.period }}</ChartTooltipHeader>
+            <!-- Category-specific tooltip with total -->
+            <template v-if="tooltip.categoryName">
+              <ChartTooltipRow
+                :color="tooltip.categoryColor"
+                :label="tooltip.categoryName"
+                :value="formatBaseCurrency(tooltip.value)"
+              />
+              <ChartTooltipRow
+                v-if="tooltip.totalValue !== undefined"
+                :label="t('analytics.trends.monthlyComparison.total')"
+                :value="formatBaseCurrency(tooltip.totalValue)"
+              />
+            </template>
+            <!-- Total tooltip (non-stacked bars) -->
+            <ChartTooltipRow v-else :label="metricLabel" :value="formatBaseCurrency(tooltip.value)" />
 
-          <template v-if="props.metric !== 'savings'">
-            <DesktopOnlyTooltip
-              v-for="cat in hiddenCategories"
-              :key="`hidden-${cat.id}`"
-              :content="$t('analytics.trends.legend.show')"
+            <template v-if="tooltip.momChange !== undefined">
+              <ChartTooltipDivider />
+              <ChartTooltipRow
+                :label="t(`analytics.trends.monthlyComparison.vsPrevious.${granularity}`)"
+                :value="`${tooltip.momChange > 0 ? '+' : ''}${tooltip.momChange}%`"
+                :value-class="getChangeColorClass(tooltip.momChange)"
+              />
+            </template>
+            <!-- View transactions link (shown on touch devices) -->
+            <button
+              v-if="isTouchDevice && tooltip.periodStart && tooltip.periodEnd"
+              type="button"
+              class="text-primary-text mt-2 block w-full text-left text-sm font-medium underline"
+              @touchstart.stop
+              @touchend.stop="handleSelectMonthClick"
+              @click.stop.prevent="handleSelectMonthClick"
             >
-              <Button
-                variant="ghost"
-                size="sm"
-                class="h-7 gap-1.5 px-2 text-xs"
-                @click="emit('show-category', { categoryId: cat.id })"
-              >
-                <EyeOffIcon class="text-muted-foreground size-3 shrink-0" />
-                <span class="text-muted-foreground line-through">{{ cat.name }}</span>
-              </Button>
-            </DesktopOnlyTooltip>
+              {{ t(`analytics.trends.monthlyComparison.show.${granularity}`) }} →
+            </button>
           </template>
-
-          <div v-if="showAverageLine" class="flex items-center gap-1.5 px-2">
-            <span
-              class="inline-block h-0.5 w-3"
-              :style="{ background: AVERAGE_LINE_COLOR, borderStyle: 'dashed' }"
-            ></span>
-            <span class="text-muted-foreground">{{ t('analytics.trends.monthlyComparison.average') }}</span>
-          </div>
-        </div>
+        </ChartTooltip>
       </div>
-    </template>
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-3 flex flex-wrap items-center justify-center gap-x-1 gap-y-1 text-xs">
+      <template v-if="hasStackedBars && (scopeCategoryId || detail)">
+        <div v-for="cat in chartCategories" :key="cat.categoryId" class="flex h-7 items-center gap-1.5 px-2">
+          <span class="inline-block size-2.5 shrink-0 rounded-sm" :style="{ backgroundColor: cat.color }"></span>
+          <span class="text-muted-foreground">{{ cat.name }}</span>
+        </div>
+      </template>
+      <template v-else-if="hasStackedBars">
+        <DesktopOnlyTooltip
+          v-for="cat in chartCategories"
+          :key="cat.categoryId"
+          :content="$t('analytics.trends.legend.hide')"
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            class="h-7 gap-1.5 px-2 text-xs"
+            @click="emit('hide-category', { categoryId: cat.categoryId })"
+          >
+            <span class="inline-block size-2.5 shrink-0 rounded-sm" :style="{ backgroundColor: cat.color }"></span>
+            <span class="text-muted-foreground">{{ cat.name }}</span>
+          </Button>
+        </DesktopOnlyTooltip>
+      </template>
+      <template v-else>
+        <div class="flex items-center gap-1.5 px-2">
+          <span class="inline-block size-2.5 rounded-sm" :style="{ backgroundColor: singleBarColor }"></span>
+          <span class="text-muted-foreground">{{ metricLabel }}</span>
+        </div>
+      </template>
+
+      <DesktopOnlyTooltip
+        v-for="cat in hiddenCategories"
+        :key="`hidden-${cat.id}`"
+        :content="$t('analytics.trends.legend.show')"
+      >
+        <Button
+          variant="ghost"
+          size="sm"
+          class="h-7 gap-1.5 px-2 text-xs"
+          @click="emit('show-category', { categoryId: cat.id })"
+        >
+          <EyeOffIcon class="text-muted-foreground size-3 shrink-0" />
+          <span class="text-muted-foreground line-through">{{ cat.name }}</span>
+        </Button>
+      </DesktopOnlyTooltip>
+
+      <div v-if="showAverageLine" class="flex items-center gap-1.5 px-2">
+        <span class="inline-block h-0.5 w-3" :style="{ background: AVERAGE_LINE_COLOR, borderStyle: 'dashed' }"></span>
+        <span class="text-muted-foreground">{{ t('analytics.trends.monthlyComparison.average') }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { getCashFlow } from '@/api';
-import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { type MetricType, isGoodChange, percentChange } from '@/common/utils/analytics-metric';
+import { isRemainderRow } from '@/common/utils/category-tree';
 import { currentTheme } from '@/common/utils/color-theme';
 import {
   ChartTooltip,
@@ -169,21 +142,20 @@ import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { AVERAGE_LINE_COLOR, renderAverageLine } from '@/composable/charts/render-average-line';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
-import { ROUTES_NAMES } from '@/routes';
+import { type Period } from '@/composable/use-period-navigation';
 import { useCategoriesStore } from '@/stores';
-import { TRANSACTION_TYPES, type CashFlowCategoryData, type CashFlowPeriodData } from '@bt/shared/types';
+import { type CashFlowCategoryData, type CashFlowPeriodData } from '@bt/shared/types';
 import { EyeOffIcon } from '@lucide/vue';
-import { useQuery } from '@tanstack/vue-query';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
-import { endOfMonth, parseISO, startOfMonth } from 'date-fns';
+import { endOfMonth, isAfter, isBefore, parseISO, startOfMonth } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
 
-import { type TrendsFilters, toStatsFilterParams } from '../trends-filters';
-import ChartSkeleton from '../../cash-flow/components/chart-skeleton.vue';
+import { type BarGranularity, groupPeriods } from '../group-periods';
+import { METRIC_LABEL_KEYS } from '../metric-labels';
+import { type TrendsFilters, getScopeCategoryId } from '../trends-filters';
 
 interface PeriodWithChange {
   periodStart: string;
@@ -194,21 +166,25 @@ interface PeriodWithChange {
 }
 
 const props = defineProps<{
-  from: Date;
-  to: Date;
-  metric: 'expenses' | 'income' | 'savings';
+  periods: CashFlowPeriodData[];
+  metric: MetricType;
   filters: TrendsFilters;
+  colors: Record<string, string>;
+  /** The page's selected period; months outside it are dimmed. */
+  selected: Period;
+  detail?: boolean;
+  granularity: BarGranularity;
 }>();
 
 const emit = defineEmits<{
   'hide-category': [payload: { categoryId: string }];
   'show-category': [payload: { categoryId: string }];
+  'select-period': [payload: Period];
 }>();
 
 const { t } = useI18n();
 const { format, locale } = useDateLocale();
 const { formatBaseCurrency, getCurrencySymbol } = useFormatCurrency();
-const router = useRouter();
 
 const { categories } = storeToRefs(useCategoriesStore());
 
@@ -232,7 +208,6 @@ const tooltip = reactive({
   momChange: undefined as number | undefined,
   categoryName: undefined as string | undefined,
   categoryColor: undefined as string | undefined,
-  categoryId: undefined as string | undefined,
   isAverage: false,
   // Navigation data
   periodStart: undefined as string | undefined,
@@ -248,32 +223,24 @@ const { updateTooltipPosition } = useChartTooltipPosition({
   tooltip,
 });
 
-// Query params — snap to whole months so partial first/last months don't
-// produce truncated bars (e.g. "May 30 2025 – May 30 2026" should still show
-// the full May 2025 bin, not just May 30–31).
-const queryParams = computed(() => ({
-  from: startOfMonth(props.from),
-  to: endOfMonth(props.to),
-  granularity: 'monthly' as const,
-  ...toStatsFilterParams({ filters: props.filters }),
-}));
+const scopeCategoryId = computed(() => getScopeCategoryId({ filters: props.filters }));
 
-// Fetch cash flow data
-const {
-  data: cashFlowData,
-  isLoading,
-  isError,
-} = useQuery({
-  queryKey: [...VUE_QUERY_CACHE_KEYS.analyticsCashFlow, 'monthly-comparison', queryParams],
-  queryFn: () => getCashFlow(queryParams.value),
-  staleTime: QUERY_CACHE_STALE_TIME.ANALYTICS,
-  gcTime: QUERY_CACHE_STALE_TIME.ANALYTICS * 2,
+const decorateCategory = (cat: CashFlowCategoryData): CashFlowCategoryData => ({
+  ...cat,
+  color: props.colors[cat.categoryId] ?? cat.color,
+  name: isRemainderRow({
+    id: cat.categoryId,
+    scopeId: scopeCategoryId.value,
+    detail: !!props.detail,
+    categories: categories.value,
+  })
+    ? t('analytics.trends.categoryBreakdown.noSubcategory', { name: cat.name })
+    : cat.name,
 });
 
 // Check if we have stacked bars (multiple categories with data for current metric)
-// Savings mode never uses stacked bars — it shows net flow as simple bars
 const hasStackedBars = computed(() => {
-  return props.metric !== 'savings' && chartCategories.value.length > 1;
+  return chartCategories.value.length > 1;
 });
 
 // Categories from API response for legend, filtered by metric
@@ -302,15 +269,7 @@ const hiddenCategories = computed(() => {
     .filter((cat): cat is NonNullable<typeof cat> => Boolean(cat));
 });
 
-// Metric label
-const metricLabel = computed(() => {
-  const labels = {
-    expenses: t('analytics.trends.metrics.expenses'),
-    income: t('analytics.trends.metrics.income'),
-    savings: t('analytics.trends.metrics.savings'),
-  };
-  return labels[props.metric];
-});
+const metricLabel = computed(() => t(METRIC_LABEL_KEYS[props.metric]));
 
 // Get value based on metric
 // The endpoint already returns expenses as a positive magnitude, except where a refund landed in a
@@ -321,10 +280,6 @@ const getMetricValue = (period: CashFlowPeriodData): number => {
       return period.expenses;
     case 'income':
       return period.income;
-    case 'savings':
-      return period.netFlow;
-    default:
-      return 0;
   }
 };
 
@@ -335,11 +290,6 @@ const getCategoryAmount = (cat: CashFlowCategoryData): number => {
       return cat.expenseAmount;
     case 'income':
       return cat.incomeAmount;
-    case 'savings':
-      // For savings, we might use netFlow (income - expense) but categories don't have this
-      return cat.incomeAmount - cat.expenseAmount;
-    default:
-      return 0;
   }
 };
 
@@ -351,10 +301,6 @@ const sumBySign = ({ amounts, keepPositive }: { amounts: number[]; keepPositive:
 // Get the displayed value for a period (what the bar actually shows)
 // For stacked bars, this is the sum of category amounts; otherwise the metric total
 const getDisplayedValue = (period: CashFlowPeriodData): number => {
-  // Savings always uses the period-level netFlow (not category breakdown)
-  if (props.metric === 'savings') {
-    return getMetricValue(period);
-  }
   // If we have categories and they're being displayed as stacked bars,
   // use the sum of category amounts to match what's visually shown
   if (period.categories && period.categories.length > 0) {
@@ -366,30 +312,22 @@ const getDisplayedValue = (period: CashFlowPeriodData): number => {
 
 // Chart data with MoM changes
 const chartData = computed<PeriodWithChange[]>(() => {
-  if (!cashFlowData.value?.periods) return [];
+  const periods = groupPeriods({ periods: props.periods, granularity: props.granularity });
 
-  return cashFlowData.value.periods.map((period, index) => {
+  return periods.map((period, index) => {
     // Use displayed value (sum of categories if available) for consistency with visual bars
     const currentValue = getDisplayedValue(period);
-    let momChange: number | undefined;
-
-    if (index > 0) {
-      const prevPeriod = cashFlowData.value!.periods[index - 1]!;
-      const prevValue = getDisplayedValue(prevPeriod);
-
-      if (prevValue === 0) {
-        momChange = currentValue > 0 ? 100 : 0;
-      } else {
-        momChange = Math.round(((currentValue - prevValue) / Math.abs(prevValue)) * 100);
-      }
-    }
+    const prevPeriod = periods[index - 1];
+    const momChange = prevPeriod
+      ? percentChange({ current: currentValue, previous: getDisplayedValue(prevPeriod) })
+      : undefined;
 
     return {
       periodStart: period.periodStart,
       periodEnd: period.periodEnd,
       value: currentValue,
       momChange,
-      categories: period.categories,
+      categories: period.categories?.map(decorateCategory),
     };
   });
 });
@@ -416,31 +354,15 @@ const singleBarColor = computed(() => {
   const root = document.documentElement;
   const style = getComputedStyle(root);
 
-  switch (props.metric) {
-    case 'expenses':
-      return style.getPropertyValue('--destructive-text').trim() || 'rgb(239, 68, 68)';
-    case 'income':
-      return style.getPropertyValue('--success-text').trim() || 'rgb(46, 204, 113)';
-    case 'savings':
-      return 'rgb(59, 130, 246)'; // blue-500
-    default:
-      return 'rgb(161, 161, 170)';
-  }
+  return props.metric === 'income'
+    ? style.getPropertyValue('--success-text').trim() || 'rgb(46, 204, 113)'
+    : style.getPropertyValue('--destructive-text').trim() || 'rgb(239, 68, 68)';
 });
 
 // Get change color class
 const getChangeColorClass = (change: number): string => {
   if (change === 0) return 'text-card-tooltip-muted';
-
-  // For expenses, decrease is good (green), increase is bad (red)
-  // For income/savings, increase is good (green), decrease is bad (red)
-  const isPositiveGood = props.metric !== 'expenses';
-
-  if (change > 0) {
-    return isPositiveGood ? 'text-green-500' : 'text-red-500';
-  } else {
-    return isPositiveGood ? 'text-red-500' : 'text-green-500';
-  }
+  return isGoodChange({ metric: props.metric, change }) ? 'text-green-500' : 'text-red-500';
 };
 
 const getColors = () => {
@@ -465,10 +387,14 @@ const getMargins = ({ width, shouldRotate }: { width: number; shouldRotate: bool
   };
 };
 
-const formatPeriodLabel = (periodStart: string): string => {
-  const date = parseISO(periodStart);
-  return format(date, 'MMM yy');
+const PERIOD_FORMATS: Record<BarGranularity, { axis: string; tooltip: string }> = {
+  monthly: { axis: 'MMM yy', tooltip: 'MMMM yyyy' },
+  quarterly: { axis: 'QQQ yy', tooltip: 'QQQ yyyy' },
+  yearly: { axis: 'yyyy', tooltip: 'yyyy' },
 };
+
+const formatPeriodLabel = (periodStart: string): string =>
+  format(parseISO(periodStart), PERIOD_FORMATS[props.granularity].axis);
 
 const formatAxisValue = (value: number) => formatAxisCurrency({ value, symbol: getCurrencySymbol() });
 
@@ -508,8 +434,8 @@ const renderChart = () => {
   // Get list of category IDs to render (only those with data for current metric)
   const renderCategoryIds = new Set(chartCategories.value.map((c) => c.categoryId));
 
-  // Y scale — the domain has to cover negatives for every metric, not just savings: a bucket whose
-  // refunds outweigh its purchases reports negative expenses.
+  // Y scale — the domain has to cover negatives: a bucket whose refunds outweigh its purchases
+  // reports negative expenses.
   let yMax = 0;
   let yMin = 0;
   if (isStacked) {
@@ -562,11 +488,18 @@ const renderChart = () => {
   // X axis
   const labelRotation = shouldRotateLabels ? -45 : 0;
   const fontSize = isMobile ? '10px' : '12px';
+  const maxTicks = Math.max(2, Math.floor(innerWidth / 48));
+  const tickStep = Math.ceil(xScale.domain().length / maxTicks);
 
   g.append('g')
     .attr('class', 'x-axis')
     .attr('transform', `translate(0,${innerHeight})`)
-    .call(d3.axisBottom(xScale).tickFormat((d) => formatPeriodLabel(d as string)))
+    .call(
+      d3
+        .axisBottom(xScale)
+        .tickValues(xScale.domain().filter((_, index) => index % tickStep === 0))
+        .tickFormat((d) => formatPeriodLabel(d as string)),
+    )
     .call((axis) => {
       axis.select('.domain').attr('stroke', colors.grid);
       axis
@@ -658,7 +591,8 @@ const renderChart = () => {
       // Filter to only categories with data for current metric, then sort
       const filteredCategories = period.categories.filter((cat) => renderCategoryIds.has(cat.categoryId));
       // Only an include list carries a meaningful order; otherwise keep what the API returned.
-      const pickOrder = props.filters.categories.mode === 'include' ? props.filters.categories.ids : null;
+      const pickOrder =
+        props.filters.categories.mode === 'include' && !scopeCategoryId.value ? props.filters.categories.ids : null;
       const sortedCategories = pickOrder
         ? [...filteredCategories].sort((a, b) => pickOrder.indexOf(a.categoryId) - pickOrder.indexOf(b.categoryId))
         : filteredCategories;
@@ -696,11 +630,12 @@ const renderChart = () => {
               createTopRoundedRect({ x: segmentX, y: segmentY, width: barWidth, height: catHeight, radius: 4 }),
             )
             .attr('fill', cat.color)
+            .attr('opacity', periodOpacity(period))
             .style('cursor', 'pointer')
             .on('mouseenter', (event: MouseEvent) => handleStackedMouseEnter(event, period, cat))
             .on('mousemove', handleMouseMove)
             .on('mouseleave', handleStackedMouseLeave)
-            .on('click', (event: MouseEvent) => handleBarClick(event, period, cat.categoryId));
+            .on('click', (event: MouseEvent) => handleBarClick(event, period));
         } else {
           // Regular rect for other segments (no rounding)
           g.append('rect')
@@ -711,11 +646,12 @@ const renderChart = () => {
             .attr('width', barWidth)
             .attr('height', catHeight)
             .attr('fill', cat.color)
+            .attr('opacity', periodOpacity(period))
             .style('cursor', 'pointer')
             .on('mouseenter', (event: MouseEvent) => handleStackedMouseEnter(event, period, cat))
             .on('mousemove', handleMouseMove)
             .on('mouseleave', handleStackedMouseLeave)
-            .on('click', (event: MouseEvent) => handleBarClick(event, period, cat.categoryId));
+            .on('click', (event: MouseEvent) => handleBarClick(event, period));
         }
 
         // Add inner shadow only between segments with the same color
@@ -764,22 +700,19 @@ const renderChart = () => {
       .attr('width', barWidth)
       .attr('height', (d) => Math.abs(yScale(d.value) - zeroY))
       .attr('fill', colors.bar)
+      .attr('opacity', (d) => periodOpacity(d))
       .attr('rx', 4)
       .attr('ry', 4)
       .style('cursor', 'pointer')
       .on('mouseenter', handleMouseEnter)
       .on('mousemove', handleMouseMove)
       .on('mouseleave', handleMouseLeave)
-      .on('click', (event: MouseEvent, d) => {
-        // When exactly one category has data, pass its ID for navigation
-        const singleCategoryId = chartCategories.value.length === 1 ? chartCategories.value[0]!.categoryId : undefined;
-        handleBarClick(event, d, singleCategoryId);
-      });
+      .on('click', (event: MouseEvent, d) => handleBarClick(event, d));
   }
 
   // MoM change badges with background
-  const isPositiveGood = props.metric !== 'expenses';
-  const badgeData = chartData.value.filter((d) => d.momChange !== undefined);
+  // Past two dozen bars the change badges overlap into noise.
+  const badgeData = chartData.value.length > 24 ? [] : chartData.value.filter((d) => d.momChange !== undefined);
   const badgeFontSize = isMobile ? 9 : 11;
   const badgePadding = { x: 4, y: 2 };
 
@@ -798,10 +731,7 @@ const renderChart = () => {
   // Helper to get badge color
   const getBadgeColor = (d: PeriodWithChange) => {
     if (d.momChange === 0) return colors.text;
-    if (d.momChange! > 0) {
-      return isPositiveGood ? colors.positive : colors.negative;
-    }
-    return isPositiveGood ? colors.negative : colors.positive;
+    return isGoodChange({ metric: props.metric, change: d.momChange! }) ? colors.positive : colors.negative;
   };
 
   // Create groups for each badge (background + text)
@@ -843,66 +773,16 @@ const renderChart = () => {
   });
 };
 
-// Get category ID and all its children IDs
-function getCategoryWithChildrenIds(categoryId: string): string[] {
-  const ids = [categoryId];
-  // Find all categories where parentId matches the given category
-  const children = categories.value.filter((cat) => cat.parentId === categoryId);
-  for (const child of children) {
-    // Recursively get children of children
-    ids.push(...getCategoryWithChildrenIds(child.id));
-  }
-  return ids;
-}
-
-// Navigate to transactions page with filters
-function navigateToTransactions({
-  periodStart,
-  periodEnd,
-  categoryId,
-}: {
-  periodStart: string;
-  periodEnd: string;
-  categoryId?: string;
-}) {
-  const query: Record<string, string | string[]> = {
-    start: periodStart,
-    end: periodEnd,
-  };
-
-  // Add category filter if specified (including all child categories)
-  // Vue Router handles arrays as ?categoryIds[]=1&categoryIds[]=2
-  if (categoryId !== undefined) {
-    const allCategoryIds = getCategoryWithChildrenIds(categoryId);
-    query.categoryIds = allCategoryIds.map(String);
-  }
-
-  // Add transaction type filter based on metric
-  if (props.metric === 'expenses') {
-    query.transactionType = TRANSACTION_TYPES.expense;
-  } else if (props.metric === 'income') {
-    query.transactionType = TRANSACTION_TYPES.income;
-  }
-  // For savings, don't filter by type (shows all)
-
-  router.push({
-    name: ROUTES_NAMES.transactions,
-    query,
-  });
-}
-
 function handleMouseEnter(event: MouseEvent, d: PeriodWithChange) {
   // Skip if user is interacting with tooltip
   if (isTooltipInteracting.value) return;
 
-  const startDate = parseISO(d.periodStart);
-  tooltip.period = format(startDate, 'MMMM yyyy');
+  tooltip.period = format(parseISO(d.periodStart), PERIOD_FORMATS[props.granularity].tooltip);
   tooltip.value = d.value;
   tooltip.totalValue = undefined; // No total needed for non-stacked bars
   tooltip.momChange = d.momChange;
   tooltip.categoryName = undefined;
   tooltip.categoryColor = undefined;
-  tooltip.categoryId = undefined;
   tooltip.isAverage = false;
   // Store navigation data
   tooltip.periodStart = d.periodStart;
@@ -915,8 +795,7 @@ function handleStackedMouseEnter(event: MouseEvent, period: PeriodWithChange, ca
   // Skip if user is interacting with tooltip
   if (isTooltipInteracting.value) return;
 
-  const startDate = parseISO(period.periodStart);
-  tooltip.period = format(startDate, 'MMMM yyyy');
+  tooltip.period = format(parseISO(period.periodStart), PERIOD_FORMATS[props.granularity].tooltip);
   tooltip.value = getCategoryAmount(cat);
 
   // Calculate total for the period (sum of all categories for current metric)
@@ -929,7 +808,6 @@ function handleStackedMouseEnter(event: MouseEvent, period: PeriodWithChange, ca
   tooltip.momChange = period.momChange;
   tooltip.categoryName = cat.name;
   tooltip.categoryColor = cat.color;
-  tooltip.categoryId = cat.categoryId;
   tooltip.isAverage = false;
   // Store navigation data
   tooltip.periodStart = period.periodStart;
@@ -957,36 +835,33 @@ function handleStackedMouseLeave() {
   // Restore opacity of all segments
   if (svgRef.value) {
     const svg = d3.select(svgRef.value);
-    svg.selectAll('.bar-segment').transition().duration(150).style('opacity', 1);
+    svg.selectAll('.bar-segment').transition().duration(150).style('opacity', null);
   }
 }
 
-// Handle bar click - navigate on desktop, show tooltip on touch
-function handleBarClick(_event: MouseEvent, d: PeriodWithChange, categoryId?: string) {
-  // Skip if user is interacting with tooltip
-  if (isTooltipInteracting.value) return;
-
-  if (!isTouchDevice.value) {
-    // Desktop: navigate directly
-    navigateToTransactions({
-      periodStart: d.periodStart,
-      periodEnd: d.periodEnd,
-      categoryId,
-    });
-  }
-  // Touch device: tooltip is already shown by mouseenter/touchstart
+// Desktop click picks the month; on touch the first tap shows the tooltip with its own button.
+function handleBarClick(_event: MouseEvent, d: PeriodWithChange) {
+  if (isTooltipInteracting.value || isTouchDevice.value) return;
+  emit('select-period', toPeriod(d));
 }
 
-// Handle "View transactions" click from tooltip (touch devices)
-function handleViewTransactionsClick() {
-  if (tooltip.periodStart && tooltip.periodEnd) {
-    navigateToTransactions({
-      periodStart: tooltip.periodStart,
-      periodEnd: tooltip.periodEnd,
-      categoryId: tooltip.categoryId,
-    });
-  }
+function handleSelectMonthClick() {
+  if (!tooltip.periodStart || !tooltip.periodEnd) return;
+  emit('select-period', toPeriod({ periodStart: tooltip.periodStart, periodEnd: tooltip.periodEnd }));
+  tooltip.visible = false;
+  isTooltipInteracting.value = false;
 }
+
+const toPeriod = ({ periodStart, periodEnd }: { periodStart: string; periodEnd: string }): Period => ({
+  from: startOfMonth(parseISO(periodStart)),
+  to: endOfMonth(parseISO(periodEnd)),
+});
+
+const periodOpacity = (bar: { periodStart: string; periodEnd: string }) => {
+  const { from, to } = toPeriod(bar);
+  const overlapsSelection = !isAfter(from, props.selected.to) && !isBefore(to, props.selected.from);
+  return overlapsSelection ? 1 : 0.35;
+};
 
 function handleAverageLabelMouseEnter(event: MouseEvent, avgValue: number) {
   tooltip.value = avgValue;
@@ -1009,9 +884,7 @@ function handleTooltipMouseLeave() {
 
 useResizeObserver(containerRef, renderChart);
 
-// flush: 'post' waits for the v-else SVG container to mount after data loads,
-// so renderChart sees the correct container dimensions on the first paint.
-watch([chartData, () => props.metric, locale, () => props.filters, currentTheme], renderChart, {
+watch([chartData, () => props.metric, locale, () => props.filters, () => props.selected, currentTheme], renderChart, {
   deep: true,
   flush: 'post',
 });

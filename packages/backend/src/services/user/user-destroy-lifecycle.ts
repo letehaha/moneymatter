@@ -504,5 +504,7 @@ async function stampCreatorSnapshotForOutboundTransactions({ deletingUser }: { d
     planned: 'include',
     access: { creator: deletingUser.id },
     balanceAdjustments: 'include',
+    // Trashed rows stay restorable by the account owner, so they keep the label too.
+    paranoid: false,
   });
 }

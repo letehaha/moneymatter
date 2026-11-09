@@ -7,6 +7,7 @@
     :selected-label="selectedLabel"
     :search-placeholder="$t('fields.comboboxCategories.searchPlaceholder')"
     :trigger-class="triggerClass"
+    :hide-clear-button="scopePicker"
     :selected="categoryIds"
     content-class="min-w-75"
     @clear="clearSelection"
@@ -14,6 +15,11 @@
     <template v-if="isExcluding" #leading>
       <CircleOffIcon class="text-muted-foreground size-4 shrink-0" />
     </template>
+    <template v-else-if="scopePicker && categoryIds.length === 1" #leading>
+      <CategoryCircle :category-id="categoryIds[0]" />
+    </template>
+
+    <slot name="header" />
 
     <ScrollArea class="max-h-85 lg:max-h-60" viewport-class="max-h-85 lg:max-h-60">
       <ListboxContent class="p-1.25" :class="{ 'select-none': isShiftPressed }">
@@ -37,12 +43,17 @@
             :value="item.id"
             class="data-highlighted:text-accent-foreground data-[state=checked]:bg-primary/5 gap-2 py-1.5 pr-2"
             :style="{ paddingLeft: `${8 + (isSearching ? 0 : item.depth) * 16}px` }"
-            @toggle="handleToggle({ item, index })"
+            @toggle="scopePicker ? selectOnly({ item }) : handleToggle({ item, index })"
           >
-            <Checkbox :model-value="isCategoryChecked(item)" class="pointer-events-none size-3.5" tabindex="-1">
-              <MinusIcon v-if="isCategoryChecked(item) === 'indeterminate'" class="size-3" />
-              <CheckIcon v-else class="size-3" />
-            </Checkbox>
+            <span
+              :class="scopePicker && '-m-1.5 flex cursor-pointer p-1.5'"
+              @click="onCheckboxClick({ event: $event, item, index })"
+            >
+              <Checkbox :model-value="isCategoryChecked(item)" class="pointer-events-none size-3.5" tabindex="-1">
+                <MinusIcon v-if="isCategoryChecked(item) === 'indeterminate'" class="size-3" />
+                <CheckIcon v-else class="size-3" />
+              </Checkbox>
+            </span>
             <CategoryCircle :category="item" class="shrink-0" />
             <span class="min-w-0 flex-1 truncate text-sm">{{ item.name }}</span>
             <span v-if="!isSearching && item.descendantIds.length > 0" class="text-muted-foreground text-xs">
@@ -92,6 +103,11 @@ const props = defineProps<{
   independentCheckState?: boolean;
   /** Display only: `exclude` swaps the label and leading icon, selection behaviour is identical. */
   mode?: 'include' | 'exclude';
+  /** Row click selects only that category and closes; the checkbox adds or removes just that
+   * row, without its subtree, since each selected category already counts everything below it. */
+  scopePicker?: boolean;
+  /** Overrides the trigger text shown while a selection is active. */
+  selectedText?: string;
 }>();
 
 const emit = defineEmits<{
@@ -165,7 +181,7 @@ const isCategoryChecked = (item: FlatCategory) =>
     item,
     selectedIds: selectedIdsSet.value,
     isSearching: isSearching.value,
-    independent: props.independentCheckState ?? false,
+    independent: props.independentCheckState || props.scopePicker,
   });
 
 // Shift-click range selection
@@ -199,10 +215,22 @@ const handleToggle = ({ item, index }: { item: FlatCategory; index: number }) =>
     isSearching: isSearching.value,
     isShiftPressed: isShiftPressed.value,
     lastClickedIndex,
+    cascade: !props.scopePicker,
   });
 
   lastClickedIndex = index;
   emit('update:categoryIds', next);
+};
+
+const onCheckboxClick = ({ event, item, index }: { event: MouseEvent; item: FlatCategory; index: number }) => {
+  if (!props.scopePicker) return;
+  event.stopPropagation();
+  handleToggle({ item, index });
+};
+
+const selectOnly = ({ item }: { item: FlatCategory }) => {
+  emit('update:categoryIds', [item.id]);
+  isOpen.value = false;
 };
 
 const selectedCategoryCount = computed(() => props.categoryIds.length);
@@ -210,6 +238,7 @@ const selectedCategoryCount = computed(() => props.categoryIds.length);
 const isExcluding = computed(() => props.mode === 'exclude' && selectedCategoryCount.value > 0);
 
 const selectedLabel = computed(() => {
+  if (props.selectedText) return props.selectedText;
   const n = selectedCategoryCount.value;
 
   if (props.mode === 'exclude') {

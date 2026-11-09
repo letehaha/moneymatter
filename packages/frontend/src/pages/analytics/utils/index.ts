@@ -1,4 +1,5 @@
 export { createPeriodSerializer } from './period-serializer';
+export { createEnumSerializer } from './enum-serializer';
 
 // Session-stored Cash Flow periods. Cleared when the payday changes, so the page rebuilds them as pay periods.
 export const CASH_FLOW_PERIOD_STORAGE_KEYS = ['cash-flow-period', 'cash-flow-composition-period'] as const;

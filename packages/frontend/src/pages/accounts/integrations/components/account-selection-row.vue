@@ -61,6 +61,7 @@
 </template>
 
 <script lang="ts" setup>
+import { toLocalNumber } from '@/js/helpers/formatters';
 import { type AvailableAccount, NO_CURRENCY_CODE } from '@/api/bank-data-providers';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { useFormatCurrency } from '@/composable';
@@ -94,9 +95,7 @@ const { formatAmountByCurrencyCode } = useFormatCurrency();
 // No-currency accounts can't be currency-formatted — show a plain number.
 const formattedBalance = computed(() =>
   needsCurrency.value
-    ? new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
-        props.account.balance,
-      )
+    ? toLocalNumber(props.account.balance, { maximumFractionDigits: 2 })
     : formatAmountByCurrencyCode(props.account.balance, props.account.currency),
 );
 </script>

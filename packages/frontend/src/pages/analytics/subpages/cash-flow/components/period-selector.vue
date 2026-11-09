@@ -3,24 +3,29 @@
     :class="
       cn(
         'flex items-center justify-center gap-0.5',
+        fluid && 'min-w-0',
         variant === 'solid' && 'border-input bg-input-background h-9 rounded-md border px-0.5',
       )
     "
   >
-    <Button size="icon-sm" variant="ghost" @click="selectPrevPeriod">
+    <Button size="icon-sm" variant="ghost" class="shrink-0" @click="selectPrevPeriod">
       <ChevronLeft :size="16" />
     </Button>
 
     <DateSelector v-model="period" :presets="quickPresets" :earliest-date="earliestDate">
       <template #trigger="{ triggerText }">
-        <Button variant="ghost" size="sm" :class="cn('min-w-55 font-medium', variant === 'solid' && 'h-8')">
-          <CalendarIcon class="mr-1.5 size-3.5" />
-          {{ triggerText }}
+        <Button
+          variant="ghost"
+          size="sm"
+          :class="cn('font-medium', fluid ? 'min-w-0 flex-1' : 'min-w-55', variant === 'solid' && 'h-8')"
+        >
+          <CalendarIcon class="mr-1.5 size-3.5 shrink-0" />
+          <span class="truncate">{{ triggerText }}</span>
         </Button>
       </template>
     </DateSelector>
 
-    <Button size="icon-sm" variant="ghost" :disabled="isNextDisabled" @click="selectNextPeriod">
+    <Button size="icon-sm" variant="ghost" class="shrink-0" :disabled="isNextDisabled" @click="selectNextPeriod">
       <ChevronRight :size="16" />
     </Button>
   </div>
@@ -44,6 +49,8 @@ const props = withDefaults(
     modelValue: Period;
     variant?: 'ghost' | 'solid';
     payday?: number;
+    /** Shrinks with its container and truncates the label instead of holding a fixed minimum width. */
+    fluid?: boolean;
   }>(),
   { variant: 'ghost', payday: 1 },
 );

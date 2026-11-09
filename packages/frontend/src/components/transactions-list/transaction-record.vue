@@ -376,6 +376,11 @@ const props = withDefaults(
     showAccount?: boolean;
     /** Marks a row smart tracking linked; the reason shows in its tooltip. */
     aiMatchReason?: string;
+    /**
+     * Opposite transfer leg known up front, e.g. a trashed leg the API no longer returns.
+     * `undefined` fetches it; `null` means there is none.
+     */
+    oppositeTx?: TransactionModel | null;
   }>(),
   {
     asButton: true,
@@ -409,7 +414,12 @@ const isTransferTransaction = computed(
     transaction.value.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_out_wallet,
 );
 
-const { data: oppositeTransferTransaction, isLoading: isLoadingOpposite } = useOppositeTxRecord(() => props.tx);
+const { data: fetchedOppositeTx, isLoading: isLoadingOpposite } = useOppositeTxRecord(() => props.tx, {
+  enabled: () => props.oppositeTx === undefined,
+});
+const oppositeTransferTransaction = computed(() =>
+  props.oppositeTx === undefined ? fetchedOppositeTx.value : props.oppositeTx,
+);
 
 const isPortfolioLinked = computed(
   () => transaction.value.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_to_portfolio,

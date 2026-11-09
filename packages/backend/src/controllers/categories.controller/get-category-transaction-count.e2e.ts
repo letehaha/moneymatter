@@ -296,11 +296,17 @@ describe('GET /categories/:id/transaction-count', () => {
     });
   });
 
-  it('stops counting a planned transaction once it is deleted', async () => {
+  it('keeps counting a trashed planned transaction until it is deleted permanently', async () => {
     const [real] = await createReal({ amount: 100 });
     const [planned] = await createPlanned({ amount: 200 });
 
     await helpers.deleteTransaction({ id: planned.id });
+
+    expect(await helpers.getCategoryTransactionCount({ categoryId: category.id, raw: true })).toEqual({
+      transactionCount: 2,
+    });
+
+    await helpers.deleteTrash({ transactionIds: [planned.id], raw: true });
 
     expect(await helpers.getCategoryTransactionCount({ categoryId: category.id, raw: true })).toEqual({
       transactionCount: 1,

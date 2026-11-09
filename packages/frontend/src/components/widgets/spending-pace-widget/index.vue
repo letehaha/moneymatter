@@ -138,8 +138,6 @@ const setSpikePercent = async ({ value }: { value: number }) => {
 
 const { includePlanned } = useIncludePlannedConfig({ defaultValue: INCLUDE_PLANNED_DEFAULT });
 
-// Both cash-flow queries share this range: refunds net only when both halves are in range, so a
-// narrower planned window would make the per-day difference read refunds as plans.
 const cashFlowRange = computed(() => ({
   from: subMonths(payMonth.value.start, COMPARISON_MONTHS),
   to: payMonth.value.end,

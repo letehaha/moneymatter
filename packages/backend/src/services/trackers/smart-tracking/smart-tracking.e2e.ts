@@ -427,6 +427,17 @@ describe('Smart tracking', () => {
       expect((await helpers.getTrackerSuggestions({ id: tracker.id, raw: true })).aiMatched).toEqual([]);
     });
 
+    it('hides an AI match while its transaction is trashed and shows it again on restore', async () => {
+      const { tracker, suggestions } = await setup({ scores: { Sure: 0.9 } });
+      const [match] = suggestions.aiMatched;
+
+      await helpers.deleteTransaction({ id: match!.transactionId });
+      expect((await helpers.getTrackerSuggestions({ id: tracker.id, raw: true })).aiMatched).toEqual([]);
+
+      await helpers.restoreTrash({ transactionIds: [match!.transactionId] });
+      expect((await helpers.getTrackerSuggestions({ id: tracker.id, raw: true })).aiMatched).toEqual([match]);
+    });
+
     it('unlinks an accepted suggestion on reject', async () => {
       const { tracker, suggestions } = await setup({ scores: { One: 0.6 } });
       const [one] = suggestions.pending;

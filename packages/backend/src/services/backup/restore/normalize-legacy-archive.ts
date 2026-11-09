@@ -1,3 +1,4 @@
+import { TRANSACTION_DELETION_REASON } from '@bt/shared/types';
 import isPlainObject from 'lodash/isPlainObject';
 
 type Row = Record<string, unknown>;
@@ -100,6 +101,8 @@ export function normalizeLegacyArchive({
   parsedByPath.delete('data/user-merchant-category-codes.json');
   for (const row of rowsAt({ parsedByPath, name: 'transactions' })) {
     if (asObject(row.categorizationMeta)?.source === 'mcc_rule') row.categorizationMeta = null;
+    // Rows soft-deleted before `deletionReason` existed came from reconciliation; the DB CHECK needs a reason.
+    if (row.deletedAt && !row.deletionReason) row.deletionReason = TRANSACTION_DELETION_REASON.reconciliation;
   }
   if (formatVersion > LEGACY_TRACKER_TYPE_VERSION) return;
   if (formatVersion <= LEGACY_TRACKER_NAMING_VERSION) normalizeTrackerNaming({ parsedByPath });

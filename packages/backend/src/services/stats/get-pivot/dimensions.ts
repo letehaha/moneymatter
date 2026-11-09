@@ -81,8 +81,7 @@ const createCategoryStrategy = ({
       ctx.addCell({ rowKey: resolveRowKey(leg.categoryId), columnKey: ctx.columnKeys[bucketIndex]!, cents: leg.cents });
     }
 
-    // Refunds net only where the (grouped) category already received an amount in range, so a refund
-    // whose counterpart fell outside the window/filter never spawns a phantom negative row.
+    // No base leg in this row means nothing to net; skipping avoids a phantom negative row.
     for (const leg of allocations.refunds) {
       const rowKey = resolveRowKey(leg.categoryId);
       if (!ctx.cellData.has(rowKey)) continue;
@@ -127,11 +126,13 @@ const createPayeeStrategy = (): PivotDimensionStrategy => ({
       side: ctx.side,
     });
     for (const refund of refunds) {
-      const rowKey = refund.payeeId ?? UNASSIGNED_ID;
-      if (!ctx.cellData.has(rowKey)) continue;
-      const refundBucket = ctx.bucketIndexForTime(refund.refundTime);
+      const refundBucket = ctx.bucketIndexForTime(refund.time);
       if (refundBucket === -1) continue;
-      ctx.addCell({ rowKey, columnKey: ctx.columnKeys[refundBucket]!, cents: -refund.refundCents });
+      ctx.addCell({
+        rowKey: refund.payeeId ?? UNASSIGNED_ID,
+        columnKey: ctx.columnKeys[refundBucket]!,
+        cents: -refund.refundCents,
+      });
     }
   },
   assembleRows: (ctx) =>
@@ -201,12 +202,11 @@ const createTagStrategy = (): PivotDimensionStrategy => {
         side: ctx.side,
       });
       for (const refund of refunds) {
-        const refundBucket = ctx.bucketIndexForTime(refund.refundTime);
+        const refundBucket = ctx.bucketIndexForTime(refund.time);
         if (refundBucket === -1) continue;
         const columnKey = ctx.columnKeys[refundBucket]!;
         const targets = refund.tagIds.length === 0 ? [UNTAGGED_ID] : refund.tagIds;
         for (const rowKey of targets) {
-          if (!ctx.cellData.has(rowKey)) continue;
           ctx.addCell({ rowKey, columnKey, cents: -refund.refundCents });
         }
       }

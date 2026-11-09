@@ -8,7 +8,7 @@ export const deleteTransactionTool = defineTool({
   toolset: 'core',
   access: 'delete',
   description:
-    'Permanently delete a transaction by ID. DESTRUCTIVE: this cannot be undone. For transfer transactions, both sides of the transfer are deleted.',
+    'Move a transaction to Trash by ID. It is hidden everywhere and balances are reversed; the user can restore it in the app within 30 days, after which it is deleted for good. For transfer transactions, both sides of the transfer go to Trash. Rejected for transactions that belong to a payment, a portfolio or a venture: they must be unlinked first.',
   input: {
     id: recordId().describe('ID of the transaction to delete'),
   },

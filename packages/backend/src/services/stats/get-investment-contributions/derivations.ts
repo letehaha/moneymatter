@@ -1,4 +1,5 @@
 import { type Cents, asCents } from '@bt/shared/types';
+import type { CategoryRefundPair } from '@services/stats/category-allocation';
 import { type PeriodBucket, findBucketIndex } from '@services/stats/utils';
 
 import { type SavingsTransactionRow, accumulateSavings } from '../get-net-worth-drivers/savings';
@@ -93,11 +94,13 @@ export const accumulateContributions = ({
  */
 export const accumulateSavingsNet = ({
   transactions,
+  refundPairs,
   buckets,
 }: {
   transactions: SavingsTransactionRow[];
+  refundPairs: CategoryRefundPair[];
   buckets: PeriodBucket[];
-}): Cents[] => accumulateSavings({ transactions, buckets }).map((bucket) => bucket.net);
+}): Cents[] => accumulateSavings({ transactions, refundPairs, buckets }).map((bucket) => bucket.net);
 
 /**
  * Legend for the stacked chart: one entry per active portfolio, ordered by the

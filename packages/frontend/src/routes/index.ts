@@ -249,6 +249,12 @@ const routes: RouteRecordRaw[] = [
         meta: { navSection: 'transactions', i18nChunks: ['pages/transactions'] },
       },
       {
+        path: '/transactions/trash',
+        name: ROUTES_NAMES.transactionsTrash,
+        component: () => import('@/pages/transactions-trash/index.vue'),
+        meta: { navSection: 'transactions', i18nChunks: ['pages/transactions'] },
+      },
+      {
         path: '/transaction-groups',
         name: ROUTES_NAMES.transactionGroups,
         component: () => import('@/pages/transaction-groups/index.vue'),

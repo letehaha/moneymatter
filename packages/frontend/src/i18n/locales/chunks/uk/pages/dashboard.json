@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Витрати за категоріями",
+        "incomeTitle": "Доходи за категоріями",
         "today": "Сьогодні",
         "vsPreviousPeriod": "до попереднього періоду",
-        "viewButton": "Переглянути"
+        "viewButton": "Переглянути",
+        "back": "Назад",
+        "openInAnalytics": "Відкрити в Аналітиці",
+        "metric": {
+          "expenses": "Витрати",
+          "income": "Доходи"
+        },
+        "seeTransactions": "Переглянути транзакції"
       },
       "latestTransactions": {
         "title": "Останні транзакції",

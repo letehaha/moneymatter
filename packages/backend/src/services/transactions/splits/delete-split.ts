@@ -3,6 +3,7 @@ import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import RefundTransactions from '@models/refund-transactions.model';
 import * as TransactionSplits from '@models/transaction-splits.model';
+import Transactions from '@models/transactions.model';
 
 import { withTransaction } from '../../common/with-transaction';
 
@@ -28,6 +29,7 @@ export const deleteSplit = withTransaction(async ({ splitId, userId }: DeleteSpl
   // Check if any refunds target this split
   const refundTargetingSplit = await RefundTransactions.findOne({
     where: { splitId, userId },
+    include: [{ model: Transactions, as: 'refundTransaction', required: true, attributes: [] }],
   });
 
   if (refundTargetingSplit) {

@@ -269,6 +269,34 @@ describe('toggleCategorySelection', () => {
     expect(next.sort()).toEqual(['1', '2', '3', '4', '5']);
   });
 
+  it('toggles only the parent itself when cascade is off', () => {
+    const next = toggleCategorySelection({
+      item: findFlat(flat, '1'),
+      clickedIndex: 0,
+      currentSelection: ['11'],
+      displayedItems: flat,
+      isSearching: false,
+      isShiftPressed: false,
+      lastClickedIndex: null,
+      cascade: false,
+    });
+    expect(next.sort()).toEqual(['1', '11']);
+  });
+
+  it('keeps selected children when deselecting a parent with cascade off', () => {
+    const next = toggleCategorySelection({
+      item: findFlat(flat, '1'),
+      clickedIndex: 0,
+      currentSelection: ['1', '2', '3', '4', '5'],
+      displayedItems: flat,
+      isSearching: false,
+      isShiftPressed: false,
+      lastClickedIndex: null,
+      cascade: false,
+    });
+    expect(next.sort()).toEqual(['2', '3', '4', '5']);
+  });
+
   it('deselects the parent plus descendants when clicking an already fully-selected parent', () => {
     const next = toggleCategorySelection({
       item: findFlat(flat, '1'),

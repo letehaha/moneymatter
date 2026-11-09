@@ -13,15 +13,16 @@ interface WholeTxRefund {
   tagIds: string[];
   /** Refund magnitude in integer cents (base currency); callers subtract it. */
   refundCents: number;
-  /** The refund tx's own date, so the reduction lands in the bucket the money returned in. */
-  refundTime: Date;
+  /** Date of the leg on the requested side, so the reduction lands in that leg's own bucket. */
+  time: Date;
 }
 
 /**
  * Resolves refunds for the whole-transaction dimensions (payee, tag), which — unlike categories —
  * carry no per-split payee/tag. Each refund is attributed to the payee/tags of its leg on `side`
  * (the report's measure), so it cancels the same rows that leg filled, mirroring the category
- * netting's `refundSide`.
+ * netting's `refundSide`. Only refunds whose leg on `side` is among `transactions` are returned:
+ * a leg outside the report filled no row.
  *
  * The original + refund txs are loaded fresh (some sit outside the report window) with only the
  * attributes the caller's dimension needs.
@@ -40,6 +41,7 @@ export const resolveWholeTxRefunds = async ({
 }): Promise<WholeTxRefund[]> => {
   const txIdsWithRefunds = transactions.filter((tx) => tx.refundLinked).map((tx) => tx.id);
   if (txIdsWithRefunds.length === 0) return [];
+  const inScopeTxIds = new Set(transactions.map((tx) => tx.id));
 
   const refunds = await RefundTransactions.findAll({
     where: {
@@ -79,11 +81,12 @@ export const resolveWholeTxRefunds = async ({
     if (!baseTx || !refundTx) continue;
 
     const sideTx = baseTx.transactionType === side ? baseTx : refundTx;
+    if (!inScopeTxIds.has(sideTx.id)) continue;
     result.push({
       payeeId: sideTx.payeeId,
       tagIds: needTags ? (sideTx.tags ?? []).map((tag) => tag.id) : [],
       refundCents: refundShareRefAmount({ link: refund, refundTx }).toCents(),
-      refundTime: new Date(refundTx.time),
+      time: new Date(sideTx.time),
     });
   }
 

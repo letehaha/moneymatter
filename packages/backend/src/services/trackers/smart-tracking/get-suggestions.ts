@@ -9,12 +9,13 @@ import TrackerSuggestions from '@models/tracker-suggestions.model';
 import TrackerTransactions from '@models/tracker-transactions.model';
 import type Trackers from '@models/trackers.model';
 import { findTransactions } from '@models/transactions-query';
+import { liveTransactionExistsSql } from '@models/transactions-query/deletion-where';
 import type Transactions from '@models/transactions.model';
 import { resolveAIConfiguration } from '@services/ai';
 import { isWithinAiAllowance } from '@services/ai/ai-allowance';
 import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
 import { getConnectionInfos } from '@services/user-settings/ai-connections';
-import { Op } from 'sequelize';
+import { Op, literal } from 'sequelize';
 
 import { findOwnedTracker } from './find-owned-tracker';
 import { getTrackerScanBlocker } from './run-tracker-scan';
@@ -82,7 +83,11 @@ export const getTrackerSuggestions = async ({
       : ([] as Transactions[]),
     matchedRows.length
       ? TrackerTransactions.findAll({
-          where: { trackerId, transactionId: matchedRows.map((row) => row.transactionId) },
+          where: {
+            trackerId,
+            transactionId: matchedRows.map((row) => row.transactionId),
+            [Op.and]: literal(liveTransactionExistsSql({ idColumnSql: '"TrackerTransactions"."transactionId"' })),
+          },
           attributes: ['transactionId'],
         })
       : ([] as TrackerTransactions[]),

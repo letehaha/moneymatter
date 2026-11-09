@@ -1,9 +1,10 @@
 import { logger } from '@js/utils/logger';
 import * as RefundTransactions from '@models/refund-transactions.model';
 import TransactionSplits from '@models/transaction-splits.model';
+import { liveOrExternalTransactionSql } from '@models/transactions-query/deletion-where';
 import * as Transactions from '@models/transactions.model';
 import { attachRefundedAmounts } from '@services/tx-refunds/attach-refunded-amounts';
-import { Op } from 'sequelize';
+import { Op, literal } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
 
@@ -18,6 +19,7 @@ export const getRefundsForTransactionById = withTransaction(
       const refunds = await RefundTransactions.default.findAll({
         where: {
           userId,
+          [Op.and]: literal(liveOrExternalTransactionSql({ idColumnSql: '"RefundTransactions"."originalTxId"' })),
           [Op.or]: [
             {
               originalTxId: transactionId,

@@ -55,3 +55,4 @@ export * from './invoice-matching';
 export * from './background-jobs';
 export * from './landing-faq';
 export * from './reconciliation';
+export * from './transactions-trash';

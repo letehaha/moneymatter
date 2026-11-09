@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Expenses structure",
+        "incomeTitle": "Income structure",
         "today": "Today",
         "vsPreviousPeriod": "vs previous period",
-        "viewButton": "View"
+        "viewButton": "View",
+        "back": "Back",
+        "openInAnalytics": "Open in Analytics",
+        "metric": {
+          "expenses": "Expenses",
+          "income": "Income"
+        },
+        "seeTransactions": "See transactions"
       },
       "latestTransactions": {
         "title": "Latest transactions",

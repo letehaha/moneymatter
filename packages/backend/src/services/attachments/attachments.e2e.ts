@@ -353,11 +353,27 @@ describe('Transaction attachments', () => {
   });
 
   describe('transaction cascade', () => {
-    it('drops the attachment rows when the transaction is deleted', async () => {
+    it('hides the attachments of a trashed transaction and brings them back on restore', async () => {
       const tx = await createTransaction();
       const uploaded = await helpers.uploadAttachment({ transactionId: tx.id, file: PNG_BYTES });
 
       expect((await helpers.deleteTransaction({ id: tx.id })).statusCode).toBe(200);
+
+      expect((await helpers.listAttachments({ transactionId: tx.id })).statusCode).toBe(404);
+      expect((await helpers.downloadAttachment({ id: uploaded.response!.id })).statusCode).toBe(404);
+
+      await helpers.restoreTrash({ transactionIds: [tx.id], raw: true });
+
+      const listed = await helpers.listAttachments({ transactionId: tx.id, raw: true });
+      expect(listed.map((attachment) => attachment.id)).toEqual([uploaded.response!.id]);
+    });
+
+    it('drops the attachment rows when the transaction is deleted for good', async () => {
+      const tx = await createTransaction();
+      const uploaded = await helpers.uploadAttachment({ transactionId: tx.id, file: PNG_BYTES });
+
+      expect((await helpers.deleteTransaction({ id: tx.id })).statusCode).toBe(200);
+      await helpers.deleteTrash({ transactionIds: [tx.id], raw: true });
 
       expect((await helpers.listAttachments({ transactionId: tx.id })).statusCode).toBe(404);
       expect((await helpers.downloadAttachment({ id: uploaded.response!.id })).statusCode).toBe(404);

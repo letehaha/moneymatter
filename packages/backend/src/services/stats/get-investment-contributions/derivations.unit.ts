@@ -104,6 +104,7 @@ describe('accumulateSavingsNet', () => {
           transactionType: TRANSACTION_TYPES.expense,
         },
       ],
+      refundPairs: [],
       buckets,
     });
 
@@ -121,10 +122,42 @@ describe('accumulateSavingsNet', () => {
           transactionType: TRANSACTION_TYPES.income,
         },
       ],
+      refundPairs: [],
       buckets,
     });
 
     expect(savingsNet).toEqual([0, 0, 0]);
+  });
+
+  it('nets each side of a refund pair in its own bucket', () => {
+    const savingsNet = accumulateSavingsNet({
+      transactions: [
+        {
+          time: '2026-01-10T12:00:00.000Z',
+          refAmount: Money.fromCents(20_000),
+          transactionType: TRANSACTION_TYPES.expense,
+        },
+        {
+          time: '2026-02-05T12:00:00.000Z',
+          refAmount: Money.fromCents(5_000),
+          transactionType: TRANSACTION_TYPES.income,
+        },
+      ],
+      refundPairs: [
+        {
+          cents: 5_000,
+          expenseTime: new Date('2026-01-10T12:00:00.000Z'),
+          incomeTime: new Date('2026-02-05T12:00:00.000Z'),
+          expenseCategoryId: null,
+          incomeCategoryId: null,
+          expenseInScope: true,
+          incomeInScope: true,
+        },
+      ],
+      buckets,
+    });
+
+    expect(savingsNet).toEqual([-15_000, 0, 0]);
   });
 });
 

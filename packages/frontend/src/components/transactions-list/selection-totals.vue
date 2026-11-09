@@ -68,32 +68,12 @@ const breakdown = computed<Figure[]>(() => [
   expense.value,
   ...(transfers.value ? [transfers.value] : []),
 ]);
-
-const inlineFigures = computed<Figure[]>(() => [
-  income.value,
-  expense.value,
-  net.value,
-  ...(transfers.value ? [transfers.value] : []),
-]);
 </script>
 
 <template>
-  <!--
-    Breakpoints run on the toolbar's own width, not the viewport: the sidebar leaves the
-    content area ~300px narrower, so a `sm:` breakpoint switches while the figures still clip.
-    Below @4xl the summary collapses into one chip that carries the count.
-  -->
-  <div class="hidden items-center gap-x-4 @4xl/bulk-toolbar:flex">
-    <span class="text-muted-foreground text-sm whitespace-nowrap">{{ countLabel }}</span>
-    <span v-for="figure in inlineFigures" :key="figure.key" class="flex items-baseline gap-1.5 whitespace-nowrap">
-      <span class="text-muted-foreground text-sm">{{ figure.label }}</span>
-      <span :class="figure.colorClass" class="text-sm tabular-nums">{{ formatBaseCurrency(figure.value) }}</span>
-    </span>
-  </div>
-
   <Popover>
     <PopoverTrigger as-child>
-      <Button variant="outline" size="sm" class="gap-2 @4xl/bulk-toolbar:hidden">
+      <Button variant="outline" size="sm" class="gap-2">
         <span class="text-muted-foreground flex items-center gap-1">
           <component :is="matching ? ListIcon : SquareCheckBigIcon" class="size-3.5" />
           <span class="text-sm tabular-nums">{{ selectedCount }}</span>

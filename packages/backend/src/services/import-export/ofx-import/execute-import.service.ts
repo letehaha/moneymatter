@@ -16,7 +16,6 @@ import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
-import * as Transactions from '@models/transactions.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
@@ -37,6 +36,7 @@ import { selectAccountsWithPlannedRows } from '@services/transactions/planned-ma
 import { UniqueConstraintError } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
+import { findTransactionsByOriginalIds } from './detect-duplicates.service';
 import { deleteOfxUpload, readOfxUpload } from './upload-cache';
 
 function resolveAccountCategory({ statementType, accountType }: { statementType: string; accountType: string }) {
@@ -197,10 +197,7 @@ async function executeOfxImportImpl({
   summary.payeesCreated = payeesCreated;
 
   const originalIds = rowsToWrite.map((tx) => tx.sourceTransactionKey).filter((id): id is string => Boolean(id));
-  const existingIdRows =
-    originalIds.length > 0
-      ? await Transactions.getTransactionsByArrayOfField({ fieldName: 'originalId', fieldValues: originalIds, userId })
-      : [];
+  const existingIdRows = originalIds.length > 0 ? await findTransactionsByOriginalIds({ userId, originalIds }) : [];
   const existingKeys = new Set(existingIdRows.map((tx) => `${tx.accountId}:${tx.originalId}`));
 
   let processedCount = 0;

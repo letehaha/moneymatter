@@ -144,7 +144,7 @@
     {
       "name": "bulk_delete_transactions",
       "toolset": "core",
-      "description": "Permanently delete many transactions at once, by ids or by filters. Requires finance:delete scope."
+      "description": "Move many transactions to Trash at once, by ids or by filters. Requires finance:delete scope."
     },
     {
       "name": "bulk_update_transactions",
@@ -214,7 +214,7 @@
     {
       "name": "delete_transaction",
       "toolset": "core",
-      "description": "Permanently delete a transaction by ID. Requires finance:delete scope."
+      "description": "Move a transaction to Trash by ID. Requires finance:delete scope."
     },
     {
       "name": "get_account",

@@ -37,9 +37,9 @@ interface GetPivotReportParams {
 /**
  * Cross-tabs a row dimension (category / subcategory / payee / tag) against a time dimension,
  * summing `refAmount` (base currency) into integer cents. Split transactions are distributed and
- * refunds are netted (cash-basis, in the bucket the money returned in) across every dimension and
- * on whichever side the report measures — a refunded amount never counts as spend or as income, so
- * an income report minus an expense report nets each refund exactly once.
+ * refunds are netted across every dimension on whichever side the report measures, in that leg's
+ * own bucket when the leg is in the report — a refunded amount never counts as spend or as income,
+ * so an income report minus an expense report nets each refund exactly once.
  *
  * Per-dimension aggregation, assembly and hydration live behind a `PivotDimensionStrategy`
  * (see `./dimensions`); this orchestrator only owns the shared query, bucketing and totals.

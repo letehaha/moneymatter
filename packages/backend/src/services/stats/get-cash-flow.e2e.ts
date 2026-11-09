@@ -273,7 +273,7 @@ describe('GET /stats/cash-flow — refunds and splits', () => {
     expect(period.netFlow).toBe(70);
   });
 
-  it('lands a cross-period refund in the bucket the money returned in', async () => {
+  it('nets each side of a cross-period refund in its own transaction month', async () => {
     const account = await helpers.createAccount({ raw: true });
     const category = await helpers.addCustomCategory({ name: uniqueName('LateRefund'), color: '#aa00aa', raw: true });
 
@@ -311,17 +311,104 @@ describe('GET /stats/cash-flow — refunds and splits', () => {
     });
 
     const [january, february] = result.periods;
-    expect(january!.expenses).toBe(100);
-    expect(january!.netFlow).toBe(-100);
-    // February's money-in is a reversal of spend, so it lowers expenses rather than raising income —
-    // the period's net cash (+30) stays the same either way.
-    expect(february!.expenses).toBe(-30);
-    expect(february!.income).toBe(0);
-    expect(february!.netFlow).toBe(30);
+    expect(january!).toMatchObject({ income: 0, expenses: 70, netFlow: -70 });
+    expect(february!).toMatchObject({ income: 0, expenses: 0, netFlow: 0 });
+    expect(january!.categories!.find((entry) => entry.categoryId === category.id)).toMatchObject({
+      expenseAmount: 70,
+      incomeAmount: 0,
+    });
+    expect(february!.categories!.find((entry) => entry.categoryId === category.id)).toMatchObject({
+      expenseAmount: 0,
+      incomeAmount: 0,
+    });
+    expect(result.totals).toMatchObject({ income: 0, expenses: 70, netFlow: -70 });
 
-    expect(result.totals.expenses).toBe(70);
-    expect(result.totals.income).toBe(0);
-    expect(result.totals.netFlow).toBe(-70);
+    const januaryOnly = await helpers.getCashFlow({
+      from: '2025-01-01',
+      to: '2025-01-31',
+      granularity: 'monthly',
+      raw: true,
+    });
+    expect(januaryOnly.periods[0]!).toMatchObject({ income: 0, expenses: 70, netFlow: -70 });
+
+    const februaryOnly = await helpers.getCashFlow({
+      from: '2025-02-01',
+      to: '2025-02-28',
+      granularity: 'monthly',
+      raw: true,
+    });
+    expect(februaryOnly.periods[0]!).toMatchObject({ income: 0, expenses: 0, netFlow: 0 });
+  });
+
+  it('nets an income original against expense refunds dated in an earlier month', async () => {
+    const account = await helpers.createAccount({ raw: true });
+
+    const createTx = async ({
+      amount,
+      transactionType,
+      time,
+    }: {
+      amount: number;
+      transactionType: TRANSACTION_TYPES;
+      time: string;
+    }) => {
+      const [tx] = await helpers.createTransaction({
+        payload: { ...helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType }), time },
+        raw: true,
+      });
+      return tx!;
+    };
+
+    // Money lent in September and returned in one October payment, linked with the October
+    // income as the original and each September loan as one of its refunds.
+    const lentFirst = await createTx({
+      amount: 5000,
+      transactionType: TRANSACTION_TYPES.expense,
+      time: '2025-09-07T12:00:00.000Z',
+    });
+    const lentSecond = await createTx({
+      amount: 20000,
+      transactionType: TRANSACTION_TYPES.expense,
+      time: '2025-09-23T12:00:00.000Z',
+    });
+    const repaid = await createTx({
+      amount: 25000,
+      transactionType: TRANSACTION_TYPES.income,
+      time: '2025-10-07T12:00:00.000Z',
+    });
+    await createTx({ amount: 300, transactionType: TRANSACTION_TYPES.expense, time: '2025-09-15T12:00:00.000Z' });
+    await createTx({ amount: 1000, transactionType: TRANSACTION_TYPES.income, time: '2025-10-15T12:00:00.000Z' });
+
+    await helpers.createSingleRefund({ originalTxId: repaid.id, refundTxId: lentFirst.id });
+    await helpers.createSingleRefund({ originalTxId: repaid.id, refundTxId: lentSecond.id });
+
+    const result = await helpers.getCashFlow({
+      from: '2025-09-01',
+      to: '2025-10-31',
+      granularity: 'monthly',
+      raw: true,
+    });
+
+    const [september, october] = result.periods;
+    expect(september!).toMatchObject({ income: 0, expenses: 300, netFlow: -300 });
+    expect(october!).toMatchObject({ income: 1000, expenses: 0, netFlow: 1000 });
+    expect(result.totals).toMatchObject({ income: 1000, expenses: 300, netFlow: 700 });
+
+    const septemberOnly = await helpers.getCashFlow({
+      from: '2025-09-01',
+      to: '2025-09-30',
+      granularity: 'monthly',
+      raw: true,
+    });
+    expect(septemberOnly.periods[0]!).toMatchObject({ income: 0, expenses: 300, netFlow: -300 });
+
+    const octoberOnly = await helpers.getCashFlow({
+      from: '2025-10-01',
+      to: '2025-10-31',
+      granularity: 'monthly',
+      raw: true,
+    });
+    expect(octoberOnly.periods[0]!).toMatchObject({ income: 1000, expenses: 0, netFlow: 1000 });
   });
 
   it('distributes a split transaction across its categories in the breakdown', async () => {
@@ -471,7 +558,7 @@ describe('GET /stats/cash-flow — refunds and splits', () => {
     expect(cashFlow.totals.expenses).toBe(75);
   });
 
-  it('leaves both sides gross when the range holds only one half of a refund pair', async () => {
+  it('nets the in-range half of a refund pair whose counterpart sits before the range', async () => {
     const account = await helpers.createAccount({ raw: true });
     const category = await helpers.addCustomCategory({ name: uniqueName('OutOfRange'), color: '#123456', raw: true });
 
@@ -504,14 +591,14 @@ describe('GET /stats/cash-flow — refunds and splits', () => {
 
     const result = await helpers.getCashFlow({ ...RANGE, raw: true });
 
-    // Netting only the in-range half would erase the $30 that actually arrived in January.
+    // The $30 reverses December spend, so it is not January income.
     const period = result.periods[0]!;
-    expect(period.income).toBe(30);
+    expect(period.income).toBe(0);
     expect(period.expenses).toBe(0);
-    expect(period.netFlow).toBe(30);
+    expect(period.netFlow).toBe(0);
   });
 
-  it('keeps a refund credited to another account out of the netting when scoped to one account', async () => {
+  it('nets only the refund half that sits in the scoped account', async () => {
     const spendAccount = await helpers.createAccount({ raw: true });
     const refundAccount = await helpers.createAccount({ raw: true });
     const category = await helpers.addCustomCategory({ name: uniqueName('CrossAcc'), color: '#654321', raw: true });
@@ -544,11 +631,15 @@ describe('GET /stats/cash-flow — refunds and splits', () => {
 
     const scoped = await helpers.getCashFlow({ ...RANGE, accountId: spendAccount.id, raw: true });
 
-    // The refund never entered this account's income, so it must not be taken out of it either.
+    // The purchase is in scope, so its refunded share stops counting as spend; the refund itself
+    // never entered this account's income, so nothing is taken out of it.
     const period = scoped.periods[0]!;
     expect(period.income).toBe(0);
-    expect(period.expenses).toBe(100);
-    expect(period.netFlow).toBe(-100);
+    expect(period.expenses).toBe(70);
+    expect(period.netFlow).toBe(-70);
+
+    const refundAccountScoped = await helpers.getCashFlow({ ...RANGE, accountId: refundAccount.id, raw: true });
+    expect(refundAccountScoped.periods[0]!).toMatchObject({ income: 0, expenses: 0, netFlow: 0 });
 
     // Unscoped, both halves are present and the pair nets as usual.
     const unscoped = await helpers.getCashFlow({ ...RANGE, raw: true });
@@ -1467,8 +1558,8 @@ describe('GET /stats/cash-flow – daily granularity', () => {
 
     const expensesByDay = Object.fromEntries(result.periods.map((p) => [p.periodStart, p.expenses]));
     expect(expensesByDay['2025-01-01']).toBe(10);
-    expect(expensesByDay['2025-01-10']).toBe(100);
-    expect(expensesByDay['2025-01-12']).toBe(-30);
+    expect(expensesByDay['2025-01-10']).toBe(70);
+    expect(expensesByDay['2025-01-12']).toBe(0);
     expect(expensesByDay['2025-01-15']).toBe(25);
     expect(expensesByDay['2025-01-31']).toBe(40);
     expect(expensesByDay['2025-01-02']).toBe(0);

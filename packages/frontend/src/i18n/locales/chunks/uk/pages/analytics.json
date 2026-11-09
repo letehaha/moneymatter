@@ -84,7 +84,7 @@
       }
     },
     "trends": {
-      "subtitle": "Порівняйте витрати, дохід і заощадження з попереднім періодом.",
+      "subtitle": "Порівняйте витрати та дохід із попереднім періодом.",
       "metrics": {
         "expenses": "Витрати",
         "income": "Дохід",
@@ -95,27 +95,63 @@
         "comparisonPeriod": "Попередній період",
         "cumulativeNote": "Накопичувальна сума до цього моменту"
       },
+      "scope": {
+        "label": "Область категорій",
+        "all": "Усі категорії",
+        "up": "На рівень вище",
+        "transactions": "Транзакції",
+        "count": "{count} категорія | {count} категорії | {count} категорій",
+        "more": "+{count}",
+        "allExcept": "Усі, крім: {list}",
+        "clear": "Очистити"
+      },
       "categoryBreakdown": {
         "title": "Розбивка за категоріями",
         "noData": "Немає даних за цей період",
         "viewAll": "Переглянути всі категорії",
-        "moreCount": "ще {count}"
+        "moreCount": "ще {count}",
+        "noSubcategory": "{name} · без підкатегорії",
+        "byLevel": "За рівнем",
+        "detail": "Детально",
+        "others": "Інші"
+      },
+      "hero": {
+        "vsPrevious": "{percent}% проти попереднього періоду",
+        "same": "Так само, як у попередньому періоді"
+      },
+      "overTime": {
+        "title": "У динаміці",
+        "cumulative": "Накопичувально",
+        "perPeriod": "За період",
+        "granularity": {
+          "monthly": "По місяцях",
+          "quarterly": "По кварталах",
+          "yearly": "По роках"
+        }
+      },
+      "transactionsCard": {
+        "title": "Транзакції",
+        "largest": "Найбільші",
+        "recent": "Останні"
       },
       "monthlyComparison": {
-        "title": "Порівняння по місяцях",
         "allCategories": "Усі категорії",
         "average": "Середнє",
         "total": "Усього",
-        "vsLastMonth": "проти попереднього місяця",
-        "viewTransactions": "Переглянути транзакції"
-      },
-      "cumulativeProgress": {
-        "title": "Накопичувальний прогрес"
+        "vsPrevious": {
+          "monthly": "проти минулого місяця",
+          "quarterly": "проти минулого кварталу",
+          "yearly": "проти минулого року"
+        },
+        "show": {
+          "monthly": "Показати цей місяць",
+          "quarterly": "Показати квартал",
+          "yearly": "Показати рік"
+        }
       },
       "filters": {
         "button": "Фільтри",
         "title": "Фільтри",
-        "categories": "Категорії",
         "include": "Включити",
         "exclude": "Виключити",
         "accounts": "Рахунки",

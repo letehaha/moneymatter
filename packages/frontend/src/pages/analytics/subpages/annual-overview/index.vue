@@ -1,333 +1,291 @@
 <template>
-  <div class="@container/trends space-y-6">
-    <div class="flex flex-wrap items-center gap-4">
-      <PeriodSelector v-model="selectedPeriod" class="max-xs:mx-auto" />
-      <MetricToggle v-model="selectedMetric" />
-      <FiltersButton
-        :label="t('analytics.trends.filters.button')"
-        :active-count="countActiveFilters({ filters })"
-        class="ml-auto"
-      >
-        <TrendsFiltersPanel :filters="filters" @update:filters="filters = $event" />
-      </FiltersButton>
-    </div>
-
-    <!-- Error state -->
-    <div v-if="cumulativeError" class="flex h-80 items-center justify-center">
-      <div class="text-destructive-text">{{ t('analytics.trends.loadError') }}</div>
-    </div>
-
-    <!-- Content (with skeleton fallback) -->
-    <template v-else>
-      <!-- Summary rows (narrow) -->
-      <SummaryRows :items="summaryRows" :loading="isLoadingCumulative" class="@md/trends:hidden">
-        <template #divider>
-          <div v-if="cumulativeData" class="flex items-center gap-2">
-            <span class="bg-border h-px min-w-0 flex-1" />
-            <span
-              :class="
-                cn(
-                  'bg-muted/60 flex items-center gap-1 rounded-full px-2.5 py-0.5 text-center text-xs font-semibold tabular-nums',
-                  changeClass,
-                )
-              "
-            >
-              <component :is="changeIcon" class="size-3 shrink-0" />
-              {{ Math.abs(cumulativeData.percentChange) }}%
-              <span class="text-muted-foreground font-medium">{{ t('analytics.trends.vsPreviousPeriod') }}</span>
-            </span>
-            <span class="bg-border h-px min-w-0 flex-1" />
-          </div>
-        </template>
-      </SummaryRows>
-
-      <!-- Summary Cards (wide) -->
-      <div class="hidden grid-cols-3 gap-4 @md/trends:grid">
-        <!-- Card 1: Current period -->
-        <SummaryCardSkeleton v-if="isLoadingCumulative" title-width="w-20" value-width="w-28" />
-        <SummaryCard
-          v-else-if="cumulativeData"
-          :title="metricLabel"
-          :value="cumulativeData.currentPeriod.total"
-          :change="cumulativeData.percentChange"
-          :comparison-period-label="t('analytics.trends.vsPreviousPeriod')"
-          :invert-colors="selectedMetric === 'expenses'"
-        />
-
-        <!-- Card 2: Previous period -->
-        <SummaryCardSkeleton v-if="isLoadingCumulative" title-width="w-24" value-width="w-28" />
-        <SummaryCard
-          v-else-if="cumulativeData"
-          :title="`${t('analytics.trends.chart.comparisonPeriod')}`"
-          :value="cumulativeData.previousPeriod.total"
-        />
-
-        <!-- Card 3: Percent change -->
-        <SummaryCardSkeleton
-          v-if="isLoadingCumulative"
-          container-class="flex items-center justify-center"
-          inner-class="text-center"
-          title-width="w-24 mx-auto"
-          value-width="w-16 mx-auto"
-        />
+  <div class="@container/trends" :style="{ '--trends-controls-height': `${controlsHeight}px` }">
+    <div class="grid gap-6 @5xl/trends:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] @5xl/trends:items-start">
+      <div class="min-w-0 space-y-6">
         <div
-          v-else-if="cumulativeData"
-          class="border-border bg-card flex items-center justify-center rounded-lg border p-4"
+          ref="controlsRef"
+          class="border-border bg-card @container/controls sticky top-(--header-height) z-(--z-navbar) rounded-lg border"
         >
-          <div class="text-center">
-            <div class="text-muted-foreground mb-1 text-sm">{{ t('analytics.trends.vsPreviousPeriod') }}</div>
-            <div
-              :class="[
-                'text-2xl font-semibold',
-                cumulativeData.percentChange > 0
-                  ? selectedMetric === 'expenses'
-                    ? 'text-red-500'
-                    : 'text-green-500'
-                  : cumulativeData.percentChange < 0
-                    ? selectedMetric === 'expenses'
-                      ? 'text-green-500'
-                      : 'text-red-500'
-                    : 'text-muted-foreground',
-              ]"
+          <div class="flex items-center gap-2 px-2 py-1.5">
+            <MetricToggle v-model="selectedMetric" class="shrink-0" />
+            <PeriodSelector v-model="selectedPeriod" fluid class="flex-1 justify-start @lg/controls:flex-none" />
+            <FiltersButton
+              :label="t('analytics.trends.filters.button')"
+              :active-count="countActiveFilters({ filters })"
+              label-class="hidden @lg/controls:inline"
+              class="ml-auto shrink-0"
             >
-              {{ cumulativeData.percentChange > 0 ? '+' : '' }}{{ cumulativeData.percentChange }}%
+              <TrendsFiltersPanel :filters="filters" @update:filters="filters = $event" />
+            </FiltersButton>
+          </div>
+
+          <CategoryScopeBar
+            class="border-border border-t px-2 py-1.5"
+            :filters="filters"
+            :from="selectedPeriod.from"
+            :to="selectedPeriod.to"
+            :metric="selectedMetric"
+            @update:filters="filters = $event"
+          />
+
+          <div
+            v-if="!isCategoriesError"
+            :class="
+              cn(
+                'grid transition-[grid-template-rows,opacity] duration-200 ease-out',
+                isHeroHidden ? 'grid-rows-[1fr] opacity-100' : 'pointer-events-none grid-rows-[0fr] opacity-0',
+              )
+            "
+            :aria-hidden="!isHeroHidden"
+          >
+            <div class="overflow-hidden">
+              <div class="border-border flex items-baseline gap-2 border-t px-3 py-1.5 text-sm">
+                <span class="text-muted-foreground">{{ metricLabel }}</span>
+                <span class="font-semibold tabular-nums">{{ formatBaseCurrency(currentTotal) }}</span>
+                <span
+                  v-if="totalChange !== undefined"
+                  :class="cn('flex items-center gap-0.5 self-center text-xs font-medium', changeClass)"
+                >
+                  <component :is="changeIcon" class="size-3.5 shrink-0" />
+                  {{ Math.abs(totalChange) }}%
+                </span>
+              </div>
             </div>
           </div>
         </div>
+
+        <div ref="heroRef" class="px-1">
+          <div class="text-muted-foreground text-sm font-medium">{{ metricLabel }}</div>
+          <div v-if="isLoadingCategories" class="animate-pulse">
+            <div class="bg-muted mt-1 h-10 w-56 rounded" />
+            <div class="bg-muted mt-1.5 h-4 w-72 rounded" />
+          </div>
+          <div v-else-if="isCategoriesError" class="text-destructive-text mt-1">
+            {{ t('analytics.trends.loadError') }}
+          </div>
+          <template v-else>
+            <div class="text-4xl font-bold tracking-tight tabular-nums">{{ formatBaseCurrency(currentTotal) }}</div>
+            <div
+              v-if="totalChange !== undefined"
+              :class="cn('mt-0.5 flex items-center gap-1 text-sm font-medium', changeClass)"
+            >
+              <component :is="changeIcon" class="size-4 shrink-0" />
+              {{
+                totalChange === 0
+                  ? t('analytics.trends.hero.same')
+                  : t('analytics.trends.hero.vsPrevious', { percent: Math.abs(totalChange) })
+              }}
+              <span class="text-muted-foreground font-normal tabular-nums"
+                >({{ formatBaseCurrency(previousTotal) }})</span
+              >
+            </div>
+          </template>
+        </div>
+
+        <CategoryBreakdown
+          :current-period-data="currentPeriodCategories || {}"
+          :previous-period-data="previousPeriodCategories || {}"
+          :is-loading="isLoadingCategories"
+          :is-fetching="isFetchingCategories"
+          :is-error="isCategoriesError"
+          :metric="selectedMetric"
+          :scope-category-id="getScopeCategoryId({ filters })"
+          v-model:detail="isDetail"
+          :colors="seriesColors"
+          @select="drillInto"
+        />
+
+        <OverTimeCard
+          :chart-window="chartWindow"
+          :selected="selectedPeriod"
+          :metric="selectedMetric"
+          :filters="filters"
+          :colors="seriesColors"
+          :detail="isDetail"
+          @hide-category="filters = hideCategory({ filters, categoryId: $event.categoryId })"
+          @show-category="filters = showCategory({ filters, categoryId: $event.categoryId })"
+          @select-period="selectedPeriod = $event"
+        />
       </div>
 
-      <!-- Monthly Comparison Chart -->
-      <MonthlyComparisonChart
-        :from="selectedPeriod.from"
-        :to="selectedPeriod.to"
-        :metric="selectedMetric"
+      <TransactionsCard
         :filters="filters"
-        @hide-category="filters = hideCategory({ filters, categoryId: $event.categoryId })"
-        @show-category="filters = showCategory({ filters, categoryId: $event.categoryId })"
+        :period="selectedPeriod"
+        :metric="selectedMetric"
+        class="@5xl/trends:sticky @5xl/trends:top-[calc(var(--header-height)+1rem)]"
       />
-
-      <!-- Cumulative Chart Skeleton -->
-      <ChartSkeleton v-if="isLoadingCumulative" />
-
-      <!-- Cumulative Chart -->
-      <template v-else-if="cumulativeData">
-        <div
-          v-if="cumulativeData.currentPeriod.data.length > 0 || cumulativeData.previousPeriod.data.length > 0"
-          class="border-border bg-card rounded-lg border p-4 max-sm:px-0"
-        >
-          <CumulativeChart
-            :current-period-data="cumulativeData.currentPeriod.data"
-            :previous-period-data="cumulativeData.previousPeriod.data"
-            :metric="selectedMetric"
-          />
-        </div>
-
-        <!-- Empty state for chart -->
-        <div v-else class="border-border bg-card flex h-80 items-center justify-center rounded-lg border p-4">
-          <div class="text-center">
-            <div class="text-muted-foreground">{{ t('analytics.trends.noData') }}</div>
-            <div class="text-muted-foreground mt-1 text-sm">{{ t('analytics.trends.noDataHint') }}</div>
-          </div>
-        </div>
-      </template>
-    </template>
-
-    <!-- Category Breakdown (show for expenses and income, not savings) -->
-    <CategoryBreakdown
-      v-if="selectedMetric !== 'savings'"
-      :current-period-data="currentPeriodCategories || {}"
-      :previous-period-data="previousPeriodCategories || {}"
-      :is-loading="isLoadingCategories"
-      :is-income="selectedMetric === 'income'"
-    />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { getCumulativeData, getSpendingsByCategories } from '@/api';
+import { getSpendingsByCategories } from '@/api';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import {
+  METRICS,
+  type MetricType,
+  isGoodChange,
+  metricTransactionType,
+  percentChange,
+} from '@/common/utils/analytics-metric';
+import { readTrendsDeepLink } from '@/common/utils/trends-deep-link';
 import { useFormatCurrency } from '@/composable';
-import { useChartColors } from '@/composable/charts/chart-colors';
+import { assignSiblingColors } from '@/composable/charts/assign-sibling-colors';
+import { type Period, getPrevPeriod } from '@/composable/use-period-navigation';
 import { cn } from '@/lib/utils';
-import { TRANSACTION_TYPES } from '@bt/shared/types';
+import { useCategoriesStore } from '@/stores';
 import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from '@lucide/vue';
-import { useQuery } from '@tanstack/vue-query';
-import { useSessionStorage } from '@vueuse/core';
-import { differenceInMonths, startOfMonth, subMonths } from 'date-fns';
-import { computed, onMounted } from 'vue';
+import { keepPreviousData, useQuery } from '@tanstack/vue-query';
+import { useElementBounding, useSessionStorage } from '@vueuse/core';
+import { endOfMonth, startOfMonth } from 'date-fns';
+import { storeToRefs } from 'pinia';
+import { computed, onMounted, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
-import { createPeriodSerializer } from '../../utils';
-import ChartSkeleton from '../cash-flow/components/chart-skeleton.vue';
-import type { Period } from '@/composable/use-period-navigation';
-import PeriodSelector from '../cash-flow/components/period-selector.vue';
-import SummaryCardSkeleton from '../cash-flow/components/summary-card-skeleton.vue';
-import SummaryCard from '../cash-flow/components/summary-card.vue';
-import CategoryBreakdown from './components/category-breakdown.vue';
-import CumulativeChart from './components/cumulative-chart.vue';
-import MetricToggle, { type MetricType } from './components/metric-toggle.vue';
-import MonthlyComparisonChart from './components/monthly-comparison-chart.vue';
-import TrendsFiltersPanel from './components/trends-filters-panel.vue';
 import FiltersButton from '../../components/filters-button.vue';
-import SummaryRows, { type SummaryRowItem } from '../../components/summary-rows.vue';
+import { createEnumSerializer, createPeriodSerializer } from '../../utils';
+import PeriodSelector from '../cash-flow/components/period-selector.vue';
+import { getChartWindow } from './chart-window';
+import CategoryBreakdown from './components/category-breakdown.vue';
+import CategoryScopeBar from './components/category-scope-bar.vue';
+import MetricToggle from './components/metric-toggle.vue';
+import OverTimeCard from './components/over-time-card.vue';
+import TransactionsCard from './components/transactions-card.vue';
+import TrendsFiltersPanel from './components/trends-filters-panel.vue';
+import { METRIC_LABEL_KEYS } from './metric-labels';
 import {
   type TrendsFilters,
   countActiveFilters,
   emptyTrendsFilters,
+  filtersFromDeepLink,
+  getScopeCategoryId,
   hideCategory,
   parseTrendsFilters,
+  scopeTo,
   showCategory,
   toStatsFilterParams,
 } from './trends-filters';
 
 const { t } = useI18n();
 const { formatBaseCurrency } = useFormatCurrency();
-const colors = useChartColors();
 const route = useRoute();
-
 const router = useRouter();
+const { categories, categoriesMap } = storeToRefs(useCategoriesStore());
 
-// Helper to get default period
-const getDefaultPeriod = (): Period => ({
-  from: subMonths(new Date(), 12),
-  to: new Date(),
-});
+const getDefaultPeriod = (): Period => ({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) });
 
-const periodSerializer = createPeriodSerializer({ getDefaultPeriod });
-
-// State with session persistence using VueUse
 const selectedPeriod = useSessionStorage<Period>('trends-comparison-period', getDefaultPeriod(), {
-  serializer: periodSerializer,
+  serializer: createPeriodSerializer({ getDefaultPeriod }),
 });
-const selectedMetric = useSessionStorage<MetricType>('trends-comparison-metric', 'expenses');
+const selectedMetric = useSessionStorage<MetricType>('trends-comparison-metric', 'expenses', {
+  serializer: createEnumSerializer({ values: METRICS, fallback: 'expenses' }),
+});
 const filters = useSessionStorage<TrendsFilters>('trends-comparison-filters', emptyTrendsFilters(), {
   serializer: { read: (raw) => parseTrendsFilters({ raw }), write: (value) => JSON.stringify(value) },
 });
 
-// A `?categoryIds=` deep link preselects categories, then is consumed.
+// Deep links preset the page, then are consumed.
 onMounted(() => {
-  const queryValue = route.query.categoryIds;
-  if (!queryValue) return;
+  const link = readTrendsDeepLink({ query: route.query });
+  if (!link) return;
 
-  const categoryIds = (Array.isArray(queryValue) ? queryValue : [queryValue]).filter(
-    (id): id is string => typeof id === 'string' && id.length > 0,
-  );
-
-  if (categoryIds.length > 0) {
-    filters.value = { ...filters.value, categories: { mode: 'include', ids: categoryIds } };
-  }
+  filters.value = filtersFromDeepLink({ filters: filters.value, link });
+  if (link.metric) selectedMetric.value = link.metric;
+  if (link.period) selectedPeriod.value = link.period;
 
   // Replace rather than push so back-navigation still leaves the page.
-  const { categoryIds: _consumed, ...restQuery } = route.query;
-  router.replace({ query: restQuery });
+  router.replace({ query: link.restQuery });
 });
 
-const statsFilterParams = computed(() => toStatsFilterParams({ filters: filters.value }));
+const isDetail = useSessionStorage('trends-breakdown-detail', false);
 
-// Computed metric label
-const metricLabel = computed(() => {
-  const labels = {
-    expenses: t('analytics.trends.metrics.expenses'),
-    income: t('analytics.trends.metrics.income'),
-    savings: t('analytics.trends.metrics.savings'),
-  };
-  return labels[selectedMetric.value];
-});
+const statsFilterParams = computed(() =>
+  toStatsFilterParams({ filters: filters.value, categories: categories.value, detail: isDetail.value }),
+);
 
-// Query params
-const cumulativeQueryParams = computed(() => ({
-  from: selectedPeriod.value.from,
-  to: selectedPeriod.value.to,
-  metric: selectedMetric.value,
-  ...statsFilterParams.value,
-}));
+const drillInto = ({ categoryId }: { categoryId: string }) => {
+  filters.value = scopeTo({ filters: filters.value, categoryIds: [categoryId] });
+};
 
-// Cumulative data query
+const metricLabel = computed(() => t(METRIC_LABEL_KEYS[selectedMetric.value]));
+
+const chartWindow = computed(() => getChartWindow({ period: selectedPeriod.value }));
+const previousPeriod = computed(() => getPrevPeriod({ period: selectedPeriod.value }));
+
+const categoryType = computed(() => metricTransactionType({ metric: selectedMetric.value }));
+
+const useSpendings = ({ key, period }: { key: string; period: () => Period }) =>
+  useQuery({
+    queryKey: computed(() => [
+      ...VUE_QUERY_CACHE_KEYS.analyticsSpendingsByCategories,
+      key,
+      { ...period(), type: categoryType.value, ...statsFilterParams.value },
+    ]),
+    queryFn: () => getSpendingsByCategories({ ...period(), type: categoryType.value, ...statsFilterParams.value }),
+    staleTime: QUERY_CACHE_STALE_TIME.ANALYTICS,
+    gcTime: QUERY_CACHE_STALE_TIME.ANALYTICS * 2,
+    placeholderData: keepPreviousData,
+  });
+
 const {
-  data: cumulativeData,
-  isLoading: isLoadingCumulative,
-  error: cumulativeError,
-} = useQuery({
-  queryKey: [...VUE_QUERY_CACHE_KEYS.analyticsCumulative, cumulativeQueryParams],
-  queryFn: () => getCumulativeData(cumulativeQueryParams.value),
-  staleTime: QUERY_CACHE_STALE_TIME.ANALYTICS,
-  gcTime: QUERY_CACHE_STALE_TIME.ANALYTICS * 2,
+  data: currentPeriodCategories,
+  isLoading: isLoadingCurrent,
+  isFetching: isFetchingCurrent,
+  isError: isErrorCurrent,
+} = useSpendings({
+  key: 'current',
+  period: () => selectedPeriod.value,
 });
+const {
+  data: previousPeriodCategories,
+  isLoading: isLoadingPrevious,
+  isFetching: isFetchingPrevious,
+  isError: isErrorPrevious,
+} = useSpendings({
+  key: 'previous',
+  period: () => previousPeriod.value,
+});
+const { data: windowCategories } = useSpendings({ key: 'window', period: () => chartWindow.value });
 
-const summaryRows = computed<SummaryRowItem[]>(() => {
-  if (!cumulativeData.value) return [];
-  const metricColor = {
-    expenses: colors.value.appExpense,
-    income: colors.value.appIncome,
-    savings: colors.value.appSavings,
-  }[selectedMetric.value];
-  return [
-    {
-      label: metricLabel.value,
-      value: formatBaseCurrency(cumulativeData.value.currentPeriod.total),
-      color: metricColor,
-    },
-    {
-      label: t('analytics.trends.chart.comparisonPeriod'),
-      value: formatBaseCurrency(cumulativeData.value.previousPeriod.total),
-      color: colors.value.text,
-      valueClass: 'text-muted-foreground font-semibold',
-    },
-  ];
-});
+const isLoadingCategories = computed(() => isLoadingCurrent.value || isLoadingPrevious.value);
+const isFetchingCategories = computed(() => isFetchingCurrent.value || isFetchingPrevious.value);
+const isCategoriesError = computed(() => isErrorCurrent.value || isErrorPrevious.value);
+
+const sumAmounts = ({ data }: { data: typeof currentPeriodCategories.value }) =>
+  Object.values(data ?? {}).reduce((sum, category) => sum + category.amount, 0);
+
+const currentTotal = computed(() => sumAmounts({ data: currentPeriodCategories.value }));
+const previousTotal = computed(() => sumAmounts({ data: previousPeriodCategories.value }));
+
+const totalChange = computed(() => percentChange({ current: currentTotal.value, previous: previousTotal.value }));
 
 const changeIcon = computed(() => {
-  const change = cumulativeData.value?.percentChange ?? 0;
+  const change = totalChange.value ?? 0;
   return change === 0 ? MinusIcon : change > 0 ? ArrowUpIcon : ArrowDownIcon;
 });
 
 const changeClass = computed(() => {
-  const change = cumulativeData.value?.percentChange ?? 0;
+  const change = totalChange.value ?? 0;
   if (change === 0) return 'text-muted-foreground';
-  const isGood = selectedMetric.value === 'expenses' ? change < 0 : change > 0;
-  return isGood ? 'text-app-income-color' : 'text-app-expense-color';
+  return isGoodChange({ metric: selectedMetric.value, change }) ? 'text-success-text' : 'text-destructive-text';
 });
 
-// Category breakdown queries (for expenses and income, not savings)
-const categoryType = computed(() =>
-  selectedMetric.value === TRANSACTION_TYPES.income ? TRANSACTION_TYPES.income : TRANSACTION_TYPES.expense,
+// Ranked by the chart window's totals so colors hold still while stepping through its months.
+const seriesColors = computed(() => {
+  const scopeId = getScopeCategoryId({ filters: filters.value });
+  return assignSiblingColors({
+    items: Object.entries({ ...currentPeriodCategories.value, ...windowCategories.value })
+      .sort(([, a], [, b]) => b.amount - a.amount)
+      .map(([id, { color }]) => ({ id, color })),
+    parentColor: scopeId ? categoriesMap.value[scopeId]?.color : undefined,
+  });
+});
+
+// The headline total slides into the sticky controls once it has scrolled under them.
+const { bottom: controlsBottom, height: controlsHeight } = useElementBounding(
+  useTemplateRef<HTMLElement>('controlsRef'),
 );
-
-const currentPeriodDates = computed(() => ({
-  from: selectedPeriod.value.from,
-  to: selectedPeriod.value.to,
-  type: categoryType.value,
-  ...statsFilterParams.value,
-}));
-
-// Calculate period length and get the immediately preceding period (same as cumulative chart)
-const periodLengthMonths = computed(
-  () => differenceInMonths(startOfMonth(selectedPeriod.value.to), startOfMonth(selectedPeriod.value.from)) + 1,
-);
-
-const previousPeriodDates = computed(() => ({
-  from: subMonths(selectedPeriod.value.from, periodLengthMonths.value),
-  to: subMonths(selectedPeriod.value.to, periodLengthMonths.value),
-  type: categoryType.value,
-  ...statsFilterParams.value,
-}));
-
-const { data: currentPeriodCategories, isLoading: isLoadingCurrentCategories } = useQuery({
-  queryKey: [...VUE_QUERY_CACHE_KEYS.analyticsSpendingsByCategories, 'current', cumulativeQueryParams],
-  queryFn: () => getSpendingsByCategories(currentPeriodDates.value),
-  staleTime: QUERY_CACHE_STALE_TIME.ANALYTICS,
-  gcTime: QUERY_CACHE_STALE_TIME.ANALYTICS * 2,
-  enabled: computed(() => selectedMetric.value !== 'savings'),
-});
-
-const { data: previousPeriodCategories, isLoading: isLoadingPreviousCategories } = useQuery({
-  queryKey: [...VUE_QUERY_CACHE_KEYS.analyticsSpendingsByCategories, 'previous', cumulativeQueryParams],
-  queryFn: () => getSpendingsByCategories(previousPeriodDates.value),
-  staleTime: QUERY_CACHE_STALE_TIME.ANALYTICS,
-  gcTime: QUERY_CACHE_STALE_TIME.ANALYTICS * 2,
-  enabled: computed(() => selectedMetric.value !== 'savings'),
-});
-
-const isLoadingCategories = computed(() => isLoadingCurrentCategories.value || isLoadingPreviousCategories.value);
+const { bottom: heroBottom } = useElementBounding(useTemplateRef<HTMLElement>('heroRef'));
+const isHeroHidden = computed(() => heroBottom.value < controlsBottom.value);
 </script>

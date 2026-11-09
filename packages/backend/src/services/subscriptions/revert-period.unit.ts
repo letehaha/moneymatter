@@ -111,7 +111,7 @@ describe('revertPeriod', () => {
       });
 
       expect(assertCanDeleteTransaction).toHaveBeenCalledTimes(1);
-      expect(removeTransaction).toHaveBeenCalledWith({ id: TX_ID, userId: USER_ID });
+      expect(removeTransaction).toHaveBeenCalledWith({ id: TX_ID, userId: USER_ID, permanent: true });
       expect(order).toEqual(['assert', 'delete']);
     });
 
@@ -223,7 +223,7 @@ describe('revertPeriod', () => {
 
       await revertPeriod({ userId: USER_ID, subscriptionId: SUBSCRIPTION_ID, periodId: PERIOD_ID });
 
-      expect(removeTransaction).toHaveBeenCalledWith({ id: TX_ID, userId: USER_ID });
+      expect(removeTransaction).toHaveBeenCalledWith({ id: TX_ID, userId: USER_ID, permanent: true });
       expect(period.update).toHaveBeenCalledWith(expect.objectContaining({ transactionId: null }));
     });
 
