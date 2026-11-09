@@ -1139,7 +1139,7 @@
     {
       "name": "replace_venture_event_links",
       "toolset": "ventures",
-      "description": "Replace the whole set of bank transactions linked to a venture event: every current link is removed (each transaction gets its original state back), then the given transactions are linked under the rules of link_transactions_to_venture_event (same currency, not already linked elsewhere, sum equal to the event's lpNetAmount). Requires finance:write scope."
+      "description": "Replace the whole set of bank transactions linked to a venture event: every current link is removed (each transaction gets its original state back), then the given transactions are linked under the rules of link_transactions_to_venture_event (same currency, not already linked elsewhere). Requires finance:write scope."
     },
     {
       "name": "update_venture_deal",

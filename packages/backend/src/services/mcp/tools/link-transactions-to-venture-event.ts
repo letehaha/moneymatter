@@ -10,7 +10,7 @@ export const linkTransactionsToVentureEventTool = defineTool({
   toolset: 'ventures',
   access: 'write',
   description:
-    "Link existing bank transactions to a venture event as the cash behind it. The rules: every transaction is in the same currency as the event, none is already linked to a venture event or a portfolio, or part of a transfer, and the sum of their amounts equals the event's lpNetAmount exactly; otherwise nothing is linked. The transactions are marked as transfers to venture; delete_venture_event_link restores one. Returns the links created.",
+    "Link existing bank transactions to a venture event as the cash behind it. The rules: every transaction is in the same currency as the event, none is already linked to a venture event or a portfolio, or part of a transfer; otherwise nothing is linked. The amounts may differ from the event's lpNetAmount: the event records what the statement says, the transactions what reached the bank (transfer fees, FX spreads). The transactions are marked as transfers to venture; delete_venture_event_link restores one. Returns the links created.",
   input: {
     eventId: recordId().describe('Venture event ID (from list_venture_events)'),
     transactionIds: appendLinksBodySchema.shape.transactionIds.describe(

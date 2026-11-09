@@ -22,6 +22,8 @@ export enum VENTURE_EVENT_TYPE {
   exit = 'exit',
   writedown = 'writedown',
   fee_payment = 'fee_payment',
+  /** Uninvested capital sent back by the vehicle. Lowers cost basis; not a distribution (no DPI, carry, or status change). */
+  capital_refund = 'capital_refund',
 }
 
 export enum VENTURE_CASH_FLOW_MODE {

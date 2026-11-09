@@ -11,7 +11,6 @@ import {
 } from '@services/common/transaction-linking';
 import { withTransaction } from '@services/common/with-transaction';
 import { assertNotInPayment } from '@services/transactions/payment-legs';
-import Big from 'big.js';
 
 import { findVentureEventOrThrow } from '../helpers';
 
@@ -37,7 +36,6 @@ const linkTxsToEventImpl = async ({ userId, eventId, transactionIds }: LinkTxsTo
     });
   }
 
-  const expectedSum = new Big(event.lpNetAmount.toDecimalString(10));
   const eventCurrency = event.currencyCode;
 
   // Load all txs in one pass
@@ -63,16 +61,6 @@ const linkTxsToEventImpl = async ({ userId, eventId, transactionIds }: LinkTxsTo
     await assertNotAlreadyLinked({ tx });
   }
   await assertNotInPayment({ transactionIds });
-
-  // Validate sum-of-amounts matches expected lpNetAmount (using absolute values
-  // because tx amount sign depends on transactionType; the link records the
-  // magnitude of cash movement).
-  const sum = txs.reduce((acc, tx) => acc.plus(new Big(tx.amount.toDecimalString(10)).abs()), new Big(0));
-  if (!sum.eq(expectedSum)) {
-    throw new ValidationError({
-      message: `Sum of linked transactions (${sum.toFixed(2)}) does not match event LP net amount (${expectedSum.toFixed(2)})`,
-    });
-  }
 
   // Persist link rows + restamp each tx
   const links: VentureEventLinks[] = [];

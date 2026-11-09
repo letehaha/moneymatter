@@ -10,6 +10,7 @@ const CASH_FLOW_EVENT_TYPES: readonly VENTURE_EVENT_TYPE[] = [
   VENTURE_EVENT_TYPE.distribution,
   VENTURE_EVENT_TYPE.exit,
   VENTURE_EVENT_TYPE.fee_payment,
+  VENTURE_EVENT_TYPE.capital_refund,
 ];
 
 /** Event types that may bear carry (LP-positive cash, GP earns share). */

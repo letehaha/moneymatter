@@ -35,10 +35,7 @@ export const createVentureDealTool = defineTool({
     initialInvestment: z
       .object({
         cashFlowMode: z.enum([VENTURE_CASH_FLOW_MODE.linked, VENTURE_CASH_FLOW_MODE.out_of_wallet]),
-        transactionIds: z
-          .array(recordId())
-          .optional()
-          .describe('Required when cashFlowMode=linked. Sum of linked tx amounts must equal principal + entryFee.'),
+        transactionIds: z.array(recordId()).optional().describe('Required when cashFlowMode=linked.'),
       })
       .optional()
       .describe(

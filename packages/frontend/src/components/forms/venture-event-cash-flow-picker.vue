@@ -42,7 +42,11 @@ watch(
 );
 
 const pickerTransactionType = computed(() => {
-  if (props.eventType === VENTURE_EVENT_TYPE.distribution || props.eventType === VENTURE_EVENT_TYPE.exit) {
+  if (
+    props.eventType === VENTURE_EVENT_TYPE.distribution ||
+    props.eventType === VENTURE_EVENT_TYPE.exit ||
+    props.eventType === VENTURE_EVENT_TYPE.capital_refund
+  ) {
     return TRANSACTION_TYPES.income;
   }
   return TRANSACTION_TYPES.expense;

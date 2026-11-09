@@ -10,7 +10,7 @@ export const replaceVentureEventLinksTool = defineTool({
   toolset: 'ventures',
   access: 'write',
   description:
-    "Replace the whole set of bank transactions linked to a venture event: every current link is removed (each transaction gets its original state back), then the given transactions are linked under the rules of link_transactions_to_venture_event (same currency, not already linked elsewhere, sum equal to the event's lpNetAmount). An empty transactionIds list only removes the links. All or nothing. Returns the new links.",
+    'Replace the whole set of bank transactions linked to a venture event: every current link is removed (each transaction gets its original state back), then the given transactions are linked under the rules of link_transactions_to_venture_event (same currency, not already linked elsewhere). An empty transactionIds list only removes the links. All or nothing. Returns the new links.',
   input: {
     eventId: recordId().describe('Venture event ID (from list_venture_events)'),
     transactionIds: replaceLinksBodySchema.shape.transactionIds.describe(
