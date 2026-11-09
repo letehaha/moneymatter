@@ -125,6 +125,7 @@
       <DonutChart
         :data="chartData"
         :total-amount="totalAmount"
+        :class="cn('transition-opacity', isPlaceholderData && 'opacity-50')"
         clickable="drillable"
         @category-click="drilledCategoryId = $event.categoryId"
       />
@@ -145,6 +146,7 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import IncludePlannedMenuItem from '@/components/widgets/components/include-planned-menu-item.vue';
 import { useIncludePlannedConfig, useWidgetConfigFlag } from '@/components/widgets/use-include-planned-config';
 import { useFormatCurrency } from '@/composable';
+import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
 import { useCategoriesStore } from '@/stores';
 import { ArrowUpRightIcon, ChartPieIcon, ChevronLeftIcon, ListIcon } from '@lucide/vue';
@@ -222,6 +224,7 @@ const {
   chartData,
   isDataEmpty,
   hasData,
+  isPlaceholderData,
   totalAmount,
 } = useExpensesStructureData({
   selectedPeriod: () => props.selectedPeriod,

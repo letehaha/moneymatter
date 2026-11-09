@@ -5,8 +5,7 @@ import { getLevelCategoryIds } from '@/common/utils/category-tree';
 import { useAnimatedNumber } from '@/composable/use-animated-number';
 import { calculatePercentageDifference } from '@/js/helpers';
 import { useCategoriesStore } from '@/stores';
-import { type GetSpendingsByCategoriesReturnType } from '@bt/shared/types';
-import { useQuery } from '@tanstack/vue-query';
+import { keepPreviousData, useQuery } from '@tanstack/vue-query';
 import { differenceInDays, endOfMonth, format, isSameMonth, startOfMonth, subDays, subMonths } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { type Ref, computed, ref, watch } from 'vue';
@@ -90,22 +89,17 @@ export function useExpensesStructureData({
       excludePlanned: excludePlannedParam.value,
     });
 
-  // Another level's rows would render as a wrong slice set until the fetch lands, so only same-level data carries over.
-  const sameLevelPlaceholder = (
-    previousData: GetSpendingsByCategoriesReturnType | undefined,
-    previousQuery?: { queryKey: readonly unknown[] },
-  ) => (previousQuery?.queryKey.at(-1) === levelKey.value ? previousData : undefined);
-
   const {
     data: spendingsByCategories,
     isFetching: isSpendingsByCategoriesFetching,
     isError,
+    isPlaceholderData,
     refetch: refetchCurrent,
   } = useQuery({
     queryKey: [...VUE_QUERY_CACHE_KEYS.widgetExpensesStructureTotal, periodQueryKey, excludedKey, levelKey],
     queryFn: () => fetchSpendings(selectedPeriod()),
     staleTime: Infinity,
-    placeholderData: sameLevelPlaceholder,
+    placeholderData: keepPreviousData,
   });
 
   // Calculate previous period. For full-month selections, use the full previous month
@@ -137,15 +131,21 @@ export function useExpensesStructureData({
     queryKey: [...VUE_QUERY_CACHE_KEYS.widgetExpensesStructurePrevTotal, periodQueryKey, excludedKey, levelKey],
     queryFn: () => fetchSpendings(prevPeriod.value),
     staleTime: Infinity,
-    placeholderData: sameLevelPlaceholder,
+    placeholderData: keepPreviousData,
   });
 
   const isWidgetDataFetching = computed(() => isSpendingsByCategoriesFetching.value || isPrevSpendingsFetching.value);
 
+  // Placeholder rows belong to the previous level, so slices keep that level's drill until fresh data lands.
+  const dataDrillId = ref(drilledCategoryId.value);
+  watch([spendingsByCategories, isPlaceholderData], () => {
+    if (!isPlaceholderData.value) dataDrillId.value = drilledCategoryId.value;
+  });
+
   const chartData = computed(() =>
     buildLevelSlices({
       spendings: spendingsByCategories.value ?? {},
-      drilledCategoryId: drilledCategoryId.value,
+      drilledCategoryId: dataDrillId.value,
       categoriesMap: categoriesMap.value,
       excludedCategoryIds: excludedCategoryIds.value,
     }),
@@ -185,6 +185,7 @@ export function useExpensesStructureData({
     chartData,
     isDataEmpty,
     hasData,
+    isPlaceholderData,
     totalAmount,
   };
 }
