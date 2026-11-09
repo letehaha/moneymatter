@@ -29,9 +29,14 @@ export enum OAUTH_PROVIDER {
 // Array of all providers for iteration (e.g., login method lists)
 export const OAUTH_PROVIDERS_LIST = Object.values(OAUTH_PROVIDER);
 
+/** Built-in providers configured via client id/secret env vars; OIDC is reported separately. */
+export type SocialOAuthProvider = Exclude<OAUTH_PROVIDER, OAUTH_PROVIDER.oidc>;
+
 /** Response of `GET /auth/features`: server-side auth capabilities the pre-login pages adapt to. */
 export interface AuthFeaturesResponse {
   emailEnabled: boolean;
+  /** Social providers whose credentials are configured. */
+  socialProviders: SocialOAuthProvider[];
   /** Generic OIDC sign-in; null when the server has no OIDC provider configured. */
   oidc: { name: string } | null;
 }

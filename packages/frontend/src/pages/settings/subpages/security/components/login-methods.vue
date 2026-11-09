@@ -304,20 +304,16 @@ const hasPassword = ref(false);
 
 const getAccountByProvider = (provider: OAUTH_PROVIDER) => accounts.value.find((a) => a.providerId === provider);
 
-const { oidcProvider, getProviderName } = useAuthFeatures();
+const { isProviderEnabled, getProviderName } = useAuthFeatures();
 
-// The OIDC row only makes sense on servers that configure it, or to let a user unlink a stale account.
-const visibleProviders = computed(() =>
-  OAUTH_PROVIDERS_LIST.filter(
-    (provider) => provider !== OAUTH_PROVIDER.oidc || oidcProvider.value || getAccountByProvider(provider),
-  ),
-);
+// Accounts on unconfigured providers can't sign in, so they're hidden and don't count as login methods.
+const visibleProviders = computed(() => OAUTH_PROVIDERS_LIST.filter((provider) => isProviderEnabled({ provider })));
 
-const hasAnyOAuthAccount = computed(() => OAUTH_PROVIDERS_LIST.some((p) => getAccountByProvider(p)));
+const hasAnyOAuthAccount = computed(() => visibleProviders.value.some((p) => getAccountByProvider(p)));
 
 // Count total login methods
 const loginMethodCount = computed(() => {
-  const oauthCount = OAUTH_PROVIDERS_LIST.filter((p) => getAccountByProvider(p)).length;
+  const oauthCount = visibleProviders.value.filter((p) => getAccountByProvider(p)).length;
   const passkeyCount = passkeys.value.length;
   const passwordCount = hasPassword.value ? 1 : 0;
   return oauthCount + passkeyCount + passwordCount;

@@ -5,53 +5,57 @@
         <h1 class="text-center text-2xl font-semibold tracking-tight">{{ $t('auth.signup.title') }}</h1>
       </CardHeader>
       <CardContent class="grid gap-5">
-        <!-- OAuth buttons -->
-        <div class="grid gap-3">
-          <OAuthButton
-            v-if="oidcProvider"
-            :provider="OAUTH_PROVIDER.oidc"
-            :provider-name="oidcProvider.name"
-            mode="signup"
-            :is-loading="isOAuthLoading"
-            @click="handleOAuthSignup({ provider: OAUTH_PROVIDER.oidc })"
-          >
-            <template #icon>
-              <ShieldUserIcon class="size-5" />
-            </template>
-          </OAuthButton>
-          <OAuthButton
-            :provider="OAUTH_PROVIDER.google"
-            mode="signup"
-            :is-loading="isOAuthLoading"
-            @click="handleOAuthSignup({ provider: OAUTH_PROVIDER.google })"
-          >
-            <template #icon>
-              <GoogleIcon />
-            </template>
-          </OAuthButton>
-          <OAuthButton
-            :provider="OAUTH_PROVIDER.github"
-            mode="signup"
-            :is-loading="isOAuthLoading"
-            @click="handleOAuthSignup({ provider: OAUTH_PROVIDER.github })"
-          >
-            <template #icon>
-              <GithubIcon />
-            </template>
-          </OAuthButton>
-          <OAuthButton
-            :provider="OAUTH_PROVIDER.apple"
-            mode="signup"
-            :is-loading="isOAuthLoading"
-            @click="handleOAuthSignup({ provider: OAUTH_PROVIDER.apple })"
-          >
-            <template #icon>
-              <AppleIcon />
-            </template>
-          </OAuthButton>
-        </div>
+        <template v-if="hasAnyOAuthProvider">
+          <div class="grid gap-3">
+            <OAuthButton
+              v-if="oidcProvider"
+              :provider="OAUTH_PROVIDER.oidc"
+              :provider-name="oidcProvider.name"
+              mode="signup"
+              :is-loading="isOAuthLoading"
+              @click="handleOAuthSignup({ provider: OAUTH_PROVIDER.oidc })"
+            >
+              <template #icon>
+                <ShieldUserIcon class="size-5" />
+              </template>
+            </OAuthButton>
+            <OAuthButton
+              v-if="isProviderEnabled({ provider: OAUTH_PROVIDER.google })"
+              :provider="OAUTH_PROVIDER.google"
+              mode="signup"
+              :is-loading="isOAuthLoading"
+              @click="handleOAuthSignup({ provider: OAUTH_PROVIDER.google })"
+            >
+              <template #icon>
+                <GoogleIcon />
+              </template>
+            </OAuthButton>
+            <OAuthButton
+              v-if="isProviderEnabled({ provider: OAUTH_PROVIDER.github })"
+              :provider="OAUTH_PROVIDER.github"
+              mode="signup"
+              :is-loading="isOAuthLoading"
+              @click="handleOAuthSignup({ provider: OAUTH_PROVIDER.github })"
+            >
+              <template #icon>
+                <GithubIcon />
+              </template>
+            </OAuthButton>
+            <OAuthButton
+              v-if="isProviderEnabled({ provider: OAUTH_PROVIDER.apple })"
+              :provider="OAUTH_PROVIDER.apple"
+              mode="signup"
+              :is-loading="isOAuthLoading"
+              @click="handleOAuthSignup({ provider: OAUTH_PROVIDER.apple })"
+            >
+              <template #icon>
+                <AppleIcon />
+              </template>
+            </OAuthButton>
+          </div>
 
-        <AuthDivider :text="$t('auth.signup.divider')" />
+          <AuthDivider :text="$t('auth.signup.divider')" />
+        </template>
 
         <!-- Email credentials form -->
         <form-wrapper :error="formError" class="grid gap-5">
@@ -129,7 +133,7 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const isOAuthLoading = ref(false);
-const { oidcProvider, getProviderName } = useAuthFeatures();
+const { oidcProvider, isProviderEnabled, hasAnyOAuthProvider, getProviderName } = useAuthFeatures();
 const formError: Ref<string | null> = ref(null);
 const { t } = useI18n();
 
