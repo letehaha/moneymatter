@@ -1,9 +1,5 @@
 <template>
   <div class="flex flex-col">
-    <h3 class="mb-4 text-lg font-semibold">
-      {{ t('analytics.trends.cumulativeProgress.title') }}
-      <span class="text-muted-foreground font-normal">({{ metricLabel }})</span>
-    </h3>
     <div ref="containerRef" class="relative h-80 w-full">
       <svg ref="svgRef" class="h-full w-full"></svg>
 
@@ -67,7 +63,7 @@ import { useResizeObserver } from '@vueuse/core';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-type MetricType = 'expenses' | 'income' | 'savings';
+import { type MetricType } from '../metric';
 
 const props = defineProps<{
   currentPeriodData: CumulativeMonthData[];
@@ -82,21 +78,10 @@ const { formatBaseCurrency, getCurrencySymbol } = useFormatCurrency();
 const METRIC_COLORS = {
   expenses: { main: 'rgb(239, 68, 68)', faded: 'rgba(239, 68, 68, 0.5)', area: 'rgba(239, 68, 68, 0.1)' },
   income: { main: 'rgb(34, 197, 94)', faded: 'rgba(34, 197, 94, 0.5)', area: 'rgba(34, 197, 94, 0.1)' },
-  savings: { main: 'rgb(139, 92, 246)', faded: 'rgba(139, 92, 246, 0.5)', area: 'rgba(139, 92, 246, 0.1)' }, // violet-500
 };
 
 const metricColor = computed(() => METRIC_COLORS[props.metric].main);
 const metricColorFaded = computed(() => METRIC_COLORS[props.metric].faded);
-
-// Metric label for title
-const metricLabel = computed(() => {
-  const labels = {
-    expenses: t('analytics.trends.metrics.expenses'),
-    income: t('analytics.trends.metrics.income'),
-    savings: t('analytics.trends.metrics.savings'),
-  };
-  return labels[props.metric];
-});
 
 const containerRef = ref<HTMLDivElement | null>(null);
 const svgRef = ref<SVGSVGElement | null>(null);
@@ -199,6 +184,8 @@ const renderChart = () => {
       grid.selectAll('.tick line').attr('stroke', colors.grid).attr('stroke-opacity', 0.5);
     });
 
+  const maxTicks = Math.max(2, Math.floor(innerWidth / 48));
+
   // X axis
   const fontSize = isMobile ? '10px' : '12px';
   g.append('g')
@@ -207,7 +194,7 @@ const renderChart = () => {
     .call(
       d3
         .axisBottom(xScale)
-        .tickValues(sortedMonths)
+        .tickValues(sortedMonths.filter((_, index) => index % Math.ceil(sortedMonths.length / maxTicks) === 0))
         .tickFormat((d) => monthsInPeriod.get(d as number) || ''),
     )
     .call((axis) => {

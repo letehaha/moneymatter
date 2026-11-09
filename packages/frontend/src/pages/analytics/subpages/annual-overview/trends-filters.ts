@@ -1,3 +1,6 @@
+import { type CategoryNode, collectSubtreeIds } from './category-tree';
+import { type MetricType, metricTransactionType } from './metric';
+
 export interface FilterGroup {
   mode: 'include' | 'exclude';
   ids: string[];
@@ -10,7 +13,7 @@ export interface TrendsFilters {
   accountIds: string[];
 }
 
-export type TrendsFilterGroupKey = 'categories' | 'payees' | 'tags';
+export type TrendsFilterGroupKey = 'payees' | 'tags';
 
 export const emptyTrendsFilters = (): TrendsFilters => ({
   categories: { mode: 'include', ids: [] },
@@ -29,7 +32,27 @@ interface StatsFilterParams {
   accountIds?: string[];
 }
 
-export const toStatsFilterParams = ({ filters }: { filters: TrendsFilters }): StatsFilterParams => {
+/** The one category the page is drilled into, if the selection is exactly one included category. */
+export const getScopeCategoryId = ({ filters }: { filters: TrendsFilters }): string | undefined => {
+  const { mode, ids } = filters.categories;
+  return mode === 'include' && ids.length === 1 ? ids[0] : undefined;
+};
+
+/**
+ * Stats endpoints roll each amount up to its nearest selected ancestor, so sending a scope
+ * category together with its direct children returns exactly one level, with the scope
+ * itself holding what is booked on it directly. `detail` sends every category in the
+ * selection, so each comes back with only its own amount.
+ */
+export const toStatsFilterParams = ({
+  filters,
+  categories = [],
+  detail = false,
+}: {
+  filters: TrendsFilters;
+  categories?: CategoryNode[];
+  detail?: boolean;
+}): StatsFilterParams => {
   const params: StatsFilterParams = {};
 
   const apply = ({
@@ -46,6 +69,17 @@ export const toStatsFilterParams = ({ filters }: { filters: TrendsFilters }): St
   };
 
   apply({ group: filters.categories, includeKey: 'categoryIds', excludeKey: 'excludedCategoryIds' });
+  const scopeId = getScopeCategoryId({ filters });
+  if (scopeId) {
+    params.categoryIds = [scopeId, ...categories.filter((c) => c.parentId === scopeId).map((c) => c.id)];
+  }
+
+  if (detail) {
+    delete params.excludedCategoryIds;
+    params.categoryIds =
+      getTransactionCategoryIds({ filters, categories }) ?? categories.map((category) => category.id);
+  }
+
   apply({ group: filters.payees, includeKey: 'payeeIds', excludeKey: 'excludedPayeeIds' });
   apply({ group: filters.tags, includeKey: 'tagIds', excludeKey: 'excludedTagIds' });
 
@@ -54,9 +88,54 @@ export const toStatsFilterParams = ({ filters }: { filters: TrendsFilters }): St
   return params;
 };
 
+/** Categories live in the category bar, so the Filters badge counts only the other groups. */
 export const countActiveFilters = ({ filters }: { filters: TrendsFilters }): number =>
-  [filters.categories.ids, filters.payees.ids, filters.tags.ids, filters.accountIds].filter((ids) => ids.length > 0)
-    .length;
+  [filters.payees.ids, filters.tags.ids, filters.accountIds].filter((ids) => ids.length > 0).length;
+
+/** Category ids for the Transactions list, which has no exclude param and no roll-up. */
+export const getTransactionCategoryIds = ({
+  filters,
+  categories,
+}: {
+  filters: TrendsFilters;
+  categories: CategoryNode[];
+}): string[] | undefined => {
+  const { mode, ids } = filters.categories;
+  if (ids.length === 0) return undefined;
+
+  const subtrees = new Set(ids.flatMap((rootId) => collectSubtreeIds({ rootId, categories })));
+  if (mode === 'include') return [...subtrees];
+  return categories.filter((c) => !subtrees.has(c.id)).map((c) => c.id);
+};
+
+/** Only what the Transactions page reads from its URL; payees and tags have no param there. */
+export const toTransactionFilterParams = ({
+  filters,
+  categories,
+  metric,
+}: {
+  filters: TrendsFilters;
+  categories: CategoryNode[];
+  metric: MetricType;
+}) => {
+  const categoryIds = getTransactionCategoryIds({ filters, categories });
+  return {
+    ...(categoryIds && { categoryIds }),
+    ...(filters.accountIds.length > 0 && { accountIds: filters.accountIds }),
+    transactionType: metricTransactionType({ metric }),
+  };
+};
+
+export const scopeTo = ({
+  filters,
+  categoryIds,
+}: {
+  filters: TrendsFilters;
+  categoryIds: string[];
+}): TrendsFilters => ({
+  ...filters,
+  categories: { mode: 'include', ids: categoryIds },
+});
 
 export const hideCategory = ({
   filters,

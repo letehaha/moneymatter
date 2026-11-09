@@ -1,6 +1,6 @@
 <template>
   <Select :model-value="modelValue" @update:model-value="emit('update:modelValue', $event as T)">
-    <SelectTrigger class="w-[130px]">
+    <SelectTrigger :class="cn('w-[130px]', triggerClass)">
       <SelectValue />
     </SelectTrigger>
     <SelectContent>
@@ -13,6 +13,7 @@
 
 <script setup lang="ts" generic="T extends string">
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/lib/ui/select';
+import { cn } from '@/lib/utils';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -26,6 +27,7 @@ const props = defineProps<{
   // Granularities kept visible but not selectable — e.g. ones the API would reject
   // for the current date range. Staying in the list keeps the option discoverable.
   disabledValues?: readonly T[];
+  triggerClass?: string;
 }>();
 
 const emit = defineEmits<{

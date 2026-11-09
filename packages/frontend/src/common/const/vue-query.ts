@@ -135,6 +135,7 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   fireVentureContributions: [transactionChange, ventureChange, 'fire-venture-contributions'] as const,
   analyticsCumulative: [transactionChange, 'analytics-cumulative'] as const,
   analyticsSpendingsByCategories: [transactionChange, 'analytics-spendings-by-categories'] as const,
+  analyticsLargestTransactions: [transactionChange, 'analytics-largest-transactions'] as const,
   earliestTransactionDate: [transactionChange, 'earliest-transaction-date'] as const,
 
   recordsPageRecordsList: [transactionChange, 'records-page-records-list'] as const,

@@ -1,5 +1,5 @@
 <template>
-  <div ref="chartContainerRef" class="relative h-55 w-full">
+  <div ref="chartContainerRef" :class="cn('relative h-55 w-full', props.class)">
     <svg ref="svgRef" class="h-full w-full"></svg>
 
     <!-- Center label: shows Total by default, category info on hover -->
@@ -39,6 +39,7 @@
 <script lang="ts" setup>
 import Button from '@/components/lib/ui/button/Button.vue';
 import { useFormatCurrency } from '@/composable';
+import { cn } from '@/lib/utils';
 import { useMediaQuery, useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
 import { ExternalLinkIcon } from '@lucide/vue';
@@ -49,6 +50,7 @@ import type { ChartDataItem } from './use-expenses-structure-data';
 const props = defineProps<{
   data: ChartDataItem[];
   totalAmount: number;
+  class?: string;
 }>();
 
 const emit = defineEmits<{

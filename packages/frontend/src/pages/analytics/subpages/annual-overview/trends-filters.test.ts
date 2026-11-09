@@ -1,11 +1,17 @@
+import { TRANSACTION_TYPES } from '@bt/shared/types';
+
 import {
   type TrendsFilters,
   countActiveFilters,
   emptyTrendsFilters,
+  getScopeCategoryId,
+  getTransactionCategoryIds,
   hideCategory,
   parseTrendsFilters,
+  scopeTo,
   showCategory,
   toStatsFilterParams,
+  toTransactionFilterParams,
 } from './trends-filters';
 
 const makeFilters = (overrides: Partial<TrendsFilters> = {}): TrendsFilters => ({
@@ -55,15 +61,199 @@ describe('toStatsFilterParams', () => {
   });
 });
 
+// Food(1) › Groceries(2) › Organic(4); Food › Restaurants(3); Transport(5)
+const TREE = [
+  { id: '1', parentId: null },
+  { id: '2', parentId: '1' },
+  { id: '3', parentId: '1' },
+  { id: '4', parentId: '2' },
+  { id: '5', parentId: null },
+];
+
+describe('toStatsFilterParams with a single scope category', () => {
+  it('sends the scope with its direct children only', () => {
+    expect(
+      toStatsFilterParams({ filters: makeFilters({ categories: { mode: 'include', ids: ['1'] } }), categories: TREE }),
+    ).toEqual({ categoryIds: ['1', '2', '3'] });
+  });
+
+  it('sends just the scope for a category without subcategories', () => {
+    expect(
+      toStatsFilterParams({ filters: makeFilters({ categories: { mode: 'include', ids: ['5'] } }), categories: TREE }),
+    ).toEqual({ categoryIds: ['5'] });
+  });
+
+  it('leaves a multi-category selection as is', () => {
+    expect(
+      toStatsFilterParams({
+        filters: makeFilters({ categories: { mode: 'include', ids: ['1', '5'] } }),
+        categories: TREE,
+      }),
+    ).toEqual({ categoryIds: ['1', '5'] });
+  });
+
+  it('does not expand a single excluded category', () => {
+    expect(
+      toStatsFilterParams({ filters: makeFilters({ categories: { mode: 'exclude', ids: ['1'] } }), categories: TREE }),
+    ).toEqual({ excludedCategoryIds: ['1'] });
+  });
+});
+
+describe('toStatsFilterParams in detail mode', () => {
+  it('sends every category when nothing is selected', () => {
+    expect(toStatsFilterParams({ filters: makeFilters(), categories: TREE, detail: true })).toEqual({
+      categoryIds: ['1', '2', '3', '4', '5'],
+    });
+  });
+
+  it('sends the whole subtree of the scope', () => {
+    expect(
+      toStatsFilterParams({
+        filters: makeFilters({ categories: { mode: 'include', ids: ['1'] } }),
+        categories: TREE,
+        detail: true,
+      }).categoryIds?.sort(),
+    ).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('turns an exclusion into the categories left over', () => {
+    expect(
+      toStatsFilterParams({
+        filters: makeFilters({ categories: { mode: 'exclude', ids: ['2'] } }),
+        categories: TREE,
+        detail: true,
+      }),
+    ).toEqual({ categoryIds: ['1', '3', '5'] });
+  });
+
+  it('keeps payee, tag and account params', () => {
+    expect(
+      toStatsFilterParams({
+        filters: makeFilters({
+          payees: { mode: 'include', ids: ['p1'] },
+          tags: { mode: 'exclude', ids: ['t1'] },
+          accountIds: ['a'],
+        }),
+        categories: TREE,
+        detail: true,
+      }),
+    ).toEqual({
+      categoryIds: ['1', '2', '3', '4', '5'],
+      payeeIds: ['p1'],
+      excludedTagIds: ['t1'],
+      accountIds: ['a'],
+    });
+  });
+});
+
+describe('getScopeCategoryId', () => {
+  it('returns the id of a single included category', () => {
+    expect(getScopeCategoryId({ filters: makeFilters({ categories: { mode: 'include', ids: ['1'] } }) })).toBe('1');
+  });
+
+  it('is undefined for several, none, or an exclusion', () => {
+    expect(getScopeCategoryId({ filters: makeFilters({ categories: { mode: 'include', ids: ['1', '2'] } }) })).toBe(
+      undefined,
+    );
+    expect(getScopeCategoryId({ filters: makeFilters() })).toBe(undefined);
+    expect(getScopeCategoryId({ filters: makeFilters({ categories: { mode: 'exclude', ids: ['1'] } }) })).toBe(
+      undefined,
+    );
+  });
+});
+
+describe('getTransactionCategoryIds', () => {
+  it('is undefined when no category is selected', () => {
+    expect(getTransactionCategoryIds({ filters: makeFilters(), categories: TREE })).toBe(undefined);
+  });
+
+  it('includes every descendant of the included categories', () => {
+    expect(
+      getTransactionCategoryIds({
+        filters: makeFilters({ categories: { mode: 'include', ids: ['1'] } }),
+        categories: TREE,
+      })?.sort(),
+    ).toEqual(['1', '2', '3', '4']);
+  });
+
+  it('lists everything outside the excluded subtrees', () => {
+    expect(
+      getTransactionCategoryIds({
+        filters: makeFilters({ categories: { mode: 'exclude', ids: ['2'] } }),
+        categories: TREE,
+      })?.sort(),
+    ).toEqual(['1', '3', '5']);
+  });
+});
+
+describe('toTransactionFilterParams', () => {
+  it('sends only the transaction type when nothing is selected', () => {
+    expect(toTransactionFilterParams({ filters: makeFilters(), categories: TREE, metric: 'expenses' })).toEqual({
+      transactionType: TRANSACTION_TYPES.expense,
+    });
+  });
+
+  it('expands an inclusion to whole subtrees', () => {
+    expect(
+      toTransactionFilterParams({
+        filters: makeFilters({ categories: { mode: 'include', ids: ['2'] } }),
+        categories: TREE,
+        metric: 'income',
+      }),
+    ).toEqual({ categoryIds: ['2', '4'], transactionType: TRANSACTION_TYPES.income });
+  });
+
+  it('turns an exclusion into the categories left over', () => {
+    expect(
+      toTransactionFilterParams({
+        filters: makeFilters({ categories: { mode: 'exclude', ids: ['1'] } }),
+        categories: TREE,
+        metric: 'expenses',
+      }),
+    ).toEqual({ categoryIds: ['5'], transactionType: TRANSACTION_TYPES.expense });
+  });
+
+  it('passes accounts through and leaves payees and tags out', () => {
+    expect(
+      toTransactionFilterParams({
+        filters: makeFilters({
+          accountIds: ['a'],
+          payees: { mode: 'include', ids: ['p1'] },
+          tags: { mode: 'include', ids: ['t1'] },
+        }),
+        categories: TREE,
+        metric: 'expenses',
+      }),
+    ).toEqual({ accountIds: ['a'], transactionType: TRANSACTION_TYPES.expense });
+  });
+});
+
+describe('scopeTo', () => {
+  it('replaces the category selection with an inclusion of exactly these ids', () => {
+    const filters = makeFilters({ categories: { mode: 'exclude', ids: ['1'] }, accountIds: ['a'] });
+    expect(scopeTo({ filters, categoryIds: ['2'] })).toEqual(
+      makeFilters({ categories: { mode: 'include', ids: ['2'] }, accountIds: ['a'] }),
+    );
+  });
+
+  it('clears the selection with no ids', () => {
+    expect(scopeTo({ filters: makeFilters({ categories: { mode: 'include', ids: ['1'] } }), categoryIds: [] })).toEqual(
+      makeFilters(),
+    );
+  });
+});
+
 describe('countActiveFilters', () => {
   it('counts zero for empty filters', () => {
     expect(countActiveFilters({ filters: makeFilters() })).toBe(0);
   });
 
   it('counts a group once regardless of how many ids it holds', () => {
-    expect(
-      countActiveFilters({ filters: makeFilters({ categories: { mode: 'include', ids: ['1', '2', '3'] } }) }),
-    ).toBe(1);
+    expect(countActiveFilters({ filters: makeFilters({ tags: { mode: 'include', ids: ['1', '2', '3'] } }) })).toBe(1);
+  });
+
+  it('ignores categories, which the category bar owns', () => {
+    expect(countActiveFilters({ filters: makeFilters({ categories: { mode: 'include', ids: ['1'] } }) })).toBe(0);
   });
 
   it('counts each non-empty group once', () => {
@@ -76,7 +266,7 @@ describe('countActiveFilters', () => {
           accountIds: ['a'],
         }),
       }),
-    ).toBe(4);
+    ).toBe(3);
   });
 });
 
