@@ -12,6 +12,7 @@ import {
   createFindLatestUsdRate,
   createGetExchangeRate,
 } from '@services/stats/get-combined-balance-history/exchange-rate-lookup';
+import { costBasisDelta } from '@services/venture/metrics/compute-cost-basis';
 import Big from 'big.js';
 import { endOfDay, format, parseISO, startOfDay, subDays } from 'date-fns';
 import { Op } from 'sequelize';
@@ -23,11 +24,6 @@ const NAV_BEARING_TYPES: readonly VENTURE_EVENT_TYPE[] = [
   VENTURE_EVENT_TYPE.writedown,
   VENTURE_EVENT_TYPE.exit,
   VENTURE_EVENT_TYPE.distribution,
-];
-
-const COST_BASIS_GROWING_TYPES: readonly VENTURE_EVENT_TYPE[] = [
-  VENTURE_EVENT_TYPE.capital_call,
-  VENTURE_EVENT_TYPE.fee_payment,
 ];
 
 const DISTRIBUTION_TYPES: readonly VENTURE_EVENT_TYPE[] = [VENTURE_EVENT_TYPE.distribution, VENTURE_EVENT_TYPE.exit];
@@ -48,7 +44,7 @@ interface DealCompute {
  *   - Else find the latest NAV-bearing event (nav_update / writedown / exit /
  *     distribution) at-or-before D with a non-null navAfter; that value wins.
  *   - Else fall back to `costBasis(D) − cumulativeDistributions(D)`, where
- *     costBasis grows on capital_call and fee_payment events.
+ *     costBasis follows `costBasisDelta`.
  *
  * Matches the live deal-metrics calculation (see compute-current-value.ts)
  * but skips the current-status short-circuit because historical points can't
@@ -174,9 +170,7 @@ export const calculateVentureBalanceHistory = async ({
     for (const ev of deal.events) {
       if (ev.eventDate > dateStr) break;
 
-      if (COST_BASIS_GROWING_TYPES.includes(ev.type) && ev.grossAmount) {
-        basis = basis.plus(ev.grossAmount.toDecimalString(10));
-      }
+      basis = basis.plus(costBasisDelta({ event: ev }));
       if (DISTRIBUTION_TYPES.includes(ev.type) && ev.lpNetAmount) {
         cumDist = cumDist.plus(ev.lpNetAmount.toDecimalString(10));
       }

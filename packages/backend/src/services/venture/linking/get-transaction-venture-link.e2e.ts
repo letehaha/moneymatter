@@ -14,7 +14,6 @@ const createLinkedTransaction = async () => {
   const [tx] = await helpers.createTransaction({
     payload: helpers.buildTransactionPayload({
       accountId: account.id,
-      // principal 16000 + 8.5% entry fee: a linked initial investment must match it.
       amount: 17360,
       transactionType: TRANSACTION_TYPES.expense,
     }),

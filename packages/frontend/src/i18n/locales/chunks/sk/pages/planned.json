@@ -262,6 +262,7 @@
         "dueOn": "Splatné {date}",
         "paidAt": "Zaplatené {date}",
         "viewTransaction": "Zobraziť transakciu",
+        "paymentInTrash": "Platba v koši",
         "actions": {
           "markPaid": "Označiť ako zaplatené",
           "skip": "Preskočiť"

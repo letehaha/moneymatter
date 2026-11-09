@@ -8,7 +8,7 @@ export const deleteVentureEventLinkTool = defineTool({
   toolset: 'ventures',
   access: 'delete',
   description:
-    "Remove one transaction link from a venture event. The bank transaction is not deleted: the removal restores it to the state it had before it was linked. The event's lpNetAmount is not changed, so the remaining links may no longer add up to it; use replace_venture_event_links to set the whole set at once.",
+    "Remove one transaction link from a venture event. The bank transaction is not deleted: the removal restores it to the state it had before it was linked. The event's lpNetAmount is not changed. To set the whole set at once, use replace_venture_event_links.",
   input: {
     eventId: recordId().describe('Venture event ID the link belongs to (from list_venture_events)'),
     linkId: recordId().describe('Link ID (from get_venture_event, in its links)'),

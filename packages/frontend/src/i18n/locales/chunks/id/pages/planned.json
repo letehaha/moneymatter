@@ -262,6 +262,7 @@
         "dueOn": "Jatuh tempo {date}",
         "paidAt": "Dibayar {date}",
         "viewTransaction": "Lihat transaksi",
+        "paymentInTrash": "Payment in Trash",
         "actions": {
           "markPaid": "Tandai Dibayar",
           "skip": "Lewati"

@@ -258,8 +258,10 @@
       "externalTooltip": "Výber obsahuje transakcie synchronizované s bankou, ktoré nemožno zmazať.",
       "confirmButton": "Zmazať",
       "confirmTitle": "Zmazať {count} transakcií?",
-      "confirmDescription": "Túto akciu nie je možné vrátiť späť. Pri prevodoch sa odstránia obe strany.",
-      "successMessage": "Zmazaných {count} transakcií",
+      "confirmDescription": "V koši zostanú 30 dní, dovtedy ich môžete obnoviť. Prevody presunú obe strany.",
+      "successMessage": "1 transakcia presunutá do koša | {count} transakcie presunuté do koša | {count} transakcií presunutých do koša",
+      "skippedMessage": "1 bola vynechaná, pretože je prepojená s platbou, portfóliom alebo venture. | {count} boli vynechané, pretože sú prepojené s platbou, portfóliom alebo venture. | {count} bolo vynechaných, pretože sú prepojené s platbou, portfóliom alebo venture.",
+      "noneDeletedMessage": "Nič sa nepresunulo do koša: 1 transakcia je prepojená s platbou, portfóliom alebo venture. | Nič sa nepresunulo do koša: {count} transakcie sú prepojené s platbou, portfóliom alebo venture. | Nič sa nepresunulo do koša: {count} transakcií je prepojených s platbou, portfóliom alebo venture.",
       "unexpectedError": "Transakcie sa nepodarilo zmazať. Skúste to znova, prosím."
     },
     "inlineEdit": {
@@ -296,6 +298,50 @@
       "deleteTitle": "Zmazať pohľad „{name}”?",
       "deleteDescription": "Vaše transakcie nie sú dotknuté. Túto akciu nie je možné vrátiť späť.",
       "filtersCount": "{count} filter | {count} filtre | {count} filtrov"
+    },
+    "trashPage": {
+      "title": "Kôš",
+      "description": "Najnovšie odstránené ako prvé. Každá sa natrvalo odstráni po {days} dňoch. Vyberte jednu a uvidíte, čo sa s ňou obnoví.",
+      "expiringBanner": "{count} sa natrvalo odstráni do {days}.",
+      "expiringCount": "1 transakcia | {count} transakcie | {count} transakcií",
+      "expiringDays": "1 deň | {count} dni | {count} dní",
+      "loadError": "Kôš sa nepodarilo načítať",
+      "emptyTitle": "Kôš je prázdny",
+      "emptyDescription": "Odstránené transakcie tu zostanú {days} dní, kým sa natrvalo odstránia.",
+      "daysLeft": "zostáva 1 deň | zostávajú {count} dni | zostáva {count} dní",
+      "deletedOn": "zmazané {date}",
+      "transferTitle": "Prevod z {from} na {to}",
+      "unknownAccount": "Neznámy účet",
+      "restore": "Obnoviť",
+      "deletePermanently": "Zmazať natrvalo",
+      "deleteConfirmTitle": "Zmazať natrvalo?",
+      "deleteConfirmDescription": "Táto transakcia bude natrvalo odstránená. Túto akciu nemožno vrátiť späť.",
+      "notifications": {
+        "restored": "Transakcia obnovená",
+        "restoreError": "Transakciu sa nepodarilo obnoviť",
+        "deleted": "Transakcia bola natrvalo odstránená",
+        "deleteError": "Transakciu sa nepodarilo odstrániť",
+        "restoredWithDroppedRefundLinks": "Obnovené. 1 prepojenie vrátenia sa nepodarilo obnoviť, pretože už nezodpovedá. | Obnovené. {count} prepojenia vrátenia sa nepodarilo obnoviť, pretože už nezodpovedajú. | Obnovené. {count} prepojení vrátenia sa nepodarilo obnoviť, pretože už nezodpovedajú."
+      },
+      "comesBack": {
+        "title": "Obnoví sa spolu s",
+        "basics": "Kategória, poznámka a príjemca",
+        "splits": "1 rozdelenie | {n} rozdelenia | {n} rozdelení",
+        "tags": "1 značka | {n} značky | {n} značiek",
+        "attachments": "1 príloha | {n} prílohy | {n} príloh",
+        "otherLeg": "Druhá strana: {accountName} · {amountText}",
+        "balance": "Zostatok účtu sa prepočíta",
+        "balances": "Oba zostatky sa prepočítajú",
+        "counterpartInTrash": "Obnoví sa, keď sa obnoví aj prepojená transakcia.",
+        "links": {
+          "refund": "Prepojenie vrátenia s „{name}“",
+          "tracker": "Sledovač „{name}“",
+          "group": "Skupina „{name}“",
+          "subscription": "Predplatné „{name}“",
+          "subscriptionPeriod": "Platba predplatného splatná {name}",
+          "unnamed": "Bez názvu"
+        }
+      }
     }
   },
   "records": {
@@ -310,7 +356,7 @@
       "morePlans": "+{count} ďalších plánovaných",
       "morePlansAtLeast": "+{count}+ ďalších plánovaných",
       "deletePlanTitle": "Zmazať plánovanú transakciu?",
-      "deletePlanDescription": "Túto akciu nie je možné vrátiť späť.",
+      "deletePlanDescription": "V koši zostane 30 dní, dovtedy ju môžete obnoviť.",
       "plansLoadFailed": "Plánované transakcie sa nepodarilo načítať",
       "confirmAction": "Potvrdiť",
       "confirmTooltip": "Peniaze sa presunuli — zaznamenajte to a aktualizujte zostatok",

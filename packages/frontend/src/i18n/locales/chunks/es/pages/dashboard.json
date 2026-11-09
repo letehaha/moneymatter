@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Estructura de gastos",
+        "incomeTitle": "Income structure",
         "today": "Hoy",
         "vsPreviousPeriod": "vs período anterior",
-        "viewButton": "Ver"
+        "viewButton": "Ver",
+        "back": "Atrás",
+        "openInAnalytics": "Open in Analytics",
+        "metric": {
+          "expenses": "Gastos",
+          "income": "Ingreso"
+        },
+        "seeTransactions": "See transactions"
       },
       "latestTransactions": {
         "title": "Últimas transacciones",
@@ -315,6 +323,28 @@
         "ended": "Finalizado",
         "create": "Crear un seguimiento"
       },
+      "tagAnalysis": {
+        "title": "Tag analysis",
+        "noTagsTitle": "No tags selected",
+        "noTagsDescription": "Pick the tags to compare in the widget settings.",
+        "ofIncome": "de ingreso",
+        "remaining": "Unallocated",
+        "targetTooltip": "Target: {value}%",
+        "settings": {
+          "tagsLabel": "Etiquetas",
+          "tagsPlaceholder": "Seleccionar etiquetas",
+          "targetsLabel": "Targets, %",
+          "targetsNoneSet": "None set",
+          "targetsSetCount": "{set} of {total} set",
+          "targetsEmpty": "Add tags first to set their targets",
+          "targetPlaceholder": "Ninguna",
+          "percentBaseLabel": "Percent of",
+          "percentBaseTags": "Selected tags",
+          "percentBaseIncome": "Ingreso",
+          "includeTransfersLabel": "Include transfers",
+          "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
+        }
+      },
       "emptyState": "No hay datos en el intervalo de tiempo seleccionado.",
       "registry": {
         "balanceTrend": {
@@ -399,6 +429,10 @@
             "showReached": "Mostrar objetivos alcanzados"
           },
           "reachedSection": "Alcanzado"
+        },
+        "tagAnalysis": {
+          "name": "Tag analysis",
+          "description": "See how your spending splits across chosen tags, like needs, wants and savings"
         }
       }
     },

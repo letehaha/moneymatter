@@ -36,6 +36,10 @@ export const useFiltersFromQuery = () => {
         : [query.accountIds as string];
     }
 
+    if (query.tagIds) {
+      filters.tagIds = Array.isArray(query.tagIds) ? (query.tagIds as string[]) : [query.tagIds as string];
+    }
+
     if (query.trackerIds) {
       filters.trackerIds = Array.isArray(query.trackerIds)
         ? (query.trackerIds as string[])

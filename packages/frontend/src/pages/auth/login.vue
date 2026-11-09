@@ -20,6 +20,7 @@
             </template>
           </OAuthButton>
           <OAuthButton
+            v-if="isProviderEnabled({ provider: OAUTH_PROVIDER.google })"
             :provider="OAUTH_PROVIDER.google"
             mode="signin"
             :is-loading="isOAuthLoading"
@@ -31,6 +32,7 @@
             </template>
           </OAuthButton>
           <OAuthButton
+            v-if="isProviderEnabled({ provider: OAUTH_PROVIDER.github })"
             :provider="OAUTH_PROVIDER.github"
             mode="signin"
             :is-loading="isOAuthLoading"
@@ -42,6 +44,7 @@
             </template>
           </OAuthButton>
           <OAuthButton
+            v-if="isProviderEnabled({ provider: OAUTH_PROVIDER.apple })"
             :provider="OAUTH_PROVIDER.apple"
             mode="signin"
             :is-loading="isOAuthLoading"
@@ -190,7 +193,7 @@ const { data: signupsStatus } = useQuery({
 });
 const signupsOpen = computed(() => signupsStatus.value?.signupsOpen ?? true);
 
-const { isEmailEnabled, oidcProvider, getProviderName } = useAuthFeatures();
+const { isEmailEnabled, oidcProvider, isProviderEnabled, getProviderName } = useAuthFeatures();
 
 // Check for OAuth error from callback redirect
 const oauthError = route.query.oauth_error as string | undefined;

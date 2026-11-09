@@ -2064,4 +2064,69 @@ describe('Enable Banking dedup improvements (E2E)', () => {
       expect(rows.find((row) => row.id === pendingTx!.id)!.transactionType).toBe(TRANSACTION_TYPES.income);
     });
   });
+
+  describe('#11 entry_reference shared by a card capture and its hold release', () => {
+    const SHARED = {
+      currency: 'EUR',
+      counterpartyIban: null,
+      status: 'BOOK',
+      bookingDate: '2026-11-08',
+      entryReference: 'ev_charge_ref',
+    } as const;
+    const RELEASE: FixedTransaction = { ...SHARED, amount: '5.42', isExpense: false };
+    const CAPTURE: FixedTransaction = { ...SHARED, amount: '4.58', isExpense: true };
+    const EXPECTED = [`${TRANSACTION_TYPES.expense}:4.58`, `${TRANSACTION_TYPES.income}:5.42`];
+
+    function summarize({ rows }: { rows: { amount: unknown; transactionType: string }[] }) {
+      return rows.map((row) => `${row.transactionType}:${String(row.amount)}`).toSorted();
+    }
+
+    it('imports both the release and the capture', async () => {
+      helpers.enablebanking.setFixedTransactions([RELEASE, CAPTURE]);
+      const { accountId } = await setupConnectionWithAccount();
+
+      expect(summarize({ rows: await listTransactions({ accountId }) })).toEqual(EXPECTED);
+    });
+
+    it('keeps both rows stable across a later sync', async () => {
+      helpers.enablebanking.setFixedTransactions([RELEASE, CAPTURE]);
+      const { connectionId, accountId } = await setupConnectionWithAccount();
+      const firstIds = (await listTransactions({ accountId })).map((row) => row.id).toSorted();
+
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+
+      const rows = await listTransactions({ accountId });
+      expect(rows.map((row) => row.id).toSorted()).toEqual(firstIds);
+      expect(summarize({ rows })).toEqual(EXPECTED);
+    });
+
+    it('keeps same-amount entries in opposite directions apart', async () => {
+      helpers.enablebanking.setFixedTransactions([
+        { ...RELEASE, amount: '5.00' },
+        { ...CAPTURE, amount: '5.00' },
+      ]);
+      const { connectionId, accountId } = await setupConnectionWithAccount();
+
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+
+      expect(summarize({ rows: await listTransactions({ accountId }) })).toEqual([
+        `${TRANSACTION_TYPES.expense}:5`,
+        `${TRANSACTION_TYPES.income}:5`,
+      ]);
+    });
+
+    it('keeps matching a pending row that booked at a different amount', async () => {
+      helpers.enablebanking.setFixedTransactions([{ ...CAPTURE, status: 'PDNG', amount: '50.00' }]);
+      const { connectionId, accountId } = await setupConnectionWithAccount();
+      const [pendingRow] = await listTransactions({ accountId });
+
+      helpers.enablebanking.setFixedTransactions([{ ...CAPTURE, amount: '45.00' }]);
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+
+      const rows = await listTransactions({ accountId });
+      expect(rows.map((row) => row.id)).toEqual([pendingRow!.id]);
+      expect((await readExternalData({ id: pendingRow!.id })).rawTransaction?.status).toBe('BOOK');
+    });
+  });
 });

@@ -161,17 +161,17 @@ describe('Venture Investment Lifecycle E2E', () => {
   });
 
   describe('failure flows', () => {
-    it('rejects sum mismatch (tx sum ≠ event lpNet)', async () => {
+    it('accepts a linked tx whose amount differs from the event lpNet (transfer fees)', async () => {
       const account = await helpers.createAccount({ raw: true });
       const deal = await helpers.createVentureDeal({
         payload: { currencyCode: global.BASE_CURRENCY.code, principal: '10000', entryFeePct: '0' },
         raw: true,
       });
 
-      const wrongAmountTx = await helpers.createTransaction({
+      const netOfFeesTx = await helpers.createTransaction({
         payload: helpers.buildTransactionPayload({
           accountId: account.id,
-          amount: 5000,
+          amount: 9985.5,
           transactionType: TRANSACTION_TYPES.expense,
         }),
         raw: true,
@@ -183,10 +183,14 @@ describe('Venture Investment Lifecycle E2E', () => {
           type: VENTURE_EVENT_TYPE.initial_investment,
           eventDate: '2026-03-24',
           cashFlowMode: VENTURE_CASH_FLOW_MODE.linked,
-          transactionIds: [wrongAmountTx[0].id],
+          transactionIds: [netOfFeesTx[0].id],
         },
       });
-      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(response.statusCode).toBe(200);
+      const event = helpers.extractResponse(response);
+      expect(Number(event.lpNetAmount)).toBe(10000);
+      expect(event.links).toHaveLength(1);
+      expect(event.links![0]!.transactionId).toBe(netOfFeesTx[0].id);
     });
 
     it('rejects linking a tx already attached to a venture event', async () => {
@@ -460,7 +464,7 @@ describe('Venture Investment Lifecycle E2E', () => {
       expect(event.links).toEqual([]);
     });
 
-    it('rejects principal=0 deal with a clear error message (no confusing "0.00" mismatch)', async () => {
+    it('rejects principal=0 deal with an error pointing at the principal', async () => {
       const deal = await helpers.createVentureDeal({
         payload: { currencyCode: global.BASE_CURRENCY.code, principal: '0', entryFeePct: '0' },
         raw: true,
@@ -475,10 +479,7 @@ describe('Venture Investment Lifecycle E2E', () => {
         },
       });
       expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
-      // Error must point at the actual fix (set principal on the deal), not at the
-      // sum-mismatch downstream symptom.
       expect((response.body.response as unknown as helpers.ErrorResponse).message).toMatch(/principal/i);
-      expect((response.body.response as unknown as helpers.ErrorResponse).message).not.toMatch(/sum of linked/i);
     });
 
     it('rejects principal=0 even when caller supplies a linked tx', async () => {

@@ -8,7 +8,7 @@ import xirr from 'xirr';
  * IRR via the `xirr` lib. Builds a cash-flow series:
  *   - LP outflows: principal + entryFee at investmentDate, plus
  *     capital_call/fee_payment amounts (negative)
- *   - LP inflows: distribution + exit lpNetAmount (positive)
+ *   - LP inflows: distribution + exit + capital_refund lpNetAmount (positive)
  *   - Residual NAV: current value at "today" added as a synthetic inflow
  *     while the deal is open (gives a paper IRR; mirrors common LP statement
  *     convention)
@@ -56,11 +56,20 @@ function buildCashFlowSeries({
         break;
       case VENTURE_EVENT_TYPE.distribution:
       case VENTURE_EVENT_TYPE.exit:
+      case VENTURE_EVENT_TYPE.capital_refund:
         points.push({ amount: lpNet, when });
         break;
-      default:
+
       // initial_investment is captured above via deal.principal + entryFee;
-      // nav_update + writedown are non-cash and excluded.
+      // nav_update + writedown are non-cash.
+      case VENTURE_EVENT_TYPE.initial_investment:
+      case VENTURE_EVENT_TYPE.nav_update:
+      case VENTURE_EVENT_TYPE.writedown:
+        break;
+      default: {
+        const unhandled: never = event.type;
+        throw new Error(`Unhandled venture event type: ${unhandled}`);
+      }
     }
   }
 

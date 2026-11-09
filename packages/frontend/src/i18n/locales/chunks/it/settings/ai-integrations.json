@@ -57,7 +57,8 @@
         "financeWrite": "Modifica dei dati finanziari",
         "financeDelete": "Eliminazione dei dati finanziari",
         "profileRead": "Lettura del profilo",
-        "offlineAccess": "Accesso offline"
+        "offlineAccess": "Accesso offline",
+        "toolset": "Strumenti: {name}"
       }
     }
   }

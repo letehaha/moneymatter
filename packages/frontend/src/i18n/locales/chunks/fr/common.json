@@ -28,7 +28,9 @@
       "retry": "Réessayer",
       "copyInviteLink": "Copier le lien d'invitation",
       "moveTo": "Déplacer vers…",
-      "learnMore": "En savoir plus"
+      "learnMore": "En savoir plus",
+      "undo": "Annuler",
+      "more": "Plus"
     },
     "ui": {
       "close": "Fermer",
@@ -151,6 +153,8 @@
     "transactions": {
       "delete": {
         "success": "Suppression réussie",
+        "undoSuccess": "Restored",
+        "undoError": "Couldn't undo. You can still restore it from the Trash.",
         "error": "Échec de la suppression de l'opération !"
       },
       "submit": {
@@ -579,6 +583,56 @@
     },
     "transactionGroupRecord": {
       "transactionCountLabel": "opérations"
+    }
+  },
+  "mcpToolsets": {
+    "core": {
+      "label": "Core",
+      "description": "Accounts, transactions, categories, tags, payees and reports"
+    },
+    "subscriptions": {
+      "label": "Paiements récurrents",
+      "description": "Recurring payments, their periods and planned transactions"
+    },
+    "budgetPlans": {
+      "label": "Budget plans",
+      "description": "Plans, lines, line goals and savings goals"
+    },
+    "trackers": {
+      "label": "Suivis",
+      "description": "Spending trackers and their suggestions"
+    },
+    "automations": {
+      "label": "Automatisations",
+      "description": "Rules, payee aliases, ignored payee names and tag reminders"
+    },
+    "review": {
+      "label": "Review and cleanup",
+      "description": "Transfer and refund matches, duplicates and stuck pending transactions"
+    },
+    "groupsTemplates": {
+      "label": "Groups and templates",
+      "description": "Transaction groups and transaction templates"
+    },
+    "investments": {
+      "label": "Investissements",
+      "description": "Portfolios, holdings, securities and investment transactions"
+    },
+    "ventures": {
+      "label": "Projets",
+      "description": "Venture platforms, deals and events"
+    },
+    "loansVehicles": {
+      "label": "Loans and vehicles",
+      "description": "Loans with their payments, and vehicles"
+    },
+    "currencies": {
+      "label": "Devises",
+      "description": "Your currencies and exchange rates"
+    },
+    "imports": {
+      "label": "Imports and sharing",
+      "description": "Import batches (list, undo) and bank connections (status, unlink an account); sharing is read only."
     }
   }
 }

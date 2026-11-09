@@ -69,6 +69,19 @@ export const WIDGET_REGISTRY: Record<string, WidgetDefinition> = {
     component: () => import('@/components/widgets/expenses-structure/index.vue'),
     needsPeriod: true,
   },
+  'tag-analysis': {
+    id: 'tag-analysis',
+    name: 'dashboard.widgets.registry.tagAnalysis.name',
+    description: 'dashboard.widgets.registry.tagAnalysis.description',
+    defaultColSpan: 2,
+    defaultRowSpan: 1,
+    allowedSizes: [
+      { colSpan: 1, rowSpan: 1, label: '1×1' },
+      { colSpan: 2, rowSpan: 1, label: '2×1' },
+    ],
+    component: () => import('@/components/widgets/tag-analysis/index.vue'),
+    needsPeriod: true,
+  },
   'latest-records': {
     id: 'latest-records',
     name: 'dashboard.widgets.registry.latestRecords.name',

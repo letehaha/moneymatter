@@ -262,6 +262,7 @@
         "dueOn": "Vence {date}",
         "paidAt": "Pagado {date}",
         "viewTransaction": "Ver transacción",
+        "paymentInTrash": "Payment in Trash",
         "actions": {
           "markPaid": "Marcar como pagado",
           "skip": "Omitir"

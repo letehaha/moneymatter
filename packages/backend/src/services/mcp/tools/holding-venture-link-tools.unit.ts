@@ -660,7 +660,9 @@ describe('link_transactions_to_venture_event', () => {
   });
 
   it('passes the service errors on', async () => {
-    link.mockRejectedValue(new ValidationError({ message: 'Sum of linked transactions does not match' }));
+    link.mockRejectedValue(
+      new ValidationError({ message: 'Transaction currency EUR does not match event currency USD' }),
+    );
 
     await expect(call({ tool, args: { eventId: EVENT_ID, transactionIds: [TX_ID] }, extra: WRITE })).rejects.toThrow(
       /does not match/,

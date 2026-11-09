@@ -346,6 +346,7 @@ interface GetPivotReportParams {
   accountIds?: string[];
   categoryIds?: string[];
   payeeIds?: string[];
+  includeTransfers?: boolean;
 }
 
 export const getPivotReport = async ({
@@ -357,6 +358,7 @@ export const getPivotReport = async ({
   accountIds,
   categoryIds,
   payeeIds,
+  includeTransfers,
 }: GetPivotReportParams): Promise<GetPivotReportResponse> => {
   const params: Record<string, string> = {
     from: formatDate(from),
@@ -369,6 +371,7 @@ export const getPivotReport = async ({
   if (accountIds && accountIds.length > 0) params.accountIds = accountIds.join(',');
   if (categoryIds && categoryIds.length > 0) params.categoryIds = categoryIds.join(',');
   if (payeeIds && payeeIds.length > 0) params.payeeIds = payeeIds.join(',');
+  if (includeTransfers) params.includeTransfers = 'true';
 
   return api.get('/stats/pivot', params);
 };

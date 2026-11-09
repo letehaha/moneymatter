@@ -13,6 +13,7 @@
     "accountNoExternalIdEnableBanking": "У счёта нет внешнего ID Enable Banking",
     "accountNotFoundForTransaction": "Счёт для этой транзакции не найден",
     "deleteBlockedByLoanPayments": "У этого счёта есть платежи по кредиту. Удалите или переназначьте их перед удалением счёта.",
+    "deleteBlockedByTrashedLoanPayments": "This account has loan payments in Trash. Delete them permanently from Trash before deleting the account.",
     "loanBalanceUseUpdateLoan": "Изменяйте остаток задолженности по кредиту на странице кредита, а не в настройках счёта.",
     "loanCategoryImmutable": "Категорию кредитного счёта нельзя изменить.",
     "dedicatedFlowCategoryNotAllowed": "Кредитные счета и счета транспортных средств должны создаваться через специальные эндпоинты, а не через общий эндпоинт счетов.",
@@ -144,6 +145,13 @@
         "message_one": "1 transaction has been pending for over a week. Check it with your bank so your balance stays accurate.",
         "message_other": "{{count}} transactions have been pending for over a week. Check them with your bank so your balance stays accurate."
       }
+    },
+    "trash": {
+      "paymentNotTrashable": "Remove it from the payment first to delete it.",
+      "portfolioNotTrashable": "Unlink it from the portfolio first to delete it.",
+      "ventureNotTrashable": "Unlink it from the venture first to delete it.",
+      "accountTypeChanged": "This transaction can't be restored because its account type has changed.",
+      "loanPaymentLegMissing": "This loan payment can't be restored because its other side was deleted."
     }
   },
   "budgets": {
@@ -256,6 +264,7 @@
     "cannotDeleteHoldingWithActivePosition": "Нельзя удалить позицию с активным остатком. Сначала продайте или переведите все бумаги.",
     "transactionAlreadyTransfer": "Транзакция уже отмечена как перевод и не может быть связана с портфелем.",
     "transactionAlreadyLinkedToPortfolio": "Транзакция уже связана с переводом в портфель.",
+    "linkedTransactionMustBelongToDestinationAccount": "The linked transaction must belong to the destination account.",
     "transactionAlreadyLinkedToVenture": "Транзакция уже связана с венчурной сделкой",
     "portfolioTransferNotFound": "Перевод в портфель не найден",
     "exchangeCurrenciesMustDiffer": "Валюты обмена должны различаться",

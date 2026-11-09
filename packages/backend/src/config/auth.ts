@@ -2,7 +2,7 @@ import { expo } from '@better-auth/expo';
 import { oauthProvider } from '@better-auth/oauth-provider';
 import { passkey } from '@better-auth/passkey';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@bt/shared/const/auth';
-import { OAUTH_PROVIDER } from '@bt/shared/types';
+import { OAUTH_PROVIDER, SocialOAuthProvider } from '@bt/shared/types';
 import { EnvVar, isEnvConfigured } from '@common/utils/env';
 import { getAppleClientSecretFromEnv } from '@config/apple-client-secret';
 import { createSessionHooks } from '@config/auth-hooks/session-hooks';
@@ -81,6 +81,20 @@ const DEV_TRUSTED_ORIGINS =
 // ponytail: signed once at boot and valid for 6 months; a process running longer breaks web Apple sign-in.
 // Re-sign on a timer if deploys ever get that rare.
 const appleClientSecret = getAppleClientSecretFromEnv();
+
+const SOCIAL_PROVIDER_CONFIGURED: Record<SocialOAuthProvider, boolean> = {
+  [OAUTH_PROVIDER.google]:
+    isEnvConfigured(EnvVar.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_ID) &&
+    isEnvConfigured(EnvVar.GOOGLE_CLIENT_SECRET, process.env.GOOGLE_CLIENT_SECRET),
+  [OAUTH_PROVIDER.github]:
+    isEnvConfigured(EnvVar.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_ID) &&
+    isEnvConfigured(EnvVar.GITHUB_CLIENT_SECRET, process.env.GITHUB_CLIENT_SECRET),
+  [OAUTH_PROVIDER.apple]: Boolean(appleClientSecret),
+};
+
+export const ENABLED_SOCIAL_PROVIDERS = (Object.keys(SOCIAL_PROVIDER_CONFIGURED) as SocialOAuthProvider[]).filter(
+  (provider) => SOCIAL_PROVIDER_CONFIGURED[provider],
+);
 
 export const auth = betterAuth({
   database: pool,
@@ -254,16 +268,12 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      enabled:
-        isEnvConfigured(EnvVar.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_ID) &&
-        isEnvConfigured(EnvVar.GOOGLE_CLIENT_SECRET, process.env.GOOGLE_CLIENT_SECRET),
+      enabled: SOCIAL_PROVIDER_CONFIGURED[OAUTH_PROVIDER.google],
     },
     github: {
       clientId: process.env.GITHUB_CLIENT_ID || '',
       clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-      enabled:
-        isEnvConfigured(EnvVar.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_ID) &&
-        isEnvConfigured(EnvVar.GITHUB_CLIENT_SECRET, process.env.GITHUB_CLIENT_SECRET),
+      enabled: SOCIAL_PROVIDER_CONFIGURED[OAUTH_PROVIDER.github],
     },
     apple: {
       clientId: process.env.APPLE_CLIENT_ID || '',
@@ -273,7 +283,7 @@ export const auth = betterAuth({
         const value = process.env[name];
         return isEnvConfigured(name, value) ? [value!] : [];
       }),
-      enabled: Boolean(appleClientSecret),
+      enabled: SOCIAL_PROVIDER_CONFIGURED[OAUTH_PROVIDER.apple],
     },
   },
 

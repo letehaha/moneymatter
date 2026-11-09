@@ -95,27 +95,63 @@
         "comparisonPeriod": "Vorheriger Zeitraum",
         "cumulativeNote": "Kumulierter Gesamtbetrag bis zu diesem Punkt"
       },
+      "scope": {
+        "label": "Category scope",
+        "all": "Alle Kategorien",
+        "up": "Up one level",
+        "transactions": "Transaktionen",
+        "count": "{count} Kategorie | {count} Kategorien",
+        "more": "+{count}",
+        "allExcept": "All except {list}",
+        "clear": "Zurücksetzen"
+      },
       "categoryBreakdown": {
         "title": "Kategorie-Aufschlüsselung",
         "noData": "Keine Daten für diesen Zeitraum",
         "viewAll": "Alle Kategorien anzeigen",
-        "moreCount": "{count} weitere"
+        "moreCount": "{count} weitere",
+        "noSubcategory": "{name} · no subcategory",
+        "byLevel": "By level",
+        "detail": "Detail",
+        "others": "Sonstige"
+      },
+      "hero": {
+        "vsPrevious": "{percent}% vs previous period",
+        "same": "Same as previous period"
+      },
+      "overTime": {
+        "title": "Over time",
+        "cumulative": "Kumuliert",
+        "perPeriod": "Per period",
+        "granularity": {
+          "monthly": "Monatlich",
+          "quarterly": "Vierteljährlich",
+          "yearly": "Jährlich"
+        }
+      },
+      "transactionsCard": {
+        "title": "Transaktionen",
+        "largest": "Largest",
+        "recent": "Recent"
       },
       "monthlyComparison": {
-        "title": "Monatsvergleich",
         "allCategories": "Alle Kategorien",
         "average": "Durchschnitt",
         "total": "Gesamt",
-        "vsLastMonth": "vs. Vormonat",
-        "viewTransactions": "Transaktionen anzeigen"
-      },
-      "cumulativeProgress": {
-        "title": "Kumulierter Fortschritt"
+        "vsPrevious": {
+          "monthly": "vs. Vormonat",
+          "quarterly": "vs last quarter",
+          "yearly": "vs last year"
+        },
+        "show": {
+          "monthly": "Show this month",
+          "quarterly": "Show quarter",
+          "yearly": "Show year"
+        }
       },
       "filters": {
         "button": "Filter",
         "title": "Filter",
-        "categories": "Kategorien",
         "include": "Einschließen",
         "exclude": "Ohne",
         "accounts": "Konten",

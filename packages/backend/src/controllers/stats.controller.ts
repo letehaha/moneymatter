@@ -216,6 +216,7 @@ const pivotReportSchema = z.object({
       accountIds: optionalCommaSeparatedIds(),
       categoryIds: optionalCommaSeparatedIds(),
       payeeIds: optionalCommaSeparatedIds(),
+      includeTransfers: booleanQuery().optional(),
     }),
   ),
 });

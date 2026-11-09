@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Štruktúra výdavkov",
+        "incomeTitle": "Štruktúra príjmov",
         "today": "Dnes",
         "vsPreviousPeriod": "vs. predchádzajúce obdobie",
-        "viewButton": "Zobraziť"
+        "viewButton": "Zobraziť",
+        "back": "Späť",
+        "openInAnalytics": "Otvoriť v Analytike",
+        "metric": {
+          "expenses": "Výdavky",
+          "income": "Príjem"
+        },
+        "seeTransactions": "Zobraziť transakcie"
       },
       "latestTransactions": {
         "title": "Posledné transakcie",
@@ -315,6 +323,28 @@
         "ended": "Ukončené",
         "create": "Vytvoriť sledovač"
       },
+      "tagAnalysis": {
+        "title": "Analýza značiek",
+        "noTagsTitle": "Nie sú vybrané žiadne značky",
+        "noTagsDescription": "Značky na porovnanie vyberte v nastaveniach widgetu.",
+        "ofIncome": "z príjmu",
+        "remaining": "Nepridelené",
+        "targetTooltip": "Cieľ: {value} %",
+        "settings": {
+          "tagsLabel": "Značky",
+          "tagsPlaceholder": "Vyberte značky",
+          "targetsLabel": "Ciele, %",
+          "targetsNoneSet": "Nenastavené",
+          "targetsSetCount": "Nastavené: {set} z {total}",
+          "targetsEmpty": "Najprv pridajte značky, aby ste mohli nastaviť ich ciele",
+          "targetPlaceholder": "Žiadne",
+          "percentBaseLabel": "Percento z",
+          "percentBaseTags": "Vybrané značky",
+          "percentBaseIncome": "Príjem",
+          "includeTransfersLabel": "Zahrnúť prevody",
+          "includeTransfersDescription": "Počítať prevody na vaše vlastné účty a portfóliá ako výdavky"
+        }
+      },
       "emptyState": "Za vybraný časový interval nie sú žiadne údaje.",
       "registry": {
         "balanceTrend": {
@@ -399,6 +429,10 @@
             "showReached": "Zobraziť dosiahnuté ciele"
           },
           "reachedSection": "Dosiahnuté"
+        },
+        "tagAnalysis": {
+          "name": "Analýza značiek",
+          "description": "Pozrite si, ako sa vaše výdavky rozdeľujú medzi vybrané značky, napríklad potreby, priania a úspory"
         }
       }
     },

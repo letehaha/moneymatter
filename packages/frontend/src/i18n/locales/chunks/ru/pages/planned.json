@@ -262,6 +262,7 @@
         "dueOn": "Срок {date}",
         "paidAt": "Оплачено {date}",
         "viewTransaction": "Просмотреть транзакцию",
+        "paymentInTrash": "Payment in Trash",
         "actions": {
           "markPaid": "Отметить оплаченным",
           "skip": "Пропустить"

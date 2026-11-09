@@ -97,7 +97,6 @@
 
         <OverTimeCard
           :chart-window="chartWindow"
-          :selected="selectedPeriod"
           :metric="selectedMetric"
           :filters="filters"
           :colors="seriesColors"
@@ -271,7 +270,7 @@ const changeClass = computed(() => {
   return isGoodChange({ metric: selectedMetric.value, change }) ? 'text-success-text' : 'text-destructive-text';
 });
 
-// Ranked by the chart window's totals so colors hold still while stepping through its months.
+// Ranked by the chart window's totals so the chart and the breakdown share one color per category.
 const seriesColors = computed(() => {
   const scopeId = getScopeCategoryId({ filters: filters.value });
   return assignSiblingColors({

@@ -1721,6 +1721,38 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     ownAccountIds: string[];
   }): Promise<Transactions | null> {
     const entryReference = tx.metadata?.entryReference as string | undefined;
+    const isExpense = tx.metadata?.isExpense === true;
+    const transactionType = isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income;
+
+    const isBooked = getRawTransactionStatus({ externalData: tx.metadata }) === TransactionStatus.BOOK;
+    const incomingRaw = getRawTransaction({ externalData: tx.metadata });
+    const sameMoney = { amount: Math.abs(tx.amount), transactionType };
+
+    // A bank can reuse one entry_reference for a card capture and the release of its unused hold, so a booked
+    // payload only matches a pending row, or one whose amount and direction (or stored booked payload's) agree.
+    const bookedMoneyGate =
+      isBooked && incomingRaw
+        ? [
+            {
+              [Op.or]: [
+                sameMoney,
+                wherePreBookingStatus(),
+                {
+                  [Op.and]: [
+                    Sequelize.where(
+                      Sequelize.literal(`"externalData"#>>'{rawTransaction,transaction_amount,amount}'`),
+                      incomingRaw.transaction_amount.amount,
+                    ),
+                    Sequelize.where(
+                      Sequelize.literal(`"externalData"#>>'{rawTransaction,credit_debit_indicator}'`),
+                      incomingRaw.credit_debit_indicator,
+                    ),
+                  ],
+                },
+              ],
+            },
+          ]
+        : [];
 
     // (1) entry_reference: ASPSP promises this is unique + immutable per account.
     // Cheapest, strongest match – short-circuits the rest.
@@ -1731,7 +1763,10 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         balanceAdjustments: 'include',
         where: {
           accountId,
-          [Op.and]: [Sequelize.where(Sequelize.literal(`"externalData"->>'entryReference'`), entryReference)],
+          [Op.and]: [
+            Sequelize.where(Sequelize.literal(`"externalData"->>'entryReference'`), entryReference),
+            ...bookedMoneyGate,
+          ],
         },
         paranoid: false,
         order: [['deletedAt', 'ASC NULLS FIRST']],
@@ -1752,10 +1787,15 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       balanceAdjustments: 'include',
       where: {
         accountId,
-        [Op.or]: [
-          { originalId: tx.externalId },
-          Sequelize.where(Sequelize.literal(`"externalData"->>'pendingHash'`), tx.externalId),
-          Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx.externalId),
+        [Op.and]: [
+          {
+            [Op.or]: [
+              { originalId: tx.externalId },
+              Sequelize.where(Sequelize.literal(`"externalData"->>'pendingHash'`), tx.externalId),
+              Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx.externalId),
+            ],
+          },
+          ...bookedMoneyGate,
         ],
       },
       paranoid: false,
@@ -1763,16 +1803,13 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     });
     if (byOriginalId) return byOriginalId;
 
-    const isExpense = tx.metadata?.isExpense === true;
-    const transactionType = isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income;
     const counterpartyIban = isExpense
       ? (tx.metadata?.creditorAccount as string | undefined)
       : (tx.metadata?.debtorAccount as string | undefined);
     const fingerprintBase = {
       accountId,
-      amount: Math.abs(tx.amount),
       currencyCode: tx.currency,
-      transactionType,
+      ...sameMoney,
     };
 
     // (3) IBAN fingerprint. Safety net for ASPSPs that never populate
@@ -1818,7 +1855,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     // mismatch is the fresh-reference re-issue. A reference-less payload never
     // reaches tier 1, so it may only consume reference-less candidates.
     if (!accountHasPendingRows) return null;
-    if (getRawTransactionStatus({ externalData: tx.metadata }) !== TransactionStatus.BOOK) return null;
+    if (!isBooked) return null;
 
     const pendingPoolWhere = {
       ...fingerprintBase,
@@ -1863,7 +1900,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     // Some ASPSPs flag a pending payment with the opposite direction of its booked
     // copy. Only a pending row naming the same parties on the same sides qualifies.
-    const incomingRaw = getRawTransaction({ externalData: tx.metadata });
     if (!incomingRaw) return null;
 
     const mirroredCandidates = await findTransactions({

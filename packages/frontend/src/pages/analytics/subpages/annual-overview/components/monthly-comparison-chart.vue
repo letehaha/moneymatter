@@ -148,7 +148,7 @@ import { type CashFlowCategoryData, type CashFlowPeriodData } from '@bt/shared/t
 import { EyeOffIcon } from '@lucide/vue';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
-import { endOfMonth, isAfter, isBefore, parseISO, startOfMonth } from 'date-fns';
+import { endOfMonth, parseISO, startOfMonth } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -170,8 +170,6 @@ const props = defineProps<{
   metric: MetricType;
   filters: TrendsFilters;
   colors: Record<string, string>;
-  /** The page's selected period; months outside it are dimmed. */
-  selected: Period;
   detail?: boolean;
   granularity: BarGranularity;
 }>();
@@ -630,7 +628,6 @@ const renderChart = () => {
               createTopRoundedRect({ x: segmentX, y: segmentY, width: barWidth, height: catHeight, radius: 4 }),
             )
             .attr('fill', cat.color)
-            .attr('opacity', periodOpacity(period))
             .style('cursor', 'pointer')
             .on('mouseenter', (event: MouseEvent) => handleStackedMouseEnter(event, period, cat))
             .on('mousemove', handleMouseMove)
@@ -646,7 +643,6 @@ const renderChart = () => {
             .attr('width', barWidth)
             .attr('height', catHeight)
             .attr('fill', cat.color)
-            .attr('opacity', periodOpacity(period))
             .style('cursor', 'pointer')
             .on('mouseenter', (event: MouseEvent) => handleStackedMouseEnter(event, period, cat))
             .on('mousemove', handleMouseMove)
@@ -700,7 +696,6 @@ const renderChart = () => {
       .attr('width', barWidth)
       .attr('height', (d) => Math.abs(yScale(d.value) - zeroY))
       .attr('fill', colors.bar)
-      .attr('opacity', (d) => periodOpacity(d))
       .attr('rx', 4)
       .attr('ry', 4)
       .style('cursor', 'pointer')
@@ -857,12 +852,6 @@ const toPeriod = ({ periodStart, periodEnd }: { periodStart: string; periodEnd: 
   to: endOfMonth(parseISO(periodEnd)),
 });
 
-const periodOpacity = (bar: { periodStart: string; periodEnd: string }) => {
-  const { from, to } = toPeriod(bar);
-  const overlapsSelection = !isAfter(from, props.selected.to) && !isBefore(to, props.selected.from);
-  return overlapsSelection ? 1 : 0.35;
-};
-
 function handleAverageLabelMouseEnter(event: MouseEvent, avgValue: number) {
   tooltip.value = avgValue;
   tooltip.isAverage = true;
@@ -884,7 +873,7 @@ function handleTooltipMouseLeave() {
 
 useResizeObserver(containerRef, renderChart);
 
-watch([chartData, () => props.metric, locale, () => props.filters, () => props.selected, currentTheme], renderChart, {
+watch([chartData, () => props.metric, locale, () => props.filters, currentTheme], renderChart, {
   deep: true,
   flush: 'post',
 });

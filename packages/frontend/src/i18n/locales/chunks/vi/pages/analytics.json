@@ -84,7 +84,7 @@
       }
     },
     "trends": {
-      "subtitle": "Compare spending, income and savings with the previous period.",
+      "subtitle": "Compare spending and income with the previous period.",
       "metrics": {
         "expenses": "Expenses",
         "income": "Income",
@@ -95,27 +95,63 @@
         "comparisonPeriod": "Previous period",
         "cumulativeNote": "Cumulative total up to this point"
       },
+      "scope": {
+        "label": "Category scope",
+        "all": "All categories",
+        "up": "Up one level",
+        "transactions": "Giao dịch",
+        "count": "{count} category | {count} categories",
+        "more": "+{count}",
+        "allExcept": "All except {list}",
+        "clear": "Clear"
+      },
       "categoryBreakdown": {
         "title": "Category breakdown",
         "noData": "No data for this period",
         "viewAll": "View all categories",
-        "moreCount": "{count} more"
+        "moreCount": "{count} more",
+        "noSubcategory": "{name} · no subcategory",
+        "byLevel": "By level",
+        "detail": "Detail",
+        "others": "Others"
+      },
+      "hero": {
+        "vsPrevious": "{percent}% vs previous period",
+        "same": "Same as previous period"
+      },
+      "overTime": {
+        "title": "Over time",
+        "cumulative": "Cumulative",
+        "perPeriod": "Per period",
+        "granularity": {
+          "monthly": "Monthly",
+          "quarterly": "Quarterly",
+          "yearly": "Hằng năm"
+        }
+      },
+      "transactionsCard": {
+        "title": "Giao dịch",
+        "largest": "Largest",
+        "recent": "Recent"
       },
       "monthlyComparison": {
-        "title": "Monthly comparison",
         "allCategories": "All categories",
         "average": "Average",
         "total": "Total",
-        "vsLastMonth": "vs previous month",
-        "viewTransactions": "View transactions"
-      },
-      "cumulativeProgress": {
-        "title": "Cumulative progress"
+        "vsPrevious": {
+          "monthly": "vs last month",
+          "quarterly": "vs last quarter",
+          "yearly": "vs last year"
+        },
+        "show": {
+          "monthly": "Show this month",
+          "quarterly": "Show quarter",
+          "yearly": "Show year"
+        }
       },
       "filters": {
         "button": "Filters",
         "title": "Filters",
-        "categories": "Danh mục",
         "include": "Include",
         "exclude": "Exclude",
         "accounts": "Tài khoản",

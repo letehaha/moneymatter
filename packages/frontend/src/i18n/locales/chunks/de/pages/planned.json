@@ -262,6 +262,7 @@
         "dueOn": "Fällig am {date}",
         "paidAt": "Bezahlt am {date}",
         "viewTransaction": "Transaktion anzeigen",
+        "paymentInTrash": "Payment in Trash",
         "actions": {
           "markPaid": "Als bezahlt markieren",
           "skip": "Überspringen"

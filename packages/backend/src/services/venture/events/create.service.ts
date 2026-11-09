@@ -52,10 +52,8 @@ const createVentureEventImpl = async (params: CreateVentureEventParams) => {
     if (existing) {
       throw new ValidationError({ message: 'This deal already has an initial_investment event' });
     }
-    // initial_investment derives lpNet from `deal.principal + deal.entryFee`. A
-    // zero-principal deal would silently produce lpNet=0 and then collide with the
-    // linked-tx sum check, surfacing a confusing "(0.00)" mismatch. Bail early with
-    // a message that points at the actual fix.
+    // initial_investment derives lpNet from `deal.principal + deal.entryFee`; a
+    // zero-principal deal would record a meaningless 0 investment.
     const principalPlusFee = new Big(deal.principal.toDecimalString(10)).plus(deal.entryFee.toDecimalString(10));
     if (principalPlusFee.lte(0)) {
       throw new ValidationError({

@@ -12,6 +12,7 @@ import {
   DoorOpenIcon,
   PhoneCallIcon,
   Trash2Icon,
+  Undo2Icon,
   type LucideIcon,
 } from '@lucide/vue';
 import { computed } from 'vue';
@@ -39,6 +40,7 @@ interface EventVisual {
 const EVENT_VISUALS: Record<VENTURE_EVENT_TYPE, EventVisual> = {
   [VENTURE_EVENT_TYPE.initial_investment]: { icon: ArrowDownToLineIcon, tone: 'invest' },
   [VENTURE_EVENT_TYPE.capital_call]: { icon: PhoneCallIcon, tone: 'invest' },
+  [VENTURE_EVENT_TYPE.capital_refund]: { icon: Undo2Icon, tone: 'distribute' },
   [VENTURE_EVENT_TYPE.fee_payment]: { icon: CoinsIcon, tone: 'fee' },
   [VENTURE_EVENT_TYPE.distribution]: { icon: ArrowUpFromLineIcon, tone: 'distribute' },
   [VENTURE_EVENT_TYPE.exit]: { icon: DoorOpenIcon, tone: 'exit' },

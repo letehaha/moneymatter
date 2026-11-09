@@ -84,7 +84,7 @@
       }
     },
     "trends": {
-      "subtitle": "Compare spending, income and savings with the previous period.",
+      "subtitle": "Compare spending and income with the previous period.",
       "metrics": {
         "expenses": "Расходы",
         "income": "Доходы",
@@ -95,27 +95,63 @@
         "comparisonPeriod": "Предыдущий период",
         "cumulativeNote": "Накопительный итог к этому моменту"
       },
+      "scope": {
+        "label": "Category scope",
+        "all": "Все категории",
+        "up": "Up one level",
+        "transactions": "Транзакции",
+        "count": "{count} category | {count} categories",
+        "more": "+{count}",
+        "allExcept": "All except {list}",
+        "clear": "Очистить"
+      },
       "categoryBreakdown": {
         "title": "Разбивка по категориям",
         "noData": "Нет данных за этот период",
         "viewAll": "Показать все категории",
-        "moreCount": "ещё {count}"
+        "moreCount": "ещё {count}",
+        "noSubcategory": "{name} · no subcategory",
+        "byLevel": "By level",
+        "detail": "Детализация",
+        "others": "Прочее"
+      },
+      "hero": {
+        "vsPrevious": "{percent}% vs previous period",
+        "same": "Same as previous period"
+      },
+      "overTime": {
+        "title": "Over time",
+        "cumulative": "Cumulative",
+        "perPeriod": "Per period",
+        "granularity": {
+          "monthly": "Ежемесячно",
+          "quarterly": "Ежеквартально",
+          "yearly": "Ежегодно"
+        }
+      },
+      "transactionsCard": {
+        "title": "Транзакции",
+        "largest": "Largest",
+        "recent": "Recent"
       },
       "monthlyComparison": {
-        "title": "Сравнение по месяцам",
         "allCategories": "Все категории",
         "average": "Среднее",
         "total": "Итого",
-        "vsLastMonth": "по сравнению с предыдущим месяцем",
-        "viewTransactions": "Просмотреть транзакции"
-      },
-      "cumulativeProgress": {
-        "title": "Накопительный прогресс"
+        "vsPrevious": {
+          "monthly": "vs last month",
+          "quarterly": "vs last quarter",
+          "yearly": "vs last year"
+        },
+        "show": {
+          "monthly": "Show this month",
+          "quarterly": "Show quarter",
+          "yearly": "Show year"
+        }
       },
       "filters": {
         "button": "Фильтры",
         "title": "Фильтры",
-        "categories": "Категории",
         "include": "Include",
         "exclude": "Исключить",
         "accounts": "Счета",

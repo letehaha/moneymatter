@@ -1,4 +1,4 @@
-import { VENTURE_DEAL_STATUS } from '@bt/shared/types/venture';
+import { VENTURE_DEAL_STATUS, VENTURE_EVENT_TYPE } from '@bt/shared/types/venture';
 import { Money } from '@common/types/money';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
@@ -8,6 +8,7 @@ jest.mock('@js/utils/logger', () => ({
 
 import { logger } from '@js/utils/logger';
 import VentureDeals from '@models/venture/venture-deals.model';
+import VentureEvents from '@models/venture/venture-events.model';
 
 import { computeIrr } from './compute-irr';
 
@@ -49,5 +50,24 @@ describe('computeIrr', () => {
     expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('could not converge'));
     expect(logger.warn).not.toHaveBeenCalled();
     expect(logger.error).not.toHaveBeenCalled();
+  });
+
+  it('capital_refund counts as an inflow (refund + residual = principal → ~0% IRR)', () => {
+    const deal = {
+      id: 'deal-3',
+      status: VENTURE_DEAL_STATUS.outstanding,
+      investmentDate: '2026-01-01',
+      principal: Money.fromDecimal('10000'),
+      entryFee: Money.fromDecimal('0'),
+    } as unknown as VentureDeals;
+    const refund = {
+      type: VENTURE_EVENT_TYPE.capital_refund,
+      eventDate: '2026-07-01',
+      lpNetAmount: Money.fromDecimal('1000'),
+    } as unknown as VentureEvents;
+
+    const irr = computeIrr({ deal, events: [refund], currentValue: '9000', asOfDate: new Date('2027-01-01') });
+
+    expect(Number(irr)).toBeCloseTo(0, 4);
   });
 });

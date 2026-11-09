@@ -120,7 +120,7 @@ const updateVentureEventImpl = async (params: UpdateVentureEventParams) => {
   });
 
   // Cascade only kicks in for carry-bearing event changes that shift principalRemaining,
-  // OR when a non-carry cash event's grossAmount changed (capital_call/fee_payment affect costBasis).
+  // OR when a non-carry cash event's grossAmount changed (capital_call/fee_payment/capital_refund affect costBasis).
   const earliestImpactedDate = previousEventDate < nextEventDate ? previousEventDate : nextEventDate;
   const { recomputedEventIds } = await syncDealFromEvents({
     userId,

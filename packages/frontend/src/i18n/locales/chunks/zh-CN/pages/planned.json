@@ -262,6 +262,7 @@
         "dueOn": "Due {date}",
         "paidAt": "Paid {date}",
         "viewTransaction": "View transaction",
+        "paymentInTrash": "Payment in Trash",
         "actions": {
           "markPaid": "Mark paid",
           "skip": "Skip"

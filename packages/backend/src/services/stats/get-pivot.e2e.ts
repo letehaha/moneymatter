@@ -703,6 +703,58 @@ describe('GET /stats/pivot', () => {
     expect(result.grandTotal).toBe(40);
   });
 
+  it('includeTransfers: tagged outgoing transfer legs count on the expense side only', async () => {
+    const source = await helpers.createAccount({ raw: true });
+    const destination = await helpers.createAccount({ raw: true });
+    const saveTag = await helpers.createTag({ payload: { name: uniqueName('Save'), color: '#00aa00' }, raw: true });
+    const needTag = await helpers.createTag({ payload: { name: uniqueName('Need'), color: '#aa0000' }, raw: true });
+
+    const [outgoingLeg, incomingLeg] = await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({
+          accountId: source.id,
+          amount: 500,
+          transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+          destinationAmount: 500,
+          destinationAccountId: destination.id,
+        }),
+        time: '2025-07-10T12:00:00.000Z',
+      },
+      raw: true,
+    });
+    const [expenseTx] = await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({
+          accountId: source.id,
+          amount: 40,
+          transactionType: TRANSACTION_TYPES.expense,
+        }),
+        time: '2025-07-12T12:00:00.000Z',
+      },
+      raw: true,
+    });
+    await helpers.addTransactionsToTag({ tagId: saveTag.id, transactionIds: [outgoingLeg.id, incomingLeg!.id] });
+    await helpers.addTransactionsToTag({ tagId: needTag.id, transactionIds: [expenseTx.id] });
+
+    const query = {
+      from: '2025-07-01',
+      to: '2025-07-31',
+      granularity: 'monthly',
+      rowDimension: 'tag',
+      measure: 'expense',
+      raw: true,
+    } as const;
+
+    const withoutTransfers = await helpers.getPivotReport(query);
+    expect(withoutTransfers.rows.find((row) => row.id === saveTag.id)).toBeUndefined();
+    expect(withoutTransfers.rows.find((row) => row.id === needTag.id)!.total).toBe(40);
+
+    const withTransfers = await helpers.getPivotReport({ ...query, includeTransfers: true });
+    expect(withTransfers.rows.find((row) => row.id === saveTag.id)!.total).toBe(500);
+    expect(withTransfers.rows.find((row) => row.id === needTag.id)!.total).toBe(40);
+    expect(withTransfers.grandTotal).toBe(540);
+  });
+
   it('cross-bucket refund: the expense measure nets the refund in the expense month on every dimension', async () => {
     const account = await helpers.createAccount({ raw: true });
     const category = await helpers.addCustomCategory({ name: uniqueName('Returns'), color: '#0000ff', raw: true });

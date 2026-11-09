@@ -345,6 +345,7 @@ export async function getPivotReport<R extends boolean | undefined = undefined>(
   accountIds,
   categoryIds,
   payeeIds,
+  includeTransfers,
   raw,
 }: {
   from: string;
@@ -355,6 +356,7 @@ export async function getPivotReport<R extends boolean | undefined = undefined>(
   accountIds?: string[];
   categoryIds?: string[];
   payeeIds?: string[];
+  includeTransfers?: boolean;
   raw?: R;
 }) {
   const params = new URLSearchParams();
@@ -366,6 +368,7 @@ export async function getPivotReport<R extends boolean | undefined = undefined>(
   if (accountIds && accountIds.length > 0) params.append('accountIds', accountIds.join(','));
   if (categoryIds && categoryIds.length > 0) params.append('categoryIds', categoryIds.join(','));
   if (payeeIds && payeeIds.length > 0) params.append('payeeIds', payeeIds.join(','));
+  if (includeTransfers) params.append('includeTransfers', 'true');
 
   const result = await helpers.makeRequest<GetPivotReportResponse, R>({
     method: 'get',

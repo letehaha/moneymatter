@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Структура расходов",
+        "incomeTitle": "Income structure",
         "today": "Сегодня",
         "vsPreviousPeriod": "по сравнению с предыдущим периодом",
-        "viewButton": "Просмотреть"
+        "viewButton": "Просмотреть",
+        "back": "Назад",
+        "openInAnalytics": "Open in Analytics",
+        "metric": {
+          "expenses": "Расходы",
+          "income": "Доход"
+        },
+        "seeTransactions": "See transactions"
       },
       "latestTransactions": {
         "title": "Последние транзакции",
@@ -315,6 +323,28 @@
         "ended": "Завершён",
         "create": "Create a tracker"
       },
+      "tagAnalysis": {
+        "title": "Tag analysis",
+        "noTagsTitle": "No tags selected",
+        "noTagsDescription": "Pick the tags to compare in the widget settings.",
+        "ofIncome": "of income",
+        "remaining": "Unallocated",
+        "targetTooltip": "Target: {value}%",
+        "settings": {
+          "tagsLabel": "Теги",
+          "tagsPlaceholder": "Выберите теги",
+          "targetsLabel": "Targets, %",
+          "targetsNoneSet": "None set",
+          "targetsSetCount": "{set} of {total} set",
+          "targetsEmpty": "Add tags first to set their targets",
+          "targetPlaceholder": "Нет",
+          "percentBaseLabel": "Percent of",
+          "percentBaseTags": "Selected tags",
+          "percentBaseIncome": "Доход",
+          "includeTransfersLabel": "Include transfers",
+          "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
+        }
+      },
       "emptyState": "За выбранный период данных нет.",
       "registry": {
         "balanceTrend": {
@@ -399,6 +429,10 @@
             "showReached": "Show reached goals"
           },
           "reachedSection": "Достигнуто"
+        },
+        "tagAnalysis": {
+          "name": "Tag analysis",
+          "description": "See how your spending splits across chosen tags, like needs, wants and savings"
         }
       }
     },

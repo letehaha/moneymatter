@@ -2,11 +2,11 @@ import { describe, expect, it } from '@jest/globals';
 import { makeAuthRequest, makeRequest } from '@tests/helpers';
 
 describe('GET /auth/features', () => {
-  it('reports email and OIDC disabled when they are not configured', async () => {
+  it('reports email, social providers and OIDC disabled when they are not configured', async () => {
     const res = await makeRequest({ method: 'get', url: '/auth/features' });
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.response).toEqual({ emailEnabled: false, oidc: null });
+    expect(res.body.response).toEqual({ emailEnabled: false, socialProviders: [], oidc: null });
   });
 
   it('is reachable without a session', async () => {
@@ -15,7 +15,7 @@ describe('GET /auth/features', () => {
     const res = await makeRequest({ method: 'get', url: '/auth/features' });
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.response).toEqual({ emailEnabled: false, oidc: null });
+    expect(res.body.response).toEqual({ emailEnabled: false, socialProviders: [], oidc: null });
   });
 });
 

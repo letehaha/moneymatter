@@ -84,7 +84,7 @@
       }
     },
     "trends": {
-      "subtitle": "Porovnajte výdavky, príjmy a úspory s predchádzajúcim obdobím.",
+      "subtitle": "Porovnajte výdavky a príjmy s predchádzajúcim obdobím.",
       "metrics": {
         "expenses": "Výdavky",
         "income": "Príjmy",
@@ -95,27 +95,63 @@
         "comparisonPeriod": "Predchádzajúce obdobie",
         "cumulativeNote": "Kumulatívny súčet k tomuto bodu"
       },
+      "scope": {
+        "label": "Rozsah kategórií",
+        "all": "Všetky kategórie",
+        "up": "O úroveň vyššie",
+        "transactions": "Transakcie",
+        "count": "{count} kategória | {count} kategórie | {count} kategórií",
+        "more": "+{count}",
+        "allExcept": "Všetko okrem {list}",
+        "clear": "Vymazať"
+      },
       "categoryBreakdown": {
         "title": "Rozdelenie podľa kategórií",
         "noData": "Za toto obdobie nie sú žiadne údaje",
         "viewAll": "Zobraziť všetky kategórie",
-        "moreCount": "{count} ďalších"
+        "moreCount": "{count} ďalších",
+        "noSubcategory": "{name} · bez podkategórie",
+        "byLevel": "Podľa úrovne",
+        "detail": "Detail",
+        "others": "Ostatné"
+      },
+      "hero": {
+        "vsPrevious": "{percent} % oproti predchádzajúcemu obdobiu",
+        "same": "Rovnaké ako v predchádzajúcom období"
+      },
+      "overTime": {
+        "title": "V čase",
+        "cumulative": "Kumulatívne",
+        "perPeriod": "Za obdobie",
+        "granularity": {
+          "monthly": "Mesačne",
+          "quarterly": "Štvrťročne",
+          "yearly": "Ročne"
+        }
+      },
+      "transactionsCard": {
+        "title": "Transakcie",
+        "largest": "Najväčšie",
+        "recent": "Nedávne"
       },
       "monthlyComparison": {
-        "title": "Mesačné porovnanie",
         "allCategories": "Všetky kategórie",
         "average": "Priemer",
         "total": "Spolu",
-        "vsLastMonth": "vs. predchádzajúci mesiac",
-        "viewTransactions": "Zobraziť transakcie"
-      },
-      "cumulativeProgress": {
-        "title": "Kumulatívny priebeh"
+        "vsPrevious": {
+          "monthly": "oproti minulému mesiacu",
+          "quarterly": "oproti minulému štvrťroku",
+          "yearly": "oproti minulému roku"
+        },
+        "show": {
+          "monthly": "Zobraziť tento mesiac",
+          "quarterly": "Zobraziť štvrťrok",
+          "yearly": "Zobraziť rok"
+        }
       },
       "filters": {
         "button": "Filtre",
         "title": "Filtre",
-        "categories": "Kategórie",
         "include": "Zahrnúť",
         "exclude": "Vylúčiť",
         "accounts": "Účty",

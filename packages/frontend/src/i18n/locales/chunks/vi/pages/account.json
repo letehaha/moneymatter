@@ -354,9 +354,9 @@
         "empty": "No manual overrides yet. Override the value to record one.",
         "delete": "Xóa",
         "deleteTitle": "Delete this override?",
-        "deleteDescription": "Removing this override re-anchors the depreciation to the previous override (or original purchase if none). The associated transaction will be deleted.",
+        "deleteDescription": "Removing this override re-anchors the depreciation to the previous override (or original purchase if none). The associated transaction will be moved to Trash, where you can restore it for 30 days.",
         "deleteConfirm": "Xóa",
-        "deleteSuccess": "Override removed",
+        "deleteSuccess": "Override removed and its transaction moved to Trash",
         "deleteError": "Failed to remove override"
       },
       "sections": {

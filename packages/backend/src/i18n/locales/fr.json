@@ -13,6 +13,7 @@
     "accountNoExternalIdEnableBanking": "Le compte n'a pas d'identifiant externe Enable Banking",
     "accountNotFoundForTransaction": "Compte introuvable pour cette opération",
     "deleteBlockedByLoanPayments": "Ce compte est associé à des remboursements de prêt. Supprimez-les ou réaffectez-les avant de supprimer le compte.",
+    "deleteBlockedByTrashedLoanPayments": "This account has loan payments in Trash. Delete them permanently from Trash before deleting the account.",
     "loanBalanceUseUpdateLoan": "Modifiez le capital restant dû d'un prêt depuis sa page dédiée, et non depuis les paramètres du compte.",
     "loanCategoryImmutable": "La catégorie d'un compte de prêt ne peut pas être modifiée.",
     "dedicatedFlowCategoryNotAllowed": "Les comptes de prêt et de véhicule doivent être créés via leurs parcours dédiés, et non via le parcours de compte classique.",
@@ -144,6 +145,13 @@
         "message_one": "1 opération est en attente depuis plus d'une semaine. Vérifiez-la auprès de votre banque pour garder un solde exact.",
         "message_other": "{{count}} opérations sont en attente depuis plus d'une semaine. Vérifiez-les auprès de votre banque pour garder un solde exact."
       }
+    },
+    "trash": {
+      "paymentNotTrashable": "Remove it from the payment first to delete it.",
+      "portfolioNotTrashable": "Unlink it from the portfolio first to delete it.",
+      "ventureNotTrashable": "Unlink it from the venture first to delete it.",
+      "accountTypeChanged": "This transaction can't be restored because its account type has changed.",
+      "loanPaymentLegMissing": "This loan payment can't be restored because its other side was deleted."
     }
   },
   "budgets": {
@@ -256,6 +264,7 @@
     "cannotDeleteHoldingWithActivePosition": "Impossible de supprimer une ligne avec une position active. Veuillez d'abord vendre ou transférer toutes les actions.",
     "transactionAlreadyTransfer": "L'opération est déjà marquée comme virement et ne peut pas être liée à un portefeuille.",
     "transactionAlreadyLinkedToPortfolio": "L'opération est déjà liée à un transfert de portefeuille.",
+    "linkedTransactionMustBelongToDestinationAccount": "The linked transaction must belong to the destination account.",
     "transactionAlreadyLinkedToVenture": "L'opération est déjà liée à un investissement venture",
     "portfolioTransferNotFound": "Transfert de portefeuille introuvable",
     "exchangeCurrenciesMustDiffer": "Les devises de change doivent être différentes",

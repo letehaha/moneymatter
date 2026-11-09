@@ -13,6 +13,7 @@
     "accountNoExternalIdEnableBanking": "Account does not have external ID from Enable Banking",
     "accountNotFoundForTransaction": "Account not found for this transaction",
     "deleteBlockedByLoanPayments": "This account has loan payments. Delete or reassign them before deleting the account.",
+    "deleteBlockedByTrashedLoanPayments": "This account has loan payments in Trash. Delete them permanently from Trash before deleting the account.",
     "loanBalanceUseUpdateLoan": "Change a loan's outstanding balance from its loan page, not from account settings.",
     "loanCategoryImmutable": "A loan account's category can't be changed.",
     "dedicatedFlowCategoryNotAllowed": "Loan and vehicle accounts must be created through their dedicated endpoints, not the generic accounts endpoint.",
@@ -144,6 +145,13 @@
         "message_one": "1 transaction has been pending for over a week. Check it with your bank so your balance stays accurate.",
         "message_other": "{{count}} transactions have been pending for over a week. Check them with your bank so your balance stays accurate."
       }
+    },
+    "trash": {
+      "paymentNotTrashable": "Remove it from the payment first to delete it.",
+      "portfolioNotTrashable": "Unlink it from the portfolio first to delete it.",
+      "ventureNotTrashable": "Unlink it from the venture first to delete it.",
+      "accountTypeChanged": "This transaction can't be restored because its account type has changed.",
+      "loanPaymentLegMissing": "This loan payment can't be restored because its other side was deleted."
     }
   },
   "budgets": {
@@ -256,6 +264,7 @@
     "cannotDeleteHoldingWithActivePosition": "Cannot delete a holding with an active position. Please sell or transfer all shares first.",
     "transactionAlreadyTransfer": "Transaction is already marked as a transfer and cannot be linked to a portfolio.",
     "transactionAlreadyLinkedToPortfolio": "Transaction is already linked to a portfolio transfer.",
+    "linkedTransactionMustBelongToDestinationAccount": "The linked transaction must belong to the destination account.",
     "transactionAlreadyLinkedToVenture": "Transaction is already linked to a venture deal",
     "portfolioTransferNotFound": "Portfolio transfer not found",
     "exchangeCurrenciesMustDiffer": "Exchange currencies must be different",
