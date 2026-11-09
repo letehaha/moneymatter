@@ -1,6 +1,6 @@
 import { TRANSACTION_TYPES } from '@bt/shared/types';
 
-import { isGoodChange, metricTransactionType, percentChange } from './metric';
+import { isGoodChange, metricTransactionType, percentChange } from './analytics-metric';
 
 describe('percentChange', () => {
   it('returns the rounded change from the previous value', () => {
@@ -27,6 +27,11 @@ describe('isGoodChange', () => {
   it('treats a rise as good for income', () => {
     expect(isGoodChange({ metric: 'income', change: 10 })).toBe(true);
     expect(isGoodChange({ metric: 'income', change: -10 })).toBe(false);
+  });
+
+  it('treats no change as not good for either metric', () => {
+    expect(isGoodChange({ metric: 'expenses', change: 0 })).toBe(false);
+    expect(isGoodChange({ metric: 'income', change: 0 })).toBe(false);
   });
 });
 

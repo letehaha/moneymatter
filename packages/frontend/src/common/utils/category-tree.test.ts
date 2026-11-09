@@ -1,4 +1,4 @@
-import { collectSubtreeIds, getAncestors, hasChildren, isRemainderRow } from './category-tree';
+import { collectSubtreeIds, getAncestors, getLevelCategoryIds, hasChildren, isRemainderRow } from './category-tree';
 
 // Food(1) › Groceries(2) › Organic(4); Food › Restaurants(3); Transport(5)
 const TREE = [
@@ -9,6 +9,11 @@ const TREE = [
   { id: '5', parentId: null, name: 'Transport' },
 ];
 const MAP = Object.fromEntries(TREE.map((category) => [category.id, category]));
+const CYCLE = [
+  { id: 'a', parentId: 'b' },
+  { id: 'b', parentId: 'a' },
+];
+const CYCLE_MAP = Object.fromEntries(CYCLE.map((category) => [category.id, category]));
 
 describe('hasChildren', () => {
   it('is true only for categories with subcategories', () => {
@@ -31,12 +36,56 @@ describe('getAncestors', () => {
     expect(getAncestors({ id: '4', categoriesMap: MAP, stopId: '1' }).map((c) => c.id)).toEqual(['2']);
     expect(getAncestors({ id: '4', categoriesMap: MAP, stopId: '2' })).toEqual([]);
   });
+
+  it('stops on a parent cycle', () => {
+    expect(getAncestors({ id: 'a', categoriesMap: CYCLE_MAP }).map((c) => c.id)).toEqual(['b']);
+  });
+
+  it('stops at a parent id missing from the map', () => {
+    const orphanMap = { ...MAP, x: { id: 'x', parentId: 'missing', name: 'Orphan' } };
+    expect(getAncestors({ id: 'x', categoriesMap: orphanMap })).toEqual([]);
+  });
+
+  it('walks to the root when the stop id is not an ancestor', () => {
+    expect(getAncestors({ id: '4', categoriesMap: MAP, stopId: '5' }).map((c) => c.id)).toEqual(['1', '2']);
+  });
 });
 
 describe('collectSubtreeIds', () => {
   it('collects the root and every descendant', () => {
     expect(collectSubtreeIds({ rootId: '1', categories: TREE }).sort()).toEqual(['1', '2', '3', '4']);
     expect(collectSubtreeIds({ rootId: '5', categories: TREE })).toEqual(['5']);
+  });
+
+  it('drops excluded categories with their whole subtree', () => {
+    expect(collectSubtreeIds({ rootId: '1', categories: TREE, excludedIds: ['2'] })).toEqual(['1', '3']);
+  });
+
+  it('still collects the whole subtree when the root itself is excluded', () => {
+    expect(collectSubtreeIds({ rootId: '1', categories: TREE, excludedIds: ['1'] }).sort()).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+    ]);
+  });
+
+  it('stops on a parent cycle', () => {
+    expect(collectSubtreeIds({ rootId: 'a', categories: CYCLE }).sort()).toEqual(['a', 'b']);
+  });
+});
+
+describe('getLevelCategoryIds', () => {
+  it('sends the scope with its direct children only, never grandchildren', () => {
+    expect(getLevelCategoryIds({ scopeId: '1', categories: TREE })).toEqual(['1', '2', '3']);
+  });
+
+  it('drops excluded children', () => {
+    expect(getLevelCategoryIds({ scopeId: '1', categories: TREE, excludedIds: ['3'] })).toEqual(['1', '2']);
+  });
+
+  it('sends only the scope when every child is excluded', () => {
+    expect(getLevelCategoryIds({ scopeId: '1', categories: TREE, excludedIds: ['2', '3'] })).toEqual(['1']);
   });
 });
 

@@ -59,6 +59,7 @@
 <script setup lang="ts">
 import { getCashFlow, getCumulativeData } from '@/api';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { type MetricType } from '@/common/utils/analytics-metric';
 import { type PillTabItem, PillTabs } from '@/components/lib/ui/pill-tabs';
 import { type Period } from '@/composable/use-period-navigation';
 import { useCategoriesStore } from '@/stores';
@@ -74,7 +75,6 @@ import { createEnumSerializer } from '../../../utils';
 import GranularitySelector from '../../../components/granularity-selector.vue';
 import ChartSkeleton from '../../cash-flow/components/chart-skeleton.vue';
 import { BAR_GRANULARITIES, type BarGranularity, snapToBuckets } from '../group-periods';
-import { type MetricType } from '../metric';
 import { type TrendsFilters, toStatsFilterParams } from '../trends-filters';
 import CumulativeChart from './cumulative-chart.vue';
 import MonthlyComparisonChart from './monthly-comparison-chart.vue';

@@ -69,8 +69,7 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
 
   // widget expenses structure
   widgetExpensesStructureTotal: [transactionChange, 'widget-expenses-structure-total'] as const,
-  widgetExpensesStructureCurrentAmount: [transactionChange, 'widget-expenses-structure-current-amount'] as const,
-  widgetExpensesStructurePrevAmount: [transactionChange, 'widget-expenses-structure-prev-amount'] as const,
+  widgetExpensesStructurePrevTotal: [transactionChange, 'widget-expenses-structure-prev-total'] as const,
 
   // widget latest records
   widgetLatestRecords: [transactionChange, 'widget-latest-records'] as const,

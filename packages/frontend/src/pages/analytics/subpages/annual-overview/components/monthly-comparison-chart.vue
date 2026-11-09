@@ -125,6 +125,8 @@
 </template>
 
 <script setup lang="ts">
+import { type MetricType, isGoodChange, percentChange } from '@/common/utils/analytics-metric';
+import { isRemainderRow } from '@/common/utils/category-tree';
 import { currentTheme } from '@/common/utils/color-theme';
 import {
   ChartTooltip,
@@ -151,9 +153,8 @@ import { storeToRefs } from 'pinia';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { isRemainderRow } from '../category-tree';
 import { type BarGranularity, groupPeriods } from '../group-periods';
-import { METRIC_LABEL_KEYS, type MetricType, isGoodChange, percentChange } from '../metric';
+import { METRIC_LABEL_KEYS } from '../metric-labels';
 import { type TrendsFilters, getScopeCategoryId } from '../trends-filters';
 
 interface PeriodWithChange {

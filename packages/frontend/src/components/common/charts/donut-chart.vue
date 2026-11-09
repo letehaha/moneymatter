@@ -2,12 +2,12 @@
   <div ref="chartContainerRef" :class="cn('relative h-55 w-full', props.class)">
     <svg ref="svgRef" class="h-full w-full"></svg>
 
-    <!-- Center label: shows Total by default, category info on hover -->
+    <!-- Center label: shows Total by default, category info on hover/selection -->
     <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
       <div class="flex flex-col items-center gap-0.5 text-center">
-        <template v-if="centerLabel.isHovering">
-          <div class="text-muted-foreground text-xs">{{ centerLabel.name }}</div>
-          <div class="text-base font-semibold">{{ centerLabel.amount }}</div>
+        <template v-if="displayedItem">
+          <div class="text-muted-foreground text-xs">{{ displayedItem.name }}</div>
+          <div class="text-base font-semibold">{{ formatBaseCurrency(displayedItem.amount) }}</div>
         </template>
         <template v-else>
           <div class="text-muted-foreground text-xs">{{ $t('common.labels.total') }}</div>
@@ -18,7 +18,7 @@
 
     <!-- Touch device overlay: shows navigation button below center label -->
     <div
-      v-if="isTouch && selectedCategoryId !== null"
+      v-if="clickable === 'all' && isTouch && selectedItem"
       class="pointer-events-none absolute inset-0 flex items-center justify-center"
     >
       <div class="pointer-events-auto mt-18 flex flex-col items-center">
@@ -26,7 +26,7 @@
           size="sm"
           variant="outline"
           class="h-6 gap-1 px-2 text-xs"
-          @click="$emit('category-click', { categoryId: selectedCategoryId })"
+          @click="$emit('category-click', selectedItem)"
         >
           {{ $t('dashboard.widgets.expensesStructure.viewButton') }}
           <ExternalLinkIcon class="size-3" />
@@ -43,18 +43,23 @@ import { cn } from '@/lib/utils';
 import { useMediaQuery, useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
 import { ExternalLinkIcon } from '@lucide/vue';
-import { nextTick, reactive, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 
-import type { ChartDataItem } from './use-expenses-structure-data';
+import type { DonutChartItem } from './donut-chart-item';
 
-const props = defineProps<{
-  data: ChartDataItem[];
-  totalAmount: number;
-  class?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    data: DonutChartItem[];
+    totalAmount: number;
+    class?: string;
+    /** `drillable`: only `isDrillable` slices emit `category-click`; the rest just show their details. */
+    clickable?: 'all' | 'drillable';
+  }>(),
+  { clickable: 'all' },
+);
 
 const emit = defineEmits<{
-  'category-click': [payload: { categoryId: string }];
+  'category-click': [item: DonutChartItem];
 }>();
 
 const { formatBaseCurrency } = useFormatCurrency();
@@ -62,13 +67,11 @@ const isTouch = useMediaQuery('(pointer: coarse)');
 
 const chartContainerRef = ref<HTMLDivElement | null>(null);
 const svgRef = ref<SVGSVGElement | null>(null);
-const selectedCategoryId = ref<string | null>(null);
+const selectedItem = ref<DonutChartItem | null>(null);
+const hoveredItem = ref<DonutChartItem | null>(null);
+const displayedItem = computed(() => hoveredItem.value ?? selectedItem.value);
 
-const centerLabel = reactive({
-  name: '',
-  amount: '',
-  isHovering: false,
-});
+let highlight: (params: { item: DonutChartItem | null }) => void = () => {};
 
 const renderChart = () => {
   if (!svgRef.value || !chartContainerRef.value || props.data.length === 0) return;
@@ -84,14 +87,14 @@ const renderChart = () => {
   const innerRadius = radius * 0.7;
 
   const pie = d3
-    .pie<ChartDataItem>()
+    .pie<DonutChartItem>()
     .value((d) => d.amount)
     .sort(null);
 
-  const arc = d3.arc<d3.PieArcDatum<ChartDataItem>>().innerRadius(innerRadius).outerRadius(radius);
+  const arc = d3.arc<d3.PieArcDatum<DonutChartItem>>().innerRadius(innerRadius).outerRadius(radius);
 
   const glowArc = d3
-    .arc<d3.PieArcDatum<ChartDataItem>>()
+    .arc<d3.PieArcDatum<DonutChartItem>>()
     .innerRadius(radius)
     .outerRadius(radius + glowSize);
 
@@ -100,64 +103,47 @@ const renderChart = () => {
   const pieData = pie(props.data);
   const arcs = g.selectAll('.arc').data(pieData).enter().append('g').attr('class', 'arc');
 
+  highlight = ({ item }) => {
+    glowGroup.selectAll('*').remove();
+    const datum = item && pieData.find((d) => d.data.categoryId === item.categoryId);
+    if (!datum) {
+      g.selectAll('.arc path').style('opacity', 1);
+      return;
+    }
+    g.selectAll<SVGPathElement, d3.PieArcDatum<DonutChartItem>>('.arc path').style('opacity', (d) =>
+      d.data.categoryId === datum.data.categoryId ? 1 : 0.3,
+    );
+    glowGroup.append('path').attr('d', glowArc(datum)).attr('fill', datum.data.color).style('opacity', 0.5);
+  };
+
   arcs
     .append('path')
     .attr('d', arc)
     .attr('fill', (d) => d.data.color)
     .attr('stroke', 'var(--card)')
     .attr('stroke-width', 2)
-    .style('cursor', 'pointer')
+    .style('cursor', (d) => (props.clickable === 'all' || d.data.isDrillable ? 'pointer' : 'default'))
     .style('transition', 'opacity 0.2s ease')
-    .on('mouseenter', function (_event, d) {
+    .on('mouseenter', (_event, d) => {
       if (isTouch.value) return;
-
-      g.selectAll('.arc path').style('opacity', 0.3);
-      d3.select(this).style('opacity', 1);
-
-      glowGroup.selectAll('*').remove();
-      glowGroup.append('path').attr('d', glowArc(d)).attr('fill', d.data.color).style('opacity', 0.5);
-
-      centerLabel.name = d.data.name;
-      centerLabel.amount = formatBaseCurrency(d.data.amount);
-      centerLabel.isHovering = true;
+      hoveredItem.value = d.data;
     })
-    .on('mouseleave', function () {
+    .on('mouseleave', () => {
       if (isTouch.value) return;
-
-      g.selectAll('.arc path').style('opacity', 1);
-      glowGroup.selectAll('*').remove();
-      centerLabel.isHovering = false;
+      hoveredItem.value = null;
     })
-    .on('click', function (_event, d) {
-      if (isTouch.value) {
-        selectedCategoryId.value = d.data.categoryId;
+    .on('click', (_event, d) => onSliceClick({ item: d.data }));
 
-        g.selectAll('.arc path').style('opacity', 0.3);
-        d3.select(this).style('opacity', 1);
-
-        glowGroup.selectAll('*').remove();
-        glowGroup.append('path').attr('d', glowArc(d)).attr('fill', d.data.color).style('opacity', 0.5);
-
-        centerLabel.name = d.data.name;
-        centerLabel.amount = formatBaseCurrency(d.data.amount);
-        centerLabel.isHovering = true;
-      } else {
-        emit('category-click', { categoryId: d.data.categoryId });
-      }
-    });
+  highlight({ item: displayedItem.value });
 };
 
-// Watch for touch selection changes to update opacity
-watch(selectedCategoryId, (newId) => {
-  if (!svgRef.value || !newId) {
-    const svg = d3.select(svgRef.value);
-    svg.selectAll('.arc path').style('opacity', 1);
-    svg.selectAll('.glow-group *').remove();
-    if (!newId) {
-      centerLabel.isHovering = false;
-    }
-  }
-});
+const onSliceClick = ({ item }: { item: DonutChartItem }) => {
+  if (props.clickable === 'drillable' && item.isDrillable) emit('category-click', item);
+  else if (isTouch.value) selectedItem.value = item;
+  else if (props.clickable === 'all') emit('category-click', item);
+};
+
+watch(displayedItem, (item) => highlight({ item }));
 
 useResizeObserver(chartContainerRef, renderChart);
 
@@ -176,8 +162,8 @@ watch(
 watch(
   () => props.data,
   () => {
-    selectedCategoryId.value = null;
-    centerLabel.isHovering = false;
+    selectedItem.value = null;
+    hoveredItem.value = null;
   },
 );
 </script>

@@ -35,6 +35,7 @@
 <script setup lang="ts">
 import { loadTransactions } from '@/api/transactions';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { type MetricType } from '@/common/utils/analytics-metric';
 import { type PillTabItem, PillTabs } from '@/components/lib/ui/pill-tabs';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import TransactionsList from '@/components/transactions-list/transactions-list.vue';
@@ -49,7 +50,6 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { createEnumSerializer } from '../../../utils';
-import { type MetricType } from '../metric';
 import { type TrendsFilters, toTransactionFilterParams } from '../trends-filters';
 
 const LIMIT = 20;

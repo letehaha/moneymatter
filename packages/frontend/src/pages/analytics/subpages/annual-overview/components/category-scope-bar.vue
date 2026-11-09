@@ -85,6 +85,8 @@
 </template>
 
 <script setup lang="ts">
+import { type MetricType } from '@/common/utils/analytics-metric';
+import { getAncestors } from '@/common/utils/category-tree';
 import ComboboxCategories from '@/components/common/combobox-categories.vue';
 import { Button } from '@/components/lib/ui/button';
 import { type PillTabItem, PillTabs } from '@/components/lib/ui/pill-tabs';
@@ -98,8 +100,6 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { type RouteLocationRaw, RouterLink } from 'vue-router';
 
-import { getAncestors } from '../category-tree';
-import { type MetricType } from '../metric';
 import {
   type FilterGroup,
   type TrendsFilters,

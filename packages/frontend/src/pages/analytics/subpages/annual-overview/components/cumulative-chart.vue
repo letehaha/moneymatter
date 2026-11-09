@@ -51,6 +51,7 @@
 </template>
 
 <script setup lang="ts">
+import { type MetricType } from '@/common/utils/analytics-metric';
 import { currentTheme } from '@/common/utils/color-theme';
 import { ChartTooltip, ChartTooltipHeader, ChartTooltipRow } from '@/components/common/charts/chart-tooltip';
 import { useFormatCurrency } from '@/composable';
@@ -62,8 +63,6 @@ import * as d3 from 'd3';
 import { useResizeObserver } from '@vueuse/core';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-
-import { type MetricType } from '../metric';
 
 const props = defineProps<{
   currentPeriodData: CumulativeMonthData[];

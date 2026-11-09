@@ -189,6 +189,7 @@
 <script setup lang="ts">
 import { deleteCategory as apiDeleteCategory, editCategory, getCategoryTransactionCount } from '@/api';
 import { type CategoryDropPosition, type FormattedCategory } from '@/common/types';
+import { buildTrendsLocation } from '@/common/utils/trends-deep-link';
 import Accordion from '@/components/common/accordion/accordion.vue';
 import DocsLink from '@/components/common/docs-link.vue';
 import CategoryFormDialog from '@/components/dialogs/category-form-dialog.vue';
@@ -322,10 +323,7 @@ const viewCategoryTransactions = (category: FormattedCategory) => {
 };
 
 const viewCategoryAnalytics = (category: FormattedCategory) => {
-  router.push({
-    name: ROUTES_NAMES.analyticsTrendsComparison,
-    query: { categoryIds: String(category.id) },
-  });
+  router.push(buildTrendsLocation({ categoryIds: [String(category.id)] }));
 };
 
 const openEditDialog = (category?: FormattedCategory) => {

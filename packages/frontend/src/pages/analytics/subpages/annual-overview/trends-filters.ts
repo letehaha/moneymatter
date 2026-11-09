@@ -1,5 +1,6 @@
-import { type CategoryNode, collectSubtreeIds } from './category-tree';
-import { type MetricType, metricTransactionType } from './metric';
+import { type MetricType, metricTransactionType } from '@/common/utils/analytics-metric';
+import { type CategoryNode, collectSubtreeIds, getLevelCategoryIds } from '@/common/utils/category-tree';
+import type { TrendsDeepLink } from '@/common/utils/trends-deep-link';
 
 export interface FilterGroup {
   mode: 'include' | 'exclude';
@@ -38,12 +39,7 @@ export const getScopeCategoryId = ({ filters }: { filters: TrendsFilters }): str
   return mode === 'include' && ids.length === 1 ? ids[0] : undefined;
 };
 
-/**
- * Stats endpoints roll each amount up to its nearest selected ancestor, so sending a scope
- * category together with its direct children returns exactly one level, with the scope
- * itself holding what is booked on it directly. `detail` sends every category in the
- * selection, so each comes back with only its own amount.
- */
+/** `detail` sends every category in the selection, so each comes back with only its own amount. */
 export const toStatsFilterParams = ({
   filters,
   categories = [],
@@ -71,7 +67,7 @@ export const toStatsFilterParams = ({
   apply({ group: filters.categories, includeKey: 'categoryIds', excludeKey: 'excludedCategoryIds' });
   const scopeId = getScopeCategoryId({ filters });
   if (scopeId) {
-    params.categoryIds = [scopeId, ...categories.filter((c) => c.parentId === scopeId).map((c) => c.id)];
+    params.categoryIds = getLevelCategoryIds({ scopeId, categories });
   }
 
   if (detail) {
@@ -136,6 +132,24 @@ export const scopeTo = ({
   ...filters,
   categories: { mode: 'include', ids: categoryIds },
 });
+
+/** A link with `metric` replaces every filter; without it, `categoryIds` only rescope the current filters. */
+export const filtersFromDeepLink = ({
+  filters,
+  link,
+}: {
+  filters: TrendsFilters;
+  link: Pick<TrendsDeepLink, 'categoryIds' | 'excludedCategoryIds' | 'metric'>;
+}): TrendsFilters => {
+  const { categoryIds, excludedCategoryIds, metric } = link;
+
+  if (!metric) return categoryIds.length > 0 ? scopeTo({ filters, categoryIds }) : filters;
+
+  const empty = emptyTrendsFilters();
+  if (categoryIds.length > 0) return scopeTo({ filters: empty, categoryIds });
+  if (excludedCategoryIds.length > 0) return { ...empty, categories: { mode: 'exclude', ids: excludedCategoryIds } };
+  return empty;
+};
 
 export const hideCategory = ({
   filters,

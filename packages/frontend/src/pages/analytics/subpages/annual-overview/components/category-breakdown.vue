@@ -124,7 +124,10 @@
 </template>
 
 <script setup lang="ts">
+import { type MetricType, isGoodChange, percentChange } from '@/common/utils/analytics-metric';
+import { getAncestors, hasChildren, isRemainderRow } from '@/common/utils/category-tree';
 import CategoryCircle from '@/components/common/category-circle.vue';
+import DonutChart from '@/components/common/charts/donut-chart.vue';
 import { Button } from '@/components/lib/ui/button';
 import { type PillTabItem, PillTabs } from '@/components/lib/ui/pill-tabs';
 import { useFormatCurrency } from '@/composable';
@@ -135,11 +138,7 @@ import { storeToRefs } from 'pinia';
 import { type Component, computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import DonutChart from '@/components/widgets/expenses-structure/donut-chart.vue';
-
-import { getAncestors, hasChildren, isRemainderRow } from '../category-tree';
 import { OTHERS_SLICE_ID, foldSmallSlices } from '../fold-small-slices';
-import { type MetricType, isGoodChange, percentChange } from '../metric';
 
 interface CategoryWithChange {
   id: string;

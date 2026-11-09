@@ -7,12 +7,13 @@
 </template>
 
 <script setup lang="ts">
+import { type MetricType } from '@/common/utils/analytics-metric';
 import { type PillTabItem, PillTabs } from '@/components/lib/ui/pill-tabs';
 import { ArrowDownLeftIcon, ArrowUpRightIcon } from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { METRIC_LABEL_KEYS, type MetricType } from '../metric';
+import { METRIC_LABEL_KEYS } from '../metric-labels';
 
 defineProps<{
   modelValue: MetricType;

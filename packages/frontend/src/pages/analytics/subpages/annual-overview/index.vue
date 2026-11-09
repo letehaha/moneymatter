@@ -121,6 +121,14 @@
 <script setup lang="ts">
 import { getSpendingsByCategories } from '@/api';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import {
+  METRICS,
+  type MetricType,
+  isGoodChange,
+  metricTransactionType,
+  percentChange,
+} from '@/common/utils/analytics-metric';
+import { readTrendsDeepLink } from '@/common/utils/trends-deep-link';
 import { useFormatCurrency } from '@/composable';
 import { assignSiblingColors } from '@/composable/charts/assign-sibling-colors';
 import { type Period, getPrevPeriod } from '@/composable/use-period-navigation';
@@ -145,18 +153,12 @@ import MetricToggle from './components/metric-toggle.vue';
 import OverTimeCard from './components/over-time-card.vue';
 import TransactionsCard from './components/transactions-card.vue';
 import TrendsFiltersPanel from './components/trends-filters-panel.vue';
-import {
-  METRICS,
-  METRIC_LABEL_KEYS,
-  type MetricType,
-  isGoodChange,
-  metricTransactionType,
-  percentChange,
-} from './metric';
+import { METRIC_LABEL_KEYS } from './metric-labels';
 import {
   type TrendsFilters,
   countActiveFilters,
   emptyTrendsFilters,
+  filtersFromDeepLink,
   getScopeCategoryId,
   hideCategory,
   parseTrendsFilters,
@@ -183,22 +185,17 @@ const filters = useSessionStorage<TrendsFilters>('trends-comparison-filters', em
   serializer: { read: (raw) => parseTrendsFilters({ raw }), write: (value) => JSON.stringify(value) },
 });
 
-// A `?categoryIds=` deep link preselects categories, then is consumed.
+// Deep links preset the page, then are consumed.
 onMounted(() => {
-  const queryValue = route.query.categoryIds;
-  if (!queryValue) return;
+  const link = readTrendsDeepLink({ query: route.query });
+  if (!link) return;
 
-  const categoryIds = (Array.isArray(queryValue) ? queryValue : [queryValue]).filter(
-    (id): id is string => typeof id === 'string' && id.length > 0,
-  );
-
-  if (categoryIds.length > 0) {
-    filters.value = scopeTo({ filters: filters.value, categoryIds });
-  }
+  filters.value = filtersFromDeepLink({ filters: filters.value, link });
+  if (link.metric) selectedMetric.value = link.metric;
+  if (link.period) selectedPeriod.value = link.period;
 
   // Replace rather than push so back-navigation still leaves the page.
-  const { categoryIds: _consumed, ...restQuery } = route.query;
-  router.replace({ query: restQuery });
+  router.replace({ query: link.restQuery });
 });
 
 const isDetail = useSessionStorage('trends-breakdown-detail', false);

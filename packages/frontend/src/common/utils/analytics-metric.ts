@@ -3,11 +3,6 @@ import { TRANSACTION_TYPES } from '@bt/shared/types';
 export const METRICS = ['expenses', 'income'] as const;
 export type MetricType = (typeof METRICS)[number];
 
-export const METRIC_LABEL_KEYS: Record<MetricType, string> = {
-  expenses: 'analytics.trends.metrics.expenses',
-  income: 'analytics.trends.metrics.income',
-};
-
 export const metricTransactionType = ({ metric }: { metric: MetricType }) =>
   metric === 'income' ? TRANSACTION_TYPES.income : TRANSACTION_TYPES.expense;
 

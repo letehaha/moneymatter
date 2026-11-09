@@ -4,6 +4,7 @@ import {
   type TrendsFilters,
   countActiveFilters,
   emptyTrendsFilters,
+  filtersFromDeepLink,
   getScopeCategoryId,
   getTransactionCategoryIds,
   hideCategory,
@@ -370,5 +371,50 @@ describe('emptyTrendsFilters', () => {
     const second = emptyTrendsFilters();
     first.categories.ids.push('1');
     expect(second.categories.ids).toEqual([]);
+  });
+});
+
+describe('filtersFromDeepLink', () => {
+  const current = makeFilters({
+    categories: { mode: 'include', ids: ['9'] },
+    payees: { mode: 'include', ids: ['p1'] },
+    accountIds: ['a1'],
+  });
+
+  it('replaces every filter with the linked categories when the link has a metric', () => {
+    expect(
+      filtersFromDeepLink({
+        filters: current,
+        link: { categoryIds: ['1'], excludedCategoryIds: [], metric: 'expenses' },
+      }),
+    ).toEqual(makeFilters({ categories: { mode: 'include', ids: ['1'] } }));
+  });
+
+  it('excludes the linked categories from an otherwise empty view', () => {
+    expect(
+      filtersFromDeepLink({
+        filters: current,
+        link: { categoryIds: [], excludedCategoryIds: ['2', '3'], metric: 'income' },
+      }),
+    ).toEqual(makeFilters({ categories: { mode: 'exclude', ids: ['2', '3'] } }));
+  });
+
+  it('resets to empty filters for a metric link without categories', () => {
+    expect(
+      filtersFromDeepLink({ filters: current, link: { categoryIds: [], excludedCategoryIds: [], metric: 'expenses' } }),
+    ).toEqual(emptyTrendsFilters());
+  });
+
+  it('only rescopes the categories when the link has no metric', () => {
+    expect(filtersFromDeepLink({ filters: current, link: { categoryIds: ['1'], excludedCategoryIds: [] } })).toEqual({
+      ...current,
+      categories: { mode: 'include', ids: ['1'] },
+    });
+  });
+
+  it('leaves filters untouched for a no-metric link without categories', () => {
+    expect(filtersFromDeepLink({ filters: current, link: { categoryIds: [], excludedCategoryIds: ['2'] } })).toBe(
+      current,
+    );
   });
 });
