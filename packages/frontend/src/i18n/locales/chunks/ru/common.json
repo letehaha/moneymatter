@@ -28,7 +28,9 @@
       "retry": "Попробовать снова",
       "copyInviteLink": "Скопировать ссылку-приглашение",
       "moveTo": "Переместить в…",
-      "learnMore": "Learn more"
+      "learnMore": "Learn more",
+      "undo": "Undo",
+      "more": "Ещё"
     },
     "ui": {
       "close": "Закрыть",
@@ -151,6 +153,8 @@
     "transactions": {
       "delete": {
         "success": "Успешно удалено",
+        "undoSuccess": "Restored",
+        "undoError": "Couldn't undo. You can still restore it from the Trash.",
         "error": "Не удалось удалить транзакцию!"
       },
       "submit": {
@@ -579,6 +583,56 @@
     },
     "transactionGroupRecord": {
       "transactionCountLabel": "транзакций"
+    }
+  },
+  "mcpToolsets": {
+    "core": {
+      "label": "Core",
+      "description": "Accounts, transactions, categories, tags, payees and reports"
+    },
+    "subscriptions": {
+      "label": "Регулярные платежи",
+      "description": "Recurring payments, their periods and planned transactions"
+    },
+    "budgetPlans": {
+      "label": "Budget plans",
+      "description": "Plans, lines, line goals and savings goals"
+    },
+    "trackers": {
+      "label": "Бюджеты",
+      "description": "Spending trackers and their suggestions"
+    },
+    "automations": {
+      "label": "Автоматизации",
+      "description": "Rules, payee aliases, ignored payee names and tag reminders"
+    },
+    "review": {
+      "label": "Review and cleanup",
+      "description": "Transfer and refund matches, duplicates and stuck pending transactions"
+    },
+    "groupsTemplates": {
+      "label": "Groups and templates",
+      "description": "Transaction groups and transaction templates"
+    },
+    "investments": {
+      "label": "Инвестиции",
+      "description": "Portfolios, holdings, securities and investment transactions"
+    },
+    "ventures": {
+      "label": "Венчурные инвестиции",
+      "description": "Venture platforms, deals and events"
+    },
+    "loansVehicles": {
+      "label": "Loans and vehicles",
+      "description": "Loans with their payments, and vehicles"
+    },
+    "currencies": {
+      "label": "Валюты",
+      "description": "Your currencies and exchange rates"
+    },
+    "imports": {
+      "label": "Imports and sharing",
+      "description": "Import batches (list, undo) and bank connections (status, unlink an account); sharing is read only."
     }
   }
 }

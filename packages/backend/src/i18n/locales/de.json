@@ -13,6 +13,7 @@
     "accountNoExternalIdEnableBanking": "Konto hat keine externe ID von Enable Banking aktivieren",
     "accountNotFoundForTransaction": "Konto für diese Transaktion nicht gefunden",
     "deleteBlockedByLoanPayments": "Dieses Konto hat Kreditrückzahlungen. Löschen oder neu zuweisen, bevor das Konto gelöscht wird.",
+    "deleteBlockedByTrashedLoanPayments": "This account has loan payments in Trash. Delete them permanently from Trash before deleting the account.",
     "loanBalanceUseUpdateLoan": "Passe den Restbetrag des Kredits direkt auf dessen Detailseite an, nicht in den Kontoeinstellungen.",
     "loanCategoryImmutable": "Die Kategorie eines Kreditkontos kann nicht geändert werden.",
     "dedicatedFlowCategoryNotAllowed": "Kredit- und Fahrzeugkonten müssen über ihre eigenen Endpunkte erstellt werden und nicht über den Endpunkt der allgemeinen Konten.",
@@ -56,7 +57,7 @@
     "idCannotBeChanged": "ID kann nicht geändert werden",
     "editReadonlyFields": "Versuch, schreibgeschützte Felder des externen Kontos zu bearbeiten",
     "changeTypeNotAllowed": "Es ist nicht erlaubt, den „transactionType“ eines Nicht-System-Kontos zu ändern",
-    "bothRefundFieldsNotAllowed": "Du kannst nicht gleichzeitig „refundedByTxIds“ und „refundsTxId“ verwenden. Bitte wähle eines von beiden.",
+    "bothRefundFieldsNotAllowed": "Du kannst nicht gleichzeitig \"refundedByTxIds\" und \"refundsTargets\" verwenden. Bitte entscheide dich für eines von beiden.",
     "oppositeTransactionNotFound": "Gegenbuchung zum Aktualisieren wurde nicht gefunden",
     "transactionIdNotExist": "Transaktion mit der angegebenen ID existiert nicht!",
     "notAuthorizedToEdit": "Du bist nicht berechtigt, diese Transaktion zu bearbeiten.",
@@ -101,14 +102,14 @@
     "paymentLinkedAmountFixed": "Der Betrag einer verknüpften Transaktion kann nicht geändert werden.",
     "paymentLinkedTypeMismatch": "Verknüpfte Transaktionen müssen denselben Typ haben wie die Zahlung. Hebe die Verknüpfung zuerst auf.",
     "refunds": {
-      "wholeLinkWithPartials": "A whole-refund link cannot be combined with partial links",
-      "externalLinkWithOthers": "A refund for a purchase outside the app cannot be combined with other refund links",
-      "externalLinkWithAmount": "A refund of a transaction outside the app cannot have a partial amount; it always covers the whole refund.",
-      "totalExceedsRefund": "Total refund link amounts cannot be greater than the refund transaction amount",
-      "totalExceedsSplit": "Total refund amount cannot be greater than the split amount",
-      "totalExceedsOriginal": "Total refund amount cannot be greater than the original transaction amount",
-      "refundOfRefund": "Cannot refund a \"refund\" transaction",
-      "duplicateLink": "This refund is already linked to that transaction"
+      "wholeLinkWithPartials": "Ein Link für eine vollständige Rückerstattung kann nicht mit Teil-Links kombiniert werden",
+      "externalLinkWithOthers": "Eine Rückerstattung für einen Kauf außerhalb der App kann nicht mit anderen Rückerstattungs-Links kombiniert werden",
+      "externalLinkWithAmount": "Eine Rückerstattung für eine Transaktion außerhalb der App kann keinen Teilbetrag haben; sie deckt immer die gesamte Rückerstattung ab.",
+      "totalExceedsRefund": "Die Summe der Rückerstattungs-Link-Beträge kann den Betrag der Rückerstattungstransaktion nicht überschreiten",
+      "totalExceedsSplit": "Der Gesamtrückerstattungsbetrag kann den Aufteilungsbetrag nicht überschreiten",
+      "totalExceedsOriginal": "Der Gesamtrückerstattungsbetrag kann den ursprünglichen Transaktionsbetrag nicht überschreiten",
+      "refundOfRefund": "Eine \"Rückerstattung\"-Transaktion kann nicht erstattet werden",
+      "duplicateLink": "Diese Rückerstattung ist bereits mit dieser Transaktion verknüpft"
     },
     "splits": {
       "splitsOnTransfer": "Umbuchungstransaktionen können keine Aufteilungen hinzugefügt werden",
@@ -144,6 +145,13 @@
         "message_one": "1 Transaktion ist seit über einer Woche ausstehend. Überprüfe sie bei deiner Bank, damit dein Kontostand korrekt bleibt.",
         "message_other": "{{count}} Transaktionen sind seit über einer Woche ausstehend. Überprüfe sie bei deiner Bank, damit dein Kontostand korrekt bleibt."
       }
+    },
+    "trash": {
+      "paymentNotTrashable": "Remove it from the payment first to delete it.",
+      "portfolioNotTrashable": "Unlink it from the portfolio first to delete it.",
+      "ventureNotTrashable": "Unlink it from the venture first to delete it.",
+      "accountTypeChanged": "This transaction can't be restored because its account type has changed.",
+      "loanPaymentLegMissing": "This loan payment can't be restored because its other side was deleted."
     }
   },
   "budgets": {
@@ -256,6 +264,7 @@
     "cannotDeleteHoldingWithActivePosition": "Eine Position mit aktivem Bestand kann nicht gelöscht werden. Bitte verkaufe oder übertrage zuerst alle Anteile.",
     "transactionAlreadyTransfer": "Transaktion ist bereits als Umbuchung markiert und kann nicht mit einem Portfolio verknüpft werden.",
     "transactionAlreadyLinkedToPortfolio": "Transaktion ist bereits mit einer Portfolio-Umbuchung verknüpft.",
+    "linkedTransactionMustBelongToDestinationAccount": "Die verknüpfte Transaktion muss zum Zielkonto gehören.",
     "transactionAlreadyLinkedToVenture": "Transaktion ist bereits mit einer Portfolio-Umbuchung verknüpft",
     "portfolioTransferNotFound": "Portfolio-Umbuchung nicht gefunden",
     "exchangeCurrenciesMustDiffer": "Währungen beim Umtausch müssen unterschiedlich sein",
@@ -487,7 +496,7 @@
     "aiRateLimited": "Ratenlimit des KI-Anbieters erreicht. Bitte versuche es in einigen Minuten erneut.",
     "aiExtractionFailed": "KI-Extrahierung fehlgeschlagen. Bitte versuche es erneut.",
     "ynab": {
-      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
+      "importAlreadyInProgress": "Ein YNAB-Import läuft bereits. Warte, bis dieser abgeschlossen ist, bevor du einen weiteren startest.",
       "parse": {
         "fileEmpty": "YNAB Register.csv ist leer.",
         "unparseable": "YNAB Register.csv konnte nicht als CSV-Datei verarbeitet werden.",

@@ -28,7 +28,9 @@
       "retry": "Erneut versuchen",
       "copyInviteLink": "Einladungslink kopieren",
       "moveTo": "Verschieben nach…",
-      "learnMore": "Mehr erfahren"
+      "learnMore": "Mehr erfahren",
+      "undo": "Rückgängig",
+      "more": "Mehr"
     },
     "ui": {
       "close": "Schließen",
@@ -151,6 +153,8 @@
     "transactions": {
       "delete": {
         "success": "Erfolgreich entfernt",
+        "undoSuccess": "Restored",
+        "undoError": "Couldn't undo. You can still restore it from the Trash.",
         "error": "Fehler beim Löschen der Transaktion!"
       },
       "submit": {
@@ -579,6 +583,56 @@
     },
     "transactionGroupRecord": {
       "transactionCountLabel": "Transaktionen"
+    }
+  },
+  "mcpToolsets": {
+    "core": {
+      "label": "Kern",
+      "description": "Konten, Transaktionen, Kategorien, Tags, Zahlungsempfänger und Berichte"
+    },
+    "subscriptions": {
+      "label": "Wiederkehrende Zahlungen",
+      "description": "Wiederkehrende Zahlungen, ihre Zeiträume und geplanten Transaktionen"
+    },
+    "budgetPlans": {
+      "label": "Budgetpläne",
+      "description": "Pläne, Linien, Zeilenziele und Sparziele"
+    },
+    "trackers": {
+      "label": "Tracker",
+      "description": "Ausgaben-Tracker und deren Vorschläge"
+    },
+    "automations": {
+      "label": "Automatisierungen",
+      "description": "Regeln, Zahlungsempfänger-Aliase, ignorierte Zahlungsempfängernamen und Tag-Erinnerungen"
+    },
+    "review": {
+      "label": "Überprüfung und Bereinigung",
+      "description": "Umbuchungs- und Rückerstattungsabgleiche, Duplikate und hängende ausstehende Transaktionen"
+    },
+    "groupsTemplates": {
+      "label": "Gruppen und Vorlagen",
+      "description": "Transaktionsgruppen und Transaktionsvorlagen"
+    },
+    "investments": {
+      "label": "Investments",
+      "description": "Portfolios, Positionen, Wertpapiere und Investitionstransaktionen"
+    },
+    "ventures": {
+      "label": "Beteiligungen",
+      "description": "Beteiligungsplattformen, Deals und Events"
+    },
+    "loansVehicles": {
+      "label": "Kredite und Fahrzeuge",
+      "description": "Kredite mit ihren Kreditrückzahlungen und Fahrzeuge"
+    },
+    "currencies": {
+      "label": "Währungen",
+      "description": "Deine Währungen und Wechselkurse"
+    },
+    "imports": {
+      "label": "Importe und Freigaben",
+      "description": "Importstapel (Liste, rückgängig machen) und Bankverbindungen (Status, Konto verknüpfen aufheben); Freigabe ist schreibgeschützt."
     }
   }
 }

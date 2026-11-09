@@ -28,7 +28,9 @@
       "retry": "Skúsiť znova",
       "copyInviteLink": "Kopírovať pozývací odkaz",
       "moveTo": "Presunúť do…",
-      "learnMore": "Zistiť viac"
+      "learnMore": "Zistiť viac",
+      "undo": "Vrátiť späť",
+      "more": "Viac"
     },
     "ui": {
       "close": "Zavrieť",
@@ -150,7 +152,9 @@
     },
     "transactions": {
       "delete": {
-        "success": "Úspešne odstránené",
+        "success": "Presunuté do koša",
+        "undoSuccess": "Obnovené",
+        "undoError": "Vrátenie späť sa nepodarilo. Stále ju môžete obnoviť z koša.",
         "error": "Transakciu sa nepodarilo zmazať!"
       },
       "submit": {
@@ -579,6 +583,56 @@
     },
     "transactionGroupRecord": {
       "transactionCountLabel": "transakcie"
+    }
+  },
+  "mcpToolsets": {
+    "core": {
+      "label": "Základné",
+      "description": "Účty, transakcie, kategórie, značky, príjemcovia a prehľady"
+    },
+    "subscriptions": {
+      "label": "Pravidelné platby",
+      "description": "Opakované platby, ich obdobia a plánované transakcie"
+    },
+    "budgetPlans": {
+      "label": "Rozpočty",
+      "description": "Plány, riadky, ciele riadkov a sporiace ciele"
+    },
+    "trackers": {
+      "label": "Rozpočty",
+      "description": "Sledovače výdavkov a ich návrhy"
+    },
+    "automations": {
+      "label": "Automatizácie",
+      "description": "Pravidlá, aliasy príjemcov, ignorované názvy príjemcov a pripomienky značiek"
+    },
+    "review": {
+      "label": "Kontrola a čistenie",
+      "description": "Zhody prevodov a vrátení platieb, duplikáty a zaseknuté nezaúčtované transakcie"
+    },
+    "groupsTemplates": {
+      "label": "Skupiny a šablóny",
+      "description": "Skupiny transakcií a šablóny transakcií"
+    },
+    "investments": {
+      "label": "Investície",
+      "description": "Portfóliá, pozície, cenné papiere a investičné transakcie"
+    },
+    "ventures": {
+      "label": "Rizikové kapitály",
+      "description": "Platformy venture, obchody a udalosti"
+    },
+    "loansVehicles": {
+      "label": "Úvery a vozidlá",
+      "description": "Úvery s ich splátkami a vozidlá"
+    },
+    "currencies": {
+      "label": "Meny",
+      "description": "Vaše meny a výmenné kurzy"
+    },
+    "imports": {
+      "label": "Importy a zdieľanie",
+      "description": "Dávky importov (zoznam, vrátenie späť) a bankové pripojenia (stav, odpojenie účtu); zdieľanie je len na čítanie."
     }
   }
 }

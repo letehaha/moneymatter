@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Struktur Pengeluaran",
+        "incomeTitle": "Income structure",
         "today": "Hari ini",
         "vsPreviousPeriod": "vs periode sebelumnya",
-        "viewButton": "Lihat"
+        "viewButton": "Lihat",
+        "back": "Kembali",
+        "openInAnalytics": "Open in Analytics",
+        "metric": {
+          "expenses": "Pengeluaran",
+          "income": "Pemasukan"
+        },
+        "seeTransactions": "See transactions"
       },
       "latestTransactions": {
         "title": "Transaksi Terbaru",
@@ -315,6 +323,28 @@
         "ended": "Berakhir",
         "create": "Create a tracker"
       },
+      "tagAnalysis": {
+        "title": "Tag analysis",
+        "noTagsTitle": "No tags selected",
+        "noTagsDescription": "Pick the tags to compare in the widget settings.",
+        "ofIncome": "of income",
+        "remaining": "Unallocated",
+        "targetTooltip": "Target: {value}%",
+        "settings": {
+          "tagsLabel": "Tag",
+          "tagsPlaceholder": "Pilih tag",
+          "targetsLabel": "Targets, %",
+          "targetsNoneSet": "None set",
+          "targetsSetCount": "{set} of {total} set",
+          "targetsEmpty": "Add tags first to set their targets",
+          "targetPlaceholder": "Tidak ada",
+          "percentBaseLabel": "Percent of",
+          "percentBaseTags": "Selected tags",
+          "percentBaseIncome": "Pemasukan",
+          "includeTransfersLabel": "Include transfers",
+          "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
+        }
+      },
       "emptyState": "Tidak ada data dalam interval waktu yang dipilih.",
       "registry": {
         "balanceTrend": {
@@ -399,6 +429,10 @@
             "showReached": "Show reached goals"
           },
           "reachedSection": "Tercapai"
+        },
+        "tagAnalysis": {
+          "name": "Tag analysis",
+          "description": "See how your spending splits across chosen tags, like needs, wants and savings"
         }
       }
     },

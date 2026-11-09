@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Struttura delle uscite",
+        "incomeTitle": "Income structure",
         "today": "Oggi",
         "vsPreviousPeriod": "rispetto al periodo precedente",
-        "viewButton": "Visualizza"
+        "viewButton": "Visualizza",
+        "back": "Indietro",
+        "openInAnalytics": "Open in Analytics",
+        "metric": {
+          "expenses": "Spese",
+          "income": "Entrata"
+        },
+        "seeTransactions": "See transactions"
       },
       "latestTransactions": {
         "title": "Ultime transazioni",
@@ -315,6 +323,28 @@
         "ended": "Terminato",
         "create": "Crea un tracker"
       },
+      "tagAnalysis": {
+        "title": "Tag analysis",
+        "noTagsTitle": "No tags selected",
+        "noTagsDescription": "Pick the tags to compare in the widget settings.",
+        "ofIncome": "delle entrate",
+        "remaining": "Unallocated",
+        "targetTooltip": "Target: {value}%",
+        "settings": {
+          "tagsLabel": "Etichette",
+          "tagsPlaceholder": "Seleziona etichette",
+          "targetsLabel": "Targets, %",
+          "targetsNoneSet": "None set",
+          "targetsSetCount": "{set} of {total} set",
+          "targetsEmpty": "Add tags first to set their targets",
+          "targetPlaceholder": "Nessuna",
+          "percentBaseLabel": "Percent of",
+          "percentBaseTags": "Selected tags",
+          "percentBaseIncome": "Entrata",
+          "includeTransfersLabel": "Include transfers",
+          "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
+        }
+      },
       "emptyState": "Nessun dato nell'intervallo di tempo selezionato.",
       "registry": {
         "balanceTrend": {
@@ -399,6 +429,10 @@
             "showReached": "Mostra obiettivi raggiunti"
           },
           "reachedSection": "Raggiunti"
+        },
+        "tagAnalysis": {
+          "name": "Tag analysis",
+          "description": "See how your spending splits across chosen tags, like needs, wants and savings"
         }
       }
     },

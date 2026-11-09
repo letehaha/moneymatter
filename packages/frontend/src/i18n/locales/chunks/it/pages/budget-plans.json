@@ -501,7 +501,7 @@
       "amountEachYear": "Importo ogni anno",
       "repeatsOnLabel": "Si ripete il",
       "weekdayPlaceholder": "Selezionare un giorno della settimana",
-      "dueDateLabel": "Data di scadenza",
+      "dueDateLabel": "Periodo di riferimento",
       "firstPaymentDateLabel": "Data del primo pagamento",
       "firstDueDateLabel": "Prima scadenza",
       "firstDueDateHint": "Si ripete ogni anno in questa data. Il finanziamento è ripartito sui periodi precedenti.",

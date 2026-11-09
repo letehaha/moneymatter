@@ -95,27 +95,63 @@
         "comparisonPeriod": "Período anterior",
         "cumulativeNote": "Total acumulado até este ponto"
       },
+      "scope": {
+        "label": "Category scope",
+        "all": "Todas as categorias",
+        "up": "Up one level",
+        "transactions": "Transações",
+        "count": "{count} categoria | {count} categorias",
+        "more": "+{count}",
+        "allExcept": "All except {list}",
+        "clear": "Limpar"
+      },
       "categoryBreakdown": {
         "title": "Detalhamento por categoria",
         "noData": "Sem dados para este período",
         "viewAll": "Ver todas as categorias",
-        "moreCount": "mais {count}"
+        "moreCount": "mais {count}",
+        "noSubcategory": "{name} · no subcategory",
+        "byLevel": "By level",
+        "detail": "Detalhamento",
+        "others": "Outros"
+      },
+      "hero": {
+        "vsPrevious": "{percent}% vs previous period",
+        "same": "Same as previous period"
+      },
+      "overTime": {
+        "title": "Over time",
+        "cumulative": "Acumulado",
+        "perPeriod": "Per period",
+        "granularity": {
+          "monthly": "Mensal",
+          "quarterly": "Trimestral",
+          "yearly": "Anual"
+        }
+      },
+      "transactionsCard": {
+        "title": "Transações",
+        "largest": "Largest",
+        "recent": "Recent"
       },
       "monthlyComparison": {
-        "title": "Comparação mensal",
         "allCategories": "Todas as categorias",
         "average": "Média",
         "total": "Total",
-        "vsLastMonth": "vs. mês anterior",
-        "viewTransactions": "Ver transações"
-      },
-      "cumulativeProgress": {
-        "title": "Progresso acumulado"
+        "vsPrevious": {
+          "monthly": "vs. mês passado",
+          "quarterly": "vs last quarter",
+          "yearly": "vs last year"
+        },
+        "show": {
+          "monthly": "Show this month",
+          "quarterly": "Show quarter",
+          "yearly": "Show year"
+        }
       },
       "filters": {
         "button": "Filtros",
         "title": "Filtros",
-        "categories": "Categorias",
         "include": "Incluir",
         "exclude": "Excluir",
         "accounts": "Contas",

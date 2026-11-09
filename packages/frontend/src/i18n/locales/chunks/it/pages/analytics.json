@@ -95,27 +95,63 @@
         "comparisonPeriod": "Periodo precedente",
         "cumulativeNote": "Totale cumulativo fino a questo punto"
       },
+      "scope": {
+        "label": "Category scope",
+        "all": "Tutte le categorie",
+        "up": "Up one level",
+        "transactions": "Transazioni",
+        "count": "{count} categoria | {count} categorie",
+        "more": "+{count}",
+        "allExcept": "All except {list}",
+        "clear": "Pulisci"
+      },
       "categoryBreakdown": {
         "title": "Ripartizione per categoria",
         "noData": "Nessun dato per questo periodo",
         "viewAll": "Visualizza tutte le categorie",
-        "moreCount": "altre {count}"
+        "moreCount": "altre {count}",
+        "noSubcategory": "{name} · no subcategory",
+        "byLevel": "By level",
+        "detail": "Dettaglio",
+        "others": "Altri"
+      },
+      "hero": {
+        "vsPrevious": "{percent}% vs previous period",
+        "same": "Same as previous period"
+      },
+      "overTime": {
+        "title": "Over time",
+        "cumulative": "Cumulativo",
+        "perPeriod": "Per period",
+        "granularity": {
+          "monthly": "Mensile",
+          "quarterly": "Trimestrale",
+          "yearly": "Annualmente"
+        }
+      },
+      "transactionsCard": {
+        "title": "Transazioni",
+        "largest": "Largest",
+        "recent": "Recent"
       },
       "monthlyComparison": {
-        "title": "Confronto mensile",
         "allCategories": "Tutte le categorie",
         "average": "Medio",
         "total": "Totale",
-        "vsLastMonth": "rispetto al mese precedente",
-        "viewTransactions": "Visualizza transazioni"
-      },
-      "cumulativeProgress": {
-        "title": "Andamento cumulativo"
+        "vsPrevious": {
+          "monthly": "rispetto al mese scorso",
+          "quarterly": "vs last quarter",
+          "yearly": "vs last year"
+        },
+        "show": {
+          "monthly": "Show this month",
+          "quarterly": "Show quarter",
+          "yearly": "Show year"
+        }
       },
       "filters": {
         "button": "Filtri",
         "title": "Filtri",
-        "categories": "Categorie",
         "include": "Includi",
         "exclude": "Escludi",
         "accounts": "Conti",

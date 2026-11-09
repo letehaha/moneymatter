@@ -28,7 +28,9 @@
       "retry": "Riprova",
       "copyInviteLink": "Copia il link d'invito",
       "moveTo": "Sposta in…",
-      "learnMore": "Maggiori informazioni"
+      "learnMore": "Maggiori informazioni",
+      "undo": "Annulla",
+      "more": "Altro"
     },
     "ui": {
       "close": "Chiudi",
@@ -150,7 +152,9 @@
     },
     "transactions": {
       "delete": {
-        "success": "Rimosso con successo",
+        "success": "Spostata nel Cestino",
+        "undoSuccess": "Ripristinata",
+        "undoError": "Impossibile annullare. È comunque possibile ripristinarla dal Cestino.",
         "error": "Impossibile eliminare la transazione!"
       },
       "submit": {
@@ -183,7 +187,7 @@
     "outOfWallet": "Fuori dai conti",
     "dateSelector": {
       "dialogTitle": "Intervallo di date",
-      "dueDate": "Data di scadenza",
+      "dueDate": "Periodo di riferimento",
       "quickSelect": "Selezione rapida",
       "apply": "Applica",
       "periodTypes": {
@@ -579,6 +583,56 @@
     },
     "transactionGroupRecord": {
       "transactionCountLabel": "transazioni"
+    }
+  },
+  "mcpToolsets": {
+    "core": {
+      "label": "Base",
+      "description": "Conti, transazioni, categorie, etichette, beneficiari e report"
+    },
+    "subscriptions": {
+      "label": "Pagamenti ricorrenti",
+      "description": "Pagamenti ricorrenti, relativi periodi e transazioni pianificate"
+    },
+    "budgetPlans": {
+      "label": "Piani di budget",
+      "description": "Piani, voci, obiettivi delle voci e obiettivi di risparmio"
+    },
+    "trackers": {
+      "label": "Tracker",
+      "description": "Tracker di spesa e relativi suggerimenti"
+    },
+    "automations": {
+      "label": "Automazioni",
+      "description": "Regole, alias dei beneficiari, nomi di beneficiari ignorati e promemoria delle etichette"
+    },
+    "review": {
+      "label": "Revisione e pulizia",
+      "description": "Abbinamenti di trasferimenti e rimborsi, duplicati e transazioni in sospeso bloccate"
+    },
+    "groupsTemplates": {
+      "label": "Gruppi e modelli",
+      "description": "Gruppi di transazioni e modelli di transazione"
+    },
+    "investments": {
+      "label": "Investimenti",
+      "description": "Portafogli, posizioni, titoli e transazioni di investimento"
+    },
+    "ventures": {
+      "label": "Venture capital",
+      "description": "Piattaforme, operazioni ed eventi di venture capital"
+    },
+    "loansVehicles": {
+      "label": "Prestiti e veicoli",
+      "description": "Prestiti con i relativi pagamenti, e veicoli"
+    },
+    "currencies": {
+      "label": "Valute",
+      "description": "Valute e tassi di cambio"
+    },
+    "imports": {
+      "label": "Importazioni e condivisione",
+      "description": "Lotti di importazione (elenco, annullamento) e connessioni bancarie (stato, scollegamento di un conto); la condivisione è in sola lettura."
     }
   }
 }

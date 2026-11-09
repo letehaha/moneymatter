@@ -42,9 +42,9 @@
         },
         "unauthorizedClient": "Diese Anwendung ist nicht berechtigt, diese Authentifizierungsmethode zu verwenden",
         "temporarilyUnavailable": "Der Authentifizierungsdienst ist vorübergehend nicht verfügbar. Bitte versuche später erneut.",
-        "unableToLinkAccount": "We couldn't link this account because this server doesn't treat the provider's email as verified. Contact your administrator.",
-        "emailDoesNotMatch": "The email on this provider account doesn't match your account email. Use a provider account with the same email.",
-        "emailNotVerified": "Check your email to verify your address, then sign in again."
+        "unableToLinkAccount": "Wir konnten dieses Konto nicht verknüpfen, da dieser Server die E-Mail-Adresse des Anbieters nicht als verifiziert betrachtet. Wende dich an deinen Administrator.",
+        "emailDoesNotMatch": "Die E-Mail-Adresse dieses Anbieterkontos stimmt nicht mit deiner Konto-E-Mail-Adresse überein. Verwende ein Anbieterkonto mit derselben E-Mail-Adresse.",
+        "emailNotVerified": "Überprüfe deine E-Mails, um deine Adresse zu bestätigen, und melde dich dann erneut an."
       }
     }
   }

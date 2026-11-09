@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Expenses structure",
+        "incomeTitle": "Income structure",
         "today": "Today",
         "vsPreviousPeriod": "vs previous period",
-        "viewButton": "查看"
+        "viewButton": "查看",
+        "back": "Back",
+        "openInAnalytics": "Open in Analytics",
+        "metric": {
+          "expenses": "Expenses",
+          "income": "Income"
+        },
+        "seeTransactions": "See transactions"
       },
       "latestTransactions": {
         "title": "Latest transactions",
@@ -315,6 +323,28 @@
         "ended": "Ended",
         "create": "Create a tracker"
       },
+      "tagAnalysis": {
+        "title": "Tag analysis",
+        "noTagsTitle": "No tags selected",
+        "noTagsDescription": "Pick the tags to compare in the widget settings.",
+        "ofIncome": "of income",
+        "remaining": "Unallocated",
+        "targetTooltip": "Target: {value}%",
+        "settings": {
+          "tagsLabel": "Tags",
+          "tagsPlaceholder": "Select tags",
+          "targetsLabel": "Targets, %",
+          "targetsNoneSet": "None set",
+          "targetsSetCount": "{set} of {total} set",
+          "targetsEmpty": "Add tags first to set their targets",
+          "targetPlaceholder": "None",
+          "percentBaseLabel": "Percent of",
+          "percentBaseTags": "Selected tags",
+          "percentBaseIncome": "Income",
+          "includeTransfersLabel": "Include transfers",
+          "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
+        }
+      },
       "emptyState": "There are no data in selected time interval.",
       "registry": {
         "balanceTrend": {
@@ -399,6 +429,10 @@
             "showReached": "Show reached goals"
           },
           "reachedSection": "Reached"
+        },
+        "tagAnalysis": {
+          "name": "Tag analysis",
+          "description": "See how your spending splits across chosen tags, like needs, wants and savings"
         }
       }
     },

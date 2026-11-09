@@ -12,7 +12,26 @@
       "always_granted": "Sempre concesso",
       "optional": "Opzionale",
       "delete_warning": "Concedere l'accesso solo ad applicazioni affidabili",
-      "unknown_app": "Un'applicazione"
+      "unknown_app": "Un'applicazione",
+      "steps": {
+        "permissions": "Permessi",
+        "tools": "Strumenti"
+      },
+      "continue": "Continua",
+      "back": "Indietro",
+      "toolsets": {
+        "intro": "Scegliere con cosa può lavorare {name}. Ogni set aggiuntivo aggiunge strumenti che {name} carica in ogni chat.",
+        "add_all": "Aggiungi tutte",
+        "core_only": "Solo base",
+        "always_on": "{count} strumento, sempre attivo | {count} strumenti, sempre attivi",
+        "tool_count": "{count} strumento | {count} strumenti",
+        "selected": "{count} strumento selezionato | {count} strumenti selezionati",
+        "of_total": "su {total}",
+        "counter_label": "Strumenti selezionati",
+        "fits_cap": "Compatibile con tutte le app, inclusi ChatGPT e VS Code Copilot (massimo {cap} strumenti).",
+        "over_cap": "Oltre {cap} strumenti. ChatGPT e VS Code Copilot non ne caricano così tanti.",
+        "load_error": "Impossibile caricare i set di strumenti. Consentire l'accesso per usare gli strumenti di base e ricollegarsi più tardi per aggiungerne altri."
+      }
     },
     "scopes": {
       "finance_read": {

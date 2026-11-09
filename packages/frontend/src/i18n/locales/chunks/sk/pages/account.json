@@ -354,9 +354,9 @@
         "empty": "Zatiaľ žiadne ručné úpravy hodnoty. Prepíšte hodnotu a zaznamenajte ju.",
         "delete": "Zmazať",
         "deleteTitle": "Zmazať túto úpravu?",
-        "deleteDescription": "Po odstránení tejto úpravy sa odpisovanie znova viaže na predchádzajúcu úpravu (alebo na pôvodný nákup, ak žiadna nie je). Súvisiaca transakcia sa zmaže.",
+        "deleteDescription": "Odstránením tejto úpravy sa odpisy znova viažu na predchádzajúcu úpravu (alebo na pôvodný nákup, ak žiadna nie je). Súvisiaca transakcia sa presunie do koša, kde ju môžete 30 dní obnoviť.",
         "deleteConfirm": "Vymazať",
-        "deleteSuccess": "Úprava odstránená",
+        "deleteSuccess": "Úprava odstránená a jej transakcia presunutá do koša",
         "deleteError": "Úpravu sa nepodarilo odstrániť"
       },
       "sections": {

@@ -13,6 +13,7 @@
     "accountNoExternalIdEnableBanking": "Akun tidak memiliki ID eksternal dari Enable Banking",
     "accountNotFoundForTransaction": "Akun tidak ditemukan untuk transaksi ini",
     "deleteBlockedByLoanPayments": "Akun ini memiliki pembayaran pinjaman. Hapus atau alihkan pembayaran tersebut sebelum menghapus akun.",
+    "deleteBlockedByTrashedLoanPayments": "This account has loan payments in Trash. Delete them permanently from Trash before deleting the account.",
     "loanBalanceUseUpdateLoan": "Ubah saldo pinjaman dari halaman pinjaman, bukan dari pengaturan akun.",
     "loanCategoryImmutable": "Kategori akun pinjaman tidak dapat diubah.",
     "dedicatedFlowCategoryNotAllowed": "Akun pinjaman dan kendaraan harus dibuat melalui endpoint khusus, bukan endpoint akun umum.",
@@ -144,6 +145,13 @@
         "message_one": "1 transaction has been pending for over a week. Check it with your bank so your balance stays accurate.",
         "message_other": "{{count}} transactions have been pending for over a week. Check them with your bank so your balance stays accurate."
       }
+    },
+    "trash": {
+      "paymentNotTrashable": "Remove it from the payment first to delete it.",
+      "portfolioNotTrashable": "Unlink it from the portfolio first to delete it.",
+      "ventureNotTrashable": "Unlink it from the venture first to delete it.",
+      "accountTypeChanged": "This transaction can't be restored because its account type has changed.",
+      "loanPaymentLegMissing": "This loan payment can't be restored because its other side was deleted."
     }
   },
   "budgets": {
@@ -256,6 +264,7 @@
     "cannotDeleteHoldingWithActivePosition": "Tidak dapat menghapus holding dengan posisi aktif. Silakan jual atau transfer semua saham terlebih dahulu.",
     "transactionAlreadyTransfer": "Transaksi sudah ditandai sebagai transfer dan tidak dapat ditautkan ke portofolio.",
     "transactionAlreadyLinkedToPortfolio": "Transaksi sudah ditautkan ke transfer portofolio.",
+    "linkedTransactionMustBelongToDestinationAccount": "The linked transaction must belong to the destination account.",
     "transactionAlreadyLinkedToVenture": "Transaksi sudah ditautkan ke deal venture",
     "portfolioTransferNotFound": "Transfer portofolio tidak ditemukan",
     "exchangeCurrenciesMustDiffer": "Mata uang pertukaran harus berbeda",
