@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Ausgabenstruktur",
+        "incomeTitle": "Income structure",
         "today": "Heute",
         "vsPreviousPeriod": "gegenüber vorherigem Zeitraum",
-        "viewButton": "Anzeigen"
+        "viewButton": "Anzeigen",
+        "back": "Zurück",
+        "openInAnalytics": "Open in Analytics",
+        "metric": {
+          "expenses": "Ausgaben",
+          "income": "Einnahmen"
+        },
+        "seeTransactions": "See transactions"
       },
       "latestTransactions": {
         "title": "Neueste Transaktionen",
@@ -238,7 +246,7 @@
         },
         "hints": {
           "noHistory": "Der Vergleich erscheint nach deinem ersten vollen Monat.",
-          "plannedFailed": "Couldn't load planned transactions. The forecast may not include them.",
+          "plannedFailed": "Geplante Transaktionen konnten nicht geladen werden. Die Prognose enthält sie möglicherweise nicht.",
           "fewMonths": "Durchschnitt des {n} vollen Monats, den du bisher hast. | Durchschnitt der {n} vollen Monate, die du bisher hast."
         },
         "loadFailed": "Deine Ausgaben konnten nicht geladen werden.",
@@ -314,6 +322,28 @@
         "empty": "Noch keine Tracker",
         "ended": "Beendet",
         "create": "Tracker erstellen"
+      },
+      "tagAnalysis": {
+        "title": "Tag analysis",
+        "noTagsTitle": "No tags selected",
+        "noTagsDescription": "Pick the tags to compare in the widget settings.",
+        "ofIncome": "vom Einkommen",
+        "remaining": "Unallocated",
+        "targetTooltip": "Target: {value}%",
+        "settings": {
+          "tagsLabel": "Tags",
+          "tagsPlaceholder": "Tags auswählen",
+          "targetsLabel": "Targets, %",
+          "targetsNoneSet": "None set",
+          "targetsSetCount": "{set} of {total} set",
+          "targetsEmpty": "Add tags first to set their targets",
+          "targetPlaceholder": "Keine",
+          "percentBaseLabel": "Percent of",
+          "percentBaseTags": "Selected tags",
+          "percentBaseIncome": "Einnahmen",
+          "includeTransfersLabel": "Include transfers",
+          "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
+        }
       },
       "emptyState": "Keine Daten im ausgewählten Zeitintervall vorhanden.",
       "registry": {
@@ -399,6 +429,10 @@
             "showReached": "Erreichte Ziele anzeigen"
           },
           "reachedSection": "Erreicht"
+        },
+        "tagAnalysis": {
+          "name": "Tag analysis",
+          "description": "See how your spending splits across chosen tags, like needs, wants and savings"
         }
       }
     },

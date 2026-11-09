@@ -84,7 +84,7 @@
       }
     },
     "trends": {
-      "subtitle": "Compare spending, income and savings with the previous period.",
+      "subtitle": "Compare spending and income with the previous period.",
       "metrics": {
         "expenses": "Pengeluaran",
         "income": "Pemasukan",
@@ -95,27 +95,63 @@
         "comparisonPeriod": "Periode sebelumnya",
         "cumulativeNote": "Total kumulatif hingga titik ini"
       },
+      "scope": {
+        "label": "Category scope",
+        "all": "Semua Kategori",
+        "up": "Up one level",
+        "transactions": "Transaksi",
+        "count": "{count} category | {count} categories",
+        "more": "+{count}",
+        "allExcept": "All except {list}",
+        "clear": "Bersihkan"
+      },
       "categoryBreakdown": {
         "title": "Rincian Kategori",
         "noData": "Tidak ada data untuk periode ini",
         "viewAll": "Lihat semua kategori",
-        "moreCount": "{count} lainnya"
+        "moreCount": "{count} lainnya",
+        "noSubcategory": "{name} · no subcategory",
+        "byLevel": "By level",
+        "detail": "Detail",
+        "others": "Lainnya"
+      },
+      "hero": {
+        "vsPrevious": "{percent}% vs previous period",
+        "same": "Same as previous period"
+      },
+      "overTime": {
+        "title": "Over time",
+        "cumulative": "Cumulative",
+        "perPeriod": "Per period",
+        "granularity": {
+          "monthly": "Bulanan",
+          "quarterly": "Triwulan",
+          "yearly": "Tahunan"
+        }
+      },
+      "transactionsCard": {
+        "title": "Transaksi",
+        "largest": "Largest",
+        "recent": "Recent"
       },
       "monthlyComparison": {
-        "title": "Perbandingan Bulanan",
         "allCategories": "Semua Kategori",
         "average": "Rata-rata",
         "total": "Total",
-        "vsLastMonth": "vs bulan sebelumnya",
-        "viewTransactions": "Lihat transaksi"
-      },
-      "cumulativeProgress": {
-        "title": "Progres Kumulatif"
+        "vsPrevious": {
+          "monthly": "vs last month",
+          "quarterly": "vs last quarter",
+          "yearly": "vs last year"
+        },
+        "show": {
+          "monthly": "Show this month",
+          "quarterly": "Show quarter",
+          "yearly": "Show year"
+        }
       },
       "filters": {
         "button": "Filter",
         "title": "Filter",
-        "categories": "Kategori",
         "include": "Include",
         "exclude": "Kecualikan",
         "accounts": "Akun",

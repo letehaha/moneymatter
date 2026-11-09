@@ -258,8 +258,10 @@
       "externalTooltip": "Selection contains bank-synced transactions, which cannot be deleted.",
       "confirmButton": "Xóa",
       "confirmTitle": "Delete {count} transactions?",
-      "confirmDescription": "This action cannot be undone. Transfers will have both sides removed.",
-      "successMessage": "{count} transactions deleted",
+      "confirmDescription": "They stay in Trash for 30 days and you can restore them until then. Transfers move both sides.",
+      "successMessage": "1 transaction moved to Trash | {count} transactions moved to Trash",
+      "skippedMessage": "1 was skipped because it's linked to a payment, portfolio or venture. | {count} were skipped because they're linked to a payment, portfolio or venture.",
+      "noneDeletedMessage": "Nothing moved to Trash: 1 transaction is linked to a payment, portfolio or venture. | Nothing moved to Trash: {count} transactions are linked to a payment, portfolio or venture.",
       "unexpectedError": "Failed to delete transactions. Please try again."
     },
     "inlineEdit": {
@@ -296,6 +298,50 @@
       "deleteTitle": "Delete view “{name}”?",
       "deleteDescription": "Your transactions are not affected. This can't be undone.",
       "filtersCount": "{count} filter | {count} filters"
+    },
+    "trashPage": {
+      "title": "Thùng rác",
+      "description": "Newest deletions first. Each is removed for good after {days} days. Pick one to see what comes back with it.",
+      "expiringBanner": "{count} will be deleted permanently within {days}.",
+      "expiringCount": "1 transaction | {count} transactions",
+      "expiringDays": "1 day | {count} days",
+      "loadError": "Couldn't load the Trash",
+      "emptyTitle": "Trash is empty",
+      "emptyDescription": "Deleted transactions stay here for {days} days before they're removed for good.",
+      "daysLeft": "1 day left | {count} days left",
+      "deletedOn": "deleted {date}",
+      "transferTitle": "Transfer from {from} to {to}",
+      "unknownAccount": "Unknown account",
+      "restore": "Khôi phục",
+      "deletePermanently": "Delete permanently",
+      "deleteConfirmTitle": "Delete permanently?",
+      "deleteConfirmDescription": "This transaction will be removed for good. This can't be undone.",
+      "notifications": {
+        "restored": "Transaction restored",
+        "restoreError": "Failed to restore the transaction",
+        "deleted": "Transaction deleted permanently",
+        "deleteError": "Failed to delete the transaction",
+        "restoredWithDroppedRefundLinks": "Restored. 1 refund link couldn't be restored because it no longer fits. | Restored. {count} refund links couldn't be restored because they no longer fit."
+      },
+      "comesBack": {
+        "title": "Comes back with",
+        "basics": "Category, note and payee",
+        "splits": "1 split | {n} splits",
+        "tags": "1 tag | {n} tags",
+        "attachments": "1 attachment | {n} attachments",
+        "otherLeg": "Other leg: {accountName} · {amountText}",
+        "balance": "Account balance is recalculated",
+        "balances": "Both balances are recalculated",
+        "counterpartInTrash": "Comes back when the linked transaction is restored too.",
+        "links": {
+          "refund": "Refund link with \"{name}\"",
+          "tracker": "Tracker \"{name}\"",
+          "group": "Group \"{name}\"",
+          "subscription": "Subscription \"{name}\"",
+          "subscriptionPeriod": "Subscription payment due {name}",
+          "unnamed": "Không có tiêu đề"
+        }
+      }
     }
   },
   "records": {
@@ -310,7 +356,7 @@
       "morePlans": "+{count} more planned",
       "morePlansAtLeast": "+{count}+ more planned",
       "deletePlanTitle": "Delete planned transaction?",
-      "deletePlanDescription": "This action cannot be undone.",
+      "deletePlanDescription": "It stays in Trash for 30 days and you can restore it until then.",
       "plansLoadFailed": "Couldn't load planned transactions",
       "confirmAction": "Confirm",
       "confirmTooltip": "The money moved — record it and update the balance",

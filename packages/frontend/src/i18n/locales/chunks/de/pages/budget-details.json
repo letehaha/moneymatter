@@ -97,7 +97,7 @@
         },
         "topPayees": "Top-Zahlungsempfänger",
         "bySpend": "nach Ausgaben",
-        "noPayee": "Kein ZahlungsempfängerEmpfänger",
+        "noPayee": "Kein Zahlungsempfänger",
         "txCount": "{count} Transaktionen"
       },
       "sharing": {

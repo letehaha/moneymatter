@@ -57,7 +57,8 @@
         "financeWrite": "Chỉnh sửa dữ liệu tài chính",
         "financeDelete": "Xóa dữ liệu tài chính",
         "profileRead": "Đọc hồ sơ",
-        "offlineAccess": "Truy cập ngoại tuyến"
+        "offlineAccess": "Truy cập ngoại tuyến",
+        "toolset": "Tools: {name}"
       }
     }
   }

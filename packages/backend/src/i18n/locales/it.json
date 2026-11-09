@@ -13,6 +13,7 @@
     "accountNoExternalIdEnableBanking": "Il conto non ha un ID esterno di Enable Banking",
     "accountNotFoundForTransaction": "Conto non trovato per questa transazione",
     "deleteBlockedByLoanPayments": "Questo conto ha pagamenti di prestito collegati. Eliminarli o riassegnarli prima di eliminare il conto.",
+    "deleteBlockedByTrashedLoanPayments": "Questo conto ha pagamenti del prestito nel Cestino. Eliminarli definitivamente dal Cestino prima di eliminare il conto.",
     "loanBalanceUseUpdateLoan": "Modificare il saldo residuo di un prestito dalla relativa pagina del prestito, non dalle impostazioni del conto.",
     "loanCategoryImmutable": "La categoria di un conto di prestito non può essere modificata.",
     "dedicatedFlowCategoryNotAllowed": "I conti dei prestiti e dei veicoli devono essere creati attraverso le pagine dedicate, non attraverso la pagina dei conti generici.",
@@ -56,7 +57,7 @@
     "idCannotBeChanged": "L'ID non può essere modificato",
     "editReadonlyFields": "Tentativo di modificare campi in sola lettura del conto esterno",
     "changeTypeNotAllowed": "Non è consentito cambiare \"transactionType\" dei conti non di sistema",
-    "bothRefundFieldsNotAllowed": "Non è possibile utilizzare contemporaneamente i campi \"refundedByTxIds\" e \"refundsTxId\". Sceglierne solo uno.",
+    "bothRefundFieldsNotAllowed": "Non è possibile usare contemporaneamente \"refundedByTxIds\" e \"refundsTargets\". Sceglierne uno.",
     "oppositeTransactionNotFound": "Impossibile trovare la transazione complementare per effettuare un aggiornamento",
     "transactionIdNotExist": "La transazione con l'ID indicato non esiste.",
     "notAuthorizedToEdit": "Autorizzazione insufficiente per modificare questa transazione.",
@@ -101,14 +102,14 @@
     "paymentLinkedAmountFixed": "L'importo di una transazione collegata non può essere modificato.",
     "paymentLinkedTypeMismatch": "Le transazioni collegate devono avere lo stesso tipo del pagamento. Scollegarle prima.",
     "refunds": {
-      "wholeLinkWithPartials": "A whole-refund link cannot be combined with partial links",
-      "externalLinkWithOthers": "A refund for a purchase outside the app cannot be combined with other refund links",
-      "externalLinkWithAmount": "A refund of a transaction outside the app cannot have a partial amount; it always covers the whole refund.",
-      "totalExceedsRefund": "Total refund link amounts cannot be greater than the refund transaction amount",
-      "totalExceedsSplit": "Total refund amount cannot be greater than the split amount",
-      "totalExceedsOriginal": "Total refund amount cannot be greater than the original transaction amount",
-      "refundOfRefund": "Cannot refund a \"refund\" transaction",
-      "duplicateLink": "This refund is already linked to that transaction"
+      "wholeLinkWithPartials": "Un collegamento di rimborso totale non può essere combinato con collegamenti parziali",
+      "externalLinkWithOthers": "Un rimborso per un acquisto esterno all'app non può essere combinato con altri collegamenti di rimborso",
+      "externalLinkWithAmount": "Un rimborso di una transazione esterna all'app non può avere un importo parziale: copre sempre l'intero rimborso.",
+      "totalExceedsRefund": "Il totale degli importi dei collegamenti di rimborso non può superare l'importo della transazione di rimborso",
+      "totalExceedsSplit": "L'importo totale del rimborso non può superare l'importo della suddivisione",
+      "totalExceedsOriginal": "L'importo totale del rimborso non può superare l'importo della transazione originale",
+      "refundOfRefund": "Impossibile rimborsare una transazione di \"rimborso\"",
+      "duplicateLink": "Questo rimborso è già collegato a quella transazione"
     },
     "splits": {
       "splitsOnTransfer": "Impossibile aggiungere suddivisioni alle transazioni di trasferimento",
@@ -144,6 +145,13 @@
         "message_one": "1 transazione è in sospeso da oltre una settimana. Verificarla con la banca per mantenere il saldo accurato.",
         "message_other": "{{count}} transazioni sono in sospeso da oltre una settimana. Verificarle con la banca per mantenere il saldo accurato."
       }
+    },
+    "trash": {
+      "paymentNotTrashable": "Rimuoverla dal pagamento prima di eliminarla.",
+      "portfolioNotTrashable": "Scollegarla dal portafoglio prima di eliminarla.",
+      "ventureNotTrashable": "Scollegarla dal venture capital prima di eliminarla.",
+      "accountTypeChanged": "Impossibile ripristinare questa transazione perché il tipo di conto è cambiato.",
+      "loanPaymentLegMissing": "Impossibile ripristinare questo pagamento del prestito perché l'altro lato è stato eliminato."
     }
   },
   "budgets": {
@@ -256,6 +264,7 @@
     "cannotDeleteHoldingWithActivePosition": "Impossibile eliminare una posizione ancora aperta. Vendere o trasferire prima tutte le quote.",
     "transactionAlreadyTransfer": "La transazione è già contrassegnata come trasferimento e non può essere collegata a un portafoglio.",
     "transactionAlreadyLinkedToPortfolio": "La transazione è già collegata a un trasferimento di portafoglio.",
+    "linkedTransactionMustBelongToDestinationAccount": "La transazione collegata deve appartenere al conto di destinazione.",
     "transactionAlreadyLinkedToVenture": "La transazione è già collegata a un'operazione di venture capital",
     "portfolioTransferNotFound": "Trasferimento di portafoglio non trovato",
     "exchangeCurrenciesMustDiffer": "Le valute del cambio devono essere diverse",
@@ -487,7 +496,7 @@
     "aiRateLimited": "Raggiunto il limite di richieste del provider IA. Riprovare tra qualche minuto.",
     "aiExtractionFailed": "Estrazione IA non riuscita. Riprovare.",
     "ynab": {
-      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
+      "importAlreadyInProgress": "È già in corso un'importazione da YNAB. Attenderne il termine prima di avviarne un'altra.",
       "parse": {
         "fileEmpty": "Il file Register.csv di YNAB è vuoto.",
         "unparseable": "Impossibile analizzare il file Register.csv di YNAB come file CSV.",

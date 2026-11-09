@@ -365,7 +365,7 @@
       "noResults": "Keine Zahlungsempfänger gefunden",
       "unknownPayee": "Unbekannter Zahlungsempfänger",
       "loadError": "Zahlungsempfänger konnten nicht geladen werden. Bitte versuche es erneut.",
-      "blankOption": "Kein ZahlungsempfängerEmpfänger"
+      "blankOption": "Kein Zahlungsempfänger"
     },
     "budgetMultiSelect": {
       "label": "Alle Tracker",

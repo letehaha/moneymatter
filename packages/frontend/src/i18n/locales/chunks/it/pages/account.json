@@ -354,9 +354,9 @@
         "empty": "Ancora nessuna rettifica manuale. Rettificare il valore per registrarne una.",
         "delete": "Elimina",
         "deleteTitle": "Eliminare questa rettifica?",
-        "deleteDescription": "Rimuovendo questa rettifica, il deprezzamento verrà ricalcolato a partire dalla rettifica precedente (o dall'acquisto originale, se assente). La transazione associata verrà eliminata.",
+        "deleteDescription": "Rimuovendo questa rettifica, il deprezzamento verrà ricalcolato a partire dalla rettifica precedente (o dall'acquisto originale, se assente). La transazione associata verrà spostata nel Cestino, da cui sarà possibile ripristinarla per 30 giorni.",
         "deleteConfirm": "Elimina",
-        "deleteSuccess": "Rettifica rimossa",
+        "deleteSuccess": "Rettifica rimossa e relativa transazione spostata nel Cestino",
         "deleteError": "Rimozione della rettifica non riuscita"
       },
       "sections": {

@@ -13,6 +13,7 @@
     "accountNoExternalIdEnableBanking": "Účet nemá externé ID z Enable Banking",
     "accountNotFoundForTransaction": "Pre túto transakciu sa nenašiel účet",
     "deleteBlockedByLoanPayments": "Tento účet má splátky pôžičky. Pred zmazaním účtu ich zmažte alebo preraďte.",
+    "deleteBlockedByTrashedLoanPayments": "Tento účet má splátky úveru v koši. Pred odstránením účtu ich natrvalo odstráňte z koša.",
     "loanBalanceUseUpdateLoan": "Nesplatený zostatok pôžičky zmeňte na jej stránke, nie v nastaveniach účtu.",
     "loanCategoryImmutable": "Kategóriu účtu pôžičky nemožno zmeniť.",
     "dedicatedFlowCategoryNotAllowed": "Účty pôžičiek a vozidiel sa musia vytvárať cez svoje vyhradené rozhrania, nie cez všeobecné rozhranie účtov.",
@@ -144,6 +145,13 @@
         "message_one": "1 transakcia čaká už viac než týždeň. Overte ju v banke, aby bol váš zostatok presný.",
         "message_other": "{{count}} transakcií čaká už viac než týždeň. Overte ich v banke, aby bol váš zostatok presný."
       }
+    },
+    "trash": {
+      "paymentNotTrashable": "Najprv ju odstráňte z platby, aby ju bolo možné odstrániť.",
+      "portfolioNotTrashable": "Najprv ju odpojte od portfólia, aby ju bolo možné odstrániť.",
+      "ventureNotTrashable": "Najprv ju odpojte od venture, aby ju bolo možné odstrániť.",
+      "accountTypeChanged": "Túto transakciu nemožno obnoviť, pretože sa zmenil typ jej účtu.",
+      "loanPaymentLegMissing": "Túto splátku úveru nemožno obnoviť, pretože jej druhá strana bola odstránená."
     }
   },
   "budgets": {
@@ -256,6 +264,7 @@
     "cannotDeleteHoldingWithActivePosition": "Pozíciu s aktívnym podielom nemožno zmazať. Najprv predajte alebo previeďte všetky akcie, prosím.",
     "transactionAlreadyTransfer": "Transakcia je už označená ako prevod a nemožno ju prepojiť s portfóliom.",
     "transactionAlreadyLinkedToPortfolio": "Transakcia je už prepojená s prevodom do portfólia.",
+    "linkedTransactionMustBelongToDestinationAccount": "Prepojená transakcia musí patriť do cieľového účtu.",
     "transactionAlreadyLinkedToVenture": "Transakcia je už prepojená s obchodom v rizikovom kapitáli",
     "portfolioTransferNotFound": "Prevod do portfólia sa nenašiel",
     "exchangeCurrenciesMustDiffer": "Meny pri výmene musia byť rôzne",
@@ -487,7 +496,7 @@
     "aiRateLimited": "Dosiahnutý limit požiadaviek poskytovateľa AI. Skúste to znova o pár minút, prosím.",
     "aiExtractionFailed": "Vyťaženie pomocou AI zlyhalo. Skúste to znova, prosím.",
     "ynab": {
-      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
+      "importAlreadyInProgress": "Import z YANB už prebieha. Pred spustením ďalšieho počkajte, kým sa dokončí.",
       "parse": {
         "fileEmpty": "Súbor YNAB Register.csv je prázdny.",
         "unparseable": "Súbor YNAB Register.csv sa nepodarilo spracovať ako súbor CSV.",

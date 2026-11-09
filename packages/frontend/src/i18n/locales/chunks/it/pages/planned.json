@@ -262,6 +262,7 @@
         "dueOn": "Scadenza {date}",
         "paidAt": "Pagato il {date}",
         "viewTransaction": "Visualizza transazione",
+        "paymentInTrash": "Pagamento nel Cestino",
         "actions": {
           "markPaid": "Segna pagato",
           "skip": "Salta"

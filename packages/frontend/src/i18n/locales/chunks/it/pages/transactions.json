@@ -258,8 +258,10 @@
       "externalTooltip": "La selezione contiene transazioni sincronizzate dalla banca, che non possono essere eliminate.",
       "confirmButton": "Elimina",
       "confirmTitle": "Eliminare {count} transazioni?",
-      "confirmDescription": "Questa azione non può essere annullata. Per i trasferimenti verranno rimossi entrambi i lati.",
-      "successMessage": "{count} transazioni eliminate",
+      "confirmDescription": "Restano nel Cestino per 30 giorni e fino ad allora sarà possibile ripristinarle. Per i trasferimenti vengono spostati entrambi i lati.",
+      "successMessage": "1 transazione spostata nel Cestino | {count} transazioni spostate nel Cestino",
+      "skippedMessage": "1 è stata esclusa perché è collegata a un pagamento, un portafoglio o un venture capital. | {count} sono state escluse perché sono collegate a un pagamento, un portafoglio o un venture capital.",
+      "noneDeletedMessage": "Nulla spostato nel Cestino: 1 transazione è collegata a un pagamento, un portafoglio o un venture capital. | Nulla spostato nel Cestino: {count} transazioni sono collegate a un pagamento, un portafoglio o un venture capital.",
       "unexpectedError": "Impossibile eliminare le transazioni. Riprovare."
     },
     "inlineEdit": {
@@ -296,6 +298,50 @@
       "deleteTitle": "Eliminare la vista “{name}”?",
       "deleteDescription": "Le transazioni non vengono modificate. L'operazione non può essere annullata.",
       "filtersCount": "{count} filtro | {count} filtri"
+    },
+    "trashPage": {
+      "title": "Cestino",
+      "description": "Prima le eliminazioni più recenti. Ogni elemento viene rimosso definitivamente dopo {days} giorni. Selezionarne uno per vedere cosa viene ripristinato insieme.",
+      "expiringBanner": "{count} in eliminazione definitiva entro {days}.",
+      "expiringCount": "1 transazione | {count} transazioni",
+      "expiringDays": "1 giorno | {count} giorni",
+      "loadError": "Impossibile caricare il Cestino",
+      "emptyTitle": "Il Cestino è vuoto",
+      "emptyDescription": "Le transazioni eliminate restano qui per {days} giorni prima di essere rimosse definitivamente.",
+      "daysLeft": "1 giorno rimanente | {count} giorni rimanenti",
+      "deletedOn": "eliminata il {date}",
+      "transferTitle": "Trasferimento da {from} a {to}",
+      "unknownAccount": "Conto sconosciuto",
+      "restore": "Ripristina",
+      "deletePermanently": "Elimina definitivamente",
+      "deleteConfirmTitle": "Eliminare definitivamente?",
+      "deleteConfirmDescription": "Questa transazione verrà rimossa definitivamente. L'operazione non può essere annullata.",
+      "notifications": {
+        "restored": "Transazione ripristinata",
+        "restoreError": "Ripristino della transazione non riuscito",
+        "deleted": "Transazione eliminata definitivamente",
+        "deleteError": "Eliminazione della transazione non riuscita",
+        "restoredWithDroppedRefundLinks": "Ripristinata. 1 collegamento di rimborso non è stato ripristinato perché non è più compatibile. | Ripristinata. {count} collegamenti di rimborso non sono stati ripristinati perché non sono più compatibili."
+      },
+      "comesBack": {
+        "title": "Viene ripristinato insieme a",
+        "basics": "Categoria, nota e beneficiario",
+        "splits": "1 suddivisione | {n} suddivisioni",
+        "tags": "1 etichetta | {n} etichette",
+        "attachments": "1 allegato | {n} allegati",
+        "otherLeg": "Altro lato: {accountName} · {amountText}",
+        "balance": "Il saldo del conto viene ricalcolato",
+        "balances": "Entrambi i saldi vengono ricalcolati",
+        "counterpartInTrash": "Viene ripristinato quando si ripristina anche la transazione collegata.",
+        "links": {
+          "refund": "Collegamento di rimborso con \"{name}\"",
+          "tracker": "Tracker \"{name}\"",
+          "group": "Gruppo \"{name}\"",
+          "subscription": "Abbonamento \"{name}\"",
+          "subscriptionPeriod": "Pagamento dell'abbonamento con scadenza {name}",
+          "unnamed": "Senza titolo"
+        }
+      }
     }
   },
   "records": {
@@ -310,7 +356,7 @@
       "morePlans": "+{count} altre pianificate",
       "morePlansAtLeast": "+{count}+ altre pianificate",
       "deletePlanTitle": "Eliminare la transazione pianificata?",
-      "deletePlanDescription": "Questa azione non può essere annullata.",
+      "deletePlanDescription": "Resta nel Cestino per 30 giorni e fino ad allora sarà possibile ripristinarla.",
       "plansLoadFailed": "Impossibile caricare le transazioni pianificate",
       "confirmAction": "Conferma",
       "confirmTooltip": "Il denaro è stato movimentato: registrarlo e aggiornare il saldo",

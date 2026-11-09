@@ -114,39 +114,39 @@
         }
       },
       "broadcast": {
-        "title": "Broadcast notification",
-        "description": "Send an in-app notification to every user active in the last 30 days, or only to the user IDs and emails you list. With a link, clicking it opens the link in a new tab, and re-sending the same link skips users who already got it.",
+        "title": "Benachrichtigung senden",
+        "description": "Sende eine In-App-Benachrichtigung an jeden Benutzer, der in den letzten 30 Tagen aktiv war, oder nur an die von dir aufgelisteten Benutzer-IDs und E-Mail-Adressen. Wenn ein Link angegeben ist, öffnet ein Klick darauf den Link in einem neuen Tab, und das erneute Senden desselben Links überspringt Benutzer, die ihn bereits erhalten haben.",
         "fields": {
-          "title": "Title",
-          "titlePlaceholder": "e.g. iOS app is in public beta 📱",
-          "message": "Message",
-          "messagePlaceholder": "Optional text shown under the title",
+          "title": "Titel",
+          "titlePlaceholder": "z.B. iOS-App ist in der Public Beta 📱",
+          "message": "Nachricht",
+          "messagePlaceholder": "Optionaler Text, der unter dem Titel angezeigt wird",
           "url": "Verknüpfen",
-          "urlPlaceholder": "https://…  (optional)",
-          "urlError": "Link must start with https://",
+          "urlPlaceholder": "https://... (optional)",
+          "urlError": "Link muss mit https:// beginnen",
           "icon": "Symbol",
-          "recipients": "Recipients",
-          "recipientsPlaceholder": "Optional user IDs or emails, comma-separated, e.g. 12, jane@example.com. Empty = all active users",
-          "recipientsError": "Use positive whole-number IDs or valid emails, separated by commas"
+          "recipients": "Empfänger",
+          "recipientsPlaceholder": "Optionale Benutzer-IDs oder E-Mail-Adressen, durch Kommas getrennt, z.B. 12, jane@example.com. Leer = alle aktiven Benutzer",
+          "recipientsError": "Verwende positive ganzzahlige IDs oder gültige E-Mail-Adressen, getrennt durch Kommas"
         },
         "icons": {
           "info": "Info",
-          "announcement": "Announcement",
-          "success": "Success",
-          "warning": "Warning"
+          "announcement": "Ankündigung",
+          "success": "Erfolg",
+          "warning": "Warnung"
         },
-        "button": "Send notification",
+        "button": "Benachrichtigung senden",
         "confirm": {
-          "title": "Send to all active users?",
-          "titleSelected": "Send to {count} users?",
-          "description": "This creates a notification for every user active in the last 30 days. It can't be undone.",
-          "descriptionSelected": "Unknown IDs and emails are skipped. It can't be undone.",
+          "title": "An alle aktiven Benutzer senden?",
+          "titleSelected": "An {count} Benutzer senden?",
+          "description": "Dadurch wird eine Benachrichtigung für jeden Benutzer erstellt, der in den letzten 30 Tagen aktiv war. Dies kann nicht rückgängig gemacht werden.",
+          "descriptionSelected": "Unbekannte IDs und E-Mail-Adressen werden übersprungen. Dies kann nicht rückgängig gemacht werden.",
           "button": "Senden"
         },
         "notifications": {
-          "success": "Notification sent to {count} users",
-          "failed": "Failed to send the notification",
-          "noneCreated": "No notifications were sent: no matching users, or they already got this link"
+          "success": "Benachrichtigung an {count} Benutzer gesendet",
+          "failed": "Benachrichtigung konnte nicht gesendet werden",
+          "noneCreated": "Es wurden keine Benachrichtigungen gesendet: Keine passenden Benutzer oder sie haben diesen Link bereits erhalten"
         }
       },
       "tabs": {

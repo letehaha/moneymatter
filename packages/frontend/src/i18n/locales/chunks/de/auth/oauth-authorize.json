@@ -12,7 +12,26 @@
       "always_granted": "Immer gewährt",
       "optional": "Optional",
       "delete_warning": "Gewähre den Zugriff nur Apps, denen du vollkommen vertraust",
-      "unknown_app": "Eine Anwendung"
+      "unknown_app": "Eine Anwendung",
+      "steps": {
+        "permissions": "Berechtigungen",
+        "tools": "Tools"
+      },
+      "continue": "Weiter",
+      "back": "Zurück",
+      "toolsets": {
+        "intro": "Wähle aus, womit {name} arbeiten kann. Jedes zusätzliche Set fügt Tools hinzu, die {name} in jeden Chat lädt.",
+        "add_all": "Alle hinzufügen",
+        "core_only": "Nur Kern-Tools",
+        "always_on": "{count} Tool, immer aktiv | {count} Tools, immer aktiv",
+        "tool_count": "{count} Tool | {count} Tools",
+        "selected": "{count} Tool ausgewählt | {count} Tools ausgewählt",
+        "of_total": "von {total}",
+        "counter_label": "Ausgewählte Tools",
+        "fits_cap": "Passt zu jeder App, einschließlich ChatGPT und VS Code Copilot (max. {cap} Tools).",
+        "over_cap": "Mehr als {cap} Tools. ChatGPT und VS Code Copilot laden nicht so viele.",
+        "load_error": "Die Toolsets konnten nicht geladen werden. Erlaube den Zugriff, um die Kern-Tools zu nutzen, und stelle später die Verbindung wieder her, um weitere hinzuzufügen."
+      }
     },
     "scopes": {
       "finance_read": {

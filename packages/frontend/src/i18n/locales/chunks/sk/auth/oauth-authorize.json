@@ -12,7 +12,26 @@
       "always_granted": "Vždy povolené",
       "optional": "Voliteľné",
       "delete_warning": "Udeľujte povolenia len aplikáciám, ktorým plne dôverujete",
-      "unknown_app": "Aplikácia"
+      "unknown_app": "Aplikácia",
+      "steps": {
+        "permissions": "Oprávnenia",
+        "tools": "Nástroje"
+      },
+      "continue": "Pokračovať",
+      "back": "Späť",
+      "toolsets": {
+        "intro": "Vyberte, s čím môže {name} pracovať. Každá ďalšia sada pridáva nástroje, ktoré {name} načíta do každého chatu.",
+        "add_all": "Pridať všetky",
+        "core_only": "Len základné",
+        "always_on": "{count} nástroj, vždy zapnutý | {count} nástroje, vždy zapnuté | {count} nástrojov, vždy zapnuté",
+        "tool_count": "{count} nástroj | {count} nástroje | {count} nástrojov",
+        "selected": "{count} vybraný nástroj | {count} vybrané nástroje | {count} vybraných nástrojov",
+        "of_total": "z {total}",
+        "counter_label": "Vybrané nástroje",
+        "fits_cap": "Hodí sa pre všetky aplikácie vrátane ChatGPT a VS Code Copilot (max. {cap} nástrojov).",
+        "over_cap": "Viac než {cap} nástrojov. ChatGPT a VS Code Copilot toľko nenačítajú.",
+        "load_error": "Sady nástrojov sa nepodarilo načítať. Povoľte prístup, aby ste mohli používať základné nástroje, a neskôr sa pripojte znova a pridajte ďalšie."
+      }
     },
     "scopes": {
       "finance_read": {
