@@ -8,13 +8,15 @@
     <CardHeader :class="isDashboard ? 'sm:py-3' : ''">
       <slot name="header">
         <div class="grid grid-cols-[minmax(0,1fr)_max-content] items-center justify-between gap-1">
-          <h3 class="font-semibold tracking-tight">
-            <slot name="title" />
-          </h3>
+          <div class="flex min-w-0 items-center gap-2">
+            <h3 class="min-w-0 font-semibold tracking-tight">
+              <slot name="title" />
+            </h3>
+            <Loader2Icon v-if="isFetching" class="text-muted-foreground size-4 shrink-0 animate-spin" />
+          </div>
 
           <div class="flex items-center gap-1">
             <slot name="action" />
-            <Loader2Icon v-if="isFetching" class="text-muted-foreground size-5 animate-spin" />
           </div>
         </div>
       </slot>

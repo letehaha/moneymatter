@@ -323,6 +323,28 @@
         "ended": "Завершено",
         "create": "Створити трекер"
       },
+      "tagAnalysis": {
+        "title": "Аналіз тегів",
+        "noTagsTitle": "Теги не вибрано",
+        "noTagsDescription": "Виберіть теги для порівняння в налаштуваннях віджета.",
+        "ofIncome": "від доходу",
+        "remaining": "Нерозподілене",
+        "targetTooltip": "Ціль: {value}%",
+        "settings": {
+          "tagsLabel": "Теги",
+          "tagsPlaceholder": "Виберіть теги",
+          "targetsLabel": "Цілі, %",
+          "targetsNoneSet": "Не задано",
+          "targetsSetCount": "Задано {set} із {total}",
+          "targetsEmpty": "Спочатку додайте теги, щоб задати для них цілі",
+          "targetPlaceholder": "Немає",
+          "percentBaseLabel": "Відсоток від",
+          "percentBaseTags": "Вибраних тегів",
+          "percentBaseIncome": "Доходу",
+          "includeTransfersLabel": "Враховувати перекази",
+          "includeTransfersDescription": "Рахувати перекази на ваші рахунки й портфелі як витрати"
+        }
+      },
       "emptyState": "Немає даних за вибраний період часу.",
       "registry": {
         "balanceTrend": {
@@ -407,6 +429,10 @@
             "showReached": "Показувати досягнуті цілі"
           },
           "reachedSection": "Досягнуті"
+        },
+        "tagAnalysis": {
+          "name": "Аналіз тегів",
+          "description": "Дивіться, як ваші витрати розподіляються між вибраними тегами, як-от потреби, бажання й заощадження"
         }
       }
     },

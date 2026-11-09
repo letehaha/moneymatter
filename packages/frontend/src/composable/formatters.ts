@@ -100,6 +100,10 @@ export const useFormatCurrency = () => {
       ? formatCompactUIAmount({ amount, currency: currencyCode })
       : formatUIAmount(amount, { currency: currencyCode, fractionDigits: 0 });
 
+  /** Full amount with cents below 100k, compact (₴385k, ₴1.24M) from there. */
+  const formatCompactLargeBaseCurrency = ({ amount }: { amount: number }) =>
+    formatCompactUIAmount({ amount, currency: baseCurrency.value?.currency?.code, from: 100_000 });
+
   /** `formatWholeOrCompactAmount` with an explicit sign: "+₴500", "−₴1.2k", "₴0". */
   const formatSignedWholeOrCompactAmount = ({ amount, currencyCode }: { amount: number; currencyCode: string }) => {
     const formatted = formatWholeOrCompactAmount({ amount: Math.abs(amount), currencyCode });
@@ -114,6 +118,7 @@ export const useFormatCurrency = () => {
     formatAmountByCurrencyCode,
     formatCompactAmount,
     formatWholeOrCompactAmount,
+    formatCompactLargeBaseCurrency,
     formatSignedWholeOrCompactAmount,
     formatCompactBaseCurrency,
     formatShortBaseCurrency,

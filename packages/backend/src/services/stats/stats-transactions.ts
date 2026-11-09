@@ -18,6 +18,7 @@ import { CategoryRefundPair, resolveRefundPairs } from './category-allocation';
  * balance-adjustment rows are out. The one transfer that stays is the cash leg of a loan
  * payment: money leaving the user's pocket to service debt is spend to them, even though the
  * paired income leg on the loan account is only a liability reduction and never counts.
+ * `transfers: 'include'` lifts the transfer exclusion for reports where the user explicitly opts in.
  */
 type StatsRefundsPolicy =
   | 'net' // caller nets refunds itself: rows come back with their refund pairs resolved
@@ -38,6 +39,7 @@ interface StatsTransactionsOptions {
   access: AccessPolicy;
   planned: PlannedPolicy;
   refunds: StatsRefundsPolicy;
+  transfers?: 'exclude' | 'include';
   window: StatsWindow;
   where?: WhereOptions;
   attributes?: FindAttributeOptions;
@@ -90,6 +92,7 @@ export const statsTransactions = async ({
   access,
   planned,
   refunds,
+  transfers = 'exclude',
   window,
   where,
   attributes,
@@ -103,7 +106,7 @@ export const statsTransactions = async ({
     ...(timeWhere ? [timeWhere] : []),
     ...(refunds === 'exclude-refund-rows' ? [{ refundLinked: false }] : []),
     ...(where ? [where] : []),
-    moneyMovementWhere,
+    ...(transfers === 'exclude' ? [moneyMovementWhere] : []),
   ];
 
   const rows = await findTransactions({

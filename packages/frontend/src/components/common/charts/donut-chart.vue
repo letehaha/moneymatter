@@ -7,18 +7,20 @@
       <div class="flex flex-col items-center gap-0.5 text-center">
         <template v-if="displayedItem">
           <div class="text-muted-foreground text-xs">{{ displayedItem.name }}</div>
-          <div class="text-base font-semibold">{{ formatBaseCurrency(displayedItem.amount) }}</div>
+          <div class="text-base font-semibold">
+            {{ formatCompactLargeBaseCurrency({ amount: displayedItem.amount }) }}
+          </div>
         </template>
-        <template v-else>
+        <slot v-else name="center">
           <div class="text-muted-foreground text-xs">{{ $t('common.labels.total') }}</div>
-          <div class="text-base font-semibold">{{ formatBaseCurrency(totalAmount) }}</div>
-        </template>
+          <div class="text-base font-semibold">{{ formatCompactLargeBaseCurrency({ amount: totalAmount }) }}</div>
+        </slot>
       </div>
     </div>
 
     <!-- Touch device overlay: shows navigation button below center label -->
     <div
-      v-if="clickable === 'all' && isTouch && selectedItem"
+      v-if="clickable === 'all' && isTouch && selectedItem && selectedItem.isDrillable !== false"
       class="pointer-events-none absolute inset-0 flex items-center justify-center"
     >
       <div class="pointer-events-auto mt-18 flex flex-col items-center">
@@ -29,7 +31,7 @@
           @click="$emit('category-click', selectedItem)"
         >
           {{ $t('dashboard.widgets.expensesStructure.viewButton') }}
-          <ExternalLinkIcon class="size-3" />
+          <ListIcon class="size-3" />
         </Button>
       </div>
     </div>
@@ -42,7 +44,7 @@ import { useFormatCurrency } from '@/composable';
 import { cn } from '@/lib/utils';
 import { useMediaQuery, useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
-import { ExternalLinkIcon } from '@lucide/vue';
+import { ListIcon } from '@lucide/vue';
 import { computed, nextTick, ref, watch } from 'vue';
 
 import type { DonutChartItem } from './donut-chart-item';
@@ -62,7 +64,10 @@ const emit = defineEmits<{
   'category-click': [item: DonutChartItem];
 }>();
 
-const { formatBaseCurrency } = useFormatCurrency();
+const MIN_LABEL_ANGLE = 0.4;
+const MIN_LABEL_RING_WIDTH = 28;
+
+const { formatCompactLargeBaseCurrency } = useFormatCurrency();
 const isTouch = useMediaQuery('(pointer: coarse)');
 
 const chartContainerRef = ref<HTMLDivElement | null>(null);
@@ -134,13 +139,31 @@ const renderChart = () => {
     })
     .on('click', (_event, d) => onSliceClick({ item: d.data }));
 
+  const labelRadius = (radius + innerRadius) / 2;
+  const labelArc = d3.arc<d3.PieArcDatum<DonutChartItem>>().innerRadius(labelRadius).outerRadius(labelRadius);
+
+  arcs
+    .filter(
+      (d) =>
+        !!d.data.label && radius - innerRadius >= MIN_LABEL_RING_WIDTH && d.endAngle - d.startAngle >= MIN_LABEL_ANGLE,
+    )
+    .append('text')
+    .attr('transform', (d) => `translate(${labelArc.centroid(d)})`)
+    .attr('text-anchor', 'middle')
+    .attr('dominant-baseline', 'central')
+    .attr('fill', 'white')
+    .attr('font-size', 12)
+    .attr('font-weight', 600)
+    .style('pointer-events', 'none')
+    .text((d) => d.data.label!);
+
   highlight({ item: displayedItem.value });
 };
 
 const onSliceClick = ({ item }: { item: DonutChartItem }) => {
   if (props.clickable === 'drillable' && item.isDrillable) emit('category-click', item);
   else if (isTouch.value) selectedItem.value = item;
-  else if (props.clickable === 'all') emit('category-click', item);
+  else if (props.clickable === 'all' && item.isDrillable !== false) emit('category-click', item);
 };
 
 watch(displayedItem, (item) => highlight({ item }));

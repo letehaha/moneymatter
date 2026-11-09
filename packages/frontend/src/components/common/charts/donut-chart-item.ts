@@ -4,4 +4,6 @@ export interface DonutChartItem {
   color: string;
   amount: number;
   isDrillable?: boolean;
+  /** Drawn on the slice when it is wide enough. */
+  label?: string;
 }

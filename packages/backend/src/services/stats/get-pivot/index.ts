@@ -32,6 +32,7 @@ interface GetPivotReportParams {
   accountIds?: string[];
   categoryIds?: string[];
   payeeIds?: string[];
+  includeTransfers?: boolean;
 }
 
 /**
@@ -54,6 +55,7 @@ export const getPivotReport = async ({
   accountIds,
   categoryIds,
   payeeIds,
+  includeTransfers,
 }: GetPivotReportParams): Promise<PivotReportResultCents> => {
   const buckets = generatePivotBuckets({ from, to, granularity });
   const columnKeys = buckets.map((bucket) => getBucketKey({ periodStart: bucket.periodStart, granularity }));
@@ -84,6 +86,7 @@ export const getPivotReport = async ({
     access: { accessibleTo: userId },
     planned: 'exclude',
     refunds: 'ignore',
+    transfers: includeTransfers ? 'include' : 'exclude',
     window: { from, to },
     where: {
       transactionType: side,
