@@ -1,6 +1,6 @@
 {
   "name": "budget-tracker-fe",
-  "version": "0.33.13",
+  "version": "0.33.14",
   "private": true,
   "type": "module",
   "scripts": {
