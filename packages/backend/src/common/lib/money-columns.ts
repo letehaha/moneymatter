@@ -5,7 +5,7 @@
  * money column here when its model declares it.
  *
  * The money-storage migration does not read this list: it has its own frozen snapshot in
- * `migrations/utils/money-columns-20261016.ts`, so a column added here never reaches it.
+ * `migrations/utils/money-columns-20261112.ts`, so a column added here never reaches it.
  */
 
 export const MONEY_COLUMN_PRECISION = 36;
@@ -32,7 +32,10 @@ export const MONEY_COLUMNS: readonly MoneyColumnSpec[] = [
   { table: 'BudgetLineGoals', column: 'stopAtBalance' },
   { table: 'BudgetLineGoals', column: 'fundingCap' },
   { table: 'BudgetPlans', column: 'expectedIncome' },
-  { table: 'Trackers', column: 'limitAmount' },
+  { table: 'GoalAccounts', column: 'fixedAmount' },
+  { table: 'Goals', column: 'targetAmount' },
+  { table: 'Goals', column: 'plannedMonthly' },
+  { table: 'Goals', column: 'achievedAmount' },
   { table: 'ImportBatchAccountEffects', column: 'absorbedAmount' },
   { table: 'LoanDetails', column: 'originalPrincipal' },
   { table: 'LoanDetails', column: 'refOriginalPrincipal' },
@@ -40,9 +43,11 @@ export const MONEY_COLUMNS: readonly MoneyColumnSpec[] = [
   { table: 'LoanDetails', column: 'refMinPayment' },
   { table: 'LoanDetails', column: 'plannedPayment' },
   { table: 'LoanDetails', column: 'refPlannedPayment' },
+  { table: 'RefundTransactions', column: 'amount' },
   { table: 'SubscriptionCandidates', column: 'averageAmount' },
   { table: 'Subscriptions', column: 'expectedAmount' },
   { table: 'TrackerLines', column: 'limitAmount' },
+  { table: 'Trackers', column: 'limitAmount' },
   { table: 'TransactionSplits', column: 'amount' },
   { table: 'TransactionSplits', column: 'refAmount' },
   { table: 'TransactionTemplates', column: 'amount' },
@@ -52,6 +57,7 @@ export const MONEY_COLUMNS: readonly MoneyColumnSpec[] = [
   { table: 'Transactions', column: 'refCommissionRate' },
   { table: 'Transactions', column: 'cashbackAmount' },
   { table: 'Transactions', column: 'originalAmount' },
+  { table: 'Transactions', column: 'paymentAmount' },
   { table: 'Vehicles', column: 'purchasePrice' },
   { table: 'Vehicles', column: 'valueAnchor' },
 ];

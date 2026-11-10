@@ -443,7 +443,7 @@ export default class Transactions extends Model {
   paymentParentId!: RecordId | null;
 
   // The row's share in the main row's currency; null when both currencies match.
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare paymentAmount: Money | null;
 
   // A linked row's own values from before the link, restored on unlink. Null on rows the payment created.

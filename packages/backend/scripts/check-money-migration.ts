@@ -1,5 +1,5 @@
 /**
- * Round-trip check for the money-storage migration (`20261016000000-money-columns-to-decimal`).
+ * Round-trip check for the money-storage migration (`20261112000000-money-columns-to-decimal`).
  *
  * Against a disposable Postgres it applies every migration before that one, seeds rows into every
  * money column (including `real_transactions` and the JSON fields), then runs the migration up,
@@ -17,16 +17,16 @@ import { Sequelize } from 'sequelize-typescript';
 
 // The frozen snapshot the migration itself reads: this script checks that migration, not the live list.
 import {
-  MONEY_COLUMNS_20261016 as MONEY_COLUMNS,
-  MONEY_COLUMN_PRECISION_20261016 as MONEY_COLUMN_PRECISION,
-  MONEY_COLUMN_SCALE_20261016 as MONEY_COLUMN_SCALE,
-  MONEY_JSON_FIELDS_20261016 as MONEY_JSON_FIELDS,
-} from '../src/migrations/utils/money-columns-20261016';
+  MONEY_COLUMNS_20261112 as MONEY_COLUMNS,
+  MONEY_COLUMN_PRECISION_20261112 as MONEY_COLUMN_PRECISION,
+  MONEY_COLUMN_SCALE_20261112 as MONEY_COLUMN_SCALE,
+  MONEY_JSON_FIELDS_20261112 as MONEY_JSON_FIELDS,
+} from '../src/migrations/utils/money-columns-20261112';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Umzug = require('umzug');
 
-const MIGRATION_NAME = '20261016000000-money-columns-to-decimal';
+const MIGRATION_NAME = '20261112000000-money-columns-to-decimal';
 const DATABASE_NAME = 'money_migration_check';
 
 const connection = {
@@ -187,6 +187,20 @@ const rowPlans = ({ table }: { table: string }): RowPlan[] => {
           kind: 'B',
           overrides: { userId: 2, cadence: 'months', carryPolicy: 'none' },
         },
+      ];
+    case 'Goals':
+      return [
+        { label: 'A', kind: 'A', overrides: { achievedAt: RAW('now()') } },
+        {
+          label: 'B',
+          kind: 'B',
+          cents: { targetAmount: 250000, plannedMonthly: null, achievedAmount: null },
+        },
+      ];
+    case 'GoalAccounts':
+      return [
+        { label: 'A', kind: 'A', overrides: { sharePercent: null, fixedPosition: 0 } },
+        { label: 'B', kind: 'B', overrides: { sharePercent: 50, fixedPosition: null } },
       ];
     case 'ImportBatchAccountEffects':
       return [

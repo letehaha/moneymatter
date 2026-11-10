@@ -1,23 +1,24 @@
-import { QueryInterface, QueryTypes, Transaction } from 'sequelize';
+import { QueryInterface, Transaction } from 'sequelize';
 
 import {
-  MONEY_COLUMNS_20261016,
-  MONEY_COLUMN_PRECISION_20261016,
-  MONEY_COLUMN_SCALE_20261016,
-  MONEY_JSON_FIELDS_20261016,
+  MONEY_COLUMNS_20261112,
+  MONEY_COLUMN_PRECISION_20261112,
+  MONEY_COLUMN_SCALE_20261112,
+  MONEY_JSON_FIELDS_20261112,
   MoneyJsonFieldSpec,
-} from './utils/money-columns-20261016';
+} from './utils/money-columns-20261112';
 import { createRealTransactionsViewSql, dropRealTransactionsViewSql } from './utils/real-transactions-view';
 
 /**
  * Moves every transactional money amount from integer cents (BIGINT) to DECIMAL(36,18), and
  * rewrites the cents held inside JSON fields as decimals. `up` divides by 100, which is lossless.
  *
- * The column and JSON lists are the frozen snapshot in `utils/money-columns-20261016.ts`, the
- * columns that held cents when this migration was written. The live list in
- * `common/lib/money-columns.ts` (backup, restore and the v1 converter read it) grows with the
- * schema and must not be imported here, or a column added later would fail this migration on a
- * fresh database.
+ * The column and JSON lists are the frozen snapshot in `utils/money-columns-20261112.ts`, the
+ * columns that held cents when this migration was written. Its timestamp follows every migration
+ * that creates one of them, so a fresh database and one that already ran those migrations both
+ * reach it with every listed column still BIGINT cents. The live list in `common/lib/money-columns.ts`
+ * (backup, restore and the v1 converter read it) grows with the schema and must not be imported
+ * here, or a column added later would fail this migration on a fresh database.
  *
  * `real_transactions` selects from "Transactions", and Postgres refuses to change the type of a
  * column a view depends on, so the view is dropped first and recreated afterwards.
@@ -27,12 +28,11 @@ import { createRealTransactionsViewSql, dropRealTransactionsViewSql } from './ut
  * (e.g. on "BudgetLineGoals"."amount") rejects, so `down` fails until such rows are removed.
  */
 
-const DECIMAL_TYPE = `NUMERIC(${MONEY_COLUMN_PRECISION_20261016},${MONEY_COLUMN_SCALE_20261016})`;
+const DECIMAL_TYPE = `NUMERIC(${MONEY_COLUMN_PRECISION_20261112},${MONEY_COLUMN_SCALE_20261112})`;
 
-const columnsByTable = ({ budgetsTable }: { budgetsTable: string }): Map<string, string[]> => {
+const columnsByTable = (): Map<string, string[]> => {
   const byTable = new Map<string, string[]>();
-  for (const { table: snapshotTable, column } of MONEY_COLUMNS_20261016) {
-    const table = snapshotTable === 'Budgets' ? budgetsTable : snapshotTable;
+  for (const { table, column } of MONEY_COLUMNS_20261112) {
     byTable.set(table, [...(byTable.get(table) ?? []), column]);
   }
   return byTable;
@@ -41,14 +41,8 @@ const columnsByTable = ({ budgetsTable }: { budgetsTable: string }): Map<string,
 // `Array.from` rather than spreading the Map: the e2e template runner transpiles migrations
 // with ts-node's default target, where spreading a Map silently yields an empty array and the
 // migration would be recorded as applied without altering a single column.
-const alterColumnTypesSql = ({
-  direction,
-  budgetsTable,
-}: {
-  direction: 'up' | 'down';
-  budgetsTable: string;
-}): string[] =>
-  Array.from(columnsByTable({ budgetsTable }), ([table, columns]) => {
+const alterColumnTypesSql = ({ direction }: { direction: 'up' | 'down' }): string[] =>
+  Array.from(columnsByTable(), ([table, columns]) => {
     const clauses = columns.map((column) =>
       direction === 'up'
         ? `ALTER COLUMN "${column}" TYPE ${DECIMAL_TYPE} USING "${column}"::numeric / 100`
@@ -127,19 +121,11 @@ const runMigration = async ({
   const run = (sql: string) => queryInterface.sequelize.query(sql, { transaction: t });
 
   try {
-    // `20261019000000-rename-budgets-to-trackers` renames the table. A database that already ran it still
-    // has this migration pending when it was written before the rename, so it follows the table.
-    const rows = (await queryInterface.sequelize.query(
-      `SELECT to_regclass('"Budgets"') IS NULL AND to_regclass('"Trackers"') IS NOT NULL AS renamed`,
-      { type: QueryTypes.SELECT, transaction: t },
-    )) as { renamed: boolean }[];
-    const budgetsTable = rows[0]?.renamed ? 'Trackers' : 'Budgets';
-
     await run(dropRealTransactionsViewSql);
-    for (const sql of alterColumnTypesSql({ direction, budgetsTable })) {
+    for (const sql of alterColumnTypesSql({ direction })) {
       await run(sql);
     }
-    for (const field of MONEY_JSON_FIELDS_20261016) {
+    for (const field of MONEY_JSON_FIELDS_20261112) {
       await run(rewriteJsonFieldSql({ field, direction }));
     }
     await run(createRealTransactionsViewSql);
