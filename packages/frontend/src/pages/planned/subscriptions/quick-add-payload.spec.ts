@@ -1,3 +1,4 @@
+import type { SubscriptionCandidate } from '@/api/subscription-candidates';
 import {
   SUBSCRIPTION_FREQUENCIES,
   SUBSCRIPTION_INTERVAL_UNITS,
@@ -6,7 +7,7 @@ import {
 } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
-import { type QuickAddFormState, buildQuickAddPayload } from './quick-add-payload';
+import { type QuickAddFormState, buildCandidatePrefill, buildQuickAddPayload } from './quick-add-payload';
 
 const NOW = new Date(2025, 5, 15, 23, 45);
 
@@ -173,5 +174,49 @@ describe('buildQuickAddPayload', () => {
 
     expect(payload).not.toHaveProperty('logoDomain');
     expect(payload).not.toHaveProperty('logoInitials');
+  });
+});
+
+describe('buildCandidatePrefill', () => {
+  const candidate = {
+    id: 'cand-1',
+    suggestedName: 'MAGTI MOBILE',
+    detectedFrequency: SUBSCRIPTION_FREQUENCIES.custom,
+    detectedIntervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+    detectedIntervalCount: 30,
+    averageAmount: 25,
+    currencyCode: 'GEL',
+    accountId: 'acc-1',
+  } as SubscriptionCandidate;
+
+  it('carries a detected custom step into the form', () => {
+    expect(buildCandidatePrefill({ candidate })).toEqual({
+      name: 'MAGTI MOBILE',
+      expectedAmount: 25,
+      expectedCurrencyCode: 'GEL',
+      frequency: SUBSCRIPTION_FREQUENCIES.custom,
+      intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+      intervalCount: 30,
+      accountId: 'acc-1',
+    });
+  });
+
+  it('prefills a detected preset without a step', () => {
+    const prefill = buildCandidatePrefill({
+      candidate: {
+        ...candidate,
+        detectedFrequency: SUBSCRIPTION_FREQUENCIES.monthly,
+        detectedIntervalUnit: null,
+        detectedIntervalCount: null,
+        accountId: null,
+      },
+    });
+    expect(prefill).toEqual({
+      name: 'MAGTI MOBILE',
+      expectedAmount: 25,
+      expectedCurrencyCode: 'GEL',
+      frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+      accountId: null,
+    });
   });
 });

@@ -83,7 +83,14 @@ const confidence = computed(() => {
           {{ formatAmountByCurrencyCode(candidate.averageAmount, candidate.currencyCode) }}
         </p>
         <p class="text-muted-foreground mt-0.5 text-xs">
-          {{ formatFrequency({ frequency: candidate.detectedFrequency, t }) }}
+          {{
+            formatFrequency({
+              frequency: candidate.detectedFrequency,
+              intervalUnit: candidate.detectedIntervalUnit,
+              intervalCount: candidate.detectedIntervalCount,
+              t,
+            })
+          }}
         </p>
       </div>
     </div>
