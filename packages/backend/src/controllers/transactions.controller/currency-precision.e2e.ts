@@ -256,7 +256,7 @@ describe('Currency precision', () => {
       });
       expect(response.statusCode).toBe(200);
 
-      const [stored] = (await helpers.getTransactions({ raw: true, includeSplits: true }))!;
+      const [stored] = (await helpers.getTransactions({ raw: true }))!;
       expect(Number(stored!.amount)).toBe(10.124);
       expect(stored!.splits!.map((split) => Number(split.amount))).toEqual([5.062, 5.062]);
     });

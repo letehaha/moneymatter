@@ -7,6 +7,7 @@ import { withTransaction } from '@services/common/with-transaction';
 import { syncSavedGoal } from './check-goals-reached';
 import { findGoal } from './get-goals';
 import { assertGoalCurrencyConvertible } from './goal-insights';
+import { roundGoalAmount } from './round-goal-amount';
 import { writeGoalShares } from './share-capacity';
 
 type UpdateGoalParams = UpdateGoalPayload & { userId: number; goalId: RecordId };
@@ -35,12 +36,20 @@ const updateGoalImpl = withTransaction(
       await assertGoalCurrencyConvertible({ userId, currencyCode });
     }
 
+    // Sent amounts are in the goal's (possibly new) currency and round half-up to its decimals.
+    const round = ({ amount }: { amount: number }) =>
+      roundGoalAmount({ money: Money.fromDecimal(amount), userId, currencyCode: currencyCode ?? goal.currencyCode });
+    const amounts = {
+      targetAmount: targetAmount === undefined ? undefined : await round({ amount: targetAmount }),
+      plannedMonthly: plannedMonthly == null ? plannedMonthly : await round({ amount: plannedMonthly }),
+    };
+
     const nextStatus = status ?? goal.status;
     const unarchiving =
       !GOAL_STATUSES_HOLDING_SHARES.includes(goal.status) && GOAL_STATUSES_HOLDING_SHARES.includes(nextStatus);
 
     const completionChanged =
-      currencyChanged || (targetAmount !== undefined && !Money.fromDecimal(targetAmount).equals(goal.targetAmount));
+      currencyChanged || (amounts.targetAmount !== undefined && !amounts.targetAmount.equals(goal.targetAmount));
 
     if (accounts !== undefined || unarchiving || completionChanged) {
       await writeGoalShares({
@@ -48,7 +57,7 @@ const updateGoalImpl = withTransaction(
         goalId,
         status: nextStatus,
         target: {
-          amount: targetAmount === undefined ? goal.targetAmount : Money.fromDecimal(targetAmount),
+          amount: amounts.targetAmount ?? goal.targetAmount,
           currencyCode: currencyCode ?? goal.currencyCode,
         },
         shares: accounts,
@@ -65,8 +74,8 @@ const updateGoalImpl = withTransaction(
         ...fields,
         status,
         currencyCode,
-        targetAmount: targetAmount === undefined ? undefined : Money.fromDecimal(targetAmount),
-        plannedMonthly: plannedMonthly == null ? plannedMonthly : Money.fromDecimal(plannedMonthly),
+        targetAmount: amounts.targetAmount,
+        plannedMonthly: amounts.plannedMonthly,
       }),
       ...(completionChanged && { achievedAt: null, achievedAmount: null }),
       ...logoPatch,

@@ -204,7 +204,7 @@ export const resolveRefundPairs = async ({
       originalTx.transactionType === TRANSACTION_TYPES.expense ? [original, counterpart] : [counterpart, original];
 
     pairs.push({
-      minor: refundShareRefAmount({ link: refund, refundTx }).toMinorUnits({ decimals }),
+      minor: refundShareRefAmount({ link: refund, refundTx, decimals }).toMinorUnits({ decimals }),
       expenseTime: expense.time,
       incomeTime: income.time,
       expenseCategoryId: expense.categoryId,

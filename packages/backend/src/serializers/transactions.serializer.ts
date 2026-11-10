@@ -14,12 +14,7 @@ import type {
   TransactionLocation,
   TransactionPaymentPart,
 } from '@bt/shared/types';
-import {
-  Money,
-  centsToApiDecimal,
-  moneyToApiDecimal,
-  moneyToApiDecimalOrNull,
-} from '@common/types/money';
+import { Money, moneyToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import type Tags from '@models/tags.model';
 import type TransactionGroups from '@models/transaction-groups.model';
 import type TransactionSplits from '@models/transaction-splits.model';
@@ -235,7 +230,7 @@ function serializeTransactionSplit(split: SerializableSplit): TransactionSplitAp
         icon: split.category.icon,
       },
     }),
-    ...(split.refundedAmount && { refundedAmount: centsToApiDecimal(split.refundedAmount) }),
+    ...(split.refundedAmount && { refundedAmount: moneyToApiDecimal(split.refundedAmount) }),
   };
 }
 
@@ -290,7 +285,7 @@ export function serializeTransaction(
     transferId: tx.transferId,
     originalId: tx.originalId,
     refundLinked: tx.refundLinked,
-    ...(tx.refundedAmount && { refundedAmount: centsToApiDecimal(tx.refundedAmount) }),
+    ...(tx.refundedAmount && { refundedAmount: moneyToApiDecimal(tx.refundedAmount) }),
     isPlanned: tx.isPlanned ?? false,
     excludeFromStats: tx.excludeFromStats ?? false,
     plannedMerge: extractPlannedMerge({ externalData: tx.externalData }),
@@ -338,11 +333,11 @@ export function serializeTransaction(
     ...(tx.paymentParts && {
       paymentParts: tx.paymentParts.map((part) => ({
         ...part,
-        amount: centsToApiDecimal(part.amount),
-        paymentAmount: centsToApiDecimal(part.paymentAmount),
+        amount: moneyToApiDecimal(part.amount),
+        paymentAmount: moneyToApiDecimal(part.paymentAmount),
       })),
     }),
-    ...(tx.paymentTotal && { paymentTotal: centsToApiDecimal(tx.paymentTotal) }),
+    ...(tx.paymentTotal && { paymentTotal: moneyToApiDecimal(tx.paymentTotal) }),
   };
 }
 

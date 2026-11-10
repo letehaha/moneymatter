@@ -157,6 +157,37 @@ describe('Goals CRUD', () => {
     expect(await helpers.listGoals({ raw: true })).toEqual([]);
   });
 
+  it('rejects an amount below the smallest unit of its currency with 422', async () => {
+    const savings = await createAccountOf({ accountCategory: ACCOUNT_CATEGORIES.saving });
+    const cash = await createAccountOf({ accountCategory: ACCOUNT_CATEGORIES.cash });
+    const accounts = [{ accountId: savings.id, sharePercent: 100 }];
+
+    const invalid: Partial<CreateGoalPayload>[] = [
+      { targetAmount: 0.001, accounts },
+      { plannedMonthly: 0.004, accounts },
+      {
+        targetAmount: 100,
+        accounts: [
+          { accountId: savings.id, fixedAmount: 100 },
+          { accountId: cash.id, fixedAmount: 0.001 },
+        ],
+      },
+    ];
+    for (const payload of invalid) {
+      expect((await helpers.createGoal({ payload })).statusCode).toBe(ERROR_CODES.ValidationError);
+    }
+    expect(await helpers.listGoals({ raw: true })).toEqual([]);
+
+    const goal = await helpers.createGoal({ payload: { accounts }, raw: true });
+    for (const payload of [{ targetAmount: 0.001 }, { plannedMonthly: 0.004 }]) {
+      expect((await helpers.updateGoal({ goalId: goal.id, payload })).statusCode).toBe(ERROR_CODES.ValidationError);
+    }
+    expect(await helpers.getGoal({ goalId: goal.id, raw: true })).toMatchObject({
+      targetAmount: 1000,
+      plannedMonthly: null,
+    });
+  });
+
   it('rejects invalid update payloads with 422 and leaves the goal unchanged', async () => {
     const goal = await helpers.createGoal({ raw: true });
     const accountId = goal.accounts[0]!.accountId;

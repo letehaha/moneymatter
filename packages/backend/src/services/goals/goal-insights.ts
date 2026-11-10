@@ -6,7 +6,8 @@ import {
   type GoalInsights,
   type RecordId,
 } from '@bt/shared/types';
-import { centsToApiDecimal, type Money } from '@common/types/money';
+import { getBaseCurrencyDecimals, getConversionDecimals } from '@common/lib/currency-precision';
+import { type Money, minorUnitsToApiDecimal } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ExchangeRateUnavailableError, UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
@@ -121,6 +122,7 @@ export const loadGoalInsights = async ({
   const months = monthStarts.map((month) => format(min([endOfMonth(month), now]), 'yyyy-MM-dd'));
   const accountIds = [...new Set(goals.flatMap((goal) => (goal.goalAccounts ?? []).map((link) => link.accountId)))];
   const { currencyCode: baseCurrencyCode } = await getBaseCurrency({ userId });
+  const baseDecimals = await getBaseCurrencyDecimals({ userId });
 
   const [accounts, seriesByAccount, firstDates, rates] = await Promise.all([
     Accounts.findAll({
@@ -134,6 +136,7 @@ export const loadGoalInsights = async ({
       to: today,
       accountIds,
       ignoreExcludeFromStats: true,
+      decimals: baseDecimals,
     }),
     Balances.findAll({
       where: { accountId: { [Op.in]: accountIds } },
@@ -169,10 +172,25 @@ export const loadGoalInsights = async ({
   const rateByFixedAccount = new Map(
     fixedAccounts.map((account) => [account.id, accountRates.get(account.currencyCode)!]),
   );
+  const decimalsByCurrency = new Map(
+    await Promise.all(
+      [...new Set([...goals.map((goal) => goal.currencyCode), ...accountRates.keys()])].map(
+        async (currencyCode) =>
+          [
+            currencyCode,
+            await getConversionDecimals({ userId, baseCode: currencyCode, quoteCode: baseCurrencyCode }),
+          ] as const,
+      ),
+    ),
+  );
 
   // ponytail: today's rate for every month-end too; per-month rates if a foreign fixed amount's history matters
   const fixedToBase = ({ accountId, amount }: { accountId: RecordId; amount: Money }): number =>
-    calculateRefAmountFromParams({ amount, rate: rateByFixedAccount.get(accountId)! }).toNumber();
+    calculateRefAmountFromParams({
+      amount,
+      rate: rateByFixedAccount.get(accountId)!,
+      ...decimalsByCurrency.get(currencyByAccount.get(accountId)!)!,
+    }).toNumber();
 
   const heldByAccount = new Map<RecordId, { goalId: RecordId; value: number }[]>();
   for (const { goalId, accountId, fixedAmount } of heldFixedAmounts) {
@@ -188,11 +206,11 @@ export const loadGoalInsights = async ({
     const series = seriesByAccount[accountId];
     if (!series) return months.map(() => 0);
     return months.map((month) => {
-      const cents = series[toBalanceDateKey(month)];
-      if (cents === undefined) {
+      const minor = series[toBalanceDateKey(month)];
+      if (minor === undefined) {
         throw new UnexpectedError({ message: `Goal insights: balance series of ${accountId} is missing ${month}.` });
       }
-      return centsToApiDecimal(cents);
+      return minorUnitsToApiDecimal({ value: minor, decimals: baseDecimals });
     });
   };
 
@@ -215,7 +233,12 @@ export const loadGoalInsights = async ({
         logger.warn('[Goals] Insights skipped: no exchange rate', { goalId: goal.id, currencyCode: goal.currencyCode });
         return [goal.id, null];
       }
-      const toBase = (amount: Money) => calculateRefAmountFromParams({ amount, rate: rateToBase }).toNumber();
+      const toBase = (amount: Money) =>
+        calculateRefAmountFromParams({
+          amount,
+          rate: rateToBase,
+          ...decimalsByCurrency.get(goal.currencyCode)!,
+        }).toNumber();
 
       const links = goal.goalAccounts ?? [];
       const rateless = links.find(({ accountId }) => rateByFixedAccount.get(accountId) === null);

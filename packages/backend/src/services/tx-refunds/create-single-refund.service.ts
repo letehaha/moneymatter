@@ -1,3 +1,4 @@
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import type { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -80,6 +81,13 @@ export const createSingleRefund = withTransaction(
         });
       }
 
+      // The share is an entered amount in the refund transaction's currency, so it rounds half-up to that
+      // currency's decimals; one that rounds to nothing would break the link's `amount > 0` check.
+      const share = amount ? amount.round(await getCurrencyDecimals({ userId, code: refundTx.currencyCode })) : amount;
+      if (share && !share.isPositive()) {
+        throw new ValidationError({ message: 'Refund amount is below the smallest unit of its currency' });
+      }
+
       const duplicateLink = await RefundTransactions.default.findOne({
         where: { refundTxId, originalTxId, userId },
       });
@@ -93,7 +101,7 @@ export const createSingleRefund = withTransaction(
         refundTxId,
         userId,
         splitId,
-        amount: amount && amount.equals(refundTx.amount.abs()) ? null : amount,
+        amount: share && share.equals(refundTx.amount.abs()) ? null : share,
       }).catch((error) => {
         if (error instanceof UniqueConstraintError) {
           throw new ValidationError({ message: t({ key: 'transactions.refunds.duplicateLink' }) });

@@ -1,4 +1,4 @@
-import { centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
+import { moneyToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import Accounts from '@models/accounts.model';
 import GoalAccounts from '@models/goal-accounts.model';
 import Goals from '@models/goals.model';
@@ -51,13 +51,13 @@ export async function transformGoals({ userId }: { userId: number }): Promise<Go
     (goal): GoalRow => ({
       name: goal.name,
       status: goal.status,
-      targetAmount: centsToApiDecimal(goal.targetAmount),
+      targetAmount: moneyToApiDecimal(goal.targetAmount),
       currency: goal.currencyCode,
       targetDate: goal.targetDate ?? '',
-      plannedMonthly: centsToApiDecimalOrNull(goal.plannedMonthly),
+      plannedMonthly: moneyToApiDecimalOrNull(goal.plannedMonthly),
       accounts: (sharesByGoalId.get(goal.id) ?? []).toSorted(),
       achievedAt: goal.achievedAt ? toDateOnly({ value: goal.achievedAt }) : '',
-      achievedAmount: centsToApiDecimalOrNull(goal.achievedAmount),
+      achievedAmount: moneyToApiDecimalOrNull(goal.achievedAmount),
     }),
   );
 }

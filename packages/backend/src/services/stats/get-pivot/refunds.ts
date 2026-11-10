@@ -88,7 +88,7 @@ export const resolveWholeTxRefunds = async ({
     result.push({
       payeeId: sideTx.payeeId,
       tagIds: needTags ? (sideTx.tags ?? []).map((tag) => tag.id) : [],
-      refundMinor: refundShareRefAmount({ link: refund, refundTx }).toMinorUnits({ decimals }),
+      refundMinor: refundShareRefAmount({ link: refund, refundTx, decimals }).toMinorUnits({ decimals }),
       time: new Date(sideTx.time),
     });
   }

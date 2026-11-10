@@ -589,7 +589,7 @@ const getLinkedTransactionsSpendingStats = async ({
     };
   });
 
-  const refundPairs = await fetchTrackerRefundPairs({ countedTransactions: transactions });
+  const refundPairs = await fetchTrackerRefundPairs({ countedTransactions: transactions, decimals });
   const refundAdjustments = buildRefundAdjustments({
     pairs: refundPairs,
     measuresIncome,
@@ -626,7 +626,12 @@ export const getTrackerSpendingStats = async ({
   // The tracker's amounts are in its owner's base currency, whoever reads them.
   const decimals = await getBaseCurrencyDecimals({ userId: ownerUserId });
 
-  const stats = await getLinkedTransactionsSpendingStats({ userId: ownerUserId, trackerId, callerUserId: userId, decimals });
+  const stats = await getLinkedTransactionsSpendingStats({
+    userId: ownerUserId,
+    trackerId,
+    callerUserId: userId,
+    decimals,
+  });
 
   return { stats, decimals };
 };

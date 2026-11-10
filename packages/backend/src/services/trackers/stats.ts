@@ -196,7 +196,7 @@ const applyRefundAdjustments = async ({
   limit: TrackerLimit;
   decimals: number;
 }): Promise<void> => {
-  const pairs = await fetchTrackerRefundPairs({ countedTransactions });
+  const pairs = await fetchTrackerRefundPairs({ countedTransactions, decimals });
   if (pairs.length === 0) return;
 
   for (const pair of pairs) {

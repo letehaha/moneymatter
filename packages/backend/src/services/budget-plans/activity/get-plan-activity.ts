@@ -81,25 +81,26 @@ export const getPlanActivity = async ({
       FROM units u
     ),
     link_spans AS (
-      -- Rounded once per link, as refundShareRefAmount does, so plan and stats net the same cents.
+      -- Rounded once per link at the plan currency decimals, as refundShareRefAmount does, so plan and
+      -- stats net the same amount.
       SELECT l.*, SUM(l."share") OVER (PARTITION BY l."refundTxId" ORDER BY l.id) AS "linkEnd"
       FROM (
         SELECT r.id, r."refundTxId", r."originalTxId", r."splitId", r.amount,
-               COALESCE(ROUND(s."refAmount" * r.amount::numeric / NULLIF(s."amount", 0)), 0) AS "share"
+               COALESCE(ROUND(s."refAmount" * r.amount / NULLIF(s."amount", 0), :decimals), 0) AS "share"
         FROM "RefundTransactions" r JOIN scoped s ON s.id = r."refundTxId"
       ) l
     ),
     unit_shares AS (
-      -- With F(x, y) = ROUND(x * y / total) over running unit (x) and link (y) totals, a cell is
-      -- F's difference over its box: each link's cells sum to its share, and no unit gives more than it holds.
+      -- With F(x, y) = ROUND(x * y / total) at those decimals over running unit (x) and link (y) totals, a
+      -- cell is F's difference over its box: each link's cells sum to its share, and no unit gives more than it holds.
       SELECT u."txId", u."splitId", u."time", u."transactionType", u."categoryId", u."refAmount",
              r."originalTxId", r."splitId" AS "refundSplitId",
              CASE WHEN r.amount IS NULL THEN u."refAmount"
                   ELSE COALESCE(
-                      ROUND(u."unitEnd"::numeric * r."linkEnd" / u."unitsTotal")
-                    - ROUND((u."unitEnd" - u."refAmount")::numeric * r."linkEnd" / u."unitsTotal")
-                    - ROUND(u."unitEnd"::numeric * (r."linkEnd" - r."share") / u."unitsTotal")
-                    + ROUND((u."unitEnd" - u."refAmount")::numeric * (r."linkEnd" - r."share") / u."unitsTotal"),
+                      ROUND(u."unitEnd" * r."linkEnd" / u."unitsTotal", :decimals)
+                    - ROUND((u."unitEnd" - u."refAmount") * r."linkEnd" / u."unitsTotal", :decimals)
+                    - ROUND(u."unitEnd" * (r."linkEnd" - r."share") / u."unitsTotal", :decimals)
+                    + ROUND((u."unitEnd" - u."refAmount") * (r."linkEnd" - r."share") / u."unitsTotal", :decimals),
                   0) END AS "shareRefAmount",
              r.amount IS NOT NULL AS "isPartial"
       FROM unit_spans u
@@ -142,6 +143,7 @@ export const getPlanActivity = async ({
         fromUtc: utcInstant({ date: plan.epochDate }),
         toUtc: utcInstant({ date: lastEnd }),
         poolFromUtc: plan.poolFrom ? utcInstant({ date: plan.poolFrom }) : null,
+        decimals,
       },
     },
   );

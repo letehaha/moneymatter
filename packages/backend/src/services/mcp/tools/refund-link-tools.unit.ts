@@ -45,11 +45,12 @@ describe('MCP refund link tools', () => {
   const link = toolOf({ register: linkRefundTool });
   const getLinks = toolOf({ register: getRefundLinksTool });
 
-  it('link_refund rejects a share below one cent', () => {
+  // The schema cannot know the refund currency, so a share that rounds to nothing in it is the service's to reject.
+  it('link_refund rejects a share that is not positive and keeps sub-cent ones for 3-decimal currencies', () => {
     const base = { originalTxId: PURCHASE_A, refundTxId: REFUND_ID };
     expect(link.schema.safeParse({ ...base, amount: 0 }).success).toBe(false);
-    expect(link.schema.safeParse({ ...base, amount: 0.004 }).success).toBe(false);
     expect(link.schema.safeParse({ ...base, amount: -5 }).success).toBe(false);
+    expect(link.schema.safeParse({ ...base, amount: 0.004 }).success).toBe(true);
     expect(link.schema.safeParse(base).success).toBe(true);
   });
 

@@ -5,6 +5,7 @@ import {
   NOTIFICATION_TYPES,
   type RecordId,
 } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
@@ -83,9 +84,15 @@ const syncGoalAchievement = async ({
     try {
       if (goal.insights.status === 'reached') {
         if (goal.achievedAt) continue;
-        const achievedAmount = Money.fromDecimal(
-          toGoalCurrency({ amount: goal.insights.currentValue, rateToBase: goal.insights.rateToBase }),
-        );
+        // A converted value, so it rounds half-even to the goal currency's decimals.
+        const achievedAmount = await roundToCurrency({
+          money: Money.fromDecimal(
+            toGoalCurrency({ amount: goal.insights.currentValue, rateToBase: goal.insights.rateToBase }),
+          ),
+          userId,
+          currencyCode: goal.currencyCode,
+          mode: 'half-even',
+        });
         if (await latchGoal({ userId, goal, achievedAt: now, achievedAmount })) {
           goal.achievedAt = now.toISOString();
           goal.achievedAmount = achievedAmount.toNumber();

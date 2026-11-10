@@ -5,6 +5,7 @@ import { QueryTypes } from 'sequelize';
 interface RefundedTotalRow {
   originalTxId: string;
   splitId: string | null;
+  /** Decimal string: a SUM over the DECIMAL amounts, which pg hands back as text. */
   total: string;
 }
 
@@ -35,7 +36,7 @@ export const attachRefundedAmounts = async <T extends { id: string; splits?: { i
 
   for (const tx of transactions) {
     const txRows = rows.filter((row) => row.originalTxId === tx.id);
-    const sum = (list: RefundedTotalRow[]) => Money.sum(list.map((row) => Money.fromCents(Number(row.total))));
+    const sum = (list: RefundedTotalRow[]) => Money.sum(list.map((row) => Money.fromDecimal(row.total)));
 
     (tx as WithRefundedAmount<T>).refundedAmount = sum(txRows);
     for (const split of tx.splits ?? []) {
