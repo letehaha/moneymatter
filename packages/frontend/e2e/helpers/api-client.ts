@@ -620,7 +620,7 @@ export async function createHolding({
 
 // ─── Subscriptions (Recurring Payments) ──────────────────────────────
 
-type SubscriptionFrequency = 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'semi_annual' | 'annual';
+type SubscriptionFrequency = 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'semi_annual' | 'annual' | 'custom';
 
 /**
  * POST /subscriptions. `expectedAmount` is a decimal and must always travel with
@@ -634,6 +634,9 @@ export async function createSubscription({
   payload: {
     name: string;
     frequency: SubscriptionFrequency;
+    /** Step of a `custom` frequency; both required with it and refused with a preset. */
+    intervalUnit?: 'day' | 'week' | 'month' | 'year' | null;
+    intervalCount?: number | null;
     startDate: string;
     type?: 'subscription' | 'bill' | 'installment';
     transactionType?: 'expense' | 'income';

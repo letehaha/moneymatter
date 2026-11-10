@@ -1,6 +1,11 @@
 import type { createSubscription } from '@/api/subscriptions';
 import { type LogoSelection, toLogoPayload } from '@/components/common/logo-selection';
-import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
+import {
+  SUBSCRIPTION_FREQUENCIES,
+  type SUBSCRIPTION_INTERVAL_UNITS,
+  SUBSCRIPTION_TYPES,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { format } from 'date-fns';
 
 export interface QuickAddFormState {
@@ -10,6 +15,9 @@ export interface QuickAddFormState {
   expectedAmount: number | null;
   expectedCurrencyCode: string;
   frequency: SUBSCRIPTION_FREQUENCIES;
+  /** Step of a custom frequency; ignored for the presets. */
+  intervalUnit: SUBSCRIPTION_INTERVAL_UNITS;
+  intervalCount: number | null;
   nextPaymentDate: Date | null;
   maxOccurrences: number | null;
   logo: LogoSelection | null;
@@ -36,6 +44,9 @@ export const buildQuickAddPayload = ({ form, now }: { form: QuickAddFormState; n
     type: form.type,
     transactionType: form.transactionType,
     frequency: form.frequency,
+    ...(form.frequency === SUBSCRIPTION_FREQUENCIES.custom
+      ? { intervalUnit: form.intervalUnit, intervalCount: form.intervalCount }
+      : {}),
     startDate: format(now, API_DATE_FORMAT),
     ...(form.nextPaymentDate ? { dueDate: format(form.nextPaymentDate, API_DATE_FORMAT) } : {}),
     // The API rejects an amount without its currency and a currency without its
