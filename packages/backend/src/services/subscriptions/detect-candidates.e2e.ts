@@ -6,17 +6,19 @@ import SubscriptionCandidates from '@models/subscription-candidates.model';
 import Transactions from '@models/transactions.model';
 import * as helpers from '@tests/helpers';
 import { buildTransactionPayload } from '@tests/helpers/transactions';
+import { subDays, subMonths } from 'date-fns';
 
 /**
- * Helper to create a series of monthly transactions with the same note,
- * simulating a recurring subscription pattern.
+ * Helper to create a series of transactions with the same note, simulating a
+ * recurring subscription pattern. Without `intervalDays` they land on the same
+ * calendar day of consecutive months, the way a monthly bill does.
  */
 async function createRecurringTransactions({
   accountId,
   note,
   amount = 15.99,
   count = 4,
-  intervalDays = 30,
+  intervalDays,
 }: {
   accountId: RecordId;
   note: string;
@@ -28,8 +30,8 @@ async function createRecurringTransactions({
   const transactions: Transactions[] = [];
 
   for (let i = 0; i < count; i++) {
-    const time = new Date(now);
-    time.setDate(time.getDate() - intervalDays * (count - 1 - i));
+    const stepsBack = count - 1 - i;
+    const time = intervalDays === undefined ? subMonths(now, stepsBack) : subDays(now, intervalDays * stepsBack);
 
     const [tx] = await helpers.createTransaction({
       raw: true,
@@ -67,7 +69,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'NETFLIX.COM PAYMENT',
         amount: 15.99,
         count: 4,
-        intervalDays: 30,
       });
 
       const result = await helpers.detectSubscriptionCandidates({ raw: true });
@@ -99,7 +100,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'NETFLIX.COM PAYMENT',
         amount: 15.99,
         count: 4,
-        intervalDays: 30,
       });
 
       await createRecurringTransactions({
@@ -107,7 +107,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'SPOTIFY PREMIUM',
         amount: 9.99,
         count: 5,
-        intervalDays: 30,
       });
 
       const first = await helpers.detectSubscriptionCandidates({ raw: true });
@@ -144,7 +143,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'NETFLIX.COM PAYMENT',
         amount: 15.99,
         count: 4,
-        intervalDays: 30,
       });
 
       await createRecurringTransactions({
@@ -152,7 +150,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'SPOTIFY PREMIUM',
         amount: 9.99,
         count: 5,
-        intervalDays: 30,
       });
 
       const detection = await helpers.detectSubscriptionCandidates({ raw: true });
@@ -188,7 +185,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'ACCEPT LINK TEST',
         amount: 15.99,
         count: 4,
-        intervalDays: 30,
       });
 
       const detection = await helpers.detectSubscriptionCandidates({ raw: true });
@@ -273,8 +269,7 @@ describe('Subscription Candidate Detection', () => {
 
       // Create transfers (not subscriptions)
       for (let i = 0; i < 4; i++) {
-        const time = new Date();
-        time.setDate(time.getDate() - i * 30);
+        const time = subMonths(new Date(), i);
         await helpers.createTransaction({
           raw: true,
           payload: buildTransactionPayload({
@@ -303,7 +298,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'RARE SERVICE PAYMENT',
         amount: 29.99,
         count: 2,
-        intervalDays: 30,
       });
 
       const result = await helpers.detectSubscriptionCandidates({ raw: true });
@@ -319,7 +313,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'LINKED SERVICE PAYMENT',
         amount: 15.99,
         count: 4,
-        intervalDays: 30,
       });
 
       // Create a subscription and link the transactions
@@ -360,7 +353,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'NETFLIX.COM PAYMENT',
         amount: 15.99,
         count: 4,
-        intervalDays: 30,
       });
 
       const first = await helpers.detectSubscriptionCandidates({ raw: true });
@@ -372,7 +364,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'SPOTIFY PREMIUM',
         amount: 9.99,
         count: 5,
-        intervalDays: 30,
       });
 
       // Bypass cooldown and re-detect
@@ -397,7 +388,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'VERY REGULAR SERVICE',
         amount: 9.99,
         count: 5,
-        intervalDays: 30,
       });
 
       // Lower confidence: fewer transactions
@@ -406,7 +396,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'LESS REGULAR SERVICE',
         amount: 24.99,
         count: 3,
-        intervalDays: 30,
       });
 
       const result = await helpers.detectSubscriptionCandidates({ raw: true });
@@ -469,8 +458,7 @@ describe('Subscription Candidate Detection', () => {
       // Mix of two distinct price points with same note
       const amounts = [9.99, 9.99, 9.99, 9.99, 49.99, 49.99, 49.99, 49.99];
       for (let i = 0; i < amounts.length; i++) {
-        const time = new Date(now);
-        time.setDate(time.getDate() - 30 * (amounts.length - 1 - i));
+        const time = subMonths(now, amounts.length - 1 - i);
         await helpers.createTransaction({
           raw: true,
           payload: buildTransactionPayload({
@@ -500,7 +488,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'VANISHING SERVICE',
         amount: 9,
         count: 4,
-        intervalDays: 30,
       });
 
       const detection = await helpers.detectSubscriptionCandidates({ raw: true });
@@ -543,7 +530,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'SHARED SERVICE',
         amount: 10,
         count: 4,
-        intervalDays: 30,
       });
 
       // Link first 2 transactions to an existing subscription
@@ -610,7 +596,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'DigitalOcean',
         amount: 7,
         count: 4,
-        intervalDays: 30,
       });
 
       const result = await helpers.detectSubscriptionCandidates({ raw: true });
@@ -628,7 +613,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'UNIQUE SERVICE ABC',
         amount: 12.5,
         count: 4,
-        intervalDays: 30,
       });
 
       const result = await helpers.detectSubscriptionCandidates({ raw: true });
@@ -642,12 +626,11 @@ describe('Subscription Candidate Detection', () => {
     it('marks a candidate as outdated when last occurrence exceeds 2x median interval', async () => {
       const account = await helpers.createAccount({ raw: true });
 
-      // Create monthly transactions all in the past (oldest: ~210 days ago, newest: ~90 days ago)
-      // Median interval = ~30 days, so 2x = 60 days. Last occurrence at 90 days ago → outdated
+      // Create monthly transactions all in the past (oldest: ~180 days ago, newest: 90 days ago)
+      // Monthly, so the median interval is ~30 days and 2x = 60 days. Last occurrence at 90 days ago → outdated
       const now = new Date();
       for (let i = 0; i < 4; i++) {
-        const time = new Date(now);
-        time.setDate(time.getDate() - 90 - 30 * (3 - i));
+        const time = subMonths(subDays(now, 90), 3 - i);
         await helpers.createTransaction({
           raw: true,
           payload: buildTransactionPayload({
@@ -685,7 +668,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'NETFLIX.COM PAYMENT',
         amount: 15.99,
         count: 4,
-        intervalDays: 30,
       });
 
       await createRecurringTransactions({
@@ -693,7 +675,6 @@ describe('Subscription Candidate Detection', () => {
         note: 'SPOTIFY PREMIUM',
         amount: 9.99,
         count: 5,
-        intervalDays: 30,
       });
 
       const detection = await helpers.detectSubscriptionCandidates({ raw: true });
