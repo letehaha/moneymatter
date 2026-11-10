@@ -1,42 +1,20 @@
 import { mcpToolsetsFromScopes } from '@bt/shared/types';
-import { CustomError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { runWithBalanceRevalueBatch } from '@services/balances/revalue-balance-history.service';
 import { McpAuthInfo, verifyMcpToken } from '@services/mcp/auth';
 import { createMcpServer } from '@services/mcp/server';
-import {
-  getSession,
-  registerSession,
-  removeSession,
-  startSessionCleanup,
-  touchSession,
-} from '@services/mcp/transport-manager';
 import { Router, Request, Response } from 'express';
-import { randomUUID } from 'node:crypto';
 
 import { MCP_BASE_URL } from '../config';
 
 const router = Router();
-
-// Start the idle session cleanup interval (skip in tests to avoid open handles)
-if (process.env.NODE_ENV !== 'test') {
-  startSessionCleanup();
-}
 
 declare module 'express' {
   interface Request {
     auth?: McpAuthInfo;
     mcpAuthInfo?: McpAuthInfo;
   }
-}
-
-/**
- * Extract the MCP session ID from the request header, handling the string[] case.
- */
-function getSessionId({ req }: { req: Request }): string | undefined {
-  const header = req.headers['mcp-session-id'];
-  return Array.isArray(header) ? header[0] : header;
 }
 
 /**
@@ -108,149 +86,62 @@ async function authenticateMcpRequest({ req, res }: { req: Request; res: Respons
 }
 
 /**
- * Lookup an existing session transport by session ID from the request header.
- * Returns the transport if found, or sends a 400/403 error and returns null.
- */
-function resolveSessionTransport({ req, res }: { req: Request; res: Response }): StreamableHTTPServerTransport | null {
-  const sessionId = getSessionId({ req });
-
-  if (!sessionId) {
-    res.status(400).json({
-      jsonrpc: '2.0',
-      error: { code: -32000, message: 'Missing session ID' },
-      id: null,
-    });
-    return null;
-  }
-
-  const session = getSession({ sessionId });
-  if (!session) {
-    res.status(400).json({
-      jsonrpc: '2.0',
-      error: { code: -32000, message: 'Invalid or expired session ID' },
-      id: null,
-    });
-    return null;
-  }
-
-  // Verify the session belongs to the authenticated user
-  if (session.userId !== req.mcpAuthInfo?.extra?.userId) {
-    res.status(403).json({
-      jsonrpc: '2.0',
-      error: { code: -32001, message: 'Session does not belong to authenticated user' },
-      id: null,
-    });
-    return null;
-  }
-
-  touchSession({ sessionId });
-  return session.transport;
-}
-
-/**
- * POST /mcp — Handle MCP JSON-RPC requests (initialization + tool calls)
+ * POST /mcp — Handle MCP JSON-RPC requests, in the Streamable HTTP spec's stateless mode.
+ *
+ * Every request gets a server and transport of its own and nothing outlives it. A tool call needs only
+ * its request's token, so an idle client or a backend restart has no session to lose, and a session id
+ * a client still sends is ignored. The toolsets come from the request's token, so the ones picked on
+ * the consent screen apply from the next call. Building the server registers its tools, about a
+ * millisecond.
  */
 // oxlint-disable-next-line oxc/no-async-endpoint-handlers -- handler has internal try/catch for all async operations
 router.post('/', async (req: Request, res: Response) => {
   if (!(await authenticateMcpRequest({ req, res }))) return;
 
-  const sessionId = getSessionId({ req });
-
-  // Tool calls mutate data, so each request gets its own revalue scope: the queued
-  // rebuilds must run after the tool's writes, not inline from inside a model hook.
   try {
-    // Reuse existing transport for established sessions
-    if (sessionId) {
-      const transport = resolveSessionTransport({ req, res });
-      if (!transport) return;
+    const server = createMcpServer({ toolsets: mcpToolsetsFromScopes({ scopes: req.mcpAuthInfo!.scopes }) });
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
 
-      await runWithBalanceRevalueBatch(() => transport.handleRequest(req, res, req.body));
-      return;
-    }
-
-    // New session — must be an initialization request
-    if (req.body?.method === 'initialize') {
-      const { scopes, extra } = req.mcpAuthInfo!;
-      const userId = extra.userId;
-
-      const transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: () => randomUUID(),
-        onsessioninitialized: (sid: string) => {
-          registerSession({ sessionId: sid, transport, userId });
-        },
+    res.on('close', () => {
+      server.close().catch((error: unknown) => {
+        logger.error('MCP server close failed', { error: (error as Error).message });
       });
-
-      // oxlint-disable-next-line unicorn/prefer-add-event-listener -- StreamableHTTPServerTransport only exposes onclose setter
-      transport.onclose = () => {
-        const sid = transport.sessionId;
-        if (sid) removeSession({ sessionId: sid });
-      };
-
-      // The session keeps the toolsets of the token it started with; picking others on the consent
-      // screen means reconnecting the app.
-      const server = createMcpServer({ toolsets: mcpToolsetsFromScopes({ scopes }) });
-      await server.connect(transport);
-      await runWithBalanceRevalueBatch(() => transport.handleRequest(req, res, req.body));
-      return;
-    }
-
-    // Invalid request — no session and not initialization
-    res.status(400).json({
-      jsonrpc: '2.0',
-      error: { code: -32000, message: 'Invalid request. Send an initialization request first.' },
-      id: null,
     });
+
+    await server.connect(transport);
+    // Tool calls mutate data, so each request gets its own revalue scope: the queued
+    // rebuilds must run after the tool's writes, not inline from inside a model hook.
+    await runWithBalanceRevalueBatch(() => transport.handleRequest(req, res, req.body));
   } catch (error) {
-    if (error instanceof CustomError && error.httpCode === 503) {
-      if (!res.headersSent) {
-        res.status(503).json({
-          jsonrpc: '2.0',
-          error: { code: -32000, message: (error as Error).message },
-          id: null,
-        });
-      }
-      return;
-    }
     handleMcpError({ error, res, label: 'POST' });
   }
 });
 
 /**
- * GET /mcp — SSE stream for server-to-client notifications
+ * GET and DELETE /mcp answer 405: there is no stream to open, since nothing is ever pushed to a
+ * client, and no session to end. Both still authenticate first, so the scope gate answers the same on
+ * every method.
  */
-// oxlint-disable-next-line oxc/no-async-endpoint-handlers -- handler has internal try/catch for all async operations
-router.get('/', async (req: Request, res: Response) => {
-  if (!(await authenticateMcpRequest({ req, res }))) return;
-
-  const transport = resolveSessionTransport({ req, res });
-  if (!transport) return;
-
+const methodNotAllowed = async (req: Request, res: Response) => {
   try {
-    await transport.handleRequest(req, res);
-  } catch (error) {
-    handleMcpError({ error, res, label: 'GET' });
-  }
-});
+    if (!(await authenticateMcpRequest({ req, res }))) return;
 
-/**
- * DELETE /mcp — Terminate an MCP session
- */
+    res
+      .status(405)
+      .set('Allow', 'POST')
+      .json({
+        jsonrpc: '2.0',
+        error: { code: -32000, message: 'Method not allowed: this server keeps no sessions or streams.' },
+        id: null,
+      });
+  } catch (error) {
+    handleMcpError({ error, res, label: req.method });
+  }
+};
+
 // oxlint-disable-next-line oxc/no-async-endpoint-handlers -- handler has internal try/catch for all async operations
-router.delete('/', async (req: Request, res: Response) => {
-  if (!(await authenticateMcpRequest({ req, res }))) return;
-
-  const sessionId = getSessionId({ req });
-
-  const transport = resolveSessionTransport({ req, res });
-  if (!transport) return;
-
-  try {
-    await transport.handleRequest(req, res);
-    if (sessionId) removeSession({ sessionId });
-  } catch (error) {
-    if (sessionId) removeSession({ sessionId });
-    handleMcpError({ error, res, label: 'DELETE' });
-  }
-});
+router.get('/', methodNotAllowed);
+// oxlint-disable-next-line oxc/no-async-endpoint-handlers -- handler has internal try/catch for all async operations
+router.delete('/', methodNotAllowed);
 
 export default router;
