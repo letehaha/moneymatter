@@ -28,8 +28,11 @@ import { PNG_1X1_BYTES, PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 import { VALID_ANTHROPIC_API_KEY } from '@tests/mocks/anthropic/mock-api';
 import { VALID_MONOBANK_TOKEN } from '@tests/mocks/monobank/mock-api';
+import Big from 'big.js';
 import { format } from 'date-fns';
 import { randomUUID } from 'node:crypto';
+
+import { buildV1ConversionRules } from './convert-v1-money';
 
 type Row = Record<string, unknown>;
 
@@ -2015,8 +2018,9 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
     ];
 
     /**
-     * Rewrite a current archive into the v1 shape: budget-named tracker files, `budgetId` keys, old stored values,
-     * and `type: 'category'` trackers with no rule columns, tracker tags or rule links.
+     * Rewrite a current archive into the v1 shape: money as integer cents, budget-named tracker files,
+     * `budgetId` keys, old stored values, and `type: 'category'` trackers with no rule columns, tracker
+     * tags or rule links. Only money columns are rewritten: the ledger here keeps none inside JSON fields.
      */
     function toLegacyArchive({
       files,
@@ -2029,6 +2033,16 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       categoryTrackerIds: string[];
       userId: number;
     }) {
+      for (const { fileName, attrName } of buildV1ConversionRules().columns) {
+        const path = `data/${fileName}.json`;
+        const rows = readArchiveJson({ files, path }) as Row[] | null;
+        if (!rows) continue;
+        for (const row of rows) {
+          if (row[attrName] != null) row[attrName] = new Big(row[attrName] as string).times(100).toNumber();
+        }
+        writeArchiveJson({ files, path, value: rows });
+      }
+
       const trackerRows = readArchiveJson({ files, path: 'data/trackers.json' }) as Row[];
       const legacyTrackerRows = trackerRows.map((row) => {
         const legacy: Row = {

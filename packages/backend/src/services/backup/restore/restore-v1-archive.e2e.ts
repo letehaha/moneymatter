@@ -210,7 +210,7 @@ describe('Restoring a format version 1 backup (cents to decimals)', () => {
     expect(byName.get('Dollars')!.refCurrentBalance).toBe(1120.4);
   });
 
-  it('exports the restored ledger as a format version 3 archive that round-trips exactly', async () => {
+  it('exports the restored ledger as a format version 4 archive that round-trips exactly', async () => {
     await restoreUpload({ base64: await buildFixtureUpload() });
     const firstExport = await helpers.exportBackup();
     const first = helpers.parseBackupArchive({ buffer: firstExport.body });
@@ -301,10 +301,10 @@ describe('Restoring a format version 1 backup (cents to decimals)', () => {
     expect(restore.message).toMatch(/version/i);
   });
 
-  it('exports a user with no data as a format version 3 archive with empty money files', async () => {
+  it('exports a user with no data as a format version 4 archive with empty money files', async () => {
     const archive = await exportParsed();
 
-    expect(archive.manifest.formatVersion).toBe(3);
+    expect(archive.manifest.formatVersion).toBe(BACKUP_FORMAT_VERSION);
     expect(rowsOf({ archive, name: 'accounts' })).toEqual([]);
     expect(rowsOf({ archive, name: 'transactions' })).toEqual([]);
   });

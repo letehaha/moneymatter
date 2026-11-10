@@ -15,11 +15,12 @@
  *
  * - 1: money columns are integer cents (BIGINT storage); trackers carry the older "budget" names.
  * - 2: trackers use their current names; money is still integer cents.
- * - 3: money columns are exact decimal strings (DECIMAL storage) and the money
- *   fields inside JSON columns are decimals. A version 1 or 2 archive is
+ * - 3: category trackers are rules trackers; money is still integer cents.
+ * - 4: money columns are exact decimal strings (DECIMAL storage) and the money
+ *   fields inside JSON columns are decimals. A version 1, 2 or 3 archive is
  *   converted to this shape on restore.
  */
-export const BACKUP_FORMAT_VERSION = 3;
+export const BACKUP_FORMAT_VERSION = 4;
 
 /**
  * Global-catalog subset embedded under `reference/`. Only the security

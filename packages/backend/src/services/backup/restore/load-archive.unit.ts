@@ -200,12 +200,29 @@ describe('loadBackupArchive money format', () => {
     const archive = await loadBackupArchive({ fileContent: buffer.toString('base64') });
 
     expect(archive.data.get('transactions')).toEqual([{ id: 'a', amount: '15.5', refAmount: null }]);
-    expect(archive.data.get('trackers')).toEqual([{ id: 't', limitAmount: '50' }]);
+    expect(archive.data.get('trackers')).toEqual([
+      expect.objectContaining({ id: 't', limitAmount: '50', rulesEnabled: false }),
+    ]);
   });
 
-  it('keeps the money of a format version 3 archive as it is', async () => {
+  it('converts the cents of a format version 3 archive', async () => {
+    const buffer = await buildArchiveFromFiles({
+      files: {
+        'data/transactions.json': rows,
+        'data/trackers.json': JSON.stringify([{ id: 't', limitAmount: 5000, rulesEnabled: true }]),
+      },
+      formatVersion: 3,
+    });
+
+    const archive = await loadBackupArchive({ fileContent: buffer.toString('base64') });
+
+    expect(archive.data.get('transactions')).toEqual([{ id: 'a', amount: '15.5', refAmount: null }]);
+    expect(archive.data.get('trackers')).toEqual([{ id: 't', limitAmount: '50', rulesEnabled: true }]);
+  });
+
+  it('keeps the money of a format version 4 archive as it is', async () => {
     const decimalRows = JSON.stringify([{ id: 'a', amount: '15.500000000000000000', refAmount: null }]);
-    const buffer = await buildArchiveFromFiles({ files: { 'data/transactions.json': decimalRows }, formatVersion: 3 });
+    const buffer = await buildArchiveFromFiles({ files: { 'data/transactions.json': decimalRows }, formatVersion: 4 });
 
     const archive = await loadBackupArchive({ fileContent: buffer.toString('base64') });
 
@@ -213,7 +230,7 @@ describe('loadBackupArchive money format', () => {
   });
 
   it('rejects a version newer than this app writes', async () => {
-    const buffer = await buildArchiveFromFiles({ files: { 'data/transactions.json': rows }, formatVersion: 4 });
+    const buffer = await buildArchiveFromFiles({ files: { 'data/transactions.json': rows }, formatVersion: 5 });
 
     await expect(loadBackupArchive({ fileContent: buffer.toString('base64') })).rejects.toThrow(/newer than/);
   });
