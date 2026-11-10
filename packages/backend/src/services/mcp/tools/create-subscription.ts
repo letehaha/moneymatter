@@ -12,10 +12,18 @@ export const createSubscriptionTool = defineTool({
   toolset: 'subscriptions',
   access: 'write',
   description:
-    'Create a new subscription, recurring bill, or installment plan. Use type="subscription" for SaaS/streaming services, type="bill" for utilities, and type="installment" for a finite financed purchase paid off over a fixed number of payments. An installment requires maxOccurrences (number of payments) and dueDate (first payment date). expectedAmount is a decimal in the subscription currency.',
+    'Create a new subscription, recurring bill, or installment plan. Use type="subscription" for SaaS/streaming services, type="bill" for utilities, and type="installment" for a finite financed purchase paid off over a fixed number of payments. An installment requires maxOccurrences (number of payments) and dueDate (first payment date). For a schedule no preset fits (e.g. every 30 days), use frequency="custom" with intervalUnit and intervalCount. expectedAmount is a decimal in the subscription currency.',
   input: {
     name: shape.name.describe('Display name of the subscription (e.g. "Netflix", "Electricity")'),
-    frequency: shape.frequency.describe('Billing frequency: weekly, biweekly, monthly, quarterly, semi_annual, annual'),
+    frequency: shape.frequency.describe(
+      'Billing frequency: weekly, biweekly, monthly, quarterly, semi_annual, annual, or custom (then pass intervalUnit and intervalCount)',
+    ),
+    intervalUnit: shape.intervalUnit.describe(
+      'Unit of a custom frequency: day, week, month or year. Only with frequency="custom"',
+    ),
+    intervalCount: shape.intervalCount.describe(
+      'Repeat every N units for a custom frequency (day up to 366, week 104, month 120, year 10). Only with frequency="custom"',
+    ),
     startDate: shape.startDate.describe('Start date of the subscription (ISO 8601, e.g. "2024-01-01")'),
     type: shape.type.describe('Type: "subscription" (default), "bill", or "installment"'),
     transactionType: shape.transactionType.describe('Transaction type: "expense" (default) or "income"'),
