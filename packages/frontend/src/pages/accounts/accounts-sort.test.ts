@@ -3,7 +3,14 @@ import { computeAccountDisplayBalances } from '@/common/utils/account-balance';
 import type { AccountModel } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
-import { type AccountsListItem, accountBaseValue, groupBaseValue, sortItems, sortMixed } from './accounts-sort';
+import {
+  type AccountsListItem,
+  accountBaseValue,
+  defaultSortDirection,
+  groupBaseValue,
+  sortItems,
+  sortMixed,
+} from './accounts-sort';
 
 const makeAccount = ({
   id,
@@ -133,6 +140,34 @@ describe('sortItems', () => {
     const original = [...items];
     sortItems({ items, sortKey: 'balance', getName, getValue });
     expect(items).toEqual(original);
+  });
+
+  it('sorts descending by name when direction is desc', () => {
+    const result = sortItems({ items, sortKey: 'name', direction: 'desc', getName, getValue });
+    expect(result.map(getName)).toEqual(['Cherry 10', 'Cherry 2', 'Banana', 'apple']);
+  });
+
+  it('sorts ascending by value when direction is asc, keeping A→Z tie-breaks', () => {
+    const result = sortItems({ items, sortKey: 'balance', direction: 'asc', getName, getValue });
+    expect(result.map(getName)).toEqual(['Banana', 'Cherry 2', 'Cherry 10', 'apple']);
+  });
+
+  it('puts the largest credit-card debt first when balances sort ascending', () => {
+    const cards = [
+      { name: 'Unused card', value: 0 },
+      { name: 'Small debt', value: -990.15 },
+      { name: 'Large debt', value: -258253.58 },
+    ];
+    const result = sortItems({ items: cards, sortKey: 'balance', direction: 'asc', getName, getValue });
+    expect(result.map(getName)).toEqual(['Large debt', 'Small debt', 'Unused card']);
+  });
+});
+
+describe('defaultSortDirection', () => {
+  it('starts balance descending and name-based keys ascending', () => {
+    expect(defaultSortDirection({ sortKey: 'balance' })).toBe('desc');
+    expect(defaultSortDirection({ sortKey: 'name' })).toBe('asc');
+    expect(defaultSortDirection({ sortKey: 'auto' })).toBe('asc');
   });
 });
 
