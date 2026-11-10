@@ -36,7 +36,15 @@ export const scheduleInclude: Includeable[] = [
 
 type ScheduledSubscription = Pick<
   Subscriptions,
-  'startDate' | 'frequency' | 'dueDate' | 'isActive' | 'endDate' | 'transactions' | 'periods'
+  | 'startDate'
+  | 'frequency'
+  | 'intervalUnit'
+  | 'intervalCount'
+  | 'dueDate'
+  | 'isActive'
+  | 'endDate'
+  | 'transactions'
+  | 'periods'
 >;
 
 /** The earliest open period's dueDate; an unscheduled subscription derives it from its payments. */
@@ -44,6 +52,8 @@ const nextPaymentDate = ({ subscription }: { subscription: ScheduledSubscription
   resolveNextExpectedDate({
     startDate: subscription.startDate,
     frequency: subscription.frequency,
+    intervalUnit: subscription.intervalUnit,
+    intervalCount: subscription.intervalCount,
     transactions: subscription.transactions,
     isActive: subscription.isActive,
     endDate: subscription.endDate,
@@ -67,7 +77,13 @@ export const paymentDatesInRange = ({
   for (
     let date = nextPaymentDate({ subscription });
     date !== null && date < until && (!subscription.endDate || date <= subscription.endDate);
-    date = calculateNextDueDate({ currentDueDate: date, frequency: subscription.frequency, anchorDay })
+    date = calculateNextDueDate({
+      currentDueDate: date,
+      frequency: subscription.frequency,
+      intervalUnit: subscription.intervalUnit,
+      intervalCount: subscription.intervalCount,
+      anchorDay,
+    })
   ) {
     if (date >= from) dates.push(date);
   }
@@ -107,6 +123,8 @@ export const getUpcomingPayments = async ({ userId, limit = 5, type }: GetUpcomi
         transactionType: plain.transactionType,
         nextPaymentDate: nextPaymentDate({ subscription: plain }),
         frequency: plain.frequency,
+        intervalUnit: plain.intervalUnit,
+        intervalCount: plain.intervalCount,
         categoryName: plain.category?.name ?? null,
         categoryColor: plain.category?.color ?? null,
       };

@@ -1,4 +1,4 @@
-import { SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
+import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 
 import { matchToleranceDays, pickNearestOpenPeriod } from './period-match-window';
@@ -13,6 +13,18 @@ describe('matchToleranceDays', () => {
     [SUBSCRIPTION_FREQUENCIES.annual, 182],
   ])('is half the interval for %s', (frequency, expected) => {
     expect(matchToleranceDays({ frequency })).toBe(expected);
+  });
+
+  it.each([
+    [SUBSCRIPTION_INTERVAL_UNITS.day, 30, 15],
+    [SUBSCRIPTION_INTERVAL_UNITS.day, 1, 0],
+    [SUBSCRIPTION_INTERVAL_UNITS.week, 3, 10],
+    [SUBSCRIPTION_INTERVAL_UNITS.month, 2, 30],
+    [SUBSCRIPTION_INTERVAL_UNITS.year, 2, 365],
+  ])('is half the interval for custom %s×%i', (intervalUnit, intervalCount, expected) => {
+    expect(matchToleranceDays({ frequency: SUBSCRIPTION_FREQUENCIES.custom, intervalUnit, intervalCount })).toBe(
+      expected,
+    );
   });
 });
 
@@ -73,5 +85,23 @@ describe('pickNearestOpenPeriod', () => {
 
   it('returns null without periods', () => {
     expect(pickNearestOpenPeriod({ periods: [], transactionTime: new Date(), frequency: monthly })).toBeNull();
+  });
+});
+
+describe('pickNearestOpenPeriod with a custom frequency', () => {
+  const every30Days = {
+    frequency: SUBSCRIPTION_FREQUENCIES.custom,
+    intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+    intervalCount: 30,
+  };
+
+  it('settles within 15 days of the due date and not 16', () => {
+    const periods = [{ id: 'a', dueDate: '2025-06-30' }];
+    expect(
+      pickNearestOpenPeriod({ periods, transactionTime: new Date('2025-06-15T00:00:00Z'), ...every30Days })?.id,
+    ).toBe('a');
+    expect(pickNearestOpenPeriod({ periods, transactionTime: new Date('2025-06-14T00:00:00Z'), ...every30Days })).toBe(
+      null,
+    );
   });
 });

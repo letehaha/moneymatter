@@ -102,6 +102,8 @@ async function findLinkedPaymentsForPeriod({
       calculateNextDueDate({
         currentDueDate: period.dueDate,
         frequency: subscription.frequency,
+        intervalUnit: subscription.intervalUnit,
+        intervalCount: subscription.intervalCount,
         anchorDay: subscription.anchorDay ?? dueStart.getUTCDate(),
       }),
   });

@@ -30,7 +30,8 @@ const PRESET_STEPS: Record<PresetFrequency, RecurrenceStep> = {
 const DAYS_PER_WEEK = 7;
 const MONTHS_PER_YEAR = 12;
 
-type RecurrenceInput = Pick<SubscriptionRecurrence, 'frequency'> &
+/** A schedule's recurrence fields; the step pair may be omitted for a preset. */
+export type RecurrenceInput = Pick<SubscriptionRecurrence, 'frequency'> &
   Partial<Pick<SubscriptionRecurrence, 'intervalUnit' | 'intervalCount'>>;
 
 /** The step a schedule repeats by. Throws for `custom` without a complete step. */
