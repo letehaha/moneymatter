@@ -771,6 +771,11 @@
         "requiresAccountField": "Автозапис потребує рахунку для запису транзакції.",
         "requiresAmountField": "Автозапис потребує expectedAmount та expectedCurrencyCode.",
         "excludesMatchingField": "Автозапис та правила зіставлення є взаємовиключними."
+      },
+      "customInterval": {
+        "required": "Для власної частоти потрібні одиниця та кількість інтервалу.",
+        "presetConflict": "Одиницю та кількість інтервалу можна задати лише для власної частоти.",
+        "countOutOfRange": "Кількість інтервалу для цієї одиниці має бути від {{min}} до {{max}}."
       }
     }
   },

@@ -1,4 +1,10 @@
-import { ACCOUNT_TYPES, SubscriptionMatchingRules } from '@bt/shared/types';
+import {
+  ACCOUNT_TYPES,
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_LIMITS,
+  SubscriptionMatchingRules,
+  type SubscriptionRecurrence,
+} from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -32,6 +38,45 @@ export const assertAmountCurrencyConsistent = ({
       message: 'expectedAmount and expectedCurrencyCode must be provided together (both set, or both omitted).',
     });
   }
+};
+
+/**
+ * Which recurrence rule a schedule breaks, as a backend i18n key, or null when it holds:
+ * `custom` needs a complete step within its unit's limit, a preset carries no step.
+ * Shared by the request schemas and the service-layer assert so both refuse alike.
+ */
+export const findRecurrenceProblem = ({
+  frequency,
+  intervalUnit,
+  intervalCount,
+}: Partial<SubscriptionRecurrence>): { key: string; variables?: Record<string, number> } | null => {
+  if (frequency !== undefined && frequency !== SUBSCRIPTION_FREQUENCIES.custom) {
+    return intervalUnit != null || intervalCount != null
+      ? { key: 'subscriptions.validation.customInterval.presetConflict' }
+      : null;
+  }
+  if (frequency === SUBSCRIPTION_FREQUENCIES.custom && (intervalUnit == null || intervalCount == null)) {
+    return { key: 'subscriptions.validation.customInterval.required' };
+  }
+  if (intervalUnit != null && intervalCount != null) {
+    const max = SUBSCRIPTION_INTERVAL_LIMITS.max[intervalUnit];
+    if (intervalCount < SUBSCRIPTION_INTERVAL_LIMITS.min || intervalCount > max) {
+      return {
+        key: 'subscriptions.validation.customInterval.countOutOfRange',
+        variables: { min: SUBSCRIPTION_INTERVAL_LIMITS.min, max },
+      };
+    }
+  }
+  return null;
+};
+
+/**
+ * Refuses a merged (post-update) schedule that breaks a recurrence rule. Enforced in
+ * the service layer because MCP callers reach it without the request schema.
+ */
+export const assertRecurrenceConsistent = (recurrence: SubscriptionRecurrence): void => {
+  const problem = findRecurrenceProblem(recurrence);
+  if (problem) throw new ValidationError({ message: t(problem) });
 };
 
 export const findSubscriptionOrThrow = async ({ id, userId }: { id: string; userId: number }) => {
