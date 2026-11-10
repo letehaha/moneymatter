@@ -89,7 +89,9 @@ export const getTransactionsSummary = async (filters: ListFilters): Promise<Tran
     ...row,
     refAmount: Money.fromDecimal(row.refAmount).toMinorUnits({ decimals }),
   }));
-  const totals = sumTransactionTotals(await scopeToCategories({ rows: minorRows, categoryIds: filters.categoryIds, decimals }));
+  const totals = sumTransactionTotals(
+    await scopeToCategories({ rows: minorRows, categoryIds: filters.categoryIds, decimals }),
+  );
 
   return {
     count: rows.length,

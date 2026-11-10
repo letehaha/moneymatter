@@ -13,8 +13,8 @@ import {
 } from '@bt/shared/types';
 import addTransactionsToTrackerController from '@controllers/trackers/add-transactions-to-tracker';
 import removeTransactionsFromTrackerController from '@controllers/trackers/remove-transactions-from-tracker';
-import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
 import { serializeTrackerStats } from '@root/serializers';
+import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
 import * as createTrackerService from '@root/services/trackers/create-tracker';
 import * as getTrackersService from '@root/services/trackers/get-trackers';
 import { Response } from 'express';

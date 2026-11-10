@@ -1,6 +1,5 @@
 import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, isTwoLegTransfer } from '@bt/shared/types';
 import { roundToCurrency } from '@common/lib/currency-precision';
-import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';

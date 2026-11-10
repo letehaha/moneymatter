@@ -11,8 +11,8 @@ import Trackers from '@models/trackers.model';
 import { applyLogoWrite } from '@services/brand-logos';
 import { runAfterCommit } from '@services/common/run-after-commit';
 import { withTransaction } from '@services/common/with-transaction';
-import { startFeatureTrial } from '@services/entitlements/start-feature-trial.service';
 import { roundToBaseCurrency } from '@services/currencies/round-to-base-currency';
+import { startFeatureTrial } from '@services/entitlements/start-feature-trial.service';
 import { includeCategories, includeTags } from '@services/trackers/get-trackers';
 
 import { saveTrackerRules } from './rules/save-tracker-rules';
