@@ -117,7 +117,14 @@ const due = computed<{ label: string; chipClass: string } | null>(() => {
             <span class="truncate">{{ subscription.category.name }}</span>
             <span aria-hidden="true">&middot;</span>
           </template>
-          <span class="whitespace-nowrap">{{ formatFrequency({ frequency: subscription.frequency, t }) }}</span>
+          <span class="whitespace-nowrap">{{
+            formatFrequency({
+              frequency: subscription.frequency,
+              intervalUnit: subscription.intervalUnit,
+              intervalCount: subscription.intervalCount,
+              t,
+            })
+          }}</span>
           <template v-if="installmentProgress">
             <span aria-hidden="true">&middot;</span>
             <span class="whitespace-nowrap">
