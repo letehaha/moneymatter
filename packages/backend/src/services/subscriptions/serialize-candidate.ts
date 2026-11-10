@@ -1,3 +1,4 @@
+import type { SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import SubscriptionCandidates from '@models/subscription-candidates.model';
 import Subscriptions from '@models/subscriptions.model';
@@ -13,6 +14,9 @@ export interface SerializedCandidate {
   id: string;
   suggestedName: string;
   detectedFrequency: string;
+  /** Step of a `custom` detected frequency (e.g. day × 30); null for a preset. */
+  detectedIntervalUnit: SUBSCRIPTION_INTERVAL_UNITS | null;
+  detectedIntervalCount: number | null;
   averageAmount: number;
   currencyCode: string;
   accountId: string | null;
@@ -53,6 +57,8 @@ export function serializeCandidate({
     id: json.id,
     suggestedName: json.suggestedName,
     detectedFrequency: json.detectedFrequency,
+    detectedIntervalUnit: json.detectedIntervalUnit,
+    detectedIntervalCount: json.detectedIntervalCount,
     averageAmount: Money.fromCents(json.averageAmount).toNumber(),
     currencyCode: json.currencyCode,
     accountId: json.accountId,

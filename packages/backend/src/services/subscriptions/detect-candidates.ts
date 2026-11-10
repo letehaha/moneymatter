@@ -1,4 +1,9 @@
-import { SUBSCRIPTION_CANDIDATE_STATUS, SUBSCRIPTION_LINK_STATUS, TRANSACTION_TYPES } from '@bt/shared/types';
+import {
+  SUBSCRIPTION_CANDIDATE_STATUS,
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_LINK_STATUS,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { logger } from '@js/utils';
 import SubscriptionCandidates from '@models/subscription-candidates.model';
 import Subscriptions from '@models/subscriptions.model';
@@ -13,6 +18,7 @@ import {
   computeConfidenceScore,
   computeIntervals,
   computeMedian,
+  detectFixedDayCadence,
   findMostCommonNote,
   groupTransactionsBySignature,
   mapIntervalToFrequency,
@@ -216,7 +222,11 @@ export async function runDetection({ userId }: { userId: number }): Promise<Subs
 
     const amounts = txs.map((tx) => Math.abs(tx.amount));
     const averageAmount = Math.round(amounts.reduce((s, a) => s + a, 0) / amounts.length);
-    const frequency = mapIntervalToFrequency({ medianDays: medianIntervalDays });
+    // A fixed day cadence (every 30 days) wins over the nearest preset, which would drift.
+    const cadence = detectFixedDayCadence({ dates: txs.map((tx) => new Date(tx.time)) });
+    const frequency = cadence
+      ? SUBSCRIPTION_FREQUENCIES.custom
+      : mapIntervalToFrequency({ medianDays: medianIntervalDays });
     const suggestedName = findMostCommonNote({ notes: group.rawNotes }).slice(0, MAX_SUGGESTED_NAME_LENGTH);
 
     // Sort by time descending for sample IDs and lastOccurrenceAt
@@ -228,6 +238,8 @@ export async function runDetection({ userId }: { userId: number }): Promise<Subs
       userId,
       suggestedName,
       detectedFrequency: frequency,
+      detectedIntervalUnit: cadence?.unit ?? null,
+      detectedIntervalCount: cadence?.count ?? null,
       averageAmount,
       currencyCode: group.currencyCode,
       accountId: group.accountId,

@@ -1,5 +1,10 @@
 import type { RecordId } from '@bt/shared/types';
-import { SUBSCRIPTION_FREQUENCIES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import {
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
+  TRANSACTION_TRANSFER_NATURE,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import SubscriptionCandidates from '@models/subscription-candidates.model';
@@ -79,6 +84,8 @@ describe('Subscription Candidate Detection', () => {
       const netflix = result.candidates.find((c) => c.suggestedName.includes('NETFLIX'));
       expect(netflix).toBeDefined();
       expect(netflix!.detectedFrequency).toBe(SUBSCRIPTION_FREQUENCIES.monthly);
+      expect(netflix!.detectedIntervalUnit).toBeNull();
+      expect(netflix!.detectedIntervalCount).toBeNull();
       expect(netflix!.occurrenceCount).toBe(4);
       expect(netflix!.confidenceScore).toBeGreaterThan(0);
       expect(netflix!.sampleTransactionIds.length).toBeGreaterThan(0);
@@ -223,6 +230,69 @@ describe('Subscription Candidate Detection', () => {
       for (const txId of candidate.sampleTransactionIds) {
         expect(linkedTxIds).toContain(txId);
       }
+    });
+  });
+
+  describe('Fixed day cadences', () => {
+    it('proposes every 30 days, and the candidate is accepted onto a subscription with that step', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      await createRecurringTransactions({
+        accountId: account.id,
+        note: 'MAGTI MOBILE TOPUP',
+        amount: 25,
+        count: 5,
+        intervalDays: 30,
+      });
+
+      const detection = await helpers.detectSubscriptionCandidates({ raw: true });
+      const magti = detection.candidates.find((c) => c.suggestedName.includes('MAGTI'))!;
+      expect(magti).toMatchObject({
+        detectedFrequency: SUBSCRIPTION_FREQUENCIES.custom,
+        detectedIntervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+        detectedIntervalCount: 30,
+      });
+
+      const listed = await helpers.getSubscriptionCandidates({ raw: true });
+      expect(listed.find((c) => c.id === magti.id)).toMatchObject({
+        detectedFrequency: SUBSCRIPTION_FREQUENCIES.custom,
+        detectedIntervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+        detectedIntervalCount: 30,
+      });
+
+      // The client prefills the quick-add form from the candidate, then accepts with the new id.
+      const sub = await helpers.createSubscription({
+        name: magti.suggestedName,
+        expectedAmount: magti.averageAmount,
+        expectedCurrencyCode: magti.currencyCode,
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: magti.detectedIntervalUnit!,
+        intervalCount: magti.detectedIntervalCount!,
+        startDate: '2026-01-01',
+        accountId: account.id,
+        raw: true,
+      });
+      const accepted = await helpers.acceptSubscriptionCandidate({ id: magti.id, subscriptionId: sub.id, raw: true });
+      expect(accepted.status).toBe('accepted');
+
+      const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
+      expect(detail).toMatchObject({
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+        intervalCount: 30,
+      });
+      expect(detail.transactions).toHaveLength(5);
+    }, 60_000);
+
+    it('keeps a 14-day cadence on the biweekly preset', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      await createRecurringTransactions({ accountId: account.id, note: 'CLEANER VISIT', count: 5, intervalDays: 14 });
+
+      const detection = await helpers.detectSubscriptionCandidates({ raw: true });
+      expect(detection.candidates.find((c) => c.suggestedName.includes('CLEANER'))).toMatchObject({
+        detectedFrequency: SUBSCRIPTION_FREQUENCIES.biweekly,
+        detectedIntervalUnit: null,
+        detectedIntervalCount: null,
+      });
     });
   });
 
