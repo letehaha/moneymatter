@@ -1,6 +1,8 @@
 import { type RecurrenceStep, normalizeRecurrence } from '@bt/shared/subscriptions/recurrence';
 import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_LIMITS, SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
 
+import { utcDayNumber } from './period-match-window';
+
 /**
  * Normalize a transaction note for grouping:
  * - Lowercase, trim
@@ -194,33 +196,25 @@ export function mapIntervalToFrequency({ medianDays }: { medianDays: number }): 
   return SUBSCRIPTION_FREQUENCIES.annual;
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_CADENCE_INTERVALS = 3;
 const MIN_CADENCE_DAYS = 7;
 
-const utcDayNumber = ({ date }: { date: Date }): number =>
-  Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / DAY_MS);
-
 /**
  * A fixed day cadence ("every 30 days") behind the payment dates, or null to leave them
- * to `mapIntervalToFrequency`. It needs at least three intervals between UTC days, all
- * exactly N days, a week or longer, and N not a preset (7 and 14 days are weekly and
- * biweekly). A calendar-monthly bill never qualifies: no two 30-day months are adjacent
- * and three 31-day months never follow each other, so its intervals always differ. A
- * missed payment or a day of jitter breaks the run and falls back to the presets too.
+ * to `mapIntervalToFrequency`. Payments sharing a day of the month are a calendar cadence
+ * even when their gaps match: the May, August, November and February quarters are 92 days each.
  */
 export function detectFixedDayCadence({ dates }: { dates: Date[] }): RecurrenceStep | null {
   const days = dates.map((date) => utcDayNumber({ date })).toSorted((a, b) => a - b);
   const intervals = days.slice(1).map((day, i) => day - days[i]!);
   if (intervals.length < MIN_CADENCE_INTERVALS) return null;
 
+  const unit = SUBSCRIPTION_INTERVAL_UNITS.day;
   const count = intervals[0]!;
   if (intervals.some((interval) => interval !== count)) return null;
-  if (count < MIN_CADENCE_DAYS || count > SUBSCRIPTION_INTERVAL_LIMITS.max[SUBSCRIPTION_INTERVAL_UNITS.day]) {
-    return null;
-  }
+  if (count < MIN_CADENCE_DAYS || count > SUBSCRIPTION_INTERVAL_LIMITS.max[unit]) return null;
+  if (dates.every((date) => date.getUTCDate() === dates[0]!.getUTCDate())) return null;
 
-  const unit = SUBSCRIPTION_INTERVAL_UNITS.day;
   const { frequency } = normalizeRecurrence({
     frequency: SUBSCRIPTION_FREQUENCIES.custom,
     intervalUnit: unit,

@@ -224,6 +224,18 @@ describe('detectFixedDayCadence', () => {
     expect(detectFixedDayCadence({ dates: onDayOfMonth({ day, count: 12 }) })).toBeNull();
   });
 
+  it.each([
+    ['quarterly', ['2025-05-10', '2025-08-10', '2025-11-10', '2026-02-10']],
+    ['bimonthly', ['2025-04-10', '2025-06-10', '2025-08-10', '2025-10-10']],
+  ])('leaves a calendar-%s bill with equal day gaps to the presets', (_, isoDates) => {
+    expect(detectFixedDayCadence({ dates: isoDates.map((isoDate) => new Date(isoDate)) })).toBeNull();
+  });
+
+  it('counts UTC days, whatever the time of day', () => {
+    const dates = [0, 30, 60, 90].map((offset, i) => new Date(Date.UTC(2026, 0, 5 + offset, i % 2 ? 23 : 0, 30)));
+    expect(detectFixedDayCadence({ dates })).toEqual({ unit: SUBSCRIPTION_INTERVAL_UNITS.day, count: 30 });
+  });
+
   it('leaves every 14 days to the biweekly preset', () => {
     expect(detectFixedDayCadence({ dates: everyNDays({ days: 14, count: 6 }) })).toBeNull();
   });

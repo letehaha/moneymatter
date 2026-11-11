@@ -74,10 +74,8 @@ export const buildCandidatePrefill = ({
   expectedAmount: candidate.averageAmount,
   expectedCurrencyCode: candidate.currencyCode,
   frequency: candidate.detectedFrequency,
-  ...(candidate.detectedFrequency === SUBSCRIPTION_FREQUENCIES.custom &&
-  candidate.detectedIntervalUnit &&
-  candidate.detectedIntervalCount
+  ...(candidate.detectedIntervalUnit && candidate.detectedIntervalCount
     ? { intervalUnit: candidate.detectedIntervalUnit, intervalCount: candidate.detectedIntervalCount }
     : {}),
-  accountId: candidate.accountId ?? null,
+  accountId: candidate.accountId,
 });
