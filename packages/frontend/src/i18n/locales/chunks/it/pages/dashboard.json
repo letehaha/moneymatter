@@ -81,17 +81,17 @@
       },
       "expensesStructure": {
         "title": "Struttura delle uscite",
-        "incomeTitle": "Income structure",
+        "incomeTitle": "Struttura delle entrate",
         "today": "Oggi",
         "vsPreviousPeriod": "rispetto al periodo precedente",
         "viewButton": "Visualizza",
         "back": "Indietro",
-        "openInAnalytics": "Open in Analytics",
+        "openInAnalytics": "Apri in Dati analitici",
         "metric": {
           "expenses": "Spese",
           "income": "Entrata"
         },
-        "seeTransactions": "See transactions"
+        "seeTransactions": "Vedi transazioni"
       },
       "latestTransactions": {
         "title": "Ultime transazioni",
@@ -324,25 +324,25 @@
         "create": "Crea un tracker"
       },
       "tagAnalysis": {
-        "title": "Tag analysis",
-        "noTagsTitle": "No tags selected",
-        "noTagsDescription": "Pick the tags to compare in the widget settings.",
+        "title": "Analisi etichette",
+        "noTagsTitle": "Nessuna etichetta selezionata",
+        "noTagsDescription": "Scegliere le etichette da confrontare nelle impostazioni del widget.",
         "ofIncome": "delle entrate",
-        "remaining": "Unallocated",
-        "targetTooltip": "Target: {value}%",
+        "remaining": "Non assegnato",
+        "targetTooltip": "Obiettivo: {value}%",
         "settings": {
           "tagsLabel": "Etichette",
           "tagsPlaceholder": "Seleziona etichette",
-          "targetsLabel": "Targets, %",
-          "targetsNoneSet": "None set",
-          "targetsSetCount": "{set} of {total} set",
-          "targetsEmpty": "Add tags first to set their targets",
+          "targetsLabel": "Obiettivi, %",
+          "targetsNoneSet": "Nessuno impostato",
+          "targetsSetCount": "{set} di {total} impostati",
+          "targetsEmpty": "Aggiungere prima le etichette per impostarne gli obiettivi",
           "targetPlaceholder": "Nessuna",
-          "percentBaseLabel": "Percent of",
-          "percentBaseTags": "Selected tags",
+          "percentBaseLabel": "Percentuale di",
+          "percentBaseTags": "Etichette selezionate",
           "percentBaseIncome": "Entrata",
-          "includeTransfersLabel": "Include transfers",
-          "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
+          "includeTransfersLabel": "Includere i trasferimenti",
+          "includeTransfersDescription": "Conteggiare come spesa i trasferimenti verso i propri conti e portafogli"
         }
       },
       "emptyState": "Nessun dato nell'intervallo di tempo selezionato.",
@@ -431,8 +431,8 @@
           "reachedSection": "Raggiunti"
         },
         "tagAnalysis": {
-          "name": "Tag analysis",
-          "description": "See how your spending splits across chosen tags, like needs, wants and savings"
+          "name": "Analisi etichette",
+          "description": "Vedere come si distribuisce la spesa tra le etichette scelte, ad esempio necessità, desideri e risparmi"
         }
       }
     },

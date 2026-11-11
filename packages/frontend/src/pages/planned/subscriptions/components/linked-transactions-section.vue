@@ -49,6 +49,8 @@ const summary = computed(() =>
   buildLinkedPaymentsSummary({
     transactions: props.subscription.transactions ?? [],
     frequency: props.subscription.frequency,
+    intervalUnit: props.subscription.intervalUnit,
+    intervalCount: props.subscription.intervalCount,
   }),
 );
 

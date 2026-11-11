@@ -1,6 +1,7 @@
 import type { ACCOUNT_TYPES } from '../accounts';
 import type { EmbeddedCategoryModel } from '../categories';
 import type { CategorizationMeta } from '../categorization';
+import type { ImportSource } from '../import-export/core';
 import { RecordId } from '../record-id';
 import type { TagModel } from '../tags';
 
@@ -292,6 +293,8 @@ export interface CreateTransactionBody {
   isPlanned?: boolean;
   /** Run the user's automations on a manual-account row; off by default. For API integrations. */
   applyAutomations?: boolean;
+  /** Files the row under the day's import batch of this source; ignored for a planned row. */
+  importSource?: ImportSource.messageImport;
   originalAmount?: number;
   /** Any ISO 4217 code; it does not have to be connected to the user. */
   originalCurrencyCode?: string;

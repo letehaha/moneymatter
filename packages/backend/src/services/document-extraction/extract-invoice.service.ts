@@ -14,6 +14,8 @@ import { isValid, parseISO } from 'date-fns';
 import { getDocumentProxy, renderPageAsImage } from 'unpdf';
 import { z } from 'zod';
 
+import { knownListParts } from './utils/payee-category-hints';
+
 const SYSTEM_PROMPT = [
   'You read a single billing document and report what it says.',
   'Invoices, receipts, order confirmations, order summaries and payment confirmations all count: anything stating who charged whom, how much and when.',
@@ -35,9 +37,6 @@ const SYSTEM_PROMPT = [
 const DOCUMENT_SPECIFIC_URL = /^https:\/\/[^/]+\/.*\d/;
 
 const TIME_OF_DAY = /^([01]\d|2[0-3]):[0-5]\d$/;
-
-// ponytail: names past this cap are never offered to the AI. Rank by usage if large payee lists miss matches.
-const MAX_KNOWN_ENTRIES = 1000;
 
 // ponytail: a long scan loses every page past this cap. Raise it if totals get missed.
 const MAX_SCANNED_PDF_PAGES = 3;
@@ -97,9 +96,6 @@ async function renderPdfPages({ bytes }: { bytes: Buffer }): Promise<FilePart[]>
     await pdf.destroy();
   }
 }
-
-const knownListParts = ({ label, names }: { label: string; names: string[] }): TextPart[] =>
-  names.length ? [{ type: 'text', text: `${label}:\n${names.slice(0, MAX_KNOWN_ENTRIES).join('\n')}` }] : [];
 
 interface ExtractInvoiceResult {
   invoice: ExtractedInvoice;

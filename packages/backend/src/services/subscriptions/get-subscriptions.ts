@@ -44,6 +44,8 @@ interface SubscriptionBase extends Pick<
   | 'type'
   | 'expectedCurrencyCode'
   | 'frequency'
+  | 'intervalUnit'
+  | 'intervalCount'
   | 'startDate'
   | 'endDate'
   | 'dueDate'
@@ -282,6 +284,8 @@ export const getSubscriptions = async ({
       nextDueDate: resolveNextExpectedDate({
         startDate: item.startDate,
         frequency: item.frequency,
+        intervalUnit: item.intervalUnit,
+        intervalCount: item.intervalCount,
         transactions: latestTxTime ? [{ time: latestTxTime }] : [],
         isActive: item.isActive,
         endDate: item.endDate,
@@ -362,6 +366,8 @@ export const getSubscriptionById = async ({
   const nextExpectedDate = resolveNextExpectedDate({
     startDate: raw.startDate,
     frequency: raw.frequency,
+    intervalUnit: raw.intervalUnit,
+    intervalCount: raw.intervalCount,
     transactions: transactions.filter((tx) => !tx.isPlanned),
     isActive: raw.isActive,
     endDate: raw.endDate,

@@ -1,7 +1,7 @@
-import { toAiExtractionHttpError } from '@controllers/helpers/ai-extraction-http-error';
 import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
+import { toAiExtractionHttpError } from '@services/import-export/core/ai-extraction-http-error';
 import {
   extractTransactionsWithAI,
   prepareStatementContent,

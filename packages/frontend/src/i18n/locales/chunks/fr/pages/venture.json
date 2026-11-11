@@ -75,6 +75,7 @@
       "types": {
         "initial_investment": "Investissement initial",
         "capital_call": "Appel de fonds",
+        "capital_refund": "Capital refund",
         "distribution": "Distribution",
         "nav_update": "Mise à jour de la VNI",
         "exit": "Sortie",

@@ -1,4 +1,9 @@
-import { SUBSCRIPTION_CANDIDATE_STATUS, SUBSCRIPTION_FREQUENCIES, RecordId } from '@bt/shared/types';
+import {
+  SUBSCRIPTION_CANDIDATE_STATUS,
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
+  RecordId,
+} from '@bt/shared/types';
 import { IdColumn } from '@common/types/id-column';
 import { Table, Column, Model, ForeignKey, BelongsTo, DataType } from 'sequelize-typescript';
 
@@ -28,11 +33,25 @@ export default class SubscriptionCandidates extends Model {
   })
   suggestedName!: string;
 
+  // VARCHAR + TS-side enum (project convention: no DB enums), guarded by a CHECK.
   @Column({
-    type: DataType.ENUM(...Object.values(SUBSCRIPTION_FREQUENCIES)),
+    type: DataType.STRING(50),
     allowNull: false,
   })
   detectedFrequency!: SUBSCRIPTION_FREQUENCIES;
+
+  // The detected step when `detectedFrequency` is `custom`; both null for the presets.
+  @Column({
+    type: DataType.STRING(10),
+    allowNull: true,
+  })
+  detectedIntervalUnit!: SUBSCRIPTION_INTERVAL_UNITS | null;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  detectedIntervalCount!: number | null;
 
   @Column({
     type: DataType.BIGINT,

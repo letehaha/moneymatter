@@ -2,17 +2,14 @@ import { ACCOUNT_STATUSES, ACCOUNT_TYPES, type ExtractedInvoice, FEATURES, TRANS
 import { logger } from '@js/utils/logger';
 import { trackReceiptScanned } from '@js/utils/posthog';
 import Accounts from '@models/accounts.model';
-import { getCategories } from '@models/categories.model';
-import PayeeAliases from '@models/payee-aliases.model';
-import Payees from '@models/payees.model';
 import { findTransactions } from '@models/transactions-query';
 import type Transactions from '@models/transactions.model';
 import { type FeatureAccess, recordFeatureUse } from '@services/entitlements/feature-trial.service';
-import { buildHaystack } from '@services/payees/fuzzy-matcher';
 import { subDays } from 'date-fns';
 import { Op, type WhereOptions, col, fn } from 'sequelize';
 
 import { extractInvoice } from './extract-invoice.service';
+import { loadPayeeAndCategoryMatcher } from './utils/payee-category-hints';
 
 const LOOKBACK_DAYS = 90;
 
@@ -80,17 +77,6 @@ async function suggestReceiptAccount({
   return ranked[0]?.accountId ?? null;
 }
 
-function findByName<T extends { text: string }>({
-  entries,
-  name,
-}: {
-  entries: T[];
-  name: string | null;
-}): T | undefined {
-  const wanted = name?.trim().toLowerCase();
-  return wanted ? entries.find((entry) => entry.text.trim().toLowerCase() === wanted) : undefined;
-}
-
 export interface ReceiptScanResult {
   invoice: ExtractedInvoice;
   /** `HH:mm` as printed, in the receipt's local time. */
@@ -113,16 +99,7 @@ export async function scanReceipt({
   transactionType: TRANSACTION_TYPES;
   access: Exclude<FeatureAccess, 'denied'>;
 }): Promise<ReceiptScanResult> {
-  const [payees, categories] = await Promise.all([
-    Payees.findAll({ where: { userId }, include: [{ model: PayeeAliases, as: 'aliases' }] }),
-    getCategories({ userId }),
-  ]);
-  const knownPayees = buildHaystack({ payees });
-  const nameById = new Map(categories.map((category) => [category.id, category.name]));
-  const knownCategories = categories.map((category) => ({
-    categoryId: category.id,
-    text: [category.parentId && nameById.get(category.parentId), category.name].filter(Boolean).join(' › '),
-  }));
+  const { knownPayeeNames, knownCategoryNames, suggest } = await loadPayeeAndCategoryMatcher({ userId });
 
   const onTrial = access === 'trial';
   const { invoice, issueTime, payeeName, categoryName, provider, modelId } = await extractInvoice({
@@ -130,20 +107,18 @@ export async function scanReceipt({
     bytes,
     transactionType,
     allowOperatorKey: onTrial,
-    knownPayeeNames: knownPayees.map((entry) => entry.text),
-    knownCategoryNames: knownCategories.map((entry) => entry.text),
+    knownPayeeNames,
+    knownCategoryNames,
   });
 
-  const suggestedPayeeId = findByName({ entries: knownPayees, name: payeeName })?.payeeId ?? null;
-  const payeeDefaultCategoryId = payees.find((payee) => payee.id === suggestedPayeeId)?.defaultCategoryId ?? null;
+  const { suggestedPayeeId, suggestedCategoryId } = suggest({ payeeName, categoryName });
 
   const result: ReceiptScanResult = {
     invoice,
     issueTime,
     suggestedAccountId: await suggestReceiptAccount({ userId, invoice, payeeId: suggestedPayeeId }),
     suggestedPayeeId,
-    suggestedCategoryId:
-      payeeDefaultCategoryId ?? findByName({ entries: knownCategories, name: categoryName })?.categoryId ?? null,
+    suggestedCategoryId,
   };
   trackReceiptScanned({
     userId,

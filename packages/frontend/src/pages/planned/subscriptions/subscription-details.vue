@@ -643,7 +643,16 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
           <dl class="grid gap-1.5 text-sm">
             <div class="flex items-baseline justify-between gap-3">
               <dt class="text-muted-foreground">{{ $t('planned.subscriptions.frequencyLabel') }}</dt>
-              <dd class="text-right font-medium">{{ formatFrequency({ frequency: subscription.frequency, t }) }}</dd>
+              <dd class="text-right font-medium">
+                {{
+                  formatFrequency({
+                    frequency: subscription.frequency,
+                    intervalUnit: subscription.intervalUnit,
+                    intervalCount: subscription.intervalCount,
+                    t,
+                  })
+                }}
+              </dd>
             </div>
             <div class="flex items-baseline justify-between gap-3">
               <dt class="text-muted-foreground">{{ $t('planned.subscriptions.nextExpected') }}</dt>

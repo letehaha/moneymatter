@@ -35,6 +35,9 @@
         "title": "Microsoft Money",
         "listDescription": "Importujte súbor .mny z Microsoft Money"
       },
+      "messageImport": {
+        "title": "Synchronizácia správ v iOS"
+      },
       "importHistory": {
         "title": "História importov",
         "listDescription": "Prezrite si minulé importy a to, čo vytvorili"

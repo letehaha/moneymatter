@@ -215,6 +215,7 @@ const SOURCE_ID_MAP: Record<ImportSource, string> = {
   [ImportSource.budgetBakersWallet]: 'budget-bakers-wallet',
   [ImportSource.msMoney]: 'ms-money',
   [ImportSource.ofx]: 'ofx',
+  [ImportSource.messageImport]: 'messageImport',
 };
 
 const router = useRouter();

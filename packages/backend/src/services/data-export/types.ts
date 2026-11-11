@@ -178,6 +178,10 @@ export interface SubscriptionRow {
   amount: number | null;
   currency: string;
   frequency: string;
+  /** Unit of a custom frequency's step ('day', 'week', 'month', 'year'); empty for a preset. */
+  intervalUnit: string;
+  /** Count of a custom frequency's step; null for a preset. */
+  intervalCount: number | null;
   startDate: string;
   endDate: string;
   category: string;

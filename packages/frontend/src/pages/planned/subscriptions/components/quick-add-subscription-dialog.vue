@@ -22,6 +22,8 @@ import { useCurrenciesStore } from '@/stores';
 import {
   type CurrencyModel,
   SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_LIMITS,
+  SUBSCRIPTION_INTERVAL_UNITS,
   SUBSCRIPTION_TYPES,
   type SubscriptionModel,
   TRANSACTION_TYPES,
@@ -34,7 +36,8 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 import { type QuickAddFormState, buildQuickAddPayload } from '../quick-add-payload';
-import { formatFrequency } from '../utils';
+import { formatFrequency, isIntervalCountValid } from '../utils';
+import CustomIntervalFields from './custom-interval-fields.vue';
 
 const FORM_ID = 'quick-add-subscription-form';
 
@@ -65,6 +68,8 @@ const getInitialState = (): QuickAddFormState => ({
   expectedAmount: null,
   expectedCurrencyCode: baseCurrency.value?.currencyCode ?? '',
   frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+  intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+  intervalCount: null,
   nextPaymentDate: null,
   maxOccurrences: null,
   logo: null,
@@ -122,6 +127,18 @@ const validationRules = computed(() => ({
       (value: string, siblings: QuickAddFormState) => {
         if (siblings.expectedAmount === null || siblings.expectedAmount <= 0) return true;
         return !!value;
+      },
+    ),
+  },
+  intervalCount: {
+    validForCustom: helpers.withMessage(
+      () =>
+        t('planned.subscriptions.form.validationIntervalCount', {
+          max: SUBSCRIPTION_INTERVAL_LIMITS.max[form.value.intervalUnit],
+        }),
+      (value: number | null, siblings: QuickAddFormState) => {
+        if (siblings.frequency !== SUBSCRIPTION_FREQUENCIES.custom) return true;
+        return isIntervalCountValid({ unit: siblings.intervalUnit, count: value });
       },
     ),
   },
@@ -288,6 +305,13 @@ const handleSubmit = () => {
             {{ formatFrequency({ frequency, t }) }}
           </button>
         </div>
+        <CustomIntervalFields
+          v-if="form.frequency === SUBSCRIPTION_FREQUENCIES.custom"
+          v-model:count="form.intervalCount"
+          v-model:unit="form.intervalUnit"
+          :count-error-message="getFieldErrorMessage('form.intervalCount')"
+          @count-blur="touchField('form.intervalCount')"
+        />
       </div>
 
       <div class="grid gap-2">

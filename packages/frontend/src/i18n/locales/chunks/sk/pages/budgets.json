@@ -115,7 +115,7 @@
       "menu": {
         "moreActions": "Ďalšie akcie",
         "open": "Otvoriť",
-        "duplicate": "Duplicita"
+        "duplicate": "Duplikovať"
       },
       "duplicateSuccess": "Sledovač duplikovaný",
       "duplicateError": "Sledovač sa nepodarilo duplikovať",
@@ -186,7 +186,7 @@
         "share": "Zdielať",
         "setLimits": "Nastaviť limity",
         "removeLimits": "Odstrániť limity",
-        "duplicate": "Duplicita",
+        "duplicate": "Duplikovať",
         "openInTransactions": "Otvoriť v Transakciách",
         "more": "Ďalšie akcie"
       },

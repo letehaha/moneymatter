@@ -35,6 +35,9 @@
         "title": "Microsoft Money",
         "listDescription": "Nhập tệp .mny từ Microsoft Money"
       },
+      "messageImport": {
+        "title": "iOS message sync"
+      },
       "importHistory": {
         "title": "Lịch sử nhập dữ liệu",
         "listDescription": "Xem các lần nhập trước và dữ liệu mà chúng đã tạo"

@@ -1,4 +1,5 @@
-import { SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
+import { type RecurrenceInput, resolveRecurrenceStep } from '@bt/shared/subscriptions/recurrence';
+import { SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
 import { addDays, differenceInCalendarDays, format } from 'date-fns';
 
 /** Fallback bar height when every refAmount is zero, so the chart still renders bars. */
@@ -27,14 +28,12 @@ const MAX_GAP_SLOTS = 3;
  */
 const MAX_CHART_PAYMENTS = 24;
 
-/** Average calendar length of one billing period, used to count skipped periods. */
-const FREQUENCY_STEP_DAYS: Record<SUBSCRIPTION_FREQUENCIES, number> = {
-  [SUBSCRIPTION_FREQUENCIES.weekly]: 7,
-  [SUBSCRIPTION_FREQUENCIES.biweekly]: 14,
-  [SUBSCRIPTION_FREQUENCIES.monthly]: 30.44,
-  [SUBSCRIPTION_FREQUENCIES.quarterly]: 91.3,
-  [SUBSCRIPTION_FREQUENCIES.semiAnnual]: 182.6,
-  [SUBSCRIPTION_FREQUENCIES.annual]: 365.25,
+/** Average calendar days per unit of a recurrence step, used to count skipped periods. */
+const UNIT_STEP_DAYS: Record<SUBSCRIPTION_INTERVAL_UNITS, number> = {
+  [SUBSCRIPTION_INTERVAL_UNITS.day]: 1,
+  [SUBSCRIPTION_INTERVAL_UNITS.week]: 7,
+  [SUBSCRIPTION_INTERVAL_UNITS.month]: 30.44,
+  [SUBSCRIPTION_INTERVAL_UNITS.year]: 365.25,
 };
 
 /** Shape the summary reads off a linked transaction; callers keep their own richer type. */
@@ -223,10 +222,9 @@ const buildGap = <T extends LinkedPaymentLike>({
 export const buildLinkedPaymentsSummary = <T extends LinkedPaymentLike>({
   transactions,
   frequency,
-}: {
-  transactions: T[];
-  frequency: SUBSCRIPTION_FREQUENCIES;
-}): LinkedPaymentsSummary<T> => {
+  intervalUnit,
+  intervalCount,
+}: RecurrenceInput & { transactions: T[] }): LinkedPaymentsSummary<T> => {
   const payments = [...transactions].sort(
     (a, b) => toDate({ time: b.time }).getTime() - toDate({ time: a.time }).getTime(),
   );
@@ -278,7 +276,8 @@ export const buildLinkedPaymentsSummary = <T extends LinkedPaymentLike>({
       return BAR_RANGE_FLOOR_PCT + ((refAmount - minRefAmount) / refRange) * (100 - BAR_RANGE_FLOOR_PCT);
     };
 
-    const stepDays = FREQUENCY_STEP_DAYS[frequency];
+    const step = resolveRecurrenceStep({ frequency, intervalUnit, intervalCount });
+    const stepDays = UNIT_STEP_DAYS[step.unit] * step.count;
 
     return charted.flatMap((payment, index) => {
       const previous = charted[index - 1];

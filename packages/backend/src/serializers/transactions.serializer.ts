@@ -8,6 +8,7 @@
 import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import type {
   CategorizationMeta,
+  ImportSource,
   PaymentLegInput,
   RecordId,
   TransactionLocation,
@@ -152,6 +153,7 @@ interface CreateTransactionRequest {
   payeeLocked?: boolean;
   isPlanned?: boolean;
   applyAutomations?: boolean;
+  importSource?: ImportSource.messageImport;
   originalAmount?: number; // decimal from API
   originalCurrencyCode?: string;
   paymentLegs?: PaymentLegInput[];
@@ -192,6 +194,7 @@ interface CreateTransactionInternal {
   payeeLocked?: boolean;
   isPlanned?: boolean;
   applyAutomations?: boolean;
+  importSource?: ImportSource.messageImport;
   originalAmount?: Money;
   originalCurrencyCode?: string;
   paymentLegs?: PaymentLegParam[];
@@ -404,6 +407,7 @@ export function deserializeCreateTransaction(req: CreateTransactionRequest, user
     payeeLocked: req.payeeLocked,
     isPlanned: req.isPlanned,
     applyAutomations: req.applyAutomations,
+    importSource: req.importSource,
     originalAmount: req.originalAmount !== undefined ? Money.fromDecimal(req.originalAmount) : undefined,
     originalCurrencyCode: req.originalCurrencyCode,
     paymentLegs: req.paymentLegs && deserializePaymentLegs({ legs: req.paymentLegs }),

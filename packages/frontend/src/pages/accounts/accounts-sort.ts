@@ -10,6 +10,12 @@ export type AccountsSortKey = 'auto' | 'name' | 'balance';
 
 export const ACCOUNTS_SORT_KEYS: readonly AccountsSortKey[] = ['auto', 'name', 'balance'];
 
+export type AccountsSortDirection = 'asc' | 'desc';
+
+/** Direction a key starts in: names read A→Z, balances lead with the largest holdings. */
+export const defaultSortDirection = ({ sortKey }: { sortKey: AccountsSortKey }): AccountsSortDirection =>
+  sortKey === 'balance' ? 'desc' : 'asc';
+
 /** A single row in the sorted accounts list: either a folder group or a leaf account. */
 export type AccountsListItem =
   | { kind: 'group'; id: string; group: AccountGroups }
@@ -59,26 +65,28 @@ const compareNames = (a: string, b: string): number =>
 
 /**
  * Sort a homogeneous list into a NEW array (never mutates the input).
- * `auto`/`name` order ascending by name; `balance` orders descending by value.
+ * `auto`/`name` order by name; `balance` orders by value.
  */
 export function sortItems<T>({
   items,
   sortKey,
+  direction = defaultSortDirection({ sortKey }),
   getName,
   getValue,
 }: {
   items: readonly T[];
   sortKey: AccountsSortKey;
+  direction?: AccountsSortDirection;
   getName: (item: T) => string;
   getValue: (item: T) => number;
 }): T[] {
   const copy = [...items];
+  const sign = direction === 'asc' ? 1 : -1;
 
   if (sortKey === 'balance') {
-    // Balance sort leads with the largest holdings so the accounts that move net worth the
-    // most sit on top; equal balances fall back to name order for a stable, readable result.
+    // Equal balances fall back to A→Z name order in both directions, so ties stay readable.
     return copy.sort((a, b) => {
-      const diff = getValue(b) - getValue(a);
+      const diff = (getValue(a) - getValue(b)) * sign;
       if (diff !== 0) return diff;
       return compareNames(getName(a), getName(b));
     });
@@ -86,7 +94,7 @@ export function sortItems<T>({
 
   // `auto` and `name` both order alphabetically for a single list; `auto` only diverges in
   // the mixed list, where it additionally floats folder groups above loose accounts.
-  return copy.sort((a, b) => compareNames(getName(a), getName(b)));
+  return copy.sort((a, b) => compareNames(getName(a), getName(b)) * sign);
 }
 
 /** Groups and accounts annotated with the fields the sort compares, then discarded. */
@@ -104,12 +112,14 @@ export function sortMixed({
   groups,
   accounts,
   sortKey,
+  direction,
   baseCurrencyCode,
   includeCreditLimit,
 }: {
   groups: readonly AccountGroups[];
   accounts: readonly AccountModel[];
   sortKey: AccountsSortKey;
+  direction?: AccountsSortDirection;
   baseCurrencyCode: string | undefined;
   includeCreditLimit: boolean;
 }): AccountsListItem[] {
@@ -131,12 +141,12 @@ export function sortMixed({
   if (sortKey === 'auto') {
     // `auto` keeps folder groups as a block above loose accounts, each block name-sorted, so
     // the page always reads folders-first regardless of the balances inside them.
-    const sortedGroups = sortItems({ items: groups.map(annotateGroup), sortKey, getName, getValue });
-    const sortedAccounts = sortItems({ items: accounts.map(annotateAccount), sortKey, getName, getValue });
+    const sortedGroups = sortItems({ items: groups.map(annotateGroup), sortKey, direction, getName, getValue });
+    const sortedAccounts = sortItems({ items: accounts.map(annotateAccount), sortKey, direction, getName, getValue });
     return [...sortedGroups, ...sortedAccounts].map((entry) => entry.item);
   }
 
   // `name` and `balance` rank folders and accounts in one interleaved list.
   const merged = [...groups.map(annotateGroup), ...accounts.map(annotateAccount)];
-  return sortItems({ items: merged, sortKey, getName, getValue }).map((entry) => entry.item);
+  return sortItems({ items: merged, sortKey, direction, getName, getValue }).map((entry) => entry.item);
 }

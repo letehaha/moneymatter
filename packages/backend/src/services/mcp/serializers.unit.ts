@@ -292,7 +292,9 @@ describe('MCP serializers', () => {
       type: 'subscription',
       expectedAmount: 15.99,
       expectedCurrencyCode: 'USD',
-      frequency: 'monthly',
+      frequency: 'custom',
+      intervalUnit: 'day',
+      intervalCount: 30,
       startDate: '2026-01-01',
       endDate: null,
       accountId: 'acc-1',
@@ -334,6 +336,11 @@ describe('MCP serializers', () => {
       }
       expect(slim.category).toEqual({ id: 'cat-1', name: 'Entertainment' });
       expect(slim.account).toEqual({ id: 'acc-1', name: 'Checking', currencyCode: 'USD' });
+    });
+
+    it('keeps the frequency and its custom step', () => {
+      const slim = slimSubscriptionDetailForMcp(fullSubscription);
+      expect(slim).toMatchObject({ frequency: 'custom', intervalUnit: 'day', intervalCount: 30 });
     });
 
     it('slims each linked transaction and surfaces junction match metadata', () => {

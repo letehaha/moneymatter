@@ -6,12 +6,7 @@ import {
 } from '@bt/shared/types';
 import { describe, expect, it, jest } from '@jest/globals';
 
-// The unit suite maps the MCP SDK to a stub; these checks need the real server and the real
-// `tools/list` handler, so the stub is swapped for the SDK's own CommonJS build.
 const SDK_DIST = '../../../../../node_modules/@modelcontextprotocol/sdk/dist/cjs';
-jest.mock('@modelcontextprotocol/sdk/server/mcp.js', () =>
-  jest.requireActual('../../../../../node_modules/@modelcontextprotocol/sdk/dist/cjs/server/mcp.js'),
-);
 
 /**
  * A client that loads every tool up front pays for the whole `tools/list` result of `core` on
