@@ -1,4 +1,9 @@
-import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
+import {
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
+  SUBSCRIPTION_TYPES,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
 import { type QuickAddFormState, buildQuickAddPayload } from './quick-add-payload';
@@ -12,6 +17,8 @@ const buildForm = (overrides: Partial<QuickAddFormState> = {}): QuickAddFormStat
   expectedAmount: 9.99,
   expectedCurrencyCode: 'USD',
   frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+  intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+  intervalCount: null,
   nextPaymentDate: null,
   maxOccurrences: null,
   logo: null,
@@ -20,6 +27,33 @@ const buildForm = (overrides: Partial<QuickAddFormState> = {}): QuickAddFormStat
 });
 
 describe('buildQuickAddPayload', () => {
+  it('sends the step with a custom frequency', () => {
+    const payload = buildQuickAddPayload({
+      form: buildForm({
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+        intervalCount: 30,
+      }),
+      now: NOW,
+    });
+
+    expect(payload).toMatchObject({
+      frequency: SUBSCRIPTION_FREQUENCIES.custom,
+      intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+      intervalCount: 30,
+    });
+  });
+
+  it('leaves the step out for a preset, whatever the custom fields hold', () => {
+    const payload = buildQuickAddPayload({
+      form: buildForm({ intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.week, intervalCount: 3 }),
+      now: NOW,
+    });
+
+    expect(payload).not.toHaveProperty('intervalUnit');
+    expect(payload).not.toHaveProperty('intervalCount');
+  });
+
   it('builds a subscription payload', () => {
     const payload = buildQuickAddPayload({ form: buildForm(), now: NOW });
 

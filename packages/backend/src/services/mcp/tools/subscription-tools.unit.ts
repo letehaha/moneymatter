@@ -1,17 +1,22 @@
 import { matchingRulesSchema } from '@controllers/subscriptions/shared-schemas';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { createSubscription, updateSubscription } from '@services/subscriptions';
+import { createSubscription, getSubscriptions, updateSubscription } from '@services/subscriptions';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
 import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test.
-jest.mock('@services/subscriptions', () => ({ createSubscription: jest.fn(), updateSubscription: jest.fn() }));
+jest.mock('@services/subscriptions', () => ({
+  createSubscription: jest.fn(),
+  getSubscriptions: jest.fn(),
+  updateSubscription: jest.fn(),
+}));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
 import { createSubscriptionTool } from './create-subscription';
+import { getSubscriptionsTool } from './get-subscriptions';
 import { updateSubscriptionTool } from './update-subscription';
 
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
@@ -19,6 +24,7 @@ const NO_WRITE_SCOPE = makeExtra({ scopes: ['finance:read'] });
 
 const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
 const create = jest.mocked(createSubscription);
+const list = jest.mocked(getSubscriptions);
 const update = jest.mocked(updateSubscription);
 
 const SUB_ID = '11111111-1111-4111-8111-111111111111';
@@ -90,6 +96,21 @@ describe.each([
     expect(schema.safeParse({ ...base, tagIds: ['nope'] }).success).toBe(false);
   });
 
+  it('accepts a custom step and rejects an unknown unit or a fractional count', () => {
+    const custom = { ...base, frequency: 'custom', intervalUnit: 'day', intervalCount: 30 };
+    expect(schema.safeParse(custom).success).toBe(true);
+    expect(schema.safeParse({ ...custom, intervalUnit: 'hour' }).success).toBe(false);
+    expect(schema.safeParse({ ...custom, intervalCount: 1.5 }).success).toBe(false);
+    expect(schema.safeParse({ ...custom, intervalCount: 0 }).success).toBe(false);
+  });
+
+  it('describes the custom frequency and its step for the agent', () => {
+    const shape = tool.config.inputSchema!.shape as unknown as Record<string, z.ZodType>;
+    expect(shape.frequency!.description).toContain('custom');
+    expect(shape.intervalUnit!.description).toContain('day');
+    expect(shape.intervalCount!.description).toBeTruthy();
+  });
+
   it('describes the rule shapes for the agent', () => {
     const { description } = tool.config.inputSchema!.shape.matchingRules as unknown as z.ZodType;
     expect(description).toContain('contains_any');
@@ -149,6 +170,24 @@ describe('create_subscription REST validation', () => {
   const noAmount = { name: 'Netflix', frequency: 'monthly', startDate: '2026-01-01' };
   const base = { ...noAmount, expectedAmount: 9.99, expectedCurrencyCode: 'USD' };
 
+  it('passes a custom step to the service', async () => {
+    create.mockResolvedValue({ id: SUB_ID } as never);
+
+    await tool.handler({ ...base, frequency: 'custom', intervalUnit: 'day', intervalCount: 30 }, WRITE);
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: 42, frequency: 'custom', intervalUnit: 'day', intervalCount: 30 }),
+    );
+  });
+
+  it('refuses custom without a step with the REST message, with the service not called', async () => {
+    // Unit tests run without the i18n resources, so the message is its key.
+    await expect(tool.handler({ ...base, frequency: 'custom' }, WRITE)).rejects.toThrow(
+      'subscriptions.validation.customInterval.required',
+    );
+    expect(create).not.toHaveBeenCalled();
+  });
+
   it('rejects the field values the REST body rejects', () => {
     expect(schema.safeParse(base).success).toBe(true);
     expect(schema.safeParse({ ...base, name: '' }).success).toBe(false);
@@ -168,6 +207,10 @@ describe('create_subscription REST validation', () => {
       { ...base, endDate: '2025-12-31' },
       { ...base, autoRecord: true },
       { ...base, autoRecord: true, accountId: ACCOUNT_ID, matchingRules: RULES },
+      { ...base, frequency: 'custom', intervalUnit: 'day' },
+      { ...base, intervalUnit: 'day', intervalCount: 30 },
+      { ...base, frequency: 'custom', intervalUnit: 'day', intervalCount: 367 },
+      { ...base, frequency: 'custom', intervalUnit: 'year', intervalCount: 11 },
     ]) {
       await expect(tool.handler(args, WRITE)).rejects.toThrow();
     }
@@ -195,6 +238,8 @@ describe('update_subscription REST validation', () => {
       { id: SUB_ID, expectedAmount: 10, expectedCurrencyCode: null },
       { id: SUB_ID, type: 'installment', maxOccurrences: 12 },
       { id: SUB_ID, autoRecord: true, accountId: null },
+      { id: SUB_ID, frequency: 'monthly', intervalUnit: 'day', intervalCount: 30 },
+      { id: SUB_ID, intervalUnit: 'year', intervalCount: 11 },
     ]) {
       await expect(tool.handler(args, WRITE)).rejects.toThrow();
     }
@@ -217,5 +262,35 @@ describe('update_subscription handler', () => {
       payeeId: null,
       tagIds: [],
     });
+  });
+});
+
+describe('update_subscription custom step', () => {
+  const tool = captureTools({ register: updateSubscriptionTool })[0]!;
+
+  it('passes only the count when that is all that changed', async () => {
+    update.mockResolvedValue({ id: SUB_ID } as never);
+
+    await tool.handler({ id: SUB_ID, intervalCount: 28 }, WRITE);
+
+    expect(update).toHaveBeenCalledWith({ id: SUB_ID, userId: 42, intervalCount: 28 });
+  });
+});
+
+describe('get_subscriptions', () => {
+  const tool = captureTools({ register: getSubscriptionsTool })[0]!;
+
+  it('returns the custom step of each subscription', async () => {
+    list.mockResolvedValue([
+      { id: SUB_ID, name: 'Magti', frequency: 'custom', intervalUnit: 'day', intervalCount: 30 },
+      { id: PAYEE_ID, name: 'Netflix', frequency: 'monthly', intervalUnit: null, intervalCount: null },
+    ] as never);
+
+    const result = parseToolResult({ result: await tool.handler({}, makeExtra({ scopes: ['finance:read'] })) });
+
+    expect(result).toEqual([
+      expect.objectContaining({ id: SUB_ID, frequency: 'custom', intervalUnit: 'day', intervalCount: 30 }),
+      expect.objectContaining({ id: PAYEE_ID, frequency: 'monthly', intervalUnit: null, intervalCount: null }),
+    ]);
   });
 });

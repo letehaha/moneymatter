@@ -12,7 +12,9 @@ export enum SUBSCRIPTION_TYPES {
 }
 
 /**
- * Subscription frequency presets
+ * Subscription frequencies: six presets plus `custom`, which repeats every
+ * `intervalCount` `intervalUnit`s (e.g. every 30 days).
+ * Stored as VARCHAR(50) in the DB – not a Postgres ENUM.
  */
 export enum SUBSCRIPTION_FREQUENCIES {
   weekly = 'weekly',
@@ -21,6 +23,35 @@ export enum SUBSCRIPTION_FREQUENCIES {
   quarterly = 'quarterly',
   semiAnnual = 'semi_annual',
   annual = 'annual',
+  custom = 'custom',
+}
+
+/** Unit of a custom recurrence step. */
+export enum SUBSCRIPTION_INTERVAL_UNITS {
+  day = 'day',
+  week = 'week',
+  month = 'month',
+  year = 'year',
+}
+
+/** Bounds of a custom recurrence's `intervalCount`, per unit (inclusive). */
+export const SUBSCRIPTION_INTERVAL_LIMITS = {
+  min: 1,
+  max: {
+    [SUBSCRIPTION_INTERVAL_UNITS.day]: 366,
+    [SUBSCRIPTION_INTERVAL_UNITS.week]: 104,
+    [SUBSCRIPTION_INTERVAL_UNITS.month]: 120,
+    [SUBSCRIPTION_INTERVAL_UNITS.year]: 10,
+  },
+} as const satisfies { min: number; max: Record<SUBSCRIPTION_INTERVAL_UNITS, number> };
+
+/** The schedule fields that define how often a subscription repeats. */
+export interface SubscriptionRecurrence {
+  frequency: SUBSCRIPTION_FREQUENCIES;
+  /** Set only when `frequency` is `custom`. */
+  intervalUnit: SUBSCRIPTION_INTERVAL_UNITS | null;
+  /** Set only when `frequency` is `custom`. */
+  intervalCount: number | null;
 }
 
 /**
@@ -124,6 +155,10 @@ export interface SubscriptionModel extends EntityLogoFields {
   expectedAmount: number | null;
   expectedCurrencyCode: string | null;
   frequency: SUBSCRIPTION_FREQUENCIES;
+  /** Unit of a custom recurrence step; null for the presets. */
+  intervalUnit: SUBSCRIPTION_INTERVAL_UNITS | null;
+  /** Count of a custom recurrence step; null for the presets. */
+  intervalCount: number | null;
   startDate: string;
   endDate: string | null;
   accountId: RecordId | null;

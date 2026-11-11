@@ -1,4 +1,4 @@
-import { SUBSCRIPTION_FREQUENCIES, TRANSACTION_TYPES } from '@bt/shared/types';
+import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_UNITS, TRANSACTION_TYPES } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { toUtcDateString } from '@common/utils/date';
 import { describe, expect, it } from '@jest/globals';
@@ -45,6 +45,8 @@ const subscription = ({
 }: {
   name: string;
   frequency: SUBSCRIPTION_FREQUENCIES;
+  intervalUnit?: SUBSCRIPTION_INTERVAL_UNITS;
+  intervalCount?: number;
   startDate: string;
   dueDate?: string;
   endDate?: string;
@@ -113,6 +115,29 @@ describe('GET /budget-plans/:planId/periods/:periodId/scheduled', () => {
     const result = await helpers.getBudgetPlanScheduled({ planId, periodId: next.id, raw: true });
 
     expect(expected.length).toBeGreaterThanOrEqual(4);
+    expect(result.items.map((item) => item.date)).toEqual(expected);
+    expect(result.outflows).toEqual({ total: -20 * expected.length, count: expected.length });
+  });
+
+  it('gives a custom every-10-days subscription one item every 10 days inside the period', async () => {
+    const { planId, account, next } = await setup();
+    const dueDate = plusDays({ date: next.startDate, days: 1 });
+    await subscription({
+      name: 'Mobile plan',
+      frequency: SUBSCRIPTION_FREQUENCIES.custom,
+      intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+      intervalCount: 10,
+      startDate: dueDate,
+      dueDate,
+      accountId: account.id,
+    });
+
+    const expected: string[] = [];
+    for (let date = dueDate; date < next.endDate; date = plusDays({ date, days: 10 })) expected.push(date);
+
+    const result = await helpers.getBudgetPlanScheduled({ planId, periodId: next.id, raw: true });
+
+    expect(expected.length).toBeGreaterThanOrEqual(3);
     expect(result.items.map((item) => item.date)).toEqual(expected);
     expect(result.outflows).toEqual({ total: -20 * expected.length, count: expected.length });
   });

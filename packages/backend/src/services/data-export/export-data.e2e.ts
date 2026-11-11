@@ -5,6 +5,8 @@ import {
   RecordId,
   RESOURCE_TYPES,
   SHARE_PERMISSIONS,
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
   TRANSACTIONS_WRITE_SCOPES,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
@@ -865,6 +867,39 @@ describe('Data export (POST /user/data-export)', () => {
       expect(row!.EndDate).toBe('2026-12-31');
       // Defends against a regression that re-renames the column.
       expect(Object.keys(row!)).not.toContain('NextDue');
+    });
+
+    it('exports the step of a custom frequency and leaves it empty for a preset', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const base = {
+        startDate: '2026-01-01',
+        expectedAmount: 10,
+        expectedCurrencyCode: account.currencyCode,
+        raw: true as const,
+      };
+      await helpers.createSubscription({
+        ...base,
+        name: 'Every 30 days sub',
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+        intervalCount: 30,
+      });
+      await helpers.createSubscription({ ...base, name: 'Monthly sub', frequency: SUBSCRIPTION_FREQUENCIES.monthly });
+
+      const response = await helpers.exportData({ format: 'csv', groups: ['subscriptions'] });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('subscriptions.csv')! });
+
+      expect(rows.find((r) => r.Name === 'Every 30 days sub')).toMatchObject({
+        Frequency: 'custom',
+        IntervalUnit: 'day',
+        IntervalCount: '30',
+      });
+      expect(rows.find((r) => r.Name === 'Monthly sub')).toMatchObject({
+        Frequency: 'monthly',
+        IntervalUnit: '',
+        IntervalCount: '',
+      });
     });
   });
 

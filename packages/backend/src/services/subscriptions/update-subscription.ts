@@ -1,7 +1,9 @@
+import { normalizeRecurrence } from '@bt/shared/subscriptions/recurrence';
 import {
   type EntityLogoPayload,
   RemindBeforePreset,
   SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
   SUBSCRIPTION_PERIOD_STATUSES,
   SUBSCRIPTION_TYPES,
   SubscriptionMatchingRules,
@@ -19,6 +21,7 @@ import {
   assertAmountCurrencyConsistent,
   assertAutoRecordAccountIsManual,
   assertAutoRecordConsistent,
+  assertRecurrenceConsistent,
   findSubscriptionOrThrow,
   validateAccountOwnership,
   validateCategoryOwnership,
@@ -40,6 +43,8 @@ interface UpdateSubscriptionParams extends EntityLogoPayload {
   expectedAmount?: number | null;
   expectedCurrencyCode?: string | null;
   frequency?: SUBSCRIPTION_FREQUENCIES;
+  intervalUnit?: SUBSCRIPTION_INTERVAL_UNITS | null;
+  intervalCount?: number | null;
   startDate?: string;
   endDate?: string | null;
   accountId?: string | null;
@@ -112,6 +117,28 @@ export const updateSubscription = withTransaction(
       accountId: fields.accountId !== undefined ? fields.accountId : subscription.accountId,
       userId,
     });
+
+    // A partial payload can only be checked against the stored schedule, so the merged
+    // recurrence is validated and normalized here. A step key the payload omits keeps the
+    // stored value only while the subscription stays `custom`.
+    if (fields.frequency !== undefined || fields.intervalUnit !== undefined || fields.intervalCount !== undefined) {
+      const frequency = fields.frequency ?? subscription.frequency;
+      const keepsStoredStep =
+        frequency === SUBSCRIPTION_FREQUENCIES.custom && subscription.frequency === SUBSCRIPTION_FREQUENCIES.custom;
+      const merged = {
+        frequency,
+        intervalUnit:
+          fields.intervalUnit !== undefined ? fields.intervalUnit : keepsStoredStep ? subscription.intervalUnit : null,
+        intervalCount:
+          fields.intervalCount !== undefined
+            ? fields.intervalCount
+            : keepsStoredStep
+              ? subscription.intervalCount
+              : null,
+      };
+      assertRecurrenceConsistent(merged);
+      fields = { ...fields, ...normalizeRecurrence(merged) };
+    }
 
     // Refuse lowering the payment count below the periods already paid/skipped —
     // that history is immutable, so the plan can't shrink beneath it.

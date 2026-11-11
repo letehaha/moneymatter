@@ -62,7 +62,20 @@
         "monthly": "Щомісяця",
         "quarterly": "Щокварталу",
         "semiAnnual": "Раз на пів року",
-        "annual": "Щорічно"
+        "annual": "Щорічно",
+        "custom": "Інша",
+        "every": {
+          "day": "Кожен {count} день | Кожні {count} дні | Кожні {count} днів",
+          "week": "Кожен {count} тиждень | Кожні {count} тижні | Кожні {count} тижнів",
+          "month": "Кожен {count} місяць | Кожні {count} місяці | Кожні {count} місяців",
+          "year": "Кожен {count} рік | Кожні {count} роки | Кожні {count} років"
+        },
+        "units": {
+          "day": "день | дні | днів",
+          "week": "тиждень | тижні | тижнів",
+          "month": "місяць | місяці | місяців",
+          "year": "рік | роки | років"
+        }
       },
       "matchSource": {
         "manual": "Вручну",
@@ -86,6 +99,11 @@
         "amountPlaceholder": "0.00",
         "currencyLabel": "Валюта",
         "frequencyLabel": "Частота",
+        "intervalCountLabel": "Повторювати кожні",
+        "intervalCountPlaceholder": "Напр., 30",
+        "intervalUnitLabel": "Одиниця",
+        "intervalUnitPlaceholder": "Оберіть одиницю",
+        "validationIntervalCount": "Введіть ціле число від 1 до {max}",
         "startDateLabel": "Дата початку",
         "endDateLabel": "Дата завершення",
         "accountLabel": "Рахунок",

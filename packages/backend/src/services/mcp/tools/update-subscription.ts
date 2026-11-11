@@ -17,7 +17,15 @@ export const updateSubscriptionTool = defineTool({
   input: {
     id: z.string().describe('UUID of the subscription to update'),
     name: shape.name.describe('New display name'),
-    frequency: shape.frequency.describe('New billing frequency'),
+    frequency: shape.frequency.describe(
+      'New billing frequency: weekly, biweekly, monthly, quarterly, semi_annual, annual, or custom (needs intervalUnit and intervalCount unless already custom)',
+    ),
+    intervalUnit: shape.intervalUnit.describe(
+      'New unit of a custom frequency: day, week, month or year. Only for a custom frequency',
+    ),
+    intervalCount: shape.intervalCount.describe(
+      'New count of a custom frequency (day up to 366, week 104, month 120, year 10). Only for a custom frequency',
+    ),
     startDate: shape.startDate.describe('New start date (ISO 8601)'),
     type: shape.type.describe(
       'New type: "subscription", "bill", or "installment". Switching to installment requires maxOccurrences and dueDate to be set (pass them in the same call).',

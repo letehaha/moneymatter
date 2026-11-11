@@ -1,7 +1,9 @@
+import { normalizeRecurrence } from '@bt/shared/subscriptions/recurrence';
 import {
   type EntityLogoPayload,
   RemindBeforePreset,
   SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
   SUBSCRIPTION_TYPES,
   TRANSACTION_TYPES,
   SubscriptionMatchingRules,
@@ -17,6 +19,7 @@ import {
   assertAmountCurrencyConsistent,
   assertAutoRecordAccountIsManual,
   assertAutoRecordConsistent,
+  assertRecurrenceConsistent,
   validateAccountOwnership,
   validateCategoryOwnership,
   validatePayeeOwnership,
@@ -33,6 +36,8 @@ interface CreateSubscriptionParams extends EntityLogoPayload {
   expectedAmount?: number | null;
   expectedCurrencyCode?: string | null;
   frequency: SUBSCRIPTION_FREQUENCIES;
+  intervalUnit?: SUBSCRIPTION_INTERVAL_UNITS | null;
+  intervalCount?: number | null;
   startDate: string;
   endDate?: string | null;
   accountId?: string | null;
@@ -61,6 +66,9 @@ export const createSubscription = withTransaction(
     endDate = null,
     notes = null,
     dueDate = null,
+    frequency,
+    intervalUnit = null,
+    intervalCount = null,
     logoDomain,
     logoInitials,
     logoColor,
@@ -81,6 +89,11 @@ export const createSubscription = withTransaction(
 
     const uniqueTagIds = [...new Set(tagIds)];
     await validateTagsOwnership({ tagIds: uniqueTagIds, userId });
+
+    // Internal callers skip the request schema, so the recurrence rules are enforced here
+    // too. A step equal to a preset is stored as that preset.
+    assertRecurrenceConsistent({ frequency, intervalUnit, intervalCount });
+    const recurrence = normalizeRecurrence({ frequency, intervalUnit, intervalCount });
 
     // Enforce the installment invariant here too (not just in the controller) so MCP
     // callers, which reach the service directly, fail cleanly rather than on the DB CHECK.
@@ -134,6 +147,7 @@ export const createSubscription = withTransaction(
       notes,
       dueDate,
       anchorDay,
+      ...recurrence,
       ...rest,
       // A supplied logo value is a manual override (`logoSource: 'manual'` makes
       // the resolver treat it as authoritative); null keys on create change

@@ -1,4 +1,4 @@
-import { SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
+import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
 import { afterAll, beforeAll, describe, expect, it, jest } from '@jest/globals';
 
 import { computeNextExpectedDate, resolveNextExpectedDate } from './subscription-date.utils';
@@ -246,5 +246,53 @@ describe('resolveNextExpectedDate', () => {
       });
       expect(result).toBe('2025-07-08');
     });
+  });
+});
+
+describe('computeNextExpectedDate with a custom frequency', () => {
+  const custom = SUBSCRIPTION_FREQUENCIES.custom;
+
+  it('every 30 days: steps from the latest payment', () => {
+    const result = computeNextExpectedDate({
+      startDate: '2025-01-01T00:00:00Z',
+      frequency: custom,
+      intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+      intervalCount: 30,
+      transactions: [{ time: '2025-05-20T10:00:00Z' }],
+    });
+    expect(result).toBe('2025-06-19');
+  });
+
+  it('every 3 weeks: advances past several periods from startDate', () => {
+    const result = computeNextExpectedDate({
+      startDate: '2025-05-01T00:00:00Z',
+      frequency: custom,
+      intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.week,
+      intervalCount: 3,
+    });
+    // May 1 → May 22 → Jun 12 → Jul 3
+    expect(result).toBe('2025-07-03');
+  });
+
+  it('every 2 months: steps over the short months between', () => {
+    const result = computeNextExpectedDate({
+      startDate: '2025-03-31T00:00:00Z',
+      frequency: custom,
+      intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.month,
+      intervalCount: 2,
+    });
+    // Mar 31 → May 31 → Jul 31; a monthly schedule would clamp to Apr 30 and drift.
+    expect(result).toBe('2025-07-31');
+  });
+
+  it('every 2 years: steps two years from the latest payment', () => {
+    const result = computeNextExpectedDate({
+      startDate: '2020-01-01T00:00:00Z',
+      frequency: custom,
+      intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.year,
+      intervalCount: 2,
+      transactions: [{ time: '2024-02-29T00:00:00Z' }],
+    });
+    expect(result).toBe('2026-02-28');
   });
 });
