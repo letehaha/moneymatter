@@ -118,12 +118,9 @@ export const updateSubscription = withTransaction(
       userId,
     });
 
-    // Resolve the post-update recurrence whenever the payload touches it. A step key the
-    // payload omits keeps the stored value only while the subscription stays `custom`; a
-    // preset never inherits one. The merged triple is validated (MCP callers bypass the
-    // request schema), then normalized, so the stored step is cleared for a preset and a
-    // step equal to a preset becomes that preset. The open period keeps its due date; the
-    // next one follows the new step.
+    // A partial payload can only be checked against the stored schedule, so the merged
+    // recurrence is validated and normalized here. A step key the payload omits keeps the
+    // stored value only while the subscription stays `custom`.
     if (fields.frequency !== undefined || fields.intervalUnit !== undefined || fields.intervalCount !== undefined) {
       const frequency = fields.frequency ?? subscription.frequency;
       const keepsStoredStep =

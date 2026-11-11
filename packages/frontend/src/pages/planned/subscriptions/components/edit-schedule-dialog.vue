@@ -90,6 +90,7 @@ watch(open, (isOpen) => {
   if (!isOpen) return;
   form.value = buildFormState();
   formError.value = null;
+  resetValidation();
 });
 
 const isInstallment = computed(() => props.subscription.type === SUBSCRIPTION_TYPES.installment);
@@ -137,7 +138,7 @@ const validationRules = computed(() => ({
   },
 }));
 
-const { isFormValid, getFieldErrorMessage, touchField } = useFormValidation(
+const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFormValidation(
   { form },
   computed(() => ({ form: validationRules.value })),
 );

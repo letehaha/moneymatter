@@ -5,9 +5,9 @@ import {
 } from '../types/subscriptions';
 
 /**
- * The one place that turns a subscription's schedule into dates. Every consumer
- * (next due date, next expected date, upcoming payments, the client's strip) steps
- * through `addRecurrenceStep`, so a preset and its custom twin give identical dates.
+ * The one place that turns a subscription's schedule into a step. Backend consumers
+ * (next due date, next expected date, upcoming payments) advance dates through
+ * `addRecurrenceStep`, so a preset and its custom twin give identical dates.
  * Dependency-free because both the backend and the frontend import it.
  */
 
@@ -16,7 +16,7 @@ export interface RecurrenceStep {
   count: number;
 }
 
-type PresetFrequency = Exclude<SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_FREQUENCIES.custom>;
+export type PresetFrequency = Exclude<SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_FREQUENCIES.custom>;
 
 const PRESET_STEPS: Record<PresetFrequency, RecurrenceStep> = {
   [SUBSCRIPTION_FREQUENCIES.weekly]: { unit: SUBSCRIPTION_INTERVAL_UNITS.week, count: 1 },

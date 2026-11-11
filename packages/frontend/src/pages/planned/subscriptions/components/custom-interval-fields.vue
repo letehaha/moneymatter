@@ -37,6 +37,7 @@ const selectedUnit = computed(() => unitOptions.value.find((option) => option.va
         :model-value="count ?? undefined"
         type="number"
         inputmode="numeric"
+        step="1"
         :label="$t('planned.subscriptions.form.intervalCountLabel')"
         :placeholder="$t('planned.subscriptions.form.intervalCountPlaceholder')"
         :error-message="countErrorMessage"

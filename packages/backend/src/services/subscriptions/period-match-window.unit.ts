@@ -17,7 +17,6 @@ describe('matchToleranceDays', () => {
 
   it.each([
     [SUBSCRIPTION_INTERVAL_UNITS.day, 30, 15],
-    [SUBSCRIPTION_INTERVAL_UNITS.day, 1, 0],
     [SUBSCRIPTION_INTERVAL_UNITS.week, 3, 10],
     [SUBSCRIPTION_INTERVAL_UNITS.month, 2, 30],
     [SUBSCRIPTION_INTERVAL_UNITS.year, 2, 365],
@@ -25,6 +24,16 @@ describe('matchToleranceDays', () => {
     expect(matchToleranceDays({ frequency: SUBSCRIPTION_FREQUENCIES.custom, intervalUnit, intervalCount })).toBe(
       expected,
     );
+  });
+
+  it.each([1, 2, 3])('is at least one day for custom day×%i', (intervalCount) => {
+    expect(
+      matchToleranceDays({
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+        intervalCount,
+      }),
+    ).toBe(1);
   });
 });
 
@@ -103,5 +112,18 @@ describe('pickNearestOpenPeriod with a custom frequency', () => {
     expect(pickNearestOpenPeriod({ periods, transactionTime: new Date('2025-06-14T00:00:00Z'), ...every30Days })).toBe(
       null,
     );
+  });
+
+  it('settles a payment one day off a daily due date', () => {
+    const periods = [{ id: 'a', dueDate: '2025-06-10' }];
+    const daily = {
+      frequency: SUBSCRIPTION_FREQUENCIES.custom,
+      intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+      intervalCount: 1,
+    };
+    expect(pickNearestOpenPeriod({ periods, transactionTime: new Date('2025-06-11T00:00:00Z'), ...daily })?.id).toBe(
+      'a',
+    );
+    expect(pickNearestOpenPeriod({ periods, transactionTime: new Date('2025-06-12T00:00:00Z'), ...daily })).toBe(null);
   });
 });

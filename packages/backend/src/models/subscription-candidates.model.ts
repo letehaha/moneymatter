@@ -1,4 +1,9 @@
-import { SUBSCRIPTION_CANDIDATE_STATUS, SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_UNITS, RecordId } from '@bt/shared/types';
+import {
+  SUBSCRIPTION_CANDIDATE_STATUS,
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
+  RecordId,
+} from '@bt/shared/types';
 import { IdColumn } from '@common/types/id-column';
 import { Table, Column, Model, ForeignKey, BelongsTo, DataType } from 'sequelize-typescript';
 

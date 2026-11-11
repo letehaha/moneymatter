@@ -41,7 +41,8 @@ export const assertAmountCurrencyConsistent = ({
 };
 
 /**
- * Which recurrence rule a schedule breaks, as a backend i18n key, or null when it holds:
+ * Which recurrence rule a schedule breaks, as a backend i18n key plus the field at fault, or
+ * null when it holds:
  * `custom` needs a complete step within its unit's limit, a preset carries no step.
  * Shared by the request schemas and the service-layer assert so both refuse alike.
  */
@@ -49,20 +50,30 @@ export const findRecurrenceProblem = ({
   frequency,
   intervalUnit,
   intervalCount,
-}: Partial<SubscriptionRecurrence>): { key: string; variables?: Record<string, number> } | null => {
+}: Partial<SubscriptionRecurrence>): {
+  key: string;
+  field: 'intervalUnit' | 'intervalCount';
+  variables?: Record<string, number>;
+} | null => {
   if (frequency !== undefined && frequency !== SUBSCRIPTION_FREQUENCIES.custom) {
-    return intervalUnit != null || intervalCount != null
-      ? { key: 'subscriptions.validation.customInterval.presetConflict' }
-      : null;
+    if (intervalUnit == null && intervalCount == null) return null;
+    return {
+      key: 'subscriptions.validation.customInterval.presetConflict',
+      field: intervalUnit != null ? 'intervalUnit' : 'intervalCount',
+    };
   }
   if (frequency === SUBSCRIPTION_FREQUENCIES.custom && (intervalUnit == null || intervalCount == null)) {
-    return { key: 'subscriptions.validation.customInterval.required' };
+    return {
+      key: 'subscriptions.validation.customInterval.required',
+      field: intervalUnit == null ? 'intervalUnit' : 'intervalCount',
+    };
   }
   if (intervalUnit != null && intervalCount != null) {
     const max = SUBSCRIPTION_INTERVAL_LIMITS.max[intervalUnit];
     if (intervalCount < SUBSCRIPTION_INTERVAL_LIMITS.min || intervalCount > max) {
       return {
         key: 'subscriptions.validation.customInterval.countOutOfRange',
+        field: 'intervalCount',
         variables: { min: SUBSCRIPTION_INTERVAL_LIMITS.min, max },
       };
     }
@@ -71,12 +82,12 @@ export const findRecurrenceProblem = ({
 };
 
 /**
- * Refuses a merged (post-update) schedule that breaks a recurrence rule. Enforced in
- * the service layer because MCP callers reach it without the request schema.
+ * Refuses a schedule that breaks a recurrence rule. Enforced in the service layer because
+ * an update's merged state is only known there.
  */
 export const assertRecurrenceConsistent = (recurrence: SubscriptionRecurrence): void => {
   const problem = findRecurrenceProblem(recurrence);
-  if (problem) throw new ValidationError({ message: t(problem) });
+  if (problem) throw new ValidationError({ message: t({ key: problem.key, variables: problem.variables }) });
 };
 
 export const findSubscriptionOrThrow = async ({ id, userId }: { id: string; userId: number }) => {

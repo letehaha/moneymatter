@@ -131,6 +131,22 @@ describe('Subscriptions with a custom recurrence interval', () => {
           intervalCount: 11,
         },
       ],
+      [
+        'a week count above 104',
+        {
+          frequency: SUBSCRIPTION_FREQUENCIES.custom,
+          intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.week,
+          intervalCount: 105,
+        },
+      ],
+      [
+        'a month count above 120',
+        {
+          frequency: SUBSCRIPTION_FREQUENCIES.custom,
+          intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.month,
+          intervalCount: 121,
+        },
+      ],
       ['an unknown unit', { ...every30Days, intervalUnit: 'hour' as SUBSCRIPTION_INTERVAL_UNITS }],
     ])('refuses to create %s', async (_label, recurrence) => {
       const res = await helpers.createSubscription({
@@ -141,6 +157,19 @@ describe('Subscriptions with a custom recurrence interval', () => {
         ...recurrence,
       });
       expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+
+    it('names the missing count in the refusal', async () => {
+      const res = await helpers.createSubscription({
+        name: 'Broken',
+        expectedAmount: 10,
+        expectedCurrencyCode: global.BASE_CURRENCY_CODE,
+        startDate: today(),
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+      });
+      expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((res.body.response as unknown as helpers.ErrorResponse).message).toContain('intervalCount');
     });
 
     it('accepts the largest count of each unit', async () => {
@@ -228,6 +257,23 @@ describe('Subscriptions with a custom recurrence interval', () => {
       expect(detail).toMatchObject({ ...every30Days, intervalCount: 28 });
     });
 
+    it("updates only the unit of a custom step and checks the inherited count against the new unit's limit", async () => {
+      const created = await createBill(every30Days);
+      const updated = await helpers.updateSubscription({
+        id: created.id,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.week,
+        raw: true,
+      });
+      expect(updated).toMatchObject({ ...every30Days, intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.week });
+
+      const every200Days = await createBill({ ...every30Days, intervalCount: 200 });
+      const res = await helpers.updateSubscription({
+        id: every200Days.id,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.year,
+      });
+      expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+
     it('folds an updated step that equals a preset into the preset', async () => {
       const created = await createBill(every30Days);
 
@@ -295,6 +341,7 @@ describe('Subscriptions with a custom recurrence interval', () => {
       expect(detail.transactions.map((t) => t.id)).toContain(tx!.id);
       const period = detail.periods.find((p) => p.dueDate === dueDate);
       expect(period!.status).not.toBe(SUBSCRIPTION_PERIOD_STATUSES.paid);
+      expect(period!.transactionId).toBeNull();
     });
   });
 
@@ -322,6 +369,25 @@ describe('Subscriptions with a custom recurrence interval', () => {
       const summary = await helpers.getSubscriptionsSummary({ raw: true });
       // 30 every 30 days → 30 × 30.44 / 30 = 30.44 a month; 50 every 2 months → 25.
       expect(summary.estimatedMonthlyCost).toBe(55.44);
+    });
+
+    it('counts custom week and year steps at their monthly equivalent', async () => {
+      await createBill({
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.week,
+        intervalCount: 3,
+        expectedAmount: 30,
+      });
+      await createBill({
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.year,
+        intervalCount: 2,
+        expectedAmount: 240,
+      });
+
+      const summary = await helpers.getSubscriptionsSummary({ raw: true });
+      // 30 every 3 weeks → 30 × 4.33 / 3 = 43.3 a month; 240 every 2 years → 240 / 12 / 2 = 10.
+      expect(summary.estimatedMonthlyCost).toBe(53.3);
     });
 
     it('offers linked payments inside the custom period window only', async () => {

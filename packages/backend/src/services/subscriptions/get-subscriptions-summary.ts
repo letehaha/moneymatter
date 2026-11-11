@@ -1,4 +1,4 @@
-import { resolveRecurrenceStep, type RecurrenceInput } from '@bt/shared/subscriptions/recurrence';
+import { resolveRecurrenceStep, type PresetFrequency, type RecurrenceInput } from '@bt/shared/subscriptions/recurrence';
 import {
   API_ERROR_CODES,
   SUBSCRIPTION_FREQUENCIES,
@@ -51,7 +51,7 @@ const getAverageMonthlyIncome = async ({
   return total.divide(lookbackMonths);
 };
 
-const MONTHLY_MULTIPLIERS: Record<Exclude<SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_FREQUENCIES.custom>, number> = {
+const MONTHLY_MULTIPLIERS: Record<PresetFrequency, number> = {
   [SUBSCRIPTION_FREQUENCIES.weekly]: 4.33,
   [SUBSCRIPTION_FREQUENCIES.biweekly]: 2.17,
   [SUBSCRIPTION_FREQUENCIES.monthly]: 1,
@@ -69,7 +69,7 @@ const UNIT_MONTHLY_MULTIPLIERS: Record<SUBSCRIPTION_INTERVAL_UNITS, number> = {
 };
 
 const monthlyMultiplier = ({ frequency, intervalUnit, intervalCount }: RecurrenceInput): number => {
-  if (frequency !== SUBSCRIPTION_FREQUENCIES.custom) return MONTHLY_MULTIPLIERS[frequency] ?? 1;
+  if (frequency !== SUBSCRIPTION_FREQUENCIES.custom) return MONTHLY_MULTIPLIERS[frequency];
   const step = resolveRecurrenceStep({ frequency, intervalUnit, intervalCount });
   return UNIT_MONTHLY_MULTIPLIERS[step.unit] / step.count;
 };

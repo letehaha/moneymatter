@@ -94,11 +94,13 @@ describe('formatFrequency', () => {
 });
 
 describe('isIntervalCountValid', () => {
-  const { day, year } = SUBSCRIPTION_INTERVAL_UNITS;
+  const { day, week, month, year } = SUBSCRIPTION_INTERVAL_UNITS;
 
   it('accepts whole counts within the unit limit', () => {
     expect(isIntervalCountValid({ unit: day, count: 1 })).toBe(true);
     expect(isIntervalCountValid({ unit: day, count: 366 })).toBe(true);
+    expect(isIntervalCountValid({ unit: week, count: 104 })).toBe(true);
+    expect(isIntervalCountValid({ unit: month, count: 120 })).toBe(true);
     expect(isIntervalCountValid({ unit: year, count: 10 })).toBe(true);
   });
 
@@ -107,6 +109,8 @@ describe('isIntervalCountValid', () => {
     expect(isIntervalCountValid({ unit: day, count: 1.5 })).toBe(false);
     expect(isIntervalCountValid({ unit: day, count: 0 })).toBe(false);
     expect(isIntervalCountValid({ unit: day, count: 367 })).toBe(false);
+    expect(isIntervalCountValid({ unit: week, count: 105 })).toBe(false);
+    expect(isIntervalCountValid({ unit: month, count: 121 })).toBe(false);
     expect(isIntervalCountValid({ unit: year, count: 11 })).toBe(false);
   });
 });

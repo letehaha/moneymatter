@@ -1,3 +1,4 @@
+import type { RecurrenceInput } from '@bt/shared/subscriptions/recurrence';
 import {
   SUBSCRIPTION_FREQUENCIES,
   SUBSCRIPTION_INTERVAL_LIMITS,
@@ -24,12 +25,7 @@ export const formatFrequency = ({
   intervalUnit,
   intervalCount,
   t,
-}: {
-  frequency: SUBSCRIPTION_FREQUENCIES;
-  intervalUnit?: SUBSCRIPTION_INTERVAL_UNITS | null;
-  intervalCount?: number | null;
-  t: ComposerTranslation;
-}): string => {
+}: RecurrenceInput & { t: ComposerTranslation }): string => {
   if (frequency === SUBSCRIPTION_FREQUENCIES.custom && intervalUnit && intervalCount) {
     return t(`planned.subscriptions.frequency.every.${intervalUnit}`, { count: intervalCount }, intervalCount);
   }

@@ -6,6 +6,7 @@ import {
   SUBSCRIPTION_INTERVAL_LIMITS,
   SUBSCRIPTION_INTERVAL_UNITS,
   SUBSCRIPTION_TYPES,
+  type SubscriptionRecurrence,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
 import { currencyCode, dateBound, recordId, withDateOrder } from '@common/lib/zod/custom-types';
@@ -97,11 +98,7 @@ const refineRecurrence = ({
   ctx,
   partial,
 }: {
-  data: {
-    frequency?: SUBSCRIPTION_FREQUENCIES;
-    intervalUnit?: SUBSCRIPTION_INTERVAL_UNITS | null;
-    intervalCount?: number | null;
-  };
+  data: Partial<SubscriptionRecurrence>;
   ctx: z.RefinementCtx;
   partial: boolean;
 }) => {
@@ -113,8 +110,8 @@ const refineRecurrence = ({
   if (!problem) return;
   ctx.addIssue({
     code: z.ZodIssueCode.custom,
-    message: t(problem),
-    path: [problem.key.endsWith('countOutOfRange') ? 'intervalCount' : 'intervalUnit'],
+    message: t({ key: problem.key, variables: problem.variables }),
+    path: [problem.field],
   });
 };
 

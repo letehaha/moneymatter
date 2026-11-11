@@ -90,8 +90,8 @@ export const createSubscription = withTransaction(
     const uniqueTagIds = [...new Set(tagIds)];
     await validateTagsOwnership({ tagIds: uniqueTagIds, userId });
 
-    // `custom` needs a step within its unit's limit and a preset takes none (covers MCP
-    // callers, which bypass the request schema). A step equal to a preset is stored as it.
+    // Internal callers skip the request schema, so the recurrence rules are enforced here
+    // too. A step equal to a preset is stored as that preset.
     assertRecurrenceConsistent({ frequency, intervalUnit, intervalCount });
     const recurrence = normalizeRecurrence({ frequency, intervalUnit, intervalCount });
 

@@ -1,18 +1,9 @@
 import { resolveRecurrenceStep, type RecurrenceInput } from '@bt/shared/subscriptions/recurrence';
-import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
+import { SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const FREQUENCY_INTERVAL_DAYS: Record<Exclude<SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_FREQUENCIES.custom>, number> = {
-  [SUBSCRIPTION_FREQUENCIES.weekly]: 7,
-  [SUBSCRIPTION_FREQUENCIES.biweekly]: 14,
-  [SUBSCRIPTION_FREQUENCIES.monthly]: 30,
-  [SUBSCRIPTION_FREQUENCIES.quarterly]: 90,
-  [SUBSCRIPTION_FREQUENCIES.semiAnnual]: 180,
-  [SUBSCRIPTION_FREQUENCIES.annual]: 365,
-};
-
-/** Days per unit of a custom step, on the same 30/365 scale as the preset table. */
+/** Approximate days per unit of a recurrence step. */
 const UNIT_INTERVAL_DAYS: Record<SUBSCRIPTION_INTERVAL_UNITS, number> = {
   [SUBSCRIPTION_INTERVAL_UNITS.day]: 1,
   [SUBSCRIPTION_INTERVAL_UNITS.week]: 7,
@@ -20,14 +11,14 @@ const UNIT_INTERVAL_DAYS: Record<SUBSCRIPTION_INTERVAL_UNITS, number> = {
   [SUBSCRIPTION_INTERVAL_UNITS.year]: 365,
 };
 
-const intervalDays = ({ frequency, intervalUnit, intervalCount }: RecurrenceInput): number => {
-  if (frequency !== SUBSCRIPTION_FREQUENCIES.custom) return FREQUENCY_INTERVAL_DAYS[frequency];
-  const step = resolveRecurrenceStep({ frequency, intervalUnit, intervalCount });
-  return UNIT_INTERVAL_DAYS[step.unit] * step.count;
+/**
+ * Half the recurrence interval, at least one day: how far from its dueDate a payment may
+ * land and still settle the period.
+ */
+export const matchToleranceDays = (recurrence: RecurrenceInput): number => {
+  const step = resolveRecurrenceStep(recurrence);
+  return Math.max(1, Math.floor((UNIT_INTERVAL_DAYS[step.unit] * step.count) / 2));
 };
-
-/** Half the recurrence interval: how far from its dueDate a payment may land and still settle the period. */
-export const matchToleranceDays = (recurrence: RecurrenceInput): number => Math.floor(intervalDays(recurrence) / 2);
 
 const utcDayNumber = ({ date }: { date: Date }): number =>
   Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / DAY_MS);
