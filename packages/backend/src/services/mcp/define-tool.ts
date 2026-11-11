@@ -36,7 +36,7 @@ export function scopeSentence({ def }: { def: ToolDef }): string {
   return ` Requires finance:${def.access} scope${conditional}.`;
 }
 
-// Every MCP session registers every tool, so the strict object is built once per def, not per session.
+// Every `/mcp` request registers its tools again, so the strict object is built once per def.
 const inputSchemas = new WeakMap<ToolDef, z.ZodObject>();
 
 function inputSchemaOf({ def }: { def: ToolDef }): z.ZodObject | undefined {

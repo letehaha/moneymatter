@@ -3,8 +3,6 @@ import * as mcpHelpers from '@tests/helpers/mcp';
 
 const METHODS = ['post', 'get', 'delete'] as const;
 
-// No session id and not an `initialize` call: a request that clears auth and the
-// scope gate lands on the route's own 400, without reaching the (mocked) MCP SDK.
 const NON_INITIALIZE_BODY = { jsonrpc: '2.0', id: 1, method: 'tools/list' };
 
 describe('/mcp scope gate', () => {
@@ -37,10 +35,13 @@ describe('/mcp scope gate', () => {
   it('lets a token carrying finance:read through the gate on every method', async () => {
     const token = await mcpHelpers.createTestMcpBearerToken({ scopes: ['finance:read', 'profile:read'] });
 
+    const statuses: number[] = [];
     for (const method of METHODS) {
       const res = await mcpHelpers.requestMcp({ method, token, body: NON_INITIALIZE_BODY });
-
-      expect(res.status).toBe(400);
+      statuses.push(res.status);
     }
+
+    // POST is served; GET and DELETE answer 405 because `/mcp` keeps no stream or session.
+    expect(statuses).toEqual([200, 405, 405]);
   });
 });
