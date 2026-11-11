@@ -1,17 +1,11 @@
 import { afterEach, describe, expect, it } from '@jest/globals';
 import * as mcpHelpers from '@tests/helpers/mcp';
-import { useRealMcpServer } from '@tests/mocks/mcp-sdk/server-mcp';
-import { useRealMcpTransport } from '@tests/mocks/mcp-sdk/server-streamable-http';
 
 const METHODS = ['post', 'get', 'delete'] as const;
 
 const NON_INITIALIZE_BODY = { jsonrpc: '2.0', id: 1, method: 'tools/list' };
 
 describe('/mcp scope gate', () => {
-  // A request that clears the gate reaches the SDK's own server and transport.
-  useRealMcpTransport();
-  useRealMcpServer();
-
   afterEach(async () => {
     await mcpHelpers.cleanupTestOAuthData();
   });

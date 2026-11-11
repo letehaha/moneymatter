@@ -13,7 +13,6 @@ const router = Router();
 declare module 'express' {
   interface Request {
     auth?: McpAuthInfo;
-    mcpAuthInfo?: McpAuthInfo;
   }
 }
 
@@ -79,32 +78,56 @@ async function authenticateMcpRequest({ req, res }: { req: Request; res: Respons
     return false;
   }
 
-  req.mcpAuthInfo = authInfo;
   // Set req.auth so the MCP SDK passes authInfo to tool handlers via extra.authInfo
   req.auth = authInfo;
   return true;
 }
 
+// Bounds the memory concurrent requests hold: each keeps its server and its tool's query results
+// until the response closes.
+const DEFAULT_MAX_IN_FLIGHT_REQUESTS = 100;
+let inFlightRequests = 0;
+
 /**
- * POST /mcp — Handle MCP JSON-RPC requests, in the Streamable HTTP spec's stateless mode.
- *
- * Every request gets a server and transport of its own and nothing outlives it. A tool call needs only
- * its request's token, so an idle client or a backend restart has no session to lose, and a session id
- * a client still sends is ignored. The toolsets come from the request's token, so the ones picked on
- * the consent screen apply from the next call. Building the server registers its tools, about a
- * millisecond.
+ * POST /mcp, in the Streamable HTTP spec's stateless mode: each request gets its own server and
+ * transport, and its toolsets come from its own token. An `mcp-session-id` header is ignored.
  */
 // oxlint-disable-next-line oxc/no-async-endpoint-handlers -- handler has internal try/catch for all async operations
 router.post('/', async (req: Request, res: Response) => {
   if (!(await authenticateMcpRequest({ req, res }))) return;
 
+  // A client that left during auth has already emitted `close`: a listener added now never fires,
+  // so counting the request would leak its slot.
+  if (res.destroyed) return;
+
+  const configuredMax = Number(process.env.MCP_MAX_IN_FLIGHT_REQUESTS);
+  const maxInFlight = configuredMax > 0 ? configuredMax : DEFAULT_MAX_IN_FLIGHT_REQUESTS;
+  if (inFlightRequests >= maxInFlight) {
+    // Keep the message constant: the logger rate-limits Sentry warnings per message text.
+    logger.warn('MCP request rejected: in-flight limit reached', { inFlightRequests, maxInFlight });
+    res
+      .status(503)
+      .set('Retry-After', '5')
+      .json({
+        jsonrpc: '2.0',
+        error: { code: -32000, message: 'MCP server is overloaded. Retry in a few seconds.' },
+        id: null,
+      });
+    return;
+  }
+
+  inFlightRequests += 1;
+  res.on('close', () => {
+    inFlightRequests -= 1;
+  });
+
   try {
-    const server = createMcpServer({ toolsets: mcpToolsetsFromScopes({ scopes: req.mcpAuthInfo!.scopes }) });
+    const server = createMcpServer({ toolsets: mcpToolsetsFromScopes({ scopes: req.auth!.scopes }) });
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
 
     res.on('close', () => {
       server.close().catch((error: unknown) => {
-        logger.error('MCP server close failed', { error: (error as Error).message });
+        logger.error({ message: 'MCP server close failed', error: error as Error });
       });
     });
 

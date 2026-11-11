@@ -2,8 +2,6 @@ import { mcpToolsetScope } from '@bt/shared/types';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 import * as mcpHelpers from '@tests/helpers/mcp';
-import { useRealMcpServer } from '@tests/mocks/mcp-sdk/server-mcp';
-import { useRealMcpTransport } from '@tests/mocks/mcp-sdk/server-streamable-http';
 import { randomUUID } from 'node:crypto';
 
 const INITIALIZE_BODY = {
@@ -22,9 +20,6 @@ const toolText = ({ res }: { res: Awaited<ReturnType<typeof mcpHelpers.callMcpTo
 // The public `/mcp` keeps no session: an idle timeout or a restart has nothing to end, so a client is
 // never told its session is gone.
 describe('/mcp without sessions', () => {
-  useRealMcpTransport();
-  useRealMcpServer();
-
   afterEach(async () => {
     await mcpHelpers.cleanupTestOAuthData();
   });
@@ -85,6 +80,31 @@ describe('/mcp without sessions', () => {
 
       expect(res.status).toBe(405);
       expect(res.headers.allow).toBe('POST');
+    }
+  });
+
+  it('answers 503 to requests past the in-flight limit and serves again once they finish', async () => {
+    const token = await mcpHelpers.createTestMcpBearerToken({ scopes: ['finance:read'] });
+    process.env.MCP_MAX_IN_FLIGHT_REQUESTS = '2';
+
+    try {
+      const responses = await Promise.all(
+        Array.from({ length: 20 }, () => mcpHelpers.callMcpTool({ token, name: 'get_accounts' })),
+      );
+      const statuses = responses.map((res) => res.status);
+
+      expect(statuses.filter((status) => status !== 200 && status !== 503)).toEqual([]);
+      expect(statuses).toContain(200);
+      expect(statuses).toContain(503);
+      const rejected = responses.find((res) => res.status === 503)!;
+      expect(rejected.headers['retry-after']).toBe('5');
+      expect(rejected.body.error).toMatchObject({ code: -32000, message: expect.stringContaining('overloaded') });
+
+      // A leaked slot would keep the counter at the limit and reject this call too.
+      const next = await mcpHelpers.callMcpTool({ token, name: 'get_accounts' });
+      expect(next.status).toBe(200);
+    } finally {
+      delete process.env.MCP_MAX_IN_FLIGHT_REQUESTS;
     }
   });
 
