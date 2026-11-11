@@ -1,5 +1,5 @@
 import { ACCOUNT_TYPES, PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
-import type { TransactionLocation } from '@bt/shared/types';
+import type { ImportSource, TransactionLocation } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import * as Transactions from '@models/transactions.model';
 
@@ -56,6 +56,11 @@ export type CreateTransactionParams = Omit<
    * entry is never overridden; API integrations posting bank data opt in per request.
    */
   applyAutomations?: boolean;
+  /**
+   * Files the row under the day's import batch of this source, so import history lists it and can
+   * undo it. Ignored for a planned row, which cannot carry an import stamp.
+   */
+  importSource?: ImportSource.messageImport;
   /** The other accounts of a multi-account payment; the main row keeps `accountId` and `amount`. */
   paymentLegs?: PaymentLegParam[];
 };

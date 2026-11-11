@@ -6,12 +6,12 @@ import {
 } from '@bt/shared/types/investments';
 import { recordId } from '@common/lib/zod/custom-types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
-import { toAiExtractionHttpError } from '@controllers/helpers/ai-extraction-http-error';
 import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { CustomError, UnexpectedError } from '@js/errors';
 import { logger } from '@js/utils';
 import Portfolios from '@models/investments/portfolios.model';
+import { toAiExtractionHttpError } from '@services/import-export/core/ai-extraction-http-error';
 import {
   extractInvestmentTransactionsWithAI,
   groupRowsIntoHoldings,

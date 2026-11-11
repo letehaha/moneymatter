@@ -51,7 +51,7 @@ export * from './backup';
 export * from './ai-categorization';
 export * from './billing';
 export * from './attachments';
-export * from './invoice-matching';
+export * from './document-extraction';
 export * from './background-jobs';
 export * from './landing-faq';
 export * from './reconciliation';

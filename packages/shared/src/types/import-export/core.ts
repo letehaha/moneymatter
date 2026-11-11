@@ -34,6 +34,8 @@ export enum ImportSource {
   budgetBakersWallet = 'budget-bakers-wallet',
   msMoney = 'ms-money',
   ofx = 'ofx',
+  /** Bank SMS, wallet payments and bank notifications the mobile app turns into transactions one at a time. */
+  messageImport = 'message-import',
 }
 
 /**

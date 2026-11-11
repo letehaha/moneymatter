@@ -9,6 +9,7 @@ import bulkDelete from '@controllers/transactions.controller/bulk-delete';
 import bulkUpdate from '@controllers/transactions.controller/bulk-update';
 import createTransaction from '@controllers/transactions.controller/create-transaction';
 import deleteTransaction from '@controllers/transactions.controller/delete-transaction';
+import extractMessage from '@controllers/transactions.controller/extract-message';
 import extractReceipt from '@controllers/transactions.controller/extract-receipt';
 import getPlannedSummary from '@controllers/transactions.controller/get-planned-summary';
 import getPortfolioLink from '@controllers/transactions.controller/get-portfolio-link';
@@ -39,7 +40,7 @@ import { authenticateSession } from '@middlewares/better-auth';
 import { blockDemoUsers } from '@middlewares/block-demo-users';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { requireFeature, requireFeatureOrTrial } from '@middlewares/entitlements';
-import { attachmentUploadRateLimit } from '@middlewares/rate-limit';
+import { attachmentUploadRateLimit, messageExtractionRateLimit } from '@middlewares/rate-limit';
 import express, { Router } from 'express';
 
 const router = Router({});
@@ -83,6 +84,7 @@ router.post(
   express.raw({ type: 'application/octet-stream', limit: ATTACHMENT_MAX_FILE_BYTES }),
   extractReceipt,
 );
+router.post('/extract-message', requireFeature(FEATURES.invoice_matching), messageExtractionRateLimit, extractMessage);
 router.post(
   '/match-invoice/candidates',
   // No AI and no try spent, so a user whose free tries are gone can still correct the

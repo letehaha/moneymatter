@@ -22,6 +22,7 @@ import * as Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
+import { dailyImportDetails } from '@services/import-export/core/daily-import-details';
 import { assertLoanPaymentAllowed } from '@services/loans/assert-loan-payment-allowed';
 import { applyPayeeCategorization } from '@services/payees/apply-categorization';
 import { applyPayeeDefaultLocation } from '@services/payees/apply-default-location';
@@ -367,10 +368,17 @@ export const createTransaction = withTransaction(
     categoryIdIsExplicit = false,
     matchPlanned = false,
     applyAutomations = false,
+    importSource,
     paymentLegs,
     ...payload
   }: CreateTransactionParams): Promise<CreateTxResult> => {
     if (applyAutomations) payload.externalData = { ...payload.externalData, applyAutomations: true };
+    if (importSource && !payload.isPlanned) {
+      payload.externalData = {
+        ...payload.externalData,
+        importDetails: dailyImportDetails({ userId, source: importSource }),
+      };
+    }
     if (matchPlanned && paymentLegs?.length) {
       throw new ValidationError({ message: t({ key: 'transactions.paymentLegsNotAllowed' }) });
     }

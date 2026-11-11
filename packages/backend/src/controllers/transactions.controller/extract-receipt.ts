@@ -3,7 +3,7 @@ import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { ForbiddenError, ValidationError } from '@js/errors';
 import { getRequestFeatureAccess } from '@middlewares/entitlements';
-import { scanReceipt } from '@services/invoice-matching/scan-receipt.service';
+import { scanReceipt } from '@services/document-extraction/scan-receipt.service';
 import { z } from 'zod';
 
 const schema = z.object({

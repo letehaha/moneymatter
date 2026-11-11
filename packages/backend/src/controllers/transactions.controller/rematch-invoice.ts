@@ -2,8 +2,8 @@ import { FEATURES, type InvoiceMatchResult } from '@bt/shared/types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { getRequestFeatureAccess } from '@middlewares/entitlements';
 import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
-import { invoiceSchema } from '@services/invoice-matching/extract-invoice.service';
-import { findInvoiceCandidates } from '@services/invoice-matching/match-invoice.service';
+import { invoiceSchema } from '@services/document-extraction/extract-invoice.service';
+import { findInvoiceCandidates } from '@services/document-extraction/match-invoice.service';
 import { z } from 'zod';
 
 const schema = z.object({ body: invoiceSchema });

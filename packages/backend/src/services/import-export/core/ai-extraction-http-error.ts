@@ -1,5 +1,6 @@
 import { BadGateway, TooManyRequests, UnexpectedError, ValidationError } from '@js/errors';
-import type { AIExtractionError } from '@services/import-export/core/ai-extraction-failure';
+
+import type { AIExtractionError } from './ai-extraction-failure';
 
 /**
  * The failure the client sees for each way an AI extraction step can end. A new code must be

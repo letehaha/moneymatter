@@ -252,6 +252,13 @@ export const attachmentUploadRateLimit = perUserNonDevRateLimit({
   maxAttempts: 30,
 });
 
+/** Each call is one paid AI request. */
+export const messageExtractionRateLimit = perUserNonDevRateLimit({
+  prefix: 'message-extraction',
+  windowSeconds: 60,
+  maxAttempts: 30,
+});
+
 /**
  * Client-log rate limit. Every accepted call becomes a Loki line, so this bounds
  * how much log volume one session can generate.

@@ -21,8 +21,8 @@ import { addDays, format, parseISO, subDays } from 'date-fns';
 import { Op } from 'sequelize';
 
 import { extractInvoice } from './extract-invoice.service';
-import { resolveMerchantSimilarity } from './merchant-similarity';
-import { AMOUNT_TOLERANCE, DAYS_AFTER_INVOICE, DAYS_BEFORE_INVOICE, scoreCandidates } from './score-candidates';
+import { resolveMerchantSimilarity } from './utils/merchant-similarity';
+import { AMOUNT_TOLERANCE, DAYS_AFTER_INVOICE, DAYS_BEFORE_INVOICE, scoreCandidates } from './utils/score-candidates';
 
 /** Scoring is cheap, but the payee lookup and the Jev call are not. */
 const CANDIDATE_LIMIT = 50;

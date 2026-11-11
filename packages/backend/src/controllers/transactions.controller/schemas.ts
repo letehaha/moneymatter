@@ -1,4 +1,5 @@
 import {
+  ImportSource,
   MAX_PAYMENT_LEGS,
   PAYMENT_TYPES,
   TRANSACTION_TRANSFER_NATURE,
@@ -102,6 +103,8 @@ export const createTransactionBodyShape = {
   payeeLocked: z.boolean().optional(),
   isPlanned: z.boolean().optional().default(false),
   applyAutomations: z.boolean().optional().default(false),
+  // Any other value is dropped, not refused: a newer client must still be able to create the row.
+  importSource: z.literal(ImportSource.messageImport).optional().catch(undefined),
   originalAmount: nonNegativeAmountSchema().optional(),
   originalCurrencyCode: currencyCode().optional(),
   paymentLegs: paymentLegsSchema.optional(),

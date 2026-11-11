@@ -9,6 +9,7 @@ import {
   markCustomEndpointUnreachable,
   markModelNotServed,
 } from '@services/ai';
+import { NoObjectGeneratedError, NoOutputGeneratedError } from 'ai';
 
 export interface AIExtractionError {
   code:
@@ -38,6 +39,20 @@ export async function resolveAiExtractionFailure({
   error: unknown;
   logPrefix: string;
 }): Promise<{ error: AIExtractionError; cause: Error }> {
+  // An answer of the wrong shape, or none at all (a content filter, or the token budget spent before any text).
+  if (NoObjectGeneratedError.isInstance(error) || NoOutputGeneratedError.isInstance(error)) {
+    // Logged without the error: its cause quotes the model's raw output, which repeats the user's document.
+    logger.info(`${logPrefix} AI gave no usable answer`, {
+      modelId: aiClient.modelId,
+      finishReason: 'finishReason' in error ? error.finishReason : undefined,
+    });
+
+    return {
+      error: { code: 'EXTRACTION_FAILED', message: t({ key: 'importExport.aiExtractionFailed' }) },
+      cause: error,
+    };
+  }
+
   const { kind, cause } = classifyAiCallFailure({ error });
   const details = cause.message;
   const isCustomEndpoint = aiClient.provider === AI_PROVIDER.custom;

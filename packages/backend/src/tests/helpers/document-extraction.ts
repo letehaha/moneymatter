@@ -1,7 +1,8 @@
 import { app } from '@root/app';
 import { API_PREFIX } from '@root/config';
-import type { matchInvoice as apiMatchInvoice } from '@services/invoice-matching/match-invoice.service';
-import type { ReceiptScanResult } from '@services/invoice-matching/scan-receipt.service';
+import type { MessageExtractionResult } from '@services/document-extraction/extract-message.service';
+import type { matchInvoice as apiMatchInvoice } from '@services/document-extraction/match-invoice.service';
+import type { ReceiptScanResult } from '@services/document-extraction/scan-receipt.service';
 import request from 'supertest';
 
 import { followBackgroundJob, makeRequest } from './common';
@@ -51,6 +52,16 @@ export const extractReceipt = (params: UploadParams) =>
     url: '/transactions/extract-receipt',
     ...params,
   });
+
+export async function extractMessage({ text }: { text: unknown }) {
+  const result = await makeRequest<MessageExtractionResult>({
+    method: 'post',
+    url: '/transactions/extract-message',
+    payload: { text },
+  });
+
+  return { statusCode: result.statusCode, response: result.statusCode === 200 ? result.body.response : null };
+}
 
 /** Re-ranks candidates for invoice fields the user corrected; no file and no AI involved. */
 export async function rematchInvoice({ invoice }: { invoice: Record<string, unknown> }): Promise<MatchInvoiceResult> {
