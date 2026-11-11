@@ -36,15 +36,11 @@ export function useAccountsSort() {
   const { baseCurrency } = storeToRefs(useCurrenciesStore());
   const { data: userSettings } = useUserSettings();
 
-  // Picking a key starts it in its natural direction, so switching to Balance always shows the
-  // largest holdings first rather than inheriting whatever direction Name was left in.
+  // Switching to a different key resets to that key's default direction.
   const setSortKey = (key: AccountsSortKey): void => {
+    if (key === sortKey.value) return;
     sortKey.value = key;
     sortDirection.value = defaultSortDirection({ sortKey: key });
-  };
-
-  const setSortDirection = (direction: AccountsSortDirection): void => {
-    sortDirection.value = direction;
   };
 
   // Read reactive store values lazily: these wrappers run inside consumer `computed()`s, and
@@ -110,7 +106,6 @@ export function useAccountsSort() {
     sortKey,
     setSortKey,
     sortDirection,
-    setSortDirection,
     sortConnectionRows,
     sortLeafAccounts,
     sortVehicles,

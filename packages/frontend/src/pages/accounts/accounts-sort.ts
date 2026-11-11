@@ -12,8 +12,6 @@ export const ACCOUNTS_SORT_KEYS: readonly AccountsSortKey[] = ['auto', 'name', '
 
 export type AccountsSortDirection = 'asc' | 'desc';
 
-export const ACCOUNTS_SORT_DIRECTIONS: readonly AccountsSortDirection[] = ['asc', 'desc'];
-
 /** Direction a key starts in: names read A→Z, balances lead with the largest holdings. */
 export const defaultSortDirection = ({ sortKey }: { sortKey: AccountsSortKey }): AccountsSortDirection =>
   sortKey === 'balance' ? 'desc' : 'asc';
@@ -67,8 +65,7 @@ const compareNames = (a: string, b: string): number =>
 
 /**
  * Sort a homogeneous list into a NEW array (never mutates the input).
- * `auto`/`name` order by name; `balance` orders by value. `direction` defaults per key
- * (see `defaultSortDirection`).
+ * `auto`/`name` order by name; `balance` orders by value.
  */
 export function sortItems<T>({
   items,
@@ -88,7 +85,6 @@ export function sortItems<T>({
 
   if (sortKey === 'balance') {
     // Equal balances fall back to A→Z name order in both directions, so ties stay readable.
-    // Credit balances are negative, so ascending puts the largest debt first.
     return copy.sort((a, b) => {
       const diff = (getValue(a) - getValue(b)) * sign;
       if (diff !== 0) return diff;

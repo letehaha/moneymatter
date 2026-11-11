@@ -24,7 +24,7 @@
         {{ opt.label }}
       </UiButton>
 
-      <div role="separator" class="bg-border my-1 h-px" />
+      <Separator class="my-1" />
 
       <UiButton
         v-for="opt in directionOptions"
@@ -45,22 +45,18 @@
 <script setup lang="ts">
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import * as Popover from '@/components/lib/ui/popover';
+import { Separator } from '@/components/lib/ui/separator';
 import { ArrowUpDownIcon, CheckIcon, ChevronDownIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import {
-  ACCOUNTS_SORT_DIRECTIONS,
-  ACCOUNTS_SORT_KEYS,
-  type AccountsSortDirection,
-  type AccountsSortKey,
-} from '../accounts-sort';
+import { ACCOUNTS_SORT_KEYS, type AccountsSortDirection, type AccountsSortKey } from '../accounts-sort';
 import { useAccountsSort } from '../use-accounts-sort';
 
 defineProps<{ triggerVariant: 'labeled' | 'icon' }>();
 
 const { t } = useI18n();
-const { sortKey, setSortKey, sortDirection, setSortDirection } = useAccountsSort();
+const { sortKey, setSortKey, sortDirection } = useAccountsSort();
 
 const isOpen = ref(false);
 
@@ -80,18 +76,20 @@ const selectSort = (key: AccountsSortKey) => {
 };
 
 // Balance reads as magnitude, names as alphabet; "ascending" alone is ambiguous for either.
-const directionOptions = computed(() =>
-  ACCOUNTS_SORT_DIRECTIONS.map((direction) => ({
-    direction,
-    label:
-      sortKey.value === 'balance'
-        ? t(direction === 'desc' ? 'accounts.sort.direction.highestFirst' : 'accounts.sort.direction.lowestFirst')
-        : t(direction === 'asc' ? 'accounts.sort.direction.aToZ' : 'accounts.sort.direction.zToA'),
-  })),
+const directionOptions = computed<{ direction: AccountsSortDirection; label: string }[]>(() =>
+  sortKey.value === 'balance'
+    ? [
+        { direction: 'desc', label: t('accounts.sort.direction.highestFirst') },
+        { direction: 'asc', label: t('accounts.sort.direction.lowestFirst') },
+      ]
+    : [
+        { direction: 'asc', label: t('accounts.sort.direction.aToZ') },
+        { direction: 'desc', label: t('accounts.sort.direction.zToA') },
+      ],
 );
 
 const selectDirection = (direction: AccountsSortDirection) => {
-  setSortDirection(direction);
+  sortDirection.value = direction;
   isOpen.value = false;
 };
 </script>

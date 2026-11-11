@@ -202,6 +202,22 @@ describe('sortMixed', () => {
     expect(result.map((item) => item.kind)).toEqual(['account', 'group', 'account', 'group']);
   });
 
+  it('forwards direction: auto desc reverses each block, groups still lead; balance asc interleaves', () => {
+    const common = { groups, accounts, baseCurrencyCode: 'USD', includeCreditLimit: false };
+    expect(names(sortMixed({ ...common, sortKey: 'auto', direction: 'desc' }))).toEqual([
+      'Zebra',
+      'Mango',
+      'Yak',
+      'Bee',
+    ]);
+    expect(names(sortMixed({ ...common, sortKey: 'balance', direction: 'asc' }))).toEqual([
+      'Mango',
+      'Bee',
+      'Zebra',
+      'Yak',
+    ]);
+  });
+
   it('balance interleaves groups and accounts descending by base value', () => {
     const result = sortMixed({
       groups,
