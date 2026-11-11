@@ -75,6 +75,7 @@
       "types": {
         "initial_investment": "Počiatočná investícia",
         "capital_call": "Výzva na vloženie kapitálu",
+        "capital_refund": "Vrátenie kapitálu",
         "distribution": "Distribúcia",
         "nav_update": "Aktualizácia NAV",
         "exit": "Exit",

@@ -75,6 +75,7 @@
       "types": {
         "initial_investment": "Investimento inicial",
         "capital_call": "Chamada de capital",
+        "capital_refund": "Capital refund",
         "distribution": "Distribuição",
         "nav_update": "Atualização do NAV",
         "exit": "Saída",

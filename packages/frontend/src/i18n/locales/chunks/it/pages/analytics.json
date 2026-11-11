@@ -84,7 +84,7 @@
       }
     },
     "trends": {
-      "subtitle": "Confrontare spese, entrate e risparmi con il periodo precedente.",
+      "subtitle": "Confrontare spese ed entrate con il periodo precedente.",
       "metrics": {
         "expenses": "Spese",
         "income": "Entrata",
@@ -96,13 +96,13 @@
         "cumulativeNote": "Totale cumulativo fino a questo punto"
       },
       "scope": {
-        "label": "Category scope",
+        "label": "Ambito categorie",
         "all": "Tutte le categorie",
-        "up": "Up one level",
+        "up": "Livello superiore",
         "transactions": "Transazioni",
         "count": "{count} categoria | {count} categorie",
         "more": "+{count}",
-        "allExcept": "All except {list}",
+        "allExcept": "Tutte tranne {list}",
         "clear": "Pulisci"
       },
       "categoryBreakdown": {
@@ -110,19 +110,19 @@
         "noData": "Nessun dato per questo periodo",
         "viewAll": "Visualizza tutte le categorie",
         "moreCount": "altre {count}",
-        "noSubcategory": "{name} · no subcategory",
-        "byLevel": "By level",
+        "noSubcategory": "{name} · nessuna sottocategoria",
+        "byLevel": "Per livello",
         "detail": "Dettaglio",
         "others": "Altri"
       },
       "hero": {
-        "vsPrevious": "{percent}% vs previous period",
-        "same": "Same as previous period"
+        "vsPrevious": "{percent}% rispetto al periodo precedente",
+        "same": "Uguale al periodo precedente"
       },
       "overTime": {
-        "title": "Over time",
+        "title": "Nel tempo",
         "cumulative": "Cumulativo",
-        "perPeriod": "Per period",
+        "perPeriod": "Per periodo",
         "granularity": {
           "monthly": "Mensile",
           "quarterly": "Trimestrale",
@@ -131,8 +131,8 @@
       },
       "transactionsCard": {
         "title": "Transazioni",
-        "largest": "Largest",
-        "recent": "Recent"
+        "largest": "Più elevate",
+        "recent": "Recenti"
       },
       "monthlyComparison": {
         "allCategories": "Tutte le categorie",
@@ -140,13 +140,13 @@
         "total": "Totale",
         "vsPrevious": {
           "monthly": "rispetto al mese scorso",
-          "quarterly": "vs last quarter",
-          "yearly": "vs last year"
+          "quarterly": "rispetto al trimestre scorso",
+          "yearly": "rispetto all'anno scorso"
         },
         "show": {
-          "monthly": "Show this month",
-          "quarterly": "Show quarter",
-          "yearly": "Show year"
+          "monthly": "Mostra questo mese",
+          "quarterly": "Mostra trimestre",
+          "yearly": "Mostra anno"
         }
       },
       "filters": {
