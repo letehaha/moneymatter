@@ -35,6 +35,9 @@
         "title": "Microsoft Money",
         "listDescription": "Importe um arquivo .mny do Microsoft Money"
       },
+      "messageImport": {
+        "title": "iOS message sync"
+      },
       "importHistory": {
         "title": "Histórico de importações",
         "listDescription": "Veja importações anteriores e o que elas criaram"

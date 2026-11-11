@@ -176,7 +176,7 @@
         "loadingButton": "Načítavanie...",
         "createButton": "Vytvoriť",
         "editButton": "Upraviť",
-        "duplicateButton": "Duplicita",
+        "duplicateButton": "Duplikovať",
         "createMore": {
           "label": "Vytvoriť ďalšiu",
           "createdToast": "Transakcia vytvorená"

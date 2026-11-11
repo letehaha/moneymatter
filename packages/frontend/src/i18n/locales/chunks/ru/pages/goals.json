@@ -1,8 +1,8 @@
 {
   "goals": {
-    "title": "Goals",
+    "title": "Цели",
     "description": "Save toward targets from the accounts you already have",
-    "newGoal": "New goal",
+    "newGoal": "Новая цель",
     "list": {
       "searchPlaceholder": "Search goals",
       "filters": {
@@ -19,7 +19,7 @@
       },
       "loadError": "Couldn't load your goals.",
       "emptyState": {
-        "title": "No goals yet",
+        "title": "Пока нет целей",
         "description": "Point a goal at the accounts that hold the money. Progress updates as balances change."
       },
       "noMatch": {
@@ -70,11 +70,11 @@
       "description": "The goal and its account shares are removed. Your accounts and transactions stay as they are."
     },
     "toasts": {
-      "created": "Goal created",
+      "created": "Цель создана",
       "saved": "Goal saved",
       "paused": "Goal paused",
       "archived": "Goal archived",
-      "deleted": "Goal deleted",
+      "deleted": "Цель удалена",
       "saveError": "Couldn't save the goal",
       "deleteError": "Couldn't delete the goal"
     },
@@ -86,9 +86,9 @@
       "trialEnded": "Your goals trial has ended. Your goals stay visible; upgrade to edit them."
     },
     "details": {
-      "backToList": "Back to goals",
+      "backToList": "Назад к целям",
       "notFound": {
-        "title": "Goal not found",
+        "title": "Цель не найдена",
         "description": "It may have been deleted."
       },
       "loadError": "Couldn't load this goal",
@@ -188,7 +188,7 @@
       "staleData": "Couldn't refresh this goal. Showing the last loaded data."
     },
     "form": {
-      "createTitle": "New goal",
+      "createTitle": "Новая цель",
       "editTitle": "Edit goal",
       "description": "Progress reads your account balances. No money moves.",
       "nameLabel": "Название",
