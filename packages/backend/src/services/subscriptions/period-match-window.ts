@@ -20,7 +20,7 @@ export const matchToleranceDays = (recurrence: RecurrenceInput): number => {
   return Math.max(1, Math.floor((UNIT_INTERVAL_DAYS[step.unit] * step.count) / 2));
 };
 
-const utcDayNumber = ({ date }: { date: Date }): number =>
+export const utcDayNumber = ({ date }: { date: Date }): number =>
   Math.floor(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / DAY_MS);
 
 /**

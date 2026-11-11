@@ -18,7 +18,7 @@ import { SearchIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import type { QuickAddFormState } from '../quick-add-payload';
+import { type QuickAddFormState, buildCandidatePrefill } from '../quick-add-payload';
 import CandidateCard from './candidate-card.vue';
 import CandidateTransactionsDialog from './candidate-transactions-dialog.vue';
 import QuickAddSubscriptionDialog from './quick-add-subscription-dialog.vue';
@@ -97,13 +97,7 @@ const { mutate: doLink, isPending: isLinking } = useMutation({
 // subscription is actually created, so a cancelled dialog leaves the candidate open.
 const handleAccept = ({ candidate }: { candidate: SubscriptionCandidate }) => {
   pendingAcceptCandidateId.value = candidate.id;
-  candidatePrefill.value = {
-    name: candidate.suggestedName,
-    expectedAmount: candidate.averageAmount,
-    expectedCurrencyCode: candidate.currencyCode,
-    frequency: candidate.detectedFrequency,
-    accountId: candidate.accountId ?? null,
-  };
+  candidatePrefill.value = buildCandidatePrefill({ candidate });
   isCreateDialogOpen.value = true;
 };
 

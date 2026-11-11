@@ -1,4 +1,7 @@
-import { SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
+import { type RecurrenceStep, normalizeRecurrence } from '@bt/shared/subscriptions/recurrence';
+import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_LIMITS, SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
+
+import { utcDayNumber } from './period-match-window';
 
 /**
  * Normalize a transaction note for grouping:
@@ -191,6 +194,33 @@ export function mapIntervalToFrequency({ medianDays }: { medianDays: number }): 
   if (medianDays <= 120) return SUBSCRIPTION_FREQUENCIES.quarterly;
   if (medianDays <= 270) return SUBSCRIPTION_FREQUENCIES.semiAnnual;
   return SUBSCRIPTION_FREQUENCIES.annual;
+}
+
+const MIN_CADENCE_INTERVALS = 3;
+const MIN_CADENCE_DAYS = 7;
+
+/**
+ * A fixed day cadence ("every 30 days") behind the payment dates, or null to leave them
+ * to `mapIntervalToFrequency`. Payments sharing a day of the month are a calendar cadence
+ * even when their gaps match: the May, August, November and February quarters are 92 days each.
+ */
+export function detectFixedDayCadence({ dates }: { dates: Date[] }): RecurrenceStep | null {
+  const days = dates.map((date) => utcDayNumber({ date })).toSorted((a, b) => a - b);
+  const intervals = days.slice(1).map((day, i) => day - days[i]!);
+  if (intervals.length < MIN_CADENCE_INTERVALS) return null;
+
+  const unit = SUBSCRIPTION_INTERVAL_UNITS.day;
+  const count = intervals[0]!;
+  if (intervals.some((interval) => interval !== count)) return null;
+  if (count < MIN_CADENCE_DAYS || count > SUBSCRIPTION_INTERVAL_LIMITS.max[unit]) return null;
+  if (dates.every((date) => date.getUTCDate() === dates[0]!.getUTCDate())) return null;
+
+  const { frequency } = normalizeRecurrence({
+    frequency: SUBSCRIPTION_FREQUENCIES.custom,
+    intervalUnit: unit,
+    intervalCount: count,
+  });
+  return frequency === SUBSCRIPTION_FREQUENCIES.custom ? { unit, count } : null;
 }
 
 /**

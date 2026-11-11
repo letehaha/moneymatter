@@ -1,3 +1,4 @@
+import type { SubscriptionCandidate } from '@/api/subscription-candidates';
 import type { createSubscription } from '@/api/subscriptions';
 import { type LogoSelection, toLogoPayload } from '@/components/common/logo-selection';
 import {
@@ -62,3 +63,19 @@ export const buildQuickAddPayload = ({ form, now }: { form: QuickAddFormState; n
     ...(form.logo ? toLogoPayload({ selection: form.logo }) : {}),
   };
 };
+
+/** Seeds the quick-add form from a discovered candidate, its detected custom step included. */
+export const buildCandidatePrefill = ({
+  candidate,
+}: {
+  candidate: SubscriptionCandidate;
+}): Partial<QuickAddFormState> => ({
+  name: candidate.suggestedName,
+  expectedAmount: candidate.averageAmount,
+  expectedCurrencyCode: candidate.currencyCode,
+  frequency: candidate.detectedFrequency,
+  ...(candidate.detectedIntervalUnit && candidate.detectedIntervalCount
+    ? { intervalUnit: candidate.detectedIntervalUnit, intervalCount: candidate.detectedIntervalCount }
+    : {}),
+  accountId: candidate.accountId,
+});
