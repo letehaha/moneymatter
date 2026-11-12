@@ -38,17 +38,16 @@ const FACTS = [
               href={GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={starsLabel ? `MoneyMatter on GitHub, ${starsLabel} stars` : undefined}
               data-track="landing_github_clicked"
               data-track-location="community"
             >
-              <svg aria-hidden="true" class="ic"><use href="#r-code" /></svg>GitHub{
+              <svg aria-hidden="true" class="ic"><use href="#r-code" /></svg><span class="sr-only">MoneyMatter on </span>GitHub{
                 starsLabel && (
                   <span class="gh-count">
                     <svg viewBox="0 0 16 16" aria-hidden="true">
                       <use href="#i-star" />
                     </svg>
-                    {starsLabel}
+                    <span class="sr-only">, </span>{starsLabel}<span class="sr-only"> stars</span>
                   </span>
                 )
               }

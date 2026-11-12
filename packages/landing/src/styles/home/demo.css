@@ -195,7 +195,13 @@
   gap: 17px;
   padding: 24px;
 }
-#shot-crop:is(.live, .pending) .shot,
+/* Not display: none, or Lighthouse checks the loaded mobile image against the desktop width/height attributes. */
+#shot-crop:is(.live, .pending) .shot {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
 #shot-crop:not(.live) .demo-app {
   display: none;
 }

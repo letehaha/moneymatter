@@ -102,7 +102,7 @@
 .prov-tags .tag:is(.live, .paid) {
   border-color: transparent;
   background: color-mix(in srgb, var(--c) 26%, transparent);
-  color: color-mix(in srgb, var(--c) 72%, var(--fg));
+  color: color-mix(in srgb, var(--c) 55%, var(--fg));
 }
 .prov-foot {
   margin-top: auto;

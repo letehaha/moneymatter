@@ -71,7 +71,7 @@
   font-family: var(--mono);
   font-size: 11.5px;
   line-height: 1.5;
-  color: var(--muted);
+  color: color-mix(in srgb, var(--muted) 80%, var(--fg));
 }
 .engine {
   position: relative;
@@ -641,7 +641,7 @@
   line-height: 1.6;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
-  color: var(--plus);
+  color: color-mix(in srgb, var(--plus) 85%, var(--fg));
   background: color-mix(in srgb, var(--plus) 14%, transparent);
 }
 .flow .result-chart {
