@@ -8,20 +8,22 @@ import FeatureCard from '@/components/feature-card.astro';
 import { getFeaturePage } from '@/lib/features';
 import '@/styles/feature-page.css';
 import '@/styles/prose-page.css';
+import { useI18n } from '@/i18n';
 
 export async function getStaticPaths() {
-  const guides = await getCollection('guides');
+  const guides = await getCollection('guides', (guide) => !guide.id.includes('/'));
   return guides.map((guide) => ({ params: { slug: guide.id }, props: { guide } }));
 }
 
-const { guide } = Astro.props;
+const { t, url, locale, localizeGuide } = useI18n(Astro);
+const guide = await localizeGuide({ guide: Astro.props.guide });
 const { title, description, published, updated, related, docs } = guide.data;
 const { Content } = await render(guide);
 
 const relatedPages = related.map((href) => getFeaturePage({ href }));
 
 const lastChange = updated ?? published;
-const pageUrl = new URL(`/guides/${guide.id}`, Astro.site).href;
+const pageUrl = new URL(url({ href: `/guides/${Astro.props.guide.id}` }), Astro.site).href;
 
 const structuredData = {
   '@context': 'https://schema.org',
@@ -34,11 +36,12 @@ const structuredData = {
       datePublished: published.toISOString(),
       dateModified: lastChange.toISOString(),
       author: { '@type': 'Person', name: 'letehaha', url: 'https://github.com/letehaha' },
+      ...(locale !== 'en' && { inLanguage: locale }),
     },
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Guides', item: new URL('/guides', Astro.site).href },
+        { '@type': 'ListItem', position: 1, name: t('Guides'), item: new URL(url({ href: '/guides' }), Astro.site).href },
         { '@type': 'ListItem', position: 2, name: title, item: pageUrl },
       ],
     },
@@ -54,17 +57,17 @@ const structuredData = {
     <div class="wrap">
       <div class="prose-page">
         <header class="text-center">
-          <nav aria-label="Breadcrumb" class="fp-crumbs">
+          <nav aria-label={t('Breadcrumb')} class="fp-crumbs">
             <ol>
-              <li><a href="/guides">Guides</a></li>
+              <li><a href={url({ href: '/guides' })}>{t('Guides')}</a></li>
               <li aria-current="page">{title}</li>
             </ol>
           </nav>
           <h1>{title}</h1>
           <p class="hero-note">
-            {updated ? 'Updated' : 'Published'}{' '}
+            {updated ? t('Updated') : t('Published')}{' '}
             <time datetime={lastChange.toISOString()}>
-              {lastChange.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}
+              {lastChange.toLocaleDateString(locale === 'en' ? 'en-GB' : locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}
             </time>
           </p>
         </header>
@@ -74,7 +77,7 @@ const structuredData = {
         </article>
 
         <p class="text-muted-foreground mt-12 text-sm">
-          Step-by-step docs:{' '}
+          {t('Step-by-step docs:')}{' '}
           {
             docs.map((doc, index) => (
               <>
@@ -91,7 +94,7 @@ const structuredData = {
 
     <section class="sec sec-soft">
       <div class="wrap">
-        <h2>Features used in this guide</h2>
+        <h2>{t('Features used in this guide')}</h2>
         <ul class="fp-cards">
           {
             relatedPages.map((page) => (

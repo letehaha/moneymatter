@@ -6,24 +6,31 @@ import CtaSection from '@/components/cta-section.astro';
 import LandingFooter from '@/components/landing-footer.astro';
 import LucideIcon from '@/components/lucide-icon.astro';
 import { ALTERNATIVE_PAGES } from '@/lib/alternatives';
+import { useI18n } from '@/i18n';
+
+const { t, url } = useI18n(Astro);
 ---
 
 <BaseLayout
-  title="Compare MoneyMatter With Other Finance Apps | MoneyMatter"
-  description="How MoneyMatter compares with Wallet by BudgetBakers, YNAB, Microsoft Money and Monarch Money: who should switch, who should stay, and how import works."
+  title={t('Compare MoneyMatter With Other Finance Apps | MoneyMatter')}
+  description={t(
+    'How MoneyMatter compares with Wallet by BudgetBakers, YNAB, Microsoft Money and Monarch Money: who should switch, who should stay, and how import works.',
+  )}
 >
   <LandingHeader />
   <main id="main">
     <section class="sec alt-s alt-hero">
       <div class="wrap">
-        <p class="eyebrow">Compare</p>
+        <p class="eyebrow">{t('Compare')}</p>
         <div class="alt-hero-grid">
           <div>
-            <h1>MoneyMatter compared with other finance apps</h1>
+            <h1>{t('MoneyMatter compared with other finance apps')}</h1>
             <p class="alt-hero-sub">
-              MoneyMatter is an open-source personal finance tracker: try the cloud free for 40 days with no card, or
-              host it yourself for free. Each page below compares it with one app, shows how your history moves over,
-              and names the cases where the other app is the better fit.
+              {
+                t(
+                  'MoneyMatter is an open-source personal finance tracker: try the cloud free for 40 days with no card, or host it yourself for free. Each page below compares it with one app, shows how your history moves over, and names the cases where the other app is the better fit.',
+                )
+              }
             </p>
           </div>
         </div>
@@ -35,21 +42,23 @@ import { ALTERNATIVE_PAGES } from '@/lib/alternatives';
         <div class="alt-others">
           {
             ALTERNATIVE_PAGES.map((page) => (
-              <a class="plate alt-other" href={page.href}>
-                <h2>MoneyMatter as a {page.label}</h2>
-                <span>{page.verdict}</span>
+              <a class="plate alt-other" href={url({ href: page.href })}>
+                <h2>{t(`MoneyMatter as a ${page.label}`)}</h2>
+                <span>{t(page.verdict)}</span>
                 <span class="alt-imp">
-                  <b>Import:</b> {page.importer}
+                  <b>{t('Import:')}</b> {t(page.importer)}
                 </span>
                 <em>
-                  Read the comparison
+                  {t('Read the comparison')}
                   <LucideIcon name="arrow-right" class="ic" />
                 </em>
               </a>
             ))
           }
         </div>
-        <p class="alt-note">Each page lists the sources for what it says about the other app and the date they were checked.</p>
+        <p class="alt-note">
+          {t('Each page lists the sources for what it says about the other app and the date they were checked.')}
+        </p>
       </div>
     </section>
 

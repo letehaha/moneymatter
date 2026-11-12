@@ -6,6 +6,8 @@
  * The feature-detect ensures this is a no-op where unsupported.
  */
 
+import { rememberLocale } from '@/i18n/client';
+
 import { GITHUB_URL } from './github-api';
 
 interface WebMcpTool {
@@ -37,6 +39,7 @@ export function initWebMcp(): void {
         description: 'Navigate the user to the MoneyMatter sign-up page so they can create a free account.',
         inputSchema: EMPTY_OBJECT_SCHEMA,
         execute: () => {
+          rememberLocale();
           window.location.href = '/sign-up';
           return { navigatedTo: '/sign-up' };
         },
@@ -53,7 +56,7 @@ export function initWebMcp(): void {
       {
         name: 'start_demo',
         description:
-          'Start the no-signup demo with sample data. Works on any landing page that shows a "View live demo" button; returns an error otherwise.',
+          'Start the no-signup demo with sample data. Works on any landing page that has a demo start button; returns an error otherwise.',
         inputSchema: EMPTY_OBJECT_SCHEMA,
         execute: () => {
           const button = document.querySelector<HTMLButtonElement>('[data-demo-start]');

@@ -6,7 +6,7 @@
     :aria-busy="state === 'loading'"
   >
     <div class="gha-head">
-      <h3>Repository activity</h3>
+      <h3>{{ tr({ text: 'Repository activity' }) }}</h3>
       <a
         :href="`${GITHUB_URL}/commits/main`"
         target="_blank"
@@ -14,7 +14,7 @@
         data-track="landing_github_clicked"
         data-track-location="community"
       >
-        Commit history <span aria-hidden="true">↗</span>
+        {{ ' ' + tr({ text: 'Commit history' }) }} <span aria-hidden="true">↗</span>
       </a>
     </div>
     <div class="gha-body">
@@ -28,21 +28,21 @@
           />
         </div>
         <div class="gha-axis" aria-hidden="true">
-          <span class="gha-axis-long">{{ weeks.length - 1 }} weeks ago</span>
-          <span class="gha-axis-short">{{ SHORT_WEEKS - 1 }} weeks ago</span>
-          <span>This week</span>
+          <span class="gha-axis-long">{{ relativeTime.format(1 - weeks.length, 'week') }}</span>
+          <span class="gha-axis-short">{{ relativeTime.format(1 - SHORT_WEEKS, 'week') }}</span>
+          <span>{{ tr({ text: 'This week' }) }}</span>
         </div>
       </div>
       <dl class="gha-facts">
         <div>
-          <dt>Commits, last 30 days</dt>
+          <dt>{{ tr({ text: 'Commits, last 30 days' }) }}</dt>
           <dd>
             <template v-if="activity">{{ activity.commitsLast30Days }}</template>
             <span v-else class="gha-ph" />
           </dd>
         </div>
         <div>
-          <dt>Last push</dt>
+          <dt>{{ tr({ text: 'Last push' }) }}</dt>
           <dd>
             <time v-if="activity" :datetime="activity.lastUpdated" :title="fullDate({ iso: activity.lastUpdated })">
               {{ relativeDate({ iso: activity.lastUpdated }) }}
@@ -65,7 +65,11 @@ const SHORT_WEEKS = 8;
 const MAX_ATTEMPTS = 4;
 const RETRY_DELAY_MS = 2000;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const relativeTime = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+const props = defineProps<{ dict?: Record<string, string>; locale?: string }>();
+const tr = ({ text, vars = {} }: { text: string; vars?: Record<string, number | string> }) =>
+  (props.dict?.[text] ?? text).replace(/\{(\w+)\}/g, (match, name) => String(vars[name] ?? match));
+const relativeTime = new Intl.RelativeTimeFormat(props.locale ?? 'en', { numeric: 'auto' });
 
 const activity = ref<GitHubActivityData | null>(null);
 const state = ref<'loading' | 'ready' | 'failed'>('loading');
@@ -73,9 +77,9 @@ const state = ref<'loading' | 'ready' | 'failed'>('loading');
 const weeks = computed(() => activity.value?.recentWeeksActivity ?? Array<number>(SKELETON_WEEKS).fill(0));
 
 const summary = computed(() => {
-  if (!activity.value) return 'Loading repository activity';
+  if (!activity.value) return tr({ text: 'Loading repository activity' });
   const total = weeks.value.reduce((sum, commits) => sum + commits, 0);
-  return `${total} commits in the last ${weeks.value.length} weeks`;
+  return tr({ text: '{total} commits in the last {weeks} weeks', vars: { total, weeks: weeks.value.length } });
 });
 
 function level({ commits }: { commits: number }): number {
@@ -88,11 +92,14 @@ function level({ commits }: { commits: number }): number {
 
 function weekTitle({ index, commits }: { index: number; commits: number }): string | undefined {
   if (!activity.value) return undefined;
-  return `${commits} commits ${relativeTime.format(index + 1 - weeks.value.length, 'week')}`;
+  return tr({
+    text: '{commits} commits {when}',
+    vars: { commits, when: relativeTime.format(index + 1 - weeks.value.length, 'week') },
+  });
 }
 
 function fullDate({ iso }: { iso: string }): string {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return new Date(iso).toLocaleDateString(props.locale ?? 'en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function relativeDate({ iso }: { iso: string }): string {

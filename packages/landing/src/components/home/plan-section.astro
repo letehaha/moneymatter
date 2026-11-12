@@ -3,6 +3,9 @@ import { Image } from 'astro:assets';
 import LucideIcon from '@/components/lucide-icon.astro';
 import { getFeaturePage } from '@/lib/features';
 import '@/styles/home/plan.css';
+import { useI18n } from '@/i18n';
+
+const { t, url } = useI18n(Astro);
 
 const SHOTS = import.meta.glob<ImageMetadata>('/src/assets/home/plan-*.webp', { eager: true, import: 'default' });
 const shot = ({ name }: { name: string }) => {
@@ -64,31 +67,31 @@ const IMG = {
 
 <section class="sec" id="plan">
   <div class="wrap">
-    <p class="eyebrow">Plan and understand</p>
-    <h2>See where it goes, then decide where it should</h2>
+    <p class="eyebrow">{t('Plan and understand')}</p>
+    <h2>{t('See where it goes, then decide where it should')}</h2>
     <div class="plan2">
-      <div class="ptabs" role="group" aria-label="Planning tools">
+      <div class="ptabs" role="group" aria-label={t('Planning tools')}>
         {
-          TABS.map((t, i) => (
+          TABS.map((tab, i) => (
             <button
               type="button"
               class="ptab"
-              data-tab={t.id}
-              aria-controls={`plan-panel-${t.id}`}
+              data-tab={tab.id}
+              aria-controls={`plan-panel-${tab.id}`}
               aria-pressed={String(i === 0)}
             >
               <span class="itile">
-                {t.lucide ? (
-                  <LucideIcon name={t.lucide} class="ic" />
+                {tab.lucide ? (
+                  <LucideIcon name={tab.lucide} class="ic" />
                 ) : (
                   <svg class="ic" aria-hidden="true">
-                    <use href={`#${t.icon}`} />
+                    <use href={`#${tab.icon}`} />
                   </svg>
                 )}
               </span>
               <span class="ptab-text">
-                <strong>{t.title}</strong>
-                <span>{t.text}</span>
+                <strong>{t(tab.title)}</strong>
+                <span>{t(tab.text)}</span>
               </span>
             </button>
           ))
@@ -96,22 +99,22 @@ const IMG = {
       </div>
       <div class="plate pstage">
         {
-          TABS.map((t, i) => (
+          TABS.map((tab, i) => (
             <a
-              id={`plan-panel-${t.id}`}
-              data-panel={t.id}
-              href={t.page.href}
+              id={`plan-panel-${tab.id}`}
+              data-panel={tab.id}
+              href={url({ href: tab.page.href })}
               aria-hidden={i === 0 ? undefined : 'true'}
               inert={i !== 0}
             >
-              <span class="sr-only">{t.page.label}</span>
-              {SHOTS[`/src/assets/home/plan-${t.id}-light.webp`] ? (
+              <span class="sr-only">{t(tab.page.label)}</span>
+              {SHOTS[`/src/assets/home/plan-${tab.id}-light.webp`] ? (
                 <>
-                  <Image class="shot-light" src={shot({ name: `${t.id}-light` })} alt={t.alt} {...IMG} />
-                  <Image class="shot-dark" src={shot({ name: `${t.id}-dark` })} alt={t.alt} {...IMG} />
+                  <Image class="shot-light" src={shot({ name: `${tab.id}-light` })} alt={t(tab.alt)} {...IMG} />
+                  <Image class="shot-dark" src={shot({ name: `${tab.id}-dark` })} alt={t(tab.alt)} {...IMG} />
                 </>
               ) : (
-                <Image src={shot({ name: `${t.id}-dark` })} alt={t.alt} {...IMG} />
+                <Image src={shot({ name: `${tab.id}-dark` })} alt={t(tab.alt)} {...IMG} />
               )}
             </a>
           ))

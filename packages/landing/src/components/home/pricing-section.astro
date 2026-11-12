@@ -1,6 +1,9 @@
 ---
 import '@/styles/home/pricing.css';
 import { GITHUB_URL } from '@/lib/github-api';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n(Astro);
 
 const plans: {
   name: string;
@@ -63,29 +66,29 @@ const plans: {
 
 <section class="sec sec-soft" id="pricing">
   <div class="wrap">
-    <p class="eyebrow">Pricing</p>
-    <h2>Simple pricing, with 40 days to decide</h2>
-    <p class="lede">Try every cloud feature for 40 days, no card needed.</p>
+    <p class="eyebrow">{t('Pricing')}</p>
+    <h2>{t('Simple pricing, with 40 days to decide')}</h2>
+    <p class="lede">{t('Try every cloud feature for 40 days, no card needed.')}</p>
     <div class="tiers">
       {
         plans.map((plan) => (
           <article class:list={['plate tier', { 'tier-main': plan.highlight, 'tier-soon': plan.planned }]}>
             <div class="tier-top">
-              <h3>{plan.name}</h3>
-              {plan.tag && <span class="tier-tag">{plan.tag}</span>}
-              {plan.planned && <span class="tag">Planned</span>}
+              <h3>{t(plan.name)}</h3>
+              {plan.tag && <span class="tier-tag">{t(plan.tag)}</span>}
+              {plan.planned && <span class="tag">{t('Planned')}</span>}
             </div>
-            <p class="tier-desc">{plan.tagline}</p>
+            <p class="tier-desc">{t(plan.tagline)}</p>
             <div class="tier-price">
               <strong>${plan.yearly}</strong>
               <span>
-                /year<em class="save">Save ${plan.monthly * 12 - plan.yearly}/yr</em>
-                <small>or ${plan.monthly}/month</small>
+                {t('/year')}<em class="save">{t(`Save $${plan.monthly * 12 - plan.yearly}/yr`)}</em>
+                <small>{t(`or $${plan.monthly}/month`)}</small>
               </span>
             </div>
             {plan.planned ? (
               <button type="button" class="btn btn-quiet" id="premium-early-access">
-                Get early access
+                {t('Get early access')}
               </button>
             ) : (
               <a
@@ -94,7 +97,7 @@ const plans: {
                 data-track="landing_cta_clicked"
                 data-track-location="pricing"
               >
-                Try for free
+                {t('Try for free')}
               </a>
             )}
             <ul class="tier-list">
@@ -103,7 +106,7 @@ const plans: {
                   <svg aria-hidden="true" class="ic">
                     <use href="#i-check" />
                   </svg>
-                  {feature}
+                  {t(feature)}
                 </li>
               ))}
             </ul>
@@ -114,8 +117,8 @@ const plans: {
     <div class="plate strip selfhost">
       <span class="itile"><svg aria-hidden="true" class="ic"><use href="#r-server" /></svg></span>
       <div>
-        <strong>Self-hosting is free, forever</strong>
-        <span>The same app on your own server, with Docker Compose.</span>
+        <strong>{t('Self-hosting is free, forever')}</strong>
+        <span>{t('The same app on your own server, with Docker Compose.')}</span>
       </div>
       <a
         href={`${GITHUB_URL}/tree/main/self-hosting`}
@@ -123,36 +126,42 @@ const plans: {
         rel="noopener noreferrer"
         data-track="landing_github_clicked"
         data-track-location="self_host"
-        >Self-host guide<svg aria-hidden="true" class="ic"><use href="#f-to" /></svg></a
+        >{t('Self-host guide')}<svg aria-hidden="true" class="ic"><use href="#f-to" /></svg></a
       >
     </div>
-    <p class="plans-note">Prices in USD. Taxes are calculated at checkout. Cancel anytime.</p>
+    <p class="plans-note">{t('Prices in USD. Taxes are calculated at checkout. Cancel anytime.')}</p>
   </div>
 
   <dialog id="premium-early-access-dialog" class="ea-dialog" aria-labelledby="premium-early-access-title" closedby="any">
     <form method="dialog">
-      <button class="ea-close" aria-label="Close">&times;</button>
+      <button class="ea-close" aria-label={t('Close')}>&times;</button>
     </form>
     <form id="premium-early-access-form">
-      <h3 id="premium-early-access-title">Premium is coming</h3>
-      <p>
-        We'll open Premium once enough people want it. Leave your email and we'll let you know when it's available, or
-        just count your vote.
-      </p>
-      <input name="email" type="email" required aria-label="Email" autocomplete="email" placeholder="you@example.com" />
+      <h3 id="premium-early-access-title">{t('Premium is coming')}</h3>
+      <p
+        set:html={t(
+          "We'll open Premium once enough people want it. Leave your email and we'll let you know when it's available, or just count your vote.",
+        )}
+      />
+      <input name="email" type="email" required aria-label={t('Email')} autocomplete="email" placeholder="you@example.com" />
       <div class="ea-actions">
-        <button type="submit" value="email" class="btn btn-primary">Notify me</button>
-        <button type="submit" value="vote" formnovalidate class="btn btn-quiet">Just count my vote</button>
+        <button type="submit" value="email" class="btn btn-primary">{t('Notify me')}</button>
+        <button type="submit" value="vote" formnovalidate class="btn btn-quiet">{t('Just count my vote')}</button>
       </div>
-      <p id="premium-early-access-error" role="alert" hidden>
-        Couldn't send that. Please email <a href="mailto:support@moneymatter.app">support@moneymatter.app</a> instead.
-      </p>
+      <p
+        id="premium-early-access-error"
+        role="alert"
+        hidden
+        set:html={t(`Couldn't send that. Please email <a href="mailto:{email}">{email}</a> instead.`, {
+          email: 'support@moneymatter.app',
+        })}
+      />
     </form>
     <div id="premium-early-access-thanks" hidden>
-      <h3 tabindex="-1">Thanks, your vote is counted</h3>
-      <p id="premium-early-access-thanks-email" hidden>We'll email you when Premium opens.</p>
+      <h3 tabindex="-1">{t('Thanks, your vote is counted')}</h3>
+      <p id="premium-early-access-thanks-email" hidden set:html={t("We'll email you when Premium opens.")} />
       <form method="dialog" class="ea-actions">
-        <button class="btn btn-quiet">Close</button>
+        <button class="btn btn-quiet">{t('Close')}</button>
       </form>
     </div>
   </dialog>

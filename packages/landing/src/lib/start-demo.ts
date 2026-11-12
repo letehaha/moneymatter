@@ -1,3 +1,5 @@
+import { DEMO_STRINGS, tc } from '@/i18n/client';
+
 import { config } from './config';
 import type { DemoStartLocation } from './posthog';
 import { trackAnalyticsEvent } from './posthog';
@@ -30,7 +32,7 @@ export async function startDemo({
   } catch (error) {
     console.error('Failed to start demo:', error);
     trackAnalyticsEvent({ event: 'demo_setup_failed', properties: { reason: 'network' } });
-    onError({ message: "Couldn't reach the server. Please check your connection and try again." });
+    onError({ message: tc({ text: DEMO_STRINGS.network }) });
     return;
   }
 
@@ -42,9 +44,7 @@ export async function startDemo({
       properties: { reason: isRateLimited ? 'rate_limited' : 'server_error', status: response.status },
     });
     onError({
-      message: isRateLimited
-        ? 'Too many demo sessions from this network. Please try again in a few minutes.'
-        : "Couldn't start the demo. Please try again.",
+      message: isRateLimited ? tc({ text: DEMO_STRINGS.rateLimited }) : tc({ text: DEMO_STRINGS.failed }),
     });
     return;
   }

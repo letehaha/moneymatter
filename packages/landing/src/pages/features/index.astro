@@ -6,23 +6,27 @@ import CtaSection from '@/components/cta-section.astro';
 import LandingFooter from '@/components/landing-footer.astro';
 import FeatureCard from '@/components/feature-card.astro';
 import { FEATURE_GROUPS } from '@/lib/features';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n(Astro);
 ---
 
 <BaseLayout
-  title="Personal Finance App Features | MoneyMatter"
-  description="Personal finance app features in MoneyMatter: bank sync, file import, budgeting, goals, investment and net worth tracking, FIRE planning and self-hosting."
+  title={t('Personal Finance App Features | MoneyMatter')}
+  description={t(
+    'Personal finance app features in MoneyMatter: bank sync, file import, budgeting, goals, investment and net worth tracking, FIRE planning and self-hosting.',
+  )}
 >
   <LandingHeader />
   <main id="main">
     <section class="sec fp-hero">
       <div class="wrap">
-        <p class="eyebrow">Features</p>
-        <h1>Personal finance app features: everything MoneyMatter does</h1>
+        <p class="eyebrow">{t('Features')}</p>
+        <h1>{t('Personal finance app features: everything MoneyMatter does')}</h1>
         <p class="fp-intro">
-          Browse the personal finance app features in MoneyMatter, an open-source tracker for your budget, accounts and
-          investments. Try the cloud free for 40 days with no card, or host it yourself for free. Cloud plans start at $30 a
-          year, and bank sync and the FIRE planner are on the Plus plan. Each page below shows how one feature works and what
-          its limits are.
+          {t(
+            'Browse the personal finance app features in MoneyMatter, an open-source tracker for your budget, accounts and investments. Try the cloud free for 40 days with no card, or host it yourself for free. Cloud plans start at $30 a year, and bank sync and the FIRE planner are on the Plus plan. Each page below shows how one feature works and what its limits are.',
+          )}
         </p>
       </div>
     </section>
@@ -32,7 +36,7 @@ import { FEATURE_GROUPS } from '@/lib/features';
         {
           FEATURE_GROUPS.map((group) => (
             <div class="fp-group">
-              <h2>{group.title}</h2>
+              <h2>{t(group.title)}</h2>
               <ul class="fp-cards">
                 {group.pages.map((page) => (
                   <li>

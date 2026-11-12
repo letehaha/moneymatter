@@ -1,5 +1,8 @@
 ---
 import '@/styles/home/ai.css';
+import { useI18n } from '@/i18n';
+
+const { t, clientStrings } = useI18n(Astro);
 
 const TXNS = [
   { name: 'Green Market', category: 'Groceries', color: '#3aa655', date: 'Oct 02', amount: '−$38.40' },
@@ -19,106 +22,109 @@ const IMPORTED = {
 <section class="sec sec-soft" id="ai">
   <span id="mcp-demo"></span>
   <div class="wrap">
-    <p class="eyebrow">AI assistants</p>
-    <h2>Ask your assistant about your money</h2>
-    <p class="lede">Connect Claude, ChatGPT, or any MCP-compatible AI to your financial data. Hand it a statement, a spreadsheet, or a receipt photo and it books the transactions. Ask questions the UI can't answer.</p>
+    <p class="eyebrow">{t('AI assistants')}</p>
+    <h2>{t('Ask your assistant about your money')}</h2>
+    <p class="lede" set:html={t("Connect Claude, ChatGPT, or any MCP-compatible AI to your financial data. Hand it a statement, a spreadsheet, or a receipt photo and it books the transactions. Ask questions the UI can't answer.")} />
     <div class="plate aidemo" id="ai-demo">
-      <div class="asst-bar"><span class="itile sm"><svg aria-hidden="true" class="ic"><use href="#r-spark"/></svg></span><strong>Your assistant</strong><span class="tag live"><i></i>MoneyMatter connected</span></div>
+      <div class="asst-bar"><span class="itile sm"><svg aria-hidden="true" class="ic"><use href="#r-spark"/></svg></span><strong>{t('Your assistant')}</strong><span class="tag live"><i></i>{t('MoneyMatter connected')}</span></div>
       <div class="ai-grid">
-        <div class="ai-nav" role="group" aria-label="Ways to use an assistant">
-          <p class="ai-group">Hand it a file</p>
-          <button type="button" class="ai-tab" data-ai-tab="pdf" aria-controls="ai-panel-pdf" aria-pressed="true"><svg aria-hidden="true" class="ic"><use href="#r-doc"/></svg>Bank statement PDF</button>
-          <button type="button" class="ai-tab" data-ai-tab="csv" aria-controls="ai-panel-csv" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-sheet"/></svg>CSV or spreadsheet</button>
-          <button type="button" class="ai-tab" data-ai-tab="receipt" aria-controls="ai-panel-receipt" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-receipt"/></svg>Receipt photo</button>
-          <button type="button" class="ai-tab" data-ai-tab="screenshot" aria-controls="ai-panel-screenshot" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-phone"/></svg>Screenshot</button>
-          <p class="ai-group">Ask a question</p>
-          <button type="button" class="ai-tab" data-ai-tab="subscriptions" aria-controls="ai-panel-subscriptions" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-pct"/></svg>Price hikes?</button>
-          <button type="button" class="ai-tab" data-ai-tab="categories" aria-controls="ai-panel-categories" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-pie"/></svg>By category</button>
-          <button type="button" class="ai-tab" data-ai-tab="budget" aria-controls="ai-panel-budget" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-target"/></svg>Over budget?</button>
-          <p class="ai-group">Automate</p>
-          <button type="button" class="ai-tab" data-ai-tab="automations" aria-controls="ai-panel-automations" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-clock"/></svg>On a schedule</button>
+        <div class="ai-nav" role="group" aria-label={t('Ways to use an assistant')}>
+          <p class="ai-group">{t('Hand it a file')}</p>
+          <button type="button" class="ai-tab" data-ai-tab="pdf" aria-controls="ai-panel-pdf" aria-pressed="true"><svg aria-hidden="true" class="ic"><use href="#r-doc"/></svg>{t('Bank statement PDF')}</button>
+          <button type="button" class="ai-tab" data-ai-tab="csv" aria-controls="ai-panel-csv" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-sheet"/></svg>{t('CSV or spreadsheet')}</button>
+          <button type="button" class="ai-tab" data-ai-tab="receipt" aria-controls="ai-panel-receipt" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-receipt"/></svg>{t('Receipt photo')}</button>
+          <button type="button" class="ai-tab" data-ai-tab="screenshot" aria-controls="ai-panel-screenshot" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-phone"/></svg>{t('Screenshot')}</button>
+          <p class="ai-group">{t('Ask a question')}</p>
+          <button type="button" class="ai-tab" data-ai-tab="subscriptions" aria-controls="ai-panel-subscriptions" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-pct"/></svg>{t('Price hikes?')}</button>
+          <button type="button" class="ai-tab" data-ai-tab="categories" aria-controls="ai-panel-categories" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-pie"/></svg>{t('By category')}</button>
+          <button type="button" class="ai-tab" data-ai-tab="budget" aria-controls="ai-panel-budget" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-target"/></svg>{t('Over budget?')}</button>
+          <p class="ai-group">{t('Automate')}</p>
+          <button type="button" class="ai-tab" data-ai-tab="automations" aria-controls="ai-panel-automations" aria-pressed="false"><svg aria-hidden="true" class="ic"><use href="#r-clock"/></svg>{t('On a schedule')}</button>
         </div>
         <div class="ai-stage">
           <div class="ai-panel" id="ai-panel-pdf" data-ai="pdf">
-            <div class="bub bub-user" data-anim><span class="ai-file"><svg aria-hidden="true" class="ic"><use href="#r-doc"/></svg>statement-oct.pdf</span>Add every transaction from this statement to my checking account.</div>
+            <div class="bub bub-user" data-anim><span class="ai-file"><svg aria-hidden="true" class="ic"><use href="#r-doc"/></svg>statement-oct.pdf</span>{t('Add every transaction from this statement to my checking account.')}</div>
             <div class="ai-io">
-              <div class="ai-src" data-anim style="--d:150ms"><div class="doc"><div class="doc-head"><div class="doc-bank"><i>N</i><div><b>Northside Bank</b><span>Account statement</span></div></div><span>Acct ····4821<br>Oct 1–31, 2026</span></div><table><thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead><tbody><tr><td>Oct 02</td><td>GRN MKT 88213</td><td>−$38.40</td></tr><tr><td>Oct 03</td><td>CITY FUEL 0291</td><td>−$52.10</td></tr><tr><td>Oct 05</td><td>STREAMBOX.COM</td><td>−$12.99</td></tr><tr><td>Oct 06</td><td>ACME PAYROLL OCT</td><td class="in">+$2,600.00</td></tr><tr><td>Oct 08</td><td>CORNER COFFEE #0412</td><td>−$24.50</td></tr><tr><td>Oct 09</td><td>GRN MKT 88213</td><td>−$61.20</td></tr></tbody></table><div class="doc-foot"><span>Closing balance</span><span>$3,182.41</span></div></div></div>
+              <div class="ai-src" data-anim style="--d:150ms"><div class="doc"><div class="doc-head"><div class="doc-bank"><i>N</i><div><b>Northside Bank</b><span>{t('Account statement')}</span></div></div><span>{t('Acct ····4821')}<br>{t('Oct 1–31, 2026')}</span></div><table><thead><tr><th>{t('Date')}</th><th>{t('Description')}</th><th>{t('Amount')}</th></tr></thead><tbody><tr><td>{t('Oct 02')}</td><td>GRN MKT 88213</td><td>−$38.40</td></tr><tr><td>{t('Oct 03')}</td><td>CITY FUEL 0291</td><td>−$52.10</td></tr><tr><td>{t('Oct 05')}</td><td>STREAMBOX.COM</td><td>−$12.99</td></tr><tr><td>{t('Oct 06')}</td><td>ACME PAYROLL OCT</td><td class="in">+$2,600.00</td></tr><tr><td>{t('Oct 08')}</td><td>CORNER COFFEE #0412</td><td>−$24.50</td></tr><tr><td>{t('Oct 09')}</td><td>GRN MKT 88213</td><td>−$61.20</td></tr></tbody></table><div class="doc-foot"><span>{t('Closing balance')}</span><span>$3,182.41</span></div></div></div>
               <svg aria-hidden="true" class="ic ai-arrow" data-anim style="--d:300ms"><use href="#f-to"/></svg>
-              <div class="ai-out" data-anim style="--d:350ms"><div class="ai-out-head"><span class="ai-tool"><i></i>create_transaction</span><span>MoneyMatter</span></div><ul class="ai-list">{IMPORTED.pdf.map(({ name, category, color, date, amount, income }, i) => <li data-anim style={`--d:${450 + 160 * i}ms`}><div class="ai-txn"><b>{name}</b><span class="ai-meta"><span class="cat" style={`--c:${color}`}>{category}</span>{date}</span></div><span class={income ? 'amt plus' : 'amt'}>{amount}</span></li>)}</ul></div>
+              <div class="ai-out" data-anim style="--d:350ms"><div class="ai-out-head"><span class="ai-tool"><i></i>create_transaction</span><span>MoneyMatter</span></div><ul class="ai-list">{IMPORTED.pdf.map(({ name, category, color, date, amount, income }, i) => <li data-anim style={`--d:${450 + 160 * i}ms`}><div class="ai-txn"><b>{name}</b><span class="ai-meta"><span class="cat" style={`--c:${color}`}>{t(category)}</span>{t(date)}</span></div><span class={income ? 'amt plus' : 'amt'}>{amount}</span></li>)}</ul></div>
             </div>
-            <div class="bub bub-bot" data-anim style="--d:1660ms">Imported 6 transactions to Checking: <b>$2,600.00</b> in income and <b>$189.19</b> in expenses.</div>
+            <div class="bub bub-bot" data-anim style="--d:1660ms" set:html={t('Imported 6 transactions to Checking: <b>$2,600.00</b> in income and <b>$189.19</b> in expenses.')} />
           </div>
           <div class="ai-panel" id="ai-panel-csv" data-ai="csv" inert>
-            <div class="bub bub-user" data-anim><span class="ai-file"><svg aria-hidden="true" class="ic"><use href="#r-sheet"/></svg>export.csv</span>Here's an export from my old app. Import all of it to checking.</div>
+            <div class="bub bub-user" data-anim><span class="ai-file"><svg aria-hidden="true" class="ic"><use href="#r-sheet"/></svg>export.csv</span><Fragment set:html={t("Here's an export from my old app. Import all of it to checking.")} /></div>
             <div class="ai-io">
-              <div class="ai-src" data-anim style="--d:150ms"><div class="csv"><div class="csv-name"><i></i>export.csv</div><div class="csv-scroll"><table><thead><tr><th>date</th><th>payee</th><th>category</th><th>amount</th></tr></thead><tbody><tr><td>Oct 02</td><td>Green Market</td><td>Groceries</td><td>-38.40</td></tr><tr><td>Oct 03</td><td>City Fuel</td><td>Transport</td><td>-52.10</td></tr><tr><td>Oct 06</td><td>Acme Inc</td><td>Salary</td><td class="in">2600.00</td></tr><tr><td>Oct 08</td><td>Corner Coffee</td><td>Eating out</td><td>-24.50</td></tr><tr><td>Oct 09</td><td>Green Market</td><td>Groceries</td><td>-61.20</td></tr></tbody></table></div></div></div>
+              <div class="ai-src" data-anim style="--d:150ms"><div class="csv"><div class="csv-name"><i></i>export.csv</div><div class="csv-scroll"><table><thead><tr><th>{t('date')}</th><th>{t('payee')}</th><th>{t('category')}</th><th>{t('amount')}</th></tr></thead><tbody><tr><td>{t('Oct 02')}</td><td>Green Market</td><td>{t('Groceries')}</td><td>-38.40</td></tr><tr><td>{t('Oct 03')}</td><td>City Fuel</td><td>{t('Transport')}</td><td>-52.10</td></tr><tr><td>{t('Oct 06')}</td><td>Acme Inc</td><td>{t('Salary')}</td><td class="in">2600.00</td></tr><tr><td>{t('Oct 08')}</td><td>Corner Coffee</td><td>{t('Eating out')}</td><td>-24.50</td></tr><tr><td>{t('Oct 09')}</td><td>Green Market</td><td>{t('Groceries')}</td><td>-61.20</td></tr></tbody></table></div></div></div>
               <svg aria-hidden="true" class="ic ai-arrow" data-anim style="--d:300ms"><use href="#f-to"/></svg>
-              <div class="ai-out" data-anim style="--d:350ms"><div class="ai-out-head"><span class="ai-tool"><i></i>create_transaction</span><span>MoneyMatter</span></div><ul class="ai-list">{IMPORTED.csv.map(({ name, category, color, date, amount, income }, i) => <li data-anim style={`--d:${450 + 160 * i}ms`}><div class="ai-txn"><b>{name}</b><span class="ai-meta"><span class="cat" style={`--c:${color}`}>{category}</span>{date}</span></div><span class={income ? 'amt plus' : 'amt'}>{amount}</span></li>)}</ul></div>
+              <div class="ai-out" data-anim style="--d:350ms"><div class="ai-out-head"><span class="ai-tool"><i></i>create_transaction</span><span>MoneyMatter</span></div><ul class="ai-list">{IMPORTED.csv.map(({ name, category, color, date, amount, income }, i) => <li data-anim style={`--d:${450 + 160 * i}ms`}><div class="ai-txn"><b>{name}</b><span class="ai-meta"><span class="cat" style={`--c:${color}`}>{t(category)}</span>{t(date)}</span></div><span class={income ? 'amt plus' : 'amt'}>{amount}</span></li>)}</ul></div>
             </div>
-            <div class="bub bub-bot" data-anim style="--d:1500ms">Imported all 5 rows to Checking, each matched to a category and payee.</div>
+            <div class="bub bub-bot" data-anim style="--d:1500ms">{t('Imported all 5 rows to Checking, each matched to a category and payee.')}</div>
           </div>
           <div class="ai-panel" id="ai-panel-receipt" data-ai="receipt" inert>
-            <div class="bub bub-user" data-anim><span class="ai-file"><svg aria-hidden="true" class="ic"><use href="#r-receipt"/></svg>receipt.jpg</span>Add this receipt to my expenses.</div>
+            <div class="bub bub-user" data-anim><span class="ai-file"><svg aria-hidden="true" class="ic"><use href="#r-receipt"/></svg>receipt.jpg</span>{t('Add this receipt to my expenses.')}</div>
             <div class="ai-io">
-              <div class="ai-src" data-anim style="--d:150ms"><div class="rcpt"><div class="rcpt-body"><p class="rcpt-name">GREEN MARKET</p><p class="rcpt-sub">Store 114 · Oct 08 2026 14:32</p><hr><div><span>Whole milk 1gal</span><span>$4.29</span></div><div><span>Sourdough bread</span><span>$3.49</span></div><div><span>Free-range eggs</span><span>$1.19</span></div><div><span>Bananas 2lb</span><span>$0.85</span></div><div><span>Cheddar 8oz</span><span>$1.79</span></div><hr><div class="rcpt-total"><span>TOTAL</span><span>$11.61</span></div><div class="rcpt-card"><span>CARD ····4821</span><span>Approved</span></div><p class="rcpt-sub">Thank you!</p></div><div class="rcpt-edge"></div></div></div>
+              <div class="ai-src" data-anim style="--d:150ms"><div class="rcpt"><div class="rcpt-body"><p class="rcpt-name">GREEN MARKET</p><p class="rcpt-sub">{t('Store 114 · Oct 08 2026 14:32')}</p><hr><div><span>{t('Whole milk 1gal')}</span><span>$4.29</span></div><div><span>{t('Sourdough bread')}</span><span>$3.49</span></div><div><span>{t('Free-range eggs')}</span><span>$1.19</span></div><div><span>{t('Bananas 2lb')}</span><span>$0.85</span></div><div><span>{t('Cheddar 8oz')}</span><span>$1.79</span></div><hr><div class="rcpt-total"><span>{t('TOTAL')}</span><span>$11.61</span></div><div class="rcpt-card"><span>{t('CARD ····4821')}</span><span>{t('Approved')}</span></div><p class="rcpt-sub">{t('Thank you!')}</p></div><div class="rcpt-edge"></div></div></div>
               <svg aria-hidden="true" class="ic ai-arrow" data-anim style="--d:300ms"><use href="#f-to"/></svg>
-              <div class="ai-out" data-anim style="--d:350ms"><div class="ai-out-head"><span class="ai-tool"><i></i>create_transaction</span><span>MoneyMatter</span></div><ul class="ai-list"><li data-anim style="--d:450ms"><div class="ai-txn"><b>Green Market</b><span class="ai-meta"><span class="cat" style="--c:#3aa655">Groceries</span>Oct 08</span></div><span class="amt">−$11.61</span></li></ul></div>
+              <div class="ai-out" data-anim style="--d:350ms"><div class="ai-out-head"><span class="ai-tool"><i></i>create_transaction</span><span>MoneyMatter</span></div><ul class="ai-list"><li data-anim style="--d:450ms"><div class="ai-txn"><b>Green Market</b><span class="ai-meta"><span class="cat" style="--c:#3aa655">{t('Groceries')}</span>{t('Oct 08')}</span></div><span class="amt">−$11.61</span></li></ul></div>
             </div>
-            <div class="bub bub-bot" data-anim style="--d:860ms">Added one <b>$11.61</b> expense at Green Market, categorized automatically.</div>
+            <div class="bub bub-bot" data-anim style="--d:860ms" set:html={t('Added one <b>$11.61</b> expense at Green Market, categorized automatically.')} />
           </div>
           <div class="ai-panel" id="ai-panel-screenshot" data-ai="screenshot" inert>
-            <div class="bub bub-user" data-anim><span class="ai-file"><svg aria-hidden="true" class="ic"><use href="#r-phone"/></svg>screenshot.png</span>Add the transactions from this screenshot to checking.</div>
+            <div class="bub bub-user" data-anim><span class="ai-file"><svg aria-hidden="true" class="ic"><use href="#r-phone"/></svg>screenshot.png</span>{t('Add the transactions from this screenshot to checking.')}</div>
             <div class="ai-io">
-              <div class="ai-src" data-anim style="--d:150ms"><div class="phone"><div class="phone-screen"><div class="phone-top"><span>Checking · ····4821</span><b>$3,182.41</b></div><div class="phone-row"><i>G</i><div><b>Green Market</b><em>Oct 02</em></div><span>−$38.40</span></div><div class="phone-row"><i>C</i><div><b>City Fuel</b><em>Oct 03</em></div><span>−$52.10</span></div><div class="phone-row"><i>S</i><div><b>Streambox</b><em>Oct 05</em></div><span>−$12.99</span></div><div class="phone-row"><i>A</i><div><b>Acme Inc</b><em>Oct 06</em></div><span class="in">+$2,600.00</span></div><div class="phone-row"><i>C</i><div><b>Corner Coffee</b><em>Oct 08</em></div><span>−$24.50</span></div></div></div></div>
+              <div class="ai-src" data-anim style="--d:150ms"><div class="phone"><div class="phone-screen"><div class="phone-top"><span>{t('Checking · ····4821')}</span><b>$3,182.41</b></div><div class="phone-row"><i>G</i><div><b>Green Market</b><em>{t('Oct 02')}</em></div><span>−$38.40</span></div><div class="phone-row"><i>C</i><div><b>City Fuel</b><em>{t('Oct 03')}</em></div><span>−$52.10</span></div><div class="phone-row"><i>S</i><div><b>Streambox</b><em>{t('Oct 05')}</em></div><span>−$12.99</span></div><div class="phone-row"><i>A</i><div><b>Acme Inc</b><em>{t('Oct 06')}</em></div><span class="in">+$2,600.00</span></div><div class="phone-row"><i>C</i><div><b>Corner Coffee</b><em>{t('Oct 08')}</em></div><span>−$24.50</span></div></div></div></div>
               <svg aria-hidden="true" class="ic ai-arrow" data-anim style="--d:300ms"><use href="#f-to"/></svg>
-              <div class="ai-out" data-anim style="--d:350ms"><div class="ai-out-head"><span class="ai-tool"><i></i>create_transaction</span><span>MoneyMatter</span></div><ul class="ai-list">{IMPORTED.screenshot.map(({ name, category, color, date, amount, income }, i) => <li data-anim style={`--d:${450 + 160 * i}ms`}><div class="ai-txn"><b>{name}</b><span class="ai-meta"><span class="cat" style={`--c:${color}`}>{category}</span>{date}</span></div><span class={income ? 'amt plus' : 'amt'}>{amount}</span></li>)}</ul></div>
+              <div class="ai-out" data-anim style="--d:350ms"><div class="ai-out-head"><span class="ai-tool"><i></i>create_transaction</span><span>MoneyMatter</span></div><ul class="ai-list">{IMPORTED.screenshot.map(({ name, category, color, date, amount, income }, i) => <li data-anim style={`--d:${450 + 160 * i}ms`}><div class="ai-txn"><b>{name}</b><span class="ai-meta"><span class="cat" style={`--c:${color}`}>{t(category)}</span>{t(date)}</span></div><span class={income ? 'amt plus' : 'amt'}>{amount}</span></li>)}</ul></div>
             </div>
-            <div class="bub bub-bot" data-anim style="--d:1500ms">Imported 5 transactions to Checking, categorized automatically.</div>
+            <div class="bub bub-bot" data-anim style="--d:1500ms">{t('Imported 5 transactions to Checking, categorized automatically.')}</div>
           </div>
           <div class="ai-panel" id="ai-panel-subscriptions" data-ai="subscriptions" inert>
-            <div class="bub bub-user" data-anim>Which of my subscriptions got more expensive this year?</div>
-            <div class="ai-out" data-anim style="--d:250ms"><div class="ai-out-head"><span class="ai-tool"><i></i>get_subscriptions</span><span>MoneyMatter</span></div><ul class="ai-list"><li class="ai-stat" data-anim style="--d:450ms"><div class="ai-row"><div class="ai-txn"><b>Streambox</b><em>January · $10.99 → $12.99</em></div><span class="amt">+$2.00</span></div></li><li class="ai-stat" data-anim style="--d:610ms"><div class="ai-row"><div class="ai-txn"><b>Northwind Mobile</b><em>March · $42.00 → $45.00</em></div><span class="amt">+$3.00</span></div></li><li class="ai-stat" data-anim style="--d:770ms"><div class="ai-row"><div class="ai-txn"><b>Fit Club</b><em>June · $35.00 → $39.00</em></div><span class="amt">+$4.00</span></div></li></ul></div>
-            <div class="bub bub-bot" data-anim style="--d:1180ms">Three did: <b>Streambox</b> +$2.00 in January, <b>Northwind Mobile</b> +$3.00 in March, <b>Fit Club</b> +$4.00 in June. Combined that adds <b>$108/year</b>.</div>
+            <div class="bub bub-user" data-anim>{t('Which of my subscriptions got more expensive this year?')}</div>
+            <div class="ai-out" data-anim style="--d:250ms"><div class="ai-out-head"><span class="ai-tool"><i></i>get_subscriptions</span><span>MoneyMatter</span></div><ul class="ai-list"><li class="ai-stat" data-anim style="--d:450ms"><div class="ai-row"><div class="ai-txn"><b>Streambox</b><em>{t('January · $10.99 → $12.99')}</em></div><span class="amt">+$2.00</span></div></li><li class="ai-stat" data-anim style="--d:610ms"><div class="ai-row"><div class="ai-txn"><b>Northwind Mobile</b><em>{t('March · $42.00 → $45.00')}</em></div><span class="amt">+$3.00</span></div></li><li class="ai-stat" data-anim style="--d:770ms"><div class="ai-row"><div class="ai-txn"><b>Fit Club</b><em>{t('June · $35.00 → $39.00')}</em></div><span class="amt">+$4.00</span></div></li></ul></div>
+            <div class="bub bub-bot" data-anim style="--d:1180ms" set:html={t('Three did: <b>Streambox</b> +$2.00 in January, <b>Northwind Mobile</b> +$3.00 in March, <b>Fit Club</b> +$4.00 in June. Combined that adds <b>$108/year</b>.')} />
           </div>
           <div class="ai-panel" id="ai-panel-categories" data-ai="categories" inert>
-            <div class="bub bub-user" data-anim>Where did my money go last month?</div>
-            <div class="ai-out" data-anim style="--d:250ms"><div class="ai-out-head"><span class="ai-tool"><i></i>get_spending_by_categories</span><span>MoneyMatter</span></div><ul class="ai-list"><li class="ai-stat" data-anim style="--d:450ms"><div class="ai-row"><div class="ai-txn"><b>Groceries</b><em>42 transactions</em></div><span class="amt">$612.30</span></div><div class="meter-track"><div class="meter-fill" style="width: 100%; background: #3aa655"></div></div></li><li class="ai-stat" data-anim style="--d:610ms"><div class="ai-row"><div class="ai-txn"><b>Eating out</b><em>18 transactions</em></div><span class="amt">$388.10</span></div><div class="meter-track"><div class="meter-fill" style="width: 63%; background: #e0913a"></div></div></li><li class="ai-stat" data-anim style="--d:770ms"><div class="ai-row"><div class="ai-txn"><b>Transport</b><em>11 transactions</em></div><span class="amt">$295.40</span></div><div class="meter-track"><div class="meter-fill" style="width: 48%; background: #3b8fd9"></div></div></li><li class="ai-stat" data-anim style="--d:930ms"><div class="ai-row"><div class="ai-txn"><b>Shopping</b><em>7 transactions</em></div><span class="amt">$241.00</span></div><div class="meter-track"><div class="meter-fill" style="width: 39%; background: #d6569a"></div></div></li><li class="ai-stat" data-anim style="--d:1090ms"><div class="ai-row"><div class="ai-txn"><b>Subscriptions</b><em>3 transactions</em></div><span class="amt">$96.99</span></div><div class="meter-track"><div class="meter-fill" style="width: 16%; background: #8264cd"></div></div></li></ul></div>
-            <div class="bub bub-bot" data-anim style="--d:1500ms">Groceries led at <b>$612</b>, over a third of the month. Eating out came second and is <b>up 40%</b> on the month before.</div>
+            <div class="bub bub-user" data-anim>{t('Where did my money go last month?')}</div>
+            <div class="ai-out" data-anim style="--d:250ms"><div class="ai-out-head"><span class="ai-tool"><i></i>get_spending_by_categories</span><span>MoneyMatter</span></div><ul class="ai-list"><li class="ai-stat" data-anim style="--d:450ms"><div class="ai-row"><div class="ai-txn"><b>{t('Groceries')}</b><em>{t('42 transactions')}</em></div><span class="amt">$612.30</span></div><div class="meter-track"><div class="meter-fill" style="width: 100%; background: #3aa655"></div></div></li><li class="ai-stat" data-anim style="--d:610ms"><div class="ai-row"><div class="ai-txn"><b>{t('Eating out')}</b><em>{t('18 transactions')}</em></div><span class="amt">$388.10</span></div><div class="meter-track"><div class="meter-fill" style="width: 63%; background: #e0913a"></div></div></li><li class="ai-stat" data-anim style="--d:770ms"><div class="ai-row"><div class="ai-txn"><b>{t('Transport')}</b><em>{t('11 transactions')}</em></div><span class="amt">$295.40</span></div><div class="meter-track"><div class="meter-fill" style="width: 48%; background: #3b8fd9"></div></div></li><li class="ai-stat" data-anim style="--d:930ms"><div class="ai-row"><div class="ai-txn"><b>{t('Shopping')}</b><em>{t('7 transactions')}</em></div><span class="amt">$241.00</span></div><div class="meter-track"><div class="meter-fill" style="width: 39%; background: #d6569a"></div></div></li><li class="ai-stat" data-anim style="--d:1090ms"><div class="ai-row"><div class="ai-txn"><b>{t('Subscriptions')}</b><em>{t('3 transactions')}</em></div><span class="amt">$96.99</span></div><div class="meter-track"><div class="meter-fill" style="width: 16%; background: #8264cd"></div></div></li></ul></div>
+            <div class="bub bub-bot" data-anim style="--d:1500ms" set:html={t('Groceries led at <b>$612</b>, over a third of the month. Eating out came second and is <b>up 40%</b> on the month before.')} />
           </div>
           <div class="ai-panel" id="ai-panel-budget" data-ai="budget" inert>
-            <div class="bub bub-user" data-anim>Am I over budget on anything this month?</div>
-            <div class="ai-out" data-anim style="--d:250ms"><div class="ai-out-head"><span class="ai-tool"><i></i>get_tracker_spending_stats</span><span>MoneyMatter</span></div><ul class="ai-list"><li class="ai-stat" data-anim style="--d:450ms"><div class="ai-row"><div class="ai-txn"><b>Eating out</b><em>$548 of $500</em></div><span class="amt over">110%</span></div><div class="meter-track"><div class="meter-fill over" style="width: 100%"></div></div></li><li class="ai-stat" data-anim style="--d:610ms"><div class="ai-row"><div class="ai-txn"><b>Groceries</b><em>$640 of $800</em></div><span class="amt">80%</span></div><div class="meter-track"><div class="meter-fill ok" style="width: 80%"></div></div></li><li class="ai-stat" data-anim style="--d:770ms"><div class="ai-row"><div class="ai-txn"><b>Transport</b><em>$180 of $300</em></div><span class="amt">60%</span></div><div class="meter-track"><div class="meter-fill ok" style="width: 60%"></div></div></li><li class="ai-stat" data-anim style="--d:930ms"><div class="ai-row"><div class="ai-txn"><b>Entertainment</b><em>$95 of $200</em></div><span class="amt">48%</span></div><div class="meter-track"><div class="meter-fill ok" style="width: 48%"></div></div></li></ul></div>
-            <div class="bub bub-bot" data-anim style="--d:1340ms">Only <b>Eating out</b>: $48 over with 9 days to go. Everything else is on track, and Groceries still has $160 left.</div>
+            <div class="bub bub-user" data-anim>{t('Am I over budget on anything this month?')}</div>
+            <div class="ai-out" data-anim style="--d:250ms"><div class="ai-out-head"><span class="ai-tool"><i></i>get_tracker_spending_stats</span><span>MoneyMatter</span></div><ul class="ai-list"><li class="ai-stat" data-anim style="--d:450ms"><div class="ai-row"><div class="ai-txn"><b>{t('Eating out')}</b><em>{t('$548 of $500')}</em></div><span class="amt over">110%</span></div><div class="meter-track"><div class="meter-fill over" style="width: 100%"></div></div></li><li class="ai-stat" data-anim style="--d:610ms"><div class="ai-row"><div class="ai-txn"><b>{t('Groceries')}</b><em>{t('$640 of $800')}</em></div><span class="amt">80%</span></div><div class="meter-track"><div class="meter-fill ok" style="width: 80%"></div></div></li><li class="ai-stat" data-anim style="--d:770ms"><div class="ai-row"><div class="ai-txn"><b>{t('Transport')}</b><em>{t('$180 of $300')}</em></div><span class="amt">60%</span></div><div class="meter-track"><div class="meter-fill ok" style="width: 60%"></div></div></li><li class="ai-stat" data-anim style="--d:930ms"><div class="ai-row"><div class="ai-txn"><b>{t('Entertainment')}</b><em>{t('$95 of $200')}</em></div><span class="amt">48%</span></div><div class="meter-track"><div class="meter-fill ok" style="width: 48%"></div></div></li></ul></div>
+            <div class="bub bub-bot" data-anim style="--d:1340ms" set:html={t('Only <b>Eating out</b>: $48 over with 9 days to go. Everything else is on track, and Groceries still has $160 left.')} />
           </div>
           <div class="ai-panel" id="ai-panel-automations" data-ai="automations" inert>
-            <p class="ai-cap" data-anim>Use OpenClaw, Claude, or any agent framework to run financial analyses on a schedule you set.</p>
-            <div class="ai-run" data-anim style="--d:300ms"><span class="ai-when"><svg aria-hidden="true" class="ic"><use href="#r-clock"/></svg>Weekly digest<em>Every Monday, 8:00</em></span><div class="ai-msg"><span class="ai-tool"><i></i>get_expenses_for_period</span><p>You spent <b>$412</b> last week, 12% less than usual. Groceries took the most at $148.</p></div></div>
-            <div class="ai-run" data-anim style="--d:900ms"><span class="ai-when"><svg aria-hidden="true" class="ic"><use href="#r-clock"/></svg>Anomaly check<em>Every day, 21:00</em></span><div class="ai-msg"><span class="ai-tool"><i></i>search_transactions</span><p><b>$249.00 at Volt Electronics</b> is 4× your usual Shopping spend. Was that you?</p></div></div>
-            <div class="ai-run" data-anim style="--d:1500ms"><span class="ai-when"><svg aria-hidden="true" class="ic"><use href="#r-clock"/></svg>Budget health check<em>1st of every month</em></span><div class="ai-msg"><span class="ai-tool"><i></i>get_tracker_spending_stats</span><p>3 of 4 budgets stayed on track in September. Trimming Eating out by <b>$50/month</b> gets you to your savings goal by December.</p></div></div>
+            <p class="ai-cap" data-anim>{t('Use OpenClaw, Claude, or any agent framework to run financial analyses on a schedule you set.')}</p>
+            <div class="ai-run" data-anim style="--d:300ms"><span class="ai-when"><svg aria-hidden="true" class="ic"><use href="#r-clock"/></svg>{t('Weekly digest')}<em>{t('Every Monday, 8:00')}</em></span><div class="ai-msg"><span class="ai-tool"><i></i>get_expenses_for_period</span><p set:html={t('You spent <b>$412</b> last week, 12% less than usual. Groceries took the most at $148.')} /></div></div>
+            <div class="ai-run" data-anim style="--d:900ms"><span class="ai-when"><svg aria-hidden="true" class="ic"><use href="#r-clock"/></svg>{t('Anomaly check')}<em>{t('Every day, 21:00')}</em></span><div class="ai-msg"><span class="ai-tool"><i></i>search_transactions</span><p set:html={t('<b>$249.00 at Volt Electronics</b> is 4× your usual Shopping spend. Was that you?')} /></div></div>
+            <div class="ai-run" data-anim style="--d:1500ms"><span class="ai-when"><svg aria-hidden="true" class="ic"><use href="#r-clock"/></svg>{t('Budget health check')}<em>{t('1st of every month')}</em></span><div class="ai-msg"><span class="ai-tool"><i></i>get_tracker_spending_stats</span><p set:html={t('3 of 4 budgets stayed on track in September. Trimming Eating out by <b>$50/month</b> gets you to your savings goal by December.')} /></div></div>
           </div>
         </div>
       </div>
-      <small>Sample conversations with fictional merchants.</small>
+      <small>{t('Sample conversations with fictional merchants.')}</small>
     </div>
     <div class="ai-under">
       <div class="plate ai-connect">
-        <div class="strip ai-connect-top"><span class="itile"><svg aria-hidden="true" class="ic"><use href="#r-plug"/></svg></span><div><strong>Connect in a minute</strong><span>Paste the remote MCP server into Claude or ChatGPT connector settings. Or use the built-in AI, your own API key, or a local model. Your data never has to leave your server.</span></div></div>
-        <div class="ai-url"><code id="mcp-url">https://mcp.moneymatter.app/mcp</code><button type="button" id="mcp-copy"><svg aria-hidden="true" class="ic"><use href="#r-copy"/></svg><span>Copy</span><span class="sr-only"> MCP server URL</span></button></div>
+        <div class="strip ai-connect-top"><span class="itile"><svg aria-hidden="true" class="ic"><use href="#r-plug"/></svg></span><div><strong>{t('Connect in a minute')}</strong><span>{t('Paste the remote MCP server into Claude or ChatGPT connector settings. Or use the built-in AI, your own API key, or a local model. Your data never has to leave your server.')}</span></div></div>
+        <div class="ai-url"><code id="mcp-url">https://mcp.moneymatter.app/mcp</code><button type="button" id="mcp-copy"><svg aria-hidden="true" class="ic"><use href="#r-copy"/></svg><span>{t('Copy')}</span><span class="sr-only"> {t('MCP server URL')}</span></button></div>
+        <Fragment set:html={clientStrings({ texts: ['Copy', 'Copied'] })} />
       </div>
       <div class="plate ai-access">
-        <strong>You choose the access</strong>
+        <strong>{t('You choose the access')}</strong>
         <ul class="levels strip">
-          <li><span class="itile sm"><svg aria-hidden="true" class="ic"><use href="#r-eye"/></svg></span><div><strong>Read</strong><span>It answers questions from your data.</span></div></li>
-          <li><span class="itile sm"><svg aria-hidden="true" class="ic"><use href="#r-pen"/></svg></span><div><strong>Write</strong><span>It can also add and edit records.</span></div></li>
-          <li><span class="itile sm"><svg aria-hidden="true" class="ic"><use href="#r-trash"/></svg></span><div><strong>Write and delete</strong><span>It can also remove them.</span></div></li>
+          <li><span class="itile sm"><svg aria-hidden="true" class="ic"><use href="#r-eye"/></svg></span><div><strong>{t('Read')}</strong><span>{t('It answers questions from your data.')}</span></div></li>
+          <li><span class="itile sm"><svg aria-hidden="true" class="ic"><use href="#r-pen"/></svg></span><div><strong>{t('Write')}</strong><span>{t('It can also add and edit records.')}</span></div></li>
+          <li><span class="itile sm"><svg aria-hidden="true" class="ic"><use href="#r-trash"/></svg></span><div><strong>{t('Write and delete')}</strong><span>{t('It can also remove them.')}</span></div></li>
         </ul>
-        <p class="ai-note"><svg aria-hidden="true" class="ic"><use href="#r-key"/></svg>It signs in through OAuth, and you can revoke it in settings.</p>
+        <p class="ai-note"><svg aria-hidden="true" class="ic"><use href="#r-key"/></svg>{t('It signs in through OAuth, and you can revoke it in settings.')}</p>
       </div>
     </div>
   </div>
 </section>
 
 <script>
+  import { tc } from '@/i18n/client';
+
   const demo = document.getElementById('ai-demo');
   const stage = demo?.querySelector<HTMLElement>('.ai-stage');
 
@@ -180,11 +186,11 @@ const IMPORTED = {
       try {
         await navigator.clipboard.writeText(url.textContent?.trim() ?? '');
         copy.classList.add('done');
-        label.textContent = 'Copied';
+        label.textContent = tc({ text: 'Copied' });
         clearTimeout(reset);
         reset = setTimeout(() => {
           copy.classList.remove('done');
-          label.textContent = 'Copy';
+          label.textContent = tc({ text: 'Copy' });
         }, 2000);
       } catch {
         getSelection()?.selectAllChildren(url);

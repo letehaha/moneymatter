@@ -1,3 +1,5 @@
+import { DEMO_STRINGS, tc } from '@/i18n/client';
+
 import type { DemoStartLocation } from './posthog';
 import { startDemo } from './start-demo';
 
@@ -9,9 +11,10 @@ const loadOverlay = () =>
   (overlay ??= Promise.all([import('vue'), import('@/components/demo-loading-overlay.vue')])
     .then(([{ createApp, h, ref }, { default: DemoLoadingOverlay }]): SetOverlayVisible => {
       const isVisible = ref(false);
-      createApp({ render: () => h(DemoLoadingOverlay, { isVisible: isVisible.value }) }).mount(
-        document.body.appendChild(document.createElement('div')),
-      );
+      createApp({
+        render: () =>
+          h(DemoLoadingOverlay, { isVisible: isVisible.value, title: tc({ text: DEMO_STRINGS.overlayTitle }) }),
+      }).mount(document.body.appendChild(document.createElement('div')));
       return ({ visible }) => {
         isVisible.value = visible;
       };
@@ -48,7 +51,7 @@ export const startDemoWithOverlay = async ({
   } catch (error) {
     console.error('Failed to start demo:', error);
     hideOverlay();
-    onError({ message: "Couldn't start the demo. Please try again." });
+    onError({ message: tc({ text: DEMO_STRINGS.failed }) });
   }
 };
 

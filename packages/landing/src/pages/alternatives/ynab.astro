@@ -1,6 +1,8 @@
 ---
 import AlternativeLayout from '@/layouts/alternative-layout.astro';
+import { useI18n } from '@/i18n';
 
+const { t } = useI18n(Astro);
 const checkedOn = '12 October 2026';
 const DOCS_IMPORT_URL = 'https://docs.moneymatter.app/import/other-import-sources/#ynab';
 const DOCS_SELF_HOSTING_URL = 'https://docs.moneymatter.app/getting-started/self-hosting/';
@@ -284,8 +286,8 @@ const SOURCES = [
     href: 'https://support.ynab.com/en_us/direct-import-in-europe-Syae1z_A9',
   },
   { label: 'YNAB help: YNAB Together', href: 'https://support.ynab.com/en_us/ynab-together-B1nS78Cki' },
-  { label: 'YNAB Loan Planner', href: 'https://www.ynab.com/ynab-loan-planner/' },
-  { label: 'YNAB API', href: 'https://api.ynab.com' },
+  { label: 'YNAB Loan Planner', href: 'https://www.ynab.com/ynab-loan-planner/', raw: true },
+  { label: 'YNAB API', href: 'https://api.ynab.com', raw: true },
 ];
 ---
 
@@ -311,13 +313,18 @@ const SOURCES = [
   whyCloud={{ heading: 'What the cloud plan adds over self-hosting', items: WHY_CLOUD }}
 >
   <p slot="import-note" class="alt-note">
-    Dates are read the same way for the whole file. When no row settles whether they are day-first or month-first,
-    MoneyMatter reads them as MM/DD/YYYY and warns you, so check a few transactions afterwards.
+    {
+      t(
+        'Dates are read the same way for the whole file. When no row settles whether they are day-first or month-first, MoneyMatter reads them as MM/DD/YYYY and warns you, so check a few transactions afterwards.',
+      )
+    }
   </p>
 
-  <Fragment slot="why-cloud-intro">
-    Both run the same app. The cloud is for when you would rather not run a server. The <a
-      href={DOCS_SELF_HOSTING_URL}>self-hosting guide</a
-    > shows what running it yourself takes.
-  </Fragment>
+  <Fragment
+    slot="why-cloud-intro"
+    set:html={t(
+      'Both run the same app. The cloud is for when you would rather not run a server. The <a href="{selfHosting}">self-hosting guide</a> shows what running it yourself takes.',
+      { selfHosting: DOCS_SELF_HOSTING_URL },
+    )}
+  />
 </AlternativeLayout>

@@ -6,29 +6,38 @@ import CtaSection from '@/components/cta-section.astro';
 import LandingFooter from '@/components/landing-footer.astro';
 import '@/styles/feature-page.css';
 import '@/styles/prose-page.css';
+import { useI18n } from '@/i18n';
 
-const guides = (await getCollection('guides')).sort((a, b) => b.data.published.getTime() - a.data.published.getTime());
+const { t, url, localizeGuide } = useI18n(Astro);
+const guides = await Promise.all(
+  (await getCollection('guides', (guide) => !guide.id.includes('/')))
+    .sort((a, b) => b.data.published.getTime() - a.data.published.getTime())
+    .map(async (guide) => ({ href: url({ href: `/guides/${guide.id}` }), data: (await localizeGuide({ guide })).data })),
+);
 ---
 
 <BaseLayout
-  title="Personal Finance Guides | MoneyMatter"
-  description="Guides to setting up MoneyMatter for a specific situation, such as money in several currencies, with the steps, the mistakes to avoid and links to the docs."
+  title={t('Personal Finance Guides | MoneyMatter')}
+  description={t(
+    'Guides to setting up MoneyMatter for a specific situation, such as money in several currencies, with the steps, the mistakes to avoid and links to the docs.',
+  )}
 >
   <LandingHeader />
   <main id="main">
     <div class="wrap">
       <div class="prose-page">
-        <h1 class="text-center">Guides</h1>
+        <h1 class="text-center">{t('Guides')}</h1>
         <p class="lede mx-auto text-center">
-          How to set up MoneyMatter for a specific situation: what to do, in what order, and which mistakes to avoid.
-          Each guide links to the full docs.
+          {t(
+            'How to set up MoneyMatter for a specific situation: what to do, in what order, and which mistakes to avoid. Each guide links to the full docs.',
+          )}
         </p>
 
         <ul class="mt-14 space-y-4">
           {
             guides.map((guide) => (
               <li>
-                <a href={`/guides/${guide.id}`} class="plate fp-card">
+                <a href={guide.href} class="plate fp-card">
                   <h2 class="text-lg">{guide.data.title}</h2>
                   <p class="text-muted-foreground text-sm leading-relaxed">{guide.data.description}</p>
                 </a>

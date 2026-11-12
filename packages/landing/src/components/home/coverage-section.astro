@@ -1,6 +1,9 @@
 ---
 import { getFeaturePage } from '@/lib/features';
 import '@/styles/home/coverage.css';
+import { useI18n } from '@/i18n';
+
+const { t, url } = useI18n(Astro);
 
 const importHref = getFeaturePage({ slug: 'import-transactions' }).href;
 
@@ -61,19 +64,19 @@ const PROVIDERS = [
   },
 ];
 
-const FORMATS = ['YNAB', 'Wallet', 'Microsoft Money', 'CSV', 'OFX', 'Bank statements'];
+const FORMATS = ['YNAB', 'Wallet', 'Microsoft Money', 'CSV', 'OFX', t('Bank statements')];
 ---
 
 <section class="sec" id="coverage">
   <div class="wrap">
     <div class="cov">
       <div>
-        <p class="eyebrow">Bank connections</p>
-        <h2>Connect through the provider that covers your bank</h2>
-        <p class="lede">Coverage depends on the provider, so check its own page for your bank before you start.</p>
+        <p class="eyebrow">{t('Bank connections')}</p>
+        <h2>{t('Connect through the provider that covers your bank')}</h2>
+        <p class="lede">{t('Coverage depends on the provider, so check its own page for your bank before you start.')}</p>
         <div class="plate strip trust2">
           <span class="itile"><svg class="ic" aria-hidden="true"><use href="#r-lock"></use></svg></span>
-          <div><strong>Sync is read-only</strong><span>It can never move your money.</span></div>
+          <div><strong>{t('Sync is read-only')}</strong><span>{t('It can never move your money.')}</span></div>
         </div>
       </div>
       <div>
@@ -92,20 +95,20 @@ const FORMATS = ['YNAB', 'Wallet', 'Microsoft Money', 'CSV', 'OFX', 'Bank statem
                     {p.countries.map((c) => (
                       <li class="ctry">
                         <img class="flag" src={`/img/landing/flags/${c.code}.svg`} alt="" width="18" height="13" loading="lazy" decoding="async" />
-                        {c.name}
+                        {t(c.name)}
                       </li>
                     ))}
-                    {p.more && <li class="ctry-more">and more</li>}
+                    {p.more && <li class="ctry-more">{t('and more')}</li>}
                   </ul>
-                  {p.note && <small>{p.note}</small>}
+                  {p.note && <small>{t(p.note)}</small>}
                 </div>
                 <span class="prov-foot">
                   <span class="prov-tags">
-                    {p.paid ? <span class="tag paid">Paid separately</span> : <span class="tag live">Free</span>}
-                    {p.beta && <span class="tag">Beta</span>}
+                    {p.paid ? <span class="tag paid">{t('Paid separately')}</span> : <span class="tag live">{t('Free')}</span>}
+                    {p.beta && <span class="tag">{t('Beta')}</span>}
                   </span>
                   <em>
-                    {p.cta}
+                    {t(p.cta)}
                     <svg class="ic" aria-hidden="true"><use href="#f-out"></use></svg>
                   </em>
                 </span>
@@ -115,7 +118,7 @@ const FORMATS = ['YNAB', 'Wallet', 'Microsoft Money', 'CSV', 'OFX', 'Bank statem
         </div>
         <div class="plate strip imp">
           <div>
-            <strong>Bank not listed?</strong><span><a class="imp-link" href={importHref}>Import your history instead.</a></span>
+            <strong>{t('Bank not listed?')}</strong><span><a class="imp-link" href={url({ href: importHref })}>{t('Import your history instead.')}</a></span>
           </div>
           <ul class="fmt">{FORMATS.map((f) => <li>{f}</li>)}</ul>
         </div>

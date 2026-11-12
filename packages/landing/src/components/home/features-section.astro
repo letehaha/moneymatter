@@ -6,6 +6,9 @@ import networthDark from '@/assets/home/shot-networth-dark.jpg';
 import networthLight from '@/assets/home/shot-networth-light.jpg';
 import { getFeaturePage } from '@/lib/features';
 import '@/styles/home/features.css';
+import { useI18n } from '@/i18n';
+
+const { t, url } = useI18n(Astro);
 
 const STORIES = [
   {
@@ -14,7 +17,7 @@ const STORIES = [
     href: getFeaturePage({ slug: 'net-worth-tracker' }).href,
     text: 'Cash, investments, vehicles, ventures and debts add up in one history, week by week.',
     ticks: ['Stacked by asset type', 'Liabilities counted against what you own', 'Filter by asset, liability and period'],
-    bar: 'Net worth history',
+    bar: t('Net worth history'),
     frame: 'frame-worth',
     images: { light: networthLight, dark: networthDark },
     alt: 'Net worth history chart with assets by week',
@@ -44,8 +47,8 @@ const ALSO = [
 
 <section class="sec sec-soft" id="features">
   <div class="wrap">
-    <p class="eyebrow">All in one place</p>
-    <h2>Everything you own and owe, in one picture</h2>
+    <p class="eyebrow">{t('All in one place')}</p>
+    <h2>{t('Everything you own and owe, in one picture')}</h2>
 
     {
       STORIES.map((s) => (
@@ -53,16 +56,16 @@ const ALSO = [
           <div>
             <span class="idx">{s.idx}</span>
             <h3>
-              <a href={s.href}>{s.title}</a>
+              <a href={url({ href: s.href })}>{t(s.title)}</a>
             </h3>
-            <p>{s.text}</p>
+            <p>{t(s.text)}</p>
             <ul class="ticks">
-              {s.ticks.map((t) => (
+              {s.ticks.map((tick) => (
                 <li>
                   <svg class="ic" aria-hidden="true">
                     <use href="#i-check" />
                   </svg>
-                  {t}
+                  {t(tick)}
                 </li>
               ))}
             </ul>
@@ -79,7 +82,7 @@ const ALSO = [
                 <picture class={`shot shot-${theme}`}>
                   <Image
                     src={s.images[theme]}
-                    alt={s.alt}
+                    alt={t(s.alt)}
                     format="webp"
                     widths={[960, 1440, 1920, 2880]}
                     sizes="(min-width: 900px) 970px, 132vw"
@@ -105,11 +108,11 @@ const ALSO = [
             </span>
             <div>
               <strong>
-                <a class="also-link" href={getFeaturePage({ slug: a.slug }).href}>
-                  {a.title}
+                <a class="also-link" href={url({ href: getFeaturePage({ slug: a.slug }).href })}>
+                  {t(a.title)}
                 </a>
               </strong>
-              <span>{a.text}</span>
+              <span>{t(a.text)}</span>
             </div>
           </li>
         ))

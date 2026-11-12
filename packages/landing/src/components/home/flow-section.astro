@@ -1,5 +1,8 @@
 ---
+import { useI18n } from '@/i18n';
 import '@/styles/home/flow.css';
+
+const { t, clientStrings } = useI18n(Astro);
 
 const NET_WORTH = [12900, 13180, 13420, 13240, 13100, 13610, 14140.35, 18262.64];
 const CHECKING = { from: 2140.35, to: 5762.64 };
@@ -15,17 +18,29 @@ const lineD = NET_WORTH.map((v, i) => {
   return `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
 }).join(' ');
 const areaD = `${lineD} L395 84 L5 84 Z`;
+const SCRIPT_TEXTS = [
+  'Waiting for results',
+  'New transactions',
+  'Accounts updated',
+  'Reports updated',
+  'All settled',
+  'Waiting for data',
+  'Working through 5 transactions',
+  '5 transactions sorted',
+  'Pause',
+  'Resume',
+];
 ---
 
 
 <section class="flow-section" id="flow">
   <div class="wrap">
-    <p class="eyebrow">How it works</p>
-    <h2>From scattered bank data to a settled picture</h2>
-    <p class="flow-lede">Your transactions arrive messy. By the time you open the app, they are sorted, matched and counted.</p>
+    <p class="eyebrow">{t('How it works')}</p>
+    <h2>{t('From scattered bank data to a settled picture')}</h2>
+    <p class="flow-lede">{t('Your transactions arrive messy. By the time you open the app, they are sorted, matched and counted.')}</p>
 
     <div class="flow">
-      <p class="sr-only">Animated example: transactions from Monobank, Lunch Flow, SimpleFIN and a bank statement go into MoneyMatter, which categorizes them, applies rules, matches transfers and refunds, and finds payees. Five clean transactions come out, account balances update, and net worth rises from {usd.format(netFrom)} to {usd.format(netTo)}.</p>
+      <p class="sr-only">{t('Animated example: transactions from Monobank, Lunch Flow, SimpleFIN and a bank statement go into MoneyMatter, which categorizes them, applies rules, matches transfers and refunds, and finds payees. Five clean transactions come out, account balances update, and net worth rises from {from} to {to}.', { from: usd.format(netFrom), to: usd.format(netTo) })}</p>
       <div class="stage settled" id="stage" aria-hidden="true">
           <svg class="lines" id="lines"></svg>
 
@@ -35,10 +50,10 @@ const areaD = `${lineD} L395 84 L5 84 Z`;
                 <div class="source"><div class="source-name"><span class="source-mark logo"><img src="/img/landing/logos/monobank.webp" alt="" width="20" height="20" loading="lazy" decoding="async"></span>Monobank</div><div class="raw"><div data-raw><span>STREAMBOX RFND</span><span>+12.99</span></div></div></div>
                 <div class="source"><div class="source-name"><span class="source-mark logo"><img src="/img/landing/logos/lunch-flow.webp" alt="" width="20" height="20" loading="lazy" decoding="async"></span>Lunch Flow</div><div class="raw"><div data-raw><span>CORNER COFFEE #0412</span><span>-6.50</span></div><div data-raw><span>GRN MKT 88213</span><span>-84.20</span></div></div></div>
                 <div class="source"><div class="source-name"><span class="source-mark logo"><img src="/img/landing/logos/simplefin.webp" alt="" width="20" height="20" loading="lazy" decoding="async"></span>SimpleFIN</div><div class="raw"><div data-raw><span>ACME PAYROLL OCT</span><span>+4200.00</span></div></div></div>
-                <div class="source"><div class="source-name"><span class="source-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4"/></svg></span>Bank statement</div><div class="raw"><div data-raw><span>TRF TO SAVINGS</span><span>-500.00</span></div></div></div>
+                <div class="source"><div class="source-name"><span class="source-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4"/></svg></span>{t('Bank statement')}</div><div class="raw"><div data-raw><span>TRF TO SAVINGS</span><span>-500.00</span></div></div></div>
               </div>
             </div>
-            <div class="col-label" data-seek="0">Your banks and files</div>
+            <div class="col-label" data-seek="0">{t('Your banks and files')}</div>
           </div>
 
           <div class="col">
@@ -48,31 +63,31 @@ const areaD = `${lineD} L395 84 L5 84 Z`;
                 <ul class="steps">
                   <li class="step" data-state="done">
                     <span class="step-icon"><svg class="step-ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.25" pathLength="1"/></svg><svg><use href="#i-check"/></svg></span>
-                    <div class="step-main"><div class="step-label">Categorizing</div><div class="step-detail"><code>GRN MKT 88213</code><svg><use href="#f-to"/></svg><span class="fl-cat" style="--c: #3aa655"><svg><use href="#f-cart"/></svg>Groceries</span></div></div>
+                    <div class="step-main"><div class="step-label">{t('Categorizing')}</div><div class="step-detail"><code>GRN MKT 88213</code><svg><use href="#f-to"/></svg><span class="fl-cat" style="--c: #3aa655"><svg><use href="#f-cart"/></svg>{t('Groceries')}</span></div></div>
                   </li>
                   <li class="step" data-state="done">
                     <span class="step-icon"><svg class="step-ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.25" pathLength="1"/></svg><svg><use href="#i-check"/></svg></span>
-                    <div class="step-main"><div class="step-label">Applying your rules</div><div class="step-detail"><code>contains "COFFEE"</code><svg><use href="#f-to"/></svg><span class="fl-cat" style="--c: #f08c2e"><svg><use href="#f-fork"/></svg>Eating out</span></div></div>
+                    <div class="step-main"><div class="step-label">{t('Applying your rules')}</div><div class="step-detail"><code set:html={t('contains "COFFEE"')} /><svg><use href="#f-to"/></svg><span class="fl-cat" style="--c: #f08c2e"><svg><use href="#f-fork"/></svg>{t('Eating out')}</span></div></div>
                   </li>
                   <li class="step" data-state="done">
                     <span class="step-icon"><svg class="step-ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.25" pathLength="1"/></svg><svg><use href="#i-check"/></svg></span>
-                    <div class="step-main"><div class="step-label">Matching transfers and refunds</div><div class="step-detail"><code>TRF TO SAVINGS</code><svg><use href="#f-to"/></svg><span class="fl-cat" style="--c: #5b8def"><svg><use href="#f-swap"/></svg>Transfer</span></div></div>
+                    <div class="step-main"><div class="step-label">{t('Matching transfers and refunds')}</div><div class="step-detail"><code>TRF TO SAVINGS</code><svg><use href="#f-to"/></svg><span class="fl-cat" style="--c: #5b8def"><svg><use href="#f-swap"/></svg>{t('Transfer')}</span></div></div>
                   </li>
                   <li class="step" data-state="done">
                     <span class="step-icon"><svg class="step-ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.25" pathLength="1"/></svg><svg><use href="#i-check"/></svg></span>
-                    <div class="step-main"><div class="step-label">Finding payees</div><div class="step-detail"><code>ACME PAYROLL OCT</code><svg><use href="#f-to"/></svg><span class="fl-payee"><b style="--b: #2f6fed">A</b>Acme Inc</span></div></div>
+                    <div class="step-main"><div class="step-label">{t('Finding payees')}</div><div class="step-detail"><code>ACME PAYROLL OCT</code><svg><use href="#f-to"/></svg><span class="fl-payee"><b style="--b: #2f6fed">A</b>Acme Inc</span></div></div>
                   </li>
                 </ul>
-                <div class="engine-status" id="engine-status">5 transactions sorted</div>
+                <div class="engine-status" id="engine-status">{t('5 transactions sorted')}</div>
               </div>
             </div>
-            <div class="col-label" data-seek="1.5">Sorted automatically</div>
+            <div class="col-label" data-seek="1.5">{t('Sorted automatically')}</div>
           </div>
 
           <div class="col on">
             <div class="col-body">
               <div class="result" id="result">
-                <div class="result-head"><span id="result-title">All settled</span><span class="settled-mark" id="settled"><svg><use href="#i-check"/></svg></span></div>
+                <div class="result-head"><span id="result-title">{t('All settled')}</span><span class="settled-mark" id="settled"><svg><use href="#i-check"/></svg></span></div>
                 <div class="layers">
                   <div class="layer layer-skeleton" id="layer-skeleton">
                     <div class="skeleton-row"><i></i><i></i><i></i></div>
@@ -82,16 +97,16 @@ const areaD = `${lineD} L395 84 L5 84 Z`;
                     <div class="skeleton-row"><i></i><i></i><i></i></div>
                   </div>
                   <div class="layer layer-tx" id="layer-tx">
-                    <div class="tx" data-tx><div class="tx-mark" style="--b: #7a4a2b"><svg><use href="#f-coffee"/></svg></div><div class="tx-body"><div class="tx-name">Corner Coffee</div><div class="tx-meta"><span class="fl-cat" style="--c: #f08c2e"><svg><use href="#f-fork"/></svg>Eating out</span></div></div><div class="tx-amt minus">−$6.50</div></div>
-                    <div class="tx" data-tx><div class="tx-mark" style="--b: #2e9e56"><svg><use href="#f-leaf"/></svg></div><div class="tx-body"><div class="tx-name">Green Market</div><div class="tx-meta"><span class="fl-cat" style="--c: #3aa655"><svg><use href="#f-cart"/></svg>Groceries</span></div></div><div class="tx-amt minus">−$84.20</div></div>
-                    <div class="tx" data-tx><div class="tx-mark" style="--b: #2f6fed">A</div><div class="tx-body"><div class="tx-name">Acme Inc</div><div class="tx-meta"><span class="fl-cat" style="--c: #2f9e8f"><svg><use href="#f-cash"/></svg>Salary</span></div></div><div class="tx-amt plus">+$4,200.00</div></div>
-                    <div class="tx" data-tx><div class="tx-mark plain"><svg><use href="#f-swap"/></svg></div><div class="tx-body"><div class="tx-name">Checking → Savings</div><div class="tx-meta"><span class="fl-cat" style="--c: #5b8def"><svg><use href="#f-swap"/></svg>Transfer</span><span>both sides matched</span></div></div><div class="tx-amt">$500.00</div></div>
-                    <div class="tx" data-tx><div class="tx-mark" style="--b: #e5484d"><svg><use href="#f-play"/></svg></div><div class="tx-body"><div class="tx-name">Streambox</div><div class="tx-meta"><span class="fl-cat" style="--c: #d6589f"><svg><use href="#f-repeat"/></svg>Subscriptions</span><span>refund linked</span></div></div><div class="tx-amt plus">+$12.99</div></div>
+                    <div class="tx" data-tx><div class="tx-mark" style="--b: #7a4a2b"><svg><use href="#f-coffee"/></svg></div><div class="tx-body"><div class="tx-name">Corner Coffee</div><div class="tx-meta"><span class="fl-cat" style="--c: #f08c2e"><svg><use href="#f-fork"/></svg>{t('Eating out')}</span></div></div><div class="tx-amt minus">−$6.50</div></div>
+                    <div class="tx" data-tx><div class="tx-mark" style="--b: #2e9e56"><svg><use href="#f-leaf"/></svg></div><div class="tx-body"><div class="tx-name">Green Market</div><div class="tx-meta"><span class="fl-cat" style="--c: #3aa655"><svg><use href="#f-cart"/></svg>{t('Groceries')}</span></div></div><div class="tx-amt minus">−$84.20</div></div>
+                    <div class="tx" data-tx><div class="tx-mark" style="--b: #2f6fed">A</div><div class="tx-body"><div class="tx-name">Acme Inc</div><div class="tx-meta"><span class="fl-cat" style="--c: #2f9e8f"><svg><use href="#f-cash"/></svg>{t('Salary')}</span></div></div><div class="tx-amt plus">+$4,200.00</div></div>
+                    <div class="tx" data-tx><div class="tx-mark plain"><svg><use href="#f-swap"/></svg></div><div class="tx-body"><div class="tx-name">{t('Checking → Savings')}</div><div class="tx-meta"><span class="fl-cat" style="--c: #5b8def"><svg><use href="#f-swap"/></svg>{t('Transfer')}</span><span>{t('both sides matched')}</span></div></div><div class="tx-amt">$500.00</div></div>
+                    <div class="tx" data-tx><div class="tx-mark" style="--b: #e5484d"><svg><use href="#f-play"/></svg></div><div class="tx-body"><div class="tx-name">Streambox</div><div class="tx-meta"><span class="fl-cat" style="--c: #d6589f"><svg><use href="#f-repeat"/></svg>{t('Subscriptions')}</span><span>{t('refund linked')}</span></div></div><div class="tx-amt plus">+$12.99</div></div>
                   </div>
                   <div class="layer" id="layer-final">
                     <div class="fl-fin">
                       <div class="fl-tile fl-net">
-                        <div class="fl-row"><span class="fl-label">Net worth</span><span class="fl-delta" data-delta data-count={`0 ${netGain}`} data-count-sign="+">+{usd.format(netGain)}</span></div>
+                        <div class="fl-row"><span class="fl-label">{t('Net worth')}</span><span class="fl-delta" data-delta data-count={`0 ${netGain}`} data-count-sign="+">+{usd.format(netGain)}</span></div>
                         <div class="fl-big" id="bal-net" data-count={`${netFrom} ${netTo}`}>{usd.format(netTo)}</div>
                         <svg class="result-chart" id="result-chart" viewBox="0 0 400 84" preserveAspectRatio="none">
                           <defs><linearGradient id="nw-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="nwf-a"/><stop offset="1" class="nwf-b"/></linearGradient></defs>
@@ -100,32 +115,34 @@ const areaD = `${lineD} L395 84 L5 84 Z`;
                         </svg>
                       </div>
                       <div class="fl-tile fl-accounts">
-                        <div class="fl-acct"><span class="fl-mark" style="--b: #5b8def"><svg><use href="#f-bank"/></svg></span><div><div class="fl-acct-name">Checking</div><div class="fl-sub plus" data-delta>+{usd.format(CHECKING.to - CHECKING.from)}</div></div><span class="fl-acct-val" id="bal-checking" data-count={`${CHECKING.from} ${CHECKING.to}`}>{usd.format(CHECKING.to)}</span></div>
-                        <div class="fl-acct"><span class="fl-mark" style="--b: #2f9e8f"><svg><use href="#f-coins"/></svg></span><div><div class="fl-acct-name">Savings</div><div class="fl-sub plus" data-delta>+{usd.format(SAVINGS.to - SAVINGS.from)}</div></div><span class="fl-acct-val" id="bal-savings" data-count={`${SAVINGS.from} ${SAVINGS.to}`}>{usd.format(SAVINGS.to)}</span></div>
+                        <div class="fl-acct"><span class="fl-mark" style="--b: #5b8def"><svg><use href="#f-bank"/></svg></span><div><div class="fl-acct-name">{t('Checking')}</div><div class="fl-sub plus" data-delta>+{usd.format(CHECKING.to - CHECKING.from)}</div></div><span class="fl-acct-val" id="bal-checking" data-count={`${CHECKING.from} ${CHECKING.to}`}>{usd.format(CHECKING.to)}</span></div>
+                        <div class="fl-acct"><span class="fl-mark" style="--b: #2f9e8f"><svg><use href="#f-coins"/></svg></span><div><div class="fl-acct-name">{t('Savings')}</div><div class="fl-sub plus" data-delta>+{usd.format(SAVINGS.to - SAVINGS.from)}</div></div><span class="fl-acct-val" id="bal-savings" data-count={`${SAVINGS.from} ${SAVINGS.to}`}>{usd.format(SAVINGS.to)}</span></div>
                       </div>
                       <div class="fl-stats">
-                        <div class="fl-tile fl-stat" data-stat><div class="fl-label"><svg class="plus"><use href="#f-in"/></svg>Income</div><div class="fl-stat-val plus">+$4,200.00</div></div>
-                        <div class="fl-tile fl-stat" data-stat><div class="fl-label"><svg class="minus"><use href="#f-out"/></svg>Expenses</div><div class="fl-stat-val minus">−$77.71</div></div>
-                        <div class="fl-tile fl-stat fl-budget" data-stat><div class="fl-row"><span class="fl-label"><i style="background: #3aa655"></i>Groceries</span><span class="fl-label">{usd.format(BUDGET.spent)} of ${BUDGET.limit}</span></div><div class="meter-track"><div class="meter-fill" id="m-budget" data-fill={BUDGET.spent / BUDGET.limit} style={`background: #3aa655; transform: scaleX(${BUDGET.spent / BUDGET.limit})`}></div></div></div>
+                        <div class="fl-tile fl-stat" data-stat><div class="fl-label"><svg class="plus"><use href="#f-in"/></svg>{t('Income')}</div><div class="fl-stat-val plus">+$4,200.00</div></div>
+                        <div class="fl-tile fl-stat" data-stat><div class="fl-label"><svg class="minus"><use href="#f-out"/></svg>{t('Expenses')}</div><div class="fl-stat-val minus">−$77.71</div></div>
+                        <div class="fl-tile fl-stat fl-budget" data-stat><div class="fl-row"><span class="fl-label"><i style="background: #3aa655"></i>{t('Groceries')}</span><span class="fl-label">{t('{spent} of {limit}', { spent: usd.format(BUDGET.spent), limit: `$${BUDGET.limit}` })}</span></div><div class="meter-track"><div class="meter-fill" id="m-budget" data-fill={BUDGET.spent / BUDGET.limit} style={`background: #3aa655; transform: scaleX(${BUDGET.spent / BUDGET.limit})`}></div></div></div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="col-label" data-seek="5">Everything settled</div>
+            <div class="col-label" data-seek="5">{t('Everything settled')}</div>
           </div>
         </div>
 
       <div class="flow-controls" id="controls">
-        <button type="button" class="ctl" id="toggle" title="Pause or resume"><svg viewBox="0 0 24 24" aria-hidden="true"><path id="toggle-icon" fill="currentColor" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg><span id="toggle-text" class="sr-only">Pause</span></button>
-        <button type="button" class="ctl" id="replay" title="Replay"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 1 0 2.6-5.9M4 4v5h5"/></svg><span class="sr-only">Replay</span></button>
+        <button type="button" class="ctl" id="toggle" title={t('Pause or resume')}><svg viewBox="0 0 24 24" aria-hidden="true"><path id="toggle-icon" fill="currentColor" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg><span id="toggle-text" class="sr-only">{t('Pause')}</span></button>
+        <button type="button" class="ctl" id="replay" title={t('Replay')}><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 1 0 2.6-5.9M4 4v5h5"/></svg><span class="sr-only">{t('Replay')}</span></button>
       </div>
-      <p class="sample-note">Sample data with fictional merchants.</p>
+      <p class="sample-note">{t('Sample data with fictional merchants.')}</p>
     </div>
   </div>
+  <Fragment set:html={clientStrings({ texts: SCRIPT_TEXTS })} />
 </section>
 <script>
+  import { tc } from '@/i18n/client';
   import { clamp, ease, lerp } from '@/lib/math';
 
   const END = 11.3;
@@ -295,13 +312,15 @@ const areaD = `${lineD} L395 84 L5 84 Z`;
       });
       setText({
         node: el['engine-status'],
-        text: t < T.steps ? 'Waiting for data' : t < STEPS_END ? 'Working through 5 transactions' : '5 transactions sorted',
+        text: tc({
+          text: t < T.steps ? 'Waiting for data' : t < STEPS_END ? 'Working through 5 transactions' : '5 transactions sorted',
+        }),
       });
 
       const shown = T.result + 0.4;
       setText({
         node: el['result-title'],
-        text: RESULT_TITLES.find(([until]) => t < until)?.[1] ?? 'All settled',
+        text: tc({ text: RESULT_TITLES.find(([until]) => t < until)?.[1] ?? 'All settled' }),
       });
       el.settled.style.opacity = String(prog({ t, from: END - 0.5, to: END - 0.1 }));
 
@@ -369,7 +388,7 @@ const areaD = `${lineD} L395 84 L5 84 Z`;
 
     const syncToggle = () => {
       const running = !userPaused;
-      setText({ node: el['toggle-text'], text: running ? 'Pause' : 'Resume' });
+      setText({ node: el['toggle-text'], text: tc({ text: running ? 'Pause' : 'Resume' }) });
       el['toggle-icon'].setAttribute('d', running ? 'M7 5h3.5v14H7zM13.5 5H17v14h-3.5z' : 'M8 5v14l11-7z');
       if (t >= END && document.activeElement === toggle) el.replay.focus();
       toggle.disabled = t >= END;

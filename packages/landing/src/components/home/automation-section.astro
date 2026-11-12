@@ -1,111 +1,113 @@
 ---
 import { getFeaturePage } from '@/lib/features';
+import { useI18n } from '@/i18n';
 import '@/styles/home/automation.css';
 
+const { t, url } = useI18n(Astro);
 ---
 
 <section class="sec sec-soft" id="automation">
   <div class="wrap">
-    <p class="eyebrow">Automation</p>
-    <h2>The tedious part is done before you open the app</h2>
+    <p class="eyebrow">{t('Automation')}</p>
+    <h2>{t('The tedious part is done before you open the app')}</h2>
     <div class="bento">
       <article class="plate cell cell-w">
         <div class="viz" aria-hidden="true">
           <div class="cz">
             <code class="raw-code">GRN MKT 88213</code><svg class="ic" aria-hidden="true"><use href="#f-to"></use></svg>
             <div class="vrow">
-              <span class="mark" style="--b: #2e9e56"><svg class="ic" aria-hidden="true"><use href="#f-leaf"></use></svg></span><b>Green Market</b><span class="cat" style="--c: #3aa655"><svg><use href="#f-cart"></use></svg>Groceries</span>
+              <span class="mark" style="--b: #2e9e56"><svg class="ic" aria-hidden="true"><use href="#f-leaf"></use></svg></span><b>Green Market</b><span class="cat" style="--c: #3aa655"><svg><use href="#f-cart"></use></svg>{t('Groceries')}</span>
             </div>
           </div>
           <div class="cz">
             <code class="raw-code">CORNER COFFEE #0412</code><svg class="ic" aria-hidden="true"><use href="#f-to"></use></svg>
             <div class="vrow">
-              <span class="mark" style="--b: #7a4a2b"><svg class="ic" aria-hidden="true"><use href="#f-coffee"></use></svg></span><b>Corner Coffee</b><span class="cat" style="--c: #f08c2e"><svg><use href="#f-fork"></use></svg>Eating out</span>
+              <span class="mark" style="--b: #7a4a2b"><svg class="ic" aria-hidden="true"><use href="#f-coffee"></use></svg></span><b>Corner Coffee</b><span class="cat" style="--c: #f08c2e"><svg><use href="#f-fork"></use></svg>{t('Eating out')}</span>
             </div>
           </div>
           <div class="cz">
             <code class="raw-code">ACME PAYROLL OCT</code><svg class="ic" aria-hidden="true"><use href="#f-to"></use></svg>
             <div class="vrow">
-              <span class="mark" style="--b: #2f6fed">A</span><b>Acme Inc</b><span class="cat" style="--c: #2f9e8f"><svg><use href="#f-cash"></use></svg>Salary</span>
+              <span class="mark" style="--b: #2f6fed">A</span><b>Acme Inc</b><span class="cat" style="--c: #2f9e8f"><svg><use href="#f-cash"></use></svg>{t('Salary')}</span>
             </div>
           </div>
         </div>
         <div class="cell-text">
           <h3>
-            <svg class="ic" aria-hidden="true"><use href="#r-spark"></use></svg><a class="cell-link" href={getFeaturePage({ slug: 'ai-categorization' }).href}>AI categorization</a>
+            <svg class="ic" aria-hidden="true"><use href="#r-spark"></use></svg><a class="cell-link" href={url({ href: getFeaturePage({ slug: 'ai-categorization' }).href })}>{t('AI categorization')}</a>
           </h3>
-          <p>Cryptic bank descriptions become real categories, without a setup step.</p>
+          <p>{t('Cryptic bank descriptions become real categories, without a setup step.')}</p>
         </div>
       </article>
       <article class="plate cell">
         <div class="viz" aria-hidden="true">
           <div class="rule">
             <div class="rule-row">
-              <span class="kw">When</span><span class="tok">Payee</span><span class="op">contains</span><span class="tok">Corner Coffee</span>
+              <span class="kw">{t('When')}</span><span class="tok">{t('Payee')}</span><span class="op">{t('contains')}</span><span class="tok">Corner Coffee</span>
             </div>
             <div class="rule-row">
-              <span class="kw">Then</span><span class="op">set category to</span><span class="cat" style="--c: #f08c2e"><svg><use href="#f-fork"></use></svg>Eating out</span>
+              <span class="kw">{t('Then')}</span><span class="op">{t('set category to')}</span><span class="cat" style="--c: #f08c2e"><svg><use href="#f-fork"></use></svg>{t('Eating out')}</span>
             </div>
           </div>
-          <div class="viz-foot"><svg class="ic" aria-hidden="true"><use href="#i-check"></use></svg>Runs on every new transaction</div>
+          <div class="viz-foot"><svg class="ic" aria-hidden="true"><use href="#i-check"></use></svg>{t('Runs on every new transaction')}</div>
         </div>
         <div class="cell-text">
           <h3>
-            <svg class="ic" aria-hidden="true"><use href="#r-rule"></use></svg><a class="cell-link" href={getFeaturePage({ slug: 'automation-rules' }).href}>Your rules</a>
+            <svg class="ic" aria-hidden="true"><use href="#r-rule"></use></svg><a class="cell-link" href={url({ href: getFeaturePage({ slug: 'automation-rules' }).href })}>{t('Your rules')}</a>
           </h3>
-          <p>Decide once how something should be handled, and it stays handled.</p>
+          <p>{t('Decide once how something should be handled, and it stays handled.')}</p>
         </div>
       </article>
       <article class="plate cell">
         <div class="viz" aria-hidden="true">
           <div>
             <div class="vrow">
-              <span class="mark soft" style="--b: #5b8def"><svg class="ic" aria-hidden="true"><use href="#f-bank"></use></svg></span><b>Checking</b><span class="amt">−$500.00</span>
+              <span class="mark soft" style="--b: #5b8def"><svg class="ic" aria-hidden="true"><use href="#f-bank"></use></svg></span><b>{t('Checking')}</b><span class="amt">−$500.00</span>
             </div>
-            <div class="pair-link"><span><svg class="ic" aria-hidden="true"><use href="#f-swap"></use></svg>One transfer, both sides matched</span></div>
+            <div class="pair-link"><span><svg class="ic" aria-hidden="true"><use href="#f-swap"></use></svg>{t('One transfer, both sides matched')}</span></div>
             <div class="vrow">
-              <span class="mark soft" style="--b: #2f9e8f"><svg class="ic" aria-hidden="true"><use href="#f-coins"></use></svg></span><b>Savings</b><span class="amt">+$500.00</span>
+              <span class="mark soft" style="--b: #2f9e8f"><svg class="ic" aria-hidden="true"><use href="#f-coins"></use></svg></span><b>{t('Savings')}</b><span class="amt">+$500.00</span>
             </div>
           </div>
           <div class="vrow">
-            <span class="mark" style="--b: #e5484d"><svg class="ic" aria-hidden="true"><use href="#f-play"></use></svg></span><b>Streambox</b><span class="note">refund linked</span><span class="amt plus">+$12.99</span>
+            <span class="mark" style="--b: #e5484d"><svg class="ic" aria-hidden="true"><use href="#f-play"></use></svg></span><b>Streambox</b><span class="note">{t('refund linked')}</span><span class="amt plus">+$12.99</span>
           </div>
         </div>
         <div class="cell-text">
           <h3>
-            <svg class="ic" aria-hidden="true"><use href="#f-swap"></use></svg><a class="cell-link" href={getFeaturePage({ slug: 'transfers-and-refunds' }).href}>Transfers and refunds</a>
+            <svg class="ic" aria-hidden="true"><use href="#f-swap"></use></svg><a class="cell-link" href={url({ href: getFeaturePage({ slug: 'transfers-and-refunds' }).href })}>{t('Transfers and refunds')}</a>
           </h3>
-          <p>Both sides get matched, so moving money never looks like spending it.</p>
+          <p>{t('Both sides get matched, so moving money never looks like spending it.')}</p>
         </div>
       </article>
       <article class="plate cell cell-w">
         <div class="viz" aria-hidden="true">
-          <div class="viz-head"><span>3 recurring payments found</span><b>$96.99 / month</b></div>
+          <div class="viz-head"><span>{t('3 recurring payments found')}</span><b>{t('{amount} / month', { amount: '$96.99' })}</b></div>
           <div class="vrow">
-            <span class="mark" style="--b: #e5484d"><svg class="ic" aria-hidden="true"><use href="#f-play"></use></svg></span><b>Streambox</b><span class="note">Monthly · next Nov 14</span><span class="amt">$12.99</span>
+            <span class="mark" style="--b: #e5484d"><svg class="ic" aria-hidden="true"><use href="#f-play"></use></svg></span><b>Streambox</b><span class="note">{t('Monthly · next Nov 14')}</span><span class="amt">$12.99</span>
           </div>
           <div class="vrow">
-            <span class="mark" style="--b: #7355be">F</span><b>Fit Club</b><span class="note">Monthly · next Nov 20</span><span class="amt">$39.00</span>
+            <span class="mark" style="--b: #7355be">F</span><b>Fit Club</b><span class="note">{t('Monthly · next Nov 20')}</span><span class="amt">$39.00</span>
           </div>
           <div class="vrow">
-            <span class="mark" style="--b: #1f8a9c">N</span><b>Northwind Mobile</b><span class="note">Monthly · next Dec 1</span><span class="amt">$45.00</span>
+            <span class="mark" style="--b: #1f8a9c">N</span><b>Northwind Mobile</b><span class="note">{t('Monthly · next Dec 1')}</span><span class="amt">$45.00</span>
           </div>
         </div>
         <div class="cell-text">
           <h3>
-            <svg class="ic" aria-hidden="true"><use href="#f-repeat"></use></svg><a class="cell-link" href={getFeaturePage({ slug: 'subscription-tracker' }).href}>Payees and subscriptions</a>
+            <svg class="ic" aria-hidden="true"><use href="#f-repeat"></use></svg><a class="cell-link" href={url({ href: getFeaturePage({ slug: 'subscription-tracker' }).href })}>{t('Payees and subscriptions')}</a>
           </h3>
-          <p>Merchants are recognized and recurring payments show up on their own.</p>
+          <p>{t('Merchants are recognized and recurring payments show up on their own.')}</p>
         </div>
       </article>
       <article class="plate cell cell-slim strip">
         <span class="itile"><svg class="ic" aria-hidden="true"><use href="#r-okc"></use></svg></span>
-        <div><strong>Account reconciliation</strong><span>Check your balance against the bank's and settle the difference.</span></div>
+        <div><strong>{t('Account reconciliation')}</strong><span set:html={t("Check your balance against the bank's and settle the difference.")} /></div>
       </article>
       <article class="plate cell cell-slim strip">
         <span class="itile"><svg class="ic" aria-hidden="true"><use href="#r-file"></use></svg></span>
         <div>
-          <strong><a class="cell-link" href={getFeaturePage({ slug: 'import-transactions' }).href}>Statement import</a></strong><span>Drop in a bank statement. AI-assisted parsing handles messy files.</span>
+          <strong><a class="cell-link" href={url({ href: getFeaturePage({ slug: 'import-transactions' }).href })}>{t('Statement import')}</a></strong><span>{t('Drop in a bank statement. AI-assisted parsing handles messy files.')}</span>
         </div>
       </article>
     </div>

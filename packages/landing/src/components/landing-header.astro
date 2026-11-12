@@ -1,12 +1,19 @@
 ---
 import lucide from '@iconify-json/lucide/icons.json';
+import { i18n } from 'astro:config/client';
+import { getRelativeLocaleUrl, toCodes } from 'astro:i18n';
 
 import LucideIcon from '@/components/lucide-icon.astro';
 import { FEATURE_GROUPS } from '@/lib/features';
 import { GITHUB_URL } from '@/lib/github-api';
 import { getGitHubStarsLabel } from '@/lib/github-stars';
+import { ENGLISH_ONLY, useI18n } from '@/i18n';
+
+const { t, url, locale } = useI18n(Astro);
 
 const starsLabel = await getGitHubStarsLabel();
+// Outside the starsLabel branch so the key is recorded even when the GitHub fetch fails.
+const starsText = t('stars');
 
 const NAV_LINKS = [
   { label: 'Self-Host', href: '/#open-source' },
@@ -21,15 +28,37 @@ const THEME_OPTIONS = [
   { pref: 'light', label: 'Light', icon: 'sun' },
   { pref: 'dark', label: 'Dark', icon: 'moon' },
 ] as const;
+
+const LOCALE_UI: Record<string, { flag: string; hint: string }> = {
+  en: { flag: 'gb.svg', hint: 'Read in English' },
+  uk: { flag: 'ua.svg', hint: 'Читати українською' },
+  es: { flag: 'es.png', hint: 'Leer en español' },
+  it: { flag: 'it.svg', hint: 'Leggi in italiano' },
+  de: { flag: 'de.svg', hint: 'Auf Deutsch lesen' },
+  fr: { flag: 'fr.svg', hint: 'Lire en français' },
+  'pt-BR': { flag: 'br.svg', hint: 'Ler em português' },
+};
+
+const LANGUAGES = toCodes(i18n!.locales).map((code) => {
+  const name = new Intl.DisplayNames([code], { type: 'language' }).of(code)!;
+  const path = code !== 'en' && ENGLISH_ONLY.test(Astro.url.pathname) ? '/' : Astro.url.pathname;
+  return {
+    code,
+    name: name[0].toLocaleUpperCase(code) + name.slice(1),
+    href: getRelativeLocaleUrl(code, path),
+    flag: `/img/landing/flags/${LOCALE_UI[code].flag}`,
+    hint: LOCALE_UI[code].hint,
+  };
+});
 ---
 
 <header class="site-head" data-scroll-lock-compensate>
   <div class="wrap">
-    <a class="brand" href="/"><svg aria-hidden="true"><use href="#mm-logo"></use></svg>MoneyMatter</a>
-    <nav class="site-nav" aria-label="Main">
+    <a class="brand" href={url({ href: '/' })}><svg aria-hidden="true"><use href="#mm-logo"></use></svg>MoneyMatter</a>
+    <nav class="site-nav" aria-label={t('Main')}>
       <div class="nav-feat">
-        <a class="nav-trigger" href="/features">Features</a>
-        <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="mega-menu" aria-label="Features menu"
+        <a class="nav-trigger" href={url({ href: '/features' })}>{t('Features', { ctx: 'header' })}</a>
+        <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="mega-menu" aria-label={t('Features menu')}
           ><LucideIcon name="chevron-down" /></button
         >
         <div class="mega" id="mega-menu">
@@ -37,13 +66,13 @@ const THEME_OPTIONS = [
             {
               FEATURE_GROUPS.map((group) => (
                 <div>
-                  <p>{group.title}</p>
+                  <p>{t(group.title)}</p>
                   <ul>
                     {group.pages.map((page) => (
                       <li>
-                        <a href={page.href}>
+                        <a href={url({ href: page.href })}>
                           <LucideIcon name={page.icon} />
-                          {page.label}
+                          {t(page.label)}
                         </a>
                       </li>
                     ))}
@@ -52,10 +81,10 @@ const THEME_OPTIONS = [
               ))
             }
           </div>
-          <a class="mega-all" href="/features">Browse all features<LucideIcon name="arrow-right" /></a>
+          <a class="mega-all" href={url({ href: '/features' })}>{t('Browse all features')}<LucideIcon name="arrow-right" /></a>
         </div>
       </div>
-      {NAV_LINKS.map((link) => <a href={link.href}>{link.label}</a>)}
+      {NAV_LINKS.map((link) => <a href={url({ href: link.href })}>{t(link.label, { ctx: 'header' })}</a>)}
     </nav>
     <div class="head-actions">
       <a
@@ -71,40 +100,62 @@ const THEME_OPTIONS = [
             fill="currentColor"
             d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
           ></path></svg
-        >Star<span class="sr-only"> MoneyMatter on GitHub{starsLabel && ','}</span>{
+        >{t('Star')}<span class="sr-only"> {t('MoneyMatter on GitHub')}{starsLabel && ','}</span>{
           starsLabel && (
             <span class="gh-count">
               <svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-star"></use></svg>
-              {starsLabel}<span class="sr-only"> stars</span>
+              {starsLabel}<span class="sr-only"> {starsText}</span>
             </span>
           )
         }
       </a>
       <details class="theme-dd">
-        <summary aria-label="Colour theme" title="Colour theme">
+        <summary aria-label={t('Colour theme')} title={t('Colour theme')}>
           {
             THEME_OPTIONS.map((option) => (
               <svg viewBox="0 0 24 24" aria-hidden="true" data-i={option.pref} set:html={lucide.icons[option.icon].body} />
             ))
           }
         </summary>
-        <div class="theme-menu" role="group" aria-label="Colour theme">
+        <div class="theme-menu" role="group" aria-label={t('Colour theme')}>
           {
             THEME_OPTIONS.map((option) => (
               <button type="button" data-theme-pref={option.pref} aria-pressed={String(option.pref === 'system')}>
                 <LucideIcon name={option.icon} />
-                {option.label}
+                {t(option.label)}
               </button>
             ))
           }
         </div>
       </details>
-      <a class="signin" href="/sign-in">Sign in</a>
+      <details class="theme-dd">
+        <summary aria-label={t('Language')} title={t('Language')}
+          ><img class="lang-flag" src={LANGUAGES.find((language) => language.code === locale)!.flag} alt="" width="20" height="14" /></summary
+        >
+        <div class="theme-menu" role="group" aria-label={t('Language')}>
+          {
+            LANGUAGES.map((language) => (
+              <a
+                href={language.href}
+                hreflang={language.code}
+                lang={language.code}
+                data-locale={language.code}
+                data-hint={language.hint}
+                aria-current={language.code === locale ? 'true' : undefined}
+              >
+                <img class="lang-flag" src={language.flag} alt="" width="20" height="14" loading="lazy" decoding="async" />
+                {language.name}
+              </a>
+            ))
+          }
+        </div>
+      </details>
+      <a class="signin" href="/sign-in">{t('Sign in', { ctx: 'header' })}</a>
       <a class="btn btn-primary btn-sm" href="/sign-up" data-track="landing_cta_clicked" data-track-location="header">
-        Try for free
+        {t('Try for free', { ctx: 'header' })}
       </a>
       <details class="nav-menu">
-        <summary aria-label="Menu"
+        <summary aria-label={t('Menu')}
           ><svg
             viewBox="0 0 24 24"
             aria-hidden="true"
@@ -115,9 +166,9 @@ const THEME_OPTIONS = [
           ></summary
         >
         <div class="nav-panel">
-          <nav aria-label="Main menu">
-            <a href="/features">Features</a>
-            {NAV_LINKS.map((link) => <a href={link.href}>{link.label}</a>)}
+          <nav aria-label={t('Main menu')}>
+            <a href={url({ href: '/features' })}>{t('Features', { ctx: 'header' })}</a>
+            {NAV_LINKS.map((link) => <a href={url({ href: link.href })}>{t(link.label, { ctx: 'header' })}</a>)}
             <a
               href={GITHUB_URL}
               target="_blank"
@@ -134,26 +185,53 @@ const THEME_OPTIONS = [
                 )
               }
             </a>
-            <a class="menu-signin" href="/sign-in">Sign in</a>
+            <a class="menu-signin" href="/sign-in">{t('Sign in', { ctx: 'header' })}</a>
           </nav>
-          <div class="segmented theme-seg menu-theme" role="group" aria-label="Colour theme">
+          <div class="segmented theme-seg menu-theme" role="group" aria-label={t('Colour theme')}>
             {
               THEME_OPTIONS.map((option) => (
                 <button
                   type="button"
                   data-theme-pref={option.pref}
                   aria-pressed={String(option.pref === 'system')}
-                  aria-label={`${option.label} theme`}
-                  title={`${option.label} theme`}
+                  aria-label={t(`${option.label} theme`)}
+                  title={t(`${option.label} theme`)}
                 >
                   <LucideIcon name={option.icon} />
                 </button>
               ))
             }
           </div>
+          <div class="menu-lang" role="group" aria-label={t('Language')}>
+            {
+              LANGUAGES.map((language) => (
+                <a
+                  href={language.href}
+                  hreflang={language.code}
+                  lang={language.code}
+                  data-locale={language.code}
+                  data-hint={language.hint}
+                  aria-current={language.code === locale ? 'true' : undefined}
+                >
+                  <img class="lang-flag" src={language.flag} alt="" width="20" height="14" loading="lazy" decoding="async" />
+                  {language.name}
+                </a>
+              ))
+            }
+          </div>
         </div>
       </details>
     </div>
+    {
+      !ENGLISH_ONLY.test(Astro.url.pathname) && (
+        <div class="locale-hint" hidden>
+          <a />
+          <button type="button" aria-label={t('Dismiss')}>
+            <LucideIcon name="x" />
+          </button>
+        </div>
+      )
+    }
   </div>
 </header>
 
@@ -235,4 +313,47 @@ const THEME_OPTIONS = [
     else if (inMega) megaToggle.focus();
   });
   header.querySelectorAll('.nav-panel a').forEach((link) => link.addEventListener('click', () => closeMenus()));
+
+  const matchLocale = ({ languages, locales }: { languages: readonly string[]; locales: string[] }) => {
+    for (const language of languages) {
+      const match = locales.find((code) => code.split('-')[0] === language.split('-')[0].toLowerCase());
+      if (match) return match;
+    }
+  };
+
+  const canShowHint = () => {
+    try {
+      return localStorage.getItem('preferred-locale') === null && localStorage.getItem('locale-hint-dismissed') === null;
+    } catch {
+      return false;
+    }
+  };
+
+  const hint = header.querySelector<HTMLElement>('.locale-hint');
+  if (hint) {
+    const options = [...header.querySelectorAll<HTMLAnchorElement>('[data-locale]')];
+    const target = matchLocale({ languages: navigator.languages, locales: options.map((option) => option.dataset.locale!) });
+    if (target && target !== document.documentElement.lang && canShowHint()) {
+      const option = options.find((item) => item.dataset.locale === target)!;
+      const link = hint.querySelector('a')!;
+      link.href = option.href;
+      link.hreflang = link.lang = link.dataset.locale = target;
+      link.append(option.querySelector('img')!.cloneNode(), option.dataset.hint!);
+      hint.querySelector('button')!.addEventListener('click', () => {
+        try {
+          localStorage.setItem('locale-hint-dismissed', '1');
+        } catch {}
+        hint.remove();
+      });
+      hint.hidden = false;
+    }
+  }
+
+  header.querySelectorAll<HTMLAnchorElement>('[data-locale]').forEach((link) =>
+    link.addEventListener('click', () => {
+      try {
+        localStorage.setItem('preferred-locale', link.dataset.locale!);
+      } catch {}
+    }),
+  );
 </script>

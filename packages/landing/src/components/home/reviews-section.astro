@@ -1,6 +1,9 @@
 ---
 import '@/styles/home/reviews.css';
 import { REDDIT_URL } from '@/lib/github-api';
+import { useI18n } from '@/i18n';
+
+const { t, clientStrings } = useI18n(Astro);
 
 const REVIEWS: { quote: string; author: string; source: string; href?: string; color?: string; lead?: boolean }[] = [
   {
@@ -88,9 +91,9 @@ const REVIEWS: { quote: string; author: string; source: string; href?: string; c
 
 <section class="sec" id="reviews">
   <div class="wrap">
-    <p class="eyebrow">From people using it</p>
-    <h2>What users say</h2>
-    <p class="lede">Real comments, quoted as written. Public ones link to the original post.</p>
+    <p class="eyebrow">{t('From people using it')}</p>
+    <h2>{t('What users say')}</h2>
+    <p class="lede">{t('Real comments, quoted as written. Public ones link to the original post.')}</p>
     <div class="revwall" id="revwall">
       {
         REVIEWS.map((review) => (
@@ -111,8 +114,8 @@ const REVIEWS: { quote: string; author: string; source: string; href?: string; c
                 </svg>
               </span>
               <span class="rev-who">
-                <strong>{review.author}</strong>
-                <span>{review.source}</span>
+                <strong>{t(review.author)}</strong>
+                <span>{review.href ? review.source : t(review.source)}</span>
               </span>
               {review.href && (
                 <a
@@ -120,9 +123,9 @@ const REVIEWS: { quote: string; author: string; source: string; href?: string; c
                   href={review.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Original on ${review.source}`}
+                  aria-label={t('Original on {source}', { source: review.source })}
                 >
-                  Original
+                  {t('Original')}
                   <svg aria-hidden="true" class="ic">
                     <use href="#f-out" />
                   </svg>
@@ -133,23 +136,26 @@ const REVIEWS: { quote: string; author: string; source: string; href?: string; c
         ))
       }
     </div>
-    <button type="button" class="btn btn-quiet rev-toggle" aria-expanded="false" aria-controls="revwall">Show more</button>
+    <button type="button" class="btn btn-quiet rev-toggle" aria-expanded="false" aria-controls="revwall">{t('Show more')}</button>
+    <Fragment set:html={clientStrings({ texts: ['Show more', 'Show less'] })} />
     <p class="rev-more">
-      Using MoneyMatter? <a href={REDDIT_URL} target="_blank" rel="noopener noreferrer" data-track="landing_reddit_clicked" data-track-location="reviews"
-        >Share how it goes on Reddit<svg aria-hidden="true" class="ic"><use href="#f-to" /></svg></a
+      {t('Using MoneyMatter?')} <a href={REDDIT_URL} target="_blank" rel="noopener noreferrer" data-track="landing_reddit_clicked" data-track-location="reviews"
+        >{t('Share how it goes on Reddit')}<svg aria-hidden="true" class="ic"><use href="#f-to" /></svg></a
       >
     </p>
   </div>
 </section>
 
 <script>
+  import { tc } from '@/i18n/client';
+
   const wall = document.getElementById('revwall');
   const toggle = document.querySelector<HTMLButtonElement>('.rev-toggle');
 
   toggle?.addEventListener('click', () => {
     const open = wall?.classList.toggle('open') ?? false;
     toggle.setAttribute('aria-expanded', String(open));
-    toggle.textContent = open ? 'Show less' : 'Show more';
+    toggle.textContent = tc({ text: open ? 'Show less' : 'Show more' });
     if (!open) toggle.scrollIntoView({ block: 'nearest' });
   });
 </script>

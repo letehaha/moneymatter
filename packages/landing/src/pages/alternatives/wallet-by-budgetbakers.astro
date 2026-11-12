@@ -1,6 +1,8 @@
 ---
 import AlternativeLayout from '@/layouts/alternative-layout.astro';
+import { useI18n } from '@/i18n';
 
+const { t } = useI18n(Astro);
 const checkedOn = '9 October 2026';
 const DOCS_IMPORT_URL = 'https://docs.moneymatter.app/import/other-import-sources/#wallet-by-budgetbakers';
 const DOCS_TRANSFERS_URL = 'https://docs.moneymatter.app/transfers-and-refunds/how-transfers-work/';
@@ -259,10 +261,12 @@ const SOURCES = [
   trademarkNote="Wallet and BudgetBakers are trademarks of BudgetBakers; MoneyMatter is not affiliated with them."
   sources={SOURCES}
 >
-  <p slot="import-note" class="alt-note">
-    Two records are joined into one transfer when they share a date and time, sit in different accounts, and their
-    amounts are within 1% of each other. See <a href={DOCS_TRANSFERS_URL}
-      >how transfers work</a
-    >.
-  </p>
+  <p
+    slot="import-note"
+    class="alt-note"
+    set:html={t(
+      'Two records are joined into one transfer when they share a date and time, sit in different accounts, and their amounts are within 1% of each other. See <a href="{transfers}">how transfers work</a>.',
+      { transfers: DOCS_TRANSFERS_URL },
+    )}
+  />
 </AlternativeLayout>

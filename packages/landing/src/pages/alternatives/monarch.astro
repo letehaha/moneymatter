@@ -1,5 +1,8 @@
 ---
 import AlternativeLayout from '@/layouts/alternative-layout.astro';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n(Astro);
 
 const checkedOn = '12 October 2026';
 const DOCS_CSV_IMPORT_URL = 'https://docs.moneymatter.app/import/import-from-csv/';
@@ -335,29 +338,24 @@ const SOURCES = [
   sources={SOURCES}
   whyCloud={{ heading: 'Cloud account or your own server', items: WHY_CLOUD }}
 >
-  <p slot="import-note" class="alt-note">
-    After the import, open <a
-      href={DOCS_LINK_TRANSFERS_URL}
-      target="_blank"
-      rel="noopener noreferrer">Transfer matching</a
-    > to join the two sides of each transfer. Until they are linked, a transfer counts once as spending and once as income.
-  </p>
+  <p
+    slot="import-note"
+    class="alt-note"
+    set:html={t(
+      'After the import, open <a href="{linkTransfers}" target="_blank" rel="noopener noreferrer">Transfer matching</a> to join the two sides of each transfer. Until they are linked, a transfer counts once as spending and once as income.',
+      { linkTransfers: DOCS_LINK_TRANSFERS_URL },
+    )}
+  />
 
-  <p class="eyebrow">Import</p>
-  <h2>Second route: an AI assistant over MCP</h2>
-  <p class="lede">
-    MoneyMatter has a built-in MCP server, included in every plan and in the trial. It works with assistants that
-    support remote MCP servers with OAuth sign-in. The <a
-      href={DOCS_MCP_URL}
-      target="_blank"
-      rel="noopener noreferrer">connection guide</a
-    > covers Claude, ChatGPT and Claude Code. You connect the assistant, give it your Monarch CSV, and it creates the
-    records through the server's tools. Monarch's own <a
-      href={MONARCH_MCP_URL}
-      target="_blank"
-      rel="noopener noreferrer nofollow">help page</a
-    > says you can upload your export to an AI model of your choice.
-  </p>
+  <p class="eyebrow">{t('Import')}</p>
+  <h2>{t('Second route: an AI assistant over MCP')}</h2>
+  <p
+    class="lede"
+    set:html={t(
+      "MoneyMatter has a built-in MCP server, included in every plan and in the trial. It works with assistants that support remote MCP servers with OAuth sign-in. The <a href=\"{mcpGuide}\" target=\"_blank\" rel=\"noopener noreferrer\">connection guide</a> covers Claude, ChatGPT and Claude Code. You connect the assistant, give it your Monarch CSV, and it creates the records through the server's tools. Monarch's own <a href=\"{monarchHelp}\" target=\"_blank\" rel=\"noopener noreferrer nofollow\">help page</a> says you can upload your export to an AI model of your choice.",
+      { mcpGuide: DOCS_MCP_URL, monarchHelp: MONARCH_MCP_URL },
+    )}
+  />
   <dl class="plate alt-dl alt-rows">
     {
       [
@@ -379,10 +377,12 @@ const SOURCES = [
         },
         {
           lead: 'Checking',
+          ctx: 'verify',
           text: 'An assistant can skip or repeat rows. Compare the count and the account balances with your file when it finishes.',
         },
         {
           lead: 'ChatGPT',
+          raw: true,
           text: 'Whether a custom MCP server may change data depends on your ChatGPT plan. Some plans allow reading only.',
         },
         {
@@ -391,21 +391,25 @@ const SOURCES = [
         },
       ].map((item) => (
         <div>
-          <dt>{item.lead}</dt>
-          <dd>{item.text}</dd>
+          <dt>{item.raw ? item.lead : t(item.lead, item.ctx ? { ctx: item.ctx } : undefined)}</dt>
+          <dd>{t(item.text)}</dd>
         </div>
       ))
     }
   </dl>
   <p class="alt-note">
-    A self-hosted MoneyMatter runs its own MCP server. Claude and ChatGPT connect from their own servers, so the
-    install has to be reachable from the internet over HTTPS.
+    {
+      t(
+        'A self-hosted MoneyMatter runs its own MCP server. Claude and ChatGPT connect from their own servers, so the install has to be reachable from the internet over HTTPS.',
+      )
+    }
   </p>
 
-  <Fragment slot="why-cloud-intro">
-    Both run the same app. Self-host if you want your data on your own machine. Use the cloud if you would rather not
-    run a server. The <a
-      href={DOCS_SELF_HOSTING_URL}>self-hosting guide</a
-    > lists what a server needs.
-  </Fragment>
+  <Fragment
+    slot="why-cloud-intro"
+    set:html={t(
+      'Both run the same app. Self-host if you want your data on your own machine. Use the cloud if you would rather not run a server. The <a href="{selfHosting}">self-hosting guide</a> lists what a server needs.',
+      { selfHosting: DOCS_SELF_HOSTING_URL },
+    )}
+  />
 </AlternativeLayout>

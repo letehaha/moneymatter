@@ -2,52 +2,56 @@
 import { ALTERNATIVE_PAGES } from '@/lib/alternatives';
 import { FEATURE_PAGES } from '@/lib/features';
 import { GITHUB_URL, REDDIT_URL, ROADMAP_URL } from '@/lib/github-api';
+import { useI18n } from '@/i18n';
+
+const { t, url } = useI18n(Astro);
+const local = ({ page }: { page: { label: string; href: string } }) => ({ label: t(page.label), href: url({ href: page.href }) });
 
 const currentYear = new Date().getFullYear();
 
 const columns = [
   {
-    title: 'Features',
+    title: t('Features'),
     links: [
       ...FEATURE_PAGES.filter((page) =>
         ['Bank Sync', 'Import Transactions', 'Budgeting', 'Multi-Currency', 'Investment Tracking', 'Net Worth Tracker', 'Self-Hosting'].includes(
           page.label,
         ),
-      ),
-      { label: 'All features', href: '/features' },
+      ).map((page) => local({ page })),
+      { label: t('All features'), href: url({ href: '/features' }) },
     ],
   },
   {
-    title: 'Product',
+    title: t('Product'),
     links: [
-      { label: 'Pricing', href: '/#pricing' },
-      { label: 'FAQ', href: '/#faq' },
-      { label: 'Sign In', href: '/sign-in' },
-      { label: 'Sign Up', href: '/sign-up' },
+      { label: t('Pricing'), href: url({ href: '/#pricing' }) },
+      { label: t('FAQ'), href: url({ href: '/#faq' }) },
+      { label: t('Sign In'), href: '/sign-in' },
+      { label: t('Sign Up'), href: '/sign-up' },
     ],
   },
   {
-    title: 'Compare',
-    links: [...ALTERNATIVE_PAGES, { label: 'All comparisons', href: '/alternatives' }],
+    title: t('Compare'),
+    links: [...ALTERNATIVE_PAGES.map((page) => local({ page })), { label: t('All comparisons'), href: url({ href: '/alternatives' }) }],
   },
   {
-    title: 'Resources',
+    title: t('Resources'),
     links: [
-      { label: 'Guides', href: '/guides' },
-      { label: 'Docs', href: 'https://docs.moneymatter.app' },
+      { label: t('Guides'), href: url({ href: '/guides' }) },
+      { label: t('Docs'), href: 'https://docs.moneymatter.app' },
       { label: 'GitHub', href: GITHUB_URL, track: 'landing_github_clicked' },
       { label: 'Reddit', href: REDDIT_URL, track: 'landing_reddit_clicked' },
-      { label: 'Self-Host Guide', href: `${GITHUB_URL}/tree/main/self-hosting` },
-      { label: 'Roadmap', href: ROADMAP_URL },
-      { label: 'Changelog', href: `${GITHUB_URL}/releases` },
-      { label: 'Support', href: '/support' },
+      { label: t('Self-Host Guide'), href: `${GITHUB_URL}/tree/main/self-hosting` },
+      { label: t('Roadmap'), href: ROADMAP_URL },
+      { label: t('Changelog'), href: `${GITHUB_URL}/releases` },
+      { label: t('Support'), href: '/support' },
     ],
   },
   {
-    title: 'Legal',
+    title: t('Legal'),
     links: [
-      { label: 'Privacy Policy', href: '/privacy-policy' },
-      { label: 'Terms of Use', href: '/terms-of-use' },
+      { label: t('Privacy Policy'), href: '/privacy-policy' },
+      { label: t('Terms of Use'), href: '/terms-of-use' },
     ],
   },
 ];
@@ -57,9 +61,9 @@ const columns = [
   <div class="wrap">
     <div class="foot">
       <div class="foot-brand2">
-        <a class="brand" href="/"><svg aria-hidden="true"><use href="#mm-logo"></use></svg>MoneyMatter</a>
-        <p>All your money, organized automatically.</p>
-        <span class="tag">Open source · AGPL-3.0</span>
+        <a class="brand" href={url({ href: '/' })}><svg aria-hidden="true"><use href="#mm-logo"></use></svg>MoneyMatter</a>
+        <p>{t('All your money, organized automatically.')}</p>
+        <span class="tag">{t('Open source · AGPL-3.0')}</span>
       </div>
       {
         columns.map((column) => (
@@ -78,6 +82,6 @@ const columns = [
         ))
       }
     </div>
-    <div class="foot-base"><span>&copy; {currentYear} MoneyMatter</span><span>Built in the open by one developer.</span></div>
+    <div class="foot-base"><span>&copy; {currentYear} MoneyMatter</span><span>{t('Built in the open by one developer.')}</span></div>
   </div>
 </footer>

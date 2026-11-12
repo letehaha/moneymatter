@@ -1,23 +1,25 @@
 ---
 import LucideIcon from '@/components/lucide-icon.astro';
 import { REDDIT_URL, SUPPORT_EMAIL } from '@/lib/github-api';
+import { useI18n } from '@/i18n';
 
+const { t } = useI18n(Astro);
 
 const ROUTES = [
   {
-    title: 'Ask the community',
-    text: 'Questions and tips on Reddit',
+    title: t('Ask the community'),
+    text: t('Questions and tips on Reddit'),
     href: REDDIT_URL,
     icon: 'messages-square',
     track: 'landing_reddit_clicked',
   },
   {
-    title: 'Request a feature or report a bug',
-    text: 'Vote and follow progress on Featurebase',
+    title: t('Request a feature or report a bug'),
+    text: t('Vote and follow progress on Featurebase'),
     href: 'https://moneymatter.featurebase.app',
     icon: 'lightbulb',
   },
-  { title: 'Email support', text: SUPPORT_EMAIL, href: `mailto:${SUPPORT_EMAIL}`, icon: 'mail' },
+  { title: t('Email support'), text: SUPPORT_EMAIL, href: `mailto:${SUPPORT_EMAIL}`, icon: 'mail' },
 ];
 ---
 

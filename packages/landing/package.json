@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/i18n.mjs && astro build && node scripts/i18n.mjs --dist",
+    "i18n:sync": "rm -f .i18n-report.jsonl && I18N_REPORT=1 astro build && node scripts/i18n.mjs --dist && node scripts/i18n.mjs --sync",
     "preview": "astro preview"
   },
   "dependencies": {

@@ -1,6 +1,8 @@
 ---
 import AlternativeLayout from '@/layouts/alternative-layout.astro';
+import { useI18n } from '@/i18n';
 
+const { t } = useI18n(Astro);
 const checkedOn = '12 October 2026';
 const DOCS_IMPORT_URL = 'https://docs.moneymatter.app/import/other-import-sources/#microsoft-money';
 const SAMPLE_FILES_URL = 'https://github.com/clmsoft/sunriise/tree/master/src/test/data/mny';
@@ -334,13 +336,16 @@ const SOURCES = [
   importLimits={IMPORT_LIMITS}
   faq={FAQ}
   betterFit={STAY_ON_MONEY}
-  comparisonNote={`Rows from Status to Support were checked on ${checkedOn} against the sources at the end of this page. Rows from Budgets down describe Money Plus Deluxe and Premium, the 2008 versions that Money Plus Sunset replaces, from our own knowledge of the program, and are not checked against a linked source.`}
+  comparisonNote={`Rows from Status to Support were checked on ${checkedOn} against the <a href="#sources">sources at the end of this page</a>. Rows from Budgets down describe Money Plus Deluxe and Premium, the 2008 versions that Money Plus Sunset replaces, from our own knowledge of the program, and are not checked against a linked source.`}
   trademarkNote="Microsoft and Microsoft Money are trademarks of the Microsoft group of companies; MoneyMatter is not affiliated with Microsoft."
   sources={SOURCES}
   whyCloud={{ heading: 'Cloud or your own server: what differs', items: WHY_CLOUD }}
 >
   <Fragment slot="why-cloud-intro">
-    The self-hosted app is the same app with every feature on, and it stays free. The cloud is for people who would
-    rather not run a server.
+    {
+      t(
+        'The self-hosted app is the same app with every feature on, and it stays free. The cloud is for people who would rather not run a server.',
+      )
+    }
   </Fragment>
 </AlternativeLayout>

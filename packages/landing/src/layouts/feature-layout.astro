@@ -12,6 +12,8 @@ import FeatureCard from '@/components/feature-card.astro';
 import DemoStartButton from '@/components/demo-start-button.astro';
 import { getCollection } from 'astro:content';
 import { getFeaturePage } from '@/lib/features';
+import { FAQ_ASK_STRINGS } from '@/i18n/client';
+import { useI18n } from '@/i18n';
 
 type ScreenshotProps = { name: string; alt: string; width: number; height: number };
 
@@ -29,17 +31,23 @@ interface Props {
 }
 
 const { title, description, heading, intro, heroScreenshot, sections, goodToKnow, faq, guides, related } = Astro.props;
+const { t, url, locale, clientProps, localizeGuide } = useI18n(Astro);
+const faqItems = faq.map((item) => ({ question: t(item.question), answer: t(item.answer) }));
 
 const page = getFeaturePage({ href: Astro.url.pathname.replace(/\/$/, '') });
 const relatedPages = related.map((href) => getFeaturePage({ href }));
 
-const flowGuides = await getCollection('guides', (guide) => guide.data.related.includes(page.href));
+const flowGuides = await Promise.all(
+  (await getCollection('guides', (guide) => !guide.id.includes('/') && guide.data.related.includes(page.href))).map(
+    async (guide) => ({ label: (await localizeGuide({ guide })).data.title, href: url({ href: `/guides/${guide.id}` }) }),
+  ),
+);
 const guideLists = [
-  { title: 'Step-by-step guides', icon: 'file-text', items: guides },
+  { title: t('Step-by-step guides'), icon: 'file-text', items: guides.map((guide) => ({ ...guide, label: t(guide.label) })) },
   {
-    title: 'Guides that use this feature',
+    title: t('Guides that use this feature'),
     icon: 'route',
-    items: flowGuides.map((guide) => ({ label: guide.data.title, href: `/guides/${guide.id}` })),
+    items: flowGuides,
   },
 ].filter((list) => list.items.length > 0);
 
@@ -56,13 +64,14 @@ const structuredData = {
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Features', item: new URL('/features', Astro.site).href },
-        { '@type': 'ListItem', position: 2, name: page.label, item: new URL(page.href, Astro.site).href },
+        { '@type': 'ListItem', position: 1, name: t('Features'), item: new URL(url({ href: '/features' }), Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: t(page.label), item: new URL(url({ href: page.href }), Astro.site).href },
       ],
     },
     {
       '@type': 'FAQPage',
-      mainEntity: faq.map((item) => ({
+      ...(locale !== 'en' && { inLanguage: locale }),
+      mainEntity: faqItems.map((item) => ({
         '@type': 'Question',
         name: item.question,
         acceptedAnswer: { '@type': 'Answer', text: item.answer },
@@ -72,30 +81,32 @@ const structuredData = {
 };
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={t(title)} description={t(description)}>
   <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
   <LandingHeader />
   <main id="main">
     <section class="sec fp-hero">
       <div class="wrap">
-        <nav class="fp-crumbs" aria-label="Breadcrumb">
+        <nav class="fp-crumbs" aria-label={t('Breadcrumb')}>
           <ol>
-            <li><a href="/features">Features</a></li>
-            <li aria-current="page">{page.label}</li>
+            <li><a href={url({ href: '/features' })}>{t('Features')}</a></li>
+            <li aria-current="page">{t(page.label)}</li>
           </ol>
         </nav>
-        <h1>{heading}</h1>
-        <p class="fp-intro">{intro}</p>
+        <h1>{t(heading)}</h1>
+        <p class="fp-intro">{t(intro)}</p>
         <div class="hero-cta">
           <a class="btn btn-primary btn-lg" href="/sign-up" data-track="landing_cta_clicked" data-track-location="hero"
-            >Try for free<svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg
+            >{t('Try for free')}<svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg
             ></a
           >
           <DemoStartButton location="hero" />
         </div>
         <p class="hero-note fp-note">
-          <span><strong>40-day free trial,</strong> no card needed</span><span>Live demo: no signup required, sample data</span>
+          <span set:html={t('<strong>40-day free trial,</strong> no card needed')} /><span
+            >{t('Live demo: no signup required, sample data')}</span
+          >
         </p>
         {
           heroScreenshot && (
@@ -104,9 +115,9 @@ const structuredData = {
                 <i />
                 <i />
                 <i />
-                <span>{page.label}</span>
+                <span>{t(page.label)}</span>
               </div>
-              <ZoomableScreenshot {...heroScreenshot} loading="eager" />
+              <ZoomableScreenshot {...heroScreenshot} alt={t(heroScreenshot.alt)} loading="eager" />
             </figure>
           )
         }
@@ -123,9 +134,9 @@ const structuredData = {
                   <span class="idx" aria-hidden="true">
                     {row.number}
                   </span>
-                  {row.heading}
+                  {t(row.heading)}
                 </h2>
-                <p>{row.text}</p>
+                <p>{t(row.text)}</p>
                 {row.bullets && (
                   <ul class="ticks">
                     {row.bullets.map((bullet) => (
@@ -133,7 +144,7 @@ const structuredData = {
                         <svg class="ic" aria-hidden="true">
                           <use href="#i-check" />
                         </svg>
-                        {bullet}
+                        {t(bullet)}
                       </li>
                     ))}
                   </ul>
@@ -145,9 +156,9 @@ const structuredData = {
                     <i />
                     <i />
                     <i />
-                    <span>{page.label}</span>
+                    <span>{t(page.label)}</span>
                   </div>
-                  <ZoomableScreenshot {...row.screenshot} />
+                  <ZoomableScreenshot {...row.screenshot} alt={t(row.screenshot.alt)} />
                 </figure>
               )}
             </div>
@@ -157,10 +168,10 @@ const structuredData = {
         {
           goodToKnow && (
             <div class="plate fp-know">
-              <h2>Good to know</h2>
+              <h2>{t('Good to know')}</h2>
               <ul>
                 {goodToKnow.map((item) => (
-                  <li>{item}</li>
+                  <li>{t(item)}</li>
                 ))}
               </ul>
             </div>
@@ -173,8 +184,8 @@ const structuredData = {
       <div class="wrap">
         <div class="faq2">
           <div>
-            <p class="eyebrow">FAQ</p>
-            <h2>{page.label} questions</h2>
+            <p class="eyebrow">{t('FAQ')}</p>
+            <h2>{t(`${page.label} questions`)}</h2>
             {
               guideLists.map((list) => (
                 <div class="plate fp-guides">
@@ -197,8 +208,8 @@ const structuredData = {
             }
           </div>
           <div class="faq2-main">
-            <FaqDetails items={faq} />
-            <FaqAsk client:visible />
+            <FaqDetails items={faqItems} />
+            <FaqAsk client:visible {...clientProps({ texts: FAQ_ASK_STRINGS })} />
           </div>
         </div>
       </div>
@@ -208,10 +219,10 @@ const structuredData = {
       <div class="wrap">
         <div class="fp-related-head">
           <div>
-            <p class="eyebrow">Keep exploring</p>
-            <h2>Related features</h2>
+            <p class="eyebrow">{t('Keep exploring')}</p>
+            <h2>{t('Related features')}</h2>
           </div>
-          <a class="fp-all" href="/features">Browse all features<LucideIcon name="arrow-right" class="ic" /></a>
+          <a class="fp-all" href={url({ href: '/features' })}>{t('Browse all features')}<LucideIcon name="arrow-right" class="ic" /></a>
         </div>
         <ul class="fp-cards">
           {
@@ -229,9 +240,9 @@ const structuredData = {
   </main>
   <LandingFooter />
 
-  <dialog id="screenshot-zoom" class="fp-zoom-dialog" aria-label="Enlarged screenshot">
+  <dialog id="screenshot-zoom" class="fp-zoom-dialog" aria-label={t('Enlarged screenshot')}>
     <img alt="" />
-    <button type="button" class="fp-zoom-close" aria-label="Close"><LucideIcon name="x" class="ic" /></button>
+    <button type="button" class="fp-zoom-close" aria-label={t('Close')}><LucideIcon name="x" class="ic" /></button>
   </dialog>
 </BaseLayout>
 

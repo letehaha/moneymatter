@@ -34,10 +34,10 @@ export const sparkYs = ({ worth }) => {
 export const sparkLine = ({ ys }) => ys.map((y, i) => `${i ? 'L' : 'M'}${SPARK_X[i]} ${y.toFixed(1)}`).join('');
 
 /**
- * @param {{ active?: string }} [args]
+ * @param {{ active?: string, t?: (text: string) => string }} [args]
  * @returns {{ svg: string, finale: string }}
  */
-export const buildIso = ({ active } = {}) => {
+export const buildIso = ({ active, t = (text) => text } = {}) => {
   const ground = ({ x = 0, y = 0, z = 0, inner }) => {
     const [px, py] = P(x, y, z);
     return `<g transform="matrix(${C} ${S} ${-C} ${S} ${f(px)} ${f(py)})">${inner}</g>`;
@@ -318,7 +318,7 @@ export const buildIso = ({ active } = {}) => {
       tone: 'plate',
     });
     const object = OBJECTS[key]({ x: cx, y: cy - 10, z: PLATE });
-    const text = `<text class="lbl">${name}</text>`;
+    const text = `<text class="lbl">${t(name)}</text>`;
     const label =
       cx > cy
         ? groundFlip({ x: cx + HALF - 16, y: cy + HALF - 24, z: PLATE, inner: text })
@@ -339,8 +339,10 @@ export const buildIso = ({ active } = {}) => {
       corners[3],
     ];
     const [px, py] = P(cx + HALF, cy - HALF, PLATE);
+    const soonLabel = t('SOON');
+    const pillW = Math.max(44, Math.ceil(soonLabel.length * 6.3) + 14);
     const pill = soon
-      ? `<g class="pill" transform="translate(${f(px - 6)} ${f(py - 22)})"><rect x="-22" y="-9" width="44" height="18" rx="9"/><text text-anchor="middle" y="3.2">SOON</text></g>`
+      ? `<g class="pill" transform="translate(${f(px - 6)} ${f(py - 22)})"><rect x="${-pillW / 2}" y="-9" width="${pillW}" height="18" rx="9"/><text text-anchor="middle" y="3.2">${soonLabel}</text></g>`
       : '';
     return `<g class="isl${soon ? ' soon' : ''}${key === active ? ' on' : ''}" data-key="${key}"><ellipse fill="url(#iso-shade)" cx="${f(sx)}" cy="${f(sy + 16)}" rx="150" ry="84"/><g class="isl-lift">${plate}<g class="obj">${object}</g>${label}</g>${pill}${poly(hit, 'hit')}</g>`;
   };
@@ -368,7 +370,7 @@ export const buildIso = ({ active } = {}) => {
         y: -6,
         z: TOP,
         inner:
-          '<text class="cap" x="14" y="24">NET WORTH</text><text class="num" data-v="nw" x="13" y="50">$148,672</text>' +
+          `<text class="cap" x="14" y="24">${t('NET WORTH')}</text><text class="num" data-v="nw" x="13" y="50">$148,672</text>` +
           `<path class="area" data-v="area" d="${line}V118H14Z"/>` +
           `<path class="spark" data-v="spark" d="${line}"/><circle class="spark-end" data-v="end" cx="118" cy="${ys[5].toFixed(1)}" r="4"/>`,
       }) +
@@ -377,8 +379,7 @@ export const buildIso = ({ active } = {}) => {
         x: -138,
         y: 6,
         z: TOP,
-        inner:
-          '<text class="cap" x="14" y="24">CASH FLOW</text><text class="num sm" data-v="cf" x="13" y="46">+$1,240</text>',
+        inner: `<text class="cap" x="14" y="24">${t('CASH FLOW')}</text><text class="num sm" data-v="cf" x="13" y="46">+$1,240</text>`,
       }) +
       `<g data-v="bars">${bars([20, 13, 28, 17, 36])}</g>` +
       module(6, 6) +
@@ -387,7 +388,7 @@ export const buildIso = ({ active } = {}) => {
         y: 6,
         z: TOP,
         inner:
-          '<text class="cap" x="14" y="24">INSIGHTS</text>' +
+          `<text class="cap" x="14" y="24">${t('INSIGHTS')}</text>` +
           '<rect class="bar ac" data-v="ins" x="14" y="40" width="38" height="5" rx="2.5"/><rect class="bar" data-v="ins" x="14" y="52" width="27" height="5" rx="2.5"/><rect class="bar" data-v="ins" x="14" y="64" width="33" height="5" rx="2.5"/>',
       }) +
       prism({ outline: disc({ x: 94, y: 92, r: 31 }), z: TOP, h: 6 }) +

@@ -1,12 +1,18 @@
 ---
+import { readFileSync } from 'node:fs';
 import { getImage } from 'astro:assets';
 import desktopDark from '@/assets/home/hero-desktop-dark.jpg';
 import desktopLight from '@/assets/home/hero-desktop-light.jpg';
 import mobileDark from '@/assets/home/hero-mobile-dark.jpg';
 import mobileLight from '@/assets/home/hero-mobile-light.jpg';
+import { widgetTexts, type Widgets } from '@/lib/mount-widgets';
+import { useI18n } from '@/i18n';
 import '@/styles/home/demo.css';
 
-const SHOT_ALT = 'MoneyMatter dashboard with balance trend, latest transactions, cash flow and expenses';
+const { t, clientStrings } = useI18n(Astro);
+
+const SHOT_ALT = t('MoneyMatter dashboard with balance trend, latest transactions, cash flow and expenses');
+const demoWidgets: Widgets = JSON.parse(readFileSync('public/img/landing/home/demo-widgets.json', 'utf8'));
 const SOURCES = {
   light: { desktop: desktopLight, mobile: mobileLight },
   dark: { desktop: desktopDark, mobile: mobileDark },
@@ -25,9 +31,9 @@ const shots = await Promise.all(
 
 <section class="sec demo" id="demo">
   <div class="wrap">
-    <p class="eyebrow">Live demo</p>
-    <h2>Click around a real account</h2>
-    <p class="lede">The demo opens a full account with sample data. No signup needed.</p>
+    <p class="eyebrow">{t('Live demo')}</p>
+    <h2>{t('Click around a real account')}</h2>
+    <p class="lede">{t('The demo opens a full account with sample data. No signup needed.')}</p>
     <div class="product">
       <div class="shot-frame" id="shot-frame">
         <div class="shot-bar" aria-hidden="true"><i></i><i></i><i></i><span>https://moneymatter.app</span></div>
@@ -62,15 +68,16 @@ const shots = await Promise.all(
               <button type="button" class="portal-btn" data-demo-portal
                 ><svg viewBox="0 0 24 24" aria-hidden="true"
                   ><polygon points="6 3 20 12 6 21 6 3" fill="currentColor"></polygon></svg
-                >Open live demo</button
+                >{t('Open live demo')}</button
               >
-              <small aria-live="polite" data-demo-portal-note>No signup · sample data</small>
+              <small aria-live="polite" data-demo-portal-note>{t('No signup · sample data')}</small>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <Fragment set:html={clientStrings({ texts: widgetTexts({ cards: demoWidgets.cards }) })} />
 </section>
 
 <script>

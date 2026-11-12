@@ -3,19 +3,23 @@ import FaqAsk from '@/components/faq-ask.vue';
 import FaqDetails from '@/components/faq-details.astro';
 import FaqContact from '@/components/faq-contact.astro';
 import { FAQ_ITEMS } from '@/lib/faq';
+import { useI18n } from '@/i18n';
+import { FAQ_ASK_STRINGS } from '@/i18n/client';
+
+const { t, clientProps } = useI18n(Astro);
 ---
 
 <section class="sec sec-soft" id="faq">
   <div class="wrap">
     <div class="faq2">
       <div>
-        <p class="eyebrow">FAQ</p>
-        <h2>Questions, answered</h2>
+        <p class="eyebrow">{t('FAQ')}</p>
+        <h2>{t('Questions, answered')}</h2>
         <FaqContact />
       </div>
       <div class="faq2-main">
-        <FaqDetails items={FAQ_ITEMS} />
-        <FaqAsk client:visible />
+        <FaqDetails items={FAQ_ITEMS.map((item) => ({ question: t(item.question), answer: t(item.answer) }))} />
+        <FaqAsk client:visible {...clientProps({ texts: FAQ_ASK_STRINGS })} />
       </div>
     </div>
   </div>

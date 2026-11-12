@@ -1,6 +1,7 @@
 ---
 import Screenshot from '@/components/screenshot.astro';
 import LucideIcon from '@/components/lucide-icon.astro';
+import { useI18n } from '@/i18n';
 
 interface Props {
   name: string;
@@ -11,10 +12,11 @@ interface Props {
 }
 
 const { name, alt, width, height, loading = 'lazy' } = Astro.props;
+const { t } = useI18n(Astro);
 ---
 
 <button type="button" class="fp-zoom">
   <Screenshot name={name} alt={alt} width={width} height={height} loading={loading} />
-  <span class="sr-only">Enlarge screenshot</span>
+  <span class="sr-only">{t('Enlarge screenshot')}</span>
   <span class="fp-zoom-ic" aria-hidden="true"><LucideIcon name="maximize-2" class="ic" /></span>
 </button>

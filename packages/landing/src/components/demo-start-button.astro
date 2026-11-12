@@ -1,5 +1,7 @@
 ---
 import type { DemoStartLocation } from '@/lib/posthog';
+import { useI18n } from '@/i18n';
+import { DEMO_STRINGS } from '@/i18n/client';
 
 interface Props {
   location: DemoStartLocation;
@@ -7,12 +9,13 @@ interface Props {
 }
 
 const { location, replaceHistory = false } = Astro.props;
+const { t, clientStrings } = useI18n(Astro);
 ---
 
 <button type="button" class="btn btn-quiet btn-lg" data-demo-start={location} data-demo-replace-history={replaceHistory || undefined}
   ><svg class="btn-ic solid" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg
-  >View live demo</button
-><p class="demo-error" role="alert"></p>
+  >{t('View live demo')}</button
+><p class="demo-error" role="alert"></p><Fragment set:html={clientStrings({ texts: Object.values(DEMO_STRINGS) })} />
 
 <script>
   import { startDemoWithOverlay } from '@/lib/demo-overlay';

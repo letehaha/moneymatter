@@ -2,6 +2,7 @@
 import { GITHUB_URL } from '@/lib/github-api';
 import { buildIso } from '@/lib/iso-scene.js';
 import DemoStartButton from '@/components/demo-start-button.astro';
+import { useI18n } from '@/i18n';
 
 interface Props {
   /** Isometric scene behind the panel, with the home page copy. */
@@ -9,6 +10,7 @@ interface Props {
 }
 
 const { illustration = false } = Astro.props;
+const { t } = useI18n(Astro);
 
 const copy = illustration
   ? {
@@ -28,22 +30,22 @@ const copy = illustration
     <div class="final-panel">
       {illustration && <div class="final-scene" aria-hidden="true" set:html={buildIso().finale} />}
       <svg class="final-logo" aria-hidden="true"><use href="#mm-logo"></use></svg>
-      <h2>{copy.title}</h2>
-      <p class="final-sub">{copy.subtitle}</p>
+      <h2>{t(copy.title)}</h2>
+      <p class="final-sub">{t(copy.subtitle)}</p>
       <div class="hero-cta">
         <a
           class="btn btn-primary btn-lg"
           href="/sign-up"
           data-track="landing_cta_clicked"
           data-track-location="cta_section"
-          >Try for free<svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"
+          >{t('Try for free')}<svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"
             ></path></svg
           ></a
         >
         <DemoStartButton location="cta_section" />
       </div>
       <p class="hero-note">
-        <strong>40-day free trial.</strong> No card needed.{' '}
+        <Fragment set:html={t('<strong>40-day free trial.</strong> No card needed.')} />{' '}
         {
           !illustration && (
             <a
@@ -53,7 +55,7 @@ const copy = illustration
               data-track="landing_github_clicked"
               data-track-location="cta_section"
             >
-              View on GitHub
+              {t('View on GitHub')}
             </a>
           )
         }
@@ -73,10 +75,10 @@ const copy = illustration
                   data-track="landing_github_clicked"
                   data-track-location="cta_section"
                 >
-                  {tick}
+                  {t(tick)}
                 </a>
               ) : (
-                tick
+                t(tick)
               )}
             </li>
           ))

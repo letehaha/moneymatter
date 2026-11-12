@@ -12,6 +12,8 @@ import DemoStartButton from '@/components/demo-start-button.astro';
 import FaqContact from '@/components/faq-contact.astro';
 import { ALTERNATIVE_PAGES } from '@/lib/alternatives';
 import { GITHUB_URL, ROADMAP_URL } from '@/lib/github-api';
+import { FAQ_ASK_STRINGS } from '@/i18n/client';
+import { useI18n } from '@/i18n';
 
 interface Props {
   title: string;
@@ -34,7 +36,7 @@ interface Props {
   faq: { question: string; answer: string }[];
   betterFit: string[];
   trademarkNote: string;
-  sources: { label: string; href: string }[];
+  sources: { label: string; href: string; raw?: boolean }[];
   importFirst?: boolean;
   importLead?: string;
   whyCloud?: { heading: string; items: { lead: string; text: string }[] };
@@ -48,7 +50,7 @@ const {
   heading,
   intro,
   checkedOn,
-  comparisonNote = `${short} details checked on ${checkedOn} against the sources at the end of this page.`,
+  comparisonNote = `${short} details checked on ${checkedOn} against the <a href="#sources">sources at the end of this page</a>.`,
   atAGlance,
   highlights,
   comparison,
@@ -77,58 +79,55 @@ const current = ALTERNATIVE_PAGES.find((page) => page.href === path);
 if (!current) throw new Error(`${path} is missing from ALTERNATIVE_PAGES`);
 const otherAlternatives = ALTERNATIVE_PAGES.filter((page) => page.href !== path);
 
-const SOURCES_PHRASE = 'sources at the end of this page';
-const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
+const { t, url, clientProps } = useI18n(Astro);
+// Amounts, counts, codes and file extensions stay as written; every other value is a translatable phrase.
+const LITERAL_VALUE = /^(\$\d+|\d+\+|[A-Z0-9.-]+|\.\w+)$/;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={t(title)} description={t(description)}>
   <LandingHeader />
   <main id="main">
     <section class="sec alt-s alt-hero">
       <div class="wrap">
-        <nav class="eyebrow alt-crumbs" aria-label="Breadcrumb">
+        <nav class="eyebrow alt-crumbs" aria-label={t('Breadcrumb')}>
           <ol>
-            <li><a href="/alternatives">Compare</a></li>
+            <li><a href={url({ href: '/alternatives' })}>{t('Compare')}</a></li>
             <li aria-current="page">{competitor}</li>
           </ol>
         </nav>
         <div class="alt-hero-grid">
           <div>
-            <h1>{heading}</h1>
-            <p class="alt-hero-sub">{intro}</p>
+            <h1>{t(heading)}</h1>
+            <p class="alt-hero-sub">{t(intro)}</p>
             <div class="alt-cta">
               <a class="btn btn-primary btn-lg" href="/sign-up" data-track="landing_cta_clicked" data-track-location="hero"
-                >Try for free<svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"
+                >{t('Try for free')}<svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"
                   ></path></svg
                 ></a
               >
               <DemoStartButton location="hero" />
             </div>
-            <p class="hero-note"><strong>40-day free trial.</strong> No card needed.</p>
+            <p class="hero-note" set:html={t('<strong>40-day free trial.</strong> No card needed.')} />
           </div>
           <aside class="plate alt-verdict" aria-labelledby="alt-verdict-h">
-            <p class="alt-kicker" id="alt-verdict-h">The short answer</p>
+            <p class="alt-kicker" id="alt-verdict-h">{t('The short answer')}</p>
             <ul>
               <li>
                 <span class="itile sm">
                   <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#r-check" /></svg>
                 </span>
-                <p>
-                  <strong>Switch if</strong> {current.switchIf}
-                </p>
+                <p set:html={t(`<strong>Switch if</strong> ${current.switchIf}`)} />
               </li>
               <li>
                 <span class="itile sm alt-tile-mute">
                   <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#r-minus" /></svg>
                 </span>
-                <p>
-                  <strong>Stay on {current.stayOn} if</strong> {current.stayIf}
-                </p>
+                <p set:html={t(`<strong>Stay on ${current.stayOn} if</strong> ${current.stayIf}`)} />
               </li>
             </ul>
             <p class="alt-verdict-foot">
               <LucideIcon name="download" class="ic" />
-              {current.importer}
+              {t(current.importer)}
             </p>
           </aside>
         </div>
@@ -136,8 +135,8 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
           {
             atAGlance.map((fact) => (
               <div>
-                <dt>{fact.label}</dt>
-                <dd>{fact.value}</dd>
+                <dt>{t(fact.label)}</dt>
+                <dd>{LITERAL_VALUE.test(fact.value) ? fact.value : t(fact.value)}</dd>
               </div>
             ))
           }
@@ -150,16 +149,16 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
         key === 'comparison' ? (
           <section class={band({ key: 'comparison' })} id="compare">
             <div class="wrap">
-              <p class="eyebrow">Feature by feature</p>
-              <h2>{short} and MoneyMatter side by side</h2>
-              <p class="lede">
-                {noteHead}{noteTail !== undefined && <><a href="#sources">{SOURCES_PHRASE}</a>{noteTail}</>} MoneyMatter
-                plans are on the <a href="/#pricing">pricing section</a>.
-              </p>
+              <p class="eyebrow">{t('Feature by feature')}</p>
+              <h2>{t(`${short} and MoneyMatter side by side`)}</h2>
+              <p
+                class="lede"
+                set:html={`${t(comparisonNote)} ${t('MoneyMatter plans are on the <a href="{pricing}">pricing section</a>.', { pricing: url({ href: '/#pricing' }) })}`}
+              />
               <div class="plate alt-table-box">
                 <table class="alt-table">
                   <caption class="sr-only">
-                    {competitor} and MoneyMatter compared, feature by feature
+                    {t(`${competitor} and MoneyMatter compared, feature by feature`)}
                   </caption>
                   <thead>
                     <tr>
@@ -177,15 +176,15 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
                           <span class="itile sm">
                             <LucideIcon name={row.icon} class="ic" />
                           </span>
-                          {row.feature}
+                          {t(row.feature)}
                         </th>
                         <td>
                           <span class="alt-who">{short}</span>
-                          {row.competitor}
+                          {t(row.competitor)}
                         </td>
                         <td class="alt-mm">
                           <span class="alt-who">MoneyMatter</span>
-                          {row.moneymatter}
+                          {t(row.moneymatter)}
                         </td>
                       </tr>
                     ))}
@@ -197,8 +196,8 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
         ) : key === 'highlights' ? (
           <section class={band({ key: 'highlights' })} id="what-you-get">
             <div class="wrap">
-              <p class="eyebrow">Why switch</p>
-              <h2>What you get with MoneyMatter</h2>
+              <p class="eyebrow">{t('Why switch')}</p>
+              <h2>{t('What you get with MoneyMatter')}</h2>
               <div class="alt-groups">
                 {highlights.map((group, index) => (
                   <article class="alt-group">
@@ -208,13 +207,13 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
                           <LucideIcon name={group.icon} class="ic" />
                         </span>
                         <span class="idx">{String(index + 1).padStart(2, '0')}</span>
-                        <h3>{group.title}</h3>
+                        <h3>{t(group.title)}</h3>
                       </div>
                       <dl class="alt-dl">
                         {group.items.map((item) => (
                           <div>
-                            <dt>{item.lead}</dt>
-                            <dd>{item.text}</dd>
+                            <dt>{t(item.lead)}</dt>
+                            <dd>{t(item.text)}</dd>
                           </div>
                         ))}
                       </dl>
@@ -222,26 +221,29 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
                   </article>
                 ))}
               </div>
-              <p class="alt-more">
-                See what is planned on the <a href={ROADMAP_URL} target="_blank" rel="noopener noreferrer">public roadmap</a>,
-                read the code on <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">GitHub</a>, or see how <a
-                  href="/#open-source">self-hosting</a
-                > works.
-              </p>
+              <p
+                class="alt-more"
+                set:html={t(
+                  'See what is planned on the <a href="{roadmap}" target="_blank" rel="noopener noreferrer">public roadmap</a>, read the code on <a href="{github}" target="_blank" rel="noopener noreferrer">GitHub</a>, or see how <a href="{selfHost}">self-hosting</a> works.',
+                  { roadmap: ROADMAP_URL, github: GITHUB_URL, selfHost: url({ href: '/#open-source' }) },
+                )}
+              />
             </div>
           </section>
         ) : (
           <section class={band({ key: 'import' })} id="import">
             <div class="wrap">
-              <p class="eyebrow">Import</p>
-              <h2>Move your {short} history</h2>
+              <p class="eyebrow">{t('Import')}</p>
+              <h2>{t(`Move your ${short} history`)}</h2>
               <p class="lede">
-                {importLead} The <a href={importGuideUrl}>{importGuideLabel}</a> covers every option.
+                {importLead && t(importLead)} <Fragment
+                  set:html={t(`The <a href="{href}">${importGuideLabel}</a> covers every option.`, { href: importGuideUrl })}
+                />
               </p>
               <div class="alt-import">
                 <ol class="alt-steps">
                   {steps.map((step) => (
-                    <li>{step}</li>
+                    <li>{t(step)}</li>
                   ))}
                 </ol>
                 {screenshot && (
@@ -250,9 +252,9 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
                       <i></i>
                       <i></i>
                       <i></i>
-                      <span>Settings · Import/Export</span>
+                      <span>{t('Settings · Import/Export')}</span>
                     </div>
-                    <Screenshot {...screenshot} />
+                    <Screenshot {...screenshot} alt={t(screenshot.alt)} />
                   </figure>
                 )}
               </div>
@@ -262,13 +264,13 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
                     <span class="alt-mark alt-yes">
                       <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#r-check" /></svg>
                     </span>
-                    What comes across
+                    {t('What comes across')}
                   </h3>
                   <ul>
                     {imported.map((item) => (
                       <li>
                         <svg class="ic alt-yes" viewBox="0 0 24 24" aria-hidden="true"><use href="#r-check" /></svg>
-                        {item}
+                        {t(item)}
                       </li>
                     ))}
                   </ul>
@@ -278,13 +280,13 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
                     <span class="alt-mark alt-no">
                       <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#r-minus" /></svg>
                     </span>
-                    Limits of the import
+                    {t('Limits of the import')}
                   </h3>
                   <ul>
                     {importLimits.map((item) => (
                       <li>
                         <svg class="ic alt-no" viewBox="0 0 24 24" aria-hidden="true"><use href="#r-minus" /></svg>
-                        {item}
+                        {t(item)}
                       </li>
                     ))}
                   </ul>
@@ -311,16 +313,16 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
       whyCloud && (
         <section class={band({ key: 'cloud' })} id="hosting">
           <div class="wrap">
-            <p class="eyebrow">Hosting</p>
-            <h2>{whyCloud.heading}</h2>
+            <p class="eyebrow">{t('Hosting')}</p>
+            <h2>{t(whyCloud.heading)}</h2>
             <p class="lede">
               <slot name="why-cloud-intro" />
             </p>
             <dl class="plate alt-dl alt-rows">
               {whyCloud.items.map((item) => (
                 <div>
-                  <dt>{item.lead}</dt>
-                  <dd>{item.text}</dd>
+                  <dt>{t(item.lead)}</dt>
+                  <dd>{t(item.text)}</dd>
                 </div>
               ))}
             </dl>
@@ -333,19 +335,19 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
       <div class="wrap">
         <div class="faq2">
           <div>
-            <p class="eyebrow">FAQ</p>
-            <h2>Questions about switching</h2>
+            <p class="eyebrow">{t('FAQ')}</p>
+            <h2>{t('Questions about switching')}</h2>
             <FaqContact />
           </div>
           <div class="faq2-main">
-            <FaqDetails items={faq} />
-            <FaqAsk client:visible class="alt-ask" />
+            <FaqDetails items={faq.map((item) => ({ question: t(item.question), answer: t(item.answer) }))} />
+            <FaqAsk client:visible class="alt-ask" {...clientProps({ texts: FAQ_ASK_STRINGS })} />
           </div>
         </div>
         <div class="plate alt-fit">
-          <h3>When {short} is the better fit</h3>
+          <h3>{t(`When ${short} is the better fit`)}</h3>
           <ul>
-            {betterFit.map((item) => <li>{item}</li>)}
+            {betterFit.map((item) => <li>{t(item)}</li>)}
           </ul>
         </div>
       </div>
@@ -353,36 +355,39 @@ const [noteHead, noteTail] = comparisonNote.split(SOURCES_PHRASE);
 
     <section class={band({ key: 'others' })} id="other-comparisons">
       <div class="wrap">
-        <p class="eyebrow">Compare</p>
-        <h2>Other comparisons</h2>
+        <p class="eyebrow">{t('Compare')}</p>
+        <h2>{t('Other comparisons')}</h2>
         <div class="alt-others">
           {
             otherAlternatives.map((page) => (
-              <a class="plate alt-other" href={page.href}>
-                <strong>{page.label}</strong>
-                <span>{page.verdict}</span>
+              <a class="plate alt-other" href={url({ href: page.href })}>
+                <strong>{t(page.label)}</strong>
+                <span>{t(page.verdict)}</span>
                 <span class="alt-imp">
-                  <b>Import:</b> {page.importer}
+                  <b>{t('Import:')}</b> {t(page.importer)}
                 </span>
                 <em>
-                  Read the comparison
+                  {t('Read the comparison')}
                   <LucideIcon name="arrow-right" class="ic" />
                 </em>
               </a>
             ))
           }
         </div>
-        <p class="alt-more"><a href="/alternatives">All of them are on one page</a>.</p>
+        <p
+          class="alt-more"
+          set:html={t('<a href="{href}">All of them are on one page</a>.', { href: url({ href: '/alternatives' }) })}
+        />
         <div class="alt-fine" id="sources">
-          <p>{trademarkNote}</p>
+          <p>{t(trademarkNote)}</p>
           <details open>
-            <summary>Sources, checked on {checkedOn}<LucideIcon name="chevron-down" class="ic" /></summary>
+            <summary>{t(`Sources, checked on ${checkedOn}`)}<LucideIcon name="chevron-down" class="ic" /></summary>
             <ul>
               {
                 sources.map((source) => (
                   <li>
                     <a href={source.href} target="_blank" rel="noopener noreferrer nofollow">
-                      {source.label}
+                      {source.raw ? source.label : t(source.label)}
                     </a>
                   </li>
                 ))
