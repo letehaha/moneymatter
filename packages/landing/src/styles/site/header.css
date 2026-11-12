@@ -41,14 +41,6 @@
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
   backdrop-filter: blur(14px) saturate(1.4);
 }
-/* Relative, not static: z-index must keep applying or the open menu panel
-   paints under the hero's positioned content. */
-@media (max-width: 760px) {
-  .site-head {
-    position: relative;
-    top: 0;
-  }
-}
 .segmented {
   display: inline-flex;
   padding: 2px;
