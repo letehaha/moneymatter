@@ -25,6 +25,7 @@ export async function startDemo({
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(30_000),
     });
   } catch (error) {
     console.error('Failed to start demo:', error);

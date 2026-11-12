@@ -1,0 +1,210 @@
+.product {
+  width: var(--frame-w);
+  margin: 48px 0 0 calc((100% - var(--frame-w)) / 2);
+  text-align: left;
+  height: var(--visible);
+}
+.shot-frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow:
+    var(--shadow-pop),
+    inset 0 1px 0 var(--edge);
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.shot-frame.zoomed {
+  z-index: 50;
+}
+.shot-crop {
+  position: relative;
+  overflow: hidden;
+}
+.shot-portal {
+  position: absolute;
+  inset: 0;
+}
+.shot-veil {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 40%, transparent);
+  backdrop-filter: blur(1px);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.shot-action {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: var(--visible);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+.shot-action small {
+  font-size: 12px;
+}
+.portal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.portal-btn svg {
+  width: 14px;
+  height: 14px;
+}
+.shot-portal:hover .shot-veil,
+.shot-portal:focus-within .shot-veil {
+  opacity: 1;
+}
+.shot-portal:hover .shot-action,
+.shot-portal:focus-within .shot-action {
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (hover: none) {
+  .shot-action {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+.demo {
+  position: relative;
+  overflow: clip;
+  padding-block: 96px 0;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+.demo .eyebrow {
+  justify-content: center;
+}
+.demo h2,
+.demo .lede {
+  margin-inline: auto;
+}
+.demo .product {
+  --frame-w: min(1320px, calc(100vw - 32px));
+  --visible: calc(41px + var(--frame-w) * 553 / 1517);
+  margin-top: 64px;
+}
+@media (max-width: 731px) {
+  .demo .product {
+    --visible: calc(41px + var(--frame-w) * 553 / 979);
+  }
+}
+.demo .shot-action small {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  color: var(--fg);
+  font-weight: 500;
+}
+.demo .shot-crop {
+  max-height: calc(var(--visible) + 70px);
+}
+.demo .shot-frame:hover,
+.demo .shot-frame:focus-within {
+  transform: translateY(-56px);
+}
+.demo-app {
+  --demo-bg: rgb(243, 241, 237);
+  --demo-side: #ffffff;
+  display: flex;
+  transform-origin: 0 0;
+  background: var(--demo-bg);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .demo-app {
+    --demo-bg: rgb(11, 9, 8);
+    --demo-side: rgb(19, 17, 16);
+  }
+}
+:root[data-theme='dark'] .demo-app {
+  --demo-bg: rgb(11, 9, 8);
+  --demo-side: rgb(19, 17, 16);
+}
+.demo-rail {
+  box-sizing: border-box;
+  flex: none;
+  width: 64px;
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border-right: 1px solid var(--border);
+  background: var(--demo-side);
+}
+.demo-rail .rail-logo {
+  width: 30px;
+  height: 30px;
+  margin-bottom: 12px;
+}
+.demo-rail i {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  color: var(--muted);
+}
+.demo-rail i.on {
+  background: var(--accent-soft);
+  color: var(--fg);
+}
+.demo-rail i svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.demo-rail hr {
+  width: 28px;
+  margin: 8px 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+.demo-rail i:last-child {
+  margin-top: auto;
+}
+.demo-app.narrow .demo-rail {
+  display: none;
+}
+.demo-grid {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 17px;
+  padding: 24px;
+}
+#shot-crop:is(.live, .pending) .shot,
+#shot-crop:not(.live) .demo-app {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shot-frame {
+    transition: none;
+  }
+  .shot-frame:is(:hover, :focus-within),
+  .demo .shot-frame:is(:hover, :focus-within) {
+    transform: none;
+  }
+}

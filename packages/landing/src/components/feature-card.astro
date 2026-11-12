@@ -1,4 +1,5 @@
 ---
+import '@/styles/feature-page.css';
 import LucideIcon from '@/components/lucide-icon.astro';
 
 interface Props {
@@ -8,10 +9,11 @@ interface Props {
 const { page } = Astro.props;
 ---
 
-<a href={page.href} class="border-border/50 bg-card hover:border-primary/50 block h-full rounded-2xl border p-5 transition-all">
-  <span class="flex items-center gap-3 font-semibold">
-    <LucideIcon name={page.icon} class="text-primary-text size-5 shrink-0" />
-    {page.label}
+<a class="plate fp-card" href={page.href}>
+  <span class="fp-card-top">
+    <span class="itile"><LucideIcon name={page.icon} class="ic" /></span>
+    <LucideIcon name="arrow-right" class="ic" />
   </span>
-  <span class="text-muted-foreground mt-2 block text-sm leading-relaxed">{page.summary}</span>
+  <strong>{page.label}</strong>
+  <span>{page.summary}</span>
 </a>

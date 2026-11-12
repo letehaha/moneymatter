@@ -1,0 +1,119 @@
+---
+import { Image } from 'astro:assets';
+import investmentsDark from '@/assets/home/shot-investments-dark.jpg';
+import investmentsLight from '@/assets/home/shot-investments-light.jpg';
+import networthDark from '@/assets/home/shot-networth-dark.jpg';
+import networthLight from '@/assets/home/shot-networth-light.jpg';
+import { getFeaturePage } from '@/lib/features';
+import '@/styles/home/features.css';
+
+const STORIES = [
+  {
+    idx: '01',
+    title: 'Net worth you can trust',
+    href: getFeaturePage({ slug: 'net-worth-tracker' }).href,
+    text: 'Cash, investments, vehicles, ventures and debts add up in one history, week by week.',
+    ticks: ['Stacked by asset type', 'Liabilities counted against what you own', 'Filter by asset, liability and period'],
+    bar: 'Net worth history',
+    frame: 'frame-worth',
+    images: { light: networthLight, dark: networthDark },
+    alt: 'Net worth history chart with assets and liabilities by week',
+  },
+  {
+    idx: '02',
+    title: 'Investments next to everything else',
+    href: getFeaturePage({ slug: 'investment-tracking' }).href,
+    text: 'Holdings, cost basis and realized and unrealized gains, for stocks, ETFs and crypto.',
+    ticks: ['Total return per holding', 'Cash balances inside each portfolio', 'Import trades from a file'],
+    bar: 'Growth Portfolio',
+    frame: 'frame-invest',
+    images: { light: investmentsLight, dark: investmentsDark },
+    alt: 'Portfolio with total value, gains and a table of holdings',
+    flip: true,
+  },
+];
+
+const ALSO = [
+  { icon: 'r-pct', title: 'Loans', text: 'What you still owe, in your net worth.', slug: 'loan-tracking' },
+  { icon: 'r-car', title: 'Vehicles', text: 'Count what your car is worth.', slug: 'vehicles-and-ventures' },
+  { icon: 'r-rocket', title: 'Venture deals', text: 'Keep private investments on the map.', slug: 'vehicles-and-ventures' },
+  { icon: 'r-globe', title: 'Multi-currency', text: 'Accounts in any currency, one total.', slug: 'multi-currency' },
+  { icon: 'r-users', title: 'Family sharing', text: 'Up to 5 household seats on Plus.', slug: 'family-sharing' },
+];
+---
+
+<section class="sec sec-soft" id="features">
+  <div class="wrap">
+    <p class="eyebrow">All in one place</p>
+    <h2>Everything you own and owe, in one picture</h2>
+
+    {
+      STORIES.map((s) => (
+        <div class:list={['story2', { flip: s.flip }]}>
+          <div>
+            <span class="idx">{s.idx}</span>
+            <h3>
+              <a href={s.href}>{s.title}</a>
+            </h3>
+            <p>{s.text}</p>
+            <ul class="ticks">
+              {s.ticks.map((t) => (
+                <li>
+                  <svg class="ic" aria-hidden="true">
+                    <use href="#i-check" />
+                  </svg>
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div class="win">
+            <div class="shot-bar" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+              <span>{s.bar}</span>
+            </div>
+            <div class={`pframe ${s.frame} crop-app`}>
+              {(['light', 'dark'] as const).map((theme) => (
+                <picture class={`shot shot-${theme}`}>
+                  <Image
+                    src={s.images[theme]}
+                    alt={s.alt}
+                    format="webp"
+                    widths={[960, 1440, 1920, 2880]}
+                    sizes="(min-width: 900px) 970px, 132vw"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </picture>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))
+    }
+
+    <ul class="also2">
+      {
+        ALSO.map((a) => (
+          <li class="plate">
+            <span class="itile">
+              <svg class="ic" aria-hidden="true">
+                <use href={`#${a.icon}`} />
+              </svg>
+            </span>
+            <div>
+              <strong>
+                <a class="also-link" href={getFeaturePage({ slug: a.slug }).href}>
+                  {a.title}
+                </a>
+              </strong>
+              <span>{a.text}</span>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

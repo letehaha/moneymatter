@@ -1,0 +1,22 @@
+---
+import FaqAsk from '@/components/faq-ask.vue';
+import FaqDetails from '@/components/faq-details.astro';
+import FaqContact from '@/components/faq-contact.astro';
+import { FAQ_ITEMS } from '@/lib/faq';
+---
+
+<section class="sec sec-soft" id="faq">
+  <div class="wrap">
+    <div class="faq2">
+      <div>
+        <p class="eyebrow">FAQ</p>
+        <h2>Questions, answered</h2>
+        <FaqContact />
+      </div>
+      <div class="faq2-main">
+        <FaqDetails items={FAQ_ITEMS} />
+        <FaqAsk client:visible />
+      </div>
+    </div>
+  </div>
+</section>

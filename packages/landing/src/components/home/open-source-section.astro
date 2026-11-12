@@ -1,0 +1,111 @@
+---
+import '@/styles/home/open-source.css';
+import GithubActivity from '@/components/github-activity.vue';
+import { GITHUB_URL, ROADMAP_URL } from '@/lib/github-api';
+import { getGitHubStarsLabel } from '@/lib/github-stars';
+
+const starsLabel = await getGitHubStarsLabel();
+
+const LINKS = [
+  { label: 'Self-host guide', icon: 'r-server', href: `${GITHUB_URL}/tree/main/self-hosting`, track: 'landing_github_clicked', location: 'self_host' },
+  { label: 'Roadmap', icon: 'r-map', href: ROADMAP_URL, track: 'landing_roadmap_clicked', location: 'community' },
+  { label: 'Changelog', icon: 'r-list', href: `${GITHUB_URL}/releases`, track: 'landing_github_clicked', location: 'community' },
+];
+
+const FACTS = [
+  { icon: 'r-shield', title: 'AGPL-3.0', text: 'Anyone can audit the code on GitHub.' },
+  { icon: 'r-server', title: 'Free to self-host', text: 'Deploy with Docker Compose, and add Enable Banking for EU and UK banks.' },
+  { icon: 'r-export', title: 'No lock-in', text: 'Export a backup and move between the cloud and your own server, both ways.' },
+  { icon: 'r-eyeoff', title: 'Your data stays yours', text: 'Never sold or shared. No ads, and no Google or Facebook trackers.' },
+];
+---
+
+<section class="sec" id="open-source">
+  <span id="self-host"></span>
+  <div class="wrap">
+    <div class="plate oss">
+      <div class="oss-main">
+        <div>
+          <p class="eyebrow">Open source</p>
+          <h2>Built in the open by one developer</h2>
+          <p class="lede">
+            MoneyMatter is made by a solo developer, with a public roadmap and changelog. You can read every line of the
+            code, or run all of it yourself.
+          </p>
+          <div class="oss-links2">
+            <a
+              class="btn btn-quiet"
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={starsLabel ? `MoneyMatter on GitHub, ${starsLabel} stars` : undefined}
+              data-track="landing_github_clicked"
+              data-track-location="community"
+            >
+              <svg aria-hidden="true" class="ic"><use href="#r-code" /></svg>GitHub{
+                starsLabel && (
+                  <span class="gh-count">
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <use href="#i-star" />
+                    </svg>
+                    {starsLabel}
+                  </span>
+                )
+              }
+            </a>
+            {
+              LINKS.map((link) => (
+                <a
+                  class="btn btn-quiet"
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-track={link.track}
+                  data-track-location={link.location}
+                >
+                  <svg aria-hidden="true" class="ic">
+                    <use href={`#${link.icon}`} />
+                  </svg>
+                  {link.label}
+                </a>
+              ))
+            }
+          </div>
+          <GithubActivity client:visible={{ rootMargin: '200px' }} />
+        </div>
+        <div class="oss-side">
+          <div class="term">
+            <div class="shot-bar" aria-hidden="true"><i></i><i></i><i></i><span>Self-hosting quickstart</span></div>
+            <pre><code><span class="pr">$</span>git clone {GITHUB_URL}.git
+<span class="pr">$</span>cd moneymatter/self-hosting
+<span class="pr">$</span>cp .env.example .env
+<span class="pr">$</span>docker compose up -d
+<span class="cm"># open http://&lt;host&gt;:8080</span></code></pre>
+          </div>
+          <blockquote class="oss-q">
+            The developer seems very open to user feedback and users can suggest and vote on features for the roadmap.<cite
+              >Reddit user, r/YNABAlternatives</cite
+            >
+          </blockquote>
+        </div>
+      </div>
+      <ul class="oss-facts">
+        {
+          FACTS.map((fact) => (
+            <li>
+              <span class="itile">
+                <svg aria-hidden="true" class="ic">
+                  <use href={`#${fact.icon}`} />
+                </svg>
+              </span>
+              <div>
+                <strong>{fact.title}</strong>
+                <span>{fact.text}</span>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>

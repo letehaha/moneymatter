@@ -11,11 +11,10 @@
   "dependencies": {
     "@astrojs/sitemap": "^3.7.2",
     "@astrojs/vue": "^7.0.2",
-    "@fontsource/montserrat": "^5.1.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/manrope": "^5.3.0",
     "@iconify-json/lucide": "^1.2.0",
     "astro": "^7.3.1",
-    "astro-icon": "^1.1.0",
-    "lucide-vue-next": "^0.469.0",
     "posthog-js": "^1.194.4",
     "vue": "^3.5.0"
   },

@@ -1,0 +1,140 @@
+---
+import { Image } from 'astro:assets';
+import LucideIcon from '@/components/lucide-icon.astro';
+import { getFeaturePage } from '@/lib/features';
+import '@/styles/home/plan.css';
+
+const SHOTS = import.meta.glob<ImageMetadata>('/src/assets/home/plan-*.webp', { eager: true, import: 'default' });
+const shot = ({ name }: { name: string }) => {
+  const image = SHOTS[`/src/assets/home/plan-${name}.webp`];
+  if (!image) throw new Error(`Missing plan screenshot: ${name}`);
+  return image;
+};
+
+const TABS = [
+  {
+    id: 'budget',
+    icon: 'r-pie',
+    title: 'Budgets',
+    text: 'Assign money to lines and see what is left at a glance.',
+    page: getFeaturePage({ slug: 'budgeting' }),
+    alt: 'Budget lines with assigned, activity and available amounts',
+  },
+  {
+    id: 'moneyflow',
+    icon: 'r-flow',
+    title: 'Money flow',
+    text: 'Follow income through taxes, expenses and savings.',
+    page: getFeaturePage({ slug: 'analytics-and-reports' }),
+    alt: 'Money flow diagram from income to expenses and savings',
+  },
+  {
+    id: 'goals',
+    icon: 'r-target',
+    title: 'Savings goals',
+    text: 'Save toward targets from the accounts you already have.',
+    page: getFeaturePage({ slug: 'savings-goals' }),
+    alt: 'Savings goals list with progress, schedule status and saved amounts',
+  },
+  {
+    id: 'trackers',
+    lucide: 'chart-column',
+    title: 'Trackers',
+    text: 'Give a trip or a project its own limit and total.',
+    page: getFeaturePage({ slug: 'spending-trackers' }),
+    alt: 'Spending tracker for a trip with a limit, spent and left amounts per line',
+  },
+  {
+    id: 'fire',
+    icon: 'r-flame',
+    title: 'FIRE',
+    text: 'See when your savings could cover your spending.',
+    page: getFeaturePage({ slug: 'fire-planner' }),
+    alt: 'FIRE planner showing time to financial independence, progress and a projection chart',
+  },
+];
+
+const IMG = {
+  widths: [800, 1600],
+  sizes: '(min-width: 900px) 820px, 100vw',
+  loading: 'lazy' as const,
+  decoding: 'async' as const,
+};
+---
+
+<section class="sec" id="plan">
+  <div class="wrap">
+    <p class="eyebrow">Plan and understand</p>
+    <h2>See where it goes, then decide where it should</h2>
+    <div class="plan2">
+      <div class="ptabs" role="group" aria-label="Planning tools">
+        {
+          TABS.map((t, i) => (
+            <button
+              type="button"
+              class="ptab"
+              data-tab={t.id}
+              aria-controls={`plan-panel-${t.id}`}
+              aria-pressed={String(i === 0)}
+            >
+              <span class="itile">
+                {t.lucide ? (
+                  <LucideIcon name={t.lucide} class="ic" />
+                ) : (
+                  <svg class="ic" aria-hidden="true">
+                    <use href={`#${t.icon}`} />
+                  </svg>
+                )}
+              </span>
+              <span class="ptab-text">
+                <strong>{t.title}</strong>
+                <span>{t.text}</span>
+              </span>
+            </button>
+          ))
+        }
+      </div>
+      <div class="plate pstage">
+        {
+          TABS.map((t, i) => (
+            <a
+              id={`plan-panel-${t.id}`}
+              data-panel={t.id}
+              href={t.page.href}
+              aria-hidden={i === 0 ? undefined : 'true'}
+              inert={i !== 0}
+            >
+              <span class="sr-only">{t.page.label}</span>
+              {SHOTS[`/src/assets/home/plan-${t.id}-light.webp`] ? (
+                <>
+                  <Image class="shot-light" src={shot({ name: `${t.id}-light` })} alt={t.alt} {...IMG} />
+                  <Image class="shot-dark" src={shot({ name: `${t.id}-dark` })} alt={t.alt} {...IMG} />
+                </>
+              ) : (
+                <Image src={shot({ name: `${t.id}-dark` })} alt={t.alt} {...IMG} />
+              )}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const plan = document.getElementById('plan');
+  const tabs = [...(plan?.querySelectorAll<HTMLButtonElement>('[data-tab]') ?? [])];
+  const panels = [...(plan?.querySelectorAll<HTMLElement>('[data-panel]') ?? [])];
+
+  const showPlan = ({ name }: { name: string }) => {
+    tabs.forEach((tab) => tab.setAttribute('aria-pressed', String(tab.dataset.tab === name)));
+    panels.forEach((panel) => {
+      const off = panel.dataset.panel !== name;
+      panel.inert = off;
+      if (off) panel.setAttribute('aria-hidden', 'true');
+      else panel.removeAttribute('aria-hidden');
+    });
+  };
+
+  tabs.forEach((tab) => tab.addEventListener('click', () => showPlan({ name: tab.dataset.tab ?? '' })));
+</script>

@@ -1,0 +1,233 @@
+---
+import { getImage } from 'astro:assets';
+import desktopDark from '@/assets/home/hero-desktop-dark.jpg';
+import desktopLight from '@/assets/home/hero-desktop-light.jpg';
+import mobileDark from '@/assets/home/hero-mobile-dark.jpg';
+import mobileLight from '@/assets/home/hero-mobile-light.jpg';
+import '@/styles/home/demo.css';
+
+const SHOT_ALT = 'MoneyMatter dashboard with balance trend, latest transactions, cash flow and expenses';
+const SOURCES = {
+  light: { desktop: desktopLight, mobile: mobileLight },
+  dark: { desktop: desktopDark, mobile: mobileDark },
+};
+
+const shots = await Promise.all(
+  (['light', 'dark'] as const).map(async (theme) => {
+    const [desktop, mobile] = await Promise.all([
+      getImage({ src: SOURCES[theme].desktop, widths: [1400, 2800], format: 'webp' }),
+      getImage({ src: SOURCES[theme].mobile, widths: [430, 860], format: 'webp' }),
+    ]);
+    return { theme, desktop, mobile };
+  }),
+);
+---
+
+<section class="sec demo" id="demo">
+  <div class="wrap">
+    <p class="eyebrow">Live demo</p>
+    <h2>Click around a real account</h2>
+    <p class="lede">The demo opens a full account with sample data. No signup needed.</p>
+    <div class="product">
+      <div class="shot-frame" id="shot-frame">
+        <div class="shot-bar" aria-hidden="true"><i></i><i></i><i></i><span>https://moneymatter.app</span></div>
+        <div class="shot-crop" id="shot-crop">
+          <div class="demo-app" id="demo-app" aria-hidden="true"><div class="demo-rail"><svg class="rail-logo"><use href="#mm-logo"/></svg><i class="on"><svg viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></i><i><svg viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg></i><i><svg viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><path d="M2 10h20"/></svg></i><i><svg viewBox="0 0 24 24"><path d="M8 2v4M16 2v4M3 10h18"/><rect width="18" height="18" x="3" y="4" rx="2"/></svg></i><i><svg viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16M18 17V9M13 17V5M8 17v-3"/></svg></i><hr><i><svg viewBox="0 0 24 24"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg></i><i><svg viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.700 3.700 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></i><i><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg></i></div><div class="demo-grid" id="demo-grid"></div></div>
+          {
+            shots.map(({ theme, desktop, mobile }) => (
+              <picture class={`shot shot-${theme}`}>
+                <source
+                  media="(max-width: 639px)"
+                  srcset={mobile.srcSet.attribute}
+                  sizes="calc(100vw - 32px)"
+                  width="860"
+                  height="2200"
+                />
+                <img
+                  src={desktop.src}
+                  srcset={desktop.srcSet.attribute}
+                  sizes="min(1400px, calc(100vw - 32px))"
+                  alt={SHOT_ALT}
+                  width="3200"
+                  height="2200"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
+            ))
+          }
+          <div class="shot-portal">
+            <div class="shot-veil"></div>
+            <div class="shot-action">
+              <button type="button" class="portal-btn" data-demo-portal
+                ><svg viewBox="0 0 24 24" aria-hidden="true"
+                  ><polygon points="6 3 20 12 6 21 6 3" fill="currentColor"></polygon></svg
+                >Open live demo</button
+              >
+              <small aria-live="polite" data-demo-portal-note>No signup · sample data</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { startDemoWithOverlay } from '@/lib/demo-overlay';
+  import { loadWidgets, mountWidgets, type Widgets } from '@/lib/mount-widgets';
+
+  const DEMO_PAD = 24;
+  const DEMO_GAP = 17;
+  const DEMO_RAIL = 64;
+  const DEMO_BAR = 41;
+  const ZOOM_MS = 600;
+  const ZOOM_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const section = document.getElementById('demo');
+  const frame = document.getElementById('shot-frame');
+  const crop = document.getElementById('shot-crop');
+  const app = document.getElementById('demo-app');
+  const grid = document.getElementById('demo-grid');
+  const product = section?.querySelector<HTMLElement>('.product');
+  crop?.classList.add('pending');
+
+  const buildDemo = ({ data }: { data: Widgets }) => {
+    if (!crop || !app || !grid || !product || !data.cards.length) throw new Error('No demo widgets');
+    const [{ w, h }] = data.cards;
+
+    mountWidgets({
+      data,
+      hosts: data.cards.map((card) => {
+        const host = document.createElement('div');
+        host.style.width = `${card.w}px`;
+        host.style.height = `${card.h}px`;
+        grid.appendChild(host);
+        return { card, host };
+      }),
+    });
+    crop.classList.replace('pending', 'live');
+
+    let fitted = 0;
+    const fit = () => {
+      const width = crop.clientWidth;
+      if (width === fitted) return;
+      fitted = width;
+      const narrow = width < 700;
+      const columns = narrow ? 2 : 3;
+      const gridWidth = columns * w + (columns - 1) * DEMO_GAP + DEMO_PAD * 2;
+      const natural = gridWidth + (narrow ? 0 : DEMO_RAIL);
+      const scale = width / natural;
+      // Browser bar, the first row, and a third of the second.
+      product.style.setProperty('--visible', `${DEMO_BAR + (DEMO_PAD + h + DEMO_GAP + h / 3) * scale}px`);
+      app.classList.toggle('narrow', narrow);
+      grid.style.width = `${gridWidth}px`;
+      app.style.width = `${natural}px`;
+      app.style.transform = `scale(${scale})`;
+      app.style.marginBottom = `${app.offsetHeight * (scale - 1)}px`;
+    };
+    new ResizeObserver(fit).observe(crop);
+  };
+
+  if (section) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        loadWidgets({ url: '/img/landing/home/demo-widgets.json' })
+          .then((data) => buildDemo({ data }))
+          .catch((error) => {
+            console.warn(error);
+            crop?.classList.remove('pending');
+          });
+      },
+      { rootMargin: '800px 0px' },
+    );
+    observer.observe(section);
+  }
+
+  let collapsedHeight = 0;
+  let unzoomTimer = 0;
+
+  const clearZoom = () => {
+    if (!section || !frame || !crop) return;
+    frame.classList.remove('zoomed');
+    frame.style.transition = '';
+    frame.style.transform = '';
+    frame.style.borderRadius = '';
+    crop.style.maxHeight = '';
+    crop.style.transition = '';
+    section.style.overflow = '';
+    section.style.zIndex = '';
+  };
+
+  const zoom = () => {
+    if (reduced || !section || !frame || !crop) return;
+    window.clearTimeout(unzoomTimer);
+    section.style.overflow = 'visible';
+    section.style.zIndex = '50';
+    frame.style.transition = 'none';
+    frame.style.transform = 'none';
+    collapsedHeight = crop.getBoundingClientRect().height;
+    crop.style.maxHeight = 'none';
+    const rect = frame.getBoundingClientRect();
+    crop.style.maxHeight = `${collapsedHeight}px`;
+    void crop.offsetHeight;
+    frame.style.transform = '';
+    crop.style.transition = `max-height ${ZOOM_MS}ms ${ZOOM_EASE}`;
+    crop.style.maxHeight = `${crop.scrollHeight}px`;
+    const scale = Math.max(window.innerWidth / rect.width, window.innerHeight / rect.height) * 1.02;
+    const x = window.innerWidth / 2 - (rect.left + rect.width / 2);
+    const y = window.innerHeight / 2 - (rect.top + rect.height / 2);
+    frame.classList.add('zoomed');
+    frame.style.transition = `transform ${ZOOM_MS}ms ${ZOOM_EASE}, border-radius ${ZOOM_MS}ms`;
+    frame.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+    frame.style.borderRadius = '0';
+  };
+
+  const unzoom = () => {
+    if (!frame?.classList.contains('zoomed') || !crop) return;
+    frame.style.transform = '';
+    frame.style.borderRadius = '';
+    crop.style.maxHeight = `${collapsedHeight}px`;
+    unzoomTimer = window.setTimeout(clearZoom, ZOOM_MS);
+  };
+
+  const button = document.querySelector<HTMLButtonElement>('[data-demo-portal]');
+  const note = document.querySelector<HTMLElement>('[data-demo-portal-note]');
+  if (button && note) {
+    const idleNote = note.textContent;
+    let busy = false;
+    let startTimer = 0;
+
+    button.addEventListener('click', () => {
+      if (busy) return;
+      busy = true;
+      note.textContent = idleNote;
+      zoom();
+      startTimer = window.setTimeout(
+        () =>
+          void startDemoWithOverlay({
+            location: 'hero_screenshot',
+            onError: ({ message }) => {
+              busy = false;
+              unzoom();
+              note.textContent = message;
+            },
+          }),
+        reduced ? 0 : ZOOM_MS,
+      );
+    });
+
+    // A bfcache restore brings back the zoomed state the page had when the demo redirected away.
+    window.addEventListener('pageshow', (event) => {
+      if (!event.persisted) return;
+      busy = false;
+      window.clearTimeout(startTimer);
+      window.clearTimeout(unzoomTimer);
+      clearZoom();
+      note.textContent = idleNote;
+    });
+  }
+</script>

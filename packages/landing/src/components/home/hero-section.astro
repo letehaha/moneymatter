@@ -1,0 +1,860 @@
+---
+import '@/styles/home/hero.css';
+import { buildIso } from '@/lib/iso-scene.js';
+import DemoStartButton from '@/components/demo-start-button.astro';
+
+const FIRST_ISLAND = 'accounts';
+const isoSvg = buildIso({ active: FIRST_ISLAND }).svg;
+
+const ISLANDS = [
+  {
+    key: 'accounts',
+    label: 'Accounts',
+    text: 'Every bank, card and cash account, in any currency.',
+    items: ['Bank sync via 6 providers', 'Manual and cash accounts', 'CSV, OFX, statement import', 'iOS SMS tracking'],
+  },
+  {
+    key: 'investments',
+    label: 'Investments',
+    text: 'Portfolios next to your everyday money.',
+    items: ['Holdings, trades and cash', 'Realized and unrealized gains', 'Stocks, ETFs and crypto'],
+    next: 'custom investments',
+  },
+  {
+    key: 'liabilities',
+    label: 'Liabilities',
+    text: 'What you owe, counted against what you own.',
+    items: ['Loans with payoff projection', 'Credit cards and overdrafts', 'Debt history in net worth'],
+  },
+  {
+    key: 'vehicles',
+    label: 'Vehicles',
+    text: 'Your car counts toward net worth.',
+    items: ['Estimated from price and age', 'Automatic depreciation', 'Override the value anytime'],
+  },
+  {
+    key: 'realestate',
+    label: 'Real estate',
+    soon: true,
+    text: 'Property value and what you still owe on it, in your net worth.',
+  },
+  { key: 'commodities', label: 'Commodities', soon: true, text: 'Gold, silver and other metals, valued at market price.' },
+  { key: 'pension', label: 'Pension', soon: true, text: 'Retirement accounts and contributions, tracked for the long run.' },
+];
+---
+
+<section class="hero">
+  <div class="wall" id="wall" aria-hidden="true"><div class="wall-inner" id="wall-inner"></div></div>
+  <div class="wrap">
+    <p class="eyebrow"><a href="#open-source">Open-source personal finance tracker</a></p>
+    <h1>All your money,<br />organized automatically.</h1>
+    <p class="hero-sub">
+      Accounts, investments, loans, vehicles and more flow into one place. Categories, transfers and balances take care
+      of themselves.
+    </p>
+    <div class="hero-cta">
+      <a class="btn btn-primary btn-lg" href="/sign-up" data-track="landing_cta_clicked" data-track-location="hero"
+        >Try for free<svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg
+        ></a
+      >
+      <DemoStartButton location="hero" />
+    </div>
+    <p class="hero-note"><strong>40-day free trial.</strong> No card needed.</p>
+    <div class="hero-ios">
+      <a
+        class="tf-badge"
+        href="https://testflight.apple.com/join/tm5q4V5H"
+        target="_blank"
+        rel="noopener noreferrer"
+        data-track="landing_testflight_clicked"
+        data-track-location="hero"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true"
+          ><path
+            fill="currentColor"
+            d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04c-2.04.027-3.91 1.183-4.961 3.014c-2.117 3.675-.546 9.103 1.519 12.09c1.013 1.454 2.208 3.09 3.792 3.039c1.52-.065 2.09-.987 3.935-.987c1.831 0 2.35.987 3.96.948c1.637-.026 2.676-1.48 3.676-2.948c1.156-1.688 1.636-3.325 1.662-3.415c-.039-.013-3.182-1.221-3.22-4.857c-.026-3.04 2.48-4.494 2.597-4.559c-1.429-2.09-3.623-2.324-4.39-2.376c-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83c-1.207.052-2.662.805-3.532 1.818c-.78.896-1.454 2.338-1.273 3.714c1.338.104 2.715-.688 3.559-1.701"
+          ></path></svg
+        >
+        <span><small>Get the iPhone app beta on</small><strong>TestFlight</strong></span>
+      </a>
+    </div>
+
+    <div class="iso" id="iso">
+      <p class="sr-only">
+        Diagram: accounts, investments, liabilities and vehicles feed into MoneyMatter, which shows net worth, cash flow
+        and insights. Real estate, commodities and pension tracking are coming soon.
+      </p>
+      <div class="iso-view">
+        <div id="iso-stage" set:html={isoSvg} />
+        {
+          ISLANDS.map(({ key, label, soon, text, items, next }) => (
+            <article class="isl-card" data-card={key} hidden={key !== FIRST_ISLAND}>
+              <div class="isl-title">
+                {label} <span class={soon ? 'tag' : 'tag live'}>{soon ? 'Soon' : 'Live'}</span>
+              </div>
+              <p>{text}</p>
+              {items && (
+                <ul>
+                  {items.map((item) => (
+                    <li>
+                      <svg aria-hidden="true">
+                        <use href="#i-check" />
+                      </svg>
+                      {item}
+                    </li>
+                  ))}
+                  {next && (
+                    <li class="next">
+                      <i />
+                      Soon: {next}
+                    </li>
+                  )}
+                </ul>
+              )}
+            </article>
+          ))
+        }
+      </div>
+      <div class="iso-legend" role="group" aria-label="What MoneyMatter tracks">
+        {
+          ISLANDS.map(({ key, label, soon }) => (
+            <button type="button" class="chip" data-chip={key} aria-pressed={String(key === FIRST_ISLAND)}>
+              {label}
+              {soon && <> <small>Soon</small></>}
+            </button>
+          ))
+        }
+      </div>
+      <p class="iso-hint">Pick an island or a chip to see what it tracks. Dashed ones are on the way.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { bars as isoBars, sparkLine, sparkYs, WORTH } from '@/lib/iso-scene.js';
+  import { clamp, ease, lerp } from '@/lib/math';
+  import { loadWidgets, mountWidgets, type MountedWidget, type Widgets } from '@/lib/mount-widgets';
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Each wall story spans 3-5 ticks (the pop, then its follow-ups), so 90s shows about six of them.
+  const MOTION_LIMIT_MS = 90000;
+  const rand = ({ min, max }: { min: number; max: number }) => min + Math.random() * (max - min);
+  const within = ({ value, min, max }: { value: number; min: number; max: number }) =>
+    Math.min(max, Math.max(min, value));
+  const money = ({ value }: { value: number }) => `$${Math.abs(Math.round(value)).toLocaleString('en-US')}`;
+
+  const initIso = () => {
+    const root = document.getElementById('iso');
+    const svg = root?.querySelector<SVGSVGElement>('#iso-stage svg');
+    if (!root || !svg) return;
+
+    const keyed = [...svg.querySelectorAll<SVGElement>('[data-key]')];
+    const cards = [...root.querySelectorAll<HTMLElement>('[data-card]')];
+    const chips = [...root.querySelectorAll<HTMLButtonElement>('[data-chip]')];
+    const order = chips.map((chip) => chip.dataset.chip ?? '');
+
+    const showIsland = ({ key }: { key: string }) => {
+      keyed.forEach((el) => el.classList.toggle('on', el.dataset.key === key));
+      cards.forEach((el) => {
+        el.hidden = el.dataset.card !== key;
+      });
+      chips.forEach((el) => el.setAttribute('aria-pressed', String(el.dataset.chip === key)));
+    };
+
+    let tour = 0;
+    let tourIndex = 0;
+    let inView = false;
+    let stopped = false;
+    const stopTour = () => window.clearInterval(tour);
+    const pick = ({ key }: { key: string | undefined }) => {
+      if (!key) return;
+      stopTour();
+      showIsland({ key });
+    };
+    svg.querySelectorAll<SVGElement>('.isl').forEach((el) => {
+      el.addEventListener('pointerenter', () => pick({ key: el.dataset.key }));
+      el.addEventListener('click', () => pick({ key: el.dataset.key }));
+    });
+    chips.forEach((el) => {
+      el.addEventListener('click', () => pick({ key: el.dataset.chip }));
+      el.addEventListener('focus', stopTour);
+      el.addEventListener('pointerenter', stopTour);
+    });
+
+    if (reduced) {
+      svg.pauseAnimations();
+      svg.querySelectorAll('.dot').forEach((dot) => dot.remove());
+      return;
+    }
+
+    new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        if (inView && !stopped) svg.unpauseAnimations();
+        else svg.pauseAnimations();
+      },
+      { threshold: 0.15 },
+    ).observe(svg);
+
+    tour = window.setInterval(() => {
+      if (!inView || document.hidden) return;
+      tourIndex = (tourIndex + 1) % order.length;
+      showIsland({ key: order[tourIndex] });
+    }, 3800);
+
+    const part = ({ name }: { name: string }) => svg.querySelector<SVGElement>(`[data-v="${name}"]`);
+    const board = {
+      nw: part({ name: 'nw' }),
+      cf: part({ name: 'cf' }),
+      bars: part({ name: 'bars' }),
+      spark: part({ name: 'spark' }),
+      area: part({ name: 'area' }),
+      end: part({ name: 'end' }),
+      ring: part({ name: 'ring' }),
+    };
+    const insights = [...svg.querySelectorAll<SVGElement>('[data-v="ins"]')];
+    if (Object.values(board).some((el) => !el)) return;
+    const { nw, cf, bars, spark, area, end, ring } = board as Record<keyof typeof board, SVGElement>;
+
+    const RING = 119.4;
+    const book = {
+      worth: [...WORTH],
+      flow: 1240,
+      bars: [20, 13, 28, 17, 36],
+      ring: 0.37,
+      ins: [38, 27, 33],
+    };
+    type Frame = { nw: number; cf: number; bars: number[]; ring: number; ins: number[]; spark: number[] };
+    const frameOf = (): Frame => ({
+      nw: book.worth[5],
+      cf: book.flow,
+      bars: book.bars,
+      ring: book.ring,
+      ins: book.ins,
+      spark: sparkYs({ worth: book.worth }),
+    });
+    const paint = ({ frame }: { frame: Frame }) => {
+      nw.textContent = money({ value: frame.nw });
+      cf.textContent = `${frame.cf < 0 ? '−' : '+'}${money({ value: frame.cf })}`;
+      bars.innerHTML = isoBars(frame.bars);
+      const line = sparkLine({ ys: frame.spark });
+      spark.setAttribute('d', line);
+      area.setAttribute('d', `${line}V118H14Z`);
+      end.setAttribute('cy', frame.spark[5].toFixed(1));
+      ring.setAttribute('stroke-dasharray', `${(frame.ring * RING).toFixed(1)} ${RING}`);
+      insights.forEach((el, i) => el.setAttribute('width', frame.ins[i].toFixed(1)));
+    };
+    const blend = ({ from, to, k }: { from: number | number[]; to: number | number[]; k: number }) =>
+      Array.isArray(from)
+        ? from.map((v, i) => lerp({ from: v, to: (to as number[])[i], k }))
+        : lerp({ from, to: to as number, k });
+
+    let shown = frameOf();
+    let from = shown;
+    let goal = shown;
+    let startedAt = 0;
+    let raf = 0;
+    const step = (now: number) => {
+      const k = ease(clamp((now - startedAt) / 700));
+      shown = Object.fromEntries(
+        (Object.keys(goal) as (keyof Frame)[]).map((key) => [key, blend({ from: from[key], to: goal[key], k })]),
+      ) as Frame;
+      paint({ frame: shown });
+      raf = k < 1 ? requestAnimationFrame(step) : 0;
+    };
+
+    // Each source nudges net worth its own way; the pull toward 150k keeps the walk bounded.
+    const NUDGE: Record<string, () => number> = {
+      accounts: () => rand({ min: -420, max: 680 }),
+      investments: () => rand({ min: -900, max: 1500 }),
+      liabilities: () => rand({ min: 90, max: 360 }),
+      vehicles: () => -rand({ min: 40, max: 160 }),
+    };
+    const arrive = ({ key }: { key: string }) => {
+      const last = book.worth[5];
+      book.worth = [...book.worth.slice(1), last + (NUDGE[key]?.() ?? 0) + (150000 - last) * 0.06];
+      if (key === 'accounts') {
+        book.flow = within({
+          value: book.flow + rand({ min: -520, max: 560 }) + (1200 - book.flow) * 0.1,
+          min: -900,
+          max: 2600,
+        });
+        book.bars = [...book.bars.slice(1), rand({ min: 10, max: 36 })];
+        book.ring = within({ value: book.ring + rand({ min: -0.14, max: 0.14 }), min: 0.2, max: 0.75 });
+        book.ins = book.ins.map(() => rand({ min: 18, max: 40 }));
+      }
+      from = shown;
+      goal = frameOf();
+      startedAt = performance.now();
+      if (!raf) raf = requestAnimationFrame(step);
+    };
+
+    const ABSORB = 0.3;
+    const feeds = [...svg.querySelectorAll<SVGElement>('.wire[data-dur]')].map((el) => ({
+      key: el.dataset.key ?? '',
+      dur: Number(el.dataset.dur),
+      delay: Number(el.dataset.delay) + ABSORB,
+      port: el.querySelector('.port.end'),
+      lap: 0,
+    }));
+    const poll = window.setInterval(() => {
+      if (!inView || document.hidden) return;
+      const now = svg.getCurrentTime();
+      feeds.forEach((feed) => {
+        const lap = Math.floor((now + feed.delay) / feed.dur);
+        if (lap === feed.lap) return;
+        feed.lap = lap;
+        arrive({ key: feed.key });
+        feed.port?.classList.add('ping');
+        window.setTimeout(() => feed.port?.classList.remove('ping'), 320);
+      });
+    }, 100);
+
+    window.setTimeout(() => {
+      stopped = true;
+      stopTour();
+      window.clearInterval(poll);
+      svg.pauseAnimations();
+    }, MOTION_LIMIT_MS);
+  };
+
+  const WALL_SLOTS = [
+    { title: 'Latest transactions', x: -877, y: -170 },
+    { title: 'Expenses structure', x: -877, y: 234 },
+    { title: 'FIRE progress', x: -877, y: 638 },
+    { title: 'Credit utilization', x: -1254, y: -100 },
+    { title: 'Cash flow', x: -1254, y: 304 },
+    { title: 'Average tax rate', x: -1254, y: 708 },
+    { title: 'Categories watchlist', x: -1631, y: -170 },
+    { title: 'Recurring payments', x: -1631, y: 234 },
+    { title: 'Latest transactions', x: -1631, y: 638 },
+    { title: 'Recurring payments', x: 520, y: -100 },
+    { title: 'Average tax rate', x: 520, y: 304 },
+    { title: 'Categories watchlist', x: 520, y: 708 },
+    { title: 'Cash flow', x: 897, y: -170 },
+    { title: 'FIRE progress', x: 897, y: 234 },
+    { title: 'Credit utilization', x: 897, y: 638 },
+    { title: 'Expenses structure', x: 1274, y: -100 },
+    { title: 'Latest transactions', x: 1274, y: 304 },
+    { title: 'Cash flow', x: 1274, y: 708 },
+  ];
+  type Tx = { name: string; category: string; amount: number; color: string; income?: boolean; card?: boolean };
+  type WallEvent = { tx?: Tx; scheduled?: boolean; gain?: number };
+  type Binding = { keys: string[]; values: number[]; render: (values: number[]) => void; flash: Element[][] };
+  type MoneyNode = { node: Text; sign: string };
+
+  const TX: Record<string, Tx> = {
+    coffee: { name: 'Corner Coffee', category: 'Bar, cafe', amount: 6.5, color: '#e74c3c' },
+    invoice: { name: 'Client invoice', category: 'Wage, invoices', amount: 640, color: '#f1c40f', income: true },
+    groceries: { name: 'Green Market', category: 'Groceries', amount: 84.2, color: '#e74c3c', card: true },
+    netflix: { name: 'Netflix', category: 'TV, Streaming', amount: 15.99, color: '#2ecc71' },
+    metro: { name: 'Metro Transit', category: 'Public transport', amount: 2.9, color: '#95a5a6' },
+    fuel: { name: 'City Fuel', category: 'Fuel', amount: 41.3, color: '#95a5a6', card: true },
+    interest: { name: 'Savings interest', category: 'Interests, dividends', amount: 18.42, color: '#f1c40f', income: true },
+    lunch: { name: 'Chipotle', category: 'Restaurant, fast-food', amount: 13.85, color: '#e74c3c' },
+  };
+  // Gains are portfolio moves in thousands, shown only by FIRE progress.
+  const EVENTS: WallEvent[] = [
+    { tx: TX.coffee },
+    { tx: TX.invoice },
+    { tx: TX.groceries },
+    { tx: TX.netflix, scheduled: true },
+    { gain: 1.6 },
+    { tx: TX.metro },
+    { tx: TX.fuel },
+    { tx: TX.interest },
+    { gain: 2.1 },
+    { tx: TX.lunch },
+  ];
+  const WALL_TICK_MS = 3200;
+  const TWEEN_MS = 800;
+  const MONEY_TEXT = /^[-+]?\$[\d,]+\.\d\d$/;
+  const PERCENT_TEXT = /^\d+%$/;
+  const PAIR_TEXT = /^(\D)([\d,]+\.\d\d) \/ (\D[\d,]+\.\d\d)$/;
+  const SAVED_TEXT = /^\$([\d.]+)K of \$([\d.]+)([KM])$/;
+  const FLASH: Keyframe[] = [{ opacity: 0.45 }, { opacity: 1 }];
+  const EASE_OUT = 'cubic-bezier(.2,.7,.2,1)';
+  const decimals = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const cash = ({ value, symbol = '$' }: { value: number; symbol?: string }) =>
+    `${symbol}${decimals.format(Math.abs(value))}`;
+  const amountOf = ({ text }: { text: string }) => Number(text.replace(/[^\d.]/g, ''));
+  const trimmed = ({ node }: { node: Node }) => (node.nodeValue ?? '').trim();
+  const hex = ({ color }: { color: string }) => {
+    const rgb = color.match(/\d+/g);
+    if (color.startsWith('#') || !rgb) return color.toLowerCase();
+    return `#${rgb
+      .slice(0, 3)
+      .map((n) => Number(n).toString(16).padStart(2, '0'))
+      .join('')}`;
+  };
+
+  const textNodes = ({ root }: { root: Node }) => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const found: Text[] = [];
+    while (walker.nextNode()) found.push(walker.currentNode as Text);
+    return found;
+  };
+  const moneyNodes = ({ root, value }: { root: Node; value?: number }): MoneyNode[] =>
+    textNodes({ root }).flatMap((node) => {
+      const text = trimmed({ node });
+      if (!MONEY_TEXT.test(text)) return [];
+      if (value !== undefined && Math.abs(amountOf({ text }) - value) > 0.005) return [];
+      return [{ node, sign: /^[-+]/.test(text) ? text[0] : '' }];
+    });
+  const setText = ({ node, text }: { node: Text; text: string }) => {
+    const raw = node.nodeValue ?? '';
+    node.nodeValue = raw.replace(raw.trim(), () => text);
+  };
+  const writeMoney = ({ nodes, value }: { nodes: MoneyNode[]; value: number }) =>
+    nodes.forEach(({ node, sign }) => setText({ node, text: `${sign}${cash({ value })}` }));
+  const parents = ({ nodes }: { nodes: Node[] }) => nodes.flatMap((node) => node.parentElement ?? []);
+  const tileNodes = ({ root, label }: { root: Node; label: string }) => {
+    const tile = textNodes({ root }).find((node) => trimmed({ node }) === label)?.parentElement?.parentElement;
+    return tile ? moneyNodes({ root: tile }) : [];
+  };
+  const percentBars = ({ root }: { root: ParentNode }) =>
+    [...root.querySelectorAll<HTMLElement>('[style*="width"]')].filter((el) => el.style.width.endsWith('%'));
+  const scaleBar = ({ bar, scale, origin }: { bar?: HTMLElement; scale: number; origin: string }) => {
+    if (!bar) return;
+    bar.style.transformOrigin = origin;
+    bar.style.transform = `scaleX(${scale})`;
+  };
+  const tween = ({ step }: { step: (k: number) => void }) => {
+    const started = performance.now();
+    const frame = (now: number) => {
+      const k = ease(clamp((now - started) / TWEEN_MS));
+      step(k);
+      if (k < 1) requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  };
+
+  const bindStructure = ({ root }: { root: ParentNode }): Binding | null => {
+    const header = moneyNodes({ root })[0];
+    const arcs = [...root.querySelectorAll<SVGPathElement>('path[fill^="#"]')].flatMap((el) => {
+      const d = el.getAttribute('d') ?? '';
+      const start = d.match(/^M(-?[\d.]+),(-?[\d.]+)/);
+      const radii = d.match(/A([\d.]+),[\d.]+.*?L.*?A([\d.]+),/);
+      if (!start || !radii) return [];
+      const angle = Math.atan2(Number(start[1]), -Number(start[2]));
+      return [{ el, angle: angle < 0 ? angle + Math.PI * 2 : angle, outer: Number(radii[1]), inner: Number(radii[2]) }];
+    });
+    if (!header) return null;
+    const total = amountOf({ text: trimmed({ node: header.node }) });
+    const totals = moneyNodes({ root, value: total });
+    const shares = arcs.map((arc, i) => {
+      const next = arcs[(i + 1) % arcs.length].angle;
+      return ((next - arc.angle + Math.PI * 2) % (Math.PI * 2) || Math.PI * 2) / (Math.PI * 2);
+    });
+    const point = ({ r, a }: { r: number; a: number }) =>
+      `${(r * Math.sin(a)).toFixed(3)},${(-r * Math.cos(a)).toFixed(3)}`;
+    return {
+      keys: ['total', ...arcs.map(({ el }) => hex({ color: el.getAttribute('fill') ?? '' }))],
+      values: [total, ...shares.map((share) => share * total)],
+      flash: [parents({ nodes: totals.map(({ node }) => node) })],
+      render: ([value, ...segments]) => {
+        writeMoney({ nodes: totals, value });
+        const sum = segments.reduce((a, b) => a + b, 0) || 1;
+        let a0 = arcs[0]?.angle ?? 0;
+        arcs.forEach(({ el, outer, inner }, i) => {
+          const a1 = a0 + (segments[i] / sum) * Math.PI * 2;
+          const large = a1 - a0 > Math.PI ? 1 : 0;
+          el.setAttribute(
+            'd',
+            `M${point({ r: outer, a: a0 })}A${outer},${outer},0,${large},1,${point({ r: outer, a: a1 })}` +
+              `L${point({ r: inner, a: a1 })}A${inner},${inner},0,${large},0,${point({ r: inner, a: a0 })}Z`,
+          );
+          a0 = a1;
+        });
+      },
+    };
+  };
+
+  const bindCashFlow = ({ root }: { root: ParentNode }): Binding | null => {
+    const incomeNodes = tileNodes({ root, label: 'Income' });
+    const expenseNodes = tileNodes({ root, label: 'Expenses' });
+    if (!incomeNodes[0] || !expenseNodes[0]) return null;
+    const income = amountOf({ text: trimmed({ node: incomeNodes[0].node }) });
+    const expenses = amountOf({ text: trimmed({ node: expenseNodes[0].node }) });
+    const netNodes = moneyNodes({ root, value: Math.abs(income - expenses) });
+    const savedText = textNodes({ root })
+      .filter((node) => PERCENT_TEXT.test(trimmed({ node })))
+      .find((node) => node.parentElement?.parentElement?.textContent?.includes('Saved'));
+    const savedNodes = savedText
+      ? textNodes({ root }).filter((node) => trimmed({ node }) === trimmed({ node: savedText }))
+      : [];
+    const [incomeBar, expenseBar] = percentBars({ root });
+    const share0 = income / (income + expenses);
+    return {
+      keys: ['income', 'expenses'],
+      values: [income, expenses],
+      flash: [
+        parents({ nodes: [...incomeNodes, ...netNodes].map(({ node }) => node) }),
+        parents({ nodes: [...expenseNodes, ...netNodes].map(({ node }) => node) }),
+      ],
+      render: ([inc, exp]) => {
+        const net = inc - exp;
+        writeMoney({ nodes: incomeNodes, value: inc });
+        writeMoney({ nodes: expenseNodes, value: exp });
+        netNodes.forEach(({ node }) => setText({ node, text: `${net < 0 ? '-' : '+'}${cash({ value: net })}` }));
+        savedNodes.forEach((node) => setText({ node, text: `${Math.round((net / inc) * 100)}%` }));
+        const share = inc / (inc + exp);
+        scaleBar({ bar: incomeBar, scale: share / share0, origin: 'left' });
+        scaleBar({ bar: expenseBar, scale: (1 - share) / (1 - share0), origin: 'right' });
+      },
+    };
+  };
+
+  const bindWatchlist = ({ root }: { root: ParentNode }): Binding | null => {
+    const rows = [...root.querySelectorAll('button')].flatMap((row) => {
+      const dot = row.querySelector<HTMLElement>('[style*="background-color"]');
+      const nodes = moneyNodes({ root: row });
+      return dot && nodes[0] ? [{ color: hex({ color: dot.style.backgroundColor }), nodes }] : [];
+    });
+    if (!rows.length) return null;
+    return {
+      keys: rows.map(({ color }) => color),
+      values: rows.map(({ nodes }) => amountOf({ text: trimmed({ node: nodes[0].node }) })),
+      flash: rows.map(({ nodes }) => parents({ nodes: nodes.map(({ node }) => node) })),
+      render: (values) => rows.forEach(({ nodes }, i) => writeMoney({ nodes, value: values[i] })),
+    };
+  };
+
+  const bindCredit = ({ root }: { root: ParentNode }): Binding | null => {
+    const all = textNodes({ root });
+    const percents = all.filter((node) => PERCENT_TEXT.test(trimmed({ node })));
+    const bars = percentBars({ root });
+    const parts = all
+      .flatMap((node) => {
+        const match = trimmed({ node }).match(PAIR_TEXT);
+        return match ? [{ node, symbol: match[1], used: amountOf({ text: match[2] }), limitText: match[3] }] : [];
+      })
+      .slice(0, 2)
+      .map((part, i) => ({ ...part, limit: amountOf({ text: part.limitText }), percent: percents[i], bar: bars[i] }));
+    if (!parts.length) return null;
+    return {
+      keys: parts.map((_, i) => (i ? 'card' : 'used')),
+      values: parts.map(({ used }) => used),
+      flash: parts.map(({ node, percent }) => parents({ nodes: percent ? [node, percent] : [node] })),
+      render: (values) =>
+        parts.forEach(({ node, symbol, used, limit, limitText, percent, bar }, i) => {
+          setText({ node, text: `${cash({ value: values[i], symbol })} / ${limitText}` });
+          if (percent) setText({ node: percent, text: `${Math.round((values[i] / limit) * 100)}%` });
+          scaleBar({ bar, scale: values[i] / used, origin: 'left' });
+        }),
+    };
+  };
+
+  const bindFire = ({ root }: { root: ParentNode }): Binding | null => {
+    const all = textNodes({ root });
+    const savedNodes = all.filter((node) => SAVED_TEXT.test(trimmed({ node })));
+    const match = savedNodes[0] && trimmed({ node: savedNodes[0] }).match(SAVED_TEXT);
+    const percent = all.find((node) => PERCENT_TEXT.test(trimmed({ node })));
+    const circles = [...root.querySelectorAll('circle[stroke-dasharray]')].map((el) => {
+      const [dash, rest] = (el.getAttribute('stroke-dasharray') ?? '').split(/[\s,]+/).map(Number);
+      return { el, dash, rest };
+    });
+    const quarter = Math.max(...circles.map(({ dash }) => dash));
+    const ring = circles.find(({ dash }) => dash < quarter);
+    if (!match || !percent || !ring) return null;
+    const saved0 = Number(match[1]);
+    const target = Number(match[2]) * (match[3] === 'M' ? 1000 : 1);
+    return {
+      keys: ['saved'],
+      values: [saved0],
+      flash: [parents({ nodes: [...savedNodes, percent] })],
+      render: ([saved]) => {
+        savedNodes.forEach((node) => setText({ node, text: `$${saved.toFixed(1)}K of $${match[2]}${match[3]}` }));
+        setText({ node: percent, text: `${Math.round((saved / target) * 100)}%` });
+        ring.el.setAttribute('stroke-dasharray', `${Math.min(quarter, (ring.dash * saved) / saved0)} ${ring.rest}`);
+      },
+    };
+  };
+
+  const bindRecurring = ({ root }: { root: ParentNode }): Binding | null => {
+    const warned = [...root.querySelectorAll<HTMLElement>('[class*="bg-warning"]')];
+    const row = warned.find((el) => el.querySelector('button'));
+    const button = row?.querySelector('button');
+    const bar = warned.find((el) => !el.children.length);
+    const due = row && moneyNodes({ root: row })[0];
+    const all = textNodes({ root });
+    const badge = all.find((node) => /^\d+ due$/.test(trimmed({ node })))?.parentElement;
+    const outLabel = all.find((node) => trimmed({ node }) === 'going out')?.parentElement;
+    const outNodes = outLabel ? moneyNodes({ root: outLabel }) : [];
+    if (!row || !button || !due) return null;
+    const dueAmount = amountOf({ text: trimmed({ node: due.node }) });
+    const out0 = outNodes[0] ? amountOf({ text: trimmed({ node: outNodes[0].node }) }) : 0;
+    return {
+      keys: ['paid'],
+      values: [0],
+      flash: [[]],
+      render: ([k]) => {
+        row.style.backgroundColor = k > 0.5 ? 'transparent' : '';
+        button.style.opacity = String(1 - k);
+        if (badge) badge.style.opacity = String(1 - k);
+        if (bar) {
+          bar.style.transformOrigin = 'bottom';
+          bar.style.transform = `scaleY(${1 - 0.9 * k})`;
+        }
+        writeMoney({ nodes: outNodes, value: out0 - dueAmount * k });
+      },
+    };
+  };
+
+  const bindFeed = ({ root }: { root: ParentNode }) => {
+    let list: Element | null = null;
+    for (const { node } of moneyNodes({ root })) {
+      let el = node.parentElement;
+      while (el?.parentElement && el.parentElement.children.length < 4) el = el.parentElement;
+      if (el?.parentElement) {
+        list = el.parentElement;
+        break;
+      }
+    }
+    const template = list?.firstElementChild;
+    if (!list || !template) return null;
+    const rows = list;
+    const incomeClass = moneyNodes({ root: rows }).find(({ sign }) => !sign)?.node.parentElement?.className;
+    const markPaid = textNodes({ root }).find((node) => trimmed({ node }) === 'Mark paid');
+    let banner = markPaid?.parentElement;
+    while (banner && !banner.textContent?.includes('Scheduled')) banner = banner.parentElement;
+    const scheduled = banner;
+
+    return {
+      pop: ({ tx, animate }: { tx: Tx; animate: boolean }) => {
+        const row = template.cloneNode(true) as HTMLElement;
+        const texts = textNodes({ root: row }).filter((node) => trimmed({ node }));
+        const amount = texts.find((node) => MONEY_TEXT.test(trimmed({ node })));
+        const words = texts.filter((node) => !/\$|\d/.test(node.nodeValue ?? '') && trimmed({ node }).length > 1);
+        if (amount) {
+          setText({ node: amount, text: `${tx.income ? '' : '-'}${cash({ value: tx.amount })}` });
+          if (tx.income && incomeClass && amount.parentElement) amount.parentElement.className = incomeClass;
+        }
+        if (words.length > 1) {
+          setText({ node: words[0], text: tx.category });
+          setText({ node: words[words.length - 1], text: tx.name });
+          if (tx.income) words.slice(1, -1).forEach((node) => node.parentElement?.style.setProperty('display', 'none'));
+        }
+        const dot = row.querySelector<HTMLElement>('[style*="background-color"]');
+        if (dot) {
+          dot.style.backgroundColor = tx.color;
+          dot.style.color = tx.color;
+        }
+        rows.insertBefore(row, rows.firstElementChild);
+        rows.lastElementChild?.remove();
+        if (animate) {
+          row.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], {
+            duration: 700,
+            easing: EASE_OUT,
+          });
+        }
+      },
+      clearScheduled: ({ animate }: { animate: boolean }) => {
+        if (!scheduled) return;
+        if (!animate) return scheduled.remove();
+        scheduled.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 600, easing: EASE_OUT }).onfinish = () =>
+          scheduled.remove();
+      },
+    };
+  };
+
+  const BINDERS: Record<string, (args: { root: ParentNode }) => Binding | null> = {
+    'Expenses structure': bindStructure,
+    'Cash flow': bindCashFlow,
+    'Categories watchlist': bindWatchlist,
+    'Credit utilization': bindCredit,
+    'FIRE progress': bindFire,
+    'Recurring payments': bindRecurring,
+  };
+
+  const buildWall = ({ wall, inner, data }: { wall: HTMLElement; inner: HTMLElement; data: Widgets }) => {
+    // The model outlives the widget DOM: a theme repaint rebinds and replays it.
+    const truth = new Map<string, number[]>();
+    const shown = new Map<string, number[]>();
+    const base = new Map<string, number[]>();
+    const keys = new Map<string, string[]>();
+    let bindings = new Map<string, Binding[]>();
+    let feeds: NonNullable<ReturnType<typeof bindFeed>>[] = [];
+    const popped: Tx[] = [];
+    let scheduledPaid = false;
+
+    const bindAll = ({ mounted }: { mounted: MountedWidget[] }) => {
+      bindings = new Map();
+      feeds = [];
+      mounted.forEach(({ card, shadow }) => {
+        if (card.title === 'Latest transactions') {
+          const feed = bindFeed({ root: shadow });
+          if (!feed) return;
+          feeds.push(feed);
+          popped.forEach((tx) => feed.pop({ tx, animate: false }));
+          if (scheduledPaid) feed.clearScheduled({ animate: false });
+          return;
+        }
+        const binding = BINDERS[card.title]?.({ root: shadow });
+        if (!binding) return;
+        const current = shown.get(card.title);
+        if (current) binding.render(current);
+        else {
+          truth.set(card.title, [...binding.values]);
+          shown.set(card.title, [...binding.values]);
+          base.set(card.title, [...binding.values]);
+          keys.set(card.title, binding.keys);
+        }
+        bindings.set(card.title, [...(bindings.get(card.title) ?? []), binding]);
+      });
+    };
+
+    mountWidgets({
+      data,
+      hosts: WALL_SLOTS.flatMap(({ title, x, y }) => {
+        const card = data.cards.find((c) => c.title === title);
+        if (!card) return [];
+        const host = document.createElement('div');
+        host.style.position = 'absolute';
+        host.style.left = `calc(50% + ${x}px)`;
+        host.style.top = `${y}px`;
+        host.style.width = `${card.w}px`;
+        host.style.height = `${card.h}px`;
+        inner.appendChild(host);
+        return [{ card, host }];
+      }),
+      onPaint: reduced ? undefined : bindAll,
+    });
+
+    let scrollTick = false;
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (scrollTick) return;
+        scrollTick = true;
+        requestAnimationFrame(() => {
+          scrollTick = false;
+          wall.style.setProperty('--wall-o', String(clamp(1 - window.scrollY / 520)));
+        });
+      },
+      { passive: true },
+    );
+
+    if (reduced) return;
+
+    const add = ({ title, key, delta }: { title: string; key: string; delta: number }) => {
+      const index = keys.get(title)?.indexOf(key) ?? -1;
+      const values = truth.get(title);
+      if (values && index >= 0) values[index] += delta;
+    };
+
+    const sync = ({ title }: { title: string }) => {
+      const from = shown.get(title);
+      const to = truth.get(title);
+      if (!from || !to) return false;
+      const changed = to.flatMap((value, i) => (value === from[i] ? [] : [i]));
+      if (!changed.length) return false;
+      const start = [...from];
+      const goal = [...to];
+      bindings.get(title)?.forEach(({ flash }) =>
+        changed.forEach((i) => flash[i]?.forEach((el) => el.animate(FLASH, { duration: 900, easing: 'ease-out' }))),
+      );
+      tween({
+        step: (k) => {
+          const now = start.map((value, i) => lerp({ from: value, to: goal[i], k }));
+          shown.set(title, now);
+          bindings.get(title)?.forEach(({ render }) => render(now));
+        },
+      });
+      return true;
+    };
+
+    const shuffled = ({ list }: { list: string[] }) => [...list].sort(() => Math.random() - 0.5);
+
+    const apply = ({ event }: { event: WallEvent }): string[] => {
+      const { tx, gain } = event;
+      if (gain) {
+        add({ title: 'FIRE progress', key: 'saved', delta: gain });
+        sync({ title: 'FIRE progress' });
+        return [];
+      }
+      if (!tx) return [];
+      if (event.scheduled) {
+        scheduledPaid = true;
+        add({ title: 'Recurring payments', key: 'paid', delta: 1 });
+        feeds.forEach((feed) => feed.clearScheduled({ animate: true }));
+      }
+      popped.push(tx);
+      feeds.forEach((feed) => feed.pop({ tx, animate: true }));
+      add({ title: 'Categories watchlist', key: tx.color, delta: tx.amount });
+      if (tx.income) {
+        add({ title: 'Cash flow', key: 'income', delta: tx.amount });
+        add({ title: 'FIRE progress', key: 'saved', delta: tx.amount / 1000 });
+        return shuffled({ list: ['Cash flow', 'Categories watchlist', 'FIRE progress'] });
+      }
+      add({ title: 'Expenses structure', key: 'total', delta: tx.amount });
+      add({ title: 'Expenses structure', key: tx.color, delta: tx.amount });
+      add({ title: 'Cash flow', key: 'expenses', delta: tx.amount });
+      const followUps = ['Expenses structure', 'Cash flow', 'Categories watchlist'];
+      const [used, card] = base.get('Credit utilization') ?? [];
+      if (tx.card && used) {
+        add({ title: 'Credit utilization', key: 'used', delta: tx.amount });
+        if (card) add({ title: 'Credit utilization', key: 'card', delta: (tx.amount * card) / used });
+        followUps.push('Credit utilization');
+      }
+      return [...(event.scheduled ? ['Recurring payments'] : []), ...shuffled({ list: followUps })];
+    };
+
+    let eventIndex = 0;
+    let queue: string[] = [];
+    const nextEvent = () => {
+      for (let tries = 0; tries < EVENTS.length; tries += 1) {
+        const event = EVENTS[eventIndex % EVENTS.length];
+        eventIndex += 1;
+        if (!event.scheduled || (!scheduledPaid && bindings.has('Recurring payments'))) return event;
+      }
+      return null;
+    };
+
+    let inView = true;
+    new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+      },
+      { threshold: 0.25 },
+    ).observe(wall);
+    const motionStart = performance.now();
+    const tick = window.setInterval(() => {
+      if (performance.now() - motionStart > MOTION_LIMIT_MS) {
+        window.clearInterval(tick);
+        inner.style.animationPlayState = 'paused';
+        return;
+      }
+      if (!inView || document.hidden || !wall.offsetParent) return;
+      while (queue.length) {
+        if (sync({ title: queue.shift() ?? '' })) return;
+      }
+      const event = nextEvent();
+      if (event) queue = apply({ event });
+    }, WALL_TICK_MS);
+  };
+
+  const initWall = () => {
+    const wall = document.getElementById('wall');
+    const inner = document.getElementById('wall-inner');
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    if (!wall || !inner || connection?.saveData) return;
+
+    const load = () => {
+      // offsetParent is null while the CSS hides the wall on narrow screens.
+      if (!wall.offsetParent) return;
+      loadWidgets({ url: '/img/landing/home/widgets.json' })
+        .then((data) => buildWall({ wall, inner, data }))
+        .catch((error) => {
+          console.warn(error);
+          wall.hidden = true;
+        });
+    };
+    if ('requestIdleCallback' in window) window.requestIdleCallback(load);
+    else setTimeout(load, 1000);
+  };
+
+  initWall();
+  initIso();
+</script>

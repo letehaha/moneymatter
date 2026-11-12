@@ -1,26 +1,22 @@
 ---
 import BaseLayout from '@/layouts/base-layout.astro';
-import BackgroundOrbs from '@/components/background-orbs.astro';
 import LandingHeader from '@/components/landing-header.astro';
-import HeroSection from '@/components/hero-section.astro';
-import HowItWorksSection from '@/components/how-it-works-section.astro';
-import ComparisonSection from '@/components/comparison-section.astro';
-import FeaturesSection from '@/components/features-section.astro';
-import McpSection from '@/components/mcp-section.astro';
-import SelfHostSection from '@/components/self-host-section.astro';
-import PricingSection from '@/components/pricing-section.astro';
-import FaqSection from '@/components/faq-section.astro';
-import CommunitySection from '@/components/community-section.astro';
+import HeroSection from '@/components/home/hero-section.astro';
+import DemoSection from '@/components/home/demo-section.astro';
+import FlowSection from '@/components/home/flow-section.astro';
+import AutomationSection from '@/components/home/automation-section.astro';
+import CoverageSection from '@/components/home/coverage-section.astro';
+import FeaturesSection from '@/components/home/features-section.astro';
+import PlanSection from '@/components/home/plan-section.astro';
+import AiSection from '@/components/home/ai-section.astro';
+import ReviewsSection from '@/components/home/reviews-section.astro';
+import PricingSection from '@/components/home/pricing-section.astro';
+import OpenSourceSection from '@/components/home/open-source-section.astro';
+import FaqSection from '@/components/home/faq-section.astro';
 import CtaSection from '@/components/cta-section.astro';
 import LandingFooter from '@/components/landing-footer.astro';
 
-import TryDemoButton from '@/components/try-demo-button.vue';
-import GitHubActivity from '@/components/github-activity.vue';
-import DemoPortal from '@/components/demo-portal.vue';
 import { FAQ_ITEMS } from '@/lib/faq';
-import { getGitHubStarsLabel } from '@/lib/github-stars';
-
-const starsLabel = await getGitHubStarsLabel();
 ---
 
 <BaseLayout
@@ -85,32 +81,21 @@ const starsLabel = await getGitHubStarsLabel();
     ]
   })} />
 
-  <div class="bg-background text-foreground landing-page min-h-screen">
-    <BackgroundOrbs />
-    <LandingHeader />
-
-    <HeroSection>
-      <TryDemoButton slot="try-demo" client:load />
-      <GitHubActivity slot="github-activity" starsLabel={starsLabel} client:visible />
-      <DemoPortal slot="demo-portal" client:visible />
-    </HeroSection>
-
-    <HowItWorksSection />
-    <ComparisonSection />
+  <LandingHeader />
+  <main id="main">
+    <HeroSection />
+    <DemoSection />
+    <FlowSection />
+    <AutomationSection />
+    <CoverageSection />
     <FeaturesSection />
-    <McpSection />
-    <SelfHostSection />
+    <PlanSection />
+    <AiSection />
+    <ReviewsSection />
     <PricingSection />
+    <OpenSourceSection />
     <FaqSection />
-    <CommunitySection />
-    <CtaSection />
-    <LandingFooter />
-  </div>
+    <CtaSection illustration />
+  </main>
+  <LandingFooter />
 </BaseLayout>
-
-<style>
-  .landing-page {
-    font-family: 'Montserrat', system-ui, sans-serif;
-    overflow-y: auto;
-  }
-</style>

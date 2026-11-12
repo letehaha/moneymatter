@@ -1,0 +1,76 @@
+---
+import '@/styles/home/reviews.css';
+import { REDDIT_URL } from '@/lib/github-api';
+
+const REVIEWS: { quote: string; author: string; source: string; href?: string; color?: string; lead?: boolean }[] = [
+  {
+    quote:
+      "I've been using MoneyMatter for around three months and I'm honestly surprised it hasn't received more attention.",
+    author: 'Reddit user',
+    source: 'r/YNABAlternatives',
+    href: 'https://www.reddit.com/r/YNABAlternatives/comments/1weyqv3/comment/p9ip9u6/',
+    color: '#e0913a',
+    lead: true,
+  },
+  {
+    quote: 'Thanks for developing this 360 degree financial app.',
+    author: 'MoneyMatter user',
+    source: 'Sent to the developer',
+  },
+];
+---
+
+<section class="sec" id="reviews">
+  <div class="wrap">
+    <p class="eyebrow">From people using it</p>
+    <h2>What users say</h2>
+    <p class="lede">Real comments, quoted as written. Public ones link to the original post.</p>
+    <div class="revwall">
+      {
+        REVIEWS.map((review) => (
+          <figure class:list={['plate rev', { 'rev-lead': review.lead }]}>
+            {review.lead && (
+              <svg class="qmark" viewBox="0 0 32 24" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M0 24V13.5C0 6 4 1.5 12 0l1.5 3.5C9.5 5 8 7.5 8 10h5v14zm18 0V13.5C18 6 22 1.5 30 0l1.5 3.5C27.5 5 26 7.5 26 10h5v14z"
+                />
+              </svg>
+            )}
+            <blockquote>{review.quote}</blockquote>
+            <figcaption>
+              <span class="rev-ava" style={review.color ? `--b: ${review.color}` : undefined}>
+                <svg aria-hidden="true" class="ic">
+                  <use href="#r-user" />
+                </svg>
+              </span>
+              <span class="rev-who">
+                <strong>{review.author}</strong>
+                <span>{review.source}</span>
+              </span>
+              {review.href && (
+                <a
+                  class="rev-src"
+                  href={review.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Original comment in ${review.source}`}
+                >
+                  Original
+                  <svg aria-hidden="true" class="ic">
+                    <use href="#f-out" />
+                  </svg>
+                </a>
+              )}
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
+    <p class="rev-more">
+      Using MoneyMatter? <a href={REDDIT_URL} target="_blank" rel="noopener noreferrer" data-track="landing_reddit_clicked" data-track-location="reviews"
+        >Share how it goes on Reddit<svg aria-hidden="true" class="ic"><use href="#f-to" /></svg></a
+      >
+    </p>
+  </div>
+</section>

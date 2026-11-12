@@ -1,55 +1,88 @@
 ---
 import { GITHUB_URL } from '@/lib/github-api';
+import { buildIso } from '@/lib/iso-scene.js';
+import DemoStartButton from '@/components/demo-start-button.astro';
+
+interface Props {
+  /** Isometric scene behind the panel, with the home page copy. */
+  illustration?: boolean;
+}
+
+const { illustration = false } = Astro.props;
+
+const copy = illustration
+  ? {
+      title: 'All your money, organized automatically.',
+      subtitle: 'Connect a bank, import a file, or start by hand.',
+      ticks: ['Open source', 'Free to self-host', 'Read-only bank sync'],
+    }
+  : {
+      title: 'Own your financial data',
+      subtitle: 'Sign up for the cloud in a minute, or pull the Docker image and run it yourself.',
+      ticks: ['No ads, data never sold', '14-day money-back', 'Cancel anytime', 'Export data anytime'],
+    };
 ---
 
-<section class="relative z-10 py-16 sm:py-24">
-  <div class="relative mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-    <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Own your financial data</h2>
-    <p class="text-muted-foreground mx-auto mt-4 max-w-xl text-lg">
-      Sign up for the cloud in a minute, or pull the Docker image and run it yourself.
-    </p>
-    <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-      <a
-        href="/sign-up"
-        class="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 font-semibold transition-all sm:w-auto"
-        data-track="landing_cta_clicked"
-        data-track-location="cta_section"
-      >
-        Start Free Trial
-        <!-- ArrowRight -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-      </a>
-      <a
-        href={GITHUB_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="border-border hover:bg-accent flex w-full items-center justify-center gap-2 rounded-xl border px-8 py-3 font-semibold transition-all sm:w-auto"
-        data-track="landing_github_clicked"
-        data-track-location="cta_section"
-      >
-        <!-- GitHub icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="size-5 text-white"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-        View on GitHub
-      </a>
-    </div>
-    <p class="text-muted-foreground mt-4 text-sm">40-day free trial, no card needed</p>
-    <div class="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-      <div class="text-muted-foreground flex items-center gap-2 text-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary size-4"><path d="M20 6 9 17l-5-5"/></svg>
-        <span>No ads, data never sold</span>
+<section class="final">
+  <div class="wrap">
+    <div class="final-panel">
+      {illustration && <div class="final-scene" aria-hidden="true" set:html={buildIso().finale} />}
+      <svg class="final-logo" aria-hidden="true"><use href="#mm-logo"></use></svg>
+      <h2>{copy.title}</h2>
+      <p class="final-sub">{copy.subtitle}</p>
+      <div class="hero-cta">
+        <a
+          class="btn btn-primary btn-lg"
+          href="/sign-up"
+          data-track="landing_cta_clicked"
+          data-track-location="cta_section"
+          >Try for free<svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"
+            ></path></svg
+          ></a
+        >
+        <DemoStartButton location="cta_section" />
       </div>
-      <div class="text-muted-foreground flex items-center gap-2 text-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary size-4"><path d="M20 6 9 17l-5-5"/></svg>
-        <span>14-day money-back</span>
-      </div>
-      <div class="text-muted-foreground flex items-center gap-2 text-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary size-4"><path d="M20 6 9 17l-5-5"/></svg>
-        <span>Cancel anytime</span>
-      </div>
-      <div class="text-muted-foreground flex items-center gap-2 text-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary size-4"><path d="M20 6 9 17l-5-5"/></svg>
-        <span>Export data anytime</span>
-      </div>
+      <p class="hero-note">
+        <strong>40-day free trial.</strong> No card needed.{' '}
+        {
+          !illustration && (
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-track="landing_github_clicked"
+              data-track-location="cta_section"
+            >
+              View on GitHub
+            </a>
+          )
+        }
+      </p>
+      <ul class="final-ticks">
+        {
+          copy.ticks.map((tick) => (
+            <li>
+              <svg class="ic" aria-hidden="true">
+                <use href="#i-check" />
+              </svg>
+              {illustration && tick === 'Open source' ? (
+                <a
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-track="landing_github_clicked"
+                  data-track-location="cta_section"
+                >
+                  {tick}
+                </a>
+              ) : (
+                tick
+              )}
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </div>
 </section>
+

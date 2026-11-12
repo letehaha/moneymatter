@@ -18,6 +18,7 @@ const AT_A_GLANCE = [
 const HIGHLIGHTS = [
   {
     title: 'More than one currency, not limited to the US and Canada',
+    icon: 'globe',
     items: [
       {
         lead: 'Accounts',
@@ -35,6 +36,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Open code and your own server',
+    icon: 'server',
     items: [
       { lead: 'Licence', text: 'The code is public under AGPL-3.0.' },
       {
@@ -49,6 +51,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Trial and price',
+    icon: 'tag',
     items: [
       { lead: 'Trial', text: '40 days with no card on file, so nothing can be charged when it ends.' },
       {
@@ -63,6 +66,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Bank data and AI assistants',
+    icon: 'landmark',
     items: [
       {
         lead: 'Bank sync',
@@ -87,34 +91,40 @@ const HIGHLIGHTS = [
 const COMPARISON = [
   {
     feature: 'Price',
+    icon: 'tag',
     competitor: 'Core is $14.99 a month or $99.99 a year. Plus is $199.99 a year, billed annually. In USD, plus tax where it applies',
     moneymatter: 'Essential is $5 a month or $30 a year. Plus is $8 a month or $55 a year. In USD, before tax',
   },
   {
     feature: 'Free trial',
+    icon: 'hourglass',
     competitor:
       '7 days. A payment method is required, and you are billed when the trial ends unless you cancel at least 24 hours before',
     moneymatter: '40 days, no card. If you do not subscribe, the account turns read-only and nothing is charged',
   },
   {
     feature: 'Free option',
+    icon: 'gift',
     competitor: 'None. Monarch offers paid subscriptions only',
     moneymatter: 'Self-hosting is free. There is no free cloud plan',
   },
   {
     feature: 'Countries and currencies',
+    icon: 'globe',
     competitor:
       'Available in the US and Canada only. Every amount is shown with a $ sign and nothing is converted, so 10,000 CAD plus 10,000 USD shows as $20,000',
     moneymatter: 'Each account has its own currency. Totals are converted into the base currency you choose',
   },
   {
     feature: 'Bank sync',
+    icon: 'landmark',
     competitor: 'Included in Core and Plus. 13,000+ institutions through Plaid, Finicity and MX',
     moneymatter:
       'On the Plus plan, through LunchFlow, SimpleFIN, Monobank, Walutomat or Akahu. LunchFlow and SimpleFIN charge separately',
   },
   {
     feature: 'Investments',
+    icon: 'chart-candlestick',
     competitor:
       'Holdings from connected accounts or added by hand. Prices only for securities on US exchanges, shown in USD',
     moneymatter:
@@ -122,32 +132,38 @@ const COMPARISON = [
   },
   {
     feature: 'File import',
+    icon: 'file-up',
     competitor: 'CSV, on the web only. A CSV import cannot be undone',
     moneymatter:
       'CSV, OFX and QFX, plus importers for YNAB, Wallet and Microsoft Money. A CSV import can be deleted from Import History',
   },
   {
     feature: 'Getting your data out',
+    icon: 'hard-drive-download',
     competitor: 'CSV of transactions and account balances. It works after a subscription or trial ends',
     moneymatter: 'Data export on every plan, and in read-only mode after a trial or plan ends. Plus a backup you can restore',
   },
   {
     feature: 'AI assistants',
+    icon: 'sparkles',
     competitor: `An official MCP connector. Its help page, read on ${checkedOn}, says it is temporarily paused`,
     moneymatter: 'A built-in MCP server on every plan, with read, write, or write and delete access',
   },
   {
     feature: 'Apps',
+    icon: 'monitor-smartphone',
     competitor: 'Web, iPhone, iPad and Android',
     moneymatter: 'A web app that runs in the browser on a computer or a phone, plus an iPhone app in beta on TestFlight. No Android app',
   },
   {
     feature: 'Sharing',
+    icon: 'users',
     competitor: 'Household members join one subscription at no extra cost. Accounts and transactions cannot be hidden from them',
     moneymatter: '2 household seats on Essential, 5 on Plus. Each member needs their own trial or plan to make changes',
   },
   {
     feature: 'Refunds',
+    icon: 'undo-2',
     competitor: 'A refund for the remaining time on the subscription. Apple App Store subscriptions are not eligible',
     moneymatter: 'A full refund within 14 days of the first payment',
   },
@@ -319,84 +335,77 @@ const SOURCES = [
   sources={SOURCES}
   whyCloud={{ heading: 'Cloud account or your own server', items: WHY_CLOUD }}
 >
-  <p slot="import-note" class="text-muted-foreground mt-8 max-w-2xl text-sm">
+  <p slot="import-note" class="alt-note">
     After the import, open <a
       href={DOCS_LINK_TRANSFERS_URL}
-      class="text-primary-text hover:underline"
       target="_blank"
       rel="noopener noreferrer">Transfer matching</a
     > to join the two sides of each transfer. Until they are linked, a transfer counts once as spending and once as income.
   </p>
 
-  <section class="mt-20">
-    <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Second route: an AI assistant over MCP</h2>
-    <p class="text-muted-foreground mt-4 max-w-2xl">
-      MoneyMatter has a built-in MCP server, included in every plan and in the trial. It works with assistants that
-      support remote MCP servers with OAuth sign-in. The <a
-        href={DOCS_MCP_URL}
-        class="text-primary-text hover:underline"
-        target="_blank"
-        rel="noopener noreferrer">connection guide</a
-      > covers Claude, ChatGPT and Claude Code. You connect the assistant, give it your Monarch CSV, and it creates the
-      records through the server's tools. Monarch's own <a
-        href={MONARCH_MCP_URL}
-        class="text-primary-text hover:underline"
-        target="_blank"
-        rel="noopener noreferrer nofollow">help page</a
-      > says you can upload your export to an AI model of your choice.
-    </p>
-    <dl class="border-border/50 bg-card divide-border/40 mt-8 divide-y overflow-hidden rounded-2xl border">
-      {
-        [
-          {
-            lead: 'Access level',
-            text: 'Keep "Create and edit your financial data" ticked when you approve the connection. With view access only, the assistant can read and cannot add anything. "Delete your financial data" can stay off.',
-          },
-          {
-            lead: 'Accounts first',
-            text: 'Create your accounts in MoneyMatter before you start. The server has no tool that creates an account.',
-          },
-          {
-            lead: 'What it creates',
-            text: 'Categories and tags, then transactions, each with its account, date, amount, category, tags and note. It can also record a move between two accounts as one linked transfer.',
-          },
-          {
-            lead: 'Speed',
-            text: "There is no bulk-create tool. Every transaction is its own tool call, so a history of several thousand rows is slow and can stop partway at the assistant's usage or context limits.",
-          },
-          {
-            lead: 'Checking',
-            text: 'An assistant can skip or repeat rows. Compare the count and the account balances with your file when it finishes.',
-          },
-          {
-            lead: 'ChatGPT',
-            text: 'Whether a custom MCP server may change data depends on your ChatGPT plan. Some plans allow reading only.',
-          },
-          {
-            lead: 'Best use',
-            text: 'A short history, or tidying up after the CSV import: linking transfer pairs, adding tags, fixing categories. For a long history the CSV import is the better route.',
-          },
-        ].map((item) => (
-          <div class="grid sm:grid-cols-[13rem_1fr]">
-            <dt class="border-border/40 sm:bg-background/60 px-5 pt-2.5 text-sm font-medium sm:border-r sm:py-2.5">
-              {item.lead}
-            </dt>
-            <dd class="text-muted-foreground px-5 pt-0.5 pb-2.5 text-sm leading-relaxed sm:py-2.5">{item.text}</dd>
-          </div>
-        ))
-      }
-    </dl>
-    <p class="text-muted-foreground mt-3 text-xs">
-      A self-hosted MoneyMatter runs its own MCP server. Claude and ChatGPT connect from their own servers, so the
-      install has to be reachable from the internet over HTTPS.
-    </p>
-  </section>
+  <p class="eyebrow">Import</p>
+  <h2>Second route: an AI assistant over MCP</h2>
+  <p class="lede">
+    MoneyMatter has a built-in MCP server, included in every plan and in the trial. It works with assistants that
+    support remote MCP servers with OAuth sign-in. The <a
+      href={DOCS_MCP_URL}
+      target="_blank"
+      rel="noopener noreferrer">connection guide</a
+    > covers Claude, ChatGPT and Claude Code. You connect the assistant, give it your Monarch CSV, and it creates the
+    records through the server's tools. Monarch's own <a
+      href={MONARCH_MCP_URL}
+      target="_blank"
+      rel="noopener noreferrer nofollow">help page</a
+    > says you can upload your export to an AI model of your choice.
+  </p>
+  <dl class="plate alt-dl alt-rows">
+    {
+      [
+        {
+          lead: 'Access level',
+          text: 'Keep "Create and edit your financial data" ticked when you approve the connection. With view access only, the assistant can read and cannot add anything. "Delete your financial data" can stay off.',
+        },
+        {
+          lead: 'Accounts first',
+          text: 'Create your accounts in MoneyMatter before you start. The server has no tool that creates an account.',
+        },
+        {
+          lead: 'What it creates',
+          text: 'Categories and tags, then transactions, each with its account, date, amount, category, tags and note. It can also record a move between two accounts as one linked transfer.',
+        },
+        {
+          lead: 'Speed',
+          text: "There is no bulk-create tool. Every transaction is its own tool call, so a history of several thousand rows is slow and can stop partway at the assistant's usage or context limits.",
+        },
+        {
+          lead: 'Checking',
+          text: 'An assistant can skip or repeat rows. Compare the count and the account balances with your file when it finishes.',
+        },
+        {
+          lead: 'ChatGPT',
+          text: 'Whether a custom MCP server may change data depends on your ChatGPT plan. Some plans allow reading only.',
+        },
+        {
+          lead: 'Best use',
+          text: 'A short history, or tidying up after the CSV import: linking transfer pairs, adding tags, fixing categories. For a long history the CSV import is the better route.',
+        },
+      ].map((item) => (
+        <div>
+          <dt>{item.lead}</dt>
+          <dd>{item.text}</dd>
+        </div>
+      ))
+    }
+  </dl>
+  <p class="alt-note">
+    A self-hosted MoneyMatter runs its own MCP server. Claude and ChatGPT connect from their own servers, so the
+    install has to be reachable from the internet over HTTPS.
+  </p>
 
   <Fragment slot="why-cloud-intro">
     Both run the same app. Self-host if you want your data on your own machine. Use the cloud if you would rather not
     run a server. The <a
-      href={DOCS_SELF_HOSTING_URL}
-      class="text-primary-text hover:underline">self-hosting guide</a
+      href={DOCS_SELF_HOSTING_URL}>self-hosting guide</a
     > lists what a server needs.
   </Fragment>
 </AlternativeLayout>

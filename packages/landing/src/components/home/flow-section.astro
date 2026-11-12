@@ -1,0 +1,428 @@
+---
+import '@/styles/home/flow.css';
+
+const NET_WORTH = [12900, 13180, 13420, 13240, 13100, 13610, 14140.35, 18262.64];
+const CHECKING = { from: 2140.35, to: 5762.64 };
+const SAVINGS = { from: 12000, to: 12500 };
+const BUDGET = { spent: 84.2, limit: 400 };
+
+const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const [netFrom, netTo] = NET_WORTH.slice(-2);
+const netGain = Math.round((netTo - netFrom) * 100) / 100;
+const lineD = NET_WORTH.map((v, i) => {
+  const x = 5 + (i / (NET_WORTH.length - 1)) * 390;
+  const y = 79 - ((v - 12000) / 7000) * 74;
+  return `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`;
+}).join(' ');
+const areaD = `${lineD} L395 84 L5 84 Z`;
+---
+
+
+<section class="flow-section" id="flow">
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2>From scattered bank data to a settled picture</h2>
+    <p class="flow-lede">Your transactions arrive messy. By the time you open the app, they are sorted, matched and counted.</p>
+
+    <div class="flow">
+      <p class="sr-only">Animated example: transactions from Monobank, Lunch Flow, SimpleFIN and a bank statement go into MoneyMatter, which categorizes them, applies rules, matches transfers and refunds, and finds payees. Five clean transactions come out, account balances update, and net worth rises from {usd.format(netFrom)} to {usd.format(netTo)}.</p>
+      <div class="stage settled" id="stage" aria-hidden="true">
+          <svg class="lines" id="lines"></svg>
+
+          <div class="col">
+            <div class="col-body">
+              <div class="sources" id="sources">
+                <div class="source"><div class="source-name"><span class="source-mark logo"><img src="/img/landing/logos/monobank.webp" alt="" width="20" height="20" loading="lazy" decoding="async"></span>Monobank</div><div class="raw"><div data-raw><span>STREAMBOX RFND</span><span>+12.99</span></div></div></div>
+                <div class="source"><div class="source-name"><span class="source-mark logo"><img src="/img/landing/logos/lunch-flow.webp" alt="" width="20" height="20" loading="lazy" decoding="async"></span>Lunch Flow</div><div class="raw"><div data-raw><span>CORNER COFFEE #0412</span><span>-6.50</span></div><div data-raw><span>GRN MKT 88213</span><span>-84.20</span></div></div></div>
+                <div class="source"><div class="source-name"><span class="source-mark logo"><img src="/img/landing/logos/simplefin.webp" alt="" width="20" height="20" loading="lazy" decoding="async"></span>SimpleFIN</div><div class="raw"><div data-raw><span>ACME PAYROLL OCT</span><span>+4200.00</span></div></div></div>
+                <div class="source"><div class="source-name"><span class="source-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4"/></svg></span>Bank statement</div><div class="raw"><div data-raw><span>TRF TO SAVINGS</span><span>-500.00</span></div></div></div>
+              </div>
+            </div>
+            <div class="col-label" data-seek="0">Your banks and files</div>
+          </div>
+
+          <div class="col">
+            <div class="col-body">
+              <div class="engine" id="engine">
+                <div class="engine-head"><svg aria-hidden="true"><use href="#mm-logo"/></svg>MoneyMatter</div>
+                <ul class="steps">
+                  <li class="step" data-state="done">
+                    <span class="step-icon"><svg class="step-ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.25" pathLength="1"/></svg><svg><use href="#i-check"/></svg></span>
+                    <div class="step-main"><div class="step-label">Categorizing</div><div class="step-detail"><code>GRN MKT 88213</code><svg><use href="#f-to"/></svg><span class="fl-cat" style="--c: #3aa655"><svg><use href="#f-cart"/></svg>Groceries</span></div></div>
+                  </li>
+                  <li class="step" data-state="done">
+                    <span class="step-icon"><svg class="step-ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.25" pathLength="1"/></svg><svg><use href="#i-check"/></svg></span>
+                    <div class="step-main"><div class="step-label">Applying your rules</div><div class="step-detail"><code>contains "COFFEE"</code><svg><use href="#f-to"/></svg><span class="fl-cat" style="--c: #f08c2e"><svg><use href="#f-fork"/></svg>Eating out</span></div></div>
+                  </li>
+                  <li class="step" data-state="done">
+                    <span class="step-icon"><svg class="step-ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.25" pathLength="1"/></svg><svg><use href="#i-check"/></svg></span>
+                    <div class="step-main"><div class="step-label">Matching transfers and refunds</div><div class="step-detail"><code>TRF TO SAVINGS</code><svg><use href="#f-to"/></svg><span class="fl-cat" style="--c: #5b8def"><svg><use href="#f-swap"/></svg>Transfer</span></div></div>
+                  </li>
+                  <li class="step" data-state="done">
+                    <span class="step-icon"><svg class="step-ring" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.25" pathLength="1"/></svg><svg><use href="#i-check"/></svg></span>
+                    <div class="step-main"><div class="step-label">Finding payees</div><div class="step-detail"><code>ACME PAYROLL OCT</code><svg><use href="#f-to"/></svg><span class="fl-payee"><b style="--b: #2f6fed">A</b>Acme Inc</span></div></div>
+                  </li>
+                </ul>
+                <div class="engine-status" id="engine-status">5 transactions sorted</div>
+              </div>
+            </div>
+            <div class="col-label" data-seek="1.5">Sorted automatically</div>
+          </div>
+
+          <div class="col on">
+            <div class="col-body">
+              <div class="result" id="result">
+                <div class="result-head"><span id="result-title">All settled</span><span class="settled-mark" id="settled"><svg><use href="#i-check"/></svg></span></div>
+                <div class="layers">
+                  <div class="layer layer-skeleton" id="layer-skeleton">
+                    <div class="skeleton-row"><i></i><i></i><i></i></div>
+                    <div class="skeleton-row"><i></i><i></i><i></i></div>
+                    <div class="skeleton-row"><i></i><i></i><i></i></div>
+                    <div class="skeleton-row"><i></i><i></i><i></i></div>
+                    <div class="skeleton-row"><i></i><i></i><i></i></div>
+                  </div>
+                  <div class="layer layer-tx" id="layer-tx">
+                    <div class="tx" data-tx><div class="tx-mark" style="--b: #7a4a2b"><svg><use href="#f-coffee"/></svg></div><div class="tx-body"><div class="tx-name">Corner Coffee</div><div class="tx-meta"><span class="fl-cat" style="--c: #f08c2e"><svg><use href="#f-fork"/></svg>Eating out</span></div></div><div class="tx-amt minus">−$6.50</div></div>
+                    <div class="tx" data-tx><div class="tx-mark" style="--b: #2e9e56"><svg><use href="#f-leaf"/></svg></div><div class="tx-body"><div class="tx-name">Green Market</div><div class="tx-meta"><span class="fl-cat" style="--c: #3aa655"><svg><use href="#f-cart"/></svg>Groceries</span></div></div><div class="tx-amt minus">−$84.20</div></div>
+                    <div class="tx" data-tx><div class="tx-mark" style="--b: #2f6fed">A</div><div class="tx-body"><div class="tx-name">Acme Inc</div><div class="tx-meta"><span class="fl-cat" style="--c: #2f9e8f"><svg><use href="#f-cash"/></svg>Salary</span></div></div><div class="tx-amt plus">+$4,200.00</div></div>
+                    <div class="tx" data-tx><div class="tx-mark plain"><svg><use href="#f-swap"/></svg></div><div class="tx-body"><div class="tx-name">Checking → Savings</div><div class="tx-meta"><span class="fl-cat" style="--c: #5b8def"><svg><use href="#f-swap"/></svg>Transfer</span><span>both sides matched</span></div></div><div class="tx-amt">$500.00</div></div>
+                    <div class="tx" data-tx><div class="tx-mark" style="--b: #e5484d"><svg><use href="#f-play"/></svg></div><div class="tx-body"><div class="tx-name">Streambox</div><div class="tx-meta"><span class="fl-cat" style="--c: #d6589f"><svg><use href="#f-repeat"/></svg>Subscriptions</span><span>refund linked</span></div></div><div class="tx-amt plus">+$12.99</div></div>
+                  </div>
+                  <div class="layer" id="layer-final">
+                    <div class="fl-fin">
+                      <div class="fl-tile fl-net">
+                        <div class="fl-row"><span class="fl-label">Net worth</span><span class="fl-delta" data-delta data-count={`0 ${netGain}`} data-count-sign="+">+{usd.format(netGain)}</span></div>
+                        <div class="fl-big" id="bal-net" data-count={`${netFrom} ${netTo}`}>{usd.format(netTo)}</div>
+                        <svg class="result-chart" id="result-chart" viewBox="0 0 400 84" preserveAspectRatio="none">
+                          <defs><linearGradient id="nw-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="nwf-a"/><stop offset="1" class="nwf-b"/></linearGradient></defs>
+                          <path id="result-area" class="chart-area" d={areaD}/>
+                          <path id="result-line" class="chart-line" d={lineD} pathLength="1" stroke-dasharray="1" vector-effect="non-scaling-stroke"/>
+                        </svg>
+                      </div>
+                      <div class="fl-tile fl-accounts">
+                        <div class="fl-acct"><span class="fl-mark" style="--b: #5b8def"><svg><use href="#f-bank"/></svg></span><div><div class="fl-acct-name">Checking</div><div class="fl-sub plus" data-delta>+{usd.format(CHECKING.to - CHECKING.from)}</div></div><span class="fl-acct-val" id="bal-checking" data-count={`${CHECKING.from} ${CHECKING.to}`}>{usd.format(CHECKING.to)}</span></div>
+                        <div class="fl-acct"><span class="fl-mark" style="--b: #2f9e8f"><svg><use href="#f-coins"/></svg></span><div><div class="fl-acct-name">Savings</div><div class="fl-sub plus" data-delta>+{usd.format(SAVINGS.to - SAVINGS.from)}</div></div><span class="fl-acct-val" id="bal-savings" data-count={`${SAVINGS.from} ${SAVINGS.to}`}>{usd.format(SAVINGS.to)}</span></div>
+                      </div>
+                      <div class="fl-stats">
+                        <div class="fl-tile fl-stat" data-stat><div class="fl-label"><svg class="plus"><use href="#f-in"/></svg>Income</div><div class="fl-stat-val plus">+$4,200.00</div></div>
+                        <div class="fl-tile fl-stat" data-stat><div class="fl-label"><svg class="minus"><use href="#f-out"/></svg>Expenses</div><div class="fl-stat-val minus">−$77.71</div></div>
+                        <div class="fl-tile fl-stat fl-budget" data-stat><div class="fl-row"><span class="fl-label"><i style="background: #3aa655"></i>Groceries</span><span class="fl-label">{usd.format(BUDGET.spent)} of ${BUDGET.limit}</span></div><div class="meter-track"><div class="meter-fill" id="m-budget" data-fill={BUDGET.spent / BUDGET.limit} style={`background: #3aa655; transform: scaleX(${BUDGET.spent / BUDGET.limit})`}></div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-label" data-seek="5">Everything settled</div>
+          </div>
+        </div>
+
+      <div class="flow-controls" id="controls">
+        <button type="button" class="ctl" id="toggle" title="Pause or resume"><svg viewBox="0 0 24 24" aria-hidden="true"><path id="toggle-icon" fill="currentColor" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg><span id="toggle-text" class="sr-only">Pause</span></button>
+        <button type="button" class="ctl" id="replay" title="Replay"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 1 0 2.6-5.9M4 4v5h5"/></svg><span class="sr-only">Replay</span></button>
+      </div>
+      <p class="sample-note">Sample data with fictional merchants.</p>
+    </div>
+  </div>
+</section>
+<script>
+  import { clamp, ease, lerp } from '@/lib/math';
+
+  const END = 11.3;
+  const WIDE = 820;
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  // Column weights at rest and with sources, engine or result in focus.
+  const REST = [0.92, 0.85, 1.15];
+  const FOCUS = [
+    [0.98, 0.9, 1.12],
+    [0.66, 1.5, 0.84],
+    [0.62, 0.84, 1.54],
+  ];
+  const T = { engine: 1.5, steps: 1.9, stepLen: 0.75, result: 5, tx: 5.7, txGap: 0.35, final: 8.2 };
+  const IDS = [
+    'stage',
+    'lines',
+    'engine',
+    'result',
+    'sources',
+    'engine-status',
+    'result-title',
+    'settled',
+    'layer-skeleton',
+    'layer-tx',
+    'layer-final',
+    'result-line',
+    'result-area',
+    'm-budget',
+    'controls',
+    'toggle',
+    'toggle-text',
+    'toggle-icon',
+    'replay',
+  ] as const;
+
+  const RESULT_TITLES: [number, string][] = [
+    [T.result + 0.4, 'Waiting for results'],
+    [T.final, 'New transactions'],
+    [T.final + 1.3, 'Accounts updated'],
+    [END - 0.5, 'Reports updated'],
+  ];
+
+  const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  const prog = ({ t, from, to }: { t: number; from: number; to: number }) => clamp((t - from) / (to - from));
+  const smooth = (k: number) => k * k * (3 - 2 * k);
+
+  const initFlow = () => {
+    const found = IDS.map((id) => [id, document.getElementById(id)] as const);
+    if (found.some(([, node]) => !node)) return;
+    const el = Object.fromEntries(found) as Record<(typeof IDS)[number], HTMLElement>;
+    const { stage } = el;
+    const toggle = el.toggle as HTMLButtonElement;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const cols = [...stage.querySelectorAll<HTMLElement>('.col')];
+    const rawRows = [...stage.querySelectorAll<HTMLElement>('[data-raw]')];
+    const txRows = [...stage.querySelectorAll<HTMLElement>('[data-tx]')];
+    const deltas = [...stage.querySelectorAll<HTMLElement>('[data-delta]')];
+    const stats = [...stage.querySelectorAll<HTMLElement>('[data-stat]')];
+    const steps = [...stage.querySelectorAll<HTMLElement>('.step')];
+    const rings = steps.map((step) => step.querySelector<SVGElement>('.step-ring circle'));
+    const details = steps.map((step) => step.querySelector<HTMLElement>('.step-detail'));
+    const sourceCards = [...stage.querySelectorAll<HTMLElement>('.source')];
+    const counters = [...stage.querySelectorAll<HTMLElement>('[data-count]')].map((node) => {
+      const [from, to] = (node.dataset.count ?? '').split(' ').map(Number);
+      return { node, from, to, sign: node.dataset.countSign ?? '' };
+    });
+    const budgetFill = Number(el['m-budget'].dataset.fill) || 0;
+    const STEPS_END = T.steps + steps.length * T.stepLen;
+
+    const makePath = () => el.lines.appendChild(document.createElementNS(SVG_NS, 'path'));
+    const inputs = sourceCards.map(() => makePath());
+    const output = makePath();
+    const dots: { el: SVGCircleElement; path: SVGPathElement; offset: number; from: number; to: number; speed: number }[] =
+      [];
+    const makeDot = (config: Omit<(typeof dots)[number], 'el'>) => {
+      const dot = document.createElementNS(SVG_NS, 'circle');
+      dot.setAttribute('r', '3.5');
+      el.lines.appendChild(dot);
+      dots.push({ el: dot, ...config });
+    };
+    inputs.forEach((path, i) => {
+      for (let n = 0; n < 2; n += 1) makeDot({ path, offset: n / 2 + i * 0.13, from: 0.3, to: T.result, speed: 0.6 });
+    });
+    for (let n = 0; n < 3; n += 1) {
+      makeDot({ path: output, offset: n / 3, from: STEPS_END - 0.2, to: T.tx + 2, speed: 0.75 });
+    }
+
+    const curve = ({ x1, y1, x2, y2 }: { x1: number; y1: number; x2: number; y2: number }) => {
+      if (Math.abs(x2 - x1) > Math.abs(y2 - y1)) {
+        const mid = (x1 + x2) / 2;
+        return `M${x1} ${y1} C${mid} ${y1} ${mid} ${y2} ${x2} ${y2}`;
+      }
+      return `M${x1} ${y1} L${x2} ${y2}`;
+    };
+    const placeLines = ({ wide }: { wide: boolean }) => {
+      const box = stage.getBoundingClientRect();
+      const rel = ({ node }: { node: Element }) => {
+        const r = node.getBoundingClientRect();
+        return { left: r.left - box.left, right: r.right - box.left, top: r.top - box.top, bottom: r.bottom - box.top };
+      };
+      const engine = rel({ node: el.engine });
+      const result = rel({ node: el.result });
+      const midY = (engine.top + engine.bottom) / 2;
+      const midX = (engine.left + engine.right) / 2;
+      inputs.forEach((path, i) => {
+        path.style.visibility = wide || !i ? '' : 'hidden';
+        if (!wide) return;
+        const card = rel({ node: sourceCards[i] });
+        const spread = (i - (inputs.length - 1) / 2) * 16;
+        path.setAttribute(
+          'd',
+          curve({ x1: card.right + 3, y1: (card.top + card.bottom) / 2, x2: engine.left - 3, y2: midY + spread }),
+        );
+      });
+      if (wide) {
+        output.setAttribute('d', curve({ x1: engine.right + 3, y1: midY, x2: result.left - 3, y2: midY }));
+        return;
+      }
+      const sources = rel({ node: el.sources });
+      inputs[0]?.setAttribute('d', curve({ x1: midX, y1: sources.bottom + 36, x2: midX, y2: engine.top - 3 }));
+      output.setAttribute('d', curve({ x1: midX, y1: engine.bottom + 36, x2: midX, y2: result.top - 3 }));
+    };
+
+    const setText = ({ node, text }: { node: HTMLElement; text: string }) => {
+      if (node.textContent !== text) node.textContent = text;
+    };
+
+    let t = END;
+    const render = () => {
+      const width = stage.clientWidth;
+      const wide = width >= WIDE;
+      const amount = clamp((width - WIDE) / 240);
+      const toEngine = smooth(prog({ t, from: T.engine, to: T.engine + 0.6 }));
+      const toResult = smooth(prog({ t, from: T.result, to: T.result + 0.6 }));
+      const weights = REST.map((rest, i) => {
+        const focused = lerp({
+          from: lerp({ from: FOCUS[0][i], to: FOCUS[1][i], k: toEngine }),
+          to: FOCUS[2][i],
+          k: toResult,
+        });
+        return lerp({ from: rest, to: focused, k: amount });
+      });
+      stage.style.gridTemplateColumns = wide ? weights.map((w) => `minmax(0, ${w.toFixed(3)}fr)`).join(' ') : '';
+      const active = t < T.engine + 0.3 ? 0 : t < T.result + 0.3 ? 1 : 2;
+      cols.forEach((col, i) => col.classList.toggle('on', i === active));
+      stage.classList.toggle('settled', t >= END);
+
+      rawRows.forEach((row, i) => {
+        const k = ease(prog({ t, from: 0.15 + i * 0.22, to: 0.45 + i * 0.22 }));
+        row.style.opacity = String(k);
+        row.style.transform = `translateX(${(1 - k) * -6}px)`;
+      });
+
+      const engineFocus = wide ? toEngine * (1 - toResult) * clamp(amount * 3) : 1 - toResult;
+      steps.forEach((step, i) => {
+        const start = T.steps + i * T.stepLen;
+        const p = prog({ t, from: start, to: start + T.stepLen });
+        const state = p >= 1 ? 'done' : t >= start ? 'active' : 'pending';
+        if (step.dataset.state !== state) step.dataset.state = state;
+        rings[i]?.style.setProperty('stroke-dashoffset', String(1 - p));
+        const k = ease(prog({ t, from: start + 0.1, to: start + 0.45 })) * engineFocus;
+        const detail = details[i];
+        if (!detail) return;
+        detail.style.height = `${k * 26}px`;
+        detail.style.opacity = String(k);
+      });
+      setText({
+        node: el['engine-status'],
+        text: t < T.steps ? 'Waiting for data' : t < STEPS_END ? 'Working through 5 transactions' : '5 transactions sorted',
+      });
+
+      const shown = T.result + 0.4;
+      setText({
+        node: el['result-title'],
+        text: RESULT_TITLES.find(([until]) => t < until)?.[1] ?? 'All settled',
+      });
+      el.settled.style.opacity = String(prog({ t, from: END - 0.5, to: END - 0.1 }));
+
+      el['layer-skeleton'].style.opacity = String(1 - prog({ t, from: shown, to: shown + 0.3 }));
+      el['layer-tx'].style.opacity = String(t < shown ? 0 : 1 - prog({ t, from: T.final - 0.4, to: T.final + 0.1 }));
+      txRows.forEach((row, i) => {
+        const k = ease(prog({ t, from: T.tx + i * T.txGap, to: T.tx + 0.35 + i * T.txGap }));
+        row.style.opacity = String(k);
+        row.style.transform = `translateY(${(1 - k) * 8}px)`;
+      });
+
+      el['layer-final'].style.opacity = String(prog({ t, from: T.final, to: T.final + 0.5 }));
+      const count = ease(prog({ t, from: T.final + 0.2, to: T.final + 1.3 }));
+      counters.forEach(({ node, from, to, sign }) => {
+        node.textContent = `${sign}${usd.format(lerp({ from, to, k: count }))}`;
+      });
+      deltas.forEach((node) => {
+        node.style.opacity = String(count);
+      });
+
+      const drawn = ease(prog({ t, from: T.final + 0.9, to: T.final + 2.1 }));
+      const line = el['result-line'];
+      line.style.strokeDashoffset = String(1 - drawn);
+      line.style.opacity = drawn ? '1' : '0';
+      el['result-area'].style.opacity = String(prog({ t, from: T.final + 1.5, to: T.final + 2.3 }));
+      stats.forEach((node, i) => {
+        const k = ease(prog({ t, from: T.final + 1.3 + i * 0.2, to: T.final + 1.7 + i * 0.2 }));
+        node.style.opacity = String(k);
+        node.style.transform = `translateY(${(1 - k) * 6}px)`;
+      });
+      el['m-budget'].style.transform = `scaleX(${budgetFill * ease(prog({ t, from: T.final + 1.9, to: T.final + 2.6 }))})`;
+
+      placeLines({ wide });
+      inputs.forEach((path) => path.classList.toggle('on', t > 0.3 && t < T.result));
+      output.classList.toggle('on', t > STEPS_END - 0.2 && t < T.tx + 2);
+      dots.forEach((dot) => {
+        if (t < dot.from || t > dot.to || dot.path.style.visibility === 'hidden') {
+          dot.el.style.opacity = '0';
+          return;
+        }
+        const frac = ((t - dot.from) * dot.speed + dot.offset) % 1;
+        const point = dot.path.getPointAtLength(frac * dot.path.getTotalLength());
+        dot.el.setAttribute('cx', String(point.x));
+        dot.el.setAttribute('cy', String(point.y));
+        const edge = Math.min(frac, 1 - frac);
+        const windowFade = Math.min(prog({ t, from: dot.from, to: dot.from + 0.4 }), 1 - prog({ t, from: dot.to - 0.4, to: dot.to }));
+        dot.el.style.opacity = String(clamp(edge * 10) * windowFade);
+      });
+    };
+
+    new ResizeObserver(render).observe(stage);
+    document.fonts?.ready.then(render);
+
+    if (reduced) {
+      el.controls.hidden = true;
+      render();
+      return;
+    }
+
+    let inView = false;
+    let started = false;
+    let userPaused = false;
+    let last = 0;
+    let raf = 0;
+
+    const syncToggle = () => {
+      const running = !userPaused;
+      setText({ node: el['toggle-text'], text: running ? 'Pause' : 'Resume' });
+      el['toggle-icon'].setAttribute('d', running ? 'M7 5h3.5v14H7zM13.5 5H17v14h-3.5z' : 'M8 5v14l11-7z');
+      if (t >= END && document.activeElement === toggle) el.replay.focus();
+      toggle.disabled = t >= END;
+    };
+    const frame = (now: number) => {
+      raf = 0;
+      if (!inView || userPaused || t >= END) return;
+      t = Math.min(END, t + Math.min(0.1, (now - last) / 1000));
+      last = now;
+      render();
+      if (t >= END) syncToggle();
+      raf = requestAnimationFrame(frame);
+    };
+    const kick = () => {
+      if (raf) return;
+      last = performance.now();
+      raf = requestAnimationFrame(frame);
+    };
+    const seek = ({ to }: { to: number }) => {
+      started = true;
+      t = to;
+      userPaused = false;
+      render();
+      syncToggle();
+      kick();
+    };
+
+    syncToggle();
+    // A band, not a ratio threshold: the stacked stage can be taller than the viewport.
+    new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting;
+        if (!inView) return;
+        if (!started) {
+          started = true;
+          t = 0;
+          render();
+          syncToggle();
+        }
+        kick();
+      },
+      { rootMargin: '-25% 0px -25% 0px' },
+    ).observe(stage);
+    toggle.addEventListener('click', () => {
+      userPaused = !userPaused;
+      syncToggle();
+      kick();
+    });
+    el.replay.addEventListener('click', () => seek({ to: 0 }));
+    stage.querySelectorAll<HTMLElement>('[data-seek]').forEach((button) => {
+      button.addEventListener('click', () => seek({ to: Number(button.dataset.seek) }));
+    });
+  };
+
+  initFlow();
+</script>

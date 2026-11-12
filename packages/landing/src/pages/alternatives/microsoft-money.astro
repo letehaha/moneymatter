@@ -15,6 +15,7 @@ const AT_A_GLANCE = [
 const HIGHLIGHTS = [
   {
     title: 'Open code, backups and export',
+    icon: 'hard-drive-download',
     items: [
       {
         lead: 'Open source',
@@ -29,6 +30,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Bank data, now that Money no longer downloads it',
+    icon: 'landmark',
     items: [
       {
         lead: 'Bank sync',
@@ -43,6 +45,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Portfolios, loans and net worth',
+    icon: 'chart-candlestick',
     items: [
       { lead: 'Portfolios', text: 'Holdings in stocks, ETFs and crypto, with cost basis, returns and dividends.' },
       {
@@ -54,6 +57,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Multi-currency',
+    icon: 'globe',
     items: [
       { lead: 'About 158 currencies', text: 'Exchange rates are fetched automatically.' },
       { lead: 'Historic rates', text: 'Each transaction is converted at the rate of its own date.' },
@@ -61,6 +65,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Reports to set up again',
+    icon: 'chart-column',
     items: [
       {
         lead: 'Not imported',
@@ -81,18 +86,21 @@ const HIGHLIGHTS = [
 const COMPARISON = [
   {
     feature: 'Status',
+    icon: 'info',
     competitor:
       'Discontinued. Microsoft stopped selling it on 30 June 2009 and ended online services and assisted support on 31 January 2011',
     moneymatter: 'Actively developed. Every release is listed on GitHub',
   },
   {
     feature: 'What you can still run',
+    icon: 'app-window',
     competitor:
       'Money Plus Sunset, which Microsoft calls a replacement for expired versions of Money. It needs no activation, and opens and converts Money Plus files and files from older US versions of Money',
     moneymatter: 'The current version, on the cloud or on your own server',
   },
   {
     feature: 'Where it runs',
+    icon: 'monitor-smartphone',
     competitor:
       'A desktop program for Windows. Microsoft listed Windows 7, Windows Vista and Windows XP as supported. Community answers on Microsoft Q&A report it running on Windows 10 and 11',
     moneymatter:
@@ -100,40 +108,47 @@ const COMPARISON = [
   },
   {
     feature: 'Bank downloads',
+    icon: 'landmark',
     competitor:
       'No online services in Money Plus Sunset: no online quotes, bill payment or statement downloads started by Money. OFX and QIF statements downloaded from your bank still import',
     moneymatter: 'Bank sync on the Plus plan. OFX, QFX and CSV file imports on every plan',
   },
   {
     feature: 'Your data',
+    icon: 'database',
     competitor: 'A Money data file that you open and edit in the program',
     moneymatter: 'Kept on the MoneyMatter cloud or on your own server, not in a file on your PC',
   },
   {
     feature: 'Price',
+    icon: 'tag',
     competitor: 'Money Plus Sunset was a download from Microsoft with no activation step. Its download page names no price',
     moneymatter:
       'A yearly cloud plan: $30 for Essential or $55 for Plus, after 40 days of trial with no card. Self-hosting costs nothing',
   },
   {
     feature: 'Support',
+    icon: 'life-buoy',
     competitor: 'No assisted support from Microsoft since 31 January 2011',
     moneymatter: 'Email support, and a public roadmap you can vote on',
   },
   {
     feature: 'Budgets',
+    icon: 'wallet',
     competitor: 'A Budget Planner with a budget for each category and a cash-flow forecast',
     moneymatter:
       'A budget with a line per category that resets monthly, weekly or on a schedule you pick, with rollover and goals. No balance forecast. Budgets in a .mny file are not imported',
   },
   {
     feature: 'Bills and recurring payments',
+    icon: 'calendar-clock',
     competitor: 'Recurring Bills & Deposits with reminders',
     moneymatter:
       'Subscriptions, bills and installments on a weekly to yearly schedule, with reminders in the app and by email. Recurring payments can be detected from your history. Bills in a .mny file are not imported',
   },
   {
     feature: 'Investments',
+    icon: 'chart-candlestick',
     competitor:
       'A Portfolio Manager for stocks, funds, bonds and employee stock options, with cost-basis lots and capital-gains reports. Online quotes ended in January 2011, so prices in Money Plus Sunset are typed in by hand',
     moneymatter:
@@ -141,6 +156,7 @@ const COMPARISON = [
   },
   {
     feature: 'Loans',
+    icon: 'hand-coins',
     competitor:
       'Loan and mortgage accounts with an amortization schedule that splits each payment into principal and interest, plus a Debt Reduction Planner',
     moneymatter:
@@ -148,6 +164,7 @@ const COMPARISON = [
   },
   {
     feature: 'Currencies',
+    icon: 'coins',
     competitor:
       'Accounts in different currencies in one file. Exchange rates are entered by hand now that online updates have ended',
     moneymatter:
@@ -155,6 +172,7 @@ const COMPARISON = [
   },
   {
     feature: 'Reports',
+    icon: 'chart-column',
     competitor:
       'A large set of built-in reports and charts that can be customised and saved as favourites, including tax reports aimed at US filers',
     moneymatter:
@@ -162,12 +180,14 @@ const COMPARISON = [
   },
   {
     feature: 'Long-term planning',
+    icon: 'trending-up',
     competitor: 'A Lifetime Planner for retirement and long-term goals, in Deluxe and higher',
     moneymatter:
       'A FIRE planner on the Plus plan. It projects the month your savings could cover your spending. Savings goals sit on budget lines. No plan built from separate life events',
   },
   {
     feature: 'Sharing with a partner',
+    icon: 'users',
     competitor:
       'One local file that can be password-protected. No separate logins or roles for a second person',
     moneymatter:

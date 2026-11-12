@@ -1,10 +1,11 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '@/layouts/base-layout.astro';
-import BackgroundOrbs from '@/components/background-orbs.astro';
 import LandingHeader from '@/components/landing-header.astro';
 import CtaSection from '@/components/cta-section.astro';
 import LandingFooter from '@/components/landing-footer.astro';
+import '@/styles/feature-page.css';
+import '@/styles/prose-page.css';
 
 const guides = (await getCollection('guides')).sort((a, b) => b.data.published.getTime() - a.data.published.getTime());
 ---
@@ -13,41 +14,31 @@ const guides = (await getCollection('guides')).sort((a, b) => b.data.published.g
   title="Personal Finance Guides | MoneyMatter"
   description="Guides to setting up MoneyMatter for a specific situation, such as money in several currencies, with the steps, the mistakes to avoid and links to the docs."
 >
-  <div class="bg-background text-foreground landing-page min-h-screen">
-    <BackgroundOrbs />
-    <LandingHeader />
+  <LandingHeader />
+  <main id="main">
+    <div class="wrap">
+      <div class="prose-page">
+        <h1 class="text-center">Guides</h1>
+        <p class="lede mx-auto text-center">
+          How to set up MoneyMatter for a specific situation: what to do, in what order, and which mistakes to avoid.
+          Each guide links to the full docs.
+        </p>
 
-    <main class="relative z-10 mx-auto max-w-3xl px-4 pt-28 pb-16 sm:px-6 sm:pt-36 lg:px-8">
-      <h1 class="text-center text-3xl font-bold tracking-tight sm:text-5xl">Guides</h1>
-      <p class="text-muted-foreground mx-auto mt-6 max-w-2xl text-center text-lg">
-        How to set up MoneyMatter for a specific situation: what to do, in what order, and which mistakes to avoid. Each
-        guide links to the full docs.
-      </p>
-
-      <ul class="mt-14 space-y-4">
-        {
-          guides.map((guide) => (
-            <li class="border-border/50 bg-card rounded-2xl border px-5 py-5">
-              <h2 class="text-lg font-semibold">
-                <a href={`/guides/${guide.id}`} class="text-primary-text hover:underline">
-                  {guide.data.title}
+        <ul class="mt-14 space-y-4">
+          {
+            guides.map((guide) => (
+              <li>
+                <a href={`/guides/${guide.id}`} class="plate fp-card">
+                  <h2 class="text-lg">{guide.data.title}</h2>
+                  <p class="text-muted-foreground text-sm leading-relaxed">{guide.data.description}</p>
                 </a>
-              </h2>
-              <p class="text-muted-foreground mt-2 text-sm leading-relaxed">{guide.data.description}</p>
-            </li>
-          ))
-        }
-      </ul>
-    </main>
-
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
     <CtaSection />
-    <LandingFooter />
-  </div>
+  </main>
+  <LandingFooter />
 </BaseLayout>
-
-<style>
-  .landing-page {
-    font-family: 'Montserrat', system-ui, sans-serif;
-    overflow-y: auto;
-  }
-</style>
