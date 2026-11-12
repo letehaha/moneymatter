@@ -120,7 +120,7 @@ const LANGUAGES = toCodes(i18n!.locales).map((code) => {
         <div class="theme-menu" role="group" aria-label={t('Colour theme')}>
           {
             THEME_OPTIONS.map((option) => (
-              <button type="button" data-theme-pref={option.pref} aria-pressed={String(option.pref === 'system')}>
+              <button type="button" data-theme-pref={option.pref} aria-pressed={option.pref === 'system' ? 'true' : 'false'}>
                 <LucideIcon name={option.icon} />
                 {t(option.label)}
               </button>
@@ -193,7 +193,7 @@ const LANGUAGES = toCodes(i18n!.locales).map((code) => {
                 <button
                   type="button"
                   data-theme-pref={option.pref}
-                  aria-pressed={String(option.pref === 'system')}
+                  aria-pressed={option.pref === 'system' ? 'true' : 'false'}
                   aria-label={t(`${option.label} theme`)}
                   title={t(`${option.label} theme`)}
                 >

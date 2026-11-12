@@ -135,7 +135,7 @@ const ISLANDS = [
       <div class="iso-legend" role="group" aria-label={t('What MoneyMatter tracks')}>
         {
           ISLANDS.map(({ key, label, soon }) => (
-            <button type="button" class="chip" data-chip={key} aria-pressed={String(key === FIRST_ISLAND)}>
+            <button type="button" class="chip" data-chip={key} aria-pressed={key === FIRST_ISLAND ? 'true' : 'false'}>
               {t(label)}
               {soon && <> <small>{t('Soon')}</small></>}
             </button>
@@ -163,8 +163,6 @@ const ISLANDS = [
   import { TX, type Tx } from '@/lib/wall-transactions';
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Each wall story spans 3-5 ticks (the pop, then its follow-ups), so 90s shows about six of them.
-  const MOTION_LIMIT_MS = 90000;
   const rand = ({ min, max }: { min: number; max: number }) => min + Math.random() * (max - min);
   const within = ({ value, min, max }: { value: number; min: number; max: number }) =>
     Math.min(max, Math.max(min, value));
@@ -191,7 +189,6 @@ const ISLANDS = [
     let tour = 0;
     let tourIndex = 0;
     let inView = false;
-    let stopped = false;
     const stopTour = () => window.clearInterval(tour);
     const pick = ({ key }: { key: string | undefined }) => {
       if (!key) return;
@@ -217,7 +214,7 @@ const ISLANDS = [
     new IntersectionObserver(
       ([entry]) => {
         inView = entry.isIntersecting;
-        if (inView && !stopped) svg.unpauseAnimations();
+        if (inView) svg.unpauseAnimations();
         else svg.pauseAnimations();
       },
       { threshold: 0.15 },
@@ -324,7 +321,7 @@ const ISLANDS = [
       port: el.querySelector('.port.end'),
       lap: 0,
     }));
-    const poll = window.setInterval(() => {
+    window.setInterval(() => {
       if (!inView || document.hidden) return;
       const now = svg.getCurrentTime();
       feeds.forEach((feed) => {
@@ -336,13 +333,6 @@ const ISLANDS = [
         window.setTimeout(() => feed.port?.classList.remove('ping'), 320);
       });
     }, 100);
-
-    window.setTimeout(() => {
-      stopped = true;
-      stopTour();
-      window.clearInterval(poll);
-      svg.pauseAnimations();
-    }, MOTION_LIMIT_MS);
   };
 
   const WALL_SLOTS = [
@@ -840,13 +830,7 @@ const ISLANDS = [
       },
       { threshold: 0.25 },
     ).observe(wall);
-    const motionStart = performance.now();
-    const tick = window.setInterval(() => {
-      if (performance.now() - motionStart > MOTION_LIMIT_MS) {
-        window.clearInterval(tick);
-        inner.style.animationPlayState = 'paused';
-        return;
-      }
+    window.setInterval(() => {
       if (!inView || document.hidden || !wall.offsetParent) return;
       while (queue.length) {
         if (sync({ title: queue.shift() ?? '' })) return;

@@ -78,7 +78,7 @@ const IMG = {
               class="ptab"
               data-tab={tab.id}
               aria-controls={`plan-panel-${tab.id}`}
-              aria-pressed={String(i === 0)}
+              aria-pressed={i === 0 ? 'true' : 'false'}
             >
               <span class="itile">
                 {tab.lucide ? (
