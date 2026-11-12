@@ -48,6 +48,14 @@ const NOT_A_TRANSACTION = {
   suggestedCategoryId: null,
 };
 
+const serverModelAnswer = () =>
+  http.post(GEMINI_API_URL, () =>
+    HttpResponse.json({
+      candidates: [{ content: { parts: [{ text: answer() }], role: 'model' }, finishReason: 'STOP' }],
+      usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 50, totalTokenCount: 150 },
+    }),
+  );
+
 const createAccount = ({ name }: { name: string }) =>
   helpers.createAccount({ payload: helpers.buildAccountPayload({ name }), raw: true });
 
@@ -453,23 +461,41 @@ describe('POST /transactions/extract-message', () => {
       enableServerModel();
       // One mocked call costs $0.000155; usedPercent is floored, so a much larger cap would still read 0.
       process.env.AI_MONTHLY_CAP_USD_TRIAL = '0.001';
-      global.mswMockServer.use(
-        http.post(GEMINI_API_URL, () =>
-          HttpResponse.json({
-            candidates: [{ content: { parts: [{ text: answer() }], role: 'model' }, finishReason: 'STOP' }],
-            usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 50, totalTokenCount: 150 },
-          }),
-        ),
-      );
+      global.mswMockServer.use(serverModelAnswer());
 
       expect((await helpers.extractMessage({ text: SMS })).statusCode).toBe(200);
       expect((await helpers.getAiFeaturesStatus({ raw: true })).aiAllowance!.usedPercent).toBeGreaterThan(0);
     });
-  });
 
-  it('402s when the plan does not include invoice matching', async () => {
-    await helpers.setUserBilling({ plan: PLANS.essential });
+    // TODO(ios-release): restore Plus gate (invoice_matching), then assert 402 for Essential here
+    it('serves an Essential user on the server key', async () => {
+      await helpers.setUserBilling({ plan: PLANS.essential });
+      enableServerModel();
+      global.mswMockServer.use(serverModelAnswer());
 
-    expect((await helpers.extractMessage({ text: SMS })).statusCode).toBe(402);
+      const result = await helpers.extractMessage({ text: SMS });
+
+      expect(result.statusCode).toBe(200);
+      expect(result.response).toMatchObject({ isTransaction: true, amount: 1234.5 });
+    });
+
+    it('tells an Essential user over the AI allowance that it ran out, without calling the model', async () => {
+      await helpers.setUserBilling({ plan: PLANS.essential });
+      enableServerModel();
+      process.env.AI_MONTHLY_CAP_USD_TRIAL = '0';
+      let modelCalls = 0;
+      global.mswMockServer.use(
+        http.post(GEMINI_API_URL, () => {
+          modelCalls++;
+          return HttpResponse.json({}, { status: 500 });
+        }),
+      );
+
+      const result = await helpers.extractMessage({ text: SMS });
+
+      expect(result.statusCode).toBe(422);
+      expect(result.errorMessage).toContain('used the AI included in your plan');
+      expect(modelCalls).toBe(0);
+    });
   });
 });

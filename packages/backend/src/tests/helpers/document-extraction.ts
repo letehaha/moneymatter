@@ -54,13 +54,18 @@ export const extractReceipt = (params: UploadParams) =>
   });
 
 export async function extractMessage({ text }: { text: unknown }) {
-  const result = await makeRequest<MessageExtractionResult>({
+  const result = await makeRequest<MessageExtractionResult & { message?: string }>({
     method: 'post',
     url: '/transactions/extract-message',
     payload: { text },
   });
+  const body = result.body.response;
 
-  return { statusCode: result.statusCode, response: result.statusCode === 200 ? result.body.response : null };
+  return {
+    statusCode: result.statusCode,
+    response: result.statusCode === 200 ? body : null,
+    errorMessage: result.statusCode === 200 ? null : (body?.message ?? null),
+  };
 }
 
 /** Re-ranks candidates for invoice fields the user corrected; no file and no AI involved. */
