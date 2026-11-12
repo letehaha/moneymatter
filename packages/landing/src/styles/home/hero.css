@@ -10,7 +10,8 @@
   transform: rotate(-5deg) scale(0.72);
   transform-origin: 50% 40%;
 }
-@media (max-width: 760px) {
+/* 860px = twice the 430px clear zone of the mask below: at this width the wall is fully masked out. */
+@media (max-width: 860px) {
   .wall {
     display: none;
   }
