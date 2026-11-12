@@ -13,6 +13,72 @@ const REVIEWS: { quote: string; author: string; source: string; href?: string; c
     lead: true,
   },
   {
+    quote:
+      "I've actually started looking forward to the release updates from MoneyMatter. It's refreshing to see a developer who continues to improve a project and listen to what users might need.",
+    author: 'Reddit user',
+    source: 'r/YNABAlternatives',
+    href: 'https://www.reddit.com/r/YNABAlternatives/comments/1weyqv3/a_shoutout_to_the_creator_of_moneymatter/',
+    color: '#e0913a',
+  },
+  {
+    quote:
+      'I loved this app from the demo itself, so I decided to self-host it, thanks for all of your efforts to create such a versatile app. I used sure.am as well, but your app is the best when it comes to simplicity and functionality.',
+    author: 'MoneyMatter user',
+    source: 'GitHub',
+    href: 'https://github.com/letehaha/moneymatter/issues/524#issuecomment-5407538115',
+  },
+  {
+    quote: "Love your app!! It's awesome and has everything that I need. Great work.",
+    author: 'Reddit user',
+    source: 'r/moneymatterapp',
+    href: 'https://www.reddit.com/r/moneymatterapp/comments/1xgk2g1/love_your_app_its_awesome_and_has_everything_that/',
+    color: '#e0913a',
+  },
+  {
+    quote: 'Great project! It has things I never dreamed to have under single roof. Keep it up! 🙌',
+    author: 'MoneyMatter user',
+    source: 'GitHub',
+    href: 'https://github.com/letehaha/moneymatter/issues/871',
+  },
+  {
+    quote: 'I started the 40 day trial and am beyond impressed!',
+    author: 'Reddit user',
+    source: 'r/YNABAlternatives',
+    href: 'https://www.reddit.com/r/YNABAlternatives/comments/1weyqv3/comment/19rrbn11961sz/',
+    color: '#e0913a',
+  },
+  {
+    quote: 'From testing now just a few days I see great potential in your project. Thanks for all the work.',
+    author: 'MoneyMatter user',
+    source: 'GitHub',
+    href: 'https://github.com/letehaha/moneymatter/discussions/740#discussioncomment-18997562',
+  },
+  {
+    quote: 'Amazing software - love it.',
+    author: 'MoneyMatter user',
+    source: 'GitHub',
+    href: 'https://github.com/letehaha/moneymatter/issues/688',
+  },
+  {
+    quote: 'Just want to note — the MCP implementation itself is excellent.',
+    author: 'MoneyMatter user',
+    source: 'GitHub',
+    href: 'https://github.com/letehaha/moneymatter/issues/429',
+  },
+  {
+    quote:
+      'I created issues for all the problems I encountered setting it up, but I must also thank you for this very nice project 🤗',
+    author: 'MoneyMatter user',
+    source: 'GitHub',
+    href: 'https://github.com/letehaha/moneymatter/issues/317#issuecomment-4639806723',
+  },
+  {
+    quote: "I've just started using the app and I think it's great.",
+    author: 'MoneyMatter user',
+    source: 'GitHub',
+    href: 'https://github.com/letehaha/moneymatter/issues/437',
+  },
+  {
     quote: 'Thanks for developing this 360 degree financial app.',
     author: 'MoneyMatter user',
     source: 'Sent to the developer',
@@ -25,7 +91,7 @@ const REVIEWS: { quote: string; author: string; source: string; href?: string; c
     <p class="eyebrow">From people using it</p>
     <h2>What users say</h2>
     <p class="lede">Real comments, quoted as written. Public ones link to the original post.</p>
-    <div class="revwall">
+    <div class="revwall" id="revwall">
       {
         REVIEWS.map((review) => (
           <figure class:list={['plate rev', { 'rev-lead': review.lead }]}>
@@ -54,7 +120,7 @@ const REVIEWS: { quote: string; author: string; source: string; href?: string; c
                   href={review.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Original comment in ${review.source}`}
+                  aria-label={`Original on ${review.source}`}
                 >
                   Original
                   <svg aria-hidden="true" class="ic">
@@ -67,6 +133,7 @@ const REVIEWS: { quote: string; author: string; source: string; href?: string; c
         ))
       }
     </div>
+    <button type="button" class="btn btn-quiet rev-toggle" aria-expanded="false" aria-controls="revwall">Show more</button>
     <p class="rev-more">
       Using MoneyMatter? <a href={REDDIT_URL} target="_blank" rel="noopener noreferrer" data-track="landing_reddit_clicked" data-track-location="reviews"
         >Share how it goes on Reddit<svg aria-hidden="true" class="ic"><use href="#f-to" /></svg></a
@@ -74,3 +141,15 @@ const REVIEWS: { quote: string; author: string; source: string; href?: string; c
     </p>
   </div>
 </section>
+
+<script>
+  const wall = document.getElementById('revwall');
+  const toggle = document.querySelector<HTMLButtonElement>('.rev-toggle');
+
+  toggle?.addEventListener('click', () => {
+    const open = wall?.classList.toggle('open') ?? false;
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.textContent = open ? 'Show less' : 'Show more';
+    if (!open) toggle.scrollIntoView({ block: 'nearest' });
+  });
+</script>
