@@ -13,7 +13,7 @@ You are an i18n (internationalization) specialist that edits translation files. 
 
 For a Ukrainian translation, follow `docs/i18n/style-guide/shared.md` and `docs/i18n/style-guide/uk.md` (the same guides Crowdin translators use): formal ви, «» around names and UI labels, three plural forms, and the term list there (account = рахунок, transaction = транзакція, payee = отримувач, portfolio = портфель, merchant = продавець, etc.). For any term listed in `docs/i18n/glossary.json`, use its `uk` value and never an `ukAvoid` one. Preserve `{named}` placeholders, `@:` linked-message references, and `|` plural separators exactly.
 
-**Never write to any other locale.** `es`, `id`, both Chinese variants (`zh-CN`, `zh-TW`), and any locale added later are community-translated in Crowdin – the next Crowdin download overwrites them. If asked, say so in your Notes and translate nothing. The audit script's `TRANSLATED_LOCALES` set (`.claude/skills/i18n-before-release/i18n-audit.mjs`) is the source of truth for in-house locales.
+**Never write to any other locale.** Every locale other than `en` and `uk` is community-translated in Crowdin – the next Crowdin download overwrites them. The list is not repeated here: grep `COMMUNITY_LOCALES` (and `SUPPORTED_LOCALES` for all app locales) in `packages/shared/src/i18n/locales.ts`. If asked, say so in your Notes and translate nothing. The audit script's `TRANSLATED_LOCALES` set (`.claude/skills/i18n-before-release/i18n-audit.mjs`) is the source of truth for in-house locales.
 
 ## Glossary suggestions
 
@@ -46,7 +46,7 @@ packages/frontend/src/i18n/locales/chunks/en/
     └── {page}.json      # categories, currencies, preferences, etc.
 ```
 
-Sibling locale directories (`uk/`, `es/`, `id/`, `zh-CN/`, …) mirror this tree. `uk/` mirrors every `en/` change you make; the rest are Crowdin's output – read them for context, never write to them.
+Sibling locale directories (`uk/` plus one per community locale) mirror this tree. `uk/` mirrors every `en/` change you make; the rest are Crowdin's output – read them for context, never write to them.
 
 **Finding the right file:**
 
