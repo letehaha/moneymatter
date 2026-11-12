@@ -37,7 +37,13 @@ const AI_ALLOWANCE_REACHED_ERROR_MESSAGE =
  * A user whose every connection is flagged down does own credentials, so telling them to add
  * a model would send them to the wrong screen.
  */
-export async function describeMissingAiConfiguration({ userId }: { userId: number }): Promise<string> {
+export async function describeMissingAiConfiguration({
+  userId,
+  allowOperatorKey = false,
+}: {
+  userId: number;
+  allowOperatorKey?: boolean;
+}): Promise<string> {
   const connections = await getConnectionInfos({ userId });
   const dialable = connections.find((connection) => connection.status !== 'invalid');
   const first = connections[0];
@@ -47,7 +53,8 @@ export async function describeMissingAiConfiguration({ userId }: { userId: numbe
   }
 
   const entitlements = await getEntitlementsByUserId({ userId });
-  if (hasServerAiEntitlement({ entitlements }) && !(await isWithinAiAllowance({ userId, entitlements }))) {
+  const entitled = allowOperatorKey || hasServerAiEntitlement({ entitlements });
+  if (entitled && !(await isWithinAiAllowance({ userId, entitlements }))) {
     return AI_ALLOWANCE_REACHED_ERROR_MESSAGE;
   }
 

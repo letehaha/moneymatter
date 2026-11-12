@@ -81,9 +81,10 @@ export async function extractMessage({
   userId: number;
   text: string;
 }): Promise<MessageExtractionResult> {
-  const aiClient = await createAIClient({ userId, feature: AI_FEATURE.receiptParsing });
+  // TODO(ios-release): restore Plus gate (invoice_matching)
+  const aiClient = await createAIClient({ userId, feature: AI_FEATURE.receiptParsing, allowOperatorKey: true });
   if (!aiClient) {
-    throw new ValidationError({ message: await describeMissingAiConfiguration({ userId }) });
+    throw new ValidationError({ message: await describeMissingAiConfiguration({ userId, allowOperatorKey: true }) });
   }
 
   const [{ knownPayeeNames, knownCategoryNames, suggest }, { knownAccountNames, resolveAccount }] = await Promise.all([

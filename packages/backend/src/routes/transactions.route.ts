@@ -84,7 +84,8 @@ router.post(
   express.raw({ type: 'application/octet-stream', limit: ATTACHMENT_MAX_FILE_BYTES }),
   extractReceipt,
 );
-router.post('/extract-message', requireFeature(FEATURES.invoice_matching), messageExtractionRateLimit, extractMessage);
+// TODO(ios-release): restore Plus gate (invoice_matching)
+router.post('/extract-message', messageExtractionRateLimit, extractMessage);
 router.post(
   '/match-invoice/candidates',
   // No AI and no try spent, so a user whose free tries are gone can still correct the
