@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "screenshots:missing": "node ./scripts/missing-screenshots.mjs",
     "screenshots:optimize": "node ./scripts/optimize-screenshots.mjs",
+    "screenshots:landing": "node ./scripts/capture/landing-shots.mjs",
     "screenshots:seed": "node ./scripts/capture/seed-docs-user.mjs"
   },
   "dependencies": {
