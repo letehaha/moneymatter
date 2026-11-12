@@ -1,83 +1,25 @@
-@import 'tailwindcss';
+@import 'tailwindcss' source(none);
+/* Add a file here before using utilities in it. Scanning everything emits utilities that collide with hand-written class names. */
+@source '../components/demo-loading-overlay.vue';
+@source '../components/faq-ask.vue';
+@source '../pages/demo.astro';
+@source '../pages/guides';
+@source '../pages/privacy-policy.astro';
+@source '../pages/support.astro';
+@source '../pages/terms-of-use.astro';
+@source inline('sr-only');
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @theme {
-  /* Dark mode configuration */
-  --default-dark-mode: class;
-
-  /* Container configuration */
-  --container-center: true;
-  --container-padding: 2rem;
-  --container-screens-2xl: 1400px;
-
-  /* Extended breakpoints */
-  --breakpoint-xxs: 390px;
-  --breakpoint-xs: 550px;
-
-  /* Colors using CSS custom properties */
+  /* Legacy utility colors resolve to the redesign tokens, so they follow the theme switch. */
   --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-base-text: var(--base-text);
-  --color-error-message: var(--error-message);
-
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary-text: var(--primary-text);
-
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --color-primary: var(--accent);
+  --color-primary-text: var(--accent-text);
+  --color-muted-foreground: var(--muted);
   --color-destructive-text: var(--destructive-text);
-
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-success-text: var(--success-text);
-
-  --color-warning: rgb(230 126 34);
-  --color-warning-text: var(--warning-text);
-
-  /* Border radius */
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-
-  /* Z-index */
-  --z-over-default: 1;
-  --z-navbar: 10;
-  --z-dialog: 50;
-  --z-over-dialog: 51;
-  --z-notifications: 51;
-}
-
-/*
-  Tailwind v4 border color compatibility
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
 }
 
 /*
@@ -92,58 +34,21 @@
 }
 
 @layer base {
-  /* Dark mode only: always apply dark theme values */
   :root {
-    --radius: 0.5rem;
+    --destructive-text: rgb(200, 30, 30);
+  }
 
-    --background: rgb(11, 9, 8);
-    --foreground: rgb(242, 242, 242);
-
-    --base-text: rgb(250, 250, 250);
-
-    --card: rgb(27, 25, 23);
-    --card-foreground: rgb(242, 242, 242);
-
-    --popover: rgb(22, 22, 22);
-    --popover-foreground: rgb(242, 242, 242);
-
-    --primary: rgb(130, 100, 205);
-    --primary-foreground: rgb(255, 255, 255);
-    --primary-text: rgb(167, 139, 250);
-
-    --secondary: rgb(39, 39, 42);
-    --secondary-foreground: rgb(249, 249, 249);
-
-    --muted: rgb(38, 38, 38);
-    --muted-foreground: rgb(161, 161, 169);
-
-    --accent: rgb(41, 37, 36);
-    --accent-foreground: rgb(249, 249, 249);
-
-    --destructive: rgb(147, 29, 29);
-    --destructive-foreground: rgb(254, 242, 242);
+  :root[data-theme='dark'] {
     --destructive-text: rgb(239, 68, 68);
-
-    --border: rgb(39, 39, 42);
-    --input: rgb(39, 39, 42);
-    --ring: rgb(115, 85, 190);
-
-    --success: rgb(16, 59, 49);
-    --success-foreground: rgb(250, 250, 250);
-    --success-text: rgb(46, 204, 113);
-
-    --warning-text: rgb(243, 156, 18);
-
-    --error-message: rgb(228, 105, 89);
   }
 }
 
 @layer base {
-  * {
+  *,
+  ::before,
+  ::after,
+  ::backdrop,
+  ::file-selector-button {
     @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-family: 'Montserrat', system-ui, sans-serif;
   }
 }

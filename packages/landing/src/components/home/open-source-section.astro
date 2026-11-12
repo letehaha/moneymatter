@@ -1,0 +1,128 @@
+---
+import '@/styles/home/open-source.css';
+import GithubActivity from '@/components/github-activity.vue';
+import { GITHUB_URL, ROADMAP_URL } from '@/lib/github-api';
+import { getGitHubStarsLabel } from '@/lib/github-stars';
+import { useI18n } from '@/i18n';
+
+const { t, locale, clientProps } = useI18n(Astro);
+
+const starsLabel = await getGitHubStarsLabel();
+const starsHtml = t('<span class="sr-only">, </span>{stars}<span class="sr-only"> stars</span>', { stars: starsLabel ?? '' });
+
+const GITHUB_ACTIVITY_STRINGS = [
+  'Repository activity',
+  'Commit history',
+  'This week',
+  'Commits, last 30 days',
+  'Last push',
+  'Loading repository activity',
+  '{total} commits in the last {weeks} weeks',
+  '{commits} commits {when}',
+];
+
+const LINKS = [
+  { label: t('Self-host guide'), icon: 'r-server', href: `${GITHUB_URL}/tree/main/self-hosting`, track: 'landing_github_clicked', location: 'self_host' },
+  { label: t('Roadmap'), icon: 'r-map', href: ROADMAP_URL, track: 'landing_roadmap_clicked', location: 'community' },
+  { label: t('Changelog'), icon: 'r-list', href: `${GITHUB_URL}/releases`, track: 'landing_github_clicked', location: 'community' },
+];
+
+const FACTS = [
+  { icon: 'r-shield', title: 'AGPL-3.0', text: t('Anyone can audit the code on GitHub.') },
+  { icon: 'r-server', title: t('Free to self-host'), text: t('Deploy with Docker Compose, and add Enable Banking for EU and UK banks.') },
+  { icon: 'r-export', title: t('No lock-in'), text: t('Export a backup and move between the cloud and your own server, both ways.') },
+  { icon: 'r-eyeoff', title: t('Your data stays yours'), text: t('Never sold or shared. No ads, and no Google or Facebook trackers.') },
+];
+---
+
+<section class="sec" id="open-source">
+  <span id="self-host"></span>
+  <div class="wrap">
+    <div class="plate oss">
+      <div class="oss-main">
+        <div>
+          <p class="eyebrow">{t('Open source')}</p>
+          <h2>{t('Built in the open by one developer')}</h2>
+          <p class="lede">
+            {t('MoneyMatter is made by a solo developer, with a public roadmap and changelog. You can read every line of the code, or run all of it yourself.')}
+          </p>
+          <div class="oss-links2">
+            <a
+              class="btn btn-quiet"
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-track="landing_github_clicked"
+              data-track-location="community"
+            >
+              <svg aria-hidden="true" class="ic"><use href="#r-code" /></svg><Fragment set:html={t('<span class="sr-only">MoneyMatter on </span>GitHub')} />{
+                starsLabel && (
+                  <span class="gh-count">
+                    <svg viewBox="0 0 16 16" aria-hidden="true">
+                      <use href="#i-star" />
+                    </svg>
+                    <Fragment set:html={starsHtml} />
+                  </span>
+                )
+              }
+            </a>
+            {
+              LINKS.map((link) => (
+                <a
+                  class="btn btn-quiet"
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-track={link.track}
+                  data-track-location={link.location}
+                >
+                  <svg aria-hidden="true" class="ic">
+                    <use href={`#${link.icon}`} />
+                  </svg>
+                  {link.label}
+                </a>
+              ))
+            }
+          </div>
+          <GithubActivity
+            client:visible={{ rootMargin: '200px' }}
+            {...clientProps({ texts: GITHUB_ACTIVITY_STRINGS })}
+            {...(locale !== 'en' && { locale })}
+          />
+        </div>
+        <div class="oss-side">
+          <div class="term">
+            <div class="shot-bar" aria-hidden="true"><i></i><i></i><i></i><span>{t('Self-hosting quickstart')}</span></div>
+            <pre><code><span class="pr">$</span>git clone {GITHUB_URL}.git
+<span class="pr">$</span>cd moneymatter/self-hosting
+<span class="pr">$</span>cp .env.example .env
+<span class="pr">$</span>docker compose up -d
+<span class="cm"># open http://&lt;host&gt;:8080</span></code></pre>
+          </div>
+          <blockquote class="oss-q">
+            The developer seems very open to user feedback and users can suggest and vote on features for the roadmap.<cite
+              >{t('Reddit user')}, r/YNABAlternatives</cite
+            >
+          </blockquote>
+        </div>
+      </div>
+      <ul class="oss-facts">
+        {
+          FACTS.map((fact) => (
+            <li>
+              <span class="itile">
+                <svg aria-hidden="true" class="ic">
+                  <use href={`#${fact.icon}`} />
+                </svg>
+              </span>
+              <div>
+                <strong>{fact.title}</strong>
+                <span>{fact.text}</span>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>

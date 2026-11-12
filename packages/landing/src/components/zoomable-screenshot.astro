@@ -1,42 +1,22 @@
 ---
 import Screenshot from '@/components/screenshot.astro';
+import LucideIcon from '@/components/lucide-icon.astro';
+import { useI18n } from '@/i18n';
 
 interface Props {
   name: string;
   alt: string;
   width: number;
   height: number;
+  loading?: 'eager' | 'lazy';
 }
 
-const { name, alt, width, height } = Astro.props;
+const { name, alt, width, height, loading = 'lazy' } = Astro.props;
+const { t } = useI18n(Astro);
 ---
 
-<button
-  type="button"
-  data-zoom-src={`/img/landing/screenshots/${name}@2x.webp`}
-  data-zoom-alt={alt}
-  class="group focus-visible:outline-primary relative block w-full cursor-zoom-in rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2"
->
-  <Screenshot name={name} alt={alt} width={width} height={height} />
-  <span class="sr-only">Enlarge screenshot</span>
-  <span
-    aria-hidden="true"
-    class="absolute top-2 right-2 rounded-full bg-black/60 p-2 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class="size-4"
-    >
-      <path d="M15 3h6v6" />
-      <path d="m21 3-7 7" />
-      <path d="m3 21 7-7" />
-      <path d="M9 21H3v-6" />
-    </svg>
-  </span>
+<button type="button" class="fp-zoom">
+  <Screenshot name={name} alt={alt} width={width} height={height} loading={loading} />
+  <span class="sr-only">{t('Enlarge screenshot')}</span>
+  <span class="fp-zoom-ic" aria-hidden="true"><LucideIcon name="maximize-2" class="ic" /></span>
 </button>

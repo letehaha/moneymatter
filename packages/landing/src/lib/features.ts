@@ -169,3 +169,9 @@ export const FEATURE_GROUPS = [
 ];
 
 export const FEATURE_PAGES = FEATURE_GROUPS.flatMap((group) => group.pages);
+
+export const getFeaturePage = ({ slug, href = `/features/${slug}` }: { slug?: string; href?: string }) => {
+  const page = FEATURE_PAGES.find((p) => p.href === href);
+  if (!page) throw new Error(`Unknown feature page: ${href}`);
+  return page;
+};

@@ -1,6 +1,8 @@
 ---
 import AlternativeLayout from '@/layouts/alternative-layout.astro';
+import { useI18n } from '@/i18n';
 
+const { t } = useI18n(Astro);
 const checkedOn = '12 October 2026';
 const DOCS_IMPORT_URL = 'https://docs.moneymatter.app/import/other-import-sources/#ynab';
 const DOCS_SELF_HOSTING_URL = 'https://docs.moneymatter.app/getting-started/self-hosting/';
@@ -44,16 +46,19 @@ const IMPORT_LIMITS = [
 const COMPARISON = [
   {
     feature: 'Price',
+    icon: 'tag',
     competitor: '$14.99 a month, or $109 a year, plus tax',
     moneymatter: 'From $30 a year on the cloud, before tax. Free when self-hosted',
   },
   {
     feature: 'Free trial',
+    icon: 'hourglass',
     competitor: '34 days, no credit card when you sign up on ynab.com. College students get 365 days',
     moneymatter: '40 days, no card needed. Self-hosting is free with no time limit',
   },
   {
     feature: 'Budgeting method',
+    icon: 'wallet',
     competitor:
       'Zero-based. Ready to Assign is the money not yet added to a category, and each category can have a target',
     moneymatter:
@@ -61,48 +66,57 @@ const COMPARISON = [
   },
   {
     feature: 'Currencies',
+    icon: 'coins',
     competitor: 'One currency in a plan. YNAB recommends a separate plan for each extra currency',
     moneymatter: 'About 158 fiat currencies side by side, each transaction converted at the rate of its own date',
   },
   {
     feature: 'Investments',
+    icon: 'chart-candlestick',
     competitor: 'A tracking account whose balance you update by reconciling',
     moneymatter:
       'Stocks, ETFs and crypto as holdings, with cost basis, returns and dividends. Prices update daily, crypto hourly',
   },
   {
     feature: 'Loans',
+    icon: 'hand-coins',
     competitor: 'Loan accounts, with a Loan Planner that shows the time and interest an extra payment saves',
     moneymatter: 'Loan accounts with a projected payoff date, the interest still to pay, and a balance projection chart',
   },
   {
     feature: 'Refunds',
+    icon: 'undo-2',
     competitor: 'Categorized back to the original spending category',
     moneymatter: 'Linked to the purchase they refund, and counted back in budgets',
   },
   {
     feature: 'Bank sync',
+    icon: 'landmark',
     competitor: 'Select US, Canadian, UK and EU banks. In Europe, at least one bank in each of 18 countries',
     moneymatter:
       'On the Plus plan, through LunchFlow, SimpleFIN, Monobank, Walutomat or Akahu. LunchFlow and SimpleFIN are separate paid services',
   },
   {
     feature: 'AI assistants',
+    icon: 'sparkles',
     competitor: 'A REST API. The MCP servers listed on its API page are third-party',
     moneymatter: 'A built-in MCP server with three access levels. No public REST API',
   },
   {
     feature: 'Sharing',
+    icon: 'users',
     competitor: 'Up to six people on one subscription, with edit access to the plans shared with them',
     moneymatter: '2 seats on Essential, 5 on Plus. Read-only or write access, set per account or tracker',
   },
   {
     feature: 'Apps',
+    icon: 'monitor-smartphone',
     competitor: 'Web, iOS and Android, with offline access',
     moneymatter: 'A web app with a phone layout that you can add to your home screen, plus an iPhone app in beta on TestFlight. No Android app, and it needs a connection',
   },
   {
     feature: 'Getting your data out',
+    icon: 'hard-drive-download',
     competitor: 'CSV export of the plan and the transaction history, from the web app. Targets and category notes are left out',
     moneymatter: 'CSV or Excel export, on every plan',
   },
@@ -111,6 +125,7 @@ const COMPARISON = [
 const HIGHLIGHTS = [
   {
     title: 'Investments, loans and net worth',
+    icon: 'chart-candlestick',
     items: [
       {
         lead: 'Portfolios',
@@ -129,6 +144,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Budgeting',
+    icon: 'wallet',
     items: [
       { lead: 'Lines', text: 'One line per category or group of categories, with what is assigned, spent and left.' },
       {
@@ -144,6 +160,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Several currencies in one place',
+    icon: 'globe',
     items: [
       { lead: 'Accounts', text: 'About 158 fiat currencies with automatic exchange rates.' },
       { lead: 'Conversion', text: 'Each transaction is converted at the rate of its own date.' },
@@ -153,6 +170,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Refunds, splits, rules and subscriptions',
+    icon: 'list-checks',
     items: [
       {
         lead: 'Refund linking',
@@ -171,6 +189,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'AI assistants and self-hosting',
+    icon: 'sparkles',
     items: [
       {
         lead: 'MCP server',
@@ -267,8 +286,8 @@ const SOURCES = [
     href: 'https://support.ynab.com/en_us/direct-import-in-europe-Syae1z_A9',
   },
   { label: 'YNAB help: YNAB Together', href: 'https://support.ynab.com/en_us/ynab-together-B1nS78Cki' },
-  { label: 'YNAB Loan Planner', href: 'https://www.ynab.com/ynab-loan-planner/' },
-  { label: 'YNAB API', href: 'https://api.ynab.com' },
+  { label: 'YNAB Loan Planner', href: 'https://www.ynab.com/ynab-loan-planner/', raw: true },
+  { label: 'YNAB API', href: 'https://api.ynab.com', raw: true },
 ];
 ---
 
@@ -293,15 +312,19 @@ const SOURCES = [
   importFirst
   whyCloud={{ heading: 'What the cloud plan adds over self-hosting', items: WHY_CLOUD }}
 >
-  <p slot="import-note" class="text-muted-foreground mt-8 max-w-2xl text-sm">
-    Dates are read the same way for the whole file. When no row settles whether they are day-first or month-first,
-    MoneyMatter reads them as MM/DD/YYYY and warns you, so check a few transactions afterwards.
+  <p slot="import-note" class="alt-note">
+    {
+      t(
+        'Dates are read the same way for the whole file. When no row settles whether they are day-first or month-first, MoneyMatter reads them as MM/DD/YYYY and warns you, so check a few transactions afterwards.',
+      )
+    }
   </p>
 
-  <Fragment slot="why-cloud-intro">
-    Both run the same app. The cloud is for when you would rather not run a server. The <a
-      href={DOCS_SELF_HOSTING_URL}
-      class="text-primary-text hover:underline">self-hosting guide</a
-    > shows what running it yourself takes.
-  </Fragment>
+  <Fragment
+    slot="why-cloud-intro"
+    set:html={t(
+      'Both run the same app. The cloud is for when you would rather not run a server. The <a href="{selfHosting}">self-hosting guide</a> shows what running it yourself takes.',
+      { selfHosting: DOCS_SELF_HOSTING_URL },
+    )}
+  />
 </AlternativeLayout>

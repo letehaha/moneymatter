@@ -1,16 +1,19 @@
 ---
 import BaseLayout from './base-layout.astro';
-import BackgroundOrbs from '@/components/background-orbs.astro';
+import '@/styles/alternative-page.css';
 import LandingHeader from '@/components/landing-header.astro';
 import CtaSection from '@/components/cta-section.astro';
 import LandingFooter from '@/components/landing-footer.astro';
+import LucideIcon from '@/components/lucide-icon.astro';
 import Screenshot from '@/components/screenshot.astro';
 import FaqAsk from '@/components/faq-ask.vue';
 import FaqDetails from '@/components/faq-details.astro';
-import TryDemoButton from '@/components/try-demo-button.vue';
-import CheckIcon from '@/components/icons/check-icon.astro';
+import DemoStartButton from '@/components/demo-start-button.astro';
+import FaqContact from '@/components/faq-contact.astro';
 import { ALTERNATIVE_PAGES } from '@/lib/alternatives';
-import { GITHUB_URL } from '@/lib/github-api';
+import { GITHUB_URL, ROADMAP_URL } from '@/lib/github-api';
+import { FAQ_ASK_STRINGS } from '@/i18n/client';
+import { useI18n } from '@/i18n';
 
 interface Props {
   title: string;
@@ -22,8 +25,8 @@ interface Props {
   checkedOn: string;
   comparisonNote?: string;
   atAGlance: { value: string; label: string }[];
-  highlights: { title: string; items: { lead: string; text: string }[] }[];
-  comparison: { feature: string; competitor: string; moneymatter: string }[];
+  highlights: { title: string; icon: string; items: { lead: string; text: string }[] }[];
+  comparison: { feature: string; icon: string; competitor: string; moneymatter: string }[];
   importGuideUrl: string;
   importGuideLabel?: string;
   steps: string[];
@@ -33,7 +36,7 @@ interface Props {
   faq: { question: string; answer: string }[];
   betterFit: string[];
   trademarkNote: string;
-  sources: { label: string; href: string }[];
+  sources: { label: string; href: string; raw?: boolean }[];
   importFirst?: boolean;
   importLead?: string;
   whyCloud?: { heading: string; items: { lead: string; text: string }[] };
@@ -47,7 +50,7 @@ const {
   heading,
   intro,
   checkedOn,
-  comparisonNote = `${short} details checked on ${checkedOn} against the sources at the end of this page.`,
+  comparisonNote = `${short} details checked on ${checkedOn} against the <a href="#sources">sources at the end of this page</a>.`,
   atAGlance,
   highlights,
   comparison,
@@ -66,263 +69,337 @@ const {
   whyCloud,
 } = Astro.props;
 
-const sectionOrder = importFirst
-  ? ['import', 'comparison', 'highlights']
-  : ['highlights', 'comparison', 'import'];
+const sectionOrder = importFirst ? ['import', 'comparison', 'highlights'] : ['comparison', 'highlights', 'import'];
+const hasRoute = Astro.slots.has('default');
+const bands = [...sectionOrder, hasRoute && 'route', whyCloud && 'cloud', 'faq', 'others'].filter(Boolean);
+const band = ({ key }: { key: string }) => (bands.indexOf(key) % 2 === 0 ? 'sec sec-soft alt-s' : 'sec alt-s');
 
-const otherAlternatives = ALTERNATIVE_PAGES.filter((page) => page.href !== Astro.url.pathname.replace(/\/$/, ''));
+const path = Astro.url.pathname.replace(/\/$/, '');
+const current = ALTERNATIVE_PAGES.find((page) => page.href === path);
+if (!current) throw new Error(`${path} is missing from ALTERNATIVE_PAGES`);
+const otherAlternatives = ALTERNATIVE_PAGES.filter((page) => page.href !== path);
 
-const ROADMAP_URL = 'https://moneymatter.featurebase.app/dashboard/roadmap';
+const { t, url, clientProps } = useI18n(Astro);
+// Amounts, counts, codes and file extensions stay as written; every other value is a translatable phrase.
+const LITERAL_VALUE = /^(\$\d+|\d+\+|[A-Z0-9.-]+|\.\w+)$/;
 ---
 
-<BaseLayout title={title} description={description}>
-  <div class="bg-background text-foreground landing-page min-h-screen">
-    <BackgroundOrbs />
-    <LandingHeader />
-
-    <main class="relative z-10 mx-auto max-w-5xl px-4 pt-28 pb-16 sm:px-6 sm:pt-36 lg:px-8">
-      <h1 class="mx-auto max-w-4xl text-center text-3xl font-bold tracking-tight sm:text-5xl">
-        {heading}
-      </h1>
-      <p class="text-muted-foreground mx-auto mt-6 max-w-2xl text-center text-lg">
-        {intro}
-      </p>
-
-      <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-center">
-        <div class="flex flex-col items-center gap-2">
-          <a
-            href="/sign-up"
-            class="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center rounded-xl border-2 border-transparent px-8 py-3.5 text-base font-semibold transition-all sm:w-auto"
-            data-track="landing_cta_clicked"
-            data-track-location="hero"
-          >
-            Start Free Trial
-          </a>
-          <span class="text-muted-foreground text-xs">40-day free trial, no card needed</span>
-        </div>
-        <TryDemoButton client:load />
-      </div>
-
-      <dl class="border-border/50 divide-border/50 mt-14 grid grid-cols-2 divide-x divide-y border-y sm:grid-cols-4 sm:divide-y-0">
-        {
-          atAGlance.map((fact) => (
-            <div class="flex flex-col-reverse gap-1 px-4 py-6 text-center">
-              <dt class="text-muted-foreground text-xs">{fact.label}</dt>
-              <dd class="text-2xl font-bold tracking-tight sm:text-3xl">{fact.value}</dd>
+<BaseLayout title={t(title)} description={t(description)}>
+  <LandingHeader />
+  <main id="main">
+    <section class="sec alt-s alt-hero">
+      <div class="wrap">
+        <nav class="eyebrow alt-crumbs" aria-label={t('Breadcrumb')}>
+          <ol>
+            <li><a href={url({ href: '/alternatives' })}>{t('Compare')}</a></li>
+            <li aria-current="page">{competitor}</li>
+          </ol>
+        </nav>
+        <div class="alt-hero-grid">
+          <div>
+            <h1>{t(heading)}</h1>
+            <p class="alt-hero-sub">{t(intro)}</p>
+            <div class="alt-cta">
+              <a class="btn btn-primary btn-lg" href="/sign-up" data-track="landing_cta_clicked" data-track-location="hero"
+                >{t('Try for free')}<svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"
+                  ></path></svg
+                ></a
+              >
+              <DemoStartButton location="hero" />
             </div>
-          ))
-        }
-      </dl>
+            <p class="hero-note" set:html={t('<strong>40-day free trial.</strong> No card needed.')} />
+          </div>
+          <aside class="plate alt-verdict" aria-labelledby="alt-verdict-h">
+            <p class="alt-kicker" id="alt-verdict-h">{t('The short answer')}</p>
+            <ul>
+              <li>
+                <span class="itile sm">
+                  <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#r-check" /></svg>
+                </span>
+                <p set:html={t(`<strong>Switch if</strong> ${current.switchIf}`)} />
+              </li>
+              <li>
+                <span class="itile sm alt-tile-mute">
+                  <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><use href="#r-minus" /></svg>
+                </span>
+                <p set:html={t(`<strong>Stay on ${current.stayOn} if</strong> ${current.stayIf}`)} />
+              </li>
+            </ul>
+            <p class="alt-verdict-foot">
+              <LucideIcon name="download" class="ic" />
+              {t(current.importer)}
+            </p>
+          </aside>
+        </div>
+        <dl class="plate alt-facts">
+          {
+            atAGlance.map((fact) => (
+              <div>
+                <dt>{t(fact.label)}</dt>
+                <dd>{LITERAL_VALUE.test(fact.value) ? fact.value : t(fact.value)}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </section>
 
-      {
-        sectionOrder.map((key) =>
-          key === 'highlights' ? (
-            <section class="mt-20">
-              <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">What you get with MoneyMatter</h2>
-              <div class="mt-8 space-y-4">
-                {
-                  highlights.map((group, index) => (
-                    <div class="border-border/50 bg-card overflow-hidden rounded-2xl border">
-                      <div class="border-border/50 bg-primary/5 flex items-baseline gap-3 border-b px-5 py-3">
-                        <span class="text-primary-text text-sm font-semibold tabular-nums">{String(index + 1).padStart(2, '0')}</span>
-                        <h3 class="font-semibold tracking-tight">{group.title}</h3>
+    {
+      sectionOrder.map((key) =>
+        key === 'comparison' ? (
+          <section class={band({ key: 'comparison' })} id="compare">
+            <div class="wrap">
+              <p class="eyebrow">{t('Feature by feature')}</p>
+              <h2>{t(`${short} and MoneyMatter side by side`)}</h2>
+              <p
+                class="lede"
+                set:html={`${t(comparisonNote)} ${t('MoneyMatter plans are on the <a href="{pricing}">pricing section</a>.', { pricing: url({ href: '/#pricing' }) })}`}
+              />
+              <div class="plate alt-table-box">
+                <table class="alt-table">
+                  <caption class="sr-only">
+                    {t(`${competitor} and MoneyMatter compared, feature by feature`)}
+                  </caption>
+                  <thead>
+                    <tr>
+                      <td></td>
+                      <th scope="col">{competitor}</th>
+                      <th scope="col" class="alt-mm">
+                        MoneyMatter
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comparison.map((row) => (
+                      <tr>
+                        <th scope="row">
+                          <span class="itile sm">
+                            <LucideIcon name={row.icon} class="ic" />
+                          </span>
+                          {t(row.feature)}
+                        </th>
+                        <td>
+                          <span class="alt-who">{short}</span>
+                          {t(row.competitor)}
+                        </td>
+                        <td class="alt-mm">
+                          <span class="alt-who">MoneyMatter</span>
+                          {t(row.moneymatter)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        ) : key === 'highlights' ? (
+          <section class={band({ key: 'highlights' })} id="what-you-get">
+            <div class="wrap">
+              <p class="eyebrow">{t('Why switch')}</p>
+              <h2>{t('What you get with MoneyMatter')}</h2>
+              <div class="alt-groups">
+                {highlights.map((group, index) => (
+                  <article class="alt-group">
+                    <div class="plate">
+                      <div class="alt-group-head">
+                        <span class="itile">
+                          <LucideIcon name={group.icon} class="ic" />
+                        </span>
+                        <span class="idx">{String(index + 1).padStart(2, '0')}</span>
+                        <h3>{t(group.title)}</h3>
                       </div>
-                      <dl class="divide-border/40 divide-y">
+                      <dl class="alt-dl">
                         {group.items.map((item) => (
-                          <div class="grid sm:grid-cols-[13rem_1fr]">
-                            <dt class="border-border/40 sm:bg-background/60 px-5 pt-2.5 text-sm font-medium sm:border-r sm:py-2.5">
-                              {item.lead}
-                            </dt>
-                            <dd class="text-muted-foreground px-5 pt-0.5 pb-2.5 text-sm leading-relaxed sm:py-2.5">{item.text}</dd>
+                          <div>
+                            <dt>{t(item.lead)}</dt>
+                            <dd>{t(item.text)}</dd>
                           </div>
                         ))}
                       </dl>
                     </div>
-                  ))
-                }
+                  </article>
+                ))}
               </div>
-              <p class="text-muted-foreground mt-4 text-sm">
-                See what is planned on the <a href={ROADMAP_URL} class="text-primary-text hover:underline" target="_blank" rel="noopener noreferrer">public roadmap</a>,
-                read the code on <a href={GITHUB_URL} class="text-primary-text hover:underline" target="_blank" rel="noopener noreferrer">GitHub</a>,
-                or see how <a href="/#self-host" class="text-primary-text hover:underline">self-hosting</a> works.
+              <p
+                class="alt-more"
+                set:html={t(
+                  'See what is planned on the <a href="{roadmap}" target="_blank" rel="noopener noreferrer">public roadmap</a>, read the code on <a href="{github}" target="_blank" rel="noopener noreferrer">GitHub</a>, or see how <a href="{selfHost}">self-hosting</a> works.',
+                  { roadmap: ROADMAP_URL, github: GITHUB_URL, selfHost: url({ href: '/#open-source' }) },
+                )}
+              />
+            </div>
+          </section>
+        ) : (
+          <section class={band({ key: 'import' })} id="import">
+            <div class="wrap">
+              <p class="eyebrow">{t('Import')}</p>
+              <h2>{t(`Move your ${short} history`)}</h2>
+              <p class="lede">
+                {importLead && t(importLead)} <Fragment
+                  set:html={t(`The <a href="{href}">${importGuideLabel}</a> covers every option.`, { href: importGuideUrl })}
+                />
               </p>
-            </section>
-          ) : key === 'comparison' ? (
-            <section class="mt-20">
-              <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">{short} and MoneyMatter side by side</h2>
-              <div class="border-border/50 bg-card mt-8 overflow-hidden rounded-2xl border text-sm">
-                <div class="border-border/50 hidden border-b md:grid md:grid-cols-[12rem_1fr_1fr]">
-                  <span></span>
-                  <span class="text-muted-foreground px-5 py-3 font-medium">{competitor}</span>
-                  <span class="bg-primary/5 text-primary-text px-5 py-3 font-semibold">MoneyMatter</span>
-                </div>
-                <div class="divide-border/50 divide-y">
-                  {
-                    comparison.map((row) => (
-                      <div class="md:grid md:grid-cols-[12rem_1fr_1fr]">
-                        <h3 class="px-5 pt-4 font-semibold md:py-4">{row.feature}</h3>
-                        <p class="text-muted-foreground px-5 py-2 md:py-4">
-                          <span class="mb-0.5 block text-xs font-medium tracking-wide uppercase opacity-70 md:hidden">{short}</span>
-                          {row.competitor}
-                        </p>
-                        <p class="bg-primary/5 px-5 py-3 md:py-4">
-                          <span class="text-primary-text mb-0.5 block text-xs font-medium tracking-wide uppercase md:hidden">MoneyMatter</span>
-                          {row.moneymatter}
-                        </p>
-                      </div>
-                    ))
-                  }
-                </div>
-              </div>
-              <p class="text-muted-foreground mt-3 text-xs">
-                {comparisonNote} MoneyMatter plans are on
-                the <a href="/#pricing" class="text-primary-text hover:underline">pricing section</a>.
-              </p>
-            </section>
-          ) : (
-            <section class="mt-20">
-              <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Move your {short} history</h2>
-              <p class="text-muted-foreground mt-4 max-w-2xl">
-                {importLead} The <a href={importGuideUrl} class="text-primary-text hover:underline"
-                  >{importGuideLabel}</a
-                > covers every option.
-              </p>
-
-              <div class:list={['mt-8 grid items-start gap-10', screenshot && 'lg:grid-cols-2']}>
-                <ol class:list={[!screenshot && 'max-w-2xl']}>
-                  {
-                    steps.map((step, index) => (
-                      <li class="relative flex gap-4 pb-6 last:pb-0">
-                        {index < steps.length - 1 && <span class="bg-border/60 absolute top-8 bottom-0 left-4 w-px" aria-hidden="true" />}
-                        <span class="border-primary/40 text-primary-text bg-background relative flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold tabular-nums">
-                          {index + 1}
-                        </span>
-                        <p class="text-muted-foreground pt-1 text-sm leading-relaxed">{step}</p>
-                      </li>
-                    ))
-                  }
+              <div class="alt-import">
+                <ol class="alt-steps">
+                  {steps.map((step) => (
+                    <li>{t(step)}</li>
+                  ))}
                 </ol>
-                {
-                  screenshot && (
-                    <div class="border-border/50 overflow-hidden rounded-2xl border">
-                      <Screenshot {...screenshot} />
+                {screenshot && (
+                  <figure class="win alt-shot">
+                    <div class="shot-bar" aria-hidden="true">
+                      <i></i>
+                      <i></i>
+                      <i></i>
+                      <span>{t('Settings · Import/Export')}</span>
                     </div>
-                  )
-                }
+                    <Screenshot {...screenshot} alt={t(screenshot.alt)} />
+                  </figure>
+                )}
               </div>
-
-              <div class="border-border/50 mt-12 grid gap-10 border-t pt-10 sm:grid-cols-2">
-                <div>
-                  <h3 class="text-lg font-semibold">What comes across</h3>
-                  <ul class="mt-4 space-y-3">
-                    {
-                      imported.map((item) => (
-                        <li class="text-muted-foreground flex gap-3 text-sm leading-relaxed">
-                          <CheckIcon class="text-primary-text mt-0.5 shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))
-                    }
+              <div class="alt-lists">
+                <div class="plate alt-list">
+                  <h3>
+                    <span class="alt-mark alt-yes">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#r-check" /></svg>
+                    </span>
+                    {t('What comes across')}
+                  </h3>
+                  <ul>
+                    {imported.map((item) => (
+                      <li>
+                        <svg class="ic alt-yes" viewBox="0 0 24 24" aria-hidden="true"><use href="#r-check" /></svg>
+                        {t(item)}
+                      </li>
+                    ))}
                   </ul>
                 </div>
-                <div>
-                  <h3 class="text-lg font-semibold">Limits of the import</h3>
-                  <ul class="mt-4 space-y-3">
-                    {
-                      importLimits.map((item) => (
-                        <li class="text-muted-foreground flex gap-3 text-sm leading-relaxed">
-                          <span class="bg-muted-foreground/60 mt-2 h-px w-4 shrink-0" aria-hidden="true" />
-                          <span>{item}</span>
-                        </li>
-                      ))
-                    }
+                <div class="plate alt-list">
+                  <h3>
+                    <span class="alt-mark alt-no">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#r-minus" /></svg>
+                    </span>
+                    {t('Limits of the import')}
+                  </h3>
+                  <ul>
+                    {importLimits.map((item) => (
+                      <li>
+                        <svg class="ic alt-no" viewBox="0 0 24 24" aria-hidden="true"><use href="#r-minus" /></svg>
+                        {t(item)}
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
               <slot name="import-note" />
-            </section>
-          ),
-        )
-      }
+            </div>
+          </section>
+        ),
+      )
+    }
 
-      <slot />
+    {
+      hasRoute && (
+        <section class={band({ key: 'route' })}>
+          <div class="wrap">
+            <slot />
+          </div>
+        </section>
+      )
+    }
 
-      {
-        whyCloud && (
-          <section class="mt-20">
-            <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">{whyCloud.heading}</h2>
-            <p class="text-muted-foreground mt-4 max-w-2xl">
+    {
+      whyCloud && (
+        <section class={band({ key: 'cloud' })} id="hosting">
+          <div class="wrap">
+            <p class="eyebrow">{t('Hosting')}</p>
+            <h2>{t(whyCloud.heading)}</h2>
+            <p class="lede">
               <slot name="why-cloud-intro" />
             </p>
-            <dl class="border-border/50 bg-card divide-border/40 mt-8 divide-y overflow-hidden rounded-2xl border">
+            <dl class="plate alt-dl alt-rows">
               {whyCloud.items.map((item) => (
-                <div class="grid sm:grid-cols-[13rem_1fr]">
-                  <dt class="border-border/40 sm:bg-background/60 px-5 pt-2.5 text-sm font-medium sm:border-r sm:py-2.5">
-                    {item.lead}
-                  </dt>
-                  <dd class="text-muted-foreground px-5 pt-0.5 pb-2.5 text-sm leading-relaxed sm:py-2.5">{item.text}</dd>
+                <div>
+                  <dt>{t(item.lead)}</dt>
+                  <dd>{t(item.text)}</dd>
                 </div>
               ))}
             </dl>
-          </section>
-        )
-      }
+          </div>
+        </section>
+      )
+    }
 
-      <section class="mx-auto mt-20 max-w-3xl">
-        <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Questions about switching</h2>
-        <div class="mt-6 space-y-3">
-          <FaqDetails items={faq} />
-          <FaqAsk client:visible />
+    <section class={band({ key: 'faq' })} id="faq">
+      <div class="wrap">
+        <div class="faq2">
+          <div>
+            <p class="eyebrow">{t('FAQ')}</p>
+            <h2>{t('Questions about switching')}</h2>
+            <FaqContact />
+          </div>
+          <div class="faq2-main">
+            <FaqDetails items={faq.map((item) => ({ question: t(item.question), answer: t(item.answer) }))} />
+            <FaqAsk client:visible class="alt-ask" {...clientProps({ texts: FAQ_ASK_STRINGS })} />
+          </div>
         </div>
-
-        <div class="border-primary/40 mt-12 border-l-2 pl-5">
-          <h2 class="text-lg font-semibold">When {short} is the better fit</h2>
-          <ul class="text-muted-foreground mt-3 space-y-2 text-sm">
-            {betterFit.map((item) => <li>{item}</li>)}
+        <div class="plate alt-fit">
+          <h3>{t(`When ${short} is the better fit`)}</h3>
+          <ul>
+            {betterFit.map((item) => <li>{t(item)}</li>)}
           </ul>
         </div>
+      </div>
+    </section>
 
-        <p class="text-muted-foreground mt-8 text-sm">
-          Other comparisons:{' '}
+    <section class={band({ key: 'others' })} id="other-comparisons">
+      <div class="wrap">
+        <p class="eyebrow">{t('Compare')}</p>
+        <h2>{t('Other comparisons')}</h2>
+        <div class="alt-others">
           {
-            otherAlternatives.map((page, index) => (
-              <>
-                {index > 0 && ', '}
-                <a href={page.href} class="text-primary-text hover:underline">
-                  {page.label.replace(' alternative', '')}
-                </a>
-              </>
+            otherAlternatives.map((page) => (
+              <a class="plate alt-other" href={url({ href: page.href })}>
+                <strong>{t(page.label)}</strong>
+                <span>{t(page.verdict)}</span>
+                <span class="alt-imp">
+                  <b>{t('Import:')}</b> {t(page.importer)}
+                </span>
+                <em>
+                  {t('Read the comparison')}
+                  <LucideIcon name="arrow-right" class="ic" />
+                </em>
+              </a>
             ))
           }
-          . <a href="/alternatives" class="text-primary-text hover:underline">All of them are on one page</a>.
-        </p>
-
-        <p class="text-muted-foreground mt-12 text-xs">{trademarkNote}</p>
-        <details class="text-muted-foreground mt-3 text-xs">
-          <summary class="hover:text-foreground cursor-pointer">Sources, checked on {checkedOn}</summary>
-          <ul class="mt-3 flex flex-wrap gap-x-5 gap-y-1">
-            {
-              sources.map((source) => (
-                <li>
-                  <a href={source.href} class="hover:text-foreground underline" target="_blank" rel="noopener noreferrer nofollow">
-                    {source.label}
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
-        </details>
-      </section>
-    </main>
+        </div>
+        <p
+          class="alt-more"
+          set:html={t('<a href="{href}">All of them are on one page</a>.', { href: url({ href: '/alternatives' }) })}
+        />
+        <div class="alt-fine" id="sources">
+          <p>{t(trademarkNote)}</p>
+          <details open>
+            <summary>{t(`Sources, checked on ${checkedOn}`)}<LucideIcon name="chevron-down" class="ic" /></summary>
+            <ul>
+              {
+                sources.map((source) => (
+                  <li>
+                    <a href={source.href} target="_blank" rel="noopener noreferrer nofollow">
+                      {source.raw ? source.label : t(source.label)}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </details>
+        </div>
+      </div>
+    </section>
 
     <CtaSection />
-    <LandingFooter />
-  </div>
+  </main>
+  <LandingFooter />
 </BaseLayout>
 
-<style>
-  .landing-page {
-    font-family: 'Montserrat', system-ui, sans-serif;
-    overflow-y: auto;
-  }
-</style>

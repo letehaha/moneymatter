@@ -1,17 +1,21 @@
 ---
+import '@/styles/feature-page.css';
 import LucideIcon from '@/components/lucide-icon.astro';
+import { useI18n } from '@/i18n';
 
 interface Props {
   page: { label: string; href: string; icon: string; summary: string };
 }
 
 const { page } = Astro.props;
+const { t, url } = useI18n(Astro);
 ---
 
-<a href={page.href} class="border-border/50 bg-card hover:border-primary/50 block h-full rounded-2xl border p-5 transition-all">
-  <span class="flex items-center gap-3 font-semibold">
-    <LucideIcon name={page.icon} class="text-primary-text size-5 shrink-0" />
-    {page.label}
+<a class="plate fp-card" href={url({ href: page.href })}>
+  <span class="fp-card-top">
+    <span class="itile"><LucideIcon name={page.icon} class="ic" /></span>
+    <LucideIcon name="arrow-right" class="ic" />
   </span>
-  <span class="text-muted-foreground mt-2 block text-sm leading-relaxed">{page.summary}</span>
+  <strong>{t(page.label)}</strong>
+  <span>{t(page.summary)}</span>
 </a>

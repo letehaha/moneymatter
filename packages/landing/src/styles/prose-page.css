@@ -1,0 +1,17 @@
+.prose-page {
+  max-width: 48rem;
+  margin-inline: auto;
+  padding-block: 56px 96px;
+}
+.prose-page h1 {
+  font-family: var(--display);
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.032em;
+}
+.prose-page h2 {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}

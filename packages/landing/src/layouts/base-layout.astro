@@ -1,36 +1,68 @@
 ---
 // Font CSS must be imported here rather than from global.css: the Tailwind Vite
 // plugin inlines @import-ed CSS but never emits the referenced woff2 assets.
-import '@fontsource/montserrat/latin-400.css';
-import '@fontsource/montserrat/latin-500.css';
-import '@fontsource/montserrat/latin-600.css';
-import '@fontsource/montserrat/latin-700.css';
+import '@fontsource/manrope/latin-400.css';
+import '@fontsource/manrope/latin-500.css';
+import '@fontsource/manrope/latin-600.css';
+import '@fontsource/manrope/latin-700.css';
+import '@fontsource/manrope/latin-800.css';
+import '@fontsource/jetbrains-mono/latin-400.css';
+import '@fontsource/jetbrains-mono/latin-500.css';
+import '@fontsource/jetbrains-mono/latin-600.css';
+import '@/styles/site/tokens.css';
+import '@/styles/site/base.css';
+import '@/styles/site/header.css';
+import '@/styles/site/footer.css';
+import '@/styles/site/faq.css';
+import '@/styles/site/final.css';
+import SiteSprites from '@/components/site-sprites.astro';
+import { useI18n } from '@/i18n';
 
 interface Props {
   title: string;
   description?: string;
   ogImage?: string;
-  canonicalUrl?: string;
   noindex?: boolean;
 }
 
+const { t, url, locale } = useI18n(Astro);
+
 const {
   title,
-  description = 'Open-source budget tracking app. Connect your banks, track expenses, set budgets, and monitor investments. Self-host with Docker or use our cloud. Your data stays yours.',
+  description = t('Open-source budget tracking app. Connect your banks, track expenses, set budgets, and monitor investments. Self-host with Docker or use our cloud. Your data stays yours.'),
   ogImage = '/img/og-image.jpg',
   noindex = false,
 } = Astro.props;
 
 const siteUrl = Astro.site?.origin || 'https://moneymatter.app';
-const canonicalUrl = Astro.props.canonicalUrl ?? new URL(Astro.url.pathname, siteUrl).href;
+const canonicalUrl = new URL(url({ href: Astro.url.pathname }), siteUrl).href;
 const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
 ---
 
 <!doctype html>
-<html lang="en" class="dark">
+<html lang={locale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Runs before first paint so the page never flashes the wrong theme. Same storage key as the SPA. -->
+    <script is:inline>
+      (() => {
+        const media = window.matchMedia('(prefers-color-scheme: dark)');
+        const apply = () => {
+          let pref = document.documentElement.dataset.themeChoice;
+          if (!pref) {
+            try {
+              pref = localStorage.getItem('preferred-theme');
+            } catch {}
+          }
+          const theme = pref === 'light' || pref === 'dark' ? pref : media.matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', theme);
+        };
+        apply();
+        media.addEventListener('change', apply);
+      })();
+    </script>
 
     <title>{title}</title>
     <meta name="description" content={description} />
@@ -65,46 +97,58 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
     <script is:inline src="/config.js"></script>
   </head>
   <body>
+    <a href="#main" class="skip-link">{t('Skip to content')}</a>
+    <SiteSprites />
     <slot />
   </body>
 </html>
 
 <script>
-  // Expose landing-page actions to browser-based AI agents via WebMCP
-  // (draft API). Safe no-op where unsupported.
-  import { initPostHog, trackAnalyticsEvent } from '@/lib/posthog';
+  import { rememberLocale } from '@/i18n/client';
+  import { analyticsLoading, initPostHog, trackAnalyticsEvent, TRACKED_CLICK_LOCATIONS } from '@/lib/posthog';
   import { initWebMcp } from '@/lib/webmcp';
 
   initPostHog();
   initWebMcp();
 
-  // Attach click tracking to all [data-track] elements
-  document.querySelectorAll('[data-track]').forEach((el) => {
-    el.addEventListener('click', () => {
-      const event = el.getAttribute('data-track');
-      const location = el.getAttribute('data-track-location');
+  if (document.documentElement.lang !== 'en') {
+    document.addEventListener(
+      'click',
+      (event) => {
+        const handoff = 'a[href="/sign-up"], a[href="/sign-in"], [data-demo-start], [data-demo-portal]';
+        if ((event.target as Element).closest?.(handoff)) rememberLocale();
+      },
+      true,
+    );
+  }
 
-      if (event === 'landing_cta_clicked' && location) {
-        trackAnalyticsEvent({
-          event: 'landing_cta_clicked',
-          properties: { location: location as 'header' | 'hero' | 'cta_section' | 'self_host' | 'pricing', action: 'sign_up' },
-        });
-      } else if (event === 'landing_roadmap_clicked' && location) {
-        trackAnalyticsEvent({
-          event: 'landing_roadmap_clicked',
-          properties: { location: location as 'hero' | 'community' },
-        });
-      } else if (event === 'landing_testflight_clicked' && location) {
-        trackAnalyticsEvent({
-          event: 'landing_testflight_clicked',
-          properties: { location: location as 'hero' },
-        });
-      } else if (event === 'landing_github_clicked' && location) {
-        trackAnalyticsEvent({
-          event: 'landing_github_clicked',
-          properties: { location: location as 'header_nav' | 'header_star' | 'hero' | 'self_host' | 'cta_section' | 'footer' | 'community' },
-        });
+  document.querySelectorAll<HTMLElement>('[data-track]').forEach((el) => {
+    el.addEventListener('click', (click) => {
+      const { track: event, trackLocation: location } = el.dataset;
+      const allowed: readonly string[] | undefined = TRACKED_CLICK_LOCATIONS[event as keyof typeof TRACKED_CLICK_LOCATIONS];
+      if (!location || !allowed?.includes(location)) {
+        if (import.meta.env.DEV) console.warn(`Untracked click: data-track="${event}" data-track-location="${location}"`);
+        return;
       }
+
+      trackAnalyticsEvent({
+        event,
+        properties: { location, ...(event === 'landing_cta_clicked' && { action: 'sign_up' }) },
+      } as Parameters<typeof trackAnalyticsEvent>[0]);
+
+      // A same-tab navigation would unload the page before the queued event is sent.
+      const loading = analyticsLoading();
+      const href =
+        el instanceof HTMLAnchorElement && (!el.target || el.target === '_self') && !el.hasAttribute('download')
+          ? el.href
+          : '';
+      const isModified = click.button !== 0 || click.metaKey || click.ctrlKey || click.shiftKey || click.altKey;
+      if (!loading || !href || isModified || click.defaultPrevented) return;
+
+      click.preventDefault();
+      void Promise.race([loading, new Promise((resolve) => setTimeout(resolve, 300))]).then(() =>
+        window.location.assign(href),
+      );
     });
   });
 </script>

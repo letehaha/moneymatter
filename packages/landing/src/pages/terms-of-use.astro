@@ -1,6 +1,6 @@
 ---
 import LegalLayout from '@/layouts/legal-layout.astro';
-import { GITHUB_URL } from '@/lib/github-api';
+import { GITHUB_URL, SUPPORT_EMAIL } from '@/lib/github-api';
 
 const lastUpdated = 'November 3, 2026';
 ---
@@ -8,12 +8,11 @@ const lastUpdated = 'November 3, 2026';
 <LegalLayout
   title="Terms of Service - MoneyMatter"
   description="MoneyMatter Terms of Service - Read our terms and conditions for using the service."
-  crossLinks={[{ href: '/privacy-policy', label: 'Privacy Policy' }]}
 >
   <h1 class="mb-2 text-3xl font-bold tracking-tight sm:text-4xl">Terms of Service</h1>
   <p class="text-muted-foreground mb-8">Last updated: {lastUpdated}</p>
 
-  <div class="prose prose-invert max-w-none space-y-8">
+  <div class="space-y-8">
     <section>
       <h2 class="text-xl font-semibold">1. Acceptance of Terms</h2>
       <p class="text-muted-foreground mt-2">
@@ -142,7 +141,7 @@ const lastUpdated = 'November 3, 2026';
         <p>
           <strong class="text-foreground">Refunds.</strong> If you ask within 14 days of your first payment on the
           web, we refund it in full, no questions asked: email{' '}
-          <a href="mailto:support@moneymatter.app" class="text-primary hover:underline">support@moneymatter.app</a>.
+          <a href={`mailto:${SUPPORT_EMAIL}`} class="text-primary hover:underline">{SUPPORT_EMAIL}</a>.
           Other refund requests for web purchases are handled by Stripe as merchant of record, under its refund policy,
           using the link in your receipt. We cannot refund App Store purchases; request those from Apple at{' '}
           <a
