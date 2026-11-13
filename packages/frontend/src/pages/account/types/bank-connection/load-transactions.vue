@@ -7,7 +7,7 @@ import { NotificationType, useNotificationCenter } from '@/components/notificati
 import { type Period } from '@/composable/use-period-navigation';
 import { useSyncStatus } from '@/composable/use-sync-status';
 import { ACCOUNT_TYPES, AccountModel } from '@bt/shared/types';
-import { differenceInDays, startOfDay, subDays } from 'date-fns';
+import { addYears, startOfDay, subDays } from 'date-fns';
 import { CalendarIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -30,9 +30,6 @@ const isAccountSyncing = computed(() => {
 // Mirrors the backend providers that implement `loadTransactionsForPeriod`.
 const PROVIDERS_WITH_PERIOD_SYNC: ACCOUNT_TYPES[] = [ACCOUNT_TYPES.monobank, ACCOUNT_TYPES.simplefin];
 const isPeriodSyncSupported = computed(() => PROVIDERS_WITH_PERIOD_SYNC.includes(props.account.type));
-
-// Backend caps a historical load at one year (see load-transactions-for-period controller).
-const MAX_DATE_RANGE_DAYS = 365;
 
 const yesterday = startOfDay(subDays(new Date(), 1));
 
@@ -57,8 +54,7 @@ const handlePeriodUpdate = async (period: Period) => {
     const { from, to } = period;
 
     // Validate date range (max 1 year)
-    const daysDiff = differenceInDays(to, from);
-    if (daysDiff > MAX_DATE_RANGE_DAYS) {
+    if (to > addYears(from, 1)) {
       addNotification({
         text: t('pages.account.loadTransactions.dateRangeExceeds'),
         type: NotificationType.error,
