@@ -19,7 +19,6 @@ import { getUserDefaultCategory } from '@models/users.model';
 import {
   BaseBankDataProvider,
   type DateRange,
-  type LoadTransactionsForPeriodResult,
   type ProviderAccount,
   type ProviderBalance,
   type ProviderMetadata,
@@ -309,77 +308,6 @@ export class AkahuProvider extends BaseBankDataProvider {
         return { transactionIds: counters.createdTransactionIds, fetchedCount: fetched.length };
       },
     });
-  }
-
-  async loadTransactionsForPeriod({
-    connectionId,
-    systemAccountId,
-    userId,
-    from,
-    to,
-  }: {
-    connectionId: string;
-    systemAccountId: RecordId;
-    userId: number;
-    from: Date;
-    to: Date;
-  }): Promise<LoadTransactionsForPeriodResult> {
-    const result = await this.runSyncWithStatus({
-      systemAccountId,
-      userId,
-      connectionId,
-      errorLogMessage: '[Akahu] Period load error:',
-      work: async () => {
-        const account = await this.getSystemAccount(systemAccountId);
-        const connection = await this.getConnection(connectionId);
-        this.validateProviderType(connection);
-
-        if (!account.externalId) {
-          throw new BadRequestError({ message: t({ key: 'bankDataProviders.akahu.accountNoExternalId' }) });
-        }
-
-        const credentials = await this.getValidatedCredentials(connectionId);
-        const apiClient = new AkahuApiClient(credentials);
-
-        const externalId = account.externalId;
-        const { akahuAccount, fetched } = await this.withAuthTracking({
-          connectionId,
-          request: async () => ({
-            akahuAccount: (await apiClient.getAccount({ accountId: externalId })).item,
-            // `start` is exclusive and dates are day-precise, so step back 1ms to keep rows dated exactly `from`.
-            fetched: await apiClient.getTransactions({
-              accountId: externalId,
-              start: new Date(from.getTime() - 1),
-              end: to,
-            }),
-          }),
-        });
-
-        // No `matchPlanned`: a charge from an arbitrary past window must not
-        // consume a plan the user made for something else.
-        const counters = await this.persistTransactions({
-          connection,
-          account,
-          transactions: fetched,
-          matchPlanned: false,
-          createFromDate: clampSyncStartToLink({ account, from }),
-        });
-
-        if (counters.createdTransactionIds.length > 0 && akahuAccount.balance.current != null) {
-          await writeBankBalanceWithHistory({ account, balance: Money.fromDecimal(akahuAccount.balance.current) });
-        }
-
-        return { transactionIds: counters.createdTransactionIds, fetchedCount: fetched.length };
-      },
-    });
-
-    return {
-      jobGroupId: null,
-      totalBatches: 1,
-      estimatedMinutes: 0,
-      createdCount: result.transactionIds.length,
-      fetchedCount: result.fetchedCount,
-    };
   }
 
   async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {

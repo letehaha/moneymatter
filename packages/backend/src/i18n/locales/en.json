@@ -337,7 +337,7 @@
     "periodLoadNotSupported": "Loading transactions for a custom period is not supported by this provider.",
     "transactionsLoadedCount": "Loaded {{count}} transactions.",
     "transactionsAllDuplicates": "Found {{count}} transactions for this period — all were already imported.",
-    "transactionsNoneInPeriod": "The provider returned no transactions for this period.",
+    "transactionsNoneInPeriod": "The data provider didn't return any transactions for this period.",
     "apiError": "{{provider}} API error: {{message}}",
     "simplefinUnreachable": "SimpleFIN is temporarily unreachable. Please try again later.",
     "currencySelectionRequired": "Account \"{{account}}\" has no currency reported by the bank — choose a currency for it before connecting.",

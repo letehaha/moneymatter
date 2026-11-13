@@ -341,7 +341,7 @@
     "periodLoadNotSupported": "Завантаження транзакцій за довільний період не підтримується цим провайдером.",
     "transactionsLoadedCount": "Завантажено транзакцій: {{count}}.",
     "transactionsAllDuplicates": "Знайдено транзакцій за цей період: {{count}} — усі вже були імпортовані.",
-    "transactionsNoneInPeriod": "Провайдер не повернув жодної транзакції за цей період.",
+    "transactionsNoneInPeriod": "Провайдер даних не повернув жодної транзакції за цей період.",
     "apiError": "Помилка API {{provider}}: {{message}}",
     "simplefinUnreachable": "SimpleFIN тимчасово недоступний. Спробуйте пізніше.",
     "currencySelectionRequired": "Рахунок «{{account}}» не має валюти, повідомленої банком — оберіть для нього валюту перед підключенням.",
