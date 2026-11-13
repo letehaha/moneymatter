@@ -18,7 +18,8 @@
       "general": "General",
       "payees": "Payees",
       "planBilling": "Plan & billing",
-      "collapse": "Collapse"
+      "collapse": "Collapse",
+      "resize": "Resize navigation"
     },
     "backToSettings": "Back to settings"
   }

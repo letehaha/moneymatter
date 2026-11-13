@@ -18,11 +18,19 @@
       v-if="!isOnChildRoute || !isCompactLayout"
       :class="[
         'border-border bg-card dark:bg-card/50 shadow-card shrink-0 rounded-lg border backdrop-blur-sm dark:shadow-none',
-        isTransitionReady && 'transition-all duration-200',
-        isCompactLayout ? 'w-full' : isCollapsed ? 'w-14' : 'w-full lg:w-52',
+        isTransitionReady && !isResizing && 'transition-all duration-200',
+        isCompactLayout ? 'w-full' : isCollapsed && 'w-14',
         !isCompactLayout && 'sticky top-[calc(var(--header-height)+1rem)] self-start',
       ]"
+      :style="isCompactLayout || isCollapsed ? undefined : { width: `${navWidth}px` }"
     >
+      <ResizeHandle
+        v-if="!isCompactLayout && !isCollapsed"
+        edge="right"
+        :label="$t('settings.navigation.resize')"
+        @start="startResize"
+        @reset="resetWidth"
+      />
       <ScrollArea :class="navMaxHeight" :viewport-class="cn('p-2', navMaxHeight)">
         <div class="flex flex-col gap-4 overflow-hidden">
           <button
@@ -67,7 +75,12 @@
                     "
                   >
                     <component :is="tab.icon" :class="cn('size-4 shrink-0', isCompactLayout && 'md:size-5')" />
-                    <span :class="['transition-opacity duration-200', isIconOnly ? 'opacity-0' : 'opacity-100']">
+                    <span
+                      :class="[
+                        'min-w-0 truncate transition-opacity duration-200',
+                        isIconOnly ? 'opacity-0' : 'opacity-100',
+                      ]"
+                    >
                       {{ tab.label }}
                     </span>
                     <NewBadge
@@ -97,7 +110,12 @@
                 "
               >
                 <BookOpenIcon :class="cn('size-4 shrink-0', isCompactLayout && 'md:size-5')" />
-                <span :class="['transition-opacity duration-200', isIconOnly ? 'opacity-0' : 'opacity-100']">
+                <span
+                  :class="[
+                    'min-w-0 truncate transition-opacity duration-200',
+                    isIconOnly ? 'opacity-0' : 'opacity-100',
+                  ]"
+                >
                   {{ $t('navigation.helpAndDocs') }}
                 </span>
                 <ExternalLinkIcon v-if="!isIconOnly" class="text-muted-foreground ml-auto size-3" />
@@ -121,12 +139,14 @@
 </template>
 
 <script setup lang="ts">
+import ResizeHandle from '@/components/common/resize-handle.vue';
 import { config } from '@/common/config';
 import BackLink from '@/components/common/back-link.vue';
 import NewBadge from '@/components/common/new-badge.vue';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useAfterMountTransition } from '@/composable/use-after-mount-transition';
+import { SUB_NAV_WIDTH, useResizableWidth } from '@/composable/use-resizable-width';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
@@ -190,6 +210,16 @@ const isCompactLayout = computed(() => containerWidth.value < 920);
 const navMaxHeight = computed(() => (isCompactLayout.value ? '' : 'max-h-[calc(100dvh-var(--header-height)-2rem)]'));
 const isCollapsed = useLocalStorage('settings-sidebar-collapsed', false);
 const isIconOnly = computed(() => isCollapsed.value && !isCompactLayout.value);
+const {
+  width: navWidth,
+  isResizing,
+  startResize,
+  resetWidth,
+} = useResizableWidth({
+  storageKey: 'settings-sidebar-width',
+  ...SUB_NAV_WIDTH,
+  edge: 'right',
+});
 const isTransitionReady = useAfterMountTransition();
 const showAdminTab = ref(user.value?.isAdmin ?? false);
 
