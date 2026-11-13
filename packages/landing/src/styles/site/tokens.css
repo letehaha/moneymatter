@@ -1,3 +1,23 @@
+/* Arial scaled to Manrope's metrics (capsize) so the swap to Manrope doesn't reflow text. */
+@font-face {
+  font-family: 'Manrope Fallback';
+  src: local('Arial');
+  font-weight: 100 500;
+  size-adjust: 103.18%;
+  ascent-override: 103.31%;
+  descent-override: 29.07%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Manrope Fallback';
+  src: local('Arial Bold');
+  font-weight: 600 900;
+  size-adjust: 99.38%;
+  ascent-override: 107.27%;
+  descent-override: 30.19%;
+  line-gap-override: 0%;
+}
+
 :root {
   --bg: #fbfbfd;
   --fg: #17151f;
@@ -16,8 +36,8 @@
   --block-muted: #a3a0b5;
   --block-line: rgba(255, 255, 255, 0.12);
   --plus: #1b7f4d;
-  --sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --display: 'Manrope', system-ui, sans-serif;
+  --sans: 'Manrope', 'Manrope Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --display: 'Manrope', 'Manrope Fallback', system-ui, sans-serif;
   --display-tracking: -0.035em;
   --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --band: #f5f4f9;
