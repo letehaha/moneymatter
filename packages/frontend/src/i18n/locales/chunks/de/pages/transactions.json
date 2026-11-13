@@ -1,10 +1,10 @@
 {
   "transactions": {
     "filters": {
-      "filtersLabel": "Filter",
-      "selectFilters": "Filter auswählen",
+      "filtersLabel": "Filters",
+      "selectFilters": "Select filters",
       "reset": "Zurücksetzen",
-      "apply": "Anwenden",
+      "apply": "Apply",
       "dateRange": {
         "placeholder": "Datum oder Zeitraum",
         "presets": {
@@ -21,10 +21,10 @@
         "allTypes": "Alle Arten"
       },
       "amountRange": {
-        "from": "Betrag von (>=)",
-        "to": "Bis (<=)",
-        "placeholderFrom": ">= als",
-        "placeholderTo": "<= als",
+        "from": "Amount from (gte)",
+        "to": "To (lte)",
+        "placeholderFrom": ">= than",
+        "placeholderTo": "<= than",
         "compactFrom": "Min. Betrag",
         "compactTo": "Max. Betrag"
       },
@@ -38,7 +38,7 @@
         "label": "Geplant"
       },
       "attachments": {
-        "label": "Anhänge"
+        "label": "Attachments"
       },
       "filterOperation": {
         "all": "Alle",
@@ -59,7 +59,7 @@
         "blankOption": "Keine Tags"
       },
       "payees": {
-        "label": "Zahlungsempfänger",
+        "label": "Payees",
         "selectedOne": "1 Zahlungsempfänger ausgewählt",
         "selectedMany": "{n} Zahlungsempfänger ausgewählt"
       },
@@ -82,16 +82,16 @@
       }
     },
     "list": {
-      "noMoreData": "Keine weiteren Transaktionen",
+      "noMoreData": "No more transactions",
       "loadingMore": "Mehr laden...",
       "detailsTitle": "Transaktionsdetails",
       "detailsDescription": "Transaktion anzeigen und bearbeiten"
     },
     "bulkEdit": {
-      "selectAll": "Alles auswählen",
-      "selectAllShort": "Alle",
+      "selectAll": "Select all",
+      "selectAllShort": "All",
       "cancelSelection": "Auswahl aufheben",
-      "editButton": "Bearbeiten",
+      "editButton": "Edit",
       "selectedCount": "{count} ausgewählt",
       "matchingCount": "Gesamt: {count}",
       "dialogTitle": "{count} Transaktionen bearbeiten",
@@ -112,17 +112,17 @@
       "confirmPayeeLabel": "Zahlungsempfänger",
       "confirmTagsLabel": "Tags",
       "confirmNoteLabel": "Notiz",
-      "cancelButton": "Abbrechen",
-      "confirmApplyButton": "Anwenden",
+      "cancelButton": "Cancel",
+      "confirmApplyButton": "Apply",
       "successMessage": "{count} Transaktionen erfolgreich aktualisiert",
       "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten",
       "tagModeLabel": "Tag-Aktion",
       "tagModeAdd": "Zu bestehenden Tags hinzufügen",
       "tagModeReplace": "Alle Tags ersetzen",
       "tagModeRemove": "Diese Tags entfernen",
-      "tagModeAddShort": "Hinzufügen",
-      "tagModeReplaceShort": "Ersetzen",
-      "tagModeRemoveShort": "Entfernen",
+      "tagModeAddShort": "Add",
+      "tagModeReplaceShort": "Replace",
+      "tagModeRemoveShort": "Remove",
       "tagModeAddHint": "Behält die aktuellen Tags bei und fügt diese hinzu.",
       "tagModeReplaceHint": "Entfernt alle aktuellen Tags und fügt dann diese hinzu.",
       "tagModeRemoveHint": "Entfernt nur diese Tags. Andere Tags bleiben erhalten.",
@@ -135,7 +135,7 @@
     },
     "transactionGroups": {
       "bulkActions": {
-        "createNewGroup": "Neue Gruppe erstellen",
+        "createNewGroup": "Create new group",
         "addToExistingGroup": "Zu bestehender Gruppe hinzufügen",
         "groupButton": "Gruppieren"
       },
@@ -146,7 +146,7 @@
         "noSearchResultsMessage": "Keine Gruppen entsprechen deiner Suche.",
         "addingText": "Wird hinzugefügt...",
         "buttonLabel": "Zu Gruppe hinzufügen",
-        "cancelButton": "Abbrechen",
+        "cancelButton": "Cancel",
         "transactionCountLabel": "Transaktionen"
       },
       "createGroupDialog": {
@@ -156,9 +156,9 @@
         "groupNamePlaceholder": "z.B. Gehaltsumbuchung Mai",
         "noteLabel": "Notiz (optional)",
         "notePlaceholder": "Optionale Beschreibung...",
-        "creatingText": "Wird erstellt...",
+        "creatingText": "Creating...",
         "buttonLabel": "Gruppe erstellen",
-        "cancelButton": "Abbrechen"
+        "cancelButton": "Cancel"
       },
       "groupsPage": {
         "title": "Transaktionsgruppen",
@@ -170,12 +170,12 @@
         "loadError": "Transaktionsgruppen konnten nicht geladen werden",
         "description": "Bündele zusammengehörige Transaktionen, wie eine Reise oder eine Umbuchungskette, und sieh sie dir gemeinsam an.",
         "noMatchTitle": "Keine Gruppen entsprechen deiner Suche",
-        "moreActions": "Weitere Aktionen für {name}",
+        "moreActions": "More actions for {name}",
         "columns": {
           "name": "Name",
-          "transactions": "Transaktionen",
-          "date": "Datum",
-          "net": "Netto"
+          "transactions": "Transactions",
+          "date": "Date",
+          "net": "Net"
         },
         "sort": {
           "label": "Gruppen sortieren",
@@ -196,7 +196,7 @@
       }
     },
     "planned": {
-      "label": "Geplant",
+      "label": "Planned",
       "confirmedLabel": "Bestätigt",
       "plannedTooltip": "Geplante Transaktion",
       "expiredTooltip": "Vor {days} Tagen erwartet, keine passende Banktransaktion",
@@ -219,8 +219,8 @@
         "tags": "Tags",
         "categorizationSource": "Kategorisiert durch",
         "group": "Gruppe",
-        "refund": "Rückerstattung",
-        "split": "Aufteilen"
+        "refund": "Refund",
+        "split": "Split"
       },
       "outOfWallet": "Extern",
       "hint": "Klicke auf eine Zelle, um sie zu bearbeiten, oder auf ↗, um die vollständige Transaktion zu öffnen. Wähle Zeilen aus, um sie gesammelt zu bearbeiten.",
@@ -254,9 +254,9 @@
       }
     },
     "bulkDelete": {
-      "button": "Löschen",
+      "button": "Delete",
       "externalTooltip": "Auswahl enthält bank-synchronisierte Transaktionen, die nicht gelöscht werden können.",
-      "confirmButton": "Löschen",
+      "confirmButton": "Delete",
       "confirmTitle": "{count} Transaktionen löschen?",
       "confirmDescription": "Diese Aktion kann nicht rückgängig gemacht werden. Bei Umbuchungen werden beide Seiten entfernt.",
       "successMessage": "{count} Transaktionen gelöscht",
@@ -270,37 +270,37 @@
       "bankDescription": "Datum, Konto und Betrag werden von deiner Bankverbindung synchronisiert. Alles andere an dieser Transaktion kannst du ändern.",
       "managedTitle": "An anderer Stelle verwaltet",
       "managedDescription": "Diese Transaktion gehört zu einem Portfolio, einer Investition, einem Fahrzeug oder einem Kredit. Ändere sie auf der jeweiligen Seite, damit die Salden korrekt bleiben.",
-      "gotIt": "Verstanden",
+      "gotIt": "Got it",
       "openDetails": "Details öffnen",
       "tooManyTags": "Bis zu {max} Tags pro Transaktion"
     },
     "savedViews": {
-      "trigger": "Ansichten",
+      "trigger": "Views",
       "empty": "Noch keine gespeicherten Ansichten. Richte Filter ein und speichere sie dann als Ansicht.",
       "modified": "Filter geändert",
       "update": "\"{name}\" mit aktuellen Filtern aktualisieren",
       "updateShort": "Ansicht aktualisieren",
-      "revert": "Zurücksetzen",
+      "revert": "Revert",
       "saveNew": "Als neue Ansicht speichern",
       "actions": "Aktionen für Ansicht",
-      "rename": "Umbenennen",
+      "rename": "Rename",
       "moveUp": "Nach oben verschieben",
       "moveDown": "Nach unten verschieben",
-      "saveTitle": "Ansicht speichern",
+      "saveTitle": "Save view",
       "renameTitle": "Ansicht umbenennen",
       "dialogDescription": "Eine Ansicht speichert die aktuellen Filter und die Sortierung, damit du sie mit einem Klick wieder anwenden kannst.",
       "nameLabel": "Name",
       "namePlaceholder": "z.B. Lebensmittel, letzte 3 Monate",
-      "savedToast": "Ansicht gespeichert",
+      "savedToast": "View saved",
       "updatedToast": "Ansicht aktualisiert",
-      "deletedToast": "Ansicht gelöscht",
+      "deletedToast": "View deleted",
       "saveError": "Deine Ansichten konnten nicht gespeichert werden. Versuche es erneut.",
       "deleteTitle": "Ansicht \"{name}\" löschen?",
       "deleteDescription": "Deine Transaktionen sind davon nicht betroffen. Dies kann nicht rückgängig gemacht werden.",
       "filtersCount": "{count} Filter | {count} Filter"
     },
     "trashPage": {
-      "title": "Papierkorb",
+      "title": "Trash",
       "description": "Newest deletions first. Each is removed for good after {days} days. Pick one to see what comes back with it.",
       "expiringBanner": "{count} will be deleted permanently within {days}.",
       "expiringCount": "1 transaction | {count} transactions",
@@ -312,8 +312,8 @@
       "deletedOn": "deleted {date}",
       "transferTitle": "Transfer from {from} to {to}",
       "unknownAccount": "Unknown account",
-      "restore": "Wiederherstellen",
-      "deletePermanently": "Endgültig löschen",
+      "restore": "Restore",
+      "deletePermanently": "Delete permanently",
       "deleteConfirmTitle": "Delete permanently?",
       "deleteConfirmDescription": "This transaction will be removed for good. This can't be undone.",
       "notifications": {
@@ -339,7 +339,7 @@
           "group": "Group \"{name}\"",
           "subscription": "Subscription \"{name}\"",
           "subscriptionPeriod": "Subscription payment due {name}",
-          "unnamed": "Ohne Titel"
+          "unnamed": "Untitled"
         }
       }
     }
@@ -358,7 +358,7 @@
       "deletePlanTitle": "Geplante Transaktion löschen?",
       "deletePlanDescription": "It stays in Trash for 30 days and you can restore it until then.",
       "plansLoadFailed": "Geplante Transaktionen konnten nicht geladen werden",
-      "confirmAction": "Bestätigen",
+      "confirmAction": "Confirm",
       "confirmTooltip": "Das Geld wurde bewegt — erfasse es und aktualisiere den Kontostand",
       "confirmPlanSuccess": "Planung erfasst — Kontostand aktualisiert",
       "confirmPlanError": "Planung konnte nicht erfasst werden"

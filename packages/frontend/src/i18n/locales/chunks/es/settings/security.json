@@ -36,7 +36,7 @@
           "addButton": "Añadir clave de acceso",
           "passkeyName": "Clave de acceso",
           "added": "Añadida el {date}",
-          "rename": "Renombrar",
+          "rename": "Rename",
           "renamePlaceholder": "Ingresa el passkey",
           "deleteConfirmTitle": "¿Eliminar passkey?",
           "deleteConfirmDescription": "\"{name}\" ya no podrá iniciar sesión en su cuenta. Esto no se puede deshacer."

@@ -61,7 +61,7 @@
         "topN": "Top {count}",
         "totalIncome": "Total income",
         "incomePlusDeficit": "Income + deficit",
-        "savings": "储蓄",
+        "savings": "Savings",
         "taxes": "Taxes",
         "deficit": "Deficit",
         "other": "Other",
@@ -88,7 +88,7 @@
       "metrics": {
         "expenses": "Expenses",
         "income": "Income",
-        "savings": "储蓄"
+        "savings": "Savings"
       },
       "chart": {
         "selectedPeriod": "Selected period",
@@ -150,8 +150,8 @@
         }
       },
       "filters": {
-        "button": "搜索条件",
-        "title": "搜索条件",
+        "button": "Filters",
+        "title": "Filters",
         "include": "Include",
         "exclude": "Exclude",
         "accounts": "Accounts",
@@ -199,8 +199,8 @@
       "portfolioReturnOption": "{name} (your ~{rate}%/yr)",
       "portfolioNoHistoryOption": "{name} — not enough history",
       "presetReturnOption": "{label} (~{rate}%/yr)",
-      "rangeMin": "最少",
-      "rangeMax": "最多",
+      "rangeMin": "Min",
+      "rangeMax": "Max",
       "indicators": {
         "worldStock": "Total world stock",
         "usTreasury": "US Treasury bonds",
@@ -247,9 +247,9 @@
         "autoSpendingHint": "Average of the last {n} full month × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments. | Average of the last {n} full months × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments.",
         "backToAuto": "Back to auto ({amount})",
         "excludedLabel": "Not counted as spending",
-        "excludedPlaceholder": "排除分类",
+        "excludedPlaceholder": "Exclude categories",
         "savingsNote": "Savings categories are excluded too. {link}",
-        "savingsNoteLink": "编辑",
+        "savingsNoteLink": "Edit",
         "contributionLabel": "Monthly contribution",
         "contributionPlaceholder": "e.g. 1500",
         "autoContributionHint": "Average net flow over the same {n} month. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return). | Average net flow over the same {n} months. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return).",
@@ -257,9 +257,9 @@
         "countsTitle": "What counts toward FIRE",
         "countsCash": "Cash & bank accounts",
         "countsPortfolios": "Investment portfolios",
-        "countsVentures": "风险投资",
+        "countsVentures": "Ventures",
         "countsVehicles": "Vehicles",
-        "countsLoans": "贷款",
+        "countsLoans": "Loans",
         "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
         "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",
         "archivedNoteLink": "Review",
@@ -284,7 +284,7 @@
         "coastAgeLabel": "Coast FIRE target age",
         "coastAgePlaceholder": "e.g. 65"
       },
-      "auto": "自动",
+      "auto": "Auto",
       "perYear": "{amount}/yr",
       "perMonth": "{amount}/mo",
       "notWithinHorizon": "not within 50 yrs",
@@ -458,7 +458,7 @@
       "rows": "Rows",
       "columns": "Columns",
       "measure": "Measure",
-      "settings": "设置"
+      "settings": "Settings"
     },
     "dimensions": {
       "category": "Category",
@@ -486,8 +486,8 @@
     "filters": {
       "period": "Period",
       "allCategories": "All",
-      "button": "搜索条件",
-      "categories": "分类",
+      "button": "Filters",
+      "categories": "Categories",
       "payees": "Payees",
       "accounts": "Accounts",
       "reset": "Reset",
@@ -558,7 +558,7 @@
       "grown": "Grown",
       "totalGained": "Total gained",
       "thisPeriod": "This period",
-      "periodSavings": "储蓄",
+      "periodSavings": "Savings",
       "periodGrowth": "Growth",
       "allocationContext": "{share}% of your net worth sits in investments (was {reference}% in {date})",
       "allocationContextNoReference": "{share}% of your net worth sits in investments"
@@ -630,7 +630,7 @@
     "states": {
       "noData": "No contributions in this range",
       "noDataHint": "Move money into a portfolio during this period to see it here.",
-      "noPortfoliosTitle": "无投资组合",
+      "noPortfoliosTitle": "No portfolios yet",
       "noPortfoliosPlaceholder": "Create a portfolio and start investing to track your contributions here.",
       "noPortfoliosAction": "Add a portfolio",
       "loadError": "Couldn't load contributions"
@@ -654,7 +654,7 @@
       "cash": "Cash & accounts",
       "investments": "Investments",
       "vehicles": "Vehicles",
-      "ventures": "风险投资"
+      "ventures": "Ventures"
     },
     "assetFilter": {
       "all": "All assets",

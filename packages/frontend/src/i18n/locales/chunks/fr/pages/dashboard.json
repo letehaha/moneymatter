@@ -85,11 +85,11 @@
         "today": "Aujourd'hui",
         "vsPreviousPeriod": "vs période précédente",
         "viewButton": "Afficher",
-        "back": "Retour",
+        "back": "Back",
         "openInAnalytics": "Open in Analytics",
         "metric": {
-          "expenses": "Dépenses",
-          "income": "Revenu"
+          "expenses": "Expenses",
+          "income": "Income"
         },
         "seeTransactions": "See transactions"
       },
@@ -327,20 +327,20 @@
         "title": "Tag analysis",
         "noTagsTitle": "No tags selected",
         "noTagsDescription": "Pick the tags to compare in the widget settings.",
-        "ofIncome": "des revenus",
+        "ofIncome": "of income",
         "remaining": "Unallocated",
         "targetTooltip": "Target: {value}%",
         "settings": {
-          "tagsLabel": "Étiquettes",
-          "tagsPlaceholder": "Sélectionner des étiquettes",
+          "tagsLabel": "Tags",
+          "tagsPlaceholder": "Select tags",
           "targetsLabel": "Targets, %",
           "targetsNoneSet": "None set",
           "targetsSetCount": "{set} of {total} set",
           "targetsEmpty": "Add tags first to set their targets",
-          "targetPlaceholder": "Aucune",
+          "targetPlaceholder": "None",
           "percentBaseLabel": "Percent of",
           "percentBaseTags": "Selected tags",
-          "percentBaseIncome": "Revenu",
+          "percentBaseIncome": "Income",
           "includeTransfersLabel": "Include transfers",
           "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
         }
@@ -412,7 +412,7 @@
           "description": "Chaque suivi actif avec la part consommée du plafond et son solde net"
         },
         "goals": {
-          "name": "Objectifs",
+          "name": "Goals",
           "description": "Progression vers vos objectifs d'épargne",
           "savedOfTarget": "{saved} sur {target}",
           "empty": {
@@ -423,12 +423,12 @@
           "locked": {
             "title": "Les objectifs sont verrouillés",
             "description": "Épargnez pour ce qui compte et vérifiez si vous êtes dans les temps. Disponible avec les offres payantes.",
-            "action": "En savoir plus"
+            "action": "Learn more"
           },
           "settings": {
             "showReached": "Afficher les objectifs atteints"
           },
-          "reachedSection": "Atteint"
+          "reachedSection": "Reached"
         },
         "tagAnalysis": {
           "name": "Tag analysis",
@@ -471,7 +471,7 @@
         "excludeBalanceAdjustmentsDescription": "Masquer les opérations d'ajustement de solde",
         "plannedTitle": "Opérations prévisionnelles",
         "excludePlannedDescription": "Masquer les opérations prévisionnelles en attente de la liste",
-        "scheduledTitle": "Paiements récurrents",
+        "scheduledTitle": "Scheduled payments",
         "excludeScheduledDescription": "Hide upcoming and overdue subscription payments from the list",
         "scheduledSaveError": "Failed to update scheduled payments setting",
         "nothingExcluded": "Aucune exclusion",

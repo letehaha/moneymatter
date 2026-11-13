@@ -47,13 +47,13 @@
           "submit": "Save changes"
         },
         "move": {
-          "title": "Di chuyển “{name}”",
+          "title": "Move “{name}”",
           "description": "Its subgroups and accounts move with it.",
           "parentLabel": "Parent group",
           "parentPlaceholder": "Select a parent group",
           "noParent": "No parent",
           "hint": "Pick “No parent” to make it a top-level group.",
-          "submit": "Di chuyển"
+          "submit": "Move"
         },
         "addAccounts": {
           "title": "Add accounts to “{name}”",
@@ -78,8 +78,8 @@
       "tree": {
         "groupsCount": "{count} group | {count} groups",
         "syncedBadge": "Synced",
-        "expand": "Mở rộng",
-        "collapse": "Thu gọn",
+        "expand": "Expand",
+        "collapse": "Collapse",
         "renameTooltip": "Rename",
         "moreActions": "More actions",
         "menu": {
@@ -87,14 +87,14 @@
           "move": "Move to another group",
           "newSubgroup": "New subgroup",
           "addAccounts": "Add accounts",
-          "delete": "Xóa nhóm"
+          "delete": "Delete group"
         }
       },
       "organize": {
         "button": "Organize",
         "hint": "Drag a group onto another to nest it",
         "save": "Save changes",
-        "topLevel": "Cấp cao nhất",
+        "topLevel": "Top level",
         "dropToTopLevel": "Drop here to make “{name}” a top-level group",
         "movesCount": "{count} move | {count} moves",
         "moveInside": "Move inside",

@@ -89,7 +89,7 @@
     },
     "bulkEdit": {
       "selectAll": "Pilih semua",
-      "selectAllShort": "Semua",
+      "selectAllShort": "All",
       "cancelSelection": "Batalkan pilihan",
       "editButton": "Sunting",
       "selectedCount": "{count} dipilih",
@@ -120,17 +120,17 @@
       "tagModeAdd": "Tambahkan ke tag yang ada",
       "tagModeReplace": "Ganti semua tag",
       "tagModeRemove": "Hapus tag ini",
-      "tagModeAddShort": "Tambah",
-      "tagModeReplaceShort": "Ganti",
+      "tagModeAddShort": "Add",
+      "tagModeReplaceShort": "Replace",
       "tagModeRemoveShort": "Remove",
       "tagModeAddHint": "Keeps current tags and adds these.",
       "tagModeReplaceHint": "Removes all current tags, then adds these.",
       "tagModeRemoveHint": "Removes only these tags. Other tags stay.",
       "totals": {
-        "income": "Pemasukan",
-        "expense": "Pengeluaran",
-        "net": "Bersih",
-        "transfers": "Transfer"
+        "income": "Income",
+        "expense": "Expense",
+        "net": "Net",
+        "transfers": "Transfers"
       }
     },
     "transactionGroups": {
@@ -172,10 +172,10 @@
         "noMatchTitle": "No groups match your search",
         "moreActions": "More actions for {name}",
         "columns": {
-          "name": "Nama",
-          "transactions": "Transaksi",
-          "date": "Tanggal",
-          "net": "Bersih"
+          "name": "Name",
+          "transactions": "Transactions",
+          "date": "Date",
+          "net": "Net"
         },
         "sort": {
           "label": "Sort groups",
@@ -203,7 +203,7 @@
       "mergedTooltip": "Dikonfirmasi dari entri terencana pada {date}"
     },
     "pending": {
-      "label": "Tertunda",
+      "label": "Pending",
       "tooltip": "The bank hasn't booked this transaction yet. It doesn't affect the account balance."
     },
     "table": {
@@ -270,37 +270,37 @@
       "bankDescription": "Date, account and amount sync from your bank connection. Everything else on this transaction is yours to change.",
       "managedTitle": "Managed elsewhere",
       "managedDescription": "This transaction belongs to a portfolio, investment, vehicle or loan. Change it from its own page so balances stay correct.",
-      "gotIt": "Mengerti",
+      "gotIt": "Got it",
       "openDetails": "Open details",
       "tooManyTags": "Up to {max} tags per transaction"
     },
     "savedViews": {
-      "trigger": "Tampilan",
+      "trigger": "Views",
       "empty": "No saved views yet. Set up filters, then save them as a view.",
       "modified": "Filters changed",
       "update": "Update “{name}” with current filters",
       "updateShort": "Update view",
-      "revert": "Kembalikan",
+      "revert": "Revert",
       "saveNew": "Save as new view",
       "actions": "View actions",
-      "rename": "Ubah nama",
+      "rename": "Rename",
       "moveUp": "Move up",
       "moveDown": "Move down",
-      "saveTitle": "Simpan tampilan",
+      "saveTitle": "Save view",
       "renameTitle": "Rename view",
       "dialogDescription": "A view keeps the current filters and sorting so you can apply them again in one click.",
-      "nameLabel": "Nama",
+      "nameLabel": "Name",
       "namePlaceholder": "e.g. Groceries, last 3 months",
-      "savedToast": "Tampilan disimpan",
+      "savedToast": "View saved",
       "updatedToast": "View updated",
-      "deletedToast": "Tampilan dihapus",
+      "deletedToast": "View deleted",
       "saveError": "Couldn't save your views. Try again.",
       "deleteTitle": "Delete view “{name}”?",
       "deleteDescription": "Your transactions are not affected. This can't be undone.",
       "filtersCount": "{count} filter | {count} filters"
     },
     "trashPage": {
-      "title": "Tempat Sampah",
+      "title": "Trash",
       "description": "Newest deletions first. Each is removed for good after {days} days. Pick one to see what comes back with it.",
       "expiringBanner": "{count} will be deleted permanently within {days}.",
       "expiringCount": "1 transaction | {count} transactions",
@@ -312,7 +312,7 @@
       "deletedOn": "deleted {date}",
       "transferTitle": "Transfer from {from} to {to}",
       "unknownAccount": "Unknown account",
-      "restore": "Pulihkan",
+      "restore": "Restore",
       "deletePermanently": "Delete permanently",
       "deleteConfirmTitle": "Delete permanently?",
       "deleteConfirmDescription": "This transaction will be removed for good. This can't be undone.",
@@ -339,7 +339,7 @@
           "group": "Group \"{name}\"",
           "subscription": "Subscription \"{name}\"",
           "subscriptionPeriod": "Subscription payment due {name}",
-          "unnamed": "Tanpa Judul"
+          "unnamed": "Untitled"
         }
       }
     }

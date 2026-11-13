@@ -177,8 +177,8 @@
         "accountCategoryUpdateError": "Échec de la mise à jour de la catégorie de compte",
         "defaultPaymentType": "Default payment type:",
         "editDefaultPaymentType": "Edit default payment type",
-        "defaultPaymentTypeUpdateSuccess": "Moyen de paiement par défaut mis à jour",
-        "defaultPaymentTypeUpdateError": "Échec de la mise à jour du moyen de paiement par défaut",
+        "defaultPaymentTypeUpdateSuccess": "Default payment type updated",
+        "defaultPaymentTypeUpdateError": "Failed to update default payment type",
         "currency": "Devise :",
         "main": "(principale)",
         "exchangeRate": "Taux de change :",
@@ -245,7 +245,7 @@
       },
       "rightPanel": {
         "transactions": "Opérations",
-        "viewAll": "Tout afficher",
+        "viewAll": "View all",
         "analyticsSoon": "Analyses (bientôt)"
       },
       "integrations": {

@@ -6,18 +6,18 @@
         "pageDescription": "Import bank and credit card transactions from an OFX or QFX file.",
         "stepper": {
           "steps": {
-            "upload": "Unggah",
+            "upload": "Upload",
             "resolve": "Map accounts",
-            "review": "Tinjau",
-            "results": "Selesai"
+            "review": "Review",
+            "results": "Done"
           }
         },
         "fileUpload": {
           "stepTitle": "Upload your OFX or QFX file",
           "description": "Select a statement file that you downloaded from your bank or credit card provider.",
           "maxSize": ".ofx or .qfx file, up to 10 MB",
-          "parsing": "Membaca file…",
-          "continue": "Lanjutkan",
+          "parsing": "Reading file…",
+          "continue": "Continue",
           "errors": {
             "invalidFormatNamed": "\"{name}\" is not an OFX or QFX file."
           }
@@ -27,40 +27,40 @@
         },
         "resolve": {
           "accounts": {
-            "sectionTitle": "Akun",
-            "nameLabel": "Nama akun",
+            "sectionTitle": "Accounts",
+            "nameLabel": "Account name",
             "namePlaceholder": "Enter an account name",
-            "currentBalanceLabel": "Saldo saat ini",
+            "currentBalanceLabel": "Current balance",
             "currentBalancePlaceholder": "Leave blank to use the sum of imported transactions",
             "ledgerBalanceHint": "Statement balance: {balance} on {date}",
-            "transactionCount": "{count} transaksi | {count} transaksi",
+            "transactionCount": "{count} transaction | {count} transactions",
             "skippedNote": "{count} account(s) will be skipped. Its transactions will not be imported. | {count} accounts will be skipped. Their transactions will not be imported.",
             "statementType": {
               "bank": "Bank account",
-              "credit-card": "Kartu kredit"
+              "credit-card": "Credit card"
             }
           },
           "quickActions": {
-            "mapExactMatches": "Petakan kecocokan persis",
-            "createNewForUnmatched": "Buat baru untuk yang tidak cocok",
-            "reset": "Setel ulang",
+            "mapExactMatches": "Map exact matches",
+            "createNewForUnmatched": "Create new for unmatched",
+            "reset": "Reset",
             "tooltips": {
               "mapExactMatches": "Link each account to an existing account that has the same name and currency.",
               "createNewForUnmatched": "Set each account that is not linked to an existing account to create a new account.",
-              "reset": "Hapus semua pilihan dan cocokkan lagi."
+              "reset": "Clear all choices and match again."
             }
           },
           "footer": {
-            "back": "Kembali",
-            "continue": "Lanjutkan"
+            "back": "Back",
+            "continue": "Continue"
           }
         },
         "review": {
-          "transactions": "Transaksi",
-          "accountsSkipped": "Akun dilewati",
-          "duplicatesSkipped": "Duplikat dilewati",
-          "willImport": "Akan diimpor",
-          "dateRange": "Rentang tanggal: {from} — {to}",
+          "transactions": "Transactions",
+          "accountsSkipped": "Accounts skipped",
+          "duplicatesSkipped": "Duplicates skipped",
+          "willImport": "Will import",
+          "dateRange": "Date range: {from} — {to}",
           "warningsTitle": "Check these file details",
           "warningsHint": "The import can continue, but some transactions need special handling.",
           "warnings": {
@@ -70,55 +70,55 @@
           },
           "duplicatesTitle": "{count} possible duplicate | {count} possible duplicates",
           "duplicatesHint": "These transactions look like transactions that you already have. Check a row to import it anyway; unchecked duplicates are skipped.",
-          "back": "Kembali",
-          "importing": "Memulai impor...",
+          "back": "Back",
+          "importing": "Starting import…",
           "importButton": "Import {count} transaction | Import {count} transactions"
         },
         "execute": {
-          "starting": "Memulai impor...",
-          "progressCount": "{processed} dari {total}",
-          "failed": "Impor gagal.",
+          "starting": "Starting the import…",
+          "progressCount": "{processed} of {total}",
+          "failed": "The import failed.",
           "partialImportNote": "Some transactions might already be imported.",
-          "statusQueued": "Antrean",
-          "statusRunning": "Mengimpor",
-          "statusCompleted": "Selesai",
-          "statusFailed": "Gagal"
+          "statusQueued": "Queued",
+          "statusRunning": "Importing",
+          "statusCompleted": "Completed",
+          "statusFailed": "Failed"
         },
         "done": {
-          "successTitle": "Impor selesai",
+          "successTitle": "Import finished",
           "successDescription": "Your OFX or QFX transactions are now in your account.",
           "partialTitle": "Imported with {count} issue | Imported with {count} issues",
           "partialDescription": "Most transactions were imported. The list below shows what was not imported.",
-          "emptyTitle": "Tidak ada yang baru untuk diimpor",
+          "emptyTitle": "Nothing new to import",
           "emptyDescription": "Each transaction was skipped or was already in your ledger.",
-          "failedTitle": "Tidak ada yang diimpor",
+          "failedTitle": "Nothing was imported",
           "failedDescription": "No transactions could be created. Review the errors below.",
-          "accountsCreated": "Akun Dibuat",
-          "accountsLinked": "Akun ditautkan",
-          "accountsSkipped": "Akun dilewati",
-          "payeesCreated": "Penerima Dibuat",
-          "transactionsImported": "Transaksi diimpor",
-          "duplicatesSkipped": "Duplikat dilewati",
-          "mergedIntoPlanned": "Digabungkan ke transaksi terencana",
+          "accountsCreated": "Accounts created",
+          "accountsLinked": "Accounts linked",
+          "accountsSkipped": "Accounts skipped",
+          "payeesCreated": "Payees created",
+          "transactionsImported": "Transactions imported",
+          "duplicatesSkipped": "Duplicates skipped",
+          "mergedIntoPlanned": "Merged into planned",
           "balanceWarningTitle": "Some balances might be incorrect",
           "balanceWarningBody": "The final balance could not be set on each account. Review these accounts and adjust their balances if necessary.",
           "errorsTitle": "{count} transaction could not be imported | {count} transactions could not be imported",
-          "errorsOverflow": "…dan {count} lainnya",
+          "errorsOverflow": "…and {count} more",
           "errors": {
             "rowImportFailed": "This row could not be imported.",
             "accountBalanceDesync": "An account balance could not be updated after the import.",
             "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed."
           },
-          "rowPrefix": "Baris {rowIndex}:",
-          "viewTransactions": "Lihat transaksi",
-          "importAnother": "Impor file lain"
+          "rowPrefix": "Row {rowIndex}:",
+          "viewTransactions": "View transactions",
+          "importAnother": "Import another file"
         },
         "leaseExpired": {
-          "title": "File yang Anda unggah tidak lagi tersedia",
+          "title": "Your uploaded file is no longer available",
           "description": "The parsed copy of your OFX or QFX file was released after a period of inactivity. Your mapping choices could not be kept. Start the import again.",
-          "action": "Mulai ulang"
+          "action": "Start over"
         },
-        "leaseResourceLabel": "File yang Anda unggah"
+        "leaseResourceLabel": "Your uploaded file"
       }
     }
   }

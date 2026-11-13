@@ -43,9 +43,9 @@
           "estimating": "Analyzing...",
           "estimated": "Ready",
           "estimateFailed": "Could not analyze",
-          "extracting": "Mengurai...",
-          "extracted": "{count} transaksi | {count} transaksi",
-          "failed": "Gagal"
+          "extracting": "Parsing...",
+          "extracted": "{count} transaction | {count} transactions",
+          "failed": "Failed"
         },
         "analyzeButton": "Analisis File",
         "tryAgain": "Coba Lagi",

@@ -6,7 +6,7 @@
       "submitButton": "Войти",
       "noAccount": "Нет аккаунта?",
       "signupsDisabledTooltip": "Регистрация новых пользователей отключена администратором этого экземпляра",
-      "forgotPassword": "Forgot password?",
+      "forgotPassword": "Забыли пароль?",
       "errors": {
         "incorrectEmailOrPassword": "Неверная электронная почта или пароль.",
         "incorrectPassword": "Неверный пароль.",

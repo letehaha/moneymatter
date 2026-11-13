@@ -85,11 +85,11 @@
         "today": "Hoy",
         "vsPreviousPeriod": "vs período anterior",
         "viewButton": "Ver",
-        "back": "Atrás",
+        "back": "Back",
         "openInAnalytics": "Open in Analytics",
         "metric": {
-          "expenses": "Gastos",
-          "income": "Ingreso"
+          "expenses": "Expenses",
+          "income": "Income"
         },
         "seeTransactions": "See transactions"
       },
@@ -131,7 +131,7 @@
         "selectCategories": "Seleccionar categorías",
         "showTrend": "Mostrar tendencia de 6 meses",
         "sort": {
-          "title": "Ordenar por",
+          "title": "Sort by",
           "custom": "Orden personalizado",
           "spendDesc": "Mayor gasto primero",
           "spendAsc": "Menor gasto primero"
@@ -141,7 +141,7 @@
         "title": "Flujo de caja",
         "description": "Muestra su ahorro neto: ingresos menos gastos para el período seleccionado, con una tendencia de períodos anteriores",
         "vsPrevious": "vs anterior",
-        "notAvailable": "N/D",
+        "notAvailable": "N/A",
         "income": "Ingresos",
         "expenses": "Gastos",
         "saved": "Ahorrado",
@@ -188,7 +188,7 @@
       },
       "cashAccounts": {
         "vsLastMonth": "vs. el mes pasado",
-        "runwayUnit": "m",
+        "runwayUnit": "mo",
         "runwayLabel": "de gastos",
         "loadFailed": "No se pudieron cargar tus cuentas.",
         "runwayHint": {
@@ -199,18 +199,18 @@
         }
       },
       "assetsLiabilities": {
-        "netWorth": "Patrimonio neto",
+        "netWorth": "Net worth",
         "owesShare": "Te debes {percent} de lo que posees",
         "noDebt": "Sin deuda",
-        "assets": "Activos",
-        "liabilities": "Pasivos",
+        "assets": "Assets",
+        "liabilities": "Liabilities",
         "loadFailed": "No se pudieron cargar tus activos y pasivos",
         "buckets": {
-          "cash": "Efectivo",
-          "investments": "Inversiones",
+          "cash": "Cash",
+          "investments": "Investments",
           "ventures": "Ventures",
-          "vehicles": "Vehículos",
-          "loans": "Préstamos",
+          "vehicles": "Vehicles",
+          "loans": "Loans",
           "creditAndOverdrafts": "Créditos y descubiertos"
         }
       },
@@ -231,16 +231,16 @@
           "daysLeft": "Días restantes"
         },
         "chart": {
-          "today": "Hoy",
+          "today": "Today",
           "ariaLabel": "Gasto de este mes"
         },
         "tooltip": {
-          "spent": "Gastado",
+          "spent": "Spent",
           "forecast": "Pronóstico",
           "spikeFrom": "Gastado en {date}"
         },
         "legend": {
-          "thisMonth": "Este mes",
+          "thisMonth": "This month",
           "forecast": "Pronóstico",
           "averageMonth": "Mes promedio"
         },
@@ -257,7 +257,7 @@
             "inputLabel": "Marcar un día cuando llegue",
             "hint": "Porcentaje del gasto total del mes pasado, 1–100%. Las marcas se muestran en modo \"vs. el mes pasado\"."
           },
-          "saved": "Configuración actualizada"
+          "saved": "Setting updated"
         }
       },
       "plannedOverview": {
@@ -272,11 +272,11 @@
         "ofIncome": "de ingreso",
         "vsTrailingRate": "{delta} pp vs tasa de 12 meses {rate}",
         "average": "Máx.: {amount}",
-        "amount": "Impuestos",
-        "shareOfIncome": "Porcentaje del ingreso",
+        "amount": "Taxes",
+        "shareOfIncome": "Share of income",
         "shareOfTaxes": "Porcentaje de impuestos",
-        "other": "Otro",
-        "moreCategories": "{count} más",
+        "other": "Other",
+        "moreCategories": "{count} more",
         "viewDetails": "Ver flujo de caja",
         "loadFailed": "No se pudo cargar los datos de impuestos.",
         "noCategories": {
@@ -294,9 +294,9 @@
           }
         },
         "lastMonths": {
-          "m3": "Últimos 3 meses",
-          "m6": "Últimos 6 meses",
-          "m12": "Últimos 12 meses"
+          "m3": "Last 3 months",
+          "m6": "Last 6 months",
+          "m12": "Last 12 months"
         }
       },
       "budget": {
@@ -317,30 +317,30 @@
       "trackers": {
         "spentOfLimit": "{spent} de {limit}",
         "inOut": "{ingresos} entran, {gastos} salen",
-        "net": "Neto",
+        "net": "Net",
         "noLimit": "Sin límite",
-        "empty": "Aún no hay rastreadores",
-        "ended": "Finalizado",
+        "empty": "No trackers yet",
+        "ended": "Ended",
         "create": "Crear un seguimiento"
       },
       "tagAnalysis": {
         "title": "Tag analysis",
         "noTagsTitle": "No tags selected",
         "noTagsDescription": "Pick the tags to compare in the widget settings.",
-        "ofIncome": "de ingreso",
+        "ofIncome": "of income",
         "remaining": "Unallocated",
         "targetTooltip": "Target: {value}%",
         "settings": {
-          "tagsLabel": "Etiquetas",
-          "tagsPlaceholder": "Seleccionar etiquetas",
+          "tagsLabel": "Tags",
+          "tagsPlaceholder": "Select tags",
           "targetsLabel": "Targets, %",
           "targetsNoneSet": "None set",
           "targetsSetCount": "{set} of {total} set",
           "targetsEmpty": "Add tags first to set their targets",
-          "targetPlaceholder": "Ninguna",
+          "targetPlaceholder": "None",
           "percentBaseLabel": "Percent of",
           "percentBaseTags": "Selected tags",
-          "percentBaseIncome": "Ingreso",
+          "percentBaseIncome": "Income",
           "includeTransfersLabel": "Include transfers",
           "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
         }
@@ -404,7 +404,7 @@
           "description": "Porcentaje de ingresos pagados en impuestos, con una tendencia de 12 meses"
         },
         "budget": {
-          "name": "Presupuestos",
+          "name": "Budget",
           "description": "Lo que queda en el actual período presupuestario, línea por línea"
         },
         "trackers": {
@@ -412,7 +412,7 @@
           "description": "Cada rastreador activo con cuánto de su límite está usado y su neto"
         },
         "goals": {
-          "name": "Objetivos",
+          "name": "Goals",
           "description": "Avance hacia sus objetivos de ahorro",
           "savedOfTarget": "{saved} de {target}",
           "empty": {
@@ -423,12 +423,12 @@
           "locked": {
             "title": "Los objetivos están bloqueados",
             "description": "Ahorre en lo que importa y vea si está en el ritmo. Disponible en planes de pago.",
-            "action": "Saber más"
+            "action": "Learn more"
           },
           "settings": {
             "showReached": "Mostrar objetivos alcanzados"
           },
-          "reachedSection": "Alcanzado"
+          "reachedSection": "Reached"
         },
         "tagAnalysis": {
           "name": "Tag analysis",
@@ -450,15 +450,15 @@
   "widgets": {
     "subscriptionsOverview": {
       "payAction": "Marcar como pagado",
-      "listTitle": "Próximo",
+      "listTitle": "Upcoming",
       "dueCount": "{count} más",
       "nothingDue": "Nada en 3 días",
       "overdueHint": "Vencido desde %date%",
       "dueSoonHint": "Vence en los próximos 30 días",
       "strip": {
-        "title": "Próximos 30 días",
+        "title": "Next 30 days",
         "goingOut": "{amount} saliendo",
-        "today": "Hoy"
+        "today": "Today"
       },
       "loadFailed": "No se pudo cargar los pagos recurrentes"
     },
@@ -471,15 +471,15 @@
         "excludeBalanceAdjustmentsDescription": "Ocultar transacciones de ajuste de saldo",
         "plannedTitle": "Transacciones planificadas",
         "excludePlannedDescription": "Ocultar de la lista las transacciones planificadas pendientes",
-        "scheduledTitle": "Pagos programados",
+        "scheduledTitle": "Scheduled payments",
         "excludeScheduledDescription": "Ocultar pagos de suscripción próximos y vencidos de la lista",
         "scheduledSaveError": "No se pudo actualizar la configuración de los pagos programados",
         "nothingExcluded": "Nada excluido",
-        "tagsStyleTitle": "Etiquetas",
+        "tagsStyleTitle": "Tags",
         "tagsStyleNames": "Nombres",
         "tagsStyleBars": "Barras",
         "tagsStyleSaveError": "No se pudo guardar la plantilla. Inténtelo de nuevo.",
-        "showAccountTitle": "Cuenta",
+        "showAccountTitle": "Account",
         "showAccountDescription": "Mostrar el logo de la cuenta en cada transacción",
         "showAccountSaveError": "No se pudo guardar la automatización. Inténtelo de nuevo."
       },
@@ -502,27 +502,27 @@
       "ringLabelFor": "{pct}% del objetivo {type} alcanzado, {duration} restante",
       "ringLabelReachedFor": "{type} objetivo alcanzado",
       "ringLabelUnreachableFor": "{pct}% del objetivo de {type} alcanzado, no alcanzable a tu ritmo actual",
-      "timeTo": "Tiempo hasta {type}",
-      "unitYears": "{n} años | {n} año | {n} años",
-      "unitMonths": "{n} meses | {n} mes | {n} meses",
-      "atAge": "a la edad de {age}",
+      "timeTo": "Time to {type}",
+      "unitYears": "{n} yrs | {n} yr | {n} yrs",
+      "unitMonths": "{n} mos | {n} mo | {n} mos",
+      "atAge": "at age {age}",
       "nextMilestone": "Siguiente meta",
-      "saved": "Ahorrado",
-      "progress": "Progreso",
+      "saved": "Saved",
+      "progress": "Progress",
       "coastFire": "Coast FIRE",
-      "reached": "Alcanzado",
+      "reached": "Reached",
       "milestoneIn": "{pct}% en {duration}",
       "typeNumber": "Número de {type}",
       "atRate": "en {rate}%",
       "milestonesReached": "{n} de {total} metas",
-      "balanceOfTarget": "{balance} de {target}",
-      "reachedType": "{type} alcanzado",
+      "balanceOfTarget": "{balance} of {target}",
+      "reachedType": "{type} reached",
       "supports": "Soporta {amount}/mes",
       "pctOfSpending": "{pct}% de tus gastos",
-      "unreachable": "No se puede alcanzar con ahorros actuales",
+      "unreachable": "Not reachable at current savings",
       "needs": "Necesita cerca de {amount}/mes para llegar en {duration}",
       "chart": {
-        "today": "Hoy",
+        "today": "Today",
         "typeTarget": "{type} · {amount}",
         "ariaLabel": "Ruta del valor neto: historia real hasta hoy, proyectada hacia su número de FIRE"
       },

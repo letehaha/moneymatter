@@ -153,7 +153,7 @@
         "selectCategoryPlaceholder": "Select a category",
         "targetAmountLabel": "Target amount",
         "targetAmountPlaceholder": "Target amount",
-        "plannedLabel": "مخطط له",
+        "plannedLabel": "Planned",
         "plannedUnavailableNotification": "Planned transactions aren't available here, so the option was turned off.",
         "plannedTooltip": "Record an upcoming transaction. Your balance stays unchanged until it goes through.",
         "plannedConnectedAccountTooltip": "Only planned transactions can sit on a bank-connected account. Switching this off clears the account and the date.",
@@ -173,7 +173,7 @@
         "deleteBlockedByPayment": "Remove it from the payment first to delete it",
         "createAriaLabel": "Create transaction",
         "editAriaLabel": "Edit transaction",
-        "loadingButton": "جار التحميل...",
+        "loadingButton": "Loading...",
         "createButton": "Create",
         "editButton": "Edit",
         "duplicateButton": "Duplicate",
@@ -269,7 +269,7 @@
           "convertedHint": "Prefilled from the market rate. Change the {currency} amount to match what you actually paid.",
           "noMarketRate": "No market rate for {currency} – enter the amount manually.",
           "linkPicker": {
-            "title": "ربط المعاملات الحالية",
+            "title": "Link existing transactions",
             "windowHint": "Within {days} days of {date}",
             "loadError": "Couldn't load transactions",
             "emptyTitle": "No transactions to link",
@@ -610,7 +610,7 @@
       "title": "Select transaction"
     },
     "attachInvoice": {
-      "title": "إرفاق الفاتورة",
+      "title": "Attach invoice",
       "description": "Drop an invoice or receipt. We read the total, date and merchant, then find the transaction it belongs to.",
       "resultsTitle": "Pick the transaction",
       "resultsDescription": "No transactions match this invoice. | {count} transaction could belong to this invoice. | {count} transactions could belong to this invoice.",

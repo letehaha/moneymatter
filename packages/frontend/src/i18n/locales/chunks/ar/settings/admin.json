@@ -141,7 +141,7 @@
           "titleSelected": "Send to {count} users?",
           "description": "This creates a notification for every user active in the last 30 days. It can't be undone.",
           "descriptionSelected": "Unknown IDs and emails are skipped. It can't be undone.",
-          "button": "إرسال"
+          "button": "Send"
         },
         "notifications": {
           "success": "Notification sent to {count} users",

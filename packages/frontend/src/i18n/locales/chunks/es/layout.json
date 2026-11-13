@@ -8,7 +8,7 @@
     "allTransactions": "Todas las transacciones",
     "transactions": "Transacciones",
     "transactionGroups": "Grupos",
-    "trash": "Papelera",
+    "trash": "Trash",
     "analytics": "Análisis",
     "optimizations": "Optimizaciones",
     "automations": "Automatizaciones",
@@ -17,14 +17,14 @@
     "community": "Comunidad",
     "logout": "Cerrar sesión",
     "appVersion": "Versión de app {version}",
-    "updateAvailable": "Actualización disponible",
+    "updateAvailable": "Update available",
     "updateToVersion": "Actualizar «{version}»",
     "settings": "Ajustes",
     "planned": {
       "planned": "Planificado",
       "subscriptions": "Cargos recurrentes",
       "budgets": "Rastreadores",
-      "goals": "Objetivos"
+      "goals": "Goals"
     },
     "venture": "Venture",
     "budget": "Presupuestos"

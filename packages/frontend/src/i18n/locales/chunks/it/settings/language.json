@@ -2,7 +2,7 @@
   "settings": {
     "language": {
       "title": "Lingua",
-      "description": "Lingua di visualizzazione dell'interfaccia.",
+      "description": "Lingua mostrata nell'interfaccia utente.",
       "community": {
         "title": "Traduzioni della Community",
         "hint": "Tradotto da volontari su Crowdin. Tutto ciò che non è stato ancora tradotto è mostrato in inglese."

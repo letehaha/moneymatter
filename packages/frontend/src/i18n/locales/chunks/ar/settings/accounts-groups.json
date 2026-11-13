@@ -77,7 +77,7 @@
       },
       "tree": {
         "groupsCount": "{count} group | {count} groups",
-        "syncedBadge": "تمت المزامنة",
+        "syncedBadge": "Synced",
         "expand": "Expand",
         "collapse": "Collapse",
         "renameTooltip": "Rename",

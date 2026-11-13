@@ -38,7 +38,7 @@
       "updateMatchingRules": "Aggiorna regole di abbinamento",
       "linked": {
         "totalPaid": "Totale pagato",
-        "average": "Medio",
+        "average": "Media",
         "lastPayment": "Ultimo pagamento",
         "driftUp": "↑ {percent}% dal primo pagamento ({date})",
         "driftDown": "↓ {percent}% dal primo pagamento ({date})",
@@ -62,7 +62,20 @@
         "monthly": "Mensile",
         "quarterly": "Trimestrale",
         "semiAnnual": "Semestrale",
-        "annual": "Annuale"
+        "annual": "Annuale",
+        "custom": "Personalizzato",
+        "every": {
+          "day": "Ogni giorno | Ogni {count} giorni",
+          "week": "Ogni settimana | Ogni {count} settimane",
+          "month": "Ogni mese | Ogni {count} mesi",
+          "year": "Ogni anno | Ogni {count} anni"
+        },
+        "units": {
+          "day": "giorno | giorni",
+          "week": "settimana | settimane",
+          "month": "mese | mesi",
+          "year": "anno | anni"
+        }
       },
       "matchSource": {
         "manual": "Manuale",
@@ -77,7 +90,7 @@
         "typeSubscriptionDesc": "Pagamento ricorrente per un servizio",
         "typeBillDesc": "Bolletta o utenza ricorrente",
         "transactionTypeLabel": "Tipo di transazione",
-        "transactionTypeExpense": "Spesa",
+        "transactionTypeExpense": "Uscita",
         "transactionTypeIncome": "Entrata",
         "transactionTypeExpenseDesc": "Uscita di denaro ricorrente",
         "transactionTypeIncomeDesc": "Stipendio, compenso fisso o versamento programmato ricorrente",
@@ -86,6 +99,11 @@
         "amountPlaceholder": "0.00",
         "currencyLabel": "Valuta",
         "frequencyLabel": "Frequenza",
+        "intervalCountLabel": "Ripeti ogni",
+        "intervalCountPlaceholder": "es. 30",
+        "intervalUnitLabel": "Unità",
+        "intervalUnitPlaceholder": "Selezionare un'unità",
+        "validationIntervalCount": "Inserire un numero intero da 1 a {max}",
         "startDateLabel": "Data di inizio",
         "endDateLabel": "Data di fine",
         "accountLabel": "Conto",
@@ -318,7 +336,7 @@
           "frequencyPlaceholder": "Selezionare una frequenza",
           "clearDueDate": "Pulisci",
           "detectionOnlyHint": "Senza una data di scadenza, questo abbonamento rileva solo le transazioni corrispondenti, senza periodi di pagamento né promemoria.",
-          "emailOn": "Attivo",
+          "emailOn": "Attivata",
           "emailOff": "Disattivata"
         },
         "automation": {

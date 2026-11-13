@@ -2,11 +2,11 @@
   "settings": {
     "currencies": {
       "page": {
-        "title": "Währungen",
+        "title": "Currencies",
         "description": "Verwalte die Währungen, die du verfolgst, und die Wechselkurse, die für deine Konten verwendet werden."
       },
       "addNew": {
-        "loading": "Laden...",
+        "loading": "Loading...",
         "selectCurrency": "Währung auswählen",
         "addButton": "Hinzufügen",
         "sectionLabel": "Währung hinzufügen",
@@ -24,7 +24,7 @@
         "custom": "Benutzerdefiniert",
         "live": "Live",
         "unused": "Ungenutzt",
-        "accountsCount": "{count} Konto | {count} Konten"
+        "accountsCount": "{count} account | {count} accounts"
       },
       "empty": {
         "title": "Noch keine weiteren Währungen",
@@ -35,7 +35,7 @@
         "liveUpdateInfo": "Wenn aktiviert, wird der benutzerdefinierte Kurs ignoriert.",
         "liveUpdateLabel": "Live-Aktualisierung",
         "ratePlaceholder": "0.00",
-        "saveButton": "Speichern",
+        "saveButton": "Save",
         "successfullyUpdated": "Erfolgreich aktualisiert.",
         "balancesNotRefreshed": "{count} Kontostand/Kontostände konnten noch nicht mit dem neuen Kurs aktualisiert werden — sie werden automatisch aktualisiert, sobald ein Kurs verfügbar ist.",
         "errors": {
@@ -47,7 +47,7 @@
         "confirmTitle": "Währung löschen?",
         "description": "Eine Währung kann nur gelöscht/getrennt werden, wenn ihr keine Konten und/oder Transaktionen zugeordnet sind.",
         "button": "Währung löschen",
-        "buttonShort": "Löschen",
+        "buttonShort": "Delete",
         "disabledTooltip": "Du kannst diese Währung nicht löschen, da sie noch mit Konten verbunden ist.",
         "successfullyDeleted": "Erfolgreich gelöscht.",
         "foreignAmountsWarning": "In dieser Währung erfasste Fremdbeträge werden aus deinen Transaktionen entfernt. Beträge in der Kontowährung bleiben unverändert.",
@@ -55,16 +55,16 @@
           "title": "Diese Währung wird noch verwendet. Bitte zuerst entfernen oder ändern:",
           "trashed": "(im Papierkorb)",
           "types": {
-            "account": "Konten",
+            "account": "Accounts",
             "portfolio": "Portfolio-Anzeigewährung",
-            "holding": "Positionen",
+            "holding": "Holdings",
             "portfolioCash": "Cash-Bestände",
             "portfolioTransfer": "Portfolio-Umbuchungen",
             "investmentTransaction": "Investitionstransaktionen",
-            "subscription": "Wiederkehrende Zahlungen",
+            "subscription": "Recurring payments",
             "transactionTemplate": "Transaktionsvorlagen",
             "budget": "Budgets",
-            "goal": "Ziele",
+            "goal": "Goals",
             "ventureDeal": "Beteiligungen"
           }
         },
@@ -93,7 +93,7 @@
           "restrictionWarning": "Du kannst keine neuen Konten, Transaktionen oder andere Dinge, die mit \"Beträgen\" zusammenhängen, erstellen, während der Prozess läuft.",
           "confirmation": "Möchtest du wirklich fortfahren?",
           "changeButton": "Basiswährung ändern",
-          "cancelButton": "Abbrechen"
+          "cancelButton": "Cancel"
         },
         "successMessage": "Basiswährung erfolgreich geändert.",
         "errors": {

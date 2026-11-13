@@ -34,7 +34,7 @@
           "label": "Obiettivo di entrate",
           "hint": "Guadagnare almeno questo importo. Verde quando si è in linea; superarlo è un successo.",
           "guide": "Per il denaro che si vuole incassare: stipendio annuo, ricavi da lavoro autonomo, rendite da affitto. Verde quando si è in linea; superarlo è un successo.",
-          "amountLabel": "Importo di destinazione"
+          "amountLabel": "Importo obiettivo"
         },
         "income_cap": {
           "label": "Tetto di entrate",

@@ -22,19 +22,19 @@
       "whatToChoose": "What to choose?",
       "guideTitle": "Which limit fits?",
       "goalNote": "Saving up for something? {goalLink} instead: goals track what you've saved, trackers track what flows in or out.",
-      "goalLink": "Créer un objectif",
+      "goalLink": "Create a goal",
       "kinds": {
         "spending": {
           "label": "Spending",
           "hint": "Spend at most this much. Warns when spending runs ahead of time passing.",
           "guide": "For a thing or an event: a trip, a renovation, a year of groceries. Warns when you spend faster than time passes.",
-          "amountLabel": "Plafond"
+          "amountLabel": "Limit"
         },
         "income_target": {
           "label": "Income target",
           "hint": "Earn at least this much. Green while you're on pace, and going over is a win.",
           "guide": "For money you want to bring in: yearly salary, freelance revenue, rental income. Green while on pace; going over is a win.",
-          "amountLabel": "Montant cible"
+          "amountLabel": "Target amount"
         },
         "income_cap": {
           "label": "Income cap",
@@ -268,10 +268,10 @@
       "switchHintOn": "Les transactions de la période correspondant à au moins une de ces catégories ou étiquettes seront ajoutées.",
       "switchHintOff": "Seules les transactions ajoutées manuellement sont prises en compte.",
       "switchHintTurnedOff": "Désactiver cette option conserve toutes les transactions déjà ajoutées.",
-      "categoriesLabel": "Catégories",
-      "categoriesPlaceholder": "Sélectionner des catégories",
-      "tagsLabel": "Étiquettes",
-      "tagsPlaceholder": "Sélectionner des étiquettes",
+      "categoriesLabel": "Categories",
+      "categoriesPlaceholder": "Select categories",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Select tags",
       "needsCategoryOrTag": "Choisissez au moins une catégorie ou une étiquette",
       "cleanupLabel": "Supprimer les transactions qui ne correspondent plus",
       "cleanupHint": "Vérification toutes les 6 heures. Les transactions ajoutées manuellement ne sont jamais supprimées.",
@@ -287,7 +287,7 @@
         "title": "Ne plus ajouter automatiquement",
         "description": "Vous avez supprimé ces transactions ou refusé leur suggestion par l'IA ; elles seront donc ignorées. Autorisez-en une pour qu'elle soit à nouveau ajoutée si elle correspond toujours.",
         "summary": "{count} transaction ne sera plus ajoutée | {count} transactions ne seront plus ajoutées",
-        "review": "Examiner",
+        "review": "Review",
         "aiBadge": "Suggestion de l'IA",
         "allowAgain": "Autoriser à nouveau",
         "allowed": "À nouveau autorisée",

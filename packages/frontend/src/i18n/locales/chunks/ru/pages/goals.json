@@ -4,20 +4,20 @@
     "description": "Save toward targets from the accounts you already have",
     "newGoal": "Новая цель",
     "list": {
-      "searchPlaceholder": "Search goals",
+      "searchPlaceholder": "Поиск целей",
       "filters": {
         "all": "Все",
         "behind": "Behind schedule",
-        "archived": "Архивные"
+        "archived": "Archived"
       },
       "sections": {
-        "active": "Активно",
-        "ended": "Завершён",
+        "active": "Активные",
+        "ended": "Завершённые",
         "archived": "Архивные",
         "show": "show",
         "hide": "hide"
       },
-      "loadError": "Couldn't load your goals.",
+      "loadError": "Не удалось загрузить цели.",
       "emptyState": {
         "title": "Пока нет целей",
         "description": "Point a goal at the accounts that hold the money. Progress updates as balances change."
@@ -29,8 +29,8 @@
         "includeArchived": "Include archived"
       },
       "row": {
-        "saved": "Сбережено",
-        "ofTarget": "из {amount}",
+        "saved": "Saved",
+        "ofTarget": "of {amount}",
         "accountShare": "{name} {share}%",
         "accountFixed": "{name} {amount}",
         "reachedOn": "reached {date}",
@@ -43,18 +43,18 @@
       }
     },
     "status": {
-      "reached": "Достигнуто",
+      "reached": "Достигнутые",
       "ahead": "Ahead",
       "onTrack": "On track",
       "behind": "Behind",
       "behindBy": "Behind · {count} mo | Behind · {count} mo",
-      "overdue": "Просрочено",
+      "overdue": "Overdue",
       "noDate": "No date",
       "around": "around {date}",
       "insufficientHistory": "Not enough history",
-      "noAccounts": "Нет счетов",
-      "paused": "Приостановлено",
-      "archived": "Архивные",
+      "noAccounts": "No accounts",
+      "paused": "Paused",
+      "archived": "Archived",
       "noRate": "No exchange rate"
     },
     "actions": {
@@ -62,20 +62,20 @@
       "pause": "Приостановить",
       "resume": "Возобновить",
       "archive": "Архивировать",
-      "unarchive": "Восстановить из архива",
+      "unarchive": "Unarchive",
       "delete": "Удалить"
     },
     "deleteDialog": {
-      "title": "Delete this goal?",
+      "title": "Удалить эту цель?",
       "description": "The goal and its account shares are removed. Your accounts and transactions stay as they are."
     },
     "toasts": {
       "created": "Цель создана",
-      "saved": "Goal saved",
-      "paused": "Goal paused",
-      "archived": "Goal archived",
+      "saved": "Цель сохранена",
+      "paused": "Цель приостановлена",
+      "archived": "Цель в архиве",
       "deleted": "Цель удалена",
-      "saveError": "Couldn't save the goal",
+      "saveError": "Не получилось сохранить цель",
       "deleteError": "Couldn't delete the goal"
     },
     "access": {
@@ -98,17 +98,17 @@
         "more": "More goal actions"
       },
       "tabs": {
-        "progress": "Прогресс",
-        "accounts": "Счета",
+        "progress": "Progress",
+        "accounts": "Accounts",
         "whatIf": "What if"
       },
       "strip": {
-        "target": "Цель",
-        "saved": "Сбережено",
+        "target": "Target",
+        "saved": "Saved",
         "left": "Left",
         "needs": "Needs",
         "pace": "Pace",
-        "reached": "Достигнуто",
+        "reached": "Reached",
         "aboveTarget": "{amount} above target",
         "notEnoughHistory": "not enough history",
         "around": "around {date}",
@@ -116,8 +116,8 @@
         "overdue": "overdue"
       },
       "accounts": {
-        "label": "Счета",
-        "count": "{count} счёт | {count} счёта | {count} счетов",
+        "label": "Accounts",
+        "count": "{count} account | {count} accounts",
         "showAll": "Show all {count} accounts",
         "countedToward": "Counted toward {name}",
         "shareOf": "{share}% of {amount}",
@@ -133,15 +133,15 @@
         "fixedHere": "Fixed {amount} from this account",
         "emptyDescription": "Link accounts in Edit goal to track progress.",
         "columns": {
-          "account": "Счёт",
-          "share": "Share",
-          "balance": "Баланс",
+          "account": "Account",
+          "share": "Поделиться",
+          "balance": "Balance",
           "counted": "Counted"
         },
-        "archived": "Архивные",
+        "archived": "Archived",
         "percentOfSaved": "{percent}% of saved",
         "total": "Total · {count} account | Total · {count} accounts",
-        "ofBalance": "из {amount}",
+        "ofBalance": "of {amount}",
         "unavailableAccount": "Unavailable account",
         "balanceUnavailable": "Balance unavailable"
       },
@@ -155,16 +155,16 @@
           "needs": "needs {amount}/mo",
           "projectedFinish": "Projected finish",
           "onTime": "on time",
-          "early": "на {count} мес. раньше",
+          "early": "{count} mo early",
           "late": "{count} mo late",
           "targetDate": "Target {date}",
           "savedIn": "Saved in {count} mo",
-          "bestMonth": "Best month",
+          "bestMonth": "Лучший месяц",
           "shareOfGrowth": "{percent}% of the period's growth",
           "leftDueInDays": "{amount} left, due in {count} day | {amount} left, due in {count} days",
           "leftOverdue": "{amount} left, overdue"
         },
-        "timeline": "Хронология",
+        "timeline": "Timeline",
         "noHistory": "No history yet",
         "insufficient": {
           "title": "Not enough history for a pace yet",
@@ -179,28 +179,28 @@
         },
         "chartAria": "Goal savings over time",
         "legend": {
-          "saved": "Сбережено",
-          "projection": "Прогноз",
-          "target": "Цель"
+          "saved": "Saved",
+          "projection": "Projection",
+          "target": "Target"
         },
         "monthlyChange": "Monthly change"
       },
       "staleData": "Couldn't refresh this goal. Showing the last loaded data."
     },
     "form": {
-      "createTitle": "Новая цель",
+      "createTitle": "New goal",
       "editTitle": "Edit goal",
       "description": "Progress reads your account balances. No money moves.",
-      "nameLabel": "Название",
+      "nameLabel": "Name",
       "namePlaceholder": "e.g. Car or Emergency fund",
-      "targetAmountLabel": "Целевая сумма",
-      "targetAmountPlaceholder": "Введите сумму",
-      "currencyLabel": "Валюта",
-      "currencyPlaceholder": "Выберите валюту",
+      "targetAmountLabel": "Target amount",
+      "targetAmountPlaceholder": "Enter an amount",
+      "currencyLabel": "Currency",
+      "currencyPlaceholder": "Select a currency",
       "targetDateLabel": "Target date",
       "targetDateHint": "Optional. Set a date to see if you're on pace. Without one, we'll estimate when you'll reach it.",
-      "accountsLabel": "Счета",
-      "noAccounts": "Счетов пока нет",
+      "accountsLabel": "Accounts",
+      "noAccounts": "No accounts yet",
       "countsNow": "Counts {amount} now",
       "manageAccounts": "Manage accounts",
       "addAccounts": "Add accounts",
@@ -240,11 +240,11 @@
       "fixedFirst": "Fixed amounts come out of an account's balance first. Percents split what's left.",
       "mode": {
         "percent": "Percent",
-        "amount": "Сумма"
+        "amount": "Amount"
       },
       "searchPlaceholder": "Search accounts",
       "holder": "{share}% in {name}",
-      "archived": "Архивные",
+      "archived": "Archived",
       "fixedOnly": "Fully used: {holders} · fixed amount only",
       "free": "{free}% free",
       "wholeAccount": "Whole account · counts {amount}",
@@ -263,14 +263,14 @@
       "marketNote": "Market moves in investment and crypto accounts count as progress. Projections assume no growth.",
       "total": "No accounts selected | {count} account · counts {amount} | {count} accounts · counts {amount}",
       "fixToSave": "Fix {name} to save",
-      "done": "Готово",
+      "done": "Done",
       "emptyState": {
         "title": "No accounts to link",
         "description": "Goals count cash, current, savings, investment and crypto accounts you own."
       },
       "unavailableCaption": "Unavailable · kept until you untick it",
       "sharePlaceholder": "100",
-      "amountPlaceholder": "Сумма",
+      "amountPlaceholder": "Amount",
       "order": {
         "hint": "If the balance runs short, fixed amounts are filled top to bottom. Drag to change.",
         "dragLabel": "Drag to change the order",
@@ -295,7 +295,7 @@
     "whatIf": {
       "monthly": {
         "label": "Monthly toward this goal",
-        "placeholder": "Автоматически",
+        "placeholder": "Auto",
         "auto": "Auto {amount}",
         "autoHint": "Auto {amount} is the median monthly change of the last {count} months",
         "noAuto": "Not enough history for Auto yet. Enter an amount.",
@@ -324,20 +324,20 @@
         "reached": "Reached around",
         "against": "Against target",
         "needed": "Needs per month",
-        "reachedAlready": "Достигнуто",
+        "reachedAlready": "Reached",
         "offset": {
-          "early": "на {count} мес. раньше",
+          "early": "{count} mo early",
           "onTime": "On time",
           "late": "{count} mo late"
         }
       },
-      "autoTag": "Автоматически",
+      "autoTag": "Auto",
       "deposit": {
         "sentence": "To count {amount} a month toward this goal, deposit {deposits}.",
         "item": "{amount} into {account}"
       },
       "sandboxHint": "A sandbox. Nothing changes until you apply it in Edit goal.",
-      "reset": "Сбросить",
+      "reset": "Reset",
       "apply": "Apply in Edit goal"
     },
     "docs": {

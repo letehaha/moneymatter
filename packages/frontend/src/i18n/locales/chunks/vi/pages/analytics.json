@@ -10,9 +10,9 @@
       "netWorthDrivers": "Net worth drivers",
       "investmentContributions": "Contributions",
       "netWorthHistory": "Net worth history",
-      "collapse": "Thu gọn",
+      "collapse": "Collapse",
       "sections": {
-        "investments": "Đầu tư"
+        "investments": "Investments"
       },
       "fire": "FIRE"
     },
@@ -64,11 +64,11 @@
         "savings": "Savings",
         "taxes": "Taxes",
         "deficit": "Deficit",
-        "other": "Khác",
+        "other": "Other",
         "noData": "No transactions in this period",
         "noDataHint": "Pick another period or click a bar in the chart above",
         "loadError": "Failed to load composition",
-        "amount": "Số tiền",
+        "amount": "Amount",
         "shareOfIncome": "Share of income",
         "shareOfExpenses": "Share of expenses",
         "saved": "Saved",
@@ -79,7 +79,7 @@
         "deficitOverspend": "Expenses exceeded income by {amount}. The gap was covered from existing account balances.",
         "deficitInvested": "Portfolio contributions ({invested}) exceeded this period's net savings ({saved}). The difference came from existing account balances.",
         "deficitBoth": "Expenses exceeded income by {overspend}, and {invested} was still moved into portfolios. Both were covered from existing account balances.",
-        "andMore": "+{count} mục nữa",
+        "andMore": "+{count} more",
         "settings": "Chart settings"
       }
     },
@@ -99,7 +99,7 @@
         "label": "Category scope",
         "all": "All categories",
         "up": "Up one level",
-        "transactions": "Giao dịch",
+        "transactions": "Transactions",
         "count": "{count} category | {count} categories",
         "more": "+{count}",
         "allExcept": "All except {list}",
@@ -126,11 +126,11 @@
         "granularity": {
           "monthly": "Monthly",
           "quarterly": "Quarterly",
-          "yearly": "Hằng năm"
+          "yearly": "Yearly"
         }
       },
       "transactionsCard": {
-        "title": "Giao dịch",
+        "title": "Transactions",
         "largest": "Largest",
         "recent": "Recent"
       },
@@ -154,9 +154,9 @@
         "title": "Filters",
         "include": "Include",
         "exclude": "Exclude",
-        "accounts": "Tài khoản",
-        "payees": "Người nhận",
-        "tags": "Thẻ",
+        "accounts": "Accounts",
+        "payees": "Payees",
+        "tags": "Tags",
         "reset": "Reset"
       },
       "legend": {
@@ -258,11 +258,11 @@
         "countsCash": "Cash & bank accounts",
         "countsPortfolios": "Investment portfolios",
         "countsVentures": "Ventures",
-        "countsVehicles": "Phương tiện",
+        "countsVehicles": "Vehicles",
         "countsLoans": "Loans",
         "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
         "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",
-        "archivedNoteLink": "Xem xét",
+        "archivedNoteLink": "Review",
         "presetLabel": "{label} · ≈{real} real ({nominal} nominal, {inflation} US inflation)",
         "inflationLabel": "Inflation",
         "inflationBuiltIn": "{pct}% · built into this preset",
@@ -397,7 +397,7 @@
           "offTrack": "The {month} forecast was {date}. On today's numbers FIRE is out of reach.",
           "metric": "Metric",
           "today": "Today",
-          "change": "Thay đổi",
+          "change": "Change",
           "fireDate": "FIRE date",
           "saved": "Saved by now",
           "spending": "Spending",
@@ -487,9 +487,9 @@
       "period": "Period",
       "allCategories": "All",
       "button": "Filters",
-      "categories": "Danh mục",
-      "payees": "Người nhận",
-      "accounts": "Tài khoản",
+      "categories": "Categories",
+      "payees": "Payees",
+      "accounts": "Accounts",
       "reset": "Reset",
       "resetTooltip": "Reset to defaults"
     },
@@ -517,11 +517,11 @@
     },
     "table": {
       "total": "Total",
-      "net": "Thu chi ròng",
+      "net": "Net",
       "collapseAll": "Collapse all",
       "expandAll": "Expand all",
-      "expandRow": "Mở rộng",
-      "collapseRow": "Thu gọn"
+      "expandRow": "Expand",
+      "collapseRow": "Collapse"
     },
     "states": {
       "emptyTitle": "No data for this selection",
@@ -549,7 +549,7 @@
     "granularity": {
       "monthly": "Monthly",
       "quarterly": "Quarterly",
-      "yearly": "Hằng năm"
+      "yearly": "Yearly"
     },
     "chart": {
       "title": "Saved vs. grown",
@@ -617,7 +617,7 @@
     "granularity": {
       "monthly": "Monthly",
       "quarterly": "Quarterly",
-      "yearly": "Hằng năm"
+      "yearly": "Yearly"
     },
     "cards": {
       "totalContributed": "Total contributed",
@@ -630,7 +630,7 @@
     "states": {
       "noData": "No contributions in this range",
       "noDataHint": "Move money into a portfolio during this period to see it here.",
-      "noPortfoliosTitle": "Chưa có danh mục đầu tư nào",
+      "noPortfoliosTitle": "No portfolios yet",
       "noPortfoliosPlaceholder": "Create a portfolio and start investing to track your contributions here.",
       "noPortfoliosAction": "Add a portfolio",
       "loadError": "Couldn't load contributions"
@@ -642,7 +642,7 @@
       "weekly": "Weekly",
       "monthly": "Monthly",
       "quarterly": "Quarterly",
-      "yearly": "Hằng năm"
+      "yearly": "Yearly"
     },
     "kindFilter": {
       "all": "All liabilities",
@@ -652,8 +652,8 @@
     },
     "assetKinds": {
       "cash": "Cash & accounts",
-      "investments": "Đầu tư",
-      "vehicles": "Phương tiện",
+      "investments": "Investments",
+      "vehicles": "Vehicles",
       "ventures": "Ventures"
     },
     "assetFilter": {
@@ -670,8 +670,8 @@
       "noLiabilities": "You had no liabilities during the selected period."
     },
     "chart": {
-      "assets": "Tài sản",
-      "liabilities": "Nợ phải trả",
+      "assets": "Assets",
+      "liabilities": "Liabilities",
       "netWorth": "Net worth",
       "averageLiabilities": "Avg. liabilities",
       "liabilitiesZoomed": "Liabilities scale zoomed"

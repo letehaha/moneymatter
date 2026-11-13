@@ -37,7 +37,13 @@
       "auto": "Automática",
       "name": "Nome",
       "balance": "Saldo",
-      "ariaLabel": "Ordenar contas"
+      "ariaLabel": "Ordenar contas",
+      "direction": {
+        "aToZ": "A to Z",
+        "zToA": "Z to A",
+        "highestFirst": "Highest first",
+        "lowestFirst": "Lowest first"
+      }
     },
     "status": {
       "active": "Ativa",

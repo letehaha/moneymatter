@@ -89,7 +89,7 @@
     },
     "bulkEdit": {
       "selectAll": "Seleccionar todo",
-      "selectAllShort": "Todas",
+      "selectAllShort": "All",
       "cancelSelection": "Cancelar selección",
       "editButton": "Editar",
       "selectedCount": "{count} seleccionadas",
@@ -120,17 +120,17 @@
       "tagModeAdd": "Añadir a etiquetas existentes",
       "tagModeReplace": "Reemplazar todas las etiquetas",
       "tagModeRemove": "Eliminar estas etiquetas",
-      "tagModeAddShort": "Añadir",
-      "tagModeReplaceShort": "Reemplazar",
-      "tagModeRemoveShort": "Eliminar",
+      "tagModeAddShort": "Add",
+      "tagModeReplaceShort": "Replace",
+      "tagModeRemoveShort": "Remove",
       "tagModeAddHint": "Conserva las etiquetas actuales y añade estas.",
       "tagModeReplaceHint": "Elimina todas las etiquetas actuales, luego añade estas",
       "tagModeRemoveHint": "Elimina solamente estas etiquetas. Las otras etiquetas permanecen.",
       "totals": {
-        "income": "Ingreso",
-        "expense": "Gasto",
-        "net": "Neto",
-        "transfers": "Transferencias"
+        "income": "Income",
+        "expense": "Expense",
+        "net": "Net",
+        "transfers": "Transfers"
       }
     },
     "transactionGroups": {
@@ -170,12 +170,12 @@
         "loadError": "No se han podido cargar las transacciones",
         "description": "Agrupar transacciones relacionadas, como un viaje o una cadena de transferencia, y verlas juntos.",
         "noMatchTitle": "Ningún grupo coincide con su búsqueda",
-        "moreActions": "Más acciones para {name}",
+        "moreActions": "More actions for {name}",
         "columns": {
-          "name": "Nombre",
-          "transactions": "Transacciones",
-          "date": "Fecha",
-          "net": "Neto"
+          "name": "Name",
+          "transactions": "Transactions",
+          "date": "Date",
+          "net": "Net"
         },
         "sort": {
           "label": "Ordenar grupos",
@@ -203,7 +203,7 @@
       "mergedTooltip": "Confirmada a partir de un movimiento planificado del {date}"
     },
     "pending": {
-      "label": "Pendiente",
+      "label": "Pending",
       "tooltip": "El banco no ha reservado esta transacción todavía. No afecta el saldo de la cuenta."
     },
     "table": {
@@ -270,37 +270,37 @@
       "bankDescription": "Fecha, cuenta y cantidad sincronizada desde tu conexión bancaria. Todo lo demás en esta transacción es tuyo para cambiar.",
       "managedTitle": "Administrado en otro lugar",
       "managedDescription": "Esta transacción pertenece a un portafolio, inversión, vehículo o préstamo. Cambia desde su propia página para que los balances permanezcan correctos.",
-      "gotIt": "Entendido",
+      "gotIt": "Got it",
       "openDetails": "Abrir detalles",
       "tooManyTags": "Hasta {max} etiquetas por transacción"
     },
     "savedViews": {
-      "trigger": "Vistas",
+      "trigger": "Views",
       "empty": "No hay vistas guardadas todavía. Configure los filtros, luego guárdelos como una vista.",
       "modified": "Filtros modificados.",
       "update": "Actualizar “{name}” con los filtros actuales",
       "updateShort": "Actualizar vista",
-      "revert": "Revertir",
+      "revert": "Revert",
       "saveNew": "Guardar como nueva vista",
       "actions": "Ver acciones",
-      "rename": "Renombrar",
+      "rename": "Rename",
       "moveUp": "Mover arriba",
       "moveDown": "Mover abajo",
-      "saveTitle": "Guardar vista",
+      "saveTitle": "Save view",
       "renameTitle": "Renombrar vista",
       "dialogDescription": "Una vista mantiene los filtros y ordenamientos actuales para que pueda aplicarlos de nuevo en un solo clic.",
-      "nameLabel": "Nombre",
+      "nameLabel": "Name",
       "namePlaceholder": "ej. Supermercado, últimos 3 meses",
-      "savedToast": "Vista guardada",
+      "savedToast": "View saved",
       "updatedToast": "Vista actualizada",
-      "deletedToast": "Vista eliminada",
+      "deletedToast": "View deleted",
       "saveError": "No se pudo guardar sus vistas. Inténtelo de nuevo.",
       "deleteTitle": "¿Eliminar la vista “{name}”?",
       "deleteDescription": "Tus transacciones no se han visto afectadas. Esto no se puede deshacer.",
       "filtersCount": "{count} filtro | {count} filtros"
     },
     "trashPage": {
-      "title": "Papelera",
+      "title": "Trash",
       "description": "Newest deletions first. Each is removed for good after {days} days. Pick one to see what comes back with it.",
       "expiringBanner": "{count} will be deleted permanently within {days}.",
       "expiringCount": "1 transaction | {count} transactions",
@@ -312,8 +312,8 @@
       "deletedOn": "deleted {date}",
       "transferTitle": "Transfer from {from} to {to}",
       "unknownAccount": "Unknown account",
-      "restore": "Restaurar",
-      "deletePermanently": "Eliminar permanentemente",
+      "restore": "Restore",
+      "deletePermanently": "Delete permanently",
       "deleteConfirmTitle": "Delete permanently?",
       "deleteConfirmDescription": "This transaction will be removed for good. This can't be undone.",
       "notifications": {
@@ -339,7 +339,7 @@
           "group": "Group \"{name}\"",
           "subscription": "Subscription \"{name}\"",
           "subscriptionPeriod": "Subscription payment due {name}",
-          "unnamed": "Sin título"
+          "unnamed": "Untitled"
         }
       }
     }

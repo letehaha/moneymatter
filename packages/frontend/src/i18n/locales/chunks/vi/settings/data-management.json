@@ -58,7 +58,7 @@
         "cardTitle": "Xuất dữ liệu của bạn",
         "backupOrExportHint": "Chưa biết nên chọn Xuất hay Sao lưu?",
         "form": {
-          "title": "Xuất dữ liệu của bạn",
+          "title": "Export your data",
           "description": "Chọn định dạng và những phần dữ liệu bạn muốn xuất. Tệp sẽ bắt đầu tải xuống ngay sau khi bạn xác nhận.",
           "confirmLabel": "Tải xuống",
           "confirmLoading": "Đang chuẩn bị…",
@@ -97,7 +97,7 @@
           "clear": "Xóa khoảng thời gian"
         },
         "accounts": {
-          "label": "Tài khoản",
+          "label": "Accounts",
           "helper": "Chỉ xuất các tài khoản được chọn cùng các giao dịch và lịch sử số dư của chúng. Để trống để xuất tất cả tài khoản.",
           "placeholder": "Tất cả tài khoản"
         },

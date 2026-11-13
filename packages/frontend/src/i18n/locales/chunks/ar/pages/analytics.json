@@ -257,9 +257,9 @@
         "countsTitle": "What counts toward FIRE",
         "countsCash": "Cash & bank accounts",
         "countsPortfolios": "Investment portfolios",
-        "countsVentures": "المشاريع",
+        "countsVentures": "Ventures",
         "countsVehicles": "Vehicles",
-        "countsLoans": "القروض",
+        "countsLoans": "Loans",
         "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
         "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",
         "archivedNoteLink": "Review",
@@ -654,7 +654,7 @@
       "cash": "Cash & accounts",
       "investments": "Investments",
       "vehicles": "Vehicles",
-      "ventures": "المشاريع"
+      "ventures": "Ventures"
     },
     "assetFilter": {
       "all": "All assets",

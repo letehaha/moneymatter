@@ -33,7 +33,7 @@
           "title": "Passkeys",
           "noPasskeys": "No passkeys registered",
           "passkeyCount": "{count} passkey(s) registered",
-          "addButton": "إضافة Passkey",
+          "addButton": "Add passkey",
           "passkeyName": "Passkey",
           "added": "Added {date}",
           "rename": "Rename",
@@ -67,10 +67,10 @@
           "unknownBrowser": "Unknown browser"
         },
         "timeAgo": {
-          "justNow": "الآن",
-          "minutesAgo": "منذ {count} دققيقة | منذ {count} دقيقة",
-          "hoursAgo": "منذ {count} ساعة | منذ {count} ساعة",
-          "daysAgo": "منذ {count} يوم | منذ {count} يوم"
+          "justNow": "Just now",
+          "minutesAgo": "{count} minute ago | {count} minutes ago",
+          "hoursAgo": "{count} hour ago | {count} hours ago",
+          "daysAgo": "{count} day ago | {count} days ago"
         },
         "notifications": {
           "revokeSuccess": "Session revoked",

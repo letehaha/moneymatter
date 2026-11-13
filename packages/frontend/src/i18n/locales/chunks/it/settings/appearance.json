@@ -2,7 +2,7 @@
   "settings": {
     "appearance": {
       "title": "Aspetto",
-      "description": "Personalizzare l'aspetto dell'app e le sezioni visibili nella barra laterale.",
+      "description": "Personalizza l'aspetto dell'app e le sezioni visibili nella barra laterale.",
       "theme": {
         "title": "Tema",
         "description": "Scegliere tra tema chiaro e tema scuro. L'opzione Sistema segue l'impostazione del dispositivo."

@@ -61,26 +61,26 @@
         "topN": "Primeros {count}",
         "totalIncome": "Ingreso total",
         "incomePlusDeficit": "Ingreso + déficit",
-        "savings": "Ahorro",
-        "taxes": "Impuestos",
+        "savings": "Savings",
+        "taxes": "Taxes",
         "deficit": "Déficit",
-        "other": "Otro",
+        "other": "Other",
         "noData": "No se registraron transacciones para este período",
         "noDataHint": "Elige otro período o haz clic en una barra en el gráfico de arriba",
         "loadError": "Error al cargar las transacciones",
-        "amount": "Importe",
+        "amount": "Amount",
         "shareOfIncome": "Porcentaje del ingreso",
         "shareOfExpenses": "Compartir gastos",
-        "saved": "Ahorrado",
+        "saved": "Saved",
         "pctOfIncome": "{pct} de ingreso",
         "pctSavingsRate": "Tasa de ahorro {pct}",
         "keptAsCash": "Mantener como efectivo",
-        "shareOfSavings": "Parte del ahorro",
+        "shareOfSavings": "Share of savings",
         "deficitOverspend": "Los gastos superaron los ingresos de {amount}. La brecha se cubrió con los saldos de cuentas existentes.",
         "deficitInvested": "Las contribuciones a la cartera ({invested}) superaron el ahorro neto de este período ({saved}). La diferencia se produjo con los saldos de cuentas existentes.",
         "deficitBoth": "Los gastos superaron los ingresos de {overspend} y {invested} se trasladó a portafolios. Ambos se cubrieron de los saldos de cuentas existentes.",
-        "andMore": "+{count} más",
-        "settings": "Ajustes del gráfico"
+        "andMore": "+{count} more",
+        "settings": "Chart settings"
       }
     },
     "trends": {
@@ -97,13 +97,13 @@
       },
       "scope": {
         "label": "Category scope",
-        "all": "Todas las categorías",
+        "all": "All categories",
         "up": "Up one level",
-        "transactions": "Transacciones",
-        "count": "{count} categoría | {count} categorías",
+        "transactions": "Transactions",
+        "count": "{count} category | {count} categories",
         "more": "+{count}",
         "allExcept": "All except {list}",
-        "clear": "Limpiar"
+        "clear": "Clear"
       },
       "categoryBreakdown": {
         "title": "Desglose por categorías",
@@ -112,8 +112,8 @@
         "moreCount": "{count} más",
         "noSubcategory": "{name} · no subcategory",
         "byLevel": "By level",
-        "detail": "Detalle",
-        "others": "Otros"
+        "detail": "Detail",
+        "others": "Others"
       },
       "hero": {
         "vsPrevious": "{percent}% vs previous period",
@@ -121,16 +121,16 @@
       },
       "overTime": {
         "title": "Over time",
-        "cumulative": "Acumulativo",
+        "cumulative": "Cumulative",
         "perPeriod": "Per period",
         "granularity": {
-          "monthly": "Mensual",
-          "quarterly": "Trimestral",
-          "yearly": "Anual"
+          "monthly": "Monthly",
+          "quarterly": "Quarterly",
+          "yearly": "Yearly"
         }
       },
       "transactionsCard": {
-        "title": "Transacciones",
+        "title": "Transactions",
         "largest": "Largest",
         "recent": "Recent"
       },
@@ -139,7 +139,7 @@
         "average": "Media",
         "total": "Total",
         "vsPrevious": {
-          "monthly": "vs. el mes pasado",
+          "monthly": "vs last month",
           "quarterly": "vs last quarter",
           "yearly": "vs last year"
         },
@@ -150,14 +150,14 @@
         }
       },
       "filters": {
-        "button": "Filtros",
-        "title": "Filtros",
+        "button": "Filters",
+        "title": "Filters",
         "include": "Incluir",
-        "exclude": "Excluir",
-        "accounts": "Cuentas",
-        "payees": "Beneficiarios",
-        "tags": "Etiquetas",
-        "reset": "Restablecer"
+        "exclude": "Exclude",
+        "accounts": "Accounts",
+        "payees": "Payees",
+        "tags": "Tags",
+        "reset": "Reset"
       },
       "legend": {
         "hide": "Ocultar del gráfico",
@@ -199,8 +199,8 @@
       "portfolioReturnOption": "{name} (su ~{rate}%/año)",
       "portfolioNoHistoryOption": "{name} — historial insuficiente",
       "presetReturnOption": "{label} (~{rate}%/año)",
-      "rangeMin": "Mín.",
-      "rangeMax": "Máx.",
+      "rangeMin": "Min",
+      "rangeMax": "Max",
       "indicators": {
         "worldStock": "Stock total mundial",
         "usTreasury": "Bonos de Tesorería de Estados Unidos",
@@ -237,20 +237,20 @@
         "hideTitle": "¿Ocultar esta advertencia?",
         "hideDescription": "Regresa la próxima vez que abra el planificador.",
         "dontShowAgain": "No mostrar de nuevo",
-        "hideConfirm": "Ocultar"
+        "hideConfirm": "Hide"
       },
       "assumptions": {
-        "title": "Supuestos",
+        "title": "Assumptions",
         "spendingLabel": "Gastos anuales en jubilación",
         "spendingPlaceholder": "Ej.: 40000",
         "requiredBadge": "Obligatorio",
         "autoSpendingHint": "Promedio del último mes completo {n} × 12, solo las cuentas que posees y las categorías de ahorro excluidas. Mes típico: {typical}. Incluye préstamos y pagos de hipoteca. | Promedio de los últimos {n} meses completos × 12, sólo las cuentas que usted posee, las transferencias y categorías de ahorro excluidos. Mes típico: {typical}. Incluye préstamos y pagos de mortalidad.",
         "backToAuto": "Regresar a Auto ({amount})",
         "excludedLabel": "No contabilizar como gasto",
-        "excludedPlaceholder": "Excluir categorías",
+        "excludedPlaceholder": "Exclude categories",
         "savingsNote": "Las categorías de ahorro también están excluidas. {link}",
-        "savingsNoteLink": "Editar",
-        "contributionLabel": "Aportación mensual",
+        "savingsNoteLink": "Edit",
+        "contributionLabel": "Monthly contribution",
         "contributionPlaceholder": "Ej.: 1500",
         "autoContributionHint": "El flujo neto promedio a lo largo del mismo {n} mes. Los depósitos realizados directamente a un portafolio no están en el flujo de efectivo, así que añádelos aquí. Dividendas pagadas a una cuenta bancaria dos veces (ingresos y devolución). | Un flujo neto promedio a lo largo de los mismos {n} meses. Los depósitos realizados directamente en un portafolio no están en flujo de efectivo, así que añádelos aquí. Dividendas pagadas a una cuenta bancaria dos veces (ingresos y devolución).",
         "savingsRate": "Ahorras {pct} de tus ingresos",
@@ -258,20 +258,20 @@
         "countsCash": "Cuentas bancarias y en efectivo",
         "countsPortfolios": "Carteras de inversión",
         "countsVentures": "Ventures",
-        "countsVehicles": "Vehículos",
-        "countsLoans": "Préstamos",
+        "countsVehicles": "Vehicles",
+        "countsLoans": "Loans",
         "countsHint": "El efectivo y las carteras siempre se contabilizan. Los pagos de préstamos ya se consideran gastos, por lo que los préstamos están excluidos por defecto.",
         "archivedNote": "Cuenta archivada de {count} excluido de estadísticas todavía tiene {amount}. {link} | Cuentas archivadas de {count} excluidas de estadísticas todavía mantienen {amount}. {link}",
-        "archivedNoteLink": "Revisar",
+        "archivedNoteLink": "Review",
         "presetLabel": "{label} ·{real} real ({nominal} nominal, {inflation} inflación estadounidense)",
         "inflationLabel": "Inflación",
         "inflationBuiltIn": "{pct}% · incorporado en este ajuste",
         "inflationBuiltInHint": "Los ajustes preestablecidos del mercado son rendimientos nominales globales y estadounidenses, por lo que vienen con inflación estadounidense. Emparejarlos con tu inflación local daría números engañosos. Elige un retorno personalizado o tu cartera para establecer la inflación tú mismo.",
         "withdrawalLabel": "Tasa de retiro",
-        "withdrawalCustom": "Personalizado",
+        "withdrawalCustom": "Custom",
         "withdrawalPlaceholder": "Ej.: 3.8",
         "withdrawalHint": "La parte de sus ahorros que usted retira cada año. Una tarifa más alta significa un número de FIRE más pequeño pero un mayor riesgo de agotarse. La regla del 4% proviene de datos estadounidenses para jubilaciones de 30 años.",
-        "more": "Más",
+        "more": "More",
         "moreSummary": "Lean {lean}× · Fat {fat}× · Coast en {age}",
         "leanLabel": "Multiplicador de Lean FIRE",
         "leanPlaceholder": "Ej.: 0.7",
@@ -315,7 +315,7 @@
           "noSavingsTitle": "No hay nuevos ahorros.",
           "noSavingsClamped": "Has gastado más de lo que has ganado en los últimos 12 meses, por lo que la proyección no supone nuevos ahorros.",
           "noSavings": "Tu contribución mensual es 0 o menos.",
-          "enterContribution": "Ingrese una contribución",
+          "enterContribution": "Enter a contribution",
           "lowReturnTitle": "El retorno no supera la inflación.",
           "lowReturn": "El equilibrio se contrae en el dinero de hoy.",
           "tooSlow": "A este ritmo tarda más de 50 años.",
@@ -358,11 +358,11 @@
           "pastAge": "has pasado la edad de tu coast de {age}",
           "notMeaningful": "el crecimiento por sí solo no puede llegar al 0% de retorno real o menos"
         },
-        "others": "Otros",
+        "others": "Others",
         "nextGoal": "{name} · siguiente",
         "eta": "en {duration}",
         "growthOnly": "solo crecimiento",
-        "reached": "Alcanzado",
+        "reached": "Reached",
         "reachedCoast": "Alcanzado · guardar es opcional ahora",
         "reachedBaristaCovers": "Los ingresos a tiempo parcial cubren sus gastos",
         "actions": {
@@ -385,8 +385,8 @@
           "rollingHint": "En curso · actualmente {month}",
           "specific": "Mes específico",
           "specificHint": "Permanece fijas",
-          "prevYear": "Año anterior",
-          "nextYear": "Próximo año",
+          "prevYear": "Previous year",
+          "nextYear": "Next year",
           "earliest": "La más temprana es {month}. FIRE necesita 3 meses de gasto rastreado antes de ella."
         },
         "details": {
@@ -396,11 +396,11 @@
           "backInReach": "Los números de {month}estaban fuera de alcance. Ahora es {date}.",
           "offTrack": "La previsión para {month} fue del {date}. Con las cifras actuales, el movimiento FIRE queda fuera de alcance.",
           "metric": "Métrica",
-          "today": "Hoy",
-          "change": "Cambiar",
+          "today": "Today",
+          "change": "Change",
           "fireDate": "Fecha FIRE",
           "saved": "Guardado por ahora",
-          "spending": "Gasto",
+          "spending": "Spending",
           "saving": "Guardando",
           "expected": "{amount} esperado",
           "sooner": "{duration} antes",
@@ -417,7 +417,7 @@
         "actual": "Actual",
         "projected": "Proyectado",
         "range": "±2 pts de retorno",
-        "today": "Hoy",
+        "today": "Today",
         "typeTarget": "{type} · {amount}",
         "typeLabel": "{type} · {date}",
         "forecast": "Previsión de {month}",
@@ -425,7 +425,7 @@
         "actualSince": "Actual desde {month}"
       },
       "milestones": {
-        "reached": "Alcanzado",
+        "reached": "Reached",
         "reachedOn": "Alcanzo {date}",
         "eta": "en {duration} · {date}"
       },
@@ -486,9 +486,9 @@
     "filters": {
       "period": "Período",
       "allCategories": "Todo",
-      "button": "Filtros",
-      "categories": "Categorías",
-      "payees": "Beneficiarios",
+      "button": "Filters",
+      "categories": "Categories",
+      "payees": "Payees",
       "accounts": "Cuentas",
       "reset": "Restablecer",
       "resetTooltip": "Restablecer a valores predeterminados"
@@ -517,7 +517,7 @@
     },
     "table": {
       "total": "Total",
-      "net": "Neto",
+      "net": "Net",
       "collapseAll": "Contraer todo",
       "expandAll": "Expandir todo",
       "expandRow": "Expandir",

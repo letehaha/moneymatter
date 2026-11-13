@@ -280,7 +280,7 @@
       "lenderNameLabel": "Finanziatore",
       "lenderNamePlaceholder": "es. Intesa Sanpaolo, UniCredit",
       "accountNumberLabel": "Numero del conto / prestito",
-      "accountNumberPlaceholder": "Opzionale",
+      "accountNumberPlaceholder": "Facoltativo",
       "currentBalanceLabel": "Debito residuo attuale",
       "balanceAsOfLabel": "Saldo al",
       "balanceAsOfPlaceholder": "GG/MM/AAAA",

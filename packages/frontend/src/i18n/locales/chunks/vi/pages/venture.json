@@ -10,7 +10,7 @@
       "emptyTitle": "No platforms yet",
       "emptyDescription": "Add the syndicates or GPs you invest through (e.g., Acme Ventures, AngelList). Configure default fees once — applied to all deals on that platform.",
       "editTooltip": "Edit",
-      "deleteTooltip": "Xóa",
+      "deleteTooltip": "Delete",
       "entryFee": "Entry fee",
       "mgmtFee": "Mgmt fee",
       "carry": "Carry",
@@ -21,7 +21,7 @@
       "editDialogDescription": "Updates apply to future deals. Existing deals keep their original fee snapshots.",
       "deleteTitle": "Delete platform?",
       "deleteDescription": "{name} will be removed. Deals on this platform stay but lose their platform link. This can be undone via the trash.",
-      "deleteConfirm": "Xóa",
+      "deleteConfirm": "Delete",
       "notifications": {
         "created": "Platform created",
         "updated": "Platform updated",
@@ -29,7 +29,7 @@
         "error": "Something went wrong"
       },
       "form": {
-        "nameLabel": "Tên",
+        "nameLabel": "Name",
         "namePlaceholder": "Acme Ventures",
         "nameRequired": "Name is required",
         "websiteLabel": "Website",
@@ -41,14 +41,14 @@
         "carryLabel": "Default carry %",
         "hurdleLabel": "Default hurdle %",
         "percentInvalid": "Must be between 0 and 100",
-        "cancel": "Hủy",
-        "save": "Lưu",
+        "cancel": "Cancel",
+        "save": "Save",
         "create": "Create",
         "saving": "Saving…"
       }
     },
     "metrics": {
-      "costBasis": "Giá vốn",
+      "costBasis": "Cost basis",
       "currentValue": "Current value",
       "totalDistributions": "Distributions",
       "pnl": "P&L",
@@ -108,7 +108,7 @@
         "pickAnotherTransaction": "Add another transaction",
         "removeLinkedTransaction": "Remove linked transaction",
         "linkedSummary": "Linked {total} across {count} transaction(s)",
-        "cancel": "Hủy",
+        "cancel": "Cancel",
         "create": "Create",
         "saving": "Saving…"
       },
@@ -128,10 +128,10 @@
       "editDialogDescription": "Updates apply going forward; historical event values are not retroactively recalculated.",
       "backToDeals": "Back to deals",
       "edit": "Edit",
-      "delete": "Xóa",
+      "delete": "Delete",
       "deleteTitle": "Delete deal?",
       "deleteDescription": "{name} will be removed along with all its events. This can be undone via the trash.",
-      "deleteConfirm": "Xóa",
+      "deleteConfirm": "Delete",
       "principal": "Principal",
       "entryFee": "Entry fee",
       "carry": "Carry",
@@ -153,14 +153,14 @@
         "error": "Something went wrong"
       },
       "form": {
-        "nameLabel": "Tên",
+        "nameLabel": "Name",
         "namePlaceholder": "SK 116 — Founder Factor YC W26",
         "nameRequired": "Name is required",
         "platformLabel": "Platform",
         "platformPlaceholder": "Select platform (optional)",
         "noPlatform": "No platform",
-        "currencyLabel": "Đơn vị tiền tệ",
-        "currencyPlaceholder": "Đơn vị tiền tệ",
+        "currencyLabel": "Currency",
+        "currencyPlaceholder": "Currency",
         "subtypeLabel": "SPV type",
         "subtypeMulti": "Multi-company",
         "subtypeSingle": "Single-company",
@@ -188,8 +188,8 @@
         "percentInvalid": "Must be between 0 and 100",
         "notesLabel": "Notes",
         "notesPlaceholder": "Optional notes about this deal",
-        "cancel": "Hủy",
-        "save": "Lưu",
+        "cancel": "Cancel",
+        "save": "Save",
         "create": "Create",
         "saving": "Saving…"
       }

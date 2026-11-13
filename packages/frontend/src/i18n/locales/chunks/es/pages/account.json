@@ -177,8 +177,8 @@
         "accountCategoryUpdateError": "Error al actualizar la categoría de cuenta",
         "defaultPaymentType": "Tipo de pago por defecto:",
         "editDefaultPaymentType": "Editar tipo de pago por defecto",
-        "defaultPaymentTypeUpdateSuccess": "Tipo de pago por defecto actualizado",
-        "defaultPaymentTypeUpdateError": "Error al actualizar el tipo de pago predeterminado",
+        "defaultPaymentTypeUpdateSuccess": "Default payment type updated",
+        "defaultPaymentTypeUpdateError": "Failed to update default payment type",
         "currency": "Moneda:",
         "main": "(principal)",
         "exchangeRate": "Tipo de cambio:",
@@ -226,7 +226,7 @@
         "description": "Pega las filas pendientes en las transacciones reservadas que las reemplazaron.",
         "button": "Fusionar duplicados",
         "running": "Fusionando…",
-        "confirm": "Combinar",
+        "confirm": "Merge",
         "confirmTitle": "¿Fusionar transacciones duplicadas?",
         "confirmDescription": "Los registros pendientes que coincidan con una transacción reservada en esta cuenta serán eliminados. Notas y categorías que ha establecido al mover a la transacción reservada. Esto no se puede deshacer.",
         "result": "Fusionado {merged} duplicado(s), omitió {skipped}.",
@@ -245,7 +245,7 @@
       },
       "rightPanel": {
         "transactions": "Transacciones",
-        "viewAll": "Ver todo",
+        "viewAll": "View all",
         "analyticsSoon": "Analítica (próximamente)"
       },
       "integrations": {

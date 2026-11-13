@@ -12,8 +12,8 @@
       "error": "Unexpected error!",
       "nameLabel": "Tracker name",
       "namePlaceholder": "Enter the name",
-      "fromDateLabel": "起始日期",
-      "toDateLabel": "结束日期",
+      "fromDateLabel": "From date",
+      "toDateLabel": "To date",
       "limitPlaceholder": "Enter the limit",
       "submitButton": "Add tracker"
     },
@@ -34,7 +34,7 @@
           "label": "Income target",
           "hint": "Earn at least this much. Green while you're on pace, and going over is a win.",
           "guide": "For money you want to bring in: yearly salary, freelance revenue, rental income. Green while on pace; going over is a win.",
-          "amountLabel": "目标金额"
+          "amountLabel": "Target amount"
         },
         "income_cap": {
           "label": "Income cap",
@@ -48,8 +48,8 @@
       "loadError": "Couldn't load trackers.",
       "tabCategory": "Category trackers",
       "tabManual": "Manual trackers",
-      "edit": "编辑",
-      "delete": "删除",
+      "edit": "Edit",
+      "delete": "Delete",
       "deleteSuccess": "Tracker deleted successfully!",
       "deleteError": "Unexpected error!",
       "updateSuccess": "Tracker updated successfully!",
@@ -129,11 +129,11 @@
       },
       "archivePrompt": {
         "title": "Archive \"{name}\"?",
-        "endedDaysAgo": "{count} 天前 | {count} 天前",
-        "endedMonthsAgo": "{count} 个月前 | {count} 个月前",
+        "endedDaysAgo": "{count} day ago | {count} days ago",
+        "endedMonthsAgo": "{count} month ago | {count} months ago",
         "description": "It ended {ago}. Archived trackers move to the Archived group and keep their transactions and statistics. You can unarchive any time.",
         "dontAsk": "Don't ask for this tracker",
-        "notNow": "以后再说",
+        "notNow": "Not now",
         "dismissError": "Failed to update tracker",
         "dismissSuccess": "Got it. We won't suggest archiving this tracker again."
       }
@@ -152,7 +152,7 @@
       "clearSelection": "Clear selection"
     },
     "manualBudget": {
-      "edit": "编辑",
+      "edit": "Edit",
       "editTitle": "Edit tracker"
     },
     "share": {
@@ -245,7 +245,7 @@
         "nameLabel": "Name",
         "namePlaceholder": "e.g. Hotels",
         "nameRequired": "Enter a name",
-        "categoriesLabel": "分类",
+        "categoriesLabel": "Categories",
         "categoriesPlaceholder": "Pick categories",
         "categoriesRequired": "Pick at least one category",
         "limitLabel": "Limit (optional)",
@@ -268,7 +268,7 @@
       "switchHintOn": "Your transactions in the date range with any of these categories or tags get added.",
       "switchHintOff": "Only transactions you add by hand count.",
       "switchHintTurnedOff": "Turning this off keeps every transaction already added.",
-      "categoriesLabel": "分类",
+      "categoriesLabel": "Categories",
       "categoriesPlaceholder": "Select categories",
       "tagsLabel": "Tags",
       "tagsPlaceholder": "Select tags",
@@ -346,7 +346,7 @@
         "checkedAt": "checked {when}",
         "review": "Review",
         "idle": "Smart tracking is on · nothing new to review",
-        "settings": "设置",
+        "settings": "Settings",
         "paused": "Paused",
         "allowanceUsed": "AI allowance used up",
         "unavailable": "AI connection stopped working",
@@ -367,7 +367,7 @@
           "likely": "Likely",
           "possible": "Possible"
         },
-        "add": "添加",
+        "add": "Add",
         "skip": "Skip",
         "addAria": "Add {name} to {tracker}",
         "skipAria": "Skip {name}",

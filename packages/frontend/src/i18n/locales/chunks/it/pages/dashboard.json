@@ -17,7 +17,7 @@
         "balanceTypes": {
           "total": "Totale",
           "accounts": "Conti",
-          "portfolios": "Portafoglio",
+          "portfolios": "Portafogli",
           "ventures": "Venture capital",
           "vehicles": "Veicoli",
           "loans": "Prestiti & Finanziamenti"
@@ -34,7 +34,7 @@
         "vsPreviousPeriod": "rispetto al periodo precedente",
         "spikePanel": {
           "accounts": "Conti",
-          "portfolios": "Portafoglio",
+          "portfolios": "Portafogli",
           "priceDrivenChange": "Variazione dovuta ai prezzi: dettagli delle transazioni in arrivo",
           "noSignificantTransactions": "Nessuna transazione significativa per questa data.",
           "seeAllTransactions": "Vedi tutte le transazioni"
@@ -89,7 +89,7 @@
         "openInAnalytics": "Apri in Dati analitici",
         "metric": {
           "expenses": "Spese",
-          "income": "Entrata"
+          "income": "Entrate"
         },
         "seeTransactions": "Vedi transazioni"
       },
@@ -261,7 +261,7 @@
         }
       },
       "plannedOverview": {
-        "title": "Transazioni pianificate",
+        "title": "Pianificati",
         "projectedBy": "Previsto al {date}",
         "upcoming": "In scadenza · {count}",
         "loadFailed": "Impossibile caricare le transazioni pianificate"
@@ -332,15 +332,15 @@
         "targetTooltip": "Obiettivo: {value}%",
         "settings": {
           "tagsLabel": "Etichette",
-          "tagsPlaceholder": "Seleziona etichette",
+          "tagsPlaceholder": "Selezionare le etichette",
           "targetsLabel": "Obiettivi, %",
           "targetsNoneSet": "Nessuno impostato",
           "targetsSetCount": "{set} di {total} impostati",
           "targetsEmpty": "Aggiungere prima le etichette per impostarne gli obiettivi",
-          "targetPlaceholder": "Nessuna",
+          "targetPlaceholder": "Nessuno",
           "percentBaseLabel": "Percentuale di",
           "percentBaseTags": "Etichette selezionate",
-          "percentBaseIncome": "Entrata",
+          "percentBaseIncome": "Entrate",
           "includeTransfersLabel": "Includere i trasferimenti",
           "includeTransfersDescription": "Conteggiare come spesa i trasferimenti verso i propri conti e portafogli"
         }

@@ -1,6 +1,6 @@
 {
   "automations": {
-    "title": "الأتمتة",
+    "title": "Automations",
     "subtitle": "Run on new transactions from bank sync and file imports. First matching rule wins — drag a rule to reorder.",
     "newAutomation": "New automation",
     "new": "New",

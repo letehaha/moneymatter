@@ -2,14 +2,14 @@
   "pages": {
     "importExport": {
       "importHistory": {
-        "pageTitle": "Importverlauf",
+        "pageTitle": "Import history",
         "pageDescription": "Sieh deine vergangenen Importe ein und prüfe genau, welche Konten und Transaktionen jeweils erstellt wurden.",
         "loadError": "Dein Importverlauf konnte nicht geladen werden.",
         "emptyTitle": "Noch keine Importe",
         "emptyDescription": "Sobald du Transaktionen importierst, werden sie hier angezeigt.",
-        "emptyAction": "Daten importieren",
-        "transactionCount": "{count} Transaktion | {count} Transaktionen",
-        "accountCount": "{count} Konto | {count} Konten",
+        "emptyAction": "Import data",
+        "transactionCount": "{count} transaction | {count} transactions",
+        "accountCount": "{count} account | {count} accounts",
         "deleteButton": "Import löschen",
         "deleteConfirmTitle": "Diesen Import löschen?",
         "deleteConfirmDescription": "Dies wird {count} Transaktion aus diesem Import dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden. | Dies wird {count} Transaktionen aus diesem Import dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden.",

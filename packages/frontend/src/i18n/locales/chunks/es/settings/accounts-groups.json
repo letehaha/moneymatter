@@ -44,16 +44,16 @@
         "rename": {
           "title": "Renombrar grupo",
           "description": "Haga clic en el logotipo para elegir un logotipo de banco, iniciales o un color.",
-          "submit": "Guardar cambios"
+          "submit": "Save changes"
         },
         "move": {
-          "title": "Mover «{name}»",
+          "title": "Move “{name}”",
           "description": "Sus subgrupos y cuentas se mueven con ella.",
           "parentLabel": "Grupo padre",
           "parentPlaceholder": "Seleccionar grupo padre",
           "noParent": "Ningún padre",
           "hint": "Elige \"Sin padre\" para convertirlo en un grupo de alto nivel.",
-          "submit": "Mover"
+          "submit": "Move"
         },
         "addAccounts": {
           "title": "Añadir cuentas a “{name}”",
@@ -77,24 +77,24 @@
       },
       "tree": {
         "groupsCount": "{count} grupo | {count} grupos",
-        "syncedBadge": "Sincronizado",
-        "expand": "Expandir",
-        "collapse": "Contraer",
-        "renameTooltip": "Renombrar",
-        "moreActions": "Más acciones",
+        "syncedBadge": "Synced",
+        "expand": "Expand",
+        "collapse": "Collapse",
+        "renameTooltip": "Rename",
+        "moreActions": "More actions",
         "menu": {
           "rename": "Cambiar el nombre y el logotipo",
           "move": "Mover a otro grupo",
-          "newSubgroup": "Nuevo subgrupo",
+          "newSubgroup": "New subgroup",
           "addAccounts": "Añadir cuentas",
-          "delete": "Eliminar grupo"
+          "delete": "Delete group"
         }
       },
       "organize": {
-        "button": "Organización",
+        "button": "Organize",
         "hint": "Arrastra un grupo a otro para anidarlo",
-        "save": "Guardar cambios",
-        "topLevel": "Nivel superior",
+        "save": "Save changes",
+        "topLevel": "Top level",
         "dropToTopLevel": "Suelte aquí para convertir «{name}» en una categoría de nivel superior",
         "movesCount": "Mover {count} | Mover {count}",
         "moveInside": "Mover dentro",

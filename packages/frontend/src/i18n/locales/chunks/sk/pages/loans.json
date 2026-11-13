@@ -76,8 +76,8 @@
       "interestPaid": "Zaplatený úrok (odhad)"
     },
     "archivedList": {
-      "sectionTitle": "Archivované",
-      "badge": "Archivované",
+      "sectionTitle": "Archivovaný",
+      "badge": "Archivovaný",
       "outstanding": "Nesplatené"
     },
     "aggregate": {

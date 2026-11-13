@@ -37,7 +37,13 @@
       "auto": "Auto",
       "name": "Nom",
       "balance": "Solde",
-      "ariaLabel": "Trier les comptes"
+      "ariaLabel": "Trier les comptes",
+      "direction": {
+        "aToZ": "A to Z",
+        "zToA": "Z to A",
+        "highestFirst": "Highest first",
+        "lowestFirst": "Lowest first"
+      }
     },
     "status": {
       "active": "Actif",

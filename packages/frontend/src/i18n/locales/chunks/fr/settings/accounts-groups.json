@@ -44,16 +44,16 @@
         "rename": {
           "title": "Renommer le groupe",
           "description": "Cliquez sur le logo pour choisir un logo de banque, des initiales ou une couleur.",
-          "submit": "Enregistrer les modifications"
+          "submit": "Save changes"
         },
         "move": {
-          "title": "Déplacer « {name} »",
+          "title": "Move “{name}”",
           "description": "Ses sous-groupes et ses comptes seront déplacés avec lui.",
           "parentLabel": "Groupe parent",
           "parentPlaceholder": "Sélectionner un groupe parent",
           "noParent": "Aucun groupe parent",
           "hint": "Choisissez « Aucun groupe parent » pour placer ce groupe au premier niveau.",
-          "submit": "Déplacer"
+          "submit": "Move"
         },
         "addAccounts": {
           "title": "Ajouter des comptes à « {name} »",
@@ -77,24 +77,24 @@
       },
       "tree": {
         "groupsCount": "{count} groupe | {count} groupes",
-        "syncedBadge": "Synchronisé",
-        "expand": "Développer",
-        "collapse": "Réduire",
-        "renameTooltip": "Renommer",
-        "moreActions": "Plus d'actions",
+        "syncedBadge": "Synced",
+        "expand": "Expand",
+        "collapse": "Collapse",
+        "renameTooltip": "Rename",
+        "moreActions": "More actions",
         "menu": {
           "rename": "Renommer et modifier le logo",
           "move": "Déplacer vers un autre groupe",
           "newSubgroup": "Nouveau sous-groupe",
           "addAccounts": "Ajouter des comptes",
-          "delete": "Supprimer le groupe"
+          "delete": "Delete group"
         }
       },
       "organize": {
-        "button": "Organiser",
+        "button": "Organize",
         "hint": "Faites glisser un groupe sur un autre pour l'imbriquer",
-        "save": "Enregistrer les modifications",
-        "topLevel": "Niveau supérieur",
+        "save": "Save changes",
+        "topLevel": "Top level",
         "dropToTopLevel": "Déposez ici pour placer « {name} » au premier niveau",
         "movesCount": "{count} déplacement | {count} déplacements",
         "moveInside": "Déplacer à l'intérieur",

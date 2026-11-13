@@ -1,6 +1,6 @@
 {
   "budgets": {
-    "title": "Ngân sách",
+    "title": "Trackers",
     "description": "Theo dõi chi tiêu và giám sát các sự kiện tài chính.",
     "notFound": "Không tìm thấy ngân sách",
     "notFoundDescription": "Không tìm thấy ngân sách này. Có thể ngân sách đã bị xóa hoặc bạn không có quyền truy cập.",
@@ -49,7 +49,7 @@
       "tabCategory": "Ngân sách theo danh mục",
       "tabManual": "Ngân sách thủ công",
       "edit": "Chỉnh sửa",
-      "delete": "Xóa",
+      "delete": "Delete",
       "deleteSuccess": "Đã xóa ngân sách thành công!",
       "deleteError": "Đã xảy ra lỗi ngoài dự kiến!",
       "updateSuccess": "Đã cập nhật ngân sách thành công!",
@@ -60,9 +60,9 @@
         "description": "Khi nhấn \"Chấp nhận\", tất cả giao dịch liên quan sẽ được gỡ liên kết khỏi ngân sách nhưng vẫn giữ nguyên trong hệ thống."
       },
       "limitLabel": "Hạn mức: {amount}",
-      "transactionsCount": "{count} giao dịch",
+      "transactionsCount": "{count} transactions",
       "categoriesCount": "{count} danh mục",
-      "noTransactions": "Chưa có giao dịch nào",
+      "noTransactions": "No transactions yet",
       "noTimePeriod": "Không giới hạn thời gian",
       "status": {
         "ended": "Đã kết thúc",
@@ -80,7 +80,7 @@
       "earned": "Earned",
       "archive": "Lưu trữ",
       "unarchive": "Bỏ lưu trữ",
-      "archivedLabel": "Đã lưu trữ",
+      "archivedLabel": "Archived",
       "archiveError": "Không thể cập nhật trạng thái lưu trữ",
       "showArchived": "Hiển thị ngân sách đã lưu trữ",
       "hideArchived": "Ẩn ngân sách đã lưu trữ",
@@ -93,22 +93,22 @@
         "all": "All",
         "autoAdd": "Auto-add on",
         "handPicked": "Hand-picked",
-        "archived": "Đã lưu trữ"
+        "archived": "Archived"
       },
       "groups": {
         "active": "Active now",
         "upcoming": "Upcoming",
         "noDates": "No dates",
-        "ended": "Đã kết thúc",
-        "archived": "Đã lưu trữ",
+        "ended": "Ended",
+        "archived": "Archived",
         "show": "show",
         "hide": "hide"
       },
       "showMoreEnded": "Show {count} more ended",
       "row": {
         "auto": "auto",
-        "transactions": "{count} giao dịch | {count} giao dịch",
-        "moreCategories": "+{count} mục nữa",
+        "transactions": "{count} transaction | {count} transactions",
+        "moreCategories": "+{count} more",
         "noLimit": "no limit",
         "archiveSuggestion": "Archive?"
       },
@@ -134,17 +134,17 @@
         "description": "It ended {ago}. Archived trackers move to the Archived group and keep their transactions and statistics. You can unarchive any time.",
         "dontAsk": "Don't ask for this tracker",
         "notNow": "Not now",
-        "dismissError": "Không thể cập nhật ngân sách",
+        "dismissError": "Failed to update tracker",
         "dismissSuccess": "Got it. We won't suggest archiving this tracker again."
       }
     },
     "settings": {
-      "nameLabel": "Tên ngân sách",
+      "nameLabel": "Tracker name",
       "namePlaceholder": "Nhập tên ngân sách",
       "limitPlaceholder": "Nhập hạn mức (không bắt buộc)",
       "startDateLabel": "Ngày bắt đầu",
       "endDateLabel": "Ngày kết thúc",
-      "notSet": "Chưa đặt"
+      "notSet": "Not set"
     },
     "addTransactionsDialog": {
       "title": "Thêm giao dịch vào ngân sách",
@@ -156,11 +156,11 @@
       "editTitle": "Chỉnh sửa ngân sách"
     },
     "share": {
-      "sharedByBadge": "Được chia sẻ bởi {handle}"
+      "sharedByBadge": "Shared by {handle}"
     },
     "details": {
       "statsLoadError": "Couldn't load this tracker's totals.",
-      "transactionsCount": "{count} giao dịch | {count} giao dịch",
+      "transactionsCount": "{count} transaction | {count} transactions",
       "tagsCount": "{count} tag | {count} tags",
       "strip": {
         "limit": "Limit",
@@ -173,8 +173,8 @@
         "aboveTargetBy": "Above target by",
         "income": "Income",
         "expenses": "Expenses",
-        "net": "Thu chi ròng",
-        "transactions": "Giao dịch",
+        "net": "Net",
+        "transactions": "Transactions",
         "perDay": "{amount} / day"
       },
       "tabs": {
@@ -242,10 +242,10 @@
       "dialog": {
         "addTitle": "Add line",
         "editTitle": "Edit line",
-        "nameLabel": "Tên",
+        "nameLabel": "Name",
         "namePlaceholder": "e.g. Hotels",
         "nameRequired": "Enter a name",
-        "categoriesLabel": "Danh mục",
+        "categoriesLabel": "Categories",
         "categoriesPlaceholder": "Pick categories",
         "categoriesRequired": "Pick at least one category",
         "limitLabel": "Limit (optional)",
@@ -268,9 +268,9 @@
       "switchHintOn": "Your transactions in the date range with any of these categories or tags get added.",
       "switchHintOff": "Only transactions you add by hand count.",
       "switchHintTurnedOff": "Turning this off keeps every transaction already added.",
-      "categoriesLabel": "Danh mục",
+      "categoriesLabel": "Categories",
       "categoriesPlaceholder": "Select categories",
-      "tagsLabel": "Thẻ",
+      "tagsLabel": "Tags",
       "tagsPlaceholder": "Select tags",
       "needsCategoryOrTag": "Pick at least one category or tag",
       "cleanupLabel": "Remove transactions that stop matching",
@@ -287,7 +287,7 @@
         "title": "Not added again",
         "description": "You removed these or rejected them as AI suggestions, so they're skipped. Allow one and it's added back if it still matches.",
         "summary": "{count} transaction won't be added again | {count} transactions won't be added again",
-        "review": "Xem xét",
+        "review": "Review",
         "aiBadge": "AI suggestion",
         "allowAgain": "Allow again",
         "allowed": "Allowed again",
@@ -344,7 +344,7 @@
         "startedAt": "Started {time}",
         "toReview": "{count} to review",
         "checkedAt": "checked {when}",
-        "review": "Xem xét",
+        "review": "Review",
         "idle": "Smart tracking is on · nothing new to review",
         "settings": "Settings",
         "paused": "Paused",
@@ -367,7 +367,7 @@
           "likely": "Likely",
           "possible": "Possible"
         },
-        "add": "Thêm",
+        "add": "Add",
         "skip": "Skip",
         "addAria": "Add {name} to {tracker}",
         "skipAria": "Skip {name}",

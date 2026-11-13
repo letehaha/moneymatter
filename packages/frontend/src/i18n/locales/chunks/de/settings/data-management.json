@@ -72,7 +72,7 @@
         },
         "groups": {
           "label": "Was enthalten sein soll",
-          "selectAll": "Alles auswählen",
+          "selectAll": "Select all",
           "deselectAll": "Alle abwählen",
           "transactions": "Transaktionen & Konten",
           "transactionsDescription": "Transaktionen, Konten, Kontostandshistorie, Kategorien, Tags, Fahrzeuge",
@@ -97,9 +97,9 @@
           "clear": "Datumsbereich zurücksetzen"
         },
         "accounts": {
-          "label": "Konten",
+          "label": "Accounts",
           "helper": "Exportiere nur die ausgewählten Konten mit ihren Transaktionen und ihrer Kontostandshistorie. Leer lassen, um alle Konten zu exportieren.",
-          "placeholder": "Alle Konten"
+          "placeholder": "All accounts"
         },
         "listDescription": "Lade eine ZIP-Datei für Tabellenkalkulationen, Steuern oder eine Migration herunter"
       }

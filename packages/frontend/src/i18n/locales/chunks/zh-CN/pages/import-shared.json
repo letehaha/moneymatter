@@ -43,7 +43,7 @@
       "target": "Target"
     },
     "account": {
-      "selectTarget": "选择账户",
+      "selectTarget": "Select account",
       "noMatchingCurrency": "No account with currency {currency}",
       "willCreate": "Will create {name} ({currency})",
       "empty": "No accounts to map",
@@ -69,7 +69,7 @@
         "newRows": "New rows",
         "backfillRows": "Backfill rows"
       },
-      "newAccount": "新建账户"
+      "newAccount": "New account"
     },
     "duplicatesTable": {
       "columnHeaders": {

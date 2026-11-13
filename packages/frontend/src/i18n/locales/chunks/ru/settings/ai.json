@@ -75,7 +75,7 @@
         "trigger": "Which model fits?",
         "tierHeading": "{tier} model is enough",
         "tiers": {
-          "light": "Светлая",
+          "light": "Light",
           "balanced": "Balanced",
           "smart": "Smart"
         },
@@ -174,10 +174,10 @@
         },
         "actions": {
           "menuAriaLabel": "AI model actions",
-          "duplicate": "Дубликат",
+          "duplicate": "Duplicate",
           "setDefault": "Set as default",
           "remove": "Remove",
-          "reconnect": "Переподключить",
+          "reconnect": "Reconnect",
           "enterKey": "Enter API key"
         },
         "removeDialog": {
@@ -213,22 +213,22 @@
           "titleDuplicate": "Duplicate AI model",
           "providerLabel": "Provider",
           "providerPlaceholder": "Select a provider",
-          "nameLabel": "Название",
+          "nameLabel": "Name",
           "baseUrlLabel": "Base URL",
           "baseUrlPlaceholder": "https://example.com/v1",
-          "apiKeyLabel": "API-ключ",
+          "apiKeyLabel": "API key",
           "apiKeyPlaceholder": "Paste your API key",
           "apiKeyGetHint": "Get a key at {link}.",
           "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",
           "apiKeySavedHint": "Leave blank to keep the saved key.",
           "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
           "removeApiKeyButton": "Remove API key",
-          "modelLabel": "Модель",
+          "modelLabel": "Model",
           "modelPlaceholder": "Type or pick a model",
           "modelListEmpty": "No models to pick from. Type the model name your server uses.",
           "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
           "testButton": "Test connection",
-          "saveButton": "Сохранить изменения",
+          "saveButton": "Save changes",
           "localNetworkOnly": "MoneyMatter can't reach a server on your own computer, like {hostname} or {ip}. Expose it through a tunnel such as ngrok or Cloudflare Tunnel, then paste the tunnel's URL here.",
           "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
         },

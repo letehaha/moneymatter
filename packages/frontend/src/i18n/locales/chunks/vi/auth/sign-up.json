@@ -2,7 +2,7 @@
   "auth": {
     "signup": {
       "title": "Tạo tài khoản",
-      "divider": "Hoặc tiếp tục với email",
+      "divider": "Or continue with email",
       "submitButton": "Đăng ký",
       "alreadyHaveAccount": "Đã có tài khoản?",
       "signInLink": "Đăng nhập",
@@ -21,20 +21,20 @@
         "invalidPassword": "Mật khẩu không hợp lệ.",
         "userExists": "Đã tồn tại người dùng với email này.",
         "signupsDisabled": "Quản trị viên của máy chủ này đã tắt chức năng đăng ký.",
-        "genericErrorRetry": "Đã xảy ra lỗi. Vui lòng thử lại.",
+        "genericErrorRetry": "An error occurred. Please try again.",
         "oauthFailed": "Không đăng ký được bằng {provider}. Vui lòng thử lại.",
-        "oauthNotConfigured": "Máy chủ này chưa cấu hình đăng nhập bằng {provider}."
+        "oauthNotConfigured": "{provider} sign-in is not configured on this server."
       }
     },
     "shared": {
-      "divider": "Hoặc tiếp tục với",
+      "divider": "Or continue with",
       "passkeyButton": {
         "signIn": "Đăng nhập bằng Passkey",
         "register": "Thêm Passkey"
       },
       "oauthButton": {
-        "signIn": "Đăng nhập bằng {provider}",
-        "signUp": "Đăng ký bằng {provider}"
+        "signIn": "Sign in with {provider}",
+        "signUp": "Sign up with {provider}"
       }
     }
   }

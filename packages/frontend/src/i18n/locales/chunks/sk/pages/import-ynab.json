@@ -49,7 +49,7 @@
         "execute": {
           "starting": "Spúšťanie importu…",
           "progressCount": "{processed} / {total}",
-          "statusQueued": "V rade",
+          "statusQueued": "V poradí",
           "statusRunning": "Importovanie...",
           "statusCompleted": "Hotovo",
           "statusFailed": "Zlyhalo",

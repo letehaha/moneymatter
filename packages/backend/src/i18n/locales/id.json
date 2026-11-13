@@ -199,7 +199,7 @@
     "openEndedGoalCannotSnooze": "An open-ended goal can't be snoozed.",
     "zeroSumNeedsPool": "Keeping Ready to Assign at 0 needs a plan funded from a pool.",
     "suggestedGroups": {
-      "bills": "Tagihan",
+      "bills": "Bills",
       "everyday": "Everyday",
       "life": "Life"
     }
@@ -303,7 +303,7 @@
     "providerTypeMismatch": "Koneksi {{connectionId}} adalah untuk provider {{actualType}}, bukan {{expectedType}}",
     "providerAlreadyRegistered": "Provider {{providerType}} sudah terdaftar. Tidak dapat mendaftarkan provider duplikat.",
     "providerNotRegistered": "Provider {{providerType}} belum terdaftar. Provider yang tersedia: {{available}}",
-    "unexpected": "Kesalahan tak terduga."
+    "unexpected": "Unexpected error."
   },
   "validation": {
     "dateInvalid": "\"date\" adalah tanggal tidak valid."
@@ -765,6 +765,11 @@
         "requiresAccountField": "Perekaman otomatis memerlukan akun untuk mencatat transaksi.",
         "requiresAmountField": "Perekaman otomatis memerlukan expectedAmount dan expectedCurrencyCode.",
         "excludesMatchingField": "Perekaman otomatis dan aturan pencocokan bersifat mutually exclusive."
+      },
+      "customInterval": {
+        "required": "A custom frequency needs an interval unit and count.",
+        "presetConflict": "An interval unit and count can only be set with the custom frequency.",
+        "countOutOfRange": "The interval count must be between {{min}} and {{max}} for this unit."
       }
     }
   },
@@ -841,8 +846,8 @@
   "auth": {
     "errors": {
       "passwordAlreadySet": "Your account already has a password.",
-      "passwordTooShort": "Kata sandi terlalu pendek.",
-      "passwordTooLong": "Kata sandi terlalu panjang.",
+      "passwordTooShort": "Password is too short.",
+      "passwordTooLong": "Password is too long.",
       "reauthenticationRequired": "For your security, sign in again to make this change.",
       "signupsDisabled": "Signups are disabled by the administrator."
     }

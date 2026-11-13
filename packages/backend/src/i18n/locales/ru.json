@@ -199,7 +199,7 @@
     "openEndedGoalCannotSnooze": "An open-ended goal can't be snoozed.",
     "zeroSumNeedsPool": "Keeping Ready to Assign at 0 needs a plan funded from a pool.",
     "suggestedGroups": {
-      "bills": "Счета",
+      "bills": "Bills",
       "everyday": "Everyday",
       "life": "Life"
     }
@@ -303,7 +303,7 @@
     "providerTypeMismatch": "Подключение {{connectionId}} относится к провайдеру {{actualType}}, а не {{expectedType}}",
     "providerAlreadyRegistered": "Провайдер {{providerType}} уже зарегистрирован. Нельзя регистрировать дубликаты провайдеров.",
     "providerNotRegistered": "Провайдер {{providerType}} не зарегистрирован. Доступные провайдеры: {{available}}",
-    "unexpected": "Непредвиденная ошибка."
+    "unexpected": "Unexpected error."
   },
   "validation": {
     "dateInvalid": "\"date\" содержит некорректную дату."
@@ -765,6 +765,11 @@
         "requiresAccountField": "Для автоматической записи требуется счёт, на который будет проведена транзакция.",
         "requiresAmountField": "Для автоматической записи требуются expectedAmount и expectedCurrencyCode.",
         "excludesMatchingField": "Автоматическая запись и правила сопоставления взаимно исключают друг друга."
+      },
+      "customInterval": {
+        "required": "A custom frequency needs an interval unit and count.",
+        "presetConflict": "An interval unit and count can only be set with the custom frequency.",
+        "countOutOfRange": "The interval count must be between {{min}} and {{max}} for this unit."
       }
     }
   },
@@ -841,8 +846,8 @@
   "auth": {
     "errors": {
       "passwordAlreadySet": "Your account already has a password.",
-      "passwordTooShort": "Пароль слишком короткий.",
-      "passwordTooLong": "Пароль слишком длинный.",
+      "passwordTooShort": "Password is too short.",
+      "passwordTooLong": "Password is too long.",
       "reauthenticationRequired": "For your security, sign in again to make this change.",
       "signupsDisabled": "Signups are disabled by the administrator."
     }

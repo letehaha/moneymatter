@@ -121,7 +121,7 @@
         "previousYear": "Année précédente"
       },
       "includeOutOfWallet": "Inclure les virements hors portefeuille",
-      "outOfWalletSwitch": "Virements hors portefeuille",
+      "outOfWalletSwitch": "Out-of-wallet transfers",
       "skip": {
         "action": "Ignorer",
         "title": "Ignorer cette suggestion ?",
@@ -142,7 +142,7 @@
         "plusBadge": "Plus",
         "description": "L'IA vérifie chaque correspondance et n'affiche que celles qui semblent être de véritables transferts entre vos comptes.",
         "cost": "Chaque analyse utilise votre quota mensuel d'IA. Si vous utilisez votre propre fournisseur d'IA, celui-ci vous facture directement. Choisissez le modèle dans {link}.",
-        "aiSettingsLink": "Paramètres de l'IA",
+        "aiSettingsLink": "AI settings",
         "openAiSettings": "Ouvrir les paramètres d'IA",
         "blocked": {
           "plan": {
@@ -155,15 +155,15 @@
             "body": "Il sera renouvelé le {date}. Connectez votre propre fournisseur d'IA pour continuer à utiliser cette fonction dès maintenant."
           },
           "setup": {
-            "pill": "Configurer",
+            "pill": "Set up",
             "title": "Aucun modèle d'IA ne répond",
             "body": "Vérifiez votre fournisseur d'IA ou choisissez un modèle pour rapprocher les transferts."
           }
         },
-        "connectOwnModel": "Connecter votre propre modèle",
+        "connectOwnModel": "Connect your own model",
         "reviewing": "L'IA vérifie les correspondances…",
         "verdict": {
-          "likely": "Probable",
+          "likely": "Likely",
           "possible": "Possible"
         },
         "nudge": "Réduisez les faux rapprochements grâce à l'IA",

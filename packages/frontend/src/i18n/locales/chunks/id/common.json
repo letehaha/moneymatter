@@ -30,7 +30,7 @@
       "moveTo": "Pindahkan ke…",
       "learnMore": "Learn more",
       "undo": "Undo",
-      "more": "Lainnya"
+      "more": "More"
     },
     "ui": {
       "close": "Tutup",
@@ -106,7 +106,7 @@
       "mobilePayment": "Pembayaran Seluler",
       "voucher": "Voucher",
       "webPayment": "Pembayaran Web",
-      "none": "Tidak ada"
+      "none": "None"
     },
     "vehicleClasses": {
       "sedan": "Sedan",
@@ -146,7 +146,7 @@
         "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
       },
       "transferMatching": {
-        "name": "Pencocokan transfer",
+        "name": "Transfer matching",
         "description": "Checks transfer scan results and keeps the pairs that look like real transfers"
       }
     },
@@ -166,12 +166,12 @@
       "record": {
         "addedByTooltip": "Transaksi ini dilampirkan ke anggaran oleh {handle}",
         "addedByRule": "Added by the tracker's rules",
-        "matchedByAi": "Dicocokkan oleh AI",
+        "matchedByAi": "Matched by AI",
         "externalLinkTooltip": "Open external link",
         "locationTooltip": "Open location on the map",
         "attachmentsTooltip": "Has attachments",
         "hiddenAccount": "Akun tersembunyi",
-        "selectRow": "Pilih transaksi",
+        "selectRow": "Select transaction",
         "unselectableReasons": {
           "sharedAccount": "Tidak dapat dipilih: transaksi ini berada di akun yang dibagikan dengan Anda, dan hanya pemiliknya yang dapat mengeditnya."
         },
@@ -241,7 +241,7 @@
       "tabs": {
         "brand": "Merek",
         "letters": "Huruf",
-        "icon": "Ikon",
+        "icon": "Icon",
         "custom": "Image"
       },
       "searchPlaceholder": "Nama merek atau domain",
@@ -259,7 +259,7 @@
       "remove": "Hapus logo",
       "pickerDescription": "Pick a brand logo or use letters instead.",
       "updatedToast": "Logo updated",
-      "resetToast": "Logo dihapus",
+      "resetToast": "Logo removed",
       "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Huruf (1–2)",
       "lettersPlaceholder": "AB",
@@ -283,12 +283,12 @@
       "description": "A large import batch is being removed. Balances are recalculated when it finishes, so the app is locked until then.",
       "deleting": "Deleting transactions",
       "preparing": "Getting ready",
-      "finishing": "Menyelesaikan",
+      "finishing": "Finishing up",
       "takingLong": "This is taking longer than usual — large batches can take several minutes. Keep this page open.",
-      "unreachableTitle": "Tidak dapat menjangkau server",
+      "unreachableTitle": "Can't reach the server",
       "unreachableDescription": "The delete may still be running. Dismiss to keep using the app, and reload later to see the result.",
       "failedTitle": "Delete failed",
-      "dismiss": "Abaikan"
+      "dismiss": "Dismiss"
     },
     "duration": {
       "years": "{n} yr | {n} yrs",
@@ -522,7 +522,7 @@
     "percentUsed": "{percent}% used",
     "resetsOn": "Resets on {date}",
     "connectOwnModel": "Connect your own model",
-    "gotIt": "Mengerti",
+    "gotIt": "Got it",
     "badge": {
       "used": "{percent}% AI used",
       "reached": "AI limit reached"
@@ -568,12 +568,12 @@
       "removeTransactionDescriptionNormal": "Apakah Anda yakin ingin mengeluarkan transaksi ini dari grup?",
       "removeButtonText": "Keluarkan",
       "removeAndDeleteButtonText": "Keluarkan & Hapus Grup",
-      "removeFromGroup": "Hapus dari grup",
+      "removeFromGroup": "Remove from group",
       "saveError": "Couldn't save the group",
       "removeError": "Couldn't remove the transaction from the group",
-      "manageTransactions": "Kelola",
+      "manageTransactions": "Manage",
       "showMoreNote": "Show more",
-      "showLessNote": "Tampilkan lebih sedikit",
+      "showLessNote": "Show less",
       "summary": {
         "transactions": "Transaksi",
         "net": "Bersih",
@@ -591,7 +591,7 @@
       "description": "Accounts, transactions, categories, tags, payees and reports"
     },
     "subscriptions": {
-      "label": "Biaya Berulang",
+      "label": "Recurring payments",
       "description": "Recurring payments, their periods and planned transactions"
     },
     "budgetPlans": {
@@ -599,11 +599,11 @@
       "description": "Plans, lines, line goals and savings goals"
     },
     "trackers": {
-      "label": "Anggaran",
+      "label": "Trackers",
       "description": "Spending trackers and their suggestions"
     },
     "automations": {
-      "label": "Otomatisasi",
+      "label": "Automations",
       "description": "Rules, payee aliases, ignored payee names and tag reminders"
     },
     "review": {
@@ -615,11 +615,11 @@
       "description": "Transaction groups and transaction templates"
     },
     "investments": {
-      "label": "Investasi",
+      "label": "Investments",
       "description": "Portfolios, holdings, securities and investment transactions"
     },
     "ventures": {
-      "label": "Ventura",
+      "label": "Ventures",
       "description": "Venture platforms, deals and events"
     },
     "loansVehicles": {
@@ -627,7 +627,7 @@
       "description": "Loans with their payments, and vehicles"
     },
     "currencies": {
-      "label": "Mata Uang",
+      "label": "Currencies",
       "description": "Your currencies and exchange rates"
     },
     "imports": {

@@ -199,9 +199,9 @@
     "openEndedGoalCannotSnooze": "Ein Ziel ohne Enddatum kann nicht pausiert werden.",
     "zeroSumNeedsPool": "Um „Noch zu verteilen“ auf 0 zu halten, ist ein Plan erforderlich, der aus einem Pool finanziert wird.",
     "suggestedGroups": {
-      "bills": "Rechnungen",
-      "everyday": "Alltag",
-      "life": "Leben"
+      "bills": "Bills",
+      "everyday": "Everyday",
+      "life": "Life"
     }
   },
   "tags": {
@@ -303,7 +303,7 @@
     "providerTypeMismatch": "Verbindung {{connectionId}} gilt für Anbieter {{actualType}}, nicht {{expectedType}}",
     "providerAlreadyRegistered": "Anbieter {{providerType}} ist bereits registriert. Anlegen von Duplikaten nicht möglich.",
     "providerNotRegistered": "Anbieter {{providerType}} ist nicht registriert. Verfügbare Anbieter: {{available}}",
-    "unexpected": "Unerwarteter Fehler."
+    "unexpected": "Unexpected error."
   },
   "validation": {
     "dateInvalid": "\"date\" ist ein ungültiges Datum."
@@ -655,7 +655,7 @@
       "communication": "Kommunikation & IT",
       "financial-expenses": "Finanzausgaben",
       "investments": "Investitionen",
-      "income": "Einnahmen",
+      "income": "Income",
       "other": "Sonstiges"
     },
     "subcategories": {
@@ -732,7 +732,7 @@
         "realty": "Immobilien",
         "vehicles-chattels": "Fahrzeuge & Sachwerte",
         "financial-investments": "Finanzinvestitionen",
-        "savings": "Sparen",
+        "savings": "Savings",
         "collections": "Sammlungen"
       },
       "income": {
@@ -765,6 +765,11 @@
         "requiresAccountField": "Automatische Erfassung erfordert ein Konto, auf das die Transaktion gebucht wird.",
         "requiresAmountField": "Automatische Erfassung erfordert \"expectedAmount\" und \"expectedCurrencyCode\".",
         "excludesMatchingField": "Automatische Erfassung und Abgleichsregeln schließen sich gegenseitig aus."
+      },
+      "customInterval": {
+        "required": "A custom frequency needs an interval unit and count.",
+        "presetConflict": "An interval unit and count can only be set with the custom frequency.",
+        "countOutOfRange": "The interval count must be between {{min}} and {{max}} for this unit."
       }
     }
   },
@@ -776,8 +781,8 @@
     "accountMustBeSystem": "In einer Transaktionsvorlage können nur manuell verwaltete Konten verwendet werden.",
     "accountArchived": "Archivierte Konten können nicht in einer Vorlage verwendet werden.",
     "categoryNotFound": "Kategorie nicht gefunden oder gehört nicht zum Nutzer.",
-    "payeeNotFound": "Zahlungsempfänger nicht gefunden oder gehört nicht zum Nutzer.",
-    "tagsNotFound": "Ein oder mehrere Tags wurden nicht gefunden oder gehören nicht zum Nutzer."
+    "payeeNotFound": "Payee not found or does not belong to user.",
+    "tagsNotFound": "One or more tags were not found or do not belong to user."
   },
   "payees": {
     "aliasNameRequired": "Alias-Name ist erforderlich",
@@ -810,7 +815,7 @@
     "eventNotFound": "Venture-Ereignis nicht gefunden"
   },
   "vehicles": {
-    "notFound": "Fahrzeug nicht gefunden"
+    "notFound": "Vehicle not found"
   },
   "stats": {
     "netWorthHistoryTooManyPoints": "Dieser Datumsbereich und diese Granularität erzeugen zu viele Datenpunkte. Wähle eine gröbere Granularität oder einen kürzeren Zeitraum."
@@ -841,9 +846,9 @@
   "auth": {
     "errors": {
       "passwordAlreadySet": "Dein Konto hat bereits ein Passwort.",
-      "passwordTooShort": "Passwort ist zu kurz.",
-      "passwordTooLong": "Passwort ist zu lang.",
-      "reauthenticationRequired": "Zu deiner Sicherheit melde dich erneut an, um diese Änderung vorzunehmen.",
+      "passwordTooShort": "Password is too short.",
+      "passwordTooLong": "Password is too long.",
+      "reauthenticationRequired": "For your security, sign in again to make this change.",
       "signupsDisabled": "Registrierungen wurden vom Administrator deaktiviert."
     }
   },
@@ -880,7 +885,7 @@
   },
   "goals": {
     "goalNotFound": "Ziel nicht gefunden.",
-    "accountNotFound": "Eines der ausgewählten Konten wurde nicht gefunden.",
+    "accountNotFound": "One of the selected accounts was not found.",
     "accountNotEligible": "{{accountName}} kann nicht für ein Ziel angerechnet werden. Wähle ein Bargeld-, Giro-, Spar-, Investment- oder Krypto-Konto aus.",
     "shareCapacityExceeded": "{{accountName}} hat {{free}}% frei: Du hast {{requested}}% angefragt, und andere Ziele nutzen bereits {{usedByOtherGoals}}%.",
     "fixedAmountsBelowTarget": "Festbeträge ergeben in der Summe {{total}} {{currencyCode}}, weniger als das Ziel von {{target}} {{currencyCode}}. Erhöhe einen Betrag oder berücksichtige ein Konto prozentual.",

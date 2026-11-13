@@ -20,7 +20,7 @@
         "namePlaceholder": "Kontoname",
         "transferToPortfolio": "In Portfolio umbuchen",
         "editAccountName": "Kontonamen bearbeiten",
-        "save": "Speichern",
+        "save": "Save",
         "accountActions": "Kontoaktionen",
         "renameAccount": "Konto umbenennen",
         "adjustBalance": "Kontostand anpassen",
@@ -51,7 +51,7 @@
         "transactionNote": "Transaktionsnotizen",
         "optionalNote": "Optionale Notiz",
         "effectiveDate": "Wertstellungsdatum",
-        "cancel": "Abbrechen",
+        "cancel": "Cancel",
         "confirm": "Bestätigen",
         "saving": "Wird gespeichert …",
         "successNotification": "Kontostand erfolgreich angepasst",
@@ -120,7 +120,7 @@
       "link": {
         "selectConnection": "Bankverbindung auswählen",
         "selectExternalAccount": "Externes Konto auswählen",
-        "loading": "Laden...",
+        "loading": "Loading...",
         "title": "Konto mit Bankverbindung verknüpfen",
         "description": "Verknüpfe dieses Systemkonto mit einer Bankverbindung für die automatische Synchronisierung von Transaktionen.",
         "whatWillHappen": "Was passieren wird:",
@@ -137,7 +137,7 @@
         "loadingConnections": "Verbindungen werden geladen...",
         "noConnections": "Keine Verbindungen verfügbar",
         "accountLabel": "Externes Konto",
-        "loadingAccounts": "Konten werden geladen...",
+        "loadingAccounts": "Loading accounts...",
         "noExternalAccounts": "Keine externen Konten verfügbar",
         "mismatchWarning": "⚠️ Konto kann nicht verknüpft werden",
         "balanceComparison": "Vergleich der aktuellen Kontostände:",
@@ -163,7 +163,7 @@
         "editCreditLimit": "Kreditrahmen bearbeiten",
         "creditLimitUpdateSuccess": "Kreditrahmen aktualisiert",
         "creditLimitUpdateError": "Kreditrahmen konnte nicht aktualisiert werden",
-        "save": "Speichern",
+        "save": "Save",
         "initialBalance": "Startsaldo:",
         "editInitialBalance": "Startsaldo bearbeiten",
         "initialBalancePlaceholder": "Startsaldo eingeben",
@@ -177,8 +177,8 @@
         "accountCategoryUpdateError": "Fehler beim Aktualisieren der Kontokategorie",
         "defaultPaymentType": "Standard-Zahlungsart:",
         "editDefaultPaymentType": "Standard-Zahlungsart bearbeiten",
-        "defaultPaymentTypeUpdateSuccess": "Standard-Zahlungsart aktualisiert",
-        "defaultPaymentTypeUpdateError": "Standard-Zahlungsart konnte nicht aktualisiert werden",
+        "defaultPaymentTypeUpdateSuccess": "Default payment type updated",
+        "defaultPaymentTypeUpdateError": "Failed to update default payment type",
         "currency": "Währung:",
         "main": "(Hauptwährung)",
         "exchangeRate": "Wechselkurs:",
@@ -204,7 +204,7 @@
         "title": "Transaktionen für ausgewählten Zeitraum laden",
         "notLinked": "Dieses Konto ist nicht mit einer Bankverbindung verknüpft",
         "dateRangeExceeds": "Der Datumsbereich darf 1 Jahr nicht überschreiten",
-        "loading": "Laden...",
+        "loading": "Loading...",
         "selectPeriod": "Zeitraum auswählen",
         "loadButton": "Transaktionen laden",
         "failed": "Transaktionen konnten nicht geladen werden",
@@ -213,7 +213,7 @@
       "syncTransactions": {
         "title": "Neueste Transaktionen synchronisieren",
         "autoSyncInfo": "Transaktionen werden alle 12 Stunden automatisch synchronisiert",
-        "syncing": "Synchronisieren...",
+        "syncing": "Syncing...",
         "syncButton": "Sync",
         "notLinked": "Dieses Konto ist nicht mit einer Bankverbindung verknüpft",
         "syncStarted": "Synchronisierung gestartet...",
@@ -245,7 +245,7 @@
       },
       "rightPanel": {
         "transactions": "Transaktionen",
-        "viewAll": "Alle anzeigen",
+        "viewAll": "View all",
         "analyticsSoon": "Analysen (demnächst)"
       },
       "integrations": {
@@ -261,12 +261,12 @@
         "description": "Verwalte, wer dieses Konto sehen und bearbeiten kann.",
         "inviteAnother": "Weitere Person einladen",
         "membersHeading": "Mitglieder",
-        "pendingHeading": "Ausstehende Einladungen",
+        "pendingHeading": "Pending invitations",
         "loadError": "Freigabedetails konnten nicht geladen werden.",
         "permissions": {
-          "read": "Lesen",
-          "write": "Schreiben",
-          "manage": "Verwalten"
+          "read": "Read",
+          "write": "Write",
+          "manage": "Manage"
         },
         "writeScope": {
           "all": "Alle Transaktionen",
@@ -280,7 +280,7 @@
           "revoke": "Zugriff entfernen",
           "revokeTitle": "Zugriff entfernen?",
           "revokeDescription": "{user} verliert den Zugriff auf {account}. Die Person wird nicht benachrichtigt.",
-          "revokeConfirm": "Entfernen",
+          "revokeConfirm": "Remove",
           "updateSuccess": "Mitglied aktualisiert.",
           "updateError": "Mitglied konnte nicht aktualisiert werden.",
           "revokeSuccess": "Zugriff entfernt.",
@@ -347,15 +347,15 @@
         "errorNotification": "Fahrzeugwert konnte nicht aktualisiert werden",
         "confirm": "Wert speichern",
         "saving": "Wird gespeichert …",
-        "cancel": "Abbrechen"
+        "cancel": "Cancel"
       },
       "overrideHistory": {
         "title": "Verlauf der Anpassungen",
         "empty": "Noch keine manuellen Anpassungen. Passe den Wert an, um eine Anpassung zu erfassen.",
-        "delete": "Löschen",
+        "delete": "Delete",
         "deleteTitle": "Diese Anpassung löschen?",
         "deleteDescription": "Das Entfernen dieser Anpassung verankert den Wertverlust wieder an der vorherigen Anpassung (oder dem ursprünglichen Kauf, falls keine vorhanden ist). Die zugehörige Transaktion wird gelöscht.",
-        "deleteConfirm": "Löschen",
+        "deleteConfirm": "Delete",
         "deleteSuccess": "Anpassung entfernt",
         "deleteError": "Anpassung konnte nicht entfernt werden"
       },

@@ -7,14 +7,14 @@
       "noGroupDescription": "Keep this account ungrouped",
       "current": "Current",
       "syncHint": "Groups only organize your accounts — moving an account never affects bank syncing.",
-      "accountsCount": "{count} tài khoản | {count} tài khoản"
+      "accountsCount": "{count} account | {count} accounts"
     },
     "reassignCategory": {
       "title": "Reassign transactions",
       "description": "This category has {count} transaction(s). Select a new category for \"{categoryName}\" transactions before deleting.",
       "newCategoryLabel": "New category",
       "newCategoryPlaceholder": "Select a category",
-      "cancelButton": "Hủy",
+      "cancelButton": "Cancel",
       "reassignButton": "Reassign & delete",
       "reassignButtonLoading": "Reassigning...",
       "notifications": {
@@ -26,7 +26,7 @@
       "title": "Sync recently completed",
       "description": "You synchronized your accounts {time} ago. Are you sure you want to sync again?",
       "syncAnyway": "Sync anyway",
-      "cancel": "Hủy",
+      "cancel": "Cancel",
       "timeUnits": {
         "someTime": "some time",
         "hours": "{count} hour | {count} hours",
@@ -48,7 +48,7 @@
           "investment": "Investment",
           "retirement": "Retirement",
           "savings": "Savings",
-          "other": "Khác"
+          "other": "Other"
         },
         "descriptionLabel": "Description (optional)",
         "descriptionPlaceholder": "A brief description of this portfolio...",
@@ -67,7 +67,7 @@
     "deletePortfolio": {
       "title": "Delete portfolio",
       "description": "This portfolio will be moved to trash and can be restored within 30 days. After that, it will be permanently deleted along with all holdings and transactions.",
-      "cancelButton": "Hủy",
+      "cancelButton": "Cancel",
       "deleteButton": "Move to trash",
       "deleteButtonLoading": "Moving...",
       "notifications": {
@@ -94,7 +94,7 @@
       "typeSelector": {
         "expense": "Expense",
         "income": "Income",
-        "transfer": "Chuyển tiền",
+        "transfer": "Transfer",
         "selectExpense": "Select expense",
         "selectIncome": "Select income",
         "selectTransfer": "Select transfer"
@@ -107,7 +107,7 @@
         "paymentTypeLabel": "Payment type",
         "noteLabel": "Note",
         "notePlaceholder": "Note",
-        "addFieldsLabel": "Thêm",
+        "addFieldsLabel": "Add",
         "externalUrlLabel": "External URL",
         "externalUrlPlaceholder": "Link to the order, booking or receipt page",
         "externalReferenceLabel": "External reference",
@@ -138,17 +138,17 @@
             }
           }
         },
-        "tagsLabel": "Thẻ",
+        "tagsLabel": "Tags",
         "originalAmountLabel": "Original amount",
         "originalAmountPlaceholder": "Amount in foreign currency",
         "originalAmountTooltip": "When a transaction was made in a currency different from the account's, this is the actual amount paid in that currency. The main amount stays in the account's currency. Doesn't affect statistics.",
         "originalCurrencyLabel": "Original currency",
-        "originalCurrencyTriggerEmpty": "Đơn vị tiền tệ",
+        "originalCurrencyTriggerEmpty": "Currency",
         "originalCurrencyNone": "No currency",
         "originalAmountSuggestHint": "{amount} — rate for {date}",
         "originalAmountSuggestApply": "Apply",
-        "amountLabel": "Số tiền",
-        "amountPlaceholder": "Số tiền",
+        "amountLabel": "Amount",
+        "amountPlaceholder": "Amount",
         "categoryLabel": "Category",
         "selectCategoryPlaceholder": "Select a category",
         "targetAmountLabel": "Target amount",
@@ -166,14 +166,14 @@
         "splitPillLabel": "Split",
         "moreOptionsButton": "More options",
         "closeButton": "Close",
-        "deleteButton": "Xóa",
-        "deleteAriaLabel": "Xóa giao dịch",
+        "deleteButton": "Delete",
+        "deleteAriaLabel": "Delete transaction",
         "deleteConfirmTitle": "Move to Trash?",
         "deleteConfirmDescription": "It stays in Trash for 30 days and you can restore it until then.",
         "deleteBlockedByPayment": "Remove it from the payment first to delete it",
         "createAriaLabel": "Create transaction",
         "editAriaLabel": "Edit transaction",
-        "loadingButton": "Đang tải...",
+        "loadingButton": "Loading...",
         "createButton": "Create",
         "editButton": "Edit",
         "duplicateButton": "Duplicate",
@@ -242,7 +242,7 @@
           "viewer": {
             "loadFailed": "Could not load this file.",
             "openInNewTab": "Open in new tab",
-            "download": "Tải xuống"
+            "download": "Download"
           }
         },
         "paymentLegs": {
@@ -260,7 +260,7 @@
           "linkedChangesTakes": "Takes this transaction's category, payee, note and tags.",
           "linkedChangesKeeps": "Its account, amount and date stay the same.",
           "linkedChangesUnlink": "Unlinking restores its original details.",
-          "unlink": "Gỡ liên kết",
+          "unlink": "Unlink",
           "convertedAmountLabel": "Amount in {currency}",
           "rateInfo": "Exchange rate details",
           "rateFromAmounts": "Rate from your amounts",
@@ -315,13 +315,13 @@
         "mainCategoryLabel": "Main category",
         "selectCategoryPlaceholder": "Select category",
         "amountPlaceholder": "0",
-        "addCategoryButton": "Thêm danh mục",
+        "addCategoryButton": "Add category",
         "removeRowLabel": "Remove category",
         "totalAmountLabel": "Total amount",
         "splitTotalLabel": "Split total",
         "mainCategoryKeepsLabel": "Main category keeps",
         "exceedsTransactionTotal": "Split amounts exceed transaction total",
-        "cancelButton": "Hủy",
+        "cancelButton": "Cancel",
         "removeSplitsButton": "Remove splits",
         "saveSplitsButton": "Save splits",
         "errors": {
@@ -333,7 +333,7 @@
       "markAsRefund": {
         "linkRefund": "Link refund",
         "refundedByCreationHint": "Save this record first to link refunds dated after it",
-        "saveButton": "Lưu",
+        "saveButton": "Save",
         "confirmButton": "Confirm",
         "linkedRefunds": "Linked refunds",
         "unlinkRefund": "Unlink refund",
@@ -343,7 +343,7 @@
         "mainCategoryLabel": "(main)",
         "linkRemovedOnTypeChange": "Refund link removed because the transaction type changed.",
         "summaryEmpty": "Nothing ticked yet",
-        "sharePlaceholder": "Số tiền",
+        "sharePlaceholder": "Amount",
         "shareInputLabel": "Refund share for {name}",
         "shareErrorNonPositive": "Enter an amount above zero",
         "shareErrorExceedsPurchase": "More than what is left of this purchase ({amount})",
@@ -378,7 +378,7 @@
         "title": "About refund transactions",
         "description": "This action links the current transaction [expense/income] as a refund to one or more existing transactions. When it covers several, assign each a share of the refund amount.",
         "howItWorks": {
-          "title": "Cơ chế hoạt động:",
+          "title": "How it works:",
           "expenseRefund": "For an expense refund: Select the original income transaction(s).",
           "incomeRefund": "For an income refund: Select the original expense transaction(s).",
           "noOriginal": "You can mark any transaction as a refund even if there's no \"original\" transaction in the system. Useful in case you don't have account with the original transaction in the system."
@@ -427,9 +427,9 @@
         "unlinkButton": "Unlink from portfolio",
         "unlinkWarning": "Unlinking will reduce the cash balance of {portfolio} portfolio.",
         "unlinkWarningNoCash": "This transfer never changed {portfolio}'s cash balance, so unlinking leaves the balance untouched.",
-        "noCashBadge": "Không ảnh hưởng đến tiền mặt",
+        "noCashBadge": "No cash impact",
         "unlinkDescription": "Original transaction details will be restored.",
-        "cancelButton": "Hủy",
+        "cancelButton": "Cancel",
         "confirmUnlink": "Confirm unlink"
       },
       "ventureLinked": {
@@ -479,9 +479,9 @@
           "titleNew": "New template",
           "titleEdit": "Edit template",
           "titleSaveCurrent": "Save as template",
-          "nameLabel": "Tên",
+          "nameLabel": "Name",
           "namePlaceholder": "e.g. Morning coffee",
-          "typeLabel": "Loại",
+          "typeLabel": "Type",
           "keepAccount": "Keep whichever account is selected when I use it",
           "noAmount": "Don’t save an amount — I’ll type it each time",
           "delete": "Delete template",
@@ -524,12 +524,12 @@
       "clearSearch": "Clear search",
       "endOfList": "That's all",
       "assetClass": {
-        "crypto": "Tiền mã hóa"
+        "crypto": "Crypto"
       },
       "filters": {
         "all": "All",
-        "stocks": "Cổ phiếu",
-        "crypto": "Tiền mã hóa"
+        "stocks": "Stocks",
+        "crypto": "Crypto"
       },
       "marketCapRank": "#{rank}",
       "notifications": {
@@ -539,10 +539,10 @@
       "cryptoProviderNotConfigured": "Crypto search is unavailable. Set COINGECKO_API_KEY in your environment to enable it."
     },
     "deleteInvestmentTransaction": {
-      "title": "Xóa giao dịch",
+      "title": "Delete transaction",
       "description": "Are you sure you want to delete this transaction? This action cannot be undone.",
-      "cancelButton": "Hủy",
-      "deleteButton": "Xóa",
+      "cancelButton": "Cancel",
+      "deleteButton": "Delete",
       "deleteButtonLoading": "Deleting...",
       "notifications": {
         "success": "Transaction deleted successfully.",
@@ -552,7 +552,7 @@
     "categoryForm": {
       "title": {
         "edit": "Edit category",
-        "add": "Thêm danh mục"
+        "add": "Add category"
       },
       "description": {
         "addSubcategory": "Adding subcategory to {parentName}",
@@ -571,30 +571,30 @@
       "applyTagsOnAiLabel": "Also apply when AI categorizes a transaction",
       "applyTagsOnAiHint": "Tags stay on the transaction if you change its category later.",
       "settingsDivider": "Settings",
-      "saveButton": "Lưu",
+      "saveButton": "Save",
       "createButton": "Create",
       "notifications": {
         "updated": "Category updated",
         "created": "Category created",
         "saveFailed": "Failed to save category",
-        "unexpectedError": "Đã xảy ra lỗi ngoài dự kiến"
+        "unexpectedError": "Unexpected error"
       }
     },
     "addCurrency": {
       "title": "Add new currency",
       "description": "Select one currency to add",
-      "selectPlaceholder": "Chọn tiền tệ",
-      "addButton": "Thêm",
+      "selectPlaceholder": "Select currency",
+      "addButton": "Add",
       "notifications": {
         "success": "Currency successfully added!",
-        "error": "Đã xảy ra lỗi ngoài dự kiến. Không thể thêm tiền tệ."
+        "error": "Unexpected error. Currency is not added."
       }
     },
     "accountGroups": {
       "createDialog": {
         "title": "Create group",
         "nameLabel": "Group name",
-        "namePlaceholder": "Đầu tư",
+        "namePlaceholder": "Investments",
         "createButton": "Create",
         "subgroupTitle": "New subgroup",
         "insideLabel": "Inside",
@@ -637,7 +637,7 @@
         "customerPlaceholder": "Who the invoice is billed to",
         "total": "Total",
         "totalPlaceholder": "0.00",
-        "currency": "Đơn vị tiền tệ",
+        "currency": "Currency",
         "currencyPlaceholder": "EUR",
         "issued": "Invoice date",
         "submit": "Search again"
@@ -714,7 +714,7 @@
       },
       "householdOverrideHint": "{invitee} is already in your household with {permission} access. This share will override the household grant for this specific account.",
       "householdLookupFailed": "Couldn't check household membership – proceeding without the override hint.",
-      "cancel": "Hủy",
+      "cancel": "Cancel",
       "send": "Send invitation",
       "success": "Invitation request submitted. If a user with that address is registered, they'll receive an invitation.",
       "error": "Could not send invitation. Please try again.",
@@ -729,9 +729,9 @@
       "permissions": {
         "read": "View only",
         "write": "Attach own transactions",
-        "manage": "Quản lý"
+        "manage": "Manage"
       },
-      "cancel": "Hủy",
+      "cancel": "Cancel",
       "send": "Send invitation",
       "success": "Invitation sent.",
       "error": "Couldn't send invitation.",
@@ -762,7 +762,7 @@
       "permissions": {
         "read": "Read-only",
         "write": "Read + write",
-        "manage": "Quản lý"
+        "manage": "Manage"
       },
       "unknownOwner": "A MoneyMatter user",
       "unknownResource": "a shared resource",
@@ -782,7 +782,7 @@
         "writeScopeLabel": "Write scope",
         "permissions": {
           "read": "Read only",
-          "write": "Chỉnh sửa"
+          "write": "Write"
         },
         "writeScope": {
           "all": "Any account",
@@ -815,7 +815,7 @@
       "title": "Mark payment",
       "description": "Record a payment for {name}",
       "chooseDescription": "How do you want to record this payment for {name}?",
-      "amountLabel": "Số tiền",
+      "amountLabel": "Amount",
       "amountPlaceholder": "0.00",
       "crossCurrencyEstimate": "~{sourceAmount} {sourceCurrency} → {accountCurrency} (estimated)",
       "dateLabel": "Payment date",
@@ -847,12 +847,12 @@
       "payingTo": "Paying to",
       "fromAccountLabel": "From account",
       "fromAccountPlaceholder": "Select account",
-      "amountLabel": "Số tiền",
+      "amountLabel": "Amount",
       "amountPlaceholder": "0.00",
       "targetAmountLabel": "Amount applied to loan",
       "targetAmountPlaceholder": "0.00",
       "targetAmountTooltip": "Source account is in {source}, loan is in {loan}. We pre-fill the converted amount using the current exchange rate – adjust if your bank applied a different rate.",
-      "saveButton": "Lưu",
+      "saveButton": "Save",
       "recordButton": "Record",
       "overdrawWarning": "This is more than {account}'s balance and will overdraw the account.",
       "preAnchorWarning": "This payment is dated before the loan's balance anchor ({date}), so it will be saved as history and won't reduce the outstanding balance.",
@@ -860,7 +860,7 @@
       "deleteConfirmTitle": "Delete this payment?",
       "deleteConfirmDescription": "Both sides of the transfer move to Trash and the loan balance will be restored. They stay there for 30 days and you can restore them until then.",
       "preAnchorHint": "This date is before the loan's balance snapshot, so this payment won't change the outstanding balance – it's already included in the opening balance.",
-      "unlinkButton": "Gỡ liên kết",
+      "unlinkButton": "Unlink",
       "unlinkConfirmTitle": "Unlink this payment?",
       "unlinkConfirmDescription": "The transaction will be kept as a regular expense but removed from this loan. The loan balance will be recalculated.",
       "unlinkSuccess": "Payment unlinked",

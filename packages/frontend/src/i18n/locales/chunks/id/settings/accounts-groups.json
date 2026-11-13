@@ -44,16 +44,16 @@
         "rename": {
           "title": "Rename group",
           "description": "Click the logo to pick a bank logo, initials or a color.",
-          "submit": "Simpan Perubahan"
+          "submit": "Save changes"
         },
         "move": {
-          "title": "Pindahkan “{name}”",
+          "title": "Move “{name}”",
           "description": "Its subgroups and accounts move with it.",
           "parentLabel": "Parent group",
           "parentPlaceholder": "Select a parent group",
           "noParent": "No parent",
           "hint": "Pick “No parent” to make it a top-level group.",
-          "submit": "Pindahkan"
+          "submit": "Move"
         },
         "addAccounts": {
           "title": "Add accounts to “{name}”",
@@ -77,24 +77,24 @@
       },
       "tree": {
         "groupsCount": "{count} group | {count} groups",
-        "syncedBadge": "Tersinkronkan",
-        "expand": "Perluas",
-        "collapse": "Ciutkan",
-        "renameTooltip": "Ubah nama",
-        "moreActions": "Tindakan lainnya",
+        "syncedBadge": "Synced",
+        "expand": "Expand",
+        "collapse": "Collapse",
+        "renameTooltip": "Rename",
+        "moreActions": "More actions",
         "menu": {
           "rename": "Rename and change logo",
           "move": "Move to another group",
           "newSubgroup": "New subgroup",
           "addAccounts": "Add accounts",
-          "delete": "Hapus grup"
+          "delete": "Delete group"
         }
       },
       "organize": {
-        "button": "Atur",
+        "button": "Organize",
         "hint": "Drag a group onto another to nest it",
-        "save": "Simpan Perubahan",
-        "topLevel": "Tingkat atas",
+        "save": "Save changes",
+        "topLevel": "Top level",
         "dropToTopLevel": "Drop here to make “{name}” a top-level group",
         "movesCount": "{count} move | {count} moves",
         "moveInside": "Move inside",

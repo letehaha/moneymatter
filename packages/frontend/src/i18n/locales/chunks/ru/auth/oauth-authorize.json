@@ -17,8 +17,8 @@
         "permissions": "Permissions",
         "tools": "Tools"
       },
-      "continue": "Продолжить",
-      "back": "Назад",
+      "continue": "Continue",
+      "back": "Back",
       "toolsets": {
         "intro": "Pick what {name} can work with. Each extra set adds tools that {name} loads into every chat.",
         "add_all": "Add all",

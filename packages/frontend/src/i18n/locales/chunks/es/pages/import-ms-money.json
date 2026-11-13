@@ -128,7 +128,7 @@
           "errors": {
             "rowsSuppressed": "No se pudo importar {count} fila más a partir de esta. Solo se muestran los primeros {listed} errores. | No se pudo importar {count} filas más a partir de esta. Solo se muestran los primeros {listed} errores.",
             "accountBalanceDesync": "El saldo de una cuenta no se pudo actualizar después de la importación. Compruébalo y corríjalo manualmente.",
-            "rowImportFailed": "Esta fila no pudo ser importada."
+            "rowImportFailed": "This row could not be imported."
           },
           "viewTransactions": "Ver transacciones",
           "importAnother": "Importar otro archivo"

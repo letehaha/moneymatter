@@ -6,8 +6,8 @@
       "creditLimit": {
         "label": "Includi i limiti di credito nel saldo",
         "description": "Se abilitata, i limiti di credito vengono sottratti dai saldi dei conti nelle statistiche e nel grafico dell'andamento dei saldi. In questo modo viene mostrata la reale situazione finanziaria invece del credito disponibile.",
-        "successNotification": "Impostazioni aggiornate con successo",
-        "errorNotification": "Impossibile aggiornare le impostazioni"
+        "successNotification": "Impostazione aggiornata correttamente",
+        "errorNotification": "Impossibile aggiornare l'impostazione"
       },
       "payday": {
         "label": "Il ciclo dello stipendio inizia il",

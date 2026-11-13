@@ -107,7 +107,7 @@
         "paymentTypeLabel": "Jenis Pembayaran",
         "noteLabel": "Catatan (opsional)",
         "notePlaceholder": "Catatan",
-        "addFieldsLabel": "Tambah",
+        "addFieldsLabel": "Add",
         "externalUrlLabel": "External URL",
         "externalUrlPlaceholder": "Link to the order, booking or receipt page",
         "externalReferenceLabel": "External reference",
@@ -129,7 +129,7 @@
             "searchFailed": "Search is unavailable right now. Try again in a moment",
             "confirm": "Use this location",
             "loadFailed": "Could not load the map. Check your connection and try again",
-            "retry": "Coba lagi",
+            "retry": "Try again",
             "consent": {
               "title": "Map tiles come from OpenStreetMap",
               "description": "Opening the map and searching addresses sends requests to openstreetmap.org, which sees your IP address. You can turn this off later in Settings.",
@@ -176,7 +176,7 @@
         "loadingButton": "Memuat...",
         "createButton": "Buat",
         "editButton": "Sunting",
-        "duplicateButton": "Duplikat",
+        "duplicateButton": "Duplicate",
         "createMore": {
           "label": "Create more",
           "createdToast": "Transaction created"
@@ -242,7 +242,7 @@
           "viewer": {
             "loadFailed": "Could not load this file.",
             "openInNewTab": "Open in new tab",
-            "download": "Unduh"
+            "download": "Download"
           }
         },
         "paymentLegs": {
@@ -260,7 +260,7 @@
           "linkedChangesTakes": "Takes this transaction's category, payee, note and tags.",
           "linkedChangesKeeps": "Its account, amount and date stay the same.",
           "linkedChangesUnlink": "Unlinking restores its original details.",
-          "unlink": "Lepaskan",
+          "unlink": "Unlink",
           "convertedAmountLabel": "Amount in {currency}",
           "rateInfo": "Exchange rate details",
           "rateFromAmounts": "Rate from your amounts",
@@ -269,7 +269,7 @@
           "convertedHint": "Prefilled from the market rate. Change the {currency} amount to match what you actually paid.",
           "noMarketRate": "No market rate for {currency} – enter the amount manually.",
           "linkPicker": {
-            "title": "Tautkan transaksi yang ada",
+            "title": "Link existing transactions",
             "windowHint": "Within {days} days of {date}",
             "loadError": "Couldn't load transactions",
             "emptyTitle": "No transactions to link",
@@ -343,7 +343,7 @@
         "mainCategoryLabel": "(utama)",
         "linkRemovedOnTypeChange": "Tautan refund dihapus karena jenis transaksi berubah.",
         "summaryEmpty": "Belum ada yang dipilih",
-        "sharePlaceholder": "Jumlah",
+        "sharePlaceholder": "Amount",
         "shareInputLabel": "Refund share for {name}",
         "shareErrorNonPositive": "Enter an amount above zero",
         "shareErrorExceedsPurchase": "More than what is left of this purchase ({amount})",
@@ -427,7 +427,7 @@
         "unlinkButton": "Lepas dari Portofolio",
         "unlinkWarning": "Melepas tautan akan mengurangi saldo kas portofolio {portfolio}.",
         "unlinkWarningNoCash": "Transfer ini tidak pernah mengubah saldo kas {portfolio}, jadi melepas tautan tidak akan memengaruhi saldo tersebut.",
-        "noCashBadge": "Tidak ada dampak kas",
+        "noCashBadge": "No cash impact",
         "unlinkDescription": "Detail transaksi asli akan dipulihkan.",
         "cancelButton": "Batal",
         "confirmUnlink": "Konfirmasi Lepas Tautan"
@@ -490,7 +490,7 @@
           "deleteConfirmDescription": "Templat ini akan dihapus. Transaksi yang sudah Anda buat darinya tidak terpengaruh.",
           "duplicateName": "Anda sudah memiliki templat bernama “{name}”.",
           "originalCurrencyLabel": "Original amount currency",
-          "originalCurrencyPlaceholder": "Pilih mata uang"
+          "originalCurrencyPlaceholder": "Select a currency"
         },
         "errors": {
           "create": "Tidak dapat menyimpan templat. Silakan coba lagi.",
@@ -566,7 +566,7 @@
       "iconLabel": "Ikon",
       "iconPlaceholder": "Pilih ikon",
       "defaultTagsLabel": "Default tags",
-      "defaultTagsPlaceholder": "Pilih tag",
+      "defaultTagsPlaceholder": "Select tags",
       "defaultTagsHint": "Added to a transaction when you pick this category.",
       "applyTagsOnAiLabel": "Also apply when AI categorizes a transaction",
       "applyTagsOnAiHint": "Tags stay on the transaction if you change its category later.",
@@ -631,13 +631,13 @@
       },
       "fixDetails": "Fix details",
       "form": {
-        "vendor": "Pedagang",
+        "vendor": "Merchant",
         "vendorPlaceholder": "Enter the merchant name",
         "customer": "Customer",
         "customerPlaceholder": "Who the invoice is billed to",
         "total": "Total",
         "totalPlaceholder": "0.00",
-        "currency": "Mata Uang",
+        "currency": "Currency",
         "currencyPlaceholder": "EUR",
         "issued": "Invoice date",
         "submit": "Search again"
@@ -670,7 +670,7 @@
         "description": "We looked for about {total} from 14 days before to 30 days after the invoice date, in all accounts. The payment may not be imported yet, or the invoice was read wrong."
       },
       "searchManually": "Search manually",
-      "createTransaction": "Buat transaksi",
+      "createTransaction": "Create transaction",
       "link": "Link invoice",
       "linked": "Invoice linked to the transaction",
       "created": "Transaction created and invoice attached",

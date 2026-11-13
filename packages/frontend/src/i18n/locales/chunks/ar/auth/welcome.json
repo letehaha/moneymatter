@@ -27,7 +27,7 @@
         },
         "userAlreadyExists": {
           "signIn": "يوجد حساب مرتبط بهذا البريد الإلكتروني بالفعل",
-          "signUp": "يوجد حساب مرتبط بهذا البريد الإلكتروني بالفعل",
+          "signUp": "An account with this email already exists",
           "link": "هذا الحساب مرتبط بالفعل بمستخدم آخر"
         },
         "accountNotLinked": {
@@ -38,7 +38,7 @@
         "genericError": {
           "signIn": "فشل في تسجيل الدخول. يرجى المحاولة مرة أخرى.",
           "signUp": "فشل التسجيل. يرجى المحاولة مرة أخرى.",
-          "link": "فشل ربط الحساب. يرجى المحاولة مرة اخرى."
+          "link": "Failed to link account. Please try again."
         },
         "unauthorizedClient": "هذا التطبيق غير مصرح له باستخدام طريقة المصادقة هذه",
         "temporarilyUnavailable": "خدمة المصادقة غير متوفرة مؤقتاً. الرجاء المحاولة لاحقاً.",

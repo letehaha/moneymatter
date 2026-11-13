@@ -9,7 +9,7 @@
       "title": "Recurring payments",
       "description": "Track recurring payments, bills, and income",
       "addSubscription": "Add recurring payment",
-      "addSubscriptionShort": "Thêm",
+      "addSubscriptionShort": "Add",
       "backToList": "Back to recurring payments",
       "createTitle": "Create recurring payment",
       "typeSubscription": "Subscription",
@@ -17,11 +17,11 @@
       "typeInstallment": "Installment",
       "completed": "Completed",
       "paused": "Paused",
-      "cancel": "Hủy",
+      "cancel": "Cancel",
       "pauseSubscription": "Pause",
       "resumeSubscription": "Resume",
-      "deleteSubscription": "Xóa",
-      "amount": "Số tiền",
+      "deleteSubscription": "Delete",
+      "amount": "Amount",
       "frequencyLabel": "Frequency",
       "nextExpected": "Next expected",
       "startDate": "Start date",
@@ -51,7 +51,7 @@
         "convertedTooltip": "Converted at each payment's exchange rate"
       },
       "quickAdd": {
-        "currencyPlaceholder": "Chọn tiền tệ",
+        "currencyPlaceholder": "Select currency",
         "nextPaymentLabel": "Next payment",
         "nextPaymentHint": "Optional. Set a date to track due payments and get reminders.",
         "refineHint": "You can add an account, category, tags, reminders and automation right after creating."
@@ -62,7 +62,20 @@
         "monthly": "Monthly",
         "quarterly": "Quarterly",
         "semiAnnual": "Semi-annual",
-        "annual": "Annual"
+        "annual": "Annual",
+        "custom": "Custom",
+        "every": {
+          "day": "Every day | Every {count} days",
+          "week": "Every week | Every {count} weeks",
+          "month": "Every month | Every {count} months",
+          "year": "Every year | Every {count} years"
+        },
+        "units": {
+          "day": "day | days",
+          "week": "week | weeks",
+          "month": "month | months",
+          "year": "year | years"
+        }
       },
       "matchSource": {
         "manual": "Manual",
@@ -70,10 +83,10 @@
         "ai": "AI"
       },
       "form": {
-        "nameLabel": "Tên",
+        "nameLabel": "Name",
         "namePlaceholder": "e.g. Netflix, Electricity bill",
         "logoLabel": "Logo",
-        "typeLabel": "Loại",
+        "typeLabel": "Type",
         "typeSubscriptionDesc": "Recurring service payment",
         "typeBillDesc": "Recurring bill or utility",
         "transactionTypeLabel": "Transaction type",
@@ -84,8 +97,13 @@
         "transactionTypeLockedTooltip": "Transaction type can't be changed after the recurring payment is created",
         "amountLabel": "Expected amount",
         "amountPlaceholder": "0.00",
-        "currencyLabel": "Đơn vị tiền tệ",
+        "currencyLabel": "Currency",
         "frequencyLabel": "Frequency",
+        "intervalCountLabel": "Repeat every",
+        "intervalCountPlaceholder": "e.g. 30",
+        "intervalUnitLabel": "Unit",
+        "intervalUnitPlaceholder": "Select a unit",
+        "validationIntervalCount": "Enter a whole number from 1 to {max}",
         "startDateLabel": "Start date",
         "endDateLabel": "End date",
         "accountLabel": "Account",
@@ -95,7 +113,7 @@
         "payeeLabel": "Payee",
         "payeePlaceholder": "Select a payee",
         "payeeHint": "Applied to matched transactions that don't already have a payee.",
-        "tagsLabel": "Thẻ",
+        "tagsLabel": "Tags",
         "tagsPlaceholder": "Select tags",
         "tagsHint": "Added to every transaction linked to this subscription. Existing tags are kept.",
         "matchingRulesLabel": "Matching rules",
@@ -150,7 +168,7 @@
         "addRule": "Add rule",
         "fieldOptions": {
           "note": "Note",
-          "amount": "Số tiền",
+          "amount": "Amount",
           "transactionType": "Transaction type",
           "account": "Account"
         },
@@ -167,13 +185,13 @@
       "deleteError": "Failed to delete recurring payment",
       "deleteConfirmTitle": "Delete recurring payment?",
       "deleteConfirmDescription": "Are you sure you want to delete this recurring payment? This action cannot be undone.",
-      "deleteConfirm": "Xóa",
+      "deleteConfirm": "Delete",
       "toggleError": "Failed to update recurring payment status",
       "unlinkSuccess": "Transaction unlinked successfully",
       "unlinkError": "Failed to unlink transaction",
       "unlinkConfirmTitle": "Unlink this payment?",
       "unlinkConfirmDescription": "{payment} will be removed from this subscription's history. The transaction itself won't be deleted.",
-      "unlinkConfirmAction": "Gỡ liên kết",
+      "unlinkConfirmAction": "Unlink",
       "suggestError": "Failed to load suggested matches",
       "linkSuccess": "Transactions linked successfully",
       "linkError": "Failed to link transactions",
@@ -225,7 +243,7 @@
         "lastScanned": "Last scanned {time}",
         "emptyTitle": "No new subscriptions found",
         "emptyDescription": "We couldn't find any new recurring payment patterns in your transaction history.",
-        "add": "Thêm",
+        "add": "Add",
         "dismiss": "Dismiss",
         "basedOnTransactions": "Based on {count} transactions",
         "confidence": {
@@ -350,7 +368,7 @@
           "edit": "Edit organization",
           "notesAdded": "Added",
           "notesEmpty": "None",
-          "tagsMore": "+{count} mục nữa"
+          "tagsMore": "+{count} more"
         }
       }
     }

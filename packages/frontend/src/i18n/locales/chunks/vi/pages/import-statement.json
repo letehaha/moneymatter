@@ -7,15 +7,15 @@
         "steps": {
           "upload": "Upload",
           "account": "Account",
-          "review": "Xem xét",
-          "results": "Nhập"
+          "review": "Review",
+          "results": "Import"
         }
       },
       "steps": {
         "accountTitle": "Select account",
         "accountDescription": "Choose or create an account for the transactions"
       },
-      "selectCurrency": "Chọn tiền tệ",
+      "selectCurrency": "Select currency",
       "selectExistingAccount": "Select existing account",
       "accountNamePlaceholder": "e.g., Main Bank Account",
       "selectAccount": "Select an account",
@@ -44,13 +44,13 @@
           "estimated": "Ready",
           "estimateFailed": "Could not analyze",
           "extracting": "Parsing...",
-          "extracted": "{count} giao dịch | {count} giao dịch",
+          "extracted": "{count} transaction | {count} transactions",
           "failed": "Failed"
         },
         "analyzeButton": "Analyze file | Analyze {count} files",
         "tryAgain": "Try again",
-        "modelLabel": "Mô hình",
-        "estimatedCostLabel": "Chi phí ước tính",
+        "modelLabel": "Model",
+        "estimatedCostLabel": "Estimated cost",
         "estimatedTokensLabel": "Estimated tokens",
         "extractButton": "Extract transactions",
         "progressMessage": "This may take 30-60 seconds depending on the document size",
@@ -109,18 +109,18 @@
         "allCurrenciesGroup": "All currencies",
         "createNew": "Create new",
         "back": "Back",
-        "importTransactions": "Nhập giao dịch",
+        "importTransactions": "Import transactions",
         "checkForDuplicates": "Check for duplicates"
       },
       "createAccountDialog": {
         "title": "Create account for import",
         "description": "Create a new account to import your statement transactions.",
         "accountNameLabel": "Account name",
-        "currencyLabel": "Đơn vị tiền tệ",
+        "currencyLabel": "Currency",
         "fromStatement": "(from statement)",
         "currencyLocked": "Currency is locked to match the statement ({currency}).",
         "currencyWillBeAdded": "Note: {currency} will be added to your currencies.",
-        "cancel": "Hủy",
+        "cancel": "Cancel",
         "creating": "Creating...",
         "createAccount": "Create account",
         "validation": {
@@ -142,7 +142,7 @@
         "legendDuplicate": "Duplicate",
         "legendExisting": "Already in account",
         "statusDup": "Duplicate",
-        "statusImport": "Nhập",
+        "statusImport": "Import",
         "statusExists": "In account",
         "duplicateInfoSkipped": "{count} transactions will be skipped as duplicates.",
         "duplicateInfoOverridden": "{count} duplicates have been overridden and will be imported.",

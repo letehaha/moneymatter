@@ -6,7 +6,7 @@
         "description": "管理您跟踪的货币和您账户中使用的汇率。"
       },
       "addNew": {
-        "loading": "加载中……",
+        "loading": "Loading...",
         "selectCurrency": "选择货币",
         "addButton": "添加",
         "sectionLabel": "添加货币",
@@ -16,7 +16,7 @@
         }
       },
       "howItWorks": {
-        "trigger": "它是如何运作的？",
+        "trigger": "How it works?",
         "body": "您的基本货币是账户余额统计和报告时计算的货币。 每个添加的货币会自动从实时市场汇率更新，或者您也可以设置自定义汇率。"
       },
       "row": {
@@ -93,7 +93,7 @@
           "restrictionWarning": "在修改进行中时，您将无法创建新账户、交易记录和任何与余额相关的交易。",
           "confirmation": "您确定要继续吗？",
           "changeButton": "更改基础货币",
-          "cancelButton": "取消"
+          "cancelButton": "Cancel"
         },
         "successMessage": "已成功更改基础货币。",
         "errors": {

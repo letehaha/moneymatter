@@ -1,22 +1,22 @@
 {
   "common": {
-    "loading": "Laden...",
+    "loading": "Loading...",
     "new": "Neu",
     "actions": {
-      "loading": "Laden...",
+      "loading": "Loading...",
       "signUp": "Registrieren",
-      "save": "Speichern",
-      "cancel": "Abbrechen",
-      "back": "Zurück",
-      "accept": "Annehmen",
-      "delete": "Löschen",
-      "edit": "Bearbeiten",
+      "save": "Save",
+      "cancel": "Cancel",
+      "back": "Back",
+      "accept": "Accept",
+      "delete": "Delete",
+      "edit": "Edit",
       "addSubcategory": "Unterkategorie hinzufügen",
-      "settings": "Einstellungen",
-      "confirm": "Bestätigen",
+      "settings": "Settings",
+      "confirm": "Confirm",
       "viewTransactions": "Transaktionen anzeigen",
       "viewAnalytics": "Analysen anzeigen",
-      "saving": "Speichern...",
+      "saving": "Saving...",
       "saveChanges": "Speichern",
       "done": "Fertig",
       "failed": "Fehlgeschlagen",
@@ -24,13 +24,13 @@
       "scan": "Scannen",
       "link": "Verknüpfen",
       "clear": "Zurücksetzen",
-      "apply": "Anwenden",
+      "apply": "Apply",
       "retry": "Erneut versuchen",
       "copyInviteLink": "Einladungslink kopieren",
       "moveTo": "Verschieben nach…",
       "learnMore": "Mehr erfahren",
-      "undo": "Rückgängig",
-      "more": "Mehr"
+      "undo": "Undo",
+      "more": "More"
     },
     "ui": {
       "close": "Schließen",
@@ -68,7 +68,7 @@
       "emailNotSent": "E-Mail-Versand nicht konfiguriert — Teile den Einladungslink manuell"
     },
     "labels": {
-      "email": "E-Mail",
+      "email": "Email",
       "password": "Passwort",
       "system": "System",
       "unknown": "Unbekannt",
@@ -79,7 +79,7 @@
       "password": "Dein Passwort"
     },
     "dialogs": {
-      "createAccount": "Konto erstellen",
+      "createAccount": "Create account",
       "createVehicle": "Fahrzeug hinzufügen",
       "editVehicle": "Fahrzeug bearbeiten"
     },
@@ -92,7 +92,7 @@
       "bonus": "Bonus",
       "insurance": "Versicherung",
       "investment": "Investment",
-      "loan": "Kredit",
+      "loan": "Loan",
       "mortgage": "Immobilienkredit",
       "overdraft": "Dispokredit",
       "crypto": "Krypto",
@@ -106,7 +106,7 @@
       "mobilePayment": "Mobiles Bezahlen",
       "voucher": "Gutschein",
       "webPayment": "Web-Zahlung",
-      "none": "Keine"
+      "none": "None"
     },
     "vehicleClasses": {
       "sedan": "Limousine",
@@ -146,7 +146,7 @@
         "description": "Scannt neue Transaktionen und schlägt diejenigen vor, die zu einem Smart-Tracker gehören."
       },
       "transferMatching": {
-        "name": "Umbuchungserkennung",
+        "name": "Transfer matching",
         "description": "Überprüft Ergebnisse des Umbuchungs-Scans und behält die Paare bei, die wie echte Umbuchungen aussehen"
       }
     },
@@ -166,12 +166,12 @@
       "record": {
         "addedByTooltip": "Diese Transaktion wurde dem Tracker von {handle} hinzugefügt",
         "addedByRule": "Durch die Regeln des Trackers hinzugefügt",
-        "matchedByAi": "Durch KI zugeordnet",
+        "matchedByAi": "Matched by AI",
         "externalLinkTooltip": "Externen Link öffnen",
         "locationTooltip": "Standort auf Karte öffnen",
         "attachmentsTooltip": "Enthält Anhänge",
         "hiddenAccount": "Ausgeblendetes Konto",
-        "selectRow": "Transaktion auswählen",
+        "selectRow": "Select transaction",
         "unselectableReasons": {
           "sharedAccount": "Kann nicht ausgewählt werden: Diese Transaktion befindet sich auf einem mit dir geteilten Konto, und nur dessen Eigentümer kann sie bearbeiten."
         },
@@ -189,7 +189,7 @@
       "dialogTitle": "Datumsbereich",
       "dueDate": "Fälligkeitsdatum",
       "quickSelect": "Schnellauswahl",
-      "apply": "Anwenden",
+      "apply": "Apply",
       "periodTypes": {
         "day": "Tag",
         "month": "Monat",
@@ -233,15 +233,15 @@
       },
       "duration": {
         "seconds": "{count} Sekunde | {count} Sekunden",
-        "minutes": "{count} Minute | {count} Minuten",
-        "hours": "{count} Stunde | {count} Stunden"
+        "minutes": "{count} minute | {count} minutes",
+        "hours": "{count} hour | {count} hours"
       }
     },
     "logo": {
       "tabs": {
         "brand": "Marke",
         "letters": "Buchstaben",
-        "icon": "Symbol",
+        "icon": "Icon",
         "custom": "Bild"
       },
       "searchPlaceholder": "Markenname oder Domain",
@@ -259,11 +259,11 @@
       "remove": "Logo entfernen",
       "pickerDescription": "Wähle ein Markenlogo oder verwende stattdessen Buchstaben.",
       "updatedToast": "Logo aktualisiert",
-      "resetToast": "Logo entfernt",
+      "resetToast": "Logo removed",
       "updateError": "Logo konnte nicht aktualisiert werden. Bitte versuche es erneut.",
       "lettersLabel": "Buchstaben (1–2)",
       "lettersPlaceholder": "AB",
-      "colorLabel": "Farbe",
+      "colorLabel": "Color",
       "colorSwatchAriaLabel": "Farbe {color} verwenden",
       "customColorAriaLabel": "Benutzerdefinierte Farbe wählen",
       "lettersSelectedLabel": "Buchstaben \"{letters}\"",
@@ -519,10 +519,10 @@
   "aiUsage": {
     "title": "Enthaltene KI-Nutzung",
     "used": "genutzt",
-    "percentUsed": "{percent}% genutzt",
+    "percentUsed": "{percent}% used",
     "resetsOn": "Wird am {date} zurückgesetzt",
     "connectOwnModel": "Eigenes Modell verbinden",
-    "gotIt": "Verstanden",
+    "gotIt": "Got it",
     "badge": {
       "used": "{percent}% KI genutzt",
       "reached": "KI-Limit erreicht"
@@ -555,10 +555,10 @@
       "nameLabel": "Name",
       "noteLabel": "Notiz (optional)",
       "notePlaceholder": "Optionale Notiz...",
-      "loadingText": "Laden...",
-      "savingAction": "Speichern",
-      "cancelButton": "Abbrechen",
-      "editAction": "Bearbeiten",
+      "loadingText": "Loading...",
+      "savingAction": "Save",
+      "cancelButton": "Cancel",
+      "editAction": "Edit",
       "deleteAction": "Gruppe löschen",
       "transactionsLabel": "Transaktionen",
       "deleteGroupTitle": "Gruppe löschen",
@@ -566,14 +566,14 @@
       "removeTransactionTitle": "Transaktion aus Gruppe entfernen",
       "removeTransactionDescription": "Dadurch verbleiben weniger als 2 Transaktionen in der Gruppe, weshalb die Gruppe gelöscht wird. Fortfahren?",
       "removeTransactionDescriptionNormal": "Bist du sicher, dass du diese Transaktion aus der Gruppe entfernen möchtest?",
-      "removeButtonText": "Entfernen",
+      "removeButtonText": "Remove",
       "removeAndDeleteButtonText": "Entfernen & Gruppe löschen",
-      "removeFromGroup": "Aus Gruppe entfernen",
+      "removeFromGroup": "Remove from group",
       "saveError": "Gruppe konnte nicht gespeichert werden",
       "removeError": "Transaktion konnte nicht aus der Gruppe entfernt werden",
-      "manageTransactions": "Verwalten",
+      "manageTransactions": "Manage",
       "showMoreNote": "Mehr anzeigen",
-      "showLessNote": "Weniger anzeigen",
+      "showLessNote": "Show less",
       "summary": {
         "transactions": "Transaktionen",
         "net": "Netto",
@@ -591,7 +591,7 @@
       "description": "Konten, Transaktionen, Kategorien, Tags, Zahlungsempfänger und Berichte"
     },
     "subscriptions": {
-      "label": "Wiederkehrende Zahlungen",
+      "label": "Recurring payments",
       "description": "Wiederkehrende Zahlungen, ihre Zeiträume und geplanten Transaktionen"
     },
     "budgetPlans": {
@@ -599,11 +599,11 @@
       "description": "Pläne, Linien, Zeilenziele und Sparziele"
     },
     "trackers": {
-      "label": "Tracker",
+      "label": "Trackers",
       "description": "Ausgaben-Tracker und deren Vorschläge"
     },
     "automations": {
-      "label": "Automatisierungen",
+      "label": "Automations",
       "description": "Regeln, Zahlungsempfänger-Aliase, ignorierte Zahlungsempfängernamen und Tag-Erinnerungen"
     },
     "review": {
@@ -619,7 +619,7 @@
       "description": "Portfolios, Positionen, Wertpapiere und Investitionstransaktionen"
     },
     "ventures": {
-      "label": "Beteiligungen",
+      "label": "Ventures",
       "description": "Beteiligungsplattformen, Deals und Events"
     },
     "loansVehicles": {
@@ -627,7 +627,7 @@
       "description": "Kredite mit ihren Kreditrückzahlungen und Fahrzeuge"
     },
     "currencies": {
-      "label": "Währungen",
+      "label": "Currencies",
       "description": "Deine Währungen und Wechselkurse"
     },
     "imports": {

@@ -765,6 +765,11 @@
         "requiresAccountField": "La registrazione automatica richiede un conto su cui registrare la transazione.",
         "requiresAmountField": "La registrazione automatica richiede expectedAmount ed expectedCurrencyCode.",
         "excludesMatchingField": "La registrazione automatica e le regole di abbinamento si escludono a vicenda."
+      },
+      "customInterval": {
+        "required": "Una frequenza personalizzata richiede un'unità e un numero di intervalli.",
+        "presetConflict": "L'unità e il numero di intervalli possono essere impostati solo con la frequenza personalizzata.",
+        "countOutOfRange": "Il numero di intervalli deve essere compreso tra {{min}} e {{max}} per questa unità."
       }
     }
   },

@@ -12,7 +12,7 @@
       "payday": {
         "label": "El ciclo de pago comienza el",
         "description": "Día del mes que comienza tu ciclo de pago. El período predeterminado del tablero de control se extiende de este día al día anterior al mes próximo.",
-        "placeholder": "Seleccionar día",
+        "placeholder": "Select day",
         "successNotification": "Inicio del ciclo de pago actualizado"
       },
       "unrealizedLossAlert": {
@@ -106,7 +106,7 @@
             "description": "Mantenga un número de pedido, número de factura o referencia de reserva con la transacción."
           },
           "originalAmount": {
-            "label": "Importe original",
+            "label": "Original amount",
             "description": "La cantidad realmente cobrada en otra moneda, cuando difiere de la divisa de la cuenta."
           },
           "location": {

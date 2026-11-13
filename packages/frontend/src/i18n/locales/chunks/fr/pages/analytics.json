@@ -97,13 +97,13 @@
       },
       "scope": {
         "label": "Category scope",
-        "all": "Toutes les catégories",
+        "all": "All categories",
         "up": "Up one level",
-        "transactions": "Opérations",
-        "count": "{count} catégorie | {count} catégories",
+        "transactions": "Transactions",
+        "count": "{count} category | {count} categories",
         "more": "+{count}",
         "allExcept": "All except {list}",
-        "clear": "Effacer"
+        "clear": "Clear"
       },
       "categoryBreakdown": {
         "title": "Répartition par catégorie",
@@ -112,8 +112,8 @@
         "moreCount": "{count} autres",
         "noSubcategory": "{name} · no subcategory",
         "byLevel": "By level",
-        "detail": "Détail",
-        "others": "Autres"
+        "detail": "Detail",
+        "others": "Others"
       },
       "hero": {
         "vsPrevious": "{percent}% vs previous period",
@@ -121,16 +121,16 @@
       },
       "overTime": {
         "title": "Over time",
-        "cumulative": "Cumulé",
+        "cumulative": "Cumulative",
         "perPeriod": "Per period",
         "granularity": {
-          "monthly": "Mensuel",
-          "quarterly": "Trimestriel",
-          "yearly": "Annuelle"
+          "monthly": "Monthly",
+          "quarterly": "Quarterly",
+          "yearly": "Yearly"
         }
       },
       "transactionsCard": {
-        "title": "Opérations",
+        "title": "Transactions",
         "largest": "Largest",
         "recent": "Recent"
       },
@@ -139,7 +139,7 @@
         "average": "Moyenne",
         "total": "Total",
         "vsPrevious": {
-          "monthly": "vs le mois dernier",
+          "monthly": "vs last month",
           "quarterly": "vs last quarter",
           "yearly": "vs last year"
         },
@@ -385,8 +385,8 @@
           "rollingHint": "Rolling · currently {month}",
           "specific": "Specific month",
           "specificHint": "Stays fixed",
-          "prevYear": "Année précédente",
-          "nextYear": "L'année prochaine",
+          "prevYear": "Previous year",
+          "nextYear": "Next year",
           "earliest": "Earliest is {month}. FIRE needs 3 months of tracked spending before it."
         },
         "details": {
@@ -396,8 +396,8 @@
           "backInReach": "On {month}'s numbers FIRE was out of reach. Now it's {date}.",
           "offTrack": "The {month} forecast was {date}. On today's numbers FIRE is out of reach.",
           "metric": "Metric",
-          "today": "Aujourd'hui",
-          "change": "Modifier",
+          "today": "Today",
+          "change": "Change",
           "fireDate": "FIRE date",
           "saved": "Saved by now",
           "spending": "Spending",

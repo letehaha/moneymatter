@@ -86,7 +86,7 @@
         },
         "buttons": {
           "back": "Back",
-          "loading": "جار التحميل...",
+          "loading": "Loading...",
           "next": "Next",
           "syncing": "Syncing...",
           "sync": "Sync {count} account | Sync {count} accounts"
@@ -364,7 +364,7 @@
           "columnExternalId": "External ID",
           "columnBalance": "Balance",
           "currencyFallbackChip": "Currency: {currency}",
-          "syncNow": "المزامنة الآن",
+          "syncNow": "Sync now",
           "connectRemainingWithCount": "Connect remaining accounts ({count})",
           "needsAttention": "{count} needs attention | {count} need attention",
           "totalLabel": "{amount} total",

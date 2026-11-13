@@ -9,9 +9,9 @@
           "steps": {
             "upload": "Upload",
             "map": "Map columns",
-            "resolveAccounts": "Tài khoản",
-            "resolveCategories": "Danh mục",
-            "review": "Xem xét",
+            "resolveAccounts": "Accounts",
+            "resolveCategories": "Categories",
+            "review": "Review",
             "results": "Done"
           }
         },
@@ -33,7 +33,7 @@
           "maxSize": "Maximum file size: 50MB",
           "removeFile": "Remove file",
           "parsing": "Parsing...",
-          "continueToMapping": "Tiếp tục ghép cột",
+          "continueToMapping": "Continue to mapping",
           "errors": {
             "invalidFormat": "Invalid file format. Please upload a CSV file.",
             "invalidFormatNamed": "{name} is not a CSV file",
@@ -54,7 +54,7 @@
         "columnMapping": {
           "stepTitle": "Map columns",
           "description": "Map your CSV columns to the required fields",
-          "file": "Tệp",
+          "file": "File",
           "filesCount": "{count} file | {count} files",
           "totalRows": "Total rows",
           "delimiter": "Delimiter",
@@ -100,7 +100,7 @@
           "unpriceableTitle": "{count} row(s) cannot be priced — no exchange rate found",
           "unpriceableDescription": "These rows use a currency that has no stored exchange rate and cannot be converted to your base currency. You must skip them or cancel the import.",
           "unpriceableWillBeSkipped": "unpriceable will be skipped",
-          "currency": "Đơn vị tiền tệ",
+          "currency": "Currency",
           "skipAndImport": "Skip & import",
           "cancelImport": "Cancel import",
           "noInvalidRows": "No invalid rows",
@@ -116,7 +116,7 @@
           "imported": "Imported",
           "skippedDuplicates": "Skipped (duplicates)",
           "accountsCreated": "Accounts created",
-          "accountsSkipped": "Đã bỏ qua tài khoản",
+          "accountsSkipped": "Accounts skipped",
           "categoriesCreated": "Categories created",
           "tagsCreated": "Tags created",
           "payeesCreated": "Payees created",
@@ -139,7 +139,7 @@
       "columnMapping": {
         "stepTitle": "Map columns",
         "description": "Map your CSV columns to the required fields",
-        "file": "Tệp",
+        "file": "File",
         "totalRows": "Total rows",
         "delimiter": "Delimiter",
         "detecting": "Detecting duplicates…"
@@ -196,7 +196,7 @@
         "title": "Account mapping",
         "description": "Map CSV account names to your existing accounts or create new ones. Only accounts with matching currency will be shown.",
         "csvAccountName": "CSV account name",
-        "currency": "Đơn vị tiền tệ",
+        "currency": "Currency",
         "action": "Action",
         "targetAccount": "Target account",
         "actions": {
@@ -247,7 +247,7 @@
           "sectionTitle": "Account mapping",
           "resolvedCount": "{resolved} of {total} resolved",
           "csvName": "CSV account",
-          "currency": "Đơn vị tiền tệ",
+          "currency": "Currency",
           "action": "Action",
           "target": "Target account",
           "selectTarget": "Select an account",
@@ -300,12 +300,12 @@
         "next": "Next",
         "missingHint": "Still needed: {fields}",
         "fields": {
-          "date": "Ngày",
-          "amount": "Số tiền",
+          "date": "Date",
+          "amount": "Amount",
           "description": "Description",
           "category": "Category",
           "account": "Account",
-          "currency": "Đơn vị tiền tệ",
+          "currency": "Currency",
           "transactionType": "Transaction type",
           "payee": "Payee"
         },
@@ -316,7 +316,7 @@
           "monthFirstOption": "Month first — {example}",
           "suggestedBadge": "Suggested",
           "isoDetected": "ISO date format detected — dates in this column are year-first, so no day/month choice is needed.",
-          "previewLabel": "Bản xem trước",
+          "previewLabel": "Preview",
           "previewUnrecognized": "unrecognized",
           "mismatchWarning": "{count} row doesn't match this format and will be flagged as invalid. | {count} rows don't match this format and will be flagged as invalid."
         }

@@ -21,7 +21,7 @@
       "dateLabel": "Transaktionsdatum",
       "noteLabel": "Notiz",
       "notePlaceholder": "Optional. Notiz zu dieser Transaktion hinzufügen",
-      "cancelButton": "Abbrechen",
+      "cancelButton": "Cancel",
       "submitButton": "Transaktion erstellen",
       "submitButtonLoading": "Wird erstellt...",
       "notifications": {
@@ -66,9 +66,9 @@
       "displayCurrencyPlaceholder": "Anzeigewährung auswählen",
       "displayCurrencyBaseOption": "Basiswährung ({code})",
       "displayCurrencyDescription": "Portfoliowert und Statistiken werden zum aktuellen Wechselkurs in diese Währung umgerechnet.",
-      "cancelButton": "Abbrechen",
+      "cancelButton": "Cancel",
       "submitButton": "Speichern",
-      "submitButtonLoading": "Speichern...",
+      "submitButtonLoading": "Saving...",
       "notifications": {
         "success": "Portfolio erfolgreich aktualisiert.",
         "error": "Portfolio konnte nicht aktualisiert werden. Bitte versuche es erneut."
@@ -98,7 +98,7 @@
       "dateLabel": "Datum",
       "descriptionLabel": "Beschreibung (optional)",
       "descriptionPlaceholder": "Notiz zu dieser Umbuchung hinzufügen...",
-      "cancelButton": "Abbrechen",
+      "cancelButton": "Cancel",
       "submitButton": "Umbuchung",
       "submitButtonLoading": "Wird verarbeitet...",
       "confirmDialog": {
@@ -107,7 +107,7 @@
         "actionTransfer": "Umbuchung",
         "actionWithdrawal": "Auszahlung",
         "actionDeposit": "Einzahlung",
-        "cancelButton": "Abbrechen",
+        "cancelButton": "Cancel",
         "confirmButton": "Umbuchung bestätigen"
       },
       "validation": {
@@ -136,7 +136,7 @@
       "accountCategoryPlaceholder": "Wähle eine Kontokategorie",
       "creditLimitLabel": "Kreditrahmen",
       "creditLimitPlaceholder": "Kreditrahmen",
-      "defaultPaymentTypeLabel": "Standard-Zahlungsart",
+      "defaultPaymentTypeLabel": "Default payment type",
       "submitButton": "Erstellen",
       "submitButtonLoading": "Wird erstellt...",
       "notifications": {
@@ -157,7 +157,7 @@
       "toAccountLabel": "Auf Konto",
       "accountPlaceholder": "Konto auswählen",
       "orSeparator": "oder",
-      "linkExistingTransaction": "Bestehende Transaktion verknüpfen",
+      "linkExistingTransaction": "Link existing transaction",
       "linkedTransactionLabel": "Verknüpfte Transaktion",
       "amountLabel": "Betrag",
       "amountPlaceholder": "Betrag eingeben",
@@ -168,20 +168,20 @@
       "adjustmentLabel": "Dies ist eine Saldenkorrektur",
       "adjustmentHint": "Der Cash-Bestand ändert sich weiterhin, jedoch wird dies im Bericht zu Investment-Einzahlungen nicht als eingezahltes Geld gewertet.",
       "descriptionPlaceholder": "Optionale Beschreibung",
-      "cancelButton": "Abbrechen",
+      "cancelButton": "Cancel",
       "submitButton": "Absenden",
       "submitButtonLoading": "Wird gesendet...",
       "confirmDialog": {
         "title": "Umbuchung bestätigen",
         "description": "Eine {action} über {amount} von {from} nach {to} wird erstellt",
-        "cancelButton": "Abbrechen",
+        "cancelButton": "Cancel",
         "confirmButton": "Bestätigen",
         "actionDeposit": "Einzahlung",
         "actionWithdrawal": "Auszahlung"
       },
       "validation": {
         "required": "Dieses Feld ist erforderlich",
-        "minValue": "Betrag muss größer als 0 sein"
+        "minValue": "Amount must be greater than 0"
       },
       "notifications": {
         "success": "Cash-Transaktion erfolgreich erstellt",
@@ -203,12 +203,12 @@
       "dateLabel": "Tauschdatum",
       "descriptionLabel": "Beschreibung (optional)",
       "descriptionPlaceholder": "Notiz zu diesem Währungstausch hinzufügen...",
-      "cancelButton": "Abbrechen",
+      "cancelButton": "Cancel",
       "submitButton": "Tauschen",
       "submitButtonLoading": "Wird verarbeitet...",
       "validation": {
         "required": "Dieses Feld ist erforderlich",
-        "minValue": "Betrag muss größer als 0 sein",
+        "minValue": "Amount must be greater than 0",
         "sameCurrency": "Ausgangs- und Zielwährung müssen unterschiedlich sein"
       },
       "notifications": {
@@ -221,7 +221,7 @@
       "namePlaceholder": "z.B. Mein Camry",
       "currencyLabel": "Währung",
       "makeLabel": "Marke",
-      "modelLabel": "Modell",
+      "modelLabel": "Model",
       "trimLabel": "Ausstattungslinie (optional)",
       "yearLabel": "Baujahr",
       "vehicleClassLabel": "Fahrzeugklasse",
@@ -241,7 +241,7 @@
     },
     "editVehicle": {
       "submitButton": "Speichern",
-      "submitButtonLoading": "Speichern...",
+      "submitButtonLoading": "Saving...",
       "notifications": {
         "success": "Fahrzeug aktualisiert",
         "error": "Fahrzeug konnte nicht aktualisiert werden"
@@ -287,7 +287,7 @@
       "saveButton": "Speichern",
       "submitButton": "Kredit erstellen",
       "submitButtonLoading": "Wird erstellt...",
-      "cancelButton": "Abbrechen",
+      "cancelButton": "Cancel",
       "notifications": {
         "success": "Kredit erstellt.",
         "error": "Kredit konnte nicht erstellt werden. Bitte versuche es erneut.",
@@ -322,7 +322,7 @@
     },
     "select": {
       "selectOption": "Option auswählen",
-      "searchPlaceholder": "Suchen..."
+      "searchPlaceholder": "Search..."
     },
     "currencySelect": {
       "yourCurrencies": "Deine Währungen",
@@ -354,8 +354,8 @@
     },
     "categoryMultiSelect": {
       "placeholder": "Kategorien auswählen...",
-      "searchPlaceholder": "Kategorien suchen...",
-      "noCategoriesFound": "Keine Kategorien gefunden",
+      "searchPlaceholder": "Search categories...",
+      "noCategoriesFound": "No categories found",
       "takenBy": "In {name}"
     },
     "payeeMultiSelect": {

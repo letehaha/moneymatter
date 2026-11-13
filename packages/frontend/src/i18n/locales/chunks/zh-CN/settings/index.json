@@ -2,7 +2,7 @@
   "settings": {
     "navigation": {
       "currencies": "Currencies",
-      "categories": "分类",
+      "categories": "Categories",
       "tags": "Tags",
       "accountsGroups": "Accounts groups",
       "importData": "Import/Export",
@@ -13,11 +13,11 @@
       "household": "Household",
       "personalGroup": "Personal",
       "workspaceGroup": "Workspace",
-      "appearance": "外观",
-      "language": "语言",
+      "appearance": "Appearance",
+      "language": "Language",
       "general": "General",
       "payees": "Payees",
-      "planBilling": "订阅与支付",
+      "planBilling": "Plan & billing",
       "collapse": "Collapse"
     },
     "backToSettings": "Back to settings"

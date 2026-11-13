@@ -29,8 +29,8 @@
       "copyInviteLink": "Copier le lien d'invitation",
       "moveTo": "Déplacer vers…",
       "learnMore": "En savoir plus",
-      "undo": "Annuler",
-      "more": "Plus"
+      "undo": "Undo",
+      "more": "More"
     },
     "ui": {
       "close": "Fermer",
@@ -106,7 +106,7 @@
       "mobilePayment": "Paiement mobile",
       "voucher": "Bon d'achat",
       "webPayment": "Paiement en ligne",
-      "none": "Aucune"
+      "none": "None"
     },
     "vehicleClasses": {
       "sedan": "Berline",
@@ -146,7 +146,7 @@
         "description": "Analyse les nouvelles opérations et suggère celles associées à un suivi intelligent."
       },
       "transferMatching": {
-        "name": "Rapprochement des virements",
+        "name": "Transfer matching",
         "description": "Vérifie les résultats de détection des transferts et conserve les paires qui semblent correspondre à de véritables transferts"
       }
     },
@@ -259,7 +259,7 @@
       "remove": "Supprimer le logo",
       "pickerDescription": "Pick a brand logo or use letters instead.",
       "updatedToast": "Logo updated",
-      "resetToast": "Logo supprimé",
+      "resetToast": "Logo removed",
       "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Lettres (1–2)",
       "lettersPlaceholder": "AB",
@@ -568,12 +568,12 @@
       "removeTransactionDescriptionNormal": "Voulez-vous vraiment retirer cette opération du groupe ?",
       "removeButtonText": "Retirer",
       "removeAndDeleteButtonText": "Retirer et supprimer le groupe",
-      "removeFromGroup": "Retirer du groupe",
+      "removeFromGroup": "Remove from group",
       "saveError": "Couldn't save the group",
       "removeError": "Couldn't remove the transaction from the group",
-      "manageTransactions": "Gérer",
+      "manageTransactions": "Manage",
       "showMoreNote": "Show more",
-      "showLessNote": "Voir moins",
+      "showLessNote": "Show less",
       "summary": {
         "transactions": "Opérations",
         "net": "Net",
@@ -591,7 +591,7 @@
       "description": "Accounts, transactions, categories, tags, payees and reports"
     },
     "subscriptions": {
-      "label": "Paiements récurrents",
+      "label": "Recurring payments",
       "description": "Recurring payments, their periods and planned transactions"
     },
     "budgetPlans": {
@@ -599,11 +599,11 @@
       "description": "Plans, lines, line goals and savings goals"
     },
     "trackers": {
-      "label": "Suivis",
+      "label": "Trackers",
       "description": "Spending trackers and their suggestions"
     },
     "automations": {
-      "label": "Automatisations",
+      "label": "Automations",
       "description": "Rules, payee aliases, ignored payee names and tag reminders"
     },
     "review": {
@@ -615,11 +615,11 @@
       "description": "Transaction groups and transaction templates"
     },
     "investments": {
-      "label": "Investissements",
+      "label": "Investments",
       "description": "Portfolios, holdings, securities and investment transactions"
     },
     "ventures": {
-      "label": "Projets",
+      "label": "Ventures",
       "description": "Venture platforms, deals and events"
     },
     "loansVehicles": {
@@ -627,7 +627,7 @@
       "description": "Loans with their payments, and vehicles"
     },
     "currencies": {
-      "label": "Devises",
+      "label": "Currencies",
       "description": "Your currencies and exchange rates"
     },
     "imports": {

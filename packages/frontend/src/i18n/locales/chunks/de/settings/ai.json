@@ -15,7 +15,7 @@
         "invalidBadge": "Ungültig"
       },
       "features": {
-        "title": "KI-Funktionen",
+        "title": "AI features",
         "description": "Konfiguriere, welches Modell für die jeweiligen KI-gestützten Funktionen verwendet werden soll",
         "howItWorks": "Wie es funktioniert",
         "loadError": "Deine KI-Funktionen konnten nicht geladen werden."
@@ -148,7 +148,7 @@
         }
       },
       "connections": {
-        "title": "KI-Modelle",
+        "title": "AI models",
         "description": "Verbinde OpenAI, Claude, Gemini, OpenRouter oder ein lokales Modell. Jeder Eintrag ist ein Modell, das du für jede beliebige Funktion auswählen kannst.",
         "tip": {
           "ariaLabel": "Über KI-Modelle",
@@ -177,7 +177,7 @@
           "duplicate": "Duplizieren",
           "setDefault": "Als Standard festlegen",
           "remove": "Entfernen",
-          "reconnect": "Erneut verbinden",
+          "reconnect": "Reconnect",
           "enterKey": "API-Schlüssel eingeben"
         },
         "removeDialog": {
@@ -223,7 +223,7 @@
           "apiKeySavedHint": "Leer lassen, um den gespeicherten Schlüssel beizubehalten.",
           "apiKeyBorrowedHint": "Verwendet den Schlüssel von \"{name}\". Gib Sie einen neuen Schlüssel ein, um einen anderen zu verwenden.",
           "removeApiKeyButton": "API-Schlüssel entfernen",
-          "modelLabel": "Modell",
+          "modelLabel": "Model",
           "modelPlaceholder": "Modell eingeben oder auswählen",
           "modelListEmpty": "Keine Modelle zur Auswahl. Gib den Modellnamen ein, den dein Server verwendet.",
           "modelListNoMatch": "Kein aufgelistetes Modell passt. Du kannst den eingegebenen Namen trotzdem verwenden.",

@@ -1,10 +1,10 @@
 {
   "transactions": {
     "filters": {
-      "filtersLabel": "搜索条件",
-      "selectFilters": "搜索条件",
+      "filtersLabel": "Filters",
+      "selectFilters": "Select filters",
       "reset": "Reset",
-      "apply": "应用",
+      "apply": "Apply",
       "dateRange": {
         "placeholder": "Date or range",
         "presets": {
@@ -21,10 +21,10 @@
         "allTypes": "All types"
       },
       "amountRange": {
-        "from": "金额大于",
-        "to": "金额小于",
-        "placeholderFrom": "金额>=",
-        "placeholderTo": "金额<=",
+        "from": "Amount from (gte)",
+        "to": "To (lte)",
+        "placeholderFrom": ">= than",
+        "placeholderTo": "<= than",
         "compactFrom": "Min amount",
         "compactTo": "Max amount"
       },
@@ -76,22 +76,22 @@
         "disabledTooltip": "Transfers are excluded by the filter above, so transfer kinds have no effect.",
         "commonTransfer": "Between accounts",
         "outOfWallet": "Out of wallet",
-        "toPortfolio": "到投资组合",
+        "toPortfolio": "To portfolio",
         "toVenture": "To venture",
         "selectedCount": "{n} selected"
       }
     },
     "list": {
-      "noMoreData": "无更多交易",
+      "noMoreData": "No more transactions",
       "loadingMore": "Loading more...",
-      "detailsTitle": "交易详情",
+      "detailsTitle": "Transaction details",
       "detailsDescription": "View and edit transaction"
     },
     "bulkEdit": {
       "selectAll": "Select all",
       "selectAllShort": "All",
       "cancelSelection": "Cancel selection",
-      "editButton": "编辑",
+      "editButton": "Edit",
       "selectedCount": "{count} selected",
       "matchingCount": "Total: {count}",
       "dialogTitle": "Edit {count} transactions",
@@ -112,15 +112,15 @@
       "confirmPayeeLabel": "Payee",
       "confirmTagsLabel": "Tags",
       "confirmNoteLabel": "Note",
-      "cancelButton": "取消",
-      "confirmApplyButton": "应用",
+      "cancelButton": "Cancel",
+      "confirmApplyButton": "Apply",
       "successMessage": "Successfully updated {count} transactions",
       "unexpectedError": "An unexpected error occurred",
       "tagModeLabel": "Tag action",
       "tagModeAdd": "Add to existing tags",
       "tagModeReplace": "Replace all tags",
       "tagModeRemove": "Remove these tags",
-      "tagModeAddShort": "添加",
+      "tagModeAddShort": "Add",
       "tagModeReplaceShort": "Replace",
       "tagModeRemoveShort": "Remove",
       "tagModeAddHint": "Keeps current tags and adds these.",
@@ -135,7 +135,7 @@
     },
     "transactionGroups": {
       "bulkActions": {
-        "createNewGroup": "创建新分组",
+        "createNewGroup": "Create new group",
         "addToExistingGroup": "Add to existing group",
         "groupButton": "Group"
       },
@@ -146,7 +146,7 @@
         "noSearchResultsMessage": "No groups match your search.",
         "addingText": "Adding...",
         "buttonLabel": "Add to group",
-        "cancelButton": "取消",
+        "cancelButton": "Cancel",
         "transactionCountLabel": "transactions"
       },
       "createGroupDialog": {
@@ -156,9 +156,9 @@
         "groupNamePlaceholder": "e.g. May salary transfer",
         "noteLabel": "Note (optional)",
         "notePlaceholder": "Optional description...",
-        "creatingText": "创建中……",
-        "buttonLabel": "创建分组",
-        "cancelButton": "取消"
+        "creatingText": "Creating...",
+        "buttonLabel": "Create group",
+        "cancelButton": "Cancel"
       },
       "groupsPage": {
         "title": "Transaction groups",
@@ -196,7 +196,7 @@
       }
     },
     "planned": {
-      "label": "已规划",
+      "label": "Planned",
       "confirmedLabel": "Confirmed",
       "plannedTooltip": "Planned transaction",
       "expiredTooltip": "Expected {days} days ago, no matching bank transaction",
@@ -254,9 +254,9 @@
       }
     },
     "bulkDelete": {
-      "button": "删除",
+      "button": "Delete",
       "externalTooltip": "Selection contains bank-synced transactions, which cannot be deleted.",
-      "confirmButton": "删除",
+      "confirmButton": "Delete",
       "confirmTitle": "Delete {count} transactions?",
       "confirmDescription": "They stay in Trash for 30 days and you can restore them until then. Transfers move both sides.",
       "successMessage": "1 transaction moved to Trash | {count} transactions moved to Trash",
@@ -300,7 +300,7 @@
       "filtersCount": "{count} filter | {count} filters"
     },
     "trashPage": {
-      "title": "回收站",
+      "title": "Trash",
       "description": "Newest deletions first. Each is removed for good after {days} days. Pick one to see what comes back with it.",
       "expiringBanner": "{count} will be deleted permanently within {days}.",
       "expiringCount": "1 transaction | {count} transactions",
@@ -312,7 +312,7 @@
       "deletedOn": "deleted {date}",
       "transferTitle": "Transfer from {from} to {to}",
       "unknownAccount": "Unknown account",
-      "restore": "恢复",
+      "restore": "Restore",
       "deletePermanently": "Delete permanently",
       "deleteConfirmTitle": "Delete permanently?",
       "deleteConfirmDescription": "This transaction will be removed for good. This can't be undone.",
@@ -358,7 +358,7 @@
       "deletePlanTitle": "Delete planned transaction?",
       "deletePlanDescription": "It stays in Trash for 30 days and you can restore it until then.",
       "plansLoadFailed": "Couldn't load planned transactions",
-      "confirmAction": "确认",
+      "confirmAction": "Confirm",
       "confirmTooltip": "The money moved — record it and update the balance",
       "confirmPlanSuccess": "Plan recorded — balance updated",
       "confirmPlanError": "Failed to record the plan"

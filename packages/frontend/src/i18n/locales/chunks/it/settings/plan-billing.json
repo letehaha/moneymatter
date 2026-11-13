@@ -10,10 +10,10 @@
       "manageBilling": "Gestisci fatturazione",
       "manageInAppStore": "Gestisci nell'App Store",
       "currentPlan": "Piano attuale",
-      "recommended": "Consigliate",
+      "recommended": "Consigliato",
       "previousPlan": "Piano precedente",
       "yourPlan": "Il tuo piano",
-      "planned": "Transazioni pianificate",
+      "planned": "In programma",
       "voteOnRoadmap": "Vota sulla roadmap",
       "roadmapNote": "Nessun costo. Votare la funzione e verrà inviata una notifica al rilascio.",
       "saveUpTo": "Risparmia fino al {percent}%",
@@ -91,7 +91,7 @@
       },
       "cycle": {
         "month": "Mensile",
-        "year": "Annualmente"
+        "year": "Annuale"
       },
       "perCycle": {
         "month": "/mese",
