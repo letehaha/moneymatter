@@ -1,5 +1,6 @@
 import { API_ERROR_CODES } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
+import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
 import * as Categories from '@models/categories.model';
 import TrackerCategories from '@models/tracker-categories.model';
@@ -7,6 +8,7 @@ import TrackerLineCategories from '@models/tracker-line-categories.model';
 import TrackerLines from '@models/tracker-lines.model';
 import TransactionTemplates from '@models/transaction-templates.model';
 import { updateTransactions } from '@models/transactions-query';
+import { getUserDefaultCategory } from '@models/users.model';
 import { mergeLinesOnCategoryDelete } from '@services/budget-plans/merge-lines-on-category-delete';
 import { withTransaction } from '@services/common/with-transaction';
 import { disableEmptyTrackerRules } from '@services/trackers/rules/disable-empty-tracker-rules';
@@ -80,6 +82,12 @@ export const deleteCategory = withTransaction(async (payload: DeleteCategoryPayl
     query: Categories.default.findOne({ where: { id: payload.categoryId, userId: payload.userId } }),
     message: 'Category with provided id does not exist.',
   });
+
+  // The default category is the "uncategorized" bucket that bank sync, imports and balance
+  // adjustments file new transactions under, so it has no valid replacement.
+  if (category.id === (await getUserDefaultCategory({ id: payload.userId }))) {
+    throw new ValidationError({ message: t({ key: 'categories.defaultCannotBeDeleted' }) });
+  }
 
   if (payload.replaceWithCategoryId === payload.categoryId) {
     throw new ValidationError({ message: 'Replacement category must differ from the deleted one.' });

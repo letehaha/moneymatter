@@ -40,6 +40,7 @@
     "systemCannotBeMoved": "System categories cannot be moved.",
     "parentNotFound": "Category with such parentId doesn't exist.",
     "systemParentForbidden": "System categories cannot be used as a parent.",
+    "defaultCannotBeDeleted": "This category holds uncategorized transactions and cannot be deleted.",
     "ownParent": "Category cannot be its own parent.",
     "underOwnSubcategory": "Category cannot be moved under its own subcategory.",
     "nestingTooDeep": "Categories cannot be nested deeper than {{max}} levels."

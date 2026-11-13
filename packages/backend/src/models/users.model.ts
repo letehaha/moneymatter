@@ -56,6 +56,7 @@ export default class Users extends Model {
   })
   totalBalance!: number;
 
+  /** Category for transactions created without one (bank sync, imports, balance adjustments); doubles as "uncategorized". */
   @Column({ allowNull: true, type: DataType.UUID })
   defaultCategoryId!: RecordId;
 
