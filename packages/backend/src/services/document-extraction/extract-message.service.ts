@@ -93,28 +93,33 @@ export async function extractMessage({
   ]);
   const { abortSignal, maxRetries } = aiCallGuards({ provider: aiClient.provider });
 
+  const debugUserContent = [
+    { type: 'text' as const, text: 'Report the transaction fields for the message below.' },
+    ...knownListParts({ label: 'Known payees', names: knownPayeeNames }),
+    ...knownListParts({ label: 'Known categories', names: knownCategoryNames }),
+    ...knownListParts({ label: 'Known accounts', names: knownAccountNames }),
+    { type: 'text' as const, text: `Message:\n${text}` },
+  ];
+  logger.info(`[extract-message-debug] AI system prompt: ${JSON.stringify(SYSTEM_PROMPT)}`);
+  logger.info(`[extract-message-debug] AI user content: ${JSON.stringify(debugUserContent)}`);
+
   let answer: z.infer<typeof aiAnswerSchema>;
   try {
-    const { output, usage, finishReason } = await generateText({
+    const {
+      output,
+      usage,
+      finishReason,
+      text: debugRawText,
+    } = await generateText({
       model: aiClient.model,
       output: Output.object({ schema: aiAnswerSchema, name: 'transaction' }),
       system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: 'Report the transaction fields for the message below.' },
-            ...knownListParts({ label: 'Known payees', names: knownPayeeNames }),
-            ...knownListParts({ label: 'Known categories', names: knownCategoryNames }),
-            ...knownListParts({ label: 'Known accounts', names: knownAccountNames }),
-            { type: 'text', text: `Message:\n${text}` },
-          ],
-        },
-      ],
+      messages: [{ role: 'user', content: debugUserContent }],
       abortSignal,
       maxRetries,
       maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
     });
+    logger.info(`[extract-message-debug] AI raw response: ${JSON.stringify(debugRawText)}`);
     answer = output;
     await trackAiUsage({ userId, feature: 'message_extraction', aiClient, usage });
     logger.info('[Message Extraction] AI answered', {
@@ -126,12 +131,18 @@ export async function extractMessage({
       isTransaction: output.isTransaction,
     });
   } catch (error) {
+    logger.info(
+      `[extract-message-debug] AI call failed: ${(error as Error)?.name} ${(error as Error)?.message} raw: ${JSON.stringify((error as { text?: unknown })?.text)}`,
+    );
     const failure = await resolveAiExtractionFailure({ userId, aiClient, error, logPrefix: '[Message Extraction]' });
     // A provider failure answers 429 or 502, so the client can tell "retry later" from the 422 of a bad request.
     throw toAiExtractionHttpError({ error: failure.error });
   }
 
-  if (!answer.isTransaction) return NOT_A_TRANSACTION;
+  if (!answer.isTransaction) {
+    logger.info(`[extract-message-debug] final: ${JSON.stringify(NOT_A_TRANSACTION)} (model said not a transaction)`);
+    return NOT_A_TRANSACTION;
+  }
 
   // The app's own "Sender:" line is not message content, so its digits can neither confirm an amount nor a card.
   const [, sender, body = text] = /^Sender:[ \t]*(.*)\n([\s\S]*)$/.exec(text) ?? [];
@@ -146,6 +157,9 @@ export async function extractMessage({
       hasTransactionType: transactionType !== null,
       hasAmount: amount !== null,
     });
+    logger.info(
+      `[extract-message-debug] final: ${JSON.stringify(NOT_A_TRANSACTION)} (dropped: transactionType=${transactionType} amount=${amount} amountInText=${amount !== null && amountAppearsInText({ amount, text: body })} parsedAnswer=${JSON.stringify(answer)})`,
+    );
     return NOT_A_TRANSACTION;
   }
 
@@ -166,7 +180,7 @@ export async function extractMessage({
     ...(process.env.NODE_ENV !== 'production' && { sender, cardHint, cardDigits, accountName: answer.accountName }),
   });
 
-  return {
+  const debugResult: MessageExtractionResult = {
     isTransaction: true,
     transactionType,
     amount,
@@ -176,4 +190,7 @@ export async function extractMessage({
     suggestedAccountId,
     ...suggest({ payeeName: answer.payeeName, categoryName: answer.categoryName }),
   };
+  logger.info(`[extract-message-debug] parsed AI answer: ${JSON.stringify(answer)}`);
+  logger.info(`[extract-message-debug] final: ${JSON.stringify(debugResult)}`);
+  return debugResult;
 }
