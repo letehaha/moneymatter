@@ -38,7 +38,7 @@
         "genericError": {
           "signIn": "Accesso non riuscito. Riprovare.",
           "signUp": "Impossibile registrarsi. Riprovare.",
-          "link": "Impossibile collegare l'account. Riprovare."
+          "link": "Impossibile collegare il profilo. Riprovare."
         },
         "unauthorizedClient": "Questa applicazione non è autorizzata ad usare questo metodo di autenticazione",
         "temporarilyUnavailable": "Il servizio di autenticazione è temporaneamente non disponibile. Riprovare più tardi.",

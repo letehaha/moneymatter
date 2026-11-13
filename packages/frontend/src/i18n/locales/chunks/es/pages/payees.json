@@ -20,7 +20,7 @@
       "netFlow": "Flujo neto",
       "name": "Nombre",
       "lastSeen": "Actividad reciente",
-      "defaultTags": "Etiquetas por defecto"
+      "defaultTags": "Default tags"
     },
     "actions": {
       "menu": "Acciones",
@@ -31,8 +31,8 @@
     },
     "bulk": {
       "select": "Seleccionar",
-      "selectedCount": "{count} seleccionadas",
-      "clearSelection": "Limpiar selección",
+      "selectedCount": "{count} selected",
+      "clearSelection": "Clear selection",
       "selectAll": "Seleccionar todos los beneficiarios cargados",
       "selectRow": "Seleccionar {name}",
       "deleteTitle": "¿Eliminar {count} beneficiario? | ¿Eliminar {count} beneficiarios?",

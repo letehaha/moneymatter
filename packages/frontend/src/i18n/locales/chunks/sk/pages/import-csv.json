@@ -121,7 +121,7 @@
           "tagsCreated": "Vytvorené značky",
           "payeesCreated": "Vytvorené protistrany",
           "importErrors": "Chyby importu",
-          "rowNumber": "Riadok č.",
+          "rowNumber": "Riadok #",
           "error": "Chyba",
           "batchIdLabel": "ID dávky",
           "batchIdDescription": "Pomocou tohto ID nájdete všetky transakcie z tohto importu.",
@@ -138,7 +138,7 @@
       },
       "columnMapping": {
         "stepTitle": "Priradiť stĺpce",
-        "description": "Priraďte svoje stĺpce CSV k požadovaným poliam",
+        "description": "Priraďte svoje stĺpce z CSV k požadovaným poliam",
         "file": "Súbor",
         "totalRows": "Celkový počet riadkov",
         "delimiter": "Oddeľovač",

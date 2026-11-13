@@ -12,10 +12,10 @@
         }
       },
       "steps": {
-        "accountTitle": "选择账户",
+        "accountTitle": "Select account",
         "accountDescription": "Choose or create an account for the transactions"
       },
-      "selectCurrency": "选择货币",
+      "selectCurrency": "Select currency",
       "selectExistingAccount": "Select existing account",
       "accountNamePlaceholder": "e.g., Main Bank Account",
       "selectAccount": "Select an account",
@@ -120,9 +120,9 @@
         "fromStatement": "(from statement)",
         "currencyLocked": "Currency is locked to match the statement ({currency}).",
         "currencyWillBeAdded": "Note: {currency} will be added to your currencies.",
-        "cancel": "取消",
-        "creating": "创建中……",
-        "createAccount": "创建账户",
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "createAccount": "Create account",
         "validation": {
           "nameRequired": "Account name is required",
           "currencyRequired": "Please select a currency"

@@ -62,7 +62,20 @@
         "monthly": "Mensal",
         "quarterly": "Trimestral",
         "semiAnnual": "Semestral",
-        "annual": "Anual"
+        "annual": "Anual",
+        "custom": "Custom",
+        "every": {
+          "day": "Every day | Every {count} days",
+          "week": "Every week | Every {count} weeks",
+          "month": "Every month | Every {count} months",
+          "year": "Every year | Every {count} years"
+        },
+        "units": {
+          "day": "day | days",
+          "week": "week | weeks",
+          "month": "month | months",
+          "year": "year | years"
+        }
       },
       "matchSource": {
         "manual": "Manual",
@@ -86,6 +99,11 @@
         "amountPlaceholder": "0.00",
         "currencyLabel": "Moeda",
         "frequencyLabel": "Frequência",
+        "intervalCountLabel": "Repeat every",
+        "intervalCountPlaceholder": "e.g. 30",
+        "intervalUnitLabel": "Unit",
+        "intervalUnitPlaceholder": "Select a unit",
+        "validationIntervalCount": "Enter a whole number from 1 to {max}",
         "startDateLabel": "Data de início",
         "endDateLabel": "Data de término",
         "accountLabel": "Conta",

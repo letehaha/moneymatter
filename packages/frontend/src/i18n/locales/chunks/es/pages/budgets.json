@@ -22,19 +22,19 @@
       "whatToChoose": "¿Qué escoger?",
       "guideTitle": "¿Qué límite se aplica?",
       "goalNote": "¿Ahorrar para algo? {goalLink} en su lugar: los objetivos siguen lo que has guardado, los rastreadores rastrean lo que fluye dentro o fuera.",
-      "goalLink": "Crear objetivo",
+      "goalLink": "Create a goal",
       "kinds": {
         "spending": {
           "label": "Gasto",
           "hint": "Gasta como máximo esta cantidad. Avisa cuando el gasto avanza más rápido que el paso del tiempo.",
           "guide": "Para una cosa o un evento: un viaje, una renovación, un año de comestibles, advierte cuando pasa más rápido que el tiempo.",
-          "amountLabel": "Límite"
+          "amountLabel": "Limit"
         },
         "income_target": {
           "label": "Objetivo de ingreso",
           "hint": "Gana al menos esta cantidad. Verde indica que vas por buen camino, y vas hacia la meta con éxito.",
           "guide": "Para los ingresos que esperas obtener: salario anual, ingresos por trabajo independiente, rentas. En verde si vas según lo previsto; superar la meta es un éxito.",
-          "amountLabel": "Importe objetivo"
+          "amountLabel": "Target amount"
         },
         "income_cap": {
           "label": "Límite de ingresos",
@@ -90,16 +90,16 @@
       },
       "searchPlaceholder": "Buscar rastreadores",
       "filters": {
-        "all": "Todas",
+        "all": "All",
         "autoAdd": "Autoañadidos",
         "handPicked": "Seleccionados a mano",
         "archived": "Archivados"
       },
       "groups": {
         "active": "Activo ahora",
-        "upcoming": "Próximo",
+        "upcoming": "Upcoming",
         "noDates": "Sin fechas",
-        "ended": "Finalizado",
+        "ended": "Ended",
         "archived": "Archivados",
         "show": "mostrar",
         "hide": "ocultar"
@@ -107,15 +107,15 @@
       "showMoreEnded": "Mostrar {count} finalizados",
       "row": {
         "auto": "auto",
-        "transactions": "{count} transacción | {count} transacciones",
-        "moreCategories": "+{count} más",
+        "transactions": "{count} transaction | {count} transactions",
+        "moreCategories": "+{count} more",
         "noLimit": "sin límite",
         "archiveSuggestion": "¿Archivar?"
       },
       "menu": {
-        "moreActions": "Más acciones",
+        "moreActions": "More actions",
         "open": "Abrir",
-        "duplicate": "Duplicado"
+        "duplicate": "Duplicate"
       },
       "duplicateSuccess": "Rastreador duplicado",
       "duplicateError": "Error al duplicar el rastreador",
@@ -128,13 +128,13 @@
         "includeArchived": "Incluir archivados"
       },
       "archivePrompt": {
-        "title": "¿Archivar \"{name}\"?",
-        "endedDaysAgo": "hace {count} día | hace {count} días",
-        "endedMonthsAgo": "hace {count} mes | hace {count} meses",
+        "title": "Archive \"{name}\"?",
+        "endedDaysAgo": "{count} day ago | {count} days ago",
+        "endedMonthsAgo": "{count} month ago | {count} months ago",
         "description": "Ha terminado {ago}. Los rastreadores archivados se mueven al grupo archivado y mantienen sus transacciones y estadísticas. Puede desarchivar en cualquier momento.",
         "dontAsk": "No preguntar por este rastreador",
-        "notNow": "Ahora no",
-        "dismissError": "Error al actualizar el rastreador",
+        "notNow": "Not now",
+        "dismissError": "Failed to update tracker",
         "dismissSuccess": "Entendido. No sugerimos archivar este rastreador de nuevo."
       }
     },
@@ -160,25 +160,25 @@
     },
     "details": {
       "statsLoadError": "No se han podido cargar los totales de este rastreador.",
-      "transactionsCount": "{count} transacción | {count} transacciones",
+      "transactionsCount": "{count} transaction | {count} transactions",
       "tagsCount": "{count} etiqueta | {count} etiquetas",
       "strip": {
         "limit": "Límite",
-        "spent": "Gastado",
+        "spent": "Spent",
         "left": "Quedan",
         "overBy": "Excedido en",
         "earned": "Ganado",
         "toGo": "Para ir",
         "headroom": "Espacio libre",
         "aboveTargetBy": "Por encima del objetivo por",
-        "income": "Ingreso",
-        "expenses": "Gastos",
-        "net": "Neto",
-        "transactions": "Transacciones",
+        "income": "Income",
+        "expenses": "Expenses",
+        "net": "Net",
+        "transactions": "Transactions",
         "perDay": "{amount} / día"
       },
       "tabs": {
-        "limits": "Límites"
+        "limits": "Limits"
       },
       "autoAdds": "Autoañadir",
       "membersLabel": "Miembros: {count}",
@@ -186,9 +186,9 @@
         "share": "Compartir",
         "setLimits": "Establecer límites",
         "removeLimits": "Eliminar límites",
-        "duplicate": "Duplicado",
+        "duplicate": "Duplicate",
         "openInTransactions": "Abrir en transacciones",
-        "more": "Más acciones"
+        "more": "More actions"
       },
       "shareDialog": {
         "title": "Compartir \"{name}\""
@@ -203,7 +203,7 @@
       }
     },
     "lines": {
-      "addLine": "Agregar línea",
+      "addLine": "Add line",
       "empty": {
         "title": "Dividir el gasto en líneas",
         "titleWithLimit": "Dividir  {amount} en líneas",
@@ -212,51 +212,51 @@
       "columns": {
         "line": "Línea",
         "limit": "Límite",
-        "spent": "Gastado",
+        "spent": "Spent",
         "left": "Quedan"
       },
       "usage": "{percent}% · {spent} de {limit}",
       "overUsage": "Por encima de {amount} · {spent} de {limit}",
       "spentOnly": "{amount} restantes",
-      "categoriesCount": "{count} categoría | {count} categorías",
+      "categoriesCount": "{count} category | {count} categories",
       "ofLimit": "de {limit}",
       "editLimitAria": "Editar límite para {name}",
-      "noLimitPlaceholder": "Sin límite",
+      "noLimitPlaceholder": "No limit",
       "other": {
         "title": "Otros gastos",
         "hint": "no está en ninguna línea"
       },
       "total": {
-        "title": "Total · {count} línea | Total · {count} líneas",
+        "title": "Total · {count} line | Total · {count} lines",
         "limitOfOverall": "{sum} de {limit}"
       },
       "menu": {
-        "ariaLabel": "Acciones de línea",
-        "edit": "Editar línea",
-        "delete": "Eliminar línea"
+        "ariaLabel": "Line actions",
+        "edit": "Edit line",
+        "delete": "Delete line"
       },
       "delete": {
         "title": "¿Eliminar línea?",
         "description": "\"{name}\" se eliminará y sus gastos se mostrarán bajo Otro. Las transacciones no se verán afectadas."
       },
       "dialog": {
-        "addTitle": "Agregar línea",
-        "editTitle": "Editar línea",
-        "nameLabel": "Nombre",
+        "addTitle": "Add line",
+        "editTitle": "Edit line",
+        "nameLabel": "Name",
         "namePlaceholder": "ej. Hoteles",
         "nameRequired": "Ingresa un nombre",
-        "categoriesLabel": "Categorías",
+        "categoriesLabel": "Categories",
         "categoriesPlaceholder": "Seleccionar categoría…",
         "categoriesRequired": "Seleccione al menos una categoría",
         "limitLabel": "Límite (opcional)",
-        "limitPlaceholder": "Sin límite",
+        "limitPlaceholder": "No limit",
         "limitHint": "Dejar vacío para agrupar el gasto sin límite."
       },
       "notifications": {
         "limitsRemoved": "Límites eliminados",
-        "created": "Línea añadida",
-        "updated": "Línea actualizada",
-        "deleted": "Línea eliminada",
+        "created": "Line added",
+        "updated": "Line updated",
+        "deleted": "Line deleted",
         "createError": "No se pudo agregar la línea",
         "updateError": "No se pudo actualizar la línea",
         "deleteError": "No se pudo eliminar la línea"
@@ -268,10 +268,10 @@
       "switchHintOn": "Sus transacciones en el rango de fechas con cualquiera de estas categorías o etiquetas se añaden.",
       "switchHintOff": "Sólo las transacciones que añadas a mano.",
       "switchHintTurnedOff": "Apagar esto mantiene todas las transacciones ya agregadas.",
-      "categoriesLabel": "Categorías",
-      "categoriesPlaceholder": "Seleccionar categorías",
-      "tagsLabel": "Etiquetas",
-      "tagsPlaceholder": "Seleccionar etiquetas",
+      "categoriesLabel": "Categories",
+      "categoriesPlaceholder": "Select categories",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Select tags",
       "needsCategoryOrTag": "Elija al menos una categoría o etiqueta",
       "cleanupLabel": "Eliminar transacciones que dejen de coincidir",
       "cleanupHint": "Comprobado cada 6 horas. Las transacciones que agregaste a mano nunca se eliminarán.",
@@ -287,7 +287,7 @@
         "title": "No añadido otra vez",
         "description": "Las eliminaste o las rechazaste como sugerencias de IA, así que se saltan. Permita una y se agrega de nuevo si todavía coincide.",
         "summary": "La transacción {count} no se volverá a añadir | Las transacciones {count} no se volverán a añadir",
-        "review": "Revisar",
+        "review": "Review",
         "aiBadge": "Sugerencia de IA",
         "allowAgain": "Permitir de nuevo",
         "allowed": "Permitido de nuevo",
@@ -323,7 +323,7 @@
         "usesOwnModel": "Utiliza tu propio modelo · {model}"
       },
       "pausedUntil": "Pausado hasta {date}",
-      "connectOwnModel": "Conecte su propio modelo",
+      "connectOwnModel": "Connect your own model",
       "plan": {
         "locked": "El rastreo inteligente es parte de Plus. Actualiza o conecta tu propia clave de IA para seguir usándola.",
         "connectOwnKey": "Conecte su propio modelo",
@@ -338,16 +338,16 @@
       "relinkError": "No se pudo agregar las transacciones de vuelta. Inténtelo de nuevo.",
       "strip": {
         "tip": "Permitir que la IA encuentre transacciones para este rastreador",
-        "turnOn": "Activar",
-        "hide": "Ocultar",
+        "turnOn": "Turn on",
+        "hide": "Hide",
         "scanning": "Buscando transacciones coincidentes…",
         "startedAt": "Iniciado {time}",
         "toReview": "{count} a revisar",
         "checkedAt": "comprobado {when}",
-        "review": "Revisar",
+        "review": "Review",
         "idle": "El rastreo inteligente está activado · nada nuevo que revisar",
-        "settings": "Ajustes",
-        "paused": "En pausa",
+        "settings": "Settings",
+        "paused": "Paused",
         "allowanceUsed": "Permiso de IA utilizado",
         "unavailable": "La conexión de IA dejó de funcionar",
         "fixInSettings": "Corregir en Ajustes",
@@ -359,7 +359,7 @@
         "description": "Todavía puede activar el rastreo inteligente en la configuración del rastreador.",
         "neverShow": "No mostrar de nuevo",
         "neverShowHint": "Oculta en cada rastreador, no sólo en éste.",
-        "confirm": "Ocultar"
+        "confirm": "Hide"
       },
       "review": {
         "sectionTitle": "Por revisar ({count})",
@@ -367,13 +367,13 @@
           "likely": "Probable",
           "possible": "Posible"
         },
-        "add": "Añadir",
-        "skip": "Omitir",
+        "add": "Add",
+        "skip": "Skip",
         "addAria": "Agregar {name} a {tracker}",
         "skipAria": "Omitir {name}",
         "addAll": "Añadir todos los {count}",
         "addAllShort": "Añadir todo",
-        "skipAll": "Omitir todos",
+        "skipAll": "Skip all",
         "added": "Añadida transacción {count} a {name} | Añadidas transacciones {count} a {name}",
         "skipped": "Omitido. IA no volverá a sugerirlo. | Omitidas {count} transacciones. IA no volverá a sugerirlas.",
         "acceptError": "No se pudo agregar las transacciones de vuelta. Inténtelo de nuevo.",

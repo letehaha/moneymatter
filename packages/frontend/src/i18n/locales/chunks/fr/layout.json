@@ -8,7 +8,7 @@
     "allTransactions": "Toutes les opérations",
     "transactions": "Opérations",
     "transactionGroups": "Groupes",
-    "trash": "Corbeille",
+    "trash": "Trash",
     "analytics": "Analyses",
     "optimizations": "Optimisations",
     "automations": "Automatisations",
@@ -17,14 +17,14 @@
     "community": "Community",
     "logout": "Se déconnecter",
     "appVersion": "Version de l'application {version}",
-    "updateAvailable": "Mise à jour disponible",
+    "updateAvailable": "Update available",
     "updateToVersion": "Mettre à jour · {version}",
     "settings": "Paramètres",
     "planned": {
       "planned": "Prévisionnel",
       "subscriptions": "Paiements récurrents",
       "budgets": "Suivis",
-      "goals": "Objectifs"
+      "goals": "Goals"
     },
     "venture": "Projets",
     "budget": "Budget"

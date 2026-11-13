@@ -121,7 +121,7 @@
         "previousYear": "Año anterior"
       },
       "includeOutOfWallet": "Incluir transferencias fuera de cartera",
-      "outOfWalletSwitch": "Transferencias fuera de cartera",
+      "outOfWalletSwitch": "Out-of-wallet transfers",
       "skip": {
         "action": "Omitir",
         "title": "¿Omitir esta sugerencia?",
@@ -142,7 +142,7 @@
         "plusBadge": "Plus",
         "description": "IA comprueba cada coincidencia y muestra sólo los que parecen transferencias reales entre tus cuentas.",
         "cost": "Cada escaneo utiliza tu permiso de IA mensual. Con tu propio proveedor de IA, el proveedor la factura. Elige el modelo en {link}.",
-        "aiSettingsLink": "Ajustes de IA",
+        "aiSettingsLink": "AI settings",
         "openAiSettings": "Open AI configuración",
         "blocked": {
           "plan": {
@@ -155,16 +155,16 @@
             "body": "Se reinicia el {date}. Conecta a tu propio proveedor de IA para seguir usándolo ahora."
           },
           "setup": {
-            "pill": "Configurar",
+            "pill": "Set up",
             "title": "Ningún modelo de IA está respondiendo",
             "body": "Compruebe su proveedor de IA o elija un modelo para que coincida con la transferencia."
           }
         },
-        "connectOwnModel": "Conecte su propio modelo",
+        "connectOwnModel": "Connect your own model",
         "reviewing": "La IA está comprobando coincidencias…",
         "verdict": {
-          "likely": "Probable",
-          "possible": "Posible"
+          "likely": "Likely",
+          "possible": "Possible"
         },
         "nudge": "Cortar coincidencias falsas con la revisión de IA",
         "rescanHint": "Revisión con IA",
@@ -178,16 +178,16 @@
     "reconciliation": {
       "title": "Conciliación de transacciones",
       "tabs": {
-        "transactions": "Transacciones",
+        "transactions": "Transactions",
         "stuckPending": "Pendiente",
-        "history": "Historial"
+        "history": "History"
       },
       "table": {
         "hint": "Seleccione transacciones bancarias para fusionar duplicados o eliminar extras"
       },
       "actions": {
-        "merge": "Combinar",
-        "remove": "Eliminar"
+        "merge": "Merge",
+        "remove": "Remove"
       },
       "blockReasons": {
         "header": {
@@ -206,28 +206,28 @@
         "title": "Combinar transacciones",
         "description": "Escoja la transacción a guardar. Los demás son eliminados y pueden ser restaurados del historial.",
         "fields": {
-          "payee": "Beneficiario",
+          "payee": "Payee",
           "status": "Estado",
           "time": "Tiempo"
         },
         "status": {
-          "pending": "Pendiente",
+          "pending": "Pending",
           "booked": "Reservado"
         },
         "keep": "Mantener",
-        "remove": "Eliminar",
+        "remove": "Remove",
         "sameInAll": "Lo mismo en todo:",
         "confirm": "Fusionar y eliminar {count} | Fusionar y quitar {count}"
       },
       "remove": {
         "title": "Importar {count} transacción | Importar {count} transacciones?",
         "description": "Las transacciones eliminadas dejan de contar hacia saldos y estadísticas. Los enlaces de presupuesto, grupo y suscripción se desprenden. Puede restaurarlos desde el historial, pero los enlaces no volverán.",
-        "confirm": "Eliminar"
+        "confirm": "Remove"
       },
       "restoreDialog": {
         "title": "¿Restaurar {count}  transacción? | ¿Restaurar las {count} transacciones?",
         "description": "Las transacciones restauradas cuentan para saldos y estadísticas de nuevo. Si fueron fusionadas, la transacción guardada se queda, así que puede ver duplicados de nuevo. Los enlaces de grupo y de suscripción desconectados al eliminar no vuelven.",
-        "confirm": "Restaurar"
+        "confirm": "Restore"
       },
       "notifications": {
         "removed": "Se eliminó {count} transacción | Se eliminaron {count} transacciones",
@@ -235,7 +235,7 @@
         "restored": "Restaurada {count} transaccion | Restuarar {count} transacciones",
         "keptAsBooked": "Marcado como reservado",
         "checkedWithBank": "Verificado con banco",
-        "unexpectedError": "Algo salió mal. Por favor, inténtelo de nuevo.",
+        "unexpectedError": "Something went wrong. Please try again.",
         "bankCheck": {
           "allBooked": "Tu banco ha reservado la transacción | Tu banco ha reservado todas las {count} transacciones",
           "someBooked": "Tu banco ha reservado {count} transacción | Tu banco ha reservado {count} transacciones ",
@@ -261,19 +261,19 @@
         },
         "checkFirstHint": "Primero chequee con su banco. Las transacciones que ha reservado desde entonces desaparecen de esta lista.",
         "columns": {
-          "account": "Cuenta",
-          "date": "Fecha",
-          "category": "Categoría",
+          "account": "Account",
+          "date": "Date",
+          "category": "Category",
           "pendingFor": "Pendiente por",
-          "amount": "Importe",
-          "status": "Estado",
-          "actions": "Acciones"
+          "amount": "Amount",
+          "status": "Status",
+          "actions": "Actions"
         },
         "pendingDaysShort": "{count} más",
         "status": {
           "tooOld": "Demasiado viejo para comprobar",
           "tooOldHint": "Su banco sólo comparte alrededor de 90 días de historia, por lo que esta transacción no puede ser verificada. Manténgalo si el cargo ocurrió, eliminarlo si no lo hizo.",
-          "duplicate": "Posible duplicado",
+          "duplicate": "Possible duplicate",
           "duplicateHint": "Una transacción reservada del mismo beneficiario el {date} parece el mismo pago. Combínalos para mantener uno.",
           "notFound": "No encontrado en el banco",
           "notFoundHint": "Su banco no tiene una copia reservada de esta transacción, por lo que puede ser una reserva liberada. Manténgalo si el cargo ocurrió, eliminarlo si no lo hizo."
@@ -287,7 +287,7 @@
           "merge": "Fusionado",
           "remove": "Eliminado"
         },
-        "restore": "Restaurar",
+        "restore": "Restore",
         "kept": "Guardado",
         "removedRows": "{count} transacción eliminada | {count} transacciones eliminadas"
       }

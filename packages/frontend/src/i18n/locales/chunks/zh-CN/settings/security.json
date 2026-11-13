@@ -33,7 +33,7 @@
           "title": "Passkeys",
           "noPasskeys": "No passkeys registered",
           "passkeyCount": "{count} passkey(s) registered",
-          "addButton": "添加通行密钥",
+          "addButton": "Add passkey",
           "passkeyName": "Passkey",
           "added": "Added {date}",
           "rename": "Rename",
@@ -67,10 +67,10 @@
           "unknownBrowser": "Unknown browser"
         },
         "timeAgo": {
-          "justNow": "刚刚",
-          "minutesAgo": "{count} 分钟前 | {count} 分钟前",
-          "hoursAgo": "{count} 小时前 | {count} 小时前",
-          "daysAgo": "{count} 天前 | {count} 天前"
+          "justNow": "Just now",
+          "minutesAgo": "{count} minute ago | {count} minutes ago",
+          "hoursAgo": "{count} hour ago | {count} hours ago",
+          "daysAgo": "{count} day ago | {count} days ago"
         },
         "notifications": {
           "revokeSuccess": "Session revoked",
@@ -132,7 +132,7 @@
       "wipeData": {
         "title": "Wipe all data",
         "warningFull": "{strong} This action removes everything in your workspace. Your login stays so you can start over.",
-        "warningStrong": "警告：",
+        "warningStrong": "Warning:",
         "button": "Wipe data",
         "dialog": {
           "title": "Wipe all your data?",
@@ -179,7 +179,7 @@
           "confirmFull": "Please type {email} to confirm",
           "placeholder": "Enter your email",
           "acceptButton": "Delete my account",
-          "acceptButtonLoading": "正在删除……",
+          "acceptButtonLoading": "Deleting...",
           "appStoreWarning": "Deleting your account doesn't cancel your App Store subscription, and Apple will keep charging you. Cancel it in your {link} first.",
           "appStoreWarningLink": "App Store subscriptions"
         },
@@ -224,7 +224,7 @@
             "warning": "This replaces ALL your current data",
             "description": "Everything currently in your account will be permanently deleted and replaced with the contents of this backup. This cannot be undone.",
             "selectedFile": "Selected file: {name}",
-            "confirmLabel": "恢复",
+            "confirmLabel": "Restore",
             "reconnectTitle": "After restoring, set these up again",
             "reconnectBankConnections": "Reconnect your bank connections",
             "reconnectAiKeys": "Re-enter your AI API keys (if you use any)"

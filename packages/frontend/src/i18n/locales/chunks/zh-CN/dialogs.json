@@ -107,7 +107,7 @@
         "paymentTypeLabel": "付款方式",
         "noteLabel": "备注",
         "notePlaceholder": "备注",
-        "addFieldsLabel": "添加",
+        "addFieldsLabel": "Add",
         "externalUrlLabel": "External URL",
         "externalUrlPlaceholder": "Link to the order, booking or receipt page",
         "externalReferenceLabel": "External reference",
@@ -269,7 +269,7 @@
           "convertedHint": "Prefilled from the market rate. Change the {currency} amount to match what you actually paid.",
           "noMarketRate": "No market rate for {currency} – enter the amount manually.",
           "linkPicker": {
-            "title": "链接现有的交易",
+            "title": "Link existing transactions",
             "windowHint": "Within {days} days of {date}",
             "loadError": "Couldn't load transactions",
             "emptyTitle": "No transactions to link",
@@ -417,7 +417,7 @@
         "noIncomeTransactions": "未找到收入交易。请尝试修改搜索条件。",
         "noExpenseTransactions": "未找到支出交易。请尝试修改搜索条件。",
         "noTransactions": "未找到交易。请尝试修改搜索条件。",
-        "resetFiltersButton": "重置搜索条件"
+        "resetFiltersButton": "Reset filters"
       },
       "portfolioLinked": {
         "title": "链接至投资组合的交易",
@@ -429,7 +429,7 @@
         "unlinkWarningNoCash": "此转账未改变 {portfolio} 的余额，因此取消链接不会影响余额。",
         "noCashBadge": "No cash impact",
         "unlinkDescription": "原始交易详情将被恢复。",
-        "cancelButton": "取消",
+        "cancelButton": "Cancel",
         "confirmUnlink": "确认取消链接"
       },
       "ventureLinked": {
@@ -455,7 +455,7 @@
         "saveAsNew": "另存为",
         "newTemplate": "创建模版",
         "use": "使用模板",
-        "edit": "编辑",
+        "edit": "Edit",
         "tapHint": "点击模板以填写表单",
         "toggleDetails": "显示详情",
         "noAmount": "未保存金额",
@@ -541,7 +541,7 @@
     "deleteInvestmentTransaction": {
       "title": "删除交易",
       "description": "确定要删除此交易吗？此操作无法撤消。",
-      "cancelButton": "取消",
+      "cancelButton": "Cancel",
       "deleteButton": "删除",
       "deleteButtonLoading": "正在删除……",
       "notifications": {
@@ -670,7 +670,7 @@
         "description": "We looked for about {total} from 14 days before to 30 days after the invoice date, in all accounts. The payment may not be imported yet, or the invoice was read wrong."
       },
       "searchManually": "Search manually",
-      "createTransaction": "创建交易",
+      "createTransaction": "Create transaction",
       "link": "Link invoice",
       "linked": "Invoice linked to the transaction",
       "created": "Transaction created and invoice attached",
@@ -714,7 +714,7 @@
       },
       "householdOverrideHint": "{invitee} 已在您的家庭成员中，并拥有 {permission} 访问权限。此次共享将覆盖该账户的访问权限。",
       "householdLookupFailed": "无法检查家庭成员关系——将继续操作，不显示覆盖提示。",
-      "cancel": "取消",
+      "cancel": "Cancel",
       "send": "发送邀请",
       "success": "邀请请求已提交。如果使用该电邮的用户已在本站注册，他们将收到邀请。",
       "error": "无法发送邀请。请重试。",
@@ -724,15 +724,15 @@
       "title": "共享预算",
       "description": "邀请他人读取预算并添加他们的交易记录进 {name}。",
       "emailLabel": "电邮",
-      "emailPlaceholder": "收件人邮箱",
-      "permissionLabel": "权限",
+      "emailPlaceholder": "Recipient email",
+      "permissionLabel": "Permission",
       "permissions": {
         "read": "仅浏览",
         "write": "附加自己的交易",
         "manage": "管理"
       },
-      "cancel": "取消",
-      "send": "发送邀请",
+      "cancel": "Cancel",
+      "send": "Send invitation",
       "success": "已发送邀请。",
       "error": "无法发送邀请。",
       "emailSendFailedWarning": "已创建邀请，但无法发送电子邮件。"
@@ -760,7 +760,7 @@
       "permissionLabel": "权限范围",
       "expiresLabel": "有效期",
       "permissions": {
-        "read": "只读",
+        "read": "Read-only",
         "write": "读取 + 写入",
         "manage": "管理"
       },
@@ -793,7 +793,7 @@
         "done": "完成",
         "sentTitle": "已发送邀请",
         "sentBody": "我们已发送邀请给 {owner}。他们在接受邀请后即可访问。",
-        "success": "已发送邀请。",
+        "success": "Invitation sent.",
         "deliveryFailed": "已创建邀请，但无法发送电子邮件。请稍后再试。",
         "emailNotConfigured": "邀请已创建，但此服务器无法发送邮件。请对方在应用中查看邀请。",
         "error": "无法发送邀请。"
@@ -802,7 +802,7 @@
     "categoryExclusions": {
       "title": "排除分类",
       "description": "从这个组件的图表和总额隐藏",
-      "menuItem": "排除分类",
+      "menuItem": "Exclude categories",
       "nothingExcluded": "未排除任何内容。此组件统计全部分类。",
       "excludedTag": "已排除",
       "stopExcluding": "停止排除 {name}",
@@ -821,7 +821,7 @@
       "dateLabel": "付款日期",
       "accountLabel": "账户",
       "accountPlaceholder": "选择账户",
-      "confirm": "确认",
+      "confirm": "Confirm",
       "confirmMarkOnly": "标记为已支付",
       "recordModeMarkTitle": "只标记为已支付",
       "recordModeMarkDescription": "仅更新计划——不创建交易记录。",
@@ -845,8 +845,8 @@
       "createTitle": "记录付款",
       "editTitle": "编辑贷款付款",
       "payingTo": "付款给",
-      "fromAccountLabel": "从账户",
-      "fromAccountPlaceholder": "选择账户",
+      "fromAccountLabel": "From account",
+      "fromAccountPlaceholder": "Select account",
       "amountLabel": "金额",
       "amountPlaceholder": "0.00",
       "targetAmountLabel": "适用于贷款的金额",

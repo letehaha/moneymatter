@@ -55,16 +55,16 @@
           "title": "This currency is still in use. Remove or change these first:",
           "trashed": "(in trash)",
           "types": {
-            "account": "Comptes",
+            "account": "Accounts",
             "portfolio": "Portfolio display currency",
-            "holding": "Lignes de portefeuille",
+            "holding": "Holdings",
             "portfolioCash": "Portfolio cash",
             "portfolioTransfer": "Portfolio transfers",
             "investmentTransaction": "Investment transactions",
-            "subscription": "Paiements récurrents",
+            "subscription": "Recurring payments",
             "transactionTemplate": "Transaction templates",
             "budget": "Budgets",
-            "goal": "Objectifs",
+            "goal": "Goals",
             "ventureDeal": "Venture deals"
           }
         },

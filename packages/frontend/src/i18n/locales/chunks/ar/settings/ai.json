@@ -75,7 +75,7 @@
         "trigger": "Which model fits?",
         "tierHeading": "{tier} model is enough",
         "tiers": {
-          "light": "فاتح",
+          "light": "Light",
           "balanced": "Balanced",
           "smart": "Smart"
         },
@@ -177,7 +177,7 @@
           "duplicate": "Duplicate",
           "setDefault": "Set as default",
           "remove": "Remove",
-          "reconnect": "إعادة الاتصال",
+          "reconnect": "Reconnect",
           "enterKey": "Enter API key"
         },
         "removeDialog": {

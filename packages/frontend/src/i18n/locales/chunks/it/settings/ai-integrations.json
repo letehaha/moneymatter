@@ -46,7 +46,7 @@
         "revoke": "Revoca"
       },
       "revokeDialog": {
-        "title": "Revoca accesso?",
+        "title": "Revocare l'accesso?",
         "description": "L'app verrà disconnessa immediatamente e tutti i suoi token verranno invalidati. Sarà possibile ricollegarla in seguito.",
         "confirm": "Revoca accesso",
         "successNotification": "Accesso dell'app revocato con successo",

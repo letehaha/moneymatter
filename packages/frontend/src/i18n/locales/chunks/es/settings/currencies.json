@@ -55,16 +55,16 @@
           "title": "Esta moneda todavía está en uso. Elimina o cambia estos primero:",
           "trashed": "(en la papelera)",
           "types": {
-            "account": "Cuentas",
+            "account": "Accounts",
             "portfolio": "Moneda de visualización de portafolio",
-            "holding": "Posiciones",
+            "holding": "Holdings",
             "portfolioCash": "Efectivo del portafolio",
             "portfolioTransfer": "Transferencias de portafolio",
             "investmentTransaction": "Transacciones de inversión",
-            "subscription": "Cargos recurrentes",
+            "subscription": "Recurring payments",
             "transactionTemplate": "Plantillas de la transacción",
             "budget": "Presupuestos",
-            "goal": "Objetivos",
+            "goal": "Goals",
             "ventureDeal": "Ofertas Venture "
           }
         },

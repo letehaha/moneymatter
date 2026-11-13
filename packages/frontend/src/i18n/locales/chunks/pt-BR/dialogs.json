@@ -343,7 +343,7 @@
         "mainCategoryLabel": "(principal)",
         "linkRemovedOnTypeChange": "O vínculo de reembolso foi removido porque o tipo da transação mudou.",
         "summaryEmpty": "Nada escolhido ainda",
-        "sharePlaceholder": "Valor",
+        "sharePlaceholder": "Amount",
         "shareInputLabel": "Refund share for {name}",
         "shareErrorNonPositive": "Enter an amount above zero",
         "shareErrorExceedsPurchase": "More than what is left of this purchase ({amount})",

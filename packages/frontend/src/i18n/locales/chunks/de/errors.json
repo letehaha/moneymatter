@@ -3,15 +3,15 @@
     "api": {
       "failedToFetch": "Fehler beim Abrufen der Daten vom Server.",
       "failedToFetchSelfHost": "Server kann nicht erreicht werden. Das Backend startet möglicherweise noch (~30 Sek. nach dem Start) oder deine ALLOWED_ORIGINS-Umgebungsvariable enthält diese URL nicht.",
-      "unexpectedError": "Unerwarteter Fehler.",
+      "unexpectedError": "Unexpected error.",
       "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an",
       "payloadTooLarge": "Die Anfrage ist zu groß. Bitte versuche, weniger Elemente auf einmal zu importieren.",
       "tooManyRequests": "Zu viele Versuche. Bitte warte einen Moment und versuche es erneut."
     },
     "auth": {
       "reauthenticationRequired": "Zu deiner Sicherheit melde dich erneut an, um diese Änderung vorzunehmen.",
-      "passwordTooShort": "Passwort ist zu kurz.",
-      "passwordTooLong": "Passwort ist zu lang.",
+      "passwordTooShort": "Password is too short.",
+      "passwordTooLong": "Password is too long.",
       "providerNotConfigured": "Dieser Anmeldeanbieter ist auf diesem Server nicht konfiguriert.",
       "accountAlreadyLinked": "Dieses Konto ist bereits mit einem anderen Benutzer verknüpft.",
       "cannotUnlinkLastAccount": "Du kannst deine einzige Anmeldemethode nicht entfernen.",

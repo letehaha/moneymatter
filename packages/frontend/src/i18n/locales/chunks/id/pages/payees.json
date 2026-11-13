@@ -31,8 +31,8 @@
     },
     "bulk": {
       "select": "Select",
-      "selectedCount": "{count} dipilih",
-      "clearSelection": "Hapus pilihan",
+      "selectedCount": "{count} selected",
+      "clearSelection": "Clear selection",
       "selectAll": "Select all loaded payees",
       "selectRow": "Select {name}",
       "deleteTitle": "Delete {count} payee? | Delete {count} payees?",

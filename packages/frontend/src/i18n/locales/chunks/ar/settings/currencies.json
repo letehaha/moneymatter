@@ -6,7 +6,7 @@
         "description": "Manage the currencies you track and the exchange rates used across your accounts."
       },
       "addNew": {
-        "loading": "جار التحميل...",
+        "loading": "Loading...",
         "selectCurrency": "Select currency",
         "addButton": "Add",
         "sectionLabel": "Add a currency",

@@ -72,7 +72,7 @@
           "averagePerDay": "Average per day",
           "firstTransaction": "First transaction",
           "lastTransaction": "Last transaction",
-          "transactions": "Transaksi",
+          "transactions": "Transactions",
           "avgAmount": "avg {amount}",
           "biggestDay": "Biggest day",
           "shareOfTotal": "{percent}% of total"
@@ -81,7 +81,7 @@
         "categoriesCount": "{count} category | {count} categories",
         "byCurrency": "By currency",
         "asPaid": "as paid",
-        "timeline": "Garis Waktu",
+        "timeline": "Timeline",
         "todayMarker": "today {date}",
         "timelineAria": "Cumulative spending over time with per-period bars",
         "limitLabel": "{amount} limit",
@@ -90,7 +90,7 @@
           "cumulative": "Spent, cumulative",
           "earnedCumulative": "Earned, cumulative",
           "evenPace": "Even pace to the limit",
-          "projection": "Proyeksi",
+          "projection": "Projection",
           "daily": "Per day",
           "weekly": "Per week",
           "monthly": "Per month"

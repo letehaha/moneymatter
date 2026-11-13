@@ -1,19 +1,19 @@
 {
   "common": {
-    "loading": "加载中……",
+    "loading": "Loading...",
     "new": "New",
     "actions": {
-      "loading": "加载中……",
+      "loading": "Loading...",
       "signUp": "Sign up",
       "save": "Save",
-      "cancel": "取消",
+      "cancel": "Cancel",
       "back": "Back",
-      "accept": "接受",
-      "delete": "删除",
-      "edit": "编辑",
+      "accept": "Accept",
+      "delete": "Delete",
+      "edit": "Edit",
       "addSubcategory": "Add subcategory",
-      "settings": "设置",
-      "confirm": "确认",
+      "settings": "Settings",
+      "confirm": "Confirm",
       "viewTransactions": "View transactions",
       "viewAnalytics": "View analytics",
       "saving": "Saving...",
@@ -24,7 +24,7 @@
       "scan": "Scan",
       "link": "Link",
       "clear": "Clear",
-      "apply": "应用",
+      "apply": "Apply",
       "retry": "Try again",
       "copyInviteLink": "Copy invite link",
       "moveTo": "Move to…",
@@ -68,7 +68,7 @@
       "emailNotSent": "Email sending not configured — share the invite link manually"
     },
     "labels": {
-      "email": "电邮",
+      "email": "Email",
       "password": "Password",
       "system": "system",
       "unknown": "Unknown",
@@ -79,7 +79,7 @@
       "password": "Your password"
     },
     "dialogs": {
-      "createAccount": "创建账户",
+      "createAccount": "Create account",
       "createVehicle": "Add vehicle",
       "editVehicle": "Edit vehicle"
     },
@@ -91,8 +91,8 @@
       "saving": "Saving account",
       "bonus": "Bonus",
       "insurance": "Insurance",
-      "investment": "投资",
-      "loan": "贷款",
+      "investment": "Investment",
+      "loan": "Loan",
       "mortgage": "Mortgage",
       "overdraft": "Overdraft",
       "crypto": "Crypto",
@@ -171,7 +171,7 @@
         "locationTooltip": "Open location on the map",
         "attachmentsTooltip": "Has attachments",
         "hiddenAccount": "Hidden account",
-        "selectRow": "选择交易",
+        "selectRow": "Select transaction",
         "unselectableReasons": {
           "sharedAccount": "Can't be selected: this transaction is on an account shared with you, and only its owner can edit it."
         },
@@ -189,7 +189,7 @@
       "dialogTitle": "Date range",
       "dueDate": "Due date",
       "quickSelect": "Quick select",
-      "apply": "应用",
+      "apply": "Apply",
       "periodTypes": {
         "day": "Day",
         "month": "Month",
@@ -233,15 +233,15 @@
       },
       "duration": {
         "seconds": "{count} second | {count} seconds",
-        "minutes": "{count} 分钟 | {count} 分钟",
-        "hours": "{count} 小时 | {count} 小时"
+        "minutes": "{count} minute | {count} minutes",
+        "hours": "{count} hour | {count} hours"
       }
     },
     "logo": {
       "tabs": {
         "brand": "Brand",
         "letters": "Letters",
-        "icon": "图标",
+        "icon": "Icon",
         "custom": "Image"
       },
       "searchPlaceholder": "Brand name or domain",
@@ -263,7 +263,7 @@
       "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Letters (1–2)",
       "lettersPlaceholder": "AB",
-      "colorLabel": "颜色",
+      "colorLabel": "Color",
       "colorSwatchAriaLabel": "Use color {color}",
       "customColorAriaLabel": "Pick a custom color",
       "lettersSelectedLabel": "Letters “{letters}”",
@@ -555,10 +555,10 @@
       "nameLabel": "Name",
       "noteLabel": "Note (optional)",
       "notePlaceholder": "Optional note...",
-      "loadingText": "加载中……",
+      "loadingText": "Loading...",
       "savingAction": "Save",
-      "cancelButton": "取消",
-      "editAction": "编辑",
+      "cancelButton": "Cancel",
+      "editAction": "Edit",
       "deleteAction": "Delete group",
       "transactionsLabel": "Transactions",
       "deleteGroupTitle": "Delete group",
@@ -603,7 +603,7 @@
       "description": "Spending trackers and their suggestions"
     },
     "automations": {
-      "label": "自动化",
+      "label": "Automations",
       "description": "Rules, payee aliases, ignored payee names and tag reminders"
     },
     "review": {
@@ -619,7 +619,7 @@
       "description": "Portfolios, holdings, securities and investment transactions"
     },
     "ventures": {
-      "label": "风险投资",
+      "label": "Ventures",
       "description": "Venture platforms, deals and events"
     },
     "loansVehicles": {

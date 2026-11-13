@@ -97,9 +97,9 @@
           "clear": "Quitar rango de fechas"
         },
         "accounts": {
-          "label": "Cuentas",
+          "label": "Accounts",
           "helper": "Exportar solo las cuentas seleccionadas con sus transacciones e historial de saldo. Dejar en blanco para exportar todas las cuentas.",
-          "placeholder": "Todas las cuentas"
+          "placeholder": "All accounts"
         },
         "listDescription": "Descarga un zip para hojas de cálculo, impuestos o migración"
       }

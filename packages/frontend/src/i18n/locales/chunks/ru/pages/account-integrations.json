@@ -311,19 +311,19 @@
           "step2": "Create a personal app (or open an existing one) — connect your bank accounts in Akahu first.",
           "step3": "Copy the User Access Token and the App ID Token and paste both into the fields above."
         },
-        "backButton": "Назад",
-        "connectingButton": "Подключение...",
-        "connectButton": "Подключить",
-        "loadingAccounts": "Загрузка счетов...",
-        "accountsPreviewHint": "Найдено счетов: {count}. Все счета будут импортированы.",
-        "importingButton": "Импорт...",
-        "importButton": "Импортировать счетов: {count}",
-        "importSuccess": "Успешно синхронизировано счетов: {count}",
-        "skipButton": "Пропустить",
-        "skipTooltip": "Пропустите импорт, чтобы позже подключить только нужные счета или повторно связать существующие счета в их настройках.",
+        "backButton": "Back",
+        "connectingButton": "Connecting...",
+        "connectButton": "Connect",
+        "loadingAccounts": "Loading accounts...",
+        "accountsPreviewHint": "Found {count} account(s). All accounts will be imported.",
+        "importingButton": "Importing...",
+        "importButton": "Import {count} account(s)",
+        "importSuccess": "Connected {count} account(s). Transactions are syncing in the background.",
+        "skipButton": "Skip",
+        "skipTooltip": "Skip importing to connect only specific accounts later, or to relink existing accounts from their settings.",
         "errors": {
           "connectFailed": "Failed to connect to Akahu",
-          "importFailed": "Не удалось импортировать счета"
+          "importFailed": "Failed to import accounts"
         }
       },
       "notifications": {

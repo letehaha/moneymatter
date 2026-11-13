@@ -765,6 +765,11 @@
         "requiresAccountField": "L'enregistrement automatique nécessite un compte sur lequel imputer l'opération.",
         "requiresAmountField": "L'enregistrement automatique nécessite expectedAmount et expectedCurrencyCode.",
         "excludesMatchingField": "L'enregistrement automatique et les règles de rapprochement s'excluent mutuellement."
+      },
+      "customInterval": {
+        "required": "A custom frequency needs an interval unit and count.",
+        "presetConflict": "An interval unit and count can only be set with the custom frequency.",
+        "countOutOfRange": "The interval count must be between {{min}} and {{max}} for this unit."
       }
     }
   },
@@ -880,7 +885,7 @@
   },
   "goals": {
     "goalNotFound": "Objectif introuvable.",
-    "accountNotFound": "L'un des comptes sélectionnés est introuvable.",
+    "accountNotFound": "One of the selected accounts was not found.",
     "accountNotEligible": "{{accountName}} ne peut pas contribuer à un objectif. Choisissez un compte courant, d'épargne, d'investissement, de cryptomonnaies ou un compte de liquidités.",
     "shareCapacityExceeded": "Il reste {{free}} % disponibles sur {{accountName}} : vous demandez {{requested}} %, et les autres objectifs utilisent déjà {{usedByOtherGoals}} %.",
     "fixedAmountsBelowTarget": "Les montants fixes totalisent {{total}} {{currencyCode}}, soit moins que la cible de {{target}} {{currencyCode}}. Augmentez un montant ou attribuez un pourcentage d'un compte.",

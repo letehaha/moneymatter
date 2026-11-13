@@ -99,7 +99,7 @@
         "accounts": {
           "label": "Accounts",
           "helper": "Export only the selected accounts with their transactions and balance history. Leave empty to export all accounts.",
-          "placeholder": "كل الحسابات"
+          "placeholder": "All accounts"
         },
         "listDescription": "Download a zip for spreadsheets, taxes, or migrating"
       }

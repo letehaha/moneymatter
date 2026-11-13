@@ -6,7 +6,7 @@
       "tabs": {
         "loginMethods": "Anmeldemethoden",
         "activeSessions": "Aktive Sitzungen",
-        "password": "Passwort",
+        "password": "Password",
         "backup": "Sicherung & Wiederherstellung",
         "dangerZone": "Gefahrenzone"
       },
@@ -17,13 +17,13 @@
           "connectedAs": "Verbunden als {email}",
           "accountName": "{provider}-Konto",
           "notConnected": "Nicht verbunden",
-          "disconnect": "Trennen",
+          "disconnect": "Disconnect",
           "disconnectConfirmTitle": "{provider} trennen?",
           "disconnectConfirmDescription": "Du kannst dich nicht mehr mit diesem {provider}-Konto anmelden. Du kannst es jederzeit wieder verbinden.",
-          "connect": "Verbinden"
+          "connect": "Connect"
         },
         "password": {
-          "title": "Passwort",
+          "title": "Password",
           "passwordSet": "Passwort ist festgelegt",
           "noPassword": "Kein Passwort festgelegt",
           "manageInTab": "Im Tab Passwort verwalten",
@@ -33,7 +33,7 @@
           "title": "Passkeys",
           "noPasskeys": "Keine Passkeys registriert",
           "passkeyCount": "{count} Passkey(s) registriert",
-          "addButton": "Passkey hinzufügen",
+          "addButton": "Add passkey",
           "passkeyName": "Passkey",
           "added": "Hinzugefügt am {date}",
           "rename": "Umbenennen",
@@ -67,10 +67,10 @@
           "unknownBrowser": "Unbekannter Browser"
         },
         "timeAgo": {
-          "justNow": "Gerade eben",
-          "minutesAgo": "Vor {count} Minute | Vor {count} Minuten",
-          "hoursAgo": "Vor {count} Stunde | Vor {count} Stunden",
-          "daysAgo": "Vor {count} Tag | Vor {count} Tagen"
+          "justNow": "Just now",
+          "minutesAgo": "{count} minute ago | {count} minutes ago",
+          "hoursAgo": "{count} hour ago | {count} hours ago",
+          "daysAgo": "{count} day ago | {count} days ago"
         },
         "notifications": {
           "revokeSuccess": "Sitzung beendet",
@@ -80,13 +80,13 @@
         }
       },
       "passwordSection": {
-        "title": "Passwort",
+        "title": "Password",
         "descriptionChange": "Ändere dein Passwort",
         "descriptionSet": "Richte ein Passwort für dein Konto ein",
         "labels": {
           "currentPassword": "Aktuelles Passwort",
           "newPassword": "Neues Passwort",
-          "password": "Passwort",
+          "password": "Password",
           "confirmPassword": "Passwort bestätigen"
         },
         "placeholders": {
@@ -179,7 +179,7 @@
           "confirmFull": "Bitte gib {email} ein, um zu bestätigen",
           "placeholder": "Gib deine E-Mail-Adresse ein",
           "acceptButton": "Mein Konto löschen",
-          "acceptButtonLoading": "Wird gelöscht...",
+          "acceptButtonLoading": "Deleting...",
           "appStoreWarning": "Das Löschen deines Kontos kündigt dein App-Store-Abo nicht und Apple wird dir weiterhin Kosten berechnen. Kündige es zuerst in deinen {link}.",
           "appStoreWarningLink": "App-Store-Abonnements"
         },
@@ -202,7 +202,7 @@
             "title": "Was in der Sicherung nicht enthalten ist",
             "intro": "Deine Sicherung enthält alle deine Daten. Aus Sicherheitsgründen können einige verschlüsselte Elemente nicht mitgesichert werden und müssen nach der Wiederherstellung erneut eingerichtet werden:",
             "items": {
-              "bankConnectionsTerm": "Bankverbindungen",
+              "bankConnectionsTerm": "Bank connections",
               "bankConnections": "{term} — Zugriffs-Token sind verschlüsselt und an diesen Server gebunden, daher musst du jede Bank nach der Wiederherstellung neu verbinden.",
               "aiKeysTerm": "KI-API-Schlüssel",
               "aiKeys": "{term} — verschlüsselt gespeichert, daher musst du sie nach der Wiederherstellung erneut eingeben."

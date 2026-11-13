@@ -29,8 +29,8 @@
       "copyInviteLink": "Copiar enlace de invitación",
       "moveTo": "Mover a…",
       "learnMore": "Saber más",
-      "undo": "Deshacer",
-      "more": "Más"
+      "undo": "Undo",
+      "more": "More"
     },
     "ui": {
       "close": "Cerrar",
@@ -106,7 +106,7 @@
       "mobilePayment": "Pago móvil",
       "voucher": "Vale",
       "webPayment": "Pago web",
-      "none": "Ninguna"
+      "none": "None"
     },
     "vehicleClasses": {
       "sedan": "Sedán",
@@ -146,7 +146,7 @@
         "description": "Escanea nuevas transacciones y sugiere las que pertenecen a un rastreador inteligente."
       },
       "transferMatching": {
-        "name": "Asociación de transferencias",
+        "name": "Transfer matching",
         "description": "Comprueba la transferencia de resultados del escaneo y mantiene los pares que parecen transferencias reales"
       }
     },
@@ -166,12 +166,12 @@
       "record": {
         "addedByTooltip": "{handle} adjuntó esta transacción al presupuesto",
         "addedByRule": "Agregado por las reglas del rastreador",
-        "matchedByAi": "Coincidencia por IA",
+        "matchedByAi": "Matched by AI",
         "externalLinkTooltip": "Abrir enlace externo",
         "locationTooltip": "Abrir ubicación en el mapa",
         "attachmentsTooltip": "Tiene adjuntos",
         "hiddenAccount": "Cuenta oculta",
-        "selectRow": "Seleccionar transacción",
+        "selectRow": "Select transaction",
         "unselectableReasons": {
           "sharedAccount": "No se puede seleccionar: esta transacción pertenece a una cuenta compartida contigo, y solo su propietario puede editarla."
         },
@@ -241,7 +241,7 @@
       "tabs": {
         "brand": "Marca",
         "letters": "Letras",
-        "icon": "Icono",
+        "icon": "Icon",
         "custom": "Imagen"
       },
       "searchPlaceholder": "Nombre de marca o dominio",
@@ -259,7 +259,7 @@
       "remove": "Quitar logo",
       "pickerDescription": "Elige un logo de marca o usa letras en su lugar.",
       "updatedToast": "Logo actualizado",
-      "resetToast": "Logo eliminado",
+      "resetToast": "Logo removed",
       "updateError": "No se pudo actualizar el logo. Vuelve a intentarlo.",
       "lettersLabel": "Letras (1–2)",
       "lettersPlaceholder": "AB",
@@ -283,12 +283,12 @@
       "description": "Se está eliminando un gran lote de importación. Los saldos se recalculan cuando termina, por lo que la aplicación está bloqueada hasta entonces.",
       "deleting": "Eliminando transacción",
       "preparing": "Preparándose",
-      "finishing": "Finalizando",
+      "finishing": "Finishing up",
       "takingLong": "Esto está tardando más de lo habitual, grandes lotes pueden tardar varios minutos. Mantenga esta página abierta.",
-      "unreachableTitle": "No se puede contactar con el servidor",
+      "unreachableTitle": "Can't reach the server",
       "unreachableDescription": "El borrado puede estar ejecutándose. Descartar para seguir usando la aplicación, y volver a cargar más tarde para ver el resultado.",
       "failedTitle": "No se pudo eliminar",
-      "dismiss": "Descartar"
+      "dismiss": "Dismiss"
     },
     "duration": {
       "years": "{n} año | {n} años",
@@ -519,10 +519,10 @@
   "aiUsage": {
     "title": "Incluye uso IA",
     "used": "usado",
-    "percentUsed": "{percent}% usado",
+    "percentUsed": "{percent}% used",
     "resetsOn": "Se reinicia en {date}",
     "connectOwnModel": "Conecte su propio modelo",
-    "gotIt": "Entendido",
+    "gotIt": "Got it",
     "badge": {
       "used": "{percent}% IA utilizada",
       "reached": "Límite de IA alcanzado"
@@ -568,12 +568,12 @@
       "removeTransactionDescriptionNormal": "¿Está seguro de que desea quitar esta transacción del grupo?",
       "removeButtonText": "Quitar",
       "removeAndDeleteButtonText": "Quitar y eliminar el grupo",
-      "removeFromGroup": "Quitar del grupo",
+      "removeFromGroup": "Remove from group",
       "saveError": "No se pudo guardar el grupo",
       "removeError": "No se pudo eliminar la transacción del grupo",
-      "manageTransactions": "Gestión",
+      "manageTransactions": "Manage",
       "showMoreNote": "Mostrar más",
-      "showLessNote": "Mostrar menos",
+      "showLessNote": "Show less",
       "summary": {
         "transactions": "Transacciones",
         "net": "Neto",
@@ -591,7 +591,7 @@
       "description": "Accounts, transactions, categories, tags, payees and reports"
     },
     "subscriptions": {
-      "label": "Cargos recurrentes",
+      "label": "Recurring payments",
       "description": "Recurring payments, their periods and planned transactions"
     },
     "budgetPlans": {
@@ -599,11 +599,11 @@
       "description": "Plans, lines, line goals and savings goals"
     },
     "trackers": {
-      "label": "Presupuestos",
+      "label": "Trackers",
       "description": "Spending trackers and their suggestions"
     },
     "automations": {
-      "label": "Automatizaciones",
+      "label": "Automations",
       "description": "Rules, payee aliases, ignored payee names and tag reminders"
     },
     "review": {
@@ -615,7 +615,7 @@
       "description": "Transaction groups and transaction templates"
     },
     "investments": {
-      "label": "Inversiones",
+      "label": "Investments",
       "description": "Portfolios, holdings, securities and investment transactions"
     },
     "ventures": {
@@ -627,7 +627,7 @@
       "description": "Loans with their payments, and vehicles"
     },
     "currencies": {
-      "label": "Monedas",
+      "label": "Currencies",
       "description": "Your currencies and exchange rates"
     },
     "imports": {

@@ -15,7 +15,7 @@
         "invalidBadge": "Neplatné"
       },
       "features": {
-        "title": "Funkcie AI",
+        "title": "AI funkcie",
         "description": "Nastavte, ktorý model sa má použiť pre jednotlivé funkcie využívajúce AI",
         "howItWorks": "Ako to funguje",
         "loadError": "Vaše funkcie AI sa nepodarilo načítať."

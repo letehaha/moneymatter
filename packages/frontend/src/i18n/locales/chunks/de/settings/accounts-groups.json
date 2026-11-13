@@ -17,13 +17,13 @@
       },
       "row": {
         "bankBadgeTooltip": "Diese Gruppe wurde erstellt, als du die Bank verbunden hast, aber sie repräsentiert nicht die Verbindung selbst — du kannst sie beliebig umbenennen, Konten verschieben oder sie löschen. Konten bleiben unabhängig davon synchronisiert.",
-        "accountsCount": "{count} Konto | {count} Konten",
+        "accountsCount": "{count} account | {count} accounts",
         "noAccounts": "Keine Konten",
         "accountsElsewhere": "{count} synchronisiertes Konto in anderen Gruppen | {count} synchronisierte Konten in anderen Gruppen",
-        "manageConnection": "Verbindung verwalten"
+        "manageConnection": "Manage connection"
       },
       "update": {
-        "label": "Gruppenname",
+        "label": "Group name",
         "placeholder": "Gruppennamen eingeben",
         "emptyNameError": "Gruppenname darf nicht leer sein"
       },
@@ -31,7 +31,7 @@
         "unlinkTooltip": "Aus Gruppe entfernen",
         "removeConfirmTitle": "\"{name}\" aus dieser Gruppe entfernen?",
         "removeConfirmDescription": "Das Konto wird nicht gelöscht — es verlässt lediglich diese Gruppe.",
-        "removeConfirmAction": "Entfernen"
+        "removeConfirmAction": "Remove"
       },
       "delete": {
         "button": "Gruppe löschen",
@@ -44,16 +44,16 @@
         "rename": {
           "title": "Gruppe umbenennen",
           "description": "Klicke auf das Logo, um ein Banklogo, Initialen oder eine Farbe auszuwählen.",
-          "submit": "Speichern"
+          "submit": "Save changes"
         },
         "move": {
-          "title": "\"{name}\" verschieben",
+          "title": "Move “{name}”",
           "description": "Ihre Untergruppen und Konten werden mitverschoben.",
           "parentLabel": "Übergeordnete Gruppe",
           "parentPlaceholder": "Wähle eine übergeordnete Gruppe",
           "noParent": "Keine übergeordnete Gruppe",
           "hint": "Wähle \"Keine übergeordnete Gruppe\", um sie zu einer Hauptgruppe zu machen.",
-          "submit": "Verschieben"
+          "submit": "Move"
         },
         "addAccounts": {
           "title": "Konten zu \"{name}\" hinzufügen",
@@ -77,24 +77,24 @@
       },
       "tree": {
         "groupsCount": "{count} Gruppe | {count} Gruppen",
-        "syncedBadge": "Synchronisiert",
-        "expand": "Ausklappen",
-        "collapse": "Einklappen",
-        "renameTooltip": "Umbenennen",
-        "moreActions": "Weitere Aktionen",
+        "syncedBadge": "Synced",
+        "expand": "Expand",
+        "collapse": "Collapse",
+        "renameTooltip": "Rename",
+        "moreActions": "More actions",
         "menu": {
           "rename": "Umbenennen und Logo ändern",
           "move": "In eine andere Gruppe verschieben",
-          "newSubgroup": "Neue Untergruppe",
+          "newSubgroup": "New subgroup",
           "addAccounts": "Konten hinzufügen",
-          "delete": "Gruppe löschen"
+          "delete": "Delete group"
         }
       },
       "organize": {
-        "button": "Organisieren",
+        "button": "Organize",
         "hint": "Ziehe eine Gruppe auf eine andere, um sie unterzuordnen",
-        "save": "Speichern",
-        "topLevel": "Oberste Ebene",
+        "save": "Save changes",
+        "topLevel": "Top level",
         "dropToTopLevel": "Hier ablegen, um \"{name}\" zu einer Hauptgruppe zu machen",
         "movesCount": "{count} Verschiebung | {count} Verschiebungen",
         "moveInside": "Nach innen verschieben",

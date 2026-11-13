@@ -9,7 +9,7 @@
         "description": "Finde Ausgaben-Einnahmen-Paare, die Umbuchungen zwischen deinen Konten sein könnten, und verknüpfe sie automatisch."
       },
       "aiCategorization": {
-        "title": "KI-Kategorisierung",
+        "title": "AI categorization",
         "description": "Lass die KI unkategorisierte Transaktionen sortieren und überprüfe vergangene Durchläufe."
       },
       "applyRules": {
@@ -22,7 +22,7 @@
       }
     },
     "aiCategorization": {
-      "title": "KI-Kategorisierung",
+      "title": "AI categorization",
       "description": "Führe die KI für Transaktionen aus, die sich noch in deiner Standardkategorie befinden, und lass sie eine bessere auswählen. Du kannst eine Kategorie später jederzeit ändern.",
       "tabs": {
         "categorize": "Kategorisieren",
@@ -51,10 +51,10 @@
         "runEmptyDescription": "Jede Transaktion, die in diesem Durchlauf kategorisiert wurde, wurde seitdem neu kategorisiert oder gelöscht.",
         "transactionCount": "{count} Transaktion | {count} Transaktionen",
         "trigger": {
-          "manual": "Manuell",
+          "manual": "Manual",
           "import": "Datenimport",
           "sync": "Banksynchronisierung",
-          "unknown": "Unbekannt"
+          "unknown": "Unknown"
         },
         "triggerTooltip": {
           "manual": "Du hast diesen Durchlauf manuell gestartet",
@@ -65,7 +65,7 @@
       },
       "setup": {
         "title": "KI-Konfiguration",
-        "model": "Modell",
+        "model": "Model",
         "notConfigured": "Nicht konfiguriert",
         "connection": "KI-Modell",
         "limits": "Limits",
@@ -121,7 +121,7 @@
         "previousYear": "Vorheriges Jahr"
       },
       "includeOutOfWallet": "Externe Umbuchungen einschließen",
-      "outOfWalletSwitch": "Externe Umbuchungen",
+      "outOfWalletSwitch": "Out-of-wallet transfers",
       "skip": {
         "action": "Ablehnen",
         "title": "Diesen Vorschlag ablehnen?",
@@ -142,7 +142,7 @@
         "plusBadge": "Plus",
         "description": "Die KI prüft jeden Treffer und zeigt nur diejenigen an, die wie echte Umbuchungen zwischen deinen Konten aussehen.",
         "cost": "Jeder Scan nutzt dein monatliches KI-Guthaben. Bei einem eigenen KI-Anbieter rechnet dieser direkt ab. Wähle das Modell in {link}.",
-        "aiSettingsLink": "KI-Einstellungen",
+        "aiSettingsLink": "AI settings",
         "openAiSettings": "KI-Einstellungen öffnen",
         "blocked": {
           "plan": {
@@ -155,16 +155,16 @@
             "body": "Es wird am {date} zurückgesetzt. Verbinde deinen eigenen KI-Anbieter, um die Funktion sofort weiterzunutzen."
           },
           "setup": {
-            "pill": "Einrichten",
+            "pill": "Set up",
             "title": "Kein KI-Modell antwortet",
             "body": "Überprüfe deinen KI-Anbieter oder wähle ein Modell für den Umbuchungserkennung aus."
           }
         },
-        "connectOwnModel": "Eigenes Modell verbinden",
+        "connectOwnModel": "Connect your own model",
         "reviewing": "KI überprüft Treffer...",
         "verdict": {
-          "likely": "Wahrscheinlich",
-          "possible": "Möglich"
+          "likely": "Likely",
+          "possible": "Possible"
         },
         "nudge": "Falsche Treffer mit der KI-Überprüfung reduzieren",
         "rescanHint": "Mit KI überprüfen",
@@ -186,8 +186,8 @@
         "hint": "Wähle Banktransaktionen aus, um Duplikate zusammenzuführen oder überflüssige zu entfernen"
       },
       "actions": {
-        "merge": "Zusammenführen",
-        "remove": "Entfernen"
+        "merge": "Merge",
+        "remove": "Remove"
       },
       "blockReasons": {
         "header": {
@@ -215,19 +215,19 @@
           "booked": "Gebucht"
         },
         "keep": "Behalten",
-        "remove": "Entfernen",
+        "remove": "Remove",
         "sameInAll": "In allen identisch:",
         "confirm": "Zusammenführen und {count} entfernen | Zusammenführen und {count} entfernen"
       },
       "remove": {
         "title": "{count} Transaktion entfernen? | {count} Transaktionen entfernen?",
         "description": "Entfernte Transaktionen werden nicht mehr für Kontostände und Statistiken berücksichtigt. Verknüpfungen zu Trackern, Gruppen und Abonnements werden getrennt. Du kannst sie aus dem Verlauf wiederherstellen, aber die Verknüpfungen werden nicht wiederhergestellt.",
-        "confirm": "Entfernen"
+        "confirm": "Remove"
       },
       "restoreDialog": {
         "title": "{count} Transaktion wiederherstellen? | {count} Transaktionen wiederherstellen?",
         "description": "Wiederhergestellte Transaktionen werden wieder für Kontostände und Statistiken berücksichtigt. Falls sie zusammengeführt wurden, bleibt die behaltene Transaktion bestehen, sodass du möglicherweise wieder Duplikate siehst. Verknüpfungen zu Trackern, Gruppen und Abonnements, die beim Entfernen getrennt wurden, werden nicht wiederhergestellt.",
-        "confirm": "Wiederherstellen"
+        "confirm": "Restore"
       },
       "notifications": {
         "removed": "{count} Transaktion entfernt | {count} Transaktionen entfernt",
@@ -261,13 +261,13 @@
         },
         "checkFirstHint": "Gleiche zuerst mit deiner Bank ab. Transaktionen, die sie seitdem gebucht hat, verschwinden aus dieser Liste.",
         "columns": {
-          "account": "Konto",
+          "account": "Account",
           "date": "Datum",
-          "category": "Kategorie",
+          "category": "Category",
           "pendingFor": "Ausstehend seit",
           "amount": "Betrag",
           "status": "Status",
-          "actions": "Aktionen"
+          "actions": "Actions"
         },
         "pendingDaysShort": "{count} T.",
         "status": {
@@ -287,7 +287,7 @@
           "merge": "Zusammengeführt",
           "remove": "Entfernt"
         },
-        "restore": "Wiederherstellen",
+        "restore": "Restore",
         "kept": "Behalten",
         "removedRows": "{count} entfernte Transaktion | {count} entfernte Transaktionen"
       }

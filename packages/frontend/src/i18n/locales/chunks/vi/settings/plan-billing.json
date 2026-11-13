@@ -9,7 +9,7 @@
       "updatePaymentMethod": "Cập nhật phương thức thanh toán",
       "manageBilling": "Quản lý thanh toán",
       "manageInAppStore": "Manage in the App Store",
-      "currentPlan": "Gói hiện tại",
+      "currentPlan": "Current plan",
       "recommended": "Được đề xuất",
       "previousPlan": "Gói trước đây",
       "yourPlan": "Gói của bạn",
@@ -67,7 +67,7 @@
         "trial": "Tính năng Plus",
         "processing": "Đang xử lý",
         "earlyAdopter": "Người dùng từ những ngày đầu",
-        "endsOn": "Kết thúc vào {date}"
+        "endsOn": "Ends {date}"
       },
       "cta": {
         "activating": "Đang kích hoạt…",
@@ -91,7 +91,7 @@
       },
       "cycle": {
         "month": "Hàng tháng",
-        "year": "Hằng năm"
+        "year": "Yearly"
       },
       "perCycle": {
         "month": "/tháng",

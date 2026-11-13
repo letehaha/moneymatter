@@ -29,7 +29,7 @@
         "includeArchived": "Zahrnúť archivované"
       },
       "row": {
-        "saved": "Ušetrené",
+        "saved": "Usporené",
         "ofTarget": "z {amount}",
         "accountShare": "{name} {share} %",
         "accountFixed": "{name} {amount}",
@@ -43,7 +43,7 @@
       }
     },
     "status": {
-      "reached": "Dosiahnuté",
+      "reached": "Dosiahnutý",
       "ahead": "V predstihu",
       "onTrack": "Na dobrej ceste",
       "behind": "Zaostáva",

@@ -765,6 +765,11 @@
         "requiresAccountField": "Auto-record requires an account to book the transaction against.",
         "requiresAmountField": "Auto-record requires expectedAmount and expectedCurrencyCode.",
         "excludesMatchingField": "Auto-record and matching rules are mutually exclusive."
+      },
+      "customInterval": {
+        "required": "A custom frequency needs an interval unit and count.",
+        "presetConflict": "An interval unit and count can only be set with the custom frequency.",
+        "countOutOfRange": "The interval count must be between {{min}} and {{max}} for this unit."
       }
     }
   },

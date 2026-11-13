@@ -8,18 +8,18 @@
     "allTransactions": "所有交易记录",
     "transactions": "交易记录",
     "transactionGroups": "交易组",
-    "trash": "回收站",
+    "trash": "Trash",
     "analytics": "统计分析",
     "optimizations": "优化",
     "automations": "自动化",
     "accountDetails": "账户详情",
     "helpAndDocs": "Help & docs",
     "community": "Community",
-    "logout": "登出",
+    "logout": "Logout",
     "appVersion": "App version {version}",
     "updateAvailable": "Update available",
     "updateToVersion": "Update · {version}",
-    "settings": "设置",
+    "settings": "Settings",
     "planned": {
       "planned": "已规划",
       "subscriptions": "定期付款",
@@ -33,7 +33,7 @@
     "collapse": "Collapse sidebar",
     "expand": "Expand sidebar",
     "settings": {
-      "title": "设置",
+      "title": "Settings",
       "sections": {
         "label": "侧边栏小组",
         "description": "选择在侧边栏中显示哪些小组。",
@@ -54,7 +54,7 @@
       "noPortfolios": "无投资组合",
       "ventures": "风险投资",
       "cars": "车辆",
-      "loans": "贷款",
+      "loans": "Loans",
       "collapseNavigation": "折叠导航栏",
       "viaHousehold": "由 {handle} 的家庭账户共享",
       "sharedBy": "由 {handle} 共享",
@@ -70,7 +70,7 @@
     "attachInvoiceHint": "We find the transaction it belongs to",
     "language": "语言",
     "newTransaction": "添加交易",
-    "settings": "设置",
+    "settings": "Settings",
     "feedback": "意见反馈",
     "support": "帮助",
     "sync": {
@@ -139,7 +139,7 @@
     "progress": "已同步 {current}/{total}",
     "progressPercentage": "{percentage}%",
     "statuses": {
-      "syncing": "正在同步",
+      "syncing": "Syncing",
       "queued": "队列中",
       "synced": "已同步",
       "failed": "失败",
@@ -236,7 +236,7 @@
             "title": "探索分析"
           },
           "ai-settings": {
-            "title": "AI 功能"
+            "title": "AI features"
           },
           "sharing": {
             "title": "共享和家庭"
@@ -338,7 +338,7 @@
           "triggerTooltip": "快速开始——剩 {count} 个任务",
           "srDescription": "完成这些任务以开始应用",
           "progressText": "已完成 {completed}/{total}",
-          "categoryProgress": "已完成 {completed}/{total}"
+          "categoryProgress": "{completed} of {total} complete"
         }
       }
     }

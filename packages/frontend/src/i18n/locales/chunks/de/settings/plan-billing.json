@@ -10,10 +10,10 @@
       "manageBilling": "Abrechnung verwalten",
       "manageInAppStore": "Im App Store verwalten",
       "currentPlan": "Aktueller Tarif",
-      "recommended": "Empfohlen",
+      "recommended": "Recommended",
       "previousPlan": "Vorheriger Tarif",
       "yourPlan": "Dein Tarif",
-      "planned": "Geplant",
+      "planned": "Planned",
       "voteOnRoadmap": "Über Roadmap abstimmen",
       "roadmapNote": "Kostenlos. Stimme dafür ab und wir informieren dich, sobald es verfügbar ist.",
       "saveUpTo": "Spare bis zu {percent}%",
@@ -61,7 +61,7 @@
       },
       "status": {
         "pastDue": "Zahlung fehlgeschlagen",
-        "active": "Aktiv",
+        "active": "Active",
         "paused": "Pausiert",
         "readOnly": "Schreibgeschützt",
         "trial": "Plus-Funktionen",
@@ -91,7 +91,7 @@
       },
       "cycle": {
         "month": "Monatlich",
-        "year": "Jährlich"
+        "year": "Yearly"
       },
       "perCycle": {
         "month": "/Monat",

@@ -1,6 +1,6 @@
 {
   "venture": {
-    "title": "风险投资",
+    "title": "Venture",
     "subtitle": "Track private venture investments — SPVs, syndicates, fund deals.",
     "managePlatforms": "Manage platforms",
     "platforms": {
@@ -9,8 +9,8 @@
       "createButton": "Add platform",
       "emptyTitle": "No platforms yet",
       "emptyDescription": "Add the syndicates or GPs you invest through (e.g., Acme Ventures, AngelList). Configure default fees once — applied to all deals on that platform.",
-      "editTooltip": "编辑",
-      "deleteTooltip": "删除",
+      "editTooltip": "Edit",
+      "deleteTooltip": "Delete",
       "entryFee": "Entry fee",
       "mgmtFee": "Mgmt fee",
       "carry": "Carry",
@@ -21,7 +21,7 @@
       "editDialogDescription": "Updates apply to future deals. Existing deals keep their original fee snapshots.",
       "deleteTitle": "Delete platform?",
       "deleteDescription": "{name} will be removed. Deals on this platform stay but lose their platform link. This can be undone via the trash.",
-      "deleteConfirm": "删除",
+      "deleteConfirm": "Delete",
       "notifications": {
         "created": "Platform created",
         "updated": "Platform updated",
@@ -41,7 +41,7 @@
         "carryLabel": "Default carry %",
         "hurdleLabel": "Default hurdle %",
         "percentInvalid": "Must be between 0 and 100",
-        "cancel": "取消",
+        "cancel": "Cancel",
         "save": "Save",
         "create": "Create",
         "saving": "Saving…"
@@ -108,7 +108,7 @@
         "pickAnotherTransaction": "Add another transaction",
         "removeLinkedTransaction": "Remove linked transaction",
         "linkedSummary": "Linked {total} across {count} transaction(s)",
-        "cancel": "取消",
+        "cancel": "Cancel",
         "create": "Create",
         "saving": "Saving…"
       },
@@ -127,11 +127,11 @@
       "editDialogTitle": "Edit deal",
       "editDialogDescription": "Updates apply going forward; historical event values are not retroactively recalculated.",
       "backToDeals": "Back to deals",
-      "edit": "编辑",
-      "delete": "删除",
+      "edit": "Edit",
+      "delete": "Delete",
       "deleteTitle": "Delete deal?",
       "deleteDescription": "{name} will be removed along with all its events. This can be undone via the trash.",
-      "deleteConfirm": "删除",
+      "deleteConfirm": "Delete",
       "principal": "Principal",
       "entryFee": "Entry fee",
       "carry": "Carry",
@@ -188,7 +188,7 @@
         "percentInvalid": "Must be between 0 and 100",
         "notesLabel": "Notes",
         "notesPlaceholder": "Optional notes about this deal",
-        "cancel": "取消",
+        "cancel": "Cancel",
         "save": "Save",
         "create": "Create",
         "saving": "Saving…"

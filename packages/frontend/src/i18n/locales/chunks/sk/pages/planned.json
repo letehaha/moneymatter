@@ -62,7 +62,20 @@
         "monthly": "Mesačne",
         "quarterly": "Štvrťročne",
         "semiAnnual": "Polročne",
-        "annual": "Ročne"
+        "annual": "Ročne",
+        "custom": "Vlastné",
+        "every": {
+          "day": "Každý deň | Každé {count} dni | Každých {count} dní",
+          "week": "Každý týždeň | Každé {count} týždne | Každých {count} týždňov",
+          "month": "Každý mesiac | Každé {count} mesiace | Každých {count} mesiacov",
+          "year": "Každý rok | Každé {count} roky | Každých {count} rokov"
+        },
+        "units": {
+          "day": "deň | dni | dní",
+          "week": "týždeň | týždne | týždňov",
+          "month": "mesiac | mesiace | mesiacov",
+          "year": "rok | roky | rokov"
+        }
       },
       "matchSource": {
         "manual": "Ručne",
@@ -86,6 +99,11 @@
         "amountPlaceholder": "0,00",
         "currencyLabel": "Mena",
         "frequencyLabel": "Frekvencia",
+        "intervalCountLabel": "Opakovať každých",
+        "intervalCountPlaceholder": "napr. 30",
+        "intervalUnitLabel": "Jednotka",
+        "intervalUnitPlaceholder": "Vyberte jednotku",
+        "validationIntervalCount": "Zadajte celé číslo od 1 do {max}",
         "startDateLabel": "Dátum začiatku",
         "endDateLabel": "Dátum konca",
         "accountLabel": "Účet",

@@ -33,7 +33,7 @@
           "title": "Passkeys",
           "noPasskeys": "No passkeys registered",
           "passkeyCount": "{count} passkey(s) registered",
-          "addButton": "Thêm Passkey",
+          "addButton": "Add passkey",
           "passkeyName": "Passkey",
           "added": "Added {date}",
           "rename": "Rename",
@@ -132,7 +132,7 @@
       "wipeData": {
         "title": "Wipe all data",
         "warningFull": "{strong} This action removes everything in your workspace. Your login stays so you can start over.",
-        "warningStrong": "Cảnh báo:",
+        "warningStrong": "Warning:",
         "button": "Wipe data",
         "dialog": {
           "title": "Wipe all your data?",
@@ -192,7 +192,7 @@
         "download": {
           "title": "Download backup",
           "description": "Save a complete, restorable copy of all your data as a zip file.",
-          "button": "Tải xuống",
+          "button": "Download",
           "loading": "Preparing...",
           "success": "Backup downloaded",
           "failed": "Could not create backup. Please try again.",
@@ -202,7 +202,7 @@
             "title": "What a backup leaves out",
             "intro": "Your backup includes all your data. For security, a couple of encrypted items can't travel with it and need setting up again after you restore:",
             "items": {
-              "bankConnectionsTerm": "Kết nối ngân hàng",
+              "bankConnectionsTerm": "Bank connections",
               "bankConnections": "{term} — access tokens are encrypted and tied to this server, so you'll reconnect each bank after restoring.",
               "aiKeysTerm": "AI API keys",
               "aiKeys": "{term} — stored encrypted, so you'll re-enter them after restoring."
@@ -224,7 +224,7 @@
             "warning": "This replaces ALL your current data",
             "description": "Everything currently in your account will be permanently deleted and replaced with the contents of this backup. This cannot be undone.",
             "selectedFile": "Selected file: {name}",
-            "confirmLabel": "Khôi phục",
+            "confirmLabel": "Restore",
             "reconnectTitle": "After restoring, set these up again",
             "reconnectBankConnections": "Reconnect your bank connections",
             "reconnectAiKeys": "Re-enter your AI API keys (if you use any)"
@@ -252,7 +252,7 @@
             "title": "Restore complete",
             "description": "Your data has been restored from the backup.",
             "recordsHeading": "Restored records",
-            "warningsHeading": "Cảnh báo",
+            "warningsHeading": "Warnings",
             "noRecords": "No records were restored.",
             "doneButton": "Done"
           },
@@ -280,7 +280,7 @@
           "overlay": {
             "title": "Restoring your data",
             "description": "Please keep this tab open. We're replacing your data with your backup — this can take a moment.",
-            "preparing": "Đang chuẩn bị…",
+            "preparing": "Preparing…",
             "finishing": "Finishing up",
             "takingLong": "This is taking longer than usual. Your data is still being restored — please keep this tab open.",
             "unreachableTitle": "Can't reach the server",

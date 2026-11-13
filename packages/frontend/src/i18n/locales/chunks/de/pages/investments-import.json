@@ -9,7 +9,7 @@
       "fileHintFormats": "CSV, TXT oder PDF",
       "pastePlaceholder": "Füge deine Transaktionsliste hier ein...",
       "estimatedCost": "Geschätzte Kosten",
-      "model": "Modell",
+      "model": "Model",
       "estimateButton": "Kosten schätzen",
       "extractButton": "Extrahieren",
       "extracting": "Extrahiere…",
@@ -44,7 +44,7 @@
       "possibleDup": "Mögliches Duplikat",
       "skipping": "Wird übersprungen",
       "duplicateBadgeTooltip": "Dies sieht nach einem möglichen Duplikat einer bestehenden Transaktion aus. Klicke, um sie zu überspringen – andernfalls wird neben der bestehenden eine neue Transaktion erstellt (keine Zusammenführung oder Überschreibung).",
-      "back": "Zurück",
+      "back": "Back",
       "commit": "Importieren",
       "cols": {
         "date": "Datum",
@@ -109,7 +109,7 @@
     },
     "columnMapping": {
       "rowsAndDelimiter": "{rows} Zeilen · Trennzeichen \"{delimiter}\"",
-      "backToUpload": "Zurück",
+      "backToUpload": "Back",
       "previewTitle": "Vorschau",
       "requiredTitle": "Erforderliche Spalten",
       "optionalTitle": "Optionale Spalten",

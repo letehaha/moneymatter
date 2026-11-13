@@ -599,7 +599,7 @@
       "description": "Plány, riadky, ciele riadkov a sporiace ciele"
     },
     "trackers": {
-      "label": "Rozpočty",
+      "label": "Sledovače",
       "description": "Sledovače výdavkov a ich návrhy"
     },
     "automations": {

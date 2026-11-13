@@ -10,10 +10,10 @@
       "manageBilling": "Administrar la facturación",
       "manageInAppStore": "Administrar en la App Store",
       "currentPlan": "Plan actual",
-      "recommended": "Recomendado",
+      "recommended": "Recommended",
       "previousPlan": "Plan anterior",
       "yourPlan": "Tu plan",
-      "planned": "Planificadas",
+      "planned": "Planned",
       "voteOnRoadmap": "Votar en el mapa de ruta",
       "roadmapNote": "Sin cargo. Al votarlo y te avisaremos cuando esté listo.",
       "saveUpTo": "Ahorra hasta {percent}%",
@@ -61,9 +61,9 @@
       },
       "status": {
         "pastDue": "No se pudo efectuar el pago",
-        "active": "Activa",
-        "paused": "En pausa",
-        "readOnly": "Solo lectura",
+        "active": "Active",
+        "paused": "Paused",
+        "readOnly": "Read-only",
         "trial": "Características Plus",
         "processing": "Procesando",
         "earlyAdopter": "Early Adpoter",
@@ -90,8 +90,8 @@
         "early_adopter": "Early Adopter"
       },
       "cycle": {
-        "month": "Mensual",
-        "year": "Anual"
+        "month": "Monthly",
+        "year": "Yearly"
       },
       "perCycle": {
         "month": "/mes",

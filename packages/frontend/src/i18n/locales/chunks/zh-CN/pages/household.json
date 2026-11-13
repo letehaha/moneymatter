@@ -20,12 +20,12 @@
         "own": "Can edit only their own transactions"
       },
       "invite": {
-        "emailLabel": "电邮",
+        "emailLabel": "Email",
         "emailPlaceholder": "person{'@'}example.com",
-        "permissionLabel": "权限",
-        "writeScopeLabel": "写入范围",
+        "permissionLabel": "Permission",
+        "writeScopeLabel": "Write scope",
         "submit": "Send household invite",
-        "sent": "已发送邀请。",
+        "sent": "Invitation sent.",
         "error": "Couldn't send the invitation.",
         "emailDeliveryFailed": "Invitation created, but the email couldn't be delivered. You can resend it from the invitations panel."
       },
@@ -61,7 +61,7 @@
       "pending": {
         "badge": "Pending",
         "resend": "Resend",
-        "cancel": "取消",
+        "cancel": "Cancel",
         "cancelTitle": "Cancel invitation?",
         "cancelDescription": "Cancel the pending invitation sent to {email}? They will no longer be able to accept it.",
         "cancelConfirm": "Cancel invitation",

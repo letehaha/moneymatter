@@ -7,15 +7,15 @@
         "selectAll": "Select all",
         "selected": "{count} selected",
         "unlink": "Unlink",
-        "cancel": "取消",
+        "cancel": "Cancel",
         "unlinkSelected": "Unlink selected",
         "noMatchingTransactions": "No matching transactions",
         "noTransactionsLinked": "No transactions linked",
         "filterAdjustmentHint": "Try adjusting your filters to see more transactions.",
         "addTransactionsHint": "Add transactions to this tracker to start tracking your spending.",
-        "resetFilters": "重置搜索条件",
+        "resetFilters": "Reset filters",
         "addTransactions": "Add transactions",
-        "add": "添加",
+        "add": "Add",
         "loadingMore": "Loading more...",
         "unlinkError": "Failed to unlink transactions",
         "addError": "Failed to add transactions"
@@ -25,7 +25,7 @@
       "notSet": "Not set",
       "saving": "Saving...",
       "saveChanges": "Save changes",
-      "loading": "加载中……",
+      "loading": "Loading...",
       "uncategorized": "Uncategorized",
       "stats": {
         "income": "Income",
@@ -47,7 +47,7 @@
       },
       "statistics": {
         "tabs": {
-          "categories": "分类",
+          "categories": "Categories",
           "timeline": "Timeline"
         },
         "errorTitle": "Failed to load statistics",
@@ -106,8 +106,8 @@
         "pendingHeading": "Pending invitations",
         "loadError": "Couldn't load members.",
         "permissions": {
-          "read": "仅浏览",
-          "write": "附加自己的交易",
+          "read": "View only",
+          "write": "Attach own transactions",
           "manage": "Manage"
         },
         "member": {
@@ -130,7 +130,7 @@
           "resendSuccess": "Invitation resent.",
           "resendError": "Couldn't resend invitation.",
           "resendDeliveryFailed": "Resent, but the email couldn't be delivered.",
-          "cancel": "取消",
+          "cancel": "Cancel",
           "cancelConfirm": "Cancel invitation",
           "cancelTitle": "Cancel invitation?",
           "cancelDescription": "The invitation to {email} will be cancelled.",

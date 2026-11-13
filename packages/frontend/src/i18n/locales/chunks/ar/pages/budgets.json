@@ -129,8 +129,8 @@
       },
       "archivePrompt": {
         "title": "Archive \"{name}\"?",
-        "endedDaysAgo": "منذ {count} يوم | منذ {count} يوم",
-        "endedMonthsAgo": "منذ {count} شهر | منذ {count} شهر",
+        "endedDaysAgo": "{count} day ago | {count} days ago",
+        "endedMonthsAgo": "{count} month ago | {count} months ago",
         "description": "It ended {ago}. Archived trackers move to the Archived group and keep their transactions and statistics. You can unarchive any time.",
         "dontAsk": "Don't ask for this tracker",
         "notNow": "Not now",

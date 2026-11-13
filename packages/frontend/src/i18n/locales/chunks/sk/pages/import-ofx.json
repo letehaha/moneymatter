@@ -79,7 +79,7 @@
           "progressCount": "{processed} z {total}",
           "failed": "Import zlyhal.",
           "partialImportNote": "Niektoré transakcie mohli byť už importované.",
-          "statusQueued": "V rade",
+          "statusQueued": "V poradí",
           "statusRunning": "Importovanie",
           "statusCompleted": "Dokončené",
           "statusFailed": "Zlyhalo"

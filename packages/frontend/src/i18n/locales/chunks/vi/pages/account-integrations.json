@@ -86,7 +86,7 @@
         },
         "buttons": {
           "back": "Back",
-          "loading": "Đang tải...",
+          "loading": "Loading...",
           "next": "Next",
           "syncing": "Syncing...",
           "sync": "Sync {count} account | Sync {count} accounts"
@@ -257,7 +257,7 @@
         "help": {
           "trigger": "How do I set up Walutomat API access?"
         },
-        "apiKeyLabel": "Khóa API",
+        "apiKeyLabel": "API key",
         "apiKeyPlaceholder": "Enter your Walutomat API key",
         "apiKeyHint": "Found in your Walutomat dashboard under Settings → API",
         "privateKeyLabel": "Private key (PEM)",
@@ -374,7 +374,7 @@
         "actions": {
           "renameButton": "Rename connection",
           "disconnectButton": "Disconnect integration",
-          "manage": "Quản lý"
+          "manage": "Manage"
         },
         "fetchAccountsDialog": {
           "title": "Connect remaining accounts",
@@ -396,8 +396,8 @@
           "connectedSince": "Connected {date}"
         },
         "summary": {
-          "totalBalance": "Tổng số dư",
-          "accounts": "Tài khoản",
+          "totalBalance": "Total balance",
+          "accounts": "Accounts",
           "accountsCount": "no accounts | {count} account | {count} accounts",
           "lastSync": "Last sync",
           "consent": "Consent",
@@ -432,7 +432,7 @@
           "description": "Give your connection a custom name to easily identify it.",
           "label": "Connection name",
           "saving": "Saving...",
-          "save": "Lưu"
+          "save": "Save"
         },
         "reconnect": {
           "title": "Reconnect integration",
@@ -448,7 +448,7 @@
       },
       "updateCredentials": {
         "title": "Update credentials",
-        "apiKeyLabel": "Khóa API",
+        "apiKeyLabel": "API key",
         "apiKeyPlaceholder": "Enter your API key",
         "updatingButton": "Updating...",
         "updateButton": "Update",

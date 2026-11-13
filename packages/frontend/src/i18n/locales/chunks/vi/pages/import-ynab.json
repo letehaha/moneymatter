@@ -7,7 +7,7 @@
         "stepper": {
           "steps": {
             "upload": "Tải lên",
-            "preview": "Xem xét",
+            "preview": "Review",
             "results": "Hoàn tất"
           }
         },
@@ -23,10 +23,10 @@
         },
         "preview": {
           "emptyList": "Không có gì để nhập ở đây.",
-          "accounts": "Tài khoản",
-          "categories": "Danh mục",
-          "payees": "Người nhận",
-          "tags": "Thẻ",
+          "accounts": "Accounts",
+          "categories": "Categories",
+          "payees": "Payees",
+          "tags": "Tags",
           "transactions": "Giao dịch",
           "transfers": "Chuyển khoản",
           "dateRange": "Khoảng thời gian: {from} → {to}",

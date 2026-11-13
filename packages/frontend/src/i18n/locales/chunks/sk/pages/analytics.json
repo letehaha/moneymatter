@@ -71,7 +71,7 @@
         "amount": "Suma",
         "shareOfIncome": "Podiel na príjmoch",
         "shareOfExpenses": "Podiel na výdavkoch",
-        "saved": "Ušetrené",
+        "saved": "Usporené",
         "pctOfIncome": "{pct} z príjmov",
         "pctSavingsRate": "Miera úspor: {pct}",
         "keptAsCash": "Ponechané v hotovosti",
@@ -163,7 +163,7 @@
         "hide": "Skryť z grafu",
         "show": "Zobraziť v grafe"
       },
-      "vsPreviousPeriod": "vs. predchádzajúce obdobie",
+      "vsPreviousPeriod": "oproti predchádzajúcemu obdobiu",
       "loadError": "Údaje sa nepodarilo načítať",
       "noData": "Nie sú dostupné žiadne údaje",
       "noDataHint": "Za toto obdobie nie sú zaznamenané žiadne transakcie"
@@ -362,7 +362,7 @@
         "nextGoal": "{name} · ďalší",
         "eta": "za {duration}",
         "growthOnly": "len rast",
-        "reached": "Dosiahnuté",
+        "reached": "Dosiahnutý",
         "reachedCoast": "Dosiahnuté · sporenie je teraz voliteľné",
         "reachedBaristaCovers": "Príjem z čiastočného úväzku pokryje vaše výdavky",
         "actions": {
@@ -425,7 +425,7 @@
         "actualSince": "Skutočnosť od {month}"
       },
       "milestones": {
-        "reached": "Dosiahnuté",
+        "reached": "Dosiahnutý",
         "reachedOn": "Dosiahnuté {date}",
         "eta": "za {duration} · {date}"
       },
@@ -538,7 +538,7 @@
     "calcInfo": {
       "trigger": "Ako sa to počíta",
       "title": "Ako sa to počíta",
-      "savedHeading": "Ušetrené",
+      "savedHeading": "Usporené",
       "savedBody": "Peniaze, ktoré si odložíte — príjmy mínus výdavky. Presun peňazí medzi vlastnými účtami alebo do investičného portfólia sa nepočíta ako sporenie.",
       "grownHeading": "Zhodnotenie",
       "grownBody": "To, ako sa vďaka trhu vyvinula hodnota vašich pozícií — zmeny cien, plus dividendy, mínus poplatky. Vložené peniaze sa nikdy nepočítajú ako zhodnotenie.",
@@ -554,7 +554,7 @@
     "chart": {
       "title": "Úspory vs. zhodnotenie",
       "subtitle": "Kumulatívne súčty za vybrané obdobie.",
-      "saved": "Ušetrené",
+      "saved": "Usporené",
       "grown": "Zhodnotenie",
       "totalGained": "Celkový zisk",
       "thisPeriod": "Toto obdobie",
@@ -625,7 +625,7 @@
       "averagePerPeriod": "Priemer za obdobie"
     },
     "chart": {
-      "vsPrevious": "vs. predchádzajúce obdobie"
+      "vsPrevious": "oproti predchádzajúcemu obdobiu"
     },
     "states": {
       "noData": "V tomto rozsahu nie sú žiadne vklady",

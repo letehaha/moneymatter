@@ -9,8 +9,8 @@
       "createButton": "Plattform hinzufügen",
       "emptyTitle": "Noch keine Plattformen",
       "emptyDescription": "Füge die Syndikate oder GPs hinzu, über die du investierst (z.B. Acme Ventures, AngelList). Konfiguriere Standardgebühren einmalig — angewendet auf alle Deals auf dieser Plattform.",
-      "editTooltip": "Bearbeiten",
-      "deleteTooltip": "Löschen",
+      "editTooltip": "Edit",
+      "deleteTooltip": "Delete",
       "entryFee": "Einstiegsgebühr",
       "mgmtFee": "Verwaltungsgebühr",
       "carry": "Erfolgsbeteiligung",
@@ -21,12 +21,12 @@
       "editDialogDescription": "Aktualisierungen gelten für zukünftige Deals. Bestehende Deals behalten ihre ursprünglichen Gebührendaten.",
       "deleteTitle": "Plattform löschen?",
       "deleteDescription": "{name} wird entfernt. Deals auf dieser Plattform bleiben bestehen, verlieren aber ihre Plattformverknüpfung. Dies kann über den Papierkorb rückgängig gemacht werden.",
-      "deleteConfirm": "Löschen",
+      "deleteConfirm": "Delete",
       "notifications": {
         "created": "Plattform erstellt",
         "updated": "Plattform aktualisiert",
         "deleted": "Plattform gelöscht",
-        "error": "Etwas ist schiefgelaufen"
+        "error": "Something went wrong"
       },
       "form": {
         "nameLabel": "Name",
@@ -41,8 +41,8 @@
         "carryLabel": "Standard-Erfolgsbeteiligung",
         "hurdleLabel": "Standard-Mindestrendite",
         "percentInvalid": "Muss zwischen 0 und 100 liegen",
-        "cancel": "Abbrechen",
-        "save": "Speichern",
+        "cancel": "Cancel",
+        "save": "Save",
         "create": "Erstellen",
         "saving": "Wird gespeichert…"
       }
@@ -90,7 +90,7 @@
       "notifications": {
         "created": "Ereignis erstellt",
         "deleted": "Ereignis gelöscht",
-        "error": "Etwas ist schiefgelaufen"
+        "error": "Something went wrong"
       },
       "form": {
         "typeLabel": "Ereignistyp",
@@ -108,7 +108,7 @@
         "pickAnotherTransaction": "Weitere Transaktion hinzufügen",
         "removeLinkedTransaction": "Verknüpfte Transaktion entfernen",
         "linkedSummary": "{total} über {count} Transaktion(en) verknüpft",
-        "cancel": "Abbrechen",
+        "cancel": "Cancel",
         "create": "Erstellen",
         "saving": "Wird gespeichert…"
       },
@@ -127,11 +127,11 @@
       "editDialogTitle": "Deal bearbeiten",
       "editDialogDescription": "Aktualisierungen gelten für die Zukunft; historische Ereigniswerte werden nicht rückwirkend neu berechnet.",
       "backToDeals": "Zurück zu den Deals",
-      "edit": "Bearbeiten",
-      "delete": "Löschen",
+      "edit": "Edit",
+      "delete": "Delete",
       "deleteTitle": "Deal löschen?",
       "deleteDescription": "{name} wird zusammen mit allen Ereignissen entfernt. Dies kann über den Papierkorb rückgängig gemacht werden.",
-      "deleteConfirm": "Löschen",
+      "deleteConfirm": "Delete",
       "principal": "Kapitalbetrag",
       "entryFee": "Einstiegsgebühr",
       "carry": "Erfolgsbeteiligung",
@@ -150,7 +150,7 @@
         "created": "Deal erstellt",
         "updated": "Deal aktualisiert",
         "deleted": "Deal gelöscht",
-        "error": "Etwas ist schiefgelaufen"
+        "error": "Something went wrong"
       },
       "form": {
         "nameLabel": "Name",
@@ -188,8 +188,8 @@
         "percentInvalid": "Muss zwischen 0 und 100 liegen",
         "notesLabel": "Notizen",
         "notesPlaceholder": "Optionale Notizen zu diesem Deal",
-        "cancel": "Abbrechen",
-        "save": "Speichern",
+        "cancel": "Cancel",
+        "save": "Save",
         "create": "Erstellen",
         "saving": "Wird gespeichert…"
       }

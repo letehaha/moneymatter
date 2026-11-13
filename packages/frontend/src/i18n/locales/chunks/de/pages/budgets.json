@@ -1,6 +1,6 @@
 {
   "budgets": {
-    "title": "Tracker",
+    "title": "Trackers",
     "description": "Verfolge Ausgaben und überwache Finanzereignisse",
     "notFound": "Tracker nicht gefunden",
     "notFoundDescription": "Wir konnten diesen Tracker nicht finden. Er wurde möglicherweise gelöscht oder du hast keinen Zugriff darauf.",
@@ -9,11 +9,11 @@
     "createBudget": "Tracker erstellen",
     "creation": {
       "success": "Tracker erstellt",
-      "error": "Unerwarteter Fehler!",
+      "error": "Unexpected error!",
       "nameLabel": "Tracker-Name",
       "namePlaceholder": "Name eingeben",
-      "fromDateLabel": "Startdatum",
-      "toDateLabel": "Enddatum",
+      "fromDateLabel": "From date",
+      "toDateLabel": "To date",
       "limitPlaceholder": "Limit eingeben",
       "submitButton": "Tracker hinzufügen"
     },
@@ -22,7 +22,7 @@
       "whatToChoose": "Was auswählen?",
       "guideTitle": "Welches Limit passt?",
       "goalNote": "Du sparst auf etwas hin? Nimm stattdessen {goalLink}: Ziele verfolgen, was du gespart hast, Tracker verfolgen, was ein- oder ausgeht.",
-      "goalLink": "Ziel erstellen",
+      "goalLink": "Create a goal",
       "kinds": {
         "spending": {
           "label": "Ausgaben",
@@ -34,7 +34,7 @@
           "label": "Einnahmenziel",
           "hint": "Nimm mindestens so viel ein. Grün, solange du im Zeitplan bist, und eine Überschreitung ist ein Erfolg.",
           "guide": "Für Geld, das du einnehmen möchtest: Jahresgehalt, Freiberufler-Umsatz, Mieteinnahmen. Grün, solange du im Zeitplan bist; eine Überschreitung ist ein Erfolg.",
-          "amountLabel": "Zielbetrag"
+          "amountLabel": "Target amount"
         },
         "income_cap": {
           "label": "Einnahmenobergrenze",
@@ -48,10 +48,10 @@
       "loadError": "Tracker konnten nicht geladen werden.",
       "tabCategory": "Kategorie-Tracker",
       "tabManual": "Manuelle Tracker",
-      "edit": "Bearbeiten",
-      "delete": "Löschen",
+      "edit": "Edit",
+      "delete": "Delete",
       "deleteSuccess": "Tracker erfolgreich gelöscht!",
-      "deleteError": "Unerwarteter Fehler!",
+      "deleteError": "Unexpected error!",
       "updateSuccess": "Tracker erfolgreich aktualisiert!",
       "updateError": "Tracker konnte nicht aktualisiert werden",
       "unlinkTransactionsSuccess": "Verknüpfung der Transaktionen erfolgreich aufgehoben!",
@@ -60,9 +60,9 @@
         "description": "Wenn du auf \"Akzeptieren\" klickst, werden alle verknüpften Transaktionen vom Tracker getrennt, bleiben aber im System erhalten."
       },
       "limitLabel": "Limit: {amount}",
-      "transactionsCount": "{count} Transaktionen",
+      "transactionsCount": "{count} transactions",
       "categoriesCount": "{count} Kategorien",
-      "noTransactions": "Noch keine Transaktionen",
+      "noTransactions": "No transactions yet",
       "noTimePeriod": "Kein Zeitraum",
       "status": {
         "ended": "Beendet",
@@ -78,9 +78,9 @@
       "net": "Netto",
       "used": "Genutzt",
       "earned": "Eingenommen",
-      "archive": "Archivieren",
+      "archive": "Archive",
       "unarchive": "Wiederherstellen",
-      "archivedLabel": "Archiviert",
+      "archivedLabel": "Archived",
       "archiveError": "Archivstatus konnte nicht aktualisiert werden",
       "showArchived": "Archivierte anzeigen",
       "hideArchived": "Archivierte ausblenden",
@@ -88,34 +88,34 @@
         "title": "Noch keine Tracker",
         "description": "Erstelle einen Tracker, um deine Ausgaben zu verfolgen oder bestimmte Ereignisse zu überwachen."
       },
-      "searchPlaceholder": "Tracker suchen",
+      "searchPlaceholder": "Search trackers",
       "filters": {
-        "all": "Alle",
+        "all": "All",
         "autoAdd": "Automatisches Hinzufügen an",
         "handPicked": "Manuell ausgewählt",
-        "archived": "Archiviert"
+        "archived": "Archived"
       },
       "groups": {
         "active": "Jetzt aktiv",
-        "upcoming": "Bevorstehend",
+        "upcoming": "Upcoming",
         "noDates": "Ohne Datum",
-        "ended": "Beendet",
-        "archived": "Archiviert",
+        "ended": "Ended",
+        "archived": "Archived",
         "show": "anzeigen",
         "hide": "ausblenden"
       },
       "showMoreEnded": "Weitere {count} beendete anzeigen",
       "row": {
         "auto": "auto",
-        "transactions": "{count} Transaktion | {count} Transaktionen",
-        "moreCategories": "+{count} weitere",
+        "transactions": "{count} transaction | {count} transactions",
+        "moreCategories": "+{count} more",
         "noLimit": "kein Limit",
         "archiveSuggestion": "Archivieren?"
       },
       "menu": {
-        "moreActions": "Weitere Aktionen",
+        "moreActions": "More actions",
         "open": "Öffnen",
-        "duplicate": "Duplikat"
+        "duplicate": "Duplicate"
       },
       "duplicateSuccess": "Tracker dupliziert",
       "duplicateError": "Duplizieren des Trackers fehlgeschlagen",
@@ -128,13 +128,13 @@
         "includeArchived": "Archivierte einschließen"
       },
       "archivePrompt": {
-        "title": "\"{name}\" archivieren?",
-        "endedDaysAgo": "Vor {count} Tag | Vor {count} Tagen",
-        "endedMonthsAgo": "Vor {count} Monat | Vor {count} Monaten",
+        "title": "Archive \"{name}\"?",
+        "endedDaysAgo": "{count} day ago | {count} days ago",
+        "endedMonthsAgo": "{count} month ago | {count} months ago",
         "description": "Er wurde {ago} beendet. Archivierte Tracker werden in die Gruppe \"Archiviert\" verschoben und behalten ihre Transaktionen und Statistiken. Du kannst sie jederzeit reaktivieren.",
         "dontAsk": "Für diesen Tracker nicht mehr fragen",
-        "notNow": "Nicht jetzt",
-        "dismissError": "Tracker konnte nicht aktualisiert werden",
+        "notNow": "Not now",
+        "dismissError": "Failed to update tracker",
         "dismissSuccess": "Alles klar. Wir werden die Archivierung dieses Trackers nicht mehr vorschlagen."
       }
     },
@@ -142,39 +142,39 @@
       "nameLabel": "Tracker-Name",
       "namePlaceholder": "Tracker-Name eingeben",
       "limitPlaceholder": "Limitbetrag eingeben (optional)",
-      "startDateLabel": "Startdatum",
-      "endDateLabel": "Enddatum",
-      "notSet": "Nicht festgelegt"
+      "startDateLabel": "Start date",
+      "endDateLabel": "End date",
+      "notSet": "Not set"
     },
     "addTransactionsDialog": {
       "title": "Transaktionen zum Tracker hinzufügen",
       "addSelected": "Ausgewählte hinzufügen",
-      "clearSelection": "Auswahl aufheben"
+      "clearSelection": "Clear selection"
     },
     "manualBudget": {
-      "edit": "Bearbeiten",
+      "edit": "Edit",
       "editTitle": "Tracker bearbeiten"
     },
     "share": {
-      "sharedByBadge": "Geteilt von {handle}"
+      "sharedByBadge": "Shared by {handle}"
     },
     "details": {
       "statsLoadError": "Gesamtsummen dieses Trackers konnten nicht geladen werden.",
-      "transactionsCount": "{count} Transaktion | {count} Transaktionen",
+      "transactionsCount": "{count} transaction | {count} transactions",
       "tagsCount": "{count} Tag | {count} Tags",
       "strip": {
         "limit": "Limit",
-        "spent": "Ausgegeben",
+        "spent": "Spent",
         "left": "Verbleibend",
         "overBy": "Überzogen um",
-        "earned": "Eingenommen",
+        "earned": "Earned",
         "toGo": "Verbleibend",
         "headroom": "Spielraum",
         "aboveTargetBy": "Über dem Ziel um",
-        "income": "Einnahmen",
-        "expenses": "Ausgaben",
-        "net": "Netto",
-        "transactions": "Transaktionen",
+        "income": "Income",
+        "expenses": "Expenses",
+        "net": "Net",
+        "transactions": "Transactions",
         "perDay": "{amount} / Tag"
       },
       "tabs": {
@@ -186,9 +186,9 @@
         "share": "Teilen",
         "setLimits": "Limits festlegen",
         "removeLimits": "Limits entfernen",
-        "duplicate": "Duplikat",
+        "duplicate": "Duplicate",
         "openInTransactions": "In Transaktionen öffnen",
-        "more": "Weitere Aktionen"
+        "more": "More actions"
       },
       "shareDialog": {
         "title": "\"{name}\" teilen"
@@ -203,7 +203,7 @@
       }
     },
     "lines": {
-      "addLine": "Zeile hinzufügen",
+      "addLine": "Add line",
       "empty": {
         "title": "Ausgaben auf Zeilen aufteilen",
         "titleWithLimit": "Die {amount} auf Zeilen aufteilen",
@@ -212,51 +212,51 @@
       "columns": {
         "line": "Zeile",
         "limit": "Limit",
-        "spent": "Ausgegeben",
-        "left": "Verbleibend"
+        "spent": "Spent",
+        "left": "Left"
       },
       "usage": "{percent}% · {spent} von {limit}",
       "overUsage": "Überzogen um {amount} · {spent} von {limit}",
       "spentOnly": "{amount} ausgegeben",
-      "categoriesCount": "{count} Kategorie | {count} Kategorien",
+      "categoriesCount": "{count} category | {count} categories",
       "ofLimit": "von {limit}",
       "editLimitAria": "Limit für {name} bearbeiten",
-      "noLimitPlaceholder": "Kein Limit",
+      "noLimitPlaceholder": "No limit",
       "other": {
         "title": "Sonstige Ausgaben",
         "hint": "in keiner Zeile"
       },
       "total": {
-        "title": "Gesamt · {count} Zeile | Gesamt · {count} Zeilen",
+        "title": "Total · {count} line | Total · {count} lines",
         "limitOfOverall": "{sum} von {limit}"
       },
       "menu": {
-        "ariaLabel": "Zeilenaktionen",
-        "edit": "Zeile bearbeiten",
-        "delete": "Zeile löschen"
+        "ariaLabel": "Line actions",
+        "edit": "Edit line",
+        "delete": "Delete line"
       },
       "delete": {
         "title": "Zeile löschen?",
         "description": "\"{name}\" wird entfernt und die zugehörigen Ausgaben werden unter Sonstiges angezeigt. Transaktionen sind nicht betroffen."
       },
       "dialog": {
-        "addTitle": "Zeile hinzufügen",
-        "editTitle": "Zeile bearbeiten",
+        "addTitle": "Add line",
+        "editTitle": "Edit line",
         "nameLabel": "Name",
         "namePlaceholder": "z.B. Hotels",
         "nameRequired": "Gib einen Namen ein",
-        "categoriesLabel": "Kategorien",
+        "categoriesLabel": "Categories",
         "categoriesPlaceholder": "Kategorien auswählen",
         "categoriesRequired": "Wähle mindestens eine Kategorie aus",
         "limitLabel": "Limit (optional)",
-        "limitPlaceholder": "Kein Limit",
+        "limitPlaceholder": "No limit",
         "limitHint": "Leer lassen, um Ausgaben ohne Limit zu gruppieren."
       },
       "notifications": {
         "limitsRemoved": "Limits entfernt",
-        "created": "Zeile hinzugefügt",
-        "updated": "Zeile aktualisiert",
-        "deleted": "Zeile gelöscht",
+        "created": "Line added",
+        "updated": "Line updated",
+        "deleted": "Line deleted",
         "createError": "Die Zeile konnte nicht hinzugefügt werden",
         "updateError": "Die Zeile konnte nicht aktualisiert werden",
         "deleteError": "Die Zeile konnte nicht gelöscht werden"
@@ -268,10 +268,10 @@
       "switchHintOn": "Deine Transaktionen im Zeitraum mit einer dieser Kategorien oder Tags werden hinzugefügt.",
       "switchHintOff": "Nur Transaktionen, die du von Hand hinzufügst, zählen.",
       "switchHintTurnedOff": "Das Deaktivieren behält jede bereits hinzugefügte Transaktion bei.",
-      "categoriesLabel": "Kategorien",
-      "categoriesPlaceholder": "Kategorien auswählen",
+      "categoriesLabel": "Categories",
+      "categoriesPlaceholder": "Select categories",
       "tagsLabel": "Tags",
-      "tagsPlaceholder": "Tags auswählen",
+      "tagsPlaceholder": "Select tags",
       "needsCategoryOrTag": "Wähle mindestens eine Kategorie oder ein Tag aus",
       "cleanupLabel": "Transaktionen entfernen, die nicht mehr passen",
       "cleanupHint": "Alle 6 Stunden geprüft. Manuell hinzugefügte Transaktionen werden nie entfernt.",
@@ -287,7 +287,7 @@
         "title": "Nicht erneut hinzugefügt",
         "description": "Du hast diese entfernt oder als KI-Vorschläge abgelehnt, daher werden sie übersprungen. Gib eine frei und sie wird wieder hinzugefügt, falls sie weiterhin passt.",
         "summary": "{count} Transaktion wird nicht erneut hinzugefügt | {count} Transaktionen werden nicht erneut hinzugefügt",
-        "review": "Überprüfen",
+        "review": "Review",
         "aiBadge": "KI-Vorschlag",
         "allowAgain": "Erneut zulassen",
         "allowed": "Erneut zugelassen",
@@ -323,7 +323,7 @@
         "usesOwnModel": "Verwendet dein eigenes Modell · {model}"
       },
       "pausedUntil": "Pausiert bis {date}",
-      "connectOwnModel": "Eigenes Modell verbinden",
+      "connectOwnModel": "Connect your own model",
       "plan": {
         "locked": "Intelligente Erfassung ist Teil von Plus. Führe ein Upgrade durch oder verbinde deinen eigenen KI-Schlüssel, um sie weiterhin zu nutzen.",
         "connectOwnKey": "Eigenen Schlüssel verbinden",
@@ -338,16 +338,16 @@
       "relinkError": "Die Transaktionen konnten nicht wieder hinzugefügt werden. Versuche es erneut.",
       "strip": {
         "tip": "KI passende Transaktionen für diesen Tracker finden lassen",
-        "turnOn": "Aktivieren",
-        "hide": "Ausblenden",
+        "turnOn": "Turn on",
+        "hide": "Hide",
         "scanning": "Suche nach passenden Transaktionen...",
         "startedAt": "Gestartet {time}",
-        "toReview": "{count} zu überprüfen",
+        "toReview": "{count} to review",
         "checkedAt": "überprüft {when}",
-        "review": "Überprüfen",
+        "review": "Review",
         "idle": "Intelligente Erfassung ist aktiv · nichts Neues zu überprüfen",
-        "settings": "Einstellungen",
-        "paused": "Pausiert",
+        "settings": "Settings",
+        "paused": "Paused",
         "allowanceUsed": "KI-Guthaben aufgebraucht",
         "unavailable": "KI-Verbindung funktioniert nicht mehr",
         "fixInSettings": "In den Einstellungen beheben",
@@ -359,7 +359,7 @@
         "description": "Du kannst die intelligente Erfassung weiterhin in den Einstellungen des Trackers aktivieren.",
         "neverShow": "Nie wieder anzeigen",
         "neverShowHint": "Blendet ihn bei jedem Tracker aus, nicht nur bei diesem.",
-        "confirm": "Ausblenden"
+        "confirm": "Hide"
       },
       "review": {
         "sectionTitle": "Zu überprüfen ({count})",
@@ -367,13 +367,13 @@
           "likely": "Wahrscheinlich",
           "possible": "Möglich"
         },
-        "add": "Hinzufügen",
-        "skip": "Überspringen",
+        "add": "Add",
+        "skip": "Skip",
         "addAria": "{name} zu {tracker} hinzufügen",
         "skipAria": "{name} überspringen",
         "addAll": "Alle {count} hinzufügen",
         "addAllShort": "Alle hinzufügen",
-        "skipAll": "Alle überspringen",
+        "skipAll": "Skip all",
         "added": "{count} Transaktion zu {name} hinzugefügt | {count} Transaktionen zu {name} hinzugefügt",
         "skipped": "Übersprungen. KI wird es nicht erneut vorschlagen. | {count} Transaktionen übersprungen. KI wird sie nicht erneut vorschlagen.",
         "acceptError": "Vorgeschlagene Transaktionen konnten nicht hinzugefügt werden. Versuche es erneut.",

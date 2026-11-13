@@ -17,10 +17,10 @@
         "balanceTypes": {
           "total": "Total",
           "accounts": "Accounts",
-          "portfolios": "المحافظ",
-          "ventures": "المشاريع",
+          "portfolios": "Portfolios",
+          "ventures": "Ventures",
           "vehicles": "Vehicles",
-          "loans": "القروض"
+          "loans": "Loans"
         },
         "tooltip": {
           "accounts": "Accounts:",
@@ -34,7 +34,7 @@
         "vsPreviousPeriod": "vs previous period",
         "spikePanel": {
           "accounts": "Accounts",
-          "portfolios": "المحافظ",
+          "portfolios": "Portfolios",
           "priceDrivenChange": "Price-driven change — transaction details coming soon",
           "noSignificantTransactions": "No significant transactions for this date.",
           "seeAllTransactions": "See all transactions"
@@ -69,8 +69,8 @@
         "componentsSettings": {
           "description": "Choose which components count toward the Total balance line.",
           "vehicles": "Vehicles",
-          "ventures": "المشاريع",
-          "loans": "القروض",
+          "ventures": "Ventures",
+          "loans": "Loans",
           "loansTooltip": "When on, your outstanding loan balances are subtracted from the total (true net worth). When off, loans are ignored so the total shows assets only.",
           "allIncluded": "All components",
           "excluding": "Excluding {items}"
@@ -164,15 +164,15 @@
         "viewHistory": "View history",
         "loadFailed": "Couldn't load net worth data.",
         "components": {
-          "ventures": "المشاريع",
+          "ventures": "Ventures",
           "vehicles": "Vehicles",
-          "loans": "القروض"
+          "loans": "Loans"
         },
         "settings": {
           "title": "Include in net worth",
-          "loans": "القروض",
+          "loans": "Loans",
           "vehicles": "Vehicles",
-          "ventures": "المشاريع"
+          "ventures": "Ventures"
         },
         "trendTooltip": {
           "change": "Change",
@@ -208,9 +208,9 @@
         "buckets": {
           "cash": "Cash",
           "investments": "Investments",
-          "ventures": "المشاريع",
+          "ventures": "Ventures",
           "vehicles": "Vehicles",
-          "loans": "القروض",
+          "loans": "Loans",
           "creditAndOverdrafts": "Credit & overdrafts"
         }
       },
@@ -261,7 +261,7 @@
         }
       },
       "plannedOverview": {
-        "title": "مخطط له",
+        "title": "Planned",
         "projectedBy": "Projected by {date}",
         "upcoming": "Upcoming · {count}",
         "loadFailed": "Couldn't load planned transactions"

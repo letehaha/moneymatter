@@ -21,7 +21,7 @@
     },
     "cashFlow": {
       "subtitle": "Entrate rispetto alle spese nel tempo, e dove è finito il denaro.",
-      "income": "Entrata",
+      "income": "Entrate",
       "expenses": "Spese",
       "netSavings": "Risparmio netto",
       "netFlow": "Flusso netto",
@@ -61,7 +61,7 @@
         "topN": "Primi {count}",
         "totalIncome": "Entrate totali",
         "incomePlusDeficit": "Entrate + disavanzo",
-        "savings": "Risparmio",
+        "savings": "Risparmi",
         "taxes": "Tasse & Imposte",
         "deficit": "Disavanzo",
         "other": "Altro",
@@ -87,8 +87,8 @@
       "subtitle": "Confrontare spese ed entrate con il periodo precedente.",
       "metrics": {
         "expenses": "Spese",
-        "income": "Entrata",
-        "savings": "Risparmio"
+        "income": "Entrate",
+        "savings": "Risparmi"
       },
       "chart": {
         "selectedPeriod": "Periodo selezionato",
@@ -126,7 +126,7 @@
         "granularity": {
           "monthly": "Mensile",
           "quarterly": "Trimestrale",
-          "yearly": "Annualmente"
+          "yearly": "Annuale"
         }
       },
       "transactionsCard": {
@@ -136,7 +136,7 @@
       },
       "monthlyComparison": {
         "allCategories": "Tutte le categorie",
-        "average": "Medio",
+        "average": "Media",
         "total": "Totale",
         "vsPrevious": {
           "monthly": "rispetto al mese scorso",
@@ -247,7 +247,7 @@
         "autoSpendingHint": "Media dell'ultimo mese completo × 12, solo conti di proprietà, esclusi trasferimenti e categorie di risparmio. Mese tipico: {typical}. Include le rate di prestiti e mutui. | Media degli ultimi {n} mesi completi × 12, solo conti di proprietà, esclusi trasferimenti e categorie di risparmio. Mese tipico: {typical}. Include le rate di prestiti e mutui.",
         "backToAuto": "Torna ad automatico ({amount})",
         "excludedLabel": "Non conteggiato come spesa",
-        "excludedPlaceholder": "Escludi categorie",
+        "excludedPlaceholder": "Escludere categorie",
         "savingsNote": "Anche le categorie di risparmio sono escluse. {link}",
         "savingsNoteLink": "Modifica",
         "contributionLabel": "Versamento mensile",
@@ -474,7 +474,7 @@
     },
     "measure": {
       "expense": "Spese",
-      "income": "Entrata"
+      "income": "Entrate"
     },
     "display": {
       "title": "Opzioni di visualizzazione"
@@ -549,7 +549,7 @@
     "granularity": {
       "monthly": "Mensile",
       "quarterly": "Trimestrale",
-      "yearly": "Annualmente"
+      "yearly": "Annuale"
     },
     "chart": {
       "title": "Risparmiato vs cresciuto",
@@ -558,7 +558,7 @@
       "grown": "Cresciuto",
       "totalGained": "Guadagno totale",
       "thisPeriod": "Questo periodo",
-      "periodSavings": "Risparmio",
+      "periodSavings": "Risparmi",
       "periodGrowth": "Crescita",
       "allocationContext": "Il {share}% del patrimonio netto è in investimenti (era il {reference}% il {date})",
       "allocationContextNoReference": "Il {share}% del patrimonio netto è in investimenti"
@@ -610,14 +610,14 @@
   },
   "investmentContributions": {
     "subtitle": "Quanta liquidità è stata spostata nei portafogli nel tempo e dove è andata.",
-    "average": "Medio",
+    "average": "Media",
     "portfolioFilter": {
       "scopeHint": "Filtra quali portafogli contano per i versamenti."
     },
     "granularity": {
       "monthly": "Mensile",
       "quarterly": "Trimestrale",
-      "yearly": "Annualmente"
+      "yearly": "Annuale"
     },
     "cards": {
       "totalContributed": "Totale versato",
@@ -642,7 +642,7 @@
       "weekly": "Settimanale",
       "monthly": "Mensile",
       "quarterly": "Trimestrale",
-      "yearly": "Annualmente"
+      "yearly": "Annuale"
     },
     "kindFilter": {
       "all": "Tutte le passività",

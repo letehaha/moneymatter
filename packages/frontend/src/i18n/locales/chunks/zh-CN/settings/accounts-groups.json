@@ -47,13 +47,13 @@
           "submit": "Save changes"
         },
         "move": {
-          "title": "移动 “{name}”",
+          "title": "Move “{name}”",
           "description": "Its subgroups and accounts move with it.",
           "parentLabel": "Parent group",
           "parentPlaceholder": "Select a parent group",
           "noParent": "No parent",
           "hint": "Pick “No parent” to make it a top-level group.",
-          "submit": "移动"
+          "submit": "Move"
         },
         "addAccounts": {
           "title": "Add accounts to “{name}”",
@@ -77,7 +77,7 @@
       },
       "tree": {
         "groupsCount": "{count} group | {count} groups",
-        "syncedBadge": "已同步",
+        "syncedBadge": "Synced",
         "expand": "Expand",
         "collapse": "Collapse",
         "renameTooltip": "Rename",
@@ -94,7 +94,7 @@
         "button": "Organize",
         "hint": "Drag a group onto another to nest it",
         "save": "Save changes",
-        "topLevel": "顶层",
+        "topLevel": "Top level",
         "dropToTopLevel": "Drop here to make “{name}” a top-level group",
         "movesCount": "{count} move | {count} moves",
         "moveInside": "Move inside",

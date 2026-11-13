@@ -61,26 +61,26 @@
         "topN": "Top {count}",
         "totalIncome": "Total income",
         "incomePlusDeficit": "Income + deficit",
-        "savings": "Tabungan",
-        "taxes": "Pajak",
+        "savings": "Savings",
+        "taxes": "Taxes",
         "deficit": "Deficit",
-        "other": "Lainnya",
+        "other": "Other",
         "noData": "No transactions in this period",
         "noDataHint": "Pick another period or click a bar in the chart above",
         "loadError": "Failed to load composition",
-        "amount": "Jumlah",
+        "amount": "Amount",
         "shareOfIncome": "Share of income",
         "shareOfExpenses": "Share of expenses",
-        "saved": "Ditabung",
+        "saved": "Saved",
         "pctOfIncome": "{pct} of income",
         "pctSavingsRate": "{pct} savings rate",
         "keptAsCash": "Kept as cash",
-        "shareOfSavings": "Porsi dari tabungan",
+        "shareOfSavings": "Share of savings",
         "deficitOverspend": "Expenses exceeded income by {amount}. The gap was covered from existing account balances.",
         "deficitInvested": "Portfolio contributions ({invested}) exceeded this period's net savings ({saved}). The difference came from existing account balances.",
         "deficitBoth": "Expenses exceeded income by {overspend}, and {invested} was still moved into portfolios. Both were covered from existing account balances.",
-        "andMore": "+{count} lagi",
-        "settings": "Pengaturan grafik"
+        "andMore": "+{count} more",
+        "settings": "Chart settings"
       }
     },
     "trends": {
@@ -97,13 +97,13 @@
       },
       "scope": {
         "label": "Category scope",
-        "all": "Semua Kategori",
+        "all": "All categories",
         "up": "Up one level",
-        "transactions": "Transaksi",
+        "transactions": "Transactions",
         "count": "{count} category | {count} categories",
         "more": "+{count}",
         "allExcept": "All except {list}",
-        "clear": "Bersihkan"
+        "clear": "Clear"
       },
       "categoryBreakdown": {
         "title": "Rincian Kategori",
@@ -113,7 +113,7 @@
         "noSubcategory": "{name} · no subcategory",
         "byLevel": "By level",
         "detail": "Detail",
-        "others": "Lainnya"
+        "others": "Others"
       },
       "hero": {
         "vsPrevious": "{percent}% vs previous period",
@@ -124,13 +124,13 @@
         "cumulative": "Cumulative",
         "perPeriod": "Per period",
         "granularity": {
-          "monthly": "Bulanan",
-          "quarterly": "Triwulan",
-          "yearly": "Tahunan"
+          "monthly": "Monthly",
+          "quarterly": "Quarterly",
+          "yearly": "Yearly"
         }
       },
       "transactionsCard": {
-        "title": "Transaksi",
+        "title": "Transactions",
         "largest": "Largest",
         "recent": "Recent"
       },
@@ -150,14 +150,14 @@
         }
       },
       "filters": {
-        "button": "Filter",
-        "title": "Filter",
+        "button": "Filters",
+        "title": "Filters",
         "include": "Include",
-        "exclude": "Kecualikan",
-        "accounts": "Akun",
-        "payees": "Penerima",
-        "tags": "Tag",
-        "reset": "Setel ulang"
+        "exclude": "Exclude",
+        "accounts": "Accounts",
+        "payees": "Payees",
+        "tags": "Tags",
+        "reset": "Reset"
       },
       "legend": {
         "hide": "Hide from chart",
@@ -200,7 +200,7 @@
       "portfolioNoHistoryOption": "{name} — riwayat tidak mencukupi",
       "presetReturnOption": "{label} (~{rate}%/yr)",
       "rangeMin": "Min",
-      "rangeMax": "Maks",
+      "rangeMax": "Max",
       "indicators": {
         "worldStock": "Total world stock",
         "usTreasury": "US Treasury bonds",
@@ -237,41 +237,41 @@
         "hideTitle": "Hide this warning?",
         "hideDescription": "It comes back the next time you open the planner.",
         "dontShowAgain": "Don't show again",
-        "hideConfirm": "Sembunyikan"
+        "hideConfirm": "Hide"
       },
       "assumptions": {
-        "title": "Asumsi",
+        "title": "Assumptions",
         "spendingLabel": "Yearly spending in retirement",
         "spendingPlaceholder": "e.g. 40000",
         "requiredBadge": "Required",
         "autoSpendingHint": "Average of the last {n} full month × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments. | Average of the last {n} full months × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments.",
         "backToAuto": "Back to auto ({amount})",
         "excludedLabel": "Not counted as spending",
-        "excludedPlaceholder": "Kecualikan kategori",
+        "excludedPlaceholder": "Exclude categories",
         "savingsNote": "Savings categories are excluded too. {link}",
-        "savingsNoteLink": "Sunting",
-        "contributionLabel": "Kontribusi bulanan",
+        "savingsNoteLink": "Edit",
+        "contributionLabel": "Monthly contribution",
         "contributionPlaceholder": "e.g. 1500",
         "autoContributionHint": "Average net flow over the same {n} month. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return). | Average net flow over the same {n} months. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return).",
         "savingsRate": "You save {pct} of your income",
         "countsTitle": "What counts toward FIRE",
         "countsCash": "Cash & bank accounts",
         "countsPortfolios": "Investment portfolios",
-        "countsVentures": "Ventura",
-        "countsVehicles": "Kendaraan",
-        "countsLoans": "Pinjaman",
+        "countsVentures": "Ventures",
+        "countsVehicles": "Vehicles",
+        "countsLoans": "Loans",
         "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
         "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",
-        "archivedNoteLink": "Tinjau",
+        "archivedNoteLink": "Review",
         "presetLabel": "{label} · ≈{real} real ({nominal} nominal, {inflation} US inflation)",
         "inflationLabel": "Inflation",
         "inflationBuiltIn": "{pct}% · built into this preset",
         "inflationBuiltInHint": "Market presets are US and global nominal returns, so they come with US inflation. Pairing them with your local inflation would give misleading numbers. Pick a custom return or your portfolio to set inflation yourself.",
         "withdrawalLabel": "Withdrawal rate",
-        "withdrawalCustom": "Kustom",
+        "withdrawalCustom": "Custom",
         "withdrawalPlaceholder": "e.g. 3.8",
         "withdrawalHint": "The share of your savings you withdraw each year. A higher rate means a smaller FIRE number but a bigger risk of running out. The 4% rule comes from US data for 30-year retirements.",
-        "more": "Lainnya",
+        "more": "More",
         "moreSummary": "Lean {lean}× · Fat {fat}× · coast at {age}",
         "leanLabel": "Lean FIRE multiplier",
         "leanPlaceholder": "e.g. 0.7",
@@ -284,7 +284,7 @@
         "coastAgeLabel": "Coast FIRE target age",
         "coastAgePlaceholder": "e.g. 65"
       },
-      "auto": "Otomatis",
+      "auto": "Auto",
       "perYear": "{amount}/yr",
       "perMonth": "{amount}/mo",
       "notWithinHorizon": "not within 50 yrs",
@@ -358,11 +358,11 @@
           "pastAge": "you're past your coast age of {age}",
           "notMeaningful": "growth alone can't get there at 0% real return or less"
         },
-        "others": "Lainnya",
+        "others": "Others",
         "nextGoal": "{name} · next",
         "eta": "in {duration}",
         "growthOnly": "growth only",
-        "reached": "Tercapai",
+        "reached": "Reached",
         "reachedCoast": "Reached · saving is optional now",
         "reachedBaristaCovers": "Part-time income covers your spending",
         "actions": {
@@ -385,8 +385,8 @@
           "rollingHint": "Rolling · currently {month}",
           "specific": "Specific month",
           "specificHint": "Stays fixed",
-          "prevYear": "Tahun sebelumnya",
-          "nextYear": "Tahun depan",
+          "prevYear": "Previous year",
+          "nextYear": "Next year",
           "earliest": "Earliest is {month}. FIRE needs 3 months of tracked spending before it."
         },
         "details": {
@@ -396,8 +396,8 @@
           "backInReach": "On {month}'s numbers FIRE was out of reach. Now it's {date}.",
           "offTrack": "The {month} forecast was {date}. On today's numbers FIRE is out of reach.",
           "metric": "Metric",
-          "today": "Hari ini",
-          "change": "Ganti",
+          "today": "Today",
+          "change": "Change",
           "fireDate": "FIRE date",
           "saved": "Saved by now",
           "spending": "Spending",
@@ -417,7 +417,7 @@
         "actual": "Actual",
         "projected": "Projected",
         "range": "±2 pts return",
-        "today": "Hari ini",
+        "today": "Today",
         "typeTarget": "{type} · {amount}",
         "typeLabel": "{type} · {date}",
         "forecast": "{month} forecast",
@@ -425,7 +425,7 @@
         "actualSince": "Actual since {month}"
       },
       "milestones": {
-        "reached": "Tercapai",
+        "reached": "Reached",
         "reachedOn": "Reached {date}",
         "eta": "in {duration} · {date}"
       },
@@ -486,9 +486,9 @@
     "filters": {
       "period": "Periode",
       "allCategories": "Semua",
-      "button": "Filter",
-      "categories": "Kategori",
-      "payees": "Penerima",
+      "button": "Filters",
+      "categories": "Categories",
+      "payees": "Payees",
       "accounts": "Akun",
       "reset": "Atur Ulang",
       "resetTooltip": "Kembalikan ke bawaan"
@@ -517,7 +517,7 @@
     },
     "table": {
       "total": "Total",
-      "net": "Bersih",
+      "net": "Net",
       "collapseAll": "Tutup semua",
       "expandAll": "Buka semua",
       "expandRow": "Buka",

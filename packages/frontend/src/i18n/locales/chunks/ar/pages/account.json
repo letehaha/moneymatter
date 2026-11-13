@@ -120,7 +120,7 @@
       "link": {
         "selectConnection": "Select a bank connection",
         "selectExternalAccount": "Select an external account",
-        "loading": "جار التحميل...",
+        "loading": "Loading...",
         "title": "Link account to bank connection",
         "description": "Connect this system account to a bank connection for automatic transaction syncing.",
         "whatWillHappen": "What will happen:",
@@ -204,7 +204,7 @@
         "title": "Load transactions for selected period",
         "notLinked": "This account is not linked to a bank connection",
         "dateRangeExceeds": "Date range cannot exceed 1 year",
-        "loading": "جار التحميل...",
+        "loading": "Loading...",
         "selectPeriod": "Select period",
         "loadButton": "Load transactions",
         "failed": "Failed to load transactions",

@@ -15,7 +15,7 @@
     "linkPayments": {
       "title": "Link previous payments",
       "description": "Select transactions you've already paid toward this loan to record them as payments.",
-      "emptyTitle": "Không tìm thấy giao dịch phù hợp",
+      "emptyTitle": "No matching transactions",
       "emptyDescription": "No transactions match these filters. Try widening the date range or clearing filters.",
       "selectedCount": "{count} selected",
       "clearSelection": "Clear",
@@ -45,13 +45,13 @@
       "archiveButton": "Archive",
       "archivedTitle": "This loan is archived",
       "archivedDescription": "It's hidden from the sidebar and account pickers and listed under Archived on the loans page. Restore it to resume tracking.",
-      "unarchiveButton": "Khôi phục",
+      "unarchiveButton": "Restore",
       "archiveConfirmTitle": "Archive this loan?",
       "archiveConfirmDescription": "{name} will move to the Archived section on this page and be hidden from the sidebar and account pickers.",
       "archiveAlsoExclude": "Also exclude from statistics",
       "deleteTitle": "Delete loan",
       "deleteDescription": "Permanently removes the loan and its history. This cannot be undone.",
-      "deleteButton": "Xóa",
+      "deleteButton": "Delete",
       "deleteConfirmTitle": "Delete this loan permanently?",
       "deleteConfirmDescription": "{name} and all its events will be permanently removed. This cannot be undone.",
       "toggleSuccess": "Setting updated",
@@ -76,8 +76,8 @@
       "interestPaid": "Interest paid (est.)"
     },
     "archivedList": {
-      "sectionTitle": "Đã lưu trữ",
-      "badge": "Đã lưu trữ",
+      "sectionTitle": "Archived",
+      "badge": "Archived",
       "outstanding": "Outstanding"
     },
     "aggregate": {
@@ -106,11 +106,11 @@
       "mortgage": "Mortgage",
       "auto": "Vehicle",
       "student": "Student",
-      "personal": "Cá nhân",
+      "personal": "Personal",
       "heloc": "HELOC",
       "business": "Business",
       "medical": "Medical",
-      "other": "Khác"
+      "other": "Other"
     },
     "warnings": {
       "no_planned_payment": "No planned payment set – projected payoff unavailable.",
@@ -147,7 +147,7 @@
         },
         "cost": {
           "title": "What this loan cost",
-          "totalLabel": "Tổng giá vốn",
+          "totalLabel": "Total cost",
           "principal": "Principal",
           "interest": "Interest (est.)",
           "estimateFootnote": "Interest is an amortization-schedule estimate — payments are recorded as principal, so no exact interest split is stored.",
@@ -171,7 +171,7 @@
         "plannedPayment": "Planned payment"
       },
       "events": {
-        "title": "Dòng thời gian",
+        "title": "Timeline",
         "empty": "No history yet – rate changes, balance corrections, and notes will appear here.",
         "rateChange": "Rate changed from {from}% to {to}%",
         "termChange": "Term changed from {from} to {to} months",

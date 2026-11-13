@@ -10,7 +10,7 @@
       "error": "Impossibile elaborare la richiesta. Riprovare.",
       "unexpected_response": "Risposta inattesa dal server. Riprovare.",
       "always_granted": "Sempre concesso",
-      "optional": "Opzionale",
+      "optional": "Facoltativo",
       "delete_warning": "Concedere l'accesso solo ad applicazioni affidabili",
       "unknown_app": "Un'applicazione",
       "steps": {
@@ -21,7 +21,7 @@
       "back": "Indietro",
       "toolsets": {
         "intro": "Scegliere con cosa può lavorare {name}. Ogni set aggiuntivo aggiunge strumenti che {name} carica in ogni chat.",
-        "add_all": "Aggiungi tutte",
+        "add_all": "Aggiungi tutti",
         "core_only": "Solo base",
         "always_on": "{count} strumento, sempre attivo | {count} strumenti, sempre attivi",
         "tool_count": "{count} strumento | {count} strumenti",

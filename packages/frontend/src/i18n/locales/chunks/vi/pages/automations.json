@@ -7,7 +7,7 @@
     "dragHint": "Drag to reorder",
     "toggleAriaLabel": "Enable automation",
     "menuAriaLabel": "Automation actions",
-    "disabledPill": "Đã tắt",
+    "disabledPill": "Disabled",
     "mcpTip": {
       "trigger": "Tips",
       "text": "You can manage automations with AI through an MCP connection — ask it to reorganize your rules, or check for duplicates and conflicts.",
@@ -34,7 +34,7 @@
       "then": "Then",
       "not": "not",
       "day": "day",
-      "more": "+{count} mục nữa",
+      "more": "+{count} more",
       "less": "Thu gọn",
       "noteReplace": "set note",
       "noteAppend": "append",
@@ -72,7 +72,7 @@
     "delete": {
       "title": "Delete automation?",
       "description": "\"{name}\" will stop running on new transactions. Transactions it already categorized keep their category, tags, and note.",
-      "confirm": "Xóa"
+      "confirm": "Delete"
     },
     "notifications": {
       "deleteSuccess": "Automation deleted.",
@@ -86,12 +86,12 @@
       "note": "Note",
       "merchant": "Merchant",
       "payee": "Payee",
-      "amount": "Số tiền",
+      "amount": "Amount",
       "transactionType": "Transaction type",
       "account": "Account",
       "accountGroup": "Account group",
       "bankConnection": "Bank connection",
-      "dayOfMonth": "Ngày trong tháng"
+      "dayOfMonth": "Day of month"
     },
     "operators": {
       "contains_any": "contains any of",
@@ -122,8 +122,8 @@
       "titleNew": "New automation",
       "titleEdit": "Edit automation",
       "back": "Back to automations",
-      "enabled": "Đã bật",
-      "nameLabel": "Tên",
+      "enabled": "Enabled",
+      "nameLabel": "Name",
       "namePlaceholder": "e.g. Groceries from Biedronka",
       "conditionsHeader": "Match {match} of these conditions",
       "matchAll": "all",
@@ -169,11 +169,11 @@
         "confirm": "Discard changes"
       },
       "preview": {
-        "title": "Bản xem trước",
+        "title": "Preview",
         "run": "Preview matches",
         "hint": "Finish the rule to preview which transactions it would match.",
         "summary": "{matched} of the last {scanned} transactions this rule could apply to",
-        "empty": "Không có kết quả phù hợp",
+        "empty": "No matches",
         "stale": "Conditions changed since this preview ran.",
         "error": "Could not run the preview. Please try again."
       },

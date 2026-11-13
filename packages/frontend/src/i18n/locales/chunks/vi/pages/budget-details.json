@@ -7,7 +7,7 @@
         "selectAll": "Chọn tất cả",
         "selected": "Đã chọn {count}",
         "unlink": "Gỡ liên kết",
-        "cancel": "Hủy",
+        "cancel": "Cancel",
         "unlinkSelected": "Gỡ liên kết các giao dịch đã chọn",
         "noMatchingTransactions": "Không tìm thấy giao dịch phù hợp",
         "noTransactionsLinked": "Chưa có giao dịch nào được liên kết",
@@ -15,7 +15,7 @@
         "addTransactionsHint": "Thêm giao dịch vào ngân sách này để bắt đầu theo dõi chi tiêu.",
         "resetFilters": "Đặt lại bộ lọc",
         "addTransactions": "Thêm giao dịch",
-        "add": "Thêm",
+        "add": "Add",
         "loadingMore": "Đang tải thêm…",
         "unlinkError": "Failed to unlink transactions",
         "addError": "Failed to add transactions"
@@ -25,7 +25,7 @@
       "notSet": "Chưa đặt",
       "saving": "Đang lưu…",
       "saveChanges": "Lưu thay đổi",
-      "loading": "Đang tải...",
+      "loading": "Loading...",
       "uncategorized": "Chưa phân loại",
       "stats": {
         "income": "Thu nhập",
@@ -41,13 +41,13 @@
       "transactions": "Giao dịch",
       "transactionsLinked": "{count} giao dịch được liên kết với ngân sách này | {count} giao dịch được liên kết với ngân sách này",
       "tabs": {
-        "statistics": "Thống Kê",
+        "statistics": "Statistics",
         "transactions": "Giao dịch",
         "sharing": "Chia sẻ"
       },
       "statistics": {
         "tabs": {
-          "categories": "Danh mục",
+          "categories": "Categories",
           "timeline": "Dòng thời gian"
         },
         "errorTitle": "Không thể tải số liệu thống kê.",
@@ -72,7 +72,7 @@
           "averagePerDay": "Average per day",
           "firstTransaction": "First transaction",
           "lastTransaction": "Last transaction",
-          "transactions": "Giao dịch",
+          "transactions": "Transactions",
           "avgAmount": "avg {amount}",
           "biggestDay": "Biggest day",
           "shareOfTotal": "{percent}% of total"
@@ -81,7 +81,7 @@
         "categoriesCount": "{count} category | {count} categories",
         "byCurrency": "By currency",
         "asPaid": "as paid",
-        "timeline": "Dòng thời gian",
+        "timeline": "Timeline",
         "todayMarker": "today {date}",
         "timelineAria": "Cumulative spending over time with per-period bars",
         "limitLabel": "{amount} limit",
@@ -103,20 +103,20 @@
       "sharing": {
         "inviteAnother": "Mời người khác",
         "membersHeading": "Thành viên",
-        "pendingHeading": "Lời mời đang chờ",
+        "pendingHeading": "Pending invitations",
         "loadError": "Không thể tải danh sách thành viên.",
         "permissions": {
           "read": "Chỉ xem",
           "write": "Liên kết giao dịch của riêng bạn",
-          "manage": "Quản lý"
+          "manage": "Manage"
         },
         "member": {
           "you": "Bạn",
           "roleOwner": "Chủ sở hữu",
           "roleRecipient": "Thành viên",
           "ownerHint": "Toàn quyền kiểm soát ngân sách này",
-          "updateSuccess": "Đã cập nhật quyền.",
-          "updateError": "Không cập nhật được quyền.",
+          "updateSuccess": "Permission updated.",
+          "updateError": "Couldn't update permission.",
           "revoke": "Thu hồi quyền truy cập",
           "revokeConfirm": "Thu hồi",
           "revokeTitle": "Thu hồi quyền truy cập?",
@@ -126,15 +126,15 @@
         },
         "pending": {
           "empty": "Không có lời mời nào đang chờ xử lý.",
-          "resend": "Gửi lại",
-          "resendSuccess": "Đã gửi lại lời mời.",
+          "resend": "Resend",
+          "resendSuccess": "Invitation resent.",
           "resendError": "Không thể gửi lại lời mời.",
           "resendDeliveryFailed": "Đã gửi lại lời mời nhưng không gửi được email.",
-          "cancel": "Hủy",
-          "cancelConfirm": "Hủy lời mời",
-          "cancelTitle": "Hủy lời mời?",
+          "cancel": "Cancel",
+          "cancelConfirm": "Cancel invitation",
+          "cancelTitle": "Cancel invitation?",
           "cancelDescription": "Lời mời gửi đến {email} sẽ bị hủy.",
-          "cancelSuccess": "Đã hủy lời mời.",
+          "cancelSuccess": "Invitation cancelled.",
           "cancelError": "Không thể hủy lời mời."
         }
       }
