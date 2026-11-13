@@ -1,167 +1,87 @@
 ---
 import { ALTERNATIVE_PAGES } from '@/lib/alternatives';
 import { FEATURE_PAGES } from '@/lib/features';
-import { GITHUB_URL } from '@/lib/github-api';
+import { GITHUB_URL, REDDIT_URL, ROADMAP_URL } from '@/lib/github-api';
+import { useI18n } from '@/i18n';
+
+const { t, url } = useI18n(Astro);
+const local = ({ page }: { page: { label: string; href: string } }) => ({ label: t(page.label), href: url({ href: page.href }) });
 
 const currentYear = new Date().getFullYear();
 
 const columns = [
   {
-    title: 'Features',
+    title: t('Features'),
     links: [
       ...FEATURE_PAGES.filter((page) =>
         ['Bank Sync', 'Import Transactions', 'Budgeting', 'Multi-Currency', 'Investment Tracking', 'Net Worth Tracker', 'Self-Hosting'].includes(
           page.label,
         ),
-      ),
-      { label: 'All features', href: '/features' },
+      ).map((page) => local({ page })),
+      { label: t('All features'), href: url({ href: '/features' }) },
     ],
   },
   {
-    title: 'Product',
+    title: t('Product'),
     links: [
-      { label: 'Pricing', href: '/#pricing' },
-      { label: 'FAQ', href: '/#faq' },
-      { label: 'Sign In', href: '/sign-in' },
-      { label: 'Sign Up', href: '/sign-up' },
+      { label: t('Pricing'), href: url({ href: '/#pricing' }) },
+      { label: t('FAQ'), href: url({ href: '/#faq' }) },
+      { label: t('Sign In'), href: '/sign-in' },
+      { label: t('Sign Up'), href: '/sign-up' },
     ],
   },
   {
-    title: 'Compare',
-    links: [...ALTERNATIVE_PAGES, { label: 'All comparisons', href: '/alternatives' }],
+    title: t('Compare'),
+    links: [...ALTERNATIVE_PAGES.map((page) => local({ page })), { label: t('All comparisons'), href: url({ href: '/alternatives' }) }],
   },
   {
-    title: 'Resources',
+    title: t('Resources'),
     links: [
-      { label: 'Guides', href: '/guides' },
-      { label: 'Docs', href: 'https://docs.moneymatter.app' },
+      { label: t('Guides'), href: url({ href: '/guides' }) },
+      { label: t('Docs'), href: 'https://docs.moneymatter.app' },
       { label: 'GitHub', href: GITHUB_URL, track: 'landing_github_clicked' },
-      { label: 'Reddit', href: 'https://www.reddit.com/r/moneymatterapp/', track: 'landing_reddit_clicked' },
-      { label: 'Self-Host Guide', href: `${GITHUB_URL}/tree/main/self-hosting` },
-      { label: 'Roadmap', href: 'https://moneymatter.featurebase.app/dashboard/roadmap' },
-      { label: 'Changelog', href: `${GITHUB_URL}/releases` },
-      { label: 'Support', href: '/support' },
+      { label: 'Reddit', href: REDDIT_URL, track: 'landing_reddit_clicked' },
+      { label: t('Self-Host Guide'), href: `${GITHUB_URL}/tree/main/self-hosting` },
+      { label: t('Roadmap'), href: ROADMAP_URL },
+      { label: t('Changelog'), href: `${GITHUB_URL}/releases` },
+      { label: t('Support'), href: '/support' },
     ],
   },
   {
-    title: 'Legal',
+    title: t('Legal'),
     links: [
-      { label: 'Privacy Policy', href: '/privacy-policy' },
-      { label: 'Terms of Use', href: '/terms-of-use' },
+      { label: t('Privacy Policy'), href: '/privacy-policy' },
+      { label: t('Terms of Use'), href: '/terms-of-use' },
     ],
   },
 ];
 ---
 
-<footer class="border-border/40 relative overflow-hidden border-t py-12">
-  <!-- Background gradient -->
-  <div class="pointer-events-none absolute inset-0">
-    <div class="footer-orb absolute -bottom-1/2 left-1/2 size-150 -translate-x-1/2 rounded-full"></div>
-  </div>
-
-  <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    <div class="flex flex-col gap-10 lg:flex-row lg:justify-between">
-      <div class="max-w-xs">
-        <!-- Logo -->
-        <div class="flex items-center gap-2">
-          <img src="/img/logo.svg" alt="MoneyMatter logo" class="size-8" />
-          <span class="font-semibold">MoneyMatter</span>
-        </div>
-        <p class="text-muted-foreground mt-4 text-sm">Your finances. Your server. Your rules.</p>
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand2">
+        <a class="brand" href={url({ href: '/' })}><svg aria-hidden="true"><use href="#mm-logo"></use></svg>MoneyMatter</a>
+        <p>{t('All your money, organized automatically.')}</p>
+        <span class="tag">{t('Open source · AGPL-3.0')}</span>
       </div>
-
-      <!-- Links -->
-      <div class="grid grid-cols-2 gap-x-12 gap-y-8 sm:grid-cols-3 md:grid-cols-5">
-        {
-          columns.map((column) => (
-            <div>
-              <p class="text-sm font-semibold">{column.title}</p>
-              <ul class="text-muted-foreground mt-4 space-y-3 text-sm">
-                {column.links.map((link) => (
-                  <li>
-                    <a
-                      href={link.href}
-                      class="hover:text-foreground transition-colors"
-                      {...(link.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                      {...('track' in link ? { 'data-track': link.track, 'data-track-location': 'footer' } : {})}
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))
-        }
-      </div>
+      {
+        columns.map((column) => (
+          <div class="foot-col">
+            <strong>{column.title}</strong>
+            {column.links.map((link) => (
+              <a
+                href={link.href}
+                {...(link.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                {...('track' in link ? { 'data-track': link.track, 'data-track-location': 'footer' } : {})}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        ))
+      }
     </div>
-
-    <!-- Copyright -->
-    <p class="text-muted-foreground border-border/40 mt-10 border-t pt-8 text-sm">
-      &copy; {currentYear} MoneyMatter. Open source under AGPL-3.0.
-    </p>
+    <div class="foot-base"><span>&copy; {currentYear} MoneyMatter</span><span>{t('Built in the open by one developer.')}</span></div>
   </div>
 </footer>
-
-<style>
-  /*
-    The orb must stay a plain radial gradient: a CSS blur re-rasterizes on every
-    animation frame and pegs the iOS GPU.
-  */
-  .footer-orb {
-    background: radial-gradient(
-      circle closest-side,
-      rgba(236, 72, 153, 0.09) 0%,
-      rgba(236, 72, 153, 0.07) 20%,
-      rgba(168, 85, 247, 0.05) 40%,
-      rgba(168, 85, 247, 0.02) 70%,
-      transparent 100%
-    );
-    animation:
-      footer-float 12s infinite,
-      footer-pulse 4s ease-in-out infinite;
-  }
-
-  @keyframes footer-float {
-    0%,
-    100% {
-      transform: translate(0, 0);
-    }
-    33% {
-      transform: translate(3%, 4%);
-    }
-    66% {
-      transform: translate(-2%, -2%);
-    }
-  }
-
-  @keyframes footer-pulse {
-    0%,
-    100% {
-      opacity: 0.5;
-      scale: 1;
-    }
-    50% {
-      opacity: 0.8;
-      scale: 1.15;
-    }
-  }
-
-  /*
-    Without the pulse animation the orb falls back to opacity 1, brighter than
-    it ever appears animated, so pin a value inside the pulse's 0.5-0.8 range.
-  */
-  @media (pointer: coarse) {
-    .footer-orb {
-      animation: none;
-      opacity: 0.6;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .footer-orb {
-      animation: none;
-      opacity: 0.6;
-    }
-  }
-</style>

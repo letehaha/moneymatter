@@ -165,6 +165,7 @@ packages/frontend/playwright-results.json
 
 # Astro generated files
 packages/landing/.astro/
+packages/landing/.i18n-report.jsonl
 packages/docs/.astro/
 packages/docs/scripts/capture/.state.json
 

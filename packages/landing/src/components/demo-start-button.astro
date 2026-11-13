@@ -1,0 +1,54 @@
+---
+import type { DemoStartLocation } from '@/lib/posthog';
+import { useI18n } from '@/i18n';
+import { DEMO_STRINGS } from '@/i18n/client';
+
+interface Props {
+  location: DemoStartLocation;
+  replaceHistory?: boolean;
+}
+
+const { location, replaceHistory = false } = Astro.props;
+const { t, clientStrings } = useI18n(Astro);
+---
+
+<button type="button" class="btn btn-quiet btn-lg" data-demo-start={location} data-demo-replace-history={replaceHistory || undefined}
+  ><svg class="btn-ic solid" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"></path></svg
+  >{t('View live demo')}</button
+><p class="demo-error" role="alert"></p><Fragment set:html={clientStrings({ texts: Object.values(DEMO_STRINGS) })} />
+
+<script>
+  import { startDemoWithOverlay } from '@/lib/demo-overlay';
+  import type { DemoStartLocation } from '@/lib/posthog';
+
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-demo-start]');
+
+  const reset = ({ button }: { button: HTMLButtonElement }) => {
+    button.removeAttribute('aria-disabled');
+    button.removeAttribute('aria-busy');
+  };
+
+  buttons.forEach((button) => {
+    const error = button.nextElementSibling as HTMLElement;
+
+    button.addEventListener('click', () => {
+      if (button.getAttribute('aria-busy') === 'true') return;
+      button.setAttribute('aria-disabled', 'true');
+      button.setAttribute('aria-busy', 'true');
+      error.textContent = '';
+
+      void startDemoWithOverlay({
+        location: button.dataset.demoStart as DemoStartLocation,
+        replaceHistory: button.hasAttribute('data-demo-replace-history'),
+        onError: ({ message }) => {
+          reset({ button });
+          error.textContent = message;
+        },
+      });
+    });
+  });
+
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) buttons.forEach((button) => reset({ button }));
+  });
+</script>

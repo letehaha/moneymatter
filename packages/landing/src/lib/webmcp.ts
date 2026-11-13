@@ -6,6 +6,8 @@
  * The feature-detect ensures this is a no-op where unsupported.
  */
 
+import { rememberLocale } from '@/i18n/client';
+
 import { GITHUB_URL } from './github-api';
 
 interface WebMcpTool {
@@ -27,16 +29,7 @@ declare global {
 
 const EMPTY_OBJECT_SCHEMA = { type: 'object', properties: {} as Record<string, unknown> };
 
-function findTryDemoButton(): HTMLButtonElement | null {
-  return (
-    Array.from(document.querySelectorAll<HTMLButtonElement>('button')).find((b) =>
-      b.textContent?.trim().startsWith('Try Demo'),
-    ) ?? null
-  );
-}
-
 export function initWebMcp(): void {
-  if (typeof navigator === 'undefined') return;
   if (!navigator.modelContext?.provideContext) return;
 
   navigator.modelContext.provideContext({
@@ -46,6 +39,7 @@ export function initWebMcp(): void {
         description: 'Navigate the user to the MoneyMatter sign-up page so they can create a free account.',
         inputSchema: EMPTY_OBJECT_SCHEMA,
         execute: () => {
+          rememberLocale();
           window.location.href = '/sign-up';
           return { navigatedTo: '/sign-up' };
         },
@@ -62,12 +56,15 @@ export function initWebMcp(): void {
       {
         name: 'start_demo',
         description:
-          'Start the no-signup demo with sample data on the landing homepage. Only works on the homepage (/); returns an error otherwise.',
+          'Start the no-signup demo with sample data. Works on any landing page that has a demo start button; returns an error otherwise.',
         inputSchema: EMPTY_OBJECT_SCHEMA,
         execute: () => {
-          const button = findTryDemoButton();
+          const button = document.querySelector<HTMLButtonElement>('[data-demo-start]');
           if (!button) {
-            return { started: false, error: 'Demo button not found — user is not on the landing homepage.' };
+            return { started: false, error: 'This page has no demo button.' };
+          }
+          if (button.getAttribute('aria-busy') === 'true') {
+            return { started: false, error: 'A demo is already starting.' };
           }
           button.click();
           return { started: true };

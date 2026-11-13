@@ -1,6 +1,6 @@
 ---
 import LegalLayout from '@/layouts/legal-layout.astro';
-import { GITHUB_URL } from '@/lib/github-api';
+import { GITHUB_URL, SUPPORT_EMAIL } from '@/lib/github-api';
 
 const linkClass = 'text-primary hover:underline';
 ---
@@ -8,10 +8,6 @@ const linkClass = 'text-primary hover:underline';
 <LegalLayout
   title="Support - MoneyMatter"
   description="Contact MoneyMatter support, read the docs, delete your account or manage your subscription."
-  crossLinks={[
-    { href: '/privacy-policy', label: 'Privacy Policy' },
-    { href: '/terms-of-use', label: 'Terms of Service' },
-  ]}
 >
   <h1 class="mb-8 text-3xl font-bold tracking-tight sm:text-4xl">Support</h1>
 
@@ -19,7 +15,7 @@ const linkClass = 'text-primary hover:underline';
     <section>
       <h2 class="text-xl font-semibold">Contact</h2>
       <ul class="text-muted-foreground mt-2 list-disc pl-5 space-y-2">
-        <li>Email: <a href="mailto:support@moneymatter.app" class={linkClass}>support@moneymatter.app</a></li>
+        <li>Email: <a href={`mailto:${SUPPORT_EMAIL}`} class={linkClass}>{SUPPORT_EMAIL}</a></li>
         <li>
           Bugs and feature requests:{' '}
           <a href={`${GITHUB_URL}/issues`} target="_blank" rel="noopener noreferrer" class={linkClass}>GitHub issues</a>

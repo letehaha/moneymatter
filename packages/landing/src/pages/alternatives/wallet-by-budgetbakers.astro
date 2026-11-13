@@ -1,6 +1,8 @@
 ---
 import AlternativeLayout from '@/layouts/alternative-layout.astro';
+import { useI18n } from '@/i18n';
 
+const { t } = useI18n(Astro);
 const checkedOn = '9 October 2026';
 const DOCS_IMPORT_URL = 'https://docs.moneymatter.app/import/other-import-sources/#wallet-by-budgetbakers';
 const DOCS_TRANSFERS_URL = 'https://docs.moneymatter.app/transfers-and-refunds/how-transfers-work/';
@@ -15,6 +17,7 @@ const AT_A_GLANCE = [
 const HIGHLIGHTS = [
   {
     title: 'AI that does the sorting',
+    icon: 'sparkles',
     items: [
       {
         lead: 'Auto-categorization',
@@ -36,6 +39,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Reports that answer questions',
+    icon: 'chart-column',
     items: [
       {
         lead: 'Pivot tables',
@@ -51,6 +55,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Your whole net worth',
+    icon: 'chart-pie',
     items: [
       { lead: 'Loans', text: 'A payoff projection, and what an overpayment changes.' },
       { lead: 'Vehicles', text: 'Value drops on a depreciation schedule you can override.' },
@@ -60,6 +65,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Tools to keep the books clean',
+    icon: 'list-checks',
     items: [
       { lead: 'Refunds', text: 'Link a refund to its purchase, so spending goes down and income stays honest.' },
       {
@@ -80,6 +86,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Built in the open',
+    icon: 'code-xml',
     items: [
       { lead: 'Public roadmap', text: 'Vote on what gets built next.' },
       { lead: 'Frequent releases', text: '21 shipped in September 2026, each one listed on GitHub.' },
@@ -88,6 +95,7 @@ const HIGHLIGHTS = [
   },
   {
     title: 'Your data stays yours',
+    icon: 'shield-check',
     items: [
       {
         lead: 'Backup and restore',
@@ -102,47 +110,56 @@ const HIGHLIGHTS = [
 const COMPARISON = [
   {
     feature: 'Source code and hosting',
+    icon: 'server',
     competitor: 'Not published. Cloud only',
     moneymatter: 'Open source. Use the cloud or self-host for free',
   },
   {
     feature: 'Price',
+    icon: 'tag',
     competitor: 'Not listed on the website. Shown in the app, and it differs by country and app store',
     moneymatter: '$30 a year for Essential, $55 a year for Plus, after a 40-day trial without a card',
   },
   {
     feature: 'Getting your data out',
+    icon: 'hard-drive-download',
     competitor: 'CSV and XLS export of transactions, on Premium',
     moneymatter: 'Export on every plan, plus a full account backup you can restore',
   },
   {
     feature: 'Refunds',
+    icon: 'undo-2',
     competitor: 'Recorded as separate income',
     moneymatter: 'Linked to the original purchase',
   },
   {
     feature: 'AI',
+    icon: 'sparkles',
     competitor: 'Automatic categorization, receipt scanning, and an MCP server for your own assistant',
     moneymatter: 'Categorization, statement parsing, an MCP server, and your own model inside the app',
   },
   {
     feature: 'Beyond bank accounts',
+    icon: 'layers',
     competitor: 'Stocks, ETFs and crypto. Simple debts you lent or borrowed',
     moneymatter: 'Stocks, ETFs and crypto. Loans with payoff projections, vehicles and venture deals',
   },
   {
     feature: 'Bank sync',
+    icon: 'landmark',
     competitor: 'Premium. Wallet says it connects to over 15,000 institutions',
     moneymatter:
       'Plus plan, through LunchFlow, SimpleFIN, Monobank, Walutomat and Akahu. LunchFlow and SimpleFIN need their own account',
   },
   {
     feature: 'Apps',
+    icon: 'monitor-smartphone',
     competitor: 'iOS, Android and web, with offline mode on mobile',
     moneymatter: 'Web app built for phones too; add it to your home screen. iPhone app in beta on TestFlight. No Android app, no offline mode',
   },
   {
     feature: 'Free use',
+    icon: 'gift',
     competitor: 'Free plan for manual tracking',
     moneymatter: 'Free when self-hosted. On the cloud, the trial is followed by a paid plan',
   },
@@ -244,10 +261,12 @@ const SOURCES = [
   trademarkNote="Wallet and BudgetBakers are trademarks of BudgetBakers; MoneyMatter is not affiliated with them."
   sources={SOURCES}
 >
-  <p slot="import-note" class="text-muted-foreground mt-8 max-w-2xl text-sm">
-    Two records are joined into one transfer when they share a date and time, sit in different accounts, and their
-    amounts are within 1% of each other. See <a href={DOCS_TRANSFERS_URL} class="text-primary-text hover:underline"
-      >how transfers work</a
-    >.
-  </p>
+  <p
+    slot="import-note"
+    class="alt-note"
+    set:html={t(
+      'Two records are joined into one transfer when they share a date and time, sit in different accounts, and their amounts are within 1% of each other. See <a href="{transfers}">how transfers work</a>.',
+      { transfers: DOCS_TRANSFERS_URL },
+    )}
+  />
 </AlternativeLayout>

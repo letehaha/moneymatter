@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { APP, EMAIL, PASSWORD, STATE, api, open } from './helper.mjs';
+import { seedShowcase } from './seed-showcase.mjs';
 
 // SimpleFIN's public demo: claimable any number of times, returns demo accounts with fresh transactions.
 const SIMPLEFIN_DEMO_TOKEN = Buffer.from('https://beta-bridge.simplefin.org/simplefin/claim/DEMO').toString('base64');
@@ -143,6 +144,8 @@ if (!accounts.some((a) => a.name === MANUAL_ACCOUNT)) {
   log('receipt and invoice attached to "Office chair"');
 }
 
+await seedShowcase({ call, log });
+
 await page.goto(APP + '/settings/security/login-methods');
 await page.getByText('Passkeys', { exact: true }).waitFor();
 if (await page.getByText('No passkeys registered').isVisible()) {
@@ -173,7 +176,7 @@ if (await dismiss.isVisible()) {
   log('Quick Start dismissed');
 }
 
-if (!(await page.getByText('Net Worth', { exact: true }).count())) {
+if (!(await page.locator('[data-widget-id="net-worth"]').count())) {
   await page.getByRole('button', { name: 'Customize' }).click();
   await page.getByText('Add widgets').scrollIntoViewIfNeeded();
   await page

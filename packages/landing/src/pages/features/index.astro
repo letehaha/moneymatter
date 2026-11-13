@@ -1,54 +1,56 @@
 ---
 import BaseLayout from '@/layouts/base-layout.astro';
-import BackgroundOrbs from '@/components/background-orbs.astro';
+import '@/styles/feature-page.css';
 import LandingHeader from '@/components/landing-header.astro';
 import CtaSection from '@/components/cta-section.astro';
 import LandingFooter from '@/components/landing-footer.astro';
 import FeatureCard from '@/components/feature-card.astro';
 import { FEATURE_GROUPS } from '@/lib/features';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n(Astro);
 ---
 
 <BaseLayout
-  title="Personal Finance App Features | MoneyMatter"
-  description="Personal finance app features in MoneyMatter: bank sync, file import, budgeting, goals, investment and net worth tracking, FIRE planning and self-hosting."
+  title={t('Personal Finance App Features | MoneyMatter')}
+  description={t(
+    'Personal finance app features in MoneyMatter: bank sync, file import, budgeting, goals, investment and net worth tracking, FIRE planning and self-hosting.',
+  )}
 >
-  <div class="bg-background text-foreground landing-page min-h-screen">
-    <BackgroundOrbs />
-    <LandingHeader />
+  <LandingHeader />
+  <main id="main">
+    <section class="sec fp-hero">
+      <div class="wrap">
+        <p class="eyebrow">{t('Features')}</p>
+        <h1>{t('Personal finance app features: everything MoneyMatter does')}</h1>
+        <p class="fp-intro">
+          {t(
+            'Browse the personal finance app features in MoneyMatter, an open-source tracker for your budget, accounts and investments. Try the cloud free for 40 days with no card, or host it yourself for free. Cloud plans start at $30 a year, and bank sync and the FIRE planner are on the Plus plan. Each page below shows how one feature works and what its limits are.',
+          )}
+        </p>
+      </div>
+    </section>
 
-    <main class="relative z-10 mx-auto max-w-6xl px-4 pt-28 pb-16 sm:px-6 sm:pt-36 lg:px-8">
-      <h1 class="text-center text-3xl font-bold tracking-tight sm:text-5xl">Personal finance app features: everything MoneyMatter does</h1>
-      <p class="text-muted-foreground mx-auto mt-6 max-w-2xl text-center text-lg">
-        Browse the personal finance app features in MoneyMatter, an open-source tracker for your budget, accounts and
-        investments. Try the cloud free for 40 days with no card, or host it
-        yourself for free. Cloud plans start at $30 a year, and bank sync and the FIRE planner are on the Plus plan. Each
-        page below shows how one feature works and what its limits are.
-      </p>
-
-      {
-        FEATURE_GROUPS.map((group) => (
-          <section class="mt-16">
-            <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">{group.title}</h2>
-            <ul class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {group.pages.map((page) => (
-                <li>
-                  <FeatureCard page={page} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))
-      }
-    </main>
+    <section class="sec sec-soft">
+      <div class="wrap">
+        {
+          FEATURE_GROUPS.map((group) => (
+            <div class="fp-group">
+              <h2>{t(group.title)}</h2>
+              <ul class="fp-cards">
+                {group.pages.map((page) => (
+                  <li>
+                    <FeatureCard page={page} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </section>
 
     <CtaSection />
-    <LandingFooter />
-  </div>
+  </main>
+  <LandingFooter />
 </BaseLayout>
-
-<style>
-  .landing-page {
-    font-family: 'Montserrat', system-ui, sans-serif;
-    overflow-y: auto;
-  }
-</style>
