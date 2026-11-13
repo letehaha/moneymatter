@@ -1,17 +1,17 @@
 import { ACCOUNT_TYPES, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
-import { connection } from '@models/connection';
 import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { withTransaction } from '@root/services/common/with-transaction';
 import { linkTransactions } from '@services/transactions/transactions-linking/link-transactions';
 import { getUserSettings } from '@services/user-settings/get-user-settings';
 import { addDays, subDays } from 'date-fns';
-import { DatabaseError, Op, QueryTypes } from 'sequelize';
+import { DatabaseError, Op } from 'sequelize';
 
-import { getCounterpartyIban, hasSettledStatus } from '../enablebanking/utils/transaction-metadata';
-import { TRANSFER_DATE_WINDOW_DAYS, normalizeIban } from './transfer-matching';
+import { getCounterpartyIban } from '../enablebanking/utils/transaction-metadata';
+import { linkCrossProviderTransfers } from '../walutomat/cross-provider-linking';
+import { TRANSFER_DATE_WINDOW_DAYS, isLinkableRow, lockTransferLinking, normalizeIban } from './transfer-matching';
 
 /** Walutomat rows must not auto-link here: that provider's own FX/IBAN matchers own them. */
 const NEVER_MATCHABLE_ACCOUNT_TYPES: ACCOUNT_TYPES[] = [ACCOUNT_TYPES.walutomat];
@@ -21,15 +21,6 @@ const SEED_EXCLUDED_ACCOUNT_TYPES: ACCOUNT_TYPES[] = [ACCOUNT_TYPES.system, ...N
 
 function oppositeType({ type }: { type: TRANSACTION_TYPES }): TRANSACTION_TYPES {
   return type === TRANSACTION_TYPES.expense ? TRANSACTION_TYPES.income : TRANSACTION_TYPES.expense;
-}
-
-/**
- * Only settled rows may carry a transferId: on a pending row it blocks the pending-to-booked
- * upgrade and the booked copy lands as a duplicate. Monobank authorization holds are excluded
- * too, their amount still changes on settlement.
- */
-export function isLinkableRow({ tx }: { tx: Transactions }): boolean {
-  return hasSettledStatus({ tx }) && tx.externalData?.hold !== true;
 }
 
 type IbanRelation = 'confirmed' | 'contradicted' | 'neutral';
@@ -120,13 +111,11 @@ const linkTransfersInTransaction = withTransaction(
     const consumed = new Set<RecordId>();
 
     try {
-      // Serialize concurrent syncs of one user: two matchers running at once can claim
-      // overlapping pairs and leave a leg holding a transferId with no counterpart. The
-      // lock also makes the later run see the earlier one's committed rows.
-      await connection.sequelize.query('SELECT pg_advisory_xact_lock(hashtext(:scope), :userId)', {
-        replacements: { scope: 'auto-link-transfers', userId },
-        type: QueryTypes.SELECT,
-      });
+      await lockTransferLinking({ userId });
+
+      for (const id of await linkCrossProviderTransfers({ userId, counterpartIds: transactionIds })) {
+        consumed.add(id);
+      }
 
       const { matchTransfersWithManualAccounts } = await getUserSettings({ userId });
       const candidateExcludedTypes = matchTransfersWithManualAccounts
