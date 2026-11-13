@@ -673,7 +673,6 @@
         "home-garden": "Home, garden",
         "pets-animals": "Pets, animals",
         "electronics-accessories": "Electronics, accessories",
-        "gifts-joy": "Gifts, joy",
         "stationery-tools": "Stationery, tools",
         "free-time": "Free time",
         "drugstore-chemist": "Drug-store, chemist"
@@ -710,7 +709,8 @@
         "books-audio-subscriptions": "Books, audio, subscriptions",
         "tv-streaming": "TV, Streaming",
         "holiday-trips-hotels": "Holiday, trips, hotels",
-        "charity-gifts": "Charity, gifts",
+        "gifts": "Gifts",
+        "charity": "Charity",
         "alcohol-tobacco": "Alcohol, tobacco",
         "lottery-gambling": "Lottery, gambling"
       },

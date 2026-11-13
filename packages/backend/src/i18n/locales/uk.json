@@ -679,7 +679,6 @@
         "home-garden": "Дім, сад",
         "pets-animals": "Домашні тварини",
         "electronics-accessories": "Електроніка, аксесуари",
-        "gifts-joy": "Подарунки, радість",
         "stationery-tools": "Канцелярія, інструменти",
         "free-time": "Вільний час",
         "drugstore-chemist": "Аптека, хімія"
@@ -716,7 +715,8 @@
         "books-audio-subscriptions": "Книги, аудіо, підписки",
         "tv-streaming": "ТБ, стрімінг",
         "holiday-trips-hotels": "Відпустка, подорожі, готелі",
-        "charity-gifts": "Благодійність, подарунки",
+        "gifts": "Подарунки",
+        "charity": "Благодійність",
         "alcohol-tobacco": "Алкоголь, тютюн",
         "lottery-gambling": "Лотерея, азартні ігри"
       },

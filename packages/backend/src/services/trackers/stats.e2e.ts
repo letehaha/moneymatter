@@ -9,6 +9,11 @@ import { getResponseInitialState } from './stats';
 const findFood = (categories: Awaited<ReturnType<typeof helpers.getCategoriesList>>) =>
   categories.find((category) => category.key === 'food' && category.parentId === null)!;
 
+const findLifeGifts = (categories: Awaited<ReturnType<typeof helpers.getCategoriesList>>) => {
+  const life = categories.find((category) => category.key === 'life' && category.parentId === null)!;
+  return categories.find((category) => category.key === 'gifts' && category.parentId === life.id)!;
+};
+
 const createTrackerWithIncome = async ({
   limitKind,
   incomeAmount = 800,
@@ -529,6 +534,43 @@ describe('Get tracker stats', () => {
 
       expect(stats.summary.actualExpense).toBe(70);
       expect(stats.lines).toEqual([{ lineId: line.id, spent: 70 }]);
+      expect(stats.otherSpent).toBe(0);
+    });
+
+    it("keeps a recipient's expense on the owner's category when the key repeats under another parent", async () => {
+      const tracker = await helpers.createTracker({ name: 'lines-shared-repeated-key', raw: true });
+      const line = await helpers.createTrackerLine({
+        trackerId: tracker.id,
+        payload: { name: 'Gifts', categoryIds: [findLifeGifts(await helpers.getCategoriesList()).id] },
+        raw: true,
+      });
+
+      const recipient = await helpers.provisionSecondUserWithBaseCurrency();
+      await helpers.shareTrackerWith({ trackerId: tracker.id, recipient, permission: SHARE_PERMISSIONS.write });
+      await helpers.asUser({
+        cookies: recipient.cookies,
+        fn: async () => {
+          const account = await helpers.createAccount({ raw: true });
+          const [tx] = await helpers.createTransaction({
+            payload: helpers.buildTransactionPayload({
+              accountId: account.id,
+              amount: 40,
+              categoryId: findLifeGifts(await helpers.getCategoriesList()).id,
+              transactionType: TRANSACTION_TYPES.expense,
+            }),
+            raw: true,
+          });
+          await helpers.addTransactionsToTracker({
+            id: tracker.id,
+            payload: { transactionIds: [tx!.id] },
+            raw: true,
+          });
+        },
+      });
+
+      const stats = (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
+
+      expect(stats.lines).toEqual([{ lineId: line.id, spent: 40 }]);
       expect(stats.otherSpent).toBe(0);
     });
 

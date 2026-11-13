@@ -72,6 +72,8 @@ const STARTER_FOCUS: { parentKey: string; key: string }[] = [
   { parentKey: 'life', key: 'active-sport-fitness' },
   { parentKey: 'life', key: 'holiday-trips-hotels' },
   { parentKey: 'life', key: 'hobbies' },
+  { parentKey: 'life', key: 'gifts' },
+  // Seed key of accounts created before gifts moved to Life; each user has only one of the two.
   { parentKey: 'shopping', key: 'gifts-joy' },
   { parentKey: 'life', key: 'education-development' },
 ];
