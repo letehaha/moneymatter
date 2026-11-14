@@ -27,14 +27,7 @@ import {
 import Transactions from '@models/transactions.model';
 import { getUserDefaultCategory } from '@models/users.model';
 import { FRONTEND_BASE_URL } from '@root/config';
-import {
-  BaseBankDataProvider,
-  DateRange,
-  ProviderAccount,
-  ProviderBalance,
-  ProviderMetadata,
-  ProviderTransaction,
-} from '@services/bank-data-providers';
+import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
 import { createTransaction } from '@services/transactions';
 import { findIdsInPayments, syncLegsOfMains } from '@services/transactions/payment-legs';
 import { accountHasPlannedRows } from '@services/transactions/planned-matching';
@@ -50,11 +43,14 @@ import { EnableBankingApiClient, isAspspDateRangeRejection } from './api-client'
 import {
   AmountType,
   CreditDebitIndicator,
+  DateRange,
   EnableBankingAccount,
   EnableBankingConnectionParams,
   EnableBankingCredentials,
   EnableBankingMetadata,
   OAuthCallbackParams,
+  ProviderBalance,
+  ProviderTransaction,
   PSUType,
   StartAuthorizationResponse,
   TransactionStatus,
@@ -464,7 +460,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     const connection = await this.getConnection(connectionId);
     this.validateProviderType(connection);
 
-    // Try to revoke session at Enable Banking
     try {
       const credentials = (await this.getDecryptedCredentials(connectionId)) as unknown as EnableBankingCredentials;
       if (credentials.sessionId) {
@@ -472,15 +467,13 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         await apiClient.deleteSession(credentials.sessionId);
       }
     } catch (error) {
-      // Log error but continue with disconnection
       logger.error(
         { message: 'Failed to revoke Enable Banking session on disconnect', error: error as Error },
         { connectionId },
       );
     }
 
-    // Delete the connection (CASCADE will handle related accounts)
-    await connection.destroy();
+    await super.disconnect(connectionId);
   }
 
   async validateCredentials(credentials: unknown): Promise<boolean> {
@@ -630,21 +623,22 @@ export class EnableBankingProvider extends BaseBankDataProvider {
   // Transaction Operations
   // ============================================================================
 
-  /**
-   * Fetch transactions from Enable Banking API
-   * @param connectionId - Connection ID
-   * @param accountApiUid - Session-specific uid for API calls
-   * @param dateRange - Optional date range filter
-   * @param accountExternalIdForHash - Stable identifier for hash generation (defaults to accountApiUid for backward compatibility)
-   * @param strategy - Omitted means the bank is asked for exactly `dateRange`
-   */
-  async fetchTransactions(
-    connectionId: string,
-    accountApiUid: string,
-    dateRange?: DateRange,
-    accountExternalIdForHash?: string,
-    strategy?: TransactionsFetchStrategy,
-  ): Promise<ProviderTransaction[]> {
+  private async fetchTransactions({
+    connectionId,
+    accountApiUid,
+    dateRange,
+    accountExternalIdForHash,
+    strategy,
+  }: {
+    connectionId: string;
+    /** Session-specific uid for API calls */
+    accountApiUid: string;
+    dateRange: DateRange;
+    /** Stable identifier for hash generation */
+    accountExternalIdForHash: string;
+    /** Omitted means the bank is asked for exactly `dateRange` */
+    strategy?: TransactionsFetchStrategy;
+  }): Promise<ProviderTransaction[]> {
     const credentials = await this.getValidatedCredentials(connectionId);
 
     if (!credentials.sessionId) {
@@ -653,13 +647,10 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     const apiClient = new EnableBankingApiClient(credentials);
 
-    // Use the stable externalId for hashing (identification_hash), or fall back to apiUid for backward compatibility
-    const hashId = accountExternalIdForHash || accountApiUid;
-
     // Get all transactions for the date range
     const transactions = await apiClient.getAllTransactions(accountApiUid, {
-      date_from: dateRange?.from?.toISOString().split('T')[0],
-      date_to: dateRange?.to?.toISOString().split('T')[0],
+      date_from: dateRange.from.toISOString().split('T')[0],
+      date_to: dateRange.to.toISOString().split('T')[0],
       strategy,
     });
 
@@ -686,7 +677,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
       // Generate unique hash from transaction data
       // Use stable externalId (identification_hash) for hashing, not session-specific uid
-      const uniqueId = generateTransactionHash({ tx, accountExternalId: hashId });
+      const uniqueId = generateTransactionHash({ tx, accountExternalId: accountExternalIdForHash });
 
       // Get the transaction date using priority-based selection
       const transactionDateString = getTransactionDateString({ tx });
@@ -809,10 +800,10 @@ export class EnableBankingProvider extends BaseBankDataProvider {
               })
             : null;
           const fetchedTransactions = latestTransaction
-            ? await this.fetchTransactions(
+            ? await this.fetchTransactions({
                 connectionId,
-                apiUid,
-                {
+                accountApiUid: apiUid,
+                dateRange: {
                   from: new Date(
                     Math.min(
                       latestTransaction.time.getTime(),
@@ -823,8 +814,8 @@ export class EnableBankingProvider extends BaseBankDataProvider {
                   ),
                   to,
                 },
-                account.externalId,
-              )
+                accountExternalIdForHash: account.externalId,
+              })
             : await this.fetchInitialTransactionsWithShrinkingWindow({
                 connectionId,
                 apiUid,
@@ -1314,13 +1305,13 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     for (const days of INITIAL_SYNC_FALLBACK_DAYS) {
       const from = new Date(to.getTime() - days * MS_PER_DAY);
       try {
-        return await this.fetchTransactions(
+        return await this.fetchTransactions({
           connectionId,
-          apiUid,
-          { from, to },
-          accountExternalId,
-          TransactionsFetchStrategy.LONGEST,
-        );
+          accountApiUid: apiUid,
+          dateRange: { from, to },
+          accountExternalIdForHash: accountExternalId,
+          strategy: TransactionsFetchStrategy.LONGEST,
+        });
       } catch (error) {
         if (!isAspspDateRangeRejection(error)) {
           logger.info(`Enable Banking initial sync: non-retryable error during ${days}-day window attempt`, {
@@ -1350,7 +1341,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
   // Balance Operations
   // ============================================================================
 
-  async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
+  private async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
     const credentials = await this.getValidatedCredentials(connectionId);
 
     if (!credentials.sessionId) {
@@ -1380,21 +1371,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       currency: balance.balance_amount.currency,
       asOf: balance.reference_date ? new Date(balance.reference_date) : new Date(),
     };
-  }
-
-  async refreshBalance(connectionId: string, systemAccountId: string): Promise<void> {
-    const account = await this.getSystemAccount(systemAccountId);
-
-    if (!account.externalId) {
-      throw new BadRequestError({ message: t({ key: 'accounts.accountNoExternalId' }) });
-    }
-
-    // Get uid from metadata for API calls (session-specific)
-    // Fall back to externalId for backward compatibility
-    const metadata = account.externalData as Record<string, unknown> | null;
-    const apiUid = (metadata?.uid as string) || account.externalId;
-
-    await this.writeBalanceFromBank({ connectionId, apiUid, account });
   }
 
   private async writeBalanceFromBank({

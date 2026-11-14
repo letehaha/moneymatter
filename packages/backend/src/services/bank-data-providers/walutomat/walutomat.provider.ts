@@ -9,14 +9,7 @@ import BankDataProviderConnections from '@models/bank-data-provider-connections.
 import { findOneTransaction, findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { getUserDefaultCategory } from '@models/users.model';
-import {
-  BaseBankDataProvider,
-  DateRange,
-  ProviderAccount,
-  ProviderBalance,
-  ProviderMetadata,
-  ProviderTransaction,
-} from '@services/bank-data-providers';
+import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
 import { createTransaction } from '@services/transactions';
 import { accountHasPlannedRows } from '@services/transactions/planned-matching';
 import { linkTransactions } from '@services/transactions/transactions-linking/link-transactions';
@@ -123,13 +116,10 @@ export class WalutomatProvider extends BaseBankDataProvider {
       throw new ForbiddenError({ message: t({ key: 'bankDataProviders.walutomat.invalidApiKey' }) });
     }
 
-    const client = this.createApiClient(credentials);
+    const client = new WalutomatApiClient(credentials);
     const balances = await client.getBalances();
 
-    const existingConnections = await BankDataProviderConnections.count({
-      where: { userId, providerType: this.metadata.type },
-    });
-    const providerName = existingConnections > 0 ? `Walutomat (${existingConnections + 1})` : 'Walutomat';
+    const providerName = await this.nextConnectionName({ userId, label: 'Walutomat' });
 
     const connection = await BankDataProviderConnections.create({
       userId,
@@ -150,18 +140,12 @@ export class WalutomatProvider extends BaseBankDataProvider {
     return connection.id;
   }
 
-  async disconnect(connectionId: string): Promise<void> {
-    const connection = await this.getConnection(connectionId);
-    this.validateProviderType(connection);
-    await connection.destroy();
-  }
-
   async validateCredentials(credentials: unknown): Promise<boolean> {
     if (!this.isValidCredentials(credentials)) {
       return false;
     }
 
-    const client = this.createApiClient(credentials);
+    const client = new WalutomatApiClient(credentials);
 
     // testConnection returns false only for 401/403 or signing errors (bad private key).
     // Network/5xx errors propagate so callers can distinguish "invalid creds"
@@ -207,7 +191,7 @@ export class WalutomatProvider extends BaseBankDataProvider {
 
     let balances: WalletBalance[];
     try {
-      const client = this.createApiClient(credentials);
+      const client = new WalutomatApiClient(credentials);
       balances = await client.getBalances();
       await this.resetAuthFailures(connectionId);
     } catch (error) {
@@ -233,48 +217,6 @@ export class WalutomatProvider extends BaseBankDataProvider {
   // Transaction Operations
   // ============================================================================
 
-  async fetchTransactions(
-    connectionId: string,
-    accountExternalId: string,
-    dateRange?: DateRange,
-  ): Promise<ProviderTransaction[]> {
-    const credentials = await this.getValidatedCredentials(connectionId);
-    const client = this.createApiClient(credentials);
-    const currency = currencyFromExternalId(accountExternalId);
-
-    const now = new Date();
-    const defaultFrom = new Date(now);
-    defaultFrom.setMonth(defaultFrom.getMonth() - DEFAULT_SYNC_MONTHS);
-
-    const transactions: ProviderTransaction[] = [];
-
-    for await (const item of client.getHistoryIterator({
-      currencies: [currency],
-      dateFrom: (dateRange?.from ?? defaultFrom).toISOString(),
-      dateTo: (dateRange?.to ?? now).toISOString(),
-      itemLimit: 200,
-      sortOrder: 'ASC',
-    })) {
-      transactions.push({
-        externalId: item.transactionId,
-        amount: Money.fromDecimal(Math.abs(parseFloat(item.operationAmount))).toCents(),
-        currency: item.currency,
-        date: new Date(item.ts),
-        description: buildTransactionDescription(item),
-        metadata: {
-          historyItemId: item.historyItemId,
-          transactionId: item.transactionId,
-          operationType: item.operationType,
-          operationDetailedType: item.operationDetailedType,
-          operationDetails: item.operationDetails,
-          balanceAfter: item.balanceAfter,
-        },
-      });
-    }
-
-    return transactions;
-  }
-
   async syncTransactions({
     connectionId,
     systemAccountId,
@@ -299,7 +241,7 @@ export class WalutomatProvider extends BaseBankDataProvider {
         }
 
         const credentials = await this.getValidatedCredentials(connectionId);
-        const client = this.createApiClient(credentials);
+        const client = new WalutomatApiClient(credentials);
         const currency = currencyFromExternalId(account.externalId);
 
         // Determine sync start date
@@ -460,43 +402,6 @@ export class WalutomatProvider extends BaseBankDataProvider {
     }
   }
 
-  // ============================================================================
-  // Balance Operations
-  // ============================================================================
-
-  async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
-    const credentials = await this.getValidatedCredentials(connectionId);
-    const client = this.createApiClient(credentials);
-    const currency = currencyFromExternalId(accountExternalId);
-
-    const balances = await client.getBalances();
-    const wallet = balances.find((b) => b.currency === currency);
-
-    if (!wallet) {
-      throw new BadRequestError({
-        message: t({ key: 'bankDataProviders.walutomat.walletNotFound', variables: { currency } }),
-      });
-    }
-
-    return {
-      amount: Money.fromDecimal(parseFloat(wallet.balanceAvailable)).toCents(),
-      currency: wallet.currency,
-      asOf: new Date(),
-    };
-  }
-
-  async refreshBalance(connectionId: string, systemAccountId: string): Promise<void> {
-    const account = await this.getSystemAccount(systemAccountId);
-
-    if (!account.externalId) {
-      throw new BadRequestError({ message: t({ key: 'bankDataProviders.walutomat.accountNoExternalId' }) });
-    }
-
-    const balance = await this.fetchBalance(connectionId, account.externalId);
-
-    await writeBankBalanceWithHistory({ account, balance: Money.fromCents(balance.amount) });
-  }
-
   // Walutomat surfaces 401/403 via its own HTTP error class as well as
   // ForbiddenError, so widen the base detection.
   protected override isAuthError(error: unknown): boolean {
@@ -597,13 +502,6 @@ export class WalutomatProvider extends BaseBankDataProvider {
   // ============================================================================
   // Helper Methods
   // ============================================================================
-
-  private createApiClient(credentials: WalutomatCredentials): WalutomatApiClient {
-    return new WalutomatApiClient({
-      apiKey: credentials.apiKey,
-      privateKey: credentials.privateKey,
-    });
-  }
 
   private isValidCredentials(credentials: unknown): credentials is WalutomatCredentials {
     if (typeof credentials !== 'object' || credentials === null) {

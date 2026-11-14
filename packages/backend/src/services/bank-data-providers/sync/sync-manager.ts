@@ -10,9 +10,6 @@ import { enqueueAccountSync } from './account-sync-queue';
 import { type AccountWithConnection, getUserBankAccounts } from './get-user-sync-status';
 import { shouldTriggerAutoSync, updateLastAutoSync } from './sync-status-tracker';
 
-// Re-export for backwards compatibility
-export { getUserAccountsSyncStatus } from './get-user-sync-status';
-
 interface SyncResult {
   totalAccounts: number;
   queuedAccounts: number;

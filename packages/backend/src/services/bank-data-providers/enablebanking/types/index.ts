@@ -89,6 +89,9 @@ export type {
   SuccessResponse,
 } from './auth';
 
+// Normalized provider data
+export type { DateRange, ProviderBalance, ProviderTransaction } from './provider-data';
+
 // Payment types
 export type {
   Beneficiary,

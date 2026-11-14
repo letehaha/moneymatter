@@ -16,14 +16,7 @@ import type Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { findOneTransaction } from '@models/transactions-query';
 import { getUserDefaultCategory } from '@models/users.model';
-import {
-  BaseBankDataProvider,
-  type DateRange,
-  type ProviderAccount,
-  type ProviderBalance,
-  type ProviderMetadata,
-  type ProviderTransaction,
-} from '@services/bank-data-providers';
+import { BaseBankDataProvider, type ProviderAccount, type ProviderMetadata } from '@services/bank-data-providers';
 import { createTransaction } from '@services/transactions';
 import { accountHasPlannedRows } from '@services/transactions/planned-matching';
 import { Op, Sequelize } from 'sequelize';
@@ -79,10 +72,7 @@ export class AkahuProvider extends BaseBankDataProvider {
 
     const accountsResponse = await new AkahuApiClient(credentials).getAccounts();
 
-    const existingConnections = await BankDataProviderConnections.count({
-      where: { userId, providerType: this.metadata.type },
-    });
-    const providerName = existingConnections > 0 ? `Akahu (${existingConnections + 1})` : 'Akahu';
+    const providerName = await this.nextConnectionName({ userId, label: 'Akahu' });
 
     const connection = await BankDataProviderConnections.create({
       userId,
@@ -98,15 +88,6 @@ export class AkahuProvider extends BaseBankDataProvider {
     } as any);
 
     return connection.id;
-  }
-
-  async disconnect(connectionId: string): Promise<void> {
-    const connection = await this.getConnection(connectionId);
-    this.validateProviderType(connection);
-
-    // Personal apps are user-created and shared across connections; there is
-    // nothing server-side to revoke.
-    await connection.destroy();
   }
 
   async validateCredentials(credentials: unknown): Promise<boolean> {
@@ -184,39 +165,6 @@ export class AkahuProvider extends BaseBankDataProvider {
         creditLimit: account.balance.limit ? Money.fromDecimal(Math.abs(account.balance.limit)).toCents() : 0,
       },
     };
-  }
-
-  async fetchTransactions(
-    connectionId: string,
-    accountExternalId: string,
-    dateRange?: DateRange,
-  ): Promise<ProviderTransaction[]> {
-    const credentials = await this.getValidatedCredentials(connectionId);
-    const apiClient = new AkahuApiClient(credentials);
-
-    // Transactions carry no currency field; the account's balance currency is authoritative.
-    const { account, transactions } = await this.withAuthTracking({
-      connectionId,
-      request: async () => ({
-        account: (await apiClient.getAccount({ accountId: accountExternalId })).item,
-        transactions: await apiClient.getTransactions({
-          accountId: accountExternalId,
-          start: dateRange?.from,
-          end: dateRange?.to,
-        }),
-      }),
-    });
-    const currency = this.currencyOf(account);
-
-    return transactions.map((tx) => ({
-      externalId: tx._id,
-      amount: Money.fromDecimal(tx.amount).toCents(),
-      currency,
-      date: new Date(tx.date),
-      description: tx.description || tx.merchant?.name || '',
-      merchantName: tx.merchant?.name,
-      metadata: this.transactionMetadata(tx),
-    }));
   }
 
   async syncTransactions({
@@ -308,44 +256,6 @@ export class AkahuProvider extends BaseBankDataProvider {
         return { transactionIds: counters.createdTransactionIds, fetchedCount: fetched.length };
       },
     });
-  }
-
-  async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
-    const credentials = await this.getValidatedCredentials(connectionId);
-    const apiClient = new AkahuApiClient(credentials);
-    const { item: account } = await this.withAuthTracking({
-      connectionId,
-      request: () => apiClient.getAccount({ accountId: accountExternalId }),
-    });
-
-    return {
-      amount: this.balanceCents(account),
-      currency: this.currencyOf(account),
-      asOf: account.refreshed?.balance ? new Date(account.refreshed.balance) : new Date(),
-    };
-  }
-
-  async refreshBalance(connectionId: string, systemAccountId: string): Promise<void> {
-    const account = await this.getSystemAccount(systemAccountId);
-
-    if (!account.externalId) {
-      throw new BadRequestError({ message: t({ key: 'bankDataProviders.akahu.accountNoExternalId' }) });
-    }
-
-    const credentials = await this.getValidatedCredentials(connectionId);
-    const apiClient = new AkahuApiClient(credentials);
-    const externalId = account.externalId;
-    const { item } = await this.withAuthTracking({
-      connectionId,
-      request: () => apiClient.getAccount({ accountId: externalId }),
-    });
-
-    if (item.balance.current == null) {
-      logger.info(`[Akahu] Account ${item._id} has no current balance, balance left unchanged`);
-      return;
-    }
-
-    await writeBankBalanceWithHistory({ account, balance: Money.fromDecimal(item.balance.current) });
   }
 
   /**
@@ -453,13 +363,6 @@ export class AkahuProvider extends BaseBankDataProvider {
       cardSuffix: tx.meta?.card_suffix ?? null,
       balanceAfter: tx.balance ?? null,
     };
-  }
-
-  private currencyOf(account: AkahuApiAccount): string {
-    if (!account.balance.currency) {
-      throw new ValidationError({ message: t({ key: 'bankDataProviders.akahu.missingCurrency' }) });
-    }
-    return account.balance.currency.toUpperCase();
   }
 
   private balanceCents(account: AkahuApiAccount): Cents {

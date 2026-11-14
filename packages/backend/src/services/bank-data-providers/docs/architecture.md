@@ -39,7 +39,6 @@ The bank-data-providers system is a modular framework for connecting users' bank
 │  └──────────────────────────┘                                  │
 │                                                                 │
 │  ┌─ PROVIDER INTERFACE ─────────────────────────────────────┐  │
-│  │ IBankDataProvider (types.ts)                             │  │
 │  │ BaseBankDataProvider (abstract base class)               │  │
 │  │ BankProviderRegistry (singleton)                         │  │
 │  └──────────────────────────────────────────────────────────┘  │

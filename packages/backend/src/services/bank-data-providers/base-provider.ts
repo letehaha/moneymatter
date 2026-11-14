@@ -10,15 +10,7 @@ import { isDeadlockError } from '@services/common/retry-on-deadlock';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
 import { SyncStatus, setAccountSyncStatus } from './sync/sync-status-tracker';
-import {
-  DateRange,
-  IBankDataProvider,
-  LoadTransactionsForPeriodResult,
-  ProviderAccount,
-  ProviderBalance,
-  ProviderMetadata,
-  ProviderTransaction,
-} from './types';
+import { LoadTransactionsForPeriodResult, ProviderAccount, ProviderMetadata } from './types';
 import { linkAndEmitSyncedTransactions } from './utils/link-and-emit-synced-transactions';
 
 /**
@@ -57,7 +49,7 @@ class BaseCurrencyChangeLockedError extends Error {
  *
  * All providers (Monobank, Enable Banking, etc.) should extend this class.
  */
-export abstract class BaseBankDataProvider implements IBankDataProvider {
+export abstract class BaseBankDataProvider {
   // ============================================================================
   // Abstract Properties - Must be implemented by child classes
   // ============================================================================
@@ -104,6 +96,14 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
       query: Accounts.findByPk(systemAccountId),
       message: t({ key: 'errors.accountIdNotFound', variables: { accountId: systemAccountId } }),
     });
+  }
+
+  /** `label` for the first connection of this provider, `label (n)` for the n-th. */
+  protected async nextConnectionName({ userId, label }: { userId: number; label: string }): Promise<string> {
+    const existingConnections = await BankDataProviderConnections.count({
+      where: { userId, providerType: this.metadata.type },
+    });
+    return existingConnections > 0 ? `${label} (${existingConnections + 1})` : label;
   }
 
   /**
@@ -332,12 +332,10 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
   protected async runQueuedSync<T>({
     systemAccountId,
     userId,
-    errorLogMessage,
     enqueue,
   }: {
     systemAccountId: RecordId;
     userId: number;
-    errorLogMessage?: string;
     enqueue: () => Promise<T>;
   }): Promise<T> {
     await setAccountSyncStatus({ accountId: systemAccountId, status: SyncStatus.QUEUED, userId });
@@ -347,9 +345,6 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
     } catch (error) {
       // Just in case, catch any errors that happened before and during queueing
       // Everything that happens inside workers is handled by workers
-      if (errorLogMessage) {
-        logger.error({ message: errorLogMessage, error: error as Error });
-      }
       const message = error instanceof Error ? error.message : 'Unknown error';
       await setAccountSyncStatus({
         accountId: systemAccountId,
@@ -362,7 +357,7 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
   }
 
   // ============================================================================
-  // Abstract Methods - Must be implemented by child classes
+  // Provider contract
   // ============================================================================
 
   /**
@@ -374,10 +369,15 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
   abstract connect(userId: number, credentials: unknown): Promise<string>;
 
   /**
-   * Disconnect and remove a provider connection
+   * Disconnect and remove a provider connection. A provider whose upstream holds
+   * a revocable session or consent must override this to revoke it.
    * @param connectionId - Connection to disconnect
    */
-  abstract disconnect(connectionId: string): Promise<void>;
+  async disconnect(connectionId: string): Promise<void> {
+    const connection = await this.getConnection(connectionId);
+    this.validateProviderType(connection);
+    await connection.destroy();
+  }
 
   /**
    * Validate credentials by testing connection to provider
@@ -401,19 +401,6 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
   abstract fetchAccounts(connectionId: string): Promise<ProviderAccount[]>;
 
   /**
-   * Fetch transactions for a specific account (without saving to DB)
-   * @param connectionId - Connection ID
-   * @param accountExternalId - Provider's account ID
-   * @param dateRange - Optional date range to filter transactions
-   * @returns List of transactions
-   */
-  abstract fetchTransactions(
-    connectionId: string,
-    accountExternalId: string,
-    dateRange?: DateRange,
-  ): Promise<ProviderTransaction[]>;
-
-  /**
    * Sync transactions for a specific account to our database
    * @param connectionId - Connection ID
    * @param systemAccountId - Our internal account ID
@@ -429,36 +416,6 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
     systemAccountId: string;
     userId: number;
   }): Promise<void | { jobGroupId: string; totalBatches: number; estimatedMinutes: number }>;
-
-  /**
-   * Fetch current balance for a specific account
-   * @param connectionId - Connection ID
-   * @param accountExternalId - Provider's account ID
-   * @returns Current balance
-   */
-  abstract fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance>;
-
-  /**
-   * Refresh balance for a specific account in our system
-   * @param connectionId - Connection ID
-   * @param systemAccountId - Our internal account ID
-   */
-  abstract refreshBalance(connectionId: string, systemAccountId: string): Promise<void>;
-
-  /**
-   * Set up webhook for real-time updates (if supported)
-   * Optional method - only implement if provider supports webhooks
-   * @param connectionId - Connection to set up webhook for
-   * @param webhookUrl - URL to receive webhook notifications
-   */
-  setupWebhook?(connectionId: string, webhookUrl: string): Promise<void>;
-
-  /**
-   * Handle incoming webhook payload (if supported)
-   * Optional method - only implement if provider supports webhooks
-   * @param payload - Webhook payload from provider
-   */
-  handleWebhook?(payload: unknown): Promise<void>;
 
   /**
    * Load transactions for an explicit historical window (the account-details
@@ -477,8 +434,9 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
    * Sync several accounts of one connection in a single batched pass (optional).
    * Implemented only by providers whose upstream returns every account (with
    * transactions) in one response — e.g. SimpleFIN's `/accounts` — so the
-   * orchestrators can fetch once per window instead of once per account.
-   * Marks each account's sync status internally.
+   * orchestrators can fetch once per window instead of once per account,
+   * respecting tight request budgets. Providers without it fall back to the
+   * per-account `syncTransactions`. Marks each account's sync status internally.
    */
   syncConnectionAccounts?(args: { connectionId: string; userId: number; systemAccountIds: string[] }): Promise<void>;
 }

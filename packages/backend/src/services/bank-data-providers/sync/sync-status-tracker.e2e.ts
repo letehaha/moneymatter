@@ -8,7 +8,6 @@ import {
   SyncStatus,
   clearAllSyncStatuses,
   getAccountSyncStatus,
-  setAccountPriority,
   setAccountSyncStatus,
   updateLastAutoSync,
 } from './sync-status-tracker';
@@ -182,22 +181,6 @@ describe('Sync Status Tracker - clearAllSyncStatuses', () => {
     const lastSync = await redisClient.get(REDIS_KEYS.userLastAutoSync(userId));
     expect(lastSync).not.toBeNull();
     expect(parseInt(lastSync!, 10)).toBeGreaterThanOrEqual(timestamp);
-  });
-
-  it('should not touch accountPriority keys', async () => {
-    const accountId = generateRandomRecordId();
-    const priority = 100;
-
-    // Set priority
-    await setAccountPriority(accountId, priority);
-
-    // Run cleanup
-    await clearAllSyncStatuses();
-
-    // Verify the key still exists
-    const savedPriority = await redisClient.get(REDIS_KEYS.accountPriority(accountId));
-    expect(savedPriority).not.toBeNull();
-    expect(parseFloat(savedPriority!)).toBe(priority);
   });
 
   it('should delete invalid/corrupted keys', async () => {

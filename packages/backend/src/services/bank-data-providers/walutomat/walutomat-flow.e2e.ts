@@ -175,6 +175,24 @@ describe('Walutomat Data Provider E2E', () => {
       const connection = connections.find((c: { id: string }) => c.id === result.connectionId);
       expect(connection?.providerName).toBe('Walutomat');
     });
+
+    it('names a second connection with a counter', async () => {
+      const credentials = { apiKey: VALID_WALUTOMAT_API_KEY, privateKey: VALID_WALUTOMAT_PRIVATE_KEY };
+      await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.WALUTOMAT,
+        credentials,
+        raw: true,
+      });
+      const { connectionId } = await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.WALUTOMAT,
+        credentials,
+        raw: true,
+      });
+
+      const { connections } = await helpers.bankDataProviders.listUserConnections({ raw: true });
+      const connection = connections.find((c: { id: string }) => c.id === connectionId);
+      expect(connection?.providerName).toBe('Walutomat (2)');
+    });
   });
 
   describe('List external accounts', () => {

@@ -15,14 +15,7 @@ import { logger } from '@js/utils';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { findOneTransaction } from '@models/transactions-query';
 import { getUserDefaultCategory } from '@models/users.model';
-import {
-  BaseBankDataProvider,
-  DateRange,
-  ProviderAccount,
-  ProviderBalance,
-  ProviderMetadata,
-  ProviderTransaction,
-} from '@services/bank-data-providers';
+import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
 import { createTransaction } from '@services/transactions';
 import { accountHasPlannedRows } from '@services/transactions/planned-matching';
 import { Op, Sequelize } from 'sequelize';
@@ -78,11 +71,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
     const apiClient = new LunchFlowApiClient(apiKey);
     const { accounts } = await apiClient.getAccounts();
 
-    // Generate connection name with counter for multiple connections
-    const existingConnections = await BankDataProviderConnections.count({
-      where: { userId, providerType: this.metadata.type },
-    });
-    const providerName = existingConnections > 0 ? `LunchFlow (${existingConnections + 1})` : 'LunchFlow';
+    const providerName = await this.nextConnectionName({ userId, label: 'LunchFlow' });
 
     const connection = await BankDataProviderConnections.create({
       userId,
@@ -98,13 +87,6 @@ export class LunchFlowProvider extends BaseBankDataProvider {
     } as any);
 
     return connection.id;
-  }
-
-  async disconnect(connectionId: string): Promise<void> {
-    const connection = await this.getConnection(connectionId);
-    this.validateProviderType(connection);
-
-    await connection.destroy();
   }
 
   async validateCredentials(credentials: unknown): Promise<boolean> {
@@ -246,34 +228,6 @@ export class LunchFlowProvider extends BaseBankDataProvider {
   // ============================================================================
   // Transaction Operations
   // ============================================================================
-
-  async fetchTransactions(
-    connectionId: string,
-    accountExternalId: string,
-    _dateRange?: DateRange, // eslint-disable-line @typescript-eslint/no-unused-vars
-  ): Promise<ProviderTransaction[]> {
-    const { apiKey } = await this.getValidatedCredentials(connectionId);
-
-    const apiClient = new LunchFlowApiClient(apiKey);
-    const accountId = parseInt(accountExternalId, 10);
-    const { transactions } = await apiClient.getTransactions({ accountId });
-
-    return transactions
-      .filter((tx) => tx.id !== null)
-      .map((tx) => ({
-        externalId: tx.id!,
-        amount: Money.fromDecimal(tx.amount).toCents(),
-        currency: tx.currency,
-        date: new Date(tx.date),
-        description: tx.description || tx.merchant || '',
-        merchantName: tx.merchant,
-        metadata: {
-          merchant: tx.merchant,
-          description: tx.description,
-          lunchflowAccountId: tx.accountId,
-        },
-      }));
-  }
 
   async syncTransactions({
     connectionId,
@@ -441,36 +395,6 @@ export class LunchFlowProvider extends BaseBankDataProvider {
         return { transactionIds: createdTransactionIds };
       },
     });
-  }
-
-  // ============================================================================
-  // Balance Operations
-  // ============================================================================
-
-  async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
-    const { apiKey } = await this.getValidatedCredentials(connectionId);
-
-    const apiClient = new LunchFlowApiClient(apiKey);
-    const accountId = parseInt(accountExternalId, 10);
-    const { balance } = await apiClient.getBalance({ accountId });
-
-    return {
-      amount: Money.fromDecimal(balance.amount).toCents(),
-      currency: balance.currency,
-      asOf: new Date(),
-    };
-  }
-
-  async refreshBalance(connectionId: string, systemAccountId: string): Promise<void> {
-    const account = await this.getSystemAccount(systemAccountId);
-
-    if (!account.externalId) {
-      throw new BadRequestError({ message: t({ key: 'bankDataProviders.lunchflow.accountNoExternalId' }) });
-    }
-
-    const balance = await this.fetchBalance(connectionId, account.externalId);
-
-    await writeBankBalanceWithHistory({ account, balance: Money.fromCents(balance.amount) });
   }
 
   // ============================================================================

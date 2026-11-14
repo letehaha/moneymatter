@@ -264,6 +264,9 @@ describe('LunchFlow Data Provider E2E', () => {
       );
 
       expect(lunchflowConnections.length).toBeGreaterThanOrEqual(2);
+
+      const second = connections.find((c: { id: string }) => c.id === result2.connectionId);
+      expect(second?.providerName).toBe('LunchFlow (2)');
     });
   });
 

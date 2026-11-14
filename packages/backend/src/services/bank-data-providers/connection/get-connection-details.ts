@@ -79,12 +79,6 @@ export async function getConnectionDetails(params: GetConnectionDetailsParams): 
   // Get provider metadata
   const provider = bankProviderRegistry.get(connection.providerType);
 
-  if (!provider) {
-    throw new Error(
-      t({ key: 'errors.providerNotFoundInRegistry', variables: { providerType: connection.providerType } }),
-    );
-  }
-
   const providerMetadata = provider.metadata;
 
   // Consent validity for the expiry banner; absent when metadata carries no consent window

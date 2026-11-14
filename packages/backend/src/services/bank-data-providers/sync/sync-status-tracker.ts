@@ -32,7 +32,6 @@ export interface AccountSyncStatus {
 export const REDIS_KEYS = {
   userLastAutoSync: (userId: number | string): string => `user:${userId}:last-auto-sync`,
   accountSyncStatus: (accountId: number | string): string => `account:${accountId}:sync-status`,
-  accountPriority: (accountId: number | string): string => `account:${accountId}:priority`,
 };
 
 const AUTO_SYNC_PERIOD = 12 * 60 * 60 * 1000;
@@ -259,14 +258,6 @@ export async function clearAccountSyncStatus(accountId: string): Promise<void> {
 }
 
 /**
- * Set priority score for an account (higher = more priority)
- */
-export async function setAccountPriority(accountId: string, priority: number): Promise<void> {
-  if (!isRedisReady()) return;
-  await redisClient.setex(REDIS_KEYS.accountPriority(accountId), STATUS_TTL, priority.toString());
-}
-
-/**
  * Clear stale sync statuses from Redis on startup
  * Only resets QUEUED/SYNCING statuses (which are invalid after restart)
  * Preserves COMPLETED/FAILED/IDLE statuses and user last-sync timestamps
@@ -331,9 +322,6 @@ export async function clearAllSyncStatuses(): Promise<void> {
       `[Sync Status] Startup cleanup: reset ${resetCount} active syncs to IDLE, cleared ${clearedCount} invalid keys`,
     );
   }
-
-  // Note: We DON'T touch userLastAutoSync or accountPriority keys
-  // These are historical data and remain valid across restarts
 }
 
 /**

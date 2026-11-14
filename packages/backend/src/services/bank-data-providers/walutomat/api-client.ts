@@ -52,10 +52,6 @@ export class WalutomatApiClient {
     return this.client.account.getBalances();
   }
 
-  async getHistory(params?: GetHistoryParams): Promise<HistoryItem[]> {
-    return this.client.account.getHistory(params as SdkGetHistoryParams);
-  }
-
   async *getHistoryIterator(params?: Omit<GetHistoryParams, 'continueFrom'>): AsyncIterableIterator<HistoryItem> {
     yield* this.client.account.getHistoryIterator(params as Omit<SdkGetHistoryParams, 'continueFrom'>);
   }
