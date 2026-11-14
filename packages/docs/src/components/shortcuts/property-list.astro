@@ -1,0 +1,26 @@
+---
+interface Props {
+  /** Options in the list that opens when you tap a variable pill. */
+  options: string[];
+  pick: string;
+}
+
+const { options, pick } = Astro.props;
+if (!options.includes(pick)) throw new Error(`PropertyList: "${pick}" is not one of the options`);
+---
+
+<figure class="sc-figure not-content" role="img" aria-label={`Illustration of the Get list with ${pick} selected`}>
+  <div>
+    <div class="sc-section-title">Get</div>
+    <div class="sc-card sc-list">
+      {
+        options.map((option) => (
+          <div class="sc-row" data-picked={option === pick || undefined}>
+            <span class="sc-row-label">{option}</span>
+            {option === pick && <span class="sc-check">✓</span>}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</figure>

@@ -226,7 +226,7 @@
         "description": "Folds leftover pending rows into the booked transactions that replaced them.",
         "button": "Merge duplicates",
         "running": "Merging…",
-        "confirm": "Объединить",
+        "confirm": "Merge",
         "confirmTitle": "Merge duplicate transactions?",
         "confirmDescription": "Pending rows that match a booked transaction on this account will be deleted. Notes and categories you set on them move to the booked transaction. This cannot be undone.",
         "result": "Merged {merged} duplicate(s), skipped {skipped}.",
@@ -245,7 +245,7 @@
       },
       "rightPanel": {
         "transactions": "Транзакции",
-        "viewAll": "Показать всё",
+        "viewAll": "View all",
         "analyticsSoon": "Аналитика (скоро)"
       },
       "integrations": {

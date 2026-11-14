@@ -42,7 +42,7 @@ const onHeaderClick = () => {
   >
     <ChevronRightIcon :class="['size-4 shrink-0 transition-transform duration-200', { 'rotate-90': open }]" />
     <component :is="icon" class="text-muted-foreground size-4 shrink-0" />
-    <span>{{ label }}</span>
+    <span class="min-w-0 truncate">{{ label }}</span>
     <span class="ml-auto shrink-0">
       <slot name="trailing">
         <span v-if="count" class="text-muted-foreground text-xs tabular-nums">

@@ -106,6 +106,8 @@ export const loadTransactions = async ({
   to?: string;
   amountLte?: number;
   amountGte?: number;
+  /** Free text matched against note, payee name and tag names. Words are AND-ed. */
+  search?: string;
   /** Case-insensitive substring match on the note field. Comma-separated terms are OR-ed. */
   noteSearch?: string;
   /** Adds `refundedAmount` (same-currency refunds) to each row and its splits. */

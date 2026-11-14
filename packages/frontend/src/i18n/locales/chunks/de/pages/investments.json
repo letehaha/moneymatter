@@ -3,10 +3,10 @@
     "title": "Investments",
     "createButton": "Portfolio erstellen",
     "loadError": "Portfolios konnten nicht geladen werden",
-    "tryAgain": "Erneut versuchen",
+    "tryAgain": "Try again",
     "menu": {
       "view": "Anzeigen",
-      "delete": "Löschen"
+      "delete": "Delete"
     },
     "card": {
       "hidden": "Ausgeblendet",

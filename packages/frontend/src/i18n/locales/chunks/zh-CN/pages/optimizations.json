@@ -142,7 +142,7 @@
         "plusBadge": "Plus",
         "description": "AI checks each match and shows only the ones that look like real transfers between your accounts.",
         "cost": "Each scan uses your monthly AI allowance. With your own AI provider, the provider bills it. Choose the model in {link}.",
-        "aiSettingsLink": "AI 设定",
+        "aiSettingsLink": "AI settings",
         "openAiSettings": "Open AI settings",
         "blocked": {
           "plan": {
@@ -227,7 +227,7 @@
       "restoreDialog": {
         "title": "Restore {count} transaction? | Restore {count} transactions?",
         "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Tracker, group and subscription links detached on removal don't come back.",
-        "confirm": "恢复"
+        "confirm": "Restore"
       },
       "notifications": {
         "removed": "Removed {count} transaction | Removed {count} transactions",
@@ -287,7 +287,7 @@
           "merge": "Merged",
           "remove": "Removed"
         },
-        "restore": "恢复",
+        "restore": "Restore",
         "kept": "Kept",
         "removedRows": "{count} removed transaction | {count} removed transactions"
       }

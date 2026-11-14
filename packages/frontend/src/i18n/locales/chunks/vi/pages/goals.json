@@ -8,12 +8,12 @@
       "filters": {
         "all": "All",
         "behind": "Behind schedule",
-        "archived": "Đã lưu trữ"
+        "archived": "Archived"
       },
       "sections": {
         "active": "Active",
-        "ended": "Đã kết thúc",
-        "archived": "Đã lưu trữ",
+        "ended": "Ended",
+        "archived": "Archived",
         "show": "show",
         "hide": "hide"
       },
@@ -52,9 +52,9 @@
       "noDate": "No date",
       "around": "around {date}",
       "insufficientHistory": "Not enough history",
-      "noAccounts": "Không có tài khoản",
+      "noAccounts": "No accounts",
       "paused": "Paused",
-      "archived": "Đã lưu trữ",
+      "archived": "Archived",
       "noRate": "No exchange rate"
     },
     "actions": {
@@ -62,8 +62,8 @@
       "pause": "Pause",
       "resume": "Resume",
       "archive": "Archive",
-      "unarchive": "Bỏ lưu trữ",
-      "delete": "Xóa"
+      "unarchive": "Unarchive",
+      "delete": "Delete"
     },
     "deleteDialog": {
       "title": "Delete this goal?",
@@ -99,11 +99,11 @@
       },
       "tabs": {
         "progress": "Progress",
-        "accounts": "Tài khoản",
+        "accounts": "Accounts",
         "whatIf": "What if"
       },
       "strip": {
-        "target": "Đích",
+        "target": "Target",
         "saved": "Saved",
         "left": "Left",
         "needs": "Needs",
@@ -116,8 +116,8 @@
         "overdue": "overdue"
       },
       "accounts": {
-        "label": "Tài khoản",
-        "count": "{count} tài khoản | {count} tài khoản",
+        "label": "Accounts",
+        "count": "{count} account | {count} accounts",
         "showAll": "Show all {count} accounts",
         "countedToward": "Counted toward {name}",
         "shareOf": "{share}% of {amount}",
@@ -138,7 +138,7 @@
           "balance": "Balance",
           "counted": "Counted"
         },
-        "archived": "Đã lưu trữ",
+        "archived": "Archived",
         "percentOfSaved": "{percent}% of saved",
         "total": "Total · {count} account | Total · {count} accounts",
         "ofBalance": "of {amount}",
@@ -164,7 +164,7 @@
           "leftDueInDays": "{amount} left, due in {count} day | {amount} left, due in {count} days",
           "leftOverdue": "{amount} left, overdue"
         },
-        "timeline": "Dòng thời gian",
+        "timeline": "Timeline",
         "noHistory": "No history yet",
         "insufficient": {
           "title": "Not enough history for a pace yet",
@@ -181,7 +181,7 @@
         "legend": {
           "saved": "Saved",
           "projection": "Projection",
-          "target": "Đích"
+          "target": "Target"
         },
         "monthlyChange": "Monthly change"
       },
@@ -191,16 +191,16 @@
       "createTitle": "New goal",
       "editTitle": "Edit goal",
       "description": "Progress reads your account balances. No money moves.",
-      "nameLabel": "Tên",
+      "nameLabel": "Name",
       "namePlaceholder": "e.g. Car or Emergency fund",
       "targetAmountLabel": "Target amount",
       "targetAmountPlaceholder": "Enter an amount",
-      "currencyLabel": "Đơn vị tiền tệ",
+      "currencyLabel": "Currency",
       "currencyPlaceholder": "Select a currency",
       "targetDateLabel": "Target date",
       "targetDateHint": "Optional. Set a date to see if you're on pace. Without one, we'll estimate when you'll reach it.",
-      "accountsLabel": "Tài khoản",
-      "noAccounts": "Chưa có tài khoản nào",
+      "accountsLabel": "Accounts",
+      "noAccounts": "No accounts yet",
       "countsNow": "Counts {amount} now",
       "manageAccounts": "Manage accounts",
       "addAccounts": "Add accounts",
@@ -240,11 +240,11 @@
       "fixedFirst": "Fixed amounts come out of an account's balance first. Percents split what's left.",
       "mode": {
         "percent": "Percent",
-        "amount": "Số tiền"
+        "amount": "Amount"
       },
       "searchPlaceholder": "Search accounts",
       "holder": "{share}% in {name}",
-      "archived": "Đã lưu trữ",
+      "archived": "Archived",
       "fixedOnly": "Fully used: {holders} · fixed amount only",
       "free": "{free}% free",
       "wholeAccount": "Whole account · counts {amount}",
@@ -270,7 +270,7 @@
       },
       "unavailableCaption": "Unavailable · kept until you untick it",
       "sharePlaceholder": "100",
-      "amountPlaceholder": "Số tiền",
+      "amountPlaceholder": "Amount",
       "order": {
         "hint": "If the balance runs short, fixed amounts are filled top to bottom. Drag to change.",
         "dragLabel": "Drag to change the order",

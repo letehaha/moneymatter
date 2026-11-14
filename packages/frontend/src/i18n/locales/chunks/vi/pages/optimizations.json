@@ -49,7 +49,7 @@
         "backToRuns": "Back to all runs",
         "runEmptyTitle": "Nothing left from this run",
         "runEmptyDescription": "Every transaction this run categorized has since been re-categorized or deleted.",
-        "transactionCount": "{count} giao dịch | {count} giao dịch",
+        "transactionCount": "{count} transaction | {count} transactions",
         "trigger": {
           "manual": "Manual",
           "import": "Data import",
@@ -65,7 +65,7 @@
       },
       "setup": {
         "title": "Run setup",
-        "model": "Mô hình",
+        "model": "Model",
         "notConfigured": "Not configured",
         "connection": "AI model",
         "limits": "Limits",
@@ -121,7 +121,7 @@
         "previousYear": "Previous year"
       },
       "includeOutOfWallet": "Include out-of-wallet transfers",
-      "outOfWalletSwitch": "Đã nhập giao dịch chuyển tiền ngoài Wallet",
+      "outOfWalletSwitch": "Out-of-wallet transfers",
       "skip": {
         "action": "Reject",
         "title": "Reject this suggestion?",
@@ -142,7 +142,7 @@
         "plusBadge": "Plus",
         "description": "AI checks each match and shows only the ones that look like real transfers between your accounts.",
         "cost": "Each scan uses your monthly AI allowance. With your own AI provider, the provider bills it. Choose the model in {link}.",
-        "aiSettingsLink": "Cài đặt AI",
+        "aiSettingsLink": "AI settings",
         "openAiSettings": "Open AI settings",
         "blocked": {
           "plan": {
@@ -178,7 +178,7 @@
     "reconciliation": {
       "title": "Transactions reconciliation",
       "tabs": {
-        "transactions": "Giao dịch",
+        "transactions": "Transactions",
         "stuckPending": "Stuck pending",
         "history": "History"
       },
@@ -211,7 +211,7 @@
           "time": "Time"
         },
         "status": {
-          "pending": "Đang chờ",
+          "pending": "Pending",
           "booked": "Booked"
         },
         "keep": "Keep",
@@ -227,7 +227,7 @@
       "restoreDialog": {
         "title": "Restore {count} transaction? | Restore {count} transactions?",
         "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Tracker, group and subscription links detached on removal don't come back.",
-        "confirm": "Khôi phục"
+        "confirm": "Restore"
       },
       "notifications": {
         "removed": "Removed {count} transaction | Removed {count} transactions",
@@ -262,10 +262,10 @@
         "checkFirstHint": "Check with your bank first. Transactions it has booked since then disappear from this list.",
         "columns": {
           "account": "Account",
-          "date": "Ngày",
+          "date": "Date",
           "category": "Category",
           "pendingFor": "Pending for",
-          "amount": "Số tiền",
+          "amount": "Amount",
           "status": "Status",
           "actions": "Actions"
         },
@@ -273,7 +273,7 @@
         "status": {
           "tooOld": "Too old to check",
           "tooOldHint": "Your bank only shares about 90 days of history, so this transaction can't be checked. Keep it if the charge happened, remove it if it didn't.",
-          "duplicate": "Có thể bị trùng lặp",
+          "duplicate": "Possible duplicate",
           "duplicateHint": "A booked transaction from the same payee on {date} looks like the same payment. Merge them to keep one.",
           "notFound": "Not found at bank",
           "notFoundHint": "Your bank has no booked copy of this transaction, so it may be a released hold. Keep it if the charge happened, remove it if it didn't."
@@ -287,7 +287,7 @@
           "merge": "Merged",
           "remove": "Removed"
         },
-        "restore": "Khôi phục",
+        "restore": "Restore",
         "kept": "Kept",
         "removedRows": "{count} removed transaction | {count} removed transactions"
       }

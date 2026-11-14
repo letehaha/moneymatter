@@ -85,6 +85,21 @@
         "successNotification": "Account dropdown settings updated",
         "errorNotification": "Failed to update account dropdown settings"
       },
+      "iosAddExpense": {
+        "label": "iPhone Add Expense",
+        "description": "Settings for the Add Expense shortcut on iPhone (Siri, Spotlight and the Action button).",
+        "showBankAccounts": {
+          "label": "Show bank-connected accounts",
+          "description": "Off by default: transactions on bank-connected accounts arrive through sync."
+        },
+        "hiddenCategories": {
+          "label": "Hidden categories",
+          "description": "Checked categories, with their subcategories, are hidden from the shortcut's category list.",
+          "placeholder": "None"
+        },
+        "successNotification": "iPhone Add Expense settings updated",
+        "errorNotification": "Failed to update iPhone Add Expense settings"
+      },
       "showUpcomingTransactions": {
         "label": "Show upcoming transactions",
         "description": "Pin a section with overdue scheduled payments and ones due within the next 3 days at the top of the transactions list.",

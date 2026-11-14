@@ -572,6 +572,7 @@ describe('bulk_delete_transactions', () => {
     { label: 'an empty note search', filters: { noteSearch: '' } },
     { label: 'a note search of only separators', filters: { noteSearch: ',' } },
     { label: 'a note search of only whitespace', filters: { noteSearch: '  ,  ' } },
+    { label: 'a blank search', filters: { search: '   ' } },
     { label: 'a lone keepRefundsForTxId', filters: { keepRefundsForTxId: ID_1 } },
     {
       label: 'keepRefundsForTxId with excludeRefundTxs off',
@@ -600,6 +601,7 @@ describe('bulk_delete_transactions', () => {
     { label: 'a date bound', filters: { from: '2026-10-01T00:00:00.000Z' } },
     { label: 'an account', filters: { accountIds: [ACCOUNT_ID] } },
     { label: 'a note search', filters: { noteSearch: 'coffee' } },
+    { label: 'a search', filters: { search: 'coffee' } },
     { label: 'a transaction type', filters: { transactionType: TRANSACTION_TYPES.expense } },
     { label: 'a switched-on flag', filters: { excludeTransfer: true } },
     { label: 'the only-refunds operation', filters: { refundFilter: 'only' } },

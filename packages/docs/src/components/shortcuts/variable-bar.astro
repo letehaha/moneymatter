@@ -1,0 +1,18 @@
+---
+interface Props {
+  /** The trigger's variable at the far right of the row, e.g. "Transaction". */
+  target: string;
+}
+
+const { target } = Astro.props;
+---
+
+<figure class="sc-figure not-content" role="img" aria-label={`Illustration of the variable row: swipe it all the way to the right to reach ${target}`}>
+  <div class="sc-bar">
+    <span class="sc-chip">Select Variable</span>
+    <span class="sc-chip">Ask Each Time</span>
+    <span class="sc-bar-gap" aria-hidden="true">· · · →</span>
+    <span class="sc-chip" data-target>{target}</span>
+  </div>
+  <div class="sc-hint">Swipe the row all the way to the right</div>
+</figure>

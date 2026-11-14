@@ -1,30 +1,30 @@
 {
   "navigation": {
     "dashboard": "Dashboard",
-    "accounts": "Konten",
+    "accounts": "Accounts",
     "accountsList": "Alle Konten",
     "investments": "Investments",
     "loans": "Kredite",
     "allTransactions": "Alle Transaktionen",
     "transactions": "Transaktionen",
     "transactionGroups": "Gruppen",
-    "trash": "Papierkorb",
+    "trash": "Trash",
     "analytics": "Analysen",
     "optimizations": "Optimierungen",
     "automations": "Automatisierungen",
     "accountDetails": "Kontodetails",
     "helpAndDocs": "Hilfe & Dokumentation",
     "community": "Community",
-    "logout": "Abmelden",
+    "logout": "Logout",
     "appVersion": "App-Version {version}",
-    "updateAvailable": "Update verfügbar",
+    "updateAvailable": "Update available",
     "updateToVersion": "Update · {version}",
     "settings": "Einstellungen",
     "planned": {
       "planned": "Geplant",
       "subscriptions": "Wiederkehrende Zahlungen",
       "budgets": "Tracker",
-      "goals": "Ziele"
+      "goals": "Goals"
     },
     "venture": "Beteiligungen",
     "budget": "Budget"
@@ -45,7 +45,7 @@
       }
     },
     "accountsView": {
-      "title": "Konten",
+      "title": "Accounts",
       "bankAccounts": "Bankkonten",
       "newAccount": "Neues Konto",
       "newAccountsGroup": "Neue Kontengruppe",
@@ -56,8 +56,8 @@
       "cars": "Fahrzeuge",
       "loans": "Kredite",
       "collapseNavigation": "Navigation einklappen",
-      "viaHousehold": "Geteilt über den Haushalt von {handle}",
-      "sharedBy": "Geteilt von {handle}",
+      "viaHousehold": "Shared via {handle}'s household",
+      "sharedBy": "Shared by {handle}",
       "needsReauthTooltip": "Verbindung abgelaufen. Verbinde dich erneut, um die Synchronisierung fortzusetzen."
     }
   },
@@ -139,7 +139,7 @@
     "progress": "{current} von {total} synchronisiert",
     "progressPercentage": "{percentage}%",
     "statuses": {
-      "syncing": "Synchronisieren",
+      "syncing": "Syncing",
       "queued": "In Warteschlange",
       "synced": "Synchronisiert",
       "failed": "Fehlgeschlagen",
@@ -149,7 +149,7 @@
     "neverSynced": "Nie synchronisiert",
     "syncNowButton": "Jetzt synchronisieren",
     "noBankAccounts": "Keine Bankkonten verbunden",
-    "connectButton": "Verbinden",
+    "connectButton": "Connect",
     "retrySyncButton": "Synchronisierung wiederholen",
     "manageConnectionsButton": "Verbindungen verwalten",
     "needsReauthTitle": "Verbindungen müssen erneut hergestellt werden",
@@ -206,7 +206,7 @@
       "title": "Willkommen bei MoneyMatter",
       "subtitle": "Richte als Erstes dein erstes Konto ein",
       "createManualAccount": {
-        "title": "Manuelles Konto erstellen",
+        "title": "Create manual account",
         "description": "Verfolge Bargeld, Ersparnisse oder jedes andere Konto manuell"
       },
       "connectBank": {
@@ -236,7 +236,7 @@
             "title": "Analysen erkunden"
           },
           "ai-settings": {
-            "title": "KI-Funktionen"
+            "title": "AI features"
           },
           "sharing": {
             "title": "Freigabe & Haushalt"

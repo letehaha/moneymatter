@@ -33,7 +33,7 @@
       "actions": {
         "addCustomConnector": "Benutzerdefinierten Connector hinzufügen",
         "addConnector": "Konnektor hinzufügen",
-        "add": "Hinzufügen"
+        "add": "Add"
       },
       "connectedApps": {
         "title": "Aktive Konnektoren",

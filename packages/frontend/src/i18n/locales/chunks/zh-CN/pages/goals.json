@@ -52,18 +52,18 @@
       "noDate": "No date",
       "around": "around {date}",
       "insufficientHistory": "Not enough history",
-      "noAccounts": "无账户",
+      "noAccounts": "No accounts",
       "paused": "Paused",
       "archived": "Archived",
       "noRate": "No exchange rate"
     },
     "actions": {
-      "edit": "编辑",
+      "edit": "Edit",
       "pause": "Pause",
       "resume": "Resume",
       "archive": "Archive",
       "unarchive": "Unarchive",
-      "delete": "删除"
+      "delete": "Delete"
     },
     "deleteDialog": {
       "title": "Delete this goal?",
@@ -193,7 +193,7 @@
       "description": "Progress reads your account balances. No money moves.",
       "nameLabel": "Name",
       "namePlaceholder": "e.g. Car or Emergency fund",
-      "targetAmountLabel": "目标金额",
+      "targetAmountLabel": "Target amount",
       "targetAmountPlaceholder": "Enter an amount",
       "currencyLabel": "Currency",
       "currencyPlaceholder": "Select a currency",
@@ -295,7 +295,7 @@
     "whatIf": {
       "monthly": {
         "label": "Monthly toward this goal",
-        "placeholder": "自动",
+        "placeholder": "Auto",
         "auto": "Auto {amount}",
         "autoHint": "Auto {amount} is the median monthly change of the last {count} months",
         "noAuto": "Not enough history for Auto yet. Enter an amount.",
@@ -331,7 +331,7 @@
           "late": "{count} mo late"
         }
       },
-      "autoTag": "自动",
+      "autoTag": "Auto",
       "deposit": {
         "sentence": "To count {amount} a month toward this goal, deposit {deposits}.",
         "item": "{amount} into {account}"

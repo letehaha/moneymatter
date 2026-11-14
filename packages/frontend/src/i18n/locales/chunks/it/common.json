@@ -457,7 +457,7 @@
       "description": "La funzionalità investimenti non è disponibile in modalità demo. Registrare un profilo completo per accedere al monitoraggio degli investimenti."
     },
     "banner": {
-      "message": "Si sta esplorando una demo con dati di esempio{time}. {signUpLink} per creare il proprio profilo.",
+      "message": "Questa è una demo con dati di esempio{time}. {signUpLink} per creare il tuo profilo.",
       "resets": "si azzera tra {time}",
       "signUp": "Registrati",
       "timeFormat": {
@@ -571,7 +571,7 @@
       "removeFromGroup": "Rimuovi dal gruppo",
       "saveError": "Impossibile salvare il gruppo",
       "removeError": "Impossibile rimuovere la transazione dal gruppo",
-      "manageTransactions": "Gestione",
+      "manageTransactions": "Gestisci",
       "showMoreNote": "Mostra altro",
       "showLessNote": "Mostra meno",
       "summary": {

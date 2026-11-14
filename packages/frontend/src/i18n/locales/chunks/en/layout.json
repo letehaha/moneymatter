@@ -32,6 +32,7 @@
   "sidebar": {
     "collapse": "Collapse sidebar",
     "expand": "Expand sidebar",
+    "resize": "Resize sidebar",
     "settings": {
       "title": "Settings",
       "sections": {

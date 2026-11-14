@@ -2,12 +2,12 @@
   "pages": {
     "importExport": {
       "ynabImport": {
-        "pageTitle": "Aus YNAB importieren",
+        "pageTitle": "Import from YNAB",
         "pageDescription": "Lade deinen YNAB Register.csv-Export hoch, um Konten, Transaktionen, Kategorien, Zahlungsempfänger und Tags in MoneyMatter zu übernehmen.",
         "stepper": {
           "steps": {
             "upload": "Hochladen",
-            "preview": "Überprüfen",
+            "preview": "Review",
             "results": "Fertig"
           }
         },
@@ -15,24 +15,24 @@
           "stepTitle": "Ziehe deine Register.csv hierher",
           "description": "YNAB → Budget → Budget exportieren → entpacken → verwende die Datei Register.csv.",
           "maxSize": "Bis zu 10 MB.",
-          "parsing": "Verarbeite…",
-          "continueToPreview": "Weiter",
+          "parsing": "Parsing…",
+          "continueToPreview": "Continue",
           "errors": {
             "invalidFormat": "Bitte lade eine .csv-Datei hoch."
           }
         },
         "preview": {
           "emptyList": "Hier gibt es nichts zu importieren.",
-          "accounts": "Konten",
-          "categories": "Kategorien",
-          "payees": "Zahlungsempfänger",
+          "accounts": "Accounts",
+          "categories": "Categories",
+          "payees": "Payees",
           "tags": "Tags",
-          "transactions": "Transaktionen",
-          "transfers": "Umbuchungen",
+          "transactions": "Transactions",
+          "transfers": "Transfers",
           "dateRange": "Zeitraum: {from} → {to}",
           "accountsHelper": "Bestätige für jedes YNAB-Konto die Währung.",
           "skippedNote": "{count} Konto/Konten werden übersprungen. Ihre Transaktionen – und alle Umbuchungen zu oder von ihnen – werden nicht importiert.",
-          "warningsTitle": "Warnungen",
+          "warningsTitle": "Warnings",
           "rowPrefix": "Zeile {rowIndex}:",
           "startOver": "Von vorn beginnen",
           "continueToImport": "Import starten"
@@ -41,7 +41,7 @@
           "transactionsCount": "{count} Transaktionen",
           "startingBalance": "Startsaldo",
           "currencyPlaceholder": "USD",
-          "currencyLabel": "Währung",
+          "currencyLabel": "Currency",
           "currencyInvalid": "Gib einen 3-stelligen Währungscode ein (z.B. USD)",
           "autoDetected": "Automatisch erkannt: {code}",
           "undoSkip": "In Import einschließen"
@@ -50,7 +50,7 @@
           "starting": "Starte den Import…",
           "progressCount": "{processed} / {total}",
           "statusQueued": "In Warteschlange",
-          "statusRunning": "Importieren…",
+          "statusRunning": "Importing…",
           "statusCompleted": "Fertig",
           "statusFailed": "Fehlgeschlagen",
           "failed": "Der Import konnte nicht abgeschlossen werden."
@@ -69,9 +69,9 @@
           "errorsTitle": "{count} Zeilen konnten nicht importiert werden",
           "errors": {
             "payeeCreateFailed": "Zahlungsempfänger \"{payeeName}\" konnte nicht erstellt werden. Seine Transaktionen wurden ohne Zahlungsempfänger importiert.",
-            "rowImportFailed": "Diese Zeile konnte nicht importiert werden."
+            "rowImportFailed": "This row could not be imported."
           },
-          "viewTransactions": "Transaktionen anzeigen",
+          "viewTransactions": "View transactions",
           "importAnother": "Weitere Datei importieren"
         }
       }

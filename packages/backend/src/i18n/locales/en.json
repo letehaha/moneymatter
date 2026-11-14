@@ -40,6 +40,7 @@
     "systemCannotBeMoved": "System categories cannot be moved.",
     "parentNotFound": "Category with such parentId doesn't exist.",
     "systemParentForbidden": "System categories cannot be used as a parent.",
+    "defaultCannotBeDeleted": "This category holds uncategorized transactions and cannot be deleted.",
     "ownParent": "Category cannot be its own parent.",
     "underOwnSubcategory": "Category cannot be moved under its own subcategory.",
     "nestingTooDeep": "Categories cannot be nested deeper than {{max}} levels."
@@ -336,7 +337,7 @@
     "periodLoadNotSupported": "Loading transactions for a custom period is not supported by this provider.",
     "transactionsLoadedCount": "Loaded {{count}} transactions.",
     "transactionsAllDuplicates": "Found {{count}} transactions for this period — all were already imported.",
-    "transactionsNoneInPeriod": "The provider returned no transactions for this period.",
+    "transactionsNoneInPeriod": "The data provider didn't return any transactions for this period.",
     "apiError": "{{provider}} API error: {{message}}",
     "simplefinUnreachable": "SimpleFIN is temporarily unreachable. Please try again later.",
     "currencySelectionRequired": "Account \"{{account}}\" has no currency reported by the bank — choose a currency for it before connecting.",
@@ -672,7 +673,6 @@
         "home-garden": "Home, garden",
         "pets-animals": "Pets, animals",
         "electronics-accessories": "Electronics, accessories",
-        "gifts-joy": "Gifts, joy",
         "stationery-tools": "Stationery, tools",
         "free-time": "Free time",
         "drugstore-chemist": "Drug-store, chemist"
@@ -709,7 +709,8 @@
         "books-audio-subscriptions": "Books, audio, subscriptions",
         "tv-streaming": "TV, Streaming",
         "holiday-trips-hotels": "Holiday, trips, hotels",
-        "charity-gifts": "Charity, gifts",
+        "gifts": "Gifts",
+        "charity": "Charity",
         "alcohol-tobacco": "Alcohol, tobacco",
         "lottery-gambling": "Lottery, gambling"
       },

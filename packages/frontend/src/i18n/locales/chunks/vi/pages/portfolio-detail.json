@@ -1,6 +1,6 @@
 {
   "portfolioDetail": {
-    "loading": "Đang tải...",
+    "loading": "Loading...",
     "loadingDetails": "Đang tải thông tin danh mục đầu tư…",
     "loadError": "Không thể tải thông tin danh mục đầu tư.",
     "tryAgain": "Thử lại",
@@ -9,9 +9,9 @@
     "backToInvestments": "Quay lại mục Đầu tư",
     "subtitle": "Tổng quan danh mục đầu tư",
     "actions": {
-      "transfer": "Chuyển tiền",
+      "transfer": "Transfer",
       "edit": "Chỉnh sửa",
-      "delete": "Xóa",
+      "delete": "Delete",
       "exchangeCurrency": "Đổi đơn vị tiền tệ"
     },
     "balance": {
@@ -30,7 +30,7 @@
       "emptyState": "Chưa có số dư tiền mặt",
       "tabs": {
         "balances": "Số dư",
-        "cashTransactions": "Giao dịch",
+        "cashTransactions": "Transactions",
         "buysSells": "Mua và bán"
       },
       "cashTransactions": {
@@ -69,8 +69,8 @@
       "subtitle": "{count} mã chứng khoán",
       "filterPlaceholder": "Lọc theo mã hoặc tên...",
       "addButton": "Thêm mã chứng khoán",
-      "importButton": "Nhập giao dịch",
-      "importButtonShort": "Nhập"
+      "importButton": "Import transactions",
+      "importButtonShort": "Import"
     },
     "holdingsTable": {
       "loadError": "Không thể tải các vị thế",
@@ -79,10 +79,10 @@
       "noFilterResultsDescription": "Không có vị thế nào khớp với nội dung tìm kiếm. Hãy thử mã hoặc tên khác.",
       "clearFilterButton": "Xóa tìm kiếm",
       "headers": {
-        "symbol": "Mã chứng khoán",
-        "name": "Tên",
+        "symbol": "Symbol",
+        "name": "Name",
         "shares": "Cổ phiếu",
-        "price": "Giá",
+        "price": "Price",
         "avgCostPerShare": "Giá vốn TB/cổ phiếu",
         "totalCost": "Tổng giá vốn",
         "marketValue": "Giá trị thị trường",
@@ -97,10 +97,10 @@
       "closedPositions": "Vị thế đã đóng ({count})",
       "stalePrice": "Giá gần nhất hiện có. Giá trị thị trường và lãi/lỗ có thể đã lỗi thời.",
       "deleteHolding": {
-        "ariaLabel": "Xóa vị thế",
-        "title": "Xóa vị thế",
+        "ariaLabel": "Delete holding",
+        "title": "Delete holding",
         "description": "Vị thế {symbol} cùng toàn bộ giao dịch của vị thế đó sẽ bị xóa vĩnh viễn. Bạn không thể hoàn tác thao tác này.",
-        "confirmLabel": "Xóa vị thế",
+        "confirmLabel": "Delete holding",
         "success": "Đã xóa vị thế.",
         "error": "Không thể xóa vị thế."
       },
@@ -114,17 +114,17 @@
       "importTransactions": "Hoặc nhập từ tệp"
     },
     "transactionsList": {
-      "title": "Giao dịch",
+      "title": "Transactions",
       "addButton": "Thêm giao dịch",
       "loadingMore": "Đang tải thêm giao dịch…",
       "headers": {
-        "date": "Ngày",
-        "type": "Loại",
+        "date": "Date",
+        "type": "Type",
         "note": "Ghi chú",
-        "quantity": "Số lượng",
-        "price": "Giá",
-        "fees": "Phí",
-        "amount": "Số tiền",
+        "quantity": "Quantity",
+        "price": "Price",
+        "fees": "Fees",
+        "amount": "Amount",
         "refAmount": "Số tiền quy đổi",
         "refFees": "Phí quy đổi",
         "settlementAmount": "Tiền mặt",
@@ -134,14 +134,14 @@
         "createdAt": "Ngày thêm"
       },
       "categories": {
-        "buy": "Mua",
-        "sell": "Bán",
-        "dividend": "Cổ tức",
-        "transfer": "Chuyển tiền",
-        "tax": "Thuế",
-        "fee": "Phí",
-        "cancel": "Hủy",
-        "other": "Khác"
+        "buy": "Buy",
+        "sell": "Sell",
+        "dividend": "Dividend",
+        "transfer": "Transfer",
+        "tax": "Tax",
+        "fee": "Fee",
+        "cancel": "Cancel",
+        "other": "Other"
       },
       "headerTooltips": {
         "amount": "Tổng giao dịch theo đơn vị tiền tệ giao dịch của chứng khoán.",
@@ -149,7 +149,7 @@
         "settlementAmount": "Số tiền mặt thực tế đã trả hoặc nhận vào tài khoản, theo đơn vị tiền tệ dùng để thanh toán."
       },
       "deleteTransaction": {
-        "tooltip": "Xóa giao dịch"
+        "tooltip": "Delete transaction"
       }
     }
   }

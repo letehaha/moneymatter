@@ -765,6 +765,11 @@
         "requiresAccountField": "Automatické zaznamenávanie vyžaduje účet, na ktorý sa transakcia zaúčtuje.",
         "requiresAmountField": "Automatické zaznamenávanie vyžaduje expectedAmount a expectedCurrencyCode.",
         "excludesMatchingField": "Automatické zaznamenávanie a priraďovacie pravidlá sa navzájom vylučujú."
+      },
+      "customInterval": {
+        "required": "Vlastná frekvencia vyžaduje jednotku a počet intervalu.",
+        "presetConflict": "Jednotku a počet intervalu možno nastaviť len pri vlastnej frekvencii.",
+        "countOutOfRange": "Počet intervalov musí byť pre túto jednotku v rozsahu {{min}} až {{max}}."
       }
     }
   },

@@ -2,11 +2,11 @@
   "settings": {
     "currencies": {
       "page": {
-        "title": "Tiền tệ",
+        "title": "Currencies",
         "description": "Quản lý các loại tiền tệ bạn theo dõi và tỷ giá được sử dụng trên các tài khoản."
       },
       "addNew": {
-        "loading": "Đang tải...",
+        "loading": "Loading...",
         "selectCurrency": "Chọn tiền tệ",
         "addButton": "Thêm",
         "sectionLabel": "Thêm loại tiền tệ",
@@ -24,7 +24,7 @@
         "custom": "Tùy chỉnh",
         "live": "Trực tiếp",
         "unused": "Chưa sử dụng",
-        "accountsCount": "{count} tài khoản | {count} tài khoản"
+        "accountsCount": "{count} account | {count} accounts"
       },
       "empty": {
         "title": "Chưa có loại tiền tệ nào khác",
@@ -35,7 +35,7 @@
         "liveUpdateInfo": "Khi bật, tỷ giá tùy chỉnh sẽ bị bỏ qua.",
         "liveUpdateLabel": "Cập nhật trực tiếp",
         "ratePlaceholder": "0.00",
-        "saveButton": "Lưu",
+        "saveButton": "Save",
         "successfullyUpdated": "Đã cập nhật thành công.",
         "balancesNotRefreshed": "{count} số dư tài khoản chưa thể cập nhật theo tỷ giá mới — sẽ tự động cập nhật khi có tỷ giá.",
         "errors": {
@@ -47,7 +47,7 @@
         "confirmTitle": "Xóa tiền tệ?",
         "description": "Chỉ có thể xóa hoặc ngắt kết nối tiền tệ khi không còn tài khoản hay giao dịch nào liên kết với tiền tệ đó.",
         "button": "Xóa tiền tệ",
-        "buttonShort": "Xóa",
+        "buttonShort": "Delete",
         "disabledTooltip": "Không thể xóa tiền tệ này vì vẫn còn tài khoản liên kết.",
         "successfullyDeleted": "Đã xóa thành công.",
         "foreignAmountsWarning": "Foreign amounts recorded in this currency will be removed from your transactions. Amounts in the account currency stay unchanged.",
@@ -55,9 +55,9 @@
           "title": "This currency is still in use. Remove or change these first:",
           "trashed": "(in trash)",
           "types": {
-            "account": "Tài khoản",
+            "account": "Accounts",
             "portfolio": "Portfolio display currency",
-            "holding": "Vị thế",
+            "holding": "Holdings",
             "portfolioCash": "Portfolio cash",
             "portfolioTransfer": "Portfolio transfers",
             "investmentTransaction": "Investment transactions",
@@ -93,7 +93,7 @@
           "restrictionWarning": "Trong khi quá trình đang diễn ra, bạn sẽ không thể tạo tài khoản, giao dịch hoặc thao tác nào liên quan đến \"số tiền\".",
           "confirmation": "Bạn có chắc chắn muốn tiếp tục?",
           "changeButton": "Đổi tiền tệ cơ sở",
-          "cancelButton": "Hủy"
+          "cancelButton": "Cancel"
         },
         "successMessage": "Đã đổi tiền tệ cơ sở thành công.",
         "errors": {

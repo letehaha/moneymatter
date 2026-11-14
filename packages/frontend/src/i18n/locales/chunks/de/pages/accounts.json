@@ -1,13 +1,13 @@
 {
   "accounts": {
-    "title": "Konten",
+    "title": "Accounts",
     "createAccount": "Konto erstellen",
     "createVehicle": "Fahrzeug hinzufügen",
-    "actionsMenu": "Kontoaktionen",
+    "actionsMenu": "Account actions",
     "sections": {
       "archived": "Archiviert",
       "manual": "Manuelle Konten",
-      "sharedWithMe": "Mit mir geteilt",
+      "sharedWithMe": "Shared with me",
       "vehicles": "Fahrzeuge",
       "bankConnections": "Bankverbindungen"
     },
@@ -24,9 +24,9 @@
       "vehicles": "Fahrzeuge",
       "projected": "Prognostiziert {amount} · {count} geplanter Eintrag bis {date} | Prognostiziert {amount} · {count} geplante Einträge bis {date}"
     },
-    "sharedBy": "Geteilt von {handle}",
+    "sharedBy": "Shared by {handle}",
     "viaHousehold": "Geteilt über den Haushalt von {handle}",
-    "connect": "Verbinden",
+    "connect": "Connect",
     "connectBank": "Bank verbinden",
     "noBanksConnected": "Noch keine Banken verbunden – Verbinde eine, um Kontostände automatisch zu synchronisieren.",
     "reconnect": "Erneut verbinden",
@@ -37,12 +37,18 @@
       "auto": "Auto",
       "name": "Name",
       "balance": "Kontostand",
-      "ariaLabel": "Konten sortieren"
+      "ariaLabel": "Konten sortieren",
+      "direction": {
+        "aToZ": "A to Z",
+        "zToA": "Z to A",
+        "highestFirst": "Highest first",
+        "lowestFirst": "Lowest first"
+      }
     },
     "status": {
-      "active": "Aktiv",
+      "active": "Active",
       "expiringSoon": "Läuft bald ab",
-      "expired": "Abgelaufen"
+      "expired": "Expired"
     }
   }
 }

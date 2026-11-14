@@ -85,11 +85,11 @@
         "today": "Hoje",
         "vsPreviousPeriod": "vs. período anterior",
         "viewButton": "Ver",
-        "back": "Voltar",
+        "back": "Back",
         "openInAnalytics": "Open in Analytics",
         "metric": {
-          "expenses": "Despesas",
-          "income": "Receita"
+          "expenses": "Expenses",
+          "income": "Income"
         },
         "seeTransactions": "See transactions"
       },
@@ -327,20 +327,20 @@
         "title": "Tag analysis",
         "noTagsTitle": "No tags selected",
         "noTagsDescription": "Pick the tags to compare in the widget settings.",
-        "ofIncome": "da receita",
+        "ofIncome": "of income",
         "remaining": "Unallocated",
         "targetTooltip": "Target: {value}%",
         "settings": {
           "tagsLabel": "Tags",
-          "tagsPlaceholder": "Escolha as tags",
+          "tagsPlaceholder": "Select tags",
           "targetsLabel": "Targets, %",
           "targetsNoneSet": "None set",
           "targetsSetCount": "{set} of {total} set",
           "targetsEmpty": "Add tags first to set their targets",
-          "targetPlaceholder": "Nenhuma",
+          "targetPlaceholder": "None",
           "percentBaseLabel": "Percent of",
           "percentBaseTags": "Selected tags",
-          "percentBaseIncome": "Receita",
+          "percentBaseIncome": "Income",
           "includeTransfersLabel": "Include transfers",
           "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
         }

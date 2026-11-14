@@ -19,7 +19,7 @@
         "title": "Tải dữ liệu giá chứng khoán lên thủ công",
         "description": "Tải dữ liệu giá lịch sử của chứng khoán lên bằng tệp CSV hoặc JSON.",
         "button": "Tải giá chứng khoán lên",
-        "dialogTitle": "Tải giá chứng khoán lên",
+        "dialogTitle": "Upload security prices",
         "selectSecurity": {
           "searchLabel": "Tìm theo mã hoặc tên",
           "searchPlaceholder": "AAPL",
@@ -150,7 +150,7 @@
         }
       },
       "tabs": {
-        "investments": "Đầu tư",
+        "investments": "Investments",
         "notifications": "Notifications"
       }
     }

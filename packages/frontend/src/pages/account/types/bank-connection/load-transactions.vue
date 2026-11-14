@@ -7,7 +7,7 @@ import { NotificationType, useNotificationCenter } from '@/components/notificati
 import { type Period } from '@/composable/use-period-navigation';
 import { useSyncStatus } from '@/composable/use-sync-status';
 import { ACCOUNT_TYPES, AccountModel } from '@bt/shared/types';
-import { differenceInDays, startOfDay, subDays } from 'date-fns';
+import { addYears, startOfDay, subDays } from 'date-fns';
 import { CalendarIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -27,11 +27,9 @@ const isAccountSyncing = computed(() => {
   return status?.status === 'syncing' || status?.status === 'queued';
 });
 
-const PROVIDERS_WITHOUT_PERIOD_SYNC: ACCOUNT_TYPES[] = [ACCOUNT_TYPES.lunchflow];
-const isPeriodSyncSupported = computed(() => !PROVIDERS_WITHOUT_PERIOD_SYNC.includes(props.account.type));
-
-// Backend caps a historical load at one year (see load-transactions-for-period controller).
-const MAX_DATE_RANGE_DAYS = 365;
+// Mirrors the backend providers that implement `loadTransactionsForPeriod`.
+const PROVIDERS_WITH_PERIOD_SYNC: ACCOUNT_TYPES[] = [ACCOUNT_TYPES.monobank, ACCOUNT_TYPES.simplefin];
+const isPeriodSyncSupported = computed(() => PROVIDERS_WITH_PERIOD_SYNC.includes(props.account.type));
 
 const yesterday = startOfDay(subDays(new Date(), 1));
 
@@ -56,8 +54,7 @@ const handlePeriodUpdate = async (period: Period) => {
     const { from, to } = period;
 
     // Validate date range (max 1 year)
-    const daysDiff = differenceInDays(to, from);
-    if (daysDiff > MAX_DATE_RANGE_DAYS) {
+    if (to > addYears(from, 1)) {
       addNotification({
         text: t('pages.account.loadTransactions.dateRangeExceeds'),
         type: NotificationType.error,
@@ -76,13 +73,12 @@ const handlePeriodUpdate = async (period: Period) => {
       to.toISOString(),
     );
 
-    // Inline providers (jobGroupId === null, e.g. SimpleFIN) have already
-    // finished — surface the backend's result message as a success. Queue-based
-    // providers (e.g. Monobank) return a non-null jobGroupId and report async
-    // progress, so show their queued message as info.
+    // Inline providers (jobGroupId === null) have already finished: success only if
+    // the window had data. Queue-based providers (e.g. Monobank) report async progress.
+    const isInlineWithData = result.jobGroupId === null && Boolean(result.createdCount || result.fetchedCount);
     addNotification({
       text: result.message,
-      type: result.jobGroupId === null ? NotificationType.success : NotificationType.info,
+      type: isInlineWithData ? NotificationType.success : NotificationType.info,
     });
 
     // SSE will provide updates as sync progresses (queue-based providers)

@@ -40,6 +40,7 @@
     "systemCannotBeMoved": "Системні категорії не можна переміщати.",
     "parentNotFound": "Категорія з таким parentId не існує.",
     "systemParentForbidden": "Системні категорії не можна використовувати як батьківські.",
+    "defaultCannotBeDeleted": "Ця категорія містить транзакції без категорії, тому її не можна видалити.",
     "ownParent": "Категорія не може бути батьківською для самої себе.",
     "underOwnSubcategory": "Категорію не можна перемістити під власну підкатегорію.",
     "nestingTooDeep": "Категорії не можна вкладати глибше ніж на {{max}} рівнів."
@@ -340,7 +341,7 @@
     "periodLoadNotSupported": "Завантаження транзакцій за довільний період не підтримується цим провайдером.",
     "transactionsLoadedCount": "Завантажено транзакцій: {{count}}.",
     "transactionsAllDuplicates": "Знайдено транзакцій за цей період: {{count}} — усі вже були імпортовані.",
-    "transactionsNoneInPeriod": "Провайдер не повернув жодної транзакції за цей період.",
+    "transactionsNoneInPeriod": "Провайдер даних не повернув жодної транзакції за цей період.",
     "apiError": "Помилка API {{provider}}: {{message}}",
     "simplefinUnreachable": "SimpleFIN тимчасово недоступний. Спробуйте пізніше.",
     "currencySelectionRequired": "Рахунок «{{account}}» не має валюти, повідомленої банком — оберіть для нього валюту перед підключенням.",
@@ -678,7 +679,6 @@
         "home-garden": "Дім, сад",
         "pets-animals": "Домашні тварини",
         "electronics-accessories": "Електроніка, аксесуари",
-        "gifts-joy": "Подарунки, радість",
         "stationery-tools": "Канцелярія, інструменти",
         "free-time": "Вільний час",
         "drugstore-chemist": "Аптека, хімія"
@@ -715,7 +715,8 @@
         "books-audio-subscriptions": "Книги, аудіо, підписки",
         "tv-streaming": "ТБ, стрімінг",
         "holiday-trips-hotels": "Відпустка, подорожі, готелі",
-        "charity-gifts": "Благодійність, подарунки",
+        "gifts": "Подарунки",
+        "charity": "Благодійність",
         "alcohol-tobacco": "Алкоголь, тютюн",
         "lottery-gambling": "Лотерея, азартні ігри"
       },

@@ -33,7 +33,7 @@
           "title": "Passkey",
           "noPasskeys": "Nessuna passkey registrata",
           "passkeyCount": "{count} passkey registrate",
-          "addButton": "Aggiungi Passkey",
+          "addButton": "Aggiungi passkey",
           "passkeyName": "Passkey",
           "added": "Aggiunta il {date}",
           "rename": "Rinomina",

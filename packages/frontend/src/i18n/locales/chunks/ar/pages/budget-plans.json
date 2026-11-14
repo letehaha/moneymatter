@@ -103,7 +103,7 @@
       "description": "Pick how often your budget resets and which accounts it watches.",
       "noAccountsTitle": "No accounts to budget yet",
       "noAccountsDescription": "A budget needs at least one checking, savings, cash or credit card account that you own. Add one on the Accounts page, then come back.",
-      "goToAccounts": "اذهب إلى الحسابات",
+      "goToAccounts": "Go to accounts",
       "cadenceLabel": "Resets",
       "startsOnLabel": "Starts on",
       "startsOnOutOfRange": "Pick a date from {from} to today.",

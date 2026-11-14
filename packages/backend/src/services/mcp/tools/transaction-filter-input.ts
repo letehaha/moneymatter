@@ -54,6 +54,11 @@ export const transactionFilterInput = {
   amountGte: z.number().optional().describe('Minimum amount (positive decimal, in the original currency)'),
   amountLte: z.number().optional().describe('Maximum amount (positive decimal, in the original currency)'),
   noteSearch: z.string().optional().describe('Search the note: comma-separated terms'),
+  search: z
+    .string()
+    .max(200)
+    .optional()
+    .describe('Free text matched against note, payee name and tag names; every word must match'),
   isPlanned: z
     .boolean()
     .optional()
@@ -99,7 +104,7 @@ export function parseTransactionFilters({ filters }: { filters: unknown }) {
  * Whether a filter set narrows the selection at all, judged on the filters the REST schema
  * parsed (what `parseBulkTarget` returns), not on the arguments as sent: a value counts only
  * when it restricts the WHERE clause the service builds. So an empty or all-separator
- * `noteSearch` (the schema turns it into no terms), an empty list, an exclude flag that is off,
+ * `noteSearch` (the schema turns it into no terms), a blank `search`, an empty list, an exclude flag that is off,
  * the `all` operation (including one that overrides a legacy `excludeTransfer`/`excludeRefunds`
  * flag), a lone `keepRefundsForTxId` and the refund pivot bounds (they only decide which
  * refund-linked rows stay linkable) all select everything. REST lets a bulk action run with such
@@ -138,6 +143,7 @@ export function hasNarrowingFilter({ filters }: { filters: ReturnType<typeof par
     filters.categorizationSource,
     filters.categorizedAt,
     filters.batchId,
+    filters.search,
   ].some((value) => value !== undefined && value !== null);
 
   // A flag counts only when switched on. `false` on an exclude flag changes nothing, and `false` on

@@ -8,7 +8,7 @@
     "allTransactions": "Semua Transaksi",
     "transactions": "Transaksi",
     "transactionGroups": "Grup",
-    "trash": "Tempat Sampah",
+    "trash": "Trash",
     "analytics": "Analitik",
     "optimizations": "Optimasi",
     "automations": "Otomatisasi",
@@ -17,7 +17,7 @@
     "community": "Community",
     "logout": "Keluar",
     "appVersion": "App version {version}",
-    "updateAvailable": "Pembaruan tersedia",
+    "updateAvailable": "Update available",
     "updateToVersion": "Update · {version}",
     "settings": "Pengaturan",
     "planned": {

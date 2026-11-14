@@ -41,7 +41,7 @@
           "currentBalancePlaceholder": "e.g. 1234.56",
           "currentBalanceHint": "Leave blank to start from the sum of imported transactions.",
           "linkTargetLabel": "Existing account",
-          "linkTargetPlaceholder": "选择账户",
+          "linkTargetPlaceholder": "Select account",
           "keepBalanceNote": "The existing account's current balance will be preserved. History will be back-filled."
         },
         "execute": {
@@ -101,7 +101,7 @@
             "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
           },
           "categories": {
-            "sectionTitle": "分类"
+            "sectionTitle": "Categories"
           },
           "quickActions": {
             "mapExactMatches": "Map exact matches",

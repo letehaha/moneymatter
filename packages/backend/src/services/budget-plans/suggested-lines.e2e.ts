@@ -436,7 +436,7 @@ describe('Suggested budget lines', () => {
           { parentKey: 'life', key: 'active-sport-fitness' },
           { parentKey: 'life', key: 'holiday-trips-hotels' },
           { parentKey: 'life', key: 'hobbies' },
-          { parentKey: 'shopping', key: 'gifts-joy' },
+          { parentKey: 'life', key: 'gifts' },
           { parentKey: 'life', key: 'education-development' },
         ].map((entry) => ({ id: findCategory({ categories, ...entry }).id, monthlyAvg: null })),
       });

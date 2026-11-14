@@ -9,9 +9,9 @@
           "steps": {
             "upload": "Hochladen",
             "map": "Spalten zuordnen",
-            "resolveAccounts": "Konten",
-            "resolveCategories": "Kategorien",
-            "review": "Überprüfen",
+            "resolveAccounts": "Accounts",
+            "resolveCategories": "Categories",
+            "review": "Review",
             "results": "Fertig"
           }
         },
@@ -54,7 +54,7 @@
         "columnMapping": {
           "stepTitle": "Spalten zuordnen",
           "description": "Ordne deine CSV-Spalten den erforderlichen Feldern zu",
-          "file": "Datei",
+          "file": "File",
           "filesCount": "{count} Datei | {count} Dateien",
           "totalRows": "Zeilen insgesamt",
           "delimiter": "Trennzeichen",
@@ -67,7 +67,7 @@
           "starting": "Starte Import…",
           "progressCount": "{processed} / {total}",
           "statusQueued": "In Warteschlange",
-          "statusRunning": "Importieren…",
+          "statusRunning": "Importing…",
           "statusCompleted": "Abgeschlossen",
           "statusFailed": "Fehlgeschlagen",
           "failed": "Import fehlgeschlagen.",
@@ -86,7 +86,7 @@
           "rawData": "Rohdaten",
           "duplicatesTitle": "{count} mögliche Duplikate gefunden",
           "duplicatesHint": "Wähle Zeilen aus, die du trotzdem importieren möchtest; nicht ausgewählte Duplikate werden übersprungen.",
-          "skip": "Überspringen",
+          "skip": "Skip",
           "match": "Übereinstimmung",
           "csvTransaction": "CSV-Transaktion",
           "existingTransaction": "Bestehende Transaktion",
@@ -95,12 +95,12 @@
           "invalidWillBeSkipped": "ungültige Zeilen werden übersprungen.",
           "duplicatesWillBeSkipped": "Duplikate werden übersprungen.",
           "backToMapping": "Zurück zur Zuordnung",
-          "importing": "Importieren...",
+          "importing": "Importing...",
           "importButton": "{count} Transaktionen importieren",
           "unpriceableTitle": "{count} Zeile(n) können nicht bewertet werden – kein Wechselkurs gefunden",
           "unpriceableDescription": "Diese Zeilen verwenden eine Währung, für die kein Wechselkurs gespeichert ist und die nicht in deine Basiswährung umgerechnet werden kann. Du musst sie überspringen oder den Import abbrechen.",
           "unpriceableWillBeSkipped": "nicht bewertbare werden übersprungen",
-          "currency": "Währung",
+          "currency": "Currency",
           "skipAndImport": "Überspringen & importieren",
           "cancelImport": "Import abbrechen",
           "noInvalidRows": "Keine ungültigen Zeilen",
@@ -116,12 +116,12 @@
           "imported": "Importiert",
           "skippedDuplicates": "Übersprungen (Duplikate)",
           "accountsCreated": "Konten erstellt",
-          "accountsSkipped": "Konten übersprungen",
+          "accountsSkipped": "Accounts skipped",
           "categoriesCreated": "Kategorien erstellt",
           "tagsCreated": "Tags erstellt",
           "payeesCreated": "Zahlungsempfänger erstellt",
           "importErrors": "Importfehler",
-          "rowNumber": "Zeile Nr.",
+          "rowNumber": "Row #",
           "error": "Importfehler",
           "batchIdLabel": "Batch-ID",
           "batchIdDescription": "Verwende diese ID, um alle Transaktionen aus diesem Import zu finden.",
@@ -130,19 +130,19 @@
           "skippedUnpriceable": "Übersprungen (ohne Preis)",
           "importFailed": "Transaktionen konnten nicht importiert werden. Bitte versuche es erneut.",
           "successCallout": "{count} Transaktionen erfolgreich importiert",
-          "failed": "Fehlgeschlagen",
+          "failed": "Failed",
           "noErrors": "Keine Fehler",
           "balanceWarningTitle": "Kontosalden könnten fehlerhaft sein",
           "balanceWarningBody": "Die Transaktionen wurden importiert, aber einige Kontosalden konnten danach nicht aktualisiert werden. Überprüfe diese Konten und passe ihre Salden bei Bedarf manuell an.v"
         }
       },
       "columnMapping": {
-        "stepTitle": "Spalten zuordnen",
-        "description": "Ordne deine CSV-Spalten den erforderlichen Feldern zu",
-        "file": "Datei",
-        "totalRows": "Zeilen insgesamt",
-        "delimiter": "Trennzeichen",
-        "detecting": "Erkenne Duplikate…"
+        "stepTitle": "Map columns",
+        "description": "Map your CSV columns to the required fields",
+        "file": "File",
+        "totalRows": "Total rows",
+        "delimiter": "Delimiter",
+        "detecting": "Detecting duplicates…"
       },
       "common": {
         "selectOption": "Option auswählen...",
@@ -184,7 +184,7 @@
         "description": "Wähle, wie Konten importierten Transaktionen zugewiesen werden sollen",
         "accountColumn": "Konto-Spalte",
         "columnDescription": "Wähle die CSV-Spalte aus, die Kontennamen enthält",
-        "accountLabel": "Konto",
+        "accountLabel": "Account",
         "singleAccountDescription": "Alle importierten Transaktionen werden diesem Konto zugewiesen",
         "mapOnNextStep": "Du ordnest im nächsten Schritt jedes CSV-Konto deinen bestehenden Konten zu",
         "options": {
@@ -196,7 +196,7 @@
         "title": "Kontenzuordnung",
         "description": "Ordne CSV-Kontennamen deinen bestehenden Konten zu oder erstelle neue. Es werden nur Konten mit passender Währung angezeigt.",
         "csvAccountName": "CSV-Kontoname",
-        "currency": "Währung",
+        "currency": "Currency",
         "action": "Aktion",
         "targetAccount": "Zielkonto",
         "actions": {
@@ -226,8 +226,8 @@
         "selectAction": "Aktion auswählen",
         "actions": {
           "createNew": "Neu erstellen",
-          "linkExisting": "Verknüpfen",
-          "skip": "Überspringen"
+          "linkExisting": "Link to existing",
+          "skip": "Skip"
         },
         "quickActions": {
           "mapExactMatches": "Exakte Übereinstimmungen zuordnen",
@@ -247,7 +247,7 @@
           "sectionTitle": "Kontenzuordnung",
           "resolvedCount": "{resolved} von {total} gelöst",
           "csvName": "CSV-Konto",
-          "currency": "Währung",
+          "currency": "Currency",
           "action": "Aktion",
           "target": "Zielkonto",
           "selectTarget": "Konto auswählen",
@@ -280,8 +280,8 @@
         "extractFailed": "Werte zur Zuordnung konnten nicht geladen werden. Bitte gehe zurück und versuche es erneut.",
         "retry": "Erneut versuchen",
         "footer": {
-          "back": "Zurück",
-          "next": "Weiter"
+          "back": "Back",
+          "next": "Next"
         }
       },
       "mapColumns": {
@@ -296,16 +296,16 @@
         "choosePlaceholder": "Auswählen…",
         "alreadyMatchedSuffix": "(bereits zugeordnet)",
         "amountSignNote": "Aus dem Vorzeichen des Betrags bestimmt",
-        "back": "Zurück",
-        "next": "Weiter",
+        "back": "Back",
+        "next": "Next",
         "missingHint": "Noch benötigt: {fields}",
         "fields": {
-          "date": "Datum",
-          "amount": "Betrag",
+          "date": "Date",
+          "amount": "Amount",
           "description": "Beschreibung",
-          "category": "Kategorie",
-          "account": "Konto",
-          "currency": "Währung",
+          "category": "Category",
+          "account": "Account",
+          "currency": "Currency",
           "transactionType": "Transaktionstyp",
           "payee": "Zahlungsempfänger"
         },
@@ -316,7 +316,7 @@
           "monthFirstOption": "Monat zuerst — {example}",
           "suggestedBadge": "Vorgeschlagen",
           "isoDetected": "ISO-Datumsformat erkannt – Datumsangaben in dieser Spalte beginnen mit dem Jahr, daher ist keine Auswahl von Tag/Monat erforderlich.",
-          "previewLabel": "Vorschau",
+          "previewLabel": "Preview",
           "previewUnrecognized": "nicht erkannt",
           "mismatchWarning": "{count} Zeile entspricht nicht diesem Format und wird als ungültig markiert. | {count} Zeilen entsprechen nicht diesem Format und werden als ungültig markiert."
         }
@@ -327,10 +327,10 @@
           "error": "Fehler"
         },
         "rowErrors": {
-          "payeeDefaultTagsFailed": "Die Transaktion wurde importiert, aber die Standard-Tags des Zahlungsempfängers konnten nicht angewendet werden.",
+          "payeeDefaultTagsFailed": "The transaction was imported, but the payee's default tags could not be applied.",
           "accountUnresolved": "Das Konto für diese Zeile konnte nicht zugeordnet werden, daher wurde die Zeile übersprungen.",
           "readBackFailed": "Die Transaktion wurde gespeichert, konnte aber nicht verifiziert werden und fehlt daher in der Import-Zusammenfassung.",
-          "generic": "Diese Zeile konnte nicht importiert werden."
+          "generic": "This row could not be imported."
         }
       }
     }

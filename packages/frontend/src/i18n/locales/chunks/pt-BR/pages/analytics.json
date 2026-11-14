@@ -97,13 +97,13 @@
       },
       "scope": {
         "label": "Category scope",
-        "all": "Todas as categorias",
+        "all": "All categories",
         "up": "Up one level",
-        "transactions": "Transações",
-        "count": "{count} categoria | {count} categorias",
+        "transactions": "Transactions",
+        "count": "{count} category | {count} categories",
         "more": "+{count}",
         "allExcept": "All except {list}",
-        "clear": "Limpar"
+        "clear": "Clear"
       },
       "categoryBreakdown": {
         "title": "Detalhamento por categoria",
@@ -112,8 +112,8 @@
         "moreCount": "mais {count}",
         "noSubcategory": "{name} · no subcategory",
         "byLevel": "By level",
-        "detail": "Detalhamento",
-        "others": "Outros"
+        "detail": "Detail",
+        "others": "Others"
       },
       "hero": {
         "vsPrevious": "{percent}% vs previous period",
@@ -121,16 +121,16 @@
       },
       "overTime": {
         "title": "Over time",
-        "cumulative": "Acumulado",
+        "cumulative": "Cumulative",
         "perPeriod": "Per period",
         "granularity": {
-          "monthly": "Mensal",
-          "quarterly": "Trimestral",
-          "yearly": "Anual"
+          "monthly": "Monthly",
+          "quarterly": "Quarterly",
+          "yearly": "Yearly"
         }
       },
       "transactionsCard": {
-        "title": "Transações",
+        "title": "Transactions",
         "largest": "Largest",
         "recent": "Recent"
       },
@@ -139,7 +139,7 @@
         "average": "Média",
         "total": "Total",
         "vsPrevious": {
-          "monthly": "vs. mês passado",
+          "monthly": "vs last month",
           "quarterly": "vs last quarter",
           "yearly": "vs last year"
         },

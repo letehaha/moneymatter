@@ -1,4 +1,5 @@
 import { COMMUNITY_LOCALES, LOCALE_NAMES, SUPPORTED_LOCALES, type SupportedLocale } from '@bt/shared/i18n/locales';
+import { PLANNED_MATCH_WINDOW_DAYS } from '@bt/shared/types';
 
 const languageList = (locales: SupportedLocale[]) =>
   new Intl.ListFormat('en', { type: 'conjunction' }).format(locales.map((l) => LOCALE_NAMES[l].english));
@@ -153,6 +154,15 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Reusable transaction templates for quick repeat entries, such as cash spending.
 - Recurring subscriptions are detected from your history and suggested for confirmation. Upcoming
   payments send reminders in the app and by email.
+- Planned transactions: mark an income or expense as planned for money you expect to move. A plan
+  does not count in the balance, budgets or reports until confirmed; accounts show the balance
+  with pending plans added. On a manual account you confirm a plan by hand. A bank sync, or a
+  CSV, OFX, Wallet, MS Money or statement import, confirms it by itself: a transaction on the same
+  account with the same type, currency and amount, within ${PLANNED_MATCH_WINDOW_DAYS} days of the
+  plan's date, merges into the plan instead of adding a duplicate. On a bank-connected account
+  only the sync can confirm a plan, and the first sync after connecting does not merge. YNAB
+  imports do not merge. Each plan is one transaction; for repeating payments use subscriptions.
+  Only the account owner can create plans; transfers and loan or vehicle accounts cannot be planned.
 - Not supported: hiding a single transaction from reports (a whole account can be excluded),
   splitting a bill with another person and settling up, mileage, per-diem or invoicing.
 

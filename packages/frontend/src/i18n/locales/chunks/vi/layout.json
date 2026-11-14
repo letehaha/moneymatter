@@ -1,21 +1,21 @@
 {
   "navigation": {
     "dashboard": "Dashboard",
-    "accounts": "Tài khoản",
+    "accounts": "Accounts",
     "accountsList": "All accounts",
-    "investments": "Đầu tư",
+    "investments": "Investments",
     "loans": "Loans",
     "allTransactions": "All transactions",
-    "transactions": "Giao dịch",
+    "transactions": "Transactions",
     "transactionGroups": "Groups",
-    "trash": "Thùng rác",
+    "trash": "Trash",
     "analytics": "Analytics",
     "optimizations": "Optimizations",
     "automations": "Automations",
     "accountDetails": "Account details",
     "helpAndDocs": "Help & docs",
     "community": "Community",
-    "logout": "Đăng xuất",
+    "logout": "Logout",
     "appVersion": "App version {version}",
     "updateAvailable": "Update available",
     "updateToVersion": "Update · {version}",
@@ -23,7 +23,7 @@
     "planned": {
       "planned": "Planning",
       "subscriptions": "Recurring payments",
-      "budgets": "Ngân sách",
+      "budgets": "Trackers",
       "goals": "Goals"
     },
     "venture": "Venture",
@@ -35,9 +35,9 @@
     "settings": {
       "title": "Settings",
       "sections": {
-        "label": "Các mục trên thanh bên",
-        "description": "Chọn những mục sẽ hiển thị trên thanh bên.",
-        "alwaysVisibleTooltip": "Mục này luôn hiển thị."
+        "label": "Sidebar sections",
+        "description": "Pick which sections appear in the sidebar.",
+        "alwaysVisibleTooltip": "This section is always visible."
       },
       "hideZeroBalances": {
         "label": "Hide zero balances",
@@ -45,30 +45,30 @@
       }
     },
     "accountsView": {
-      "title": "Tài khoản",
+      "title": "Accounts",
       "bankAccounts": "Bank accounts",
       "newAccount": "New account",
       "newAccountsGroup": "New accounts group",
       "portfolios": "Portfolios",
       "newPortfolio": "New portfolio",
-      "noPortfolios": "Chưa có danh mục đầu tư nào",
+      "noPortfolios": "No portfolios yet",
       "ventures": "Ventures",
-      "cars": "Phương tiện",
+      "cars": "Vehicles",
       "loans": "Loans",
       "collapseNavigation": "Collapse navigation",
-      "viaHousehold": "Được chia sẻ qua hộ gia đình của {handle}",
-      "sharedBy": "Được chia sẻ bởi {handle}",
+      "viaHousehold": "Shared via {handle}'s household",
+      "sharedBy": "Shared by {handle}",
       "needsReauthTooltip": "Connection expired. Reconnect to resume syncing."
     }
   },
   "header": {
-    "add": "Thêm",
-    "importData": "Nhập dữ liệu",
+    "add": "Add",
+    "importData": "Import data",
     "moreActions": "More ways to add data",
     "importDataHint": "CSV file or bank statement",
     "attachInvoice": "Attach invoice",
     "attachInvoiceHint": "We find the transaction it belongs to",
-    "language": "Ngôn ngữ",
+    "language": "Language",
     "newTransaction": "Add transaction",
     "settings": "Settings",
     "feedback": "Send feedback",
@@ -104,7 +104,7 @@
     "dialog": {
       "title": "Leave feedback",
       "description": "Tell us what is working and what is not.",
-      "typeLabel": "Loại",
+      "typeLabel": "Type",
       "typePlaceholder": "Choose a type",
       "types": {
         "bug": "Something is broken",
@@ -183,7 +183,7 @@
     "connectionValiditySection": "Connection validity",
     "connectionLabel": "Connection #{id}",
     "step2Full": "If any accounts remain listed below after reconnection, go to each account and manually {unlink} then {link} again.",
-    "unlinkAction": "Gỡ liên kết",
+    "unlinkAction": "Unlink",
     "linkAction": "Link"
   },
   "pages": {
@@ -206,7 +206,7 @@
       "title": "Welcome to MoneyMatter",
       "subtitle": "Get started by setting up your first account",
       "createManualAccount": {
-        "title": "Tạo tài khoản thủ công",
+        "title": "Create manual account",
         "description": "Track cash, savings, or any account manually"
       },
       "connectBank": {
@@ -236,7 +236,7 @@
             "title": "Explore analytics"
           },
           "ai-settings": {
-            "title": "Tính năng AI"
+            "title": "AI features"
           },
           "sharing": {
             "title": "Sharing & household"
@@ -300,7 +300,7 @@
             "description": "Sync transactions automatically"
           },
           "import-csv": {
-            "title": "Nhập từ nguồn văn bản bất kỳ",
+            "title": "Import from any text source",
             "description": "Import from CSV, PDF, or bank statements"
           },
           "view-annual-overview": {

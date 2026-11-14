@@ -259,6 +259,20 @@ const ZodAccountsSettingsSchema = z.object({
   showArchivedInDropdowns: z.boolean().optional(),
 });
 
+const IOS_ADD_EXPENSE_MAX_EXCLUDED_CATEGORIES = 500;
+
+// iOS-only preferences for the Add Expense shortcut. `showBankAccounts` lists bank-connected
+// accounts, hidden when unset. `excludedCategoryIds` hides those categories and their subtrees,
+// so categories created later are shown.
+const ZodIosSettingsSchema = z.object({
+  addExpense: z
+    .object({
+      showBankAccounts: z.boolean().optional(),
+      excludedCategoryIds: z.array(z.uuid()).max(IOS_ADD_EXPENSE_MAX_EXCLUDED_CATEGORIES).optional(),
+    })
+    .optional(),
+});
+
 // A saved Pivot Report "view", persisted in the settings JSONB with no dedicated table.
 // Reuses `dateRange()` + `withDateOrder()` so a saved view can't hold a range the live
 // report would 400 on.
@@ -358,6 +372,7 @@ export const ZodSettingsSchema = z.object({
   ui: ZodUiSettingsSchema.optional(),
   import: ZodImportSettingsSchema.optional(),
   accounts: ZodAccountsSettingsSchema.optional(),
+  ios: ZodIosSettingsSchema.optional(),
   savedPivotViews: z.array(ZodSavedPivotViewSchema).optional(),
   savedTransactionViews: z.array(ZodSavedTransactionViewSchema).max(MAX_SAVED_TRANSACTION_VIEWS).optional(),
   // When true, Payee extraction falls back to the transaction description/note when the
@@ -490,6 +505,7 @@ export const ZodSettingsPatchSchema = z.object({
     })
     .optional(),
   accounts: ZodAccountsSettingsSchema.optional(),
+  ios: ZodIosSettingsSchema.optional(),
   // Same element schema as `ZodSettingsSchema`, defaults and all, so the two can't drift.
   savedPivotViews: z.array(ZodSavedPivotViewSchema).optional(),
   savedTransactionViews: z.array(ZodSavedTransactionViewSchema).max(MAX_SAVED_TRANSACTION_VIEWS).optional(),

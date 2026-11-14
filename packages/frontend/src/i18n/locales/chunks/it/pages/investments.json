@@ -1,7 +1,7 @@
 {
   "investments": {
     "title": "Investimenti",
-    "createButton": "Creare un portafoglio",
+    "createButton": "Crea portafoglio",
     "loadError": "Caricamento dei portafogli non riuscito",
     "tryAgain": "Riprova",
     "menu": {

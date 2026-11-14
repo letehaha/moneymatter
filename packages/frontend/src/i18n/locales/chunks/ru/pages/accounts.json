@@ -37,7 +37,13 @@
       "auto": "Автоматически",
       "name": "Название",
       "balance": "Баланс",
-      "ariaLabel": "Сортировать счета"
+      "ariaLabel": "Сортировать счета",
+      "direction": {
+        "aToZ": "A to Z",
+        "zToA": "Z to A",
+        "highestFirst": "Highest first",
+        "lowestFirst": "Lowest first"
+      }
     },
     "status": {
       "active": "Активно",

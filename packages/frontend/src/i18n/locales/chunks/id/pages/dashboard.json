@@ -85,11 +85,11 @@
         "today": "Hari ini",
         "vsPreviousPeriod": "vs periode sebelumnya",
         "viewButton": "Lihat",
-        "back": "Kembali",
+        "back": "Back",
         "openInAnalytics": "Open in Analytics",
         "metric": {
-          "expenses": "Pengeluaran",
-          "income": "Pemasukan"
+          "expenses": "Expenses",
+          "income": "Income"
         },
         "seeTransactions": "See transactions"
       },
@@ -131,7 +131,7 @@
         "selectCategories": "Pilih Kategori",
         "showTrend": "Show 6-month trend",
         "sort": {
-          "title": "Urutkan berdasarkan",
+          "title": "Sort by",
           "custom": "Custom order",
           "spendDesc": "Highest spend first",
           "spendAsc": "Lowest spend first"
@@ -148,7 +148,7 @@
         "previousPeriodsTrend": "Tren periode sebelumnya",
         "viewDetails": "Lihat detail",
         "savingsRateLine": "Show savings rate line",
-        "savingsRate": "Rasio Tabungan",
+        "savingsRate": "Savings rate",
         "noIncome": "no income"
       },
       "netWorth": {
@@ -188,7 +188,7 @@
       },
       "cashAccounts": {
         "vsLastMonth": "vs last month",
-        "runwayUnit": "bln",
+        "runwayUnit": "mo",
         "runwayLabel": "of expenses",
         "loadFailed": "Couldn't load your accounts",
         "runwayHint": {
@@ -199,18 +199,18 @@
         }
       },
       "assetsLiabilities": {
-        "netWorth": "Kekayaan bersih",
+        "netWorth": "Net worth",
         "owesShare": "You owe {percent} of what you own",
         "noDebt": "No debt",
-        "assets": "Aset",
-        "liabilities": "Kewajiban",
+        "assets": "Assets",
+        "liabilities": "Liabilities",
         "loadFailed": "Couldn't load your assets and liabilities",
         "buckets": {
-          "cash": "Tunai",
-          "investments": "Investasi",
-          "ventures": "Ventura",
-          "vehicles": "Kendaraan",
-          "loans": "Pinjaman",
+          "cash": "Cash",
+          "investments": "Investments",
+          "ventures": "Ventures",
+          "vehicles": "Vehicles",
+          "loans": "Loans",
           "creditAndOverdrafts": "Credit & overdrafts"
         }
       },
@@ -231,7 +231,7 @@
           "daysLeft": "Days left"
         },
         "chart": {
-          "today": "Hari ini",
+          "today": "Today",
           "ariaLabel": "Spending this month"
         },
         "tooltip": {
@@ -240,7 +240,7 @@
           "spikeFrom": "Spent on {date}"
         },
         "legend": {
-          "thisMonth": "Bulan ini",
+          "thisMonth": "This month",
           "forecast": "Forecast",
           "averageMonth": "Average month"
         },
@@ -257,7 +257,7 @@
             "inputLabel": "Mark a day when it reaches",
             "hint": "Share of last month's total spending, 1–100%. Marks show in “vs last month” mode."
           },
-          "saved": "Pengaturan diperbarui"
+          "saved": "Setting updated"
         }
       },
       "plannedOverview": {
@@ -272,11 +272,11 @@
         "ofIncome": "of income",
         "vsTrailingRate": "{delta} pp vs 12-month rate {rate}",
         "average": "avg {amount}",
-        "amount": "Pajak",
+        "amount": "Taxes",
         "shareOfIncome": "Share of income",
         "shareOfTaxes": "Share of taxes",
-        "other": "Lainnya",
-        "moreCategories": "{count} lainnya",
+        "other": "Other",
+        "moreCategories": "{count} more",
         "viewDetails": "View cash flow",
         "loadFailed": "Couldn't load tax data.",
         "noCategories": {
@@ -294,9 +294,9 @@
           }
         },
         "lastMonths": {
-          "m3": "3 bulan terakhir",
-          "m6": "6 bulan terakhir",
-          "m12": "12 bulan terakhir"
+          "m3": "Last 3 months",
+          "m6": "Last 6 months",
+          "m12": "Last 12 months"
         }
       },
       "budget": {
@@ -317,10 +317,10 @@
       "trackers": {
         "spentOfLimit": "{spent} of {limit}",
         "inOut": "{income} in, {expense} out",
-        "net": "Bersih",
+        "net": "Net",
         "noLimit": "No limit",
-        "empty": "Belum ada anggaran",
-        "ended": "Berakhir",
+        "empty": "No trackers yet",
+        "ended": "Ended",
         "create": "Create a tracker"
       },
       "tagAnalysis": {
@@ -331,16 +331,16 @@
         "remaining": "Unallocated",
         "targetTooltip": "Target: {value}%",
         "settings": {
-          "tagsLabel": "Tag",
-          "tagsPlaceholder": "Pilih tag",
+          "tagsLabel": "Tags",
+          "tagsPlaceholder": "Select tags",
           "targetsLabel": "Targets, %",
           "targetsNoneSet": "None set",
           "targetsSetCount": "{set} of {total} set",
           "targetsEmpty": "Add tags first to set their targets",
-          "targetPlaceholder": "Tidak ada",
+          "targetPlaceholder": "None",
           "percentBaseLabel": "Percent of",
           "percentBaseTags": "Selected tags",
-          "percentBaseIncome": "Pemasukan",
+          "percentBaseIncome": "Income",
           "includeTransfersLabel": "Include transfers",
           "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
         }
@@ -380,7 +380,7 @@
           "description": "Penggunaan batas kredit di semua akun Anda"
         },
         "cashAccounts": {
-          "name": "Kas & akun",
+          "name": "Cash & accounts",
           "description": "Total cash across your accounts, its change since last month, and how many months of expenses it covers"
         },
         "assetsLiabilities": {
@@ -408,7 +408,7 @@
           "description": "What is left in the current budget period, line by line"
         },
         "trackers": {
-          "name": "Anggaran",
+          "name": "Trackers",
           "description": "Each active tracker with how much of its limit is used and its net"
         },
         "goals": {
@@ -428,7 +428,7 @@
           "settings": {
             "showReached": "Show reached goals"
           },
-          "reachedSection": "Tercapai"
+          "reachedSection": "Reached"
         },
         "tagAnalysis": {
           "name": "Tag analysis",
@@ -450,15 +450,15 @@
   "widgets": {
     "subscriptionsOverview": {
       "payAction": "Tandai dibayar",
-      "listTitle": "Akan Datang",
+      "listTitle": "Upcoming",
       "dueCount": "{count} due",
       "nothingDue": "Nothing due in 3 days",
       "overdueHint": "Overdue since {date}",
       "dueSoonHint": "Due in the next 3 days",
       "strip": {
-        "title": "30 hari ke depan",
+        "title": "Next 30 days",
         "goingOut": "{amount} going out",
-        "today": "Hari ini"
+        "today": "Today"
       },
       "loadFailed": "Couldn't load recurring payments"
     },
@@ -471,15 +471,15 @@
         "excludeBalanceAdjustmentsDescription": "Sembunyikan transaksi penyesuaian saldo",
         "plannedTitle": "Transaksi terencana",
         "excludePlannedDescription": "Sembunyikan transaksi terencana yang tertunda dari daftar",
-        "scheduledTitle": "Pembayaran terjadwal",
+        "scheduledTitle": "Scheduled payments",
         "excludeScheduledDescription": "Hide upcoming and overdue subscription payments from the list",
         "scheduledSaveError": "Failed to update scheduled payments setting",
         "nothingExcluded": "Tidak ada yang dikecualikan",
-        "tagsStyleTitle": "Tag",
+        "tagsStyleTitle": "Tags",
         "tagsStyleNames": "Names",
         "tagsStyleBars": "Bars",
         "tagsStyleSaveError": "Couldn't save the tag style. Please try again.",
-        "showAccountTitle": "Akun",
+        "showAccountTitle": "Account",
         "showAccountDescription": "Show the account logo on each transaction",
         "showAccountSaveError": "Couldn't save the account setting. Please try again."
       },
@@ -507,10 +507,10 @@
       "unitMonths": "{n} mos | {n} mo | {n} mos",
       "atAge": "at age {age}",
       "nextMilestone": "Next milestone",
-      "saved": "Ditabung",
-      "progress": "Progres",
+      "saved": "Saved",
+      "progress": "Progress",
       "coastFire": "Coast FIRE",
-      "reached": "Tercapai",
+      "reached": "Reached",
       "milestoneIn": "{pct}% in {duration}",
       "typeNumber": "{type} number",
       "atRate": "at {rate}%",
@@ -522,7 +522,7 @@
       "unreachable": "Not reachable at current savings",
       "needs": "Needs about {amount}/mo to get there in {duration}",
       "chart": {
-        "today": "Hari ini",
+        "today": "Today",
         "typeTarget": "{type} · {amount}",
         "ariaLabel": "Net worth path: actual history up to today, projected toward your FIRE number"
       },

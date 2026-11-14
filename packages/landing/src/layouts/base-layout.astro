@@ -9,6 +9,8 @@ import '@fontsource/manrope/latin-800.css';
 import '@fontsource/jetbrains-mono/latin-400.css';
 import '@fontsource/jetbrains-mono/latin-500.css';
 import '@fontsource/jetbrains-mono/latin-600.css';
+import manrope400Url from '@fontsource/manrope/files/manrope-latin-400-normal.woff2?url';
+import manrope600Url from '@fontsource/manrope/files/manrope-latin-600-normal.woff2?url';
 import '@/styles/site/tokens.css';
 import '@/styles/site/base.css';
 import '@/styles/site/header.css';
@@ -44,6 +46,8 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preload" href={manrope400Url} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={manrope600Url} as="font" type="font/woff2" crossorigin />
 
     <!-- Runs before first paint so the page never flashes the wrong theme. Same storage key as the SPA. -->
     <script is:inline>

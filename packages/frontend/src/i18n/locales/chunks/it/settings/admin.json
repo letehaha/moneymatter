@@ -121,7 +121,7 @@
           "titlePlaceholder": "es. L'app iOS è in beta pubblica 📱",
           "message": "Messaggio",
           "messagePlaceholder": "Testo facoltativo mostrato sotto il titolo",
-          "url": "Collega",
+          "url": "Link",
           "urlPlaceholder": "https://…  (facoltativo)",
           "urlError": "Il link deve iniziare con https://",
           "icon": "Icona",

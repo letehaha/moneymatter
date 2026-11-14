@@ -765,6 +765,11 @@
         "requiresAccountField": "Auto-record requires an account to book the transaction against.",
         "requiresAmountField": "Auto-record requires expectedAmount and expectedCurrencyCode.",
         "excludesMatchingField": "Auto-record and matching rules are mutually exclusive."
+      },
+      "customInterval": {
+        "required": "A custom frequency needs an interval unit and count.",
+        "presetConflict": "An interval unit and count can only be set with the custom frequency.",
+        "countOutOfRange": "The interval count must be between {{min}} and {{max}} for this unit."
       }
     }
   },
@@ -841,8 +846,8 @@
   "auth": {
     "errors": {
       "passwordAlreadySet": "Your account already has a password.",
-      "passwordTooShort": "كلمة السر قصيرة جدا.",
-      "passwordTooLong": "كلمة السر طويلة جداً.",
+      "passwordTooShort": "Password is too short.",
+      "passwordTooLong": "Password is too long.",
       "reauthenticationRequired": "For your security, sign in again to make this change.",
       "signupsDisabled": "Signups are disabled by the administrator."
     }

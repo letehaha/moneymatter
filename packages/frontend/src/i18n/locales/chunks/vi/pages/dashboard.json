@@ -16,10 +16,10 @@
         "title": "Balance trend",
         "balanceTypes": {
           "total": "Total",
-          "accounts": "Tài khoản",
+          "accounts": "Accounts",
           "portfolios": "Portfolios",
           "ventures": "Ventures",
-          "vehicles": "Phương tiện",
+          "vehicles": "Vehicles",
           "loans": "Loans"
         },
         "tooltip": {
@@ -33,7 +33,7 @@
         "today": "Today",
         "vsPreviousPeriod": "vs previous period",
         "spikePanel": {
-          "accounts": "Tài khoản",
+          "accounts": "Accounts",
           "portfolios": "Portfolios",
           "priceDrivenChange": "Price-driven change — transaction details coming soon",
           "noSignificantTransactions": "No significant transactions for this date.",
@@ -68,7 +68,7 @@
         },
         "componentsSettings": {
           "description": "Choose which components count toward the Total balance line.",
-          "vehicles": "Phương tiện",
+          "vehicles": "Vehicles",
           "ventures": "Ventures",
           "loans": "Loans",
           "loansTooltip": "When on, your outstanding loan balances are subtracted from the total (true net worth). When off, loans are ignored so the total shows assets only.",
@@ -84,7 +84,7 @@
         "incomeTitle": "Income structure",
         "today": "Today",
         "vsPreviousPeriod": "vs previous period",
-        "viewButton": "Xem",
+        "viewButton": "View",
         "back": "Back",
         "openInAnalytics": "Open in Analytics",
         "metric": {
@@ -127,7 +127,7 @@
       },
       "categoryTracker": {
         "title": "Categories watchlist",
-        "addCategory": "Thêm danh mục",
+        "addCategory": "Add category",
         "selectCategories": "Select categories",
         "showTrend": "Show 6-month trend",
         "sort": {
@@ -165,17 +165,17 @@
         "loadFailed": "Couldn't load net worth data.",
         "components": {
           "ventures": "Ventures",
-          "vehicles": "Phương tiện",
+          "vehicles": "Vehicles",
           "loans": "Loans"
         },
         "settings": {
           "title": "Include in net worth",
           "loans": "Loans",
-          "vehicles": "Phương tiện",
+          "vehicles": "Vehicles",
           "ventures": "Ventures"
         },
         "trendTooltip": {
-          "change": "Thay đổi",
+          "change": "Change",
           "netWorth": "Net worth",
           "noData": "No data for this period"
         }
@@ -202,14 +202,14 @@
         "netWorth": "Net worth",
         "owesShare": "You owe {percent} of what you own",
         "noDebt": "No debt",
-        "assets": "Tài sản",
-        "liabilities": "Nợ phải trả",
+        "assets": "Assets",
+        "liabilities": "Liabilities",
         "loadFailed": "Couldn't load your assets and liabilities",
         "buckets": {
           "cash": "Cash",
-          "investments": "Đầu tư",
+          "investments": "Investments",
           "ventures": "Ventures",
-          "vehicles": "Phương tiện",
+          "vehicles": "Vehicles",
           "loans": "Loans",
           "creditAndOverdrafts": "Credit & overdrafts"
         }
@@ -275,7 +275,7 @@
         "amount": "Taxes",
         "shareOfIncome": "Share of income",
         "shareOfTaxes": "Share of taxes",
-        "other": "Khác",
+        "other": "Other",
         "moreCategories": "{count} more",
         "viewDetails": "View cash flow",
         "loadFailed": "Couldn't load tax data.",
@@ -317,10 +317,10 @@
       "trackers": {
         "spentOfLimit": "{spent} of {limit}",
         "inOut": "{income} in, {expense} out",
-        "net": "Thu chi ròng",
+        "net": "Net",
         "noLimit": "No limit",
-        "empty": "Chưa có ngân sách nào",
-        "ended": "Đã kết thúc",
+        "empty": "No trackers yet",
+        "ended": "Ended",
         "create": "Create a tracker"
       },
       "tagAnalysis": {
@@ -331,7 +331,7 @@
         "remaining": "Unallocated",
         "targetTooltip": "Target: {value}%",
         "settings": {
-          "tagsLabel": "Thẻ",
+          "tagsLabel": "Tags",
           "tagsPlaceholder": "Select tags",
           "targetsLabel": "Targets, %",
           "targetsNoneSet": "None set",
@@ -408,7 +408,7 @@
           "description": "What is left in the current budget period, line by line"
         },
         "trackers": {
-          "name": "Ngân sách",
+          "name": "Trackers",
           "description": "Each active tracker with how much of its limit is used and its net"
         },
         "goals": {
@@ -471,11 +471,11 @@
         "excludeBalanceAdjustmentsDescription": "Hide balance adjustment transactions",
         "plannedTitle": "Planned transactions",
         "excludePlannedDescription": "Hide pending planned transactions from the list",
-        "scheduledTitle": "Khoản định kỳ",
+        "scheduledTitle": "Scheduled payments",
         "excludeScheduledDescription": "Hide upcoming and overdue subscription payments from the list",
         "scheduledSaveError": "Failed to update scheduled payments setting",
         "nothingExcluded": "Nothing excluded",
-        "tagsStyleTitle": "Thẻ",
+        "tagsStyleTitle": "Tags",
         "tagsStyleNames": "Names",
         "tagsStyleBars": "Bars",
         "tagsStyleSaveError": "Couldn't save the tag style. Please try again.",

@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/common/dropdown-menu';
 import PageWrapper from '@/components/common/page-wrapper.vue';
+import ResizeHandle from '@/components/common/resize-handle.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/lib/ui/collapsible';
@@ -96,9 +97,10 @@ const { height: stripHeight } = useElementSize(stripRef, undefined, { box: 'bord
 const floatingPanelRef = ref<HTMLElement | null>(null);
 const { height: floatingPanelHeight } = useElementSize(floatingPanelRef, undefined, { box: 'border-box' });
 const { rowBars } = useGridDisplayOptions();
-const { panelWidth, panelOpen, startResize, isNarrow, isPanelAttached, isPanelFloating, isPanelTab } = useFrameLayout({
-  frameRef,
-});
+const { panelWidth, panelOpen, startResize, resetPanelWidth, isNarrow, isPanelAttached, isPanelFloating, isPanelTab } =
+  useFrameLayout({
+    frameRef,
+  });
 
 // Sits right under the sticky page title row, which is h-11.
 const FRAME_STICKY_CLASS = 'sticky top-[calc(var(--header-height)+2.75rem)]';
@@ -742,12 +744,11 @@ const openLineDialog = ({
           :inert="isViewPlaceholder"
           :class="cn('border-border relative border-l transition-opacity', isViewPlaceholder && 'opacity-60')"
         >
-          <div
-            role="separator"
-            aria-orientation="vertical"
-            :aria-label="$t('budgetPlans.panel.resize')"
-            class="hover:bg-primary/40 active:bg-primary/60 absolute inset-y-0 -left-1 z-10 w-2 cursor-col-resize touch-none transition-colors"
-            @pointerdown="startResize"
+          <ResizeHandle
+            edge="left"
+            :label="$t('budgetPlans.panel.resize')"
+            @start="startResize"
+            @reset="resetPanelWidth"
           />
           <div :class="FRAME_STICKY_CLASS">
             <ScrollArea viewport-class="max-h-[calc(100dvh-var(--header-height)-3.75rem)] p-4">

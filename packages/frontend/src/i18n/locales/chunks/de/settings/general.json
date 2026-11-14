@@ -1,7 +1,7 @@
 {
   "settings": {
     "general": {
-      "title": "Allgemein",
+      "title": "General",
       "description": "Steuere, wie deine Finanzdaten in der App berechnet und angezeigt werden.",
       "creditLimit": {
         "label": "Kreditlimits im Kontostand berücksichtigen",
@@ -12,7 +12,7 @@
       "payday": {
         "label": "Abrechnungszyklus beginnt am",
         "description": "Der Tag des Monats, an dem dein Abrechnungszyklus beginnt. Der Standardzeitraum des Dashboards läuft von diesem Tag bis zum Tag vor diesem im nächsten Monat.",
-        "placeholder": "Tag auswählen",
+        "placeholder": "Select day",
         "successNotification": "Beginn des Abrechnungszyklus aktualisiert"
       },
       "unrealizedLossAlert": {
@@ -98,11 +98,11 @@
         "errorNotification": "Ein unerwarteter Fehler ist aufgetreten. Einstellung nicht gespeichert",
         "fields": {
           "externalUrl": {
-            "label": "Externe URL",
+            "label": "External URL",
             "description": "Verknüpfe die Transaktion mit einer Bestellseite, Buchungsbestätigung oder einem Beleg."
           },
           "externalReference": {
-            "label": "Externe Referenz",
+            "label": "External reference",
             "description": "Speichere eine Bestellnummer, Rechnungsnummer oder Buchungsreferenz bei der Transaktion."
           },
           "originalAmount": {
@@ -110,7 +110,7 @@
             "description": "Der tatsächlich in einer anderen Währung abgebuchte Betrag, wenn er von der Kontowährung abweicht."
           },
           "location": {
-            "label": "Standort",
+            "label": "Location",
             "description": "GPS-Koordinaten des Ortes, an dem der Kauf stattgefunden hat. Übernehme den Standort deines Geräts oder gib ihn manuell ein"
           }
         },

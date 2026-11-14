@@ -196,7 +196,7 @@
       }
     },
     "planned": {
-      "label": "مخطط له",
+      "label": "Planned",
       "confirmedLabel": "Confirmed",
       "plannedTooltip": "Planned transaction",
       "expiredTooltip": "Expected {days} days ago, no matching bank transaction",

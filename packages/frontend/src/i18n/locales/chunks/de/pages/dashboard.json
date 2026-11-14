@@ -16,10 +16,10 @@
         "title": "Saldoverlauf",
         "balanceTypes": {
           "total": "Gesamt",
-          "accounts": "Konten",
+          "accounts": "Accounts",
           "portfolios": "Portfolios",
           "ventures": "Beteiligungen",
-          "vehicles": "Fahrzeuge",
+          "vehicles": "Vehicles",
           "loans": "Kredite"
         },
         "tooltip": {
@@ -33,7 +33,7 @@
         "today": "Heute",
         "vsPreviousPeriod": "gegenüber vorherigem Zeitraum",
         "spikePanel": {
-          "accounts": "Konten",
+          "accounts": "Accounts",
           "portfolios": "Portfolios",
           "priceDrivenChange": "Preisbedingte Änderung – Transaktionsdetails demnächst verfügbar",
           "noSignificantTransactions": "Keine wesentlichen Transaktionen für dieses Datum.",
@@ -68,7 +68,7 @@
         },
         "componentsSettings": {
           "description": "Wähle, welche Komponenten zur Gesamtsaldo-Linie zählen.",
-          "vehicles": "Fahrzeuge",
+          "vehicles": "Vehicles",
           "ventures": "Beteiligungen",
           "loans": "Kredite",
           "loansTooltip": "Wenn aktiviert, werden offene Kreditsalden vom Gesamtwert abgezogen (echtes Nettovermögen). Wenn deaktiviert, werden Kredite ignoriert, sodass nur Vermögenswerte angezeigt werden.",
@@ -82,14 +82,14 @@
       "expensesStructure": {
         "title": "Ausgabenstruktur",
         "incomeTitle": "Income structure",
-        "today": "Heute",
+        "today": "Today",
         "vsPreviousPeriod": "gegenüber vorherigem Zeitraum",
         "viewButton": "Anzeigen",
-        "back": "Zurück",
+        "back": "Back",
         "openInAnalytics": "Open in Analytics",
         "metric": {
-          "expenses": "Ausgaben",
-          "income": "Einnahmen"
+          "expenses": "Expenses",
+          "income": "Income"
         },
         "seeTransactions": "See transactions"
       },
@@ -131,7 +131,7 @@
         "selectCategories": "Kategorien auswählen",
         "showTrend": "6-Monats-Trend anzeigen",
         "sort": {
-          "title": "Sortieren nach",
+          "title": "Sort by",
           "custom": "Benutzerdefinierte Reihenfolge",
           "spendDesc": "Höchste Ausgaben zuerst",
           "spendAsc": "Niedrigste Ausgaben zuerst"
@@ -165,13 +165,13 @@
         "loadFailed": "Daten zum Nettovermögen konnten nicht geladen werden.",
         "components": {
           "ventures": "Beteiligungen",
-          "vehicles": "Fahrzeuge",
+          "vehicles": "Vehicles",
           "loans": "Kredite"
         },
         "settings": {
           "title": "In Nettovermögen einbeziehen",
           "loans": "Kredite",
-          "vehicles": "Fahrzeuge",
+          "vehicles": "Vehicles",
           "ventures": "Beteiligungen"
         },
         "trendTooltip": {
@@ -188,7 +188,7 @@
       },
       "cashAccounts": {
         "vsLastMonth": "vs. Vormonat",
-        "runwayUnit": "Mon.",
+        "runwayUnit": "mo",
         "runwayLabel": "an Ausgaben",
         "loadFailed": "Deine Konten konnten nicht geladen werden",
         "runwayHint": {
@@ -199,24 +199,24 @@
         }
       },
       "assetsLiabilities": {
-        "netWorth": "Nettovermögen",
+        "netWorth": "Net worth",
         "owesShare": "Du schuldest {percent} deines Vermögens",
         "noDebt": "Keine Schulden",
-        "assets": "Vermögenswerte",
-        "liabilities": "Verbindlichkeiten",
+        "assets": "Assets",
+        "liabilities": "Liabilities",
         "loadFailed": "Deine Vermögenswerte und Verbindlichkeiten konnten nicht geladen werden",
         "buckets": {
-          "cash": "Bargeld",
+          "cash": "Cash",
           "investments": "Investments",
-          "ventures": "Beteiligungen",
-          "vehicles": "Fahrzeuge",
-          "loans": "Kredite",
+          "ventures": "Ventures",
+          "vehicles": "Vehicles",
+          "loans": "Loans",
           "creditAndOverdrafts": "Kredite & Dispos"
         }
       },
       "spendingPace": {
         "tabs": {
-          "lastMonth": "vs. Vormonat",
+          "lastMonth": "vs last month",
           "average": "vs. 3-Monats-Ø"
         },
         "spentIn": "Ausgegeben im {month}",
@@ -231,17 +231,17 @@
           "daysLeft": "Verbleibende Tage"
         },
         "chart": {
-          "today": "Heute",
+          "today": "Today",
           "ariaLabel": "Ausgaben diesen Monat"
         },
         "tooltip": {
-          "spent": "Ausgegeben",
+          "spent": "Spent",
           "forecast": "Prognose",
           "spikeFrom": "Ausgegeben am {date}"
         },
         "legend": {
-          "thisMonth": "Diesen Monat",
-          "forecast": "Prognose",
+          "thisMonth": "This month",
+          "forecast": "Forecast",
           "averageMonth": "Durchschnittlicher Monat"
         },
         "hints": {
@@ -257,7 +257,7 @@
             "inputLabel": "Einen Tag markieren, wenn er folgendes erreicht",
             "hint": "Anteil an den Gesamtausgaben des Vormonats, 1–100%. Markierungen werden im Modus \"vs. Vormonat\" angezeigt."
           },
-          "saved": "Einstellung aktualisiert"
+          "saved": "Setting updated"
         }
       },
       "plannedOverview": {
@@ -272,11 +272,11 @@
         "ofIncome": "vom Einkommen",
         "vsTrailingRate": "{delta} Prozentpunkte ggü. 12-Monats-Satz {rate}",
         "average": "Ø {amount}",
-        "amount": "Steuern",
-        "shareOfIncome": "Anteil an Einnahmen",
+        "amount": "Taxes",
+        "shareOfIncome": "Share of income",
         "shareOfTaxes": "Steueranteil",
-        "other": "Sonstiges",
-        "moreCategories": "{count} weitere",
+        "other": "Other",
+        "moreCategories": "{count} more",
         "viewDetails": "Cashflow anzeigen",
         "loadFailed": "Steuerdaten konnten nicht geladen werden.",
         "noCategories": {
@@ -294,9 +294,9 @@
           }
         },
         "lastMonths": {
-          "m3": "Letzte 3 Monate",
-          "m6": "Letzte 6 Monate",
-          "m12": "Letzte 12 Monate"
+          "m3": "Last 3 months",
+          "m6": "Last 6 months",
+          "m12": "Last 12 months"
         }
       },
       "budget": {
@@ -317,30 +317,30 @@
       "trackers": {
         "spentOfLimit": "{spent} von {limit}",
         "inOut": "{income} Einnahmen, {expense} Ausgaben",
-        "net": "Netto",
+        "net": "Net",
         "noLimit": "Kein Limit",
         "empty": "Noch keine Tracker",
-        "ended": "Beendet",
+        "ended": "Ended",
         "create": "Tracker erstellen"
       },
       "tagAnalysis": {
         "title": "Tag analysis",
         "noTagsTitle": "No tags selected",
         "noTagsDescription": "Pick the tags to compare in the widget settings.",
-        "ofIncome": "vom Einkommen",
+        "ofIncome": "of income",
         "remaining": "Unallocated",
         "targetTooltip": "Target: {value}%",
         "settings": {
           "tagsLabel": "Tags",
-          "tagsPlaceholder": "Tags auswählen",
+          "tagsPlaceholder": "Select tags",
           "targetsLabel": "Targets, %",
           "targetsNoneSet": "None set",
           "targetsSetCount": "{set} of {total} set",
           "targetsEmpty": "Add tags first to set their targets",
-          "targetPlaceholder": "Keine",
+          "targetPlaceholder": "None",
           "percentBaseLabel": "Percent of",
           "percentBaseTags": "Selected tags",
-          "percentBaseIncome": "Einnahmen",
+          "percentBaseIncome": "Income",
           "includeTransfersLabel": "Include transfers",
           "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
         }
@@ -372,7 +372,7 @@
           "description": "Einkommen gegenüber Ausgaben mit Sparquote"
         },
         "netWorth": {
-          "name": "Nettovermögen",
+          "name": "Net worth",
           "description": "Wie sich dein Gesamtnettovermögen im Zeitverlauf verändert, einschließlich Investments, Krediten und Vermögenswerten."
         },
         "creditUtilization": {
@@ -408,11 +408,11 @@
           "description": "Zeile für Zeile, was im aktuellen Budgetzeitraum noch übrig ist"
         },
         "trackers": {
-          "name": "Tracker",
+          "name": "Trackers",
           "description": "Jeder aktive Tracker mit genutztem Limit und Netto-Saldo"
         },
         "goals": {
-          "name": "Ziele",
+          "name": "Goals",
           "description": "Fortschritt deiner Sparziele",
           "savedOfTarget": "{saved} von {target}",
           "empty": {
@@ -423,12 +423,12 @@
           "locked": {
             "title": "Ziele sind gesperrt",
             "description": "Spare für das, was zählt, und sieh, ob du im Zeitplan bist. Verfügbar in kostenpflichtigen Abos.",
-            "action": "Mehr erfahren"
+            "action": "Learn more"
           },
           "settings": {
             "showReached": "Erreichte Ziele anzeigen"
           },
-          "reachedSection": "Erreicht"
+          "reachedSection": "Reached"
         },
         "tagAnalysis": {
           "name": "Tag analysis",
@@ -450,15 +450,15 @@
   "widgets": {
     "subscriptionsOverview": {
       "payAction": "Bezahlt",
-      "listTitle": "Bevorstehend",
+      "listTitle": "Upcoming",
       "dueCount": "{count} fällig",
       "nothingDue": "Nichts fällig in 3 Tagen",
       "overdueHint": "Überfällig seit {date}",
       "dueSoonHint": "Fällig in den nächsten 3 Tagen",
       "strip": {
-        "title": "Nächste 30 Tage",
+        "title": "Next 30 days",
         "goingOut": "{amount} Abgänge",
-        "today": "Heute"
+        "today": "Today"
       },
       "loadFailed": "Wiederkehrende Zahlungen konnten nicht geladen werden"
     },
@@ -471,7 +471,7 @@
         "excludeBalanceAdjustmentsDescription": "Saldokorrektur-Transaktionen ausblenden",
         "plannedTitle": "Geplante Transaktionen",
         "excludePlannedDescription": "Ausstehende geplante Transaktionen aus der Liste ausblenden",
-        "scheduledTitle": "Geplante Zahlungen",
+        "scheduledTitle": "Scheduled payments",
         "excludeScheduledDescription": "Kommende und überfällige Abo-Zahlungen aus der Liste ausblenden",
         "scheduledSaveError": "Einstellung für geplante Zahlungen konnte nicht aktualisiert werden",
         "nothingExcluded": "Nichts ausgeschlossen",
@@ -479,7 +479,7 @@
         "tagsStyleNames": "Namen",
         "tagsStyleBars": "Balken",
         "tagsStyleSaveError": "Tag-Stil konnte nicht gespeichert werden. Bitte versuche es erneut.",
-        "showAccountTitle": "Konto",
+        "showAccountTitle": "Account",
         "showAccountDescription": "Kontologo bei jeder Transaktion anzeigen",
         "showAccountSaveError": "Die Kontoeinstellung konnte nicht gespeichert werden. Bitte versuche es erneut."
       },
@@ -507,7 +507,7 @@
       "unitMonths": "{n} Monate | {n} Monat | {n} Monate",
       "atAge": "im Alter von {age}",
       "nextMilestone": "Nächster Meilenstein",
-      "saved": "Gespart",
+      "saved": "Saved",
       "progress": "Fortschritt",
       "coastFire": "Coast FIRE",
       "reached": "Erreicht",
@@ -522,7 +522,7 @@
       "unreachable": "Bei aktueller Sparrate nicht erreichbar",
       "needs": "Benötigt ca. {amount}/Monat, um es in {duration} zu erreichen",
       "chart": {
-        "today": "Heute",
+        "today": "Today",
         "typeTarget": "{type} · {amount}",
         "ariaLabel": "Nettovermögensverlauf: bisherige Historie bis heute, prognostiziert auf dein FIRE-Ziel"
       },

@@ -89,7 +89,7 @@
         "openInAnalytics": "Otvoriť v Analytike",
         "metric": {
           "expenses": "Výdavky",
-          "income": "Príjem"
+          "income": "Príjmy"
         },
         "seeTransactions": "Zobraziť transakcie"
       },
@@ -154,7 +154,7 @@
       "netWorth": {
         "title": "Čistá hodnota majetku",
         "description": "Ako sa čistá hodnota majetku zmenila za vybrané obdobie. Zohľadňuje každú zmenu zostatku: účty, investície, pôžičky a hodnoty aktív.",
-        "vsPrevious": "vs. predchádzajúce obdobie",
+        "vsPrevious": "oproti predchádzajúcemu obdobiu",
         "start": "Začiatok",
         "end": "Koniec",
         "growth": "Nárast",
@@ -275,7 +275,7 @@
         "amount": "Dane",
         "shareOfIncome": "Podiel na príjmoch",
         "shareOfTaxes": "Podiel daní",
-        "other": "Ostatné",
+        "other": "Iné",
         "moreCategories": "{count} ďalších",
         "viewDetails": "Zobraziť peňažný tok",
         "loadFailed": "Daňové údaje sa nepodarilo načítať.",
@@ -428,7 +428,7 @@
           "settings": {
             "showReached": "Zobraziť dosiahnuté ciele"
           },
-          "reachedSection": "Dosiahnuté"
+          "reachedSection": "Dosiahnutý"
         },
         "tagAnalysis": {
           "name": "Analýza značiek",
@@ -507,10 +507,10 @@
       "unitMonths": "{n} mes. | {n} mes. | {n} mes.",
       "atAge": "vo veku {age}",
       "nextMilestone": "Ďalší medzník",
-      "saved": "Ušetrené",
+      "saved": "Usporené",
       "progress": "Priebeh",
       "coastFire": "Coast FIRE",
-      "reached": "Dosiahnuté",
+      "reached": "Dosiahnutý",
       "milestoneIn": "{pct} % za {duration}",
       "typeNumber": "Cieľové číslo {type}",
       "atRate": "pri {rate}%",

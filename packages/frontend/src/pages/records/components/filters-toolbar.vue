@@ -17,6 +17,18 @@
 
       <slot name="prefix" />
 
+      <!-- Always-visible search. Typing updates the filters; the page applies them debounced. -->
+      <div class="mr-2 mb-2 inline-block w-64 max-w-full align-top">
+        <InputField
+          :model-value="filters.search"
+          type="search"
+          maxlength="200"
+          :placeholder="$t('transactions.filters.search.placeholder')"
+          :aria-label="$t('transactions.filters.search.placeholder')"
+          @update:model-value="emitFilters({ ...filters, search: String($event ?? '') })"
+        />
+      </div>
+
       <!-- Filter picker: a multi-select menu of the optional filters. Rows keep
            their place and get a check mark when active, and the popover stays
            open so several filters can be toggled in one visit. -->
@@ -178,14 +190,6 @@
           />
         </div>
 
-        <div v-else-if="filterKey === 'note'" class="w-56">
-          <NoteIncludesFilter
-            compact
-            :note-includes="filters.noteIncludes"
-            @update:note-includes="emitFilters({ ...filters, noteIncludes: $event })"
-          />
-        </div>
-
         <!-- Fused remove segment: overlaps the control's right edge by exactly the
              rounded-md corner radius (10px = -ml-2.5) so the control's rounded
              corners are fully covered and the button's own left border reads as a
@@ -215,8 +219,8 @@ import { FILTER_ICONS } from '@/components/records-filters/filter-icons';
 import { EXTRA_FILTERS, EXTRA_FILTER_KEYS, type ExtraFilterKey } from '@/components/records-filters/filter-registry';
 import AmountRangeFilter from '@/components/records-filters/filters/amount-range-filter.vue';
 import DateRangeFilter from '@/components/records-filters/filters/date-range-filter.vue';
-import NoteIncludesFilter from '@/components/records-filters/filters/note-includes.vue';
 import OperationPills from '@/components/records-filters/filters/operation-pills.vue';
+import InputField from '@/components/fields/input-field.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
 import PayeeMultiSelectField from '@/components/fields/payee-multi-select-field.vue';
 import TrackerMultiSelectField from '@/components/fields/tracker-multi-select-field.vue';

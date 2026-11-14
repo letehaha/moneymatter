@@ -45,10 +45,8 @@
         "exclude": "Exclude",
         "only": "Only"
       },
-      "noteIncludes": {
-        "label": "Note includes (comma-separated):",
-        "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Search in notes"
+      "search": {
+        "placeholder": "Search notes, payees and tags"
       },
       "tags": {
         "allTags": "All tags",
@@ -68,8 +66,7 @@
         "type": "Type",
         "tags": "Tags",
         "budgets": "Trackers",
-        "amount": "Amount range",
-        "note": "Notes"
+        "amount": "Amount range"
       },
       "transferNature": {
         "label": "Transfer kinds",

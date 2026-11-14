@@ -2,7 +2,7 @@
   "auth": {
     "signup": {
       "title": "Ein Konto erstellen",
-      "divider": "Oder weiter mit E-Mail-Adresse",
+      "divider": "Or continue with email",
       "submitButton": "Registrieren",
       "alreadyHaveAccount": "Du hast bereits ein Konto?",
       "signInLink": "Anmelden",
@@ -21,20 +21,20 @@
         "invalidPassword": "Ungültiges Passwort.",
         "userExists": "Ein Benutzer mit dieser E-Mail-Adresse existiert bereits.",
         "signupsDisabled": "Registrierungen wurden vom Administrator dieser Instanz deaktiviert.",
-        "genericErrorRetry": "Es ist ein Fehler aufgetreten. Bitte versuche es erneut.",
+        "genericErrorRetry": "An error occurred. Please try again.",
         "oauthFailed": "Fehler beim Anmelden mit {provider}. Bitte versuche es erneut.",
         "oauthNotConfigured": "Die Anmeldung mit {provider} ist auf diesem Server nicht konfiguriert."
       }
     },
     "shared": {
-      "divider": "Oder fortfahren mit",
+      "divider": "Or continue with",
       "passkeyButton": {
         "signIn": "Mit Passkey anmelden",
         "register": "Passkey hinzufügen"
       },
       "oauthButton": {
-        "signIn": "Mit {provider} anmelden",
-        "signUp": "Mit {provider} registrieren"
+        "signIn": "Sign in with {provider}",
+        "signUp": "Sign up with {provider}"
       }
     }
   }

@@ -72,7 +72,7 @@
     "delete": {
       "title": "Automatisierung löschen?",
       "description": "\"{name}\" wird nicht mehr für neue Transaktionen ausgeführt. Bereits kategorisierte Transaktionen behalten ihre Kategorie, Tags und Notiz.",
-      "confirm": "Löschen"
+      "confirm": "Delete"
     },
     "notifications": {
       "deleteSuccess": "Automatisierung gelöscht.",
@@ -89,7 +89,7 @@
       "amount": "Betrag",
       "transactionType": "Transaktionstyp",
       "account": "Konto",
-      "accountGroup": "Kontogruppe",
+      "accountGroup": "Account group",
       "bankConnection": "Bankverbindung",
       "dayOfMonth": "Tag des Monats"
     },
@@ -119,7 +119,7 @@
       }
     },
     "editor": {
-      "titleNew": "Neue Automatisierung",
+      "titleNew": "New automation",
       "titleEdit": "Automatisierung bearbeiten",
       "back": "Zurück zu Automatisierungen",
       "enabled": "Aktiviert",
@@ -161,7 +161,7 @@
       "notFound": {
         "title": "Automatisierung nicht gefunden",
         "description": "Diese Automatisierung existiert nicht mehr oder wurde gelöscht.",
-        "link": "Zurück zu Automatisierungen"
+        "link": "Back to automations"
       },
       "unsaved": {
         "title": "Ungespeicherte Änderungen verwerfen?",
@@ -229,7 +229,7 @@
         "noneTitle": "Noch keine Treffer",
         "noneDescription": "Keine der vergangenen Transaktionen in deinen synchronisierten oder importierten Konten entspricht diesen Bedingungen."
       },
-      "selectAll": "Alles auswählen",
+      "selectAll": "Select all",
       "selectedCount": "{count} ausgewählt",
       "irreversible": "Dies kann nicht rückgängig gemacht werden. Überprüfe die Liste sorgfältig.",
       "applyAction": "Auf {count} Transaktionen anwenden",

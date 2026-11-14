@@ -103,7 +103,7 @@
       "sharing": {
         "inviteAnother": "Invita qualcuno",
         "membersHeading": "Membri",
-        "pendingHeading": "Richieste in attesa",
+        "pendingHeading": "Inviti in sospeso",
         "loadError": "Impossibile caricare i membri.",
         "permissions": {
           "read": "Sola lettura",
@@ -115,8 +115,8 @@
           "roleOwner": "Proprietario",
           "roleRecipient": "Membro",
           "ownerHint": "Controllo completo di questo tracker",
-          "updateSuccess": "Autorizzazioni aggiornate.",
-          "updateError": "Impossibile aggiornare i permessi.",
+          "updateSuccess": "Autorizzazione aggiornata.",
+          "updateError": "Impossibile aggiornare l'autorizzazione.",
           "revoke": "Revoca accesso",
           "revokeConfirm": "Revoca",
           "revokeTitle": "Revoca accesso?",

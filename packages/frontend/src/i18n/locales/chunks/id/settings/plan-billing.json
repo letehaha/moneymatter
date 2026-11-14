@@ -10,10 +10,10 @@
       "manageBilling": "Manage billing",
       "manageInAppStore": "Manage in the App Store",
       "currentPlan": "Current plan",
-      "recommended": "Direkomendasikan",
+      "recommended": "Recommended",
       "previousPlan": "Previous plan",
       "yourPlan": "Your plan",
-      "planned": "Terencana",
+      "planned": "Planned",
       "voteOnRoadmap": "Vote on the roadmap",
       "roadmapNote": "No charge. Upvote it and we'll let you know when it ships.",
       "saveUpTo": "Save up to {percent}%",
@@ -61,9 +61,9 @@
       },
       "status": {
         "pastDue": "Payment failed",
-        "active": "Aktif",
-        "paused": "Dijeda",
-        "readOnly": "Hanya baca",
+        "active": "Active",
+        "paused": "Paused",
+        "readOnly": "Read-only",
         "trial": "Plus features",
         "processing": "Processing",
         "earlyAdopter": "Early adopter",
@@ -90,8 +90,8 @@
         "early_adopter": "Early Adopter"
       },
       "cycle": {
-        "month": "Bulanan",
-        "year": "Tahunan"
+        "month": "Monthly",
+        "year": "Yearly"
       },
       "perCycle": {
         "month": "/month",

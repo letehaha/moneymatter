@@ -13,9 +13,9 @@
         "editTitle": "Edit tag",
         "name": "Name",
         "namePlaceholder": "Tag name",
-        "color": "颜色",
-        "icon": "图标",
-        "iconPlaceholder": "选择图标",
+        "color": "Color",
+        "icon": "Icon",
+        "iconPlaceholder": "Select icon",
         "description": "Description",
         "descriptionPlaceholder": "Optional description",
         "saveButton": "Save",
@@ -24,8 +24,8 @@
       "delete": {
         "title": "Delete tag?",
         "description": "This will permanently delete \"{name}\" and remove it from all transactions. This action cannot be undone.",
-        "deleteButton": "删除",
-        "cancelButton": "取消"
+        "deleteButton": "Delete",
+        "cancelButton": "Cancel"
       },
       "notifications": {
         "createSuccess": "Tag created",
@@ -79,8 +79,8 @@
         "delete": {
           "title": "Delete reminder?",
           "description": "This will permanently delete this reminder. This action cannot be undone.",
-          "deleteButton": "删除",
-          "cancelButton": "取消"
+          "deleteButton": "Delete",
+          "cancelButton": "Cancel"
         },
         "notifications": {
           "createSuccess": "Reminder created",

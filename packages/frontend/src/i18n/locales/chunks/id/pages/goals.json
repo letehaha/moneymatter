@@ -6,14 +6,14 @@
     "list": {
       "searchPlaceholder": "Search goals",
       "filters": {
-        "all": "Semua",
+        "all": "All",
         "behind": "Behind schedule",
-        "archived": "Diarsipkan"
+        "archived": "Archived"
       },
       "sections": {
-        "active": "Aktif",
-        "ended": "Berakhir",
-        "archived": "Diarsipkan",
+        "active": "Active",
+        "ended": "Ended",
+        "archived": "Archived",
         "show": "show",
         "hide": "hide"
       },
@@ -29,8 +29,8 @@
         "includeArchived": "Include archived"
       },
       "row": {
-        "saved": "Ditabung",
-        "ofTarget": "dari {amount}",
+        "saved": "Saved",
+        "ofTarget": "of {amount}",
         "accountShare": "{name} {share}%",
         "accountFixed": "{name} {amount}",
         "reachedOn": "reached {date}",
@@ -43,27 +43,27 @@
       }
     },
     "status": {
-      "reached": "Tercapai",
+      "reached": "Reached",
       "ahead": "Ahead",
       "onTrack": "On track",
       "behind": "Behind",
       "behindBy": "Behind · {count} mo | Behind · {count} mo",
-      "overdue": "Terlambat",
+      "overdue": "Overdue",
       "noDate": "No date",
       "around": "around {date}",
       "insufficientHistory": "Not enough history",
-      "noAccounts": "Tidak ada akun",
-      "paused": "Dijeda",
-      "archived": "Diarsipkan",
+      "noAccounts": "No accounts",
+      "paused": "Paused",
+      "archived": "Archived",
       "noRate": "No exchange rate"
     },
     "actions": {
-      "edit": "Sunting",
-      "pause": "Jeda langganan",
-      "resume": "Lanjutkan langganan",
-      "archive": "Arsipkan",
-      "unarchive": "Keluarkan dari arsip",
-      "delete": "Hapus"
+      "edit": "Edit",
+      "pause": "Pause",
+      "resume": "Resume",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "delete": "Delete"
     },
     "deleteDialog": {
       "title": "Delete this goal?",
@@ -98,17 +98,17 @@
         "more": "More goal actions"
       },
       "tabs": {
-        "progress": "Progres",
-        "accounts": "Akun",
+        "progress": "Progress",
+        "accounts": "Accounts",
         "whatIf": "What if"
       },
       "strip": {
         "target": "Target",
-        "saved": "Ditabung",
+        "saved": "Saved",
         "left": "Left",
         "needs": "Needs",
         "pace": "Pace",
-        "reached": "Tercapai",
+        "reached": "Reached",
         "aboveTarget": "{amount} above target",
         "notEnoughHistory": "not enough history",
         "around": "around {date}",
@@ -116,8 +116,8 @@
         "overdue": "overdue"
       },
       "accounts": {
-        "label": "Akun",
-        "count": "{count} akun | {count} akun",
+        "label": "Accounts",
+        "count": "{count} account | {count} accounts",
         "showAll": "Show all {count} accounts",
         "countedToward": "Counted toward {name}",
         "shareOf": "{share}% of {amount}",
@@ -133,15 +133,15 @@
         "fixedHere": "Fixed {amount} from this account",
         "emptyDescription": "Link accounts in Edit goal to track progress.",
         "columns": {
-          "account": "Akun",
+          "account": "Account",
           "share": "Share",
-          "balance": "Saldo",
+          "balance": "Balance",
           "counted": "Counted"
         },
-        "archived": "Diarsipkan",
+        "archived": "Archived",
         "percentOfSaved": "{percent}% of saved",
         "total": "Total · {count} account | Total · {count} accounts",
-        "ofBalance": "dari {amount}",
+        "ofBalance": "of {amount}",
         "unavailableAccount": "Unavailable account",
         "balanceUnavailable": "Balance unavailable"
       },
@@ -155,7 +155,7 @@
           "needs": "needs {amount}/mo",
           "projectedFinish": "Projected finish",
           "onTime": "on time",
-          "early": "{count} bln lebih awal",
+          "early": "{count} mo early",
           "late": "{count} mo late",
           "targetDate": "Target {date}",
           "savedIn": "Saved in {count} mo",
@@ -164,7 +164,7 @@
           "leftDueInDays": "{amount} left, due in {count} day | {amount} left, due in {count} days",
           "leftOverdue": "{amount} left, overdue"
         },
-        "timeline": "Garis Waktu",
+        "timeline": "Timeline",
         "noHistory": "No history yet",
         "insufficient": {
           "title": "Not enough history for a pace yet",
@@ -179,8 +179,8 @@
         },
         "chartAria": "Goal savings over time",
         "legend": {
-          "saved": "Ditabung",
-          "projection": "Proyeksi",
+          "saved": "Saved",
+          "projection": "Projection",
           "target": "Target"
         },
         "monthlyChange": "Monthly change"
@@ -191,16 +191,16 @@
       "createTitle": "New goal",
       "editTitle": "Edit goal",
       "description": "Progress reads your account balances. No money moves.",
-      "nameLabel": "Nama",
+      "nameLabel": "Name",
       "namePlaceholder": "e.g. Car or Emergency fund",
-      "targetAmountLabel": "Jumlah target",
-      "targetAmountPlaceholder": "Masukkan jumlah",
-      "currencyLabel": "Mata Uang",
-      "currencyPlaceholder": "Pilih mata uang",
+      "targetAmountLabel": "Target amount",
+      "targetAmountPlaceholder": "Enter an amount",
+      "currencyLabel": "Currency",
+      "currencyPlaceholder": "Select a currency",
       "targetDateLabel": "Target date",
       "targetDateHint": "Optional. Set a date to see if you're on pace. Without one, we'll estimate when you'll reach it.",
-      "accountsLabel": "Akun",
-      "noAccounts": "Belum Ada Akun",
+      "accountsLabel": "Accounts",
+      "noAccounts": "No accounts yet",
       "countsNow": "Counts {amount} now",
       "manageAccounts": "Manage accounts",
       "addAccounts": "Add accounts",
@@ -240,11 +240,11 @@
       "fixedFirst": "Fixed amounts come out of an account's balance first. Percents split what's left.",
       "mode": {
         "percent": "Percent",
-        "amount": "Jumlah"
+        "amount": "Amount"
       },
       "searchPlaceholder": "Search accounts",
       "holder": "{share}% in {name}",
-      "archived": "Diarsipkan",
+      "archived": "Archived",
       "fixedOnly": "Fully used: {holders} · fixed amount only",
       "free": "{free}% free",
       "wholeAccount": "Whole account · counts {amount}",
@@ -263,14 +263,14 @@
       "marketNote": "Market moves in investment and crypto accounts count as progress. Projections assume no growth.",
       "total": "No accounts selected | {count} account · counts {amount} | {count} accounts · counts {amount}",
       "fixToSave": "Fix {name} to save",
-      "done": "Selesai",
+      "done": "Done",
       "emptyState": {
         "title": "No accounts to link",
         "description": "Goals count cash, current, savings, investment and crypto accounts you own."
       },
       "unavailableCaption": "Unavailable · kept until you untick it",
       "sharePlaceholder": "100",
-      "amountPlaceholder": "Jumlah",
+      "amountPlaceholder": "Amount",
       "order": {
         "hint": "If the balance runs short, fixed amounts are filled top to bottom. Drag to change.",
         "dragLabel": "Drag to change the order",
@@ -295,7 +295,7 @@
     "whatIf": {
       "monthly": {
         "label": "Monthly toward this goal",
-        "placeholder": "Otomatis",
+        "placeholder": "Auto",
         "auto": "Auto {amount}",
         "autoHint": "Auto {amount} is the median monthly change of the last {count} months",
         "noAuto": "Not enough history for Auto yet. Enter an amount.",
@@ -324,20 +324,20 @@
         "reached": "Reached around",
         "against": "Against target",
         "needed": "Needs per month",
-        "reachedAlready": "Tercapai",
+        "reachedAlready": "Reached",
         "offset": {
-          "early": "{count} bln lebih awal",
+          "early": "{count} mo early",
           "onTime": "On time",
           "late": "{count} mo late"
         }
       },
-      "autoTag": "Otomatis",
+      "autoTag": "Auto",
       "deposit": {
         "sentence": "To count {amount} a month toward this goal, deposit {deposits}.",
         "item": "{amount} into {account}"
       },
       "sandboxHint": "A sandbox. Nothing changes until you apply it in Edit goal.",
-      "reset": "Setel ulang",
+      "reset": "Reset",
       "apply": "Apply in Edit goal"
     },
     "docs": {

@@ -15,7 +15,7 @@
         "invalidBadge": "Invalid"
       },
       "features": {
-        "title": "AI 功能",
+        "title": "AI features",
         "description": "Configure which model to use for each AI-powered feature",
         "howItWorks": "How it works",
         "loadError": "Couldn't load your AI features."
@@ -75,7 +75,7 @@
         "trigger": "Which model fits?",
         "tierHeading": "{tier} model is enough",
         "tiers": {
-          "light": "浅色",
+          "light": "Light",
           "balanced": "Balanced",
           "smart": "Smart"
         },
@@ -177,7 +177,7 @@
           "duplicate": "Duplicate",
           "setDefault": "Set as default",
           "remove": "Remove",
-          "reconnect": "重新连接",
+          "reconnect": "Reconnect",
           "enterKey": "Enter API key"
         },
         "removeDialog": {
@@ -216,7 +216,7 @@
           "nameLabel": "Name",
           "baseUrlLabel": "Base URL",
           "baseUrlPlaceholder": "https://example.com/v1",
-          "apiKeyLabel": "API 密钥",
+          "apiKeyLabel": "API key",
           "apiKeyPlaceholder": "Paste your API key",
           "apiKeyGetHint": "Get a key at {link}.",
           "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",

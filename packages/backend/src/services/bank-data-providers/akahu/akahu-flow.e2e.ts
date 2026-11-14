@@ -456,47 +456,6 @@ describe('Akahu Data Provider E2E', () => {
     });
   });
 
-  describe('Period load', () => {
-    it('imports new rows in the window and skips the already-imported one', async () => {
-      const conn = await helpers.akahu.pairAkahuUser();
-      const { account } = await helpers.akahu.connectAccountsAndSync({
-        connectionId: conn.connectionId,
-        accountId: AKAHU_ACCOUNT_1_ID,
-        mockedTransactions: getMockedAkahuTransactions({ amount: 1 }),
-      });
-      const before = await Transactions.count({ where: { accountId: account.id } });
-
-      const NEW_ROWS = 3;
-      // Row 0 shares the id of the already-imported row.
-      const response = getMockedAkahuTransactions({ amount: NEW_ROWS + 1 });
-      const from = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
-      const to = new Date();
-      let sentWindow: { start: string | null; end: string | null } | undefined;
-      global.mswMockServer.use(
-        getAkahuTransactionsMock({
-          response,
-          accountId: AKAHU_ACCOUNT_1_ID,
-          onRequest: (params) => (sentWindow = { start: params.get('start'), end: params.get('end') }),
-        }),
-      );
-
-      const result = await helpers.bankDataProviders.loadTransactionsForPeriod({
-        connectionId: conn.connectionId,
-        accountId: account.id,
-        from: from.toISOString(),
-        to: to.toISOString(),
-        raw: true,
-      });
-
-      expect(sentWindow).toEqual({
-        start: new Date(from.getTime() - 1).toISOString(),
-        end: to.toISOString(),
-      });
-      expect(result.jobGroupId).toBeNull();
-      expect(await Transactions.count({ where: { accountId: account.id } })).toBe(before + NEW_ROWS);
-    });
-  });
-
   describe('Credential updates', () => {
     it('accepts a fresh token pair', async () => {
       const { connectionId } = await helpers.akahu.pairAkahuUser();

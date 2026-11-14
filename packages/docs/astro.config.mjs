@@ -16,7 +16,7 @@ export default defineConfig({
       description: 'Guides and explanations for MoneyMatter, the personal finance app.',
       logo: { src: './src/assets/logo.svg' },
       favicon: '/favicon.svg',
-      customCss: ['./src/styles/custom.css'],
+      customCss: ['./src/styles/custom.css', './src/styles/shortcuts.css'],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/letehaha/moneymatter' },
         { icon: 'reddit', label: 'Reddit', href: 'https://www.reddit.com/r/moneymatterapp/' },
@@ -45,6 +45,7 @@ export default defineConfig({
         { label: 'Transfers & refunds', items: [{ autogenerate: { directory: 'transfers-and-refunds' } }] },
         { label: 'Stats & reports', items: [{ autogenerate: { directory: 'stats' } }] },
         { label: 'Import & bank connections', items: [{ autogenerate: { directory: 'import' } }] },
+        { label: 'iPhone app', items: [{ autogenerate: { directory: 'iphone' } }] },
         { label: 'Settings', items: [{ autogenerate: { directory: 'settings' } }] },
       ],
     }),

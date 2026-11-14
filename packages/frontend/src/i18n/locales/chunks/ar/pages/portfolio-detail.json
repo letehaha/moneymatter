@@ -1,6 +1,6 @@
 {
   "portfolioDetail": {
-    "loading": "جار التحميل...",
+    "loading": "Loading...",
     "loadingDetails": "Loading portfolio details...",
     "loadError": "Failed to load portfolio details.",
     "tryAgain": "Try again",

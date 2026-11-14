@@ -86,7 +86,7 @@
         },
         "buttons": {
           "back": "Back",
-          "loading": "加载中……",
+          "loading": "Loading...",
           "next": "Next",
           "syncing": "Syncing...",
           "sync": "Sync {count} account | Sync {count} accounts"
@@ -215,7 +215,7 @@
         "selectAll": "Select all",
         "availableLabel": "Available",
         "clearAll": "Clear all",
-        "noCurrencyBadge": "无货币",
+        "noCurrencyBadge": "No currency",
         "currencyPicker": {
           "placeholder": "Choose currency",
           "missingCount": "{count} selected account still needs a currency — it can't be changed after import. | {count} selected accounts still need a currency — it can't be changed after import."
@@ -257,7 +257,7 @@
         "help": {
           "trigger": "How do I set up Walutomat API access?"
         },
-        "apiKeyLabel": "API 密钥",
+        "apiKeyLabel": "API key",
         "apiKeyPlaceholder": "Enter your Walutomat API key",
         "apiKeyHint": "Found in your Walutomat dashboard under Settings → API",
         "privateKeyLabel": "Private key (PEM)",
@@ -364,7 +364,7 @@
           "columnExternalId": "External ID",
           "columnBalance": "Balance",
           "currencyFallbackChip": "Currency: {currency}",
-          "syncNow": "立即同步",
+          "syncNow": "Sync now",
           "connectRemainingWithCount": "Connect remaining accounts ({count})",
           "needsAttention": "{count} needs attention | {count} need attention",
           "totalLabel": "{amount} total",
@@ -448,7 +448,7 @@
       },
       "updateCredentials": {
         "title": "Update credentials",
-        "apiKeyLabel": "API 密钥",
+        "apiKeyLabel": "API key",
         "apiKeyPlaceholder": "Enter your API key",
         "updatingButton": "Updating...",
         "updateButton": "Update",

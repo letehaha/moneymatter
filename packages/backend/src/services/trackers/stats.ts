@@ -101,9 +101,9 @@ const buildCategoryCanonicalizer = async ({
 
   const categories = (await Categories.findAll({
     where: { userId: { [Op.in]: [...userIds] } },
-    attributes: ['id', 'key', 'userId'],
+    attributes: ['id', 'key', 'parentId', 'userId'],
     raw: true,
-  })) as unknown as { id: RecordId; key: string | null; userId: number }[];
+  })) as unknown as { id: RecordId; key: string | null; parentId: RecordId | null; userId: number }[];
   const mergeMap = buildSharedTrackerMergeMap({ categories, ownerUserId });
   return (categoryId) => mergeMap.get(categoryId) ?? categoryId;
 };

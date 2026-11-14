@@ -6,13 +6,13 @@
     "settings": {
       "title": "Budget settings",
       "description": "Changes save and apply immediately.",
-      "nameLabel": "Название",
+      "nameLabel": "Name",
       "namePlaceholder": "Name this budget",
-      "periodLabel": "Период",
+      "periodLabel": "Period",
       "startsOn": "Starts on {date}",
       "cadenceLocked": "The cadence can't be changed yet.",
       "accountsLabel": "Accounts on budget",
-      "accountsPlaceholder": "Выбрать счета",
+      "accountsPlaceholder": "Select accounts",
       "accountsRequired": "Keep at least one account",
       "autoAttachLabel": "Add new accounts automatically",
       "rolloverLabel": "Rollover default",
@@ -23,7 +23,7 @@
         "none": "Every line starts at zero, whatever happened before."
       },
       "deleteTitle": "Delete this budget",
-      "delete": "Переместить в корзину",
+      "delete": "Move to trash",
       "deleteCaption": "Kept for 30 days, then deleted.",
       "deleteConfirmTitle": "Move this budget to trash?",
       "deleteConfirmDescription": "It's kept for 30 days, then deleted. You can restore it until then.",
@@ -59,15 +59,15 @@
       },
       "example": {
         "groups": {
-          "bills": "Счета",
+          "bills": "Bills",
           "everyday": "Everyday",
           "life": "Life"
         },
         "lines": {
-          "rent": "Аренда",
+          "rent": "Rent",
           "utilities": "Utilities",
-          "subscriptions": "Подписки",
-          "groceries": "Продукты",
+          "subscriptions": "Subscriptions",
+          "groceries": "Groceries",
           "eatingOut": "Eating out",
           "transport": "Transport",
           "funMoney": "Fun money",
@@ -76,12 +76,12 @@
       }
     },
     "trashed": {
-      "open": "Удалено",
+      "open": "Deleted",
       "title": "Recently deleted budgets",
       "description": "Kept for {days} days, then removed for good.",
       "deletedOn": "Deleted {date}",
       "daysLeft": "{n} day left | {n} days left",
-      "restore": "Восстановить",
+      "restore": "Restore",
       "restorePlan": "Restore {name}",
       "restored": "Budget restored",
       "restoreError": "Could not restore the budget",
@@ -96,23 +96,23 @@
       "settingsRowHint": "{count} budget, kept for {days} days | {count} budgets, kept for {days} days",
       "replaceTitle": "Replace your current budget?",
       "replaceDescription": "You can have one budget at a time. {restored} becomes your budget, and {current} moves to Recently deleted for 30 days.",
-      "replaceConfirm": "Заменить"
+      "replaceConfirm": "Replace"
     },
     "create": {
       "title": "Start budgeting",
       "description": "Pick how often your budget resets and which accounts it watches.",
       "noAccountsTitle": "No accounts to budget yet",
       "noAccountsDescription": "A budget needs at least one checking, savings, cash or credit card account that you own. Add one on the Accounts page, then come back.",
-      "goToAccounts": "Перейти к счетам",
+      "goToAccounts": "Go to accounts",
       "cadenceLabel": "Resets",
       "startsOnLabel": "Starts on",
       "startsOnOutOfRange": "Pick a date from {from} to today.",
-      "accountsLabel": "Счета",
-      "accountsPlaceholder": "Выбрать счета",
+      "accountsLabel": "Accounts",
+      "accountsPlaceholder": "Select accounts",
       "rolloverLabel": "Rollover",
       "rolloverPlaceholder": "Select a rollover rule",
       "submit": "Create budget",
-      "creating": "Создание…",
+      "creating": "Creating…",
       "success": "Budget created",
       "suggestedLinesFailed": "Suggested lines couldn't be added. You can add them from the budget.",
       "error": "Could not create the budget",
@@ -127,10 +127,10 @@
       "customUnitPlaceholder": "Select a unit",
       "customUnits": {
         "days": "Days",
-        "months": "Месяцы"
+        "months": "Months"
       },
       "customEveryError": "Enter a whole number from 1 to {max}.",
-      "recommended": "Рекомендуемые"
+      "recommended": "Recommended"
     },
     "suggest": {
       "title": "Shape your lines",
@@ -140,10 +140,10 @@
         "home": "Home",
         "life": "Lifestyle",
         "focus": "Focus",
-        "detail": "Детализация"
+        "detail": "Detail"
       },
-      "back": "Назад",
-      "next": "Далее",
+      "back": "Back",
+      "next": "Next",
       "useDefaults": "Use defaults",
       "defaultsConfirm": {
         "title": "Use default lines?",
@@ -169,7 +169,7 @@
         "kindQuestion": "What kind? (optional)",
         "dog": "Dog",
         "cat": "Cat",
-        "other": "Другое"
+        "other": "Other"
       },
       "eatsOut": {
         "question": "How often do you eat out or order food?",
@@ -181,7 +181,7 @@
         "question": "Paid subscriptions?",
         "many": "Many",
         "few": "A few",
-        "none": "Нет"
+        "none": "None"
       },
       "focus": {
         "questionHistory": "What do you want to watch closely?",
@@ -192,25 +192,25 @@
       },
       "detail": {
         "question": "How detailed should your budget be?",
-        "compact": "Компактно",
+        "compact": "Compact",
         "compactHint": "6–8 lines",
         "balanced": "Balanced",
         "balancedHint": "10–12 lines",
-        "detailed": "Подробно",
+        "detailed": "Detailed",
         "detailedHint": "Up to 20 lines"
       },
       "contextError": "Couldn't load your spending. Try again.",
-      "retry": "Попробовать снова",
+      "retry": "Try again",
       "answersIgnored": "Smart suggestions weren't available, so your answers weren't used. You got the default lines."
     },
     "cadence": {
-      "monthly": "Ежемесячно",
+      "monthly": "Monthly",
       "semiMonthly": "Semi-monthly",
-      "biweekly": "Раз в две недели",
-      "weekly": "Еженедельно",
+      "biweekly": "Biweekly",
+      "weekly": "Weekly",
       "everyNDays": "Every {n} days",
       "everyNMonths": "Every {n} months",
-      "custom": "Свой"
+      "custom": "Custom"
     },
     "carryPolicy": {
       "floor": "Carry surplus",
@@ -218,23 +218,23 @@
       "none": "Start fresh each period"
     },
     "period": {
-      "previous": "Предыдущий период",
+      "previous": "Previous period",
       "next": "Next period",
-      "current": "Текущий",
-      "pickerTitle": "Выберите период",
+      "current": "Current",
+      "pickerTitle": "Select period",
       "dayOf": "Day {day} of {totalDays}"
     },
     "tiles": {
       "assigned": "Assigned",
       "spent": "Spent",
-      "available": "Доступно",
+      "available": "Available",
       "overspent": "Overspent",
       "overspentLines": "{count} line | {count} lines"
     },
     "grid": {
       "assigned": "Assigned",
       "activity": "Activity",
-      "available": "Доступно",
+      "available": "Available",
       "overrideBadge": "override",
       "carryBadge": {
         "floor": "carries surplus",
@@ -244,19 +244,19 @@
       "lineActions": "Line actions",
       "editLine": "Edit line",
       "archiveLine": "Archive line",
-      "archiveSelected": "Архивировать",
+      "archiveSelected": "Archive",
       "archiveTitle": "Archive \"{name}\"?",
       "archiveDescription": "It stops counting from this period on. Past periods keep their numbers. You can restore it later from \"Archived\".",
       "selectLine": "Select {name}",
       "selectAll": "Select all lines",
       "selectMode": "Select lines",
       "selectionAvailable": "Available in selection",
-      "clearSelection": "Очистить выбор",
+      "clearSelection": "Clear selection",
       "selectedCount": "{count} line selected | {count} lines selected",
       "archiveManyTitle": "Archive {count} line? | Archive {count} lines?",
       "archiveManyDescription": "They stop counting from this period on. Past periods keep their numbers. You can restore them later from \"Archived\".",
       "deleteLine": "Delete line",
-      "deleteTitle": "Удалить «{name}»?",
+      "deleteTitle": "Delete \"{name}\"?",
       "deleteDescription": "Its assigned amounts are deleted and its spending will show as outside your lines. This can't be undone.",
       "deleteHistoryDescription": "It's removed from every period, including past ones, and its assigned amounts are deleted. Its spending will show as outside your lines. This can't be undone.",
       "deletePermanently": "Delete permanently",
@@ -280,7 +280,7 @@
       "title": "Archived lines",
       "description": "A restored line resumes from the current period. Past periods stay as they are.",
       "archivedFrom": "Archived from {date}",
-      "restore": "Восстановить",
+      "restore": "Restore",
       "restoreLine": "Restore {name}",
       "deleteLine": "Delete {name}",
       "restored": "Line restored",
@@ -289,10 +289,10 @@
     "line": {
       "createTitle": "New line",
       "editTitle": "Edit line",
-      "nameLabel": "Название",
-      "namePlaceholder": "Продукты",
-      "categoriesLabel": "Категории",
-      "categoriesPlaceholder": "Выберите категории",
+      "nameLabel": "Name",
+      "namePlaceholder": "Groceries",
+      "categoriesLabel": "Categories",
+      "categoriesPlaceholder": "Select categories",
       "created": "Line added",
       "updated": "Line updated",
       "error": "Could not save the line",
@@ -325,7 +325,7 @@
       "assignTitle": "Assign from the pool",
       "toLabel": "To",
       "toPlaceholder": "Select a line",
-      "amountLabel": "Сумма",
+      "amountLabel": "Amount",
       "assignSubmit": "Assign {amount}",
       "calc": {
         "title": "Budget calculation",
@@ -335,8 +335,8 @@
         "drift": "FX / unreconciled",
         "changedSince": "What changed since {period}",
         "changedThisPeriod": "What changed this period",
-        "startingBalance": "Начальный баланс",
-        "income": "Доход",
+        "startingBalance": "Starting balance",
+        "income": "Income",
         "outsideSpending": "Spending outside your lines",
         "fromLines": "From lines (rollover returned / overspending covered)",
         "assigned": "Assigned this period",
@@ -379,12 +379,12 @@
       "elapsed": "Period elapsed",
       "spentOfTotal": "{spent} of {total}",
       "daysLeft": "{n}d left",
-      "scheduled": "Запланировано",
+      "scheduled": "Scheduled",
       "nextOn": "Next on {date}",
       "scheduledCount": "{count} scheduled",
       "outflows": "Outflows",
       "inflows": "Inflows",
-      "transactionCount": "{count} транзакция | {count} транзакции | {count} транзакций",
+      "transactionCount": "{count} transaction | {count} transactions",
       "nothingScheduled": "Nothing scheduled",
       "trend": {
         "title": "Assigned vs spent",
@@ -400,7 +400,7 @@
     },
     "groups": {
       "headerLabel": "Line group",
-      "add": "Добавить группу",
+      "add": "Add group",
       "collapseAll": "Collapse all groups",
       "expandAll": "Expand all groups",
       "collapse": "Collapse {name}",
@@ -408,26 +408,26 @@
       "addLine": "Add line to {name}",
       "selectLines": "Select all lines in {name}",
       "actions": "Group actions",
-      "edit": "Изменить группу",
-      "delete": "Удалить группу",
+      "edit": "Edit group",
+      "delete": "Delete group",
       "deleteBlocked": "Move or archive its lines first",
       "deleteTitle": "Delete {name}?",
       "deleteDescription": "Its archived lines become ungrouped. This cannot be undone.",
       "deleted": "Group deleted",
       "deleteError": "Could not delete the group",
       "createTitle": "New group",
-      "editTitle": "Изменить группу",
-      "nameLabel": "Название группы",
+      "editTitle": "Edit group",
+      "nameLabel": "Group name",
       "namePlaceholder": "e.g. Bills",
       "created": "Group created",
-      "updated": "Группа обновлена",
+      "updated": "Group updated",
       "error": "Could not save the group",
-      "lineGroupLabel": "Группировать",
+      "lineGroupLabel": "Group",
       "lineGroupPlaceholder": "Select a group",
-      "noGroup": "Без группы",
+      "noGroup": "No group",
       "layoutTitle": "Manage layout",
       "layoutDescription": "Drag lines within and between groups, and drag groups to reorder them.",
-      "ungrouped": "Без группы",
+      "ungrouped": "Ungrouped",
       "layoutSaved": "Layout saved",
       "layoutError": "Could not save the layout"
     },
@@ -462,7 +462,7 @@
       "progressOf": "{progress} of {target} ({percent}%)",
       "toGo": "{amount} to go",
       "assignAsk": "Budget {amount}",
-      "unsnooze": "Возобновить",
+      "unsnooze": "Resume",
       "edit": "Edit goal",
       "delete": "Delete goal",
       "deleteTitle": "Delete goal",
@@ -470,11 +470,11 @@
       "deleted": "Goal deleted",
       "deleteError": "Couldn't delete the goal",
       "snoozeError": "Couldn't snooze the goal",
-      "frequencyLabel": "Периодичность",
+      "frequencyLabel": "Frequency",
       "frequency": {
-        "weekly": "Еженедельно",
-        "biweekly": "Раз в две недели",
-        "yearly": "Ежегодно",
+        "weekly": "Weekly",
+        "biweekly": "Biweekly",
+        "yearly": "Yearly",
         "by_date": "By date",
         "open_ended": "Open-ended"
       },
@@ -501,7 +501,7 @@
       "amountEachYear": "Amount each year",
       "repeatsOnLabel": "Repeats on",
       "weekdayPlaceholder": "Select a weekday",
-      "dueDateLabel": "Срок",
+      "dueDateLabel": "Due date",
       "firstPaymentDateLabel": "First payment date",
       "firstDueDateLabel": "First due date",
       "firstDueDateHint": "Repeats yearly on this date. Funding is spread across the periods before it.",
@@ -512,8 +512,8 @@
       "repeatUnitLabel": "Unit",
       "repeatUnitPlaceholder": "Select a unit",
       "repeatUnits": {
-        "months": "Месяцы",
-        "years": "Годы"
+        "months": "Months",
+        "years": "Years"
       },
       "stopAtBalanceLabel": "Stop at a balance",
       "stopAtBalanceHint": "Stop asking once the saved balance (carryover plus assigned) reaches this cap.",
@@ -534,10 +534,10 @@
       "saveError": "Couldn't save the goal",
       "details": "Goal details",
       "stats": {
-        "saved": "Сбережено",
-        "target": "Цель",
+        "saved": "Saved",
+        "target": "Target",
         "leftToSave": "Left to save",
-        "balance": "Баланс",
+        "balance": "Balance",
         "refillTo": "Refill to"
       },
       "percentOf": "{percent}% of {target}",
@@ -572,7 +572,7 @@
       },
       "unit": {
         "month": {
-          "frequency": "Ежемесячно",
+          "frequency": "Monthly",
           "each": "each month",
           "need": "Need {amount} this month",
           "needLabel": "Need this month",
@@ -581,7 +581,7 @@
           "snooze": "Snooze this month",
           "amountEach": "Amount each month",
           "fundingCap": "Monthly funding cap",
-          "current": "Этот месяц",
+          "current": "This month",
           "yearlyHint": "Spread over the months of each yearly cycle."
         },
         "period": {
@@ -594,7 +594,7 @@
           "snooze": "Snooze this period",
           "amountEach": "Amount each period",
           "fundingCap": "Funding cap per period",
-          "current": "Этот период",
+          "current": "This period",
           "yearlyHint": "Spread over the periods of each yearly cycle."
         }
       },
@@ -604,9 +604,9 @@
       "allFunded": "All funded",
       "periodTargets": "Period targets",
       "stillNeeded": "Still needed",
-      "stillNeededTotal": "Всего {amount}",
+      "stillNeededTotal": "{amount} total",
       "addExpectedIncome": "Add expected income",
-      "expectedIncome": "Ожидаемый доход",
+      "expectedIncome": "Expected income",
       "expectedIncomePlaceholder": "Enter expected income",
       "leftAfterTargets": "Left after targets",
       "expectedIncomeSaved": "Expected income saved",

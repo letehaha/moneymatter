@@ -36,7 +36,7 @@
           "addButton": "Tambah Passkey",
           "passkeyName": "Passkey",
           "added": "Ditambahkan {date}",
-          "rename": "Ubah nama",
+          "rename": "Rename",
           "renamePlaceholder": "Enter passkey name",
           "deleteConfirmTitle": "Remove passkey?",
           "deleteConfirmDescription": "\"{name}\" will no longer be able to sign in to your account. This cannot be undone."

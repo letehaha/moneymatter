@@ -21,11 +21,11 @@
         "button": "Wertpapierpreise hochladen",
         "dialogTitle": "Wertpapierpreise hochladen",
         "selectSecurity": {
-          "searchLabel": "Symbol oder Name suchen",
+          "searchLabel": "Search symbol or name",
           "searchPlaceholder": "AAPL",
           "searching": "Wird gesucht…",
           "failed": "Suche nach Wertpapieren fehlgeschlagen.",
-          "noResults": "Keine Ergebnisse.",
+          "noResults": "No results.",
           "changeButton": "Ändern"
         },
         "dateRangeInfo": {
@@ -93,7 +93,7 @@
             "title": "Bestehende Datensätze überschreiben",
             "description": "Aktualisiert bestehende Preisdatensätze, anstatt Duplikate zu überspringen"
           },
-          "backButton": "Zurück",
+          "backButton": "Back",
           "uploadButton": "Preise hochladen",
           "uploadingButton": "Wird hochgeladen..."
         },
@@ -121,10 +121,10 @@
           "titlePlaceholder": "z.B. iOS-App ist in der Public Beta 📱",
           "message": "Nachricht",
           "messagePlaceholder": "Optionaler Text, der unter dem Titel angezeigt wird",
-          "url": "Verknüpfen",
+          "url": "Link",
           "urlPlaceholder": "https://... (optional)",
           "urlError": "Link muss mit https:// beginnen",
-          "icon": "Symbol",
+          "icon": "Icon",
           "recipients": "Empfänger",
           "recipientsPlaceholder": "Optionale Benutzer-IDs oder E-Mail-Adressen, durch Kommas getrennt, z.B. 12, jane@example.com. Leer = alle aktiven Benutzer",
           "recipientsError": "Verwende positive ganzzahlige IDs oder gültige E-Mail-Adressen, getrennt durch Kommas"
@@ -141,7 +141,7 @@
           "titleSelected": "An {count} Benutzer senden?",
           "description": "Dadurch wird eine Benachrichtigung für jeden Benutzer erstellt, der in den letzten 30 Tagen aktiv war. Dies kann nicht rückgängig gemacht werden.",
           "descriptionSelected": "Unbekannte IDs und E-Mail-Adressen werden übersprungen. Dies kann nicht rückgängig gemacht werden.",
-          "button": "Senden"
+          "button": "Send"
         },
         "notifications": {
           "success": "Benachrichtigung an {count} Benutzer gesendet",
@@ -151,7 +151,7 @@
       },
       "tabs": {
         "investments": "Investments",
-        "notifications": "Benachrichtigungen"
+        "notifications": "Notifications"
       }
     }
   }

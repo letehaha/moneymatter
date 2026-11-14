@@ -29,8 +29,8 @@
       "copyInviteLink": "Скопировать ссылку-приглашение",
       "moveTo": "Переместить в…",
       "learnMore": "Learn more",
-      "undo": "Undo",
-      "more": "Ещё"
+      "undo": "Отменить",
+      "more": "More"
     },
     "ui": {
       "close": "Закрыть",
@@ -57,7 +57,7 @@
     },
     "errors": {
       "copyToClipboardFailed": "Не удалось скопировать в буфер обмена",
-      "settingsSaveFailed": "Couldn't save your settings. Please try again."
+      "settingsSaveFailed": "Не удалось сохранить настройки. Пожалуйста, попробуйте снова."
     },
     "notifications": {
       "subscriptionCurrencyNotConnected": "В сводке подписок невозможно конвертировать {currencies} в базовую валюту. Подключите валюту в разделе «Настройки → Валюты».",
@@ -105,8 +105,8 @@
       "debitCard": "Дебетовая карта",
       "mobilePayment": "Мобильный платёж",
       "voucher": "Ваучер",
-      "webPayment": "Онлайн-платёж",
-      "none": "Нет"
+      "webPayment": "Онлайн платёж",
+      "none": "Отсутствует"
     },
     "vehicleClasses": {
       "sedan": "Седан",
@@ -146,15 +146,15 @@
         "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
       },
       "transferMatching": {
-        "name": "Сопоставление переводов",
+        "name": "Transfer matching",
         "description": "Checks transfer scan results and keeps the pairs that look like real transfers"
       }
     },
     "transactions": {
       "delete": {
-        "success": "Успешно удалено",
-        "undoSuccess": "Restored",
-        "undoError": "Couldn't undo. You can still restore it from the Trash.",
+        "success": "Перемещено в корзину",
+        "undoSuccess": "Восстановлено",
+        "undoError": "Не удалось отменить. Вы всё еще можете восстановить из корзины.",
         "error": "Не удалось удалить транзакцию!"
       },
       "submit": {
@@ -166,10 +166,10 @@
       "record": {
         "addedByTooltip": "Эта транзакция была прикреплена к бюджету пользователем {handle}",
         "addedByRule": "Added by the tracker's rules",
-        "matchedByAi": "Сопоставлено AI",
+        "matchedByAi": "Matched by AI",
         "externalLinkTooltip": "Открыть внешнюю ссылку",
         "locationTooltip": "Открыть местоположение на карте",
-        "attachmentsTooltip": "Has attachments",
+        "attachmentsTooltip": "Содержит вложения",
         "hiddenAccount": "Скрытый счёт",
         "selectRow": "Выберите транзакцию",
         "unselectableReasons": {
@@ -179,8 +179,8 @@
           "paidFrom": "Paid from {count} accounts",
           "receivedInto": "Received into {count} accounts",
           "partOf": "Part of a {total} payment",
-          "thisAccount": "(this account)",
-          "loadError": "Couldn't open this transaction. Try again."
+          "thisAccount": "(этот счёт)",
+          "loadError": "Не удалось открыть транзакцию. Попробуйте еще раз."
         }
       }
     },
@@ -242,7 +242,7 @@
         "brand": "Бренд",
         "letters": "Буквы",
         "icon": "Значок",
-        "custom": "Image"
+        "custom": "Изображение"
       },
       "searchPlaceholder": "Название бренда или домен",
       "searchHint": "Введите название бренда или домен, например amazon.com",
@@ -252,43 +252,43 @@
       "autoLabel": "Автоматически (из названия)",
       "domainHint": "Чтобы найти точный бренд, введите домен сайта компании (например, amazon.com) — так будет выбран правильный логотип.",
       "searchError": "Не удалось загрузить логотипы — попробуйте снова",
-      "brandNotConfigured": "Brand logos are not configured on this instance. Ask the admin to set VITE_LOGO_DEV_TOKEN, or use letters instead.",
+      "brandNotConfigured": "Логотипы брендов не настроены. Попросите администратора настроить VITE_LOGO_DEV_TOKEN, или используйте буквы.",
       "editAriaLabel": "Изменить логотип",
       "dialogTitle": "Изменить логотип",
       "resetToAuto": "Вернуть автоматический выбор",
       "remove": "Удалить логотип",
-      "pickerDescription": "Pick a brand logo or use letters instead.",
-      "updatedToast": "Logo updated",
+      "pickerDescription": "Выберите логотип или используйте буквы.",
+      "updatedToast": "Логотип обновлён",
       "resetToast": "Логотип удалён",
-      "updateError": "Couldn't update the logo. Try again.",
+      "updateError": "Не удалось обновить логотип. Повторите попытку.",
       "lettersLabel": "Буквы (1–2)",
       "lettersPlaceholder": "АБ",
       "colorLabel": "Цвет",
       "colorSwatchAriaLabel": "Использовать цвет {color}",
       "customColorAriaLabel": "Выбрать свой цвет",
       "lettersSelectedLabel": "Буквы «{letters}»",
-      "lettersHint": "1–2 letters or an emoji",
-      "chooseImage": "Choose image",
-      "replaceImage": "Replace image",
+      "lettersHint": "1-2 буквы или эмодзи",
+      "chooseImage": "Выбрать изображение",
+      "replaceImage": "Заменить изображение",
       "imageHint": "Cropped to a square and resized to 200×200 on your device.",
-      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
-      "imageUnreadable": "That file couldn't be read as an image."
+      "imageTooLarge": "Изображение всё ещё больше 50 КБ после изменения размера. Попробуйте более простое изображение.",
+      "imageUnreadable": "Этот файл не может быть прочитан как изображение."
     },
     "iconPicker": {
       "searchPlaceholder": "Поиск значков...",
       "clear": "Убрать значок"
     },
     "importBatchDeleteOverlay": {
-      "title": "Deleting imported transactions",
-      "description": "A large import batch is being removed. Balances are recalculated when it finishes, so the app is locked until then.",
-      "deleting": "Deleting transactions",
-      "preparing": "Getting ready",
+      "title": "Удаление импортированных транзакций",
+      "description": "Происходит удаление большого количества импортированных записей. После окончания произойдет пересчёт балансов, до этого момента приложение будет заблокировано.",
+      "deleting": "Удаление транзакций",
+      "preparing": "Идет подготовка",
       "finishing": "Завершение",
-      "takingLong": "This is taking longer than usual — large batches can take several minutes. Keep this page open.",
+      "takingLong": "Процесс занимает больше времени, чем обычно, для большого количества записей может потребоваться несколько минут. Держите эту страницу открытой.",
       "unreachableTitle": "Не удаётся подключиться к серверу",
       "unreachableDescription": "The delete may still be running. Dismiss to keep using the app, and reload later to see the result.",
-      "failedTitle": "Delete failed",
-      "dismiss": "Скрыть"
+      "failedTitle": "Ошибка удаления",
+      "dismiss": "Пропустить"
     },
     "duration": {
       "years": "{n} yr | {n} yrs",
@@ -309,10 +309,10 @@
       }
     },
     "pasteImage": {
-      "button": "Paste image",
+      "button": "Вставить изображение",
       "shortcutHint": "or press {shortcut}",
-      "noImage": "No image found in the clipboard.",
-      "readFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut."
+      "noImage": "В буфере обмена не найдено изображений.",
+      "readFailed": "Не удалось прочитать буфер обмена. Разрешите доступ к буферу обмена или вставьте изображение с помощью клавиатуры."
     }
   },
   "accountGroups": {
@@ -332,8 +332,8 @@
       "error": "Не удалось добавить счёт в группу"
     },
     "linkMany": {
-      "success": "Accounts added to the group",
-      "error": "Failed to add accounts to the group"
+      "success": "Счета добавлены в группу",
+      "error": "Не удалось добавить счета в группу"
     },
     "unlink": {
       "success": "Счёт удалён из группы",
@@ -341,7 +341,7 @@
     }
   },
   "validation": {
-    "required": "Field is required",
+    "required": "Обязательное поле",
     "minLength": "Минимальная длина — {length}.",
     "emailInvalid": "Введите корректный адрес электронной почты.",
     "passwordsNoMatch": "Пароли не совпадают"
@@ -370,7 +370,7 @@
       "sendFailedHint": "Откройте панель общего доступа, чтобы отправить повторно."
     },
     "goalReached": {
-      "title": "Goal reached: {name}",
+      "title": "Цель достигнута: {name}",
       "message": "You've saved {amount}."
     },
     "unrealizedLossAlert": {
@@ -468,13 +468,13 @@
     "sessionExpiredNotice": "Демо-сеанс завершён. Создайте бесплатный аккаунт, чтобы продолжить, или войдите ниже, если аккаунт уже есть."
   },
   "billing": {
-    "seePlans": "See plans",
-    "trialStartFailed": "Couldn't start the free trial. Try again.",
-    "updatePaymentMethod": "Update your payment method",
+    "seePlans": "Посмотреть тарифы",
+    "trialStartFailed": "Не удалось запустить бесплатную пробную версию. Попробуйте снова.",
+    "updatePaymentMethod": "Измени способ оплаты",
     "planRequired": {
       "essential": "Included in the Essential plan",
       "plus": "Included in the Plus plan",
-      "hint": "Your current plan doesn't include this feature. Upgrade to unlock it."
+      "hint": "Ваш текущий тариф не включает эту функцию. Улучшите тарифный план, чтобы разблокировать данную функцию."
     },
     "banner": {
       "trial": "{count} day left in your trial · {link} | {count} days left in your trial · {link}",
@@ -522,7 +522,7 @@
     "percentUsed": "{percent}% used",
     "resetsOn": "Resets on {date}",
     "connectOwnModel": "Connect your own model",
-    "gotIt": "Понятно",
+    "gotIt": "Got it",
     "badge": {
       "used": "{percent}% AI used",
       "reached": "AI limit reached"
@@ -551,7 +551,7 @@
   },
   "transactionGroups": {
     "groupDialog": {
-      "editTitle": "Изменить группу",
+      "editTitle": "Редактировать группу",
       "nameLabel": "Название",
       "noteLabel": "Примечание (необязательно)",
       "notePlaceholder": "Необязательное примечание...",
@@ -567,13 +567,13 @@
       "removeTransactionDescription": "После удаления в группе останется меньше двух транзакций, поэтому группа будет удалена. Продолжить?",
       "removeTransactionDescriptionNormal": "Вы уверены, что хотите удалить эту транзакцию из группы?",
       "removeButtonText": "Удалить",
-      "removeAndDeleteButtonText": "Удалить и удалить группу",
-      "removeFromGroup": "Удалить из группы",
-      "saveError": "Couldn't save the group",
-      "removeError": "Couldn't remove the transaction from the group",
-      "manageTransactions": "Управление",
-      "showMoreNote": "Show more",
-      "showLessNote": "Показать меньше",
+      "removeAndDeleteButtonText": "Исключить и удалить группу",
+      "removeFromGroup": "Исключить из группы",
+      "saveError": "Не удалось сохранить группу",
+      "removeError": "Не удалось удалить транзакцию из группы",
+      "manageTransactions": "Manage",
+      "showMoreNote": "Показать больше",
+      "showLessNote": "Show less",
       "summary": {
         "transactions": "Транзакции",
         "net": "Итог",
@@ -599,11 +599,11 @@
       "description": "Plans, lines, line goals and savings goals"
     },
     "trackers": {
-      "label": "Бюджеты",
+      "label": "Трекеры",
       "description": "Spending trackers and their suggestions"
     },
     "automations": {
-      "label": "Автоматизации",
+      "label": "Automations",
       "description": "Rules, payee aliases, ignored payee names and tag reminders"
     },
     "review": {
@@ -628,7 +628,7 @@
     },
     "currencies": {
       "label": "Валюты",
-      "description": "Your currencies and exchange rates"
+      "description": "Ваши валюты и обменные курсы"
     },
     "imports": {
       "label": "Imports and sharing",

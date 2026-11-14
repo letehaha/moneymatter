@@ -311,19 +311,19 @@
           "step2": "Crea una aplicación personal (o abre una existente) — conecta tus cuentas bancarias en Akahu primero.",
           "step3": "Copie el token de acceso de usuario y el token de ID de la aplicación y pegue ambos en los campos anteriores."
         },
-        "backButton": "Atrás",
-        "connectingButton": "Conectando...",
-        "connectButton": "Conectar",
-        "loadingAccounts": "Cargando cuentas...",
-        "accountsPreviewHint": "Se encontraron {count} cuenta(s). Se importarán todas las cuentas.",
-        "importingButton": "Importando...",
-        "importButton": "Importar {count} cuenta(s)",
-        "importSuccess": "{count} cuenta(s) sincronizada(s) correctamente",
-        "skipButton": "Omitir",
-        "skipTooltip": "Omita la importación para conectar solo cuentas específicas más tarde, o para volver a vincular cuentas existentes desde su configuración.",
+        "backButton": "Back",
+        "connectingButton": "Connecting...",
+        "connectButton": "Connect",
+        "loadingAccounts": "Loading accounts...",
+        "accountsPreviewHint": "Found {count} account(s). All accounts will be imported.",
+        "importingButton": "Importing...",
+        "importButton": "Import {count} account(s)",
+        "importSuccess": "Connected {count} account(s). Transactions are syncing in the background.",
+        "skipButton": "Skip",
+        "skipTooltip": "Skip importing to connect only specific accounts later, or to relink existing accounts from their settings.",
         "errors": {
           "connectFailed": "Error al conectar con Akahu",
-          "importFailed": "Error al importar las cuentas"
+          "importFailed": "Failed to import accounts"
         }
       },
       "notifications": {

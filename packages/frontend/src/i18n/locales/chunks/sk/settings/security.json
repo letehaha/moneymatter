@@ -179,7 +179,7 @@
           "confirmFull": "Na potvrdenie zadajte {email}, prosím",
           "placeholder": "Zadajte svoj email",
           "acceptButton": "Zmazať môj účet",
-          "acceptButtonLoading": "Mazanie…...",
+          "acceptButtonLoading": "Mazanie…",
           "appStoreWarning": "Odstránenie účtu nezruší vaše predplatné v App Store a Apple vás bude ďalej účtovať. Najprv ho zrušte v {link}.",
           "appStoreWarningLink": "Predplatné v App Store"
         },

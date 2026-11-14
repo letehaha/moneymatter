@@ -2,6 +2,7 @@ import type { RecordId } from '@bt/shared/types';
 import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import { DOMAIN_EVENTS, type TransactionsSyncedPayload, eventBus } from '@root/services/common/event-bus';
+import type { HistoryItem } from '@services/bank-data-providers/walutomat/api-client';
 import * as helpers from '@tests/helpers';
 import { useSelfHost } from '@tests/helpers/self-host';
 import {
@@ -9,6 +10,7 @@ import {
   MOCK_IDENTIFICATION_HASH_1,
   MOCK_IDENTIFICATION_HASH_2,
 } from '@tests/mocks/enablebanking/data';
+import { getWalutomatBalancesMock, getWalutomatHistoryMock } from '@tests/mocks/walutomat/mock-api';
 
 useSelfHost();
 
@@ -464,6 +466,188 @@ describe('Enable Banking transfer auto-linking (E2E)', () => {
       expect(manualTxs.length).toBe(2);
       for (const tx of [...manualTxs, ...savingsTxs]) {
         expect(tx.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
+      }
+    });
+  });
+
+  describe('Walutomat legs', () => {
+    const WALUTOMAT_IBAN = 'PL82102040270000130207676648';
+
+    function walutomatItem({
+      operationType,
+      amount,
+      ownIbanKey,
+      ownIban,
+      transactionId,
+    }: {
+      operationType: 'PAYIN' | 'PAYOUT';
+      amount: string;
+      ownIbanKey: 'sourceAccount' | 'destinationAccount';
+      ownIban: string;
+      transactionId: string;
+    }): HistoryItem {
+      return {
+        historyItemId: Number(transactionId.replace(/\D/g, '')),
+        transactionId,
+        ts: '2024-03-15T13:48:20.949Z',
+        operationAmount: operationType === 'PAYIN' ? amount : `-${amount}`,
+        balanceAfter: '0.00',
+        currency: 'EUR',
+        operationType,
+        operationDetailedType: operationType,
+        operationDetails: [{ key: ownIbanKey, value: ownIban }],
+      };
+    }
+
+    it('links Walutomat PAYIN/PAYOUT to bank legs that sync after Walutomat', async () => {
+      const { connectionId, mainAccountId, savingsAccountId } = await setupTwoAccounts();
+
+      const { connectionId: walutomatConnectionId } = await helpers.walutomat.pair();
+      global.mswMockServer.use(
+        getWalutomatHistoryMock({
+          response: [
+            walutomatItem({
+              operationType: 'PAYIN',
+              amount: '3000.00',
+              ownIbanKey: 'sourceAccount',
+              ownIban: MAIN_ACCOUNT_IBAN,
+              transactionId: 'payin-1',
+            }),
+            walutomatItem({
+              operationType: 'PAYOUT',
+              amount: '2637.65',
+              ownIbanKey: 'destinationAccount',
+              ownIban: SAVINGS_ACCOUNT_IBAN,
+              transactionId: 'payout-2',
+            }),
+          ],
+        }),
+        getWalutomatBalancesMock(),
+      );
+      const { syncedAccounts } = await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId: walutomatConnectionId,
+        accountExternalIds: ['wallet-eur'],
+        raw: true,
+      });
+
+      await syncAccountWith({
+        connectionId,
+        accountId: mainAccountId,
+        transactions: [expenseLeg({ amount: '3000.00', counterpartyIban: WALUTOMAT_IBAN })],
+      });
+      const emitted: TransactionsSyncedPayload[] = [];
+      const collect = (payload: TransactionsSyncedPayload) => emitted.push(payload);
+      eventBus.on(DOMAIN_EVENTS.TRANSACTIONS_SYNCED, collect);
+      try {
+        await syncAccountWith({
+          connectionId,
+          accountId: savingsAccountId,
+          transactions: [incomeLeg({ amount: '2637.65', counterpartyIban: WALUTOMAT_IBAN })],
+        });
+      } finally {
+        eventBus.off(DOMAIN_EVENTS.TRANSACTIONS_SYNCED, collect);
+      }
+
+      const walutomatTxs = await listTransactions({ accountId: syncedAccounts[0]!.id });
+      const payin = walutomatTxs.find((tx) => tx.transactionType === TRANSACTION_TYPES.income);
+      const payout = walutomatTxs.find((tx) => tx.transactionType === TRANSACTION_TYPES.expense);
+      const [mainTx] = await listTransactions({ accountId: mainAccountId });
+      const [savingsTx] = await listTransactions({ accountId: savingsAccountId });
+
+      expect(mainTx!.transferId).toBeTruthy();
+      expect(mainTx!.transferId).toBe(payin!.transferId);
+      expect(savingsTx!.transferId).toBeTruthy();
+      expect(savingsTx!.transferId).toBe(payout!.transferId);
+      expect(emitted.flatMap((payload) => payload.transactionIds)).not.toContain(savingsTx!.id);
+    });
+
+    async function connectWalutomatWithPayin(): Promise<RecordId> {
+      const { connectionId: walutomatConnectionId } = await helpers.walutomat.pair();
+      global.mswMockServer.use(
+        getWalutomatHistoryMock({
+          response: [
+            walutomatItem({
+              operationType: 'PAYIN',
+              amount: '3000.00',
+              ownIbanKey: 'sourceAccount',
+              ownIban: MAIN_ACCOUNT_IBAN,
+              transactionId: 'payin-1',
+            }),
+          ],
+        }),
+        getWalutomatBalancesMock(),
+      );
+      const { syncedAccounts } = await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId: walutomatConnectionId,
+        accountExternalIds: ['wallet-eur'],
+        raw: true,
+      });
+
+      return syncedAccounts[0]!.id;
+    }
+
+    it('does not link a freshly synced bank leg while older same-amount rows also fit', async () => {
+      const { connectionId, mainAccountId } = await setupTwoAccounts();
+      const olderLegs = [
+        expenseLeg({ amount: '3000.00', counterpartyIban: WALUTOMAT_IBAN, entryReference: 'walutomat_out_a' }),
+        expenseLeg({ amount: '3000.00', counterpartyIban: WALUTOMAT_IBAN, entryReference: 'walutomat_out_b' }),
+      ];
+      await syncAccountWith({ connectionId, accountId: mainAccountId, transactions: olderLegs });
+
+      const walutomatAccountId = await connectWalutomatWithPayin();
+
+      await syncAccountWith({
+        connectionId,
+        accountId: mainAccountId,
+        transactions: [
+          ...olderLegs,
+          expenseLeg({ amount: '3000.00', counterpartyIban: WALUTOMAT_IBAN, entryReference: 'walutomat_out_c' }),
+        ],
+      });
+
+      const [payin] = await listTransactions({ accountId: walutomatAccountId });
+      const mainTxs = await listTransactions({ accountId: mainAccountId });
+
+      expect(mainTxs.length).toBe(3);
+      for (const tx of [payin!, ...mainTxs]) {
+        expect(tx.transferId).toBeNull();
+      }
+    });
+
+    it('does not re-link a Walutomat pair the user unlinked', async () => {
+      const { connectionId, mainAccountId } = await setupTwoAccounts();
+      const walutomatAccountId = await connectWalutomatWithPayin();
+      const bankLeg = expenseLeg({ amount: '3000.00', counterpartyIban: WALUTOMAT_IBAN });
+
+      await syncAccountWith({ connectionId, accountId: mainAccountId, transactions: [bankLeg] });
+
+      const [linkedMainTx] = await listTransactions({ accountId: mainAccountId });
+      expect(linkedMainTx!.transferId).toBeTruthy();
+
+      await helpers.unlinkTransferTransactions({ transferIds: [linkedMainTx!.transferId!], raw: true });
+
+      await syncAccountWith({
+        connectionId,
+        accountId: mainAccountId,
+        transactions: [
+          bankLeg,
+          expenseLeg({
+            amount: '42.10',
+            bookingDate: '2024-03-16',
+            valueDate: '2024-03-16',
+            entryReference: 'unrelated_grocery_001',
+            counterpartyIban: null,
+            remittanceInformation: ['GROCERY STORE'],
+          }),
+        ],
+      });
+
+      const [payin] = await listTransactions({ accountId: walutomatAccountId });
+      const mainTxs = await listTransactions({ accountId: mainAccountId });
+
+      expect(mainTxs.length).toBe(2);
+      for (const tx of [payin!, ...mainTxs]) {
+        expect(tx.transferId).toBeNull();
       }
     });
   });

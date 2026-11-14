@@ -121,10 +121,10 @@
           "titlePlaceholder": "e.g. iOS app is in public beta 📱",
           "message": "Message",
           "messagePlaceholder": "Optional text shown under the title",
-          "url": "Lier",
+          "url": "Link",
           "urlPlaceholder": "https://…  (optional)",
           "urlError": "Link must start with https://",
-          "icon": "Icône",
+          "icon": "Icon",
           "recipients": "Recipients",
           "recipientsPlaceholder": "Optional user IDs or emails, comma-separated, e.g. 12, jane@example.com. Empty = all active users",
           "recipientsError": "Use positive whole-number IDs or valid emails, separated by commas"
@@ -141,7 +141,7 @@
           "titleSelected": "Send to {count} users?",
           "description": "This creates a notification for every user active in the last 30 days. It can't be undone.",
           "descriptionSelected": "Unknown IDs and emails are skipped. It can't be undone.",
-          "button": "Envoyer"
+          "button": "Send"
         },
         "notifications": {
           "success": "Notification sent to {count} users",
@@ -150,7 +150,7 @@
         }
       },
       "tabs": {
-        "investments": "Investissements",
+        "investments": "Investments",
         "notifications": "Notifications"
       }
     }

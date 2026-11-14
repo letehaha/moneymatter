@@ -107,7 +107,7 @@
         "paymentTypeLabel": "Тип платежа",
         "noteLabel": "Примечание",
         "notePlaceholder": "Примечание",
-        "addFieldsLabel": "Добавить",
+        "addFieldsLabel": "Add",
         "externalUrlLabel": "Внешний URL",
         "externalUrlPlaceholder": "Ссылка на страницу заказа, бронирования или чека",
         "externalReferenceLabel": "Внешний идентификатор",
@@ -176,7 +176,7 @@
         "loadingButton": "Загрузка...",
         "createButton": "Создать",
         "editButton": "Изменить",
-        "duplicateButton": "Дубликат",
+        "duplicateButton": "Duplicate",
         "createMore": {
           "label": "Create more",
           "createdToast": "Transaction created"
@@ -242,7 +242,7 @@
           "viewer": {
             "loadFailed": "Could not load this file.",
             "openInNewTab": "Open in new tab",
-            "download": "Скачать"
+            "download": "Download"
           }
         },
         "paymentLegs": {
@@ -260,7 +260,7 @@
           "linkedChangesTakes": "Takes this transaction's category, payee, note and tags.",
           "linkedChangesKeeps": "Its account, amount and date stay the same.",
           "linkedChangesUnlink": "Unlinking restores its original details.",
-          "unlink": "Отвязать",
+          "unlink": "Unlink",
           "convertedAmountLabel": "Amount in {currency}",
           "rateInfo": "Exchange rate details",
           "rateFromAmounts": "Rate from your amounts",
@@ -269,7 +269,7 @@
           "convertedHint": "Prefilled from the market rate. Change the {currency} amount to match what you actually paid.",
           "noMarketRate": "No market rate for {currency} – enter the amount manually.",
           "linkPicker": {
-            "title": "Свяжите существующие транзакции",
+            "title": "Link existing transactions",
             "windowHint": "Within {days} days of {date}",
             "loadError": "Couldn't load transactions",
             "emptyTitle": "No transactions to link",
@@ -343,7 +343,7 @@
         "mainCategoryLabel": "(основная)",
         "linkRemovedOnTypeChange": "Связь возврата удалена, поскольку тип транзакции изменился.",
         "summaryEmpty": "Пока ничего не выбрано",
-        "sharePlaceholder": "Сумма",
+        "sharePlaceholder": "Amount",
         "shareInputLabel": "Refund share for {name}",
         "shareErrorNonPositive": "Enter an amount above zero",
         "shareErrorExceedsPurchase": "More than what is left of this purchase ({amount})",
@@ -427,7 +427,7 @@
         "unlinkButton": "Отвязать от портфеля",
         "unlinkWarning": "Отвязка уменьшит денежный баланс портфеля {portfolio}.",
         "unlinkWarningNoCash": "Этот перевод не изменял денежный баланс портфеля {portfolio}, поэтому при отвязке баланс останется прежним.",
-        "noCashBadge": "Без влияния на деньги",
+        "noCashBadge": "No cash impact",
         "unlinkDescription": "Исходные данные транзакции будут восстановлены.",
         "cancelButton": "Отмена",
         "confirmUnlink": "Подтвердить отвязку"
@@ -490,7 +490,7 @@
           "deleteConfirmDescription": "Шаблон будет удалён. Уже созданные по нему транзакции не изменятся.",
           "duplicateName": "Шаблон с названием «{name}» уже существует.",
           "originalCurrencyLabel": "Original amount currency",
-          "originalCurrencyPlaceholder": "Выберите валюту"
+          "originalCurrencyPlaceholder": "Select a currency"
         },
         "errors": {
           "create": "Не удалось сохранить шаблон. Попробуйте снова.",
@@ -566,7 +566,7 @@
       "iconLabel": "Значок",
       "iconPlaceholder": "Выберите значок",
       "defaultTagsLabel": "Default tags",
-      "defaultTagsPlaceholder": "Выберите теги",
+      "defaultTagsPlaceholder": "Select tags",
       "defaultTagsHint": "Added to a transaction when you pick this category.",
       "applyTagsOnAiLabel": "Also apply when AI categorizes a transaction",
       "applyTagsOnAiHint": "Tags stay on the transaction if you change its category later.",
@@ -627,17 +627,17 @@
       "invoice": {
         "number": "Invoice №",
         "issued": "Issued",
-        "total": "Итого"
+        "total": "Total"
       },
       "fixDetails": "Fix details",
       "form": {
-        "vendor": "Продавец",
+        "vendor": "Merchant",
         "vendorPlaceholder": "Enter the merchant name",
         "customer": "Customer",
         "customerPlaceholder": "Who the invoice is billed to",
-        "total": "Итого",
+        "total": "Total",
         "totalPlaceholder": "0.00",
-        "currency": "Валюта",
+        "currency": "Currency",
         "currencyPlaceholder": "EUR",
         "issued": "Invoice date",
         "submit": "Search again"
@@ -670,7 +670,7 @@
         "description": "We looked for about {total} from 14 days before to 30 days after the invoice date, in all accounts. The payment may not be imported yet, or the invoice was read wrong."
       },
       "searchManually": "Search manually",
-      "createTransaction": "Создать транзакцию",
+      "createTransaction": "Create transaction",
       "link": "Link invoice",
       "linked": "Invoice linked to the transaction",
       "created": "Transaction created and invoice attached",

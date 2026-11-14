@@ -1,6 +1,6 @@
 {
   "loans": {
-    "title": "Kredite",
+    "title": "Loans",
     "loadError": "Kredite konnten nicht geladen werden.",
     "tryAgain": "Erneut versuchen",
     "addButton": {
@@ -8,7 +8,7 @@
     },
     "actions": {
       "more": "Mehr",
-      "moreAriaLabel": "Weitere Aktionen",
+      "moreAriaLabel": "More actions",
       "excludeFromStats": "Aus Statistiken ausschließen",
       "linkPayments": "Bisherige Zahlungen verknüpfen"
     },
@@ -17,8 +17,8 @@
       "description": "Wähle Transaktionen aus, die du bereits für diesen Kredit gezahlt hast, um sie als Kreditrückzahlung zu erfassen.",
       "emptyTitle": "Keine passenden Transaktionen",
       "emptyDescription": "Keine Transaktionen entsprechen diesen Filtern. Versuche, den Datumsbereich zu erweitern oder Filter zu löschen.",
-      "selectedCount": "{count} ausgewählt",
-      "clearSelection": "Zurücksetzen",
+      "selectedCount": "{count} selected",
+      "clearSelection": "Clear",
       "linkSelected": "{count} verknüpfen",
       "success": "{count} Zahlung mit dem Kredit verknüpft. | {count} Zahlungen mit dem Kredit verknüpft.",
       "preAnchorWarning": "{count} ausgewählte Zahlung liegt vor dem Saldo-Stichtag des Kredits ({date}) – sie wird nur als Verlauf verknüpft und verringert nicht den offenen Saldo. | {count} ausgewählte Zahlungen liegen vor dem Saldo-Stichtag des Kredits ({date}) – sie werden nur als Verlauf verknüpft und verringern nicht den offenen Saldo.",
@@ -34,10 +34,10 @@
       "editDescription": "Aktualisiere die Kreditbedingungen. Änderungen an Zinssatz, Laufzeit oder geplanter Zahlung werden im Verlauf aufgezeichnet."
     },
     "settings": {
-      "title": "Einstellungen",
+      "title": "Settings",
       "editTitle": "Kreditdetails bearbeiten",
       "editDescription": "Aktualisiere Name, Saldo, Zinssatz, Laufzeit, Zahlungsfelder oder Kreditgeber-Infos.",
-      "editButton": "Bearbeiten",
+      "editButton": "Edit",
       "excludeFromStatsTitle": "Aus Statistiken ausschließen",
       "excludeFromStatsDescription": "Blende diesen Kredit im Nettovermögen, in Diagrammen und Berichten aus, ohne ihn zu archivieren.",
       "archiveTitle": "Kredit archivieren",
@@ -45,13 +45,13 @@
       "archiveButton": "Archivieren",
       "archivedTitle": "Dieser Kredit ist archiviert",
       "archivedDescription": "Er ist in der Seitenleiste und den Kontenauswahlen ausgeblendet und unter \"Archiviert\" auf der Kreditseite aufgeführt. Stelle ihn wieder her, um die Verfolgung fortzusetzen.",
-      "unarchiveButton": "Wiederherstellen",
+      "unarchiveButton": "Restore",
       "archiveConfirmTitle": "Diesen Kredit archivieren?",
       "archiveConfirmDescription": "{name} wird in den Bereich \"Archiviert\" auf dieser Seite verschoben und in der Seitenleiste sowie den Kontenauswahlen ausgeblendet.",
       "archiveAlsoExclude": "Auch aus der Statistik ausschließen",
       "deleteTitle": "Kredit löschen",
       "deleteDescription": "Entfernt den Kredit und seinen Verlauf dauerhaft. Dies kann nicht rückgängig gemacht werden.",
-      "deleteButton": "Löschen",
+      "deleteButton": "Delete",
       "deleteConfirmTitle": "Diesen Kredit dauerhaft löschen?",
       "deleteConfirmDescription": "{name} und alle zugehörigen Ereignisse werden dauerhaft entfernt. Dies kann nicht rückgängig gemacht werden.",
       "toggleSuccess": "Einstellung aktualisiert",
@@ -76,8 +76,8 @@
       "interestPaid": "Gezahlte Zinsen (geschätzt)"
     },
     "archivedList": {
-      "sectionTitle": "Archiviert",
-      "badge": "Archiviert",
+      "sectionTitle": "Archived",
+      "badge": "Archived",
       "outstanding": "Offener Saldo"
     },
     "aggregate": {
@@ -90,11 +90,11 @@
     },
     "list": {
       "columns": {
-        "loan": "Kredit",
+        "loan": "Loan",
         "progress": "Fortschritt",
         "balance": "Saldo",
         "apr": "Sollzinssatz",
-        "monthly": "Monatlich",
+        "monthly": "Monthly",
         "payoff": "Abbezahlt am",
         "interestLeft": "Verbleibende Zinsen"
       },
@@ -103,7 +103,7 @@
       "ofPrincipal": "von {amount}"
     },
     "types": {
-      "mortgage": "Immobilienkredit",
+      "mortgage": "Mortgage",
       "auto": "Fahrzeugkredit",
       "student": "Studienkredit",
       "personal": "Personalkredit",
@@ -127,7 +127,7 @@
         "originalPrincipal": "Ursprünglicher Kreditbetrag",
         "term": "Laufzeit",
         "termMonths": "{count} Monat | {count} Monate",
-        "startDate": "Startdatum",
+        "startDate": "Start date",
         "paymentDay": "Zahlungstag",
         "dayOfMonth": "Am {day}. jedes Monats",
         "accountNumber": "Kontonummer",

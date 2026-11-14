@@ -81,22 +81,22 @@
           "authDescription": "Klicke auf die Schaltfläche unten, um den Zugriff auf dein Konto bei {bank} zu autorisieren.",
           "authWarning": "Du wirst zur Website von {bank} weitergeleitet, um dich anzumelden und die Verbindung zu genehmigen.",
           "authorizeButton": "Bei {bank} autorisieren",
-          "loadingAccounts": "Konten werden geladen...",
-          "selectAccountsHint": "Wähle die Konten aus, die du mit MoneyMatter synchronisieren möchtest"
+          "loadingAccounts": "Loading accounts...",
+          "selectAccountsHint": "Select the accounts you want to sync with MoneyMatter"
         },
         "buttons": {
-          "back": "Zurück",
-          "loading": "Laden...",
+          "back": "Back",
+          "loading": "Loading...",
           "next": "Weiter",
-          "syncing": "Synchronisieren...",
+          "syncing": "Syncing...",
           "sync": "{count} Konto synchronisieren | {count} Konten synchronisieren"
         },
         "errors": {
           "loadCountriesFailed": "Länder konnten nicht geladen werden. Bitte überprüfe deine Zugangsdaten.",
           "loadAccountsFailed": "Konten konnten nicht geladen werden",
-          "syncFailed": "Synchronisierung der Konten fehlgeschlagen"
+          "syncFailed": "Failed to sync accounts"
         },
-        "syncSuccess": "{count} Konto/Konten verbunden. Transaktionen werden im Hintergrund synchronisiert."
+        "syncSuccess": "Connected {count} account(s). Transactions are syncing in the background."
       },
       "instructionsDialog": {
         "title": "So erhältst du Enable Banking-Zugangsdaten",
@@ -180,7 +180,7 @@
         "errors": {
           "noAuthUrl": "Keine Autorisierungs-URL vom Server erhalten",
           "failedToLoadBanks": "Banken konnten nicht geladen werden",
-          "failedToConnectProvider": "Verbindung zum Anbieter fehlgeschlagen"
+          "failedToConnectProvider": "Failed to connect provider"
         },
         "help": {
           "trigger": "Woher bekomme ich die Enable Banking-Zugangsdaten?"
@@ -196,14 +196,14 @@
           "step2": "Gehe zu Settings → API Destinations.",
           "step3": "Kopiere den API-Schlüssel und fügen ihn in das Feld ein."
         },
-        "backButton": "Zurück",
-        "connectingButton": "Verbinden...",
-        "connectButton": "Verbinden",
-        "loadingAccounts": "Konten werden geladen...",
+        "backButton": "Back",
+        "connectingButton": "Connecting...",
+        "connectButton": "Connect",
+        "loadingAccounts": "Loading accounts...",
         "accountsPreviewHint": "{count} Konto/Konten gefunden. Alle Konten werden importiert.",
         "importingButton": "Importieren...",
         "importButton": "{count} Konto/Konten importieren",
-        "importSuccess": "{count} Konto/Konten verbunden. Transaktionen werden im Hintergrund synchronisiert.",
+        "importSuccess": "Connected {count} account(s). Transactions are syncing in the background.",
         "skipButton": "Überspringen",
         "skipTooltip": "Überspringe den Import, um später nur bestimmte Konten zu verbinden oder bestehende Konten über deren Einstellungen neu zu verknüpfen.",
         "errors": {
@@ -241,9 +241,9 @@
           "unsupported": "Depots und Altersvorsorgekonten (Aktien, ETFs, Krypto, 401k, IRA) werden nicht unterstützt. SimpleFIN selbst unterstützt sie ebenfalls nicht wirklich – es gibt nicht an, welches Konto ein Depot ist, und Bestände werden in einem inoffiziellen Format geliefert, das sich jederzeit ändern kann.",
           "tryAnyway": "Du kannst trotzdem versuchen, sie zu verbinden – sie werden als normale Konten mit dem von SimpleFIN gelieferten Kontostand und den Cash-Transaktionen importiert, aber deine Positionen werden nicht angezeigt. Keine Garantie, dass es korrekt funktioniert."
         },
-        "connectButton": "Verbinden",
+        "connectButton": "Connect",
         "connectingButton": "Verbinden…",
-        "backButton": "Zurück",
+        "backButton": "Back",
         "loadingAccounts": "Konten werden geladen…",
         "backfillNote": "Wir laden jetzt die Transaktionen der letzten 6 Monate. Du kannst einen älteren Verlauf jederzeit über die Datumsauswahl auf der Kontoseite laden.",
         "importButton": "Konten auswählen | 1 Konto importieren | {count} Konten importieren",
@@ -257,28 +257,28 @@
         "help": {
           "trigger": "Wie richte ich den Walutomat API-Zugriff ein?"
         },
-        "apiKeyLabel": "API-Schlüssel",
+        "apiKeyLabel": "API key",
         "apiKeyPlaceholder": "Gib deinen Walutomat API-Schlüssel ein",
         "apiKeyHint": "In deinem Walutomat-Dashboard unter Settings → API zu finden",
         "privateKeyLabel": "Privater Schlüssel (PEM)",
         "privateKeyPlaceholder": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----",
         "privateKeyHint": "Füge den Inhalt deiner private.key Datei ein (RSA 4096-bit PEM Format)",
-        "backButton": "Zurück",
-        "connectButton": "Verbinden",
-        "connectingButton": "Verbinden...",
+        "backButton": "Back",
+        "connectButton": "Connect",
+        "connectingButton": "Connecting...",
         "loadingWallets": "Währungskonten werden geladen...",
         "selectWalletsHint": "Wähle aus, welche Währungskonten synchronisiert werden sollen ({count} verfügbar)",
-        "selectAll": "Alles auswählen",
+        "selectAll": "Select all",
         "importButton": "{count} Währungskonto/Währungskonten importieren",
-        "importingButton": "Importieren...",
-        "importSuccess": "{count} Konto/Konten verbunden. Transaktionen werden im Hintergrund synchronisiert.",
+        "importingButton": "Importing...",
+        "importSuccess": "Connected {count} account(s). Transactions are syncing in the background.",
         "errors": {
           "connectFailed": "Verbindung zu Walutomat fehlgeschlagen. Überprüfe deine Zugangsdaten.",
           "importFailed": "Import der Währungskonten fehlgeschlagen."
         },
         "instructions": {
           "title": "Anleitung zur Walutomat API-Einrichtung",
-          "overviewTitle": "Übersicht",
+          "overviewTitle": "Overview",
           "overviewText": "Um Walutomat zu verbinden, benötigst du einen API-Schlüssel und einen privaten RSA-Schlüssel. Der API-Schlüssel authentifiziert dein Konto, während der private Schlüssel jede Anfrage zur Sicherheit signiert.",
           "step1Title": "RSA-Schlüsselpaar erzeugen",
           "step1Intro": "Öffne ein Terminal und führe diese Befehle aus:",
@@ -292,9 +292,9 @@
           "step3Intro": "Du benötigst zwei Dinge:",
           "step3ApiKeyDesc": "{apiKey} — Kopieren ihn von der Walutomat API-Einstellungsseite",
           "step3PrivateKeyDesc": "{privateKey} — Öffne {filename} mit einem Texteditor und kopiere den gesamten Inhalt (einschließlich der Zeilen BEGIN/END)",
-          "securityNoteTitle": "Sicherheitshinweis",
+          "securityNoteTitle": "Security note",
           "securityNoteText": "Dein privater Schlüssel wird vor der Speicherung verschlüsselt und nur zum Signieren von API-Anfragen verwendet. Er wird niemals offengelegt oder an jemanden anderen als Walutomat übermittelt.",
-          "closeButton": "Verstanden"
+          "closeButton": "Got it"
         }
       },
       "akahu": {
@@ -311,19 +311,19 @@
           "step2": "Erstelle eine persönliche App (oder öffne eine bestehende) – verbinde zuerst deine Bankkonten in Akahu.",
           "step3": "Kopiere das Benutzer-Zugriffstoken und das App-ID-Token und füge beide in die Felder oben ein."
         },
-        "backButton": "Zurück",
-        "connectingButton": "Verbinden...",
-        "connectButton": "Verbinden",
-        "loadingAccounts": "Konten werden geladen...",
-        "accountsPreviewHint": "{count} Konto/Konten gefunden. Alle Konten werden importiert.",
-        "importingButton": "Importieren...",
-        "importButton": "{count} Konto/Konten importieren",
-        "importSuccess": "{count} Konto/Konten verbunden. Transaktionen werden im Hintergrund synchronisiert.",
-        "skipButton": "Überspringen",
-        "skipTooltip": "Überspringe den Import, um später nur bestimmte Konten zu verbinden oder bestehende Konten über deren Einstellungen neu zu verknüpfen.",
+        "backButton": "Back",
+        "connectingButton": "Connecting...",
+        "connectButton": "Connect",
+        "loadingAccounts": "Loading accounts...",
+        "accountsPreviewHint": "Found {count} account(s). All accounts will be imported.",
+        "importingButton": "Importing...",
+        "importButton": "Import {count} account(s)",
+        "importSuccess": "Connected {count} account(s). Transactions are syncing in the background.",
+        "skipButton": "Skip",
+        "skipTooltip": "Skip importing to connect only specific accounts later, or to relink existing accounts from their settings.",
         "errors": {
           "connectFailed": "Verbindung zu Akahu fehlgeschlagen",
-          "importFailed": "Import der Konten fehlgeschlagen"
+          "importFailed": "Failed to import accounts"
         }
       },
       "notifications": {
@@ -374,7 +374,7 @@
         "actions": {
           "renameButton": "Verbindung umbenennen",
           "disconnectButton": "Integration trennen",
-          "manage": "Verwalten"
+          "manage": "Manage"
         },
         "fetchAccountsDialog": {
           "title": "Verbleibende Konten verbinden",
@@ -397,7 +397,7 @@
         },
         "summary": {
           "totalBalance": "Gesamtsaldo",
-          "accounts": "Konten",
+          "accounts": "Accounts",
           "accountsCount": "keine Konten | {count} Konto | {count} Konten",
           "lastSync": "Letzte Synchronisierung",
           "consent": "Zustimmung",
@@ -420,7 +420,7 @@
       },
       "dialogs": {
         "disconnect": {
-          "title": "Integration trennen",
+          "title": "Disconnect integration",
           "description": "Bist du sicher, dass du diese Integration trennen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
           "removeAccounts": "Zugehörige Konten ebenfalls entfernen",
           "removeAccountsHint": "Dadurch werden alle mit dieser Integration verknüpften Konten dauerhaft gelöscht",
@@ -432,7 +432,7 @@
           "description": "Gib deiner Verbindung einen benutzerdefinierten Namen, um sie leicht zu identifizieren.",
           "label": "Verbindungsname",
           "saving": "Speichern...",
-          "save": "Speichern"
+          "save": "Save"
         },
         "reconnect": {
           "title": "Integration neu verbinden",
@@ -448,7 +448,7 @@
       },
       "updateCredentials": {
         "title": "Zugangsdaten aktualisieren",
-        "apiKeyLabel": "API-Schlüssel",
+        "apiKeyLabel": "API key",
         "apiKeyPlaceholder": "Gib deinen API-Schlüssel ein",
         "updatingButton": "Aktualisieren...",
         "updateButton": "Aktualisieren",
@@ -487,7 +487,7 @@
       }
     },
     "connectionName": {
-      "placeholder": "z.B. Privatkonto"
+      "placeholder": "e.g., Personal Account"
     },
     "bankCallback": {
       "processing": {
@@ -496,7 +496,7 @@
       },
       "error": {
         "title": "Autorisierung fehlgeschlagen",
-        "backToIntegrations": "Zurück zu Integrationen"
+        "backToIntegrations": "Back to integrations"
       },
       "success": {
         "title": "Verbindung erfolgreich!",

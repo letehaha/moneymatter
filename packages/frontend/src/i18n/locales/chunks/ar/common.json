@@ -1,9 +1,9 @@
 {
   "common": {
-    "loading": "جار التحميل...",
+    "loading": "Loading...",
     "new": "New",
     "actions": {
-      "loading": "جار التحميل...",
+      "loading": "Loading...",
       "signUp": "Sign up",
       "save": "Save",
       "cancel": "Cancel",
@@ -259,7 +259,7 @@
       "remove": "Remove logo",
       "pickerDescription": "Pick a brand logo or use letters instead.",
       "updatedToast": "Logo updated",
-      "resetToast": "تم حذف الشعار",
+      "resetToast": "Logo removed",
       "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Letters (1–2)",
       "lettersPlaceholder": "AB",
@@ -555,7 +555,7 @@
       "nameLabel": "Name",
       "noteLabel": "Note (optional)",
       "notePlaceholder": "Optional note...",
-      "loadingText": "جار التحميل...",
+      "loadingText": "Loading...",
       "savingAction": "Save",
       "cancelButton": "Cancel",
       "editAction": "Edit",
@@ -603,7 +603,7 @@
       "description": "Spending trackers and their suggestions"
     },
     "automations": {
-      "label": "الأتمتة",
+      "label": "Automations",
       "description": "Rules, payee aliases, ignored payee names and tag reminders"
     },
     "review": {
@@ -619,7 +619,7 @@
       "description": "Portfolios, holdings, securities and investment transactions"
     },
     "ventures": {
-      "label": "المشاريع",
+      "label": "Ventures",
       "description": "Venture platforms, deals and events"
     },
     "loansVehicles": {

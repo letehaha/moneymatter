@@ -229,13 +229,13 @@
         "noneTitle": "No matches yet",
         "noneDescription": "No past transaction on your synced or imported accounts matches these conditions."
       },
-      "selectAll": "Pilih semua",
-      "selectedCount": "{count} dipilih",
+      "selectAll": "Select all",
+      "selectedCount": "{count} selected",
       "irreversible": "This can't be undone. Review the list carefully.",
       "applyAction": "Apply to {count} transactions",
       "confirm": {
         "title": "Apply this rule?",
-        "action": "Terapkan",
+        "action": "Apply",
         "description": "{count} transactions will be updated right away.",
         "payeeNote": "The payee on those transactions will be treated as set by you, so automatic payee detection won't change it later."
       },

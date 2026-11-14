@@ -142,7 +142,7 @@
         "plusBadge": "Plus",
         "description": "AI checks each match and shows only the ones that look like real transfers between your accounts.",
         "cost": "Each scan uses your monthly AI allowance. With your own AI provider, the provider bills it. Choose the model in {link}.",
-        "aiSettingsLink": "إعدادات الذكاء الاصطناعي",
+        "aiSettingsLink": "AI settings",
         "openAiSettings": "Open AI settings",
         "blocked": {
           "plan": {

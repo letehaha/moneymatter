@@ -7,6 +7,7 @@ import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { withAccountSyncLock } from '@root/services/bank-data-providers/connection/sync-transactions-for-account';
 import { bankProviderRegistry } from '@root/services/bank-data-providers/registry';
+import { addYears } from 'date-fns';
 import { z } from 'zod';
 
 export default createController(
@@ -80,9 +81,7 @@ export default createController(
     // Validate date range (max 1 year)
     const fromDate = new Date(from);
     const toDate = new Date(to);
-    const oneYearInMs = 365 * 24 * 60 * 60 * 1000;
-
-    if (toDate.getTime() - fromDate.getTime() > oneYearInMs) {
+    if (toDate > addYears(fromDate, 1)) {
       throw new ValidationError({
         message: t({ key: 'bankDataProviders.dateRangeExceedsLimit' }),
       });
@@ -96,7 +95,7 @@ export default createController(
 
     // Dispatch to the provider. Only providers that support date-range
     // historical loads implement loadTransactionsForPeriod — Monobank via a
-    // job queue, SimpleFIN and Akahu inline. Providers without it reject the request.
+    // job queue, SimpleFIN inline. Providers without it reject the request.
     const provider = bankProviderRegistry.get(connection.providerType);
     const loadTransactionsForPeriod = provider.loadTransactionsForPeriod?.bind(provider);
 

@@ -12,7 +12,7 @@
       "payday": {
         "label": "Pay cycle starts on",
         "description": "Day of the month your pay cycle starts. The dashboard's default period runs from this day to the day before it next month.",
-        "placeholder": "Pilih hari",
+        "placeholder": "Select day",
         "successNotification": "Pay cycle start updated"
       },
       "unrealizedLossAlert": {
@@ -106,7 +106,7 @@
             "description": "Keep an order number, invoice number or booking reference with the transaction."
           },
           "originalAmount": {
-            "label": "Jumlah asli",
+            "label": "Original amount",
             "description": "The amount actually charged in another currency, when it differs from the account's currency."
           },
           "location": {

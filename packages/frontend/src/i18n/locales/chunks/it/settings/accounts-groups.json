@@ -20,7 +20,7 @@
         "accountsCount": "{count} conto | {count} conti",
         "noAccounts": "Nessun conto",
         "accountsElsewhere": "{count} conto sincronizzato in altri gruppi | {count} conti sincronizzati in altri gruppi",
-        "manageConnection": "Gestisci le connessioni"
+        "manageConnection": "Gestisci connessione"
       },
       "update": {
         "label": "Nome del gruppo",
@@ -94,7 +94,7 @@
         "button": "Organizza",
         "hint": "Trascinare un gruppo su un altro per annidarlo",
         "save": "Salva modifiche",
-        "topLevel": "Categoria principale",
+        "topLevel": "Livello superiore",
         "dropToTopLevel": "Rilasciare qui per rendere «{name}» un gruppo di primo livello",
         "movesCount": "{count} spostamento | {count} spostamenti",
         "moveInside": "Sposta all'interno",

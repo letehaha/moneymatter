@@ -229,13 +229,13 @@
         "noneTitle": "Sin coincidencias",
         "noneDescription": "Ninguna transacción pasada en tus cuentas sincronizadas o importadas coinciden con estas condiciones."
       },
-      "selectAll": "Seleccionar todo",
-      "selectedCount": "{count} seleccionadas",
+      "selectAll": "Select all",
+      "selectedCount": "{count} selected",
       "irreversible": "Esto no se puede deshacer. Revise la lista con cuidado.",
       "applyAction": "Importar {count} transacciones",
       "confirm": {
         "title": "¿Aplicar esta regla?",
-        "action": "Aplicar",
+        "action": "Apply",
         "description": "Las {count} transacciones se actualizarán inmediatamente.",
         "payeeNote": "El beneficiario de esas transacciones será tratado como lo establece usted, por lo que la detección automática del beneficiario no lo cambiará más tarde."
       },

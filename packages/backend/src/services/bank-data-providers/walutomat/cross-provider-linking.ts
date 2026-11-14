@@ -1,15 +1,19 @@
 import { ACCOUNT_TYPES, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
-import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
+import { withTransaction } from '@root/services/common/with-transaction';
 import { linkTransactions } from '@services/transactions/transactions-linking/link-transactions';
 import { addDays, isWithinInterval, subDays } from 'date-fns';
-import { Op, Sequelize } from 'sequelize';
+import { DatabaseError, Op, Sequelize } from 'sequelize';
 
-import { isLinkableRow } from '../utils/auto-link-transfers';
-import { TRANSFER_DATE_WINDOW_DAYS, normalizeIban } from '../utils/transfer-matching';
+import {
+  TRANSFER_DATE_WINDOW_DAYS,
+  isLinkableRow,
+  lockTransferLinking,
+  normalizeIban,
+} from '../utils/transfer-matching';
 
 /**
  * Extract the counterparty IBAN from a Walutomat transaction's operationDetails.
@@ -102,8 +106,19 @@ function hasRivalLeg({
  *
  * Only links when the pair is unambiguous from both sides, and a transaction already linked
  * earlier in the same run is not offered again.
+ *
+ * With `counterpartIds`, only pairs whose bank leg is among those ids link; other bank rows still
+ * count toward the ambiguity check. Returns both legs of every linked pair.
  */
-export async function linkCrossProviderTransfers({ userId }: { userId: number }): Promise<void> {
+async function linkCrossProviderTransfersLocked({
+  userId,
+  counterpartIds,
+}: {
+  userId: number;
+  counterpartIds?: string[];
+}): Promise<Set<RecordId>> {
+  await lockTransferLinking({ userId });
+
   // Step 1: Find unlinked Walutomat PAYIN/PAYOUT transactions
   const walutomatTxs = await findTransactions({
     planned: 'exclude',
@@ -121,7 +136,7 @@ export async function linkCrossProviderTransfers({ userId }: { userId: number })
     },
   });
 
-  if (walutomatTxs.length === 0) return;
+  if (walutomatTxs.length === 0) return new Set();
 
   // Step 2: Build IBAN → accountId[] index from all user accounts that have an IBAN
   // Both Enable Banking and Monobank store IBANs in externalData.iban
@@ -147,7 +162,7 @@ export async function linkCrossProviderTransfers({ userId }: { userId: number })
     }
   }
 
-  if (ibanToAccountIds.size === 0) return;
+  if (ibanToAccountIds.size === 0) return new Set();
 
   // Step 3: Match and link each Walutomat transaction
   const consumed = new Set<RecordId>();
@@ -207,6 +222,7 @@ export async function linkCrossProviderTransfers({ userId }: { userId: number })
     if (candidates.length !== 1) continue;
 
     const match = candidates[0]!;
+    if (counterpartIds && !counterpartIds.includes(match.id)) continue;
 
     if (hasRivalLeg({ walutomatTxs, tx, counterpart: match, consumed, ibanToAccountIds })) continue;
 
@@ -220,15 +236,19 @@ export async function linkCrossProviderTransfers({ userId }: { userId: number })
       consumed.add(match.id);
       linkedCount += 1;
     } catch (err) {
-      // A rejected pair (planned or split-bearing leg) must not abort the batch; anything else is a broken run.
-      if (!(err instanceof ValidationError)) throw err;
+      // Rethrow DatabaseError: it aborted the surrounding transaction; any other rejection only skips the pair.
+      if (err instanceof DatabaseError) throw err;
       logger.warn(
-        `[Walutomat] Failed to auto-link cross-provider pair ${baseTxId} <-> ${oppositeTxId}: ${err.message}`,
+        `[Walutomat] Failed to auto-link cross-provider pair ${baseTxId} <-> ${oppositeTxId}: ${err instanceof Error ? err.message : err}`,
       );
     }
   }
 
-  if (linkedCount === 0) return;
+  if (linkedCount > 0) {
+    logger.info(`[Walutomat] Auto-linked ${linkedCount} cross-provider transfer(s) for user ${userId}`);
+  }
 
-  logger.info(`[Walutomat] Auto-linked ${linkedCount} cross-provider transfer(s) for user ${userId}`);
+  return consumed;
 }
+
+export const linkCrossProviderTransfers = withTransaction(linkCrossProviderTransfersLocked);

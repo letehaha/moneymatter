@@ -21,11 +21,11 @@
         "button": "Upload security prices",
         "dialogTitle": "Upload security prices",
         "selectSecurity": {
-          "searchLabel": "搜索证券代码或名称",
+          "searchLabel": "Search symbol or name",
           "searchPlaceholder": "AAPL",
           "searching": "Searching…",
-          "failed": "无法搜索证券。",
-          "noResults": "查无结果。",
+          "failed": "Failed to search securities.",
+          "noResults": "No results.",
           "changeButton": "Change"
         },
         "dateRangeInfo": {
@@ -124,7 +124,7 @@
           "url": "Link",
           "urlPlaceholder": "https://…  (optional)",
           "urlError": "Link must start with https://",
-          "icon": "图标",
+          "icon": "Icon",
           "recipients": "Recipients",
           "recipientsPlaceholder": "Optional user IDs or emails, comma-separated, e.g. 12, jane@example.com. Empty = all active users",
           "recipientsError": "Use positive whole-number IDs or valid emails, separated by commas"
@@ -141,7 +141,7 @@
           "titleSelected": "Send to {count} users?",
           "description": "This creates a notification for every user active in the last 30 days. It can't be undone.",
           "descriptionSelected": "Unknown IDs and emails are skipped. It can't be undone.",
-          "button": "发送"
+          "button": "Send"
         },
         "notifications": {
           "success": "Notification sent to {count} users",

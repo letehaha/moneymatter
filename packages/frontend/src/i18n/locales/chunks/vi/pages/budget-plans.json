@@ -6,7 +6,7 @@
     "settings": {
       "title": "Budget settings",
       "description": "Changes save and apply immediately.",
-      "nameLabel": "Tên",
+      "nameLabel": "Name",
       "namePlaceholder": "Name this budget",
       "periodLabel": "Period",
       "startsOn": "Starts on {date}",
@@ -81,7 +81,7 @@
       "description": "Kept for {days} days, then removed for good.",
       "deletedOn": "Deleted {date}",
       "daysLeft": "{n} day left | {n} days left",
-      "restore": "Khôi phục",
+      "restore": "Restore",
       "restorePlan": "Restore {name}",
       "restored": "Budget restored",
       "restoreError": "Could not restore the budget",
@@ -107,7 +107,7 @@
       "cadenceLabel": "Resets",
       "startsOnLabel": "Starts on",
       "startsOnOutOfRange": "Pick a date from {from} to today.",
-      "accountsLabel": "Tài khoản",
+      "accountsLabel": "Accounts",
       "accountsPlaceholder": "Select accounts",
       "rolloverLabel": "Rollover",
       "rolloverPlaceholder": "Select a rollover rule",
@@ -169,7 +169,7 @@
         "kindQuestion": "What kind? (optional)",
         "dog": "Dog",
         "cat": "Cat",
-        "other": "Khác"
+        "other": "Other"
       },
       "eatsOut": {
         "question": "How often do you eat out or order food?",
@@ -256,7 +256,7 @@
       "archiveManyTitle": "Archive {count} line? | Archive {count} lines?",
       "archiveManyDescription": "They stop counting from this period on. Past periods keep their numbers. You can restore them later from \"Archived\".",
       "deleteLine": "Delete line",
-      "deleteTitle": "Xóa \"{name}\"?",
+      "deleteTitle": "Delete \"{name}\"?",
       "deleteDescription": "Its assigned amounts are deleted and its spending will show as outside your lines. This can't be undone.",
       "deleteHistoryDescription": "It's removed from every period, including past ones, and its assigned amounts are deleted. Its spending will show as outside your lines. This can't be undone.",
       "deletePermanently": "Delete permanently",
@@ -280,7 +280,7 @@
       "title": "Archived lines",
       "description": "A restored line resumes from the current period. Past periods stay as they are.",
       "archivedFrom": "Archived from {date}",
-      "restore": "Khôi phục",
+      "restore": "Restore",
       "restoreLine": "Restore {name}",
       "deleteLine": "Delete {name}",
       "restored": "Line restored",
@@ -289,9 +289,9 @@
     "line": {
       "createTitle": "New line",
       "editTitle": "Edit line",
-      "nameLabel": "Tên",
+      "nameLabel": "Name",
       "namePlaceholder": "Groceries",
-      "categoriesLabel": "Danh mục",
+      "categoriesLabel": "Categories",
       "categoriesPlaceholder": "Select categories",
       "created": "Line added",
       "updated": "Line updated",
@@ -325,7 +325,7 @@
       "assignTitle": "Assign from the pool",
       "toLabel": "To",
       "toPlaceholder": "Select a line",
-      "amountLabel": "Số tiền",
+      "amountLabel": "Amount",
       "assignSubmit": "Assign {amount}",
       "calc": {
         "title": "Budget calculation",
@@ -335,7 +335,7 @@
         "drift": "FX / unreconciled",
         "changedSince": "What changed since {period}",
         "changedThisPeriod": "What changed this period",
-        "startingBalance": "Số dư ban đầu",
+        "startingBalance": "Starting balance",
         "income": "Income",
         "outsideSpending": "Spending outside your lines",
         "fromLines": "From lines (rollover returned / overspending covered)",
@@ -384,7 +384,7 @@
       "scheduledCount": "{count} scheduled",
       "outflows": "Outflows",
       "inflows": "Inflows",
-      "transactionCount": "{count} giao dịch | {count} giao dịch",
+      "transactionCount": "{count} transaction | {count} transactions",
       "nothingScheduled": "Nothing scheduled",
       "trend": {
         "title": "Assigned vs spent",
@@ -400,7 +400,7 @@
     },
     "groups": {
       "headerLabel": "Line group",
-      "add": "Thêm nhóm",
+      "add": "Add group",
       "collapseAll": "Collapse all groups",
       "expandAll": "Expand all groups",
       "collapse": "Collapse {name}",
@@ -409,7 +409,7 @@
       "selectLines": "Select all lines in {name}",
       "actions": "Group actions",
       "edit": "Edit group",
-      "delete": "Xóa nhóm",
+      "delete": "Delete group",
       "deleteBlocked": "Move or archive its lines first",
       "deleteTitle": "Delete {name}?",
       "deleteDescription": "Its archived lines become ungrouped. This cannot be undone.",
@@ -474,7 +474,7 @@
       "frequency": {
         "weekly": "Weekly",
         "biweekly": "Biweekly",
-        "yearly": "Hằng năm",
+        "yearly": "Yearly",
         "by_date": "By date",
         "open_ended": "Open-ended"
       },
@@ -535,7 +535,7 @@
       "details": "Goal details",
       "stats": {
         "saved": "Saved",
-        "target": "Đích",
+        "target": "Target",
         "leftToSave": "Left to save",
         "balance": "Balance",
         "refillTo": "Refill to"

@@ -196,7 +196,7 @@
       }
     },
     "planned": {
-      "label": "Transazioni pianificate",
+      "label": "Pianificata",
       "confirmedLabel": "Confermata",
       "plannedTooltip": "Transazione pianificata",
       "expiredTooltip": "Prevista {days} giorni fa, nessuna transazione bancaria corrispondente",
@@ -220,7 +220,7 @@
         "categorizationSource": "Classificata da",
         "group": "Gruppo",
         "refund": "Rimborso",
-        "split": "Dividi"
+        "split": "Suddivisione"
       },
       "outOfWallet": "Fuori dai conti",
       "hint": "Fare clic su una cella per modificarla, oppure su ↗ per aprire la transazione completa. Selezionare le righe per la modifica multipla.",

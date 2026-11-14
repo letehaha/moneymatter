@@ -107,7 +107,7 @@
         "paymentTypeLabel": "Tipo de pago",
         "noteLabel": "Nota (opcional)",
         "notePlaceholder": "Nota",
-        "addFieldsLabel": "Añadir",
+        "addFieldsLabel": "Add",
         "externalUrlLabel": "URL externa",
         "externalUrlPlaceholder": "Enlace a la página de pedido, reserva o recibo",
         "externalReferenceLabel": "Referencia externa",
@@ -129,7 +129,7 @@
             "searchFailed": "La búsqueda no está disponible ahora. Inténtalo de nuevo en un momento",
             "confirm": "Usar esta ubicación",
             "loadFailed": "No se pudo cargar el mapa. Compruebe su conexión y vuelva a intentarlo",
-            "retry": "Intentar de nuevo",
+            "retry": "Try again",
             "consent": {
               "title": "Los cuadros de mapa vienen de OpenStreetMap",
               "description": "Abrir el mapa y buscar direcciones envía peticiones a openstreetmap.org, que ve tu dirección IP. Puedes desactivarlo más tarde en Configuración.",
@@ -176,7 +176,7 @@
         "loadingButton": "Cargando...",
         "createButton": "Crear",
         "editButton": "Editar",
-        "duplicateButton": "Duplicado",
+        "duplicateButton": "Duplicate",
         "createMore": {
           "label": "Crear más",
           "createdToast": "Transacción creada"
@@ -242,7 +242,7 @@
           "viewer": {
             "loadFailed": "No se pudo cargar este archivo.",
             "openInNewTab": "Abrir en una nueva pestaña",
-            "download": "Descargar"
+            "download": "Download"
           }
         },
         "paymentLegs": {
@@ -260,7 +260,7 @@
           "linkedChangesTakes": "Toma la categoría de esta transacción, beneficiaria, nota y etiquetas.",
           "linkedChangesKeeps": "Su cuenta, cantidad y fecha permanecen iguales.",
           "linkedChangesUnlink": "Desvincular restaura sus detalles originales.",
-          "unlink": "Desvincular",
+          "unlink": "Unlink",
           "convertedAmountLabel": "Cantidades en {currency}",
           "rateInfo": "Detalles del tipo de cambio",
           "rateFromAmounts": "Tarifa de tus cantidades",
@@ -269,7 +269,7 @@
           "convertedHint": "Rellenado desde la tasa de mercado. Cambia la cantidad {currency} para que coincida con lo que pagaste realmente.",
           "noMarketRate": "Ningún tipo de cambio de mercado para {currency} – ingrese la cantidad manualmente.",
           "linkPicker": {
-            "title": "Vincular transacciones existentes",
+            "title": "Link existing transactions",
             "windowHint": "Dentro de {days} días de {date}",
             "loadError": "No se han podido cargar las transacciones",
             "emptyTitle": "No hay transacciones vinculadas",
@@ -343,7 +343,7 @@
         "mainCategoryLabel": "(principal)",
         "linkRemovedOnTypeChange": "Se eliminó el vínculo de reembolso porque cambió el tipo de transacción.",
         "summaryEmpty": "Nada seleccionado aún",
-        "sharePlaceholder": "Importe",
+        "sharePlaceholder": "Amount",
         "shareInputLabel": "Reembolso compartido por {name}",
         "shareErrorNonPositive": "Introduce una cantidad mayor que cero.",
         "shareErrorExceedsPurchase": "More than what is left of this purchase ({amount})",
@@ -427,7 +427,7 @@
         "unlinkButton": "Desvincular de la cartera",
         "unlinkWarning": "Desvincular reducirá el saldo en efectivo de la cartera {portfolio}.",
         "unlinkWarningNoCash": "Esta transferencia nunca modificó el saldo en efectivo de {portfolio}, así que desvincularla deja el saldo intacto.",
-        "noCashBadge": "Sin impacto en efectivo",
+        "noCashBadge": "No cash impact",
         "unlinkDescription": "Se restaurarán los detalles originales de la transacción.",
         "cancelButton": "Cancelar",
         "confirmUnlink": "Confirmar desvinculación"
@@ -490,7 +490,7 @@
           "deleteConfirmDescription": "Esta plantilla se eliminará. Las transacciones que ya creó a partir de ella no se verán afectadas.",
           "duplicateName": "Ya tiene una plantilla llamada «{name}».",
           "originalCurrencyLabel": "Moneda de monto original",
-          "originalCurrencyPlaceholder": "Seleccionar una moneda"
+          "originalCurrencyPlaceholder": "Select a currency"
         },
         "errors": {
           "create": "No se pudo guardar la plantilla. Inténtelo de nuevo.",
@@ -565,8 +565,8 @@
       "inheritParentColor": "Usar el color de la categoría padre",
       "iconLabel": "Icono",
       "iconPlaceholder": "Seleccionar icono",
-      "defaultTagsLabel": "Etiquetas por defecto",
-      "defaultTagsPlaceholder": "Seleccionar etiquetas",
+      "defaultTagsLabel": "Default tags",
+      "defaultTagsPlaceholder": "Select tags",
       "defaultTagsHint": "Añadido a una transacción al elegir esta categoría.",
       "applyTagsOnAiLabel": "También aplicar cuando la IA categorice una transacción",
       "applyTagsOnAiHint": "Las etiquetas permanecen en la transacción si usted cambia su categoría más adelante.",
@@ -610,7 +610,7 @@
       "title": "Seleccionar transacción"
     },
     "attachInvoice": {
-      "title": "Adjuntar factura",
+      "title": "Attach invoice",
       "description": "Soltar una factura o recibo. Leemos el total, la fecha y el comerciante, y luego encontramos la transacción a la que pertenece.",
       "resultsTitle": "Seleccionar una transacción",
       "resultsDescription": "Ninguna transacción coincide con esta factura. | La transacción {count} podría pertenecer a esta factura. | Las transacciones {count} podrían pertenecer a esta factura.",
@@ -631,13 +631,13 @@
       },
       "fixDetails": "Detalles de corrección",
       "form": {
-        "vendor": "Comercio",
+        "vendor": "Merchant",
         "vendorPlaceholder": "Introduzca el nombre del comerciante",
         "customer": "Cliente",
         "customerPlaceholder": "A quién se le cobra la factura",
         "total": "Total",
         "totalPlaceholder": "0.00",
-        "currency": "Moneda",
+        "currency": "Currency",
         "currencyPlaceholder": "EUR",
         "issued": "Fecha de la factura",
         "submit": "Buscar de nuevo"
@@ -670,7 +670,7 @@
         "description": "Buscamos alrededor de {total} desde 14 días antes de 30 días después de la fecha de la factura, en todas las cuentas. El pago puede no ser importado todavía, o la factura fue leída mal."
       },
       "searchManually": "Buscar manualmente",
-      "createTransaction": "Crear transacción",
+      "createTransaction": "Create transaction",
       "link": "Vincular factura",
       "linked": "Factura vinculada a la transacción",
       "created": "Transacción creada y factura adjuntada",

@@ -35,7 +35,7 @@
           </button>
         </PopoverTrigger>
         <PopoverContent class="w-80 p-0" align="start">
-          <ListboxRoot multiple :model-value="modelValue" highlight-on-hover>
+          <ListboxRoot multiple :model-value="listboxValue" highlight-on-hover>
             <div class="border-border border-b p-2">
               <div
                 class="border-input bg-input-background flex h-9 w-full items-center gap-2 rounded-md border px-3 text-sm"
@@ -71,6 +71,7 @@
                   :is-selected="isSelected"
                   :get-descendant-count="getDescendantCount"
                   :taken-by="takenBy"
+                  :is-covered="isCovered"
                   @toggle="toggleCategory"
                 />
               </div>
@@ -110,6 +111,8 @@ const props = withDefaults(
     takenBy?: Record<string, string>;
     /** Ids rendered as chips; defaults to `modelValue`. */
     chipIds?: string[];
+    /** A selected category covers its subtree: descendants render checked and locked, and aren't stored. */
+    coverSubtree?: boolean;
   }>(),
   {
     label: undefined,
@@ -191,7 +194,19 @@ const filteredCategories = computed(() => {
   return findMatchingCategories(availableCategories.value, query);
 });
 
-const isSelected = (categoryId: string) => selectedCategoryIds.value.has(categoryId);
+const coveredIds = computed(() => {
+  const ids = new Set<string>();
+  if (!props.coverSubtree) return ids;
+  for (const id of props.modelValue ?? []) {
+    const category = findCategory(availableCategories.value, (cat) => cat.id === id);
+    if (category) for (const descendantId of collectDescendantIds({ category })) ids.add(descendantId);
+  }
+  return ids;
+});
+
+const isCovered = (categoryId: string) => coveredIds.value.has(categoryId);
+const listboxValue = computed(() => [...(props.modelValue ?? []), ...coveredIds.value]);
+const isSelected = (categoryId: string) => selectedCategoryIds.value.has(categoryId) || isCovered(categoryId);
 
 const getDescendantCount = (category: FormattedCategory): number => collectDescendantIds({ category }).length;
 
@@ -199,7 +214,7 @@ const toggleCategory = (categoryId: string) => {
   const currentIds = new Set(props.modelValue ?? []);
   const category = categoriesMap.value[categoryId];
 
-  if (!category || (!currentIds.has(categoryId) && props.takenBy[categoryId])) return;
+  if (!category || (!currentIds.has(categoryId) && (isCovered(categoryId) || props.takenBy[categoryId]))) return;
 
   // Find the category in the formatted structure to get its descendants
   const formattedCategory = findCategory(availableCategories.value, (cat) => cat.id === categoryId);
@@ -212,10 +227,11 @@ const toggleCategory = (categoryId: string) => {
       currentIds.delete(id);
     }
   } else {
-    // Check: add this category and all its descendants
+    // Check: add this category; descendants are added too, or dropped when the selection covers them
     currentIds.add(categoryId);
     for (const id of descendantIds) {
-      currentIds.add(id);
+      if (props.coverSubtree) currentIds.delete(id);
+      else currentIds.add(id);
     }
   }
 

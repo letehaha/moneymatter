@@ -76,7 +76,7 @@
       }
     },
     "trashed": {
-      "open": "Eliminato",
+      "open": "Eliminati",
       "title": "Budget eliminati di recente",
       "description": "Conservati per {days} giorni, poi rimossi definitivamente.",
       "deletedOn": "Eliminato il {date}",
@@ -130,7 +130,7 @@
         "months": "Mesi"
       },
       "customEveryError": "Inserire un numero intero da 1 a {max}.",
-      "recommended": "Consigliate"
+      "recommended": "Consigliato"
     },
     "suggest": {
       "title": "Definire le voci",
@@ -474,7 +474,7 @@
       "frequency": {
         "weekly": "Settimanale",
         "biweekly": "Bisettimanale",
-        "yearly": "Annualmente",
+        "yearly": "Annuale",
         "by_date": "Entro una data",
         "open_ended": "Senza scadenza"
       },
@@ -501,7 +501,7 @@
       "amountEachYear": "Importo ogni anno",
       "repeatsOnLabel": "Si ripete il",
       "weekdayPlaceholder": "Selezionare un giorno della settimana",
-      "dueDateLabel": "Periodo di riferimento",
+      "dueDateLabel": "Data di scadenza",
       "firstPaymentDateLabel": "Data del primo pagamento",
       "firstDueDateLabel": "Prima scadenza",
       "firstDueDateHint": "Si ripete ogni anno in questa data. Il finanziamento è ripartito sui periodi precedenti.",

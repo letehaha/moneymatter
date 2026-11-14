@@ -12,7 +12,7 @@
       },
       "sections": {
         "active": "Attivi",
-        "ended": "Terminato",
+        "ended": "Terminati",
         "archived": "Archiviati",
         "show": "mostra",
         "hide": "nascondi"
@@ -29,7 +29,7 @@
         "includeArchived": "Includi archiviati"
       },
       "row": {
-        "saved": "Risparmiato",
+        "saved": "Accantonato",
         "ofTarget": "di {amount}",
         "accountShare": "{name} {share}%",
         "accountFixed": "{name} {amount}",
@@ -104,9 +104,9 @@
       },
       "strip": {
         "target": "Traguardo",
-        "saved": "Risparmiato",
+        "saved": "Accantonato",
         "left": "Rimanente",
-        "needs": "Requisiti",
+        "needs": "Necessario",
         "pace": "Ritmo",
         "reached": "Raggiunto",
         "aboveTarget": "{amount} oltre il traguardo",
@@ -134,7 +134,7 @@
         "emptyDescription": "Collegare i conti in Modifica obiettivo per monitorare i progressi.",
         "columns": {
           "account": "Conto",
-          "share": "Condividi",
+          "share": "Quota",
           "balance": "Saldo",
           "counted": "Conteggiato"
         },
@@ -179,7 +179,7 @@
         },
         "chartAria": "Risparmi dell'obiettivo nel tempo",
         "legend": {
-          "saved": "Risparmiato",
+          "saved": "Accantonato",
           "projection": "Proiezione",
           "target": "Traguardo"
         },
@@ -193,7 +193,7 @@
       "description": "I progressi leggono i saldi dei conti. Nessun denaro viene spostato.",
       "nameLabel": "Nome",
       "namePlaceholder": "es. Auto o Fondo di emergenza",
-      "targetAmountLabel": "Importo di destinazione",
+      "targetAmountLabel": "Importo obiettivo",
       "targetAmountPlaceholder": "Inserire un importo",
       "currencyLabel": "Valuta",
       "currencyPlaceholder": "Selezionare una valuta",

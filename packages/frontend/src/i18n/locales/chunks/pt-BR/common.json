@@ -29,8 +29,8 @@
       "copyInviteLink": "Copiar link de convite",
       "moveTo": "Mover para…",
       "learnMore": "Saiba mais",
-      "undo": "Desfazer",
-      "more": "Mais"
+      "undo": "Undo",
+      "more": "More"
     },
     "ui": {
       "close": "Fechar",
@@ -259,7 +259,7 @@
       "remove": "Remover logo",
       "pickerDescription": "Pick a brand logo or use letters instead.",
       "updatedToast": "Logo updated",
-      "resetToast": "Logo removido",
+      "resetToast": "Logo removed",
       "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Letras (1–2)",
       "lettersPlaceholder": "AB",
@@ -591,7 +591,7 @@
       "description": "Accounts, transactions, categories, tags, payees and reports"
     },
     "subscriptions": {
-      "label": "Pagamentos recorrentes",
+      "label": "Recurring payments",
       "description": "Recurring payments, their periods and planned transactions"
     },
     "budgetPlans": {
@@ -599,11 +599,11 @@
       "description": "Plans, lines, line goals and savings goals"
     },
     "trackers": {
-      "label": "Acompanhamentos",
+      "label": "Trackers",
       "description": "Spending trackers and their suggestions"
     },
     "automations": {
-      "label": "Automações",
+      "label": "Automations",
       "description": "Rules, payee aliases, ignored payee names and tag reminders"
     },
     "review": {
@@ -615,11 +615,11 @@
       "description": "Transaction groups and transaction templates"
     },
     "investments": {
-      "label": "Investimentos",
+      "label": "Investments",
       "description": "Portfolios, holdings, securities and investment transactions"
     },
     "ventures": {
-      "label": "Participações",
+      "label": "Ventures",
       "description": "Venture platforms, deals and events"
     },
     "loansVehicles": {
@@ -627,7 +627,7 @@
       "description": "Loans with their payments, and vehicles"
     },
     "currencies": {
-      "label": "Moedas",
+      "label": "Currencies",
       "description": "Your currencies and exchange rates"
     },
     "imports": {

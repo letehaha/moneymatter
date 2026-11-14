@@ -27,30 +27,30 @@
   "importShared": {
     "action": {
       "createNew": "Neu erstellen",
-      "linkExisting": "Verknüpfen",
-      "skip": "Überspringen"
+      "linkExisting": "Link to existing",
+      "skip": "Skip"
     },
     "selectAction": "Aktion auswählen",
     "resolvedCounterWord": "gelöst",
     "quickActionsMenuLabel": "Massenaktionen",
     "quickActions": {
-      "menu": "Aktionen"
+      "menu": "Actions"
     },
     "columns": {
       "sourceName": "Quellname",
-      "currency": "Währung",
+      "currency": "Currency",
       "action": "Aktion",
       "target": "Ziel"
     },
     "account": {
-      "selectTarget": "Konto auswählen",
+      "selectTarget": "Select account",
       "noMatchingCurrency": "Kein Konto mit Währung {currency}",
       "willCreate": "Erstellt {name} ({currency})",
       "empty": "Keine Konten zum Zuordnen",
       "willSkip": "Wird nicht importiert"
     },
     "category": {
-      "selectTarget": "Kategorie auswählen",
+      "selectTarget": "Select category",
       "willCreate": "Erstellt {name}",
       "empty": "Keine Kategorien zum Zuordnen"
     },
@@ -62,14 +62,14 @@
     "balanceChanges": {
       "title": "Änderungen der Kontosalden",
       "columns": {
-        "account": "Konto",
+        "account": "Account",
         "before": "Vorher",
         "after": "Nachher",
-        "delta": "Ändern",
+        "delta": "Change",
         "newRows": "Neue Zeilen",
         "backfillRows": "Nachträgliche Zeilen"
       },
-      "newAccount": "Neues Konto"
+      "newAccount": "New account"
     },
     "duplicatesTable": {
       "columnHeaders": {
@@ -86,10 +86,10 @@
         "fuzzy": "Ungefähr"
       },
       "fieldLabels": {
-        "amount": "Betrag",
-        "date": "Datum",
-        "note": "Notiz",
-        "category": "Kategorie"
+        "amount": "Amount",
+        "date": "Date",
+        "note": "Note",
+        "category": "Category"
       },
       "importAnywayAriaLabel": "Zeile {row} trotzdem importieren"
     },

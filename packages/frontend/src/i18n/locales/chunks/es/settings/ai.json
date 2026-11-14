@@ -69,13 +69,13 @@
           "description": "Añade tu propio modelo de IA para usar esta función."
         },
         "allConnectionsDown": "Todos tus modelos de IA necesitan atención, por lo que esta función está en pausa. Arregla uno en {link}.",
-        "allConnectionsDownLink": "Modelos de IA"
+        "allConnectionsDownLink": "AI models"
       },
       "modelGuide": {
         "trigger": "¿Cuál es el modelo?",
         "tierHeading": "El modelo {tier} es suficiente",
         "tiers": {
-          "light": "Claro",
+          "light": "Light",
           "balanced": "Equilibrado",
           "smart": "Inteligente"
         },
@@ -148,7 +148,7 @@
         }
       },
       "connections": {
-        "title": "Modelos de IA",
+        "title": "AI models",
         "description": "Conecte OpenAI, Claude, Gemini, OpenRouter o un modelo local. Cada entrada es un modelo que puede elegir para cualquier característica.",
         "tip": {
           "ariaLabel": "Acerca de modelos de IA",
@@ -174,10 +174,10 @@
         },
         "actions": {
           "menuAriaLabel": "Acciones de modelo de IA",
-          "duplicate": "Duplicado",
+          "duplicate": "Duplicate",
           "setDefault": "Establecer como predeterminado",
           "remove": "Eliminar",
-          "reconnect": "Reconectar",
+          "reconnect": "Reconnect",
           "enterKey": "Introduzca clave API"
         },
         "removeDialog": {
@@ -213,7 +213,7 @@
           "titleDuplicate": "Duplicar modelo IA",
           "providerLabel": "Proveedor",
           "providerPlaceholder": "Seleccionar un proveedor.",
-          "nameLabel": "Nombre",
+          "nameLabel": "Name",
           "baseUrlLabel": "URL base",
           "baseUrlPlaceholder": "https://example.com/v1",
           "apiKeyLabel": "Clave API",
@@ -223,12 +223,12 @@
           "apiKeySavedHint": "Déjalo en blanco para conservar la clave guardada",
           "apiKeyBorrowedHint": "Utiliza la clave de \"{name}\". Escribe una nueva clave para usar otra.",
           "removeApiKeyButton": "Eliminar clave API",
-          "modelLabel": "Modelo",
+          "modelLabel": "Model",
           "modelPlaceholder": "Escribe o elige un modelo",
           "modelListEmpty": "No hay modelos de los que escoger. Escriba el nombre del modelo que utiliza su servidor.",
           "modelListNoMatch": "No hay modelos listados. Todavía puedes usar el nombre que has escrito.",
           "testButton": "Probar conexión",
-          "saveButton": "Guardar cambios",
+          "saveButton": "Save changes",
           "localNetworkOnly": "MoneyMatter no puede acceder a un servidor en tu propio ordenador, como {hostname} o {ip}. Expóngalo a través de un túnel como el ngrok o Cloudflare Tunnel, luego pegue la URL del túnel aquí.",
           "dockerHost": "Si ejecuta esta aplicación en Docker en la misma máquina que el servidor del modelo, use {dockerHost} en lugar de {ip}."
         },
