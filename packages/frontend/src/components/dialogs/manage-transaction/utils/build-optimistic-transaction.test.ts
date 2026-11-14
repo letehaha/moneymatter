@@ -64,6 +64,26 @@ describe('buildOptimisticTransaction', () => {
     expect(result.isPlanned).toBe(false);
   });
 
+  it('applies excludeFromStats from the form', () => {
+    const result = buildOptimisticTransaction({
+      form: buildForm({ excludeFromStats: true }),
+      transaction: buildTransaction({ excludeFromStats: false }),
+      isRecordExternal: false,
+    });
+
+    expect(result.excludeFromStats).toBe(true);
+  });
+
+  it('clears excludeFromStats when the form flag is unchecked', () => {
+    const result = buildOptimisticTransaction({
+      form: buildForm({ excludeFromStats: false }),
+      transaction: buildTransaction({ excludeFromStats: true }),
+      isRecordExternal: false,
+    });
+
+    expect(result.excludeFromStats).toBe(false);
+  });
+
   it('carries a complete original-currency pair onto the row', () => {
     const transaction = buildTransaction({ originalAmount: null, originalCurrencyCode: null });
 

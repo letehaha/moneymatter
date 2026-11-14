@@ -80,6 +80,10 @@ export const prepareTxCreationParams = ({
     if (refundTarget.amount != null) creationParams.refundForAmount = refundTarget.amount;
   }
 
+  if (form.excludeFromStats) {
+    creationParams.excludeFromStats = true;
+  }
+
   // if (linkedTransaction) {
   //   creationParams.destinationTransactionId = linkedTransaction.id;
   //   creationParams.transferNature = TRANSACTION_TRANSFER_NATURE.common_transfer;
@@ -117,10 +121,6 @@ export const prepareTxCreationParams = ({
 
     if (resolveFormIsPlanned({ form })) {
       creationParams.isPlanned = true;
-    }
-
-    if (form.excludeFromStats) {
-      creationParams.excludeFromStats = true;
     }
 
     const originalPair = resolveOriginalCurrencyPair({ form });

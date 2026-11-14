@@ -65,27 +65,34 @@ export const moneyMovementWhere: WhereOptions = {
 };
 
 /**
- * The one predicate every spending/income number applies: the row is not marked `excludeFromStats`,
- * and neither is the other side of its refund pair (a refund that kept counting against an excluded
- * expense would turn spending negative).
- *
- * Exported because the reports that build their own where clauses must use the same condition
- * instead of growing their own copy: the payee stats (`excludeFromStatsWhere`) and the raw-SQL
- * reports (`excludeFromStatsSql`, with the table alias they read through).
+ * Drops a row when any live member of its refund group is flagged. Each check correlates on an
+ * indexed column; a single IN/UNION form plans as an anti join over every flagged row DB-wide.
  */
-export const excludeFromStatsSql = (alias = '"Transactions"'): string => `
+export const excludeFromStatsSql = ({ alias = '"Transactions"' }: { alias?: string } = {}): string => `(
   ${alias}."excludeFromStats" = false
   AND NOT EXISTS (
-    SELECT 1
-    FROM "RefundTransactions" rt
-    JOIN "Transactions" counterpart
-      ON counterpart."id" = CASE
-        WHEN rt."originalTxId" = ${alias}."id" THEN rt."refundTxId"
-        ELSE rt."originalTxId"
-      END
-    WHERE (rt."originalTxId" = ${alias}."id" OR rt."refundTxId" = ${alias}."id")
-      AND counterpart."excludeFromStats" = true
-  )`;
+    SELECT 1 FROM "RefundTransactions" r
+    JOIN "Transactions" g ON g."id" = r."originalTxId"
+    WHERE r."refundTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM "RefundTransactions" r
+    JOIN "Transactions" g ON g."id" = r."refundTxId"
+    WHERE r."originalTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM "RefundTransactions" own
+    JOIN "RefundTransactions" sib ON sib."originalTxId" = own."originalTxId"
+    JOIN "Transactions" g ON g."id" = sib."refundTxId"
+    WHERE own."refundTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM "RefundTransactions" own
+    JOIN "RefundTransactions" sib ON sib."refundTxId" = own."refundTxId"
+    JOIN "Transactions" g ON g."id" = sib."originalTxId"
+    WHERE own."originalTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+)`;
 
 export const excludeFromStatsWhere: WhereOptions = literal(excludeFromStatsSql());
 
@@ -132,8 +139,7 @@ export const statsTransactions = async ({
     ...(refunds === 'exclude-refund-rows' ? [{ refundLinked: false }] : []),
     ...(where ? [where] : []),
     ...(transfers === 'exclude' ? [moneyMovementWhere] : []),
-    // The exclusion applies to every spending/income number, including the refund-pair rule.
-    { [Op.and]: [excludeFromStatsWhere] },
+    excludeFromStatsWhere,
   ];
 
   const rows = await findTransactions({

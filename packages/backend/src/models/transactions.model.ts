@@ -207,8 +207,7 @@ export interface TransactionsAttributes {
 
 /**
  * The fields an existing row takes from the main row when linked into a payment (plus its tags).
- * `excludeFromStats` is one of them: the flag covers the whole payment, so every leg has to
- * follow the main row or the reports would count the parts the user excluded.
+ * `excludeFromStats` covers the whole payment, so every leg follows the main row.
  */
 export const PAYMENT_LINK_FIELDS = [
   'categoryId',
@@ -221,7 +220,11 @@ export const PAYMENT_LINK_FIELDS = [
 
 export type PaymentLinkFields = Pick<TransactionsAttributes, (typeof PAYMENT_LINK_FIELDS)[number]>;
 
-export type PaymentLinkSnapshot = PaymentLinkFields & { tagIds: string[] };
+/** `excludeFromStats` is absent on snapshots stored before the column existed. */
+export type PaymentLinkSnapshot = Omit<PaymentLinkFields, 'excludeFromStats'> & {
+  excludeFromStats?: boolean;
+  tagIds: string[];
+};
 
 @Table({
   timestamps: true,
@@ -399,8 +402,6 @@ export default class Transactions extends Model {
   })
   declare isPlanned: boolean;
 
-  // A reporting opt-out, not a deletion: the row still counts toward balances and the
-  // transaction list, and only the reports skip it.
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,

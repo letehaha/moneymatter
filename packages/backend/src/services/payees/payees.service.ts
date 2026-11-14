@@ -214,7 +214,7 @@ export const listPayees = withTransaction(
            WHERE t."userId" = :scopedUserId
              AND t."transferNature" = 'not_transfer'
              AND a."excludeFromStats" = false
-             AND ${excludeFromStatsSql('t')}
+             AND ${excludeFromStatsSql({ alias: 't' })}
              ${accountFilter}
              AND (t."externalData" IS NULL OR NOT (t."externalData" @> '{"balanceAdjustment": true}'))
            GROUP BY t."payeeId"

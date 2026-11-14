@@ -1,6 +1,5 @@
-import { API_ERROR_CODES, API_RESPONSE_STATUS, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { API_RESPONSE_STATUS, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
-import { ERROR_CODES } from '@js/errors';
 import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
 import * as helpers from '@tests/helpers';
 
@@ -36,15 +35,15 @@ describe('excludeFromStats on the transaction write path', () => {
   it('PUT /transactions/:id clears and re-sets the flag, and the response carries it', async () => {
     const [tx] = await createTx({ excludeFromStats: true });
 
-    const cleared = await helpers.makeRequest<TransactionApiResponse>({
+    const cleared = await helpers.makeRequest<TransactionApiResponse[]>({
       method: 'put',
       url: `/transactions/${tx.id}`,
       payload: { excludeFromStats: false },
     });
 
-    expect(cleared.statusCode).toBe(API_RESPONSE_STATUS.success);
+    expect(cleared.statusCode).toBe(200);
     expect(cleared.body).toMatchObject({ status: API_RESPONSE_STATUS.success });
-    expect((cleared.body as { response: TransactionApiResponse }).response.excludeFromStats).toBe(false);
+    expect(cleared.body.response[0]!.excludeFromStats).toBe(false);
 
     const readBack = await helpers.getTransactionById({ id: tx.id, raw: true });
     expect(readBack?.excludeFromStats).toBe(false);
@@ -55,7 +54,7 @@ describe('excludeFromStats on the transaction write path', () => {
       payload: { excludeFromStats: true },
     });
 
-    expect(reFlagged.statusCode).toBe(API_RESPONSE_STATUS.success);
+    expect(reFlagged.statusCode).toBe(200);
     expect((await helpers.getTransactionById({ id: tx.id, raw: true }))?.excludeFromStats).toBe(true);
   }, 30_000);
 
@@ -68,15 +67,15 @@ describe('excludeFromStats on the transaction write path', () => {
       payload: { note: 'A note' },
     });
 
-    expect(updated.statusCode).toBe(API_RESPONSE_STATUS.success);
+    expect(updated.statusCode).toBe(200);
     expect((await helpers.getTransactionById({ id: tx.id, raw: true }))?.excludeFromStats).toBe(true);
   }, 30_000);
 
-  it('rejects the flag on a transfer leg, which is outside every report anyway', async () => {
+  it('accepts the flag on a transfer leg and round-trips it', async () => {
     const account = await helpers.createAccount({ raw: true });
     const destination = await helpers.createAccount({ raw: true });
 
-    const response = await helpers.createTransaction({
+    const [base, opposite] = await helpers.createTransaction({
       payload: {
         ...helpers.buildTransactionPayload({
           accountId: account.id,
@@ -88,38 +87,45 @@ describe('excludeFromStats on the transaction write path', () => {
         }),
         excludeFromStats: true,
       },
+      raw: true,
     });
 
-    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
-    const errorBody = (response as helpers.CustomResponse<unknown>).body.response as {
-      code: string;
-      message: string;
-    };
-    expect(errorBody.code).toBe(API_ERROR_CODES.validationError);
-    expect(errorBody.message).toMatch(/transfer/i);
+    expect(base.excludeFromStats).toBe(true);
+    expect(opposite!.excludeFromStats).toBe(false);
+
+    const updated = await helpers.makeRequest({
+      method: 'put',
+      url: `/transactions/${opposite!.id}`,
+      payload: { excludeFromStats: true },
+    });
+
+    expect(updated.statusCode).toBe(200);
+    expect((await helpers.getTransactionById({ id: opposite!.id, raw: true }))?.excludeFromStats).toBe(true);
   }, 30_000);
 
-  it('rejects the flag when a transaction is turned into a transfer', async () => {
-    const destination = await helpers.createAccount({ raw: true });
-    const [tx] = await createTx({ excludeFromStats: false });
-
-    const response = await helpers.makeRequest({
-      method: 'put',
-      url: `/transactions/${tx.id}`,
-      payload: {
-        transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
-        destinationAccountId: destination.id,
-        destinationAmount: 100,
-        excludeFromStats: true,
-      },
+  it('copies the flag from the main row onto its payment legs', async () => {
+    const card = await helpers.createAccount({ raw: true });
+    const voucher = await helpers.createAccount({ raw: true });
+    const [main] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: card.id,
+        amount: 70,
+        transactionType: TRANSACTION_TYPES.expense,
+        paymentLegs: [{ accountId: voucher.id, amount: 30 }],
+      }),
+      raw: true,
     });
+    const [leg] = (await helpers.getTransactions({ accountIds: [voucher.id], raw: true })).filter(
+      (tx) => tx.paymentParentId,
+    );
+    const legFlag = async () => (await helpers.getTransactionById({ id: leg!.id, raw: true }))?.excludeFromStats;
 
-    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
-    const errorBody = (response as helpers.CustomResponse<unknown>).body.response as {
-      code: string;
-      message: string;
-    };
-    expect(errorBody.code).toBe(API_ERROR_CODES.validationError);
-    expect(errorBody.message).toMatch(/transfer/i);
+    expect(await legFlag()).toBe(false);
+
+    await helpers.updateTransaction({ id: main.id, payload: { excludeFromStats: true } });
+    expect(await legFlag()).toBe(true);
+
+    await helpers.updateTransaction({ id: main.id, payload: { excludeFromStats: false } });
+    expect(await legFlag()).toBe(false);
   }, 30_000);
 });

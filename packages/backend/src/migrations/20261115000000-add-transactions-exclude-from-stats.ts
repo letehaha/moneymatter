@@ -5,12 +5,8 @@ import { dropRealTransactionsViewSql } from './utils/real-transactions-view';
 const createRealTransactionsViewSql = `CREATE OR REPLACE VIEW real_transactions AS SELECT * FROM "Transactions" WHERE "isPlanned" = false AND "deletedAt" IS NULL;`;
 
 /**
- * A reporting opt-out: the row stays in the ledger, counts toward balances and shows up in the
- * transaction list, but the reports skip it. `defaultValue` mirrors the model, which needs its own
- * default for backup restore to accept an archive that omits the column.
- *
- * The view is rebuilt at the end: Postgres freezes a view's column list when it is created, so the
- * reports reading through `real_transactions` would not see the new column.
+ * The view is rebuilt because Postgres freezes a view's column list at creation, so reports reading
+ * through `real_transactions` would not see the new column.
  */
 module.exports = {
   up: async (queryInterface: QueryInterface): Promise<void> => {

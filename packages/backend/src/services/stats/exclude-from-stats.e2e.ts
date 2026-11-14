@@ -1,4 +1,4 @@
-import { TRANSACTION_TYPES } from '@bt/shared/types';
+import { type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 import { addDays, format, subDays } from 'date-fns';
@@ -48,6 +48,38 @@ const seed = async () => {
   return account;
 };
 
+const linkRefund = async ({ originalTxId, refundTxId }: { originalTxId: RecordId; refundTxId: RecordId }) => {
+  expect((await helpers.createSingleRefund({ originalTxId, refundTxId })).statusCode).toBe(200);
+};
+const flagTx = async ({ id }: { id: RecordId }) => {
+  await helpers.updateTransaction({ id, payload: { excludeFromStats: true } });
+};
+
+/**
+ * Payee net flow is a raw signed sum with no refund netting or clamping, so a leaked group member
+ * shows up in it. A 10 baseline expense keeps the payee's stats row present.
+ */
+const seedRefundGroup = async () => {
+  const account = await helpers.createAccount({ raw: true });
+  const payee = await helpers.createPayee({ payload: helpers.buildPayeePayload({ name: 'Group payee' }), raw: true });
+
+  const create = async ({ amount, transactionType }: { amount: number; transactionType: TRANSACTION_TYPES }) => {
+    const [tx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType, payeeId: payee.id }),
+      raw: true,
+    });
+    return tx;
+  };
+  const netFlow = async () => [
+    (await helpers.getPayeeById({ id: payee.id, raw: true })).stats?.netFlowRef,
+    (await helpers.listPayees({ raw: true })).find((row) => row.id === payee.id)?.stats?.netFlowRef,
+  ];
+
+  await create({ amount: 10, transactionType: TRANSACTION_TYPES.expense });
+
+  return { create, netFlow };
+};
+
 describe('excludeFromStats on stats endpoints', () => {
   it('GET /stats/cash-flow drops the flagged expense and keeps the income', async () => {
     await seed();
@@ -81,79 +113,93 @@ describe('excludeFromStats on stats endpoints', () => {
 
     expect(flagged).toHaveLength(1);
 
-    const balance = await helpers.getBalanceHistory({ ...RANGE(), accountId: account.id, raw: true });
-    expect(balance.length).toBeGreaterThan(0);
+    // 0 initial - 50 - 200 (flagged) + 100
+    const refreshed = await helpers.getAccount({ id: account.id, raw: true });
+    expect(refreshed.currentBalance).toBe(-150);
   }, 60_000);
 
-  it('drops the whole refund pair when the original is excluded', async () => {
-    const account = await helpers.createAccount({ raw: true });
-    const time = subDays(new Date(), 1).toISOString();
+  it('drops the refund with its excluded original', async () => {
+    const { create, netFlow } = await seedRefundGroup();
+    const expense = await create({ amount: 200, transactionType: TRANSACTION_TYPES.expense });
+    const refund = await create({ amount: 50, transactionType: TRANSACTION_TYPES.income });
+    await linkRefund({ originalTxId: expense.id, refundTxId: refund.id });
 
-    const [expense] = await helpers.createTransaction({
-      payload: {
-        ...helpers.buildTransactionPayload({
-          accountId: account.id,
-          amount: 200,
-          transactionType: TRANSACTION_TYPES.expense,
-        }),
-        time,
-      },
-      raw: true,
-    });
-    const [refund] = await helpers.createTransaction({
-      payload: {
-        ...helpers.buildTransactionPayload({
-          accountId: account.id,
-          amount: 50,
-          transactionType: TRANSACTION_TYPES.income,
-        }),
-        time,
-      },
-      raw: true,
-    });
-    await helpers.createSingleRefund({ originalTxId: expense.id, refundTxId: refund.id });
+    expect(await netFlow()).toEqual([-160, -160]);
 
-    // The refund takes 50 off the 200 expense, so the pair is worth 150 until one side is excluded.
-    expect(await helpers.getExpensesAmountForPeriod({ ...RANGE(), raw: true })).toBe(150);
+    await flagTx({ id: expense.id });
 
-    await helpers.updateTransaction({ id: expense.id, payload: { excludeFromStats: true } });
-
-    expect(await helpers.getExpensesAmountForPeriod({ ...RANGE(), raw: true })).toBe(0);
+    expect(await netFlow()).toEqual([-10, -10]);
   }, 60_000);
 
-  it('drops the whole refund pair when the refund side is excluded', async () => {
-    const account = await helpers.createAccount({ raw: true });
-    const time = subDays(new Date(), 1).toISOString();
+  it('drops the original with its excluded refund', async () => {
+    const { create, netFlow } = await seedRefundGroup();
+    const expense = await create({ amount: 200, transactionType: TRANSACTION_TYPES.expense });
+    const refund = await create({ amount: 50, transactionType: TRANSACTION_TYPES.income });
+    await linkRefund({ originalTxId: expense.id, refundTxId: refund.id });
 
-    const [expense] = await helpers.createTransaction({
-      payload: {
-        ...helpers.buildTransactionPayload({
+    await flagTx({ id: refund.id });
+
+    expect(await netFlow()).toEqual([-10, -10]);
+  }, 60_000);
+
+  it('drops the whole refund group when one of two partial refunds is excluded', async () => {
+    const { create, netFlow } = await seedRefundGroup();
+    const expense = await create({ amount: 200, transactionType: TRANSACTION_TYPES.expense });
+    const flaggedRefund = await create({ amount: 50, transactionType: TRANSACTION_TYPES.income });
+    const keptRefund = await create({ amount: 30, transactionType: TRANSACTION_TYPES.income });
+    await linkRefund({ originalTxId: expense.id, refundTxId: flaggedRefund.id });
+    await linkRefund({ originalTxId: expense.id, refundTxId: keptRefund.id });
+
+    expect(await netFlow()).toEqual([-130, -130]);
+
+    await flagTx({ id: flaggedRefund.id });
+
+    expect(await netFlow()).toEqual([-10, -10]);
+  }, 60_000);
+
+  it('a trashed flagged original no longer hides its live refund', async () => {
+    const { create, netFlow } = await seedRefundGroup();
+    const expense = await create({ amount: 200, transactionType: TRANSACTION_TYPES.expense });
+    const refund = await create({ amount: 50, transactionType: TRANSACTION_TYPES.income });
+    await linkRefund({ originalTxId: expense.id, refundTxId: refund.id });
+    await flagTx({ id: expense.id });
+
+    expect(await netFlow()).toEqual([-10, -10]);
+
+    expect((await helpers.deleteTransaction({ id: expense.id })).statusCode).toBe(200);
+
+    expect(await netFlow()).toEqual([40, 40]);
+  }, 60_000);
+
+  it('keeps the flagged row out of the payee stats', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const payee = await helpers.createPayee({
+      payload: helpers.buildPayeePayload({ name: 'Excluded payee' }),
+      raw: true,
+    });
+    const create = async ({ amount }: { amount: number }) => {
+      const [tx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
           accountId: account.id,
-          amount: 200,
+          amount,
+          payeeId: payee.id,
           transactionType: TRANSACTION_TYPES.expense,
         }),
-        time,
-      },
-      raw: true,
-    });
-    const [refund] = await helpers.createTransaction({
-      payload: {
-        ...helpers.buildTransactionPayload({
-          accountId: account.id,
-          amount: 50,
-          transactionType: TRANSACTION_TYPES.income,
-        }),
-        time,
-      },
-      raw: true,
-    });
-    await helpers.createSingleRefund({ originalTxId: expense.id, refundTxId: refund.id });
+        raw: true,
+      });
+      return tx;
+    };
 
-    expect(await helpers.getExpensesAmountForPeriod({ ...RANGE(), raw: true })).toBe(150);
+    await create({ amount: 100 });
+    const flagged = await create({ amount: 40 });
+    await helpers.updateTransaction({ id: flagged.id, payload: { excludeFromStats: true } });
 
-    await helpers.updateTransaction({ id: refund.id, payload: { excludeFromStats: true } });
+    const detail = await helpers.getPayeeById({ id: payee.id, raw: true });
+    const listed = (await helpers.listPayees({ raw: true })).find((row) => row.id === payee.id);
 
-    expect(await helpers.getExpensesAmountForPeriod({ ...RANGE(), raw: true })).toBe(0);
+    for (const stats of [detail.stats, listed?.stats]) {
+      expect(stats).toMatchObject({ transactionCount: 1, netFlowRef: -100 });
+    }
   }, 60_000);
 
   it('keeps the flagged row out of the tracker totals', async () => {
@@ -170,12 +216,55 @@ describe('excludeFromStats on stats endpoints', () => {
     await helpers.addTransactionsToTracker({ id: tracker.id, payload: { transactionIds: [expense.id] } });
 
     const before = await helpers.getTrackerStats({ id: tracker.id, raw: true });
-    expect(before?.summary.actualExpense).toBe(10000);
+    expect(before?.summary.actualExpense).toBe(100);
+    expect((await helpers.getTrackerSpendingStats({ id: tracker.id, raw: true })).biggestDay?.expense).toBe(100);
 
     await helpers.updateTransaction({ id: expense.id, payload: { excludeFromStats: true } });
 
     const after = await helpers.getTrackerStats({ id: tracker.id, raw: true });
     expect(after?.summary.actualExpense).toBe(0);
+    expect((await helpers.getTrackerSpendingStats({ id: tracker.id, raw: true })).biggestDay).toBeNull();
+  }, 60_000);
+
+  it('keeps the flagged row and its refund group out of the exported tracker spent total', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const create = async ({
+      amount,
+      transactionType,
+      excludeFromStats,
+    }: {
+      amount: number;
+      transactionType: TRANSACTION_TYPES;
+      excludeFromStats?: boolean;
+    }) => {
+      const [tx] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType }),
+          ...(excludeFromStats === undefined ? {} : { excludeFromStats }),
+        },
+        raw: true,
+      });
+      return tx;
+    };
+
+    const kept = await create({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+    const flagged = await create({ amount: 200, transactionType: TRANSACTION_TYPES.expense, excludeFromStats: true });
+    const refund = await create({ amount: 50, transactionType: TRANSACTION_TYPES.income });
+    await helpers.createSingleRefund({ originalTxId: flagged.id, refundTxId: refund.id });
+
+    const tracker = await helpers.createTracker({ name: 'Exported', raw: true });
+    await helpers.addTransactionsToTracker({
+      id: tracker.id,
+      payload: { transactionIds: [kept.id, flagged.id, refund.id] },
+    });
+
+    const response = await helpers.exportData({ format: 'json', groups: ['budgets'] });
+    const json = helpers.parseExportArchive({ buffer: response.body }).json as Record<
+      string,
+      Record<string, unknown>[]
+    >;
+
+    expect(json.trackers!.find((row) => row.name === 'Exported')!.spentAmount).toBe(100);
   }, 60_000);
 
   it('keeps the flagged row out of the budget plan activity', async () => {

@@ -8,7 +8,7 @@ import { findTransactions } from '@models/transactions-query';
 import { liveTransactionExistsSql } from '@models/transactions-query/deletion-where';
 import Transactions from '@models/transactions.model';
 import { getBaseCurrency } from '@models/users-currencies.model';
-import { excludeFromStatsWhere } from '@services/stats/stats-transactions';
+import { excludeFromStatsSql } from '@services/stats/stats-transactions';
 import { Op, literal } from 'sequelize';
 
 import type { TrackerRow } from '../types';
@@ -50,14 +50,14 @@ export async function transformTrackers({ userId }: { userId: number }): Promise
       : Promise.resolve([] as Categories[]),
     transactionIds.length
       ? // Export mirrors what the tracker screen shows, and a tracker counts every row
-        // linked to it — so a linked plan is exported and summed like any other, while a row
-        // the user excluded from the reports stays out of the total, as it does on the screen.
+        // linked to it — so a linked plan is exported and summed like any other.
         findTransactions({
-          where: { [Op.and]: [{ id: { [Op.in]: transactionIds } }, excludeFromStatsWhere] },
+          where: { id: { [Op.in]: transactionIds } },
           planned: 'include',
           access: { creator: userId },
           balanceAdjustments: 'include',
           completeness: 'all',
+          attributes: { include: [[literal(excludeFromStatsSql()), 'countsInStats']] },
         })
       : Promise.resolve([] as Transactions[]),
   ]);
@@ -73,6 +73,7 @@ export async function transformTrackers({ userId }: { userId: number }): Promise
       );
       continue;
     }
+    if (!tx.get('countsInStats')) continue;
     const list = txByTrackerId.get(link.trackerId) ?? [];
     list.push(tx);
     txByTrackerId.set(link.trackerId, list);

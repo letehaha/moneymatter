@@ -82,9 +82,9 @@ describe('useFieldReveal', () => {
     expect(shown.value.location).toBe(true);
   });
 
-  it('offers no excludeFromStats chip on transfers', () => {
+  it('offers the excludeFromStats chip on transfers', () => {
     const { chipKeys, shown } = setup({ isTransferTx: true });
-    expect(chipKeys()).not.toContain('excludeFromStats');
+    expect(chipKeys()).toContain('excludeFromStats');
     expect(shown.value.excludeFromStats).toBe(false);
   });
 

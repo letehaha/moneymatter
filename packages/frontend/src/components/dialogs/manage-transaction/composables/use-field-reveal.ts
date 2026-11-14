@@ -98,8 +98,7 @@ export const useFieldReveal = ({
       externalReference: isOptionalFieldEnabled('externalReference'),
       location: isOptionalFieldEnabled('location'),
       originalAmount: isOptionalFieldEnabled('originalAmount') && !toValue(isTransferTx),
-      // Transfers are already outside every report, so the switch would be a silent no-op there.
-      excludeFromStats: !toValue(isTransferTx),
+      excludeFromStats: true,
     };
     const result: AddFieldChip[] = MOUNTABLE_FIELDS.filter((field) => isOffered[field] && !shown.value[field]).map(
       (field) => ({ key: field, ...FIELD_CHIPS[field], onClick: () => mount({ field }) }),

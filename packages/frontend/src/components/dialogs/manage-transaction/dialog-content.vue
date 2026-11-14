@@ -1695,18 +1695,16 @@ onUnmounted(() => {
           @apply-suggestion="applySuggestedOriginalAmount"
         />
       </FormRow>
-      <FormRow v-if="!isTransferTx && shownFields.excludeFromStats" data-optional-field="excludeFromStats">
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <p class="text-sm font-medium">{{ $t('dialogs.manageTransaction.form.excludeFromStatsLabel') }}</p>
-            <p class="text-muted-foreground text-xs">
-              {{ $t('dialogs.manageTransaction.form.excludeFromStatsTooltip') }}
-            </p>
+      <FormRow v-if="shownFields.excludeFromStats" data-optional-field="excludeFromStats">
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex min-w-0 items-center gap-1.5">
+            <span class="text-sm font-medium">{{ $t('dialogs.manageTransaction.form.excludeFromStatsLabel') }}</span>
+            <HintIcon :content="$t('dialogs.manageTransaction.form.excludeFromStatsTooltip')" />
           </div>
           <Switch
-            :model-value="Boolean(form.excludeFromStats)"
+            v-model="form.excludeFromStats"
             :disabled="isFormFieldsDisabled"
-            @update:model-value="(value) => (form.excludeFromStats = value)"
+            :aria-label="$t('dialogs.manageTransaction.form.excludeFromStatsLabel')"
           />
         </div>
       </FormRow>

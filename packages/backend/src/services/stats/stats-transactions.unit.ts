@@ -11,7 +11,7 @@ jest.mock('./category-allocation', () => ({ __esModule: true, resolveRefundPairs
 /* eslint-disable import/first */
 import { findTransactions } from '@models/transactions-query';
 
-import { statsTransactions } from './stats-transactions';
+import { excludeFromStatsWhere, statsTransactions } from './stats-transactions';
 /* eslint-enable import/first */
 
 const findTransactionsMock = jest.mocked(findTransactions);
@@ -69,6 +69,6 @@ describe('statsTransactions window bounds', () => {
     const fragments = lastWhere()![Op.and];
     expect(fragments).toHaveLength(2);
     expect(Object.getOwnPropertySymbols(fragments[0]!)).toContain(Op.or);
-    expect(Object.getOwnPropertySymbols(fragments[1]!)).toContain(Op.and);
+    expect(fragments).toContain(excludeFromStatsWhere);
   });
 });
