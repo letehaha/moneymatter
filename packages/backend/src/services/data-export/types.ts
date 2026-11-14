@@ -63,6 +63,7 @@ export interface TransactionRow {
   linkedTransfer: string;
   subscription: string;
   isPlanned: boolean;
+  excludeFromStats: boolean;
 }
 
 export interface AccountRow {

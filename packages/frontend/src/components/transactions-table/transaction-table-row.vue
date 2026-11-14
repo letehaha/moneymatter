@@ -29,6 +29,7 @@
         </label>
 
         <PlannedIndicator v-if="!isPlannedRow" compact hide-confirmed :transaction="tx" />
+        <ExcludeFromStatsIndicator compact :transaction="tx" />
       </div>
     </td>
 
@@ -258,6 +259,7 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { getPaymentRowAmounts } from '@/components/dialogs/manage-transaction/utils/payment-legs';
 import AttachmentIndicator from '@/components/transactions-list/indicators/attachment-indicator.vue';
 import PaymentIndicator from '@/components/transactions-list/indicators/payment-indicator.vue';
+import ExcludeFromStatsIndicator from '@/components/transactions-list/indicators/exclude-from-stats-indicator.vue';
 import PlannedIndicator from '@/components/transactions-list/indicators/planned-indicator.vue';
 import RefundIndicator from '@/components/transactions-list/indicators/refund-indicator.vue';
 import SplitIndicator from '@/components/transactions-list/indicators/split-indicator.vue';

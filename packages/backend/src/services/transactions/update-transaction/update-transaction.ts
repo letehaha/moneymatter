@@ -108,6 +108,14 @@ const validateTransaction = async (
 ) => {
   if (newData.id !== prevData.id) throw new ValidationError({ message: t({ key: 'transactions.idCannotBeChanged' }) });
 
+  // A transfer leg is already outside every report, so the flag would be a silent no-op there.
+  if (
+    newData.excludeFromStats &&
+    (newData.transferNature ?? prevData.transferNature) !== TRANSACTION_TRANSFER_NATURE.not_transfer
+  ) {
+    throw new ValidationError({ message: t({ key: 'transactions.excludeFromStatsTransfer' }) });
+  }
+
   // Check the account type, not the transaction type
   // A system transaction in a monobank account should be treated as external.
   // Auth has already been gated by the parent `updateTransaction`, so we look up the
@@ -243,6 +251,7 @@ const makeBasicBaseTxUpdation = async (
     currencyCode: prevData.currencyCode,
     refundLinked: prevData.refundLinked,
     isPlanned: newData.isPlanned,
+    excludeFromStats: newData.excludeFromStats,
     originalAmount: newData.originalAmount,
     originalCurrencyCode: newData.originalCurrencyCode,
   };

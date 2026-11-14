@@ -117,6 +117,7 @@ describe('create_transaction', () => {
         location: LOCATION,
         payeeLocked: true,
         applyAutomations: true,
+        excludeFromStats: true,
       },
       WRITE,
     );
@@ -127,6 +128,7 @@ describe('create_transaction', () => {
         location: LOCATION,
         payeeLocked: true,
         applyAutomations: true,
+        excludeFromStats: true,
       }),
     );
   });
@@ -145,6 +147,7 @@ describe('update_transaction', () => {
         location: LOCATION,
         payeeLocked: false,
         isPlanned: true,
+        excludeFromStats: true,
       }).success,
     ).toBe(true);
     expect(schema.safeParse({ id: ID, externalUrl: null, externalReference: null, location: null }).success).toBe(true);
@@ -176,7 +179,15 @@ describe('update_transaction', () => {
   it('passes the detail fields to the service, nulls included', async () => {
     update.mockResolvedValue([] as never);
     await tool.handler(
-      { id: ID, externalUrl: null, externalReference: 'R-1', location: LOCATION, payeeLocked: true, isPlanned: false },
+      {
+        id: ID,
+        externalUrl: null,
+        externalReference: 'R-1',
+        location: LOCATION,
+        payeeLocked: true,
+        isPlanned: false,
+        excludeFromStats: true,
+      },
       WRITE,
     );
     expect(update).toHaveBeenCalledWith(
@@ -187,6 +198,7 @@ describe('update_transaction', () => {
         location: LOCATION,
         payeeLocked: true,
         isPlanned: false,
+        excludeFromStats: true,
       }),
     );
   });

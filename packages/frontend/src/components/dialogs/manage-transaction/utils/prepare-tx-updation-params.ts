@@ -294,5 +294,12 @@ export const prepareTxUpdationParams = ({
     editionParams.isPlanned = formIsPlanned;
   }
 
+  // Delta only: an unrelated edit must not re-assert the flag, and the backend
+  // rejects it on a transfer leg.
+  const formExcludeFromStats = Boolean(form.excludeFromStats);
+  if (formExcludeFromStats !== Boolean(transaction.excludeFromStats)) {
+    editionParams.excludeFromStats = formExcludeFromStats;
+  }
+
   return editionParams;
 };

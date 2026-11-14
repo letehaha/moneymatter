@@ -93,6 +93,7 @@
     "plannedUnflipOnConnectedAccount": "This plan is on a bank-connected account, so your bank confirms it automatically. Delete if it is no longer expected.",
     "plannedCannotConfirmPayment": "A planned transaction cannot confirm a payment. Wait for it to be confirmed, then link it.",
     "plannedCannotBeRefundLinked": "A planned transaction cannot be part of a refund link.",
+    "excludeFromStatsTransfer": "Transfers move money between your own accounts, so they never appear in the reports — this option only applies to income and expenses.",
     "paymentLegsNotAllowed": "Only a regular income or expense on your own account can be split across several accounts. Transfers, refunds, planned and category-split transactions can't.",
     "inPaymentNotAllowed": "This transaction is part of a payment from several accounts. Remove it from the payment first.",
     "paymentLegInvalidAccount": "Each new part must be on one of your other manual accounts.",

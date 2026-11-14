@@ -96,6 +96,8 @@ const createdLegFields = ({ main, amount }: { main: Transactions.default; amount
   // Keeps background payee linking off the copy, so it can't drift from the main row.
   payeeLocked: true,
   categorizationMeta: main.categorizationMeta,
+  // The reporting opt-out covers the whole payment, so a leg follows the main row.
+  excludeFromStats: main.excludeFromStats,
 });
 
 const createLeg = async ({

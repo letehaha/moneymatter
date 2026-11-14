@@ -2,6 +2,7 @@ import { RecordId } from '@bt/shared/types';
 import BudgetPeriods from '@models/budget-periods.model';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
+import { excludeFromStatsSql } from '@services/stats/stats-transactions';
 import { QueryTypes } from 'sequelize';
 
 import { utcInstant } from '../date-ranges';
@@ -42,6 +43,7 @@ export const getPlanActivity = async ({
       JOIN "BudgetPlanAccounts" pa ON pa."accountId" = t."accountId" AND pa."planId" = :planId
       JOIN "Accounts" a ON a.id = t."accountId" AND a."excludeFromStats" = false AND a."userId" = :ownerId
       WHERE t."time" >= :fromUtc AND t."time" < :toUtc
+        AND ${excludeFromStatsSql('t')}
         AND ( t."transferNature" = 'not_transfer'
            OR (t."transferNature" = 'transfer_to_loan' AND t."transactionType" = 'expense')
            OR ( t."time" >= :poolFromUtc AND NOT EXISTS (

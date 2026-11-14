@@ -239,6 +239,7 @@ const form = ref<UI_FORM_STRUCT>({
   payeeId: null,
   categoryUserTouched: false,
   isPlanned: false,
+  excludeFromStats: false,
   originalAmount: null,
   originalCurrency: null,
 });
@@ -1694,6 +1695,22 @@ onUnmounted(() => {
           @apply-suggestion="applySuggestedOriginalAmount"
         />
       </FormRow>
+      <FormRow v-if="!isTransferTx && shownFields.excludeFromStats" data-optional-field="excludeFromStats">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium">{{ $t('dialogs.manageTransaction.form.excludeFromStatsLabel') }}</p>
+            <p class="text-muted-foreground text-xs">
+              {{ $t('dialogs.manageTransaction.form.excludeFromStatsTooltip') }}
+            </p>
+          </div>
+          <Switch
+            :model-value="Boolean(form.excludeFromStats)"
+            :disabled="isFormFieldsDisabled"
+            @update:model-value="(value) => (form.excludeFromStats = value)"
+          />
+        </div>
+      </FormRow>
+
       <!-- Refund linking on accounts shared *with* the caller isn't supported by the
            backend yet — hide the field rather than offering a button that errors on
            submit. Owner-side shares (`share.isOwner === true`) keep full access. -->

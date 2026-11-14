@@ -119,6 +119,10 @@ export const prepareTxCreationParams = ({
       creationParams.isPlanned = true;
     }
 
+    if (form.excludeFromStats) {
+      creationParams.excludeFromStats = true;
+    }
+
     const originalPair = resolveOriginalCurrencyPair({ form });
     if (originalPair.state === 'pair') {
       creationParams.originalAmount = originalPair.originalAmount;

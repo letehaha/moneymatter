@@ -3,7 +3,7 @@ import Accounts from '@models/accounts.model';
 import { AccessPolicy, PlannedPolicy, findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { endOfDay } from 'date-fns';
-import { FindAttributeOptions, Includeable, Op, Order, WhereOptions } from 'sequelize';
+import { FindAttributeOptions, Includeable, Op, Order, WhereOptions, literal } from 'sequelize';
 
 import { CategoryRefundPair, resolveRefundPairs } from './category-allocation';
 
@@ -65,6 +65,31 @@ export const moneyMovementWhere: WhereOptions = {
 };
 
 /**
+ * The one predicate every spending/income number applies: the row is not marked `excludeFromStats`,
+ * and neither is the other side of its refund pair (a refund that kept counting against an excluded
+ * expense would turn spending negative).
+ *
+ * Exported because the reports that build their own where clauses must use the same condition
+ * instead of growing their own copy: the payee stats (`excludeFromStatsWhere`) and the raw-SQL
+ * reports (`excludeFromStatsSql`, with the table alias they read through).
+ */
+export const excludeFromStatsSql = (alias = '"Transactions"'): string => `
+  ${alias}."excludeFromStats" = false
+  AND NOT EXISTS (
+    SELECT 1
+    FROM "RefundTransactions" rt
+    JOIN "Transactions" counterpart
+      ON counterpart."id" = CASE
+        WHEN rt."originalTxId" = ${alias}."id" THEN rt."refundTxId"
+        ELSE rt."originalTxId"
+      END
+    WHERE (rt."originalTxId" = ${alias}."id" OR rt."refundTxId" = ${alias}."id")
+      AND counterpart."excludeFromStats" = true
+  )`;
+
+export const excludeFromStatsWhere: WhereOptions = literal(excludeFromStatsSql());
+
+/**
  * A `to` day string is stretched to end-of-day only when `from` bounds the other side; an
  * open-start window stops at that day's midnight. Odd, but it is the boundary every stats report
  * was written and tested against, so widening it here would silently move report totals.
@@ -107,6 +132,8 @@ export const statsTransactions = async ({
     ...(refunds === 'exclude-refund-rows' ? [{ refundLinked: false }] : []),
     ...(where ? [where] : []),
     ...(transfers === 'exclude' ? [moneyMovementWhere] : []),
+    // The exclusion applies to every spending/income number, including the refund-pair rule.
+    { [Op.and]: [excludeFromStatsWhere] },
   ];
 
   const rows = await findTransactions({

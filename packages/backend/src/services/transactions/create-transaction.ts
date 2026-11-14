@@ -437,6 +437,11 @@ export const createTransaction = withTransaction(
         });
       }
 
+      // A transfer leg is already outside every report, so the flag would be a silent no-op there.
+      if (payload.excludeFromStats && transferNature !== TRANSACTION_TRANSFER_NATURE.not_transfer) {
+        throw new ValidationError({ message: t({ key: 'transactions.excludeFromStatsTransfer' }) });
+      }
+
       const accountType =
         payload.accountType ??
         (await resolveAccountTypeForManualWrite({
@@ -552,6 +557,7 @@ export const createTransaction = withTransaction(
         refCurrencyCode: defaultUserCurrency.code,
         payeeId: resolvedPayeeId,
         payeeLocked: callerPayeeLocked ?? false,
+        excludeFromStats: Boolean(payload.excludeFromStats),
       };
 
       if (defaultUserCurrency.code !== generalTxCurrency.code) {

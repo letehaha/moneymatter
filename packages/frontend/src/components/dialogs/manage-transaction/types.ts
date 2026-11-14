@@ -89,6 +89,8 @@ export interface UI_FORM_STRUCT {
   paymentTypeUserTouched?: boolean;
   /** Entry for money that hasn't moved yet: no balance impact until it's confirmed. */
   isPlanned?: boolean;
+  /** Keeps the row out of the reports without removing it from the ledger. */
+  excludeFromStats?: boolean;
   /** Decimal amount actually spent, in `originalCurrency`. Reaches the API only as a complete pair. */
   originalAmount?: number | null;
   /** Any ISO currency, not only the user's linked ones. Sent to the API as its `code`. */
@@ -109,6 +111,7 @@ export type TransactionPrefill = Pick<UI_FORM_STRUCT, 'type' | 'account' | 'amou
       | 'latitude'
       | 'longitude'
       | 'isPlanned'
+      | 'excludeFromStats'
       | 'splits'
       | 'toAccount'
       | 'targetAmount'

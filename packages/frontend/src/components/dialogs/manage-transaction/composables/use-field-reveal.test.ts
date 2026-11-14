@@ -50,6 +50,7 @@ describe('useFieldReveal', () => {
       'externalReference',
       'location',
       'originalAmount',
+      'excludeFromStats',
       'refund',
     ]);
   });
@@ -81,8 +82,28 @@ describe('useFieldReveal', () => {
     expect(shown.value.location).toBe(true);
   });
 
+  it('offers no excludeFromStats chip on transfers', () => {
+    const { chipKeys, shown } = setup({ isTransferTx: true });
+    expect(chipKeys()).not.toContain('excludeFromStats');
+    expect(shown.value.excludeFromStats).toBe(false);
+  });
+
+  it('mounting excludeFromStats turns the switch on and removes its chip', () => {
+    const { chipKeys, form, mount, shown } = setup();
+    mount({ field: 'excludeFromStats' });
+    expect(shown.value.excludeFromStats).toBe(true);
+    expect(form.value.excludeFromStats).toBe(true);
+    expect(chipKeys()).not.toContain('excludeFromStats');
+  });
+
   it('offers no originalAmount chip on transfers', () => {
     expect(setup({ isTransferTx: true }).chipKeys()).not.toContain('originalAmount');
+  });
+
+  it('shows an already excluded transaction without offering the chip', () => {
+    const { chipKeys, shown } = setup({ form: { excludeFromStats: true } });
+    expect(shown.value.excludeFromStats).toBe(true);
+    expect(chipKeys()).not.toContain('excludeFromStats');
   });
 
   it.each([

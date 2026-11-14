@@ -1,10 +1,10 @@
 import type { TransactionOptionalField } from '@bt/shared/types';
-import { GlobeIcon, HashIcon, LinkIcon, MapPinIcon, PaperclipIcon, TagIcon, Undo2Icon } from '@lucide/vue';
+import { EyeOffIcon, GlobeIcon, HashIcon, LinkIcon, MapPinIcon, PaperclipIcon, TagIcon, Undo2Icon } from '@lucide/vue';
 import { type Component, type MaybeRefOrGetter, computed, ref, toValue, watchEffect } from 'vue';
 
 import type { UI_FORM_STRUCT } from '../types';
 
-export type MountableField = TransactionOptionalField | 'tags' | 'attachments';
+export type MountableField = TransactionOptionalField | 'tags' | 'attachments' | 'excludeFromStats';
 
 const FIELD_CHIPS = {
   tags: { icon: TagIcon, labelKey: 'dialogs.manageTransaction.form.tagsLabel' },
@@ -13,6 +13,10 @@ const FIELD_CHIPS = {
   externalReference: { icon: HashIcon, labelKey: 'dialogs.manageTransaction.form.externalReferenceLabel' },
   location: { icon: MapPinIcon, labelKey: 'dialogs.manageTransaction.form.location.label' },
   originalAmount: { icon: GlobeIcon, labelKey: 'dialogs.manageTransaction.form.originalAmountLabel' },
+  excludeFromStats: {
+    icon: EyeOffIcon,
+    labelKey: 'dialogs.manageTransaction.form.excludeFromStatsChipLabel',
+  },
 } satisfies Record<MountableField, { icon: Component; labelKey: string }>;
 
 const MOUNTABLE_FIELDS = Object.keys(FIELD_CHIPS) as MountableField[];
@@ -59,6 +63,7 @@ export const useFieldReveal = ({
       externalReference: !!values.externalReference,
       location: values.latitude != null || values.longitude != null,
       originalAmount: values.originalAmount != null || !!values.originalCurrency,
+      excludeFromStats: !!values.excludeFromStats,
     };
     for (const field of MOUNTABLE_FIELDS) if (hasValue[field]) mounted.value.add(field);
   });
@@ -73,11 +78,15 @@ export const useFieldReveal = ({
       externalReference: isMounted('externalReference'),
       location: isMounted('location'),
       originalAmount: isMounted('originalAmount'),
+      excludeFromStats: isMounted('excludeFromStats'),
     };
   });
 
   const mount = ({ field }: { field: MountableField }) => {
     mounted.value.add(field);
+    // Revealing the switch turns it on: the chip reads "exclude from stats", so an off switch
+    // behind it would look like the action failed.
+    if (field === 'excludeFromStats') toValue(form).excludeFromStats = true;
     onReveal({ field });
   };
 
@@ -89,6 +98,8 @@ export const useFieldReveal = ({
       externalReference: isOptionalFieldEnabled('externalReference'),
       location: isOptionalFieldEnabled('location'),
       originalAmount: isOptionalFieldEnabled('originalAmount') && !toValue(isTransferTx),
+      // Transfers are already outside every report, so the switch would be a silent no-op there.
+      excludeFromStats: !toValue(isTransferTx),
     };
     const result: AddFieldChip[] = MOUNTABLE_FIELDS.filter((field) => isOffered[field] && !shown.value[field]).map(
       (field) => ({ key: field, ...FIELD_CHIPS[field], onClick: () => mount({ field }) }),
