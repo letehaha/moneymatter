@@ -18,6 +18,7 @@ import {
   remapCategoryOrderIds,
   remapFireSettingsIds,
   remapIncomeCategoryIds,
+  remapIosAddExpenseCategoryIds,
   remapSavedPivotViewIds,
   remapSavedTransactionViewIds,
 } from './remap-embedded-references';
@@ -130,13 +131,14 @@ async function upsertUserSettings({
   const restoredSettings: SettingsSchema = restored.data;
 
   // Category/account/payee/portfolio UUIDs may be reminted on restore, so rewrite the ids saved
-  // inside Pivot views, Transactions views, the FIRE slice, the income categories and the
-  // category order before persisting the settings blob.
+  // inside Pivot views, Transactions views, the FIRE slice, the income categories, the iOS
+  // Add Expense categories and the category order before persisting the settings blob.
   remapSavedPivotViewIds({ views: restoredSettings.savedPivotViews, insertedIds });
   remapSavedTransactionViewIds({ views: restoredSettings.savedTransactionViews, insertedIds });
   remapFireSettingsIds({ fire: restoredSettings.fire, insertedIds });
   for (const entry of restoredSettings.fireHistory ?? []) remapFireSettingsIds({ fire: entry.fire, insertedIds });
   remapIncomeCategoryIds({ settings: restoredSettings, insertedIds });
+  remapIosAddExpenseCategoryIds({ settings: restoredSettings, insertedIds });
   remapCategoryOrderIds({ settings: restoredSettings, insertedIds });
 
   await UserSettings.create({ userId, settings: restoredSettings });

@@ -370,6 +370,9 @@ describe('Patch user settings', () => {
       { import: { recalculateAccountBalance: 'yes' } },
       { accounts: { defaultAccountId: 'not-a-uuid' } },
       { accounts: { showArchivedInDropdowns: 'yes' } },
+      { ios: { addExpense: { showBankAccounts: 'yes' } } },
+      { ios: { addExpense: { excludedCategoryIds: ['not-a-uuid'] } } },
+      { ios: { addExpense: { excludedCategoryIds: Array.from({ length: 501 }, () => generateRandomRecordId()) } } },
       { currencyDisplay: 'code' },
     ];
 
@@ -449,6 +452,62 @@ describe('Patch user settings', () => {
       },
     });
     expect(overCap.statusCode).toBe(ERROR_CODES.ValidationError);
+  });
+
+  it('persists the ios slice and keeps it through patches of other keys', async () => {
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { ios: { addExpense: { showBankAccounts: true } } },
+    });
+    expect(patched.ios).toStrictEqual({ addExpense: { showBankAccounts: true } });
+
+    const fetched = await helpers.getUserSettings({ raw: true });
+    expect(fetched.ios).toStrictEqual({ addExpense: { showBankAccounts: true } });
+
+    await helpers.patchUserSettings({
+      raw: true,
+      patch: { accounts: { showArchivedInDropdowns: true } },
+    });
+
+    const afterOtherPatch = await helpers.getUserSettings({ raw: true });
+    expect(afterOtherPatch.ios).toStrictEqual({ addExpense: { showBankAccounts: true } });
+
+    await helpers.patchUserSettings({
+      raw: true,
+      patch: { ios: { addExpense: { showBankAccounts: false } } },
+    });
+
+    const afterToggleOff = await helpers.getUserSettings({ raw: true });
+    expect(afterToggleOff.ios).toStrictEqual({ addExpense: { showBankAccounts: false } });
+  });
+
+  it('replaces ios.addExpense.excludedCategoryIds wholesale without touching showBankAccounts', async () => {
+    const [first, second, third] = [generateRandomRecordId(), generateRandomRecordId(), generateRandomRecordId()];
+
+    await helpers.patchUserSettings({ raw: true, patch: { ios: { addExpense: { showBankAccounts: true } } } });
+
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { ios: { addExpense: { excludedCategoryIds: [first, second, third] } } },
+    });
+    expect(patched.ios).toStrictEqual({
+      addExpense: { showBankAccounts: true, excludedCategoryIds: [first, second, third] },
+    });
+
+    const fetched = await helpers.getUserSettings({ raw: true });
+    expect(fetched.ios).toStrictEqual(patched.ios);
+
+    await helpers.patchUserSettings({ raw: true, patch: { ios: { addExpense: { excludedCategoryIds: [second] } } } });
+    const shrunk = await helpers.getUserSettings({ raw: true });
+    expect(shrunk.ios).toStrictEqual({ addExpense: { showBankAccounts: true, excludedCategoryIds: [second] } });
+
+    await helpers.patchUserSettings({ raw: true, patch: { ios: { addExpense: { showBankAccounts: false } } } });
+    const afterToggle = await helpers.getUserSettings({ raw: true });
+    expect(afterToggle.ios).toStrictEqual({ addExpense: { showBankAccounts: false, excludedCategoryIds: [second] } });
+
+    await helpers.patchUserSettings({ raw: true, patch: { ios: { addExpense: { excludedCategoryIds: [] } } } });
+    const cleared = await helpers.getUserSettings({ raw: true });
+    expect(cleared.ios).toStrictEqual({ addExpense: { showBankAccounts: false, excludedCategoryIds: [] } });
   });
 
   it('persists, merges and clears the accounts slice', async () => {

@@ -25,6 +25,7 @@ import Tags from '@models/tags.model';
 import Trackers from '@models/trackers.model';
 import TransactionAutomations from '@models/transaction-automations.model';
 import Transactions from '@models/transactions.model';
+import type { SettingsSchema } from '@models/user-settings.model';
 import VentureEventLinks from '@models/venture/venture-event-links.model';
 import { Model, type ModelStatic, Op, type Transaction, type WhereOptions } from 'sequelize';
 
@@ -391,6 +392,12 @@ export function remapSavedTransactionViewIds({
   }
 }
 
+/** Map category ids to their restored ids, dropping ids the restore did not insert. */
+function remapCategoryIdList({ ids, insertedIds }: { ids: string[]; insertedIds: InsertedIds }): string[] {
+  const categories = insertedIds.get(String(Categories.getTableName()));
+  return ids.flatMap((id) => categories?.get(id) ?? []);
+}
+
 /** Remap FIRE category ids and the `portfolio:<id>` return indicator in place. Every restored
  *  row is in `insertedIds`, so an unmapped id is dangling: it's dropped, and the indicator falls
  *  back to its default. */
@@ -402,11 +409,10 @@ export function remapFireSettingsIds({
   insertedIds: InsertedIds;
 }): void {
   if (!fire) return;
-  const categories = insertedIds.get(String(Categories.getTableName()));
   const portfolios = insertedIds.get(String(Portfolios.getTableName()));
 
   if (fire.spendingExcludedCategoryIds) {
-    fire.spendingExcludedCategoryIds = fire.spendingExcludedCategoryIds.flatMap((id) => categories?.get(id) ?? []);
+    fire.spendingExcludedCategoryIds = remapCategoryIdList({ ids: fire.spendingExcludedCategoryIds, insertedIds });
   }
   if (fire.returnIndicatorId && isPortfolioIndicatorId({ id: fire.returnIndicatorId })) {
     const portfolioId = portfolios?.get(getPortfolioIdFromIndicatorId({ id: fire.returnIndicatorId }));
@@ -424,8 +430,20 @@ export function remapIncomeCategoryIds({
   insertedIds: InsertedIds;
 }): void {
   if (!settings.incomeCategoryIds) return;
-  const categories = insertedIds.get(String(Categories.getTableName()));
-  settings.incomeCategoryIds = settings.incomeCategoryIds.flatMap((id) => categories?.get(id) ?? []);
+  settings.incomeCategoryIds = remapCategoryIdList({ ids: settings.incomeCategoryIds, insertedIds });
+}
+
+/** Remap `settings.ios.addExpense.excludedCategoryIds` in place, dropping ids the restore did not insert. */
+export function remapIosAddExpenseCategoryIds({
+  settings,
+  insertedIds,
+}: {
+  settings: Pick<SettingsSchema, 'ios'>;
+  insertedIds: InsertedIds;
+}): void {
+  const addExpense = settings.ios?.addExpense;
+  if (!addExpense?.excludedCategoryIds) return;
+  addExpense.excludedCategoryIds = remapCategoryIdList({ ids: addExpense.excludedCategoryIds, insertedIds });
 }
 
 /** Remap `settings.categoryOrder` keys (parent ids) and values in place, dropping ids the restore did not insert. */

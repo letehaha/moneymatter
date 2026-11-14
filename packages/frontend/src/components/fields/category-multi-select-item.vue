@@ -34,6 +34,7 @@
         :is-selected="isSelected"
         :get-descendant-count="getDescendantCount"
         :taken-by="takenBy"
+        :is-covered="isCovered"
         @toggle="$emit('toggle', $event)"
       />
     </template>
@@ -54,6 +55,7 @@ const props = defineProps<{
   isSelected: (id: string) => boolean;
   getDescendantCount: (category: FormattedCategory) => number;
   takenBy: Record<string, string>;
+  isCovered: (id: string) => boolean;
 }>();
 
 defineEmits<{
@@ -63,5 +65,7 @@ defineEmits<{
 const descendantCount = computed(() => props.getDescendantCount(props.category));
 const takenByName = computed(() => props.takenBy[props.category.id]);
 // A selected category that became taken (merge, re-parent) stays removable.
-const isBlocked = computed(() => Boolean(takenByName.value) && !props.isSelected(props.category.id));
+const isBlocked = computed(
+  () => (!!takenByName.value && !props.isSelected(props.category.id)) || props.isCovered(props.category.id),
+);
 </script>
