@@ -29,6 +29,7 @@ import {
   resolveManualLogoFields,
 } from '@services/brand-logos';
 import { canUserAccessResource } from '@services/sharing/auth/can-user-access-resource.service';
+import { excludeFromStatsSql } from '@services/stats/stats-transactions';
 import { assertTagsOwnedByUser } from '@services/tags/assert-tags-owned-by-user';
 import { pauseAutomationsReferencing, rewriteAutomationRef } from '@services/transaction-automations/references';
 import { Op, QueryTypes } from 'sequelize';
@@ -213,6 +214,7 @@ export const listPayees = withTransaction(
            WHERE t."userId" = :scopedUserId
              AND t."transferNature" = 'not_transfer'
              AND a."excludeFromStats" = false
+             AND ${excludeFromStatsSql('t')}
              ${accountFilter}
              AND (t."externalData" IS NULL OR NOT (t."externalData" @> '{"balanceAdjustment": true}'))
            GROUP BY t."payeeId"

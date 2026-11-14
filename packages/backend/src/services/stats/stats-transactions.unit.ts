@@ -63,9 +63,12 @@ describe('statsTransactions window bounds', () => {
     expect(bounds[Op.lte]).toBeUndefined();
   });
 
-  it('states only the money-movement clause for an unbounded window', async () => {
+  it('states the money-movement clause and the reporting opt-out for an unbounded window', async () => {
     await statsTransactions({ access: { creator: 7 }, planned: 'exclude', refunds: 'ignore', window: {} });
 
-    expect(lastWhere()![Op.and]).toHaveLength(1);
+    const fragments = lastWhere()![Op.and];
+    expect(fragments).toHaveLength(2);
+    expect(Object.getOwnPropertySymbols(fragments[0]!)).toContain(Op.or);
+    expect(Object.getOwnPropertySymbols(fragments[1]!)).toContain(Op.and);
   });
 });

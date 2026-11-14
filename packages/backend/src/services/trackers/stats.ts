@@ -6,7 +6,7 @@ import TrackerLines from '@models/tracker-lines.model';
 import Trackers from '@models/trackers.model';
 import { findTransactions } from '@models/transactions-query';
 import type * as Transactions from '@models/transactions.model';
-import { moneyMovementWhere } from '@services/stats/stats-transactions';
+import { excludeFromStatsWhere, moneyMovementWhere } from '@services/stats/stats-transactions';
 import { includeLines } from '@services/trackers/get-trackers';
 import { Op } from 'sequelize';
 
@@ -136,7 +136,7 @@ const getLinkedTransactionsStats = async ({
     Transactions.default,
     'id' | 'time' | 'amount' | 'refAmount' | 'transactionType' | 'refundLinked' | 'categoryId' | 'userId'
   >[] = await findTransactions({
-    where: moneyMovementWhere,
+    where: { [Op.and]: [moneyMovementWhere, excludeFromStatsWhere] },
     access: { trackerScoped: [trackerId as RecordId] },
     completeness: 'all',
     planned: { visibleTo: callerUserId },

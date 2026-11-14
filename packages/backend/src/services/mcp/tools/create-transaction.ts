@@ -47,6 +47,9 @@ export const createTransactionTool = defineTool({
     ),
     tagIds: shape.tagIds.describe('Tag IDs to assign to this transaction'),
     isPlanned: shape.isPlanned.describe('Mark the transaction as planned rather than an already-happened record'),
+    excludeFromStats: shape.excludeFromStats.describe(
+      'Keep the transaction out of every spending/income report. It still counts toward balances and stays in the transaction list',
+    ),
     payeeId: shape.payeeId.describe(
       'ID of an existing payee to link (from get_payees). Cannot be combined with merchantName',
     ),

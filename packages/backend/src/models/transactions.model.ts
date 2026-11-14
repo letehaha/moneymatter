@@ -192,6 +192,8 @@ export interface TransactionsAttributes {
   originalCurrencyCode: string | null;
   refundLinked: boolean;
   isPlanned: boolean;
+  /** Set by the user to keep this row out of the reports: one-off movements such as a property sale. */
+  excludeFromStats: boolean;
   categorizationMeta: CategorizationMeta | null;
   payeeId: string | null;
   payeeLocked: boolean;
@@ -203,8 +205,19 @@ export interface TransactionsAttributes {
   updatedAt: Date;
 }
 
-/** The fields an existing row takes from the main row when linked into a payment (plus its tags). */
-export const PAYMENT_LINK_FIELDS = ['categoryId', 'payeeId', 'payeeLocked', 'note', 'categorizationMeta'] as const;
+/**
+ * The fields an existing row takes from the main row when linked into a payment (plus its tags).
+ * `excludeFromStats` is one of them: the flag covers the whole payment, so every leg has to
+ * follow the main row or the reports would count the parts the user excluded.
+ */
+export const PAYMENT_LINK_FIELDS = [
+  'categoryId',
+  'payeeId',
+  'payeeLocked',
+  'note',
+  'categorizationMeta',
+  'excludeFromStats',
+] as const;
 
 export type PaymentLinkFields = Pick<TransactionsAttributes, (typeof PAYMENT_LINK_FIELDS)[number]>;
 
@@ -385,6 +398,15 @@ export default class Transactions extends Model {
     defaultValue: false,
   })
   declare isPlanned: boolean;
+
+  // A reporting opt-out, not a deletion: the row still counts toward balances and the
+  // transaction list, and only the reports skip it.
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  })
+  declare excludeFromStats: boolean;
 
   // Metadata about how this transaction was categorized (manual, ai, user_rule, subscription_rule, payee_rule)
   @Column({
@@ -1508,6 +1530,7 @@ type CreateTxOptionalParams = Partial<
     | 'payeeId'
     | 'payeeLocked'
     | 'isPlanned'
+    | 'excludeFromStats'
     | 'originalAmount'
     | 'originalCurrencyCode'
     | 'paymentParentId'
@@ -1551,6 +1574,7 @@ export interface UpdateTransactionByIdParams {
   payeeId?: string | null;
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  excludeFromStats?: boolean;
   originalAmount?: Money | null;
   originalCurrencyCode?: string | null;
   externalData?: TransactionsAttributes['externalData'];

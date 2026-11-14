@@ -8,6 +8,7 @@ import { findTransactions } from '@models/transactions-query';
 import { liveTransactionExistsSql } from '@models/transactions-query/deletion-where';
 import Transactions from '@models/transactions.model';
 import { getBaseCurrency } from '@models/users-currencies.model';
+import { excludeFromStatsWhere } from '@services/stats/stats-transactions';
 import { Op, literal } from 'sequelize';
 
 import type { TrackerRow } from '../types';
@@ -49,9 +50,10 @@ export async function transformTrackers({ userId }: { userId: number }): Promise
       : Promise.resolve([] as Categories[]),
     transactionIds.length
       ? // Export mirrors what the tracker screen shows, and a tracker counts every row
-        // linked to it — so a linked plan is exported and summed like any other.
+        // linked to it — so a linked plan is exported and summed like any other, while a row
+        // the user excluded from the reports stays out of the total, as it does on the screen.
         findTransactions({
-          where: { id: { [Op.in]: transactionIds } },
+          where: { [Op.and]: [{ id: { [Op.in]: transactionIds } }, excludeFromStatsWhere] },
           planned: 'include',
           access: { creator: userId },
           balanceAdjustments: 'include',

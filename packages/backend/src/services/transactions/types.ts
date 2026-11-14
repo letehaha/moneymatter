@@ -87,6 +87,8 @@ interface UpdateParams {
   payeeId?: string | null;
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  /** Keeps the row out of the reports without removing it from the ledger. */
+  excludeFromStats?: boolean;
   /** `null` clears the stored metadata; both fields move together. */
   originalAmount?: Money | null;
   originalCurrencyCode?: string | null;

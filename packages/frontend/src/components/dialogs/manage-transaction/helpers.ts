@@ -234,6 +234,7 @@ export const prepopulateForm = ({
       // to prevent later Payee selections from silently overwriting it.
       categoryUserTouched: transaction.categoryId !== null && transaction.categoryId !== undefined,
       isPlanned: Boolean(transaction.isPlanned),
+      excludeFromStats: Boolean(transaction.excludeFromStats),
       originalAmount: transaction.originalAmount ?? null,
       originalCurrency: transaction.originalCurrencyCode
         ? (systemCurrencies.find((item) => item.code === transaction.originalCurrencyCode) ?? null)

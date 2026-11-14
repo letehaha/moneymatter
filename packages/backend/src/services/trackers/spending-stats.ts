@@ -7,7 +7,7 @@ import Payees from '@models/payees.model';
 import Trackers from '@models/trackers.model';
 import { findTransactions } from '@models/transactions-query';
 import { EMPTY_LOGO_FIELDS, serializeLogoFields } from '@root/serializers/logo-fields.serializer';
-import { moneyMovementWhere } from '@services/stats/stats-transactions';
+import { excludeFromStatsWhere, moneyMovementWhere } from '@services/stats/stats-transactions';
 import {
   addDays,
   addMonths,
@@ -491,7 +491,7 @@ const getLinkedTransactionsSpendingStats = async ({
   });
 
   const transactions = await findTransactions({
-    where: moneyMovementWhere,
+    where: { [Op.and]: [moneyMovementWhere, excludeFromStatsWhere] },
     access: { trackerScoped: [trackerId as RecordId] },
     completeness: 'all',
     planned: { visibleTo: callerUserId },

@@ -68,6 +68,9 @@ export const updateTransactionTool = defineTool({
     isPlanned: shape.isPlanned.describe(
       'true marks it planned, false marks it as happened (see also confirm_planned_transaction in the subscriptions toolset)',
     ),
+    excludeFromStats: shape.excludeFromStats.describe(
+      'true keeps the transaction out of every spending/income report; balances and the transaction list are unaffected',
+    ),
   },
   run: async ({ userId, args }) => {
     const { id, ...fields } = args;
@@ -105,6 +108,7 @@ export const updateTransactionTool = defineTool({
       location: body.location,
       payeeLocked: body.payeeLocked,
       isPlanned: body.isPlanned,
+      excludeFromStats: body.excludeFromStats,
       // null clears the link, so only an omitted payeeId is left out
       ...(body.payeeId !== undefined ? { payeeId: body.payeeId } : {}),
     });
