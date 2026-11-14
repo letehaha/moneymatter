@@ -1,4 +1,6 @@
-import { BalanceStatus, type EnableBankingBalance } from '../types';
+import { Money } from '@common/types/money';
+
+import { BalanceStatus, CashAccountType, type EnableBankingBalance } from '../types';
 
 // Booked types first: available balances already subtract pending holds, which
 // must not move the account balance before the bank books them.
@@ -10,6 +12,22 @@ export function pickAccountBalance({ balances }: { balances: EnableBankingBalanc
     if (balance) return balance;
   }
   return balances[0];
+}
+
+// Some ASPSPs (Morrow Bank SE) report savings balances with the sign inverted (bug or not, whoever knows).
+// A savings account without a credit line cannot be overdrawn.
+export function correctInvertedSavingsBalance({
+  balance,
+  cashAccountType,
+  creditLimitCents,
+}: {
+  balance: Money;
+  cashAccountType: CashAccountType | undefined;
+  creditLimitCents: number | undefined;
+}): Money {
+  return cashAccountType === CashAccountType.SVGS && !creditLimitCents && balance.isNegative()
+    ? balance.negate()
+    : balance;
 }
 
 export function balancesForLog({ balances }: { balances: EnableBankingBalance[] }) {

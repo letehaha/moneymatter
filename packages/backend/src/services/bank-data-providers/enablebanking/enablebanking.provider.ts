@@ -60,7 +60,7 @@ import {
   TransactionStatus,
   TransactionsFetchStrategy,
 } from './types';
-import { balancesForLog, pickAccountBalance } from './utils/balances';
+import { balancesForLog, correctInvertedSavingsBalance, pickAccountBalance } from './utils/balances';
 import { filterIbanCompatible, haveSameParties, pickNearestByDate } from './utils/candidate-selection';
 import { calculateConsentValidUntil } from './utils/consent';
 import {
@@ -583,9 +583,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             balances: balancesForLog({ balances }),
           });
 
-          // Convert balance from string to system amount (cents as integer)
           const balanceFloat = primaryBalance?.balance_amount ? parseFloat(primaryBalance.balance_amount.amount) : 0;
-          const balanceSystemAmount = Money.fromDecimal(balanceFloat).toCents();
           const creditLimitCurrencyMatches = Boolean(
             details.currency &&
             details.credit_limit?.currency &&
@@ -617,7 +615,11 @@ export class EnableBankingProvider extends BaseBankDataProvider {
               details.product ||
               `Account ${details.account_id?.iban?.slice(-4) || accountId.slice(-4)}`,
             type: 'debit' as const, // Enable Banking doesn't distinguish, default to debit
-            balance: balanceSystemAmount,
+            balance: correctInvertedSavingsBalance({
+              balance: Money.fromDecimal(balanceFloat),
+              cashAccountType: details.cash_account_type,
+              creditLimitCents,
+            }).toCents(),
             // Empty/missing currency → ISO "XXX" (no currency), so connect
             // requires an explicit user choice instead of failing downstream.
             currency: details.currency?.toUpperCase() || NO_CURRENCY_CODE,
@@ -1168,8 +1170,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
           // Always update account balance from bank when syncing
           // This ensures balance stays accurate even if no new transactions were found
-          const balance = await this.fetchBalance(connectionId, apiUid);
-          await writeBankBalanceWithHistory({ account, balance: Money.fromCents(balance.amount) });
+          await this.writeBalanceFromBank({ connectionId, apiUid, account });
 
           return { transactionIds: createdTransactionIds, extraAutoLinkCandidateIds: bookedUpgradedTransactionIds };
         },
@@ -1423,9 +1424,31 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     const metadata = account.externalData as Record<string, unknown> | null;
     const apiUid = (metadata?.uid as string) || account.externalId;
 
-    const balance = await this.fetchBalance(connectionId, apiUid);
+    await this.writeBalanceFromBank({ connectionId, apiUid, account });
+  }
 
-    await writeBankBalanceWithHistory({ account, balance: Money.fromCents(balance.amount) });
+  private async writeBalanceFromBank({
+    connectionId,
+    apiUid,
+    account,
+  }: {
+    connectionId: string;
+    apiUid: string;
+    account: Accounts;
+  }): Promise<void> {
+    const balance = await this.fetchBalance(connectionId, apiUid);
+    const rawAccountData = (account.externalData as Record<string, unknown> | null)?.rawAccountData as
+      | EnableBankingAccount
+      | undefined;
+
+    await writeBankBalanceWithHistory({
+      account,
+      balance: correctInvertedSavingsBalance({
+        balance: Money.fromCents(balance.amount),
+        cashAccountType: rawAccountData?.cash_account_type,
+        creditLimitCents: account.creditLimit.toCents(),
+      }),
+    });
   }
 
   // ============================================================================

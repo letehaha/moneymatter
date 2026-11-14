@@ -3065,4 +3065,45 @@ describe('Enable Banking Data Provider E2E', () => {
       expect(account.currentBalance).toBe(1523.45);
     });
   });
+
+  describe('Negative balance on an account that cannot be overdrawn', () => {
+    const mockBank = ({ cashAccountType, creditLimit }: { cashAccountType: string; creditLimit?: string }) =>
+      global.mswMockServer.use(
+        http.get('https://api.enablebanking.com/accounts/:accountId/details', ({ params }) =>
+          HttpResponse.json({
+            ...getMockedAccountDetails(params.accountId as string),
+            cash_account_type: cashAccountType,
+            ...(creditLimit && { credit_limit: { amount: creditLimit, currency: 'EUR' } }),
+          }),
+        ),
+        http.get('https://api.enablebanking.com/accounts/:accountId/balances', () =>
+          HttpResponse.json({
+            balances: [{ balance_type: 'ITAV', balance_amount: { amount: '-1523.45', currency: 'EUR' } }],
+          }),
+        ),
+      );
+
+    it('shows a savings account as positive on link and after sync', async () => {
+      mockBank({ cashAccountType: 'SVGS' });
+      const { connectionId, accountId } = await setupActiveConnection();
+
+      expect((await helpers.getAccount({ id: accountId, raw: true })).currentBalance).toBe(1523.45);
+
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+      expect((await helpers.getAccount({ id: accountId, raw: true })).currentBalance).toBe(1523.45);
+    });
+
+    it.each([
+      ['an overdrawn current account', { cashAccountType: 'CACC' }],
+      ['a savings account with a credit line', { cashAccountType: 'SVGS', creditLimit: '5000.00' }],
+    ])('keeps %s negative', async (_, bank) => {
+      mockBank(bank);
+      const { connectionId, accountId } = await setupActiveConnection();
+
+      expect((await helpers.getAccount({ id: accountId, raw: true })).currentBalance).toBe(-1523.45);
+
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+      expect((await helpers.getAccount({ id: accountId, raw: true })).currentBalance).toBe(-1523.45);
+    });
+  });
 });
