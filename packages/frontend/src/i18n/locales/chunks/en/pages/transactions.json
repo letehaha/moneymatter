@@ -45,6 +45,9 @@
         "exclude": "Exclude",
         "only": "Only"
       },
+      "search": {
+        "placeholder": "Search notes, payees and tags"
+      },
       "noteIncludes": {
         "label": "Note includes (comma-separated):",
         "placeholder": "Amazon,nike",
