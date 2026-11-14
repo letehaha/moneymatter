@@ -72,6 +72,10 @@ export const useFiltersFromQuery = () => {
       filters.amountLte = Number(query.amountLte);
     }
 
+    if (query.search) {
+      filters.search = query.search as string;
+    }
+
     if (query.noteIncludes) {
       filters.noteIncludes = query.noteIncludes as string;
     }
