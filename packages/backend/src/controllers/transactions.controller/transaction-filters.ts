@@ -70,6 +70,13 @@ export const transactionFilterFields = {
       if (!val || val === '') return undefined;
       return parseCommaSeparatedStrings(val);
     }),
+  // Free text matched against note, payee name and tag names; words are AND-ed.
+  search: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .transform((val) => (val ? val : undefined)),
   categorizationSource: z.nativeEnum(CATEGORIZATION_SOURCE).optional(),
   categorizedAt: z.string().datetime().optional(),
   batchId: recordId().optional(),
