@@ -45,10 +45,8 @@
         "exclude": "Виключити",
         "only": "Тільки"
       },
-      "noteIncludes": {
-        "label": "Примітка містить (через кому):",
-        "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Пошук у примітках"
+      "search": {
+        "placeholder": "Пошук у примітках, отримувачах і тегах"
       },
       "tags": {
         "allTags": "Усі теги",
@@ -68,8 +66,7 @@
         "type": "Тип",
         "tags": "Теги",
         "budgets": "Трекери",
-        "amount": "Діапазон суми",
-        "note": "Примітки"
+        "amount": "Діапазон суми"
       },
       "transferNature": {
         "label": "Види переказів",

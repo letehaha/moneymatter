@@ -1,6 +1,6 @@
 ---
 title: Search and filter
-description: Find transactions with filters and note search, switch between list and table views, and select several transactions to edit, group or delete them at once.
+description: Find transactions with search and filters, switch between list and table views, and select several transactions to edit, group or delete them at once.
 sidebar:
   order: 2
 ---
@@ -61,7 +61,6 @@ Your filters and sorting stay in place while you move around the app in the same
 | Categories | Only transactions in the categories you pick. Picking a parent category also picks all its subcategories. |
 | **Transaction type** | **All types**, **Income** or **Expense**. |
 | **Amount range** | A minimum and/or maximum amount. |
-| **Notes** | Words to look for in notes. See [search notes](#search-notes). |
 | **Tags** | Transactions with any of the tags you pick. Choose **No tags** to find untagged transactions. |
 | **Payees** | Transactions with any of the payees you pick. Choose **No payee** to find ones without a payee. |
 | **Refunds** | **All**, **Exclude** or **Only** transactions that are part of a refund link: both the refund and the purchase it refunds. |
@@ -75,16 +74,16 @@ A few details worth knowing:
 - **The categories filter also looks inside splits.** A transaction split between Groceries and Drug-store, chemist shows up when you filter by either one, and the whole transaction is listed. See [split a transaction](/transactions/split-a-transaction/).
 - **Refunds and Transfers both set to Only** show transactions that are refunds *or* transfers.
 
-### Search notes
+### Search
 
-The **Notes** filter searches the text of transaction notes. In table view, add it from **Filters** → **Notes**. In the filter panel, it's the **Note includes (comma-separated):** field.
+The search box at the top of the list looks through transaction notes, payee names and tag names. Results update as you type.
 
-It ignores upper and lower case, and matches any part of the note, so "amaz" finds "Amazon order".
+It ignores upper and lower case, and matches any part of the text, so "amaz" finds "Amazon order".
 
-To search for several words at once, separate them with commas, for example `amazon, nike`. A transaction matches if its note contains **any** of the words.
+Type several words to narrow the results. A transaction matches only if it contains **every** word, each in its note, payee or tags. For example, `starbucks latte` finds a Starbucks transaction with "latte" in its note.
 
-<Aside type="caution" title="Only notes are searched">
-The search doesn't look at payee names, category names or amounts. To find everything from one shop, use the **Payees** filter instead.
+<Aside type="caution" title="Categories and amounts aren't searched">
+To find transactions by category or amount, use the **Categories** or **Amount** filter.
 </Aside>
 
 ### Open the list from a category

@@ -40,7 +40,11 @@ export const parseStoredFilters = ({ raw }: { raw: string | null }): StoredFilte
     const stored = JSON.parse(raw, (key, value) =>
       DATE_FILTER_KEYS.has(key) && typeof value === 'string' ? new Date(value) : value,
     );
-    return stored?.filters && typeof stored.filters === 'object' ? stored : null;
+    if (!stored?.filters || typeof stored.filters !== 'object') return null;
+    // Legacy `noteIncludes` in saved views and session state maps onto `search`.
+    const { noteIncludes, ...filters } = stored.filters;
+    if (typeof noteIncludes === 'string' && !filters.search) filters.search = noteIncludes.replace(/,/g, ' ').trim();
+    return { ...stored, filters };
   } catch {
     return null;
   }
@@ -74,7 +78,6 @@ export const buildFilterParams = ({ filter }: { filter: FiltersStruct }): Transa
       amountGte: filter.amountGte || undefined,
       amountLte: filter.amountLte || undefined,
       search: filter.search.trim() || undefined,
-      noteSearch: filter.noteIncludes || undefined,
       hasAttachment: buildTriStateParam({ value: filter.attachmentFilter }),
       transferFilter: filterOrUndefined(filter.transferFilter),
       refundFilter: filterOrUndefined(filter.refundFilter),

@@ -32,7 +32,7 @@ interface ExtraFilterDefinition extends FilterDefinition {
 }
 
 /** Filters the user can add to the filter bar via the picker menu. The
- * always-visible trio (date range, accounts, categories) is not part of this list. */
+ * always-visible search, date range, accounts and categories are not part of this list. */
 export const EXTRA_FILTER_KEYS = [
   'type',
   'tags',
@@ -43,7 +43,6 @@ export const EXTRA_FILTER_KEYS = [
   'refunds',
   'transfers',
   'planned',
-  'note',
   'attachments',
 ] as const;
 
@@ -52,7 +51,7 @@ export type ExtraFilterKey = (typeof EXTRA_FILTER_KEYS)[number];
 /** Always-visible filters plus query-param-only ones (`categorizationSource`
  * and `batchId` come from dashboard/import-history deep links) – present in
  * every view, so the picker menu doesn't offer them. */
-const BUILTIN_FILTER_KEYS = ['date', 'accounts', 'categories', 'categorizationSource', 'batchId'] as const;
+const BUILTIN_FILTER_KEYS = ['search', 'date', 'accounts', 'categories', 'categorizationSource', 'batchId'] as const;
 
 type BuiltinFilterKey = (typeof BUILTIN_FILTER_KEYS)[number];
 
@@ -113,12 +112,6 @@ export const EXTRA_FILTERS: Record<ExtraFilterKey, ExtraFilterDefinition> = {
     isActive: (filters) => filters.plannedFilter !== FILTER_OPERATION.all,
     dissolvesGroups: true,
   },
-  note: {
-    menuLabelKey: 'transactions.filters.menu.note',
-    defaultSlice: () => ({ noteIncludes: DEFAULT_FILTERS.noteIncludes }),
-    isActive: (filters) => filters.noteIncludes.trim().length > 0,
-    dissolvesGroups: true,
-  },
   attachments: {
     menuLabelKey: 'transactions.filters.attachments.label',
     defaultSlice: () => ({ attachmentFilter: DEFAULT_FILTERS.attachmentFilter }),
@@ -128,6 +121,10 @@ export const EXTRA_FILTERS: Record<ExtraFilterKey, ExtraFilterDefinition> = {
 };
 
 const BUILTIN_FILTERS: Record<BuiltinFilterKey, FilterDefinition> = {
+  search: {
+    isActive: (filters) => filters.search.trim().length > 0,
+    dissolvesGroups: true,
+  },
   date: {
     isActive: (filters) => filters.start != null || filters.end != null,
     dissolvesGroups: false,

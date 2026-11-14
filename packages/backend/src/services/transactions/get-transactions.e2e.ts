@@ -691,6 +691,25 @@ describe('Retrieve transactions with filters', () => {
       const blank = await helpers.getTransactions({ search: '   ', raw: true });
       expect(blank?.length).toBe(3);
     });
+
+    it('treats LIKE wildcards and backslashes in the search as literal text', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const idsByNote: Record<string, string> = {};
+      for (const note of ['50% off', '50 off', 'a_b', 'axb', 'C:\\tmp', 'C:tmp']) {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, note }),
+          raw: true,
+        });
+        idsByNote[note] = tx!.id;
+      }
+
+      const idsFor = async (search: string) =>
+        ((await helpers.getTransactions({ search, raw: true })) ?? []).map((tx) => tx.id);
+
+      expect(await idsFor('%')).toEqual([idsByNote['50% off']]);
+      expect(await idsFor('_')).toEqual([idsByNote['a_b']]);
+      expect(await idsFor('\\')).toEqual([idsByNote['C:\\tmp']]);
+    });
   });
 
   describe('filter by note', () => {

@@ -185,3 +185,15 @@ describe('buildFilterParams search', () => {
     expect(buildFilterParams({ filter: makeFilters() })).not.toHaveProperty('search');
   });
 });
+
+describe('parseStoredFilters legacy noteIncludes', () => {
+  const parse = (filters: object) => parseStoredFilters({ raw: JSON.stringify({ filters }) })?.filters;
+
+  it('maps noteIncludes onto search and drops the old key', () => {
+    expect(parse({ noteIncludes: 'amazon, nike' })).toEqual({ search: 'amazon  nike' });
+  });
+
+  it('keeps an existing search', () => {
+    expect(parse({ noteIncludes: 'lidl', search: 'coffee' })).toEqual({ search: 'coffee' });
+  });
+});
