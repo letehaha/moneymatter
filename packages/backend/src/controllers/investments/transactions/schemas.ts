@@ -27,7 +27,7 @@ const nonNegativeNumberString = ({ message }: { message: string }) =>
 export const createInvestmentTransactionBodyShape = {
   portfolioId: recordId(),
   securityId: recordId(),
-  category: z.nativeEnum(INVESTMENT_TRANSACTION_CATEGORY),
+  category: z.enum(INVESTMENT_TRANSACTION_CATEGORY),
   date: investmentTransactionDate,
   quantity: numericString(),
   // Zero price = legitimate position change with no cash consideration (staking, airdrops, balance
@@ -65,7 +65,7 @@ export const createInvestmentTransactionBodySchema = z
  * currency, so they live in the service.
  */
 export const updateInvestmentTransactionBodyShape = {
-  category: z.nativeEnum(INVESTMENT_TRANSACTION_CATEGORY).optional(),
+  category: z.enum(INVESTMENT_TRANSACTION_CATEGORY).optional(),
   date: investmentTransactionDate.optional(),
   quantity: positiveNumberString({ message: 'Quantity must be a positive number' }),
   // Zero allowed: staking rewards / airdrops / burns / balance adjustments are real position changes

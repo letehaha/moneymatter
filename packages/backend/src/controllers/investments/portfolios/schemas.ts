@@ -30,7 +30,7 @@ export const transferAdjustmentBodySchema = z.object({
 /** Fields of `POST /investments/portfolios`; the MCP `create_portfolio` tool reads its shape. */
 export const createPortfolioBodyShape = {
   name: z.string().min(1, 'Portfolio name is required').max(100, 'Portfolio name must be 100 characters or less'),
-  portfolioType: z.nativeEnum(PORTFOLIO_TYPE).default(PORTFOLIO_TYPE.investment),
+  portfolioType: z.enum(PORTFOLIO_TYPE).default(PORTFOLIO_TYPE.investment),
   description: z.string().max(500, 'Description must be 500 characters or less').optional(),
   displayCurrencyCode: currencyCode().nullable().optional(),
   isEnabled: z.boolean().default(true),
@@ -39,7 +39,7 @@ export const createPortfolioBodyShape = {
 /** Fields of `PATCH /investments/portfolios/:id`; the MCP `update_portfolio` tool reads its shape. */
 export const updatePortfolioBodyShape = {
   name: z.string().min(1).max(255).optional(),
-  portfolioType: z.nativeEnum(PORTFOLIO_TYPE).optional(),
+  portfolioType: z.enum(PORTFOLIO_TYPE).optional(),
   description: z.string().nullable().optional(),
   displayCurrencyCode: currencyCode().nullable().optional(),
   isEnabled: z.boolean().optional(),

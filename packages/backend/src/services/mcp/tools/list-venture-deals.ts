@@ -12,7 +12,7 @@ export const listVentureDealsTool = defineTool({
   description:
     "List the user's venture deals (private/illiquid investments through SPVs, syndicates, or direct vehicles). Returns each deal's id, name, status (outstanding | partial_exit | fully_exited | written_off), platform, currency, principal, entry fee, fee fractions, dates, and target company. Use the returned id with get_venture_deal, get_venture_deal_metrics, list_venture_events, and update_venture_deal.",
   input: {
-    status: z.nativeEnum(VENTURE_DEAL_STATUS).optional().describe('Filter by status'),
+    status: z.enum(VENTURE_DEAL_STATUS).optional().describe('Filter by status'),
     platformId: recordId().optional().describe('Filter by platform id'),
     limit: z.number().optional().describe('Max results'),
     offset: z.number().optional().describe('Pagination offset (default: 0)'),

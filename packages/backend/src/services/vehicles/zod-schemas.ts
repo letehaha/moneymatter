@@ -20,10 +20,10 @@ export const createVehicleBodyFields = {
     .int()
     .min(1900)
     .max(new Date().getFullYear() + 1),
-  vehicleClass: z.nativeEnum(VEHICLE_CLASS),
+  vehicleClass: z.enum(VEHICLE_CLASS),
   purchasePrice: z.number().positive({ message: 'purchasePrice must be > 0' }),
   purchaseDate: z.string().regex(datePattern, 'purchaseDate must be YYYY-MM-DD'),
-  depreciationPreset: z.nativeEnum(DEPRECIATION_PRESET).optional(),
+  depreciationPreset: z.enum(DEPRECIATION_PRESET).optional(),
   customAnnualRatePct: z.number().min(0).max(100).nullable().optional(),
   salvageFloorPct: z.number().min(0).max(100).optional(),
   currentMileage: z.number().int().min(0).nullable().optional(),
@@ -48,8 +48,8 @@ export const updateVehicleBodyFields = {
     .min(1900)
     .max(new Date().getFullYear() + 1)
     .optional(),
-  vehicleClass: z.nativeEnum(VEHICLE_CLASS).optional(),
-  depreciationPreset: z.nativeEnum(DEPRECIATION_PRESET).optional(),
+  vehicleClass: z.enum(VEHICLE_CLASS).optional(),
+  depreciationPreset: z.enum(DEPRECIATION_PRESET).optional(),
   customAnnualRatePct: z.number().min(0).max(100).nullable().optional(),
   salvageFloorPct: z.number().min(0).max(100).optional(),
   currentMileage: z.number().int().min(0).nullable().optional(),

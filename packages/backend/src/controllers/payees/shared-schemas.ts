@@ -14,7 +14,7 @@ export const MAX_BULK_DELETE_PAYEE_IDS = 2000;
 export const updatePayeeBodyShape = {
   name: z.string().trim().min(1).max(200).optional(),
   defaultCategoryId: recordId().nullable().optional(),
-  categorizationMode: z.nativeEnum(CATEGORIZATION_MODE).optional(),
+  categorizationMode: z.enum(CATEGORIZATION_MODE).optional(),
   defaultTagIds: z.array(recordId()).optional(),
   defaultLocation: locationSchema.nullable().optional(),
   ...logoFieldsShape,
@@ -25,7 +25,7 @@ export const updatePayeeBodySchema = z
   .superRefine((data, ctx) => refineLogoFields({ data, ctx }));
 
 export const bulkUpdateCategorizationModeBodySchema = z.object({
-  mode: z.nativeEnum(CATEGORIZATION_MODE),
+  mode: z.enum(CATEGORIZATION_MODE),
 });
 
 export const bulkDeletePayeesBodySchema = z.object({

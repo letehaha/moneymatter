@@ -52,7 +52,7 @@ import Users from './users.model';
 
 /** `connectionId: null` is an explicit pick of the included server model. */
 const ZodAiFeatureConfigSchema = z.object({
-  feature: z.nativeEnum(AI_FEATURE),
+  feature: z.enum(AI_FEATURE),
   connectionId: z.string().nullable(),
 });
 
@@ -61,7 +61,7 @@ const ZodAiFeatureConfigSchema = z.object({
 const ZodAiConnectionSchema = z
   .object({
     id: z.string(),
-    provider: z.nativeEnum(AI_PROVIDER),
+    provider: z.enum(AI_PROVIDER),
     name: nameField,
     baseUrl: baseUrlField.optional(),
     keyEncrypted: z.string().optional(),
@@ -302,7 +302,7 @@ const ZodSavedTransactionViewSchema = z.object({
   id: z.string(),
   name: z.string().min(1).max(SAVED_TRANSACTION_VIEW_NAME_MAX_LENGTH),
   filters: z.record(z.string(), z.unknown()),
-  sorting: z.object({ sortBy: z.nativeEnum(TRANSACTION_SORT_FIELD), order: z.nativeEnum(SORT_DIRECTIONS) }).optional(),
+  sorting: z.object({ sortBy: z.enum(TRANSACTION_SORT_FIELD), order: z.enum(SORT_DIRECTIONS) }).optional(),
   datePreset: z.enum(TRANSACTION_DATE_PRESETS).optional(),
 });
 

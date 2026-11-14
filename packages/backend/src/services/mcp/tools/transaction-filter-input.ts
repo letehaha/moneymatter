@@ -29,12 +29,12 @@ const idOrBlank = z.union([recordId(), z.literal(BLANK_FILTER_VALUE)]);
 export const transactionFilterInput = {
   from: z.string().optional().describe('Start of the date range (ISO 8601 datetime in UTC, e.g. 2026-10-01T00:00:00Z)'),
   to: z.string().optional().describe('End of the date range (ISO 8601 datetime in UTC). Must not precede from'),
-  transactionType: z.nativeEnum(TRANSACTION_TYPES).optional().describe('Only income, expense or transfer rows'),
+  transactionType: z.enum(TRANSACTION_TYPES).optional().describe('Only income, expense or transfer rows'),
   transferNatures: z
-    .array(z.nativeEnum(TRANSACTION_TRANSFER_NATURE))
+    .array(z.enum(TRANSACTION_TRANSFER_NATURE))
     .optional()
     .describe('Exact set of transfer natures to include. Replaces transferFilter and excludeTransfer when set'),
-  accountType: z.nativeEnum(ACCOUNT_TYPES).optional().describe('Only rows on accounts of this type'),
+  accountType: z.enum(ACCOUNT_TYPES).optional().describe('Only rows on accounts of this type'),
   accountIds: z.array(recordId()).optional().describe('Only rows on these account IDs'),
   excludeAccountIds: z.array(recordId()).optional().describe('Leave out rows on these account IDs'),
   trackerIds: z.array(recordId()).optional().describe('Only rows linked to these tracker IDs'),
@@ -86,11 +86,11 @@ export const transactionFilterInput = {
     .describe('End of that local day (ISO 8601 datetime); pairs with refundPivotFrom'),
   excludeBalanceAdjustments: z.boolean().optional().describe('Leave out balance adjustments'),
   transferFilter: z
-    .nativeEnum(FILTER_OPERATION)
+    .enum(FILTER_OPERATION)
     .optional()
     .describe('Transfers: include, exclude or only. Superseded by transferNatures'),
-  refundFilter: z.nativeEnum(FILTER_OPERATION).optional().describe('Refunds: include, exclude or only'),
-  categorizationSource: z.nativeEnum(CATEGORIZATION_SOURCE).optional().describe('How the category was assigned'),
+  refundFilter: z.enum(FILTER_OPERATION).optional().describe('Refunds: include, exclude or only'),
+  categorizationSource: z.enum(CATEGORIZATION_SOURCE).optional().describe('How the category was assigned'),
   categorizedAt: z.string().optional().describe('Only rows categorized at this ISO 8601 datetime'),
   batchId: recordId().optional().describe('Only rows from this import batch'),
 };

@@ -7,7 +7,7 @@ import { apiKeyField, baseUrlField, modelField, nameField } from './connection-f
 
 const schema = z.object({
   body: z.object({
-    provider: z.nativeEnum(AI_PROVIDER),
+    provider: z.enum(AI_PROVIDER),
     name: nameField,
     model: modelField,
     // Required for `custom`, refused for native providers

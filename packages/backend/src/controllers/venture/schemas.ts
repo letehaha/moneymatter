@@ -15,8 +15,8 @@ export const createVentureDealBodyShape = {
   principal: decimalString(),
   investmentDate: dateString(),
   platformId: recordId().nullable().optional(),
-  vehicleType: z.nativeEnum(VENTURE_VEHICLE_TYPE).optional(),
-  spvSubtype: z.nativeEnum(VENTURE_SPV_SUBTYPE).nullable().optional(),
+  vehicleType: z.enum(VENTURE_VEHICLE_TYPE).optional(),
+  spvSubtype: z.enum(VENTURE_SPV_SUBTYPE).nullable().optional(),
   targetCompany: z.string().max(255).nullable().optional(),
   entryFeePct: percentageFraction().optional(),
   entryFee: decimalString().optional(),
@@ -27,7 +27,7 @@ export const createVentureDealBodyShape = {
   notes: z.string().max(5000).nullable().optional(),
   initialInvestment: z
     .object({
-      cashFlowMode: z.nativeEnum(VENTURE_CASH_FLOW_MODE),
+      cashFlowMode: z.enum(VENTURE_CASH_FLOW_MODE),
       transactionIds: z.array(recordId()).optional(),
     })
     .optional(),
@@ -37,10 +37,10 @@ export const createVentureDealBodyShape = {
 export const updateVentureDealBodyShape = {
   name: z.string().trim().min(1).max(255).optional(),
   platformId: recordId().nullable().optional(),
-  spvSubtype: z.nativeEnum(VENTURE_SPV_SUBTYPE).nullable().optional(),
+  spvSubtype: z.enum(VENTURE_SPV_SUBTYPE).nullable().optional(),
   targetCompany: z.string().max(255).nullable().optional(),
   currencyCode: currencyCode().optional(),
-  status: z.nativeEnum(VENTURE_DEAL_STATUS).optional(),
+  status: z.enum(VENTURE_DEAL_STATUS).optional(),
   principal: decimalString().optional(),
   entryFee: decimalString().optional(),
   entryFeePct: percentageFraction().optional(),

@@ -10,7 +10,7 @@ export default createController(
       query: z.string().min(1, 'Search query cannot be empty.'),
       limit: z.coerce.number().int().positive().optional(),
       portfolioId: recordId().optional(),
-      assetClass: z.nativeEnum(ASSET_CLASS).optional(),
+      assetClass: z.enum(ASSET_CLASS).optional(),
     }),
   }),
   async ({ user, query }) => {

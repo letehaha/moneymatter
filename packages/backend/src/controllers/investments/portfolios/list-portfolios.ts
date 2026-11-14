@@ -9,7 +9,7 @@ export default createController(
   z.object({
     query: z
       .object({
-        portfolioType: z.nativeEnum(PORTFOLIO_TYPE).optional(),
+        portfolioType: z.enum(PORTFOLIO_TYPE).optional(),
         isEnabled: booleanQuery().optional(),
         onlyDeleted: booleanQuery().optional(),
         ...paginationFields,

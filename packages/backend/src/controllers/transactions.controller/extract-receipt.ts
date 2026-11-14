@@ -7,7 +7,7 @@ import { scanReceipt } from '@services/document-extraction/scan-receipt.service'
 import { z } from 'zod';
 
 const schema = z.object({
-  query: z.object({ transactionType: z.nativeEnum(TRANSACTION_TYPES).default(TRANSACTION_TYPES.expense) }),
+  query: z.object({ transactionType: z.enum(TRANSACTION_TYPES).default(TRANSACTION_TYPES.expense) }),
 });
 
 export default createController(

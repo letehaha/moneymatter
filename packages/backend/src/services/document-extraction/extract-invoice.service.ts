@@ -57,7 +57,7 @@ const aiAnswerSchema = z.object({
 });
 
 export const invoiceSchema = z.object({
-  transactionType: z.nativeEnum(TRANSACTION_TYPES),
+  transactionType: z.enum(TRANSACTION_TYPES),
   vendorName: z.string().trim().min(1),
   customerName: z.string().trim().min(1).nullable(),
   totalAmount: z.number().positive(),
