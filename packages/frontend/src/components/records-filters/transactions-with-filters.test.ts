@@ -174,3 +174,14 @@ describe('buildFilterParams', () => {
     expect(params).not.toHaveProperty('to');
   });
 });
+
+describe('buildFilterParams search', () => {
+  it('sends the trimmed search text', () => {
+    expect(buildFilterParams({ filter: makeFilters({ search: '  coffee shop ' }) }).search).toBe('coffee shop');
+  });
+
+  it('omits search when it is empty or only whitespace', () => {
+    expect(buildFilterParams({ filter: makeFilters({ search: '   ' }) })).not.toHaveProperty('search');
+    expect(buildFilterParams({ filter: makeFilters() })).not.toHaveProperty('search');
+  });
+});
