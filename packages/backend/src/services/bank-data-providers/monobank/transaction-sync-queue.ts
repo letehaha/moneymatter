@@ -927,12 +927,6 @@ export async function getActiveJobsForUser(userId: number): Promise<
 }
 
 /**
- * Remove all pending/delayed jobs belonging to a user across every per-token
- * queue. Used during user deletion so leftover work doesn't try to touch
- * tables of a user that no longer exists. 'active' jobs are locked by their
- * worker and intentionally skipped — they finish on their own.
- */
-/**
  * Force a fresh recovery scan, bypassing the memoized `ensureMonobankQueueRecovery`,
  * so per-token bundles created since boot — including by another process — are
  * discovered. The base-currency drain calls this before counting a user's
@@ -955,6 +949,11 @@ export async function countUnfinishedMonobankJobsForUser({ userId }: { userId: n
   return jobsPerBundle.flat().filter((job) => job.data.userId === userId).length;
 }
 
+/**
+ * Remove a user's waiting/delayed jobs across every per-token queue, for user deletion and the
+ * base-currency drain. 'active' jobs are locked by their worker and finish on their own.
+ * Uses the memoized recovery; the drain calls {@link refreshMonobankBundleDiscovery} first.
+ */
 export async function removePendingJobsForUser({
   userId,
 }: {
@@ -978,7 +977,7 @@ export async function removePendingJobsForUser({
           // Job may have become active between getJobs and remove - ignore lock errors,
           // but log the actual error so we can spot non-lock failures (Redis disconnect,
           // etc.) instead of misattributing every miss to a transient lock race.
-          logger.warn(`Could not remove job during user deletion. jobId: ${job.id}`, { error: error as Error });
+          logger.warn(`Could not remove pending job. jobId: ${job.id}`, { error: error as Error });
         }),
     ),
   );

@@ -153,7 +153,7 @@ async function writeAccountSyncStatus({
   const statusData: AccountSyncStatus = {
     accountId,
     status,
-    startedAt: isActiveSync(status) ? new Date().toISOString() : null,
+    startedAt: isActiveSync({ status }) ? new Date().toISOString() : null,
     completedAt: [SyncStatus.COMPLETED, SyncStatus.FAILED].includes(status) ? new Date().toISOString() : null,
     error: error ?? null,
   };
@@ -161,7 +161,7 @@ async function writeAccountSyncStatus({
   // startedAt is inherited only from a still-active run, so COMPLETED/FAILED keeps
   // that run's start and a terminal record never ages a freshly queued one.
   const existing = await getAccountSyncStatus(accountId);
-  if (existing?.startedAt && isActiveSync(existing.status) && status !== SyncStatus.SYNCING) {
+  if (existing?.startedAt && isActiveSync({ status: existing.status }) && status !== SyncStatus.SYNCING) {
     statusData.startedAt = existing.startedAt;
   }
 
@@ -292,7 +292,7 @@ export async function clearAllSyncStatuses(): Promise<void> {
 
       // Only reset statuses that indicate active syncing
       // These are invalid after a restart since the actual sync process is gone
-      if (isActiveSync(status.status)) {
+      if (isActiveSync({ status: status.status })) {
         // Reset to IDLE instead of deleting - preserves the key structure
         const resetStatus: AccountSyncStatus = {
           ...status,
@@ -337,10 +337,8 @@ function createDefaultStatus(accountId: RecordId): AccountSyncStatus {
   };
 }
 
-/**
- * Check if status represents an active sync operation
- */
-function isActiveSync(status: SyncStatus): boolean {
+/** QUEUED counts as active: the job is committed to run even before a worker picks it up. */
+export function isActiveSync({ status }: { status: SyncStatus }): boolean {
   return status === SyncStatus.QUEUED || status === SyncStatus.SYNCING;
 }
 
@@ -348,7 +346,7 @@ function isActiveSync(status: SyncStatus): boolean {
  * Check if a sync status is stale (active for too long)
  */
 function isStaleStatus(status: AccountSyncStatus): boolean {
-  if (isActiveSync(status.status) && status.startedAt) {
+  if (isActiveSync({ status: status.status }) && status.startedAt) {
     const startedTime = new Date(status.startedAt).getTime();
     const elapsed = Date.now() - startedTime;
     return elapsed > STALE_SYNC_THRESHOLD;
