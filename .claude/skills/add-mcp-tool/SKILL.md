@@ -79,7 +79,7 @@ Rules:
 - `input` is a **plain shape of Zod fields** (no outer `z.object(...)`). Omit it for a tool with no inputs.
 - `run` gets `{ userId, args, extra }` and returns the data; never call `jsonContent`, `getUserId`, `requireScope`, `requireFeature`, `assertBaseCurrencyUnlocked` or `trackMcpToolUsed` for the def's own guards. Money instances serialize to decimals via `toJSON()`.
 - `description` leaves out the `Requires finance:X scope.` sentence; it is appended from `access`. Its first sentence must stand alone: it is what the server card and the skill tables show.
-- Checks that are not guards stay at the top of `run`: a conditional scope (`if (args.force) requireScope({ extra, scope: 'finance:delete' })`), `assertNotDemoUser({ extra })`, argument checks that throw, and REST schema re-parses with refines.
+- Argument checks go in `validate({ args })`: REST schema re-parses with refines, rules across fields, refusals that throw. It is pure (no guards, no I/O), runs after the guards and before `run`, and returns what `run` receives as `args`. The in-app chat runs it on a proposed call before the user approves the card, so a write or delete tool keeps no argument check in `run` (`tool-validate-drift`). Checks that are not about the arguments stay at the top of `run`: a conditional scope (`if (args.force) requireScope({ extra, scope: 'finance:delete' })`), `assertNotDemoUser({ extra })`, and anything that reads the database.
 - Use `z.enum([...])` for enum args. Dates come in as ISO strings; convert with `new Date(args.date)` if the service expects a `Date`.
 
 ### Naming, access and guards
@@ -94,7 +94,7 @@ Rules:
 
 Every tool is a thin wrapper over the service its REST route uses. Parity with REST is the rule: the same service, validation, lock and feature gate, and the same serializer (slimmed for MCP in `serializers.ts` where the output is large). When a controller holds logic a tool needs (validation, orchestration), move it into a service or a shared schema that both the controller and the tool call. Never copy it into the tool.
 
-**Refined inputs:** `input` is a plain shape, so a rule that spans fields (an either-or, a mutually exclusive pair, a `superRefine`) cannot sit in it. Use the shared schema's `.shape` as `input` and run the full shared schema in `run`, on the schema's own fields only: when the tool adds ids beside a strict body schema, destructure them off first (`const { planId, ...body } = args; schema.parse(body)`). The unit test asserts that the **tool** rejects, not the shape.
+**Refined inputs:** `input` is a plain shape, so a rule that spans fields (an either-or, a mutually exclusive pair, a `superRefine`) cannot sit in it. Use the shared schema's `.shape` as `input` and run the full shared schema in `validate`, on the schema's own fields only: when the tool adds ids beside a strict body schema, destructure them off first and return them with the parsed body (`const { planId, ...body } = args; return { planId, ...schema.parse(body) }`). The unit test asserts that the **tool** rejects, not the shape.
 
 ### 2. Add the def to `ALL_TOOLS` in `toolsets.ts`
 
@@ -145,7 +145,10 @@ It covers the drift suites and every tool unit test:
 - `generate-mcp-metadata` (`src/scripts/generate-mcp-metadata.unit.ts`) — the committed server card, OAuth mirrors and SKILL.md equal what the generator produces, and the registry `server.json` matches the server version;
 - `agent-skills-drift` — the SKILL.md sha256;
 - `tool-scopes-drift` — `access`, `feature` and `lock` on the defs;
-- `toolsets-drift` — every exported def in `ALL_TOOLS` once, `core` within its size, and the toolset scopes accepted by the OAuth provider.
+- `toolsets-drift` — every exported def in `ALL_TOOLS` once, `core` within its size, and the toolset scopes accepted by the OAuth provider;
+- `tool-validate-drift` — no write or delete tool parses or asserts its arguments in `run`.
+
+The chat's tool catalog (`services/mcp/tool-catalog.ts`) is built from `ALL_TOOLS`, so a new tool reaches it with no registration.
 
 If any fail:
 
@@ -154,6 +157,7 @@ If any fail:
 - **access, lock or feature case** → fix the def's field after checking its REST route, or list the name in `DESTRUCTIVE_TOOLS`.
 - **registration case** → the def is exported but not in `ALL_TOOLS`.
 - **toolset case** → `core` went over 60 tools.
+- **`tool-validate-drift` case** → move the check from `run` into `validate` and have `run` use what it returns.
 
 Delegate to the `test-runner` subagent (per CLAUDE.md rules).
 

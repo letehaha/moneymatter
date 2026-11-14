@@ -19,8 +19,6 @@ export const deleteExchangeRatesTool = defineTool({
       .nonempty()
       .describe('Pairs to remove: { baseCode, quoteCode }. Each pair needs its opposite in the same call.'),
   },
-  run: ({ userId, args }) => {
-    const pairs = removeExchangeRatePairsSchema.parse(args.pairs);
-    return removeUserExchangeRates({ userId, pairs });
-  },
+  validate: ({ args }) => ({ pairs: removeExchangeRatePairsSchema.parse(args.pairs) }),
+  run: ({ userId, args: { pairs } }) => removeUserExchangeRates({ userId, pairs }),
 });

@@ -33,7 +33,7 @@ export const bulkDeleteTransactionsTool = defineTool({
         'With filters: IDs to keep out of the delete. Leaving out one leg of a transfer keeps the whole transfer',
       ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     const target = parseBulkTarget({
       transactionIds: args.transactionIds,
       filters: args.filters,
@@ -49,6 +49,9 @@ export const bulkDeleteTransactionsTool = defineTool({
       );
     }
 
+    return target;
+  },
+  run: async ({ userId, args: target }) => {
     const transactionIds = await resolveBulkTargetIds({ userId, ...target });
     return bulkDelete({ userId, transactionIds });
   },

@@ -44,11 +44,10 @@ export const createSubscriptionTool = defineTool({
     matchingRules: subscriptionMatchingRulesInput,
     ...subscriptionExtraInputs,
   },
+  // The amount, installment, auto-record and date-order rules span fields, so they run on the REST schema.
+  validate: ({ args }) => createSubscriptionBodySchema.parse(args),
   run: async ({ userId, args }) => {
-    // The amount, installment, auto-record and date-order rules span fields, so they run on the REST schema.
-    const body = createSubscriptionBodySchema.parse(args);
-
-    const result = await createSubscription({ userId, ...body });
+    const result = await createSubscription({ userId, ...args });
 
     return result;
   },

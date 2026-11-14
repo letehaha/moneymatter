@@ -17,8 +17,9 @@ export const updateBudgetPlanGroupTool = defineTool({
     groupId: recordId().describe('ID of the group to rename (from get_budget_plan_period, in its groups)'),
     name: updateGroupBodyFields.name.describe('New name, 1 to 200 characters'),
   },
-  run: ({ userId, args }) => {
+  validate: ({ args }) => {
     const { name } = updateGroupBodySchema.parse({ name: args.name });
-    return updateGroup({ userId, planId: args.planId, groupId: args.groupId, name });
+    return { planId: args.planId, groupId: args.groupId, name };
   },
+  run: ({ userId, args: { planId, groupId, name } }) => updateGroup({ userId, planId, groupId, name }),
 });

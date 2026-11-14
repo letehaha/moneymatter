@@ -38,10 +38,10 @@ export const createInvestmentTransactionTool = defineTool({
       'Known security-to-settlement rate; the fee is derived as the residual. Requires settlementCurrencyCode, not together with settlementFees. With neither, the market rate of the trade date is used',
     ),
   },
+  // The settlement either-or rules span fields, so they run on the REST body schema.
+  validate: ({ args }) => createInvestmentTransactionBodySchema.parse(args),
   run: async ({ userId, args }) => {
-    // The settlement either-or rules span fields, so they run on the REST body schema.
-    const body = createInvestmentTransactionBodySchema.parse(args);
-    const transaction = await createInvestmentTransaction({ userId, ...body });
+    const transaction = await createInvestmentTransaction({ userId, ...args });
 
     return transaction;
   },
