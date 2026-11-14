@@ -75,7 +75,7 @@ const IMPORT_BALANCE_LIMIT = 20_000_000;
  */
 export function boundedImportBalance({ label }: { label: string }): z.ZodNumber {
   const message = `${label} must be between -${IMPORT_BALANCE_LIMIT.toLocaleString('en-US')} and ${IMPORT_BALANCE_LIMIT.toLocaleString('en-US')}`;
-  return z.number().finite().min(-IMPORT_BALANCE_LIMIT, message).max(IMPORT_BALANCE_LIMIT, message);
+  return z.number().min(-IMPORT_BALANCE_LIMIT, message).max(IMPORT_BALANCE_LIMIT, message);
 }
 
 export const accountMappingValueSchema = z.discriminatedUnion('action', [

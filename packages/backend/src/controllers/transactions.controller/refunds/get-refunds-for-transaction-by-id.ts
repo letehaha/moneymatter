@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 const schema = z.object({
   query: z.object({
-    transactionId: z.string().uuid({ message: 'Invalid transaction ID' }),
+    transactionId: z.uuid({ message: 'Invalid transaction ID' }),
   }),
 });
 

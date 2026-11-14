@@ -14,11 +14,11 @@ import { z } from 'zod';
 
 // Zero is allowed: a register entry can exist without ever moving money (a
 // Microsoft Money voided cheque), and such rows must stay editable.
-export const nonNegativeAmountSchema = () => z.number().nonnegative('Amount must be 0 or greater').finite();
+export const nonNegativeAmountSchema = () => z.number().nonnegative('Amount must be 0 or greater');
 
 // For amounts that carry no meaning at zero: a transfer leg that moves nothing,
 // a fee that costs nothing, a split that holds no share of its parent.
-export const positiveAmountSchema = () => z.number().positive('Amount must be greater than 0').finite();
+export const positiveAmountSchema = () => z.number().positive('Amount must be greater than 0');
 
 // For amounts stored in a cents column that rejects zero: 0.004 passes `positive` but rounds to 0.
 export const atLeastOneCentAmountSchema = () =>
@@ -29,12 +29,9 @@ export const atLeastOneCentAmountSchema = () =>
 const MIN_TRANSACTION_TIME = new Date('2000-01-01T00:00:00.000Z');
 
 export const transactionTimeSchema = () =>
-  z
-    .string()
-    .datetime({ message: 'Invalid ISO date string' })
-    .refine((time) => new Date(time) >= MIN_TRANSACTION_TIME, {
-      message: 'Transaction time cannot be before 2000-01-01',
-    });
+  z.iso.datetime({ message: 'Invalid ISO date string' }).refine((time) => new Date(time) >= MIN_TRANSACTION_TIME, {
+    message: 'Transaction time cannot be before 2000-01-01',
+  });
 
 // A Payee link on a write: explicit `null` clears it, `undefined` leaves it untouched.
 export const payeeIdSchema = () => recordId().nullable().optional();
@@ -71,9 +68,8 @@ export const locationSchema = z.object({
 
 const transactionDetailFieldsSchema = {
   externalUrl: z
-    .string()
-    .max(2048, 'The URL must not exceed 2048 characters.')
     .url('Invalid URL')
+    .max(2048, 'The URL must not exceed 2048 characters.')
     .regex(/^https?:\/\//i, 'Only http(s) URLs are allowed')
     .nullish(),
   externalReference: z.string().max(255, 'The reference must not exceed 255 characters.').nullish(),

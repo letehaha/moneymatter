@@ -78,7 +78,7 @@ export const transactionFilterFields = {
     .optional()
     .transform((val) => val || undefined),
   categorizationSource: z.enum(CATEGORIZATION_SOURCE).optional(),
-  categorizedAt: z.string().datetime().optional(),
+  categorizedAt: z.iso.datetime().optional(),
   batchId: recordId().optional(),
 };
 

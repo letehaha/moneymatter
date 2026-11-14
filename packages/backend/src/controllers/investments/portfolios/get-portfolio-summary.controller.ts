@@ -9,7 +9,7 @@ const schema = z.object({
   }),
   query: z
     .object({
-      date: z.string().datetime().optional(),
+      date: z.iso.datetime().optional(),
     })
     .optional()
     .default({}),

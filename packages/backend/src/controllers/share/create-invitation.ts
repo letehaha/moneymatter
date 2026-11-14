@@ -8,7 +8,7 @@ import { shareableResourceTypeEnum } from './_zod';
 
 const schema = z.object({
   body: z.object({
-    inviteeEmail: z.string().email().max(320).trim(),
+    inviteeEmail: z.email().max(320).trim(),
     resourceType: shareableResourceTypeEnum,
     resourceId: z.union([z.coerce.number().int().positive(), recordId()]),
     permission: z.enum([SHARE_PERMISSIONS.read, SHARE_PERMISSIONS.write, SHARE_PERMISSIONS.manage] as const),

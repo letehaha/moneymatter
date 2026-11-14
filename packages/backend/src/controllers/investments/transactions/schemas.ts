@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 // Accept a date-only value ("2026-06-20") or a full ISO 8601 datetime ("2026-06-20T09:00:00.000Z").
 // Date-only is normalized to UTC midnight.
-const investmentTransactionDate = z.union([z.string().date(), z.string().datetime({ offset: true })]);
+const investmentTransactionDate = z.union([z.iso.date(), z.iso.datetime({ offset: true })]);
 
 const positiveNumberString = ({ message }: { message: string }) =>
   z

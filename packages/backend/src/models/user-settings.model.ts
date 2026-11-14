@@ -66,11 +66,11 @@ const ZodAiConnectionSchema = z
     baseUrl: baseUrlField.optional(),
     keyEncrypted: z.string().optional(),
     model: modelField,
-    createdAt: z.string().datetime(),
+    createdAt: z.iso.datetime(),
     status: z.enum(['valid', 'invalid']),
-    lastValidatedAt: z.string().datetime(),
+    lastValidatedAt: z.iso.datetime(),
     lastError: z.string().optional(),
-    invalidatedAt: z.string().datetime().optional(),
+    invalidatedAt: z.iso.datetime().optional(),
   })
   .superRefine((connection, ctx) => {
     // Native providers always dial their official API, so a stored base URL would be dead weight.
@@ -105,14 +105,14 @@ const ZodNotificationPreferencesSchema = z.object({
 const ZodOnboardingStateSchema = z.object({
   completedTasks: z.array(z.string()).default([]),
   isDismissed: z.boolean().default(false),
-  dismissedAt: z.string().datetime().nullable().default(null),
+  dismissedAt: z.iso.datetime().nullable().default(null),
 });
 
 // Schema for partial updates - no defaults so only provided fields are included
 export const ZodOnboardingStateUpdateSchema = z.object({
   completedTasks: z.array(z.string()).optional(),
   isDismissed: z.boolean().optional(),
-  dismissedAt: z.string().datetime().nullable().optional(),
+  dismissedAt: z.iso.datetime().nullable().optional(),
 });
 
 export type OnboardingStateSchema = z.infer<typeof ZodOnboardingStateSchema>;

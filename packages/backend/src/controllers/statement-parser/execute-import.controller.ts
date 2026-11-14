@@ -11,7 +11,7 @@ const extractedTransactionSchema = z
     merchant: z.string().optional(),
     amount: z.number().positive(),
     type: z.enum(['income', 'expense']),
-    originalAmount: z.number().positive().finite().optional(),
+    originalAmount: z.number().positive().optional(),
     originalCurrencyCode: currencyCode().optional(),
     externalReference: z.string().max(255).optional(),
   })

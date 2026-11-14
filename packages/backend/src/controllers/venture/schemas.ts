@@ -64,7 +64,7 @@ export const updateVentureDealBodySchema = z
 /** Fields of `POST /venture/platforms`; the MCP `create_venture_platform` tool reads its shape. */
 export const createVenturePlatformBodyShape = {
   name: z.string().trim().min(1).max(255),
-  website: z.string().url().max(2000).nullable().optional(),
+  website: z.url().max(2000).nullable().optional(),
   description: z.string().max(2000).nullable().optional(),
   defaultEntryFeePct: percentageFraction().optional(),
   defaultMgmtFeePct: percentageFraction().optional(),
@@ -75,7 +75,7 @@ export const createVenturePlatformBodyShape = {
 /** Fields of `PATCH /venture/platforms/:id`; the MCP `update_venture_platform` tool reads its shape. */
 export const updateVenturePlatformBodyShape = {
   name: z.string().trim().min(1).max(255).optional(),
-  website: z.string().url().max(2000).nullable().optional(),
+  website: z.url().max(2000).nullable().optional(),
   description: z.string().max(2000).nullable().optional(),
   defaultEntryFeePct: percentageFraction().optional(),
   defaultMgmtFeePct: percentageFraction().optional(),

@@ -10,8 +10,8 @@ const schema = z.object({
     categoryId: recordId().optional(),
     accountId: recordId().optional(),
     transactionType: z.enum(TRANSACTION_TYPES).optional(),
-    page: z.coerce.number().int().positive().finite(),
-    limit: z.coerce.number().int().positive().finite(),
+    page: z.coerce.number().int().positive(),
+    limit: z.coerce.number().int().positive(),
   }),
 });
 

@@ -24,7 +24,7 @@ const matchingRuleSchema = z.discriminatedUnion('field', [
   z.object({
     field: z.literal('amount'),
     operator: z.literal('between'),
-    value: z.object({ min: z.number().nonnegative().finite(), max: z.number().nonnegative().finite() }),
+    value: z.object({ min: z.number().nonnegative(), max: z.number().nonnegative() }),
     currencyCode: currencyCode().optional(),
   }),
   z.object({
@@ -109,7 +109,7 @@ const refineRecurrence = ({
   });
   if (!problem) return;
   ctx.addIssue({
-    code: z.ZodIssueCode.custom,
+    code: 'custom',
     message: t({ key: problem.key, variables: problem.variables }),
     path: [problem.field],
   });
@@ -162,7 +162,7 @@ export const createSubscriptionBodySchema = withDateOrder(
 
     if (hasAmount !== hasCurrency) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'Both expectedAmount and expectedCurrencyCode must be provided together.',
         path: [hasAmount ? 'expectedCurrencyCode' : 'expectedAmount'],
       });
@@ -170,7 +170,7 @@ export const createSubscriptionBodySchema = withDateOrder(
 
     if (data.type === SUBSCRIPTION_TYPES.subscription && !hasAmount) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'Subscriptions require expectedAmount and expectedCurrencyCode.',
         path: ['expectedAmount'],
       });
@@ -181,14 +181,14 @@ export const createSubscriptionBodySchema = withDateOrder(
     if (data.type === SUBSCRIPTION_TYPES.installment) {
       if (data.maxOccurrences == null) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: 'Installments require maxOccurrences (the number of payments).',
           path: ['maxOccurrences'],
         });
       }
       if (data.dueDate == null) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: 'Installments require a payment schedule date (dueDate).',
           path: ['dueDate'],
         });
@@ -201,21 +201,21 @@ export const createSubscriptionBodySchema = withDateOrder(
     if (data.autoRecord) {
       if (data.accountId == null) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: t({ key: 'subscriptions.validation.autoRecord.requiresAccountField' }),
           path: ['accountId'],
         });
       }
       if (data.expectedAmount == null || data.expectedCurrencyCode == null) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: t({ key: 'subscriptions.validation.autoRecord.requiresAmountField' }),
           path: ['expectedAmount'],
         });
       }
       if (data.matchingRules && data.matchingRules.rules.length > 0) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: t({ key: 'subscriptions.validation.autoRecord.excludesMatchingField' }),
           path: ['matchingRules'],
         });
@@ -265,7 +265,7 @@ export const updateSubscriptionBodySchema = withDateOrder(
 
     if (hasAmount !== undefined && hasCurrency !== undefined && hasAmount !== hasCurrency) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'Both expectedAmount and expectedCurrencyCode must be provided together.',
         path: [hasAmount ? 'expectedCurrencyCode' : 'expectedAmount'],
       });
@@ -278,14 +278,14 @@ export const updateSubscriptionBodySchema = withDateOrder(
     if (data.type === SUBSCRIPTION_TYPES.installment) {
       if (data.maxOccurrences == null) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: 'Installments require maxOccurrences (the number of payments).',
           path: ['maxOccurrences'],
         });
       }
       if (data.dueDate == null) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: 'Installments require a payment schedule date (dueDate).',
           path: ['dueDate'],
         });
@@ -299,21 +299,21 @@ export const updateSubscriptionBodySchema = withDateOrder(
     if (data.autoRecord === true) {
       if (data.accountId === null) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: t({ key: 'subscriptions.validation.autoRecord.requiresAccountField' }),
           path: ['accountId'],
         });
       }
       if (data.expectedAmount === null || data.expectedCurrencyCode === null) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: t({ key: 'subscriptions.validation.autoRecord.requiresAmountField' }),
           path: ['expectedAmount'],
         });
       }
       if (data.matchingRules && data.matchingRules.rules.length > 0) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: t({ key: 'subscriptions.validation.autoRecord.excludesMatchingField' }),
           path: ['matchingRules'],
         });

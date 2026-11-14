@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { updateTransactionBodySchema } from './schemas';
 
 const paramsZodSchema = z.object({
-  id: z.string().uuid({ message: 'ID must be a valid UUID' }),
+  id: z.uuid({ message: 'ID must be a valid UUID' }),
 });
 
 const schema = z.object({
