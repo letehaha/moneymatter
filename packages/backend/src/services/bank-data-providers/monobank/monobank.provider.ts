@@ -5,13 +5,11 @@ import { ExternalMonobankClientInfoResponse } from '@bt/shared/types/external-se
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import { findOneTransaction } from '@models/transactions-query';
 import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
 import cc from 'currency-codes';
-import { Op } from 'sequelize';
 
-import { clampSyncStartToLink } from '../utils/clamp-sync-start-to-link';
 import { encryptCredentials } from '../utils/credential-encryption';
+import { resolveSyncStart } from '../utils/resolve-sync-start';
 import { MonobankApiClient } from './api-client';
 import { queueTransactionSync, syncPriorityForAccount } from './transaction-sync-queue';
 import { MonobankCredentials, MonobankMetadata } from './types';
@@ -157,27 +155,10 @@ export class MonobankProvider extends BaseBankDataProvider {
       enqueue: async () => {
         const account = await this.getSystemAccount(systemAccountId);
 
-        // A future-dated planned row must not anchor the window: it would push
-        // `from` past `to` and turn every sync into a no-op until that date
-        // passes.
-        const latestTransaction = await findOneTransaction({
-          planned: 'exclude',
-          access: 'unscoped-internal',
-          balanceAdjustments: 'include',
-          where: {
-            accountId: account.id,
-            time: { [Op.lte]: new Date() },
-          },
-          order: [['time', 'DESC']],
-        });
-
-        // Accounts with no rows at all backfill the provider's 31-day maximum:
-        // there is nothing to collide with, and the deferred residual absorb
-        // explains whatever the backfill doesn't.
-        const from = latestTransaction
-          ? clampSyncStartToLink({ account, from: new Date(latestTransaction.time) })
-          : new Date(Date.now() - 31 * 24 * 60 * 60 * 1000);
         const to = new Date();
+        // Anchorless accounts backfill the provider's 31-day maximum: there is nothing to
+        // collide with, and the deferred residual absorb explains whatever the backfill doesn't.
+        const { anchor, from, matchPlanned } = await resolveSyncStart({ account, to, backfillDays: 31 });
 
         return this.enqueueTransactionSync({
           connectionId,
@@ -185,12 +166,8 @@ export class MonobankProvider extends BaseBankDataProvider {
           userId,
           from,
           to,
-          // Only an anchored (incremental) sync may consume plans: the anchorless
-          // default window is a backfill, and old charges must not eat fresh plans.
-          matchPlanned: Boolean(latestTransaction),
-          priority: syncPriorityForAccount({
-            latestTransactionTime: latestTransaction ? new Date(latestTransaction.time) : null,
-          }),
+          matchPlanned,
+          priority: syncPriorityForAccount({ latestTransactionTime: anchor }),
         });
       },
     });

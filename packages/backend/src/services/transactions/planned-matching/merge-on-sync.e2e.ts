@@ -394,6 +394,37 @@ describe('Planned transactions – merge on sync', () => {
       }
     });
 
+    it('backfills 31 days when the account has no stored transactions', async () => {
+      const requestedWindowStarts: number[] = [];
+      global.mswMockServer.use(
+        http.get(MONOBANK_URLS_MOCK.personalStatement, ({ request }) => {
+          const segments = new URL(request.url).pathname.split('/');
+          requestedWindowStarts.push(Number(segments[segments.length - 2]));
+          return HttpResponse.json([]);
+        }),
+      );
+
+      const { connectionId } = await helpers.monobank.pair();
+      const { accounts: externalAccounts } = await helpers.bankDataProviders.listExternalAccounts({
+        connectionId,
+        raw: true,
+      });
+      const startedAt = new Date();
+      await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId,
+        accountExternalIds: [externalAccounts[0]!.externalId],
+        raw: true,
+      });
+
+      for (let attempt = 0; attempt < 20 && requestedWindowStarts.length === 0; attempt += 1) {
+        await helpers.sleep(300);
+      }
+
+      expect(requestedWindowStarts.length).toBeGreaterThan(0);
+      const expectedStart = unixSeconds(subDays(startedAt, 31));
+      expect(Math.abs(Math.min(...requestedWindowStarts) - expectedStart)).toBeLessThan(60);
+    });
+
     it('keeps exactly one row per originalId when the same window syncs twice', async () => {
       const now = new Date();
       const anchorTime = subDays(startOfDay(now), 10);

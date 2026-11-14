@@ -25,14 +25,13 @@ import { getUserDefaultCategory } from '@models/users.model';
 import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
 import { createTransaction } from '@services/transactions';
 import { accountHasPlannedRows } from '@services/transactions/planned-matching';
-import { subDays } from 'date-fns';
-import { Op, Sequelize } from 'sequelize';
+import { Sequelize } from 'sequelize';
 
 import { SyncStatus, setAccountSyncStatus, setAccountsSyncStatus } from '../sync/sync-status-tracker';
-import { clampSyncStartToLink } from '../utils/clamp-sync-start-to-link';
 import { encryptCredentials } from '../utils/credential-encryption';
 import { linkAndEmitSyncedTransactions } from '../utils/link-and-emit-synced-transactions';
 import { notifyPlannedConfirmations } from '../utils/notify-planned-confirmations';
+import { resolveSyncStart } from '../utils/resolve-sync-start';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { SimplefinApiClient } from './api-client';
 import {
@@ -293,17 +292,8 @@ export class SimplefinProvider extends BaseBankDataProvider {
       logLabel: 'Sync',
       resolveWindow: async ({ account }) => {
         const to = new Date();
-        const anchor = await this.findAnchor({ accountId: systemAccountId, to });
-
-        return {
-          // Clamped to the link date: the bank's copy of a pre-link manual row carries no id dedup can match.
-          // An account with no rows backfills instead.
-          from: anchor ? clampSyncStartToLink({ account, from: anchor }) : subDays(to, INITIAL_BACKFILL_DAYS),
-          to,
-          // Only an anchored (incremental) sync may consume plans: the anchorless
-          // backfill window would let old charges eat fresh plans.
-          matchPlanned: anchor !== null,
-        };
+        const { from, matchPlanned } = await resolveSyncStart({ account, to, backfillDays: INITIAL_BACKFILL_DAYS });
+        return { from, to, matchPlanned };
       },
     });
   }
@@ -352,13 +342,8 @@ export class SimplefinProvider extends BaseBankDataProvider {
     const to = new Date();
     const plans = await Promise.all(
       accounts.map(async (account) => {
-        const anchor = await this.findAnchor({ accountId: account.id, to });
-        return {
-          account,
-          // Anchorless accounts are on their backfill pull, which must not consume plans.
-          matchPlanned: anchor !== null,
-          createFromDate: anchor ? clampSyncStartToLink({ account, from: anchor }) : subDays(to, INITIAL_BACKFILL_DAYS),
-        };
+        const { from, matchPlanned } = await resolveSyncStart({ account, to, backfillDays: INITIAL_BACKFILL_DAYS });
+        return { account, matchPlanned, createFromDate: from };
       }),
     );
     const from = new Date(Math.min(...plans.map((plan) => plan.createFromDate.getTime())));
@@ -541,22 +526,6 @@ export class SimplefinProvider extends BaseBankDataProvider {
     });
 
     return { transactionIds, fetchedCount };
-  }
-
-  /**
-   * Newest stored transaction time at or before `to`, or null when nothing is stored.
-   * A future-dated row must not anchor: it pushes `from` past `to` and every sync becomes a no-op.
-   */
-  private async findAnchor({ accountId, to }: { accountId: RecordId; to: Date }): Promise<Date | null> {
-    const latest = await findOneTransaction({
-      planned: 'exclude',
-      access: 'unscoped-internal',
-      balanceAdjustments: 'include',
-      where: { accountId, time: { [Op.lte]: to } },
-      order: [['time', 'DESC']],
-    });
-
-    return latest ? new Date(latest.time) : null;
   }
 
   /**
