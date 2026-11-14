@@ -569,7 +569,6 @@ bank-data-providers/
 │   ├── list-external-accounts.ts # Stage 1: list accounts
 │   ├── connect-selected-accounts.ts # Stage 2: create accounts
 │   ├── sync-transactions-for-account.ts
-│   ├── reconcile-duplicates-for-account.ts
 │   ├── disconnect-provider.ts
 │   └── get-connection-details.ts
 ├── sync/
@@ -587,9 +586,11 @@ bank-data-providers/
 ├── enablebanking/
 │   ├── enablebanking.provider.ts # Provider implementation
 │   ├── api-client.ts             # HTTP client + JWT
+│   ├── reconcile-duplicates.ts   # One-time duplicate reconciliation (POST /connections/:id/reconcile-duplicates)
 │   ├── aspsp.service.ts          # Bank listing
 │   ├── types.ts
 │   ├── utils/
+│   │   ├── has-dependent-rows.ts     # Whether deleting a row would drop user links
 │   │   ├── jwt-utils.ts              # JWT generation
 │   │   ├── plan-edit-merge.ts        # Pure edit-preservation policy for reconcile
 │   │   ├── plan-edit-merge.unit.ts   # Unit tests for the merge policy

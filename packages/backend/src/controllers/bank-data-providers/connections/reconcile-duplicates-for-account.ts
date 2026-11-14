@@ -1,6 +1,6 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
-import { reconcileDuplicatesForAccount } from '@root/services/bank-data-providers/connection/reconcile-duplicates-for-account';
+import { reconcileDuplicatesForAccount } from '@root/services/bank-data-providers/enablebanking/reconcile-duplicates';
 import { z } from 'zod';
 
 export default createController(
