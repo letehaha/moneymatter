@@ -73,6 +73,7 @@ export const buildFilterParams = ({ filter }: { filter: FiltersStruct }): Transa
       // A zero bound filters nothing, and the API rejects it in a request body.
       amountGte: filter.amountGte || undefined,
       amountLte: filter.amountLte || undefined,
+      search: filter.search.trim() || undefined,
       noteSearch: filter.noteIncludes || undefined,
       hasAttachment: buildTriStateParam({ value: filter.attachmentFilter }),
       transferFilter: filterOrUndefined(filter.transferFilter),
