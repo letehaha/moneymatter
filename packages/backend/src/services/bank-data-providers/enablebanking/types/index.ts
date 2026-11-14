@@ -84,7 +84,6 @@ export type {
   GetSessionResponse,
   MetadataAccountSummary,
   OAuthCallbackParams,
-  SessionDetails,
   StartAuthorizationRequest,
   StartAuthorizationResponse,
   SuccessResponse,

@@ -141,7 +141,7 @@ export const linkAccountToBankConnection = withTransaction(
     const existingExternalData = account.externalData || {};
     const linkedAt = new Date().toISOString();
 
-    // External account metadata (iban, ownerName, ...) is stored so reconnection
+    // External account metadata (iban, ...) is stored so reconnection
     // flows can match accounts by IBAN.
     const updatedExternalData: AccountExternalData = {
       ...existingExternalData,

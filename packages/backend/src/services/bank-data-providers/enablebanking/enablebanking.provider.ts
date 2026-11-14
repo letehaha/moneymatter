@@ -274,7 +274,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         uid: account.uid,
         iban: account.account_id?.iban,
         currency: account.currency,
-        name: account.name || account.owner_name,
+        name: account.name,
       })),
       state: undefined, // Clear state after successful auth
       consentValidFrom: consentValidFrom.toISOString(),
@@ -291,9 +291,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     await connection.save();
 
-    // Update externalId for existing accounts after reconnection
-    // Enable Banking assigns new UUIDs after each authorization, but IBAN stays the same
-    await this.updateExistingAccountExternalIds({
+    await this.refreshExistingAccountsMetadata({
       connectionId,
       userId: connection.userId,
       newAccounts: sessionResponse.accounts,
@@ -301,15 +299,11 @@ export class EnableBankingProvider extends BaseBankDataProvider {
   }
 
   /**
-   * Update existing accounts after reconnection.
-   * Enable Banking assigns new UIDs after each authorization, but identification_hash stays the same.
-   * This method:
-   * 1. Matches accounts by IBAN + currency
-   * 2. Updates externalData with new rawAccountData and uid (for API calls)
-   * 3. Migrates transaction hashes if externalId changes (from old uid to identification_hash)
-   * 4. Updates externalId to identification_hash (stable across sessions)
+   * Enable Banking assigns new UIDs after each authorization, so existing accounts get the
+   * fresh uid (for API calls) and rawAccountData. externalId is never rewritten: transaction
+   * hashes are derived from it.
    */
-  private async updateExistingAccountExternalIds({
+  private async refreshExistingAccountsMetadata({
     connectionId,
     userId,
     newAccounts,
@@ -338,11 +332,16 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       // Primary: match by identification_hash (externalId now stores this stable ID)
       let matchingNewAccount = newAccounts.find((newAcc) => newAcc.identification_hash === existingAccount.externalId);
 
-      // Fallback: match by IBAN + currency (for legacy accounts where externalId was uid)
+      // Fallback: the bank changed identification_hash for this account
       if (!matchingNewAccount && existingIban) {
         matchingNewAccount = newAccounts.find(
           (newAcc) => newAcc.account_id?.iban === existingIban && newAcc.currency === existingAccount.currencyCode,
         );
+        if (matchingNewAccount) {
+          logger.warn(
+            `Account ${existingAccount.id} matched by IBAN: identification_hash changed from ${existingAccount.externalId} to ${matchingNewAccount.identification_hash}`,
+          );
+        }
       }
 
       if (!matchingNewAccount) {
@@ -354,34 +353,17 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         continue;
       }
 
-      // The stable identifier we should use for externalId
-      const newExternalId = matchingNewAccount.identification_hash;
-
       // Update externalData with fresh account data (including uid for API calls)
       const updatedMetadata = {
         ...existingMetadata,
         iban: matchingNewAccount.account_id?.iban,
         product: matchingNewAccount.product,
-        ownerName: matchingNewAccount.owner_name,
         accountServicer: matchingNewAccount.account_servicer?.name,
         bic: matchingNewAccount.account_servicer?.bic_fi,
         uid: matchingNewAccount.uid, // Session-specific uid for API calls
         rawAccountData: matchingNewAccount, // Full account data
       };
 
-      // Check if we need to migrate transaction hashes
-      // This happens when externalId was previously set to uid (old behavior)
-      // and now we're updating it to identification_hash (new stable identifier)
-      if (existingAccount.externalId !== newExternalId) {
-        await this.migrateTransactionHashes({
-          account: existingAccount,
-          newExternalId,
-        });
-        // Reload to get updated externalId
-        await existingAccount.reload();
-      }
-
-      // Update externalData (always update to get fresh uid and rawAccountData)
       await existingAccount.update({
         externalData: updatedMetadata,
       });
@@ -627,7 +609,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
               creditLimit: creditLimitCents,
               iban: details.account_id?.iban,
               product: details.product,
-              ownerName: details.owner_name,
               accountServicer: details.account_servicer?.name,
               bic: details.account_servicer?.bic_fi,
               // Store the session-specific uid for API calls (balances, transactions)
@@ -769,7 +750,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             throw new BadRequestError({ message: t({ key: 'accounts.accountNoExternalIdEnableBanking' }) });
           }
 
-          // Get metadata for API calls and migrations
+          // Get metadata for API calls
           let metadata = account.externalData as Record<string, unknown> | null;
           let rawAccountData = metadata?.rawAccountData as EnableBankingAccount | undefined;
 
@@ -791,17 +772,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           // Get uid from metadata for API calls (session-specific)
           // Fall back to externalId for backward compatibility
           const apiUid = (metadata?.uid as string) || account.externalId;
-
-          // Check if we need to migrate transaction hashes
-          // This happens when account was created with uid as externalId but now has identification_hash available
-          if (rawAccountData?.identification_hash && account.externalId !== rawAccountData.identification_hash) {
-            await this.migrateTransactionHashes({
-              account,
-              newExternalId: rawAccountData.identification_hash,
-            });
-            // Reload account to get updated externalId
-            await account.reload();
-          }
 
           // Find the most recent transaction
           const latestTransaction = await findOneTransaction({
@@ -1612,11 +1582,16 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     // Primary: match by identification_hash (externalId now stores this stable ID)
     let matchingAccount = validAccountsDetails.find((details) => details.identification_hash === account.externalId);
 
-    // Fallback: match by IBAN + currency (for legacy accounts where externalId was uid)
+    // Fallback: the bank changed identification_hash for this account
     if (!matchingAccount && existingIban) {
       matchingAccount = validAccountsDetails.find(
         (details) => details.account_id?.iban === existingIban && details.currency === account.currencyCode,
       );
+      if (matchingAccount) {
+        logger.warn(
+          `Account ${account.id} matched by IBAN: identification_hash changed from ${account.externalId} to ${matchingAccount.identification_hash}`,
+        );
+      }
     }
 
     if (!matchingAccount) {
@@ -1633,7 +1608,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       ...existingMetadata,
       iban: matchingAccount.account_id?.iban,
       product: matchingAccount.product,
-      ownerName: matchingAccount.owner_name,
       accountServicer: matchingAccount.account_servicer?.name,
       bic: matchingAccount.account_servicer?.bic_fi,
       uid: matchingAccount.uid, // Session-specific uid for API calls
@@ -1645,87 +1619,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     logger.info(`Refreshed account metadata for account ${account.id} (uid: ${matchingAccount.uid})`);
 
     return matchingAccount;
-  }
-
-  /**
-   * Migrate transaction hashes when account externalId changes.
-   * This recalculates all transaction originalIds using the new externalId.
-   *
-   * @param account - The account whose transactions need migration
-   * @param newExternalId - The new externalId (identification_hash)
-   * @returns Number of transactions migrated
-   *
-   * @deprecated Temporary migration for legacy accounts (pre-identification_hash).
-   * Can be removed once all accounts have been migrated to use identification_hash as externalId.
-   */
-  private async migrateTransactionHashes({
-    account,
-    newExternalId,
-  }: {
-    account: Accounts;
-    newExternalId: string;
-  }): Promise<number> {
-    // Skip if externalId hasn't changed
-    if (account.externalId === newExternalId) {
-      return 0;
-    }
-
-    logger.info(
-      `Migrating transaction hashes for account ${account.id} from ${account.externalId} to ${newExternalId}`,
-    );
-
-    // Get all transactions for this account
-    const transactions = await findTransactions({
-      planned: 'exclude',
-      access: 'unscoped-internal',
-      balanceAdjustments: 'include',
-      completeness: 'all',
-      where: { accountId: account.id },
-      paranoid: false,
-    });
-
-    let migratedCount = 0;
-
-    for (const tx of transactions) {
-      const rawTransaction = getRawTransaction({ externalData: tx.externalData });
-
-      if (!rawTransaction) {
-        logger.info(`Transaction ${tx.id} has no rawTransaction in externalData, skipping migration`);
-        continue;
-      }
-
-      // Calculate new hash using the new externalId (identification_hash)
-      const newOriginalId = generateTransactionHash({
-        tx: rawTransaction,
-        accountExternalId: newExternalId,
-      });
-
-      const updates: { originalId?: string; externalData?: Transactions['externalData'] } = {};
-      if (tx.originalId !== newOriginalId) {
-        updates.originalId = newOriginalId;
-      }
-
-      const externalData = tx.externalData as Record<string, unknown> | null;
-      if (externalData && externalData.pendingHash !== undefined) {
-        // pendingHash was derived from the old account externalId and the pending-era
-        // payload is gone, so it can never be recomputed or matched again.
-        const withoutPendingHash = { ...externalData };
-        delete withoutPendingHash.pendingHash;
-        updates.externalData = withoutPendingHash;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        await tx.update(updates);
-        if (updates.originalId) migratedCount++;
-      }
-    }
-
-    // Update account's externalId to the new value
-    await account.update({ externalId: newExternalId });
-
-    logger.info(`Migrated ${migratedCount} transaction hashes for account ${account.id}`);
-
-    return migratedCount;
   }
 
   /**
