@@ -50,7 +50,7 @@ import { Button as UiButton } from '@/components/lib/ui/button';
 import InputField from '@/components/fields/input-field.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { PlusIcon, SearchIcon, XIcon } from '@lucide/vue';
-import { useDebounce, useSessionStorage } from '@vueuse/core';
+import { refDebounced, useSessionStorage } from '@vueuse/core';
 import { computed, reactive } from 'vue';
 
 import PayeeFormDialog from './payee-form-dialog.vue';
@@ -59,7 +59,7 @@ import PayeesTable from './payees-table.vue';
 const DEBOUNCE_MS = 200;
 
 const searchQuery = useSessionStorage('payees-search-query', '');
-const searchQueryDebounced = useDebounce(searchQuery, DEBOUNCE_MS);
+const searchQueryDebounced = refDebounced(searchQuery, DEBOUNCE_MS);
 const debouncedQuery = computed(() => (searchQueryDebounced.value ?? '').trim());
 
 const dialogState = reactive<{ isOpen: boolean; payee: null }>({ isOpen: false, payee: null });

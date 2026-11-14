@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { Button } from '@/components/lib/ui/button';
 import { cn } from '@/lib/utils';
 import { PlusIcon, SearchIcon, XIcon } from '@lucide/vue';
-import { useDebounce } from '@vueuse/core';
+import { refDebounced } from '@vueuse/core';
 import { ListboxContent, ListboxFilter, ListboxItem, ListboxRoot } from 'reka-ui';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -74,7 +74,7 @@ const { t } = useI18n();
 
 const isOpen = ref(false);
 const inputValue = ref('');
-const debouncedRaw = useDebounce(inputValue, DEBOUNCE_MS);
+const debouncedRaw = refDebounced(inputValue, DEBOUNCE_MS);
 const debouncedQuery = computed(() => debouncedRaw.value.trim());
 
 // Sort by last-seen so the most recently used payees lead – that's what the

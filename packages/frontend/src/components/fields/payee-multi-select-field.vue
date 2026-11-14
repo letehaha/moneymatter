@@ -76,7 +76,7 @@ import { isEqual } from 'lodash-es';
 import { CheckIcon, CircleDashedIcon } from '@lucide/vue';
 import MultiSelectItem from '@/components/fields/multi-select-item.vue';
 import { ListboxContent } from 'reka-ui';
-import { useDebounce } from '@vueuse/core';
+import { refDebounced } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -106,7 +106,7 @@ const realPayeeIds = computed(() => props.payeeIds.filter((id) => id !== BLANK_F
 const { t } = useI18n();
 
 const searchTerm = ref('');
-const searchTermDebounced = useDebounce(searchTerm, DEBOUNCE_MS);
+const searchTermDebounced = refDebounced(searchTerm, DEBOUNCE_MS);
 const debouncedQuery = computed(() => (searchTermDebounced.value ?? '').trim());
 const isOpen = ref(false);
 
