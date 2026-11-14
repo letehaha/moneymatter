@@ -1,0 +1,250 @@
+---
+title: Log payments automatically on iPhone
+description: Set up Shortcuts automations so your iPhone logs Apple Pay taps, bank SMS and bank notifications in MoneyMatter for you.
+sidebar:
+  label: Payment automations
+  order: 1
+  badge:
+    text: Plus
+    variant: tip
+---
+
+import { Aside, Badge, Steps } from '@astrojs/starlight/components';
+import PhoneVideo from '~/components/phone-video.astro';
+import Screenshot from '~/components/screenshot.astro';
+import ActionCard from '~/components/shortcuts/action-card.astro';
+import PropertyList from '~/components/shortcuts/property-list.astro';
+import TriggerCard from '~/components/shortcuts/trigger-card.astro';
+import VariableBar from '~/components/shortcuts/variable-bar.astro';
+import VariablePill from '~/components/shortcuts/variable-pill.astro';
+
+The MoneyMatter iPhone app adds two actions to Apple's **Shortcuts** app. Put one in an automation, and your iPhone logs a payment every time you tap your card, your bank texts you or your bank's app sends a notification. You set it up once per card or bank.
+
+| You pay with | Automation trigger | MoneyMatter action |
+|---|---|---|
+| A card in Apple Wallet, in a shop | **Wallet** | **Log Wallet Payment** |
+| Any card, and your bank texts you | **Message** | **Log Payment Message** |
+| Any card, and your bank app notifies you | **Notification** | **Log Payment Message** |
+
+The steps follow iOS 27. The small illustrations are drawn to match Shortcuts, so colours and spacing differ a little from your phone.
+
+## Before you start <Badge text="Plus" variant="tip" />
+
+- **Plus plan.** AI reads each payment, so automations need Plus. They're included in your free trial. See [plans and billing](/settings/plans-and-billing/).
+- **The iPhone app, signed in.** Open MoneyMatter once after installing it, so Shortcuts can find its actions.
+- **iOS version.** Wallet and Message automations work on iOS 17 and later. Notification automations need iOS 27.
+
+## Set up a Wallet automation
+
+Wallet only reports payments you make by tapping your phone or watch in a shop. Online and in-app Apple Pay payments don't trigger it.
+
+<PhoneVideo
+  src="/videos/iphone/wallet-setup.mp4"
+  label="Screen recording of setting up a Wallet automation with the Log Wallet Payment action, from an empty Automation list to the saved automation."
+/>
+
+<Steps>
+
+1. Open **Shortcuts**, go to **Library** → **Automation** and tap **+**. If a card asks you to describe the shortcut, tap **Edit**.
+
+2. In the action list, tap the **Automation** chip and choose **Wallet** under **Apps**. The trigger reads **When Any Card is tapped**.
+
+   <TriggerCard summary="When {Any Card} is tapped" />
+
+3. Choose which card the automation listens to:
+
+   - Tap **Any Card** and pick one card. Do this once per card, so each automation can send its payments to the right account. **Recommended.**
+   - Or keep **Any Card**. Every tap gets logged, including cards you don't track in MoneyMatter.
+
+4. Tap the arrow next to the trigger to see its options, and check that the **Automation** toggle is on.
+
+5. In the search field at the bottom, search for **Log Wallet** and add **Log Wallet Payment**.
+
+   <ActionCard
+     title="Log Wallet Payment"
+     fields={[
+       { label: 'Amount' },
+       { label: 'Merchant' },
+       { label: 'Card' },
+       { label: 'Location', value: 'Choose' },
+       { label: 'Account' },
+     ]}
+   />
+
+6. Fill **Amount** with the payment amount:
+
+   1. Tap the **Amount** field. A row of choices opens: **Select Variable**, **Ask Each Time** and more. Swipe it all the way to the right and tap **Transaction**. Or tap **Select Variable**, then tap the **Transaction** bubble under the trigger.
+
+      <VariableBar target="Transaction" />
+
+   2. A blue <VariablePill label="Transaction" /> pill fills the field. Tap the pill and pick **Amount** from the **Get** list. The pill now reads <VariablePill label="Amount" />.
+
+      <Screenshot
+        phone
+        src="/screenshots/iphone/wallet-variable-get.png"
+        alt="The Shortcuts editor with a Transaction pill in the Amount field of Log Wallet Payment, and the Get list open below it: Transaction, Card or Pass, Merchant, Amount and Name."
+        hint="iPhone screenshot, light and dark. In the Wallet automation, insert the Transaction variable into Amount, then tap the pill so the Get list opens."
+      />
+
+7. Fill the other two fields the same way: **Merchant** → **Merchant**, **Card** → **Card or Pass**.
+
+8. Optional: tap **Account** and pick the MoneyMatter account this card belongs to. Every payment from this automation then lands on that account.
+
+   <ActionCard
+     title="Log Wallet Payment"
+     fields={[
+       { label: 'Amount', pill: 'Amount' },
+       { label: 'Merchant', pill: 'Merchant' },
+       { label: 'Card', pill: 'Card or Pass' },
+       { label: 'Location', value: 'Choose' },
+       { label: 'Account', value: 'Everyday Card · USD' },
+     ]}
+     caption="A finished action, with an account picked."
+   />
+
+9. Tap the back arrow to save the automation.
+
+</Steps>
+
+<Screenshot
+  phone
+  src="/screenshots/iphone/wallet-automation-done.png"
+  alt="The finished Wallet automation in Shortcuts: When Any Card is tapped with its options open (Categories, Merchants, the Automation toggle on, Notify off), and Log Wallet Payment with Amount, Merchant and Card or Pass pills and the Everyday Card account."
+  hint="iPhone screenshot on iOS 27, light and dark. Open the saved Wallet automation in the editor with the trigger options expanded."
+/>
+
+<Aside title="On iOS 26 and earlier">
+Open the **Automation** tab and tap **+**. The trigger is called **Transaction** on iOS 17 and 18, and **Wallet** on iOS 26. Pick your card, choose **Run Immediately** so iOS doesn't ask you to confirm every time, tap **Next**, then **New Blank Automation**. Continue from step 5.
+</Aside>
+
+### Add where you paid
+
+The **Location** field saves the shop's location with the transaction.
+
+<Steps>
+
+1. In the automation, add the **Get Current Location** action above **Log Wallet Payment**.
+2. Tap **Location** and pick the **Current Location** variable.
+
+   <ActionCard
+     title="Log Wallet Payment"
+     fields={[
+       { label: 'Amount', pill: 'Amount' },
+       { label: 'Merchant', pill: 'Merchant' },
+       { label: 'Card', pill: 'Card or Pass' },
+       { label: 'Location', pill: 'Current Location', active: true },
+       { label: 'Account' },
+     ]}
+   />
+
+</Steps>
+
+## Set up an SMS automation
+
+Use this if your bank texts you about every payment.
+
+<Steps>
+
+1. Start a new automation as for Wallet, but choose **Message**.
+2. Set **Sender** to your bank, and add **Message Contains** with a phrase that only its payment texts use (for example, the word your bank puts before the amount). Keep the filter narrow so one-time codes and promotions aren't captured.
+3. Add the MoneyMatter action **Log Payment Message**.
+4. Tap **Message Text**, insert the **Message** variable, then tap the pill and pick **Content**.
+
+   <VariableBar target="Message" />
+
+5. Optional: fill **Sender** the same way with **Message** → **Sender**.
+6. Optional: pick an **Account**.
+
+   <ActionCard
+     title="Log Payment Message"
+     fields={[
+       { label: 'Message Text', pill: 'Content' },
+       { label: 'Sender', pill: 'Sender' },
+       { label: 'Account' },
+     ]}
+   />
+
+7. Tap the back arrow to save.
+
+</Steps>
+
+## Set up a notification automation
+
+Use this if your bank's app sends a notification for every payment. Needs iOS 27.
+
+<Steps>
+
+1. Start a new automation as for Wallet, but choose **Notification** under **Apps**. The trigger reads **When I receive a notification from App**.
+
+   <TriggerCard summary="When I receive a notification from {App}" />
+
+2. Tap **App** and pick your bank's app. Then tap **Add Filter**, for example **Title contains** or **Message contains**, with words only payment notifications use. That way promotions and sign-in alerts don't run the automation.
+3. Add the MoneyMatter action **Log Payment Message**.
+4. Tap **Message Text**, insert the **Notification** variable, then tap the pill and pick **Body**. This is the only field you have to fill.
+
+   <PropertyList options={['Body', 'App', 'Sender']} pick="Body" />
+
+5. Optional: fill **Sender** with **Notification** → **App**. Don't pick the notification's **Sender** property: it means the person who sent a message, so it's empty for bank notifications.
+6. Optional: pick an **Account**.
+
+   <ActionCard
+     title="Log Payment Message"
+     fields={[
+       { label: 'Message Text', pill: 'Body' },
+       { label: 'Sender', pill: 'App' },
+       { label: 'Account' },
+     ]}
+   />
+
+7. Tap the back arrow to save.
+
+</Steps>
+
+<Screenshot
+  phone
+  src="/screenshots/iphone/notification-automation-done.png"
+  alt="The finished Notification automation in Shortcuts: a bank app as the trigger with a Message contains filter, and Log Payment Message with Message Text set to Body and Sender set to App."
+  hint="iPhone screenshot on iOS 27 from a real phone (the simulator has no bank apps), light and dark. Open the saved notification automation in the editor. Use a generic bank or blur its name."
+/>
+
+## Where the payments go
+
+- **They're imported the next time you open the app.** The automation only queues the payment on your phone. Open MoneyMatter and it's sent off and added.
+- **Bank-connected accounts** get a planned transaction. It's confirmed when your bank sync reports the same amount. If the bank never reports it, delete the planned transaction.
+- **Manual accounts** get a regular transaction.
+- **No account picked in the shortcut?** The first payment from each card asks which account it belongs to. Tap the sync icon on the **Home** screen: it's listed under **SMS & Wallet** → **Check these payments** as "Pick the account for this card".
+- **Different currency?** A payment in a currency other than its account's waits in the same list, with the original amount filled in.
+
+<Screenshot
+  phone
+  src="/screenshots/iphone/pending-payments.png"
+  alt="The Bank sync sheet in the MoneyMatter iPhone app. Under SMS & Wallet, Check these payments lists City Parking $8.00 and Sunrise Bakery $12.40, each with Pick the account for this card and a delete button."
+  hint="iPhone screenshot, light and dark. Queue two Log Wallet Payment runs with no Account picked, open MoneyMatter and tap the sync icon on Home."
+/>
+
+## Privacy
+
+- The message text and sender, and the Wallet amount, merchant and card, are sent to the MoneyMatter server and its AI provider to be read, then removed from your phone.
+- The location is saved with the transaction on the MoneyMatter server only. It's never sent to the AI provider.
+
+## Upgrading from Log Transaction
+
+Earlier versions of the app had a single **Log Transaction** action. It's now two actions: **Log Wallet Payment** and **Log Payment Message**.
+
+- **SMS and notification automations keep working.** The action now shows as **Log Payment Message**. Nothing to change.
+- **Wallet automations need rebuilding.** Open each one, delete the old action and add **Log Wallet Payment** as in [Set up a Wallet automation](#set-up-a-wallet-automation).
+
+<Aside type="tip">
+While you're there, pick an **Account** in each automation. Payments then skip the "which account?" question.
+</Aside>
+
+## Good to know
+
+- **One automation per card or bank.** It keeps payments on the right account and the filters narrow.
+- **Want to type an expense yourself?** Use the [Add Expense shortcut](/iphone/add-expense-shortcut/).
+
+## Related
+
+- [Add Expense shortcut](/iphone/add-expense-shortcut/)
+- [Bank connections](/import/bank-connections/)
+- [AI features](/ai/ai-features/)

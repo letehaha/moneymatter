@@ -1,0 +1,29 @@
+---
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+interface Props {
+  /** Light recording; the dark one sits next to it as `<name>.dark.mp4`. */
+  src: string;
+  label: string;
+}
+
+const { src, label } = Astro.props;
+const dark = src.replace(/\.mp4$/, '.dark.mp4');
+const inPublic = (path: string) => existsSync(join(process.cwd(), 'public', path));
+if (!src.endsWith('.mp4') || !inPublic(src) || !inPublic(dark)) {
+  throw new Error(`PhoneVideo: ${src} and ${dark} must both exist in public/`);
+}
+---
+
+<video class="dark:sl-hidden" src={src} aria-label={label} controls muted playsinline preload="metadata"></video>
+<video class="light:sl-hidden" src={dark} aria-label={label} controls muted playsinline preload="metadata"></video>
+
+<style>
+  video {
+    width: 100%;
+    max-width: 18rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 1.25rem;
+  }
+</style>
