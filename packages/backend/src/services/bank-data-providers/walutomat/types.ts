@@ -2,7 +2,7 @@
  * Walutomat-specific types for the provider implementation.
  * Walutomat API returns monetary amounts as decimal strings (e.g., "100.50").
  */
-import type { DeactivationReason } from '@bt/shared/types';
+import type { AuthTrackingMetadata } from '../types';
 
 /**
  * Walutomat API credentials required for authentication.
@@ -16,8 +16,6 @@ export interface WalutomatCredentials {
 /**
  * Walutomat connection metadata stored alongside credentials
  */
-export interface WalutomatMetadata {
+export interface WalutomatMetadata extends AuthTrackingMetadata {
   walletCount?: number;
-  consecutiveAuthFailures?: number;
-  deactivationReason?: DeactivationReason | null;
 }

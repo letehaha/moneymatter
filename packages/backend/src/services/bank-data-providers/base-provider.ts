@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { DEACTIVATION_REASON, type DeactivationReason, type RecordId } from '@bt/shared/types';
+import { DEACTIVATION_REASON, type RecordId } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { ForbiddenError, ServiceUnavailableError } from '@js/errors';
@@ -10,18 +9,8 @@ import { isDeadlockError } from '@services/common/retry-on-deadlock';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
 import { SyncStatus, setAccountSyncStatus } from './sync/sync-status-tracker';
-import { LoadTransactionsForPeriodResult, ProviderAccount, ProviderMetadata } from './types';
+import { AuthTrackingMetadata, LoadTransactionsForPeriodResult, ProviderAccount, ProviderMetadata } from './types';
 import { linkAndEmitSyncedTransactions } from './utils/link-and-emit-synced-transactions';
-
-/**
- * Shape of connection-metadata fields used by the shared auth-failure
- * tracking. Provider-specific metadata interfaces should include these
- * fields (and may add their own).
- */
-interface AuthTrackingMetadata {
-  consecutiveAuthFailures?: number;
-  deactivationReason?: DeactivationReason | null;
-}
 
 /**
  * After this many consecutive auth failures the connection is auto-deactivated
@@ -157,12 +146,19 @@ export abstract class BaseBankDataProvider {
    * save: the caller's single save() must persist credentials and this state together.
    */
   protected reactivateConnection({ connection }: { connection: BankDataProviderConnections }): void {
-    connection.metadata = {
-      ...(connection.metadata as AuthTrackingMetadata),
-      consecutiveAuthFailures: 0,
-      deactivationReason: null,
-    } satisfies AuthTrackingMetadata;
+    this.writeAuthMetadata({ connection, patch: { consecutiveAuthFailures: 0, deactivationReason: null } });
     connection.isActive = true;
+  }
+
+  // Always a new object: Sequelize only flags a JSONB column changed when its reference changes.
+  private writeAuthMetadata({
+    connection,
+    patch,
+  }: {
+    connection: BankDataProviderConnections;
+    patch: AuthTrackingMetadata;
+  }): void {
+    connection.metadata = { ...(connection.metadata as AuthTrackingMetadata | null), ...patch };
   }
 
   /**
@@ -174,16 +170,12 @@ export abstract class BaseBankDataProvider {
 
     try {
       const connection = await this.getConnection(connectionId);
-      // Spread into a NEW object: Sequelize only flags a JSON(B) column dirty
-      // when its reference changes, so mutating the existing metadata in place
-      // and re-assigning the same reference would not persist on save().
-      const metadata: AuthTrackingMetadata = { ...(connection.metadata as AuthTrackingMetadata) };
-      const failures = (metadata.consecutiveAuthFailures || 0) + 1;
-      metadata.consecutiveAuthFailures = failures;
+      const failures = ((connection.metadata as AuthTrackingMetadata | null)?.consecutiveAuthFailures || 0) + 1;
+      const patch: AuthTrackingMetadata = { consecutiveAuthFailures: failures };
 
       if (failures >= AUTH_FAILURE_DEACTIVATION_THRESHOLD) {
         connection.isActive = false;
-        metadata.deactivationReason = DEACTIVATION_REASON.AUTH_FAILURE;
+        patch.deactivationReason = DEACTIVATION_REASON.AUTH_FAILURE;
         // Designed response to a user's credentials going stale, surfaced by
         // the connection-status badge — not a fault worth a Sentry event.
         logger.info(
@@ -191,7 +183,7 @@ export abstract class BaseBankDataProvider {
         );
       }
 
-      connection.metadata = metadata as any;
+      this.writeAuthMetadata({ connection, patch });
       // `{ transaction: null }` bypasses the ambient CLS transaction: an auth
       // failure surfaces while a sync is being rolled back, so this write must
       // commit independently or the failure count (and deactivation) would be
@@ -213,13 +205,11 @@ export abstract class BaseBankDataProvider {
   private async resetAuthFailures(connectionId: string): Promise<void> {
     try {
       const connection = await this.getConnection(connectionId);
-      // New object reference so Sequelize persists the reset (see handleAuthError).
-      const metadata: AuthTrackingMetadata = { ...(connection.metadata as AuthTrackingMetadata) };
+      const consecutiveAuthFailures = (connection.metadata as AuthTrackingMetadata | null)?.consecutiveAuthFailures;
 
-      if (metadata.consecutiveAuthFailures && metadata.consecutiveAuthFailures > 0) {
-        metadata.consecutiveAuthFailures = 0;
-        connection.metadata = metadata as any;
-        // Commit outside any ambient sync transaction (see handleAuthError).
+      if (consecutiveAuthFailures) {
+        this.writeAuthMetadata({ connection, patch: { consecutiveAuthFailures: 0 } });
+        // Commit outside any ambient sync transaction.
         await connection.save({ transaction: null });
       }
     } catch {

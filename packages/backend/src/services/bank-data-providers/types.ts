@@ -3,7 +3,16 @@
  * This system allows users to connect multiple bank accounts from various providers
  * (Monobank, Enable Banking, etc.) in a unified, modular way.
  */
-import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, Cents } from '@bt/shared/types';
+import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, Cents, type DeactivationReason } from '@bt/shared/types';
+
+/**
+ * Connection-metadata fields used by the shared auth-failure tracking in
+ * BaseBankDataProvider. Provider metadata interfaces extend this.
+ */
+export interface AuthTrackingMetadata {
+  consecutiveAuthFailures?: number;
+  deactivationReason?: DeactivationReason | null;
+}
 
 // ============================================================================
 // Provider Types and Enums

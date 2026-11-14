@@ -4,7 +4,9 @@
  * negative = money left the account (debit), positive = money entered (credit).
  * Docs: https://developers.akahu.nz/
  */
-import type { Decimal, DeactivationReason } from '@bt/shared/types';
+import type { Decimal } from '@bt/shared/types';
+
+import type { AuthTrackingMetadata } from '../types';
 
 /**
  * Akahu personal-app credentials: the two static tokens shown on
@@ -19,10 +21,8 @@ export interface AkahuCredentials {
 /**
  * Akahu connection metadata stored alongside credentials
  */
-export interface AkahuMetadata {
+export interface AkahuMetadata extends AuthTrackingMetadata {
   accountCount?: number;
-  consecutiveAuthFailures?: number;
-  deactivationReason?: DeactivationReason | null;
 }
 
 export type AkahuAccountStatus = 'ACTIVE' | 'INACTIVE';
