@@ -16,7 +16,7 @@ import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 import { encryptCredentials } from '../utils/credential-encryption';
 import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
-import { type HistoryItem, type WalletBalance, WalutomatApiClient, WalutomatHttpError } from './api-client';
+import { type HistoryItem, WalutomatApiClient, WalutomatHttpError } from './api-client';
 import { linkCrossProviderTransfers } from './cross-provider-linking';
 import { WalutomatCredentials, WalutomatMetadata } from './types';
 
@@ -171,11 +171,7 @@ export class WalutomatProvider extends BaseBankDataProvider {
       privateKey: newCredentials.privateKey,
     });
 
-    const metadata = (connection.metadata as WalutomatMetadata) || {};
-    metadata.consecutiveAuthFailures = 0;
-    metadata.deactivationReason = null;
-    connection.metadata = metadata as any;
-    connection.isActive = true;
+    this.reactivateConnection({ connection });
 
     await connection.save();
   }
@@ -187,15 +183,10 @@ export class WalutomatProvider extends BaseBankDataProvider {
   async fetchAccounts(connectionId: string): Promise<ProviderAccount[]> {
     const credentials = await this.getValidatedCredentials(connectionId);
 
-    let balances: WalletBalance[];
-    try {
-      const client = new WalutomatApiClient(credentials);
-      balances = await client.getBalances();
-      await this.resetAuthFailures(connectionId);
-    } catch (error) {
-      await this.handleAuthError({ connectionId, error });
-      throw error;
-    }
+    const balances = await this.withAuthTracking({
+      connectionId,
+      request: () => new WalutomatApiClient(credentials).getBalances(),
+    });
 
     return balances.map((wallet) => ({
       externalId: externalIdFromCurrency(wallet.currency),
@@ -260,22 +251,22 @@ export class WalutomatProvider extends BaseBankDataProvider {
           fromDate.setMonth(fromDate.getMonth() - DEFAULT_SYNC_MONTHS);
         }
 
-        const historyItems: HistoryItem[] = [];
-        try {
-          for await (const item of client.getHistoryIterator({
-            currencies: [currency],
-            dateFrom: fromDate.toISOString(),
-            dateTo: now.toISOString(),
-            itemLimit: 200,
-            sortOrder: 'ASC',
-          })) {
-            historyItems.push(item);
-          }
-          await this.resetAuthFailures(connectionId);
-        } catch (error) {
-          await this.handleAuthError({ connectionId, error });
-          throw error;
-        }
+        const historyItems = await this.withAuthTracking({
+          connectionId,
+          request: async () => {
+            const items: HistoryItem[] = [];
+            for await (const item of client.getHistoryIterator({
+              currencies: [currency],
+              dateFrom: fromDate.toISOString(),
+              dateTo: now.toISOString(),
+              itemLimit: 200,
+              sortOrder: 'ASC',
+            })) {
+              items.push(item);
+            }
+            return items;
+          },
+        });
 
         const { createdTransactionIds, mergedIntoPlannedCount } = await persistSyncedTransactions({
           account,

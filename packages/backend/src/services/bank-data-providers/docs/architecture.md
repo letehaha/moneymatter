@@ -462,22 +462,20 @@ If a user unlinks, adds a manual transaction dated today, then relinks — witho
 
 ## Flow 7: Auth Failure Tracking
 
-Providers that use API keys (LunchFlow) track consecutive authentication failures:
+LunchFlow, Akahu, Walutomat and SimpleFIN wrap authenticated API calls in `withAuthTracking()` (base provider):
 
 ```
-API call fails with ForbiddenError
+withAuthTracking({ connectionId, request })
        ↓
-handleAuthError()
+Success → reset consecutiveAuthFailures to 0
+       ↓
+Auth error (ForbiddenError, or provider-specific isAuthError()) → handleAuthError() (private)
   • Increment consecutiveAuthFailures in metadata
-  • If failures >= 2: deactivate connection (isActive = false)
-  • Store deactivationReason = 'auth_failure'
-       ↓
-On next successful API call:
-  resetAuthFailures()
-  • Reset counter to 0
+  • If failures >= 2: isActive = false, deactivationReason = 'auth_failure'
+  • Rethrow the error
 ```
 
-User can reactivate by updating credentials via `refreshCredentials()`.
+`refreshCredentials()` in those providers plus Monobank calls `reactivateConnection()`, which resets the counter, clears `deactivationReason` and sets `isActive = true` before the single `save()` that persists the new credentials. Enable Banking has its own auth handling.
 
 ---
 

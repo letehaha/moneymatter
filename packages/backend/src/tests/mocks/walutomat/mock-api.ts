@@ -40,6 +40,15 @@ UxaMcWvIpy51nH62k9jrTyw=
 
 const WALUTOMAT_BASE_URL = 'https://api.walutomat.pl/api/v2.0.0';
 
+const forbiddenResponse = () =>
+  HttpResponse.json(
+    {
+      success: false,
+      errors: [{ key: 'UNAUTHORIZED', description: 'Invalid API key' }],
+    },
+    { status: 403 },
+  );
+
 /**
  * Override handler for balances endpoint with custom response.
  */
@@ -56,6 +65,9 @@ export const getWalutomatBalancesMock = ({
   });
 };
 
+export const getWalutomatForbiddenBalancesMock = () =>
+  http.get(`${WALUTOMAT_BASE_URL}/account/balances`, () => forbiddenResponse());
+
 /**
  * Override handler for history endpoint with custom response.
  */
@@ -71,6 +83,9 @@ export const getWalutomatHistoryMock = ({
     });
   });
 };
+
+export const getWalutomatForbiddenHistoryMock = () =>
+  http.get(`${WALUTOMAT_BASE_URL}/account/history`, () => forbiddenResponse());
 
 /**
  * Override handler for history endpoint that returns different items per currency.
@@ -103,13 +118,7 @@ export const walutomatHandlers = [
     const validKeys = [VALID_WALUTOMAT_API_KEY, VALID_WALUTOMAT_API_KEY_2];
 
     if (!apiKey || !validKeys.includes(apiKey)) {
-      return HttpResponse.json(
-        {
-          success: false,
-          errors: [{ key: 'UNAUTHORIZED', description: 'Invalid API key' }],
-        },
-        { status: 403 },
-      );
+      return forbiddenResponse();
     }
 
     return HttpResponse.json({
@@ -124,13 +133,7 @@ export const walutomatHandlers = [
     const validKeys = [VALID_WALUTOMAT_API_KEY, VALID_WALUTOMAT_API_KEY_2];
 
     if (!apiKey || !validKeys.includes(apiKey)) {
-      return HttpResponse.json(
-        {
-          success: false,
-          errors: [{ key: 'UNAUTHORIZED', description: 'Invalid API key' }],
-        },
-        { status: 403 },
-      );
+      return forbiddenResponse();
     }
 
     // Parse currency filter from query params

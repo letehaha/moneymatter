@@ -16,12 +16,7 @@ import { encryptCredentials } from '../utils/credential-encryption';
 import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { LunchFlowApiClient } from './api-client';
-import {
-  LunchFlowApiAccountsResponse,
-  LunchFlowApiTransactionsResponse,
-  LunchFlowCredentials,
-  LunchFlowMetadata,
-} from './types';
+import { LunchFlowCredentials, LunchFlowMetadata } from './types';
 
 /**
  * LunchFlow provider implementation
@@ -108,12 +103,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
 
     connection.setEncryptedCredentials({ apiKey: newCredentials.apiKey });
 
-    // New object reference: mutating metadata in place leaves the JSONB column clean and the reset is never saved.
-    const metadata: LunchFlowMetadata = { ...(connection.metadata as LunchFlowMetadata) };
-    metadata.consecutiveAuthFailures = 0;
-    metadata.deactivationReason = null;
-    connection.metadata = metadata as any;
-    connection.isActive = true;
+    this.reactivateConnection({ connection });
 
     await connection.save();
   }
@@ -127,14 +117,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
 
     const apiClient = new LunchFlowApiClient(apiKey);
 
-    let accountsResponse: LunchFlowApiAccountsResponse;
-    try {
-      accountsResponse = await apiClient.getAccounts();
-      await this.resetAuthFailures(connectionId);
-    } catch (error) {
-      await this.handleAuthError({ connectionId, error });
-      throw error;
-    }
+    const accountsResponse = await this.withAuthTracking({ connectionId, request: () => apiClient.getAccounts() });
 
     // Only return ACTIVE accounts (include accounts with no status — benefit of the doubt)
     const activeAccounts = accountsResponse.accounts.filter((acc) => !acc.status || acc.status === 'ACTIVE');
@@ -247,14 +230,10 @@ export class LunchFlowProvider extends BaseBankDataProvider {
         const apiClient = new LunchFlowApiClient(apiKey);
         const accountId = parseInt(account.externalId, 10);
 
-        let transactionsResponse: LunchFlowApiTransactionsResponse;
-        try {
-          transactionsResponse = await apiClient.getTransactions({ accountId });
-          await this.resetAuthFailures(connectionId);
-        } catch (error) {
-          await this.handleAuthError({ connectionId, error });
-          throw error;
-        }
+        const transactionsResponse = await this.withAuthTracking({
+          connectionId,
+          request: () => apiClient.getTransactions({ accountId }),
+        });
 
         // Filter out pending transactions (those with null IDs)
         const postedTransactions = transactionsResponse.transactions.filter((tx) => tx.id !== null);

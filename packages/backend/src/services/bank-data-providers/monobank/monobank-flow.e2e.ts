@@ -1271,6 +1271,24 @@ describe('Monobank Data Provider E2E', () => {
       expect(result.status).not.toEqual(ERROR_CODES.Forbidden);
       expect(result.status).toBeGreaterThanOrEqual(400);
     });
+
+    it('refreshCredentials: should keep the connection active with no deactivation reason for a valid token', async () => {
+      const { connectionId } = await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.MONOBANK,
+        credentials: { apiToken: VALID_MONOBANK_TOKEN },
+        raw: true,
+      });
+
+      const result = await helpers.bankDataProviders.updateConnectionDetails({
+        connectionId,
+        credentials: { apiToken: VALID_MONOBANK_TOKEN },
+      });
+      expect(result.status).toBe(200);
+
+      const { connection } = await helpers.bankDataProviders.getConnectionDetails({ connectionId, raw: true });
+      expect(connection.isActive).toBe(true);
+      expect(connection.deactivationReason).toBeNull();
+    });
   });
 
   describe('Stale external account id', () => {

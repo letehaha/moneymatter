@@ -131,12 +131,45 @@ export abstract class BaseBankDataProvider {
   }
 
   /**
-   * Increment the connection's consecutive auth-failure counter and deactivate
-   * the connection once the threshold is reached. Called by providers in the
-   * catch branch of an authenticated call. No-ops for non-auth errors so call
-   * sites can pass any caught error.
+   * Run an authenticated upstream request with auth-failure tracking: reset the
+   * failure counter on success, count (and possibly deactivate) on an auth error,
+   * and rethrow any error.
    */
-  protected async handleAuthError({ connectionId, error }: { connectionId: string; error: unknown }): Promise<void> {
+  protected async withAuthTracking<T>({
+    connectionId,
+    request,
+  }: {
+    connectionId: string;
+    request: () => Promise<T>;
+  }): Promise<T> {
+    try {
+      const result = await request();
+      await this.resetAuthFailures(connectionId);
+      return result;
+    } catch (error) {
+      await this.handleAuthError({ connectionId, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Clear auth-failure state and reactivate after a credential refresh. Does not
+   * save: the caller's single save() must persist credentials and this state together.
+   */
+  protected reactivateConnection({ connection }: { connection: BankDataProviderConnections }): void {
+    connection.metadata = {
+      ...(connection.metadata as AuthTrackingMetadata),
+      consecutiveAuthFailures: 0,
+      deactivationReason: null,
+    } satisfies AuthTrackingMetadata;
+    connection.isActive = true;
+  }
+
+  /**
+   * Increment the connection's consecutive auth-failure counter and deactivate
+   * the connection once the threshold is reached. No-ops for non-auth errors.
+   */
+  private async handleAuthError({ connectionId, error }: { connectionId: string; error: unknown }): Promise<void> {
     if (!this.isAuthError(error)) return;
 
     try {
@@ -177,7 +210,7 @@ export abstract class BaseBankDataProvider {
    * Failures here are swallowed because the recorded count is non-critical:
    * we'd rather risk an extra deactivation than fail a working request.
    */
-  protected async resetAuthFailures(connectionId: string): Promise<void> {
+  private async resetAuthFailures(connectionId: string): Promise<void> {
     try {
       const connection = await this.getConnection(connectionId);
       // New object reference so Sequelize persists the reset (see handleAuthError).

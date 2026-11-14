@@ -106,13 +106,7 @@ export class AkahuProvider extends BaseBankDataProvider {
       appToken: newCredentials.appToken,
     });
 
-    // New object reference: mutating metadata in place leaves the JSONB column clean and the reset is never saved.
-    connection.metadata = {
-      ...(connection.metadata as AkahuMetadata),
-      consecutiveAuthFailures: 0,
-      deactivationReason: null,
-    } satisfies AkahuMetadata;
-    connection.isActive = true;
+    this.reactivateConnection({ connection });
 
     await connection.save();
   }
@@ -273,23 +267,6 @@ export class AkahuProvider extends BaseBankDataProvider {
       return asCents(0);
     }
     return Money.fromDecimal(account.balance.current).toCents();
-  }
-
-  private async withAuthTracking<T>({
-    connectionId,
-    request,
-  }: {
-    connectionId: string;
-    request: () => Promise<T>;
-  }): Promise<T> {
-    try {
-      const result = await request();
-      await this.resetAuthFailures(connectionId);
-      return result;
-    } catch (error) {
-      await this.handleAuthError({ connectionId, error });
-      throw error;
-    }
   }
 
   /**

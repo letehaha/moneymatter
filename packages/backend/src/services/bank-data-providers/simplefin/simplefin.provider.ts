@@ -203,14 +203,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
 
     connection.setEncryptedCredentials({ accessUrl } satisfies SimplefinCredentials);
 
-    // Reset auth-failure tracking and reactivate. Spread into a new object so
-    // Sequelize flags the JSONB column dirty (a same-reference re-assign won't
-    // persist the reset of consecutiveAuthFailures / deactivationReason).
-    const metadata: SimplefinMetadata = { ...(connection.metadata as SimplefinMetadata) };
-    metadata.consecutiveAuthFailures = 0;
-    metadata.deactivationReason = null;
-    connection.metadata = metadata as any;
-    connection.isActive = true;
+    this.reactivateConnection({ connection });
 
     await connection.save();
   }
@@ -738,18 +731,17 @@ export class SimplefinProvider extends BaseBankDataProvider {
     apiClient: SimplefinApiClient;
     params?: SimplefinGetAccountsParams;
   }): Promise<SimplefinAccountSet> {
-    try {
-      const accountSet = await apiClient.getAccounts(params);
-      this.surfaceAccountSetErrors({ accountSet });
-      await this.resetAuthFailures(connectionId);
-      return accountSet;
-    } catch (error) {
-      // Rate-limit (TooManyRequests) is NOT a ForbiddenError, so isAuthError
-      // returns false and the connection is not deactivated for a transient
-      // throttle — the error still propagates and surfaces via the sync status.
-      await this.handleAuthError({ connectionId, error });
-      throw error;
-    }
+    // Rate-limit (TooManyRequests) is NOT a ForbiddenError, so isAuthError
+    // returns false and the connection is not deactivated for a transient
+    // throttle — the error still propagates and surfaces via the sync status.
+    return this.withAuthTracking({
+      connectionId,
+      request: async () => {
+        const accountSet = await apiClient.getAccounts(params);
+        this.surfaceAccountSetErrors({ accountSet });
+        return accountSet;
+      },
+    });
   }
 
   /**
