@@ -5,7 +5,7 @@ import { trackAnalyticsEvent } from '@/lib/posthog';
 /**
  * Fires `transactions_filter_used` for every filter that just transitioned from
  * its default to a narrowing value. Edge-triggered, so typing "abc" into the
- * note filter reports once, not per keystroke. The analytics `filter` property
+ * search box reports once, not per keystroke. The analytics `filter` property
  * is the filter's registry key.
  */
 export function trackNewlyActiveFilters({ previous, current }: { previous: FiltersStruct; current: FiltersStruct }) {

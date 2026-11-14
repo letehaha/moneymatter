@@ -999,6 +999,7 @@ export const findWithFilters = async ({
   categoryIds,
   payeeIds,
   noteSearch,
+  search,
   attributes,
   categorizationSource,
   categorizedAt,
@@ -1072,6 +1073,8 @@ export const findWithFilters = async ({
   categoryIds?: string[];
   payeeIds?: string[];
   noteSearch?: string[]; // array of keywords
+  /** Free-text search over note, payee name and tag names. Words are AND-ed, each matched case-insensitively. */
+  search?: string;
   attributes?: (keyof Transactions)[];
   categorizationSource?: CATEGORIZATION_SOURCE;
   /** Exact `categorizationMeta.categorizedAt` stamp, which identifies one categorization run. */
@@ -1331,6 +1334,28 @@ export const findWithFilters = async ({
         };
       }
     }
+  }
+
+  // Free-text search: every word must match the note, the payee name or one of the tag names.
+  // Correlated subqueries keep rows unique (a join on tags would duplicate them).
+  // Each word adds two subplans; past ~6 words Postgres JIT-compiles the plan and a search takes seconds.
+  const searchWords = [...new Set((search ?? '').split(/\s+/).filter(Boolean))].slice(0, 6);
+  // Scoping the subqueries by owner lets them use the userId indexes instead of scanning every user's rows.
+  const ownerScope = ({ alias }: { alias: string }) =>
+    access === 'pre-scoped' ? '' : ` AND ${alias}."userId" = ${Number(access.creator)}`;
+  for (const word of searchWords) {
+    const pattern = Transactions.sequelize!.escape(`%${word.replace(/[\\%_]/g, '\\$&')}%`);
+    pushAndCondition(
+      literal(`(
+        "Transactions"."note" ILIKE ${pattern}
+        OR EXISTS (SELECT 1 FROM "Payees" sp WHERE sp."id" = "Transactions"."payeeId" AND sp."name" ILIKE ${pattern}${ownerScope({ alias: 'sp' })})
+        OR EXISTS (
+          SELECT 1 FROM "TransactionTags" stt
+          JOIN "Tags" st ON st."id" = stt."tagId"
+          WHERE stt."transactionId" = "Transactions"."id" AND st."name" ILIKE ${pattern}${ownerScope({ alias: 'st' })}
+        )
+      )`),
+    );
   }
 
   // Add note search condition if provided

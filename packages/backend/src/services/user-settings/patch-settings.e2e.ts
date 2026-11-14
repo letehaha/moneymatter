@@ -322,7 +322,7 @@ describe('Patch user settings', () => {
     const view = {
       id: generateRandomRecordId(),
       name: 'Groceries',
-      filters: { accountIds: ['a1'], noteIncludes: 'lidl' },
+      filters: { accountIds: ['a1'], search: 'lidl' },
       sorting: { sortBy: 'time', order: 'DESC' },
       datePreset: 'last3Months',
     };

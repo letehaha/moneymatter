@@ -657,6 +657,61 @@ describe('Retrieve transactions with filters', () => {
     }
   }, 60_000);
 
+  describe('free-text search', () => {
+    it('matches note, payee name and tag names, AND-ing words', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const payee = await helpers.createPayee({ payload: helpers.buildPayeePayload({ name: 'Starbucks' }), raw: true });
+      const tag = await helpers.createTag({ payload: { name: 'Holiday', color: '#ff0000' }, raw: true });
+
+      const [byNote] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: account.id, note: 'Morning coffee beans' }),
+        raw: true,
+      });
+      const [byPayee] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: account.id, payeeId: payee.id, note: 'latte' }),
+        raw: true,
+      });
+      const [byTag] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: account.id, note: 'flight' }),
+        raw: true,
+      });
+      await helpers.addTransactionsToTag({ tagId: tag.id, transactionIds: [byTag!.id], raw: true });
+
+      const idsFor = async (search: string) =>
+        ((await helpers.getTransactions({ search, raw: true })) ?? []).map((tx) => tx.id).sort();
+
+      expect(await idsFor('COFFEE')).toEqual([byNote!.id]);
+      expect(await idsFor('starbucks')).toEqual([byPayee!.id]);
+      expect(await idsFor('holiday')).toEqual([byTag!.id]);
+      expect(await idsFor('starbucks latte')).toEqual([byPayee!.id]);
+      expect(await idsFor('starbucks coffee')).toEqual([]);
+      expect(await idsFor('nothing-matches-this')).toEqual([]);
+      expect(await idsFor('100%')).toEqual([]);
+
+      const blank = await helpers.getTransactions({ search: '   ', raw: true });
+      expect(blank?.length).toBe(3);
+    });
+
+    it('treats LIKE wildcards and backslashes in the search as literal text', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const idsByNote: Record<string, string> = {};
+      for (const note of ['50% off', '50 off', 'a_b', 'axb', 'C:\\tmp', 'C:tmp']) {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, note }),
+          raw: true,
+        });
+        idsByNote[note] = tx!.id;
+      }
+
+      const idsFor = async (search: string) =>
+        ((await helpers.getTransactions({ search, raw: true })) ?? []).map((tx) => tx.id);
+
+      expect(await idsFor('%')).toEqual([idsByNote['50% off']]);
+      expect(await idsFor('_')).toEqual([idsByNote['a_b']]);
+      expect(await idsFor('\\')).toEqual([idsByNote['C:\\tmp']]);
+    });
+  });
+
   describe('filter by note', () => {
     it('works correctly', async () => {
       const accountA = await helpers.createAccount({ raw: true });
