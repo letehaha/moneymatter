@@ -999,6 +999,7 @@ export const findWithFilters = async ({
   categoryIds,
   payeeIds,
   noteSearch,
+  search,
   attributes,
   categorizationSource,
   categorizedAt,
@@ -1072,6 +1073,8 @@ export const findWithFilters = async ({
   categoryIds?: string[];
   payeeIds?: string[];
   noteSearch?: string[]; // array of keywords
+  /** Free-text search over note, payee name and tag names. Words are AND-ed, each matched case-insensitively. */
+  search?: string;
   attributes?: (keyof Transactions)[];
   categorizationSource?: CATEGORIZATION_SOURCE;
   /** Exact `categorizationMeta.categorizedAt` stamp, which identifies one categorization run. */
@@ -1331,6 +1334,24 @@ export const findWithFilters = async ({
         };
       }
     }
+  }
+
+  // Free-text search: every word must match the note, the payee name or one of the tag names.
+  // Correlated subqueries keep rows unique (a join on tags would duplicate them).
+  const searchWords = (search ?? '').split(/\s+/).filter(Boolean);
+  for (const word of searchWords) {
+    const pattern = Transactions.sequelize!.escape(`%${word.replace(/[\\%_]/g, '\\$&')}%`);
+    pushAndCondition(
+      literal(`(
+        "Transactions"."note" ILIKE ${pattern}
+        OR EXISTS (SELECT 1 FROM "Payees" sp WHERE sp."id" = "Transactions"."payeeId" AND sp."name" ILIKE ${pattern})
+        OR EXISTS (
+          SELECT 1 FROM "TransactionTags" stt
+          JOIN "Tags" st ON st."id" = stt."tagId"
+          WHERE stt."transactionId" = "Transactions"."id" AND st."name" ILIKE ${pattern}
+        )
+      )`),
+    );
   }
 
   // Add note search condition if provided
