@@ -18,15 +18,13 @@ import { NON_CURRENCY_CODES, getCurrency } from '@models/currencies.model';
 import Subscriptions from '@models/subscriptions.model';
 import { calculateRefAmount } from '@root/services/calculate-ref-amount.service';
 import { withTransaction } from '@root/services/common/with-transaction';
-import {
-  PROVIDER_TO_ACCOUNT_TYPE,
-  restoreRelinkedTransactionsAccountType,
-} from '@services/accounts/restore-relinked-transactions-account-type';
+import { restoreRelinkedTransactionsAccountType } from '@services/accounts/restore-relinked-transactions-account-type';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
 
 import { bankProviderRegistry } from '../registry';
 import { enqueueAccountSync } from '../sync/account-sync-queue';
 import type { AccountWithConnection } from '../sync/get-user-sync-status';
+import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 
 const PROVIDER_TO_ANALYTICS_TYPE: Record<BANK_PROVIDER_TYPE, BankProvider> = {
   [BANK_PROVIDER_TYPE.MONOBANK]: 'monobank',

@@ -1,12 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  ACCOUNT_TYPES,
-  BANK_PROVIDER_TYPE,
-  NO_CURRENCY_CODE,
-  type RecordId,
-  TRANSACTION_TRANSFER_NATURE,
-  TRANSACTION_TYPES,
-} from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE, NO_CURRENCY_CODE, type RecordId } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import {
@@ -20,17 +13,13 @@ import {
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import { findOneTransaction } from '@models/transactions-query';
-import { getUserDefaultCategory } from '@models/users.model';
 import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
-import { createTransaction } from '@services/transactions';
-import { accountHasPlannedRows } from '@services/transactions/planned-matching';
-import { Sequelize } from 'sequelize';
 
 import { SyncStatus, setAccountSyncStatus, setAccountsSyncStatus } from '../sync/sync-status-tracker';
+import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 import { encryptCredentials } from '../utils/credential-encryption';
 import { linkAndEmitSyncedTransactions } from '../utils/link-and-emit-synced-transactions';
-import { notifyPlannedConfirmations } from '../utils/notify-planned-confirmations';
+import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
 import { resolveSyncStart } from '../utils/resolve-sync-start';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { SimplefinApiClient } from './api-client';
@@ -687,7 +676,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
   private async persistAccountTransactions({
     connection,
     account,
-    transactions: rawTransactions,
+    transactions,
     matchPlanned = false,
     createFromDate,
   }: {
@@ -697,101 +686,40 @@ export class SimplefinProvider extends BaseBankDataProvider {
     matchPlanned?: boolean;
     createFromDate: Date;
   }): Promise<string[]> {
-    // Oldest first so balance-history ordering is natural.
-    const transactions = rawTransactions.toSorted((a, b) => a.posted - b.posted);
-    const defaultCategoryId = await getUserDefaultCategory({ id: connection.userId });
-    const createdIds: string[] = [];
-    let mergedIntoPlannedCount = 0;
-    const checkpoint = this.createBaseCurrencyLockCheckpoint({ userId: connection.userId });
-
-    // One probe per account instead of one per row.
-    const canMatchPlanned = matchPlanned && (await accountHasPlannedRows({ accountId: account.id }));
-
-    for (const tx of transactions) {
-      await checkpoint();
-
-      // Primary dedup: normal re-sync.
-      const existingTx = await findOneTransaction({
-        planned: 'exclude',
-        access: 'unscoped-internal',
-        balanceAdjustments: 'include',
-        where: { accountId: account.id, originalId: tx.id },
-        paranoid: false,
-      });
-      if (existingTx) continue;
-
-      // Secondary dedup: unlink→relink cleared originalId to null but preserved
-      // the original value under externalData.originalSource.originalId.
-      const existingByOriginalSource = await findOneTransaction({
-        planned: 'exclude',
-        access: 'unscoped-internal',
-        balanceAdjustments: 'include',
-        where: Sequelize.and(
-          { accountId: account.id, originalId: null },
-          Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx.id),
-        ),
-        paranoid: false,
-      });
-      if (existingByOriginalSource) {
-        // Restore originalId so future syncs use the fast primary path.
-        await existingByOriginalSource.update({ originalId: tx.id });
-        continue;
-      }
-
-      const time = new Date((tx.transacted_at ?? tx.posted) * 1000);
-
-      // Never create rows before the account's start: that history is already absorbed into the opening balance.
-      if (time < createFromDate) continue;
-
-      const amountMoney = Money.fromDecimal(tx.amount);
-      const isExpense = amountMoney.toNumber() < 0;
-
-      const createResult = await createTransaction({
-        originalId: tx.id,
-        note: tx.description || tx.payee || tx.memo || '',
-        amount: amountMoney.abs(),
-        // `transacted_at` (when it actually happened) beats `posted` (when the
-        // bank cleared it) for user-facing date. Falls back to `posted` for
-        // bridges/banks that don't expose `transacted_at`.
-        time,
-        externalData: {
-          payee: tx.payee,
-          memo: tx.memo,
-          sfinAccountId: account.externalId,
-          posted: tx.posted,
-          transactedAt: tx.transacted_at,
-        },
-        commissionRate: Money.fromCents(0),
-        cashbackAmount: Money.fromCents(0),
-        accountId: account.id,
-        userId: connection.userId,
-        transactionType: isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income,
-        categoryId: defaultCategoryId,
-        transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-        accountType: ACCOUNT_TYPES.simplefin,
-        rawMerchantName: tx.payee?.trim() || null,
-        matchPlanned: canMatchPlanned,
-      });
-
-      // A merged row is not a new row: it keeps the user's category and payee, which the
-      // post-sync listeners on the emitted ids would overwrite.
-      if (createResult.mergedIntoPlanned) {
-        mergedIntoPlannedCount += 1;
-      } else {
-        createdIds.push(createResult[0].id);
-      }
-    }
+    const { createdTransactionIds, mergedIntoPlannedCount } = await persistSyncedTransactions({
+      account,
+      userId: connection.userId,
+      accountType: PROVIDER_TO_ACCOUNT_TYPE[this.metadata.type],
+      checkpoint: this.createBaseCurrencyLockCheckpoint({ userId: connection.userId }),
+      // Oldest first so balance-history ordering is natural.
+      rows: transactions
+        .toSorted((a, b) => a.posted - b.posted)
+        .map((tx) => ({
+          originalId: tx.id,
+          // `transacted_at` (when it actually happened) beats `posted` (when the
+          // bank cleared it) for user-facing date. Falls back to `posted` for
+          // bridges/banks that don't expose `transacted_at`.
+          time: new Date((tx.transacted_at ?? tx.posted) * 1000),
+          amount: tx.amount,
+          note: tx.description || tx.payee || tx.memo || '',
+          externalData: {
+            payee: tx.payee,
+            memo: tx.memo,
+            sfinAccountId: account.externalId,
+            posted: tx.posted,
+            transactedAt: tx.transacted_at,
+          },
+          rawMerchantName: tx.payee?.trim() || null,
+        })),
+      matchPlanned,
+      createFromDate,
+    });
 
     if (mergedIntoPlannedCount > 0) {
       logger.info(`[SimpleFIN] ${mergedIntoPlannedCount} planned transaction(s) confirmed for account ${account.id}`);
-      await notifyPlannedConfirmations({
-        userId: connection.userId,
-        accountId: account.id,
-        mergedCount: mergedIntoPlannedCount,
-      });
     }
 
-    return createdIds;
+    return createdTransactionIds;
   }
 
   /**

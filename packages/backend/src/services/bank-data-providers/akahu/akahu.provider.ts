@@ -1,29 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  ACCOUNT_TYPES,
-  BANK_PROVIDER_TYPE,
-  type Cents,
-  type RecordId,
-  TRANSACTION_TRANSFER_NATURE,
-  TRANSACTION_TYPES,
-  asCents,
-} from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE, type Cents, type RecordId, asCents } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
-import type Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { findOneTransaction } from '@models/transactions-query';
-import { getUserDefaultCategory } from '@models/users.model';
 import { BaseBankDataProvider, type ProviderAccount, type ProviderMetadata } from '@services/bank-data-providers';
-import { createTransaction } from '@services/transactions';
-import { accountHasPlannedRows } from '@services/transactions/planned-matching';
-import { Op, Sequelize } from 'sequelize';
+import { Op } from 'sequelize';
 
+import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 import { clampSyncStartToLink } from '../utils/clamp-sync-start-to-link';
 import { encryptCredentials } from '../utils/credential-encryption';
-import { notifyPlannedConfirmations } from '../utils/notify-planned-confirmations';
+import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { AkahuApiClient } from './api-client';
 import type { AkahuApiAccount, AkahuApiTransaction, AkahuCredentials, AkahuMetadata } from './types';
@@ -225,12 +214,23 @@ export class AkahuProvider extends BaseBankDataProvider {
         });
         await this.requestRefreshIfStale({ apiClient, account: akahuAccount });
 
-        const matchPlanned = Boolean(anyStoredTransaction) && (await accountHasPlannedRows({ accountId: account.id }));
-        const counters = await this.persistTransactions({
-          connection,
+        const counters = await persistSyncedTransactions({
           account,
-          transactions: fetched,
-          matchPlanned,
+          userId: connection.userId,
+          accountType: PROVIDER_TO_ACCOUNT_TYPE[this.metadata.type],
+          checkpoint: this.createBaseCurrencyLockCheckpoint({ userId: connection.userId }),
+          // Ledger order, so planned-merge sees transactions ascending.
+          rows: fetched
+            .toSorted((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+            .map((tx) => ({
+              originalId: tx._id,
+              time: new Date(tx.date),
+              amount: tx.amount,
+              note: tx.description || tx.merchant?.name || '',
+              externalData: this.transactionMetadata(tx),
+              rawMerchantName: tx.merchant?.name?.trim() || null,
+            })),
+          matchPlanned: Boolean(anyStoredTransaction),
           createFromDate: anyStoredTransaction ? clampSyncStartToLink({ account, from: new Date(0) }) : new Date(0),
         });
 
@@ -242,11 +242,6 @@ export class AkahuProvider extends BaseBankDataProvider {
           logger.info(
             `[Akahu] Sync: ${counters.createdTransactionIds.length} transactions created, ${counters.mergedIntoPlannedCount} planned confirmed, ${counters.skippedPreLinkCount} pre-link rows skipped for account ${account.id}`,
           );
-          await notifyPlannedConfirmations({
-            userId: connection.userId,
-            accountId: account.id,
-            mergedCount: counters.mergedIntoPlannedCount,
-          });
         }
 
         if (akahuAccount.balance.current != null) {
@@ -256,99 +251,6 @@ export class AkahuProvider extends BaseBankDataProvider {
         return { transactionIds: counters.createdTransactionIds, fetchedCount: fetched.length };
       },
     });
-  }
-
-  /**
-   * Dedup is two-tier: primary by `originalId`, secondary by
-   * `externalData.originalSource.originalId` (covers unlink→relink, restoring `originalId` on a hit).
-   */
-  private async persistTransactions({
-    connection,
-    account,
-    transactions,
-    matchPlanned,
-    createFromDate,
-  }: {
-    connection: BankDataProviderConnections;
-    account: Accounts;
-    transactions: AkahuApiTransaction[];
-    matchPlanned: boolean;
-    createFromDate: Date;
-  }) {
-    const defaultCategoryId = await getUserDefaultCategory({ id: connection.userId });
-    const createdTransactionIds: string[] = [];
-    let mergedIntoPlannedCount = 0;
-    let skippedPreLinkCount = 0;
-    const checkpoint = this.createBaseCurrencyLockCheckpoint({ userId: connection.userId });
-
-    // Persist in ledger order so planned-merge sees transactions ascending.
-    const ascending = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-    for (const tx of ascending) {
-      await checkpoint();
-
-      const existingTx = await findOneTransaction({
-        planned: 'exclude',
-        access: 'unscoped-internal',
-        balanceAdjustments: 'include',
-        where: { accountId: account.id, originalId: tx._id },
-        paranoid: false,
-      });
-
-      if (existingTx) {
-        continue;
-      }
-
-      const existingByOriginalSource = await findOneTransaction({
-        planned: 'exclude',
-        access: 'unscoped-internal',
-        balanceAdjustments: 'include',
-        where: Sequelize.and(
-          { accountId: account.id, originalId: null },
-          Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx._id),
-        ),
-        paranoid: false,
-      });
-
-      if (existingByOriginalSource) {
-        await existingByOriginalSource.update({ originalId: tx._id });
-        continue;
-      }
-
-      // Never create rows before the link date: that history is already absorbed into the opening balance.
-      if (new Date(tx.date) < createFromDate) {
-        skippedPreLinkCount += 1;
-        continue;
-      }
-
-      const createResult = await createTransaction({
-        originalId: tx._id,
-        note: tx.description || tx.merchant?.name || '',
-        amount: Money.fromDecimal(Math.abs(tx.amount)),
-        time: new Date(tx.date),
-        externalData: this.transactionMetadata(tx),
-        commissionRate: Money.fromCents(0),
-        cashbackAmount: Money.fromCents(0),
-        accountId: account.id,
-        userId: connection.userId,
-        transactionType: tx.amount < 0 ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income,
-        categoryId: defaultCategoryId,
-        transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-        accountType: ACCOUNT_TYPES.akahu,
-        rawMerchantName: tx.merchant?.name?.trim() || null,
-        matchPlanned,
-      });
-
-      // A merged row is not a new row: it keeps the user's category and payee, which the
-      // post-sync listeners on the emitted ids would overwrite.
-      if (createResult.mergedIntoPlanned) {
-        mergedIntoPlannedCount += 1;
-      } else {
-        createdTransactionIds.push(createResult[0].id);
-      }
-    }
-
-    return { createdTransactionIds, mergedIntoPlannedCount, skippedPreLinkCount };
   }
 
   private transactionMetadata(tx: AkahuApiTransaction): Record<string, unknown> {

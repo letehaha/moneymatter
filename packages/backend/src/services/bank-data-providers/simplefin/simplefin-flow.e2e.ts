@@ -329,6 +329,7 @@ describe('SimpleFIN Data Provider E2E', () => {
 
       const transactions = await Transactions.findAll({ where: { accountId }, raw: true });
       expect(transactions.length).toBe(MOCK_AMOUNT);
+      for (const tx of transactions) expect(tx.accountType).toBe(ACCOUNT_TYPES.simplefin);
     });
 
     it('skips pending transactions (posted = 0)', async () => {

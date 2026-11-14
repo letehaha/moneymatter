@@ -1,28 +1,19 @@
 import type { RecordId } from '@bt/shared/types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  ACCOUNT_TYPES,
-  BANK_PROVIDER_TYPE,
-  Cents,
-  TRANSACTION_TRANSFER_NATURE,
-  TRANSACTION_TYPES,
-  asCents,
-} from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE, Cents, asCents } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { findOneTransaction } from '@models/transactions-query';
-import { getUserDefaultCategory } from '@models/users.model';
 import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
-import { createTransaction } from '@services/transactions';
-import { accountHasPlannedRows } from '@services/transactions/planned-matching';
-import { Op, Sequelize } from 'sequelize';
+import { Op } from 'sequelize';
 
+import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 import { clampSyncStartToLink } from '../utils/clamp-sync-start-to-link';
 import { encryptCredentials } from '../utils/credential-encryption';
-import { notifyPlannedConfirmations } from '../utils/notify-planned-confirmations';
+import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { LunchFlowApiClient } from './api-client';
 import {
@@ -271,12 +262,6 @@ export class LunchFlowProvider extends BaseBankDataProvider {
         // Sort by date ascending
         postedTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-        const defaultCategoryId = await getUserDefaultCategory({ id: connection.userId });
-        const createdTransactionIds: string[] = [];
-        let mergedIntoPlannedCount = 0;
-        let skippedPreLinkCount = 0;
-        const checkpoint = this.createBaseCurrencyLockCheckpoint({ userId });
-
         // An account with nothing stored yet is a backfill: it imports the whole feed and
         // must not consume plans. Otherwise only rows since the link date are created, never
         // since the newest stored row: LunchFlow sends the whole feed every sync, and a row
@@ -290,95 +275,32 @@ export class LunchFlowProvider extends BaseBankDataProvider {
         const createFromDate = anyStoredTransaction
           ? clampSyncStartToLink({ account, from: new Date(0) })
           : new Date(0);
-        const matchPlanned = Boolean(anyStoredTransaction) && (await accountHasPlannedRows({ accountId: account.id }));
 
-        for (const tx of postedTransactions) {
-          await checkpoint();
-
-          // Primary dedup: check by originalId (covers normal re-sync)
-          const existingTx = await findOneTransaction({
-            planned: 'exclude',
-            access: 'unscoped-internal',
-            balanceAdjustments: 'include',
-            where: {
-              accountId: account.id,
-              originalId: tx.id!,
-            },
-            paranoid: false,
-          });
-
-          if (existingTx) {
-            continue;
-          }
-
-          // Secondary dedup: check externalData.originalSource.originalId
-          // This covers the unlink→relink flow where originalId was cleared to null
-          // but the original value was preserved in externalData
-          const existingByOriginalSource = await findOneTransaction({
-            planned: 'exclude',
-            access: 'unscoped-internal',
-            balanceAdjustments: 'include',
-            where: Sequelize.and(
-              { accountId: account.id, originalId: null },
-              Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx.id!),
-            ),
-            paranoid: false,
-          });
-
-          if (existingByOriginalSource) {
-            // Restore the originalId so future syncs use the fast primary path
-            await existingByOriginalSource.update({ originalId: tx.id! });
-            continue;
-          }
-
-          // Never create rows before the link date: that history is already absorbed into the opening balance.
-          if (new Date(tx.date) < createFromDate) {
-            skippedPreLinkCount += 1;
-            continue;
-          }
-
-          const isExpense = tx.amount < 0;
-
-          const createResult = await createTransaction({
+        const { createdTransactionIds, mergedIntoPlannedCount, skippedPreLinkCount } = await persistSyncedTransactions({
+          account,
+          userId: connection.userId,
+          accountType: PROVIDER_TO_ACCOUNT_TYPE[this.metadata.type],
+          checkpoint: this.createBaseCurrencyLockCheckpoint({ userId: connection.userId }),
+          rows: postedTransactions.map((tx) => ({
             originalId: tx.id!,
-            note: tx.description || tx.merchant || '',
-            amount: Money.fromDecimal(Math.abs(tx.amount)),
             time: new Date(tx.date),
+            amount: tx.amount,
+            note: tx.description || tx.merchant || '',
             externalData: {
               merchant: tx.merchant,
               description: tx.description,
               lunchflowAccountId: tx.accountId,
             },
-            commissionRate: Money.fromCents(0),
-            cashbackAmount: Money.fromCents(0),
-            accountId: account.id,
-            userId: connection.userId,
-            transactionType: isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income,
-            categoryId: defaultCategoryId,
-            transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-            accountType: ACCOUNT_TYPES.lunchflow,
             rawMerchantName: tx.merchant?.trim() || null,
-            matchPlanned,
-          });
-
-          // A merged row is not a new row: it keeps the user's category and payee, which the
-          // post-sync listeners on the emitted ids would overwrite.
-          if (createResult.mergedIntoPlanned) {
-            mergedIntoPlannedCount += 1;
-          } else {
-            createdTransactionIds.push(createResult[0].id);
-          }
-        }
+          })),
+          matchPlanned: Boolean(anyStoredTransaction),
+          createFromDate,
+        });
 
         if (createdTransactionIds.length > 0 || mergedIntoPlannedCount > 0 || skippedPreLinkCount > 0) {
           logger.info(
             `[LunchFlow] Sync: ${createdTransactionIds.length} transactions created, ${mergedIntoPlannedCount} planned confirmed, ${skippedPreLinkCount} pre-link rows skipped for account ${account.id}`,
           );
-          await notifyPlannedConfirmations({
-            userId: connection.userId,
-            accountId: account.id,
-            mergedCount: mergedIntoPlannedCount,
-          });
         }
 
         // Update account balance

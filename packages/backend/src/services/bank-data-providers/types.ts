@@ -3,7 +3,7 @@
  * This system allows users to connect multiple bank accounts from various providers
  * (Monobank, Enable Banking, etc.) in a unified, modular way.
  */
-import { BANK_PROVIDER_TYPE, Cents } from '@bt/shared/types';
+import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, Cents } from '@bt/shared/types';
 
 // ============================================================================
 // Provider Types and Enums
@@ -55,6 +55,15 @@ export interface ProviderMetadata {
   redirectUrl?: string;
 }
 
+export const PROVIDER_TO_ACCOUNT_TYPE: Record<BANK_PROVIDER_TYPE, ACCOUNT_TYPES> = {
+  [BANK_PROVIDER_TYPE.MONOBANK]: ACCOUNT_TYPES.monobank,
+  [BANK_PROVIDER_TYPE.ENABLE_BANKING]: ACCOUNT_TYPES.enableBanking,
+  [BANK_PROVIDER_TYPE.LUNCHFLOW]: ACCOUNT_TYPES.lunchflow,
+  [BANK_PROVIDER_TYPE.WALUTOMAT]: ACCOUNT_TYPES.walutomat,
+  [BANK_PROVIDER_TYPE.SIMPLEFIN]: ACCOUNT_TYPES.simplefin,
+  [BANK_PROVIDER_TYPE.AKAHU]: ACCOUNT_TYPES.akahu,
+};
+
 // ============================================================================
 // Provider Data Types
 // ============================================================================
@@ -75,6 +84,20 @@ export interface ProviderAccount {
   currency: string;
   /** Additional provider-specific data */
   metadata?: Record<string, unknown>;
+}
+
+export interface SyncedTransactionRow {
+  originalId: string;
+  time: Date;
+  /**
+   * Signed decimal as the provider reports it; negative is an expense. A string is accepted so
+   * SimpleFIN's decimal is parsed strictly by `Money.fromDecimal`, and only after dedup.
+   */
+  amount: number | string;
+  note: string;
+  externalData: Record<string, unknown>;
+  rawMerchantName?: string | null;
+  externalReference?: string | null;
 }
 
 /**

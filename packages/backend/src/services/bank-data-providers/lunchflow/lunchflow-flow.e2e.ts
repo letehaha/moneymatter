@@ -636,6 +636,7 @@ describe('LunchFlow Data Provider E2E', () => {
 
       expect(Array.isArray(transactions)).toBe(true);
       expect(transactions.length).toBe(MOCK_AMOUNT);
+      for (const tx of transactions) expect(tx.accountType).toBe(ACCOUNT_TYPES.lunchflow);
     });
 
     it('should skip pending transactions (null ID)', async () => {

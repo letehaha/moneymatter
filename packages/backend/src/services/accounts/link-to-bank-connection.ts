@@ -18,11 +18,8 @@ import Subscriptions from '@models/subscriptions.model';
 import { updateAccount } from '@services/accounts.service';
 import { absorbLinkResidual } from '@services/accounts/absorb-link-residual';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
-import {
-  PROVIDER_TO_ACCOUNT_TYPE,
-  restoreRelinkedTransactionsAccountType,
-} from '@services/accounts/restore-relinked-transactions-account-type';
-import { bankProviderRegistry } from '@services/bank-data-providers';
+import { restoreRelinkedTransactionsAccountType } from '@services/accounts/restore-relinked-transactions-account-type';
+import { PROVIDER_TO_ACCOUNT_TYPE, bankProviderRegistry } from '@services/bank-data-providers';
 import { assertExternalAccountNotLinkedElsewhere } from '@services/bank-data-providers/connection/connect-selected-accounts';
 import { syncTransactionsForAccount } from '@services/bank-data-providers/connection/sync-transactions-for-account';
 import { SyncStatus, setAccountSyncStatus } from '@services/bank-data-providers/sync/sync-status-tracker';

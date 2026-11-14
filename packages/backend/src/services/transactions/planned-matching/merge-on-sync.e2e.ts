@@ -1,6 +1,7 @@
 import {
   ACCOUNT_TYPES,
   BANK_PROVIDER_TYPE,
+  asDecimal,
   type ExternalMonobankTransactionResponse,
   RESOURCE_TYPES,
   SUBSCRIPTION_FREQUENCIES,
@@ -15,6 +16,8 @@ import ResourceShares from '@models/resource-shares.model';
 import Transactions from '@models/transactions.model';
 import * as helpers from '@tests/helpers';
 import { useSelfHost } from '@tests/helpers/self-host';
+import { AKAHU_ACCOUNT_1_ID } from '@tests/mocks/akahu/data';
+import { getAkahuTransactionsMock } from '@tests/mocks/akahu/mock-api';
 import { FixedTransaction, MOCK_IDENTIFICATION_HASH_1 } from '@tests/mocks/enablebanking/data';
 import { MONOBANK_URLS_MOCK, getMonobankTransactionsMock } from '@tests/mocks/monobank/mock-api';
 import { addDays, format, startOfDay, subDays } from 'date-fns';
@@ -107,6 +110,18 @@ const seedHouseholdMember = async ({ ownerUserId }: { ownerUserId: number }) => 
 
   return member;
 };
+
+const akahuFeed = ({ items }: { items: { _id: string; amount: number; date: Date; description: string }[] }) => ({
+  success: true,
+  cursor: { next: null },
+  items: items.map((tx) => ({
+    ...tx,
+    _account: AKAHU_ACCOUNT_1_ID,
+    amount: asDecimal(tx.amount),
+    date: tx.date.toISOString(),
+    type: 'EFTPOS',
+  })),
+});
 
 async function setupConnectionWithAccount(): Promise<{
   connectionId: string;
@@ -545,6 +560,82 @@ describe('Planned transactions – merge on sync', () => {
         expect(visible!.isPlanned).toBe(false);
         expect(visible!.originalId).toBe(incoming.id);
       });
+    });
+  });
+
+  describe('Akahu', () => {
+    const connectAkahu = async ({ items }: { items: Parameters<typeof akahuFeed>[0]['items'] }) => {
+      const { connectionId } = await helpers.akahu.pairAkahuUser();
+      const { account } = await helpers.akahu.connectAccountsAndSync({
+        connectionId,
+        accountId: AKAHU_ACCOUNT_1_ID,
+        mockedTransactions: akahuFeed({ items }),
+      });
+      return { connectionId, accountId: account.id };
+    };
+
+    const syncAkahu = async ({
+      connectionId,
+      accountId,
+      items,
+    }: {
+      connectionId: string;
+      accountId: RecordId;
+      items: Parameters<typeof akahuFeed>[0]['items'];
+    }) => {
+      global.mswMockServer.use(
+        getAkahuTransactionsMock({ response: akahuFeed({ items }), accountId: AKAHU_ACCOUNT_1_ID }),
+      );
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+    };
+
+    it('merges the incoming feed row into the plan once the account has an anchor', async () => {
+      const now = new Date();
+      const anchor = { _id: 'trans_anchor', amount: -12.34, date: subDays(startOfDay(now), 10), description: 'ANCHOR' };
+      const { connectionId, accountId } = await connectAkahu({ items: [anchor] });
+      expect(await listAccountTransactions({ accountId })).toHaveLength(1);
+
+      const categoryId = await nonDefaultCategoryId();
+      const [plan] = await helpers.createPlannedTransaction({
+        payload: { accountId, amount: 250, time: addDays(startOfDay(now), 2).toISOString(), note: 'Rent', categoryId },
+        raw: true,
+      });
+
+      const rent = { _id: 'trans_rent', amount: -250, date: subDays(startOfDay(now), 1), description: 'RENT LANDLORD' };
+      await syncAkahu({ connectionId, accountId, items: [anchor, rent] });
+
+      const rows = await listAccountTransactions({ accountId });
+      expect(rows).toHaveLength(2);
+      expect(rows.filter((row) => row.originalId === rent._id)).toHaveLength(1);
+
+      const merged = rows.find((row) => row.id === plan.id)!;
+      expect(merged.isPlanned).toBe(false);
+      expect(merged.originalId).toBe(rent._id);
+      expect(merged.accountType).toBe(ACCOUNT_TYPES.akahu);
+      expect(merged.amount).toBe(250);
+      expect(merged.categoryId).toBe(categoryId);
+
+      // TRANSACTIONS_SYNCED listeners run after the sync returns; the user's category must survive them.
+      await helpers.sleep(1000);
+      expect((await helpers.getTransactionById({ id: plan.id, raw: true }))!.categoryId).toBe(categoryId);
+    }, 30000);
+
+    it('does not consume the plan when backfilling an account with no stored transactions', async () => {
+      const now = new Date();
+      const { connectionId, accountId } = await connectAkahu({ items: [] });
+
+      const [plan] = await helpers.createPlannedTransaction({
+        payload: { accountId, amount: 250, time: addDays(startOfDay(now), 2).toISOString(), note: 'Rent' },
+        raw: true,
+      });
+
+      const rent = { _id: 'trans_rent', amount: -250, date: subDays(startOfDay(now), 1), description: 'RENT LANDLORD' };
+      await syncAkahu({ connectionId, accountId, items: [rent] });
+
+      const rows = await listAccountTransactions({ accountId });
+      expect(rows).toHaveLength(2);
+      expect(rows.find((row) => row.id === plan.id)!.isPlanned).toBe(true);
+      expect(rows.find((row) => row.originalId === rent._id)!.id).not.toBe(plan.id);
     });
   });
 

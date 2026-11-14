@@ -1,6 +1,6 @@
 import type { RecordId } from '@bt/shared/types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
@@ -8,15 +8,13 @@ import { logger } from '@js/utils';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { findOneTransaction, findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
-import { getUserDefaultCategory } from '@models/users.model';
 import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
-import { createTransaction } from '@services/transactions';
-import { accountHasPlannedRows } from '@services/transactions/planned-matching';
 import { linkTransactions } from '@services/transactions/transactions-linking/link-transactions';
 import { Op, Sequelize } from 'sequelize';
 
+import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 import { encryptCredentials } from '../utils/credential-encryption';
-import { notifyPlannedConfirmations } from '../utils/notify-planned-confirmations';
+import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { type HistoryItem, type WalletBalance, WalutomatApiClient, WalutomatHttpError } from './api-client';
 import { linkCrossProviderTransfers } from './cross-provider-linking';
@@ -279,62 +277,18 @@ export class WalutomatProvider extends BaseBankDataProvider {
           throw error;
         }
 
-        const defaultCategoryId = await getUserDefaultCategory({ id: connection.userId });
-        const createdTransactionIds: string[] = [];
-        let mergedIntoPlannedCount = 0;
-        const checkpoint = this.createBaseCurrencyLockCheckpoint({ userId });
-
-        // One probe per run instead of one per row. Anchorless runs are backfills
-        // and must not consume plans.
-        const matchPlanned = Boolean(latestTransaction) && (await accountHasPlannedRows({ accountId: account.id }));
-
-        for (const item of historyItems) {
-          await checkpoint();
-
-          // Primary dedup: check by originalId
-          const existingTx = await findOneTransaction({
-            planned: 'exclude',
-            access: 'unscoped-internal',
-            balanceAdjustments: 'include',
-            where: {
-              accountId: account.id,
-              originalId: item.transactionId,
-            },
-            paranoid: false,
-          });
-
-          if (existingTx) {
-            continue;
-          }
-
-          // Secondary dedup: check externalData.originalSource.originalId
-          // Covers the unlink→relink flow where originalId was cleared
-          const existingByOriginalSource = await findOneTransaction({
-            planned: 'exclude',
-            access: 'unscoped-internal',
-            balanceAdjustments: 'include',
-            where: Sequelize.and(
-              { accountId: account.id, originalId: null },
-              Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), item.transactionId),
-            ),
-            paranoid: false,
-          });
-
-          if (existingByOriginalSource) {
-            await existingByOriginalSource.update({ originalId: item.transactionId });
-            continue;
-          }
-
-          const operationAmount = parseFloat(item.operationAmount);
-          const isExpense = operationAmount < 0;
-
-          const createResult = await createTransaction({
+        const { createdTransactionIds, mergedIntoPlannedCount } = await persistSyncedTransactions({
+          account,
+          userId: connection.userId,
+          accountType: PROVIDER_TO_ACCOUNT_TYPE[this.metadata.type],
+          checkpoint: this.createBaseCurrencyLockCheckpoint({ userId: connection.userId }),
+          rows: historyItems.map((item) => ({
             originalId: item.transactionId,
+            time: new Date(item.ts),
+            amount: parseFloat(item.operationAmount),
             note: buildTransactionDescription(item),
             externalReference:
               detail({ item, key: 'partnerOrderId' }) ?? detail({ item, key: 'providerOperationId' }) ?? null,
-            amount: Money.fromDecimal(Math.abs(operationAmount)),
-            time: new Date(item.ts),
             externalData: {
               historyItemId: item.historyItemId,
               transactionId: item.transactionId,
@@ -343,35 +297,15 @@ export class WalutomatProvider extends BaseBankDataProvider {
               operationDetails: item.operationDetails,
               balanceAfter: item.balanceAfter,
             },
-            commissionRate: Money.fromCents(0),
-            cashbackAmount: Money.fromCents(0),
-            accountId: account.id,
-            userId: connection.userId,
-            transactionType: isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income,
-            categoryId: defaultCategoryId,
-            transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-            accountType: ACCOUNT_TYPES.walutomat,
-            matchPlanned,
-          });
-
-          // A merged row is not a new row: it keeps the user's category and payee, which the
-          // post-sync listeners on the emitted ids would overwrite.
-          if (createResult.mergedIntoPlanned) {
-            mergedIntoPlannedCount += 1;
-          } else {
-            createdTransactionIds.push(createResult[0].id);
-          }
-        }
+          })),
+          // Anchorless runs are backfills and must not consume plans.
+          matchPlanned: Boolean(latestTransaction),
+        });
 
         if (createdTransactionIds.length > 0 || mergedIntoPlannedCount > 0) {
           logger.info(
             `[Walutomat] Sync: ${createdTransactionIds.length} transactions created, ${mergedIntoPlannedCount} planned confirmed for account ${account.id}`,
           );
-          await notifyPlannedConfirmations({
-            userId: connection.userId,
-            accountId: account.id,
-            mergedCount: mergedIntoPlannedCount,
-          });
         }
 
         // Update account balance
