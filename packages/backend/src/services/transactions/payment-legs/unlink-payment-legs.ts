@@ -34,7 +34,7 @@ export const unlinkPaymentLeg = async ({
   const updated = await Transactions.updateTransactionById({
     id: leg.id,
     userId,
-    ...pickLinkFields({ row: snapshot }),
+    ...pickLinkFields({ row: { ...snapshot, excludeFromStats: snapshot.excludeFromStats ?? false } }),
     // Never keep the main's category: on a shared account it can belong to another user.
     categoryId: category?.id ?? (await getUserDefaultCategory({ id: userId })),
     payeeId: payee?.id ?? null,

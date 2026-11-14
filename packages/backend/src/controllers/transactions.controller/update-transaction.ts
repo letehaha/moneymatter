@@ -43,6 +43,7 @@ export default createController(schema, async ({ user, params, body }) => {
     payeeId,
     payeeLocked,
     isPlanned,
+    excludeFromStats,
     originalAmount,
     originalCurrencyCode,
     paymentLegs,
@@ -99,6 +100,7 @@ export default createController(schema, async ({ user, params, body }) => {
       refundsTargets: normalizedRefundsTargets,
       payeeLocked,
       isPlanned,
+      excludeFromStats,
     }),
     // payeeId can be null to clear the link, so don't strip undefined here.
     ...(payeeId !== undefined ? { payeeId } : {}),

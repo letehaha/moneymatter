@@ -192,6 +192,10 @@
         "addFailed": "Failed to add transactions to group"
       }
     },
+    "excludeFromStats": {
+      "label": "Excluded from statistics",
+      "tooltip": "Kept out of the reports, dashboard widgets, budget plans and trackers. It still counts toward your balance and stays in the transaction list."
+    },
     "planned": {
       "label": "Planned",
       "confirmedLabel": "Confirmed",

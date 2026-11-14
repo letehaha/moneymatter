@@ -3,7 +3,7 @@ import Accounts from '@models/accounts.model';
 import { AccessPolicy, PlannedPolicy, findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { endOfDay } from 'date-fns';
-import { FindAttributeOptions, Includeable, Op, Order, WhereOptions } from 'sequelize';
+import { FindAttributeOptions, Includeable, Op, Order, WhereOptions, literal } from 'sequelize';
 
 import { CategoryRefundPair, resolveRefundPairs } from './category-allocation';
 
@@ -65,6 +65,38 @@ export const moneyMovementWhere: WhereOptions = {
 };
 
 /**
+ * Drops a row when any live member of its refund group is flagged. Each check correlates on an
+ * indexed column; a single IN/UNION form plans as an anti join over every flagged row DB-wide.
+ */
+export const excludeFromStatsSql = ({ alias = '"Transactions"' }: { alias?: string } = {}): string => `(
+  ${alias}."excludeFromStats" = false
+  AND NOT EXISTS (
+    SELECT 1 FROM "RefundTransactions" r
+    JOIN "Transactions" g ON g."id" = r."originalTxId"
+    WHERE r."refundTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM "RefundTransactions" r
+    JOIN "Transactions" g ON g."id" = r."refundTxId"
+    WHERE r."originalTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM "RefundTransactions" own
+    JOIN "RefundTransactions" sib ON sib."originalTxId" = own."originalTxId"
+    JOIN "Transactions" g ON g."id" = sib."refundTxId"
+    WHERE own."refundTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM "RefundTransactions" own
+    JOIN "RefundTransactions" sib ON sib."refundTxId" = own."refundTxId"
+    JOIN "Transactions" g ON g."id" = sib."originalTxId"
+    WHERE own."originalTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+)`;
+
+export const excludeFromStatsWhere: WhereOptions = literal(excludeFromStatsSql());
+
+/**
  * A `to` day string is stretched to end-of-day only when `from` bounds the other side; an
  * open-start window stops at that day's midnight. Odd, but it is the boundary every stats report
  * was written and tested against, so widening it here would silently move report totals.
@@ -107,6 +139,7 @@ export const statsTransactions = async ({
     ...(refunds === 'exclude-refund-rows' ? [{ refundLinked: false }] : []),
     ...(where ? [where] : []),
     ...(transfers === 'exclude' ? [moneyMovementWhere] : []),
+    excludeFromStatsWhere,
   ];
 
   const rows = await findTransactions({

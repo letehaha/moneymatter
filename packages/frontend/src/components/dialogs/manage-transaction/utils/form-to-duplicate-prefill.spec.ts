@@ -83,6 +83,7 @@ describe('formToDuplicatePrefill', () => {
       tagIds: ['t1', 't2'],
       paymentType: form.paymentType,
       note: 'Weekly shop',
+      excludeFromStats: false,
       externalUrl: 'https://example.com/receipt',
       externalReference: 'INV-1',
       latitude: 50.45,
@@ -159,6 +160,12 @@ describe('formToDuplicatePrefill', () => {
     ]);
   });
 
+  it('keeps the excludeFromStats flag', () => {
+    expect(formToDuplicatePrefill({ form: createForm({ excludeFromStats: true }), now: NOW }).excludeFromStats).toBe(
+      true,
+    );
+  });
+
   it('does not share the tag array with the source form', () => {
     const form = createForm();
     const prefill = formToDuplicatePrefill({ form, now: NOW });
@@ -217,8 +224,15 @@ describe('formToDuplicatePrefill for transfers', () => {
       tagIds: ['t1', 't2'],
       paymentType: form.paymentType,
       note: 'Weekly shop',
+      excludeFromStats: false,
       originalAmount: null,
       originalCurrency: null,
+    });
+  });
+
+  it('keeps the excludeFromStats flag', () => {
+    expect(formToDuplicatePrefill({ form: createTransferForm({ excludeFromStats: true }), now: NOW })).toMatchObject({
+      excludeFromStats: true,
     });
   });
 

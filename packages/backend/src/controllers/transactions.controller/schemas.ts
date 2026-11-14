@@ -102,6 +102,7 @@ export const createTransactionBodyShape = {
   payeeId: payeeIdSchema(),
   payeeLocked: z.boolean().optional(),
   isPlanned: z.boolean().optional().default(false),
+  excludeFromStats: z.boolean().optional().default(false),
   applyAutomations: z.boolean().optional().default(false),
   // Any other value is dropped, not refused: a newer client must still be able to create the row.
   importSource: z.literal(ImportSource.messageImport).optional().catch(undefined),
@@ -254,6 +255,7 @@ export const updateTransactionBodyShape = {
   payeeId: payeeIdSchema(),
   payeeLocked: z.boolean().optional(),
   isPlanned: z.boolean().optional(),
+  excludeFromStats: z.boolean().optional(),
   originalAmount: nonNegativeAmountSchema().nullable().optional(),
   originalCurrencyCode: currencyCode().nullable().optional(),
   paymentLegs: paymentLegsSchema.nullish(),

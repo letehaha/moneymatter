@@ -552,6 +552,7 @@ export const createTransaction = withTransaction(
         refCurrencyCode: defaultUserCurrency.code,
         payeeId: resolvedPayeeId,
         payeeLocked: callerPayeeLocked ?? false,
+        excludeFromStats: Boolean(payload.excludeFromStats),
       };
 
       if (defaultUserCurrency.code !== generalTxCurrency.code) {

@@ -433,6 +433,32 @@ describe('components/modals/modify-record/helpers', () => {
       expect(result!.originalAmount).toBe(1500);
       expect(result!.originalCurrency).toBeNull();
     });
+
+    it('hydrates excludeFromStats from the transaction', () => {
+      const result = prepopulateForm({
+        transaction: buildSystemExpenseTransaction({ excludeFromStats: true }),
+        oppositeTransaction: undefined,
+        accounts: accountsRecord,
+        categories: categoriesRecord,
+        formattedCategories: USER_CATEGORIES,
+        systemCurrencies: SYSTEM_CURRENCIES,
+      });
+
+      expect(result!.excludeFromStats).toBe(true);
+    });
+
+    it('defaults excludeFromStats to false', () => {
+      const result = prepopulateForm({
+        transaction: buildSystemExpenseTransaction(),
+        oppositeTransaction: undefined,
+        accounts: accountsRecord,
+        categories: categoriesRecord,
+        formattedCategories: USER_CATEGORIES,
+        systemCurrencies: SYSTEM_CURRENCIES,
+      });
+
+      expect(result!.excludeFromStats).toBe(false);
+    });
   });
 
   describe('canDeleteTransaction', () => {
