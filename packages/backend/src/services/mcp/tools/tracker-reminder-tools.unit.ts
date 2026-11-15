@@ -180,6 +180,19 @@ describe('get_tracker', () => {
     });
   });
 
+  it('reads the stats minor units at a 3-decimal base currency', async () => {
+    trackerById.mockResolvedValue(makeTracker({ limitAmount: Money.fromDecimal('500.125') }) as never);
+    trackerStats.mockResolvedValue({ stats: makeStats(), decimals: 3 } as never);
+
+    const data = (await call({ tool, args: { trackerId: TRACKER_ID } })) as {
+      tracker: { limitAmount: number };
+      stats: { summary: Record<string, unknown> };
+    };
+
+    expect(data.tracker.limitAmount).toBe(500.125);
+    expect(data.stats.summary).toMatchObject({ actualIncome: 1, actualExpense: 12.345, balance: -11.345 });
+  });
+
   it('includes the share context for a tracker shared with the caller', async () => {
     const share = {
       isOwner: false,

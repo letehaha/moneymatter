@@ -5,7 +5,7 @@ import {
   reminderFrequencySchema,
   reminderTypeSchema,
 } from '@controllers/tag-reminders/shared-schemas';
-import { deserializeCreateTagReminder, serializeTagReminder } from '@root/serializers';
+import { serializeTagReminder } from '@root/serializers';
 import { createReminder } from '@services/tag-reminders';
 import { z } from 'zod';
 
@@ -34,25 +34,20 @@ export const createTagReminderTool = defineTool({
       ),
     amountThreshold: reminderAmountThresholdSchema
       .optional()
-      .describe('Threshold, 0.01 or more, a decimal in the base currency. Required for amount_threshold'),
+      .describe(
+        'Threshold above zero, a decimal in the base currency, rounded to its decimals. Required for amount_threshold',
+      ),
     isEnabled: z.boolean().optional().describe('Default true'),
   },
   run: async ({ userId, args }) => {
-    const deserialized = deserializeCreateTagReminder({
-      type: args.type,
-      frequency: args.frequency,
-      dayOfMonth: args.dayOfMonth,
-      settings: args.amountThreshold === undefined ? undefined : { amountThreshold: args.amountThreshold },
-      isEnabled: args.isEnabled,
-    });
     const reminder = await createReminder({
       userId,
       tagId: args.tagId,
-      type: deserialized.type,
-      frequency: deserialized.frequency ?? null,
-      dayOfMonth: deserialized.dayOfMonth ?? null,
-      settings: deserialized.settings ?? {},
-      isEnabled: deserialized.isEnabled,
+      type: args.type,
+      frequency: args.frequency ?? null,
+      dayOfMonth: args.dayOfMonth ?? null,
+      settings: args.amountThreshold === undefined ? {} : { amountThreshold: args.amountThreshold },
+      isEnabled: args.isEnabled,
     });
 
     return serializeTagReminder(reminder);

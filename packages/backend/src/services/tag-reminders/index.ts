@@ -1,4 +1,6 @@
 import { TAG_REMINDER_TYPES, TagReminderFrequency, TagReminderSettings, TagReminderType } from '@bt/shared/types';
+import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
@@ -9,6 +11,33 @@ import { withTransaction } from '@services/common/with-transaction';
 import { Op } from 'sequelize';
 
 const MAX_REMINDERS_PER_USER = 50;
+
+/**
+ * Rounds `settings.amountThreshold` half-up to the decimals of the owner's base currency, the
+ * currency the threshold is stated in, so the stored value, the duplicate check and the
+ * notification all see the same figure. A threshold that rounds to zero is refused.
+ */
+const roundAmountThreshold = async ({
+  userId,
+  settings,
+}: {
+  userId: number;
+  settings: TagReminderSettings;
+}): Promise<TagReminderSettings> => {
+  const { amountThreshold } = settings as { amountThreshold?: number };
+  if (amountThreshold === undefined) return settings;
+
+  const decimals = await getBaseCurrencyDecimals({ userId });
+  const rounded = Money.fromDecimal(amountThreshold).round(decimals);
+
+  if (!rounded.isPositive()) {
+    throw new ValidationError({
+      message: t({ key: 'tagReminders.amountThresholdRoundsToZero', variables: { decimals } }),
+    });
+  }
+
+  return { ...settings, amountThreshold: rounded.toNumber() };
+};
 
 interface CreateReminderPayload {
   userId: number;
@@ -21,13 +50,15 @@ interface CreateReminderPayload {
 }
 
 export const createReminder = withTransaction(async (payload: CreateReminderPayload) => {
-  const { userId, tagId, type, frequency = null, dayOfMonth = null, settings = {}, isEnabled = true } = payload;
+  const { userId, tagId, type, frequency = null, dayOfMonth = null, isEnabled = true } = payload;
 
   // Verify tag exists and belongs to user
   await findOrThrowNotFound({
     query: Tags.findOne({ where: { id: tagId, userId } }),
     message: t({ key: 'tags.tagNotFound' }),
   });
+
+  const settings = await roundAmountThreshold({ userId, settings: payload.settings ?? {} });
 
   // Check 50 reminder limit per user
   const userReminderCount = await TagReminders.count({ where: { userId } });
@@ -52,7 +83,7 @@ export const createReminder = withTransaction(async (payload: CreateReminderPayl
       type,
       frequency: frequency ?? null,
       dayOfMonth: dayOfMonth ?? null,
-      settings: settings ?? {},
+      settings,
     },
   });
 
@@ -139,12 +170,15 @@ interface UpdateReminderPayload {
 }
 
 export const updateReminder = withTransaction(async (payload: UpdateReminderPayload) => {
-  const { id, userId, tagId, type, frequency, dayOfMonth, settings, isEnabled } = payload;
+  const { id, userId, tagId, type, frequency, dayOfMonth, isEnabled } = payload;
 
   const reminder = await findOrThrowNotFound({
     query: TagReminders.findOne({ where: { id, userId, tagId } }),
     message: t({ key: 'tagReminders.reminderNotFound' }),
   });
+
+  const settings =
+    payload.settings === undefined ? undefined : await roundAmountThreshold({ userId, settings: payload.settings });
 
   const newType = type ?? reminder.type;
   const newFrequency = frequency !== undefined ? frequency : reminder.frequency;

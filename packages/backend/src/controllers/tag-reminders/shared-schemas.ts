@@ -18,8 +18,8 @@ export const reminderFrequencySchema = z.enum([
 
 export const reminderDayOfMonthSchema = z.number().int().min(1).max(31);
 
-/** A decimal in the user's base currency, stored as sent. */
-export const reminderAmountThresholdSchema = z.number().min(0.01);
+/** A decimal in the user's base currency; the service rounds it to that currency's decimals. */
+export const reminderAmountThresholdSchema = z.number().positive();
 
 const reminderSettingsSchema = z.object({
   amountThreshold: reminderAmountThresholdSchema.optional(),

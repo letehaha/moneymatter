@@ -1,6 +1,6 @@
 import { type MinorUnits, asMinorUnits } from '@bt/shared/types';
 
-import { getBalanceHistory } from './get-balance-history';
+import { getBalanceHistoryRows } from './get-balance-history';
 import { getCreditLimitAdjustment } from './get-credit-limit-adjustment';
 
 /**
@@ -29,13 +29,13 @@ export const getTotalBalance = async ({
   decimals: number;
 }): Promise<MinorUnits> => {
   const [balancesForDate, creditLimitSum] = await Promise.all([
-    getBalanceHistory({ userId, accountScope: 'accessible', from: date, to: date, decimals }),
+    getBalanceHistoryRows({ userId, accountScope: 'accessible', from: date, to: date, decimals }),
     includeCreditLimit
       ? getCreditLimitAdjustment({ userId, accountScope: 'accessible', decimals })
       : Promise.resolve(0),
   ]);
 
-  const totalBalance = balancesForDate.reduce((acc, value) => (acc += value.amount.toMinorUnits({ decimals })), 0);
+  const totalBalance = balancesForDate.reduce((acc, row) => acc + row.amount, 0);
 
   return asMinorUnits(totalBalance - creditLimitSum);
 };

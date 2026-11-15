@@ -22,7 +22,7 @@ interface AccountCategoryFilter {
  * so per-row Sequelize instances + Money objects dominate dashboard-load memory.
  * `amount` is integer minor units at the base currency's decimals: the DECIMAL column arrives
  * as a string and `toMinorRow` converts it right after the query. Money is constructed only at
- * the public `getBalanceHistory` boundary.
+ * the `getBalanceHistory` boundary; `getTotalBalance` sums the minor units directly.
  */
 interface BalanceHistoryRow {
   date: string | Date;
@@ -103,7 +103,7 @@ export function toBalanceDateKey(date: string | Date): string {
  * dated "from". An account with no row in the range and none before "from" gets its
  * earliest balance after "to" instead, dated "from" (or "to" when "from" is absent).
  */
-const getBalanceHistoryRows = async ({
+export const getBalanceHistoryRows = async ({
   userId,
   accountScope,
   from,
@@ -277,8 +277,8 @@ export const getBalanceHistory = async ({
 }): Promise<Balances.default[]> => {
   const rows = await getBalanceHistoryRows({ userId, accountScope, from, to, categoryFilter, decimals });
 
-  // Plain objects (not Sequelize instances) with Money amounts — consumers
-  // (stats serializer, getTotalBalance) only read `date`, `amount`, `accountId`.
+  // Plain objects (not Sequelize instances) with Money amounts — the stats serializer only reads
+  // `date`, `amount`, `accountId`.
   return rows.map(
     (row) =>
       ({

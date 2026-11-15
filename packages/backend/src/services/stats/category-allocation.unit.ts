@@ -120,3 +120,34 @@ describe('resolveRefundPairs minor units', () => {
     ]);
   });
 });
+
+describe('resolveRefundPairs partial links', () => {
+  it('rounds the linked share of the refund to the third decimal', async () => {
+    // 1 of the refund's 3 native units links to the expense: 1.001 * 1 / 3 = 0.33366..., which
+    // rounds half-up to 0.334 at 3 decimals.
+    refundsFindAll.mockResolvedValue([
+      { originalTxId: 'tx-1', refundTxId: 'tx-2', splitId: null, userId: 1, amount: Money.fromDecimal('1') },
+    ]);
+
+    const pairs = await resolveRefundPairs({
+      transactions: [
+        buildTransaction({ id: 'tx-1', refAmount: '1.234', refundLinked: true }),
+        {
+          ...buildTransaction({
+            id: 'tx-2',
+            refAmount: '1.001',
+            categoryId: 'cat-b',
+            transactionType: TRANSACTION_TYPES.income,
+            refundLinked: true,
+          }),
+          amount: Money.fromDecimal('3'),
+        },
+      ],
+      decimals: 3,
+    });
+
+    expect(pairs).toEqual([
+      expect.objectContaining({ minor: 334, expenseCategoryId: 'cat-a', incomeCategoryId: 'cat-b' }),
+    ]);
+  });
+});

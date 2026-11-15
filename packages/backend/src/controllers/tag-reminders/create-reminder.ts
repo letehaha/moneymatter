@@ -1,6 +1,6 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
-import { deserializeCreateTagReminder, serializeTagReminder } from '@root/serializers';
+import { serializeTagReminder } from '@root/serializers';
 import * as tagRemindersService from '@services/tag-reminders';
 import { z } from 'zod';
 
@@ -16,16 +16,14 @@ const schema = z.object({
 export default createController(schema, async ({ user, params, body }) => {
   const { tagId } = params;
 
-  const deserialized = deserializeCreateTagReminder(body);
-
   const reminder = await tagRemindersService.createReminder({
     userId: user.id,
     tagId,
-    type: deserialized.type,
-    frequency: deserialized.frequency ?? null,
-    dayOfMonth: deserialized.dayOfMonth ?? null,
-    settings: deserialized.settings ?? {},
-    isEnabled: deserialized.isEnabled,
+    type: body.type,
+    frequency: body.frequency ?? null,
+    dayOfMonth: body.dayOfMonth ?? null,
+    settings: body.settings ?? {},
+    isEnabled: body.isEnabled,
   });
 
   return { data: serializeTagReminder(reminder) };

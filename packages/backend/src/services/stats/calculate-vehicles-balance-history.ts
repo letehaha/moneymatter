@@ -146,7 +146,7 @@ export const calculateVehiclesBalanceHistory = async ({
     else txsByAccount.set(tx.accountId, [tx]);
   }
 
-  // A custom code's decimals are per user and the owner's definition governs every native amount.
+  // One decimals lookup per distinct account currency; each vehicle's native amounts use its account's.
   const decimalsByCurrency = new Map(
     await Promise.all(
       [...new Set(activeVehicles.map((v) => v.account.currencyCode))].map(

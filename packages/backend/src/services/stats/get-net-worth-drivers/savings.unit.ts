@@ -225,13 +225,14 @@ describe('accumulateSavings at the base currency decimals', () => {
     const [january] = accumulateSavings({
       decimals: 0,
       transactions: [
-        buildTx({ time: '2026-01-10T12:00:00.000', amount: 1555, transactionType: TRANSACTION_TYPES.income }),
-        buildTx({ time: '2026-01-20T12:00:00.000', amount: 300, transactionType: TRANSACTION_TYPES.expense }),
+        buildTx({ time: '2026-01-10T12:00:00.000', amount: 1555.5, transactionType: TRANSACTION_TYPES.income }),
+        buildTx({ time: '2026-01-20T12:00:00.000', amount: 300.4, transactionType: TRANSACTION_TYPES.expense }),
       ],
       buckets,
     });
 
-    expect(january).toEqual({ income: 1_555, expenses: 300, net: 1_255 });
+    // Each row rounds half-up to whole units before it is summed: 1555.5 -> 1556, 300.4 -> 300.
+    expect(january).toEqual({ income: 1_556, expenses: 300, net: 1_256 });
   });
 
   it('nets a refund pair handed over in the same minor units', () => {

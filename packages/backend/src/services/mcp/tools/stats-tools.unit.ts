@@ -11,6 +11,7 @@ import {
   TRANSACTION_TYPES,
   asMinorUnits,
 } from '@bt/shared/types';
+import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { getBaseCurrency } from '@models/users-currencies.model';
@@ -34,8 +35,8 @@ import { z } from 'zod';
 
 // Block the real services: their import chains load models and open database pools.
 jest.mock('@models/users-currencies.model', () => ({ getBaseCurrency: jest.fn() }));
-// EUR's decimals, so the minor units the stubs return below are cents.
-jest.mock('@common/lib/currency-precision', () => ({ getBaseCurrencyDecimals: async () => 2 }));
+// EUR's decimals by default (set in `beforeEach`), so the minor units the stubs return below are cents.
+jest.mock('@common/lib/currency-precision', () => ({ getBaseCurrencyDecimals: jest.fn() }));
 jest.mock('@services/user-settings/get-user-settings', () => ({ getUserSettings: jest.fn() }));
 jest.mock('@services/stats/get-balance-history', () => ({ getBalanceHistory: jest.fn() }));
 jest.mock('@services/stats/get-balance-history-for-account', () => ({ getBalanceHistoryForAccount: jest.fn() }));
@@ -71,6 +72,7 @@ import { getVentureContributionsTool } from './get-venture-contributions';
 const READ = makeExtra({ scopes: ['finance:read'] });
 
 const settingsOf = jest.mocked(getUserSettings);
+const baseDecimalsOf = jest.mocked(getBaseCurrencyDecimals);
 const baseCurrencyOf = jest.mocked(getBaseCurrency);
 const balanceHistory = jest.mocked(getBalanceHistory);
 const accountBalanceHistory = jest.mocked(getBalanceHistoryForAccount);
@@ -131,6 +133,7 @@ const setSettings = ({ includeCreditLimitInStats }: { includeCreditLimitInStats:
 beforeEach(() => {
   jest.resetAllMocks();
   baseCurrencyOf.mockResolvedValue({ currencyCode: 'EUR' } as Awaited<ReturnType<typeof getBaseCurrency>>);
+  baseDecimalsOf.mockResolvedValue(2);
   setSettings({ includeCreditLimitInStats: false });
 });
 
@@ -318,6 +321,17 @@ describe('get_total_balance', () => {
       decimals: 2,
     });
     expect(data).toEqual({ amount: 123.45, currencyCode: 'EUR', date: '2026-02-01' });
+  });
+
+  it('reads the minor units at a 3-decimal base currency', async () => {
+    baseCurrencyOf.mockResolvedValue({ currencyCode: 'KWD' } as Awaited<ReturnType<typeof getBaseCurrency>>);
+    baseDecimalsOf.mockResolvedValue(3);
+    totalBalance.mockResolvedValue(asMinorUnits(12_345));
+
+    const { data } = await call({ name: 'get_total_balance', args: { date: '2026-02-01' } });
+
+    expect(totalBalance).toHaveBeenCalledWith(expect.objectContaining({ decimals: 3 }));
+    expect(data).toEqual({ amount: 12.345, currencyCode: 'KWD', date: '2026-02-01' });
   });
 
   it('leaves the credit limit out while the setting is off', async () => {
