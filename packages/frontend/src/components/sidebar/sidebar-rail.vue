@@ -31,7 +31,7 @@ import { useSidebarSectionTotals } from './accounts-view/helpers/use-sidebar-sec
 import LoansList from './accounts-view/loans-list.vue';
 import PortfoliosList from './accounts-view/portfolios-list.vue';
 import VenturesList from './accounts-view/ventures-list.vue';
-import { SIDEBAR_NAV_CHILDREN, type SidebarNavChild, useAccountsNavChildren } from './nav-items';
+import { SIDEBAR_CHAT_NAV_ITEM, SIDEBAR_NAV_CHILDREN, type SidebarNavChild, useAccountsNavChildren } from './nav-items';
 import RailIconTrigger from './rail-icon-trigger.vue';
 import { useSidebarNavRoutes } from './use-nav-routes';
 import { useSidebarCollapsed } from './use-sidebar-collapsed';
@@ -40,7 +40,7 @@ import UserMenu from './user-menu.vue';
 const { t } = useI18n();
 const route = useRoute();
 const { isCollapsed } = useSidebarCollapsed();
-const { isAccountsRoute, isTransactionsRoute, isPlannedRoute, isChildActive } = useSidebarNavRoutes();
+const { isAccountsRoute, isTransactionsRoute, isPlannedRoute, isChatRoute, isChildActive } = useSidebarNavRoutes();
 const accountsNavChildren = useAccountsNavChildren();
 
 const {
@@ -113,6 +113,12 @@ const navItems = computed<RailNavItem[]>(() => [
     children: SIDEBAR_NAV_CHILDREN.planned,
   },
   { routeName: ROUTES_NAMES.analytics, icon: ChartColumnIcon, label: t('navigation.analytics') },
+  {
+    routeName: SIDEBAR_CHAT_NAV_ITEM.routeName,
+    icon: SIDEBAR_CHAT_NAV_ITEM.icon,
+    label: t(SIDEBAR_CHAT_NAV_ITEM.labelKey),
+    active: isChatRoute.value,
+  },
 ]);
 
 interface RailSectionItem {

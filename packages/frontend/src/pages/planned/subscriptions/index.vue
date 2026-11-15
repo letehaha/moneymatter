@@ -5,12 +5,13 @@ import Button from '@/components/lib/ui/button/Button.vue';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { useInvalidateSubscriptionQueries, useSubscriptionsList } from '@/composable/data-queries/subscriptions';
 import { type Period } from '@/composable/use-period-navigation';
 import { ROUTES_NAMES } from '@/routes';
 import { SUBSCRIPTION_TYPES } from '@bt/shared/types';
 import { useLocalStorage, useNow } from '@vueuse/core';
-import { addYears, endOfMonth, isWithinInterval, parseISO, startOfDay } from 'date-fns';
+import { addYears, endOfMonth, format, isWithinInterval, parseISO, startOfDay } from 'date-fns';
 import { CircleAlertIcon, PlusIcon, RepeatIcon, SearchIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -75,6 +76,22 @@ const {
 } = useSubscriptionsList({
   filter: computed(() => ({ sortBy: sortBy.value })),
 });
+
+// The chat sees the list as it is narrowed and sorted right now.
+provideChatPageContext(() => ({
+  filters: {
+    sortBy: sortBy.value,
+    ...(activeFilter.value !== ALL_TYPES_FILTER ? { type: activeFilter.value } : {}),
+  },
+  ...(isPeriodFilterActive.value
+    ? {
+        period: {
+          from: format(periodFilter.value.from, 'yyyy-MM-dd'),
+          to: format(periodFilter.value.to, 'yyyy-MM-dd'),
+        },
+      }
+    : {}),
+}));
 
 const filteredSubscriptions = computed(() => {
   if (!subscriptions.value) return [];

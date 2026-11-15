@@ -129,6 +129,8 @@
 </template>
 
 <script setup lang="ts">
+import { buildPeriodChatContext } from '@/composable/chat/period-context';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { getNetWorthDrivers } from '@/api';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { Callout } from '@/components/lib/ui/callout';
@@ -175,6 +177,8 @@ const periodSerializer = createPeriodSerializer({ getDefaultPeriod });
 const selectedPeriod = useSessionStorage<Period>('net-worth-drivers-period', getDefaultPeriod(), {
   serializer: periodSerializer,
 });
+
+provideChatPageContext(() => buildPeriodChatContext({ period: selectedPeriod.value }));
 const selectedGranularity = useLocalStorage<NetWorthDriversGranularity>('net-worth-drivers-granularity', 'monthly');
 
 // Empty = all enabled portfolios (the default), sent to the API as no filter.

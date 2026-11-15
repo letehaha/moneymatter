@@ -1,4 +1,5 @@
 import type { SidebarNavConfig } from '@/api/user-settings';
+import { AiChatIcon } from '@/components/chat/chat-icon';
 import { useUserSettings } from '@/composable/data-queries/user-settings';
 import { ROUTES_NAMES } from '@/routes/constants';
 import {
@@ -28,6 +29,13 @@ export interface SidebarNavChild {
 }
 
 type ToggleableNavChild = SidebarNavChild & { settingKey: keyof SidebarNavConfig };
+
+/** Top-level, ungrouped nav entry for the AI chat page. */
+export const SIDEBAR_CHAT_NAV_ITEM: SidebarNavChild = {
+  routeName: ROUTES_NAMES.chat,
+  labelKey: 'navigation.chat',
+  icon: AiChatIcon,
+};
 
 /** Sub-links of the collapsible nav groups, rendered by both the full nav and the rail flyouts. */
 export const SIDEBAR_NAV_CHILDREN = {
