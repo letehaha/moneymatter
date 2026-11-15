@@ -8,8 +8,8 @@ declare global {
       toBeBefore(date: Date): R;
       /**
        * Custom matcher for ref values (refAmount, refInitialBalance, refCurrentBalance, etc.)
-       * Applies roundHalfToEven to the expected value and allows ±1 tolerance for floating point precision.
-       * @param expected - The expected value (will be rounded using roundHalfToEven)
+       * Rounds the expected value half-even to 2 decimals and passes within one hundredth.
+       * @param expected - The expected decimal value (rounded half-even to 2 decimals)
        */
       toEqualRefValue(expected: number): R;
     }
@@ -21,8 +21,8 @@ declare global {
       toBeBefore(date: Date): T;
       /**
        * Custom matcher for ref values (refAmount, refInitialBalance, refCurrentBalance, etc.)
-       * Applies roundHalfToEven to the expected value and allows ±1 tolerance for floating point precision.
-       * @param expected - The expected value (will be rounded using roundHalfToEven)
+       * Rounds the expected value half-even to 2 decimals and passes within one hundredth.
+       * @param expected - The expected decimal value (rounded half-even to 2 decimals)
        */
       toEqualRefValue(expected: number): T;
     }

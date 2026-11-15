@@ -239,8 +239,6 @@ const HISTORICAL_EUR_PER_USD = 0.5;
 const HISTORICAL_AED_PER_USD = 3.5;
 const HISTORICAL_EUR_TO_USD = 1 / HISTORICAL_EUR_PER_USD; // 2.0
 
-const decimalToCents = (decimal: unknown) => Math.round(Number(decimal) * 100);
-
 const seedHistoricalRates = async () => {
   // ExchangeRates is keyed on (baseCode, quoteCode, date) and is not truncated between tests, so
   // clear this date first — another file seeding the same fixture would make the insert throw.
@@ -333,7 +331,7 @@ describe('Change base currency — shared-account ledger boundary is author-blin
     // date (2.0) = 400 USD. The boundary is account-scoped (not author-scoped),
     // matching `restampRefInitialBalance`, so a recipient-authored earliest tx sets it.
     const afterChange = await helpers.getAccount({ id: account.id, raw: true });
-    expect(decimalToCents(afterChange.refInitialBalance)).toEqualRefValue(20000 * HISTORICAL_EUR_TO_USD);
+    expect(Number(afterChange.refInitialBalance)).toEqualRefValue(200 * HISTORICAL_EUR_TO_USD);
 
     // A subsequent owner-authored write triggers the account-scoped restamp. Because
     // change-base used the same boundary, refInitialBalance must NOT move — it stays
@@ -349,6 +347,6 @@ describe('Change base currency — shared-account ledger boundary is author-blin
     });
 
     const afterOwnerWrite = await helpers.getAccount({ id: account.id, raw: true });
-    expect(decimalToCents(afterOwnerWrite.refInitialBalance)).toEqualRefValue(20000 * HISTORICAL_EUR_TO_USD);
+    expect(Number(afterOwnerWrite.refInitialBalance)).toEqualRefValue(200 * HISTORICAL_EUR_TO_USD);
   });
 });

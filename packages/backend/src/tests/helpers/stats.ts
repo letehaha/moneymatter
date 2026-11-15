@@ -58,16 +58,22 @@ export async function getBalanceHistory<R extends boolean | undefined = undefine
 
 const dateKey = (date: string | Date) => (typeof date === 'string' ? date.slice(0, 10) : format(date, 'yyyy-MM-dd'));
 
-/** What the chart reads on `date`: the latest row dated on or before it, in cents. */
-export const balanceCentsOn = ({ rows, date }: { rows: { date: string | Date; amount: unknown }[]; date: Date }) => {
+type BalanceRow = { date: string | Date; amount: unknown };
+
+/** What the chart reads on `date`: the latest row dated on or before it, as a decimal. */
+export const balanceOn = ({ rows, date }: { rows: BalanceRow[]; date: Date }) => {
   const key = format(date, 'yyyy-MM-dd');
   const latest = rows
     .filter((row) => dateKey(row.date) <= key)
     .toSorted((a, b) => dateKey(a.date).localeCompare(dateKey(b.date)))
     .at(-1);
 
-  return latest ? Math.round(Number(latest.amount) * 100) : 0;
+  return latest ? Number(latest.amount) : 0;
 };
+
+/** `balanceOn` in cents. */
+export const balanceCentsOn = ({ rows, date }: { rows: BalanceRow[]; date: Date }) =>
+  Math.round(balanceOn({ rows, date }) * 100);
 
 export const getSpendingsByCategories = async ({
   raw = false,

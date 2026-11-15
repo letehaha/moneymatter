@@ -68,7 +68,8 @@ const DECIMAL_AMOUNT_PATTERN = new RegExp(`^\\d+(\\.\\d{1,${MONEY_COLUMN_SCALE}}
  *
  * The schema only enforces what the storage can hold. How many decimals the amount may carry
  * depends on the currency it is denominated in, which the request does not name, so the service
- * that knows the currency checks it with `assertMoneyFitsCurrency`.
+ * that knows the currency checks it with `assertMoneyFitsCurrency`, or rounds it, as the goal
+ * services do with `roundGoalAmount`.
  */
 export const boundedDecimalAmount = ({ positive = false }: { positive?: boolean } = {}) =>
   (positive ? z.number().positive() : z.number().min(0))

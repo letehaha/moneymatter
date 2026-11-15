@@ -14,14 +14,18 @@ export interface ConversionDecimals {
 
 type CurrencyRoundingMode = 'half-up' | 'half-even';
 
+const roundAt = ({ money, decimals, mode }: { money: Money; decimals: number; mode: CurrencyRoundingMode }): Money =>
+  mode === 'half-even' ? money.roundHalfEven(decimals) : money.round(decimals);
+
 /**
- * Number of decimal places the currency carries for the user.
+ * Number of decimal places the currency carries: `Currencies.digits` for `code`. The result
+ * depends on the code alone; `userId` names the user the amount belongs to and does not change it.
  *
- * Reads `Currencies.digits`. Results are cached per `userId + code`; the cache is dropped
- * by the `Currencies` model hooks whenever a currency row changes.
+ * Results are cached per code; the `Currencies` model hooks drop the cache whenever a currency
+ * row changes.
  */
-export const getCurrencyDecimals = async ({ userId, code }: { userId: number; code: string }): Promise<number> => {
-  const cached = getCachedCurrencyDecimals({ userId, code });
+export const getCurrencyDecimals = async ({ code }: { userId: number; code: string }): Promise<number> => {
+  const cached = getCachedCurrencyDecimals({ code });
   if (cached !== undefined) return cached;
 
   const currency = await Currencies.findOne({ where: { code } });
@@ -30,7 +34,7 @@ export const getCurrencyDecimals = async ({ userId, code }: { userId: number; co
     throw new NotFoundError({ message: t({ key: 'currencies.unknownCurrencyCode', variables: { code } }) });
   }
 
-  setCachedCurrencyDecimals({ userId, code, decimals: currency.digits });
+  setCachedCurrencyDecimals({ code, decimals: currency.digits });
 
   return currency.digits;
 };
@@ -46,7 +50,7 @@ export const getBaseCurrencyDecimals = async ({ userId }: { userId: number }): P
     throw new ValidationError({ message: t({ key: 'currencies.noBaseCurrency' }) });
   }
 
-  return getCurrencyDecimals({ userId, code: baseCurrency.currencyCode });
+  return baseCurrency.currency.digits;
 };
 
 /**
@@ -89,7 +93,7 @@ export const roundToCurrency = async ({
 }): Promise<Money> => {
   const decimals = await getCurrencyDecimals({ userId, code: currencyCode });
 
-  return mode === 'half-even' ? money.roundHalfEven(decimals) : money.round(decimals);
+  return roundAt({ money, decimals, mode });
 };
 
 type OptionalMoney = Money | null | undefined;
@@ -120,7 +124,7 @@ export const roundMoneyValues = async <TValues extends Record<string, OptionalMo
     entries.map(([key, value]) => {
       if (value === null || value === undefined) return [key, value];
 
-      return [key, mode === 'half-even' ? value.roundHalfEven(decimals) : value.round(decimals)];
+      return [key, roundAt({ money: value, decimals, mode })];
     }),
   ) as TValues;
 };
