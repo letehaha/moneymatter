@@ -73,13 +73,28 @@ export const getWalutomatForbiddenBalancesMock = () =>
  */
 export const getWalutomatHistoryMock = ({
   response,
+  respectDateRange = false,
 }: {
   response?: ReturnType<typeof getMockedWalutomatHistory>;
+  /** Filter items by the `dateFrom`/`dateTo` query params, like the real API. */
+  respectDateRange?: boolean;
 } = {}) => {
-  return http.get(`${WALUTOMAT_BASE_URL}/account/history`, () => {
+  return http.get(`${WALUTOMAT_BASE_URL}/account/history`, ({ request }) => {
+    const items = response || getMockedWalutomatHistory();
+    const params = new URL(request.url).searchParams;
+    const dateFrom = params.get('dateFrom');
+    const dateTo = params.get('dateTo');
+    const from = dateFrom ? new Date(dateFrom).getTime() : -Infinity;
+    const to = dateTo ? new Date(dateTo).getTime() : Infinity;
+
     return HttpResponse.json({
       success: true,
-      result: response || getMockedWalutomatHistory(),
+      result: respectDateRange
+        ? items.filter((item) => {
+            const ts = new Date(item.ts).getTime();
+            return ts >= from && ts <= to;
+          })
+        : items,
     });
   });
 };

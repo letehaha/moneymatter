@@ -6,7 +6,7 @@ import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import { findOneTransaction, findTransactions } from '@models/transactions-query';
+import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
 import { linkTransactions } from '@services/transactions/transactions-linking/link-transactions';
@@ -15,13 +15,14 @@ import { Op, Sequelize } from 'sequelize';
 import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 import { encryptCredentials } from '../utils/credential-encryption';
 import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
+import { resolveSyncStart } from '../utils/resolve-sync-start';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { type HistoryItem, WalutomatApiClient, WalutomatHttpError } from './api-client';
 import { linkCrossProviderTransfers } from './cross-provider-linking';
 import { WalutomatCredentials, WalutomatMetadata } from './types';
 
 const WALLET_EXTERNAL_ID_PREFIX = 'wallet-';
-const DEFAULT_SYNC_MONTHS = 12;
+const BACKFILL_DAYS = 365;
 
 /**
  * Extract currency code from wallet externalId.
@@ -233,23 +234,8 @@ export class WalutomatProvider extends BaseBankDataProvider {
         const client = new WalutomatApiClient(credentials);
         const currency = currencyFromExternalId(account.externalId);
 
-        // Determine sync start date
-        const latestTransaction = await findOneTransaction({
-          planned: 'exclude',
-          access: 'unscoped-internal',
-          balanceAdjustments: 'include',
-          where: { accountId: account.id },
-          order: [['time', 'DESC']],
-        });
-
         const now = new Date();
-        let fromDate: Date;
-        if (latestTransaction) {
-          fromDate = new Date(latestTransaction.time);
-        } else {
-          fromDate = new Date(now);
-          fromDate.setMonth(fromDate.getMonth() - DEFAULT_SYNC_MONTHS);
-        }
+        const { from, matchPlanned } = await resolveSyncStart({ account, to: now, backfillDays: BACKFILL_DAYS });
 
         const historyItems = await this.withAuthTracking({
           connectionId,
@@ -257,7 +243,7 @@ export class WalutomatProvider extends BaseBankDataProvider {
             const items: HistoryItem[] = [];
             for await (const item of client.getHistoryIterator({
               currencies: [currency],
-              dateFrom: fromDate.toISOString(),
+              dateFrom: from.toISOString(),
               dateTo: now.toISOString(),
               itemLimit: 200,
               sortOrder: 'ASC',
@@ -289,8 +275,7 @@ export class WalutomatProvider extends BaseBankDataProvider {
               balanceAfter: item.balanceAfter,
             },
           })),
-          // Anchorless runs are backfills and must not consume plans.
-          matchPlanned: Boolean(latestTransaction),
+          matchPlanned,
         });
 
         if (createdTransactionIds.length > 0 || mergedIntoPlannedCount > 0) {
