@@ -328,6 +328,8 @@ Fetch all user's bank-connected accounts, grouped by connection
        ↓
 enqueueAccountSync() per connection: accounts set to QUEUED, jobs added
        ↓
+Last-sync time recorded only if every connection queued (throttles GET /sync/check)
+       ↓
 `account-sync` BullMQ worker (concurrency 5) picks jobs up
        ↓
 Frontend polls GET /sync/status for progress
