@@ -1,5 +1,6 @@
 import type { TransactionFilterParams } from '@/api/transactions';
 import type { BulkEditFormValues } from '@/components/transactions-list/bulk-edit-dialog.vue';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { useAccountsStore } from '@/stores';
 import {
   ACCOUNT_TYPES,
@@ -19,6 +20,9 @@ import {
 } from './transaction-selection';
 import { useBulkDeleteTransactions } from './use-bulk-delete-transactions';
 import { useBulkUpdateCategory } from './use-bulk-update-category';
+
+/** A page context carries a sample of the ticked rows; the server bounds it to the same size. */
+const CHAT_SELECTION_MAX_IDS = 50;
 
 /**
  * Bank-connected (external) transactions can't be deleted — the backend rejects
@@ -102,6 +106,15 @@ export function useBulkTransactionActions({
       ? Math.max(allMatching.value.summary.count - excludedIds.value.size, 0)
       : selection.selectedCount.value,
   );
+
+  // The chat sees the rows ticked here (a sample of them when there are many), so "these" has an answer.
+  provideChatPageContext(() => {
+    const ids = [...selection.selectedIds.value];
+    if (ids.length === 0) return {};
+    return {
+      selection: { kind: 'transaction', ids: ids.slice(0, CHAT_SELECTION_MAX_IDS), total: selectedCount.value },
+    };
+  });
 
   const selectedTotals = computed(() => {
     const transactions = getTransactions();
