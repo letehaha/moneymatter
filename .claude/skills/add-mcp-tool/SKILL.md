@@ -79,7 +79,7 @@ Rules:
 - `input` is a **plain shape of Zod fields** (no outer `z.object(...)`). Omit it for a tool with no inputs.
 - `run` gets `{ userId, args, extra }` and returns the data; never call `jsonContent`, `getUserId`, `requireScope`, `requireFeature`, `assertBaseCurrencyUnlocked` or `trackMcpToolUsed` for the def's own guards. Money instances serialize to decimals via `toJSON()`.
 - `description` leaves out the `Requires finance:X scope.` sentence; it is appended from `access`. Its first sentence must stand alone: it is what the server card and the skill tables show.
-- Checks that are not guards stay at the top of `run`: a conditional scope (`if (args.force) requireScope({ extra, scope: 'finance:delete' })`), `assertNotDemoUser({ extra })`, argument checks that throw, and REST schema re-parses with refines.
+- Argument checks go in `validate({ args })`: REST schema re-parses with refines, rules across fields, refusals that throw. It is pure (no guards, no I/O), runs after the guards and before `run`, and returns what `run` receives as `args`. The in-app chat runs it on a proposed call before the user approves the card, so a write or delete tool keeps no argument check in `run` (`tool-validate-drift`). Checks that are not about the arguments stay at the top of `run`: a conditional scope (`if (args.force) requireScope({ extra, scope: 'finance:delete' })`), `assertNotDemoUser({ extra })`, and anything that reads the database.
 - Use `z.enum([...])` for enum args. Dates come in as ISO strings; convert with `new Date(args.date)` if the service expects a `Date`.
 
 ### Naming, access and guards
@@ -94,7 +94,7 @@ Rules:
 
 Every tool is a thin wrapper over the service its REST route uses. Parity with REST is the rule: the same service, validation, lock and feature gate, and the same serializer (slimmed for MCP in `serializers.ts` where the output is large). When a controller holds logic a tool needs (validation, orchestration), move it into a service or a shared schema that both the controller and the tool call. Never copy it into the tool.
 
-**Refined inputs:** `input` is a plain shape, so a rule that spans fields (an either-or, a mutually exclusive pair, a `superRefine`) cannot sit in it. Use the shared schema's `.shape` as `input` and run the full shared schema in `run`, on the schema's own fields only: when the tool adds ids beside a strict body schema, destructure them off first (`const { planId, ...body } = args; schema.parse(body)`). The unit test asserts that the **tool** rejects, not the shape.
+**Refined inputs:** `input` is a plain shape, so a rule that spans fields (an either-or, a mutually exclusive pair, a `superRefine`) cannot sit in it. Use the shared schema's `.shape` as `input` and run the full shared schema in `validate`, on the schema's own fields only: when the tool adds ids beside a strict body schema, destructure them off first and return them with the parsed body (`const { planId, ...body } = args; return { planId, ...schema.parse(body) }`). The unit test asserts that the **tool** rejects, not the shape.
 
 ### 2. Add the def to `ALL_TOOLS` in `toolsets.ts`
 
@@ -145,7 +145,10 @@ It covers the drift suites and every tool unit test:
 - `generate-mcp-metadata` (`src/scripts/generate-mcp-metadata.unit.ts`) — the committed server card, OAuth mirrors and SKILL.md equal what the generator produces, and the registry `server.json` matches the server version;
 - `agent-skills-drift` — the SKILL.md sha256;
 - `tool-scopes-drift` — `access`, `feature` and `lock` on the defs;
-- `toolsets-drift` — every exported def in `ALL_TOOLS` once, `core` within its size, and the toolset scopes accepted by the OAuth provider.
+- `toolsets-drift` — every exported def in `ALL_TOOLS` once, `core` within its size, and the toolset scopes accepted by the OAuth provider;
+- `tool-validate-drift` — no write or delete tool parses or asserts its arguments in `run`.
+
+The chat's tool catalog (`services/mcp/tool-catalog.ts`) is built from `ALL_TOOLS`, so a new tool reaches it with no registration.
 
 If any fail:
 
@@ -154,12 +157,34 @@ If any fail:
 - **access, lock or feature case** → fix the def's field after checking its REST route, or list the name in `DESTRUCTIVE_TOOLS`.
 - **registration case** → the def is exported but not in `ALL_TOOLS`.
 - **toolset case** → `core` went over 60 tools.
+- **`tool-validate-drift` case** → move the check from `run` into `validate` and have `run` use what it returns.
 
 Delegate to the `test-runner` subagent (per CLAUDE.md rules).
 
 **e2e:** the gate also runs the MCP e2e suites (`services/mcp/(connected-apps|mcp-scope-gate)`) plus the REST suites of the routes the tool wraps, in one batched run: `lockf -t 7200 /tmp/mm-e2e.lock npm run test:e2e -- --testPathPattern='...'`. Tools themselves cannot be called end to end, so a check that moves out of a controller into a service gets an e2e case first, run green against the unmoved code, and stays green after the move.
 
-### 5. Lint check (optional but cheap)
+### 5. Chat capability
+
+The in-app AI chat builds its tools from the same catalog, so a new tool reaches it with no registration. A read tool is offered as is. A write tool becomes a card the user approves, and `services/chat/policies/chat-capabilities-drift.unit.ts` (it runs in the unit suite) fails until the tool is classified. Check, in `services/chat/policies/`:
+
+- **Policy.** The tool's name decides its card (`create_*`, `update_*`, `delete_*`, `bulk_*`, `merge_*`); `deriveFromName` in `rules.ts` gives the kind, the entity and the danger. Add an entry to `EXPLICIT_POLICIES` in `explicit.ts` only where the name rule gets it wrong: another entity, a target argument other than `<entity>Id` (`targetFields`), a `previewResolver`, a `kind`, a danger level. Every id-like argument needs an entity in the tool's `entityFields`, or an acknowledgement in the drift suite.
+- **Preview resolver.** A destructive or bulk tool (every `delete_*`, `bulk_*`, `merge_*`, every def with `access: 'delete'` or a `conditionalDelete` path, and every name in the chat's `HIGH_IMPACT_TOOLS` in `rules.ts`) is a red card and needs a real resolver from `services/chat/proposals/previews/` (count, sample rows, frozen target set) that is registered under a name in `PREVIEW_RESOLVER_NAMES`. A red tool is never in `CHAT_ARGS_ONLY_TOOLS`. Any other write tool either gets a resolver or goes into `CHAT_ARGS_ONLY_TOOLS` in `excluded.ts`, and the suite requires that list to equal the tools without a resolver.
+- **Credential-returning tool.** A tool that returns a token, an upload URL or any other secret goes into `CHAT_EXCLUDED_TOOLS` in `excluded.ts` with a reason, so the secret never sits in chat history or the model's context. The same goes for a probe whose only effect is an outbound request.
+- **Cross-field rules.** A tool checks rules across fields in its `validate` hook (step 1). The chat runs it on proposal, on every edit and at approval, so the card is refused the way the MCP tool refuses it.
+- **Egress.** A tool that makes the server call a host named by its arguments goes into `EGRESS_TOOLS` in `explicit.ts`, as a function of the arguments that returns the host and URL (or `null` when the arguments name no host). Its card is amber, shows the host, needs a confirmation that repeats it, and is never applied by "Approve all safe".
+- **High impact.** A tool whose effect is wide or hard to take back although its name and `access` do not say so goes into `HIGH_IMPACT_TOOLS` in `rules.ts`. Its card asks for the affected count typed, even for one record. A tool with `access: 'delete'` and no `delete_` prefix is red without a list entry.
+- **Standalone.** A tool that queues work or commits on its own (outside the database transaction) goes into `STANDALONE_TOOLS` and `HIGH_IMPACT_TOOLS`. It cannot be part of a card chain, and its card is high-impact.
+- **Card text.** Add `chat.fields.<argument>` labels and, for a new entity, `chat.entities.<entity>` to `pages/chat.json` in `en` and `uk` (the i18n-editor does this). The drift suite fails on a missing label.
+- **Gate pattern.** If the new tool introduces a gate pattern the chat has to respect (a new kind of guard beyond scope, feature, lock and rate limit), add its rule under `services/chat/policies/` so the card is refused or confirmed the same way, with a unit case in `rules.unit.ts`.
+
+Run the suite with the rest of the gate:
+
+```bash
+cd packages/backend
+npm run test:unit -- --testPathPattern='services/(mcp|chat/policies)/'
+```
+
+### 6. Lint check (optional but cheap)
 
 Delegate to the `linter` subagent. Existing MCP tool files may show 4 `TS1005`-style errors from an `ioredis` env issue — that's pre-existing noise and not caused by new tools. Real errors look different (unused imports, mistyped service args, wrong Zod shape).
 

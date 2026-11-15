@@ -98,6 +98,14 @@ export const loadHeldFixedAmounts = ({
 
 const sumOf = ({ rows }: { rows: { value: number }[] }) => rows.reduce((sum, row) => sum + row.value, 0);
 
+/** One goal's fixed amount on an account, as `loadHeldFixedAmounts` returns it. */
+type HeldFixedAmount = Pick<GoalAccounts, 'goalId' | 'accountId' | 'fixedAmount'>;
+
+/** What the insights read of a goal: a stored one, or one a call has yet to write. */
+export type GoalForInsights = Pick<Goals, 'id' | 'currencyCode' | 'targetAmount' | 'targetDate' | 'plannedMonthly'> & {
+  goalAccounts?: Array<Pick<GoalAccounts, 'accountId' | 'sharePercent' | 'fixedAmount'>>;
+};
+
 /**
  * One read for any number of goals: each linked account and its history load once. A goal whose
  * currency has no rate today gets null, without failing the others.
@@ -108,9 +116,9 @@ export const loadGoalInsights = async ({
   heldFixedAmounts,
 }: {
   userId: number;
-  goals: Goals[];
+  goals: GoalForInsights[];
   /** `loadHeldFixedAmounts` over the goals' accounts. */
-  heldFixedAmounts: GoalAccounts[];
+  heldFixedAmounts: HeldFixedAmount[];
 }): Promise<Map<RecordId, GoalInsights | null>> => {
   if (!goals.length) return new Map();
 

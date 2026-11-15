@@ -5,6 +5,7 @@ import PlanRestricted from '@/components/billing/plan-restricted.vue';
 import PageWrapper from '@/components/common/page-wrapper.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useUserStore } from '@/stores';
@@ -44,6 +45,8 @@ const {
 });
 
 const activePlan = computed(() => plans.value?.find((plan) => !plan.deletedAt));
+
+provideChatPageContext(() => (activePlan.value ? { entity: { kind: 'budgetPlan', id: activePlan.value.id } } : {}));
 
 const trashedPlans = computed(() => trashedPlansOf({ plans: plans.value ?? [] }));
 

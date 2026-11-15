@@ -67,11 +67,12 @@ export const updateTrackerTool = defineTool({
       `Days before startDate the AI also scans. One of ${TRACKER_AI_PRE_WINDOW_DAYS.join(', ')}. Owner only`,
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     // The date-order and logo either-or rules span fields, so they run on the REST body schema.
     const { trackerId, ...fields } = args;
-    const body = editTrackerBodySchema.parse(fields);
-
+    return { trackerId, body: editTrackerBodySchema.parse(fields) };
+  },
+  run: async ({ userId, args: { trackerId, body } }) => {
     const tracker = await editTracker({ id: trackerId, userId, ...body });
 
     return tracker && serializeTracker(tracker);

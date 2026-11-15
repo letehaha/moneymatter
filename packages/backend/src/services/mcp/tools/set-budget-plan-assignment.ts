@@ -26,8 +26,9 @@ export const setBudgetPlanAssignmentTool = defineTool({
       'How an unspent or overspent balance carries into the next period: floor, signed or none, for this line and period. null clears it back to the plan default. Omit to leave it unchanged',
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     const { planId, periodId, lineId, ...body } = args;
-    return setAssignment({ userId, planId, periodId, lineId, ...setAssignmentBodySchema.parse(body) });
+    return { planId, periodId, lineId, ...setAssignmentBodySchema.parse(body) };
   },
+  run: async ({ userId, args }) => setAssignment({ userId, ...args }),
 });

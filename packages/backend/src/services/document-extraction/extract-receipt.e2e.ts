@@ -193,7 +193,7 @@ describe('POST /transactions/extract-receipt', () => {
       global.mswMockServer.use(
         createGeminiMock({
           rawText: receiptAnswer(),
-          expectedModel: FALLBACK_SERVER_MODELS[AI_FEATURE.receiptParsing].model,
+          expectedModel: FALLBACK_SERVER_MODELS[AI_FEATURE.receiptParsing]!.model,
         }),
       );
 

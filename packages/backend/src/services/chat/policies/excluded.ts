@@ -1,0 +1,80 @@
+/**
+ * Write tools the chat does not offer, each with the reason. A tool that is not here and is not a
+ * read becomes a capability, and the drift suite then demands its card type.
+ */
+export const CHAT_EXCLUDED_TOOLS: Readonly<Record<string, string>> = {
+  create_attachment_upload_url:
+    'Returns an upload credential URL, and the chat cannot upload bytes; the credential would also sit in chat history and in the model context.',
+};
+
+/**
+ * Write tools whose card shows the validated arguments without a computed preview. Explicit, so a
+ * new tool cannot land here silently: the drift suite requires this list to equal the tools whose
+ * policy declares no resolver. A red tool is never in it.
+ */
+export const CHAT_ARGS_ONLY_TOOLS: readonly string[] = [
+  'create_account',
+  'create_transaction',
+  'link_refund',
+  'unlink_refund',
+  'link_transfer',
+  'unlink_transfer',
+  'dismiss_transfer_suggestion',
+  'keep_pending_as_booked',
+  'create_category',
+  'create_tag',
+  'assign_tags_to_transaction',
+  'remove_tags_from_transaction',
+  'create_tag_reminder',
+  'create_payee',
+  'unignore_payee_name',
+  'create_payee_alias',
+  'create_tracker',
+  'add_transactions_to_tracker',
+  'remove_transactions_from_tracker',
+  'create_tracker_line',
+  'accept_tracker_suggestions',
+  'reject_tracker_suggestions',
+  'create_holding',
+  'create_portfolio',
+  'restore_portfolio',
+  'create_investment_transaction',
+  'link_transaction_to_portfolio',
+  'unlink_transaction_from_portfolio',
+  'transfer_account_to_portfolio',
+  'transfer_portfolio_to_account',
+  'create_portfolio_cash_transaction',
+  'transfer_between_portfolios',
+  'exchange_portfolio_currency',
+  'create_transaction_group',
+  'add_transactions_to_group',
+  'remove_transactions_from_group',
+  'create_subscription',
+  'detect_subscription_candidates',
+  'dismiss_subscription_candidate',
+  'accept_subscription_candidate',
+  'pay_subscription_period',
+  'skip_subscription_period',
+  'unlink_subscription_period_transaction',
+  'create_transaction_automation',
+  'reorder_transaction_automations',
+  'create_transaction_template',
+  'create_venture_platform',
+  'create_venture_deal',
+  'create_venture_event',
+  'link_transactions_to_venture_event',
+  'replace_venture_event_links',
+  'set_exchange_rates',
+  'add_user_currencies',
+  'create_loan',
+  'add_loan_note',
+  'link_loan_payments',
+  'unlink_loan_payment',
+  'create_vehicle',
+  'create_budget_plan',
+  'restore_budget_plan',
+  'create_budget_plan_group',
+  'create_budget_plan_line',
+  'add_suggested_budget_plan_lines',
+  'snooze_budget_plan_line_goal',
+];

@@ -7,6 +7,7 @@ export enum ERROR_CODES {
   NotFoundError = 404,
   NotAllowed = 405,
   ConflictError = 409,
+  PayloadTooLarge = 413,
   ValidationError = 422,
   Locked = 423,
   TooManyRequests = 429,
@@ -123,6 +124,20 @@ export class UnexpectedError extends CustomError {
 
 /** No exchange rate exists for the pair on or before the requested date. */
 export class ExchangeRateUnavailableError extends UnexpectedError {}
+
+export class PayloadTooLargeError extends CustomError {
+  constructor({
+    code = API_ERROR_CODES.payloadTooLarge,
+    message,
+    details,
+  }: {
+    code?: API_ERROR_CODES;
+    message: string;
+    details?: Record<string, unknown>;
+  }) {
+    super(ERROR_CODES.PayloadTooLarge, code, message, details);
+  }
+}
 
 export class TooManyRequests extends CustomError {
   constructor({

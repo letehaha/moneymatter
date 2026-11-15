@@ -20,6 +20,7 @@ export enum AI_FEATURE {
   statementParsing = 'statement_parsing',
   investmentTransactionsParsing = 'investment_transactions_parsing',
   receiptParsing = 'receipt_parsing',
+  chat = 'chat',
   trackerMatching = 'tracker_matching',
   transferMatching = 'transfer_matching',
   // Future features:
@@ -39,6 +40,8 @@ export interface AIModelCapabilities {
   inputs: string[];
   maxOutputTokens: number | null;
   structuredOutput: boolean | null;
+  /** Whether the model can call tools, which the chat needs to look up the user's data */
+  toolCalling: boolean | null;
 }
 
 /** Providers served through their native SDK at the official API; need an API key, take no base URL. */
@@ -77,10 +80,15 @@ export interface AIConnectionInfo {
   invalidatedAt?: string;
 }
 
-/** Stored per feature. `connectionId: null` = explicitly the included server model. */
+/**
+ * Stored per feature. `connectionId: null` = explicitly the included server model.
+ * `modelId` runs the feature on another model of that connection's provider; unset, the connection's own model.
+ * It is never set with a null `connectionId`.
+ */
 export interface AIFeatureConfig {
   feature: AI_FEATURE;
   connectionId: string | null;
+  modelId?: string;
 }
 
 /**
@@ -93,6 +101,8 @@ export interface AIFeatureStatus {
   isConfigured: boolean;
   /** The stored pick when `isConfigured`: a connection id, or null for the server model */
   configuredConnectionId?: string | null;
+  /** The stored model override of the picked connection, unset while the connection's own model answers */
+  configuredModelId?: string;
   /** `null` when nothing answers: no credentials at all, or every connection is down */
   servedBy: 'connection' | 'server' | null;
   /** `provider/model` of what answers (e.g. 'custom/llama3.2'), '' when nothing does */
@@ -173,7 +183,7 @@ export interface ListAIConnectionModelsResponse {
 }
 
 /** PUT /user/settings/ai/features/:feature */
-export type SetAIFeatureConfigBody = Pick<AIFeatureConfig, 'connectionId'>;
+export type SetAIFeatureConfigBody = Pick<AIFeatureConfig, 'connectionId' | 'modelId'>;
 
 /** Maximum character length for custom AI categorization instructions */
 export const AI_CUSTOM_INSTRUCTIONS_MAX_LENGTH = 2000;

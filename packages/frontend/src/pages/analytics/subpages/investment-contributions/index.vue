@@ -92,6 +92,8 @@
 </template>
 
 <script setup lang="ts">
+import { buildPeriodChatContext } from '@/composable/chat/period-context';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { getInvestmentContributions } from '@/api';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { CATEGORICAL_SERIES_PALETTE } from '@/composable/charts/categorical-series-palette';
@@ -139,6 +141,8 @@ const periodSerializer = createPeriodSerializer({ getDefaultPeriod });
 const selectedPeriod = useSessionStorage<Period>('investment-contributions-period', getDefaultPeriod(), {
   serializer: periodSerializer,
 });
+
+provideChatPageContext(() => buildPeriodChatContext({ period: selectedPeriod.value }));
 const selectedGranularity = useLocalStorage<InvestmentContributionsGranularity>(
   'investment-contributions-granularity',
   'monthly',

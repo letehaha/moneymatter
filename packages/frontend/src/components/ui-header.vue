@@ -117,6 +117,8 @@
           </Button>
         </DesktopOnlyTooltip>
 
+        <ChatHeaderButton />
+
         <template v-if="accountsNeedingRelink.length > 0">
           <AccountsRelinkWarning />
         </template>
@@ -178,6 +180,7 @@
 
 <script setup lang="ts">
 import AccountsRelinkWarning from '@/components/accounts-relink-warning.vue';
+import ChatHeaderButton from '@/components/chat/chat-header-button.vue';
 import TrialBanner from '@/components/billing/trial-banner.vue';
 import FeedbackIcon from '@/components/common/icons/feedback-icon.vue';
 import FeedbackDialog from '@/components/dialogs/feedback-dialog.vue';

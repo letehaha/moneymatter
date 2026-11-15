@@ -635,6 +635,26 @@ export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
     reason:
       'Rows point at files in attachment storage, which the backup archive does not carry — restoring rows alone would list attachments that cannot be opened. Attachments are not part of backup/restore.',
   },
+  {
+    model: models.ChatThreads,
+    reason:
+      'Short-lived, self-expiring conversation log that holds untrusted copies of documents. Wipe and restore delete it explicitly (destroyUserOwnedData), because it is not walked through this registry.',
+  },
+  {
+    model: models.ChatMessages,
+    reason:
+      'Belongs to a chat thread: private conversation history, expires with the thread and is deleted by wipe and restore.',
+  },
+  {
+    model: models.ChatProposals,
+    reason:
+      'Cards carry the ids of the data that existed when they were proposed; restored into other data they could be approved against the wrong rows. Applied cards live and die with their thread.',
+  },
+  {
+    model: models.ChatAttachments,
+    reason:
+      'Context files a user attached to a chat message, kept as prepared content that expires with the thread; never part of the finance data.',
+  },
 ];
 
 const unresolved = [...BACKUP_TABLES, ...REFERENCE_TABLES, ...BACKUP_EXCLUDED].filter((t) => !t.model);

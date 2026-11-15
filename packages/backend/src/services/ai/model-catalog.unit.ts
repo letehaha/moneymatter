@@ -15,6 +15,7 @@ describe('parseModelsDevCatalog', () => {
               limit: { context: 1_048_576, output: 65_536 },
               modalities: { input: ['text', 'image', 'pdf'] },
               structured_output: true,
+              tool_call: true,
             },
             'gemma-4-31b-it': {
               name: 'Gemma 4 31B',
@@ -22,6 +23,7 @@ describe('parseModelsDevCatalog', () => {
               limit: { context: 262_144 },
               modalities: { input: ['text', 'image'] },
               structured_output: 'yes',
+              tool_call: 'yes',
             },
             broken: 'not an object',
           },
@@ -37,13 +39,18 @@ describe('parseModelsDevCatalog', () => {
         name: 'Gemini 3.8 Flash',
         contextWindow: 1_048_576,
         pricing: { inputPerMillion: 0.75, outputPerMillion: 3.75 },
-        capabilities: { inputs: ['text', 'image', 'pdf'], maxOutputTokens: 65_536, structuredOutput: true },
+        capabilities: {
+          inputs: ['text', 'image', 'pdf'],
+          maxOutputTokens: 65_536,
+          structuredOutput: true,
+          toolCalling: true,
+        },
       },
       'google/gemma-4-31b-it': {
         name: 'Gemma 4 31B',
         contextWindow: 262_144,
         pricing: null,
-        capabilities: { inputs: ['text', 'image'], maxOutputTokens: null, structuredOutput: null },
+        capabilities: { inputs: ['text', 'image'], maxOutputTokens: null, structuredOutput: null, toolCalling: null },
       },
       'openrouter/google/gemma-4-31b-it': {
         name: 'google/gemma-4-31b-it',

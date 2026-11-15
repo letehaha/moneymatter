@@ -5,7 +5,9 @@ import {
   SHARE_PERMISSIONS,
 } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
+import { deleteAttachment } from '@services/attachments/attachments.service';
 import { listObjects } from '@services/attachments/storage';
+import { withTransaction } from '@services/common/with-transaction';
 import * as helpers from '@tests/helpers';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -278,6 +280,40 @@ describe('Transaction attachments', () => {
       expect(await helpers.listAttachments({ transactionId: tx.id, raw: true })).toEqual([]);
       expect((await helpers.downloadAttachment({ id: uploaded.response!.id })).statusCode).toBe(404);
       expect((await listObjects()).some((object) => storedKey(object.key))).toBe(false);
+    });
+  });
+
+  describe('deleting inside a database transaction', () => {
+    const blobStored = async ({ id }: { id: string }) =>
+      (await listObjects()).some((object) => object.key.endsWith(`/${id}`));
+
+    it('keeps the blob when the transaction rolls back, so the restored row still has its file', async () => {
+      const tx = await createTransaction();
+      const uploaded = await helpers.uploadAttachment({ transactionId: tx.id, file: PNG_BYTES });
+      const id = uploaded.response!.id;
+      const { id: userId } = await helpers.getUserInfo({ raw: true });
+
+      const failing = withTransaction(async () => {
+        await deleteAttachment({ userId, id });
+        throw new Error('rolled back');
+      });
+      await expect(failing()).rejects.toThrow('rolled back');
+
+      expect(await helpers.listAttachments({ transactionId: tx.id, raw: true })).toHaveLength(1);
+      expect(await blobStored({ id })).toBe(true);
+      expect((await helpers.downloadAttachment({ id })).statusCode).toBe(200);
+    });
+
+    it('removes the blob once the transaction commits', async () => {
+      const tx = await createTransaction();
+      const uploaded = await helpers.uploadAttachment({ transactionId: tx.id, file: PNG_BYTES });
+      const id = uploaded.response!.id;
+      const { id: userId } = await helpers.getUserInfo({ raw: true });
+
+      await withTransaction(() => deleteAttachment({ userId, id }))();
+
+      expect(await helpers.listAttachments({ transactionId: tx.id, raw: true })).toEqual([]);
+      expect(await blobStored({ id })).toBe(false);
     });
   });
 

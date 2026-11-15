@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import CurrencyChip from '@/components/common/currency-chip.vue';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { getExchangeRatePair } from '@/api/currencies';
 import { loadTransactionById } from '@/api/transactions';
 import { OUT_OF_WALLET_ACCOUNT_MOCK, VERBOSE_PAYMENT_TYPES, VUE_QUERY_CACHE_KEYS } from '@/common/const';
@@ -160,6 +161,9 @@ const props = withDefaults(defineProps<CreateRecordModalProps>(), {
 // (which side is "from"/"to") is handled in prepopulateForm based on transactionType,
 // so we no longer swap the props.
 const transaction = computed(() => props.transaction);
+
+// While an existing transaction is open here, "this" in the chat means it, whatever page it opened from.
+provideChatPageContext(() => (transaction.value ? { focus: { kind: 'transaction', id: transaction.value.id } } : {}));
 const oppositeTransaction = computed(() => props.oppositeTransaction);
 
 const emit = defineEmits<{

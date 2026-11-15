@@ -118,6 +118,8 @@
 </template>
 
 <script setup lang="ts">
+import { buildPeriodChatContext } from '@/composable/chat/period-context';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { getSpendingsByCategories } from '@/api';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import {
@@ -183,6 +185,12 @@ const selectedMetric = useSessionStorage<MetricType>('trends-comparison-metric',
 const filters = useSessionStorage<TrendsFilters>('trends-comparison-filters', emptyTrendsFilters(), {
   serializer: { read: (raw) => parseTrendsFilters({ raw }), write: (value) => JSON.stringify(value) },
 });
+
+// The chat sees the period, the metric and the selection the numbers are narrowed by (not the expanded subtree).
+provideChatPageContext(() => ({
+  ...buildPeriodChatContext({ period: selectedPeriod.value }),
+  filters: { metric: selectedMetric.value, ...toStatsFilterParams({ filters: filters.value }) },
+}));
 
 // Deep links preset the page, then are consumed.
 onMounted(() => {

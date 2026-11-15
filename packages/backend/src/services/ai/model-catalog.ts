@@ -33,6 +33,7 @@ const ModelSchema = z.object({
     .nullish()
     .catch(null),
   structured_output: z.boolean().optional().catch(undefined),
+  tool_call: z.boolean().optional().catch(undefined),
 });
 
 /** `provider/model` keys; a malformed provider or model entry is left out rather than failing the whole catalog. */
@@ -47,7 +48,7 @@ export function parseModelsDevCatalog({ raw }: { raw: unknown }): Record<string,
       const model = ModelSchema.safeParse(entry);
       if (!model.success) continue;
 
-      const { name, cost, limit, modalities, structured_output } = model.data;
+      const { name, cost, limit, modalities, structured_output, tool_call } = model.data;
       catalog[`${provider}/${id}`] = {
         name: name ?? id,
         contextWindow: limit?.context ?? null,
@@ -57,6 +58,7 @@ export function parseModelsDevCatalog({ raw }: { raw: unknown }): Record<string,
               inputs: modalities.input,
               maxOutputTokens: limit?.output ?? null,
               structuredOutput: structured_output ?? null,
+              toolCalling: tool_call ?? null,
             }
           : null,
       };
@@ -113,6 +115,13 @@ async function refreshCatalog(): Promise<Record<string, ModelProfile>> {
 
 let inflightRefresh: Promise<Record<string, ModelProfile>> | null = null;
 
+/** A profile cached before a capability was listed reads that capability as unknown. */
+function withListedCapabilities({ profile }: { profile: ModelProfile }): ModelProfile {
+  return profile.capabilities
+    ? { ...profile, capabilities: { ...profile.capabilities, toolCalling: profile.capabilities.toolCalling ?? null } }
+    : profile;
+}
+
 /** Price, limits and capabilities read as unknown when the public catalog doesn't know the model or can't be reached. */
 export async function getModelProfile({
   provider,
@@ -130,7 +139,7 @@ export async function getModelProfile({
     if (!key) return unknown;
 
     const cached = await redisClient.hget(CACHE_KEY, key);
-    if (cached) return JSON.parse(cached) as ModelProfile;
+    if (cached) return withListedCapabilities({ profile: JSON.parse(cached) as ModelProfile });
     if (await redisClient.exists(CACHE_KEY)) return unknown;
 
     inflightRefresh ??= refreshCatalog().finally(() => {

@@ -35,12 +35,13 @@ export const paySubscriptionPeriodTool = defineTool({
     ),
     notes: bodyShape.notes.describe('Note to keep on the period'),
   },
-  run: ({ userId, args }) => {
+  validate: ({ args }) => {
     // The either-or rule spans fields, so it runs on the REST body schema, not on the shape.
     const { subscriptionId, periodId, ...rest } = args;
-    const body = markPeriodPaidBodySchema.parse(rest);
-
-    return markPeriodPaid({
+    return { subscriptionId, periodId, body: markPeriodPaidBodySchema.parse(rest) };
+  },
+  run: ({ userId, args: { subscriptionId, periodId, body } }) =>
+    markPeriodPaid({
       userId,
       subscriptionId,
       periodId,
@@ -50,6 +51,5 @@ export const paySubscriptionPeriodTool = defineTool({
       amount: body.amount,
       time: body.time,
       accountId: body.accountId,
-    });
-  },
+    }),
 });

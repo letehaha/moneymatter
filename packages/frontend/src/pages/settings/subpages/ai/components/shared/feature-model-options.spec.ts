@@ -97,7 +97,7 @@ describe('buildFeatureModelOptions', () => {
     expect(automatic).toEqual({
       value: AUTOMATIC_OPTION,
       kind: 'automatic',
-      target: { kind: 'connection', name: 'Claude fast' },
+      target: { kind: 'connection', name: 'Claude fast', model: 'gemini-flash' },
     });
   });
 

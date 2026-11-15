@@ -20,10 +20,9 @@ export const createHoldingTool = defineTool({
       'One result of search_securities, passed as it came back. Set this or securityId',
     ),
   },
-  run: async ({ userId, args }) => {
-    // The REST body rule: a portfolio plus exactly one of a security id and a search result.
-    const { portfolioId, securityId, searchResult } = createHoldingBodySchema.parse(args);
-
+  // The REST body rule: a portfolio plus exactly one of a security id and a search result.
+  validate: ({ args }) => createHoldingBodySchema.parse(args),
+  run: async ({ userId, args: { portfolioId, securityId, searchResult } }) => {
     const holding = await createHoldingFromInput({ userId, portfolioId, securityId, searchResult });
 
     return presentHolding({ holding });

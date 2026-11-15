@@ -35,11 +35,12 @@ export const updatePayeeTool = defineTool({
       'Icon key shown instead of a brand logo or monogram (e.g. "food-24-regular"), or null to clear. Not together with logoDomain or logoInitials.',
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     // The logo either-or rule spans fields, so it runs on the REST body schema, not on the shape.
     const { id, ...rest } = args;
-    const body = updatePayeeBodySchema.parse(rest);
-
+    return { id, body: updatePayeeBodySchema.parse(rest) };
+  },
+  run: async ({ userId, args: { id, body } }) => {
     const payee = await updatePayee({
       userId,
       id,

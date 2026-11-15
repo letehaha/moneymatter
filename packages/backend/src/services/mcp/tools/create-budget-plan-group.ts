@@ -16,8 +16,9 @@ export const createBudgetPlanGroupTool = defineTool({
     planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
     name: createGroupBodyFields.name.describe('Name of the group, 1 to 200 characters, e.g. "Fixed costs"'),
   },
-  run: ({ userId, args }) => {
+  validate: ({ args }) => {
     const { name } = createGroupBodySchema.parse({ name: args.name });
-    return createGroup({ userId, planId: args.planId, name });
+    return { planId: args.planId, name };
   },
+  run: ({ userId, args: { planId, name } }) => createGroup({ userId, planId, name }),
 });

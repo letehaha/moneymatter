@@ -22,11 +22,10 @@ export const updatePortfolioTool = defineTool({
       'New display currency (ISO code, must be one of the user currencies); null = use base currency, omit = keep',
     ),
   },
-  run: ({ userId, args }) => {
+  validate: ({ args }) => {
     // The either-or rule (at least one field) spans fields, so it runs on the REST body schema.
     const { portfolioId, ...fields } = args;
-    const body = updatePortfolioBodySchema.parse(fields);
-
-    return updatePortfolio({ userId, portfolioId, ...body });
+    return { portfolioId, ...updatePortfolioBodySchema.parse(fields) };
   },
+  run: ({ userId, args }) => updatePortfolio({ userId, ...args }),
 });
