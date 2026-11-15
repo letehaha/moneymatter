@@ -491,7 +491,7 @@ interface DeleteAccountByIdInTxResult {
   accountSnapshot: { id: string; name: string };
 }
 
-const deleteAccountByIdInTx = withTransaction(
+export const deleteAccountByIdInTx = withTransaction(
   async ({
     id,
     userId,

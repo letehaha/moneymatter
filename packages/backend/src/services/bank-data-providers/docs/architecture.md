@@ -375,7 +375,8 @@ provider.disconnect(connectionId)
 ```
 DELETE /connections/{connectionId}?removeAssociatedAccounts=true
        ↓
-Permanently delete all linked accounts (and their transactions via CASCADE)
+deleteAccountByIdInTx() per linked account (same steps as DELETE /accounts/:id,
+incl. loan-payment guards; one transaction, so a blocked account rolls back the disconnect)
        ↓
 provider.disconnect(connectionId)
 ```

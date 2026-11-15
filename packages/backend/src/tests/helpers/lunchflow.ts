@@ -131,6 +131,8 @@ const linkManualAccount = async ({ accountId }: { accountId: string }) => {
   if (response.statusCode !== 200) {
     throw new Error(`Linking account ${accountId} to LunchFlow failed with status ${response.statusCode}`);
   }
+
+  return { connectionId };
 };
 
 export default {
