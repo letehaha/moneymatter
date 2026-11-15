@@ -33,7 +33,7 @@ export const resetCurrencyDecimals = (): void => {
 const intlDecimalsCache = new Map<string, number | null>();
 
 /** Decimals `Intl` (ISO 4217 / CLDR) knows for a code, or null for codes it rejects. */
-export const resolveIntlCurrencyDecimals = ({ code }: { code: string }): number | null => {
+const resolveIntlCurrencyDecimals = ({ code }: { code: string }): number | null => {
   const cached = intlDecimalsCache.get(code);
   if (cached !== undefined) return cached;
 
@@ -68,3 +68,12 @@ export const isIntlCurrencyCode = ({ code }: { code: string }): boolean =>
  */
 export const trimAmountNoise = ({ value, decimals }: { value: number; decimals: number }): number =>
   Number(value.toFixed(decimals));
+
+/**
+ * Rounds a computed amount (a conversion, an estimate, a share at a rate) half-up to
+ * `decimals` digits.
+ */
+export const roundToDecimals = ({ value, decimals }: { value: number; decimals: number }): number => {
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+};

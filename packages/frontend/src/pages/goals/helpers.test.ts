@@ -41,8 +41,17 @@ const buildInsights = (overrides: Partial<GoalInsights> = {}): GoalInsights => (
   neededMonthly: null,
   daysLeft: null,
   monthsLeft: null,
-  input: { today: '2026-10-20', months: [], accounts: [], targetAmount: 0, targetDate: null, plannedMonthly: null },
+  input: {
+    today: '2026-10-20',
+    months: [],
+    accounts: [],
+    targetAmount: 0,
+    targetDate: null,
+    plannedMonthly: null,
+    decimals: 2,
+  },
   rateToBase: 1,
+  goalDecimals: 2,
   baseCurrencyCode: 'USD',
   ...overrides,
 });
@@ -110,13 +119,15 @@ describe('getGoalSection / splitGoalSections', () => {
 });
 
 describe('toGoalCurrency / getGoalProgress', () => {
-  it('divides a base amount by the rate, rounded to cents', () => {
-    expect(toGoalCurrency({ amount: 4100, insights: { rateToBase: 41 } })).toBe(100);
-    expect(toGoalCurrency({ amount: 100, insights: { rateToBase: 3 } })).toBe(33.33);
+  it("divides a base amount by the rate, rounded to the goal currency's decimals", () => {
+    expect(toGoalCurrency({ amount: 4100, insights: { rateToBase: 41, goalDecimals: 2 } })).toBe(100);
+    expect(toGoalCurrency({ amount: 100, insights: { rateToBase: 3, goalDecimals: 2 } })).toBe(33.33);
+    expect(toGoalCurrency({ amount: 100, insights: { rateToBase: 3, goalDecimals: 0 } })).toBe(33);
+    expect(toGoalCurrency({ amount: 100, insights: { rateToBase: 3, goalDecimals: 3 } })).toBe(33.333);
   });
 
   it('passes a missing amount or rate through as null', () => {
-    expect(toGoalCurrency({ amount: null, insights: { rateToBase: 41 } })).toBeNull();
+    expect(toGoalCurrency({ amount: null, insights: { rateToBase: 41, goalDecimals: 2 } })).toBeNull();
     expect(toGoalCurrency({ amount: 4100, insights: null })).toBeNull();
   });
 
@@ -308,31 +319,40 @@ describe('getAccountFixedHolders', () => {
 });
 
 describe('countedFromAccount', () => {
-  const account = { currentBalance: 1000, creditLimit: 0, refCurrentBalance: 1000 };
+  const account = { currencyCode: 'USD', currentBalance: 1000, creditLimit: 0, refCurrentBalance: 1000 };
   const holders = [{ fixedAmount: 300 }, { fixedAmount: 500 }];
+  const baseDecimals = 2;
 
   it('gives a fixed share behind the holders what they leave, up to its amount', () => {
     const share = buildShare({ accountId: id('a'), fixedAmount: 400, fixedPosition: 2 });
-    expect(countedFromAccount({ account, share, holders })).toBe(200);
-    expect(countedFromAccount({ account, share: { ...share, fixedPosition: 0 }, holders })).toBe(400);
+    expect(countedFromAccount({ account, share, holders, baseDecimals })).toBe(200);
+    expect(countedFromAccount({ account, share: { ...share, fixedPosition: 0 }, holders, baseDecimals })).toBe(400);
   });
 
   it('applies a percent share to what all fixed amounts leave', () => {
     const share = buildShare({ accountId: id('a'), sharePercent: 50 });
-    expect(countedFromAccount({ account, share, holders })).toBe(100);
+    expect(countedFromAccount({ account, share, holders, baseDecimals })).toBe(100);
   });
 
   it('converts to base with the balance ratio for a foreign-currency account', () => {
-    const foreign = { currentBalance: 100, creditLimit: 0, refCurrentBalance: 4500 };
+    const foreign = { currencyCode: 'EUR', currentBalance: 100, creditLimit: 0, refCurrentBalance: 4500 };
     const share = buildShare({ accountId: id('a'), sharePercent: 50 });
-    expect(countedFromAccount({ account: foreign, share, holders: [] })).toBe(2250);
+    expect(countedFromAccount({ account: foreign, share, holders: [], baseDecimals })).toBe(2250);
+  });
+
+  it("counts at the account currency's decimals and converts to the base currency's", () => {
+    const share = buildShare({ accountId: id('a'), sharePercent: 33.33 });
+    // 33.33% of 1000 yen is 333.3, counted as 333 yen; the 1000 yen are worth 6.667 KWD, so 333 count as 2.220.
+    const yen = { currencyCode: 'JPY', currentBalance: 1000, creditLimit: 0, refCurrentBalance: 6.667 };
+    expect(countedFromAccount({ account: yen, share, holders: [], baseDecimals: 3 })).toBe(2.22);
+    expect(countedFromAccount({ account: yen, share, holders: [], baseDecimals: 0 })).toBe(2);
   });
 
   it('is unknown when the account has a balance but no base-currency value', () => {
     const share = buildShare({ accountId: id('a'), sharePercent: 50 });
-    const noRate = { currentBalance: 100, creditLimit: 0, refCurrentBalance: 0 };
-    expect(countedFromAccount({ account: noRate, share, holders: [] })).toBeNull();
-    expect(countedFromAccount({ account: { ...noRate, currentBalance: 0 }, share, holders: [] })).toBe(0);
+    const noRate = { currencyCode: 'EUR', currentBalance: 100, creditLimit: 0, refCurrentBalance: 0 };
+    expect(countedFromAccount({ account: noRate, share, holders: [], baseDecimals })).toBeNull();
+    expect(countedFromAccount({ account: { ...noRate, currentBalance: 0 }, share, holders: [], baseDecimals })).toBe(0);
   });
 });
 

@@ -6,7 +6,7 @@ import FieldLabel from '@/components/fields/components/field-label.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
-import { formatUIAmount } from '@/js/helpers';
+import { formatUIAmount, getCurrencyDecimals } from '@/js/helpers';
 import { useAccountsStore } from '@/stores';
 import { type AccountModel, MAX_PAYMENT_LEGS, type TRANSACTION_TYPES, type TransactionModel } from '@bt/shared/types';
 import { InfoIcon, Link2OffIcon, LinkIcon, LockIcon, PlusIcon, XIcon } from '@lucide/vue';
@@ -56,6 +56,7 @@ const { accountsRecord } = storeToRefs(useAccountsStore());
 const { convert, ratesMap } = useExchangeRates();
 
 const mainCurrencyCode = computed(() => account.value?.currencyCode);
+const mainDecimals = computed(() => getCurrencyDecimals({ code: mainCurrencyCode.value }));
 
 const legAccountIds = computed(() => new Set(legs.value.map((leg) => getPaymentLegAccountId({ leg }))));
 const createdLegAccountIds = computed(
@@ -110,6 +111,7 @@ const setLegAmount = ({ index, value }: { index: number; value: string | number 
       leg: legs.value[index]!,
       amount: toAmount({ value }),
       mainCurrencyCode: mainCurrencyCode.value,
+      decimals: mainDecimals.value,
       convert,
     }),
   });
@@ -168,6 +170,7 @@ const removeLeg = ({ index }: { index: number }) => {
       mainAmount: amount.value,
       legs: legs.value,
       mainCurrencyCode: mainCurrencyCode.value,
+      decimals: mainDecimals.value,
     });
   }
   legs.value = legs.value.filter((_, i) => i !== index);
@@ -340,6 +343,7 @@ defineExpose({
                 class="min-w-0 flex-1 rounded-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                 :model-value="leg.paymentAmount ?? null"
                 type="number"
+                :decimals="mainDecimals"
                 only-positive
                 :aria-label="
                   $t('dialogs.manageTransaction.form.paymentLegs.convertedAmountLabel', { currency: currencyCode })

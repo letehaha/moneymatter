@@ -16,6 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
 import * as Select from '@/components/lib/ui/select';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormatCurrency } from '@/composable/formatters';
+import { getCurrencyDecimals, trimAmountNoise } from '@/js/helpers/currency-decimals';
 import { cn } from '@/lib/utils';
 import { useAccountsStore } from '@/stores';
 import { AccountModel, type LinkResidualTarget } from '@bt/shared/types';
@@ -134,7 +135,12 @@ const externalOwnFunds = computed(() =>
 );
 
 const balanceDifference = computed(() =>
-  selectedExternalAccount.value ? Number((externalOwnFunds.value - systemOwnFunds.value).toFixed(2)) : 0,
+  selectedExternalAccount.value
+    ? trimAmountNoise({
+        value: externalOwnFunds.value - systemOwnFunds.value,
+        decimals: getCurrencyDecimals({ code: props.account.currencyCode }),
+      })
+    : 0,
 );
 
 const currencyMismatch = computed(() => {

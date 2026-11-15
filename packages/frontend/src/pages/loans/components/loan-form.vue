@@ -8,7 +8,7 @@ import UiButton from '@/components/lib/ui/button/Button.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useCurrencyName, useFormatCurrency } from '@/composable';
 import { useFormValidation } from '@/composable/form-validator';
-import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
+import { getCurrencyDecimals, roundToDecimals } from '@/js/helpers/currency-decimals';
 import { useCurrenciesStore } from '@/stores';
 import { type CurrencyModel, LOAN_TYPE, SUPPORTED_LOAN_TYPES } from '@bt/shared/types';
 import { between, helpers, integer, maxLength, required } from '@vuelidate/validators';
@@ -167,8 +167,8 @@ const estimatedMinPaymentLabel = computed(() => {
 
 const applyEstimatedMinPayment = () => {
   if (estimatedMinPayment.value === null) return;
-  // Round to 2 decimals – field is for user-quoted amounts, not the raw long-division result.
-  form.minPayment = Math.round(estimatedMinPayment.value * 100) / 100;
+  // Rounded to the currency's decimals – the field holds a quoted amount, not the raw long-division result.
+  form.minPayment = roundToDecimals({ value: estimatedMinPayment.value, decimals: amountDecimals.value });
 };
 
 // Balance above principal is legitimate (negative amortization, capitalized interest) — soft heads-up,

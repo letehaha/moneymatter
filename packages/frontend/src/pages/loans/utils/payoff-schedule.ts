@@ -1,3 +1,4 @@
+import { roundToDecimals } from '@/js/helpers/currency-decimals';
 import { addMonths } from 'date-fns';
 
 /**
@@ -42,17 +43,15 @@ export function computeMinimumPaymentFromTerm({
 }): number | null {
   if (!termMonths || termMonths <= 0 || principal <= 0) return null;
 
-  const minorPerUnit = 10 ** decimals;
-
   if (interestRate === 0) {
-    return Math.round((principal / termMonths) * minorPerUnit) / minorPerUnit;
+    return roundToDecimals({ value: principal / termMonths, decimals });
   }
 
   const monthlyRate = interestRate / 100 / MONTHS_PER_YEAR;
   const payment = (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths));
   // Half-up to the minor unit (displayed-payment convention) — unlike the half-to-even
   // interest accrual, which must mirror the backend.
-  return Math.round(payment * minorPerUnit) / minorPerUnit;
+  return roundToDecimals({ value: payment, decimals });
 }
 
 export interface PayoffPoint {

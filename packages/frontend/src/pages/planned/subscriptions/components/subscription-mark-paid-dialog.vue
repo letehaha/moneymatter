@@ -390,7 +390,6 @@ defineExpose({ triggerPay, isPending });
           v-model="amount"
           type="number"
           :decimals="amountDecimals"
-          min="0.01"
           only-positive
           :label="$t('dialogs.subscriptionMarkPaid.amountLabel')"
           :placeholder="$t('dialogs.subscriptionMarkPaid.amountPlaceholder')"

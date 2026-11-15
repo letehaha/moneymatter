@@ -171,6 +171,26 @@ describe('validateGoalForm', () => {
     expect(validateGoalForm({ state, accountsById, today }).accounts).toBeNull();
   });
 
+  it("compares fixed amounts to the target at the goal currency's decimals", () => {
+    const kwdAccounts = { [id('k1')]: { currencyCode: 'KWD' } };
+    const kwdState = buildState({
+      currencyCode: 'KWD',
+      targetAmount: 1.001,
+      accounts: [buildShare({ accountId: id('k1'), fixedAmount: 1, fixedPosition: 0 })],
+    });
+    expect(validateGoalForm({ state: kwdState, accountsById: kwdAccounts, today }).accounts).toBe(
+      'goals.form.errors.fixedBelowTarget',
+    );
+
+    const jpyAccounts = { [id('j1')]: { currencyCode: 'JPY' } };
+    const jpyState = buildState({
+      currencyCode: 'JPY',
+      targetAmount: 1000,
+      accounts: [buildShare({ accountId: id('j1'), fixedAmount: 999.6, fixedPosition: 0 })],
+    });
+    expect(validateGoalForm({ state: jpyState, accountsById: jpyAccounts, today }).accounts).toBeNull();
+  });
+
   it.each([null, -1, 1.5, GOAL_REACHED_HOLD_DAYS_MAX + 1])('rejects %s hold days', (reachedHoldDays) => {
     expect(validateGoalForm({ state: buildState({ reachedHoldDays }), accountsById, today }).reachedHoldDays).toBe(
       'goals.form.errors.holdDaysRange',
@@ -217,38 +237,40 @@ describe('buildGoalPayload', () => {
 describe('counted amounts', () => {
   it('subtracts the credit limit, clamps at 0 and applies the share', () => {
     const accountsById = {
-      [id('a1')]: { currentBalance: 1200, creditLimit: 200, refCurrentBalance: 1200 },
-      [id('a2')]: { currentBalance: -50, creditLimit: 0, refCurrentBalance: -50 },
+      [id('a1')]: { currencyCode: 'USD', currentBalance: 1200, creditLimit: 200, refCurrentBalance: 1200 },
+      [id('a2')]: { currencyCode: 'USD', currentBalance: -50, creditLimit: 0, refCurrentBalance: -50 },
     };
     const shares = [
       buildShare({ accountId: id('a1'), sharePercent: 25 }),
       buildShare({ accountId: id('a2'), sharePercent: 100 }),
     ];
 
-    expect(sumCountedAmount({ shares, accountsById, holdersOf: () => [] })).toBe(250);
+    expect(sumCountedAmount({ shares, accountsById, holdersOf: () => [], baseDecimals: 2 })).toBe(250);
   });
 
   it('sums the shares and skips accounts it does not know', () => {
-    const accountsById = { [id('a1')]: { currentBalance: 1000, creditLimit: 0, refCurrentBalance: 1000 } };
+    const accountsById = {
+      [id('a1')]: { currencyCode: 'USD', currentBalance: 1000, creditLimit: 0, refCurrentBalance: 1000 },
+    };
     const shares = [
       buildShare({ accountId: id('a1'), sharePercent: 50 }),
       buildShare({ accountId: id('gone'), sharePercent: 100 }),
     ];
 
-    expect(sumCountedAmount({ shares, accountsById, holdersOf: () => [] })).toBe(500);
+    expect(sumCountedAmount({ shares, accountsById, holdersOf: () => [], baseDecimals: 2 })).toBe(500);
   });
 
   it('is unknown when one account has no rate', () => {
     const accountsById = {
-      [id('a1')]: { currentBalance: 1000, creditLimit: 0, refCurrentBalance: 1000 },
-      [id('a2')]: { currentBalance: 100, creditLimit: 0, refCurrentBalance: 0 },
+      [id('a1')]: { currencyCode: 'USD', currentBalance: 1000, creditLimit: 0, refCurrentBalance: 1000 },
+      [id('a2')]: { currencyCode: 'USD', currentBalance: 100, creditLimit: 0, refCurrentBalance: 0 },
     };
     const shares = [
       buildShare({ accountId: id('a1'), sharePercent: 50 }),
       buildShare({ accountId: id('a2'), sharePercent: 50 }),
     ];
 
-    expect(sumCountedAmount({ shares, accountsById, holdersOf: () => [] })).toBeNull();
+    expect(sumCountedAmount({ shares, accountsById, holdersOf: () => [], baseDecimals: 2 })).toBeNull();
   });
 });
 
@@ -367,6 +389,19 @@ describe('getGoalFormSummary', () => {
 
     expect(summary?.isCovered).toBe(false);
     expect(summary?.neededMonthly).toBeCloseTo(600 / (365 / 30.44), 1);
+  });
+
+  it("rounds the ask to the goal currency's decimals", () => {
+    const yearAway = { targetAmount: 1000, targetDate: new Date(2027, 9, 20) };
+
+    // 600 over 365 / 30.44 months is 50.038…
+    expect(
+      getGoalFormSummary({ state: buildState({ ...yearAway, currencyCode: 'JPY' }), counted: 400, today }),
+    ).toEqual({ isCovered: false, neededMonthly: 50 });
+    expect(
+      getGoalFormSummary({ state: buildState({ ...yearAway, currencyCode: 'KWD' }), counted: 400, today })
+        ?.neededMonthly,
+    ).toBe(50.038);
   });
 
   it('reports a covered target and skips the ask without a date or rate', () => {

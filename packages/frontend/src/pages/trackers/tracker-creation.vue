@@ -144,7 +144,9 @@ const submit = () => {
       <LimitKindField v-model="form.limitKind" />
       <InputField
         v-model.number="form.limitAmount"
+        type="number"
         :decimals="baseCurrencyDecimals"
+        only-positive
         :label="$t(`budgets.limitKind.kinds.${form.limitKind}.amountLabel`)"
         :placeholder="$t('budgets.creation.limitPlaceholder')"
       />

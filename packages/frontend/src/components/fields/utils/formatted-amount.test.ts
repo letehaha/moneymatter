@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { caretOffsetAfterDigits, countDigitsBeforeCaret, parseAmountInput } from './formatted-amount';
+import {
+  caretOffsetAfterDigits,
+  countDigitsBeforeCaret,
+  limitAmountDecimals,
+  limitDecimalDigits,
+  parseAmountInput,
+} from './formatted-amount';
 
 describe('parseAmountInput', () => {
   describe("decimalSeparator '.'", () => {
@@ -254,5 +260,39 @@ describe('parseAmountInput per-currency decimals', () => {
 
   it('defaults to two decimals when none are given', () => {
     expect(parseAmountInput({ raw: '1.239', decimalSeparator: '.' })).toEqual({ numeric: 1.23, fragment: '' });
+  });
+});
+
+describe('limitDecimalDigits', () => {
+  it.each<[string, number, string]>([
+    ['1.23456', 3, '1.234'],
+    ['1.2', 3, '1.2'],
+    ['1500.6', 0, '1500'],
+    ['1500.', 0, '1500'],
+    ['1500', 0, '1500'],
+    ['10.50', 2, '10.50'],
+    ['', 2, ''],
+  ])('%s at %d decimals → %s', (raw, decimals, expected) => {
+    expect(limitDecimalDigits({ raw, decimals })).toBe(expected);
+  });
+
+  it('leaves exponent notation unchanged', () => {
+    expect(limitDecimalDigits({ raw: '1.5e3', decimals: 0 })).toBe('1.5e3');
+    expect(limitDecimalDigits({ raw: '1.23E-7', decimals: 2 })).toBe('1.23E-7');
+  });
+});
+
+describe('limitAmountDecimals', () => {
+  it.each<[number, number, number]>([
+    [1000.555, 2, 1000.55],
+    [1.005, 2, 1.0],
+    [1.005, 3, 1.005],
+    [10.5, 0, 10],
+    [-10.59, 1, -10.5],
+    [1500, 0, 1500],
+    [1e-7, 8, 1e-7],
+    [1.5e-7, 2, 0],
+  ])('%d at %d decimals → %d', (value, decimals, expected) => {
+    expect(limitAmountDecimals({ value, decimals })).toBe(expected);
   });
 });

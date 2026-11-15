@@ -31,14 +31,14 @@
 import FieldError from '@/components/fields/components/field-error.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import {
-  DEFAULT_AMOUNT_DECIMALS,
   caretOffsetAfterDigits,
   countDigitsBeforeCaret,
   getAmountSeparators,
+  limitAmountDecimals,
   parseAmountInput,
 } from '@/components/fields/utils/formatted-amount';
 import { cn } from '@/lib/utils';
-import { computed, nextTick, ref } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -48,13 +48,12 @@ const props = withDefaults(
     disabled?: boolean;
     errorMessage?: string;
     /** Decimals of the amount's currency; typed precision beyond it is dropped. */
-    decimals?: number;
+    decimals: number;
   }>(),
   {
     label: undefined,
     placeholder: undefined,
     errorMessage: undefined,
-    decimals: DEFAULT_AMOUNT_DECIMALS,
   },
 );
 
@@ -117,6 +116,8 @@ const onInput = (event: Event) => {
   // displayValue reruns after the prop update, but the DOM refreshes only next tick — restore caret then.
   nextTick(() => {
     const formatted = displayValue.value;
+    // Dropped digits that leave the value unchanged trigger no re-render, so the typed text would stay.
+    if (inputRef.value && inputRef.value.value !== formatted) inputRef.value.value = formatted;
     const nextCaret = caretOffsetAfterDigits({
       text: formatted,
       digitCount: digitsBeforeCaret,
@@ -125,4 +126,15 @@ const onInput = (event: Event) => {
     inputRef.value?.setSelectionRange(nextCaret, nextCaret);
   });
 };
+
+// A switch to a currency with fewer decimals must not leave the extra digits in the model.
+watch(
+  () => props.decimals,
+  (decimals) => {
+    trailingFragment.value = '';
+    if (props.modelValue === null || !Number.isFinite(props.modelValue)) return;
+    const limited = limitAmountDecimals({ value: props.modelValue, decimals });
+    if (limited !== props.modelValue) emit('update:modelValue', limited);
+  },
+);
 </script>

@@ -263,6 +263,14 @@ describe('BalanceAdjustmentDialog', () => {
       expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 800 }));
     });
 
+    it('sends a fractional target without float noise', async () => {
+      const w = mountDialog({ currencyCode: 'KWD', currentBalance: 1000.1 });
+      await switchToAdjustBy(w);
+      await enterAmountAndSubmit(w, 0.2);
+
+      expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 1000.3 }));
+    });
+
     it('disables confirm when amount results in zero diff', async () => {
       const w = mountDialog();
       await switchToAdjustBy(w);

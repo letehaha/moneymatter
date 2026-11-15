@@ -115,19 +115,43 @@ describe('payment legs helpers', () => {
           { account: null, amount: null },
         ],
         mainCurrencyCode: 'EUR',
+        decimals: 2,
       }),
     ).toBe(100);
-    expect(sumPaymentRows({ mainAmount: null, legs: [], mainCurrencyCode: 'EUR' })).toBe(0);
+    expect(sumPaymentRows({ mainAmount: null, legs: [], mainCurrencyCode: 'EUR', decimals: 2 })).toBe(0);
   });
 
-  it('rounds the total to cents', () => {
+  it('trims float noise off the total', () => {
     expect(
       sumPaymentRows({
         mainAmount: 10.1,
         legs: [{ account: voucher, amount: 20.2, currencyCode: 'EUR' }],
         mainCurrencyCode: 'EUR',
+        decimals: 2,
       }),
     ).toBe(30.3);
+  });
+
+  it('keeps the third decimal of a 3-decimal main currency', () => {
+    expect(
+      sumPaymentRows({
+        mainAmount: 1.005,
+        legs: [{ account: voucher, amount: 2.001, currencyCode: 'KWD' }],
+        mainCurrencyCode: 'KWD',
+        decimals: 3,
+      }),
+    ).toBe(3.006);
+  });
+
+  it('sums whole units for a 0-decimal main currency', () => {
+    expect(
+      sumMainWithCreatedLegs({
+        mainAmount: 1500,
+        legs: [{ account: voucher, amount: 2501, currencyCode: 'JPY' }],
+        mainCurrencyCode: 'JPY',
+        decimals: 0,
+      }),
+    ).toBe(4001);
   });
 
   it('sums a cross-currency leg by its share in the main currency', () => {
@@ -136,6 +160,7 @@ describe('payment legs helpers', () => {
         mainAmount: 70,
         legs: [linkedCashLeg, { account: voucher, amount: 10, currencyCode: 'EUR', paymentAmount: 999 }],
         mainCurrencyCode: 'EUR',
+        decimals: 2,
       }),
     ).toBe(110);
     expect(
@@ -143,6 +168,7 @@ describe('payment legs helpers', () => {
         mainAmount: 70,
         legs: [{ ...linkedCashLeg, paymentAmount: null }],
         mainCurrencyCode: 'EUR',
+        decimals: 2,
       }),
     ).toBe(70);
   });
@@ -153,23 +179,43 @@ describe('payment legs helpers', () => {
         mainAmount: 70,
         legs: [savedLeg, linkedCashLeg, { account: voucher, amount: 5, currencyCode: 'EUR' }],
         mainCurrencyCode: 'EUR',
+        decimals: 2,
       }),
     ).toBe(105);
-    expect(sumMainWithCreatedLegs({ mainAmount: 70, legs: [linkedCashLeg], mainCurrencyCode: 'EUR' })).toBe(70);
+    expect(
+      sumMainWithCreatedLegs({ mainAmount: 70, legs: [linkedCashLeg], mainCurrencyCode: 'EUR', decimals: 2 }),
+    ).toBe(70);
   });
 
   describe('setPaymentLegAmount', () => {
     const savedCashLeg: FormPaymentLeg = { ...linkedCashLeg, isLinked: false };
 
     it('scales a user-set share by the new amount at the same rate', () => {
-      expect(setPaymentLegAmount({ leg: savedCashLeg, amount: 70, mainCurrencyCode: 'EUR', convert })).toMatchObject({
+      expect(
+        setPaymentLegAmount({ leg: savedCashLeg, amount: 70, mainCurrencyCode: 'EUR', decimals: 2, convert }),
+      ).toMatchObject({
         amount: 70,
         paymentAmount: 60,
         isPaymentAmountEdited: true,
       });
       expect(
-        setPaymentLegAmount({ leg: savedCashLeg, amount: 10, mainCurrencyCode: 'EUR', convert }).paymentAmount,
+        setPaymentLegAmount({ leg: savedCashLeg, amount: 10, mainCurrencyCode: 'EUR', decimals: 2, convert })
+          .paymentAmount,
       ).toBe(8.57);
+    });
+
+    it('rounds a scaled share to a 3-decimal main currency', () => {
+      expect(
+        setPaymentLegAmount({ leg: savedCashLeg, amount: 10, mainCurrencyCode: 'EUR', decimals: 3, convert })
+          .paymentAmount,
+      ).toBe(8.571);
+    });
+
+    it('rounds a scaled share to a whole unit for a 0-decimal main currency', () => {
+      expect(
+        setPaymentLegAmount({ leg: savedCashLeg, amount: 10, mainCurrencyCode: 'EUR', decimals: 0, convert })
+          .paymentAmount,
+      ).toBe(9);
     });
 
     it('prefills an untouched share from the market rate', () => {
@@ -178,21 +224,30 @@ describe('payment legs helpers', () => {
           leg: { account: cash, amount: 10, currencyCode: 'USD', paymentAmount: 9.2 },
           amount: 35,
           mainCurrencyCode: 'EUR',
+          decimals: 2,
           convert,
         }).paymentAmount,
       ).toBe(32.18);
     });
 
     it('drops back to the market rate once the amount is cleared', () => {
-      const cleared = setPaymentLegAmount({ leg: savedCashLeg, amount: null, mainCurrencyCode: 'EUR', convert });
+      const cleared = setPaymentLegAmount({
+        leg: savedCashLeg,
+        amount: null,
+        mainCurrencyCode: 'EUR',
+        decimals: 2,
+        convert,
+      });
       expect(cleared).toMatchObject({ amount: null, paymentAmount: null, isPaymentAmountEdited: false });
-      expect(setPaymentLegAmount({ leg: cleared, amount: 35, mainCurrencyCode: 'EUR', convert }).paymentAmount).toBe(
-        32.18,
-      );
+      expect(
+        setPaymentLegAmount({ leg: cleared, amount: 35, mainCurrencyCode: 'EUR', decimals: 2, convert }).paymentAmount,
+      ).toBe(32.18);
     });
 
     it('only changes the amount of a same-currency leg', () => {
-      expect(setPaymentLegAmount({ leg: savedLeg, amount: 25, mainCurrencyCode: 'EUR', convert })).toMatchObject({
+      expect(
+        setPaymentLegAmount({ leg: savedLeg, amount: 25, mainCurrencyCode: 'EUR', decimals: 2, convert }),
+      ).toMatchObject({
         amount: 25,
         paymentAmount: 30,
       });

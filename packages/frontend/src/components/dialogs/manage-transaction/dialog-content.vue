@@ -369,6 +369,7 @@ const toggleMultiAccount = () => {
         mainAmount: form.value.amount,
         legs: form.value.paymentLegs ?? [],
         mainCurrencyCode: form.value.account?.currencyCode,
+        decimals: amountDecimals.value,
       });
     }
     form.value.paymentLegs = undefined;
@@ -708,17 +709,18 @@ const isCurrenciesDifferent = computed(() => {
   return form.value.account.currencyCode !== form.value.toAccount.currencyCode;
 });
 
+// A shared account can be in a currency the viewer has not connected, so the account's own code is the fallback.
 const currencyCode = computed(() => {
   const accountCurrencyCode = form.value.account?.currencyCode;
   if (accountCurrencyCode) {
-    return currenciesMap.value[accountCurrencyCode]?.currency?.code;
+    return currenciesMap.value[accountCurrencyCode]?.currency?.code ?? accountCurrencyCode;
   }
   return undefined;
 });
 
 // Amount inputs keep only the decimals their currency stores.
 const amountDecimals = computed(() => getCurrencyDecimals({ code: currencyCode.value }));
-const targetAmountDecimals = computed(() => getCurrencyDecimals({ code: targetCurrency.value?.currency?.code }));
+const targetAmountDecimals = computed(() => getCurrencyDecimals({ code: form.value.toAccount?.currencyCode }));
 
 const { formatAmountByCurrencyCode } = useFormatCurrency();
 const { convert: convertCurrency, data: exchangeRates } = useExchangeRates();
@@ -917,7 +919,11 @@ const validationRules = computed(() => {
       }),
     (value: unknown) => {
       if (value == null || value === '') return true;
-      return !isLoanOverpayment({ amount: Number(value), maxPayment: loanOverpayMax.value });
+      return !isLoanOverpayment({
+        amount: Number(value),
+        maxPayment: loanOverpayMax.value,
+        decimals: targetAmountDecimals.value,
+      });
     },
   );
   // A pre-anchor payment is exempt from the overpay guard on the backend (it never
@@ -1067,7 +1073,7 @@ const suggestedOriginalAmount = computed(() => {
   return resolveSuggestedOriginalAmount({
     amount: Number(form.value.amount),
     rate,
-    currencyDigits: form.value.originalCurrency?.digits,
+    decimals: getCurrencyDecimals({ code: form.value.originalCurrency?.code }),
   });
 });
 
@@ -1370,6 +1376,7 @@ const paymentTotalLabel = computed(() =>
       mainAmount: form.value.amount,
       legs: form.value.paymentLegs ?? [],
       mainCurrencyCode: form.value.account?.currencyCode,
+      decimals: amountDecimals.value,
     }),
     { currency: currencyCode.value },
   ),

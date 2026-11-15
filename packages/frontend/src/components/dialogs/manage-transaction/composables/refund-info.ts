@@ -2,6 +2,7 @@ import { getRefundsForTransaction } from '@/api/refunds';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { ApiErrorResponseError } from '@/js/errors';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { TRANSACTION_TYPES, TransactionModel } from '@bt/shared/types';
 import { Ref, computed, onMounted, ref, watch } from 'vue';
 
@@ -11,7 +12,7 @@ import {
   refillRefundLinks,
   refillRefundedByLinks,
   refundShareKey,
-  round2,
+  roundShare,
 } from '../utils/refund-shares';
 
 type RefundStatus = 'refunds' | 'refunded' | null;
@@ -135,8 +136,9 @@ export const getRefundInfo = ({
   const isRefundSharesOverAssigned = computed(() => {
     const links = form.value.refundsTx;
     if (!links?.length || !form.value.amount) return false;
-    const assigned = round2({ value: links.reduce((sum, link) => sum + (link.amount ?? 0), 0) });
-    return assigned > round2({ value: Number(form.value.amount) });
+    const decimals = getCurrencyDecimals({ code: form.value.account?.currencyCode });
+    const assigned = roundShare({ value: links.reduce((sum, link) => sum + (link.amount ?? 0), 0), decimals });
+    return assigned > roundShare({ value: Number(form.value.amount), decimals });
   });
 
   // Adjusted shares survive an amount change but not a currency change: they are in the old currency.
@@ -145,6 +147,7 @@ export const getRefundInfo = ({
     ([amount, currencyCode], [prevAmount, prevCurrencyCode]) => {
       if (!amount || !currencyCode || !prevCurrencyCode) return;
       if (amount === prevAmount && currencyCode === prevCurrencyCode) return;
+      const decimals = getCurrencyDecimals({ code: currencyCode });
 
       if (form.value.refundsTx?.length) {
         const links =
@@ -156,10 +159,12 @@ export const getRefundInfo = ({
             links,
             refundAmount: amount,
             refundCurrencyCode: currencyCode,
+            decimals,
             savedShares: savedRefundShares.value,
             convert,
           }),
           refundAmount: amount,
+          decimals,
         });
       }
 
@@ -168,6 +173,7 @@ export const getRefundInfo = ({
           links: form.value.refundedByTxs,
           purchaseAmount: amount,
           purchaseCurrencyCode: currencyCode,
+          decimals,
         });
       }
     },

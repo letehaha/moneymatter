@@ -623,14 +623,28 @@ describe('buildPoolAssignPayload', () => {
   const baseline = { assigned: 100.1, assignedSource: 'baseline' as const, carryPolicy: 'floor' as const };
 
   it.each(['baseline', 'override'] as const)('adds the amount to a %s line for this period only', (assignedSource) => {
-    expect(buildPoolAssignPayload({ line: { ...baseline, assignedSource }, amount: 0.2 })).toEqual({
+    expect(buildPoolAssignPayload({ line: { ...baseline, assignedSource }, amount: 0.2, decimals: 2 })).toEqual({
       scope: 'this_period',
       amount: 100.3,
     });
   });
 
   it.each([null, 0, -10])('returns null for amount %s', (amount) => {
-    expect(buildPoolAssignPayload({ line: baseline, amount })).toBeNull();
+    expect(buildPoolAssignPayload({ line: baseline, amount, decimals: 2 })).toBeNull();
+  });
+
+  it('keeps the third decimal of a 3-decimal base currency', () => {
+    expect(buildPoolAssignPayload({ line: { ...baseline, assigned: 10.125 }, amount: 0.25, decimals: 3 })).toEqual({
+      scope: 'this_period',
+      amount: 10.375,
+    });
+  });
+
+  it('adds whole units for a 0-decimal base currency', () => {
+    expect(buildPoolAssignPayload({ line: { ...baseline, assigned: 1500 }, amount: 250, decimals: 0 })).toEqual({
+      scope: 'this_period',
+      amount: 1750,
+    });
   });
 });
 
@@ -645,7 +659,7 @@ describe('buildPoolTakeBackPayload', () => {
   it.each(['baseline', 'override'] as const)(
     'takes the amount off a %s line for this period only',
     (assignedSource) => {
-      expect(buildPoolTakeBackPayload({ line: { ...baseline, assignedSource }, amount: 0.2 })).toEqual({
+      expect(buildPoolTakeBackPayload({ line: { ...baseline, assignedSource }, amount: 0.2, decimals: 2 })).toEqual({
         scope: 'this_period',
         amount: 100.1,
       });
@@ -653,15 +667,31 @@ describe('buildPoolTakeBackPayload', () => {
   );
 
   it('takes the whole assigned down to 0', () => {
-    expect(buildPoolTakeBackPayload({ line: baseline, amount: 100.3 })).toEqual({ scope: 'this_period', amount: 0 });
+    expect(buildPoolTakeBackPayload({ line: baseline, amount: 100.3, decimals: 2 })).toEqual({
+      scope: 'this_period',
+      amount: 0,
+    });
   });
 
   it.each([null, 0, -10, 100.31])('returns null for amount %s', (amount) => {
-    expect(buildPoolTakeBackPayload({ line: baseline, amount })).toBeNull();
+    expect(buildPoolTakeBackPayload({ line: baseline, amount, decimals: 2 })).toBeNull();
   });
 
   it('returns null when the pool counts none of the assigned', () => {
-    expect(buildPoolTakeBackPayload({ line: { ...baseline, poolAssigned: 0 }, amount: 10 })).toBeNull();
+    expect(buildPoolTakeBackPayload({ line: { ...baseline, poolAssigned: 0 }, amount: 10, decimals: 2 })).toBeNull();
+  });
+
+  it('keeps the third decimal of a 3-decimal base currency', () => {
+    expect(buildPoolTakeBackPayload({ line: baseline, amount: 0.105, decimals: 3 })).toEqual({
+      scope: 'this_period',
+      amount: 100.195,
+    });
+  });
+
+  it('takes whole units off for a 0-decimal base currency', () => {
+    expect(
+      buildPoolTakeBackPayload({ line: { ...baseline, assigned: 1500, poolAssigned: 1500 }, amount: 250, decimals: 0 }),
+    ).toEqual({ scope: 'this_period', amount: 1250 });
   });
 });
 
@@ -1542,12 +1572,13 @@ describe('sumLineTotals', () => {
           { carriedIn: 10, assigned: 100, activity: -40, available: 60 },
           { carriedIn: 0, assigned: 50, activity: -80, available: -30 },
         ],
+        decimals: 2,
       }),
     ).toEqual({ carriedIn: 10, assigned: 150, activity: -120, available: 30 });
   });
 
   it('returns zeros for no lines', () => {
-    expect(sumLineTotals({ lines: [] })).toEqual({ carriedIn: 0, assigned: 0, activity: 0, available: 0 });
+    expect(sumLineTotals({ lines: [], decimals: 2 })).toEqual({ carriedIn: 0, assigned: 0, activity: 0, available: 0 });
   });
 
   it('rounds float residue to a positive zero', () => {
@@ -1558,8 +1589,33 @@ describe('sumLineTotals', () => {
         { ...line, available: 20.2 },
         { ...line, available: -30.3 },
       ],
+      decimals: 2,
     });
     expect(Object.is(available, 0)).toBe(true);
+  });
+
+  it('keeps the third decimal of a 3-decimal base currency', () => {
+    const line = { carriedIn: 0, assigned: 0, activity: 0 };
+    const { available } = sumLineTotals({
+      lines: [
+        { ...line, available: 1.234 },
+        { ...line, available: 2.345 },
+      ],
+      decimals: 3,
+    });
+    expect(available).toBe(3.579);
+  });
+
+  it('sums whole units for a 0-decimal base currency', () => {
+    const line = { carriedIn: 0, activity: 0, available: 0 };
+    const { assigned } = sumLineTotals({
+      lines: [
+        { ...line, assigned: 1500 },
+        { ...line, assigned: 2501 },
+      ],
+      decimals: 0,
+    });
+    expect(assigned).toBe(4001);
   });
 });
 

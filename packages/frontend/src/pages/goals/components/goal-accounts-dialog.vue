@@ -34,7 +34,7 @@ const open = defineModel<boolean>('open', { required: true });
 const emit = defineEmits<{ 'update:modelValue': [shares: GoalAccountShare[]] }>();
 
 const { t } = useI18n();
-const { formatAmountByCurrencyCode, formatBaseCurrency } = useFormatCurrency();
+const { formatAmountByCurrencyCode, formatBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
 const { accounts, accountsRecord, isAccountsFetched } = storeToRefs(useAccountsStore());
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const { data: goals, isLoading: isGoalsLoading, refetch: refetchGoals } = useGoals();
@@ -193,6 +193,7 @@ const countedOf = ({ row }: { row: AccountRow }) => {
       share: share.mode === 'percent' ? { ...share, sharePercent: Math.min(share.sharePercent ?? 0, row.max) } : share,
     }),
     holders: row.fixedHolders,
+    baseDecimals: baseCurrencyDecimals.value,
   });
 };
 

@@ -13,7 +13,7 @@ export interface SubscriptionCandidate {
   /** Step of a `custom` detected frequency (e.g. every 30 days); null for a preset. */
   detectedIntervalUnit: SUBSCRIPTION_INTERVAL_UNITS | null;
   detectedIntervalCount: number | null;
-  /** Average amount as decimal (already converted from cents) */
+  /** Average amount as a decimal */
   averageAmount: number;
   currencyCode: string;
   accountId: string | null;

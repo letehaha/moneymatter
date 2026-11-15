@@ -14,6 +14,7 @@ import * as Select from '@/components/lib/ui/select';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useCurrencyName } from '@/composable';
 import { useFormValidation } from '@/composable/form-validator';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { captureException } from '@/lib/sentry';
 import { useCurrenciesStore } from '@/stores';
 import { DEPRECIATION_PRESET, VEHICLE_CLASS } from '@bt/shared/types';
@@ -235,6 +236,7 @@ const submit = async () => {
     <input-field
       v-model="form.purchasePrice"
       type="number"
+      :decimals="getCurrencyDecimals({ code: form.currencyCode })"
       :label="$t('forms.createVehicle.purchasePriceLabel')"
       :error-message="getFieldErrorMessage('form.purchasePrice')"
       @blur="touchField('form.purchasePrice')"

@@ -77,7 +77,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const queryClient = useQueryClient();
-const { formatBaseCurrency } = useFormatCurrency();
+const { formatBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
 const { categoriesMap } = storeToRefs(useCategoriesStore());
 
 const planId = computed(() => String(route.params.planId));
@@ -300,7 +300,9 @@ const pickDrawerLineAction = ({ action }: { action: 'edit' | 'archive' | 'delete
   gridRef.value?.pickMenuAction({ line, action });
 };
 
-const selectionAvailable = computed(() => sumLineTotals({ lines: selectedLines.value }).available);
+const selectionAvailable = computed(
+  () => sumLineTotals({ lines: selectedLines.value, decimals: baseCurrencyDecimals.value }).available,
+);
 const panelTabAvailable = computed(() =>
   selectedLines.value.length ? selectionAvailable.value : (view.value?.header.totalAvailable ?? 0),
 );

@@ -1,3 +1,4 @@
+import { roundToDecimals, trimAmountNoise } from '@/js/helpers/currency-decimals';
 import type {
   AccountModel,
   PaymentLegInput,
@@ -76,23 +77,31 @@ export const sumPaymentRows = ({
   mainAmount,
   legs,
   mainCurrencyCode,
+  decimals,
 }: {
   mainAmount: number | null;
   legs: FormPaymentLeg[];
   mainCurrencyCode: string | undefined;
+  /** Decimals of the main currency. */
+  decimals: number;
 }): number =>
-  Math.round(legs.reduce((sum, leg) => sum + legShare({ leg, mainCurrencyCode }), Number(mainAmount) || 0) * 100) / 100;
+  trimAmountNoise({
+    value: legs.reduce((sum, leg) => sum + legShare({ leg, mainCurrencyCode }), Number(mainAmount) || 0),
+    decimals,
+  });
 
 /** The single-account amount once the legs are dropped: an unlinked row stays its own transaction, so it is left out. */
 export const sumMainWithCreatedLegs = ({
   mainAmount,
   legs,
   mainCurrencyCode,
+  decimals,
 }: {
   mainAmount: number | null;
   legs: FormPaymentLeg[];
   mainCurrencyCode: string | undefined;
-}): number => sumPaymentRows({ mainAmount, legs: legs.filter((leg) => !leg.isLinked), mainCurrencyCode });
+  decimals: number;
+}): number => sumPaymentRows({ mainAmount, legs: legs.filter((leg) => !leg.isLinked), mainCurrencyCode, decimals });
 
 /** Refills the main-currency share from the market rate until the user types one. */
 export const refreshLegPaymentAmount = ({
@@ -117,11 +126,14 @@ export const setPaymentLegAmount = ({
   leg,
   amount,
   mainCurrencyCode,
+  decimals,
   convert,
 }: {
   leg: FormPaymentLeg;
   amount: number | null;
   mainCurrencyCode: string | undefined;
+  /** Decimals of the main currency, which the share is in. */
+  decimals: number;
   convert: ConvertFn;
 }): FormPaymentLeg => {
   const oldAmount = Number(leg.amount);
@@ -134,7 +146,7 @@ export const setPaymentLegAmount = ({
     share > 0 &&
     newAmount > 0
   ) {
-    return { ...leg, amount, paymentAmount: Math.round(((share * newAmount) / oldAmount) * 100) / 100 };
+    return { ...leg, amount, paymentAmount: roundToDecimals({ value: (share * newAmount) / oldAmount, decimals }) };
   }
   return refreshLegPaymentAmount({ leg: { ...leg, amount, isPaymentAmountEdited: false }, mainCurrencyCode, convert });
 };

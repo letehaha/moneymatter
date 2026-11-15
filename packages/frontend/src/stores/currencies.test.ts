@@ -61,6 +61,24 @@ describe('currencies store', () => {
     expect(getCurrencyDecimals({ code: 'USDT' })).toBe(6);
   });
 
+  it('registers the decimals of linked currencies, which win over the system list', async () => {
+    api.getAllCurrencies.mockResolvedValue([
+      { code: 'KWD', digits: 3 },
+      { code: 'HUF', digits: 0 },
+    ]);
+    api.loadUserCurrencies.mockResolvedValue([
+      { id: 1, currencyCode: 'HUF', currency: { code: 'HUF', digits: 2 } },
+      { id: 2, currencyCode: 'IQD', currency: { code: 'IQD', digits: 3 } },
+    ]);
+    const store = useCurrenciesStore();
+
+    await store.loadCurrencies();
+
+    expect(getCurrencyDecimals({ code: 'KWD' })).toBe(3);
+    expect(getCurrencyDecimals({ code: 'HUF' })).toBe(2);
+    expect(getCurrencyDecimals({ code: 'IQD' })).toBe(3);
+  });
+
   it('registers the decimals of the base currency', async () => {
     api.loadUserBaseCurrency.mockResolvedValue({
       id: 3,

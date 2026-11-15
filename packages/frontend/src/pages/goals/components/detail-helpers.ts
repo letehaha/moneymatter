@@ -1,3 +1,4 @@
+import { trimAmountNoise } from '@/js/helpers';
 import { DAYS_PER_MONTH, FULL_SHARE, accountGoalValue } from '@bt/shared/goals/goal-math';
 import type { AccountModel, GoalAccountShare, GoalInsights, RecordId } from '@bt/shared/types';
 import { addMonths, parseISO } from 'date-fns';
@@ -31,7 +32,7 @@ export interface DetailAccountRow extends GoalAccountBreakdown {
 }
 
 /**
- * Sorted by counted amount, biggest first. Per-row cent rounding is put on the biggest row
+ * Sorted by counted amount, biggest first. Per-row rounding is put on the biggest row
  * so the rows add up to the saved amount shown everywhere else.
  */
 export const getAccountBreakdown = ({
@@ -50,7 +51,11 @@ export const getAccountBreakdown = ({
       if (!insights || !history) {
         return { ...link, balance: null, base: null, afterFixed: false, counted: null, isShort: false };
       }
-      const counted = accountGoalValue({ ...history, balance: history.currentBalance });
+      const counted = accountGoalValue({
+        ...history,
+        balance: history.currentBalance,
+        decimals: insights.input.decimals,
+      });
       const available = Math.max(0, history.currentBalance - history.creditLimit);
       const base = history.fixedAmount ?? Math.max(0, available - history.fixedOthers);
       return {
@@ -69,7 +74,10 @@ export const getAccountBreakdown = ({
   const saved = toGoalCurrency({ amount: insights.currentValue, insights });
   const top = rows[0];
   if (top && top.counted !== null) {
-    top.counted = Math.round((top.counted + saved - sumBy(rows, (row) => row.counted ?? 0)) * 100) / 100;
+    top.counted = trimAmountNoise({
+      value: top.counted + saved - sumBy(rows, (row) => row.counted ?? 0),
+      decimals: insights.goalDecimals,
+    });
   }
 
   const percentOfSaved = ({ counted }: { counted: number | null }) => {

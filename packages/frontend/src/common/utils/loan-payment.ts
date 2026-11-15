@@ -1,9 +1,5 @@
 import { utcDayKey } from '@/common/utils/date';
 
-// Half-cent slack: backend compares cents, frontend compares decimals — keeps
-// an exact payoff valid without letting a real overpay through.
-const OVERPAY_CENT_SLACK = 0.005;
-
 /**
  * Max payment that keeps the loan at/above zero, as a positive decimal.
  * `loanCurrentBalance` is signed (liabilities negative); `existingLegAmount`
@@ -19,10 +15,20 @@ export const getMaxLoanPayment = ({
 
 /**
  * True when `amount` would push the loan past a zero balance — i.e. pay off
- * more than is owed — beyond a half-cent of float slack.
+ * more than is owed — beyond half a minor unit of the loan currency. The backend
+ * compares amounts rounded to that unit, so the slack keeps an exact payoff valid
+ * through float drift without letting a real overpay through.
  */
-export const isLoanOverpayment = ({ amount, maxPayment }: { amount: number; maxPayment: number }): boolean =>
-  Number.isFinite(amount) && amount > maxPayment + OVERPAY_CENT_SLACK;
+export const isLoanOverpayment = ({
+  amount,
+  maxPayment,
+  decimals,
+}: {
+  amount: number;
+  maxPayment: number;
+  /** Decimals of the loan currency. */
+  decimals: number;
+}): boolean => Number.isFinite(amount) && amount > maxPayment + 0.5 * 10 ** -decimals;
 
 /**
  * True when a payment dated strictly before the loan's balance anchor date —

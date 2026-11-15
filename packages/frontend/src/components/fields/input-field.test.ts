@@ -452,5 +452,77 @@ describe('InputField component', () => {
 
       expect(preventDefaultSpy).not.toHaveBeenCalled();
     });
+
+    it('re-emits the value cut to the new decimals when they shrink', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 3, modelValue: 12.345 });
+
+      await wrapper.setProps({ decimals: 2 });
+
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([12.34]);
+    });
+
+    it('re-emits a whole number when the decimals drop to zero', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2, modelValue: 10.5 });
+
+      await wrapper.setProps({ decimals: 0 });
+
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([10]);
+    });
+
+    it('drops a typed trailing decimal tail when the decimals drop to zero', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2, modelValue: null });
+
+      await typeInto({ wrapper, value: '10.0' });
+      await wrapper.setProps({ modelValue: 10 });
+      await wrapper.setProps({ decimals: 0 });
+
+      expect(wrapper.find('input').element.value).toBe('10');
+    });
+
+    it('emits nothing when the value already fits the new decimals', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 3, modelValue: 10.5 });
+
+      await wrapper.setProps({ decimals: 2 });
+
+      expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+    });
+
+    it('parses pasted exponent notation instead of slicing it', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2 });
+
+      await typeInto({ wrapper, value: '1.5e3' });
+
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1500]);
+    });
+
+    it('keeps a pasted exponent value whole for a whole-number currency', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 0 });
+
+      await typeInto({ wrapper, value: '1.5e3' });
+
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1500]);
+    });
+
+    it('cuts a pasted exponent value to the currency decimals', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2 });
+
+      await typeInto({ wrapper, value: '1.23456e1' });
+
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([12.34]);
+      expect(wrapper.find('input').element.value).toBe('12.34');
+    });
+
+    it('never emits a non-finite number', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2, modelValue: 5 });
+      const input = wrapper.find('input');
+      // A number input reports a value the browser cannot parse; force one past jsdom's sanitising.
+      Object.defineProperty(input.element, 'value', { configurable: true, get: () => '1.5e', set: () => {} });
+
+      await input.trigger('input');
+
+      const emitted = wrapper.emitted('update:modelValue') ?? [];
+      expect(emitted.every(([value]) => value === null || Number.isFinite(value))).toBe(true);
+      expect(emitted.at(-1)).toEqual([null]);
+    });
   });
 });

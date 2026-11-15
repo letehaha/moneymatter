@@ -326,8 +326,8 @@ const submit = () => {
           />
         </div>
         <FormattedAmountField
-          :decimals="baseCurrencyDecimals"
           v-if="state.hasStopAtBalance"
+          :decimals="baseCurrencyDecimals"
           :model-value="state.stopAtBalance"
           class="[&_input]:text-right"
           :placeholder="$t('budgetPlans.goals.amountPlaceholder')"
@@ -346,8 +346,8 @@ const submit = () => {
           />
         </div>
         <FormattedAmountField
-          :decimals="baseCurrencyDecimals"
           v-if="state.hasFundingCap"
+          :decimals="baseCurrencyDecimals"
           :model-value="state.fundingCap"
           class="[&_input]:text-right"
           :placeholder="$t('budgetPlans.goals.amountPlaceholder')"

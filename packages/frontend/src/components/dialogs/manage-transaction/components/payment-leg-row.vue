@@ -3,6 +3,7 @@ import CurrencyChip from '@/components/common/currency-chip.vue';
 import AccountSelectField from '@/components/fields/account-select-field.vue';
 import FieldError from '@/components/fields/components/field-error.vue';
 import InputField from '@/components/fields/input-field.vue';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { cn } from '@/lib/utils';
 import type { AccountModel } from '@bt/shared/types';
 import { ref } from 'vue';
@@ -62,6 +63,7 @@ defineExpose({
           class="min-w-0 flex-1 rounded-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
           :model-value="amount"
           type="number"
+          :decimals="getCurrencyDecimals({ code: currencyCode })"
           only-positive
           :placeholder="$t('dialogs.manageTransaction.form.amountPlaceholder')"
           :aria-label="$t('dialogs.manageTransaction.form.amountLabel')"

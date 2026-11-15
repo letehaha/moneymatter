@@ -73,11 +73,14 @@ const form = ref<{
   time: props.transaction ? new Date(props.transaction.time) : new Date(),
 });
 
+// A shared account can be in a currency the viewer has not connected, so the account's own code is the fallback.
 const sourceCurrency = computed(() => {
   const code = form.value.account?.currencyCode;
-  return code ? currenciesMap.value[code]?.currency?.code : undefined;
+  return code ? (currenciesMap.value[code]?.currency?.code ?? code) : undefined;
 });
-const loanCurrency = computed(() => currenciesMap.value[props.loanAccount.currencyCode]?.currency?.code);
+const loanCurrency = computed(
+  () => currenciesMap.value[props.loanAccount.currencyCode]?.currency?.code ?? props.loanAccount.currencyCode,
+);
 const sourceDecimals = computed(() => getCurrencyDecimals({ code: sourceCurrency.value }));
 const loanDecimals = computed(() => getCurrencyDecimals({ code: loanCurrency.value }));
 
@@ -152,7 +155,11 @@ const validationRules = computed(() => {
       // exempts them from the overpay guard — mirror that and let any amount through.
       if (isPreAnchorPayment.value) return true;
       if (value == null || value === '') return true;
-      return !isLoanOverpayment({ amount: Number(value), maxPayment: maxLoanPaymentAllowed.value });
+      return !isLoanOverpayment({
+        amount: Number(value),
+        maxPayment: maxLoanPaymentAllowed.value,
+        decimals: loanDecimals.value,
+      });
     },
   );
 

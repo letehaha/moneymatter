@@ -4,6 +4,7 @@ import {
   isIntlCurrencyCode,
   registerCurrencyDecimals,
   resetCurrencyDecimals,
+  roundToDecimals,
   trimAmountNoise,
 } from './currency-decimals';
 
@@ -21,6 +22,23 @@ describe('js/helpers/currency-decimals', () => {
       ['BHD', 3],
     ])('falls back to the ISO decimals of %s: %d', (code, expected) => {
       expect(getCurrencyDecimals({ code })).toBe(expected);
+    });
+
+    // CLDR (behind `Intl`) and the backend's ISO 4217 table disagree on these codes.
+    test.each<[string, number]>([
+      ['HUF', 0],
+      ['IQD', 0],
+    ])('an unregistered %s takes the Intl decimals: %d', (code, expected) => {
+      expect(getCurrencyDecimals({ code })).toBe(expected);
+    });
+
+    test.each<[string, number]>([
+      ['HUF', 2],
+      ['IQD', 3],
+    ])('a registered %s takes the backend decimals over Intl: %d', (code, decimals) => {
+      registerCurrencyDecimals({ entries: [{ code, decimals }] });
+
+      expect(getCurrencyDecimals({ code })).toBe(decimals);
     });
 
     test('an unknown code with nothing registered gets the default', () => {
@@ -95,6 +113,21 @@ describe('js/helpers/currency-decimals', () => {
       [20_500_000_000.25 + 0.5, 2, 20_500_000_000.75],
     ])('%d at %d decimals → %d', (value, decimals, expected) => {
       expect(trimAmountNoise({ value, decimals })).toBe(expected);
+    });
+  });
+
+  describe('roundToDecimals', () => {
+    test.each<[number, number, number]>([
+      [1.005 * 1000, 0, 1005],
+      [28567.43, 0, 28567],
+      [28567.5, 0, 28568],
+      [1.2345, 3, 1.235],
+      [1.2344, 3, 1.234],
+      [85607.126, 2, 85607.13],
+      [10.1255, 3, 10.126],
+      [-1.5, 0, -1],
+    ])('%d at %d decimals → %d', (value, decimals, expected) => {
+      expect(roundToDecimals({ value, decimals })).toBe(expected);
     });
   });
 });

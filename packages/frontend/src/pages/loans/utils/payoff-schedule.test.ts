@@ -153,6 +153,15 @@ describe('computePayoffScenario at the loan currency decimals', () => {
     expect(result.monthsRemaining).toBe(4);
     expect(result.points[1]).toMatchObject({ month: 1, balance: 700 });
   });
+
+  it('accrues interest in whole units, half to even, for a 0-decimal currency', () => {
+    // 1,050 at 12% APR (1%/mo): interest 10.5 rounds to 10, so the balance after paying 500 is 560.
+    const result = computePayoffScenario({ balance: 1050, interestRate: 12, payment: 500, today, decimals: 0 });
+
+    expect(result.points[1]!.balance).toBe(560);
+    expect(result.points.every((point) => Number.isInteger(point.balance))).toBe(true);
+    expect(Number.isInteger(result.totalInterest)).toBe(true);
+  });
 });
 
 describe('computeMinimumPaymentFromTerm at the loan currency decimals', () => {
@@ -165,6 +174,20 @@ describe('computeMinimumPaymentFromTerm at the loan currency decimals', () => {
 
   it('rounds the level payment to a whole unit for a 0-decimal currency', () => {
     expect(computeMinimumPaymentFromTerm({ principal: 1000, interestRate: 0, termMonths: 3, decimals: 0 })).toBe(333);
+  });
+
+  it('rounds an interest-bearing level payment to 3 decimals', () => {
+    // 1000 over 3 months at 12% APR: 340.0221… KWD
+    expect(computeMinimumPaymentFromTerm({ principal: 1000, interestRate: 12, termMonths: 3, decimals: 3 })).toBe(
+      340.022,
+    );
+  });
+
+  it('rounds an interest-bearing level payment to a whole unit for a 0-decimal currency', () => {
+    // 100,000 over 12 months at 12% APR: 8884.878…
+    expect(computeMinimumPaymentFromTerm({ principal: 100000, interestRate: 12, termMonths: 12, decimals: 0 })).toBe(
+      8885,
+    );
   });
 });
 

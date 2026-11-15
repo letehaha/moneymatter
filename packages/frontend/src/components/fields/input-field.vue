@@ -78,6 +78,7 @@ import { HTMLAttributes, computed, onMounted, ref, useAttrs, watch } from 'vue';
 
 import FieldError from './components/field-error.vue';
 import FieldLabel from './components/field-label.vue';
+import { limitAmountDecimals, limitDecimalDigits } from './utils/formatted-amount';
 
 enum MODEL_EVENTS {
   input = 'update:modelValue',
@@ -172,9 +173,19 @@ watch(
 );
 
 const limitDecimals = (raw: string): string => {
-  const dot = raw.indexOf('.');
-  if (props.decimals === undefined || dot === -1) return raw;
-  return props.decimals === 0 ? raw.slice(0, dot) : raw.slice(0, dot + 1 + props.decimals);
+  if (props.decimals === undefined) return raw;
+  // Pasted exponent notation ("1.5e3") is capped on its value, then shown as a plain number.
+  if (/e/i.test(raw)) {
+    const value = Number(raw);
+    return Number.isFinite(value) ? String(limitAmountDecimals({ value, decimals: props.decimals })) : raw;
+  }
+  return limitDecimalDigits({ raw, decimals: props.decimals });
+};
+
+const toFiniteNumber = (raw: string): number | null => {
+  if (raw === '') return null;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
 };
 
 const onInput = (event: Event) => {
@@ -187,7 +198,7 @@ const onInput = (event: Event) => {
     const limited = limitDecimals(target.value);
     if (limited !== target.value) target.value = limited;
     rawNumberInput.value = limited;
-    const numValue = limited === '' ? null : Number(limited);
+    const numValue = toFiniteNumber(limited);
     if (props.modelValue === numValue) return;
     emits(MODEL_EVENTS.input, numValue);
   } else {
@@ -196,6 +207,18 @@ const onInput = (event: Event) => {
     emits(MODEL_EVENTS.input, value);
   }
 };
+
+// A switch to a currency with fewer decimals must not leave the extra digits in the model.
+watch(
+  () => props.decimals,
+  (decimals) => {
+    if (props.type !== 'number' || decimals === undefined) return;
+    rawNumberInput.value = limitDecimalDigits({ raw: rawNumberInput.value, decimals });
+    if (typeof props.modelValue !== 'number' || !Number.isFinite(props.modelValue)) return;
+    const limited = limitAmountDecimals({ value: props.modelValue, decimals });
+    if (limited !== props.modelValue) emits(MODEL_EVENTS.input, limited);
+  },
+);
 
 const onKeypress = (event: KeyboardEvent) => {
   if (props.disabled) return;

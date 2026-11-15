@@ -65,7 +65,7 @@
               </div>
               <div class="text-right">
                 <div class="text-sm font-medium">
-                  {{ formatBalance(account.balance, account.currency) }}
+                  {{ formatUIAmount(account.balance, { currency: account.currency }) }}
                 </div>
                 <div class="text-muted-foreground text-xs">{{ account.currency }}</div>
               </div>
@@ -252,6 +252,4 @@ const getErrorMessage = (error: unknown): string | undefined => {
   if (error instanceof Error && error.message) return error.message;
   return undefined;
 };
-
-const formatBalance = (balance: number, currency: string) => formatUIAmount(balance, { currency });
 </script>

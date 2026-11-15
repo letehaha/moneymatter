@@ -19,24 +19,34 @@ describe('getMaxLoanPayment', () => {
 
 describe('isLoanOverpayment', () => {
   it('is false when the amount is below the cap', () => {
-    expect(isLoanOverpayment({ amount: 1000, maxPayment: 49000 })).toBe(false);
+    expect(isLoanOverpayment({ amount: 1000, maxPayment: 49000, decimals: 2 })).toBe(false);
   });
 
   it('is false for an exact payoff', () => {
-    expect(isLoanOverpayment({ amount: 49000, maxPayment: 49000 })).toBe(false);
+    expect(isLoanOverpayment({ amount: 49000, maxPayment: 49000, decimals: 2 })).toBe(false);
   });
 
   it('tolerates sub-cent float drift at the boundary', () => {
-    expect(isLoanOverpayment({ amount: 49000.004, maxPayment: 49000 })).toBe(false);
+    expect(isLoanOverpayment({ amount: 49000.004, maxPayment: 49000, decimals: 2 })).toBe(false);
   });
 
   it('is true once the amount clears the cap past the slack', () => {
-    expect(isLoanOverpayment({ amount: 49000.01, maxPayment: 49000 })).toBe(true);
-    expect(isLoanOverpayment({ amount: 60000, maxPayment: 49000 })).toBe(true);
+    expect(isLoanOverpayment({ amount: 49000.01, maxPayment: 49000, decimals: 2 })).toBe(true);
+    expect(isLoanOverpayment({ amount: 60000, maxPayment: 49000, decimals: 2 })).toBe(true);
+  });
+
+  it('lets only half a minor unit of drift through for a 3-decimal loan', () => {
+    expect(isLoanOverpayment({ amount: 49000.0004, maxPayment: 49000, decimals: 3 })).toBe(false);
+    expect(isLoanOverpayment({ amount: 49000.004, maxPayment: 49000, decimals: 3 })).toBe(true);
+  });
+
+  it('flags an overpay of one whole unit for a 0-decimal loan', () => {
+    expect(isLoanOverpayment({ amount: 49000.4, maxPayment: 49000, decimals: 0 })).toBe(false);
+    expect(isLoanOverpayment({ amount: 49001, maxPayment: 49000, decimals: 0 })).toBe(true);
   });
 
   it('is false for a non-finite amount (defer to the required-field rule)', () => {
-    expect(isLoanOverpayment({ amount: Number.NaN, maxPayment: 49000 })).toBe(false);
+    expect(isLoanOverpayment({ amount: Number.NaN, maxPayment: 49000, decimals: 2 })).toBe(false);
   });
 });
 

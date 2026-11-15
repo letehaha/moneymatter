@@ -21,6 +21,7 @@
             <InputField
               :model-value="customPayment"
               type="number"
+              :decimals="decimals"
               :only-positive="true"
               :aria-label="$t('loans.detail.payoffChart.customPaymentLabel')"
               :placeholder="customPaymentPlaceholder"

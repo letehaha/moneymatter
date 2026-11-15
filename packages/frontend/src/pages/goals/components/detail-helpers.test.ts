@@ -47,8 +47,17 @@ const buildInsights = (overrides: Partial<GoalInsights> = {}): GoalInsights => (
   neededMonthly: null,
   daysLeft: null,
   monthsLeft: null,
-  input: { today: '2026-10-20', months: [], accounts: [], targetAmount: 0, targetDate: null, plannedMonthly: null },
+  input: {
+    today: '2026-10-20',
+    months: [],
+    accounts: [],
+    targetAmount: 0,
+    targetDate: null,
+    plannedMonthly: null,
+    decimals: 2,
+  },
   rateToBase: 1,
+  goalDecimals: 2,
   baseCurrencyCode: 'USD',
   ...overrides,
 });
