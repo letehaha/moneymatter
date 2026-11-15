@@ -13,7 +13,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import * as entitlementsService from '@services/entitlements/resolve-entitlements.service';
 
-import { defineTool, type ToolAccess } from './define-tool';
+import { defineTool, type ToolAccess, validateToolArgs } from './define-tool';
 
 const ID = '019f7e9e-b5f4-729c-9881-9544b15f4e3d';
 const READ = makeExtra({ scopes: ['finance:read'], readOnly: true });
@@ -141,5 +141,55 @@ describe('registerDefinedTool', () => {
     expect(tool!.config.inputSchema).toBeUndefined();
     expect(parseToolResult({ result: await tool!.handler(READ) })).toEqual({ ok: true });
     expect(run).toHaveBeenCalledWith(expect.objectContaining({ userId: 42, args: {} }));
+  });
+});
+
+describe('validate', () => {
+  const validatedTool = () =>
+    defineTool({
+      name: 'validated_tool',
+      toolset: 'core',
+      access: 'write',
+      description: 'Does a thing.',
+      input: { from: z.number(), to: z.number() },
+      validate: ({ args }) => {
+        if (args.from > args.to) throw new Error('"from" must not exceed "to"');
+        return { span: args.to - args.from };
+      },
+      run,
+    });
+
+  it('hands run what validate returns, after the guards', async () => {
+    const [tool] = captureTools({ register: validatedTool() });
+
+    await tool!.handler({ from: 2, to: 5 }, WRITE);
+
+    expect(run).toHaveBeenCalledWith(expect.objectContaining({ userId: 42, args: { span: 3 } }));
+  });
+
+  it('refuses a bad input without running the tool', async () => {
+    const [tool] = captureTools({ register: validatedTool() });
+
+    await expect(tool!.handler({ from: 5, to: 2 }, WRITE)).rejects.toThrow(/"from" must not exceed "to"/);
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  it('checks the scope before validating', async () => {
+    const validate = jest.fn(() => ({}));
+    const [tool] = captureTools({
+      register: defineTool({ name: 'x', toolset: 'core', access: 'write', description: 'X.', validate, run }),
+    });
+
+    await expect(tool!.handler(READ)).rejects.toThrow(/no longer includes editing/);
+    expect(validate).not.toHaveBeenCalled();
+  });
+
+  it('runs validate alone through validateToolArgs, and passes the args through for a tool without one', () => {
+    expect(validateToolArgs({ def: validatedTool(), args: { from: 1, to: 4 } })).toEqual({ span: 3 });
+    expect(() => validateToolArgs({ def: validatedTool(), args: { from: 4, to: 1 } })).toThrow(/must not exceed/);
+    expect(run).not.toHaveBeenCalled();
+
+    const plain = defineTool({ name: 'plain', toolset: 'core', access: 'read', description: 'X.', run });
+    expect(validateToolArgs({ def: plain, args: { id: ID } })).toEqual({ id: ID });
   });
 });

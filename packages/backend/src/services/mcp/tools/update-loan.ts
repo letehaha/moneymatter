@@ -30,9 +30,12 @@ export const updateLoanTool = defineTool({
       'Planned monthly payment; null clears it. A change is added to the timeline',
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     const { loanId, ...body } = args;
-    const loanDetails = await updateLoan({ userId, accountId: loanId, ...updateLoanBodySchema.parse(body) });
+    return { loanId, ...updateLoanBodySchema.parse(body) };
+  },
+  run: async ({ userId, args: { loanId, ...body } }) => {
+    const loanDetails = await updateLoan({ userId, accountId: loanId, ...body });
 
     const loan = await toLoanView({ userId, loanDetails });
     return presentLoan({ loan });

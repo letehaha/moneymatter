@@ -32,9 +32,12 @@ export const updateBudgetPlanTool = defineTool({
       'Income expected per period, a non-negative decimal in the plan currency; null clears it',
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     const { planId, ...patch } = args;
-    const details = await updatePlan({ userId, planId, ...updatePlanBodySchema.parse(patch) });
+    return { planId, ...updatePlanBodySchema.parse(patch) };
+  },
+  run: async ({ userId, args }) => {
+    const details = await updatePlan({ userId, ...args });
 
     return presentBudgetPlanDetails({ details });
   },

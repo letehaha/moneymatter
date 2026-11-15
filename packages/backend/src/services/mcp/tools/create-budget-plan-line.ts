@@ -28,8 +28,9 @@ export const createBudgetPlanLineTool = defineTool({
       'Period start (YYYY-MM-DD) the line starts in; it must be the start of an existing period up to the current one. Default: the current period',
     ),
   },
-  run: ({ userId, args }) => {
+  validate: ({ args }) => {
     const { planId, ...body } = args;
-    return createLine({ userId, planId, ...createLineBodySchema.parse(body) });
+    return { planId, ...createLineBodySchema.parse(body) };
   },
+  run: ({ userId, args }) => createLine({ userId, ...args }),
 });

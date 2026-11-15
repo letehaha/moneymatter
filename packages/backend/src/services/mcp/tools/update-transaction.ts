@@ -72,11 +72,12 @@ export const updateTransactionTool = defineTool({
       'true keeps the transaction out of every spending/income report; balances and the transaction list are unaffected',
     ),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     const { id, ...fields } = args;
     // The transfer, split and original-currency rules span fields, so they run on the REST body schema.
-    const body = updateTransactionBodySchema.parse(fields);
-
+    return { id, body: updateTransactionBodySchema.parse(fields) };
+  },
+  run: async ({ userId, args: { id, body } }) => {
     const result = await updateTransaction({
       id,
       userId,

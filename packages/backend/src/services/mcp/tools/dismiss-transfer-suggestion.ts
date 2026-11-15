@@ -14,10 +14,10 @@ export const dismissTransferSuggestionTool = defineTool({
     expenseTransactionId: recordId().describe('The expense of the suggested pair'),
     incomeTransactionId: recordId().describe('The income of the suggested pair'),
   },
+  validate: ({ args }) => dismissBodySchema.parse(args),
   run: async ({ userId, args }) => {
-    const body = dismissBodySchema.parse(args);
-    await dismissTransferSuggestion({ userId, ...body });
+    await dismissTransferSuggestion({ userId, ...args });
 
-    return { dismissed: true, ...body };
+    return { dismissed: true, ...args };
   },
 });

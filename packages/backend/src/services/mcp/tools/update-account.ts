@@ -18,8 +18,11 @@ export const updateAccountTool = defineTool({
     accountId: recordId().describe('ID of the account to update.'),
     ...updateAccountBodyFields,
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     const { accountId, ...body } = args;
+    return { accountId, body: updateAccountBodySchema.parse(body) };
+  },
+  run: async ({ userId, args: { accountId, body } }) => {
     const {
       accountCategory,
       defaultPaymentType,
@@ -29,7 +32,7 @@ export const updateAccountTool = defineTool({
       currentBalance,
       initialBalance,
       ...logo
-    } = updateAccountBodySchema.parse(body);
+    } = body;
 
     await assertAccountUpdateAllowed({ userId, id: accountId, accountCategory, currentBalance });
 

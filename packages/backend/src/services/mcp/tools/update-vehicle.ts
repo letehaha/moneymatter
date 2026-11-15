@@ -31,9 +31,12 @@ export const updateVehicleTool = defineTool({
     ),
     currentMileage: updateVehicleBodyFields.currentMileage.describe('Odometer reading, a whole number; null clears it'),
   },
-  run: async ({ userId, args }) => {
+  validate: ({ args }) => {
     const { vehicleId, ...body } = args;
-    const vehicle = await updateVehicle({ userId, vehicleId, ...updateVehicleBodySchema.parse(body) });
+    return { vehicleId, ...updateVehicleBodySchema.parse(body) };
+  },
+  run: async ({ userId, args }) => {
+    const vehicle = await updateVehicle({ userId, ...args });
 
     return presentVehicle({ vehicle, userId });
   },

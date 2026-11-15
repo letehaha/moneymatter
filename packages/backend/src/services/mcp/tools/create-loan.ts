@@ -28,8 +28,9 @@ export const createLoanTool = defineTool({
       'Monthly payment the user plans to make, a decimal. Without it there is no payoff date in the projection',
     ),
   },
+  validate: ({ args }) => createLoanBodySchema.parse(args),
   run: async ({ userId, args }) => {
-    const loanDetails = await createLoan({ userId, ...createLoanBodySchema.parse(args) });
+    const loanDetails = await createLoan({ userId, ...args });
 
     // A just-created loan can't have payments yet.
     const loan = await toLoanView({ userId, loanDetails, paymentsCount: 0 });

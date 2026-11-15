@@ -51,11 +51,9 @@ export const createBudgetPlanTool = defineTool({
       'Answers that steer the starter lines; used only with withSuggestedLines. The accepted keys are listed in this schema',
     ),
   },
+  validate: ({ args }) => createPlanBodySchema.parse(args),
   run: async ({ userId, args }) => {
-    const { suggestedLinesFailed, suggestionAnswersIgnored, ...details } = await createPlan({
-      userId,
-      ...createPlanBodySchema.parse(args),
-    });
+    const { suggestedLinesFailed, suggestionAnswersIgnored, ...details } = await createPlan({ userId, ...args });
 
     return {
       ...presentBudgetPlanDetails({ details }),
