@@ -7,7 +7,7 @@
  *
  * Code that depends on a fixed point in history reads a frozen snapshot instead of this list: the
  * money-storage migration and the restore of format 1 to 3 backups both read
- * `migrations/utils/money-columns-20261112.ts`, the columns that held cents before that migration.
+ * `migrations/utils/money-columns-20261115.ts`, the columns that held cents before that migration.
  */
 
 export const MONEY_COLUMN_PRECISION = 36;

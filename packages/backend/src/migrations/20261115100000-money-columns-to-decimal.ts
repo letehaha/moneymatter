@@ -1,19 +1,19 @@
 import { QueryInterface, QueryTypes, Transaction } from 'sequelize';
 
 import {
-  MONEY_COLUMNS_20261112,
-  MONEY_COLUMN_PRECISION_20261112,
-  MONEY_COLUMN_SCALE_20261112,
-  MONEY_JSON_FIELDS_20261112,
+  MONEY_COLUMNS_20261115,
+  MONEY_COLUMN_PRECISION_20261115,
+  MONEY_COLUMN_SCALE_20261115,
+  MONEY_JSON_FIELDS_20261115,
   MoneyJsonFieldSpec,
-} from './utils/money-columns-20261112';
+} from './utils/money-columns-20261115';
 import { dropRealTransactionsViewSql } from './utils/real-transactions-view';
 
 /**
  * Moves every transactional money amount from integer cents (BIGINT) to DECIMAL(36,18), and
  * rewrites the cents held inside JSON fields as decimals. `up` divides by 100, which is lossless.
  *
- * The column and JSON lists are the frozen snapshot in `utils/money-columns-20261112.ts`, the
+ * The column and JSON lists are the frozen snapshot in `utils/money-columns-20261115.ts`, the
  * columns that held cents when this migration was written. Its timestamp follows every migration
  * that creates one of them, so a fresh database and one that already ran those migrations both
  * reach it with every listed column still BIGINT cents. The live list in `common/lib/money-columns.ts`
@@ -46,7 +46,7 @@ import { dropRealTransactionsViewSql } from './utils/real-transactions-view';
 
 type Direction = 'up' | 'down';
 
-const DECIMAL_TYPE = `NUMERIC(${MONEY_COLUMN_PRECISION_20261112},${MONEY_COLUMN_SCALE_20261112})`;
+const DECIMAL_TYPE = `NUMERIC(${MONEY_COLUMN_PRECISION_20261115},${MONEY_COLUMN_SCALE_20261115})`;
 
 const createRealTransactionsViewSql = `CREATE OR REPLACE VIEW real_transactions AS SELECT * FROM "Transactions" WHERE "isPlanned" = false AND "deletedAt" IS NULL;`;
 
@@ -152,7 +152,7 @@ const sqlString = (value: string): string => `'${value.replace(/'/g, "''")}'`;
 
 const columnsByTable = (): Map<string, string[]> => {
   const byTable = new Map<string, string[]>();
-  for (const { table, column } of MONEY_COLUMNS_20261112) {
+  for (const { table, column } of MONEY_COLUMNS_20261115) {
     byTable.set(table, [...(byTable.get(table) ?? []), column]);
   }
   return byTable;
@@ -199,8 +199,8 @@ const stateOf = ({ row }: { row: ColumnTypeRow | undefined }): ColumnState => {
   if (INTEGER_TYPES.includes(row.data_type)) return 'integer';
   if (
     row.data_type === 'numeric' &&
-    row.numeric_precision === MONEY_COLUMN_PRECISION_20261112 &&
-    row.numeric_scale === MONEY_COLUMN_SCALE_20261112
+    row.numeric_precision === MONEY_COLUMN_PRECISION_20261115 &&
+    row.numeric_scale === MONEY_COLUMN_SCALE_20261115
   ) {
     return 'decimal';
   }
@@ -215,7 +215,7 @@ const readColumnStates = async ({
   queryInterface: QueryInterface;
   transaction: Transaction;
 }): Promise<Map<ColumnState, string[]>> => {
-  const pairs = MONEY_COLUMNS_20261112.map(({ table, column }) => `(${sqlString(table)}, ${sqlString(column)})`);
+  const pairs = MONEY_COLUMNS_20261115.map(({ table, column }) => `(${sqlString(table)}, ${sqlString(column)})`);
   const rows = await queryInterface.sequelize.query<ColumnTypeRow>(
     `SELECT table_name, column_name, data_type, numeric_precision, numeric_scale
      FROM information_schema.columns
@@ -224,7 +224,7 @@ const readColumnStates = async ({
   );
 
   const states = new Map<ColumnState, string[]>();
-  for (const { table, column } of MONEY_COLUMNS_20261112) {
+  for (const { table, column } of MONEY_COLUMNS_20261115) {
     const row = rows.find((candidate) => candidate.table_name === table && candidate.column_name === column);
     const state = stateOf({ row });
     const type = !row
@@ -248,7 +248,7 @@ const decide = ({
   states: Map<ColumnState, string[]>;
   direction: Direction;
 }): 'convert' | 'skip' => {
-  const total = MONEY_COLUMNS_20261112.length;
+  const total = MONEY_COLUMNS_20261115.length;
   const source: ColumnState = direction === 'up' ? 'integer' : 'decimal';
   const target: ColumnState = direction === 'up' ? 'decimal' : 'integer';
   if (states.get(source)?.length === total) return 'convert';
@@ -271,7 +271,7 @@ const assertTargetTypes = async ({
 }): Promise<void> => {
   const states = await readColumnStates({ queryInterface, transaction });
   const target: ColumnState = direction === 'up' ? 'decimal' : 'integer';
-  if (states.get(target)?.length !== MONEY_COLUMNS_20261112.length) {
+  if (states.get(target)?.length !== MONEY_COLUMNS_20261115.length) {
     throw new Error(
       `money-columns-to-decimal ${direction}: after the conversion not every listed column is ` +
         `${direction === 'up' ? DECIMAL_TYPE : 'BIGINT'}. ${describeStates({ states })}`,
@@ -373,7 +373,7 @@ const assertJsonAmountsAreNumbers = async ({
   transaction: Transaction;
   direction: Direction;
 }): Promise<void> => {
-  for (const field of MONEY_JSON_FIELDS_20261112) {
+  for (const field of MONEY_JSON_FIELDS_20261115) {
     const [invalid] = await queryInterface.sequelize.query<{ id: string; key: string; type: string }>(
       invalidJsonAmountSql({ field }),
       { transaction, type: QueryTypes.SELECT },
@@ -418,7 +418,7 @@ const runMigration = async ({
     for (const sql of alterColumnTypesSql({ direction })) {
       await run(sql);
     }
-    for (const field of MONEY_JSON_FIELDS_20261112) {
+    for (const field of MONEY_JSON_FIELDS_20261115) {
       await run(rewriteJsonFieldSql({ field, direction }));
     }
     for (const sql of columnCommentsSql({ direction })) {

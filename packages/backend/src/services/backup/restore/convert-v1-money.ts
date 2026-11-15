@@ -1,7 +1,7 @@
 import { type MoneyColumnSpec, type MoneyJsonFieldSpec } from '@common/lib/money-columns';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
-import { MONEY_COLUMNS_20261112, MONEY_JSON_FIELDS_20261112 } from '@root/migrations/utils/money-columns-20261112';
+import { MONEY_COLUMNS_20261115, MONEY_JSON_FIELDS_20261115 } from '@root/migrations/utils/money-columns-20261115';
 import Big from 'big.js';
 import isPlainObject from 'lodash/isPlainObject';
 
@@ -73,8 +73,8 @@ function resolveColumn({
  * leave the backup, or a listed column its model, without the converter noticing.
  */
 export function buildV1ConversionRules({
-  columns = MONEY_COLUMNS_20261112,
-  jsonFields = MONEY_JSON_FIELDS_20261112,
+  columns = MONEY_COLUMNS_20261115,
+  jsonFields = MONEY_JSON_FIELDS_20261115,
   tables = BACKUP_TABLES,
 }: {
   columns?: readonly MoneyColumnSpec[];

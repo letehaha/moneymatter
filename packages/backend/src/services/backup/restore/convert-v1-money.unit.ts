@@ -1,9 +1,9 @@
 import { t } from '@i18n/index';
 import { describe, expect, it } from '@jest/globals';
 import {
-  MONEY_COLUMNS_20261112 as MONEY_COLUMNS,
-  MONEY_JSON_FIELDS_20261112 as MONEY_JSON_FIELDS,
-} from '@root/migrations/utils/money-columns-20261112';
+  MONEY_COLUMNS_20261115 as MONEY_COLUMNS,
+  MONEY_JSON_FIELDS_20261115 as MONEY_JSON_FIELDS,
+} from '@root/migrations/utils/money-columns-20261115';
 
 import { BACKUP_TABLES, type BackupFileName } from '../registry';
 import { buildV1ConversionRules, convertV1MoneyToDecimal } from './convert-v1-money';
