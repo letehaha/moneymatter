@@ -100,11 +100,16 @@
 </template>
 
 <script setup lang="ts">
-import { type AIModelNeed, type AIModelTier, getAIFeatureDisplayInfo } from '@/common/const';
+import {
+  type AIModelNeed,
+  type AIModelTier,
+  type ConfigurableAIFeatureStatus,
+  getAIFeatureDisplayInfo,
+} from '@/common/const';
 import ResponsivePopover from '@/components/common/responsive-popover.vue';
 import { Button } from '@/components/lib/ui/button';
 import { cn } from '@/lib/utils';
-import { AIFeatureStatus, getModelNameFromModelId } from '@bt/shared/types';
+import { getModelNameFromModelId } from '@bt/shared/types';
 import {
   AlignLeftIcon,
   BracesIcon,
@@ -113,6 +118,7 @@ import {
   CircleHelpIcon,
   ImageIcon,
   LightbulbIcon,
+  WrenchIcon,
   TypeIcon,
   XIcon,
   ZapIcon,
@@ -123,7 +129,7 @@ import { useI18n } from 'vue-i18n';
 import type { ModelFit, ModelFitCheckKind } from './model-fit';
 
 const props = defineProps<{
-  featureStatus: AIFeatureStatus;
+  featureStatus: ConfigurableAIFeatureStatus;
   /** Null hides the model check, for anything but the user's own connection */
   fit: ModelFit | null;
 }>();
@@ -159,6 +165,7 @@ const NEEDS: Record<AIModelNeed, { icon: Component; labelKey: string; required?:
   longAnswers: { icon: AlignLeftIcon, labelKey: 'settings.ai.modelGuide.needs.longAnswers' },
   readsFiles: { icon: ImageIcon, labelKey: 'settings.ai.modelGuide.needs.readsFiles', required: true },
   structuredAnswers: { icon: BracesIcon, labelKey: 'settings.ai.modelGuide.needs.structuredAnswers' },
+  toolCalling: { icon: WrenchIcon, labelKey: 'settings.ai.modelGuide.needs.toolCalling', required: true },
 };
 
 /** An `okKey` detail is shown when the check passes too; every detail may read `{tokens}`. */
@@ -183,6 +190,10 @@ const CHECKS: Record<ModelFitCheckKind, { labelKey: string; failKey: string; okK
   structuredAnswers: {
     labelKey: 'settings.ai.modelGuide.checks.structuredAnswers.label',
     failKey: 'settings.ai.modelGuide.checks.structuredAnswers.fail',
+  },
+  toolCalling: {
+    labelKey: 'settings.ai.modelGuide.checks.toolCalling.label',
+    failKey: 'settings.ai.modelGuide.checks.toolCalling.fail',
   },
 };
 

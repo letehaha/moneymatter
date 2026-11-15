@@ -6,8 +6,10 @@ import {
   FIRST_CONNECTION_NAME,
   createFirstConnection,
   getTestUserId,
+  readStoredChatRetention,
   readStoredConnections,
   readStoredFeatureConfigs,
+  seedStoredChatRetention,
 } from '@tests/helpers/user-settings';
 import { VALID_CUSTOM_ENDPOINT_API_KEY } from '@tests/mocks/openai-compatible/mock-api';
 
@@ -162,6 +164,32 @@ describe('Settings slices owned by their own endpoints', () => {
       expect(storedAfterSiblingUpdate[0]!.name).toBe(FIRST_CONNECTION_NAME);
     }, 30_000);
 
+    it('leaves a stored ai.chat.retentionDays unchanged, as a stale cached settings object would carry it', async () => {
+      await helpers.updateUserSettings({ raw: true, settings: { locale: 'en' } });
+      await seedStoredChatRetention({ retentionDays: 7 });
+      const userId = await getTestUserId();
+
+      const response = await putRawSettings({
+        settings: { locale: 'uk', ai: { customInstructions: 'Be brief', chat: { retentionDays: 90 } } },
+      });
+      expect(response.statusCode).toBe(200);
+
+      expect(await readStoredChatRetention({ userId })).toBe(7);
+      const fetched = await helpers.getUserSettings({ raw: true });
+      expect(fetched.locale).toBe('uk');
+      expect(fetched.ai?.customInstructions).toBe('Be brief');
+      expect(fetched.ai?.chat?.retentionDays).toBe(7);
+    });
+
+    it('does not store ai.chat.retentionDays on the very first write', async () => {
+      const response = await putRawSettings({
+        settings: { locale: 'en', ai: { chat: { retentionDays: 90 } } },
+      });
+      expect(response.statusCode).toBe(200);
+
+      expect(await readStoredChatRetention({ userId: await getTestUserId() })).toBeUndefined();
+    });
+
     it('rejects a payload that is invalid outside the ignored slices', async () => {
       const response = await putRawSettings({ settings: { locale: 'klingon' } });
 
@@ -192,6 +220,28 @@ describe('Settings slices owned by their own endpoints', () => {
   });
 
   describe('PATCH /user/settings', () => {
+    it('leaves a stored ai.chat.retentionDays unchanged', async () => {
+      await helpers.updateUserSettings({ raw: true, settings: { locale: 'en' } });
+      await seedStoredChatRetention({ retentionDays: 7 });
+      const userId = await getTestUserId();
+
+      const response = await helpers.patchUserSettings({
+        patch: { includeCreditLimitInStats: true, ai: { chat: { retentionDays: 90 } } },
+      });
+      expect(response.statusCode).toBe(200);
+
+      expect(response.body.response.includeCreditLimitInStats).toBe(true);
+      expect(response.body.response.ai?.chat?.retentionDays).toBe(7);
+      expect(await readStoredChatRetention({ userId })).toBe(7);
+
+      const siblingPatch = await helpers.patchUserSettings({
+        raw: true,
+        patch: { ai: { customInstructions: 'Prefer concise answers' } },
+      });
+      expect(siblingPatch.ai?.chat?.retentionDays).toBe(7);
+      expect(await readStoredChatRetention({ userId })).toBe(7);
+    });
+
     it('never writes ai.connections or ai.featureConfigs, whatever the rest of the patch does', async () => {
       const userId = await getTestUserId();
 

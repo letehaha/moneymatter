@@ -20,4 +20,19 @@ describe('backup registry drift guard', () => {
     const names = BACKUP_TABLES.map((t) => t.fileName);
     expect(new Set(names).size).toBe(names.length);
   });
+
+  it.each(['ChatThreads', 'ChatMessages', 'ChatProposals', 'ChatAttachments'])(
+    '%s is excluded from backups with a reason',
+    (modelName) => {
+      const model = connection.sequelize.models[modelName];
+      expect(model).toBeDefined();
+
+      const entry = BACKUP_EXCLUDED.find((e) => e.model === model);
+      expect(entry).toBeDefined();
+      expect(entry!.reason.trim().length).toBeGreaterThan(0);
+
+      const restored = [...BACKUP_TABLES, ...REFERENCE_TABLES].some((e) => e.model === model);
+      expect(restored).toBe(false);
+    },
+  );
 });

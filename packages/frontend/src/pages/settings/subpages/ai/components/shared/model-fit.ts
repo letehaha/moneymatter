@@ -4,7 +4,13 @@ import type { AIModelCapabilities } from '@bt/shared/types';
 /** The output ceiling the backend asks for on row-emitting calls; a lower model limit cuts long files off. */
 export const LONG_ANSWER_MIN_TOKENS = 32_000;
 
-export type ModelFitCheckKind = 'readsText' | 'readsImages' | 'readsPdfs' | 'longAnswers' | 'structuredAnswers';
+export type ModelFitCheckKind =
+  | 'readsText'
+  | 'readsImages'
+  | 'readsPdfs'
+  | 'longAnswers'
+  | 'structuredAnswers'
+  | 'toolCalling';
 
 /** Both file kinds failing read as one warning */
 export type ModelFitWarning = ModelFitCheckKind | 'readsFiles';
@@ -30,7 +36,7 @@ const checksForNeed = ({
   need: AIModelNeed;
   capabilities: AIModelCapabilities;
 }): ModelFitCheck[] => {
-  const { inputs, maxOutputTokens, structuredOutput } = capabilities;
+  const { inputs, maxOutputTokens, structuredOutput, toolCalling } = capabilities;
 
   switch (need) {
     case 'textOnly':
@@ -44,6 +50,8 @@ const checksForNeed = ({
       return maxOutputTokens === null ? [] : [{ kind: 'longAnswers', ok: maxOutputTokens >= LONG_ANSWER_MIN_TOKENS }];
     case 'structuredAnswers':
       return structuredOutput === null ? [] : [{ kind: 'structuredAnswers', ok: structuredOutput }];
+    case 'toolCalling':
+      return toolCalling === null ? [] : [{ kind: 'toolCalling', ok: toolCalling }];
     case 'runsOften':
       return [];
   }

@@ -18,6 +18,7 @@ export const MODELS_DEV_CATALOG = {
         limit: { context: 1_048_576, output: 65_536 },
         modalities: { input: ['text', 'image', 'pdf'] },
         structured_output: true,
+        tool_call: true,
       },
       'gemini-3.5-flash-lite': {
         name: 'Gemini 3.5 Flash Lite',

@@ -7,8 +7,18 @@ import omit from 'lodash/omit';
  * wholesale write cannot, such as the outbound URL guard and key encryption on AI connections,
  * or a feature pick naming a connection that exists. `PUT /user/settings` and
  * `PATCH /user/settings` drop these paths from the request.
+ *
+ * `ai.chat` is written by `PUT /chat/settings`, which recomputes every thread's expiry in the same
+ * transaction; a stale cached settings object sent back whole must never write an old retention
+ * without that recompute.
  */
-const SERVICE_OWNED_SETTING_PATHS = ['onboarding', 'ai.connections', 'ai.featureConfigs', 'fireHistory'] as const;
+const SERVICE_OWNED_SETTING_PATHS = [
+  'onboarding',
+  'ai.connections',
+  'ai.featureConfigs',
+  'ai.chat',
+  'fireHistory',
+] as const;
 
 export const stripServiceOwnedSlices = <T extends object>({ settings }: { settings: T }): T =>
   omit(settings, [...SERVICE_OWNED_SETTING_PATHS]) as unknown as T;

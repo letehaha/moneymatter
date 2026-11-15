@@ -4,7 +4,7 @@ import { AIConnectionInfo, AIFeatureStatus, getModelNameFromModelId } from '@bt/
 export const AUTOMATIC_OPTION = 'automatic';
 export const SERVER_OPTION = 'server';
 
-export type AutomaticTarget = { kind: 'server' } | { kind: 'connection'; name: string } | null;
+export type AutomaticTarget = { kind: 'server' } | { kind: 'connection'; name: string; model: string } | null;
 
 export type FeatureModelOption =
   | { value: typeof AUTOMATIC_OPTION; kind: 'automatic'; target: AutomaticTarget }
@@ -16,13 +16,17 @@ export const readFeatureSelectValue = ({ status }: { status: AIFeatureStatus }):
   return status.configuredConnectionId ?? SERVER_OPTION;
 };
 
+/** The model that answers. The status carries it whether it is the connection's own or an override. */
+export const formatAnsweringModel = ({ status }: { status: AIFeatureStatus }): string =>
+  getModelNameFromModelId({ modelId: status.modelId });
+
 /** What "Automatic" resolves to. Only an unconfigured status says: a configured one describes the pick. */
 const describeAutomaticTarget = ({ status }: { status: AIFeatureStatus }): AutomaticTarget => {
   if (status.isConfigured) return null;
   if (status.servedBy === 'server') return { kind: 'server' };
-  return status.servedBy === 'connection' && status.connectionName
-    ? { kind: 'connection', name: status.connectionName }
-    : null;
+  if (status.servedBy !== 'connection' || !status.connectionName) return null;
+
+  return { kind: 'connection', name: status.connectionName, model: formatAnsweringModel({ status }) };
 };
 
 export const buildFeatureModelOptions = ({
