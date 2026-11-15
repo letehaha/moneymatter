@@ -159,7 +159,7 @@ const getLinkedTransactionsStats = async ({
   // ponytail: matches on the primary categoryId, so a split transaction lands whole in one line.
   // Read the transaction's splits here if trackers need per-split line totals.
   const expenses = transactions.flatMap((tx) =>
-    tx.transactionType === TRANSACTION_TYPES.expense && tx.refAmount !== null
+    tx.transactionType === TRANSACTION_TYPES.expense
       ? [{ categoryId: canonicalize(tx.categoryId), minor: tx.refAmount.toMinorUnits({ decimals }) }]
       : [],
   );
@@ -235,12 +235,7 @@ const aggregateTransactionStats = ({
   limit: TrackerLimit;
   decimals: number;
 }): StatsResponse => {
-  // A row with no base-currency amount (custom currency, no rate yet) is left out of every figure.
-  const valued = transactions.flatMap((tx) =>
-    tx.refAmount === null ? [] : [{ time: tx.time, transactionType: tx.transactionType, refAmount: tx.refAmount }],
-  );
-
-  const result = valued.reduce((acc, curr) => {
+  const result = transactions.reduce((acc, curr) => {
     const isExpense = curr.transactionType === TRANSACTION_TYPES.expense;
     const refAmount = curr.refAmount.toMinorUnits({ decimals });
 
@@ -256,20 +251,26 @@ const aggregateTransactionStats = ({
     return acc;
   }, getResponseInitialState());
 
-  result.summary.transactionsCount = valued.length;
+  result.summary.transactionsCount = transactions.length;
   setUtilizationRate({ result, limit });
 
   return result;
 };
 
 /** The stats with the `decimals` their minor units are at, which the serializer needs to turn them into decimals. */
-interface TrackerStatsResult {
-  stats: StatsResponse;
+export interface TrackerStatsWithDecimals<TStats> {
+  stats: TStats;
   decimals: number;
 }
 
 export const getTrackerStats = withTransaction(
-  async ({ userId, trackerId }: { userId: number; trackerId: string }): Promise<TrackerStatsResult> => {
+  async ({
+    userId,
+    trackerId,
+  }: {
+    userId: number;
+    trackerId: string;
+  }): Promise<TrackerStatsWithDecimals<StatsResponse>> => {
     // Share-aware auth: recipient sees the same numbers the owner would (per PRD visibility decision).
     const { ownerUserId } = await authorizeTrackerRead({ userId, trackerId });
 

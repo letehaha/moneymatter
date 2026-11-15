@@ -1,10 +1,11 @@
 import { ACCOUNT_CATEGORIES } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import type { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import LoanDetails from '@models/loan-details.model';
 import { isOnOrAfterAnchorDay } from '@services/loans/anchor-day';
-import { lockLoanAccountRow, projectLoanOverpay } from '@services/loans/project-loan-overpay';
+import { lockLoanAccountRow, projectLoanOverpay, sumAtLoanDecimals } from '@services/loans/project-loan-overpay';
 
 /**
  * Single home for the "institutional loans can't go into credit" invariant —
@@ -72,11 +73,14 @@ export const assertLoanPaymentAllowed = async ({
     return;
   }
 
-  let rawProjectedBalance = loanAccount.currentBalance.add(newLegAmount);
-  if (currentLegAmount !== null && isCounted(currentLegDate)) {
-    rawProjectedBalance = rawProjectedBalance.subtract(currentLegAmount);
-  }
-  const { overpaysBy } = projectLoanOverpay({ projectedBalance: rawProjectedBalance });
+  const decimals = await getCurrencyDecimals({ userId: ownerUserId, code: loanAccount.currencyCode });
+  const backedOut = currentLegAmount !== null && isCounted(currentLegDate) ? [currentLegAmount.negate()] : [];
+  const { overpaysBy } = projectLoanOverpay({
+    projectedBalance: sumAtLoanDecimals({
+      amounts: [loanAccount.currentBalance, newLegAmount, ...backedOut],
+      decimals,
+    }),
+  });
   if (overpaysBy.isPositive()) {
     throw new ValidationError({
       message: t({ key: 'transactions.loanPaymentOverpay' }),

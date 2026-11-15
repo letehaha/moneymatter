@@ -16,7 +16,6 @@ import Trackers from '@models/trackers.model';
 import { applyLogoWrite } from '@services/brand-logos';
 import { runAfterCommit } from '@services/common/run-after-commit';
 import { withTransaction } from '@services/common/with-transaction';
-import { roundToBaseCurrency } from '@services/currencies/round-to-base-currency';
 import { startFeatureTrial } from '@services/entitlements/start-feature-trial.service';
 import { getTrackerById } from '@services/trackers/get-trackers';
 
@@ -24,6 +23,7 @@ import { authorizeTrackerAccess } from './authorize-tracker-access';
 import { saveTrackerRules } from './rules/save-tracker-rules';
 import { assertSmartTrackingConfig } from './smart-tracking/assert-smart-tracking-config';
 import { enqueueTrackerScan, getTrackerScanState } from './smart-tracking/tracker-scan-queue';
+import { roundTrackerLimit } from './utils/round-tracker-limit';
 
 interface EditTrackerPayload extends EntityLogoWritePayload {
   id: RecordId;
@@ -101,12 +101,10 @@ export const editTracker = withTransaction(
       stored: tracker,
     });
 
-    // A tracker is denominated in the owner's base currency.
-    const [limitAmount] = await roundToBaseCurrency({ userId: ownerUserId, values: [fields.limitAmount] });
-    const roundedFields = limitAmount === undefined ? fields : { ...fields, limitAmount };
+    const limitAmount = await roundTrackerLimit({ ownerUserId, limitAmount: fields.limitAmount });
 
     await tracker.update({
-      ...removeUndefinedKeys(roundedFields),
+      ...removeUndefinedKeys({ ...fields, limitAmount }),
       ...logoPatch,
       ...(rescan && { aiScannedUntil: null }),
     });

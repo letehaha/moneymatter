@@ -1,4 +1,4 @@
-import { isWithinReachedHold, toGoalCurrency } from '@bt/shared/goals/goal-math';
+import { isWithinReachedHold } from '@bt/shared/goals/goal-math';
 import {
   type GoalModel,
   type GoalReachedNotificationPayload,
@@ -84,11 +84,9 @@ const syncGoalAchievement = async ({
     try {
       if (goal.insights.status === 'reached') {
         if (goal.achievedAt) continue;
-        // A converted value, so it rounds half-even to the goal currency's decimals.
+        // The base-currency value converted to the goal currency, rounded once half-even to its decimals.
         const achievedAmount = await roundToCurrency({
-          money: Money.fromDecimal(
-            toGoalCurrency({ amount: goal.insights.currentValue, rateToBase: goal.insights.rateToBase }),
-          ),
+          money: Money.fromDecimal(goal.insights.currentValue).divide(goal.insights.rateToBase),
           userId,
           currencyCode: goal.currencyCode,
           mode: 'half-even',

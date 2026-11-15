@@ -29,6 +29,7 @@ import {
 import { Op } from 'sequelize';
 
 import { authorizeTrackerRead } from './authorize-tracker-access';
+import type { TrackerStatsWithDecimals } from './stats';
 import { type TrackerRefundPair, fetchTrackerRefundPairs } from './utils/refund-pairs';
 import { OTHER_CATEGORY_ID, buildSharedTrackerMergeMap } from './utils/shared-category-merge-map';
 
@@ -563,11 +564,7 @@ const getLinkedTransactionsSpendingStats = async ({
   };
 
   const measuresIncome = trackerDetails.limitKind !== TRACKER_LIMIT_KINDS.spending;
-  // A row with no base-currency amount (custom currency, no rate yet) cannot be added to a base-currency
-  // figure, so every tracker aggregate leaves it out.
-  const txDataList: NormalizedTxData[] = transactions.flatMap((tx) => {
-    if (tx.refAmount === null) return [];
-
+  const txDataList: NormalizedTxData[] = transactions.map((tx) => {
     const isExpense = tx.transactionType === TRANSACTION_TYPES.expense;
     const rootCatId = tx.categoryId
       ? canonicalize(getRootCategoryId({ categoryId: tx.categoryId, categoryMap }))
@@ -605,19 +602,13 @@ const getLinkedTransactionsSpendingStats = async ({
   });
 };
 
-/** The stats with the `decimals` their minor units are at, which the serializer needs to turn them into decimals. */
-interface TrackerSpendingStatsResult {
-  stats: SpendingStatsResponse;
-  decimals: number;
-}
-
 export const getTrackerSpendingStats = async ({
   userId,
   trackerId,
 }: {
   userId: number;
   trackerId: string;
-}): Promise<TrackerSpendingStatsResult> => {
+}): Promise<TrackerStatsWithDecimals<SpendingStatsResponse>> => {
   // Share-aware auth: recipient sees the same numbers the owner would (per PRD
   // visibility decision). Downstream queries scope against the owner's userId so
   // a recipient's unrelated transactions don't filter the result.

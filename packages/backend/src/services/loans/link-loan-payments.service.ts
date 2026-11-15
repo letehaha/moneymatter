@@ -5,7 +5,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
-import { Money } from '@common/types/money';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import LoanDetails from '@models/loan-details.model';
@@ -13,7 +13,7 @@ import { findTransactions } from '@models/transactions-query';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
 import { isOnOrAfterAnchorDay } from '@services/loans/anchor-day';
-import { lockLoanAccountRow, projectLoanOverpay } from '@services/loans/project-loan-overpay';
+import { lockLoanAccountRow, projectLoanOverpay, sumAtLoanDecimals } from '@services/loans/project-loan-overpay';
 import { assertNotInPayment } from '@services/transactions/payment-legs';
 import { updateTransaction } from '@services/transactions/update-transaction';
 
@@ -106,19 +106,20 @@ const linkLoanPaymentsImpl = async ({
     }),
   );
 
-  const postAnchorSum = plans
-    .filter((plan) => plan.countsTowardBalance)
-    .reduce((sum, plan) => sum.add(plan.destinationAmount), Money.zero());
-
   // Loan balances are negative (liability); income legs add toward zero. A
   // positive projection means the batch overshoots the owed amount.
+  const decimals = await getCurrencyDecimals({ userId, code: loanCurrencyCode });
+  const outstanding = sumAtLoanDecimals({ amounts: [loanAccount.currentBalance], decimals });
   const { projectedBalance, overpaysBy } = projectLoanOverpay({
-    projectedBalance: loanAccount.currentBalance.add(postAnchorSum),
+    projectedBalance: sumAtLoanDecimals({
+      amounts: [outstanding, ...plans.filter((plan) => plan.countsTowardBalance).map((plan) => plan.destinationAmount)],
+      decimals,
+    }),
   });
   if (overpaysBy.isPositive() && !confirmOverpay) {
     const details: LoanPaymentOverpayDetails = {
       projectedBalance: projectedBalance.toNumber(),
-      maxLinkable: loanAccount.currentBalance.abs().toNumber(),
+      maxLinkable: outstanding.abs().toNumber(),
       overpayBy: projectedBalance.toNumber(),
     };
     throw new ValidationError({

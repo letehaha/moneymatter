@@ -2,9 +2,9 @@ import { SHARE_PERMISSIONS } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import TrackerLines from '@models/tracker-lines.model';
 import { withTransaction } from '@services/common/with-transaction';
-import { roundToBaseCurrency } from '@services/currencies/round-to-base-currency';
 
 import { authorizeTrackerAccess } from '../authorize-tracker-access';
+import { roundTrackerLimit } from '../utils/round-tracker-limit';
 import { findLineOrThrow, replaceLineCategories } from './line-helpers';
 
 export const createTrackerLine = withTransaction(
@@ -29,8 +29,7 @@ export const createTrackerLine = withTransaction(
       requiredPermission: SHARE_PERMISSIONS.manage,
     });
 
-    // A tracker is denominated in the owner's base currency.
-    const [roundedLimit] = await roundToBaseCurrency({ userId: ownerUserId, values: [limitAmount] });
+    const roundedLimit = await roundTrackerLimit({ ownerUserId, limitAmount });
 
     const maxPosition = await TrackerLines.max<number | null, TrackerLines>('position', {
       where: { trackerId },

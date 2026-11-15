@@ -1,6 +1,7 @@
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPES, DEPRECIATION_PRESET, VEHICLE_CLASS } from '@bt/shared/types';
-import { roundToCurrency } from '@common/lib/currency-precision';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import Accounts, { createAccount as createAccountInDb } from '@models/accounts.model';
 import Vehicles from '@models/vehicles.model';
@@ -57,25 +58,27 @@ const createVehicleImpl = async (params: CreateVehicleParams) => {
   const now = new Date();
   const anchorDate = parseISO(purchaseDate);
 
-  // The depreciation curve starts from a price held at the currency's decimals.
-  const anchorPrice = await roundToCurrency({ money: purchasePrice, userId, currencyCode, mode: 'half-up' });
+  // The depreciation curve starts from a price held at the currency's decimals. A positive price that
+  // rounds to nothing is refused, as a zero price would.
+  const decimals = await getCurrencyDecimals({ userId, code: currencyCode });
+  const anchorPrice = purchasePrice.round(decimals);
+  if (!anchorPrice.isPositive()) {
+    throw new ValidationError({
+      message: t({ key: 'currencies.amountExceedsDecimals', variables: { code: currencyCode, decimals } }),
+    });
+  }
 
   // Compute today's depreciated value — that becomes the account's initial balance.
   // Historical Balances rows are not backfilled in P1 (documented limitation).
-  const currentValue = await roundToCurrency({
-    money: computeVehicleValue({
-      anchorValue: anchorPrice,
-      anchorDate,
-      asOf: now,
-      vehicleClass,
-      preset: depreciationPreset,
-      customAnnualRatePct,
-      salvageFloorPct,
-    }),
-    userId,
-    currencyCode,
-    mode: 'half-up',
-  });
+  const currentValue = computeVehicleValue({
+    anchorValue: anchorPrice,
+    anchorDate,
+    asOf: now,
+    vehicleClass,
+    preset: depreciationPreset,
+    customAnnualRatePct,
+    salvageFloorPct,
+  }).round(decimals);
 
   const refCurrentValue = await calculateRefAmount({
     userId,

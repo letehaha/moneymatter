@@ -2,9 +2,9 @@ import { SHARE_PERMISSIONS } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { removeUndefinedKeys } from '@js/helpers';
 import { withTransaction } from '@services/common/with-transaction';
-import { roundToBaseCurrency } from '@services/currencies/round-to-base-currency';
 
 import { authorizeTrackerAccess } from '../authorize-tracker-access';
+import { roundTrackerLimit } from '../utils/round-tracker-limit';
 import { findLineOrThrow, replaceLineCategories } from './line-helpers';
 
 export const updateTrackerLine = withTransaction(
@@ -31,10 +31,9 @@ export const updateTrackerLine = withTransaction(
 
     const line = await findLineOrThrow({ trackerId, lineId });
 
-    // A tracker is denominated in the owner's base currency.
-    const [limitAmount] = await roundToBaseCurrency({ userId: ownerUserId, values: [fields.limitAmount] });
+    const limitAmount = await roundTrackerLimit({ ownerUserId, limitAmount: fields.limitAmount });
 
-    await line.update(removeUndefinedKeys(limitAmount === undefined ? fields : { ...fields, limitAmount }));
+    await line.update(removeUndefinedKeys({ ...fields, limitAmount }));
 
     if (categoryIds !== undefined) {
       await replaceLineCategories({ lineId, ownerUserId, categoryIds });

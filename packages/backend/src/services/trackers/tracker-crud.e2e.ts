@@ -52,10 +52,10 @@ describe('Tracker CRUD', () => {
         name: trackerName,
         startDate: '2025-03-01T00:00:00Z',
         endDate: '2025-03-31T23:59:59Z',
-        limitAmount: 100.555,
+        limitAmount: 100.545,
         raw: true,
       });
-      expect(tracker.limitAmount).toBe(100.56);
+      expect(tracker.limitAmount).toBe(100.55);
 
       const edited = await helpers.editTracker({ id: tracker.id, raw: true, params: { limitAmount: 77.774 } });
       expect(edited.limitAmount).toBe(77.77);
@@ -68,10 +68,38 @@ describe('Tracker CRUD', () => {
             name: trackerName,
             startDate: '2025-03-01T00:00:00Z',
             endDate: '2025-03-31T23:59:59Z',
-            limitAmount: 100.5555,
+            limitAmount: 100.5545,
             raw: true,
           });
-          expect(kwdTracker.limitAmount).toBe(100.556);
+          expect(kwdTracker.limitAmount).toBe(100.555);
+        },
+      });
+    });
+
+    it('refuses a positive limit that rounds to nothing at the base currency decimals', async () => {
+      const period = { startDate: '2025-03-01T00:00:00Z', endDate: '2025-03-31T23:59:59Z' };
+      const created = await helpers.createTracker({ name: trackerName, ...period, limitAmount: 0.004 });
+      expect(created.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const tracker = await helpers.createTracker({ name: trackerName, ...period, limitAmount: 50, raw: true });
+      const edited = await helpers.editTracker({ id: tracker.id, raw: false, params: { limitAmount: 0.004 } });
+      expect(edited.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await helpers.getTrackerById({ id: tracker.id, raw: true }))!.limitAmount).toBe(50);
+
+      const jpyUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'JPY' });
+      await helpers.asUser({
+        cookies: jpyUser.cookies,
+        fn: async () => {
+          const jpyCreated = await helpers.createTracker({ name: trackerName, ...period, limitAmount: 0.4 });
+          expect(jpyCreated.statusCode).toBe(ERROR_CODES.ValidationError);
+
+          const jpyTracker = await helpers.createTracker({
+            name: trackerName,
+            ...period,
+            limitAmount: 1000.5,
+            raw: true,
+          });
+          expect(jpyTracker.limitAmount).toBe(1001);
         },
       });
     });

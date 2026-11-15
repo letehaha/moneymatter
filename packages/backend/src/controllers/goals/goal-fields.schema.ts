@@ -34,6 +34,11 @@ const goalAccountsSchema = z
     message: 'IDs must be unique',
   });
 
+/**
+ * Goal amounts (`targetAmount`, `plannedMonthly`, `fixedAmount`) take any decimals the storage holds:
+ * the goal services round each half-up to its currency's decimals with `roundGoalAmount` and refuse
+ * one that rounds to zero.
+ */
 export const goalFieldsShape = {
   name: z.string().trim().min(1).max(GOAL_NAME_MAX_LENGTH),
   currencyCode: currencyCode(),

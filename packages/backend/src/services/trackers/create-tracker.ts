@@ -11,13 +11,13 @@ import Trackers from '@models/trackers.model';
 import { applyLogoWrite } from '@services/brand-logos';
 import { runAfterCommit } from '@services/common/run-after-commit';
 import { withTransaction } from '@services/common/with-transaction';
-import { roundToBaseCurrency } from '@services/currencies/round-to-base-currency';
 import { startFeatureTrial } from '@services/entitlements/start-feature-trial.service';
 import { includeCategories, includeTags } from '@services/trackers/get-trackers';
 
 import { saveTrackerRules } from './rules/save-tracker-rules';
 import { assertSmartTrackingConfig } from './smart-tracking/assert-smart-tracking-config';
 import { enqueueTrackerScan } from './smart-tracking/tracker-scan-queue';
+import { roundTrackerLimit } from './utils/round-tracker-limit';
 
 interface CreateTrackerPayload extends EntityLogoWritePayload {
   id?: string;
@@ -52,8 +52,7 @@ export const createTracker = withTransaction(async (payload: CreateTrackerPayloa
     },
   });
 
-  // A tracker is denominated in the owner's base currency.
-  const [limitAmount] = await roundToBaseCurrency({ userId: payload.userId, values: [payload.limitAmount] });
+  const limitAmount = await roundTrackerLimit({ ownerUserId: payload.userId, limitAmount: payload.limitAmount });
 
   const tracker = await Trackers.create({
     name: payload.name,

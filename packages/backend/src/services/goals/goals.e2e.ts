@@ -11,6 +11,7 @@ import {
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
+import { connection } from '@models/index';
 import * as helpers from '@tests/helpers';
 import type { ErrorResponse } from '@tests/helpers/common';
 
@@ -747,5 +748,111 @@ describe('Goal fixed amounts', () => {
     expect((await helpers.updateGoal({ goalId: goal.id, payload: { targetAmount: converted } })).statusCode).toBe(200);
     expectBelowTarget(await helpers.updateGoal({ goalId: goal.id, payload: { targetAmount: aboveConverted } }));
     expect((await helpers.getGoal({ goalId: goal.id, raw: true })).targetAmount).toBe(converted);
+  });
+});
+
+const createAccountIn = async ({ currencyCode }: { currencyCode: string }) => {
+  await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+  return helpers.createAccount({ payload: helpers.buildAccountPayload({ currencyCode }), raw: true });
+};
+
+describe('Goal amounts at the currency decimals', () => {
+  it('rounds an amount with extra decimals half-up on a 2-decimal goal', async () => {
+    const goal = await helpers.createGoal({ payload: { targetAmount: 100.555, plannedMonthly: 10.005 }, raw: true });
+    expect(goal).toMatchObject({ targetAmount: 100.56, plannedMonthly: 10.01 });
+
+    const updated = await helpers.updateGoal({ goalId: goal.id, payload: { targetAmount: 200.545 }, raw: true });
+    expect(updated.targetAmount).toBe(200.55);
+  });
+
+  it('rounds to whole units on a 0-decimal goal and refuses an amount that rounds to nothing', async () => {
+    const goal = await helpers.createGoal({ payload: { currencyCode: 'JPY', targetAmount: 1500.5 }, raw: true });
+    expect(goal).toMatchObject({ currencyCode: 'JPY', targetAmount: 1501 });
+
+    expect((await helpers.updateGoal({ goalId: goal.id, payload: { plannedMonthly: 0.4 } })).statusCode).toBe(
+      ERROR_CODES.ValidationError,
+    );
+    expect((await helpers.createGoal({ payload: { currencyCode: 'JPY', targetAmount: 0.4 } })).statusCode).toBe(
+      ERROR_CODES.ValidationError,
+    );
+    expect((await helpers.getGoal({ goalId: goal.id, raw: true })).plannedMonthly).toBe(null);
+  });
+
+  it('keeps the third decimal of a 3-decimal goal', async () => {
+    const goal = await helpers.createGoal({
+      payload: { currencyCode: 'KWD', targetAmount: 1500.1255, plannedMonthly: 0.001 },
+      raw: true,
+    });
+
+    expect(goal).toMatchObject({ currencyCode: 'KWD', targetAmount: 1500.126, plannedMonthly: 0.001 });
+  });
+
+  it('rejects a share percent with three decimals on update', async () => {
+    const goal = await helpers.createGoal({ raw: true });
+    const accountId = goal.accounts[0]!.accountId;
+
+    const response = await helpers.updateGoal({
+      goalId: goal.id,
+      payload: { accounts: [{ accountId, sharePercent: 10.555 }] },
+    });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((await helpers.getGoal({ goalId: goal.id, raw: true })).accounts).toEqual(goal.accounts);
+  });
+
+  it("rounds a fixed amount to its account's currency", async () => {
+    const account = await createAccountIn({ currencyCode: 'JPY' });
+
+    const goal = await helpers.createGoal({
+      payload: { targetAmount: 1, accounts: [{ accountId: account.id, fixedAmount: 1000.5 }] },
+      raw: true,
+    });
+
+    expect(goal.accounts[0]!.fixedAmount).toBe(1001);
+  });
+
+  it("rounds the stored amounts to the new currency's decimals when only the currency changes", async () => {
+    const goal = await helpers.createGoal({ payload: { targetAmount: 1000.55, plannedMonthly: 100.45 }, raw: true });
+
+    const updated = await helpers.updateGoal({ goalId: goal.id, payload: { currencyCode: 'JPY' }, raw: true });
+
+    expect(updated).toMatchObject({ currencyCode: 'JPY', targetAmount: 1001, plannedMonthly: 100 });
+    expect(await helpers.getGoal({ goalId: goal.id, raw: true })).toMatchObject({
+      currencyCode: 'JPY',
+      targetAmount: 1001,
+      plannedMonthly: 100,
+    });
+  });
+
+  it('refuses a currency change that rounds a stored amount to nothing and leaves the goal unchanged', async () => {
+    const goal = await helpers.createGoal({ payload: { plannedMonthly: 0.4 }, raw: true });
+
+    const response = await helpers.updateGoal({ goalId: goal.id, payload: { currencyCode: 'JPY' } });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(await helpers.getGoal({ goalId: goal.id, raw: true })).toMatchObject({
+      currencyCode: global.BASE_CURRENCY.code,
+      plannedMonthly: 0.4,
+    });
+  });
+
+  it('keeps a stored fixed amount as it is when a write does not send the shares', async () => {
+    const account = await createAccountIn({ currencyCode: 'JPY' });
+    const goal = await helpers.createGoal({
+      payload: { targetAmount: 1, accounts: [{ accountId: account.id, fixedAmount: 1000 }] },
+      raw: true,
+    });
+    // A row converted from 100050 cents holds 1000.50 in a currency without minor units.
+    await connection.sequelize.query(`UPDATE "GoalAccounts" SET "fixedAmount" = 1000.5 WHERE "goalId" = :goalId`, {
+      replacements: { goalId: goal.id },
+    });
+
+    const retargeted = await helpers.updateGoal({ goalId: goal.id, payload: { targetAmount: 2 } });
+    expect(retargeted.statusCode).toBe(200);
+    await helpers.updateGoal({ goalId: goal.id, payload: { status: 'archived' }, raw: true });
+    const unarchived = await helpers.updateGoal({ goalId: goal.id, payload: { status: 'active' } });
+    expect(unarchived.statusCode).toBe(200);
+
+    expect((await helpers.getGoal({ goalId: goal.id, raw: true })).accounts[0]!.fixedAmount).toBe(1000.5);
   });
 });

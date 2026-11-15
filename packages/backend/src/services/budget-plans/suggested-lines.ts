@@ -5,7 +5,7 @@ import {
   BudgetSuggestionAnswers,
   BudgetSuggestionContext,
 } from '@bt/shared/types';
-import { getBaseCurrencyDecimals, getCurrencyDecimals, roundToCurrency } from '@common/lib/currency-precision';
+import { getBaseCurrencyDecimals, getCurrencyDecimals } from '@common/lib/currency-precision';
 import { requestContext } from '@common/request-context';
 import { Money, minorUnitsToApiDecimal } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
@@ -198,12 +198,7 @@ const writeLines = withTransaction(
         await BudgetAssignments.create({
           periodId: currentPeriod.id,
           lineId: line.id,
-          baselineAmount: await roundToCurrency({
-            money: Money.fromMinorUnits({ value: baselineMinor, decimals }),
-            userId,
-            currencyCode: plan.currencyCode,
-            mode: 'half-up',
-          }),
+          baselineAmount: Money.fromMinorUnits({ value: baselineMinor, decimals }),
         });
       }
     }

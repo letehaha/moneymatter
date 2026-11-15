@@ -6,7 +6,11 @@ import {
   type GoalInsights,
   type RecordId,
 } from '@bt/shared/types';
-import { getBaseCurrencyDecimals, getConversionDecimals } from '@common/lib/currency-precision';
+import {
+  type ConversionDecimals,
+  getBaseCurrencyDecimals,
+  getConversionDecimals,
+} from '@common/lib/currency-precision';
 import { type Money, minorUnitsToApiDecimal } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ExchangeRateUnavailableError, UnexpectedError, ValidationError } from '@js/errors';
@@ -97,6 +101,28 @@ export const loadHeldFixedAmounts = ({
     ],
   });
 
+/** Decimals of converting each of `currencyCodes` to the base currency, keyed by code. */
+export const loadConversionDecimals = async ({
+  userId,
+  currencyCodes,
+  baseCurrencyCode,
+}: {
+  userId: number;
+  currencyCodes: string[];
+  baseCurrencyCode: string;
+}): Promise<Map<string, ConversionDecimals>> =>
+  new Map(
+    await Promise.all(
+      [...new Set(currencyCodes)].map(
+        async (currencyCode) =>
+          [
+            currencyCode,
+            await getConversionDecimals({ userId, baseCode: currencyCode, quoteCode: baseCurrencyCode }),
+          ] as const,
+      ),
+    ),
+  );
+
 const sumOf = ({ rows }: { rows: { value: number }[] }) => rows.reduce((sum, row) => sum + row.value, 0);
 
 /**
@@ -172,17 +198,11 @@ export const loadGoalInsights = async ({
   const rateByFixedAccount = new Map(
     fixedAccounts.map((account) => [account.id, accountRates.get(account.currencyCode)!]),
   );
-  const decimalsByCurrency = new Map(
-    await Promise.all(
-      [...new Set([...goals.map((goal) => goal.currencyCode), ...accountRates.keys()])].map(
-        async (currencyCode) =>
-          [
-            currencyCode,
-            await getConversionDecimals({ userId, baseCode: currencyCode, quoteCode: baseCurrencyCode }),
-          ] as const,
-      ),
-    ),
-  );
+  const decimalsByCurrency = await loadConversionDecimals({
+    userId,
+    currencyCodes: [...goals.map((goal) => goal.currencyCode), ...accountRates.keys()],
+    baseCurrencyCode,
+  });
 
   // ponytail: today's rate for every month-end too; per-month rates if a foreign fixed amount's history matters
   const fixedToBase = ({ accountId, amount }: { accountId: RecordId; amount: Money }): number =>
@@ -279,9 +299,11 @@ export const loadGoalInsights = async ({
         targetAmount: toBase(goal.targetAmount),
         targetDate: goal.targetDate,
         plannedMonthly: goal.plannedMonthly ? toBase(goal.plannedMonthly) : null,
+        decimals: baseDecimals,
       };
+      const goalDecimals = decimalsByCurrency.get(goal.currencyCode)!.baseDecimals;
 
-      return [goal.id, { ...computeGoalProgress(input), input, rateToBase, baseCurrencyCode }];
+      return [goal.id, { ...computeGoalProgress(input), input, rateToBase, goalDecimals, baseCurrencyCode }];
     }),
   );
 };

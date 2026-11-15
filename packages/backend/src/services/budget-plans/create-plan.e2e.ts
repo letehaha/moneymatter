@@ -235,6 +235,37 @@ describe('Budget plan CRUD', () => {
     }
   });
 
+  it('takes an expected income with as many decimals as the plan currency carries and no more', async () => {
+    const created = await helpers.createBudgetPlan({ raw: true });
+    const planId = created.plan.id;
+
+    expect((await helpers.updateBudgetPlan({ planId, payload: { expectedIncome: 2500.555 } })).statusCode).toBe(
+      ERROR_CODES.ValidationError,
+    );
+    const updated = await helpers.updateBudgetPlan({ planId, payload: { expectedIncome: 2500.55 }, raw: true });
+    expect(updated.plan.expectedIncome).toBe(2500.55);
+
+    const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
+    await helpers.asUser({
+      cookies: kwdUser.cookies,
+      fn: async () => {
+        const kwdPlan = await helpers.createBudgetPlan({ raw: true });
+        const kwdPlanId = kwdPlan.plan.id;
+
+        const kwdUpdated = await helpers.updateBudgetPlan({
+          planId: kwdPlanId,
+          payload: { expectedIncome: 2500.555 },
+          raw: true,
+        });
+        expect(kwdUpdated.plan.expectedIncome).toBe(2500.555);
+        expect(
+          (await helpers.updateBudgetPlan({ planId: kwdPlanId, payload: { expectedIncome: 2500.5555 } })).statusCode,
+        ).toBe(ERROR_CODES.ValidationError);
+      },
+    });
+    expect((await helpers.getBudgetPlan({ planId, raw: true })).plan.expectedIncome).toBe(2500.55);
+  });
+
   it('soft-deletes a plan out of the list, out of GET and out of every write', async () => {
     const created = await helpers.createBudgetPlan({ raw: true });
     const planId = created.plan.id;

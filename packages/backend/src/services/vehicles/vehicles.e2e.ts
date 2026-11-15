@@ -95,6 +95,45 @@ describe('Vehicles', () => {
     });
   });
 
+  describe('POST /vehicles at the currency decimals', () => {
+    it('refuses a positive purchase price that rounds to nothing', async () => {
+      const usd = await helpers.createVehicle({ ...basePayload({ purchasePrice: 0.004 }), raw: false });
+      expect(usd.statusCode).toBe(422);
+
+      const jpy = await helpers.createVehicle({
+        ...basePayload({ currencyCode: 'JPY', purchasePrice: 0.4 }),
+        raw: false,
+      });
+      expect(jpy.statusCode).toBe(422);
+
+      expect(await helpers.getVehicles({ raw: true })).toEqual([]);
+    });
+
+    it.each([
+      // 1_234_567.4 rounds to 1_234_567; two years at 10% leave 999_999.27, held as 999_999.
+      { currencyCode: 'JPY', purchasePrice: 1_234_567.4, anchor: 1_234_567, value: 999_999 },
+      // 1234.5674 rounds to 1234.567; two years at 10% leave 999.99927, held as 999.999.
+      { currencyCode: 'KWD', purchasePrice: 1234.5674, anchor: 1234.567, value: 999.999 },
+    ])(
+      'depreciates a $currencyCode vehicle bought two years ago at the currency decimals',
+      async ({ currencyCode, purchasePrice, anchor, value }) => {
+        const vehicle = await helpers.createVehicle({
+          ...basePayload({
+            currencyCode,
+            purchasePrice,
+            purchaseDate: pastDateString({ yearsAgo: 2 }),
+            depreciationPreset: DEPRECIATION_PRESET.custom,
+            customAnnualRatePct: 10,
+          }),
+          raw: true,
+        });
+
+        expect(vehicle.purchasePrice).toBe(anchor);
+        expect(vehicle.account!.currentBalance).toBe(value);
+      },
+    );
+  });
+
   describe('GET /vehicles', () => {
     it('returns an empty list without vehicles, then the user’s vehicles once created', async () => {
       const emptyList = await helpers.getVehicles({ raw: true });

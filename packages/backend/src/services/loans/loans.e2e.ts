@@ -593,6 +593,31 @@ describe('Loans read API', () => {
   });
 
   describe('PATCH /loans/:id', () => {
+    it.each([
+      {
+        currencyCode: 'USD',
+        sent: { plannedPayment: 1500.555, minPayment: 99.994, currentBalance: 1234.565 },
+        stored: { plannedPayment: 1500.56, minPayment: 99.99, currentBalance: -1234.57 },
+      },
+      {
+        currencyCode: 'JPY',
+        sent: { plannedPayment: 1500.5, minPayment: 99.4, currentBalance: 1234.5 },
+        stored: { plannedPayment: 1501, minPayment: 99, currentBalance: -1235 },
+      },
+    ])('rounds the amounts of a $currencyCode loan half-up to its decimals', async ({ currencyCode, sent, stored }) => {
+      await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+      const created = await helpers.createLoan({
+        payload: helpers.buildCreateLoanPayload({ currencyCode }),
+        raw: true,
+      });
+
+      const updated = await helpers.updateLoan({ id: created.id, payload: sent, raw: true });
+
+      expect(updated.loanDetails.plannedPayment).toBe(stored.plannedPayment);
+      expect(updated.loanDetails.minPayment).toBe(stored.minPayment);
+      expect(updated.currentBalance).toBe(stored.currentBalance);
+    });
+
     it('appends rate_change, term_change and planned_payment_change events as those fields change', async () => {
       const created = await helpers.createLoan({
         payload: helpers.buildCreateLoanPayload(),

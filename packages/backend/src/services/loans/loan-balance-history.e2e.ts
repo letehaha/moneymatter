@@ -533,16 +533,27 @@ describe('Loan history at the loan currency decimals', () => {
   };
 
   it('keeps 3 decimals in the KWD loan-currency series and rounds the base rows to 2 in a 2-decimal book', async () => {
+    await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
+    await helpers.updateUserCurrency({ currency: { currencyCode: 'KWD', liveRateUpdate: false }, raw: true });
+    await helpers.editCurrencyExchangeRate({
+      pairs: [
+        { baseCode: 'KWD', quoteCode: global.BASE_CURRENCY_CODE, rate: 12.345 },
+        { baseCode: global.BASE_CURRENCY_CODE, quoteCode: 'KWD', rate: 0.081 },
+      ],
+    });
+
     const { series, balances } = await anchoredAndPaid({ currencyCode: 'KWD', owed: 1000.125, payment: 10.125 });
 
     expect(series).toEqual([
       { date: DAY_30_AGO, amount: -1000.125 },
       { date: DAY_20_AGO, amount: -990 },
     ]);
-    expect(balances).toHaveLength(2);
-    for (const row of balances) {
-      expect(row.amount).toBe(Number(row.amount.toFixed(2)));
-    }
+    // 1000.125 KWD at 12.345 is 12346.543125 AED, held as 12346.54; the 10.125 payment is
+    // 124.993125, held as 124.99.
+    expect(balances).toEqual([
+      { date: DAY_30_AGO, amount: -12346.54 },
+      { date: DAY_20_AGO, amount: -12221.55 },
+    ]);
   });
 
   it('keeps 3 decimals in the base-currency rows of a KWD-base book', async () => {

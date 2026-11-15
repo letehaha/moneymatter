@@ -70,6 +70,7 @@ const progress = (input: Partial<GoalMathInput>) =>
     targetAmount: 2400,
     targetDate: null,
     plannedMonthly: null,
+    decimals: 2,
     ...input,
   });
 
@@ -244,6 +245,27 @@ describe('computeGoalProgress', () => {
     });
   });
 
+  it('decides reached and the remainder at the base currency decimals', () => {
+    const balance = (amount: number) => account({ monthEndBalances: MONTHS.map(() => amount) });
+
+    // A 3-decimal goal 0.004 short is not reached; at 2 decimals the same gap would vanish.
+    expect(progress({ accounts: [balance(10)], targetAmount: 10.004, decimals: 3 })).toMatchObject({
+      status: 'no_date',
+      currentValue: 10,
+      remaining: 0.004,
+    });
+    expect(progress({ accounts: [balance(10)], targetAmount: 10.004, decimals: 2 }).status).toBe('reached');
+
+    // A 0-decimal share of 333.3 counts as 333.
+    expect(
+      progress({
+        accounts: [account({ monthEndBalances: MONTHS.map(() => 1000), sharePercent: 33.33 })],
+        targetAmount: 1000,
+        decimals: 0,
+      }),
+    ).toMatchObject({ currentValue: 333, remaining: 667 });
+  });
+
   it('subtracts the credit limit before the share, on every point', () => {
     const withLimit = account({ monthEndBalances: MONTHS.map(() => 1500), creditLimit: 1000, sharePercent: 50 });
     expect(progress({ accounts: [withLimit] })).toMatchObject({
@@ -259,20 +281,27 @@ describe('computeGoalProgress', () => {
 describe('neededMonthly', () => {
   it('divides by days left at day precision', () => {
     // 45 days = 1.478 months.
-    expect(neededMonthly({ remaining: 1000, today: TODAY, targetDate: inDays(45) })).toEqual({
+    expect(neededMonthly({ remaining: 1000, today: TODAY, targetDate: inDays(45), decimals: 2 })).toEqual({
       neededMonthly: 676.44,
       daysLeft: 45,
     });
   });
 
+  it('rounds the monthly need to the given decimals', () => {
+    const in45Days = { remaining: 1000, today: TODAY, targetDate: inDays(45) };
+
+    expect(neededMonthly({ ...in45Days, decimals: 0 }).neededMonthly).toBe(676);
+    expect(neededMonthly({ ...in45Days, decimals: 3 }).neededMonthly).toBe(676.444);
+  });
+
   it('moves smoothly across a month boundary', () => {
-    const before = neededMonthly({ remaining: 1000, today: TODAY, targetDate: inDays(62) }).neededMonthly!;
-    const after = neededMonthly({ remaining: 1000, today: TODAY, targetDate: inDays(61) }).neededMonthly!;
+    const before = neededMonthly({ remaining: 1000, today: TODAY, targetDate: inDays(62), decimals: 2 }).neededMonthly!;
+    const after = neededMonthly({ remaining: 1000, today: TODAY, targetDate: inDays(61), decimals: 2 }).neededMonthly!;
     expect(after - before).toBeLessThan(10);
   });
 
   it('asks for the whole remainder under one month left', () => {
-    expect(neededMonthly({ remaining: 1000, today: TODAY, targetDate: inDays(20) })).toEqual({
+    expect(neededMonthly({ remaining: 1000, today: TODAY, targetDate: inDays(20), decimals: 2 })).toEqual({
       neededMonthly: 1000,
       daysLeft: 20,
     });
@@ -281,9 +310,16 @@ describe('neededMonthly', () => {
 
 describe('etaMonths', () => {
   it('rounds whole months up without float noise', () => {
-    expect(etaMonths({ remaining: 11, pace: 1 })).toBe(11);
-    expect(etaMonths({ remaining: 1.1, pace: 0.1 })).toBe(11);
-    expect(etaMonths({ remaining: 1201, pace: 100 })).toBe(13);
+    expect(etaMonths({ remaining: 11, pace: 1, decimals: 2 })).toBe(11);
+    expect(etaMonths({ remaining: 1.1, pace: 0.1, decimals: 2 })).toBe(11);
+    expect(etaMonths({ remaining: 1201, pace: 100, decimals: 2 })).toBe(13);
+  });
+
+  it('compares the remainder and the pace at the given decimals', () => {
+    expect(etaMonths({ remaining: 0.011, pace: 0.001, decimals: 3 })).toBe(11);
+    expect(etaMonths({ remaining: 0.004, pace: 1, decimals: 2 })).toBe(0);
+    expect(etaMonths({ remaining: 0.004, pace: 1, decimals: 3 })).toBe(1);
+    expect(etaMonths({ remaining: 100, pace: 0.4, decimals: 0 })).toBeNull();
   });
 });
 
@@ -295,10 +331,17 @@ describe('median', () => {
 });
 
 describe('toGoalCurrency', () => {
-  it('converts to cents and passes null through', () => {
-    expect(toGoalCurrency({ amount: 100, rateToBase: 3 })).toBe(33.33);
-    expect(toGoalCurrency({ amount: 2203.5, rateToBase: 3.6725 })).toBe(600);
-    expect(toGoalCurrency({ amount: null, rateToBase: 3 })).toBeNull();
+  it("converts to the goal currency's decimals and passes null through", () => {
+    expect(toGoalCurrency({ amount: 100, rateToBase: 3, decimals: 2 })).toBe(33.33);
+    expect(toGoalCurrency({ amount: 2203.5, rateToBase: 3.6725, decimals: 2 })).toBe(600);
+    expect(toGoalCurrency({ amount: null, rateToBase: 3, decimals: 2 })).toBeNull();
+  });
+
+  it('rounds once at 0 and at 3 decimals', () => {
+    expect(toGoalCurrency({ amount: 100, rateToBase: 3, decimals: 0 })).toBe(33);
+    // 101.495 straight to whole units, not through 101.50 to 102.
+    expect(toGoalCurrency({ amount: 101.495, rateToBase: 1, decimals: 0 })).toBe(101);
+    expect(toGoalCurrency({ amount: 100, rateToBase: 3, decimals: 3 })).toBe(33.333);
   });
 });
 
@@ -309,6 +352,7 @@ const accountValue = (params: Partial<Parameters<typeof accountGoalValue>[0]> & 
     fixedAmount: null,
     fixedAhead: 0,
     fixedOthers: 0,
+    decimals: 2,
     ...params,
   });
 
@@ -317,6 +361,12 @@ describe('accountGoalValue', () => {
     expect(accountValue({ balance: 1500, creditLimit: 1000, sharePercent: 50 })).toBe(250);
     expect(accountValue({ balance: 500, creditLimit: 1000, sharePercent: 50 })).toBe(0);
     expect(accountValue({ balance: 0.1, sharePercent: 33.33 })).toBe(0.03);
+  });
+
+  it('counts at the given decimals', () => {
+    expect(accountValue({ balance: 0.1, sharePercent: 33.33, decimals: 3 })).toBe(0.033);
+    expect(accountValue({ balance: 1000, sharePercent: 33.33, decimals: 0 })).toBe(333);
+    expect(accountValue({ balance: 10.004, fixedAmount: 10.004, decimals: 3 })).toBe(10.004);
   });
 
   it('gives a fixed amount what the fixed amounts ahead of it leave, up to itself', () => {

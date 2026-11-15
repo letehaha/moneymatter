@@ -32,9 +32,10 @@ import { loadGroups } from './line-groups';
 import { ensurePeriods, loadLines } from './periods/ensure-periods';
 import { ownerCategories } from './validate-line-categories';
 
-const poolToApi = ({ pool, decimals }: { pool: BudgetPlanPool; decimals: number }): BudgetPlanPool => {
-  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
+/** Minor units at the plan currency's decimals to an API decimal. */
+type ToDecimal = (value: number) => number;
 
+const poolToApi = ({ pool, toDecimal }: { pool: BudgetPlanPool; toDecimal: ToDecimal }): BudgetPlanPool => {
   return {
     readyToAssign: toDecimal(pool.readyToAssign),
     committedLater: toDecimal(pool.committedLater),
@@ -146,13 +147,12 @@ const evaluateGoals = ({
 const goalsSummary = ({
   plan,
   asks,
-  decimals,
+  toDecimal,
 }: {
   plan: BudgetPlans;
   asks: Map<string, GoalEvaluation>;
-  decimals: number;
+  toDecimal: ToDecimal;
 }): BudgetPlanGoalsSummary => {
-  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
   const results = [...asks.entries()];
   return {
     count: results.length,
@@ -178,16 +178,15 @@ const nextCoverage = ({
   history,
   goals,
   nextReadyToAssign,
-  decimals,
+  toDecimal,
 }: {
   plan: BudgetPlans;
   next: FoldedPeriodView;
   history: FoldedPeriodView[];
   goals: Map<string, LineGoal>;
   nextReadyToAssign: number;
-  decimals: number;
+  toDecimal: ToDecimal;
 }): BudgetPlanCoverage => {
-  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
   const asks = evaluateGoals({ plan, view: next, views: history, goals, assignedSetAside: false });
   const recent = history.slice(-HISTORY_PERIODS);
 
@@ -225,12 +224,13 @@ const goalToApi = ({
   goal,
   result,
   decimals,
+  toDecimal,
 }: {
   goal: LineGoal;
   result: GoalEvaluation;
   decimals: number;
+  toDecimal: ToDecimal;
 }): BudgetPlanPeriodViewLineGoal => {
-  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
   const { lineId: _lineId, snoozedPeriodStart: _snoozedPeriodStart, ...settings } = goalSpecToApi({ goal, decimals });
   return {
     ...settings,
@@ -264,6 +264,7 @@ const toApi = ({
   goalsSummary: summary,
   coverage,
   decimals,
+  toDecimal,
 }: {
   view: FoldedPeriodView;
   groups: BudgetPlanLineGroup[];
@@ -276,9 +277,8 @@ const toApi = ({
   goalsSummary: BudgetPlanGoalsSummary | null;
   coverage: BudgetPlanCoverage | null;
   decimals: number;
+  toDecimal: ToDecimal;
 }): BudgetPlanPeriodView => {
-  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
-
   return {
     period: view.period,
     header: {
@@ -302,31 +302,23 @@ const toApi = ({
       available: toDecimal(line.available),
       carryPolicy: line.carryPolicy,
       goal: asks.has(line.lineId)
-        ? goalToApi({ goal: goals.get(line.lineId)!, result: asks.get(line.lineId)!, decimals })
+        ? goalToApi({ goal: goals.get(line.lineId)!, result: asks.get(line.lineId)!, decimals, toDecimal })
         : null,
     })),
     unbudgeted: view.unbudgeted.map((entry) => ({
       categoryId: entry.categoryId,
       activity: toDecimal(entry.activity),
     })),
-    pool: pool && poolToApi({ pool, decimals }),
+    pool: pool && poolToApi({ pool, toDecimal }),
     goals: summary,
     coverage,
   };
 };
 
-const loadGoals = async ({
-  planId,
-  decimals,
-}: {
-  planId: RecordId;
-  decimals: number;
-}): Promise<Map<string, LineGoal>> => {
-  const rows = await BudgetLineGoals.findAll({
+const loadGoalRows = ({ planId }: { planId: RecordId }): Promise<BudgetLineGoals[]> =>
+  BudgetLineGoals.findAll({
     include: [{ model: BudgetLines, where: { planId }, attributes: [] }],
   });
-  return new Map(rows.map((row) => [row.lineId, toGoalSpec({ row, decimals })]));
-};
 
 /**
  * Everything `foldPlan` needs for the whole plan, periods ensured through today, plus the plan
@@ -381,9 +373,14 @@ export const getPeriodView = async ({
   const plan = await findPlan({ planId, userId });
 
   const today = toUtcDateString(new Date());
-  const [foldInput, groups] = await Promise.all([loadFoldInput({ plan, today }), loadGroups({ planId: plan.id })]);
+  const [foldInput, groups, goalRows] = await Promise.all([
+    loadFoldInput({ plan, today }),
+    loadGroups({ planId: plan.id }),
+    loadGoalRows({ planId: plan.id }),
+  ]);
   const { decimals } = foldInput;
-  const goals = await loadGoals({ planId: plan.id, decimals });
+  const toDecimal: ToDecimal = (value) => minorUnitsToApiDecimal({ value, decimals });
+  const goals = new Map(goalRows.map((row) => [row.lineId, toGoalSpec({ row, decimals })]));
   const index = foldInput.periods.findIndex((period) => period.id === periodId);
   if (index === -1) {
     throw new NotFoundError({
@@ -406,7 +403,7 @@ export const getPeriodView = async ({
           history: views.slice(0, index + 1),
           goals,
           nextReadyToAssign: poolResult.nextReadyToAssign,
-          decimals,
+          toDecimal,
         })
       : null;
 
@@ -418,8 +415,9 @@ export const getPeriodView = async ({
     poolAssigned: poolResult && new Map(explicitViews[index]!.lines.map((line) => [line.lineId, line.assigned])),
     goals,
     asks,
-    goalsSummary: goals.size ? goalsSummary({ plan, asks, decimals }) : null,
+    goalsSummary: goals.size ? goalsSummary({ plan, asks, toDecimal }) : null,
     coverage,
     decimals,
+    toDecimal,
   });
 };

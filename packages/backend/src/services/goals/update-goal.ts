@@ -36,12 +36,23 @@ const updateGoalImpl = withTransaction(
       await assertGoalCurrencyConvertible({ userId, currencyCode });
     }
 
-    // Sent amounts are in the goal's (possibly new) currency and round half-up to its decimals.
-    const round = ({ amount }: { amount: number }) =>
-      roundGoalAmount({ money: Money.fromDecimal(amount), userId, currencyCode: currencyCode ?? goal.currencyCode });
+    // Amounts are in the goal's (possibly new) currency and round half-up to its decimals. A
+    // currency change re-rounds the stored amounts too, so none keeps more decimals than it carries.
+    const round = ({ money }: { money: Money }) =>
+      roundGoalAmount({ money, userId, currencyCode: currencyCode ?? goal.currencyCode });
+    const sentOrRestated = <T extends Money | null>({ sent, stored }: { sent: T | undefined; stored: T }) =>
+      sent !== undefined ? sent : currencyChanged ? stored : undefined;
+    const nextTargetAmount = sentOrRestated({
+      sent: targetAmount === undefined ? undefined : Money.fromDecimal(targetAmount),
+      stored: goal.targetAmount,
+    });
+    const nextPlannedMonthly = sentOrRestated({
+      sent: plannedMonthly == null ? plannedMonthly : Money.fromDecimal(plannedMonthly),
+      stored: goal.plannedMonthly,
+    });
     const amounts = {
-      targetAmount: targetAmount === undefined ? undefined : await round({ amount: targetAmount }),
-      plannedMonthly: plannedMonthly == null ? plannedMonthly : await round({ amount: plannedMonthly }),
+      targetAmount: nextTargetAmount === undefined ? undefined : await round({ money: nextTargetAmount }),
+      plannedMonthly: nextPlannedMonthly == null ? nextPlannedMonthly : await round({ money: nextPlannedMonthly }),
     };
 
     const nextStatus = status ?? goal.status;

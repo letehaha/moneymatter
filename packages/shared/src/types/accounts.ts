@@ -148,8 +148,8 @@ export interface AccountModel extends EntityLogoFields {
 }
 
 /**
- * Serialized account wire shape (DB → API): every monetary field is a decimal
- * (cents converted on the way out), `id`/`type`/`accountCategory` are plain
+ * Serialized account wire shape (DB → API): every monetary field is a decimal,
+ * `id`/`type`/`accountCategory` are plain
  * strings, and owner-only bank-link metadata is stripped for share recipients.
  * The single source of truth for both the backend serializer's return type and
  * the frontend loan/account response shapes, so the two can't drift.

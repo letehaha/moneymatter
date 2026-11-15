@@ -10,6 +10,7 @@ import { lockAccountRow } from '@services/accounts/lock-account-row';
 import { measureSpotRefBalance } from '@services/accounts/measure-spot-ref-balance';
 import { withTransaction } from '@services/common/with-transaction';
 import { getPostAnchorPaymentLegs } from '@services/loans/get-post-anchor-payment-legs';
+import { sumAtLoanDecimals } from '@services/loans/project-loan-overpay';
 import { replayLoanOutstanding } from '@services/loans/replay-loan-outstanding';
 import { Op } from 'sequelize';
 
@@ -25,18 +26,21 @@ const resolveSettledAt = ({
   anchorBalance,
   anchorDate,
   legs,
+  decimals,
 }: {
   anchorBalance: Money;
   /** yyyy-MM-dd anchor boundary. */
   anchorDate: string;
   legs: Transactions[];
+  /** Decimals of the loan currency; the walk adds at them, as the recompute does. */
+  decimals: number;
 }): string => {
-  if (!anchorBalance.isNegative()) return new Date(anchorDate).toISOString();
+  let cumulativeBalance = sumAtLoanDecimals({ amounts: [anchorBalance], decimals });
+  if (!cumulativeBalance.isNegative()) return new Date(anchorDate).toISOString();
 
   const sortedLegs = [...legs].toSorted((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-  let cumulativeBalance = anchorBalance;
   for (const leg of sortedLegs) {
-    cumulativeBalance = cumulativeBalance.add(leg.amount);
+    cumulativeBalance = sumAtLoanDecimals({ amounts: [cumulativeBalance, leg.amount], decimals });
     if (!cumulativeBalance.isNegative()) return new Date(leg.time).toISOString();
   }
   return new Date().toISOString();
@@ -93,24 +97,21 @@ const recomputeLoanBalanceImpl = async ({
     anchorDate,
   });
 
-  // The native legs are summed in minor units at the loan currency's decimals, the base-currency
-  // (ref) legs at the base currency's, so neither side is ever rounded to cents.
+  // The anchor and the native legs are summed in minor units at the loan currency's decimals, the
+  // base-currency (ref) ones at the base currency's.
   const [decimals, baseDecimals] = await Promise.all([
     getCurrencyDecimals({ userId: account.userId, code: account.currencyCode }),
     getBaseCurrencyDecimals({ userId: account.userId }),
   ]);
 
-  // Income legs move a negative liability balance toward zero, so they add.
-  let sumMinor = 0;
-  for (const leg of legs) {
-    sumMinor += leg.amount.toMinorUnits({ decimals });
-  }
-
   // Loan balances are stored negative (liability); income legs add toward zero.
   // A batch that overshoots the owed amount would push the balance positive
   // (credit), but a loan never carries credit — the outstanding balance is
   // floored at zero and the excess stays only on the cash-account expense legs.
-  const rawCurrentBalance = account.initialBalance.add(Money.fromMinorUnits({ value: sumMinor, decimals }));
+  const rawCurrentBalance = sumAtLoanDecimals({
+    amounts: [account.initialBalance, ...legs.map((leg) => leg.amount)],
+    decimals,
+  });
   const newCurrentBalance = rawCurrentBalance.isPositive() ? Money.zero() : rawCurrentBalance;
 
   // The base-currency outstanding is a spot measure of the native outstanding — the
@@ -158,7 +159,7 @@ const recomputeLoanBalanceImpl = async ({
   if (account.currentBalance.isNegative() && !newCurrentBalance.isNegative()) {
     const paidOffEvent: LoanEvent = {
       type: 'paid_off',
-      at: resolveSettledAt({ anchorBalance: account.initialBalance, anchorDate, legs }),
+      at: resolveSettledAt({ anchorBalance: account.initialBalance, anchorDate, legs, decimals }),
     };
     await loanDetails.update({ events: [...events, paidOffEvent] });
   }

@@ -44,16 +44,18 @@ export const replayLoanOutstanding = <TLeg extends { time: Date | string }>({
   }
 
   // Anchor point first (same-day payments fold in — the boundary is inclusive),
-  // then one cumulative point per later day with legs.
+  // then one cumulative point per later day with legs. The opening balance joins
+  // the walk at `decimals` too, so a stored anchor finer than its currency settles
+  // where the balance recompute does.
   const series: { date: string; balance: Money }[] = [];
-  let runningBalance = openingBalance;
+  const toBalance = (minor: number) => Money.fromMinorUnits({ value: minor, decimals });
+  let runningMinor: number = openingBalance.toMinorUnits({ decimals });
   if (!minorByDay.has(anchorDate)) {
-    series.push({ date: anchorDate, balance: runningBalance });
+    series.push({ date: anchorDate, balance: toBalance(runningMinor) });
   }
   for (const day of [...minorByDay.keys()].toSorted()) {
-    runningBalance = runningBalance.add(Money.fromMinorUnits({ value: minorByDay.get(day)!, decimals }));
-    if (runningBalance.isPositive()) runningBalance = Money.zero();
-    series.push({ date: day, balance: runningBalance });
+    runningMinor = Math.min(0, runningMinor + minorByDay.get(day)!);
+    series.push({ date: day, balance: toBalance(runningMinor) });
   }
 
   return series;
