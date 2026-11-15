@@ -38,6 +38,7 @@ import {
   assertPlannedStandalone,
   assertPlannedWriteAllowed,
 } from '../planned-matching/assert-planned-invariants';
+import { roundPositiveAmount } from '../round-positive-amount';
 import { manageSplits } from '../splits';
 import { linkTransactions } from '../transactions-linking';
 import { type UpdateTransactionParams } from '../types';
@@ -546,7 +547,14 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
     updateOppositeTxParams.amount = impliedDestinationAmount;
   }
 
-  if (updateOppositeTxParams.amount !== undefined) {
+  // An entered destination amount must stay positive; one mirrored from a zero base amount may be zero.
+  if (destinationAmount !== undefined) {
+    updateOppositeTxParams.amount = await roundPositiveAmount({
+      money: destinationAmount,
+      userId: oppositeTx.userId,
+      currencyCode: updateOppositeTxParams.currencyCode,
+    });
+  } else if (updateOppositeTxParams.amount !== undefined) {
     updateOppositeTxParams.amount = await roundToCurrency({
       money: updateOppositeTxParams.amount,
       userId: oppositeTx.userId,

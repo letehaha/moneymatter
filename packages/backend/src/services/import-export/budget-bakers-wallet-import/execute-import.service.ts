@@ -16,6 +16,7 @@ import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import { decimalsOfAccount, getAccountDecimals } from '@services/import-export/core/duplicates/get-account-decimals';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { ImportJobError } from '@services/import-export/core/queue/import-job-error';
@@ -222,6 +223,12 @@ async function executeBudgetBakersWalletImportImpl({
   });
   summary.accountsCreated = accountsCreated;
 
+  // Every amount is rounded to its account currency's decimals before it is written and tallied, so
+  // the tally that `finalize` undoes is what the rows stored.
+  const decimalsByAccountId = await getAccountDecimals({ accountIds: Array.from(new Set(accountIdByName.values())) });
+  const roundForAccount = ({ accountId, amount }: { accountId: string; amount: number }) =>
+    Money.fromDecimal(amount).round(decimalsOfAccount({ decimalsByAccountId, accountId }));
+
   // Snapshot every linked account BEFORE any row is written: balance-before +
   // boundary day (day of its latest existing transaction). Phase 7 reconciles
   // each linked account against this snapshot. Created accounts are excluded —
@@ -311,7 +318,7 @@ async function executeBudgetBakersWalletImportImpl({
       // a zero-amount row has no sign (`-0 === 0`) yet still has a real
       // Expense/Income type the user expects to keep.
       const transactionType = tx.type;
-      const amount = Money.fromDecimal(Math.abs(tx.amount));
+      const amount = roundForAccount({ accountId, amount: Math.abs(tx.amount) });
 
       // Out-of-wallet legs carry no real category and model money leaving/entering
       // the tracked set of accounts, so they import as `transfer_out_wallet` with
@@ -445,10 +452,13 @@ async function executeBudgetBakersWalletImportImpl({
         });
       }
 
+      const sourceAmount = roundForAccount({ accountId: sourceAccountId, amount: xfer.sourceAmount });
+      const destinationAmount = roundForAccount({ accountId: destinationAccountId, amount: xfer.destinationAmount });
+
       const [, destinationLeg] = await createTransaction({
         userId,
         accountId: sourceAccountId,
-        amount: Money.fromDecimal(xfer.sourceAmount),
+        amount: sourceAmount,
         commissionRate: Money.zero(),
         note: xfer.note,
         time: new Date(xfer.date),
@@ -456,7 +466,7 @@ async function executeBudgetBakersWalletImportImpl({
         accountType: ACCOUNT_TYPES.system,
         transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
         destinationAccountId,
-        destinationAmount: Money.fromDecimal(xfer.destinationAmount),
+        destinationAmount,
         externalData: { importDetails },
       });
 
@@ -478,7 +488,7 @@ async function executeBudgetBakersWalletImportImpl({
         rowIso: xfer.date,
         ...signedRowContribution({
           isIncome: false,
-          amount: Money.fromDecimal(xfer.sourceAmount),
+          amount: sourceAmount,
         }),
       });
       reconciler.recordRow({
@@ -486,7 +496,7 @@ async function executeBudgetBakersWalletImportImpl({
         rowIso: xfer.date,
         ...signedRowContribution({
           isIncome: true,
-          amount: Money.fromDecimal(xfer.destinationAmount),
+          amount: destinationAmount,
         }),
       });
 

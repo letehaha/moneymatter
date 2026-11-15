@@ -36,6 +36,16 @@ const readBalanceRow = async ({ accountId, date }: { accountId: string; date: Da
   return row ? Number(row.cents) : null;
 };
 
+/** The stored DECIMAL as written, for assertions on the exact value at the base currency's decimals. */
+const readBalanceAmount = async ({ accountId, date }: { accountId: string; date: Date }): Promise<Money | null> => {
+  const [row] = (await connection.sequelize.query(
+    `SELECT "amount" FROM "Balances" WHERE "accountId" = :accountId AND "date" = :date`,
+    { type: QueryTypes.SELECT, replacements: { accountId, date: dayKey(date) } },
+  )) as { amount: string }[];
+
+  return row ? Money.fromDecimal(row.amount) : null;
+};
+
 const LUNCHFLOW_EXTERNAL_ACCOUNT_ID = 1001;
 const BANK_BALANCE = 1000.5;
 
@@ -93,7 +103,9 @@ describe('Nightly balance revalue sweep', () => {
 
   it('re-values today for a foreign-currency bank account the provider did not sync', async () => {
     const today = new Date();
-    await helpers.seedUsdExchangeRates({ date: today, ratesPerUsd: { AED: helpers.AED_PER_USD } });
+    // 1000.5 USD × 2.25 = 2251.125 AED: a tie at the base currency's 2 decimals, which half-even
+    // rounds down to 2251.12 where half-up would give 2251.13 and no rounding would keep 2251.125.
+    await helpers.seedUsdExchangeRates({ date: today, ratesPerUsd: { AED: 2.25 } });
 
     const account = await connectBankAccount({ currency: 'USD' });
     await writeBalanceRow({ accountId: account.id, date: today, cents: CORRUPTED_CENTS });
@@ -102,9 +114,8 @@ describe('Nightly balance revalue sweep', () => {
 
     expect(result.totalProcessed).toBe(1);
     expect(result.successfulUpdates).toBe(1);
-    expect(await readBalanceRow({ accountId: account.id, date: today })).toBe(
-      account.currentBalance.toCents() * helpers.AED_PER_USD,
-    );
+    expect(account.currentBalance.toNumber()).toBe(BANK_BALANCE);
+    expect((await readBalanceAmount({ accountId: account.id, date: today }))?.toDecimalString(3)).toBe('2251.120');
   });
 
   it('leaves a bank account in the base currency alone', async () => {

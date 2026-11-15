@@ -348,4 +348,125 @@ describe('Currency precision', () => {
       expect(Number(updated.amount)).toBe(21);
     });
   });
+  describe('a positive amount that rounds to zero', () => {
+    const createUsdToJpyTransfer = async ({ destinationAmount }: { destinationAmount: number }) => {
+      const usdAccount = await createAccountIn({ currencyCode: 'USD', initialBalance: 100 });
+      const jpyAccount = await createAccountIn({ currencyCode: 'JPY' });
+
+      const response = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({
+            accountId: usdAccount.id,
+            amount: 10,
+            transactionType: TRANSACTION_TYPES.expense,
+          }),
+          transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+          destinationAmount,
+          destinationAccountId: jpyAccount.id,
+        },
+      });
+
+      return { response, usdAccount, jpyAccount };
+    };
+
+    it('rejects a transfer whose destination amount rounds to zero in its currency', async () => {
+      const { response, jpyAccount } = await createUsdToJpyTransfer({ destinationAmount: 0.4 });
+
+      expect(response.statusCode).toBe(422);
+      expect(await helpers.getTransactions({ raw: true })).toHaveLength(0);
+      expect(Number((await helpers.getAccount({ id: jpyAccount.id, raw: true })).currentBalance)).toBe(0);
+    });
+
+    it('rejects a transfer edit whose destination amount rounds to zero, leaving the leg as it was', async () => {
+      const { response, usdAccount, jpyAccount } = await createUsdToJpyTransfer({ destinationAmount: 1500 });
+      expect(response.statusCode).toBe(200);
+      const outLeg = (await helpers.getTransactions({ raw: true })).find((tx) => tx.accountId === usdAccount.id)!;
+
+      const edit = await helpers.updateTransaction({ id: outLeg.id, payload: { destinationAmount: 0.4 } });
+
+      expect(edit.statusCode).toBe(422);
+      expect(Number((await helpers.getAccount({ id: jpyAccount.id, raw: true })).currentBalance)).toBe(1500);
+    });
+  });
+
+  describe('account edits', () => {
+    /** A 0-decimal account as the decimal migration leaves it, from 100040 cents: a sub-unit digit on each balance. */
+    const createMigratedJpyAccount = async () => {
+      const account = await createAccountIn({ currencyCode: 'JPY', initialBalance: 1000 });
+      await connection.sequelize.query(
+        `UPDATE "Accounts" SET "initialBalance" = 1000.4, "currentBalance" = 1000.4 WHERE "id" = :id`,
+        { replacements: { id: account.id } },
+      );
+      return account;
+    };
+
+    it('keeps a stored opening balance that has more decimals than its currency on a rename', async () => {
+      const account = await createMigratedJpyAccount();
+
+      await helpers.updateAccount({ id: account.id, payload: { name: 'Renamed' }, raw: true });
+
+      const updated = await helpers.getAccount({ id: account.id, raw: true });
+      expect(updated.name).toBe('Renamed');
+      expect(Number(updated.initialBalance)).toBe(1000.4);
+      expect(Number(updated.currentBalance)).toBe(1000.4);
+    });
+
+    it('rounds an edited balance and credit limit to a 3-decimal currency', async () => {
+      const account = await createAccountIn({ currencyCode: 'KWD', initialBalance: 10 });
+
+      await helpers.updateAccount({
+        id: account.id,
+        payload: { currentBalance: 12.3456, creditLimit: 500.0005 },
+        raw: true,
+      });
+
+      const updated = await helpers.getAccount({ id: account.id, raw: true });
+      expect(Number(updated.currentBalance)).toBe(12.346);
+      expect(Number(updated.initialBalance)).toBe(12.346);
+      expect(Number(updated.creditLimit)).toBe(500.001);
+    });
+
+    it('rounds an edited balance and credit limit to a currency without minor units', async () => {
+      const account = await createAccountIn({ currencyCode: 'JPY', initialBalance: 1000 });
+
+      await helpers.updateAccount({
+        id: account.id,
+        payload: { currentBalance: 1500.5, creditLimit: 20000.4 },
+        raw: true,
+      });
+
+      const updated = await helpers.getAccount({ id: account.id, raw: true });
+      expect(Number(updated.currentBalance)).toBe(1501);
+      expect(Number(updated.initialBalance)).toBe(1501);
+      expect(Number(updated.creditLimit)).toBe(20000);
+    });
+
+    it('reports the balance a balance adjustment leaves on a migrated account', async () => {
+      const account = await createMigratedJpyAccount();
+
+      const result = await helpers.balanceAdjustment({
+        id: account.id,
+        payload: { targetBalance: asDecimal(2000) },
+        raw: true,
+      });
+
+      const stored = await helpers.getAccount({ id: account.id, raw: true });
+      expect(result.newBalance).toBe(Number(stored.currentBalance));
+      expect(Number(result.transaction!.amount)).toBe(1000);
+    });
+
+    it('books no adjustment when the difference to the target rounds to zero', async () => {
+      const account = await createMigratedJpyAccount();
+
+      const result = await helpers.balanceAdjustment({
+        id: account.id,
+        payload: { targetBalance: asDecimal(1000) },
+        raw: true,
+      });
+
+      expect(result.transaction).toBeNull();
+      expect(await helpers.getTransactions({ raw: true })).toHaveLength(0);
+      expect(Number((await helpers.getAccount({ id: account.id, raw: true })).currentBalance)).toBe(1000.4);
+    });
+  });
 });

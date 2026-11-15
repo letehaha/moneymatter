@@ -10,6 +10,7 @@ import {
 } from '@bt/shared/types';
 import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money, moneyToApiDecimalOrNull } from '@common/types/money';
+import { UnexpectedError } from '@js/errors';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
 import { resolveManualLogoFields } from '@services/brand-logos';
@@ -194,17 +195,21 @@ export const updateSubscription = withTransaction(
     // expectedAmount leaves the stored amount untouched.
     const { expectedAmount: expectedAmountInput, ...restFields } = fields;
     const expectedCurrencyCode = fields.expectedCurrencyCode ?? subscription.expectedCurrencyCode;
+    // `assertAmountCurrencyConsistent` above already rejects an amount without a currency.
+    if (expectedAmountInput != null && !expectedCurrencyCode) {
+      throw new UnexpectedError({ message: 'A subscription amount reached the write without a currency' });
+    }
     await subscription.update({
       ...restFields,
       ...(expectedAmountInput !== undefined
         ? {
             // Stored at the decimals of the currency it is billed in.
             expectedAmount:
-              expectedAmountInput != null && expectedCurrencyCode
+              expectedAmountInput != null
                 ? await roundToCurrency({
                     money: Money.fromDecimal(expectedAmountInput),
                     userId,
-                    currencyCode: expectedCurrencyCode,
+                    currencyCode: expectedCurrencyCode!,
                     mode: 'half-up',
                   })
                 : null,

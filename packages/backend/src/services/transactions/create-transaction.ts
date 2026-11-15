@@ -8,7 +8,6 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
-import { roundToCurrency } from '@common/lib/currency-precision';
 import { roundTransactionMoney } from '@common/lib/round-transaction-money';
 import { UnwrapPromise } from '@common/types';
 import { Money } from '@common/types/money';
@@ -48,6 +47,7 @@ import { createSingleRefund } from '../tx-refunds/create-single-refund.service';
 import { syncPaymentLegs } from './payment-legs';
 import { tryMergeIntoPlanned } from './planned-matching';
 import { assertPlannedCreateAllowed } from './planned-matching/assert-planned-invariants';
+import { roundPositiveAmount } from './round-positive-amount';
 import { manageSplits } from './splits';
 import { linkTransactions } from './transactions-linking';
 import type { CreateTransactionParams, UpdateTransactionParams } from './types';
@@ -224,11 +224,10 @@ export const createOppositeTransaction = async (params: CreateOppositeTransactio
   if (!destAccount) {
     throw new NotFoundError({ message: t({ key: 'accounts.accountNotFoundForTransaction' }) });
   }
-  const destinationAmount = await roundToCurrency({
+  const destinationAmount = await roundPositiveAmount({
     money: requestedDestinationAmount,
     userId: destOwnerUserId,
     currencyCode: destAccount.currencyCode,
-    mode: 'half-up',
   });
   if (destAccount.type !== ACCOUNT_TYPES.system) {
     throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });

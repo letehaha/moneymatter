@@ -1,4 +1,5 @@
 import type { RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import type { Money } from '@common/types/money';
 import { normalizePayeeName } from '@services/payees/normalize-name';
 
 export interface StuckPendingMatchRow {
@@ -6,7 +7,7 @@ export interface StuckPendingMatchRow {
   accountId: RecordId;
   transactionType: TRANSACTION_TYPES;
   time: Date;
-  amountCents: number;
+  amount: Money;
   payeeId: string | null;
   merchantName: string | null;
 }
@@ -23,6 +24,8 @@ const isSamePayee = ({ a, b }: { a: StuckPendingMatchRow; b: StuckPendingMatchRo
   return merchant !== null && merchant === normalizeMerchant({ name: b.merchantName });
 };
 
+const compareMoney = ({ a, b }: { a: Money; b: Money }) => (a.lessThan(b) ? -1 : a.greaterThan(b) ? 1 : 0);
+
 /** Best booked candidate per stuck pending row, one-to-one. Returns pendingId → candidateId. */
 export const matchStuckPending = ({
   pending,
@@ -31,7 +34,7 @@ export const matchStuckPending = ({
   pending: StuckPendingMatchRow[];
   pool: StuckPendingMatchRow[];
 }): Map<RecordId, RecordId> => {
-  const pairs: { pendingId: RecordId; candidateId: RecordId; amountDiff: number; timeDiff: number }[] = [];
+  const pairs: { pendingId: RecordId; candidateId: RecordId; amountDiff: Money; timeDiff: number }[] = [];
 
   for (const p of pending) {
     for (const c of pool) {
@@ -39,13 +42,13 @@ export const matchStuckPending = ({
       if (c.accountId !== p.accountId || c.transactionType !== p.transactionType) continue;
       if (timeDiff < 0 || timeDiff > CANDIDATE_WINDOW_MS) continue;
       if (!isSamePayee({ a: p, b: c })) continue;
-      pairs.push({ pendingId: p.id, candidateId: c.id, amountDiff: Math.abs(c.amountCents - p.amountCents), timeDiff });
+      pairs.push({ pendingId: p.id, candidateId: c.id, amountDiff: c.amount.subtract(p.amount).abs(), timeDiff });
     }
   }
 
   pairs.sort(
     (a, b) =>
-      a.amountDiff - b.amountDiff ||
+      compareMoney({ a: a.amountDiff, b: b.amountDiff }) ||
       a.timeDiff - b.timeDiff ||
       a.pendingId.localeCompare(b.pendingId) ||
       a.candidateId.localeCompare(b.candidateId),

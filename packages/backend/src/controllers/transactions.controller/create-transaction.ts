@@ -12,7 +12,7 @@ const schema = z.object({
 export default createController(schema, async ({ user, body }) => {
   const { id: userId } = user;
 
-  // Deserialize: convert decimal amounts to cents
+  // Deserialize: API decimals to Money amounts
   const params = deserializeCreateTransaction(body, userId);
 
   // TODO: Add validations
@@ -20,7 +20,7 @@ export default createController(schema, async ({ user, body }) => {
 
   const transactions = await transactionsService.createTransaction(params);
 
-  // Serialize: convert cents to decimal for API response
+  // Serialize: Money amounts to API decimals
   // createTransaction returns [baseTx, oppositeTx?] tuple
   return { data: serializeTransactionTuple(transactions) };
 });

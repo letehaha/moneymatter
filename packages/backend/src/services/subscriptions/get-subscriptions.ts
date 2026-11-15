@@ -3,7 +3,7 @@ import {
   SUBSCRIPTION_PERIOD_STATUSES,
   type SubscriptionPeriodStatus,
 } from '@bt/shared/types';
-import { centsToApiDecimalOrNull } from '@common/types/money';
+import { type Money, moneyToApiDecimalOrNull } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import Accounts from '@models/accounts.model';
 import Categories from '@models/categories.model';
@@ -70,7 +70,7 @@ interface SubscriptionBase extends Pick<
   | 'createdAt'
   | 'updatedAt'
 > {
-  /** Cents-backed Money on the model, surfaced here as a decimal number. */
+  /** Money on the model, surfaced here as a decimal number. */
   expectedAmount: number | null;
   tagIds: string[];
   account: SubscriptionAccount | null;
@@ -194,12 +194,13 @@ export const getSubscriptions = async ({
   await backfillLogosForUnresolved({ subscriptions });
 
   const mapped = subscriptions.map((s) => {
-    const plain = s.toJSON() as unknown as Omit<SubscriptionBase, 'tagIds'> & {
+    const plain = s.toJSON() as unknown as Omit<SubscriptionBase, 'tagIds' | 'expectedAmount'> & {
+      expectedAmount: Money | null;
       linkedTransactionsCount: number | string | null;
     };
     return {
       ...plain,
-      expectedAmount: centsToApiDecimalOrNull(plain.expectedAmount),
+      expectedAmount: moneyToApiDecimalOrNull(plain.expectedAmount),
       linkedTransactionsCount: Number(plain.linkedTransactionsCount ?? 0),
     };
   });
@@ -336,7 +337,8 @@ export const getSubscriptionById = async ({
 
   // toJSON() is untyped; describe the loaded shape (Money fields still boxed,
   // join-table metadata nested under SubscriptionTransactions) so the rest is typed.
-  const raw = subscription.toJSON() as unknown as Omit<SubscriptionBase, 'tagIds'> & {
+  const raw = subscription.toJSON() as unknown as Omit<SubscriptionBase, 'tagIds' | 'expectedAmount'> & {
+    expectedAmount: Money | null;
     transactions?: Array<
       TransactionsAttributes & {
         SubscriptionTransactions: Pick<SubscriptionTransactions, 'matchSource' | 'matchedAt' | 'status'>;
@@ -377,7 +379,7 @@ export const getSubscriptionById = async ({
 
   return {
     ...raw,
-    expectedAmount: centsToApiDecimalOrNull(raw.expectedAmount),
+    expectedAmount: moneyToApiDecimalOrNull(raw.expectedAmount),
     tagIds: await getSubscriptionTagIds({ subscriptionId: id }),
     transactions,
     nextExpectedDate,

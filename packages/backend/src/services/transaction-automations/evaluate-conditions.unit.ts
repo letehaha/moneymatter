@@ -150,6 +150,33 @@ describe('evaluateConditions', () => {
       ).resolves.toBe(false);
     });
 
+    it('compares a 3-decimal amount at its own precision', async () => {
+      const ctx = makeCtx({
+        transaction: {
+          amount: Money.fromDecimal('-1.234'),
+          refAmount: Money.fromDecimal('-14.75'),
+          currencyCode: 'KWD',
+        },
+      });
+      const currency = { mode: 'specific', code: 'KWD' } as const;
+
+      await expect(
+        matches({ ctx, conditions: all([{ field: 'amount', operator: 'equals', value: { min: 1.234 }, currency }]) }),
+      ).resolves.toBe(true);
+      await expect(
+        matches({ ctx, conditions: all([{ field: 'amount', operator: 'equals', value: { min: 1.23 }, currency }]) }),
+      ).resolves.toBe(false);
+      await expect(
+        matches({ ctx, conditions: all([{ field: 'amount', operator: 'gte', value: { min: 1.235 }, currency }]) }),
+      ).resolves.toBe(false);
+      await expect(
+        matches({
+          ctx,
+          conditions: all([{ field: 'amount', operator: 'between', value: { min: 1.231, max: 1.233 }, currency }]),
+        }),
+      ).resolves.toBe(false);
+    });
+
     it('base mode compares refAmount', async () => {
       const ctx = makeCtx();
       const currency = { mode: 'base' } as const;

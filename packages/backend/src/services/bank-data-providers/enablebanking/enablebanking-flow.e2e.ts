@@ -295,6 +295,90 @@ describe('Enable Banking Data Provider E2E', () => {
     });
   });
 
+  describe('accounts in currencies without two decimals', () => {
+    const connectAccountIn = async ({
+      currency,
+      balance,
+      transactionAmount,
+    }: {
+      currency: string;
+      balance: string;
+      transactionAmount: string;
+    }) => {
+      const today = new Date().toISOString().slice(0, 10);
+      helpers.enablebanking.setFixedTransactions([
+        {
+          entryReference: `precision_${currency}`,
+          amount: transactionAmount,
+          currency,
+          isExpense: true,
+          bookingDate: today,
+          transactionDate: today,
+          balanceAfter: balance,
+        },
+      ]);
+      global.mswMockServer.use(
+        http.get('https://api.enablebanking.com/accounts/:accountId/details', ({ params }) =>
+          HttpResponse.json({ ...getMockedAccountDetails(params.accountId as string), currency }),
+        ),
+        http.get('https://api.enablebanking.com/accounts/:accountId/balances', () =>
+          HttpResponse.json({
+            balances: [{ balance_type: 'ITAV', balance_amount: { amount: balance, currency }, reference_date: today }],
+          }),
+        ),
+      );
+
+      const connectResult = await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.ENABLE_BANKING,
+        credentials: helpers.enablebanking.mockCredentials(),
+        raw: true,
+      });
+      const state = await helpers.enablebanking.getConnectionState(connectResult.connectionId);
+      await helpers.makeRequest({
+        method: 'post',
+        url: '/bank-data-providers/enablebanking/oauth-callback',
+        payload: { connectionId: connectResult.connectionId, code: helpers.enablebanking.mockAuthCode, state },
+      });
+      const { syncedAccounts } = await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId: connectResult.connectionId,
+        accountExternalIds: [MOCK_IDENTIFICATION_HASH_1],
+        raw: true,
+      });
+
+      const accountId = syncedAccounts[0]!.id;
+      const account = await helpers.getAccount({ id: accountId, raw: true });
+      const [transaction] = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+
+      return { account, transaction: transaction! };
+    };
+
+    it('stores a JPY account balance and transaction as whole yen', async () => {
+      const { account, transaction } = await connectAccountIn({
+        currency: 'JPY',
+        balance: '152345',
+        transactionAmount: '1500',
+      });
+
+      expect(account.currencyCode).toBe('JPY');
+      expect(Number(account.currentBalance)).toBe(152345);
+      expect(Number(transaction.amount)).toBe(1500);
+    });
+
+    // The provider adapters normalize every amount to 2-decimal cents, so a KWD third decimal is
+    // lost before it reaches storage. This pins that behaviour until the adapters carry decimals.
+    it('stores a KWD account balance and transaction at 2 decimals, the provider boundary precision', async () => {
+      const { account, transaction } = await connectAccountIn({
+        currency: 'KWD',
+        balance: '1523.456',
+        transactionAmount: '1.234',
+      });
+
+      expect(account.currencyCode).toBe('KWD');
+      expect(Number(account.currentBalance)).toBe(1523.46);
+      expect(Number(transaction.amount)).toBe(1.23);
+    });
+  });
+
   describe('Step 1: List supported providers', () => {
     it('should include Enable Banking in providers list', async () => {
       const { providers } = await helpers.bankDataProviders.getSupportedBankProviders({
@@ -1899,9 +1983,9 @@ describe('Enable Banking Data Provider E2E', () => {
       ];
 
       // `date` is typed as a Date but the endpoint serializes it as 'yyyy-MM-dd'.
-      const bookingDayCents = ({ balances }: { balances: { date: Date | string; amount: number }[] }) => {
+      const bookingDayBalance = ({ balances }: { balances: { date: Date | string; amount: number }[] }) => {
         const row = balances.find((balance) => String(balance.date) === BOOKING_DATE);
-        return row ? Math.round(row.amount * 100) : null;
+        return row ? row.amount : null;
       };
 
       const connectAccountWithLadder = async ({
@@ -1965,7 +2049,7 @@ describe('Enable Banking Data Provider E2E', () => {
         // Pinned to the value, not the sign: every other row of the day converts to
         // a different figure, and so does an unconverted, inverted or cents-scaled
         // reading of the right one.
-        expect(bookingDayCents({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED * 100);
+        expect(bookingDayBalance({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED);
       });
 
       it('rounds the converted balance to the decimals of a base currency without any', async () => {
@@ -1997,7 +2081,7 @@ describe('Enable Banking Data Provider E2E', () => {
         // Both rows landed, so a blank day is a refusal to guess rather than a sync
         // that stored nothing.
         expect(storedTransactions).toHaveLength(2);
-        expect(bookingDayCents({ balances })).toBeNull();
+        expect(bookingDayBalance({ balances })).toBeNull();
       });
 
       it('leaves the day blank when a booked row carries no balance at all', async () => {
@@ -2019,7 +2103,7 @@ describe('Enable Banking Data Provider E2E', () => {
         });
 
         expect(storedTransactions).toHaveLength(5);
-        expect(bookingDayCents({ balances })).toBeNull();
+        expect(bookingDayBalance({ balances })).toBeNull();
       });
 
       it('ignores a pending row, whose balance is available rather than booked', async () => {
@@ -2043,7 +2127,7 @@ describe('Enable Banking Data Provider E2E', () => {
         // The pending row is stored; it just has no say in the booked ladder. Were
         // it counted, the day would gain a second candidate and resolve to nothing.
         expect(storedTransactions).toHaveLength(5);
-        expect(bookingDayCents({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED * 100);
+        expect(bookingDayBalance({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED);
       });
 
       it('resolves a booking day whose rows arrive across two syncs', async () => {
@@ -2065,7 +2149,7 @@ describe('Enable Banking Data Provider E2E', () => {
         const { balances, storedTransactions } = await readLadderState({ accountId });
 
         expect(storedTransactions).toHaveLength(4);
-        expect(bookingDayCents({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED * 100);
+        expect(bookingDayBalance({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED);
       });
     });
   });

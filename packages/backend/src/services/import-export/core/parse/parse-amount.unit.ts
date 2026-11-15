@@ -90,6 +90,13 @@ describe('parseAmount (core tabular-import amount parser)', () => {
     expect(parseAmount('  100.00  ')).toBe('100');
   });
 
+  it('reads a sign written after the currency symbol', () => {
+    expect(parseAmount('$-5.00')).toBe('-5');
+    expect(parseAmount('€-12,50')).toBe('-12.5');
+    expect(parseAmount('$+5')).toBe('5');
+    expect(parseAmount('₴ -250.00')).toBe('-250');
+  });
+
   it('returns a plain zero for a negative zero', () => {
     expect(parseAmount('-0')).toBe('0');
     expect(parseAmount('(0.00)')).toBe('0');

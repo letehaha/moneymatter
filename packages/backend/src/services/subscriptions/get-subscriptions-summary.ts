@@ -6,7 +6,7 @@ import {
   SUBSCRIPTION_TYPES,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
-import { getConversionDecimals } from '@common/lib/currency-precision';
+import { getConversionDecimals, getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { CustomError, ValidationError } from '@js/errors';
@@ -190,11 +190,13 @@ const getSubscriptionsSummaryImpl = async ({
     });
   }
 
-  const monthlyCostMoney = totalMonthlyCost.round();
+  // The totals are base-currency figures, shown at the base currency's decimals.
+  const baseDecimals = await getCurrencyDecimals({ userId, code: baseCurrencyCode });
+  const monthlyCostMoney = totalMonthlyCost.round(baseDecimals);
   const yearlyCostMoney = monthlyCostMoney.multiply(12);
-  const monthlyIncomeMoney = totalMonthlyIncome.round();
+  const monthlyIncomeMoney = totalMonthlyIncome.round(baseDecimals);
 
-  const averageMonthlyIncomeMoney = await getAverageMonthlyIncome({ userId, lookbackMonths });
+  const averageMonthlyIncomeMoney = (await getAverageMonthlyIncome({ userId, lookbackMonths })).round(baseDecimals);
   const averageMonthlyIncome = averageMonthlyIncomeMoney.toNumber();
   const percentOfIncome =
     averageMonthlyIncome > 0 ? Math.round((monthlyCostMoney.toNumber() / averageMonthlyIncome) * 1000) / 10 : null;

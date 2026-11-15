@@ -52,10 +52,11 @@ export const absorbLinkResidual = withTransaction(
       },
     );
 
-    const signedSumCents = Money.fromDecimal(row?.signedSum ?? 0).toCents();
+    // Exact decimals, so a 3-decimal account neither books a phantom gap nor misses a real one.
+    const signedSum = Money.fromDecimal(row?.signedSum ?? 0);
     const initialBalanceBefore = account.initialBalance;
-    const identityGapCents = account.currentBalance.toCents() - (initialBalanceBefore.toCents() + signedSumCents);
-    if (identityGapCents === 0) return {};
+    const identityGap = account.currentBalance.subtract(initialBalanceBefore.add(signedSum));
+    if (identityGap.isZero()) return {};
 
     const bankConnection = account.externalData?.bankConnection;
     const residualTarget = bankConnection?.balanceReconciliation.residualTarget;
@@ -64,7 +65,7 @@ export const absorbLinkResidual = withTransaction(
       const adjustment = await createBalanceAdjustmentTransaction({
         userId,
         accountId,
-        amountDelta: Money.fromCents(identityGapCents),
+        amountDelta: identityGap,
         time: new Date(bankConnection.linkedAt),
       });
 
@@ -76,8 +77,8 @@ export const absorbLinkResidual = withTransaction(
       logger.info('Recorded post-link balance residual as a balance adjustment', {
         accountId,
         userId,
-        signedSumCents,
-        identityGapCents,
+        signedSum: signedSum.toNumber(),
+        identityGap: identityGap.toNumber(),
         residualTarget,
         adjustmentTransactionId: adjustment.id,
       });
@@ -85,7 +86,7 @@ export const absorbLinkResidual = withTransaction(
       return { adjustmentTransactionId: adjustment.id };
     }
 
-    const initialBalanceAfter = initialBalanceBefore.add(Money.fromCents(identityGapCents));
+    const initialBalanceAfter = initialBalanceBefore.add(identityGap);
     await Accounts.update({ initialBalance: initialBalanceAfter }, { where: { id: accountId, userId } });
 
     // A failed restamp would pair the moved opening balance with a stale
@@ -117,14 +118,15 @@ export const absorbLinkResidual = withTransaction(
     logger.info('Absorbed post-link balance residual into the opening balance', {
       accountId,
       userId,
-      signedSumCents,
-      identityGapCents,
+      signedSum: signedSum.toNumber(),
+      identityGap: identityGap.toNumber(),
       residualTarget,
-      initialBalanceBeforeCents: initialBalanceBefore.toCents(),
-      initialBalanceAfterCents: initialBalanceAfter.toCents(),
+      initialBalanceBefore: initialBalanceBefore.toNumber(),
+      initialBalanceAfter: initialBalanceAfter.toNumber(),
     });
 
-    return { absorbedResidual: identityGapCents };
+    // The reconciliation snapshot keeps its figures in cents (`AccountExternalData`).
+    return { absorbedResidual: identityGap.toCents() };
   },
 );
 

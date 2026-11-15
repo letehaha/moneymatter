@@ -47,6 +47,12 @@ export function parseAmount(amountStr: string): string | null {
   // Remove currency symbols and spaces
   cleanStr = cleanStr.replace(/[$€£¥₴₽\s]/g, '');
 
+  // A sign can also follow the symbol (`$-5.00`, `€+12,50`); with one on both sides they cancel out
+  const isNegativeAfterSymbol = cleanStr.startsWith('-');
+  if (isNegativeAfterSymbol || cleanStr.startsWith('+')) {
+    cleanStr = cleanStr.slice(1);
+  }
+
   // Determine decimal separator
   // If string has both comma and period, the last one is the decimal separator
   const lastComma = cleanStr.lastIndexOf(',');
@@ -81,5 +87,6 @@ export function parseAmount(amountStr: string): string | null {
   }
 
   // Apply negative sign
-  return (isNegativeParens || isNegativeSign ? magnitude.neg() : magnitude).toFixed();
+  const isNegative = (isNegativeParens || isNegativeSign) !== isNegativeAfterSymbol;
+  return (isNegative ? magnitude.neg() : magnitude).toFixed();
 }

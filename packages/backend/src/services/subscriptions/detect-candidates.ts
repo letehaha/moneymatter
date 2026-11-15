@@ -222,9 +222,8 @@ export async function runDetection({ userId }: { userId: number }): Promise<Subs
   for (const candidate of topCandidates) {
     const { group, transactions: txs, confidenceScore, medianIntervalDays } = candidate;
 
-    const amounts = txs.map((tx) => Math.abs(tx.amount));
     const averageAmount = await roundToCurrency({
-      money: Money.fromDecimal(amounts.reduce((s, a) => s + a, 0) / amounts.length),
+      money: Money.sum(txs.map((tx) => Money.fromDecimal(tx.amount).abs())).divide(txs.length),
       userId,
       currencyCode: group.currencyCode,
       mode: 'half-up',

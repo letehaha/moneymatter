@@ -117,7 +117,7 @@ export default createController(schema, async ({ user, params, body }) => {
     ...(paymentLegs !== undefined ? { paymentLegs: paymentLegs && deserializePaymentLegs({ legs: paymentLegs }) } : {}),
   });
 
-  // Serialize: convert cents to decimal for API response
+  // Serialize: Money amounts to API decimals
   // updateTransaction returns [baseTx, oppositeTx?] tuple
   return { data: serializeTransactionTuple(transactions) };
 });

@@ -5,7 +5,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
-import { roundToCurrency } from '@common/lib/currency-precision';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
@@ -85,12 +85,8 @@ export const adjustAccountBalance = withTransaction(
     }
 
     // The target is what the account will hold, so it carries the account currency's decimals.
-    const targetBalance = await roundToCurrency({
-      money: requestedTargetBalance,
-      userId,
-      currencyCode: account.currencyCode,
-      mode: 'half-up',
-    });
+    const decimals = await getCurrencyDecimals({ userId, code: account.currencyCode });
+    const targetBalance = requestedTargetBalance.round(decimals);
 
     if (account.type !== ACCOUNT_TYPES.system) {
       throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
@@ -103,8 +99,11 @@ export const adjustAccountBalance = withTransaction(
       });
     }
 
+    // A stored balance can carry digits finer than its currency (a migrated 0-decimal balance of
+    // 1000.4). The adjustment row holds the difference at the currency's decimals, so the balance it
+    // reaches is the previous one plus that row, which a sub-unit remainder keeps off the target.
     const previousBalance = account.currentBalance;
-    const diff = targetBalance.subtract(previousBalance);
+    const diff = targetBalance.subtract(previousBalance).round(decimals);
 
     if (diff.isZero()) {
       return {
@@ -130,7 +129,7 @@ export const adjustAccountBalance = withTransaction(
     // the depreciation curve to (targetBalance, effectiveTime). Without this,
     // the next stale-cache refresh would recompute from the original purchase
     // and silently overwrite the user's adjustment.
-    let newBalance = targetBalance;
+    let newBalance = previousBalance.add(diff);
     if (account.accountCategory === ACCOUNT_CATEGORIES.vehicle) {
       const vehicle = await Vehicles.findOne({ where: { accountId } });
       if (vehicle) {

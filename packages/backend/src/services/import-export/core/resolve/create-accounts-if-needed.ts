@@ -21,8 +21,8 @@ interface CreateAccountsIfNeededParams {
   resolveCurrencyCode: (accountName: string) => string | undefined;
   /** Date used as the fx reference point when computing the ref initial balance. */
   resolveFxDate: (accountName: string) => Date;
-  /** Initial balance in cents for a newly created account. Defaults to 0. */
-  resolveInitialBalanceCents?: (accountName: string) => number;
+  /** Initial balance of a newly created account, rounded to its currency on create. Defaults to 0. */
+  resolveInitialBalance?: (accountName: string) => Money;
   /** Account category for a newly created account. Defaults to general. */
   resolveAccountCategory?: (accountName: string) => ACCOUNT_CATEGORIES;
   /** Local display name for a newly created account. Defaults to the source name. */
@@ -69,7 +69,7 @@ export async function createAccountsIfNeeded({
   accountMapping,
   resolveCurrencyCode,
   resolveFxDate,
-  resolveInitialBalanceCents,
+  resolveInitialBalance,
   resolveAccountCategory,
   resolveAccountName,
   alwaysCreate = false,
@@ -88,8 +88,7 @@ export async function createAccountsIfNeeded({
       });
     }
 
-    const initialBalanceCents = resolveInitialBalanceCents?.(accountName) ?? 0;
-    const initialBalance = initialBalanceCents === 0 ? Money.zero() : Money.fromCents(initialBalanceCents);
+    const initialBalance = resolveInitialBalance?.(accountName) ?? Money.zero();
 
     const refInitialBalance = await calculateRefAmount({
       userId,

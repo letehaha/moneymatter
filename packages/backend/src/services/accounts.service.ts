@@ -399,7 +399,8 @@ export const updateAccount = withTransaction(
       payload.currentBalance !== undefined && !payload.currentBalance.equals(accountData.currentBalance);
     const creditLimitIsChanging =
       payload.creditLimit !== undefined && !payload.creditLimit.equals(accountData.creditLimit);
-    let initialBalance: Money = accountData.initialBalance;
+    // Written only when it moves, so an unrelated edit never re-rounds a stored opening balance.
+    let initialBalance: Money | undefined;
     let refCurrentBalance: Money = accountData.refCurrentBalance;
     let refCreditLimit: Money = accountData.refCreditLimit;
 
@@ -415,7 +416,7 @@ export const updateAccount = withTransaction(
       // `currentBalance = initialBalance + Σ(tx)` keeps holding. Its ref side is
       // restamped below at the boundary-date rate, not delta-shifted.
       if (accountData.type === ACCOUNT_TYPES.system) {
-        initialBalance = initialBalance.add(diff);
+        initialBalance = accountData.initialBalance.add(diff);
       }
     }
 
@@ -450,7 +451,7 @@ export const updateAccount = withTransaction(
       externalId,
       ...payload,
       ...logoPatch,
-      initialBalance,
+      ...(initialBalance !== undefined && { initialBalance }),
       refCurrentBalance,
       refCreditLimit,
     });

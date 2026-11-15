@@ -1,4 +1,3 @@
-import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import type { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -8,6 +7,7 @@ import * as RefundTransactions from '@models/refund-transactions.model';
 import * as TransactionSplits from '@models/transaction-splits.model';
 import * as Transactions from '@models/transactions.model';
 import { assertNotInPayment } from '@services/transactions/payment-legs';
+import { roundPositiveAmount } from '@services/transactions/round-positive-amount';
 import { Op, UniqueConstraintError } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
@@ -82,11 +82,10 @@ export const createSingleRefund = withTransaction(
       }
 
       // The share is an entered amount in the refund transaction's currency, so it rounds half-up to that
-      // currency's decimals; one that rounds to nothing would break the link's `amount > 0` check.
-      const share = amount ? amount.round(await getCurrencyDecimals({ userId, code: refundTx.currencyCode })) : amount;
-      if (share && !share.isPositive()) {
-        throw new ValidationError({ message: 'Refund amount is below the smallest unit of its currency' });
-      }
+      // currency's decimals; one that rounds to nothing is rejected, as the link's `amount > 0` check requires.
+      const share = amount
+        ? await roundPositiveAmount({ money: amount, userId, currencyCode: refundTx.currencyCode })
+        : amount;
 
       const duplicateLink = await RefundTransactions.default.findOne({
         where: { refundTxId, originalTxId, userId },

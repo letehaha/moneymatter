@@ -85,6 +85,15 @@ import {
 
 const getRedirectUrl = () => process.env.ENABLE_BANKING_REDIRECT_URL || `${FRONTEND_BASE_URL}/bank-callback`;
 
+/** A bank-reported running balance, or null when it is not a plain decimal the ladder can use. */
+const parseBalanceAmount = ({ amount }: { amount: string }): Money | null => {
+  try {
+    return Money.fromDecimal(amount);
+  } catch {
+    return null;
+  }
+};
+
 /**
  * Enable Banking provider implementation
  * Handles integration with Enable Banking API for multi-bank account access across Europe
@@ -1191,6 +1200,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       const dayRows = rowsByBookingDate.get(bookingDate)!;
       const ladder: ClosingBalanceRow[] = [];
       const rowsById = new Map<string, Transactions>();
+      const balanceAfterById = new Map<string, Money>();
       let dayHasUnusableRow = false;
 
       for (const row of dayRows) {
@@ -1199,13 +1209,13 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         if (isPreBookingStatus({ status: getRawTransactionStatus({ externalData: row.externalData }) })) continue;
 
         const balanceAfter = (row.externalData as { balanceAfter?: AmountType } | null)?.balanceAfter;
-        const balanceDecimal = balanceAfter ? Number.parseFloat(balanceAfter.amount) : Number.NaN;
+        const balanceAmount = balanceAfter ? parseBalanceAmount({ amount: balanceAfter.amount }) : null;
 
         // A booked row the ladder cannot use is a missing rung, and a day with a
         // hole in it has no determinable close: the rows either side of the hole
         // no longer rule each other out, so a mid-day row can end up looking like
         // the day's last.
-        if (!balanceAfter || balanceAfter.currency !== row.currencyCode || !Number.isFinite(balanceDecimal)) {
+        if (!balanceAfter || balanceAfter.currency !== row.currencyCode || !balanceAmount) {
           dayHasUnusableRow = true;
           break;
         }
@@ -1215,10 +1225,11 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
         ladder.push({
           id: row.id,
-          balanceAfterCents: Math.round(balanceDecimal * 100),
+          balanceAfterCents: balanceAmount.toCents(),
           deltaCents: signedCents,
         });
         rowsById.set(row.id, row);
+        balanceAfterById.set(row.id, balanceAmount);
       }
 
       const closingRowId = dayHasUnusableRow ? null : findClosingRowId({ rows: ladder });
@@ -1231,7 +1242,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       if (!date) continue;
 
       const closingRow = rowsById.get(closingRowId)!;
-      const closingBalance = (closingRow.externalData as { balanceAfter?: AmountType } | null)!.balanceAfter!;
+      const closingBalance = balanceAfterById.get(closingRowId)!;
 
       let convertedBalance: Money;
       try {
@@ -1241,7 +1252,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           baseCode: closingRow.currencyCode,
           quoteCode: closingRow.refCurrencyCode,
         });
-        convertedBalance = Money.fromDecimal(closingBalance.amount).multiply(exchangeRateData.rate);
+        convertedBalance = closingBalance.multiply(exchangeRateData.rate);
       } catch {
         // A day with no rate on record is one day of chart, and this pass runs
         // late enough that throwing would discard every transaction the sync just

@@ -643,8 +643,8 @@ describe('Accounts controller', () => {
         const spotEurToAed = AED_PER_USD / EUR_PER_USD;
         expect(updated.initialBalance).toBe(500);
         expect(updated.currentBalance).toBe(500);
-        expect(Math.round(Number(updated.refInitialBalance) * 100)).toEqualRefValue(50000 * spotEurToAed);
-        expect(Math.round(Number(updated.refCurrentBalance) * 100)).toEqualRefValue(50000 * spotEurToAed);
+        expect(updated.refInitialBalance).toEqualRefValue(500 * spotEurToAed);
+        expect(updated.refCurrentBalance).toEqualRefValue(500 * spotEurToAed);
       });
 
       it('rejects initialBalance on a bank-connected account', async () => {

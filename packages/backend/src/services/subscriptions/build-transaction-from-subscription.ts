@@ -28,7 +28,7 @@ import { getSubscriptionTagIds } from './subscription-tags';
  * a UAH account), the amount is resolved as follows:
  *   - an explicit `amount` override is taken verbatim (already in the account's
  *     currency, confirmed by the user in the pay dialog);
- *   - otherwise the subscription's `expectedAmount` (stored as cents) is
+ *   - otherwise the subscription's `expectedAmount` is
  *     converted into the account currency via
  *     `convertSubscriptionAmountToAccountCurrency`.
  *

@@ -432,3 +432,41 @@ describe('runPendingLinkAbsorb', () => {
     expect(fresh.update).not.toHaveBeenCalled();
   });
 });
+
+describe('absorbLinkResidual at the account currency decimals', () => {
+  /** The raw SELECT answers with the DECIMAL column's text. */
+  const mockSignedSumDecimal = (decimal: string) => queryMock.mockResolvedValue([{ signedSum: decimal }] as never);
+
+  it('absorbs nothing on a 3-decimal account whose ledger identity holds', async () => {
+    const accountId = generateRandomRecordId();
+    findOneMock.mockResolvedValue(
+      buildAccount({
+        id: accountId,
+        currentBalance: Money.fromDecimal('10.000'),
+        initialBalance: Money.fromDecimal('3.335'),
+      }) as never,
+    );
+    mockSignedSumDecimal('6.665000000000000000');
+
+    const result = await absorbLinkResidual({ accountId, userId: USER_ID });
+
+    expect(result).toEqual({});
+    expect(accountsUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it('moves the opening balance of a 3-decimal account by the exact gap', async () => {
+    const accountId = generateRandomRecordId();
+    findOneMock.mockResolvedValue(
+      buildAccount({
+        id: accountId,
+        currentBalance: Money.fromDecimal('10.010'),
+        initialBalance: Money.fromDecimal('5.004'),
+      }) as never,
+    );
+    mockSignedSumDecimal('5.004000000000000000');
+
+    await absorbLinkResidual({ accountId, userId: USER_ID });
+
+    expect(lastUpdatePayload().initialBalance.equals(Money.fromDecimal('5.006'))).toBe(true);
+  });
+});

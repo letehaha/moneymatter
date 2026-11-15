@@ -99,7 +99,7 @@ export const manageSplits = async ({
   await assertValidSplits({
     splits,
     transactionAmount,
-    minSplitAmount: Money.fromDecimal(1).divide(10 ** transactionDecimals),
+    minSplitAmount: Money.fromMinorUnits({ value: 1, decimals: transactionDecimals }),
     categoryOwnerUserId: categoryOwnerUserId ?? userId,
     transferNature: transferNature as Parameters<typeof assertValidSplits>[0]['transferNature'],
   });

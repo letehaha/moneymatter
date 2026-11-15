@@ -401,6 +401,73 @@ describe('Data export (POST /user/data-export)', () => {
       expect(csvRow?.SplitDetails).toContain('Drinks: 5.00');
     });
 
+    it('writes split and refund amounts at the decimals of their currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['KWD', 'JPY'], raw: true });
+      const kwdAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'KWD', name: 'KWD wallet' }),
+        raw: true,
+      });
+      const jpyAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'JPY', name: 'JPY wallet' }),
+        raw: true,
+      });
+      const food = await helpers.addCustomCategory({ name: 'Food', color: '#AABBCC', raw: true });
+      const drinks = await helpers.addCustomCategory({ name: 'Drinks', color: '#AABBDD', raw: true });
+
+      const [kwdTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: kwdAccount.id,
+          categoryId: food.id,
+          amount: 2,
+          transactionType: TRANSACTION_TYPES.expense,
+          note: 'KWD dinner',
+        }),
+        raw: true,
+      });
+      await helpers.updateTransaction({
+        id: kwdTx!.id,
+        payload: {
+          splits: [
+            { categoryId: food.id, amount: 1.234 },
+            { categoryId: drinks.id, amount: 0.766 },
+          ],
+        },
+        raw: true,
+      });
+
+      const [purchase] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: jpyAccount.id,
+          amount: 5000,
+          transactionType: TRANSACTION_TYPES.expense,
+          note: 'JPY purchase',
+        }),
+        raw: true,
+      });
+      const [refund] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: jpyAccount.id,
+          amount: 2000,
+          transactionType: TRANSACTION_TYPES.income,
+          note: 'JPY refund',
+        }),
+        raw: true,
+      });
+      await helpers.createSingleRefund({ originalTxId: purchase!.id, refundTxId: refund!.id, amount: 1500 }, true);
+
+      const response = await helpers.exportData({ format: 'csv' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('transactions.csv')! });
+
+      const splitRow = rows.find((r) => r.Note === 'KWD dinner');
+      expect(splitRow?.SplitDetails).toContain('Food: 1.234');
+      expect(splitRow?.SplitDetails).toContain('Drinks: 0.766');
+
+      const refundRow = rows.find((r) => r.Note === 'JPY refund');
+      expect(refundRow?.RefundOf).toContain('-5000 JPY');
+      expect(refundRow?.RefundOf).toContain('(1500 JPY)');
+    });
+
     it('renders refund linkage as a human-readable string in RefundOf column', async () => {
       const account = await helpers.createAccount({ raw: true });
       const purchase = await helpers.createTransaction({

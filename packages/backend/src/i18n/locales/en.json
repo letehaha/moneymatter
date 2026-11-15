@@ -48,6 +48,7 @@
     "notFound": "Transaction not found",
     "missingRequiredFields": "One of required fields are missing: destinationAmount, destinationAccountId.",
     "destinationAmountRequiredCrossCurrency": "destinationAmount is required when changing the amount of a cross-currency transfer.",
+    "amountBelowSmallestUnit": "The amount is below the smallest unit of {{code}}.",
     "refundAndTransferNotAllowed": "It is not allowed to create a transaction that is a refund and a transfer at the same time",
     "notOwnTransaction": "You can only edit or delete transactions you created on this shared account.",
     "sharedAccountChangeNotSupported": "Moving a transaction to a different account is only allowed for the account owner.",
@@ -216,6 +217,7 @@
     "reminderAlreadyExists": "An identical reminder already exists for this tag",
     "amountThresholdRequired": "Amount threshold is required for amount threshold reminders",
     "maxRemindersReached": "Maximum number of reminders (50) reached",
+    "amountThresholdRoundsToZero": "The threshold rounds to zero in your base currency (decimal places: {{decimals}}). Enter a larger amount.",
     "notifications": {
       "thresholdExceeded": {
         "title": "Tag Spending Alert",
@@ -871,6 +873,7 @@
         "malformedManifestEntry": "Backup archive has a malformed manifest entry for {{path}}.",
         "missingFile": "Backup archive is missing {{path}} listed in its manifest.",
         "checksumMismatch": "Backup file {{path}} failed its integrity check (checksum mismatch).",
+        "amountNotCents": "Backup file {{path}} is corrupt: expected an amount in cents, got {{value}}.",
         "differentAccount": "This backup was exported by a different account and cannot be restored here.",
         "alreadyInProgress": "A backup restore is already in progress. Wait for it to finish before starting another.",
         "failed": "The backup restore failed. Your existing data was not changed."

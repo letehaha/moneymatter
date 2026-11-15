@@ -919,3 +919,70 @@ describe('Multi-account payments: guards and cleanup', () => {
     expect((await legsOf({ accountId: plain!.id }))[0]!.paymentType).toBe(PAYMENT_TYPES.creditCard);
   });
 });
+
+const createAccountIn = async ({ currencyCode }: { currencyCode: string }) => {
+  await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+  return helpers.createAccount({
+    payload: helpers.buildAccountPayload({ currencyCode, initialBalance: 1000 }),
+    raw: true,
+  });
+};
+
+const paymentAmountOf = async ({ legAccountId }: { legAccountId: string }) => {
+  const [main] = (await helpers.getTransactions({ raw: true }))!.filter((tx) => tx.paymentParts);
+  return main!.paymentParts!.find((part) => part.accountId === legAccountId)!.paymentAmount;
+};
+
+describe('Multi-account payments: amounts at the currency decimals', () => {
+  it("rounds a leg's payment amount half-up to the main row's 2 decimals", async () => {
+    const usdMain = await createAccountIn({ currencyCode: 'USD' });
+    const [aedLeg] = await createManualAccounts({ count: 1 });
+
+    await createPayment({
+      mainAccountId: usdMain.id,
+      amount: 20,
+      legs: [{ accountId: aedLeg!.id, amount: 37, paymentAmount: 10.129 }],
+    });
+
+    expect(await paymentAmountOf({ legAccountId: aedLeg!.id })).toBe(10.13);
+  });
+
+  it("rounds a leg's payment amount half-up to a main row in a currency without minor units", async () => {
+    const jpyMain = await createAccountIn({ currencyCode: 'JPY' });
+    const [aedLeg] = await createManualAccounts({ count: 1 });
+
+    await createPayment({
+      mainAccountId: jpyMain.id,
+      amount: 3000,
+      legs: [{ accountId: aedLeg!.id, amount: 37, paymentAmount: 1500.5 }],
+    });
+
+    expect(await paymentAmountOf({ legAccountId: aedLeg!.id })).toBe(1501);
+  });
+
+  it('rejects a payment amount that rounds to zero, and a leg amount that rounds to zero', async () => {
+    const usdMain = await createAccountIn({ currencyCode: 'USD' });
+    const [aedLeg] = await createManualAccounts({ count: 1 });
+    const jpyLeg = await createAccountIn({ currencyCode: 'JPY' });
+
+    const zeroShare = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: usdMain.id,
+        amount: 20,
+        paymentLegs: [{ accountId: aedLeg!.id, amount: 37, paymentAmount: 0.004 }],
+      }),
+    });
+    expect(zeroShare.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const zeroLeg = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: usdMain.id,
+        amount: 20,
+        paymentLegs: [{ accountId: jpyLeg.id, amount: 0.4, paymentAmount: 1 }],
+      }),
+    });
+    expect(zeroLeg.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    expect(await helpers.getTransactions({ raw: true })).toHaveLength(0);
+  });
+});

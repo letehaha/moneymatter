@@ -21,6 +21,8 @@ import { extractCookies, listAutomations, listGoals, makeAuthRequest, makeReques
 import { clearMockSession, registerMockSession } from '@tests/mocks/better-auth';
 import Big from 'big.js';
 
+import { DEMO_CONFIG } from './demo-config';
+import { getDemoTemplate } from './demo-template-cache.service';
 import { DEMO_ACCOUNT_GROUPS } from './seed-account-groups.service';
 import { allDemoPayeeMerchants } from './template/merchants';
 
@@ -1181,6 +1183,24 @@ describe('Demo Mode', () => {
       // Get the main checking account (USD)
       const mainChecking = accountsRes.find((a: { name: string }) => a.name === 'Main Checking');
       expect(mainChecking).toBeDefined();
+
+      // The config and the template speak cents; the stored amounts are decimals.
+      const mainCheckingConfig = DEMO_CONFIG.accounts.find((a) => a.key === 'main_checking')!;
+      expect(new Big(mainChecking.initialBalance).eq(new Big(mainCheckingConfig.initialBalance).div(100))).toBe(true);
+
+      const sample = getDemoTemplate().transactions.find((tx) => tx.accountKey === 'main_checking' && tx.amount > 0)!;
+      expect(sample).toBeDefined();
+      const [sampleRows] = await connection.sequelize.query(
+        `SELECT id FROM "Transactions" WHERE "accountId" = :accountId AND note = :note AND amount = :amount`,
+        {
+          replacements: {
+            accountId: mainChecking.id,
+            note: sample.note,
+            amount: new Big(sample.amount).div(100).toFixed(),
+          },
+        },
+      );
+      expect(sampleRows.length).toBeGreaterThanOrEqual(1);
 
       // Get the latest balance record for this account
       const [latestBalanceRows] = await connection.sequelize.query(

@@ -776,6 +776,26 @@ describe('Subscriptions', () => {
         expect(twelveMonths.lookbackMonths).toBe(12);
       });
 
+      it('rounds the average monthly income to the base currency decimals', async () => {
+        const account = await helpers.createAccount({ raw: true });
+
+        const recent = subMonths(new Date(), 1);
+        recent.setDate(10);
+        await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 100,
+            transactionType: TRANSACTION_TYPES.income,
+            time: recent.toISOString(),
+          }),
+          raw: true,
+        });
+
+        // 100 / 3 = 33.333…, shown at the base currency's 2 decimals.
+        const summary = await helpers.getSubscriptionsSummary({ lookbackMonths: 3, raw: true });
+        expect(summary.averageMonthlyIncome).toBe(33.33);
+      });
+
       it('averages qualifying income and derives percentOfIncome, ignoring out-of-window income', async () => {
         const account = await helpers.createAccount({ raw: true });
 

@@ -279,21 +279,21 @@ describe('Edit currency exchange rate controller', () => {
       await setCustomRate({ inrToAed: CUSTOM_INR_TO_AED });
 
       const afterSet = await helpers.getBalanceHistory({ accountId: account.id, raw: true });
-      expect(helpers.balanceCentsOn({ rows: afterSet, date: DEPOSIT_DATE })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * CUSTOM_INR_TO_AED,
+      expect(helpers.balanceOn({ rows: afterSet, date: DEPOSIT_DATE })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * CUSTOM_INR_TO_AED,
       );
-      expect(helpers.balanceCentsOn({ rows: afterSet, date: TODAY })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * CUSTOM_INR_TO_AED,
+      expect(helpers.balanceOn({ rows: afterSet, date: TODAY })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * CUSTOM_INR_TO_AED,
       );
 
       await setCustomRate({ inrToAed: EDITED_INR_TO_AED });
 
       const afterEdit = await helpers.getBalanceHistory({ accountId: account.id, raw: true });
-      expect(helpers.balanceCentsOn({ rows: afterEdit, date: DEPOSIT_DATE })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * EDITED_INR_TO_AED,
+      expect(helpers.balanceOn({ rows: afterEdit, date: DEPOSIT_DATE })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * EDITED_INR_TO_AED,
       );
-      expect(helpers.balanceCentsOn({ rows: afterEdit, date: TODAY })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * EDITED_INR_TO_AED,
+      expect(helpers.balanceOn({ rows: afterEdit, date: TODAY })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * EDITED_INR_TO_AED,
       );
     });
 
@@ -313,11 +313,11 @@ describe('Edit currency exchange rate controller', () => {
 
       const rows = await helpers.getBalanceHistory({ accountId: account.id, raw: true });
 
-      expect(helpers.balanceCentsOn({ rows, date: DEPOSIT_DATE })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * helpers.INR_TO_AED_AT_DEPOSIT,
+      expect(helpers.balanceOn({ rows, date: DEPOSIT_DATE })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * helpers.INR_TO_AED_AT_DEPOSIT,
       );
-      expect(helpers.balanceCentsOn({ rows, date: TODAY })).toEqualRefValue(
-        HOLDINGS_INR_CENTS * helpers.INR_TO_AED_AFTER,
+      expect(helpers.balanceOn({ rows, date: TODAY })).toEqualRefValue(
+        (HOLDINGS_INR_CENTS / 100) * helpers.INR_TO_AED_AFTER,
       );
     });
   });

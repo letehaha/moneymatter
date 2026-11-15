@@ -699,4 +699,89 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
       expect(loanProgress.error).toContain('cannot be an import target');
     }
   }, 30_000);
+  describe('amounts at the account currency decimals', () => {
+    // `finalize` undoes the tallied rows when recalc is off, so a tally of the file's 12.345 next to a
+    // stored 12.35 would leave the balance off by the rounding difference.
+    const expectBalanceKept = async ({
+      currencyCode,
+      amount,
+      storedAmount,
+    }: {
+      currencyCode: string;
+      amount: string;
+      storedAmount: number;
+    }) => {
+      await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode, initialBalance: 100 }),
+        raw: true,
+      });
+
+      const progress = await runImport({
+        fileContent: [
+          CSV_HEADER,
+          ...['2025-06-15T10:00:00.000Z', '2025-06-16T10:00:00.000Z'].map((date, index) =>
+            walletRow({
+              account: 'Precise',
+              currency: currencyCode,
+              amount,
+              type: 'Income',
+              date,
+              note: `Row ${index}`,
+            }),
+          ),
+        ].join('\n'),
+        accountMapping: { Precise: { action: 'link-existing', accountId: account.id } },
+        recalculateBalance: false,
+      });
+      expectCompleted(progress);
+      expect(progress.summary.transactionsImported).toBe(2);
+      expect(progress.summary.errors).toHaveLength(0);
+
+      expect(Number((await helpers.getAccount({ id: account.id, raw: true })).currentBalance)).toBe(100);
+      const stored = (await helpers.getTransactions({ raw: true })).filter((tx) => tx.accountId === account.id);
+      expect(stored.map((tx) => tx.amount)).toEqual([storedAmount, storedAmount]);
+    };
+
+    it('keeps a 2-decimal balance when two 12.345 rows are stored as 12.35', async () => {
+      await expectBalanceKept({ currencyCode: 'USD', amount: '12.345', storedAmount: 12.35 });
+    });
+
+    it('keeps a JPY balance when two 1500.5 rows are stored as 1501', async () => {
+      await expectBalanceKept({ currencyCode: 'JPY', amount: '1500.5', storedAmount: 1501 });
+    });
+
+    it('keeps both balances when a transfer of 12.345 is stored as 12.35 on each leg', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+      const [source, destination] = await Promise.all(
+        ['Wallet src', 'Wallet dst'].map((name) =>
+          helpers.createAccount({
+            payload: helpers.buildAccountPayload({ currencyCode: 'USD', name, initialBalance: 100 }),
+            raw: true,
+          }),
+        ),
+      );
+
+      const progress = await runImport({
+        fileContent: [
+          CSV_HEADER,
+          'Src USD;Transfer, withdraw;USD;12.345;12.345;Expense;Cash;;2025-07-15T10:00:00.000Z;true;;',
+          'Dst USD;Transfer, withdraw;USD;12.345;12.345;Income;Cash;;2025-07-15T10:00:00.000Z;true;;',
+        ].join('\n'),
+        accountMapping: {
+          'Src USD': { action: 'link-existing', accountId: source!.id },
+          'Dst USD': { action: 'link-existing', accountId: destination!.id },
+        },
+        recalculateBalance: false,
+      });
+      expectCompleted(progress);
+      expect(progress.summary.transfersImported).toBe(1);
+      expect(progress.summary.errors).toHaveLength(0);
+
+      for (const account of [source!, destination!]) {
+        expect(Number((await helpers.getAccount({ id: account.id, raw: true })).currentBalance)).toBe(100);
+      }
+      expect((await helpers.getTransactions({ raw: true })).map((tx) => tx.amount)).toEqual([12.35, 12.35]);
+    });
+  });
 });
