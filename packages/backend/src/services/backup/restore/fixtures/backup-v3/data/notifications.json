@@ -1,0 +1,20 @@
+[
+  {
+    "id": "01a1cf52-7c8f-7138-b6b7-5817f2efa916",
+    "userId": 1,
+    "type": "goal_reached",
+    "title": "Goal reached: Small goal",
+    "message": "You've saved 75.25 AED.",
+    "payload": {
+      "goalId": "01a1cf52-7c77-71db-9d7b-6f7a3786259f",
+      "goalName": "Small goal",
+      "currencyCode": "AED",
+      "achievedAmount": 75.25
+    },
+    "status": "unread",
+    "priority": "normal",
+    "createdAt": "2026-11-12T10:34:11.983Z",
+    "readAt": null,
+    "expiresAt": null
+  }
+]

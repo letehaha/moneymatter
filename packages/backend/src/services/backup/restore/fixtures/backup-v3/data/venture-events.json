@@ -1,0 +1,24 @@
+[
+  {
+    "id": "01a1cf52-7d6f-76ca-871a-ed662f8656b1",
+    "userId": 1,
+    "dealId": "01a1cf52-7d43-74dc-8c43-29ac47b15793",
+    "type": "initial_investment",
+    "eventDate": "2026-03-24",
+    "grossAmount": "17360.0000000000",
+    "gpCarryAmount": null,
+    "lpNetAmount": "17360.0000000000",
+    "refAmount": "17360.0000000000",
+    "navAfter": null,
+    "quantityPct": null,
+    "lpNetAmountOverridden": false,
+    "gpCarryOverridden": false,
+    "principalReturnedThisEvent": null,
+    "currencyCode": "AED",
+    "cashFlowMode": "linked",
+    "notes": null,
+    "metaData": {},
+    "createdAt": "2026-11-12T10:34:12.207Z",
+    "updatedAt": "2026-11-12T10:34:12.207Z"
+  }
+]

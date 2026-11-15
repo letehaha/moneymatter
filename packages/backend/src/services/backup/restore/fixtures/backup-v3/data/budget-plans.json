@@ -1,0 +1,22 @@
+[
+  {
+    "id": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "userId": 1,
+    "name": "Household plan",
+    "type": "category_caps",
+    "currencyCode": "AED",
+    "cadence": "months",
+    "intervalN": 1,
+    "anchorDate": "2020-01-01",
+    "secondAnchorDay": null,
+    "epochDate": "2026-10-01",
+    "carryPolicy": "none",
+    "autoAttachAccounts": false,
+    "poolFrom": null,
+    "zeroSum": false,
+    "expectedIncome": 320045,
+    "deletedAt": null,
+    "createdAt": "2026-11-12T10:34:11.791Z",
+    "updatedAt": "2026-11-12T10:34:11.811Z"
+  }
+]

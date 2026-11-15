@@ -3,7 +3,12 @@
  *
  * Against a disposable Postgres it applies every migration before that one, seeds rows into every
  * money column (including `real_transactions` and the JSON fields), then runs the migration up,
- * down and up again, asserting column types and values after each step.
+ * down and up again, asserting column types and values after each step. It also checks that the
+ * migration refuses a numeric string under a JSON amount key and a mix of integer and decimal
+ * columns without changing anything, and that a second `up` or `down` is a no-op.
+ *
+ * CI runs it on every backend change (`backend-money-migration` job in `check-source-code.yml`),
+ * since the e2e template applies the migration to empty tables only.
  *
  * Usage (needs a Postgres the script may create and drop a database in):
  *   docker run --rm -d --name mm-migcheck -e POSTGRES_PASSWORD=test -p 55432:5432 postgres:16
@@ -45,8 +50,6 @@ interface SeededRow {
   key: Record<string, unknown>;
   /** Cents per money column; `null` for an absent value. */
   cents: Record<string, number | null>;
-  /** Which JSON field values were seeded, keyed `column`. */
-  json: Record<string, unknown>;
 }
 
 interface ColumnInfo {
@@ -101,6 +104,8 @@ const requiredFiller = ({ info, enumLabel }: { info: ColumnInfo; enumLabel: stri
   if (type === 'ARRAY') return `'{}'`;
   if (type === 'USER-DEFINED') return sqlLiteral(enumLabel);
   if (/currencycode/i.test(name)) return `'USD'`;
+  // Recurrence columns sit behind CHECK constraints listing the preset frequencies.
+  if (/frequency$/i.test(name)) return `'monthly'`;
   // Names sit in unique indexes on several tables.
   if (name === 'name') return `'seed-${rowCounter}'`;
   return `'x'`;
@@ -111,7 +116,6 @@ const centsA = (index: number): number => 100005 + 137 * index;
 
 /** Rows seeded per table. Overrides satisfy the table's CHECK constraints and unique keys. */
 interface RowPlan {
-  label: string;
   overrides?: Record<string, unknown>;
   /** Cents by column; unlisted money columns follow the A (positive) or B (negative/null) default. */
   cents?: Record<string, number | null>;
@@ -123,13 +127,11 @@ const rowPlans = ({ table }: { table: string }): RowPlan[] => {
     case 'BudgetLineGoals':
       return [
         {
-          label: 'A',
           kind: 'A',
           overrides: { frequency: 'every_period', behavior: 'budget_another' },
           cents: { fundingCap: null },
         },
         {
-          label: 'B',
           kind: 'B',
           overrides: { frequency: 'every_period', behavior: 'refill_up_to' },
           cents: { amount: 3, stopAtBalance: null, fundingCap: 250050 },
@@ -137,18 +139,16 @@ const rowPlans = ({ table }: { table: string }): RowPlan[] => {
       ];
     case 'BudgetAssignments':
       return [
-        { label: 'A', kind: 'A' },
+        { kind: 'A' },
         {
-          label: 'B',
           kind: 'B',
           cents: { baselineAmount: null, overrideAmount: -4200 },
         },
       ];
     case 'Subscriptions':
       return [
-        { label: 'A', kind: 'A', overrides: { expectedCurrencyCode: 'USD' } },
+        { kind: 'A', overrides: { expectedCurrencyCode: 'USD' } },
         {
-          label: 'B',
           kind: 'B',
           overrides: { type: 'bill', expectedCurrencyCode: null },
         },
@@ -156,17 +156,14 @@ const rowPlans = ({ table }: { table: string }): RowPlan[] => {
     case 'Transactions':
       return [
         {
-          label: 'real',
           kind: 'A',
           overrides: { isPlanned: false, transactionType: 'expense' },
         },
         {
-          label: 'planned',
           kind: 'B',
           overrides: { isPlanned: true, transactionType: 'expense' },
         },
         {
-          label: 'soft-deleted',
           kind: 'A',
           overrides: {
             isPlanned: false,
@@ -178,44 +175,37 @@ const rowPlans = ({ table }: { table: string }): RowPlan[] => {
     case 'BudgetPlans':
       return [
         {
-          label: 'A',
           kind: 'A',
           overrides: { cadence: 'months', carryPolicy: 'none' },
         },
         {
-          label: 'B',
           kind: 'B',
           overrides: { userId: 2, cadence: 'months', carryPolicy: 'none' },
         },
       ];
     case 'Goals':
       return [
-        { label: 'A', kind: 'A', overrides: { achievedAt: RAW('now()') } },
+        { kind: 'A', overrides: { achievedAt: RAW('now()') } },
         {
-          label: 'B',
           kind: 'B',
           cents: { targetAmount: 250000, plannedMonthly: null, achievedAmount: null },
         },
       ];
     case 'GoalAccounts':
       return [
-        { label: 'A', kind: 'A', overrides: { sharePercent: null, fixedPosition: 0 } },
-        { label: 'B', kind: 'B', overrides: { sharePercent: 50, fixedPosition: null } },
+        { kind: 'A', overrides: { sharePercent: null, fixedPosition: 0 } },
+        { kind: 'B', overrides: { sharePercent: 50, fixedPosition: null } },
       ];
     case 'ImportBatchAccountEffects':
       return [
-        { label: 'A', kind: 'A' },
+        { kind: 'A' },
         {
-          label: 'B',
           kind: 'B',
           overrides: { accountId: RAW('gen_random_uuid()') },
         },
       ];
     default:
-      return [
-        { label: 'A', kind: 'A' },
-        { label: 'B', kind: 'B' },
-      ];
+      return [{ kind: 'A' }, { kind: 'B' }];
   }
 };
 
@@ -277,7 +267,7 @@ const JSON_SEEDS: Record<string, Record<string, unknown>[]> = {
     { metaData: { originalTransactionState: 'not-an-object' } },
   ],
   PortfolioTransfers: [
-    { metaData: { originalTransactionState: { amount: 1999, refAmount: 0, transferId: null } } },
+    { metaData: { originalTransactionState: { amount: 1999, refAmount: -100050, transferId: null } } },
     { metaData: { somethingElse: { amount: 5 } } },
   ],
 };
@@ -355,8 +345,9 @@ const seedTable = async ({ sequelize, table }: { sequelize: Sequelize; table: st
   const seeded: SeededRow[] = [];
 
   const jsonSeeds = jsonField ? JSON_SEEDS[table] : null;
+  // JSON tables alternate A and B rows too, so their own money columns get NULL and negative values.
   const plans: RowPlan[] = jsonSeeds
-    ? jsonSeeds.map((_, i) => ({ label: `json-${i}`, kind: 'A' as const }))
+    ? jsonSeeds.map((_, i) => ({ kind: i % 2 === 0 ? ('A' as const) : ('B' as const) }))
     : rowPlans({ table });
 
   for (const [planIndex, plan] of plans.entries()) {
@@ -400,12 +391,7 @@ const seedTable = async ({ sequelize, table }: { sequelize: Sequelize; table: st
        RETURNING ${pk.map(quote).join(', ')}`,
     );
     const key = (rows as Record<string, unknown>[])[0];
-    seeded.push({
-      table,
-      key,
-      cents,
-      json: jsonField ? { [jsonField.column]: jsonSeeds![planIndex][jsonField.column] } : {},
-    });
+    seeded.push({ table, key, cents });
   }
 
   return seeded;
@@ -513,15 +499,16 @@ const assertView = async ({
   expected: Direction;
   step: string;
 }): Promise<void> => {
+  const viewColumns = MONEY_COLUMNS.filter((spec) => spec.table === 'Transactions').map((spec) => spec.column);
   const [rows] = await sequelize.query(
     `SELECT column_name, data_type FROM information_schema.columns
      WHERE table_schema = 'public' AND table_name = 'real_transactions'
-       AND column_name IN ('amount', 'refAmount', 'commissionRate', 'refCommissionRate', 'cashbackAmount', 'originalAmount')`,
+       AND column_name IN (${viewColumns.map(sqlLiteral).join(', ')})`,
   );
   const typed = rows as { column_name: string; data_type: string }[];
   check({
-    ok: typed.length === 6,
-    label: `${step}: real_transactions exposes the 6 money columns`,
+    ok: typed.length === viewColumns.length,
+    label: `${step}: real_transactions exposes the ${viewColumns.length} money columns (got ${typed.length})`,
   });
   check({
     ok: typed.every((col) => col.data_type === (expected === 'decimal' ? 'numeric' : 'bigint')),
@@ -538,10 +525,294 @@ const assertView = async ({
     label: `${step}: view keeps only the real, non-deleted row (${inView} of ${inTable})`,
   });
 };
+/**
+ * Integer columns of the snapshot's tables that are not money. After `up`, any other integer
+ * column there would be a cents column the snapshot missed.
+ */
+const NON_MONEY_INTEGER_COLUMNS = new Set<string>([
+  'Accounts.userId',
+  'BudgetLineGoals.repeatEvery',
+  'BudgetLineGoals.weekday',
+  'BudgetPlans.intervalN',
+  'BudgetPlans.secondAnchorDay',
+  'BudgetPlans.userId',
+  'GoalAccounts.fixedPosition',
+  'Goals.reachedHoldDays',
+  'Goals.sortOrder',
+  'Goals.userId',
+  'LoanDetails.paymentDayOfMonth',
+  'LoanDetails.termMonths',
+  'LoanDetails.userId',
+  'PortfolioTransfers.userId',
+  'RefundTransactions.userId',
+  'SubscriptionCandidates.detectedIntervalCount',
+  'SubscriptionCandidates.occurrenceCount',
+  'SubscriptionCandidates.userId',
+  'Subscriptions.anchorDay',
+  'Subscriptions.intervalCount',
+  'Subscriptions.maxOccurrences',
+  'Subscriptions.userId',
+  'TagReminders.dayOfMonth',
+  'TagReminders.userId',
+  'TrackerLines.position',
+  'Trackers.aiPreWindowDays',
+  'Trackers.userId',
+  'TransactionSplits.userId',
+  'TransactionTemplates.userId',
+  'Transactions.userId',
+  'Vehicles.currentMileage',
+  'Vehicles.userId',
+  'Vehicles.year',
+]);
+
+const assertNoUnlistedIntegerColumns = async ({
+  sequelize,
+  tables,
+  step,
+}: {
+  sequelize: Sequelize;
+  tables: string[];
+  step: string;
+}): Promise<void> => {
+  const [rows] = await sequelize.query(
+    `SELECT table_name, column_name FROM information_schema.columns
+     WHERE table_schema = 'public' AND data_type IN ('bigint', 'integer', 'smallint')
+       AND table_name IN (${tables.map(sqlLiteral).join(', ')})
+     ORDER BY table_name, column_name`,
+  );
+  const unexpected = (rows as { table_name: string; column_name: string }[])
+    .map((row) => `${row.table_name}.${row.column_name}`)
+    .filter((name) => !NON_MONEY_INTEGER_COLUMNS.has(name));
+  check({
+    ok: unexpected.length === 0,
+    label: `${step}: no integer column left in the money tables outside the non-money list (found ${unexpected.join(', ') || 'none'})`,
+  });
+};
+
+/** Listed columns whose database comment mentions cents. */
+const centsComments = async ({ sequelize }: { sequelize: Sequelize }): Promise<string[]> => {
+  const found: string[] = [];
+  for (const { table, column } of MONEY_COLUMNS) {
+    const [[row]] = (await sequelize.query(
+      `SELECT col_description(${sqlLiteral(quote(table))}::regclass, a.attnum) AS comment
+       FROM pg_attribute a WHERE a.attrelid = ${sqlLiteral(quote(table))}::regclass AND a.attname = ${sqlLiteral(column)}`,
+    )) as [{ comment: string | null }[], unknown];
+    if (row?.comment && /\bcents\b/i.test(row.comment)) found.push(`${table}.${column}`);
+  }
+  return found;
+};
+
+interface MigrationModule {
+  up: (queryInterface: unknown) => Promise<void>;
+  down: (queryInterface: unknown) => Promise<void>;
+}
+
+/** Runs `run` and records whether it threw an error whose message contains every part of `messageParts`. */
+const expectRejection = async ({
+  run,
+  messageParts,
+  label,
+}: {
+  run: () => Promise<void>;
+  messageParts: string[];
+  label: string;
+}): Promise<void> => {
+  let message: string | null = null;
+  try {
+    await run();
+  } catch (error) {
+    message = error instanceof Error ? error.message : String(error);
+  }
+  check({
+    ok: message !== null && messageParts.every((part) => message!.includes(part)),
+    label: `${label} (got ${message === null ? 'no error' : JSON.stringify(message)})`,
+  });
+};
 
 // ---------------------------------------------------------------------------
 // Runner
 // ---------------------------------------------------------------------------
+
+const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrator: Sequelize }): Promise<void> => {
+  const umzug = new Umzug({
+    migrations: {
+      path: path.join(__dirname, '../src/migrations'),
+      pattern: /\.(js|ts)$/,
+      params: [migrator.getQueryInterface(), Sequelize],
+    },
+    storage: 'sequelize',
+    storageOptions: { sequelize: migrator },
+  });
+  // The same module umzug runs, called directly to run a step umzug has already recorded.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const migration: MigrationModule = require(path.join(__dirname, '../src/migrations', `${MIGRATION_NAME}.ts`));
+  const queryInterface = migrator.getQueryInterface();
+
+  const pending: { file: string }[] = await umzug.pending();
+  const names: string[] = pending.map((entry) => entry.file.replace(/\.(js|ts)$/, ''));
+  const ownIndex = names.indexOf(MIGRATION_NAME);
+  if (ownIndex < 1) throw new Error(`${MIGRATION_NAME} not found among pending migrations`);
+
+  console.log(`Applying ${ownIndex} migrations before ${MIGRATION_NAME}...`);
+  await umzug.up({ to: names[ownIndex - 1] });
+
+  const seeded: SeededRow[] = [];
+  const tables = [...new Set([...MONEY_COLUMNS.map((spec) => spec.table), ...MONEY_JSON_FIELDS.map((f) => f.table)])];
+
+  // The seed fills only the columns each row needs, so its parent rows do not exist. The
+  // migration rewrites whole tables, which re-validates every foreign key of a rewritten row.
+  const [foreignKeys] = await sequelize.query(
+    `SELECT conrelid::regclass::text AS tbl, conname FROM pg_constraint
+     WHERE contype = 'f' AND conrelid::regclass::text IN (${tables.map((table) => sqlLiteral(quote(table))).join(', ')})`,
+  );
+  for (const { tbl, conname } of foreignKeys as {
+    tbl: string;
+    conname: string;
+  }[]) {
+    await sequelize.query(`ALTER TABLE ${tbl} DROP CONSTRAINT ${quote(conname)}`);
+  }
+  for (const table of tables) {
+    seeded.push(...(await seedTable({ sequelize, table })));
+  }
+  console.log(`Seeded ${seeded.length} rows into ${tables.length} tables (${MONEY_COLUMNS.length} money columns).`);
+
+  const assertState = async ({ expected, step, rows }: { expected: Direction; step: string; rows: SeededRow[] }) => {
+    await assertColumnTypes({ sequelize, expected, step });
+    await assertValues({ sequelize, seeded: rows, expected, step });
+    await assertView({ sequelize, expected, step });
+  };
+
+  await assertState({ expected: 'cents', step: 'seed', rows: seeded });
+  const seedCentsComments = await centsComments({ sequelize });
+  check({ ok: seedCentsComments.length > 0, label: `seed: some money columns carry a cents comment` });
+
+  // A JSON amount key holding anything but a number or null makes `up` refuse before any change.
+  const jsonProbes: { table: string; column: string; key: string; jsonSql: string }[] = [
+    {
+      table: 'TagReminders',
+      column: 'settings',
+      key: 'amountThreshold',
+      jsonSql: `jsonb_set("settings", '{amountThreshold}', '"150000"')`,
+    },
+    {
+      table: 'LoanDetails',
+      column: 'events',
+      key: 'toCents',
+      jsonSql: `jsonb_set("events", '{1,toCents}', '"123456"')`,
+    },
+    {
+      table: 'VentureEventLinks',
+      column: 'metaData',
+      key: 'refAmount',
+      jsonSql: `jsonb_set("metaData", '{originalTransactionState,refAmount}', '{"cents": 1}')`,
+    },
+  ];
+  for (const probe of jsonProbes) {
+    const row = seeded.find((candidate) => candidate.table === probe.table)!;
+    const where = whereKey({ key: row.key });
+    const [[original]] = (await sequelize.query(
+      `SELECT ${quote(probe.column)}::text AS value FROM ${quote(probe.table)} WHERE ${where}`,
+    )) as [{ value: string }[], unknown];
+    await sequelize.query(`UPDATE ${quote(probe.table)} SET ${quote(probe.column)} = ${probe.jsonSql} WHERE ${where}`);
+    await expectRejection({
+      run: () => migration.up(queryInterface),
+      messageParts: [`"${probe.table}"."${probe.column}"`, String(row.key.id), `"${probe.key}"`],
+      label: `up rejects a non-number under ${probe.table}.${probe.column} "${probe.key}"`,
+    });
+    await sequelize.query(
+      `UPDATE ${quote(probe.table)} SET ${quote(probe.column)} = ${sqlLiteral(original.value)}::jsonb WHERE ${where}`,
+    );
+  }
+  await assertState({ expected: 'cents', step: 'after rejected up (json)', rows: seeded });
+
+  await umzug.up({ to: MIGRATION_NAME });
+  await assertState({ expected: 'decimal', step: 'up', rows: seeded });
+  const upCentsComments = await centsComments({ sequelize });
+  check({ ok: upCentsComments.length === 0, label: `up: no money column comment mentions cents (${upCentsComments})` });
+  await assertNoUnlistedIntegerColumns({ sequelize, tables, step: 'up' });
+
+  // A second `up` on converted columns changes nothing.
+  await migration.up(queryInterface);
+  await assertState({ expected: 'decimal', step: 'second up', rows: seeded });
+
+  // A mix of integer and decimal columns makes `up` and `down` refuse before any change.
+  const mixedColumn = MONEY_COLUMNS[MONEY_COLUMNS.length - 1];
+  const mixedSql = `ALTER TABLE ${quote(mixedColumn.table)} ALTER COLUMN ${quote(mixedColumn.column)}`;
+  await sequelize.query(`${mixedSql} TYPE BIGINT USING round(${quote(mixedColumn.column)} * 100)::bigint`);
+  for (const direction of ['up', 'down'] as const) {
+    await expectRejection({
+      run: () => migration[direction](queryInterface),
+      messageParts: [`${mixedColumn.table}.${mixedColumn.column} (bigint)`, 'Nothing was changed'],
+      label: `${direction} rejects a mix of integer and decimal columns`,
+    });
+  }
+  const otherColumns = seeded.map((row) => ({
+    ...row,
+    cents: Object.fromEntries(
+      Object.entries(row.cents).filter(
+        ([column]) => !(row.table === mixedColumn.table && column === mixedColumn.column),
+      ),
+    ),
+  }));
+  await assertValues({ sequelize, seeded: otherColumns, expected: 'decimal', step: 'after rejected mixed run' });
+  await sequelize.query(
+    `${mixedSql} TYPE NUMERIC(${MONEY_COLUMN_PRECISION},${MONEY_COLUMN_SCALE}) USING ${quote(mixedColumn.column)}::numeric / 100`,
+  );
+  await assertState({ expected: 'decimal', step: 'mixed column restored', rows: seeded });
+
+  // Values past 2 decimals are what `down` loses: it rounds half away from zero.
+  const lossyAccount = seeded.find((row) => row.table === 'Accounts' && row.cents.currentBalance !== null)!;
+  await sequelize.query(
+    `UPDATE "Accounts" SET "currentBalance" = 1.235, "initialBalance" = -1.235 WHERE ${whereKey({ key: lossyAccount.key })}`,
+  );
+  const lossyAccountCents = {
+    ...lossyAccount.cents,
+    currentBalance: 124,
+    initialBalance: -124,
+  };
+
+  await umzug.down();
+  const afterDown = seeded.map((row) => (row === lossyAccount ? { ...row, cents: lossyAccountCents } : row));
+  await assertState({ expected: 'cents', step: 'down', rows: afterDown });
+  const downCentsComments = await centsComments({ sequelize });
+  check({
+    ok: downCentsComments.join() === seedCentsComments.join(),
+    label: `down: the cents comments are back (${downCentsComments.length} of ${seedCentsComments.length})`,
+  });
+
+  // A second `down` on integer columns changes nothing.
+  await migration.down(queryInterface);
+  await assertState({ expected: 'cents', step: 'second down', rows: afterDown });
+
+  await umzug.up({ to: MIGRATION_NAME });
+  await assertState({ expected: 'decimal', step: 'up-again', rows: afterDown });
+
+  // A fractional-cent value fits the new column exactly.
+  await sequelize.query(
+    `UPDATE "Balances" SET "amount" = 0.00040641 WHERE ${whereKey({ key: seeded.find((row) => row.table === 'Balances')!.key })}`,
+  );
+  const [[stored]] = (await sequelize.query(
+    `SELECT "amount"::text AS amount FROM "Balances" WHERE ${whereKey({ key: seeded.find((row) => row.table === 'Balances')!.key })}`,
+  )) as [{ amount: string }[], unknown];
+  check({
+    ok: Number(stored.amount) === 0.00040641,
+    label: `decimal column stores 0.00040641 exactly (got ${stored.amount})`,
+  });
+};
+
+/** Runs every cleanup step; a failure is logged and returned, never thrown, so it cannot hide an earlier error. */
+const cleanUp = async ({ steps }: { steps: { label: string; run: () => Promise<unknown> }[] }): Promise<unknown[]> => {
+  const errors: unknown[] = [];
+  for (const { label, run } of steps) {
+    try {
+      await run();
+    } catch (error) {
+      console.error(`Cleanup step "${label}" failed:`, error);
+      errors.push(error);
+    }
+  }
+  return errors;
+};
 
 const main = async (): Promise<void> => {
   const admin = new Sequelize({ ...connection, database: 'postgres' });
@@ -552,108 +823,32 @@ const main = async (): Promise<void> => {
   const sequelize = new Sequelize({ ...connection, database: DATABASE_NAME });
   const migrator = new Sequelize({ ...connection, database: DATABASE_NAME });
 
+  let runError: unknown = null;
   try {
-    const umzug = new Umzug({
-      migrations: {
-        path: path.join(__dirname, '../src/migrations'),
-        pattern: /\.(js|ts)$/,
-        params: [migrator.getQueryInterface(), Sequelize],
-      },
-      storage: 'sequelize',
-      storageOptions: { sequelize: migrator },
-    });
-
-    const pending: { file: string }[] = await umzug.pending();
-    const names: string[] = pending.map((migration) => migration.file.replace(/\.(js|ts)$/, ''));
-    const ownIndex = names.indexOf(MIGRATION_NAME);
-    if (ownIndex < 1) throw new Error(`${MIGRATION_NAME} not found among pending migrations`);
-
-    console.log(`Applying ${ownIndex} migrations before ${MIGRATION_NAME}...`);
-    await umzug.up({ to: names[ownIndex - 1] });
-
-    const seeded: SeededRow[] = [];
-    const tables = [...new Set([...MONEY_COLUMNS.map((spec) => spec.table), ...MONEY_JSON_FIELDS.map((f) => f.table)])];
-
-    // The seed fills only the columns each row needs, so its parent rows do not exist. The
-    // migration rewrites whole tables, which re-validates every foreign key of a rewritten row.
-    const [foreignKeys] = await sequelize.query(
-      `SELECT conrelid::regclass::text AS tbl, conname FROM pg_constraint
-       WHERE contype = 'f' AND conrelid::regclass::text IN (${tables.map((table) => sqlLiteral(quote(table))).join(', ')})`,
-    );
-    for (const { tbl, conname } of foreignKeys as {
-      tbl: string;
-      conname: string;
-    }[]) {
-      await sequelize.query(`ALTER TABLE ${tbl} DROP CONSTRAINT ${quote(conname)}`);
-    }
-    for (const table of tables) {
-      seeded.push(...(await seedTable({ sequelize, table })));
-    }
-    console.log(`Seeded ${seeded.length} rows into ${tables.length} tables (${MONEY_COLUMNS.length} money columns).`);
-
-    await assertColumnTypes({ sequelize, expected: 'cents', step: 'seed' });
-    await assertValues({ sequelize, seeded, expected: 'cents', step: 'seed' });
-    await assertView({ sequelize, expected: 'cents', step: 'seed' });
-
-    await umzug.up({ to: MIGRATION_NAME });
-    await assertColumnTypes({ sequelize, expected: 'decimal', step: 'up' });
-    await assertValues({ sequelize, seeded, expected: 'decimal', step: 'up' });
-    await assertView({ sequelize, expected: 'decimal', step: 'up' });
-
-    // Values past 2 decimals are what `down` loses: it rounds half away from zero.
-    const lossyAccount = seeded.find((row) => row.table === 'Accounts' && row.cents.currentBalance !== null)!;
-    await sequelize.query(
-      `UPDATE "Accounts" SET "currentBalance" = 1.235, "initialBalance" = -1.235 WHERE ${whereKey({ key: lossyAccount.key })}`,
-    );
-    const lossyAccountCents = {
-      ...lossyAccount.cents,
-      currentBalance: 124,
-      initialBalance: -124,
-    };
-
-    await umzug.down();
-    const afterDown = seeded.map((row) => (row === lossyAccount ? { ...row, cents: lossyAccountCents } : row));
-    await assertColumnTypes({ sequelize, expected: 'cents', step: 'down' });
-    await assertValues({
-      sequelize,
-      seeded: afterDown,
-      expected: 'cents',
-      step: 'down',
-    });
-    await assertView({ sequelize, expected: 'cents', step: 'down' });
-
-    await umzug.up({ to: MIGRATION_NAME });
-    await assertColumnTypes({
-      sequelize,
-      expected: 'decimal',
-      step: 'up-again',
-    });
-    await assertValues({
-      sequelize,
-      seeded: afterDown,
-      expected: 'decimal',
-      step: 'up-again',
-    });
-    await assertView({ sequelize, expected: 'decimal', step: 'up-again' });
-
-    // A fractional-cent value fits the new column exactly.
-    await sequelize.query(
-      `UPDATE "Balances" SET "amount" = 0.00040641 WHERE ${whereKey({ key: seeded.find((row) => row.table === 'Balances')!.key })}`,
-    );
-    const [[stored]] = (await sequelize.query(
-      `SELECT "amount"::text AS amount FROM "Balances" WHERE ${whereKey({ key: seeded.find((row) => row.table === 'Balances')!.key })}`,
-    )) as [{ amount: string }[], unknown];
-    check({
-      ok: Number(stored.amount) === 0.00040641,
-      label: `decimal column stores 0.00040641 exactly (got ${stored.amount})`,
-    });
-  } finally {
-    await sequelize.close();
-    await migrator.close();
-    const cleanup = new Sequelize({ ...connection, database: 'postgres' });
-    await cleanup.query(`DROP DATABASE IF EXISTS ${DATABASE_NAME}`);
-    await cleanup.close();
+    await runChecks({ sequelize, migrator });
+  } catch (error) {
+    runError = error;
   }
+
+  const cleanupErrors = await cleanUp({
+    steps: [
+      { label: 'close connection', run: () => sequelize.close() },
+      { label: 'close migrator connection', run: () => migrator.close() },
+      {
+        label: 'drop database',
+        run: async () => {
+          const cleanup = new Sequelize({ ...connection, database: 'postgres' });
+          try {
+            await cleanup.query(`DROP DATABASE IF EXISTS ${DATABASE_NAME}`);
+          } finally {
+            await cleanup.close();
+          }
+        },
+      },
+    ],
+  });
+  if (runError) throw runError;
+  if (cleanupErrors.length > 0) throw cleanupErrors[0];
 
   console.log(`\n${passed} checks passed, ${failures.length} failed.`);
   if (failures.length > 0) {
@@ -664,5 +859,9 @@ const main = async (): Promise<void> => {
 
 main().catch((error) => {
   console.error(error);
+  if (failures.length > 0) {
+    console.log(`\n${passed} checks passed, ${failures.length} failed before the error.`);
+    failures.forEach((failure) => console.log(`  - ${failure}`));
+  }
   process.exit(1);
 });

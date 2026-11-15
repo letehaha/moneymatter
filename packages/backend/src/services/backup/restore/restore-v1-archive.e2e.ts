@@ -1,4 +1,5 @@
 import { BACKUP_FORMAT_VERSION, TRANSACTION_TYPES } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { RateLimitService } from '@services/common/rate-limit.service';
 import * as helpers from '@tests/helpers';
@@ -283,7 +284,12 @@ describe('Restoring a format version 1 backup (cents to decimals)', () => {
     const restore = await helpers.restoreBackup({ fileContent: base64 });
 
     expect(restore.statusCode).toBe(422);
-    expect(restore.message).toMatch(/expected an amount in cents/);
+    expect(restore.message).toBe(
+      t({
+        key: 'backup.restore.errors.amountNotCents',
+        variables: { path: 'data/accounts.json (initialBalance)', value: '"twelve"' },
+      }),
+    );
   });
 
   it('rejects an archive newer than the version this app writes with a 422', async () => {

@@ -32,8 +32,6 @@ import Big from 'big.js';
 import { format } from 'date-fns';
 import { randomUUID } from 'node:crypto';
 
-import { buildV1ConversionRules } from './convert-v1-money';
-
 type Row = Record<string, unknown>;
 
 const LEGACY_ENDPOINT_BASE_URL = 'http://ollama.home.test/v1';
@@ -2011,6 +2009,30 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
   });
 
   describe('Legacy v1 archives', () => {
+    /** The money columns of the ledger these tests build, by backup file. Written out so the test does not share the converter's list. */
+    const LEDGER_MONEY_COLUMNS: Record<string, string[]> = {
+      accounts: [
+        'initialBalance',
+        'refInitialBalance',
+        'currentBalance',
+        'refCurrentBalance',
+        'creditLimit',
+        'refCreditLimit',
+      ],
+      balances: ['amount'],
+      transactions: [
+        'amount',
+        'refAmount',
+        'commissionRate',
+        'refCommissionRate',
+        'cashbackAmount',
+        'originalAmount',
+        'paymentAmount',
+      ],
+      trackers: ['limitAmount'],
+      'tracker-lines': ['limitAmount'],
+    };
+
     const LEGACY_TRACKER_FILES: [string, string][] = [
       ['trackers', 'budgets'],
       ['tracker-transactions', 'budget-transactions'],
@@ -2033,12 +2055,14 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       categoryTrackerIds: string[];
       userId: number;
     }) {
-      for (const { fileName, attrName } of buildV1ConversionRules().columns) {
+      for (const [fileName, attrNames] of Object.entries(LEDGER_MONEY_COLUMNS)) {
         const path = `data/${fileName}.json`;
         const rows = readArchiveJson({ files, path }) as Row[] | null;
         if (!rows) continue;
         for (const row of rows) {
-          if (row[attrName] != null) row[attrName] = new Big(row[attrName] as string).times(100).toNumber();
+          for (const attrName of attrNames) {
+            if (row[attrName] != null) row[attrName] = new Big(row[attrName] as string).times(100).toNumber();
+          }
         }
         writeArchiveJson({ files, path, value: rows });
       }

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "01a1cf52-7dcb-7142-943b-2beea5bd2b6a",
+    "userId": 1,
+    "fromAccountId": "01a1cf52-7b93-74fb-b7c2-131b123c1dee",
+    "toPortfolioId": "01a1cf52-7d92-718d-a1f1-77ba1cc5c506",
+    "fromPortfolioId": null,
+    "toAccountId": null,
+    "amount": "300.6000000000",
+    "refAmount": "300.6000000000",
+    "currencyCode": "AED",
+    "date": "2026-11-12",
+    "description": null,
+    "createdAt": "2026-11-12T10:34:12.299Z",
+    "updatedAt": "2026-11-12T10:34:12.299Z",
+    "toCurrencyCode": null,
+    "toAmount": "0.0000000000",
+    "refToAmount": "0.0000000000",
+    "metaData": {
+      "originalTransactionState": {
+        "note": "Broker deposit",
+        "time": "2026-11-12T00:00:00.000Z",
+        "amount": 30060,
+        "accountId": "01a1cf52-7b93-74fb-b7c2-131b123c1dee",
+        "refAmount": 30060,
+        "categoryId": "01a1cf52-7b18-70ce-95da-d09624ad6500",
+        "transferId": null,
+        "paymentType": "creditCard",
+        "currencyCode": "AED",
+        "transferNature": "not_transfer",
+        "transactionType": "expense"
+      }
+    },
+    "isAdjustment": false,
+    "affectsCash": true,
+    "transactionId": "01a1cf52-7db1-740a-8e9e-8d7efc6b1587"
+  }
+]

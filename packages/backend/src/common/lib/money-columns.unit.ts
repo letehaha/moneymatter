@@ -1,12 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { connection } from '@models/connection';
+import { DataTypes, Sequelize } from 'sequelize';
 
-import {
-  MONEY_COLUMNS_20261112,
-  MONEY_COLUMN_PRECISION_20261112,
-  MONEY_COLUMN_SCALE_20261112,
-  MONEY_JSON_FIELDS_20261112,
-} from '../../migrations/utils/money-columns-20261112';
 import { MONEY_COLUMNS, MONEY_COLUMN_PRECISION, MONEY_COLUMN_SCALE, MONEY_JSON_FIELDS } from './money-columns';
 
 // `@models/index` builds the Sequelize instance so each model's attributes are populated.
@@ -38,57 +33,98 @@ interface ModelLike {
   getAttributes: () => Record<string, AttributeLike>;
 }
 
+/** Fields that share the money column shape but hold no money amount. */
+const NON_MONEY_DECIMAL_FIELDS = ['InvestmentTransactions.quantity'];
+
+/** BIGINT attributes that hold no money amount. Money is never stored as BIGINT. */
+const NON_MONEY_BIGINT_FIELDS: string[] = [];
+
 const tableNameOf = (model: ModelLike): string => {
   const name = model.getTableName();
   return typeof name === 'string' ? name : name.tableName;
 };
 
+const attributesOf = ({ models }: { models: ModelLike[] }) =>
+  models.flatMap((model) =>
+    Object.entries(model.getAttributes()).map(([name, attribute]) => ({
+      id: `${tableNameOf(model)}.${attribute.field ?? name}`,
+      attribute,
+    })),
+  );
+
+/** `Table.column` of every DECIMAL(36,18) attribute with a getter, the shape `@MoneyField` declares. */
+const moneyDecimalFields = ({ models }: { models: ModelLike[] }): string[] =>
+  attributesOf({ models })
+    .filter(({ attribute }) => {
+      const precision = attribute.type.options?.precision ?? attribute.type._precision;
+      const scale = attribute.type.options?.scale ?? attribute.type._scale;
+      return (
+        attribute.type.key === 'DECIMAL' &&
+        Boolean(attribute.get) &&
+        precision === MONEY_COLUMN_PRECISION &&
+        scale === MONEY_COLUMN_SCALE
+      );
+    })
+    .map(({ id }) => id);
+
+const bigintFields = ({ models }: { models: ModelLike[] }): string[] =>
+  attributesOf({ models })
+    .filter(({ attribute }) => attribute.type.key === 'BIGINT')
+    .map(({ id }) => id);
+
+function getter(this: { getDataValue: (key: string) => unknown }) {
+  return this.getDataValue('value');
+}
+
+/** A model built the way Sequelize builds the real ones, holding one field of each shape the detectors look for. */
+const probeModels = (): ModelLike[] => {
+  const sequelize = new Sequelize({ dialect: 'postgres' });
+  const probe = sequelize.define(
+    'Probe',
+    {
+      cents: { type: DataTypes.BIGINT, get: getter },
+      plainCents: { type: DataTypes.BIGINT },
+      amount: { type: DataTypes.DECIMAL(MONEY_COLUMN_PRECISION, MONEY_COLUMN_SCALE), get: getter },
+      ratio: { type: DataTypes.DECIMAL(20, 10), get: getter },
+    },
+    { tableName: 'Probes', timestamps: false },
+  );
+  return [probe as unknown as ModelLike];
+};
+
 describe('MONEY_COLUMNS', () => {
-  // Other fields share the 36,18 shape (e.g. investment quantities), so the list is checked
-  // against the declarations one way and the absence of BIGINT money fields the other way.
-  it('lists only columns that a model declares as DECIMAL(36,18) money fields', async () => {
-    const models = await loadModels();
+  it('detects the money decimal shape and BIGINT fields on a model built by Sequelize', () => {
+    const models = probeModels();
 
-    const declared = new Set<string>();
-    for (const model of models) {
-      for (const [name, attribute] of Object.entries(model.getAttributes())) {
-        const precision = attribute.type.options?.precision ?? attribute.type._precision;
-        const scale = attribute.type.options?.scale ?? attribute.type._scale;
-        const isMoneyDecimal =
-          attribute.type.key === 'DECIMAL' &&
-          Boolean(attribute.get) &&
-          precision === MONEY_COLUMN_PRECISION &&
-          scale === MONEY_COLUMN_SCALE;
-        if (isMoneyDecimal) declared.add(`${tableNameOf(model)}.${attribute.field ?? name}`);
-      }
-    }
-
-    const listed = MONEY_COLUMNS.map(({ table, column }) => `${table}.${column}`);
-    expect(listed.filter((entry) => !declared.has(entry))).toEqual([]);
-    expect(new Set(listed).size).toBe(listed.length);
+    expect(moneyDecimalFields({ models })).toEqual(['Probes.amount']);
+    expect(bigintFields({ models })).toEqual(['Probes.cents', 'Probes.plainCents']);
   });
 
-  it('leaves no money field on BIGINT cents storage', async () => {
+  it('lists exactly the DECIMAL(36,18) money fields the models declare', async () => {
+    const models = await loadModels();
+    const declared = moneyDecimalFields({ models });
+
+    const listed = MONEY_COLUMNS.map(({ table, column }) => `${table}.${column}`);
+    expect(new Set(listed).size).toBe(listed.length);
+    expect(NON_MONEY_DECIMAL_FIELDS.filter((entry) => !declared.includes(entry))).toEqual([]);
+    expect(declared.filter((entry) => !NON_MONEY_DECIMAL_FIELDS.includes(entry)).toSorted()).toEqual(listed.toSorted());
+  });
+
+  it('leaves no field on BIGINT storage', async () => {
     const models = await loadModels();
 
-    const cents: string[] = [];
-    for (const model of models) {
-      for (const [name, attribute] of Object.entries(model.getAttributes())) {
-        if (attribute.type.key === 'BIGINT' && attribute.get) cents.push(`${tableNameOf(model)}.${name}`);
-      }
-    }
-
-    expect(cents).toEqual([]);
+    expect(bigintFields({ models }).filter((entry) => !NON_MONEY_BIGINT_FIELDS.includes(entry))).toEqual([]);
   });
 });
 
-describe('money-storage migration snapshot', () => {
-  // The migration owns a frozen copy of the list, so a column added later never reaches it. The live
-  // list starts from that snapshot and only grows: a later column gets its own migration.
-  it('keeps every column the migration converted in the live list', () => {
-    expect(MONEY_COLUMNS).toEqual(expect.arrayContaining([...MONEY_COLUMNS_20261112]));
-    expect(MONEY_JSON_FIELDS).toEqual(expect.arrayContaining([...MONEY_JSON_FIELDS_20261112]));
-    expect(MONEY_COLUMN_PRECISION_20261112).toBe(MONEY_COLUMN_PRECISION);
-    expect(MONEY_COLUMN_SCALE_20261112).toBe(MONEY_COLUMN_SCALE);
+describe('MONEY_JSON_FIELDS', () => {
+  it('names a JSON attribute of a model for every entry', async () => {
+    const models = await loadModels();
+    const jsonFields = attributesOf({ models })
+      .filter(({ attribute }) => attribute.type.key === 'JSONB' || attribute.type.key === 'JSON')
+      .map(({ id }) => id);
+
+    const listed = MONEY_JSON_FIELDS.map(({ table, column }) => `${table}.${column}`);
+    expect(listed.filter((entry) => !jsonFields.includes(entry))).toEqual([]);
   });
 });

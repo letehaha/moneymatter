@@ -159,6 +159,36 @@ jobs:
         if: needs.detect-changes.outputs.frontend-only != 'true'
         run: npm run ${{ matrix.task }} -w packages/backend
 
+  # The e2e template runs the money-storage migration on empty tables, so its conversion of
+  # real rows (columns, JSON fields, down, re-runs) is only checked here, against a seeded DB.
+  backend-money-migration:
+    name: Money migration round trip
+    needs: [prepare-dependencies, detect-changes]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Skip – no backend changes
+        if: needs.detect-changes.outputs.frontend-only == 'true'
+        run: echo "No backend changes detected. Skipping."
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: needs.detect-changes.outputs.frontend-only != 'true'
+      - uses: ./.github/actions/prepare-local-env
+        if: needs.detect-changes.outputs.frontend-only != 'true'
+      - name: Run check:money-migration
+        if: needs.detect-changes.outputs.frontend-only != 'true'
+        run: npm run check:money-migration -w packages/backend
+
   backend-e2e:
     name: Backend e2e tests (shard ${{ matrix.shardIndex }})
     needs: [prepare-dependencies, detect-changes]

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "01a1cf52-7b7a-72d5-87f7-49172dc69d89",
+    "userId": 1,
+    "currencyCode": "AED",
+    "exchangeRate": 1,
+    "liveRateUpdate": true,
+    "isDefaultCurrency": true
+  }
+]

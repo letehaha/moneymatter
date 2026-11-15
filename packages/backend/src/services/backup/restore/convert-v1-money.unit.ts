@@ -1,5 +1,9 @@
-import { MONEY_COLUMNS, MONEY_JSON_FIELDS } from '@common/lib/money-columns';
+import { t } from '@i18n/index';
 import { describe, expect, it } from '@jest/globals';
+import {
+  MONEY_COLUMNS_20261112 as MONEY_COLUMNS,
+  MONEY_JSON_FIELDS_20261112 as MONEY_JSON_FIELDS,
+} from '@root/migrations/utils/money-columns-20261112';
 
 import { BACKUP_TABLES, type BackupFileName } from '../registry';
 import { buildV1ConversionRules, convertV1MoneyToDecimal } from './convert-v1-money';
@@ -8,8 +12,11 @@ type Row = Record<string, unknown>;
 
 const rulesFromLists = () => buildV1ConversionRules();
 
+const amountNotCents = ({ path, value }: { path: string; value: unknown }): string =>
+  t({ key: 'backup.restore.errors.amountNotCents', variables: { path, value: JSON.stringify(value) } });
+
 describe('buildV1ConversionRules', () => {
-  it('has one rule for every entry of the shared money-column list', () => {
+  it('has one rule for every entry of the frozen list of columns that held cents', () => {
     const rules = rulesFromLists();
 
     expect(rules.columns).toHaveLength(MONEY_COLUMNS.length);
@@ -114,7 +121,9 @@ describe('convertV1MoneyToDecimal', () => {
   it('rejects an amount that is not a number', () => {
     const data = new Map<BackupFileName, Row[]>([['transactions', [{ amount: 'twelve' }]]]);
 
-    expect(() => convertV1MoneyToDecimal({ data })).toThrow(/expected an amount in cents/);
+    expect(() => convertV1MoneyToDecimal({ data })).toThrow(
+      amountNotCents({ path: 'data/transactions.json (amount)', value: 'twelve' }),
+    );
   });
 
   it.each([
@@ -127,13 +136,42 @@ describe('convertV1MoneyToDecimal', () => {
   ])('rejects a hostile v1 column amount (%s) before expanding it', (_label, amount) => {
     const data = new Map<BackupFileName, Row[]>([['transactions', [{ amount }]]]);
 
-    expect(() => convertV1MoneyToDecimal({ data })).toThrow(/expected an amount in cents/);
+    expect(() => convertV1MoneyToDecimal({ data })).toThrow(
+      amountNotCents({ path: 'data/transactions.json (amount)', value: amount }),
+    );
   });
 
   it('rejects a hostile v1 amount inside a JSON field', () => {
     const data = new Map<BackupFileName, Row[]>([['tag-reminders', [{ settings: { amountThreshold: 1e300 } }]]]);
 
-    expect(() => convertV1MoneyToDecimal({ data })).toThrow(/expected an amount in cents/);
+    expect(() => convertV1MoneyToDecimal({ data })).toThrow(
+      amountNotCents({ path: 'data/tag-reminders.json (settings)', value: 1e300 }),
+    );
+  });
+
+  it.each([
+    ['a numeric string', '150000'],
+    ['a boolean', true],
+    ['an object', { cents: 150000 }],
+  ])('rejects %s under a JSON amount key, as the storage migration does', (_label, amountThreshold) => {
+    const data = new Map<BackupFileName, Row[]>([['tag-reminders', [{ settings: { amountThreshold } }]]]);
+
+    expect(() => convertV1MoneyToDecimal({ data })).toThrow(
+      amountNotCents({ path: 'data/tag-reminders.json (settings)', value: amountThreshold }),
+    );
+  });
+
+  it('keeps a null or absent JSON amount key as it is', () => {
+    const data = new Map<BackupFileName, Row[]>([
+      ['tag-reminders', [{ settings: { amountThreshold: null } }, { settings: { note: 'none' } }]],
+    ]);
+
+    convertV1MoneyToDecimal({ data });
+
+    expect(data.get('tag-reminders')).toEqual([
+      { settings: { amountThreshold: null } },
+      { settings: { note: 'none' } },
+    ]);
   });
 
   it('accepts the BIGINT bounds', () => {

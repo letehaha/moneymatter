@@ -1,11 +1,13 @@
 /**
- * Every column and JSON field that holds a transactional money amount as `DECIMAL(36,18)`.
- * The backup v1 converter divides these by 100, the check script and the backup and restore
- * code read them, and a unit test keeps them in step with the model declarations. Add a new
- * money column here when its model declares it.
+ * Every column that holds a transactional money amount as `DECIMAL(36,18)`, and the JSON fields
+ * that hold such amounts: the inventory of where money is stored today. A unit test checks the
+ * columns both ways against the model declarations, so a new money column must be added here and
+ * a renamed or dropped one changed or removed. `MONEY_COLUMN_PRECISION` and `MONEY_COLUMN_SCALE`
+ * are the shape of those columns.
  *
- * The money-storage migration does not read this list: it has its own frozen snapshot in
- * `migrations/utils/money-columns-20261112.ts`, so a column added here never reaches it.
+ * Code that depends on a fixed point in history reads a frozen snapshot instead of this list: the
+ * money-storage migration and the restore of format 1 to 3 backups both read
+ * `migrations/utils/money-columns-20261112.ts`, the columns that held cents before that migration.
  */
 
 export const MONEY_COLUMN_PRECISION = 36;

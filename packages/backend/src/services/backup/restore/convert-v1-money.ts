@@ -1,10 +1,7 @@
-import {
-  MONEY_COLUMNS,
-  MONEY_JSON_FIELDS,
-  type MoneyColumnSpec,
-  type MoneyJsonFieldSpec,
-} from '@common/lib/money-columns';
+import { type MoneyColumnSpec, type MoneyJsonFieldSpec } from '@common/lib/money-columns';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
+import { MONEY_COLUMNS_20261112, MONEY_JSON_FIELDS_20261112 } from '@root/migrations/utils/money-columns-20261112';
 import Big from 'big.js';
 import isPlainObject from 'lodash/isPlainObject';
 
@@ -64,13 +61,20 @@ function resolveColumn({
 }
 
 /**
- * One conversion rule per entry of the shared money-column list. An entry that cannot be
- * resolved to a backup file and model attribute throws, so the list cannot grow (or a table
- * leave the backup) without the v1 converter noticing.
+ * One conversion rule per column and JSON field that held cents in format versions 1 to 3.
+ *
+ * Those formats were written before the money-storage migration and format 4 ships with it, so the
+ * cents in an old archive sit in exactly the columns that migration converted. Its frozen snapshot
+ * is therefore the list to divide, and it never changes. The live `MONEY_COLUMNS` must not be used:
+ * a column that was already decimal in those archives may join it later, and every old backup would
+ * then restore that column 100 times too small.
+ *
+ * An entry that cannot be resolved to a backup file and model attribute throws, so a table cannot
+ * leave the backup, or a listed column its model, without the converter noticing.
  */
 export function buildV1ConversionRules({
-  columns = MONEY_COLUMNS,
-  jsonFields = MONEY_JSON_FIELDS,
+  columns = MONEY_COLUMNS_20261112,
+  jsonFields = MONEY_JSON_FIELDS_20261112,
   tables = BACKUP_TABLES,
 }: {
   columns?: readonly MoneyColumnSpec[];
@@ -114,10 +118,16 @@ function centsToBig({ value, where }: { value: unknown; where: string }): Big {
     const cents = new Big(value);
     if (cents.gte(MIN_LEGACY_CENTS) && cents.lte(MAX_LEGACY_CENTS)) return cents.div(CENTS_PER_UNIT);
   }
-  throw new ValidationError({
-    message: `Backup file ${where} is corrupt: expected an amount in cents, got ${JSON.stringify(value)}.`,
-  });
+  throw amountNotCentsError({ value, where });
 }
+
+const amountNotCentsError = ({ value, where }: { value: unknown; where: string }): ValidationError =>
+  new ValidationError({
+    message: t({
+      key: 'backup.restore.errors.amountNotCents',
+      variables: { path: where, value: JSON.stringify(value) },
+    }),
+  });
 
 /** Cents to the exact decimal string a DECIMAL column takes. */
 const centsToDecimalString = ({ value, where }: { value: unknown; where: string }): string =>
@@ -126,15 +136,17 @@ const centsToDecimalString = ({ value, where }: { value: unknown; where: string 
 function convertJsonObject({ object, rule, where }: { object: Row; rule: MoneyJsonRule; where: string }): void {
   for (const key of rule.keys) {
     const value = object[key];
-    // Only JSON numbers are amounts; the DB migration leaves anything else untouched.
-    if (typeof value === 'number') object[key] = centsToBig({ value, where }).toNumber();
+    if (value === undefined || value === null) continue;
+    // A JSON amount is a number of cents, as the storage migration requires; a string, boolean or
+    // object under an amount key is refused, never passed through unconverted.
+    if (typeof value !== 'number') throw amountNotCentsError({ value, where });
+    object[key] = centsToBig({ value, where }).toNumber();
   }
 }
 
 /**
  * Rewrite a format version 1, 2 or 3 archive's money from integer cents to the decimals version 4
- * stores, in place. Covers every column and JSON field of the shared money-column list,
- * which is also what the storage migration converts.
+ * stores, in place. Covers every column and JSON field the storage migration converts.
  */
 export function convertV1MoneyToDecimal({
   data,

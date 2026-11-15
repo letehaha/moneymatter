@@ -1,0 +1,114 @@
+[
+  {
+    "id": "01a1cf52-7bef-73f7-a13c-1a30887dd13c",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2026-10-01",
+    "endDate": "2026-11-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bef-73f7-a13c-1f00f3a8038f",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2026-11-01",
+    "endDate": "2026-12-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf0-769a-be6d-6eb22faebfd2",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2026-12-01",
+    "endDate": "2027-01-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf0-769a-be6d-7364f5644714",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2027-01-01",
+    "endDate": "2027-02-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf0-769a-be6d-778ee2545e75",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2027-02-01",
+    "endDate": "2027-03-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf0-769a-be6d-7bda41de051f",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2027-03-01",
+    "endDate": "2027-04-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf0-769a-be6d-7cbf8c04d2e8",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2027-04-01",
+    "endDate": "2027-05-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf0-769a-be6d-818306e9d24e",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2027-05-01",
+    "endDate": "2027-06-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf0-769a-be6d-866154d46452",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2027-06-01",
+    "endDate": "2027-07-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf0-769a-be6d-89fb6d29d660",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2027-07-01",
+    "endDate": "2027-08-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf0-769a-be6d-8ffba8552d92",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2027-08-01",
+    "endDate": "2027-09-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf0-769a-be6d-9193270fc7d8",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2027-09-01",
+    "endDate": "2027-10-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf1-7382-a722-1cc74c3cf65b",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2027-10-01",
+    "endDate": "2027-11-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  },
+  {
+    "id": "01a1cf52-7bf1-7382-a722-23a899d329d2",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "startDate": "2027-11-01",
+    "endDate": "2027-12-01",
+    "createdAt": "2026-11-12T10:34:11.823Z",
+    "updatedAt": "2026-11-12T10:34:11.823Z"
+  }
+]
