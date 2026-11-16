@@ -315,7 +315,7 @@ jobs:
   # ── E2E Tests against preview ────────────────────────────────────
   test-preview:
     name: Test preview (shard ${{ matrix.shardIndex }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: deploy
     if: success()
     strategy:
