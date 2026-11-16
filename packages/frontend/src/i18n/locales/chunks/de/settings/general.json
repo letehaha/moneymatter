@@ -1,7 +1,7 @@
 {
   "settings": {
     "general": {
-      "title": "General",
+      "title": "Allgemein",
       "description": "Steuere, wie deine Finanzdaten in der App berechnet und angezeigt werden.",
       "creditLimit": {
         "label": "Kreditlimits im Kontostand berücksichtigen",
@@ -12,7 +12,7 @@
       "payday": {
         "label": "Abrechnungszyklus beginnt am",
         "description": "Der Tag des Monats, an dem dein Abrechnungszyklus beginnt. Der Standardzeitraum des Dashboards läuft von diesem Tag bis zum Tag vor diesem im nächsten Monat.",
-        "placeholder": "Select day",
+        "placeholder": "Tag auswählen",
         "successNotification": "Beginn des Abrechnungszyklus aktualisiert"
       },
       "unrealizedLossAlert": {
@@ -85,6 +85,21 @@
         "successNotification": "Einstellungen für Konto-Dropdowns aktualisiert",
         "errorNotification": "Einstellungen für Konto-Dropdowns konnten nicht aktualisiert werden"
       },
+      "iosAddExpense": {
+        "label": "Ausgabe hinzufügen (iPhone)",
+        "description": "Einstellungen für den Kurzbefehl \"Ausgabe hinzufügen\" auf dem iPhone (Siri, Spotlight und die Aktionstaste).",
+        "showBankAccounts": {
+          "label": "Bankverknüpfte Konten anzeigen",
+          "description": "Standardmäßig aus: Transaktionen auf bankverknüpften Konten werden über die Synchronisierung abgerufen."
+        },
+        "hiddenCategories": {
+          "label": "Ausgeblendete Kategorien",
+          "description": "Ausgewählte Kategorien werden samt ihrer Unterkategorien in der Kategorienliste des Kurzbefehls ausgeblendet.",
+          "placeholder": "Keine"
+        },
+        "successNotification": "Einstellungen für \"Ausgabe hinzufügen (iPhone)\" aktualisiert",
+        "errorNotification": "Einstellungen für \"Ausgabe hinzufügen (iPhone)\" konnten nicht aktualisiert werden"
+      },
       "showUpcomingTransactions": {
         "label": "Anstehende Transaktionen anzeigen",
         "description": "Hefte einen Abschnitt mit überfälligen geplanten Zahlungen und solchen, die in den nächsten 3 Tagen fällig sind, oben in der Transaktionsliste an.",
@@ -98,11 +113,11 @@
         "errorNotification": "Ein unerwarteter Fehler ist aufgetreten. Einstellung nicht gespeichert",
         "fields": {
           "externalUrl": {
-            "label": "External URL",
+            "label": "Externe URL",
             "description": "Verknüpfe die Transaktion mit einer Bestellseite, Buchungsbestätigung oder einem Beleg."
           },
           "externalReference": {
-            "label": "External reference",
+            "label": "Externe Referenz",
             "description": "Speichere eine Bestellnummer, Rechnungsnummer oder Buchungsreferenz bei der Transaktion."
           },
           "originalAmount": {
@@ -110,7 +125,7 @@
             "description": "Der tatsächlich in einer anderen Währung abgebuchte Betrag, wenn er von der Kontowährung abweicht."
           },
           "location": {
-            "label": "Location",
+            "label": "Ort",
             "description": "GPS-Koordinaten des Ortes, an dem der Kauf stattgefunden hat. Übernehme den Standort deines Geräts oder gib ihn manuell ein"
           }
         },

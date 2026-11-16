@@ -198,20 +198,20 @@
         "planned": "Planned transactions can't be reconciled.",
         "linkedTransfer": "Linked transfers can't be reconciled. Unlink the transfer first.",
         "refundLinked": "Refund-linked transactions can't be reconciled. Unlink the refund first.",
-        "tooFew": "Select at least 2 transactions to merge.",
-        "tooMany": "Too many transactions selected (merge: up to {mergeMax}, remove: up to {removeMax}).",
+        "tooFew": "Выберите не менее двух транзакций для слияния.",
+        "tooMany": "Выбрано слишком много транзакций (слияние: до {mergeMax}, удаление: до {removeMax}).",
         "differentAccounts": "All transactions must belong to the same account."
       },
       "merge": {
         "title": "Merge transactions",
         "description": "Pick the transaction to keep. The others are removed and can be restored from History.",
         "fields": {
-          "payee": "Payee",
-          "status": "Status",
+          "payee": "Получатель",
+          "status": "Статус",
           "time": "Time"
         },
         "status": {
-          "pending": "Pending",
+          "pending": "В обработке",
           "booked": "Booked"
         },
         "keep": "Keep",
@@ -222,12 +222,12 @@
       "remove": {
         "title": "Remove {count} transaction? | Remove {count} transactions?",
         "description": "Removed transactions stop counting toward balances and stats. Tracker, group and subscription links are detached. You can restore them from History, but the links won't come back.",
-        "confirm": "Remove"
+        "confirm": "Удалить"
       },
       "restoreDialog": {
-        "title": "Restore {count} transaction? | Restore {count} transactions?",
+        "title": "Восстановить {count} транзакций? | Восстановить {count} транзакций?",
         "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Tracker, group and subscription links detached on removal don't come back.",
-        "confirm": "Restore"
+        "confirm": "Восстановить"
       },
       "notifications": {
         "removed": "Removed {count} transaction | Removed {count} transactions",
@@ -261,19 +261,19 @@
         },
         "checkFirstHint": "Check with your bank first. Transactions it has booked since then disappear from this list.",
         "columns": {
-          "account": "Account",
-          "date": "Date",
-          "category": "Category",
+          "account": "Счёт",
+          "date": "Дата",
+          "category": "Категория",
           "pendingFor": "Pending for",
-          "amount": "Amount",
-          "status": "Status",
-          "actions": "Actions"
+          "amount": "Сумма",
+          "status": "Статус",
+          "actions": "Действия"
         },
         "pendingDaysShort": "{count}d",
         "status": {
           "tooOld": "Too old to check",
           "tooOldHint": "Your bank only shares about 90 days of history, so this transaction can't be checked. Keep it if the charge happened, remove it if it didn't.",
-          "duplicate": "Possible duplicate",
+          "duplicate": "Возможно дубликат",
           "duplicateHint": "A booked transaction from the same payee on {date} looks like the same payment. Merge them to keep one.",
           "notFound": "Not found at bank",
           "notFoundHint": "Your bank has no booked copy of this transaction, so it may be a released hold. Keep it if the charge happened, remove it if it didn't."

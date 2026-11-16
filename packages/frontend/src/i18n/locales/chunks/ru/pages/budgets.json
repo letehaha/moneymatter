@@ -213,7 +213,7 @@
         "line": "Line",
         "limit": "Limit",
         "spent": "Spent",
-        "left": "Left"
+        "left": "Осталось"
       },
       "usage": "{percent}% · {spent} of {limit}",
       "overUsage": "Over by {amount} · {spent} of {limit}",

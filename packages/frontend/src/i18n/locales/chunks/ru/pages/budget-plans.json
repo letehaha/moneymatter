@@ -378,7 +378,7 @@
       "spent": "Spent",
       "elapsed": "Period elapsed",
       "spentOfTotal": "{spent} of {total}",
-      "daysLeft": "{n}d left",
+      "daysLeft": "{n}д. осталось",
       "scheduled": "Scheduled",
       "nextOn": "Next on {date}",
       "scheduledCount": "{count} scheduled",
@@ -535,8 +535,8 @@
       "details": "Goal details",
       "stats": {
         "saved": "Saved",
-        "target": "Target",
-        "leftToSave": "Left to save",
+        "target": "Цель",
+        "leftToSave": "Осталось накопить",
         "balance": "Balance",
         "refillTo": "Refill to"
       },

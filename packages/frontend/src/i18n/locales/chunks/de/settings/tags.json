@@ -13,19 +13,19 @@
         "editTitle": "Tag bearbeiten",
         "name": "Name",
         "namePlaceholder": "Tag-Name",
-        "color": "Color",
-        "icon": "Icon",
-        "iconPlaceholder": "Select icon",
+        "color": "Farbe",
+        "icon": "Symbol",
+        "iconPlaceholder": "Symbol auswählen",
         "description": "Beschreibung",
-        "descriptionPlaceholder": "Optional description",
-        "saveButton": "Save",
+        "descriptionPlaceholder": "Optionale Beschreibung",
+        "saveButton": "Speichern",
         "previewPlaceholder": "Tag-Name"
       },
       "delete": {
         "title": "Tag löschen?",
         "description": "Dadurch wird \"{name}\" dauerhaft gelöscht und aus allen Transaktionen entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
-        "deleteButton": "Delete",
-        "cancelButton": "Cancel"
+        "deleteButton": "Löschen",
+        "cancelButton": "Abbrechen"
       },
       "notifications": {
         "createSuccess": "Tag erstellt",
@@ -54,7 +54,7 @@
           "dayOfMonthPlaceholder": "Tag auswählen",
           "dayOfMonthHint": "Für Monate mit weniger Tagen wird der letzte Tag verwendet",
           "isEnabled": "Aktiviert",
-          "saveButton": "Save"
+          "saveButton": "Speichern"
         },
         "types": {
           "amountThreshold": "Betragsschwellenwert",
@@ -79,8 +79,8 @@
         "delete": {
           "title": "Erinnerung löschen?",
           "description": "Dadurch wird diese Erinnerung dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
-          "deleteButton": "Delete",
-          "cancelButton": "Cancel"
+          "deleteButton": "Löschen",
+          "cancelButton": "Abbrechen"
         },
         "notifications": {
           "createSuccess": "Erinnerung erstellt",

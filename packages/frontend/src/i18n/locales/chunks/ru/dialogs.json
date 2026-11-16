@@ -107,7 +107,7 @@
         "paymentTypeLabel": "Тип платежа",
         "noteLabel": "Примечание",
         "notePlaceholder": "Примечание",
-        "addFieldsLabel": "Add",
+        "addFieldsLabel": "Добавить",
         "externalUrlLabel": "Внешний URL",
         "externalUrlPlaceholder": "Ссылка на страницу заказа, бронирования или чека",
         "externalReferenceLabel": "Внешний идентификатор",
@@ -154,6 +154,9 @@
         "targetAmountLabel": "Целевая сумма",
         "targetAmountPlaceholder": "Целевая сумма",
         "plannedLabel": "Запланировано",
+        "excludeFromStatsChipLabel": "Исключить из статистики",
+        "excludeFromStatsLabel": "Исключить из статистики",
+        "excludeFromStatsTooltip": "Keeps this transaction out of the analytics reports, dashboard widgets, budget plans and trackers. It still counts toward your balance and stays in the transaction list.",
         "plannedUnavailableNotification": "Запланированные транзакции здесь недоступны, поэтому параметр отключён.",
         "plannedTooltip": "Запишите будущую транзакцию. Баланс не изменится, пока операция не будет проведена.",
         "plannedConnectedAccountTooltip": "На счёте, подключённом к банку, могут находиться только запланированные транзакции. Отключение этого параметра очистит счёт и дату.",
@@ -170,7 +173,7 @@
         "deleteAriaLabel": "Удалить транзакцию",
         "deleteConfirmTitle": "Удалить эту транзакцию?",
         "deleteConfirmDescription": "Это действие нельзя отменить. Все связанные разбиения и связи возвратов также будут удалены.",
-        "deleteBlockedByPayment": "Remove it from the payment first to delete it",
+        "deleteBlockedByPayment": "Перед удалением сначала удалите транзакцию из платежа",
         "createAriaLabel": "Создать транзакцию",
         "editAriaLabel": "Изменить транзакцию",
         "loadingButton": "Загрузка...",
@@ -178,8 +181,8 @@
         "editButton": "Изменить",
         "duplicateButton": "Duplicate",
         "createMore": {
-          "label": "Create more",
-          "createdToast": "Transaction created"
+          "label": "Создать ещё",
+          "createdToast": "Транзакция создана"
         },
         "fromAccountLabel": "Со счёта",
         "toAccountLabel": "На счёт",
@@ -210,39 +213,39 @@
           "httpUrl": "Введите корректный URL с http(s)"
         },
         "attachments": {
-          "label": "Attachments",
-          "loading": "Loading attachments…",
-          "listLoadFailed": "Couldn't load attachments. Close and reopen this dialog to try again.",
+          "label": "Вложения",
+          "loading": "Загрузка вложений…",
+          "listLoadFailed": "Не удалось загрузить вложения. Закройте это диалоговое окно, и затем попробуйте снова.",
           "hint": "Up to {max} files, {size} each. JPEG, PNG, WebP or PDF.",
           "trigger": {
-            "empty": "Add attachments",
+            "empty": "Добавить вложения",
             "count": "{count} attachment | {count} attachments",
-            "uploading": "Uploading…"
+            "uploading": "Загрузка…"
           },
           "dropzone": {
-            "idle": "Drop files here or click to browse",
-            "drag": "Drop to attach"
+            "idle": "Перетащите файлы сюда или нажмите, чтобы выбрать",
+            "drag": "Перетащите, чтобы прикрепить"
           },
           "errors": {
             "unsupportedType": "Some files were skipped: only JPEG, PNG, WebP and PDF files can be attached.",
-            "tooMany": "A transaction can have at most {max} attachments.",
-            "tooLarge": "\"{filename}\" is larger than {max} and was not uploaded.",
-            "upload": "Failed to upload the attachment.",
-            "delete": "Failed to delete the attachment."
+            "tooMany": "Транзакция может иметь не более {max} вложений.",
+            "tooLarge": "\"{filename}\" превышает {max} и не был загружен.",
+            "upload": "Ошибка загрузки вложения.",
+            "delete": "Ошибка удаления вложения."
           },
           "deleteConfirm": {
-            "title": "Delete attachment?",
+            "title": "Удалить вложение?",
             "description": "\"{filename}\" will be permanently deleted. This action cannot be undone."
           },
-          "deleteAll": "Delete all",
+          "deleteAll": "Удалить всё",
           "deleteAllConfirm": {
-            "title": "Delete all attachments?",
+            "title": "Удалить все вложения?",
             "description": "All {count} files will be permanently deleted. This action cannot be undone."
           },
           "viewer": {
-            "loadFailed": "Could not load this file.",
-            "openInNewTab": "Open in new tab",
-            "download": "Download"
+            "loadFailed": "Не удалось загрузить этот файл.",
+            "openInNewTab": "Открыть в новой вкладке",
+            "download": "Скачать"
           }
         },
         "paymentLegs": {

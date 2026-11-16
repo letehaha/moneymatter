@@ -8,12 +8,11 @@
     "groupNotFound": "Gruppe oder Konto nicht gefunden",
     "accountNotFound": "Konto nicht gefunden!",
     "accountUpdateFailed": "Account-Aktualisierung ist nicht erfolgreich",
-    "accountNoExternalId": "Konto hat keine externe ID",
     "accountNoExternalIdMonobank": "Konto hat keine externe ID von Monobank",
     "accountNoExternalIdEnableBanking": "Konto hat keine externe ID von Enable Banking aktivieren",
     "accountNotFoundForTransaction": "Konto für diese Transaktion nicht gefunden",
     "deleteBlockedByLoanPayments": "Dieses Konto hat Kreditrückzahlungen. Löschen oder neu zuweisen, bevor das Konto gelöscht wird.",
-    "deleteBlockedByTrashedLoanPayments": "This account has loan payments in Trash. Delete them permanently from Trash before deleting the account.",
+    "deleteBlockedByTrashedLoanPayments": "Dieses Konto enthält Kreditrückzahlungen im Papierkorb. Lösche diese unwiderruflich aus dem Papierkorb, bevor du das Konto löschst.",
     "loanBalanceUseUpdateLoan": "Passe den Restbetrag des Kredits direkt auf dessen Detailseite an, nicht in den Kontoeinstellungen.",
     "loanCategoryImmutable": "Die Kategorie eines Kreditkontos kann nicht geändert werden.",
     "dedicatedFlowCategoryNotAllowed": "Kredit- und Fahrzeugkonten müssen über ihre eigenen Endpunkte erstellt werden und nicht über den Endpunkt der allgemeinen Konten.",
@@ -40,6 +39,7 @@
     "systemCannotBeMoved": "Systemkategorien können nicht verschoben werden.",
     "parentNotFound": "Kategorie mit dieser parentId existiert nicht.",
     "systemParentForbidden": "Systemkategorien können nicht als übergeordnete Kategorie verwendet werden.",
+    "defaultCannotBeDeleted": "Diese Kategorie enthält nicht kategorisierte Transaktionen und kann nicht gelöscht werden.",
     "ownParent": "Eine Kategorie kann nicht ihre eigene übergeordnete Kategorie sein.",
     "underOwnSubcategory": "Eine Kategorie kann nicht unter ihre eigene Unterkategorie verschoben werden.",
     "nestingTooDeep": "Kategorien können nicht tiefer als {{max}} Ebenen verschachtelt werden."
@@ -147,11 +147,11 @@
       }
     },
     "trash": {
-      "paymentNotTrashable": "Remove it from the payment first to delete it.",
-      "portfolioNotTrashable": "Unlink it from the portfolio first to delete it.",
-      "ventureNotTrashable": "Unlink it from the venture first to delete it.",
-      "accountTypeChanged": "This transaction can't be restored because its account type has changed.",
-      "loanPaymentLegMissing": "This loan payment can't be restored because its other side was deleted."
+      "paymentNotTrashable": "Entferne es zuerst von der Zahlung, um es zu löschen.",
+      "portfolioNotTrashable": "Trenne zuerst die Verknüpfung zum Portfolio, um es zu löschen.",
+      "ventureNotTrashable": "Trenne zuerst die Verknüpfung zur Beteiligung, um es zu löschen.",
+      "accountTypeChanged": "Diese Transaktion kann nicht wiederhergestellt werden, da sich ihr Kontotyp geändert hat.",
+      "loanPaymentLegMissing": "Diese Kreditrückzahlung kann nicht wiederhergestellt werden, da ihre andere Seite gelöscht wurde."
     }
   },
   "budgets": {
@@ -199,9 +199,9 @@
     "openEndedGoalCannotSnooze": "Ein Ziel ohne Enddatum kann nicht pausiert werden.",
     "zeroSumNeedsPool": "Um „Noch zu verteilen“ auf 0 zu halten, ist ein Plan erforderlich, der aus einem Pool finanziert wird.",
     "suggestedGroups": {
-      "bills": "Bills",
-      "everyday": "Everyday",
-      "life": "Life"
+      "bills": "Rechnungen",
+      "everyday": "Alltag",
+      "life": "Leben"
     }
   },
   "tags": {
@@ -297,13 +297,12 @@
     "connectionNotFound": "Verbindung nicht gefunden",
     "connectionNotFoundOrNotYours": "Verbindung nicht gefunden oder gehört dir nicht",
     "providerNoReauthorization": "Anbieter {{providerType}} unterstützt keine Re-Autorisierung",
-    "providerNotFoundInRegistry": "Anbieter {{providerType}} nicht in der Registrierung gefunden",
     "connectionIdNotFound": "Bankdatenanbieter-Verbindung {{connectionId}} nicht gefunden",
     "accountIdNotFound": "Konto {{accountId}} nicht gefunden",
     "providerTypeMismatch": "Verbindung {{connectionId}} gilt für Anbieter {{actualType}}, nicht {{expectedType}}",
     "providerAlreadyRegistered": "Anbieter {{providerType}} ist bereits registriert. Anlegen von Duplikaten nicht möglich.",
     "providerNotRegistered": "Anbieter {{providerType}} ist nicht registriert. Verfügbare Anbieter: {{available}}",
-    "unexpected": "Unexpected error."
+    "unexpected": "Unerwarteter Fehler."
   },
   "validation": {
     "dateInvalid": "\"date\" ist ein ungültiges Datum."
@@ -336,7 +335,7 @@
     "periodLoadNotSupported": "Das Laden von Transaktionen für einen benutzerdefinierten Zeitraum wird von diesem Anbieter nicht unterstützt.",
     "transactionsLoadedCount": "{{count}} Transaktionen geladen.",
     "transactionsAllDuplicates": "{{count}} Transaktionen für diesen Zeitraum gefunden – alle wurden bereits importiert.",
-    "transactionsNoneInPeriod": "Der Anbieter hat für diesen Zeitraum keine Transaktionen zurückgemeldet.",
+    "transactionsNoneInPeriod": "Der Datenanbieter hat für diesen Zeitraum keine Transaktionen zurückgegeben.",
     "apiError": "{{provider}} API-Fehler: {{message}}",
     "simplefinUnreachable": "SimpleFIN ist vorübergehend nicht erreichbar. Bitte versuche es später erneut.",
     "currencySelectionRequired": "Für Konto \"{{account}}\" wurde von der Bank keine Währung übermittelt – wähle eine Währung aus, bevor du es verbindest.",
@@ -345,9 +344,7 @@
       "invalidCredentialsFormat": "Ungültiges Format der Zugangsdaten für Monobank",
       "invalidApiToken": "Ungültiger Monobank API-Schlüssel",
       "rateLimitExceeded": "Monobank API-Ratenbegrenzung überschritten. Bitte versuche es in einer Minute erneut.",
-      "accountNotFound": "Konto {{accountExternalId}} bei Monobank nicht gefunden",
       "accountReconnectRequired": "Dieses Konto ist bei Monobank nicht mehr verfügbar. Bitte verbinde deine Monobank-Verbindung erneut, um die Synchronisierung fortzusetzen.",
-      "webhookNotImplemented": "handleWebhook ist für Monobank noch nicht implementiert",
       "unknownCurrencyCode": "Unbekannter Währungscode: {{numericCode}}",
       "geoBlocked": "Monobank blockiert Anfragen von der IP dieses Servers. Deaktiviere VPN oder verwende eine ukrainische IP-Adresse.",
       "geoBlockedProduction": "Monobank-Synchronisierung ist vorübergehend nicht verfügbar. Wir wurden benachrichtigt und arbeiten daran. Bitte wende dich an den Support, falls dies dringend ist."
@@ -383,8 +380,7 @@
       "invalidTokens": "Ungültige Akahu-Token. Überprüfe den User Access Token und den App ID Token auf deiner Akahu-App-Seite.",
       "accountNoExternalId": "Konto hat keine externe ID für die Akahu-Synchronisierung.",
       "accountNotFound": "Akahu-Konto nicht gefunden.",
-      "rateLimited": "Akahu limitiert derzeit die Anfragen. Bitte versuche es in Kürze noch einmal.",
-      "missingCurrency": "Akahu hat für dieses Konto keine Währung zurückgegeben."
+      "rateLimited": "Akahu limitiert derzeit die Anfragen. Bitte versuche es in Kürze noch einmal."
     },
     "simplefin": {
       "invalidCredentialsFormat": "Ungültiges Format der SimpleFIN-Zugangsdaten.",
@@ -399,8 +395,7 @@
     "walutomat": {
       "invalidCredentialsFormat": "Ungültiges Format der Walutomat-Zugangsdaten. API-Schlüssel und privater Schlüssel sind erforderlich.",
       "invalidApiKey": "Ungültiger Walutomat API-Schlüssel oder privater Schlüssel.",
-      "accountNoExternalId": "Walutomat-Konto hat keine externe ID.",
-      "walletNotFound": "Walutomat-Wallet für Währung nicht gefunden: {{currency}}"
+      "accountNoExternalId": "Walutomat-Konto hat keine externe ID."
     }
   },
   "csvImport": {
@@ -655,7 +650,7 @@
       "communication": "Kommunikation & IT",
       "financial-expenses": "Finanzausgaben",
       "investments": "Investitionen",
-      "income": "Income",
+      "income": "Einnahmen",
       "other": "Sonstiges"
     },
     "subcategories": {
@@ -672,7 +667,6 @@
         "home-garden": "Haus & Garten",
         "pets-animals": "Haustiere",
         "electronics-accessories": "Elektronik & Zubehör",
-        "gifts-joy": "Geschenke & Freude",
         "stationery-tools": "Schreibwaren & Werkzeug",
         "free-time": "Freizeit",
         "drugstore-chemist": "Drogerie"
@@ -709,7 +703,8 @@
         "books-audio-subscriptions": "Bücher, Audio & Abos",
         "tv-streaming": "TV & Streaming",
         "holiday-trips-hotels": "Urlaub, Reisen & Hotels",
-        "charity-gifts": "Spenden & Geschenke",
+        "gifts": "Geschenke",
+        "charity": "Spenden",
         "alcohol-tobacco": "Alkohol & Tabak",
         "lottery-gambling": "Lotto & Glücksspiel"
       },
@@ -732,7 +727,7 @@
         "realty": "Immobilien",
         "vehicles-chattels": "Fahrzeuge & Sachwerte",
         "financial-investments": "Finanzinvestitionen",
-        "savings": "Savings",
+        "savings": "Ersparnisse",
         "collections": "Sammlungen"
       },
       "income": {
@@ -767,9 +762,9 @@
         "excludesMatchingField": "Automatische Erfassung und Abgleichsregeln schließen sich gegenseitig aus."
       },
       "customInterval": {
-        "required": "A custom frequency needs an interval unit and count.",
-        "presetConflict": "An interval unit and count can only be set with the custom frequency.",
-        "countOutOfRange": "The interval count must be between {{min}} and {{max}} for this unit."
+        "required": "Ein benutzerdefinierter Zyklus benötigt eine Intervalleinheit und eine Anzahl.",
+        "presetConflict": "Eine Intervalleinheit und eine Anzahl können nur beim benutzerdefinierten Zyklus festgelegt werden.",
+        "countOutOfRange": "Die Anzahl des Intervalls muss für diese Einheit zwischen {{min}} und {{max}} liegen."
       }
     }
   },
@@ -781,8 +776,8 @@
     "accountMustBeSystem": "In einer Transaktionsvorlage können nur manuell verwaltete Konten verwendet werden.",
     "accountArchived": "Archivierte Konten können nicht in einer Vorlage verwendet werden.",
     "categoryNotFound": "Kategorie nicht gefunden oder gehört nicht zum Nutzer.",
-    "payeeNotFound": "Payee not found or does not belong to user.",
-    "tagsNotFound": "One or more tags were not found or do not belong to user."
+    "payeeNotFound": "Zahlungsempfänger nicht gefunden oder gehört nicht zum Benutzer.",
+    "tagsNotFound": "Ein oder mehrere Tags wurden nicht gefunden oder gehören nicht zum Benutzer."
   },
   "payees": {
     "aliasNameRequired": "Alias-Name ist erforderlich",
@@ -815,7 +810,7 @@
     "eventNotFound": "Venture-Ereignis nicht gefunden"
   },
   "vehicles": {
-    "notFound": "Vehicle not found"
+    "notFound": "Fahrzeug nicht gefunden"
   },
   "stats": {
     "netWorthHistoryTooManyPoints": "Dieser Datumsbereich und diese Granularität erzeugen zu viele Datenpunkte. Wähle eine gröbere Granularität oder einen kürzeren Zeitraum."
@@ -846,9 +841,9 @@
   "auth": {
     "errors": {
       "passwordAlreadySet": "Dein Konto hat bereits ein Passwort.",
-      "passwordTooShort": "Password is too short.",
-      "passwordTooLong": "Password is too long.",
-      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "passwordTooShort": "Das Passwort ist zu kurz.",
+      "passwordTooLong": "Das Passwort ist zu lang.",
+      "reauthenticationRequired": "Melde dich aus Sicherheitsgründen erneut an, um diese Änderung vorzunehmen.",
       "signupsDisabled": "Registrierungen wurden vom Administrator deaktiviert."
     }
   },
@@ -885,7 +880,7 @@
   },
   "goals": {
     "goalNotFound": "Ziel nicht gefunden.",
-    "accountNotFound": "One of the selected accounts was not found.",
+    "accountNotFound": "Eines der ausgewählten Konten wurde nicht gefunden.",
     "accountNotEligible": "{{accountName}} kann nicht für ein Ziel angerechnet werden. Wähle ein Bargeld-, Giro-, Spar-, Investment- oder Krypto-Konto aus.",
     "shareCapacityExceeded": "{{accountName}} hat {{free}}% frei: Du hast {{requested}}% angefragt, und andere Ziele nutzen bereits {{usedByOtherGoals}}%.",
     "fixedAmountsBelowTarget": "Festbeträge ergeben in der Summe {{total}} {{currencyCode}}, weniger als das Ziel von {{target}} {{currencyCode}}. Erhöhe einen Betrag oder berücksichtige ein Konto prozentual.",

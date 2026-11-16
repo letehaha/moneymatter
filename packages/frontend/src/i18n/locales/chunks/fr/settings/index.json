@@ -18,7 +18,8 @@
       "general": "Général",
       "payees": "Tiers",
       "planBilling": "Abonnement et facturation",
-      "collapse": "Réduire"
+      "collapse": "Réduire",
+      "resize": "Resize navigation"
     },
     "backToSettings": "Retour aux paramètres"
   }

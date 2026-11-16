@@ -2,23 +2,24 @@
   "settings": {
     "navigation": {
       "currencies": "Währungen",
-      "categories": "Categories",
+      "categories": "Kategorien",
       "tags": "Tags",
       "accountsGroups": "Kontengruppen",
       "importData": "Import/Export",
       "ai": "KI",
       "security": "Sicherheit",
       "admin": "Admin",
-      "sharedWithMe": "Shared with me",
+      "sharedWithMe": "Mit mir geteilt",
       "household": "Haushalt",
       "personalGroup": "Profil",
       "workspaceGroup": "Arbeitsbereich",
       "appearance": "Erscheinungsbild",
-      "language": "Language",
-      "general": "General",
+      "language": "Sprache",
+      "general": "Allgemein",
       "payees": "Zahlungsempfänger",
-      "planBilling": "Plan & billing",
-      "collapse": "Einklappen"
+      "planBilling": "Tarif & Abrechnung",
+      "collapse": "Einklappen",
+      "resize": "Navigation anpassen"
     },
     "backToSettings": "Zurück zu den Einstellungen"
   }

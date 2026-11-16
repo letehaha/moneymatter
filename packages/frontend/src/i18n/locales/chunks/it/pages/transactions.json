@@ -45,10 +45,8 @@
         "exclude": "Escludi",
         "only": "Solo"
       },
-      "noteIncludes": {
-        "label": "La nota contiene (separati da virgola):",
-        "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Cercare nelle note"
+      "search": {
+        "placeholder": "Cercare in note, beneficiari ed etichette"
       },
       "tags": {
         "allTags": "Tutte le etichette",
@@ -68,8 +66,7 @@
         "type": "Tipo",
         "tags": "Etichette",
         "budgets": "Tracker",
-        "amount": "Intervallo di importo",
-        "note": "Note"
+        "amount": "Intervallo di importo"
       },
       "transferNature": {
         "label": "Tipi di trasferimento",
@@ -194,6 +191,10 @@
         "createFailed": "Impossibile creare il gruppo",
         "addFailed": "Impossibile aggiungere le transazioni al gruppo"
       }
+    },
+    "excludeFromStats": {
+      "label": "Esclusa dalle statistiche",
+      "tooltip": "Esclusa dai report, dai widget della dashboard, dai Budget e dai Tracker. Continua a essere conteggiata nel saldo e resta nell'elenco delle transazioni."
     },
     "planned": {
       "label": "Pianificata",

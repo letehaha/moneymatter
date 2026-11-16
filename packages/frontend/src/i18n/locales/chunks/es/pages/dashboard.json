@@ -452,6 +452,8 @@
       "payAction": "Marcar como pagado",
       "listTitle": "Upcoming",
       "dueCount": "{count} más",
+      "daysLate": "{count}d late",
+      "overdueCount": "{count} overdue",
       "nothingDue": "Nada en 3 días",
       "overdueHint": "Vencido desde %date%",
       "dueSoonHint": "Vence en los próximos 30 días",

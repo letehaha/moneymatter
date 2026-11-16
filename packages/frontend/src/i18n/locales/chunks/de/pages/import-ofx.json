@@ -8,7 +8,7 @@
           "steps": {
             "upload": "Hochladen",
             "resolve": "Konten zuordnen",
-            "review": "Review",
+            "review": "Überprüfen",
             "results": "Fertig"
           }
         },
@@ -17,7 +17,7 @@
           "description": "Wähle eine Kontoauszugsdatei aus, die du von deiner Bank oder deinem Kreditkartenanbieter heruntergeladen hast.",
           "maxSize": ".ofx- oder .qfx-Datei, bis zu 10 MB",
           "parsing": "Lese Datei…",
-          "continue": "Continue",
+          "continue": "Weiter",
           "errors": {
             "invalidFormatNamed": "\"{name}\" ist keine OFX- oder QFX-Datei."
           }
@@ -27,17 +27,17 @@
         },
         "resolve": {
           "accounts": {
-            "sectionTitle": "Accounts",
-            "nameLabel": "Account name",
+            "sectionTitle": "Konten",
+            "nameLabel": "Kontoname",
             "namePlaceholder": "Kontonamen eingeben",
             "currentBalanceLabel": "Aktueller Saldo",
             "currentBalancePlaceholder": "Leer lassen, um die Summe der importierten Transaktionen zu verwenden",
             "ledgerBalanceHint": "Auszugssaldo: {balance} am {date}",
-            "transactionCount": "{count} transaction | {count} transactions",
+            "transactionCount": "{count} Transaktion | {count} Transaktionen",
             "skippedNote": "{count} Konto/Konten werden übersprungen. Ihre Transaktionen werden nicht importiert. | {count} Konten werden übersprungen. Ihre Transaktionen werden nicht importiert.",
             "statementType": {
               "bank": "Bankkonto",
-              "credit-card": "Credit card"
+              "credit-card": "Kreditkarte"
             }
           },
           "quickActions": {
@@ -51,12 +51,12 @@
             }
           },
           "footer": {
-            "back": "Back",
-            "continue": "Continue"
+            "back": "Zurück",
+            "continue": "Weiter"
           }
         },
         "review": {
-          "transactions": "Transactions",
+          "transactions": "Transaktionen",
           "accountsSkipped": "Konten übersprungen",
           "duplicatesSkipped": "Duplikate übersprungen",
           "willImport": "Zu importieren",
@@ -70,18 +70,18 @@
           },
           "duplicatesTitle": "{count} mögliches Duplikat | {count} mögliche Duplikate",
           "duplicatesHint": "Diese Transaktionen sehen aus wie Transaktionen, die du bereits hast. Wähle eine Zeile aus, um sie trotzdem zu importieren; nicht ausgewählte Duplikate werden übersprungen.",
-          "back": "Back",
+          "back": "Zurück",
           "importing": "Starte Import…",
           "importButton": "{count} Transaktion importieren | {count} Transaktionen importieren"
         },
         "execute": {
-          "starting": "Starting the import…",
+          "starting": "Starte den Import…",
           "progressCount": "{processed} von {total}",
           "failed": "Der Import ist fehlgeschlagen.",
           "partialImportNote": "Einige Transaktionen wurden möglicherweise bereits importiert.",
           "statusQueued": "In Warteschlange",
           "statusRunning": "Importiere",
-          "statusCompleted": "Completed",
+          "statusCompleted": "Abgeschlossen",
           "statusFailed": "Fehlgeschlagen"
         },
         "done": {
@@ -93,11 +93,11 @@
           "emptyDescription": "Jede Transaktion wurde übersprungen oder befand sich bereits in deinem Konto.",
           "failedTitle": "Es wurde nichts importiert",
           "failedDescription": "Es konnten keine Transaktionen erstellt werden. Überprüfe die Fehler unten.",
-          "accountsCreated": "Accounts created",
+          "accountsCreated": "Konten erstellt",
           "accountsLinked": "Konten verknüpft",
           "accountsSkipped": "Konten übersprungen",
-          "payeesCreated": "Payees created",
-          "transactionsImported": "Transactions imported",
+          "payeesCreated": "Zahlungsempfänger erstellt",
+          "transactionsImported": "Transaktionen importiert",
           "duplicatesSkipped": "Duplikate übersprungen",
           "mergedIntoPlanned": "Mit geplanten zusammengeführt",
           "balanceWarningTitle": "Einige Salden könnten fehlerhaft sein",
@@ -105,18 +105,18 @@
           "errorsTitle": "{count} Transaktion konnte nicht importiert werden | {count} Transaktionen konnten nicht importiert werden",
           "errorsOverflow": "…und {count} weitere",
           "errors": {
-            "rowImportFailed": "This row could not be imported.",
+            "rowImportFailed": "Diese Zeile konnte nicht importiert werden.",
             "accountBalanceDesync": "Ein Kontostand konnte nach dem Import nicht aktualisiert werden.",
-            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed."
+            "rowsSuppressed": "Ab dieser Zeile konnte {count} weitere Zeile nicht importiert werden. Nur die ersten {listed} Fehler werden angezeigt. | Ab dieser Zeile konnten {count} weitere Zeilen nicht importiert werden. Nur die ersten {listed} Fehler werden angezeigt."
           },
-          "rowPrefix": "Row {rowIndex}:",
-          "viewTransactions": "View transactions",
-          "importAnother": "Import another file"
+          "rowPrefix": "Zeile {rowIndex}:",
+          "viewTransactions": "Transaktionen anzeigen",
+          "importAnother": "Weitere Datei importieren"
         },
         "leaseExpired": {
           "title": "Deine hochgeladene Datei ist nicht mehr verfügbar",
           "description": "Die verarbeitete Kopie deiner OFX- oder QFX-Datei wurde nach einer Phase der Inaktivität freigegeben. Deine Zuordnungsauswahl konnte nicht beibehalten werden. Starte den Import erneut.",
-          "action": "Start over"
+          "action": "Von vorn beginnen"
         },
         "leaseResourceLabel": "Deine hochgeladene Datei"
       }
