@@ -3,10 +3,11 @@ import { useAccountPayees, usePayeeLookup, usePayees } from '@/composable/data-q
 import * as Popover from '@/components/lib/ui/popover';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { Button } from '@/components/lib/ui/button';
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import { cn } from '@/lib/utils';
-import { PlusIcon, SearchIcon, XIcon } from '@lucide/vue';
+import { CheckIcon, PlusIcon, SearchIcon, XIcon } from '@lucide/vue';
 import { refDebounced } from '@vueuse/core';
-import { ListboxContent, ListboxFilter, ListboxItem, ListboxRoot } from 'reka-ui';
+import { ListboxContent, ListboxFilter, ListboxItem, ListboxItemIndicator, ListboxRoot } from 'reka-ui';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { PayeeModel, TransactionLocation } from '@bt/shared/types';
@@ -39,6 +40,7 @@ interface Props {
    * owner's namespace from a transaction form).
    */
   ownerScoped?: boolean;
+  size?: ControlSize;
 }
 const props = withDefaults(defineProps<Props>(), {
   label: undefined,
@@ -47,6 +49,7 @@ const props = withDefaults(defineProps<Props>(), {
   excludeId: null,
   accountId: null,
   ownerScoped: false,
+  size: 'default',
 });
 
 const emit = defineEmits<{
@@ -191,9 +194,10 @@ function handlePayeeCreated(payee: PayeeModel) {
           :disabled="disabled"
           :class="
             cn(
-              'border-input bg-input-background not-dark:hover:bg-accent ring-offset-background flex h-10 w-full items-center gap-2 rounded-md border px-3 py-2 text-sm md:h-9',
+              'border-input bg-input-background ring-offset-background flex w-full items-center gap-2 rounded-md border px-3 py-2 text-sm',
               'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden',
               disabled && 'cursor-not-allowed opacity-50',
+              controlHeight[size],
             )
           "
           data-test="payee-select-field"
@@ -240,17 +244,20 @@ function handlePayeeCreated(payee: PayeeModel) {
           </div>
 
           <ScrollArea :class="showCreateAffordance ? 'max-h-72' : 'max-h-64'">
-            <ListboxContent>
+            <ListboxContent class="p-1">
               <ListboxItem
                 v-for="item in displayPayees"
                 :key="item.id"
                 :value="item.id"
-                class="data-highlighted:bg-popover-foreground/10 data-[state=checked]:bg-primary/15 data-[state=checked]:data-highlighted:bg-primary/20 flex cursor-pointer items-center gap-2 p-2 text-sm"
+                class="data-highlighted:bg-hover flex cursor-pointer items-center gap-2 rounded-sm p-2 text-sm data-[state=checked]:font-medium"
                 @mousedown.prevent
                 @select.prevent="!isSearchPending && selectPayee(item)"
               >
                 <BrandLogo v-bind="toEntityLogoDisplayProps(item)" :name="item.name" class="size-6 shrink-0" />
                 <span class="min-w-0 grow truncate">{{ item.name }}</span>
+                <ListboxItemIndicator class="shrink-0">
+                  <CheckIcon class="text-primary-text size-4" />
+                </ListboxItemIndicator>
               </ListboxItem>
 
               <div

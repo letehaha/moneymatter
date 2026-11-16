@@ -26,7 +26,7 @@ const select = () => emit('select');
     :aria-pressed="selected"
     :class="
       cn(
-        'hover:bg-muted/50 focus-visible:ring-ring flex cursor-pointer items-center gap-2 px-2 py-1 transition-colors focus-visible:ring-2 focus-visible:outline-hidden focus-visible:ring-inset',
+        'hover:bg-hover focus-visible:ring-ring flex cursor-pointer items-center gap-2 px-2 py-1 transition-colors focus-visible:ring-2 focus-visible:outline-hidden focus-visible:ring-inset',
         selected && 'bg-primary/10 hover:bg-primary/15 shadow-[inset_3px_0_0_var(--primary)]',
       )
     "

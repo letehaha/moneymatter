@@ -28,8 +28,7 @@
       <DesktopOnlyTooltip :content="$t('payees.newPayeeButton')">
         <UiButton
           variant="outline"
-          size="sm"
-          class="shrink-0"
+          class="shrink-0 px-3"
           :aria-label="$t('payees.newPayeeButton')"
           @click="openCreateDialog"
         >

@@ -77,7 +77,7 @@ const toggle = () => {
     :class="
       cn(
         'group/row flex h-10 items-center pr-3 pl-2 transition-colors',
-        organizing ? 'cursor-grab active:cursor-grabbing' : 'hover:bg-muted/40',
+        organizing ? 'cursor-grab active:cursor-grabbing' : 'hover:bg-hover',
         !organizing && isExpandable && 'cursor-pointer',
         dimmed && 'cursor-not-allowed opacity-40',
         dropTarget && 'bg-primary/15 ring-primary ring-2 ring-inset',

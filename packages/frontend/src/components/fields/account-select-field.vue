@@ -14,6 +14,7 @@
     :clearable="clearable"
     :required="required"
     :option-disabled="optionDisabled"
+    :size="size"
     :trigger-class="embedded ? EMBEDDED_TRIGGER_CLASS : undefined"
     @update:model-value="emit('update:modelValue', $event)"
   >
@@ -57,6 +58,7 @@
 import CurrencyChip from '@/components/common/currency-chip.vue';
 import AccountOptionRow from '@/components/dialogs/manage-transaction/components/account-option-row.vue';
 import SelectField from '@/components/fields/select-field.vue';
+import { type ControlSize } from '@/components/lib/ui/control-size';
 import { OUT_OF_WALLET_ACCOUNT_MOCK } from '@/common/const';
 import { getAccountDisplayLabel } from '@/common/utils/account-display';
 import { filterDropdownAccounts, useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs';
@@ -87,6 +89,7 @@ const props = withDefaults(
     optionDisabled?: (account: AccountModel) => boolean;
     /** Borderless trigger for a segment of a wider field; the host shows the currency. */
     embedded?: boolean;
+    size?: ControlSize;
   }>(),
   {
     label: undefined,

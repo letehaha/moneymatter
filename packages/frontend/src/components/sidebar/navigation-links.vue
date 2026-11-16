@@ -10,22 +10,57 @@ import {
   LayersIcon,
   LayoutDashboardIcon,
 } from '@lucide/vue';
-import { watch } from 'vue';
+import { useSlidingIndicator } from '@/composable/use-sliding-indicator';
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
-import { SIDEBAR_NAV_CHILDREN, useAccountsNavChildren } from './nav-items';
+import { SIDEBAR_NAV_CHILDREN, type SidebarNavChild, useAccountsNavChildren } from './nav-items';
 import { useSidebarNavCollapse } from './use-nav-collapse';
 import { useSidebarNavRoutes } from './use-nav-routes';
 
 withDefaults(defineProps<{ bottomNav?: boolean }>(), { bottomNav: false });
 
-const navItemBase = 'w-full gap-2 px-3';
-const navItemActive = 'bg-primary/10 text-foreground';
+const navItemBase = 'h-9 w-full gap-2 border px-3 touch:h-10';
+const navChildBase = 'h-8 w-full justify-start gap-2 border px-3 touch:h-9';
+const navItemIdle = 'border-transparent text-foreground dark:text-muted-foreground';
+// `nav-item-active` carries no styles: it marks the item the sliding pill sits behind.
+const navItemActive = 'nav-item-active border-transparent text-foreground hover:bg-transparent dark:hover:bg-hover';
+// Idle and active classes never share an element: Button's fallthrough attrs re-apply the raw class list, so tailwind-merge can't settle conflicts between them.
+const navItemState = ({ active, expanded = false }: { active: boolean; expanded?: boolean }) => {
+  if (!active) return navItemIdle;
+  return expanded ? 'border-transparent text-foreground' : navItemActive;
+};
 const navIconBase = 'size-4 shrink-0';
 const navIconActive = 'text-primary-text';
 
 const { isAccountsOpen, isTransactionsOpen, isPlannedOpen } = useSidebarNavCollapse();
 const { isAccountsRoute, isTransactionsRoute, isPlannedRoute, isChildActive } = useSidebarNavRoutes();
 const accountsNavChildren = useAccountsNavChildren();
+
+const route = useRoute();
+// An open section hands the highlight to its active child, but that child can be hidden by user settings.
+const hasActiveChild = (children: SidebarNavChild[]) =>
+  children.some((child) =>
+    isChildActive({ child, isActive: route.matched.some((record) => record.name === child.routeName) }),
+  );
+const isChildHighlighted = computed(() => ({
+  accounts: isAccountsOpen.value && hasActiveChild(accountsNavChildren.value),
+  transactions: isTransactionsOpen.value && hasActiveChild(SIDEBAR_NAV_CHILDREN.transactions),
+  planned: isPlannedOpen.value && hasActiveChild(SIDEBAR_NAV_CHILDREN.planned),
+}));
+const pillRef = ref<HTMLElement | null>(null);
+// Opening or closing the section that holds the current page moves the pill between the parent and its child.
+const isActiveSectionOpen = computed(
+  () =>
+    (isAccountsRoute.value && isAccountsOpen.value) ||
+    (isTransactionsRoute.value && isTransactionsOpen.value) ||
+    (isPlannedRoute.value && isPlannedOpen.value),
+);
+const { indicator } = useSlidingIndicator({
+  containerRef: computed(() => pillRef.value?.parentElement),
+  activeSelector: '.nav-item-active',
+  activeKey: () => `${String(route.name)}|${isActiveSectionOpen.value}`,
+});
 
 watch(
   isAccountsRoute,
@@ -53,11 +88,12 @@ watch(
 </script>
 
 <template>
+  <div ref="pillRef" v-bind="indicator" />
   <router-link v-slot="{ isActive }" :to="{ name: ROUTES_NAMES.home }">
     <ui-button
       variant="ghost"
       as="span"
-      :class="[navItemBase, !bottomNav && 'justify-start', isActive && navItemActive]"
+      :class="[navItemBase, !bottomNav && 'justify-start', navItemState({ active: isActive })]"
       size="default"
     >
       <LayoutDashboardIcon :class="[navIconBase, isActive && navIconActive]" />
@@ -67,7 +103,7 @@ watch(
 
   <template v-if="bottomNav">
     <router-link v-slot="{ isActive }" :to="{ name: ROUTES_NAMES.accounts }">
-      <ui-button variant="ghost" as="span" :class="[navItemBase, isActive && navItemActive]" size="default">
+      <ui-button variant="ghost" as="span" :class="[navItemBase, navItemState({ active: isActive })]" size="default">
         <LayersIcon :class="[navIconBase, isActive && navIconActive]" />
         <span class="max-sm:hidden"> {{ $t('navigation.accounts') }} </span>
       </ui-button>
@@ -77,7 +113,7 @@ watch(
     <ui-button
       variant="ghost"
       as="span"
-      :class="[navItemBase, 'justify-start', isAccountsRoute && navItemActive]"
+      :class="[navItemBase, 'justify-start', navItemState({ active: isAccountsRoute })]"
       size="default"
     >
       <LayersIcon :class="[navIconBase, isAccountsRoute && navIconActive]" />
@@ -89,7 +125,11 @@ watch(
       <ui-button
         variant="ghost"
         as="div"
-        :class="['w-full justify-start gap-2 px-3', isAccountsRoute && 'bg-primary/10']"
+        :class="[
+          navItemBase,
+          'justify-start',
+          navItemState({ active: isAccountsRoute, expanded: isChildHighlighted.accounts }),
+        ]"
         size="default"
       >
         <LayersIcon :class="[navIconBase, isAccountsRoute && navIconActive]" />
@@ -110,7 +150,7 @@ watch(
           <ui-button
             variant="ghost"
             as="span"
-            :class="['w-full justify-start gap-2 px-3', isChildActive({ child, isActive }) && navItemActive]"
+            :class="[navChildBase, navItemState({ active: isChildActive({ child, isActive }) })]"
             size="sm"
           >
             <component :is="child.icon" :class="[navIconBase, isChildActive({ child, isActive }) && navIconActive]" />
@@ -123,7 +163,7 @@ watch(
 
   <template v-if="bottomNav">
     <router-link v-slot="{ isActive }" :to="{ name: ROUTES_NAMES.transactions }">
-      <ui-button variant="ghost" as="span" :class="[navItemBase, isActive && navItemActive]" size="default">
+      <ui-button variant="ghost" as="span" :class="[navItemBase, navItemState({ active: isActive })]" size="default">
         <CreditCardIcon :class="[navIconBase, isActive && navIconActive]" />
         <span class="max-sm:hidden"> {{ $t('navigation.transactions') }} </span>
       </ui-button>
@@ -134,7 +174,11 @@ watch(
       <ui-button
         variant="ghost"
         as="div"
-        :class="['w-full justify-start gap-2 px-3', isTransactionsRoute && 'bg-primary/10']"
+        :class="[
+          navItemBase,
+          'justify-start',
+          navItemState({ active: isTransactionsRoute, expanded: isChildHighlighted.transactions }),
+        ]"
         size="default"
       >
         <CreditCardIcon :class="[navIconBase, isTransactionsRoute && navIconActive]" />
@@ -155,7 +199,7 @@ watch(
           <ui-button
             variant="ghost"
             as="span"
-            :class="['w-full justify-start gap-2 px-3', isChildActive({ child, isActive }) && navItemActive]"
+            :class="[navChildBase, navItemState({ active: isChildActive({ child, isActive }) })]"
             size="sm"
           >
             <component :is="child.icon" :class="[navIconBase, isChildActive({ child, isActive }) && navIconActive]" />
@@ -171,7 +215,11 @@ watch(
       <ui-button
         variant="ghost"
         as="div"
-        :class="['w-full justify-start gap-2 px-3', isPlannedRoute && 'bg-primary/10']"
+        :class="[
+          navItemBase,
+          'justify-start',
+          navItemState({ active: isPlannedRoute, expanded: isChildHighlighted.planned }),
+        ]"
         size="default"
       >
         <CalendarClockIcon :class="[navIconBase, isPlannedRoute && navIconActive]" />
@@ -192,7 +240,7 @@ watch(
           <ui-button
             variant="ghost"
             as="span"
-            :class="['w-full justify-start gap-2 px-3', isChildActive({ child, isActive }) && navItemActive]"
+            :class="[navChildBase, navItemState({ active: isChildActive({ child, isActive }) })]"
             size="sm"
           >
             <component :is="child.icon" :class="[navIconBase, isChildActive({ child, isActive }) && navIconActive]" />
@@ -207,7 +255,7 @@ watch(
     <ui-button
       variant="ghost"
       as="span"
-      :class="[navItemBase, !bottomNav && 'justify-start', isActive && navItemActive]"
+      :class="[navItemBase, !bottomNav && 'justify-start', navItemState({ active: isActive })]"
       size="default"
     >
       <ChartColumnIcon :class="[navIconBase, isActive && navIconActive]" />

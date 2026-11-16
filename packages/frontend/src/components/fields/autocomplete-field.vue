@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import { cn } from '@/lib/utils';
 import { Loader2Icon } from '@lucide/vue';
 import {
@@ -28,11 +29,13 @@ const props = withDefaults(
     loading?: boolean;
     disabled?: boolean;
     maxlength?: number;
+    size?: ControlSize;
   }>(),
   {
     loading: false,
     disabled: false,
     maxlength: undefined,
+    size: 'default',
   },
 );
 
@@ -80,7 +83,8 @@ const handlePick = (value: unknown) => {
             :maxlength="maxlength"
             :class="
               cn(
-                'border-input bg-input-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50 md:h-9',
+                'border-input bg-input-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50',
+                controlHeight[size],
                 loading && 'pr-9',
               )
             "
@@ -111,7 +115,7 @@ const handlePick = (value: unknown) => {
                 v-for="item in items"
                 :key="item"
                 :value="item"
-                class="data-highlighted:bg-accent data-highlighted:text-accent-foreground cursor-default truncate rounded-sm px-2 py-1.5 text-sm outline-none select-none"
+                class="data-highlighted:bg-hover data-highlighted:text-accent-foreground cursor-default truncate rounded-sm px-2 py-1.5 text-sm outline-none select-none"
               >
                 {{ item }}
               </ComboboxItem>

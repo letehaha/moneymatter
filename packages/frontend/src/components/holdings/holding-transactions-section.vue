@@ -55,7 +55,7 @@ const isEmpty = computed(() => !isLoading.value && transactions.value.length ===
         {{ $t('portfolioDetail.holdingsTable.transactions.empty') }}
       </p>
       <Button variant="outline" size="sm" @click="$emit('add-transaction')">
-        <PlusIcon class="mr-2 size-4" />
+        <PlusIcon class="size-4" />
         {{ $t('portfolioDetail.holdingsTable.transactions.addFirstButton') }}
       </Button>
     </div>

@@ -159,7 +159,7 @@
       <div v-if="showDesktopListLayout" class="flex min-h-0 flex-1 gap-4">
         <Card class="flex w-87.5 shrink-0 flex-col gap-3 overflow-hidden p-4">
           <div class="flex flex-wrap items-center gap-2">
-            <div class="bg-card flex shrink-0 items-center gap-0.5 rounded-md border p-0.5">
+            <div class="bg-card flex h-10 shrink-0 items-center gap-0.5 rounded-md border p-0.5">
               <DesktopOnlyTooltip :content="$t('transactions.table.viewToggle.list')">
                 <Button
                   :variant="desktopView === 'list' ? 'secondary' : 'ghost'"
@@ -308,7 +308,7 @@
                   <DesktopOnlyTooltip :content="$t('transactions.table.fullscreen.exit')">
                     <Button
                       variant="secondary"
-                      :size="isTouchPointer ? 'icon' : 'sm'"
+                      :size="isTouchPointer ? 'icon' : 'default'"
                       :aria-label="$t('transactions.table.fullscreen.exit')"
                       @click="exitFullscreen"
                     >
@@ -332,7 +332,7 @@
             </Card>
 
             <div v-else class="flex shrink-0 items-center justify-between gap-2">
-              <Button variant="ghost" size="sm" @click="exitFullscreen">
+              <Button variant="ghost" @click="exitFullscreen">
                 <Minimize2Icon class="size-4" />
                 {{ $t('transactions.table.fullscreen.exit') }}
               </Button>

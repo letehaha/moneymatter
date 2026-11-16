@@ -18,8 +18,8 @@ defineEmits<{
     :class="
       cn(
         'flex items-center gap-1 rounded-md transition-colors',
-        'hover:bg-accent cursor-pointer',
-        isSelected && 'bg-primary/10 ring-primary/20 ring-1',
+        'hover:bg-hover cursor-pointer',
+        isSelected && 'bg-primary/10 hover:bg-primary/10 ring-primary/20 ring-1',
       )
     "
     @click="$emit('select')"

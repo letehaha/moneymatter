@@ -1,6 +1,6 @@
 <template>
   <Collapsible v-model:open="isOpen">
-    <div class="hover:bg-muted/40 flex items-center gap-3 px-4 py-3 transition-colors">
+    <div class="hover:bg-hover flex items-center gap-3 px-4 py-3 transition-colors">
       <div class="flex min-w-0 flex-1 items-center gap-2">
         <CollapsibleTrigger
           class="focus-visible:ring-ring/40 flex min-w-0 cursor-pointer items-center gap-3 rounded text-left focus-visible:ring-2 focus-visible:outline-none"

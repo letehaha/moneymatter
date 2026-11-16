@@ -65,7 +65,7 @@ const save = () => {
           <div
             v-for="line in state.ungrouped"
             :key="line.id"
-            class="hover:bg-muted/50 flex cursor-grab items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+            class="hover:bg-hover flex cursor-grab items-center gap-2 rounded-md px-2 py-1.5 text-sm"
           >
             <GripVerticalIcon class="text-muted-foreground size-4 shrink-0" />
             <span class="min-w-0 truncate">{{ line.name }}</span>
@@ -88,7 +88,7 @@ const save = () => {
             <div
               v-for="line in group.lines"
               :key="line.id"
-              class="hover:bg-muted/50 flex cursor-grab items-center gap-2 rounded-md px-2 py-1.5 text-sm"
+              class="hover:bg-hover flex cursor-grab items-center gap-2 rounded-md px-2 py-1.5 text-sm"
             >
               <GripVerticalIcon class="text-muted-foreground size-4 shrink-0" />
               <span class="min-w-0 truncate">{{ line.name }}</span>

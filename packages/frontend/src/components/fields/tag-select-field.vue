@@ -9,9 +9,12 @@
           <PopoverAnchor as-child>
             <div
               ref="wrapperRef"
+              :data-disabled="disabled || undefined"
               :class="
                 cn(
-                  'border-input bg-input-background ring-offset-background flex min-h-10 w-full cursor-text items-center gap-2 rounded-md border px-3 py-2 text-sm md:min-h-9',
+                  'border-input bg-input-background ring-offset-background flex w-full cursor-text items-center gap-2 rounded-md border px-3 text-sm',
+                  size === 'xs' || size === 'sm' ? 'py-1' : 'py-2',
+                  controlMinHeight[size],
                   'focus-within:ring-ring focus-within:ring-2 focus-within:ring-offset-2',
                   disabled && 'cursor-not-allowed opacity-50',
                 )
@@ -102,6 +105,7 @@
 import TagIcon from '@/components/common/icons/tag-icon.vue';
 import FieldError from '@/components/fields/components/field-error.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
+import { type ControlSize, controlMinHeight } from '@/components/lib/ui/control-size';
 import { Popover, PopoverContent } from '@/components/lib/ui/popover';
 import { cn } from '@/lib/utils';
 import { useTagsStore } from '@/stores';
@@ -119,12 +123,14 @@ const props = withDefaults(
     placeholder?: string;
     errorMessage?: string;
     disabled?: boolean;
+    size?: ControlSize;
   }>(),
   {
     label: undefined,
     modelValue: () => [],
     placeholder: undefined,
     errorMessage: undefined,
+    size: 'default',
   },
 );
 

@@ -150,7 +150,7 @@
             <div class="bg-muted/30 h-3 w-48 animate-pulse rounded" />
             <div class="bg-muted/30 h-3 w-28 animate-pulse rounded" />
           </div>
-          <div class="bg-muted/40 h-8 w-16 animate-pulse rounded" />
+          <div class="bg-muted/40 h-9 w-16 animate-pulse rounded" />
         </div>
       </div>
 

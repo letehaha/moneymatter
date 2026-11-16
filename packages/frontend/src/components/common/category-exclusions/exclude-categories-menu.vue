@@ -10,7 +10,7 @@
       <div class="flex flex-col p-2">
         <button
           type="button"
-          class="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-medium transition-colors"
+          class="hover:bg-hover flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-medium transition-colors"
           :data-testid="`${testIdPrefix}-exclude-categories-btn`"
           @click="openDialog"
         >

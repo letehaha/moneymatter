@@ -35,7 +35,7 @@
 
           <RouterLink :to="{ name: ROUTES_NAMES.portfolioTransactionsImport, params: { portfolioId } }">
             <UiButton size="sm" variant="outline">
-              <FileUpIcon class="mr-1 size-4" />
+              <FileUpIcon class="size-4" />
               <span class="md:hidden">{{ $t('portfolioDetail.holdings.importButtonShort') }}</span>
               <span class="hidden md:inline">{{ $t('portfolioDetail.holdings.importButton') }}</span>
             </UiButton>
@@ -43,7 +43,7 @@
 
           <AddSymbolsDialog v-model:open="isAddSymbolsOpen" :portfolio-id="portfolioId" @updated="onHoldingAdded">
             <UiButton size="sm">
-              <PlusIcon class="mr-1 size-4" />
+              <PlusIcon class="size-4" />
               {{ $t('portfolioDetail.holdings.addButton') }}
             </UiButton>
           </AddSymbolsDialog>

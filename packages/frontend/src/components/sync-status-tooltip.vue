@@ -198,7 +198,7 @@
         :disabled="isLoading || accountStatuses.length === 0"
         @click="$emit('triggerSync')"
       >
-        <RefreshCcw :class="{ 'animate-spin': isLoading }" class="mr-2 size-4" />
+        <RefreshCcw :class="{ 'animate-spin': isLoading }" class="size-4" />
         {{
           syncStuck || hasFailedAccounts
             ? $t('syncStatusTooltip.retrySyncButton')

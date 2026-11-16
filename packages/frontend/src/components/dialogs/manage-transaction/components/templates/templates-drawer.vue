@@ -184,7 +184,8 @@ const onCloseAutoFocus = (event: Event) => {
           v-for="action in footerActions"
           :key="action.key"
           :variant="action.variant"
-          class="h-11 w-full justify-start font-normal"
+          size="lg"
+          class="w-full justify-start px-4 font-normal"
           :disabled="action.disabled"
           @click="closeAnd({ run: action.run })"
         >

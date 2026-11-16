@@ -153,7 +153,7 @@ const handleSubmit = () => {
           :class="
             cn(
               'border-input flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors',
-              mode === option.value ? 'border-primary bg-primary/5' : 'hover:bg-accent/40',
+              mode === option.value ? 'border-primary bg-primary/5' : 'hover:bg-hover',
             )
           "
         >

@@ -62,7 +62,7 @@ const handleDismiss = (id: string) => {
       <!-- Sidebar mode: full-width button with label -->
       <template v-if="sidebar">
         <button
-          class="hover:bg-accent hover:text-accent-foreground text-muted-foreground relative inline-flex h-10 w-full items-center gap-2 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors"
+          class="hover:bg-hover hover:text-accent-foreground text-muted-foreground relative inline-flex h-10 w-full items-center gap-2 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors"
         >
           <BellIcon class="size-4 shrink-0" />
           <span>{{ t('notifications.title') }}</span>

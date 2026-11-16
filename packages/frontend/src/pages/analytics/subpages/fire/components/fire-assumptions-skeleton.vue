@@ -5,10 +5,10 @@
     <SidePanelSections>
       <SidePanelSectionSkeleton :open="openSections.spending" label-class="w-48">
         <div class="flex flex-col gap-2">
-          <div class="bg-muted h-10 rounded-md md:h-9" />
+          <div class="bg-muted h-10 rounded-md" />
           <div>
             <div class="bg-muted mt-0.5 mb-1.75 h-3 w-36 rounded" />
-            <div class="bg-muted h-10 rounded-md md:h-9.5" />
+            <div class="bg-muted h-10 rounded-md" />
           </div>
           <div class="bg-muted my-0.5 h-3 w-52 rounded" />
         </div>
@@ -16,7 +16,7 @@
 
       <SidePanelSectionSkeleton :open="openSections.contribution" label-class="w-36">
         <div class="flex flex-col gap-2">
-          <div class="bg-muted h-10 rounded-md md:h-9" />
+          <div class="bg-muted h-10 rounded-md" />
           <div class="bg-muted my-0.5 h-3 w-44 rounded" />
         </div>
       </SidePanelSectionSkeleton>
@@ -44,7 +44,7 @@
 
       <SidePanelSectionSkeleton :open="openSections.return" label-class="w-32">
         <div class="flex flex-col gap-3">
-          <div class="bg-muted h-10 rounded-md md:h-9" />
+          <div class="bg-muted h-10 rounded-md" />
           <div class="flex items-center justify-between gap-2">
             <div class="bg-muted my-1 h-3 w-16 rounded" />
             <div class="bg-muted my-1 h-3 w-40 rounded" />
@@ -68,7 +68,7 @@
         <div class="flex flex-col gap-4">
           <div v-for="n in MORE_FIELDS" :key="n">
             <div class="bg-muted mt-0.5 mb-1.75 h-3 w-36 rounded" />
-            <div class="bg-muted h-10 rounded-md md:h-9" />
+            <div class="bg-muted h-10 rounded-md" />
           </div>
         </div>
       </SidePanelSectionSkeleton>

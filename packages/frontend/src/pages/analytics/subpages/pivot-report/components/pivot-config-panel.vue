@@ -30,7 +30,7 @@
                   :class="
                     cn(
                       'h-auto min-w-0 flex-1 justify-start gap-2 px-2 py-1.5 font-normal',
-                      view.id === activeViewId && 'bg-accent',
+                      view.id === activeViewId && 'bg-accent hover:bg-accent',
                     )
                   "
                   @click="selectView(view.id)"
@@ -132,7 +132,7 @@
       <!-- Resets shape, period and filters, so it sits at card level rather than in the filter row. -->
       <div v-if="canReset" class="hidden shrink-0 @2xl/pivot-report:block">
         <DesktopOnlyTooltip :content="$t('pivotReport.filters.resetTooltip')">
-          <Button type="button" variant="ghost" size="sm" class="h-8 gap-1.5 font-normal" @click="emit('reset')">
+          <Button type="button" variant="ghost" size="xs" class="gap-1.5 font-normal" @click="emit('reset')">
             <RotateCcwIcon class="size-3.5 shrink-0" />
             {{ $t('pivotReport.filters.reset') }}
           </Button>

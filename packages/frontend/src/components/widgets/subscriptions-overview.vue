@@ -366,7 +366,7 @@ function payPeriod({ subscription }: { subscription: SubscriptionListItem }) {
             :class="
               cn(
                 'relative flex h-9 items-center gap-2.5 rounded-md px-2 transition-colors',
-                status ? ROW_TONE_CLASSES[status] : 'hover:bg-muted/50',
+                status ? ROW_TONE_CLASSES[status] : 'hover:bg-hover',
               )
             "
           >

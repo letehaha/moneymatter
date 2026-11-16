@@ -192,13 +192,13 @@
       <!-- Footer actions — hidden when the unpriceable consent panel is active (it has its own buttons) -->
       <div v-if="store.unpriceableRows.length === 0" class="flex items-center justify-between gap-3 pt-2">
         <UiButton variant="ghost" @click="store.goBack()">
-          <ChevronLeftIcon class="mr-1.5 size-4" />
+          <ChevronLeftIcon class="size-4" />
           {{ $t('pages.importExport.csvImport.review.backToMapping') }}
         </UiButton>
 
         <UiButton :disabled="store.importSummary.willImport === 0 || store.isExecuting" @click="handleExecuteImport">
           <template v-if="store.isExecuting">
-            <LoaderCircleIcon class="mr-1.5 size-4 animate-spin" />
+            <LoaderCircleIcon class="size-4 animate-spin" />
             {{ $t('pages.importExport.csvImport.review.importing') }}
           </template>
           <template v-else>
@@ -207,7 +207,7 @@
                 count: store.importSummary.willImport,
               })
             }}
-            <ChevronRightIcon class="ml-1.5 size-4" />
+            <ChevronRightIcon class="size-4" />
           </template>
         </UiButton>
       </div>

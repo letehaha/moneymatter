@@ -12,7 +12,12 @@
         class="flex-1"
         @keydown.enter="handleAdd"
       />
-      <UiButton variant="outline" size="sm" :disabled="!newRawName.trim() || addMut.isPending.value" @click="handleAdd">
+      <UiButton
+        variant="outline"
+        class="px-3"
+        :disabled="!newRawName.trim() || addMut.isPending.value"
+        @click="handleAdd"
+      >
         <PlusIcon class="size-4" />
         {{ $t('payees.ignoredNames.addButton') }}
       </UiButton>

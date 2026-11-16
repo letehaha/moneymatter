@@ -33,6 +33,7 @@ const { isSupportButtonVisible, openSupport } = useSupportButton();
   <component
     :is="mobileView ? 'div' : Card"
     class="relative flex h-full flex-col rounded-none"
+    :class="!mobileView && 'bg-background dark:bg-card'"
     :style="mobileView ? undefined : { width: `${width}px` }"
   >
     <ResizeHandle
@@ -46,7 +47,7 @@ const { isSupportButtonVisible, openSupport } = useSupportButton();
       <div class="text-lg font-semibold tracking-tight">MoneyMatter</div>
     </CardHeader>
     <CardContent class="flex max-h-[calc(100%-56px)] grow flex-col gap-3 px-3 pt-0 pb-3 sm:p-3 sm:pt-0">
-      <nav class="grid gap-0.5">
+      <nav class="relative isolate grid gap-0.5">
         <NavigationLinks />
       </nav>
 

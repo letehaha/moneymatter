@@ -29,7 +29,7 @@
       </div>
       <p v-if="meta" class="text-muted-foreground mt-0.5 truncate text-xs tabular-nums">{{ meta }}</p>
       <!-- click.stop: the whole row toggles selection on click -->
-      <div v-if="needsCurrency && selected" class="mt-2 max-w-60" @click.stop>
+      <div v-if="needsCurrency && selected" class="fields-plain mt-2 max-w-60" @click.stop>
         <IntegrationCurrencySelect
           :model-value="currencyOverride ?? null"
           :disabled="disabled"

@@ -327,8 +327,8 @@ defineExpose({ triggerPay, isPending });
           :key="mode"
           :class="
             cn(
-              'border-input hover:bg-accent hover:text-accent-foreground flex cursor-pointer flex-col gap-1 rounded-md border p-3 transition-colors',
-              recordMode === mode && 'border-primary bg-primary/5',
+              'border-input hover:bg-hover flex cursor-pointer flex-col gap-1 rounded-md border p-3 transition-colors',
+              recordMode === mode && 'border-primary bg-primary/5 hover:bg-primary/5',
             )
           "
         >
@@ -351,8 +351,8 @@ defineExpose({ triggerPay, isPending });
           :key="candidate.id"
           :class="
             cn(
-              'border-input hover:bg-accent flex cursor-pointer items-center gap-3 rounded-md border p-3 text-sm transition-colors',
-              selectedLinkedPaymentId === candidate.id && 'border-primary bg-primary/5',
+              'border-input hover:bg-hover flex cursor-pointer items-center gap-3 rounded-md border p-3 text-sm transition-colors',
+              selectedLinkedPaymentId === candidate.id && 'border-primary bg-primary/5 hover:bg-primary/5',
             )
           "
         >

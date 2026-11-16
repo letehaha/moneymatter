@@ -43,7 +43,7 @@
             :disabled="!canDisconnect || isDisconnecting"
             @click="providerToDisconnect = provider"
           >
-            <Loader2Icon v-if="isDisconnecting" class="mr-2 size-4 animate-spin" />
+            <Loader2Icon v-if="isDisconnecting" class="size-4 animate-spin" />
             {{ $t('settings.security.loginMethods.oauth.disconnect') }}
           </Button>
           <DemoRestricted v-else feature="connect_oauth_provider">
@@ -53,7 +53,7 @@
               :disabled="isConnecting || isDemo"
               @click="handleConnectOAuth({ provider })"
             >
-              <Loader2Icon v-if="isConnecting" class="mr-2 size-4 animate-spin" />
+              <Loader2Icon v-if="isConnecting" class="size-4 animate-spin" />
               {{ $t('settings.security.loginMethods.oauth.connect') }}
             </Button>
           </DemoRestricted>
@@ -107,8 +107,8 @@
           </div>
           <DemoRestricted feature="add_passkey">
             <Button variant="outline" size="sm" :disabled="isAddingPasskey || isDemo" @click="handleAddPasskey">
-              <Loader2Icon v-if="isAddingPasskey" class="mr-2 size-4 animate-spin" />
-              <PlusIcon v-else class="mr-2 size-4" />
+              <Loader2Icon v-if="isAddingPasskey" class="size-4 animate-spin" />
+              <PlusIcon v-else class="size-4" />
               {{ $t('settings.security.loginMethods.passkeys.addButton') }}
             </Button>
           </DemoRestricted>
@@ -124,6 +124,7 @@
             >
               <InputField
                 v-model="editingName"
+                size="xs"
                 class="flex-1"
                 autofocus
                 :placeholder="$t('settings.security.loginMethods.passkeys.renamePlaceholder')"

@@ -59,7 +59,10 @@ const toastOptions = computed<ToasterProps['toastOptions']>(() => ({
     title: 'line-clamp-4 text-sm leading-snug font-medium text-foreground',
     description: 'line-clamp-4 text-sm leading-snug',
     closeButton: 'absolute top-2.5 right-2.5 flex size-6 cursor-pointer items-center justify-center rounded-md',
-    actionButton: cn(buttonVariants({ variant: 'secondary' }), 'h-8 shrink-0 cursor-pointer self-center px-3 text-xs'),
+    actionButton: cn(
+      buttonVariants({ variant: 'secondary', size: 'xs' }),
+      'shrink-0 cursor-pointer self-center text-xs',
+    ),
   },
 }));
 

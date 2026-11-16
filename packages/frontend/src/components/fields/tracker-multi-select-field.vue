@@ -6,6 +6,7 @@
     :selected-label="selectedLabel"
     :search-placeholder="$t('fields.budgetMultiSelect.searchPlaceholder')"
     :hide-clear-button="hideClearButton"
+    :size="size"
     :selected="trackerIds"
     content-class="min-w-64"
     @clear="emit('update:trackerIds', [])"
@@ -52,6 +53,7 @@
 import { loadTrackers } from '@/api/trackers';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import MultiSelectField from '@/components/fields/multi-select-field.vue';
+import { type ControlSize } from '@/components/lib/ui/control-size';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { useNotificationCenter } from '@/components/notification-center';
 import { BLANK_FILTER_VALUE } from '@bt/shared/types';
@@ -67,6 +69,7 @@ const props = defineProps<{
   hideClearButton?: boolean;
   /** Offer a pseudo-option (`BLANK_FILTER_VALUE`) matching transactions linked to no tracker. */
   allowBlank?: boolean;
+  size?: ControlSize;
 }>();
 
 const emit = defineEmits<{ 'update:trackerIds': [value: string[]] }>();

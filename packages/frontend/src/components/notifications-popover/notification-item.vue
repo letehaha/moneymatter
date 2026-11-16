@@ -267,8 +267,8 @@ const handleDismiss = (event: Event) => {
 <template>
   <div
     :class="[
-      'group hover:bg-accent relative cursor-pointer px-4 py-3 transition-colors',
-      notification.status === NOTIFICATION_STATUSES.unread && 'bg-accent/50',
+      'group relative cursor-pointer px-4 py-3 transition-colors',
+      notification.status === NOTIFICATION_STATUSES.unread ? 'bg-accent/50 hover:bg-accent' : 'hover:bg-hover',
     ]"
     @click="handleClick"
   >

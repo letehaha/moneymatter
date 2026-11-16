@@ -215,7 +215,7 @@ const handleSubmit = () => {
             v-if="form.dueDate && !isInstallment"
             type="button"
             variant="ghost"
-            size="sm"
+            class="px-3"
             @click="form.dueDate = null"
           >
             <XIcon class="size-4" />
@@ -272,9 +272,7 @@ const handleSubmit = () => {
             :class="
               cn(
                 'border-input flex cursor-pointer items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                form.remindBefore.includes(preset)
-                  ? 'border-primary bg-primary/5'
-                  : 'hover:bg-accent hover:text-accent-foreground',
+                form.remindBefore.includes(preset) ? 'border-primary bg-primary/5' : 'hover:bg-hover',
                 !form.remindBefore.includes(preset) &&
                   form.remindBefore.length >= MAX_REMIND_BEFORE_PRESETS &&
                   'pointer-events-none cursor-not-allowed opacity-50',

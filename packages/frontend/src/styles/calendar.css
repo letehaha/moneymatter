@@ -38,7 +38,7 @@
   @apply rounded-md;
 }
 .calendar .vc-day-content {
-  @apply ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring relative inline-flex size-9 items-center justify-center p-0 text-center text-sm font-normal select-none focus-within:relative focus-within:z-20 hover:transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden aria-selected:opacity-100;
+  @apply ring-offset-background hover:bg-hover hover:text-accent-foreground focus-visible:ring-ring relative inline-flex size-9 items-center justify-center p-0 text-center text-sm font-normal select-none focus-within:relative focus-within:z-20 hover:transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden aria-selected:opacity-100;
 }
 .calendar .vc-day-content:not(.vc-highlight-content-light) {
   @apply rounded-md;
@@ -173,13 +173,24 @@
   @apply mt-1 flex items-center px-1 text-sm leading-6 font-semibold uppercase;
 }
 .vc-time-select-group {
-  @apply border-secondary bg-background inline-flex items-center rounded-md border border-solid px-1;
+  @apply border-input dark:border-secondary inline-flex items-center rounded-md border border-solid px-1;
+  background-color: var(--color-input-background);
+  box-shadow: var(--field-shadow);
+}
+.vc-time-select-group:hover {
+  --color-input: var(--field-hover-border);
 }
 .vc-time-select-group .vc-base-icon {
   @apply stroke-primary text-primary mr-1;
 }
 .vc-time-select-group select {
-  @apply bg-background appearance-none p-1 text-center outline-none;
+  @apply appearance-none bg-transparent p-1 text-center outline-none;
+}
+/* The native option list ignores the select's transparent background and falls back to a white
+   canvas, which the dark theme's light text is unreadable on. */
+.vc-time-select-group option {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
 }
 .vc-time-weekday {
   @apply text-muted-foreground tracking-wide;

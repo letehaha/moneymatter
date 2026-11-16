@@ -227,7 +227,7 @@ async function addSymbol(sec: SecuritySearchResult) {
                 :class="
                   cn(
                     'grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-2 px-2 py-1',
-                    sec.isInPortfolio ? 'cursor-not-allowed opacity-80' : 'hover:bg-muted/40 cursor-pointer',
+                    sec.isInPortfolio ? 'cursor-not-allowed opacity-80' : 'hover:bg-hover cursor-pointer',
                   )
                 "
                 @click="!sec.isInPortfolio && addSymbol(sec)"

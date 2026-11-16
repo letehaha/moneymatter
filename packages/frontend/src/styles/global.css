@@ -52,7 +52,6 @@
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary-hover: var(--secondary-hover);
-  --color-secondary-border: var(--secondary-border);
 
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
@@ -60,6 +59,8 @@
 
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-hover: var(--hover);
+  --color-table-header: var(--table-header);
 
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
@@ -79,6 +80,7 @@
   --color-card-tooltip-border: var(--card-tooltip-border);
   --shadow-card-tooltip: var(--card-tooltip-shadow);
   --shadow-card: var(--card-shadow);
+  --shadow-button: var(--button-shadow);
 
   --color-input-background: var(--input-background);
 
@@ -197,20 +199,27 @@
   }
 }
 
+/* Pulses the outline, not box-shadow, so the button keeps its own ring and shadow while it animates. */
 @keyframes feedback-pulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent);
+    outline: 0 solid color-mix(in srgb, var(--primary) 45%, transparent);
   }
   70% {
-    box-shadow: 0 0 0 10px color-mix(in srgb, var(--primary) 0%, transparent);
+    outline: 10px solid transparent;
   }
   100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
+    outline: 0 solid transparent;
   }
 }
 
 .feedback-pulse {
   animation: feedback-pulse 1.5s ease-out 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feedback-pulse {
+    animation: none;
+  }
 }
 
 /*
@@ -261,57 +270,76 @@
       'Segoe UI Symbol', 'Noto Color Emoji';
     --header-height: 69px;
 
-    --background: rgb(243, 241, 237);
-    --foreground: rgb(32, 28, 22);
+    --background: rgb(251, 251, 253);
+    --foreground: rgb(23, 21, 31);
 
-    --base-text: rgb(32, 28, 22);
+    --base-text: rgb(23, 21, 31);
 
     --card: rgb(255, 255, 255);
-    --card-foreground: rgb(32, 28, 22);
-    --card-shadow: 0 1px 2px rgb(32 28 22 / 0.05), 0 6px 20px rgb(32 28 22 / 0.06);
+    --card-foreground: rgb(23, 21, 31);
+    --card-shadow: 0 1px 2px rgb(23 21 31 / 0.04), 0 14px 34px -20px rgb(40 30 80 / 0.2);
 
     --dialog: rgb(255, 255, 255);
+
+    /* Filled buttons: top inner highlight plus a tight drop shadow; `active:shadow-none` flattens it into a pressed state. */
+    --button-shadow: inset 0 1px 0 rgb(255 255 255 / 0.24), 0 1px 2px rgb(40 30 80 / 0.3);
+
+    /* Outline and secondary buttons read their surface from variables, one class per property, so a
+       caller's `bg-*`, `hover:bg-*` or `shadow-*` replaces it in both themes. */
+    --button-raised-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --button-outline-background: var(--card);
+    --button-secondary-background: var(--card);
+    --button-secondary-hover: var(--hover);
 
     /* --card-tooltip is the opaque fallback; -glass applies only where backdrop-filter is supported.
        White-on-white needs a near-opaque glass plus a strong border and shadow to separate. */
     --card-tooltip: rgb(255, 255, 255);
-    --card-tooltip-foreground: rgb(32, 28, 22);
+    --card-tooltip-foreground: rgb(23, 21, 31);
     --card-tooltip-glass: rgb(255 255 255 / 0.9);
-    --card-tooltip-muted: rgb(110, 104, 97);
-    --card-tooltip-border: rgb(30 25 18 / 0.14);
-    --card-tooltip-shadow: 0 16px 40px rgb(28 22 12 / 0.16), 0 4px 12px rgb(28 22 12 / 0.1);
+    --card-tooltip-muted: rgb(102, 99, 122);
+    --card-tooltip-border: rgb(23 21 31 / 0.14);
+    --card-tooltip-shadow: 0 16px 40px rgb(40 30 80 / 0.16), 0 4px 12px rgb(23 21 31 / 0.08);
 
     --popover: rgb(255, 255, 255);
-    --popover-foreground: rgb(32, 28, 22);
+    --popover-foreground: rgb(23, 21, 31);
 
-    --input-background: rgb(242, 241, 238);
+    /* Field surfaces come in two variants: `plain` (flat white) for fields on the page background
+       or a grey panel, and `well` (tinted, sunk) for fields on a white surface. --input-background
+       and --field-plain-shadow are the plain pair; the --field-well-* pair is the well. */
+    --input-background: rgb(255, 255, 255);
+    --field-plain-shadow: inset 0 1px 2px rgb(23 21 31 / 0.05);
+    --field-well-background: rgb(245, 245, 248);
+    --field-well-shadow: inset 0 2px 6px rgb(40 30 80 / 0.06);
+    --field-shadow: var(--field-plain-shadow);
+    --field-hover-border: rgb(23 21 31 / 0.26);
 
     --primary: rgb(115, 85, 190);
     --primary-foreground: rgb(255, 255, 255);
     --primary-text: rgb(106, 75, 181);
 
-    --secondary: rgb(239, 237, 233);
-    --secondary-foreground: rgb(32, 28, 22);
-    --secondary-hover: rgb(230, 227, 221);
-    --secondary-border: rgb(220, 215, 206);
+    --secondary: rgb(239, 239, 242);
+    --secondary-foreground: rgb(23, 21, 31);
+    --secondary-hover: rgb(230, 230, 235);
 
-    --muted: rgb(242, 240, 236);
-    --muted-foreground: rgb(118, 107, 91);
+    --muted: rgb(239, 239, 242);
+    --muted-foreground: rgb(102, 99, 122);
+    --table-header: color-mix(in srgb, var(--muted) 50%, var(--card));
+    --hover: color-mix(in srgb, var(--muted) 50%, transparent);
 
-    --accent: rgb(234, 231, 225);
-    --accent-foreground: rgb(32, 28, 22);
+    --accent: rgb(233, 233, 237);
+    --accent-foreground: rgb(23, 21, 31);
 
     --destructive: rgb(217, 90, 58);
     --destructive-foreground: rgb(249, 249, 249);
     --destructive-text: rgb(172, 60, 38);
 
-    --border: rgb(234, 229, 220);
-    --input: rgb(30 25 18 / 0.16);
+    --border: rgb(230, 229, 238);
+    --input: rgb(23 21 31 / 0.12);
     --ring: rgba(115, 85, 190, 0.6);
     --radius: 0.75rem;
 
     --success: rgb(42, 141, 82);
-    --success-foreground: rgb(38, 32, 24);
+    --success-foreground: rgb(23, 21, 31);
     --success-text: rgb(38, 116, 71);
 
     --warning-text: rgb(154, 91, 18);
@@ -387,6 +415,12 @@
     /* A subtle step above --background; input fields inside dialogs read through their border, not surface contrast. */
     --dialog: rgb(20, 18, 17);
 
+    --button-shadow: 0 0 #0000;
+    --button-raised-shadow: 0 0 #0000;
+    --button-outline-background: var(--background);
+    --button-secondary-background: var(--secondary);
+    --button-secondary-hover: var(--secondary-hover);
+
     /* Darker than --card so tooltips separate from chart cards by depth, not lightness. */
     --card-tooltip: rgb(18, 17, 16);
     --card-tooltip-foreground: rgb(250, 249, 247);
@@ -402,6 +436,11 @@
     /* Matches --background; field edges come from the --input border rather than a surface step. */
     --input-background: rgb(11, 9, 8);
 
+    --field-plain-shadow: 0 0 #0000;
+    --field-well-background: var(--input-background);
+    --field-well-shadow: 0 0 #0000;
+    --field-hover-border: rgb(255 255 255 / 0.22);
+
     --primary: rgb(130, 100, 205);
     --primary-foreground: rgb(255, 255, 255);
     /* --primary stays dark enough for white labels on filled buttons; --primary-text is the brighter tint text/icons need on dark backgrounds. */
@@ -410,10 +449,12 @@
     --secondary: rgb(42, 40, 38);
     --secondary-foreground: rgb(249, 248, 246);
     --secondary-hover: rgb(50, 46, 42);
-    --secondary-border: transparent;
 
     --muted: rgb(40, 38, 36);
     --muted-foreground: rgb(163, 160, 155);
+    --table-header: var(--muted);
+    /* Translucent so a ghost button inside a hovered or selected row still steps up. */
+    --hover: color-mix(in srgb, var(--foreground) 7%, transparent);
 
     --accent: rgb(41, 37, 36);
     --accent-foreground: rgb(249, 248, 246);
@@ -506,6 +547,45 @@
   :root:not(.dark) .bg-card.border:is(.rounded-xl, .rounded-2xl) {
     box-shadow: var(--card-shadow);
   }
+}
+
+/* A field's variant follows the surface it sits on: the common surface backgrounds below set it
+   for everything inside them. `fields-plain` sets it explicitly, for a container inside a well
+   surface whose own background is none of these (an opacity variant like `bg-muted/50`, an
+   arbitrary color). */
+@utility fields-plain {
+  --color-input-background: var(--input-background);
+  --field-shadow: var(--field-plain-shadow);
+}
+@layer components {
+  .bg-card,
+  .bg-popover,
+  .bg-dialog {
+    --color-input-background: var(--field-well-background);
+    --field-shadow: var(--field-well-shadow);
+  }
+  .bg-background,
+  .bg-muted,
+  .bg-secondary,
+  .bg-accent {
+    --color-input-background: var(--input-background);
+    --field-shadow: var(--field-plain-shadow);
+  }
+
+  /* `bg-input-background` marks every field surface. In `components` so a focus ring or a
+     `shadow-*` utility on the same element replaces the resting shadow. */
+  .bg-input-background {
+    box-shadow: var(--field-shadow);
+  }
+}
+
+/* Hover and focus restyle a field by re-pointing the variables its utilities read, which keeps
+   these rules out of specificity fights with `border-input` and the focus ring. */
+.bg-input-background:hover:not(:disabled, [data-disabled]) {
+  --color-input: var(--field-hover-border);
+}
+.bg-input-background:focus-within {
+  --color-input-background: var(--input-background);
 }
 
 /* Utility for inline monetary amounts — consistent weight and alignment */

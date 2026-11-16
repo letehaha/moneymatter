@@ -85,7 +85,7 @@ const handleDelete = async () => {
       </Button>
     </div>
 
-    <div v-else class="text-sm tabular-nums">
+    <div v-else class="fields-plain text-sm tabular-nums">
       <div
         :class="
           cn(
@@ -156,12 +156,12 @@ const handleDelete = async () => {
         <div class="hidden justify-end @min-[650px]/lines:flex">
           <LineLimitPopover v-if="canManage" :tracker-id="tracker.id" :line="row.line">
             <Button
-              variant="outline"
-              size="sm"
+              variant="field"
+              size="xs"
               :aria-label="$t('budgets.lines.editLimitAria', { name: row.line.name })"
               :class="
                 cn(
-                  'bg-input-background hover:bg-input-background hover:border-ring h-8 w-auto min-w-24 cursor-text justify-end font-normal tabular-nums',
+                  'w-auto min-w-24 cursor-text justify-end tabular-nums',
                   row.limit === null ? 'text-muted-foreground hover:text-muted-foreground' : 'hover:text-foreground',
                 )
               "

@@ -87,7 +87,7 @@
               v-for="country in filteredCountries"
               :key="country"
               @click="selectCountry(country)"
-              class="hover:bg-accent w-full rounded-md border p-3 text-left transition-colors"
+              class="hover:bg-hover w-full rounded-md border p-3 text-left transition-colors"
             >
               {{ getCountryName(country) }} ({{ country }})
             </button>
@@ -128,7 +128,7 @@
               v-for="bank in filteredBanks"
               :key="bank.name"
               @click="selectBank(bank)"
-              class="hover:bg-accent w-full rounded-md border p-3 text-left transition-colors"
+              class="hover:bg-hover w-full rounded-md border p-3 text-left transition-colors"
             >
               <div class="font-medium">{{ bank.name }}</div>
               <div v-if="bank.bic" class="text-muted-foreground text-xs">

@@ -20,7 +20,7 @@ const forwarded = useForwardPropsEmits(props, emits);
     v-bind="forwarded"
     :class="
       cn(
-        'focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden transition-colors select-none data-disabled:pointer-events-none data-disabled:opacity-50',
+        'focus:bg-hover focus:text-accent-foreground relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden transition-colors select-none data-disabled:pointer-events-none data-disabled:opacity-50',
         $attrs.class ?? '',
       )
     "

@@ -4,7 +4,6 @@ import { type LogoSelection, type LogoTab, toLogoDisplayProps } from '@/componen
 import LogoSearch from '@/components/common/logo-search.vue';
 import { Button } from '@/components/lib/ui/button';
 import * as Popover from '@/components/lib/ui/popover';
-import { cn } from '@/lib/utils';
 import { ChevronDownIcon, XIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -49,12 +48,7 @@ function clearSelection() {
 <template>
   <Popover.Popover :open="isOpen" @update:open="(open: boolean) => (isOpen = open)">
     <Popover.PopoverTrigger as-child>
-      <Button
-        variant="outline"
-        :disabled="disabled"
-        :class="cn('border-input bg-input-background h-10 w-full justify-start gap-2 px-3 py-2 text-sm font-normal')"
-        data-test="logo-field"
-      >
+      <Button variant="field" :disabled="disabled" class="w-full justify-start px-3" data-test="logo-field">
         <BrandLogo v-bind="logoDisplay" :name="nameForSearch" class="size-6" />
         <span
           class="min-w-0 flex-1 truncate text-left"

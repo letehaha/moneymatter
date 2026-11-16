@@ -94,14 +94,24 @@ const vCalendarSlots = computed(() =>
     <div v-if="$attrs.mode !== 'time'" class="absolute top-3 z-1 flex w-full justify-between px-4">
       <button
         type="button"
-        :class="cn(buttonVariants({ variant: 'outline' }), 'size-7 bg-transparent p-0 opacity-50 hover:opacity-100')"
+        :class="
+          cn(
+            buttonVariants({ variant: 'outline' }),
+            'size-7 bg-transparent p-0 opacity-50 shadow-none hover:opacity-100',
+          )
+        "
         @click="handleNav('prev')"
       >
         <ChevronLeft class="size-4" />
       </button>
       <button
         type="button"
-        :class="cn(buttonVariants({ variant: 'outline' }), 'size-7 bg-transparent p-0 opacity-50 hover:opacity-100')"
+        :class="
+          cn(
+            buttonVariants({ variant: 'outline' }),
+            'size-7 bg-transparent p-0 opacity-50 shadow-none hover:opacity-100',
+          )
+        "
         @click="handleNav('next')"
       >
         <ChevronRight class="size-4" />

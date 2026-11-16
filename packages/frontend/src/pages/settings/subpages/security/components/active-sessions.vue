@@ -80,7 +80,7 @@
       <!-- Revoke all button -->
       <div v-if="otherSessions.length > 0" class="border-t pt-4">
         <Button variant="destructive" @click="handleRevokeAll">
-          <LogOutIcon class="mr-2 size-4" />
+          <LogOutIcon class="size-4" />
           {{ $t('settings.security.activeSessions.revokeAllButton') }}
         </Button>
       </div>

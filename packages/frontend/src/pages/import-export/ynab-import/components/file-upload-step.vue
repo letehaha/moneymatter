@@ -27,7 +27,7 @@
     <div v-if="uploadedFile" class="mt-6 flex justify-end">
       <UiButton :disabled="store.isParsing" @click="handleUpload">
         <template v-if="store.isParsing">
-          <LoaderIcon class="mr-2 size-4 animate-spin" />
+          <LoaderIcon class="size-4 animate-spin" />
           {{ $t('pages.importExport.ynabImport.fileUpload.parsing') }}
         </template>
         <template v-else>{{ $t('pages.importExport.ynabImport.fileUpload.continueToPreview') }}</template>

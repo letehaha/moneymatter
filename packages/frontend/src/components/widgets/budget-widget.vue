@@ -258,7 +258,7 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
                 <button
                   type="button"
                   data-testid="budget-widget-settings-sort"
-                  class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                   @click="settingsView = 'sort'"
                 >
                   <span class="flex flex-col">
@@ -291,7 +291,7 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
                   :key="option"
                   type="button"
                   :data-testid="`budget-widget-sort-${option}`"
-                  class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                   @click="setSortBy({ value: option })"
                 >
                   <span class="text-sm">{{ $t(SORT_LABELS[option]) }}</span>
