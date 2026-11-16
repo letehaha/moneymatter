@@ -106,6 +106,7 @@ function applyPreset({ preset }: { preset: CategoryMappingPreset }) {
           <template v-if="renamingFingerprint === preset.fingerprint">
             <InputField
               :model-value="renameValue"
+              size="xs"
               class="min-w-0 flex-1"
               non-label-wrapper
               autofocus
@@ -131,7 +132,8 @@ function applyPreset({ preset }: { preset: CategoryMappingPreset }) {
           <template v-else>
             <UiButton
               variant="ghost"
-              class="h-8 min-w-0 flex-1 justify-start px-2 font-normal"
+              size="xs"
+              class="min-w-0 flex-1 justify-start px-2 font-normal"
               @click="applyPreset({ preset })"
             >
               <span v-if="section.key === 'matching'" class="bg-success-text size-1.5 shrink-0 rounded-full" />

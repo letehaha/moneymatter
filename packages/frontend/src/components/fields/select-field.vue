@@ -1,6 +1,7 @@
 <script lang="ts" setup generic="T extends Record<string, any>">
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
+import { type ControlSize } from '@/components/lib/ui/control-size';
 import * as Select from '@/components/lib/ui/select';
 import { cn } from '@/lib/utils';
 import { debounce } from 'lodash-es';
@@ -40,6 +41,7 @@ const props = withDefaults(
     /** Lists the matching options first under their own label; a search shows one flat list. */
     pinnedGroup?: SelectPinnedGroup<T>;
     triggerClass?: string;
+    size?: ControlSize;
   }>(),
   {
     placeholder: undefined,
@@ -55,6 +57,7 @@ const props = withDefaults(
     required: false,
     pinnedGroup: undefined,
     triggerClass: undefined,
+    size: 'default',
   },
 );
 
@@ -178,15 +181,10 @@ watch(
          and the addon become direct flex children and share one joined outline. -->
     <div :class="cn($slots['field-right'] && 'flex items-stretch')">
       <Select.Select v-model="selectedKey" :open="isOpen" :disabled="disabled" @update:open="onOpenChange">
-        <div ref="triggerWrapperRef" :class="cn('group relative', $slots['field-right'] && 'min-w-0 flex-1')">
+        <div ref="triggerWrapperRef" :class="cn('relative', $slots['field-right'] && 'min-w-0 flex-1')">
           <Select.SelectTrigger
-            :class="
-              cn(
-                'not-dark:group-hover:bg-accent w-full',
-                $slots['field-right'] && 'rounded-r-none border-r-0',
-                triggerClass,
-              )
-            "
+            :class="cn('w-full', $slots['field-right'] && 'rounded-r-none border-r-0', triggerClass)"
+            :size="size"
             :aria-required="required || undefined"
           >
             <Select.SelectValue

@@ -34,7 +34,7 @@
             variant="ghost"
             size="sm"
             class="flex w-full items-center justify-between px-2 font-normal"
-            :class="modelValue === preset.months && 'bg-accent'"
+            :class="modelValue === preset.months && 'bg-accent hover:bg-accent'"
             @click="selectPreset(preset.months)"
           >
             <span>{{ preset.label }}</span>

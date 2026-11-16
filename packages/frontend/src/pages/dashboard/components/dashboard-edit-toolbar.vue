@@ -21,7 +21,7 @@ const emit = defineEmits<{
     </template>
     <template v-else>
       <Button variant="outline" size="sm" @click="emit('enter')">
-        <SettingsIcon class="mr-1.5 size-3.5" />
+        <SettingsIcon class="size-3.5" />
         {{ $t('dashboard.editMode.customize') }}
       </Button>
     </template>

@@ -102,7 +102,7 @@ const { virtualRows, totalSize } = useVirtualizedInfiniteScroll<InvestmentTransa
       <h4 class="text-sm font-semibold">{{ $t('portfolioDetail.transactionsList.title') }}</h4>
       <div class="flex items-center gap-1">
         <UiButton variant="outline" size="sm" @click="$emit('add-transaction')">
-          <PlusIcon class="mr-1.5 size-3.5" />
+          <PlusIcon class="size-3.5" />
           {{ $t('portfolioDetail.transactionsList.addButton') }}
         </UiButton>
         <ColumnConfigPopover
@@ -162,7 +162,7 @@ const { virtualRows, totalSize } = useVirtualizedInfiniteScroll<InvestmentTransa
             >
               <template v-if="transactions[virtualRow.index]">
                 <div
-                  class="hover:bg-muted/30 grid items-center gap-2 px-3 py-1.5 transition-colors"
+                  class="hover:bg-hover grid items-center gap-2 px-3 py-1.5 transition-colors"
                   :style="{ gridTemplateColumns: gridTemplate }"
                 >
                   <template v-for="column in visibleColumns" :key="column.id">

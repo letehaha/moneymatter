@@ -93,7 +93,7 @@ const isConfigChoiceActive = ({ option, value }: { option: WidgetConfigOption; v
               :key="`${size.colSpan}x${size.rowSpan}`"
               :class="[
                 'rounded px-2 py-0.5 text-xs transition-colors',
-                isSizeActive(size) ? 'bg-primary text-primary-foreground' : 'hover:bg-muted text-muted-foreground',
+                isSizeActive(size) ? 'bg-primary text-primary-foreground' : 'hover:bg-hover text-muted-foreground',
               ]"
               :aria-pressed="isSizeActive(size)"
               @click="emit('resize', widgetConfig.widgetId, size.colSpan, size.rowSpan)"
@@ -117,7 +117,7 @@ const isConfigChoiceActive = ({ option, value }: { option: WidgetConfigOption; v
                 'rounded px-2 py-0.5 text-xs transition-colors',
                 isConfigChoiceActive({ option, value: choice.value })
                   ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted text-muted-foreground',
+                  : 'hover:bg-hover text-muted-foreground',
               ]"
               :aria-pressed="isConfigChoiceActive({ option, value: choice.value })"
               @click="emit('config-change', widgetConfig.widgetId, option.key, choice.value)"

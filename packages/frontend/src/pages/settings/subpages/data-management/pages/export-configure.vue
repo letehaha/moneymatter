@@ -46,13 +46,11 @@
           >
             <template #trigger="{ triggerText }">
               <Button
-                variant="outline"
+                variant="field"
                 :disabled="isPending"
-                :class="
-                  cn('min-w-0 flex-1 justify-start text-left font-normal', !selectedPeriod && 'text-muted-foreground')
-                "
+                :class="cn('min-w-0 flex-1 justify-start text-left', !selectedPeriod && 'text-muted-foreground')"
               >
-                <CalendarIcon class="mr-2 size-4 shrink-0" />
+                <CalendarIcon class="size-4 shrink-0" />
                 <span class="truncate">
                   {{ selectedPeriod ? triggerText : $t('settings.dataManagement.export.dateRange.placeholder') }}
                 </span>
@@ -115,7 +113,7 @@
             :class="
               cn(
                 'group relative flex cursor-pointer flex-col gap-4 rounded-lg border p-4 transition-colors',
-                selectedGroups.has(group) ? 'border-primary/40 bg-primary/5' : 'border-border hover:bg-muted/50',
+                selectedGroups.has(group) ? 'border-primary/40 bg-primary/5' : 'border-border hover:bg-hover',
               )
             "
           >

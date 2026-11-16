@@ -20,7 +20,7 @@ const emit = defineEmits<{
   <div class="border-b p-4">
     <div class="mb-3 flex items-center justify-between">
       <h2 class="text-lg font-semibold">{{ t('dashboard.onboarding.quickStart.ui.title') }}</h2>
-      <Button variant="ghost" size="icon" class="size-8" @click="emit('close')">
+      <Button variant="ghost" size="icon-sm" @click="emit('close')">
         <XIcon class="size-4" />
       </Button>
     </div>

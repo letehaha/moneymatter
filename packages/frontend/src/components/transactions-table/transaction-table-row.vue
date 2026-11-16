@@ -1,7 +1,7 @@
 <template>
   <!-- Borders live on cells, not the row: the table uses border-separate, where <tr> borders don't render -->
   <tr
-    :class="['group/row hover:bg-muted/50 h-10 cursor-pointer divide-x transition-colors', isPlannedRow && 'bg-muted']"
+    :class="['group/row hover:bg-hover h-10 cursor-pointer divide-x transition-colors', isPlannedRow && 'bg-muted']"
     aria-haspopup="true"
     :data-index="index"
     @click="onRowClick"

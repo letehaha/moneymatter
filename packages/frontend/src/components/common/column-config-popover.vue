@@ -78,7 +78,7 @@
                 <div
                   v-for="item in draggableColumns"
                   :key="item.definition.id"
-                  class="hover:bg-muted/50 flex items-center gap-2 rounded-md px-2 py-1.5"
+                  class="hover:bg-hover flex items-center gap-2 rounded-md px-2 py-1.5"
                 >
                   <GripVerticalIcon class="drag-handle text-muted-foreground size-4 shrink-0 cursor-grab" />
                   <label class="flex flex-1 cursor-pointer items-center gap-2">

@@ -129,7 +129,7 @@ const addAction = ({ type, close }: { type: AutomationActionType; close: () => v
             <Button
               type="button"
               variant="soft-destructive"
-              size="icon-sm"
+              size="icon"
               class="ml-auto shrink-0"
               :aria-label="$t('automations.editor.removeAction')"
               @click="removeAt({ index })"

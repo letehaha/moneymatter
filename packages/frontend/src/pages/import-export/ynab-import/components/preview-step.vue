@@ -194,7 +194,7 @@
 
     <div class="flex flex-wrap items-center justify-between gap-3">
       <UiButton variant="ghost" @click="store.reset()">
-        <ChevronLeftIcon class="mr-1 size-4" />
+        <ChevronLeftIcon class="size-4" />
         {{ $t('pages.importExport.ynabImport.preview.startOver') }}
       </UiButton>
       <UiButton :disabled="!store.canExecute" @click="store.execute()">

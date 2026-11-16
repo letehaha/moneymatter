@@ -215,12 +215,12 @@ const confirmDeleteHolding = async () => {
 
 const cellStyles = 'py-0.5';
 const theadCellStyles = 'py-2';
-const theadBgStyles = 'bg-muted';
+const theadBgStyles = 'bg-table-header';
 // Chevron + Symbol cells pin to the left during horizontal scroll. They need
-// an opaque bg (scrolled columns would show through), so the row's transparent
-// bg-muted/30 hover is pre-blended with the card bg via color-mix.
+// an opaque bg (scrolled columns would show through), so the row's translucent
+// hover color is layered over the card bg as a background image.
 const stickyBodyCellStyles =
-  'sticky z-1 bg-card transition-colors group-hover:bg-[color-mix(in_oklab,var(--muted)_30%,var(--card))]';
+  'sticky z-1 bg-card group-hover:bg-[linear-gradient(var(--color-hover),var(--color-hover))]';
 // Single-line header labels: the cap keeps long (localized) labels from
 // wrapping or blowing up column widths; overflow turns into an ellipsis.
 const theadLabelStyles = 'block max-w-32 truncate';
@@ -295,7 +295,7 @@ const theadLabelStyles = 'block max-w-32 truncate';
       <p class="text-muted-foreground mb-4 text-sm">{{ $t('portfolioDetail.holdingsTable.emptyDescription') }}</p>
       <div class="flex flex-wrap items-center justify-center gap-2">
         <Button variant="outline" @click="emit('addSymbol')">
-          <PlusIcon class="mr-2 size-4" />
+          <PlusIcon class="size-4" />
           {{ $t('portfolioDetail.holdingsTable.addFirstHolding') }}
         </Button>
         <Button variant="ghost" @click="emit('importTransactions')">
@@ -409,7 +409,7 @@ const theadLabelStyles = 'block max-w-32 truncate';
                 @click="closedExpanded = !closedExpanded"
               >
                 <td :class="[cellStyles, 'py-1']">
-                  <Button variant="ghost" size="icon" class="size-8" @click.stop="closedExpanded = !closedExpanded">
+                  <Button variant="ghost" size="icon-sm" @click.stop="closedExpanded = !closedExpanded">
                     <ChevronDownIcon v-if="closedExpanded" class="size-4" />
                     <ChevronRightIcon v-else class="size-4" />
                   </Button>
@@ -422,10 +422,10 @@ const theadLabelStyles = 'block max-w-32 truncate';
                 </td>
               </tr>
               <template v-else>
-                <tr class="hover:bg-muted/30 group text-sm transition-colors">
+                <tr class="hover:bg-hover group text-sm">
                   <td :class="[cellStyles, stickyBodyCellStyles, 'left-0 py-1 pr-3 font-semibold']">
                     <div class="flex items-center gap-2">
-                      <Button variant="ghost" size="icon" class="size-8" @click="toggleExpand(row.holding.securityId)">
+                      <Button variant="ghost" size="icon-sm" @click="toggleExpand(row.holding.securityId)">
                         <ChevronDownIcon v-if="isExpanded(row.holding.securityId)" class="size-4" />
                         <ChevronRightIcon v-else class="size-4" />
                       </Button>
@@ -514,8 +514,7 @@ const theadLabelStyles = 'block max-w-32 truncate';
                     <DesktopOnlyTooltip :content="$t('portfolioDetail.holdingsTable.deleteHolding.ariaLabel')">
                       <Button
                         variant="ghost-destructive"
-                        size="icon"
-                        class="size-8"
+                        size="icon-sm"
                         :aria-label="$t('portfolioDetail.holdingsTable.deleteHolding.ariaLabel')"
                         @click="openDeleteConfirm(row.holding)"
                       >

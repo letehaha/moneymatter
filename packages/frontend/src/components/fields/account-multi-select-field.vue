@@ -10,6 +10,7 @@
     :error-message="errorMessage"
     :disabled="disabled"
     :trigger-class="triggerClass"
+    :size="size"
     :selected="modelValue"
     content-class="w-80"
     @clear="clearSelection"
@@ -26,7 +27,7 @@
         <template v-for="section in displaySections" :key="section.id">
           <!-- Grouped accounts: collapsible section with a tri-state select-all header. -->
           <Collapsible v-if="section.showHeader" :open="isSectionExpanded(section.id)" class="mb-0.5">
-            <div class="hover:bg-accent flex items-center gap-2 rounded-md pr-2" @mousedown.prevent @keydown.enter.stop>
+            <div class="hover:bg-hover flex items-center gap-2 rounded-md pr-2" @mousedown.prevent @keydown.enter.stop>
               <div class="flex shrink-0 cursor-pointer items-center py-2 pr-1 pl-2" @click="toggleSection(section)">
                 <Checkbox
                   :model-value="sectionCheckState(section)"
@@ -56,7 +57,7 @@
                 v-for="account in section.accounts"
                 :key="account.id"
                 :value="account.id"
-                class="data-[state=checked]:bg-primary/5 gap-2.5 py-1.5 pr-2 pl-8"
+                :class="[ACCOUNT_ITEM_CLASS, 'pl-8']"
                 @toggle="toggleAccount(account)"
               >
                 <Checkbox :model-value="isSelected(account)" class="pointer-events-none" tabindex="-1" />
@@ -73,7 +74,7 @@
               v-for="account in section.accounts"
               :key="account.id"
               :value="account.id"
-              class="data-[state=checked]:bg-primary/5 gap-2.5 px-2 py-1.5"
+              :class="[ACCOUNT_ITEM_CLASS, 'pl-2']"
               @toggle="toggleAccount(account)"
             >
               <Checkbox :model-value="isSelected(account)" class="pointer-events-none" tabindex="-1" />
@@ -96,6 +97,7 @@ import { Collapsible, CollapsibleContent } from '@/components/lib/ui/collapsible
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { type GroupedAccountsGroup, useGroupedAccounts } from '@/composable/use-grouped-accounts';
 import { AccountModel } from '@bt/shared/types';
+import { type ControlSize } from '@/components/lib/ui/control-size';
 import { ChevronDownIcon } from '@lucide/vue';
 import MultiSelectItem from '@/components/fields/multi-select-item.vue';
 import { ListboxContent } from 'reka-ui';
@@ -112,6 +114,9 @@ import {
 
 /** Sentinel section id for the accounts that belong to no group. */
 const UNGROUPED_SECTION_ID = '__ungrouped__';
+// Adjacent checked rows read as one block: only its first and last row keep their rounded corners.
+const ACCOUNT_ITEM_CLASS =
+  'gap-2.5 py-1.5 pr-2 data-[state=checked]:has-[+[data-state=checked]]:rounded-b-none [[data-state=checked]+&]:data-[state=checked]:rounded-t-none';
 
 interface DisplaySection {
   id: string;
@@ -145,6 +150,7 @@ const props = withDefaults(
     excludeDedicatedFlow?: boolean;
     /** Extra predicate narrowing the offered accounts, e.g. to the categories a budget plan may attach. */
     filterAccounts?: (account: AccountModel) => boolean;
+    size?: ControlSize;
   }>(),
   {
     label: undefined,

@@ -36,9 +36,10 @@ defineExpose({
 <template>
   <div class="@container">
     <div
+      :data-disabled="disabled || (locked && !$slots.converted) || undefined"
       :class="
         cn(
-          'border-input bg-input-background focus-within:border-ring flex h-10 w-full items-stretch overflow-hidden rounded-md border md:h-9',
+          'border-input bg-input-background focus-within:border-ring flex h-10 w-full items-stretch overflow-hidden rounded-md border',
           errorMessage && 'border-destructive',
         )
       "

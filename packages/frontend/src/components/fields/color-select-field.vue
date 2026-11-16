@@ -5,7 +5,8 @@
         <label
           :class="
             cn(
-              'border-input bg-input-background not-dark:hover:bg-accent ring-offset-background focus-within:ring-ring relative flex h-10 w-full cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-offset-2 md:h-9',
+              'border-input bg-input-background ring-offset-background focus-within:ring-ring relative flex w-full cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-offset-2',
+              controlHeight[size],
               $slots['field-right'] && 'min-w-0 flex-1 rounded-r-none border-r-0',
             )
           "
@@ -29,14 +30,19 @@
 </template>
 
 <script setup lang="ts">
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import { cn } from '@/lib/utils';
 
 import FieldLabel from './components/field-label.vue';
 
-defineProps<{
-  label?: string;
-  modelValue: string;
-}>();
+withDefaults(
+  defineProps<{
+    label?: string;
+    modelValue: string;
+    size?: ControlSize;
+  }>(),
+  { label: undefined, size: 'default' },
+);
 
 const emit = defineEmits<{
   'update:modelValue': [value: string];

@@ -6,6 +6,7 @@ import { mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 
 import { getFormTypeFromTransaction } from '../helpers';
+import { FORM_TYPES } from '../types';
 import TypeSelectorVue from './type-selector.vue';
 
 const i18n = createI18n({
@@ -35,7 +36,6 @@ describe('Record TypeSelector component', () => {
       const wrapper = mount(TypeSelectorVue, {
         props: {
           selectedTransactionType: getFormTypeFromTransaction(transaction),
-          isFormCreation: false,
           transaction,
           account: getUahAccount({ type: ACCOUNT_TYPES.monobank }) as AccountModel,
         },
@@ -44,13 +44,9 @@ describe('Record TypeSelector component', () => {
         },
       });
 
-      const buttons = wrapper.findAll('button');
+      const disabledButtons = wrapper.findAll('button').filter((item) => item.attributes().disabled !== undefined);
 
-      const desiredButton = buttons.find((item) => item.text().includes(disabledBtnLabel));
-
-      expect(desiredButton!.attributes().disabled !== undefined).toBe(true);
-
-      expect(buttons.filter((item) => item.attributes().disabled !== undefined).length).toBeGreaterThanOrEqual(1);
+      expect(disabledButtons.map((item) => item.text())).toEqual([disabledBtnLabel]);
     });
 
     test.each([[buildSystemExpenseTransaction()], [buildSystemIncomeTransaction()]])(
@@ -59,7 +55,6 @@ describe('Record TypeSelector component', () => {
         const wrapper = mount(TypeSelectorVue, {
           props: {
             selectedTransactionType: getFormTypeFromTransaction(transaction),
-            isFormCreation: false,
             transaction,
             account: getUahAccount() as AccountModel,
           },
@@ -81,7 +76,6 @@ describe('Record TypeSelector component', () => {
     const wrapper = mount(TypeSelectorVue, {
       props: {
         selectedTransactionType: getFormTypeFromTransaction(transaction),
-        isFormCreation: true,
         isTransferDisabled: true,
       },
       global: {
@@ -94,5 +88,33 @@ describe('Record TypeSelector component', () => {
 
     expect(disabledButtons.length).toBe(1);
     expect(disabledButtons[0]!.text()).toBe('Transfer');
+  });
+
+  const mountSelector = (props: Record<string, unknown>) =>
+    mount(TypeSelectorVue, {
+      props: { selectedTransactionType: FORM_TYPES.expense, ...props },
+      global: { plugins: [i18n] },
+    });
+  const disabledLabels = (wrapper: ReturnType<typeof mountSelector>) =>
+    wrapper
+      .findAll('button')
+      .filter((item) => item.attributes().disabled !== undefined)
+      .map((item) => item.text());
+
+  test('a locked type leaves only the selected button enabled', () => {
+    expect(disabledLabels(mountSelector({ isTypeLocked: true }))).toEqual(['Income', 'Transfer']);
+  });
+
+  test('`disabled` disables every button', () => {
+    expect(disabledLabels(mountSelector({ disabled: true }))).toEqual(['Expense', 'Income', 'Transfer']);
+  });
+
+  test('clicking a type emits it, and a disabled type emits nothing', async () => {
+    const wrapper = mountSelector({ isTransferDisabled: true });
+
+    await wrapper.find('button[aria-label="Select income"]').trigger('click');
+    await wrapper.find('button[aria-label="Select transfer"]').trigger('click');
+
+    expect(wrapper.emitted('change-tx-type')).toEqual([[FORM_TYPES.income]]);
   });
 });

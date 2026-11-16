@@ -132,7 +132,7 @@ function formatPercentage(percent: number): string {
           <tr
             v-for="(row, index) in paginatedData"
             :key="index"
-            class="hover:bg-muted/30 transition-colors"
+            class="hover:bg-hover transition-colors"
             :class="{ 'bg-warning/10': row.hasSignificantDiff }"
           >
             <td class="border-border border-b px-3 py-2">{{ formatDate(row.date) }}</td>

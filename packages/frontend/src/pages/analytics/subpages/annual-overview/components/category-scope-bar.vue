@@ -16,8 +16,8 @@
       <template v-if="hasSelection">
         <Button
           variant="ghost"
-          size="sm"
-          class="text-muted-foreground hidden h-8 px-2 @md/scope:inline-flex"
+          size="xs"
+          class="text-muted-foreground hidden px-2 @md/scope:inline-flex"
           @click="selectOnly({ categoryId: null })"
         >
           {{ t('analytics.trends.scope.all') }}
@@ -27,8 +27,8 @@
         <template v-for="ancestor in ancestors" :key="ancestor.id">
           <Button
             variant="ghost"
-            size="sm"
-            class="text-muted-foreground hidden h-8 max-w-40 px-2 @md/scope:inline-flex"
+            size="xs"
+            class="text-muted-foreground hidden max-w-40 px-2 @md/scope:inline-flex"
             @click="selectOnly({ categoryId: ancestor.id })"
           >
             <span class="truncate">{{ ancestor.name }}</span>
@@ -44,7 +44,8 @@
           :mode="filters.categories.mode"
           :placeholder="t('analytics.trends.scope.all')"
           :selected-text="selectionLabel"
-          trigger-class="h-8 md:h-8 border-transparent bg-transparent px-2 font-semibold"
+          size="xs"
+          trigger-class="border-transparent bg-transparent px-2 font-semibold hover:bg-hover"
           @update:category-ids="(ids) => patchCategories({ ids })"
         >
           <template #header>
@@ -64,8 +65,8 @@
         <Separator orientation="vertical" class="h-5" />
         <Button
           variant="ghost-destructive"
-          size="sm"
-          class="h-8 shrink-0 px-2"
+          size="xs"
+          class="shrink-0 px-2"
           :aria-label="t('analytics.trends.scope.clear')"
           @click="selectOnly({ categoryId: null })"
         >
@@ -75,7 +76,7 @@
       </template>
     </nav>
 
-    <Button variant="ghost-primary" size="sm" class="h-8 shrink-0 px-2" as-child>
+    <Button variant="ghost-primary" size="xs" class="shrink-0 px-2" as-child>
       <RouterLink :to="transactionsLink">
         {{ t('analytics.trends.scope.transactions') }}
         <ArrowRightIcon class="size-4" />

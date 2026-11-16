@@ -529,7 +529,7 @@ async function handleNext() {
       "
     >
       <UiButton variant="ghost" @click="importStore.goBack()">
-        <ChevronLeftIcon class="mr-1.5 size-4" />
+        <ChevronLeftIcon class="size-4" />
         {{ t('pages.importExport.resolveValues.footer.back') }}
       </UiButton>
 
@@ -538,7 +538,7 @@ async function handleNext() {
         @click="handleNext"
       >
         {{ t('pages.importExport.resolveValues.footer.next') }}
-        <ChevronRightIcon class="ml-1.5 size-4" />
+        <ChevronRightIcon class="size-4" />
       </UiButton>
     </div>
   </div>

@@ -497,13 +497,7 @@ const accountLabel = computed(() =>
             <div class="min-w-0 flex-1">
               <TransactionRecord :tx="linkedTransaction!" :as-button="false" />
             </div>
-            <UiButton
-              type="button"
-              variant="ghost"
-              size="icon"
-              class="size-8 shrink-0"
-              @click="linkedTransaction = null"
-            >
+            <UiButton type="button" variant="ghost" size="icon-sm" class="shrink-0" @click="linkedTransaction = null">
               <X :size="16" />
             </UiButton>
           </div>

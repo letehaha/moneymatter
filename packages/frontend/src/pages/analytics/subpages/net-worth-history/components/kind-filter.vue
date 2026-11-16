@@ -19,7 +19,7 @@
           v-for="kind in kinds"
           :key="kind"
           :value="kind"
-          class="data-[state=checked]:bg-primary/5 gap-2.5 px-2 py-1.5"
+          class="gap-2.5 px-2 py-1.5"
           @toggle="toggleKind(kind)"
         >
           <Checkbox :model-value="isChecked(kind)" class="pointer-events-none" tabindex="-1" />

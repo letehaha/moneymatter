@@ -19,7 +19,7 @@
       <p v-if="categoriesStatus === 'error'" class="text-destructive-text text-sm">
         {{ $t('fields.categorySelect.sharedOwnerCategoriesLoadError') }}
       </p>
-      <div v-else-if="categoriesStatus === 'pending'" class="bg-muted/30 h-10 animate-pulse rounded-md md:h-9" />
+      <div v-else-if="categoriesStatus === 'pending'" class="bg-muted/30 h-10 animate-pulse rounded-md" />
       <CategorySelectField
         v-else
         ref="dropdownFieldRef"
@@ -45,7 +45,7 @@
         v-model="form.amount"
         :placeholder="$t('dialogs.manageTransaction.form.amountPlaceholder')"
       />
-      <div v-if="isMobile && form.amount !== null" class="absolute top-0 right-1 flex h-10 items-center md:h-9">
+      <div v-if="isMobile && form.amount !== null" class="absolute top-0 right-1 flex h-10 items-center">
         <ClearButton />
       </div>
     </div>

@@ -2,14 +2,8 @@
   <Popover v-model:open="isOpen">
     <PopoverTrigger as-child>
       <Button
-        :variant="activeView ? 'soft-primary' : secondaryTrigger ? 'secondary' : 'outline'"
-        :class="
-          cn(
-            'h-10 gap-2',
-            block ? 'min-w-0 flex-1 justify-start' : 'max-w-56 min-w-0 shrink',
-            !activeView && !secondaryTrigger && 'bg-input-background font-normal',
-          )
-        "
+        :variant="activeView ? 'soft-primary' : secondaryTrigger ? 'secondary' : 'field'"
+        :class="cn('gap-2', block ? 'min-w-0 flex-1 justify-start' : 'max-w-56 min-w-0 shrink')"
       >
         <BookmarkIcon class="size-4 shrink-0" />
         <span class="min-w-0 flex-1 truncate text-left">
@@ -34,7 +28,7 @@
             :class="
               cn(
                 'h-auto min-w-0 flex-1 justify-start gap-2 px-2 py-1.5 font-normal',
-                view.id === activeView?.id && 'bg-accent',
+                view.id === activeView?.id && 'bg-accent hover:bg-accent',
               )
             "
             @click="applyView({ view })"

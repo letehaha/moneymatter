@@ -176,7 +176,7 @@ const onFilterKeydown = (event: KeyboardEvent) => {
                     :class="
                       cn(
                         'h-auto w-full justify-start rounded-none px-3 py-1.5 text-left font-normal',
-                        template.id === highlightedId && 'bg-primary/15',
+                        template.id === highlightedId && 'bg-primary/15 hover:bg-primary/15',
                       )
                     "
                     @mousemove="setHighlight({ id: template.id })"

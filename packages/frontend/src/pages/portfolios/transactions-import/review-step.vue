@@ -274,7 +274,7 @@ const execute = useMutation({
     <div class="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-end">
       <Button variant="outline" @click="emit('back')">{{ $t('investmentsImport.review.back') }}</Button>
       <Button :disabled="!allValid || execute.isPending.value" @click="execute.mutate()">
-        <Loader2Icon v-if="execute.isPending.value" class="mr-1 size-4 animate-spin" />
+        <Loader2Icon v-if="execute.isPending.value" class="size-4 animate-spin" />
         {{ $t('investmentsImport.review.commit') }}
       </Button>
     </div>

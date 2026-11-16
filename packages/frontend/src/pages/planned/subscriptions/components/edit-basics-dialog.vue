@@ -335,7 +335,10 @@ const handleSubmit = async () => {
         />
       </div>
 
-      <div v-if="needsInstallmentSchedule" class="border-border bg-muted/20 grid gap-3 rounded-lg border p-3">
+      <div
+        v-if="needsInstallmentSchedule"
+        class="border-border bg-muted/20 fields-plain grid gap-3 rounded-lg border p-3"
+      >
         <p class="text-muted-foreground text-xs">
           {{ $t('planned.subscriptions.editors.basics.installmentScheduleRequired') }}
         </p>

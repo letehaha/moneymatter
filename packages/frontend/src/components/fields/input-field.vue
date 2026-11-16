@@ -43,9 +43,10 @@
           spellcheck="false"
           :class="
             cn(
-              'border-input bg-input-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50 md:h-9',
+              'border-input bg-input-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50',
               $slots.iconTrailing && 'pr-12',
               $slots.iconLeading && 'pl-10',
+              controlHeight[size],
               (computedAttrs.class as string) ?? '',
             )
           "
@@ -73,6 +74,7 @@
 </template>
 
 <script lang="ts" setup>
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import { cn } from '@/lib/utils';
 import { HTMLAttributes, computed, onMounted, ref, useAttrs, watch } from 'vue';
 
@@ -83,27 +85,31 @@ enum MODEL_EVENTS {
   input = 'update:modelValue',
 }
 
-const props = defineProps<{
-  label?: string;
-  modelValue?: string | number | null;
-  type?: string;
-  disabled?: boolean;
-  tabindex?: string;
-  errorMessage?: string;
-  /** `absolute` keeps the field's height fixed while the message shows; the parent must leave room below. */
-  errorPlacement?: 'inline' | 'absolute';
-  inputFieldStyles?: HTMLAttributes['style'];
-  onlyPositive?: boolean;
-  autofocus?: boolean;
-  trailingIconCssClass?: string;
-  leadingIconCssClass?: string;
-  placeholder?: string;
-  /**
-   * Wraps the field in a `div` instead of a `label`. Needed when `label-right` holds a clickable
-   * control: it precedes the input in tree order, so a `label` would send every click to it.
-   */
-  nonLabelWrapper?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    label?: string;
+    modelValue?: string | number | null;
+    type?: string;
+    disabled?: boolean;
+    tabindex?: string;
+    errorMessage?: string;
+    /** `absolute` keeps the field's height fixed while the message shows; the parent must leave room below. */
+    errorPlacement?: 'inline' | 'absolute';
+    inputFieldStyles?: HTMLAttributes['style'];
+    onlyPositive?: boolean;
+    autofocus?: boolean;
+    trailingIconCssClass?: string;
+    leadingIconCssClass?: string;
+    placeholder?: string;
+    /**
+     * Wraps the field in a `div` instead of a `label`. Needed when `label-right` holds a clickable
+     * control: it precedes the input in tree order, so a `label` would send every click to it.
+     */
+    nonLabelWrapper?: boolean;
+    size?: ControlSize;
+  }>(),
+  { size: 'default' },
+);
 
 const emits = defineEmits<{
   (e: MODEL_EVENTS.input, payload: string | number | null): void;

@@ -30,8 +30,8 @@
         <PopoverTrigger as-child>
           <Button
             variant="ghost"
-            size="sm"
-            :class="cn('h-8 gap-1.5 rounded-full px-3 font-bold tabular-nums', PACE_TONE_CLASS[chip.tone])"
+            size="xs"
+            :class="cn('gap-1.5 rounded-full px-3 font-bold tabular-nums', PACE_TONE_CLASS[chip.tone])"
           >
             <component :is="chip.icon" class="size-4" />
             {{ chip.label }}

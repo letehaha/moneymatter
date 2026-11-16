@@ -2,7 +2,7 @@
   <component
     :is="tag"
     v-bind="linkProps"
-    class="group focus-visible:ring-ring hover:bg-muted/50 flex items-center gap-4 px-4 py-3.5 transition-colors duration-200 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
+    class="group focus-visible:ring-ring hover:bg-hover flex items-center gap-4 px-4 py-3.5 transition-colors duration-200 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
   >
     <div
       :class="

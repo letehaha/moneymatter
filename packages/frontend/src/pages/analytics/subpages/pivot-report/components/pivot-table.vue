@@ -75,13 +75,13 @@
         </thead>
 
         <tbody>
-          <tr v-for="row in visibleRows" :key="row.id" class="group/row hover:bg-muted/30">
+          <tr v-for="row in visibleRows" :key="row.id" class="group/row hover:bg-hover">
             <!-- Row label (sticky first column) -->
             <th
               scope="row"
               :class="
                 cn(
-                  'border-border bg-card group-hover/row:bg-accent sticky left-0 z-10 border-r border-b px-3 py-1.5 text-left font-normal',
+                  'border-border bg-card sticky left-0 z-10 border-r border-b px-3 py-1.5 text-left font-normal group-hover/row:bg-[linear-gradient(var(--color-hover),var(--color-hover))]',
                   row.kind === 'child' && 'pl-8',
                 )
               "
@@ -143,7 +143,7 @@
             <td
               :class="
                 cn(
-                  'border-border bg-card group-hover/row:bg-accent sticky right-0 z-10 border-b border-l px-3 py-1.5 text-right font-semibold tabular-nums',
+                  'border-border bg-card sticky right-0 z-10 border-b border-l px-3 py-1.5 text-right font-semibold tabular-nums group-hover/row:bg-[linear-gradient(var(--color-hover),var(--color-hover))]',
                   hoveredColKey === TOTAL_COLUMN_KEY && 'bg-muted',
                 )
               "

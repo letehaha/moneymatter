@@ -93,7 +93,7 @@ const handleEdit = () => {
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button variant="outline" size="sm" :disabled="!hasSelection || isLoading">
-            <ListOrderedIcon class="mr-1.5 size-4" />
+            <ListOrderedIcon class="size-4" />
             <ChevronDownIcon class="size-3.5" />
           </Button>
         </DropdownMenuTrigger>

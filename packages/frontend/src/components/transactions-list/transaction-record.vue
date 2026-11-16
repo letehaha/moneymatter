@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'group/row hover:bg-muted/50 grid w-full cursor-pointer rounded-md px-2 py-1 transition-colors [content-visibility:auto]',
+      'group/row hover:bg-hover grid w-full cursor-pointer rounded-md px-2 py-1 transition-colors [content-visibility:auto]',
       showCheckbox
         ? 'grid-cols-[auto_minmax(0,1fr)_max-content] items-center gap-2'
         : (shouldShowGroupedTransfer && !compact) || isLoadingGroupedTransfer

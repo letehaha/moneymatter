@@ -8,7 +8,7 @@
         cn(
           'grid w-full grid-cols-[minmax(0,1fr)_14px] items-center gap-3 px-4 py-3 text-left',
           !isBase &&
-            'hover:bg-muted/40 focus-visible:ring-ring/40 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
+            'hover:bg-hover focus-visible:ring-ring/40 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
         )
       "
       @click="onTriggerClick"
@@ -101,7 +101,7 @@
     </component>
 
     <CollapsibleContent v-if="!isBase" scroll-into-view>
-      <div class="border-border/60 bg-muted/20 border-t px-4 py-4">
+      <div class="border-border/60 bg-muted/20 fields-plain border-t px-4 py-4">
         <ExchangeRateForm
           :currency="currency"
           :is-form-disabled="isFormDisabled"

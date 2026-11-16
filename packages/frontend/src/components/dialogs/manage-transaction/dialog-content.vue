@@ -1658,7 +1658,7 @@ onUnmounted(() => {
                 type="button"
                 variant="secondary"
                 size="icon"
-                class="size-10 shrink-0 md:size-9"
+                class="shrink-0"
                 :disabled="isFormFieldsDisabled"
                 :aria-label="$t('dialogs.manageTransaction.form.location.pickOnMap')"
                 @click="isLocationPickerOpen = true"
@@ -1744,8 +1744,8 @@ onUnmounted(() => {
           :key="chip.key"
           type="button"
           variant="outline"
-          size="sm"
-          class="h-8 gap-1.5 rounded-full px-3 text-sm"
+          size="xs"
+          class="gap-1.5 rounded-full text-sm"
           :disabled="isFormFieldsDisabled"
           @click="chip.onClick"
         >
@@ -2137,10 +2137,7 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div
-          v-if="!isMobileView"
-          class="bg-muted border-border border-l px-6 py-6 [--color-input-background:var(--card)] dark:bg-black/20 dark:[--color-input-background:var(--input-background)]"
-        >
+        <div v-if="!isMobileView" class="bg-muted border-border border-l px-6 py-6 dark:bg-black/20">
           <ReuseMoreOptions />
         </div>
       </div>

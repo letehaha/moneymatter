@@ -187,7 +187,7 @@ const handleClearAll = () => {
 
     <div class="max-h-[50vh] overflow-y-auto py-4">
       <!-- Main category display -->
-      <div class="border-input bg-input-background mb-4 rounded-md border px-3 py-2.5">
+      <div class="border-input mb-4 rounded-md border bg-(--color-input-background) px-3 py-2.5">
         <div class="text-muted-foreground mb-1.5 text-[11px] font-medium tracking-wider uppercase">
           {{ $t('dialogs.manageTransaction.splitDialog.mainCategoryLabel') }}
         </div>

@@ -9,7 +9,6 @@
           v-model="granularity"
           :granularities="BAR_GRANULARITIES"
           label-key-prefix="analytics.trends.overTime.granularity"
-          trigger-class="md:h-10"
         />
         <PillTabs
           :model-value="chartType"

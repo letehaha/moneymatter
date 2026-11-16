@@ -25,7 +25,7 @@ const handleClick = () => {
     :class="
       cn(
         'flex w-full items-center gap-2 rounded py-1.5 pl-2 text-left transition-colors',
-        isCompleted ? 'cursor-default' : 'hover:bg-muted/50 cursor-pointer',
+        isCompleted ? 'cursor-default' : 'hover:bg-hover cursor-pointer',
       )
     "
     :disabled="isCompleted"

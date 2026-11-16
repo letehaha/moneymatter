@@ -233,7 +233,7 @@ const averageLineOffset = computed(() => 1 - windowMonths.value / (bars.value.le
                 <div class="flex flex-col p-2">
                   <button
                     type="button"
-                    class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                    class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                     @click="settingsView = 'months'"
                   >
                     <span class="flex flex-col">
@@ -272,7 +272,7 @@ const averageLineOffset = computed(() => 1 - windowMonths.value / (bars.value.le
                     v-for="option in WINDOW_OPTIONS"
                     :key="option"
                     type="button"
-                    class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                    class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                     @click="onWindowChange({ months: option })"
                   >
                     <span class="text-sm">{{ $t(`dashboard.widgets.taxes.lastMonths.m${option}`) }}</span>
