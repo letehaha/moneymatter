@@ -1,5 +1,6 @@
 import Accounts from '@models/accounts.model';
 import { FindTransactionsOptions, findTransactions } from '@models/transactions-query';
+import { excludeFromStatsWhere } from '@services/stats/stats-transactions';
 import { Op, col, fn, literal } from 'sequelize';
 
 export interface PayeeStatsRow {
@@ -40,8 +41,9 @@ type CountableScope = Pick<
 /**
  * What a Payee's stats count: real money the user moved with that Payee. Transfer legs keep
  * their `payeeId` (a transfer can be reverted), plans record an intention rather than a
- * payment, balance adjustments are the account's own correction rather than a payment, and
- * accounts flagged `excludeFromStats` are out of every report.
+ * payment, balance adjustments are the account's own correction rather than a payment,
+ * accounts flagged `excludeFromStats` are out of every report, and so are the transactions
+ * the user excluded from the reports themselves.
  */
 const countableScope = ({ userId }: { userId: number }): CountableScope => ({
   access: { creator: userId },
@@ -83,7 +85,7 @@ async function getPayeeStats({
   const [totals, categoryCounts] = (await Promise.all([
     findTransactions({
       ...scope,
-      where: payeeFilter,
+      where: { [Op.and]: [payeeFilter, excludeFromStatsWhere] },
       attributes: [
         'payeeId',
         [rowCount, 'transactionCount'],
@@ -95,7 +97,7 @@ async function getPayeeStats({
     }),
     findTransactions({
       ...scope,
-      where: { ...payeeFilter, categoryId: { [Op.ne]: null } },
+      where: { [Op.and]: [{ ...payeeFilter, categoryId: { [Op.ne]: null } }, excludeFromStatsWhere] },
       attributes: ['payeeId', 'categoryId', [rowCount, 'transactionCount']],
       group: ['Transactions.payeeId', 'Transactions.categoryId'],
     }),

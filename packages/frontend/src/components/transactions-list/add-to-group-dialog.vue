@@ -119,7 +119,7 @@ const handleSubmit = async () => {
           :key="group.id"
           :class="[
             'flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition-colors',
-            selectedGroupId === group.id ? 'bg-primary/10 text-primary-text' : 'hover:bg-muted',
+            selectedGroupId === group.id ? 'bg-primary/10 text-primary-text' : 'hover:bg-hover',
           ]"
           @click="selectedGroupId = group.id"
         >

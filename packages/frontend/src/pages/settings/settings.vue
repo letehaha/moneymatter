@@ -32,13 +32,14 @@
         @reset="resetWidth"
       />
       <ScrollArea :class="navMaxHeight" :viewport-class="cn('p-2', navMaxHeight)">
-        <div class="flex flex-col gap-4 overflow-hidden">
+        <div ref="navListRef" class="relative isolate -m-1 flex flex-col gap-4 overflow-hidden p-1">
+          <div v-bind="indicator" />
           <button
             v-if="!isCompactLayout"
             :class="
               cn(
                 'text-muted-foreground flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                'hover:bg-accent hover:text-foreground',
+                'hover:bg-hover hover:text-foreground',
               )
             "
             @click="isCollapsed = !isCollapsed"
@@ -67,14 +68,22 @@
                     :to="tab.to"
                     :class="
                       cn(
-                        'text-foreground dark:text-muted-foreground flex items-center gap-2 rounded-md px-3 py-2 whitespace-nowrap transition-colors',
-                        'hover:bg-accent hover:text-foreground',
-                        '[&.router-link-active]:bg-primary/10 dark:[&.router-link-active]:bg-accent [&.router-link-active]:text-foreground',
+                        'group text-foreground dark:text-muted-foreground flex items-center gap-2 rounded-md px-3 py-2 whitespace-nowrap transition-colors',
+                        'hover:bg-hover hover:text-foreground',
+                        '[&.router-link-active]:text-foreground [&.router-link-active]:hover:bg-transparent',
                         isCompactLayout ? 'text-sm md:gap-4 md:text-base' : 'text-sm',
                       )
                     "
                   >
-                    <component :is="tab.icon" :class="cn('size-4 shrink-0', isCompactLayout && 'md:size-5')" />
+                    <component
+                      :is="tab.icon"
+                      :class="
+                        cn(
+                          'group-[.router-link-active]:text-primary-text size-4 shrink-0',
+                          isCompactLayout && 'md:size-5',
+                        )
+                      "
+                    />
                     <span
                       :class="[
                         'min-w-0 truncate transition-opacity duration-200',
@@ -104,7 +113,7 @@
                 :class="
                   cn(
                     'text-foreground dark:text-muted-foreground flex items-center gap-2 rounded-md px-3 py-2 whitespace-nowrap transition-colors',
-                    'hover:bg-accent hover:text-foreground',
+                    'hover:bg-hover hover:text-foreground',
                     isCompactLayout ? 'text-sm md:gap-4 md:text-base' : 'text-sm',
                   )
                 "
@@ -147,6 +156,7 @@ import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useAfterMountTransition } from '@/composable/use-after-mount-transition';
 import { SUB_NAV_WIDTH, useResizableWidth } from '@/composable/use-resizable-width';
+import { useSlidingIndicator } from '@/composable/use-sliding-indicator';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
@@ -221,6 +231,13 @@ const {
   edge: 'right',
 });
 const isTransitionReady = useAfterMountTransition();
+
+const navListRef = ref<HTMLElement | null>(null);
+const { indicator } = useSlidingIndicator({
+  containerRef: navListRef,
+  activeSelector: '.router-link-active',
+  activeKey: () => route.name,
+});
 const showAdminTab = ref(user.value?.isAdmin ?? false);
 
 const isOnChildRoute = computed(() => route.name !== ROUTES_NAMES.settings);

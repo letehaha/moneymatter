@@ -16,7 +16,7 @@ const { formatAmountByCurrencyCode } = useFormatCurrency();
 <template>
   <router-link
     :to="{ name: ROUTES_NAMES.ventureDealDetail, params: { dealId: deal.id } }"
-    class="bg-card border-border hover:bg-accent/30 block rounded-xl border p-5 transition-colors"
+    class="bg-card border-border hover:bg-hover block rounded-xl border p-5 transition-colors"
   >
     <div class="flex flex-col gap-4">
       <div class="flex items-start justify-between gap-3">

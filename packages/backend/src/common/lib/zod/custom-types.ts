@@ -147,7 +147,7 @@ export const commaSeparatedRecordIds = z.string().transform((str, ctx) => {
 
   if (ids.some((id) => id === null)) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'Not all values are valid record IDs',
     });
     return z.NEVER;
@@ -175,7 +175,7 @@ export const booleanQuery = () =>
     }
 
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'Boolean value must be "true", "false", "1", or "0"',
     });
     return z.NEVER;
@@ -201,7 +201,7 @@ export const dateBound = ({
   precision = 'date',
   offset = false,
 }: { precision?: DateRangePrecision; offset?: boolean } = {}): z.ZodType<string> =>
-  precision === 'datetime' ? z.string().datetime({ offset }) : z.iso.date('Invalid calendar date');
+  precision === 'datetime' ? z.iso.datetime({ offset }) : z.iso.date('Invalid calendar date');
 
 // Compares two bounds as instants, so it is correct for calendar days, UTC
 // datetimes, and offset datetimes alike (each parses to a comparable epoch).
@@ -313,7 +313,7 @@ export const decimalString = () =>
   z.union([z.string(), z.number()]).transform((v, ctx) => {
     const s = typeof v === 'number' ? v.toString() : v;
     if (!/^-?\d+(\.\d+)?$/.test(s)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Invalid decimal' });
+      ctx.addIssue({ code: 'custom', message: 'Invalid decimal' });
       return z.NEVER;
     }
     return s;

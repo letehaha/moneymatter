@@ -4,7 +4,7 @@ import { ListExternalAccountsResponseData } from '@controllers/bank-data-provide
 import * as connectProviderService from '@services/bank-data-providers/connection/connect-provider';
 import * as getConnectionDetailsService from '@services/bank-data-providers/connection/get-connection-details';
 import * as listUserConnectionsService from '@services/bank-data-providers/connection/list-user-connections';
-import * as reconcileDuplicatesService from '@services/bank-data-providers/connection/reconcile-duplicates-for-account';
+import * as reconcileDuplicatesService from '@services/bank-data-providers/enablebanking/reconcile-duplicates';
 import { listSupportedProviders } from '@services/bank-data-providers/list-supported-providers.service';
 import type * as getUserAccountsSyncStatusService from '@services/bank-data-providers/sync/get-user-sync-status';
 import type { queueConnectionSync } from '@services/bank-data-providers/sync/sync-manager';

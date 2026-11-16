@@ -494,6 +494,42 @@ describe('prepareTxCreationParams', () => {
     });
   });
 
+  describe('excludeFromStats', () => {
+    it('sends the flag when it is on', () => {
+      const result = prepareTxCreationParams({
+        form: createBaseForm({ excludeFromStats: true }),
+        isTransferTx: false,
+        isCurrenciesDifferent: false,
+      });
+
+      expect(result.excludeFromStats).toBe(true);
+    });
+
+    it.each([false, undefined])('omits the flag when it is %s', (excludeFromStats) => {
+      const result = prepareTxCreationParams({
+        form: createBaseForm({ excludeFromStats }),
+        isTransferTx: false,
+        isCurrenciesDifferent: false,
+      });
+
+      expect(result).not.toHaveProperty('excludeFromStats');
+    });
+
+    it('sends the flag in a transfer payload', () => {
+      const result = prepareTxCreationParams({
+        form: createBaseForm({
+          type: FORM_TYPES.transfer,
+          toAccount: createMockAccount({ id: '00000000-0000-0000-0000-000000000002' as RecordId }),
+          excludeFromStats: true,
+        }),
+        isTransferTx: true,
+        isCurrenciesDifferent: false,
+      });
+
+      expect(result.excludeFromStats).toBe(true);
+    });
+  });
+
   describe('original currency pair', () => {
     const JPY = SYSTEM_CURRENCIES.find((item) => item.code === 'JPY')!;
 

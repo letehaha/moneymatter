@@ -195,7 +195,7 @@ const isSelfRow = (member: ShareMemberRow) => user.value?.id === member.user.id;
     <div v-if="isOwner" class="flex items-start justify-end gap-3">
       <DemoRestricted v-if="isOwner" feature="share_tracker_invite">
         <Button variant="outline" size="sm" :disabled="isDemo" @click="inviteDialogOpen = true">
-          <UserPlusIcon class="mr-2 size-4" />
+          <UserPlusIcon class="size-4" />
           {{ $t('pages.budgetDetails.sharing.inviteAnother') }}
         </Button>
       </DemoRestricted>
@@ -264,7 +264,7 @@ const isSelfRow = (member: ShareMemberRow) => user.value?.id === member.user.id;
                   <DesktopOnlyTooltip :content="$t('pages.budgetDetails.sharing.member.revoke')">
                     <Button
                       variant="soft-destructive"
-                      size="icon-sm"
+                      size="icon"
                       :disabled="isSelfRow(member) || revokeMutation.isPending.value || isDemo"
                       @click="openRevoke(member)"
                     >

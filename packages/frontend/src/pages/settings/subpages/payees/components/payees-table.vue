@@ -19,15 +19,15 @@
               $t('payees.bulk.selectedCount', { count: selectedIds.length })
             }}</span>
           </label>
-          <UiButton variant="ghost" size="sm" class="h-8 px-2" @click="clearSelection">
+          <UiButton variant="ghost" size="xs" class="px-2" @click="clearSelection">
             {{ $t('common.actions.cancel') }}
           </UiButton>
         </template>
         <template v-else>
           <UiButton
             variant="ghost-primary"
-            size="sm"
-            class="h-8 px-2"
+            size="xs"
+            class="px-2"
             :disabled="list.length === 0"
             @click="selecting = true"
           >
@@ -35,7 +35,7 @@
           </UiButton>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
-              <UiButton variant="ghost" size="sm" class="h-8 gap-1 px-2">
+              <UiButton variant="ghost" size="xs" class="gap-1 px-2">
                 {{ currentSortLabel }}
                 <component :is="sortDir === 'asc' ? ArrowUpIcon : ArrowDownIcon" class="size-3.5" />
               </UiButton>
@@ -136,8 +136,8 @@
               v-if="list[virtualRow.index]"
               :class="
                 cn(
-                  'hover:bg-muted/40 flex border-b transition-colors',
-                  selected.has(list[virtualRow.index]!.id) && 'bg-muted/40',
+                  'hover:bg-hover flex border-b transition-colors',
+                  selected.has(list[virtualRow.index]!.id) && 'bg-accent hover:bg-accent',
                   isRowSelectable && 'cursor-pointer select-none',
                 )
               "
@@ -160,7 +160,7 @@
                     ? undefined
                     : { name: ROUTES_NAMES.settingsPayeeDetail, params: { id: list[virtualRow.index]!.id } }
                 "
-                class="focus-visible:bg-muted/40 focus-visible:ring-ring block min-w-0 flex-1 px-3 py-2 focus-visible:ring-2 focus-visible:outline-none"
+                class="focus-visible:bg-hover focus-visible:ring-ring block min-w-0 flex-1 px-3 py-2 focus-visible:ring-2 focus-visible:outline-none"
               >
                 <!-- Compact (two-line row) -->
                 <div class="flex items-center gap-2.5 @3xl/payees-table:hidden">

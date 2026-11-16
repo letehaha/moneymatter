@@ -282,7 +282,7 @@ const goToCurrencySettings = () => {
           <p class="text-muted-foreground text-sm">{{ $t('dialogs.shareInvitationDialog.acceptedBody') }}</p>
         </div>
 
-        <div v-if="backInviteContext" class="bg-muted/40 flex flex-col gap-3 rounded-md border p-4">
+        <div v-if="backInviteContext" class="bg-muted/40 fields-plain flex flex-col gap-3 rounded-md border p-4">
           <p class="text-sm">
             <i18n-t keypath="dialogs.shareInvitationDialog.backInvite.prompt" tag="span">
               <template #owner>

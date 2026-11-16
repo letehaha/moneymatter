@@ -14,7 +14,6 @@ export const linkRefundTool = defineTool({
     'Mark an existing transaction as a refund of another transaction. Provide originalTxId (the transaction being refunded) and refundTxId (the refund transaction). The two transactions must have opposite types (income vs expense). Optionally target a specific split of the original. One refund can cover several purchases: call once per purchase, each with an amount; the amounts cannot exceed the refund, and in the same currency the amounts against one purchase or split cannot exceed it.',
   input: {
     originalTxId: z
-      .string()
       .uuid()
       .nullable()
       .describe('ID of the original transaction being refunded. Pass null for a standalone refund'),

@@ -169,7 +169,7 @@ const groups = computed(() => {
             v-for="row in group.rows"
             :key="row.goal.id"
             :to="{ name: ROUTES_NAMES.goalDetails, params: { goalId: row.goal.id } }"
-            class="hover:bg-foreground/5 border-border/60 -mx-2 block rounded-md border-t px-2 py-2 transition-colors first:border-t-0 @xl:nth-2:border-t-0"
+            class="hover:bg-hover border-border/60 -mx-2 block rounded-md border-t px-2 py-2 transition-colors first:border-t-0 @xl:nth-2:border-t-0"
           >
             <span class="flex min-w-0 items-center justify-between gap-3">
               <span class="flex min-w-0 items-center gap-2">

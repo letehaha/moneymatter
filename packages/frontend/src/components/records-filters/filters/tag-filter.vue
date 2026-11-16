@@ -8,7 +8,12 @@
   >
     <Combobox.ComboboxAnchor>
       <Combobox.ComboboxTrigger
-        class="border-input bg-input-background ring-offset-background focus-visible:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        :class="
+          cn(
+            'border-input bg-input-background ring-offset-background focus-visible:ring-ring flex w-full items-center justify-between rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+            controlHeight[size],
+          )
+        "
       >
         <div class="flex min-w-0 flex-1 items-center gap-2">
           <span
@@ -37,7 +42,7 @@
     <Combobox.ComboboxList class="max-h-100 w-(--reka-combobox-trigger-width) lg:max-h-75">
       <div class="relative w-full items-center p-2 pb-0">
         <Combobox.ComboboxInput
-          class="h-9 w-full rounded-md border pl-9 focus-visible:ring-0"
+          class="border-input bg-input-background dark:border-border h-9 w-full rounded-md border pl-9 focus-visible:ring-0 dark:bg-transparent"
           :placeholder="$t('transactions.filters.tags.searchPlaceholder')"
         />
         <SearchIcon class="text-muted-foreground absolute top-[60%] left-4 size-5 -translate-y-1/2" />
@@ -49,7 +54,7 @@
           <template v-if="allowBlank && !searchTerm.trim()">
             <Combobox.ComboboxItem
               :value="BLANK_FILTER_VALUE"
-              class="hover:bg-accent hover:text-accent-foreground text-muted-foreground flex-start mb-1 flex cursor-pointer items-center justify-between rounded-md px-2 py-1"
+              class="hover:bg-hover hover:text-accent-foreground text-muted-foreground flex-start mb-1 flex cursor-pointer items-center justify-between rounded-md px-2 py-1"
               @select.prevent="toggleTagId(BLANK_FILTER_VALUE)"
             >
               <div class="flex items-center gap-2">
@@ -64,7 +69,7 @@
             v-for="tag in displayedTags"
             :key="tag.id"
             :value="tag"
-            class="hover:bg-accent hover:text-accent-foreground flex-start flex cursor-pointer items-center justify-between rounded-md px-2 py-1"
+            class="hover:bg-hover hover:text-accent-foreground flex-start flex cursor-pointer items-center justify-between rounded-md px-2 py-1"
             @select.prevent="toggleTagId(tag.id)"
           >
             <div class="flex items-center gap-2">
@@ -84,6 +89,8 @@
 import TagIcon from '@/components/common/icons/tag-icon.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import * as Combobox from '@/components/lib/ui/combobox';
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
+import { cn } from '@/lib/utils';
 import { useTagsStore } from '@/stores';
 import { BLANK_FILTER_VALUE, type RecordId } from '@bt/shared/types';
 import { isEqual } from 'lodash-es';
@@ -94,14 +101,18 @@ import { computed, ref, watch } from 'vue';
 
 const { t } = useI18n();
 
-const props = defineProps<{
-  tagIds: string[];
-  /** Hide the in-trigger clear button — for hosts (like the filter bar chips)
-   * that render their own remove control next to the trigger. */
-  hideClearButton?: boolean;
-  /** Offer a "Blank" pseudo-option (`BLANK_FILTER_VALUE`) matching untagged transactions. */
-  allowBlank?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    tagIds: string[];
+    /** Hide the in-trigger clear button — for hosts (like the filter bar chips)
+     * that render their own remove control next to the trigger. */
+    hideClearButton?: boolean;
+    /** Offer a "Blank" pseudo-option (`BLANK_FILTER_VALUE`) matching untagged transactions. */
+    allowBlank?: boolean;
+    size?: ControlSize;
+  }>(),
+  { size: 'default' },
+);
 
 const emit = defineEmits<{
   'update:tagIds': [value: string[]];

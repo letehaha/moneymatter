@@ -114,11 +114,8 @@ const hasResults = computed(() => (query.data.value ?? []).length > 0);
     <Popover.PopoverTrigger as-child>
       <Button
         type="button"
-        variant="outline"
-        :class="[
-          'group inline-flex w-full items-center justify-between gap-2 text-left font-normal',
-          modelValue ? '' : 'border-destructive-text',
-        ]"
+        variant="field"
+        :class="['group w-full justify-between text-left', modelValue ? '' : 'border-destructive-text']"
       >
         <span v-if="modelValue" class="truncate font-medium">{{ buttonLabel }}</span>
         <span v-else class="text-destructive-text">{{ $t('investmentsImport.review.pickSecurity') }}</span>

@@ -3,7 +3,16 @@
  * This system allows users to connect multiple bank accounts from various providers
  * (Monobank, Enable Banking, etc.) in a unified, modular way.
  */
-import { BANK_PROVIDER_TYPE, Cents } from '@bt/shared/types';
+import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, Cents, type DeactivationReason } from '@bt/shared/types';
+
+/**
+ * Connection-metadata fields used by the shared auth-failure tracking in
+ * BaseBankDataProvider. Provider metadata interfaces extend this.
+ */
+export interface AuthTrackingMetadata {
+  consecutiveAuthFailures?: number;
+  deactivationReason?: DeactivationReason | null;
+}
 
 // ============================================================================
 // Provider Types and Enums
@@ -55,17 +64,18 @@ export interface ProviderMetadata {
   redirectUrl?: string;
 }
 
+export const PROVIDER_TO_ACCOUNT_TYPE: Record<BANK_PROVIDER_TYPE, ACCOUNT_TYPES> = {
+  [BANK_PROVIDER_TYPE.MONOBANK]: ACCOUNT_TYPES.monobank,
+  [BANK_PROVIDER_TYPE.ENABLE_BANKING]: ACCOUNT_TYPES.enableBanking,
+  [BANK_PROVIDER_TYPE.LUNCHFLOW]: ACCOUNT_TYPES.lunchflow,
+  [BANK_PROVIDER_TYPE.WALUTOMAT]: ACCOUNT_TYPES.walutomat,
+  [BANK_PROVIDER_TYPE.SIMPLEFIN]: ACCOUNT_TYPES.simplefin,
+  [BANK_PROVIDER_TYPE.AKAHU]: ACCOUNT_TYPES.akahu,
+};
+
 // ============================================================================
 // Provider Data Types
 // ============================================================================
-
-/**
- * Date range for querying transactions
- */
-export interface DateRange {
-  from: Date;
-  to: Date;
-}
 
 /**
  * Bank account from external provider
@@ -85,48 +95,20 @@ export interface ProviderAccount {
   metadata?: Record<string, unknown>;
 }
 
-/**
- * Transaction from external provider
- */
-export interface ProviderTransaction {
-  /** Provider's unique identifier for this transaction */
-  externalId: string;
-  /** Transaction amount in cents (positive for income, negative for expense) */
-  amount: Cents;
-  /** Currency code */
-  currency: string;
-  /** Transaction date */
-  date: Date;
-  /** Transaction description */
-  description: string;
-  /** Merchant/counterparty name */
-  merchantName?: string;
-  /** Transaction category (if provided by provider) */
-  category?: string;
-  /** Additional provider-specific data */
-  metadata?: Record<string, unknown>;
+export interface SyncedTransactionRow {
+  originalId: string;
+  time: Date;
+  /**
+   * Signed decimal as the provider reports it; negative is an expense. A string is accepted so
+   * SimpleFIN's decimal is parsed strictly by `Money.fromDecimal`, and only after dedup.
+   */
+  amount: number | string;
+  note: string;
+  externalData: Record<string, unknown>;
+  rawMerchantName?: string | null;
+  externalReference?: string | null;
 }
 
-/**
- * Account balance information from provider
- */
-export interface ProviderBalance {
-  /** Balance amount (in cents) */
-  amount: Cents;
-  /** Currency code */
-  currency: string;
-  /** Timestamp when balance was retrieved */
-  asOf: Date;
-}
-
-// ============================================================================
-// Provider Interface
-// ============================================================================
-
-/**
- * Base interface that all bank data providers must implement.
- * This ensures a consistent API regardless of the underlying provider.
- */
 /**
  * Result of a historical period load (`loadTransactionsForPeriod`).
  *
@@ -143,149 +125,4 @@ export interface LoadTransactionsForPeriodResult {
   estimatedMinutes: number;
   createdCount?: number;
   fetchedCount?: number;
-}
-
-export interface IBankDataProvider {
-  // ========================================
-  // Metadata
-  // ========================================
-
-  /** Provider metadata (name, features, credential fields, etc.) */
-  readonly metadata: ProviderMetadata;
-
-  // ========================================
-  // Connection Management
-  // ========================================
-
-  /**
-   * Create a new connection to this provider for a user
-   * @param userId - User creating the connection
-   * @param credentials - Provider-specific credentials
-   * @returns Connection ID
-   */
-  connect(userId: number, credentials: unknown): Promise<string>;
-
-  /**
-   * Disconnect and remove a provider connection
-   * @param connectionId - Connection to disconnect
-   */
-  disconnect(connectionId: string): Promise<void>;
-
-  /**
-   * Validate credentials by testing connection to provider
-   * @param credentials - Credentials to validate
-   * @returns True if credentials are valid
-   */
-  validateCredentials(credentials: unknown): Promise<boolean>;
-
-  /**
-   * Update credentials for an existing connection
-   * @param connectionId - Connection to update
-   * @param newCredentials - New credentials to store
-   */
-  refreshCredentials(connectionId: string, newCredentials: unknown): Promise<void>;
-
-  // ========================================
-  // Account Operations
-  // ========================================
-
-  /**
-   * Fetch list of accounts from provider (without saving to DB)
-   * @param connectionId - Connection to fetch accounts from
-   * @returns List of provider accounts
-   */
-  fetchAccounts(connectionId: string): Promise<ProviderAccount[]>;
-
-  // ========================================
-  // Transaction Operations
-  // ========================================
-
-  /**
-   * Fetch transactions for a specific account (without saving to DB)
-   * @param connectionId - Connection ID
-   * @param accountExternalId - Provider's account ID
-   * @param dateRange - Optional date range to filter transactions
-   * @returns List of transactions
-   */
-  fetchTransactions(
-    connectionId: string,
-    accountExternalId: string,
-    dateRange?: DateRange,
-  ): Promise<ProviderTransaction[]>;
-
-  /**
-   * Sync transactions for a specific account to our database
-   * @param connectionId - Connection ID
-   * @param systemAccountId - Our internal account ID
-   * @param userId - User ID for SSE notifications
-   * @returns Either void (immediate sync) or job info (queue-based sync)
-   */
-  syncTransactions({
-    connectionId,
-    systemAccountId,
-    userId,
-  }: {
-    connectionId: string;
-    systemAccountId: string;
-    userId: number;
-  }): Promise<void | { jobGroupId: string; totalBatches: number; estimatedMinutes: number }>;
-
-  /**
-   * Sync several accounts of one connection in a single batched pass (optional).
-   * Only providers whose upstream returns every account (with transactions) in
-   * one response — e.g. SimpleFIN's `/accounts` — implement this; it lets the
-   * orchestrators fetch once per window instead of once per account, respecting
-   * tight request budgets. Providers without it fall back to the per-account
-   * `syncTransactions`. Marks each account's sync status internally.
-   */
-  syncConnectionAccounts?(args: { connectionId: string; userId: number; systemAccountIds: string[] }): Promise<void>;
-
-  // ========================================
-  // Balance Operations
-  // ========================================
-
-  /**
-   * Fetch current balance for a specific account
-   * @param connectionId - Connection ID
-   * @param accountExternalId - Provider's account ID
-   * @returns Current balance
-   */
-  fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance>;
-
-  /**
-   * Refresh balance for a specific account in our system
-   * @param connectionId - Connection ID
-   * @param systemAccountId - Our internal account ID
-   */
-  refreshBalance(connectionId: string, systemAccountId: string): Promise<void>;
-
-  // ========================================
-  // Webhook Support (Optional)
-  // ========================================
-
-  /**
-   * Set up webhook for real-time updates (if supported)
-   * @param connectionId - Connection to set up webhook for
-   * @param webhookUrl - URL to receive webhook notifications
-   */
-  setupWebhook?(connectionId: string, webhookUrl: string): Promise<void>;
-
-  /**
-   * Handle incoming webhook payload (if supported)
-   * @param payload - Webhook payload from provider
-   */
-  handleWebhook?(payload: unknown): Promise<void>;
-
-  /**
-   * Load transactions for an explicit historical window (the account-details
-   * "load data for period" picker). Optional — only providers that support
-   * date-range historical loads implement it.
-   */
-  loadTransactionsForPeriod?(args: {
-    connectionId: string;
-    systemAccountId: string;
-    userId: number;
-    from: Date;
-    to: Date;
-  }): Promise<LoadTransactionsForPeriodResult>;
 }

@@ -50,7 +50,7 @@
         </Popover>
 
         <Select v-model="topN">
-          <SelectTrigger class="h-8 w-auto gap-2">
+          <SelectTrigger size="sm" class="w-auto gap-2">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

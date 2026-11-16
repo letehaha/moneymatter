@@ -22,14 +22,14 @@ const { format } = useDateLocale();
 
 const columns = computed(() => getGridColumns({ periodType: props.periodType }));
 
-const cellBase = 'h-9 rounded-md border text-sm font-medium transition-colors hover:bg-accent';
+const cellBase = 'h-9 rounded-md border text-sm font-medium transition-colors hover:bg-hover';
 
 function getCellClasses({ year, index }: { year: number; index: number }): Record<string, boolean> {
   const state = props.getCellState({ year, index });
   return {
     'bg-primary text-primary-foreground hover:bg-primary/90 border-transparent':
       state.isSelected && !state.isRangeStart && !state.isRangeEnd,
-    'bg-accent text-accent-foreground rounded-none border-transparent': state.isInRange,
+    'bg-accent hover:bg-accent text-accent-foreground rounded-none border-transparent': state.isInRange,
     'bg-primary text-primary-foreground hover:bg-primary/90 rounded-r-none border-transparent':
       state.isRangeStart && !state.isRangeEnd,
     'bg-primary text-primary-foreground hover:bg-primary/90 rounded-l-none border-transparent':

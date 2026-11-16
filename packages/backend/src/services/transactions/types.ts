@@ -87,6 +87,7 @@ interface UpdateParams {
   payeeId?: string | null;
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  excludeFromStats?: boolean;
   /** `null` clears the stored metadata; both fields move together. */
   originalAmount?: Money | null;
   originalCurrencyCode?: string | null;

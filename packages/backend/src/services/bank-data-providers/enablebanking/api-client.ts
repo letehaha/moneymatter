@@ -25,7 +25,7 @@ import {
   EnableBankingAccount,
   EnableBankingBalance,
   EnableBankingCredentials,
-  SessionDetails,
+  GetSessionResponse,
   StartAuthorizationRequest,
   StartAuthorizationResponse,
   TransactionsQuery,
@@ -413,9 +413,9 @@ export class EnableBankingApiClient {
    * Get session details
    * @link https://enablebanking.com/docs/api/reference#sessions-sessionid-get
    */
-  async getSession(sessionId: string): Promise<SessionDetails> {
+  async getSession(sessionId: string): Promise<GetSessionResponse> {
     try {
-      const response = await this.client.get<SessionDetails>(`/sessions/${sessionId}`, {
+      const response = await this.client.get<GetSessionResponse>(`/sessions/${sessionId}`, {
         headers: this.getAuthHeaders(),
       });
       return response.data;

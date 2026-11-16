@@ -1,12 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  ACCOUNT_TYPES,
-  BANK_PROVIDER_TYPE,
-  NO_CURRENCY_CODE,
-  type RecordId,
-  TRANSACTION_TRANSFER_NATURE,
-  TRANSACTION_TYPES,
-} from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE, NO_CURRENCY_CODE, type RecordId } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import {
@@ -20,26 +13,14 @@ import {
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import { findOneTransaction } from '@models/transactions-query';
-import { getUserDefaultCategory } from '@models/users.model';
-import {
-  BaseBankDataProvider,
-  DateRange,
-  ProviderAccount,
-  ProviderBalance,
-  ProviderMetadata,
-  ProviderTransaction,
-} from '@services/bank-data-providers';
-import { createTransaction } from '@services/transactions';
-import { accountHasPlannedRows } from '@services/transactions/planned-matching';
-import { subDays } from 'date-fns';
-import { Op, Sequelize } from 'sequelize';
+import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
 
 import { SyncStatus, setAccountSyncStatus, setAccountsSyncStatus } from '../sync/sync-status-tracker';
-import { clampSyncStartToLink } from '../utils/clamp-sync-start-to-link';
+import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 import { encryptCredentials } from '../utils/credential-encryption';
 import { linkAndEmitSyncedTransactions } from '../utils/link-and-emit-synced-transactions';
-import { notifyPlannedConfirmations } from '../utils/notify-planned-confirmations';
+import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
+import { resolveSyncStart } from '../utils/resolve-sync-start';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { SimplefinApiClient } from './api-client';
 import {
@@ -76,7 +57,6 @@ const INITIAL_BACKFILL_DAYS = 180;
 interface AccountTransactionsBucket {
   transactions: SimplefinTransaction[];
   balance: string | null;
-  currency: string | null;
 }
 
 const isTransientBridgeError = ({ error }: { error: unknown }): boolean =>
@@ -164,10 +144,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
     const connectionsById = accountSet ? this.buildConnectionsMap(accountSet) : new Map();
     const firstAccount = accountSet?.accounts[0];
 
-    const existingConnections = await BankDataProviderConnections.count({
-      where: { userId, providerType: this.metadata.type },
-    });
-    const providerName = existingConnections > 0 ? `SimpleFIN (${existingConnections + 1})` : 'SimpleFIN';
+    const providerName = await this.nextConnectionName({ userId, label: 'SimpleFIN' });
 
     const connection = await BankDataProviderConnections.create({
       userId,
@@ -184,13 +161,6 @@ export class SimplefinProvider extends BaseBankDataProvider {
     } as any);
 
     return connection.id;
-  }
-
-  async disconnect(connectionId: string): Promise<void> {
-    const connection = await this.getConnection(connectionId);
-    this.validateProviderType(connection);
-
-    await connection.destroy();
   }
 
   async validateCredentials(credentials: unknown): Promise<boolean> {
@@ -233,14 +203,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
 
     connection.setEncryptedCredentials({ accessUrl } satisfies SimplefinCredentials);
 
-    // Reset auth-failure tracking and reactivate. Spread into a new object so
-    // Sequelize flags the JSONB column dirty (a same-reference re-assign won't
-    // persist the reset of consecutiveAuthFailures / deactivationReason).
-    const metadata: SimplefinMetadata = { ...(connection.metadata as SimplefinMetadata) };
-    metadata.consecutiveAuthFailures = 0;
-    metadata.deactivationReason = null;
-    connection.metadata = metadata as any;
-    connection.isActive = true;
+    this.reactivateConnection({ connection });
 
     await connection.save();
   }
@@ -295,39 +258,6 @@ export class SimplefinProvider extends BaseBankDataProvider {
   // Transaction Operations
   // ============================================================================
 
-  async fetchTransactions(
-    connectionId: string,
-    accountExternalId: string,
-    dateRange?: DateRange,
-  ): Promise<ProviderTransaction[]> {
-    const { accessUrl } = await this.getValidatedCredentials(connectionId);
-    const apiClient = new SimplefinApiClient(accessUrl);
-
-    const to = dateRange?.to ?? new Date();
-    const from = dateRange?.from ?? subDays(to, INITIAL_BACKFILL_DAYS);
-
-    const { transactions, currency } = await this.fetchAccountTransactions({
-      connectionId,
-      apiClient,
-      accountExternalId,
-      from,
-      to,
-    });
-
-    return transactions.map((tx) => ({
-      externalId: tx.id,
-      amount: Money.fromDecimal(tx.amount).toCents(),
-      currency: (currency || '').toUpperCase(),
-      // `transacted_at` is the actual purchase moment; `posted` is when the
-      // bank cleared it. Prefer the former when the bridge supplies it so
-      // transactions land on the day the user spent the money.
-      date: new Date((tx.transacted_at ?? tx.posted) * 1000),
-      description: tx.description || tx.payee || tx.memo || '',
-      merchantName: tx.payee,
-      metadata: { payee: tx.payee, memo: tx.memo, posted: tx.posted, transactedAt: tx.transacted_at },
-    }));
-  }
-
   async syncTransactions({
     connectionId,
     systemAccountId,
@@ -344,17 +274,8 @@ export class SimplefinProvider extends BaseBankDataProvider {
       logLabel: 'Sync',
       resolveWindow: async ({ account }) => {
         const to = new Date();
-        const anchor = await this.findAnchor({ accountId: systemAccountId, to });
-
-        return {
-          // Clamped to the link date: the bank's copy of a pre-link manual row carries no id dedup can match.
-          // An account with no rows backfills instead.
-          from: anchor ? clampSyncStartToLink({ account, from: anchor }) : subDays(to, INITIAL_BACKFILL_DAYS),
-          to,
-          // Only an anchored (incremental) sync may consume plans: the anchorless
-          // backfill window would let old charges eat fresh plans.
-          matchPlanned: anchor !== null,
-        };
+        const { from, matchPlanned } = await resolveSyncStart({ account, to, backfillDays: INITIAL_BACKFILL_DAYS });
+        return { from, to, matchPlanned };
       },
     });
   }
@@ -403,13 +324,8 @@ export class SimplefinProvider extends BaseBankDataProvider {
     const to = new Date();
     const plans = await Promise.all(
       accounts.map(async (account) => {
-        const anchor = await this.findAnchor({ accountId: account.id, to });
-        return {
-          account,
-          // Anchorless accounts are on their backfill pull, which must not consume plans.
-          matchPlanned: anchor !== null,
-          createFromDate: anchor ? clampSyncStartToLink({ account, from: anchor }) : subDays(to, INITIAL_BACKFILL_DAYS),
-        };
+        const { from, matchPlanned } = await resolveSyncStart({ account, to, backfillDays: INITIAL_BACKFILL_DAYS });
+        return { account, matchPlanned, createFromDate: from };
       }),
     );
     const from = new Date(Math.min(...plans.map((plan) => plan.createFromDate.getTime())));
@@ -522,46 +438,6 @@ export class SimplefinProvider extends BaseBankDataProvider {
   }
 
   // ============================================================================
-  // Balance Operations
-  // ============================================================================
-
-  async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
-    const { accessUrl } = await this.getValidatedCredentials(connectionId);
-    const apiClient = new SimplefinApiClient(accessUrl);
-
-    const accountSet = await this.getAccountsTracked({
-      connectionId,
-      apiClient,
-      params: { accountId: accountExternalId, balancesOnly: true },
-    });
-    const account = accountSet.accounts.find((acc) => acc.id === accountExternalId);
-
-    if (!account) {
-      throw new NotFoundError({ message: t({ key: 'bankDataProviders.simplefin.accountNotFound' }) });
-    }
-
-    return {
-      amount: Money.fromDecimal(account.balance).toCents(),
-      currency: (account.currency || '').toUpperCase(),
-      asOf: account['balance-date'] ? new Date(account['balance-date'] * 1000) : new Date(),
-    };
-  }
-
-  async refreshBalance(connectionId: string, systemAccountId: string): Promise<void> {
-    const account = await this.getSystemAccount(systemAccountId);
-
-    if (!account.externalId) {
-      throw new BadRequestError({ message: t({ key: 'bankDataProviders.simplefin.accountNoExternalId' }) });
-    }
-
-    const balance = await this.fetchBalance(connectionId, account.externalId);
-    await writeBankBalanceWithHistory({
-      account,
-      balance: Money.fromCents(balance.amount),
-    });
-  }
-
-  // ============================================================================
   // Helper Methods
   // ============================================================================
 
@@ -635,26 +511,10 @@ export class SimplefinProvider extends BaseBankDataProvider {
   }
 
   /**
-   * Newest stored transaction time at or before `to`, or null when nothing is stored.
-   * A future-dated row must not anchor: it pushes `from` past `to` and every sync becomes a no-op.
-   */
-  private async findAnchor({ accountId, to }: { accountId: RecordId; to: Date }): Promise<Date | null> {
-    const latest = await findOneTransaction({
-      planned: 'exclude',
-      access: 'unscoped-internal',
-      balanceAdjustments: 'include',
-      where: { accountId, time: { [Op.lte]: to } },
-      order: [['time', 'DESC']],
-    });
-
-    return latest ? new Date(latest.time) : null;
-  }
-
-  /**
    * Fetch posted transactions for one account across [from, to], paging in
    * windows under the SimpleFIN 90-day limit. Pending transactions (posted=0)
    * are dropped — they can change or vanish before settling. Also returns the
-   * account's current balance/currency from the response (no extra request).
+   * account's current balance from the response (no extra request).
    * Each window goes through {@link getAccountsTracked}, so auth-failure
    * tracking and error surfacing are consistent across every window.
    */
@@ -670,11 +530,10 @@ export class SimplefinProvider extends BaseBankDataProvider {
     accountExternalId: string;
     from: Date;
     to: Date;
-  }): Promise<{ transactions: SimplefinTransaction[]; balance: string | null; currency: string | null }> {
+  }): Promise<{ transactions: SimplefinTransaction[]; balance: string | null }> {
     const windows = splitIntoWindows(from, to);
     const byId = new Map<string, SimplefinTransaction>();
     let balance: string | null = null;
-    let currency: string | null = null;
 
     for (const window of windows) {
       const accountSet = await this.getAccountsTracked({
@@ -693,7 +552,6 @@ export class SimplefinProvider extends BaseBankDataProvider {
       }
 
       balance = account.balance ?? balance;
-      currency = account.currency ?? currency;
 
       for (const tx of account.transactions ?? []) {
         if (tx.pending || !tx.posted) continue; // skip pending (posted === 0)
@@ -701,7 +559,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
       }
     }
 
-    return { transactions: [...byId.values()], balance, currency };
+    return { transactions: [...byId.values()], balance };
   }
 
   /**
@@ -728,7 +586,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
     // externalId -> (txId -> tx) so a transaction echoed across overlapping
     // windows is stored once.
     const byAccount = new Map<string, Map<string, SimplefinTransaction>>();
-    const meta = new Map<string, { balance: string | null; currency: string | null }>();
+    const balances = new Map<string, string | null>();
 
     for (const window of windows) {
       const accountSet = await this.getAccountsTracked({
@@ -744,10 +602,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
           if (tx.pending || !tx.posted) continue; // skip pending (posted === 0)
           txById.set(tx.id, tx);
         }
-        meta.set(account.id, {
-          balance: account.balance ?? meta.get(account.id)?.balance ?? null,
-          currency: account.currency ?? meta.get(account.id)?.currency ?? null,
-        });
+        balances.set(account.id, account.balance ?? balances.get(account.id) ?? null);
       }
     }
 
@@ -755,8 +610,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
     for (const [externalId, txById] of byAccount) {
       result.set(externalId, {
         transactions: [...txById.values()],
-        balance: meta.get(externalId)?.balance ?? null,
-        currency: meta.get(externalId)?.currency ?? null,
+        balance: balances.get(externalId) ?? null,
       });
     }
     return result;
@@ -815,7 +669,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
   private async persistAccountTransactions({
     connection,
     account,
-    transactions: rawTransactions,
+    transactions,
     matchPlanned = false,
     createFromDate,
   }: {
@@ -825,101 +679,40 @@ export class SimplefinProvider extends BaseBankDataProvider {
     matchPlanned?: boolean;
     createFromDate: Date;
   }): Promise<string[]> {
-    // Oldest first so balance-history ordering is natural.
-    const transactions = rawTransactions.toSorted((a, b) => a.posted - b.posted);
-    const defaultCategoryId = await getUserDefaultCategory({ id: connection.userId });
-    const createdIds: string[] = [];
-    let mergedIntoPlannedCount = 0;
-    const checkpoint = this.createBaseCurrencyLockCheckpoint({ userId: connection.userId });
-
-    // One probe per account instead of one per row.
-    const canMatchPlanned = matchPlanned && (await accountHasPlannedRows({ accountId: account.id }));
-
-    for (const tx of transactions) {
-      await checkpoint();
-
-      // Primary dedup: normal re-sync.
-      const existingTx = await findOneTransaction({
-        planned: 'exclude',
-        access: 'unscoped-internal',
-        balanceAdjustments: 'include',
-        where: { accountId: account.id, originalId: tx.id },
-        paranoid: false,
-      });
-      if (existingTx) continue;
-
-      // Secondary dedup: unlink→relink cleared originalId to null but preserved
-      // the original value under externalData.originalSource.originalId.
-      const existingByOriginalSource = await findOneTransaction({
-        planned: 'exclude',
-        access: 'unscoped-internal',
-        balanceAdjustments: 'include',
-        where: Sequelize.and(
-          { accountId: account.id, originalId: null },
-          Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx.id),
-        ),
-        paranoid: false,
-      });
-      if (existingByOriginalSource) {
-        // Restore originalId so future syncs use the fast primary path.
-        await existingByOriginalSource.update({ originalId: tx.id });
-        continue;
-      }
-
-      const time = new Date((tx.transacted_at ?? tx.posted) * 1000);
-
-      // Never create rows before the account's start: that history is already absorbed into the opening balance.
-      if (time < createFromDate) continue;
-
-      const amountMoney = Money.fromDecimal(tx.amount);
-      const isExpense = amountMoney.toNumber() < 0;
-
-      const createResult = await createTransaction({
-        originalId: tx.id,
-        note: tx.description || tx.payee || tx.memo || '',
-        amount: amountMoney.abs(),
-        // `transacted_at` (when it actually happened) beats `posted` (when the
-        // bank cleared it) for user-facing date. Falls back to `posted` for
-        // bridges/banks that don't expose `transacted_at`.
-        time,
-        externalData: {
-          payee: tx.payee,
-          memo: tx.memo,
-          sfinAccountId: account.externalId,
-          posted: tx.posted,
-          transactedAt: tx.transacted_at,
-        },
-        commissionRate: Money.fromCents(0),
-        cashbackAmount: Money.fromCents(0),
-        accountId: account.id,
-        userId: connection.userId,
-        transactionType: isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income,
-        categoryId: defaultCategoryId,
-        transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-        accountType: ACCOUNT_TYPES.simplefin,
-        rawMerchantName: tx.payee?.trim() || null,
-        matchPlanned: canMatchPlanned,
-      });
-
-      // A merged row is not a new row: it keeps the user's category and payee, which the
-      // post-sync listeners on the emitted ids would overwrite.
-      if (createResult.mergedIntoPlanned) {
-        mergedIntoPlannedCount += 1;
-      } else {
-        createdIds.push(createResult[0].id);
-      }
-    }
+    const { createdTransactionIds, mergedIntoPlannedCount } = await persistSyncedTransactions({
+      account,
+      userId: connection.userId,
+      accountType: PROVIDER_TO_ACCOUNT_TYPE[this.metadata.type],
+      checkpoint: this.createBaseCurrencyLockCheckpoint({ userId: connection.userId }),
+      // Oldest first so balance-history ordering is natural.
+      rows: transactions
+        .toSorted((a, b) => a.posted - b.posted)
+        .map((tx) => ({
+          originalId: tx.id,
+          // `transacted_at` (when it actually happened) beats `posted` (when the
+          // bank cleared it) for user-facing date. Falls back to `posted` for
+          // bridges/banks that don't expose `transacted_at`.
+          time: new Date((tx.transacted_at ?? tx.posted) * 1000),
+          amount: tx.amount,
+          note: tx.description || tx.payee || tx.memo || '',
+          externalData: {
+            payee: tx.payee,
+            memo: tx.memo,
+            sfinAccountId: account.externalId,
+            posted: tx.posted,
+            transactedAt: tx.transacted_at,
+          },
+          rawMerchantName: tx.payee?.trim() || null,
+        })),
+      matchPlanned,
+      createFromDate,
+    });
 
     if (mergedIntoPlannedCount > 0) {
       logger.info(`[SimpleFIN] ${mergedIntoPlannedCount} planned transaction(s) confirmed for account ${account.id}`);
-      await notifyPlannedConfirmations({
-        userId: connection.userId,
-        accountId: account.id,
-        mergedCount: mergedIntoPlannedCount,
-      });
     }
 
-    return createdIds;
+    return createdTransactionIds;
   }
 
   /**
@@ -938,18 +731,17 @@ export class SimplefinProvider extends BaseBankDataProvider {
     apiClient: SimplefinApiClient;
     params?: SimplefinGetAccountsParams;
   }): Promise<SimplefinAccountSet> {
-    try {
-      const accountSet = await apiClient.getAccounts(params);
-      this.surfaceAccountSetErrors({ accountSet });
-      await this.resetAuthFailures(connectionId);
-      return accountSet;
-    } catch (error) {
-      // Rate-limit (TooManyRequests) is NOT a ForbiddenError, so isAuthError
-      // returns false and the connection is not deactivated for a transient
-      // throttle — the error still propagates and surfaces via the sync status.
-      await this.handleAuthError({ connectionId, error });
-      throw error;
-    }
+    // Rate-limit (TooManyRequests) is NOT a ForbiddenError, so isAuthError
+    // returns false and the connection is not deactivated for a transient
+    // throttle — the error still propagates and surfaces via the sync status.
+    return this.withAuthTracking({
+      connectionId,
+      request: async () => {
+        const accountSet = await apiClient.getAccounts(params);
+        this.surfaceAccountSetErrors({ accountSet });
+        return accountSet;
+      },
+    });
   }
 
   /**

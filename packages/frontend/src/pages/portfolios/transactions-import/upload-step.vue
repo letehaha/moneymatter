@@ -231,11 +231,11 @@ onBeforeUnmount(() => abortExtract());
     <!-- Mode toggle: AI (LLM-powered, costs tokens) vs CSV (manual column mapping, free). -->
     <div class="border-border/60 border-b px-5 py-4">
       <Tabs v-model="importMode">
-        <TabsList class="bg-muted/60 h-9 gap-1 rounded-full p-1">
+        <TabsList class="bg-muted/60 h-9 gap-1 rounded-full p-1" indicator-class="bg-primary dark:bg-primary">
           <TabsTrigger
             value="ai"
             :disabled="isAnyMutationPending"
-            class="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground inline-flex items-center gap-1.5 rounded-full px-4 text-xs font-medium data-[state=active]:shadow-sm"
+            class="data-[state=active]:text-primary-foreground inline-flex items-center gap-1.5 rounded-full px-4 text-xs font-medium"
           >
             <SparklesIcon class="size-3.5" />
             {{ $t('investmentsImport.upload.modeAi') }}
@@ -243,7 +243,7 @@ onBeforeUnmount(() => abortExtract());
           <TabsTrigger
             value="csv"
             :disabled="isAnyMutationPending"
-            class="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground inline-flex items-center gap-1.5 rounded-full px-4 text-xs font-medium data-[state=active]:shadow-sm"
+            class="data-[state=active]:text-primary-foreground inline-flex items-center gap-1.5 rounded-full px-4 text-xs font-medium"
           >
             <FileSpreadsheetIcon class="size-3.5" />
             {{ $t('investmentsImport.upload.modeCsv') }}
@@ -261,11 +261,11 @@ onBeforeUnmount(() => abortExtract());
     <template v-if="importMode === 'ai'">
       <div class="border-border/60 border-b px-5 py-4">
         <Tabs v-model="inputMode">
-          <TabsList class="bg-muted/60 h-9 gap-1 rounded-full p-1">
+          <TabsList class="bg-muted/60 h-9 gap-1 rounded-full p-1" indicator-class="bg-primary dark:bg-primary">
             <TabsTrigger
               value="file"
               :disabled="extract.isPending.value"
-              class="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground inline-flex items-center gap-1.5 rounded-full px-4 text-xs font-medium data-[state=active]:shadow-sm"
+              class="data-[state=active]:text-primary-foreground inline-flex items-center gap-1.5 rounded-full px-4 text-xs font-medium"
             >
               <FileTextIcon class="size-3.5" />
               {{ $t('investmentsImport.upload.fileTab') }}
@@ -273,7 +273,7 @@ onBeforeUnmount(() => abortExtract());
             <TabsTrigger
               value="paste"
               :disabled="extract.isPending.value"
-              class="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground inline-flex items-center gap-1.5 rounded-full px-4 text-xs font-medium data-[state=active]:shadow-sm"
+              class="data-[state=active]:text-primary-foreground inline-flex items-center gap-1.5 rounded-full px-4 text-xs font-medium"
             >
               <ClipboardIcon class="size-3.5" />
               {{ $t('investmentsImport.upload.pasteTab') }}
@@ -324,7 +324,6 @@ onBeforeUnmount(() => abortExtract());
       >
         <Button
           variant="ghost"
-          size="sm"
           :disabled="!isReadyToExtract || estimate.isPending.value || extract.isPending.value"
           @click="estimate.mutate()"
         >

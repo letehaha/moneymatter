@@ -86,8 +86,7 @@ async function attachBankProviderTypes(accounts: AccountWithRelinkStatus[]): Pro
 
 /**
  * Check if an Enable Banking account needs to be re-linked.
- * This is true when the account has rawAccountData with identification_hash,
- * but the externalId doesn't match (meaning it was created with uid instead).
+ * True when externalId no longer matches the bank-reported identification_hash.
  */
 function checkNeedsRelink(account: Accounts.default): boolean {
   // Only check accounts linked to a bank connection
@@ -492,7 +491,7 @@ interface DeleteAccountByIdInTxResult {
   accountSnapshot: { id: string; name: string };
 }
 
-const deleteAccountByIdInTx = withTransaction(
+export const deleteAccountByIdInTx = withTransaction(
   async ({
     id,
     userId,

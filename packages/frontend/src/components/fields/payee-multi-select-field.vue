@@ -9,6 +9,7 @@
     :search-placeholder="$t('fields.payeeMultiSelect.searchPlaceholder')"
     :hide-clear-button="hideClearButton"
     :trigger-class="triggerClass"
+    :size="size"
     :selected="payeeIds"
     content-class="min-w-64"
     @clear="clearSelection"
@@ -68,6 +69,7 @@ import {
   type SelectedPayee,
   hydrateSelectedPayees,
 } from '@/components/fields/payee-multi-select-field.helpers';
+import { type ControlSize } from '@/components/lib/ui/control-size';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { useNotificationCenter } from '@/components/notification-center';
 import { usePayees, usePayeesByIds } from '@/composable/data-queries/payees';
@@ -76,7 +78,7 @@ import { isEqual } from 'lodash-es';
 import { CheckIcon, CircleDashedIcon } from '@lucide/vue';
 import MultiSelectItem from '@/components/fields/multi-select-item.vue';
 import { ListboxContent } from 'reka-ui';
-import { useDebounce } from '@vueuse/core';
+import { refDebounced } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -94,6 +96,7 @@ const props = defineProps<{
   triggerClass?: string;
   /** Offer a "Blank" pseudo-option (`BLANK_FILTER_VALUE`) matching transactions without a payee. */
   allowBlank?: boolean;
+  size?: ControlSize;
 }>();
 
 const emit = defineEmits<{
@@ -106,7 +109,7 @@ const realPayeeIds = computed(() => props.payeeIds.filter((id) => id !== BLANK_F
 const { t } = useI18n();
 
 const searchTerm = ref('');
-const searchTermDebounced = useDebounce(searchTerm, DEBOUNCE_MS);
+const searchTermDebounced = refDebounced(searchTerm, DEBOUNCE_MS);
 const debouncedQuery = computed(() => (searchTermDebounced.value ?? '').trim());
 const isOpen = ref(false);
 

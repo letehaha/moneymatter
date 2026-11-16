@@ -1,29 +1,18 @@
 import type { RecordId } from '@bt/shared/types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BANK_PROVIDER_TYPE, asCents } from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import { ExternalMonobankClientInfoResponse } from '@bt/shared/types/external-services';
-import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
-import { BadRequestError, ForbiddenError, NotFoundError, ValidationError } from '@js/errors';
+import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import { findOneTransaction } from '@models/transactions-query';
-import {
-  BaseBankDataProvider,
-  DateRange,
-  ProviderAccount,
-  ProviderBalance,
-  ProviderMetadata,
-  ProviderTransaction,
-} from '@services/bank-data-providers';
+import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
 import cc from 'currency-codes';
-import { Op } from 'sequelize';
 
-import { clampSyncStartToLink } from '../utils/clamp-sync-start-to-link';
 import { encryptCredentials } from '../utils/credential-encryption';
-import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
+import { resolveSyncStart } from '../utils/resolve-sync-start';
 import { MonobankApiClient } from './api-client';
-import { getJobGroupProgress, queueTransactionSync, syncPriorityForAccount } from './transaction-sync-queue';
-import { MonobankCredentials, MonobankMetadata } from './types';
+import { queueTransactionSync, syncPriorityForAccount } from './transaction-sync-queue';
+import { MonobankCredentials } from './types';
 
 /**
  * Monobank provider implementation
@@ -85,14 +74,6 @@ export class MonobankProvider extends BaseBankDataProvider {
     return connection.id;
   }
 
-  async disconnect(connectionId: string): Promise<void> {
-    const connection = await this.getConnection(connectionId);
-    this.validateProviderType(connection);
-
-    // Delete the connection (CASCADE will handle related accounts via SET NULL)
-    await connection.destroy();
-  }
-
   async validateCredentials(credentials: unknown): Promise<boolean> {
     if (!this.isValidCredentials(credentials)) {
       return false;
@@ -124,14 +105,7 @@ export class MonobankProvider extends BaseBankDataProvider {
     // Update credentials - newCredentials is validated as MonobankCredentials, cast to Record for encryption
     connection.setEncryptedCredentials(newCredentials as unknown as Record<string, unknown>);
 
-    // Clear the reauth state so the connection syncs again. Spread into a new
-    // object so Sequelize flags the JSONB column dirty (a same-reference
-    // re-assign won't persist the reset).
-    const metadata: MonobankMetadata = { ...(connection.metadata as MonobankMetadata) };
-    metadata.consecutiveAuthFailures = 0;
-    metadata.deactivationReason = null;
-    connection.metadata = metadata as any;
-    connection.isActive = true;
+    this.reactivateConnection({ connection });
 
     await connection.save();
   }
@@ -152,43 +126,6 @@ export class MonobankProvider extends BaseBankDataProvider {
   // ============================================================================
   // Transaction Operations
   // ============================================================================
-
-  async fetchTransactions(
-    connectionId: string,
-    accountExternalId: string,
-    dateRange?: DateRange,
-  ): Promise<ProviderTransaction[]> {
-    const { apiToken } = await this.getValidatedCredentials(connectionId);
-
-    const apiClient = new MonobankApiClient(apiToken);
-
-    // Default to last 31 days if no date range provided
-    const to = dateRange?.to || new Date();
-    const from = dateRange?.from || new Date(Date.now() - 31 * 24 * 60 * 60 * 1000);
-
-    const fromTimestamp = Math.floor(from.getTime() / 1000);
-    const toTimestamp = Math.floor(to.getTime() / 1000);
-
-    const transactions = await apiClient.getStatement(accountExternalId, fromTimestamp, toTimestamp);
-
-    return transactions.map((tx) => ({
-      externalId: tx.id,
-      amount: asCents(tx.amount),
-      currency: this.getCurrencyCodeFromMonobank(tx.currencyCode),
-      date: new Date(tx.time * 1000),
-      description: tx.description,
-      merchantName: tx.counterName,
-      metadata: {
-        mcc: tx.mcc,
-        hold: tx.hold,
-        cashbackAmount: tx.cashbackAmount,
-        balance: tx.balance,
-        commissionRate: tx.commissionRate,
-        operationAmount: tx.operationAmount,
-        receiptId: tx.receiptId,
-      },
-    }));
-  }
 
   /**
    * Sync transactions (queue-based for Monobank)
@@ -211,27 +148,10 @@ export class MonobankProvider extends BaseBankDataProvider {
       enqueue: async () => {
         const account = await this.getSystemAccount(systemAccountId);
 
-        // A future-dated planned row must not anchor the window: it would push
-        // `from` past `to` and turn every sync into a no-op until that date
-        // passes.
-        const latestTransaction = await findOneTransaction({
-          planned: 'exclude',
-          access: 'unscoped-internal',
-          balanceAdjustments: 'include',
-          where: {
-            accountId: account.id,
-            time: { [Op.lte]: new Date() },
-          },
-          order: [['time', 'DESC']],
-        });
-
-        // Accounts with no rows at all backfill the provider's 31-day maximum:
-        // there is nothing to collide with, and the deferred residual absorb
-        // explains whatever the backfill doesn't.
-        const from = latestTransaction
-          ? clampSyncStartToLink({ account, from: new Date(latestTransaction.time) })
-          : new Date(Date.now() - 31 * 24 * 60 * 60 * 1000);
         const to = new Date();
+        // Anchorless accounts backfill the provider's 31-day maximum: there is nothing to
+        // collide with, and the deferred residual absorb explains whatever the backfill doesn't.
+        const { anchor, from, matchPlanned } = await resolveSyncStart({ account, to, backfillDays: 31 });
 
         return this.enqueueTransactionSync({
           connectionId,
@@ -239,12 +159,8 @@ export class MonobankProvider extends BaseBankDataProvider {
           userId,
           from,
           to,
-          // Only an anchored (incremental) sync may consume plans: the anchorless
-          // default window is a backfill, and old charges must not eat fresh plans.
-          matchPlanned: Boolean(latestTransaction),
-          priority: syncPriorityForAccount({
-            latestTransactionTime: latestTransaction ? new Date(latestTransaction.time) : null,
-          }),
+          matchPlanned,
+          priority: syncPriorityForAccount({ latestTransactionTime: anchor }),
         });
       },
     });
@@ -313,83 +229,6 @@ export class MonobankProvider extends BaseBankDataProvider {
     });
 
     return result;
-  }
-
-  /**
-   * Get progress of a queued transaction sync job
-   */
-  async getTransactionSyncProgress({ jobGroupId, userId }: { jobGroupId: string; userId: number }): Promise<{
-    totalBatches: number;
-    completedBatches: number;
-    failedBatches: number;
-    activeBatches: number;
-    waitingBatches: number;
-    status: 'waiting' | 'active' | 'completed' | 'failed' | 'partial';
-    progress?: unknown;
-  }> {
-    return getJobGroupProgress({ jobGroupId, userId });
-  }
-
-  // ============================================================================
-  // Balance Operations
-  // ============================================================================
-
-  async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
-    const { apiToken } = await this.getValidatedCredentials(connectionId);
-    const apiClient = new MonobankApiClient(apiToken);
-    const clientInfo = await apiClient.getClientInfo();
-
-    const account = clientInfo.accounts.find((acc) => acc.id === accountExternalId);
-    if (!account) {
-      throw new NotFoundError({
-        message: t({ key: 'bankDataProviders.monobank.accountNotFound', variables: { accountExternalId } }),
-      });
-    }
-
-    return {
-      amount: asCents(account.balance),
-      currency: this.getCurrencyCodeFromMonobank(account.currencyCode),
-      asOf: new Date(),
-    };
-  }
-
-  async refreshBalance(connectionId: string, systemAccountId: string): Promise<void> {
-    const account = await this.getSystemAccount(systemAccountId);
-
-    if (!account.externalId) {
-      throw new BadRequestError({ message: t({ key: 'accounts.accountNoExternalId' }) });
-    }
-
-    const balance = await this.fetchBalance(connectionId, account.externalId);
-
-    await writeBankBalanceWithHistory({ account, balance: Money.fromCents(balance.amount) });
-  }
-
-  // ============================================================================
-  // Webhook Support
-  // ============================================================================
-
-  async setupWebhook(connectionId: string, webhookUrl: string): Promise<void> {
-    const { apiToken } = await this.getValidatedCredentials(connectionId);
-    const apiClient = new MonobankApiClient(apiToken);
-    await apiClient.setWebhook(webhookUrl);
-
-    // Update metadata with webhook URL
-    const connection = await this.getConnection(connectionId);
-    const metadata = (connection.metadata as MonobankMetadata) || {};
-    metadata.webHookUrl = webhookUrl;
-    connection.metadata = metadata as any;
-    await connection.save();
-  }
-
-  async handleWebhook(): Promise<void> {
-    // TODO: Implement webhook handling
-    // This would involve:
-    // 1. Validate webhook signature (if Monobank provides one)
-    // 2. Extract transaction data from payload
-    // 3. Find the corresponding account
-    // 4. Create the transaction in database
-    throw new Error(t({ key: 'bankDataProviders.monobank.webhookNotImplemented' }));
   }
 
   // ============================================================================

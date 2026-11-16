@@ -6,15 +6,13 @@ import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import Users from '@models/users.model';
 import { withTransaction } from '@root/services/common/with-transaction';
-import { removePortfolioTransfersForAccounts } from '@services/accounts/remove-portfolio-transfers-for-accounts';
+import { deleteAccountByIdInTx } from '@services/accounts.service';
 import { unlinkAccountFromBankConnection } from '@services/accounts/unlink-from-bank-connection';
 import {
   AccountShareCleanupResult,
-  cleanupAccountSharesInTx,
   notifyAccountDeleteRecipients,
 } from '@services/sharing/cleanup/cleanup-account-shares.service';
 import { pauseAutomationsReferencing } from '@services/transaction-automations/references';
-import { unlinkPaymentLegsOfAccounts } from '@services/transactions/payment-legs';
 
 import { bankProviderRegistry } from '../registry';
 
@@ -54,40 +52,27 @@ const disconnectProviderInTx = withTransaction(
         userId,
         bankDataProviderConnectionId: connectionId,
       },
+      // UUIDv7 ids sort by creation time.
+      order: [['id', 'ASC']],
     });
 
     const cleanups: DisconnectProviderInTxResult['cleanups'] = [];
 
     if (removeAssociatedAccounts) {
-      // Bulk `Accounts.destroy` below skips per-instance hooks AND bypasses the
-      // account-delete service that normally runs share cleanup. Walk each account
-      // through `cleanupAccountSharesInTx` first so any `ResourceShares` rows and
-      // pending invitations get the same in-tx pruning + post-commit notification
-      // treatment as a direct `DELETE /accounts/:id`.
       for (const account of linkedAccounts) {
-        // The bulk destroy below bypasses `deleteAccountByIdInTx`, so `account` refs
-        // would otherwise survive the cascade unpaused.
-        await pauseAutomationsReferencing({ userId, refType: 'account', refId: account.id, label: account.name });
-
-        const cleanup = await cleanupAccountSharesInTx({ accountId: account.id, ownerUserId: userId });
+        const { cleanup, accountSnapshot } = await deleteAccountByIdInTx({
+          id: account.id,
+          userId,
+          removePortfolioTransfers: true,
+        });
         if (cleanup.recipients.length > 0 || cleanup.householdRecipients.length > 0) {
           cleanups.push({
-            account: { id: account.id, name: account.name },
+            account: accountSnapshot,
             recipients: cleanup.recipients,
             householdRecipients: cleanup.householdRecipients,
           });
         }
       }
-
-      await removePortfolioTransfersForAccounts({ userId, accountIds: linkedAccounts.map((account) => account.id) });
-      await unlinkPaymentLegsOfAccounts({ userId, accountIds: linkedAccounts.map((account) => account.id) });
-
-      await Accounts.destroy({
-        where: {
-          userId,
-          bankDataProviderConnectionId: connectionId,
-        },
-      });
     } else {
       // Reset each account to system type, preserving connection history
       // and transaction original IDs (same as individual account unlink). Shares
@@ -126,13 +111,12 @@ export const disconnectProvider = async (params: {
 
   if (result.cleanups.length === 0) return;
 
-  // Single owner fetch for the whole batch — every cleanup belongs to the same user.
-  const owner = await Users.findByPk(params.userId);
   // Notification failures must not bubble up as a 500: the accounts are already destroyed
   // and the connection is unwound. Each `notifyAccountDeleteRecipients` already wraps its
   // per-recipient loop in try/catch, but a top-level throw (e.g. before the loop starts)
   // would otherwise reject the whole `Promise.all` and surface to the user.
   try {
+    const owner = await Users.findByPk(params.userId);
     await Promise.all(
       result.cleanups.map((entry) =>
         notifyAccountDeleteRecipients({

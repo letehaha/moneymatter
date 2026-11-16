@@ -3,7 +3,7 @@
     <!-- Reminder Type -->
     <FieldLabel :label="$t('settings.tags.reminders.form.type')" only-template>
       <Select v-model="form.type">
-        <SelectTrigger class="h-14 md:h-14">
+        <SelectTrigger class="h-auto min-h-10">
           <span v-if="selectedTypeOption" class="flex flex-col items-start">
             <span>{{ selectedTypeOption.label }}</span>
             <span class="text-muted-foreground text-xs">{{ selectedTypeOption.description }}</span>
@@ -39,7 +39,7 @@
     <!-- Frequency -->
     <FieldLabel :label="$t('settings.tags.reminders.form.frequency')" only-template>
       <Select v-model="form.frequency">
-        <SelectTrigger class="h-14 md:h-14">
+        <SelectTrigger class="h-auto min-h-10">
           <span v-if="selectedFrequencyOption" class="flex flex-col items-start">
             <span>{{ selectedFrequencyOption.label }}</span>
             <span class="text-muted-foreground text-xs">{{ selectedFrequencyOption.description }}</span>

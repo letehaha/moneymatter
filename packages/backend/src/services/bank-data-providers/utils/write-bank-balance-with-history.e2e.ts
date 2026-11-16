@@ -5,17 +5,8 @@ import * as helpers from '@tests/helpers';
 import { getMonobankTransactionsMock } from '@tests/mocks/monobank/mock-api';
 
 /**
- * Regression coverage for the `writeBankBalanceWithHistory` helper.
- *
- * Before extraction, LunchFlow and Walutomat only updated `Accounts.currentBalance`
- * after a sync — they never recomputed `refCurrentBalance` and never wrote a
- * `Balances` row, leaving the analytics chart flat for those providers.
- * Monobank's `refreshBalance` had the same gap (TODO comment from day one).
- *
- * Each test below exercises a sync through its provider's normal mocked flow
- * and asserts that (a) a `Balances` row exists for today and (b)
- * `refCurrentBalance` is set on the account — the two things the prior code
- * silently skipped.
+ * Each test syncs through a provider's mocked flow and asserts that a `Balances`
+ * row exists for today and `refCurrentBalance` is set on the account.
  */
 const todayIso = (): string => new Date().toISOString().slice(0, 10);
 

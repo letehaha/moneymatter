@@ -1167,6 +1167,76 @@ describe('prepareTxUpdationParams', () => {
     });
   });
 
+  describe('excludeFromStats', () => {
+    const update = ({ form, transaction }: { form: UI_FORM_STRUCT; transaction: TransactionModel }) =>
+      prepareTxUpdationParams({
+        form,
+        transaction,
+        linkedTransaction: null,
+        isTransferTx: form.type === FORM_TYPES.transfer,
+        isRecordExternal: false,
+        isCurrenciesDifferent: false,
+        isOriginalRefundsOverriden: false,
+      });
+
+    const buildExpenseForm = ({
+      transaction,
+      excludeFromStats,
+    }: {
+      transaction: TransactionModel;
+      excludeFromStats: boolean;
+    }): UI_FORM_STRUCT => ({
+      ...buildBaseFormMock(transaction),
+      type: FORM_TYPES.expense,
+      account: getUahAccount() as AccountModel,
+      amount: transaction.amount,
+      toAccount: null,
+      targetAmount: null,
+      excludeFromStats,
+    });
+
+    it.each([false, true])('omits the flag when it stays %s', (value) => {
+      const transaction = buildSystemExpenseTransaction({ excludeFromStats: value });
+
+      const result = update({ form: buildExpenseForm({ transaction, excludeFromStats: value }), transaction });
+
+      expect(result).not.toHaveProperty('excludeFromStats');
+    });
+
+    it('sends true when the flag is switched on', () => {
+      const transaction = buildSystemExpenseTransaction({ excludeFromStats: false });
+
+      const result = update({ form: buildExpenseForm({ transaction, excludeFromStats: true }), transaction });
+
+      expect(result.excludeFromStats).toBe(true);
+    });
+
+    it('sends false when the flag is switched off', () => {
+      const transaction = buildSystemExpenseTransaction({ excludeFromStats: true });
+
+      const result = update({ form: buildExpenseForm({ transaction, excludeFromStats: false }), transaction });
+
+      expect(result.excludeFromStats).toBe(false);
+    });
+
+    it('sends the change for a transfer form', () => {
+      const transaction = buildSystemTransferExpenseTransaction({ excludeFromStats: false });
+      const form: UI_FORM_STRUCT = {
+        ...buildBaseFormMock(transaction),
+        type: FORM_TYPES.transfer,
+        account: getUah2Account() as AccountModel,
+        amount: transaction.amount,
+        toAccount: getUahAccount() as AccountModel,
+        targetAmount: transaction.amount,
+        excludeFromStats: true,
+      };
+
+      const result = update({ form, transaction });
+
+      expect(result.excludeFromStats).toBe(true);
+    });
+  });
+
   describe('external fields', () => {
     const update = ({ transaction, ...overrides }: { transaction: TransactionModel } & Partial<UI_FORM_STRUCT>) =>
       prepareTxUpdationParams({

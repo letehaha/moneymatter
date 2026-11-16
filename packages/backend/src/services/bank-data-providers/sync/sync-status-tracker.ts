@@ -32,7 +32,6 @@ export interface AccountSyncStatus {
 export const REDIS_KEYS = {
   userLastAutoSync: (userId: number | string): string => `user:${userId}:last-auto-sync`,
   accountSyncStatus: (accountId: number | string): string => `account:${accountId}:sync-status`,
-  accountPriority: (accountId: number | string): string => `account:${accountId}:priority`,
 };
 
 const AUTO_SYNC_PERIOD = 12 * 60 * 60 * 1000;
@@ -154,7 +153,7 @@ async function writeAccountSyncStatus({
   const statusData: AccountSyncStatus = {
     accountId,
     status,
-    startedAt: isActiveSync(status) ? new Date().toISOString() : null,
+    startedAt: isActiveSync({ status }) ? new Date().toISOString() : null,
     completedAt: [SyncStatus.COMPLETED, SyncStatus.FAILED].includes(status) ? new Date().toISOString() : null,
     error: error ?? null,
   };
@@ -162,7 +161,7 @@ async function writeAccountSyncStatus({
   // startedAt is inherited only from a still-active run, so COMPLETED/FAILED keeps
   // that run's start and a terminal record never ages a freshly queued one.
   const existing = await getAccountSyncStatus(accountId);
-  if (existing?.startedAt && isActiveSync(existing.status) && status !== SyncStatus.SYNCING) {
+  if (existing?.startedAt && isActiveSync({ status: existing.status }) && status !== SyncStatus.SYNCING) {
     statusData.startedAt = existing.startedAt;
   }
 
@@ -259,14 +258,6 @@ export async function clearAccountSyncStatus(accountId: string): Promise<void> {
 }
 
 /**
- * Set priority score for an account (higher = more priority)
- */
-export async function setAccountPriority(accountId: string, priority: number): Promise<void> {
-  if (!isRedisReady()) return;
-  await redisClient.setex(REDIS_KEYS.accountPriority(accountId), STATUS_TTL, priority.toString());
-}
-
-/**
  * Clear stale sync statuses from Redis on startup
  * Only resets QUEUED/SYNCING statuses (which are invalid after restart)
  * Preserves COMPLETED/FAILED/IDLE statuses and user last-sync timestamps
@@ -301,7 +292,7 @@ export async function clearAllSyncStatuses(): Promise<void> {
 
       // Only reset statuses that indicate active syncing
       // These are invalid after a restart since the actual sync process is gone
-      if (isActiveSync(status.status)) {
+      if (isActiveSync({ status: status.status })) {
         // Reset to IDLE instead of deleting - preserves the key structure
         const resetStatus: AccountSyncStatus = {
           ...status,
@@ -331,9 +322,6 @@ export async function clearAllSyncStatuses(): Promise<void> {
       `[Sync Status] Startup cleanup: reset ${resetCount} active syncs to IDLE, cleared ${clearedCount} invalid keys`,
     );
   }
-
-  // Note: We DON'T touch userLastAutoSync or accountPriority keys
-  // These are historical data and remain valid across restarts
 }
 
 /**
@@ -349,10 +337,8 @@ function createDefaultStatus(accountId: RecordId): AccountSyncStatus {
   };
 }
 
-/**
- * Check if status represents an active sync operation
- */
-function isActiveSync(status: SyncStatus): boolean {
+/** QUEUED counts as active: the job is committed to run even before a worker picks it up. */
+export function isActiveSync({ status }: { status: SyncStatus }): boolean {
   return status === SyncStatus.QUEUED || status === SyncStatus.SYNCING;
 }
 
@@ -360,7 +346,7 @@ function isActiveSync(status: SyncStatus): boolean {
  * Check if a sync status is stale (active for too long)
  */
 function isStaleStatus(status: AccountSyncStatus): boolean {
-  if (isActiveSync(status.status) && status.startedAt) {
+  if (isActiveSync({ status: status.status }) && status.startedAt) {
     const startedTime = new Date(status.startedAt).getTime();
     const elapsed = Date.now() - startedTime;
     return elapsed > STALE_SYNC_THRESHOLD;

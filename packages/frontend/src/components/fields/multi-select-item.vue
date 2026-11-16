@@ -3,7 +3,7 @@
   <ListboxItem
     :value="value"
     :disabled="disabled"
-    class="data-highlighted:bg-accent data-[state=checked]:data-highlighted:bg-accent flex cursor-pointer items-center rounded-md data-disabled:data-highlighted:bg-transparent"
+    class="data-highlighted:bg-hover data-[state=checked]:bg-primary/5 data-[state=checked]:data-highlighted:bg-primary/10 flex cursor-pointer items-center rounded-md data-disabled:data-highlighted:bg-transparent"
     @mousedown.prevent
     @select="!disabled && emit('toggle')"
   >

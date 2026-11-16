@@ -1,43 +1,22 @@
 import type { RecordId } from '@bt/shared/types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  ACCOUNT_TYPES,
-  BANK_PROVIDER_TYPE,
-  Cents,
-  TRANSACTION_TRANSFER_NATURE,
-  TRANSACTION_TYPES,
-  asCents,
-} from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE, Cents, asCents } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { findOneTransaction } from '@models/transactions-query';
-import { getUserDefaultCategory } from '@models/users.model';
-import {
-  BaseBankDataProvider,
-  DateRange,
-  ProviderAccount,
-  ProviderBalance,
-  ProviderMetadata,
-  ProviderTransaction,
-} from '@services/bank-data-providers';
-import { createTransaction } from '@services/transactions';
-import { accountHasPlannedRows } from '@services/transactions/planned-matching';
-import { Op, Sequelize } from 'sequelize';
+import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
+import { Op } from 'sequelize';
 
+import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 import { clampSyncStartToLink } from '../utils/clamp-sync-start-to-link';
 import { encryptCredentials } from '../utils/credential-encryption';
-import { notifyPlannedConfirmations } from '../utils/notify-planned-confirmations';
+import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { LunchFlowApiClient } from './api-client';
-import {
-  LunchFlowApiAccountsResponse,
-  LunchFlowApiTransactionsResponse,
-  LunchFlowCredentials,
-  LunchFlowMetadata,
-} from './types';
+import { LunchFlowCredentials, LunchFlowMetadata } from './types';
 
 /**
  * LunchFlow provider implementation
@@ -78,11 +57,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
     const apiClient = new LunchFlowApiClient(apiKey);
     const { accounts } = await apiClient.getAccounts();
 
-    // Generate connection name with counter for multiple connections
-    const existingConnections = await BankDataProviderConnections.count({
-      where: { userId, providerType: this.metadata.type },
-    });
-    const providerName = existingConnections > 0 ? `LunchFlow (${existingConnections + 1})` : 'LunchFlow';
+    const providerName = await this.nextConnectionName({ userId, label: 'LunchFlow' });
 
     const connection = await BankDataProviderConnections.create({
       userId,
@@ -98,13 +73,6 @@ export class LunchFlowProvider extends BaseBankDataProvider {
     } as any);
 
     return connection.id;
-  }
-
-  async disconnect(connectionId: string): Promise<void> {
-    const connection = await this.getConnection(connectionId);
-    this.validateProviderType(connection);
-
-    await connection.destroy();
   }
 
   async validateCredentials(credentials: unknown): Promise<boolean> {
@@ -135,12 +103,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
 
     connection.setEncryptedCredentials({ apiKey: newCredentials.apiKey });
 
-    // New object reference: mutating metadata in place leaves the JSONB column clean and the reset is never saved.
-    const metadata: LunchFlowMetadata = { ...(connection.metadata as LunchFlowMetadata) };
-    metadata.consecutiveAuthFailures = 0;
-    metadata.deactivationReason = null;
-    connection.metadata = metadata as any;
-    connection.isActive = true;
+    this.reactivateConnection({ connection });
 
     await connection.save();
   }
@@ -154,14 +117,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
 
     const apiClient = new LunchFlowApiClient(apiKey);
 
-    let accountsResponse: LunchFlowApiAccountsResponse;
-    try {
-      accountsResponse = await apiClient.getAccounts();
-      await this.resetAuthFailures(connectionId);
-    } catch (error) {
-      await this.handleAuthError({ connectionId, error });
-      throw error;
-    }
+    const accountsResponse = await this.withAuthTracking({ connectionId, request: () => apiClient.getAccounts() });
 
     // Only return ACTIVE accounts (include accounts with no status — benefit of the doubt)
     const activeAccounts = accountsResponse.accounts.filter((acc) => !acc.status || acc.status === 'ACTIVE');
@@ -247,34 +203,6 @@ export class LunchFlowProvider extends BaseBankDataProvider {
   // Transaction Operations
   // ============================================================================
 
-  async fetchTransactions(
-    connectionId: string,
-    accountExternalId: string,
-    _dateRange?: DateRange, // eslint-disable-line @typescript-eslint/no-unused-vars
-  ): Promise<ProviderTransaction[]> {
-    const { apiKey } = await this.getValidatedCredentials(connectionId);
-
-    const apiClient = new LunchFlowApiClient(apiKey);
-    const accountId = parseInt(accountExternalId, 10);
-    const { transactions } = await apiClient.getTransactions({ accountId });
-
-    return transactions
-      .filter((tx) => tx.id !== null)
-      .map((tx) => ({
-        externalId: tx.id!,
-        amount: Money.fromDecimal(tx.amount).toCents(),
-        currency: tx.currency,
-        date: new Date(tx.date),
-        description: tx.description || tx.merchant || '',
-        merchantName: tx.merchant,
-        metadata: {
-          merchant: tx.merchant,
-          description: tx.description,
-          lunchflowAccountId: tx.accountId,
-        },
-      }));
-  }
-
   async syncTransactions({
     connectionId,
     systemAccountId,
@@ -302,26 +230,16 @@ export class LunchFlowProvider extends BaseBankDataProvider {
         const apiClient = new LunchFlowApiClient(apiKey);
         const accountId = parseInt(account.externalId, 10);
 
-        let transactionsResponse: LunchFlowApiTransactionsResponse;
-        try {
-          transactionsResponse = await apiClient.getTransactions({ accountId });
-          await this.resetAuthFailures(connectionId);
-        } catch (error) {
-          await this.handleAuthError({ connectionId, error });
-          throw error;
-        }
+        const transactionsResponse = await this.withAuthTracking({
+          connectionId,
+          request: () => apiClient.getTransactions({ accountId }),
+        });
 
         // Filter out pending transactions (those with null IDs)
         const postedTransactions = transactionsResponse.transactions.filter((tx) => tx.id !== null);
 
         // Sort by date ascending
         postedTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-        const defaultCategoryId = await getUserDefaultCategory({ id: connection.userId });
-        const createdTransactionIds: string[] = [];
-        let mergedIntoPlannedCount = 0;
-        let skippedPreLinkCount = 0;
-        const checkpoint = this.createBaseCurrencyLockCheckpoint({ userId });
 
         // An account with nothing stored yet is a backfill: it imports the whole feed and
         // must not consume plans. Otherwise only rows since the link date are created, never
@@ -336,95 +254,32 @@ export class LunchFlowProvider extends BaseBankDataProvider {
         const createFromDate = anyStoredTransaction
           ? clampSyncStartToLink({ account, from: new Date(0) })
           : new Date(0);
-        const matchPlanned = Boolean(anyStoredTransaction) && (await accountHasPlannedRows({ accountId: account.id }));
 
-        for (const tx of postedTransactions) {
-          await checkpoint();
-
-          // Primary dedup: check by originalId (covers normal re-sync)
-          const existingTx = await findOneTransaction({
-            planned: 'exclude',
-            access: 'unscoped-internal',
-            balanceAdjustments: 'include',
-            where: {
-              accountId: account.id,
-              originalId: tx.id!,
-            },
-            paranoid: false,
-          });
-
-          if (existingTx) {
-            continue;
-          }
-
-          // Secondary dedup: check externalData.originalSource.originalId
-          // This covers the unlink→relink flow where originalId was cleared to null
-          // but the original value was preserved in externalData
-          const existingByOriginalSource = await findOneTransaction({
-            planned: 'exclude',
-            access: 'unscoped-internal',
-            balanceAdjustments: 'include',
-            where: Sequelize.and(
-              { accountId: account.id, originalId: null },
-              Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx.id!),
-            ),
-            paranoid: false,
-          });
-
-          if (existingByOriginalSource) {
-            // Restore the originalId so future syncs use the fast primary path
-            await existingByOriginalSource.update({ originalId: tx.id! });
-            continue;
-          }
-
-          // Never create rows before the link date: that history is already absorbed into the opening balance.
-          if (new Date(tx.date) < createFromDate) {
-            skippedPreLinkCount += 1;
-            continue;
-          }
-
-          const isExpense = tx.amount < 0;
-
-          const createResult = await createTransaction({
+        const { createdTransactionIds, mergedIntoPlannedCount, skippedPreLinkCount } = await persistSyncedTransactions({
+          account,
+          userId: connection.userId,
+          accountType: PROVIDER_TO_ACCOUNT_TYPE[this.metadata.type],
+          checkpoint: this.createBaseCurrencyLockCheckpoint({ userId: connection.userId }),
+          rows: postedTransactions.map((tx) => ({
             originalId: tx.id!,
-            note: tx.description || tx.merchant || '',
-            amount: Money.fromDecimal(Math.abs(tx.amount)),
             time: new Date(tx.date),
+            amount: tx.amount,
+            note: tx.description || tx.merchant || '',
             externalData: {
               merchant: tx.merchant,
               description: tx.description,
               lunchflowAccountId: tx.accountId,
             },
-            commissionRate: Money.fromCents(0),
-            cashbackAmount: Money.fromCents(0),
-            accountId: account.id,
-            userId: connection.userId,
-            transactionType: isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income,
-            categoryId: defaultCategoryId,
-            transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-            accountType: ACCOUNT_TYPES.lunchflow,
             rawMerchantName: tx.merchant?.trim() || null,
-            matchPlanned,
-          });
-
-          // A merged row is not a new row: it keeps the user's category and payee, which the
-          // post-sync listeners on the emitted ids would overwrite.
-          if (createResult.mergedIntoPlanned) {
-            mergedIntoPlannedCount += 1;
-          } else {
-            createdTransactionIds.push(createResult[0].id);
-          }
-        }
+          })),
+          matchPlanned: Boolean(anyStoredTransaction),
+          createFromDate,
+        });
 
         if (createdTransactionIds.length > 0 || mergedIntoPlannedCount > 0 || skippedPreLinkCount > 0) {
           logger.info(
             `[LunchFlow] Sync: ${createdTransactionIds.length} transactions created, ${mergedIntoPlannedCount} planned confirmed, ${skippedPreLinkCount} pre-link rows skipped for account ${account.id}`,
           );
-          await notifyPlannedConfirmations({
-            userId: connection.userId,
-            accountId: account.id,
-            mergedCount: mergedIntoPlannedCount,
-          });
         }
 
         // Update account balance
@@ -441,36 +296,6 @@ export class LunchFlowProvider extends BaseBankDataProvider {
         return { transactionIds: createdTransactionIds };
       },
     });
-  }
-
-  // ============================================================================
-  // Balance Operations
-  // ============================================================================
-
-  async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
-    const { apiKey } = await this.getValidatedCredentials(connectionId);
-
-    const apiClient = new LunchFlowApiClient(apiKey);
-    const accountId = parseInt(accountExternalId, 10);
-    const { balance } = await apiClient.getBalance({ accountId });
-
-    return {
-      amount: Money.fromDecimal(balance.amount).toCents(),
-      currency: balance.currency,
-      asOf: new Date(),
-    };
-  }
-
-  async refreshBalance(connectionId: string, systemAccountId: string): Promise<void> {
-    const account = await this.getSystemAccount(systemAccountId);
-
-    if (!account.externalId) {
-      throw new BadRequestError({ message: t({ key: 'bankDataProviders.lunchflow.accountNoExternalId' }) });
-    }
-
-    const balance = await this.fetchBalance(connectionId, account.externalId);
-
-    await writeBankBalanceWithHistory({ account, balance: Money.fromCents(balance.amount) });
   }
 
   // ============================================================================

@@ -17,7 +17,7 @@ import EmptyState from '../components/empty-state.vue';
 import ErrorState from '../components/error-state.vue';
 import LoadingState from '../components/loading-state.vue';
 import WidgetWrapper from '../components/widget-wrapper.vue';
-import { type NetWorthComponentKey, excludedComponents } from './helpers';
+import { type NetWorthComponentKey, computeGrowthPercent, excludedComponents } from './helpers';
 import NetWorthSettingsPopover from './net-worth-settings-popover.vue';
 import { useNetWorthConfig } from './use-net-worth-config';
 import { useNetWorthData } from './use-net-worth-data';
@@ -84,10 +84,11 @@ const formattedDelta = computed(() => {
   return `${isPositiveDelta.value ? '+' : ''}${formatBaseCurrency(animatedDelta.value)}`;
 });
 
+const formatPercent = ({ percent }: { percent: number }) => `${percent > 0 ? '+' : ''}${percent.toFixed(1)}%`;
+
 const formattedGrowth = computed(() => {
   const percent = growthPercent.value;
-  if (percent === null) return NO_VALUE_LABEL;
-  return `${percent > 0 ? '+' : ''}${percent.toFixed(1)}%`;
+  return percent === null ? NO_VALUE_LABEL : formatPercent({ percent });
 });
 
 const trendBars = computed(() => {
@@ -103,8 +104,11 @@ const trendBars = computed(() => {
         heightPercent: MIN_TREND_BAR_HEIGHT_PERCENT,
         formattedDelta: '',
         formattedNetWorth: '',
+        formattedPercent: null,
       };
     }
+
+    const percent = computeGrowthPercent({ currentDelta: bar.delta, startNetWorth: bar.endNetWorth - bar.delta });
 
     return {
       label: bar.label,
@@ -114,6 +118,7 @@ const trendBars = computed(() => {
       heightPercent: Math.max((Math.abs(bar.delta) / maxAbs) * 100, MIN_TREND_BAR_HEIGHT_PERCENT),
       formattedDelta: `${bar.delta > 0 ? '+' : ''}${formatBaseCurrency(bar.delta)}`,
       formattedNetWorth: formatBaseCurrency(bar.endNetWorth),
+      formattedPercent: percent === null ? null : formatPercent({ percent }),
     };
   });
 });
@@ -265,21 +270,29 @@ const trendBars = computed(() => {
           <div class="text-muted-foreground text-[11px] font-medium tracking-wider uppercase">
             {{ $t('dashboard.widgets.netWorth.previousPeriodsTrend') }}
           </div>
-          <div class="flex h-25 items-end gap-2.5">
+          <div class="flex h-30 items-end gap-2.5">
             <ResponsiveTooltip v-for="(bar, index) in trendBars" :key="index" variant="chart" :delay-duration="100">
               <div class="flex flex-1 flex-col items-center gap-1">
                 <div class="flex h-22 w-full max-w-10 items-end justify-center">
                   <div
-                    class="min-h-1 w-full rounded-xs transition-all duration-500"
+                    class="relative min-h-1 w-full rounded-xs transition-all duration-500"
                     :class="{
                       'bg-muted': !bar.hasData,
                       'bg-app-income-color/90': bar.hasData && bar.isPositive,
                       'bg-app-expense-color/90': bar.hasData && !bar.isPositive,
                     }"
                     :style="{ height: `${bar.heightPercent}%` }"
-                  />
+                  >
+                    <span
+                      v-if="bar.formattedPercent"
+                      class="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 text-xs leading-none font-semibold whitespace-nowrap tabular-nums"
+                      :class="bar.isPositive ? 'text-app-income-color' : 'text-app-expense-color'"
+                    >
+                      {{ bar.formattedPercent }}
+                    </span>
+                  </div>
                 </div>
-                <span class="text-muted-foreground text-[9px] leading-none">{{ bar.shortLabel }}</span>
+                <span class="text-muted-foreground text-xs leading-none">{{ bar.shortLabel }}</span>
               </div>
               <template #content>
                 <ChartTooltipHeader>{{ bar.label }}</ChartTooltipHeader>
@@ -292,6 +305,12 @@ const trendBars = computed(() => {
                   <ChartTooltipRow
                     :label="$t('dashboard.widgets.netWorth.trendTooltip.change')"
                     :value="bar.formattedDelta"
+                    :value-class="bar.isPositive ? 'text-app-income-color' : 'text-app-expense-color'"
+                  />
+                  <ChartTooltipRow
+                    v-if="bar.formattedPercent"
+                    :label="$t('dashboard.widgets.netWorth.growth')"
+                    :value="bar.formattedPercent"
                     :value-class="bar.isPositive ? 'text-app-income-color' : 'text-app-expense-color'"
                   />
                   <ChartTooltipRow

@@ -26,6 +26,8 @@ import {
   getLunchFlowTransactionsMock,
 } from '@tests/mocks/lunchflow/mock-api';
 import { MONOBANK_URLS_MOCK, getMonobankTransactionsMock } from '@tests/mocks/monobank/mock-api';
+import { getMockedWalutomatHistory } from '@tests/mocks/walutomat/data';
+import { getWalutomatBalancesMock, getWalutomatHistoryMock } from '@tests/mocks/walutomat/mock-api';
 import { format, subDays, subMinutes, subYears } from 'date-fns';
 import { HttpResponse, http } from 'msw';
 import { Op } from 'sequelize';
@@ -916,6 +918,85 @@ describe('Balance reconciliation when linking account to a bank connection', () 
           updatedAccount.currentBalance.toCents(),
         );
       });
+    });
+  });
+
+  describe('inline provider (Walutomat)', () => {
+    it('does not re-import a manually-logged expense whose bank timestamp falls inside the pre-link window', async () => {
+      // Manual row at T, the bank's copy stamped T+30m. Dedup by originalId
+      // cannot catch it (manual rows have none), so the sync window must not
+      // reach back past the link.
+      const manualTime = subMinutes(new Date(), 180);
+      const bankTime = subMinutes(new Date(), 150);
+
+      await helpers.addUserCurrencies({ currencyCodes: ['EUR'], raw: true });
+
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({
+          name: 'Linkable Walutomat account',
+          currencyCode: 'EUR',
+          initialBalance: 1000,
+        }),
+        raw: true,
+      });
+
+      await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 50,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: manualTime.toISOString(),
+        }),
+        raw: true,
+      });
+
+      global.mswMockServer.use(
+        getWalutomatHistoryMock({
+          response: getMockedWalutomatHistory({
+            amount: 1,
+            currency: 'EUR',
+            overrides: [
+              {
+                transactionId: 'bank-copy-of-manual-row',
+                ts: bankTime.toISOString(),
+                operationAmount: '-50.00',
+                operationType: 'PAYOUT',
+                operationDetailedType: 'PAYOUT',
+              },
+            ],
+          }),
+          respectDateRange: true,
+        }),
+        getWalutomatBalancesMock({
+          response: [
+            { currency: 'EUR', balanceTotal: '1200.00', balanceAvailable: '1200.00', balanceReserved: '0.00' },
+          ],
+        }),
+      );
+
+      const { connectionId } = await helpers.walutomat.pair();
+
+      const linkResponse = await helpers.linkAccountToBankConnection({
+        id: account.id,
+        connectionId,
+        externalAccountId: 'wallet-eur',
+        raw: false,
+      });
+      expect(linkResponse.statusCode).toBe(200);
+
+      const updatedAccount = (await Accounts.findByPk(account.id))!;
+      const transactions = await Transactions.findAll({ where: { accountId: account.id }, raw: true });
+
+      expect(transactions.length).toBe(1);
+      expect(transactions.filter((tx) => tx.originalId !== null).length).toBe(0);
+
+      expect(updatedAccount.currentBalance.toNumber()).toBe(1200);
+      // Tracked 1000 − 50 = 950 against the bank's 1200: the 250 gap is
+      // pre-link history, absorbed into the opening balance.
+      expect(updatedAccount.initialBalance.toNumber()).toBe(1250);
+      expect(updatedAccount.initialBalance.toCents() + sumSignedCents(transactions)).toBe(
+        updatedAccount.currentBalance.toCents(),
+      );
     });
   });
 

@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'group/row hover:bg-muted/50 grid w-full cursor-pointer rounded-md px-2 py-1 transition-colors [content-visibility:auto]',
+      'group/row hover:bg-hover grid w-full cursor-pointer rounded-md px-2 py-1 transition-colors [content-visibility:auto]',
       showCheckbox
         ? 'grid-cols-[auto_minmax(0,1fr)_max-content] items-center gap-2'
         : (shouldShowGroupedTransfer && !compact) || isLoadingGroupedTransfer
@@ -189,6 +189,7 @@
               <UsersIcon class="text-muted-foreground size-3.5 shrink-0 cursor-help" :aria-label="addedByTooltip" />
             </ResponsiveTooltip>
             <PlannedIndicator v-if="!(hidePlannedMarker && transaction.isPlanned)" :transaction="transaction" />
+            <ExcludeFromStatsIndicator :transaction="transaction" />
             <SplitIndicator :transaction="transaction" />
             <PaymentIndicator :transaction="transaction" />
             <RefundIndicator v-if="!hideRefundMarker" :transaction="transaction" />
@@ -340,6 +341,7 @@ import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import ExcludeFromStatsIndicator from './indicators/exclude-from-stats-indicator.vue';
 import PlannedIndicator from './indicators/planned-indicator.vue';
 import AttachmentIndicator from './indicators/attachment-indicator.vue';
 import PaymentIndicator from './indicators/payment-indicator.vue';

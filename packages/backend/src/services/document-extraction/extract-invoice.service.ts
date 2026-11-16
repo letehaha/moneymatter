@@ -57,7 +57,7 @@ const aiAnswerSchema = z.object({
 });
 
 export const invoiceSchema = z.object({
-  transactionType: z.nativeEnum(TRANSACTION_TYPES),
+  transactionType: z.enum(TRANSACTION_TYPES),
   vendorName: z.string().trim().min(1),
   customerName: z.string().trim().min(1).nullable(),
   totalAmount: z.number().positive(),
@@ -70,9 +70,8 @@ export const invoiceSchema = z.object({
     .refine((value) => isValid(parseISO(value)), 'Invalid calendar date'),
   invoiceNumber: z.string().trim().min(1).nullable(),
   invoiceUrl: z
-    .string()
-    .max(2048, 'The URL must not exceed 2048 characters.')
     .url('Invalid URL')
+    .max(2048, 'The URL must not exceed 2048 characters.')
     .startsWith('https://')
     .nullable(),
 });

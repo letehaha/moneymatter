@@ -18,8 +18,8 @@ const schema = z.object({
   query: withDateOrder(
     z
       .object({
-        order: z.nativeEnum(SORT_DIRECTIONS).optional().default(SORT_DIRECTIONS.desc),
-        sortBy: z.nativeEnum(TRANSACTION_SORT_FIELD).optional(),
+        order: z.enum(SORT_DIRECTIONS).optional().default(SORT_DIRECTIONS.desc),
+        sortBy: z.enum(TRANSACTION_SORT_FIELD).optional(),
         limit: z.preprocess((val) => Number(val), z.number().int().positive().max(1000)).optional(),
         // Pagination row offset. Named `offset` to match the shared pagination vocabulary;
         // the model still calls this `from` internally (mapped in the handler below).

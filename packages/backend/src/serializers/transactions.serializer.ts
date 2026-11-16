@@ -75,6 +75,7 @@ export interface TransactionApiResponse {
   /** Present on list reads only. */
   hasAttachments?: boolean;
   isPlanned: boolean;
+  excludeFromStats: boolean;
   /** Set when a bank transaction merged into this row while it was planned. */
   plannedMerge: { mergedAt: string } | null;
   /** Bank reported the row as PDNG/HOLD and has not booked it yet. */
@@ -152,6 +153,7 @@ interface CreateTransactionRequest {
   payeeId?: RecordId | null;
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  excludeFromStats?: boolean;
   applyAutomations?: boolean;
   importSource?: ImportSource.messageImport;
   originalAmount?: number; // decimal from API
@@ -193,6 +195,7 @@ interface CreateTransactionInternal {
   payeeId?: RecordId | null;
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  excludeFromStats?: boolean;
   applyAutomations?: boolean;
   importSource?: ImportSource.messageImport;
   originalAmount?: Money;
@@ -284,6 +287,7 @@ export function serializeTransaction(
     refundLinked: tx.refundLinked,
     ...(tx.refundedAmount && { refundedAmount: centsToApiDecimal(tx.refundedAmount) }),
     isPlanned: tx.isPlanned ?? false,
+    excludeFromStats: tx.excludeFromStats ?? false,
     plannedMerge: extractPlannedMerge({ externalData: tx.externalData }),
     isPending: isPreBookingStatus({ status: getRawTransactionStatus({ externalData: tx.externalData }) }),
     payeeId: tx.payeeId ?? null,
@@ -406,6 +410,7 @@ export function deserializeCreateTransaction(req: CreateTransactionRequest, user
     payeeId: req.payeeId,
     payeeLocked: req.payeeLocked,
     isPlanned: req.isPlanned,
+    excludeFromStats: req.excludeFromStats,
     applyAutomations: req.applyAutomations,
     importSource: req.importSource,
     originalAmount: req.originalAmount !== undefined ? Money.fromDecimal(req.originalAmount) : undefined,

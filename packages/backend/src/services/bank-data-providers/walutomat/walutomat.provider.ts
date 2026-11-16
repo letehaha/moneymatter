@@ -1,36 +1,28 @@
 import type { RecordId } from '@bt/shared/types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import { findOneTransaction, findTransactions } from '@models/transactions-query';
+import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
-import { getUserDefaultCategory } from '@models/users.model';
-import {
-  BaseBankDataProvider,
-  DateRange,
-  ProviderAccount,
-  ProviderBalance,
-  ProviderMetadata,
-  ProviderTransaction,
-} from '@services/bank-data-providers';
-import { createTransaction } from '@services/transactions';
-import { accountHasPlannedRows } from '@services/transactions/planned-matching';
+import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
 import { linkTransactions } from '@services/transactions/transactions-linking/link-transactions';
 import { Op, Sequelize } from 'sequelize';
 
+import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 import { encryptCredentials } from '../utils/credential-encryption';
-import { notifyPlannedConfirmations } from '../utils/notify-planned-confirmations';
+import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
+import { resolveSyncStart } from '../utils/resolve-sync-start';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
-import { type HistoryItem, type WalletBalance, WalutomatApiClient, WalutomatHttpError } from './api-client';
+import { type HistoryItem, WalutomatApiClient, WalutomatHttpError } from './api-client';
 import { linkCrossProviderTransfers } from './cross-provider-linking';
 import { WalutomatCredentials, WalutomatMetadata } from './types';
 
 const WALLET_EXTERNAL_ID_PREFIX = 'wallet-';
-const DEFAULT_SYNC_MONTHS = 12;
+const BACKFILL_DAYS = 365;
 
 /**
  * Extract currency code from wallet externalId.
@@ -123,13 +115,10 @@ export class WalutomatProvider extends BaseBankDataProvider {
       throw new ForbiddenError({ message: t({ key: 'bankDataProviders.walutomat.invalidApiKey' }) });
     }
 
-    const client = this.createApiClient(credentials);
+    const client = new WalutomatApiClient(credentials);
     const balances = await client.getBalances();
 
-    const existingConnections = await BankDataProviderConnections.count({
-      where: { userId, providerType: this.metadata.type },
-    });
-    const providerName = existingConnections > 0 ? `Walutomat (${existingConnections + 1})` : 'Walutomat';
+    const providerName = await this.nextConnectionName({ userId, label: 'Walutomat' });
 
     const connection = await BankDataProviderConnections.create({
       userId,
@@ -150,18 +139,12 @@ export class WalutomatProvider extends BaseBankDataProvider {
     return connection.id;
   }
 
-  async disconnect(connectionId: string): Promise<void> {
-    const connection = await this.getConnection(connectionId);
-    this.validateProviderType(connection);
-    await connection.destroy();
-  }
-
   async validateCredentials(credentials: unknown): Promise<boolean> {
     if (!this.isValidCredentials(credentials)) {
       return false;
     }
 
-    const client = this.createApiClient(credentials);
+    const client = new WalutomatApiClient(credentials);
 
     // testConnection returns false only for 401/403 or signing errors (bad private key).
     // Network/5xx errors propagate so callers can distinguish "invalid creds"
@@ -189,11 +172,7 @@ export class WalutomatProvider extends BaseBankDataProvider {
       privateKey: newCredentials.privateKey,
     });
 
-    const metadata = (connection.metadata as WalutomatMetadata) || {};
-    metadata.consecutiveAuthFailures = 0;
-    metadata.deactivationReason = null;
-    connection.metadata = metadata as any;
-    connection.isActive = true;
+    this.reactivateConnection({ connection });
 
     await connection.save();
   }
@@ -205,15 +184,10 @@ export class WalutomatProvider extends BaseBankDataProvider {
   async fetchAccounts(connectionId: string): Promise<ProviderAccount[]> {
     const credentials = await this.getValidatedCredentials(connectionId);
 
-    let balances: WalletBalance[];
-    try {
-      const client = this.createApiClient(credentials);
-      balances = await client.getBalances();
-      await this.resetAuthFailures(connectionId);
-    } catch (error) {
-      await this.handleAuthError({ connectionId, error });
-      throw error;
-    }
+    const balances = await this.withAuthTracking({
+      connectionId,
+      request: () => new WalutomatApiClient(credentials).getBalances(),
+    });
 
     return balances.map((wallet) => ({
       externalId: externalIdFromCurrency(wallet.currency),
@@ -232,48 +206,6 @@ export class WalutomatProvider extends BaseBankDataProvider {
   // ============================================================================
   // Transaction Operations
   // ============================================================================
-
-  async fetchTransactions(
-    connectionId: string,
-    accountExternalId: string,
-    dateRange?: DateRange,
-  ): Promise<ProviderTransaction[]> {
-    const credentials = await this.getValidatedCredentials(connectionId);
-    const client = this.createApiClient(credentials);
-    const currency = currencyFromExternalId(accountExternalId);
-
-    const now = new Date();
-    const defaultFrom = new Date(now);
-    defaultFrom.setMonth(defaultFrom.getMonth() - DEFAULT_SYNC_MONTHS);
-
-    const transactions: ProviderTransaction[] = [];
-
-    for await (const item of client.getHistoryIterator({
-      currencies: [currency],
-      dateFrom: (dateRange?.from ?? defaultFrom).toISOString(),
-      dateTo: (dateRange?.to ?? now).toISOString(),
-      itemLimit: 200,
-      sortOrder: 'ASC',
-    })) {
-      transactions.push({
-        externalId: item.transactionId,
-        amount: Money.fromDecimal(Math.abs(parseFloat(item.operationAmount))).toCents(),
-        currency: item.currency,
-        date: new Date(item.ts),
-        description: buildTransactionDescription(item),
-        metadata: {
-          historyItemId: item.historyItemId,
-          transactionId: item.transactionId,
-          operationType: item.operationType,
-          operationDetailedType: item.operationDetailedType,
-          operationDetails: item.operationDetails,
-          balanceAfter: item.balanceAfter,
-        },
-      });
-    }
-
-    return transactions;
-  }
 
   async syncTransactions({
     connectionId,
@@ -299,100 +231,41 @@ export class WalutomatProvider extends BaseBankDataProvider {
         }
 
         const credentials = await this.getValidatedCredentials(connectionId);
-        const client = this.createApiClient(credentials);
+        const client = new WalutomatApiClient(credentials);
         const currency = currencyFromExternalId(account.externalId);
 
-        // Determine sync start date
-        const latestTransaction = await findOneTransaction({
-          planned: 'exclude',
-          access: 'unscoped-internal',
-          balanceAdjustments: 'include',
-          where: { accountId: account.id },
-          order: [['time', 'DESC']],
+        const now = new Date();
+        const { from, matchPlanned } = await resolveSyncStart({ account, to: now, backfillDays: BACKFILL_DAYS });
+
+        const historyItems = await this.withAuthTracking({
+          connectionId,
+          request: async () => {
+            const items: HistoryItem[] = [];
+            for await (const item of client.getHistoryIterator({
+              currencies: [currency],
+              dateFrom: from.toISOString(),
+              dateTo: now.toISOString(),
+              itemLimit: 200,
+              sortOrder: 'ASC',
+            })) {
+              items.push(item);
+            }
+            return items;
+          },
         });
 
-        const now = new Date();
-        let fromDate: Date;
-        if (latestTransaction) {
-          fromDate = new Date(latestTransaction.time);
-        } else {
-          fromDate = new Date(now);
-          fromDate.setMonth(fromDate.getMonth() - DEFAULT_SYNC_MONTHS);
-        }
-
-        const historyItems: HistoryItem[] = [];
-        try {
-          for await (const item of client.getHistoryIterator({
-            currencies: [currency],
-            dateFrom: fromDate.toISOString(),
-            dateTo: now.toISOString(),
-            itemLimit: 200,
-            sortOrder: 'ASC',
-          })) {
-            historyItems.push(item);
-          }
-          await this.resetAuthFailures(connectionId);
-        } catch (error) {
-          await this.handleAuthError({ connectionId, error });
-          throw error;
-        }
-
-        const defaultCategoryId = await getUserDefaultCategory({ id: connection.userId });
-        const createdTransactionIds: string[] = [];
-        let mergedIntoPlannedCount = 0;
-        const checkpoint = this.createBaseCurrencyLockCheckpoint({ userId });
-
-        // One probe per run instead of one per row. Anchorless runs are backfills
-        // and must not consume plans.
-        const matchPlanned = Boolean(latestTransaction) && (await accountHasPlannedRows({ accountId: account.id }));
-
-        for (const item of historyItems) {
-          await checkpoint();
-
-          // Primary dedup: check by originalId
-          const existingTx = await findOneTransaction({
-            planned: 'exclude',
-            access: 'unscoped-internal',
-            balanceAdjustments: 'include',
-            where: {
-              accountId: account.id,
-              originalId: item.transactionId,
-            },
-            paranoid: false,
-          });
-
-          if (existingTx) {
-            continue;
-          }
-
-          // Secondary dedup: check externalData.originalSource.originalId
-          // Covers the unlink→relink flow where originalId was cleared
-          const existingByOriginalSource = await findOneTransaction({
-            planned: 'exclude',
-            access: 'unscoped-internal',
-            balanceAdjustments: 'include',
-            where: Sequelize.and(
-              { accountId: account.id, originalId: null },
-              Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), item.transactionId),
-            ),
-            paranoid: false,
-          });
-
-          if (existingByOriginalSource) {
-            await existingByOriginalSource.update({ originalId: item.transactionId });
-            continue;
-          }
-
-          const operationAmount = parseFloat(item.operationAmount);
-          const isExpense = operationAmount < 0;
-
-          const createResult = await createTransaction({
+        const { createdTransactionIds, mergedIntoPlannedCount } = await persistSyncedTransactions({
+          account,
+          userId: connection.userId,
+          accountType: PROVIDER_TO_ACCOUNT_TYPE[this.metadata.type],
+          checkpoint: this.createBaseCurrencyLockCheckpoint({ userId: connection.userId }),
+          rows: historyItems.map((item) => ({
             originalId: item.transactionId,
+            time: new Date(item.ts),
+            amount: parseFloat(item.operationAmount),
             note: buildTransactionDescription(item),
             externalReference:
               detail({ item, key: 'partnerOrderId' }) ?? detail({ item, key: 'providerOperationId' }) ?? null,
-            amount: Money.fromDecimal(Math.abs(operationAmount)),
-            time: new Date(item.ts),
             externalData: {
               historyItemId: item.historyItemId,
               transactionId: item.transactionId,
@@ -401,35 +274,14 @@ export class WalutomatProvider extends BaseBankDataProvider {
               operationDetails: item.operationDetails,
               balanceAfter: item.balanceAfter,
             },
-            commissionRate: Money.fromCents(0),
-            cashbackAmount: Money.fromCents(0),
-            accountId: account.id,
-            userId: connection.userId,
-            transactionType: isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income,
-            categoryId: defaultCategoryId,
-            transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-            accountType: ACCOUNT_TYPES.walutomat,
-            matchPlanned,
-          });
-
-          // A merged row is not a new row: it keeps the user's category and payee, which the
-          // post-sync listeners on the emitted ids would overwrite.
-          if (createResult.mergedIntoPlanned) {
-            mergedIntoPlannedCount += 1;
-          } else {
-            createdTransactionIds.push(createResult[0].id);
-          }
-        }
+          })),
+          matchPlanned,
+        });
 
         if (createdTransactionIds.length > 0 || mergedIntoPlannedCount > 0) {
           logger.info(
             `[Walutomat] Sync: ${createdTransactionIds.length} transactions created, ${mergedIntoPlannedCount} planned confirmed for account ${account.id}`,
           );
-          await notifyPlannedConfirmations({
-            userId: connection.userId,
-            accountId: account.id,
-            mergedCount: mergedIntoPlannedCount,
-          });
         }
 
         // Update account balance
@@ -458,43 +310,6 @@ export class WalutomatProvider extends BaseBankDataProvider {
       const errorMsg = error instanceof Error ? error.message : String(error);
       logger.warn(`[Walutomat] Failed to auto-link cross-provider transfers: ${errorMsg}`);
     }
-  }
-
-  // ============================================================================
-  // Balance Operations
-  // ============================================================================
-
-  async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
-    const credentials = await this.getValidatedCredentials(connectionId);
-    const client = this.createApiClient(credentials);
-    const currency = currencyFromExternalId(accountExternalId);
-
-    const balances = await client.getBalances();
-    const wallet = balances.find((b) => b.currency === currency);
-
-    if (!wallet) {
-      throw new BadRequestError({
-        message: t({ key: 'bankDataProviders.walutomat.walletNotFound', variables: { currency } }),
-      });
-    }
-
-    return {
-      amount: Money.fromDecimal(parseFloat(wallet.balanceAvailable)).toCents(),
-      currency: wallet.currency,
-      asOf: new Date(),
-    };
-  }
-
-  async refreshBalance(connectionId: string, systemAccountId: string): Promise<void> {
-    const account = await this.getSystemAccount(systemAccountId);
-
-    if (!account.externalId) {
-      throw new BadRequestError({ message: t({ key: 'bankDataProviders.walutomat.accountNoExternalId' }) });
-    }
-
-    const balance = await this.fetchBalance(connectionId, account.externalId);
-
-    await writeBankBalanceWithHistory({ account, balance: Money.fromCents(balance.amount) });
   }
 
   // Walutomat surfaces 401/403 via its own HTTP error class as well as
@@ -597,13 +412,6 @@ export class WalutomatProvider extends BaseBankDataProvider {
   // ============================================================================
   // Helper Methods
   // ============================================================================
-
-  private createApiClient(credentials: WalutomatCredentials): WalutomatApiClient {
-    return new WalutomatApiClient({
-      apiKey: credentials.apiKey,
-      privateKey: credentials.privateKey,
-    });
-  }
 
   private isValidCredentials(credentials: unknown): credentials is WalutomatCredentials {
     if (typeof credentials !== 'object' || credentials === null) {

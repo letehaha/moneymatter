@@ -97,7 +97,7 @@ const quickPresets = computed<DateSelectorPreset[]>(() => {
 
     <DateSelector v-model="period" :presets="quickPresets">
       <template #trigger>
-        <Button variant="ghost" size="sm" class="hover:bg-accent min-w-40 font-medium">
+        <Button variant="ghost" size="sm" class="min-w-40 font-medium">
           <CalendarIcon class="size-3.5" />
           {{ triggerLabel }}
         </Button>

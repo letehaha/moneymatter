@@ -264,6 +264,9 @@ describe('LunchFlow Data Provider E2E', () => {
       );
 
       expect(lunchflowConnections.length).toBeGreaterThanOrEqual(2);
+
+      const second = connections.find((c: { id: string }) => c.id === result2.connectionId);
+      expect(second?.providerName).toBe('LunchFlow (2)');
     });
   });
 
@@ -633,6 +636,7 @@ describe('LunchFlow Data Provider E2E', () => {
 
       expect(Array.isArray(transactions)).toBe(true);
       expect(transactions.length).toBe(MOCK_AMOUNT);
+      for (const tx of transactions) expect(tx.accountType).toBe(ACCOUNT_TYPES.lunchflow);
     });
 
     it('should skip pending transactions (null ID)', async () => {

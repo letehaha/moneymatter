@@ -38,7 +38,9 @@ export function createMcpServer({ toolsets }: { toolsets: readonly McpOptionalTo
   slimToolListing({ server });
 
   for (const { name, description, text } of MCP_PROMPTS) {
-    server.prompt(name, description, () => ({ messages: [{ role: 'user', content: { type: 'text', text } }] }));
+    server.registerPrompt(name, { description }, () => ({
+      messages: [{ role: 'user', content: { type: 'text', text } }],
+    }));
   }
 
   registerToolsets({ server, toolsets });

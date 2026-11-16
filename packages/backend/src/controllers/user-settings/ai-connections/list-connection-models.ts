@@ -7,7 +7,7 @@ import { apiKeyField, baseUrlField } from './connection-field-schemas';
 
 const schema = z.object({
   body: z.object({
-    provider: z.nativeEnum(AI_PROVIDER),
+    provider: z.enum(AI_PROVIDER),
     baseUrl: baseUrlField.optional(),
     apiKey: apiKeyField.optional(),
     connectionId: z.uuid().optional(),

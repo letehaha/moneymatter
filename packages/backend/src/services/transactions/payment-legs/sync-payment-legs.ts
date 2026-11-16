@@ -96,6 +96,7 @@ const createdLegFields = ({ main, amount }: { main: Transactions.default; amount
   // Keeps background payee linking off the copy, so it can't drift from the main row.
   payeeLocked: true,
   categorizationMeta: main.categorizationMeta,
+  excludeFromStats: main.excludeFromStats,
 });
 
 const createLeg = async ({

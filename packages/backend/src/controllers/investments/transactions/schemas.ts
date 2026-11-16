@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 // Accept a date-only value ("2026-06-20") or a full ISO 8601 datetime ("2026-06-20T09:00:00.000Z").
 // Date-only is normalized to UTC midnight.
-const investmentTransactionDate = z.union([z.string().date(), z.string().datetime({ offset: true })]);
+const investmentTransactionDate = z.union([z.iso.date(), z.iso.datetime({ offset: true })]);
 
 const positiveNumberString = ({ message }: { message: string }) =>
   z
@@ -27,7 +27,7 @@ const nonNegativeNumberString = ({ message }: { message: string }) =>
 export const createInvestmentTransactionBodyShape = {
   portfolioId: recordId(),
   securityId: recordId(),
-  category: z.nativeEnum(INVESTMENT_TRANSACTION_CATEGORY),
+  category: z.enum(INVESTMENT_TRANSACTION_CATEGORY),
   date: investmentTransactionDate,
   quantity: numericString(),
   // Zero price = legitimate position change with no cash consideration (staking, airdrops, balance
@@ -65,7 +65,7 @@ export const createInvestmentTransactionBodySchema = z
  * currency, so they live in the service.
  */
 export const updateInvestmentTransactionBodyShape = {
-  category: z.nativeEnum(INVESTMENT_TRANSACTION_CATEGORY).optional(),
+  category: z.enum(INVESTMENT_TRANSACTION_CATEGORY).optional(),
   date: investmentTransactionDate.optional(),
   quantity: positiveNumberString({ message: 'Quantity must be a positive number' }),
   // Zero allowed: staking rewards / airdrops / burns / balance adjustments are real position changes

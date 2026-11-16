@@ -14,7 +14,7 @@ const savedConnectionBody = z.object({
 
 // Test a combination the user typed in, before it is saved anywhere.
 const draftConnectionBody = z.object({
-  provider: z.nativeEnum(AI_PROVIDER),
+  provider: z.enum(AI_PROVIDER),
   model: modelField,
   baseUrl: baseUrlField.optional(),
   apiKey: apiKeyField.optional(),

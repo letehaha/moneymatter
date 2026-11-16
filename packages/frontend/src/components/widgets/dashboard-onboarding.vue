@@ -10,7 +10,7 @@
     <div class="grid gap-3 sm:grid-cols-2">
       <CreateAccountDialog>
         <button
-          class="border-border hover:border-foreground/25 hover:bg-accent/50 group flex w-full items-start gap-4 rounded-lg border bg-transparent p-5 text-left transition-all"
+          class="border-border hover:border-foreground/25 hover:bg-hover group flex w-full items-start gap-4 rounded-lg border bg-transparent p-5 text-left transition-all"
         >
           <div class="bg-primary/10 group-hover:bg-primary/15 rounded-lg p-2.5 transition-colors">
             <WalletIcon class="text-primary-text size-5" />
@@ -25,7 +25,7 @@
       </CreateAccountDialog>
 
       <button
-        class="border-border hover:border-foreground/25 hover:bg-accent/50 group flex w-full items-start gap-4 rounded-lg border bg-transparent p-5 text-left transition-all"
+        class="border-border hover:border-foreground/25 hover:bg-hover group flex w-full items-start gap-4 rounded-lg border bg-transparent p-5 text-left transition-all"
         @click="navigateToIntegrations"
       >
         <div class="bg-primary/10 group-hover:bg-primary/15 rounded-lg p-2.5 transition-colors">
@@ -52,7 +52,7 @@
 
     <!-- Secondary Option - Import -->
     <button
-      class="border-border hover:border-foreground/25 hover:bg-accent/50 group flex w-full items-center gap-4 rounded-lg border bg-transparent p-5 text-left transition-all"
+      class="border-border hover:border-foreground/25 hover:bg-hover group flex w-full items-center gap-4 rounded-lg border bg-transparent p-5 text-left transition-all"
       @click="navigateToImport"
     >
       <div class="bg-muted group-hover:bg-muted/80 rounded-lg p-2.5 transition-colors">

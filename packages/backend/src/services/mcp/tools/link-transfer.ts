@@ -13,10 +13,7 @@ export const linkTransferTool = defineTool({
     'Link two existing transactions as a transfer pair. The two transactions must be in different accounts and have opposite types (one income, one expense). Provide baseTxId (the source/expense side) and oppositeTxId (the destination/income side).',
   input: {
     baseTxId: recordId().describe('ID of the base (source) transaction — typically the expense side'),
-    oppositeTxId: z
-      .string()
-      .uuid()
-      .describe('ID of the opposite (destination) transaction — typically the income side'),
+    oppositeTxId: z.uuid().describe('ID of the opposite (destination) transaction — typically the income side'),
   },
   run: async ({ userId, args }) => {
     const results = await linkTransactions({

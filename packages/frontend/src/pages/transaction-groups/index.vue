@@ -311,12 +311,7 @@ const formatPhoneCaption = ({ group }: { group: TransactionGroupResponse }) =>
           <div
             v-for="group in visibleGroups"
             :key="group.id"
-            :class="
-              cn(
-                ROW_GRID,
-                'hover:bg-foreground/5 has-[button:focus-visible]:bg-foreground/5 relative transition-colors',
-              )
-            "
+            :class="cn(ROW_GRID, 'hover:bg-hover has-[button:focus-visible]:bg-hover relative transition-colors')"
           >
             <div class="min-w-0">
               <div class="flex min-w-0 items-baseline gap-2">

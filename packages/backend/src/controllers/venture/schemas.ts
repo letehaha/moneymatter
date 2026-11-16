@@ -15,8 +15,8 @@ export const createVentureDealBodyShape = {
   principal: decimalString(),
   investmentDate: dateString(),
   platformId: recordId().nullable().optional(),
-  vehicleType: z.nativeEnum(VENTURE_VEHICLE_TYPE).optional(),
-  spvSubtype: z.nativeEnum(VENTURE_SPV_SUBTYPE).nullable().optional(),
+  vehicleType: z.enum(VENTURE_VEHICLE_TYPE).optional(),
+  spvSubtype: z.enum(VENTURE_SPV_SUBTYPE).nullable().optional(),
   targetCompany: z.string().max(255).nullable().optional(),
   entryFeePct: percentageFraction().optional(),
   entryFee: decimalString().optional(),
@@ -27,7 +27,7 @@ export const createVentureDealBodyShape = {
   notes: z.string().max(5000).nullable().optional(),
   initialInvestment: z
     .object({
-      cashFlowMode: z.nativeEnum(VENTURE_CASH_FLOW_MODE),
+      cashFlowMode: z.enum(VENTURE_CASH_FLOW_MODE),
       transactionIds: z.array(recordId()).optional(),
     })
     .optional(),
@@ -37,10 +37,10 @@ export const createVentureDealBodyShape = {
 export const updateVentureDealBodyShape = {
   name: z.string().trim().min(1).max(255).optional(),
   platformId: recordId().nullable().optional(),
-  spvSubtype: z.nativeEnum(VENTURE_SPV_SUBTYPE).nullable().optional(),
+  spvSubtype: z.enum(VENTURE_SPV_SUBTYPE).nullable().optional(),
   targetCompany: z.string().max(255).nullable().optional(),
   currencyCode: currencyCode().optional(),
-  status: z.nativeEnum(VENTURE_DEAL_STATUS).optional(),
+  status: z.enum(VENTURE_DEAL_STATUS).optional(),
   principal: decimalString().optional(),
   entryFee: decimalString().optional(),
   entryFeePct: percentageFraction().optional(),
@@ -64,7 +64,7 @@ export const updateVentureDealBodySchema = z
 /** Fields of `POST /venture/platforms`; the MCP `create_venture_platform` tool reads its shape. */
 export const createVenturePlatformBodyShape = {
   name: z.string().trim().min(1).max(255),
-  website: z.string().url().max(2000).nullable().optional(),
+  website: z.url().max(2000).nullable().optional(),
   description: z.string().max(2000).nullable().optional(),
   defaultEntryFeePct: percentageFraction().optional(),
   defaultMgmtFeePct: percentageFraction().optional(),
@@ -75,7 +75,7 @@ export const createVenturePlatformBodyShape = {
 /** Fields of `PATCH /venture/platforms/:id`; the MCP `update_venture_platform` tool reads its shape. */
 export const updateVenturePlatformBodyShape = {
   name: z.string().trim().min(1).max(255).optional(),
-  website: z.string().url().max(2000).nullable().optional(),
+  website: z.url().max(2000).nullable().optional(),
   description: z.string().max(2000).nullable().optional(),
   defaultEntryFeePct: percentageFraction().optional(),
   defaultMgmtFeePct: percentageFraction().optional(),

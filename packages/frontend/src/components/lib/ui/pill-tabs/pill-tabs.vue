@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { cn } from '@/lib/utils';
 import { useResizeObserver } from '@vueuse/core';
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import {
   type PillTabItem,
   type PillTabsSize,
@@ -25,6 +25,8 @@ const props = withDefaults(
 const emit = defineEmits<{
   'update:modelValue': [value: string];
 }>();
+
+const activeItem = computed(() => props.items.find((item) => item.value === props.modelValue));
 
 const containerRef = ref<HTMLElement | null>(null);
 const indicatorStyle = ref({ left: '0px', width: '0px' });
@@ -59,21 +61,32 @@ watch(
 <template>
   <div ref="containerRef" :class="cn(pillTabsContainerVariants({ size }), fullWidth && 'flex w-full self-auto')">
     <!-- Sliding indicator -->
-    <div :class="cn(pillTabsIndicatorVariants({ size }))" :style="indicatorStyle" />
+    <div
+      :class="
+        cn(
+          pillTabsIndicatorVariants({ size }),
+          activeItem?.tone && 'inset-ring inset-ring-(--pill-tone)/25 dark:bg-(--pill-tone)/15 dark:shadow-none',
+          (disabled || activeItem?.disabled) && 'opacity-50',
+        )
+      "
+      :style="{ ...indicatorStyle, '--pill-tone': activeItem?.tone }"
+    />
     <!-- Buttons -->
     <button
       v-for="item in items"
       :key="item.value"
       type="button"
       :data-value="item.value"
+      :aria-label="item.ariaLabel"
       :aria-pressed="modelValue === item.value"
       :disabled="disabled || item.disabled"
+      :style="{ '--pill-tone': item.tone }"
       :class="
         cn(
           pillTabsTriggerVariants({ size }),
-          modelValue === item.value ? 'text-foreground' : 'text-muted-foreground',
+          modelValue === item.value ? (item.tone ? 'text-(--pill-tone)' : 'text-foreground') : 'text-muted-foreground',
           (disabled || item.disabled) && 'cursor-not-allowed opacity-50',
-          fullWidth && 'flex-1',
+          fullWidth && 'flex-1 px-2',
         )
       "
       @click="emit('update:modelValue', item.value)"

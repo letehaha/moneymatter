@@ -89,7 +89,7 @@ const showStatusPill = computed(() => kind.value !== 'reached' && !isArchived.va
     :class="
       cn(
         GOAL_ROW_GRID,
-        'hover:bg-foreground/5 has-[a:focus-visible]:bg-foreground/5 relative transition-colors',
+        'hover:bg-hover has-[a:focus-visible]:bg-hover relative transition-colors',
         isArchived && 'opacity-60',
       )
     "

@@ -116,6 +116,7 @@ export function slimTransactionsForMcp({
       accountId: tx.accountId,
       categoryId: tx.categoryId,
       isPlanned: tx.isPlanned,
+      excludeFromStats: tx.excludeFromStats,
       payeeId: tx.payeeId,
       payee: tx.payeeId && payeeName !== undefined ? { id: tx.payeeId, name: payeeName } : null,
       ...(tx.tags && { tags: tx.tags.map((t) => ({ id: t.id, name: t.name })) }),

@@ -13,7 +13,12 @@
       </p>
       <Button
         variant="ghost"
-        :class="cn('h-auto w-full justify-start gap-3 px-2.5 py-2 text-left', anchor.isRolling && 'bg-primary/10')"
+        :class="
+          cn(
+            'h-auto w-full justify-start gap-3 px-2.5 py-2 text-left',
+            anchor.isRolling && 'bg-primary/10 hover:bg-primary/10',
+          )
+        "
         :aria-pressed="anchor.isRolling"
         @click="pick({ month: null })"
       >
@@ -66,8 +71,7 @@
           v-for="m in months"
           :key="m.key"
           :variant="m.isSelected ? 'default' : 'ghost'"
-          size="sm"
-          :class="cn('h-10', m.isRolling && 'ring-primary text-primary-text ring-1 ring-inset')"
+          :class="cn('px-3', m.isRolling && 'ring-primary text-primary-text ring-1 ring-inset')"
           :disabled="m.disabled"
           :aria-pressed="m.isSelected"
           :aria-label="m.ariaLabel"

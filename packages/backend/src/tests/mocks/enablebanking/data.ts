@@ -121,7 +121,6 @@ export const getMockedAccountDetails = (accountId: string) => {
         iban: 'FI1234567890123456',
       },
       product: 'Current Account',
-      owner_name: 'John Doe',
       details: 'Personal account',
       account_servicer: {
         name: MOCK_BANK_NAME,
@@ -136,7 +135,6 @@ export const getMockedAccountDetails = (accountId: string) => {
         iban: 'FI9876543210987654',
       },
       product: 'Savings Account',
-      owner_name: 'John Doe',
       details: 'Personal savings',
       credit_limit: { amount: '1500.00', currency: 'EUR' },
       account_servicer: {
@@ -152,7 +150,6 @@ export const getMockedAccountDetails = (accountId: string) => {
         iban: 'FI1111222233334444',
       },
       product: 'Business Account',
-      owner_name: 'John Doe',
       details: 'Business expenses',
       credit_limit: { amount: 'N/A', currency: 'USD' },
       account_servicer: {

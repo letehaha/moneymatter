@@ -111,7 +111,7 @@ const handleMenuAction = ({ close, action }: { close: () => void; action: 'edit'
 
 <template>
   <div
-    class="hover:bg-accent/50 flex cursor-pointer items-stretch gap-2 px-3 transition-colors @md/automations:gap-3"
+    class="hover:bg-hover flex cursor-pointer items-stretch gap-2 px-3 transition-colors @md/automations:gap-3"
     :class="density === 'compact' ? 'py-1.5' : 'py-3'"
     role="button"
     tabindex="0"
@@ -132,7 +132,7 @@ const handleMenuAction = ({ close, action }: { close: () => void; action: 'edit'
       >
         <span
           class="drag-handle text-muted-foreground flex min-h-6 flex-1 items-center justify-center"
-          :class="reorderable ? 'hover:text-foreground hover:bg-muted/60 cursor-grab' : 'cursor-not-allowed opacity-50'"
+          :class="reorderable ? 'hover:text-foreground hover:bg-hover cursor-grab' : 'cursor-not-allowed opacity-50'"
           @click.stop
         >
           <GripVerticalIcon class="size-4" />

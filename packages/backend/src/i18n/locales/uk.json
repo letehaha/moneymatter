@@ -8,7 +8,6 @@
     "groupNotFound": "Групу або рахунок не знайдено",
     "accountNotFound": "Рахунок не знайдено!",
     "accountUpdateFailed": "Оновлення рахунку не вдалося",
-    "accountNoExternalId": "Рахунок не має зовнішнього ID",
     "accountNoExternalIdMonobank": "Рахунок не має зовнішнього ID від Monobank",
     "accountNoExternalIdEnableBanking": "Рахунок не має зовнішнього ID від Enable Banking",
     "accountNotFoundForTransaction": "Рахунок для цієї транзакції не знайдено",
@@ -302,7 +301,6 @@
     "connectionNotFound": "Підключення не знайдено",
     "connectionNotFoundOrNotYours": "Підключення не знайдено або не належить вам",
     "providerNoReauthorization": "Провайдер {{providerType}} не підтримує повторну авторизацію",
-    "providerNotFoundInRegistry": "Провайдер {{providerType}} не знайдено в реєстрі",
     "connectionIdNotFound": "Підключення банківського провайдера {{connectionId}} не знайдено",
     "accountIdNotFound": "Рахунок {{accountId}} не знайдено",
     "providerTypeMismatch": "Підключення {{connectionId}} призначене для провайдера {{actualType}}, а не {{expectedType}}",
@@ -350,9 +348,7 @@
       "invalidCredentialsFormat": "Недійсний формат облікових даних для Monobank",
       "invalidApiToken": "Недійсний API-токен Monobank",
       "rateLimitExceeded": "Перевищено ліміт запитів до API Monobank. Спробуйте ще раз через хвилину.",
-      "accountNotFound": "Рахунок {{accountExternalId}} не знайдено в Monobank",
       "accountReconnectRequired": "Цей рахунок більше не доступний у Monobank. Будь ласка, перепідключіть Monobank, щоб відновити синхронізацію.",
-      "webhookNotImplemented": "handleWebhook ще не реалізовано для Monobank",
       "unknownCurrencyCode": "Невідомий код валюти: {{numericCode}}",
       "geoBlocked": "Monobank блокує запити з IP-адреси цього сервера. Вимкніть VPN або використайте українську IP-адресу.",
       "geoBlockedProduction": "Синхронізація Monobank тимчасово недоступна. Ми отримали сповіщення і працюємо над виправленням. Зверніться до підтримки, якщо це терміново."
@@ -388,8 +384,7 @@
       "invalidTokens": "Недійсні токени Akahu. Перевірте User Access Token і App ID Token на сторінці вашого застосунку Akahu.",
       "accountNoExternalId": "Рахунок не має зовнішнього ID для синхронізації Akahu.",
       "accountNotFound": "Рахунок Akahu не знайдено.",
-      "rateLimited": "Akahu зараз обмежує кількість запитів. Будь ласка, спробуйте ще раз трохи згодом.",
-      "missingCurrency": "Akahu не повернув валюту для цього рахунку."
+      "rateLimited": "Akahu зараз обмежує кількість запитів. Будь ласка, спробуйте ще раз трохи згодом."
     },
     "simplefin": {
       "invalidCredentialsFormat": "Недійсний формат облікових даних SimpleFIN.",
@@ -404,8 +399,7 @@
     "walutomat": {
       "invalidCredentialsFormat": "Недійсний формат облікових даних Walutomat. Необхідні API-ключ та приватний ключ.",
       "invalidApiKey": "Недійсний API-ключ або приватний ключ Walutomat.",
-      "accountNoExternalId": "Рахунок Walutomat не має зовнішнього ID.",
-      "walletNotFound": "Гаманець Walutomat не знайдено для валюти: {{currency}}"
+      "accountNoExternalId": "Рахунок Walutomat не має зовнішнього ID."
     }
   },
   "csvImport": {

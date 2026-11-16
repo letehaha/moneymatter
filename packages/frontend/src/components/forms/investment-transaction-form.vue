@@ -354,7 +354,7 @@ const onSubmit = async () => {
     </div>
 
     <div class="border-border overflow-hidden rounded-md border">
-      <label class="hover:bg-muted/50 flex cursor-pointer items-center gap-3 p-4 transition-colors">
+      <label class="hover:bg-hover flex cursor-pointer items-center gap-3 p-4 transition-colors">
         <Checkbox
           v-model="useSettlement"
           :disabled="createTransactionMutation.isPending.value"

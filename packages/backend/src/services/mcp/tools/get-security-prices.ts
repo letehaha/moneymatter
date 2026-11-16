@@ -59,7 +59,7 @@ export const getSecurityPricesTool = defineTool({
         'Symbol of a security already stored, as search_securities returns it (providerSymbol, or the ticker). Needs providerName; read-only, never adds a security',
       ),
     providerName: z
-      .nativeEnum(SECURITY_PROVIDER)
+      .enum(SECURITY_PROVIDER)
       .optional()
       .describe('Provider of the stored security, as search_securities returns it. Needs symbol'),
     from: shape.from.describe(

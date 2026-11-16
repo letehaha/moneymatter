@@ -11,6 +11,7 @@ import { countUnfinishedAccountSyncJobsForUser } from '@services/bank-data-provi
 import {
   SyncStatus,
   getMultipleAccountsSyncStatus,
+  isActiveSync,
   setAccountSyncStatus,
 } from '@services/bank-data-providers/sync/sync-status-tracker';
 import { budgetBakersWalletImportQueue } from '@services/import-export/budget-bakers-wallet-import';
@@ -56,7 +57,7 @@ async function hasAccountMidSync({ userId }: { userId: number }): Promise<boolea
   const accounts = await Accounts.findAll({ where: { userId }, attributes: ['id'], raw: true });
   if (accounts.length === 0) return false;
   const statuses = await getMultipleAccountsSyncStatus(accounts.map((account) => account.id));
-  return statuses.some((status) => status.status === SyncStatus.QUEUED || status.status === SyncStatus.SYNCING);
+  return statuses.some(({ status }) => isActiveSync({ status }));
 }
 
 /**
@@ -117,7 +118,7 @@ export async function drainUserWriters({ userId }: { userId: number }): Promise<
       const statuses = await getMultipleAccountsSyncStatus([...orphanedAccountIds] as RecordId[]);
       await Promise.all(
         statuses
-          .filter((s) => s.status === SyncStatus.QUEUED || s.status === SyncStatus.SYNCING)
+          .filter(({ status }) => isActiveSync({ status }))
           .map((s) => setAccountSyncStatus({ accountId: s.accountId, status: SyncStatus.COMPLETED, userId })),
       );
       orphanedAccountIds.clear();

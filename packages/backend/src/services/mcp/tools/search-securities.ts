@@ -14,7 +14,6 @@ export const searchSecuritiesTool = defineTool({
   input: {
     query: z.string().describe('Ticker symbol or company name to search for (e.g. "AAPL", "Apple")'),
     portfolioId: z
-      .string()
       .uuid()
       .optional()
       .describe('Portfolio ID to annotate results with isInPortfolio flag (from get_portfolios)'),

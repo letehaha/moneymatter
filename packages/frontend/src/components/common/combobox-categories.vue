@@ -7,6 +7,7 @@
     :selected-label="selectedLabel"
     :search-placeholder="$t('fields.comboboxCategories.searchPlaceholder')"
     :trigger-class="triggerClass"
+    :size="size"
     :hide-clear-button="scopePicker"
     :selected="categoryIds"
     content-class="min-w-75"
@@ -41,7 +42,7 @@
 
           <MultiSelectItem
             :value="item.id"
-            class="data-highlighted:text-accent-foreground data-[state=checked]:bg-primary/5 gap-2 py-1.5 pr-2"
+            class="data-highlighted:text-accent-foreground gap-2 py-1.5 pr-2"
             :style="{ paddingLeft: `${8 + (isSearching ? 0 : item.depth) * 16}px` }"
             @toggle="scopePicker ? selectOnly({ item }) : handleToggle({ item, index })"
           >
@@ -71,6 +72,7 @@ import CategoryCircle from '@/components/common/category-circle.vue';
 import MultiSelectField from '@/components/fields/multi-select-field.vue';
 import MultiSelectItem from '@/components/fields/multi-select-item.vue';
 import { Checkbox } from '@/components/lib/ui/checkbox';
+import type { ControlSize } from '@/components/lib/ui/control-size';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { useCategoriesStore } from '@/stores';
 import { CheckIcon, CircleOffIcon, MinusIcon } from '@lucide/vue';
@@ -108,6 +110,7 @@ const props = defineProps<{
   scopePicker?: boolean;
   /** Overrides the trigger text shown while a selection is active. */
   selectedText?: string;
+  size?: ControlSize;
 }>();
 
 const emit = defineEmits<{

@@ -86,7 +86,7 @@
         <!-- Submit button -->
         <DemoRestricted feature="change_password">
           <Button type="submit" :disabled="isSubmitting || isDemo">
-            <Loader2Icon v-if="isSubmitting" class="mr-2 size-4 animate-spin" />
+            <Loader2Icon v-if="isSubmitting" class="size-4 animate-spin" />
             {{
               hasPassword
                 ? $t('settings.security.passwordSection.buttons.change')

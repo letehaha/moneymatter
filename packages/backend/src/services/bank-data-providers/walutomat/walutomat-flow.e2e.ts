@@ -1,20 +1,25 @@
 import {
   ACCOUNT_TYPES,
   BANK_PROVIDER_TYPE,
+  DEACTIVATION_REASON,
   type RecordId,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
+import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import Transactions from '@models/transactions.model';
 import * as helpers from '@tests/helpers';
 import { getMockedWalutomatFxPair, getMockedWalutomatHistory } from '@tests/mocks/walutomat/data';
 import {
   INVALID_WALUTOMAT_API_KEY,
   VALID_WALUTOMAT_API_KEY,
+  VALID_WALUTOMAT_API_KEY_2,
   VALID_WALUTOMAT_PRIVATE_KEY,
   getWalutomatBalancesMock,
+  getWalutomatForbiddenBalancesMock,
+  getWalutomatForbiddenHistoryMock,
   getWalutomatHistoryByCurrencyMock,
   getWalutomatHistoryMock,
 } from '@tests/mocks/walutomat/mock-api';
@@ -174,6 +179,24 @@ describe('Walutomat Data Provider E2E', () => {
       const { connections } = await helpers.bankDataProviders.listUserConnections({ raw: true });
       const connection = connections.find((c: { id: string }) => c.id === result.connectionId);
       expect(connection?.providerName).toBe('Walutomat');
+    });
+
+    it('names a second connection with a counter', async () => {
+      const credentials = { apiKey: VALID_WALUTOMAT_API_KEY, privateKey: VALID_WALUTOMAT_PRIVATE_KEY };
+      await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.WALUTOMAT,
+        credentials,
+        raw: true,
+      });
+      const { connectionId } = await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.WALUTOMAT,
+        credentials,
+        raw: true,
+      });
+
+      const { connections } = await helpers.bankDataProviders.listUserConnections({ raw: true });
+      const connection = connections.find((c: { id: string }) => c.id === connectionId);
+      expect(connection?.providerName).toBe('Walutomat (2)');
     });
   });
 
@@ -564,6 +587,82 @@ describe('Walutomat Data Provider E2E', () => {
 
       expect(result.status).not.toEqual(ERROR_CODES.Forbidden);
       expect(result.status).toBeGreaterThanOrEqual(400);
+    });
+  });
+
+  describe('refreshCredentials clears auth-failure state', () => {
+    const deactivateViaAuthFailures = async ({ connectionId }: { connectionId: string }) => {
+      global.mswMockServer.use(getWalutomatForbiddenBalancesMock());
+      await helpers.bankDataProviders.listExternalAccounts({ connectionId });
+      await helpers.bankDataProviders.listExternalAccounts({ connectionId });
+    };
+
+    const refreshCredentials = async ({ connectionId }: { connectionId: string }) => {
+      global.mswMockServer.use(getWalutomatBalancesMock());
+      await helpers.bankDataProviders.updateConnectionDetails({
+        connectionId,
+        credentials: { apiKey: VALID_WALUTOMAT_API_KEY_2, privateKey: VALID_WALUTOMAT_PRIVATE_KEY },
+        raw: true,
+      });
+    };
+
+    it('clears deactivationReason and the failure counter when fresh credentials reactivate the connection', async () => {
+      const { connectionId } = await helpers.walutomat.pair();
+
+      await deactivateViaAuthFailures({ connectionId });
+
+      const { connection: deactivated } = await helpers.bankDataProviders.getConnectionDetails({
+        connectionId,
+        raw: true,
+      });
+      expect(deactivated.isActive).toBe(false);
+      expect(deactivated.deactivationReason).toBe(DEACTIVATION_REASON.AUTH_FAILURE);
+
+      await refreshCredentials({ connectionId });
+
+      const { connection: reactivated } = await helpers.bankDataProviders.getConnectionDetails({
+        connectionId,
+        raw: true,
+      });
+      expect(reactivated.isActive).toBe(true);
+      expect(reactivated.deactivationReason).toBeNull();
+
+      const stored = await BankDataProviderConnections.findByPk(connectionId);
+      expect(stored!.metadata).toMatchObject({ consecutiveAuthFailures: 0, deactivationReason: null });
+    });
+
+    it('keeps the connection active when a single 403 follows a credential refresh', async () => {
+      const { connectionId } = await helpers.walutomat.pair();
+
+      await deactivateViaAuthFailures({ connectionId });
+      await refreshCredentials({ connectionId });
+
+      global.mswMockServer.use(getWalutomatForbiddenBalancesMock());
+      await helpers.bankDataProviders.listExternalAccounts({ connectionId });
+
+      const { connection } = await helpers.bankDataProviders.getConnectionDetails({ connectionId, raw: true });
+      expect(connection.isActive).toBe(true);
+      expect(connection.deactivationReason).toBeNull();
+    });
+  });
+
+  describe('Auth failure on transaction sync', () => {
+    it('deactivates the connection after two syncs where the history endpoint returns 403', async () => {
+      const { connectionId } = await helpers.walutomat.pair();
+      const { syncedAccounts } = await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId,
+        accountExternalIds: ['wallet-eur'],
+        raw: true,
+      });
+      const accountId = syncedAccounts[0]!.id;
+
+      global.mswMockServer.use(getWalutomatForbiddenHistoryMock());
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId });
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId });
+
+      const { connection } = await helpers.bankDataProviders.getConnectionDetails({ connectionId, raw: true });
+      expect(connection.isActive).toBe(false);
+      expect(connection.deactivationReason).toBe(DEACTIVATION_REASON.AUTH_FAILURE);
     });
   });
 });

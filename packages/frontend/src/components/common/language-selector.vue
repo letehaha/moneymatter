@@ -19,10 +19,8 @@
         <button
           v-for="locale in availableLocales"
           :key="locale.value"
-          class="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
-          :class="{
-            'bg-accent': currentLocale === locale.value,
-          }"
+          class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
+          :class="currentLocale === locale.value ? 'bg-accent' : 'hover:bg-hover'"
           @click="handleLocaleChange(locale.value)"
         >
           <img :src="locale.flagSrc" :alt="locale.native" class="h-4 w-5.5 rounded-sm object-cover" />

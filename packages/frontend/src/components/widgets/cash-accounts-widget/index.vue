@@ -266,7 +266,7 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
           v-for="row in rows"
           :key="row.account.id"
           :to="{ name: ROUTES_NAMES.account, params: { id: row.account.id } }"
-          class="hover:bg-muted/50 flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors"
+          class="hover:bg-hover flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors"
         >
           <AccountLogo :account="row.account" class="size-6 shrink-0 rounded-md" />
           <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ row.account.name }}</span>

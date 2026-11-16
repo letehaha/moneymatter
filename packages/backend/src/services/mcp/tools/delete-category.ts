@@ -13,7 +13,6 @@ export const deleteCategoryTool = defineTool({
   input: {
     categoryId: recordId().describe('ID of the category to delete.'),
     replaceWithCategoryId: z
-      .string()
       .uuid()
       .optional()
       .describe('ID of the category to reassign linked transactions to. Required when the category has transactions.'),

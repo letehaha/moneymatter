@@ -1,8 +1,8 @@
-import { ZodArray, ZodObject, ZodOptional, ZodTypeAny, z } from 'zod';
+import { ZodArray, ZodObject, ZodOptional, z } from 'zod';
 
 // Utility to derive default values from a Zod schema
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getDefaultValue = (schema: ZodTypeAny): any => {
+export const getDefaultValue = (schema: z.ZodType): any => {
   if (schema instanceof ZodObject) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const defaultObject: Record<string, any> = {};
@@ -27,7 +27,7 @@ export const getDefaultValue = (schema: ZodTypeAny): any => {
     return undefined; // Default for optional fields is `undefined`
   }
 
-  if (schema.isNullable()) {
+  if (schema.safeParse(null).success) {
     return null; // Default for nullable fields is `null`
   }
 

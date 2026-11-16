@@ -184,8 +184,8 @@ watch(isCreateDialogOpen, (open) => {
           <div class="border-border mt-3 flex items-center justify-between border-t pt-3">
             <div class="bg-muted h-3 w-32 rounded" />
             <div class="flex gap-1.5">
-              <div class="bg-muted h-8 w-16 rounded-md" />
-              <div class="bg-muted h-8 w-16 rounded-md" />
+              <div class="bg-muted h-9 w-16 rounded-md" />
+              <div class="bg-muted h-9 w-16 rounded-md" />
             </div>
           </div>
         </div>

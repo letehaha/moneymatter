@@ -306,7 +306,7 @@ const submit = async () => {
         <div
           :class="
             cn(
-              'border-input bg-input-background grid gap-3 rounded-md border p-3',
+              'border-input grid gap-3 rounded-md border bg-(--color-input-background) p-3',
               accountsError && 'border-destructive',
             )
           "

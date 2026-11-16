@@ -1,4 +1,4 @@
-import { useDebounce, useWindowSize } from '@vueuse/core';
+import { refDebounced, useWindowSize } from '@vueuse/core';
 import { ComputedRef, computed } from 'vue';
 
 interface Options {
@@ -22,7 +22,7 @@ export function useWindowBreakpoints(
 ): ComputedRef<boolean | boolean[]> {
   const { wait = 300, direction = 'down' } = options;
   const { width: windowWidth } = useWindowSize();
-  const debouncedWindowWidth = useDebounce(windowWidth, wait);
+  const debouncedWindowWidth = refDebounced(windowWidth, wait);
 
   const isExpectedSize = computed(() => {
     if (Array.isArray(size)) {

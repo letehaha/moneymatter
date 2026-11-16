@@ -132,6 +132,8 @@ export interface TransactionModel {
   /** Present on the list endpoint only; absent on create/update responses. */
   hasAttachments?: boolean;
   isPlanned: boolean;
+  /** Keeps the row out of the reports without removing it from the ledger. */
+  excludeFromStats: boolean;
   /** Serializer-derived: set when a bank transaction merged into this row while it was planned. */
   plannedMerge?: { mergedAt: string } | null;
   /** Serializer-derived: the bank has not booked this row yet. */
@@ -291,6 +293,8 @@ export interface CreateTransactionBody {
   /** True when the caller wants future syncs to leave this row's Payee link alone. */
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  /** Keeps the row out of the reports without removing it from the ledger. */
+  excludeFromStats?: boolean;
   /** Run the user's automations on a manual-account row; off by default. For API integrations. */
   applyAutomations?: boolean;
   /** Files the row under the day's import batch of this source; ignored for a planned row. */
@@ -334,6 +338,8 @@ export interface UpdateTransactionBody {
   payeeId?: RecordId | null;
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  /** Keeps the row out of the reports without removing it from the ledger. */
+  excludeFromStats?: boolean;
   /** Send both fields as `null` to clear the pair. */
   originalAmount?: number | null;
   originalCurrencyCode?: string | null;

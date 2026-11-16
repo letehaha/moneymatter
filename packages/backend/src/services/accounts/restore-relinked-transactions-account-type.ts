@@ -1,16 +1,8 @@
-import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE } from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import { updateTransactions } from '@models/transactions-query';
+import { PROVIDER_TO_ACCOUNT_TYPE } from '@services/bank-data-providers/types';
 import { Op, Sequelize } from 'sequelize';
-
-export const PROVIDER_TO_ACCOUNT_TYPE: Record<BANK_PROVIDER_TYPE, ACCOUNT_TYPES> = {
-  [BANK_PROVIDER_TYPE.MONOBANK]: ACCOUNT_TYPES.monobank,
-  [BANK_PROVIDER_TYPE.ENABLE_BANKING]: ACCOUNT_TYPES.enableBanking,
-  [BANK_PROVIDER_TYPE.LUNCHFLOW]: ACCOUNT_TYPES.lunchflow,
-  [BANK_PROVIDER_TYPE.WALUTOMAT]: ACCOUNT_TYPES.walutomat,
-  [BANK_PROVIDER_TYPE.SIMPLEFIN]: ACCOUNT_TYPES.simplefin,
-  [BANK_PROVIDER_TYPE.AKAHU]: ACCOUNT_TYPES.akahu,
-};
 
 /**
  * Types the rows `providerType` synced before an unlink as bank rows again;

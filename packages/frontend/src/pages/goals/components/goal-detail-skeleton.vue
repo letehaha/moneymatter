@@ -11,7 +11,7 @@ import Card from '@/components/lib/ui/card/Card.vue';
           <div class="bg-muted h-5 w-40 animate-pulse rounded" />
           <div class="bg-muted h-3 w-56 animate-pulse rounded" />
         </div>
-        <div class="bg-muted ml-auto h-8 w-20 animate-pulse rounded" />
+        <div class="bg-muted ml-auto h-9 w-20 animate-pulse rounded" />
       </div>
       <div class="flex gap-1.5 px-3 py-2 @md/goal:px-4">
         <div v-for="i in 3" :key="i" class="bg-muted h-5 w-28 animate-pulse rounded-full" />

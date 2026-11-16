@@ -6,7 +6,7 @@ import { z } from 'zod';
 export default createController(
   z.object({
     params: z.object({
-      providerType: z.nativeEnum(BANK_PROVIDER_TYPE),
+      providerType: z.enum(BANK_PROVIDER_TYPE),
     }),
     body: z.object({
       credentials: z.record(z.string(), z.unknown()),

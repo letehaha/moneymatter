@@ -350,12 +350,12 @@ const archiveSelected = () => {
 </script>
 
 <template>
-  <div>
+  <div class="fields-plain">
     <DefineAssignTrigger v-slot="{ line, compact }">
       <AssignPopover :plan-id="planId" :period-id="view.period.id" :line="line">
         <Button
-          variant="outline"
-          size="sm"
+          variant="field"
+          :size="compact ? 'xs' : 'sm'"
           :aria-label="
             $t('budgetPlans.grid.assignAmountFor', {
               name: line.name,
@@ -364,9 +364,9 @@ const archiveSelected = () => {
           "
           :class="
             cn(
-              'bg-input-background hover:bg-input-background hover:border-ring w-full cursor-text justify-end px-2.5 font-normal tabular-nums',
+              'w-full cursor-text justify-end px-2.5 tabular-nums',
               line.assigned === 0 ? 'text-muted-foreground hover:text-muted-foreground' : 'hover:text-foreground',
-              compact && 'h-8 w-auto min-w-24',
+              compact && 'w-auto min-w-24',
             )
           "
         >
@@ -379,7 +379,7 @@ const archiveSelected = () => {
       <Button
         variant="ghost"
         :aria-pressed="selectedSet.has(line.lineId)"
-        class="-mx-2 h-auto min-w-0 flex-1 flex-col items-stretch gap-0 px-2 py-0 text-left font-normal"
+        class="-mx-2 h-auto min-w-0 flex-1 flex-col items-stretch gap-0 px-2 py-0 text-left font-normal hover:bg-transparent"
         @click="toggle ? emit('toggle', { lineId: line.lineId, range: false }) : emit('select', line.lineId)"
       >
         <component :is="$slots.default" />
@@ -594,7 +594,7 @@ const archiveSelected = () => {
         :class="
           cn(
             GRID_ROW_CLASS,
-            'group/line border-border hover:bg-accent/40 border-t py-1 select-none',
+            'group/line border-border hover:bg-hover border-t py-1 select-none',
             selectedSet.has(line.lineId) && 'bg-accent hover:bg-accent',
           )
         "
@@ -630,8 +630,8 @@ const archiveSelected = () => {
       <div
         :class="
           cn(
-            'group/line border-border flex items-center gap-3 border-t px-4 py-2',
-            selectedSet.has(line.lineId) && 'bg-accent',
+            'group/line border-border hover:bg-hover flex items-center gap-3 border-t px-4 py-2',
+            selectedSet.has(line.lineId) && 'bg-accent hover:bg-accent',
           )
         "
       >
@@ -769,7 +769,7 @@ const archiveSelected = () => {
 
         <template v-for="section in sections.groups" :key="section.group.id">
           <div
-            :class="cn(GRID_ROW_CLASS, 'border-border bg-muted border-t py-1.5 text-sm font-medium')"
+            :class="cn(GRID_ROW_CLASS, 'border-border bg-table-header border-t py-1.5 text-sm font-medium')"
             @contextmenu.prevent="openMenuKey = `group-row-${section.group.id}`"
           >
             <Checkbox
@@ -844,7 +844,7 @@ const archiveSelected = () => {
 
         <template v-for="section in sections.groups" :key="section.group.id">
           <div
-            class="border-border bg-muted flex items-center gap-3 border-t px-4 py-1.5 text-sm font-medium"
+            class="border-border bg-table-header flex items-center gap-3 border-t px-4 py-1.5 text-sm font-medium"
             @contextmenu.prevent="openMenuKey = `group-card-${section.group.id}`"
           >
             <Checkbox

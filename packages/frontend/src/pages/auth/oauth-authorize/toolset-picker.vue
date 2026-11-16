@@ -30,7 +30,7 @@
         :key="toolset.id"
         :class="
           cn(
-            'hover:bg-muted/50 flex cursor-pointer gap-3 rounded-md border p-3 text-sm transition-colors',
+            'hover:bg-hover flex cursor-pointer gap-3 rounded-md border p-3 text-sm transition-colors',
             isSelected(toolset) && 'border-primary bg-primary/5 hover:bg-primary/5',
           )
         "

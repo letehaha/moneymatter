@@ -15,6 +15,7 @@ export const formToDuplicatePrefill = ({ form, now }: { form: UI_FORM_STRUCT; no
     tagIds: [...(form.tagIds ?? [])],
     paymentType: form.paymentType,
     note: form.note,
+    excludeFromStats: Boolean(form.excludeFromStats),
   };
 
   // The form keeps the source leg in account/amount and the destination in toAccount/targetAmount,

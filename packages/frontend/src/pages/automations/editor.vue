@@ -282,7 +282,7 @@ const confirmLeave = () => {
             :error-message="showErrors ? (formNameError ?? undefined) : undefined"
             error-placement="absolute"
           />
-          <label for="automation-enabled" class="flex h-10 shrink-0 items-center gap-2 text-sm md:h-9">
+          <label for="automation-enabled" class="flex h-10 shrink-0 items-center gap-2 text-sm">
             <Switch id="automation-enabled" v-model="form.isEnabled" />
             {{ $t('automations.editor.enabled') }}
           </label>

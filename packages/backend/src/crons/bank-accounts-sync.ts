@@ -3,7 +3,6 @@ import { logger } from '@js/utils';
 import { connection } from '@models/connection';
 import type Users from '@models/users.model';
 import { syncAllUserAccounts } from '@services/bank-data-providers/sync/sync-manager';
-import { updateLastAutoSync } from '@services/bank-data-providers/sync/sync-status-tracker';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { resolveEntitlements } from '@services/entitlements/resolve-entitlements.service';
 import { QueryTypes } from 'sequelize';
@@ -54,7 +53,6 @@ export const runBankAccountsSync = async ({ now = new Date() }: { now?: Date } =
       }
 
       await syncAllUserAccounts(user.id);
-      await updateLastAutoSync(user.id);
       usersSynced++;
     } catch (error) {
       usersFailed++;

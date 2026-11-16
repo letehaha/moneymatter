@@ -221,12 +221,12 @@
         </UiButton>
         <UiButton :disabled="!importStore.isMapStepValid || isAdvancing" @click="handleNext">
           <template v-if="isAdvancing">
-            <LoaderIcon class="mr-2 size-4 animate-spin" />
+            <LoaderIcon class="size-4 animate-spin" />
             {{ $t('pages.importExport.columnMapping.detecting') }}
           </template>
           <template v-else>
             {{ $t('pages.importExport.mapColumns.next') }}
-            <ChevronRightIcon class="ml-1.5 size-4" />
+            <ChevronRightIcon class="size-4" />
           </template>
         </UiButton>
       </div>

@@ -35,7 +35,7 @@ export const getRefundsTool = defineTool({
     categoryId: recordId().optional().describe('Mode 3: only refunds whose original transaction is in this category'),
     accountId: recordId().optional().describe('Mode 3: only refunds whose original transaction is on this account'),
     transactionType: z
-      .nativeEnum(TRANSACTION_TYPES)
+      .enum(TRANSACTION_TYPES)
       .optional()
       .describe('Mode 3: only refunds whose original transaction is of this type'),
   },

@@ -25,10 +25,10 @@ const csvArray = <T extends z.ZodTypeAny>({ item }: { item: T }) =>
  *  the list, its summary, and bulk actions targeting "everything matching". */
 export const transactionFilterFields = {
   // Exact set of transferNature values to include. Supersedes transferFilter when present.
-  transferNatures: csvArray({ item: z.nativeEnum(TRANSACTION_TRANSFER_NATURE) }).optional(),
+  transferNatures: csvArray({ item: z.enum(TRANSACTION_TRANSFER_NATURE) }).optional(),
   ...dateRange({ precision: 'datetime' }),
-  transactionType: z.nativeEnum(TRANSACTION_TYPES).optional(),
-  accountType: z.nativeEnum(ACCOUNT_TYPES).optional(),
+  transactionType: z.enum(TRANSACTION_TYPES).optional(),
+  accountType: z.enum(ACCOUNT_TYPES).optional(),
   accountIds: csvArray({ item: recordId() }).optional(),
   trackerIds: csvArray({ item: idOrBlank }).optional(),
   excludedTrackerIds: csvArray({ item: recordId() }).optional(),
@@ -55,8 +55,8 @@ export const transactionFilterFields = {
   hasAttachment: booleanQuery().optional(),
   // Absent = both, true = only planned, false = exclude planned.
   isPlanned: booleanQuery().optional(),
-  transferFilter: z.nativeEnum(FILTER_OPERATION).optional(),
-  refundFilter: z.nativeEnum(FILTER_OPERATION).optional(),
+  transferFilter: z.enum(FILTER_OPERATION).optional(),
+  refundFilter: z.enum(FILTER_OPERATION).optional(),
   // Amount filters accept decimals from API
   amountLte: z.preprocess((val) => Number(val), z.number().positive()).optional(),
   amountGte: z.preprocess((val) => Number(val), z.number().positive()).optional(),
@@ -77,8 +77,8 @@ export const transactionFilterFields = {
     .max(200)
     .optional()
     .transform((val) => val || undefined),
-  categorizationSource: z.nativeEnum(CATEGORIZATION_SOURCE).optional(),
-  categorizedAt: z.string().datetime().optional(),
+  categorizationSource: z.enum(CATEGORIZATION_SOURCE).optional(),
+  categorizedAt: z.iso.datetime().optional(),
   batchId: recordId().optional(),
 };
 

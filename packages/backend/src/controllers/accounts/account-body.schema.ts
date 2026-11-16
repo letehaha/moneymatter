@@ -11,8 +11,8 @@ import { z } from 'zod';
 
 // `type` is not part of the MCP tool: a tool-created account is always a manual system account.
 export const createAccountBodyFields = {
-  accountCategory: z.nativeEnum(ACCOUNT_CATEGORIES).default(ACCOUNT_CATEGORIES.general),
-  defaultPaymentType: z.nativeEnum(PAYMENT_TYPES).nullable().optional(),
+  accountCategory: z.enum(ACCOUNT_CATEGORIES).default(ACCOUNT_CATEGORIES.general),
+  defaultPaymentType: z.enum(PAYMENT_TYPES).nullable().optional(),
   currencyCode: currencyCode(),
   name: z.string().trim().min(1),
   // Amount fields are decimals; callers convert them with `Money.fromDecimal`.
@@ -25,14 +25,14 @@ export const createAccountBodyFields = {
 export const createAccountBodySchema = z
   .object({
     ...createAccountBodyFields,
-    type: z.nativeEnum(ACCOUNT_TYPES).default(ACCOUNT_TYPES.system),
+    type: z.enum(ACCOUNT_TYPES).default(ACCOUNT_TYPES.system),
   })
   .superRefine((data, ctx) => refineLogoFieldsOnCreate({ data, ctx }));
 
 // `status` is not part of the MCP tool: archiving has its own tool with its side effects.
 export const updateAccountBodyFields = {
-  accountCategory: z.nativeEnum(ACCOUNT_CATEGORIES).optional(),
-  defaultPaymentType: z.nativeEnum(PAYMENT_TYPES).nullable().optional(),
+  accountCategory: z.enum(ACCOUNT_CATEGORIES).optional(),
+  defaultPaymentType: z.enum(PAYMENT_TYPES).nullable().optional(),
   name: z.string().trim().min(1).optional(),
   creditLimit: z.number().min(0).optional(),
   excludeFromStats: z.boolean().optional(),
@@ -46,6 +46,6 @@ export const updateAccountBodyFields = {
 export const updateAccountBodySchema = z
   .object({
     ...updateAccountBodyFields,
-    status: z.nativeEnum(ACCOUNT_STATUSES).optional(),
+    status: z.enum(ACCOUNT_STATUSES).optional(),
   })
   .superRefine((data, ctx) => refineLogoFields({ data, ctx }));

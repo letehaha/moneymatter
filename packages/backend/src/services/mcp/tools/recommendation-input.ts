@@ -10,7 +10,7 @@ export const recommendationInput = {
     .optional()
     .describe('A saved transaction to find candidates for. Give this, or transactionType + originAmount + accountId'),
   transactionType: z
-    .nativeEnum(TRANSACTION_TYPES)
+    .enum(TRANSACTION_TYPES)
     .optional()
     .describe('For a transaction that is not saved yet: its type. Needs originAmount and accountId'),
   originAmount: z

@@ -156,7 +156,7 @@ const getUtilizationColors = ({ utilization }: { utilization: number }) => {
               v-for="account in creditAccounts"
               :key="account.id"
               :to="{ name: ROUTES_NAMES.account, params: { id: account.id } }"
-              class="hover:bg-muted/50 flex flex-col gap-1.5 rounded-md px-3 py-2 transition-colors"
+              class="hover:bg-hover flex flex-col gap-1.5 rounded-md px-3 py-2 transition-colors"
             >
               <div class="flex items-center justify-between gap-2">
                 <span class="flex min-w-0 items-center gap-2">
