@@ -29,7 +29,8 @@
     <div class="flex items-center gap-2 overflow-x-clip">
       <template v-if="!isTransferTransaction && !linkTarget && category">
         <div class="relative shrink-0">
-          <CategoryCircle :category="category" />
+          <BrandLogo v-if="payeeLogo" v-bind="payeeLogo" class="size-6 rounded-full" />
+          <CategoryCircle v-else :category="category" />
           <ResponsiveTooltip v-if="showAccount && accountFrom" :content="accountFrom.name" :delay-duration="100">
             <!-- Backing tracks the row's hover fill so the badge's cut-out never shows as a halo. -->
             <span
@@ -309,6 +310,7 @@ import { useOppositeTxRecord } from '@/composable/data-queries/opposite-tx-recor
 import type { BulkUnselectableReason } from '@/composable/transaction-selection';
 import { useTransactionPortfolioLink } from '@/composable/data-queries/portfolio-transfers';
 import { useTransactionVentureLink } from '@/composable/data-queries/venture/events';
+import { usePayeeLogos } from '@/composable/use-payee-logos';
 import {
   getPaymentMainCurrencyCode,
   getPaymentRowAmounts,
@@ -474,6 +476,8 @@ const isLoadingGroupedTransfer = computed(() => {
 const isCompactInline = computed(() => props.compact && !isLoadingGroupedTransfer.value);
 
 const category = computed(() => categoriesMap.value[transaction.value.categoryId]);
+const { getPayeeLogo } = usePayeeLogos();
+const payeeLogo = computed(() => getPayeeLogo({ payeeId: transaction.value.payeeId }));
 const externalLinkHref = computed(() =>
   transaction.value.externalUrl && isHttpUrl(transaction.value.externalUrl) ? transaction.value.externalUrl : null,
 );
