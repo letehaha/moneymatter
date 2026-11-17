@@ -64,45 +64,60 @@ interface PortfolioValuation {
 
 const NOTHING_TO_VALUE: PortfolioValuation = { valuesByDate: null, unpricedSecurities: [], fxFallbackCurrencies: [] };
 
+/** `TransactionRow` plus the holding-currency legs the cost-basis and FIFO gains math reads. */
+export interface ValuationTransactionRow extends TransactionRow {
+  /** DECIMAL(20,10) string. Cash moved in the security's currency (fees included for buys, net for sells). */
+  amount: string;
+  /** DECIMAL(20,10) strings. */
+  price: string;
+  fees: string;
+}
+
+interface PortfolioValuationReplay {
+  transactions: ValuationTransactionRow[];
+  securitiesById: Map<string, SecurityRow>;
+  securityLabelById: Map<string, { symbol: string | null; name: string | null }>;
+  /** Base-currency decimals (not cents) per snapshot date. */
+  holdingsValueByDate: Map<string, number>;
+  /** Base-currency decimals (not cents) per dense date. */
+  cashInBaseByDate: Map<string, number>;
+  /** Converts 1 unit of a currency into base; reports fallbacks into the two rate sets below. */
+  getExchangeRate: (currencyCode: string, dateStr: string) => number;
+  unpricedSecurityIds: Set<string>;
+  unpricedDates: Set<string>;
+  missingRateCurrencies: Set<string>;
+  approximatedRateCurrencies: Set<string>;
+}
+
 /**
- * Portfolio value (holdings market value + uninvested cash) in base-currency cents
- * for each snapshot date. Holdings are valued on the sparse `snapshotDates` only —
- * the replay folds every transaction dated on or before each day, so skipping the
- * days in between changes nothing and keeps an all-time range cheap. Cash, by
- * contrast, only adds deltas landing exactly on a listed day, so it replays over
- * `denseDates` and the caller reads the snapshot days back out.
+ * Replays the given portfolios' holdings and cash into per-date values in the
+ * user's base currency (decimals, not cents). Holdings are valued on the sparse
+ * `snapshotDates` only — the replay folds every transaction dated on or before
+ * each day, so skipping the days in between changes nothing and keeps an
+ * all-time range cheap. Cash, by contrast, only adds deltas landing exactly on a
+ * listed day, so it replays over `denseDates` and the caller reads the snapshot
+ * days back out. Returns null when the portfolios hold no data at all.
  */
-export const calculatePortfolioValueByDate = async ({
+export const replayPortfolioValuation = async ({
   userId,
+  portfolioIds,
+  baseCurrencyCode,
   snapshotDates,
   denseDates,
-  userBaseCurrencyPromise,
+  extraCurrencyCodes = [],
+  floorHoldingValues = true,
 }: {
   userId: number;
+  portfolioIds: string[];
+  baseCurrencyCode: string;
   snapshotDates: string[];
   denseDates: string[];
-  userBaseCurrencyPromise: Promise<Pick<UsersCurrencies, 'currencyCode'> | null>;
-}): Promise<PortfolioValuation> => {
+  /** Currencies the caller converts into via `getExchangeRate` beyond those the data itself holds. */
+  extraCurrencyCodes?: string[];
+  floorHoldingValues?: boolean;
+}): Promise<PortfolioValuationReplay | null> => {
   const minDate = snapshotDates[0]!;
   const maxDate = snapshotDates[snapshotDates.length - 1]!;
-
-  const [userBaseCurrency, portfolios] = await Promise.all([
-    userBaseCurrencyPromise,
-    getScopedEnabledPortfolios({ userId }),
-  ]);
-
-  if (portfolios.length === 0) {
-    return NOTHING_TO_VALUE;
-  }
-
-  // No base currency means there is nothing to convert into, but it should
-  // never happen — every user has one. Log it so the silent zero-out is visible.
-  if (!userBaseCurrency?.currencyCode) {
-    logger.error('Net-worth history: user has no base currency', { userId });
-    return NOTHING_TO_VALUE;
-  }
-
-  const portfolioIds = portfolios.map((portfolio) => portfolio.id);
 
   // Cash rows must reach through end-of-TODAY even when the window ends earlier:
   // `computePortfolioCashByDate` anchors on stored cash and back-subtracts every
@@ -110,64 +125,62 @@ export const calculatePortfolioValueByDate = async ({
   const todayKey = format(new Date(), 'yyyy-MM-dd');
   const cashFetchMaxDate = maxDate > todayKey ? maxDate : todayKey;
 
-  const [transactions, portfolioTransfers, currentBalances]: [TransactionRow[], TransferRow[], CurrentBalanceRow[]] =
-    await Promise.all([
-      // `raw: true` + cast so the DECIMAL money columns (`quantity` is a Money
-      // field on the model) arrive as strings, the shape the shared holdings
-      // replay expects — and to avoid hydrating a Money object per column per row
-      // across an active trader's full pre-window history.
-      InvestmentTransaction.findAll({
-        where: {
-          portfolioId: { [Op.in]: portfolioIds },
-          // `date` is TIMESTAMPTZ; end-of-day bound keeps the final day's intraday trades.
-          date: { [Op.lte]: `${cashFetchMaxDate}T23:59:59.999Z` },
-        },
-        // The holdings replay folds a forward-only cursor per portfolio and
-        // breaks at the first transaction past the snapshot day — it reads wrong
-        // unless each portfolio's rows arrive ascending by date.
-        order: [
-          ['portfolioId', 'ASC'],
-          ['date', 'ASC'],
-          ['createdAt', 'ASC'],
-        ],
-        attributes: [
-          'portfolioId',
-          'securityId',
-          'category',
-          'date',
-          'quantity',
-          'refAmount',
-          'currencyCode',
-          'settlementAmount',
-          'settlementCurrencyCode',
-        ],
-        raw: true,
-      }) as unknown as Promise<TransactionRow[]>,
-      PortfolioTransfers.findAll({
-        where: {
-          userId,
-          affectsCash: true,
-          date: { [Op.lte]: cashFetchMaxDate },
-          [Op.or]: [{ fromPortfolioId: { [Op.in]: portfolioIds } }, { toPortfolioId: { [Op.in]: portfolioIds } }],
-        },
-        attributes: [
-          'fromPortfolioId',
-          'toPortfolioId',
-          'amount',
-          'currencyCode',
-          'toCurrencyCode',
-          'toAmount',
-          'date',
-        ],
-      }),
-      PortfolioBalances.findAll({
-        where: { portfolioId: { [Op.in]: portfolioIds } },
-        attributes: ['portfolioId', 'currencyCode', 'totalCash', 'refTotalCash'],
-      }),
-    ]);
+  const [transactions, portfolioTransfers, currentBalances]: [
+    ValuationTransactionRow[],
+    TransferRow[],
+    CurrentBalanceRow[],
+  ] = await Promise.all([
+    // `raw: true` + cast so the DECIMAL money columns (`quantity` is a Money
+    // field on the model) arrive as strings, the shape the shared holdings
+    // replay expects — and to avoid hydrating a Money object per column per row
+    // across an active trader's full pre-window history.
+    InvestmentTransaction.findAll({
+      where: {
+        portfolioId: { [Op.in]: portfolioIds },
+        // `date` is TIMESTAMPTZ; end-of-day bound keeps the final day's intraday trades.
+        date: { [Op.lte]: `${cashFetchMaxDate}T23:59:59.999Z` },
+      },
+      // The holdings replay folds a forward-only cursor per portfolio and
+      // breaks at the first transaction past the snapshot day — it reads wrong
+      // unless each portfolio's rows arrive ascending by date.
+      order: [
+        ['portfolioId', 'ASC'],
+        ['date', 'ASC'],
+        ['createdAt', 'ASC'],
+      ],
+      attributes: [
+        'portfolioId',
+        'securityId',
+        'category',
+        'date',
+        'quantity',
+        'refAmount',
+        'currencyCode',
+        'settlementAmount',
+        'settlementCurrencyCode',
+        'amount',
+        'price',
+        'fees',
+      ],
+      raw: true,
+    }) as unknown as Promise<ValuationTransactionRow[]>,
+    PortfolioTransfers.findAll({
+      where: {
+        userId,
+        affectsCash: true,
+        date: { [Op.lte]: cashFetchMaxDate },
+        [Op.or]: [{ fromPortfolioId: { [Op.in]: portfolioIds } }, { toPortfolioId: { [Op.in]: portfolioIds } }],
+      },
+      attributes: ['fromPortfolioId', 'toPortfolioId', 'amount', 'currencyCode', 'toCurrencyCode', 'toAmount', 'date'],
+    }),
+    PortfolioBalances.findAll({
+      where: { portfolioId: { [Op.in]: portfolioIds } },
+      attributes: ['portfolioId', 'currencyCode', 'totalCash', 'refTotalCash'],
+    }),
+  ]);
 
   if (transactions.length === 0 && portfolioTransfers.length === 0 && currentBalances.length === 0) {
-    return NOTHING_TO_VALUE;
+    return null;
   }
 
   const securityIds = [...new Set(transactions.map((tx) => tx.securityId))];
@@ -197,13 +210,15 @@ export const calculatePortfolioValueByDate = async ({
     if (transfer.toCurrencyCode) cashCurrencyCodes.push(transfer.toCurrencyCode);
   }
   for (const balance of currentBalances) cashCurrencyCodes.push(balance.currencyCode);
-  const currencyCodes = [...new Set([...securities.map((security) => security.currencyCode), ...cashCurrencyCodes])];
+  const currencyCodes = [
+    ...new Set([...securities.map((security) => security.currencyCode), ...cashCurrencyCodes, ...extraCurrencyCodes]),
+  ];
 
   // Reach back a week so a snapshot landing on a weekend or holiday still finds
   // the prior trading day's price and rate.
   const dataFetchMinDate = format(subDays(parseISO(minDate), 7), 'yyyy-MM-dd');
 
-  const usdRateQuoteCodes = [...new Set([userBaseCurrency.currencyCode, ...currencyCodes])].filter(
+  const usdRateQuoteCodes = [...new Set([baseCurrencyCode, ...currencyCodes])].filter(
     (code) => code !== API_LAYER_BASE_CURRENCY_CODE,
   );
 
@@ -213,7 +228,7 @@ export const calculatePortfolioValueByDate = async ({
       where: {
         userId,
         baseCode: { [Op.in]: currencyCodes },
-        quoteCode: userBaseCurrency.currencyCode,
+        quoteCode: baseCurrencyCode,
         date: { [Op.between]: [dataFetchMinDate, maxDate] },
       },
       attributes: ['baseCode', 'quoteCode', 'date', 'rate'],
@@ -254,7 +269,7 @@ export const calculatePortfolioValueByDate = async ({
   const missingRateCurrencies = new Set<string>();
   const approximatedRateCurrencies = new Set<string>();
   const getExchangeRate = createGetExchangeRate({
-    userBaseCurrencyCode: userBaseCurrency.currencyCode,
+    userBaseCurrencyCode: baseCurrencyCode,
     userRatesMap,
     findLatestUsdRate: createFindLatestUsdRate({ usdRatesMap, usdRateDatesByQuote }),
     onMissingRate: ({ currencyCode, approximated }) =>
@@ -274,6 +289,7 @@ export const calculatePortfolioValueByDate = async ({
     securitiesById,
     findPriceForDate,
     getExchangeRate,
+    floorValues: floorHoldingValues,
     onMissingPrice: ({ securityId, dateStr }) => {
       unpricedSecurityIds.add(securityId);
       unpricedDates.add(dateStr);
@@ -293,6 +309,73 @@ export const calculatePortfolioValueByDate = async ({
     // Same key the cash-row fetch was bounded with — avoids a midnight-boundary disagreement mid-request.
     todayKey,
   });
+
+  return {
+    transactions,
+    securitiesById,
+    securityLabelById,
+    holdingsValueByDate,
+    cashInBaseByDate,
+    getExchangeRate,
+    unpricedSecurityIds,
+    unpricedDates,
+    missingRateCurrencies,
+    approximatedRateCurrencies,
+  };
+};
+
+/**
+ * Portfolio value (holdings market value + uninvested cash) in base-currency cents
+ * for each snapshot date, across the user's enabled portfolios in scope.
+ */
+export const calculatePortfolioValueByDate = async ({
+  userId,
+  snapshotDates,
+  denseDates,
+  userBaseCurrencyPromise,
+}: {
+  userId: number;
+  snapshotDates: string[];
+  denseDates: string[];
+  userBaseCurrencyPromise: Promise<Pick<UsersCurrencies, 'currencyCode'> | null>;
+}): Promise<PortfolioValuation> => {
+  const minDate = snapshotDates[0]!;
+  const maxDate = snapshotDates[snapshotDates.length - 1]!;
+
+  const [userBaseCurrency, portfolios] = await Promise.all([
+    userBaseCurrencyPromise,
+    getScopedEnabledPortfolios({ userId }),
+  ]);
+
+  if (portfolios.length === 0) {
+    return NOTHING_TO_VALUE;
+  }
+
+  // No base currency means there is nothing to convert into, but it should
+  // never happen — every user has one. Log it so the silent zero-out is visible.
+  if (!userBaseCurrency?.currencyCode) {
+    logger.error('Net-worth history: user has no base currency', { userId });
+    return NOTHING_TO_VALUE;
+  }
+
+  const valuation = await replayPortfolioValuation({
+    userId,
+    portfolioIds: portfolios.map((portfolio) => portfolio.id),
+    baseCurrencyCode: userBaseCurrency.currencyCode,
+    snapshotDates,
+    denseDates,
+  });
+  if (!valuation) return NOTHING_TO_VALUE;
+
+  const {
+    securityLabelById,
+    holdingsValueByDate,
+    cashInBaseByDate,
+    unpricedSecurityIds,
+    unpricedDates,
+    missingRateCurrencies,
+    approximatedRateCurrencies,
+  } = valuation;
 
   // Error (not warn) so the fallback reaches Sentry: silent 1:1 conversion is a
   // known production failure mode. Aggregated to one log per request.

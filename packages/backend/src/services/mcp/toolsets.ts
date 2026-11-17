@@ -116,6 +116,7 @@ import { getPortfolioTool } from './tools/get-portfolio';
 import { getPortfolioBalancesTool } from './tools/get-portfolio-balances';
 import { getPortfolioHoldingsTool } from './tools/get-portfolio-holdings';
 import { getPortfolioSummaryTool } from './tools/get-portfolio-summary';
+import { getPortfolioValueHistoryTool } from './tools/get-portfolio-value-history';
 import { getPortfoliosTool } from './tools/get-portfolios';
 import { getPortfoliosOverviewTool } from './tools/get-portfolios-overview';
 import { getReconciliationHistoryTool } from './tools/get-reconciliation-history';
@@ -360,6 +361,7 @@ export const ALL_TOOLS: readonly ToolDef[] = [
   getPortfolioBalancesTool,
   getPortfolioHoldingsTool,
   getPortfolioSummaryTool,
+  getPortfolioValueHistoryTool,
   getPortfolioTool,
   getPortfoliosOverviewTool,
   getPortfoliosTool,

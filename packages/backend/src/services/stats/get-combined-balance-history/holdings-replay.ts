@@ -27,6 +27,7 @@ export const computeHoldingsValueByDate = ({
   securitiesById,
   findPriceForDate,
   getExchangeRate,
+  floorValues = true,
   onMissingPrice,
 }: {
   uniqueDates: string[];
@@ -35,6 +36,8 @@ export const computeHoldingsValueByDate = ({
   securitiesById: Map<string, SecurityRow>;
   findPriceForDate: (securityId: string, targetDate: string) => number | null;
   getExchangeRate: (currencyCode: string, dateStr: string) => number;
+  /** Truncates each holding's base value to a whole currency unit; pass false to keep the decimals. */
+  floorValues?: boolean;
   onMissingPrice?: ({ securityId, dateStr }: { securityId: string; dateStr: string }) => void;
 }): Map<string, number> => {
   const holdingsValueByDate = new Map<string, number>();
@@ -126,7 +129,8 @@ export const computeHoldingsValueByDate = ({
         if (currentPrice !== null) {
           const marketValueInSecurityCurrency = effectiveQuantity * currentPrice;
           const exchangeRate = getExchangeRate(holding.currencyCode, dateStr);
-          const marketValueInBaseCurrency = Math.floor(marketValueInSecurityCurrency * exchangeRate);
+          const unfloored = marketValueInSecurityCurrency * exchangeRate;
+          const marketValueInBaseCurrency = floorValues ? Math.floor(unfloored) : unfloored;
           totalValueForDate += marketValueInBaseCurrency;
         } else {
           // No price for this day — value the holding at cost basis so the line

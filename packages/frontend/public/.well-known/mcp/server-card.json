@@ -974,12 +974,17 @@
     {
       "name": "get_portfolio_holdings",
       "toolset": "investments",
-      "description": "Positions held in a portfolio with dynamically calculated market value, cost basis, and realized/unrealized gain (value and percent)."
+      "description": "Positions held in a portfolio with dynamically calculated market value, cost basis, realized/unrealized gain (value and percent), and dividend income (net of fees, holding currency)."
     },
     {
       "name": "get_portfolio_summary",
       "toolset": "investments",
       "description": "Portfolio-level aggregates for a single portfolio: total current market value, total cost basis, realized and unrealized gains (value and percent), cash balances, and total portfolio value (holdings + cash)."
+    },
+    {
+      "name": "get_portfolio_value_history",
+      "toolset": "investments",
+      "description": "Daily value history of one portfolio: total value, holdings value, cash, cost basis of open positions and cumulative realized gain per day."
     },
     {
       "name": "get_portfolio",
