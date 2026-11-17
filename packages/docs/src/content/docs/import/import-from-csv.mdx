@@ -69,8 +69,9 @@ For each field, pick the matching column from your file under **CSV column**. **
 | **Amount** | Yes | The amount, and (by default) whether it's income or an expense. |
 | **Description** | No | The transaction's note. |
 | **Payee** | No | The [payee](/transactions/payees/). An existing payee with the same name is reused, otherwise a new one is created. |
+| **Tags** | No | The transaction's [tags](/transactions/tags/). Put several tags in one cell, separated by commas or semicolons (`groceries; weekly`). You choose what each tag becomes on the **Categories** step. |
 
-MoneyMatter pre-fills these by looking at your column headers. For example, a column called "Booking date" or "transaction_date" is matched to **Date**, and "Merchant" or "Counterparty" to **Payee**. Always check the choices before you go on.
+MoneyMatter pre-fills these by looking at your column headers. For example, a column called "Booking date" or "transaction_date" is matched to **Date**, and "Merchant" or "Counterparty" to **Payee**. **Tags** is never pre-filled, so pick that column yourself. Always check the choices before you go on.
 
 ### Date format
 
@@ -169,12 +170,14 @@ Each account in MoneyMatter has one currency. If the same account name in your f
 
 ## Categories
 
-This step only appears when your categories come from a column. It lists every category name found in the file (leaving out rows of accounts you skipped). For each one, choose:
+This step only appears when your categories or tags come from a column. It lists every category name found in the file (leaving out rows of accounts you skipped). For each one, choose:
 
 - **Link to existing**: use one of your [categories](/transactions/categories/).
 - **Create new**: create a category with that name. If you already have a category with the same name, in any capitalisation, that one is used instead of making a copy. New categories are created at the top level, not as subcategories.
 
 There's no skip here: every row needs a category.
+
+If you mapped a **Tags** column, a **Tags** table follows with every tag name found in the file. For each one, link it to an existing tag, create a new one, or skip it so the tag isn't added.
 
 ### Bulk actions
 
@@ -243,6 +246,7 @@ Every imported transaction gets:
 - The **Description** column as its note.
 - The account you chose, and the category from your file or the one you picked. With a single category, a mapped payee's default category can take its place.
 - The payee, if you mapped a **Payee** column. If that payee has [auto-apply tags](/transactions/payees/#auto-apply-tags), they're added too.
+- The tags from your **Tags** column, if you mapped one.
 
 ## How currencies work
 
