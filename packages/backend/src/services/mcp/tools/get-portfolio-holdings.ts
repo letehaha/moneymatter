@@ -9,7 +9,7 @@ export const getPortfolioHoldingsTool = defineTool({
   toolset: 'investments',
   access: 'read',
   description:
-    'Positions held in a portfolio with dynamically calculated market value, cost basis, and realized/unrealized gain (value and percent). Each holding includes the embedded security (symbol, name, asset class, currency). Filter by securityId to look at a single position.',
+    'Positions held in a portfolio with dynamically calculated market value, cost basis, realized/unrealized gain (value and percent), and dividend income (net of fees, holding currency). Each holding includes the embedded security (symbol, name, asset class, currency). Filter by securityId to look at a single position.',
   input: {
     portfolioId: recordId().describe('Portfolio ID (from get_portfolios)'),
     securityId: recordId().optional().describe('Filter to a specific security'),

@@ -8,6 +8,7 @@ import {
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { NotFoundError, ValidationError } from '@js/errors';
 import { getPortfolioSummaries } from '@services/investments/portfolios/get-portfolio-summaries.service';
+import { getPortfolioValueHistory } from '@services/investments/portfolios/get-portfolio-value-history.service';
 import { getPortfoliosAnnualizedReturns } from '@services/investments/portfolios/get-portfolios-annualized-returns.service';
 import { getPortfolio } from '@services/investments/portfolios/get.service';
 import { restorePortfolio } from '@services/investments/portfolios/restore.service';
@@ -26,6 +27,9 @@ jest.mock('@services/investments/portfolios/restore.service', () => ({ restorePo
 jest.mock('@services/investments/portfolios/get-portfolio-summaries.service', () => ({
   getPortfolioSummaries: jest.fn(),
 }));
+jest.mock('@services/investments/portfolios/get-portfolio-value-history.service', () => ({
+  getPortfolioValueHistory: jest.fn(),
+}));
 jest.mock('@services/investments/portfolios/get-portfolios-annualized-returns.service', () => ({
   getPortfoliosAnnualizedReturns: jest.fn(),
 }));
@@ -42,6 +46,7 @@ import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-l
 import { deletePortfolioTransferTool } from './delete-portfolio-transfer';
 import { exchangePortfolioCurrencyTool } from './exchange-portfolio-currency';
 import { getPortfolioTool } from './get-portfolio';
+import { getPortfolioValueHistoryTool } from './get-portfolio-value-history';
 import { getPortfoliosOverviewTool } from './get-portfolios-overview';
 import { restorePortfolioTool } from './restore-portfolio';
 import { setPortfolioTransferAdjustmentTool } from './set-portfolio-transfer-adjustment';
@@ -58,6 +63,7 @@ const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
 const portfolioById = jest.mocked(getPortfolio);
 const restore = jest.mocked(restorePortfolio);
 const summaries = jest.mocked(getPortfolioSummaries);
+const valueHistory = jest.mocked(getPortfolioValueHistory);
 const annualizedReturns = jest.mocked(getPortfoliosAnnualizedReturns);
 const createTransfer = jest.mocked(createPortfolioTransfer);
 const exchange = jest.mocked(exchangeCurrency);
@@ -153,6 +159,41 @@ describe('get_portfolio', () => {
 
     await expect(call({ tool, args: { portfolioId: PORTFOLIO_ID } })).rejects.toThrow('Portfolio not found');
     expect(portfolioById).toHaveBeenCalledWith({ userId: 42, portfolioId: PORTFOLIO_ID });
+  });
+});
+
+describe('get_portfolio_value_history', () => {
+  const tool = captureTools({ register: getPortfolioValueHistoryTool })[0]!;
+  const schema = tool.config.inputSchema!;
+
+  it('takes a portfolio id and an optional YYYY-MM-DD range', () => {
+    expect(tool.name).toBe('get_portfolio_value_history');
+    expect(Object.keys(schema.shape)).toEqual(['portfolioId', 'from', 'to']);
+    expect(schema.safeParse({ portfolioId: PORTFOLIO_ID }).success).toBe(true);
+    expect(schema.safeParse({ portfolioId: PORTFOLIO_ID, from: '2026-01-01', to: '2026-02-01' }).success).toBe(true);
+    expect(schema.safeParse({ portfolioId: PORTFOLIO_ID, from: '01/01/2026' }).success).toBe(false);
+  });
+
+  it('reads the history for the caller and returns the service result', async () => {
+    const history = { currencyCode: 'USD', points: [] };
+    valueHistory.mockResolvedValue(history);
+
+    const data = await call({ tool, args: { portfolioId: PORTFOLIO_ID, from: '2026-01-01' } });
+
+    expect(valueHistory).toHaveBeenCalledWith({
+      userId: 42,
+      portfolioId: PORTFOLIO_ID,
+      from: '2026-01-01',
+      to: undefined,
+    });
+    expect(data).toEqual(history);
+  });
+
+  it('rejects a range whose start is after its end without calling the service', async () => {
+    await expect(
+      call({ tool, args: { portfolioId: PORTFOLIO_ID, from: '2026-02-01', to: '2026-01-01' } }),
+    ).rejects.toThrow();
+    expect(valueHistory).not.toHaveBeenCalled();
   });
 });
 

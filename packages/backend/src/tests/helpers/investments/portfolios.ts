@@ -6,6 +6,7 @@ import { createPortfolio as _createPortfolio } from '@services/investments/portf
 import { deletePortfolio as _deletePortfolio } from '@services/investments/portfolios/delete.service';
 import { getPortfolioSummaries as _getPortfolioSummaries } from '@services/investments/portfolios/get-portfolio-summaries.service';
 import { getPortfolioSummary as _getPortfolioSummary } from '@services/investments/portfolios/get-portfolio-summary.service';
+import { getPortfolioValueHistory as _getPortfolioValueHistory } from '@services/investments/portfolios/get-portfolio-value-history.service';
 import { getPortfoliosAnnualizedReturns as _getPortfoliosAnnualizedReturns } from '@services/investments/portfolios/get-portfolios-annualized-returns.service';
 import { getPortfolio as _getPortfolio } from '@services/investments/portfolios/get.service';
 import { listPortfolios as _listPortfolios } from '@services/investments/portfolios/list.service';
@@ -199,6 +200,25 @@ export async function getPortfolioSummary<R extends boolean | undefined = false>
     method: 'get',
     url: `/investments/portfolios/${portfolioId}/summary`,
     payload: removeUndefinedKeys({ date }),
+    raw,
+  });
+}
+
+export async function getPortfolioValueHistory<R extends boolean | undefined = false>({
+  portfolioId,
+  from,
+  to,
+  raw,
+}: {
+  portfolioId: string;
+  from?: string;
+  to?: string;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _getPortfolioValueHistory>>, R>({
+    method: 'get',
+    url: `/investments/portfolios/${portfolioId}/value-history`,
+    payload: removeUndefinedKeys({ from, to }),
     raw,
   });
 }
