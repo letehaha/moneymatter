@@ -173,6 +173,8 @@ describe('buildPlanBillingView', () => {
     });
 
     expect(view.status?.note).toBe('');
+    expect(view.status?.badge?.label).toBe('settings.planBilling.status.active');
+    expect(view.status?.meta[0]).toBe('settings.planBilling.current.lifetimePurchaseMeta');
     expect(view.tiers.essential.isCurrent).toBe(true);
     expect(view.tiers.essential.cta.disabled).toBe(true);
     expect(view.tiers.plus.cta.action).toEqual({ kind: 'checkout', tier: 'plus', cycle: 'year' });

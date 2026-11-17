@@ -282,6 +282,44 @@ export function buildStripeDisputeClosedEvent({
   };
 }
 
+export function buildStripeCheckoutCompletedEvent({
+  eventId = `evt_${crypto.randomUUID()}`,
+  eventType = 'checkout.session.completed',
+  mode = 'payment',
+  paymentStatus = 'paid',
+  clientReferenceId = null,
+  email = null,
+  metadata = { lifetime_plan: 'essential' },
+}: {
+  eventId?: string;
+  eventType?: string;
+  mode?: string;
+  paymentStatus?: string;
+  clientReferenceId?: string | null;
+  email?: string | null;
+  metadata?: Record<string, string>;
+} = {}) {
+  return {
+    id: eventId,
+    object: 'event',
+    type: eventType,
+    created: Math.floor(Date.now() / SECOND_MS),
+    data: {
+      object: {
+        id: 'cs_01test',
+        object: 'checkout.session',
+        mode,
+        payment_status: paymentStatus,
+        client_reference_id: clientReferenceId,
+        customer_details: email ? { email } : null,
+        customer_email: null,
+        payment_intent: 'pi_01test',
+        metadata,
+      },
+    },
+  };
+}
+
 export const APPLE_TEST_ORIGINAL_TRANSACTION_ID = '2000000000000001';
 
 export function buildAppleTransaction(

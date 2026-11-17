@@ -4,6 +4,7 @@ import { captureException } from '@js/utils/sentry';
 import { handleAppleNotification } from '@services/billing/apple/handle-notification.service';
 import { handleBillingRefund, isRefundEvent } from '@services/billing/handle-refund.service';
 import { handleBillingWebhook as handleBillingWebhookService } from '@services/billing/handle-webhook.service';
+import { handleLifetimePurchase, isLifetimeCheckoutEvent } from '@services/billing/lifetime-purchase.service';
 import {
   isIncompleteSubscriptionEvent,
   isSubscriptionEvent,
@@ -121,6 +122,12 @@ export async function handleBillingWebhook(req: Request, res: Response): Promise
     const stripeEvent = req.stripeEvent!;
     if (isRefundEvent(stripeEvent)) {
       const outcome = await handleBillingRefund({ event: stripeEvent });
+      logger.info(`Billing webhook ${stripeEvent.type} ${stripeEvent.id}: ${outcome}`);
+      res.status(200).json({ outcome });
+      return;
+    }
+    if (isLifetimeCheckoutEvent(stripeEvent)) {
+      const outcome = await handleLifetimePurchase({ event: stripeEvent });
       logger.info(`Billing webhook ${stripeEvent.type} ${stripeEvent.id}: ${outcome}`);
       res.status(200).json({ outcome });
       return;
