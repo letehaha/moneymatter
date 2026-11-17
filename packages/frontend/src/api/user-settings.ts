@@ -132,6 +132,8 @@ export interface UserSettingsSchema {
   savedTransactionViews?: SavedTransactionView[];
   /** Header "Support" (donation) button visibility. Defaults to visible when unset. */
   showSupportButton?: boolean;
+  /** Transaction rows show the payee's logo instead of the category icon. On when unset. */
+  showPayeeLogos?: boolean;
   /**
    * Hide zero-balance accounts (and account groups emptied by that hiding) from the sidebar
    * Accounts panel. Defaults to visible/off when unset.

@@ -136,7 +136,7 @@
       "accountCategoryPlaceholder": "Выберите категорию счёта",
       "creditLimitLabel": "Кредитный лимит",
       "creditLimitPlaceholder": "Кредитный лимит",
-      "defaultPaymentTypeLabel": "Default payment type",
+      "defaultPaymentTypeLabel": "Тип платежа по умолчанию",
       "submitButton": "Создать",
       "submitButtonLoading": "Создание...",
       "notifications": {
@@ -325,8 +325,8 @@
       "searchPlaceholder": "Поиск..."
     },
     "currencySelect": {
-      "yourCurrencies": "Your currencies",
-      "otherCurrencies": "Other currencies"
+      "yourCurrencies": "Ваши валюты",
+      "otherCurrencies": "Другие валюты"
     },
     "comboboxAccounts": {
       "allAccounts": "Все счета",
@@ -356,7 +356,7 @@
       "placeholder": "Выберите категории...",
       "searchPlaceholder": "Поиск категорий...",
       "noCategoriesFound": "Категории не найдены",
-      "takenBy": "In {name}"
+      "takenBy": "В {name}"
     },
     "payeeMultiSelect": {
       "label": "Все получатели",
@@ -373,7 +373,7 @@
       "searchPlaceholder": "Поиск трекеров",
       "noResults": "Трекеры не найдены",
       "unknownBudget": "Неизвестный трекер",
-      "blankOption": "Not in any tracker",
+      "blankOption": "Нет ни в одном трекере",
       "loadError": "Не удалось загрузить трекеры. Попробуйте снова."
     },
     "payeeSelect": {

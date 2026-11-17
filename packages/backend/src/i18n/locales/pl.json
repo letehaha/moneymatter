@@ -8,7 +8,6 @@
     "groupNotFound": "Group or account not found",
     "accountNotFound": "Account not found!",
     "accountUpdateFailed": "Account updation is not successful",
-    "accountNoExternalId": "Account does not have external ID",
     "accountNoExternalIdMonobank": "Account does not have external ID from Monobank",
     "accountNoExternalIdEnableBanking": "Account does not have external ID from Enable Banking",
     "accountNotFoundForTransaction": "Account not found for this transaction",
@@ -40,6 +39,7 @@
     "systemCannotBeMoved": "System categories cannot be moved.",
     "parentNotFound": "Category with such parentId doesn't exist.",
     "systemParentForbidden": "System categories cannot be used as a parent.",
+    "defaultCannotBeDeleted": "This category holds uncategorized transactions and cannot be deleted.",
     "ownParent": "Category cannot be its own parent.",
     "underOwnSubcategory": "Category cannot be moved under its own subcategory.",
     "nestingTooDeep": "Categories cannot be nested deeper than {{max}} levels."
@@ -297,7 +297,6 @@
     "connectionNotFound": "Connection not found",
     "connectionNotFoundOrNotYours": "Connection not found or does not belong to you",
     "providerNoReauthorization": "Provider {{providerType}} does not support reauthorization",
-    "providerNotFoundInRegistry": "Provider {{providerType}} not found in registry",
     "connectionIdNotFound": "Bank data provider connection {{connectionId}} not found",
     "accountIdNotFound": "Account {{accountId}} not found",
     "providerTypeMismatch": "Connection {{connectionId}} is for provider {{actualType}}, not {{expectedType}}",
@@ -336,7 +335,7 @@
     "periodLoadNotSupported": "Loading transactions for a custom period is not supported by this provider.",
     "transactionsLoadedCount": "Loaded {{count}} transactions.",
     "transactionsAllDuplicates": "Found {{count}} transactions for this period — all were already imported.",
-    "transactionsNoneInPeriod": "The provider returned no transactions for this period.",
+    "transactionsNoneInPeriod": "The data provider didn't return any transactions for this period.",
     "apiError": "{{provider}} API error: {{message}}",
     "simplefinUnreachable": "SimpleFIN is temporarily unreachable. Please try again later.",
     "currencySelectionRequired": "Account \"{{account}}\" has no currency reported by the bank — choose a currency for it before connecting.",
@@ -345,9 +344,7 @@
       "invalidCredentialsFormat": "Invalid credentials format for Monobank",
       "invalidApiToken": "Invalid Monobank API token",
       "rateLimitExceeded": "Monobank API rate limit exceeded. Please try again in a minute.",
-      "accountNotFound": "Account {{accountExternalId}} not found in Monobank",
       "accountReconnectRequired": "This account is no longer available at Monobank. Please reconnect your Monobank connection to resume syncing.",
-      "webhookNotImplemented": "handleWebhook not yet implemented for Monobank",
       "unknownCurrencyCode": "Unknown currency code: {{numericCode}}",
       "geoBlocked": "Monobank is blocking requests from this server's IP. Disable VPN or use a Ukrainian IP address.",
       "geoBlockedProduction": "Monobank sync is temporarily unavailable. We've been notified and are working on it. Please contact support if this is urgent."
@@ -383,8 +380,7 @@
       "invalidTokens": "Invalid Akahu tokens. Check the User Access Token and App ID Token from your Akahu app page.",
       "accountNoExternalId": "Account has no external ID for Akahu sync.",
       "accountNotFound": "Akahu account not found.",
-      "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly.",
-      "missingCurrency": "Akahu did not return a currency for this account."
+      "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly."
     },
     "simplefin": {
       "invalidCredentialsFormat": "Invalid SimpleFIN credentials format.",
@@ -399,8 +395,7 @@
     "walutomat": {
       "invalidCredentialsFormat": "Invalid Walutomat credentials format. API key and private key are required.",
       "invalidApiKey": "Invalid Walutomat API key or private key.",
-      "accountNoExternalId": "Walutomat account has no external ID.",
-      "walletNotFound": "Walutomat wallet not found for currency: {{currency}}"
+      "accountNoExternalId": "Walutomat account has no external ID."
     }
   },
   "csvImport": {
@@ -672,7 +667,6 @@
         "home-garden": "Home, garden",
         "pets-animals": "Pets, animals",
         "electronics-accessories": "Electronics, accessories",
-        "gifts-joy": "Gifts, joy",
         "stationery-tools": "Stationery, tools",
         "free-time": "Free time",
         "drugstore-chemist": "Drug-store, chemist"
@@ -709,7 +703,8 @@
         "books-audio-subscriptions": "Books, audio, subscriptions",
         "tv-streaming": "TV, Streaming",
         "holiday-trips-hotels": "Holiday, trips, hotels",
-        "charity-gifts": "Charity, gifts",
+        "gifts": "Gifts",
+        "charity": "Charity",
         "alcohol-tobacco": "Alcohol, tobacco",
         "lottery-gambling": "Lottery, gambling"
       },

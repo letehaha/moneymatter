@@ -21,11 +21,11 @@
         "button": "Wertpapierpreise hochladen",
         "dialogTitle": "Wertpapierpreise hochladen",
         "selectSecurity": {
-          "searchLabel": "Search symbol or name",
+          "searchLabel": "Symbol oder Name suchen",
           "searchPlaceholder": "AAPL",
           "searching": "Wird gesucht…",
           "failed": "Suche nach Wertpapieren fehlgeschlagen.",
-          "noResults": "No results.",
+          "noResults": "Keine Ergebnisse.",
           "changeButton": "Ändern"
         },
         "dateRangeInfo": {
@@ -93,9 +93,9 @@
             "title": "Bestehende Datensätze überschreiben",
             "description": "Aktualisiert bestehende Preisdatensätze, anstatt Duplikate zu überspringen"
           },
-          "backButton": "Back",
+          "backButton": "Zurück",
           "uploadButton": "Preise hochladen",
-          "uploadingButton": "Wird hochgeladen..."
+          "uploadingButton": "Hochgeladen..."
         },
         "result": {
           "title": "Upload abgeschlossen!",
@@ -124,7 +124,7 @@
           "url": "Link",
           "urlPlaceholder": "https://... (optional)",
           "urlError": "Link muss mit https:// beginnen",
-          "icon": "Icon",
+          "icon": "Symbol",
           "recipients": "Empfänger",
           "recipientsPlaceholder": "Optionale Benutzer-IDs oder E-Mail-Adressen, durch Kommas getrennt, z.B. 12, jane@example.com. Leer = alle aktiven Benutzer",
           "recipientsError": "Verwende positive ganzzahlige IDs oder gültige E-Mail-Adressen, getrennt durch Kommas"
@@ -141,7 +141,7 @@
           "titleSelected": "An {count} Benutzer senden?",
           "description": "Dadurch wird eine Benachrichtigung für jeden Benutzer erstellt, der in den letzten 30 Tagen aktiv war. Dies kann nicht rückgängig gemacht werden.",
           "descriptionSelected": "Unbekannte IDs und E-Mail-Adressen werden übersprungen. Dies kann nicht rückgängig gemacht werden.",
-          "button": "Send"
+          "button": "Senden"
         },
         "notifications": {
           "success": "Benachrichtigung an {count} Benutzer gesendet",
@@ -151,7 +151,7 @@
       },
       "tabs": {
         "investments": "Investments",
-        "notifications": "Notifications"
+        "notifications": "Benachrichtigungen"
       }
     }
   }

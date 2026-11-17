@@ -85,6 +85,21 @@
         "successNotification": "Đã cập nhật cài đặt danh sách tài khoản",
         "errorNotification": "Không cập nhật được cài đặt danh sách tài khoản"
       },
+      "iosAddExpense": {
+        "label": "iPhone Add Expense",
+        "description": "Settings for the Add Expense shortcut on iPhone (Siri, Spotlight and the Action button).",
+        "showBankAccounts": {
+          "label": "Show bank-connected accounts",
+          "description": "Off by default: transactions on bank-connected accounts arrive through sync."
+        },
+        "hiddenCategories": {
+          "label": "Hidden categories",
+          "description": "Checked categories, with their subcategories, are hidden from the shortcut's category list.",
+          "placeholder": "None"
+        },
+        "successNotification": "iPhone Add Expense settings updated",
+        "errorNotification": "Failed to update iPhone Add Expense settings"
+      },
       "showUpcomingTransactions": {
         "label": "Hiển thị giao dịch sắp tới",
         "description": "Ghim một mục ở đầu danh sách giao dịch, gồm các khoản thanh toán định kỳ quá hạn và sắp đến hạn trong 3 ngày tới.",

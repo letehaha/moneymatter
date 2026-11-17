@@ -1,7 +1,7 @@
 {
   "goals": {
     "title": "Цели",
-    "description": "Save toward targets from the accounts you already have",
+    "description": "Копите на различные цели используя существующие счета",
     "newGoal": "Новая цель",
     "list": {
       "searchPlaceholder": "Поиск целей",
@@ -14,7 +14,7 @@
         "active": "Активные",
         "ended": "Завершённые",
         "archived": "Архивные",
-        "show": "show",
+        "show": "показать",
         "hide": "hide"
       },
       "loadError": "Не удалось загрузить цели.",
@@ -51,7 +51,7 @@
       "overdue": "Overdue",
       "noDate": "No date",
       "around": "around {date}",
-      "insufficientHistory": "Not enough history",
+      "insufficientHistory": "Недостаточно истории",
       "noAccounts": "No accounts",
       "paused": "Paused",
       "archived": "Archived",
@@ -100,17 +100,17 @@
       "tabs": {
         "progress": "Progress",
         "accounts": "Accounts",
-        "whatIf": "What if"
+        "whatIf": "Что, если"
       },
       "strip": {
-        "target": "Target",
+        "target": "Цель",
         "saved": "Saved",
         "left": "Left",
         "needs": "Needs",
         "pace": "Pace",
         "reached": "Reached",
         "aboveTarget": "{amount} above target",
-        "notEnoughHistory": "not enough history",
+        "notEnoughHistory": "недостаточно истории",
         "around": "around {date}",
         "dueInDays": "due in {count} day | due in {count} days",
         "overdue": "overdue"
@@ -126,7 +126,7 @@
         "shareOfLeft": "{share}% of {amount} left after fixed amounts",
         "sharePlain": "{share}%",
         "totalCounted": "Total counted",
-        "readOnlyHint": "Reads balances, never moves money",
+        "readOnlyHint": "Считывает балансы, никогда не перемещает средства",
         "wholeAccount": "Whole account",
         "shareHere": "{share}% here",
         "shareHereFree": "{share}% here · {free}% free",
@@ -158,7 +158,7 @@
           "early": "{count} mo early",
           "late": "{count} mo late",
           "targetDate": "Target {date}",
-          "savedIn": "Saved in {count} mo",
+          "savedIn": "Накоплено в {count} мес",
           "bestMonth": "Лучший месяц",
           "shareOfGrowth": "{percent}% of the period's growth",
           "leftDueInDays": "{amount} left, due in {count} day | {amount} left, due in {count} days",
@@ -179,9 +179,9 @@
         },
         "chartAria": "Goal savings over time",
         "legend": {
-          "saved": "Saved",
+          "saved": "Накоплено",
           "projection": "Projection",
-          "target": "Target"
+          "target": "Цель"
         },
         "monthlyChange": "Monthly change"
       },

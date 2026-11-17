@@ -36,7 +36,7 @@
         "listDescription": "Importiere eine .mny-Datei aus Microsoft Money"
       },
       "messageImport": {
-        "title": "iOS message sync"
+        "title": "iOS-Nachrichtensynchronisierung"
       },
       "importHistory": {
         "title": "Importverlauf",
@@ -72,7 +72,7 @@
         },
         "groups": {
           "label": "Was enthalten sein soll",
-          "selectAll": "Select all",
+          "selectAll": "Alle auswählen",
           "deselectAll": "Alle abwählen",
           "transactions": "Transaktionen & Konten",
           "transactionsDescription": "Transaktionen, Konten, Kontostandshistorie, Kategorien, Tags, Fahrzeuge",
@@ -97,9 +97,9 @@
           "clear": "Datumsbereich zurücksetzen"
         },
         "accounts": {
-          "label": "Accounts",
+          "label": "Konten",
           "helper": "Exportiere nur die ausgewählten Konten mit ihren Transaktionen und ihrer Kontostandshistorie. Leer lassen, um alle Konten zu exportieren.",
-          "placeholder": "All accounts"
+          "placeholder": "Alle Konten"
         },
         "listDescription": "Lade eine ZIP-Datei für Tabellenkalkulationen, Steuern oder eine Migration herunter"
       }

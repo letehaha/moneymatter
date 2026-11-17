@@ -385,6 +385,8 @@ export const ZodSettingsSchema = z.object({
   payeePromotionThreshold: z.number().int().min(1).max(3).optional(),
   // Header "Support" (donation) button. Visible when unset; users opt out in Appearance settings.
   showSupportButton: z.boolean().optional(),
+  // Transaction rows show the payee's logo instead of the category icon when the payee has one. On when unset.
+  showPayeeLogos: z.boolean().optional(),
   // When true, the sidebar Accounts panel hides accounts whose display balance is
   // zero, and hides any account group left with no non-zero account. Off by default.
   hideZeroBalances: z.boolean().optional(),
@@ -512,6 +514,7 @@ export const ZodSettingsPatchSchema = z.object({
   payeeExtractionUsesDescription: z.boolean().optional(),
   payeePromotionThreshold: z.number().int().min(1).max(3).optional(),
   showSupportButton: z.boolean().optional(),
+  showPayeeLogos: z.boolean().optional(),
   hideZeroBalances: z.boolean().optional(),
   hideSmartTrackingTip: z.boolean().optional(),
   matchTransfersWithManualAccounts: z.boolean().optional(),

@@ -285,6 +285,7 @@ const sectionItems = computed<RailSectionItem[]>(() => {
                 <span class="text-sm font-medium">{{ section.label }}</span>
                 <GroupTotal
                   v-if="section.total && baseCurrencyCode"
+                  tiny
                   :amount="section.total.total"
                   :currency-code="baseCurrencyCode"
                   :is-approx="section.total.isApprox"

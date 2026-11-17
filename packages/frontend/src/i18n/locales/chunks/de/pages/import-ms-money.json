@@ -8,8 +8,8 @@
           "steps": {
             "upload": "Hochladen",
             "resolve": "Daten zuordnen",
-            "review": "Review",
-            "execute": "Import",
+            "review": "Überprüfen",
+            "execute": "Importieren",
             "done": "Fertig"
           }
         },
@@ -21,7 +21,7 @@
           "passwordPlaceholder": "Dateipasswort eingeben",
           "passwordHint": "Leer lassen, außer du hast ein Passwort in Microsoft Money festgelegt.",
           "parsing": "Lese Datei…",
-          "continue": "Continue",
+          "continue": "Weiter",
           "errors": {
             "invalidFormatNamed": "\"{name}\" ist keine .mny-Datei.",
             "passwordUnsupportedChars": "Dieses Passwort enthält Zeichen, die wir nicht senden können. Versuche ein Passwort ohne Emojis oder nicht-lateinische Buchstaben."
@@ -33,7 +33,7 @@
         "resolve": {
           "prepareFailed": "Die Konten- und Kategorie-Zuordnung konnte nicht vorbereitet werden. Lade die Seite neu und versuche es erneut.",
           "accounts": {
-            "sectionTitle": "Accounts",
+            "sectionTitle": "Konten",
             "currentBalanceLabel": "Aktueller Saldo",
             "currentBalancePlaceholder": "Leer lassen, um die importierte Gesamtsumme zu verwenden",
             "willCreateHint": "Wird in {currency} erstellt.",
@@ -41,7 +41,7 @@
             "skippedNote": "{count} Konto/Konten werden übersprungen. Ihre Transaktionen – und alle Umbuchungen zu oder von ihnen – werden nicht importiert."
           },
           "categories": {
-            "sectionTitle": "Categories"
+            "sectionTitle": "Kategorien"
           },
           "quickActions": {
             "mapExactMatches": "Exakte Übereinstimmungen zuordnen",
@@ -55,13 +55,13 @@
             }
           },
           "footer": {
-            "back": "Back",
-            "continue": "Continue"
+            "back": "Zurück",
+            "continue": "Weiter"
           }
         },
         "review": {
-          "transactions": "Transactions",
-          "transfersDetected": "Transfers",
+          "transactions": "Transaktionen",
+          "transfersDetected": "Umbuchungen",
           "outOfWallet": "Extern",
           "duplicatesSkipped": "Duplikate übersprungen",
           "willImport": "Zu importieren",
@@ -86,18 +86,18 @@
           },
           "duplicatesTitle": "{count} mögliche(s) Duplikat(e)",
           "duplicatesHint": "Diese sehen bereits aus wie Transaktionen, die du hast. Wähle eine Zeile aus, um sie trotzdem zu importieren; nicht ausgewählte Duplikate werden übersprungen.",
-          "back": "Back",
+          "back": "Zurück",
           "importing": "Starte Import…",
           "importButton": "{count} Transaktionen importieren"
         },
         "execute": {
-          "starting": "Starting the import…",
+          "starting": "Starte den Import…",
           "progressCount": "{processed} von {total}",
           "failed": "Der Import ist fehlgeschlagen.",
           "partialImportNote": "Einige Transaktionen wurden möglicherweise bereits importiert.",
           "statusQueued": "In Warteschlange",
           "statusRunning": "Importiere",
-          "statusCompleted": "Completed",
+          "statusCompleted": "Abgeschlossen",
           "statusFailed": "Fehlgeschlagen"
         },
         "done": {
@@ -109,13 +109,13 @@
           "emptyDescription": "Jede Zeile wurde entweder übersprungen oder befand sich bereits in deinem Buch, sodass keine Transaktionen erstellt wurden.",
           "allFailedTitle": "Es wurde nichts importiert",
           "allFailedDescription": "Es konnten keine Transaktionen erstellt werden. Siehe die Fehler unten.",
-          "accountsCreated": "Accounts created",
+          "accountsCreated": "Konten erstellt",
           "accountsLinked": "Konten verknüpft",
           "accountsSkipped": "Konten übersprungen",
-          "categoriesCreated": "Categories created",
-          "payeesCreated": "Payees created",
-          "transactionsImported": "Transactions imported",
-          "transfersImported": "Transfers imported",
+          "categoriesCreated": "Kategorien erstellt",
+          "payeesCreated": "Zahlungsempfänger erstellt",
+          "transactionsImported": "Transaktionen importiert",
+          "transfersImported": "Umbuchungen importiert",
           "outOfWalletImported": "Externe Umbuchungen",
           "duplicatesSkipped": "Duplikate übersprungen",
           "voidedImported": "Stornierte importiert",
@@ -124,19 +124,19 @@
           "balanceWarningBody": "Wir konnten den Endsaldo nicht für jedes Konto festlegen. Überprüfe sie und passe sie bei Bedarf an.",
           "errorsTitle": "{count} Zeile(n) konnte(n) nicht importiert werden",
           "errorsOverflow": "…und {count} weitere",
-          "rowPrefix": "Row {rowIndex}:",
+          "rowPrefix": "Zeile {rowIndex}:",
           "errors": {
             "rowsSuppressed": "Ab dieser Zeile konnte {count} weitere Zeile nicht importiert werden. Nur die ersten {listed} Fehler werden angezeigt. | Ab dieser Zeile konnten {count} weitere Zeilen nicht importiert werden. Nur die ersten {listed} Fehler werden angezeigt.",
             "accountBalanceDesync": "Ein Kontostand konnte nach dem Import nicht aktualisiert werden. Überprüfe und korrigiere ihn manuell.",
-            "rowImportFailed": "This row could not be imported."
+            "rowImportFailed": "Diese Zeile konnte nicht importiert werden."
           },
-          "viewTransactions": "View transactions",
-          "importAnother": "Import another file"
+          "viewTransactions": "Transaktionen anzeigen",
+          "importAnother": "Weitere Datei importieren"
         },
         "leaseExpired": {
           "title": "Deine hochgeladene Datei ist nicht mehr verfügbar",
           "description": "Die verarbeitete Kopie deiner Money-Datei wurde nach einer Phase der Inaktivität freigegeben. Deine Zuordnungsauswahl konnte nicht beibehalten werden, daher muss der Import erneut ab dem Schritt Hochladen gestartet werden.",
-          "action": "Start over"
+          "action": "Von vorn beginnen"
         },
         "leaseResourceLabel": "Deine hochgeladene Datei"
       }

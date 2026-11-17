@@ -85,6 +85,21 @@
         "successNotification": "Nastavenia výberu účtov aktualizované",
         "errorNotification": "Nastavenia výberu účtov sa nepodarilo aktualizovať"
       },
+      "iosAddExpense": {
+        "label": "iPhone – Pridať výdavok",
+        "description": "Nastavenia skratky Pridať výdavok na iPhone (Siri, Spotlight a tlačidlo Akcia).",
+        "showBankAccounts": {
+          "label": "Zobraziť účty prepojené s bankou",
+          "description": "Predvolene vypnuté: transakcie na účtoch prepojených s bankou sa načítavajú synchronizáciou."
+        },
+        "hiddenCategories": {
+          "label": "Skryté kategórie",
+          "description": "Zaškrtnuté kategórie sa spolu s podkategóriami skryjú v zozname kategórií v skratke.",
+          "placeholder": "Žiadne"
+        },
+        "successNotification": "Nastavenia skratky Pridať výdavok na iPhone sa aktualizovali",
+        "errorNotification": "Nastavenia skratky Pridať výdavok na iPhone sa nepodarilo aktualizovať"
+      },
       "showUpcomingTransactions": {
         "label": "Zobraziť nadchádzajúce transakcie",
         "description": "Pripnite na vrch zoznamu transakcií sekciu s omeškanými pravidelnými platbami a tými, ktoré sú splatné v nasledujúcich 3 dňoch.",

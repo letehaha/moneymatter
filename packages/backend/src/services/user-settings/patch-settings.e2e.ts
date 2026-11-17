@@ -204,6 +204,17 @@ describe('Patch user settings', () => {
     expect((await helpers.getUserSettings({ raw: true })).ui?.transactionForm?.optionalFields).toStrictEqual([]);
   });
 
+  it('persists showPayeeLogos and rejects a non-boolean', async () => {
+    expect((await helpers.getUserSettings({ raw: true })).showPayeeLogos).toBeUndefined();
+
+    const patched = await helpers.patchUserSettings({ raw: true, patch: { showPayeeLogos: false } });
+    expect(patched.showPayeeLogos).toBe(false);
+
+    const rejected = await helpers.patchUserSettings({ patch: { showPayeeLogos: 'no' } });
+    expect(rejected.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((await helpers.getUserSettings({ raw: true })).showPayeeLogos).toBe(false);
+  });
+
   it('persists ui.transactionForm.mapPicker and rejects a non-boolean', async () => {
     const patched = await helpers.patchUserSettings({
       raw: true,

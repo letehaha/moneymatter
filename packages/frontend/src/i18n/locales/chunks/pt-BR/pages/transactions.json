@@ -45,10 +45,8 @@
         "exclude": "Excluir",
         "only": "Somente"
       },
-      "noteIncludes": {
-        "label": "Observação contém (separado por vírgulas)",
-        "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Buscar nas observações"
+      "search": {
+        "placeholder": "Search notes, payees and tags"
       },
       "tags": {
         "allTags": "Todas as tags",
@@ -68,8 +66,7 @@
         "type": "Tipo",
         "tags": "Tags",
         "budgets": "Acompanhamentos",
-        "amount": "Faixa de valor",
-        "note": "Observações"
+        "amount": "Faixa de valor"
       },
       "transferNature": {
         "label": "Tipos de transferência",
@@ -194,6 +191,10 @@
         "createFailed": "Não foi possível criar o grupo",
         "addFailed": "Não foi possível adicionar as transações ao grupo"
       }
+    },
+    "excludeFromStats": {
+      "label": "Excluded from statistics",
+      "tooltip": "Kept out of the reports, dashboard widgets, budget plans and trackers. It still counts toward your balance and stays in the transaction list."
     },
     "planned": {
       "label": "Agendada",

@@ -85,6 +85,21 @@
         "successNotification": "Impostazioni dei menu dei conti aggiornate",
         "errorNotification": "Impossibile aggiornare le impostazioni dei menu dei conti"
       },
+      "iosAddExpense": {
+        "label": "Aggiungi spesa su iPhone",
+        "description": "Impostazioni della scorciatoia Aggiungi spesa su iPhone (Siri, Spotlight e tasto Azione).",
+        "showBankAccounts": {
+          "label": "Mostrare i conti con connessione bancaria",
+          "description": "Disattivato per impostazione predefinita: le transazioni dei conti con connessione bancaria arrivano tramite la sincronizzazione."
+        },
+        "hiddenCategories": {
+          "label": "Categorie nascoste",
+          "description": "Le categorie selezionate, con le relative sottocategorie, vengono nascoste dall'elenco delle categorie della scorciatoia.",
+          "placeholder": "Nessuna"
+        },
+        "successNotification": "Impostazioni di Aggiungi spesa su iPhone aggiornate",
+        "errorNotification": "Aggiornamento delle impostazioni di Aggiungi spesa su iPhone non riuscito"
+      },
       "showUpcomingTransactions": {
         "label": "Mostra transazioni in scadenza",
         "description": "Fissare in cima all'elenco delle transazioni una sezione con i pagamenti pianificati scaduti e quelli in scadenza nei prossimi 3 giorni.",

@@ -18,7 +18,8 @@
       "general": "Общие",
       "payees": "Получатели",
       "planBilling": "Plan & billing",
-      "collapse": "Collapse"
+      "collapse": "Свернуть",
+      "resize": "Resize navigation"
     },
     "backToSettings": "Назад к настройкам"
   }

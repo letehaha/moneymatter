@@ -66,6 +66,9 @@ const mockStripe = ({
     http.get('https://api.stripe.com/v1/charges/:id', ({ params }) =>
       HttpResponse.json({ id: params.id, object: 'charge', currency: 'usd', amount: chargeAmount, amount_refunded: 0 }),
     ),
+    http.get('https://api.stripe.com/v1/payment_intents/:id', ({ params }) =>
+      HttpResponse.json({ id: params.id, object: 'payment_intent', metadata: {} }),
+    ),
     http.get('https://api.stripe.com/v1/subscriptions/:id', ({ params }) =>
       HttpResponse.json({ id: params.id, object: 'subscription', status }),
     ),

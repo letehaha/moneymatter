@@ -452,6 +452,8 @@
       "payAction": "Mark paid",
       "listTitle": "Upcoming",
       "dueCount": "{count} due",
+      "daysLate": "{count}d late",
+      "overdueCount": "{count} overdue",
       "nothingDue": "Nothing due in 3 days",
       "overdueHint": "Overdue since {date}",
       "dueSoonHint": "Due in the next 3 days",

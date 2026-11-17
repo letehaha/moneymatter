@@ -452,6 +452,8 @@
       "payAction": "Marquer comme payé",
       "listTitle": "À venir",
       "dueCount": "{count} à régler",
+      "daysLate": "{count}d late",
+      "overdueCount": "{count} overdue",
       "nothingDue": "Rien à régler sous 3 jours",
       "overdueHint": "En retard depuis le {date}",
       "dueSoonHint": "À régler sous 3 jours",

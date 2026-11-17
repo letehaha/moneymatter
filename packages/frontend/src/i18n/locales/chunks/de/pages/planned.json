@@ -9,7 +9,7 @@
       "title": "Wiederkehrende Zahlungen",
       "description": "Verfolge wiederkehrende Zahlungen, Rechnungen und Einnahmen",
       "addSubscription": "Wiederkehrende Zahlung hinzufügen",
-      "addSubscriptionShort": "Add",
+      "addSubscriptionShort": "Hinzufügen",
       "backToList": "Zurück zu Wiederkehrende Zahlungen",
       "createTitle": "Wiederkehrende Zahlung erstellen",
       "typeSubscription": "Abonnement",
@@ -17,10 +17,10 @@
       "typeInstallment": "Ratenzahlung",
       "completed": "Abgeschlossen",
       "paused": "Pausiert",
-      "cancel": "Cancel",
+      "cancel": "Abbrechen",
       "pauseSubscription": "Pausieren",
       "resumeSubscription": "Fortsetzen",
-      "deleteSubscription": "Delete",
+      "deleteSubscription": "Löschen",
       "amount": "Betrag",
       "frequencyLabel": "Häufigkeit",
       "nextExpected": "Nächste erwartete Zahlung",
@@ -37,8 +37,8 @@
       "addMatchingRules": "Zuordnungsregeln hinzufügen",
       "updateMatchingRules": "Zuordnungsregeln aktualisieren",
       "linked": {
-        "totalPaid": "Total paid",
-        "average": "Average",
+        "totalPaid": "Insgesamt bezahlt",
+        "average": "Durchschnitt",
         "lastPayment": "Letzte Zahlung",
         "driftUp": "↑ {percent}% seit der ersten Zahlung ({date})",
         "driftDown": "↓ {percent}% seit der ersten Zahlung ({date})",
@@ -51,7 +51,7 @@
         "convertedTooltip": "Zum Wechselkurs der jeweiligen Zahlung umgerechnet"
       },
       "quickAdd": {
-        "currencyPlaceholder": "Select currency",
+        "currencyPlaceholder": "Währung auswählen",
         "nextPaymentLabel": "Nächste Zahlung",
         "nextPaymentHint": "Optional. Lege ein Datum fest, um fällige Zahlungen zu verfolgen und Erinnerungen zu erhalten.",
         "refineHint": "Du kannst direkt nach dem Erstellen ein Konto, eine Kategorie, Tags, Erinnerungen und Automatisierungen hinzufügen."
@@ -63,18 +63,18 @@
         "quarterly": "Vierteljährlich",
         "semiAnnual": "Halbjährlich",
         "annual": "Jährlich",
-        "custom": "Custom",
+        "custom": "Benutzerdefiniert",
         "every": {
-          "day": "Every day | Every {count} days",
-          "week": "Every week | Every {count} weeks",
-          "month": "Every month | Every {count} months",
-          "year": "Every year | Every {count} years"
+          "day": "Jeden Tag | Alle {count} Tage",
+          "week": "Jede Woche | Alle {count} Wochen",
+          "month": "Jeden Monat | Alle {count} Monate",
+          "year": "Jedes Jahr | Alle {count} Jahre"
         },
         "units": {
-          "day": "day | days",
-          "week": "week | weeks",
-          "month": "month | months",
-          "year": "year | years"
+          "day": "Tag | Tage",
+          "week": "Woche | Wochen",
+          "month": "Monat | Monate",
+          "year": "Jahr | Jahre"
         }
       },
       "matchSource": {
@@ -99,11 +99,11 @@
         "amountPlaceholder": "0.00",
         "currencyLabel": "Währung",
         "frequencyLabel": "Häufigkeit",
-        "intervalCountLabel": "Repeat every",
-        "intervalCountPlaceholder": "e.g. 30",
-        "intervalUnitLabel": "Unit",
-        "intervalUnitPlaceholder": "Select a unit",
-        "validationIntervalCount": "Enter a whole number from 1 to {max}",
+        "intervalCountLabel": "Wiederholen alle",
+        "intervalCountPlaceholder": "z.B. 30",
+        "intervalUnitLabel": "Einheit",
+        "intervalUnitPlaceholder": "Einheit auswählen",
+        "validationIntervalCount": "Gib eine ganze Zahl von 1 bis {max} ein",
         "startDateLabel": "Startdatum",
         "endDateLabel": "Enddatum",
         "accountLabel": "Konto",
@@ -111,7 +111,7 @@
         "categoryLabel": "Kategorie",
         "categoryPlaceholder": "Kategorie auswählen",
         "payeeLabel": "Zahlungsempfänger",
-        "payeePlaceholder": "Select a payee",
+        "payeePlaceholder": "Zahlungsempfänger auswählen",
         "payeeHint": "Wird auf zugeordnete Transaktionen angewendet, die noch keinen Zahlungsempfänger haben.",
         "tagsLabel": "Tags",
         "tagsPlaceholder": "Tags auswählen",
@@ -120,7 +120,7 @@
         "matchingRulesDescription": "Definiere Regeln, um Transaktionen diesem Abonnement automatisch zuzuordnen",
         "notesLabel": "Notizen",
         "notesPlaceholder": "Optionale Notizen zu diesem Abonnement",
-        "update": "Update",
+        "update": "Aktualisieren",
         "create": "Erstellen",
         "rulesCount": "{count} Zuordnungsregeln konfiguriert",
         "validationAmountCurrency": "Sowohl Betrag als auch Währung müssen zusammen angegeben werden.",
@@ -185,7 +185,7 @@
       "deleteError": "Löschen der wiederkehrenden Zahlung fehlgeschlagen",
       "deleteConfirmTitle": "Wiederkehrende Zahlung löschen?",
       "deleteConfirmDescription": "Bist du sicher, dass du diese wiederkehrende Zahlung löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
-      "deleteConfirm": "Delete",
+      "deleteConfirm": "Löschen",
       "toggleError": "Aktualisierung des Status der wiederkehrenden Zahlung fehlgeschlagen",
       "unlinkSuccess": "Transaktion erfolgreich getrennt",
       "unlinkError": "Trennen der Transaktion fehlgeschlagen",
@@ -233,7 +233,7 @@
         "acrossIncome": "über {count} aktive Einnahmezahlung | über {count} aktive Einnahmezahlungen",
         "percentOfIncome": "{percent}% des ø-Einkommens",
         "projectedPerYearLabel": "Hochgerechnet / Jahr",
-        "activeCountLabel": "Active",
+        "activeCountLabel": "Aktiv",
         "loadError": "Zusammenfassung konnte nicht geladen werden."
       },
       "candidates": {
@@ -243,7 +243,7 @@
         "lastScanned": "Zuletzt geprüft {time}",
         "emptyTitle": "Keine neuen Abonnements gefunden",
         "emptyDescription": "Wir konnten keine neuen wiederkehrenden Zahlungsmuster in deinem Transaktionsverlauf finden.",
-        "add": "Add",
+        "add": "Hinzufügen",
         "dismiss": "Verwerfen",
         "basedOnTransactions": "Basiert auf {count} Transaktionen",
         "confidence": {
@@ -280,7 +280,7 @@
         "dueOn": "Fällig am {date}",
         "paidAt": "Bezahlt am {date}",
         "viewTransaction": "Transaktion anzeigen",
-        "paymentInTrash": "Payment in Trash",
+        "paymentInTrash": "Zahlung im Papierkorb",
         "actions": {
           "markPaid": "Als bezahlt markieren",
           "skip": "Überspringen"
@@ -336,7 +336,7 @@
           "frequencyPlaceholder": "Häufigkeit auswählen",
           "clearDueDate": "Entfernen",
           "detectionOnlyHint": "Ohne Fälligkeitsdatum erkennt dieses Abonnement nur passende Transaktionen – keine Zahlungszeiträume oder Erinnerungen.",
-          "emailOn": "On",
+          "emailOn": "Ein",
           "emailOff": "Aus"
         },
         "automation": {

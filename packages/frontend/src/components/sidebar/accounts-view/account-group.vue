@@ -56,6 +56,7 @@ const groupTotal = computed(() => sumBaseBalance({ accounts: collectGroupAccount
                  own accounts carry the numbers and repeating the total here would just be noise. -->
             <GroupTotal
               v-if="!isOpen && baseCurrencyCode"
+              tiny
               :amount="groupTotal.total"
               :currency-code="baseCurrencyCode"
               :is-approx="groupTotal.isApprox"

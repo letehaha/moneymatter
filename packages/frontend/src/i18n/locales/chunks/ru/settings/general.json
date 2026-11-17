@@ -85,6 +85,21 @@
         "successNotification": "Настройки списков счетов обновлены",
         "errorNotification": "Не удалось обновить настройки списков счетов"
       },
+      "iosAddExpense": {
+        "label": "iPhone Add Expense",
+        "description": "Settings for the Add Expense shortcut on iPhone (Siri, Spotlight and the Action button).",
+        "showBankAccounts": {
+          "label": "Show bank-connected accounts",
+          "description": "Off by default: transactions on bank-connected accounts arrive through sync."
+        },
+        "hiddenCategories": {
+          "label": "Hidden categories",
+          "description": "Checked categories, with their subcategories, are hidden from the shortcut's category list.",
+          "placeholder": "None"
+        },
+        "successNotification": "iPhone Add Expense settings updated",
+        "errorNotification": "Failed to update iPhone Add Expense settings"
+      },
       "showUpcomingTransactions": {
         "label": "Показывать предстоящие транзакции",
         "description": "Закрепить вверху списка транзакций раздел с просроченными запланированными платежами и платежами на ближайшие 3 дня.",

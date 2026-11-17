@@ -11,29 +11,29 @@
       "noMembers": "Noch niemand ist deinem Haushalt beigetreten.",
       "loadMembersError": "Haushaltsmitglieder konnten nicht geladen werden. Versuche die Seite neu zu laden.",
       "permissions": {
-        "read": "Read",
-        "write": "Write",
-        "manage": "Manage"
+        "read": "Lesen",
+        "write": "Schreiben",
+        "manage": "Verwalten"
       },
       "writeScope": {
         "all": "Kann jede Transaktion bearbeiten",
         "own": "Kann nur eigene Transaktionen bearbeiten"
       },
       "invite": {
-        "emailLabel": "Email",
+        "emailLabel": "E-Mail",
         "emailPlaceholder": "person{'@'}example.com",
-        "permissionLabel": "Permission",
-        "writeScopeLabel": "Write scope",
+        "permissionLabel": "Berechtigung",
+        "writeScopeLabel": "Schreibbereich",
         "submit": "Haushaltseinladung senden",
-        "sent": "Invitation sent.",
+        "sent": "Einladung gesendet.",
         "error": "Einladung konnte nicht gesendet werden.",
         "emailDeliveryFailed": "Einladung erstellt, aber die E-Mail konnte nicht zugestellt werden. Du kannst sie über den Bereich für Einladungen erneut senden."
       },
       "revoke": {
-        "action": "Remove",
+        "action": "Entfernen",
         "title": "Haushaltsmitglied entfernen?",
         "description": "{handle} verliert den Zugriff auf jedes Konto in deinem Haushalt. Einzelne Freigaben pro Konto (falls vorhanden) bleiben unberührt.",
-        "confirm": "Remove",
+        "confirm": "Entfernen",
         "success": "Mitglied entfernt.",
         "error": "Dieses Mitglied konnte nicht entfernt werden."
       },
@@ -51,17 +51,17 @@
         "loadError": "Die Haushalte, in denen du bist, konnten nicht geladen werden. Versuche es später erneut."
       },
       "leave": {
-        "action": "Leave",
+        "action": "Verlassen",
         "title": "Diesen Haushalt verlassen?",
         "description": "Du verlierst den Zugriff auf jedes Konto, das {owner} über seinen Haushalt freigibt. Einzelne Freigaben pro Konto (falls vorhanden) bleiben unberührt.",
-        "confirm": "Leave",
+        "confirm": "Verlassen",
         "success": "Du hast den Haushalt verlassen.",
         "error": "Der Haushalt konnte nicht verlassen werden."
       },
       "pending": {
         "badge": "Ausstehend",
         "resend": "Erneut senden",
-        "cancel": "Cancel",
+        "cancel": "Abbrechen",
         "cancelTitle": "Einladung stornieren?",
         "cancelDescription": "Möchtest du die an {email} gesendete ausstehende Einladung stornieren? Die Person kann sie dann nicht mehr annehmen.",
         "cancelConfirm": "Einladung stornieren",

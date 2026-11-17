@@ -32,6 +32,7 @@
   "sidebar": {
     "collapse": "Contraer barra lateral",
     "expand": "Expandir barra lateral",
+    "resize": "Resize sidebar",
     "settings": {
       "title": "Ajustes",
       "sections": {
