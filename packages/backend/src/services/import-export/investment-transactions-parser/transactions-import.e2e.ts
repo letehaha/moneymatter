@@ -701,6 +701,7 @@ describe('Investment transactions AI import — E2E', () => {
       // Original transaction should still be there.
       const txs = await InvestmentTransaction.findAll({ where: { securityId: btc!.id }, order: [['date', 'ASC']] });
       expect(txs).toHaveLength(2);
+      expect(txs[1]!.date.toISOString()).toBe('2024-02-01T12:00:00.000Z');
     });
 
     it('imports stock sells listed above the buys that fund them, including same-day pairs', async () => {

@@ -22,8 +22,8 @@ const recalculateHoldingImpl = async (holdingId: { portfolioId: string; security
   // time order — a full wash sale (sell the whole position, then rebuy it later
   // the same calendar day) resets the cost basis before the rebuy instead of
   // blending the liquidated lots into it. `createdAt` is the final tiebreaker
-  // for trades that share an exact instant (e.g. two date-only imports both
-  // stored at UTC midnight); without it Postgres could return the rebuy ahead
+  // for trades that share an exact instant (e.g. two same-day imports both
+  // stored at UTC noon); without it Postgres could return the rebuy ahead
   // of the sell and inflate AC/Share. Matches the ordering used by the
   // balance-history and annualized-returns replays.
   const transactions = await InvestmentTransaction.findAll({

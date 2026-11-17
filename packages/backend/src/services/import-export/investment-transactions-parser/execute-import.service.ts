@@ -210,7 +210,8 @@ export async function executeInvestmentImport({
           portfolioId: holding.portfolioId,
           securityId: security.id,
           category: tx.side as INVESTMENT_TRANSACTION_CATEGORY,
-          date: tx.date,
+          // Noon UTC keeps the calendar day in nearly every timezone; midnight shows the previous day west of UTC.
+          date: `${tx.date}T12:00:00.000Z`,
           quantity: tx.quantity,
           price: tx.price,
           fees: tx.fees,
