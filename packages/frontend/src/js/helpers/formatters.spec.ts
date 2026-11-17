@@ -2,6 +2,7 @@ import {
   currencyDisplayPreference,
   formatCompactFiat,
   formatCompactUIAmount,
+  formatTinyUIAmount,
   formatShortFiat,
   formatFiat,
   formatLargeNumber,
@@ -208,6 +209,27 @@ describe('js/helpers/formatters', () => {
       [385_000, '$385k'],
     ])('with from: 100_000, %d → %s', (amount, expected) => {
       expect(formatCompactUIAmount({ amount, currency: 'USD', from: 100_000 })).toBe(expected);
+    });
+  });
+
+  describe('formatTinyUIAmount', () => {
+    it.each([
+      [0, '$0'],
+      [408.87, '$409'],
+      [-812.18, '-$812'],
+      [999.6, '$1K'],
+      [1_100, '$1.1K'],
+      [7_839.1, '$7.8K'],
+      [269_450, '$269.5K'],
+      [999_960, '$1M'],
+      [1_240_000, '$1.2M'],
+      [-2_602.67, '-$2.6K'],
+      [-0.3, '$0'],
+      [999_960_000, '$1B'],
+      [1_240_000_000, '$1.2B'],
+      [NaN, 'NaN'],
+    ])('%d → %s', (amount, expected) => {
+      expect(formatTinyUIAmount({ amount, currency: 'USD' })).toBe(expected);
     });
   });
 });

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable/formatters';
+import { formatTinyUIAmount } from '@/js/helpers';
 import { cn } from '@/lib/utils';
 import { computed } from 'vue';
 
@@ -19,17 +20,28 @@ const props = defineProps<{
   showZero?: boolean;
   /** Merged last, so callers can override the default size and neutral color. */
   textClass?: string;
+  /** Whole units and one-decimal K/M/B, for narrow spots like the sidebar. */
+  tiny?: boolean;
 }>();
 
 const { formatCompactAmount, formatAmountByCurrencyCode } = useFormatCurrency();
 
-// Below half a cent the amount renders as "0.00" — a total that carries no information,
-// so the row stays clean instead of showing "≈$0.00" for empty or netted-out groups.
+// A total that renders as zero carries no information, so the row stays clean
+// instead of showing "≈$0.00" for empty or netted-out groups.
 const ZERO_DISPLAY_EPSILON = 0.005;
-const isZero = computed(() => Math.abs(props.amount) < ZERO_DISPLAY_EPSILON);
+const isZero = computed(() =>
+  props.tiny ? Math.round(props.amount) === 0 : Math.abs(props.amount) < ZERO_DISPLAY_EPSILON,
+);
 
 const prefix = computed(() => (props.isApprox ? '≈ ' : ''));
-const compact = computed(() => `${prefix.value}${formatCompactAmount(props.amount, props.currencyCode)}`);
+const compact = computed(
+  () =>
+    `${prefix.value}${
+      props.tiny
+        ? formatTinyUIAmount({ amount: props.amount, currency: props.currencyCode })
+        : formatCompactAmount(props.amount, props.currencyCode)
+    }`,
+);
 const full = computed(() => `${prefix.value}${formatAmountByCurrencyCode(props.amount, props.currencyCode)}`);
 </script>
 

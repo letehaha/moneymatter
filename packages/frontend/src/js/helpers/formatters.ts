@@ -223,6 +223,22 @@ export const formatCompactUIAmount = ({
   });
 };
 
+/** Whole units under 1,000, then K/M/B with at most one decimal ("$813", "$7.8K", "$1.2M"). */
+export const formatTinyUIAmount = ({ amount, currency }: { amount: number; currency?: string }) => {
+  const whole = Math.round(amount);
+  const abs = Math.abs(whole);
+  if (!(abs >= 1_000)) return formatUIAmount(whole, { currency, fractionDigits: 0 });
+
+  // Rounds before the suffix is picked, so 999,960 reads "$1M" rather than "$1000K".
+  const step = abs >= 1e6 ? 1e5 : 100;
+  return formatLargeNumber(Math.round(amount / step) * step, {
+    isFiat: true,
+    currency,
+    thousandSuffix: 'K',
+    maximumFractionDigits: 1,
+  });
+};
+
 export function formatUIAmount(
   value: number,
   {
