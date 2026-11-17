@@ -80,7 +80,7 @@
             <span class="text-muted-foreground">{{ $t('transactions.table.outOfWallet') }}</span>
           </template>
           <template v-else-if="isPortfolioLinked">
-            <ArrowRightIcon :size="13" class="shrink-0 opacity-60" />
+            <ArrowRightIcon :size="13" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
             <BrandLogo
               v-if="portfolioLogoSelection"
               v-bind="toLogoDisplayProps({ selection: portfolioLogoSelection })"
