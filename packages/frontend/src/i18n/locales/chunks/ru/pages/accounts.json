@@ -12,7 +12,7 @@
       "bankConnections": "Банковские подключения"
     },
     "empty": {
-      "title": "Счетов пока нет",
+      "title": "Еще нет счетов",
       "description": "Подключите банк или создайте счёт вручную, чтобы начать отслеживать финансы, балансы и транзакции.",
       "connectBank": "Подключить банковский счёт",
       "createManual": "Создать счёт вручную"
@@ -39,10 +39,10 @@
       "balance": "Баланс",
       "ariaLabel": "Сортировать счета",
       "direction": {
-        "aToZ": "A to Z",
-        "zToA": "Z to A",
-        "highestFirst": "Highest first",
-        "lowestFirst": "Lowest first"
+        "aToZ": "А-Я",
+        "zToA": "Я-А",
+        "highestFirst": "По убыванию",
+        "lowestFirst": "По возрастанию"
       }
     },
     "status": {

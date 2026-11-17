@@ -45,10 +45,8 @@
         "exclude": "Vylúčiť",
         "only": "Iba"
       },
-      "noteIncludes": {
-        "label": "Poznámka obsahuje (oddelené čiarkami):",
-        "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Hľadať v poznámkach"
+      "search": {
+        "placeholder": "Hľadať v poznámkach, príjemcoch a značkách"
       },
       "tags": {
         "allTags": "Všetky značky",
@@ -68,8 +66,7 @@
         "type": "Typ",
         "tags": "Značky",
         "budgets": "Sledovače",
-        "amount": "Rozsah sumy",
-        "note": "Poznámky"
+        "amount": "Rozsah sumy"
       },
       "transferNature": {
         "label": "Druhy prevodov",
@@ -194,6 +191,10 @@
         "createFailed": "Vytvorenie skupiny zlyhalo",
         "addFailed": "Pridanie do skupiny transakcií zlyhalo"
       }
+    },
+    "excludeFromStats": {
+      "label": "Vylúčené zo štatistík",
+      "tooltip": "Nezahŕňa sa do reportov, widgetov na nástenke, rozpočtov a sledovačov. Stále sa započítava do zostatku a zostáva v zozname transakcií."
     },
     "planned": {
       "label": "Naplánované",

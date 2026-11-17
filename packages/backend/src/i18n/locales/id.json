@@ -8,7 +8,6 @@
     "groupNotFound": "Grup atau akun tidak ditemukan",
     "accountNotFound": "Akun tidak ditemukan!",
     "accountUpdateFailed": "Pembaruan akun tidak berhasil",
-    "accountNoExternalId": "Akun tidak memiliki ID eksternal",
     "accountNoExternalIdMonobank": "Akun tidak memiliki ID eksternal dari Monobank",
     "accountNoExternalIdEnableBanking": "Akun tidak memiliki ID eksternal dari Enable Banking",
     "accountNotFoundForTransaction": "Akun tidak ditemukan untuk transaksi ini",
@@ -40,6 +39,7 @@
     "systemCannotBeMoved": "Kategori sistem tidak dapat dipindahkan.",
     "parentNotFound": "Kategori dengan parentId tersebut tidak ada.",
     "systemParentForbidden": "Kategori sistem tidak dapat digunakan sebagai induk.",
+    "defaultCannotBeDeleted": "This category holds uncategorized transactions and cannot be deleted.",
     "ownParent": "Kategori tidak dapat menjadi induk bagi dirinya sendiri.",
     "underOwnSubcategory": "Kategori tidak dapat dipindahkan ke bawah subkategorinya sendiri.",
     "nestingTooDeep": "Kategori tidak dapat disarangkan lebih dari {{max}} tingkat."
@@ -297,7 +297,6 @@
     "connectionNotFound": "Koneksi tidak ditemukan",
     "connectionNotFoundOrNotYours": "Koneksi tidak ditemukan atau bukan milik Anda",
     "providerNoReauthorization": "Provider {{providerType}} tidak mendukung reotorisasi",
-    "providerNotFoundInRegistry": "Provider {{providerType}} tidak ditemukan di registry",
     "connectionIdNotFound": "Koneksi penyedia data bank {{connectionId}} tidak ditemukan",
     "accountIdNotFound": "Akun {{accountId}} tidak ditemukan",
     "providerTypeMismatch": "Koneksi {{connectionId}} adalah untuk provider {{actualType}}, bukan {{expectedType}}",
@@ -345,9 +344,7 @@
       "invalidCredentialsFormat": "Format kredensial tidak valid untuk Monobank",
       "invalidApiToken": "Token API Monobank tidak valid",
       "rateLimitExceeded": "Batas kecepatan API Monobank terlampaui. Silakan coba lagi dalam satu menit.",
-      "accountNotFound": "Akun {{accountExternalId}} tidak ditemukan di Monobank",
       "accountReconnectRequired": "Akun ini tidak lagi tersedia di Monobank. Silakan hubungkan kembali koneksi Monobank Anda untuk melanjutkan sinkronisasi.",
-      "webhookNotImplemented": "handleWebhook belum diimplementasikan untuk Monobank",
       "unknownCurrencyCode": "Kode mata uang tidak dikenal: {{numericCode}}",
       "geoBlocked": "Monobank memblokir permintaan dari IP server ini. Nonaktifkan VPN atau gunakan alamat IP Ukraina.",
       "geoBlockedProduction": "Sinkronisasi Monobank untuk sementara tidak tersedia. Kami telah diberitahu dan sedang menanganinya. Hubungi dukungan jika ini mendesak."
@@ -383,8 +380,7 @@
       "invalidTokens": "Invalid Akahu tokens. Check the User Access Token and App ID Token from your Akahu app page.",
       "accountNoExternalId": "Account has no external ID for Akahu sync.",
       "accountNotFound": "Akahu account not found.",
-      "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly.",
-      "missingCurrency": "Akahu did not return a currency for this account."
+      "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly."
     },
     "simplefin": {
       "invalidCredentialsFormat": "Format kredensial SimpleFIN tidak valid.",
@@ -399,8 +395,7 @@
     "walutomat": {
       "invalidCredentialsFormat": "Format kredensial Walutomat tidak valid. Kunci API dan kunci privat diperlukan.",
       "invalidApiKey": "Kunci API atau kunci privat Walutomat tidak valid.",
-      "accountNoExternalId": "Akun Walutomat tidak memiliki ID eksternal.",
-      "walletNotFound": "Dompet Walutomat tidak ditemukan untuk mata uang: {{currency}}"
+      "accountNoExternalId": "Akun Walutomat tidak memiliki ID eksternal."
     }
   },
   "csvImport": {
@@ -672,7 +667,6 @@
         "home-garden": "Rumah, taman",
         "pets-animals": "Hewan peliharaan",
         "electronics-accessories": "Elektronik, aksesori",
-        "gifts-joy": "Hadiah, hiburan",
         "stationery-tools": "Alat tulis, perkakas",
         "free-time": "Waktu luang",
         "drugstore-chemist": "Apotik, toko obat"
@@ -709,7 +703,8 @@
         "books-audio-subscriptions": "Buku, audio, langganan",
         "tv-streaming": "TV, Streaming",
         "holiday-trips-hotels": "Liburan, perjalanan, hotel",
-        "charity-gifts": "Amal, hadiah",
+        "gifts": "Gifts",
+        "charity": "Charity",
         "alcohol-tobacco": "Alkohol, tembakau",
         "lottery-gambling": "Lotere, perjudian"
       },

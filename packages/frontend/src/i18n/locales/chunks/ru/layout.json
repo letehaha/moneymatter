@@ -8,30 +8,31 @@
     "allTransactions": "Все транзакции",
     "transactions": "Транзакции",
     "transactionGroups": "Группы",
-    "trash": "Trash",
+    "trash": "Корзина",
     "analytics": "Аналитика",
     "optimizations": "Оптимизации",
     "automations": "Автоматизации",
     "accountDetails": "Сведения о счёте",
-    "helpAndDocs": "Help & docs",
-    "community": "Community",
+    "helpAndDocs": "Помощь и документация",
+    "community": "Сообщество",
     "logout": "Выйти",
-    "appVersion": "App version {version}",
-    "updateAvailable": "Update available",
-    "updateToVersion": "Update · {version}",
+    "appVersion": "Версия приложения {version}",
+    "updateAvailable": "Доступно обновление",
+    "updateToVersion": "Обновление · {version}",
     "settings": "Настройки",
     "planned": {
       "planned": "Запланированные",
       "subscriptions": "Регулярные платежи",
       "budgets": "Бюджеты",
-      "goals": "Goals"
+      "goals": "Цели"
     },
     "venture": "Венчурные инвестиции",
-    "budget": "Budget"
+    "budget": "Бюджет"
   },
   "sidebar": {
-    "collapse": "Collapse sidebar",
-    "expand": "Expand sidebar",
+    "collapse": "Свернуть панель",
+    "expand": "Развернуть панель",
+    "resize": "Изменить размер панели",
     "settings": {
       "title": "Настройки",
       "sections": {
@@ -112,7 +113,7 @@
         "other": "Другое"
       },
       "docsHint": "Not sure how something works? Check the {link} first.",
-      "docsHintLink": "docs",
+      "docsHintLink": "документация",
       "messageLabel": "Ваш отзыв",
       "messagePlaceholder": "Что произошло или что вы хотели бы увидеть?",
       "messageRequired": "Перед отправкой напишите сообщение.",

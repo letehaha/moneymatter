@@ -452,6 +452,8 @@
       "payAction": "Označiť ako zaplatené",
       "listTitle": "Nadchádzajúce",
       "dueCount": "Splatné: {count}",
+      "daysLate": "{count}d late",
+      "overdueCount": "{count} overdue",
       "nothingDue": "V najbližších 3 dňoch nič nie je splatné",
       "overdueHint": "Po splatnosti od {date}",
       "dueSoonHint": "Splatné v nasledujúcich 3 dňoch",

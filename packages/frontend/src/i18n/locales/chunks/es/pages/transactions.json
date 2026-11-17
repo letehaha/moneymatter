@@ -45,10 +45,8 @@
         "exclude": "Excluir",
         "only": "Solo"
       },
-      "noteIncludes": {
-        "label": "La nota incluye (separado por comas):",
-        "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Buscar en notas"
+      "search": {
+        "placeholder": "Search notes, payees and tags"
       },
       "tags": {
         "allTags": "Todas las etiquetas",
@@ -68,8 +66,7 @@
         "type": "Tipo",
         "tags": "Etiquetas",
         "budgets": "Rastreadores",
-        "amount": "Rango de importe",
-        "note": "Notas"
+        "amount": "Rango de importe"
       },
       "transferNature": {
         "label": "Tipos de transferencias",
@@ -194,6 +191,10 @@
         "createFailed": "Error al crear el grupo",
         "addFailed": "Error al añadir transacciones al grupo"
       }
+    },
+    "excludeFromStats": {
+      "label": "Excluded from statistics",
+      "tooltip": "Kept out of the reports, dashboard widgets, budget plans and trackers. It still counts toward your balance and stays in the transaction list."
     },
     "planned": {
       "label": "Planificada",

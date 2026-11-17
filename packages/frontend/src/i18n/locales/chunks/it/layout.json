@@ -32,6 +32,7 @@
   "sidebar": {
     "collapse": "Nascondi barra laterale",
     "expand": "Mostra barra laterale",
+    "resize": "Ridimensionare la barra laterale",
     "settings": {
       "title": "Impostazioni",
       "sections": {

@@ -27,30 +27,30 @@
   "importShared": {
     "action": {
       "createNew": "Neu erstellen",
-      "linkExisting": "Link to existing",
-      "skip": "Skip"
+      "linkExisting": "Mit bestehendem verknüpfen",
+      "skip": "Überspringen"
     },
     "selectAction": "Aktion auswählen",
     "resolvedCounterWord": "gelöst",
     "quickActionsMenuLabel": "Massenaktionen",
     "quickActions": {
-      "menu": "Actions"
+      "menu": "Aktionen"
     },
     "columns": {
       "sourceName": "Quellname",
-      "currency": "Currency",
+      "currency": "Währung",
       "action": "Aktion",
       "target": "Ziel"
     },
     "account": {
-      "selectTarget": "Select account",
+      "selectTarget": "Konto auswählen",
       "noMatchingCurrency": "Kein Konto mit Währung {currency}",
       "willCreate": "Erstellt {name} ({currency})",
       "empty": "Keine Konten zum Zuordnen",
       "willSkip": "Wird nicht importiert"
     },
     "category": {
-      "selectTarget": "Select category",
+      "selectTarget": "Kategorie auswählen",
       "willCreate": "Erstellt {name}",
       "empty": "Keine Kategorien zum Zuordnen"
     },
@@ -62,14 +62,14 @@
     "balanceChanges": {
       "title": "Änderungen der Kontosalden",
       "columns": {
-        "account": "Account",
+        "account": "Konto",
         "before": "Vorher",
         "after": "Nachher",
-        "delta": "Change",
+        "delta": "Änderung",
         "newRows": "Neue Zeilen",
         "backfillRows": "Nachträgliche Zeilen"
       },
-      "newAccount": "New account"
+      "newAccount": "Neues Konto"
     },
     "duplicatesTable": {
       "columnHeaders": {
@@ -86,10 +86,10 @@
         "fuzzy": "Ungefähr"
       },
       "fieldLabels": {
-        "amount": "Amount",
-        "date": "Date",
-        "note": "Note",
-        "category": "Category"
+        "amount": "Betrag",
+        "date": "Datum",
+        "note": "Notiz",
+        "category": "Kategorie"
       },
       "importAnywayAriaLabel": "Zeile {row} trotzdem importieren"
     },

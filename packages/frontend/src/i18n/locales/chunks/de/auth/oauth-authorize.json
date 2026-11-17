@@ -17,11 +17,11 @@
         "permissions": "Berechtigungen",
         "tools": "Tools"
       },
-      "continue": "Continue",
-      "back": "Back",
+      "continue": "Weiter",
+      "back": "Zurück",
       "toolsets": {
         "intro": "Wähle aus, womit {name} arbeiten kann. Jedes zusätzliche Set fügt Tools hinzu, die {name} in jeden Chat lädt.",
-        "add_all": "Add all",
+        "add_all": "Alle hinzufügen",
         "core_only": "Nur Kern-Tools",
         "always_on": "{count} Tool, immer aktiv | {count} Tools, immer aktiv",
         "tool_count": "{count} Tool | {count} Tools",

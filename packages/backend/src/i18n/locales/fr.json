@@ -8,7 +8,6 @@
     "groupNotFound": "Groupe ou compte introuvable",
     "accountNotFound": "Compte introuvable !",
     "accountUpdateFailed": "Échec de la mise à jour du compte",
-    "accountNoExternalId": "Le compte n'a pas d'identifiant externe",
     "accountNoExternalIdMonobank": "Le compte n'a pas d'identifiant externe Monobank",
     "accountNoExternalIdEnableBanking": "Le compte n'a pas d'identifiant externe Enable Banking",
     "accountNotFoundForTransaction": "Compte introuvable pour cette opération",
@@ -40,6 +39,7 @@
     "systemCannotBeMoved": "Les catégories système ne peuvent pas être déplacées.",
     "parentNotFound": "Aucune catégorie ne correspond à ce parentId.",
     "systemParentForbidden": "Les catégories système ne peuvent pas être utilisées comme catégorie parente.",
+    "defaultCannotBeDeleted": "This category holds uncategorized transactions and cannot be deleted.",
     "ownParent": "Une catégorie ne peut pas être sa propre catégorie parente.",
     "underOwnSubcategory": "Une catégorie ne peut pas être déplacée sous sa propre sous-catégorie.",
     "nestingTooDeep": "Les catégories ne peuvent pas être imbriquées sur plus de {{max}} niveaux."
@@ -297,7 +297,6 @@
     "connectionNotFound": "Connexion introuvable",
     "connectionNotFoundOrNotYours": "Connexion introuvable ou non associée à votre compte",
     "providerNoReauthorization": "Le fournisseur {{providerType}} ne prend pas en charge la réautorisation",
-    "providerNotFoundInRegistry": "Fournisseur {{providerType}} introuvable dans le registre",
     "connectionIdNotFound": "Connexion au fournisseur de données bancaires {{connectionId}} introuvable",
     "accountIdNotFound": "Compte {{accountId}} introuvable",
     "providerTypeMismatch": "La connexion {{connectionId}} correspond au fournisseur {{actualType}}, et non {{expectedType}}",
@@ -345,9 +344,7 @@
       "invalidCredentialsFormat": "Format des identifiants Monobank non valide",
       "invalidApiToken": "Jeton d'API Monobank non valide",
       "rateLimitExceeded": "Limite de requêtes atteinte pour l'API Monobank. Veuillez réessayer dans une minute.",
-      "accountNotFound": "Compte {{accountExternalId}} introuvable sur Monobank",
       "accountReconnectRequired": "Ce compte n'est plus disponible sur Monobank. Veuillez reconnecter votre compte Monobank pour reprendre la synchronisation.",
-      "webhookNotImplemented": "handleWebhook n'est pas encore implémenté pour Monobank",
       "unknownCurrencyCode": "Code devise inconnu : {{numericCode}}",
       "geoBlocked": "Monobank bloque les requêtes provenant de l'adresse IP de ce serveur. Désactivez votre VPN ou utilisez une adresse IP ukrainienne.",
       "geoBlockedProduction": "La synchronisation Monobank est temporairement indisponible. Nous avons été informés et y travaillons. Veuillez contacter l'assistance en cas d'urgence."
@@ -383,8 +380,7 @@
       "invalidTokens": "Invalid Akahu tokens. Check the User Access Token and App ID Token from your Akahu app page.",
       "accountNoExternalId": "Account has no external ID for Akahu sync.",
       "accountNotFound": "Akahu account not found.",
-      "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly.",
-      "missingCurrency": "Akahu did not return a currency for this account."
+      "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly."
     },
     "simplefin": {
       "invalidCredentialsFormat": "Format des identifiants SimpleFIN invalide.",
@@ -399,8 +395,7 @@
     "walutomat": {
       "invalidCredentialsFormat": "Format des identifiants Walutomat non valide. La clé API et la clé privée sont requises.",
       "invalidApiKey": "Clé API ou clé privée Walutomat non valide.",
-      "accountNoExternalId": "Le compte Walutomat n'a pas d'identifiant externe.",
-      "walletNotFound": "Portefeuille Walutomat introuvable pour la devise : {{currency}}"
+      "accountNoExternalId": "Le compte Walutomat n'a pas d'identifiant externe."
     }
   },
   "csvImport": {
@@ -672,7 +667,6 @@
         "home-garden": "Maison, jardin",
         "pets-animals": "Animaux de compagnie",
         "electronics-accessories": "High-tech, accessoires",
-        "gifts-joy": "Cadeaux, plaisir",
         "stationery-tools": "Papeterie, bricolage",
         "free-time": "Temps libre",
         "drugstore-chemist": "Pharmacie, parapharmacie"
@@ -709,7 +703,8 @@
         "books-audio-subscriptions": "Livres, audio, abonnements",
         "tv-streaming": "TV, streaming",
         "holiday-trips-hotels": "Vacances, voyages, hôtels",
-        "charity-gifts": "Dons, cadeaux",
+        "gifts": "Gifts",
+        "charity": "Charity",
         "alcohol-tobacco": "Alcool, tabac",
         "lottery-gambling": "Loterie, jeux de hasard"
       },

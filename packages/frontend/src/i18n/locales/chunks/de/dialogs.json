@@ -7,14 +7,14 @@
       "noGroupDescription": "Dieses Konto keiner Gruppe zuordnen",
       "current": "Aktuell",
       "syncHint": "Gruppen organisieren nur deine Konten — das Verschieben eines Kontos hat keinen Einfluss auf die Bank-Synchronisierung.",
-      "accountsCount": "{count} account | {count} accounts"
+      "accountsCount": "{count} Konto | {count} Konten"
     },
     "reassignCategory": {
       "title": "Transaktionen neu zuweisen",
       "description": "Diese Kategorie enthält {count} Transaktion(en). Wähle vor dem Löschen eine neue Kategorie für Transaktionen von \"{categoryName}\".",
       "newCategoryLabel": "Neue Kategorie",
       "newCategoryPlaceholder": "Kategorie auswählen",
-      "cancelButton": "Cancel",
+      "cancelButton": "Abbrechen",
       "reassignButton": "Neu zuweisen & löschen",
       "reassignButtonLoading": "Wird neu zugewiesen...",
       "notifications": {
@@ -26,7 +26,7 @@
       "title": "Synchronisierung vor Kurzem abgeschlossen",
       "description": "Du hast deine Konten vor {time} synchronisiert. Möchtest du wirklich erneut synchronisieren?",
       "syncAnyway": "Trotzdem synchronisieren",
-      "cancel": "Cancel",
+      "cancel": "Abbrechen",
       "timeUnits": {
         "someTime": "einiger Zeit",
         "hours": "{count} Stunde | {count} Stunden",
@@ -67,7 +67,7 @@
     "deletePortfolio": {
       "title": "Portfolio löschen",
       "description": "Dieses Portfolio wird in den Papierkorb verschoben und kann innerhalb von 30 Tagen wiederhergestellt werden. Danach wird es zusammen mit allen Beständen und Transaktionen dauerhaft gelöscht.",
-      "cancelButton": "Cancel",
+      "cancelButton": "Abbrechen",
       "deleteButton": "In den Papierkorb",
       "deleteButtonLoading": "Wird verschoben...",
       "notifications": {
@@ -85,11 +85,11 @@
         "linkButton": "Gegenbuchung verknüpfen",
         "title": "Finde die Gegenbuchung dieser Umbuchung",
         "description": "Wähle die passende Transaktion vom anderen Konto. Die zwei Einträge werden zu einer Umbuchung zusammengefügt — nichts wird gelöscht.",
-        "orDivider": "or",
+        "orDivider": "oder",
         "linkHint": "Bereits auf einem anderen Konto erfasst? Verknüpfe die beiden Einträge stattdessen.",
         "unlinkButton": "Transaktionen trennen",
         "cancelLinkingAriaLabel": "Verknüpfen abbrechen",
-        "linkedTransactionLabel": "Linked transaction"
+        "linkedTransactionLabel": "Verknüpfte Transaktion"
       },
       "typeSelector": {
         "expense": "Ausgabe",
@@ -107,7 +107,7 @@
         "paymentTypeLabel": "Zahlungsart",
         "noteLabel": "Notiz",
         "notePlaceholder": "Notiz",
-        "addFieldsLabel": "Add",
+        "addFieldsLabel": "Hinzufügen",
         "externalUrlLabel": "Externe URL",
         "externalUrlPlaceholder": "Link zur Bestellung, Buchung oder Belegseite",
         "externalReferenceLabel": "Externe Referenz",
@@ -150,10 +150,13 @@
         "amountLabel": "Betrag",
         "amountPlaceholder": "Betrag",
         "categoryLabel": "Kategorie",
-        "selectCategoryPlaceholder": "Select a category",
+        "selectCategoryPlaceholder": "Kategorie auswählen",
         "targetAmountLabel": "Zielbetrag",
         "targetAmountPlaceholder": "Zielbetrag",
-        "plannedLabel": "Planned",
+        "plannedLabel": "Geplant",
+        "excludeFromStatsChipLabel": "Aus Statistiken ausschließen",
+        "excludeFromStatsLabel": "Aus Statistiken ausschließen",
+        "excludeFromStatsTooltip": "Hält diese Transaktion aus den Analyseberichten, Dashboard-Widgets, Budgetplänen und Trackern heraus. Sie zählt weiterhin zu deinem Kontostand und bleibt in der Transaktionsliste.",
         "plannedUnavailableNotification": "Geplante Transaktionen sind hier nicht verfügbar, daher wurde die Option deaktiviert.",
         "plannedTooltip": "Erfasse eine anstehende Transaktion. Dein Kontostand bleibt unverändert, bis sie ausgeführt wird.",
         "plannedConnectedAccountTooltip": "Nur geplante Transaktionen können sich auf einem mit der Bank verbundenen Konto befinden. Das Deaktivieren löscht das Konto und das Datum.",
@@ -166,17 +169,17 @@
         "splitPillLabel": "Aufteilung",
         "moreOptionsButton": "Weitere Optionen",
         "closeButton": "Schließen",
-        "deleteButton": "Delete",
+        "deleteButton": "Löschen",
         "deleteAriaLabel": "Transaktion löschen",
-        "deleteConfirmTitle": "Diese Transaktion löschen?",
-        "deleteConfirmDescription": "Dies kann nicht rückgängig gemacht werden. Alle damit verknüpften Aufteilungen und Rückerstattungslinks werden ebenfalls entfernt.",
-        "deleteBlockedByPayment": "Remove it from the payment first to delete it",
+        "deleteConfirmTitle": "In den Papierkorb verschieben?",
+        "deleteConfirmDescription": "Sie bleibt 30 Tage lang im Papierkorb und kann bis dahin wiederhergestellt werden.",
+        "deleteBlockedByPayment": "Entferne es zuerst von der Zahlung, um es zu löschen",
         "createAriaLabel": "Transaktion erstellen",
         "editAriaLabel": "Transaktion bearbeiten",
-        "loadingButton": "Loading...",
+        "loadingButton": "Laden...",
         "createButton": "Erstellen",
         "editButton": "Bearbeiten",
-        "duplicateButton": "Duplicate",
+        "duplicateButton": "Duplikat",
         "createMore": {
           "label": "Weitere erstellen",
           "createdToast": "Transaktion erstellt"
@@ -260,7 +263,7 @@
           "linkedChangesTakes": "Übernimmt die Kategorie, den Zahlungsempfänger, die Notiz und die Tags dieser Transaktion.",
           "linkedChangesKeeps": "Konto, Betrag und Datum bleiben unverändert.",
           "linkedChangesUnlink": "Das Aufheben der Verknüpfung stellt die ursprünglichen Details wieder her.",
-          "unlink": "Unlink",
+          "unlink": "Verknüpfung aufheben",
           "convertedAmountLabel": "Betrag in {currency}",
           "rateInfo": "Details zum Wechselkurs",
           "rateFromAmounts": "Kurs aus deinen Beträgen",
@@ -269,7 +272,7 @@
           "convertedHint": "Mit dem Marktkurs vorausgefüllt. Ändere den {currency}-Betrag so, dass er dem entspricht, was du tatsächlich gezahlt hast.",
           "noMarketRate": "Kein Marktkurs für {currency} – gib den Betrag manuell ein.",
           "linkPicker": {
-            "title": "Link existing transactions",
+            "title": "Bestehende Transaktionen verknüpfen",
             "windowHint": "Innerhalb von {days} Tagen ab dem {date}",
             "loadError": "Transaktionen konnten nicht geladen werden",
             "emptyTitle": "Keine Transaktionen zum Verknüpfen",
@@ -321,7 +324,7 @@
         "splitTotalLabel": "Aufgeteilter Betrag",
         "mainCategoryKeepsLabel": "Hauptkategorie behält",
         "exceedsTransactionTotal": "Aufgeteilte Beträge übersteigen den Gesamtbetrag der Transaktion",
-        "cancelButton": "Cancel",
+        "cancelButton": "Abbrechen",
         "removeSplitsButton": "Aufteilungen entfernen",
         "saveSplitsButton": "Aufteilungen speichern",
         "errors": {
@@ -333,7 +336,7 @@
       "markAsRefund": {
         "linkRefund": "Rückerstattung verknüpfen",
         "refundedByCreationHint": "Speichere diesen Datensatz zuerst, um Rückerstattungen zu verknüpfen, die danach datiert sind",
-        "saveButton": "Save",
+        "saveButton": "Speichern",
         "confirmButton": "Bestätigen",
         "linkedRefunds": "Verknüpfte Rückerstattungen",
         "unlinkRefund": "Rückerstattung entfernen",
@@ -343,7 +346,7 @@
         "mainCategoryLabel": "(Hauptkategorie)",
         "linkRemovedOnTypeChange": "Rückerstattungsverknüpfung entfernt, da sich der Transaktionstyp geändert hat.",
         "summaryEmpty": "Noch nichts ausgewählt",
-        "sharePlaceholder": "Amount",
+        "sharePlaceholder": "Betrag",
         "shareInputLabel": "Rückerstattungsanteil für {name}",
         "shareErrorNonPositive": "Gib einen Betrag größer als Null ein",
         "shareErrorExceedsPurchase": "Mehr als von diesem Kauf übrig ist ({amount})",
@@ -410,14 +413,14 @@
         "amountToLabel": "Betrag bis",
         "amountToPlaceholder": "Max",
         "resetButton": "Zurücksetzen",
-        "applyButton": "Apply",
-        "recommendedLabel": "Recommended",
-        "allTransactionsLabel": "All transactions",
+        "applyButton": "Anwenden",
+        "recommendedLabel": "Empfohlen",
+        "allTransactionsLabel": "Alle Transaktionen",
         "noMoreTransactions": "Keine weiteren Transaktionen",
         "noIncomeTransactions": "Keine Einnahme-Transaktionen gefunden. Versuche, die Filter anzupassen.",
         "noExpenseTransactions": "Keine Ausgabe-Transaktionen gefunden. Versuche, die Filter anzupassen.",
         "noTransactions": "Keine Transaktionen gefunden. Versuche, die Filter anzupassen.",
-        "resetFiltersButton": "Reset filters"
+        "resetFiltersButton": "Filter zurücksetzen"
       },
       "portfolioLinked": {
         "title": "Portfolio-verknüpfte Transaktion",
@@ -427,9 +430,9 @@
         "unlinkButton": "Vom Portfolio trennen",
         "unlinkWarning": "Das Trennen verringert den Barbestand des Portfolios {portfolio}.",
         "unlinkWarningNoCash": "Diese Umbuchung hat den Barbestand von {portfolio} nie verändert, daher bleibt der Saldo beim Trennen unverändert.",
-        "noCashBadge": "No cash impact",
+        "noCashBadge": "Cash-neutral",
         "unlinkDescription": "Ursprüngliche Transaktionsdetails werden wiederhergestellt.",
-        "cancelButton": "Cancel",
+        "cancelButton": "Abbrechen",
         "confirmUnlink": "Trennen bestätigen"
       },
       "ventureLinked": {
@@ -455,7 +458,7 @@
         "saveAsNew": "Als neu speichern",
         "newTemplate": "Neue Vorlage",
         "use": "Vorlage verwenden",
-        "edit": "Edit",
+        "edit": "Bearbeiten",
         "tapHint": "Tippe auf eine Vorlage, um das Formular auszufüllen",
         "toggleDetails": "Details anzeigen",
         "noAmount": "Kein Betrag gespeichert",
@@ -541,8 +544,8 @@
     "deleteInvestmentTransaction": {
       "title": "Transaktion löschen",
       "description": "Möchtest du diese Transaktion wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-      "cancelButton": "Cancel",
-      "deleteButton": "Delete",
+      "cancelButton": "Abbrechen",
+      "deleteButton": "Löschen",
       "deleteButtonLoading": "Wird gelöscht...",
       "notifications": {
         "success": "Transaktion erfolgreich gelöscht.",
@@ -552,7 +555,7 @@
     "categoryForm": {
       "title": {
         "edit": "Kategorie bearbeiten",
-        "add": "Add category"
+        "add": "Kategorie hinzufügen"
       },
       "description": {
         "addSubcategory": "Unterkategorie zu {parentName} hinzufügen",
@@ -565,13 +568,13 @@
       "inheritParentColor": "Wie übergeordnet",
       "iconLabel": "Symbol",
       "iconPlaceholder": "Symbol auswählen",
-      "defaultTagsLabel": "Default tags",
-      "defaultTagsPlaceholder": "Select tags",
+      "defaultTagsLabel": "Standard-Tags",
+      "defaultTagsPlaceholder": "Tags auswählen",
       "defaultTagsHint": "Wird einer Transaktion hinzugefügt, wenn du diese Kategorie auswählst.",
       "applyTagsOnAiLabel": "Auch anwenden, wenn KI eine Transaktion kategorisiert",
       "applyTagsOnAiHint": "Tags bleiben auf der Transaktion erhalten, wenn du die Kategorie später änderst.",
       "settingsDivider": "Einstellungen",
-      "saveButton": "Save",
+      "saveButton": "Speichern",
       "createButton": "Erstellen",
       "notifications": {
         "updated": "Kategorie aktualisiert",
@@ -610,7 +613,7 @@
       "title": "Transaktion auswählen"
     },
     "attachInvoice": {
-      "title": "Attach invoice",
+      "title": "Rechnung anhängen",
       "description": "Lade eine Rechnung oder einen Beleg hoch. Wir lesen Gesamtbetrag, Datum und Händler aus und finden die zugehörige Transaktion.",
       "resultsTitle": "Transaktion auswählen",
       "resultsDescription": "Keine Transaktion passt zu dieser Rechnung. | {count} Transaktion könnte zu dieser Rechnung gehören. | {count} Transaktionen könnten zu dieser Rechnung gehören.",
@@ -631,7 +634,7 @@
       },
       "fixDetails": "Angaben korrigieren",
       "form": {
-        "vendor": "Merchant",
+        "vendor": "Händler",
         "vendorPlaceholder": "Händlernamen eingeben",
         "customer": "Kunde",
         "customerPlaceholder": "An wen die Rechnung adressiert ist",
@@ -670,7 +673,7 @@
         "description": "Wir haben in allen Konten nach etwa {total} im Zeitraum von 14 Tagen vor bis 30 Tage nach dem Rechnungsdatum gesucht. Die Zahlung ist möglicherweise noch nicht importiert oder die Rechnung wurde falsch ausgelesen."
       },
       "searchManually": "Manuell suchen",
-      "createTransaction": "Create transaction",
+      "createTransaction": "Transaktion erstellen",
       "link": "Rechnung verknüpfen",
       "linked": "Rechnung mit der Transaktion verknüpft",
       "created": "Transaktion erstellt und Rechnung angehängt",
@@ -714,7 +717,7 @@
       },
       "householdOverrideHint": "{invitee} ist bereits in deinem Haushalt mit der Berechtigung {permission}. Diese Freigabe überschreibt die Haushaltsberechtigung für dieses spezifische Konto.",
       "householdLookupFailed": "Haushaltsmitgliedschaft konnte nicht geprüft werden – Fortfahren ohne den Hinweis.",
-      "cancel": "Cancel",
+      "cancel": "Abbrechen",
       "send": "Einladung senden",
       "success": "Einladungsanfrage übermittelt. Falls ein Nutzer mit dieser Adresse registriert ist, erhält er eine Einladung.",
       "error": "Einladung konnte nicht gesendet werden. Bitte versuche es erneut.",
@@ -724,14 +727,14 @@
       "title": "Tracker teilen",
       "description": "Lade jemanden ein, diesen Tracker einzusehen und eigene Transaktionen dazu beizutragen. {name}.",
       "emailLabel": "E-Mail",
-      "emailPlaceholder": "Recipient email",
-      "permissionLabel": "Permission",
+      "emailPlaceholder": "Empfänger E-Mail",
+      "permissionLabel": "Berechtigung",
       "permissions": {
         "read": "Nur anzeigen",
         "write": "Eigene Transaktionen zuweisen",
-        "manage": "Manage"
+        "manage": "Verwalten"
       },
-      "cancel": "Cancel",
+      "cancel": "Abbrechen",
       "send": "Einladung senden",
       "success": "Einladung gesendet.",
       "error": "Einladung konnte nicht gesendet werden.",
@@ -760,9 +763,9 @@
       "permissionLabel": "Berechtigungsstufe",
       "expiresLabel": "Läuft ab am",
       "permissions": {
-        "read": "Read-only",
+        "read": "Nur lesen",
         "write": "Lesen + Schreiben",
-        "manage": "Manage"
+        "manage": "Verwalten"
       },
       "unknownOwner": "Ein MoneyMatter-Nutzer",
       "unknownResource": "eine geteilte Ressource",
@@ -782,7 +785,7 @@
         "writeScopeLabel": "Bearbeitungsumfang",
         "permissions": {
           "read": "Nur lesen",
-          "write": "Write"
+          "write": "Schreiben"
         },
         "writeScope": {
           "all": "Jedes Konto",
@@ -821,7 +824,7 @@
       "dateLabel": "Zahlungsdatum",
       "accountLabel": "Konto",
       "accountPlaceholder": "Konto auswählen",
-      "confirm": "Confirm",
+      "confirm": "Bestätigen",
       "confirmMarkOnly": "Als bezahlt markieren",
       "recordModeMarkTitle": "Nur als bezahlt markieren",
       "recordModeMarkDescription": "Aktualisiert nur den Zeitplan – es wird keine Transaktion erstellt.",
@@ -846,19 +849,19 @@
       "editTitle": "Kreditrückzahlung bearbeiten",
       "payingTo": "Zahlung an",
       "fromAccountLabel": "Von Konto",
-      "fromAccountPlaceholder": "Select account",
+      "fromAccountPlaceholder": "Konto auswählen",
       "amountLabel": "Betrag",
       "amountPlaceholder": "0.00",
       "targetAmountLabel": "Auf Kredit angerechneter Betrag",
       "targetAmountPlaceholder": "0.00",
       "targetAmountTooltip": "Quellkonto ist in {source}, Kredit ist in {loan}. Wir rechnen den Betrag mit dem aktuellen Wechselkurs um – passe ihn an, falls deine Bank einen anderen Kurs angewendet hat.",
-      "saveButton": "Save",
+      "saveButton": "Speichern",
       "recordButton": "Erfassen",
       "overdrawWarning": "Das ist mehr als der Kontostand von {account} und wird das Konto überziehen.",
       "preAnchorWarning": "Diese Zahlung liegt vor dem Stichtag des Kreditsaldos ({date}), wird daher als Historie gespeichert und verringert nicht den offenen Saldo.",
       "overpayError": "Zahlung übersteigt den verbleibenden Kreditsaldo ({max}).",
       "deleteConfirmTitle": "Diese Zahlung löschen?",
-      "deleteConfirmDescription": "Beide Seiten der Umbuchung werden entfernt und der Kreditsaldo wird wiederhergestellt. Dies kann nicht rückgängig gemacht werden.",
+      "deleteConfirmDescription": "Beide Seiten der Umbuchung werden in den Papierkorb verschoben und der Kreditsaldo wird wiederhergestellt. Sie bleiben dort 30 Tage lang und können bis dahin wiederhergestellt werden.",
       "preAnchorHint": "Dieses Datum liegt vor dem Stichtag des Kreditsaldos, daher ändert diese Zahlung nicht den offenen Saldo — sie ist bereits im Anfangssaldo enthalten.",
       "unlinkButton": "Trennen",
       "unlinkConfirmTitle": "Diese Zahlung trennen?",

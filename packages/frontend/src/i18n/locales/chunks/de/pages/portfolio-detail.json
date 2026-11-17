@@ -1,6 +1,6 @@
 {
   "portfolioDetail": {
-    "loading": "Loading...",
+    "loading": "Laden...",
     "loadingDetails": "Portfoliodetails werden geladen...",
     "loadError": "Portfoliodetails konnten nicht geladen werden.",
     "tryAgain": "Erneut versuchen",
@@ -10,8 +10,8 @@
     "subtitle": "Portfolio-Übersicht",
     "actions": {
       "transfer": "Umbuchen",
-      "edit": "Edit",
-      "delete": "Delete",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
       "exchangeCurrency": "Währung tauschen"
     },
     "balance": {
@@ -52,7 +52,7 @@
         "adjustmentError": "Diese Umbuchung konnte nicht aktualisiert werden",
         "rowActions": "Transaktionsaktionen",
         "emptyStateDescription": "Einzahlungen, Auszahlungen und Umbuchungen für dieses Portfolio werden hier angezeigt.",
-        "edit": "Edit",
+        "edit": "Bearbeiten",
         "editDialog": {
           "title": "Cash-Transaktion bearbeiten",
           "description": "Ändere, wie diese Transaktion in Berichten behandelt wird.",

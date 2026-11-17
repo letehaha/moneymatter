@@ -68,8 +68,8 @@
           "splitsDetected": "Обнаружено групп разбиений",
           "errorsTitle": "Не удалось импортировать строк: {count}",
           "errors": {
-            "payeeCreateFailed": "Could not create payee \"{payeeName}\". Its transactions were imported without a payee.",
-            "rowImportFailed": "This row could not be imported."
+            "payeeCreateFailed": "Не удалось создать получателя \"{payeeName}\". Его транзакции были импортированы без получателя.",
+            "rowImportFailed": "Невозможно импортировать эту строку."
           },
           "viewTransactions": "Просмотреть транзакции",
           "importAnother": "Импортировать другой файл"
