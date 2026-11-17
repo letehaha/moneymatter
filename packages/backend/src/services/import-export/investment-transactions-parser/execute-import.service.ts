@@ -46,6 +46,8 @@ interface ExecuteImportParams {
 const userFacingReason = ({ error }: { error: unknown }): { reason?: string } =>
   error instanceof CustomError ? { reason: error.message } : {};
 
+const buysFirst = (side: string) => (side === INVESTMENT_TRANSACTION_CATEGORY.buy ? 0 : 1);
+
 export async function executeInvestmentImport({
   userId,
   holdings,
@@ -181,7 +183,11 @@ export async function executeInvestmentImport({
 
     // 3. Insert child transactions one by one through the canonical service
     // – it handles refAmount, recalculation, and cash-balance updates.
-    for (const tx of holding.transactions) {
+    // The sell guard checks the running quantity, so replay oldest-first with buys before sells and dividends on the same day.
+    const orderedTransactions = holding.transactions.toSorted(
+      (a, b) => a.date.localeCompare(b.date) || buysFirst(a.side) - buysFirst(b.side),
+    );
+    for (const tx of orderedTransactions) {
       if (skipSet.has(tx.tempId)) {
         skippedPossibleDuplicates += 1;
         continue;
@@ -198,7 +204,7 @@ export async function executeInvestmentImport({
       }
 
       try {
-        // `preloadedHoldingRef` skips a portfolio + holding lookup per row.
+        // `preloadedHoldingRef` skips the per-row portfolio lookup.
         await createInvestmentTransaction({
           userId,
           portfolioId: holding.portfolioId,
