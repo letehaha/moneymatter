@@ -10,6 +10,7 @@ import { uk } from 'date-fns/locale';
 import { describe, expect, it } from 'vitest';
 
 import {
+  aggregatePace,
   availablePillClass,
   buildAssignmentPayload,
   buildCreatePlanPayload,
@@ -40,6 +41,10 @@ import {
   isValidPlanStart,
   layoutStateFrom,
   lineBarsOf,
+  linePaceOf,
+  PACE_TOLERANCE,
+  paceCaptionNumbers,
+  paceStateOf,
   lineIdsWithHistory,
   pickTakeBackLine,
   scheduledForLines,
@@ -358,7 +363,7 @@ describe('periodSpend', () => {
 
 describe('availablePillClass', () => {
   it('lets an underfunded goal outrank the sign of the amount', () => {
-    expect(availablePillClass({ amount: 50, underfunded: true })).toContain('text-warning-text');
+    expect(availablePillClass({ amount: 50, underfunded: true })).toContain('text-primary-text');
     expect(availablePillClass({ amount: 50, underfunded: true })).not.toContain('text-success-text');
   });
 
@@ -366,6 +371,24 @@ describe('availablePillClass', () => {
     expect(availablePillClass({ amount: 50 })).toContain('text-success-text');
     expect(availablePillClass({ amount: -50 })).toContain('text-app-expense-color');
     expect(availablePillClass({ amount: 0 })).toContain('text-muted-foreground');
+  });
+
+  it('turns a positive amount amber when spending runs ahead of pace', () => {
+    expect(availablePillClass({ amount: 50, ahead: true })).toContain('text-warning-text');
+    expect(availablePillClass({ amount: 50, ahead: true })).not.toContain('text-success-text');
+  });
+
+  it('ignores ahead for zero, negative and underfunded amounts', () => {
+    expect(availablePillClass({ amount: -50, ahead: true })).toContain('text-app-expense-color');
+    expect(availablePillClass({ amount: -50, ahead: true })).not.toContain('text-warning-text');
+    expect(availablePillClass({ amount: 0, ahead: true })).toContain('text-muted-foreground');
+    expect(availablePillClass({ amount: 0, ahead: true })).not.toContain('text-warning-text');
+    expect(availablePillClass({ amount: 50, underfunded: true, ahead: true })).toContain('text-primary-text');
+    expect(availablePillClass({ amount: 50, underfunded: true, ahead: true })).not.toContain('text-warning-text');
+  });
+
+  it('keeps a positive amount green when not ahead', () => {
+    expect(availablePillClass({ amount: 50, ahead: false })).not.toContain('text-warning-text');
   });
 });
 
@@ -1029,12 +1052,12 @@ describe('trendPaddingStarts', () => {
 describe('goalStatusDisplay', () => {
   const goal = { frequency: 'every_period' as const, status: 'funded' as const, progress: 50, target: 100 };
 
-  it('tints an underfunded goal orange and fills the bar to progress over target', () => {
+  it('tints an underfunded goal purple and fills the bar to progress over target', () => {
     expect(goalStatusDisplay({ goal: { ...goal, status: 'underfunded' } })).toEqual({
       kind: 'underfunded',
       percent: 50,
-      textClass: 'text-warning-text',
-      barClass: 'bg-warning',
+      textClass: 'text-primary-text',
+      barClass: 'bg-primary',
     });
   });
 
@@ -1625,5 +1648,119 @@ describe('layoutStateFrom / buildLayoutPayload', () => {
       ],
       ungroupedLineIds: ['rent'],
     });
+  });
+});
+
+describe('paceStateOf', () => {
+  it('is over whenever the line is overspent, pace or not', () => {
+    expect(paceStateOf({ spentPercent: 120, expectedPercent: 90, isOver: true })).toBe('over');
+    expect(paceStateOf({ spentPercent: 120, expectedPercent: null, isOver: true })).toBe('over');
+  });
+
+  it('has no state without a pace', () => {
+    expect(paceStateOf({ spentPercent: 90, expectedPercent: null, isOver: false })).toBeNull();
+  });
+
+  it('is ahead only past the tolerance', () => {
+    expect(paceStateOf({ spentPercent: 40 + PACE_TOLERANCE, expectedPercent: 40, isOver: false })).toBe('ok');
+    expect(paceStateOf({ spentPercent: 40 + PACE_TOLERANCE + 0.1, expectedPercent: 40, isOver: false })).toBe('ahead');
+    expect(paceStateOf({ spentPercent: 10, expectedPercent: 40, isOver: false })).toBe('ok');
+  });
+});
+
+describe('aggregatePace', () => {
+  it('weights each expected share by the line funding and skips lines without pace', () => {
+    const result = aggregatePace({
+      lines: [
+        { carriedIn: 0, assigned: 100, pace: { basis: 'even', expectedPercent: 50 } },
+        { carriedIn: 100, assigned: 200, pace: { basis: 'even', expectedPercent: 10 } },
+        { carriedIn: 0, assigned: 0, pace: null },
+        { carriedIn: 0, assigned: 500 },
+      ],
+    });
+    expect(result?.expectedPercent).toBeCloseTo(((50 + 30) / 400) * 100);
+    expect(result?.basisLabel).toBe('elapsed');
+  });
+
+  it('labels the basis as usual when any line uses history or schedule', () => {
+    expect(
+      aggregatePace({
+        lines: [
+          { carriedIn: 0, assigned: 100, pace: { basis: 'even', expectedPercent: 50 } },
+          { carriedIn: 0, assigned: 100, pace: { basis: 'schedule', expectedPercent: 70 } },
+        ],
+      }),
+    ).toEqual({ expectedPercent: 60, basisLabel: 'usual' });
+  });
+
+  it('counts a negative carry-in as no funding', () => {
+    expect(
+      aggregatePace({ lines: [{ carriedIn: -50, assigned: 100, pace: { basis: 'history', expectedPercent: 30 } }] }),
+    ).toEqual({ expectedPercent: 30, basisLabel: 'usual' });
+  });
+
+  it('is null when no line has a pace', () => {
+    expect(aggregatePace({ lines: [{ carriedIn: 0, assigned: 100, pace: null }] })).toBeNull();
+    expect(aggregatePace({ lines: [] })).toBeNull();
+  });
+});
+
+describe('linePaceOf', () => {
+  const line = ({
+    activity,
+    pace,
+  }: {
+    activity: number;
+    pace: { basis: 'history'; expectedPercent: number } | null;
+  }) => ({
+    carriedIn: 0,
+    assigned: 200,
+    activity,
+    available: 200 + activity,
+    pace,
+  });
+
+  it('compares spent over funded with the expected share', () => {
+    expect(linePaceOf({ line: line({ activity: -120, pace: { basis: 'history', expectedPercent: 40 } }) }).state).toBe(
+      'ahead',
+    );
+    expect(linePaceOf({ line: line({ activity: -100, pace: { basis: 'history', expectedPercent: 40 } }) }).state).toBe(
+      'ok',
+    );
+  });
+
+  it('keeps the overspent state without a pace', () => {
+    expect(linePaceOf({ line: line({ activity: -250, pace: null }) }).state).toBe('over');
+    expect(linePaceOf({ line: line({ activity: -150, pace: null }) }).state).toBeNull();
+  });
+
+  it('reports over instead of ahead when an overspent line has a pace', () => {
+    expect(linePaceOf({ line: line({ activity: -250, pace: { basis: 'history', expectedPercent: 40 } }) }).state).toBe(
+      'over',
+    );
+  });
+});
+
+describe('paceCaptionNumbers', () => {
+  it('measures how far spent runs past the expected amount and spreads what is left over the days left', () => {
+    expect(paceCaptionNumbers({ spent: 300, funded: 500, available: 200, expectedPercent: 40, daysLeft: 10 })).toEqual({
+      aheadBy: 100,
+      perDay: 20,
+    });
+  });
+
+  it('gives a negative aheadBy when spent is below the expected amount', () => {
+    expect(
+      paceCaptionNumbers({ spent: 100, funded: 500, available: 400, expectedPercent: 40, daysLeft: 10 }).aheadBy,
+    ).toBe(-100);
+  });
+
+  it('has no per-day figure on the last day or with nothing left', () => {
+    expect(
+      paceCaptionNumbers({ spent: 300, funded: 500, available: 200, expectedPercent: 40, daysLeft: 0 }).perDay,
+    ).toBeNull();
+    expect(
+      paceCaptionNumbers({ spent: 500, funded: 500, available: 0, expectedPercent: 40, daysLeft: 5 }).perDay,
+    ).toBeNull();
   });
 });

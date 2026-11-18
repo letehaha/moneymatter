@@ -8,6 +8,7 @@ import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
+import BudgetPlans from '@models/budget-plans.model';
 import Payees from '@models/payees.model';
 import SubscriptionTransactions from '@models/subscription-transactions.model';
 import Subscriptions from '@models/subscriptions.model';
@@ -38,6 +39,59 @@ const totals = ({ items }: { items: BudgetPlanScheduledItem[] }) =>
     count: 0,
   });
 
+export const planAccountIds = async ({ plan }: { plan: BudgetPlans }): Promise<string[]> =>
+  (
+    await BudgetPlanAccounts.findAll({
+      where: { planId: plan.id },
+      attributes: ['accountId'],
+      include: [{ model: Accounts, attributes: [], where: { userId: plan.userId, excludeFromStats: false } }],
+    })
+  ).map((row) => row.accountId);
+
+export const findPlanSubscriptions = ({ plan, accountIds }: { plan: BudgetPlans; accountIds: string[] }) =>
+  Subscriptions.findAll({
+    where: {
+      userId: plan.userId,
+      isActive: true,
+      expectedAmount: { [Op.ne]: null },
+      accountId: { [Op.or]: [{ [Op.in]: accountIds }, { [Op.is]: null }] },
+    },
+    include: scheduleInclude,
+  });
+
+/** `null`, with a warning, when no exchange rate converts it. */
+export const subscriptionAmountInPlanCurrency = async ({
+  plan,
+  subscription,
+  amount,
+  today,
+}: {
+  plan: BudgetPlans;
+  subscription: Subscriptions;
+  amount: Money;
+  today: string;
+}): Promise<Money | null> => {
+  const currencyCode = subscription.expectedCurrencyCode ?? plan.currencyCode;
+  if (currencyCode === plan.currencyCode) return amount;
+  try {
+    return await calculateRefAmount({
+      userId: plan.userId,
+      amount,
+      baseCode: currencyCode,
+      quoteCode: plan.currencyCode,
+      date: today,
+    });
+  } catch (e) {
+    if (!(e instanceof ExchangeRateUnavailableError)) throw e;
+    logger.warn('[Budget plans] Scheduled subscription skipped: no exchange rate', {
+      planId: plan.id,
+      subscriptionId: subscription.id,
+      currencyCode,
+    });
+    return null;
+  }
+};
+
 /**
  * Subscription occurrences and planned transactions dated in the period, from
  * today on. A subscription counts when it is paid from an attached account, or
@@ -63,16 +117,11 @@ export const getScheduled = async ({
   if (until <= today) return EMPTY;
   const from = start > today ? start : today;
 
-  const [planAccounts, lines, { byId }] = await Promise.all([
-    BudgetPlanAccounts.findAll({
-      where: { planId: plan.id },
-      attributes: ['accountId'],
-      include: [{ model: Accounts, attributes: [], where: { userId: plan.userId, excludeFromStats: false } }],
-    }),
+  const [accountIds, lines, { byId }] = await Promise.all([
+    planAccountIds({ plan }),
     loadLines({ planId: plan.id }),
     ownerCategories({ userId: plan.userId }),
   ]);
-  const accountIds = planAccounts.map((row) => row.accountId);
   const lineCategories = await BudgetLineCategories.findAll({
     where: { lineId: { [Op.in]: lines.map((line) => line.id) } },
   });
@@ -84,15 +133,7 @@ export const getScheduled = async ({
     categoryId === null ? null : lineOf(categoryId);
 
   const [subscriptions, planned] = await Promise.all([
-    Subscriptions.findAll({
-      where: {
-        userId: plan.userId,
-        isActive: true,
-        expectedAmount: { [Op.ne]: null },
-        accountId: { [Op.or]: [{ [Op.in]: accountIds }, { [Op.is]: null }] },
-      },
-      include: scheduleInclude,
-    }),
+    findPlanSubscriptions({ plan, accountIds }),
     findTransactions({
       planned: 'only',
       access: { creator: plan.userId },
@@ -129,26 +170,8 @@ export const getScheduled = async ({
       .map(async ({ sub, date }): Promise<BudgetPlanScheduledItem | null> => {
         const currencyCode = sub.expectedCurrencyCode ?? plan.currencyCode;
         const native = signed({ amount: sub.expectedAmount!, type: sub.transactionType });
-        let base = native;
-        if (currencyCode !== plan.currencyCode) {
-          try {
-            base = await calculateRefAmount({
-              userId: plan.userId,
-              amount: native,
-              baseCode: currencyCode,
-              quoteCode: plan.currencyCode,
-              date: today,
-            });
-          } catch (e) {
-            if (!(e instanceof ExchangeRateUnavailableError)) throw e;
-            logger.warn('[Budget plans] Scheduled subscription skipped: no exchange rate', {
-              planId: plan.id,
-              subscriptionId: sub.id,
-              currencyCode,
-            });
-            return null;
-          }
-        }
+        const base = await subscriptionAmountInPlanCurrency({ plan, subscription: sub, amount: native, today });
+        if (!base) return null;
 
         return {
           source: 'subscription',

@@ -29,6 +29,7 @@ import { type Component, computed } from 'vue';
 import {
   type GoalPeriodUnit,
   type PanelContext,
+  aggregatePace,
   amountToneClass,
   formatPeriodLabel,
   isPastPeriod,
@@ -115,6 +116,7 @@ const context = computed<PanelContext>(() => ({
   figures: figures.value,
   trends: trends.value,
   scheduled: scheduled.value,
+  pace: aggregatePace({ lines: props.lines.length ? props.lines : props.view.lines }),
 }));
 
 const sections = computed(() => {

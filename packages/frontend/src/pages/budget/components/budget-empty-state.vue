@@ -37,6 +37,7 @@ const withTotals = ({ lines }: { lines: { key: string; assigned: number; spent: 
     carriedIn: 0,
     activity: -line.spent,
     available: line.assigned - line.spent,
+    pace: null,
   }));
   return {
     rows,

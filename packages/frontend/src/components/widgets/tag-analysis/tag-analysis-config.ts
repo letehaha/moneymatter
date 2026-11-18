@@ -1,15 +1,15 @@
 import type { DashboardWidgetConfig } from '@/api/user-settings';
 
-export type TagAnalysisPercentBase = 'tags' | 'income';
+type TagAnalysisPercentBase = 'tags' | 'income';
 
-export interface TagAnalysisConfig {
+interface TagAnalysisConfig {
   tagIds: string[];
   targets: Record<string, number>;
   includeTransfers: boolean;
   percentBase: TagAnalysisPercentBase;
 }
 
-export interface TagShare {
+interface TagShare {
   tagId: string;
   amount: number;
   percent: number | null;
@@ -17,7 +17,7 @@ export interface TagShare {
   isOverTarget: boolean;
 }
 
-export interface TagSharesSummary {
+interface TagSharesSummary {
   rows: TagShare[];
   total: number;
   /** Selected tags' total as a share of income; `null` on the tags base or when income is zero. */

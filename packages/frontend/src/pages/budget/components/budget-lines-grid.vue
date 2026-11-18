@@ -52,11 +52,14 @@ import {
   goalCaption,
   goalStatusDisplay,
   groupLines,
+  linePaceOf,
+  periodProgress,
   sumLineTotals,
 } from '../helpers';
 import ArchivedLinesDialog from './archived-lines-dialog.vue';
 import AssignPopover from './assign-popover.vue';
 import BudgetLineBars from './budget-line-bars.vue';
+import BudgetLinePaceHint from './budget-line-pace-hint.vue';
 import BudgetLineSpentText from './budget-line-spent-text.vue';
 import DeleteLineDialog from './delete-line-dialog.vue';
 import GoalEditorDialog from './goal-editor-dialog.vue';
@@ -84,6 +87,7 @@ const props = defineProps<{
   liveGroupIds: Set<string>;
   unit: GoalPeriodUnit;
   rowBars: RowBarMode;
+  paceHint: boolean;
   /** Mobile list rows instead of the table; decided by the page so it matches the panel layout. */
   narrow: boolean;
   /** Narrow layout only: rows show checkboxes and tapping a row toggles it. */
@@ -175,7 +179,10 @@ const availableClass = ({ line }: { line: BudgetPlanPeriodViewLine }) =>
   availablePillClass({
     amount: line.available,
     underfunded: goalDisplays.value.get(line.lineId)?.kind === 'underfunded',
+    ahead: linePaceOf({ line }).state === 'ahead',
   });
+
+const daysLeft = computed(() => periodProgress(props.view.period).daysLeft);
 
 const isGoalEditorOpen = ref(false);
 const goalLineId = ref<string | null>(null);
@@ -425,6 +432,7 @@ const archiveSelected = () => {
         <BudgetLineSpentText v-else :line="line" class="min-w-0 truncate text-xs leading-4" />
       </span>
       <BudgetLineBars :line="line" :goal="display" :mode="rowBars" />
+      <BudgetLinePaceHint v-if="paceHint" :line="line" :days-left="daysLeft" />
     </DefineNameCell>
 
     <DefineMobileCaption v-slot="{ line, display }">
@@ -653,6 +661,7 @@ const archiveSelected = () => {
             </span>
           </span>
           <BudgetLineBars :line="line" :goal="goalDisplays.get(line.lineId)" :mode="rowBars" />
+          <BudgetLinePaceHint v-if="paceHint" :line="line" :days-left="daysLeft" />
           <MobileCaption :line="line" :display="goalDisplays.get(line.lineId)" />
         </SelectTrigger>
       </div>
