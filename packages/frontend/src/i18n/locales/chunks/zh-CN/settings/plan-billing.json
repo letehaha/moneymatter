@@ -32,6 +32,7 @@
       "current": {
         "lifetime": "{plan} · lifetime",
         "lifetimeMeta": "Everything in Plus. No renewal, no card on file.",
+        "lifetimePurchaseMeta": "No renewal, no card on file.",
         "earlyAdopterNote": "Thank you for being here early. Everything in Plus as it exists today is yours for life. Features we add from here on, and anything that costs us per user to run, belong to the paid plans. Want them? 50% off any plan, forever, applied automatically at checkout.",
         "seats": "1 household seat | {count} household seats",
         "subscription": "{tier} · {cycle}",

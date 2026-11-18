@@ -29,6 +29,10 @@ function bankStatementWithRows({ rows }: { rows: string }): string {
   return `<OFX><BANKMSGSRSV1><STMTTRNRS><STMTRS><CURDEF>USD<BANKACCTFROM><BANKID>1<ACCTID>1234<ACCTTYPE>CHECKING</BANKACCTFROM><BANKTRANLIST>${rows}</BANKTRANLIST><LEDGERBAL><BALAMT>0<DTASOF>20260801</LEDGERBAL></STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>`;
 }
 
+function amountRow({ amount, i }: { amount: string; i: number }): string {
+  return `<STMTTRN><TRNTYPE>OTHER<DTPOSTED>20260801<TRNAMT>${amount}<FITID>t${i}<NAME>Example</STMTTRN>`;
+}
+
 describe('parseOfx', () => {
   it('maps an OFX 1.x bank statement and aggregates fallback warnings', () => {
     const result = parseOfx({ bytes: fixture({ name: 'bank-v1.ofx' }) });
@@ -110,6 +114,18 @@ describe('parseOfx', () => {
     expect(() => parseOfx({ bytes: withHeader({ body, charset: 'NONE', encoding: 'UTF-8', version: '203' }) })).toThrow(
       'ofxImport.errors.tagsMismatch',
     );
+  });
+
+  it('reads amounts with a leading plus or a decimal comma', () => {
+    const rows = ['+2150.00', '-42,50', '+42,50'].map((amount, i) => amountRow({ amount, i })).join('');
+    const result = parseOfx({ bytes: withHeader({ body: bankStatementWithRows({ rows }) }) });
+    expect(result.transactions.map((t) => t.amount)).toEqual(['2150', '-42.5', '42.5']);
+
+    for (const amount of ['1,000', '1,234,567', '1.234,56']) {
+      expect(() =>
+        parseOfx({ bytes: withHeader({ body: bankStatementWithRows({ rows: amountRow({ amount, i: 9 }) }) }) }),
+      ).toThrow('ofxImport.errors.invalidAmount');
+    }
   });
 
   it('collapses identical FITID rows and rejects conflicting rows', () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { FireChart } from './build-fire-plan';
-import { displayProgressPct, shapeFireChart } from './fire-display';
+import { displayProgressPct, formatProgressPct, shapeFireChart } from './fire-display';
 
 describe('displayProgressPct', () => {
   it('floors to one decimal', () => {
@@ -19,6 +19,13 @@ describe('displayProgressPct', () => {
 
   it('never goes below zero', () => {
     expect(displayProgressPct({ ratio: -0.3, reached: false })).toBe(0);
+  });
+});
+
+describe('formatProgressPct', () => {
+  it('drops a zero decimal and keeps one otherwise', () => {
+    expect(formatProgressPct({ ratio: 0.12, reached: false })).toBe('12%');
+    expect(formatProgressPct({ ratio: 0.17143, reached: false })).toBe('17.1%');
   });
 });
 

@@ -307,7 +307,8 @@
           "account": "Рахунок",
           "currency": "Валюта",
           "transactionType": "Тип транзакції",
-          "payee": "Отримувач"
+          "payee": "Отримувач",
+          "tags": "Теги"
         },
         "dateFormat": {
           "label": "Формат дати",

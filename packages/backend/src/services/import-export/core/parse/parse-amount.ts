@@ -1,3 +1,5 @@
+import { stripThousandsSeparator } from './parse-decimal-amount';
+
 /**
  * Parse amount string and return numeric value in cents (integer)
  * Supports various formats: 1234.56, 1,234.56, -1234.56, (1234.56)
@@ -35,8 +37,15 @@ export function parseAmount(amountStr: string): number | null {
   // If string has both comma and period, the last one is the decimal separator
   const lastComma = cleanStr.lastIndexOf(',');
   const lastPeriod = cleanStr.lastIndexOf('.');
+  const commaCount = cleanStr.split(',').length - 1;
+  const periodCount = cleanStr.split('.').length - 1;
 
-  if (lastComma > lastPeriod) {
+  if ((commaCount > 1 && periodCount === 0) || (periodCount > 1 && commaCount === 0)) {
+    // A separator repeated with no other mark can only group thousands: 3,250,000 / 1.500.000
+    const stripped = stripThousandsSeparator({ value: cleanStr, separator: commaCount > 1 ? ',' : '.' });
+    if (stripped === null) return null;
+    cleanStr = stripped;
+  } else if (lastComma > lastPeriod) {
     // European format: 1.234,56 -> 1234.56
     cleanStr = cleanStr.replace(/\./g, '').replace(',', '.');
   } else {

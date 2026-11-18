@@ -1,4 +1,4 @@
-export interface Slice {
+interface Slice {
   categoryId: string;
   name: string;
   color: string;

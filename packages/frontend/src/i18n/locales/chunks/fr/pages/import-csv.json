@@ -307,7 +307,8 @@
           "account": "Compte",
           "currency": "Devise",
           "transactionType": "Type d'opération",
-          "payee": "Tiers"
+          "payee": "Tiers",
+          "tags": "Tags"
         },
         "dateFormat": {
           "label": "Format de date",

@@ -123,6 +123,10 @@
       "tagModeAddHint": "Mantiene le etichette attuali e aggiunge queste.",
       "tagModeReplaceHint": "Rimuove tutte le etichette attuali, poi aggiunge queste.",
       "tagModeRemoveHint": "Rimuove solo queste etichette. Le altre restano.",
+      "excludeFromStatsHint": "On keeps the selected transactions out of reports, dashboard widgets, budgets and trackers. Off brings them back. Balances aren't affected.",
+      "excludeFromStatsDontChange": "Don't change stats",
+      "confirmExcludeFromStats": "Exclude from stats",
+      "confirmIncludeInStats": "Include in stats",
       "totals": {
         "income": "Entrate",
         "expense": "Uscite",

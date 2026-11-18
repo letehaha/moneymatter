@@ -119,7 +119,7 @@ With rows selected you can **Edit**, **Group** or **Delete** them. On a phone, l
 
 1. Select the transactions.
 2. Click **Edit**. The **Edit N transactions** window opens.
-3. Fill in only what you want to change: **Category**, **Payee**, **Tags** or **Note**. Empty fields are left alone.
+3. Fill in only what you want to change: **Category**, **Payee** or **Tags**. For **Note** or **Exclude from stats**, click it in the **Add** row first. Empty fields, and fields you didn't add, are left alone.
 4. If you picked tags, choose what happens to them with the tabs above the **Tags** field:
    - **Add** (the default) keeps the tags each transaction already has.
    - **Replace** swaps them for the ones you picked.
@@ -141,6 +141,7 @@ Things to watch for:
 - **A new note replaces the old one** on every selected transaction. It isn't added to the end. If you also change the category, transfers in the selection keep their old note. Edit notes on transfers in a separate bulk edit.
 - **You can't clear a field in bulk.** Leaving the note or payee empty means "don't change", not "remove".
 - **Category changes skip transfers.** Transfers don't use categories, so they keep what they have. If you selected only transfers and set a category, the edit is refused.
+- **Exclude from stats** works like [the same switch](/transactions/add-and-edit/#more-options) on a single transaction. Switched on, it takes the selected transactions out of the reports. Switched off, it brings them back. Click **×** next to it to leave them as they are.
 - **Payees set in bulk are locked**, the same as when you set them by hand. Automatic payee detection won't change them later.
 
 ### Group transactions

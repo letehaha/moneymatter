@@ -16,4 +16,10 @@ describe('useGridDisplayOptions', () => {
     localStorage.setItem(STORAGE_KEY, 'split');
     expect(useGridDisplayOptions().rowBars.value).toBe('split');
   });
+
+  it('keeps the pace hint off until it is turned on', () => {
+    expect(useGridDisplayOptions().paceHint.value).toBe(false);
+    localStorage.setItem('budget-plan:pace-hint', 'true');
+    expect(useGridDisplayOptions().paceHint.value).toBe(true);
+  });
 });

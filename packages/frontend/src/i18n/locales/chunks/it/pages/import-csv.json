@@ -307,7 +307,8 @@
           "account": "Conto",
           "currency": "Valuta",
           "transactionType": "Tipo di transazione",
-          "payee": "Beneficiario"
+          "payee": "Beneficiario",
+          "tags": "Tags"
         },
         "dateFormat": {
           "label": "Formato data",

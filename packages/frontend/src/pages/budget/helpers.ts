@@ -15,6 +15,7 @@ import {
   type BudgetPlanCadence,
   type BudgetPlanCarryPolicy,
   type BudgetPlanLineEntry,
+  type BudgetPlanLinePace,
   type BudgetPlanModel,
   type BudgetPlanPeriod,
   type BudgetPlanPeriodView,
@@ -303,11 +304,20 @@ export const amountToneClass = ({ amount }: { amount: number }): string =>
 export const GRID_ROW_CLASS = 'grid grid-cols-[1.25rem_minmax(0,1fr)_repeat(3,7rem)_2.5rem] items-center gap-2 px-3';
 
 /** An underfunded goal outranks the amount's sign. */
-export const availablePillClass = ({ amount, underfunded = false }: { amount: number; underfunded?: boolean }) =>
+export const availablePillClass = ({
+  amount,
+  underfunded = false,
+  ahead = false,
+}: {
+  amount: number;
+  underfunded?: boolean;
+  ahead?: boolean;
+}) =>
   cn(
     'inline-block rounded-full px-2 py-0.5 text-sm font-medium tabular-nums',
-    underfunded && 'bg-warning/15 text-warning-text',
-    !underfunded && amount > 0 && 'bg-success-text/15 text-success-text',
+    underfunded && 'bg-primary/15 text-primary-text',
+    !underfunded && amount > 0 && ahead && 'bg-warning/15 text-warning-text',
+    !underfunded && amount > 0 && !ahead && 'bg-success-text/15 text-success-text',
     !underfunded && amount < 0 && 'bg-app-expense-color/15 text-app-expense-color',
     !underfunded && amount === 0 && 'bg-muted text-muted-foreground',
   );
@@ -410,6 +420,8 @@ const fundedOf = ({ carriedIn, assigned }: { carriedIn: number; assigned: number
   Math.max(0, carriedIn) + Math.max(0, assigned);
 
 export type LineAmounts = Pick<BudgetPlanPeriodViewLine, 'carriedIn' | 'assigned' | 'activity' | 'available'>;
+
+export type LineWithPace = LineAmounts & Pick<BudgetPlanPeriodViewLine, 'pace'>;
 
 /** "Anything left" comes from `available`: `used` is a float sum that can land a hair under `funded`. */
 const usedPercentLabel = ({ used, funded, available }: { used: number; funded: number; available: number }) => {
@@ -540,6 +552,77 @@ export const periodProgress = ({
   return { day, totalDays, daysLeft: totalDays - day };
 };
 
+/** Percentage points spent may run ahead of the usual pace before it counts as ahead. */
+export const PACE_TOLERANCE = 15;
+
+type PaceState = 'ok' | 'ahead' | 'over';
+type PaceBasisLabel = 'usual' | 'elapsed';
+
+/** `null` when there is no pace to compare against and the line is not over. */
+export const paceStateOf = ({
+  spentPercent,
+  expectedPercent,
+  isOver,
+}: {
+  spentPercent: number;
+  expectedPercent: number | null;
+  isOver: boolean;
+}): PaceState | null => {
+  if (isOver) return 'over';
+  if (expectedPercent === null) return null;
+  return spentPercent - expectedPercent > PACE_TOLERANCE ? 'ahead' : 'ok';
+};
+
+/** Funding-weighted expected share across the lines that have a pace; one line returns its own. */
+export const aggregatePace = ({
+  lines,
+}: {
+  lines: (Pick<LineAmounts, 'carriedIn' | 'assigned'> & { pace?: BudgetPlanLinePace | null })[];
+}): { expectedPercent: number; basisLabel: PaceBasisLabel } | null => {
+  let expected = 0;
+  let funded = 0;
+  let usual = false;
+  for (const line of lines) {
+    if (line.pace == null) continue;
+    const lineFunded = fundedOf(line);
+    expected += (line.pace.expectedPercent / 100) * lineFunded;
+    funded += lineFunded;
+    usual ||= line.pace.basis !== 'even';
+  }
+  if (funded <= 0) return null;
+  return { expectedPercent: (expected / funded) * 100, basisLabel: usual ? 'usual' : 'elapsed' };
+};
+
+export const linePaceOf = ({ line }: { line: LineWithPace }) => {
+  const pace = aggregatePace({ lines: [line] });
+  const funded = fundedOf(line);
+  const spent = spentOf({ line });
+  const spentPercent = funded > 0 ? (spent / funded) * 100 : 0;
+  return {
+    pace,
+    spent,
+    funded,
+    state: paceStateOf({ spentPercent, expectedPercent: pace?.expectedPercent ?? null, isOver: line.available < 0 }),
+  };
+};
+
+export const paceCaptionNumbers = ({
+  spent,
+  funded,
+  available,
+  expectedPercent,
+  daysLeft,
+}: {
+  spent: number;
+  funded: number;
+  available: number;
+  expectedPercent: number;
+  daysLeft: number;
+}) => ({
+  aheadBy: spent - (expectedPercent / 100) * funded,
+  perDay: daysLeft > 0 && available > 0 ? available / daysLeft : null,
+});
+
 export interface PanelContext {
   planId: string;
   cadence: BudgetPlanCadence;
@@ -551,6 +634,7 @@ export interface PanelContext {
   trends?: BudgetPlanTrends;
   /** Already narrowed to `lineIds`. */
   scheduled?: BudgetPlanScheduled;
+  pace: ReturnType<typeof aggregatePace>;
 }
 
 const TREND_AVERAGE_WINDOW = 5;
@@ -650,7 +734,7 @@ export const scheduledForLines = ({
 type GoalDisplayKind = BudgetLineGoalStatus | 'progress';
 
 const GOAL_DISPLAY_TONES: Record<GoalDisplayKind, { textClass: string; barClass: string }> = {
-  underfunded: { textClass: 'text-warning-text', barClass: 'bg-warning' },
+  underfunded: { textClass: 'text-primary-text', barClass: 'bg-primary' },
   funded: { textClass: 'text-success-text', barClass: 'bg-success-text' },
   achieved: { textClass: 'text-success-text', barClass: 'bg-success-text' },
   progress: { textClass: 'text-primary-text', barClass: 'bg-primary' },

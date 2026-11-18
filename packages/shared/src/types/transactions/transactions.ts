@@ -357,6 +357,7 @@ export type BulkUpdateTransactionsBody = BulkTarget & {
   note?: string;
   // Nullable: explicit `null` clears the Payee, undefined leaves it untouched.
   payeeId?: RecordId | null;
+  excludeFromStats?: boolean;
 };
 
 export interface BulkUpdateTransactionsResponse {

@@ -29,6 +29,23 @@ describe('parseAmount (core tabular-import amount parser)', () => {
     expect(parseAmount('1.000.000,00')).toBe(100000000);
   });
 
+  it('reads a separator repeated with no other mark as thousands grouping', () => {
+    expect(parseAmount('3,250,000')).toBe(325000000);
+    expect(parseAmount('1.500.000')).toBe(150000000);
+    expect(parseAmount('-12,345,678')).toBe(-1234567800);
+    expect(parseAmount('(3,250,000)')).toBe(-325000000);
+    expect(parseAmount('$1.500.000')).toBe(150000000);
+  });
+
+  it('rejects repeated separators that do not group thousands', () => {
+    expect(parseAmount('1.2.3')).toBeNull();
+    expect(parseAmount('1.234.5')).toBeNull();
+    expect(parseAmount('1,00,000')).toBeNull();
+    expect(parseAmount(',250,000')).toBeNull();
+    expect(parseAmount('1234,567,890')).toBeNull();
+    expect(parseAmount('12x,345,678')).toBeNull();
+  });
+
   it('treats a lone comma as the decimal separator', () => {
     // With no period present, the comma is read as the decimal point (European
     // convention), not a thousands separator: '1,5' -> 1.5, '1,234' -> 1.234.

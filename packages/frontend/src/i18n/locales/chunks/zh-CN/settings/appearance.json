@@ -25,6 +25,11 @@
         "title": "货币符号",
         "description": "如何显示金额货币。 短货币符号看起来像 Rp、₴ 或 zł 而不是 IDR、UAH 或 PLN，但符号一样的货币（如 USD、CAD、AUD、SGD）均显示为 $。",
         "narrowSymbol": "使用短货币符号"
+      },
+      "transactions": {
+        "title": "Transactions",
+        "description": "Show the payee's logo instead of the category icon in transaction rows, when the payee has one.",
+        "payeeLogos": "Payee logos"
       }
     }
   }

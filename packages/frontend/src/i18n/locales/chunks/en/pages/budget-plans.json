@@ -340,7 +340,7 @@
         "outsideSpending": "Spending outside your lines",
         "fromLines": "From lines (rollover returned / overspending covered)",
         "assigned": "Assigned this period",
-        "cashHint": "Cash in the plan's accounts, minus credit limits.",
+        "cashHint": "Cash in the plan's accounts. Credit limits are subtracted when Include credit limits in balance is on.",
         "inLinesHint": "Everything currently in your lines.",
         "driftHint": "Rate moves and balances not explained by transactions.",
         "committedLaterHint": "Already assigned in a later period.",
@@ -377,6 +377,8 @@
       "pace": "Spending pace",
       "spent": "Spent",
       "elapsed": "Period elapsed",
+      "usuallyByToday": "Usually by today",
+      "slowDown": "Slow down to ~{perDay}/day to make it last",
       "spentOfTotal": "{spent} of {total}",
       "daysLeft": "{n}d left",
       "scheduled": "Scheduled",
@@ -431,6 +433,12 @@
       "layoutSaved": "Layout saved",
       "layoutError": "Could not save the layout"
     },
+    "pace": {
+      "aheadUsual": "{amount} ahead of usual pace",
+      "aheadEven": "{amount} ahead of pace",
+      "aheadUsualPerDay": "{amount} ahead of usual pace · ~{perDay}/day left for {count} day | {amount} ahead of usual pace · ~{perDay}/day left for {count} days",
+      "aheadEvenPerDay": "{amount} ahead of pace · ~{perDay}/day left for {count} day | {amount} ahead of pace · ~{perDay}/day left for {count} days"
+    },
     "options": {
       "title": "Options",
       "manageLayout": "Manage layout",
@@ -439,7 +447,8 @@
       "rowBarGoal": "Goal bar",
       "rowBarCombined": "Combined bar",
       "rowBarSplit": "Split bars",
-      "rowBarNone": "No bar"
+      "rowBarNone": "No bar",
+      "paceHint": "Pace hint"
     },
     "goals": {
       "askHint": "Assign this amount here to stay on track.",

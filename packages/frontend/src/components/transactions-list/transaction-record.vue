@@ -122,7 +122,7 @@
             <span class="line-clamp-1 text-sm tracking-wider">
               {{ accountFrom?.name }}
             </span>
-            <ArrowRight :size="14" :class="['shrink-0 opacity-60', linkTarget.flowsToAccount && 'rotate-180']" />
+            <ArrowRight :size="14" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
             <BrandLogo
               v-if="linkTarget.logoSelection"
               v-bind="toLogoDisplayProps({ selection: linkTarget.logoSelection })"
@@ -443,7 +443,6 @@ const linkTarget = computed(() => {
       name: portfolioName.value,
       isDeleted: isPortfolioDeleted.value,
       isLoading: isLoadingPortfolioLink.value,
-      flowsToAccount: false,
     };
   }
   if (transaction.value.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_to_venture) {
@@ -453,8 +452,6 @@ const linkTarget = computed(() => {
       name: ventureLinkData.value?.dealName ?? '',
       isDeleted: ventureLinkData.value?.isDealDeleted ?? false,
       isLoading: isLoadingVentureLink.value,
-      // Distributions and exits pay out of the deal into the account.
-      flowsToAccount: transaction.value.transactionType === TRANSACTION_TYPES.income,
     };
   }
   return null;

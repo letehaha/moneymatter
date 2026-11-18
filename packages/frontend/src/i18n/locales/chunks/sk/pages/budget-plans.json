@@ -340,7 +340,7 @@
         "outsideSpending": "Výdavky mimo vašich riadkov",
         "fromLines": "Z riadkov (vrátený prenos / pokryté prečerpanie)",
         "assigned": "Priradené v tomto období",
-        "cashHint": "Hotovosť na účtoch plánu, mínus kreditné limity.",
+        "cashHint": "Prostriedky na účtoch rozpočtu. Úverové limity sa odpočítajú, keď je zapnuté „Zahrnúť úverové limity do zostatku.",
         "inLinesHint": "Všetko, čo je momentálne vo vašich riadkoch.",
         "driftHint": "Pohyby kurzu a zostatky nevysvetlené transakciami.",
         "committedLaterHint": "Už priradené v neskoršom období.",

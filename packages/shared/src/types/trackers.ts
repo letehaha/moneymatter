@@ -62,7 +62,7 @@ export interface TrackerModel extends EntityLogoFields {
   /** How many days before `startDate` the AI also looks at. One of `TRACKER_AI_PRE_WINDOW_DAYS`. */
   aiPreWindowDays: TrackerAiPreWindowDays;
   aiLastScannedAt: Date | null;
-  /** Rule categories. Write-only; parent ids are expanded to children server-side. */
+  /** Rule categories. Write-only; matched exactly, so subcategories must be listed too. */
   categoryIds?: string[];
   /** Rule categories, read-only. */
   categories?: EmbeddedCategoryModel[];

@@ -4,6 +4,7 @@ import { config } from '@/common/config';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -96,7 +97,7 @@ const { height: stripHeight } = useElementSize(stripRef, undefined, { box: 'bord
 // The floating panel is absolutely positioned inside the clipping frame, so the frame must be at least as tall.
 const floatingPanelRef = ref<HTMLElement | null>(null);
 const { height: floatingPanelHeight } = useElementSize(floatingPanelRef, undefined, { box: 'border-box' });
-const { rowBars } = useGridDisplayOptions();
+const { rowBars, paceHint } = useGridDisplayOptions();
 const { panelWidth, panelOpen, startResize, resetPanelWidth, isNarrow, isPanelAttached, isPanelFloating, isPanelTab } =
   useFrameLayout({
     frameRef,
@@ -367,6 +368,10 @@ const openLineDialog = ({
                 {{ $t(option.labelKey) }}
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuCheckboxItem v-model="paceHint">
+              {{ $t('budgetPlans.options.paceHint') }}
+            </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem @select="isLayoutOpen = true">
               <LayoutListIcon class="size-4" />
@@ -675,6 +680,7 @@ const openLineDialog = ({
               :live-group-ids="liveGroupIds"
               :unit="goalUnit"
               :row-bars="rowBars"
+              :pace-hint="paceHint"
               :narrow="isNarrow"
               :select-mode="isNarrow && selectMode"
               @edit="(line) => openLineDialog({ line })"

@@ -340,7 +340,7 @@
         "outsideSpending": "Spending outside your lines",
         "fromLines": "From lines (rollover returned / overspending covered)",
         "assigned": "Assigned this period",
-        "cashHint": "Cash in the plan's accounts, minus credit limits.",
+        "cashHint": "Cash in the plan's accounts. Credit limits are subtracted when Include credit limits in balance is on.",
         "inLinesHint": "Everything currently in your lines.",
         "driftHint": "Rate moves and balances not explained by transactions.",
         "committedLaterHint": "Already assigned in a later period.",

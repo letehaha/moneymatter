@@ -123,6 +123,10 @@
       "tagModeAddHint": "Behält die aktuellen Tags bei und fügt diese hinzu.",
       "tagModeReplaceHint": "Entfernt alle aktuellen Tags und fügt dann diese hinzu.",
       "tagModeRemoveHint": "Entfernt nur diese Tags. Andere Tags bleiben erhalten.",
+      "excludeFromStatsHint": "On keeps the selected transactions out of reports, dashboard widgets, budgets and trackers. Off brings them back. Balances aren't affected.",
+      "excludeFromStatsDontChange": "Don't change stats",
+      "confirmExcludeFromStats": "Exclude from stats",
+      "confirmIncludeInStats": "Include in stats",
       "totals": {
         "income": "Einnahmen",
         "expense": "Ausgaben",

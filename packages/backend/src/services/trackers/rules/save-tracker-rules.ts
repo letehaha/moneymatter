@@ -5,7 +5,6 @@ import TrackerTags from '@models/tracker-tags.model';
 import { assertTagsOwnedByUser } from '@services/tags/assert-tags-owned-by-user';
 
 import { assertCategoriesOwnedByUser } from '../utils/assert-categories-owned-by-user';
-import { expandCategoryIds } from '../utils/expand-category-ids';
 import { syncTrackerRules } from './sync-tracker-rules';
 
 /**
@@ -27,9 +26,8 @@ export const saveTrackerRules = async ({
 }) => {
   if (categoryIds !== undefined) {
     const uniqueIds = await assertCategoriesOwnedByUser({ userId: ownerUserId, categoryIds });
-    const expandedIds = await expandCategoryIds({ userId: ownerUserId, categoryIds: uniqueIds });
     await TrackerCategories.destroy({ where: { trackerId } });
-    await TrackerCategories.bulkCreate(expandedIds.map((categoryId) => ({ trackerId, categoryId })));
+    await TrackerCategories.bulkCreate(uniqueIds.map((categoryId) => ({ trackerId, categoryId })));
   }
   if (tagIds !== undefined) {
     const uniqueIds = await assertTagsOwnedByUser({ userId: ownerUserId, tagIds });

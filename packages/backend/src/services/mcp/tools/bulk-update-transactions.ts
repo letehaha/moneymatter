@@ -11,7 +11,7 @@ export const bulkUpdateTransactionsTool = defineTool({
   toolset: 'core',
   access: 'write',
   description:
-    'Update multiple transactions at once. Provide transactionIds plus at least one of categoryId, tagIds, note, or payeeId (null clears the payee). Tags can be added to, removed from, or replaced on all specified transactions.',
+    'Update multiple transactions at once. Provide transactionIds plus at least one of categoryId, tagIds, note, payeeId (null clears the payee), or excludeFromStats. Tags can be added to, removed from, or replaced on all specified transactions.',
   input: {
     transactionIds: z.array(recordId()).min(1).describe('IDs of transactions to update'),
     categoryId: recordId().optional().describe('New category ID to assign to all transactions'),
@@ -24,6 +24,10 @@ export const bulkUpdateTransactionsTool = defineTool({
     payeeId: payeeIdSchema().describe(
       'ID of an existing payee to link to all transactions (from get_payees). Pass null to clear the payee',
     ),
+    excludeFromStats: z
+      .boolean()
+      .optional()
+      .describe('true keeps the transactions out of reports and stats without removing them; false brings them back'),
   },
   run: ({ userId, args }) =>
     bulkUpdate({
@@ -34,5 +38,6 @@ export const bulkUpdateTransactionsTool = defineTool({
       tagMode: args.tagMode,
       note: args.note,
       payeeId: args.payeeId,
+      excludeFromStats: args.excludeFromStats,
     }),
 });

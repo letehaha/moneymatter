@@ -27,7 +27,9 @@ export const createTrackerTool = defineTool({
     rulesEnabled: createTrackerBodyShape.rulesEnabled.describe(
       "Auto-add the user's transactions in the date range matching any of categoryIds or tagIds. Needs at least one of them. Default: false",
     ),
-    categoryIds: createTrackerBodyShape.categoryIds.describe('Rule categories; parent IDs include their children'),
+    categoryIds: createTrackerBodyShape.categoryIds.describe(
+      'Rule categories, matched exactly; list subcategories too to include them',
+    ),
     tagIds: createTrackerBodyShape.tagIds.describe('Rule tags'),
     rulesCleanup: createTrackerBodyShape.rulesCleanup.describe(
       'Remove rule-added transactions that stop matching the rules. Default: true',

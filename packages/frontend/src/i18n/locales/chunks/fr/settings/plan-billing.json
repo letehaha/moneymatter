@@ -32,6 +32,7 @@
       "current": {
         "lifetime": "{plan} · à vie",
         "lifetimeMeta": "Tous les avantages de Plus. Sans renouvellement, sans carte enregistrée.",
+        "lifetimePurchaseMeta": "No renewal, no card on file.",
         "earlyAdopterNote": "Merci d'avoir été parmi les premiers. Toutes les fonctionnalités actuelles de Plus vous sont acquises à vie. Les fonctionnalités futures et celles impliquant des coûts récurrents par utilisateur seront réservées aux formules payantes. Envie d'en profiter ? Bénéficiez de 50 % de réduction à vie sur toutes les formules, appliquée automatiquement au paiement.",
         "seats": "1 accès foyer | {count} accès foyer",
         "subscription": "{tier} · {cycle}",
