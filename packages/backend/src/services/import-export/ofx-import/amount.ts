@@ -8,7 +8,7 @@ export function parseOfxAmount({ value }: { value: string }): Money {
   let normalized = value.trim();
   // The OFX spec allows a comma as the decimal mark; big.js accepts neither it nor a leading "+"
   // "1,000" stays invalid: OFX has no thousands separator, and reading it as 1.000 would be silently wrong
-  if (!normalized.includes('.') && /^[+-]?\d*,(\d{1,2}|\d{4,})$/.test(normalized)) {
+  if (/^[+-]?\d*,(\d{1,2}|\d{4,})$/.test(normalized)) {
     normalized = normalized.replace(',', '.');
   }
   if (!DECIMAL.test(normalized)) {
