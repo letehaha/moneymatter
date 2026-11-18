@@ -122,6 +122,20 @@ describe('getInlineCellMode', () => {
       'b b n n b e e',
     ],
     [
+      'transfer leg whose other leg is a bank row on an account that is not loaded',
+      {
+        tx: buildTx({ ...preSeam, transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer }),
+        account: manual,
+        oppositeTx: buildTx({
+          ...preSeam,
+          accountType: ACCOUNT_TYPES.monobank,
+          transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+        }),
+        oppositeAccount: undefined,
+      },
+      'b b n n b e e',
+    ],
+    [
       'transfer between manual accounts',
       {
         tx: buildTx({ transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer }),

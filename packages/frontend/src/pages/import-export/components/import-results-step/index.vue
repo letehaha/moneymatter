@@ -107,9 +107,7 @@
       </div>
     </div>
 
-    <Callout v-if="summary?.skippedAfterBankSeam" variant="info">
-      <p>{{ store.bankSeamSkippedMessage({ count: summary.skippedAfterBankSeam }) }}</p>
-    </Callout>
+    <BankSeamSkippedCallout :count="summary?.skippedAfterBankSeam" :accounts="store.seamTargets.seamAccounts" />
 
     <!-- Per-account balance changes (only present when the import touched balances) -->
     <AccountBalanceChangesTable v-if="summary" :changes="summary.accountBalanceChanges ?? []" />
@@ -182,6 +180,7 @@ import { MappingTable, type MappingTableColumn } from '@/components/lib/ui/mappi
 import { StatCard } from '@/components/lib/ui/stat-card';
 import { StatusIndicator } from '@/components/lib/ui/status-indicator';
 import { cn } from '@/lib/utils';
+import BankSeamSkippedCallout from '@/pages/import-export/components/bank-seam-skipped-callout.vue';
 import AccountBalanceChangesTable from '@/pages/import-export/components/account-balance-changes-table.vue';
 import BalanceDesyncCallout from '@/pages/import-export/components/balance-desync-callout.vue';
 import { importErrorMessage } from '@/pages/import-export/utils/import-error-message';

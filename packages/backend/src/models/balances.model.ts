@@ -10,7 +10,7 @@ import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
 import { roundHalfToEven } from '@common/utils/round-half-to-even';
 import { logger } from '@js/utils';
-import { getLinkDayStart } from '@services/accounts/seam';
+import { getLinkDayStart, isBeforeSeamStart } from '@services/accounts/seam';
 import { runInSavepoint } from '@services/common/run-in-savepoint';
 import { getExchangeRate } from '@services/user-exchange-rate/get-exchange-rate.service';
 import { subDays, startOfMonth, startOfDay } from 'date-fns';
@@ -249,7 +249,7 @@ export default class Balances extends Model {
           const { findSeamAccount } = await import('@services/balances/revalue-balance-history.service');
           const linkedAccount = await findSeamAccount({ accountId });
           const linkDayStart = linkedAccount && getLinkDayStart({ externalData: linkedAccount.externalData });
-          if (linkDayStart && date < linkDayStart) break;
+          if (linkDayStart && isBeforeSeamStart({ seamStart: linkDayStart, time })) break;
 
           const exchangeRateData = await getExchangeRate({
             userId: data.userId,

@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { useCategoriesStore } from '@/stores/categories/categories';
 import { useImportExportStore } from '@/stores/import-export';
 import { useTagsStore } from '@/stores/tags';
+import { useAccountsStore } from '@/stores/accounts';
 import type { TagMappingValue } from '@bt/shared/types';
 import AccountMappingTable, { type AccountAction } from './account-mapping-table.vue';
 import CategoryMappingTable from './category-mapping-table.vue';
@@ -37,10 +38,11 @@ const props = defineProps<{
 // ---- Stores ----
 
 const importStore = useImportExportStore();
+const accountsStore = useAccountsStore();
 const categoriesStore = useCategoriesStore();
 const tagsStore = useTagsStore();
 
-const { csvTargetableAccounts } = storeToRefs(importStore);
+const { importLinkableAccounts } = storeToRefs(accountsStore);
 const { formattedCategories } = storeToRefs(categoriesStore);
 const { tags } = storeToRefs(tagsStore);
 
@@ -339,7 +341,7 @@ async function handleNext() {
         v-if="section === 'accounts' && importStore.uniqueAccountsInCSV.length > 0"
         :items="importStore.uniqueAccountsInCSV"
         :mapping="importStore.accountMapping"
-        :available-accounts="csvTargetableAccounts"
+        :available-accounts="importLinkableAccounts"
         :title="t('pages.importExport.resolveValues.accounts.sectionTitle')"
         :resolved-label="t('importShared.resolvedCounterWord')"
         :quick-actions="accountQuickActions"

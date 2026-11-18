@@ -185,29 +185,42 @@ const createAccountsForConnection = withTransaction(
         }
         if (isRelink) {
           // Locked before the import check: an import opening its batch now waits and sees this relink.
-          await lockAccountRow({ accountId: existingAccount.id, userId, noKey: true });
+          const locked = await lockAccountRow({ accountId: existingAccount.id, userId, noKey: true });
+          if (locked?.bankDataProviderConnectionId) {
+            await assertExternalAccountNotLinkedElsewhere({
+              userId,
+              providerType: connection.providerType,
+              externalId: providerAccount.externalId,
+            });
+          }
+          if (!locked || locked.bankDataProviderConnectionId !== null) {
+            throw new NotFoundError({
+              message: t({ key: 'bankDataProviders.accountNotLinkedToConnection' }),
+              code: API_ERROR_CODES.notFound,
+            });
+          }
+          existingAccount = locked;
           await assertNoUnfinishedImport({ userId });
         }
 
         const previousLink = existingAccount.externalData?.bankConnection;
-        const relinkBankBalance = isRelink && previousLink ? requireProviderBalance({ providerAccount }) : null;
+        const relinkBankBalance = isRelink ? requireProviderBalance({ providerAccount }) : null;
         // A relink starts a new link day. The queued sync's absorb stamps S from the bank
         // balance, so nothing from the previous link carries over.
-        const bankConnection: AccountExternalData['bankConnection'] =
-          relinkBankBalance && previousLink
-            ? {
-                linkedAt: new Date().toISOString(),
-                linkingStrategy: 'forward-only',
-                balanceReconciliation: {
-                  systemBalance: existingAccount.currentBalance.toCents(),
-                  externalBalance: relinkBankBalance.toCents(),
-                  difference: relinkBankBalance.subtract(existingAccount.currentBalance).toCents(),
-                  adjustmentTransactionId: null,
-                  residualTarget: previousLink.balanceReconciliation?.residualTarget,
-                  pendingAbsorb: true,
-                },
-              }
-            : previousLink;
+        const bankConnection: AccountExternalData['bankConnection'] = relinkBankBalance
+          ? {
+              linkedAt: new Date().toISOString(),
+              linkingStrategy: 'forward-only',
+              balanceReconciliation: {
+                systemBalance: existingAccount.currentBalance.toCents(),
+                externalBalance: relinkBankBalance.toCents(),
+                difference: relinkBankBalance.subtract(existingAccount.currentBalance).toCents(),
+                adjustmentTransactionId: null,
+                residualTarget: previousLink?.balanceReconciliation?.residualTarget,
+                pendingAbsorb: true,
+              },
+            }
+          : previousLink;
 
         // Re-link and re-activate the account
         await existingAccount.update({
@@ -315,7 +328,7 @@ const createAccountsForConnection = withTransaction(
           creditLimit: creditLimitCents,
           refCreditLimit,
           externalId: providerAccount.externalId,
-          externalData: { ...(providerAccount.metadata || {}), ...(currencyFallback && { currencyFallback }) },
+          externalData: { ...providerAccount.metadata, ...(currencyFallback && { currencyFallback }) },
           bankDataProviderConnectionId: connectionId,
         });
         createdAccounts.push(newAccount);

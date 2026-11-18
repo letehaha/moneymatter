@@ -1,4 +1,4 @@
-import { getBankRowPermissions, isBankAccount } from '@/common/utils/bank-row-permissions';
+import { getBankRowPermissions, isBankAccount, isOnBankAccount } from '@/common/utils/bank-row-permissions';
 import {
   ACCOUNT_CATEGORIES,
   ACCOUNT_TYPES,
@@ -55,8 +55,9 @@ const isBankOwned = ({
   account: AccountModel | undefined;
   column: TABLE_COLUMN;
 }) => {
-  if (!account || !isBankAccount({ account })) return false;
-  if (column === TABLE_COLUMN.account || !tx) return true;
+  if (!tx) return !!account && isBankAccount({ account });
+  if (!isOnBankAccount({ transaction: tx, account })) return false;
+  if (column === TABLE_COLUMN.account) return true;
   return !getBankRowPermissions({ transaction: tx, account }).canEditLockedFields;
 };
 

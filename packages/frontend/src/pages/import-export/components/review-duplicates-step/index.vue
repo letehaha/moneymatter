@@ -42,9 +42,7 @@
         </div>
       </div>
 
-      <Callout v-if="store.skippedAfterBankSeam > 0" variant="info">
-        <p>{{ store.bankSeamSkippedMessage({ count: store.skippedAfterBankSeam }) }}</p>
-      </Callout>
+      <BankSeamSkippedCallout :count="store.skippedAfterBankSeam" :accounts="store.seamTargets.seamAccounts" />
 
       <!-- A seam account's balance is owned by its bank feed, so the toggle does nothing when every target is one. -->
       <RecalculateBalanceToggle
@@ -54,10 +52,14 @@
         :settings-load-failed="store.recalculateBalanceSettingLoadFailed"
       />
       <p
-        v-if="store.seamTargets.seamAccounts.length > 0 && !store.seamTargets.isEveryTargetSeam"
-        class="text-muted-foreground -mt-3 text-xs"
+        v-if="store.seamTargets.seamAccounts.length > 0"
+        :class="cn('text-muted-foreground', store.seamTargets.isEveryTargetSeam ? 'text-sm' : '-mt-3 text-xs')"
       >
-        {{ $t('pages.importExport.csvImport.bankSeamRecalculateHint') }}
+        {{
+          store.seamTargets.isEveryTargetSeam
+            ? $t('pages.importExport.csvImport.bankSeamRecalculateAllHint')
+            : $t('pages.importExport.csvImport.bankSeamRecalculateHint')
+        }}
       </p>
 
       <!-- Invalid rows table -->
@@ -234,6 +236,8 @@ import { Callout } from '@/components/lib/ui/callout';
 import { MappingTable, type MappingTableColumn } from '@/components/lib/ui/mapping-table';
 import { StatCard } from '@/components/lib/ui/stat-card';
 import { StatusIndicator } from '@/components/lib/ui/status-indicator';
+import { cn } from '@/lib/utils';
+import BankSeamSkippedCallout from '@/pages/import-export/components/bank-seam-skipped-callout.vue';
 import RecalculateBalanceToggle from '@/pages/import-export/components/recalculate-balance-toggle.vue';
 import { useImportExportStore } from '@/stores/import-export';
 import type { InvalidRow } from '@bt/shared/types';

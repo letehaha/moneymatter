@@ -13,10 +13,12 @@ import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
 import { trackImportCompleted } from '@js/utils/posthog';
 import * as Accounts from '@models/accounts.model';
-import { lockAccountRow } from '@services/accounts/lock-account-row';
-import { getSeamStart } from '@services/accounts/seam';
-import { withTransaction } from '@services/common/with-transaction';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import {
+  assertBankLinksUnchanged,
+  bankLinkChangedError,
+  excludeSeamAccounts,
+} from '@services/import-export/core/bank-seam';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { ImportJobError } from '@services/import-export/core/queue/import-job-error';
@@ -73,36 +75,6 @@ interface ExecuteImportParams {
   onProgress?: (processedCount: number, totalCount: number) => void | Promise<void>;
   openImportBatch: OpenImportBatch;
 }
-
-const bankLinkChangedError = () =>
-  new ImportJobError({
-    message: t({ key: 'csvImport.bankLinkChangedSinceReview' }),
-    failure: { code: 'bank-link-changed' },
-  });
-
-/**
- * Runs once the batch row is committed: a link or unlink holding the account lock commits
- * first and is seen here, or reaches its unfinished-import check afterwards and is refused.
- */
-const assertBankLinksUnchanged = withTransaction(
-  async ({
-    userId,
-    accountIds,
-    seamStartByAccountId,
-  }: {
-    userId: number;
-    accountIds: string[];
-    seamStartByAccountId: Map<string, Date>;
-  }): Promise<void> => {
-    for (const accountId of accountIds.toSorted((a, b) => a.localeCompare(b))) {
-      const account = await lockAccountRow({ accountId, userId, noKey: true });
-      if (!account) continue;
-      const seamStart = getSeamStart({ account });
-      const isUnchanged = seamStart?.getTime() === seamStartByAccountId.get(accountId)?.getTime();
-      if (!isUnchanged || (!seamStart && account.type !== ACCOUNT_TYPES.system)) throw bankLinkChangedError();
-    }
-  },
-);
 
 function pickReferenced<T>({ mapping, referenced }: { mapping: Record<string, T>; referenced: Set<string> }) {
   return Object.fromEntries(Object.entries(mapping).filter(([sourceName]) => referenced.has(sourceName)));
@@ -275,7 +247,7 @@ async function executeImportImpl({
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
 
   const plannedMatchAccountIds = await selectAccountsWithPlannedRows({
-    accountIds: capturedAccountIds.filter((accountId) => !seamStartByAccountId.has(accountId)),
+    accountIds: excludeSeamAccounts({ accountIds: capturedAccountIds, seamStartByAccountId }),
   });
 
   // Resolve only the entities the surviving rows reference. A mapping entry for a

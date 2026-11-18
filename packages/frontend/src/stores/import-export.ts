@@ -23,7 +23,6 @@ import type { AccountMappingConfig } from '@bt/shared/types';
 type UnpriceableRow = NonNullable<DetectDuplicatesResponse['unpriceableRows']>[number];
 import { executeImport as executeImportApi, getCsvImportStatus } from '@/api/import-export';
 import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const/vue-query';
-import { formatBankSeamDay } from '@/common/utils/bank-row-permissions';
 import { layoutFingerprint } from '@/common/utils/layout-fingerprint';
 import { useCategoryMappingPresets } from '@/composable/use-category-mapping-presets';
 import { useImportJobProgress } from '@/composable/use-import-job-progress';
@@ -38,7 +37,7 @@ import {
   classifyTransactionTypeValues,
   matchColumns,
 } from '@/pages/import-export/utils/auto-match';
-import { getCsvSeamTargets, getCsvTargetableAccounts } from '@/pages/import-export/utils/bank-seam-targets';
+import { getCsvSeamTargets } from '@/pages/import-export/utils/bank-seam-targets';
 import { type ColumnMapping, buildInitialColumnMapping } from '@/pages/import-export/utils/build-initial-mapping';
 import { toColumnMappingConfig } from '@/pages/import-export/utils/column-mapping-config';
 import {
@@ -389,12 +388,6 @@ export const useImportExportStore = defineStore('importExport', () => {
     mapping?.action === 'skip' ||
     (mapping?.action === 'link-existing' && !!mapping.tagId);
 
-  const csvTargetableAccounts = computed(() =>
-    getCsvTargetableAccounts({
-      importLinkableAccounts: accountsStore.importLinkableAccounts,
-      accounts: accountsStore.accounts ?? [],
-    }),
-  );
   const seamTargets = computed(() =>
     getCsvSeamTargets({
       account: columnMapping.value.account,
@@ -402,16 +395,6 @@ export const useImportExportStore = defineStore('importExport', () => {
       accountsRecord: accountsStore.accountsRecord,
     }),
   );
-  // The seam date is named only when it is unambiguous: a single seam account among the targets.
-  const bankSeamSkippedMessage = ({ count }: { count: number }) => {
-    const [seamAccount, ...others] = seamTargets.value.seamAccounts;
-    if (seamAccount?.bankSeamAt && others.length === 0) {
-      const date = formatBankSeamDay({ seamAt: seamAccount.bankSeamAt });
-      return i18n.global.t('pages.importExport.csvImport.bankSeamSkipped', { count, date }, count);
-    }
-    return i18n.global.t('pages.importExport.csvImport.bankSeamSkippedNoDate', { count }, count);
-  };
-
   const skippedAccountNames = computed<string[]>(() =>
     Object.entries(accountMapping.value)
       .filter(([, value]) => value.action === 'skip')
@@ -506,7 +489,7 @@ export const useImportExportStore = defineStore('importExport', () => {
           currencyCode: account.currency || undefined,
         })),
       getTargets: () =>
-        csvTargetableAccounts.value.map((account) => ({
+        accountsStore.importLinkableAccounts.map((account) => ({
           id: String(account.id),
           name: account.name,
           currencyCode: account.currencyCode,
@@ -1011,9 +994,7 @@ export const useImportExportStore = defineStore('importExport', () => {
     isResolveAccountsStepValid,
     isResolveCategoriesStepValid,
     skippedAccountNames,
-    csvTargetableAccounts,
     seamTargets,
-    bankSeamSkippedMessage,
     visibleCategoriesToResolve,
     visibleTagsToResolve,
     matchingCategoryPreset,

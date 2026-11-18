@@ -114,7 +114,12 @@ const HOUR_MS = 60 * 60 * 1000;
 
 function mockRows(count: number) {
   findWithFiltersMock.mockResolvedValue(
-    Array.from({ length: count }, (_, i) => ({ id: `tx-${i}`, accountId: 'acc-1' })),
+    Array.from({ length: count }, (_, i) => ({
+      id: `tx-${i}`,
+      accountId: 'acc-1',
+      accountType: ACCOUNT_TYPES.system,
+      time: new Date(Date.now() - 10 * 24 * HOUR_MS),
+    })),
   );
 }
 
@@ -327,6 +332,23 @@ describe('deleteImportBatch', () => {
       expect(revalueMock.mock.calls).toEqual([[{ accountId: 'acc-1' }]]);
       expect(bulkDeleteMock.mock.invocationCallOrder[0]!).toBeLessThan(revalueMock.mock.invocationCallOrder[0]!);
       expect(absorbMock).not.toHaveBeenCalled();
+    });
+
+    it('refuses a batch holding a row dated from the seam on before the size cap queues it', async () => {
+      findWithFiltersMock.mockResolvedValue(
+        Array.from({ length: 1001 }, (_, i) => ({
+          id: `tx-${i}`,
+          accountId: 'acc-1',
+          accountType: ACCOUNT_TYPES.system,
+          time: new Date(),
+        })),
+      );
+      mockBatch({ importedAt: new Date(Date.now() - HOUR_MS), finishedAt: new Date() });
+      mockSeamAccount();
+
+      await expect(deleteImportBatch({ userId: USER_ID, batchId: BATCH_ID })).rejects.toBeInstanceOf(ValidationError);
+
+      expect(bulkDeleteMock).not.toHaveBeenCalled();
     });
 
     it('fails the undo when the rebuild fails', async () => {

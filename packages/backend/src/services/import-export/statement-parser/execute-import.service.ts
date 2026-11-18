@@ -20,8 +20,10 @@ import * as Accounts from '@models/accounts.model';
 import { getCurrencies } from '@models/currencies.model';
 import * as Users from '@models/users.model';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
+import { getSeamStart } from '@services/accounts/seam';
 import { CATEGORIZATION_SCOPE, queueCategorizationJob } from '@services/ai-categorization';
 import { assertImportTargetNotBankLinked } from '@services/import-export/core/assert-import-target-not-bank-linked';
+import { assertBankLinksUnchanged, isFromBankSeam } from '@services/import-export/core/bank-seam';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { anchorImportDate } from '@services/import-export/core/parse/anchor-import-date';
 import { createTransaction } from '@services/transactions';
@@ -83,6 +85,7 @@ async function executeImportImpl({
       imported: 0,
       merged: 0,
       skipped: skipIndices.length,
+      skippedAfterBankSeam: 0,
       errors: [],
       newTransactionIds: [],
       batchId,
@@ -98,13 +101,14 @@ async function executeImportImpl({
     });
   }
   assertNotDerivedBalanceAccount({ account, actionPhrase: 'be an import target' });
-  assertImportTargetNotBankLinked({ account });
+  assertImportTargetNotBankLinked({ account, allowSeam: true });
+  const seamStart = getSeamStart({ account });
 
   // Get user's default category
   const defaultCategoryId = await Users.getUserDefaultCategory({ id: userId });
 
   // One probe for the whole run instead of one per row.
-  const matchPlanned = await accountHasPlannedRows({ accountId });
+  const matchPlanned = !seamStart && (await accountHasPlannedRows({ accountId }));
 
   // A code missing from Currencies would fail the row on its foreign key, so its pair is dropped instead.
   const originalCurrencyCodes = [
@@ -120,6 +124,7 @@ async function executeImportImpl({
   const errors: StatementImportError[] = [];
   const newTransactionIds: string[] = [];
   let mergedCount = 0;
+  let skippedAfterBankSeam = 0;
 
   let processedCount = 0;
   const tick = async () => {
@@ -128,6 +133,11 @@ async function executeImportImpl({
   };
 
   await openImportBatch({ userId, importDetails });
+  await assertBankLinksUnchanged({
+    userId,
+    accountIds: [accountId],
+    seamStartByAccountId: new Map(seamStart ? [[accountId, seamStart]] : []),
+  });
 
   for (let i = 0; i < transactions.length; i++) {
     // Skip if in skip list
@@ -153,6 +163,11 @@ async function executeImportImpl({
       tomorrow.setHours(23, 59, 59, 999);
       if (txDate > tomorrow) {
         errors.push({ transactionIndex: i, code: 'FUTURE_DATE', params: { date: tx.date } });
+        continue;
+      }
+
+      if (isFromBankSeam({ seamStart, time: txDate })) {
+        skippedAfterBankSeam += 1;
         continue;
       }
 
@@ -239,6 +254,7 @@ async function executeImportImpl({
     imported: newTransactionIds.length,
     merged: mergedCount,
     skipped: skipIndices.length,
+    skippedAfterBankSeam,
     errors,
     newTransactionIds,
     batchId,

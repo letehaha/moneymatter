@@ -1,10 +1,13 @@
 import { type RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { faker } from '@faker-js/faker';
+import { t } from '@i18n/index';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import Transactions from '@models/transactions.model';
 import { EXTERNAL_ACCOUNT_RESTRICTED_UPDATION_FIELDS } from '@services/transactions/update-transaction';
 import * as helpers from '@tests/helpers';
+import { subDays } from 'date-fns';
+import type { Response } from 'express';
 
 describe('Update transaction controller', () => {
   it('should reject negative amount', async () => {
@@ -1406,6 +1409,76 @@ describe('Update transaction controller', () => {
         amount: 18400,
         transferId: expenseLeg.transferId,
       });
+    });
+  });
+});
+
+const seamStartOf = async ({ accountId }: { accountId: string }) =>
+  new Date((await helpers.readAccount({ accountId })).bankSeamAt!);
+const createManualAccount = () =>
+  helpers.createAccount({
+    payload: helpers.buildAccountPayload({ name: 'Cash', currencyCode: 'USD', initialBalance: 500 }),
+    raw: true,
+  });
+const firstCategoryId = async () => (await helpers.getCategoriesList())[0]!.id as RecordId;
+const expectMoveRefused = (response: Response) => {
+  expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+  expect(helpers.errorMessage({ response })).toBe(t({ key: 'transactions.moveAcrossBankLinkedAccount', locale: 'en' }));
+};
+
+describe('moving a row onto an account with a bank seam', () => {
+  it.each([
+    ['before the seam', ({ seamStart }: { seamStart: Date }) => subDays(seamStart, 3).toISOString()],
+    ['from the seam on', ({ seamStart }: { seamStart: Date }) => seamStart.toISOString()],
+  ])('refuses moving a manual row onto the seam account %s', async (_label, timeOf) => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const seamAccount = await helpers.createSeamAccount();
+        const manualAccount = await createManualAccount();
+        const time = timeOf({ seamStart: await seamStartOf({ accountId: seamAccount.id }) });
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: manualAccount.id,
+            amount: 10,
+            time,
+            categoryId: await firstCategoryId(),
+          }),
+          raw: true,
+        });
+
+        expectMoveRefused(await helpers.updateTransaction({ id: tx.id, payload: { accountId: seamAccount.id, time } }));
+        expect((await helpers.getTransactionById({ id: tx.id, raw: true }))!.accountId).toBe(manualAccount.id);
+      },
+    });
+  });
+
+  it('refuses changing a transfer destination to the seam account', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const seamAccount = await helpers.createSeamAccount();
+        const [accountA, accountB] = [await createManualAccount(), await createManualAccount()];
+        const [baseTx, oppositeTx] = await helpers.createTransaction({
+          payload: {
+            ...helpers.buildTransactionPayload({
+              accountId: accountA.id,
+              amount: 10,
+              time: subDays(await seamStartOf({ accountId: seamAccount.id }), 3).toISOString(),
+              categoryId: await firstCategoryId(),
+            }),
+            transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+            destinationAccountId: accountB.id,
+            destinationAmount: 10,
+          },
+          raw: true,
+        });
+
+        expectMoveRefused(
+          await helpers.updateTransaction({ id: baseTx.id, payload: { destinationAccountId: seamAccount.id } }),
+        );
+        expect((await helpers.getTransactionById({ id: oppositeTx!.id, raw: true }))!.accountId).toBe(accountB.id);
+      },
     });
   });
 });

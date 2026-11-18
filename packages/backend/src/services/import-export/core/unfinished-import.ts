@@ -8,8 +8,11 @@ import { Op } from 'sequelize';
 // the queue instead if that ever hurts.
 const UNFINISHED_IMPORT_BLOCK_MS = 3 * 60 * 60 * 1000;
 
+/** A batch imported after this moment with no `finishedAt` still counts as running. */
+const unfinishedImportCutoff = () => new Date(Date.now() - UNFINISHED_IMPORT_BLOCK_MS);
+
 export const isImportBatchUnfinished = ({ batch }: { batch: Pick<ImportBatches, 'finishedAt' | 'importedAt'> }) =>
-  !batch.finishedAt && Date.now() - batch.importedAt.getTime() < UNFINISHED_IMPORT_BLOCK_MS;
+  !batch.finishedAt && batch.importedAt > unfinishedImportCutoff();
 
 /** An import still writing rows would land them across the link change and corrupt its balance absorb. */
 export const assertNoUnfinishedImport = async ({ userId }: { userId: number }): Promise<void> => {
@@ -17,7 +20,7 @@ export const assertNoUnfinishedImport = async ({ userId }: { userId: number }): 
     where: {
       userId,
       finishedAt: null,
-      importedAt: { [Op.gt]: new Date(Date.now() - UNFINISHED_IMPORT_BLOCK_MS) },
+      importedAt: { [Op.gt]: unfinishedImportCutoff() },
     },
     attributes: ['id'],
   });

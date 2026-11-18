@@ -10,7 +10,12 @@ jest.mock('@i18n/index', () => ({
 import { ACCOUNT_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 
-import { assertPreSeamManualRow, assertRowDeletableOnAccount } from './seam';
+import {
+  assertPreSeamManualRow,
+  assertRowDeletableOnAccount,
+  isBeforeSeam,
+  manualRowOnBankAccountMessage,
+} from './seam';
 /* eslint-enable import/first */
 
 const SEAM_ACCOUNT = {
@@ -50,7 +55,7 @@ describe('assertPreSeamManualRow', () => {
         transaction: manualRow({ time: '2026-11-01T00:00:00.000Z' }),
         nextTime: '2026-11-10T00:00:00.000Z',
       }),
-    ).toThrow('transactions.preSeamTimeOnOrAfterLinkDay');
+    ).toThrow('transactions.preSeamTimeOnOrAfterLinkDay {"date":"2026-11-10"}');
   });
 
   it('keeps the generic message for a bank row and for an account without a seam', () => {
@@ -68,17 +73,26 @@ describe('assertPreSeamManualRow', () => {
     ).toThrow('transactions.editReadonlyFields');
   });
 
-  it('says the other leg is on a bank-linked account for every refusal of an opposite leg', () => {
-    for (const time of ['2026-11-10T00:00:00.000Z', '2026-11-01T00:00:00.000Z']) {
-      expect(() =>
+  it('keeps the link-day limit for an opposite leg and names the other leg only for a bank row', () => {
+    const refuse =
+      ({ transaction }: { transaction: { accountType: ACCOUNT_TYPES; time: string } }) =>
+      () =>
         assertPreSeamManualRow({
           account: SEAM_ACCOUNT,
-          transaction: manualRow({ time }),
+          transaction,
           nextTime: '2026-11-12T00:00:00.000Z',
           isOppositeLeg: true,
-        }),
-      ).toThrow('transactions.oppositeLegOnBankAccount');
-    }
+        });
+
+    expect(refuse({ transaction: manualRow({ time: '2026-11-10T00:00:00.000Z' }) })).toThrow(
+      'transactions.manualRowOnOrAfterLinkDay {"date":"2026-11-10"}',
+    );
+    expect(refuse({ transaction: manualRow({ time: '2026-11-01T00:00:00.000Z' }) })).toThrow(
+      'transactions.preSeamTimeOnOrAfterLinkDay {"date":"2026-11-10"}',
+    );
+    expect(refuse({ transaction: { accountType: ACCOUNT_TYPES.lunchflow, time: '2026-11-01T00:00:00.000Z' } })).toThrow(
+      'transactions.oppositeLegOnBankAccount',
+    );
   });
 });
 
@@ -117,5 +131,32 @@ describe('assertRowDeletableOnAccount', () => {
         transaction: manualRow({ time: '2026-11-12T00:00:00.000Z' }),
       }),
     ).not.toThrow();
+  });
+});
+
+describe('isBeforeSeam', () => {
+  it('compares against UTC midnight of the link day, for Date and string times', () => {
+    expect(isBeforeSeam({ account: SEAM_ACCOUNT, time: '2026-11-09T23:59:59.999Z' })).toBe(true);
+    expect(isBeforeSeam({ account: SEAM_ACCOUNT, time: new Date('2026-11-10T00:00:00.000Z') })).toBe(false);
+    expect(isBeforeSeam({ account: { ...SEAM_ACCOUNT, seamBalance: null }, time: '2026-11-01T00:00:00.000Z' })).toBe(
+      false,
+    );
+  });
+});
+
+describe('manualRowOnBankAccountMessage', () => {
+  it('names the link day only for a seam account and a time from the seam on', () => {
+    expect(manualRowOnBankAccountMessage({ account: SEAM_ACCOUNT, time: '2026-11-10T00:00:00.000Z' })).toBe(
+      'transactions.manualRowOnOrAfterLinkDayCreate {"date":"2026-11-10"}',
+    );
+    expect(manualRowOnBankAccountMessage({ account: SEAM_ACCOUNT, time: '2026-11-01T00:00:00.000Z' })).toBe(
+      'transactions.manualOnConnectedAccount',
+    );
+    expect(
+      manualRowOnBankAccountMessage({
+        account: { ...SEAM_ACCOUNT, seamBalance: null },
+        time: '2026-11-12T00:00:00.000Z',
+      }),
+    ).toBe('transactions.manualOnConnectedAccount');
   });
 });

@@ -150,7 +150,7 @@
         <AccountSelectField
           v-else-if="item.id === 'account' && accountUsesExisting"
           :model-value="selectedAccount"
-          :accounts="csvTargetableAccounts"
+          :accounts="importLinkableAccounts"
           class="w-full"
           required
           :placeholder="$t('pages.importExport.accountMapping.selectAccount')"
@@ -252,6 +252,7 @@ import {
   isTransactionTypeDecided,
 } from '@/pages/import-export/utils/field-decision';
 import { buildCategoryMapById } from '@/pages/import-export/utils/flatten-categories';
+import { useAccountsStore } from '@/stores/accounts';
 import { useCategoriesStore } from '@/stores/categories/categories';
 import { useImportExportStore } from '@/stores/import-export';
 import {
@@ -277,8 +278,9 @@ import TransactionTypeExpansion from './transaction-type-expansion.vue';
 const { t } = useI18n();
 
 const importStore = useImportExportStore();
+const accountsStore = useAccountsStore();
 const categoriesStore = useCategoriesStore();
-const { csvTargetableAccounts } = storeToRefs(importStore);
+const { importLinkableAccounts } = storeToRefs(accountsStore);
 const { categories, formattedCategories, categoriesMap } = storeToRefs(categoriesStore);
 
 /** Single file → its name; several files → a "N files" count (they were merged into one). */
@@ -605,7 +607,7 @@ const handleAccountColumnChange = (column: string | null) => {
 const selectedAccount = computed<AccountModel | null>(() => {
   const account = m.value.account;
   if (account?.option === AccountOptionValue.existingAccount && account.accountId) {
-    return csvTargetableAccounts.value.find((a) => a.id === account.accountId) ?? null;
+    return importLinkableAccounts.value.find((a) => a.id === account.accountId) ?? null;
   }
   return null;
 });

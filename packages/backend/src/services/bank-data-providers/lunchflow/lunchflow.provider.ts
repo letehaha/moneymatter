@@ -15,7 +15,7 @@ import { findSyncAnchor } from '../utils/find-sync-anchor';
 import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { LunchFlowApiClient } from './api-client';
-import { LunchFlowCredentials, LunchFlowMetadata } from './types';
+import { LunchFlowApiBalance, LunchFlowCredentials, LunchFlowMetadata } from './types';
 
 /**
  * LunchFlow provider implementation
@@ -274,15 +274,16 @@ export class LunchFlowProvider extends BaseBankDataProvider {
           );
         }
 
-        // Update account balance
+        let balanceResponse: LunchFlowApiBalance | null = null;
         try {
-          const balanceResponse = await apiClient.getBalance({ accountId });
-          const balanceMoney = Money.fromDecimal(balanceResponse.balance.amount);
-          await writeBankBalanceWithHistory({ account, balance: balanceMoney });
+          balanceResponse = await apiClient.getBalance({ accountId });
         } catch (error) {
           // Info-only: transactions are already synced; next sync retries the balance.
           const errorMsg = error instanceof Error ? error.message : String(error);
-          logger.info(`[LunchFlow] Failed to update balance for account ${account.id}: ${errorMsg}`);
+          logger.info(`[LunchFlow] Failed to fetch balance for account ${account.id}: ${errorMsg}`);
+        }
+        if (balanceResponse) {
+          await writeBankBalanceWithHistory({ account, balance: Money.fromDecimal(balanceResponse.balance.amount) });
         }
 
         return { transactionIds: createdTransactionIds };

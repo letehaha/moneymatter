@@ -1,4 +1,4 @@
-import { type AccountExternalData, TRANSACTION_TYPES } from '@bt/shared/types';
+import { type AccountExternalData, type LinkResidualTarget, TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { ExchangeRateUnavailableError } from '@js/errors';
 import { logger } from '@js/utils/logger';
@@ -161,6 +161,31 @@ const absorbIntoNativeOpeningBalance = async ({
 };
 
 /**
+ * `absorbLinkResidual`, except that without an exchange rate it moves only the native opening balance,
+ * also when the link asked for an adjustment row, which the log names.
+ */
+export const absorbLinkResidualWithRateFallback = async ({
+  accountId,
+  userId,
+  residualTarget,
+}: {
+  accountId: string;
+  userId: number;
+  residualTarget: LinkResidualTarget | undefined;
+}): Promise<LinkResidualOutcome> => {
+  try {
+    return await runInSavepoint(() => absorbLinkResidual({ accountId, userId }));
+  } catch (error) {
+    if (!(error instanceof ExchangeRateUnavailableError)) throw error;
+    logger.error(
+      { message: 'Link absorb had no exchange rate; moved only the native opening balance', error },
+      { code: 'LINK_ABSORB_RATE_FALLBACK', accountId, userId, requestedResidualTarget: residualTarget },
+    );
+    return absorbIntoNativeOpeningBalance({ accountId, userId });
+  }
+};
+
+/**
  * Runs the absorb linking deferred via `pendingAbsorb`, stamps S and clears the marker; a no-op
  * returning null without the marker. Without a rate only the native opening balance moves; any
  * other failure propagates to the caller's transaction.
@@ -174,17 +199,11 @@ export const runPendingLinkAbsorb = withTransaction(
     const account = await lockAccountRow({ accountId, userId, noKey: true });
     if (!hasPendingAbsorb({ row: account }) || !isLinkedToBank({ account })) return null;
 
-    let outcome: LinkResidualOutcome;
-    try {
-      outcome = await runInSavepoint(() => absorbLinkResidual({ accountId, userId }));
-    } catch (error) {
-      if (!(error instanceof ExchangeRateUnavailableError)) throw error;
-      logger.error(
-        { message: 'Pending link absorb had no exchange rate; moved only the native opening balance', error },
-        { code: 'PENDING_LINK_ABSORB_RATE_FALLBACK', accountId, userId },
-      );
-      outcome = await absorbIntoNativeOpeningBalance({ accountId, userId });
-    }
+    const outcome = await absorbLinkResidualWithRateFallback({
+      accountId,
+      userId,
+      residualTarget: account?.externalData?.bankConnection?.balanceReconciliation?.residualTarget,
+    });
     await stampSeamBalance({ accountId });
 
     // Re-read: the absorb rewrote the account behind this instance.

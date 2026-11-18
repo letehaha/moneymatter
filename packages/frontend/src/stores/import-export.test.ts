@@ -69,7 +69,7 @@ vi.mock('./onboarding', () => ({
 // Only reached through the resolve engine's account link targets; mocked so the
 // real store's accounts query never fires.
 vi.mock('./accounts', () => ({
-  useAccountsStore: vi.fn(() => ({ importLinkableAccounts: [], accounts: [], accountsRecord: {} })),
+  useAccountsStore: vi.fn(() => ({ importLinkableAccounts: [], accountsRecord: {} })),
 }));
 
 vi.mock('./categories/categories', () => ({
@@ -100,7 +100,6 @@ vi.mock('@/composable/data-queries/user-settings', () => ({
 // ----- helpers -----
 
 import * as apiModule from '@/api/import-export';
-import { i18n } from '@/i18n';
 import {
   AccountOptionValue,
   type CategoryMappingPreset,
@@ -391,8 +390,7 @@ describe('useImportExportStore – bank seam', () => {
 
   const withAccounts = (accounts: { id: string; bankSeamAt: string | null }[]) => {
     vi.mocked(useAccountsStore).mockReturnValue({
-      importLinkableAccounts: [],
-      accounts,
+      importLinkableAccounts: accounts,
       accountsRecord: Object.fromEntries(accounts.map((account) => [account.id, account])),
     } as unknown as ReturnType<typeof useAccountsStore>);
   };
@@ -443,30 +441,6 @@ describe('useImportExportStore – bank seam', () => {
     await store.executeImport();
 
     expect(mockExecuteImportApi).toHaveBeenCalledWith(expect.objectContaining({ skippedAfterBankSeam: 3 }));
-  });
-
-  it('names the seam day when the import targets a single seam account', () => {
-    const translate = vi.spyOn(i18n.global, 't');
-    const store = useImportExportStore();
-    seedStore(store);
-
-    store.bankSeamSkippedMessage({ count: 2 });
-
-    expect(translate).toHaveBeenCalledWith(
-      'pages.importExport.csvImport.bankSeamSkipped',
-      { count: 2, date: expect.stringMatching(/\d{2} \w{3} \d{4}/) },
-      2,
-    );
-  });
-
-  it('leaves the date out when the import targets several seam accounts', () => {
-    const translate = vi.spyOn(i18n.global, 't');
-    const store = useImportExportStore();
-    mapSourceAccounts({ store, accountIds: [seamAccount.id, otherSeamAccount.id] });
-
-    store.bankSeamSkippedMessage({ count: 1 });
-
-    expect(translate).toHaveBeenCalledWith('pages.importExport.csvImport.bankSeamSkippedNoDate', { count: 1 }, 1);
   });
 
   it('sends recalculateBalance: false when every target is a seam account, keeping the saved preference', async () => {

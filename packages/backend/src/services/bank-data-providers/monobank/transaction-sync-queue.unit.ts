@@ -46,6 +46,7 @@ const setAccountSyncStatusMock = jest.mocked(setAccountSyncStatus);
 const connectionsUpdateMock = jest.mocked(BankDataProviderConnections.update);
 const loggerErrorMock = jest.mocked(logger.error);
 const incrMock = jest.mocked(redisClient.incr);
+const delMock = jest.mocked(redisClient.del);
 
 const USER_ID = 42;
 const CONNECTION_ID = 'connection-1';
@@ -113,13 +114,14 @@ describe('finalizeSyncGroup via handleCompletedBatch', () => {
     expect(connectionsUpdateMock).not.toHaveBeenCalled();
   });
 
-  it('does not finalize a batch skipped because the account left the connection', async () => {
+  it('counts a batch skipped because the account left the connection and clears the group without finalizing', async () => {
     const accountId = generateRandomRecordId();
     const job = { ...buildCompletedJob(accountId), returnvalue: { success: false, skipped: true } } as unknown as Job;
 
     await handleCompletedBatch(job);
 
-    expect(incrMock).not.toHaveBeenCalled();
+    expect(incrMock).toHaveBeenCalledWith('jobgroup:group-1:completions');
+    expect(delMock).toHaveBeenCalledWith('jobgroup:group-1:completions');
     expect(runPendingLinkAbsorbMock).not.toHaveBeenCalled();
     expect(connectionsUpdateMock).not.toHaveBeenCalled();
   });

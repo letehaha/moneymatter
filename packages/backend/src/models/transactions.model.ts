@@ -60,7 +60,7 @@ import {
   plannedWhere,
 } from '@models/transactions-query/where-builders';
 import Users from '@models/users.model';
-import { assertRowDeletableOnAccount, SEAM_ACCOUNT_ATTRIBUTES } from '@services/accounts/seam';
+import { assertRowDeletableOnAccount, getSeamStart, SEAM_ACCOUNT_ATTRIBUTES } from '@services/accounts/seam';
 import { updateAccountBalanceForChangedTx } from '@services/accounts/update-balance-for-changed-tx';
 import {
   Op,
@@ -595,25 +595,46 @@ export default class Transactions extends Model {
 
   /**
    * True when the seam owns a manual row's balance effect, so the caller skips its own writes.
-   * Rows before the seam schedule its rebuild; a manual row crossing it throws. Bank rows always
-   * get false. Lazy-imported to avoid a model→service cycle.
+   * Rows before the seam schedule its rebuild; a manual row crossing it, or `entersLedger` from
+   * the seam on, throws. Bank rows always get false. Lazy-imported to avoid a model→service cycle.
    */
   private static async isBalanceOwnedBySeam({
     accountId,
     accountType,
     times,
     excludeTransactionId,
+    entersLedger = false,
   }: {
     accountId: string;
     accountType: ACCOUNT_TYPES;
     times: Date[];
     excludeTransactionId?: string;
+    entersLedger?: boolean;
   }): Promise<boolean> {
     const { schedulePreSeamRebuild } = await import('@services/balances/revalue-balance-history.service');
-    if (accountType === ACCOUNT_TYPES.system) return schedulePreSeamRebuild({ accountId, times, excludeTransactionId });
+    if (accountType === ACCOUNT_TYPES.system) {
+      return schedulePreSeamRebuild({
+        accountId,
+        times,
+        excludeTransactionId,
+        mode: entersLedger ? 'enter-ledger' : 'edit',
+      });
+    }
 
-    await schedulePreSeamRebuild({ accountId, times, excludeTransactionId, allowSeamCrossing: true });
+    await schedulePreSeamRebuild({ accountId, times, excludeTransactionId, mode: 'bank-row' });
     return false;
+  }
+
+  /** A manual row moving onto or off a seam account would skip the seam's rebuild on both sides. */
+  private static async assertMoveTouchesNoSeam({ sides }: { sides: Transactions[] }): Promise<void> {
+    const { findSeamAccount } = await import('@services/balances/revalue-balance-history.service');
+    for (const { accountId, accountType } of sides) {
+      if (accountType !== ACCOUNT_TYPES.system) continue;
+      const account = await findSeamAccount({ accountId });
+      if (account && getSeamStart({ account })) {
+        throw new ValidationError({ message: t({ key: 'transactions.moveAcrossBankLinkedAccount' }) });
+      }
+    }
   }
 
   @AfterCreate
@@ -623,7 +644,11 @@ export default class Transactions extends Model {
     // A planned row records money that hasn't moved yet.
     if (instance.isPlanned) return;
 
-    if (await Transactions.isBalanceOwnedBySeam({ accountId, accountType, times: [instance.time] })) return;
+    if (
+      await Transactions.isBalanceOwnedBySeam({ accountId, accountType, times: [instance.time], entersLedger: true })
+    ) {
+      return;
+    }
 
     if (accountType === ACCOUNT_TYPES.system) {
       await updateAccountBalanceForChangedTx({
@@ -660,6 +685,7 @@ export default class Transactions extends Model {
           accountId: newData.accountId,
           accountType: newData.accountType,
           times: [newData.time],
+          entersLedger: true,
         })
       ) {
         return;
@@ -737,13 +763,14 @@ export default class Transactions extends Model {
 
     const isAccountChanged = newData.accountId !== prevData.accountId;
 
-    if (
-      !isAccountChanged &&
-      (await Transactions.isBalanceOwnedBySeam({
+    if (isAccountChanged) {
+      await Transactions.assertMoveTouchesNoSeam({ sides: [prevData, newData] });
+    } else if (
+      await Transactions.isBalanceOwnedBySeam({
         accountId: newData.accountId,
         accountType: newData.accountType,
         times: [prevData.time, newData.time],
-      }))
+      })
     ) {
       return;
     }

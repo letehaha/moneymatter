@@ -156,7 +156,7 @@ import { useAccountAccess } from '@/composable/use-account-access';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { useAccountsStore, useCategoriesStore } from '@/stores';
 import { findFormattedCategoryById } from '@/stores/categories/helpers';
-import { type RecordId, type TransactionModel, type UpdateTransactionBody } from '@bt/shared/types';
+import type { RecordId, TransactionModel, UpdateTransactionBody } from '@bt/shared/types';
 import { createReusableTemplate } from '@vueuse/core';
 import { isBefore, subMilliseconds } from 'date-fns';
 import { XIcon } from '@lucide/vue';

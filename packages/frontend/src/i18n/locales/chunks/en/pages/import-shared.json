@@ -109,6 +109,8 @@
       "renameAria": "Rename mapping",
       "deleteAria": "Delete mapping",
       "confirmRenameAria": "Save name"
-    }
+    },
+    "bankSeamSkipped": "{count} row dated on or after {date} was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after {date} were skipped: the bank connection already provides transactions from that day.",
+    "bankSeamSkippedNoDate": "{count} row dated on or after the day its account was connected to a bank was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after the day their account was connected to a bank were skipped: the bank connection already provides transactions from that day."
   }
 }

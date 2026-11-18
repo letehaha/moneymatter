@@ -10,6 +10,7 @@ import {
   getBankSeamCutoff,
   isBankAccount,
   isBankLockedLeg,
+  isOnBankAccount,
 } from '@/common/utils/bank-row-permissions';
 import { isHttpUrl } from '@/common/utils/external-url';
 import { roundCoordinate } from '@/common/utils/coordinates';
@@ -130,7 +131,6 @@ import {
   canDeleteTransaction,
   getUnlistedCategoryIds,
   isPaymentTransaction,
-  isConnectedAccount,
   isTxEditableAsManual,
   prepopulateForm,
 } from './helpers';
@@ -391,10 +391,8 @@ const toLeg = ({ tx }: { tx: TransactionModel | undefined }) => ({
   transaction: tx,
   account: tx ? accountsRecord.value[tx.accountId] : undefined,
 });
-const isLegOnBankAccount = ({ tx }: { tx: TransactionModel | undefined }) => {
-  const { account } = toLeg({ tx });
-  return !!account && isBankAccount({ account });
-};
+const isLegOnBankAccount = ({ tx }: { tx: TransactionModel | undefined }) =>
+  !!tx && isOnBankAccount({ transaction: tx, account: accountsRecord.value[tx.accountId] });
 const isRecordOnBankAccount = computed(() => isLegOnBankAccount({ tx: transaction.value }));
 const isOppositeOnBankAccount = computed(() => isLegOnBankAccount({ tx: oppositeTransaction.value }));
 const isRecordBankLocked = computed(() => isBankLockedLeg(toLeg({ tx: transaction.value })));
@@ -596,7 +594,7 @@ const {
 // 3. When editing, validate refAmount in the same way
 
 const isEditableAsManual = computed(() =>
-  isTxEditableAsManual({ transaction: transaction.value, isRecordExternal: isRecordBankLocked.value }),
+  isTxEditableAsManual({ transaction: transaction.value, isRecordBankLocked: isRecordBankLocked.value }),
 );
 
 // Only the bank sync confirms a plan on a connected account, so edit mode keeps the
@@ -633,7 +631,7 @@ const isPlannedBadgeVisible = computed(
 const isSelectedAccountConnected = computed(() => {
   const account = resolvedAccount.value;
   if (!account) return false;
-  return isConnectedAccount({ account });
+  return isBankAccount({ account });
 });
 
 const nonTransferSourceAccounts = computed(() =>
@@ -1129,7 +1127,7 @@ const submit = ({ keepOpen = false }: { keepOpen?: boolean } = {}) => {
     isTransferTx: isTransferTx.value,
     isCurrenciesDifferent: isCurrenciesDifferent.value,
     isOriginalRefundsOverriden: isOriginalRefundsOverriden.value,
-    isRecordExternal: isRecordBankLocked.value,
+    isRecordBankLocked: isRecordBankLocked.value,
     isRecordOnBankAccount: isRecordOnBankAccount.value,
     transaction: transaction.value,
     linkedTransaction: linkedTransaction.value,
@@ -1164,6 +1162,13 @@ const paymentLegsLabel = computed(() =>
     ? t('dialogs.manageTransaction.form.paymentLegs.receivedIntoLabel')
     : t('dialogs.manageTransaction.form.paymentLegs.paidFromLabel'),
 );
+// A hand-entered row dated on or after the bank seam; the bank-sync copy would be wrong for it.
+const manualAfterLinkHint = computed(() => {
+  const tx = transaction.value;
+  const seamAt = tx ? accountsRecord.value[tx.accountId]?.bankSeamAt : null;
+  if (!tx || !seamAt || isEditableAsManual.value || tx.accountType !== ACCOUNT_TYPES.system) return undefined;
+  return t('transactions.inlineEdit.manualAfterLinkDescription', { date: formatBankSeamDay({ seamAt }) });
+});
 const paymentLegsHint = computed(() => {
   if (!isEditableAsManual.value) return t('dialogs.manageTransaction.form.paymentLegs.syncedHint');
   if (isSavedMultiAccount.value) return t('dialogs.manageTransaction.form.paymentLegs.editHint');
@@ -1874,6 +1879,10 @@ onUnmounted(() => {
               <ReuseDateField v-if="isMobileView" />
             </div>
 
+            <p v-if="manualAfterLinkHint" class="text-muted-foreground -mt-1 px-1 text-xs">
+              {{ manualAfterLinkHint }}
+            </p>
+
             <p v-if="wouldOverdrawLoanSource" class="text-warning-text -mt-1 px-1 text-xs">
               {{ $t('dialogs.loanPayment.overdrawWarning', { account: form.account?.name ?? '' }) }}
             </p>
@@ -1896,6 +1905,7 @@ onUnmounted(() => {
               :disabled="isFormFieldsDisabled"
               :is-main-locked="!isEditableAsManual"
               :is-main-account-locked="isRecordOnBankAccount"
+              :main-locked-hint="manualAfterLinkHint"
               :hint="paymentLegsHint"
               :main-amount-error="amountErrorMessage"
               :show-leg-errors="showLegErrors"

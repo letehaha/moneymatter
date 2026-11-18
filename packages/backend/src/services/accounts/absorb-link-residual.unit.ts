@@ -491,7 +491,7 @@ describe('runPendingLinkAbsorb', () => {
     expect(result).toEqual({ absorbedResidual: Money.fromDecimal(50).toCents() });
     expect(loggerErrorMock).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({ code: 'PENDING_LINK_ABSORB_RATE_FALLBACK' }),
+      expect.objectContaining({ code: 'LINK_ABSORB_RATE_FALLBACK' }),
     );
     const lastInitial = (accountsUpdateMock.mock.calls.at(-1)![0] as { initialBalance: Money }).initialBalance;
     expect(lastInitial.toNumber()).toBe(100);

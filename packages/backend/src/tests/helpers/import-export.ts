@@ -1109,6 +1109,8 @@ export function getBatchesHistory<R extends boolean | undefined = false>({
   });
 }
 
+export const latestBatchId = async () => (await getBatchesHistory({ raw: true })).items[0]!.batchId;
+
 // ============================================
 // Delete Import Batch Endpoint
 // ============================================

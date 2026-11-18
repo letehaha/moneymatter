@@ -1,20 +1,16 @@
-import { ACCOUNT_TYPES, type AccountExternalData } from '@bt/shared/types';
+import { ACCOUNT_TYPES } from '@bt/shared/types';
 import type { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import type Accounts from '@models/accounts.model';
-
-export interface SeamAccount {
-  type: ACCOUNT_TYPES;
-  externalData: AccountExternalData | null;
-  seamBalance: Money | null;
-}
 
 export const SEAM_ACCOUNT_ATTRIBUTES = [
   'type',
   'externalData',
   'seamBalance',
 ] as const satisfies readonly (keyof Accounts)[];
+
+export type SeamAccount = Pick<Accounts, (typeof SEAM_ACCOUNT_ATTRIBUTES)[number]>;
 
 /** UTC midnight of the day the account was linked forward-only to a bank feed. */
 export const getLinkDayStart = ({ externalData }: Pick<SeamAccount, 'externalData'>): Date | null => {
@@ -40,6 +36,46 @@ export const getSeam = ({ account }: { account: SeamAccount }): { seamStart: Dat
 export const getSeamStart = ({ account }: { account: SeamAccount }): Date | null =>
   getSeam({ account })?.seamStart ?? null;
 
+export const isBeforeSeamStart = ({ seamStart, time }: { seamStart: Date; time: Date | string }): boolean =>
+  new Date(time) < seamStart;
+
+export const isBeforeSeam = ({ account, time }: { account: SeamAccount; time: Date | string }): boolean => {
+  const seamStart = getSeamStart({ account });
+  return !!seamStart && isBeforeSeamStart({ seamStart, time });
+};
+
+const linkDay = ({ seamStart }: { seamStart: Date }) => ({ date: seamStart.toISOString().slice(0, 10) });
+
+/** `isNewRow` for a row entering the account (create, restore, planned flip, move), not an edit or delete. */
+export const manualRowOnOrAfterLinkDayMessage = ({
+  seamStart,
+  isNewRow = false,
+}: {
+  seamStart: Date;
+  isNewRow?: boolean;
+}): string =>
+  t({
+    key: isNewRow ? 'transactions.manualRowOnOrAfterLinkDayCreate' : 'transactions.manualRowOnOrAfterLinkDay',
+    variables: linkDay({ seamStart }),
+  });
+
+export const preSeamTimeOnOrAfterLinkDayMessage = ({ seamStart }: { seamStart: Date }): string =>
+  t({ key: 'transactions.preSeamTimeOnOrAfterLinkDay', variables: linkDay({ seamStart }) });
+
+/** Why a real manual row can't land on a bank account at `time`. */
+export const manualRowOnBankAccountMessage = ({
+  account,
+  time,
+}: {
+  account: SeamAccount;
+  time: Date | string;
+}): string => {
+  const seamStart = getSeamStart({ account });
+  return seamStart && !isBeforeSeam({ account, time })
+    ? manualRowOnOrAfterLinkDayMessage({ seamStart, isNewRow: true })
+    : t({ key: 'transactions.manualOnConnectedAccount' });
+};
+
 export const isManualRowOnSeamAccount = ({
   account,
   transaction,
@@ -54,10 +90,7 @@ export const isPreSeamManualRow = ({
 }: {
   account: SeamAccount;
   transaction: { accountType: ACCOUNT_TYPES; time: Date | string };
-}): boolean => {
-  const seamStart = getSeamStart({ account });
-  return !!seamStart && transaction.accountType === ACCOUNT_TYPES.system && new Date(transaction.time) < seamStart;
-};
+}): boolean => transaction.accountType === ACCOUNT_TYPES.system && isBeforeSeam({ account, time: transaction.time });
 
 /** A row from the seam on counts in the bank-owned balance, so removing it would break `current = initial + Σ rows`. */
 export const isRowDeletableOnAccount = ({
@@ -80,10 +113,7 @@ export const assertRowDeletableOnAccount = ({
   const seamStart = isManualRowOnSeamAccount({ account, transaction }) ? getSeamStart({ account }) : null;
   throw new ValidationError({
     message: seamStart
-      ? t({
-          key: 'transactions.manualRowOnOrAfterLinkDay',
-          variables: { date: seamStart.toISOString().slice(0, 10) },
-        })
+      ? manualRowOnOrAfterLinkDayMessage({ seamStart })
       : t({ key: 'transactions.cannotDeleteExternal' }),
   });
 };
@@ -106,16 +136,11 @@ export const assertPreSeamManualRow = ({
   const seamStart = getSeamStart({ account });
   let message: string | undefined;
   if (!seamStart || transaction.accountType !== ACCOUNT_TYPES.system) {
-    message = t({ key: 'transactions.editReadonlyFields' });
-  } else if (!(new Date(transaction.time) < seamStart)) {
-    message = t({
-      key: 'transactions.manualRowOnOrAfterLinkDay',
-      variables: { date: seamStart.toISOString().slice(0, 10) },
-    });
-  } else if (nextTime !== undefined && !(new Date(nextTime) < seamStart)) {
-    message = t({ key: 'transactions.preSeamTimeOnOrAfterLinkDay' });
+    message = t({ key: isOppositeLeg ? 'transactions.oppositeLegOnBankAccount' : 'transactions.editReadonlyFields' });
+  } else if (!isBeforeSeam({ account, time: transaction.time })) {
+    message = manualRowOnOrAfterLinkDayMessage({ seamStart });
+  } else if (nextTime !== undefined && !isBeforeSeam({ account, time: nextTime })) {
+    message = preSeamTimeOnOrAfterLinkDayMessage({ seamStart });
   }
-  if (!message) return;
-
-  throw new ValidationError({ message: isOppositeLeg ? t({ key: 'transactions.oppositeLegOnBankAccount' }) : message });
+  if (message) throw new ValidationError({ message });
 };

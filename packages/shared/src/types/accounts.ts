@@ -143,7 +143,7 @@ export interface AccountModel extends EntityLogoFields {
    * to share recipients (who can't reach the owner-scoped connection-details endpoint).
    */
   bankProviderType?: BANK_PROVIDER_TYPE | null;
-  bankSeamAt?: string | null;
+  bankSeamAt: string | null;
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
 }

@@ -1,10 +1,11 @@
-import { type BudgetBakersWalletAccountMapping, TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
+import { ACCOUNT_TYPES, type BudgetBakersWalletAccountMapping, TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
 import { expectCompleted, waitForBudgetBakersWalletCompletion } from '@tests/helpers/import-export';
 import { asUser, provisionSecondUserWithBaseCurrency, signUpSecondUser } from '@tests/helpers/share';
+import { format, startOfDay, subDays } from 'date-fns';
 
 // ---------------------------------------------------------------------------
 // Helpers for building account mappings
@@ -1096,6 +1097,220 @@ describe('Execute Budget Bakers Wallet import endpoint', () => {
       expect(rowIndices).toContain(2);
       expect(rowIndices).toContain(3);
       expect(rowIndices).not.toContain(4);
+    });
+  });
+});
+
+const TODAY = startOfDay(new Date());
+const TODAY_KEY = format(TODAY, 'yyyy-MM-dd');
+
+type WalletRow = { account: string; amount: number; type: 'Expense' | 'Income'; date: string; transfer?: boolean };
+
+const walletDate = ({ daysAgo, time = '12:00:00' }: { daysAgo: number; time?: string }) =>
+  `${format(subDays(TODAY, daysAgo), 'yyyy-MM-dd')}T${time}.000Z`;
+
+const buildWalletCsv = ({ rows }: { rows: WalletRow[] }) =>
+  [
+    'account;category;currency;amount;ref_currency_amount;type;payment_type;note;date;transfer;payee;labels',
+    ...rows.map(
+      (row, index) =>
+        `${row.account};${row.transfer ? 'Transfer, withdraw' : 'Groceries'};USD;${row.amount};${row.amount};${row.type};Cash;${row.transfer ? '' : `Row ${index}`};${row.date};${row.transfer ? 'true' : 'false'};;`,
+    ),
+  ].join('\n');
+
+const transferRows = ({ from, to, amount, date }: { from: string; to: string; amount: number; date: string }) =>
+  [
+    { account: from, amount, type: 'Expense', date, transfer: true },
+    { account: to, amount, type: 'Income', date, transfer: true },
+  ] satisfies WalletRow[];
+
+const SPANNING_WALLET_ROWS: WalletRow[] = [
+  { account: 'Seam', amount: 40, type: 'Expense', date: walletDate({ daysAgo: 8 }) },
+  { account: 'Seam', amount: 15, type: 'Income', date: walletDate({ daysAgo: 6 }) },
+  { account: 'Seam', amount: 25, type: 'Expense', date: walletDate({ daysAgo: 3 }) },
+  { account: 'Seam', amount: 7, type: 'Expense', date: walletDate({ daysAgo: 0, time: '00:00:00' }) },
+  { account: 'Seam', amount: 9, type: 'Income', date: walletDate({ daysAgo: 0, time: '06:00:00' }) },
+];
+
+const importWallet = async ({
+  rows,
+  accountMapping,
+  recalculateBalance,
+}: {
+  rows: WalletRow[];
+  accountMapping: BudgetBakersWalletAccountMapping;
+  recalculateBalance?: boolean;
+}) => {
+  const { jobId } = await helpers.executeBudgetBakersWallet({
+    payload: { fileContent: buildWalletCsv({ rows }), accountMapping, recalculateBalance },
+    raw: true,
+  });
+  const progress = await waitForBudgetBakersWalletCompletion({ jobId });
+  expectCompleted(progress);
+  return progress.summary;
+};
+
+const createWalletAccount = () =>
+  helpers.createAccount({
+    payload: helpers.buildAccountPayload({ name: 'Wallet', currencyCode: 'USD', initialBalance: 1000 }),
+    raw: true,
+  });
+
+describe('Budget Bakers Wallet import into an account with a bank seam', () => {
+  it('imports the rows before the seam as manual history and skips the rest', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+
+        const summary = await importWallet({
+          rows: SPANNING_WALLET_ROWS,
+          accountMapping: { Seam: { action: 'link-existing', accountId: account.id } },
+        });
+        expect(summary).toMatchObject({ transactionsImported: 3, skippedAfterBankSeam: 2, errors: [] });
+
+        const created = await helpers.getTransactions({ batchId: await helpers.latestBatchId(), raw: true });
+        expect(created).toHaveLength(3);
+        expect(created.every((tx) => tx.accountType === ACCOUNT_TYPES.system)).toBe(true);
+        expect(created.every((tx) => new Date(tx.time).toISOString().slice(0, 10) < TODAY_KEY)).toBe(true);
+
+        await helpers.expectImportOnlyMovedOpening({
+          accountId: account.id,
+          before,
+          shift: helpers.SPANNING_PRE_SEAM_NET_OUT,
+        });
+      },
+    });
+  });
+
+  it('undoing the batch returns the account to its pre-import state', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+        await importWallet({
+          rows: SPANNING_WALLET_ROWS,
+          accountMapping: { Seam: { action: 'link-existing', accountId: account.id } },
+        });
+
+        const result = await helpers.deleteImportBatch({ batchId: await helpers.latestBatchId(), raw: true });
+        expect(result.deletedCount).toBe(3);
+
+        expect(await helpers.snapshotSeamAccount({ accountId: account.id })).toEqual(before);
+      },
+    });
+  });
+
+  it('ignores recalculateBalance for the seam account and applies it to a manual account in the same file', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const seamAccount = await helpers.createSeamAccount();
+        const walletAccount = await createWalletAccount();
+        const seamBefore = await helpers.snapshotSeamAccount({ accountId: seamAccount.id });
+
+        const summary = await importWallet({
+          rows: [
+            ...SPANNING_WALLET_ROWS,
+            { account: 'Wallet', amount: 30, type: 'Expense', date: walletDate({ daysAgo: 1 }) },
+          ],
+          accountMapping: {
+            Seam: { action: 'link-existing', accountId: seamAccount.id },
+            Wallet: { action: 'link-existing', accountId: walletAccount.id },
+          },
+          recalculateBalance: true,
+        });
+        expect(summary).toMatchObject({ transactionsImported: 4, skippedAfterBankSeam: 2, errors: [] });
+
+        await helpers.expectImportOnlyMovedOpening({
+          accountId: seamAccount.id,
+          before: seamBefore,
+          shift: helpers.SPANNING_PRE_SEAM_NET_OUT,
+        });
+        expect((await helpers.readAccount({ accountId: walletAccount.id })).currentBalance).toBe(970);
+        expect(summary.accountBalanceChanges).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ accountId: seamAccount.id, delta: 0, movedCount: 0, historicalCount: 3 }),
+            expect.objectContaining({ accountId: walletAccount.id, delta: -30, movedCount: 1 }),
+          ]),
+        );
+
+        const undone = await helpers.deleteImportBatch({ batchId: await helpers.latestBatchId(), raw: true });
+        expect(undone.deletedCount).toBe(4);
+        expect(await helpers.readAccount({ accountId: walletAccount.id })).toMatchObject({
+          currentBalance: 1000,
+          initialBalance: 1000,
+        });
+        expect(await helpers.snapshotSeamAccount({ accountId: seamAccount.id })).toEqual(seamBefore);
+      },
+    });
+  });
+
+  it.each([
+    { direction: 'into', from: 'Wallet', to: 'Seam', shift: -100 },
+    { direction: 'out of', from: 'Seam', to: 'Wallet', shift: 100 },
+  ])('links both legs of a pre-seam transfer $direction the seam account', async ({ from, to, shift }) => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const seamAccount = await helpers.createSeamAccount();
+        const walletAccount = await createWalletAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: seamAccount.id });
+
+        const summary = await importWallet({
+          rows: transferRows({ from, to, amount: 100, date: walletDate({ daysAgo: 5 }) }),
+          accountMapping: {
+            Seam: { action: 'link-existing', accountId: seamAccount.id },
+            Wallet: { action: 'link-existing', accountId: walletAccount.id },
+          },
+        });
+        expect(summary).toMatchObject({ transfersImported: 1, outOfWalletImported: 0, skippedAfterBankSeam: 0 });
+
+        const legs = await helpers.getTransactions({ batchId: await helpers.latestBatchId(), raw: true });
+        expect(legs.map((tx) => tx.accountId).toSorted()).toEqual([seamAccount.id, walletAccount.id].toSorted());
+        expect(legs.every((tx) => tx.transferNature === TRANSACTION_TRANSFER_NATURE.common_transfer)).toBe(true);
+        expect(legs[0]!.transferId).toBeTruthy();
+        expect(legs[0]!.transferId).toBe(legs[1]!.transferId);
+
+        await helpers.expectImportOnlyMovedOpening({ accountId: seamAccount.id, before, shift });
+      },
+    });
+  });
+
+  it('drops both legs of a transfer dated from the seam on', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const seamAccount = await helpers.createSeamAccount();
+        const walletAccount = await createWalletAccount();
+        const seamBefore = await helpers.snapshotSeamAccount({ accountId: seamAccount.id });
+        const walletBefore = await helpers.snapshotSeamAccount({ accountId: walletAccount.id });
+
+        const summary = await importWallet({
+          rows: transferRows({
+            from: 'Wallet',
+            to: 'Seam',
+            amount: 100,
+            date: walletDate({ daysAgo: 0, time: '00:00:00' }),
+          }),
+          accountMapping: {
+            Seam: { action: 'link-existing', accountId: seamAccount.id },
+            Wallet: { action: 'link-existing', accountId: walletAccount.id },
+          },
+        });
+        expect(summary).toMatchObject({
+          transfersImported: 0,
+          outOfWalletImported: 0,
+          transactionsImported: 0,
+          skippedAfterBankSeam: helpers.SKIPPED_PER_TRANSFER,
+        });
+
+        expect(await helpers.getTransactions({ accountIds: [walletAccount.id], raw: true })).toEqual([]);
+        expect(await helpers.snapshotSeamAccount({ accountId: seamAccount.id })).toEqual(seamBefore);
+        expect(await helpers.snapshotSeamAccount({ accountId: walletAccount.id })).toEqual(walletBefore);
+      },
     });
   });
 });

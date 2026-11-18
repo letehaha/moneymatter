@@ -1,9 +1,8 @@
 import type { TransactionFilterParams } from '@/api/transactions';
-import { getBankRowPermissions, isBankAccount } from '@/common/utils/bank-row-permissions';
+import { getBankRowPermissions } from '@/common/utils/bank-row-permissions';
 import type { BulkEditFormValues } from '@/components/transactions-list/bulk-edit-dialog.vue';
 import { useAccountsStore } from '@/stores';
 import {
-  ACCOUNT_TYPES,
   type AccountModel,
   type TransactionModel,
   type TransactionsSummaryResponse,
@@ -21,17 +20,19 @@ import {
 import { useBulkDeleteTransactions } from './use-bulk-delete-transactions';
 import { useBulkUpdateCategory } from './use-bulk-update-category';
 
-/**
- * A row on a bank-connected account. The account's own type is authoritative;
- * tx.accountType is a fallback for accounts that haven't loaded yet.
- */
-export function isExternalTransaction({ tx, account }: { tx: TransactionModel; account: AccountModel | undefined }) {
-  if (account) return isBankAccount({ account });
-  return tx.accountType !== ACCOUNT_TYPES.system;
-}
-
-export const isUndeletableTx = ({ tx, account }: { tx: TransactionModel; account: AccountModel | undefined }) =>
-  !getBankRowPermissions({ transaction: tx, account }).canDelete;
+// The backend deletes both legs of a transfer, so a locked opposite leg blocks the row too.
+export const isUndeletableTx = ({
+  tx,
+  oppositeTx,
+  accountsRecord,
+}: {
+  tx: TransactionModel;
+  oppositeTx: TransactionModel | undefined;
+  accountsRecord: Record<string, AccountModel | undefined>;
+}) =>
+  [tx, oppositeTx].some(
+    (leg) => !!leg && !getBankRowPermissions({ transaction: leg, account: accountsRecord[leg.accountId] }).canDelete,
+  );
 
 /** The whole result set behind the loaded rows: its totals and the filters that produce it. */
 export interface MatchingTransactions {
@@ -80,11 +81,21 @@ export function useBulkTransactionActions({
     isExtraSelectable: isBulkSelectable,
   });
 
+  // ponytail: only finds an opposite leg that is loaded; the backend still rejects one that is not.
   const hasUndeletableSelected = computed(() => {
     const selectedIds = new Set(selection.getSelectedTransactionIds());
     if (selectedIds.size === 0) return false;
-    return getTransactions().some(
-      (tx) => selectedIds.has(tx.id) && isUndeletableTx({ tx, account: accountsRecord.value[tx.accountId] }),
+    const transactions = getTransactions();
+    return transactions.some(
+      (tx) =>
+        selectedIds.has(tx.id) &&
+        isUndeletableTx({
+          tx,
+          oppositeTx: tx.transferId
+            ? transactions.find((leg) => leg.transferId === tx.transferId && leg.id !== tx.id)
+            : undefined,
+          accountsRecord: accountsRecord.value,
+        }),
     );
   });
 

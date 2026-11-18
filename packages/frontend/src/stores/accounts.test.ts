@@ -208,17 +208,18 @@ describe('useAccountsStore – accountsRecord mirrors the live accounts list', (
   });
 
   describe('importLinkableAccounts', () => {
-    it('offers only hand-managed accounts whose balance an import may shift', async () => {
+    it('offers system accounts and bank-linked accounts with a seam, never loans or vehicles', async () => {
       mockLoadAccounts.mockResolvedValue([
         buildAccount('acc-cash'),
-        buildAccount('acc-mono', { type: ACCOUNT_TYPES.monobank }),
+        buildAccount('acc-mono', { type: ACCOUNT_TYPES.monobank, bankSeamAt: null }),
+        buildAccount('acc-seam', { type: ACCOUNT_TYPES.enableBanking, bankSeamAt: '2026-11-05T00:00:00.000Z' }),
         buildAccount('acc-loan', { accountCategory: ACCOUNT_CATEGORIES.loan }),
         buildAccount('acc-car', { accountCategory: ACCOUNT_CATEGORIES.vehicle }),
       ]);
       mountStore();
       await flushPromises();
 
-      expect(store.importLinkableAccounts.map((account) => account.id)).toEqual(['acc-cash']);
+      expect(store.importLinkableAccounts.map((account) => account.id)).toEqual(['acc-cash', 'acc-seam']);
     });
   });
 });

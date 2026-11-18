@@ -100,13 +100,7 @@ async function restampRefInitialBalanceImpl({
     // transaction write that triggered the restamp; anything else aborts the transaction.
     if (!(e instanceof ExchangeRateUnavailableError) && !(e instanceof ValidationError)) throw e;
     logger.error(
-      {
-        message:
-          e instanceof ValidationError
-            ? 'No base currency to restamp refInitialBalance; previous value kept'
-            : 'No rate to restamp refInitialBalance at ledger boundary; previous value kept',
-        error: e,
-      },
+      { message: 'Could not measure refInitialBalance at the ledger boundary; previous value kept', error: e },
       { code: 'ACCOUNT_REF_INITIAL_RESTAMP_FAILED', accountId, userId: account.userId },
     );
     return 'failed';

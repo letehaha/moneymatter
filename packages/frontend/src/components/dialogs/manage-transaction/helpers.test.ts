@@ -29,7 +29,6 @@ import {
   getFormTypeFromTransaction,
   getTxTypeFromFormType,
   getUnlistedCategoryIds,
-  isConnectedAccount,
   isTxEditableAsManual,
   prepopulateForm,
   resolveFormIsPlanned,
@@ -63,7 +62,7 @@ describe('components/modals/modify-record/helpers', () => {
           fromAmount: args[0] as number,
           toAmount: args[1] as number,
           isCurrenciesDifferent: args[2] as boolean,
-          isRecordExternal: args[3] as boolean,
+          isRecordPinned: args[3] as boolean,
           sourceTransaction: args[4] as TransactionModel,
         }),
       ).toBe(expected);
@@ -618,13 +617,13 @@ describe('components/modals/modify-record/helpers', () => {
 
   describe('isTxEditableAsManual', () => {
     it('is true for any transaction on a manual account', () => {
-      expect(isTxEditableAsManual({ transaction: buildSystemExpenseTransaction(), isRecordExternal: false })).toBe(
+      expect(isTxEditableAsManual({ transaction: buildSystemExpenseTransaction(), isRecordBankLocked: false })).toBe(
         true,
       );
     });
 
     it('is false for a synced transaction', () => {
-      expect(isTxEditableAsManual({ transaction: buildSystemExpenseTransaction(), isRecordExternal: true })).toBe(
+      expect(isTxEditableAsManual({ transaction: buildSystemExpenseTransaction(), isRecordBankLocked: true })).toBe(
         false,
       );
     });
@@ -633,23 +632,9 @@ describe('components/modals/modify-record/helpers', () => {
       expect(
         isTxEditableAsManual({
           transaction: buildSystemExpenseTransaction({ isPlanned: true }),
-          isRecordExternal: true,
+          isRecordBankLocked: true,
         }),
       ).toBe(true);
-    });
-  });
-
-  describe('isConnectedAccount', () => {
-    it('is false for the out-of-wallet account', () => {
-      expect(isConnectedAccount({ account: OUT_OF_WALLET_ACCOUNT_MOCK })).toBe(false);
-    });
-
-    it('is false for a system account', () => {
-      expect(isConnectedAccount({ account: { type: ACCOUNT_TYPES.system } })).toBe(false);
-    });
-
-    it('is true for a bank-connected account', () => {
-      expect(isConnectedAccount({ account: { type: ACCOUNT_TYPES.monobank } })).toBe(true);
     });
   });
 

@@ -15,6 +15,13 @@ import { UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import {
+  assertBankLinksUnchanged,
+  dropFromBankSeam,
+  excludeSeamAccounts,
+  linkedAccountIdByName,
+  loadSeamStarts,
+} from '@services/import-export/core/bank-seam';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { startBalanceReconciliation } from '@services/import-export/core/reconcile-account-balances';
@@ -131,6 +138,7 @@ async function executeMsMoneyImportImpl({
     accountBalanceChanges: AccountBalanceChange[];
     voidedImported: number;
     merged: number;
+    skippedAfterBankSeam: number;
   } = {
     accountsCreated: 0,
     accountsLinked: 0,
@@ -143,22 +151,37 @@ async function executeMsMoneyImportImpl({
     voidedImported: 0,
     merged: 0,
     duplicatesSkipped: 0,
+    skippedAfterBankSeam: 0,
     errors: [],
     accountBalanceChanges: [],
   };
 
   const skipSet = new Set(skipDuplicateIndices);
 
+  const { seamStartByName, seamStartByAccountId } = await loadSeamStarts({
+    userId,
+    accountIdByName: linkedAccountIdByName({ accountMapping: importableMapping }),
+  });
+
   // Rows and transfers that survive both filters — a skipped account removes
   // everything that touches it, and a confirmed duplicate removes the row.
   // Voided rows are dropped here unless the user opted in, so they fall out of
   // the duplicate tally and the payee resolution too.
-  const importableTransactions = parsed.transactions.filter(
-    (tx) => !skippedAccountNames.has(tx.accountName) && (includeVoidedTransactions || !tx.isVoid),
-  );
-  const transfersToWrite = parsed.transfers.filter(
-    (xfer) => !skippedAccountNames.has(xfer.sourceAccountName) && !skippedAccountNames.has(xfer.destinationAccountName),
-  );
+  const {
+    rows: importableTransactions,
+    transfers: transfersToWrite,
+    droppedCount,
+  } = dropFromBankSeam({
+    seamStartByName,
+    rows: parsed.transactions.filter(
+      (tx) => !skippedAccountNames.has(tx.accountName) && (includeVoidedTransactions || !tx.isVoid),
+    ),
+    transfers: parsed.transfers.filter(
+      (xfer) =>
+        !skippedAccountNames.has(xfer.sourceAccountName) && !skippedAccountNames.has(xfer.destinationAccountName),
+    ),
+  });
+  summary.skippedAfterBankSeam = droppedCount;
 
   // Progress total counts only rows that will actually be written. Skipped rows
   // never tick, so the worker's `processedCount === totalCount` check holds.
@@ -236,6 +259,7 @@ async function executeMsMoneyImportImpl({
       return mapping?.action === 'create-new' ? mapping.currencyCode : undefined;
     },
     resolveFxDate: () => initialBalanceFxDate,
+    allowSeamTargets: true,
   });
   summary.accountsCreated = accountsCreated;
 
@@ -252,9 +276,12 @@ async function executeMsMoneyImportImpl({
     importDetails,
     createdAccountIds: createdAccounts.map((account) => account.accountId),
   });
+  await assertBankLinksUnchanged({ userId, accountIds: capturedAccountIds, seamStartByAccountId });
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
 
-  const plannedMatchAccountIds = await selectAccountsWithPlannedRows({ accountIds: capturedAccountIds });
+  const plannedMatchAccountIds = await selectAccountsWithPlannedRows({
+    accountIds: excludeSeamAccounts({ accountIds: capturedAccountIds, seamStartByAccountId }),
+  });
 
   // Phase 3: categories. Money nests them two deep, so a create-new leaf also
   // rebuilds its parent group; link-existing only verifies ownership. Categories

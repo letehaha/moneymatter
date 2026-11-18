@@ -6,7 +6,13 @@ import Accounts from '@models/accounts.model';
 import RefundTransactions from '@models/refund-transactions.model';
 import { findOneTransaction, updateTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
-import { isManualRowOnSeamAccount, isPreSeamManualRow, SEAM_ACCOUNT_ATTRIBUTES } from '@services/accounts/seam';
+import {
+  getSeamStart,
+  isManualRowOnSeamAccount,
+  isPreSeamManualRow,
+  manualRowOnOrAfterLinkDayMessage,
+  SEAM_ACCOUNT_ATTRIBUTES,
+} from '@services/accounts/seam';
 import { runInSavepoint } from '@services/common/run-in-savepoint';
 import { withTransaction } from '@services/common/with-transaction';
 import { assertLoanPaymentAllowed } from '@services/loans/assert-loan-payment-allowed';
@@ -93,13 +99,22 @@ export const restoreTrashed = withTransaction(
       attributes: [...SEAM_ACCOUNT_ATTRIBUTES, 'id', 'userId'],
     });
     const accountById = new Map(accounts.map((account) => [account.id, account]));
-    rejectIfAny({
-      rows: legs.filter((leg) => {
-        const account = accountById.get(leg.accountId);
-        return !account || !fitsAccount({ account, leg });
-      }),
-      key: 'transactions.trash.accountTypeChanged',
-    });
+    const misfits: Transactions[] = [];
+    const seamDayLegs: { leg: Transactions; seamStart: Date }[] = [];
+    for (const leg of legs) {
+      const account = accountById.get(leg.accountId);
+      if (account && fitsAccount({ account, leg })) continue;
+      misfits.push(leg);
+      const seamStart = account && isManualRowOnSeamAccount({ account, transaction: leg }) && getSeamStart({ account });
+      if (seamStart) seamDayLegs.push({ leg, seamStart });
+    }
+    if (seamDayLegs.length) {
+      throw new ValidationError({
+        message: manualRowOnOrAfterLinkDayMessage({ seamStart: seamDayLegs[0]!.seamStart, isNewRow: true }),
+        details: { transactionIds: seamDayLegs.map(({ leg }) => leg.id) },
+      });
+    }
+    rejectIfAny({ rows: misfits, key: 'transactions.trash.accountTypeChanged' });
 
     const legsPerTransfer = Map.groupBy(legs, (leg) => leg.transferId);
     const isTwinGone = ({ leg }: { leg: Transactions }) =>

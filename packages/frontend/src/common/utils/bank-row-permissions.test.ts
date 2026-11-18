@@ -1,3 +1,4 @@
+import { OUT_OF_WALLET_ACCOUNT_MOCK } from '@/common/const';
 import { ACCOUNT_TYPES } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
@@ -7,6 +8,7 @@ import {
   getBankSeamCutoff,
   isBankAccount,
   isBankLockedLeg,
+  isOnBankAccount,
 } from './bank-row-permissions';
 
 const SEAM = '2026-11-01T00:00:00.000Z';
@@ -53,6 +55,14 @@ describe('getBankRowPermissions', () => {
   it('falls back to the row accountType when the account is unknown', () => {
     expect(getBankRowPermissions({ transaction: manualRow({ time: AT_SEAM }), account: undefined })).toEqual(OPEN);
     expect(getBankRowPermissions({ transaction: bankRow({ time: BEFORE_SEAM }), account: undefined })).toEqual(LOCKED);
+  });
+
+  it('locks a row whose account is unknown and whose accountType is missing', () => {
+    const transaction = { accountType: undefined as unknown as ACCOUNT_TYPES, time: BEFORE_SEAM };
+    expect(getBankRowPermissions({ transaction, account: undefined })).toEqual(LOCKED);
+    expect(
+      getBankRowPermissions({ transaction: { ...transaction, accountType: '' as ACCOUNT_TYPES }, account: undefined }),
+    ).toEqual(LOCKED);
   });
 
   it('opens a planned row on a bank account, even when the account is unknown', () => {
@@ -159,6 +169,22 @@ describe('isBankAccount', () => {
     expect(isBankAccount({ account: { type: ACCOUNT_TYPES.monobank } })).toBe(true);
     expect(isBankAccount({ account: { type: ACCOUNT_TYPES.system } })).toBe(false);
     expect(isBankAccount({ account: {} as { type: ACCOUNT_TYPES } })).toBe(false);
+    expect(isBankAccount({ account: OUT_OF_WALLET_ACCOUNT_MOCK })).toBe(false);
+  });
+});
+
+describe('isOnBankAccount', () => {
+  it('trusts a known account over the row accountType', () => {
+    expect(isOnBankAccount({ transaction: bankRow({ time: AT_SEAM }), account: { type: ACCOUNT_TYPES.system } })).toBe(
+      false,
+    );
+    expect(isOnBankAccount({ transaction: manualRow({ time: AT_SEAM }), account: linkedAccount })).toBe(true);
+  });
+
+  it('treats an unknown account as manual only when the row says system', () => {
+    expect(isOnBankAccount({ transaction: manualRow({ time: AT_SEAM }), account: undefined })).toBe(false);
+    expect(isOnBankAccount({ transaction: bankRow({ time: AT_SEAM }), account: undefined })).toBe(true);
+    expect(isOnBankAccount({ transaction: { accountType: '' as ACCOUNT_TYPES }, account: undefined })).toBe(true);
   });
 });
 

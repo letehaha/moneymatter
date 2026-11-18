@@ -98,7 +98,7 @@ const bundles = new Map<string, QueueBundle>();
 // built inside a request or a sync transaction. Built from the module-load context with no CLS
 // transaction, jobs never join the caller's transaction or its drained revalue batch.
 const runInModuleLoadContext = AsyncLocalStorage.snapshot();
-const createDetachedBundle = (tokenHash: string): QueueBundle =>
+const createDetachedBundle = ({ tokenHash }: { tokenHash: string }): QueueBundle =>
   runInModuleLoadContext(() =>
     namespace.runAndReturn(() => {
       namespace.set('transaction', undefined);
@@ -416,7 +416,7 @@ function getOrCreateBundle(apiToken: string): QueueBundle {
   const tokenHash = hashApiToken(apiToken);
   let bundle = bundles.get(tokenHash);
   if (!bundle) {
-    bundle = createDetachedBundle(tokenHash);
+    bundle = createDetachedBundle({ tokenHash });
     bundles.set(tokenHash, bundle);
   }
   return bundle;
@@ -500,7 +500,7 @@ async function recoverExistingQueues(): Promise<void> {
 
     for (const tokenHash of discovered) {
       if (!bundles.has(tokenHash)) {
-        bundles.set(tokenHash, createDetachedBundle(tokenHash));
+        bundles.set(tokenHash, createDetachedBundle({ tokenHash }));
       }
     }
 
@@ -637,8 +637,7 @@ export async function handleCompletedBatch(job: Job<TransactionSyncJobData>): Pr
   logger.info(`Job ${job.id} completed successfully`);
 
   const jobId = job.id;
-  // A skipped batch already settled the status of an account that left the connection.
-  if (!jobId || (job.returnvalue as { skipped?: boolean } | undefined)?.skipped) return;
+  if (!jobId) return;
   const jobGroupId = jobId.substring(0, jobId.lastIndexOf('-'));
   const { totalBatches, accountId, userId, connectionId } = job.data;
 
@@ -648,18 +647,21 @@ export async function handleCompletedBatch(job: Job<TransactionSyncJobData>): Pr
 
   if (completedCount < totalBatches) return;
 
-  try {
-    await finalizeSyncGroup({ accountId, userId, connectionId });
-  } catch (error) {
-    // `pendingAbsorb` stays set, so the next sync retries the absorb.
-    logger.error(
-      { message: '[Monobank] Finalizing the sync group failed', error: error as Error },
-      { accountId, userId },
-    );
-    await setAccountSyncStatus({ accountId, status: SyncStatus.FAILED, error: (error as Error).message, userId });
+  // A skipped batch already settled the status of an account that left the connection.
+  if (!(job.returnvalue as { skipped?: boolean } | undefined)?.skipped) {
+    try {
+      await finalizeSyncGroup({ accountId, userId, connectionId });
+      logger.info(`All batches completed for account ${accountId}, status set to COMPLETED`);
+    } catch (error) {
+      // `pendingAbsorb` stays set, so the next sync retries the absorb.
+      logger.error(
+        { message: '[Monobank] Finalizing the sync group failed', error: error as Error },
+        { accountId, userId },
+      );
+      await setAccountSyncStatus({ accountId, status: SyncStatus.FAILED, error: (error as Error).message, userId });
+    }
   }
   await redisClient.del(counterKey);
-  logger.info(`All batches completed for account ${accountId}, status set to COMPLETED`);
 }
 
 /**

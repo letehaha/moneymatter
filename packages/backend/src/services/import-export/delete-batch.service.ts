@@ -15,7 +15,7 @@ import * as Transactions from '@models/transactions.model';
 import { deleteAccountById } from '@services/accounts.service';
 import { absorbBalanceAdjustment } from '@services/accounts/absorb-balance-adjustment';
 import { lockAccountRow } from '@services/accounts/lock-account-row';
-import { getSeamStart } from '@services/accounts/seam';
+import { type SeamAccount, getSeamStart, isRowDeletableOnAccount } from '@services/accounts/seam';
 import { revalueBalanceHistory } from '@services/balances/revalue-balance-history.service';
 import { withTransaction } from '@services/common/with-transaction';
 import { isImportBatchUnfinished } from '@services/import-export/core/unfinished-import';
@@ -87,11 +87,13 @@ const deleteImportBatchImpl = async ({
     balanceAdjustments: 'include',
     // The uuid column matches any letter case, the stamp is matched as text.
     batchId: batch?.batchId ?? batchId,
-    attributes: ['id', 'accountId', 'transferId', 'transferNature'],
+    attributes: ['id', 'accountId', 'accountType', 'time', 'transferId', 'transferNature'],
     isRaw: true,
   })) as unknown as {
     id: string;
     accountId: string;
+    accountType: ACCOUNT_TYPES;
+    time: Date;
     transferId: string | null;
     transferNature: TRANSACTION_TRANSFER_NATURE;
   }[];
@@ -132,22 +134,29 @@ const deleteImportBatchImpl = async ({
   // FOR UPDATE afterwards deadlocks against a concurrent insert on the same account.
   // A seam account takes the undo through the seam-aware delete.
   const bankLinkedAccountIds: string[] = [];
-  const seamAccountIds = new Set<string>();
+  const seamAccounts = new Map<string, SeamAccount>();
   for (const accountId of accountIds) {
     const account = await lockAccountRow({ accountId });
     if (!account || account.type === ACCOUNT_TYPES.system) continue;
-    if (getSeamStart({ account })) seamAccountIds.add(accountId);
+    if (getSeamStart({ account })) seamAccounts.set(accountId, account);
     else bankLinkedAccountIds.push(accountId);
   }
+
+  // Rows `bulkDelete` would refuse: on a seam account, dated from its seam on.
+  const rowsOwnedBySeamCount = rows.filter((row) => {
+    const account = seamAccounts.get(row.accountId);
+    return account && !isRowDeletableOnAccount({ account, transaction: row });
+  }).length;
 
   // `accountType` on a transaction is a creation-time snapshot, so the type comes from
   // the locked account row: a bank link cannot land between this check and the reversal
   // and desync a provider-synced balance.
-  if (bankLinkedAccountIds.length > 0) {
+  if (bankLinkedAccountIds.length > 0 || rowsOwnedBySeamCount > 0) {
     logger.info('[import batch undo] Refused: batch touches a now bank-linked account', {
       userId,
       batchId,
       bankLinkedAccountIds,
+      rowsOwnedBySeamCount,
     });
     throw new ValidationError({
       message: t({ key: 'importExport.batchDeleteBankLinkedAccount' }),
@@ -241,11 +250,11 @@ const deleteImportBatchImpl = async ({
   await destroyTrashedRows({ transactionIds: trashedToDestroy });
 
   // Inline so a failed rebuild fails the undo; it re-derives a seam account's opening balance.
-  for (const accountId of seamAccountIds) {
+  for (const accountId of seamAccounts.keys()) {
     await revalueBalanceHistory({ accountId });
   }
 
-  for (const effect of absorbedEffects.filter(({ accountId }) => !seamAccountIds.has(accountId))) {
+  for (const effect of absorbedEffects.filter(({ accountId }) => !seamAccounts.has(accountId))) {
     await absorbBalanceAdjustment({
       userId,
       accountId: effect.accountId,

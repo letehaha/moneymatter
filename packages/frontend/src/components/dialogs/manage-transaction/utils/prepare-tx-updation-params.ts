@@ -79,8 +79,8 @@ export const prepareTxUpdationParams = ({
   transaction,
   linkedTransaction,
   isTransferTx,
-  isRecordExternal,
-  isRecordOnBankAccount = false,
+  isRecordBankLocked,
+  isRecordOnBankAccount,
   isCurrenciesDifferent,
   isOriginalRefundsOverriden,
 }: {
@@ -88,9 +88,9 @@ export const prepareTxUpdationParams = ({
   linkedTransaction?: TransactionModel | null;
   form: UI_FORM_STRUCT;
   isTransferTx: boolean;
-  isRecordExternal: boolean;
+  isRecordBankLocked: boolean;
   /** The row sits on a bank-linked account, so it can never move to another one. */
-  isRecordOnBankAccount?: boolean;
+  isRecordOnBankAccount: boolean;
   isCurrenciesDifferent: boolean;
   isOriginalRefundsOverriden: boolean;
 }) => {
@@ -107,7 +107,7 @@ export const prepareTxUpdationParams = ({
   // An income row that can't leave its bank account stays the income leg; the picked source becomes the other leg.
   const isPinnedIncome =
     isTransferTx && isRecordOnBankAccount && transaction.transactionType === TRANSACTION_TYPES.income;
-  const isRecordPinned = isRecordExternal || isPinnedIncome;
+  const isRecordPinned = isRecordBankLocked || isPinnedIncome;
 
   let editionParams: Parameters<typeof editTransaction>[0] = {
     txId: transaction.id,
@@ -145,7 +145,7 @@ export const prepareTxUpdationParams = ({
     }
   }
 
-  if (!isTxEditableAsManual({ transaction, isRecordExternal })) {
+  if (!isTxEditableAsManual({ transaction, isRecordBankLocked })) {
     editionParams = {
       ...editionParams,
       note,
@@ -170,7 +170,7 @@ export const prepareTxUpdationParams = ({
       editionParams.transactionType = TRANSACTION_TYPES.income;
       editionParams.amount = getDestinationAmount({
         sourceTransaction: transaction,
-        isRecordExternal: false,
+        isRecordPinned: false,
         fromAmount: Number(form.amount),
         toAmount: Number(form.targetAmount),
         isCurrenciesDifferent,
@@ -180,7 +180,7 @@ export const prepareTxUpdationParams = ({
 
   if (isTransferTx) {
     const destinationAccount = getDestinationAccount({
-      isRecordExternal: isRecordPinned,
+      isRecordPinned,
       account: form.account!,
       toAccount: form.toAccount!,
       sourceTransaction: transaction,
@@ -197,13 +197,13 @@ export const prepareTxUpdationParams = ({
         }
       } else if (isOutOfWalletAccount(form.account!)) {
         // Don't set transactionType for external transactions - it's a restricted field
-        if (!isRecordExternal) {
+        if (!isRecordBankLocked) {
           editionParams.transactionType = TRANSACTION_TYPES.income;
         }
         editionParams.accountId = destinationAccount.id;
         editionParams.amount = getDestinationAmount({
           sourceTransaction: transaction,
-          isRecordExternal: isRecordPinned,
+          isRecordPinned,
           fromAmount: Number(form.amount),
           toAmount: Number(form.targetAmount),
           isCurrenciesDifferent,
@@ -213,7 +213,7 @@ export const prepareTxUpdationParams = ({
         editionParams.destinationAccountId = destinationAccount.id;
         editionParams.destinationAmount = getDestinationAmount({
           sourceTransaction: transaction,
-          isRecordExternal: isRecordPinned,
+          isRecordPinned,
           fromAmount: Number(form.amount),
           toAmount: Number(form.targetAmount),
           isCurrenciesDifferent,

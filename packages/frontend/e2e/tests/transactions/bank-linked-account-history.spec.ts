@@ -1,7 +1,6 @@
 import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
 
 import {
-  apiGet,
   completeOnboarding,
   createAccount,
   createTransaction,
@@ -11,12 +10,31 @@ import {
   signInViaApi,
 } from '../../helpers/api-client';
 import { loginViaUI } from '../../helpers/auth';
+import {
+  type ApiTransaction,
+  BANK_TIME,
+  DAY_MS,
+  POST_LINK_TIME,
+  SEAM_AT,
+  SEAM_DATE_ERROR,
+  SEAM_LABEL,
+  assignSingleCategory,
+  assignSingleCurrency,
+  escapeRegExp,
+  fakeBankLink,
+  listAccountTransactions,
+  openSingleAccountOptions,
+  openTransactionDialog,
+  toCsvDate,
+  toDateTimeInput,
+  uploadCsv,
+  utcDaysAgo,
+} from '../../helpers/bank-seam';
 import { buildTestCredentials, signUpAndVerify } from '../../helpers/test-setup';
 
 const CURRENCY = 'USD';
 const creds = buildTestCredentials({ prefix: 'bank-seam' });
 
-const BANK_TYPE = 'monobank';
 const SEAM_ACCOUNT = 'Seam Bank Account';
 const PLAIN_BANK_ACCOUNT = 'Plain Bank Account';
 const CASH_ACCOUNT = 'Cash Wallet';
@@ -26,40 +44,14 @@ const POST_LINK_NOTE = 'Post-link coffee';
 const BULK_DELETE_NOTE = 'Pre-link parking';
 const BANK_NOTE = 'Bank card payment';
 const TRANSFER_NOTE = 'Cash top-up';
-const DAY_MS = 24 * 60 * 60 * 1000;
 
-const utcDaysAgo = ({ days, hour }: { days: number; hour: number }) => {
-  const date = new Date();
-  date.setUTCHours(hour, 0, 0, 0);
-  return new Date(date.getTime() - days * DAY_MS);
-};
-
-const SEAM_AT = utcDaysAgo({ days: 3, hour: 0 });
 const TRANSFER_TIME = utcDaysAgo({ days: 9, hour: 12 });
 const PRE_LINK_TIME = utcDaysAgo({ days: 10, hour: 12 });
 const INLINE_PRE_LINK_TIME = utcDaysAgo({ days: 11, hour: 12 });
 const BULK_DELETE_TIME = utcDaysAgo({ days: 7, hour: 12 });
-const BANK_TIME = utcDaysAgo({ days: 12, hour: 12 });
-const POST_LINK_TIME = utcDaysAgo({ days: 1, hour: 12 });
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const pad = (value: number) => String(value).padStart(2, '0');
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-// The app names the seam in the browser's local time, adding the time when it isn't local midnight.
-const SEAM_DAY = `${pad(SEAM_AT.getDate())} ${MONTHS[SEAM_AT.getMonth()]} ${SEAM_AT.getFullYear()}`;
-const SEAM_LABEL =
-  SEAM_AT.getHours() === 0 && SEAM_AT.getMinutes() === 0
-    ? SEAM_DAY
-    : `${SEAM_DAY}, ${pad(SEAM_AT.getHours())}:${pad(SEAM_AT.getMinutes())}`;
-const SEAM_DATE_ERROR = new RegExp(`synced with your bank since ${escapeRegExp(SEAM_LABEL)}`);
 const SEAM_SKIPPED_MESSAGE = new RegExp(`on or after ${escapeRegExp(SEAM_LABEL)} was skipped`);
 const BALANCE_TOGGLE_LABEL = 'Update account balances from imported transactions';
-
-const toDateTimeInput = ({ date }: { date: Date }) =>
-  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-
-const toCsvDate = ({ date }: { date: Date }) => date.toISOString().slice(0, 10);
 
 interface SeededIds {
   seamAccountId: string;
@@ -74,50 +66,9 @@ interface SeededIds {
   transferSeamTxId: string;
 }
 
-interface ApiTransaction {
-  id: string;
-  amount: number;
-  note: string | null;
-  time: string;
-}
-
 const readTransaction = async ({ api, id }: { api: APIRequestContext; id: string }): Promise<ApiTransaction> => {
   const body = await getTransaction({ request: api, id });
   return body.response ?? body;
-};
-
-const listAccountTransactions = async ({ api, accountId }: { api: APIRequestContext; accountId: string }) => {
-  const body = await apiGet({ request: api, path: `/api/v1/transactions?limit=100&accountIds=${accountId}` });
-  return (body.response ?? body) as ApiTransaction[];
-};
-
-const markBankLinked = ({ node, ids }: { node: unknown; ids: SeededIds }): void => {
-  if (!node || typeof node !== 'object') return;
-  if (Array.isArray(node)) {
-    node.forEach((item) => markBankLinked({ node: item, ids }));
-    return;
-  }
-  const record = node as Record<string, unknown>;
-  if ('type' in record && record.id === ids.seamAccountId) {
-    Object.assign(record, { type: BANK_TYPE, bankSeamAt: SEAM_AT.toISOString() });
-  }
-  if ('type' in record && record.id === ids.plainBankAccountId) {
-    Object.assign(record, { type: BANK_TYPE, bankSeamAt: null });
-  }
-  if ('accountType' in record && record.id === ids.bankTxId) record.accountType = BANK_TYPE;
-  Object.values(record).forEach((value) => markBankLinked({ node: value, ids }));
-};
-
-// The backend only ever sees plain manual accounts; the browser is told the account is bank-linked.
-const fakeBankLink = async ({ page, ids }: { page: Page; ids: SeededIds }) => {
-  await page.route(/\/api\/v1\/(accounts|transactions)(\/|\?|$)/, async (route) => {
-    if (route.request().method() !== 'GET') return route.fallback();
-    const response = await route.fetch();
-    if (!(response.headers()['content-type'] ?? '').includes('application/json')) return route.fulfill({ response });
-    const json = await response.json();
-    markBankLinked({ node: json, ids });
-    await route.fulfill({ response, json });
-  });
 };
 
 // The backend sees a plain manual account and skips nothing, so the review step's skip count is injected here.
@@ -136,49 +87,6 @@ const simulateSeamSkippedRow = async ({ page }: { page: Page }) => {
     const body = route.request().postDataJSON();
     await route.continue({ postData: JSON.stringify({ ...body, skippedAfterBankSeam: 0 }) });
   });
-};
-
-const openTransactionDialog = async ({ page, rowText }: { page: Page; rowText: string }) => {
-  await page.locator('[aria-haspopup="true"]').filter({ hasText: rowText }).first().click();
-  const dialog = page.getByRole('dialog').filter({ has: page.getByRole('button', { name: 'Edit transaction' }) });
-  await expect(dialog).toBeVisible();
-  // Every type tab stays disabled until the form finishes loading; an expense row keeps Expense enabled.
-  await expect(dialog.getByRole('button', { name: /select expense/i })).toBeEnabled();
-  return {
-    dialog,
-    accountSelect: ({ name }: { name: string }) => dialog.getByRole('combobox').filter({ hasText: name }),
-    amountInput: dialog.getByRole('spinbutton', { name: /^Amount/ }),
-    dateInput: dialog.locator('input[type="datetime-local"]'),
-    incomeTab: dialog.getByRole('button', { name: /select income/i }),
-    deleteButton: dialog.getByRole('button', { name: 'Delete transaction' }),
-    submitButton: dialog.getByRole('button', { name: 'Edit transaction' }),
-  };
-};
-
-const uploadCsv = async ({ page, content }: { page: Page; content: string }) => {
-  await page.goto('/settings/data-management/import/csv');
-  await page.locator('input[type="file"]').setInputFiles({
-    name: 'seam-import.csv',
-    mimeType: 'text/csv',
-    buffer: Buffer.from(content),
-  });
-  await page.getByRole('button', { name: 'Continue to mapping' }).click();
-  await expect(page.getByRole('heading', { name: 'Map columns' })).toBeVisible();
-};
-
-const assignmentRow = ({ page, field }: { page: Page; field: string }) =>
-  page
-    .getByRole('table')
-    .filter({ has: page.getByRole('columnheader', { name: 'How to assign' }) })
-    .getByRole('row')
-    .filter({ has: page.getByRole('cell').filter({ hasText: new RegExp(`^${field}\\W*$`) }) });
-
-const assignSingleCategory = async ({ page }: { page: Page }) => {
-  const row = assignmentRow({ page, field: 'Category' });
-  await row.getByRole('combobox').first().click();
-  await page.getByRole('option', { name: 'Assign all to single existing category' }).click();
-  await row.getByText('Select category...').click();
-  await page.getByRole('option').first().click();
 };
 
 test.describe('Bank-linked account: history before the link day stays editable', () => {
@@ -255,7 +163,12 @@ test.describe('Bank-linked account: history before the link day stays editable',
   });
 
   test.beforeEach(async ({ page }) => {
-    await fakeBankLink({ page, ids });
+    await fakeBankLink({
+      page,
+      seamAccountId: ids.seamAccountId,
+      plainBankAccountId: ids.plainBankAccountId,
+      bankTxId: ids.bankTxId,
+    });
     await loginViaUI({ page, email: creds.email, password: creds.password });
   });
 
@@ -437,22 +350,12 @@ test.describe('Bank-linked account: history before the link day stays editable',
 
     await assignSingleCategory({ page });
 
-    const accountRow = assignmentRow({ page, field: 'Account' });
-    await accountRow.getByRole('combobox').first().click();
-    await page.getByRole('option', { name: 'Assign all to single existing account' }).click();
-    await accountRow.getByRole('combobox').nth(1).click();
+    await openSingleAccountOptions({ page });
     await expect(page.getByRole('option', { name: new RegExp(SEAM_ACCOUNT) })).toBeVisible();
     await expect(page.getByRole('option', { name: new RegExp(PLAIN_BANK_ACCOUNT) })).toHaveCount(0);
     await page.getByRole('option', { name: new RegExp(SEAM_ACCOUNT) }).click();
 
-    const currencyRow = assignmentRow({ page, field: 'Currency' });
-    await currencyRow.getByRole('combobox').first().click();
-    await page.getByRole('option', { name: 'Use same currency for all transactions' }).click();
-    await currencyRow.getByRole('combobox').nth(1).click();
-    await page
-      .getByRole('option', { name: new RegExp(CURRENCY) })
-      .first()
-      .click();
+    await assignSingleCurrency({ page, currency: CURRENCY });
 
     await page.getByRole('button', { name: 'Next' }).click();
     await expect(page.getByText(SEAM_SKIPPED_MESSAGE)).toBeVisible();

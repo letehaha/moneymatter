@@ -11,10 +11,18 @@ const LOCKED: BankRowPermissions = { canEditLockedFields: false, canDelete: fals
 export const isBankAccount = ({ account }: { account: Pick<AccountModel, 'type'> }): boolean =>
   !!account.type && account.type !== ACCOUNT_TYPES.system;
 
+/** An unknown account (a shared tracker's row) counts as manual only when the row says `system`. */
+export const isOnBankAccount = ({
+  transaction,
+  account,
+}: {
+  transaction: Pick<TransactionModel, 'accountType'>;
+  account: Pick<AccountModel, 'type'> | undefined;
+}): boolean => (account ? isBankAccount({ account }) : transaction.accountType !== ACCOUNT_TYPES.system);
+
 /**
- * Amount, date, type and delete locks for a row. A planned row is never locked; an unknown account (a shared
- * tracker's row) falls back to the row's own `accountType`. On a bank-linked account only manual rows dated
- * strictly before `bankSeamAt` unlock.
+ * Amount, date, type and delete locks for a row. A planned row is never locked. On a bank-linked account only
+ * manual rows dated strictly before `bankSeamAt` unlock.
  */
 export const getBankRowPermissions = ({
   transaction,
@@ -24,7 +32,7 @@ export const getBankRowPermissions = ({
   account: BankRowAccount | undefined;
 }): BankRowPermissions => {
   if (transaction.isPlanned) return OPEN;
-  if (!isBankAccount({ account: account ?? { type: transaction.accountType } })) return OPEN;
+  if (!isOnBankAccount({ transaction, account })) return OPEN;
   if (!account?.bankSeamAt || transaction.accountType !== ACCOUNT_TYPES.system) return LOCKED;
 
   return isBefore(new Date(transaction.time), new Date(account.bankSeamAt)) ? OPEN : LOCKED;

@@ -258,4 +258,10 @@ export interface ImportSummaryBase {
    * pollers — summaries produced before this field existed do not carry it.
    */
   accountBalanceChanges?: AccountBalanceChange[];
+  /**
+   * Rows not imported because they are dated from the bank seam of their target account
+   * on: the bank owns that history. A dropped transfer counts once per leg. Optional:
+   * retained results predate the field.
+   */
+  skippedAfterBankSeam?: number;
 }

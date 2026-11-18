@@ -273,11 +273,6 @@ export interface CsvImportSummary extends ImportSummaryBase {
   skipped: number;
   /** Number of unpriceable rows skipped (from skipUnpriceableIndices) */
   skippedUnpriceable: number;
-  /**
-   * Rows not imported because they are dated from the bank seam of their target account
-   * on: the bank owns that history. Optional: retained results predate the field.
-   */
-  skippedAfterBankSeam?: number;
   accountsCreated: number;
   /** Number of source accounts mapped to skip. Optional: retained results predate the field. */
   accountsSkipped?: number;

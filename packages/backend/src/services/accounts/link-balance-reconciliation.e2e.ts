@@ -22,6 +22,7 @@ import { REDIS_KEYS, SyncStatus } from '@services/bank-data-providers/sync/sync-
 import * as helpers from '@tests/helpers';
 import { getMockedLunchFlowTransactions } from '@tests/mocks/lunchflow/data';
 import {
+  LUNCHFLOW_EXTERNAL_ACCOUNT_ID,
   VALID_LUNCHFLOW_API_KEY,
   getLunchFlowBalanceMock,
   getLunchFlowTransactionsMock,
@@ -42,8 +43,6 @@ import { Op } from 'sequelize';
  * copies dedup cannot recognize. Only an account with no rows backfills.
  * Invariant checked throughout: initialBalance + Σsigned(tx) === currentBalance.
  */
-
-const LUNCHFLOW_EXTERNAL_ACCOUNT_ID = '1001';
 
 const extractError = (response: unknown) =>
   (response as helpers.CustomResponse<unknown>).body.response as unknown as { code: string; message: string };

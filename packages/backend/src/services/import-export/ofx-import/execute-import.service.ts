@@ -17,6 +17,13 @@ import { UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import {
+  assertBankLinksUnchanged,
+  dropFromBankSeam,
+  excludeSeamAccounts,
+  linkedAccountIdByName,
+  loadSeamStarts,
+} from '@services/import-export/core/bank-seam';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { startBalanceReconciliation } from '@services/import-export/core/reconcile-account-balances';
@@ -145,6 +152,7 @@ async function executeOfxImportImpl({
     transactionsImported: 0,
     duplicatesSkipped: 0,
     merged: 0,
+    skippedAfterBankSeam: 0,
     errors: [],
     accountBalanceChanges: [],
   };
@@ -158,6 +166,11 @@ async function executeOfxImportImpl({
     (account) => accountMapping[account.sourceAccountKey]!.action === 'link-existing',
   ).length;
 
+  const { seamStartByName, seamStartByAccountId } = await loadSeamStarts({
+    userId,
+    accountIdByName: linkedAccountIdByName({ accountMapping: mappingWithoutSkipped }),
+  });
+
   const fxDate = parsed.dateRange ? new Date(parsed.dateRange.from) : new Date();
   const { accountNameToId: accountIdByKey, accountsCreated } = await createAccountsIfNeeded({
     userId,
@@ -170,6 +183,7 @@ async function executeOfxImportImpl({
       return mapping?.action === 'create-new' ? mapping.name : accountByKey.get(key)!.suggestedLocalName;
     },
     resolveAccountCategory: (key) => resolveAccountCategory(accountByKey.get(key)!),
+    allowSeamTargets: true,
   });
   summary.accountsCreated = accountsCreated;
 
@@ -182,11 +196,20 @@ async function executeOfxImportImpl({
     importDetails,
     createdAccountIds: createdAccounts.map((account) => account.accountId),
   });
+  await assertBankLinksUnchanged({ userId, accountIds: capturedAccountIds, seamStartByAccountId });
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
-  const plannedAccountIds = await selectAccountsWithPlannedRows({ accountIds: capturedAccountIds });
+  const plannedAccountIds = await selectAccountsWithPlannedRows({
+    accountIds: excludeSeamAccounts({ accountIds: capturedAccountIds, seamStartByAccountId }),
+  });
 
   const skipSet = new Set(skipDuplicateIndices);
-  const rows = parsed.transactions.filter((tx) => !skippedKeys.has(tx.sourceAccountKey));
+  const importableRows = parsed.transactions.filter((tx) => !skippedKeys.has(tx.sourceAccountKey));
+  const { rows, droppedCount } = dropFromBankSeam({
+    seamStartByName,
+    rows: importableRows.map((tx) => ({ ...tx, accountName: tx.sourceAccountKey })),
+    transfers: [],
+  });
+  summary.skippedAfterBankSeam = droppedCount;
   const rowsToWrite = rows.filter((tx) => !skipSet.has(tx.rowIndex));
   if (onProgress) await onProgress(0, rowsToWrite.length);
 

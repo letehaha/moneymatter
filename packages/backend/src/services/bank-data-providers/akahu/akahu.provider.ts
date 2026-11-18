@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BANK_PROVIDER_TYPE, type Cents, type RecordId, asCents } from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE, type RecordId } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
@@ -137,7 +137,7 @@ export class AkahuProvider extends BaseBankDataProvider {
       externalId: account._id,
       name: account.name,
       type: 'bank' as const,
-      balance: account.balance.current == null ? null : this.balanceCents(account),
+      balance: account.balance.current == null ? null : Money.fromDecimal(account.balance.current).toCents(),
       currency,
       metadata: {
         institutionName: account.connection?.name ?? null,
@@ -255,14 +255,6 @@ export class AkahuProvider extends BaseBankDataProvider {
       cardSuffix: tx.meta?.card_suffix ?? null,
       balanceAfter: tx.balance ?? null,
     };
-  }
-
-  private balanceCents(account: AkahuApiAccount): Cents {
-    if (account.balance.current == null) {
-      logger.info(`[Akahu] Account ${account._id} has no current balance, defaulting to 0`);
-      return asCents(0);
-    }
-    return Money.fromDecimal(account.balance.current).toCents();
   }
 
   /**

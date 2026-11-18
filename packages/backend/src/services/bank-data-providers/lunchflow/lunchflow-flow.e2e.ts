@@ -1,5 +1,6 @@
 import {
   ACCOUNT_TYPES,
+  type AccountApiResponse,
   BANK_PROVIDER_TYPE,
   PAYMENT_TYPES,
   SUBSCRIPTION_FREQUENCIES,
@@ -19,6 +20,7 @@ import * as helpers from '@tests/helpers';
 import { buildTransactionPayload } from '@tests/helpers/transactions';
 import {
   getMockedLunchFlowAccounts,
+  getMockedLunchFlowBalance,
   getMockedLunchFlowTransactions,
   getMockedLunchFlowTransactionsWithPending,
 } from '@tests/mocks/lunchflow/data';
@@ -1015,6 +1017,15 @@ describe('LunchFlow Data Provider E2E', () => {
       });
 
       expect(transactions.length).toBe(MOCK_AMOUNT);
+
+      const now = new Date();
+      const relinked = (await helpers.getAccount({
+        id: syncedAccounts[0]!.id,
+        raw: true,
+      })) as unknown as AccountApiResponse;
+      expect(relinked.bankSeamAt).toBe(
+        new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString(),
+      );
     });
 
     it('should reset accounts to system type on disconnect and allow relinking without duplicates', async () => {
@@ -1647,6 +1658,36 @@ describe('LunchFlow Data Provider E2E', () => {
 
       expect(result.status).not.toEqual(ERROR_CODES.Forbidden);
       expect(result.status).toBeGreaterThanOrEqual(400);
+    });
+  });
+
+  describe('Linking a manual account', () => {
+    it('anchors the seam on the listed bank balance when the sync cannot fetch it', async () => {
+      const { account } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
+      const { connectionId } = await helpers.lunchflow.pair();
+      const bankBalance = getMockedLunchFlowBalance({ accountId: 1001 });
+
+      let syncStarted = false;
+      global.mswMockServer.use(
+        http.get(`${LUNCHFLOW_BASE_URL}/accounts/1001/transactions`, () => {
+          syncStarted = true;
+          return HttpResponse.json({ transactions: [], total: 0 });
+        }),
+        http.get(`${LUNCHFLOW_BASE_URL}/accounts/1001/balance`, () =>
+          syncStarted ? new HttpResponse(null, { status: 500 }) : HttpResponse.json(bankBalance),
+        ),
+      );
+
+      const linked = await helpers.linkAccountToBankConnection({
+        id: account.id,
+        connectionId,
+        externalAccountId: '1001',
+      });
+      expect(linked.statusCode).toBe(200);
+
+      const expected = Number(bankBalance.balance.amount);
+      expect((await helpers.getAccount({ id: account.id, raw: true })).currentBalance).toBe(expected);
+      expect((await Accounts.findByPk(account.id))!.seamBalance!.toNumber()).toBe(expected);
     });
   });
 

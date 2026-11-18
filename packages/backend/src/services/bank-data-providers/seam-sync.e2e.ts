@@ -1,11 +1,4 @@
-import {
-  ACCOUNT_TYPES,
-  API_ERROR_CODES,
-  type AccountApiResponse,
-  BANK_PROVIDER_TYPE,
-  type RecordId,
-  TRANSACTION_TYPES,
-} from '@bt/shared/types';
+import { ACCOUNT_TYPES, API_ERROR_CODES, BANK_PROVIDER_TYPE, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
@@ -28,15 +21,12 @@ const PAST_DAYS = [9, 8, 7, 6, 5, 4, 3, 2, 1];
 
 type BalanceRows = Awaited<ReturnType<typeof helpers.getBalanceHistory<true>>>;
 
-const readAccount = ({ accountId }: { accountId: string }) =>
-  helpers.getAccount({ id: accountId, raw: true }) as unknown as Promise<AccountApiResponse>;
-
 const pastChart = (rows: BalanceRows) =>
   PAST_DAYS.map((daysAgo) => helpers.balanceCentsOn({ rows, date: subDays(TODAY, daysAgo) }));
 
 const historyBeforeSeam = async ({ accountId }: { accountId: string }) => {
   const [account, rows] = await Promise.all([
-    readAccount({ accountId }),
+    helpers.readAccount({ accountId }),
     helpers.getBalanceHistory({ accountId, raw: true }),
   ]);
   return { initialBalance: account.initialBalance, chart: pastChart(rows) };
@@ -46,7 +36,7 @@ const chartOn = ({ chart, daysAgo }: { chart: number[]; daysAgo: number }) => ch
 
 const historyFromSeam = async ({ accountId }: { accountId: string }) => {
   const [account, rows] = await Promise.all([
-    readAccount({ accountId }),
+    helpers.readAccount({ accountId }),
     helpers.getBalanceHistory({ accountId, raw: true }),
   ]);
   return {
@@ -177,7 +167,7 @@ describe('Bank sync on a manual account linked forward-only', () => {
       );
 
       await link({ accountId: account.id, connectionId, externalAccountId: 'wallet-eur' });
-      const linked = await readAccount({ accountId: account.id });
+      const linked = await helpers.readAccount({ accountId: account.id });
       expect(linked.bankSeamAt).toBe(TODAY.toISOString());
 
       const bankRows = await bankRowsOf({ accountId: account.id });
@@ -310,7 +300,7 @@ describe('Bank sync on a manual account linked forward-only', () => {
       expect(response.statusCode).toBe(ERROR_CODES.NotFoundError);
       expect(helpers.extractResponse(response)).toMatchObject({ code: API_ERROR_CODES.notFound });
       expect(await bankRowsOf({ accountId: account.id })).toEqual([]);
-      const unlinked = await readAccount({ accountId: account.id });
+      const unlinked = await helpers.readAccount({ accountId: account.id });
       expect(unlinked.type).toBe(ACCOUNT_TYPES.system);
       const rows = (await helpers.getTransactions({
         accountIds: [account.id],
@@ -376,7 +366,7 @@ describe('Bank sync on a manual account linked forward-only', () => {
 
       expect(await historyBeforeSeam({ accountId: account.id })).toEqual(before);
       expect(await bankRowsOf({ accountId: account.id })).toHaveLength(1);
-      expect((await readAccount({ accountId: account.id })).bankSeamAt).toBe(TODAY.toISOString());
+      expect((await helpers.readAccount({ accountId: account.id })).bankSeamAt).toBe(TODAY.toISOString());
     });
 
     it('drops a bank row dated before the link and leaves the history before the link alone', async () => {
@@ -570,7 +560,7 @@ describe('Bank sync on a manual account linked forward-only', () => {
       helpers.enablebanking.setFixedTransactions([bookedRow({ daysAgo: 0, reference: 'booked' })]);
       await syncAccount({ connectionId, accountId: account.id });
 
-      expect((await readAccount({ accountId: account.id })).bankSeamAt).toBe(TODAY.toISOString());
+      expect((await helpers.readAccount({ accountId: account.id })).bankSeamAt).toBe(TODAY.toISOString());
     });
   });
 
@@ -598,7 +588,7 @@ describe('Bank sync on a manual account linked forward-only', () => {
 
       // The seam is stored after the queued sync lands its rows, together with the rebuilt history.
       const deadline = Date.now() + 10_000;
-      while (!(await readAccount({ accountId: account.id })).bankSeamAt) {
+      while (!(await helpers.readAccount({ accountId: account.id })).bankSeamAt) {
         if (Date.now() > deadline) throw new Error('The queued Monobank sync did not store the seam within 10s');
         await helpers.sleep(250);
       }
@@ -611,7 +601,7 @@ describe('Bank sync on a manual account linked forward-only', () => {
         { date: dayKey({ daysAgo: 5 }), amount: 33.06 },
       ]);
 
-      const accountBefore = await readAccount({ accountId: account.id });
+      const accountBefore = await helpers.readAccount({ accountId: account.id });
       expect(accountBefore.bankSeamAt).toBe(TODAY.toISOString());
       const preSeamBankRow = (await bankRowsOf({ accountId: account.id })).find(
         (tx) => format(new Date(tx.time), 'yyyy-MM-dd') < TODAY_KEY,
@@ -619,7 +609,7 @@ describe('Bank sync on a manual account linked forward-only', () => {
       const edited = await helpers.updateTransaction({ id: preSeamBankRow.id, payload: { amount: 10 } });
       expect(edited.statusCode).toBe(ERROR_CODES.ValidationError);
       expect((await helpers.getTransactionById({ id: preSeamBankRow.id, raw: true }))!.amount).toBe(1);
-      expect(await readAccount({ accountId: account.id })).toEqual(accountBefore);
+      expect(await helpers.readAccount({ accountId: account.id })).toEqual(accountBefore);
       expect(await helpers.getBalanceHistory({ accountId: account.id, raw: true })).toEqual(rows);
     });
   });

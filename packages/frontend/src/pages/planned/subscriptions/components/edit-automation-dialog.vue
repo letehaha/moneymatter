@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type SubscriptionDetail, updateSubscription } from '@/api/subscriptions';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
-import { isConnectedAccount } from '@/components/dialogs/manage-transaction/helpers';
+import { isBankAccount } from '@/common/utils/bank-row-permissions';
 import AccountSelectField from '@/components/fields/account-select-field.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { Callout } from '@/components/lib/ui/callout';
@@ -88,8 +88,8 @@ const accountOptions = computed(() =>
       ),
 );
 
-const isConnectedAccountForRecord = computed(
-  () => isRecordMode.value && !!selectedAccount.value && isConnectedAccount({ account: selectedAccount.value }),
+const isAccountBankLinked = computed(
+  () => isRecordMode.value && !!selectedAccount.value && isBankAccount({ account: selectedAccount.value }),
 );
 
 /** The auto-record cron books a concrete amount, so a variable-amount subscription can't use it. */
@@ -129,7 +129,7 @@ const isSaveDisabled = computed(
   () =>
     isPending.value ||
     isMissingAmountForRecord.value ||
-    isConnectedAccountForRecord.value ||
+    isAccountBankLinked.value ||
     (isRecordMode.value && !accountId.value) ||
     isMatchWithoutRules.value,
 );
@@ -204,7 +204,7 @@ const handleSubmit = () => {
         <span class="text-xs">{{ $t('planned.subscriptions.editors.automation.recordNeedsAmount') }}</span>
       </Callout>
 
-      <Callout v-if="isConnectedAccountForRecord" variant="warning">
+      <Callout v-if="isAccountBankLinked" variant="warning">
         <span class="text-xs">{{ $t('planned.subscriptions.editors.automation.recordNeedsManualAccount') }}</span>
       </Callout>
 

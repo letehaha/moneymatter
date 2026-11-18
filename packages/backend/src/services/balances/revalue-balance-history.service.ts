@@ -1,7 +1,6 @@
 import { ACCOUNT_TYPES, isDedicatedFlowAccountCategory, TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { roundHalfToEven } from '@common/utils/round-half-to-even';
-import { t } from '@i18n/index';
 import { ExchangeRateUnavailableError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
@@ -16,6 +15,9 @@ import {
   getLinkDayStart,
   getSeam,
   getSeamStart,
+  isBeforeSeamStart,
+  manualRowOnOrAfterLinkDayMessage,
+  preSeamTimeOnOrAfterLinkDayMessage,
   SEAM_ACCOUNT_ATTRIBUTES,
   type SeamAccount,
 } from '@services/accounts/seam';
@@ -504,7 +506,11 @@ export const findSeamAccount = async ({ accountId }: { accountId: string }): Pro
 export const stampSeamBalance = withTransaction(async ({ accountId }: { accountId: string }): Promise<void> => {
   const account = await Accounts.findByPk(accountId);
   const linkDayStart = account && getLinkDayStart({ externalData: account.externalData });
-  if (!account || account.type === ACCOUNT_TYPES.system || !linkDayStart) return;
+  if (!account || account.type === ACCOUNT_TYPES.system) return;
+  if (!linkDayStart) {
+    logger.warn('Seam balance not stamped: account has no forward-only link day', { accountId });
+    return;
+  }
 
   const preSeamDeltas = await loadDailyNativeDeltas({ accountId, toExclusive: linkDayStart });
   await Accounts.update(
@@ -582,27 +588,32 @@ export const scheduleBalanceRevalue = async ({
 
 /**
  * True when the account has a bank seam, which owns the balance from the seam on. Times
- * before the seam schedule its rebuild; times on both sides throw unless `allowSeamCrossing`.
+ * before the seam schedule its rebuild. A manual row may not cross the seam (`edit`), nor
+ * land from the seam on (`enter-ledger`); a `bank-row` may do both.
  */
 export const schedulePreSeamRebuild = async ({
   accountId,
   times,
   excludeTransactionId,
-  allowSeamCrossing = false,
+  mode = 'edit',
 }: {
   accountId: string;
   times: (Date | string)[];
   excludeTransactionId?: string;
-  allowSeamCrossing?: boolean;
+  mode?: 'edit' | 'enter-ledger' | 'bank-row';
 }): Promise<boolean> => {
   const account = await findSeamAccount({ accountId });
   const seamStart = account && getSeamStart({ account });
   if (!seamStart) return false;
 
-  const preSeamCount = times.filter((time) => new Date(time) < seamStart).length;
-  if (preSeamCount === 0) return true;
-  if (preSeamCount < times.length && !allowSeamCrossing) {
-    throw new ValidationError({ message: t({ key: 'transactions.preSeamTimeOnOrAfterLinkDay' }) });
+  const preSeamCount = times.filter((time) => isBeforeSeamStart({ seamStart, time })).length;
+  if (preSeamCount === 0) {
+    if (mode === 'enter-ledger' && times.length)
+      throw new ValidationError({ message: manualRowOnOrAfterLinkDayMessage({ seamStart, isNewRow: true }) });
+    return true;
+  }
+  if (preSeamCount < times.length && mode !== 'bank-row') {
+    throw new ValidationError({ message: preSeamTimeOnOrAfterLinkDayMessage({ seamStart }) });
   }
 
   await scheduleBalanceRevalue({ accountId, excludeTransactionId });

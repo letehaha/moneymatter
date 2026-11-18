@@ -69,7 +69,7 @@ export const runBalanceRevalueSweep = async (): Promise<SyncResult> => {
         failures.push(error);
         logger.error(
           { message: `Balance revalue sweep failed for account ${accountId}`, error: error as Error },
-          { code: 'BALANCE_REVALUE_SWEEP_ACCOUNT_FAILED' },
+          { code: 'BALANCE_REVALUE_SWEEP_ACCOUNT_FAILED', accountId },
         );
       }
     };
@@ -86,6 +86,7 @@ export const runBalanceRevalueSweep = async (): Promise<SyncResult> => {
       await attempt(async () => {
         if ((await revalueBalanceHistory({ accountId })) === 'skipped') {
           failures.push(`Account ${accountId} skipped: balance history not rebuilt`);
+          logger.warn('Balance revalue sweep skipped account: balance history not rebuilt', { accountId });
         }
       });
     }

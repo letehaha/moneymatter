@@ -1,0 +1,6 @@
+date,amount,description,category
+2025-12-23 23:59,-25.00,Local 23:59 day before,Dining
+2025-12-24 00:00,-31.00,Local 00:00 seam day,Transport
+2025-12-24 01:00,-7.50,Local 01:00 seam day,Groceries
+2025-12-24 02:00,-12.00,Local 02:00 seam day,Groceries
+2025-12-24 12:00,150.00,Local 12:00 seam day,Other income

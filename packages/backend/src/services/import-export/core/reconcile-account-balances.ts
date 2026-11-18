@@ -325,8 +325,6 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
     for (const capture of sortedCaptures) {
       const tally = this.tallyByAccountId.get(capture.accountId) ?? emptyTally();
 
-      if (capture.hasBankSeam) await this.#recordBankSeamEffect({ importBatchId, capture, tally, logLabel, errors });
-
       const amountDelta = recalculateBalance
         ? tally.deltaHistorical.negate()
         : tally.deltaHistorical.add(tally.deltaNew).negate();
@@ -377,45 +375,6 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
         movedCount: tally.movedCount,
         historicalCount: tally.historicalCount,
         isNewAccount: false,
-      });
-    }
-  }
-
-  /**
-   * The seam rebuild shifted the opening balance by −Σrows. Recording that shift lets an
-   * undo after the account is unlinked reverse it like any manual import's absorb.
-   */
-  async #recordBankSeamEffect({
-    importBatchId,
-    capture,
-    tally,
-    logLabel,
-    errors,
-  }: {
-    importBatchId: RecordId;
-    capture: AccountBalanceCapture;
-    tally: ImportRowTally;
-    logLabel: string;
-    errors: BalanceReconcileError[];
-  }): Promise<void> {
-    if (tally.deltaHistorical.isZero()) return;
-    try {
-      await ImportBatchAccountEffects.create({
-        importBatchId,
-        accountId: capture.accountId,
-        absorbedAmount: tally.deltaHistorical.negate(),
-      });
-    } catch (err) {
-      logger.error({
-        message: `[${logLabel}] Failed to record the opening-balance shift of seam account "${capture.accountName}" — an undo after unlinking will not reverse it`,
-        error: err as Error,
-      });
-      errors.push({
-        rowIndex: null,
-        code: 'account-balance-desync',
-        accountName: capture.accountName,
-        accountCreated: false,
-        error: `${capture.accountName}: the import could not be recorded for undo; undoing it after unlinking the bank may leave this account balance incorrect`,
       });
     }
   }

@@ -18,6 +18,7 @@
     "dedicatedFlowCategoryNotAllowed": "Loan and vehicle accounts must be created through their dedicated endpoints, not the generic accounts endpoint.",
     "initialBalanceOnlySystem": "Initial balance can only be changed for manual accounts",
     "initialAndCurrentBalanceTogether": "Initial balance and current balance can't be changed in the same request",
+    "onlySystemAccountsCanBeLinked": "Only manually created accounts can be linked to a bank connection.",
     "bankLinkImportStillRunning": "An import is still running. Wait for it to finish before linking, unlinking, archiving or disconnecting a bank account. If the import stopped, this block clears on its own 3 hours after the import started."
   },
   "balanceAdjustment": {
@@ -57,10 +58,12 @@
     "cannotCreateWithParams": "Cannot create transaction with provided params",
     "idCannotBeChanged": "id cannot be changed",
     "editReadonlyFields": "Attempt to edit readonly fields of the external account",
-    "preSeamTimeOnOrAfterLinkDay": "A manual transaction on a bank-linked account must stay dated before the day the account was linked.",
+    "preSeamTimeOnOrAfterLinkDay": "A manual transaction on a bank-linked account must stay dated before {{date}}, the day the account was linked.",
     "manualRowOnOrAfterLinkDay": "This transaction is dated on or after {{date}}, the day the account was linked to the bank. From that day on, the bank's records are what counts, so it can't be edited or deleted.",
+    "manualRowOnOrAfterLinkDayCreate": "Your bank owns everything from {{date}} on, so a manual transaction must be dated before {{date}}.",
     "bulkDeleteBankRowsSelected": "Transactions synced from your bank, and ones dated on or after the day the account was linked, can't be deleted.",
     "oppositeLegOnBankAccount": "The other side of this transfer is on a bank-linked account, so this change isn't allowed there.",
+    "moveAcrossBankLinkedAccount": "A transaction can't be moved onto or off a bank-linked account. Delete it and add it again on the other account.",
     "changeTypeNotAllowed": "It's disallowed to change \"transactionType\" of the non-system account",
     "bothRefundFieldsNotAllowed": "You cannot use both \"refundedByTxIds\" and \"refundsTargets\" simultaneously. Please choose one or the other.",
     "oppositeTransactionNotFound": "Cannot find opposite tx to make an updation",
