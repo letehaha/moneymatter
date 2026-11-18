@@ -1,11 +1,14 @@
-import { DEACTIVATION_REASON, type RecordId } from '@bt/shared/types';
+import { API_ERROR_CODES, DEACTIVATION_REASON, type RecordId } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
-import { ForbiddenError, ServiceUnavailableError } from '@js/errors';
+import { ForbiddenError, NotFoundError, ServiceUnavailableError } from '@js/errors';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
+import { runPendingLinkAbsorb } from '@services/accounts/absorb-link-residual';
+import { lockLinkedBankAccount } from '@services/accounts/lock-account-row';
 import { isDeadlockError } from '@services/common/retry-on-deadlock';
+import { withTransaction } from '@services/common/with-transaction';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
 import { SyncStatus, setAccountSyncStatus } from './sync/sync-status-tracker';
@@ -303,9 +306,19 @@ export abstract class BaseBankDataProvider {
     await setAccountSyncStatus({ accountId: systemAccountId, status: SyncStatus.SYNCING, userId });
 
     try {
-      const result = await work();
-
-      await this.updateLastSync(connectionId);
+      // The link is re-checked under the row lock only after every fetch: an unlink that
+      // committed meanwhile rolls back all rows this sync wrote.
+      const result = await withTransaction(async () => {
+        const synced = await work();
+        if (!(await lockLinkedBankAccount({ accountId: systemAccountId, connectionId }))) {
+          throw new NotFoundError({
+            message: t({ key: 'bankDataProviders.accountNotLinkedToConnection' }),
+            code: API_ERROR_CODES.notFound,
+          });
+        }
+        await this.updateLastSync(connectionId);
+        return synced;
+      })();
 
       await linkAndEmitSyncedTransactions({
         userId,
@@ -313,6 +326,8 @@ export abstract class BaseBankDataProvider {
         transactionIds: result.transactionIds,
         extraAutoLinkCandidateIds: result.extraAutoLinkCandidateIds,
       });
+
+      await runPendingLinkAbsorb({ accountId: systemAccountId, userId });
 
       await setAccountSyncStatus({ accountId: systemAccountId, status: SyncStatus.COMPLETED, userId });
 

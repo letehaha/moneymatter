@@ -12,6 +12,7 @@ import { Op } from 'sequelize';
 import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 import { clampSyncStartToLink } from '../utils/clamp-sync-start-to-link';
 import { encryptCredentials } from '../utils/credential-encryption';
+import { findSyncAnchor } from '../utils/find-sync-anchor';
 import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { AkahuApiClient } from './api-client';
@@ -136,7 +137,7 @@ export class AkahuProvider extends BaseBankDataProvider {
       externalId: account._id,
       name: account.name,
       type: 'bank' as const,
-      balance: this.balanceCents(account),
+      balance: account.balance.current == null ? null : this.balanceCents(account),
       currency,
       metadata: {
         institutionName: account.connection?.name ?? null,
@@ -178,14 +179,9 @@ export class AkahuProvider extends BaseBankDataProvider {
 
         // An account with nothing stored yet is a backfill: fetch everything
         // Akahu serves for a personal app (730 days) and don't consume plans.
-        const anyStoredTransaction = await findOneTransaction({
-          planned: 'exclude',
-          access: 'unscoped-internal',
-          balanceAdjustments: 'include',
-          where: { accountId: account.id, time: { [Op.lte]: new Date() } },
-        });
+        const hasHistory = (await findSyncAnchor({ account, to: new Date() })) !== null;
         const newestImported =
-          anyStoredTransaction &&
+          hasHistory &&
           (await findOneTransaction({
             planned: 'exclude',
             access: 'unscoped-internal',
@@ -224,8 +220,8 @@ export class AkahuProvider extends BaseBankDataProvider {
               externalData: this.transactionMetadata(tx),
               rawMerchantName: tx.merchant?.name?.trim() || null,
             })),
-          matchPlanned: Boolean(anyStoredTransaction),
-          createFromDate: anyStoredTransaction ? clampSyncStartToLink({ account, from: new Date(0) }) : new Date(0),
+          matchPlanned: hasHistory,
+          createFromDate: hasHistory ? clampSyncStartToLink({ account, from: new Date(0) }) : new Date(0),
         });
 
         if (

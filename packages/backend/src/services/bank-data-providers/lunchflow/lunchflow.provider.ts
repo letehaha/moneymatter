@@ -1,18 +1,17 @@
 import type { RecordId } from '@bt/shared/types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { BANK_PROVIDER_TYPE, Cents, asCents } from '@bt/shared/types';
+import { BANK_PROVIDER_TYPE, Cents } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import { findOneTransaction } from '@models/transactions-query';
 import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
-import { Op } from 'sequelize';
 
 import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
 import { clampSyncStartToLink } from '../utils/clamp-sync-start-to-link';
 import { encryptCredentials } from '../utils/credential-encryption';
+import { findSyncAnchor } from '../utils/find-sync-anchor';
 import { persistSyncedTransactions } from '../utils/persist-synced-transactions';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { LunchFlowApiClient } from './api-client';
@@ -128,7 +127,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
       activeAccounts.map((account) => apiClient.getBalance({ accountId: account.id })),
     );
 
-    // Per-account balance failures are expected (fall back to 0). But when
+    // Per-account balance failures are expected (balance unknown). But when
     // most accounts in one sync fail simultaneously, that's a strong signal
     // the balance API itself is degraded — escalate to Sentry. Min count of 2
     // avoids firing for single-account connections where one bad account
@@ -149,7 +148,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
 
     const accounts = activeAccounts.reduce<ProviderAccount[]>((result, account, index) => {
       const balanceResult = balanceResults[index]!;
-      let balance: Cents = asCents(0);
+      let balance: Cents | null = null;
       // Use account-level currency as fallback; balance response takes precedence
       let currency = account.currency || '';
       if (balanceResult.status === 'fulfilled') {
@@ -158,7 +157,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
       } else {
         const reason =
           balanceResult.reason instanceof Error ? balanceResult.reason.message : String(balanceResult.reason);
-        logger.info(`[LunchFlow] Failed to fetch balance for account ${account.id}, defaulting to 0: ${reason}`);
+        logger.info(`[LunchFlow] Failed to fetch balance for account ${account.id}, balance unknown: ${reason}`);
       }
 
       if (!currency) {
@@ -245,15 +244,8 @@ export class LunchFlowProvider extends BaseBankDataProvider {
         // must not consume plans. Otherwise only rows since the link date are created, never
         // since the newest stored row: LunchFlow sends the whole feed every sync, and a row
         // the bank reveals later under an earlier date would be dropped for good.
-        const anyStoredTransaction = await findOneTransaction({
-          planned: 'exclude',
-          access: 'unscoped-internal',
-          balanceAdjustments: 'include',
-          where: { accountId: account.id, time: { [Op.lte]: new Date() } },
-        });
-        const createFromDate = anyStoredTransaction
-          ? clampSyncStartToLink({ account, from: new Date(0) })
-          : new Date(0);
+        const hasHistory = (await findSyncAnchor({ account, to: new Date() })) !== null;
+        const createFromDate = hasHistory ? clampSyncStartToLink({ account, from: new Date(0) }) : new Date(0);
 
         const { createdTransactionIds, mergedIntoPlannedCount, skippedPreLinkCount } = await persistSyncedTransactions({
           account,
@@ -272,7 +264,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
             },
             rawMerchantName: tx.merchant?.trim() || null,
           })),
-          matchPlanned: Boolean(anyStoredTransaction),
+          matchPlanned: hasHistory,
           createFromDate,
         });
 

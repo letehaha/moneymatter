@@ -35,7 +35,7 @@ export const listExternalAccounts = withTransaction(
       externalId: acc.externalId,
       name: acc.name,
       type: acc.type,
-      balance: Money.fromCents(acc.balance).toNumber(),
+      balance: Money.fromCents(acc.balance ?? 0).toNumber(),
       creditLimit: Money.fromCents(Number(acc.metadata?.creditLimit) || 0).toNumber(),
       currency: acc.currency,
       metadata: acc.metadata,

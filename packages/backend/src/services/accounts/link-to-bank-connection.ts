@@ -18,13 +18,19 @@ import Subscriptions from '@models/subscriptions.model';
 import { updateAccount } from '@services/accounts.service';
 import { absorbLinkResidual } from '@services/accounts/absorb-link-residual';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
+import { lockAccountRow } from '@services/accounts/lock-account-row';
 import { restoreRelinkedTransactionsAccountType } from '@services/accounts/restore-relinked-transactions-account-type';
+import { stampSeamBalance } from '@services/balances/revalue-balance-history.service';
 import { PROVIDER_TO_ACCOUNT_TYPE, bankProviderRegistry } from '@services/bank-data-providers';
-import { assertExternalAccountNotLinkedElsewhere } from '@services/bank-data-providers/connection/connect-selected-accounts';
+import {
+  assertExternalAccountNotLinkedElsewhere,
+  requireProviderBalance,
+} from '@services/bank-data-providers/connection/connect-selected-accounts';
 import { syncTransactionsForAccount } from '@services/bank-data-providers/connection/sync-transactions-for-account';
 import { SyncStatus, setAccountSyncStatus } from '@services/bank-data-providers/sync/sync-status-tracker';
 import { writeBankBalanceWithHistory } from '@services/bank-data-providers/utils/write-bank-balance-with-history';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertNoUnfinishedImport } from '@services/import-export/core/unfinished-import';
 
 interface LinkAccountToBankConnectionPayload {
   accountId: string;
@@ -129,8 +135,12 @@ export const linkAccountToBankConnection = withTransaction(
       await account.reload();
     }
 
+    // Locked before the import check: an import opening its batch now waits and sees this link.
+    await lockAccountRow({ accountId, userId, noKey: true });
+    await assertNoUnfinishedImport({ userId });
+
     const systemBalance = account.currentBalance.toCents();
-    const externalBalance = externalAccount.balance;
+    const externalBalance = requireProviderBalance({ providerAccount: externalAccount }).toCents();
     const balanceDifference = externalBalance - systemBalance;
 
     const isQueuedSyncProvider = provider.metadata.features.queuedSync === true;
@@ -236,6 +246,7 @@ export const linkAccountToBankConnection = withTransaction(
     });
 
     const residualOutcome = await absorbLinkResidual({ accountId, userId });
+    await stampSeamBalance({ accountId });
 
     const updatedAccount = (await Accounts.findByPk(accountId))!;
 

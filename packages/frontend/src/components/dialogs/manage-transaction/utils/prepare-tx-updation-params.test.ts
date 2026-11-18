@@ -622,6 +622,95 @@ describe('prepareTxUpdationParams', () => {
       });
     });
 
+    describe('pre-link manual row on a bank account', () => {
+      const params = ({ transaction, form }: { transaction: TransactionModel; form: UI_FORM_STRUCT }) =>
+        prepareTxUpdationParams({
+          form,
+          transaction,
+          linkedTransaction: null,
+          isTransferTx: true,
+          isRecordExternal: false,
+          isRecordOnBankAccount: true,
+          isCurrenciesDifferent: false,
+          isOriginalRefundsOverriden: false,
+        });
+
+      it('income -> transfer keeps the row as the income leg and sends the picked source as the other leg', () => {
+        const incomeTx = buildSystemIncomeTransaction({ accountId: destinationAccount.id });
+        const form: UI_FORM_STRUCT = {
+          ...buildBaseFormMock(incomeTx),
+          type: FORM_TYPES.transfer,
+          account: sourceAccount as AccountModel,
+          amount: 2000,
+          targetAmount: 2000,
+          toAccount: destinationAccount as AccountModel,
+        };
+
+        expect(params({ transaction: incomeTx, form })).toEqual({
+          txId: incomeTx.id,
+          accountId: incomeTx.accountId,
+          amount: 2000,
+          destinationAccountId: sourceAccount.id,
+          destinationAmount: 2000,
+          note: form.note,
+          time: expect.anything(),
+          transactionType: TRANSACTION_TYPES.income,
+          paymentType: incomeTx.paymentType,
+          transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+        });
+      });
+
+      it('income -> transfer from out of wallet keeps the row as income', () => {
+        const incomeTx = buildSystemIncomeTransaction({ accountId: destinationAccount.id });
+        const form: UI_FORM_STRUCT = {
+          ...buildBaseFormMock(incomeTx),
+          type: FORM_TYPES.transfer,
+          account: OUT_OF_WALLET_ACCOUNT_MOCK,
+          amount: null,
+          targetAmount: 700,
+          toAccount: destinationAccount as AccountModel,
+        };
+
+        expect(
+          prepareTxUpdationParams({
+            form,
+            transaction: incomeTx,
+            linkedTransaction: null,
+            isTransferTx: true,
+            isRecordExternal: false,
+            isRecordOnBankAccount: true,
+            isCurrenciesDifferent: true,
+            isOriginalRefundsOverriden: false,
+          }),
+        ).toMatchObject({
+          accountId: incomeTx.accountId,
+          amount: 700,
+          transactionType: TRANSACTION_TYPES.income,
+          transferNature: TRANSACTION_TRANSFER_NATURE.transfer_out_wallet,
+        });
+      });
+
+      it('expense -> transfer in one currency mirrors the edited amount onto the destination', () => {
+        const expenseTx = buildSystemExpenseTransaction({ accountId: sourceAccount.id });
+        const form: UI_FORM_STRUCT = {
+          ...buildBaseFormMock(expenseTx),
+          type: FORM_TYPES.transfer,
+          account: sourceAccount as AccountModel,
+          amount: 2500,
+          targetAmount: 2000,
+          toAccount: destinationAccount as AccountModel,
+        };
+
+        expect(params({ transaction: expenseTx, form })).toMatchObject({
+          accountId: sourceAccount.id,
+          amount: 2500,
+          transactionType: TRANSACTION_TYPES.expense,
+          destinationAccountId: destinationAccount.id,
+          destinationAmount: 2500,
+        });
+      });
+    });
+
     it('handles "expense -> transfer_out_wallet" updation', () => {
       const expenseTx = buildSystemExpenseTransaction();
       const formMock: UI_FORM_STRUCT = {

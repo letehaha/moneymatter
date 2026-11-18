@@ -523,6 +523,53 @@ describe('components/modals/modify-record/helpers', () => {
       );
     });
 
+    it.each([
+      ['before', '2999-01-01T00:00:00.000Z', true],
+      ['on or after', '2000-01-01T00:00:00.000Z', false],
+    ] as const)(
+      'for a manual row dated %s the seam of an account linked to a bank later',
+      (_label, bankSeamAt, expected) => {
+        const seamAccount = { ...destMonobankAccount, bankSeamAt };
+        const transaction = buildSystemExpenseTransaction({ accountId: seamAccount.id });
+        expect(
+          canDeleteTransaction({
+            transaction,
+            oppositeTransaction: undefined,
+            accounts: { ...accounts, [seamAccount.id]: seamAccount },
+            canMutate: true,
+          }),
+        ).toBe(expected);
+      },
+    );
+
+    describe('when the opposite transfer leg sits on a seam account', () => {
+      const SEAM = '2026-11-01T00:00:00.000Z';
+      const seamAccount = { ...destMonobankAccount, bankSeamAt: SEAM };
+      const seamAccounts = { ...accounts, [seamAccount.id]: seamAccount };
+      const transaction = buildSystemTransferExpenseTransaction({ accountId: sourceAccount.id! });
+      const buildOpposite = (overrides: Partial<TransactionModel>) =>
+        buildSystemTransferOppositeTransaction({
+          accountId: seamAccount.id,
+          transferId: transaction.transferId,
+          ...overrides,
+        });
+
+      it.each([
+        ['a pre-seam manual row', { time: new Date('2026-10-31T23:59:59.999Z') }, true],
+        ['a manual row on the seam day', { time: new Date(SEAM) }, false],
+        ['a bank-delivered row', { time: new Date(SEAM), accountType: ACCOUNT_TYPES.monobank }, false],
+      ] as const)('with %s as the opposite leg', (_label, overrides, expected) => {
+        expect(
+          canDeleteTransaction({
+            transaction,
+            oppositeTransaction: buildOpposite(overrides),
+            accounts: seamAccounts,
+            canMutate: true,
+          }),
+        ).toBe(expected);
+      });
+    });
+
     it('returns true for a planned row on a provider-linked account', () => {
       const transaction = buildSystemExpenseTransaction({ accountId: destMonobankAccount.id, isPlanned: true });
       expect(canDeleteTransaction({ transaction, oppositeTransaction: undefined, accounts, canMutate: true })).toBe(

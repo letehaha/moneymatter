@@ -317,7 +317,7 @@ describe('DELETE /import/batch/:batchId', () => {
     expect(stillThere).toHaveLength(2);
   });
 
-  it('rejects undoing a batch whose account was later connected to a bank', async () => {
+  it('rejects undoing a batch whose account was later connected to a bank without a seam', async () => {
     await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
     const account = await helpers.createAccount({
       payload: helpers.buildAccountPayload({ currencyCode: 'USD' }),
@@ -326,6 +326,7 @@ describe('DELETE /import/batch/:batchId', () => {
     const summary = await helpers.runCsvImport({ accountId: account.id, currencyCode: 'USD' });
 
     await linkAccountToLunchFlow({ accountId: account.id });
+    await helpers.dropSeam({ accountId: account.id });
 
     const response = await helpers.deleteImportBatch({ batchId: summary.batchId });
     expect(response.statusCode).toBe(422);
@@ -556,7 +557,7 @@ describe('background delete for batches above the sync cap', () => {
   );
 
   it(
-    'rejects an oversized batch on a now bank-linked account immediately instead of queueing it',
+    'rejects an oversized batch on a now bank-linked account without a seam immediately instead of queueing it',
     async () => {
       await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
       const account = await helpers.createAccount({
@@ -575,6 +576,7 @@ describe('background delete for batches above the sync cap', () => {
       expect(summary.newTransactionIds).toHaveLength(OVERSIZED_BATCH_ROWS);
 
       await linkAccountToLunchFlow({ accountId: account.id });
+      await helpers.dropSeam({ accountId: account.id });
 
       const response = await helpers.deleteImportBatch({ batchId: summary.batchId });
       expect(response.statusCode).toBe(422);

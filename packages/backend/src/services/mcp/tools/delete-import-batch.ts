@@ -9,7 +9,7 @@ export const deleteImportBatchTool = defineTool({
   toolset: 'imports',
   access: 'delete',
   description:
-    'Undo an import: permanently delete every transaction the batch created, reverse the balance shift the import absorbed, and remove accounts the import created once they are empty. Irreversible: call list_import_batches first and check transactionCount. A batch of up to 1000 rows is deleted at once and returns { queued: false, deletedCount }. A larger batch runs as a background job and returns { queued: true, jobId }; follow it with get_import_batch_delete_status. While that job runs, writes are blocked. Refused when the batch touches an account that is now bank-connected, or while its import is still running.',
+    'Undo an import: permanently delete every transaction the batch created, reverse the balance shift the import absorbed, and remove accounts the import created once they are empty. Irreversible: call list_import_batches first and check transactionCount. A batch of up to 1000 rows is deleted at once and returns { queued: false, deletedCount }. A larger batch runs as a background job and returns { queued: true, jobId }; follow it with get_import_batch_delete_status. While that job runs, writes are blocked. On an account with a bankSeamAt (see get_account) the rows are deleted and the opening balance is rebuilt; the current balance stays with the bank. Refused when the batch touches a bank-connected account whose bankSeamAt is null, when it holds a transaction dated on or after the bankSeamAt of its account, or while its import is still running.',
   input: {
     batchId: recordId().describe('The batchId of the import to undo, from list_import_batches.'),
     deleteLinkedTransfers: z

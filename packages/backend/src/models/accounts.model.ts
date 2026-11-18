@@ -88,6 +88,10 @@ export default class Accounts extends Model {
   @MoneyField({ storage: 'cents' })
   declare refCreditLimit: Money;
 
+  /** Native balance at the start of the bank seam day; null when the account has no seam. */
+  @MoneyField({ storage: 'cents', allowNull: true })
+  declare seamBalance: Money | null;
+
   @Column({
     type: DataType.STRING,
     allowNull: false,

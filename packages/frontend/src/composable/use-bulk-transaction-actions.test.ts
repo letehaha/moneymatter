@@ -1,7 +1,7 @@
 import { ACCOUNT_TYPES, type AccountModel, type RecordId, type TransactionModel } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
-import { buildBulkTarget, isExternalTransaction } from './use-bulk-transaction-actions';
+import { buildBulkTarget, isExternalTransaction, isUndeletableTx } from './use-bulk-transaction-actions';
 
 const buildTx = (overrides: Partial<TransactionModel>): TransactionModel =>
   ({
@@ -31,6 +31,38 @@ describe('isExternalTransaction', () => {
     expect(
       isExternalTransaction({ tx: buildTx({ accountType: ACCOUNT_TYPES.enableBanking }), account: undefined }),
     ).toBe(true);
+  });
+});
+
+describe('isUndeletableTx', () => {
+  const SEAM = '2026-11-01T00:00:00.000Z';
+  const seamAccount = { type: ACCOUNT_TYPES.monobank, bankSeamAt: SEAM } as AccountModel;
+  const afterSeam = new Date('2026-11-02T12:00:00.000Z');
+
+  it('allows deleting a row on a manual account', () => {
+    expect(isUndeletableTx({ tx: buildTx({}), account: buildAccount(ACCOUNT_TYPES.system) })).toBe(false);
+  });
+
+  it('blocks deleting a bank-delivered row', () => {
+    const tx = buildTx({ accountType: ACCOUNT_TYPES.monobank, time: afterSeam });
+    expect(isUndeletableTx({ tx, account: seamAccount })).toBe(true);
+  });
+
+  it('blocks deleting a hand-entered row after the bank seam, but not one before it', () => {
+    expect(isUndeletableTx({ tx: buildTx({ time: afterSeam }), account: seamAccount })).toBe(true);
+    expect(isUndeletableTx({ tx: buildTx({ time: new Date('2026-10-31T12:00:00.000Z') }), account: seamAccount })).toBe(
+      false,
+    );
+  });
+
+  it('allows deleting a planned row on a bank account', () => {
+    const tx = buildTx({ isPlanned: true, time: afterSeam });
+    expect(isUndeletableTx({ tx, account: buildAccount(ACCOUNT_TYPES.monobank) })).toBe(false);
+  });
+
+  it('falls back to the row accountType when the account is unknown', () => {
+    expect(isUndeletableTx({ tx: buildTx({}), account: undefined })).toBe(false);
+    expect(isUndeletableTx({ tx: buildTx({ accountType: ACCOUNT_TYPES.monobank }), account: undefined })).toBe(true);
   });
 });
 

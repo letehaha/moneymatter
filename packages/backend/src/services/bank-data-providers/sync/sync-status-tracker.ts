@@ -107,6 +107,13 @@ export async function setAccountsSyncStatus({
 }): Promise<void> {
   if (!isRedisReady() || accountIds.length === 0) return;
 
+  // COMPLETED tells pollers the rows are readable, so it must not land before they commit.
+  const sequelizeTx = namespace.get('transaction');
+  if (status === SyncStatus.COMPLETED && sequelizeTx && !sequelizeTx.finished) {
+    sequelizeTx.afterCommit(() => setAccountsSyncStatus({ accountIds, status, error, userId }));
+    return;
+  }
+
   await Promise.all(accountIds.map((accountId) => writeAccountSyncStatus({ accountId, status, error })));
 
   if (status !== SyncStatus.IDLE && isRedisReady()) {

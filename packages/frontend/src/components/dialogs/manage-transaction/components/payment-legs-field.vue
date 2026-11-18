@@ -40,6 +40,8 @@ const props = defineProps<{
   disabled?: boolean;
   /** Bank-synced main: its account and amount stay as the sync left them. */
   isMainLocked?: boolean;
+  /** Main sits on a bank-linked account, so it can't move to another one. */
+  isMainAccountLocked?: boolean;
   hint?: string;
   mainAmountError?: string;
   showLegErrors?: boolean;
@@ -256,6 +258,7 @@ defineExpose({
           :amount="amount"
           :currency-code="currencyCode"
           :locked="isMainLocked"
+          :is-account-locked="isMainAccountLocked"
           :disabled="disabled"
           :error-message="mainAmountError"
           @update:account="account = $event"
@@ -283,7 +286,7 @@ defineExpose({
                 variant="soft-destructive"
                 size="icon-sm"
                 class="size-6"
-                :disabled="disabled || firstCreatedIndex === -1"
+                :disabled="disabled || firstCreatedIndex === -1 || isMainAccountLocked"
                 :aria-label="$t('dialogs.manageTransaction.form.paymentLegs.removeRow')"
                 @click="removeMain"
               >

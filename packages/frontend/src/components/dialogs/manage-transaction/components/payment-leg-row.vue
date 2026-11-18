@@ -15,6 +15,7 @@ defineProps<{
   currencyCode?: string;
   /** Account and amount can't change here: a linked or bank-synced row. */
   locked?: boolean;
+  isAccountLocked?: boolean;
   disabled?: boolean;
   errorMessage?: string;
 }>();
@@ -51,7 +52,7 @@ defineExpose({
           :model-value="account"
           :accounts="accounts"
           :placeholder="accountPlaceholder"
-          :disabled="disabled || locked"
+          :disabled="disabled || locked || isAccountLocked"
           @update:model-value="emit('update:account', $event)"
         />
         <slot name="account-addon" />

@@ -107,6 +107,10 @@
       </div>
     </div>
 
+    <Callout v-if="summary?.skippedAfterBankSeam" variant="info">
+      <p>{{ store.bankSeamSkippedMessage({ count: summary.skippedAfterBankSeam }) }}</p>
+    </Callout>
+
     <!-- Per-account balance changes (only present when the import touched balances) -->
     <AccountBalanceChangesTable v-if="summary" :changes="summary.accountBalanceChanges ?? []" />
 

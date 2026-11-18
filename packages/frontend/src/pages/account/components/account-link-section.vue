@@ -15,6 +15,8 @@ import { Label } from '@/components/lib/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
 import * as Select from '@/components/lib/ui/select';
 import { useNotificationCenter } from '@/components/notification-center';
+import { ApiErrorResponseError } from '@/js/errors';
+import { captureException } from '@/lib/sentry';
 import { useFormatCurrency } from '@/composable/formatters';
 import { cn } from '@/lib/utils';
 import { useAccountsStore } from '@/stores';
@@ -109,6 +111,9 @@ const linkAccount = async () => {
     addSuccessNotification(result.message);
     resetForm();
   } catch (error) {
+    if (!(error instanceof ApiErrorResponseError)) {
+      captureException({ error, context: { source: 'linkAccount', accountId: props.account.id } });
+    }
     const errorMessage = error instanceof Error ? error.message : 'An error occurred while trying to link account';
     addErrorNotification(errorMessage);
   } finally {

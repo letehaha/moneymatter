@@ -9,10 +9,11 @@ import {
   type TransactionModel,
 } from '@bt/shared/types';
 import Accounts from '@models/accounts.model';
+import { connection } from '@models/connection';
 import Currencies from '@models/currencies.model';
 import { Response } from 'express';
 
-import { makeRequest } from './common';
+import { type CustomResponse, makeRequest } from './common';
 import { addUserCurrencies, getCurrenciesRates } from './currencies';
 
 export const buildAccountPayload = (overrides: Partial<CreateAccountBody> = {}): CreateAccountBody => ({
@@ -117,7 +118,13 @@ export function deleteAccount({
   });
 }
 
-export function unlinkAccountFromBankConnection({ id, raw }: { id: string; raw: false }): Promise<Response>;
+export function unlinkAccountFromBankConnection({
+  id,
+  raw,
+}: {
+  id: string;
+  raw: false;
+}): Promise<CustomResponse<AccountApiResponse>>;
 export function unlinkAccountFromBankConnection({ id, raw }: { id: string; raw: true }): Promise<Accounts>;
 export function unlinkAccountFromBankConnection({ id, raw = false }: { id: string; raw?: boolean }) {
   return makeRequest({
@@ -198,4 +205,11 @@ export const createAccountWithNewCurrency = async ({ currency }: { currency: str
   const currencies = await getCurrenciesRates({ codes: [currency] });
 
   return { account, currency: currencyA, currencyRate: currencies[0] };
+};
+
+/** A linked account whose seam is not stamped yet stays fully owned by the bank. */
+export const dropSeam = async ({ accountId }: { accountId: string }) => {
+  await connection.sequelize.query(`UPDATE "Accounts" SET "seamBalance" = NULL WHERE "id" = :accountId`, {
+    replacements: { accountId },
+  });
 };

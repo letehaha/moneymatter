@@ -478,18 +478,37 @@ describe('Transactions Trash', () => {
       expect(await balanceOf({ id: checking.id })).toBe(900);
     });
 
-    it('rejects a row whose account was connected to a bank since, and keeps it in the trash', async () => {
+    it('rejects a link-day row whose account was connected to a bank since, and keeps it in the trash', async () => {
       const { account } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
       const tx = await createExpense({ accountId: account.id });
       await trash({ id: tx.id });
 
       await helpers.lunchflow.linkManualAccount({ accountId: account.id });
+      const accountBefore = await helpers.getAccount({ id: account.id, raw: true });
 
       const response = await helpers.restoreTrash({ transactionIds: [tx.id] });
 
       expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
       expect((await helpers.getTrash({ raw: true })).map((entry) => entry.id)).toEqual([tx.id]);
       expect(await helpers.getTransactionById({ id: tx.id, raw: true })).toBeNull();
+      expect(await helpers.getAccount({ id: account.id, raw: true })).toEqual(accountBefore);
+    });
+
+    it('rejects a row whose account was connected to a bank since without a seam, and keeps it in the trash', async () => {
+      const { account } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
+      const tx = await createExpense({ accountId: account.id });
+      await trash({ id: tx.id });
+
+      await helpers.lunchflow.linkManualAccount({ accountId: account.id });
+      await helpers.dropSeam({ accountId: account.id });
+      const accountBefore = await helpers.getAccount({ id: account.id, raw: true });
+
+      const response = await helpers.restoreTrash({ transactionIds: [tx.id] });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await helpers.getTrash({ raw: true })).map((entry) => entry.id)).toEqual([tx.id]);
+      expect(await helpers.getTransactionById({ id: tx.id, raw: true })).toBeNull();
+      expect(await helpers.getAccount({ id: account.id, raw: true })).toEqual(accountBefore);
     });
 
     it('rejects an unknown id and an empty body', async () => {

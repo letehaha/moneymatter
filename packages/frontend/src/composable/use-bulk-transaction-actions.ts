@@ -1,4 +1,5 @@
 import type { TransactionFilterParams } from '@/api/transactions';
+import { getBankRowPermissions, isBankAccount } from '@/common/utils/bank-row-permissions';
 import type { BulkEditFormValues } from '@/components/transactions-list/bulk-edit-dialog.vue';
 import { useAccountsStore } from '@/stores';
 import {
@@ -21,14 +22,16 @@ import { useBulkDeleteTransactions } from './use-bulk-delete-transactions';
 import { useBulkUpdateCategory } from './use-bulk-update-category';
 
 /**
- * Bank-connected (external) transactions can't be deleted — the backend rejects
- * them. The account's own type is authoritative; tx.accountType is a fallback
- * for accounts that haven't loaded yet.
+ * A row on a bank-connected account. The account's own type is authoritative;
+ * tx.accountType is a fallback for accounts that haven't loaded yet.
  */
 export function isExternalTransaction({ tx, account }: { tx: TransactionModel; account: AccountModel | undefined }) {
-  if (account) return account.type !== ACCOUNT_TYPES.system;
+  if (account) return isBankAccount({ account });
   return tx.accountType !== ACCOUNT_TYPES.system;
 }
+
+export const isUndeletableTx = ({ tx, account }: { tx: TransactionModel; account: AccountModel | undefined }) =>
+  !getBankRowPermissions({ transaction: tx, account }).canDelete;
 
 /** The whole result set behind the loaded rows: its totals and the filters that produce it. */
 export interface MatchingTransactions {
@@ -77,13 +80,12 @@ export function useBulkTransactionActions({
     isExtraSelectable: isBulkSelectable,
   });
 
-  const isExternalTx = (tx: TransactionModel) =>
-    isExternalTransaction({ tx, account: accountsRecord.value[tx.accountId] });
-
-  const hasExternalSelected = computed(() => {
+  const hasUndeletableSelected = computed(() => {
     const selectedIds = new Set(selection.getSelectedTransactionIds());
     if (selectedIds.size === 0) return false;
-    return getTransactions().some((tx) => selectedIds.has(tx.id) && isExternalTx(tx));
+    return getTransactions().some(
+      (tx) => selectedIds.has(tx.id) && isUndeletableTx({ tx, account: accountsRecord.value[tx.accountId] }),
+    );
   });
 
   const allMatching = computed(() => (selection.isSelectAllActive.value ? getMatching?.() : undefined));
@@ -173,7 +175,7 @@ export function useBulkTransactionActions({
     selectedCount,
     isGroupingBlocked,
     getUnselectableReason,
-    hasExternalSelected,
+    hasUndeletableSelected,
     selectedTotals,
     selectAllState,
     handleSelectAllToggle,

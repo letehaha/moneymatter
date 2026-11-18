@@ -1,4 +1,5 @@
 import { loadTransactionById } from '@/api/transactions';
+import { isBankLockedLeg } from '@/common/utils/bank-row-permissions';
 import { useNotificationCenter } from '@/components/notification-center';
 import { i18n } from '@/i18n';
 import { captureException } from '@/lib/sentry';
@@ -6,7 +7,6 @@ import { useAccountsStore } from '@/stores';
 import {
   isTwoLegTransfer,
   ACCOUNT_CATEGORIES,
-  ACCOUNT_TYPES,
   AccountModel,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
@@ -59,18 +59,10 @@ export function useManageTransactionDialog() {
     ),
   );
 
-  // Derive externality from the actual account record rather than tx.accountType.
-  // Transactions can carry a stale/default accountType (the create-tx API defaults
-  // it to "system" when not provided), but the account's own type is authoritative.
-  // Fall back to tx.accountType when the account record isn't loaded (archived
-  // account, store still hydrating) — strictly better than silently classifying as
-  // system, which would re-trigger the original external-transfer normalization bug.
-  const isAccountExternal = (tx: TransactionModel | undefined): boolean => {
-    if (!tx) return false;
-    const account = accountsRecord.value[tx.accountId];
-    if (account) return account.type !== ACCOUNT_TYPES.system;
-    return tx.accountType !== ACCOUNT_TYPES.system;
-  };
+  // A leg whose amount and date the bank owns. The dialog opens on such a leg so the form locks it;
+  // a pre-seam manual leg is not one, so its transfer opens on the expense leg like a manual pair.
+  const isLegBankLocked = ({ tx }: { tx: TransactionModel | undefined }): boolean =>
+    isBankLockedLeg({ transaction: tx, account: tx ? accountsRecord.value[tx.accountId] : undefined });
 
   // Routes a transfer_to_loan pair to the loan dialog: the income leg names the
   // loan, the expense leg carries the source account/amount. Falls back to the
@@ -121,8 +113,8 @@ export function useManageTransactionDialog() {
     }
     if (tryRouteToLoanDialog(baseTx, oppositeTx)) return;
 
-    const isBaseExternal = isAccountExternal(baseTx);
-    const isOppositeExternal = isAccountExternal(oppositeTx);
+    const isBaseExternal = isLegBankLocked({ tx: baseTx });
+    const isOppositeExternal = isLegBankLocked({ tx: oppositeTx });
     const isExternalTransfer = isBaseExternal || isOppositeExternal;
 
     const modalOptions: DialogProps = {

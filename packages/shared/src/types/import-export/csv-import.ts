@@ -203,6 +203,8 @@ export interface DetectDuplicatesResponse {
    * Only present when at least one such row exists.
    */
   unpriceableRows?: UnpriceableRow[];
+  /** Rows dropped because they are dated from the bank seam of their target account on. */
+  skippedAfterBankSeam: number;
 }
 
 /**
@@ -237,6 +239,11 @@ export interface ExecuteImportRequest extends ImportExecuteRequestBase {
    * so the worker anchors dates to the same instants the preview computed.
    */
   timezone?: string;
+  /**
+   * `skippedAfterBankSeam` from the review step. The job fails when the worker drops a
+   * different count: a target's bank link changed after the review.
+   */
+  skippedAfterBankSeam?: number;
 }
 
 /**
@@ -266,6 +273,11 @@ export interface CsvImportSummary extends ImportSummaryBase {
   skipped: number;
   /** Number of unpriceable rows skipped (from skipUnpriceableIndices) */
   skippedUnpriceable: number;
+  /**
+   * Rows not imported because they are dated from the bank seam of their target account
+   * on: the bank owns that history. Optional: retained results predate the field.
+   */
+  skippedAfterBankSeam?: number;
   accountsCreated: number;
   /** Number of source accounts mapped to skip. Optional: retained results predate the field. */
   accountsSkipped?: number;

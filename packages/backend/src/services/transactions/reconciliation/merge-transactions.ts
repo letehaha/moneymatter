@@ -12,7 +12,7 @@ import {
 import { withTransaction } from '@services/common/with-transaction';
 import { Op } from 'sequelize';
 
-import { detachLinks, loadReconcilableRows, softDeleteTransactions } from './helpers';
+import { detachLinks, loadReconcilableRows, scheduleRevalueOfAccounts, softDeleteTransactions } from './helpers';
 
 /**
  * Targets the removed rows' links move onto the survivor. Rejects with `key` when the survivor
@@ -138,6 +138,7 @@ export const mergeTransactions = withTransaction(
     const removedIds = transactionIds.filter((id) => id !== survivorId);
     await detachLinks({ transactionIds: removedIds });
     await softDeleteTransactions({ userId, transactionIds: removedIds, mergedIntoId: survivorId });
+    await scheduleRevalueOfAccounts({ rows });
 
     return { removedIds };
   },

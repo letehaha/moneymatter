@@ -215,6 +215,7 @@ interface ExecuteImportParams {
   defaultCategoryId?: string;
   timezone?: string;
   recalculateBalance?: boolean;
+  skippedAfterBankSeam?: number;
 }
 
 /**

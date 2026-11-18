@@ -134,7 +134,10 @@
           "noErrors": "No errors",
           "balanceWarningTitle": "Account balances may be out of sync",
           "balanceWarningBody": "The transactions were imported, but some account balances could not be updated afterwards. Review these accounts and adjust their balances manually if needed."
-        }
+        },
+        "bankSeamSkipped": "{count} row dated on or after {date} was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after {date} were skipped: the bank connection already provides transactions from that day.",
+        "bankSeamSkippedNoDate": "{count} row dated on or after the day its account was connected to a bank was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after the day their account was connected to a bank were skipped: the bank connection already provides transactions from that day.",
+        "bankSeamRecalculateHint": "Bank-linked accounts keep the balance their bank reports, so this setting doesn't change them."
       },
       "columnMapping": {
         "stepTitle": "Map columns",

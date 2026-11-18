@@ -87,8 +87,8 @@ export interface ProviderAccount {
   name: string;
   /** Account type (e.g., 'debit', 'credit', 'savings') */
   type: string;
-  /** Current account balance (in cents) */
-  balance: Cents;
+  /** Current account balance (in cents); null when the provider could not report it */
+  balance: Cents | null;
   /** Currency code (e.g., 'UAH', 'USD') */
   currency: string;
   /** Additional provider-specific data */

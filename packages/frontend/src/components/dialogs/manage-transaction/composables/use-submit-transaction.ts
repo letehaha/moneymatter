@@ -28,6 +28,7 @@ interface SubmitTransactionParams {
   isCurrenciesDifferent: boolean;
   isOriginalRefundsOverriden: boolean;
   isRecordExternal: boolean;
+  isRecordOnBankAccount?: boolean;
   transaction?: TransactionModel;
   linkedTransaction?: TransactionModel | null;
   /** Files picked before the row existed; uploaded right after creation. */
@@ -55,6 +56,7 @@ export function useSubmitTransaction({
         isCurrenciesDifferent,
         isOriginalRefundsOverriden,
         isRecordExternal,
+        isRecordOnBankAccount,
         transaction,
         linkedTransaction,
         pendingAttachments = [],
@@ -124,6 +126,7 @@ export function useSubmitTransaction({
             linkedTransaction,
             isTransferTx,
             isRecordExternal,
+            isRecordOnBankAccount,
             isCurrenciesDifferent,
             isOriginalRefundsOverriden,
           }),

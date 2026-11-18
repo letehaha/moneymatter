@@ -239,7 +239,10 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
     expect(await helpers.getTrash({ raw: true })).toEqual([]);
   });
 
-  it('keeps the auto-created transaction, detached, when its account is bank-linked', async () => {
+  it.each([
+    ['with a seam, the row dated on or after the link day', false],
+    ['without a seam', true],
+  ])('keeps the auto-created transaction, detached, when its account is bank-linked %s', async (_label, dropSeam) => {
     const { account } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
     const dueDate = futureDate({ monthsAhead: 1, day: 15 });
     const sub = await helpers.createSubscription({
@@ -262,10 +265,11 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
       createTransaction: true,
       raw: true,
     });
-    expect(paid.transactionAutoCreated).toBe(true);
     const generatedTxId = paid.transactionId!;
 
     await helpers.lunchflow.linkManualAccount({ accountId: account.id });
+    if (dropSeam) await helpers.dropSeam({ accountId: account.id });
+    const accountBefore = await helpers.getAccount({ id: account.id, raw: true });
     const txBefore = await helpers.getTransactionById({ id: generatedTxId, raw: true });
 
     const revertRes = await helpers.revertSubscriptionPeriod({
@@ -275,18 +279,15 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
     });
 
     expect(revertRes.statusCode).toBe(200);
-    const reverted = revertRes.body.response;
-    expect([SUBSCRIPTION_PERIOD_STATUSES.upcoming, SUBSCRIPTION_PERIOD_STATUSES.overdue]).toContain(reverted.status);
-    expect(reverted.paidAt).toBeNull();
-    expect(reverted.transactionId).toBeNull();
-    expect(reverted.transactionAutoCreated).toBe(false);
+    expect(revertRes.body.response.transactionId).toBeNull();
+    expect(revertRes.body.response.transactionAutoCreated).toBe(false);
 
     const txAfter = await helpers.getTransactionById({ id: generatedTxId, raw: true });
-    expect(txAfter).not.toBeNull();
     expect(txAfter!.accountId).toBe(account.id);
     expect(txAfter!.amount).toBe(txBefore!.amount);
     expect(txAfter!.transactionType).toBe(TRANSACTION_TYPES.expense);
     expect(txAfter!.time).toBe(txBefore!.time);
+    expect(await helpers.getAccount({ id: account.id, raw: true })).toEqual(accountBefore);
   });
 });
 

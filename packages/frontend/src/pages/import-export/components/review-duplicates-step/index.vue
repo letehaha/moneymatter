@@ -42,11 +42,23 @@
         </div>
       </div>
 
+      <Callout v-if="store.skippedAfterBankSeam > 0" variant="info">
+        <p>{{ store.bankSeamSkippedMessage({ count: store.skippedAfterBankSeam }) }}</p>
+      </Callout>
+
+      <!-- A seam account's balance is owned by its bank feed, so the toggle does nothing when every target is one. -->
       <RecalculateBalanceToggle
+        v-if="!store.seamTargets.isEveryTargetSeam"
         v-model="store.recalculateBalance"
         :settings-loading="store.recalculateBalanceSettingLoading"
         :settings-load-failed="store.recalculateBalanceSettingLoadFailed"
       />
+      <p
+        v-if="store.seamTargets.seamAccounts.length > 0 && !store.seamTargets.isEveryTargetSeam"
+        class="text-muted-foreground -mt-3 text-xs"
+      >
+        {{ $t('pages.importExport.csvImport.bankSeamRecalculateHint') }}
+      </p>
 
       <!-- Invalid rows table -->
       <section v-if="store.invalidRows.length > 0" aria-labelledby="invalid-rows-heading">
@@ -239,7 +251,11 @@ const store = useImportExportStore();
 // detectDuplicates() also advances to 'review' on success — if we're already
 // here (re-render) and data exists, skip the call.
 onMounted(async () => {
-  const hasData = store.validRows.length > 0 || store.invalidRows.length > 0 || store.duplicates.length > 0;
+  const hasData =
+    store.validRows.length > 0 ||
+    store.invalidRows.length > 0 ||
+    store.duplicates.length > 0 ||
+    store.skippedAfterBankSeam > 0;
 
   if (!hasData && !store.isDetectingDuplicates) {
     try {

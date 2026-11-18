@@ -3,6 +3,7 @@ import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import Accounts from '@models/accounts.model';
 import * as Transactions from '@models/transactions.model';
+import { isRowDeletableOnAccount, SEAM_ACCOUNT_ATTRIBUTES } from '@services/accounts/seam';
 import { Op } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
@@ -30,7 +31,7 @@ interface BulkDeleteParams {
  * regardless of what the client sends, since external transactions are owned
  * by the bank sync and deleting them would desync balances on the next sync.
  * A plan on a provider account is exempt: the bank has never reported it, so
- * deleting it takes nothing away from the sync.
+ * deleting it takes nothing away from the sync. So is a manual row dated before the seam.
  *
  * Each row goes through `deleteTransaction`, which handles per-row write
  * authorization, transfer-pair cleanup, refund unlinking, and portfolio
@@ -55,11 +56,22 @@ const bulkDeleteImpl = async ({
 
   const rows = (await Transactions.default.findAll({
     where: { id: { [Op.in]: uniqueIds }, userId },
-    attributes: ['id', 'accountId', 'transferId', 'isPlanned', 'paymentParentId', 'paymentLinkSnapshot'],
+    attributes: [
+      'id',
+      'accountId',
+      'accountType',
+      'time',
+      'transferId',
+      'isPlanned',
+      'paymentParentId',
+      'paymentLinkSnapshot',
+    ],
     raw: true,
   })) as unknown as Array<{
     id: string;
     accountId: string;
+    accountType: ACCOUNT_TYPES;
+    time: Date;
     transferId: string | null;
     isPlanned: boolean;
     paymentParentId: string | null;
@@ -70,19 +82,24 @@ const bulkDeleteImpl = async ({
     throw new NotFoundError({ message: 'No valid transactions found' });
   }
 
-  const bankLinkedAccounts = await Accounts.findAll({
+  const providerAccounts = await Accounts.findAll({
     where: { id: { [Op.in]: rows.map((row) => row.accountId) }, type: { [Op.ne]: ACCOUNT_TYPES.system } },
-    attributes: ['id'],
+    attributes: [...SEAM_ACCOUNT_ATTRIBUTES, 'id'],
   });
-  const bankLinkedAccountIds = new Set<string>(bankLinkedAccounts.map((account) => account.id));
+  const providerAccountsById = new Map<string, Accounts>(providerAccounts.map((account) => [account.id, account]));
 
-  const disallowedIds = rows
-    .filter((row) => bankLinkedAccountIds.has(row.accountId) && !row.isPlanned)
-    .map((row) => row.id);
-  if (disallowedIds.length > 0) {
+  const disallowed = rows.filter((row) => {
+    const account = providerAccountsById.get(row.accountId);
+    return account && !row.isPlanned && !isRowDeletableOnAccount({ account, transaction: row });
+  });
+  if (disallowed.length > 0) {
+    const isBankRowsOnly =
+      disallowed.length === rows.length && disallowed.every((row) => row.accountType !== ACCOUNT_TYPES.system);
     throw new ValidationError({
-      message: t({ key: 'transactions.cannotDeleteExternal' }),
-      details: { disallowedIds },
+      message: t({
+        key: isBankRowsOnly ? 'transactions.cannotDeleteExternal' : 'transactions.bulkDeleteBankRowsSelected',
+      }),
+      details: { disallowedIds: disallowed.map((row) => row.id) },
     });
   }
 
