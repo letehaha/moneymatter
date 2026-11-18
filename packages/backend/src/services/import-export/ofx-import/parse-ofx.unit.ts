@@ -112,6 +112,21 @@ describe('parseOfx', () => {
     );
   });
 
+  it('reads amounts with a leading plus or a decimal comma', () => {
+    const rows = ['+2150.00', '-42,50']
+      .map(
+        (amount, i) => `<STMTTRN><TRNTYPE>OTHER<DTPOSTED>20260801<TRNAMT>${amount}<FITID>t${i}<NAME>Example</STMTTRN>`,
+      )
+      .join('');
+    const result = parseOfx({ bytes: withHeader({ body: bankStatementWithRows({ rows }) }) });
+    expect(result.transactions.map((t) => t.amount)).toEqual(['2150', '-42.5']);
+
+    const thousands = '<STMTTRN><TRNTYPE>OTHER<DTPOSTED>20260801<TRNAMT>1,000<FITID>t9<NAME>Example</STMTTRN>';
+    expect(() => parseOfx({ bytes: withHeader({ body: bankStatementWithRows({ rows: thousands }) }) })).toThrow(
+      'ofxImport.errors.invalidAmount',
+    );
+  });
+
   it('collapses identical FITID rows and rejects conflicting rows', () => {
     const row = '<STMTTRN><TRNTYPE>DEBIT<DTPOSTED>20260801<TRNAMT>-1<FITID>same<NAME>Example</STMTTRN>';
     const duplicate = parseOfx({ bytes: withHeader({ body: bankStatementWithRows({ rows: row + row }) }) });
