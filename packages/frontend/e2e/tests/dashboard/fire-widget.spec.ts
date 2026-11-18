@@ -43,7 +43,7 @@ const fireMonths = ({ target }: { target: number }) =>
 
 const FIRE_MONTHS = fireMonths({ target: TARGET });
 const NEXT_MILESTONE_MONTHS = fireMonths({ target: TARGET * 0.25 });
-const PROGRESS_PCT = Math.round((BALANCE / TARGET) * 100);
+const PROGRESS_PCT = Math.floor((BALANCE / TARGET) * 1000) / 10;
 
 // ─── UI readers ──────────────────────────────────────────────────────
 
@@ -137,7 +137,7 @@ async function expectNumbersDesign({ page, size }: { page: Page; size: 1 | 2 }) 
   const text = await widgetText({ widget });
   expectMonthsIn({ text: text.split(/Time to FIRE/i)[1]!, expected: FIRE_MONTHS });
   expect(text).toContain(monthYear({ months: FIRE_MONTHS, style: 'long' }));
-  const progress = text.match(/Progress\s*(\d+)%/i);
+  const progress = text.match(/Progress\s*([\d.]+)%/i);
   expect(progress, text).not.toBeNull();
   expect(Number(progress![1])).toBe(PROGRESS_PCT);
   expect(text).not.toMatch(/\d+%\s*·\s*\$/);
@@ -452,7 +452,7 @@ test.describe('FIRE progress widget', () => {
     const fromPage = await readFirePage({ page, type: 'Lean FIRE' });
     expect(Math.abs(fromPage.months - fireMonths({ target: leanTarget }))).toBeLessThanOrEqual(1);
     expect(fromPage.pct).toBeCloseTo((BALANCE / leanTarget) * 100, 1);
-    const pct = Math.round(fromPage.pct);
+    const pct = fromPage.pct;
     const monthsIn = ({ text }: { text: string }) => parseDuration({ text: text.match(new RegExp(DURATION))![0] });
 
     await page.getByRole('link', { name: 'Dashboard', exact: true }).click();
@@ -460,9 +460,12 @@ test.describe('FIRE progress widget', () => {
     const widget = fireWidget({ page });
     const ring = widget.getByRole('img', { name: /of Lean FIRE target reached/ });
     const expectRing = async () => {
-      await expect(ring).toContainText(new RegExp(`^\\s*${pct}%\\s*to Lean FIRE\\s*$`, 'i'), { timeout: 15_000 });
+      await expect(ring).toContainText(
+        new RegExp(`^\\s*${String(pct).replace('.', '\\.')}%\\s*to Lean FIRE\\s*$`, 'i'),
+        { timeout: 15_000 },
+      );
       const label = (await ring.getAttribute('aria-label')) ?? '';
-      expect(Number(label.match(/^(\d+)%/)![1])).toBe(pct);
+      expect(Number(label.match(/^([\d.]+)%/)![1])).toBe(pct);
       expect(monthsIn({ text: label })).toBe(fromPage.months);
     };
     const expectLeanTarget = ({ text, pattern }: { text: string; pattern: RegExp }) => {
@@ -493,7 +496,7 @@ test.describe('FIRE progress widget', () => {
       text = await widgetText({ widget });
       expect(text).not.toMatch(/Time to FIRE/i);
       expect(monthsIn({ text: text.split(/Time to Lean FIRE/i)[1]! })).toBe(fromPage.months);
-      expect(Number(text.match(/Progress\s*(\d+)%/i)![1])).toBe(pct);
+      expect(Number(text.match(/Progress\s*([\d.]+)%/i)![1])).toBe(pct);
       expectLeanTarget({ text, pattern: /\$[\d.,]+[kKM]? of (\$[\d.,]+[kKM]?)/ });
       if (size === '2×1') {
         const chart = squash({
