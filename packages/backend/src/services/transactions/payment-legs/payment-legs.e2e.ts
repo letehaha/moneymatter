@@ -237,9 +237,23 @@ describe('Multi-account payments', () => {
     });
     expect((await legsOf({ accountId: voucher!.id }))[0]!.categoryId).toBe(groceries.id);
 
-    await helpers.bulkUpdateTransactions({ payload: { transactionIds: [leg!.id], categoryId: dining.id }, raw: true });
-    expect((await helpers.getTransactionById({ id: main.id, raw: true }))!.categoryId).toBe(dining.id);
-    expect((await legsOf({ accountId: voucher!.id }))[0]!.categoryId).toBe(dining.id);
+    await helpers.bulkUpdateTransactions({
+      payload: { transactionIds: [leg!.id], categoryId: dining.id, excludeFromStats: true },
+      raw: true,
+    });
+    const mainAfter = (await helpers.getTransactionById({ id: main.id, raw: true }))!;
+    const [legAfter] = await legsOf({ accountId: voucher!.id });
+    expect(mainAfter.categoryId).toBe(dining.id);
+    expect(legAfter!.categoryId).toBe(dining.id);
+    expect(mainAfter.excludeFromStats).toBe(true);
+    expect(legAfter!.excludeFromStats).toBe(true);
+
+    await helpers.bulkUpdateTransactions({
+      payload: { transactionIds: [leg!.id], excludeFromStats: false },
+      raw: true,
+    });
+    expect((await helpers.getTransactionById({ id: main.id, raw: true }))!.excludeFromStats).toBe(false);
+    expect((await legsOf({ accountId: voucher!.id }))[0]!.excludeFromStats).toBe(false);
     expect(await balanceOf({ id: voucher!.id })).toBe(970);
   });
 
