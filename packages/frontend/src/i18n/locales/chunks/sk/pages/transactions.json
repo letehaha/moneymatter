@@ -123,6 +123,10 @@
       "tagModeAddHint": "Ponechá súčasné značky a pridá tieto.",
       "tagModeReplaceHint": "Odstráni všetky súčasné značky a potom pridá tieto.",
       "tagModeRemoveHint": "Odstráni len tieto značky. Ostatné značky zostanú.",
+      "excludeFromStatsHint": "Zapnutie vylúči vybrané transakcie z reportov, widgetov na nástenke, rozpočtov a sledovačov. Vypnutie ich vráti späť. Zostatky to neovplyvní.",
+      "excludeFromStatsDontChange": "Nemeniť štatistiky",
+      "confirmExcludeFromStats": "Vylúčiť zo štatistík",
+      "confirmIncludeInStats": "Zahrnúť do štatistík",
       "totals": {
         "income": "Príjmy",
         "expense": "Výdavky",

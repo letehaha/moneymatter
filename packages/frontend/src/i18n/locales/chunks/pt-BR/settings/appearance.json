@@ -25,6 +25,11 @@
         "title": "Símbolos de moeda",
         "description": "Como os valores mostram a moeda. Símbolos curtos ficam como Rp, ₴ ou zł em vez de IDR, UAH ou PLN, mas moedas que compartilham um símbolo (USD, CAD, AUD, SGD) viram todas $.",
         "narrowSymbol": "Usar símbolos de moeda curtos"
+      },
+      "transactions": {
+        "title": "Transactions",
+        "description": "Show the payee's logo instead of the category icon in transaction rows, when the payee has one.",
+        "payeeLogos": "Payee logos"
       }
     }
   }

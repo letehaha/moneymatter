@@ -307,7 +307,8 @@
           "account": "Akun",
           "currency": "Mata Uang",
           "transactionType": "Tipe transaksi",
-          "payee": "Penerima"
+          "payee": "Penerima",
+          "tags": "Tags"
         },
         "dateFormat": {
           "label": "Format tanggal",

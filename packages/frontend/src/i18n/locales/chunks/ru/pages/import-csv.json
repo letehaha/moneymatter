@@ -307,7 +307,8 @@
           "account": "Счёт",
           "currency": "Валюта",
           "transactionType": "Тип транзакции",
-          "payee": "Получатель"
+          "payee": "Получатель",
+          "tags": "Tags"
         },
         "dateFormat": {
           "label": "Формат даты",

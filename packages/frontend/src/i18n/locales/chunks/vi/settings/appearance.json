@@ -25,6 +25,11 @@
         "title": "Ký hiệu tiền tệ",
         "description": "Cách đơn vị tiền tệ hiển thị bên số tiền. Ký hiệu ngắn gọn hiển thị dạng Rp, ₴ hay zł thay vì IDR, UAH hay PLN, nhưng những loại tiền tệ dùng chung một ký hiệu (USD, CAD, AUD, SGD) đều thành $.",
         "narrowSymbol": "Dùng ký hiệu tiền tệ ngắn gọn"
+      },
+      "transactions": {
+        "title": "Transactions",
+        "description": "Show the payee's logo instead of the category icon in transaction rows, when the payee has one.",
+        "payeeLogos": "Payee logos"
       }
     }
   }

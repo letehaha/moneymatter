@@ -307,7 +307,8 @@
           "account": "Conta",
           "currency": "Moeda",
           "transactionType": "Tipo de transação",
-          "payee": "Favorecido"
+          "payee": "Favorecido",
+          "tags": "Tags"
         },
         "dateFormat": {
           "label": "Formato da data",

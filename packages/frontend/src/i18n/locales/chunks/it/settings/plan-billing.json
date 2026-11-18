@@ -32,6 +32,7 @@
       "current": {
         "lifetime": "{plan} · a vita",
         "lifetimeMeta": "Tutto ciò che è incluso in Plus. Nessun rinnovo, nessuna carta registrata.",
+        "lifetimePurchaseMeta": "Nessun rinnovo, nessuna carta registrata.",
         "earlyAdopterNote": "Grazie per essere arrivati presto. Tutto ciò che Plus include oggi è tuo a vita. Le funzioni aggiunte da qui in poi, e tutto ciò che ha un costo per utente, appartengono ai piani a pagamento. Le vuoi? Sconto del 50% su qualsiasi piano, per sempre, applicato automaticamente al checkout.",
         "seats": "1 posto nel Nucleo Familiare | {count} posti nel Nucleo Familiare",
         "subscription": "{tier} · {cycle}",

@@ -25,6 +25,11 @@
         "title": "Symboles monétaires",
         "description": "Format d'affichage des devises pour les montants. Les symboles courts affichent Rp, ₴ ou zł au lieu de IDR, UAH ou PLN, mais les devises partageant un même symbole (USD, CAD, AUD, SGD) afficheront toutes $.",
         "narrowSymbol": "Utiliser les symboles monétaires courts"
+      },
+      "transactions": {
+        "title": "Transactions",
+        "description": "Show the payee's logo instead of the category icon in transaction rows, when the payee has one.",
+        "payeeLogos": "Payee logos"
       }
     }
   }
