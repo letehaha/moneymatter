@@ -478,11 +478,10 @@ describe('Get tracker spending stats', () => {
         }),
       });
 
-      // Tracker tracks the parent category (descendants auto-included)
       const tracker = await helpers.createTracker({
         name: 'food-subcategory-tracker',
         rulesEnabled: true,
-        categoryIds: [parentCategory.id],
+        categoryIds: [parentCategory.id, childCategory1.id, childCategory2.id],
         startDate: '2025-04-01T00:00:00Z',
         endDate: '2025-04-30T23:59:59Z',
         raw: true,

@@ -174,7 +174,7 @@ describe('Tracker rules (spec)', () => {
       expect(tracker.tags!.map((t) => t.id as RecordId)).toEqual([ctx.trip]);
     });
 
-    it('expands a parent rule category to its children', async () => {
+    it('matches a subcategory only when it is listed itself', async () => {
       const ctx = await setup();
       const child = await helpers.addCustomCategory({
         name: 'Groceries',
@@ -186,9 +186,11 @@ describe('Tracker rules (spec)', () => {
         categoryId: child.id as RecordId,
       });
 
-      const trackerId = await createRuleTracker({ categoryIds: [ctx.food] });
+      const parentOnly = await createRuleTracker({ categoryIds: [ctx.food] });
+      const withChild = await createRuleTracker({ categoryIds: [ctx.food, child.id as RecordId] });
 
-      expect(await linkedIds({ trackerId })).toEqual([txId]);
+      expect(await linkedIds({ trackerId: parentOnly })).toEqual([]);
+      expect(await linkedIds({ trackerId: withChild })).toEqual([txId]);
     });
 
     it('only matches transactions inside the start/end window', async () => {
