@@ -8,15 +8,16 @@ function digitsAfter({ value, separatorIndex }: { value: string; separatorIndex:
 }
 
 /**
- * Removes `separator` when every group after the first is exactly three digits. Null when
- * a group is the wrong size, which means the mark never separated thousands and the whole
- * token is malformed.
+ * Removes `separator` when the first group is 1-3 digits and every later group exactly three.
+ * Null otherwise, which means the mark never separated thousands and the whole token is
+ * malformed.
  */
-function stripThousandsSeparator({ value, separator }: { value: string; separator: string }): string | null {
+export function stripThousandsSeparator({ value, separator }: { value: string; separator: string }): string | null {
   const [first, ...rest] = value.split(separator);
   if (first === undefined) return null;
+  if (rest.length === 0) return first;
 
-  const allGroupsWellFormed = rest.every((group) => group.length === THOUSANDS_GROUP_SIZE);
+  const allGroupsWellFormed = /^\d{1,3}$/.test(first) && rest.every((group) => /^\d{3}$/.test(group));
 
   return allGroupsWellFormed ? first + rest.join('') : null;
 }
