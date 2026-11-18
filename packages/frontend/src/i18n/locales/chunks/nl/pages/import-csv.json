@@ -307,7 +307,8 @@
           "account": "Account",
           "currency": "Currency",
           "transactionType": "Transaction type",
-          "payee": "Payee"
+          "payee": "Payee",
+          "tags": "Tags"
         },
         "dateFormat": {
           "label": "Date format",

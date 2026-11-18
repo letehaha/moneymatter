@@ -32,6 +32,7 @@
       "current": {
         "lifetime": "{plan} · doživotne",
         "lifetimeMeta": "Všetko z plánu Plus. Bez obnovovania, bez uloženej karty.",
+        "lifetimePurchaseMeta": "Bez obnovenia, nie je uložená žiadna karta.",
         "earlyAdopterNote": "Ďakujeme, že ste tu od začiatku. Všetko, čo dnes obsahuje plán Plus, je vaše navždy. Funkcie, ktoré pridáme odteraz, a čokoľvek, čo nás pri používateľovi niečo stojí, patrí do platených plánov. Máte o ne záujem? Na akýkoľvek plán navždy 50 % zľava, uplatnená automaticky pri platbe.",
         "seats": "1 miesto v domácnosti | {count} miesta v domácnosti | {count} miest v domácnosti",
         "subscription": "{tier} · {cycle}",

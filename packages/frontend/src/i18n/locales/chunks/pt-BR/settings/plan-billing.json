@@ -32,6 +32,7 @@
       "current": {
         "lifetime": "{plan} · vitalício",
         "lifetimeMeta": "Tudo do Plus. Sem renovação e sem cartão cadastrado.",
+        "lifetimePurchaseMeta": "No renewal, no card on file.",
         "earlyAdopterNote": "Obrigado por chegar cedo. Tudo o que o Plus oferece hoje é seu para sempre. Os recursos que adicionarmos daqui em diante, e tudo o que tem custo por usuário para nós, fazem parte dos planos pagos. Quer esses recursos? Você tem 50% de desconto em qualquer plano, para sempre, aplicado automaticamente no pagamento.",
         "seats": "{count} vaga na família | {count} vagas na família",
         "subscription": "{tier} · {cycle}",

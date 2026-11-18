@@ -12,7 +12,7 @@
     "accountNoExternalIdEnableBanking": "La cuenta no tiene ID externo de Enable Banking",
     "accountNotFoundForTransaction": "Cuenta no encontrada para esta transacción",
     "deleteBlockedByLoanPayments": "Esta cuenta tiene pagos de préstamos. Elimínelos o reasígnalos antes de eliminar la cuenta.",
-    "deleteBlockedByTrashedLoanPayments": "This account has loan payments in Trash. Delete them permanently from Trash before deleting the account.",
+    "deleteBlockedByTrashedLoanPayments": "Esta cuenta tiene pagos de préstamos. Elimínelos o reasígnalos antes de eliminar la cuenta.",
     "loanBalanceUseUpdateLoan": "Cambie el saldo pendiente de un préstamo desde su página de préstamo, no desde la configuración de la cuenta.",
     "loanCategoryImmutable": "La categoría de una cuenta de préstamo no se puede cambiar.",
     "dedicatedFlowCategoryNotAllowed": "Las cuentas de préstamos y vehículos deben crearse a través de sus puntos finales dedicados, no a través del punto final genérico de cuentas.",
@@ -39,7 +39,7 @@
     "systemCannotBeMoved": "Las categorías del sistema no se pueden mover.",
     "parentNotFound": "No existe ninguna categoría con ese parentId.",
     "systemParentForbidden": "Las categorías del sistema no se pueden usar como categoría padre.",
-    "defaultCannotBeDeleted": "This category holds uncategorized transactions and cannot be deleted.",
+    "defaultCannotBeDeleted": "Esta categoría contiene transacciones no clasificadas y no puede ser eliminada.",
     "ownParent": "Una categoría no puede ser su propia categoría padre.",
     "underOwnSubcategory": "Una categoría no se puede mover dentro de su propia subcategoría.",
     "nestingTooDeep": "Las categorías no se pueden anidar a más de {{max}} niveles."
@@ -102,14 +102,14 @@
     "paymentLinkedAmountFixed": "La cantidad de una transacción vinculada no se puede cambiar.",
     "paymentLinkedTypeMismatch": "Las transacciones vinculadas deben tener el mismo tipo que el pago. Desvincularlas primero.",
     "refunds": {
-      "wholeLinkWithPartials": "A whole-refund link cannot be combined with partial links",
-      "externalLinkWithOthers": "A refund for a purchase outside the app cannot be combined with other refund links",
-      "externalLinkWithAmount": "A refund of a transaction outside the app cannot have a partial amount; it always covers the whole refund.",
-      "totalExceedsRefund": "Total refund link amounts cannot be greater than the refund transaction amount",
-      "totalExceedsSplit": "Total refund amount cannot be greater than the split amount",
-      "totalExceedsOriginal": "Total refund amount cannot be greater than the original transaction amount",
-      "refundOfRefund": "Cannot refund a \"refund\" transaction",
-      "duplicateLink": "This refund is already linked to that transaction"
+      "wholeLinkWithPartials": "Un enlace de reembolso total no puede combinarse con enlaces parciales",
+      "externalLinkWithOthers": "Un reembolso de una compra fuera de la aplicación no se puede combinar con otros enlaces de reembolso",
+      "externalLinkWithAmount": "Un reembolso de una transacción fuera de la aplicación no puede tener una cantidad parcial; siempre cubre todo el reembolso.",
+      "totalExceedsRefund": "El importe total del reembolso no puede ser mayor que el importe de la transacción original",
+      "totalExceedsSplit": "El importe total del reembolso no puede ser mayor que el importe de la transacción original",
+      "totalExceedsOriginal": "El importe total del reembolso no puede ser mayor que el importe de la transacción original",
+      "refundOfRefund": "No se puede reembolsar una transacción de \"reembolso\"",
+      "duplicateLink": "Este reembolso ya está vinculado a esa transacción"
     },
     "splits": {
       "splitsOnTransfer": "No se pueden agregar divisiones a transacciones de transferencia",
@@ -147,11 +147,11 @@
       }
     },
     "trash": {
-      "paymentNotTrashable": "Remove it from the payment first to delete it.",
-      "portfolioNotTrashable": "Unlink it from the portfolio first to delete it.",
-      "ventureNotTrashable": "Unlink it from the venture first to delete it.",
-      "accountTypeChanged": "This transaction can't be restored because its account type has changed.",
-      "loanPaymentLegMissing": "This loan payment can't be restored because its other side was deleted."
+      "paymentNotTrashable": "Elimínelo del pago primero para eliminarlo.",
+      "portfolioNotTrashable": "Desvincularlo del portafolio primero para borrarlo.",
+      "ventureNotTrashable": "Desvincúlala de venture primero para borrarla.",
+      "accountTypeChanged": "Esta transacción no puede ser restaurada porque su tipo de cuenta ha cambiado.",
+      "loanPaymentLegMissing": "Este pago de préstamo no puede ser restaurado porque su otro lado fue eliminado."
     }
   },
   "budgets": {
@@ -199,7 +199,7 @@
     "openEndedGoalCannotSnooze": "Un objetivo abierto no puede ser pospuesto.",
     "zeroSumNeedsPool": "Mantener el valor de «Listo para asignar» en 0 requiere un plan financiado a partir de un fondo común.",
     "suggestedGroups": {
-      "bills": "Bills",
+      "bills": "Facturas",
       "everyday": "Todos los días",
       "life": "Vida"
     }
@@ -264,7 +264,7 @@
     "cannotDeleteHoldingWithActivePosition": "No se puede eliminar una posición activa. Por favor, venda o transfiera todas las participaciones primero.",
     "transactionAlreadyTransfer": "La transacción ya está marcada como transferencia y no puede vincularse a un portafolio.",
     "transactionAlreadyLinkedToPortfolio": "La transacción ya está vinculada a una transferencia de portafolio.",
-    "linkedTransactionMustBelongToDestinationAccount": "The linked transaction must belong to the destination account.",
+    "linkedTransactionMustBelongToDestinationAccount": "La transacción vinculada debe pertenecer a la cuenta de destino.",
     "transactionAlreadyLinkedToVenture": "La transacción ya está vinculada a un acuerdo de inversión",
     "portfolioTransferNotFound": "Transferencia de portafolio no encontrada",
     "exchangeCurrenciesMustDiffer": "Las monedas de cambio deben ser diferentes",
@@ -302,7 +302,7 @@
     "providerTypeMismatch": "La conexión {{connectionId}} es para el proveedor {{actualType}}, no {{expectedType}}",
     "providerAlreadyRegistered": "El proveedor {{providerType}} ya está registrado. No se pueden registrar proveedores duplicados.",
     "providerNotRegistered": "El proveedor {{providerType}} no está registrado. Proveedores disponibles: {{available}}",
-    "unexpected": "Unexpected error."
+    "unexpected": "Error inesperado."
   },
   "validation": {
     "dateInvalid": "\"date\" es una fecha no válida."
@@ -526,7 +526,7 @@
       },
       "warnings": {
         "noAccount": "La fila no tiene cuenta; se omitió.",
-        "unparseableDate": "Could not parse date \"{{value}}\"; row skipped.",
+        "unparseableDate": "No se pudo analizar la fecha \"{{value}}\"; fila omitida.",
         "unparseableAmount": "No se pudo interpretar el flujo de entrada \"{{value}}\"; fila omitida.",
         "unparseableRefAmount": "No se pudo interpretar el flujo de entrada \"{{value}}\"; fila omitida.",
         "unknownType": "Tipo desconocido \"{{value}}\"; fila omitida.",
@@ -703,8 +703,8 @@
         "books-audio-subscriptions": "Libros, audio, suscripciones",
         "tv-streaming": "TV, streaming",
         "holiday-trips-hotels": "Vacaciones, viajes, hoteles",
-        "gifts": "Gifts",
-        "charity": "Charity",
+        "gifts": "Regalos",
+        "charity": "Caridad",
         "alcohol-tobacco": "Alcohol, tabaco",
         "lottery-gambling": "Lotería, juegos de azar"
       },
@@ -762,9 +762,9 @@
         "excludesMatchingField": "El registro automático y las reglas de coincidencia son mutuamente excluyentes."
       },
       "customInterval": {
-        "required": "A custom frequency needs an interval unit and count.",
-        "presetConflict": "An interval unit and count can only be set with the custom frequency.",
-        "countOutOfRange": "The interval count must be between {{min}} and {{max}} for this unit."
+        "required": "Una frecuencia personalizada necesita una unidad de intervalo y un conteo.",
+        "presetConflict": "Una unidad de intervalo y recuento sólo se puede establecer con la frecuencia personalizada.",
+        "countOutOfRange": "El recuento de intervalos debe estar entre {{min}} y {{max}} para esta unidad."
       }
     }
   },
@@ -836,14 +836,14 @@
     "notAnInvoice": "Este documento no parece una factura o un recibo.",
     "incompleteInvoice": "No se pudo leer un proveedor, el importe total y la fecha de esta factura.",
     "pdfWithoutText": "Conexiones personalizadas de IA no pueden recibir archivos PDF directamente, y éste no puede abrirse para convertirlo (por ejemplo, está protegido por contraseña). Conviértelo a una imagen (PNG o JPEG), como una captura de pantalla de la factura y súbela en su lugar.",
-    "noFileUploaded": "No file was uploaded."
+    "noFileUploaded": "No se subió ningún archivo."
   },
   "auth": {
     "errors": {
       "passwordAlreadySet": "Tu cuenta ya tiene una contraseña.",
-      "passwordTooShort": "Password is too short.",
-      "passwordTooLong": "Password is too long.",
-      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "passwordTooShort": "La contraseña es demasiado corta.",
+      "passwordTooLong": "La contraseña es demasiado larga.",
+      "reauthenticationRequired": "Por su seguridad, inicie sesión de nuevo para hacer este cambio.",
       "signupsDisabled": "Los registros están deshabilitados por el administrador de esta instancia."
     }
   },
@@ -880,7 +880,7 @@
   },
   "goals": {
     "goalNotFound": "Objetivo no encontrado.",
-    "accountNotFound": "One of the selected accounts was not found.",
+    "accountNotFound": "No se encontró una de las cuentas seleccionadas.",
     "accountNotEligible": "{{accountName}} no puede contar para alcanzar un objetivo. Elige un efectivo, corriente, ahorros, inversión o cuenta criptomoneda.",
     "shareCapacityExceeded": "{{accountName}} tiene {{free}}% gratis: has solicitado {{requested}}% y otros objetivos ya usan {{usedByOtherGoals}}%.",
     "fixedAmountsBelowTarget": "Las cantidades fijas suman hasta {{total}} {{currencyCode}}, por debajo del objetivo {{target}} {{currencyCode}} . Aumenta una cantidad o cuente una cuenta por ciento.",

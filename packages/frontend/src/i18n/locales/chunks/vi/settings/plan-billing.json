@@ -32,6 +32,7 @@
       "current": {
         "lifetime": "{plan} · trọn đời",
         "lifetimeMeta": "Có tất cả tính năng của Plus. Không gia hạn, không cần lưu thẻ.",
+        "lifetimePurchaseMeta": "No renewal, no card on file.",
         "earlyAdopterNote": "Cảm ơn bạn đã đồng hành từ những ngày đầu. Bạn sẽ được dùng trọn đời mọi tính năng Plus hiện có. Các tính năng được bổ sung sau này và những tính năng phát sinh chi phí theo từng người dùng sẽ thuộc các gói trả phí. Muốn sử dụng? Bạn được giảm 50% vĩnh viễn cho mọi gói; ưu đãi sẽ tự động áp dụng khi thanh toán.",
         "seats": "1 thành viên hộ gia đình | {count} thành viên hộ gia đình",
         "subscription": "{tier} · {cycle}",

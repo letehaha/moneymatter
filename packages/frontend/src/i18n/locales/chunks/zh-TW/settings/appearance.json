@@ -25,6 +25,11 @@
         "title": "Currency symbols",
         "description": "How amounts show their currency. Short symbols look like Rp, ₴ or zł instead of IDR, UAH or PLN, but currencies that share a symbol (USD, CAD, AUD, SGD) all become $.",
         "narrowSymbol": "Use short currency symbols"
+      },
+      "transactions": {
+        "title": "Transactions",
+        "description": "Show the payee's logo instead of the category icon in transaction rows, when the payee has one.",
+        "payeeLogos": "Payee logos"
       }
     }
   }

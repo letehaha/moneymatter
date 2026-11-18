@@ -32,6 +32,7 @@
       "current": {
         "lifetime": "{plan} de por vida",
         "lifetimeMeta": "Todo incluido en Plus. Sin renovación, sin tarjeta ingresada.",
+        "lifetimePurchaseMeta": "No renewal, no card on file.",
         "earlyAdopterNote": "Gracias por estar aquí desde el inicio. Todo en Plus tal y como existe hoy es tuyo para toda la vida. Las características que añadamos a partir de aquí, y cualquier cosa que nos cueste por usuario para funcionar, sera parte de los planes de pago. ¿Quieres aumentar el plan? 50% de descuento en cualquier plan, para siempre, aplicado automáticamente al momento de la compra.",
         "seats": "Un integrante del hogar | {count} integrantes del hogar",
         "subscription": "{tier} · {cycle}",
