@@ -35,8 +35,17 @@ export function parseAmount(amountStr: string): number | null {
   // If string has both comma and period, the last one is the decimal separator
   const lastComma = cleanStr.lastIndexOf(',');
   const lastPeriod = cleanStr.lastIndexOf('.');
+  const commaCount = cleanStr.split(',').length - 1;
+  const periodCount = cleanStr.split('.').length - 1;
 
-  if (lastComma > lastPeriod) {
+  if ((commaCount > 1 && periodCount === 0) || (periodCount > 1 && commaCount === 0)) {
+    // A separator repeated with no other mark can only group thousands: 3,250,000 / 1.500.000.
+    // Groups must be three digits (two for Indian lakh grouping), else it is no amount (1.2.3).
+    if (!/^\d{1,3}([.,]\d{2})*[.,]\d{3}$/.test(cleanStr) && !/^\d{1,3}([.,]\d{3})+$/.test(cleanStr)) {
+      return null;
+    }
+    cleanStr = cleanStr.replace(/[.,]/g, '');
+  } else if (lastComma > lastPeriod) {
     // European format: 1.234,56 -> 1234.56
     cleanStr = cleanStr.replace(/\./g, '').replace(',', '.');
   } else {
