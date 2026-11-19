@@ -26,7 +26,7 @@ const targetAccounts = computed(
 </script>
 
 <template>
-  <Callout v-if="count" variant="info">
+  <Callout v-if="count" variant="warning">
     <p>{{ getBankSeamSkippedMessage({ count, accounts: targetAccounts, t }) }}</p>
   </Callout>
 </template>
