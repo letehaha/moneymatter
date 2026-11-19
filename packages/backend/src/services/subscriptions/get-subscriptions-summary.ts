@@ -193,7 +193,7 @@ const getSubscriptionsSummaryImpl = async ({
   // The totals are base-currency figures, shown at the base currency's decimals.
   const baseDecimals = await getCurrencyDecimals({ userId, code: baseCurrencyCode });
   const monthlyCostMoney = totalMonthlyCost.round(baseDecimals);
-  const yearlyCostMoney = monthlyCostMoney.multiply(12);
+  const yearlyCostMoney = totalMonthlyCost.multiply(12).round(baseDecimals);
   const monthlyIncomeMoney = totalMonthlyIncome.round(baseDecimals);
 
   const averageMonthlyIncomeMoney = (await getAverageMonthlyIncome({ userId, lookbackMonths })).round(baseDecimals);

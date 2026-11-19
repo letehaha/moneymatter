@@ -35,12 +35,11 @@ import {
   caretOffsetAfterDigits,
   countDigitsBeforeCaret,
   getAmountSeparators,
-  limitAmountDecimals,
   parseAmountInput,
 } from '@/components/fields/utils/formatted-amount';
 import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import { cn } from '@/lib/utils';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 
 const props = withDefaults(
   defineProps<{
@@ -74,11 +73,23 @@ const trailingFragment = ref<string>('');
 
 const separators = getAmountSeparators();
 
+const MAX_INTL_FRACTION_DIGITS = 20;
+
+const countFractionDigits = ({ value }: { value: number }): number => {
+  // 15 significant digits drop float noise, so a computed 50.04999999999999 counts as 50.05.
+  const [mantissa = '', exponent = '0'] = String(Number(value.toPrecision(15))).split('e');
+  return Math.max(0, (mantissa.split('.')[1]?.length ?? 0) - Number(exponent));
+};
+
 // Locale grouping/decimal separators, matching the rest of the app's number rendering.
+// A model with more digits than the currency allows shows them all, so the form's error matches the field.
 const formatter = computed(
   () =>
     new Intl.NumberFormat(undefined, {
-      maximumFractionDigits: props.decimals,
+      maximumFractionDigits: Math.min(
+        MAX_INTL_FRACTION_DIGITS,
+        Math.max(props.decimals, props.modelValue == null ? 0 : countFractionDigits({ value: props.modelValue })),
+      ),
       minimumFractionDigits: 0,
     }),
 );
@@ -136,15 +147,4 @@ const onInput = (event: Event) => {
     inputRef.value?.setSelectionRange(nextCaret, nextCaret);
   });
 };
-
-// A switch to a currency with fewer decimals must not leave the extra digits in the model.
-watch(
-  () => props.decimals,
-  (decimals) => {
-    trailingFragment.value = '';
-    if (props.modelValue === null || !Number.isFinite(props.modelValue)) return;
-    const limited = limitAmountDecimals({ value: props.modelValue, decimals });
-    if (limited !== props.modelValue) emit('update:modelValue', limited);
-  },
-);
 </script>

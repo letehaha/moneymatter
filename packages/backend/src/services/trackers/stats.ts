@@ -1,5 +1,5 @@
 import { type RecordId, TRACKER_LIMIT_KINDS, TRANSACTION_TYPES } from '@bt/shared/types';
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { getReportBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import Categories from '@models/categories.model';
@@ -159,11 +159,9 @@ const getLinkedTransactionsStats = async ({
 
   // ponytail: matches on the primary categoryId, so a split transaction lands whole in one line.
   // Read the transaction's splits here if trackers need per-split line totals.
-  const expenses = transactions.flatMap((tx) =>
-    tx.transactionType === TRANSACTION_TYPES.expense
-      ? [{ categoryId: canonicalize(tx.categoryId), minor: tx.refAmount.toMinorUnits({ decimals }) }]
-      : [],
-  );
+  const expenses = transactions
+    .filter((tx) => tx.transactionType === TRANSACTION_TYPES.expense)
+    .map((tx) => ({ categoryId: canonicalize(tx.categoryId), minor: tx.refAmount.toMinorUnits({ decimals }) }));
   return { ...result, ...splitExpensesByLines({ lines, expenses }) };
 };
 
@@ -281,7 +279,7 @@ export const getTrackerStats = withTransaction(
     });
 
     // The tracker's amounts are in its owner's base currency, whoever reads them.
-    const decimals = await getBaseCurrencyDecimals({ userId: ownerUserId });
+    const decimals = await getReportBaseCurrencyDecimals({ userId: ownerUserId });
 
     const stats = await getLinkedTransactionsStats({
       trackerId,

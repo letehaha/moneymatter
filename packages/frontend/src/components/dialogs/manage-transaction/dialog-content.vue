@@ -37,6 +37,7 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { formatUIAmount, getCurrencyDecimals, toLocalCurrencyNumber } from '@/js/helpers';
@@ -136,7 +137,13 @@ import {
 } from './helpers';
 import { FORM_TYPES, type FormPaymentLeg, type TransactionPrefill, UI_FORM_STRUCT } from './types';
 import { canSuggestOriginalAmount, resolveSuggestedOriginalAmount } from './utils/suggest-original-amount';
-import { hasPaymentParts, isPaymentLegIncomplete, sumMainWithCreatedLegs, sumPaymentRows } from './utils/payment-legs';
+import {
+  getPaymentLegExcessDecimals,
+  hasPaymentParts,
+  isPaymentLegIncomplete,
+  sumMainWithCreatedLegs,
+  sumPaymentRows,
+} from './utils/payment-legs';
 
 defineOptions({
   name: 'record-form',
@@ -191,7 +198,7 @@ const route = useRoute();
 const { t } = useI18n();
 watch(() => route.path, closeModal);
 
-const { currenciesMap, systemCurrencies } = storeToRefs(useCurrenciesStore());
+const { systemCurrencies } = storeToRefs(useCurrenciesStore());
 const {
   accounts: allAccounts,
   accountsRecord,
@@ -705,18 +712,16 @@ const isCurrenciesDifferent = computed(() => {
   return form.value.account.currencyCode !== form.value.toAccount.currencyCode;
 });
 
-// A shared account can be in a currency the viewer has not connected, so the account's own code is the fallback.
-const currencyCode = computed(() => {
-  const accountCurrencyCode = form.value.account?.currencyCode;
-  if (accountCurrencyCode) {
-    return currenciesMap.value[accountCurrencyCode]?.currency?.code ?? accountCurrencyCode;
-  }
-  return undefined;
-});
+const currencyCode = computed(() => form.value.account?.currencyCode);
 
 // Amount inputs keep only the decimals their currency stores.
 const amountDecimals = computed(() => getCurrencyDecimals({ code: currencyCode.value }));
 const targetAmountDecimals = computed(() => getCurrencyDecimals({ code: form.value.toAccount?.currencyCode }));
+const amountDecimalRule = useCurrencyDecimalRule({ decimals: amountDecimals });
+const targetAmountDecimalRule = useCurrencyDecimalRule({ decimals: targetAmountDecimals });
+const originalAmountDecimalRule = useCurrencyDecimalRule({
+  decimals: () => getCurrencyDecimals({ code: form.value.originalCurrency?.code }),
+});
 
 const { formatAmountByCurrencyCode } = useFormatCurrency();
 const { convert: convertCurrency, data: exchangeRates } = useExchangeRates();
@@ -934,10 +939,17 @@ const validationRules = computed(() => {
       amount: {
         ...(isAmountRequired.value ? { required: isAmountFilled, minValue: minValue(0) } : {}),
         ...(overpayOnAmount ? { notOverpay: loanOverpayRule } : {}),
+        ...(isAmountRequired.value ? { currencyDecimal: amountDecimalRule.rule.value } : {}),
       },
       targetAmount: {
         ...(isTargetAmountRequired.value ? { required: isAmountFilled, minValue: minValue(0) } : {}),
         ...(overpayOnTarget ? { notOverpay: loanOverpayRule } : {}),
+        ...(isTargetFieldVisible.value && !isTargetAmountFieldDisabled.value
+          ? { targetCurrencyDecimal: targetAmountDecimalRule.rule.value }
+          : {}),
+      },
+      originalAmount: {
+        ...(isTransferTx.value ? {} : { originalCurrencyDecimal: originalAmountDecimalRule.rule.value }),
       },
       category: {
         ...(isTransferTx.value ? {} : { required }),
@@ -1014,6 +1026,9 @@ const { isFormValid, getFieldErrorMessage, touchField } = useFormValidation(
     customValidationMessages: {
       required: t('dialogs.manageTransaction.form.validation.required'),
       minValue: t('dialogs.manageTransaction.form.validation.minValue'),
+      currencyDecimal: amountDecimalRule.message,
+      targetCurrencyDecimal: targetAmountDecimalRule.message,
+      originalCurrencyDecimal: originalAmountDecimalRule.message,
     },
   },
 );
@@ -1021,6 +1036,7 @@ const { isFormValid, getFieldErrorMessage, touchField } = useFormValidation(
 const amountErrorMessage = computed(() => getFieldErrorMessage('form.amount'));
 const categoryErrorMessage = computed(() => getFieldErrorMessage('form.category'));
 const targetAmountErrorMessage = computed(() => getFieldErrorMessage('form.targetAmount'));
+const originalAmountErrorMessage = computed(() => getFieldErrorMessage('form.originalAmount'));
 const timeErrorMessage = computed(() => getFieldErrorMessage('form.time'));
 const noteErrorMessage = computed(() => getFieldErrorMessage('form.note'));
 const externalUrlErrorMessage = computed(() => getFieldErrorMessage('form.externalUrl'));
@@ -1110,6 +1126,7 @@ const submit = ({ keepOpen = false }: { keepOpen?: boolean } = {}) => {
   if (isSubmitBlocked.value) return;
   touchField('form.amount');
   touchField('form.targetAmount');
+  touchField('form.originalAmount');
   touchField('form.time');
   touchField('form.category');
   touchField('form.note');
@@ -1118,11 +1135,10 @@ const submit = ({ keepOpen = false }: { keepOpen?: boolean } = {}) => {
 
   if (!isFormValid('form')) return;
   if (
-    form.value.paymentLegs?.some((leg) =>
-      isPaymentLegIncomplete({
-        leg,
-        mainCurrencyCode: form.value.account?.currencyCode,
-      }),
+    form.value.paymentLegs?.some(
+      (leg) =>
+        isPaymentLegIncomplete({ leg, mainCurrencyCode: form.value.account?.currencyCode }) ||
+        getPaymentLegExcessDecimals({ leg, mainCurrencyCode: form.value.account?.currencyCode }) !== null,
     )
   ) {
     showLegErrors.value = true;
@@ -1719,7 +1735,9 @@ onUnmounted(() => {
           :suggest-visible="isOriginalAmountSuggestVisible"
           :suggested-amount="suggestedOriginalAmount"
           :suggested-date="form.time"
+          :error-message="originalAmountErrorMessage"
           @apply-suggestion="applySuggestedOriginalAmount"
+          @blur="touchField('form.originalAmount')"
         />
       </FormRow>
       <FormRow v-if="shownFields.excludeFromStats" data-optional-field="excludeFromStats">

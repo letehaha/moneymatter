@@ -79,22 +79,42 @@ export const getCurrencyDecimals = async ({ code }: { userId: number; code: stri
   return currency.digits;
 };
 
-/**
- * Number of decimal places of the user's base currency: the scale the report engines (stats,
- * budgets) compute their minor units at. A user without a base currency is an error, never 2.
- */
-export const getBaseCurrencyDecimals = async ({ userId }: { userId: number }): Promise<number> => {
+/** Code and decimals of the user's base currency, or null for a user who has not picked one yet. */
+const findBaseCurrencyPrecision = async ({ userId }: { userId: number }) => {
   const baseCurrency = await getBaseCurrency({ userId });
-
-  if (!baseCurrency) {
-    throw new ValidationError({ message: t({ key: 'currencies.noBaseCurrency' }) });
-  }
+  if (!baseCurrency) return null;
 
   const { code, digits } = baseCurrency.currency;
   assertDecimals({ decimals: digits, caller: `Currency ${code}` });
 
-  return digits;
+  return { code, decimals: digits };
 };
+
+/** Code and decimals of the user's base currency. A user without a base currency is an error. */
+export const getBaseCurrencyPrecision = async ({ userId }: { userId: number }) => {
+  const precision = await findBaseCurrencyPrecision({ userId });
+
+  if (!precision) {
+    throw new ValidationError({ message: t({ key: 'currencies.noBaseCurrency' }) });
+  }
+
+  return precision;
+};
+
+/**
+ * Number of decimal places of the user's base currency: the scale the report engines (stats,
+ * budgets) compute their minor units at. A user without a base currency is an error; read-only
+ * reports use `getReportBaseCurrencyDecimals` instead.
+ */
+export const getBaseCurrencyDecimals = async ({ userId }: { userId: number }): Promise<number> =>
+  (await getBaseCurrencyPrecision({ userId })).decimals;
+
+/**
+ * `getBaseCurrencyDecimals` for read-only reports. A user without a base currency has nothing
+ * converted into one, so the report computes its empty result at 2 decimals instead of failing.
+ */
+export const getReportBaseCurrencyDecimals = async ({ userId }: { userId: number }): Promise<number> =>
+  (await findBaseCurrencyPrecision({ userId }))?.decimals ?? 2;
 
 /**
  * Decimals of both currencies of a conversion, in the shape `calculateRefAmountFromParams` takes.
@@ -171,29 +191,4 @@ export const roundMoneyValues = async <TValues extends Record<string, OptionalMo
       return [key, roundAt({ money: value, decimals, mode, code: currencyCode })];
     }),
   ) as TValues;
-};
-
-/**
- * Rejects an amount that carries more decimals than the currency does, or is too large for it. For
- * inputs that must not be silently rounded, such as a budget figure: the person sees the limit
- * instead of a changed number.
- */
-export const assertMoneyFitsCurrency = async ({
-  money,
-  userId,
-  currencyCode,
-}: {
-  money: Money;
-  userId: number;
-  currencyCode: string;
-}): Promise<void> => {
-  const decimals = await getCurrencyDecimals({ userId, code: currencyCode });
-
-  if (!money.round(decimals).equals(money)) {
-    throw new ValidationError({
-      message: t({ key: 'currencies.amountExceedsDecimals', variables: { code: currencyCode, decimals } }),
-    });
-  }
-
-  assertMoneyWithinMinorUnitRange({ money, decimals, code: currencyCode });
 };

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { createVehicle } from '@/api/vehicles';
 import { VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
+import { getErrorMessage } from '@/common/utils/error-message';
 import {
   DEPRECIATION_PRESET_TRANSLATION_KEYS,
   VEHICLE_CLASS_TRANSLATION_KEYS,
@@ -14,6 +15,7 @@ import * as Select from '@/components/lib/ui/select';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useCurrencyName } from '@/composable';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { captureException } from '@/lib/sentry';
 import { useCurrenciesStore } from '@/stores';
@@ -104,12 +106,18 @@ const selectedDepreciationPreset = computed(
 
 const showCustomRate = computed(() => form.depreciationPreset === DEPRECIATION_PRESET.custom);
 
+const currencyDecimal = useCurrencyDecimalRule({ decimals: () => getCurrencyDecimals({ code: form.currencyCode }) });
+
 const validationRules = {
   name: { required },
   make: { required },
   model: { required },
   year: { required, between: between(MIN_YEAR, MAX_YEAR) },
-  purchasePrice: { positive: positiveNumber, maxValue: maxValue(Number.MAX_SAFE_INTEGER) },
+  purchasePrice: {
+    positive: positiveNumber,
+    maxValue: maxValue(Number.MAX_SAFE_INTEGER),
+    currencyDecimal: helpers.withMessage(() => currencyDecimal.message.value, currencyDecimal.rule.value),
+  },
   salvageFloorPct: { required, between: between(0, 100) },
   customAnnualRatePct: {
     requiredIfCustom: requiredIf(() => form.depreciationPreset === DEPRECIATION_PRESET.custom),
@@ -161,7 +169,7 @@ const submit = async () => {
     emit('created');
   } catch (error) {
     addNotification({
-      text: t('forms.createVehicle.notifications.error'),
+      text: getErrorMessage(error, t('forms.createVehicle.notifications.error')),
       type: NotificationType.error,
     });
     captureException({ error, context: { source: 'createVehicleForm' } });

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { FormPaymentLeg } from '../types';
 import {
   formLegsToPaymentLegs,
+  getPaymentLegExcessDecimals,
   getPaymentRowAmounts,
   hasPaymentParts,
   isPaymentLegIncomplete,
@@ -330,6 +331,16 @@ describe('payment legs helpers', () => {
     expect(isPaymentLegIncomplete({ leg: { ...linkedCashLeg, paymentAmount: null }, mainCurrencyCode: 'USD' })).toBe(
       false,
     );
+  });
+
+  it("flags a leg amount with more decimals than the leg's currency", () => {
+    const leg = { account: cash, amount: 10.99, currencyCode: 'JPY' };
+
+    expect(getPaymentLegExcessDecimals({ leg, mainCurrencyCode: 'EUR' })).toBe(0);
+    expect(getPaymentLegExcessDecimals({ leg: { ...leg, currencyCode: 'USD' }, mainCurrencyCode: 'EUR' })).toBeNull();
+    expect(getPaymentLegExcessDecimals({ leg: { ...leg, currencyCode: undefined }, mainCurrencyCode: 'JPY' })).toBe(0);
+    expect(getPaymentLegExcessDecimals({ leg: { ...leg, isLinked: true }, mainCurrencyCode: 'EUR' })).toBeNull();
+    expect(getPaymentLegExcessDecimals({ leg: { ...leg, amount: null }, mainCurrencyCode: 'EUR' })).toBeNull();
   });
 
   it('detects a multi-account transaction', () => {

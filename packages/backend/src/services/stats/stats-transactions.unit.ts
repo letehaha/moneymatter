@@ -76,22 +76,6 @@ describe('statsTransactions window bounds', () => {
 });
 
 describe('statsTransactions refund pairs', () => {
-  it('resolves the pairs at the decimals of the base currency', async () => {
-    const rows = [{ id: 'tx-1' }];
-    findTransactionsMock.mockResolvedValue(rows as never);
-    resolveRefundPairsMock.mockResolvedValue([]);
-
-    await statsTransactions({
-      access: { creator: 7 },
-      planned: 'exclude',
-      refunds: 'net',
-      decimals: 3,
-      window: {},
-    });
-
-    expect(resolveRefundPairsMock).toHaveBeenCalledWith({ transactions: rows, decimals: 3 });
-  });
-
   it('leaves the pairs empty when refunds are not netted', async () => {
     findTransactionsMock.mockResolvedValue([{ id: 'tx-1' }] as never);
 

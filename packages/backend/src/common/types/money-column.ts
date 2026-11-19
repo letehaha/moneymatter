@@ -109,14 +109,8 @@ function moneySetDecimal({
   val: Money | string | number | null;
   scale: number;
 }): void {
-  if (val === null) {
-    model.setDataValue(field, null);
-  } else if (Money.isMoney(val)) {
-    model.setDataValue(field, val.toDecimalString(scale));
-  } else {
-    // Raw values (decimal strings/numbers, Sequelize Literals) pass through unchanged
-    model.setDataValue(field, val);
-  }
+  // Raw values (null, decimal strings/numbers, Sequelize Literals) pass through unchanged
+  model.setDataValue(field, Money.isMoney(val) ? val.toDecimalString(scale) : val);
 }
 
 // ---------------------------------------------------------------------------

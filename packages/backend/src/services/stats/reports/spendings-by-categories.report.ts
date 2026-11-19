@@ -1,4 +1,4 @@
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { getReportBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { removeUndefinedKeys } from '@js/helpers';
 import {
   serializeSpendingsByCategories,
@@ -15,7 +15,7 @@ type SpendingsByCategoriesParams = Omit<Parameters<typeof getSpendingsByCategori
 
 /** Spendings per category in the base currency, of one transaction type. */
 export const getSpendingsByCategoriesReport = async (params: SpendingsByCategoriesParams) => {
-  const decimals = await getBaseCurrencyDecimals({ userId: params.userId });
+  const decimals = await getReportBaseCurrencyDecimals({ userId: params.userId });
   const spendings = await getSpendingsByCategories(removeUndefinedKeys({ ...params, decimals }));
 
   return serializeSpendingsByCategories({ spendings, decimals });
@@ -25,7 +25,7 @@ export const getSpendingsByCategoriesReport = async (params: SpendingsByCategori
 export const getSpendingsByCategoriesByTypeReport = async (
   params: Omit<SpendingsByCategoriesParams, 'transactionType'>,
 ) => {
-  const decimals = await getBaseCurrencyDecimals({ userId: params.userId });
+  const decimals = await getReportBaseCurrencyDecimals({ userId: params.userId });
   const spendings = await getSpendingsByCategoriesByType(removeUndefinedKeys({ ...params, decimals }));
 
   return serializeSpendingsByCategoriesByType({ spendings, decimals });
@@ -35,7 +35,7 @@ export const getSpendingsByCategoriesByTypeReport = async (
 export const getMonthlySpendingsByCategoriesReport = async (
   params: Omit<Parameters<typeof getMonthlySpendingsByCategoriesByType>[0], 'transactionType' | 'decimals'>,
 ) => {
-  const decimals = await getBaseCurrencyDecimals({ userId: params.userId });
+  const decimals = await getReportBaseCurrencyDecimals({ userId: params.userId });
   const months = await getMonthlySpendingsByCategoriesByType(removeUndefinedKeys({ ...params, decimals }));
 
   return months.map(({ month, categories }) => ({

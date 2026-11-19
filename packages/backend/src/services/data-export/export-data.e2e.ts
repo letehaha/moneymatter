@@ -786,6 +786,29 @@ describe('Data export (POST /user/data-export)', () => {
     });
   });
 
+  describe('Portfolio cash balances', () => {
+    it('writes each cash balance at the decimals of its currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['KWD', 'JPY'], raw: true });
+      const portfolio = await helpers.createPortfolio({ payload: { name: 'Cash portfolio' }, raw: true });
+      for (const [currencyCode, amount] of [
+        ['KWD', '1.234'],
+        ['JPY', '5000'],
+      ] as const) {
+        await helpers.directCashTransaction({
+          portfolioId: portfolio.id,
+          payload: { type: 'deposit', amount, currencyCode, date: '2025-06-15' },
+          raw: true,
+        });
+      }
+
+      const response = await helpers.exportData({ format: 'csv' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('portfolios.csv')! });
+
+      expect(rows.find((r) => r.Name === 'Cash portfolio')?.CashBalances).toBe('JPY: 5000 | KWD: 1.234');
+    });
+  });
+
   describe('Portfolio transfers referencing a trashed portfolio', () => {
     it('resolves the trashed portfolio name instead of emitting the unresolved sentinel', async () => {
       const account = await helpers.createAccount({ raw: true });

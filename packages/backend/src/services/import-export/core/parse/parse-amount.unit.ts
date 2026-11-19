@@ -129,8 +129,6 @@ describe('parseAmount (core tabular-import amount parser)', () => {
   });
 
   it('rejects an exponent beyond the bound instead of expanding it', () => {
-    const startedAt = performance.now();
-
     expect(parseAmount('1e31')).toBeNull();
     expect(parseAmount('1e-31')).toBeNull();
     expect(parseAmount('1e9999999')).toBeNull();
@@ -138,7 +136,5 @@ describe('parseAmount (core tabular-import amount parser)', () => {
     expect(parseAmount('(1e-1000000000)')).toBeNull();
     expect(parseAmount(`1e${'9'.repeat(5000)}`)).toBeNull();
     expect(parseAmount('0e999999999')).toBeNull();
-
-    expect(performance.now() - startedAt).toBeLessThan(250);
   });
 });

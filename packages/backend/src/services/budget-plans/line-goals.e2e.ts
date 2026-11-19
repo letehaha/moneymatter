@@ -260,7 +260,7 @@ describe('Budget line goals: CRUD', () => {
       { frequency: 'every_period', behavior: 'refill_up_to', amount: 10, fundingCap: -1 },
       { frequency: 'every_period', behavior: 'budget_another', amount: 0 },
       { frequency: 'every_period', behavior: 'budget_another', amount: -5 },
-      { frequency: 'every_period', behavior: 'budget_another', amount: 10.005 },
+      { frequency: 'every_period', behavior: 'budget_another', amount: 0.004 },
       { frequency: 'monthly', behavior: 'budget_another', amount: 10 },
       { behavior: 'budget_another', amount: 10 },
     ];
@@ -867,5 +867,44 @@ describe('Budget line goals: plan currency decimals', () => {
     expect(saved).toMatchObject({ amount: 10.125, stopAtBalance: 20.25 });
     expect(before).toMatchObject({ amount: 10.125, target: 10.125, periodTarget: 10.125, ask: 10.125, progress: 0 });
     expect(after).toMatchObject({ amount: 10.125, target: 10.125, periodTarget: 10.125, ask: 8.891, progress: 1.234 });
+  });
+
+  it('rounds goal amounts half-up to the plan currency and refuses one that rounds to nothing', async () => {
+    await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
+      fn: async () => {
+        const { plan } = await helpers.createBudgetPlan({ raw: true });
+        const category = await helpers.addCustomCategory({ name: 'Food', color: '#111111', raw: true });
+        const line = await helpers.createBudgetPlanLine({
+          planId: plan.id,
+          payload: { name: 'Food', categoryIds: [category.id] },
+          raw: true,
+        });
+        const target = { planId: plan.id, lineId: line.id };
+
+        expect(
+          await setGoal({
+            ...target,
+            payload: { frequency: 'every_period', behavior: 'budget_another', amount: 10.1245, stopAtBalance: 20.2505 },
+          }),
+        ).toMatchObject({ amount: 10.125, stopAtBalance: 20.251 });
+        expect(
+          await setGoal({
+            ...target,
+            payload: { frequency: 'every_period', behavior: 'refill_up_to', amount: 10, fundingCap: 5.0005 },
+          }),
+        ).toMatchObject({ amount: 10, fundingCap: 5.001 });
+
+        const vanishing: SetBudgetLineGoalPayload[] = [
+          { frequency: 'every_period', behavior: 'budget_another', amount: 0.0004 },
+          { frequency: 'every_period', behavior: 'budget_another', amount: 10, stopAtBalance: 0.0004 },
+          { frequency: 'every_period', behavior: 'refill_up_to', amount: 10, fundingCap: 0.0004 },
+        ];
+        for (const payload of vanishing) {
+          const res = await helpers.setBudgetLineGoal({ ...target, payload });
+          expect({ payload, statusCode: res.statusCode }).toEqual({ payload, statusCode: ERROR_CODES.ValidationError });
+        }
+      },
+    });
   });
 });

@@ -65,8 +65,8 @@ export const decimalMoney = () => z.number().transform((val) => Money.fromDecima
  *
  * The schema only enforces what the storage can hold. How many decimals the amount may carry
  * depends on the currency it is denominated in, which the request does not name, so the service
- * that knows the currency checks it with `assertMoneyFitsCurrency`, or rounds it, as the goal
- * services do with `roundGoalAmount`.
+ * that knows the currency rounds it (`roundToCurrency`, or `roundGoalAmount` for amounts that must
+ * stay above 0).
  */
 export const boundedDecimalAmount = ({ positive = false }: { positive?: boolean } = {}) =>
   (positive ? z.number().positive() : z.number().min(0)).max(1e13).refine((value) => {

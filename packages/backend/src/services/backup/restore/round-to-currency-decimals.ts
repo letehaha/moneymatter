@@ -1,3 +1,4 @@
+import { assertMoneyWithinMinorUnitRange } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { toMoneyColumnValue } from '@common/types/money-column';
 
@@ -53,10 +54,7 @@ const ACCOUNT: CurrencySource = { currency: accountCurrency };
 const ACCOUNT_REF: CurrencySource = { currency: base, convertedFrom: accountCurrency };
 const PLAN: CurrencySource = { currency: planCurrency };
 const TRANSACTION_REF: CurrencySource = { currency: own('refCurrencyCode'), convertedFrom: own('currencyCode') };
-const SNAPSHOT: Record<string, CurrencySource> = {
-  amount: { currency: snapshot('currencyCode') },
-  refAmount: { currency: snapshot('refCurrencyCode'), convertedFrom: snapshot('currencyCode') },
-};
+const SNAPSHOT_AMOUNT: CurrencySource = { currency: snapshot('currencyCode') };
 
 /** Each money column's currency, keyed `file.attribute`. */
 const COLUMN_CURRENCIES: Record<string, CurrencySource> = {
@@ -113,8 +111,15 @@ const COLUMN_CURRENCIES: Record<string, CurrencySource> = {
 const JSON_KEY_CURRENCIES: Record<string, Record<string, CurrencySource>> = {
   'tag-reminders.settings': { amountThreshold: { currency: base } },
   'loan-details.events': { fromCents: ACCOUNT, toCents: ACCOUNT },
-  'venture-event-links.metaData': SNAPSHOT,
-  'portfolio-transfers.metaData': SNAPSHOT,
+  'venture-event-links.metaData': {
+    amount: SNAPSHOT_AMOUNT,
+    refAmount: { currency: snapshot('refCurrencyCode'), convertedFrom: snapshot('currencyCode') },
+  },
+  // The portfolio snapshot stores no refCurrencyCode; its refAmount is in the base currency.
+  'portfolio-transfers.metaData': {
+    amount: SNAPSHOT_AMOUNT,
+    refAmount: { currency: base, convertedFrom: snapshot('currencyCode') },
+  },
 };
 
 /** File-attribute keys of the money columns and JSON keys without a currency source. */
@@ -134,6 +139,7 @@ export function findMoneyWithoutCurrencySource({ rules = getLiveRules() }: { rul
 /**
  * Round every archive amount to its currency's decimals: native half-up, converted half-even. An
  * amount with an unresolved currency, or a `> 0` amount that would round to 0, stays as it is.
+ * Throws a `ValidationError` for an amount too large for its currency's minor-unit range.
  */
 export function roundMoneyToCurrencyDecimals({
   data,
@@ -159,13 +165,15 @@ export function roundMoneyToCurrencyDecimals({
   const rounded = ({ value, source, lookup }: { value: unknown; source: CurrencySource; lookup: Lookup }) => {
     if (value === undefined || value === null) return undefined;
     const currency = source.currency(lookup);
-    const digits = typeof currency === 'string' ? digitsByCode.get(currency) : undefined;
+    if (typeof currency !== 'string') return undefined;
+    const digits = digitsByCode.get(currency);
     if (digits === undefined) return undefined;
     const money = Money.fromDecimal(value as string | number);
     const result =
       source.convertedFrom && source.convertedFrom(lookup) !== currency
         ? money.roundHalfEven(digits)
         : money.round(digits);
+    assertMoneyWithinMinorUnitRange({ money: result, decimals: digits, code: currency });
     if (result.equals(money) || (source.positive && result.isZero())) return undefined;
     return result;
   };

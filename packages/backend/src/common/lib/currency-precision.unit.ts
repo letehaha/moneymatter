@@ -22,9 +22,9 @@ import { getBaseCurrency } from '@models/users-currencies.model';
 
 import { invalidateCurrencyDecimalsCache } from './currency-decimals-cache';
 import {
-  assertMoneyFitsCurrency,
   assertMoneyWithinMinorUnitRange,
   getBaseCurrencyDecimals,
+  getReportBaseCurrencyDecimals,
   getConversionDecimals,
   getCurrencyDecimals,
   roundMoneyValues,
@@ -109,6 +109,14 @@ describe('currency precision helpers', () => {
     it('rejects a user without a base currency instead of falling back to 2 decimals', async () => {
       baseIs({ code: null });
       await expect(getBaseCurrencyDecimals({ userId: USER_ID })).rejects.toThrow(ValidationError);
+    });
+
+    it('gives read-only reports 2 decimals for a user without a base currency', async () => {
+      baseIs({ code: null });
+      await expect(getReportBaseCurrencyDecimals({ userId: USER_ID })).resolves.toBe(2);
+
+      baseIs({ code: 'JPY' });
+      await expect(getReportBaseCurrencyDecimals({ userId: USER_ID })).resolves.toBe(0);
     });
   });
 
@@ -239,24 +247,6 @@ describe('currency precision helpers', () => {
     });
   });
 
-  describe('assertMoneyFitsCurrency', () => {
-    const assertFits = ({ value, currencyCode }: { value: string; currencyCode: string }) =>
-      assertMoneyFitsCurrency({ money: Money.fromDecimal(value), userId: USER_ID, currencyCode });
-
-    it('accepts an amount with the currency decimals or fewer', async () => {
-      await expect(assertFits({ value: '12.34', currencyCode: 'USD' })).resolves.toBeUndefined();
-      await expect(assertFits({ value: '12', currencyCode: 'USD' })).resolves.toBeUndefined();
-      await expect(assertFits({ value: '1.234', currencyCode: 'KWD' })).resolves.toBeUndefined();
-      await expect(assertFits({ value: '1500', currencyCode: 'JPY' })).resolves.toBeUndefined();
-    });
-
-    it('rejects an amount with more decimals than the currency carries', async () => {
-      await expect(assertFits({ value: '12.345', currencyCode: 'USD' })).rejects.toThrow(ValidationError);
-      await expect(assertFits({ value: '1.2345', currencyCode: 'KWD' })).rejects.toThrow(ValidationError);
-      await expect(assertFits({ value: '1500.5', currencyCode: 'JPY' })).rejects.toThrow(ValidationError);
-    });
-  });
-
   describe('assertMoneyWithinMinorUnitRange', () => {
     it.each([
       { decimals: 0, max: '9007199254740991', overMax: '9007199254740992' },
@@ -277,13 +267,6 @@ describe('currency precision helpers', () => {
       await expect(round({ value: '9007199254740.992', currencyCode: 'KWD', mode: 'half-up' })).rejects.toThrow(
         ValidationError,
       );
-      await expect(
-        assertMoneyFitsCurrency({
-          money: Money.fromDecimal('90071992.54740992'),
-          userId: USER_ID,
-          currencyCode: 'BTC',
-        }),
-      ).rejects.toThrow(ValidationError);
       await expect(round({ value: '9007199254740.991', currencyCode: 'KWD', mode: 'half-up' })).resolves.toBeDefined();
     });
   });

@@ -3,7 +3,7 @@ import { TRANSACTION_TYPES } from '@bt/shared/types';
 import * as Transactions from '@models/transactions.model';
 import { duplicateAmountKey } from '@services/transactions/duplicates-detection/amount-key';
 
-import { getAccountDecimals } from './get-account-decimals';
+import { decimalsOfAccount, getAccountDecimals } from './get-account-decimals';
 import { importDayKey } from './import-day-key';
 
 interface FindDuplicatesParams {
@@ -66,9 +66,7 @@ export async function findDuplicates({
   // Build lookup maps for efficient matching
   const exactMatchMap = new Map<string, Transactions.default[]>();
   for (const tx of existingTransactions) {
-    const decimals = decimalsByAccountId.get(tx.accountId);
-    if (decimals === undefined) continue;
-
+    const decimals = decimalsOfAccount({ decimalsByAccountId, accountId: tx.accountId });
     const dateStr = importDayKey({ iso: new Date(tx.time).toISOString() });
     const key = `${tx.accountId}:${dateStr}:${duplicateAmountKey({ amount: tx.amount, decimals })}`;
 

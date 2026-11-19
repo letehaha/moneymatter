@@ -1,8 +1,11 @@
-import { assertMoneyWithinMinorUnitRange, getCurrencyDecimals } from '@common/lib/currency-precision';
+import {
+  assertMoneyWithinMinorUnitRange,
+  getBaseCurrencyPrecision,
+  getCurrencyDecimals,
+} from '@common/lib/currency-precision';
 import type { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
-import { getBaseCurrency } from '@models/users-currencies.model';
 
 const roundPositive = ({
   money,
@@ -58,11 +61,7 @@ export const roundPositiveBaseAmount = async ({
   userId: number;
   errorKey: string;
 }): Promise<Money> => {
-  const base = await getBaseCurrency({ userId });
+  const { code, decimals } = await getBaseCurrencyPrecision({ userId });
 
-  if (!base) {
-    throw new ValidationError({ message: t({ key: 'currencies.noBaseCurrency' }) });
-  }
-
-  return roundPositive({ money, code: base.currencyCode, decimals: base.currency.digits, errorKey });
+  return roundPositive({ money, code, decimals, errorKey });
 };

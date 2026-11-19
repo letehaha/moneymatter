@@ -2,7 +2,7 @@ import type { RecordId, TransactionTemplateModel } from '@bt/shared/types';
 import { roundToCurrency } from '@common/lib/currency-precision';
 import { moneyToApiDecimalOrNull, type Money } from '@common/types/money';
 import { t } from '@i18n/index';
-import { ConflictError, UnexpectedError } from '@js/errors';
+import { ConflictError } from '@js/errors';
 import TransactionTemplateTags from '@models/transaction-template-tags.model';
 import TransactionTemplates from '@models/transaction-templates.model';
 import { Op, UniqueConstraintError } from 'sequelize';
@@ -22,11 +22,8 @@ export const roundTemplateAmount = async ({
   amount: Money | null;
 }): Promise<Money | null> => {
   if (amount === null) return null;
-  if (currencyCode === null) {
-    throw new UnexpectedError({ message: 'A pinned template amount has no account currency to round to' });
-  }
 
-  return roundToCurrency({ money: amount, userId, currencyCode, mode: 'half-up' });
+  return roundToCurrency({ money: amount, userId, currencyCode: currencyCode!, mode: 'half-up' });
 };
 
 export const loadTemplateTagIds = async ({

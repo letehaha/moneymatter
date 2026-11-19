@@ -1,4 +1,4 @@
-import { BACKUP_FORMAT_VERSION, TRANSACTION_TYPES } from '@bt/shared/types';
+import { BACKUP_FORMAT_VERSION } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
@@ -135,53 +135,6 @@ describe('Restoring a format version 1 backup (cents to decimals)', () => {
       .filter((name) => name !== 'user' && name !== 'user-settings');
     expect(dataNames.length).toBeGreaterThan(0);
     for (const name of dataNames) {
-      expect({ name, rows: helpers.canonicalBackupRows({ rows: second.readData({ name }) }) }).toEqual({
-        name,
-        rows: helpers.canonicalBackupRows({ rows: first.readData({ name }) }),
-      });
-    }
-  });
-
-  it('round-trips a KWD ledger with 3-decimal amounts through export and restore', async () => {
-    await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
-    const account = await helpers.createAccount({
-      payload: helpers.buildAccountPayload({ currencyCode: 'KWD', initialBalance: 100.555 }),
-      raw: true,
-    });
-    await helpers.createTransaction({
-      payload: helpers.buildTransactionPayload({
-        accountId: account.id,
-        amount: 1.234,
-        transactionType: TRANSACTION_TYPES.expense,
-      }),
-      raw: true,
-    });
-
-    const firstExport = await helpers.exportBackup();
-    const first = helpers.parseBackupArchive({ buffer: firstExport.body });
-    helpers.expectDecimal({
-      actual: helpers.backupRows({ archive: first, name: 'accounts' })[0]!.initialBalance,
-      expected: '100.555',
-    });
-    helpers.expectDecimal({
-      actual: helpers.backupRows({ archive: first, name: 'accounts' })[0]!.currentBalance,
-      expected: '99.321',
-    });
-    helpers.expectDecimal({
-      actual: helpers.backupRows({ archive: first, name: 'transactions' })[0]!.amount,
-      expected: '1.234',
-    });
-
-    await helpers.restoreBackupAndWait({ fileContent: firstExport.body.toString('base64') });
-
-    const [restored] = await helpers.getAccounts();
-    expect(restored!.initialBalance).toBe(100.555);
-    expect(restored!.currentBalance).toBe(99.321);
-    const [transaction] = (await helpers.getTransactions({ raw: true }))!;
-    expect(Number(transaction!.amount)).toBe(1.234);
-
-    const second = await helpers.exportParsedBackup();
-    for (const name of ['accounts', 'transactions', 'balances']) {
       expect({ name, rows: helpers.canonicalBackupRows({ rows: second.readData({ name }) }) }).toEqual({
         name,
         rows: helpers.canonicalBackupRows({ rows: first.readData({ name }) }),

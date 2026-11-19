@@ -1,6 +1,5 @@
 import type { BackupRestoreWarning } from '@bt/shared/types';
 import { DEACTIVATION_REASON } from '@bt/shared/types';
-import Currencies from '@models/currencies.model';
 import { encryptCredentials } from '@services/bank-data-providers/utils/credential-encryption';
 import { copyLogoImageIfPresent } from '@services/logo-images/logo-images.service';
 import { syncRefundLinkedFlags } from '@services/tx-refunds/sync-refund-linked-flags';
@@ -309,6 +308,7 @@ export async function insertRestoreTables({
   analysis,
   targetUserId,
   securitiesRemap,
+  currencyCodes,
   transaction,
   onProgress,
 }: {
@@ -316,6 +316,7 @@ export async function insertRestoreTables({
   analysis: ArchiveAnalysis;
   targetUserId: number;
   securitiesRemap: Map<string, string>;
+  currencyCodes: Set<string>;
   transaction: Transaction;
   onProgress?: TableProgressCallback;
 }): Promise<{
@@ -327,15 +328,10 @@ export async function insertRestoreTables({
   const insertedByTable: Record<string, number> = {};
   const insertedIds = new Map<string, Map<string, string>>();
 
-  const needsCurrency = (archive.data.get('users-currencies')?.length ?? 0) > 0;
-  const currencyRows = needsCurrency
-    ? ((await Currencies.findAll({ attributes: ['code'], raw: true })) as unknown as Array<{ code: string }>)
-    : [];
-
   const ctx: InsertContext = {
     targetUserId,
     securitiesRemap,
-    currencyCodes: new Set(currencyRows.map((r) => r.code)),
+    currencyCodes,
     guardedFkMap: buildGuardedReferenceMap(),
     insertedIds,
     transaction,

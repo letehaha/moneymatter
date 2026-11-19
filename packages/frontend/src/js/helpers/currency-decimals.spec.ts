@@ -1,6 +1,7 @@
 import {
   DEFAULT_CURRENCY_DECIMALS,
   getCurrencyDecimals,
+  getSmallestCurrencyUnit,
   isIntlCurrencyCode,
   registerCurrencyDecimals,
   resetCurrencyDecimals,
@@ -77,6 +78,23 @@ describe('js/helpers/currency-decimals', () => {
       registerCurrencyDecimals({ entries: [{ code: 'KWD', decimals }] });
 
       expect(getCurrencyDecimals({ code: 'KWD' })).toBe(3);
+    });
+  });
+
+  describe('getSmallestCurrencyUnit', () => {
+    test.each<[string | undefined, number]>([
+      ['USD', 0.01],
+      ['JPY', 1],
+      ['KWD', 0.001],
+      [undefined, 0.01],
+    ])('%s → %d', (code, expected) => {
+      expect(getSmallestCurrencyUnit({ code })).toBe(expected);
+    });
+
+    test('follows a registered precision', () => {
+      registerCurrencyDecimals({ entries: [{ code: 'BTC', decimals: 8 }] });
+
+      expect(getSmallestCurrencyUnit({ code: 'BTC' })).toBe(1e-8);
     });
   });
 

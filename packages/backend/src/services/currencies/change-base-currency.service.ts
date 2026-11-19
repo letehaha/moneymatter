@@ -20,7 +20,6 @@ import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
 import { CacheClient } from '@js/utils/cache';
 import { logger } from '@js/utils/logger';
-import { captureException } from '@js/utils/sentry';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import BudgetPlans from '@models/budget-plans.model';
@@ -1005,26 +1004,9 @@ async function convertFireSettingsAmounts({
 }
 
 /**
- * Clears Redis cache entries for ref_amount calculations.
- * After changing base currency, all cached ref_amount values are invalid
- * because they were calculated with the OLD base currency.
- *
- * Deletes every ref_amount key of this user by KEYS pattern match.
+ * Deletes every cached ref_amount of the user: those values were calculated with the old base
+ * currency. `CacheClient.delete` logs a failure and never throws.
  */
 async function clearUserCache(userId: number): Promise<void> {
-  logger.info(`Clearing ref_amount cache for user ${userId}`);
-
-  try {
-    const cache = new CacheClient({ logPrefix: 'clearUserCache' });
-
-    await cache.delete(buildRefAmountCachePattern({ userId }), true); // isPattern=true triggers key-pattern deletion
-
-    logger.info(`Successfully cleared ref_amount cache for user ${userId}`);
-  } catch (error) {
-    // Stale ref_amount cache after a base change silently serves old-base values
-    // until each key's TTL. Never throws (the recalc already committed), but the
-    // failure must be visible, so it goes to Sentry as well as the logs.
-    logger.error({ message: `Error clearing cache for user ${userId}`, error: error as Error });
-    captureException({ error, context: { scope: 'change-base-currency:clearUserCache', userId } });
-  }
+  await new CacheClient({ logPrefix: 'clearUserCache' }).delete(buildRefAmountCachePattern({ userId }), true);
 }

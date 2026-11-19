@@ -61,8 +61,8 @@ export const columnMappingConfigSchema = z.object({
   account: accountOptionSchema,
 });
 
-// Bounding at the schema turns an oversized balance into a 422 instead of a
-// database failure at the end of the import job.
+// A coarse bound for every currency. The import checks the per-currency limit
+// (`getMaxAmountForDecimals`, lower for 3+ decimals) when it creates the account.
 const IMPORT_BALANCE_LIMIT = 1e13;
 
 /**

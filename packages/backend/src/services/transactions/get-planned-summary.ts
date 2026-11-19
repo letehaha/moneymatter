@@ -1,5 +1,5 @@
 import type { PlannedSummaryEntry, RecordId } from '@bt/shared/types';
-import { Money } from '@common/types/money';
+import { moneyToApiDecimal } from '@common/types/money';
 import { connection } from '@models/connection';
 import { QueryTypes } from 'sequelize';
 
@@ -40,8 +40,8 @@ export const getPlannedSummary = async ({ userId }: { userId: number }): Promise
   return rows.map((row) => ({
     accountId: row.accountId,
     currencyCode: row.currencyCode,
-    plannedDelta: Money.fromDecimal(row.plannedDelta ?? 0).toNumber(),
-    refPlannedDelta: Money.fromDecimal(row.refPlannedDelta ?? 0).toNumber(),
+    plannedDelta: moneyToApiDecimal(row.plannedDelta ?? '0'),
+    refPlannedDelta: moneyToApiDecimal(row.refPlannedDelta ?? '0'),
     count: Number(row.count ?? 0),
     latestTime: new Date(row.latestTime).toISOString(),
   }));

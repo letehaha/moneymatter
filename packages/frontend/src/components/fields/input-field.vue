@@ -100,7 +100,8 @@ const props = withDefaults(
     onlyPositive?: boolean;
     /**
      * Caps the decimals a `number` input keeps (the amount's currency decimals): digits typed or
-     * pasted past the cap are dropped, and 0 drops the decimal point as well. Unset keeps any precision.
+     * pasted past the cap are dropped, and 0 drops the decimal point as well. A model value with more
+     * digits is kept for the form to reject. Unset keeps any precision.
      */
     decimals?: number;
     autofocus?: boolean;
@@ -213,18 +214,6 @@ const onInput = (event: Event) => {
     emits(MODEL_EVENTS.input, value);
   }
 };
-
-// A switch to a currency with fewer decimals must not leave the extra digits in the model.
-watch(
-  () => props.decimals,
-  (decimals) => {
-    if (props.type !== 'number' || decimals === undefined) return;
-    rawNumberInput.value = limitDecimalDigits({ raw: rawNumberInput.value, decimals });
-    if (typeof props.modelValue !== 'number' || !Number.isFinite(props.modelValue)) return;
-    const limited = limitAmountDecimals({ value: props.modelValue, decimals });
-    if (limited !== props.modelValue) emits(MODEL_EVENTS.input, limited);
-  },
-);
 
 const onKeypress = (event: KeyboardEvent) => {
   if (props.disabled) return;

@@ -21,8 +21,8 @@ export const getTrackerSpendingStatsTool = defineTool({
     ]);
 
     return {
-      ...serializeTrackerSpendingStats({ stats: spending.stats, decimals: spending.decimals }),
-      ...serializeTrackerStats({ stats: trackerStats.stats, decimals: trackerStats.decimals }),
+      ...serializeTrackerSpendingStats(spending),
+      ...serializeTrackerStats(trackerStats),
     };
   },
 });

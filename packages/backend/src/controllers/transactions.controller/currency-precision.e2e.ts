@@ -222,6 +222,31 @@ describe('Currency precision', () => {
       // 50.6 rounds to 51 yen, and 51 + 51 exceeds 100
       expect(response.statusCode).toBe(422);
     });
+
+    it('accepts splits that fit the transaction unrounded and keeps their rounded sum within it', async () => {
+      const account = await createAccountIn({ currencyCode: 'JPY' });
+      const categories = await helpers.getCategoriesList();
+
+      // 500.5 + 499.5 fits 1000, but rounds half-up to 501 + 500.
+      const response = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          categoryId: categories[0]!.id,
+          amount: 1000,
+          splits: [
+            { categoryId: categories[1]!.id, amount: 500.5 },
+            { categoryId: categories[2]!.id, amount: 499.5 },
+          ],
+        }),
+        raw: false,
+      });
+      expect(response.statusCode).toBe(200);
+
+      const [stored] = (await helpers.getTransactions({ raw: true }))!;
+      const splitAmounts = stored!.splits!.map((split) => Number(split.amount));
+      expect(splitAmounts.every(Number.isInteger)).toBe(true);
+      expect(splitAmounts.reduce((sum, amount) => sum + amount, 0)).toBe(1000);
+    });
   });
 
   describe('same-currency reference amount', () => {

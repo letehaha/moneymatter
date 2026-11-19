@@ -38,21 +38,21 @@ const updateGoalImpl = withTransaction(
 
     // Amounts are in the goal's (possibly new) currency and round half-up to its decimals. A
     // currency change re-rounds the stored amounts too, so none keeps more decimals than it carries.
-    const round = ({ money }: { money: Money }) =>
-      roundGoalAmount({ money, userId, currencyCode: currencyCode ?? goal.currencyCode });
-    const sentOrRestated = <T extends Money | null>({ sent, stored }: { sent: T | undefined; stored: T }) =>
-      sent !== undefined ? sent : currencyChanged ? stored : undefined;
-    const nextTargetAmount = sentOrRestated({
-      sent: targetAmount === undefined ? undefined : Money.fromDecimal(targetAmount),
-      stored: goal.targetAmount,
-    });
-    const nextPlannedMonthly = sentOrRestated({
-      sent: plannedMonthly == null ? plannedMonthly : Money.fromDecimal(plannedMonthly),
-      stored: goal.plannedMonthly,
-    });
+    const roundField = async <T extends Money | null>({ sent, stored }: { sent: T | undefined; stored: T }) => {
+      const next = sent === undefined && currencyChanged ? stored : sent;
+      return next == null
+        ? next
+        : roundGoalAmount({ money: next, userId, currencyCode: currencyCode ?? goal.currencyCode });
+    };
     const amounts = {
-      targetAmount: nextTargetAmount === undefined ? undefined : await round({ money: nextTargetAmount }),
-      plannedMonthly: nextPlannedMonthly == null ? nextPlannedMonthly : await round({ money: nextPlannedMonthly }),
+      targetAmount: await roundField({
+        sent: targetAmount === undefined ? undefined : Money.fromDecimal(targetAmount),
+        stored: goal.targetAmount,
+      }),
+      plannedMonthly: await roundField({
+        sent: plannedMonthly == null ? plannedMonthly : Money.fromDecimal(plannedMonthly),
+        stored: goal.plannedMonthly,
+      }),
     };
 
     const nextStatus = status ?? goal.status;

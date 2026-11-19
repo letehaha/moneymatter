@@ -58,6 +58,10 @@ export const getCurrencyDecimals = ({ code }: { code: string | null | undefined 
   return registry.value.get(code) ?? resolveIntlCurrencyDecimals({ code }) ?? DEFAULT_CURRENCY_DECIMALS;
 };
 
+/** One minor unit of the currency: the smallest amount it can carry (0.01 USD, 1 JPY). */
+export const getSmallestCurrencyUnit = ({ code }: { code: string | null | undefined }): number =>
+  10 ** -getCurrencyDecimals({ code });
+
 /** True when `Intl` can format the code in currency style (ISO codes). */
 export const isIntlCurrencyCode = ({ code }: { code: string }): boolean =>
   resolveIntlCurrencyDecimals({ code }) !== null;

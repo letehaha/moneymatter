@@ -12,7 +12,7 @@ vi.mock('@/components/notification-center', () => ({
   useNotificationCenter: () => ({ addSuccessNotification: vi.fn(), addErrorNotification: vi.fn() }),
 }));
 
-// Stand-in copy: the test checks which plural form is picked and what it is given, not the wording.
+// Stand-in copy: the test checks which message is picked and what it is given, not the wording.
 const i18n = createI18n({
   legacy: false,
   locale: 'en',
@@ -20,7 +20,8 @@ const i18n = createI18n({
     en: {
       forms: {
         validators: {
-          invalidCurrencyDecimal: 'whole | {decimals} decimal | {decimals} decimals',
+          invalidCurrencyDecimal: 'unused | {decimals} decimal | {decimals} decimals',
+          invalidCurrencyWholeAmount: 'whole',
         },
       },
     },

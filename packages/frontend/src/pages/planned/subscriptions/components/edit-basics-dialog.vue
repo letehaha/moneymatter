@@ -18,6 +18,7 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { usePrioritizedCurrencies } from '@/composable/data-queries/prioritized-currencies';
 import { useInvalidateSubscriptionQueries, useResetSubscriptionLogo } from '@/composable/data-queries/subscriptions';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { ApiErrorResponseError } from '@/js/errors';
 import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
@@ -124,6 +125,7 @@ const selectedCurrency = computed(() => {
 });
 
 const amountDecimals = computed(() => getCurrencyDecimals({ code: form.value.expectedCurrencyCode }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
 
 const isIncome = computed(() => props.subscription.transactionType === TRANSACTION_TYPES.income);
 
@@ -144,6 +146,7 @@ const validationRules = computed(() => ({
         return value !== null && value > 0;
       },
     ),
+    currencyDecimal: helpers.withMessage(() => currencyDecimal.message.value, currencyDecimal.rule.value),
   },
   expectedCurrencyCode: {
     requiredWithAmount: helpers.withMessage(

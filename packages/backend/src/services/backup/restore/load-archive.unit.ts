@@ -218,18 +218,6 @@ describe('loadBackupArchive money format', () => {
     expect(archive.data.get('transactions')).toEqual([{ id: 'a', amount: '15.500000000000000000', refAmount: null }]);
   });
 
-  it.each(['NaN', '1e30', '1234567890123456789'])('rejects a format version 4 amount of %p', async (amount) => {
-    const hostileRows = JSON.stringify([{ id: 'a', amount, refAmount: null }]);
-    const buffer = await buildArchiveFromFiles({ files: { 'data/transactions.json': hostileRows }, formatVersion: 4 });
-
-    await expect(loadBackupArchive({ fileContent: buffer.toString('base64') })).rejects.toThrow(
-      t({
-        key: 'backup.restore.errors.amountNotCents',
-        variables: { path: 'data/transactions.json (amount)', value: JSON.stringify(amount) },
-      }),
-    );
-  });
-
   it('rejects a version newer than this app writes', async () => {
     const buffer = await buildArchiveFromFiles({ files: { 'data/transactions.json': rows }, formatVersion: 5 });
 

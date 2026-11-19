@@ -10,7 +10,6 @@ import {
 } from '@bt/shared/types';
 import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money, moneyToApiDecimalOrNull } from '@common/types/money';
-import { UnexpectedError } from '@js/errors';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
 import { resolveManualLogoFields } from '@services/brand-logos';
@@ -196,33 +195,24 @@ export const updateSubscription = withTransaction(
     const expectedCurrencyCode = fields.expectedCurrencyCode ?? subscription.expectedCurrencyCode;
     const currencyChanged =
       fields.expectedCurrencyCode != null && fields.expectedCurrencyCode !== subscription.expectedCurrencyCode;
-    const nextAmount =
-      expectedAmountInput !== undefined
-        ? expectedAmountInput === null
-          ? null
-          : Money.fromDecimal(expectedAmountInput)
-        : currencyChanged
-          ? subscription.expectedAmount
-          : undefined;
-    // `assertAmountCurrencyConsistent` above already rejects an amount without a currency.
-    if (nextAmount != null && !expectedCurrencyCode) {
-      throw new UnexpectedError({ message: 'A subscription amount reached the write without a currency' });
+    let nextAmount: Money | null | undefined;
+    if (expectedAmountInput !== undefined) {
+      nextAmount = expectedAmountInput === null ? null : Money.fromDecimal(expectedAmountInput);
+    } else if (currencyChanged) {
+      nextAmount = subscription.expectedAmount;
+    }
+    if (nextAmount) {
+      // `assertAmountCurrencyConsistent` above already rejects an amount without a currency.
+      nextAmount = await roundToCurrency({
+        money: nextAmount,
+        userId,
+        currencyCode: expectedCurrencyCode!,
+        mode: 'half-up',
+      });
     }
     await subscription.update({
       ...restFields,
-      ...(nextAmount !== undefined
-        ? {
-            expectedAmount:
-              nextAmount !== null
-                ? await roundToCurrency({
-                    money: nextAmount,
-                    userId,
-                    currencyCode: expectedCurrencyCode!,
-                    mode: 'half-up',
-                  })
-                : null,
-          }
-        : {}),
+      ...(nextAmount !== undefined && { expectedAmount: nextAmount }),
     });
 
     // Keep the live schedule in step with an edited due date. Realigning only fires

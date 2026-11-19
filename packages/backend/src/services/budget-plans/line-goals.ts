@@ -1,6 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { BudgetLineGoal, SetBudgetLineGoalPayload } from '@bt/shared/types';
-import { assertMoneyFitsCurrency, getCurrencyDecimals } from '@common/lib/currency-precision';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money, minorUnitsToApiDecimal, minorUnitsToApiDecimalOrNull } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
@@ -9,6 +9,7 @@ import { ValidationError } from '@js/errors';
 import BudgetLineGoals from '@models/budget-line-goals.model';
 import BudgetPeriods from '@models/budget-periods.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { roundGoalAmount } from '@services/goals/round-goal-amount';
 
 import { findLine, findPlan } from './find-plan';
 import { GoalSpec } from './fold/goal-ask';
@@ -89,22 +90,19 @@ const setLineGoalImpl = async ({
   const plan = await findPlan({ planId, userId, lock: true });
   await findLine({ planId: plan.id, lineId });
 
-  for (const value of [amount, stopAtBalance, fundingCap]) {
-    if (value != null) {
-      await assertMoneyFitsCurrency({ money: Money.fromDecimal(value), userId, currencyCode: plan.currencyCode });
-    }
-  }
+  const round = (value: number) =>
+    roundGoalAmount({ money: Money.fromDecimal(value), userId, currencyCode: plan.currencyCode });
 
   const values = {
     frequency: settings.frequency,
     behavior: settings.behavior,
-    amount: Money.fromDecimal(amount),
+    amount: await round(amount),
     weekday: settings.weekday ?? null,
     anchorDate: settings.anchorDate ?? null,
     repeatEvery: settings.repeatEvery ?? null,
     repeatUnit: settings.repeatUnit ?? null,
-    stopAtBalance: stopAtBalance == null ? null : Money.fromDecimal(stopAtBalance),
-    fundingCap: fundingCap == null ? null : Money.fromDecimal(fundingCap),
+    stopAtBalance: stopAtBalance == null ? null : await round(stopAtBalance),
+    fundingCap: fundingCap == null ? null : await round(fundingCap),
     ...(settings.frequency === 'open_ended' && { snoozedPeriodStart: null }),
   };
   const decimals = await getCurrencyDecimals({ userId, code: plan.currencyCode });

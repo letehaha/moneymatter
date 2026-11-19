@@ -8,6 +8,7 @@ import UiButton from '@/components/lib/ui/button/Button.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useCurrencyName, useFormatCurrency } from '@/composable';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { getCurrencyDecimals, roundToDecimals } from '@/js/helpers/currency-decimals';
 import { useCurrenciesStore } from '@/stores';
 import { type CurrencyModel, LOAN_TYPE, SUPPORTED_LOAN_TYPES } from '@bt/shared/types';
@@ -126,6 +127,7 @@ const loanTypeOptions = computed(() =>
 const selectedLoanType = computed(() => loanTypeOptions.value.find((o) => o.value === form.loanType) ?? null);
 
 const amountDecimals = computed(() => getCurrencyDecimals({ code: form.currencyCode }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
 const selectedCurrency = computed(
   () => systemCurrenciesVerbose.value.linked.find((item) => item.code === form.currencyCode) ?? null,
 );
@@ -220,18 +222,22 @@ const startDateNotInFuture = helpers.withMessage(
   (v: unknown) => !(v instanceof Date) || !isValid(v) || format(v, 'yyyy-MM-dd') <= format(new Date(), 'yyyy-MM-dd'),
 );
 
+const currencyDecimalRule = helpers.withMessage(() => currencyDecimal.message.value, currencyDecimal.rule.value);
+
 const validationRules = {
   name: { required: helpers.withMessage(() => t('forms.loan.errors.required'), required), maxLength: maxLength(200) },
   currencyCode: { required: helpers.withMessage(() => t('forms.loan.errors.required'), required) },
   balance: {
     required: helpers.withMessage(() => t('forms.loan.errors.required'), required),
     nonNegative: nonNegativeMoney,
+    currencyDecimal: currencyDecimalRule,
   },
   balanceAsOf: { notInFuture },
   startDate: { notInFuture: startDateNotInFuture },
   originalPrincipal: {
     required: helpers.withMessage(() => t('forms.loan.errors.required'), required),
     positive: positiveMoney,
+    currencyDecimal: currencyDecimalRule,
   },
   interestRate: {
     required: helpers.withMessage(() => t('forms.loan.errors.required'), required),
@@ -247,8 +253,8 @@ const validationRules = {
       (v: unknown) => v === null || v === undefined || (Number(v) >= MIN_TERM_MONTHS && Number(v) <= MAX_TERM_MONTHS),
     ),
   },
-  minPayment: { nonNegative: nonNegativeMoney },
-  plannedPayment: { nonNegative: nonNegativeMoney },
+  minPayment: { nonNegative: nonNegativeMoney, currencyDecimal: currencyDecimalRule },
+  plannedPayment: { nonNegative: nonNegativeMoney, currencyDecimal: currencyDecimalRule },
   paymentDayOfMonth: {
     integer,
     range: helpers.withMessage(

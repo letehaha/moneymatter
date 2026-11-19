@@ -117,13 +117,13 @@ const MIN_LEGACY_CENTS = new Big('-9223372036854775808');
 const LEGACY_CENTS_TEXT = /^-?\d{1,24}(\.\d{1,24})?$/;
 
 /**
- * Parse a v1 cents value. The value is bounded before it reaches big.js: `toFixed()` expands an
- * exponent into that many digits, so an unchecked `1e1000000000` would block the process and
- * exhaust its memory.
+ * Parse a v1 cents value. A string must be plain capped decimal text before it reaches big.js:
+ * `toFixed()` expands an exponent into that many digits, so an unchecked `"1e1000000000"` would
+ * block the process and exhaust its memory. A finite number stays below 1e309.
  */
 function parseLegacyCents({ value, where }: { value: unknown; where: string }): Big {
   const parsable =
-    (typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= Number(MAX_LEGACY_CENTS)) ||
+    (typeof value === 'number' && Number.isFinite(value)) ||
     (typeof value === 'string' && LEGACY_CENTS_TEXT.test(value));
   if (parsable) {
     const cents = new Big(value);

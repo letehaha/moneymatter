@@ -1,4 +1,4 @@
-import { getCurrencyDecimals, toLocalCurrencyNumber } from '@/js/helpers';
+import { getCurrencyDecimals, roundToDecimals, toLocalCurrencyNumber } from '@/js/helpers';
 import {
   FULL_SHARE,
   accountGoalValue,
@@ -254,8 +254,10 @@ export const countedFromAccount = ({
   // A zero base balance against a non-zero own one means the rate is unknown, not zero.
   if (!account.refCurrentBalance) return null;
   // ponytail: the account's base-to-own balance ratio stands in for today's rate
-  const scale = 10 ** baseDecimals;
-  return Math.round(((counted * account.refCurrentBalance) / account.currentBalance) * scale) / scale;
+  return roundToDecimals({
+    value: (counted * account.refCurrentBalance) / account.currentBalance,
+    decimals: baseDecimals,
+  });
 };
 
 /** "40%", or the fixed amount in the account's currency; a bare number while that currency is unknown. */

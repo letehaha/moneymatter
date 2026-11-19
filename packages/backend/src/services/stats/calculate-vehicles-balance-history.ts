@@ -146,14 +146,10 @@ export const calculateVehiclesBalanceHistory = async ({
     else txsByAccount.set(tx.accountId, [tx]);
   }
 
-  // One decimals lookup per distinct account currency; each vehicle's native amounts use its account's.
-  const decimalsByCurrency = new Map(
-    await Promise.all(
-      [...new Set(activeVehicles.map((v) => v.account.currencyCode))].map(
-        async (code) => [code, await getCurrencyDecimals({ userId, code })] as const,
-      ),
-    ),
-  );
+  const decimalsByCurrency = new Map<string, number>();
+  for (const { account } of activeVehicles) {
+    decimalsByCurrency.set(account.currencyCode, await getCurrencyDecimals({ userId, code: account.currencyCode }));
+  }
 
   const vehicleComputes: VehicleCompute[] = activeVehicles.map((vehicle) => {
     const accountDecimals = decimalsByCurrency.get(vehicle.account.currencyCode)!;
@@ -262,9 +258,10 @@ export const calculateVehiclesBalanceHistory = async ({
       const valueInAccountMinor = vehicleValueAtDate(vehicle, dateStr);
       if (valueInAccountMinor === 0) continue;
       const rate = getExchangeRate(vehicle.accountCurrencyCode, dateStr);
-      // The rate converts whole units; the factor re-expresses the account's minor units in the base's.
-      const scale = 10 ** (decimals - vehicle.accountDecimals);
-      totalInBaseMinor += Math.round(valueInAccountMinor * rate * scale);
+      totalInBaseMinor += Money.fromMinorUnits({ value: valueInAccountMinor, decimals: vehicle.accountDecimals })
+        .multiply(rate)
+        .roundHalfEven(decimals)
+        .toMinorUnits({ decimals });
     }
     vehicleValuesByDate.set(dateStr, totalInBaseMinor);
   }

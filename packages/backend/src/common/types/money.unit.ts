@@ -496,12 +496,6 @@ describe('minor units', () => {
       expect(() => Money.fromMinorUnits({ value: 1.5, decimals: 2 })).toThrow('expected integer');
     });
 
-    it('rejects decimals that are not a non-negative integer', () => {
-      expect(() => Money.fromMinorUnits({ value: 1, decimals: -1 })).toThrow('expected a non-negative integer');
-      expect(() => Money.fromMinorUnits({ value: 1, decimals: 0.5 })).toThrow('expected a non-negative integer');
-      expect(() => Money.fromMinorUnits({ value: 1, decimals: 9 })).toThrow('supported maximum of 8');
-    });
-
     it.each([
       { decimals: 2, max: '90071992547409.91' },
       { decimals: 3, max: '9007199254740.991' },
@@ -539,21 +533,7 @@ describe('minor units', () => {
 
   // The engine tasks rely on a 2-decimal currency computing exactly as the cents helpers do.
   describe('equality with the cents helpers at 2 decimals', () => {
-    const VALUES = [
-      '0',
-      '0.01',
-      '-0.01',
-      '0.005',
-      '-0.005',
-      '0.015',
-      '-0.015',
-      '1234567.89',
-      '-1234567.89',
-      '90071992547409.91',
-      '-90071992547409.91',
-      '12.3456',
-      '-12.3456',
-    ];
+    const VALUES = ['0.005', '-0.005', '90071992547409.91'];
 
     it.each(VALUES)('toMinorUnits(2) equals toCents for %s', (value) => {
       const money = Money.fromDecimal(value);

@@ -27,7 +27,6 @@ export const getTrends = async ({
   const foldInput = await loadFoldInput({ plan, today });
   const { decimals } = foldInput;
   const views = foldPlan(foldInput);
-  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
 
   const last = until
     ? views.findIndex((view) => view.period.id === until)
@@ -41,15 +40,15 @@ export const getTrends = async ({
       periodId: period.id,
       startDate: period.startDate,
       endDate: period.endDate,
-      assigned: toDecimal(header.totalAssigned),
-      activity: toDecimal(header.totalActivity),
-      carriedIn: toDecimal(header.totalCarriedIn),
-      available: toDecimal(header.totalAvailable),
+      assigned: minorUnitsToApiDecimal({ value: header.totalAssigned, decimals }),
+      activity: minorUnitsToApiDecimal({ value: header.totalActivity, decimals }),
+      carriedIn: minorUnitsToApiDecimal({ value: header.totalCarriedIn, decimals }),
+      available: minorUnitsToApiDecimal({ value: header.totalAvailable, decimals }),
       lines: lines.map((line) => ({
         lineId: line.lineId,
-        assigned: toDecimal(line.assigned),
-        activity: toDecimal(line.activity),
-        available: toDecimal(line.available),
+        assigned: minorUnitsToApiDecimal({ value: line.assigned, decimals }),
+        activity: minorUnitsToApiDecimal({ value: line.activity, decimals }),
+        available: minorUnitsToApiDecimal({ value: line.available, decimals }),
       })),
     })),
   };

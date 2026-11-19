@@ -19,6 +19,7 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { useInvalidateSubscriptionQueries } from '@/composable/data-queries/subscriptions';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { ApiErrorResponseError } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
@@ -183,6 +184,10 @@ const dialogAmountCurrency = computed(() => {
 });
 
 const amountDecimals = computed(() => getCurrencyDecimals({ code: dialogAmountCurrency.value }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
+const amountDecimalError = computed(() =>
+  isBooking.value && !currencyDecimal.isValid(amount.value) ? currencyDecimal.message.value : undefined,
+);
 
 const isConfirmDisabled = computed(() => {
   if (isPending.value) return true;
@@ -190,7 +195,7 @@ const isConfirmDisabled = computed(() => {
   if (!isBooking.value) return false;
   // Booking against a not-yet-linked account requires picking one.
   if (!hasAccount.value && !selectedAccountId.value) return true;
-  return !amount.value || Number(amount.value) <= 0;
+  return !amount.value || Number(amount.value) <= 0 || !!amountDecimalError.value;
 });
 
 const confirmLabel = computed(() => {
@@ -393,6 +398,7 @@ defineExpose({ triggerPay, isPending });
           only-positive
           :label="$t('dialogs.subscriptionMarkPaid.amountLabel')"
           :placeholder="$t('dialogs.subscriptionMarkPaid.amountPlaceholder')"
+          :error-message="amountDecimalError"
         >
           <template v-if="dialogAmountCurrency" #iconTrailing>
             <span>{{ dialogAmountCurrency }}</span>

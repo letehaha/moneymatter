@@ -19,9 +19,14 @@ type RefundShareError = 'nonPositive' | 'exceedsPurchase';
 /** One minor unit of the refund currency: the stray amount a rate-rounded cap can leave. */
 const orphanUnit = ({ decimals }: { decimals: number }) => 10 ** -decimals;
 
-/** Rounds a share to the refund currency's decimals; `|| 0` turns -0 into 0. */
+/** Rounds a share to the refund currency's decimals; `|| 0` turns a NaN share into 0. */
 export const roundShare = ({ value, decimals }: { value: number; decimals: number }) =>
   roundToDecimals({ value, decimals }) || 0;
+
+const shareRounder =
+  ({ decimals }: { decimals: number }) =>
+  ({ value }: { value: number }) =>
+    roundShare({ value, decimals });
 
 /**
  * One pass in tick order: each target without a set share takes min(what is left, its cap).
@@ -37,7 +42,7 @@ export const fillRefundShares = ({
   /** Decimals of the currency the shares are in. */
   decimals: number;
 }): number[] => {
-  const round = ({ value }: { value: number }) => roundShare({ value, decimals });
+  const round = shareRounder({ decimals });
   const shares = targets.map((target) => (target.share == null ? null : round({ value: target.share })));
   let remaining = round({ value: refundAmount - shares.reduce<number>((sum, share) => sum + (share ?? 0), 0) });
   const fillIndexes = shares.flatMap((share, index) => (share === null ? [index] : []));
@@ -70,7 +75,7 @@ export const validateRefundShares = ({
   /** Decimals of the refund currency. */
   decimals: number;
 }) => {
-  const round = ({ value }: { value: number }) => roundShare({ value, decimals });
+  const round = shareRounder({ decimals });
   const errors: (RefundShareError | null)[] = targets.map((target) => {
     if (target.share == null) return 'nonPositive';
     const share = round({ value: target.share });
@@ -124,13 +129,12 @@ export const getRefundTargetCap = ({
   savedShares?: Record<string, number>;
   convert: ConvertAmount;
 }) => {
-  const round = ({ value }: { value: number }) => roundShare({ value, decimals });
+  const round = shareRounder({ decimals });
   const tx = link.transaction;
   const base = getRefundTargetBase({ link });
   const purchaseCurrencyCode = tx.currencyCode;
   const isSameCurrency = purchaseCurrencyCode === refundCurrencyCode;
-  const purchaseDecimals = isSameCurrency ? decimals : getCurrencyDecimals({ code: purchaseCurrencyCode });
-  const roundPurchase = ({ value }: { value: number }) => roundShare({ value, decimals: purchaseDecimals });
+  const roundPurchase = shareRounder({ decimals: getCurrencyDecimals({ code: purchaseCurrencyCode }) });
 
   const leftOf = ({
     amount,

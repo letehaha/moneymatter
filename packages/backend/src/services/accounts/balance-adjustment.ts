@@ -99,9 +99,6 @@ export const adjustAccountBalance = withTransaction(
       });
     }
 
-    // A stored balance can carry digits finer than its currency (a migrated 0-decimal balance of
-    // 1000.4). The adjustment row holds the difference at the currency's decimals, so the balance it
-    // reaches is the previous one plus that row, which a sub-unit remainder keeps off the target.
     const previousBalance = account.currentBalance;
     const diff = targetBalance.subtract(previousBalance).round(decimals);
 

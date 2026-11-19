@@ -9,7 +9,8 @@ import { useFormatCurrency } from '@/composable';
 import { usePortfolioBalances } from '@/composable/data-queries/portfolio-balances';
 import { useExchangeCurrency } from '@/composable/data-queries/portfolio-transfers';
 import { useFormValidation } from '@/composable/form-validator';
-import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
+import { getCurrencyDecimals, getSmallestCurrencyUnit } from '@/js/helpers/currency-decimals';
 import { useCurrenciesStore } from '@/stores';
 import type { CurrencyModel, PortfolioModel, UserCurrencyModel } from '@bt/shared/types';
 import { format as formatDate } from 'date-fns';
@@ -110,23 +111,42 @@ const handleMaxAmount = () => {
   }
 };
 
+const fromDecimals = computed(() =>
+  form.fromCurrency ? getCurrencyDecimals({ code: form.fromCurrency.currencyCode }) : undefined,
+);
+const toDecimals = computed(() =>
+  form.toCurrency ? getCurrencyDecimals({ code: form.toCurrency.currencyCode }) : undefined,
+);
+const fromCurrencyDecimal = useCurrencyDecimalRule({ decimals: fromDecimals });
+const toCurrencyDecimal = useCurrencyDecimalRule({ decimals: toDecimals });
+
 // Validation
 const validationRules = computed(() => ({
   fromCurrency: { required },
   toCurrency: { required },
-  fromAmount: { required, minValue: minValue(10 ** -getCurrencyDecimals({ code: form.fromCurrency?.currencyCode })) },
-  toAmount: { required, minValue: minValue(10 ** -getCurrencyDecimals({ code: form.toCurrency?.currencyCode })) },
+  fromAmount: {
+    required,
+    minValue: minValue(getSmallestCurrencyUnit({ code: form.fromCurrency?.currencyCode })),
+    fromCurrencyDecimal: fromCurrencyDecimal.rule.value,
+  },
+  toAmount: {
+    required,
+    minValue: minValue(getSmallestCurrencyUnit({ code: form.toCurrency?.currencyCode })),
+    toCurrencyDecimal: toCurrencyDecimal.rule.value,
+  },
   date: { required },
 }));
 
 const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFormValidation(
   { form },
-  { form: validationRules },
+  computed(() => ({ form: validationRules.value })),
   {},
   {
     customValidationMessages: {
       required: t('forms.exchangeCurrency.validation.required'),
       minValue: t('forms.exchangeCurrency.validation.minValue'),
+      fromCurrencyDecimal: fromCurrencyDecimal.message,
+      toCurrencyDecimal: toCurrencyDecimal.message,
     },
   },
 );
@@ -215,7 +235,7 @@ const onSubmit = async () => {
         :label="$t('forms.exchangeCurrency.fromAmountLabel')"
         type="number"
         only-positive
-        :decimals="form.fromCurrency ? getCurrencyDecimals({ code: form.fromCurrency.currencyCode }) : undefined"
+        :decimals="fromDecimals"
         :placeholder="$t('forms.exchangeCurrency.amountPlaceholder')"
         :disabled="exchangeMutation.isPending.value || disabled"
         :error-message="getFieldErrorMessage('form.fromAmount')"
@@ -253,7 +273,7 @@ const onSubmit = async () => {
       :label="$t('forms.exchangeCurrency.toAmountLabel')"
       type="number"
       only-positive
-      :decimals="form.toCurrency ? getCurrencyDecimals({ code: form.toCurrency.currencyCode }) : undefined"
+      :decimals="toDecimals"
       :placeholder="$t('forms.exchangeCurrency.amountPlaceholder')"
       :disabled="exchangeMutation.isPending.value || disabled"
       :error-message="getFieldErrorMessage('form.toAmount')"

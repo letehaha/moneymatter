@@ -6,7 +6,7 @@ import {
   dedupeTransferLegs,
   sumTransactionTotals,
 } from '@bt/shared/types';
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { getReportBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money, minorUnitsToApiDecimal } from '@common/types/money';
 import { ValidationError } from '@js/errors';
 import Accounts from '@models/accounts.model';
@@ -82,7 +82,7 @@ const scopeToCategories = async ({
 };
 
 export const getTransactionsSummary = async (filters: ListFilters): Promise<TransactionsSummaryResponse> => {
-  const decimals = await getBaseCurrencyDecimals({ userId: filters.userId });
+  const decimals = await getReportBaseCurrencyDecimals({ userId: filters.userId });
   const rows = dedupeTransferLegs(await findMatchingRows(filters));
   // Summed in the base currency's minor units, so the totals are exact integers.
   const minorRows = rows.map((row) => ({

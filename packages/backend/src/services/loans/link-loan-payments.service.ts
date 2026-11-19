@@ -5,7 +5,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
-import { getCurrencyDecimals } from '@common/lib/currency-precision';
+import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import LoanDetails from '@models/loan-details.model';
@@ -13,7 +13,7 @@ import { findTransactions } from '@models/transactions-query';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
 import { isOnOrAfterAnchorDay } from '@services/loans/anchor-day';
-import { lockLoanAccountRow, projectLoanOverpay, sumAtLoanDecimals } from '@services/loans/project-loan-overpay';
+import { lockLoanAccountRow, projectLoanOverpay } from '@services/loans/project-loan-overpay';
 import { assertNotInPayment } from '@services/transactions/payment-legs';
 import { updateTransaction } from '@services/transactions/update-transaction';
 
@@ -108,13 +108,12 @@ const linkLoanPaymentsImpl = async ({
 
   // Loan balances are negative (liability); income legs add toward zero. A
   // positive projection means the batch overshoots the owed amount.
-  const decimals = await getCurrencyDecimals({ userId, code: loanCurrencyCode });
-  const outstanding = sumAtLoanDecimals({ amounts: [loanAccount.currentBalance], decimals });
+  const outstanding = loanAccount.currentBalance;
   const { projectedBalance, overpaysBy } = projectLoanOverpay({
-    projectedBalance: sumAtLoanDecimals({
-      amounts: [outstanding, ...plans.filter((plan) => plan.countsTowardBalance).map((plan) => plan.destinationAmount)],
-      decimals,
-    }),
+    projectedBalance: Money.sum([
+      outstanding,
+      ...plans.filter((plan) => plan.countsTowardBalance).map((plan) => plan.destinationAmount),
+    ]),
   });
   if (overpaysBy.isPositive() && !confirmOverpay) {
     const details: LoanPaymentOverpayDetails = {

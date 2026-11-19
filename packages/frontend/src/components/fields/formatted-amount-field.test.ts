@@ -36,14 +36,16 @@ describe('FormattedAmountField decimals', () => {
     await flushPromises();
   };
 
-  it.each<[number, number, string]>([
-    [1.2345, 3, '1.235'],
-    [1500.6, 0, '1,501'],
-    [20_500_000_000, 0, '20,500,000,000'],
-  ])('shows %d at %d decimals as %s', (modelValue, decimals, shown) => {
-    wrapper = mountField({ modelValue, decimals });
+  it('shows every digit of a model with more decimals than the currency', () => {
+    wrapper = mountField({ modelValue: 1500.6, decimals: 0 });
 
-    expect(inputValue()).toBe(shown);
+    expect(inputValue()).toBe('1,500.6');
+  });
+
+  it('drops float noise from a computed model', () => {
+    wrapper = mountField({ modelValue: 0.1 + 0.2, decimals: 2 });
+
+    expect(inputValue()).toBe('0.3');
   });
 
   it('rewrites the input when a dropped digit leaves the value unchanged', async () => {
@@ -86,25 +88,13 @@ describe('FormattedAmountField decimals', () => {
     expect(inputValue()).toBe('');
   });
 
-  it.each<[number, number, number, number, string]>([
-    [1000.555, 3, 2, 1000.55, '1,000.55'],
-    [10.5, 2, 0, 10, '10'],
-  ])('re-emits %d cut from %d to %d decimals as %d', async (modelValue, from, to, emitted, shown) => {
-    wrapper = mountField({ modelValue, decimals: from });
+  it('keeps the value when the decimals drop', async () => {
+    wrapper = mountField({ modelValue: 10.99, decimals: 2 });
 
-    await wrapper.setProps({ decimals: to });
-    await flushPromises();
-
-    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([emitted]);
-    expect(inputValue()).toBe(shown);
-  });
-
-  it('emits nothing when the value already fits the new decimals', async () => {
-    wrapper = mountField({ modelValue: 10.5, decimals: 3 });
-
-    await wrapper.setProps({ decimals: 2 });
+    await wrapper.setProps({ decimals: 0 });
     await flushPromises();
 
     expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+    expect(inputValue()).toBe('10.99');
   });
 });

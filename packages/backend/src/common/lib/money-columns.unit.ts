@@ -36,9 +36,6 @@ interface ModelLike {
 /** Fields that share the money column shape but hold no money amount. */
 const NON_MONEY_DECIMAL_FIELDS = ['InvestmentTransactions.quantity'];
 
-/** BIGINT attributes that hold no money amount. Money is never stored as BIGINT. */
-const NON_MONEY_BIGINT_FIELDS: string[] = [];
-
 const tableNameOf = (model: ModelLike): string => {
   const name = model.getTableName();
   return typeof name === 'string' ? name : name.tableName;
@@ -113,7 +110,7 @@ describe('MONEY_COLUMNS', () => {
   it('leaves no field on BIGINT storage', async () => {
     const models = await loadModels();
 
-    expect(bigintFields({ models }).filter((entry) => !NON_MONEY_BIGINT_FIELDS.includes(entry))).toEqual([]);
+    expect(bigintFields({ models })).toEqual([]);
   });
 });
 

@@ -11,7 +11,7 @@ import {
   TRANSACTION_TYPES,
   asMinorUnits,
 } from '@bt/shared/types';
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { getReportBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { getBaseCurrency } from '@models/users-currencies.model';
@@ -36,7 +36,7 @@ import { z } from 'zod';
 // Block the real services: their import chains load models and open database pools.
 jest.mock('@models/users-currencies.model', () => ({ getBaseCurrency: jest.fn() }));
 // EUR's decimals by default (set in `beforeEach`), so the minor units the stubs return below are cents.
-jest.mock('@common/lib/currency-precision', () => ({ getBaseCurrencyDecimals: jest.fn() }));
+jest.mock('@common/lib/currency-precision', () => ({ getReportBaseCurrencyDecimals: jest.fn() }));
 jest.mock('@services/user-settings/get-user-settings', () => ({ getUserSettings: jest.fn() }));
 jest.mock('@services/stats/get-balance-history', () => ({ getBalanceHistory: jest.fn() }));
 jest.mock('@services/stats/get-balance-history-for-account', () => ({ getBalanceHistoryForAccount: jest.fn() }));
@@ -72,7 +72,7 @@ import { getVentureContributionsTool } from './get-venture-contributions';
 const READ = makeExtra({ scopes: ['finance:read'] });
 
 const settingsOf = jest.mocked(getUserSettings);
-const baseDecimalsOf = jest.mocked(getBaseCurrencyDecimals);
+const baseDecimalsOf = jest.mocked(getReportBaseCurrencyDecimals);
 const baseCurrencyOf = jest.mocked(getBaseCurrency);
 const balanceHistory = jest.mocked(getBalanceHistory);
 const accountBalanceHistory = jest.mocked(getBalanceHistoryForAccount);

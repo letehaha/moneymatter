@@ -1,4 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
+import { ValidationError } from '@js/errors';
 
 import { type BackupFileName } from '../registry';
 import { findMoneyWithoutCurrencySource, roundMoneyToCurrencyDecimals } from './round-to-currency-decimals';
@@ -73,6 +74,13 @@ describe('roundMoneyToCurrencyDecimals', () => {
     ]);
   });
 
+  it('rejects an amount whose minor units at its currency decimals exceed the safe integer range', () => {
+    expect(() => round([['transactions', [{ currencyCode: 'USD', amount: '100000000000000' }]]])).toThrow(
+      ValidationError,
+    );
+    expect(() => round([['transactions', [{ currencyCode: 'USD', amount: '90000000000000' }]]])).not.toThrow();
+  });
+
   it('rounds JSON amounts as numbers, by the currency of their row or snapshot', () => {
     const data = round([
       ['users-currencies', [{ currencyCode: 'JPY', isDefaultCurrency: true }]],
@@ -89,6 +97,10 @@ describe('roundMoneyToCurrencyDecimals', () => {
           },
         ],
       ],
+      [
+        'portfolio-transfers',
+        [{ metaData: { originalTransactionState: { currencyCode: 'USD', amount: 1.005, refAmount: 2.5 } } }],
+      ],
     ]);
 
     expect(data.get('loan-details')).toEqual([{ accountId: 'a', events: [{ fromCents: 751, toCents: null }] }]);
@@ -96,6 +108,11 @@ describe('roundMoneyToCurrencyDecimals', () => {
     expect((data.get('venture-event-links')![0]!.metaData as Row).originalTransactionState).toEqual({
       currencyCode: 'USD',
       refCurrencyCode: 'JPY',
+      amount: 1.01,
+      refAmount: 2,
+    });
+    expect((data.get('portfolio-transfers')![0]!.metaData as Row).originalTransactionState).toEqual({
+      currencyCode: 'USD',
       amount: 1.01,
       refAmount: 2,
     });

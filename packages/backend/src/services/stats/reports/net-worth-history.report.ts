@@ -1,4 +1,4 @@
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { getReportBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { serializeNetWorthHistory } from '@root/serializers/stats.serializer';
 import { getUserSettings } from '@services/user-settings/get-user-settings';
 
@@ -10,7 +10,7 @@ type NetWorthHistoryParams = Omit<Parameters<typeof getNetWorthHistory>[0], 'inc
 export const getNetWorthHistoryReport = async (params: NetWorthHistoryParams) => {
   const [settings, decimals] = await Promise.all([
     getUserSettings({ userId: params.userId }),
-    getBaseCurrencyDecimals({ userId: params.userId }),
+    getReportBaseCurrencyDecimals({ userId: params.userId }),
   ]);
 
   const result = await getNetWorthHistory({

@@ -21,7 +21,8 @@ import {
 import { usePortfolioCurrencySorting } from '@/composable/data-queries/use-portfolio-currency-sorting';
 import { usePortfolios } from '@/composable/data-queries/portfolios';
 import { useFormValidation } from '@/composable/form-validator';
-import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
+import { getCurrencyDecimals, getSmallestCurrencyUnit } from '@/js/helpers/currency-decimals';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import { AccountModel, PortfolioModel, TRANSACTION_TYPES, TransactionModel, UserCurrencyModel } from '@bt/shared/types';
 import { X } from '@lucide/vue';
@@ -190,22 +191,34 @@ const showFromAccount = computed(() => props.context === 'account' && transferTy
 
 const showToAccount = computed(() => transferType.value === 'portfolio-to-account');
 
-// Dynamic labels based on context
-const amountLabel = computed(() => {
-  return form.selectedCurrency
-    ? t('forms.portfolioTransfer.amountLabelWithCurrency', { currency: form.selectedCurrency.currency!.code })
-    : t('forms.portfolioTransfer.amountLabel');
+// A transfer to or from an account always moves the account's currency, which a shared account
+// may have outside the viewer's currencies.
+const accountCurrencyCode = computed(() => {
+  if (transferType.value === 'account-to-portfolio') return form.fromAccount?.currencyCode;
+  if (transferType.value === 'portfolio-to-account') return form.toAccount?.currencyCode;
+  return undefined;
 });
+const isAccountTransfer = computed(() => transferType.value !== 'portfolio-to-portfolio');
+const currencyCode = computed(() =>
+  isAccountTransfer.value ? accountCurrencyCode.value : form.selectedCurrency?.currencyCode,
+);
+const decimals = computed(() => (currencyCode.value ? getCurrencyDecimals({ code: currencyCode.value }) : undefined));
+const currencyDecimal = useCurrencyDecimalRule({ decimals });
+
+const amountLabel = computed(() =>
+  currencyCode.value
+    ? t('forms.portfolioTransfer.amountLabelWithCurrency', { currency: currencyCode.value })
+    : t('forms.portfolioTransfer.amountLabel'),
+);
 
 // Form validation
 const validationRules = computed(() => ({
   amount: {
     required,
-    minValue: minValue(10 ** -getCurrencyDecimals({ code: form.selectedCurrency?.currencyCode })),
+    minValue: minValue(getSmallestCurrencyUnit({ code: currencyCode.value })),
+    currencyDecimal: currencyDecimal.rule.value,
   },
-  selectedCurrency: {
-    required,
-  },
+  ...(isAccountTransfer.value ? {} : { selectedCurrency: { required } }),
   date: {
     required,
   },
@@ -216,29 +229,23 @@ const validationRules = computed(() => ({
 
 const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFormValidation(
   { form },
-  { form: validationRules },
+  computed(() => ({ form: validationRules.value })),
   {},
   {
     customValidationMessages: {
       required: t('forms.portfolioTransfer.validation.required'),
       minValue: t('forms.portfolioTransfer.validation.minValue'),
+      currencyDecimal: currencyDecimal.message,
     },
   },
 );
 
 // Auto-set currency based on source.
-// A transfer to or from an account always moves the account's currency.
 watch(
-  [() => form.fromPortfolio, () => form.fromAccount, () => form.toAccount, () => transferType.value],
+  [() => form.fromPortfolio, () => form.fromAccount, () => transferType.value, accountCurrencyCode],
   () => {
-    const accountCurrencyCode =
-      transferType.value === 'account-to-portfolio'
-        ? form.fromAccount?.currencyCode
-        : transferType.value === 'portfolio-to-account'
-          ? form.toAccount?.currencyCode
-          : undefined;
-    if (accountCurrencyCode) {
-      form.selectedCurrency = currencies.value?.find((c) => c.currencyCode === accountCurrencyCode) || null;
+    if (accountCurrencyCode.value) {
+      form.selectedCurrency = currencies.value?.find((c) => c.currencyCode === accountCurrencyCode.value) || null;
       return;
     }
 
@@ -362,8 +369,8 @@ const prepareConfirmationData = () => {
       toName = form.toPortfolio?.name || '';
     }
 
-    amount = formatAmountByCurrencyCode(Number(form.amount), form.selectedCurrency?.currency!.code!);
-    currency = form.selectedCurrency?.currency!.code || '';
+    currency = currencyCode.value ?? '';
+    amount = formatAmountByCurrencyCode(Number(form.amount), currency);
   }
 
   confirmDialogData.value = { from: fromName, to: toName, amount, currency, action: getTransferAction() };
@@ -405,7 +412,7 @@ const confirmTransfer = async () => {
           portfolioId: form.fromPortfolio!.id,
           accountId: form.toAccount!.id,
           amount,
-          currencyCode: form.selectedCurrency!.currencyCode,
+          currencyCode: currencyCode.value!,
           date: dateStr,
           description: form.description || undefined,
         });
@@ -455,7 +462,7 @@ const isSubmitDisabled = computed(() => {
 
   return (
     !form.amount ||
-    !form.selectedCurrency ||
+    !currencyCode.value ||
     (!form.fromPortfolio && !form.fromAccount) ||
     (!form.toPortfolio && !form.toAccount)
   );
@@ -565,9 +572,7 @@ const isSubmitDisabled = computed(() => {
         :label="amountLabel"
         type="number"
         only-positive
-        :decimals="
-          form.selectedCurrency ? getCurrencyDecimals({ code: form.selectedCurrency.currencyCode }) : undefined
-        "
+        :decimals="decimals"
         :placeholder="$t('forms.portfolioTransfer.amountPlaceholder')"
         :disabled="isAnyMutationPending || disabled"
         :error-message="getFieldErrorMessage('form.amount')"

@@ -160,8 +160,7 @@ export const getPivotReport = async ({
     label: getBucketLabel({ periodStart: bucket.periodStart, granularity }),
   }));
 
-  // Every user has a base currency, so this normally resolves; the empty-string fallback is a
-  // defensive last resort the client already guards against (it never invents a wrong currency).
+  // A user who has not picked a base currency yet gets an empty code, never a guessed one.
   const baseCurrency = (await getBaseCurrency({ userId }))?.currencyCode ?? '';
 
   if (strategy.hydrate) await strategy.hydrate({ userId, rows });

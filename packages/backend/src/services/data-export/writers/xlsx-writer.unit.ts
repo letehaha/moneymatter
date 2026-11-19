@@ -5,7 +5,8 @@ import type { TransactionRow } from '../types';
 import { xlsxWriter } from './xlsx-writer';
 
 describe('xlsxWriter money cells', () => {
-  it.each([1.234, 1500, 0.12345678])('keeps every stored decimal of %p', async (amount) => {
+  it('keeps every stored decimal', async () => {
+    const amount = 0.12345678;
     const [file] = await xlsxWriter.write({
       tables: [{ name: 'transactions', rows: [{ amount } as unknown as TransactionRow] }],
       exportedAt: new Date(0),

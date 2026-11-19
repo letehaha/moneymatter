@@ -17,6 +17,8 @@ jest.mock('@models/transactions.model', () => ({
 let mockAccountDecimals = 2;
 jest.mock('./get-account-decimals', () => ({
   __esModule: true,
+  decimalsOfAccount:
+    jest.requireActual<typeof import('./get-account-decimals')>('./get-account-decimals').decimalsOfAccount,
   getAccountDecimals: ({ accountIds }: { accountIds: string[] }) =>
     Promise.resolve(new Map(accountIds.map((id) => [id, mockAccountDecimals]))),
 }));

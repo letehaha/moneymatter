@@ -498,6 +498,139 @@ const seedRoundingCases = async ({ sequelize }: { sequelize: Sequelize }): Promi
     },
   });
 
+  // One row per remaining currency-source shape, each listed column seeded with 150050 cents.
+  const HALF_UP = '1501';
+  const HALF_EVEN = '1500';
+  const sourceCase = async ({
+    table,
+    overrides,
+    rounded,
+    json,
+  }: {
+    table: string;
+    overrides?: Record<string, unknown>;
+    rounded: Record<string, string>;
+    json?: { column: string; seed: unknown; decimal: unknown; cents: unknown };
+  }): Promise<RoundingCase> => {
+    const cents = Object.fromEntries(Object.keys(rounded).map((column) => [column, 150050]));
+    const row = await seedOne({
+      table,
+      plan: { kind: 'B', overrides: { ...overrides, ...(json && { [json.column]: json.seed }) }, cents },
+    });
+    return { row, rounded, json };
+  };
+
+  // VND account of the JPY-based user: its converted amounts round half-even.
+  const vndAccount = await seedOne({
+    table: 'Accounts',
+    plan: { kind: 'B', overrides: { currencyCode: 'VND', userId: ROUNDING_USER_ID } },
+  });
+  const plan = await seedOne({
+    table: 'BudgetPlans',
+    plan: {
+      kind: 'B',
+      overrides: { userId: ROUNDING_USER_ID, cadence: 'months', carryPolicy: 'none', currencyCode: 'JPY' },
+    },
+  });
+  const line = await seedOne({ table: 'BudgetLines', plan: { kind: 'B', overrides: { planId: plan.key.id } } });
+  const tracker = await sourceCase({
+    table: 'Trackers',
+    overrides: { userId: ROUNDING_USER_ID },
+    rounded: { limitAmount: HALF_UP },
+  });
+  const loanEvent = { type: 'balance_correction', at: '2026-01-03T00:00:00.000Z' };
+
+  const sourceCases = [
+    await sourceCase({
+      table: 'BudgetAssignments',
+      overrides: { lineId: line.key.id },
+      rounded: { baselineAmount: HALF_UP },
+    }),
+    await sourceCase({
+      table: 'TransactionTemplates',
+      overrides: { accountId: account.key.id },
+      rounded: { amount: HALF_UP },
+    }),
+    await sourceCase({
+      table: 'GoalAccounts',
+      overrides: { accountId: account.key.id, sharePercent: null, fixedPosition: 0 },
+      rounded: { fixedAmount: HALF_UP },
+    }),
+    await sourceCase({
+      table: 'LoanDetails',
+      overrides: { accountId: vndAccount.key.id, userId: ROUNDING_USER_ID },
+      rounded: {
+        originalPrincipal: HALF_UP,
+        minPayment: HALF_UP,
+        plannedPayment: HALF_UP,
+        refOriginalPrincipal: HALF_EVEN,
+        refMinPayment: HALF_EVEN,
+        refPlannedPayment: HALF_EVEN,
+      },
+      json: {
+        column: 'events',
+        seed: [{ ...loanEvent, fromCents: 150050, toCents: -150050 }],
+        decimal: [{ ...loanEvent, fromCents: 1501, toCents: -1501 }],
+        cents: [{ ...loanEvent, fromCents: 150100, toCents: -150100 }],
+      },
+    }),
+    await sourceCase({
+      table: 'Balances',
+      overrides: { accountId: vndAccount.key.id },
+      rounded: { amount: HALF_EVEN },
+    }),
+    tracker,
+    await sourceCase({
+      table: 'TrackerLines',
+      overrides: { trackerId: tracker.row.key.id },
+      rounded: { limitAmount: HALF_UP },
+    }),
+    await sourceCase({
+      table: 'RefundTransactions',
+      overrides: { refundTxId: transaction.key.id },
+      rounded: { amount: HALF_UP },
+    }),
+    // Soft-deleted, so `real_transactions` still holds one row.
+    await sourceCase({
+      table: 'Transactions',
+      overrides: {
+        isPlanned: false,
+        deletedAt: RAW('now()'),
+        transactionType: 'expense',
+        paymentParentId: transaction.key.id,
+      },
+      rounded: { paymentAmount: HALF_UP },
+    }),
+    await sourceCase({
+      table: 'Subscriptions',
+      overrides: { expectedCurrencyCode: 'JPY' },
+      rounded: { expectedAmount: HALF_UP },
+    }),
+    await sourceCase({
+      table: 'TagReminders',
+      overrides: { userId: ROUNDING_USER_ID },
+      rounded: {},
+      json: {
+        column: 'settings',
+        seed: { amountThreshold: 150050 },
+        decimal: { amountThreshold: 1501 },
+        cents: { amountThreshold: 150100 },
+      },
+    }),
+    // The portfolio snapshot has no refCurrencyCode: its refAmount is in the user's base currency.
+    await sourceCase({
+      table: 'PortfolioTransfers',
+      overrides: { userId: ROUNDING_USER_ID },
+      rounded: {},
+      json: {
+        column: 'metaData',
+        seed: { originalTransactionState: { currencyCode: 'VND', amount: 150050, refAmount: 150050 } },
+        decimal: { originalTransactionState: { currencyCode: 'VND', amount: 1501, refAmount: 1500 } },
+        cents: { originalTransactionState: { currencyCode: 'VND', amount: 150100, refAmount: 150000 } },
+      },
+    }),
+  ];
+
   return [
     {
       row: transaction,
@@ -534,6 +667,7 @@ const seedRoundingCases = async ({ sequelize }: { sequelize: Sequelize }): Promi
         cents: { originalTransactionState: { ...snapshot, amount: 150100, refAmount: 25000 } },
       },
     },
+    ...sourceCases,
   ];
 };
 
@@ -695,7 +829,7 @@ const assertView = async ({
   );
   const { in_view: inView, in_table: inTable } = (counts as { in_view: number; in_table: number }[])[0];
   check({
-    ok: inTable === 4 && inView === 1,
+    ok: inTable === 5 && inView === 1,
     label: `${step}: view keeps only the real, non-deleted row (${inView} of ${inTable})`,
   });
 };
@@ -837,7 +971,7 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
   // migration rewrites whole tables, which re-validates every foreign key of a rewritten row.
   const [foreignKeys] = await sequelize.query(
     `SELECT conrelid::regclass::text AS tbl, conname FROM pg_constraint
-     WHERE contype = 'f' AND conrelid::regclass::text IN (${[...tables, 'UsersCurrencies'].map((table) => sqlLiteral(quote(table))).join(', ')})`,
+     WHERE contype = 'f' AND conrelid::regclass::text IN (${[...tables, 'UsersCurrencies', 'BudgetLines'].map((table) => sqlLiteral(quote(table))).join(', ')})`,
   );
   for (const { tbl, conname } of foreignKeys as {
     tbl: string;
@@ -972,18 +1106,6 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
   await umzug.up({ to: MIGRATION_NAME });
   await assertState({ expected: 'decimal', step: 'up-again', rows: afterDown });
   await assertRounding({ sequelize, cases: roundingCases, expected: 'decimal', step: 'up-again' });
-
-  // A fractional-cent value fits the new column exactly.
-  await sequelize.query(
-    `UPDATE "Balances" SET "amount" = 0.00040641 WHERE ${whereKey({ key: seeded.find((row) => row.table === 'Balances')!.key })}`,
-  );
-  const [[stored]] = (await sequelize.query(
-    `SELECT "amount"::text AS amount FROM "Balances" WHERE ${whereKey({ key: seeded.find((row) => row.table === 'Balances')!.key })}`,
-  )) as [{ amount: string }[], unknown];
-  check({
-    ok: Number(stored.amount) === 0.00040641,
-    label: `decimal column stores 0.00040641 exactly (got ${stored.amount})`,
-  });
 };
 
 /** Runs every cleanup step; a failure is logged and returned, never thrown, so it cannot hide an earlier error. */

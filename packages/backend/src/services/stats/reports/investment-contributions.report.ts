@@ -1,4 +1,4 @@
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { getReportBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { removeUndefinedKeys } from '@js/helpers';
 import { serializeInvestmentContributions } from '@root/serializers/stats.serializer';
 
@@ -8,7 +8,7 @@ type InvestmentContributionsParams = Omit<Parameters<typeof getInvestmentContrib
 
 /** Money moved into and out of portfolios per period, in the base currency. */
 export const getInvestmentContributionsReport = async (params: InvestmentContributionsParams) => {
-  const decimals = await getBaseCurrencyDecimals({ userId: params.userId });
+  const decimals = await getReportBaseCurrencyDecimals({ userId: params.userId });
   const result = await getInvestmentContributions(removeUndefinedKeys({ ...params, decimals }));
 
   return serializeInvestmentContributions({ result, decimals });

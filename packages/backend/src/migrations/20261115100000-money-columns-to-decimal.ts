@@ -235,11 +235,9 @@ const readColumnStates = async ({
   for (const { table, column } of MONEY_COLUMNS_20261115) {
     const row = rows.find((candidate) => candidate.table_name === table && candidate.column_name === column);
     const state = stateOf({ row });
-    const type = !row
-      ? 'missing'
-      : row.data_type === 'numeric'
-        ? `numeric(${row.numeric_precision},${row.numeric_scale})`
-        : row.data_type;
+    let type = 'missing';
+    if (row)
+      type = row.data_type === 'numeric' ? `numeric(${row.numeric_precision},${row.numeric_scale})` : row.data_type;
     states.set(state, [...(states.get(state) ?? []), `${table}.${column} (${type})`]);
   }
   return states;
@@ -542,25 +540,33 @@ interface JsonKeyCurrency {
   convertedFrom?: string;
 }
 
-/** Original-transaction snapshots carry their own currency codes. */
-const snapshotKeyCurrencies = ({ objectSql }: { objectSql: string }): Record<string, JsonKeyCurrency> => ({
-  amount: { currency: `(${objectSql} ->> 'currencyCode')` },
-  refAmount: { currency: `(${objectSql} ->> 'refCurrencyCode')`, convertedFrom: `(${objectSql} ->> 'currencyCode')` },
-});
+const userBaseCurrencySql = ({ table }: { table: string }): string =>
+  `(SELECT uc."currencyCode" FROM "UsersCurrencies" AS uc
+    WHERE uc."userId" = "${table}"."userId" AND uc."isDefaultCurrency" LIMIT 1)`;
 
 const JSON_KEY_CURRENCIES: Record<string, (params: { objectSql: string }) => Record<string, JsonKeyCurrency>> = {
   'TagReminders.settings': () => ({
-    amountThreshold: {
-      currency: `(SELECT uc."currencyCode" FROM "UsersCurrencies" AS uc
-        WHERE uc."userId" = "TagReminders"."userId" AND uc."isDefaultCurrency" LIMIT 1)`,
-    },
+    amountThreshold: { currency: userBaseCurrencySql({ table: 'TagReminders' }) },
   }),
   'LoanDetails.events': () => {
     const currency = `(SELECT a."currencyCode" FROM "Accounts" AS a WHERE a."id" = "LoanDetails"."accountId")`;
     return { fromCents: { currency }, toCents: { currency } };
   },
-  'VentureEventLinks.metaData': snapshotKeyCurrencies,
-  'PortfolioTransfers.metaData': snapshotKeyCurrencies,
+  'VentureEventLinks.metaData': ({ objectSql }) => ({
+    amount: { currency: `(${objectSql} ->> 'currencyCode')` },
+    refAmount: {
+      currency: `(${objectSql} ->> 'refCurrencyCode')`,
+      convertedFrom: `(${objectSql} ->> 'currencyCode')`,
+    },
+  }),
+  // The portfolio snapshot stores no refCurrencyCode; its refAmount is in the owner's base currency.
+  'PortfolioTransfers.metaData': ({ objectSql }) => ({
+    amount: { currency: `(${objectSql} ->> 'currencyCode')` },
+    refAmount: {
+      currency: userBaseCurrencySql({ table: 'PortfolioTransfers' }),
+      convertedFrom: `(${objectSql} ->> 'currencyCode')`,
+    },
+  }),
 };
 
 /**

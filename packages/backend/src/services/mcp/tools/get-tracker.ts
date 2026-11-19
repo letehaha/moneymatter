@@ -21,8 +21,8 @@ export const getTrackerTool = defineTool({
       query: getTrackerById({ id: args.trackerId, userId }),
       message: t({ key: 'budgets.budgetNotFound' }),
     });
-    const { stats, decimals } = await getTrackerStats({ userId, trackerId: args.trackerId });
+    const stats = await getTrackerStats({ userId, trackerId: args.trackerId });
 
-    return { tracker: serializeTracker(tracker), stats: serializeTrackerStats({ stats, decimals }) };
+    return { tracker: serializeTracker(tracker), stats: serializeTrackerStats(stats) };
   },
 });

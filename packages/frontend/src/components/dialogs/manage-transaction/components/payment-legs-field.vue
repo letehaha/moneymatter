@@ -2,6 +2,7 @@
 import CurrencyChip from '@/components/common/currency-chip.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
+import { getCurrencyDecimalMessage } from '@/composable/use-currency-decimal-rule';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
@@ -17,6 +18,7 @@ import { useI18n } from 'vue-i18n';
 import type { FormPaymentLeg } from '../types';
 import {
   getPaymentLegAccountId,
+  getPaymentLegExcessDecimals,
   isCrossCurrencyLeg,
   isPaymentLegIncomplete,
   refreshLegPaymentAmount,
@@ -196,10 +198,13 @@ const removeMain = () => {
   legs.value = legs.value.filter((_, i) => i !== firstCreatedIndex.value);
 };
 
-const legError = ({ leg }: { leg: FormPaymentLeg }) =>
-  props.showLegErrors && isPaymentLegIncomplete({ leg, mainCurrencyCode: mainCurrencyCode.value })
-    ? t('dialogs.manageTransaction.form.validation.required')
-    : undefined;
+const legError = ({ leg }: { leg: FormPaymentLeg }) => {
+  if (props.showLegErrors && isPaymentLegIncomplete({ leg, mainCurrencyCode: mainCurrencyCode.value })) {
+    return t('dialogs.manageTransaction.form.validation.required');
+  }
+  const excessDecimals = getPaymentLegExcessDecimals({ leg, mainCurrencyCode: mainCurrencyCode.value });
+  return excessDecimals === null ? undefined : getCurrencyDecimalMessage({ t, decimals: excessDecimals });
+};
 
 const RATE_DIGITS = 4;
 const formatRate = ({ rate, from, to }: { rate: number; from: string; to: string }) =>

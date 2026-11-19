@@ -8,7 +8,7 @@ import {
 } from '@bt/shared/types';
 import {
   type ConversionDecimals,
-  getBaseCurrencyDecimals,
+  getBaseCurrencyPrecision,
   getConversionDecimals,
 } from '@common/lib/currency-precision';
 import { type Money, minorUnitsToApiDecimal } from '@common/types/money';
@@ -147,8 +147,7 @@ export const loadGoalInsights = async ({
   const from = format(monthStarts[0]!, 'yyyy-MM-dd');
   const months = monthStarts.map((month) => format(min([endOfMonth(month), now]), 'yyyy-MM-dd'));
   const accountIds = [...new Set(goals.flatMap((goal) => (goal.goalAccounts ?? []).map((link) => link.accountId)))];
-  const { currencyCode: baseCurrencyCode } = await getBaseCurrency({ userId });
-  const baseDecimals = await getBaseCurrencyDecimals({ userId });
+  const { code: baseCurrencyCode, decimals: baseDecimals } = await getBaseCurrencyPrecision({ userId });
 
   const [accounts, seriesByAccount, firstDates, rates] = await Promise.all([
     Accounts.findAll({

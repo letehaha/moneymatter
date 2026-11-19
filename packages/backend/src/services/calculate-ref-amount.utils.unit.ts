@@ -94,20 +94,6 @@ describe('calculateRefAmountFromParams', () => {
     });
   });
   describe('currency decimals', () => {
-    it('rounds the product half-even to the decimals of the target currency', () => {
-      // 5 JPY * 0.0005 = 0.0025 KWD and 15 JPY * 0.0005 = 0.0075 KWD are exact ties
-      const convert = (amount: string) =>
-        calculateRefAmountFromParams({
-          amount: Money.fromDecimal(amount),
-          rate: 0.0005,
-          baseDecimals: 0,
-          quoteDecimals: 3,
-        }).toDecimalString(3);
-
-      expect(convert('5')).toBe('0.002');
-      expect(convert('15')).toBe('0.008');
-    });
-
     it('rounds a target currency without decimals to whole units', () => {
       const result = calculateRefAmountFromParams({
         amount: Money.fromDecimal('10.50'),

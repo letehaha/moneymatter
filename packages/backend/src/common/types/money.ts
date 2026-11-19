@@ -226,11 +226,6 @@ export class Money {
    * precision half-up (away from zero on a tie), as `toCents()` does. `toMinorUnits({ decimals: 2 })`
    * is `toCents()`. Throws when the count is outside the safe integer range rather than lose digits.
    *
-   * Amounts the application writes are at their currency's decimals. Rows the decimal-storage
-   * migration converted carry two decimals whatever the currency, so in a currency with fewer than
-   * two (JPY, KRW) such a stored amount has excess precision, and this rounds it half-up to the
-   * currency's decimals like any derived value.
-   *
    * @example
    * Money.fromDecimal('1.234').toMinorUnits({ decimals: 3 }) // => 1234
    * Money.fromDecimal('1500').toMinorUnits({ decimals: 0 })  // => 1500

@@ -47,7 +47,7 @@ export const getLoanBalanceHistory = async ({
     anchorDate,
     openingBalance: account.initialBalance,
     decimals,
-    pickMinor: ({ leg }) => leg.amount.toMinorUnits({ decimals }),
+    pickAmount: ({ leg }) => leg.amount,
   });
 
   return series.map((point) => ({ date: point.date, amount: point.balance.toNumber() }));

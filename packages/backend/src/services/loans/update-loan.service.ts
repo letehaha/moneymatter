@@ -1,5 +1,5 @@
 import type { LoanEvent } from '@bt/shared/types';
-import { getCurrencyDecimals, roundMoneyValues } from '@common/lib/currency-precision';
+import { roundMoneyValues } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -172,7 +172,6 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
       loanAccountId: accountId,
       userId,
       anchorDate: asOfDate,
-      decimals: await getCurrencyDecimals({ userId, code: loan.account.currencyCode }),
     });
     const { projectedBalance, overpaysBy } = projectLoanOverpay({
       projectedBalance: anchorInitialBalance.add(postAnchorPaymentsTotal),

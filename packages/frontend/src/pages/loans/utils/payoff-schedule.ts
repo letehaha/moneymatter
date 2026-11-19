@@ -170,9 +170,6 @@ export function computePayoffScenario({
   };
 }
 
-/** Below this absolute interest delta (decimal currency units), two scenarios read as "the same" interest. */
-export const SAME_INTEREST_EPSILON = 0.005;
-
 interface PayoffComparison {
   /** scenario.totalInterest − baseline.totalInterest (decimal). Negative = scenario saves interest. */
   interestDelta: number;
@@ -193,13 +190,16 @@ interface PayoffComparison {
 export function comparePayoffScenarios({
   scenario,
   baseline,
+  decimals,
 }: {
   scenario: PayoffScenario;
   baseline: PayoffScenario;
+  /** Decimals of the loan currency: deltas under its minor unit read as the same interest. */
+  decimals: number;
 }): PayoffComparison {
   const interestDelta = (scenario.totalInterest ?? 0) - (baseline.totalInterest ?? 0);
   const monthsDelta = (scenario.monthsRemaining ?? 0) - (baseline.monthsRemaining ?? 0);
-  const sameInterest = Math.abs(interestDelta) < SAME_INTEREST_EPSILON;
+  const sameInterest = Math.round(interestDelta * 10 ** decimals) === 0;
   const sameTime = monthsDelta === 0;
   return {
     interestDelta,

@@ -3,7 +3,7 @@ import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { findTransactions } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
-import { getAccountDecimals } from '@services/import-export/core/duplicates/get-account-decimals';
+import { decimalsOfAccount, getAccountDecimals } from '@services/import-export/core/duplicates/get-account-decimals';
 import { importDayKey } from '@services/import-export/core/duplicates/import-day-key';
 import { duplicateAmountKey } from '@services/transactions/duplicates-detection/amount-key';
 import { Op } from 'sequelize';
@@ -114,14 +114,11 @@ async function findOfxDuplicates({
   // makes lookup O(1) per imported row and avoids fuzzy description work.
   const firstByFallbackKey = new Map<string, Transactions.default>();
   for (const transaction of existing) {
-    const decimals = decimalsByAccountId.get(transaction.accountId);
-    if (decimals === undefined) continue;
-
     const key = fallbackKey({
       accountId: transaction.accountId,
       date: new Date(transaction.time).toISOString(),
       amount: transaction.amount,
-      decimals,
+      decimals: decimalsOfAccount({ decimalsByAccountId, accountId: transaction.accountId }),
       transactionType: transaction.transactionType,
     });
     if (!firstByFallbackKey.has(key)) firstByFallbackKey.set(key, transaction);

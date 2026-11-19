@@ -28,6 +28,32 @@ interface ManageSplitsParams {
   transferNature?: string;
 }
 
+const sumSplits = ({ splits }: { splits: SplitInput[] }): Money =>
+  Money.sum(splits.map((split) => split.amount ?? Money.zero()));
+
+/** Takes whatever the splits exceed `total` by off the largest splits first. */
+const trimSplitsToTotal = ({ splits, total }: { splits: SplitInput[]; total: Money }): SplitInput[] => {
+  let excess = sumSplits({ splits }).subtract(total);
+  if (!excess.isPositive()) return splits;
+
+  const trimmed = [...splits];
+  const amountOf = ({ index }: { index: number }) => (splits[index]!.amount ?? Money.zero()).toBig();
+  const largestFirst = splits
+    .map((_, index) => index)
+    .toSorted((a, b) => amountOf({ index: b }).cmp(amountOf({ index: a })));
+
+  for (const index of largestFirst) {
+    const amount = trimmed[index]!.amount;
+    if (!excess.isPositive() || !amount?.isPositive()) break;
+
+    const cut = amount.lessThan(excess) ? amount : excess;
+    trimmed[index] = { ...trimmed[index]!, amount: amount.subtract(cut) };
+    excess = excess.subtract(cut);
+  }
+
+  return trimmed;
+};
+
 /**
  * Creates or updates splits for a transaction.
  * Validates splits, deletes existing ones, and creates new ones.
@@ -51,17 +77,22 @@ export const manageSplits = async ({
   transactionTime,
   transferNature,
 }: ManageSplitsParams): Promise<TransactionSplits[]> => {
-  // Splits and the transaction they divide are compared and stored at the transaction currency's
-  // decimals, so the sum check judges exactly the values that end up in the table.
   const transactionDecimals = await getCurrencyDecimals({
     userId: categoryOwnerUserId ?? userId,
     code: transactionCurrencyCode,
   });
   const transactionAmount = requestedTransactionAmount.round(transactionDecimals);
-  const splits = requestedSplits?.map((split) => ({
+  const roundedSplits = requestedSplits?.map((split) => ({
     ...split,
     amount: split.amount?.round(transactionDecimals) ?? split.amount,
   }));
+  // Rounding is monotonic, so any split sum that fits the entered amount also fits once both are
+  // rounded, even when callers pass the amount already rounded. Rounding each split can still push
+  // their sum over, so the excess comes off the splits before the validator checks the rounded sum.
+  const splits =
+    requestedSplits && sumSplits({ splits: requestedSplits }).round(transactionDecimals).lte(transactionAmount)
+      ? trimSplitsToTotal({ splits: roundedSplits!, total: transactionAmount })
+      : roundedSplits;
 
   // Fetch existing splits — keyed by transactionId; userId is creator metadata only.
   const existingSplits = await TransactionSplits.findAll({

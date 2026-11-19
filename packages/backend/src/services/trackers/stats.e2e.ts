@@ -48,17 +48,6 @@ const createTrackerWithIncome = async ({
   return (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
 };
 
-const expenseOf = ({ accountId, categoryId, amount }: { accountId: RecordId; categoryId: RecordId; amount: number }) =>
-  helpers.createTransaction({
-    payload: helpers.buildTransactionPayload({
-      accountId,
-      categoryId,
-      amount,
-      transactionType: TRANSACTION_TYPES.expense,
-      time: '2025-06-15T10:00:00Z',
-    }),
-    raw: true,
-  });
 describe('Get tracker stats', () => {
   it('successfully returns stats', async () => {
     const [baseTx] = await helpers.createTransaction({ raw: true });
@@ -663,20 +652,29 @@ describe('Get tracker stats', () => {
 
   describe('Base currency decimals', () => {
     it.each([
-      { kind: 'manual', currencyCode: 'KWD', expense: 1.234, limit: 10.125 },
-      { kind: 'category', currencyCode: 'KWD', expense: 1.234, limit: 10.125 },
-      { kind: 'manual', currencyCode: null, expense: 1.23, limit: 10.12 },
+      { kind: 'manual', expense: 1.234, limit: 10.125 },
+      { kind: 'category', expense: 1.234, limit: 10.125 },
     ])(
-      'reports a $kind tracker of a $expense expense against a $limit limit',
-      async ({ kind, currencyCode, expense, limit }) => {
+      'reports a $kind tracker of a $expense expense against a $limit limit at KWD decimals',
+      async ({ kind, expense, limit }) => {
+        const currencyCode = 'KWD';
         const seedAndRead = async () => {
-          if (currencyCode) await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+          await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
           const account = await helpers.createAccount({
-            payload: helpers.buildAccountPayload({ ...(currencyCode && { currencyCode }) }),
+            payload: helpers.buildAccountPayload({ currencyCode }),
             raw: true,
           });
           const category = await helpers.addCustomCategory({ name: 'Precision', color: '#AABBCC', raw: true });
-          const [tx] = await expenseOf({ accountId: account.id, categoryId: category.id, amount: expense });
+          const [tx] = await helpers.createTransaction({
+            payload: helpers.buildTransactionPayload({
+              accountId: account.id,
+              categoryId: category.id,
+              amount: expense,
+              transactionType: TRANSACTION_TYPES.expense,
+              time: '2025-06-15T10:00:00Z',
+            }),
+            raw: true,
+          });
           const tracker =
             kind === 'manual'
               ? await helpers.createTracker({ name: 'precision-manual', limitAmount: limit, raw: true })
@@ -695,9 +693,7 @@ describe('Get tracker stats', () => {
           return (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
         };
 
-        const stats = currencyCode
-          ? await helpers.asNewUserWithBaseCurrency({ currencyCode, fn: seedAndRead })
-          : await seedAndRead();
+        const stats = await helpers.asNewUserWithBaseCurrency({ currencyCode, fn: seedAndRead });
 
         expect(stats.summary.actualExpense).toBe(expense);
         expect(stats.summary.balance).toBe(-expense);

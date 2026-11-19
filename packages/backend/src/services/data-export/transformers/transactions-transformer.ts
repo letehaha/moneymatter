@@ -1,7 +1,6 @@
 import { RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import type { Money } from '@common/types/money';
-import { UnexpectedError } from '@js/errors';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import Categories from '@models/categories.model';
@@ -280,13 +279,7 @@ export async function transformTransactions({
   const decimalsByCurrency = new Map(
     await Promise.all(currencyCodes.map(async (code) => [code, await getCurrencyDecimals({ userId, code })] as const)),
   );
-  const decimalsOf = ({ tx }: { tx: Transactions }): number => {
-    const decimals = decimalsByCurrency.get(tx.currencyCode);
-    if (decimals === undefined) {
-      throw new UnexpectedError({ message: `Data export: no currency decimals loaded for transaction ${tx.id}` });
-    }
-    return decimals;
-  };
+  const decimalsOf = ({ tx }: { tx: Transactions }): number => decimalsByCurrency.get(tx.currencyCode)!;
 
   return transactions.map((tx): TransactionRow => {
     const accountName = resolveAccountName({ id: tx.accountId, context: `transaction ${tx.id}` });

@@ -598,4 +598,32 @@ describe('computeLoanProjection', () => {
       expect(result.paidToDate).toBe(0);
     });
   });
+
+  describe('interest totals beyond safe integer minor units', () => {
+    it('returns a null estimate for a paid-off loan whose scheduled interest is not a safe integer', () => {
+      const result = project({
+        currentBalanceMinorUnits: 0,
+        originalPrincipalMinorUnits: 100_000_000_000_000,
+        interestRate: 99,
+        termMonths: 1200,
+        plannedPaymentMinorUnits: null,
+      });
+
+      expect(result.isPaidOff).toBe(true);
+      expect(result.estimatedInterestPaid).toBeNull();
+    });
+
+    it('reports no trajectory when the remaining interest is not a safe integer', () => {
+      const result = project({
+        currentBalanceMinorUnits: 500_000_000_000_000,
+        originalPrincipalMinorUnits: 500_000_000_000_000,
+        interestRate: 99,
+        plannedPaymentMinorUnits: 41_250_000_000_001,
+      });
+
+      expect(result.warning).toBe('payment_below_interest');
+      expect(result.totalInterestRemaining).toBeNull();
+      expect(result.estimatedInterestPaid).toBeNull();
+    });
+  });
 });

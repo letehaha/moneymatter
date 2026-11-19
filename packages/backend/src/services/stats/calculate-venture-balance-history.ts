@@ -194,7 +194,7 @@ export const calculateVentureBalanceHistory = async ({
       const rate = getExchangeRate(deal.currencyCode, dateStr);
       totalInBase = totalInBase.plus(valueInDealCurrency.times(rate));
     }
-    ventureValuesByDate.set(dateStr, Money.fromDecimal(Number(totalInBase.toFixed(10))).toMinorUnits({ decimals }));
+    ventureValuesByDate.set(dateStr, Money.fromDecimal(totalInBase.toFixed(10)).toMinorUnits({ decimals }));
   }
 
   if (missingRateCurrencies.size > 0) {

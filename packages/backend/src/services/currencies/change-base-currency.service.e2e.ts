@@ -634,6 +634,10 @@ describe('Change Base Currency', () => {
       const account = (await Accounts.findByPk(usdAccount.id))!;
       expect(Number.isInteger(account.refInitialBalance.toNumber())).toBe(true);
       expect(Number.isInteger(account.refCurrentBalance.toNumber())).toBe(true);
+
+      const balances = await helpers.getBalanceHistory({ accountId: usdAccount.id, raw: true });
+      expect(balances.length).toBeGreaterThan(0);
+      expect(balances.every((row) => Number.isInteger(Number(row.amount)))).toBe(true);
     });
 
     it('re-derives split refAmounts from the parent so category legs stay in the new base', async () => {

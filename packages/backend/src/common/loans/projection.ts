@@ -162,6 +162,11 @@ export function computeLoanProjection(input: LoanProjectionInput): LoanProjectio
     months: monthsRemaining,
   });
 
+  // Beyond safe-integer minor units the total can't convert to a decimal.
+  if (!Number.isSafeInteger(totalInterestRemainingMinorUnits)) {
+    return paymentBelowInterest;
+  }
+
   return {
     payoffDate: addMonthsIso({ from: today, months: monthsRemaining }),
     monthsRemaining,
@@ -243,7 +248,8 @@ function computeTotalInterestMinorUnits({
  * lifetime figure. This is an ESTIMATE input for `estimatedInterestPaid` —
  * recorded payments carry no interest split, so the schedule is the only
  * interest model available. `null` when there is no usable schedule
- * (missing/degenerate term or principal); a zero-APR schedule costs 0.
+ * (missing/degenerate term or principal, or a total beyond safe-integer minor
+ * units); a zero-APR schedule costs 0.
  */
 function computeScheduledInterestMinorUnits({
   originalPrincipalMinorUnits,
@@ -268,12 +274,13 @@ function computeScheduledInterestMinorUnits({
     (originalPrincipalMinorUnits * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths)),
   );
 
-  return computeTotalInterestMinorUnits({
+  const totalMinorUnits = computeTotalInterestMinorUnits({
     balanceMinorUnits: originalPrincipalMinorUnits,
     paymentMinorUnits: scheduledPaymentMinorUnits,
     interestRate,
     months: Math.min(accrueMonths ?? termMonths, termMonths),
   });
+  return Number.isSafeInteger(totalMinorUnits) ? totalMinorUnits : null;
 }
 
 /**

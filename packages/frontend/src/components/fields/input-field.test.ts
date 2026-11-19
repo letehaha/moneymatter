@@ -390,18 +390,13 @@ describe('InputField component', () => {
       await wrapper.find('input').setValue(value);
     };
 
-    it.each<[number, string, string, number]>([
-      [3, '1.23456', '1.234', 1.234],
-      [3, '1.234', '1.234', 1.234],
-      [0, '1500.6', '1500', 1500],
-      [0, '20500000000', '20500000000', 20_500_000_000],
-    ])('at %d decimals shows %s as %s and emits %d', async (decimals, typed, shown, emitted) => {
-      const wrapper = mountComponent({ type: 'number', decimals });
+    it('cuts typed digits past the decimals', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 3 });
 
-      await typeInto({ wrapper, value: typed });
+      await typeInto({ wrapper, value: '1.23456' });
 
-      expect(wrapper.find('input').element.value).toBe(shown);
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([emitted]);
+      expect(wrapper.find('input').element.value).toBe('1.234');
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1.234]);
     });
 
     it('does not limit precision when decimals is unset', async () => {
@@ -425,33 +420,17 @@ describe('InputField component', () => {
       expect(preventDefaultSpy.mock.calls.length > 0).toBe(blocked);
     });
 
-    it.each<[number, number, number, number]>([
-      [3, 12.345, 2, 12.34],
-      [2, 10.5, 0, 10],
-    ])('cuts a %d-decimal %d to %d decimals and re-emits %d', async (from, modelValue, to, expected) => {
-      const wrapper = mountComponent({ type: 'number', decimals: from, modelValue });
+    it.each<[number | string | null, string]>([
+      [10.99, '10.99'],
+      ['10.99', '10.99'],
+      [null, ''],
+    ])('keeps %o and emits nothing when the decimals drop', async (modelValue, shown) => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2, modelValue });
 
-      await wrapper.setProps({ decimals: to });
-
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([expected]);
-    });
-
-    it('drops a typed trailing decimal tail when the decimals drop to zero', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 2, modelValue: null });
-
-      await typeInto({ wrapper, value: '10.0' });
-      await wrapper.setProps({ modelValue: 10 });
       await wrapper.setProps({ decimals: 0 });
 
-      expect(wrapper.find('input').element.value).toBe('10');
-    });
-
-    it('emits nothing when the value already fits the new decimals', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 3, modelValue: 10.5 });
-
-      await wrapper.setProps({ decimals: 2 });
-
       expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+      expect(wrapper.find('input').element.value).toBe(shown);
     });
 
     it.each<[number, string]>([

@@ -534,12 +534,14 @@ describe('Stats in the base currency decimals', () => {
         purchasePrice: 1000000,
         expected: 500,
       },
+      // 1001 * 0.005 = 5.005, a tie that rounds half-even to 5.00
       {
-        title: 'a USD vehicle at 2 decimals for a USD-base user (regression guard)',
+        title: 'a JPY vehicle converted into a USD base on a rounding tie',
         base: 'USD',
-        vehicleCurrency: 'USD',
-        purchasePrice: 25000.12,
-        expected: 25000.12,
+        vehicleCurrency: 'JPY',
+        rate: 0.005,
+        purchasePrice: 1001,
+        expected: 5,
       },
     ])('reports $title', async ({ base, vehicleCurrency, rate, purchasePrice, expected }) => {
       await helpers.asNewUserWithBaseCurrency({
@@ -587,5 +589,29 @@ describe('Stats in the base currency decimals', () => {
         },
       });
     });
+  });
+});
+
+describe('Stats for a user without a base currency', () => {
+  it('answers the reports with zeros instead of an error', async () => {
+    const { cookies } = await helpers.signUpSecondUser();
+
+    const { expenses, summary, totalBalance, combined } = await helpers.asUser({
+      cookies,
+      fn: async () => ({
+        expenses: await helpers.getExpensesAmountForPeriod(WINDOW),
+        summary: await helpers.getTransactionsSummary(),
+        totalBalance: await helpers.getTotalBalance({ date: TODAY }),
+        combined: await helpers.getCombinedBalanceHistory(WINDOW),
+      }),
+    });
+
+    expect(totalBalance.statusCode).toBe(200);
+    expect(helpers.extractResponse(totalBalance)).toBe(0);
+    expect(combined.statusCode).toBe(200);
+    expect(expenses.statusCode).toBe(200);
+    expect(helpers.extractResponse(expenses)).toBe(0);
+    expect(summary.statusCode).toBe(200);
+    expect(helpers.extractResponse(summary)).toEqual({ count: 0, income: 0, expense: 0, net: 0, transfers: 0 });
   });
 });

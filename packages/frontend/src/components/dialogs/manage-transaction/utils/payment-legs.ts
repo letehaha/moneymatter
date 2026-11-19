@@ -1,4 +1,5 @@
-import { roundToDecimals, trimAmountNoise } from '@/js/helpers/currency-decimals';
+import { getCurrencyDecimals, roundToDecimals, trimAmountNoise } from '@/js/helpers/currency-decimals';
+import { maxDecimalPoints } from '@/js/helpers/validators';
 import type {
   AccountModel,
   PaymentLegInput,
@@ -173,6 +174,19 @@ export const isPaymentLegIncomplete = ({
 }): boolean =>
   (!leg.isLinked && (!getPaymentLegAccountId({ leg }) || isPaymentLegAmountMissing({ leg }))) ||
   isPaymentLegShareMissing({ leg, mainCurrencyCode });
+
+/** Decimals of the leg's currency, or null when its amount fits them. */
+export const getPaymentLegExcessDecimals = ({
+  leg,
+  mainCurrencyCode,
+}: {
+  leg: FormPaymentLeg;
+  mainCurrencyCode: string | undefined;
+}): number | null => {
+  if (leg.isLinked || leg.amount == null) return null;
+  const decimals = getCurrencyDecimals({ code: leg.currencyCode ?? mainCurrencyCode });
+  return maxDecimalPoints(decimals)(leg.amount) ? null : decimals;
+};
 
 const toPaymentLegInput = ({
   leg,

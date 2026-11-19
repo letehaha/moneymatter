@@ -1,6 +1,6 @@
 import type { TrackerSpendingGranularity, EntityLogoFields, RecordId } from '@bt/shared/types';
 import { TRACKER_LIMIT_KINDS, TRANSACTION_TYPES } from '@bt/shared/types';
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { getReportBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -615,7 +615,7 @@ export const getTrackerSpendingStats = async ({
   const { ownerUserId } = await authorizeTrackerRead({ userId, trackerId });
 
   // The tracker's amounts are in its owner's base currency, whoever reads them.
-  const decimals = await getBaseCurrencyDecimals({ userId: ownerUserId });
+  const decimals = await getReportBaseCurrencyDecimals({ userId: ownerUserId });
 
   const stats = await getLinkedTransactionsSpendingStats({
     userId: ownerUserId,
