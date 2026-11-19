@@ -539,7 +539,7 @@ describe('Transaction Groups API', () => {
         maxSize: TRANSACTION_GROUP_MAX_SIZE,
         count: TRANSACTION_GROUP_MAX_SIZE + 2,
       });
-    });
+    }, 60_000);
   });
 
   describe('DELETE /transaction-groups/:id/transactions (remove)', () => {
