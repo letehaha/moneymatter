@@ -294,6 +294,8 @@ export interface StatementImportSummary {
    */
   merged?: number;
   skipped: number;
+  /** Rows dated from the account's bank seam on, which the bank owns. Optional: retained results predate the field. */
+  skippedAfterBankSeam?: number;
   errors: StatementImportError[];
   newTransactionIds: string[];
   batchId: string;

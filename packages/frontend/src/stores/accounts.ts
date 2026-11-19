@@ -7,6 +7,7 @@ import {
   unlinkAccountFromBankConnection as apiUnlinkAccountFromBankConnection,
 } from '@/api';
 import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
+import { isBankAccount } from '@/common/utils/bank-row-permissions';
 import { hasAccountWriteAccess } from '@/composable/use-account-access';
 import {
   ACCOUNT_CATEGORIES,
@@ -96,12 +97,15 @@ export const useAccountsStore = defineStore('accounts', () => {
     ];
   });
 
-  // Vehicle and loan balances are derived (depreciation model / loan anchor), so
-  // data imports must never link imported rows to them or shift their balance.
-  // A bank-linked balance is owned by the provider sync. Import wizards offer only
-  // the remaining accounts as link targets; the backend rejects the rest as well.
+  // Vehicle and loan balances are derived (depreciation model / loan anchor), so imports never touch them.
+  // A bank-linked account is a target only once it has a seam: the backend imports its pre-seam rows
+  // and skips the rest, which the provider sync owns.
   const importLinkableAccounts = computed(() =>
-    systemAccounts.value.filter((item) => !isDedicatedFlowAccountCategory(item.accountCategory)),
+    (accounts.value ?? []).filter(
+      (item) =>
+        !isDedicatedFlowAccountCategory(item.accountCategory) &&
+        (!isBankAccount({ account: item }) || !!item.bankSeamAt),
+    ),
   );
 
   /**

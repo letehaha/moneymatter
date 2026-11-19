@@ -10,6 +10,7 @@ import { findOneTransaction } from '@models/transactions-query';
 import { updateAccount } from '@services/accounts.service';
 import { absorbBalanceAdjustment } from '@services/accounts/absorb-balance-adjustment';
 import { lockAccountRow } from '@services/accounts/lock-account-row';
+import { getSeamStart } from '@services/accounts/seam';
 import { withTransaction } from '@services/common/with-transaction';
 import { importDayKey } from '@services/import-export/core/duplicates/import-day-key';
 
@@ -35,6 +36,11 @@ interface AccountBalanceCapture {
    * this day classify as `new`; older rows classify as `historical` (backfill).
    */
   boundaryDayKey: string | undefined;
+  /**
+   * The account has a bank seam: every imported row is history before it, the bank owns
+   * the balance and the seam rebuild owns the opening balance, so nothing is written.
+   */
+  hasBankSeam: boolean;
 }
 
 /** Per-account accumulator over successfully written imported rows. */
@@ -204,10 +210,13 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
   }
 
   recordRow({ accountId, rowIso, signedAmount }: { accountId: string; rowIso: string; signedAmount: Money }): void {
-    const boundaryDayKey = this.captures.get(accountId)?.boundaryDayKey;
+    const capture = this.captures.get(accountId);
+    const boundaryDayKey = capture?.boundaryDayKey;
     // YYYY-MM-DD keys compare correctly as strings; no boundary means `new`.
     const classification =
-      boundaryDayKey !== undefined && importDayKey({ iso: rowIso }) < boundaryDayKey ? 'historical' : 'new';
+      capture?.hasBankSeam || (boundaryDayKey !== undefined && importDayKey({ iso: rowIso }) < boundaryDayKey)
+        ? 'historical'
+        : 'new';
 
     const tally = this.tallyByAccountId.get(accountId) ?? emptyTally();
     if (classification === 'new') {
@@ -315,6 +324,7 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
     );
     for (const capture of sortedCaptures) {
       const tally = this.tallyByAccountId.get(capture.accountId) ?? emptyTally();
+
       const amountDelta = recalculateBalance
         ? tally.deltaHistorical.negate()
         : tally.deltaHistorical.add(tally.deltaNew).negate();
@@ -323,10 +333,10 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
       const semanticDelta = recalculateBalance ? tally.deltaNew : Money.zero();
 
       let balanceAfter: Money;
-      if (amountDelta.isZero()) {
-        // Nothing to remove — the balance hook already left the account at its
-        // target, and ref balances derive from the native balance, so a zero native
-        // delta leaves nothing to fix. Skipping the write also skips a row lock.
+      if (capture.hasBankSeam || amountDelta.isZero()) {
+        // A seam account's balance is the bank's. Otherwise nothing to remove — the
+        // balance hook already left the account at its target, and ref balances derive
+        // from the native balance. Skipping the write also skips a row lock.
         balanceAfter = capture.balanceBefore.add(semanticDelta);
       } else {
         try {
@@ -477,6 +487,7 @@ export async function startBalanceReconciliation({
       accountName: account.name,
       balanceBefore: account.currentBalance,
       boundaryDayKey: latestTx ? importDayKey({ iso: latestTx.time.toISOString() }) : undefined,
+      hasBankSeam: !!getSeamStart({ account }),
     });
   }
 

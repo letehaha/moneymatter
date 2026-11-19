@@ -1,5 +1,5 @@
 import dialogsEn from '@/i18n/locales/chunks/en/dialogs.json';
-import { ACCOUNT_TYPES, AccountModel } from '@bt/shared/types';
+import { ACCOUNT_TYPES, AccountModel, type TransactionModel } from '@bt/shared/types';
 import { buildSystemExpenseTransaction, buildSystemIncomeTransaction } from '@tests/mocks';
 import { getUahAccount } from '@tests/mocks/accounts';
 import { mount } from '@vue/test-utils';
@@ -69,6 +69,62 @@ describe('Record TypeSelector component', () => {
         expect(disabledButtons.length).toBe(0);
       },
     );
+
+    test('nothing is disabled for a manual row dated before the bank seam', () => {
+      const transaction = buildSystemExpenseTransaction({ time: new Date('2026-10-31T23:59:59.999Z') });
+      const wrapper = mount(TypeSelectorVue, {
+        props: {
+          selectedTransactionType: getFormTypeFromTransaction(transaction),
+          transaction,
+          account: {
+            ...getUahAccount({ type: ACCOUNT_TYPES.monobank }),
+            bankSeamAt: '2026-11-01T00:00:00.000Z',
+          } as AccountModel,
+        },
+        global: {
+          plugins: [i18n],
+        },
+      });
+
+      const disabledButtons = wrapper.findAll('button').filter((item) => item.attributes().disabled !== undefined);
+      expect(disabledButtons.length).toBe(0);
+    });
+
+    const disabledLabels = ({ transaction, account }: { transaction: TransactionModel; account?: AccountModel }) =>
+      mount(TypeSelectorVue, {
+        props: { selectedTransactionType: getFormTypeFromTransaction(transaction), transaction, account },
+        global: { plugins: [i18n] },
+      })
+        .findAll('button')
+        .filter((item) => item.attributes().disabled !== undefined)
+        .map((item) => item.text());
+
+    test('nothing is disabled for a planned row on a bank account', () => {
+      const transaction = buildSystemExpenseTransaction({ isPlanned: true });
+      const account = getUahAccount({ type: ACCOUNT_TYPES.monobank }) as AccountModel;
+
+      expect(disabledLabels({ transaction, account })).toEqual([]);
+    });
+
+    test('the opposite type is disabled for a manual row on or after the bank seam', () => {
+      const transaction = buildSystemExpenseTransaction({ time: new Date('2026-11-01T00:00:00.000Z') });
+      const account = {
+        ...getUahAccount({ type: ACCOUNT_TYPES.monobank }),
+        bankSeamAt: '2026-11-01T00:00:00.000Z',
+      } as AccountModel;
+
+      expect(disabledLabels({ transaction, account })).toEqual(['Income']);
+    });
+
+    test('an unknown account falls back to the row accountType', () => {
+      expect(disabledLabels({ transaction: buildSystemIncomeTransaction(), account: undefined })).toEqual([]);
+      expect(
+        disabledLabels({
+          transaction: buildSystemIncomeTransaction({ accountType: ACCOUNT_TYPES.monobank }),
+          account: undefined,
+        }),
+      ).toEqual(['Expense']);
+    });
   });
 
   test('only "Transfer" is disabled when isTransferDisabled is set', () => {

@@ -438,8 +438,10 @@ describe('revert_subscription_period', () => {
   });
 
   it('states the real keep rule: a booked row on a bank-connected account is kept, a planned one is not', () => {
-    // revertPeriod deletes when `tx.isPlanned || !isBankLinkedAccount(...)`.
-    expect(tool.config.description).toMatch(/neither is a booked \(non-planned\) one on a bank-connected account/);
+    // revertPeriod deletes a booked row on a bank account only when it is hand-entered before the seam.
+    expect(tool.config.description).toMatch(
+      /neither is a booked \(non-planned\) one on a bank-connected account, unless it was hand-entered and dated before the bankSeamAt of its account/,
+    );
   });
 
   it('hands the service a callback and no preliminary decision about the transaction', async () => {

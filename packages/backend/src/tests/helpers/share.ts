@@ -354,3 +354,8 @@ export async function provisionSecondUserWithBaseCurrency({
   });
   return handle;
 }
+
+export async function asBaseCurrencyUser({ currencyCode, fn }: { currencyCode: string; fn: () => Promise<void> }) {
+  const user = await provisionSecondUserWithBaseCurrency({ currencyCode });
+  await asUser({ cookies: user.cookies, fn });
+}

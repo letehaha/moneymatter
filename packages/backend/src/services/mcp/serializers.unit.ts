@@ -38,6 +38,7 @@ const fullAccount: AccountApiResponse = {
   excludeFromStats: false,
   bankDataProviderConnectionId: 'conn-1',
   bankProviderType: null,
+  bankSeamAt: '2026-11-01T00:00:00.000Z',
   logoDomain: null,
   logoInitials: null,
   logoColor: null,
@@ -117,6 +118,7 @@ describe('MCP serializers', () => {
         'externalId',
         'bankDataProviderConnectionId',
         'bankProviderType',
+        'bankSeamAt',
         'needsRelink',
         'share',
         'initialBalance',
@@ -136,6 +138,7 @@ describe('MCP serializers', () => {
         initialBalance: 100,
         refInitialBalance: 100,
         bankDataProviderConnectionId: 'conn-1',
+        bankSeamAt: '2026-11-01T00:00:00.000Z',
         needsRelink: true,
         logoDomain: null,
       });

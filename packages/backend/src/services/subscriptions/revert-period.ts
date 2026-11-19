@@ -1,9 +1,10 @@
 import { SUBSCRIPTION_PERIOD_STATUSES, TRANSACTION_DELETION_REASON } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { ConflictError, NotFoundError } from '@js/errors';
-import { isBankLinkedAccount } from '@models/accounts.model';
+import Accounts from '@models/accounts.model';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Transactions from '@models/transactions.model';
+import { isRowDeletableOnAccount, SEAM_ACCOUNT_ATTRIBUTES } from '@services/accounts/seam';
 import { withTransaction } from '@services/common/with-transaction';
 import { deleteTransaction } from '@services/transactions/delete-transaction';
 import { deleteTrashed } from '@services/transactions/trash/delete-trashed';
@@ -90,14 +91,18 @@ export const revertPeriod = withTransaction(
     // row, the period just stops pointing at it.
     if (period.transactionId != null && period.transactionAutoCreated) {
       const tx = await Transactions.findByPk(period.transactionId, {
-        attributes: ['accountId', 'isPlanned', 'deletedAt', 'deletionReason'],
+        attributes: ['accountId', 'accountType', 'time', 'isPlanned', 'deletedAt', 'deletionReason'],
         paranoid: false,
       });
       const isTrashed = tx?.deletionReason === TRANSACTION_DELETION_REASON.trash;
-      // A real transaction on a bank-linked account cannot be deleted, so it stays
-      // and the period only stops pointing at it.
+      // A real row on a bank-linked account stays and the period only stops pointing at it;
+      // a manual row dated before the seam is deleted.
+      const account =
+        tx && !tx.deletedAt && !tx.isPlanned
+          ? await Accounts.findByPk(tx.accountId, { attributes: [...SEAM_ACCOUNT_ATTRIBUTES] })
+          : null;
       const isDeletableLive =
-        !!tx && !tx.deletedAt && (tx.isPlanned || !(await isBankLinkedAccount({ id: tx.accountId })));
+        !!tx && !tx.deletedAt && (tx.isPlanned || !account || isRowDeletableOnAccount({ account, transaction: tx }));
 
       if (isTrashed || isDeletableLive) {
         // The caller's say on the delete, taken on the state this transaction holds the lock for.

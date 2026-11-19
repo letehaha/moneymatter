@@ -1,19 +1,39 @@
-import { type AccountExternalData, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import { type AccountExternalData, type LinkResidualTarget, TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
-import { UnexpectedError } from '@js/errors';
+import { ExchangeRateUnavailableError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import { namespace } from '@models/connection';
 import Transactions from '@models/transactions.model';
 import { createBalanceAdjustmentTransaction } from '@services/accounts/balance-adjustment';
-import { lockAccountRow } from '@services/accounts/lock-account-row';
+import { isLinkedToBank, lockAccountRow } from '@services/accounts/lock-account-row';
 import { restampRefInitialBalance } from '@services/accounts/restamp-ref-initial-balance';
+import { stampSeamBalance } from '@services/balances/revalue-balance-history.service';
 import { writeBankBalanceWithHistory } from '@services/bank-data-providers/utils/write-bank-balance-with-history';
+import { runInSavepoint } from '@services/common/run-in-savepoint';
 import { withTransaction } from '@services/common/with-transaction';
 import { QueryTypes } from 'sequelize';
 
-type LinkResidualOutcome = { absorbedResidual?: number; adjustmentTransactionId?: RecordId };
+type BalanceReconciliation = NonNullable<AccountExternalData['bankConnection']>['balanceReconciliation'];
+type LinkResidualOutcome = Partial<Pick<BalanceReconciliation, 'absorbedResidual' | 'adjustmentTransactionId'>>;
+
+/**
+ * Every row that moved the balance counts, adjustments included; `real_transactions`
+ * drops the planned rows, which by definition moved nothing.
+ */
+const sumSignedRealRows = async ({ accountId }: { accountId: string }): Promise<Money> => {
+  const [row] = await Transactions.sequelize!.query<{ signedSum: string }>(
+    `SELECT COALESCE(SUM(CASE WHEN "transactionType" = :incomeType THEN "amount" ELSE -"amount" END), 0) AS "signedSum"
+     FROM real_transactions WHERE "accountId" = :accountId`,
+    {
+      replacements: { accountId, incomeType: TRANSACTION_TYPES.income },
+      type: QueryTypes.SELECT,
+      transaction: namespace.get('transaction'),
+    },
+  );
+  return Money.fromCents(Number(row?.signedSum ?? 0));
+};
 
 /**
  * Restores `initialBalance + Σsigned(tx) = currentBalance` after a post-link
@@ -28,7 +48,7 @@ export const absorbLinkResidual = withTransaction(
     // Lock before summing: a concurrent sync blocks on this row lock, so summing
     // first would pair a pre-sync ledger sum with a post-sync currentBalance and
     // absorb the concurrent delta into the opening balance.
-    const account = await lockAccountRow({ accountId, userId });
+    const account = await lockAccountRow({ accountId, userId, noKey: true });
     if (!account) {
       logger.error(
         {
@@ -40,22 +60,10 @@ export const absorbLinkResidual = withTransaction(
       return {};
     }
 
-    // Every row that moved the balance counts, adjustments included; `real_transactions`
-    // drops the planned rows, which by definition moved nothing.
-    const [row] = await Transactions.sequelize!.query<{ signedSum: string }>(
-      `SELECT COALESCE(SUM(CASE WHEN "transactionType" = :incomeType THEN "amount" ELSE -"amount" END), 0) AS "signedSum"
-       FROM real_transactions WHERE "accountId" = :accountId`,
-      {
-        replacements: { accountId, incomeType: TRANSACTION_TYPES.income },
-        type: QueryTypes.SELECT,
-        transaction: sequelizeTx,
-      },
-    );
-
-    const signedSumCents = Number(row?.signedSum ?? 0);
+    const signedSum = await sumSignedRealRows({ accountId });
     const initialBalanceBefore = account.initialBalance;
-    const identityGapCents = account.currentBalance.toCents() - (initialBalanceBefore.toCents() + signedSumCents);
-    if (identityGapCents === 0) return {};
+    const identityGap = account.currentBalance.subtract(initialBalanceBefore.add(signedSum));
+    if (identityGap.isZero()) return {};
 
     const bankConnection = account.externalData?.bankConnection;
     const residualTarget = bankConnection?.balanceReconciliation.residualTarget;
@@ -64,7 +72,7 @@ export const absorbLinkResidual = withTransaction(
       const adjustment = await createBalanceAdjustmentTransaction({
         userId,
         accountId,
-        amountDelta: Money.fromCents(identityGapCents),
+        amountDelta: identityGap,
         time: new Date(bankConnection.linkedAt),
       });
 
@@ -76,8 +84,8 @@ export const absorbLinkResidual = withTransaction(
       logger.info('Recorded post-link balance residual as a balance adjustment', {
         accountId,
         userId,
-        signedSumCents,
-        identityGapCents,
+        signedSumCents: signedSum.toCents(),
+        identityGapCents: identityGap.toCents(),
         residualTarget,
         adjustmentTransactionId: adjustment.id,
       });
@@ -85,14 +93,14 @@ export const absorbLinkResidual = withTransaction(
       return { adjustmentTransactionId: adjustment.id };
     }
 
-    const initialBalanceAfter = initialBalanceBefore.add(Money.fromCents(identityGapCents));
+    const initialBalanceAfter = initialBalanceBefore.add(identityGap);
     await Accounts.update({ initialBalance: initialBalanceAfter }, { where: { id: accountId, userId } });
 
     // A failed restamp would pair the moved opening balance with a stale
     // base-currency stamp; throw so the whole absorb rolls back.
     const restampOutcome = await restampRefInitialBalance({ accountId, allowProviderAccount: true });
     if (restampOutcome === 'failed') {
-      throw new UnexpectedError({
+      throw new ExchangeRateUnavailableError({
         message:
           'Failed to restate the opening balance in the base currency; the link was not applied. Please try again.',
       });
@@ -117,40 +125,92 @@ export const absorbLinkResidual = withTransaction(
     logger.info('Absorbed post-link balance residual into the opening balance', {
       accountId,
       userId,
-      signedSumCents,
-      identityGapCents,
+      signedSumCents: signedSum.toCents(),
+      identityGapCents: identityGap.toCents(),
       residualTarget,
       initialBalanceBeforeCents: initialBalanceBefore.toCents(),
       initialBalanceAfterCents: initialBalanceAfter.toCents(),
     });
 
-    return { absorbedResidual: identityGapCents };
+    return { absorbedResidual: identityGap.toCents() };
   },
 );
 
+const hasPendingAbsorb = ({ row }: { row: Accounts | null }): boolean =>
+  !!row?.externalData?.bankConnection?.balanceReconciliation?.pendingAbsorb;
+
 /**
- * Runs the absorb that linking deferred via `pendingAbsorb` (queue-synced
- * providers persist nothing inline, so no residual exists until the worker
- * finishes) and records the outcome in the reconciliation snapshot. Without
- * the marker it no-ops returning null, so it is safe after every sync group.
+ * Moves only the native opening balance so `initialBalance + Σ signed real rows = currentBalance`.
+ * The base-currency stamp stays as it was; the nightly sweep restates it once a rate exists.
+ */
+const absorbIntoNativeOpeningBalance = async ({
+  accountId,
+  userId,
+}: {
+  accountId: string;
+  userId: number;
+}): Promise<LinkResidualOutcome> => {
+  const account = await lockAccountRow({ accountId, userId, noKey: true });
+  if (!account) return {};
+
+  const gap = account.currentBalance.subtract(account.initialBalance.add(await sumSignedRealRows({ accountId })));
+  if (gap.isZero()) return {};
+
+  await Accounts.update({ initialBalance: account.initialBalance.add(gap) }, { where: { id: accountId, userId } });
+  return { absorbedResidual: gap.toCents() };
+};
+
+/**
+ * `absorbLinkResidual`, except that without an exchange rate it moves only the native opening balance,
+ * also when the link asked for an adjustment row, which the log names.
+ */
+export const absorbLinkResidualWithRateFallback = async ({
+  accountId,
+  userId,
+  residualTarget,
+}: {
+  accountId: string;
+  userId: number;
+  residualTarget: LinkResidualTarget | undefined;
+}): Promise<LinkResidualOutcome> => {
+  try {
+    return await runInSavepoint(() => absorbLinkResidual({ accountId, userId }));
+  } catch (error) {
+    if (!(error instanceof ExchangeRateUnavailableError)) throw error;
+    logger.error(
+      { message: 'Link absorb had no exchange rate; moved only the native opening balance', error },
+      { code: 'LINK_ABSORB_RATE_FALLBACK', accountId, userId, requestedResidualTarget: residualTarget },
+    );
+    return absorbIntoNativeOpeningBalance({ accountId, userId });
+  }
+};
+
+/**
+ * Runs the absorb linking deferred via `pendingAbsorb`, stamps S and clears the marker; a no-op
+ * returning null without the marker. Without a rate only the native opening balance moves; any
+ * other failure propagates to the caller's transaction.
  */
 export const runPendingLinkAbsorb = withTransaction(
   async ({ accountId, userId }: { accountId: string; userId: number }): Promise<LinkResidualOutcome | null> => {
-    const account = await Accounts.findOne({ where: { id: accountId, userId } });
-    const externalData = (account?.externalData ?? {}) as AccountExternalData;
-    const reconciliation = externalData.bankConnection?.balanceReconciliation;
+    // Every sync calls this, so the row lock is taken only once the marker is seen.
+    if (!hasPendingAbsorb({ row: await Accounts.findOne({ where: { id: accountId, userId } }) })) return null;
 
-    if (!account || !reconciliation?.pendingAbsorb) return null;
+    // Locked so an unlink racing the queued sync either commits first and is seen here, or waits.
+    const account = await lockAccountRow({ accountId, userId, noKey: true });
+    if (!hasPendingAbsorb({ row: account }) || !isLinkedToBank({ account })) return null;
 
-    const outcome = await absorbLinkResidual({ accountId, userId });
+    const outcome = await absorbLinkResidualWithRateFallback({
+      accountId,
+      userId,
+      residualTarget: account?.externalData?.bankConnection?.balanceReconciliation?.residualTarget,
+    });
+    await stampSeamBalance({ accountId });
 
     // Re-read: the absorb rewrote the account behind this instance.
     const fresh = await Accounts.findOne({ where: { id: accountId, userId } });
-    if (!fresh) return outcome;
-
-    const freshExternalData = (fresh.externalData ?? {}) as AccountExternalData;
+    const freshExternalData = fresh?.externalData ?? {};
     const freshConnectionMeta = freshExternalData.bankConnection;
-    if (!freshConnectionMeta) return outcome;
+    if (!fresh || !freshConnectionMeta) return outcome;
 
     await fresh.update({
       externalData: {

@@ -19,6 +19,7 @@ import {
   setRawTransactionStatus,
   wherePreBookingStatus,
 } from '@services/bank-data-providers/enablebanking/utils/transaction-metadata';
+import { mergeAccountExternalData } from '@services/bank-data-providers/utils/merge-account-external-data';
 import { withTransaction } from '@services/common/with-transaction';
 import { addDays, differenceInCalendarDays, subDays } from 'date-fns';
 import { Op } from 'sequelize';
@@ -134,7 +135,7 @@ export const checkStuckPendingWithBank = async ({
   const storedTime = typeof stored === 'string' ? Date.parse(stored) : NaN;
   const needsWidening = oldest && (Number.isNaN(storedTime) || storedTime > oldest.time.getTime());
   if (needsWidening) {
-    await account.update({ externalData: { ...account.externalData, oldestPendingDate: oldest.time.toISOString() } });
+    await mergeAccountExternalData({ accountId: account.id, patch: { oldestPendingDate: oldest.time.toISOString() } });
   }
 
   await syncTransactionsForAccount({ connectionId: account.bankDataProviderConnectionId, userId, accountId });

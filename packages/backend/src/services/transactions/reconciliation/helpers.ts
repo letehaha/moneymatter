@@ -10,6 +10,7 @@ import { dissolveUndersizedGroups } from '@models/transaction-groups.model';
 import { findTransactions, updateTransactions } from '@models/transactions-query';
 import { reconciliationRemovedWhere } from '@models/transactions-query/deletion-where';
 import type Transactions from '@models/transactions.model';
+import { scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
 import { assertNotInPayment, unlinkPaymentLegs } from '@services/transactions/payment-legs';
 import { Op } from 'sequelize';
 
@@ -100,4 +101,11 @@ export const softDeleteTransactions = async ({
     access: { creator: userId },
     balanceAdjustments: 'include',
   });
+};
+
+/** Reconciliation writes run with hooks off, so a seam account's history before the link day is rebuilt here. */
+export const scheduleRevalueOfAccounts = async ({ rows }: { rows: Pick<Transactions, 'accountId'>[] }) => {
+  for (const accountId of new Set(rows.map((row) => row.accountId))) {
+    await scheduleBalanceRevalue({ accountId });
+  }
 };

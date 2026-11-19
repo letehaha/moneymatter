@@ -10,7 +10,7 @@ export const archiveAccountTool = defineTool({
   toolset: 'core',
   access: 'write',
   description:
-    'Archive or unarchive a user account. Archiving removes the account from groups and unlinks subscriptions. Set archived=false to restore an archived account to active status.',
+    'Archive or unarchive a user account. Archiving removes the account from groups and unlinks subscriptions; a bank-connected account is also unlinked from its bank, which is refused while an import is still running. Set archived=false to restore an archived account to active status.',
   input: {
     accountId: recordId().describe('ID of the account to archive or unarchive.'),
     archived: z.boolean().describe('true to archive the account, false to unarchive (restore to active status).'),

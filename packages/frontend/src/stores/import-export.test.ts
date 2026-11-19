@@ -2,7 +2,7 @@ import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const/
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { type Ref, defineComponent, ref } from 'vue';
 
 import { useImportExportStore } from './import-export';
@@ -69,7 +69,7 @@ vi.mock('./onboarding', () => ({
 // Only reached through the resolve engine's account link targets; mocked so the
 // real store's accounts query never fires.
 vi.mock('./accounts', () => ({
-  useAccountsStore: vi.fn(() => ({ importLinkableAccounts: [] })),
+  useAccountsStore: vi.fn(() => ({ importLinkableAccounts: [], accountsRecord: {} })),
 }));
 
 vi.mock('./categories/categories', () => ({
@@ -115,6 +115,7 @@ import {
   TransactionTypeOptionValue,
 } from '@bt/shared/types';
 
+import { useAccountsStore } from './accounts';
 import { useCategoriesStore } from './categories/categories';
 
 const mockDetectDuplicatesApi = vi.mocked(apiModule.detectDuplicates);
@@ -186,6 +187,7 @@ const BASE_RESPONSE: DetectDuplicatesResponse = {
   validRows: [],
   invalidRows: [],
   duplicates: [],
+  skippedAfterBankSeam: 0,
 };
 
 // Minimum column mapping to satisfy store's non-null assertions
@@ -377,6 +379,92 @@ describe('useImportExportStore – unpriceableRows', () => {
     store.reset();
 
     expect(store.unpriceableRows).toHaveLength(0);
+  });
+});
+
+describe('useImportExportStore – bank seam', () => {
+  const SEAM = '2026-11-01T00:00:00.000Z';
+  const seamAccount = { id: 'acc-1', bankSeamAt: SEAM };
+  const otherSeamAccount = { id: 'acc-2', bankSeamAt: '2026-11-05T00:00:00.000Z' };
+  const manualAccount = { id: 'acc-3', bankSeamAt: null };
+
+  const withAccounts = (accounts: { id: string; bankSeamAt: string | null }[]) => {
+    vi.mocked(useAccountsStore).mockReturnValue({
+      importLinkableAccounts: accounts,
+      accountsRecord: Object.fromEntries(accounts.map((account) => [account.id, account])),
+    } as unknown as ReturnType<typeof useAccountsStore>);
+  };
+
+  const mapSourceAccounts = ({
+    store,
+    accountIds,
+  }: {
+    store: ReturnType<typeof useImportExportStore>;
+    accountIds: string[];
+  }) => {
+    store.columnMapping.account = { option: AccountOptionValue.dataSourceColumn, columnName: 'Account' };
+    store.accountMapping = Object.fromEntries(
+      accountIds.map((accountId, index) => [`Source ${index}`, { action: 'link-existing', accountId }]),
+    );
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mountWithPlugins();
+    withAccounts([seamAccount, otherSeamAccount, manualAccount]);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    withAccounts([]);
+  });
+
+  it('stores skippedAfterBankSeam from the detect response and reset clears it', async () => {
+    mockDetectDuplicatesApi.mockResolvedValue({ ...BASE_RESPONSE, skippedAfterBankSeam: 3 });
+    const store = useImportExportStore();
+    seedStore(store);
+
+    await store.detectDuplicates();
+    expect(store.skippedAfterBankSeam).toBe(3);
+
+    store.reset();
+    expect(store.skippedAfterBankSeam).toBe(0);
+  });
+
+  it('echoes the reviewed skippedAfterBankSeam in the execute payload', async () => {
+    mockDetectDuplicatesApi.mockResolvedValue({ ...BASE_RESPONSE, skippedAfterBankSeam: 3 });
+    mockExecuteImportApi.mockResolvedValue(EXECUTE_RESPONSE);
+    const store = useImportExportStore();
+    seedStore(store);
+
+    await store.detectDuplicates();
+    await store.executeImport();
+
+    expect(mockExecuteImportApi).toHaveBeenCalledWith(expect.objectContaining({ skippedAfterBankSeam: 3 }));
+  });
+
+  it('sends recalculateBalance: false when every target is a seam account, keeping the saved preference', async () => {
+    mockExecuteImportApi.mockResolvedValue(EXECUTE_RESPONSE);
+    const store = useImportExportStore();
+    seedStore(store);
+    store.recalculateBalance = true;
+
+    await store.executeImport();
+
+    expect(mockExecuteImportApi).toHaveBeenCalledWith(expect.objectContaining({ recalculateBalance: false }));
+    expect(mockPatchUserSettingsAsync).toHaveBeenCalledWith({ import: { recalculateAccountBalance: true } });
+  });
+
+  it('keeps recalculateBalance when only some targets are seam accounts', async () => {
+    mockExecuteImportApi.mockResolvedValue(EXECUTE_RESPONSE);
+    const store = useImportExportStore();
+    seedStore(store);
+    mapSourceAccounts({ store, accountIds: [seamAccount.id, manualAccount.id] });
+    store.recalculateBalance = true;
+
+    await store.executeImport();
+
+    expect(mockExecuteImportApi).toHaveBeenCalledWith(expect.objectContaining({ recalculateBalance: true }));
   });
 });
 
@@ -708,6 +796,46 @@ describe('useImportExportStore – execute error handling', () => {
     await capturedJobProgressConfig!.onFailure(failedPayload as never);
 
     expect(store.progress).toEqual(expect.objectContaining({ status: 'failed', error: 'Worker blew up' }));
+  });
+
+  const seedReviewData = (store: ReturnType<typeof useImportExportStore>) => {
+    store.validRows = [{ rowIndex: 0 }] as never;
+    store.invalidRows = [{ rowIndex: 1 }] as never;
+    store.duplicates = [{ rowIndex: 0 }] as never;
+    store.skippedAfterBankSeam = 3;
+  };
+
+  const failedPayloadWithCode = (code: string) => ({
+    jobId: 'job-1',
+    status: 'failed' as const,
+    processedCount: 0,
+    totalCount: 0,
+    error: 'failed',
+    failure: { code },
+  });
+
+  it('clears review data on a bank-link-changed failure so returning to review re-runs detection', async () => {
+    const store = useImportExportStore();
+    seedReviewData(store);
+
+    await capturedJobProgressConfig!.onFailure(failedPayloadWithCode('bank-link-changed') as never);
+
+    expect(store.validRows).toEqual([]);
+    expect(store.invalidRows).toEqual([]);
+    expect(store.duplicates).toEqual([]);
+    expect(store.skippedAfterBankSeam).toBe(0);
+  });
+
+  it('keeps review data on other job failures', async () => {
+    const store = useImportExportStore();
+    seedReviewData(store);
+
+    await capturedJobProgressConfig!.onFailure(failedPayloadWithCode('interrupted') as never);
+
+    expect(store.validRows).toHaveLength(1);
+    expect(store.invalidRows).toHaveLength(1);
+    expect(store.duplicates).toHaveLength(1);
+    expect(store.skippedAfterBankSeam).toBe(3);
   });
 
   it('reset clears the watchdog error and stops the watchdog', () => {

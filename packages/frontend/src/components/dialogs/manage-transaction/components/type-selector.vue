@@ -9,8 +9,9 @@
 </template>
 
 <script setup lang="ts">
+import { isBankLockedLeg } from '@/common/utils/bank-row-permissions';
 import { type PillTabItem, PillTabs } from '@/components/lib/ui/pill-tabs';
-import { ACCOUNT_TYPES, type AccountModel, TRANSACTION_TYPES, type TransactionModel } from '@bt/shared/types';
+import { type AccountModel, TRANSACTION_TYPES, type TransactionModel } from '@bt/shared/types';
 import { ArrowDownLeftIcon, ArrowRightLeftIcon, ArrowUpRightIcon } from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -37,14 +38,12 @@ const emit = defineEmits<{
   'change-tx-type': [value: FORM_TYPES];
 }>();
 
-// Check the account type, not the transaction type
-// A system transaction in a monobank account should not be editable
+const isTypeBankLocked = computed(() => isBankLockedLeg({ transaction: props.transaction, account: props.account }));
 const isExpenseDisabled = computed(
-  () => props.account?.type !== ACCOUNT_TYPES.system && props.transaction?.transactionType === TRANSACTION_TYPES.income,
+  () => isTypeBankLocked.value && props.transaction?.transactionType === TRANSACTION_TYPES.income,
 );
 const isIncomeDisabled = computed(
-  () =>
-    props.account?.type !== ACCOUNT_TYPES.system && props.transaction?.transactionType === TRANSACTION_TYPES.expense,
+  () => isTypeBankLocked.value && props.transaction?.transactionType === TRANSACTION_TYPES.expense,
 );
 
 const items = computed<PillTabItem[]>(() =>

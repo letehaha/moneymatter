@@ -1,8 +1,9 @@
+import { isBankAccount } from '@/common/utils/bank-row-permissions';
 import { hasAccountWriteAccess } from '@/composable/use-account-access';
 import { type AccountModel, TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
 
 import type { TransferDestinationType } from '../composables/transfer-form';
-import { isConnectedAccount, isOutOfWalletAccount } from '../helpers';
+import { isOutOfWalletAccount } from '../helpers';
 import { FORM_TYPES, type UI_FORM_STRUCT } from '../types';
 
 const includesAccount = ({ accounts, account }: { accounts: Pick<AccountModel, 'id'>[]; account: AccountModel }) =>
@@ -36,7 +37,7 @@ export const canDuplicateTransaction = ({
 
   if (transferNature === TRANSACTION_TRANSFER_NATURE.not_transfer) {
     if (isTransferForm) return false;
-    const isPlanned = form.isPlanned || isConnectedAccount({ account });
+    const isPlanned = form.isPlanned || isBankAccount({ account });
     return includesAccount({ accounts: isPlanned ? plannedAccounts : sourceAccounts, account });
   }
 

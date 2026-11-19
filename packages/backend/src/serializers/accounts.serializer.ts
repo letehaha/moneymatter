@@ -7,6 +7,7 @@
 import { type AccountApiResponse, BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import { centsToApiDecimal } from '@common/types/money';
 import type Accounts from '@models/accounts.model';
+import { getSeamStart } from '@services/accounts/seam';
 import type { AccountShareContext } from '@services/sharing/get-shared-accounts.service';
 
 import { serializeLogoFields } from './logo-fields.serializer';
@@ -55,6 +56,7 @@ export function serializeAccount(
     excludeFromStats: account.excludeFromStats,
     bankDataProviderConnectionId: isRecipient ? null : (account.bankDataProviderConnectionId ?? null),
     bankProviderType: account._bankProviderType ?? null,
+    bankSeamAt: getSeamStart({ account })?.toISOString() ?? null,
     ...serializeLogoFields({ entity: account }),
   };
 

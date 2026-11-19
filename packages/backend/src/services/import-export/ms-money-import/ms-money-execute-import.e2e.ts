@@ -7,6 +7,7 @@ import {
 } from '@bt/shared/types';
 import type { CategoryMappingConfig, MsMoneyAccountMapping } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
+import { Money } from '@common/types/money';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import {
@@ -936,4 +937,262 @@ describeWithFixture('Microsoft Money import execution', () => {
       expect(response.statusCode).toBe(ERROR_CODES.NotFoundError);
     });
   });
+});
+
+type MsMoneyUpload = Awaited<ReturnType<typeof helpers.uploadMsMoneyFixture>>;
+
+const sumAmounts = ({ amounts }: { amounts: number[] }) =>
+  amounts.reduce((total, amount) => total.add(Money.fromDecimal(amount)), Money.zero()).toNumber();
+
+const ordinaryRowsOf = ({ upload, accountName }: { upload: MsMoneyUpload; accountName: string }) =>
+  upload.result.transactions.filter((tx) => tx.accountName === accountName && !tx.isVoid);
+
+/** Signed net of every row the import writes on `accountName`, transfer legs included. */
+const netLandingOn = ({ upload, accountName }: { upload: MsMoneyUpload; accountName: string }) =>
+  sumAmounts({
+    amounts: [
+      ...ordinaryRowsOf({ upload, accountName }).map((tx) => tx.amount),
+      ...upload.result.transfers.flatMap((transfer) => [
+        ...(transfer.sourceAccountName === accountName ? [-transfer.sourceAmount] : []),
+        ...(transfer.destinationAccountName === accountName ? [transfer.destinationAmount] : []),
+      ]),
+    ],
+  });
+
+const transferLegsOn = async ({ accountId }: { accountId: string }) =>
+  (await helpers.getTransactions({ accountIds: [accountId], limit: 500, raw: true })).filter(
+    (tx) => tx.transferNature === TRANSACTION_TRANSFER_NATURE.common_transfer,
+  );
+
+/** The fixture predates today's link, so the seam is moved onto `seamDayKey` to split its rows. */
+const createBackdatedSeamAccount = async ({ seamDayKey }: { seamDayKey: string }) => {
+  const account = await helpers.createAccount({
+    payload: helpers.buildAccountPayload({ name: 'Seam AUD', currencyCode: FIXTURE_CURRENCY, initialBalance: 1200 }),
+    raw: true,
+  });
+  await helpers.linkToLunchFlow({ accountId: account.id, currency: FIXTURE_CURRENCY });
+  await helpers.backdateLink({ accountId: account.id, linkedAt: new Date(`${seamDayKey}T00:00:00.000Z`) });
+  return account;
+};
+
+const createWalletAccount = () =>
+  helpers.createAccount({
+    payload: helpers.buildAccountPayload({ name: 'Wallet AUD', currencyCode: FIXTURE_CURRENCY, initialBalance: 1000 }),
+    raw: true,
+  });
+
+/** Seam on the median day of the Current account's rows, with only that account imported into it. */
+const importCurrentAcrossSeam = async () => {
+  const upload = await helpers.uploadMsMoneyFixture({ file: FIXTURE, password: FIXTURE_PASSWORD });
+  const rows = ordinaryRowsOf({ upload, accountName: ACCOUNT_CURRENT });
+  const seamDayKey = rows.map((tx) => tx.date.slice(0, 10)).toSorted()[Math.floor(rows.length / 2)]!;
+  const preSeam = rows.filter((tx) => tx.date.slice(0, 10) < seamDayKey);
+  expect(preSeam.length).toBeGreaterThan(0);
+
+  const account = await createBackdatedSeamAccount({ seamDayKey });
+  const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+  const progress = await runImport({
+    uploadId: upload.uploadId,
+    accountMapping: {
+      [ACCOUNT_CURRENT]: { action: 'link-existing', accountId: account.id },
+      [ACCOUNT_CREDIT_CARD]: { action: 'skip' },
+      [ACCOUNT_STOCKS]: { action: 'skip' },
+    },
+  });
+  expectMsMoneyCompleted(progress);
+  return { account, before, progress, seamDayKey, preSeam, postSeamCount: rows.length - preSeam.length };
+};
+
+describeWithFixture('Microsoft Money import into an account with a bank seam', () => {
+  it('imports the rows before the seam as manual history and skips the rest', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: FIXTURE_CURRENCY,
+      fn: async () => {
+        const { account, before, progress, seamDayKey, preSeam, postSeamCount } = await importCurrentAcrossSeam();
+
+        expect(progress.summary).toMatchObject({
+          transactionsImported: preSeam.length,
+          transfersImported: 0,
+          skippedAfterBankSeam: postSeamCount,
+          errors: [],
+        });
+
+        const created = await helpers.getTransactions({
+          batchId: await helpers.latestBatchId(),
+          limit: 500,
+          raw: true,
+        });
+        expect(created).toHaveLength(preSeam.length);
+        expect(created.every((tx) => new Date(tx.time).toISOString().slice(0, 10) < seamDayKey)).toBe(true);
+
+        await helpers.expectImportOnlyMovedOpening({
+          accountId: account.id,
+          before,
+          shift: -sumAmounts({ amounts: preSeam.map((tx) => tx.amount) }),
+          seamDayKey,
+        });
+      },
+    });
+  }, 60_000);
+
+  it('undoing the batch returns the account to its pre-import state', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: FIXTURE_CURRENCY,
+      fn: async () => {
+        const { account, before, preSeam, seamDayKey } = await importCurrentAcrossSeam();
+
+        const result = await helpers.deleteImportBatch({ batchId: await helpers.latestBatchId(), raw: true });
+        expect(result.deletedCount).toBe(preSeam.length);
+
+        const after = await helpers.expectImportOnlyMovedOpening({
+          accountId: account.id,
+          before,
+          shift: 0,
+          seamDayKey,
+        });
+        expect(after.account).toEqual(before.account);
+        // Undo keeps the import's earliest pre-seam row, flat at the opening balance.
+        const preSeamHistory = after.history.filter(
+          (row) => new Date(row.date).toISOString().slice(0, 10) < seamDayKey,
+        );
+        expect(preSeamHistory.length).toBeGreaterThan(0);
+        expect(preSeamHistory.every((row) => row.amount === before.account.initialBalance)).toBe(true);
+      },
+    });
+  }, 60_000);
+
+  it('ignores recalculateBalance for the seam account and applies it to a manual account in the same file', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: FIXTURE_CURRENCY,
+      fn: async () => {
+        const seamAccount = await helpers.createSeamAccount({ currencyCode: FIXTURE_CURRENCY });
+        const manualAccount = await createWalletAccount();
+        const seamBefore = await helpers.snapshotSeamAccount({ accountId: seamAccount.id });
+        const upload = await helpers.uploadMsMoneyFixture({ file: FIXTURE, password: FIXTURE_PASSWORD });
+        const seamRows = ordinaryRowsOf({ upload, accountName: ACCOUNT_CURRENT });
+        expect(seamRows.length).toBeGreaterThan(0);
+
+        const progress = await runImport({
+          uploadId: upload.uploadId,
+          accountMapping: {
+            [ACCOUNT_CURRENT]: { action: 'link-existing', accountId: seamAccount.id },
+            [ACCOUNT_CREDIT_CARD]: { action: 'skip' },
+            [ACCOUNT_STOCKS]: { action: 'link-existing', accountId: manualAccount.id },
+          },
+          recalculateBalance: true,
+        });
+        expectMsMoneyCompleted(progress);
+        expect(progress.summary).toMatchObject({
+          transactionsImported: seamRows.length,
+          outOfWalletImported: 1,
+          skippedAfterBankSeam: 0,
+          errors: [],
+        });
+
+        await helpers.expectImportOnlyMovedOpening({
+          accountId: seamAccount.id,
+          before: seamBefore,
+          shift: -sumAmounts({ amounts: seamRows.map((tx) => tx.amount) }),
+        });
+        expect((await helpers.readAccount({ accountId: manualAccount.id })).currentBalance).toBe(
+          1000 - OUT_OF_WALLET_AMOUNT,
+        );
+        expect(progress.summary.accountBalanceChanges).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              accountId: seamAccount.id,
+              delta: 0,
+              movedCount: 0,
+              historicalCount: seamRows.length,
+            }),
+            expect.objectContaining({ accountId: manualAccount.id, delta: -OUT_OF_WALLET_AMOUNT, movedCount: 1 }),
+          ]),
+        );
+      },
+    });
+  }, 60_000);
+
+  it.each([
+    { direction: 'into', seamName: ACCOUNT_CREDIT_CARD, walletName: ACCOUNT_CURRENT },
+    { direction: 'out of', seamName: ACCOUNT_CURRENT, walletName: ACCOUNT_CREDIT_CARD },
+  ])(
+    'links both legs of pre-seam transfers $direction the seam account',
+    async ({ seamName, walletName }) => {
+      await helpers.asBaseCurrencyUser({
+        currencyCode: FIXTURE_CURRENCY,
+        fn: async () => {
+          const seamAccount = await helpers.createSeamAccount({ currencyCode: FIXTURE_CURRENCY });
+          const walletAccount = await createWalletAccount();
+          const before = await helpers.snapshotSeamAccount({ accountId: seamAccount.id });
+          const upload = await helpers.uploadMsMoneyFixture({ file: FIXTURE, password: FIXTURE_PASSWORD });
+          expect(upload.result.transfers.length).toBeGreaterThan(0);
+
+          const progress = await runImport({
+            uploadId: upload.uploadId,
+            accountMapping: {
+              [seamName]: { action: 'link-existing', accountId: seamAccount.id },
+              [walletName]: { action: 'link-existing', accountId: walletAccount.id },
+              [ACCOUNT_STOCKS]: { action: 'skip' },
+            },
+          });
+          expectMsMoneyCompleted(progress);
+          expect(progress.summary).toMatchObject({
+            transfersImported: upload.result.transfers.length,
+            skippedAfterBankSeam: 0,
+            errors: [],
+          });
+
+          const seamLegs = await transferLegsOn({ accountId: seamAccount.id });
+          const walletLegs = await transferLegsOn({ accountId: walletAccount.id });
+          expect(seamLegs).toHaveLength(upload.result.transfers.length);
+          expect(seamLegs.map((tx) => tx.transferId).toSorted()).toEqual(
+            walletLegs.map((tx) => tx.transferId).toSorted(),
+          );
+
+          await helpers.expectImportOnlyMovedOpening({
+            accountId: seamAccount.id,
+            before,
+            shift: -netLandingOn({ upload, accountName: seamName }),
+          });
+        },
+      });
+    },
+    60_000,
+  );
+
+  it('drops both legs of transfers dated from the seam on', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: FIXTURE_CURRENCY,
+      fn: async () => {
+        const upload = await helpers.uploadMsMoneyFixture({ file: FIXTURE, password: FIXTURE_PASSWORD });
+        const { transfers } = upload.result;
+        expect(transfers.length).toBeGreaterThan(0);
+        const seamDayKey = transfers.map((transfer) => transfer.date.slice(0, 10)).toSorted()[0]!;
+
+        const seamAccount = await createBackdatedSeamAccount({ seamDayKey });
+        const walletAccount = await createWalletAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: seamAccount.id });
+
+        const progress = await runImport({
+          uploadId: upload.uploadId,
+          accountMapping: {
+            [ACCOUNT_CREDIT_CARD]: { action: 'link-existing', accountId: seamAccount.id },
+            [ACCOUNT_CURRENT]: { action: 'link-existing', accountId: walletAccount.id },
+            [ACCOUNT_STOCKS]: { action: 'skip' },
+          },
+        });
+        expectMsMoneyCompleted(progress);
+        expect(progress.summary).toMatchObject({
+          transfersImported: 0,
+          outOfWalletImported: 0,
+          skippedAfterBankSeam: transfers.length * helpers.SKIPPED_PER_TRANSFER,
+          errors: [],
+        });
+
+        const walletRows = await helpers.getTransactions({ accountIds: [walletAccount.id], limit: 500, raw: true });
+        expect(walletRows.filter((tx) => tx.transferNature !== TRANSACTION_TRANSFER_NATURE.not_transfer)).toEqual([]);
+        expect(await helpers.snapshotSeamAccount({ accountId: seamAccount.id })).toEqual(before);
+      },
+    });
+  }, 60_000);
 });

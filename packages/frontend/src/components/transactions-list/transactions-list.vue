@@ -135,7 +135,7 @@ const {
   toggleTransaction,
   clearSelection,
   getUnselectableReason,
-  hasExternalSelected,
+  hasUndeletableSelected,
   selectedTotals,
   handleSelectAllToggle,
   isBulkEditDialogOpen,
@@ -195,7 +195,7 @@ watchEffect(() => {
       :selected-count="selectedCount"
       :is-all-selected="isAllSelected"
       :is-loading="isBulkLoading"
-      :has-external-selected="hasExternalSelected"
+      :has-undeletable-selected="hasUndeletableSelected"
       :selected-totals="selectedTotals"
       :matching-summary="matching?.summary"
       :is-grouping-blocked="isGroupingBlocked"

@@ -4,6 +4,7 @@ import Transactions from '@models/transactions.model';
 import * as helpers from '@tests/helpers';
 import { getMockedLunchFlowAccounts, getMockedLunchFlowTransactions } from '@tests/mocks/lunchflow/data';
 import {
+  LUNCHFLOW_EXTERNAL_ACCOUNT_ID,
   VALID_LUNCHFLOW_API_KEY,
   getLunchFlowBalanceMock,
   getLunchFlowTransactionsMock,
@@ -126,7 +127,7 @@ const linkManualAccount = async ({ accountId }: { accountId: string }) => {
   const response = await helpers.linkAccountToBankConnection({
     id: accountId,
     connectionId,
-    externalAccountId: '1001',
+    externalAccountId: LUNCHFLOW_EXTERNAL_ACCOUNT_ID,
   });
   if (response.statusCode !== 200) {
     throw new Error(`Linking account ${accountId} to LunchFlow failed with status ${response.statusCode}`);

@@ -46,6 +46,7 @@ const setAccountSyncStatusMock = jest.mocked(setAccountSyncStatus);
 const connectionsUpdateMock = jest.mocked(BankDataProviderConnections.update);
 const loggerErrorMock = jest.mocked(logger.error);
 const incrMock = jest.mocked(redisClient.incr);
+const delMock = jest.mocked(redisClient.del);
 
 const USER_ID = 42;
 const CONNECTION_ID = 'connection-1';
@@ -76,7 +77,7 @@ beforeEach(() => {
   connectionsUpdateMock.mockResolvedValue([1] as never);
 });
 
-describe('finalizeSyncGroup via handleCompletedBatch (absorb errors swallowed)', () => {
+describe('finalizeSyncGroup via handleCompletedBatch', () => {
   it('completes the sync and stamps the connection when the deferred absorb succeeds', async () => {
     const accountId = generateRandomRecordId();
 
@@ -94,7 +95,7 @@ describe('finalizeSyncGroup via handleCompletedBatch (absorb errors swallowed)',
     );
   });
 
-  it('logs and still completes the sync when the deferred absorb throws', async () => {
+  it('logs and marks the sync FAILED without stamping the connection when the deferred absorb throws', async () => {
     const accountId = generateRandomRecordId();
     runPendingLinkAbsorbMock.mockRejectedValue(new Error('absorb blew up'));
 
@@ -106,10 +107,23 @@ describe('finalizeSyncGroup via handleCompletedBatch (absorb errors swallowed)',
     );
     expect(setAccountSyncStatusMock).toHaveBeenCalledWith({
       accountId,
-      status: SyncStatus.COMPLETED,
+      status: SyncStatus.FAILED,
+      error: 'absorb blew up',
       userId: USER_ID,
     });
-    expect(connectionsUpdateMock).toHaveBeenCalledTimes(1);
+    expect(connectionsUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it('counts a batch skipped because the account left the connection and clears the group without finalizing', async () => {
+    const accountId = generateRandomRecordId();
+    const job = { ...buildCompletedJob(accountId), returnvalue: { success: false, skipped: true } } as unknown as Job;
+
+    await handleCompletedBatch(job);
+
+    expect(incrMock).toHaveBeenCalledWith('jobgroup:group-1:completions');
+    expect(delMock).toHaveBeenCalledWith('jobgroup:group-1:completions');
+    expect(runPendingLinkAbsorbMock).not.toHaveBeenCalled();
+    expect(connectionsUpdateMock).not.toHaveBeenCalled();
   });
 
   it('leaves the group unfinalized until the last batch reports in', async () => {
@@ -127,7 +141,7 @@ describe('finalizeSyncGroup via handleCompletedBatch (absorb errors swallowed)',
   });
 });
 
-describe('finalizeSyncGroup via queueTransactionSync empty window (absorb errors propagate)', () => {
+describe('finalizeSyncGroup via queueTransactionSync empty window', () => {
   it('completes the sync and stamps the connection when the deferred absorb succeeds', async () => {
     const accountId = generateRandomRecordId();
 

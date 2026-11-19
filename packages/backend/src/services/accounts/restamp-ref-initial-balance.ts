@@ -1,4 +1,6 @@
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPES } from '@bt/shared/types';
+import type { Money } from '@common/types/money';
+import { ExchangeRateUnavailableError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
@@ -14,6 +16,42 @@ import { withTransaction } from '../common/with-transaction';
  * `initialBalance` must not.
  */
 type RestampOutcome = 'restamped' | 'unchanged' | 'skipped' | 'failed';
+
+/**
+ * `initialBalance` in the base currency at the rate of the ledger boundary: the earliest
+ * transaction's time, or now without one. Throws when no rate reaches that date.
+ */
+export const measureRefInitialBalanceAtBoundary = async ({
+  account,
+  initialBalance,
+  excludeTransactionId,
+}: {
+  account: Pick<Accounts, 'id' | 'userId' | 'currencyCode'>;
+  initialBalance: Money;
+  excludeTransactionId?: string;
+}): Promise<Money> => {
+  // Account-scoped, never author-scoped: on a shared account a recipient authors rows
+  // under their own userId, and an author filter would pick a later boundary.
+  // Adjustment rows are ledger rows like any other, so they can be the boundary.
+  const earliestTx = await findOneTransaction({
+    planned: 'exclude',
+    access: 'unscoped-internal',
+    balanceAdjustments: 'include',
+    where: {
+      accountId: account.id,
+      ...(excludeTransactionId ? { id: { [Op.ne]: excludeTransactionId } } : {}),
+    },
+    attributes: ['time'],
+    order: [['time', 'ASC']],
+  });
+
+  return calculateRefAmount({
+    userId: account.userId,
+    amount: initialBalance,
+    baseCode: account.currencyCode,
+    date: earliestTx?.time ?? new Date(),
+  });
+};
 
 /**
  * Re-stamps `refInitialBalance` at the exchange rate of the ledger boundary:
@@ -50,39 +88,19 @@ async function restampRefInitialBalanceImpl({
     return 'skipped';
   }
 
-  // Account-scoped, never author-scoped: on a shared account a recipient authors rows
-  // under their own userId, and an author filter would pick a later boundary.
-  // Adjustment rows are ledger rows like any other, so they can be the boundary.
-  const earliestTx = await findOneTransaction({
-    planned: 'exclude',
-    access: 'unscoped-internal',
-    balanceAdjustments: 'include',
-    where: {
-      accountId,
-      ...(excludeTransactionId ? { id: { [Op.ne]: excludeTransactionId } } : {}),
-    },
-    attributes: ['time'],
-    order: [['time', 'ASC']],
-  });
-
-  const boundaryDate = earliestTx?.time ?? new Date();
-
   let refInitialBalance;
   try {
-    refInitialBalance = await calculateRefAmount({
-      userId: account.userId,
-      amount: account.initialBalance,
-      baseCode: account.currencyCode,
-      date: boundaryDate,
+    refInitialBalance = await measureRefInitialBalanceAtBoundary({
+      account,
+      initialBalance: account.initialBalance,
+      excludeTransactionId,
     });
   } catch (e) {
-    // No rate reaches back to the boundary date for this pair — keep the current
-    // stamp rather than failing the transaction write that triggered the restamp.
+    // A missing rate or base currency keeps the current stamp rather than failing the
+    // transaction write that triggered the restamp; anything else aborts the transaction.
+    if (!(e instanceof ExchangeRateUnavailableError) && !(e instanceof ValidationError)) throw e;
     logger.error(
-      {
-        message: 'Failed to restamp refInitialBalance at ledger boundary; previous value kept',
-        error: e as Error,
-      },
+      { message: 'Could not measure refInitialBalance at the ledger boundary; previous value kept', error: e },
       { code: 'ACCOUNT_REF_INITIAL_RESTAMP_FAILED', accountId, userId: account.userId },
     );
     return 'failed';

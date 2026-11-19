@@ -1087,7 +1087,7 @@ describe('Transactions reconciliation', () => {
           .filter(([date]) => date < today)
           .toSorted(([a], [b]) => a.localeCompare(b));
       const historyBefore = await pastHistory();
-      expect(historyBefore).toHaveLength(2);
+      expect(historyBefore).toHaveLength(3);
 
       await unlinkAndRelink({ connectionId, accountId });
 

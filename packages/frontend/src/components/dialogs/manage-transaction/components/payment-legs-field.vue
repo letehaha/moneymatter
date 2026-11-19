@@ -40,6 +40,10 @@ const props = defineProps<{
   disabled?: boolean;
   /** Bank-synced main: its account and amount stay as the sync left them. */
   isMainLocked?: boolean;
+  /** Main sits on a bank-linked account, so it can't move to another one. */
+  isMainAccountLocked?: boolean;
+  /** Replaces the bank-sync copy on the main row's lock. */
+  mainLockedHint?: string;
   hint?: string;
   mainAmountError?: string;
   showLegErrors?: boolean;
@@ -56,6 +60,12 @@ const { accountsRecord } = storeToRefs(useAccountsStore());
 const { convert, ratesMap } = useExchangeRates();
 
 const mainCurrencyCode = computed(() => account.value?.currencyCode);
+const mainLockText = computed(() => props.mainLockedHint ?? t('dialogs.manageTransaction.form.paymentLegs.syncedLock'));
+const mainRemoveText = computed(() =>
+  props.isMainAccountLocked
+    ? t('transactions.inlineEdit.bankAccountDescription')
+    : t('dialogs.manageTransaction.form.paymentLegs.removeRow'),
+);
 
 const legAccountIds = computed(() => new Set(legs.value.map((leg) => getPaymentLegAccountId({ leg }))));
 const createdLegAccountIds = computed(
@@ -256,6 +266,7 @@ defineExpose({
           :amount="amount"
           :currency-code="currencyCode"
           :locked="isMainLocked"
+          :is-account-locked="isMainAccountLocked"
           :disabled="disabled"
           :error-message="mainAmountError"
           @update:account="account = $event"
@@ -263,32 +274,31 @@ defineExpose({
           @amount-blur="emit('main-amount-blur')"
         >
           <template #actions>
-            <ResponsiveTooltip
-              v-if="isMainLocked"
-              :content="$t('dialogs.manageTransaction.form.paymentLegs.syncedLock')"
-            >
+            <ResponsiveTooltip v-if="isMainLocked" :content="mainLockText">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-sm"
                 class="text-muted-foreground size-6"
-                :aria-label="$t('dialogs.manageTransaction.form.paymentLegs.syncedLock')"
+                :aria-label="mainLockText"
               >
                 <LockIcon class="size-3.5" />
               </Button>
             </ResponsiveTooltip>
-            <DesktopOnlyTooltip v-else :content="$t('dialogs.manageTransaction.form.paymentLegs.removeRow')">
-              <Button
-                type="button"
-                variant="soft-destructive"
-                size="icon-sm"
-                class="size-6"
-                :disabled="disabled || firstCreatedIndex === -1"
-                :aria-label="$t('dialogs.manageTransaction.form.paymentLegs.removeRow')"
-                @click="removeMain"
-              >
-                <XIcon class="size-3.5" />
-              </Button>
+            <DesktopOnlyTooltip v-else :content="mainRemoveText">
+              <span class="inline-flex">
+                <Button
+                  type="button"
+                  variant="soft-destructive"
+                  size="icon-sm"
+                  class="size-6"
+                  :disabled="disabled || firstCreatedIndex === -1 || isMainAccountLocked"
+                  :aria-label="mainRemoveText"
+                  @click="removeMain"
+                >
+                  <XIcon class="size-3.5" />
+                </Button>
+              </span>
             </DesktopOnlyTooltip>
           </template>
         </PaymentLegRow>

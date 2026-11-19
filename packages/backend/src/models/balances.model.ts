@@ -10,6 +10,7 @@ import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
 import { roundHalfToEven } from '@common/utils/round-half-to-even';
 import { logger } from '@js/utils';
+import { getLinkDayStart, isBeforeSeamStart } from '@services/accounts/seam';
 import { runInSavepoint } from '@services/common/run-in-savepoint';
 import { getExchangeRate } from '@services/user-exchange-rate/get-exchange-rate.service';
 import { subDays, startOfMonth, startOfDay } from 'date-fns';
@@ -243,8 +244,13 @@ export default class Balances extends Model {
         // TODO: we probably need to avoid updating opposite_tx refAmount based on
         // original-tx refAmount
         const balance = (data.externalData as TransactionsAttributes['externalData']).balance;
-
         if (balance !== undefined) {
+          // The days before a forward-only link belong to the account's manual history.
+          const { findSeamAccount } = await import('@services/balances/revalue-balance-history.service');
+          const linkedAccount = await findSeamAccount({ accountId });
+          const linkDayStart = linkedAccount && getLinkDayStart({ externalData: linkedAccount.externalData });
+          if (linkDayStart && isBeforeSeamStart({ seamStart: linkDayStart, time })) break;
+
           const exchangeRateData = await getExchangeRate({
             userId: data.userId,
             date,

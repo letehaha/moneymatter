@@ -1,8 +1,8 @@
-import type { AccountExternalData } from '@bt/shared/types';
+import { ACCOUNT_TYPES, type AccountExternalData } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { Money } from '@common/types/money';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { UnexpectedError } from '@js/errors';
+import { ExchangeRateUnavailableError } from '@js/errors';
 
 // ── Mocks (hoisted before importing the module under test) ──────────────────
 
@@ -35,6 +35,10 @@ jest.mock('@services/bank-data-providers/utils/write-bank-balance-with-history',
   __esModule: true,
   writeBankBalanceWithHistory: jest.fn(),
 }));
+jest.mock('@services/balances/revalue-balance-history.service', () => ({
+  __esModule: true,
+  stampSeamBalance: jest.fn(),
+}));
 jest.mock('@js/utils/logger', () => ({
   __esModule: true,
   logger: { error: jest.fn(), info: jest.fn(), warn: jest.fn(), debug: jest.fn() },
@@ -48,7 +52,8 @@ jest.mock('@models/connection', () => ({
   __esModule: true,
   connection: {
     sequelize: {
-      transaction: (cb: () => Promise<unknown>) => cb(),
+      // `withTransaction` passes the callback first, `runInSavepoint` second.
+      transaction: (...args: unknown[]) => (args.find((arg) => typeof arg === 'function') as () => Promise<unknown>)(),
     },
   },
   namespace: { get: () => undefined },
@@ -59,6 +64,7 @@ import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import Transactions from '@models/transactions.model';
+import { stampSeamBalance } from '@services/balances/revalue-balance-history.service';
 
 import { absorbLinkResidual, runPendingLinkAbsorb } from './absorb-link-residual';
 import { restampRefInitialBalance } from './restamp-ref-initial-balance';
@@ -70,6 +76,7 @@ const queryMock = jest.mocked(Transactions.sequelize!.query);
 const restampMock = jest.mocked(restampRefInitialBalance);
 const setTodayRowToSpotMock = jest.mocked(Balances.setTodayRowToSpot);
 const loggerErrorMock = jest.mocked(logger.error);
+const stampSeamBalanceMock = jest.mocked(stampSeamBalance);
 
 type AccountRow = InstanceType<typeof Accounts>;
 
@@ -80,17 +87,21 @@ function buildAccount({
   currentBalance = Money.zero(),
   initialBalance = Money.zero(),
   externalData = null,
+  type = ACCOUNT_TYPES.monobank,
 }: {
   id?: string;
   currentBalance?: Money;
   initialBalance?: Money;
   externalData?: AccountExternalData | null;
+  type?: ACCOUNT_TYPES;
 } = {}): AccountRow & { update: jest.Mock } {
   return {
     id,
     currentBalance,
     initialBalance,
     externalData,
+    type,
+    bankDataProviderConnectionId: type === ACCOUNT_TYPES.system ? null : generateRandomRecordId(),
     update: jest.fn(async () => undefined),
   } as unknown as AccountRow & { update: jest.Mock };
 }
@@ -229,7 +240,7 @@ describe('absorbLinkResidual', () => {
     expect(lastUpdatePayload().initialBalance.toCents()).toBe(Money.fromDecimal(70).toCents());
   });
 
-  it('throws UnexpectedError and stops before re-pinning when the restamp fails', async () => {
+  it('throws ExchangeRateUnavailableError and stops before re-pinning when the restamp fails', async () => {
     const accountId = generateRandomRecordId();
     findOneMock.mockResolvedValue(
       buildAccount({
@@ -241,7 +252,7 @@ describe('absorbLinkResidual', () => {
     mockSignedSum(Money.fromDecimal(100).toCents());
     restampMock.mockResolvedValue('failed');
 
-    await expect(absorbLinkResidual({ accountId, userId: USER_ID })).rejects.toThrow(UnexpectedError);
+    await expect(absorbLinkResidual({ accountId, userId: USER_ID })).rejects.toThrow(ExchangeRateUnavailableError);
 
     expect(accountsUpdateMock).toHaveBeenCalledTimes(1);
     expect(findOneMock).toHaveBeenCalledTimes(1);
@@ -316,6 +327,23 @@ describe('runPendingLinkAbsorb', () => {
     expect(accountsUpdateMock).not.toHaveBeenCalled();
   });
 
+  it('returns null without absorbing when the account was unlinked before the queued sync finished', async () => {
+    const accountId = generateRandomRecordId();
+    findOneMock.mockResolvedValue(
+      buildAccount({
+        id: accountId,
+        type: ACCOUNT_TYPES.system,
+        externalData: buildReconciliation({ pendingAbsorb: true }),
+      }) as never,
+    );
+
+    const result = await runPendingLinkAbsorb({ accountId, userId: USER_ID });
+
+    expect(result).toBeNull();
+    expect(queryMock).not.toHaveBeenCalled();
+    expect(stampSeamBalanceMock).not.toHaveBeenCalled();
+  });
+
   it('clears the marker and records the residual when the absorb moved the opening balance', async () => {
     const accountId = generateRandomRecordId();
     const pending = buildAccount({
@@ -332,12 +360,18 @@ describe('runPendingLinkAbsorb', () => {
       .mockResolvedValueOnce(pending as never)
       .mockResolvedValueOnce(pending as never)
       .mockResolvedValueOnce(pending as never)
+      .mockResolvedValueOnce(pending as never)
       .mockResolvedValueOnce(fresh as never);
     mockSignedSum(Money.fromDecimal(100).toCents());
 
     const result = await runPendingLinkAbsorb({ accountId, userId: USER_ID });
 
     expect(result).toEqual({ absorbedResidual: Money.fromDecimal(50).toCents() });
+    expect(stampSeamBalanceMock).toHaveBeenCalledTimes(1);
+    expect(stampSeamBalanceMock).toHaveBeenCalledWith({ accountId });
+    expect(stampSeamBalanceMock.mock.invocationCallOrder[0]!).toBeGreaterThan(
+      setTodayRowToSpotMock.mock.invocationCallOrder[0]!,
+    );
     expect(fresh.update).toHaveBeenCalledTimes(1);
     expect(fresh.update.mock.calls[0]![0]).toEqual({
       externalData: {
@@ -374,6 +408,7 @@ describe('runPendingLinkAbsorb', () => {
     findOneMock
       .mockResolvedValueOnce(pending as never)
       .mockResolvedValueOnce(pending as never)
+      .mockResolvedValueOnce(pending as never)
       .mockResolvedValueOnce(fresh as never);
     mockSignedSum(Money.fromDecimal(100).toCents());
 
@@ -400,6 +435,7 @@ describe('runPendingLinkAbsorb', () => {
       .mockResolvedValueOnce(pending as never)
       .mockResolvedValueOnce(pending as never)
       .mockResolvedValueOnce(pending as never)
+      .mockResolvedValueOnce(pending as never)
       .mockResolvedValueOnce(null as never);
     mockSignedSum(Money.fromDecimal(100).toCents());
 
@@ -422,6 +458,7 @@ describe('runPendingLinkAbsorb', () => {
       .mockResolvedValueOnce(pending as never)
       .mockResolvedValueOnce(pending as never)
       .mockResolvedValueOnce(pending as never)
+      .mockResolvedValueOnce(pending as never)
       .mockResolvedValueOnce(fresh as never);
     mockSignedSum(Money.fromDecimal(100).toCents());
 
@@ -429,5 +466,57 @@ describe('runPendingLinkAbsorb', () => {
 
     expect(result).toEqual({ absorbedResidual: Money.fromDecimal(50).toCents() });
     expect(fresh.update).not.toHaveBeenCalled();
+  });
+
+  it('moves only the native opening balance, stamps S and clears the marker when no rate exists', async () => {
+    const accountId = generateRandomRecordId();
+    const pending = buildAccount({
+      id: accountId,
+      currentBalance: Money.fromDecimal(200),
+      initialBalance: Money.fromDecimal(50),
+      externalData: buildReconciliation({ pendingAbsorb: true }),
+    });
+    const fresh = buildAccount({ id: accountId, externalData: buildReconciliation({ pendingAbsorb: true }) });
+    findOneMock.mockImplementation((async () => pending) as never);
+    findOneMock.mockImplementationOnce((async () => pending) as never);
+    restampMock.mockResolvedValue('failed');
+    mockSignedSum(Money.fromDecimal(100).toCents());
+    // Last read is the post-stamp re-read.
+    stampSeamBalanceMock.mockImplementation((async () => {
+      findOneMock.mockImplementation((async () => fresh) as never);
+    }) as never);
+
+    const result = await runPendingLinkAbsorb({ accountId, userId: USER_ID });
+
+    expect(result).toEqual({ absorbedResidual: Money.fromDecimal(50).toCents() });
+    expect(loggerErrorMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ code: 'LINK_ABSORB_RATE_FALLBACK' }),
+    );
+    const lastInitial = (accountsUpdateMock.mock.calls.at(-1)![0] as { initialBalance: Money }).initialBalance;
+    expect(lastInitial.toNumber()).toBe(100);
+    expect(stampSeamBalanceMock).toHaveBeenCalledWith({ accountId });
+    const written = fresh.update.mock.calls[0]![0] as { externalData: AccountExternalData };
+    expect(written.externalData.bankConnection!.balanceReconciliation).toMatchObject({
+      pendingAbsorb: false,
+      absorbedResidual: Money.fromDecimal(50).toCents(),
+    });
+  });
+
+  it('rethrows any failure other than a missing rate and leaves the marker set', async () => {
+    const accountId = generateRandomRecordId();
+    const pending = buildAccount({
+      id: accountId,
+      currentBalance: Money.fromDecimal(200),
+      initialBalance: Money.fromDecimal(50),
+      externalData: buildReconciliation({ pendingAbsorb: true }),
+    });
+    findOneMock.mockImplementation((async () => pending) as never);
+    queryMock.mockRejectedValue(new Error('deadlock detected') as never);
+
+    await expect(runPendingLinkAbsorb({ accountId, userId: USER_ID })).rejects.toThrow('deadlock detected');
+
+    expect(stampSeamBalanceMock).not.toHaveBeenCalled();
+    expect(pending.update).not.toHaveBeenCalled();
   });
 });

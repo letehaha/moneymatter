@@ -15,6 +15,8 @@ import { Label } from '@/components/lib/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
 import * as Select from '@/components/lib/ui/select';
 import { useNotificationCenter } from '@/components/notification-center';
+import { ApiErrorResponseError } from '@/js/errors';
+import { captureException } from '@/lib/sentry';
 import { useFormatCurrency } from '@/composable/formatters';
 import { cn } from '@/lib/utils';
 import { useAccountsStore } from '@/stores';
@@ -22,11 +24,13 @@ import { AccountModel, type LinkResidualTarget } from '@bt/shared/types';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { CheckIcon, Link2Icon } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
   account: AccountModel;
 }>();
 
+const { t } = useI18n();
 const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
 const { formatAmountByCurrencyCode } = useFormatCurrency();
 const accountsStore = useAccountsStore();
@@ -89,30 +93,36 @@ const linkAccount = async () => {
   if (!canConfirmLink.value) return;
 
   isLinking.value = true;
+  let result: Awaited<ReturnType<typeof linkAccountToBankConnection>>;
   try {
-    const result = await linkAccountToBankConnection({
+    result = await linkAccountToBankConnection({
       accountId: props.account.id,
       connectionId: selectedConnectionId.value!,
       externalAccountId: selectedExternalAccountId.value!,
       residualTarget: balanceDifference.value !== 0 ? residualTarget.value : undefined,
     });
-
-    // Refresh accounts store
-    await accountsStore.loadAccounts();
-    queryClient.invalidateQueries({
-      predicate: (query) => {
-        const queryKey = query.queryKey as string[];
-        return queryKey.includes(VUE_QUERY_GLOBAL_PREFIXES.transactionChange);
-      },
-    });
-
-    addSuccessNotification(result.message);
-    resetForm();
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred while trying to link account';
-    addErrorNotification(errorMessage);
+    if (!(error instanceof ApiErrorResponseError)) {
+      captureException({ error, context: { source: 'linkAccount', accountId: props.account.id } });
+    }
+    addErrorNotification(error instanceof Error ? error.message : t('pages.account.link.linkFailed'));
+    return;
   } finally {
     isLinking.value = false;
+  }
+
+  addSuccessNotification(result.message);
+  resetForm();
+  queryClient.invalidateQueries({
+    predicate: (query) => {
+      const queryKey = query.queryKey as string[];
+      return queryKey.includes(VUE_QUERY_GLOBAL_PREFIXES.transactionChange);
+    },
+  });
+  const refresh = await accountsStore.loadAccounts();
+  if (refresh.isError) {
+    addErrorNotification(t('pages.account.link.refreshFailed'));
+    captureException({ error: refresh.error, context: { source: 'linkAccountRefresh', accountId: props.account.id } });
   }
 };
 

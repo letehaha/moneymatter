@@ -1,5 +1,6 @@
 import {
   ACCOUNT_TYPES,
+  type AccountApiResponse,
   API_ERROR_CODES,
   BANK_PROVIDER_TYPE,
   DEACTIVATION_REASON,
@@ -1235,6 +1236,36 @@ describe('SimpleFIN Data Provider E2E', () => {
       const stored = await Transactions.findAll({ where: { accountId } });
       expect(stored.filter((tx) => tx.originalId !== null).length).toBe(0);
       expect(stored.length).toBe(1);
+    });
+
+    it('starts a new link day anchored on the bank balance when the connect flow relinks the account', async () => {
+      const accountId = await createTrackedAccount({ manualSpentAt: subDays(new Date(), 10) });
+      const connectionId = await connectSimplefin();
+      global.mswMockServer.use(getSimplefinAccountsMock({ response: getMockedSimplefinAccountSet() }));
+      await helpers.linkAccountToBankConnection({
+        id: accountId,
+        connectionId,
+        externalAccountId: SIMPLEFIN_ACCOUNT_1,
+        raw: true,
+      });
+      await waitForCompletedSync({ accountId });
+      await helpers.unlinkAccountFromBankConnection({ id: accountId, raw: true });
+
+      await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId,
+        accountExternalIds: [SIMPLEFIN_ACCOUNT_1],
+        raw: true,
+      });
+      await waitForCompletedSync({ accountId });
+
+      const relinked = (await helpers.getAccount({ id: accountId, raw: true })) as unknown as AccountApiResponse;
+      const today = new Date();
+      expect(relinked.bankSeamAt).toBe(
+        new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())).toISOString(),
+      );
+      // S is the bank's 1523.45 with no rows from the link day on; the −40 manual row sits before it.
+      expect(relinked.currentBalance).toBe(1523.45);
+      expect(relinked.initialBalance).toBe(1563.45);
     });
   });
 

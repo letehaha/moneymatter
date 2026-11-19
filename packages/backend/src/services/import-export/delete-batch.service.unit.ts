@@ -32,7 +32,13 @@ const updateTransactionsMock = jest.fn<(params: unknown) => Promise<unknown>>();
 const batchFindOneMock = jest.fn<(params: unknown) => Promise<MockBatch | null>>();
 const effectsFindAllMock = jest.fn<(params: unknown) => Promise<MockEffect[]>>();
 const absorbMock = jest.fn<(params: AbsorbParams) => Promise<unknown>>();
-const lockAccountRowMock = jest.fn<(params: { accountId: string }) => Promise<{ id: string; type: string } | null>>();
+const lockAccountRowMock =
+  jest.fn<
+    (params: {
+      accountId: string;
+    }) => Promise<{ id: string; type: string; seamBalance?: Money; externalData?: unknown } | null>
+  >();
+const revalueMock = jest.fn<(params: { accountId: string }) => Promise<unknown>>();
 const deleteAccountByIdMock = jest.fn<(params: { id: string; userId: number }) => Promise<unknown>>();
 const bulkDeleteMock =
   jest.fn<
@@ -82,6 +88,11 @@ jest.mock('@services/transactions/bulk-delete', () => ({
   bulkDelete: (params: { userId: number; transactionIds: string[] }) => bulkDeleteMock(params),
 }));
 
+jest.mock('@services/balances/revalue-balance-history.service', () => ({
+  __esModule: true,
+  revalueBalanceHistory: (params: { accountId: string }) => revalueMock(params),
+}));
+
 // The real wrapper needs a DB connection this unit test has none of. Running the body
 // straight through is what a committed run looks like to the caller.
 jest.mock('@services/common/with-transaction', () => ({
@@ -103,7 +114,12 @@ const HOUR_MS = 60 * 60 * 1000;
 
 function mockRows(count: number) {
   findWithFiltersMock.mockResolvedValue(
-    Array.from({ length: count }, (_, i) => ({ id: `tx-${i}`, accountId: 'acc-1' })),
+    Array.from({ length: count }, (_, i) => ({
+      id: `tx-${i}`,
+      accountId: 'acc-1',
+      accountType: ACCOUNT_TYPES.system,
+      time: new Date(Date.now() - 10 * 24 * HOUR_MS),
+    })),
   );
 }
 
@@ -292,5 +308,58 @@ describe('deleteImportBatch', () => {
     expect(bulkDeleteMock).not.toHaveBeenCalled();
     expect(absorbMock).not.toHaveBeenCalled();
     expect(batch.destroy).not.toHaveBeenCalled();
+  });
+
+  describe('on an account with a bank seam', () => {
+    const mockSeamAccount = () =>
+      lockAccountRowMock.mockImplementation(async ({ accountId }) => ({
+        id: accountId,
+        type: ACCOUNT_TYPES.lunchflow,
+        seamBalance: Money.fromCents(120_000),
+        externalData: { bankConnection: { linkedAt: new Date().toISOString(), linkingStrategy: 'forward-only' } },
+      }));
+
+    it('rebuilds its history once, after the delete, instead of reversing the absorb', async () => {
+      mockRows(2);
+      mockBatch({ importedAt: new Date(Date.now() - HOUR_MS), finishedAt: new Date() });
+      effectsFindAllMock.mockResolvedValue([
+        { accountId: 'acc-1', absorbedAmount: Money.fromCents(1500), createdByImport: false },
+      ]);
+      mockSeamAccount();
+
+      await deleteImportBatch({ userId: USER_ID, batchId: BATCH_ID });
+
+      expect(revalueMock.mock.calls).toEqual([[{ accountId: 'acc-1' }]]);
+      expect(bulkDeleteMock.mock.invocationCallOrder[0]!).toBeLessThan(revalueMock.mock.invocationCallOrder[0]!);
+      expect(absorbMock).not.toHaveBeenCalled();
+    });
+
+    it('refuses a batch holding a row dated from the seam on before the size cap queues it', async () => {
+      findWithFiltersMock.mockResolvedValue(
+        Array.from({ length: 1001 }, (_, i) => ({
+          id: `tx-${i}`,
+          accountId: 'acc-1',
+          accountType: ACCOUNT_TYPES.system,
+          time: new Date(),
+        })),
+      );
+      mockBatch({ importedAt: new Date(Date.now() - HOUR_MS), finishedAt: new Date() });
+      mockSeamAccount();
+
+      await expect(deleteImportBatch({ userId: USER_ID, batchId: BATCH_ID })).rejects.toBeInstanceOf(ValidationError);
+
+      expect(bulkDeleteMock).not.toHaveBeenCalled();
+    });
+
+    it('fails the undo when the rebuild fails', async () => {
+      mockRows(2);
+      const batch = mockBatch({ importedAt: new Date(Date.now() - HOUR_MS), finishedAt: new Date() });
+      mockSeamAccount();
+      revalueMock.mockRejectedValueOnce(new Error('rebuild failed'));
+
+      await expect(deleteImportBatch({ userId: USER_ID, batchId: BATCH_ID })).rejects.toThrow('rebuild failed');
+
+      expect(batch.destroy).not.toHaveBeenCalled();
+    });
   });
 });

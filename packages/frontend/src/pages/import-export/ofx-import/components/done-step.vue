@@ -4,6 +4,7 @@ import { Callout } from '@/components/lib/ui/callout';
 import { StatCard } from '@/components/lib/ui/stat-card';
 import AccountBalanceChangesTable from '@/pages/import-export/components/account-balance-changes-table.vue';
 import BalanceDesyncCallout from '@/pages/import-export/components/balance-desync-callout.vue';
+import BankSeamSkippedCallout from '@/pages/import-export/components/bank-seam-skipped-callout.vue';
 import { ROUTES_NAMES } from '@/routes';
 import { useImportOfxStore } from '@/stores/import-ofx';
 import type { ImportError } from '@bt/shared/types';
@@ -106,6 +107,7 @@ function findTransfers() {
         :value="summary.merged"
       />
     </div>
+    <BankSeamSkippedCallout :count="summary.skippedAfterBankSeam" :account-mapping="store.accountMapping" />
     <AccountBalanceChangesTable :changes="summary.accountBalanceChanges ?? []" />
     <BalanceDesyncCallout
       :errors="summary.errors"
