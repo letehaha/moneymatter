@@ -16,15 +16,14 @@ export function parseOfxHeader({ bytes }: { bytes: Buffer }): { bodyOffset: numb
   // bootstrap pass: we can find the ASCII header without decoding the body with
   // a charset that the header has not told us yet.
   const prefix = bytes.subarray(bomLength, Math.min(bytes.length, HEADER_LIMIT_BYTES)).toString('latin1');
-  const separator = /\r?\n\r?\n/.exec(prefix);
+  const bodyStart = prefix.indexOf('<');
   const processingInstructionStart = prefix.search(/<\?OFX\s/i);
   const processingInstructionEnd =
     processingInstructionStart >= 0 ? prefix.indexOf('?>', processingInstructionStart) : -1;
   const values = new Map<string, string>();
   let bodyOffset = bomLength;
-  // Detect the XML processing instruction before the SGML blank-line separator.
-  // OFX2 permits blank lines around its declarations, which must not make it
-  // enter the OFX1 header branch.
+  // OFX2 has `<` before its `<?OFX` declaration, so the XML check must run before
+  // the first `<` is treated as the end of an OFX1 header.
   const isXmlHeader = processingInstructionStart >= 0;
   if (isXmlHeader) {
     if (processingInstructionEnd < 0) {
@@ -35,13 +34,13 @@ export function parseOfxHeader({ bytes }: { bytes: Buffer }): { bodyOffset: numb
     for (const match of instruction.matchAll(attributePattern)) {
       values.set(match[1]!.toUpperCase(), match[3]!.trim());
     }
-  } else if (separator) {
-    for (const line of prefix.slice(0, separator.index).split(/\r?\n/)) {
+  } else if (bodyStart >= 0 && /^\s*OFXHEADER\s*:/i.test(prefix)) {
+    for (const line of prefix.slice(0, bodyStart).split(/\r?\n/)) {
       const colon = line.indexOf(':');
       if (colon < 1) continue;
       values.set(line.slice(0, colon).trim().toUpperCase(), line.slice(colon + 1).trim());
     }
-    bodyOffset = bomLength + separator.index + separator[0].length;
+    bodyOffset = bomLength + bodyStart;
   } else {
     throw new OfxParseError({ code: 'invalid-header', key: 'ofxImport.errors.headerMissing' });
   }
