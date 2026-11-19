@@ -9,7 +9,11 @@ import {
   type RecalculateResult,
   RESOURCE_TYPES,
 } from '@bt/shared/types';
-import { getConversionDecimals, getCurrencyDecimals } from '@common/lib/currency-precision';
+import {
+  assertMoneyWithinMinorUnitRange,
+  getConversionDecimals,
+  getCurrencyDecimals,
+} from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { toMoneyColumnValue } from '@common/types/money-column';
 import { t } from '@i18n/index';
@@ -359,7 +363,16 @@ const localCalculateRefAmount = async ({
     quoteCode: exchangeRateParams.quoteCode,
   });
 
-  return calculateRefAmountFromParams({ amount, rate, useFloorAbs, ...decimals });
+  const refAmount = calculateRefAmountFromParams({ amount, rate, useFloorAbs, ...decimals });
+  if (useFloorAbs !== false) {
+    assertMoneyWithinMinorUnitRange({
+      money: refAmount,
+      decimals: decimals.quoteDecimals,
+      code: exchangeRateParams.quoteCode,
+    });
+  }
+
+  return refAmount;
 };
 
 /**
@@ -727,6 +740,7 @@ async function rebuildBalances(params: {
             date: balance.date,
           })
         : calculateRefAmountFromParams({ amount: balance.amount, rate, ...decimals });
+    assertMoneyWithinMinorUnitRange({ money: newAmount, decimals: decimals.quoteDecimals, code: newCurrencyCode });
 
     updates.push({ id: balance.id, amount: newAmount });
     totalBalancesRecalculated++;
