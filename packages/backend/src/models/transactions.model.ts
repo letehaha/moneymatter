@@ -239,11 +239,11 @@ export default class Transactions extends Model {
   @Column(IdColumn())
   declare id: RecordId;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare amount: Money;
 
   // Amount in curreny of account
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare refAmount: Money;
 
   @Length({ max: 2000 })
@@ -366,18 +366,18 @@ export default class Transactions extends Model {
   })
   externalData!: TransactionsAttributes['externalData'];
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare commissionRate: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare refCommissionRate: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare cashbackAmount: Money;
 
   // Metadata only: no balance, statistics, tracker or budget-plan path reads these. What the user spent in a
   // foreign currency, with its ISO 4217 code. Both hold a value or both stay null.
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
+  @MoneyField({ allowNull: true })
   declare originalAmount: Money | null;
 
   @ForeignKey(() => Currencies)
@@ -443,7 +443,7 @@ export default class Transactions extends Model {
   paymentParentId!: RecordId | null;
 
   // The row's share in the main row's currency; null when both currencies match.
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
+  @MoneyField({ allowNull: true })
   declare paymentAmount: Money | null;
 
   // A linked row's own values from before the link, restored on unlink. Null on rows the payment created.

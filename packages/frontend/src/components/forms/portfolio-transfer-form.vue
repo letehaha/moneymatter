@@ -21,6 +21,7 @@ import {
 import { usePortfolioCurrencySorting } from '@/composable/data-queries/use-portfolio-currency-sorting';
 import { usePortfolios } from '@/composable/data-queries/portfolios';
 import { useFormValidation } from '@/composable/form-validator';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import { AccountModel, PortfolioModel, TRANSACTION_TYPES, TransactionModel, UserCurrencyModel } from '@bt/shared/types';
 import { X } from '@lucide/vue';
@@ -200,7 +201,7 @@ const amountLabel = computed(() => {
 const validationRules = computed(() => ({
   amount: {
     required,
-    minValue: minValue(0.01),
+    minValue: minValue(10 ** -getCurrencyDecimals({ code: form.selectedCurrency?.currencyCode })),
   },
   selectedCurrency: {
     required,
@@ -226,12 +227,18 @@ const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFo
 );
 
 // Auto-set currency based on source.
-// For account-to-portfolio, always lock currency to the account's currency.
+// A transfer to or from an account always moves the account's currency.
 watch(
-  [() => form.fromPortfolio, () => form.fromAccount, () => transferType.value],
+  [() => form.fromPortfolio, () => form.fromAccount, () => form.toAccount, () => transferType.value],
   () => {
-    if (transferType.value === 'account-to-portfolio' && form.fromAccount?.currencyCode) {
-      form.selectedCurrency = currencies.value?.find((c) => c.currencyCode === form.fromAccount!.currencyCode) || null;
+    const accountCurrencyCode =
+      transferType.value === 'account-to-portfolio'
+        ? form.fromAccount?.currencyCode
+        : transferType.value === 'portfolio-to-account'
+          ? form.toAccount?.currencyCode
+          : undefined;
+    if (accountCurrencyCode) {
+      form.selectedCurrency = currencies.value?.find((c) => c.currencyCode === accountCurrencyCode) || null;
       return;
     }
 
@@ -542,7 +549,7 @@ const isSubmitDisabled = computed(() => {
     <!-- Regular transfer fields (hidden when linking) -->
     <template v-if="!isLinkExistingTx">
       <SelectField
-        v-if="transferType !== 'account-to-portfolio'"
+        v-if="transferType === 'portfolio-to-portfolio'"
         v-model="form.selectedCurrency"
         :label="$t('forms.portfolioTransfer.currencyLabel')"
         :values="sortedCurrencies"
@@ -557,11 +564,13 @@ const isSubmitDisabled = computed(() => {
         v-model="form.amount"
         :label="amountLabel"
         type="number"
-        step="0.01"
-        min="0.01"
+        only-positive
+        :decimals="
+          form.selectedCurrency ? getCurrencyDecimals({ code: form.selectedCurrency.currencyCode }) : undefined
+        "
         :placeholder="$t('forms.portfolioTransfer.amountPlaceholder')"
         :disabled="isAnyMutationPending || disabled"
-        :error="getFieldErrorMessage('form.amount')"
+        :error-message="getFieldErrorMessage('form.amount')"
         @blur="touchField('form.amount')"
       />
 

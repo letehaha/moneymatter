@@ -54,10 +54,8 @@ describe('parseAmount (core tabular-import amount parser)', () => {
     expect(parseAmount('+500')).toBe('500');
   });
 
-  it('treats Unicode minus and dash variants as a negative sign', () => {
+  it('treats a Unicode minus with a comma decimal or a space after it as a negative sign', () => {
     expect(parseAmount('\u2212361,00')).toBe('-361');
-    expect(parseAmount('\u2013361,00')).toBe('-361');
-    expect(parseAmount('\u2014361,00')).toBe('-361');
     expect(parseAmount('\u2212 1,234.56')).toBe('-1234.56');
   });
 

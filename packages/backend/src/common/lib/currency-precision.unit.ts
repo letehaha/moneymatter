@@ -1,7 +1,7 @@
 import { Money } from '@common/types/money';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-const DIGITS_BY_CODE: Record<string, number> = { USD: 2, JPY: 0, KWD: 3 };
+const DIGITS_BY_CODE: Record<string, number> = { USD: 2, JPY: 0, KWD: 3, BTC: 8, XNN: 9 };
 
 // `Currencies.digits` is the source of the decimals; the lookup is stubbed so the
 // unit tests do not need a database.
@@ -23,6 +23,7 @@ import { getBaseCurrency } from '@models/users-currencies.model';
 import { invalidateCurrencyDecimalsCache } from './currency-decimals-cache';
 import {
   assertMoneyFitsCurrency,
+  assertMoneyWithinMinorUnitRange,
   getBaseCurrencyDecimals,
   getConversionDecimals,
   getCurrencyDecimals,
@@ -88,19 +89,15 @@ describe('currency precision helpers', () => {
             },
       );
 
-    it('returns 2 for a USD base', async () => {
-      baseIs({ code: 'USD' });
-      await expect(getBaseCurrencyDecimals({ userId: USER_ID })).resolves.toBe(2);
-    });
-
-    it('returns 3 for a KWD base', async () => {
+    it('reads the digits joined to the base currency without a second lookup', async () => {
       baseIs({ code: 'KWD' });
       await expect(getBaseCurrencyDecimals({ userId: USER_ID })).resolves.toBe(3);
+      expect(Currencies.findOne).not.toHaveBeenCalled();
     });
 
-    it('returns 0 for a JPY base', async () => {
-      baseIs({ code: 'JPY' });
-      await expect(getBaseCurrencyDecimals({ userId: USER_ID })).resolves.toBe(0);
+    it('rejects a base currency with more than 8 decimals', async () => {
+      baseIs({ code: 'XNN' });
+      await expect(getBaseCurrencyDecimals({ userId: USER_ID })).rejects.toThrow('supported maximum of 8');
     });
 
     it('looks the base up for the given user', async () => {
@@ -113,29 +110,24 @@ describe('currency precision helpers', () => {
       baseIs({ code: null });
       await expect(getBaseCurrencyDecimals({ userId: USER_ID })).rejects.toThrow(ValidationError);
     });
-
-    it('reads the digits joined to the base currency without a second lookup', async () => {
-      baseIs({ code: 'KWD' });
-      await getBaseCurrencyDecimals({ userId: USER_ID });
-      expect(Currencies.findOne).not.toHaveBeenCalled();
-    });
   });
 
   describe('getCurrencyDecimals', () => {
-    it('returns 2 for USD', async () => {
-      await expect(getCurrencyDecimals({ userId: USER_ID, code: 'USD' })).resolves.toBe(2);
-    });
-
-    it('returns 0 for JPY', async () => {
-      await expect(getCurrencyDecimals({ userId: USER_ID, code: 'JPY' })).resolves.toBe(0);
-    });
-
-    it('returns 3 for KWD', async () => {
-      await expect(getCurrencyDecimals({ userId: USER_ID, code: 'KWD' })).resolves.toBe(3);
+    it.each([
+      ['USD', 2],
+      ['JPY', 0],
+      ['KWD', 3],
+    ])('returns the digits of %s', async (code, digits) => {
+      await expect(getCurrencyDecimals({ userId: USER_ID, code })).resolves.toBe(digits);
     });
 
     it('throws for an unknown code', async () => {
       await expect(getCurrencyDecimals({ userId: USER_ID, code: 'ZZZ' })).rejects.toThrow(NotFoundError);
+    });
+
+    it('accepts 8 decimals and rejects a currency with more', async () => {
+      await expect(getCurrencyDecimals({ userId: USER_ID, code: 'BTC' })).resolves.toBe(8);
+      await expect(getCurrencyDecimals({ userId: USER_ID, code: 'XNN' })).rejects.toThrow('supported maximum of 8');
     });
 
     it('reads the database once per code, whichever user asks', async () => {
@@ -177,125 +169,29 @@ describe('currency precision helpers', () => {
   });
 
   describe('roundToCurrency', () => {
-    it('rounds USD to 2 decimals', async () => {
-      const result = await round({
-        value: '12.176673309',
-        currencyCode: 'USD',
-        mode: 'half-up',
-      });
-      expect(result.toNumber()).toBe(12.18);
-    });
-
-    it('rounds JPY to whole units', async () => {
-      const result = await round({
-        value: 1500.6,
-        currencyCode: 'JPY',
-        mode: 'half-up',
-      });
-      expect(result.toNumber()).toBe(1501);
-    });
-
-    it('keeps 3 decimals for KWD', async () => {
-      const result = await round({
-        value: '1.2345',
-        currencyCode: 'KWD',
-        mode: 'half-up',
-      });
-      expect(result.toNumber()).toBe(1.235);
+    it.each<[string, 'half-up' | 'half-even', string, number]>([
+      ['USD', 'half-up', '12.176673309', 12.18],
+      ['USD', 'half-up', '0.125', 0.13],
+      ['USD', 'half-up', '-0.125', -0.13],
+      ['KWD', 'half-up', '1.2345', 1.235],
+      ['JPY', 'half-up', '1500.6', 1501],
+      ['JPY', 'half-up', '1500.5', 1501],
+      ['JPY', 'half-up', '-1500.5', -1501],
+      ['USD', 'half-even', '0.125', 0.12],
+      ['USD', 'half-even', '-0.125', -0.12],
+      ['USD', 'half-even', '0.135', 0.14],
+      ['KWD', 'half-even', '0.0025', 0.002],
+      ['JPY', 'half-even', '2.5', 2],
+      ['JPY', 'half-even', '3.5', 4],
+    ])('rounds %s %s: %s -> %s', async (currencyCode, mode, value, expected) => {
+      expect((await round({ value, currencyCode, mode })).toNumber()).toBe(expected);
     });
 
     it('throws for an unknown code', async () => {
       await expect(round({ value: 1, currencyCode: 'ZZZ', mode: 'half-up' })).rejects.toThrow(NotFoundError);
     });
-
-    describe('at an exact tie', () => {
-      it('half-up rounds away from zero', async () => {
-        expect(
-          (
-            await round({
-              value: '0.125',
-              currencyCode: 'USD',
-              mode: 'half-up',
-            })
-          ).toNumber(),
-        ).toBe(0.13);
-        expect(
-          (
-            await round({
-              value: '-0.125',
-              currencyCode: 'USD',
-              mode: 'half-up',
-            })
-          ).toNumber(),
-        ).toBe(-0.13);
-      });
-
-      it('half-up rounds a tie away from zero at 0 decimals', async () => {
-        expect((await round({ value: '1500.5', currencyCode: 'JPY', mode: 'half-up' })).toNumber()).toBe(1501);
-        expect((await round({ value: '-1500.5', currencyCode: 'JPY', mode: 'half-up' })).toNumber()).toBe(-1501);
-      });
-
-      it('half-even rounds to the even neighbour', async () => {
-        expect(
-          (
-            await round({
-              value: '0.125',
-              currencyCode: 'USD',
-              mode: 'half-even',
-            })
-          ).toNumber(),
-        ).toBe(0.12);
-        expect(
-          (
-            await round({
-              value: '-0.125',
-              currencyCode: 'USD',
-              mode: 'half-even',
-            })
-          ).toNumber(),
-        ).toBe(-0.12);
-        expect(
-          (
-            await round({
-              value: '0.135',
-              currencyCode: 'USD',
-              mode: 'half-even',
-            })
-          ).toNumber(),
-        ).toBe(0.14);
-      });
-
-      it('half-even applies at the currency decimals, not at 2', async () => {
-        expect(
-          (
-            await round({
-              value: '0.0025',
-              currencyCode: 'KWD',
-              mode: 'half-even',
-            })
-          ).toNumber(),
-        ).toBe(0.002);
-        expect(
-          (
-            await round({
-              value: '2.5',
-              currencyCode: 'JPY',
-              mode: 'half-even',
-            })
-          ).toNumber(),
-        ).toBe(2);
-        expect(
-          (
-            await round({
-              value: '3.5',
-              currencyCode: 'JPY',
-              mode: 'half-even',
-            })
-          ).toNumber(),
-        ).toBe(4);
-      });
-    });
   });
+
   describe('roundMoneyValues', () => {
     it('rounds every present value half-up to the currency decimals', async () => {
       const result = await roundMoneyValues({
@@ -309,17 +205,6 @@ describe('currency precision helpers', () => {
       expect(result.commission.toNumber()).toBe(0.001);
     });
 
-    it('rounds half-even when asked to', async () => {
-      const result = await roundMoneyValues({
-        values: { amount: Money.fromDecimal('0.125') },
-        userId: USER_ID,
-        currencyCode: 'USD',
-        mode: 'half-even',
-      });
-
-      expect(result.amount.toNumber()).toBe(0.12);
-    });
-
     it('keeps null and undefined as they are', async () => {
       const result = await roundMoneyValues({
         values: { cleared: null, omitted: undefined, amount: Money.fromDecimal('1500.6') },
@@ -331,18 +216,6 @@ describe('currency precision helpers', () => {
       expect(result.cleared).toBeNull();
       expect(result.omitted).toBeUndefined();
       expect(result.amount!.toNumber()).toBe(1501);
-    });
-
-    it('rounds a tie half-up at 0 decimals', async () => {
-      const result = await roundMoneyValues({
-        values: { amount: Money.fromDecimal('1500.5'), refund: Money.fromDecimal('-2.5') },
-        userId: USER_ID,
-        currencyCode: 'JPY',
-        mode: 'half-up',
-      });
-
-      expect(result.amount.toNumber()).toBe(1501);
-      expect(result.refund.toNumber()).toBe(-3);
     });
 
     it('does not read the currency when there is nothing to round', async () => {
@@ -381,6 +254,37 @@ describe('currency precision helpers', () => {
       await expect(assertFits({ value: '12.345', currencyCode: 'USD' })).rejects.toThrow(ValidationError);
       await expect(assertFits({ value: '1.2345', currencyCode: 'KWD' })).rejects.toThrow(ValidationError);
       await expect(assertFits({ value: '1500.5', currencyCode: 'JPY' })).rejects.toThrow(ValidationError);
+    });
+  });
+
+  describe('assertMoneyWithinMinorUnitRange', () => {
+    it.each([
+      { decimals: 0, max: '9007199254740991', overMax: '9007199254740992' },
+      { decimals: 2, max: '90071992547409.91', overMax: '90071992547409.92' },
+      { decimals: 3, max: '9007199254740.991', overMax: '9007199254740.992' },
+      { decimals: 8, max: '90071992.54740991', overMax: '90071992.54740992' },
+    ])('at $decimals decimals accepts $max and rejects $overMax', ({ decimals, max, overMax }) => {
+      const check = (value: string) =>
+        assertMoneyWithinMinorUnitRange({ money: Money.fromDecimal(value), decimals, code: 'XXX' });
+
+      expect(() => check(max)).not.toThrow();
+      expect(() => check(`-${max}`)).not.toThrow();
+      expect(() => check(overMax)).toThrow(ValidationError);
+      expect(() => check(`-${overMax}`)).toThrow(ValidationError);
+    });
+
+    it('is applied by the rounding helpers', async () => {
+      await expect(round({ value: '9007199254740.992', currencyCode: 'KWD', mode: 'half-up' })).rejects.toThrow(
+        ValidationError,
+      );
+      await expect(
+        assertMoneyFitsCurrency({
+          money: Money.fromDecimal('90071992.54740992'),
+          userId: USER_ID,
+          currencyCode: 'BTC',
+        }),
+      ).rejects.toThrow(ValidationError);
+      await expect(round({ value: '9007199254740.991', currencyCode: 'KWD', mode: 'half-up' })).resolves.toBeDefined();
     });
   });
 });

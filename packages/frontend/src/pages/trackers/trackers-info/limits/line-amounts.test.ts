@@ -120,13 +120,16 @@ describe('buildLinesTotals', () => {
 });
 
 describe('line amounts at the base currency decimals', () => {
-  it('flags a line over its 3-decimal limit by one minor unit', () => {
+  it.each<[number, number, number, number]>([
+    [3, 10.004, 10.005, -0.001],
+    [0, 1000, 1001, -1],
+  ])('at %d decimals flags a line over its %d limit by one minor unit', (decimals, limitAmount, spent, left) => {
     const [row] = buildLineRows({
-      decimals: 3,
-      lines: [line({ id: 'a', position: 0, limitAmount: 10.004 })],
-      stats: stats({ lines: [['a', 10.005]] }),
+      decimals,
+      lines: [line({ id: 'a', position: 0, limitAmount })],
+      stats: stats({ lines: [['a', spent]] }),
     });
-    expect(row).toMatchObject({ left: -0.001, isOver: true });
+    expect(row).toMatchObject({ left, isOver: true });
   });
 
   it('keeps the third decimal in the totals', () => {
@@ -140,14 +143,5 @@ describe('line amounts at the base currency decimals', () => {
       spent: 2.346,
       left: -1.112,
     });
-  });
-
-  it('works in whole units for a 0-decimal base currency', () => {
-    const [row] = buildLineRows({
-      decimals: 0,
-      lines: [line({ id: 'a', position: 0, limitAmount: 1000 })],
-      stats: stats({ lines: [['a', 1001]] }),
-    });
-    expect(row).toMatchObject({ left: -1, isOver: true });
   });
 });

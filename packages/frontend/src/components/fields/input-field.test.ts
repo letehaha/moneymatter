@@ -390,39 +390,18 @@ describe('InputField component', () => {
       await wrapper.find('input').setValue(value);
     };
 
-    it('drops digits past the currency decimals and emits the trimmed number', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 3 });
+    it.each<[number, string, string, number]>([
+      [3, '1.23456', '1.234', 1.234],
+      [3, '1.234', '1.234', 1.234],
+      [0, '1500.6', '1500', 1500],
+      [0, '20500000000', '20500000000', 20_500_000_000],
+    ])('at %d decimals shows %s as %s and emits %d', async (decimals, typed, shown, emitted) => {
+      const wrapper = mountComponent({ type: 'number', decimals });
 
-      await typeInto({ wrapper, value: '1.23456' });
+      await typeInto({ wrapper, value: typed });
 
-      expect(wrapper.find('input').element.value).toBe('1.234');
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1.234]);
-    });
-
-    it('keeps a 3-decimal amount intact', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 3 });
-
-      await typeInto({ wrapper, value: '1.234' });
-
-      expect(wrapper.find('input').element.value).toBe('1.234');
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1.234]);
-    });
-
-    it('drops the decimal point for a whole-number currency', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 0 });
-
-      await typeInto({ wrapper, value: '1500.6' });
-
-      expect(wrapper.find('input').element.value).toBe('1500');
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1500]);
-    });
-
-    it('keeps every digit of a large whole-number amount (VND)', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 0 });
-
-      await typeInto({ wrapper, value: '20500000000' });
-
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([20_500_000_000]);
+      expect(wrapper.find('input').element.value).toBe(shown);
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([emitted]);
     });
 
     it('does not limit precision when decimals is unset', async () => {
@@ -433,40 +412,28 @@ describe('InputField component', () => {
       expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([0.00040641]);
     });
 
-    it('blocks the decimal point key for a whole-number currency', () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 0 });
+    it.each<[number, boolean]>([
+      [0, true],
+      [2, false],
+    ])('at %d decimals the decimal point key is blocked: %s', (decimals, blocked) => {
+      const wrapper = mountComponent({ type: 'number', decimals });
       const event = new KeyboardEvent('keypress', { key: '.' });
       const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
 
       wrapper.find('input').element.dispatchEvent(event);
 
-      expect(preventDefaultSpy).toHaveBeenCalled();
+      expect(preventDefaultSpy.mock.calls.length > 0).toBe(blocked);
     });
 
-    it('allows the decimal point key when the currency has decimals', () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 2 });
-      const event = new KeyboardEvent('keypress', { key: '.' });
-      const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+    it.each<[number, number, number, number]>([
+      [3, 12.345, 2, 12.34],
+      [2, 10.5, 0, 10],
+    ])('cuts a %d-decimal %d to %d decimals and re-emits %d', async (from, modelValue, to, expected) => {
+      const wrapper = mountComponent({ type: 'number', decimals: from, modelValue });
 
-      wrapper.find('input').element.dispatchEvent(event);
+      await wrapper.setProps({ decimals: to });
 
-      expect(preventDefaultSpy).not.toHaveBeenCalled();
-    });
-
-    it('re-emits the value cut to the new decimals when they shrink', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 3, modelValue: 12.345 });
-
-      await wrapper.setProps({ decimals: 2 });
-
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([12.34]);
-    });
-
-    it('re-emits a whole number when the decimals drop to zero', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 2, modelValue: 10.5 });
-
-      await wrapper.setProps({ decimals: 0 });
-
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([10]);
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([expected]);
     });
 
     it('drops a typed trailing decimal tail when the decimals drop to zero', async () => {
@@ -487,18 +454,13 @@ describe('InputField component', () => {
       expect(wrapper.emitted('update:modelValue')).toBeUndefined();
     });
 
-    it('parses pasted exponent notation instead of slicing it', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 2 });
+    it.each<[number, string]>([
+      [2, '1.5e3'],
+      [0, '1.5e3'],
+    ])('at %d decimals parses pasted %s instead of slicing it', async (decimals, pasted) => {
+      const wrapper = mountComponent({ type: 'number', decimals });
 
-      await typeInto({ wrapper, value: '1.5e3' });
-
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1500]);
-    });
-
-    it('keeps a pasted exponent value whole for a whole-number currency', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 0 });
-
-      await typeInto({ wrapper, value: '1.5e3' });
+      await typeInto({ wrapper, value: pasted });
 
       expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1500]);
     });

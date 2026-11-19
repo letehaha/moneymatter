@@ -1,9 +1,12 @@
-import type { Cents, Decimal, MinorUnits } from '@bt/shared/types';
+import { type Cents, type Decimal, type MinorUnits, MAX_CURRENCY_DECIMALS } from '@bt/shared/types';
 import Big from 'big.js';
 
-const assertDecimals = ({ decimals, caller }: { decimals: number; caller: string }): void => {
+export const assertDecimals = ({ decimals, caller }: { decimals: number; caller: string }): void => {
   if (!Number.isInteger(decimals) || decimals < 0) {
     throw new Error(`${caller}: expected a non-negative integer for decimals, got ${decimals}`);
+  }
+  if (decimals > MAX_CURRENCY_DECIMALS) {
+    throw new Error(`${caller}: ${decimals} decimals exceeds the supported maximum of ${MAX_CURRENCY_DECIMALS}`);
   }
 };
 

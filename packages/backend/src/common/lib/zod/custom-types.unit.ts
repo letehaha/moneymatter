@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { z } from 'zod';
 
-import { dateBound, dateRange, withDateOrder } from './custom-types';
+import { boundedDecimalAmount, dateBound, dateRange, withDateOrder } from './custom-types';
 
 describe('dateBound', () => {
   describe("precision 'date' (default)", () => {
@@ -207,5 +207,15 @@ describe('withDateOrder', () => {
     it('still enforces ordering when both bounds are present', () => {
       expect(schema.safeParse({ startDate: '2025-02-01', endDate: '2025-01-01' }).success).toBe(false);
     });
+  });
+});
+
+describe('boundedDecimalAmount', () => {
+  it.each([5e-7, 1e-8, 0.00000123, 1e-18, 12.5, 0])('accepts %p', (value) => {
+    expect(boundedDecimalAmount().safeParse(value).success).toBe(true);
+  });
+
+  it.each([1e-19, 1.5e-18])('rejects %p, which has more than 18 decimals', (value) => {
+    expect(boundedDecimalAmount().safeParse(value).success).toBe(false);
   });
 });

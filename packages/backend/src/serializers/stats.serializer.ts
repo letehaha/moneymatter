@@ -208,7 +208,7 @@ export function serializeCashFlow({
 // ============================================================================
 
 // Convert every minor-units amount in a keyed record to an API decimal, preserving the key type
-// — a closed-kind record (assets/liabilities) whose exact keys are kept intact.
+// (pivot columns or the closed asset/liability kinds).
 const decimalizeMinorValues = <K extends string>({
   values,
   decimals,

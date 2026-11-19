@@ -218,6 +218,20 @@ describe('getRefundTargetCap', () => {
     ).toMatchObject({ cap: 653, isCapApprox: true, isSameCurrency: false });
   });
 
+  it.each<[number, number]>([
+    [12.34, 1851],
+    [0.4, 60],
+  ])('keeps the cents of a %d USD remainder when converting it to a JPY refund (%d)', (amount, cap) => {
+    expect(
+      getRefundTargetCap({
+        decimals: 0,
+        link: { transaction: purchase({ id: 'a', amount, currencyCode: 'USD' }) },
+        refundCurrencyCode: 'JPY',
+        convert: ({ amount: value }) => value * 150,
+      }),
+    ).toMatchObject({ cap, refundedByOthers: 0 });
+  });
+
   it('has no cap when the rate is missing', () => {
     expect(
       getRefundTargetCap({
@@ -430,29 +444,24 @@ describe('finalizeRefundShares', () => {
 });
 
 describe('refund shares at the refund currency decimals', () => {
-  it('fills 3-decimal shares without losing the third decimal', () => {
-    expect(fillRefundShares({ decimals: 3, refundAmount: 3.579, targets: [{ cap: 1.234 }, { cap: 2.345 }] })).toEqual([
-      1.234, 2.345,
-    ]);
+  it.each<[number, number, { cap: number | null }[], number[]]>([
+    [3, 3.579, [{ cap: 1.234 }, { cap: 2.345 }], [1.234, 2.345]],
+    [0, 1001, [{ cap: 500 }, { cap: null }], [500, 501]],
+  ])('fills shares at %d decimals: %d', (decimals, refundAmount, targets, expected) => {
+    expect(fillRefundShares({ decimals, refundAmount, targets })).toEqual(expected);
   });
 
-  it('lets the last approximate target swallow one stray minor unit of a 3-decimal refund', () => {
-    expect(
-      fillRefundShares({ decimals: 3, refundAmount: 1.005, targets: [{ cap: 1.004, isCapApprox: true }] }),
-    ).toEqual([1.005]);
-  });
-
-  it('lets the last approximate target swallow one stray whole unit of a 0-decimal refund', () => {
-    expect(fillRefundShares({ decimals: 0, refundAmount: 1000, targets: [{ cap: 999, isCapApprox: true }] })).toEqual([
-      1000,
-    ]);
-  });
-
-  it('fills whole units for a 0-decimal refund', () => {
-    expect(fillRefundShares({ decimals: 0, refundAmount: 1001, targets: [{ cap: 500 }, { cap: null }] })).toEqual([
-      500, 501,
-    ]);
-  });
+  it.each<[number, number, number]>([
+    [3, 1.005, 1.004],
+    [0, 1000, 999],
+  ])(
+    'lets the last approximate target swallow one stray minor unit at %d decimals: %d over a cap of %d',
+    (decimals, refundAmount, cap) => {
+      expect(fillRefundShares({ decimals, refundAmount, targets: [{ cap, isCapApprox: true }] })).toEqual([
+        refundAmount,
+      ]);
+    },
+  );
 
   it('caps a 3-decimal purchase by its exact remainder', () => {
     const { cap } = getRefundTargetCap({

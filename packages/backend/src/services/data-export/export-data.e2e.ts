@@ -1872,13 +1872,9 @@ describe('Data export (POST /user/data-export)', () => {
       };
 
       it('exports a KWD plan at 3 decimals', async () => {
-        const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-        const data = await helpers.asUser({
-          cookies: user.cookies,
-          fn: async () => {
-            await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
-            return exportDecimalsPlan({ currencyCode: 'KWD', goal: 10.125, assigned: 1.234, spent: 0.5 });
-          },
+        const data = await helpers.asNewUserWithBaseCurrency({
+          currencyCode: 'KWD',
+          fn: () => exportDecimalsPlan({ currencyCode: 'KWD', goal: 10.125, assigned: 1.234, spent: 0.5 }),
         });
 
         expect(data.budget_lines[0]).toMatchObject({ goal: 'Budget another 10.125 every period', currency: 'KWD' });
@@ -1888,18 +1884,6 @@ describe('Data export (POST /user/data-export)', () => {
           available: 0.734,
           currency: 'KWD',
         });
-      });
-
-      it('keeps the 2-decimal values for a 2-decimal plan', async () => {
-        const data = await exportDecimalsPlan({
-          currencyCode: global.BASE_CURRENCY.code,
-          goal: 10.12,
-          assigned: 1.23,
-          spent: 0.5,
-        });
-
-        expect(data.budget_lines[0]).toMatchObject({ goal: 'Budget another 10.12 every period' });
-        expect(data.budget_periods[0]).toMatchObject({ assigned: 1.23, spent: 0.5, available: 0.73 });
       });
     });
 

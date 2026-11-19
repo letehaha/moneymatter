@@ -73,10 +73,10 @@ export default class VentureDeals extends Model {
   })
   status!: VENTURE_DEAL_STATUS;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare principal: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare entryFee: Money;
 
   @Column({ type: DataType.DECIMAL(10, 6), allowNull: false, defaultValue: '0' })

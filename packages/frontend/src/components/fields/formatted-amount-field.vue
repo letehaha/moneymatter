@@ -85,9 +85,10 @@ const formatNumber = (value: number): string => {
 };
 
 const displayValue = computed(() => {
-  if (props.modelValue === null || props.modelValue === undefined) return '';
   // fragment uses a canonical '.' — swap in the locale's decimal separator to match the formatter.
   const fragment = trailingFragment.value.replace('.', separators.decimal);
+  if (props.modelValue === null || props.modelValue === undefined)
+    return fragment === separators.decimal ? fragment : '';
   return `${formatNumber(props.modelValue)}${fragment}`;
 });
 
@@ -95,19 +96,24 @@ const onInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
   const raw = target.value;
   const caretBefore = target.selectionStart ?? raw.length;
-  const digitsBeforeCaret = countDigitsBeforeCaret({
-    text: raw,
-    caret: caretBefore,
-    decimalSeparator: separators.decimal,
-  });
-
   const { fragment, numeric } = parseAmountInput({
     raw,
     decimalSeparator: separators.decimal,
     groupSeparator: separators.group,
     decimals: props.decimals,
   });
-  trailingFragment.value = fragment;
+  // A lone separator has no value yet but must stay on screen, or '.5' would land as 5.
+  const isLoneSeparator = numeric === null && raw === separators.decimal && props.decimals > 0;
+  trailingFragment.value = isLoneSeparator ? '.' : fragment;
+
+  // '.5' renders as '0.5': count the added zero so the caret stays after the typed digit.
+  const addedLeadingZero = numeric !== null && raw.startsWith(separators.decimal) && caretBefore > 0 ? 1 : 0;
+  const digitsBeforeCaret =
+    countDigitsBeforeCaret({
+      text: raw,
+      caret: caretBefore,
+      decimalSeparator: separators.decimal,
+    }) + addedLeadingZero;
 
   if (numeric !== props.modelValue) {
     emit('update:modelValue', numeric);

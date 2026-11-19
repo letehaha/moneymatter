@@ -45,7 +45,7 @@ export default class Balances extends Model {
    * specific date.
    * `amount` is in the BASE currency. So it represents a `refAmount` (`refBalance`)
    */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare amount: Money;
 
   @ForeignKey(() => Accounts)
@@ -54,18 +54,6 @@ export default class Balances extends Model {
 
   @BelongsTo(() => Accounts)
   account!: Accounts;
-
-  // Method to calculate the total balance across all accounts
-  static async getTotalBalance({ userId }: { userId: number }): Promise<number> {
-    const userAccounts = await Accounts.findAll({ where: { userId: userId } });
-    const accountIds = userAccounts.map((account) => account.id);
-
-    const result = await Balances.sum('amount', {
-      where: { accountId: accountIds },
-    });
-
-    return result || 0;
-  }
 
   // Method to retrieve total balance history for specified dates and accounts
   static async getTotalBalanceHistory(payload: GetTotalBalanceHistoryPayload): Promise<Balances[]> {

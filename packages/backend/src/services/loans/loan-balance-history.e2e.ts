@@ -495,8 +495,8 @@ describe('Cross-currency loan settlement: chart matches the card', () => {
 describe('Loan history at the loan currency decimals', () => {
   /**
    * A `currencyCode` loan owing 1000.125-style `owed`, re-anchored 30 days back and paid `payment`
-   * 20 days back from a same-currency account. Returns both the loan-currency series and the
-   * base-currency Balances rows.
+   * 20 days back from a same-currency account. Returns the loan-currency series, the
+   * base-currency Balances rows and the reloaded loan.
    */
   const anchoredAndPaid = async ({
     currencyCode,
@@ -529,6 +529,7 @@ describe('Loan history at the loan currency decimals', () => {
     return {
       series: await helpers.getLoanBalanceHistory({ id: loan.id, raw: true }),
       balances: await getLoanHistory({ loanId: loan.id }),
+      reloaded: await helpers.getLoanById({ id: loan.id, raw: true }),
     };
   };
 
@@ -542,7 +543,11 @@ describe('Loan history at the loan currency decimals', () => {
       ],
     });
 
-    const { series, balances } = await anchoredAndPaid({ currencyCode: 'KWD', owed: 1000.125, payment: 10.125 });
+    const { series, balances, reloaded } = await anchoredAndPaid({
+      currencyCode: 'KWD',
+      owed: 1000.125,
+      payment: 10.125,
+    });
 
     expect(series).toEqual([
       { date: DAY_30_AGO, amount: -1000.125 },
@@ -554,12 +559,13 @@ describe('Loan history at the loan currency decimals', () => {
       { date: DAY_30_AGO, amount: -12346.54 },
       { date: DAY_20_AGO, amount: -12221.55 },
     ]);
+    expect(reloaded.currentBalance).toBe(-990);
+    expect(reloaded.projection.paidToDate).toBe(10.125);
   });
 
   it('keeps 3 decimals in the base-currency rows of a KWD-base book', async () => {
-    const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-    const { series, balances } = await helpers.asUser({
-      cookies: user.cookies,
+    const { series, balances, reloaded } = await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
       fn: () => anchoredAndPaid({ currencyCode: 'KWD', owed: 1000.125, payment: 10.125 }),
     });
 
@@ -571,10 +577,12 @@ describe('Loan history at the loan currency decimals', () => {
       { date: DAY_30_AGO, amount: -1000.125 },
       { date: DAY_20_AGO, amount: -990 },
     ]);
+    expect(reloaded.currentBalance).toBe(-990);
+    expect(reloaded.projection.paidToDate).toBe(10.125);
   });
 
   it('keeps the 2-decimal series and rows of a primary-currency loan', async () => {
-    const { series, balances } = await anchoredAndPaid({
+    const { series, balances, reloaded } = await anchoredAndPaid({
       currencyCode: global.BASE_CURRENCY_CODE,
       owed: 1000.12,
       payment: 10.12,
@@ -585,5 +593,7 @@ describe('Loan history at the loan currency decimals', () => {
       { date: DAY_20_AGO, amount: -990 },
     ]);
     expect(balances).toEqual(series.map((point) => ({ date: point.date, amount: point.amount })));
+    expect(reloaded.currentBalance).toBe(-990);
+    expect(reloaded.projection.paidToDate).toBe(10.12);
   });
 });

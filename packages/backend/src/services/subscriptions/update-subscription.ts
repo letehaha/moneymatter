@@ -190,24 +190,32 @@ export const updateSubscription = withTransaction(
     const wasInstallment = subscription.type === SUBSCRIPTION_TYPES.installment;
     const previousDueDate = subscription.dueDate;
 
-    // The API exchanges decimals; the DECIMAL column takes a Money (or null
-    // to clear). Convert only when the caller sent the field, so an omitted
-    // expectedAmount leaves the stored amount untouched.
+    // The amount is stored at its currency's decimals, so a currency change re-rounds the stored
+    // amount too. An omitted amount on an unchanged currency stays untouched.
     const { expectedAmount: expectedAmountInput, ...restFields } = fields;
     const expectedCurrencyCode = fields.expectedCurrencyCode ?? subscription.expectedCurrencyCode;
+    const currencyChanged =
+      fields.expectedCurrencyCode != null && fields.expectedCurrencyCode !== subscription.expectedCurrencyCode;
+    const nextAmount =
+      expectedAmountInput !== undefined
+        ? expectedAmountInput === null
+          ? null
+          : Money.fromDecimal(expectedAmountInput)
+        : currencyChanged
+          ? subscription.expectedAmount
+          : undefined;
     // `assertAmountCurrencyConsistent` above already rejects an amount without a currency.
-    if (expectedAmountInput != null && !expectedCurrencyCode) {
+    if (nextAmount != null && !expectedCurrencyCode) {
       throw new UnexpectedError({ message: 'A subscription amount reached the write without a currency' });
     }
     await subscription.update({
       ...restFields,
-      ...(expectedAmountInput !== undefined
+      ...(nextAmount !== undefined
         ? {
-            // Stored at the decimals of the currency it is billed in.
             expectedAmount:
-              expectedAmountInput != null
+              nextAmount !== null
                 ? await roundToCurrency({
-                    money: Money.fromDecimal(expectedAmountInput),
+                    money: nextAmount,
                     userId,
                     currencyCode: expectedCurrencyCode!,
                     mode: 'half-up',

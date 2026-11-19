@@ -61,7 +61,7 @@ export default class Subscriptions extends Model {
   })
   transactionType!: TRANSACTION_TYPES;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
+  @MoneyField({ allowNull: true })
   declare expectedAmount: Money | null;
 
   @Column({

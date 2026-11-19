@@ -1,5 +1,4 @@
 import { TAG_REMINDER_TYPES, TagReminderFrequency, TagReminderSettings, TagReminderType } from '@bt/shared/types';
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -8,14 +7,14 @@ import { logger } from '@js/utils/logger';
 import TagReminders from '@models/tag-reminders.model';
 import Tags from '@models/tags.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { roundPositiveBaseAmount } from '@services/transactions/round-positive-amount';
 import { Op } from 'sequelize';
 
 const MAX_REMINDERS_PER_USER = 50;
 
 /**
- * Rounds `settings.amountThreshold` half-up to the decimals of the owner's base currency, the
- * currency the threshold is stated in, so the stored value, the duplicate check and the
- * notification all see the same figure. A threshold that rounds to zero is refused.
+ * Rounds `settings.amountThreshold` to the owner's base currency, the currency it is stated in, so
+ * the stored value, the duplicate check and the notification all see the same figure.
  */
 const roundAmountThreshold = async ({
   userId,
@@ -27,14 +26,11 @@ const roundAmountThreshold = async ({
   const { amountThreshold } = settings as { amountThreshold?: number };
   if (amountThreshold === undefined) return settings;
 
-  const decimals = await getBaseCurrencyDecimals({ userId });
-  const rounded = Money.fromDecimal(amountThreshold).round(decimals);
-
-  if (!rounded.isPositive()) {
-    throw new ValidationError({
-      message: t({ key: 'tagReminders.amountThresholdRoundsToZero', variables: { decimals } }),
-    });
-  }
+  const rounded = await roundPositiveBaseAmount({
+    money: Money.fromDecimal(amountThreshold),
+    userId,
+    errorKey: 'tagReminders.amountThresholdRoundsToZero',
+  });
 
   return { ...settings, amountThreshold: rounded.toNumber() };
 };

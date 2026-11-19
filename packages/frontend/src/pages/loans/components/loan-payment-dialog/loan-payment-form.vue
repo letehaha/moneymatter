@@ -167,9 +167,11 @@ const validationRules = computed(() => {
     form: {
       account: { required },
       amount: isCurrenciesDifferent.value
-        ? { required, minValue: minValue(0.01) }
-        : { required, minValue: minValue(0.01), notOverpay: overpayRule },
-      targetAmount: isCurrenciesDifferent.value ? { required, minValue: minValue(0.01), notOverpay: overpayRule } : {},
+        ? { required, minValue: minValue(10 ** -sourceDecimals.value) }
+        : { required, minValue: minValue(10 ** -sourceDecimals.value), notOverpay: overpayRule },
+      targetAmount: isCurrenciesDifferent.value
+        ? { required, minValue: minValue(10 ** -loanDecimals.value), notOverpay: overpayRule }
+        : {},
     },
   };
 });

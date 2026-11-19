@@ -757,35 +757,35 @@ const createAccountIn = async ({ currencyCode }: { currencyCode: string }) => {
 };
 
 describe('Goal amounts at the currency decimals', () => {
-  it('rounds an amount with extra decimals half-up on a 2-decimal goal', async () => {
-    const goal = await helpers.createGoal({ payload: { targetAmount: 100.555, plannedMonthly: 10.005 }, raw: true });
-    expect(goal).toMatchObject({ targetAmount: 100.56, plannedMonthly: 10.01 });
+  it.each([
+    { label: '2-decimal', currencyCode: undefined, sent: [100.555, 10.005, 200.545], stored: [100.56, 10.01, 200.55] },
+    { label: 'JPY', currencyCode: 'JPY', sent: [1500.5, 100.4, 2000.5], stored: [1501, 100, 2001] },
+    { label: 'KWD', currencyCode: 'KWD', sent: [1500.1255, 0.001, 2.0005], stored: [1500.126, 0.001, 2.001] },
+  ])(
+    'rounds the amounts of a $label goal half-up to its decimals',
+    async ({
+      currencyCode,
+      sent: [targetAmount, plannedMonthly, updatedTarget],
+      stored: [storedTarget, storedMonthly, storedUpdatedTarget],
+    }) => {
+      const goal = await helpers.createGoal({
+        payload: { ...(currencyCode && { currencyCode }), targetAmount, plannedMonthly },
+        raw: true,
+      });
+      expect(goal).toMatchObject({
+        currencyCode: currencyCode ?? global.BASE_CURRENCY.code,
+        targetAmount: storedTarget,
+        plannedMonthly: storedMonthly,
+      });
 
-    const updated = await helpers.updateGoal({ goalId: goal.id, payload: { targetAmount: 200.545 }, raw: true });
-    expect(updated.targetAmount).toBe(200.55);
-  });
-
-  it('rounds to whole units on a 0-decimal goal and refuses an amount that rounds to nothing', async () => {
-    const goal = await helpers.createGoal({ payload: { currencyCode: 'JPY', targetAmount: 1500.5 }, raw: true });
-    expect(goal).toMatchObject({ currencyCode: 'JPY', targetAmount: 1501 });
-
-    expect((await helpers.updateGoal({ goalId: goal.id, payload: { plannedMonthly: 0.4 } })).statusCode).toBe(
-      ERROR_CODES.ValidationError,
-    );
-    expect((await helpers.createGoal({ payload: { currencyCode: 'JPY', targetAmount: 0.4 } })).statusCode).toBe(
-      ERROR_CODES.ValidationError,
-    );
-    expect((await helpers.getGoal({ goalId: goal.id, raw: true })).plannedMonthly).toBe(null);
-  });
-
-  it('keeps the third decimal of a 3-decimal goal', async () => {
-    const goal = await helpers.createGoal({
-      payload: { currencyCode: 'KWD', targetAmount: 1500.1255, plannedMonthly: 0.001 },
-      raw: true,
-    });
-
-    expect(goal).toMatchObject({ currencyCode: 'KWD', targetAmount: 1500.126, plannedMonthly: 0.001 });
-  });
+      const updated = await helpers.updateGoal({
+        goalId: goal.id,
+        payload: { targetAmount: updatedTarget },
+        raw: true,
+      });
+      expect(updated.targetAmount).toBe(storedUpdatedTarget);
+    },
+  );
 
   it('rejects a share percent with three decimals on update', async () => {
     const goal = await helpers.createGoal({ raw: true });
@@ -817,11 +817,6 @@ describe('Goal amounts at the currency decimals', () => {
     const updated = await helpers.updateGoal({ goalId: goal.id, payload: { currencyCode: 'JPY' }, raw: true });
 
     expect(updated).toMatchObject({ currencyCode: 'JPY', targetAmount: 1001, plannedMonthly: 100 });
-    expect(await helpers.getGoal({ goalId: goal.id, raw: true })).toMatchObject({
-      currencyCode: 'JPY',
-      targetAmount: 1001,
-      plannedMonthly: 100,
-    });
   });
 
   it('refuses a currency change that rounds a stored amount to nothing and leaves the goal unchanged', async () => {

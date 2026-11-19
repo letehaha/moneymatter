@@ -47,34 +47,18 @@ beforeEach(() => {
 });
 
 describe('computeCategoryAllocations minor units', () => {
-  it('keeps the third decimal of a KWD amount', async () => {
+  it.each([
+    [3, '1.234', 1234],
+    [2, '1.234', 123],
+    [0, '1500', 1500],
+  ])('converts at %s decimals: %s -> %s minor units', async (decimals, refAmount, minor) => {
     const { base } = await computeCategoryAllocations({
-      transactions: [buildTransaction({ id: 'tx-1', refAmount: '1.234' })],
+      transactions: [buildTransaction({ id: 'tx-1', refAmount })],
       applyRefunds: false,
-      decimals: 3,
+      decimals,
     });
 
-    expect(base.map((leg) => leg.minor)).toEqual([1234]);
-  });
-
-  it('rounds the same amount to cents at 2 decimals', async () => {
-    const { base } = await computeCategoryAllocations({
-      transactions: [buildTransaction({ id: 'tx-1', refAmount: '1.234' })],
-      applyRefunds: false,
-      decimals: 2,
-    });
-
-    expect(base.map((leg) => leg.minor)).toEqual([123]);
-  });
-
-  it('keeps whole units at 0 decimals', async () => {
-    const { base } = await computeCategoryAllocations({
-      transactions: [buildTransaction({ id: 'tx-1', refAmount: '1500' })],
-      applyRefunds: false,
-      decimals: 0,
-    });
-
-    expect(base.map((leg) => leg.minor)).toEqual([1500]);
+    expect(base.map((leg) => leg.minor)).toEqual([minor]);
   });
 
   it('gives the primary category what the splits leave at 3 decimals', async () => {

@@ -934,31 +934,24 @@ const paymentAmountOf = async ({ legAccountId }: { legAccountId: string }) => {
 };
 
 describe('Multi-account payments: amounts at the currency decimals', () => {
-  it("rounds a leg's payment amount half-up to the main row's 2 decimals", async () => {
-    const usdMain = await createAccountIn({ currencyCode: 'USD' });
-    const [aedLeg] = await createManualAccounts({ count: 1 });
+  it.each([
+    { currencyCode: 'USD', mainAmount: 20, paymentAmount: 10.129, expected: 10.13 },
+    { currencyCode: 'JPY', mainAmount: 3000, paymentAmount: 1500.5, expected: 1501 },
+  ])(
+    "rounds a leg's payment amount $paymentAmount half-up to $expected on a $currencyCode main row",
+    async ({ currencyCode, mainAmount, paymentAmount, expected }) => {
+      const main = await createAccountIn({ currencyCode });
+      const [aedLeg] = await createManualAccounts({ count: 1 });
 
-    await createPayment({
-      mainAccountId: usdMain.id,
-      amount: 20,
-      legs: [{ accountId: aedLeg!.id, amount: 37, paymentAmount: 10.129 }],
-    });
+      await createPayment({
+        mainAccountId: main.id,
+        amount: mainAmount,
+        legs: [{ accountId: aedLeg!.id, amount: 37, paymentAmount }],
+      });
 
-    expect(await paymentAmountOf({ legAccountId: aedLeg!.id })).toBe(10.13);
-  });
-
-  it("rounds a leg's payment amount half-up to a main row in a currency without minor units", async () => {
-    const jpyMain = await createAccountIn({ currencyCode: 'JPY' });
-    const [aedLeg] = await createManualAccounts({ count: 1 });
-
-    await createPayment({
-      mainAccountId: jpyMain.id,
-      amount: 3000,
-      legs: [{ accountId: aedLeg!.id, amount: 37, paymentAmount: 1500.5 }],
-    });
-
-    expect(await paymentAmountOf({ legAccountId: aedLeg!.id })).toBe(1501);
-  });
+      expect(await paymentAmountOf({ legAccountId: aedLeg!.id })).toBe(expected);
+    },
+  );
 
   it('rejects a payment amount that rounds to zero, and a leg amount that rounds to zero', async () => {
     const usdMain = await createAccountIn({ currencyCode: 'USD' });

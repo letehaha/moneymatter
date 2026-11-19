@@ -72,22 +72,22 @@ export default class Accounts extends Model {
   @Column({ allowNull: false, type: DataType.STRING })
   name!: string;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare initialBalance: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare refInitialBalance: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare currentBalance: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare refCurrentBalance: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare creditLimit: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare refCreditLimit: Money;
 
   @Column({
@@ -315,20 +315,28 @@ export interface UpdateAccountByIdPayload extends EntityLogoPayload {
   externalData?: AccountsAttributes['externalData'];
 }
 
-export async function updateAccountById({ id, userId, ...payload }: UpdateAccountByIdPayload) {
+export async function updateAccountById({
+  id,
+  userId,
+  currencyCode,
+  ...payload
+}: UpdateAccountByIdPayload & {
+  /** The stored account currency, read from the row when omitted. Only rounds; it is never written. */
+  currencyCode?: AccountsAttributes['currencyCode'];
+}) {
   const where = { id, userId };
 
   const { initialBalance, currentBalance, creditLimit } = payload;
   let rounded = {};
 
   if (initialBalance !== undefined || currentBalance !== undefined || creditLimit !== undefined) {
-    const stored = await Accounts.findOne({ where, attributes: ['currencyCode'] });
+    const code = currencyCode ?? (await Accounts.findOne({ where, attributes: ['currencyCode'] }))?.currencyCode;
 
-    if (stored) {
+    if (code) {
       rounded = await roundMoneyValues({
         values: { initialBalance, currentBalance, creditLimit },
         userId,
-        currencyCode: stored.currencyCode,
+        currencyCode: code,
         mode: 'half-up',
       });
     }

@@ -362,10 +362,8 @@ describe('Goal insights', () => {
 
 describe('Goal insights at the base currency decimals', () => {
   it('keeps a 3-decimal goal that is a few fils short below its target', async () => {
-    const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-
-    const goal = await helpers.asUser({
-      cookies: kwdUser.cookies,
+    const goal = await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
       fn: async () => {
         const account = await createAccount({ initialBalance: 10, currencyCode: 'KWD' });
         return helpers.createGoal({
@@ -385,10 +383,8 @@ describe('Goal insights at the base currency decimals', () => {
   });
 
   it('counts whole units toward a 0-decimal goal', async () => {
-    const jpyUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'JPY' });
-
-    const goal = await helpers.asUser({
-      cookies: jpyUser.cookies,
+    const goal = await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'JPY',
       fn: async () => {
         const account = await createAccount({ initialBalance: 1000, currencyCode: 'JPY' });
         return helpers.createGoal({

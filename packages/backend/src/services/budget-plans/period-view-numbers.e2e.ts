@@ -532,18 +532,6 @@ describe('Budget plan period view: line edits', () => {
   });
 });
 
-/** Runs `fn` as a user whose base currency (and so whose plan currency) is `currencyCode`. */
-const inBaseCurrency = async <T>({ currencyCode, fn }: { currencyCode: string; fn: () => Promise<T> }): Promise<T> => {
-  const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode });
-  return helpers.asUser({
-    cookies: user.cookies,
-    fn: async () => {
-      await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
-      return fn();
-    },
-  });
-};
-
 describe('Budget plan period view: plan currency decimals', () => {
   const assignAndSpend = async ({
     currencyCode,
@@ -586,39 +574,26 @@ describe('Budget plan period view: plan currency decimals', () => {
     return view({ planId: plan.id, period: periods[0]! });
   };
 
-  it('reports assigned, activity and available at 3 decimals for a KWD plan', async () => {
-    const result = await inBaseCurrency({
-      currencyCode: 'KWD',
-      fn: () => assignAndSpend({ currencyCode: 'KWD', assigned: 1.234, spent: 0.5 }),
-    });
+  it.each([
+    { currencyCode: 'KWD', assigned: 1.234, spent: 0.5, available: 0.734 },
+    { currencyCode: 'JPY', assigned: 1500, spent: 400, available: 1100 },
+  ])(
+    'reports assigned, activity and available at the decimals of a $currencyCode plan',
+    async ({ currencyCode, assigned, spent, available }) => {
+      const result = await helpers.asNewUserWithBaseCurrency({
+        currencyCode,
+        fn: () => assignAndSpend({ currencyCode, assigned, spent }),
+      });
 
-    expect(result.lines[0]).toMatchObject({ assigned: 1.234, activity: -0.5, available: 0.734 });
-    expect(result.header).toEqual({
-      totalAssigned: 1.234,
-      totalActivity: -0.5,
-      totalAvailable: 0.734,
-      totalCarriedIn: 0,
-    });
-  });
-
-  it('reports whole units for a JPY plan', async () => {
-    const result = await inBaseCurrency({
-      currencyCode: 'JPY',
-      fn: () => assignAndSpend({ currencyCode: 'JPY', assigned: 1500, spent: 400 }),
-    });
-
-    expect(result.lines[0]).toMatchObject({ assigned: 1500, activity: -400, available: 1100 });
-  });
-
-  it('keeps the 2-decimal values for a 2-decimal plan', async () => {
-    const result = await assignAndSpend({
-      currencyCode: global.BASE_CURRENCY.code,
-      assigned: 1.23,
-      spent: 0.5,
-    });
-
-    expect(result.lines[0]).toMatchObject({ assigned: 1.23, activity: -0.5, available: 0.73 });
-  });
+      expect(result.lines[0]).toMatchObject({ assigned, activity: -spent, available });
+      expect(result.header).toEqual({
+        totalAssigned: assigned,
+        totalActivity: -spent,
+        totalAvailable: available,
+        totalCarriedIn: 0,
+      });
+    },
+  );
 
   describe('pool cash held in a foreign account', () => {
     /** A pooled plan holding one USD account whose manual rate to the base is `rate`. */
@@ -649,7 +624,7 @@ describe('Budget plan period view: plan currency decimals', () => {
     };
 
     it('values a USD opening at 3 decimals in a KWD plan', async () => {
-      const pool = await inBaseCurrency({
+      const pool = await helpers.asNewUserWithBaseCurrency({
         currencyCode: 'KWD',
         fn: () => openingCash({ balance: 1.23, rate: 0.30712, baseCode: 'KWD' }),
       });
@@ -659,7 +634,7 @@ describe('Budget plan period view: plan currency decimals', () => {
     });
 
     it('does not round a USD opening to whole yen before the rate is applied', async () => {
-      const pool = await inBaseCurrency({
+      const pool = await helpers.asNewUserWithBaseCurrency({
         currencyCode: 'JPY',
         fn: () => openingCash({ balance: 0.6, rate: 100, baseCode: 'JPY' }),
       });

@@ -10,6 +10,7 @@ import { NotificationType, useNotificationCenter } from '@/components/notificati
 import { getErrorMessage } from '@/common/utils/error-message';
 import { fractionToPercentInput, isPercentInputValid, percentInputToFraction } from '@/common/utils/percentage';
 import { isPositiveDecimal } from '@/common/utils/validators';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useCreateVentureDeal, useUpdateVentureDeal } from '@/composable/data-queries/venture/deals';
 import { useVenturePlatforms } from '@/composable/data-queries/venture/platforms';
 import { useCurrenciesStore } from '@/stores';
@@ -240,7 +241,7 @@ const onSubmit = async () => {
       <InputField
         v-model="form.principal"
         type="number"
-        step="0.01"
+        :decimals="getCurrencyDecimals({ code: form.currencyCode })"
         :label="$t('venture.deals.form.principalLabel')"
         :disabled="isPending"
         :error="!isPositiveDecimal(form.principal) && $t('venture.deals.form.principalInvalid')"
@@ -252,7 +253,7 @@ const onSubmit = async () => {
       <InputField
         v-model="form.entryFee"
         type="number"
-        step="0.01"
+        :decimals="getCurrencyDecimals({ code: form.currencyCode })"
         :label="$t('venture.deals.form.entryFeeLabel')"
         :placeholder="$t('venture.deals.form.entryFeeAutoHint')"
         :disabled="isPending"

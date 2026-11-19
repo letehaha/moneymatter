@@ -636,6 +636,43 @@ describe('Change Base Currency', () => {
       expect(Number.isInteger(account.refCurrentBalance.toNumber())).toBe(true);
     });
 
+    it('re-derives split refAmounts from the parent so category legs stay in the new base', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['JPY'], raw: true });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'GBP splits', currencyCode: 'GBP' }),
+        raw: true,
+      });
+      const categories = await helpers.getCategoriesList();
+      await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          categoryId: categories[0]!.id,
+          amount: 100.01,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: new Date('2024-01-10').toISOString(),
+          splits: [
+            { categoryId: categories[1]!.id, amount: 33.33 },
+            { categoryId: categories[2]!.id, amount: 33.34 },
+            { categoryId: categories[3]!.id, amount: 33.34 },
+          ],
+        }),
+        raw: true,
+      });
+
+      const status = await helpers.changeBaseCurrencyAndWait({ newCurrencyCode: 'JPY' });
+      helpers.expectBaseCurrencyChangeCompleted(status);
+
+      const [tx] = (await helpers.getTransactions({ raw: true }))!;
+      const txRefAmount = Number(tx!.refAmount);
+      const splits = tx!.splits!.map((split) => ({ amount: Number(split.amount), refAmount: Number(split.refAmount) }));
+      expect(splits).toHaveLength(3);
+      for (const split of splits) {
+        expect(Number.isInteger(split.refAmount)).toBe(true);
+        expect(Math.abs(split.refAmount - (split.amount * txRefAmount) / Number(tx!.amount))).toBeLessThanOrEqual(1);
+      }
+      expect(splits.reduce((sum, split) => sum + split.refAmount, 0)).toBeLessThanOrEqual(txRefAmount);
+    });
+
     it('should prevent concurrent base currency change requests using the enqueue lock', async () => {
       // Add USD currency to change to
       await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });

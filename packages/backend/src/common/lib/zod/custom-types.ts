@@ -60,9 +60,6 @@ export const uniqueRecordIds = ({ min, max }: { min?: number; max?: number } = {
  */
 export const decimalMoney = () => z.number().transform((val) => Money.fromDecimal(val));
 
-// The most decimals the money columns can store is their scale.
-const DECIMAL_AMOUNT_PATTERN = new RegExp(`^\\d+(\\.\\d{1,${MONEY_COLUMN_SCALE}})?$`);
-
 /**
  * A plain decimal (no Money transform), capped at 1e13; `positive` excludes 0.
  *
@@ -72,9 +69,10 @@ const DECIMAL_AMOUNT_PATTERN = new RegExp(`^\\d+(\\.\\d{1,${MONEY_COLUMN_SCALE}}
  * services do with `roundGoalAmount`.
  */
 export const boundedDecimalAmount = ({ positive = false }: { positive?: boolean } = {}) =>
-  (positive ? z.number().positive() : z.number().min(0))
-    .max(1e13)
-    .refine((value) => DECIMAL_AMOUNT_PATTERN.test(String(value)), `At most ${MONEY_COLUMN_SCALE} decimal places`);
+  (positive ? z.number().positive() : z.number().min(0)).max(1e13).refine((value) => {
+    const money = Money.fromDecimal(value);
+    return money.round(MONEY_COLUMN_SCALE).equals(money);
+  }, `At most ${MONEY_COLUMN_SCALE} decimal places`);
 
 /** Name of a budget plan, line or line group. */
 export const budgetPlanName = () => z.string().trim().min(1).max(BUDGET_PLAN_NAME_MAX_LENGTH);

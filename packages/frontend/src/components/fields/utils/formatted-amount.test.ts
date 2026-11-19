@@ -191,76 +191,23 @@ describe('caretOffsetAfterDigits', () => {
 });
 
 describe('parseAmountInput per-currency decimals', () => {
-  it('keeps three decimals for a 3-decimal currency (KWD)', () => {
-    expect(parseAmountInput({ raw: '1.234', decimalSeparator: '.', decimals: 3 })).toEqual({
-      numeric: 1.234,
-      fragment: '',
-    });
-  });
-
-  it('drops the fourth decimal of a 3-decimal currency', () => {
-    expect(parseAmountInput({ raw: '1.2345', decimalSeparator: '.', decimals: 3 })).toEqual({
-      numeric: 1.234,
-      fragment: '',
-    });
-  });
-
-  it('keeps a trailing zero fragment at 3 decimals', () => {
-    expect(parseAmountInput({ raw: '1.230', decimalSeparator: '.', decimals: 3 })).toEqual({
-      numeric: 1.23,
-      fragment: '0',
-    });
-  });
-
-  it('keeps eight decimals for a crypto currency', () => {
-    expect(parseAmountInput({ raw: '0.00040641', decimalSeparator: '.', decimals: 8 })).toEqual({
-      numeric: 0.00040641,
-      fragment: '',
-    });
-  });
-
-  it('drops the decimal separator and the fraction for a whole-number currency (JPY)', () => {
-    expect(parseAmountInput({ raw: '1500.6', decimalSeparator: '.', decimals: 0 })).toEqual({
-      numeric: 1500,
-      fragment: '',
-    });
-  });
-
-  it('shows no trailing point while typing in a whole-number currency', () => {
-    expect(parseAmountInput({ raw: '1500.', decimalSeparator: '.', decimals: 0 })).toEqual({
-      numeric: 1500,
-      fragment: '',
-    });
-  });
-
-  it('treats a bare fraction as empty for a whole-number currency', () => {
-    expect(parseAmountInput({ raw: '.5', decimalSeparator: '.', decimals: 0 })).toEqual({
-      numeric: null,
-      fragment: '',
-    });
-  });
-
-  it('parses a large VND value with grouping', () => {
-    expect(
-      parseAmountInput({ raw: '20,500,000,000', decimalSeparator: '.', groupSeparator: ',', decimals: 0 }),
-    ).toEqual({
-      numeric: 20_500_000_000,
-      fragment: '',
-    });
-  });
-
-  it('parses a large VND value in a comma-decimal locale', () => {
-    expect(
-      parseAmountInput({ raw: '20.500.000.000', decimalSeparator: ',', groupSeparator: '.', decimals: 0 }),
-    ).toEqual({
-      numeric: 20_500_000_000,
-      fragment: '',
-    });
-  });
-
-  it('defaults to two decimals when none are given', () => {
-    expect(parseAmountInput({ raw: '1.239', decimalSeparator: '.' })).toEqual({ numeric: 1.23, fragment: '' });
-  });
+  it.each<[string, string, string | undefined, number | undefined, number | null, string]>([
+    ['1.234', '.', undefined, 3, 1.234, ''],
+    ['1.2345', '.', undefined, 3, 1.234, ''],
+    ['1.230', '.', undefined, 3, 1.23, '0'],
+    ['0.00040641', '.', undefined, 8, 0.00040641, ''],
+    ['1500.6', '.', undefined, 0, 1500, ''],
+    ['1500.', '.', undefined, 0, 1500, ''],
+    ['.5', '.', undefined, 0, null, ''],
+    ['20,500,000,000', '.', ',', 0, 20_500_000_000, ''],
+    ['20.500.000.000', ',', '.', 0, 20_500_000_000, ''],
+    ['1.239', '.', undefined, undefined, 1.23, ''],
+  ])(
+    '%s (decimal %s, group %s) at %s decimals → %s',
+    (raw, decimalSeparator, groupSeparator, decimals, numeric, fragment) => {
+      expect(parseAmountInput({ raw, decimalSeparator, groupSeparator, decimals })).toEqual({ numeric, fragment });
+    },
+  );
 });
 
 describe('limitDecimalDigits', () => {

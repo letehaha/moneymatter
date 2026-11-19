@@ -450,6 +450,7 @@ export const updateAccount = withTransaction(
       id,
       externalId,
       ...payload,
+      currencyCode: accountData.currencyCode,
       ...logoPatch,
       ...(initialBalance !== undefined && { initialBalance }),
       refCurrentBalance,

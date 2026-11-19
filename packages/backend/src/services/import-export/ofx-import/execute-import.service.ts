@@ -17,7 +17,10 @@ import { UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
-import { decimalsOfAccount, getAccountDecimals } from '@services/import-export/core/duplicates/get-account-decimals';
+import {
+  getAccountDecimals,
+  roundToAccountDecimals,
+} from '@services/import-export/core/duplicates/get-account-decimals';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { startBalanceReconciliation } from '@services/import-export/core/reconcile-account-balances';
@@ -186,7 +189,7 @@ async function executeOfxImportImpl({
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
   // Every amount is rounded to its account currency's decimals before it is written and tallied, so
   // the tally that `finalize` undoes is what the rows stored.
-  const decimalsByAccountId = await getAccountDecimals({ accountIds: Array.from(new Set(accountIdByKey.values())) });
+  const decimalsByAccountId = await getAccountDecimals({ accountIds: accountIdByKey.values() });
   const plannedAccountIds = await selectAccountsWithPlannedRows({ accountIds: capturedAccountIds });
 
   const skipSet = new Set(skipDuplicateIndices);
@@ -221,7 +224,7 @@ async function executeOfxImportImpl({
     }
 
     try {
-      const amount = Money.fromDecimal(tx.amount).abs().round(decimalsOfAccount({ decimalsByAccountId, accountId }));
+      const amount = roundToAccountDecimals({ decimalsByAccountId, accountId, amount: tx.amount }).abs();
       const result = await createTransaction({
         userId,
         accountId,

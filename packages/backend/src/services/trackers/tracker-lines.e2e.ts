@@ -125,9 +125,8 @@ describe('Tracker lines', () => {
     });
     expect(updated.limitAmount).toBe(99.99);
 
-    const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-    await helpers.asUser({
-      cookies: kwdUser.cookies,
+    await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
       fn: async () => {
         const kwdCategory = await addCategory({ name: 'Food' });
         const kwdTracker = await helpers.createTracker({ name: 'Tracker', raw: true });

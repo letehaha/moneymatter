@@ -35,14 +35,13 @@ describe('isLoanOverpayment', () => {
     expect(isLoanOverpayment({ amount: 60000, maxPayment: 49000, decimals: 2 })).toBe(true);
   });
 
-  it('lets only half a minor unit of drift through for a 3-decimal loan', () => {
-    expect(isLoanOverpayment({ amount: 49000.0004, maxPayment: 49000, decimals: 3 })).toBe(false);
-    expect(isLoanOverpayment({ amount: 49000.004, maxPayment: 49000, decimals: 3 })).toBe(true);
-  });
-
-  it('flags an overpay of one whole unit for a 0-decimal loan', () => {
-    expect(isLoanOverpayment({ amount: 49000.4, maxPayment: 49000, decimals: 0 })).toBe(false);
-    expect(isLoanOverpayment({ amount: 49001, maxPayment: 49000, decimals: 0 })).toBe(true);
+  it.each<[number, number, boolean]>([
+    [3, 49000.0004, false],
+    [3, 49000.004, true],
+    [0, 49000.4, false],
+    [0, 49001, true],
+  ])('at %d decimals lets only half a minor unit of drift through: %d → %s', (decimals, amount, expected) => {
+    expect(isLoanOverpayment({ amount, maxPayment: 49000, decimals })).toBe(expected);
   });
 
   it('is false for a non-finite amount (defer to the required-field rule)', () => {

@@ -316,10 +316,8 @@ describe('Budget plan assignment guards', () => {
   });
 
   it('accepts as many decimals as the plan currency carries and no more', async () => {
-    const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-
-    await helpers.asUser({
-      cookies: kwdUser.cookies,
+    await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
       fn: async () => {
         const { planId, periods, line } = await setup();
         const target = { planId, periodId: periods[0]!.id, lineId: line.id };

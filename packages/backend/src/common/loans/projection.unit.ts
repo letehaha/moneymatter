@@ -4,16 +4,19 @@ import { computeLoanProjection } from './projection';
 
 const TODAY = new Date('2026-06-09T00:00:00Z');
 
+type ProjectionInput = Parameters<typeof computeLoanProjection>[0];
+
+const project = (input: Omit<ProjectionInput, 'today' | 'decimals'> & Partial<ProjectionInput>) =>
+  computeLoanProjection({ today: TODAY, decimals: 2, ...input });
+
 describe('computeLoanProjection', () => {
   describe('paid-off loan', () => {
     it('flags isPaidOff true when balance is exactly zero', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 0,
         originalPrincipalMinorUnits: 32_000_000,
         interestRate: 3.75,
         plannedPaymentMinorUnits: 150_000,
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.isPaidOff).toBe(true);
@@ -26,13 +29,11 @@ describe('computeLoanProjection', () => {
     });
 
     it('flags isPaidOff true when the balance is negative (overpaid)', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: -500,
         originalPrincipalMinorUnits: 32_000_000,
         interestRate: 3.75,
         plannedPaymentMinorUnits: 150_000,
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.isPaidOff).toBe(true);
@@ -42,13 +43,11 @@ describe('computeLoanProjection', () => {
 
   describe('no planned payment', () => {
     it('returns a no_planned_payment warning and skips forward-looking fields', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 24_510_050,
         originalPrincipalMinorUnits: 32_000_000,
         interestRate: 3.75,
         plannedPaymentMinorUnits: null,
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.warning).toBe('no_planned_payment');
@@ -64,13 +63,11 @@ describe('computeLoanProjection', () => {
 
   describe('payment below monthly interest', () => {
     it('returns a payment_below_interest warning when payment cannot cover accrual', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 24_510_050,
         originalPrincipalMinorUnits: 32_000_000,
         interestRate: 3.75,
         plannedPaymentMinorUnits: 10_000, // $100 / mo, vastly below monthly interest
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.warning).toBe('payment_below_interest');
@@ -85,13 +82,11 @@ describe('computeLoanProjection', () => {
       const apr = 6.0; // 0.5% monthly
       const monthlyInterestCents = (balance * apr) / 100 / 12; // 60,000 cents = $600
 
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: balance,
         originalPrincipalMinorUnits: balance,
         interestRate: apr,
         plannedPaymentMinorUnits: monthlyInterestCents,
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.warning).toBe('payment_below_interest');
@@ -102,13 +97,11 @@ describe('computeLoanProjection', () => {
     it('matches a hand-computed 30-year mortgage payoff', () => {
       // 30-year mortgage, $200,000 at 6.00% APR. Standard payment for full term
       // is ~$1,199.10. Use a round payment of $1,200 to keep the test stable.
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 200_00 * 1000, // $200,000 in cents
         originalPrincipalMinorUnits: 200_00 * 1000,
         interestRate: 6.0,
         plannedPaymentMinorUnits: 120_000, // $1,200 / month
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.isPaidOff).toBe(false);
@@ -130,13 +123,11 @@ describe('computeLoanProjection', () => {
       //   m3: interest  $0.15 → final payment of $15.25 clears the loan
       // Total interest = $15.25. A full-final-payment formula
       // (payment × months − balance = 3 × 500 − 1000) would claim $500.
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 100_000,
         originalPrincipalMinorUnits: 100_000,
         interestRate: 12,
         plannedPaymentMinorUnits: 50_000,
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.monthsRemaining).toBe(3);
@@ -144,13 +135,11 @@ describe('computeLoanProjection', () => {
     });
 
     it('handles zero APR as a degenerate case (no interest, no log formula)', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 12_000_00, // $12,000
         originalPrincipalMinorUnits: 12_000_00,
         interestRate: 0,
         plannedPaymentMinorUnits: 100_00, // $100 / month
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.isPaidOff).toBe(false);
@@ -163,13 +152,11 @@ describe('computeLoanProjection', () => {
 
     it('rounds the final month upward — partial months always finish payoff', () => {
       // $1,000 balance, 0% APR, $300/month → 3.33 months → 4 months projected.
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 1_000_00,
         originalPrincipalMinorUnits: 1_000_00,
         interestRate: 0,
         plannedPaymentMinorUnits: 300_00,
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.monthsRemaining).toBe(4);
@@ -182,13 +169,11 @@ describe('computeLoanProjection', () => {
 
   describe('paid-to-date metrics', () => {
     it('reports the percentage of the original principal repaid', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 24_000_000, // $240k remaining
         originalPrincipalMinorUnits: 32_000_000, // out of $320k
         interestRate: 3.75,
         plannedPaymentMinorUnits: 150_000,
-        today: TODAY,
-        decimals: 2,
       });
 
       // $80k of $320k paid = 25.0%
@@ -197,26 +182,22 @@ describe('computeLoanProjection', () => {
     });
 
     it('clamps an overpaid loan to 100%', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: -1_000, // $10 overpaid
         originalPrincipalMinorUnits: 32_000_000,
         interestRate: 3.75,
         plannedPaymentMinorUnits: 150_000,
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.paidToDatePercent).toBe(100);
     });
 
     it('returns 0 when the original principal is zero (degenerate input)', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 100,
         originalPrincipalMinorUnits: 0,
         interestRate: 3.75,
         plannedPaymentMinorUnits: 150_000,
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.paidToDatePercent).toBe(0);
@@ -227,13 +208,11 @@ describe('computeLoanProjection', () => {
     it('does not amortize within a projectable horizon when a 0% loan has a near-zero payment', () => {
       // $100,000 at 0% APR paid 1¢/month would take ~833M months — beyond any
       // Date horizon, so the projection refuses to amortize instead of emitting "NaN-NaN-NaN".
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 10_000_000, // $100,000
         originalPrincipalMinorUnits: 10_000_000,
         interestRate: 0,
         plannedPaymentMinorUnits: 1, // one cent / month
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.warning).toBe('payment_below_interest');
@@ -244,13 +223,11 @@ describe('computeLoanProjection', () => {
     });
 
     it('never emits a NaN payoff date for a 0% loan with a near-zero payment', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 10_000_000,
         originalPrincipalMinorUnits: 10_000_000,
         interestRate: 0,
         plannedPaymentMinorUnits: 1,
-        today: TODAY,
-        decimals: 2,
       });
 
       // A non-amortizing horizon yields no payoff date at all — never the
@@ -261,13 +238,11 @@ describe('computeLoanProjection', () => {
 
     it('still projects a valid payoff for a normal 0% loan inside the horizon', () => {
       // $12,000 at 0% APR, $1,000/month → exactly 12 months, well within the horizon.
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 1_200_000, // $12,000
         originalPrincipalMinorUnits: 1_200_000,
         interestRate: 0,
         plannedPaymentMinorUnits: 100_000, // $1,000 / month
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.monthsRemaining).toBe(12);
@@ -279,13 +254,11 @@ describe('computeLoanProjection', () => {
 
   describe('zero planned payment means no plan, not an underfunded plan', () => {
     it('treats a zero planned payment on an interest-bearing loan as no_planned_payment', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 24_510_050,
         originalPrincipalMinorUnits: 32_000_000,
         interestRate: 5,
         plannedPaymentMinorUnits: 0,
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.warning).toBe('no_planned_payment');
@@ -294,13 +267,11 @@ describe('computeLoanProjection', () => {
     });
 
     it('treats a zero planned payment on a zero-APR loan as no_planned_payment', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 1_200_000,
         originalPrincipalMinorUnits: 1_200_000,
         interestRate: 0,
         plannedPaymentMinorUnits: 0,
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.warning).toBe('no_planned_payment');
@@ -311,13 +282,11 @@ describe('computeLoanProjection', () => {
     it('still flags a positive-but-underfunded payment as payment_below_interest', () => {
       // $300,000 at 12% APR accrues $3,000/month interest; a $1,000 payment is
       // positive yet below that accrual, so it never reaches the horizon cap.
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 30_000_000, // $300,000
         originalPrincipalMinorUnits: 30_000_000,
         interestRate: 12,
         plannedPaymentMinorUnits: 100_000, // $1,000 / month
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.warning).toBe('payment_below_interest');
@@ -326,13 +295,11 @@ describe('computeLoanProjection', () => {
     });
 
     it('still treats a null planned payment as no_planned_payment', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 24_510_050,
         originalPrincipalMinorUnits: 32_000_000,
         interestRate: 5,
         plannedPaymentMinorUnits: null,
-        today: TODAY,
-        decimals: 2,
       });
 
       expect(result.warning).toBe('no_planned_payment');
@@ -349,12 +316,10 @@ describe('computeLoanProjection', () => {
       originalPrincipalMinorUnits: 100_000,
       interestRate: 12,
       termMonths: 3,
-      today: TODAY,
-      decimals: 2,
     };
 
     it('is null when the loan has no term — there is no schedule to derive from', () => {
-      const result = computeLoanProjection({
+      const result = project({
         ...TERM_LOAN,
         termMonths: null,
         currentBalanceMinorUnits: 100_000,
@@ -367,7 +332,7 @@ describe('computeLoanProjection', () => {
     });
 
     it('is null whenever totalInterestRemaining is null (no planned payment)', () => {
-      const result = computeLoanProjection({
+      const result = project({
         ...TERM_LOAN,
         currentBalanceMinorUnits: 100_000,
         plannedPaymentMinorUnits: null,
@@ -378,7 +343,7 @@ describe('computeLoanProjection', () => {
     });
 
     it('is null whenever totalInterestRemaining is null (payment below interest)', () => {
-      const result = computeLoanProjection({
+      const result = project({
         ...TERM_LOAN,
         currentBalanceMinorUnits: 100_000,
         plannedPaymentMinorUnits: 500, // below the 1,000¢ first-month interest
@@ -389,7 +354,7 @@ describe('computeLoanProjection', () => {
     });
 
     it('is zero on a fresh loan paying exactly the scheduled payment', () => {
-      const result = computeLoanProjection({
+      const result = project({
         ...TERM_LOAN,
         currentBalanceMinorUnits: 100_000, // untouched principal
         plannedPaymentMinorUnits: 34_002, // the amortized payment for the 3-month schedule
@@ -402,7 +367,7 @@ describe('computeLoanProjection', () => {
     it('reports the scheduled share consumed so far on a mid-term loan', () => {
       // Half the principal remains; at a $1,200 payment it clears in one month
       // costing 500¢ interest → estimate = 2,007 − 500 = 1,507¢ ($15.07).
-      const result = computeLoanProjection({
+      const result = project({
         ...TERM_LOAN,
         currentBalanceMinorUnits: 50_000,
         plannedPaymentMinorUnits: 120_000,
@@ -413,7 +378,7 @@ describe('computeLoanProjection', () => {
     });
 
     it('falls back to the full scheduled lifetime interest on a paid-off loan with no settle information', () => {
-      const result = computeLoanProjection({
+      const result = project({
         ...TERM_LOAN,
         currentBalanceMinorUnits: 0,
         plannedPaymentMinorUnits: 120_000,
@@ -434,73 +399,73 @@ describe('computeLoanProjection', () => {
       };
 
       it('accrues one scheduled month when the loan settles within its first month (partial month ceils)', () => {
-        const result = computeLoanProjection({ ...PAID_OFF, settleDate: '2026-02-04' });
+        const result = project({ ...PAID_OFF, settleDate: '2026-02-04' });
 
         expect(result.isPaidOff).toBe(true);
         expect(result.estimatedInterestPaid).toBe(10);
       });
 
       it('accrues two scheduled months when the loan settles one full month plus a partial one after start', () => {
-        const result = computeLoanProjection({ ...PAID_OFF, settleDate: '2026-03-01' });
+        const result = project({ ...PAID_OFF, settleDate: '2026-03-01' });
 
         expect(result.estimatedInterestPaid).toBe(16.7);
       });
 
       it('counts an exact month boundary as that many months, without a partial bump', () => {
-        const result = computeLoanProjection({ ...PAID_OFF, settleDate: '2026-03-15' });
+        const result = project({ ...PAID_OFF, settleDate: '2026-03-15' });
 
         expect(result.estimatedInterestPaid).toBe(16.7);
       });
 
       it('is zero when the loan settles on its start date', () => {
-        const result = computeLoanProjection({ ...PAID_OFF, settleDate: '2026-01-15' });
+        const result = project({ ...PAID_OFF, settleDate: '2026-01-15' });
 
         expect(result.estimatedInterestPaid).toBe(0);
       });
 
       it('clamps to zero months when the settle date is before the start date', () => {
-        const result = computeLoanProjection({ ...PAID_OFF, settleDate: '2026-01-10' });
+        const result = project({ ...PAID_OFF, settleDate: '2026-01-10' });
 
         expect(result.estimatedInterestPaid).toBe(0);
       });
 
       it('reproduces the full lifetime figure when the loan ran to (or past) its term', () => {
-        const atTerm = computeLoanProjection({ ...PAID_OFF, settleDate: '2026-04-15' });
-        const pastTerm = computeLoanProjection({ ...PAID_OFF, settleDate: '2030-08-01' });
+        const atTerm = project({ ...PAID_OFF, settleDate: '2026-04-15' });
+        const pastTerm = project({ ...PAID_OFF, settleDate: '2030-08-01' });
 
         expect(atTerm.estimatedInterestPaid).toBe(20.07);
         expect(pastTerm.estimatedInterestPaid).toBe(20.07);
       });
 
       it('accepts a full ISO timestamp as the settle date', () => {
-        const result = computeLoanProjection({ ...PAID_OFF, settleDate: '2026-02-20T14:30:00.000Z' });
+        const result = project({ ...PAID_OFF, settleDate: '2026-02-20T14:30:00.000Z' });
 
         expect(result.estimatedInterestPaid).toBe(16.7);
       });
 
       it('falls back to the lifetime figure when only one of startDate/settleDate is known', () => {
-        const noSettle = computeLoanProjection({ ...PAID_OFF, settleDate: null });
-        const noStart = computeLoanProjection({ ...PAID_OFF, startDate: null, settleDate: '2026-02-04' });
+        const noSettle = project({ ...PAID_OFF, settleDate: null });
+        const noStart = project({ ...PAID_OFF, startDate: null, settleDate: '2026-02-04' });
 
         expect(noSettle.estimatedInterestPaid).toBe(20.07);
         expect(noStart.estimatedInterestPaid).toBe(20.07);
       });
 
       it('falls back to the lifetime figure when a date is unparsable', () => {
-        const result = computeLoanProjection({ ...PAID_OFF, settleDate: 'not-a-date' });
+        const result = project({ ...PAID_OFF, settleDate: 'not-a-date' });
 
         expect(result.estimatedInterestPaid).toBe(20.07);
       });
 
       it('does not affect an active loan — start/settle inputs only shape the paid-off estimate', () => {
-        const withDates = computeLoanProjection({
+        const withDates = project({
           ...TERM_LOAN,
           currentBalanceMinorUnits: 50_000,
           plannedPaymentMinorUnits: 120_000,
           startDate: '2026-01-15',
           settleDate: '2026-02-04',
         });
-        const withoutDates = computeLoanProjection({
+        const withoutDates = project({
           ...TERM_LOAN,
           currentBalanceMinorUnits: 50_000,
           plannedPaymentMinorUnits: 120_000,
@@ -515,7 +480,7 @@ describe('computeLoanProjection', () => {
       // $200/mo pays the full principal off slower than the 3-month schedule,
       // so remaining interest (~3,100¢) exceeds the 2,007¢ scheduled lifetime
       // — the difference must clamp instead of going negative.
-      const result = computeLoanProjection({
+      const result = project({
         ...TERM_LOAN,
         currentBalanceMinorUnits: 100_000,
         plannedPaymentMinorUnits: 20_000,
@@ -543,21 +508,19 @@ describe('computeLoanProjection', () => {
       const earlyToday = new Date('2026-01-15T00:00:00Z');
       const lateToday = new Date('2026-12-15T00:00:00Z');
 
-      const early = computeLoanProjection({
+      const early = project({
         currentBalanceMinorUnits: 1_000_00,
         originalPrincipalMinorUnits: 1_000_00,
         interestRate: 0,
         plannedPaymentMinorUnits: 100_00,
         today: earlyToday,
-        decimals: 2,
       });
-      const late = computeLoanProjection({
+      const late = project({
         currentBalanceMinorUnits: 1_000_00,
         originalPrincipalMinorUnits: 1_000_00,
         interestRate: 0,
         plannedPaymentMinorUnits: 100_00,
         today: lateToday,
-        decimals: 2,
       });
 
       expect(early.payoffDate).toBe('2026-11-15');
@@ -569,24 +532,22 @@ describe('computeLoanProjection', () => {
       // Apr 30), not overflow into the following month via Date normalization.
       const todayJan31 = new Date(2026, 0, 31);
 
-      const oneMonth = computeLoanProjection({
+      const oneMonth = project({
         currentBalanceMinorUnits: 100_00,
         originalPrincipalMinorUnits: 100_00,
         interestRate: 0,
         plannedPaymentMinorUnits: 100_00,
         today: todayJan31,
-        decimals: 2,
       });
       expect(oneMonth.monthsRemaining).toBe(1);
       expect(oneMonth.payoffDate).toBe('2026-02-28');
 
-      const threeMonths = computeLoanProjection({
+      const threeMonths = project({
         currentBalanceMinorUnits: 300_00,
         originalPrincipalMinorUnits: 300_00,
         interestRate: 0,
         plannedPaymentMinorUnits: 100_00,
         today: todayJan31,
-        decimals: 2,
       });
       expect(threeMonths.monthsRemaining).toBe(3);
       expect(threeMonths.payoffDate).toBe('2026-04-30');
@@ -595,12 +556,11 @@ describe('computeLoanProjection', () => {
 
   describe('decimals', () => {
     it('projects a zero-interest KWD loan of 1000.001 with a payment of 1000 over 2 months', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 1_000_001,
         originalPrincipalMinorUnits: 1_000_001,
         interestRate: 0,
         plannedPaymentMinorUnits: 1_000_000,
-        today: TODAY,
         decimals: 3,
       });
 
@@ -610,12 +570,11 @@ describe('computeLoanProjection', () => {
     });
 
     it('reports KWD paid-to-date, monthly interest and monthly principal at 3 decimals', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 990_000,
         originalPrincipalMinorUnits: 1_000_125,
         interestRate: 12,
         plannedPaymentMinorUnits: 100_000,
-        today: TODAY,
         decimals: 3,
       });
 
@@ -626,12 +585,11 @@ describe('computeLoanProjection', () => {
     });
 
     it('rounds the monthly interest to a whole unit for a 0-decimal currency', () => {
-      const result = computeLoanProjection({
+      const result = project({
         currentBalanceMinorUnits: 1_000_050,
         originalPrincipalMinorUnits: 1_000_050,
         interestRate: 12,
         plannedPaymentMinorUnits: 100_000,
-        today: TODAY,
         decimals: 0,
       });
 

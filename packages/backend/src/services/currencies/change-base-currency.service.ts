@@ -9,7 +9,7 @@ import {
   type RecalculateResult,
   RESOURCE_TYPES,
 } from '@bt/shared/types';
-import { getConversionDecimals } from '@common/lib/currency-precision';
+import { getConversionDecimals, getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { toMoneyColumnValue } from '@common/types/money-column';
 import { t } from '@i18n/index';
@@ -27,6 +27,7 @@ import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import Portfolios from '@models/investments/portfolios.model';
 import LoanDetails from '@models/loan-details.model';
 import ResourceShares from '@models/resource-shares.model';
+import TransactionSplits from '@models/transaction-splits.model';
 import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import UserSettings from '@models/user-settings.model';
@@ -52,6 +53,7 @@ import { Op, QueryTypes, Transaction as SequelizeTransaction } from 'sequelize';
  * Transactions.refAmount
  * Transactions.refCurrencyCode
  * Transactions.refCommissionRate
+ * TransactionSplits.refAmount
  * 3. Holdings
  * Holdings.refCostBasis
  * 4. InvestmentTransaction
@@ -134,7 +136,7 @@ export async function validateBaseCurrencyChange({ userId, newCurrencyCode }: Ch
     ResourceShares.count({
       where: {
         [Op.or]: [{ ownerUserId: userId }, { sharedWithUserId: userId }],
-        resourceType: RESOURCE_TYPES.account,
+        resourceType: [RESOURCE_TYPES.account, RESOURCE_TYPES.tracker],
         acceptedAt: { [Op.not]: null },
       },
     }),
@@ -416,7 +418,61 @@ async function rebuildTransactions(params: {
     await tx.save({ transaction, hooks: false });
   }
 
+  await rebuildSplitRefAmounts({ userId, newCurrencyCode, transactions, transaction });
+
   return transactions.length;
+}
+
+/**
+ * Derives each split's refAmount from its parent's new refAmount, so the primary leg
+ * (`tx.refAmount - Σ splits`) stays non-negative: a split never takes more than what
+ * the parent has left after the splits before it.
+ */
+async function rebuildSplitRefAmounts({
+  userId,
+  newCurrencyCode,
+  transactions,
+  transaction,
+}: {
+  userId: number;
+  newCurrencyCode: string;
+  transactions: Transactions[];
+  transaction: SequelizeTransaction;
+}): Promise<void> {
+  const splits = await TransactionSplits.findAll({
+    attributes: ['id', 'transactionId', 'amount'],
+    include: [{ model: Transactions, attributes: [], where: { userId }, paranoid: false, required: true }],
+    order: [
+      ['transactionId', 'ASC'],
+      ['id', 'ASC'],
+    ],
+    transaction,
+  });
+  if (!splits.length) return;
+
+  const txById = new Map(transactions.map((tx) => [tx.id, tx]));
+  const decimals = await getCurrencyDecimals({ userId, code: newCurrencyCode });
+  const allocatedByTxId = new Map<string, Money>();
+  const updates: { id: string; amount: Money }[] = [];
+
+  for (const split of splits) {
+    const tx = txById.get(split.transactionId);
+    if (!tx || tx.amount.isZero()) continue;
+
+    const scaled = (
+      tx.currencyCode === newCurrencyCode
+        ? split.amount
+        : split.amount.multiply(tx.refAmount.toString()).divide(tx.amount.toString())
+    ).roundHalfEven(decimals);
+    const allocated = allocatedByTxId.get(tx.id) ?? Money.zero();
+    const remaining = tx.refAmount.subtract(allocated);
+    const refAmount = scaled.greaterThan(remaining) ? remaining : scaled;
+
+    allocatedByTxId.set(tx.id, allocated.add(refAmount));
+    updates.push({ id: split.id, amount: refAmount });
+  }
+
+  await writeMoneyColumn({ table: 'TransactionSplits', column: 'refAmount', rows: updates, transaction });
 }
 
 /**
@@ -568,10 +624,14 @@ async function recalculateLoanDetails(params: {
 
 const ROWS_PER_UPDATE = 500;
 
-async function writeBalanceAmounts({
+async function writeMoneyColumn({
+  table,
+  column,
   rows,
   transaction,
 }: {
+  table: 'Balances' | 'TransactionSplits';
+  column: 'amount' | 'refAmount';
   rows: { id: string; amount: Money }[];
   transaction: SequelizeTransaction;
 }): Promise<void> {
@@ -585,8 +645,8 @@ async function writeBalanceAmounts({
     });
 
     await Transactions.sequelize!.query(
-      `UPDATE "Balances" AS b
-          SET "amount" = v.amount, "updatedAt" = NOW()
+      `UPDATE "${table}" AS b
+          SET "${column}" = v.amount${table === 'Balances' ? ', "updatedAt" = NOW()' : ''}
          FROM (VALUES ${values.join(', ')}) AS v(id, amount)
         WHERE b."id" = v.id`,
       { replacements, transaction },
@@ -672,7 +732,7 @@ async function rebuildBalances(params: {
     totalBalancesRecalculated++;
   }
 
-  await writeBalanceAmounts({ rows: updates, transaction });
+  await writeMoneyColumn({ table: 'Balances', column: 'amount', rows: updates, transaction });
 
   return { totalBalancesRecalculated, revaluedAccountIds };
 }

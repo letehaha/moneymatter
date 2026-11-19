@@ -36,7 +36,8 @@ export interface StatsResponse {
 type TrackerLimit = { minor: number; kind: TRACKER_LIMIT_KINDS } | null;
 
 const setUtilizationRate = ({ result, limit }: { result: StatsResponse; limit: TrackerLimit }) => {
-  if (!limit) return;
+  // A limit stored at a base with more decimals can round to 0 minor units at the current base.
+  if (!limit || limit.minor <= 0) return;
   const { balance } = result.summary;
   const reached = limit.kind === TRACKER_LIMIT_KINDS.spending ? Math.max(0, -balance) : Math.max(0, balance);
   result.summary.utilizationRate = (reached / limit.minor) * 100;

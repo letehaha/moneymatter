@@ -633,17 +633,13 @@ describe('buildPoolAssignPayload', () => {
     expect(buildPoolAssignPayload({ line: baseline, amount, decimals: 2 })).toBeNull();
   });
 
-  it('keeps the third decimal of a 3-decimal base currency', () => {
-    expect(buildPoolAssignPayload({ line: { ...baseline, assigned: 10.125 }, amount: 0.25, decimals: 3 })).toEqual({
+  it.each<[number, number, number, number]>([
+    [3, 10.125, 0.25, 10.375],
+    [0, 1500, 250, 1750],
+  ])('adds at %d base currency decimals: %d + %d = %d', (decimals, assigned, amount, expected) => {
+    expect(buildPoolAssignPayload({ line: { ...baseline, assigned }, amount, decimals })).toEqual({
       scope: 'this_period',
-      amount: 10.375,
-    });
-  });
-
-  it('adds whole units for a 0-decimal base currency', () => {
-    expect(buildPoolAssignPayload({ line: { ...baseline, assigned: 1500 }, amount: 250, decimals: 0 })).toEqual({
-      scope: 'this_period',
-      amount: 1750,
+      amount: expected,
     });
   });
 });
@@ -681,17 +677,13 @@ describe('buildPoolTakeBackPayload', () => {
     expect(buildPoolTakeBackPayload({ line: { ...baseline, poolAssigned: 0 }, amount: 10, decimals: 2 })).toBeNull();
   });
 
-  it('keeps the third decimal of a 3-decimal base currency', () => {
-    expect(buildPoolTakeBackPayload({ line: baseline, amount: 0.105, decimals: 3 })).toEqual({
-      scope: 'this_period',
-      amount: 100.195,
-    });
-  });
-
-  it('takes whole units off for a 0-decimal base currency', () => {
+  it.each<[number, number, number, number]>([
+    [3, baseline.assigned, 0.105, 100.195],
+    [0, 1500, 250, 1250],
+  ])('takes off at %d base currency decimals: %d - %d = %d', (decimals, assigned, amount, expected) => {
     expect(
-      buildPoolTakeBackPayload({ line: { ...baseline, assigned: 1500, poolAssigned: 1500 }, amount: 250, decimals: 0 }),
-    ).toEqual({ scope: 'this_period', amount: 1250 });
+      buildPoolTakeBackPayload({ line: { ...baseline, assigned, poolAssigned: assigned }, amount, decimals }),
+    ).toEqual({ scope: 'this_period', amount: expected });
   });
 });
 
@@ -1594,28 +1586,19 @@ describe('sumLineTotals', () => {
     expect(Object.is(available, 0)).toBe(true);
   });
 
-  it('keeps the third decimal of a 3-decimal base currency', () => {
-    const line = { carriedIn: 0, assigned: 0, activity: 0 };
-    const { available } = sumLineTotals({
+  it.each<[number, 'available' | 'assigned', number, number, number]>([
+    [3, 'available', 1.234, 2.345, 3.579],
+    [0, 'assigned', 1500, 2501, 4001],
+  ])('at %d base currency decimals sums %s: %d + %d = %d', (decimals, field, first, second, expected) => {
+    const line = { carriedIn: 0, assigned: 0, activity: 0, available: 0 };
+    const totals = sumLineTotals({
       lines: [
-        { ...line, available: 1.234 },
-        { ...line, available: 2.345 },
+        { ...line, [field]: first },
+        { ...line, [field]: second },
       ],
-      decimals: 3,
+      decimals,
     });
-    expect(available).toBe(3.579);
-  });
-
-  it('sums whole units for a 0-decimal base currency', () => {
-    const line = { carriedIn: 0, activity: 0, available: 0 };
-    const { assigned } = sumLineTotals({
-      lines: [
-        { ...line, assigned: 1500 },
-        { ...line, assigned: 2501 },
-      ],
-      decimals: 0,
-    });
-    expect(assigned).toBe(4001);
+    expect(totals[field]).toBe(expected);
   });
 });
 

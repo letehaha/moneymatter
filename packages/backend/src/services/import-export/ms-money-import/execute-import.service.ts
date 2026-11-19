@@ -15,7 +15,11 @@ import { UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
-import { decimalsOfAccount, getAccountDecimals } from '@services/import-export/core/duplicates/get-account-decimals';
+import {
+  decimalsOfAccount,
+  getAccountDecimals,
+  roundToAccountDecimals,
+} from '@services/import-export/core/duplicates/get-account-decimals';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { startBalanceReconciliation } from '@services/import-export/core/reconcile-account-balances';
@@ -242,11 +246,11 @@ async function executeMsMoneyImportImpl({
 
   // Every amount is rounded to its account currency's decimals before it is written and tallied, so
   // the tally that `finalize` undoes is what the rows stored.
-  const decimalsByAccountId = await getAccountDecimals({ accountIds: Array.from(new Set(accountIdByName.values())) });
-  const roundForAccount = ({ accountId, amount }: { accountId: string; amount: number }) =>
-    Money.fromDecimal(amount).round(decimalsOfAccount({ decimalsByAccountId, accountId }));
+  const decimalsByAccountId = await getAccountDecimals({ accountIds: accountIdByName.values() });
   const formatForAccount = ({ accountId, amount }: { accountId: string; amount: number }) =>
-    roundForAccount({ accountId, amount }).toDecimalString(decimalsOfAccount({ decimalsByAccountId, accountId }));
+    roundToAccountDecimals({ decimalsByAccountId, accountId, amount }).toDecimalString(
+      decimalsOfAccount({ decimalsByAccountId, accountId }),
+    );
 
   // Snapshot every linked account BEFORE any row is written: balance-before +
   // boundary day (day of its latest existing transaction). Phase 7 reconciles
@@ -335,7 +339,7 @@ async function executeMsMoneyImportImpl({
       if (!accountId) throw new ValidationError({ message: `Unknown account "${tx.accountName}"` });
 
       const transactionType = tx.type;
-      const amount = roundForAccount({ accountId, amount: Math.abs(tx.amount) });
+      const amount = roundToAccountDecimals({ decimalsByAccountId, accountId, amount: Math.abs(tx.amount) });
 
       // Out-of-wallet legs carry no real category and model money leaving/entering
       // the tracked set of accounts, so they import as `transfer_out_wallet` with
@@ -456,8 +460,16 @@ async function executeMsMoneyImportImpl({
       // Money records one payee for the pair, so it lands on the source leg.
       const payeeId = xfer.payeeName ? payeeNameToId.get(xfer.payeeName) : undefined;
 
-      const sourceAmount = roundForAccount({ accountId: sourceAccountId, amount: xfer.sourceAmount });
-      const destinationAmount = roundForAccount({ accountId: destinationAccountId, amount: xfer.destinationAmount });
+      const sourceAmount = roundToAccountDecimals({
+        decimalsByAccountId,
+        accountId: sourceAccountId,
+        amount: xfer.sourceAmount,
+      });
+      const destinationAmount = roundToAccountDecimals({
+        decimalsByAccountId,
+        accountId: destinationAccountId,
+        amount: xfer.destinationAmount,
+      });
 
       const [, destinationLeg] = await createTransaction({
         userId,

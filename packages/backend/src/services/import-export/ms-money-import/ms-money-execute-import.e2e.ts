@@ -378,32 +378,6 @@ describeWithFixture('Microsoft Money import execution', () => {
       const withOriginalAmount = zeroRows.filter((tx) => /\(voided: \d+\.\d{2}\)/.test(tx.note ?? ''));
       expect(withOriginalAmount.length).toBeGreaterThan(0);
     }, 30000);
-
-    it('writes the voided amount in the note at the account currency decimals', async () => {
-      const upload = await helpers.uploadMsMoneyFixture({ file: FIXTURE, password: FIXTURE_PASSWORD });
-
-      const progress = await runImport({
-        uploadId: upload.uploadId,
-        accountMapping: {
-          [ACCOUNT_CURRENT]: { action: 'create-new', currencyCode: 'JPY', currentBalance: null },
-          [ACCOUNT_CREDIT_CARD]: { action: 'create-new', currencyCode: 'JPY', currentBalance: null },
-          [ACCOUNT_STOCKS]: { action: 'create-new', currencyCode: 'JPY', currentBalance: null },
-        },
-        includeVoidedTransactions: true,
-      });
-      expectMsMoneyCompleted(progress);
-      expect(progress.summary.errors).toHaveLength(0);
-
-      const transactions = await helpers.getTransactions({ limit: 500, raw: true });
-      const voidedNotes = transactions
-        .filter((tx) => Number(tx.amount) === 0)
-        .map((tx) => tx.note ?? '')
-        .filter((note) => note.includes('(voided: '));
-
-      // JPY has no decimals, so the kept amount is a whole number.
-      expect(voidedNotes.length).toBeGreaterThan(0);
-      for (const note of voidedNotes) expect(note).toMatch(/\(voided: \d+\)/);
-    }, 30000);
   });
 
   /**

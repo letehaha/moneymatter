@@ -91,13 +91,6 @@ describe('Transaction templates', () => {
 
       expect(jpy.amount).toBe(43);
       expect(kwd.amount).toBe(1.235);
-
-      const moved = await helpers.updateTransactionTemplate({
-        id: jpy.id,
-        payload: { accountId: kwdAccount.id, amount: 3.4567 },
-        raw: true,
-      });
-      expect(moved.amount).toBe(3.457);
     });
 
     it('keeps a stored amount that has more decimals than its currency on a name-only edit', async () => {

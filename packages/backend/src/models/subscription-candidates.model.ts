@@ -55,7 +55,7 @@ export default class SubscriptionCandidates extends Model {
   })
   detectedIntervalCount!: number | null;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare averageAmount: Money;
 
   @Column({

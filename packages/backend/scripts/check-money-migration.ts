@@ -5,10 +5,11 @@
  * money column (including `real_transactions` and the JSON fields), then runs the migration up,
  * down and up again, asserting column types and values after each step. It also checks that the
  * migration refuses a numeric string under a JSON amount key and a mix of integer and decimal
- * columns without changing anything, and that a second `up` or `down` is a no-op.
+ * columns without changing anything, and that a second `up` or `down` is a no-op. Rows in JPY and
+ * VND check that `up` rounds amounts of currencies with fewer than 2 decimals to those decimals.
  *
- * CI runs it on every backend change (`backend-money-migration` job in `check-source-code.yml`),
- * since the e2e template applies the migration to empty tables only.
+ * CI runs it when the migration, its snapshot or this script change (`backend-money-migration` job
+ * in `check-source-code.yml`), since the e2e template applies the migration to empty tables only.
  *
  * Usage (needs a Postgres the script may create and drop a database in):
  *   docker run --rm -d --name mm-migcheck -e POSTGRES_PASSWORD=test -p 55432:5432 postgres:16
@@ -337,18 +338,28 @@ const primaryKeyColumns = async ({ sequelize, table }: { sequelize: Sequelize; t
   return (rows as { name: string }[]).map((row) => row.name);
 };
 
-const seedTable = async ({ sequelize, table }: { sequelize: Sequelize; table: string }): Promise<SeededRow[]> => {
+const seedTable = async ({
+  sequelize,
+  table,
+  plans: givenPlans,
+}: {
+  sequelize: Sequelize;
+  table: string;
+  plans?: RowPlan[];
+}): Promise<SeededRow[]> => {
   const columns = await tableInfo({ sequelize, table });
   const pk = await primaryKeyColumns({ sequelize, table });
   const moneyColumns = MONEY_COLUMNS.filter((spec) => spec.table === table).map((spec) => spec.column);
   const jsonField = MONEY_JSON_FIELDS.find((field) => field.table === table);
   const seeded: SeededRow[] = [];
 
-  const jsonSeeds = jsonField ? JSON_SEEDS[table] : null;
+  const jsonSeeds = jsonField && !givenPlans ? JSON_SEEDS[table] : null;
   // JSON tables alternate A and B rows too, so their own money columns get NULL and negative values.
-  const plans: RowPlan[] = jsonSeeds
-    ? jsonSeeds.map((_, i) => ({ kind: i % 2 === 0 ? ('A' as const) : ('B' as const) }))
-    : rowPlans({ table });
+  const plans: RowPlan[] =
+    givenPlans ??
+    (jsonSeeds
+      ? jsonSeeds.map((_, i) => ({ kind: i % 2 === 0 ? ('A' as const) : ('B' as const) }))
+      : rowPlans({ table }));
 
   for (const [planIndex, plan] of plans.entries()) {
     rowCounter += 1;
@@ -395,6 +406,130 @@ const seedTable = async ({ sequelize, table }: { sequelize: Sequelize; table: st
   }
 
   return seeded;
+};
+
+/** A row in a currency with fewer than 2 decimals, with what its amounts hold after `up`. */
+interface RoundingCase {
+  row: SeededRow;
+  /** Decimal per money column after `up`; `down` turns it into cents. */
+  rounded: Record<string, string | null>;
+  json?: { column: string; decimal: unknown; cents: unknown };
+}
+
+const ROUNDING_USER_ID = 77;
+
+/**
+ * JPY and VND carry 0 decimals. Native amounts round half-up, converted ones half-even unless their
+ * currency is the native one, and a positive value that would round to 0 under a `> 0` check stays.
+ */
+const seedRoundingCases = async ({ sequelize }: { sequelize: Sequelize }): Promise<RoundingCase[]> => {
+  await sequelize.query(
+    `INSERT INTO "Currencies" ("code", "currency", "digits", "number") VALUES ('JPY', 'Yen', 0, 392), ('VND', 'Dong', 0, 704)
+     ON CONFLICT ("code") DO UPDATE SET "digits" = EXCLUDED."digits"`,
+  );
+  await seedTable({
+    sequelize,
+    table: 'UsersCurrencies',
+    plans: [{ kind: 'B', overrides: { userId: ROUNDING_USER_ID, currencyCode: 'JPY', isDefaultCurrency: true } }],
+  });
+  const seedOne = async ({ table, plan }: { table: string; plan: RowPlan }): Promise<SeededRow> =>
+    (await seedTable({ sequelize, table, plans: [plan] }))[0]!;
+
+  // Soft-deleted: `up` rounds rows outside `real_transactions` too.
+  const transaction = await seedOne({
+    table: 'Transactions',
+    plan: {
+      kind: 'B',
+      overrides: {
+        isPlanned: false,
+        deletedAt: RAW('now()'),
+        transactionType: 'expense',
+        currencyCode: 'JPY',
+        refCurrencyCode: 'VND',
+      },
+      cents: {
+        amount: 150050,
+        refAmount: 25050,
+        commissionRate: -150050,
+        refCommissionRate: 25150,
+        cashbackAmount: 0,
+        originalAmount: null,
+        paymentAmount: null,
+      },
+    },
+  });
+  const split = await seedOne({
+    table: 'TransactionSplits',
+    plan: { kind: 'B', overrides: { transactionId: transaction.key.id }, cents: { amount: 50, refAmount: 150 } },
+  });
+  const account = await seedOne({
+    table: 'Accounts',
+    plan: {
+      kind: 'B',
+      overrides: { currencyCode: 'JPY', userId: ROUNDING_USER_ID },
+      cents: {
+        initialBalance: 0,
+        refInitialBalance: 0,
+        currentBalance: 100049,
+        refCurrentBalance: 100050,
+        creditLimit: 0,
+        refCreditLimit: 0,
+      },
+    },
+  });
+  const goal = await seedOne({
+    table: 'Goals',
+    plan: {
+      kind: 'B',
+      overrides: { currencyCode: 'JPY' },
+      cents: { targetAmount: 40, plannedMonthly: 250, achievedAmount: null },
+    },
+  });
+  const snapshot = { currencyCode: 'JPY', refCurrencyCode: 'VND' };
+  const link = await seedOne({
+    table: 'VentureEventLinks',
+    plan: {
+      kind: 'B',
+      overrides: { metaData: { originalTransactionState: { ...snapshot, amount: 150050, refAmount: 25050 } } },
+    },
+  });
+
+  return [
+    {
+      row: transaction,
+      rounded: {
+        amount: '1501',
+        refAmount: '250',
+        commissionRate: '-1501',
+        refCommissionRate: '252',
+        cashbackAmount: '0',
+        originalAmount: null,
+        paymentAmount: null,
+      },
+    },
+    { row: split, rounded: { amount: '1', refAmount: '2' } },
+    {
+      row: account,
+      rounded: {
+        initialBalance: '0',
+        refInitialBalance: '0',
+        currentBalance: '1000',
+        refCurrentBalance: '1001',
+        creditLimit: '0',
+        refCreditLimit: '0',
+      },
+    },
+    { row: goal, rounded: { targetAmount: '0.4', plannedMonthly: '3', achievedAmount: null } },
+    {
+      row: link,
+      rounded: {},
+      json: {
+        column: 'metaData',
+        decimal: { originalTransactionState: { ...snapshot, amount: 1501, refAmount: 250 } },
+        cents: { originalTransactionState: { ...snapshot, amount: 150100, refAmount: 25000 } },
+      },
+    },
+  ];
 };
 
 // ---------------------------------------------------------------------------
@@ -490,6 +625,40 @@ const assertValues = async ({
   }
 };
 
+const assertRounding = async ({
+  sequelize,
+  cases,
+  expected,
+  step,
+}: {
+  sequelize: Sequelize;
+  cases: RoundingCase[];
+  expected: Direction;
+  step: string;
+}): Promise<void> => {
+  for (const { row, rounded, json } of cases) {
+    const checks = Object.entries(rounded).map(([column, decimal]) => ({
+      column,
+      want:
+        decimal === null ? 'NULL' : expected === 'decimal' ? `${decimal}::numeric` : `round(${decimal}::numeric * 100)`,
+    }));
+    if (json)
+      checks.push({ column: json.column, want: sqlLiteral(expected === 'decimal' ? json.decimal : json.cents) });
+
+    for (const { column, want } of checks) {
+      const [result] = await sequelize.query(
+        `SELECT (${quote(column)} IS NOT DISTINCT FROM ${want}) AS ok, ${quote(column)}::text AS actual
+         FROM ${quote(row.table)} WHERE ${whereKey({ key: row.key })}`,
+      );
+      const { ok, actual } = (result as { ok: boolean; actual: string | null }[])[0] ?? {
+        ok: false,
+        actual: 'row missing',
+      };
+      check({ ok, label: `${step}: rounded ${row.table}.${column} expected ${want}, got ${actual}` });
+    }
+  }
+};
+
 const assertView = async ({
   sequelize,
   expected,
@@ -521,7 +690,7 @@ const assertView = async ({
   );
   const { in_view: inView, in_table: inTable } = (counts as { in_view: number; in_table: number }[])[0];
   check({
-    ok: inTable === 3 && inView === 1,
+    ok: inTable === 4 && inView === 1,
     label: `${step}: view keeps only the real, non-deleted row (${inView} of ${inTable})`,
   });
 };
@@ -663,7 +832,7 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
   // migration rewrites whole tables, which re-validates every foreign key of a rewritten row.
   const [foreignKeys] = await sequelize.query(
     `SELECT conrelid::regclass::text AS tbl, conname FROM pg_constraint
-     WHERE contype = 'f' AND conrelid::regclass::text IN (${tables.map((table) => sqlLiteral(quote(table))).join(', ')})`,
+     WHERE contype = 'f' AND conrelid::regclass::text IN (${[...tables, 'UsersCurrencies'].map((table) => sqlLiteral(quote(table))).join(', ')})`,
   );
   for (const { tbl, conname } of foreignKeys as {
     tbl: string;
@@ -675,6 +844,7 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
     seeded.push(...(await seedTable({ sequelize, table })));
   }
   console.log(`Seeded ${seeded.length} rows into ${tables.length} tables (${MONEY_COLUMNS.length} money columns).`);
+  const roundingCases = await seedRoundingCases({ sequelize });
 
   const assertState = async ({ expected, step, rows }: { expected: Direction; step: string; rows: SeededRow[] }) => {
     await assertColumnTypes({ sequelize, expected, step });
@@ -730,10 +900,19 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
   const upCentsComments = await centsComments({ sequelize });
   check({ ok: upCentsComments.length === 0, label: `up: no money column comment mentions cents (${upCentsComments})` });
   await assertNoUnlistedIntegerColumns({ sequelize, tables, step: 'up' });
+  await assertRounding({ sequelize, cases: roundingCases, expected: 'decimal', step: 'up' });
 
-  // A second `up` on converted columns changes nothing.
+  // A second `up` on converted columns changes nothing, a JPY fraction included.
+  const fractionWhere = whereKey({ key: roundingCases[0]!.row.key });
+  await sequelize.query(`UPDATE "Transactions" SET "amount" = 1500.5 WHERE ${fractionWhere}`);
   await migration.up(queryInterface);
+  const [[fraction]] = (await sequelize.query(
+    `SELECT "amount"::numeric = 1500.5 AS ok, "amount"::text AS actual FROM ${quote('Transactions')} WHERE ${fractionWhere}`,
+  )) as [{ ok: boolean; actual: string }[], unknown];
+  check({ ok: fraction!.ok, label: `second up: leaves a JPY fraction as it is (got ${fraction!.actual})` });
+  await sequelize.query(`UPDATE "Transactions" SET "amount" = 1501 WHERE ${fractionWhere}`);
   await assertState({ expected: 'decimal', step: 'second up', rows: seeded });
+  await assertRounding({ sequelize, cases: roundingCases, expected: 'decimal', step: 'second up' });
 
   // A mix of integer and decimal columns makes `up` and `down` refuse before any change.
   const mixedColumn = MONEY_COLUMNS[MONEY_COLUMNS.length - 1];
@@ -774,6 +953,7 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
   await umzug.down();
   const afterDown = seeded.map((row) => (row === lossyAccount ? { ...row, cents: lossyAccountCents } : row));
   await assertState({ expected: 'cents', step: 'down', rows: afterDown });
+  await assertRounding({ sequelize, cases: roundingCases, expected: 'cents', step: 'down' });
   const downCentsComments = await centsComments({ sequelize });
   check({
     ok: downCentsComments.join() === seedCentsComments.join(),
@@ -786,6 +966,7 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
 
   await umzug.up({ to: MIGRATION_NAME });
   await assertState({ expected: 'decimal', step: 'up-again', rows: afterDown });
+  await assertRounding({ sequelize, cases: roundingCases, expected: 'decimal', step: 'up-again' });
 
   // A fractional-cent value fits the new column exactly.
   await sequelize.query(

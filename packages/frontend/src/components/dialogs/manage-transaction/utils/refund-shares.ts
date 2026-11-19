@@ -1,5 +1,5 @@
 import type { RefundRole } from '@/api/transactions';
-import { roundToDecimals } from '@/js/helpers/currency-decimals';
+import { getCurrencyDecimals, roundToDecimals } from '@/js/helpers/currency-decimals';
 
 import type { RefundWithSplit } from '../types';
 
@@ -129,6 +129,8 @@ export const getRefundTargetCap = ({
   const base = getRefundTargetBase({ link });
   const purchaseCurrencyCode = tx.currencyCode;
   const isSameCurrency = purchaseCurrencyCode === refundCurrencyCode;
+  const purchaseDecimals = isSameCurrency ? decimals : getCurrencyDecimals({ code: purchaseCurrencyCode });
+  const roundPurchase = ({ value }: { value: number }) => roundShare({ value, decimals: purchaseDecimals });
 
   const leftOf = ({
     amount,
@@ -138,7 +140,11 @@ export const getRefundTargetCap = ({
     amount: number;
     refundedAmount?: number | null;
     saved: number;
-  }) => Math.max(0, round({ value: amount - Math.max(0, round({ value: (refundedAmount ?? 0) - saved })) }));
+  }) =>
+    Math.max(
+      0,
+      roundPurchase({ value: amount - Math.max(0, roundPurchase({ value: (refundedAmount ?? 0) - saved })) }),
+    );
   // Saving replaces every link of this refund, so all its saved shares on the purchase free room,
   // whichever split is picked now.
   const txSaved = Object.entries(savedShares).reduce(
@@ -160,7 +166,7 @@ export const getRefundTargetCap = ({
   const shared = {
     isSameCurrency,
     purchaseAmount: base.amount,
-    refundedByOthers: round({ value: base.amount - left }),
+    refundedByOthers: roundPurchase({ value: base.amount - left }),
   };
 
   if (isSameCurrency) return { ...shared, cap: left, isCapApprox: false };

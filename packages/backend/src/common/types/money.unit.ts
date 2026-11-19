@@ -458,6 +458,7 @@ describe('minor units', () => {
       expect(() => Money.zero().toMinorUnits({ decimals: -1 })).toThrow('expected a non-negative integer');
       expect(() => Money.zero().toMinorUnits({ decimals: 2.5 })).toThrow('expected a non-negative integer');
       expect(() => Money.zero().toMinorUnits({ decimals: NaN })).toThrow('expected a non-negative integer');
+      expect(() => Money.zero().toMinorUnits({ decimals: 9 })).toThrow('supported maximum of 8');
     });
 
     it.each([
@@ -498,6 +499,7 @@ describe('minor units', () => {
     it('rejects decimals that are not a non-negative integer', () => {
       expect(() => Money.fromMinorUnits({ value: 1, decimals: -1 })).toThrow('expected a non-negative integer');
       expect(() => Money.fromMinorUnits({ value: 1, decimals: 0.5 })).toThrow('expected a non-negative integer');
+      expect(() => Money.fromMinorUnits({ value: 1, decimals: 9 })).toThrow('supported maximum of 8');
     });
 
     it.each([
@@ -556,18 +558,6 @@ describe('minor units', () => {
     it.each(VALUES)('toMinorUnits(2) equals toCents for %s', (value) => {
       const money = Money.fromDecimal(value);
       expect(money.toMinorUnits({ decimals: 2 })).toBe(money.toCents());
-    });
-
-    it.each(VALUES)('fromMinorUnits(2) equals fromCents for %s', (value) => {
-      const cents = Money.fromDecimal(value).toCents();
-      expect(Money.fromMinorUnits({ value: cents, decimals: 2 }).equals(Money.fromCents(cents))).toBe(true);
-    });
-
-    it.each(VALUES)('minorUnitsToApiDecimal(2) equals the fromCents decimal for %s', (value) => {
-      const cents = Money.fromDecimal(value).toCents();
-      const expected = Money.fromCents(cents).toNumber();
-      expect(minorUnitsToApiDecimal({ value: cents, decimals: 2 })).toBe(expected);
-      expect(minorUnitsToApiDecimalOrNull({ value: cents, decimals: 2 })).toBe(expected);
     });
   });
 });

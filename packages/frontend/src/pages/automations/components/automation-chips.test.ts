@@ -151,6 +151,20 @@ describe('buildAutomationChips', () => {
     ]);
   });
 
+  test.each<[number, string]>([
+    [1.234, '= 1.234'],
+    [0.0005, '= 0.0005'],
+    [8000.123, '= 8,000.123'],
+  ])('an amount bound of %d shows every digit it carries', (min, value) => {
+    const { when } = chips(
+      makeRule({
+        items: [{ field: 'amount', operator: 'equals', value: { min }, currency: { mode: 'specific', code: 'KWD' } }],
+      }),
+    );
+
+    expect(when[0]).toMatchObject({ kind: 'amount', value });
+  });
+
   test('a transaction type condition tints both its own chip and the amount chips', () => {
     const { when } = chips(
       makeRule({

@@ -37,43 +37,17 @@ const createTransactionOf = async ({
 };
 
 describe('Currency precision', () => {
-  describe('regression guards (2-decimal currencies)', () => {
-    it('stores a USD amount with extra decimals rounded half-up to 2 decimals', async () => {
-      const account = await createAccountIn({ currencyCode: 'USD' });
+  describe('storage and rounding follow the currency decimals', () => {
+    it.each([
+      { currencyCode: 'USD', amount: 12.176673309, expected: 12.18 },
+      { currencyCode: 'KWD', amount: 1.234, expected: 1.234 },
+      { currencyCode: 'JPY', amount: 1500.6, expected: 1501 },
+    ])('stores a $currencyCode amount of $amount as $expected', async ({ currencyCode, amount, expected }) => {
+      const account = await createAccountIn({ currencyCode });
 
-      const transaction = await createTransactionOf({
-        accountId: account.id,
-        amount: 12.176673309,
-      });
+      const transaction = await createTransactionOf({ accountId: account.id, amount });
 
-      expect(Number(transaction.amount)).toBe(12.18);
-    });
-
-    it('keeps a USD balance equal to the sum of its 2-decimal transactions', async () => {
-      const account = await createAccountIn({ currencyCode: 'USD' });
-
-      await createTransactionOf({ accountId: account.id, amount: 10.25 });
-      await createTransactionOf({
-        accountId: account.id,
-        amount: 3.1,
-        transactionType: TRANSACTION_TYPES.expense,
-      });
-
-      const updated = await helpers.getAccount({ id: account.id, raw: true });
-      expect(Number(updated.currentBalance)).toBe(7.15);
-    });
-  });
-
-  describe('storage keeps the currency decimals', () => {
-    it('reads back a KWD transaction with 3 decimals', async () => {
-      const account = await createAccountIn({ currencyCode: 'KWD' });
-
-      const transaction = await createTransactionOf({
-        accountId: account.id,
-        amount: 1.234,
-      });
-
-      expect(Number(transaction.amount)).toBe(1.234);
+      expect(Number(transaction.amount)).toBe(expected);
     });
 
     it('keeps a KWD balance equal to the exact sum of its transactions', async () => {
@@ -90,28 +64,11 @@ describe('Currency precision', () => {
       const updated = await helpers.getAccount({ id: account.id, raw: true });
       expect(Number(updated.currentBalance)).toBe(3.128);
     });
-  });
-
-  describe('rounding follows the currency decimals', () => {
-    it('rounds a JPY amount to whole units', async () => {
-      const account = await createAccountIn({ currencyCode: 'JPY' });
-
-      const transaction = await createTransactionOf({
-        accountId: account.id,
-        amount: 1500.6,
-      });
-
-      expect(Number(transaction.amount)).toBe(1501);
-    });
 
     it('rounds a converted refAmount half-even to the 3 decimals of a KWD base currency', async () => {
       // KWD is not a supported base-currency change target, so the user starts with it.
-      const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({
+      await helpers.asNewUserWithBaseCurrency({
         currencyCode: 'KWD',
-      });
-
-      await helpers.asUser({
-        cookies: kwdUser.cookies,
         fn: async () => {
           const account = await createAccountIn({ currencyCode: 'JPY' });
           // The suite-wide default category belongs to the primary user.
@@ -150,41 +107,25 @@ describe('Currency precision', () => {
     });
   });
   describe('opening balance and credit limit', () => {
-    it('stores a USD opening balance rounded half-up to 2 decimals', async () => {
-      const account = await createAccountIn({ currencyCode: 'USD', initialBalance: 100.555 });
+    it.each([
+      { currencyCode: 'USD', initialBalance: 100.555, creditLimit: 500.555, expected: [100.56, 500.56] },
+      { currencyCode: 'KWD', initialBalance: 100.555, creditLimit: 500.4567, expected: [100.555, 500.457] },
+      { currencyCode: 'JPY', initialBalance: 100.5, creditLimit: 50000.5, expected: [101, 50001] },
+    ])(
+      'rounds a $currencyCode opening balance and credit limit to the currency decimals',
+      async ({ currencyCode, initialBalance, creditLimit, expected: [expectedBalance, expectedCreditLimit] }) => {
+        await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
 
-      expect(Number(account.initialBalance)).toBe(100.56);
-      expect(Number(account.currentBalance)).toBe(100.56);
-    });
+        const account = await helpers.createAccount({
+          payload: helpers.buildAccountPayload({ currencyCode, initialBalance, creditLimit }),
+          raw: true,
+        });
 
-    it('keeps the 3 decimals of a KWD opening balance', async () => {
-      const account = await createAccountIn({ currencyCode: 'KWD', initialBalance: 100.555 });
-
-      expect(Number(account.initialBalance)).toBe(100.555);
-      expect(Number(account.currentBalance)).toBe(100.555);
-    });
-
-    it('rounds a JPY opening balance to whole units', async () => {
-      const account = await createAccountIn({ currencyCode: 'JPY', initialBalance: 100.5 });
-
-      expect(Number(account.initialBalance)).toBe(101);
-    });
-
-    it('rounds a KWD credit limit to 3 decimals and a JPY one to whole units', async () => {
-      await helpers.addUserCurrencies({ currencyCodes: ['KWD', 'JPY'], raw: true });
-
-      const kwd = await helpers.createAccount({
-        payload: helpers.buildAccountPayload({ currencyCode: 'KWD', creditLimit: 500.4567 }),
-        raw: true,
-      });
-      const jpy = await helpers.createAccount({
-        payload: helpers.buildAccountPayload({ currencyCode: 'JPY', creditLimit: 50000.5 }),
-        raw: true,
-      });
-
-      expect(Number(kwd.creditLimit)).toBe(500.457);
-      expect(Number(jpy.creditLimit)).toBe(50001);
-    });
+        expect(Number(account.initialBalance)).toBe(expectedBalance);
+        expect(Number(account.currentBalance)).toBe(expectedBalance);
+        expect(Number(account.creditLimit)).toBe(expectedCreditLimit);
+      },
+    );
 
     it('rounds the target of a balance adjustment to the account currency', async () => {
       const account = await createAccountIn({ currencyCode: 'KWD', initialBalance: 10 });
@@ -411,35 +352,22 @@ describe('Currency precision', () => {
       expect(Number(updated.currentBalance)).toBe(1000.4);
     });
 
-    it('rounds an edited balance and credit limit to a 3-decimal currency', async () => {
-      const account = await createAccountIn({ currencyCode: 'KWD', initialBalance: 10 });
+    it.each([
+      { currencyCode: 'KWD', currentBalance: 12.3456, creditLimit: 500.0005, expected: [12.346, 500.001] },
+      { currencyCode: 'JPY', currentBalance: 1500.5, creditLimit: 20000.4, expected: [1501, 20000] },
+    ])(
+      'rounds an edited $currencyCode balance and credit limit to the currency decimals',
+      async ({ currencyCode, currentBalance, creditLimit, expected: [expectedBalance, expectedCreditLimit] }) => {
+        const account = await createAccountIn({ currencyCode, initialBalance: 10 });
 
-      await helpers.updateAccount({
-        id: account.id,
-        payload: { currentBalance: 12.3456, creditLimit: 500.0005 },
-        raw: true,
-      });
+        await helpers.updateAccount({ id: account.id, payload: { currentBalance, creditLimit }, raw: true });
 
-      const updated = await helpers.getAccount({ id: account.id, raw: true });
-      expect(Number(updated.currentBalance)).toBe(12.346);
-      expect(Number(updated.initialBalance)).toBe(12.346);
-      expect(Number(updated.creditLimit)).toBe(500.001);
-    });
-
-    it('rounds an edited balance and credit limit to a currency without minor units', async () => {
-      const account = await createAccountIn({ currencyCode: 'JPY', initialBalance: 1000 });
-
-      await helpers.updateAccount({
-        id: account.id,
-        payload: { currentBalance: 1500.5, creditLimit: 20000.4 },
-        raw: true,
-      });
-
-      const updated = await helpers.getAccount({ id: account.id, raw: true });
-      expect(Number(updated.currentBalance)).toBe(1501);
-      expect(Number(updated.initialBalance)).toBe(1501);
-      expect(Number(updated.creditLimit)).toBe(20000);
-    });
+        const updated = await helpers.getAccount({ id: account.id, raw: true });
+        expect(Number(updated.currentBalance)).toBe(expectedBalance);
+        expect(Number(updated.initialBalance)).toBe(expectedBalance);
+        expect(Number(updated.creditLimit)).toBe(expectedCreditLimit);
+      },
+    );
 
     it('reports the balance a balance adjustment leaves on a migrated account', async () => {
       const account = await createMigratedJpyAccount();

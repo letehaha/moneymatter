@@ -1,6 +1,7 @@
 import type { BackupRestoreProgress, BackupRestoreSummary, BackupRestoreWarning } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import { trackBackupRestored } from '@js/utils/posthog';
+import Currencies from '@models/currencies.model';
 import UserSettings, { type SettingsSchema, ZodSettingsSchema } from '@models/user-settings.model';
 import Users from '@models/users.model';
 import { unifyAiConnections } from '@root/migrations/utils/unify-ai-connections';
@@ -24,6 +25,7 @@ import {
 } from './remap-embedded-references';
 import { resolveSecurities } from './resolve-securities';
 import { insertRestoreTables } from './restore-tables';
+import { roundMoneyToCurrencyDecimals } from './round-to-currency-decimals';
 
 type Row = Record<string, unknown>;
 type ProgressCallback = (progress: BackupRestoreProgress) => void | Promise<void>;
@@ -163,6 +165,11 @@ export async function restoreUserBackup({
 }): Promise<BackupRestoreSummary> {
   await onProgress?.({ phase: 'validating' });
   const { archive, analysis } = await loadValidatedArchive({ fileContent });
+  const currencies = await Currencies.findAll({ attributes: ['code', 'digits'] });
+  roundMoneyToCurrencyDecimals({
+    data: archive.data,
+    digitsByCode: new Map(currencies.map(({ code, digits }) => [code, digits])),
+  });
 
   await onProgress?.({ phase: 'preparing-securities' });
   const securities = await resolveSecurities({ archive, analysis });

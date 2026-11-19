@@ -172,7 +172,7 @@ watch(
   },
 );
 
-const limitDecimals = (raw: string): string => {
+const limitDecimals = ({ raw }: { raw: string }): string => {
   if (props.decimals === undefined) return raw;
   // Pasted exponent notation ("1.5e3") is capped on its value, then shown as a plain number.
   if (/e/i.test(raw)) {
@@ -182,7 +182,7 @@ const limitDecimals = (raw: string): string => {
   return limitDecimalDigits({ raw, decimals: props.decimals });
 };
 
-const toFiniteNumber = (raw: string): number | null => {
+const toFiniteNumber = ({ raw }: { raw: string }): number | null => {
   if (raw === '') return null;
   const value = Number(raw);
   return Number.isFinite(value) ? value : null;
@@ -195,10 +195,10 @@ const onInput = (event: Event) => {
 
   // For number inputs, preserve raw value to handle intermediate decimal states
   if (props.type === 'number') {
-    const limited = limitDecimals(target.value);
+    const limited = limitDecimals({ raw: target.value });
     if (limited !== target.value) target.value = limited;
     rawNumberInput.value = limited;
-    const numValue = toFiniteNumber(limited);
+    const numValue = toFiniteNumber({ raw: limited });
     if (props.modelValue === numValue) return;
     emits(MODEL_EVENTS.input, numValue);
   } else {

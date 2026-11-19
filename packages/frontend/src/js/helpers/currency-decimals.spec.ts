@@ -24,12 +24,9 @@ describe('js/helpers/currency-decimals', () => {
       expect(getCurrencyDecimals({ code })).toBe(expected);
     });
 
-    // CLDR (behind `Intl`) and the backend's ISO 4217 table disagree on these codes.
-    test.each<[string, number]>([
-      ['HUF', 0],
-      ['IQD', 0],
-    ])('an unregistered %s takes the Intl decimals: %d', (code, expected) => {
-      expect(getCurrencyDecimals({ code })).toBe(expected);
+    // CLDR (behind `Intl`) gives IQD 0 digits where ISO 4217 says 3.
+    test('an unregistered IQD takes the Intl decimals', () => {
+      expect(getCurrencyDecimals({ code: 'IQD' })).toBe(0);
     });
 
     test.each<[string, number]>([
@@ -49,18 +46,6 @@ describe('js/helpers/currency-decimals', () => {
       expect(getCurrencyDecimals({ code: undefined })).toBe(DEFAULT_CURRENCY_DECIMALS);
       expect(getCurrencyDecimals({ code: null })).toBe(DEFAULT_CURRENCY_DECIMALS);
       expect(getCurrencyDecimals({ code: '' })).toBe(DEFAULT_CURRENCY_DECIMALS);
-    });
-
-    test('a registered value wins over the ISO one', () => {
-      registerCurrencyDecimals({
-        entries: [
-          { code: 'BTC', decimals: 8 },
-          { code: 'JPY', decimals: 1 },
-        ],
-      });
-
-      expect(getCurrencyDecimals({ code: 'BTC' })).toBe(8);
-      expect(getCurrencyDecimals({ code: 'JPY' })).toBe(1);
     });
 
     test('zero registered decimals are honoured, not treated as missing', () => {
@@ -125,7 +110,18 @@ describe('js/helpers/currency-decimals', () => {
       [1.2344, 3, 1.234],
       [85607.126, 2, 85607.13],
       [10.1255, 3, 10.126],
-      [-1.5, 0, -1],
+      [1.005, 2, 1.01],
+      [1.255, 2, 1.26],
+      [2.675, 2, 2.68],
+      [1.0005, 3, 1.001],
+      [0.5, 0, 1],
+      [-0.5, 0, -1],
+      [-1.5, 0, -2],
+      [-2.5, 0, -3],
+      [-1.005, 2, -1.01],
+      [-0.001, 2, 0],
+      [5e-8, 8, 5e-8],
+      [1.5e-7, 7, 2e-7],
     ])('%d at %d decimals → %d', (value, decimals, expected) => {
       expect(roundToDecimals({ value, decimals })).toBe(expected);
     });

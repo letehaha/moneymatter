@@ -245,9 +245,8 @@ describe('Budget plan CRUD', () => {
     const updated = await helpers.updateBudgetPlan({ planId, payload: { expectedIncome: 2500.55 }, raw: true });
     expect(updated.plan.expectedIncome).toBe(2500.55);
 
-    const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-    await helpers.asUser({
-      cookies: kwdUser.cookies,
+    await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
       fn: async () => {
         const kwdPlan = await helpers.createBudgetPlan({ raw: true });
         const kwdPlanId = kwdPlan.plan.id;

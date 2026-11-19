@@ -19,10 +19,9 @@ interface AccountCategoryFilter {
 /**
  * Balance row fetched without model hydration — a deliberate exception to the
  * "no raw on Money queries" rule: Balances has one row per account per day,
- * so per-row Sequelize instances + Money objects dominate dashboard-load memory.
+ * so per-row Sequelize instances dominate dashboard-load memory.
  * `amount` is integer minor units at the base currency's decimals: the DECIMAL column arrives
- * as a string and `toMinorRow` converts it right after the query. Money is constructed only at
- * the `getBalanceHistory` boundary; `getTotalBalance` sums the minor units directly.
+ * as a string and `toMinorRow` converts it once per row right after the query.
  */
 interface BalanceHistoryRow {
   date: string | Date;

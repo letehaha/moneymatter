@@ -23,6 +23,7 @@ import {
 import { usePortfolioCurrencySorting } from '@/composable/data-queries/use-portfolio-currency-sorting';
 import { useFormValidation } from '@/composable/form-validator';
 import { useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import type { AccountModel, PortfolioModel, TransactionModel, UserCurrencyModel } from '@bt/shared/types';
 import { TRANSACTION_TYPES } from '@bt/shared/types';
@@ -181,9 +182,14 @@ watch(
   },
 );
 
+const directCurrencyCode = computed(() => directForm.selectedCurrency?.currencyCode);
+const transferCurrencyCode = computed(() =>
+  showTransferCurrency.value ? transferForm.selectedCurrency?.currencyCode : transferForm.selectedAccount?.currencyCode,
+);
+
 // Validation for direct form
 const directValidationRules = computed(() => ({
-  amount: { required, minValue: minValue(0.01) },
+  amount: { required, minValue: minValue(10 ** -getCurrencyDecimals({ code: directCurrencyCode.value })) },
   selectedCurrency: { required },
   date: { required },
 }));
@@ -208,7 +214,7 @@ const {
 // Validation for transfer form
 const transferValidationRules = computed(() => ({
   selectedAccount: { required },
-  amount: { required, minValue: minValue(0.01) },
+  amount: { required, minValue: minValue(10 ** -getCurrencyDecimals({ code: transferCurrencyCode.value })) },
   ...(showTransferCurrency.value ? { selectedCurrency: { required } } : {}),
 }));
 
@@ -438,11 +444,11 @@ const accountLabel = computed(() =>
           v-model="directForm.amount"
           :label="$t('forms.directCashTransaction.amountLabel')"
           type="number"
-          step="0.01"
-          min="0.01"
+          only-positive
+          :decimals="directCurrencyCode ? getCurrencyDecimals({ code: directCurrencyCode }) : undefined"
           :placeholder="$t('forms.directCashTransaction.amountPlaceholder')"
           :disabled="isAnyMutationPending || disabled"
-          :error="getDirectFieldError('directForm.amount')"
+          :error-message="getDirectFieldError('directForm.amount')"
           @blur="touchDirectField('directForm.amount')"
         />
 
@@ -534,11 +540,11 @@ const accountLabel = computed(() =>
             v-model="transferForm.amount"
             :label="$t('forms.directCashTransaction.amountLabel')"
             type="number"
-            step="0.01"
-            min="0.01"
+            only-positive
+            :decimals="transferCurrencyCode ? getCurrencyDecimals({ code: transferCurrencyCode }) : undefined"
             :placeholder="$t('forms.directCashTransaction.amountPlaceholder')"
             :disabled="isAnyMutationPending || disabled"
-            :error="getTransferFieldError('transferForm.amount')"
+            :error-message="getTransferFieldError('transferForm.amount')"
             @blur="touchTransferField('transferForm.amount')"
           />
 

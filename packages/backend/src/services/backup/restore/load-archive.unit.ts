@@ -183,42 +183,31 @@ describe('loadBackupArchive uncompressed-size budget', () => {
 describe('loadBackupArchive money format', () => {
   const rows = JSON.stringify([{ id: 'a', amount: 1550, refAmount: null }]);
 
-  it('converts the cents of a format version 1 archive to decimals', async () => {
-    const buffer = await buildArchiveFromFiles({ files: { 'data/transactions.json': rows }, formatVersion: 1 });
-
-    const archive = await loadBackupArchive({ fileContent: buffer.toString('base64') });
-
-    expect(archive.data.get('transactions')).toEqual([{ id: 'a', amount: '15.5', refAmount: null }]);
-  });
-
-  it('converts the cents of a format version 2 archive', async () => {
-    const buffer = await buildArchiveFromFiles({
-      files: { 'data/transactions.json': rows, 'data/trackers.json': JSON.stringify([{ id: 't', limitAmount: 5000 }]) },
+  it.each([
+    { formatVersion: 1, trackers: null, expectedTrackers: undefined },
+    {
       formatVersion: 2,
-    });
-
-    const archive = await loadBackupArchive({ fileContent: buffer.toString('base64') });
-
-    expect(archive.data.get('transactions')).toEqual([{ id: 'a', amount: '15.5', refAmount: null }]);
-    expect(archive.data.get('trackers')).toEqual([
-      expect.objectContaining({ id: 't', limitAmount: '50', rulesEnabled: false }),
-    ]);
-  });
-
-  it('converts the cents of a format version 3 archive', async () => {
-    const buffer = await buildArchiveFromFiles({
-      files: {
-        'data/transactions.json': rows,
-        'data/trackers.json': JSON.stringify([{ id: 't', limitAmount: 5000, rulesEnabled: true }]),
-      },
+      trackers: [{ id: 't', limitAmount: 5000 }],
+      expectedTrackers: [expect.objectContaining({ id: 't', limitAmount: '50', rulesEnabled: false })],
+    },
+    {
       formatVersion: 3,
-    });
+      trackers: [{ id: 't', limitAmount: 5000, rulesEnabled: true }],
+      expectedTrackers: [{ id: 't', limitAmount: '50', rulesEnabled: true }],
+    },
+  ])(
+    'converts the cents of a format version $formatVersion archive to decimals',
+    async ({ formatVersion, trackers, expectedTrackers }) => {
+      const files: Record<string, string> = { 'data/transactions.json': rows };
+      if (trackers) files['data/trackers.json'] = JSON.stringify(trackers);
+      const buffer = await buildArchiveFromFiles({ files, formatVersion });
 
-    const archive = await loadBackupArchive({ fileContent: buffer.toString('base64') });
+      const archive = await loadBackupArchive({ fileContent: buffer.toString('base64') });
 
-    expect(archive.data.get('transactions')).toEqual([{ id: 'a', amount: '15.5', refAmount: null }]);
-    expect(archive.data.get('trackers')).toEqual([{ id: 't', limitAmount: '50', rulesEnabled: true }]);
-  });
+      expect(archive.data.get('transactions')).toEqual([{ id: 'a', amount: '15.5', refAmount: null }]);
+      expect(archive.data.get('trackers')).toEqual(expectedTrackers);
+    },
+  );
 
   it('keeps the money of a format version 4 archive as it is', async () => {
     const decimalRows = JSON.stringify([{ id: 'a', amount: '15.500000000000000000', refAmount: null }]);
@@ -227,6 +216,18 @@ describe('loadBackupArchive money format', () => {
     const archive = await loadBackupArchive({ fileContent: buffer.toString('base64') });
 
     expect(archive.data.get('transactions')).toEqual([{ id: 'a', amount: '15.500000000000000000', refAmount: null }]);
+  });
+
+  it.each(['NaN', '1e30', '1234567890123456789'])('rejects a format version 4 amount of %p', async (amount) => {
+    const hostileRows = JSON.stringify([{ id: 'a', amount, refAmount: null }]);
+    const buffer = await buildArchiveFromFiles({ files: { 'data/transactions.json': hostileRows }, formatVersion: 4 });
+
+    await expect(loadBackupArchive({ fileContent: buffer.toString('base64') })).rejects.toThrow(
+      t({
+        key: 'backup.restore.errors.amountNotCents',
+        variables: { path: 'data/transactions.json (amount)', value: JSON.stringify(amount) },
+      }),
+    );
   });
 
   it('rejects a version newer than this app writes', async () => {

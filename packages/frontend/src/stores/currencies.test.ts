@@ -46,25 +46,11 @@ describe('currencies store', () => {
     expect(store.systemCurrencies.map((item) => item.code)).toEqual(['EUR', 'USD', 'UAH', 'AED', 'GEL']);
   });
 
-  it('registers the decimals of every loaded currency by code', async () => {
-    api.getAllCurrencies.mockResolvedValue([
-      { code: 'KWD', digits: 3 },
-      { code: 'JPY', digits: 0 },
-      { code: 'USDT', digits: 6 },
-    ]);
-    const store = useCurrenciesStore();
-
-    await store.loadCurrencies();
-
-    expect(getCurrencyDecimals({ code: 'KWD' })).toBe(3);
-    expect(getCurrencyDecimals({ code: 'JPY' })).toBe(0);
-    expect(getCurrencyDecimals({ code: 'USDT' })).toBe(6);
-  });
-
   it('registers the decimals of linked currencies, which win over the system list', async () => {
     api.getAllCurrencies.mockResolvedValue([
       { code: 'KWD', digits: 3 },
       { code: 'HUF', digits: 0 },
+      { code: 'USDT', digits: 6 },
     ]);
     api.loadUserCurrencies.mockResolvedValue([
       { id: 1, currencyCode: 'HUF', currency: { code: 'HUF', digits: 2 } },
@@ -75,6 +61,7 @@ describe('currencies store', () => {
     await store.loadCurrencies();
 
     expect(getCurrencyDecimals({ code: 'KWD' })).toBe(3);
+    expect(getCurrencyDecimals({ code: 'USDT' })).toBe(6);
     expect(getCurrencyDecimals({ code: 'HUF' })).toBe(2);
     expect(getCurrencyDecimals({ code: 'IQD' })).toBe(3);
   });

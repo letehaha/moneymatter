@@ -554,9 +554,9 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
       userId: oppositeTx.userId,
       currencyCode: updateOppositeTxParams.currencyCode,
     });
-  } else if (updateOppositeTxParams.amount !== undefined) {
+  } else if (updateOppositeTxParams.amount !== undefined || isDestinationAccountChanged) {
     updateOppositeTxParams.amount = await roundToCurrency({
-      money: updateOppositeTxParams.amount,
+      money: updateOppositeTxParams.amount ?? oppositeTx.amount,
       userId: oppositeTx.userId,
       currencyCode: updateOppositeTxParams.currencyCode,
       mode: 'half-up',

@@ -420,7 +420,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       expect(adjustments.length).toBe(1);
       const adjustment = adjustments[0]!;
       expect(adjustment.transactionType).toBe(TRANSACTION_TYPES.expense);
-      expect(Money.fromDecimal(adjustment.amount as unknown as string).toCents()).toBe(5_000);
+      expect(Number(adjustment.amount)).toBe(50);
       expect(adjustment.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.transfer_out_wallet);
       expect(new Date(adjustment.time).toISOString()).toBe(updatedAccount.externalData!.bankConnection!.linkedAt);
 
@@ -505,7 +505,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       const adjustments = filterBalanceAdjustments(transactions);
       expect(adjustments.length).toBe(1);
       expect(adjustments[0]!.transactionType).toBe(TRANSACTION_TYPES.income);
-      expect(Money.fromDecimal(adjustments[0]!.amount as unknown as string).toCents()).toBe(10_000);
+      expect(Number(adjustments[0]!.amount)).toBe(100);
       expect(readReconciliation(updatedAccount).adjustmentTransactionId).toBeNull();
 
       expect(updatedAccount.initialBalance.toNumber()).toBe(1000);
@@ -818,7 +818,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       const adjustments = filterBalanceAdjustments(transactions);
       expect(adjustments.length).toBe(1);
       expect(adjustments[0]!.transactionType).toBe(TRANSACTION_TYPES.income);
-      expect(Money.fromDecimal(adjustments[0]!.amount as unknown as string).toCents()).toBe(5_000);
+      expect(Number(adjustments[0]!.amount)).toBe(50);
       expect(new Date(adjustments[0]!.time).toISOString()).toBe(updatedAccount.externalData!.bankConnection!.linkedAt);
 
       expect(reconciliation.pendingAbsorb).toBe(false);
@@ -862,7 +862,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
         const adjustments = filterBalanceAdjustments(transactions);
         expect(adjustments.length).toBe(1);
         expect(adjustments[0]!.transactionType).toBe(TRANSACTION_TYPES.income);
-        expect(Money.fromDecimal(adjustments[0]!.amount as unknown as string).toCents()).toBe(3_449_752);
+        expect(Number(adjustments[0]!.amount)).toBe(34497.52);
 
         expect(updatedAccount.creditLimit.toNumber()).toBe(0);
         expect(updatedAccount.currentBalance.toNumber()).toBe(0);
@@ -890,7 +890,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
         const adjustments = filterBalanceAdjustments(transactions);
         expect(adjustments.length).toBe(1);
         expect(adjustments[0]!.transactionType).toBe(TRANSACTION_TYPES.income);
-        expect(Money.fromDecimal(adjustments[0]!.amount as unknown as string).toCents()).toBe(600_000);
+        expect(Number(adjustments[0]!.amount)).toBe(6000);
 
         expect(updatedAccount.creditLimit.toNumber()).toBe(50_000);
         expect(updatedAccount.currentBalance.toNumber()).toBe(60_000);

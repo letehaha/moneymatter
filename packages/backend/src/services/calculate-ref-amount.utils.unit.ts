@@ -7,16 +7,6 @@ const TWO_DECIMALS = { baseDecimals: 2, quoteDecimals: 2 };
 
 describe('calculateRefAmountFromParams', () => {
   describe('useFloorAbs=true (default - regular transactions)', () => {
-    it("rounds fractional cent results to nearest integer using banker's rounding", () => {
-      // 205 cents * 0.5 = 102.5 → rounds to 102 (banker's rounding to even)
-      const result = calculateRefAmountFromParams({
-        ...TWO_DECIMALS,
-        amount: Money.fromCents(205),
-        rate: 0.5,
-      });
-      expect(result.toCents()).toBe(102);
-    });
-
     it('returns zero for zero amount', () => {
       const result = calculateRefAmountFromParams({
         ...TWO_DECIMALS,
@@ -32,6 +22,7 @@ describe('calculateRefAmountFromParams', () => {
       ['0.15', 0.5, '0.08'],
       ['-0.05', 0.5, '-0.02'],
       ['-0.15', 0.5, '-0.08'],
+      ['2.05', 0.5, '1.02'],
     ])('rounds the exact tie %s * %s to the even cent %s', (amount, rate, expected) => {
       const result = calculateRefAmountFromParams({ amount: Money.fromDecimal(amount), rate, ...TWO_DECIMALS });
       expect(result.toDecimalString(2)).toBe(expected);

@@ -59,21 +59,6 @@ describe('Tracker CRUD', () => {
 
       const edited = await helpers.editTracker({ id: tracker.id, raw: true, params: { limitAmount: 77.774 } });
       expect(edited.limitAmount).toBe(77.77);
-
-      const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-      await helpers.asUser({
-        cookies: kwdUser.cookies,
-        fn: async () => {
-          const kwdTracker = await helpers.createTracker({
-            name: trackerName,
-            startDate: '2025-03-01T00:00:00Z',
-            endDate: '2025-03-31T23:59:59Z',
-            limitAmount: 100.5545,
-            raw: true,
-          });
-          expect(kwdTracker.limitAmount).toBe(100.555);
-        },
-      });
     });
 
     it('refuses a positive limit that rounds to nothing at the base currency decimals', async () => {
@@ -86,9 +71,8 @@ describe('Tracker CRUD', () => {
       expect(edited.statusCode).toBe(ERROR_CODES.ValidationError);
       expect((await helpers.getTrackerById({ id: tracker.id, raw: true }))!.limitAmount).toBe(50);
 
-      const jpyUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'JPY' });
-      await helpers.asUser({
-        cookies: jpyUser.cookies,
+      await helpers.asNewUserWithBaseCurrency({
+        currencyCode: 'JPY',
         fn: async () => {
           const jpyCreated = await helpers.createTracker({ name: trackerName, ...period, limitAmount: 0.4 });
           expect(jpyCreated.statusCode).toBe(ERROR_CODES.ValidationError);

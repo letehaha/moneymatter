@@ -11,7 +11,15 @@ import { dropRealTransactionsViewSql } from './utils/real-transactions-view';
 
 /**
  * Moves every transactional money amount from integer cents (BIGINT) to DECIMAL(36,18), and
- * rewrites the cents held inside JSON fields as decimals. `up` divides by 100, which is lossless.
+ * rewrites the cents held inside JSON fields as decimals. `up` divides by 100.
+ *
+ * In the same run `up` rounds the amounts of currencies with fewer than 2 decimals (JPY, VND, ...)
+ * to `Currencies.digits`: native amounts half-up, converted ones half-even unless their currency is
+ * the native one. `COLUMN_CURRENCIES` and `JSON_KEY_CURRENCIES` name each amount's currency; a row
+ * whose currency does not resolve stays as it is. A positive value that would round to 0 in a column
+ * with a `> 0` check is left unrounded and logged. Each amount rounds on its own, so a balance can
+ * end up a unit or so away from its initial balance plus its transactions, and splits from their
+ * transaction, when several of them had a fraction.
  *
  * The column and JSON lists are the frozen snapshot in `utils/money-columns-20261115.ts`, the
  * columns that held cents when this migration was written. Its timestamp follows every migration
@@ -291,54 +299,79 @@ const convertedJsonNumber = ({ direction }: { direction: Direction }): string =>
 
 const keyListSql = ({ keys }: { keys: readonly string[] }): string => keys.map(sqlString).join(', ');
 
-/** SQL rebuilding the jsonb object `objectSql`, converting the amount keys and keeping every other entry. */
-const convertedJsonObject = ({
+/** How an amount key's JSON number is rewritten: `numberSql` over `kv`, with `joinSql` joined to `kv`. */
+type JsonNumberRewrite = ({ objectSql }: { objectSql: string }) => { numberSql: string; joinSql?: string };
+
+/** SQL rebuilding the jsonb object `objectSql`, rewriting the amount keys and keeping every other entry. */
+const rewrittenJsonObject = ({
   objectSql,
   keys,
-  direction,
+  rewrite,
 }: {
   objectSql: string;
   keys: readonly string[];
-  direction: Direction;
-}): string => `COALESCE((
+  rewrite: JsonNumberRewrite;
+}): string => {
+  const { numberSql, joinSql = '' } = rewrite({ objectSql });
+  return `COALESCE((
     SELECT jsonb_object_agg(
       kv.key,
       CASE WHEN kv.key IN (${keyListSql({ keys })}) AND jsonb_typeof(kv.value) = 'number'
-        THEN ${convertedJsonNumber({ direction })}
+        THEN ${numberSql}
         ELSE kv.value
       END
     )
-    FROM jsonb_each(${objectSql}) AS kv
+    FROM jsonb_each(${objectSql}) AS kv ${joinSql}
   ), '{}'::jsonb)`;
+};
 
-const rewriteJsonFieldSql = ({ field, direction }: { field: MoneyJsonFieldSpec; direction: Direction }): string => {
-  const { table, column, shape, keys, path } = field;
+/** The new value of the JSON field and the condition selecting the rows that hold one. */
+const rewriteJsonFieldSql = ({
+  field,
+  rewrite,
+}: {
+  field: MoneyJsonFieldSpec;
+  rewrite: JsonNumberRewrite;
+}): { valueSql: string; whereSql: string } => {
+  const { column, shape, keys, path } = field;
 
   if (shape === 'object' && path?.length) {
     const pathSql = `'{${path.join(',')}}'`;
     const nestedSql = `("${column}" #> ${pathSql})`;
-    return `UPDATE "${table}"
-      SET "${column}" = jsonb_set("${column}", ${pathSql}, ${convertedJsonObject({ objectSql: nestedSql, keys, direction })})
-      WHERE jsonb_typeof(${nestedSql}) = 'object';`;
+    return {
+      valueSql: `jsonb_set("${column}", ${pathSql}, ${rewrittenJsonObject({ objectSql: nestedSql, keys, rewrite })})`,
+      whereSql: `jsonb_typeof(${nestedSql}) = 'object'`,
+    };
   }
 
   if (shape === 'object') {
-    return `UPDATE "${table}"
-      SET "${column}" = ${convertedJsonObject({ objectSql: `"${column}"`, keys, direction })}
-      WHERE jsonb_typeof("${column}") = 'object';`;
+    return {
+      valueSql: rewrittenJsonObject({ objectSql: `"${column}"`, keys, rewrite }),
+      whereSql: `jsonb_typeof("${column}") = 'object'`,
+    };
   }
 
-  return `UPDATE "${table}"
-    SET "${column}" = COALESCE((
+  return {
+    valueSql: `COALESCE((
       SELECT jsonb_agg(
-        CASE WHEN jsonb_typeof(element) = 'object'
-          THEN ${convertedJsonObject({ objectSql: 'element', keys, direction })}
-          ELSE element
+        CASE WHEN jsonb_typeof(e.element) = 'object'
+          THEN ${rewrittenJsonObject({ objectSql: 'e.element', keys, rewrite })}
+          ELSE e.element
         END
+        ORDER BY e.ord
       )
-      FROM jsonb_array_elements("${column}") AS element
-    ), '[]'::jsonb)
-    WHERE jsonb_typeof("${column}") = 'array';`;
+      FROM jsonb_array_elements("${column}") WITH ORDINALITY AS e(element, ord)
+    ), '[]'::jsonb)`,
+    whereSql: `jsonb_typeof("${column}") = 'array'`,
+  };
+};
+
+const convertJsonFieldSql = ({ field, direction }: { field: MoneyJsonFieldSpec; direction: Direction }): string => {
+  const { valueSql, whereSql } = rewriteJsonFieldSql({
+    field,
+    rewrite: () => ({ numberSql: convertedJsonNumber({ direction }) }),
+  });
+  return `UPDATE "${field.table}" SET "${field.column}" = ${valueSql} WHERE ${whereSql};`;
 };
 
 /** `jsonSql` when it is a jsonb value of `type`, otherwise an empty one, so a set-returning function never sees a wrong type. */
@@ -388,6 +421,266 @@ const assertJsonAmountsAreNumbers = async ({
 };
 
 // ---------------------------------------------------------------------------
+// Rounding to the currency's decimals
+// ---------------------------------------------------------------------------
+
+/** Where a column's currency comes from: SQL over the row `r` and the tables in `from`. */
+interface CurrencySource {
+  /** Tables joined to `r`, as a FROM list. */
+  from?: string;
+  /** Condition joining `from` to `r`. */
+  link?: string;
+  currency: string;
+  /** For a converted amount, the currency it was converted from: half-even unless the two match. */
+  convertedFrom?: string;
+  /** The column has a `> 0` check. */
+  positive?: boolean;
+}
+
+const OWN: CurrencySource = { currency: 'r."currencyCode"' };
+const OWN_POSITIVE: CurrencySource = { ...OWN, positive: true };
+const USER_BASE: CurrencySource = {
+  from: '"UsersCurrencies" AS uc',
+  link: 'uc."userId" = r."userId" AND uc."isDefaultCurrency"',
+  currency: 'uc."currencyCode"',
+};
+const ACCOUNT: CurrencySource = {
+  from: '"Accounts" AS a',
+  link: 'a."id" = r."accountId"',
+  currency: 'a."currencyCode"',
+};
+const PLAN: CurrencySource = {
+  from: '"BudgetLines" AS l, "BudgetPlans" AS p',
+  link: 'l."id" = r."lineId" AND p."id" = l."planId"',
+  currency: 'p."currencyCode"',
+};
+const SPLIT_TRANSACTION: CurrencySource = {
+  from: '"Transactions" AS t',
+  link: 't."id" = r."transactionId"',
+  currency: 't."currencyCode"',
+};
+
+const ACCOUNT_REF: CurrencySource = { ...USER_BASE, convertedFrom: 'r."currencyCode"' };
+const LOAN_REF: CurrencySource = {
+  from: '"Accounts" AS a, "UsersCurrencies" AS uc',
+  link: 'a."id" = r."accountId" AND uc."userId" = r."userId" AND uc."isDefaultCurrency"',
+  currency: 'uc."currencyCode"',
+  convertedFrom: 'a."currencyCode"',
+};
+
+const COLUMN_CURRENCIES: Record<string, CurrencySource> = {
+  'Accounts.initialBalance': OWN,
+  'Accounts.refInitialBalance': ACCOUNT_REF,
+  'Accounts.currentBalance': OWN,
+  'Accounts.refCurrentBalance': ACCOUNT_REF,
+  'Accounts.creditLimit': OWN,
+  'Accounts.refCreditLimit': ACCOUNT_REF,
+  // The account owner's base currency.
+  'Balances.amount': {
+    from: '"Accounts" AS a, "UsersCurrencies" AS uc',
+    link: 'a."id" = r."accountId" AND uc."userId" = a."userId" AND uc."isDefaultCurrency"',
+    currency: 'uc."currencyCode"',
+    convertedFrom: 'a."currencyCode"',
+  },
+  'BudgetAssignments.baselineAmount': PLAN,
+  'BudgetAssignments.overrideAmount': PLAN,
+  'BudgetLineGoals.amount': { ...PLAN, positive: true },
+  'BudgetLineGoals.stopAtBalance': { ...PLAN, positive: true },
+  'BudgetLineGoals.fundingCap': { ...PLAN, positive: true },
+  'BudgetPlans.expectedIncome': OWN,
+  'GoalAccounts.fixedAmount': { ...ACCOUNT, positive: true },
+  'Goals.targetAmount': OWN_POSITIVE,
+  'Goals.plannedMonthly': OWN_POSITIVE,
+  'Goals.achievedAmount': OWN,
+  'ImportBatchAccountEffects.absorbedAmount': ACCOUNT,
+  'LoanDetails.originalPrincipal': ACCOUNT,
+  'LoanDetails.minPayment': ACCOUNT,
+  'LoanDetails.plannedPayment': ACCOUNT,
+  'LoanDetails.refOriginalPrincipal': LOAN_REF,
+  'LoanDetails.refMinPayment': LOAN_REF,
+  'LoanDetails.refPlannedPayment': LOAN_REF,
+  'RefundTransactions.amount': {
+    from: '"Transactions" AS t',
+    link: 't."id" = r."refundTxId"',
+    currency: 't."currencyCode"',
+    positive: true,
+  },
+  'SubscriptionCandidates.averageAmount': OWN,
+  'Subscriptions.expectedAmount': { currency: 'r."expectedCurrencyCode"' },
+  'TrackerLines.limitAmount': {
+    from: '"Trackers" AS tr, "UsersCurrencies" AS uc',
+    link: 'tr."id" = r."trackerId" AND uc."userId" = tr."userId" AND uc."isDefaultCurrency"',
+    currency: 'uc."currencyCode"',
+  },
+  'Trackers.limitAmount': USER_BASE,
+  'TransactionSplits.amount': SPLIT_TRANSACTION,
+  'TransactionSplits.refAmount': {
+    ...SPLIT_TRANSACTION,
+    currency: 't."refCurrencyCode"',
+    convertedFrom: 't."currencyCode"',
+  },
+  'TransactionTemplates.amount': ACCOUNT,
+  'Transactions.amount': OWN,
+  'Transactions.refAmount': { currency: 'r."refCurrencyCode"', convertedFrom: 'r."currencyCode"' },
+  'Transactions.commissionRate': OWN,
+  'Transactions.refCommissionRate': { currency: 'r."refCurrencyCode"', convertedFrom: 'r."currencyCode"' },
+  'Transactions.cashbackAmount': OWN,
+  'Transactions.originalAmount': { currency: 'r."originalCurrencyCode"' },
+  // In the currency of the payment's main row.
+  'Transactions.paymentAmount': {
+    from: '"Transactions" AS pm',
+    link: 'pm."id" = r."paymentParentId"',
+    currency: 'pm."currencyCode"',
+  },
+  'Vehicles.purchasePrice': ACCOUNT,
+  'Vehicles.valueAnchor': ACCOUNT,
+};
+
+interface JsonKeyCurrency {
+  currency: string;
+  convertedFrom?: string;
+}
+
+/** Original-transaction snapshots carry their own currency codes. */
+const snapshotKeyCurrencies = ({ objectSql }: { objectSql: string }): Record<string, JsonKeyCurrency> => ({
+  amount: { currency: `(${objectSql} ->> 'currencyCode')` },
+  refAmount: { currency: `(${objectSql} ->> 'refCurrencyCode')`, convertedFrom: `(${objectSql} ->> 'currencyCode')` },
+});
+
+const JSON_KEY_CURRENCIES: Record<string, (params: { objectSql: string }) => Record<string, JsonKeyCurrency>> = {
+  'TagReminders.settings': () => ({
+    amountThreshold: {
+      currency: `(SELECT uc."currencyCode" FROM "UsersCurrencies" AS uc
+        WHERE uc."userId" = "TagReminders"."userId" AND uc."isDefaultCurrency" LIMIT 1)`,
+    },
+  }),
+  'LoanDetails.events': () => {
+    const currency = `(SELECT a."currencyCode" FROM "Accounts" AS a WHERE a."id" = "LoanDetails"."accountId")`;
+    return { fromCents: { currency }, toCents: { currency } };
+  },
+  'VentureEventLinks.metaData': snapshotKeyCurrencies,
+  'PortfolioTransfers.metaData': snapshotKeyCurrencies,
+};
+
+/**
+ * `valueSql` rounded to `digitsSql` decimals: half away from zero like `Money.round`, or half-even
+ * when `halfEvenSql` holds (`round()` on numeric has no half-even mode).
+ */
+const roundedSql = ({
+  valueSql,
+  digitsSql,
+  halfEvenSql,
+}: {
+  valueSql: string;
+  digitsSql: string;
+  halfEvenSql: string;
+}): string => {
+  const scaled = `(abs(${valueSql}) * power(10::numeric, ${digitsSql}))`;
+  return `(CASE WHEN (${halfEvenSql}) AND mod(${scaled}, 1) = 0.5 AND mod(trunc(${scaled}), 2) = 0
+    THEN trunc(${valueSql}, ${digitsSql}) ELSE round(${valueSql}, ${digitsSql}) END)`;
+};
+
+const logUp = (message: string) => console.log(`money-columns-to-decimal up: ${message}`);
+
+const roundToCurrencyDecimals = async ({
+  queryInterface,
+  transaction,
+}: {
+  queryInterface: QueryInterface;
+  transaction: Transaction;
+}): Promise<void> => {
+  const count = async (sql: string): Promise<number> => {
+    const [row] = await queryInterface.sequelize.query<{ count: number }>(sql, {
+      transaction,
+      type: QueryTypes.SELECT,
+    });
+    return row?.count ?? 0;
+  };
+  let total = 0;
+
+  for (const { table, column } of MONEY_COLUMNS_20261115) {
+    const source = COLUMN_CURRENCIES[`${table}.${column}`];
+    if (!source) throw new Error(`money-columns-to-decimal up: no currency source for "${table}"."${column}".`);
+
+    const value = `r."${column}"`;
+    const rounded = roundedSql({
+      valueSql: value,
+      digitsSql: 'c."digits"',
+      halfEvenSql: source.convertedFrom ? `c."code" IS DISTINCT FROM ${source.convertedFrom}` : 'false',
+    });
+    const from = [source.from, '"Currencies" AS c'].filter(Boolean).join(', ');
+    const where = [
+      source.link,
+      `c."code" = ${source.currency}`,
+      'c."digits" < 2',
+      `${value} <> round(${value}, c."digits")`,
+    ]
+      .filter(Boolean)
+      .join(' AND ');
+
+    const changed = await count(
+      `WITH changed AS (
+        UPDATE "${table}" AS r SET "${column}" = ${rounded} FROM ${from}
+        WHERE ${where}${source.positive ? ` AND ${rounded} <> 0` : ''}
+        RETURNING 1
+      ) SELECT count(*)::int AS count FROM changed`,
+    );
+    total += changed;
+    if (changed) logUp(`rounded ${changed} "${table}"."${column}" amounts to their currency's decimals.`);
+
+    if (source.positive) {
+      const kept = await count(`SELECT count(*)::int AS count FROM "${table}" AS r, ${from} WHERE ${where}`);
+      if (kept)
+        logUp(`left ${kept} "${table}"."${column}" amounts unrounded: they round to 0, which its > 0 check rejects.`);
+    }
+  }
+
+  for (const field of MONEY_JSON_FIELDS_20261115) {
+    const keyCurrencies = JSON_KEY_CURRENCIES[`${field.table}.${field.column}`];
+    if (!keyCurrencies || !field.keys.every((key) => key in keyCurrencies({ objectSql: 'NULL' }))) {
+      throw new Error(
+        `money-columns-to-decimal up: no currency source for every key of "${field.table}"."${field.column}".`,
+      );
+    }
+
+    const { valueSql, whereSql } = rewriteJsonFieldSql({
+      field,
+      rewrite: ({ objectSql }) => {
+        const currencies = Object.entries(keyCurrencies({ objectSql }));
+        const byKey = (pick: (currency: JsonKeyCurrency) => string) =>
+          `CASE kv.key ${currencies.map(([key, currency]) => `WHEN ${sqlString(key)} THEN ${pick(currency)}`).join(' ')} END`;
+        const value = `(kv.value #>> '{}')::numeric`;
+        const rounded = roundedSql({
+          valueSql: value,
+          digitsSql: 'c."digits"',
+          halfEvenSql: byKey(({ currency, convertedFrom }) =>
+            convertedFrom ? `(${currency} IS DISTINCT FROM ${convertedFrom})` : 'false',
+          ),
+        });
+        return {
+          joinSql: `LEFT JOIN "Currencies" AS c ON c."code" = ${byKey(({ currency }) => currency)}`,
+          numberSql: `CASE WHEN c."digits" < 2 AND ${value} <> round(${value}, c."digits")
+            THEN to_jsonb(trim_scale(${rounded})) ELSE kv.value END`,
+        };
+      },
+    });
+
+    const changed = await count(
+      `WITH changed AS (
+        UPDATE "${field.table}" SET "${field.column}" = ${valueSql}
+        WHERE ${whereSql} AND ${valueSql} IS DISTINCT FROM "${field.column}"
+        RETURNING 1
+      ) SELECT count(*)::int AS count FROM changed`,
+    );
+    total += changed;
+    if (changed)
+      logUp(`rounded amounts in ${changed} "${field.table}"."${field.column}" rows to their currency's decimals.`);
+  }
+
+  logUp(`rounding to currencies with fewer than 2 decimals changed ${total} column values and JSON rows.`);
+};
+
+// ---------------------------------------------------------------------------
 // Runner
 // ---------------------------------------------------------------------------
 
@@ -419,8 +712,9 @@ const runMigration = async ({
       await run(sql);
     }
     for (const field of MONEY_JSON_FIELDS_20261115) {
-      await run(rewriteJsonFieldSql({ field, direction }));
+      await run(convertJsonFieldSql({ field, direction }));
     }
+    if (direction === 'up') await roundToCurrencyDecimals({ queryInterface, transaction: t });
     for (const sql of columnCommentsSql({ direction })) {
       await run(sql);
     }

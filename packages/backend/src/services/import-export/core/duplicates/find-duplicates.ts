@@ -86,15 +86,15 @@ export async function findDuplicates({
       continue;
     }
 
-    // `row.date` is a full ISO instant, but existing transactions are keyed by
-    // calendar day above — normalise the row to the same day granularity so a
-    // same-day match still lands in the same bucket.
     const decimals = decimalsByAccountId.get(accountId);
     if (decimals === undefined) {
-      // Not one of the user's accounts, so nothing of theirs can match
+      // Unknown account id
       continue;
     }
 
+    // `row.date` is a full ISO instant, but existing transactions are keyed by
+    // calendar day above — normalise the row to the same day granularity so a
+    // same-day match still lands in the same bucket.
     const rowDateStr = importDayKey({ iso: new Date(row.date).toISOString() });
     const key = `${accountId}:${rowDateStr}:${duplicateAmountKey({ amount: row.amount, decimals })}`;
     const candidates = exactMatchMap.get(key) || [];

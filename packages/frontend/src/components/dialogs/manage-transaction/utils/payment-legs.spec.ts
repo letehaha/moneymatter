@@ -204,18 +204,14 @@ describe('payment legs helpers', () => {
       ).toBe(8.57);
     });
 
-    it('rounds a scaled share to a 3-decimal main currency', () => {
+    it.each<[number, number]>([
+      [3, 8.571],
+      [0, 9],
+    ])('rounds a scaled share to %d main currency decimals: %d', (decimals, expected) => {
       expect(
-        setPaymentLegAmount({ leg: savedCashLeg, amount: 10, mainCurrencyCode: 'EUR', decimals: 3, convert })
+        setPaymentLegAmount({ leg: savedCashLeg, amount: 10, mainCurrencyCode: 'EUR', decimals, convert })
           .paymentAmount,
-      ).toBe(8.571);
-    });
-
-    it('rounds a scaled share to a whole unit for a 0-decimal main currency', () => {
-      expect(
-        setPaymentLegAmount({ leg: savedCashLeg, amount: 10, mainCurrencyCode: 'EUR', decimals: 0, convert })
-          .paymentAmount,
-      ).toBe(9);
+      ).toBe(expected);
     });
 
     it('prefills an untouched share from the market rate', () => {

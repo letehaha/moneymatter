@@ -1125,39 +1125,27 @@ describe('Get tracker spending stats', () => {
   });
 
   describe('Base currency decimals', () => {
-    it('reports categories and periods at 3 decimals for a KWD-base user', async () => {
-      const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
+    it.each([
+      { bookCurrency: 'KWD', expense: 1.234, income: 2.005, decimals: 3 },
+      { bookCurrency: null, expense: 1.23, income: 2.01, decimals: 2 },
+    ])('reports categories and periods at $decimals decimals', async ({ bookCurrency, expense, income, decimals }) => {
+      const seedAndRead = async () => {
+        const { trackerId, categoryId } = await seed({
+          currencyCode: bookCurrency ?? global.BASE_CURRENCY.code,
+          amounts: { expense, income },
+        });
+        return { categoryId, result: await helpers.getTrackerSpendingStats({ id: trackerId, raw: true }) };
+      };
 
-      await helpers.asUser({
-        cookies: kwdUser.cookies,
-        fn: async () => {
-          const { trackerId, categoryId } = await seed({
-            currencyCode: 'KWD',
-            amounts: { expense: 1.234, income: 2.005 },
-          });
+      const { categoryId, result } = bookCurrency
+        ? await helpers.asNewUserWithBaseCurrency({ currencyCode: bookCurrency, fn: seedAndRead })
+        : await seedAndRead();
 
-          const result = await helpers.getTrackerSpendingStats({ id: trackerId, raw: true });
-
-          expect(result.spendingsByCategory).toMatchObject([{ categoryId, amount: 1.234 }]);
-          const totalExpense = result.spendingOverTime.periods.reduce((sum, period) => sum + period.expense, 0);
-          const totalIncome = result.spendingOverTime.periods.reduce((sum, period) => sum + period.income, 0);
-          expect(Number(totalExpense.toFixed(3))).toBe(1.234);
-          expect(Number(totalIncome.toFixed(3))).toBe(2.005);
-        },
-      });
-    });
-
-    it('keeps the 2-decimal values for a 2-decimal base user', async () => {
-      const { trackerId, categoryId } = await seed({
-        currencyCode: global.BASE_CURRENCY.code,
-        amounts: { expense: 1.23, income: 2.01 },
-      });
-
-      const result = await helpers.getTrackerSpendingStats({ id: trackerId, raw: true });
-
-      expect(result.spendingsByCategory).toMatchObject([{ categoryId, amount: 1.23 }]);
+      expect(result.spendingsByCategory).toMatchObject([{ categoryId, amount: expense }]);
       const totalExpense = result.spendingOverTime.periods.reduce((sum, period) => sum + period.expense, 0);
-      expect(Number(totalExpense.toFixed(2))).toBe(1.23);
+      const totalIncome = result.spendingOverTime.periods.reduce((sum, period) => sum + period.income, 0);
+      expect(Number(totalExpense.toFixed(decimals))).toBe(expense);
+      expect(Number(totalIncome.toFixed(decimals))).toBe(income);
     });
   });
 });

@@ -35,33 +35,22 @@ const createKwdSubscription = async ({ accountId, currencyCode }: { accountId: R
 
 describe('Subscription amounts at the currency decimals', () => {
   describe('amount rules on a 3-decimal currency', () => {
-    it('suggests a payment inside the bounds and leaves one just outside them, without a rule currency', async () => {
-      const { account } = await helpers.createAccountWithNewCurrency({ currency: 'KWD' });
-      const inside = await createKwdExpense({ accountId: account.id, amount: 1.237, note: 'KWDSVC monthly' });
-      const outside = await createKwdExpense({ accountId: account.id, amount: 1.239, note: 'KWDSVC monthly' });
+    it.each([undefined, 'KWD'])(
+      'suggests a payment inside the bounds and leaves one just outside them, with rule currency %s',
+      async (currencyCode) => {
+        const { account } = await helpers.createAccountWithNewCurrency({ currency: 'KWD' });
+        const inside = await createKwdExpense({ accountId: account.id, amount: 1.237, note: 'KWDSVC monthly' });
+        const outside = await createKwdExpense({ accountId: account.id, amount: 1.239, note: 'KWDSVC monthly' });
 
-      const subscription = await createKwdSubscription({ accountId: account.id });
-      const suggestedIds = (await helpers.getSuggestedMatches({ id: subscription.id, raw: true })).map(
-        (tx: { id: string }) => tx.id,
-      );
+        const subscription = await createKwdSubscription({ accountId: account.id, currencyCode });
+        const suggestedIds = (await helpers.getSuggestedMatches({ id: subscription.id, raw: true })).map(
+          (tx: { id: string }) => tx.id,
+        );
 
-      expect(suggestedIds).toContain(inside.id);
-      expect(suggestedIds).not.toContain(outside.id);
-    });
-
-    it('suggests a payment inside the bounds and leaves one just outside them, with the rule in KWD', async () => {
-      const { account } = await helpers.createAccountWithNewCurrency({ currency: 'KWD' });
-      const inside = await createKwdExpense({ accountId: account.id, amount: 1.237, note: 'KWDSVC monthly' });
-      const outside = await createKwdExpense({ accountId: account.id, amount: 1.239, note: 'KWDSVC monthly' });
-
-      const subscription = await createKwdSubscription({ accountId: account.id, currencyCode: 'KWD' });
-      const suggestedIds = (await helpers.getSuggestedMatches({ id: subscription.id, raw: true })).map(
-        (tx: { id: string }) => tx.id,
-      );
-
-      expect(suggestedIds).toContain(inside.id);
-      expect(suggestedIds).not.toContain(outside.id);
-    });
+        expect(suggestedIds).toContain(inside.id);
+        expect(suggestedIds).not.toContain(outside.id);
+      },
+    );
 
     it('links a new payment inside the bounds and not one just outside them', async () => {
       const { account } = await helpers.createAccountWithNewCurrency({ currency: 'KWD' });
@@ -78,10 +67,8 @@ describe('Subscription amounts at the currency decimals', () => {
 
   describe('GET /subscriptions/summary', () => {
     it('rounds the totals to a base currency without minor units', async () => {
-      const jpyUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'JPY' });
-
-      await helpers.asUser({
-        cookies: jpyUser.cookies,
+      await helpers.asNewUserWithBaseCurrency({
+        currencyCode: 'JPY',
         fn: async () => {
           await helpers.createSubscription({
             name: 'Yearly plan',

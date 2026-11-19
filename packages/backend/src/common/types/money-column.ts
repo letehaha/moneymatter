@@ -1,4 +1,4 @@
-import { MONEY_COLUMN_SCALE } from '@common/lib/money-columns';
+import { MONEY_COLUMN_PRECISION, MONEY_COLUMN_SCALE } from '@common/lib/money-columns';
 import { DataType, addAttribute } from 'sequelize-typescript';
 
 import { Money } from './money';
@@ -21,17 +21,19 @@ import { Money } from './money';
  * `roundToCurrency` / `roundMoneyValues` in `@common/lib/currency-precision`), because the
  * decimals depend on a currency the attribute setter cannot see.
  *
+ * Defaults to the transactional money shape, `MONEY_COLUMN_PRECISION`/`MONEY_COLUMN_SCALE`.
+ *
  * @example
- * @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
+ * @MoneyField({ allowNull: true })
  * declare grossAmount: Money | null;
  */
 // `precision` and `scale` MUST match the real migration column type — nothing at compile time
 // links the two, so a mismatch silently changes stored values.
-export function MoneyField(opts: MoneyColumnOptions): PropertyDecorator {
+export function MoneyField(opts: MoneyColumnOptions = {}): PropertyDecorator {
   return (target: object, propertyKey: string | symbol) => {
     const key = String(propertyKey);
     const column = buildColumnConfig(opts);
-    const scale = opts.scale ?? DEFAULT_DECIMAL_SCALE;
+    const scale = opts.scale ?? MONEY_COLUMN_SCALE;
 
     addAttribute(target, key, {
       ...column,
@@ -49,9 +51,6 @@ export function MoneyField(opts: MoneyColumnOptions): PropertyDecorator {
 // Column config helper (type + allowNull + defaultValue only, NO get/set)
 // ---------------------------------------------------------------------------
 
-const DEFAULT_DECIMAL_PRECISION = 20;
-const DEFAULT_DECIMAL_SCALE = 10;
-
 function buildColumnConfig(opts: MoneyColumnOptions): MoneyColumnConfig {
   // When the column is nullable AND the caller did not explicitly supply a
   // defaultValue, default to `null` instead of `0`/`'0'`. Storing 0 for a
@@ -59,7 +58,7 @@ function buildColumnConfig(opts: MoneyColumnOptions): MoneyColumnConfig {
   // "value is zero" and breaks `valueAnchor ?? fallback` patterns downstream.
   const nullableNoDefault = opts.allowNull === true && opts.defaultValue === undefined;
 
-  const { precision = DEFAULT_DECIMAL_PRECISION, scale = DEFAULT_DECIMAL_SCALE } = opts;
+  const { precision = MONEY_COLUMN_PRECISION, scale = MONEY_COLUMN_SCALE } = opts;
   return {
     type: DataType.DECIMAL(precision, scale),
     allowNull: opts.allowNull ?? false,
@@ -125,7 +124,6 @@ function moneySetDecimal({
 // ---------------------------------------------------------------------------
 
 interface MoneyColumnOptions {
-  storage: 'decimal';
   precision?: number;
   scale?: number;
   allowNull?: boolean;

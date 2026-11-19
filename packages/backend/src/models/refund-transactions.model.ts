@@ -61,7 +61,7 @@ export default class RefundTransactions extends Model {
   refundTxId!: RecordId;
 
   // Share of the refund transaction, in its currency. NULL means the whole refund transaction.
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
+  @MoneyField({ allowNull: true })
   declare amount: Money | null;
 
   // Optional: when set, the refund applies to a specific split rather than the whole transaction

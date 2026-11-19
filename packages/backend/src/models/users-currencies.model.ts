@@ -1,11 +1,13 @@
 import { RecordId } from '@bt/shared/types';
 import { IdColumn } from '@common/types/id-column';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
+import { t } from '@i18n/index';
+import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { Op } from 'sequelize';
 import { Table, Column, Model, ForeignKey, BelongsTo, DataType } from 'sequelize-typescript';
 
-import Currencies from './currencies.model';
+import Currencies, { NON_CURRENCY_CODES } from './currencies.model';
 import Users from './users.model';
 
 @Table({
@@ -139,6 +141,12 @@ export const addCurrency = async ({
     raw: true,
   });
   if (existingCurrency) return existingCurrency;
+
+  if (NON_CURRENCY_CODES.includes(currencyCode)) {
+    throw new ValidationError({
+      message: t({ key: 'csvImport.currencyNotSupported', variables: { currency: currencyCode } }),
+    });
+  }
 
   return UsersCurrencies.create(
     {

@@ -36,38 +36,14 @@ describe('FormattedAmountField decimals', () => {
     await flushPromises();
   };
 
-  it('shows up to three decimals for a 3-decimal currency', () => {
-    wrapper = mountField({ modelValue: 1.2345, decimals: 3 });
+  it.each<[number, number, string]>([
+    [1.2345, 3, '1.235'],
+    [1500.6, 0, '1,501'],
+    [20_500_000_000, 0, '20,500,000,000'],
+  ])('shows %d at %d decimals as %s', (modelValue, decimals, shown) => {
+    wrapper = mountField({ modelValue, decimals });
 
-    expect(inputValue()).toBe('1.235');
-  });
-
-  it('shows no fraction for a whole-number currency', () => {
-    wrapper = mountField({ modelValue: 1500.6, decimals: 0 });
-
-    expect(inputValue()).toBe('1,501');
-  });
-
-  it('shows a large VND value grouped', () => {
-    wrapper = mountField({ modelValue: 20_500_000_000, decimals: 0 });
-
-    expect(inputValue()).toBe('20,500,000,000');
-  });
-
-  it('emits three decimals typed into a 3-decimal currency', async () => {
-    wrapper = mountField({ modelValue: null, decimals: 3 });
-
-    await type({ value: '1.2345' });
-
-    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1.234]);
-  });
-
-  it('emits a whole number when a fraction is typed into a whole-number currency', async () => {
-    wrapper = mountField({ modelValue: null, decimals: 0 });
-
-    await type({ value: '1500.6' });
-
-    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1500]);
+    expect(inputValue()).toBe(shown);
   });
 
   it('rewrites the input when a dropped digit leaves the value unchanged', async () => {
@@ -88,24 +64,39 @@ describe('FormattedAmountField decimals', () => {
     expect(wrapper.props('modelValue')).toBe(1.234);
   });
 
-  it('re-emits the value cut to the new decimals when they shrink', async () => {
-    wrapper = mountField({ modelValue: 1000.555, decimals: 3 });
+  it.each<[number | null]>([[null], [12]])('keeps a lone decimal separator typed over %s', async (modelValue) => {
+    wrapper = mountField({ modelValue, decimals: 2 });
 
-    await wrapper.setProps({ decimals: 2 });
-    await flushPromises();
+    await type({ value: '.' });
 
-    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1000.55]);
-    expect(inputValue()).toBe('1,000.55');
+    expect(inputValue()).toBe('.');
+
+    await type({ value: '.5' });
+
+    expect(wrapper.props('modelValue')).toBe(0.5);
+    expect(inputValue()).toBe('0.5');
+    expect((wrapper.find('input').element as HTMLInputElement).selectionStart).toBe(3);
   });
 
-  it('re-emits a whole number when the decimals drop to zero', async () => {
-    wrapper = mountField({ modelValue: 10.5, decimals: 2 });
+  it('drops a lone decimal separator in a whole-number currency', async () => {
+    wrapper = mountField({ modelValue: null, decimals: 0 });
 
-    await wrapper.setProps({ decimals: 0 });
+    await type({ value: '.' });
+
+    expect(inputValue()).toBe('');
+  });
+
+  it.each<[number, number, number, number, string]>([
+    [1000.555, 3, 2, 1000.55, '1,000.55'],
+    [10.5, 2, 0, 10, '10'],
+  ])('re-emits %d cut from %d to %d decimals as %d', async (modelValue, from, to, emitted, shown) => {
+    wrapper = mountField({ modelValue, decimals: from });
+
+    await wrapper.setProps({ decimals: to });
     await flushPromises();
 
-    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([10]);
-    expect(inputValue()).toBe('10');
+    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([emitted]);
+    expect(inputValue()).toBe(shown);
   });
 
   it('emits nothing when the value already fits the new decimals', async () => {

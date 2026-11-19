@@ -192,6 +192,29 @@ describe('GET /currencies/rates/pair', () => {
     expect(result.date.slice(0, 10)).toBe(EARLIER_RATE_DATE);
   });
 
+  it.each([
+    { label: 'IRR-like weak currency into USD', from: FALLBACK_ONLY, to: 'USD', perUsd: 1_913_782.45 },
+    { label: 'USD into a BTC-like quote', from: 'USD', to: FALLBACK_ONLY, perUsd: 0.0000112345678 },
+  ])('keeps a tiny rate at full precision: $label', async ({ from, to, perUsd }) => {
+    await insertRate({ quoteCode: FALLBACK_ONLY, rate: perUsd });
+
+    const result = await helpers.getExchangeRatePair({ from, to, date: RATE_DATE, raw: true });
+
+    const expected = from === 'USD' ? perUsd : 1 / perUsd;
+    expect(result.rate / expected).toBeCloseTo(1, 10);
+  });
+
+  it.each([
+    { from: 'USD', to: FALLBACK_ONLY },
+    { from: FALLBACK_ONLY, to: 'USD' },
+  ])('answers not-found instead of a zero or infinite rate: $from -> $to', async ({ from, to }) => {
+    await insertRate({ quoteCode: FALLBACK_ONLY, rate: 0 });
+
+    const res = await helpers.getExchangeRatePair({ from, to, date: RATE_DATE });
+
+    expect(res.statusCode).toBe(ERROR_CODES.NotFoundError);
+  });
+
   it("prefers the connected user's custom rate over the market rate", async () => {
     const CUSTOM_EUR_TO_BASE = 5;
     const baseCode = global.BASE_CURRENCY_CODE;

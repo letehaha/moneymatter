@@ -276,4 +276,28 @@ describe('Account to Portfolio Transfer (POST /investments/portfolios/:id/transf
     // Total wealth should remain unchanged (money just changed placement)
     expect(totalAfter).toBeNumericEqual(totalBefore);
   });
+
+  it('should round the amount once to the account currency and use it on both sides', async () => {
+    const { account: jpyAccount } = await helpers.createAccountWithNewCurrency({ currency: 'JPY' });
+
+    const belowUnit = await helpers.accountToPortfolioTransfer({
+      portfolioId: portfolio.id,
+      payload: { accountId: jpyAccount.id, amount: '0.4', date: '2025-06-15' },
+    });
+    expect(belowUnit.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const transfer = await helpers.accountToPortfolioTransfer({
+      portfolioId: portfolio.id,
+      payload: { accountId: jpyAccount.id, amount: '1000.5', date: '2025-06-15' },
+      raw: true,
+    });
+    expect(transfer.amount).toBeNumericEqual(1001);
+
+    const [tx] = await helpers.getTransactions({ accountIds: [jpyAccount.id], raw: true });
+    expect(tx!.amount).toBeNumericEqual(1001);
+
+    const [balance] = await helpers.getPortfolioBalance({ portfolioId: portfolio.id, currencyCode: 'JPY', raw: true });
+    expect(balance!.availableCash).toBeNumericEqual(1001);
+    expect(balance!.totalCash).toBeNumericEqual(1001);
+  });
 });

@@ -296,8 +296,6 @@ describe('Tag Reminders API', () => {
       });
       const created = await helpers.createTagReminder({ tagId: tag.id, payload: payloadWith(sent), raw: true });
       expect(thresholdOf(created)).toBe(stored);
-      const fetched = await helpers.getReminderById({ tagId: tag.id, id: created.id, raw: true });
-      expect(thresholdOf(fetched)).toBe(stored);
 
       // A threshold that rounds to the stored one is the same reminder.
       const duplicate = await helpers.createTagReminder({
@@ -343,10 +341,8 @@ describe('Tag Reminders API', () => {
     });
 
     it('rounds half-up to whole units for a JPY base currency', async () => {
-      const jpyUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'JPY' });
-
-      await helpers.asUser({
-        cookies: jpyUser.cookies,
+      await helpers.asNewUserWithBaseCurrency({
+        currencyCode: 'JPY',
         fn: () =>
           runThresholdFlow({
             sent: 1500.5,

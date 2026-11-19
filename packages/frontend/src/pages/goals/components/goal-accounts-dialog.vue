@@ -9,6 +9,7 @@ import { Label } from '@/components/lib/ui/label';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { useFormatCurrency } from '@/composable';
 import { useGoals } from '@/composable/data-queries/goals';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { cn } from '@/lib/utils';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import { FULL_SHARE, roundShare } from '@bt/shared/goals/goal-math';
@@ -390,6 +391,9 @@ const apply = () => {
                   "
                   type="number"
                   only-positive
+                  :decimals="
+                    isAmountMode({ row }) ? getCurrencyDecimals({ code: row.account.currencyCode }) : undefined
+                  "
                   :placeholder="
                     isAmountMode({ row })
                       ? $t('goals.accountsDialog.amountPlaceholder')

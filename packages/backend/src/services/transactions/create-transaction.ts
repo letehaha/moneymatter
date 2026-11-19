@@ -502,6 +502,12 @@ export const createTransaction = withTransaction(
       payload.cashbackAmount = roundedAmounts.cashbackAmount;
       payload.originalAmount = roundedAmounts.originalAmount;
 
+      if (payload.isPlanned && !amount.isPositive()) {
+        throw new ValidationError({
+          message: t({ key: 'transactions.amountBelowSmallestUnit', variables: { code: generalTxCurrency.code } }),
+        });
+      }
+
       if (matchPlanned && transferNature === TRANSACTION_TRANSFER_NATURE.not_transfer && !payload.isPlanned) {
         const merged = await tryMergeIntoPlanned({
           accountId,

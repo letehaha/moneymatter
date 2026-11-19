@@ -9,6 +9,7 @@ import { useFormatCurrency } from '@/composable';
 import { usePortfolioBalances } from '@/composable/data-queries/portfolio-balances';
 import { useExchangeCurrency } from '@/composable/data-queries/portfolio-transfers';
 import { useFormValidation } from '@/composable/form-validator';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useCurrenciesStore } from '@/stores';
 import type { CurrencyModel, PortfolioModel, UserCurrencyModel } from '@bt/shared/types';
 import { format as formatDate } from 'date-fns';
@@ -113,8 +114,8 @@ const handleMaxAmount = () => {
 const validationRules = computed(() => ({
   fromCurrency: { required },
   toCurrency: { required },
-  fromAmount: { required, minValue: minValue(0.01) },
-  toAmount: { required, minValue: minValue(0.01) },
+  fromAmount: { required, minValue: minValue(10 ** -getCurrencyDecimals({ code: form.fromCurrency?.currencyCode })) },
+  toAmount: { required, minValue: minValue(10 ** -getCurrencyDecimals({ code: form.toCurrency?.currencyCode })) },
   date: { required },
 }));
 
@@ -213,11 +214,11 @@ const onSubmit = async () => {
         v-model="form.fromAmount"
         :label="$t('forms.exchangeCurrency.fromAmountLabel')"
         type="number"
-        step="any"
-        min="0.01"
+        only-positive
+        :decimals="form.fromCurrency ? getCurrencyDecimals({ code: form.fromCurrency.currencyCode }) : undefined"
         :placeholder="$t('forms.exchangeCurrency.amountPlaceholder')"
         :disabled="exchangeMutation.isPending.value || disabled"
-        :error="getFieldErrorMessage('form.fromAmount')"
+        :error-message="getFieldErrorMessage('form.fromAmount')"
         @blur="touchField('form.fromAmount')"
       />
 
@@ -251,11 +252,11 @@ const onSubmit = async () => {
       v-model="form.toAmount"
       :label="$t('forms.exchangeCurrency.toAmountLabel')"
       type="number"
-      step="any"
-      min="0.01"
+      only-positive
+      :decimals="form.toCurrency ? getCurrencyDecimals({ code: form.toCurrency.currencyCode }) : undefined"
       :placeholder="$t('forms.exchangeCurrency.amountPlaceholder')"
       :disabled="exchangeMutation.isPending.value || disabled"
-      :error="getFieldErrorMessage('form.toAmount')"
+      :error-message="getFieldErrorMessage('form.toAmount')"
       @blur="touchField('form.toAmount')"
     />
 

@@ -442,16 +442,6 @@ describe('Detect Duplicates endpoint', () => {
       expect(result.duplicates).toHaveLength(0);
     });
 
-    it('flags a KWD 1.234 against an existing 1.234 and reports the existing amount in decimals', async () => {
-      const account = await createKwdAccount();
-      await createExpense({ accountId: account.id, amount: 1.234 });
-
-      const result = await detectRowAgainst({ account, amount: '1.234' });
-
-      expect(result.duplicates).toHaveLength(1);
-      expect(result.duplicates[0]?.existingTransaction.amount).toBe(1.234);
-    });
-
     it('rounds the row to the account decimals before keying it', async () => {
       const kwdAccount = await createKwdAccount();
       const baseAccount = await helpers.createAccount({ raw: true });

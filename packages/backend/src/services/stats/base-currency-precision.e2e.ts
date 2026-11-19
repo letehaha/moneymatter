@@ -121,14 +121,8 @@ const seedBook = async ({ spec }: { spec: BookSpec }): Promise<Book> => {
   return { baseAccountId: baseAccount.id, foreignAccountId: foreignAccount.id, categoryId: category.id };
 };
 
-const inBook = async ({ spec, fn }: { spec: BookSpec; fn: (book: Book) => Promise<void> }) => {
-  const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: spec.baseCode });
-
-  await helpers.asUser({
-    cookies: user.cookies,
-    fn: async () => fn(await seedBook({ spec })),
-  });
-};
+const inBook = ({ spec, fn }: { spec: BookSpec; fn: (book: Book) => Promise<void> }) =>
+  helpers.asNewUserWithBaseCurrency({ currencyCode: spec.baseCode, fn: async () => fn(await seedBook({ spec })) });
 
 const inKwdBook = (fn: (book: Book) => Promise<void>) => inBook({ spec: KWD_BOOK, fn });
 
@@ -149,25 +143,37 @@ describe('Stats in the base currency decimals', () => {
     const { decimals } = spec;
     const inThisBook = (fn: (book: Book) => Promise<void>) => inBook({ spec, fn });
 
-    it('reports total-balance at the base decimals', async () => {
-      await inThisBook(async () => {
-        const total = await helpers.getTotalBalance({ date: TODAY, raw: true });
-
-        expect(total).toBe(net);
-      });
-    });
-
-    it('reports balance-history rows at the base decimals', async () => {
+    it('reports balances, balance history, net worth and drivers at the base decimals', async () => {
       await inThisBook(async ({ baseAccountId, foreignAccountId }) => {
-        const rows = await helpers.getBalanceHistory({ ...WINDOW, raw: true });
+        expect(await helpers.getTotalBalance({ date: TODAY, raw: true })).toBe(net);
 
+        const rows = await helpers.getBalanceHistory({ ...WINDOW, raw: true });
         expect(lastBalanceOf({ rows, accountId: baseAccountId })).toBe(-expense);
         expect(lastBalanceOf({ rows, accountId: foreignAccountId })).toBe(income);
+
+        const combined = await helpers.getCombinedBalanceHistory({ ...WINDOW, raw: true });
+        const today = combined.find((row) => row.date === TODAY)!;
+        expect(today.accountsBalance).toBe(net);
+        expect(today.totalBalance).toBe(net);
+
+        const { points } = await helpers.getNetWorthHistory({ ...WINDOW, granularity: 'weekly', raw: true });
+        const last = points.at(-1)!;
+        expect(last.assets.cash).toBe(income);
+        expect(last.assetsTotal).toBe(income);
+        expect(last.liabilitiesTotal).toBe(-expense);
+        expect(last.netWorth).toBe(net);
+
+        const { buckets } = await helpers.getNetWorthDrivers({ ...WINDOW, granularity: 'monthly', raw: true });
+        const sum = (pick: (savings: (typeof buckets)[number]['savings']) => number) =>
+          sumAt({ values: buckets.map((bucket) => pick(bucket.savings)), decimals });
+        expect(sum((savings) => savings.income)).toBe(income);
+        expect(sum((savings) => savings.expenses)).toBe(expense);
+        expect(sum((savings) => savings.net)).toBe(net);
       });
     });
 
-    it('reports spendings-by-categories and expenses-amount-for-period at the base decimals', async () => {
-      await inThisBook(async ({ categoryId }) => {
+    it('reports category spendings, cash flow, pivot, cumulative and summary at the base decimals', async () => {
+      await inThisBook(async ({ baseAccountId, foreignAccountId, categoryId }) => {
         const spendings = await helpers.getSpendingsByCategories({ ...WINDOW, raw: true });
         const incomes = await helpers.getSpendingsByCategories({
           ...WINDOW,
@@ -175,117 +181,43 @@ describe('Stats in the base currency decimals', () => {
           raw: true,
         });
         const byType = await helpers.getSpendingsByCategories({ ...WINDOW, groupByType: true, raw: true });
-        const expenses = await helpers.getExpensesAmountForPeriod({ ...WINDOW, raw: true });
-
         expect(spendings[categoryId].amount).toBe(expense);
         expect(incomes[categoryId].amount).toBe(income);
         expect(byType[categoryId]).toMatchObject({ income, expense });
-        expect(expenses).toBe(expense);
-      });
-    });
+        expect(await helpers.getExpensesAmountForPeriod({ ...WINDOW, raw: true })).toBe(expense);
 
-    it('reports monthly spendings-by-categories at the base decimals', async () => {
-      await inThisBook(async ({ categoryId }) => {
         const months = await helpers.getMonthlySpendingsByCategories({ ...WINDOW, raw: true });
         const inCategory = months.map((month) => month.categories[categoryId]).filter(Boolean);
-
         expect(sumAt({ values: inCategory.map((entry) => entry!.expense), decimals })).toBe(expense);
         expect(sumAt({ values: inCategory.map((entry) => entry!.income), decimals })).toBe(income);
-      });
-    });
 
-    it('reports cash-flow periods and totals at the base decimals', async () => {
-      await inThisBook(async () => {
         const cashFlow = await helpers.getCashFlow({ ...WINDOW, granularity: 'monthly', raw: true });
-
         expect(cashFlow.totals).toMatchObject({ income, expenses: expense, netFlow: net });
         expect(sumAt({ values: cashFlow.periods.map((period) => period.income), decimals })).toBe(income);
-      });
-    });
 
-    it('reports the pivot grand total and cells at the base decimals', async () => {
-      await inThisBook(async ({ categoryId }) => {
-        const expensePivot = await helpers.getPivotReport({
-          ...WINDOW,
-          granularity: 'monthly',
-          rowDimension: 'category',
-          measure: 'expense',
-          raw: true,
-        });
-        const incomePivot = await helpers.getPivotReport({
-          ...WINDOW,
-          granularity: 'monthly',
-          rowDimension: 'category',
-          measure: 'income',
-          raw: true,
-        });
-        const byPayee = await helpers.getPivotReport({
-          ...WINDOW,
-          granularity: 'monthly',
-          rowDimension: 'payee',
-          measure: 'income',
-          raw: true,
-        });
-
+        const pivotOf = ({
+          rowDimension,
+          measure,
+        }: {
+          rowDimension: 'category' | 'payee';
+          measure: 'expense' | 'income';
+        }) => helpers.getPivotReport({ ...WINDOW, granularity: 'monthly', rowDimension, measure, raw: true });
+        const expensePivot = await pivotOf({ rowDimension: 'category', measure: 'expense' });
         expect(expensePivot.grandTotal).toBe(expense);
         expect(expensePivot.rows.find((row) => row.id === categoryId)!.total).toBe(expense);
-        expect(incomePivot.grandTotal).toBe(income);
-        expect(byPayee.grandTotal).toBe(income);
-      });
-    });
+        expect((await pivotOf({ rowDimension: 'category', measure: 'income' })).grandTotal).toBe(income);
+        expect((await pivotOf({ rowDimension: 'payee', measure: 'income' })).grandTotal).toBe(income);
 
-    it('reports cumulative totals at the base decimals', async () => {
-      await inThisBook(async () => {
-        const expenses = await helpers.getCumulativeData({ ...WINDOW, metric: 'expenses', raw: true });
-        const savings = await helpers.getCumulativeData({ ...WINDOW, metric: 'savings', raw: true });
+        const cumulativeExpenses = await helpers.getCumulativeData({ ...WINDOW, metric: 'expenses', raw: true });
+        const cumulativeSavings = await helpers.getCumulativeData({ ...WINDOW, metric: 'savings', raw: true });
+        expect(cumulativeExpenses.currentPeriod.total).toBe(expense);
+        expect(cumulativeSavings.currentPeriod.total).toBe(net);
 
-        expect(expenses.currentPeriod.total).toBe(expense);
-        expect(savings.currentPeriod.total).toBe(net);
-      });
-    });
-
-    it('sums the transactions summary at the base decimals', async () => {
-      await inThisBook(async ({ baseAccountId, foreignAccountId }) => {
         const summary = await helpers.getTransactionsSummary({
           accountIds: [baseAccountId, foreignAccountId],
           raw: true,
         });
-
         expect(summary).toEqual({ count: 2, income, expense, net, transfers: 0 });
-      });
-    });
-
-    it('reports combined-balance-history at the base decimals', async () => {
-      await inThisBook(async () => {
-        const rows = await helpers.getCombinedBalanceHistory({ ...WINDOW, raw: true });
-        const today = rows.find((row) => row.date === TODAY)!;
-
-        expect(today.accountsBalance).toBe(net);
-        expect(today.totalBalance).toBe(net);
-      });
-    });
-
-    it('reports net-worth-history assets and net worth at the base decimals', async () => {
-      await inThisBook(async () => {
-        const { points } = await helpers.getNetWorthHistory({ ...WINDOW, granularity: 'weekly', raw: true });
-        const last = points.at(-1)!;
-
-        expect(last.assets.cash).toBe(income);
-        expect(last.assetsTotal).toBe(income);
-        expect(last.liabilitiesTotal).toBe(-expense);
-        expect(last.netWorth).toBe(net);
-      });
-    });
-
-    it('reports net-worth-drivers savings at the base decimals', async () => {
-      await inThisBook(async () => {
-        const { buckets } = await helpers.getNetWorthDrivers({ ...WINDOW, granularity: 'monthly', raw: true });
-        const sum = (pick: (savings: (typeof buckets)[number]['savings']) => number) =>
-          sumAt({ values: buckets.map((bucket) => pick(bucket.savings)), decimals });
-
-        expect(sum((savings) => savings.income)).toBe(income);
-        expect(sum((savings) => savings.expenses)).toBe(expense);
-        expect(sum((savings) => savings.net)).toBe(net);
       });
     });
   });
@@ -558,12 +490,6 @@ describe('Stats in the base currency decimals', () => {
   });
 
   describe('vehicle value', () => {
-    const inBaseCurrencyOf = async ({ currencyCode, fn }: { currencyCode: string; fn: () => Promise<void> }) => {
-      const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode });
-
-      await helpers.asUser({ cookies: user.cookies, fn });
-    };
-
     const buyVehicle = ({ currencyCode, purchasePrice }: { currencyCode: string; purchasePrice: number }) =>
       helpers.createVehicle({
         name: 'Precision car',
@@ -577,41 +503,80 @@ describe('Stats in the base currency decimals', () => {
         raw: true,
       });
 
-    const setManualRate = ({ baseCode, quoteCode, rate }: { baseCode: string; quoteCode: string; rate: number }) =>
-      helpers.editCurrencyExchangeRate({
-        pairs: [
-          { baseCode, quoteCode, rate },
-          { baseCode: quoteCode, quoteCode: baseCode, rate: 1 / rate },
-        ],
-      });
-
     const todayVehiclesBalance = async () => {
       const rows = await helpers.getCombinedBalanceHistory({ ...WINDOW, raw: true });
 
       return rows.find((row) => row.date === TODAY)!.vehiclesBalance;
     };
 
-    it('reports a KWD vehicle at 3 decimals for a KWD-base user', async () => {
-      await inBaseCurrencyOf({
-        currencyCode: 'KWD',
+    it.each([
+      {
+        title: 'a KWD vehicle at 3 decimals for a KWD-base user',
+        base: 'KWD',
+        vehicleCurrency: 'KWD',
+        purchasePrice: 5000.125,
+        expected: 5000.125,
+      },
+      // 5000.125 * 3.25 = 16250.40625
+      {
+        title: 'a KWD vehicle converted into a USD base',
+        base: 'USD',
+        vehicleCurrency: 'KWD',
+        rate: 3.25,
+        purchasePrice: 5000.125,
+        expected: 16250.41,
+      },
+      {
+        title: 'a JPY vehicle converted into a KWD base',
+        base: 'KWD',
+        vehicleCurrency: 'JPY',
+        rate: 0.0005,
+        purchasePrice: 1000000,
+        expected: 500,
+      },
+      {
+        title: 'a USD vehicle at 2 decimals for a USD-base user (regression guard)',
+        base: 'USD',
+        vehicleCurrency: 'USD',
+        purchasePrice: 25000.12,
+        expected: 25000.12,
+      },
+    ])('reports $title', async ({ base, vehicleCurrency, rate, purchasePrice, expected }) => {
+      await helpers.asNewUserWithBaseCurrency({
+        currencyCode: base,
         fn: async () => {
-          await buyVehicle({ currencyCode: 'KWD', purchasePrice: 5000.125 });
+          if (rate) {
+            await helpers.addUserCurrencies({ currencyCodes: [vehicleCurrency], raw: true });
+            await helpers.updateUserCurrency({
+              currency: { currencyCode: vehicleCurrency, liveRateUpdate: false },
+              raw: true,
+            });
+            await helpers.editCurrencyExchangeRate({
+              pairs: [
+                { baseCode: vehicleCurrency, quoteCode: base, rate },
+                { baseCode: base, quoteCode: vehicleCurrency, rate: 1 / rate },
+              ],
+            });
+          }
+          await buyVehicle({ currencyCode: vehicleCurrency, purchasePrice });
 
-          expect(await todayVehiclesBalance()).toBe(5000.125);
+          expect(await todayVehiclesBalance()).toBe(expected);
 
+          // A range ending today reads user rates up to today's midnight, so a rate set today is not seen.
+          if (rate) return;
           const { points } = await helpers.getNetWorthHistory({
             from: FROM,
             to: TODAY,
             granularity: 'weekly',
             raw: true,
           });
-          expect(points.at(-1)!.assets.vehicles).toBe(5000.125);
+          expect(points.at(-1)!.assets.vehicles).toBe(expected);
         },
       });
     });
 
     it('keeps 3 decimals in the anchor a KWD override creates', async () => {
-      await inBaseCurrencyOf({
+      await helpers.asNewUserWithBaseCurrency({
         currencyCode: 'KWD',
         fn: async () => {
           const vehicle = await buyVehicle({ currencyCode: 'KWD', purchasePrice: 5000.125 });
@@ -619,46 +584,6 @@ describe('Stats in the base currency decimals', () => {
           await helpers.overrideVehicleValue({ id: vehicle.id, accountId: vehicle.accountId, targetValue: 5000.13 });
 
           expect(await todayVehiclesBalance()).toBe(5000.13);
-        },
-      });
-    });
-
-    it('converts a KWD vehicle into a USD base across the decimals gap', async () => {
-      await inBaseCurrencyOf({
-        currencyCode: 'USD',
-        fn: async () => {
-          await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
-          await helpers.updateUserCurrency({ currency: { currencyCode: 'KWD', liveRateUpdate: false }, raw: true });
-          await setManualRate({ baseCode: 'KWD', quoteCode: 'USD', rate: 3.25 });
-          await buyVehicle({ currencyCode: 'KWD', purchasePrice: 5000.125 });
-
-          // 5000.125 * 3.25 = 16250.40625
-          expect(await todayVehiclesBalance()).toBe(16250.41);
-        },
-      });
-    });
-
-    it('converts a JPY vehicle into a KWD base across the decimals gap', async () => {
-      await inBaseCurrencyOf({
-        currencyCode: 'KWD',
-        fn: async () => {
-          await helpers.addUserCurrencies({ currencyCodes: ['JPY'], raw: true });
-          await helpers.updateUserCurrency({ currency: { currencyCode: 'JPY', liveRateUpdate: false }, raw: true });
-          await setManualRate({ baseCode: 'JPY', quoteCode: 'KWD', rate: 0.0005 });
-          await buyVehicle({ currencyCode: 'JPY', purchasePrice: 1000000 });
-
-          expect(await todayVehiclesBalance()).toBe(500);
-        },
-      });
-    });
-
-    it('keeps a USD vehicle at the 2-decimal value for a USD-base user (regression guard)', async () => {
-      await inBaseCurrencyOf({
-        currencyCode: 'USD',
-        fn: async () => {
-          await buyVehicle({ currencyCode: 'USD', purchasePrice: 25000.12 });
-
-          expect(await todayVehiclesBalance()).toBe(25000.12);
         },
       });
     });

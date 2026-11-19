@@ -1,4 +1,5 @@
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPES, type AccountMappingValue } from '@bt/shared/types';
+import { assertMoneyWithinMinorUnitRange, getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
@@ -85,6 +86,16 @@ export async function createAccountsIfNeeded({
     if (!currencyCode) {
       throw new ValidationError({
         message: t({ key: 'importExport.newAccountCurrencyUnknown', variables: { accountName } }),
+      });
+    }
+
+    // The entered balance is written only after every row has committed, so it is checked up front.
+    const mapping = accountMapping[accountName];
+    if (mapping?.action === 'create-new' && mapping.currentBalance != null) {
+      assertMoneyWithinMinorUnitRange({
+        money: Money.fromDecimal(mapping.currentBalance),
+        decimals: await getCurrencyDecimals({ userId, code: currencyCode }),
+        code: currencyCode,
       });
     }
 

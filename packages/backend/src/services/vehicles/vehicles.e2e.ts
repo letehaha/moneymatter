@@ -99,6 +99,7 @@ describe('Vehicles', () => {
     it('refuses a positive purchase price that rounds to nothing', async () => {
       const usd = await helpers.createVehicle({ ...basePayload({ purchasePrice: 0.004 }), raw: false });
       expect(usd.statusCode).toBe(422);
+      expect(usd.body.response).toMatchObject({ message: 'The amount is below the smallest unit of USD.' });
 
       const jpy = await helpers.createVehicle({
         ...basePayload({ currencyCode: 'JPY', purchasePrice: 0.4 }),
