@@ -192,6 +192,8 @@
         "nameRequired": "Group name is required",
         "minTransactions": "Select at least {min} transactions",
         "alreadyInGroup": "Some selected transactions already belong to a group",
+        "tooManyTransactions": "A group can hold up to {max} transactions, this would make {count}. Transfers count both sides. Deselect some or split them into several groups.",
+        "alreadyInNamedGroup": "Some selected transactions are already in: {name}. A transaction can only be in one group – remove it from there first.",
         "createFailed": "Failed to create group",
         "addFailed": "Failed to add transactions to group"
       }
