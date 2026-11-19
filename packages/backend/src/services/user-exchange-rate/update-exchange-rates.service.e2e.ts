@@ -266,6 +266,27 @@ describe('Edit currency exchange rate controller', () => {
     });
   });
 
+  it('converts new transactions at the edited and then removed custom rate', async () => {
+    const account = await createEurAccountWithIncome();
+    const createEur100 = async () => {
+      const [tx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: account.id, amount: 100 }),
+        raw: true,
+      });
+      return Number(tx!.refAmount);
+    };
+    const marketRefAmount = await createEur100();
+
+    await helpers.editCurrencyExchangeRate({ pairs: buildCustomRatePairs(), raw: true });
+    expect(await createEur100()).toBe(100 * CUSTOM_EUR_TO_BASE);
+
+    await helpers.removeCurrencyExchangeRate({
+      pairs: buildCustomRatePairs().map(({ baseCode, quoteCode }) => ({ baseCode, quoteCode })),
+      raw: true,
+    });
+    expect(await createEur100()).toBe(marketRefAmount);
+  });
+
   /** A manual `INR → AED` rate re-prices every stored day of an INR account's balance history. */
   describe('Custom exchange rate and foreign-currency balance history', () => {
     afterEach(async () => {

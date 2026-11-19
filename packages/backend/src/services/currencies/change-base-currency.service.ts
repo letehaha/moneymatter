@@ -18,7 +18,6 @@ import { Money } from '@common/types/money';
 import { toMoneyColumnValue } from '@common/types/money-column';
 import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
-import { CacheClient } from '@js/utils/cache';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
@@ -38,7 +37,7 @@ import { getBaseCurrency, updateCurrencies } from '@models/users-currencies.mode
 import { isRevaluedAccount, revalueBalanceHistory } from '@services/balances/revalue-balance-history.service';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
 import { buildDailyPairRateResolver, toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
-import { buildRefAmountCachePattern } from '@services/ref-amount-cache';
+import { clearRefAmountCache } from '@services/ref-amount-cache';
 import * as userExchangeRateService from '@services/user-exchange-rate';
 import { Op, QueryTypes, Transaction as SequelizeTransaction } from 'sequelize';
 
@@ -198,9 +197,9 @@ export async function validateBaseCurrencyChange({ userId, newCurrencyCode }: Ch
 /**
  * Rewrites every `ref*` amount the user owns into the new base currency inside one
  * atomic DB transaction, flips the `UsersCurrencies` default, and clears the
- * `ref_amount:v2:{userId}:*` cache (`buildRefAmountCachePattern`). Re-runs
- * {@link validateBaseCurrencyChange} first (in-job re-check), then sweeps the eight tables
- * in order, invoking `onProgress` before each so the running job reports its current step.
+ * user's ref-amount cache. Re-runs {@link validateBaseCurrencyChange} first (in-job re-check),
+ * then sweeps the eight tables in order, invoking `onProgress` before each so the running job
+ * reports its current step.
  *
  * Foreign-currency accounts' balance history is rebuilt after that transaction
  * commits: a rebuild inside it would still read the old base currency.
@@ -317,7 +316,7 @@ export async function changeBaseCurrencyImpl({
     });
 
     // Cached ref_amount values were computed against the OLD base — drop them.
-    await clearUserCache(userId);
+    await clearRefAmountCache({ userId });
 
     logger.info(`Base currency change completed for user ${userId}`);
 
@@ -1001,12 +1000,4 @@ async function convertFireSettingsAmounts({
     fireHistory: fireHistory?.map((entry) => ({ ...entry, fire: convert({ fire: entry.fire }) })),
   };
   await userSettings.save({ transaction });
-}
-
-/**
- * Deletes every cached ref_amount of the user: those values were calculated with the old base
- * currency. `CacheClient.delete` logs a failure and never throws.
- */
-async function clearUserCache(userId: number): Promise<void> {
-  await new CacheClient({ logPrefix: 'clearUserCache' }).delete(buildRefAmountCachePattern({ userId }), true);
 }
