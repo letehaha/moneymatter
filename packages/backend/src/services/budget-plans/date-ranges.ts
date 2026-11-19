@@ -8,6 +8,10 @@ export const utcInstant = ({ date }: { date: string | Date }): Date =>
 export const addUtcDays = ({ date, days }: { date: string; days: number }): string =>
   toUtcDateString(new Date(utcInstant({ date }).getTime() + days * MS_PER_DAY));
 
+/** SQL for the instant the `:param` day starts in the `:timezone` replacement. */
+export const localMidnight = ({ param }: { param: string }): string =>
+  `(CAST(:${param} AS date)::timestamp AT TIME ZONE :timezone)`;
+
 /** Half-open day ranges `[from, until)`, `until: null` = open end. */
 export interface DateRange {
   from: string;

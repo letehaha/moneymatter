@@ -187,6 +187,37 @@ describe('GET /budget-plans/:planId/periods/:periodId/scheduled', () => {
     expect(result.nextDate).toBe(inDate);
   });
 
+  it('dates a planned transaction by its local day under X-Timezone', async () => {
+    const { planId, account, next, afterNext } = await setup();
+    const lastDay = plusDays({ date: afterNext.startDate, days: -1 });
+    const [planned] = await helpers.createPlannedTransaction({
+      payload: {
+        accountId: account.id,
+        amount: 30,
+        transactionType: TRANSACTION_TYPES.expense,
+        time: `${lastDay}T23:30:00.000Z`,
+      },
+      raw: true,
+    });
+    const scheduled = ({ periodId, timezone }: { periodId: string; timezone?: string }) =>
+      helpers.getBudgetPlanScheduled({
+        planId,
+        periodId,
+        headers: timezone ? { 'X-Timezone': timezone } : {},
+        raw: true,
+      });
+    const timezone = 'Europe/Istanbul';
+
+    expect((await scheduled({ periodId: next.id, timezone })).items).toEqual([]);
+    expect((await scheduled({ periodId: afterNext.id, timezone })).items).toEqual([
+      expect.objectContaining({ source: 'planned', id: planned.id, date: afterNext.startDate }),
+    ]);
+    expect((await scheduled({ periodId: next.id })).items).toEqual([
+      expect.objectContaining({ source: 'planned', id: planned.id, date: lastDay }),
+    ]);
+    expect((await scheduled({ periodId: afterNext.id })).items).toEqual([]);
+  });
+
   it('keeps a subscription only when its account is attached, or it has none and a line covers its category', async () => {
     const { planId, food, other, next } = await setup();
     const outside = await helpers.createAccount({ raw: true });

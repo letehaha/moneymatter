@@ -157,7 +157,7 @@ export async function transformBudgetPeriods({
 
   const rowsByPlan = await Promise.all(
     plans.map(async (plan) => {
-      const input = await loadFoldInput({ plan, today });
+      const input = await loadFoldInput({ plan, today, timezone: 'UTC' });
       const assignedPeriodIds = new Set<string>(input.assignments.map((row) => row.periodId));
       const groupIdOf = new Map<string, string | null>(input.lines.map((line) => [line.id, line.groupId]));
       const rankOf = groupRanker({ groups: groupsByPlan.get(plan.id) ?? [] });

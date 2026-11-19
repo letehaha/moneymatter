@@ -1,7 +1,7 @@
 import { RecordId } from '@bt/shared/types';
 import { BudgetPlanTrends } from '@bt/shared/types';
 import { centsToApiDecimal } from '@common/types/money';
-import { toUtcDateString } from '@common/utils/date';
+import { toZonedDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { NotFoundError } from '@js/errors';
 
@@ -15,16 +15,18 @@ export const getTrends = async ({
   planId,
   until,
   count,
+  timezone,
 }: {
   userId: number;
   planId: RecordId;
   until?: RecordId;
   count: number;
+  timezone: string;
 }): Promise<BudgetPlanTrends> => {
   const plan = await findPlan({ planId, userId });
 
-  const today = toUtcDateString(new Date());
-  const views = foldPlan(await loadFoldInput({ plan, today }));
+  const today = toZonedDateString({ date: new Date(), timezone });
+  const views = foldPlan(await loadFoldInput({ plan, today, timezone }));
 
   const last = until
     ? views.findIndex((view) => view.period.id === until)

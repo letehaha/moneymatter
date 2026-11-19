@@ -32,5 +32,6 @@ export const getBudgetPlanTrendsTool = defineTool({
       planId: args.planId,
       until: args.until,
       count: args.count ?? DEFAULT_COUNT,
+      timezone: 'UTC',
     }),
 });

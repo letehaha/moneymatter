@@ -57,10 +57,19 @@ const setup = async ({
   return { account, food, salary, fun, plan, planId: plan.id, periods, line };
 };
 
-const pool = async ({ planId, period }: { planId: string; period: Period }): Promise<BudgetPlanPool> => {
+const pool = async ({
+  planId,
+  period,
+  timezone,
+}: {
+  planId: string;
+  period: Period;
+  timezone?: string;
+}): Promise<BudgetPlanPool> => {
   const result = await helpers.getBudgetPlanPeriodView({
     planId,
     periodId: period.id,
+    headers: timezone ? { 'X-Timezone': timezone } : {},
     raw: true,
   });
   const value = result.pool!;
@@ -318,6 +327,23 @@ describe('Budget plan pool: flow', () => {
     expect(first.balance).toEqual({ cash: 1380, inLines: 0, drift: 0 });
 
     expect((await pool({ planId, period: periods[1]! })).flow.leftOver).toBe(1380);
+  });
+
+  it('puts income in the period of its local day under X-Timezone', async () => {
+    const { planId, periods, account, salary } = await setup();
+    await tx({
+      accountId: account.id,
+      categoryId: salary.id,
+      amount: 500,
+      time: new Date(`${periods[1]!.startDate}T02:00:00+03:00`).toISOString(),
+      transactionType: TRANSACTION_TYPES.income,
+    });
+    const timezone = 'Europe/Istanbul';
+
+    expect((await pool({ planId, period: periods[0]!, timezone })).flow.income).toBe(0);
+    expect((await pool({ planId, period: periods[1]!, timezone })).flow.income).toBe(500);
+    expect((await pool({ planId, period: periods[0]! })).flow.income).toBe(500);
+    expect((await pool({ planId, period: periods[1]! })).flow.income).toBe(0);
   });
 
   it('counts an uncategorised loan payment as spending outside lines', async () => {
