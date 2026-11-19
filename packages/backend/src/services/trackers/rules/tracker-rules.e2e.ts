@@ -78,21 +78,27 @@ describe('Tracker rules', () => {
       expect(stats.summary.transactionsCount).toBe(2);
     });
 
-    it('expands a parent rule category to its children', async () => {
+    it('keeps a subcategory unticked under a ticked parent and unlinks its transactions', async () => {
       const account = await helpers.createAccount({ raw: true });
       const parent = await addCategory({ name: 'Entertainment' });
       const child = await addCategory({ name: 'Movies', parentId: parent.id });
-      const tx = await createExpense({ accountId: account.id, categoryId: child.id });
+      const [parentTx, childTx] = await Promise.all([
+        createExpense({ accountId: account.id, categoryId: parent.id }),
+        createExpense({ accountId: account.id, categoryId: child.id }),
+      ]);
 
       const tracker = await helpers.createTracker({
         name: 'Fun',
         rulesEnabled: true,
-        categoryIds: [parent.id],
+        categoryIds: [parent.id, child.id],
         raw: true,
       });
+      expect(await getLinkedIds({ trackerId: tracker.id })).toEqual([parentTx.id, childTx.id].toSorted());
 
-      expect(tracker.categories!.map((c) => c.id).toSorted()).toEqual([parent.id, child.id].toSorted());
-      expect(await getLinkedIds({ trackerId: tracker.id })).toEqual([tx.id]);
+      const edited = await helpers.editTracker({ id: tracker.id, params: { categoryIds: [parent.id] }, raw: true });
+
+      expect(edited.categories!.map((c) => c.id)).toEqual([parent.id]);
+      expect(await getLinkedIds({ trackerId: tracker.id })).toEqual([parentTx.id]);
     });
 
     it('matches a transaction by a rule category or a rule tag', async () => {

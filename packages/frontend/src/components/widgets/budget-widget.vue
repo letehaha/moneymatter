@@ -15,10 +15,13 @@ import BudgetLineBars from '@/pages/budget/components/budget-line-bars.vue';
 import BudgetLineSpentText from '@/pages/budget/components/budget-line-spent-text.vue';
 import { useGridDisplayOptions } from '@/pages/budget/composables/use-grid-display-options';
 import {
+  aggregatePace,
   availablePillClass,
   formatPeriodShortLabel,
   goalStatusDisplay,
   groupLines,
+  linePaceOf,
+  paceStateOf,
   periodProgress,
   periodSpend,
 } from '@/pages/budget/helpers';
@@ -53,7 +56,7 @@ const saveWidgetConfig =
     'dashboard-save-widget-config',
   );
 
-const [DefineRing, Ring] = createReusableTemplate<{ strokeWidth: number }>();
+const [DefineRing, Ring] = createReusableTemplate<{ strokeWidth: number; showTick?: boolean }>();
 const [DefineLine, Line] = createReusableTemplate<{ line: BudgetPlanPeriodViewLine }>();
 
 const plansQuery = useQuery({
@@ -103,6 +106,31 @@ const spentPercent = computed(() => spend.value.percent);
 const funded = computed(() => spend.value.funded);
 const available = computed(() => view.value?.header.totalAvailable ?? 0);
 const isOver = computed(() => available.value < 0);
+const planPace = computed(() => aggregatePace({ lines: view.value?.lines ?? [] }));
+const isAhead = computed(
+  () =>
+    paceStateOf({
+      spentPercent: spentPercent.value,
+      expectedPercent: planPace.value?.expectedPercent ?? null,
+      isOver: isOver.value,
+    }) === 'ahead',
+);
+
+const RING_CENTER = 18;
+const TICK_OVERHANG = 1;
+const TICK_STROKE = 0.6;
+const ringTick = computed(() => {
+  if (!planPace.value) return null;
+  const angle = (planPace.value.expectedPercent / 100) * 2 * Math.PI;
+  const point = ({ radius }: { radius: number }) => ({
+    x: RING_CENTER + radius * Math.cos(angle),
+    y: RING_CENTER + radius * Math.sin(angle),
+  });
+  const reach = HEADLINE_RING_STROKE / 2 + TICK_OVERHANG;
+  const from = point({ radius: RING_RADIUS - reach });
+  const to = point({ radius: RING_RADIUS + reach });
+  return { x1: from.x, y1: from.y, x2: to.x, y2: to.y };
+});
 
 const headerHeadline = computed(() =>
   t(isOver.value ? 'dashboard.widgets.budget.headerOver' : 'dashboard.widgets.budget.headerLeft', {
@@ -179,22 +207,39 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
 </script>
 
 <template>
-  <DefineRing v-slot="{ strokeWidth }">
+  <DefineRing v-slot="{ strokeWidth, showTick }">
     <svg viewBox="0 0 36 36" class="size-full -rotate-90" aria-hidden="true">
-      <circle cx="18" cy="18" :r="RING_RADIUS" fill="none" class="stroke-foreground/10" :stroke-width="strokeWidth" />
+      <circle
+        :cx="RING_CENTER"
+        :cy="RING_CENTER"
+        :r="RING_RADIUS"
+        fill="none"
+        class="stroke-foreground/10"
+        :stroke-width="strokeWidth"
+      />
       <circle
         v-if="spentPercent > 0"
-        cx="18"
-        cy="18"
+        :cx="RING_CENTER"
+        :cy="RING_CENTER"
         :r="RING_RADIUS"
         fill="none"
         path-length="100"
         stroke-linecap="round"
         :class="
-          cn('transition-[stroke-dasharray] duration-500', isOver ? 'stroke-app-expense-color' : 'stroke-success-text')
+          cn(
+            'transition-[stroke-dasharray] duration-500',
+            isOver ? 'stroke-app-expense-color' : isAhead ? 'stroke-warning-text' : 'stroke-success-text',
+          )
         "
         :stroke-width="strokeWidth"
         :stroke-dasharray="`${spentPercent} 100`"
+      />
+      <line
+        v-if="showTick && ringTick"
+        v-bind="ringTick"
+        class="stroke-foreground"
+        :stroke-width="TICK_STROKE"
+        stroke-linecap="round"
       />
     </svg>
   </DefineRing>
@@ -210,6 +255,7 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
               availablePillClass({
                 amount: line.available,
                 underfunded: goalDisplays.get(line.lineId)?.kind === 'underfunded',
+                ahead: linePaceOf({ line }).state === 'ahead',
               }),
             )
           "
@@ -258,7 +304,7 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
                 <button
                   type="button"
                   data-testid="budget-widget-settings-sort"
-                  class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                   @click="settingsView = 'sort'"
                 >
                   <span class="flex flex-col">
@@ -291,7 +337,7 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
                   :key="option"
                   type="button"
                   :data-testid="`budget-widget-sort-${option}`"
-                  class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                   @click="setSortBy({ value: option })"
                 >
                   <span class="text-sm">{{ $t(SORT_LABELS[option]) }}</span>
@@ -362,7 +408,7 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
           role="img"
           :aria-label="$t('dashboard.widgets.budget.ringLabel', { percent: Math.round(spentPercent) })"
         >
-          <Ring :stroke-width="HEADLINE_RING_STROKE" />
+          <Ring :stroke-width="HEADLINE_RING_STROKE" :show-tick="true" />
           <div class="absolute inset-0 flex flex-col items-center justify-center">
             <span class="text-2xl leading-tight font-bold tabular-nums">{{ Math.round(spentPercent) }}%</span>
             <span class="text-muted-foreground text-xs">{{ $t('dashboard.widgets.budget.spent') }}</span>
@@ -371,7 +417,11 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
         <div class="min-w-0">
           <p
             :class="
-              cn('text-3xl leading-tight font-bold tracking-tight tabular-nums', isOver && 'text-app-expense-color')
+              cn(
+                'text-3xl leading-tight font-bold tracking-tight tabular-nums',
+                isOver && 'text-app-expense-color',
+                isAhead && 'text-warning-text',
+              )
             "
           >
             {{ formatBaseCurrency(Math.abs(available)) }}

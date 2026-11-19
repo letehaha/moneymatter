@@ -38,7 +38,7 @@ const { mutate: unlink, isPending } = useUnlinkAccountFromGroup({
 </script>
 
 <template>
-  <div class="group/row hover:bg-muted/40 flex h-9 items-center pr-3 pl-2 transition-colors">
+  <div class="group/row hover:bg-hover flex h-9 items-center pr-3 pl-2 transition-colors">
     <span v-for="level in depth" :key="level" class="flex w-4 shrink-0 justify-center self-stretch" aria-hidden="true">
       <span class="bg-border w-px" />
     </span>

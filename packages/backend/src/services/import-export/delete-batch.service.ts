@@ -15,7 +15,10 @@ import * as Transactions from '@models/transactions.model';
 import { deleteAccountById } from '@services/accounts.service';
 import { absorbBalanceAdjustment } from '@services/accounts/absorb-balance-adjustment';
 import { lockAccountRow } from '@services/accounts/lock-account-row';
+import { type SeamAccount, getSeamStart, isRowDeletableOnAccount } from '@services/accounts/seam';
+import { revalueBalanceHistory } from '@services/balances/revalue-balance-history.service';
 import { withTransaction } from '@services/common/with-transaction';
+import { isImportBatchUnfinished } from '@services/import-export/core/unfinished-import';
 import { bulkDelete } from '@services/transactions/bulk-delete';
 import { destroyTrashedRows } from '@services/transactions/trash/delete-trashed';
 import { Op, literal, where as sequelizeWhere } from 'sequelize';
@@ -37,11 +40,6 @@ interface DeleteImportBatchParams {
 // per-row loop would exceed the HTTP timeout at that scale, so larger batches run
 // as a background job (see delete-batch-queue.ts).
 const MAX_SYNC_BATCH_DELETE_TRANSACTIONS = 1000;
-
-// ponytail: age heuristic, not a liveness check. A crashed import worker blocks undo
-// of its batch until BullMQ fails the stalled job or this passes. Store the BullMQ job id on the batch row and ask
-// the queue instead if that ever hurts.
-const UNFINISHED_IMPORT_UNDO_BLOCK_MS = 3 * 60 * 60 * 1000;
 
 export class ImportBatchTooLargeError extends Error {
   readonly rowCount: number;
@@ -78,7 +76,7 @@ const deleteImportBatchImpl = async ({
 
   // Undoing while the importer still writes rows and has yet to absorb leaves the
   // balance shifted by whatever lands after the undo.
-  if (batch && !batch.finishedAt && Date.now() - batch.importedAt.getTime() < UNFINISHED_IMPORT_UNDO_BLOCK_MS) {
+  if (batch && isImportBatchUnfinished({ batch })) {
     throw new LockedError({ message: t({ key: 'importExport.batchDeleteImportStillRunning' }) });
   }
 
@@ -89,11 +87,13 @@ const deleteImportBatchImpl = async ({
     balanceAdjustments: 'include',
     // The uuid column matches any letter case, the stamp is matched as text.
     batchId: batch?.batchId ?? batchId,
-    attributes: ['id', 'accountId', 'transferId', 'transferNature'],
+    attributes: ['id', 'accountId', 'accountType', 'time', 'transferId', 'transferNature'],
     isRaw: true,
   })) as unknown as {
     id: string;
     accountId: string;
+    accountType: ACCOUNT_TYPES;
+    time: Date;
     transferId: string | null;
     transferNature: TRANSACTION_TRANSFER_NATURE;
   }[];
@@ -132,22 +132,31 @@ const deleteImportBatchImpl = async ({
   // Take FOR UPDATE on every affected account, in finalize's order, before any row is
   // deleted. The delete hooks take FOR NO KEY UPDATE, and upgrading that to the reversal's
   // FOR UPDATE afterwards deadlocks against a concurrent insert on the same account.
+  // A seam account takes the undo through the seam-aware delete.
   const bankLinkedAccountIds: string[] = [];
+  const seamAccounts = new Map<string, SeamAccount>();
   for (const accountId of accountIds) {
     const account = await lockAccountRow({ accountId });
-    if (account && account.type !== ACCOUNT_TYPES.system) bankLinkedAccountIds.push(accountId);
+    if (!account || account.type === ACCOUNT_TYPES.system) continue;
+    if (getSeamStart({ account })) seamAccounts.set(accountId, account);
+    else bankLinkedAccountIds.push(accountId);
   }
+
+  // Rows `bulkDelete` would refuse: on a seam account, dated from its seam on.
+  const rowsOwnedBySeamCount = rows.filter((row) => {
+    const account = seamAccounts.get(row.accountId);
+    return account && !isRowDeletableOnAccount({ account, transaction: row });
+  }).length;
 
   // `accountType` on a transaction is a creation-time snapshot, so the type comes from
   // the locked account row: a bank link cannot land between this check and the reversal
   // and desync a provider-synced balance.
-  // TODO: support undoing a batch whose account was later bank-linked by reconciling
-  // against the provider sync instead of refusing outright.
-  if (bankLinkedAccountIds.length > 0) {
+  if (bankLinkedAccountIds.length > 0 || rowsOwnedBySeamCount > 0) {
     logger.info('[import batch undo] Refused: batch touches a now bank-linked account', {
       userId,
       batchId,
       bankLinkedAccountIds,
+      rowsOwnedBySeamCount,
     });
     throw new ValidationError({
       message: t({ key: 'importExport.batchDeleteBankLinkedAccount' }),
@@ -240,7 +249,12 @@ const deleteImportBatchImpl = async ({
   const trashedToDestroy = [...trashedIds, ...(deleteLinkedTransfers ? trashedTwins.twinIds : [])];
   await destroyTrashedRows({ transactionIds: trashedToDestroy });
 
-  for (const effect of absorbedEffects) {
+  // Inline so a failed rebuild fails the undo; it re-derives a seam account's opening balance.
+  for (const accountId of seamAccounts.keys()) {
+    await revalueBalanceHistory({ accountId });
+  }
+
+  for (const effect of absorbedEffects.filter(({ accountId }) => !seamAccounts.has(accountId))) {
     await absorbBalanceAdjustment({
       userId,
       accountId: effect.accountId,

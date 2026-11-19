@@ -45,10 +45,8 @@
         "exclude": "Exclude",
         "only": "Only"
       },
-      "noteIncludes": {
-        "label": "Note includes (comma-separated):",
-        "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Search in notes"
+      "search": {
+        "placeholder": "Search notes, payees and tags"
       },
       "tags": {
         "allTags": "All tags",
@@ -68,8 +66,7 @@
         "type": "Type",
         "tags": "Tags",
         "budgets": "Trackers",
-        "amount": "Amount range",
-        "note": "Notes"
+        "amount": "Amount range"
       },
       "transferNature": {
         "label": "Transfer kinds",
@@ -126,6 +123,10 @@
       "tagModeAddHint": "Keeps current tags and adds these.",
       "tagModeReplaceHint": "Removes all current tags, then adds these.",
       "tagModeRemoveHint": "Removes only these tags. Other tags stay.",
+      "excludeFromStatsHint": "On keeps the selected transactions out of reports, dashboard widgets, budgets and trackers. Off brings them back. Balances aren't affected.",
+      "excludeFromStatsDontChange": "Don't change stats",
+      "confirmExcludeFromStats": "Exclude from stats",
+      "confirmIncludeInStats": "Include in stats",
       "totals": {
         "income": "Income",
         "expense": "Expense",
@@ -194,6 +195,10 @@
         "createFailed": "Failed to create group",
         "addFailed": "Failed to add transactions to group"
       }
+    },
+    "excludeFromStats": {
+      "label": "Excluded from statistics",
+      "tooltip": "Kept out of the reports, dashboard widgets, budget plans and trackers. It still counts toward your balance and stays in the transaction list."
     },
     "planned": {
       "label": "Planned",

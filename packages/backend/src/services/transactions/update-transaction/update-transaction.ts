@@ -14,6 +14,12 @@ import { deleteSplitsForTransaction } from '@models/transaction-splits.model';
 import * as Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { getUserDefaultCategory } from '@models/users.model';
+import {
+  assertPreSeamManualRow,
+  isManualRowOnSeamAccount,
+  isPreSeamManualRow,
+  SEAM_ACCOUNT_ATTRIBUTES,
+} from '@services/accounts/seam';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
 import { assertLoanEditAllowed } from '@services/loans/assert-loan-edit-allowed';
@@ -125,31 +131,42 @@ const validateTransaction = async (
   // field locks stay off until it merges into a real transaction.
   const isExternalAccount = account.type !== ACCOUNT_TYPES.system && !prevData.isPlanned;
 
-  if (isExternalAccount) {
-    if (EXTERNAL_ACCOUNT_RESTRICTED_UPDATION_FIELDS.some((field) => newData[field] !== undefined)) {
+  if (isExternalAccount && EXTERNAL_ACCOUNT_RESTRICTED_UPDATION_FIELDS.some((field) => newData[field] !== undefined)) {
+    if (newData.accountId !== undefined && newData.accountId !== prevData.accountId) {
       throw new ValidationError({
-        message: t({ key: 'transactions.editReadonlyFields' }),
+        message: t({
+          key: isPreSeamManualRow({ account, transaction: prevData })
+            ? 'transactions.moveAcrossBankLinkedAccount'
+            : 'transactions.editReadonlyFields',
+        }),
       });
     }
+    assertPreSeamManualRow({ account, transaction: prevData, nextTime: newData.time });
   }
 
-  if (newData.transactionType && isExternalAccount && newData.transactionType !== prevData.transactionType) {
+  if (
+    newData.transactionType &&
+    isExternalAccount &&
+    newData.transactionType !== prevData.transactionType &&
+    !isPreSeamManualRow({ account, transaction: prevData })
+  ) {
     throw new ValidationError({
       message: t({ key: 'transactions.changeTypeNotAllowed' }),
     });
   }
 
   // Unchecking Planned claims the money has already moved. On a provider account only the
-  // provider gets to make that claim, by syncing the real transaction into this row. A
-  // request that also moves the row elsewhere is judged on where it lands instead, which
-  // the destination check in `updateTransaction` owns.
+  // provider makes that claim, except for a manual row on a seam account: the model hook
+  // admits it before the seam and refuses it from the link day on. A request that also
+  // moves the row is judged on where it lands, which `updateTransaction` checks.
   const isMovingToAnotherAccount = Boolean(newData.accountId && newData.accountId !== prevData.accountId);
 
   if (
     newData.isPlanned === false &&
     prevData.isPlanned &&
     account.type !== ACCOUNT_TYPES.system &&
-    !isMovingToAnotherAccount
+    !isMovingToAnotherAccount &&
+    !isManualRowOnSeamAccount({ account, transaction: prevData })
   ) {
     throw new ValidationError({
       message: t({ key: 'transactions.plannedUnflipOnConnectedAccount' }),
@@ -213,7 +230,10 @@ const makeBasicBaseTxUpdation = async (
   });
 
   // Planned rows stay editable like manual ones until they merge — see `validateTransaction`.
-  const isSystemAccount = account?.type === ACCOUNT_TYPES.system || prevData.isPlanned;
+  const isSystemAccount =
+    account?.type === ACCOUNT_TYPES.system ||
+    prevData.isPlanned ||
+    (!!account && isPreSeamManualRow({ account, transaction: prevData }));
 
   // Never update "transactionType" of non-system transactions. Just an additional guard
   const transactionType = isSystemAccount ? newData.transactionType : prevData.transactionType;
@@ -303,7 +323,7 @@ const makeBasicBaseTxUpdation = async (
     const staysPlanned = newData.isPlanned ?? prevData.isPlanned;
 
     if (destinationAccount.type !== ACCOUNT_TYPES.system && !staysPlanned) {
-      throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
+      throw new ValidationError({ message: t({ key: 'transactions.moveAcrossBankLinkedAccount' }) });
     }
 
     baseTransactionUpdateParams.accountType = destinationAccount.type;
@@ -508,18 +528,16 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
 
   if (destinationAccountId && isDestinationAccountChanged) {
     // Since destinationAccountId is changed, we need to change currency too
-    const { currency: oppositeTxCurrency, type: destinationAccountType } = await Accounts.getAccountCurrency({
-      userId,
-      id: destinationAccountId,
-    });
+    const destinationAccount = await Accounts.getAccountCurrency({ userId, id: destinationAccountId });
+    const oppositeTxCurrency = destinationAccount.currency;
 
     // Both ends are judged by the account's current type: the opposite leg may neither
     // leave a bank-linked account nor land on one.
     if (await Accounts.isBankLinkedAccount({ id: oppositeTx.accountId })) {
-      throw new ValidationError({ message: t({ key: 'transactions.editReadonlyFields' }) });
+      throw new ValidationError({ message: t({ key: 'transactions.oppositeLegOnBankAccount' }) });
     }
-    if (destinationAccountType !== ACCOUNT_TYPES.system) {
-      throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
+    if (destinationAccount.type !== ACCOUNT_TYPES.system) {
+      throw new ValidationError({ message: t({ key: 'transactions.moveAcrossBankLinkedAccount' }) });
     }
 
     updateOppositeTxParams = {
@@ -561,6 +579,37 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
       currencyCode: updateOppositeTxParams.currencyCode,
       mode: 'half-up',
     });
+  }
+
+  // A bank leg keeps its own time and amount: an edit that changes them is refused, and
+  // values only resent unchanged are not copied onto it.
+  if (oppositeTx.accountType !== ACCOUNT_TYPES.system) {
+    const changesBankLeg =
+      (time !== undefined && +time !== +prevData.time) ||
+      (amount !== undefined && !baseTransaction.amount.equals(prevData.amount)) ||
+      (destinationAmount !== undefined && !updateOppositeTxParams.amount?.equals(oppositeTx.amount));
+    if (changesBankLeg) throw new ValidationError({ message: t({ key: 'transactions.oppositeLegOnBankAccount' }) });
+    delete updateOppositeTxParams.time;
+    delete updateOppositeTxParams.amount;
+  }
+
+  // A manual leg on a bank-linked account may only change within its pre-seam history.
+  const changesOppositeLeg =
+    (time !== undefined && +time !== +oppositeTx.time) ||
+    (updateOppositeTxParams.amount !== undefined && !updateOppositeTxParams.amount.equals(oppositeTx.amount));
+  if (oppositeTx.accountType === ACCOUNT_TYPES.system && changesOppositeLeg) {
+    const oppositeAccount = await findOrThrowNotFound({
+      query: Accounts.default.findByPk(oppositeTx.accountId, { attributes: [...SEAM_ACCOUNT_ATTRIBUTES] }),
+      message: t({ key: 'accounts.accountNotFoundForTransaction' }),
+    });
+    if (oppositeAccount.type !== ACCOUNT_TYPES.system) {
+      assertPreSeamManualRow({
+        account: oppositeAccount,
+        transaction: oppositeTx,
+        nextTime: time,
+        isOppositeLeg: true,
+      });
+    }
   }
 
   // Effective post-update amount of the destination leg. Falls back to the

@@ -4,7 +4,7 @@
     :class="
       cn(
         LOAN_LIST_GRID_COLS,
-        'hover:bg-muted/40 focus-visible:ring-ring/40 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-y-3 px-4 py-4',
+        'hover:bg-hover focus-visible:ring-ring/40 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-y-3 px-4 py-4',
         'transition-colors focus-visible:ring-2 focus-visible:outline-none @[56rem]/loans-list:py-3.5',
       )
     "

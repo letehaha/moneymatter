@@ -1,7 +1,7 @@
 <template>
   <!-- Borders live on cells, not the row: the table uses border-separate, where <tr> borders don't render -->
   <tr
-    :class="['group/row hover:bg-muted/50 h-10 cursor-pointer divide-x transition-colors', isPlannedRow && 'bg-muted']"
+    :class="['group/row hover:bg-hover h-10 cursor-pointer divide-x transition-colors', isPlannedRow && 'bg-muted']"
     aria-haspopup="true"
     :data-index="index"
     @click="onRowClick"
@@ -80,7 +80,7 @@
             <span class="text-muted-foreground">{{ $t('transactions.table.outOfWallet') }}</span>
           </template>
           <template v-else-if="isPortfolioLinked">
-            <ArrowRightIcon :size="13" class="shrink-0 opacity-60" />
+            <ArrowRightIcon :size="13" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
             <BrandLogo
               v-if="portfolioLogoSelection"
               v-bind="toLogoDisplayProps({ selection: portfolioLogoSelection })"
@@ -444,6 +444,7 @@ const cellModes = computed<Partial<Record<TABLE_COLUMN, InlineCellMode>>>(() =>
         tx: props.tx,
         column: column.id,
         account: accountFrom.value,
+        oppositeTx: oppositeTx.value ?? undefined,
         oppositeAccount: transferDestinationAccount.value,
         canEdit: canEdit.value,
       }),

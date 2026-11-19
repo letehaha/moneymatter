@@ -96,8 +96,8 @@ const cashFlowLabel = (m: VENTURE_CASH_FLOW_MODE): string => `venture.events.cas
               <UiButton
                 type="button"
                 variant="ghost"
-                size="icon"
-                class="size-8 shrink-0"
+                size="icon-sm"
+                class="shrink-0"
                 :disabled="disabled"
                 :aria-label="$t('venture.events.form.removeLinkedTransaction')"
                 @click="removeSelected(tx.id)"

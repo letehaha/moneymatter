@@ -114,6 +114,16 @@ Semantic colors come in pairs: the **base token is a fill** (button/badge backgr
 - Never go below 12px (`text-xs`). No `text-[10px]`/`text-[11px]`.
 - Reference: the recurring payments list (`pages/planned/subscriptions`). It uses a `text-sm` subtitle, base-size titles, `text-sm` amounts and `text-xs` only for captions and badges.
 
+### Hover
+
+One token drives every neutral hover and keyboard highlight: `bg-hover` (`--hover` in `global.css`). List and table rows, menu items, select options, sidebar links and ghost buttons all use `hover:bg-hover` / `focus:bg-hover` / `data-highlighted:bg-hover`, never `hover:bg-accent`, `hover:bg-muted/NN` or `hover:bg-foreground/NN`.
+
+- The token is a translucent overlay in both themes, so a sticky cell layers it over its own fill: `bg-card hover:bg-[linear-gradient(var(--color-hover),var(--color-hover))]`.
+- A ghost button inside a row that already hovers gets `hover:bg-transparent`.
+- `bg-accent` is for selected, open and pressed states. A chip with its own fill (`bg-muted`) may darken that fill on hover instead.
+- A selected element keeps its fill on hover: pair it with a matching hover (`bg-accent hover:bg-accent`) or put `hover:bg-hover` only on the unselected branch. Otherwise the lighter hover replaces the selected fill.
+- Table headers and group header bands use `bg-table-header`.
+
 ---
 
 ## Components
@@ -122,9 +132,20 @@ Semantic colors come in pairs: the **base token is a fill** (button/badge backgr
 
 Always use the project's `Button` component (`@/components/lib/ui/button`). Never use raw `<button>` elements.
 
-Available variants: `default`, `destructive`, `outline`, `secondary`, `ghost`, `ghost-destructive`, `soft-destructive`, `ghost-primary`, `soft-primary`, `success`, `outline-success`, `ghost-success`, `soft-success`, `link`
+Available variants: `default`, `destructive`, `outline`, `secondary`, `field`, `ghost`, `ghost-destructive`, `soft-destructive`, `ghost-primary`, `soft-primary`, `success`, `outline-success`, `ghost-success`, `soft-success`, `link`
 
-Available sizes: `default`, `sm`, `lg`, `icon`, `icon-sm`
+Use `variant="field"` for a button that imitates a form field (a date-range trigger, an "add attachments" row). `outline` and `secondary` are raised buttons and must not be restyled into fields with `bg-input-background`.
+
+Available sizes: `xs`, `sm`, `default`, `lg`, `icon` (40px square), `icon-sm` (32px square). There is no 36px or 44px icon size.
+
+#### Control sizes
+
+Buttons and field surfaces share one height scale (`@/components/lib/ui/control-size`): `xs` 32px, `sm` 36px, `default` 40px, `lg` 44px. Heights never change with the viewport (no `md:h-9`).
+
+- Pick a height with the `size` prop (`<Button size="sm">`, `<InputField size="sm">`, `<SelectTrigger size="xs">`). On a component that has a `size` prop, never set the height with `h-*` classes, a height in `trigger-class`, or `[&_input]:h-*` selectors.
+- Controls that sit in one row use the same size.
+- A hand-rolled control (a field surface or segmented control built from raw elements) uses a height from the scale: `h-8` / `h-9` / `h-10` / `h-11`. When its height comes from a `size` prop, use `controlHeight[size]` (or `controlMinHeight[size]` when it grows with content).
+- Inline chips and actions (24–28px) are off the scale on purpose. The search input at the top of a picker (popover or dialog) is `h-9` whatever the trigger's size.
 
 `Button` is `inline-flex` with `gap-2`, so spacing between its children (icon + label, multiple icons, etc.) is handled by the button itself. Do **not** add `mr-*` / `ml-*` / `space-x-*` to icons or text inside a `Button` — it doubles the gap and looks off.
 
@@ -163,6 +184,22 @@ Always use the project's field components from `@/components/fields/`. Never use
 | Category      | `category-select-field.vue` |
 | Tags          | `tag-select-field.vue`      |
 | Color         | `color-select-field.vue`    |
+
+#### Field surfaces and variants
+
+A hand-rolled field surface (a custom trigger, a composite wrapper) is `border border-input bg-input-background`. `bg-input-background` is the marker the global styles hang the field look on (resting shadow, hover border, focus fill), so:
+
+- Never add a hover fill (`hover:bg-accent`, `hover:bg-muted`) or a `shadow-*` utility to a field surface. Hover is the border darkening only.
+- To paint the field color on something that is not a field (a mask, a chip), use `bg-(--color-input-background)`, not `bg-input-background`.
+
+Fields have two variants, chosen by the surface they sit on:
+
+| Variant | Look                           | Used on                                  |
+| ------- | ------------------------------ | ---------------------------------------- |
+| `well`  | tinted fill, inner shadow      | white surfaces: cards, dialogs, popovers |
+| `plain` | white fill, light inner shadow | grey panels and the page background      |
+
+The variant is automatic inside `bg-card` / `bg-popover` / `bg-dialog` (well) and `bg-background` / `bg-muted` / `bg-secondary` / `bg-accent` (plain); with none of these above it, a field is plain. Only the exact class matches. When a container inside a well surface has any other background (`bg-muted/50`, an arbitrary color) and its fields should be plain, put `fields-plain` on it. The two variants differ in the light theme only; in dark they look the same.
 
 #### Placeholders are required
 

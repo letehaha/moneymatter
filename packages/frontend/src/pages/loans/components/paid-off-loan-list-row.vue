@@ -3,7 +3,7 @@
     :to="{ name: ROUTES_NAMES.loanDetail, params: { id: loan.id } }"
     :class="
       cn(
-        'hover:bg-muted/40 focus-visible:ring-ring/40 flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4 @[40rem]/paid-off-list:py-3.5',
+        'hover:bg-hover focus-visible:ring-ring/40 flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4 @[40rem]/paid-off-list:py-3.5',
         'transition-colors focus-visible:ring-2 focus-visible:outline-none',
       )
     "

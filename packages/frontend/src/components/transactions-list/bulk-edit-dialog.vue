@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { FormattedCategory } from '@/common/types';
+import HintIcon from '@/components/common/hint-icon.vue';
 import TagIcon from '@/components/common/icons/tag-icon.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
@@ -11,10 +12,13 @@ import { usePayeeLookup } from '@/composable/data-queries/payees';
 import { useAutoTagApply } from '@/composable/use-auto-tag-apply';
 import { Button } from '@/components/lib/ui/button';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
+import { Switch } from '@/components/lib/ui/switch';
+import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useCategoriesStore, useTagsStore } from '@/stores';
+import { AlignLeftIcon, EyeOffIcon, XIcon } from '@lucide/vue';
 import { TagModel, type RecordId, type BulkUpdateTagMode } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
-import { computed, reactive, ref, toRef, watch } from 'vue';
+import { computed, nextTick, reactive, ref, toRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 type TagMode = BulkUpdateTagMode;
@@ -25,6 +29,7 @@ export interface BulkEditFormValues {
   tagMode?: TagMode;
   note?: string;
   payeeId?: RecordId;
+  excludeFromStats?: boolean;
 }
 
 const props = defineProps<{
@@ -55,9 +60,29 @@ const form = reactive({
   tagMode: 'add' as TagMode,
   note: '',
   payeeId: null as string | null,
+  excludeFromStats: null as boolean | null,
 });
 
 const isConfirmDialogOpen = ref(false);
+const isNoteShown = ref(false);
+const extraFieldsRef = ref<HTMLElement | null>(null);
+
+const focusExtraField = async (selector: string) => {
+  await nextTick();
+  extraFieldsRef.value?.querySelector<HTMLElement>(selector)?.focus();
+};
+const revealNote = () => {
+  isNoteShown.value = true;
+  focusExtraField('textarea');
+};
+const revealExcludeFromStats = () => {
+  form.excludeFromStats = true;
+  focusExtraField('[role="switch"]');
+};
+const clearExcludeFromStats = () => {
+  form.excludeFromStats = null;
+  focusExtraField('[data-chip="excludeFromStats"]');
+};
 
 // Picking a payee pre-fills its default tags into the tag field (the user
 // can still adjust them and the mode before applying). Same dual-set model
@@ -76,6 +101,8 @@ const resetForm = () => {
   form.tagMode = 'add';
   form.note = '';
   form.payeeId = null;
+  form.excludeFromStats = null;
+  isNoteShown.value = false;
   resetAutoTagTracking();
 };
 
@@ -93,8 +120,11 @@ watch(hasTags, (value) => {
 });
 const hasNote = computed(() => form.note.trim().length > 0);
 const hasPayee = computed(() => form.payeeId !== null);
+const hasExcludeFromStats = computed(() => form.excludeFromStats !== null);
 
-const hasAnyChanges = computed(() => hasCategory.value || hasTags.value || hasNote.value || hasPayee.value);
+const hasAnyChanges = computed(
+  () => hasCategory.value || hasTags.value || hasNote.value || hasPayee.value || hasExcludeFromStats.value,
+);
 
 // Need the Payee name in the confirm dialog summary; resolve from the full payee
 // lookup so a payee past the picker's top-50 list still shows its name.
@@ -168,6 +198,9 @@ const handleConfirmedApply = () => {
   if (hasPayee.value) {
     values.payeeId = form.payeeId as RecordId;
   }
+  if (form.excludeFromStats !== null) {
+    values.excludeFromStats = form.excludeFromStats;
+  }
 
   emit('apply', values);
   isConfirmDialogOpen.value = false;
@@ -223,11 +256,66 @@ const handleConfirmedApply = () => {
         </p>
       </div>
 
-      <TextareaField
-        v-model="form.note"
-        :label="t('transactions.bulkEdit.noteLabel')"
-        :placeholder="t('transactions.bulkEdit.notePlaceholder')"
-      />
+      <div ref="extraFieldsRef" class="contents">
+        <TextareaField
+          v-if="isNoteShown"
+          v-model="form.note"
+          :label="t('transactions.bulkEdit.noteLabel')"
+          :placeholder="t('transactions.bulkEdit.notePlaceholder')"
+        />
+
+        <div v-if="hasExcludeFromStats" class="flex items-center gap-3 rounded-md border px-3 py-2">
+          <div class="flex min-w-0 flex-1 items-center gap-1.5">
+            <span class="text-sm font-medium">{{ t('dialogs.manageTransaction.form.excludeFromStatsLabel') }}</span>
+            <HintIcon :content="t('transactions.bulkEdit.excludeFromStatsHint')" />
+          </div>
+          <Switch
+            :model-value="form.excludeFromStats ?? false"
+            :aria-label="t('dialogs.manageTransaction.form.excludeFromStatsLabel')"
+            @update:model-value="(value: boolean) => (form.excludeFromStats = value)"
+          />
+          <DesktopOnlyTooltip :content="t('transactions.bulkEdit.excludeFromStatsDontChange')">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              :aria-label="t('transactions.bulkEdit.excludeFromStatsDontChange')"
+              @click="clearExcludeFromStats"
+            >
+              <XIcon class="size-4" />
+            </Button>
+          </DesktopOnlyTooltip>
+        </div>
+
+        <div v-if="!isNoteShown || !hasExcludeFromStats" class="flex flex-wrap items-center gap-1.5">
+          <span class="text-muted-foreground mr-0.5 text-sm">{{
+            t('dialogs.manageTransaction.form.addFieldsLabel')
+          }}</span>
+          <Button
+            v-if="!isNoteShown"
+            type="button"
+            variant="outline"
+            size="xs"
+            class="gap-1.5 rounded-full text-sm"
+            @click="revealNote"
+          >
+            <AlignLeftIcon class="text-muted-foreground size-3.5" />
+            {{ t('transactions.bulkEdit.noteLabel') }}
+          </Button>
+          <Button
+            v-if="!hasExcludeFromStats"
+            type="button"
+            variant="outline"
+            size="xs"
+            class="gap-1.5 rounded-full text-sm"
+            data-chip="excludeFromStats"
+            @click="revealExcludeFromStats"
+          >
+            <EyeOffIcon class="text-muted-foreground size-3.5" />
+            {{ t('dialogs.manageTransaction.form.excludeFromStatsChipLabel') }}
+          </Button>
+        </div>
+      </div>
 
       <div class="mt-2 flex justify-end">
         <Button type="submit" :disabled="isApplyDisabled">
@@ -278,6 +366,13 @@ const handleConfirmedApply = () => {
         <li v-if="hasNote" class="flex items-start gap-2">
           <span class="text-muted-foreground shrink-0">{{ t('transactions.bulkEdit.confirmNoteLabel') }}:</span>
           <span class="italic">"{{ truncatedNote }}"</span>
+        </li>
+        <li v-if="hasExcludeFromStats" class="font-medium">
+          {{
+            form.excludeFromStats
+              ? t('transactions.bulkEdit.confirmExcludeFromStats')
+              : t('transactions.bulkEdit.confirmIncludeInStats')
+          }}
         </li>
       </ul>
     </template>

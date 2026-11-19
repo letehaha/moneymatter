@@ -319,7 +319,7 @@
         "importingButton": "Importing...",
         "importButton": "Import {count} account(s)",
         "importSuccess": "Connected {count} account(s). Transactions are syncing in the background.",
-        "skipButton": "Skip",
+        "skipButton": "Пропустить",
         "skipTooltip": "Skip importing to connect only specific accounts later, or to relink existing accounts from their settings.",
         "errors": {
           "connectFailed": "Failed to connect to Akahu",

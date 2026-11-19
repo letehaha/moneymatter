@@ -85,6 +85,21 @@
         "successNotification": "Paramètres des listes déroulantes de comptes mis à jour",
         "errorNotification": "Échec de la mise à jour des paramètres des listes déroulantes de comptes"
       },
+      "iosAddExpense": {
+        "label": "iPhone Add Expense",
+        "description": "Settings for the Add Expense shortcut on iPhone (Siri, Spotlight and the Action button).",
+        "showBankAccounts": {
+          "label": "Show bank-connected accounts",
+          "description": "Off by default: transactions on bank-connected accounts arrive through sync."
+        },
+        "hiddenCategories": {
+          "label": "Hidden categories",
+          "description": "Checked categories, with their subcategories, are hidden from the shortcut's category list.",
+          "placeholder": "None"
+        },
+        "successNotification": "iPhone Add Expense settings updated",
+        "errorNotification": "Failed to update iPhone Add Expense settings"
+      },
       "showUpcomingTransactions": {
         "label": "Afficher les opérations à venir",
         "description": "Épingler en haut de la liste des opérations une section avec les paiements récurrents en retard et ceux prévus dans les 3 prochains jours.",

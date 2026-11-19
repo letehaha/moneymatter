@@ -20,6 +20,7 @@ import getPortfolioController from '@controllers/investments/portfolios/get-port
 import getPortfolioBalanceController from '@controllers/investments/portfolios/get-portfolio-balance';
 import getPortfolioSummariesController from '@controllers/investments/portfolios/get-portfolio-summaries.controller';
 import getPortfolioSummaryController from '@controllers/investments/portfolios/get-portfolio-summary.controller';
+import getPortfolioValueHistoryController from '@controllers/investments/portfolios/get-portfolio-value-history.controller';
 import getPortfoliosAnnualizedReturnsController from '@controllers/investments/portfolios/get-portfolios-annualized-returns.controller';
 import listPortfolioTransfersController from '@controllers/investments/portfolios/list-portfolio-transfers';
 import listPortfoliosController from '@controllers/investments/portfolios/list-portfolios';
@@ -66,6 +67,8 @@ router.get('/portfolios/:id', getPortfolioController);
 router.get('/portfolios/:id/balance', getPortfolioBalanceController);
 
 router.get('/portfolios/:id/summary', getPortfolioSummaryController);
+
+router.get('/portfolios/:id/value-history', getPortfolioValueHistoryController);
 
 // Test-only cash seeding: writes `PortfolioBalances` directly, bypassing the
 // InvestmentTransaction/PortfolioTransfers audit trail. Production cash moves

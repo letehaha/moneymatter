@@ -24,6 +24,7 @@ export const MONEY_COLUMNS_20261115: readonly MoneyColumnSpec[] = [
   { table: 'Accounts', column: 'refCurrentBalance' },
   { table: 'Accounts', column: 'creditLimit' },
   { table: 'Accounts', column: 'refCreditLimit' },
+  { table: 'Accounts', column: 'seamBalance' },
   { table: 'Balances', column: 'amount' },
   { table: 'BudgetAssignments', column: 'baselineAmount' },
   { table: 'BudgetAssignments', column: 'overrideAmount' },

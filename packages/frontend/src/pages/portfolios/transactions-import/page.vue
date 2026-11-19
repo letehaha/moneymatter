@@ -106,8 +106,8 @@ function onImported() {
         <div class="bg-muted mb-5 h-11 w-full animate-pulse rounded-full" />
         <div class="bg-muted mb-5 h-40 w-full animate-pulse rounded-xl" />
         <div class="flex justify-end gap-2">
-          <div class="bg-muted h-9 w-28 animate-pulse rounded-md" />
-          <div class="bg-muted h-9 w-28 animate-pulse rounded-md" />
+          <div class="bg-muted h-10 w-28 animate-pulse rounded-md" />
+          <div class="bg-muted h-10 w-28 animate-pulse rounded-md" />
         </div>
       </div>
 

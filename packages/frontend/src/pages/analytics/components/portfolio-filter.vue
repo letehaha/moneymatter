@@ -25,7 +25,7 @@
             v-for="portfolio in filteredPortfolios"
             :key="portfolio.id"
             :value="portfolio.id"
-            class="data-[state=checked]:bg-primary/5 gap-2.5 px-2 py-1.5"
+            class="gap-2.5 px-2 py-1.5"
             @toggle="togglePortfolio(portfolio.id)"
           >
             <Checkbox :model-value="isChecked(portfolio.id)" class="pointer-events-none" tabindex="-1" />

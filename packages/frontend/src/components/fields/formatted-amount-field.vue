@@ -15,7 +15,8 @@
         spellcheck="false"
         :class="
           cn(
-            'border-input bg-input-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm tabular-nums focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50 md:h-9',
+            'border-input bg-input-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm tabular-nums focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50',
+            controlHeight[size],
             errorMessage && 'border-destructive',
           )
         "
@@ -37,6 +38,7 @@ import {
   limitAmountDecimals,
   parseAmountInput,
 } from '@/components/fields/utils/formatted-amount';
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import { cn } from '@/lib/utils';
 import { computed, nextTick, ref, watch } from 'vue';
 
@@ -49,11 +51,13 @@ const props = withDefaults(
     errorMessage?: string;
     /** Decimals of the amount's currency; typed precision beyond it is dropped. */
     decimals: number;
+    size?: ControlSize;
   }>(),
   {
     label: undefined,
     placeholder: undefined,
     errorMessage: undefined,
+    size: 'default',
   },
 );
 

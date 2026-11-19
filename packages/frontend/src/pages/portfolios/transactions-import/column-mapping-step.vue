@@ -331,7 +331,7 @@ const extract = useMutation({
         </p>
       </div>
       <Button variant="ghost" size="sm" :disabled="extract.isPending.value" @click="emit('back')">
-        <ArrowLeftIcon class="mr-1 size-4" />
+        <ArrowLeftIcon class="size-4" />
         {{ $t('investmentsImport.columnMapping.backToUpload') }}
       </Button>
     </div>
@@ -348,7 +348,7 @@ const extract = useMutation({
                      user scrolls the preview. Higher z-index than the regular
                      stickies underneath it. -->
                 <th
-                  class="bg-muted border-border/60 text-muted-foreground sticky top-0 left-0 z-20 border-r border-b px-2 py-2 text-left font-medium whitespace-nowrap"
+                  class="bg-table-header border-border/60 text-muted-foreground sticky top-0 left-0 z-20 border-r border-b px-2 py-2 text-left font-medium whitespace-nowrap"
                   scope="col"
                 >
                   #
@@ -356,18 +356,18 @@ const extract = useMutation({
                 <th
                   v-for="header in parseResult.headers"
                   :key="header"
-                  class="bg-muted border-border/60 sticky top-0 z-10 border-b px-3 py-2 text-left font-medium whitespace-nowrap"
+                  class="bg-table-header border-border/60 sticky top-0 z-10 border-b px-3 py-2 text-left font-medium whitespace-nowrap"
                 >
                   {{ header }}
                 </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(row, idx) in parseResult.preview" :key="idx" class="hover:bg-muted/30">
+              <tr v-for="(row, idx) in parseResult.preview" :key="idx" class="group hover:bg-hover">
                 <!-- Row index matches the backend's 1-based data-row numbering,
                      so "row 89 invalid" maps to the cell labelled 89 here. -->
                 <td
-                  class="bg-card border-border/60 text-muted-foreground sticky left-0 border-r border-b px-2 py-1.5 text-right whitespace-nowrap tabular-nums"
+                  class="bg-card border-border/60 text-muted-foreground sticky left-0 border-r border-b px-2 py-1.5 text-right whitespace-nowrap tabular-nums group-hover:bg-[linear-gradient(var(--color-hover),var(--color-hover))]"
                 >
                   {{ idx + 1 }}
                 </td>
@@ -564,7 +564,7 @@ const extract = useMutation({
             :key="value"
             :class="
               cn(
-                'flex items-center gap-3 rounded-md border p-2',
+                'fields-plain flex items-center gap-3 rounded-md border p-2',
                 invalidSideValues.has(value)
                   ? 'border-destructive-text/60 bg-destructive/5'
                   : 'border-border/60 bg-muted/20',
@@ -596,12 +596,12 @@ const extract = useMutation({
     <div
       class="border-border/60 bg-muted/20 flex flex-col gap-2 border-t px-5 py-3 sm:flex-row sm:items-center sm:justify-end"
     >
-      <Button variant="ghost" size="sm" :disabled="extract.isPending.value" @click="emit('back')">
+      <Button variant="ghost" :disabled="extract.isPending.value" @click="emit('back')">
         {{ $t('investmentsImport.columnMapping.backToUpload') }}
       </Button>
       <Button :disabled="extract.isPending.value" @click="onContinueClick">
-        <Loader2Icon v-if="extract.isPending.value" class="mr-1 size-4 animate-spin" />
-        <SparklesIcon v-else class="mr-1 size-4" />
+        <Loader2Icon v-if="extract.isPending.value" class="size-4 animate-spin" />
+        <SparklesIcon v-else class="size-4" />
         {{
           extract.isPending.value
             ? $t('investmentsImport.columnMapping.extracting')

@@ -21,6 +21,8 @@ export interface HoldingModel {
   unrealizedGainPercent?: string;
   realizedGainValue?: string;
   realizedGainPercent?: string;
+  /** Sum of DIVIDEND transactions for this security in the portfolio, net of fees, in the holding's currency. */
+  dividendIncome?: string;
   // Present only when the portfolio has a displayCurrencyCode: money values
   // above converted to that currency. Percent fields are ratios — unchanged.
   displayCurrencyCode?: string;
@@ -28,6 +30,7 @@ export interface HoldingModel {
   displayMarketValue?: string;
   displayUnrealizedGainValue?: string;
   displayRealizedGainValue?: string;
+  displayDividendIncome?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

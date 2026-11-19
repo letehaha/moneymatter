@@ -8,7 +8,9 @@
             :disabled="disabled"
             :class="
               cn(
-                'border-input bg-input-background not-dark:hover:bg-accent ring-offset-background flex min-h-10 w-full items-center gap-2 rounded-md border px-3 py-2 text-sm md:min-h-9',
+                'border-input bg-input-background ring-offset-background flex w-full items-center gap-2 rounded-md border px-3 text-sm',
+                size === 'xs' || size === 'sm' ? 'py-1' : 'py-2',
+                controlMinHeight[size],
                 'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden',
                 disabled && 'cursor-not-allowed opacity-50',
               )
@@ -90,6 +92,7 @@ import { collectDescendantIds } from '@/components/common/combobox-categories.he
 import FieldError from '@/components/fields/components/field-error.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import CategoryItem from '@/components/fields/category-multi-select-item.vue';
+import { type ControlSize, controlMinHeight } from '@/components/lib/ui/control-size';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { cn } from '@/lib/utils';
 import { useCategoriesStore } from '@/stores';
@@ -113,6 +116,7 @@ const props = withDefaults(
     chipIds?: string[];
     /** A selected category covers its subtree: descendants render checked and locked, and aren't stored. */
     coverSubtree?: boolean;
+    size?: ControlSize;
   }>(),
   {
     label: undefined,
@@ -121,6 +125,7 @@ const props = withDefaults(
     errorMessage: undefined,
     takenBy: () => ({}),
     chipIds: undefined,
+    size: 'default',
   },
 );
 

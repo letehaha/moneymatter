@@ -1,6 +1,6 @@
 <template>
   <div
-    class="hover:bg-muted/40 relative flex items-center gap-3 px-4 py-4 transition-colors @[40rem]/archived-list:py-3.5"
+    class="hover:bg-hover relative flex items-center gap-3 px-4 py-4 transition-colors @[40rem]/archived-list:py-3.5"
   >
     <!-- Overlay link keeps the whole row clickable without nesting the restore button inside an anchor. -->
     <RouterLink

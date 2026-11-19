@@ -10,10 +10,10 @@
       "manageBilling": "Abrechnung verwalten",
       "manageInAppStore": "Im App Store verwalten",
       "currentPlan": "Aktueller Tarif",
-      "recommended": "Recommended",
+      "recommended": "Empfohlen",
       "previousPlan": "Vorheriger Tarif",
       "yourPlan": "Dein Tarif",
-      "planned": "Planned",
+      "planned": "Geplant",
       "voteOnRoadmap": "Über Roadmap abstimmen",
       "roadmapNote": "Kostenlos. Stimme dafür ab und wir informieren dich, sobald es verfügbar ist.",
       "saveUpTo": "Spare bis zu {percent}%",
@@ -32,6 +32,7 @@
       "current": {
         "lifetime": "{plan} · Lebenslang",
         "lifetimeMeta": "Alles aus Plus. Keine Verlängerung, keine Karte hinterlegt.",
+        "lifetimePurchaseMeta": "No renewal, no card on file.",
         "earlyAdopterNote": "Danke, dass du von Anfang an dabei bist. Alles aus Plus im heutigen Umfang gehört dir lebenslang. Funktionen, die wir ab jetzt hinzufügen, und alles, was uns pro Benutzer Kosten verursacht, gehört zu den kostenpflichtigen Tarifen. Möchtest du sie? 50% Rabatt auf jeden Tarif, für immer, automatisch beim Checkout angewendet.",
         "seats": "1 Haushaltsplatz | {count} Haushaltsplätze",
         "subscription": "{tier} · {cycle}",
@@ -61,7 +62,7 @@
       },
       "status": {
         "pastDue": "Zahlung fehlgeschlagen",
-        "active": "Active",
+        "active": "Aktiv",
         "paused": "Pausiert",
         "readOnly": "Schreibgeschützt",
         "trial": "Plus-Funktionen",
@@ -91,7 +92,7 @@
       },
       "cycle": {
         "month": "Monatlich",
-        "year": "Yearly"
+        "year": "Jährlich"
       },
       "perCycle": {
         "month": "/Monat",

@@ -365,3 +365,5 @@ export async function asNewUserWithBaseCurrency<T>({
   const { cookies } = await provisionSecondUserWithBaseCurrency({ currencyCode });
   return asUser({ cookies, fn });
 }
+
+export const asBaseCurrencyUser = asNewUserWithBaseCurrency;

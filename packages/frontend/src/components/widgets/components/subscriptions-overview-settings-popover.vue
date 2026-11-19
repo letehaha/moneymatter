@@ -16,7 +16,7 @@
             <div class="flex flex-col p-2">
               <button
                 type="button"
-                class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                 @click="goTo('type')"
               >
                 <span class="flex flex-col">
@@ -32,7 +32,7 @@
 
               <button
                 type="button"
-                class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                 @click="goTo('lookback')"
               >
                 <span class="flex flex-col">
@@ -72,7 +72,7 @@
                 v-for="choice in TYPE_CHOICES"
                 :key="choice.value"
                 type="button"
-                class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                 @click="onTypeChange(choice.value)"
               >
                 <span class="text-sm">{{ t(choice.label) }}</span>
@@ -105,7 +105,7 @@
                 v-for="choice in LOOKBACK_CHOICES"
                 :key="choice.value"
                 type="button"
-                class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                 @click="onLookbackChange(choice.value)"
               >
                 <span class="text-sm">{{ t(choice.label) }}</span>

@@ -10,9 +10,9 @@
       "netWorthDrivers": "Vermögenstreiber",
       "investmentContributions": "Einzahlungen",
       "netWorthHistory": "Vermögensverlauf",
-      "collapse": "Collapse",
+      "collapse": "Einklappen",
       "sections": {
-        "investments": "Investments"
+        "investments": "Investitionen"
       },
       "fire": "FIRE"
     },
@@ -27,7 +27,7 @@
       "netFlow": "Nett-Cashflow",
       "savingsRate": "Sparquote",
       "loadError": "Cashflow-Daten konnten nicht geladen werden",
-      "noData": "No transactions found",
+      "noData": "Keine Transaktionen gefunden",
       "noDataHint": "Versuche einen anderen Zeitraum auszuwählen oder prüfe, ob du Transaktionen hast",
       "showTrendLine": "Trendlinie anzeigen",
       "showTrendLineHint": "Geglätteter Durchschnitt des Netto-Cashflows",
@@ -39,17 +39,17 @@
         "grouped": "Gruppiert"
       },
       "granularity": {
-        "monthly": "Monthly",
+        "monthly": "Monatlich",
         "biweekly": "Zweiwöchentlich",
-        "weekly": "Weekly"
+        "weekly": "Wöchentlich"
       },
       "periods": {
-        "last3Months": "Last 3 months",
-        "last6Months": "Last 6 months",
+        "last3Months": "Letzte 3 Monate",
+        "last6Months": "Letzte 6 Monate",
         "last12Months": "Letzte 12 Monate",
-        "thisYear": "This year",
-        "previousYear": "Previous year",
-        "allTime": "All time",
+        "thisYear": "Dieses Jahr",
+        "previousYear": "Vorjahr",
+        "allTime": "Gesamter Zeitraum",
         "currentPayPeriod": "Aktueller Abrechnungszeitraum"
       },
       "composition": {
@@ -62,16 +62,16 @@
         "totalIncome": "Gesamteinnahmen",
         "incomePlusDeficit": "Einnahmen + Defizit",
         "savings": "Ersparnisse",
-        "taxes": "Taxes",
+        "taxes": "Steuern",
         "deficit": "Defizit",
-        "other": "Other",
+        "other": "Sonstige",
         "noData": "Keine Transaktionen in diesem Zeitraum",
         "noDataHint": "Wähle einen anderen Zeitraum oder klicke oben auf einen Balken im Diagramm",
         "loadError": "Zusammensetzung konnte nicht geladen werden",
-        "amount": "Amount",
+        "amount": "Betrag",
         "shareOfIncome": "Anteil an Einnahmen",
         "shareOfExpenses": "Anteil an Ausgaben",
-        "saved": "Saved",
+        "saved": "Gespart",
         "pctOfIncome": "{pct} der Einnahmen",
         "pctSavingsRate": "{pct} Sparquote",
         "keptAsCash": "Als Guthaben behalten",
@@ -79,16 +79,16 @@
         "deficitOverspend": "Ausgaben überstiegen die Einnahmen um {amount}. Die Differenz wurde aus vorhandenem Guthaben gedeckt.",
         "deficitInvested": "Die Portfolio-Einzahlungen ({invested}) waren höher als der Betrag, der in diesem Zeitraum nach den Ausgaben übrig blieb ({saved}). Die Differenz wurde aus vorhandenem Guthaben gedeckt.",
         "deficitBoth": "Die Ausgaben überstiegen die Einnahmen um {overspend}. Zusätzlich wurden {invested} in Portfolios investiert. Beides wurde aus vorhandenem Guthaben gedeckt.",
-        "andMore": "+{count} more",
+        "andMore": "+{count} weitere",
         "settings": "Diagramm-Einstellungen"
       }
     },
     "trends": {
-      "subtitle": "Vergleiche Ausgaben, Einnahmen und Ersparnisse mit dem vorherigen Zeitraum.",
+      "subtitle": "Vergleiche Ausgaben und Einnahmen mit dem vorherigen Zeitraum.",
       "metrics": {
         "expenses": "Ausgaben",
         "income": "Einnahmen",
-        "savings": "Savings"
+        "savings": "Ersparnisse"
       },
       "chart": {
         "selectedPeriod": "Ausgewählter Zeitraum",
@@ -96,74 +96,74 @@
         "cumulativeNote": "Kumulierter Gesamtbetrag bis zu diesem Punkt"
       },
       "scope": {
-        "label": "Category scope",
-        "all": "All categories",
-        "up": "Up one level",
-        "transactions": "Transactions",
-        "count": "{count} category | {count} categories",
+        "label": "Kategoriebereich",
+        "all": "Alle Kategorien",
+        "up": "Eine Ebene nach oben",
+        "transactions": "Transaktionen",
+        "count": "{count} Kategorie | {count} Kategorien",
         "more": "+{count}",
-        "allExcept": "All except {list}",
-        "clear": "Clear"
+        "allExcept": "Alle außer {list}",
+        "clear": "Zurücksetzen"
       },
       "categoryBreakdown": {
         "title": "Kategorie-Aufschlüsselung",
         "noData": "Keine Daten für diesen Zeitraum",
         "viewAll": "Alle Kategorien anzeigen",
         "moreCount": "{count} weitere",
-        "noSubcategory": "{name} · no subcategory",
-        "byLevel": "By level",
+        "noSubcategory": "{name} · keine Unterkategorie",
+        "byLevel": "Nach Ebene",
         "detail": "Detail",
-        "others": "Others"
+        "others": "Sonstige"
       },
       "hero": {
-        "vsPrevious": "{percent}% vs previous period",
-        "same": "Same as previous period"
+        "vsPrevious": "{percent}% vs. vorherigen Zeitraum",
+        "same": "Wie im vorherigen Zeitraum"
       },
       "overTime": {
-        "title": "Over time",
-        "cumulative": "Cumulative",
-        "perPeriod": "Per period",
+        "title": "Im Zeitverlauf",
+        "cumulative": "Kumuliert",
+        "perPeriod": "Pro Zeitraum",
         "granularity": {
-          "monthly": "Monthly",
-          "quarterly": "Quarterly",
-          "yearly": "Yearly"
+          "monthly": "Monatlich",
+          "quarterly": "Vierteljährlich",
+          "yearly": "Jährlich"
         }
       },
       "transactionsCard": {
-        "title": "Transactions",
-        "largest": "Largest",
-        "recent": "Recent"
+        "title": "Transaktionen",
+        "largest": "Größte",
+        "recent": "Letzte"
       },
       "monthlyComparison": {
         "allCategories": "Alle Kategorien",
         "average": "Durchschnitt",
-        "total": "Total",
+        "total": "Gesamt",
         "vsPrevious": {
-          "monthly": "vs last month",
-          "quarterly": "vs last quarter",
-          "yearly": "vs last year"
+          "monthly": "vs. Vormonat",
+          "quarterly": "vs. Vorquartal",
+          "yearly": "vs. Vorjahr"
         },
         "show": {
-          "monthly": "Show this month",
-          "quarterly": "Show quarter",
-          "yearly": "Show year"
+          "monthly": "Diesen Monat anzeigen",
+          "quarterly": "Quartal anzeigen",
+          "yearly": "Jahr anzeigen"
         }
       },
       "filters": {
-        "button": "Filters",
-        "title": "Filters",
+        "button": "Filter",
+        "title": "Filter",
         "include": "Einschließen",
         "exclude": "Ohne",
-        "accounts": "Accounts",
-        "payees": "Payees",
+        "accounts": "Konten",
+        "payees": "Zahlungsempfänger",
         "tags": "Tags",
-        "reset": "Reset"
+        "reset": "Zurücksetzen"
       },
       "legend": {
         "hide": "Im Diagramm ausblenden",
         "show": "Im Diagramm anzeigen"
       },
-      "vsPreviousPeriod": "vs previous period",
+      "vsPreviousPeriod": "vs. vorheriger Zeitraum",
       "loadError": "Daten konnten nicht geladen werden",
       "noData": "Keine Daten verfügbar",
       "noDataHint": "Keine Transaktionen für diesen Zeitraum erfasst"
@@ -199,8 +199,8 @@
       "portfolioReturnOption": "{name} (deine ~{rate}%/Jahr)",
       "portfolioNoHistoryOption": "{name} – nicht genügend Verlauf",
       "presetReturnOption": "{label} (~{rate}%/Jahr)",
-      "rangeMin": "Min",
-      "rangeMax": "Max",
+      "rangeMin": "Min.",
+      "rangeMax": "Max.",
       "indicators": {
         "worldStock": "Weltweiter Aktienmarkt",
         "usTreasury": "US-Staatsanleihen",
@@ -247,9 +247,9 @@
         "autoSpendingHint": "Durchschnitt der letzten {n} vollen Monate × 12, nur eigene Konten, Umbuchungen und Spar-Kategorien ausgeschlossen. Typischer Monat: {typical}. Enthält Kredit- und Immobilienraten. | Durchschnitt der letzten {n} vollen Monate × 12, nur eigene Konten, Umbuchungen und Spar-Kategorien ausgeschlossen. Typischer Monat: {typical}. Kredit- und Immobilienraten.",
         "backToAuto": "Zurück zu Auto ({amount})",
         "excludedLabel": "Nicht als Ausgaben gezählt",
-        "excludedPlaceholder": "Exclude categories",
+        "excludedPlaceholder": "Kategorien ausschließen",
         "savingsNote": "Spar-Kategorien sind ebenfalls ausgeschlossen. {link}",
-        "savingsNoteLink": "Edit",
+        "savingsNoteLink": "Bearbeiten",
         "contributionLabel": "Monatliche Einzahlung",
         "contributionPlaceholder": "z.B. 1500",
         "autoContributionHint": "Durchschnittlicher Nettofluss über dieselben {n} Monate. Direkt in ein Portfolio getätigte Einzahlungen enthalten keinen Cashflow, füge sie daher hier hinzu. An ein Bankkonto gezahlte Dividenden zählen doppelt (Einnahme und Rendite). | Durchschnittlicher Nettofluss über dieselben {n} Monate. Direkt in ein Portfolio getätigte Einzahlungen enthalten keinen Cashflow, füge sie daher hier hinzu. An ein Bankkonto gezahlte Dividenden zählen doppelt (Einnahme und Rendite).",
@@ -258,20 +258,20 @@
         "countsCash": "Kontoguthaben",
         "countsPortfolios": "Investment-Portfolios",
         "countsVentures": "Beteiligungen",
-        "countsVehicles": "Vehicles",
-        "countsLoans": "Loans",
+        "countsVehicles": "Fahrzeuge",
+        "countsLoans": "Kredite",
         "countsHint": "Kontoguthaben und Portfolios werden immer berücksichtigt. Kreditrückzahlungen gelten bereits als Ausgaben, daher sind Kredite standardmäßig ausgeschlossen.",
         "archivedNote": "{count} aus den Statistiken ausgeschlossenes archiviertes Konto hält noch {amount}. {link} | {count} aus den Statistiken ausgeschlossene archivierte Konten halten noch {amount}. {link}",
-        "archivedNoteLink": "Review",
+        "archivedNoteLink": "Überprüfen",
         "presetLabel": "{label} · ≈{real} real ({nominal} nominal, {inflation} US-Inflation)",
         "inflationLabel": "Inflation",
         "inflationBuiltIn": "{pct}% · in dieser Voreinstellung enthalten",
         "inflationBuiltInHint": "Markt-Voreinstellungen sind nominale Renditen der USA und weltweit, daher beinhalten sie die US-Inflation. Die Kombination mit deiner lokalen Inflation würde zu irreführenden Zahlen führen. Wähle eine benutzerdefinierte Rendite oder dein Portfolio, um die Inflation selbst festzulegen.",
         "withdrawalLabel": "Entnahmerate",
-        "withdrawalCustom": "Benutzerdefiniert",
+        "withdrawalCustom": "Eigene",
         "withdrawalPlaceholder": "z.B. 3.8",
         "withdrawalHint": "Der Anteil deiner Ersparnisse, den du jedes Jahr entnimmst. Eine höhere Rate bedeutet eine kleinere FIRE-Zahl, aber ein größeres Risiko, dass das Geld ausgeht. Die 4%-Regel stammt aus US-Daten für einen 30-jährigen Ruhestand.",
-        "more": "More",
+        "more": "Mehr",
         "moreSummary": "Lean {lean}× · Fat {fat}× · Coast mit {age}",
         "leanLabel": "Lean-FIRE-Multiplikator",
         "leanPlaceholder": "z.B. 0.7",
@@ -385,8 +385,8 @@
           "rollingHint": "Fortlaufend · derzeit {month}",
           "specific": "Bestimmter Monat",
           "specificHint": "Bleibt unverändert",
-          "prevYear": "Previous year",
-          "nextYear": "Next year",
+          "prevYear": "Vorjahr",
+          "nextYear": "Nächstes Jahr",
           "earliest": "Der früheste ist {month}. FIRE benötigt davor 3 Monate erfasste Ausgaben."
         },
         "details": {
@@ -396,11 +396,11 @@
           "backInReach": "Nach den Zahlen für {month} war FIRE außer Reichweite. Jetzt ist es {date}.",
           "offTrack": "Die Prognose für {month} war {date}. Nach den heutigen Zahlen ist FIRE außer Reichweite.",
           "metric": "Metrik",
-          "today": "Today",
-          "change": "Change",
+          "today": "Heute",
+          "change": "Veränderung",
           "fireDate": "FIRE-Datum",
           "saved": "Bisher gespart",
-          "spending": "Spending",
+          "spending": "Ausgaben",
           "saving": "Ansparen",
           "expected": "{amount} erwartet",
           "sooner": "{duration} früher",
@@ -417,7 +417,7 @@
         "actual": "Tatsächlich",
         "projected": "Projiziert",
         "range": "±2 Pkt. Rendite",
-        "today": "Today",
+        "today": "Heute",
         "typeTarget": "{type} · {amount}",
         "typeLabel": "{type} · {date}",
         "forecast": "Prognose für {month}",
@@ -456,14 +456,14 @@
     "subtitle": "Gliedere Ausgaben nach beliebigen Dimensionen auf, stelle sie im Zeitverlauf dar und vergleiche sie.",
     "controls": {
       "rows": "Zeilen",
-      "columns": "Columns",
+      "columns": "Spalten",
       "measure": "Wert",
-      "settings": "Settings"
+      "settings": "Einstellungen"
     },
     "dimensions": {
-      "category": "Category",
+      "category": "Kategorie",
       "subcategory": "+ Unterkategorie",
-      "payee": "Payee",
+      "payee": "Zahlungsempfänger",
       "tag": "Tag"
     },
     "granularity": {
@@ -485,22 +485,22 @@
     },
     "filters": {
       "period": "Zeitraum",
-      "allCategories": "All",
-      "button": "Filters",
-      "categories": "Categories",
-      "payees": "Payees",
-      "accounts": "Accounts",
-      "reset": "Reset",
+      "allCategories": "Alle",
+      "button": "Filter",
+      "categories": "Kategorien",
+      "payees": "Zahlungsempfänger",
+      "accounts": "Konten",
+      "reset": "Zurücksetzen",
       "resetTooltip": "Auf Standards zurücksetzen"
     },
     "periods": {
-      "last6Months": "Last 6 months",
+      "last6Months": "Letzte 6 Monate",
       "last12Months": "Letzte 12 Monate",
-      "thisYear": "This year",
-      "previousYear": "Previous year",
+      "thisYear": "Dieses Jahr",
+      "previousYear": "Vorjahr",
       "last3Years": "Letzte 3 Jahre",
       "last5Years": "Letzte 5 Jahre",
-      "allTime": "All time"
+      "allTime": "Gesamter Zeitraum"
     },
     "savedViews": {
       "trigger": "Ansichten",
@@ -516,12 +516,12 @@
       "saveError": "Ansicht konnte nicht gespeichert werden"
     },
     "table": {
-      "total": "Total",
-      "net": "Net",
+      "total": "Gesamt",
+      "net": "Netto",
       "collapseAll": "Alle einklappen",
-      "expandAll": "Alle ausklappen",
-      "expandRow": "Expand",
-      "collapseRow": "Collapse"
+      "expandAll": "Alle aufklappen",
+      "expandRow": "Ausklappen",
+      "collapseRow": "Einklappen"
     },
     "states": {
       "emptyTitle": "Keine Daten für diese Auswahl",
@@ -538,27 +538,27 @@
     "calcInfo": {
       "trigger": "Berechnungsmethode",
       "title": "Berechnungsmethode",
-      "savedHeading": "Saved",
+      "savedHeading": "Gespart",
       "savedBody": "Geld, das du zurücklegst – Einnahmen minus Ausgaben. Das Verschieben von Geld zwischen eigenen Konten oder in ein Investment-Portfolio zählt nicht als Sparen.",
-      "grownHeading": "Gewachsen",
+      "grownHeading": "Erwirtschaftet",
       "grownBody": "Zeigt, wie sich der Markt auf deine Anlagen ausgewirkt hat – Kursveränderungen plus Dividenden abzüglich Gebühren. Deine Einzahlungen werden nicht als Wertentwicklung gewertet.",
       "exampleHeading": "Beispiel",
       "exampleBody": "Du verdienst 10.000€, investierst sie und sie wachsen auf 12.000€. Das sind 10.000€ gespart und 2.000€ erwirtschaftet – die 10.000€ werden einmal als gespart gezählt und nur die 2.000€ als erwirtschaftet.",
       "noteBody": "Wachstum wird mit den Kursbewegungen in jedem Zeitraum gezählt, nicht erst beim Verkauf. Der Verkauf von etwas, das bereits gestiegen ist, erhöht den Wertzuwachs nicht ein zweites Mal."
     },
     "granularity": {
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "monthly": "Monatlich",
+      "quarterly": "Vierteljährlich",
+      "yearly": "Jährlich"
     },
     "chart": {
-      "title": "Gespart vs. Gewachsen",
+      "title": "Gespart vs. Erwirtschaftet",
       "subtitle": "Kumulierte Gesamtsummen im ausgewählten Zeitraum.",
-      "saved": "Saved",
+      "saved": "Gespart",
       "grown": "Erwirtschaftet",
       "totalGained": "Gesamtzuwachs",
       "thisPeriod": "Dieser Zeitraum",
-      "periodSavings": "Savings",
+      "periodSavings": "Ersparnisse",
       "periodGrowth": "Wachstum",
       "allocationContext": "{share}% deines Nettovermögens stecken in Investments (im Vergleich zu {reference}% am {date})",
       "allocationContextNoReference": "{share}% deines Nettovermögens stecken in Investments"
@@ -615,9 +615,9 @@
       "scopeHint": "Filtert, welche Portfolios für die Einzahlungen zählen."
     },
     "granularity": {
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "monthly": "Monatlich",
+      "quarterly": "Vierteljährlich",
+      "yearly": "Jährlich"
     },
     "cards": {
       "totalContributed": "Insgesamt eingezahlt",
@@ -630,7 +630,7 @@
     "states": {
       "noData": "Keine Einzahlungen in diesem Bereich",
       "noDataHint": "Übertrage in diesem Zeitraum Geld in ein Portfolio, um es hier zu sehen.",
-      "noPortfoliosTitle": "No portfolios yet",
+      "noPortfoliosTitle": "Noch keine Portfolios",
       "noPortfoliosPlaceholder": "Erstelle ein Portfolio und beginne zu investieren, um deine Einzahlungen hier zu verfolgen.",
       "noPortfoliosAction": "Portfolio hinzufügen",
       "loadError": "Einzahlungen konnten nicht geladen werden"
@@ -639,10 +639,10 @@
   "netWorthHistory": {
     "subtitle": "Wie sich deine Vermögenswerte, Verbindlichkeiten und dein Nettovermögen im Laufe der Zeit verändert haben",
     "granularity": {
-      "weekly": "Weekly",
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "weekly": "Wöchentlich",
+      "monthly": "Monatlich",
+      "quarterly": "Vierteljährlich",
+      "yearly": "Jährlich"
     },
     "kindFilter": {
       "all": "Alle Verbindlichkeiten",
@@ -653,7 +653,7 @@
     "assetKinds": {
       "cash": "Kontoguthaben",
       "investments": "Investments",
-      "vehicles": "Vehicles",
+      "vehicles": "Fahrzeuge",
       "ventures": "Beteiligungen"
     },
     "assetFilter": {
@@ -670,8 +670,8 @@
       "noLiabilities": "Du hattest im ausgewählten Zeitraum keine Verbindlichkeiten."
     },
     "chart": {
-      "assets": "Assets",
-      "liabilities": "Liabilities",
+      "assets": "Vermögenswerte",
+      "liabilities": "Verbindlichkeiten",
       "netWorth": "Nettovermögen",
       "averageLiabilities": "Durchschn. Verbindlichkeiten",
       "liabilitiesZoomed": "Skala für Verbindlichkeiten vergrößert"

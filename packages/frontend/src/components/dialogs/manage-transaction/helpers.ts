@@ -1,9 +1,9 @@
 import { OUT_OF_WALLET_ACCOUNT_MOCK, VERBOSE_PAYMENT_TYPES } from '@/common/const';
 import type { FormattedCategory } from '@/common/types';
+import { getBankRowPermissions } from '@/common/utils/bank-row-permissions';
 import { buildDescendantMap } from '@/components/common/category-exclusions/helpers';
 import {
   isTwoLegTransfer,
-  ACCOUNT_TYPES,
   AccountModel,
   CategoryModel,
   CurrencyModel,
@@ -17,17 +17,17 @@ import { FORM_TYPES, type FormSplit, UI_FORM_STRUCT } from './types';
 import { hasPaymentParts, paymentPartsToFormLegs } from './utils/payment-legs';
 
 export const getDestinationAccount = ({
-  isRecordExternal,
+  isRecordPinned,
   sourceTransaction,
   account,
   toAccount,
 }: {
-  isRecordExternal: boolean;
+  isRecordPinned: boolean;
   sourceTransaction: TransactionModel;
   account: AccountModel;
   toAccount: AccountModel;
 }) => {
-  if (isRecordExternal) {
+  if (isRecordPinned) {
     const isIncome = sourceTransaction.transactionType === TRANSACTION_TYPES.income;
     return isIncome ? account : toAccount;
   }
@@ -38,16 +38,16 @@ export const getDestinationAmount = ({
   fromAmount,
   toAmount,
   isCurrenciesDifferent,
-  isRecordExternal,
+  isRecordPinned,
   sourceTransaction,
 }: {
   fromAmount: number;
   toAmount: number;
   isCurrenciesDifferent: boolean;
-  isRecordExternal: boolean;
+  isRecordPinned: boolean;
   sourceTransaction: TransactionModel;
 }) => {
-  if (isRecordExternal) {
+  if (isRecordPinned) {
     const isIncome = sourceTransaction.transactionType === TRANSACTION_TYPES.income;
     return isIncome ? fromAmount : toAmount;
   }
@@ -81,10 +81,6 @@ export const getOppositeTxType = (type: TRANSACTION_TYPES): TRANSACTION_TYPES =>
 
 export const isOutOfWalletAccount = (account: typeof OUT_OF_WALLET_ACCOUNT_MOCK) => account._isOutOfWallet;
 
-// Real rows on a bank-connected account come from the sync, so the Create form makes them plans.
-export const isConnectedAccount = ({ account }: { account: Pick<AccountModel, 'type'> }): boolean =>
-  !!account.type && account.type !== ACCOUNT_TYPES.system;
-
 /**
  * Transfer destinations for a given base transaction type. A loan payment is an
  * outflow (backend rejects transfer_to_loan on an income base), so income can
@@ -102,11 +98,11 @@ export const getAvailableTransferDestinationTypes = (transactionType: TRANSACTIO
 // stay editable even on a provider-linked account.
 export const isTxEditableAsManual = ({
   transaction,
-  isRecordExternal,
+  isRecordBankLocked,
 }: {
   transaction: TransactionModel | undefined | null;
-  isRecordExternal: boolean;
-}): boolean => !isRecordExternal || !!transaction?.isPlanned;
+  isRecordBankLocked: boolean;
+}): boolean => !isRecordBankLocked || !!transaction?.isPlanned;
 
 // Transfers can't be planned, so a flag left over from a type switch must never reach
 // the payload.
@@ -141,8 +137,8 @@ export const resolveOriginalCurrencyPair = ({ form }: { form: UI_FORM_STRUCT }):
 export const isPaymentTransaction = ({ transaction }: { transaction: TransactionModel }): boolean =>
   !!transaction.paymentParentId || hasPaymentParts({ transaction });
 
-// The backend cascades a transfer delete across both legs, so an external-bank
-// partner (which can't be removed) would orphan the call — hide the button instead.
+// The backend cascades a transfer delete across both legs, so a partner the bank owns
+// (which can't be removed) would orphan the call — hide the button instead.
 export const canDeleteTransaction = ({
   transaction,
   oppositeTransaction,
@@ -158,13 +154,11 @@ export const canDeleteTransaction = ({
   // A planned row is never a transfer leg and stays `accountType: system` until it
   // merges, so the backend deletes it whatever account it sits on.
   if (transaction.isPlanned) return true;
-  const primaryAccount = accounts[transaction.accountId];
-  if (!primaryAccount || primaryAccount.type !== ACCOUNT_TYPES.system) return false;
-  if (oppositeTransaction) {
-    const oppositeAccount = accounts[oppositeTransaction.accountId];
-    if (!oppositeAccount || oppositeAccount.type !== ACCOUNT_TYPES.system) return false;
-  }
-  return true;
+  return [transaction, oppositeTransaction].every((leg) => {
+    if (!leg) return true;
+    const account = accounts[leg.accountId];
+    return !!account && getBankRowPermissions({ transaction: leg, account }).canDelete;
+  });
 };
 
 /**

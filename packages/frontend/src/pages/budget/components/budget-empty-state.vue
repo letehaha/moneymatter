@@ -37,6 +37,7 @@ const withTotals = ({ lines }: { lines: { key: string; assigned: number; spent: 
     carriedIn: 0,
     activity: -line.spent,
     available: line.assigned - line.spent,
+    pace: null,
   }));
   return {
     rows,
@@ -99,7 +100,7 @@ const CHECKBOX_CLASS = 'border-muted-foreground/50 size-[18px] rounded-[4px] bor
     <div class="relative">
       <div
         aria-hidden="true"
-        class="border-border bg-card pointer-events-none hidden min-h-[640px] grid-cols-[minmax(0,1fr)_330px] overflow-clip rounded-lg border [mask-image:linear-gradient(to_bottom,black_30%,transparent_95%)] opacity-60 select-none @3xl/budget-empty:grid"
+        class="border-border bg-card fields-plain pointer-events-none hidden min-h-[640px] grid-cols-[minmax(0,1fr)_330px] overflow-clip rounded-lg border [mask-image:linear-gradient(to_bottom,black_30%,transparent_95%)] opacity-60 select-none @3xl/budget-empty:grid"
       >
         <div class="min-w-0">
           <dl class="border-border divide-border flex divide-x border-b px-4 py-2">
@@ -132,7 +133,7 @@ const CHECKBOX_CLASS = 'border-muted-foreground/50 size-[18px] rounded-[4px] bor
           </div>
 
           <template v-for="group in EXAMPLE_GROUPS" :key="group.key">
-            <div :class="cn(GRID_ROW_CLASS, 'border-border bg-muted border-t py-1.5 text-sm font-medium')">
+            <div :class="cn(GRID_ROW_CLASS, 'border-border bg-table-header border-t py-1.5 text-sm font-medium')">
               <span :class="CHECKBOX_CLASS" />
               <span class="flex items-center gap-2 text-xs font-semibold tracking-wide uppercase">
                 <ChevronDownIcon class="size-4" />

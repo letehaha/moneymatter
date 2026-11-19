@@ -1,4 +1,4 @@
-import { ASSET_CLASS, SECURITY_PROVIDER } from '@bt/shared/types';
+import { ASSET_CLASS, INVESTMENT_TRANSACTION_CATEGORY, SECURITY_PROVIDER } from '@bt/shared/types';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import Portfolios from '@models/investments/portfolios.model';
 import Securities from '@models/investments/securities.model';
@@ -174,5 +174,41 @@ describe('Holdings display currency (GET /investments/portfolios/:id/holdings)',
     expect(holding.displayCostBasis).toBeUndefined();
     expect(holding.displayUnrealizedGainValue).toBeUndefined();
     expect(holding.displayRealizedGainValue).toBeUndefined();
+  });
+
+  it('sums dividend income net of fees, with a display variant', async () => {
+    for (const [price, fees] of [
+      ['25', '5'],
+      ['12.5', '0'],
+    ] as const) {
+      await helpers.createInvestmentTransaction({
+        payload: {
+          portfolioId: portfolio.id,
+          securityId: security.id,
+          category: INVESTMENT_TRANSACTION_CATEGORY.dividend,
+          quantity: '1',
+          price,
+          fees,
+        },
+      });
+    }
+
+    await helpers.sleep(DEDUP_CACHE_MS);
+    const [nativeOnly] = await helpers.getHoldings({ portfolioId: portfolio.id, payload: {}, raw: true });
+    expect(nativeOnly!.dividendIncome).toBe('32.50');
+    expect(nativeOnly!.displayDividendIncome).toBeUndefined();
+
+    await helpers.addUserCurrencyByCode({ code: 'EUR', raw: true });
+    await helpers.updatePortfolio({ portfolioId: portfolio.id, payload: { displayCurrencyCode: 'EUR' } });
+    await helpers.sleep(DEDUP_CACHE_MS);
+
+    const [converted] = await helpers.getHoldings({ portfolioId: portfolio.id, payload: {}, raw: true });
+    expect(converted!.dividendIncome).toBe('32.50');
+    expect(parseFloat(converted!.displayDividendIncome!)).toBeCloseTo(32.5 * AED_TO_EUR, 1);
+  });
+
+  it('reports zero dividend income for a holding without dividends', async () => {
+    const [holding] = await helpers.getHoldings({ portfolioId: portfolio.id, payload: {}, raw: true });
+    expect(holding!.dividendIncome).toBe('0.00');
   });
 });

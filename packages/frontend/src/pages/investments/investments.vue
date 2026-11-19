@@ -79,8 +79,8 @@
                 <DropdownMenuTrigger as-child>
                   <UiButton
                     variant="ghost"
-                    size="icon"
-                    class="size-8 opacity-0 transition-opacity group-hover:opacity-100"
+                    size="icon-sm"
+                    class="opacity-0 transition-opacity group-hover:opacity-100"
                     :class="{ 'opacity-100': !portfolio.isEnabled }"
                   >
                     <MoreVerticalIcon class="size-4" />

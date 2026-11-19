@@ -1,6 +1,6 @@
 {
   "name": "budget-tracker-fe",
-  "version": "0.33.17",
+  "version": "0.33.20",
   "private": true,
   "type": "module",
   "scripts": {
@@ -20,7 +20,7 @@
     "knip": "npx knip"
   },
   "dependencies": {
-    "@better-auth/passkey": "^1.7.10",
+    "@better-auth/passkey": "^1.7.20",
     "@fontsource-variable/manrope": "^5.2.8",
     "@iconify/vue": "^5.0.0",
     "@internationalized/date": "^3.10.0",
@@ -38,7 +38,7 @@
     "@vuelidate/core": "^2.0.3",
     "@vuelidate/validators": "^2.0.4",
     "@vueuse/core": "^14.3.0",
-    "better-auth": "^1.7.10",
+    "better-auth": "^1.7.20",
     "class-variance-authority": "0.7.1",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",

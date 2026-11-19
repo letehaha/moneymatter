@@ -203,6 +203,8 @@ export interface DetectDuplicatesResponse {
    * Only present when at least one such row exists.
    */
   unpriceableRows?: UnpriceableRow[];
+  /** Rows dropped because they are dated from the bank seam of their target account on. */
+  skippedAfterBankSeam: number;
 }
 
 /**
@@ -237,6 +239,11 @@ export interface ExecuteImportRequest extends ImportExecuteRequestBase {
    * so the worker anchors dates to the same instants the preview computed.
    */
   timezone?: string;
+  /**
+   * `skippedAfterBankSeam` from the review step. The job fails when the worker drops a
+   * different count: a target's bank link changed after the review.
+   */
+  skippedAfterBankSeam?: number;
 }
 
 /**

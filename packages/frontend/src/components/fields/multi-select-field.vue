@@ -6,7 +6,8 @@
           :disabled="disabled"
           :class="
             cn(
-              'border-input bg-input-background not-dark:hover:bg-accent ring-offset-background focus-visible:ring-ring flex h-10 w-full items-center gap-2 overflow-hidden rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:h-9',
+              'border-input bg-input-background ring-offset-background focus-visible:ring-ring flex w-full items-center gap-2 overflow-hidden rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+              controlHeight[size],
               disabled && 'cursor-not-allowed opacity-50',
               triggerClass,
             )
@@ -61,6 +62,7 @@ import FieldError from '@/components/fields/components/field-error.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import MultiSelectTriggerContent from '@/components/fields/multi-select-trigger-content.vue';
 import { Button } from '@/components/lib/ui/button';
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { cn } from '@/lib/utils';
 import { SearchIcon } from '@lucide/vue';
@@ -108,6 +110,7 @@ withDefaults(
     errorMessage?: string;
     /** Values of the checked rows. */
     selected?: string[];
+    size?: ControlSize;
   }>(),
   {
     searchPlaceholder: undefined,
@@ -119,6 +122,7 @@ withDefaults(
     fieldLabel: undefined,
     errorMessage: undefined,
     selected: () => [],
+    size: 'default',
   },
 );
 

@@ -304,7 +304,7 @@ const summary = computed(() => {
                 <Button
                   variant="soft-destructive"
                   size="icon-sm"
-                  class="mr-1 size-9 shrink-0 sm:size-7"
+                  class="mr-1 shrink-0"
                   :aria-label="$t('transactionGroups.groupDialog.removeFromGroup')"
                   @click.stop="handleRemoveTransaction({ transactionId: tx.id })"
                 >

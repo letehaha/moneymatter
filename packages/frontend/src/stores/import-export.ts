@@ -37,6 +37,7 @@ import {
   classifyTransactionTypeValues,
   matchColumns,
 } from '@/pages/import-export/utils/auto-match';
+import { getCsvSeamTargets } from '@/pages/import-export/utils/bank-seam-targets';
 import { type ColumnMapping, buildInitialColumnMapping } from '@/pages/import-export/utils/build-initial-mapping';
 import { toColumnMappingConfig } from '@/pages/import-export/utils/column-mapping-config';
 import {
@@ -87,6 +88,7 @@ const emptyColumnMapping = (): ColumnMapping => ({
 
 export const useImportExportStore = defineStore('importExport', () => {
   const queryClient = useQueryClient();
+  const accountsStore = useAccountsStore();
 
   // Step 1: File upload. Several CSVs are merged into one logical file before
   // parsing, so the rest of the pipeline still works on a single `fileContent`.
@@ -153,6 +155,7 @@ export const useImportExportStore = defineStore('importExport', () => {
   const unmarkedDuplicateIndices = ref<Set<number>>(new Set());
   // Rows whose currency has no exchange rate; user must skip or abort before import proceeds.
   const unpriceableRows = ref<UnpriceableRow[]>([]);
+  const skippedAfterBankSeam = ref(0);
 
   // Step 5b: Duplicate-detection async state. Fires when the API call itself
   // fails (network, 5xx, etc.), as opposed to a successful response describing
@@ -228,7 +231,14 @@ export const useImportExportStore = defineStore('importExport', () => {
       }
     },
     // On failure the wizard stays on the results step, where the failed status callout is rendered.
-    onFailure: () => {},
+    // A bank-link change invalidates the reviewed rows, so clearing them makes the review step re-run detection.
+    onFailure: ({ failure }) => {
+      if (failure?.code !== 'bank-link-changed') return;
+      validRows.value = [];
+      invalidRows.value = [];
+      duplicates.value = [];
+      skippedAfterBankSeam.value = 0;
+    },
     onLostContact: () => goToStep('review'),
   });
   const progress = jobProgress.progress;
@@ -378,6 +388,13 @@ export const useImportExportStore = defineStore('importExport', () => {
     mapping?.action === 'skip' ||
     (mapping?.action === 'link-existing' && !!mapping.tagId);
 
+  const seamTargets = computed(() =>
+    getCsvSeamTargets({
+      account: columnMapping.value.account,
+      accountMapping: accountMapping.value,
+      accountsRecord: accountsStore.accountsRecord,
+    }),
+  );
   const skippedAccountNames = computed<string[]>(() =>
     Object.entries(accountMapping.value)
       .filter(([, value]) => value.action === 'skip')
@@ -472,7 +489,7 @@ export const useImportExportStore = defineStore('importExport', () => {
           currencyCode: account.currency || undefined,
         })),
       getTargets: () =>
-        useAccountsStore().importLinkableAccounts.map((account) => ({
+        accountsStore.importLinkableAccounts.map((account) => ({
           id: String(account.id),
           name: account.name,
           currencyCode: account.currencyCode,
@@ -672,6 +689,7 @@ export const useImportExportStore = defineStore('importExport', () => {
       duplicates.value = response.duplicates;
       unmarkedDuplicateIndices.value = new Set();
       unpriceableRows.value = response.unpriceableRows ?? [];
+      skippedAfterBankSeam.value = response.skippedAfterBankSeam;
 
       markStepCompleted('map');
       if (needsAccountResolution.value) markStepCompleted('resolve-accounts');
@@ -748,11 +766,13 @@ export const useImportExportStore = defineStore('importExport', () => {
         tagMapping: tagMappingPayload,
         skipDuplicateIndices,
         skipUnpriceableIndices,
-        recalculateBalance: recalculateBalance.value,
+        // A seam account's balance belongs to its bank feed, so the toggle can't apply to an all-seam import.
+        recalculateBalance: recalculateBalance.value && !seamTargets.value.isEveryTargetSeam,
         // Must match the timezone the detect-duplicates step sent — the worker
         // re-parses server-side and the user's skip indices are only valid if the
         // parse anchors dates to the same instants.
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        skippedAfterBankSeam: skippedAfterBankSeam.value,
       });
     } catch (error) {
       // The call never started the job — keep the user on `review` (not marked
@@ -909,6 +929,7 @@ export const useImportExportStore = defineStore('importExport', () => {
     validRows.value = [];
     invalidRows.value = [];
     duplicates.value = [];
+    skippedAfterBankSeam.value = 0;
     unmarkedDuplicateIndices.value = new Set();
     unpriceableRows.value = [];
     isDetectingDuplicates.value = false;
@@ -950,6 +971,7 @@ export const useImportExportStore = defineStore('importExport', () => {
     duplicates,
     unmarkedDuplicateIndices,
     unpriceableRows,
+    skippedAfterBankSeam,
     isDetectingDuplicates,
     detectError,
     progress,
@@ -972,6 +994,7 @@ export const useImportExportStore = defineStore('importExport', () => {
     isResolveAccountsStepValid,
     isResolveCategoriesStepValid,
     skippedAccountNames,
+    seamTargets,
     visibleCategoriesToResolve,
     visibleTagsToResolve,
     matchingCategoryPreset,

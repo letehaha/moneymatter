@@ -1,5 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { toUtcDateString } from '@common/utils/date';
 import BudgetPeriods from '@models/budget-periods.model';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
@@ -14,30 +15,29 @@ interface RawActivityRow {
   categoryId: RecordId | null;
   /** Decimal string: a SUM over the DECIMAL ref amounts, which pg hands back as text. */
   activity: string;
+  dayOffset?: number;
 }
 
-/**
- * Signed minor units (at `decimals`) per period x category, on the stats scope rules plus "the
- * account is in this plan". Expense is negative, income positive, so a line's
- * activity is usually <= 0. From `poolFrom` on, transfers crossing the plan
- * boundary and uncategorised money (`categoryId` NULL) count too; before it,
- * and on a plan without a pool, both stay out.
- *
- * ponytail: live fold from epoch on every read; add per-period closing
- * snapshots only if a plan view measurably gets slow.
- */
-export const getPlanActivity = async ({
+interface PlanDailyActivityRow extends FoldActivityRow {
+  /** Days from the period start, 0 for its first day. */
+  dayOffset: number;
+}
+
+const queryActivity = async ({
   plan,
-  periods,
+  from,
+  until,
+  byDay,
   decimals,
 }: {
   plan: BudgetPlans;
-  periods: BudgetPeriods[];
+  from: string | Date;
+  until: string | Date;
+  byDay: boolean;
   /** The plan currency's decimals. */
   decimals: number;
-}): Promise<FoldActivityRow[]> => {
-  const lastEnd = periods.at(-1)?.endDate;
-  if (!lastEnd) return [];
+}): Promise<RawActivityRow[]> => {
+  const dayOffset = `(x."time" AT TIME ZONE 'UTC')::date - p."startDate"`;
 
   const rows: RawActivityRow[] = await connection.sequelize.query(
     `
@@ -124,7 +124,7 @@ export const getPlanActivity = async ({
       GROUP BY u."txId", u."splitId", u."time", u."transactionType", u."categoryId", u."refAmount"
       HAVING u."refAmount" > SUM(u."shareRefAmount")
     )
-    SELECT p.id AS "periodId", x."categoryId",
+    SELECT p.id AS "periodId", x."categoryId",${byDay ? ` ${dayOffset} AS "dayOffset",` : ''}
            SUM(CASE WHEN x."transactionType" = 'expense' THEN -x."refAmount" ELSE x."refAmount" END) AS "activity"
     FROM attributed x
     JOIN "BudgetPeriods" p
@@ -133,24 +133,86 @@ export const getPlanActivity = async ({
      AND x."time" <  (p."endDate"::timestamp   AT TIME ZONE 'UTC')
     -- A NULL :poolFromUtc makes the comparison NULL, which keeps the row out.
     WHERE x."categoryId" IS NOT NULL OR x."time" >= :poolFromUtc
-    GROUP BY p.id, x."categoryId"
+    GROUP BY p.id, x."categoryId"${byDay ? `, ${dayOffset}` : ''}
     `,
     {
       type: QueryTypes.SELECT,
       replacements: {
         planId: plan.id,
         ownerId: plan.userId,
-        fromUtc: utcInstant({ date: plan.epochDate }),
-        toUtc: utcInstant({ date: lastEnd }),
+        fromUtc: utcInstant({ date: from }),
+        toUtc: utcInstant({ date: until }),
         poolFromUtc: plan.poolFrom ? utcInstant({ date: plan.poolFrom }) : null,
         decimals,
       },
     },
   );
+  return rows;
+};
 
+/**
+ * Signed minor units (at `decimals`) per period x category, on the stats scope rules plus "the
+ * account is in this plan". Expense is negative, income positive, so a line's
+ * activity is usually <= 0. From `poolFrom` on, transfers crossing the plan
+ * boundary and uncategorised money (`categoryId` NULL) count too; before it,
+ * and on a plan without a pool, both stay out.
+ *
+ * ponytail: live fold from epoch on every read; add per-period closing
+ * snapshots only if a plan view measurably gets slow.
+ */
+export const getPlanActivity = async ({
+  plan,
+  periods,
+  decimals,
+}: {
+  plan: BudgetPlans;
+  periods: BudgetPeriods[];
+  /** The plan currency's decimals. */
+  decimals: number;
+}): Promise<FoldActivityRow[]> => {
+  const lastEnd = periods.at(-1)?.endDate;
+  if (!lastEnd) return [];
+
+  const rows = await queryActivity({ plan, from: plan.epochDate, until: lastEnd, byDay: false, decimals });
   return rows.map((row) => ({
     periodId: row.periodId,
     categoryId: row.categoryId,
     activity: Money.fromDecimal(row.activity).toMinorUnits({ decimals }),
+  }));
+};
+
+/**
+ * `getPlanActivity` for contiguous `periods`, also split by day. Only their own
+ * transactions are scanned, so a refund of an original from before them keeps
+ * its own category.
+ */
+export const getPlanDailyActivity = async ({
+  plan,
+  periods,
+  decimals,
+}: {
+  plan: BudgetPlans;
+  periods: BudgetPeriods[];
+  /** The plan currency's decimals. */
+  decimals: number;
+}): Promise<PlanDailyActivityRow[]> => {
+  const first = periods[0];
+  const last = periods.at(-1);
+  if (!first || !last) return [];
+
+  const epoch = toUtcDateString(plan.epochDate);
+  const start = toUtcDateString(first.startDate);
+  const rows = await queryActivity({
+    plan,
+    from: start > epoch ? start : epoch,
+    until: last.endDate,
+    byDay: true,
+    decimals,
+  });
+  return rows.map((row) => ({
+    periodId: row.periodId,
+    categoryId: row.categoryId,
+    activity: Money.fromDecimal(row.activity).toMinorUnits({ decimals }),
+    dayOffset: Number(row.dayOffset),
   }));
 };

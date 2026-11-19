@@ -20,7 +20,7 @@
       />
     </div>
     <Select v-if="showTopN" v-model="topN">
-      <SelectTrigger class="h-8 w-full gap-2">
+      <SelectTrigger size="xs" class="w-full gap-2">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

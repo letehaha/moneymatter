@@ -1,7 +1,7 @@
 <template>
   <Collapsible v-if="shouldRender" v-model:open="isOpen" class="mt-10">
     <CollapsibleTrigger
-      class="hover:bg-accent/40 group bg-card/40 flex w-full items-center justify-between gap-3 rounded-md border border-dashed px-4 py-3 transition-colors"
+      class="hover:bg-hover group bg-card/40 flex w-full items-center justify-between gap-3 rounded-md border border-dashed px-4 py-3 transition-colors"
     >
       <div class="flex items-center gap-2">
         <Trash2Icon class="text-muted-foreground size-4" />
@@ -34,8 +34,8 @@
             </div>
           </CardHeader>
           <CardContent class="flex gap-2 p-4 pt-1">
-            <div class="bg-muted h-8 flex-1 animate-pulse rounded" />
-            <div class="bg-muted h-8 flex-1 animate-pulse rounded" />
+            <div class="bg-muted h-9 flex-1 animate-pulse rounded" />
+            <div class="bg-muted h-9 flex-1 animate-pulse rounded" />
           </CardContent>
         </Card>
       </div>
@@ -72,7 +72,7 @@
               :disabled="isRowBusy(portfolio.id)"
               @click="onRestore(portfolio.id)"
             >
-              <Undo2Icon class="mr-2 size-4" />
+              <Undo2Icon class="size-4" />
               {{
                 pendingAction === 'restore' && pendingId === portfolio.id
                   ? $t('investments.trash.restoringButton')
@@ -86,7 +86,7 @@
               :disabled="isRowBusy(portfolio.id)"
               @click="openPurgeConfirm(portfolio)"
             >
-              <Trash2Icon class="mr-2 size-4" />
+              <Trash2Icon class="size-4" />
               {{
                 pendingAction === 'purge' && pendingId === portfolio.id
                   ? $t('investments.trash.purgingButton')

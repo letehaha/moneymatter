@@ -220,6 +220,9 @@ const createInvestmentTransactionImpl = async (params: CreateTxParams) => {
     });
   }
 
+  // `recalculateHolding` saves through its own instance; refresh the caller's so its next sell guard sees the new quantity.
+  await preloadedHolding?.reload();
+
   return newTx;
 };
 

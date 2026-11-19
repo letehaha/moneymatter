@@ -17,6 +17,13 @@ import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
 import {
+  assertBankLinksUnchanged,
+  dropFromBankSeam,
+  excludeSeamAccounts,
+  linkedAccountIdByName,
+  loadSeamStarts,
+} from '@services/import-export/core/bank-seam';
+import {
   getAccountDecimals,
   roundToAccountDecimals,
 } from '@services/import-export/core/duplicates/get-account-decimals';
@@ -126,6 +133,7 @@ async function executeBudgetBakersWalletImportImpl({
   const summary: BudgetBakersWalletImportSummary & {
     accountBalanceChanges: AccountBalanceChange[];
     merged: number;
+    skippedAfterBankSeam: number;
   } = {
     accountsCreated: 0,
     accountsLinked: 0,
@@ -138,18 +146,33 @@ async function executeBudgetBakersWalletImportImpl({
     outOfWalletImported: 0,
     merged: 0,
     duplicatesSkipped: 0,
+    skippedAfterBankSeam: 0,
     errors: [],
     accountBalanceChanges: [],
   };
 
   const skipSet = new Set(skipDuplicateIndices);
 
+  const { seamStartByName, seamStartByAccountId } = await loadSeamStarts({
+    userId,
+    accountIdByName: linkedAccountIdByName({ accountMapping: importableMapping }),
+  });
+
   // Drop a transfer when either leg lands on a skipped account: writing the
   // surviving leg alone would reference an account that was never resolved.
-  const importableTransactions = parsed.transactions.filter((tx) => !skippedAccountNames.has(tx.accountName));
-  const transfersToWrite = parsed.transfers.filter(
-    (xfer) => !skippedAccountNames.has(xfer.sourceAccountName) && !skippedAccountNames.has(xfer.destinationAccountName),
-  );
+  const {
+    rows: importableTransactions,
+    transfers: transfersToWrite,
+    droppedCount,
+  } = dropFromBankSeam({
+    seamStartByName,
+    rows: parsed.transactions.filter((tx) => !skippedAccountNames.has(tx.accountName)),
+    transfers: parsed.transfers.filter(
+      (xfer) =>
+        !skippedAccountNames.has(xfer.sourceAccountName) && !skippedAccountNames.has(xfer.destinationAccountName),
+    ),
+  });
+  summary.skippedAfterBankSeam = droppedCount;
 
   // Progress total counts only rows that will actually be written: transactions
   // not flagged as duplicates, plus every paired transfer. Skipped rows never
@@ -223,6 +246,7 @@ async function executeBudgetBakersWalletImportImpl({
       return mapping?.action === 'create-new' ? mapping.currencyCode : undefined;
     },
     resolveFxDate: () => initialBalanceFxDate,
+    allowSeamTargets: true,
   });
   summary.accountsCreated = accountsCreated;
 
@@ -243,9 +267,12 @@ async function executeBudgetBakersWalletImportImpl({
     importDetails,
     createdAccountIds: createdAccounts.map((account) => account.accountId),
   });
+  await assertBankLinksUnchanged({ userId, accountIds: capturedAccountIds, seamStartByAccountId });
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
 
-  const plannedMatchAccountIds = await selectAccountsWithPlannedRows({ accountIds: capturedAccountIds });
+  const plannedMatchAccountIds = await selectAccountsWithPlannedRows({
+    accountIds: excludeSeamAccounts({ accountIds: capturedAccountIds, seamStartByAccountId }),
+  });
 
   // Phase 3: categories. Resolve each mapped category to an id via the shared
   // CSV resolver: link-existing verifies ownership, create-new finds-or-creates

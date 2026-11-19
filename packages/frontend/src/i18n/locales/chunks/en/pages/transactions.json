@@ -123,6 +123,10 @@
       "tagModeAddHint": "Keeps current tags and adds these.",
       "tagModeReplaceHint": "Removes all current tags, then adds these.",
       "tagModeRemoveHint": "Removes only these tags. Other tags stay.",
+      "excludeFromStatsHint": "On keeps the selected transactions out of reports, dashboard widgets, budgets and trackers. Off brings them back. Balances aren't affected.",
+      "excludeFromStatsDontChange": "Don't change stats",
+      "confirmExcludeFromStats": "Exclude from stats",
+      "confirmIncludeInStats": "Include in stats",
       "totals": {
         "income": "Income",
         "expense": "Expense",
@@ -256,7 +260,7 @@
     },
     "bulkDelete": {
       "button": "Delete",
-      "externalTooltip": "Selection contains bank-synced transactions, which cannot be deleted.",
+      "externalTooltip": "Selection contains transactions synced from your bank, or dated on or after the day the account was linked, which cannot be deleted.",
       "confirmButton": "Delete",
       "confirmTitle": "Delete {count} transactions?",
       "confirmDescription": "They stay in Trash for 30 days and you can restore them until then. Transfers move both sides.",
@@ -265,10 +269,15 @@
       "noneDeletedMessage": "Nothing moved to Trash: 1 transaction is linked to a payment, portfolio or venture. | Nothing moved to Trash: {count} transactions are linked to a payment, portfolio or venture.",
       "unexpectedError": "Failed to delete transactions. Please try again."
     },
+    "bankSeamDateError": "This account has been synced with your bank since {date}. Pick an earlier date.",
     "inlineEdit": {
       "saveFailed": "Couldn't save {field}. Try again.",
       "bankTitle": "Set by your bank",
       "bankDescription": "Date, account and amount sync from your bank connection. Everything else on this transaction is yours to change.",
+      "bankAccountTitle": "Connected to a bank",
+      "bankAccountDescription": "This account is connected to a bank, so the transaction can't be moved to another account. Everything else on it is yours to change.",
+      "manualAfterLinkTitle": "Locked since the bank link",
+      "manualAfterLinkDescription": "This account has been synced with your bank since {date}, so this transaction can't be deleted and its date and amount can no longer change.",
       "managedTitle": "Managed elsewhere",
       "managedDescription": "This transaction belongs to a portfolio, investment, vehicle or loan. Change it from its own page so balances stay correct.",
       "gotIt": "Got it",

@@ -61,21 +61,25 @@ const nextPaymentDate = ({ subscription }: { subscription: ScheduledSubscription
     openPeriodDueDate: subscription.periods?.[0]?.dueDate ?? null,
   });
 
-/** Every payment date in `[from, until)`, stepping from the next one. Needs `scheduleInclude` loaded. */
-export const paymentDatesInRange = ({
+type StepSchedule = Pick<Subscriptions, 'endDate' | 'frequency' | 'intervalUnit' | 'intervalCount'>;
+
+const datesInRange = ({
   subscription,
+  first,
+  anchorDay,
   from,
   until,
 }: {
-  subscription: ScheduledSubscription & Pick<Subscriptions, 'anchorDay' | 'endDate'>;
+  subscription: StepSchedule;
+  first: string | null;
+  anchorDay: number;
   from: string;
   until: string;
 }): string[] => {
-  const anchorDay = subscription.anchorDay ?? Number(subscription.startDate.slice(8, 10));
   const dates: string[] = [];
 
   for (
-    let date = nextPaymentDate({ subscription });
+    let date = first;
     date !== null && date < until && (!subscription.endDate || date <= subscription.endDate);
     date = calculateNextDueDate({
       currentDueDate: date,
@@ -89,6 +93,44 @@ export const paymentDatesInRange = ({
   }
 
   return dates;
+};
+
+/** Every payment date in `[from, until)`, stepping from the next one. Needs `scheduleInclude` loaded. */
+export const paymentDatesInRange = ({
+  subscription,
+  from,
+  until,
+}: {
+  subscription: ScheduledSubscription & Pick<Subscriptions, 'anchorDay' | 'endDate'>;
+  from: string;
+  until: string;
+}): string[] =>
+  datesInRange({
+    subscription,
+    first: nextPaymentDate({ subscription }),
+    anchorDay: subscription.anchorDay ?? Number(subscription.startDate.slice(8, 10)),
+    from,
+    until,
+  });
+
+/** Every date the schedule falls due in `[from, until)`, paid or not, stepping from its first due date. */
+export const scheduleDatesInRange = ({
+  subscription,
+  from,
+  until,
+}: {
+  subscription: StepSchedule & Pick<Subscriptions, 'startDate' | 'dueDate' | 'anchorDay'>;
+  from: string;
+  until: string;
+}): string[] => {
+  const first = subscription.dueDate ?? subscription.startDate;
+  return datesInRange({
+    subscription,
+    first,
+    anchorDay: subscription.anchorDay ?? Number(first.slice(8, 10)),
+    from,
+    until,
+  });
 };
 
 interface GetUpcomingPaymentsParams {

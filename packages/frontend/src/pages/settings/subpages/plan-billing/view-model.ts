@@ -205,8 +205,11 @@ export const buildPlanBillingView = ({
       return {
         tone: null,
         title: tr('current.lifetime', { plan: tr(`plans.${plan}`) }),
-        badge: { variant: 'success', label: tr('status.earlyAdopter') },
-        meta: [tr('current.lifetimeMeta'), tr('current.seats', entitlements.seats)],
+        badge: { variant: 'success', label: tr(isEarlyAdopter ? 'status.earlyAdopter' : 'status.active') },
+        meta: [
+          tr(isEarlyAdopter ? 'current.lifetimeMeta' : 'current.lifetimePurchaseMeta'),
+          tr('current.seats', entitlements.seats),
+        ],
         note: isEarlyAdopter ? tr('current.earlyAdopterNote') : '',
       };
     }

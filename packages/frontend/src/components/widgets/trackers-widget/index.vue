@@ -124,9 +124,7 @@ const retry = () => {
           v-for="row in rows"
           :key="row.tracker.id"
           :to="{ name: ROUTES_NAMES.plannedTrackerDetails, params: { id: row.tracker.id } }"
-          :class="
-            cn('hover:bg-foreground/5 -mx-2 block rounded-md px-2 py-2 transition-colors', row.ended && 'opacity-60')
-          "
+          :class="cn('hover:bg-hover -mx-2 block rounded-md px-2 py-2 transition-colors', row.ended && 'opacity-60')"
         >
           <span class="flex min-w-0 items-baseline justify-between gap-3">
             <span class="flex min-w-0 items-baseline gap-2">

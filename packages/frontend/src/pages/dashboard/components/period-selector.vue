@@ -12,7 +12,7 @@
     >
       <template #trigger="{ triggerText }">
         <Button variant="ghost" size="sm" class="min-w-48 font-medium">
-          <CalendarIcon class="mr-1.5 size-3.5" />
+          <CalendarIcon class="size-3.5" />
           {{ triggerText }}
         </Button>
       </template>

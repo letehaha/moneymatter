@@ -46,7 +46,7 @@
                 'flex flex-1 items-center justify-start gap-2 overflow-hidden rounded-md px-3 py-2 text-sm font-medium',
                 isInternalCategory(cat)
                   ? 'cursor-default opacity-70'
-                  : 'hover:bg-accent hover:text-accent-foreground cursor-pointer',
+                  : 'hover:bg-hover hover:text-accent-foreground cursor-pointer',
               ])
             "
             @click="!isInternalCategory(cat) && handleCategoryClick(cat)"
@@ -67,7 +67,7 @@
 
           <ResponsiveMenu v-if="showActions && !isInternalCategory(cat)" v-model:open="menuOpenState[cat.id]">
             <template #trigger>
-              <Button variant="ghost" size="icon-sm" class="size-8 shrink-0" title="Actions" @click.stop>
+              <Button variant="ghost" size="icon-sm" class="shrink-0" title="Actions" @click.stop>
                 <MoreVerticalIcon class="size-4" />
               </Button>
             </template>

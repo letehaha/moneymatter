@@ -9,6 +9,7 @@
     :search-placeholder="$t('fields.payeeMultiSelect.searchPlaceholder')"
     :hide-clear-button="hideClearButton"
     :trigger-class="triggerClass"
+    :size="size"
     :selected="payeeIds"
     content-class="min-w-64"
     @clear="clearSelection"
@@ -68,6 +69,7 @@ import {
   type SelectedPayee,
   hydrateSelectedPayees,
 } from '@/components/fields/payee-multi-select-field.helpers';
+import { type ControlSize } from '@/components/lib/ui/control-size';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { useNotificationCenter } from '@/components/notification-center';
 import { usePayees, usePayeesByIds } from '@/composable/data-queries/payees';
@@ -94,6 +96,7 @@ const props = defineProps<{
   triggerClass?: string;
   /** Offer a "Blank" pseudo-option (`BLANK_FILTER_VALUE`) matching transactions without a payee. */
   allowBlank?: boolean;
+  size?: ControlSize;
 }>();
 
 const emit = defineEmits<{

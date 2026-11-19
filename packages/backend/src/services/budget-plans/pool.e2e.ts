@@ -624,46 +624,53 @@ describe('Budget plan pool: account boundary', () => {
     });
   });
 
-  it('counts a credit card by its debt, not its limit', async () => {
-    const card = await helpers.createAccount({
-      payload: helpers.buildAccountPayload({
-        accountCategory: ACCOUNT_CATEGORIES.creditCard,
-        initialBalance: 2000,
-        creditLimit: 3000,
-      }),
-      raw: true,
-    });
-    const fun = await helpers.addCustomCategory({
-      name: 'Fun',
-      color: '#333333',
-      raw: true,
-    });
-    const { plan } = await helpers.createBudgetPlan({
-      payload: {
-        accountIds: [card.id],
-        epochDate: helpers.budgetPeriodStart({ monthsAgo: 1 }),
-        poolEnabled: true,
-      },
-      raw: true,
-    });
-    const periods = await helpers.listBudgetPlanPeriods({
-      planId: plan.id,
-      raw: true,
-    });
+  it.each([
+    { includeCreditLimitInStats: true, leftOver: -1000, cash: -1100 },
+    { includeCreditLimitInStats: false, leftOver: 2000, cash: 1900 },
+  ])(
+    'counts a credit card net of its limit only when includeCreditLimitInStats=$includeCreditLimitInStats',
+    async ({ includeCreditLimitInStats, leftOver, cash }) => {
+      await helpers.patchUserSettings({ patch: { includeCreditLimitInStats }, raw: true });
+      const card = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({
+          accountCategory: ACCOUNT_CATEGORIES.creditCard,
+          initialBalance: 2000,
+          creditLimit: 3000,
+        }),
+        raw: true,
+      });
+      const fun = await helpers.addCustomCategory({
+        name: 'Fun',
+        color: '#333333',
+        raw: true,
+      });
+      const { plan } = await helpers.createBudgetPlan({
+        payload: {
+          accountIds: [card.id],
+          epochDate: helpers.budgetPeriodStart({ monthsAgo: 1 }),
+          poolEnabled: true,
+        },
+        raw: true,
+      });
+      const periods = await helpers.listBudgetPlanPeriods({
+        planId: plan.id,
+        raw: true,
+      });
 
-    await tx({
-      accountId: card.id,
-      categoryId: fun.id,
-      amount: 100,
-      time: at({ period: periods[0]! }),
-      transactionType: TRANSACTION_TYPES.expense,
-    });
+      await tx({
+        accountId: card.id,
+        categoryId: fun.id,
+        amount: 100,
+        time: at({ period: periods[0]! }),
+        transactionType: TRANSACTION_TYPES.expense,
+      });
 
-    const result = await pool({ planId: plan.id, period: periods[0]! });
-    expect(result.flow.leftOver).toBe(-1000);
-    expect(result.readyToAssign).toBe(-1100);
-    expect(result.balance).toEqual({ cash: -1100, inLines: 0, drift: 0 });
-  });
+      const result = await pool({ planId: plan.id, period: periods[0]! });
+      expect(result.flow.leftOver).toBe(leftOver);
+      expect(result.readyToAssign).toBe(cash);
+      expect(result.balance).toEqual({ cash, inLines: 0, drift: 0 });
+    },
+  );
 });
 
 describe('Budget plan pool: enabling on a plan with caps history', () => {

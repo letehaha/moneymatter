@@ -1,14 +1,14 @@
 <template>
-  <div class="border-border inline-flex rounded-md border">
+  <div class="border-border inline-flex h-10 rounded-md border">
     <button
       v-for="option in options"
       :key="option.value"
       type="button"
       :class="[
-        'flex h-9 items-center justify-center px-3 text-sm transition-colors',
+        'flex h-full items-center justify-center px-3 text-sm transition-colors',
         'first:rounded-l-md last:rounded-r-md',
         'border-border border-r last:border-r-0',
-        modelValue === option.value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent/50',
+        modelValue === option.value ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-hover',
       ]"
       :title="option.label"
       @click="emit('update:modelValue', option.value)"

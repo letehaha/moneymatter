@@ -25,6 +25,7 @@ export const executeImportController = createController(
       defaultAccountId: recordId().optional(),
       defaultCategoryId: recordId().optional(),
       timezone: z.string().optional(),
+      skippedAfterBankSeam: z.number().int().nonnegative().optional(),
       // Shared balance-recalculation fields (`recalculateBalance`), tied to
       // `ImportExecuteRequestBase` by a drift guard in `./shared-schemas`.
       ...importExecuteRequestBaseSchema.shape,
@@ -44,6 +45,7 @@ export const executeImportController = createController(
       defaultCategoryId,
       timezone,
       recalculateBalance,
+      skippedAfterBankSeam,
     } = body;
 
     const jobId = await queueCsvImport({
@@ -60,6 +62,7 @@ export const executeImportController = createController(
       defaultCategoryId,
       timezone,
       recalculateBalance,
+      skippedAfterBankSeam,
     });
 
     return {

@@ -45,10 +45,8 @@
         "exclude": "Исключить",
         "only": "Только"
       },
-      "noteIncludes": {
-        "label": "Примечание содержит (через запятую):",
-        "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Поиск в примечаниях"
+      "search": {
+        "placeholder": "Search notes, payees and tags"
       },
       "tags": {
         "allTags": "Все теги",
@@ -68,8 +66,7 @@
         "type": "Тип",
         "tags": "Теги",
         "budgets": "Бюджеты",
-        "amount": "Диапазон суммы",
-        "note": "Примечания"
+        "amount": "Диапазон суммы"
       },
       "transferNature": {
         "label": "Виды переводов",
@@ -126,6 +123,10 @@
       "tagModeAddHint": "Keeps current tags and adds these.",
       "tagModeReplaceHint": "Removes all current tags, then adds these.",
       "tagModeRemoveHint": "Removes only these tags. Other tags stay.",
+      "excludeFromStatsHint": "On keeps the selected transactions out of reports, dashboard widgets, budgets and trackers. Off brings them back. Balances aren't affected.",
+      "excludeFromStatsDontChange": "Don't change stats",
+      "confirmExcludeFromStats": "Exclude from stats",
+      "confirmIncludeInStats": "Include in stats",
       "totals": {
         "income": "Income",
         "expense": "Expense",
@@ -194,6 +195,10 @@
         "createFailed": "Не удалось создать группу",
         "addFailed": "Не удалось добавить транзакции в группу"
       }
+    },
+    "excludeFromStats": {
+      "label": "Excluded from statistics",
+      "tooltip": "Kept out of the reports, dashboard widgets, budget plans and trackers. It still counts toward your balance and stays in the transaction list."
     },
     "planned": {
       "label": "Запланировано",

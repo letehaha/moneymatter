@@ -1,9 +1,15 @@
 import { ACCOUNT_TYPES } from '@bt/shared/types';
 import { NotFoundError, ValidationError } from '@js/errors';
-import Accounts, { getAccountById } from '@models/accounts.model';
+import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
+import { connection } from '@models/connection';
 import { findTransactions, updateTransactions } from '@models/transactions-query';
+import { runPendingLinkAbsorb } from '@services/accounts/absorb-link-residual';
+import { lockAccountRow } from '@services/accounts/lock-account-row';
+import { getSeamStart } from '@services/accounts/seam';
+import { clearSeam } from '@services/balances/revalue-balance-history.service';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertNoUnfinishedImport } from '@services/import-export/core/unfinished-import';
 import { Sequelize } from 'sequelize';
 
 interface UnlinkAccountFromBankConnectionPayload {
@@ -12,17 +18,40 @@ interface UnlinkAccountFromBankConnectionPayload {
 }
 
 /**
- * Unlinks an account from its bank connection and converts it to a system account.
- * This operation:
- * 1. Converts the account type to 'system'
- * 2. Stores connection history in account's externalData
- * 3. Updates all transactions to 'system' type and stores their original IDs in externalData
- * 4. Clears the bankDataProviderConnectionId
+ * Under a seam every live import row sits in the opening balance. Restating each batch's
+ * effect as −Σ its live rows lets an undo after unlink leave `currentBalance` where the bank left it.
+ */
+const restateImportEffectsAtSeam = async ({ accountId }: { accountId: string }) => {
+  await connection.sequelize.query(
+    `UPDATE "ImportBatchAccountEffects" SET "absorbedAmount" = 0 WHERE "accountId" = :accountId`,
+    {
+      replacements: { accountId },
+    },
+  );
+  await connection.sequelize.query(
+    `INSERT INTO "ImportBatchAccountEffects" ("importBatchId", "accountId", "absorbedAmount", "createdByImport")
+     SELECT b."id", t."accountId",
+            -SUM(CASE WHEN t."transactionType" = 'income' THEN t."amount" ELSE -t."amount" END), false
+       FROM real_transactions t
+       JOIN "ImportBatches" b
+         ON b."userId" = t."userId"
+        AND lower(b."batchId"::text) = lower(t."externalData"->'importDetails'->>'batchId')
+      WHERE t."accountId" = :accountId
+      GROUP BY b."id", t."accountId"
+     ON CONFLICT ("importBatchId", "accountId") DO UPDATE SET "absorbedAmount" = EXCLUDED."absorbedAmount"`,
+    { replacements: { accountId } },
+  );
+};
+
+/**
+ * Converts a bank-linked account back to a manual one: settles a pending link absorb, rebuilds
+ * the history before the link day and drops S, then retypes the account and its rows to `system`,
+ * recording the previous connection and each synced row's original id.
  */
 export const unlinkAccountFromBankConnection = withTransaction(
   async ({ accountId, userId }: UnlinkAccountFromBankConnectionPayload) => {
-    // Fetch the account (owner-scoped: the where-clause can't match another user's row)
-    const account = await getAccountById({ id: accountId, userId });
+    // Locked: a deferred link absorb committing mid-unlink would stamp a seam this read misses.
+    let account = await lockAccountRow({ accountId, userId, noKey: true });
 
     if (!account) {
       throw new NotFoundError({
@@ -37,11 +66,20 @@ export const unlinkAccountFromBankConnection = withTransaction(
       });
     }
 
+    await assertNoUnfinishedImport({ userId });
+
     // Get the bank connection details before unlinking
     const bankConnection = await BankDataProviderConnections.findByPk(account.bankDataProviderConnectionId);
 
+    // A link whose queued first sync never settled its absorb settles it now, while the account
+    // is still bank-typed, so the seam branch below rebuilds the history before the link day.
+    if (account.externalData?.bankConnection?.balanceReconciliation?.pendingAbsorb && !getSeamStart({ account })) {
+      await runPendingLinkAbsorb({ accountId, userId });
+      account = (await lockAccountRow({ accountId, userId, noKey: true }))!;
+    }
+
     // Prepare connection history for account's externalData
-    const existingExternalData = (account.externalData as Record<string, unknown>) || {};
+    const existingExternalData = account.externalData ?? {};
     const updatedAccountExternalData = {
       ...existingExternalData,
       connectionHistory: {
@@ -58,6 +96,12 @@ export const unlinkAccountFromBankConnection = withTransaction(
     // Read before the account turns `system`. Provider-type strings equal
     // account-type strings, so the account type stands in for a missing connection row.
     const importedFrom = bankConnection?.providerType || account.type;
+
+    // Before the retype: a `system` account may not hold S.
+    if (account.seamBalance != null) {
+      if (getSeamStart({ account })) await restateImportEffectsAtSeam({ accountId });
+      await clearSeam({ accountId });
+    }
 
     // Update the account: convert to system type and clear bank-related fields
     await account.update({

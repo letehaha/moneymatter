@@ -314,6 +314,46 @@ describe('Bulk update transactions controller', () => {
     });
   });
 
+  describe('excludeFromStats updates', () => {
+    it('sets and clears excludeFromStats on the selected transactions only', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async () => {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id }),
+          raw: true,
+        });
+        return tx;
+      };
+      const tx1 = await createTx();
+      const tx2 = await createTx();
+      const untouched = await createTx();
+
+      const excluded = await helpers.bulkUpdateTransactions({
+        payload: { transactionIds: [tx1!.id, tx2!.id], excludeFromStats: true },
+        raw: true,
+      });
+      expect(excluded.updatedCount).toBe(2);
+
+      const flagsAfterExclude = new Map(
+        (await helpers.getTransactions({ raw: true }))!.map((t) => [t.id, t.excludeFromStats]),
+      );
+      expect(flagsAfterExclude.get(tx1!.id)).toBe(true);
+      expect(flagsAfterExclude.get(tx2!.id)).toBe(true);
+      expect(flagsAfterExclude.get(untouched!.id)).toBe(false);
+
+      await helpers.bulkUpdateTransactions({
+        payload: { transactionIds: [tx1!.id], excludeFromStats: false },
+        raw: true,
+      });
+
+      const flagsAfterInclude = new Map(
+        (await helpers.getTransactions({ raw: true }))!.map((t) => [t.id, t.excludeFromStats]),
+      );
+      expect(flagsAfterInclude.get(tx1!.id)).toBe(false);
+      expect(flagsAfterInclude.get(tx2!.id)).toBe(true);
+    });
+  });
+
   describe('validation', () => {
     it('rejects invalid payloads (no update fields, empty ids, missing category, missing transactions)', async () => {
       const account = await helpers.createAccount({ raw: true });

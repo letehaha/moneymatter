@@ -17,10 +17,7 @@ const { displayBalance } = useAccountDisplayBalance({ account: toRef(() => props
 <template>
   <label
     :class="
-      cn(
-        'flex items-center gap-3 px-3 py-2',
-        disabled ? 'cursor-default opacity-60' : 'hover:bg-muted/50 cursor-pointer',
-      )
+      cn('flex items-center gap-3 px-3 py-2', disabled ? 'cursor-default opacity-60' : 'hover:bg-hover cursor-pointer')
     "
   >
     <Checkbox :model-value="checked" :disabled="disabled" @update:model-value="emit('toggle')" />

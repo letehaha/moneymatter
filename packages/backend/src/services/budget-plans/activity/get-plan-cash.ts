@@ -1,4 +1,4 @@
-import { RecordId } from '@bt/shared/types';
+import { type MinorUnits, RecordId } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import BudgetPlans from '@models/budget-plans.model';
@@ -7,6 +7,7 @@ import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model
 import { buildDailyPairRateResolver, toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
 import { getCreditLimitMinorByAccount } from '@services/stats/get-credit-limit-adjustment';
 import { resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
+import { getUserSettings } from '@services/user-settings/get-user-settings';
 import { QueryTypes } from 'sequelize';
 
 import { utcInstant } from '../date-ranges';
@@ -58,7 +59,8 @@ const storedRate = async ({
 /**
  * Base-currency minor units at `decimals` (converted from the DECIMAL columns at the query boundary) held in the plan's accounts just before the `opening` and
  * `closing` days start ('yyyy-MM-dd', UTC): the current balance minus every
- * transaction from then on, a card net of its credit limit. A foreign account's
+ * transaction from then on, a card net of its credit limit when the user's
+ * include-credit-limits setting is on. A foreign account's
  * opening is valued at the opening day's rate, so a later rate move shows as drift.
  *
  * ponytail: every attached account counts as attached since the epoch; an
@@ -78,7 +80,11 @@ export const getPlanCash = async ({
 }): Promise<{ opening: number; closing: number }> => {
   const openingUtc = utcInstant({ date: opening });
   const [limits, baseCurrency, rows] = await Promise.all([
-    getCreditLimitMinorByAccount({ userId: plan.userId, accountScope: 'owned', decimals }),
+    getUserSettings({ userId: plan.userId }).then((settings) =>
+      settings.includeCreditLimitInStats
+        ? getCreditLimitMinorByAccount({ userId: plan.userId, accountScope: 'owned', decimals })
+        : new Map<RecordId, MinorUnits>(),
+    ),
     getBaseCurrency({ userId: plan.userId }),
     connection.sequelize.query(
       `

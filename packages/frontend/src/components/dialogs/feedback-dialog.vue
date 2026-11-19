@@ -50,7 +50,7 @@
         :href="link.href"
         target="_blank"
         rel="noopener noreferrer"
-        class="border-border hover:border-primary/40 hover:bg-accent group flex items-start gap-3 rounded-lg border p-4 transition-colors"
+        class="border-border hover:border-primary/40 hover:bg-hover group flex items-start gap-3 rounded-lg border p-4 transition-colors"
       >
         <component
           :is="link.icon"

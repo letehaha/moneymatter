@@ -26,6 +26,7 @@ interface BulkUpdateParams {
   // accounts owned by the caller — shared-account rows are silently skipped to
   // match the per-owner Payee namespace.
   payeeId?: string | null;
+  excludeFromStats?: boolean;
 }
 
 interface BulkUpdateResult {
@@ -42,14 +43,16 @@ export const bulkUpdate = withTransaction(
     tagMode = 'add',
     note,
     payeeId,
+    excludeFromStats,
   }: BulkUpdateParams): Promise<BulkUpdateResult> => {
     // Validate at least one field is being updated
     const hasCategory = categoryId !== undefined;
     const hasTags = tagIds !== undefined;
     const hasNote = note !== undefined;
     const hasPayee = payeeId !== undefined;
+    const hasExcludeFromStats = excludeFromStats !== undefined;
 
-    if (!hasCategory && !hasTags && !hasNote && !hasPayee) {
+    if (!hasCategory && !hasTags && !hasNote && !hasPayee && !hasExcludeFromStats) {
       throw new ValidationError({
         message: 'At least one field must be provided for bulk update',
       });
@@ -213,6 +216,14 @@ export const bulkUpdate = withTransaction(
       );
     }
 
+    if (hasExcludeFromStats) {
+      await Transactions.updateTransactions(
+        { excludeFromStats },
+        { userId, id: { [Op.in]: allTransactionIds } },
+        { individualHooks: false },
+      );
+    }
+
     // Handle tags update separately (many-to-many relationship)
     if (hasTags) {
       const fullTransactions = await Transactions.default.findAll({
@@ -254,12 +265,15 @@ export const bulkUpdate = withTransaction(
 
     await syncLegsOfMains({ mainIds: allTransactionIds });
 
-    // Return the appropriate count based on what was updated. Category remains
-    // the primary signal when present; otherwise prefer the Payee-restricted
-    // set (owned accounts only) when Payee was the trigger; fall back to the
-    // full set for tag/note-only updates.
+    // Return the appropriate count based on what was updated. excludeFromStats
+    // is written to every row, so it reports the full set; otherwise Category
+    // remains the primary signal when present; then the Payee-restricted set
+    // (owned accounts only) when Payee was the trigger; fall back to the full
+    // set for tag/note-only updates.
     let updatedIds: string[];
-    if (hasCategory) {
+    if (hasExcludeFromStats) {
+      updatedIds = allTransactionIds;
+    } else if (hasCategory) {
       updatedIds = nonTransferIds;
     } else if (hasPayee && !hasTags && !hasNote) {
       updatedIds = ownedAccountTxIds;

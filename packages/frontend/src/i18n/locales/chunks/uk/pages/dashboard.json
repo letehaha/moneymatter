@@ -452,6 +452,8 @@
       "payAction": "Позначити як сплачено",
       "listTitle": "Найближчі",
       "dueCount": "До сплати: {count}",
+      "daysLate": "{count} дн. простр.",
+      "overdueCount": "Прострочено: {count}",
       "nothingDue": "Найближчі 3 дні без платежів",
       "overdueHint": "Прострочено з {date}",
       "dueSoonHint": "Строк оплати протягом 3 днів",

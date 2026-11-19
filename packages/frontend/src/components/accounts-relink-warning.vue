@@ -72,7 +72,7 @@
             v-for="account in accountsNeedingRelink"
             :key="account.id"
             :to="{ name: ROUTES_NAMES.account, params: { id: account.id } }"
-            class="hover:bg-accent flex items-center gap-3 rounded-md p-2 transition-colors"
+            class="hover:bg-hover flex items-center gap-3 rounded-md p-2 transition-colors"
           >
             <div
               class="bg-warning/20 text-warning-foreground flex size-8 shrink-0 items-center justify-center rounded-full"

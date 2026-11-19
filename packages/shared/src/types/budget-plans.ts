@@ -148,6 +148,21 @@ export interface BudgetPlanPeriodViewLine {
   available: number;
   carryPolicy: BudgetPlanCarryPolicy;
   goal: BudgetPlanPeriodViewLineGoal | null;
+  /** Current period only, and only for a funded line; `null` otherwise. */
+  pace: BudgetPlanLinePace | null;
+}
+
+/**
+ * `history`: the median share of spend this line had reached by the same point of its last periods.
+ * `schedule`: recurring payments due so far, plus an even spread of the rest of the funding.
+ * `even`: time elapsed.
+ */
+export type BudgetPlanLinePaceBasis = 'history' | 'schedule' | 'even';
+
+export interface BudgetPlanLinePace {
+  basis: BudgetPlanLinePaceBasis;
+  /** 0-100, share of the line's funded amount (positive carried in + positive assigned) usually spent by today. */
+  expectedPercent: number;
 }
 
 export interface BudgetLineGoal {

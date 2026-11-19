@@ -1,6 +1,6 @@
 <template>
   <Collapsible v-if="$slots.default" v-slot="{ open }" :default-open="defaultOpen" class="rounded-lg border">
-    <CollapsibleTrigger class="hover:bg-muted/50 flex w-full items-center gap-3 p-3 text-left transition-colors">
+    <CollapsibleTrigger class="hover:bg-hover flex w-full items-center gap-3 p-3 text-left transition-colors">
       <div
         class="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
       >

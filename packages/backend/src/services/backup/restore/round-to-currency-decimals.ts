@@ -66,6 +66,7 @@ const COLUMN_CURRENCIES: Record<string, CurrencySource> = {
   'accounts.refCurrentBalance': OWN_REF,
   'accounts.creditLimit': OWN,
   'accounts.refCreditLimit': OWN_REF,
+  'accounts.seamBalance': OWN,
   'balances.amount': ACCOUNT_REF,
   'budget-assignments.baselineAmount': PLAN,
   'budget-assignments.overrideAmount': PLAN,

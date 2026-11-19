@@ -180,7 +180,7 @@ const sectionItems = computed<RailSectionItem[]>(() => {
 </script>
 
 <template>
-  <Card class="flex h-full w-16 flex-col rounded-none">
+  <Card class="bg-background dark:bg-card flex h-full w-16 flex-col rounded-none">
     <div class="flex h-14 shrink-0 items-center justify-center">
       <div
         class="bg-primary/10 text-primary-text flex size-8 items-center justify-center rounded-md text-sm font-semibold"
@@ -200,7 +200,12 @@ const sectionItems = computed<RailSectionItem[]>(() => {
             @update:open="setFlyoutOpen({ key: item.routeName, open: $event })"
           >
             <RailIconTrigger :to="{ name: item.routeName }" :aria-label="item.label">
-              <ui-button variant="ghost" as="span" size="icon" :class="cn(item.active && 'bg-primary/10')">
+              <ui-button
+                variant="ghost"
+                as="span"
+                size="icon"
+                :class="cn(item.active && 'bg-primary/10 hover:bg-primary/10')"
+              >
                 <component :is="item.icon" :class="cn('size-4 shrink-0', item.active && 'text-primary-text')" />
               </ui-button>
             </RailIconTrigger>
@@ -222,7 +227,7 @@ const sectionItems = computed<RailSectionItem[]>(() => {
                     size="sm"
                     :class="[
                       'w-full justify-start gap-2 px-3',
-                      isChildActive({ child, isActive }) && 'bg-primary/10 text-foreground',
+                      isChildActive({ child, isActive }) && 'bg-primary/10 hover:bg-primary/10 text-foreground',
                     ]"
                   >
                     <component
@@ -243,7 +248,7 @@ const sectionItems = computed<RailSectionItem[]>(() => {
                 as="span"
                 size="icon"
                 :aria-label="item.label"
-                :class="cn((item.active ?? isActive) && 'bg-primary/10')"
+                :class="cn((item.active ?? isActive) && 'bg-primary/10 hover:bg-primary/10')"
               >
                 <component
                   :is="item.icon"
@@ -275,11 +280,12 @@ const sectionItems = computed<RailSectionItem[]>(() => {
             <div class="grid grid-cols-[minmax(0,1fr)] gap-1">
               <router-link
                 :to="{ name: section.routeName }"
-                class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-1.5"
+                class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-1.5"
               >
                 <span class="text-sm font-medium">{{ section.label }}</span>
                 <GroupTotal
                   v-if="section.total && baseCurrencyCode"
+                  tiny
                   :amount="section.total.total"
                   :currency-code="baseCurrencyCode"
                   :is-approx="section.total.isApprox"

@@ -246,9 +246,7 @@ const handleSubmit = () => {
             :class="
               cn(
                 'border-input focus-visible:ring-ring flex flex-col items-center justify-center gap-1.5 rounded-lg border px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-                form.type === option.value
-                  ? 'border-primary bg-primary/5'
-                  : 'hover:bg-accent hover:text-accent-foreground',
+                form.type === option.value ? 'border-primary bg-primary/5' : 'hover:bg-hover',
               )
             "
             @click="form.type = option.value"
@@ -299,9 +297,7 @@ const handleSubmit = () => {
             :class="
               cn(
                 'border-input focus-visible:ring-ring rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-                form.frequency === frequency
-                  ? 'border-primary bg-primary/5'
-                  : 'hover:bg-accent hover:text-accent-foreground',
+                form.frequency === frequency ? 'border-primary bg-primary/5' : 'hover:bg-hover',
               )
             "
             @click="form.frequency = frequency"

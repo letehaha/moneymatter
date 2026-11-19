@@ -60,7 +60,7 @@
             :data-index="index"
             :class="
               cn(
-                'hover:bg-muted/40 cursor-pointer align-top select-none',
+                'hover:bg-hover cursor-pointer align-top select-none',
                 unmarkedIndices.has(item.rowIndex) ? 'bg-warning/5' : '',
               )
             "
@@ -128,7 +128,7 @@
           <div
             :class="
               cn(
-                'border-border bg-card hover:bg-muted/30 cursor-pointer rounded-lg border p-3 select-none',
+                'border-border bg-card hover:bg-hover cursor-pointer rounded-lg border p-3 select-none',
                 unmarkedIndices.has(item.rowIndex) ? 'bg-warning/5' : '',
               )
             "

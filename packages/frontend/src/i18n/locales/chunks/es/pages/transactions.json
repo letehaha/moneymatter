@@ -45,10 +45,8 @@
         "exclude": "Excluir",
         "only": "Solo"
       },
-      "noteIncludes": {
-        "label": "La nota incluye (separado por comas):",
-        "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Buscar en notas"
+      "search": {
+        "placeholder": "Search notes, payees and tags"
       },
       "tags": {
         "allTags": "Todas las etiquetas",
@@ -68,8 +66,7 @@
         "type": "Tipo",
         "tags": "Etiquetas",
         "budgets": "Rastreadores",
-        "amount": "Rango de importe",
-        "note": "Notas"
+        "amount": "Rango de importe"
       },
       "transferNature": {
         "label": "Tipos de transferencias",
@@ -126,6 +123,10 @@
       "tagModeAddHint": "Conserva las etiquetas actuales y añade estas.",
       "tagModeReplaceHint": "Elimina todas las etiquetas actuales, luego añade estas",
       "tagModeRemoveHint": "Elimina solamente estas etiquetas. Las otras etiquetas permanecen.",
+      "excludeFromStatsHint": "On keeps the selected transactions out of reports, dashboard widgets, budgets and trackers. Off brings them back. Balances aren't affected.",
+      "excludeFromStatsDontChange": "Don't change stats",
+      "confirmExcludeFromStats": "Exclude from stats",
+      "confirmIncludeInStats": "Include in stats",
       "totals": {
         "income": "Income",
         "expense": "Expense",
@@ -194,6 +195,10 @@
         "createFailed": "Error al crear el grupo",
         "addFailed": "Error al añadir transacciones al grupo"
       }
+    },
+    "excludeFromStats": {
+      "label": "Excluded from statistics",
+      "tooltip": "Kept out of the reports, dashboard widgets, budget plans and trackers. It still counts toward your balance and stays in the transaction list."
     },
     "planned": {
       "label": "Planificada",

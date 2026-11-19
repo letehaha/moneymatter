@@ -17,7 +17,7 @@ const GROUP_BAR_CLASS = 'bg-muted-foreground/15 rounded';
         <div :class="cn(BAR_CLASS, 'h-3 w-20')" />
       </div>
       <template v-for="(lineCount, group) in LINES_PER_GROUP" :key="group">
-        <div class="border-border bg-muted flex items-center gap-3 border-t px-3 py-2">
+        <div class="border-border bg-table-header flex items-center gap-3 border-t px-3 py-2">
           <div class="grid flex-1 gap-1.5">
             <div :class="cn(GROUP_BAR_CLASS, 'h-3.5 w-28')" />
             <div :class="cn(GROUP_BAR_CLASS, 'h-2.5 w-40')" />
@@ -43,7 +43,7 @@ const GROUP_BAR_CLASS = 'bg-muted-foreground/15 rounded';
         <span />
       </div>
       <template v-for="(lineCount, group) in LINES_PER_GROUP" :key="group">
-        <div :class="cn(GRID_ROW_CLASS, 'border-border bg-muted border-t py-2')">
+        <div :class="cn(GRID_ROW_CLASS, 'border-border bg-table-header border-t py-2')">
           <div class="bg-muted-foreground/15 size-[18px] rounded-[4px]" />
           <div :class="cn(GROUP_BAR_CLASS, 'h-3.5 w-32')" />
           <div v-for="column in 3" :key="column" :class="cn(GROUP_BAR_CLASS, 'ml-auto h-3.5 w-16')" />

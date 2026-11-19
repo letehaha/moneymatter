@@ -149,7 +149,9 @@
         "residualAdjustmentDescription": "Adds one balance adjustment transaction dated today. Your past balances stay exactly as they are.",
         "residualOpeningLabel": "Change the starting balance",
         "residualOpeningDescription": "Moves the account's starting balance by the difference, so every past balance shifts too. Pick this if transactions are missing from the start of the history.",
-        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview."
+        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview.",
+        "linkFailed": "An error occurred while trying to link account",
+        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
       },
       "tabs": {
         "details": "Details",

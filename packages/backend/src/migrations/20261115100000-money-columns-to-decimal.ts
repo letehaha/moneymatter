@@ -475,6 +475,7 @@ const COLUMN_CURRENCIES: Record<string, CurrencySource> = {
   'Accounts.refCurrentBalance': ACCOUNT_REF,
   'Accounts.creditLimit': OWN,
   'Accounts.refCreditLimit': ACCOUNT_REF,
+  'Accounts.seamBalance': OWN,
   // The account owner's base currency.
   'Balances.amount': {
     from: '"Accounts" AS a, "UsersCurrencies" AS uc',

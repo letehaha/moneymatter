@@ -4,10 +4,10 @@
       "transactionsList": {
         "loadError": "Transaktionen konnten nicht geladen werden.",
         "selectionModeWarning": "Auswahlmodus – wähle Transaktionen zum Aufheben der Verknüpfung",
-        "selectAll": "Select all",
-        "selected": "{count} selected",
+        "selectAll": "Alle auswählen",
+        "selected": "{count} ausgewählt",
         "unlink": "Verknüpfung aufheben",
-        "cancel": "Cancel",
+        "cancel": "Abbrechen",
         "unlinkSelected": "Ausgewählte Verknüpfung aufheben",
         "noMatchingTransactions": "Keine passenden Transaktionen",
         "noTransactionsLinked": "Keine Transaktionen verknüpft",
@@ -15,17 +15,17 @@
         "addTransactionsHint": "Füge diesem Tracker Transaktionen hinzu, um deine Ausgaben zu verfolgen.",
         "resetFilters": "Filter zurücksetzen",
         "addTransactions": "Transaktionen hinzufügen",
-        "add": "Add",
-        "loadingMore": "Loading more...",
+        "add": "Hinzufügen",
+        "loadingMore": "Mehr laden...",
         "unlinkError": "Verknüpfung der Transaktionen konnte nicht aufgehoben werden",
         "addError": "Hinzufügen der Transaktionen fehlgeschlagen"
       }
     },
     "budgetDetails": {
       "notSet": "Nicht festgelegt",
-      "saving": "Saving...",
+      "saving": "Speichern...",
       "saveChanges": "Speichern",
-      "loading": "Loading...",
+      "loading": "Laden...",
       "uncategorized": "Unkategorisiert",
       "stats": {
         "income": "Einnahmen",
@@ -38,16 +38,16 @@
         "na": "N/A"
       },
       "noTransactionsYet": "Noch keine Transaktionen",
-      "transactions": "Transactions",
+      "transactions": "Transaktionen",
       "transactionsLinked": "{count} Transaktion mit diesem Tracker verknüpft | {count} Transaktionen mit diesem Tracker verknüpft",
       "tabs": {
-        "statistics": "Statistics",
-        "transactions": "Transactions",
+        "statistics": "Statistiken",
+        "transactions": "Transaktionen",
         "sharing": "Freigabe"
       },
       "statistics": {
         "tabs": {
-          "categories": "Categories",
+          "categories": "Kategorien",
           "timeline": "Verlauf"
         },
         "errorTitle": "Statistiken konnten nicht geladen werden",
@@ -56,7 +56,7 @@
         "noDataDescription": "Für diesen Tracker sind noch keine Ausgabendaten verfügbar.",
         "noCategoryData": "Keine Kategoriendaten für Ausgaben.",
         "noTimelineData": "Keine Verlaufsdaten.",
-        "total": "Total",
+        "total": "Gesamt",
         "income": "Einnahmen",
         "expenses": "Ausgaben",
         "incomeLabel": "Einnahmen:",
@@ -72,8 +72,8 @@
           "averagePerDay": "Durchschnitt pro Tag",
           "firstTransaction": "Erste Transaktion",
           "lastTransaction": "Letzte Transaktion",
-          "transactions": "Transactions",
-          "avgAmount": "avg {amount}",
+          "transactions": "Transaktionen",
+          "avgAmount": "Ø {amount}",
           "biggestDay": "Umsatzstärkster Tag",
           "shareOfTotal": "{percent}% der Gesamtsumme"
         },
@@ -81,7 +81,7 @@
         "categoriesCount": "{count} Kategorie | {count} Kategorien",
         "byCurrency": "Nach Währung",
         "asPaid": "als bezahlt",
-        "timeline": "Timeline",
+        "timeline": "Zeitstrahl",
         "todayMarker": "heute {date}",
         "timelineAria": "Kumulierte Ausgaben im Zeitverlauf mit Balken pro Zeitraum",
         "limitLabel": "{amount} Limit",
@@ -90,7 +90,7 @@
           "cumulative": "Ausgegeben, kumuliert",
           "earnedCumulative": "Eingenommen, kumuliert",
           "evenPace": "Gleichmäßiges Tempo bis zum Limit",
-          "projection": "Projection",
+          "projection": "Projektion",
           "daily": "Pro Tag",
           "weekly": "Pro Woche",
           "monthly": "Pro Monat"
@@ -98,17 +98,17 @@
         "topPayees": "Top-Zahlungsempfänger",
         "bySpend": "nach Ausgaben",
         "noPayee": "Kein Zahlungsempfänger",
-        "txCount": "{count} tx"
+        "txCount": "{count} Tx"
       },
       "sharing": {
         "inviteAnother": "Jemanden einladen",
         "membersHeading": "Mitglieder",
-        "pendingHeading": "Pending invitations",
+        "pendingHeading": "Ausstehende Einladungen",
         "loadError": "Mitglieder konnten nicht geladen werden.",
         "permissions": {
-          "read": "View only",
-          "write": "Attach own transactions",
-          "manage": "Manage"
+          "read": "Nur anzeigen",
+          "write": "Eigene Transaktionen anhängen",
+          "manage": "Verwalten"
         },
         "member": {
           "you": "Du",
@@ -130,7 +130,7 @@
           "resendSuccess": "Einladung erneut gesendet.",
           "resendError": "Einladung konnte nicht erneut gesendet werden.",
           "resendDeliveryFailed": "Erneut gesendet, aber die E-Mail konnte nicht zugestellt werden.",
-          "cancel": "Cancel",
+          "cancel": "Abbrechen",
           "cancelConfirm": "Einladung stornieren",
           "cancelTitle": "Einladung stornieren?",
           "cancelDescription": "Die Einladung an {email} wird storniert.",

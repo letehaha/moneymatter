@@ -146,6 +146,9 @@ const rowPlans = ({ table }: { table: string }): RowPlan[] => {
           cents: { baselineAmount: null, overrideAmount: -4200 },
         },
       ];
+    // "seamBalance" may only be set on a non-system account.
+    case 'Accounts':
+      return [{ kind: 'A', overrides: { type: 'monobank' } }, { kind: 'B' }];
     case 'Subscriptions':
       return [
         { kind: 'A', overrides: { expectedCurrencyCode: 'USD' } },
@@ -466,7 +469,7 @@ const seedRoundingCases = async ({ sequelize }: { sequelize: Sequelize }): Promi
     table: 'Accounts',
     plan: {
       kind: 'B',
-      overrides: { currencyCode: 'JPY', userId: ROUNDING_USER_ID },
+      overrides: { currencyCode: 'JPY', userId: ROUNDING_USER_ID, type: 'monobank' },
       cents: {
         initialBalance: 0,
         refInitialBalance: 0,
@@ -474,6 +477,7 @@ const seedRoundingCases = async ({ sequelize }: { sequelize: Sequelize }): Promi
         refCurrentBalance: 100050,
         creditLimit: 0,
         refCreditLimit: 0,
+        seamBalance: 100050,
       },
     },
   });
@@ -517,6 +521,7 @@ const seedRoundingCases = async ({ sequelize }: { sequelize: Sequelize }): Promi
         refCurrentBalance: '1001',
         creditLimit: '0',
         refCreditLimit: '0',
+        seamBalance: '1001',
       },
     },
     { row: goal, rounded: { targetAmount: '0.4', plannedMonthly: '3', achievedAmount: null } },

@@ -1750,8 +1750,7 @@ describe('Enable Banking dedup improvements (E2E)', () => {
       const syncedTx = (await listTransactions({ accountId }))[0]!;
 
       // A real row dated past today — an imported entry, or a bank row whose value_date
-      // runs ahead. The anchor is MAX(time) over every real row, so this alone pushes it
-      // past today. A planned row would not: the anchor query filters those out.
+      // runs ahead. Anchoring on it would push the window past today.
       const future = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000);
       await insertRealRow({
         accountId,
@@ -1766,7 +1765,9 @@ describe('Enable Banking dedup improvements (E2E)', () => {
       const requested = helpers.enablebanking.lastTransactionsQuery();
       const today = new Date().toISOString().split('T')[0]!;
       expect(requested).not.toBeNull();
-      expect(requested!.dateFrom).toBe(today);
+      // The future row is ignored; the window resumes from the newest row up to today.
+      expect(requested!.dateFrom).toBe('2026-01-15');
+      expect(requested!.dateFrom! <= today).toBe(true);
       expect(requested!.dateFrom! <= requested!.dateTo!).toBe(true);
     });
 

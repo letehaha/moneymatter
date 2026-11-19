@@ -1,9 +1,10 @@
-import { ImportSource, OFX_MAX_FILE_BYTES, PAYMENT_TYPES } from '@bt/shared/types';
+import { ACCOUNT_TYPES, ImportSource, OFX_MAX_FILE_BYTES, PAYMENT_TYPES, type RecordId } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
 import { asUser, provisionSecondUserWithBaseCurrency } from '@tests/helpers/share';
+import { format, startOfDay, subDays } from 'date-fns';
 
 const createNewMapping = ({
   upload,
@@ -416,6 +417,226 @@ describe('OFX import HTTP endpoints', () => {
 
     it('keeps a JPY balance when two 1500.5 rows are stored as 1501', async () => {
       await expectBalanceKept({ currencyCode: 'JPY', amount: '1500.5', storedAmount: 1501 });
+    });
+  });
+});
+
+const TODAY = startOfDay(new Date());
+const TODAY_KEY = format(TODAY, 'yyyy-MM-dd');
+
+type OfxRow = { daysAgo: number; amount: number; time?: string };
+
+const ofxDate = ({ daysAgo, time = '120000' }: { daysAgo: number; time?: string }) =>
+  `${format(subDays(TODAY, daysAgo), 'yyyyMMdd')}${time}[0:GMT]`;
+
+const buildOfx = ({ rows }: { rows: OfxRow[] }) =>
+  Buffer.from(
+    [
+      'OFXHEADER:100',
+      'DATA:OFXSGML',
+      'VERSION:102',
+      'ENCODING:USASCII',
+      'CHARSET:1252',
+      'COMPRESSION:NONE',
+      '',
+      '<OFX>',
+      '<SIGNONMSGSRSV1><SONRS><FI><ORG>Seam Bank<FID>2000</FI></SONRS></SIGNONMSGSRSV1>',
+      '<BANKMSGSRSV1><STMTTRNRS><STMTRS>',
+      '<CURDEF>USD',
+      '<BANKACCTFROM><BANKID>000003<ACCTID>000044445555<ACCTTYPE>CHECKING</BANKACCTFROM>',
+      '<BANKTRANLIST>',
+      ...rows.map(
+        (row, index) =>
+          `<STMTTRN><TRNTYPE>${row.amount < 0 ? 'DEBIT' : 'CREDIT'}<DTPOSTED>${ofxDate(row)}<TRNAMT>${row.amount.toFixed(2)}<FITID>seam-${index}<NAME>Row ${index}</STMTTRN>`,
+      ),
+      '</BANKTRANLIST>',
+      `<LEDGERBAL><BALAMT>0.00<DTASOF>${ofxDate({ daysAgo: 0 })}</LEDGERBAL>`,
+      '</STMTRS></STMTTRNRS></BANKMSGSRSV1>',
+      '</OFX>',
+    ].join('\n'),
+  );
+
+const SPANNING_OFX_ROWS: OfxRow[] = [
+  { daysAgo: 8, amount: -40 },
+  { daysAgo: 6, amount: 15 },
+  { daysAgo: 3, amount: -25 },
+  { daysAgo: 0, amount: -7, time: '000000' },
+  { daysAgo: 0, amount: 9, time: '060000' },
+];
+
+const importOfxInto = async ({
+  accountId,
+  rows,
+  recalculateBalance,
+}: {
+  accountId: string;
+  rows: OfxRow[];
+  recalculateBalance?: boolean;
+}) => {
+  const upload = await helpers.uploadOfx({ file: buildOfx({ rows }) });
+  expect(upload.statusCode).toBe(200);
+  const sourceKey = upload.response!.result.accounts[0]!.sourceAccountKey;
+  return runImport({
+    uploadId: upload.response!.uploadId,
+    accountMapping: { [sourceKey]: { action: 'link-existing', accountId } },
+    skipDuplicateIndices: [],
+    recalculateBalance,
+  });
+};
+
+describe('OFX import into an account with a bank seam', () => {
+  it('imports the rows before the seam as manual history and skips the rest', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+
+        const progress = await importOfxInto({ accountId: account.id, rows: SPANNING_OFX_ROWS });
+        helpers.expectOfxCompleted(progress);
+        expect(progress.summary).toMatchObject({ transactionsImported: 3, skippedAfterBankSeam: 2, errors: [] });
+
+        const created = await helpers.getTransactions({ batchId: progress.summary.batchId, raw: true });
+        expect(created).toHaveLength(3);
+        expect(created.every((tx) => tx.accountType === ACCOUNT_TYPES.system)).toBe(true);
+        expect(created.every((tx) => new Date(tx.time).toISOString().slice(0, 10) < TODAY_KEY)).toBe(true);
+
+        await helpers.expectImportOnlyMovedOpening({
+          accountId: account.id,
+          before,
+          shift: helpers.SPANNING_PRE_SEAM_NET_OUT,
+        });
+      },
+    });
+  });
+
+  it('still rejects a bank-linked account without a seam', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        await helpers.dropSeam({ accountId: account.id });
+        const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+
+        const progress = await importOfxInto({ accountId: account.id, rows: SPANNING_OFX_ROWS });
+
+        expect(progress.status).toBe('failed');
+        expect(await helpers.snapshotSeamAccount({ accountId: account.id })).toEqual(before);
+        const rows = await helpers.getTransactions({ accountIds: [account.id], raw: true });
+        expect(rows.map((tx) => tx.note)).toEqual(['Manual row']);
+      },
+    });
+  });
+
+  it('undoing the batch while linked returns the account to its pre-import state', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+        const progress = await importOfxInto({ accountId: account.id, rows: SPANNING_OFX_ROWS });
+        helpers.expectOfxCompleted(progress);
+
+        const result = await helpers.deleteImportBatch({ batchId: progress.summary.batchId, raw: true });
+        expect(result.deletedCount).toBe(3);
+
+        expect(await helpers.snapshotSeamAccount({ accountId: account.id })).toEqual(before);
+      },
+    });
+  });
+
+  it('ignores recalculateBalance for the seam account', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+
+        const progress = await importOfxInto({
+          accountId: account.id,
+          rows: SPANNING_OFX_ROWS,
+          recalculateBalance: true,
+        });
+        helpers.expectOfxCompleted(progress);
+        expect(progress.summary).toMatchObject({ transactionsImported: 3, skippedAfterBankSeam: 2, errors: [] });
+        expect(progress.summary.accountBalanceChanges).toEqual([
+          expect.objectContaining({ accountId: account.id, delta: 0, movedCount: 0, historicalCount: 3 }),
+        ]);
+
+        await helpers.expectImportOnlyMovedOpening({
+          accountId: account.id,
+          before,
+          shift: helpers.SPANNING_PRE_SEAM_NET_OUT,
+        });
+      },
+    });
+  });
+
+  it('leaves a planned row on the seam account unmerged while the same row confirms a plan on a manual account', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const [category] = await helpers.getCategoriesList();
+        const manualAccount = await helpers.createAccount({
+          payload: helpers.buildAccountPayload({ name: 'Wallet', currencyCode: 'USD', initialBalance: 1000 }),
+          raw: true,
+        });
+        const seamAccount = await helpers.createSeamAccount();
+        const planOn = async ({ accountId }: { accountId: string }) =>
+          (
+            await helpers.createPlannedTransaction({
+              payload: {
+                accountId: accountId as RecordId,
+                amount: 25,
+                time: subDays(TODAY, 2).toISOString(),
+                categoryId: category!.id as RecordId,
+              },
+              raw: true,
+            })
+          )[0]!;
+        const manualPlan = await planOn({ accountId: manualAccount.id });
+        const seamPlan = await planOn({ accountId: seamAccount.id });
+        const rows: OfxRow[] = [{ daysAgo: 3, amount: -25 }];
+
+        const control = await importOfxInto({ accountId: manualAccount.id, rows });
+        helpers.expectOfxCompleted(control);
+        expect(control.summary).toMatchObject({ merged: 1, transactionsImported: 0 });
+        const manualRows = await helpers.getTransactions({ accountIds: [manualAccount.id], raw: true });
+        expect(manualRows.find((tx) => tx.id === manualPlan.id)!.isPlanned).toBe(false);
+
+        const before = await helpers.snapshotSeamAccount({ accountId: seamAccount.id });
+        const progress = await importOfxInto({ accountId: seamAccount.id, rows });
+        helpers.expectOfxCompleted(progress);
+        expect(progress.summary).toMatchObject({ merged: 0, transactionsImported: 1, skippedAfterBankSeam: 0 });
+
+        const seamRows = await helpers.getTransactions({ accountIds: [seamAccount.id], raw: true });
+        expect(seamRows.find((tx) => tx.id === seamPlan.id)!.isPlanned).toBe(true);
+        expect(progress.summary.newTransactionIds).toHaveLength(1);
+        expect(progress.summary.newTransactionIds[0]).not.toBe(seamPlan.id);
+        await helpers.expectImportOnlyMovedOpening({ accountId: seamAccount.id, before, shift: 25 });
+      },
+    });
+  });
+
+  it('undoing the batch after unlinking keeps the current balance and restores the opening balance', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+        const progress = await importOfxInto({ accountId: account.id, rows: SPANNING_OFX_ROWS });
+        helpers.expectOfxCompleted(progress);
+        await helpers.unlinkAccountFromBankConnection({ id: account.id, raw: true });
+        const unlinked = await helpers.snapshotSeamAccount({ accountId: account.id });
+
+        const result = await helpers.deleteImportBatch({ batchId: progress.summary.batchId, raw: true });
+        expect(result.deletedCount).toBe(3);
+
+        const after = await helpers.snapshotSeamAccount({ accountId: account.id });
+        expect(after.account.currentBalance).toBe(unlinked.account.currentBalance);
+        expect(after.account.initialBalance).toBe(before.account.initialBalance);
+        expect(after.account.refInitialBalance).toBe(before.account.refInitialBalance);
+      },
     });
   });
 });

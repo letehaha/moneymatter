@@ -452,6 +452,8 @@
       "payAction": "Segna come pagato",
       "listTitle": "In scadenza",
       "dueCount": "{count} in scadenza",
+      "daysLate": "{count} gg di ritardo",
+      "overdueCount": "{count} scaduti",
       "nothingDue": "Nessuna scadenza nei prossimi 3 giorni",
       "overdueHint": "Scaduto dal {date}",
       "dueSoonHint": "In scadenza nei prossimi 3 giorni",

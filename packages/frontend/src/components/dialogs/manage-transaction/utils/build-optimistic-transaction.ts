@@ -15,7 +15,7 @@ import { resolveFormLocation } from './resolve-form-location';
 interface BuildOptimisticTransactionParams {
   form: UI_FORM_STRUCT;
   transaction: TransactionModel;
-  isRecordExternal: boolean;
+  isRecordBankLocked: boolean;
 }
 
 /**
@@ -29,7 +29,7 @@ interface BuildOptimisticTransactionParams {
 export const buildOptimisticTransaction = ({
   form,
   transaction,
-  isRecordExternal,
+  isRecordBankLocked,
 }: BuildOptimisticTransactionParams): TransactionModel => {
   // Unwrap reactive proxy from transaction to get plain nested objects
   const rawTransaction = toRaw(transaction);
@@ -48,7 +48,7 @@ export const buildOptimisticTransaction = ({
     updatedAt: new Date(),
   };
 
-  if (isTxEditableAsManual({ transaction: rawTransaction, isRecordExternal })) {
+  if (isTxEditableAsManual({ transaction: rawTransaction, isRecordBankLocked })) {
     updatedTransaction.amount = Number(form.amount);
     updatedTransaction.time = new Date(form.time);
     updatedTransaction.transactionType = getTxTypeFromFormType(form.type);

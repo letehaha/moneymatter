@@ -16,7 +16,7 @@
             <div class="flex flex-col p-2">
               <button
                 type="button"
-                class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                 @click="goTo('spikes')"
               >
                 <span class="flex flex-col">
@@ -36,7 +36,7 @@
 
               <button
                 type="button"
-                class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                 @click="goTo('components')"
               >
                 <span class="flex flex-col">

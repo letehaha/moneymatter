@@ -5,6 +5,13 @@ import { loadTransactionById } from '@/api/transactions';
 import { OUT_OF_WALLET_ACCOUNT_MOCK, VERBOSE_PAYMENT_TYPES, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import type { FormattedCategory } from '@/common/types';
 import { getMaxLoanPayment, isLoanOverpayment, isLoanPaymentPreAnchor } from '@/common/utils/loan-payment';
+import {
+  formatBankSeamDay,
+  getBankSeamCutoff,
+  isBankAccount,
+  isBankLockedLeg,
+  isOnBankAccount,
+} from '@/common/utils/bank-row-permissions';
 import { isHttpUrl } from '@/common/utils/external-url';
 import { roundCoordinate } from '@/common/utils/coordinates';
 import { buildMapUrl } from '@/common/utils/map-url';
@@ -51,7 +58,7 @@ import {
 import { useQuery } from '@tanstack/vue-query';
 import { between, helpers, maxLength, minValue, required } from '@vuelidate/validators';
 import { createReusableTemplate, useEventListener, watchOnce } from '@vueuse/core';
-import { endOfDay, format } from 'date-fns';
+import { endOfDay, format, isBefore, subMilliseconds } from 'date-fns';
 import {
   CommandIcon,
   CopyIcon,
@@ -124,7 +131,6 @@ import {
   canDeleteTransaction,
   getUnlistedCategoryIds,
   isPaymentTransaction,
-  isConnectedAccount,
   isTxEditableAsManual,
   prepopulateForm,
 } from './helpers';
@@ -382,25 +388,25 @@ const splitsTotal = computed(() => {
   return form.value.splits.reduce((sum, split) => sum + (split.amount ?? 0), 0);
 });
 
-const isRecordExternal = computed(() => {
-  if (!transaction.value) return false;
-  // Check the account type, not the transaction type
-  // A system transaction in a monobank account should be treated as external
-  const account = accountsRecord.value[transaction.value.accountId];
-  return (account && account.type !== ACCOUNT_TYPES.system) ?? false;
+const toLeg = ({ tx }: { tx: TransactionModel | undefined }) => ({
+  transaction: tx,
+  account: tx ? accountsRecord.value[tx.accountId] : undefined,
 });
-const isOppositeTxExternal = computed(() => {
-  if (!oppositeTransaction.value) return false;
-  // Check the account type, not the transaction type
-  // A system transaction in a monobank account should be treated as external
-  const account = accountsRecord.value[oppositeTransaction.value.accountId];
-  return (account && account.type !== ACCOUNT_TYPES.system) ?? false;
-});
-// If record is external (and not a transfer), the account field will be disabled,
+const isLegOnBankAccount = ({ tx }: { tx: TransactionModel | undefined }) =>
+  !!tx && isOnBankAccount({ transaction: tx, account: accountsRecord.value[tx.accountId] });
+const isRecordOnBankAccount = computed(() => isLegOnBankAccount({ tx: transaction.value }));
+const isOppositeOnBankAccount = computed(() => isLegOnBankAccount({ tx: oppositeTransaction.value }));
+const isRecordBankLocked = computed(() => isBankLockedLeg(toLeg({ tx: transaction.value })));
+const isOppositeBankLocked = computed(() => isBankLockedLeg(toLeg({ tx: oppositeTransaction.value })));
+// Both transfer legs share the date, so a pre-seam leg on either side caps it.
+const seamCutoff = computed(() =>
+  getBankSeamCutoff({ legs: [toLeg({ tx: transaction.value }), toLeg({ tx: oppositeTransaction.value })] }),
+);
+// If record is on a bank account (and not a transfer), the account field will be disabled,
 // so we need to preselect the account. For transfer cases, prepopulateForm fills
 // form.account based on which side is the source – bypassing this preselection.
 watch(
-  () => isRecordExternal.value,
+  () => isRecordOnBankAccount.value,
   (value) => {
     if (!value) return;
     if (transaction.value?.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_out_wallet) return;
@@ -561,6 +567,7 @@ const loanDestinationAccounts = computed(() =>
 const isDestinationTypeLocked = computed(() => isTwoLegTransfer(transaction.value?.transferNature));
 
 const {
+  isAmountFieldDisabled,
   isTargetFieldVisible,
   isTargetAmountFieldDisabled,
   targetCurrency,
@@ -570,8 +577,10 @@ const {
 } = useTransferFormLogic({
   form,
   isTransferTx,
-  isRecordExternal,
-  isOppositeTxExternal,
+  isRecordBankLocked,
+  isOppositeBankLocked,
+  isRecordOnBankAccount,
+  isOppositeOnBankAccount,
   transaction: transaction.value,
   oppositeTransaction: oppositeTransaction.value,
   linkedTransaction,
@@ -586,21 +595,8 @@ const {
 // 3. When editing, validate refAmount in the same way
 
 const isEditableAsManual = computed(() =>
-  isTxEditableAsManual({ transaction: transaction.value, isRecordExternal: isRecordExternal.value }),
+  isTxEditableAsManual({ transaction: transaction.value, isRecordBankLocked: isRecordBankLocked.value }),
 );
-
-const isAmountFieldDisabled = computed(() => {
-  if (!isEditableAsManual.value) {
-    if (!isTransferTx.value) return true;
-    if (transaction.value?.transactionType === TRANSACTION_TYPES.expense) {
-      return true;
-    }
-  }
-  // Means it's "Out of wallet"
-  if (form.value.account?.id === OUT_OF_WALLET_ACCOUNT_MOCK.id) return true;
-  if (isTransferTx.value && linkedTransaction.value) return true;
-  return false;
-});
 
 // Only the bank sync confirms a plan on a connected account, so edit mode keeps the
 // toggle interactive solely for manual-account plans: turning it off books the money
@@ -636,7 +632,7 @@ const isPlannedBadgeVisible = computed(
 const isSelectedAccountConnected = computed(() => {
   const account = resolvedAccount.value;
   if (!account) return false;
-  return isConnectedAccount({ account });
+  return isBankAccount({ account });
 });
 
 const nonTransferSourceAccounts = computed(() =>
@@ -931,6 +927,7 @@ const validationRules = computed(() => {
   const overpayActive = isLoanOverpayCheckActive.value && !isPreAnchorLoanPayment.value;
   const overpayOnAmount = overpayActive && !isCurrenciesDifferent.value;
   const overpayOnTarget = overpayActive && isCurrenciesDifferent.value;
+  const seamCap = form.value.isPlanned ? undefined : seamCutoff.value;
 
   return {
     form: {
@@ -951,6 +948,17 @@ const validationRules = computed(() => {
               notFutureDate: helpers.withMessage(
                 () => t('dialogs.manageTransaction.form.validation.futureDate'),
                 (value: unknown) => !(value instanceof Date) || value.getTime() <= endOfDay(new Date()).getTime(),
+              ),
+            }
+          : {}),
+        ...(seamCap
+          ? {
+              notAfterBankSeam: helpers.withMessage(
+                () =>
+                  t('transactions.bankSeamDateError', {
+                    date: formatBankSeamDay({ seamAt: seamCap }),
+                  }),
+                (value: unknown) => !(value instanceof Date) || isBefore(value, seamCap),
               ),
             }
           : {}),
@@ -1129,7 +1137,8 @@ const submit = ({ keepOpen = false }: { keepOpen?: boolean } = {}) => {
     isTransferTx: isTransferTx.value,
     isCurrenciesDifferent: isCurrenciesDifferent.value,
     isOriginalRefundsOverriden: isOriginalRefundsOverriden.value,
-    isRecordExternal: isRecordExternal.value,
+    isRecordBankLocked: isRecordBankLocked.value,
+    isRecordOnBankAccount: isRecordOnBankAccount.value,
     transaction: transaction.value,
     linkedTransaction: linkedTransaction.value,
     pendingAttachments: pendingAttachments.value,
@@ -1163,6 +1172,13 @@ const paymentLegsLabel = computed(() =>
     ? t('dialogs.manageTransaction.form.paymentLegs.receivedIntoLabel')
     : t('dialogs.manageTransaction.form.paymentLegs.paidFromLabel'),
 );
+// A hand-entered row dated on or after the bank seam; the bank-sync copy would be wrong for it.
+const manualAfterLinkHint = computed(() => {
+  const tx = transaction.value;
+  const seamAt = tx ? accountsRecord.value[tx.accountId]?.bankSeamAt : null;
+  if (!tx || !seamAt || isEditableAsManual.value || tx.accountType !== ACCOUNT_TYPES.system) return undefined;
+  return t('transactions.inlineEdit.manualAfterLinkDescription', { date: formatBankSeamDay({ seamAt }) });
+});
 const paymentLegsHint = computed(() => {
   if (!isEditableAsManual.value) return t('dialogs.manageTransaction.form.paymentLegs.syncedHint');
   if (isSavedMultiAccount.value) return t('dialogs.manageTransaction.form.paymentLegs.editHint');
@@ -1429,7 +1445,7 @@ const isDuplicateVisible = computed(
       transferNature: transaction.value?.transferNature,
       form: form.value,
       transferDestinationType: transferDestinationType.value,
-      hasLockedLeg: !!linkedTransaction.value || isRecordExternal.value || isOppositeTxExternal.value,
+      hasLockedLeg: !!linkedTransaction.value || isRecordOnBankAccount.value || isOppositeOnBankAccount.value,
       hasOppositeTransaction: !!oppositeTransaction.value,
       sourceAccounts: txTargetableSourceAccountsActiveFirst.value,
       plannedAccounts: plannedTargetableAccountsActiveFirst.value,
@@ -1489,7 +1505,7 @@ onUnmounted(() => {
           :error-message="timeErrorMessage"
           :hide-input-time="isMobileView"
           :calendar-options="{
-            maxDate: form.isPlanned ? undefined : new Date(),
+            maxDate: form.isPlanned ? undefined : seamCutoff ? subMilliseconds(seamCutoff, 1) : new Date(),
           }"
           @update:model-value="onDateUpdate"
         />
@@ -1669,7 +1685,7 @@ onUnmounted(() => {
                 type="button"
                 variant="secondary"
                 size="icon"
-                class="size-10 shrink-0 md:size-9"
+                class="shrink-0"
                 :disabled="isFormFieldsDisabled"
                 :aria-label="$t('dialogs.manageTransaction.form.location.pickOnMap')"
                 @click="isLocationPickerOpen = true"
@@ -1755,8 +1771,8 @@ onUnmounted(() => {
           :key="chip.key"
           type="button"
           variant="outline"
-          size="sm"
-          class="h-8 gap-1.5 rounded-full px-3 text-sm"
+          size="xs"
+          class="gap-1.5 rounded-full text-sm"
           :disabled="isFormFieldsDisabled"
           @click="chip.onClick"
         >
@@ -1875,6 +1891,10 @@ onUnmounted(() => {
               <ReuseDateField v-if="isMobileView" />
             </div>
 
+            <p v-if="manualAfterLinkHint" class="text-muted-foreground -mt-1 px-1 text-xs">
+              {{ manualAfterLinkHint }}
+            </p>
+
             <p v-if="wouldOverdrawLoanSource" class="text-warning-text -mt-1 px-1 text-xs">
               {{ $t('dialogs.loanPayment.overdrawWarning', { account: form.account?.name ?? '' }) }}
             </p>
@@ -1896,6 +1916,8 @@ onUnmounted(() => {
               :main-transaction-id="transaction?.id"
               :disabled="isFormFieldsDisabled"
               :is-main-locked="!isEditableAsManual"
+              :is-main-account-locked="isRecordOnBankAccount"
+              :main-locked-hint="manualAfterLinkHint"
               :hint="paymentLegsHint"
               :main-amount-error="amountErrorMessage"
               :show-leg-errors="showLegErrors"
@@ -2150,10 +2172,7 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div
-          v-if="!isMobileView"
-          class="bg-muted border-border border-l px-6 py-6 [--color-input-background:var(--card)] dark:bg-black/20 dark:[--color-input-background:var(--input-background)]"
-        >
+        <div v-if="!isMobileView" class="bg-muted border-border border-l px-6 py-6 dark:bg-black/20">
           <ReuseMoreOptions />
         </div>
       </div>

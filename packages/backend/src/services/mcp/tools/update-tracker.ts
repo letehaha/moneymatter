@@ -39,7 +39,7 @@ export const updateTrackerTool = defineTool({
       'true hides the "archive this finished tracker" prompt in the app; false shows it again',
     ),
     categoryIds: editTrackerBodyShape.categoryIds.describe(
-      'Replace the rule categories; parent IDs include their children',
+      'Replace the rule categories, matched exactly; list subcategories too to include them',
     ),
     tagIds: editTrackerBodyShape.tagIds.describe('Replace the rule tags'),
     limitKind: editTrackerBodyShape.limitKind.describe(

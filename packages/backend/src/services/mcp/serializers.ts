@@ -49,6 +49,7 @@ export function slimAccountDetailForMcp(account: AccountApiResponse) {
     refInitialBalance: account.refInitialBalance,
     bankDataProviderConnectionId: account.bankDataProviderConnectionId,
     bankProviderType: account.bankProviderType,
+    bankSeamAt: account.bankSeamAt,
     needsRelink: account.needsRelink,
     logoDomain: account.logoDomain,
     logoInitials: account.logoInitials,

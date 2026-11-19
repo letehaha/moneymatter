@@ -18,7 +18,8 @@
       "general": "Statistik",
       "payees": "Penerima",
       "planBilling": "Plan & billing",
-      "collapse": "Collapse"
+      "collapse": "Collapse",
+      "resize": "Resize navigation"
     },
     "backToSettings": "Kembali ke Pengaturan"
   }

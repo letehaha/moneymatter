@@ -56,7 +56,8 @@ export async function getBalanceHistory<R extends boolean | undefined = undefine
   return result;
 }
 
-const dateKey = (date: string | Date) => (typeof date === 'string' ? date.slice(0, 10) : format(date, 'yyyy-MM-dd'));
+export const dateKey = ({ date }: { date: string | Date }) =>
+  (typeof date === 'string' ? date : date.toISOString()).slice(0, 10);
 
 type BalanceRow = { date: string | Date; amount: unknown };
 
@@ -64,8 +65,8 @@ type BalanceRow = { date: string | Date; amount: unknown };
 export const balanceOn = ({ rows, date }: { rows: BalanceRow[]; date: Date }) => {
   const key = format(date, 'yyyy-MM-dd');
   const latest = rows
-    .filter((row) => dateKey(row.date) <= key)
-    .toSorted((a, b) => dateKey(a.date).localeCompare(dateKey(b.date)))
+    .filter((row) => dateKey({ date: row.date }) <= key)
+    .toSorted((a, b) => dateKey({ date: a.date }).localeCompare(dateKey({ date: b.date })))
     .at(-1);
 
   return latest ? Number(latest.amount) : 0;

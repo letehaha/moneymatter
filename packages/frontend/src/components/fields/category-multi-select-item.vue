@@ -3,7 +3,7 @@
     <MultiSelectItem
       :value="category.id"
       :disabled="isBlocked"
-      class="data-[state=checked]:bg-accent/50 data-disabled:text-muted-foreground gap-2 py-1.5 pr-2 data-disabled:cursor-not-allowed"
+      class="data-disabled:text-muted-foreground gap-2 py-1.5 pr-2 data-disabled:cursor-not-allowed"
       :style="{ paddingLeft: `${8 + depth * 16}px` }"
       @toggle="$emit('toggle', category.id)"
     >

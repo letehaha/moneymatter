@@ -24,6 +24,7 @@ import { ROUTES_NAMES } from '@/routes/constants';
 import { useCurrenciesStore, useRootStore } from '@/stores';
 import {
   type SubscriptionDueStatus,
+  daysUntilDue,
   getSubscriptionDueStatus,
 } from '@/pages/planned/subscriptions/subscription-due-status';
 import {
@@ -168,10 +169,19 @@ const rows = computed(() =>
 );
 
 const dueCount = computed(() => rows.value.filter((row) => row.status).length);
+const overdueCount = computed(() => rows.value.filter((row) => row.status === 'overdue').length);
 
-const ROW_TONE_CLASSES: Record<NonNullable<SubscriptionDueStatus>, string> = {
-  overdue: 'bg-destructive/10 hover:bg-destructive/15',
-  dueSoon: 'bg-warning/10 hover:bg-warning/15',
+const CHIP_TONE_CLASSES: Record<NonNullable<SubscriptionDueStatus>, string> = {
+  overdue: 'bg-destructive/10 text-destructive-text',
+  dueSoon: 'bg-warning/10 text-warning-text',
+};
+
+const chipLabel = ({ status, dueDate }: { status: NonNullable<SubscriptionDueStatus>; dueDate: string }) => {
+  if (status === 'dueSoon') return formatDueDate({ dueDate });
+  const days = daysUntilDue({ dueDate, now: now.value });
+  return days !== null && days < 0
+    ? t('widgets.subscriptionsOverview.daysLate', { count: -days })
+    : t('widgets.latestRecords.overdueBadge');
 };
 
 const formatDueDate = ({ dueDate }: { dueDate: string }) => format(parseISO(dueDate), 'MMM d');
@@ -284,7 +294,7 @@ function payPeriod({ subscription }: { subscription: SubscriptionListItem }) {
       :class="
         cn(
           '-mx-2 min-h-0 flex-1',
-          !arrivedState.bottom && '[mask-image:linear-gradient(to_bottom,black_calc(100%-1.75rem),transparent)]',
+          !arrivedState.bottom && 'mask-[linear-gradient(to_bottom,black_calc(100%-1.75rem),transparent)]',
         )
       "
       viewport-class="px-2 md:overscroll-contain-if-scrollable"
@@ -345,7 +355,11 @@ function payPeriod({ subscription }: { subscription: SubscriptionListItem }) {
         class="border-border/60 text-muted-foreground flex items-center justify-between gap-2 border-t pt-2 pb-1 text-xs"
       >
         <span class="font-semibold tracking-wide uppercase">{{ $t('widgets.subscriptionsOverview.listTitle') }}</span>
-        <span v-if="dueCount > 0" class="text-warning-text inline-flex items-center gap-1 font-medium">
+        <span v-if="overdueCount > 0" class="text-destructive-text inline-flex items-center gap-1 font-medium">
+          <CircleAlertIcon class="size-3.5" />
+          {{ $t('widgets.subscriptionsOverview.overdueCount', { count: overdueCount }) }}
+        </span>
+        <span v-else-if="dueCount > 0" class="text-warning-text inline-flex items-center gap-1 font-medium">
           <CircleAlertIcon class="size-3.5" />
           {{ $t('widgets.subscriptionsOverview.dueCount', { count: dueCount }) }}
         </span>
@@ -362,25 +376,28 @@ function payPeriod({ subscription }: { subscription: SubscriptionListItem }) {
           :content="rowHint({ status, dueDate: sub.nextDueDate })"
           :disabled="!status"
         >
-          <div
-            :class="
-              cn(
-                'relative flex h-9 items-center gap-2.5 rounded-md px-2 transition-colors',
-                status ? ROW_TONE_CLASSES[status] : 'hover:bg-muted/50',
-              )
-            "
-          >
+          <div class="hover:bg-hover relative flex h-9 items-center gap-2.5 rounded-md px-2 transition-colors">
             <BrandLogo v-bind="toEntityLogoDisplayProps(sub)" :name="sub.name" class="size-5 shrink-0" />
             <router-link
               :to="{
                 name: ROUTES_NAMES.plannedSubscriptionDetails,
                 params: { id: sub.id },
               }"
-              class="min-w-0 flex-1 truncate text-sm font-medium after:absolute after:inset-0"
+              class="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium after:absolute after:inset-0"
             >
-              {{ sub.name }}
-              <span class="text-muted-foreground ml-1 text-xs font-normal">
-                {{ formatDueDate({ dueDate: sub.nextDueDate }) }}
+              <span class="truncate">
+                {{ sub.name }}
+                <span v-if="!status" class="text-muted-foreground ml-1 text-xs font-normal">
+                  {{ formatDueDate({ dueDate: sub.nextDueDate }) }}
+                </span>
+              </span>
+              <span
+                v-if="status"
+                :class="
+                  cn('shrink-0 rounded px-1.5 py-0.5 text-xs leading-none font-medium', CHIP_TONE_CLASSES[status])
+                "
+              >
+                {{ chipLabel({ status, dueDate: sub.nextDueDate }) }}
               </span>
               <span v-if="status" class="sr-only">{{ rowHint({ status, dueDate: sub.nextDueDate }) }}</span>
             </router-link>

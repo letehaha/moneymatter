@@ -4,7 +4,7 @@
     :class="
       cn(
         'grid grid-cols-[minmax(0,1fr)_auto_14px] items-center gap-3 px-4 py-3',
-        'hover:bg-muted/40 focus-visible:ring-ring/40 transition-colors focus-visible:ring-2 focus-visible:outline-none',
+        'hover:bg-hover focus-visible:ring-ring/40 transition-colors focus-visible:ring-2 focus-visible:outline-none',
       )
     "
   >

@@ -32,6 +32,7 @@
   "sidebar": {
     "collapse": "Zbaliť bočný panel",
     "expand": "Otvoriť bočný panel",
+    "resize": "Zmeniť veľkosť bočného panela",
     "settings": {
       "title": "Nastavenia",
       "sections": {

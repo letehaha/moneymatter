@@ -8,7 +8,6 @@
     "groupNotFound": "Gruppo o conto non trovato",
     "accountNotFound": "Conto non trovato.",
     "accountUpdateFailed": "Aggiornamento del conto non riuscito",
-    "accountNoExternalId": "Il conto non ha un ID esterno",
     "accountNoExternalIdMonobank": "Il conto non ha un ID esterno di Monobank",
     "accountNoExternalIdEnableBanking": "Il conto non ha un ID esterno di Enable Banking",
     "accountNotFoundForTransaction": "Conto non trovato per questa transazione",
@@ -40,6 +39,7 @@
     "systemCannotBeMoved": "Le categorie di sistema non possono essere spostate.",
     "parentNotFound": "Non esiste una categoria genitore con tale ID.",
     "systemParentForbidden": "Le categorie di sistema non possono essere usate come genitore.",
+    "defaultCannotBeDeleted": "Questa categoria contiene le transazioni senza categoria e non può essere eliminata.",
     "ownParent": "Una categoria non può essere genitore di se stessa.",
     "underOwnSubcategory": "Una categoria non può essere spostata all'interno della propria sottocategoria.",
     "nestingTooDeep": "Le categorie non possono essere nidificate più in profondità di {{max}} livelli."
@@ -297,7 +297,6 @@
     "connectionNotFound": "Connessione non trovata",
     "connectionNotFoundOrNotYours": "Connessione non trovata o non appartenente all'utente",
     "providerNoReauthorization": "Il provider {{providerType}} non supporta la riautorizzazione",
-    "providerNotFoundInRegistry": "Provider {{providerType}} non trovato nel registro",
     "connectionIdNotFound": "Connessione al provider di dati bancari {{connectionId}} non trovata",
     "accountIdNotFound": "Conto {{accountId}} non trovato",
     "providerTypeMismatch": "La connessione {{connectionId}} è per il provider {{actualType}}, non {{expectedType}}",
@@ -336,7 +335,7 @@
     "periodLoadNotSupported": "Questo provider non supporta il caricamento delle transazioni per un periodo personalizzato.",
     "transactionsLoadedCount": "Transazioni caricate: {{count}}.",
     "transactionsAllDuplicates": "Trovate {{count}} transazioni per questo periodo, già tutte importate.",
-    "transactionsNoneInPeriod": "Il provider non ha restituito transazioni per questo periodo.",
+    "transactionsNoneInPeriod": "Il fornitore di dati non ha restituito transazioni per questo periodo.",
     "apiError": "Errore API di {{provider}}: {{message}}",
     "simplefinUnreachable": "SimpleFIN è temporaneamente irraggiungibile. Riprovare più tardi.",
     "currencySelectionRequired": "La banca non ha indicato una valuta per il conto \"{{account}}\": sceglierne una prima di collegarlo.",
@@ -345,9 +344,7 @@
       "invalidCredentialsFormat": "Formato delle credenziali Monobank non valido",
       "invalidApiToken": "Token API di Monobank non valido",
       "rateLimitExceeded": "Superato il limite di richieste dell'API Monobank. Riprovare tra un minuto.",
-      "accountNotFound": "Conto {{accountExternalId}} non trovato su Monobank",
       "accountReconnectRequired": "Questo conto non è più disponibile su Monobank. Ricollegare la connessione Monobank per riprendere la sincronizzazione.",
-      "webhookNotImplemented": "handleWebhook non ancora implementato per Monobank",
       "unknownCurrencyCode": "Codice valuta sconosciuto: {{numericCode}}",
       "geoBlocked": "Monobank blocca le richieste provenienti dall'IP di questo server. Disattivare la VPN o usare un indirizzo IP ucraino.",
       "geoBlockedProduction": "La sincronizzazione con Monobank è temporaneamente non disponibile. Il problema è stato segnalato ed è in fase di risoluzione. In caso di urgenza, contattare il supporto."
@@ -383,8 +380,7 @@
       "invalidTokens": "Token Akahu non validi. Verificare lo User Access Token e l'App ID Token nella pagina dell'app Akahu.",
       "accountNoExternalId": "Il conto non ha un ID esterno per la sincronizzazione con Akahu.",
       "accountNotFound": "Conto Akahu non trovato.",
-      "rateLimited": "Akahu sta limitando le richieste in questo momento. Riprovare a breve.",
-      "missingCurrency": "Akahu non ha restituito una valuta per questo conto."
+      "rateLimited": "Akahu sta limitando le richieste in questo momento. Riprovare a breve."
     },
     "simplefin": {
       "invalidCredentialsFormat": "Formato delle credenziali SimpleFIN non valido.",
@@ -399,8 +395,7 @@
     "walutomat": {
       "invalidCredentialsFormat": "Formato delle credenziali Walutomat non valido. Sono obbligatorie la chiave API e la chiave privata.",
       "invalidApiKey": "Chiave API o chiave privata di Walutomat non valida.",
-      "accountNoExternalId": "Il conto Walutomat non ha un ID esterno.",
-      "walletNotFound": "Portafoglio Walutomat non trovato per la valuta: {{currency}}"
+      "accountNoExternalId": "Il conto Walutomat non ha un ID esterno."
     }
   },
   "csvImport": {
@@ -672,7 +667,6 @@
         "home-garden": "Casa & Giardino",
         "pets-animals": "Animali Domestici",
         "electronics-accessories": "Hi-Tech & Informatica",
-        "gifts-joy": "Regali",
         "stationery-tools": "Ferramenta & Dotazioni Funzionali",
         "free-time": "Tempo Libero",
         "drugstore-chemist": "Farmaci & Dispositivi Medici"
@@ -709,7 +703,8 @@
         "books-audio-subscriptions": "Letteratura & Musica",
         "tv-streaming": "TV & Servizi di Streaming",
         "holiday-trips-hotels": "Uscite, Viaggi & Vacanze",
-        "charity-gifts": "Donazioni & Carità",
+        "gifts": "Regali",
+        "charity": "Beneficenza",
         "alcohol-tobacco": "Alcolici & Tabacco",
         "lottery-gambling": "Lotteria & Gioco d'azzardo"
       },

@@ -69,6 +69,7 @@
       />
     </div>
 
+    <BankSeamSkippedCallout :count="summary.skippedAfterBankSeam" :account-mapping="store.accountMapping" />
     <!-- Per-account balance changes (only present when the import touched balances) -->
     <AccountBalanceChangesTable :changes="summary.accountBalanceChanges ?? []" />
 
@@ -124,6 +125,7 @@ import { Callout } from '@/components/lib/ui/callout';
 import { StatCard } from '@/components/lib/ui/stat-card';
 import AccountBalanceChangesTable from '@/pages/import-export/components/account-balance-changes-table.vue';
 import BalanceDesyncCallout from '@/pages/import-export/components/balance-desync-callout.vue';
+import BankSeamSkippedCallout from '@/pages/import-export/components/bank-seam-skipped-callout.vue';
 import { deriveImportOutcome } from '@/pages/import-export/ms-money-import/utils/import-outcome';
 import { ROUTES_NAMES } from '@/routes';
 import { useImportMsMoneyStore } from '@/stores/import-ms-money';

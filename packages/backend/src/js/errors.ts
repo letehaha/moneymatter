@@ -9,6 +9,7 @@ export enum ERROR_CODES {
   ConflictError = 409,
   ValidationError = 422,
   Locked = 423,
+  UpgradeRequired = 426,
   TooManyRequests = 429,
   UnexpectedError = 500,
   BadGateway = 502,
@@ -181,5 +182,11 @@ export class LockedError extends CustomError {
     details?: Record<string, unknown>;
   }) {
     super(ERROR_CODES.Locked, code, message, details);
+  }
+}
+
+export class ClientUpdateRequiredError extends CustomError {
+  constructor({ code = API_ERROR_CODES.clientUpdateRequired, message }: { code?: API_ERROR_CODES; message: string }) {
+    super(ERROR_CODES.UpgradeRequired, code, message);
   }
 }

@@ -11,7 +11,7 @@ import Card from '@/components/lib/ui/card/Card.vue';
           <div class="bg-muted h-5 w-40 animate-pulse rounded" />
           <div class="bg-muted h-3 w-56 animate-pulse rounded" />
         </div>
-        <div class="bg-muted ml-auto h-8 w-20 animate-pulse rounded" />
+        <div class="bg-muted ml-auto h-9 w-20 animate-pulse rounded" />
       </div>
 
       <div class="grid grid-cols-1 @md/tracker:grid-cols-3 @2xl/tracker:grid-cols-5">

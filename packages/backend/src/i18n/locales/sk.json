@@ -8,7 +8,6 @@
     "groupNotFound": "Skupina alebo účet sa nenašli",
     "accountNotFound": "Účet sa nenašiel!",
     "accountUpdateFailed": "Aktualizácia účtu nebola úspešná",
-    "accountNoExternalId": "Účet nemá externé ID",
     "accountNoExternalIdMonobank": "Účet nemá externé ID z Monobank",
     "accountNoExternalIdEnableBanking": "Účet nemá externé ID z Enable Banking",
     "accountNotFoundForTransaction": "Pre túto transakciu sa nenašiel účet",
@@ -40,6 +39,7 @@
     "systemCannotBeMoved": "Systémové kategórie nemožno presúvať.",
     "parentNotFound": "Kategória s týmto nadradeným ID neexistuje.",
     "systemParentForbidden": "Systémové kategórie nemožno použiť ako nadradené.",
+    "defaultCannotBeDeleted": "Táto kategória obsahuje nekategorizované transakcie a nemožno ju odstrániť.",
     "ownParent": "Kategória nemôže byť sama sebe nadradená.",
     "underOwnSubcategory": "Kategóriu nemožno presunúť pod jej vlastnú podkategóriu.",
     "nestingTooDeep": "Kategórie nemožno vnárať hlbšie než na {{max}} úrovní."
@@ -297,7 +297,6 @@
     "connectionNotFound": "Pripojenie sa nenašlo",
     "connectionNotFoundOrNotYours": "Pripojenie sa nenašlo alebo vám nepatrí",
     "providerNoReauthorization": "Poskytovateľ {{providerType}} nepodporuje opätovnú autorizáciu",
-    "providerNotFoundInRegistry": "Poskytovateľ {{providerType}} sa v registri nenašiel",
     "connectionIdNotFound": "Pripojenie poskytovateľa bankových údajov {{connectionId}} sa nenašlo",
     "accountIdNotFound": "Účet {{accountId}} sa nenašiel",
     "providerTypeMismatch": "Pripojenie {{connectionId}} je pre poskytovateľa {{actualType}}, nie {{expectedType}}",
@@ -336,7 +335,7 @@
     "periodLoadNotSupported": "Tento poskytovateľ nepodporuje načítavanie transakcií za vlastné obdobie.",
     "transactionsLoadedCount": "Načítaných {{count}} transakcií.",
     "transactionsAllDuplicates": "Za toto obdobie sa našlo {{count}} transakcií — všetky boli už importované.",
-    "transactionsNoneInPeriod": "Poskytovateľ za toto obdobie nevrátil žiadne transakcie.",
+    "transactionsNoneInPeriod": "Poskytovateľ údajov za toto obdobie nevrátil žiadne transakcie.",
     "apiError": "Chyba {{provider}} API: {{message}}",
     "simplefinUnreachable": "SimpleFIN je dočasne nedostupný. Skúste to znova neskôr, prosím.",
     "currencySelectionRequired": "Účet „{{account}}\" nemá od banky uvedenú menu — pred pripojením mu menu vyberte.",
@@ -345,9 +344,7 @@
       "invalidCredentialsFormat": "Neplatný formát prístupových údajov pre Monobank",
       "invalidApiToken": "Neplatný API token pre Monobank",
       "rateLimitExceeded": "Prekročený limit požiadaviek API Monobank. Skúste to znova o minútu, prosím.",
-      "accountNotFound": "Účet {{accountExternalId}} sa v Monobank nenašiel",
       "accountReconnectRequired": "Tento účet už v Monobank nie je dostupný. Ak chcete obnoviť synchronizáciu, pripojte svoje pripojenie Monobank znova, prosím.",
-      "webhookNotImplemented": "handleWebhook pre Monobank zatiaľ nie je implementovaný",
       "unknownCurrencyCode": "Neznámy kód meny: {{numericCode}}",
       "geoBlocked": "Monobank blokuje požiadavky z IP adresy tohto servera. Vypnite VPN, alebo použite ukrajinskú IP adresu.",
       "geoBlockedProduction": "Synchronizácia s Monobank je dočasne nedostupná. Boli sme upozornení a pracujeme na tom. Ak je to naliehavé, kontaktujte podporu, prosím."
@@ -383,8 +380,7 @@
       "invalidTokens": "Nesprávne tokeny Akahu. Skontrolujte User Access Token a App ID Token na stránke vašej aplikácie Akahu.",
       "accountNoExternalId": "Účet nemá externé ID pre synchronizáciu s Akahu.",
       "accountNotFound": "Akahu účet sa nenašiel.",
-      "rateLimited": "Akahu momentálne obmedzuje počet požiadaviek. Skúste to o chvíľu znova, prosím.",
-      "missingCurrency": "Akahu nevrátilo pre tento účet žiadnu menu."
+      "rateLimited": "Akahu momentálne obmedzuje počet požiadaviek. Skúste to o chvíľu znova, prosím."
     },
     "simplefin": {
       "invalidCredentialsFormat": "Neplatný formát prístupových údajov pre SimpleFIN.",
@@ -399,8 +395,7 @@
     "walutomat": {
       "invalidCredentialsFormat": "Neplatný formát prístupových údajov pre Walutomat. API kľúč aj súkromný kľúč sú povinné.",
       "invalidApiKey": "Neplatný API kľúč alebo súkromný kľúč pre Walutomat.",
-      "accountNoExternalId": "Účet Walutomat nemá externé ID.",
-      "walletNotFound": "Peňaženka Walutomat pre menu {{currency}} sa nenašla"
+      "accountNoExternalId": "Účet Walutomat nemá externé ID."
     }
   },
   "csvImport": {
@@ -672,7 +667,6 @@
         "home-garden": "Domácnosť, záhrada",
         "pets-animals": "Domáce zvieratá",
         "electronics-accessories": "Elektronika, príslušenstvo",
-        "gifts-joy": "Darčeky, radosti",
         "stationery-tools": "Kancelária, náradie",
         "free-time": "Voľný čas",
         "drugstore-chemist": "Drogéria, lekáreň"
@@ -709,7 +703,8 @@
         "books-audio-subscriptions": "Knihy, audio, predplatné",
         "tv-streaming": "TV, streamovanie",
         "holiday-trips-hotels": "Dovolenka, výlety, hotely",
-        "charity-gifts": "Charita, dary",
+        "gifts": "Dary",
+        "charity": "Charita",
         "alcohol-tobacco": "Alkohol, tabak",
         "lottery-gambling": "Lotéria, hazardné hry"
       },

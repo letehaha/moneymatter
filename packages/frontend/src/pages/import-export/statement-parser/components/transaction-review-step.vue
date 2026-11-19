@@ -76,7 +76,7 @@
                 item.type === 'duplicate' && item.isOverridden && 'bg-success/10',
                 item.type === 'existing' && 'bg-muted/50',
                 item.isExcluded && 'opacity-50',
-                item.type !== 'existing' && 'hover:bg-muted/30 cursor-pointer',
+                item.type !== 'existing' && 'hover:bg-hover cursor-pointer',
               ]"
               @click="handleRowClick(item)"
             >

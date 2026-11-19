@@ -113,13 +113,15 @@ const handleSelect = ({ categoryId }: { categoryId: string }) => {
     </template>
 
     <!-- Search -->
-    <div class="border-input flex items-center gap-2 rounded-md border px-3 py-2">
+    <div
+      class="border-input bg-input-background flex h-9 items-center gap-2 rounded-md border px-3 py-2 dark:bg-transparent"
+    >
       <SearchIcon class="text-muted-foreground size-4 shrink-0" />
       <input
         ref="inputRef"
         v-model="searchQuery"
         type="text"
-        class="bg-dialog min-w-0 flex-1 text-sm outline-none"
+        class="min-w-0 flex-1 bg-transparent text-sm outline-none"
         :placeholder="t('fields.categorySelect.searchPlaceholder')"
       />
       <button
@@ -146,7 +148,7 @@ const handleSelect = ({ categoryId }: { categoryId: string }) => {
 
         <button
           class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors"
-          :class="disabledSet.has(item.id) ? 'cursor-not-allowed opacity-40' : 'hover:bg-muted/50 cursor-pointer'"
+          :class="disabledSet.has(item.id) ? 'cursor-not-allowed opacity-40' : 'hover:bg-hover cursor-pointer'"
           :style="{ paddingLeft: `${8 + (isSearching ? 0 : item.depth) * 12}px` }"
           :disabled="disabledSet.has(item.id)"
           @click="handleSelect({ categoryId: item.id })"

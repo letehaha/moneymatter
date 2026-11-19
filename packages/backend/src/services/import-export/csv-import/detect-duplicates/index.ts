@@ -10,6 +10,7 @@ import * as Accounts from '@models/accounts.model';
 import { findDuplicates } from '@services/import-export/core/duplicates/find-duplicates';
 import { findUnpriceableRows } from '@services/import-export/core/duplicates/find-unpriceable-rows';
 
+import { dropRowsFromBankSeam } from '../drop-rows-from-bank-seam';
 import { parseValidRows } from '../parse-valid-rows';
 
 interface DetectDuplicatesParams {
@@ -39,7 +40,7 @@ export async function detectDuplicates({
   accountMapping,
   timezone,
 }: DetectDuplicatesParams): Promise<DetectDuplicatesResponse> {
-  const { validRows, invalidRows } = await parseValidRows({
+  const { validRows: parsedRows, invalidRows } = await parseValidRows({
     userId,
     fileContent,
     delimiter,
@@ -48,6 +49,13 @@ export async function detectDuplicates({
   });
 
   const defaultAccountId = await getDefaultAccountId(userId, columnMapping);
+
+  const { rows: validRows, droppedCount: skippedAfterBankSeam } = await dropRowsFromBankSeam({
+    userId,
+    rows: parsedRows,
+    accountMapping,
+    defaultAccountId,
+  });
 
   // Build account name to ID mapping for duplicate detection
   const accountNameToId = await buildAccountNameToIdMapping(userId, validRows, accountMapping, defaultAccountId);
@@ -77,6 +85,7 @@ export async function detectDuplicates({
     validRows,
     invalidRows,
     duplicates,
+    skippedAfterBankSeam,
     ...(unpriceableRows.length > 0 && { unpriceableRows }),
   };
 }

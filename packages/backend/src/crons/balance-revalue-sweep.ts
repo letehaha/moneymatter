@@ -16,27 +16,38 @@ interface SyncResult {
   errors: unknown[];
 }
 
-const loadCandidateAccounts = async (): Promise<{ accountId: string; type: ACCOUNT_TYPES }[]> =>
+interface Candidate {
+  accountId: string;
+  type: ACCOUNT_TYPES;
+  isForeign: boolean;
+  hasSeam: boolean;
+}
+
+const loadCandidateAccounts = async (): Promise<Candidate[]> =>
   (await connection.sequelize.query(
-    `SELECT a."id" AS "accountId", a."type" AS "type"
+    `SELECT a."id" AS "accountId", a."type" AS "type",
+            a."currencyCode" <> uc."currencyCode" AS "isForeign",
+            a."seamBalance" IS NOT NULL AS "hasSeam"
        FROM "Accounts" a
        JOIN "UsersCurrencies" uc ON uc."userId" = a."userId" AND uc."isDefaultCurrency" = true
       WHERE a."accountCategory" NOT IN (:dedicatedFlowCategories)
-        AND a."currencyCode" <> uc."currencyCode"
+        AND (a."currencyCode" <> uc."currencyCode" OR (a."seamBalance" IS NOT NULL AND a."type" <> :system))
       ORDER BY a."id"`,
     {
       type: QueryTypes.SELECT,
       replacements: {
         dedicatedFlowCategories: [...DEDICATED_FLOW_ACCOUNT_CATEGORIES],
+        system: ACCOUNT_TYPES.system,
       },
     },
-  )) as { accountId: string; type: ACCOUNT_TYPES }[];
+  )) as Candidate[];
 
 /**
  * Sequential on purpose: rebuilding every foreign-currency account at once floods the DB.
  *
- * Bank-synced accounts only get today's row re-valued from their last-known native
- * balance — the provider owns their history, so it is never rebuilt from transactions.
+ * Bank-synced foreign-currency accounts get today's row re-valued from their last-known
+ * native balance. The provider owns their history, so only the days before a bank seam
+ * are rebuilt from transactions.
  */
 export const runBalanceRevalueSweep = async (): Promise<SyncResult> => {
   const candidates = await loadCandidateAccounts();
@@ -48,37 +59,43 @@ export const runBalanceRevalueSweep = async (): Promise<SyncResult> => {
   };
 
   for (const candidate of candidates) {
-    try {
-      if (candidate.type !== ACCOUNT_TYPES.system) {
-        const account = await Accounts.findByPk(candidate.accountId);
+    const { accountId } = candidate;
+    const isBankAccount = candidate.type !== ACCOUNT_TYPES.system;
+    const failures: unknown[] = [];
+    const attempt = async (step: () => Promise<void>) => {
+      try {
+        await step();
+      } catch (error) {
+        failures.push(error);
+        logger.error(
+          { message: `Balance revalue sweep failed for account ${accountId}`, error: error as Error },
+          { code: 'BALANCE_REVALUE_SWEEP_ACCOUNT_FAILED', accountId },
+        );
+      }
+    };
 
-        if (!account) {
-          throw new Error(`Account ${candidate.accountId} disappeared mid-sweep`);
-        }
-
+    if (isBankAccount && candidate.isForeign) {
+      await attempt(async () => {
+        const account = await Accounts.findByPk(accountId);
+        if (!account) throw new Error(`Account ${accountId} disappeared mid-sweep`);
         await writeBankBalanceWithHistory({ account, balance: account.currentBalance });
-        result.successfulUpdates += 1;
-        continue;
-      }
+      });
+    }
 
-      const outcome = await revalueBalanceHistory({ accountId: candidate.accountId });
+    if (!isBankAccount || candidate.hasSeam) {
+      await attempt(async () => {
+        if ((await revalueBalanceHistory({ accountId })) === 'skipped') {
+          failures.push(`Account ${accountId} skipped: balance history not rebuilt`);
+          logger.warn('Balance revalue sweep skipped account: balance history not rebuilt', { accountId });
+        }
+      });
+    }
 
-      if (outcome === 'skipped') {
-        result.failedUpdates += 1;
-        result.errors.push(`Account ${candidate.accountId} skipped: no exchange rate coverage`);
-      } else {
-        result.successfulUpdates += 1;
-      }
-    } catch (error) {
+    if (failures.length === 0) {
+      result.successfulUpdates += 1;
+    } else {
       result.failedUpdates += 1;
-      result.errors.push(error);
-      logger.error(
-        {
-          message: `Balance revalue sweep failed for account ${candidate.accountId}`,
-          error: error as Error,
-        },
-        { code: 'BALANCE_REVALUE_SWEEP_ACCOUNT_FAILED' },
-      );
+      result.errors.push(...failures);
     }
   }
 

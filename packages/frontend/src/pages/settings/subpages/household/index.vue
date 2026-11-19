@@ -340,7 +340,7 @@ watch(permissionOptions, (next) => {
               :disabled="!isInviteEmailValid || inviteMutation.isPending.value || isDemo"
               class="@sm/household:col-span-3"
             >
-              <MailIcon class="mr-2 size-4" />
+              <MailIcon class="size-4" />
               {{ $t('pages.household.invite.submit') }}
             </Button>
           </form>
@@ -422,7 +422,7 @@ watch(permissionOptions, (next) => {
                       :disabled="revokeMutation.isPending.value || isDemo"
                       @click="openRevoke(member)"
                     >
-                      <UserMinusIcon class="mr-2 size-4" />
+                      <UserMinusIcon class="size-4" />
                       {{ $t('pages.household.revoke.action') }}
                     </Button>
                   </DemoRestricted>
@@ -471,7 +471,7 @@ watch(permissionOptions, (next) => {
                       :disabled="resendInviteMutation.isPending.value || isDemo"
                       @click="resendInviteMutation.mutate(invitation.id)"
                     >
-                      <RotateCwIcon class="mr-2 size-4" />
+                      <RotateCwIcon class="size-4" />
                       {{ $t('pages.household.pending.resend') }}
                     </Button>
                   </DemoRestricted>
@@ -482,7 +482,7 @@ watch(permissionOptions, (next) => {
                       :disabled="cancelInviteMutation.isPending.value || isDemo"
                       @click="openCancelInvite(invitation)"
                     >
-                      <XIcon class="mr-2 size-4" />
+                      <XIcon class="size-4" />
                       {{ $t('pages.household.pending.cancel') }}
                     </Button>
                   </DemoRestricted>
@@ -540,7 +540,7 @@ watch(permissionOptions, (next) => {
                   :disabled="leaveMutation.isPending.value || isDemo"
                   @click="openLeave({ resourceId: row.resourceId, ownerName: row.owner.username })"
                 >
-                  <LogOutIcon class="mr-2 size-4" />
+                  <LogOutIcon class="size-4" />
                   {{ $t('pages.household.leave.action') }}
                 </Button>
               </DemoRestricted>

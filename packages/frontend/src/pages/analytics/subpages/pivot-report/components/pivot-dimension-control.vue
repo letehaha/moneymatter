@@ -16,7 +16,7 @@
         @update:model-value="(value) => emit('update:modelValue', value as string)"
       >
         <Select.SelectTrigger
-          class="hover:bg-accent h-auto min-h-11 gap-1.5 rounded-none border-0 bg-transparent px-2.5 py-1 focus:ring-offset-0 focus:ring-inset md:h-auto @xl/pivot-report:min-h-8 @xl/pivot-report:px-3 @xl/pivot-report:py-0"
+          class="hover:bg-hover h-auto min-h-11 gap-1.5 rounded-none border-0 bg-transparent px-2.5 py-1 focus:ring-offset-0 focus:ring-inset @xl/pivot-report:min-h-8 @xl/pivot-report:px-3 @xl/pivot-report:py-0"
         >
           <span
             class="flex min-w-0 flex-col @xl/pivot-report:flex-row @xl/pivot-report:items-center @xl/pivot-report:gap-2"

@@ -143,6 +143,7 @@ export interface AccountModel extends EntityLogoFields {
    * to share recipients (who can't reach the owner-scoped connection-details endpoint).
    */
   bankProviderType?: BANK_PROVIDER_TYPE | null;
+  bankSeamAt: string | null;
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
 }
@@ -176,6 +177,8 @@ export interface AccountApiResponse extends EntityLogoFields {
    *  bank logo without a per-account connection-details lookup (which is owner-scoped
    *  and unreachable for share recipients). */
   bankProviderType: BANK_PROVIDER_TYPE | null;
+  /** Start of the day a manual account was linked to a bank: rows before it stay editable. */
+  bankSeamAt: string | null;
   needsRelink?: boolean;
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;

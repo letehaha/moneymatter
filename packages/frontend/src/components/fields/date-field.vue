@@ -21,15 +21,16 @@
             :disabled="disabled"
             :class="
               cn(
-                'datetime-local-raw-input',
+                'datetime-local-raw-input peer',
                 // Keep px-3: extra right padding pushes Firefox's native picker
                 // icon out from under the addon overlay that covers it.
-                'border-input bg-input-background ring-offset-background flex h-10 w-full rounded-md border px-3 py-2 text-sm md:h-9',
+                'border-input bg-input-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm',
                 'file:border-0 file:bg-transparent file:text-sm file:font-medium',
                 'placeholder:text-muted-foreground',
                 'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden',
                 'disabled:cursor-not-allowed disabled:opacity-50',
                 'appearance-none', // fixes Safari width issues
+                controlHeight[size],
                 $attrs.class ?? '',
               )
             "
@@ -43,7 +44,7 @@
             type="button"
             variant="ghost"
             size="icon-sm"
-            class="bg-input-background text-muted-foreground hover:text-foreground absolute top-1/2 right-12 -translate-y-1/2"
+            class="text-muted-foreground hover:text-foreground absolute top-1/2 right-12 -translate-y-1/2 bg-(--color-input-background) peer-focus:bg-(--input-background) hover:bg-(--color-input-background) hover:bg-[linear-gradient(var(--color-hover),var(--color-hover))] peer-focus:hover:bg-(--input-background)"
             :aria-label="$t('common.actions.clear')"
             @click="emit('clear')"
           >
@@ -55,7 +56,12 @@
                Disabled where Safari mobile's native picker covers it, so taps fall through. -->
           <Popover.PopoverTrigger as-child>
             <Button
-              class="border-input bg-muted text-muted-foreground hover:border-primary/50 hover:bg-muted hover:text-primary-text absolute top-0 right-0 flex h-10 w-12 items-center justify-center rounded-l-none rounded-r-md border md:h-9"
+              :class="
+                cn(
+                  'border-input bg-muted text-muted-foreground hover:border-primary/50 hover:bg-muted hover:text-primary-text absolute top-0 right-0 flex w-12 items-center justify-center rounded-l-none rounded-r-md border',
+                  controlHeight[size],
+                )
+              "
               variant="ghost"
               size="icon"
               :disabled="disabled || !isPopoverAvailable"
@@ -78,6 +84,7 @@ import FieldError from '@/components/fields/components/field-error.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Calendar } from '@/components/lib/ui/calendar';
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import * as Popover from '@/components/lib/ui/popover';
 import { useSafariDetection } from '@/composable/detect-safari';
 import { cn } from '@/lib/utils';
@@ -104,6 +111,7 @@ const props = withDefaults(
     clearable?: boolean;
     /** The input shows only the date; the time stays editable in the calendar popover. */
     hideInputTime?: boolean;
+    size?: ControlSize;
   }>(),
   {
     label: undefined,
@@ -117,6 +125,7 @@ const props = withDefaults(
     mode: 'dateTime',
     clearable: false,
     hideInputTime: false,
+    size: 'default',
   },
 );
 

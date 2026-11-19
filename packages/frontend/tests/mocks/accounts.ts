@@ -37,6 +37,7 @@ export const ACCOUNTS: AccountWithRelinkStatus[] = [
     logoColor: null,
     logoIcon: null,
     logoImageId: null,
+    bankSeamAt: null,
     needsRelink: false,
   },
   {
@@ -61,6 +62,7 @@ export const ACCOUNTS: AccountWithRelinkStatus[] = [
     logoColor: null,
     logoIcon: null,
     logoImageId: null,
+    bankSeamAt: null,
     needsRelink: false,
   },
   {
@@ -85,6 +87,7 @@ export const ACCOUNTS: AccountWithRelinkStatus[] = [
     logoColor: null,
     logoIcon: null,
     logoImageId: null,
+    bankSeamAt: null,
     needsRelink: false,
   },
   {
@@ -109,6 +112,7 @@ export const ACCOUNTS: AccountWithRelinkStatus[] = [
     logoColor: null,
     logoIcon: null,
     logoImageId: null,
+    bankSeamAt: null,
     needsRelink: false,
   },
 ];

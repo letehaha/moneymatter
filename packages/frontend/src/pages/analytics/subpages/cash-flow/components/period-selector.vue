@@ -16,10 +16,10 @@
       <template #trigger="{ triggerText }">
         <Button
           variant="ghost"
-          size="sm"
-          :class="cn('font-medium', fluid ? 'min-w-0 flex-1' : 'min-w-55', variant === 'solid' && 'h-8')"
+          :size="variant === 'solid' ? 'xs' : 'sm'"
+          :class="cn('font-medium', fluid ? 'min-w-0 flex-1' : 'min-w-55')"
         >
-          <CalendarIcon class="mr-1.5 size-3.5 shrink-0" />
+          <CalendarIcon class="size-3.5 shrink-0" />
           <span class="truncate">{{ triggerText }}</span>
         </Button>
       </template>
