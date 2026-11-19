@@ -271,7 +271,7 @@ describe('list_budget_plan_periods', () => {
 
     const data = (await call({ tool, args: { planId: PLAN_ID } })) as { periods: unknown[]; total: number };
 
-    expect(listPeriodsService).toHaveBeenCalledWith({ userId: 42, planId: PLAN_ID });
+    expect(listPeriodsService).toHaveBeenCalledWith({ timezone: 'UTC', userId: 42, planId: PLAN_ID });
     expect(data.total).toBe(30);
     expect(data.periods).toEqual(periods.slice(6).toReversed());
   });
@@ -301,7 +301,7 @@ describe('list_budget_plan_periods', () => {
     await expect(call({ tool, args: { planId: PLAN_ID }, extra: OTHER_READER })).rejects.toThrow(
       'Budget plan not found',
     );
-    expect(listPeriodsService).toHaveBeenCalledWith({ userId: 7, planId: PLAN_ID });
+    expect(listPeriodsService).toHaveBeenCalledWith({ timezone: 'UTC', userId: 7, planId: PLAN_ID });
   });
 });
 
@@ -333,7 +333,12 @@ describe('get_budget_plan_period', () => {
 
     const data = await call({ tool, args: { planId: PLAN_ID, periodId: PERIOD_ID } });
 
-    expect(getPeriodViewService).toHaveBeenCalledWith({ userId: 42, planId: PLAN_ID, periodId: PERIOD_ID });
+    expect(getPeriodViewService).toHaveBeenCalledWith({
+      timezone: 'UTC',
+      userId: 42,
+      planId: PLAN_ID,
+      periodId: PERIOD_ID,
+    });
     expect(data).toEqual(view);
   });
 
@@ -343,7 +348,12 @@ describe('get_budget_plan_period', () => {
     await expect(call({ tool, args: { planId: PLAN_ID, periodId: PERIOD_ID }, extra: OTHER_READER })).rejects.toThrow(
       'Budget plan not found',
     );
-    expect(getPeriodViewService).toHaveBeenCalledWith({ userId: 7, planId: PLAN_ID, periodId: PERIOD_ID });
+    expect(getPeriodViewService).toHaveBeenCalledWith({
+      timezone: 'UTC',
+      userId: 7,
+      planId: PLAN_ID,
+      periodId: PERIOD_ID,
+    });
   });
 });
 
@@ -383,7 +393,12 @@ describe('get_budget_plan_scheduled', () => {
 
     const data = await call({ tool, args: { planId: PLAN_ID, periodId: PERIOD_ID } });
 
-    expect(getScheduledService).toHaveBeenCalledWith({ userId: 42, planId: PLAN_ID, periodId: PERIOD_ID });
+    expect(getScheduledService).toHaveBeenCalledWith({
+      timezone: 'UTC',
+      userId: 42,
+      planId: PLAN_ID,
+      periodId: PERIOD_ID,
+    });
     expect(data).toEqual(scheduled);
   });
 
@@ -408,7 +423,12 @@ describe('get_budget_plan_scheduled', () => {
     await expect(call({ tool, args: { planId: PLAN_ID, periodId: PERIOD_ID }, extra: OTHER_READER })).rejects.toThrow(
       'Budget plan not found',
     );
-    expect(getScheduledService).toHaveBeenCalledWith({ userId: 7, planId: PLAN_ID, periodId: PERIOD_ID });
+    expect(getScheduledService).toHaveBeenCalledWith({
+      timezone: 'UTC',
+      userId: 7,
+      planId: PLAN_ID,
+      periodId: PERIOD_ID,
+    });
   });
 });
 
@@ -434,7 +454,13 @@ describe('get_budget_plan_trends', () => {
 
     await call({ tool, args: { planId: PLAN_ID } });
 
-    expect(getTrendsService).toHaveBeenCalledWith({ userId: 42, planId: PLAN_ID, until: undefined, count: 6 });
+    expect(getTrendsService).toHaveBeenCalledWith({
+      timezone: 'UTC',
+      userId: 42,
+      planId: PLAN_ID,
+      until: undefined,
+      count: 6,
+    });
   });
 
   it('passes until and count through and returns the trends the REST route returns', async () => {
@@ -456,7 +482,13 @@ describe('get_budget_plan_trends', () => {
 
     const data = await call({ tool, args: { planId: PLAN_ID, until: PERIOD_ID, count: 12 } });
 
-    expect(getTrendsService).toHaveBeenCalledWith({ userId: 42, planId: PLAN_ID, until: PERIOD_ID, count: 12 });
+    expect(getTrendsService).toHaveBeenCalledWith({
+      timezone: 'UTC',
+      userId: 42,
+      planId: PLAN_ID,
+      until: PERIOD_ID,
+      count: 12,
+    });
     expect(data).toEqual(trends);
   });
 
@@ -466,7 +498,13 @@ describe('get_budget_plan_trends', () => {
     await expect(call({ tool, args: { planId: PLAN_ID }, extra: OTHER_READER })).rejects.toThrow(
       'Budget plan not found',
     );
-    expect(getTrendsService).toHaveBeenCalledWith({ userId: 7, planId: PLAN_ID, until: undefined, count: 6 });
+    expect(getTrendsService).toHaveBeenCalledWith({
+      timezone: 'UTC',
+      userId: 7,
+      planId: PLAN_ID,
+      until: undefined,
+      count: 6,
+    });
   });
 });
 
