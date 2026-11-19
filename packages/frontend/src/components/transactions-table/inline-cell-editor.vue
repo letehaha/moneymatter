@@ -1,13 +1,13 @@
 <template>
   <DefineBody>
-    <p v-if="mode !== 'edit'" class="text-sm leading-relaxed">
-      {{
-        mode === 'bank'
-          ? $t('transactions.inlineEdit.bankDescription')
-          : $t('transactions.inlineEdit.managedDescription')
-      }}
-    </p>
-    <DateField v-else-if="column === TABLE_COLUMN.date" ref="dropdownFieldRef" v-model="form.date" />
+    <p v-if="mode !== 'edit'" class="text-sm leading-relaxed">{{ description }}</p>
+    <DateField
+      v-else-if="column === TABLE_COLUMN.date"
+      ref="dropdownFieldRef"
+      v-model="form.date"
+      :calendar-options="{ maxDate: seamCutoff ? subMilliseconds(seamCutoff, 1) : undefined }"
+      :error-message="seamDateError"
+    />
     <AccountSelectField
       v-else-if="column === TABLE_COLUMN.account"
       ref="dropdownFieldRef"
@@ -122,6 +122,7 @@
     <PopoverContent
       align="start"
       class="w-72 animate-none! p-0"
+      :aria-label="title"
       @keydown.capture="onKeydown"
       @open-auto-focus="onOpenAutoFocus"
       @pointer-down-outside="onPointerDownOutside"
@@ -138,6 +139,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatBankSeamDay, getBankSeamCutoff } from '@/common/utils/bank-row-permissions';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import AccountSelectField from '@/components/fields/account-select-field.vue';
 import CategorySelectField from '@/components/fields/category-select-field.vue';
@@ -156,6 +158,7 @@ import { useAccountsStore, useCategoriesStore } from '@/stores';
 import { findFormattedCategoryById } from '@/stores/categories/helpers';
 import type { RecordId, TransactionModel, UpdateTransactionBody } from '@bt/shared/types';
 import { createReusableTemplate } from '@vueuse/core';
+import { isBefore, subMilliseconds } from 'date-fns';
 import { XIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { PopoverAnchor, type PointerDownOutsideEvent, type ReferenceElement } from 'reka-ui';
@@ -163,7 +166,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { TABLE_COLUMN } from './columns';
-import type { ClaimedCellMode, InlineEditableColumn } from './inline-cell-mode';
+import { type ClaimedCellMode, type InlineEditableColumn, getBankLockCopy } from './inline-cell-mode';
 import { MAX_TAGS, buildInlineEditBody, canSaveInlineEdit } from './inline-edit-payload';
 import { inlineCellKey } from './use-inline-transaction-edit';
 
@@ -171,6 +174,7 @@ const MAX_NOTE_LENGTH = 1000;
 
 const props = defineProps<{
   tx: TransactionModel;
+  oppositeTx: TransactionModel | undefined;
   column: InlineEditableColumn;
   label: string;
   mode: ClaimedCellMode;
@@ -207,14 +211,41 @@ const categoriesStatus = computed(() =>
   !isSharedWithCaller.value || sharedCategories.data.value ? 'success' : sharedCategories.status.value,
 );
 
+const txAccount = computed(() => accountsRecord.value[props.tx.accountId]);
+
+// A hand-entered row on a bank-linked account is never bank-synced, so the bank-sync copy would be wrong for it.
+const lockCopy = computed(() =>
+  props.mode === 'bank'
+    ? getBankLockCopy({
+        tx: props.tx,
+        column: props.column,
+        account: txAccount.value,
+        oppositeTx: props.oppositeTx,
+        oppositeAccount: props.oppositeTx ? accountsRecord.value[props.oppositeTx.accountId] : undefined,
+      })
+    : null,
+);
+
+const seamCutoff = computed(() => getBankSeamCutoff({ legs: [{ transaction: props.tx, account: txAccount.value }] }));
+
 const accountOptions = computed(() =>
   props.tx.isPlanned ? plannedTargetableAccountsActiveFirst.value : txTargetableSourceAccountsActiveFirst.value,
 );
 
 const title = computed(() => {
+  if (lockCopy.value) return t(lockCopy.value.title);
   if (props.mode === 'bank') return t('transactions.inlineEdit.bankTitle');
   if (props.mode === 'managed') return t('transactions.inlineEdit.managedTitle');
   return props.label;
+});
+
+const description = computed(() => {
+  if (lockCopy.value) {
+    const { description: key, seamAt } = lockCopy.value;
+    return t(key, { date: seamAt ? formatBankSeamDay({ seamAt }) : '' });
+  }
+  if (props.mode === 'bank') return t('transactions.inlineEdit.bankDescription');
+  return t('transactions.inlineEdit.managedDescription');
 });
 
 const form = reactive({
@@ -233,7 +264,12 @@ watch(categories, (list) => {
 });
 
 const body = computed(() => buildInlineEditBody({ column: props.column, form }));
-const canSave = computed(() => canSaveInlineEdit({ tx: props.tx, body: body.value }));
+const seamDateError = computed(() =>
+  props.column === TABLE_COLUMN.date && seamCutoff.value && !isBefore(form.date, seamCutoff.value)
+    ? t('transactions.bankSeamDateError', { date: formatBankSeamDay({ seamAt: seamCutoff.value }) })
+    : undefined,
+);
+const canSave = computed(() => !seamDateError.value && canSaveInlineEdit({ tx: props.tx, body: body.value }));
 
 const clearText = () => {
   if (props.column === TABLE_COLUMN.amount) form.amount = null;

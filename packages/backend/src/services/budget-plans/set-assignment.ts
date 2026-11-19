@@ -19,6 +19,7 @@ interface SetAssignmentParams extends SetBudgetPlanAssignmentPayload {
   planId: RecordId;
   periodId: RecordId;
   lineId: RecordId;
+  timezone: string;
 }
 
 const setAssignmentImpl = async ({
@@ -29,6 +30,7 @@ const setAssignmentImpl = async ({
   scope,
   amount,
   carryPolicy,
+  timezone,
 }: SetAssignmentParams) => {
   const plan = await findPlan({ planId, userId, lock: true });
   const { periods } = await ensureCurrentPeriods({ plan });
@@ -71,7 +73,7 @@ const setAssignmentImpl = async ({
   else if (existing) await existing.update(next);
   else if (!empty) await BudgetAssignments.create({ periodId, lineId, ...next });
 
-  return getPeriodView({ userId, planId, periodId });
+  return getPeriodView({ userId, planId, periodId, timezone });
 };
 
 export const setAssignment = withTransaction(setAssignmentImpl);

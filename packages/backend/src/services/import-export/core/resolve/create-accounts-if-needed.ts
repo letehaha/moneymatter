@@ -39,6 +39,8 @@ interface CreateAccountsIfNeededParams {
    * account name is empty and per-name mapping is absent.
    */
   defaultAccountId?: string;
+  /** Lets an existing account with a bank seam be a target; see `assertImportTargetNotBankLinked`. */
+  allowSeamTargets?: boolean;
 }
 
 interface CreateAccountsIfNeededResult {
@@ -74,6 +76,7 @@ export async function createAccountsIfNeeded({
   resolveAccountName,
   alwaysCreate = false,
   defaultAccountId,
+  allowSeamTargets = false,
 }: CreateAccountsIfNeededParams): Promise<CreateAccountsIfNeededResult> {
   const accountNameToId = new Map<string, string>();
 
@@ -135,7 +138,7 @@ export async function createAccountsIfNeeded({
       });
     }
     assertNotDerivedBalanceAccount({ account, actionPhrase: 'be an import target' });
-    assertImportTargetNotBankLinked({ account });
+    assertImportTargetNotBankLinked({ account, allowSeam: allowSeamTargets });
     return account;
   };
 

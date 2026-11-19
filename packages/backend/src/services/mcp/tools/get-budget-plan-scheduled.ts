@@ -13,5 +13,5 @@ export const getBudgetPlanScheduledTool = defineTool({
     planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
     periodId: recordId().describe('Period ID (from list_budget_plan_periods)'),
   },
-  run: ({ userId, args }) => getScheduled({ userId, planId: args.planId, periodId: args.periodId }),
+  run: ({ userId, args }) => getScheduled({ userId, planId: args.planId, periodId: args.periodId, timezone: 'UTC' }),
 });

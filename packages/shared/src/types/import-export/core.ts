@@ -183,6 +183,7 @@ export type ImportRowErrorCode = 'payee-default-tags-failed' | 'account-unresolv
  * locale, so the UI translates `code` with `params` and falls back to a generic
  * message for unknown or missing codes; the English `error` stays for logs.
  * `interrupted`: a server restart killed the job mid-run.
+ * `bank-link-changed`: a target account was linked to or unlinked from a bank after the review.
  */
 export type ImportJobFailureCode =
   | 'interrupted'
@@ -191,7 +192,8 @@ export type ImportJobFailureCode =
   | 'category-name-too-long'
   | 'payee-name-too-long'
   | 'account-mapping-missing'
-  | 'linked-account-not-found';
+  | 'linked-account-not-found'
+  | 'bank-link-changed';
 
 export interface ImportJobFailure {
   code: ImportJobFailureCode;
@@ -256,4 +258,10 @@ export interface ImportSummaryBase {
    * pollers — summaries produced before this field existed do not carry it.
    */
   accountBalanceChanges?: AccountBalanceChange[];
+  /**
+   * Rows not imported because they are dated from the bank seam of their target account
+   * on: the bank owns that history. A dropped transfer counts once per leg. Optional:
+   * retained results predate the field.
+   */
+  skippedAfterBankSeam?: number;
 }

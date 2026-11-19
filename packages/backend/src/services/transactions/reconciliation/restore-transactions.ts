@@ -7,7 +7,7 @@ import { reconciliationRemovedWhere } from '@models/transactions-query/deletion-
 import { withTransaction } from '@services/common/with-transaction';
 import { Op } from 'sequelize';
 
-import { rejectIfAny } from './helpers';
+import { rejectIfAny, scheduleRevalueOfAccounts } from './helpers';
 
 export const restoreTransactions = withTransaction(
   async ({
@@ -49,6 +49,7 @@ export const restoreTransactions = withTransaction(
       access: { creator: userId },
       balanceAdjustments: 'include',
     });
+    await scheduleRevalueOfAccounts({ rows });
 
     return { restoredIds: transactionIds };
   },

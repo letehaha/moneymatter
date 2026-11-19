@@ -1,9 +1,26 @@
 import { ACCOUNT_TYPES, isDedicatedFlowAccountCategory, TRANSACTION_TYPES } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import { roundHalfToEven } from '@common/utils/round-half-to-even';
+import { ExchangeRateUnavailableError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import { connection } from '@models/connection';
 import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
+import { lockAccountRow } from '@services/accounts/lock-account-row';
+import {
+  measureRefInitialBalanceAtBoundary,
+  restampRefInitialBalance,
+} from '@services/accounts/restamp-ref-initial-balance';
+import {
+  getLinkDayStart,
+  getSeam,
+  getSeamStart,
+  isBeforeSeamStart,
+  manualRowOnOrAfterLinkDayMessage,
+  preSeamTimeOnOrAfterLinkDayMessage,
+  SEAM_ACCOUNT_ATTRIBUTES,
+  type SeamAccount,
+} from '@services/accounts/seam';
 import { withTransaction } from '@services/common/with-transaction';
 import {
   buildDailyPairRateResolver,
@@ -37,14 +54,35 @@ export const isRevaluedAccount = ({
 
 const signedCentsSql = `SUM(CASE WHEN "transactionType" = '${TRANSACTION_TYPES.income}' THEN "amount" ELSE -"amount" END)`;
 
+/** `excludeTransactionId` drops a row a BeforeDestroy hook is removing, which still exists then. */
+const excludeSql = ({ excludeTransactionId }: { excludeTransactionId?: string }) =>
+  excludeTransactionId ? ` AND "id" <> :excludeTransactionId` : '';
+
+const sumCents = ({ dailyDeltas }: { dailyDeltas: Map<string, number> }) =>
+  [...dailyDeltas.values()].reduce((sum, cents) => sum + cents, 0);
+
+const lockAccountHistory = async ({ accountId }: { accountId: string }) => {
+  // Two rebuilds of the same account would otherwise interleave their writes and
+  // leave the grid mixing rows from different runs.
+  await connection.sequelize.query(`SELECT pg_advisory_xact_lock(hashtext(:accountId))`, {
+    type: QueryTypes.SELECT,
+    replacements: { accountId },
+  });
+};
+
 const loadTransactionBounds = async ({
   accountId,
+  before,
+  excludeTransactionId,
 }: {
   accountId: string;
+  before?: Date;
+  excludeTransactionId?: string;
 }): Promise<{ earliest: Date | null; latest: Date | null }> => {
   const [row] = (await connection.sequelize.query(
-    `SELECT MIN("time") AS "earliest", MAX("time") AS "latest" FROM real_transactions WHERE "accountId" = :accountId`,
-    { type: QueryTypes.SELECT, replacements: { accountId } },
+    `SELECT MIN("time") AS "earliest", MAX("time") AS "latest" FROM real_transactions
+      WHERE "accountId" = :accountId${before ? ` AND "time" < :before` : ''}${excludeSql({ excludeTransactionId })}`,
+    { type: QueryTypes.SELECT, replacements: { accountId, before, excludeTransactionId } },
   )) as { earliest: Date | null; latest: Date | null }[];
 
   return {
@@ -53,10 +91,17 @@ const loadTransactionBounds = async ({
   };
 };
 
-const loadOldestStoredDay = async ({ accountId }: { accountId: string }): Promise<string | null> => {
+const loadOldestStoredDay = async ({
+  accountId,
+  beforeDay,
+}: {
+  accountId: string;
+  beforeDay?: string;
+}): Promise<string | null> => {
   const [row] = (await connection.sequelize.query(
-    `SELECT to_char(MIN("date"), 'YYYY-MM-DD') AS "day" FROM "Balances" WHERE "accountId" = :accountId`,
-    { type: QueryTypes.SELECT, replacements: { accountId } },
+    `SELECT to_char(MIN("date"), 'YYYY-MM-DD') AS "day" FROM "Balances"
+      WHERE "accountId" = :accountId${beforeDay ? ` AND "date" < :beforeDay` : ''}`,
+    { type: QueryTypes.SELECT, replacements: { accountId, beforeDay } },
   )) as { day: string | null }[];
 
   return row?.day ?? null;
@@ -66,18 +111,20 @@ const loadDailyNativeDeltas = async ({
   accountId,
   from,
   toExclusive,
+  excludeTransactionId,
 }: {
   accountId: string;
-  from: Date;
+  from?: Date;
   toExclusive: Date;
+  excludeTransactionId?: string;
 }): Promise<Map<string, number>> => {
   const rows = (await connection.sequelize.query(
     `SELECT to_char(date_trunc('day', "time" AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS "day",
             ${signedCentsSql}::bigint AS "cents"
        FROM real_transactions
-      WHERE "accountId" = :accountId AND "time" >= :from AND "time" < :toExclusive
+      WHERE "accountId" = :accountId${from ? ` AND "time" >= :from` : ''} AND "time" < :toExclusive${excludeSql({ excludeTransactionId })}
       GROUP BY 1`,
-    { type: QueryTypes.SELECT, replacements: { accountId, from, toExclusive } },
+    { type: QueryTypes.SELECT, replacements: { accountId, from, toExclusive, excludeTransactionId } },
   )) as { day: string; cents: string | number }[];
 
   return new Map(rows.map((row) => [row.day, Number(row.cents)]));
@@ -89,17 +136,20 @@ const loadDailyNativeDeltas = async ({
 const writeBalanceRows = async ({
   accountId,
   fromDay,
+  beforeDay,
   rows,
 }: {
   accountId: string;
   fromDay: string;
+  beforeDay?: string;
   rows: { date: string; amount: number }[];
 }): Promise<void> => {
   if (!rows.length) return;
 
-  await connection.sequelize.query(`DELETE FROM "Balances" WHERE "accountId" = :accountId AND "date" >= :fromDay`, {
-    replacements: { accountId, fromDay },
-  });
+  await connection.sequelize.query(
+    `DELETE FROM "Balances" WHERE "accountId" = :accountId AND "date" >= :fromDay${beforeDay ? ` AND "date" < :beforeDay` : ''}`,
+    { replacements: { accountId, fromDay, beforeDay } },
+  );
 
   const replacements: Record<string, unknown> = { accountId };
   const values = rows.map((row, index) => {
@@ -118,28 +168,261 @@ const writeBalanceRows = async ({
   );
 };
 
+/** Each day's rate to the owner's base currency, or null when the pair has no stored rate. */
+const buildRateForDay = async ({
+  account,
+  baseCurrencyCode,
+  from,
+  to,
+}: {
+  account: Accounts;
+  baseCurrencyCode: string;
+  from: Date;
+  to: Date;
+}): Promise<DailyPairRateResolver | null> => {
+  if (account.currencyCode === baseCurrencyCode) return () => 1;
+
+  const userCurrency = (await UsersCurrencies.findOne({
+    where: { userId: account.userId, currencyCode: account.currencyCode },
+    attributes: ['liveRateUpdate'],
+    raw: true,
+  })) as { liveRateUpdate: boolean | null } | null;
+
+  // A flat manual rate wins every day of the grid, so the market resolver is built
+  // only when there is no manual rate. Only that resolver can abort the rebuild.
+  const flatCustomRate =
+    (
+      await resolveCustomRate({
+        userId: account.userId,
+        pair: { baseCode: account.currencyCode, quoteCode: baseCurrencyCode },
+        liveRateUpdate: userCurrency?.liveRateUpdate ?? null,
+      })
+    )?.rate ?? null;
+  if (flatCustomRate !== null) return () => flatCustomRate;
+
+  const resolveRate = await buildDailyPairRateResolver({
+    baseCode: account.currencyCode,
+    quoteCode: baseCurrencyCode,
+    from,
+    to,
+  });
+
+  if (!resolveRate) {
+    logger.warn('No stored exchange rate for pair; account left untouched', {
+      accountId: account.id,
+      pair: `${account.currencyCode}/${baseCurrencyCode}`,
+    });
+  }
+
+  return resolveRate;
+};
+
+/**
+ * Daily rows from `gridStart` through `gridEnd`: native units held that day × that
+ * day's rate. Sparse: a row only where the value moves, plus the first day and
+ * `pinnedDayKey`. Null when a day has no rate.
+ */
+const buildDailyRows = ({
+  account,
+  baseCurrencyCode,
+  openingCents,
+  gridStart,
+  gridEnd,
+  dailyDeltas,
+  rateForDay,
+  pinnedDayKey,
+}: {
+  account: Accounts;
+  baseCurrencyCode: string;
+  openingCents: number;
+  gridStart: Date;
+  gridEnd: Date;
+  dailyDeltas: Map<string, number>;
+  rateForDay: DailyPairRateResolver;
+  pinnedDayKey?: string;
+}): { date: string; amount: number }[] | null => {
+  const startKey = toDayKey(gridStart);
+  let nativeCents = openingCents;
+  let lastEmitted: number | null = null;
+  const rows: { date: string; amount: number }[] = [];
+
+  for (let time = +gridStart; time <= +gridEnd; time += MS_PER_DAY) {
+    const dayKey = toDayKey(new Date(time));
+    nativeCents += dailyDeltas.get(dayKey) ?? 0;
+
+    const rate = rateForDay(dayKey);
+    if (rate == null) {
+      logger.warn('No exchange rate for day; account left untouched', {
+        accountId: account.id,
+        pair: `${account.currencyCode}/${baseCurrencyCode}`,
+        day: dayKey,
+      });
+      return null;
+    }
+
+    const cents = roundHalfToEven(nativeCents * rate);
+    // The chart forward-fills, so a day repeating the previous value carries no
+    // information. The pinned day always gets a row so the series tracks its rate.
+    if (cents === lastEmitted && dayKey !== startKey && dayKey !== pinnedDayKey) continue;
+
+    lastEmitted = cents;
+    rows.push({ date: dayKey, amount: cents });
+  }
+
+  return rows;
+};
+
+/**
+ * Written directly: `handleAccountChange` would shift the bank-owned rows from the seam on.
+ * The native `initialBalance` is always written; `refInitialBalance` only when measured at
+ * the ledger boundary, otherwise the previous stamp stays until the nightly sweep.
+ */
+const writeSeamOpeningBalance = async ({
+  account,
+  initialBalance,
+  excludeTransactionId,
+  ref,
+}: {
+  account: Accounts;
+  initialBalance: Money;
+  excludeTransactionId?: string;
+  ref: 'measure' | 'no-rate' | 'no-base-currency';
+}) => {
+  let refInitialBalance: Money | null = null;
+  let error: Error | undefined;
+  if (ref === 'measure') {
+    try {
+      refInitialBalance = await measureRefInitialBalanceAtBoundary({ account, initialBalance, excludeTransactionId });
+    } catch (e) {
+      if (!(e instanceof ExchangeRateUnavailableError)) throw e;
+      error = e;
+    }
+  }
+
+  if (ref === 'no-base-currency') {
+    logger.error(
+      { message: 'No base currency for the pre-seam history; refInitialBalance left as it was' },
+      { code: 'SEAM_NO_BASE_CURRENCY', accountId: account.id },
+    );
+  } else if (!refInitialBalance) {
+    logger.error(
+      { message: 'No rate for the pre-seam history; refInitialBalance stale until the nightly sweep', error },
+      { code: 'SEAM_REF_INITIAL_BALANCE_STALE', accountId: account.id },
+    );
+  }
+
+  await Accounts.update(
+    { initialBalance, ...(refInitialBalance ? { refInitialBalance } : {}) },
+    { where: { id: account.id } },
+  );
+};
+
+/**
+ * Rebuild the history before the bank seam backward from the stored seam balance S:
+ * `initialBalance = S − Σ pre-seam rows`, and each day before the seam holds S minus
+ * the pre-seam rows dated after it. `currentBalance` and every `Balances` row from
+ * the seam day on belong to the bank and are never touched.
+ */
+const rebuildPreSeamHistoryImpl = async ({
+  accountId,
+  excludeTransactionId,
+}: {
+  accountId: string;
+  excludeTransactionId?: string;
+}): Promise<'rebuilt' | 'skipped'> => {
+  // Row lock before the advisory lock, the order every seam writer takes them in.
+  const account = await lockAccountRow({ accountId, noKey: true });
+  await lockAccountHistory({ accountId });
+
+  const seam = account && getSeam({ account });
+  if (!account || !seam) return 'skipped';
+  const { seamStart, seamBalance } = seam;
+
+  const baseCurrency = await getBaseCurrency({ userId: account.userId });
+  const seamDayKey = toDayKey(seamStart);
+  const { earliest } = await loadTransactionBounds({ accountId, before: seamStart, excludeTransactionId });
+  const oldestStoredDay = await loadOldestStoredDay({ accountId, beforeDay: seamDayKey });
+  if (!earliest && !oldestStoredDay) {
+    await writeSeamOpeningBalance({
+      account,
+      initialBalance: seamBalance,
+      excludeTransactionId,
+      ref: baseCurrency ? 'measure' : 'no-base-currency',
+    });
+    return 'rebuilt';
+  }
+
+  const gridStart = new Date(
+    Math.min(
+      earliest ? +utcDayStart(earliest) - MS_PER_DAY : Infinity,
+      oldestStoredDay ? +dayKeyToDate(oldestStoredDay) : Infinity,
+    ),
+  );
+  const gridEnd = new Date(+seamStart - MS_PER_DAY);
+
+  const dailyDeltas = await loadDailyNativeDeltas({
+    accountId,
+    from: gridStart,
+    toExclusive: seamStart,
+    excludeTransactionId,
+  });
+  const initialBalance = seamBalance.subtract(Money.fromCents(sumCents({ dailyDeltas })));
+
+  const rateForDay = baseCurrency
+    ? await buildRateForDay({ account, baseCurrencyCode: baseCurrency.currencyCode, from: gridStart, to: gridEnd })
+    : null;
+  const rows =
+    baseCurrency && rateForDay
+      ? buildDailyRows({
+          account,
+          baseCurrencyCode: baseCurrency.currencyCode,
+          openingCents: initialBalance.toCents(),
+          gridStart,
+          gridEnd,
+          dailyDeltas,
+          rateForDay,
+        })
+      : null;
+
+  // Without a rate only the native opening balance moves; the nightly sweep retries the rest.
+  await writeSeamOpeningBalance({
+    account,
+    initialBalance,
+    excludeTransactionId,
+    ref: rows ? 'measure' : baseCurrency ? 'no-rate' : 'no-base-currency',
+  });
+  if (!rows) return 'skipped';
+
+  await writeBalanceRows({ accountId, fromDay: toDayKey(gridStart), beforeDay: seamDayKey, rows });
+
+  return 'rebuilt';
+};
+
 /**
  * Rewrite an account's daily `Balances` rows as "native units held that day × that
  * day's rate to the owner's base currency", from the day before its first transaction
- * (or its oldest stored row) through today (or its last transaction).
+ * (or its oldest stored row) through today (or its last transaction). An account with
+ * a bank seam gets only its pre-seam history rebuilt.
  *
- * The output is sparse: a row only where the value moves, plus the first day and
- * today. Every other row in the range is deleted, so the chart's forward fill reads
- * exactly what the rebuild computed.
+ * Every row in the range the output does not cover is deleted, so the chart's forward
+ * fill reads exactly what the rebuild computed.
  */
-const revalueBalanceHistoryImpl = async ({ accountId }: { accountId: string }): Promise<'rebuilt' | 'skipped'> => {
+const revalueBalanceHistoryImpl = async ({
+  accountId,
+  excludeTransactionId,
+}: {
+  accountId: string;
+  excludeTransactionId?: string;
+}): Promise<'rebuilt' | 'skipped'> => {
   const account = await Accounts.findByPk(accountId);
   if (!account) return 'skipped';
+
+  if (getSeamStart({ account })) return rebuildPreSeamHistoryImpl({ accountId, excludeTransactionId });
 
   const baseCurrency = await getBaseCurrency({ userId: account.userId });
   if (!baseCurrency || !isRevaluedAccount({ account, baseCurrencyCode: baseCurrency.currencyCode })) return 'skipped';
 
-  // Two rebuilds of the same account would otherwise interleave their writes and
-  // leave the grid mixing rows from different runs.
-  await connection.sequelize.query(`SELECT pg_advisory_xact_lock(hashtext(:accountId))`, {
-    type: QueryTypes.SELECT,
-    replacements: { accountId },
-  });
+  await lockAccountHistory({ accountId });
 
   const today = utcDayStart(new Date());
   const { earliest, latest } = await loadTransactionBounds({ accountId });
@@ -156,40 +439,13 @@ const revalueBalanceHistoryImpl = async ({ accountId }: { accountId: string }): 
   );
   const gridEnd = new Date(Math.max(+today, latest ? +utcDayStart(latest) : +today));
 
-  const userCurrency = (await UsersCurrencies.findOne({
-    where: { userId: account.userId, currencyCode: account.currencyCode },
-    attributes: ['liveRateUpdate'],
-    raw: true,
-  })) as { liveRateUpdate: boolean | null } | null;
-
-  // A flat manual rate wins every day of the grid, so the market resolver is built
-  // only when there is no manual rate. Only that resolver can abort the rebuild.
-  const flatCustomRate =
-    (
-      await resolveCustomRate({
-        userId: account.userId,
-        pair: { baseCode: account.currencyCode, quoteCode: baseCurrency.currencyCode },
-        liveRateUpdate: userCurrency?.liveRateUpdate ?? null,
-      })
-    )?.rate ?? null;
-
-  let resolveRate: DailyPairRateResolver | null = null;
-  if (flatCustomRate === null) {
-    resolveRate = await buildDailyPairRateResolver({
-      baseCode: account.currencyCode,
-      quoteCode: baseCurrency.currencyCode,
-      from: gridStart,
-      to: gridEnd,
-    });
-
-    if (!resolveRate) {
-      logger.warn('No stored exchange rate for pair; account left untouched', {
-        accountId,
-        pair: `${account.currencyCode}/${baseCurrency.currencyCode}`,
-      });
-      return 'skipped';
-    }
-  }
+  const rateForDay = await buildRateForDay({
+    account,
+    baseCurrencyCode: baseCurrency.currencyCode,
+    from: gridStart,
+    to: gridEnd,
+  });
+  if (!rateForDay) return 'skipped';
 
   const dailyDeltas = await loadDailyNativeDeltas({
     accountId,
@@ -197,44 +453,87 @@ const revalueBalanceHistoryImpl = async ({ accountId }: { accountId: string }): 
     toExclusive: new Date(+gridEnd + MS_PER_DAY),
   });
 
-  const startKey = toDayKey(gridStart);
-  const todayKey = toDayKey(today);
+  const rows = buildDailyRows({
+    account,
+    baseCurrencyCode: baseCurrency.currencyCode,
+    openingCents: account.initialBalance.toCents(),
+    gridStart,
+    gridEnd,
+    dailyDeltas,
+    rateForDay,
+    pinnedDayKey: toDayKey(today),
+  });
+  if (!rows) return 'skipped';
 
-  let nativeCents: number = account.initialBalance.toCents();
-  let lastEmitted: number | null = null;
-  const rows: { date: string; amount: number }[] = [];
-
-  for (let time = +gridStart; time <= +gridEnd; time += MS_PER_DAY) {
-    const dayKey = toDayKey(new Date(time));
-    nativeCents += dailyDeltas.get(dayKey) ?? 0;
-
-    const rate = flatCustomRate ?? resolveRate?.(dayKey) ?? null;
-    if (rate == null) {
-      logger.warn('No exchange rate for day; account left untouched', {
-        accountId,
-        pair: `${account.currencyCode}/${baseCurrency.currencyCode}`,
-        day: dayKey,
-      });
-      return 'skipped';
-    }
-
-    const cents = roundHalfToEven(nativeCents * rate);
-    // The chart forward-fills, so a day repeating the previous value carries no
-    // information. Today always gets a row so the series tracks the daily rate.
-    if (cents === lastEmitted && dayKey !== startKey && dayKey !== todayKey) continue;
-
-    lastEmitted = cents;
-    rows.push({ date: dayKey, amount: cents });
-  }
-
-  await writeBalanceRows({ accountId, fromDay: startKey, rows });
+  await writeBalanceRows({ accountId, fromDay: toDayKey(gridStart), rows });
 
   return 'rebuilt';
 };
 
 export const revalueBalanceHistory = withTransaction(revalueBalanceHistoryImpl);
 
-const revalueBatchStorage = new AsyncLocalStorage<Set<string>>();
+interface RevalueBatch {
+  accountIds: Set<string>;
+  seamAccounts: Map<string, SeamAccount | null>;
+  closed: boolean;
+}
+
+const revalueBatchStorage = new AsyncLocalStorage<RevalueBatch>();
+
+const openBatch = (): RevalueBatch | undefined => {
+  const batch = revalueBatchStorage.getStore();
+  return batch && !batch.closed ? batch : undefined;
+};
+
+const forgetSeamAccount = ({ accountId }: { accountId: string }) => {
+  revalueBatchStorage.getStore()?.seamAccounts.delete(accountId);
+};
+
+/** The account's seam attributes, read once per batch scope; S changes only through stamp and clear. */
+export const findSeamAccount = async ({ accountId }: { accountId: string }): Promise<SeamAccount | null> => {
+  const batch = openBatch();
+  if (batch?.seamAccounts.has(accountId)) return batch.seamAccounts.get(accountId)!;
+
+  const account = await Accounts.findByPk(accountId, { attributes: [...SEAM_ACCOUNT_ATTRIBUTES] });
+  batch?.seamAccounts.set(accountId, account);
+  return account;
+};
+
+/**
+ * Stores the seam balance S once linking has absorbed its residual:
+ * `initialBalance + Σ signed(real rows dated before the link day)`, and rebuilds the history before it.
+ */
+export const stampSeamBalance = withTransaction(async ({ accountId }: { accountId: string }): Promise<void> => {
+  const account = await Accounts.findByPk(accountId);
+  const linkDayStart = account && getLinkDayStart({ externalData: account.externalData });
+  if (!account || account.type === ACCOUNT_TYPES.system) return;
+  if (!linkDayStart) {
+    logger.warn('Seam balance not stamped: account has no forward-only link day', { accountId });
+    return;
+  }
+
+  const preSeamDeltas = await loadDailyNativeDeltas({ accountId, toExclusive: linkDayStart });
+  await Accounts.update(
+    { seamBalance: account.initialBalance.add(Money.fromCents(sumCents({ dailyDeltas: preSeamDeltas }))) },
+    { where: { id: accountId } },
+  );
+  forgetSeamAccount({ accountId });
+  // In this transaction, not via scheduleBalanceRevalue: a scheduled rebuild is lost on the queued link path.
+  await rebuildPreSeamHistoryImpl({ accountId });
+});
+
+/**
+ * Drops S, first rebuilding the history before the link day from it one last time when the
+ * account has a seam: once S is gone a rebuild is a no-op.
+ */
+export const clearSeam = withTransaction(async ({ accountId }: { accountId: string }): Promise<void> => {
+  const account = await lockAccountRow({ accountId, noKey: true });
+  if (account && getSeam({ account }) && (await rebuildPreSeamHistoryImpl({ accountId })) === 'skipped') {
+    await restampRefInitialBalance({ accountId, allowProviderAccount: true });
+  }
+  await Accounts.update({ seamBalance: null }, { where: { id: accountId } });
+  forgetSeamAccount({ accountId });
+});
 
 /**
  * Collapse every revalue scheduled inside `fn` into one rebuild per account, run after
@@ -244,24 +543,25 @@ const revalueBatchStorage = new AsyncLocalStorage<Set<string>>();
  * and the original error is rethrown. Nested scopes merge into the outermost one.
  */
 export const runWithBalanceRevalueBatch = async <R>(fn: () => Promise<R>): Promise<R> => {
-  if (revalueBatchStorage.getStore()) return fn();
+  if (openBatch()) return fn();
 
-  const queue = new Set<string>();
+  const batch: RevalueBatch = { accountIds: new Set(), seamAccounts: new Map(), closed: false };
   try {
-    return await revalueBatchStorage.run(queue, fn);
+    return await revalueBatchStorage.run(batch, fn);
   } finally {
-    for (const accountId of queue) {
+    for (const accountId of batch.accountIds) {
       try {
         await revalueBalanceHistory({ accountId });
       } catch (error) {
         // The data is already committed; a failed rebuild leaves stale rows for
         // the nightly revalue job to correct rather than killing the process.
         logger.error(
-          { message: 'Balance revalue failed after batch', error: error as Error },
+          { message: 'Balance revalue failed after batch; stale until the nightly sweep', error: error as Error },
           { code: 'BALANCE_REVALUE_BATCH_FAILED', accountId },
         );
       }
     }
+    batch.closed = true;
   }
 };
 
@@ -270,12 +570,52 @@ export const runWithBalanceRevalueBatch = async <R>(fn: () => Promise<R>): Promi
  * there is none. Inline under an ambient CLS transaction it joins that transaction, so
  * the rebuild commits together with the change that triggered it.
  */
-export const scheduleBalanceRevalue = async ({ accountId }: { accountId: string }): Promise<void> => {
-  const queue = revalueBatchStorage.getStore();
-  if (queue) {
-    queue.add(accountId);
+export const scheduleBalanceRevalue = async ({
+  accountId,
+  excludeTransactionId,
+}: {
+  accountId: string;
+  excludeTransactionId?: string;
+}): Promise<void> => {
+  const batch = openBatch();
+  if (batch) {
+    batch.accountIds.add(accountId);
     return;
   }
 
-  await revalueBalanceHistory({ accountId });
+  await revalueBalanceHistory({ accountId, excludeTransactionId });
+};
+
+/**
+ * True when the account has a bank seam, which owns the balance from the seam on. Times
+ * before the seam schedule its rebuild. A manual row may not cross the seam (`edit`), nor
+ * land from the seam on (`enter-ledger`); a `bank-row` may do both.
+ */
+export const schedulePreSeamRebuild = async ({
+  accountId,
+  times,
+  excludeTransactionId,
+  mode = 'edit',
+}: {
+  accountId: string;
+  times: (Date | string)[];
+  excludeTransactionId?: string;
+  mode?: 'edit' | 'enter-ledger' | 'bank-row';
+}): Promise<boolean> => {
+  const account = await findSeamAccount({ accountId });
+  const seamStart = account && getSeamStart({ account });
+  if (!seamStart) return false;
+
+  const preSeamCount = times.filter((time) => isBeforeSeamStart({ seamStart, time })).length;
+  if (preSeamCount === 0) {
+    if (mode === 'enter-ledger' && times.length)
+      throw new ValidationError({ message: manualRowOnOrAfterLinkDayMessage({ seamStart, isNewRow: true }) });
+    return true;
+  }
+  if (preSeamCount < times.length && mode !== 'bank-row') {
+    throw new ValidationError({ message: preSeamTimeOnOrAfterLinkDayMessage({ seamStart }) });
+  }
+
+  await scheduleBalanceRevalue({ accountId, excludeTransactionId });
+  return true;
 };

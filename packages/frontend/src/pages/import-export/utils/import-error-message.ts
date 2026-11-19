@@ -15,6 +15,7 @@ const JOB_FAILURE_KEYS: Record<ImportJobFailureCode, string> = {
   'payee-name-too-long': 'pages.importExport.jobFailure.payeeNameTooLong',
   'account-mapping-missing': 'pages.importExport.jobFailure.accountMappingMissing',
   'linked-account-not-found': 'pages.importExport.jobFailure.linkedAccountNotFound',
+  'bank-link-changed': 'pages.importExport.jobFailure.bankLinkChanged',
 };
 
 /** Translated text for an import summary error. The server's English `error` is never shown. */

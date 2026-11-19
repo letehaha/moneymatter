@@ -8,6 +8,8 @@ export const INVALID_LUNCHFLOW_API_KEY = 'invalid-lunchflow-api-key-12345';
 
 export const LUNCHFLOW_BASE_URL = 'https://lunchflow.app/api/v1';
 
+export const LUNCHFLOW_EXTERNAL_ACCOUNT_ID = '1001';
+
 export const getLunchFlowAccountsMock = ({ response }: { response: ReturnType<typeof getMockedLunchFlowAccounts> }) => {
   return http.get(`${LUNCHFLOW_BASE_URL}/accounts`, () => {
     return HttpResponse.json(response);

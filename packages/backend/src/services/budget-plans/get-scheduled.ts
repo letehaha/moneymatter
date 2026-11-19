@@ -1,7 +1,7 @@
 import { RecordId, SUBSCRIPTION_LINK_STATUS, TRANSACTION_TYPES } from '@bt/shared/types';
 import { BudgetPlanScheduled, BudgetPlanScheduledItem } from '@bt/shared/types';
 import { Money } from '@common/types/money';
-import { toUtcDateString } from '@common/utils/date';
+import { toUtcDateString, toZonedDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { ExchangeRateUnavailableError, NotFoundError } from '@js/errors';
 import { logger } from '@js/utils/logger';
@@ -17,7 +17,7 @@ import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { paymentDatesInRange, scheduleInclude } from '@services/subscriptions/get-upcoming-payments';
 import { Op } from 'sequelize';
 
-import { utcInstant } from './date-ranges';
+import { addUtcDays, utcInstant } from './date-ranges';
 import { findPlan } from './find-plan';
 import { lineOwnerResolver, periodMembership } from './fold/fold-plan';
 import { ensurePeriods, loadLines } from './periods/ensure-periods';
@@ -101,14 +101,16 @@ export const getScheduled = async ({
   userId,
   planId,
   periodId,
+  timezone,
 }: {
   userId: number;
   planId: RecordId;
   periodId: RecordId;
+  timezone: string;
 }): Promise<BudgetPlanScheduled> => {
   const plan = await findPlan({ planId, userId });
 
-  const today = toUtcDateString(new Date());
+  const today = toZonedDateString({ date: new Date(), timezone });
   const period = (await ensurePeriods({ plan, today })).find((entry) => entry.id === periodId);
   if (!period) throw new NotFoundError({ message: t({ key: 'budgetPlans.periodNotFound' }) });
 
@@ -132,7 +134,7 @@ export const getScheduled = async ({
   const lineOfCategory = ({ categoryId }: { categoryId: string | null }) =>
     categoryId === null ? null : lineOf(categoryId);
 
-  const [subscriptions, planned] = await Promise.all([
+  const [subscriptions, plannedNearby] = await Promise.all([
     findPlanSubscriptions({ plan, accountIds }),
     findTransactions({
       planned: 'only',
@@ -142,18 +144,29 @@ export const getScheduled = async ({
       completeness: 'all',
       where: {
         accountId: { [Op.in]: accountIds },
-        time: { [Op.gte]: utcInstant({ date: from }), [Op.lt]: utcInstant({ date: until }) },
+        // A day of padding each side covers any zone offset; the local date below decides.
+        time: {
+          [Op.gte]: utcInstant({ date: addUtcDays({ date: from, days: -1 }) }),
+          [Op.lt]: utcInstant({ date: addUtcDays({ date: until, days: 1 }) }),
+        },
       },
       include: [{ model: Payees, attributes: ['name'] }],
     }),
   ]);
 
+  const planned = plannedNearby
+    .map((tx) => ({ tx, date: toZonedDateString({ date: tx.time, timezone }) }))
+    .filter(({ date }) => date >= from && date < until);
+  const plannedDateById = new Map(planned.map(({ tx, date }) => [tx.id, date]));
+
   const plannedLinks = planned.length
     ? await SubscriptionTransactions.findAll({
-        where: { transactionId: { [Op.in]: planned.map((tx) => tx.id) }, status: SUBSCRIPTION_LINK_STATUS.active },
+        where: {
+          transactionId: { [Op.in]: planned.map(({ tx }) => tx.id) },
+          status: SUBSCRIPTION_LINK_STATUS.active,
+        },
       })
     : [];
-  const plannedDateById = new Map(planned.map((tx) => [tx.id, toUtcDateString(tx.time)]));
   // A planned row linked to a subscription stands in for that day's occurrence.
   const coveredOccurrences = new Set(
     plannedLinks.map((link) => `${link.subscriptionId}:${plannedDateById.get(link.transactionId)}`),
@@ -189,11 +202,11 @@ export const getScheduled = async ({
   ).then((results) => results.filter((item) => item !== null));
 
   const plannedItems = planned.map(
-    (tx): BudgetPlanScheduledItem => ({
+    ({ tx, date }): BudgetPlanScheduledItem => ({
       source: 'planned',
       id: tx.id,
       name: tx.payee?.name || tx.note || '',
-      date: plannedDateById.get(tx.id)!,
+      date,
       amount: signed({ amount: tx.refAmount, type: tx.transactionType }).toNumber(),
       currencyCode: tx.currencyCode,
       nativeAmount: signed({ amount: tx.amount, type: tx.transactionType }).toNumber(),

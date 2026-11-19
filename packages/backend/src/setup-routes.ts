@@ -2,6 +2,7 @@ import { resolveLocale } from '@bt/shared/i18n/locales';
 import { requestContext } from '@common/request-context';
 import { logger } from '@js/utils/logger';
 import { Sentry } from '@js/utils/sentry';
+import { clientVersionGate } from '@middlewares/client-version-gate';
 import { toNodeHandler } from 'better-auth/node';
 import { Express, Request, Response } from 'express';
 import http from 'node:http';
@@ -63,6 +64,9 @@ export function setupRoutes(app: Express) {
   app.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok' });
   });
+
+  // Ahead of every `/auth` handler, so an outdated build gets 426 at sign-in too.
+  app.use(clientVersionGate);
 
   // Better-auth extensions (wraps server-side only APIs like setPassword)
   // Must be mounted BEFORE better-auth handler to take precedence

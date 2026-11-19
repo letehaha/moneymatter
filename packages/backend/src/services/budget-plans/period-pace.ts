@@ -31,13 +31,15 @@ const priorSpend = async ({
   plan,
   foldInput,
   index,
+  timezone,
 }: {
   plan: BudgetPlans;
   foldInput: FoldInput;
   index: number;
+  timezone: string;
 }): Promise<Map<string, PriorPeriodSpend[]>> => {
   const periods = foldInput.periods.slice(Math.max(0, index - HISTORY_PERIODS), index);
-  const rows = await getPlanDailyActivity({ plan, periods });
+  const rows = await getPlanDailyActivity({ plan, periods, timezone });
 
   const byLine = new Map<string, PriorPeriodSpend[]>();
   for (const period of periods) {
@@ -109,12 +111,14 @@ export const periodPaces = async ({
   index,
   view,
   today,
+  timezone,
 }: {
   plan: BudgetPlans;
   foldInput: FoldInput;
   index: number;
   view: FoldedPeriodView;
   today: string;
+  timezone: string;
 }): Promise<Map<string, BudgetPlanLinePace>> => {
   const paces = new Map<string, BudgetPlanLinePace>();
   const funded = new Map(
@@ -127,7 +131,7 @@ export const periodPaces = async ({
   const { startDate: start, endDate: end } = view.period;
   const fraction = elapsedFraction({ start, end, today });
 
-  const history = await priorSpend({ plan, foldInput, index });
+  const history = await priorSpend({ plan, foldInput, index, timezone });
   for (const lineId of funded.keys()) {
     const percent = historyPercent({ periods: history.get(lineId) ?? [], fraction });
     if (percent !== null) paces.set(lineId, { basis: 'history', expectedPercent: roundPercent({ value: percent }) });

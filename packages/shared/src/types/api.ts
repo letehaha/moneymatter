@@ -21,6 +21,7 @@ export enum API_ERROR_CODES {
   payloadTooLarge = 'PAYLOAD_TOO_LARGE',
   serviceUnavailable = 'SERVICE_UNAVAILABLE',
   planRequired = 'PLAN_REQUIRED',
+  clientUpdateRequired = 'CLIENT_UPDATE_REQUIRED',
 
   // auth
   unauthorized = 'UNAUTHENTICATED',

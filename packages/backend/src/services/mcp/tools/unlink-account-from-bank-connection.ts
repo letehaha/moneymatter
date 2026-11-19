@@ -9,7 +9,7 @@ export const unlinkAccountFromBankConnectionTool = defineTool({
   toolset: 'imports',
   access: 'write',
   description:
-    'Disconnect a bank-connected account from its bank. The account becomes a manual account and keeps its whole transaction history, but stops syncing; the bank-side ids are kept only as history. Refused for an account that is not linked.',
+    'Disconnect a bank-connected account from its bank. The account becomes a manual account and keeps its whole transaction history, but stops syncing; the bank-side ids are kept only as history. Refused for an account that is not linked, and while an import is still running.',
   input: {
     accountId: recordId().describe('ID of the bank-connected account to unlink.'),
   },

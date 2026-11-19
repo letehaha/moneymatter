@@ -34,8 +34,13 @@ const setup = async ({ monthsAgo = 2 }: { monthsAgo?: number } = {}) => {
   return { account, food, groceries, transport, planId: plan.id, periods, line };
 };
 
-const view = ({ planId, period }: { planId: string; period: Period }) =>
-  helpers.getBudgetPlanPeriodView({ planId, periodId: period.id, raw: true });
+const view = ({ planId, period, timezone }: { planId: string; period: Period; timezone?: string }) =>
+  helpers.getBudgetPlanPeriodView({
+    planId,
+    periodId: period.id,
+    headers: timezone ? { 'X-Timezone': timezone } : {},
+    raw: true,
+  });
 
 interface TxParams {
   accountId: RecordId;
@@ -123,6 +128,54 @@ describe('Budget plan period view: activity attribution', () => {
 
     expect((await view({ planId, period: periods[0]! })).lines[0]!.activity).toBe(-10);
     expect((await view({ planId, period: periods[1]! })).lines[0]!.activity).toBe(-20);
+  });
+
+  describe('X-Timezone day boundaries', () => {
+    const setupLocalFirstOfMonthExpense = async () => {
+      const ctx = await setup();
+      await expense({
+        accountId: ctx.account.id,
+        categoryId: ctx.food.id,
+        amount: 10,
+        time: new Date(`${ctx.periods[1]!.startDate}T02:22:00+03:00`).toISOString(),
+      });
+      return ctx;
+    };
+
+    it('counts an expense on the local 1st in the period starting that day', async () => {
+      const { planId, periods } = await setupLocalFirstOfMonthExpense();
+      const timezone = 'Europe/Istanbul';
+
+      expect((await view({ planId, period: periods[1]!, timezone })).lines[0]!.activity).toBe(-10);
+      expect((await view({ planId, period: periods[0]!, timezone })).lines[0]!.activity).toBe(0);
+    });
+
+    it('falls back to UTC days without the header', async () => {
+      const { planId, periods } = await setupLocalFirstOfMonthExpense();
+
+      expect((await view({ planId, period: periods[0]! })).lines[0]!.activity).toBe(-10);
+      expect((await view({ planId, period: periods[1]! })).lines[0]!.activity).toBe(0);
+    });
+
+    it.each([{ timezone: 'Europe/Kyiv' }, { timezone: 'Asia/Calcutta' }])(
+      'counts the local-1st expense in the later period for $timezone',
+      async ({ timezone }) => {
+        const { planId, periods } = await setupLocalFirstOfMonthExpense();
+
+        expect((await view({ planId, period: periods[1]!, timezone })).lines[0]!.activity).toBe(-10);
+        expect((await view({ planId, period: periods[0]!, timezone })).lines[0]!.activity).toBe(0);
+      },
+    );
+
+    it.each([{ timezone: 'garbage/Zone' }, { timezone: '+03:00' }])(
+      'falls back to UTC days for an unusable $timezone header',
+      async ({ timezone }) => {
+        const { planId, periods } = await setupLocalFirstOfMonthExpense();
+
+        expect((await view({ planId, period: periods[0]!, timezone })).lines[0]!.activity).toBe(-10);
+        expect((await view({ planId, period: periods[1]!, timezone })).lines[0]!.activity).toBe(0);
+      },
+    );
   });
 
   it('returns uncovered negative spending as unbudgeted, rolled up to the root category', async () => {

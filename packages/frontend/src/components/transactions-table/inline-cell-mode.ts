@@ -1,3 +1,4 @@
+import { getBankRowPermissions, isBankAccount, isOnBankAccount } from '@/common/utils/bank-row-permissions';
 import {
   ACCOUNT_CATEGORIES,
   ACCOUNT_TYPES,
@@ -44,8 +45,59 @@ export const isInlineEditableColumn = (column: TABLE_COLUMN): column is InlineEd
 
 const BANK_OWNED_COLUMNS: TABLE_COLUMN[] = [TABLE_COLUMN.date, TABLE_COLUMN.account, TABLE_COLUMN.amount];
 
-const isExternal = ({ account }: { account: AccountModel | undefined }) =>
-  !!account && account.type !== ACCOUNT_TYPES.system;
+// A bank-linked account keeps the account column; a manual row before its seam unlocks date and amount.
+const isBankOwned = ({
+  tx,
+  account,
+  column,
+}: {
+  tx: TransactionModel | undefined;
+  account: AccountModel | undefined;
+  column: TABLE_COLUMN;
+}) => {
+  if (!tx) return !!account && isBankAccount({ account });
+  if (!isOnBankAccount({ transaction: tx, account })) return false;
+  if (column === TABLE_COLUMN.account) return true;
+  return !getBankRowPermissions({ transaction: tx, account }).canEditLockedFields;
+};
+
+type BankLockCopy = { title: string; description: string; seamAt?: string };
+
+/**
+ * Lock copy for a manual row on a bank-linked account, taken from the leg that causes the lock. Null when the
+ * generic bank-sync copy applies.
+ */
+export const getBankLockCopy = ({
+  tx,
+  column,
+  account,
+  oppositeTx,
+  oppositeAccount,
+}: {
+  tx: TransactionModel;
+  column: TABLE_COLUMN;
+  account: AccountModel | undefined;
+  oppositeTx: TransactionModel | undefined;
+  oppositeAccount: AccountModel | undefined;
+}): BankLockCopy | null => {
+  const leg = isBankOwned({ tx, account, column }) ? { tx, account } : { tx: oppositeTx, account: oppositeAccount };
+  if (!leg.tx || !leg.account?.bankSeamAt || leg.tx.accountType !== ACCOUNT_TYPES.system) return null;
+
+  if (!getBankRowPermissions({ transaction: leg.tx, account: leg.account }).canEditLockedFields) {
+    return {
+      title: 'transactions.inlineEdit.manualAfterLinkTitle',
+      description: 'transactions.inlineEdit.manualAfterLinkDescription',
+      seamAt: leg.account.bankSeamAt,
+    };
+  }
+  if (column === TABLE_COLUMN.account) {
+    return {
+      title: 'transactions.inlineEdit.bankAccountTitle',
+      description: 'transactions.inlineEdit.bankAccountDescription',
+    };
+  }
+  return null;
+};
 
 const isManagedElsewhere = ({ tx, account }: { tx: TransactionModel; account: AccountModel }) => {
   switch (tx.transferNature) {
@@ -66,12 +118,14 @@ export const getInlineCellMode = ({
   tx,
   column,
   account,
+  oppositeTx,
   oppositeAccount,
   canEdit,
 }: {
   tx: TransactionModel;
   column: TABLE_COLUMN;
   account: AccountModel | undefined;
+  oppositeTx: TransactionModel | undefined;
   oppositeAccount: AccountModel | undefined;
   canEdit: boolean;
 }): InlineCellMode => {
@@ -85,9 +139,13 @@ export const getInlineCellMode = ({
   if (column === TABLE_COLUMN.account && account.share && !account.share.isOwner) return 'na';
 
   if (BANK_OWNED_COLUMNS.includes(column)) {
-    // The server checks only the edited leg's account, then writes date and amount onto the other leg too.
-    if (isTwoLeg) return isExternal({ account }) || isExternal({ account: oppositeAccount }) ? 'bank' : 'details';
-    if (isExternal({ account }) && !tx.isPlanned) return 'bank';
+    // Date and amount are written onto both legs, so a transfer opens the full editor.
+    if (isTwoLeg) {
+      const isEitherLegBankOwned =
+        isBankOwned({ tx, account, column }) || isBankOwned({ tx: oppositeTx, account: oppositeAccount, column });
+      return isEitherLegBankOwned ? 'bank' : 'details';
+    }
+    if (isBankOwned({ tx, account, column }) && !tx.isPlanned) return 'bank';
     // The server re-checks split sums and recalculates split ref amounts only when splits are sent along.
     if (tx.splits?.length) return 'details';
     // A payment row shows the whole payment, but an inline edit would change only this row's part.

@@ -17,7 +17,7 @@ jest.mock('@models/transactions.model', () => ({
 }));
 jest.mock('@models/accounts.model', () => ({
   __esModule: true,
-  isBankLinkedAccount: jest.fn(),
+  default: { findByPk: jest.fn() },
 }));
 jest.mock('@services/transactions/delete-transaction', () => ({
   __esModule: true,
@@ -33,7 +33,7 @@ jest.mock('@services/common/with-transaction', () => ({
   withTransaction: <T extends (...args: never[]) => unknown>(fn: T) => fn,
 }));
 
-import { isBankLinkedAccount } from '@models/accounts.model';
+import Accounts from '@models/accounts.model';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Transactions from '@models/transactions.model';
 import { deleteTransaction } from '@services/transactions/delete-transaction';
@@ -49,7 +49,13 @@ const ACCOUNT_ID = '44444444-4444-4444-8444-444444444444';
 
 const findPeriod = jest.mocked(SubscriptionPeriods.findOne);
 const findTx = jest.mocked(Transactions.findByPk);
-const bankLinked = jest.mocked(isBankLinkedAccount);
+const findAccount = jest.mocked(Accounts.findByPk);
+const givenBankLinked = (linked: boolean) =>
+  findAccount.mockResolvedValue({
+    type: linked ? 'lunchflow' : 'system',
+    externalData: null,
+    seamBalance: null,
+  } as never);
 const removeTransaction = jest.mocked(deleteTransaction);
 const findSubscription = jest.mocked(findSubscriptionOrThrow);
 
@@ -75,7 +81,7 @@ const givenPeriod = ({ period }: { period: ReturnType<typeof makePeriod> }) => {
 beforeEach(() => {
   jest.resetAllMocks();
   findSubscription.mockResolvedValue({ completedAt: null, update: jest.fn() } as never);
-  bankLinked.mockResolvedValue(false);
+  givenBankLinked(false);
   removeTransaction.mockResolvedValue(undefined as never);
   findTx.mockResolvedValue({ accountId: ACCOUNT_ID, isPlanned: false } as never);
 });
@@ -116,7 +122,7 @@ describe('revertPeriod', () => {
     });
 
     it('is asked for a planned payment on a bank-linked account, which the revert still deletes', async () => {
-      bankLinked.mockResolvedValue(true);
+      givenBankLinked(true);
       findTx.mockResolvedValue({ accountId: ACCOUNT_ID, isPlanned: true } as never);
       const assertCanDeleteTransaction = jest.fn();
       givenPeriod({ period: makePeriod() });
@@ -200,7 +206,7 @@ describe('revertPeriod', () => {
     });
 
     it('is not asked when a booked payment sits on a bank-linked account, which the revert keeps', async () => {
-      bankLinked.mockResolvedValue(true);
+      givenBankLinked(true);
       const assertCanDeleteTransaction = jest.fn();
       const period = makePeriod();
       givenPeriod({ period });

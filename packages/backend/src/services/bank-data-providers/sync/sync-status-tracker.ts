@@ -1,6 +1,6 @@
 import type { RecordId } from '@bt/shared/types';
 import { logger } from '@js/utils';
-import { namespace } from '@models/connection';
+import { namespace, runOutsideTransaction } from '@models/connection';
 import { REDIS_KEY_PREFIX, redisClient } from '@root/redis-client';
 
 import { SSE_EVENT_TYPES, sseManager } from '../../common/sse';
@@ -107,6 +107,13 @@ export async function setAccountsSyncStatus({
 }): Promise<void> {
   if (!isRedisReady() || accountIds.length === 0) return;
 
+  // COMPLETED tells pollers the rows are readable, so it must not land before they commit.
+  const sequelizeTx = namespace.get('transaction');
+  if (status === SyncStatus.COMPLETED && sequelizeTx && !sequelizeTx.finished) {
+    sequelizeTx.afterCommit(() => setAccountsSyncStatus({ accountIds, status, error, userId }));
+    return;
+  }
+
   await Promise.all(accountIds.map((accountId) => writeAccountSyncStatus({ accountId, status, error })));
 
   if (status !== SyncStatus.IDLE && isRedisReady()) {
@@ -122,10 +129,7 @@ async function emitSyncStatus({ userId }: { userId: number }): Promise<void> {
     // Import dynamically to avoid circular dependency
     const { getUserAccountsSyncStatus } = await import('./get-user-sync-status');
     // Off the ambient transaction: after a failed sync statement it is aborted and every query on it throws.
-    const fullStatus = await namespace.runPromise(async () => {
-      namespace.set('transaction', null);
-      return getUserAccountsSyncStatus(userId);
-    });
+    const fullStatus = await runOutsideTransaction(() => getUserAccountsSyncStatus(userId));
     sseManager.sendToUser({
       userId,
       event: SSE_EVENT_TYPES.SYNC_STATUS_CHANGED,

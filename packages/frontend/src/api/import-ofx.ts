@@ -19,10 +19,7 @@ export const uploadOfxFile = async ({
   api.postRaw({
     endpoint: '/import/ofx/upload',
     body: file,
-    headers: {
-      'Content-Type': 'application/octet-stream',
-      'X-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
-    },
+    headers: { 'Content-Type': 'application/octet-stream' },
     options: { signal },
   });
 

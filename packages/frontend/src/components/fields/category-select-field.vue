@@ -23,7 +23,9 @@
           @select.prevent="selectItem(item)"
         >
           <CategoryCircle :category="item" :categories-map="categoriesMap" class="shrink-0" />
-          <span class="min-w-0 grow truncate">{{ item.name }}</span>
+          <DesktopOnlyTooltip :content="item.name" only-when-truncated>
+            <span class="min-w-0 grow truncate">{{ item.name }}</span>
+          </DesktopOnlyTooltip>
           <ListboxItemIndicator class="shrink-0">
             <CheckIcon class="text-primary-text size-4" />
           </ListboxItemIndicator>
@@ -268,6 +270,7 @@ import FieldLabel from '@/components/fields/components/field-label.vue';
 import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import * as Drawer from '@/components/lib/ui/drawer';
 import * as Popover from '@/components/lib/ui/popover';
+import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { cn } from '@/lib/utils';
 import { CATEGORY_TYPES, type CategoryModel } from '@bt/shared/types';

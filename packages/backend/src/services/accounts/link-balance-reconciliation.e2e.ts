@@ -1,5 +1,6 @@
 import {
   ACCOUNT_TYPES,
+  type AccountApiResponse,
   API_ERROR_CODES,
   BANK_PROVIDER_TYPE,
   type ExternalMonobankTransactionResponse,
@@ -21,6 +22,7 @@ import { REDIS_KEYS, SyncStatus } from '@services/bank-data-providers/sync/sync-
 import * as helpers from '@tests/helpers';
 import { getMockedLunchFlowTransactions } from '@tests/mocks/lunchflow/data';
 import {
+  LUNCHFLOW_EXTERNAL_ACCOUNT_ID,
   VALID_LUNCHFLOW_API_KEY,
   getLunchFlowBalanceMock,
   getLunchFlowTransactionsMock,
@@ -41,8 +43,6 @@ import { Op } from 'sequelize';
  * copies dedup cannot recognize. Only an account with no rows backfills.
  * Invariant checked throughout: initialBalance + Σsigned(tx) === currentBalance.
  */
-
-const LUNCHFLOW_EXTERNAL_ACCOUNT_ID = '1001';
 
 const extractError = (response: unknown) =>
   (response as helpers.CustomResponse<unknown>).body.response as unknown as { code: string; message: string };
@@ -134,6 +134,33 @@ const setupLinkedScenario = async ({
   expect(linkResponse.statusCode).toBe(200);
 
   return { account, preLinkAccount, connectionId };
+};
+
+/** Rejects with a clear message instead of hanging until the Jest timeout. */
+const within = <T>({ promise, ms, what }: { promise: Promise<T>; ms: number; what: string }) =>
+  Promise.race([
+    promise,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${what} within ${ms}ms`)), ms)),
+  ]);
+
+/** Serves `rows` from the statement endpoint, holding each request until `release` is called. */
+const holdStatement = ({ rows }: { rows: ExternalMonobankTransactionResponse[] }) => {
+  let markRequested!: () => void;
+  const requested = new Promise<void>((resolve) => {
+    markRequested = resolve;
+  });
+  let release!: () => void;
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const counter = { requests: 0 };
+  const handler = http.get(MONOBANK_URLS_MOCK.personalStatement, async () => {
+    counter.requests += 1;
+    markRequested();
+    await released;
+    return HttpResponse.json(rows);
+  });
+  return { handler, requested, release, counter };
 };
 
 const readTodayBalanceRow = async ({ accountId }: { accountId: string }) =>
@@ -613,7 +640,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
     /** The queued sync settles out-of-request; poll Redis for a terminal status. */
     const waitForQueuedSyncToSettle = async ({
       accountId,
-      timeoutMs = 15_000,
+      timeoutMs = 10_000,
     }: {
       accountId: string;
       timeoutMs?: number;
@@ -687,7 +714,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       const settled = await waitForQueuedSyncToSettle({ accountId: account.id });
       expect(settled).toBe(SyncStatus.COMPLETED);
 
-      return { account };
+      return { account, connectionId };
     };
 
     it('updates the balance to the bank figure when the sync window returns no transactions', async () => {
@@ -789,6 +816,181 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       expect(updatedAccount.initialBalance.toCents() + sumSignedCents(transactions)).toBe(
         updatedAccount.currentBalance.toCents(),
       );
+    });
+
+    it('leaves an account unlinked during its queued first sync without bank rows and with the history rebuilt', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['UAH'], raw: true });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({
+          name: 'Linkable Monobank account',
+          currencyCode: 'UAH',
+          initialBalance: 900,
+        }),
+        raw: true,
+      });
+      // Tracked 900 − 50 = 850 before the link; the bank says 1000.
+      const preLinkHistory = await seedManualHistory({ accountId: account.id, amount: 50 });
+
+      const statement = holdStatement({
+        rows: [
+          buildBankStatementTx({
+            id: 'pre-link-row',
+            time: subDays(new Date(), 3),
+            amountCents: -2_000,
+            balanceCents: 102_000,
+          }),
+          buildBankStatementTx({ id: 'link-day-row', time: new Date(), amountCents: -2_000, balanceCents: 100_000 }),
+        ],
+      });
+      global.mswMockServer.use(mockMonobankClientInfo({ balanceCents: 100_000 }), statement.handler);
+
+      const { connectionId } = await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.MONOBANK,
+        credentials: { apiToken: 'link-mono-token-unlink-mid-sync' },
+        raw: true,
+      });
+      const linkResponse = await helpers.linkAccountToBankConnection({
+        id: account.id,
+        connectionId,
+        externalAccountId: MONOBANK_EXTERNAL_ID,
+        raw: false,
+      });
+      expect(linkResponse.statusCode).toBe(200);
+
+      try {
+        await within({
+          promise: statement.requested,
+          ms: 5_000,
+          what: 'The queued sync did not request the statement',
+        });
+        await helpers.unlinkAccountFromBankConnection({ id: account.id, raw: true });
+      } finally {
+        statement.release();
+      }
+      await waitForQueuedSyncToSettle({ accountId: account.id });
+
+      const readAccount = async () =>
+        (await helpers.getAccount({ id: account.id, raw: true })) as unknown as AccountApiResponse;
+      const unlinked = await readAccount();
+      expect(unlinked.type).toBe(ACCOUNT_TYPES.system);
+      expect(unlinked.bankSeamAt).toBeNull();
+
+      const rows = await Transactions.findAll({ where: { accountId: account.id }, raw: true });
+      expect(rows.filter((tx) => tx.accountType !== ACCOUNT_TYPES.system)).toEqual([]);
+      expect(rows.filter((tx) => tx.originalId !== null)).toEqual([]);
+      // The link wrote the bank's 1000 inline; unlink absorbs the gap so the ledger identity holds.
+      expect(unlinked.currentBalance).toBe(1000);
+      expect(unlinked.initialBalance).toBe(1050);
+      expect(Math.round(unlinked.initialBalance * 100) + sumSignedCents(rows)).toBe(
+        Math.round(unlinked.currentBalance * 100),
+      );
+
+      // The history before the link day is rebuilt from the absorbed opening balance: 1000 where it held 850.
+      const spendDay = preLinkHistory.at(-1)!;
+      const rebuiltSpendDay = (await readPreTodayBalanceRows({ accountId: account.id })).find(
+        (row) => row.date === spendDay.date,
+      )!;
+      expect(rebuiltSpendDay.amountCents / spendDay.amountCents).toBeCloseTo(1000 / 850, 2);
+
+      await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 30,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: new Date().toISOString(),
+        }),
+        raw: true,
+      });
+      expect((await readAccount()).currentBalance).toBe(unlinked.currentBalance - 30);
+    });
+
+    it('never fetches the second chunk of a period load once the account is unlinked', async () => {
+      // A connect-flow account: a forward-only link refuses period loads before the link.
+      const { connectionId } = await helpers.monobank.pair('link-mono-token-unlink-period-load');
+      global.mswMockServer.use(getMonobankTransactionsMock({ response: [] }));
+      const { accounts: externalAccounts } = await helpers.bankDataProviders.listExternalAccounts({
+        connectionId,
+        raw: true,
+      });
+      const { syncedAccounts } = await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId,
+        accountExternalIds: [externalAccounts[0]!.externalId],
+        raw: true,
+      });
+      const accountId = syncedAccounts[0]!.id;
+
+      const statement = holdStatement({
+        rows: [
+          buildBankStatementTx({
+            id: 'period-row',
+            time: subDays(new Date(), 5),
+            amountCents: -1_000,
+            balanceCents: 100_000,
+          }),
+        ],
+      });
+      global.mswMockServer.use(statement.handler);
+
+      const load = await helpers.bankDataProviders.loadTransactionsForPeriod({
+        connectionId,
+        accountId,
+        from: subDays(new Date(), 50).toISOString(),
+        to: new Date().toISOString(),
+        raw: true,
+      });
+      expect(load.totalBatches).toBe(2);
+
+      try {
+        await within({
+          promise: statement.requested,
+          ms: 5_000,
+          what: 'The first chunk did not request the statement',
+        });
+        await helpers.unlinkAccountFromBankConnection({ id: accountId, raw: true });
+      } finally {
+        statement.release();
+      }
+      await waitForQueuedSyncToSettle({ accountId });
+      // The second chunk runs right after the first; give it the time to (wrongly) fetch.
+      await helpers.sleep(1_000);
+
+      expect(statement.counter.requests).toBe(1);
+      const rows = await Transactions.findAll({ where: { accountId }, raw: true });
+      expect(rows.filter((tx) => tx.accountType !== ACCOUNT_TYPES.system)).toEqual([]);
+      expect(((await helpers.getAccount({ id: accountId, raw: true })) as unknown as AccountApiResponse).type).toBe(
+        ACCOUNT_TYPES.system,
+      );
+    });
+
+    it('anchors the seam on the bank balance when a connect-flow relink syncs no rows', async () => {
+      const { account, connectionId } = await setupMonobankLink({
+        initialBalance: 900,
+        bankBalanceCents: 100_000,
+        bankStatement: [],
+        apiToken: 'link-mono-token-relink-empty-statement',
+      });
+      await helpers.unlinkAccountFromBankConnection({ id: account.id, raw: true });
+      await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 100,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: new Date().toISOString(),
+        }),
+        raw: true,
+      });
+
+      await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId,
+        accountExternalIds: [MONOBANK_EXTERNAL_ID],
+        raw: true,
+      });
+
+      // Bank 1000 with the −100 row from the link day on: S = 1100, which is the opening balance.
+      const relinked = (await helpers.getAccount({ id: account.id, raw: true })) as unknown as AccountApiResponse;
+      expect(relinked.bankSeamAt).not.toBeNull();
+      expect(relinked.currentBalance).toBe(1000);
+      expect(relinked.initialBalance).toBe(1100);
     });
 
     it("records the residual as one adjustment row once the queue finishes when residualTarget is 'adjustment'", async () => {

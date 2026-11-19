@@ -1,49 +1,10 @@
-import {
-  BANK_PROVIDER_TYPE,
-  TRANSACTION_TRANSFER_NATURE,
-  TRANSACTION_TYPES,
-  asDecimal,
-  type RecordId,
-} from '@bt/shared/types';
+import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, type RecordId } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { describe, expect, it } from '@jest/globals';
+import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
 import { waitForImportBatchDelete } from '@tests/helpers/import-export';
 import { asUser, signUpSecondUser, withoutSession } from '@tests/helpers/share';
-import { getMockedLunchFlowTransactions } from '@tests/mocks/lunchflow/data';
-import {
-  VALID_LUNCHFLOW_API_KEY,
-  getLunchFlowBalanceMock,
-  getLunchFlowTransactionsMock,
-} from '@tests/mocks/lunchflow/mock-api';
-
-/** LunchFlow's mock account id used across the bank-data-provider test fixtures. */
-const LUNCHFLOW_EXTERNAL_ACCOUNT_ID = '1001';
-
-/** Connects a USD account to LunchFlow, turning it bank-linked after its import. */
-async function linkAccountToLunchFlow({ accountId }: { accountId: string }) {
-  const { connectionId } = await helpers.bankDataProviders.connectProvider({
-    providerType: BANK_PROVIDER_TYPE.LUNCHFLOW,
-    credentials: { apiKey: VALID_LUNCHFLOW_API_KEY },
-    raw: true,
-  });
-  global.mswMockServer.use(
-    getLunchFlowTransactionsMock({
-      response: getMockedLunchFlowTransactions(0),
-      accountId: LUNCHFLOW_EXTERNAL_ACCOUNT_ID,
-    }),
-    getLunchFlowBalanceMock({
-      accountId: LUNCHFLOW_EXTERNAL_ACCOUNT_ID,
-      response: { balance: { amount: asDecimal(0), currency: 'USD' } },
-    }),
-  );
-  const linkResponse = await helpers.linkAccountToBankConnection({
-    id: accountId,
-    connectionId,
-    externalAccountId: LUNCHFLOW_EXTERNAL_ACCOUNT_ID,
-    raw: false,
-  });
-  expect(linkResponse.statusCode).toBe(200);
-}
 
 describe('DELETE /import/batch/:batchId', () => {
   it('deletes every transaction of the batch and restores the account balance', async () => {
@@ -288,7 +249,7 @@ describe('DELETE /import/batch/:batchId', () => {
   it('rejects a non-uuid batchId', async () => {
     const response = await helpers.deleteImportBatch({ batchId: 'not-a-uuid' });
 
-    expect(response.statusCode).toBe(422);
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
   });
 
   it('returns 401 for an unauthenticated request', async () => {
@@ -317,7 +278,7 @@ describe('DELETE /import/batch/:batchId', () => {
     expect(stillThere).toHaveLength(2);
   });
 
-  it('rejects undoing a batch whose account was later connected to a bank', async () => {
+  it('rejects undoing a batch whose account was later connected to a bank without a seam', async () => {
     await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
     const account = await helpers.createAccount({
       payload: helpers.buildAccountPayload({ currencyCode: 'USD' }),
@@ -325,14 +286,41 @@ describe('DELETE /import/batch/:batchId', () => {
     });
     const summary = await helpers.runCsvImport({ accountId: account.id, currencyCode: 'USD' });
 
-    await linkAccountToLunchFlow({ accountId: account.id });
+    await helpers.linkToLunchFlow({ accountId: account.id, balance: 0 });
+    await helpers.dropSeam({ accountId: account.id });
 
     const response = await helpers.deleteImportBatch({ batchId: summary.batchId });
-    expect(response.statusCode).toBe(422);
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
 
     // Blocked before deletion, not partially applied.
     const stillThere = await helpers.getTransactions({ batchId: summary.batchId, raw: true });
     expect(stillThere).toHaveLength(2);
+  });
+
+  it('refuses up front to undo a batch holding a row dated from the seam of an account linked after the import', async () => {
+    await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+    const account = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ currencyCode: 'USD' }),
+      raw: true,
+    });
+    const today = new Date().toISOString().slice(0, 10);
+    const summary = await helpers.runCsvImport({
+      accountId: account.id,
+      currencyCode: 'USD',
+      extraRows: [`${today},5.00,Today,,A,USD,expense`],
+    });
+
+    await helpers.linkToLunchFlow({ accountId: account.id, balance: 0 });
+    const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+
+    const response = await helpers.deleteImportBatch({ batchId: summary.batchId });
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((response.body.response as unknown as { message: string }).message).toBe(
+      t({ key: 'importExport.batchDeleteBankLinkedAccount', locale: 'en' }),
+    );
+
+    expect(await helpers.getTransactions({ batchId: summary.batchId, raw: true })).toHaveLength(3);
+    expect(await helpers.snapshotSeamAccount({ accountId: account.id })).toEqual(before);
   });
 
   it('undoes an emptied batch whose created account was later connected to a bank, keeping the account', async () => {
@@ -345,7 +333,7 @@ describe('DELETE /import/batch/:batchId', () => {
       payload: { transactionIds: summary.newTransactionIds },
     });
     expect(manualDelete.statusCode).toBe(200);
-    await linkAccountToLunchFlow({ accountId: created.id });
+    await helpers.linkToLunchFlow({ accountId: created.id, balance: 0 });
 
     const historyBeforeUndo = await helpers.getBatchesHistory({ raw: true });
     expect(historyBeforeUndo.items.map((item) => item.batchId)).toEqual([summary.batchId]);
@@ -556,7 +544,7 @@ describe('background delete for batches above the sync cap', () => {
   );
 
   it(
-    'rejects an oversized batch on a now bank-linked account immediately instead of queueing it',
+    'rejects an oversized batch on a now bank-linked account without a seam immediately instead of queueing it',
     async () => {
       await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
       const account = await helpers.createAccount({
@@ -574,10 +562,11 @@ describe('background delete for batches above the sync cap', () => {
       });
       expect(summary.newTransactionIds).toHaveLength(OVERSIZED_BATCH_ROWS);
 
-      await linkAccountToLunchFlow({ accountId: account.id });
+      await helpers.linkToLunchFlow({ accountId: account.id, balance: 0 });
+      await helpers.dropSeam({ accountId: account.id });
 
       const response = await helpers.deleteImportBatch({ batchId: summary.batchId });
-      expect(response.statusCode).toBe(422);
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
 
       const status = await helpers.getImportBatchDeleteStatus({ raw: true });
       expect(status).toEqual({ state: 'idle' });

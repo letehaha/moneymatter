@@ -25,7 +25,7 @@ export const listBudgetPlanPeriodsTool = defineTool({
     offset: z.number().int().min(0).optional().describe('How many of the newest periods to skip (default 0)'),
   },
   run: async ({ userId, args }) => {
-    const all = await listPeriods({ userId, planId: args.planId });
+    const all = await listPeriods({ userId, planId: args.planId, timezone: 'UTC' });
     const newestFirst = all.toReversed();
     const offset = args.offset ?? 0;
 

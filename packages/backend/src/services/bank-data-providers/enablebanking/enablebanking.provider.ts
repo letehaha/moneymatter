@@ -21,6 +21,7 @@ import { countTransactions, findOneTransaction, findTransactions } from '@models
 import Transactions from '@models/transactions.model';
 import { getUserDefaultCategory } from '@models/users.model';
 import { FRONTEND_BASE_URL } from '@root/config';
+import { getLinkDayStart } from '@services/accounts/seam';
 import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
 import { createTransaction } from '@services/transactions';
 import { syncLegsOfMains } from '@services/transactions/payment-legs';
@@ -30,7 +31,10 @@ import { getUserSettings } from '@services/user-settings/get-user-settings';
 import { addDays, subDays } from 'date-fns';
 import { Op, Sequelize } from 'sequelize';
 
+import { clampSyncStartToLink } from '../utils/clamp-sync-start-to-link';
 import { encryptCredentials } from '../utils/credential-encryption';
+import { findSyncAnchor } from '../utils/find-sync-anchor';
+import { mergeAccountExternalData } from '../utils/merge-account-external-data';
 import { notifyPlannedConfirmations } from '../utils/notify-planned-confirmations';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { EnableBankingApiClient, isAspspDateRangeRejection } from './api-client';
@@ -339,7 +343,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
       // Update externalData with fresh account data (including uid for API calls)
       const updatedMetadata = {
-        ...existingMetadata,
         iban: matchingNewAccount.account_id?.iban,
         product: matchingNewAccount.product,
         accountServicer: matchingNewAccount.account_servicer?.name,
@@ -348,9 +351,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         rawAccountData: matchingNewAccount, // Full account data
       };
 
-      await existingAccount.update({
-        externalData: updatedMetadata,
-      });
+      await mergeAccountExternalData({ accountId: existingAccount.id, patch: updatedMetadata });
     }
   }
 
@@ -546,7 +547,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             balances: balancesForLog({ balances }),
           });
 
-          const balanceFloat = primaryBalance?.balance_amount ? parseFloat(primaryBalance.balance_amount.amount) : 0;
+          const balanceFloat = primaryBalance?.balance_amount ? parseFloat(primaryBalance.balance_amount.amount) : null;
           const creditLimitCurrencyMatches = Boolean(
             details.currency &&
             details.credit_limit?.currency &&
@@ -578,11 +579,14 @@ export class EnableBankingProvider extends BaseBankDataProvider {
               details.product ||
               `Account ${details.account_id?.iban?.slice(-4) || accountId.slice(-4)}`,
             type: 'debit' as const, // Enable Banking doesn't distinguish, default to debit
-            balance: correctInvertedSavingsBalance({
-              balance: Money.fromDecimal(balanceFloat),
-              cashAccountType: details.cash_account_type,
-              creditLimitCents,
-            }).toCents(),
+            balance:
+              balanceFloat === null
+                ? null
+                : correctInvertedSavingsBalance({
+                    balance: Money.fromDecimal(balanceFloat),
+                    cashAccountType: details.cash_account_type,
+                    creditLimitCents,
+                  }).toCents(),
             // Empty/missing currency → ISO "XXX" (no currency), so connect
             // requires an explicit user choice instead of failing downstream.
             currency: details.currency?.toUpperCase() || NO_CURRENCY_CODE,
@@ -753,15 +757,8 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           const apiUid = (metadata?.uid as string) || account.externalId;
 
           // Find the most recent transaction
-          const latestTransaction = await findOneTransaction({
-            planned: 'exclude',
-            access: 'unscoped-internal',
-            balanceAdjustments: 'include',
-            where: { accountId: account.id },
-            order: [['time', 'DESC']],
-          });
-
           const to = new Date();
+          const anchor = await findSyncAnchor({ account, to });
 
           // Incremental: `from` anchored to last tx, pulled back to the oldest payment the
           // previous sync saw pending. That payment books under its original date, so a
@@ -774,7 +771,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           // A bank may stop listing a payment as pending before it lists the booked copy,
           // so the stored pending row keeps the range open too. Older rows are skipped:
           // their booked copy could no longer upgrade them.
-          const oldestStoredPendingRow = latestTransaction
+          const oldestStoredPendingRow = anchor
             ? await findOneTransaction({
                 planned: 'exclude',
                 access: 'unscoped-internal',
@@ -787,19 +784,23 @@ export class EnableBankingProvider extends BaseBankDataProvider {
                 order: [['time', 'ASC']],
               })
             : null;
-          const fetchedTransactions = latestTransaction
+          const fetchedTransactions = anchor
             ? await this.fetchTransactions({
                 connectionId,
                 accountApiUid: apiUid,
                 dateRange: {
-                  from: new Date(
-                    Math.min(
-                      latestTransaction.time.getTime(),
-                      to.getTime(),
-                      (typeof storedOldestPendingDate === 'string' && Date.parse(storedOldestPendingDate)) || Infinity,
-                      oldestStoredPendingRow?.time.getTime() ?? Infinity,
+                  from: clampSyncStartToLink({
+                    account,
+                    from: new Date(
+                      Math.min(
+                        anchor.getTime(),
+                        to.getTime(),
+                        (typeof storedOldestPendingDate === 'string' && Date.parse(storedOldestPendingDate)) ||
+                          Infinity,
+                        oldestStoredPendingRow?.time.getTime() ?? Infinity,
+                      ),
                     ),
-                  ),
+                  }),
                   to,
                 },
                 accountExternalIdForHash: account.externalId,
@@ -847,7 +848,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           const mergedPlannedIds: string[] = [];
           // Only the incremental branch may confirm a plan: the initial history fetch
           // reaches years back, where a same-amount charge would eat an unrelated plan.
-          const matchPlanned = Boolean(latestTransaction) && (await accountHasPlannedRows({ accountId: account.id }));
+          const matchPlanned = anchor !== null && (await accountHasPlannedRows({ accountId: account.id }));
           // Tier 4 costs one extra query per unmatched row, and on an initial 3-year
           // sync every row is unmatched. Flips to true as soon as this run stores a
           // pending row so a same-batch booked copy can still upgrade it.
@@ -861,7 +862,9 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           let revokedRemovedCount = 0;
           let revokedKeptCount = 0;
           let softDeletedSkippedCount = 0;
+          let skippedPreLinkCount = 0;
           const checkpoint = this.createBaseCurrencyLockCheckpoint({ userId });
+          const linkDayStart = anchor ? getLinkDayStart({ externalData: account.externalData }) : null;
 
           for (const tx of providerTransactions) {
             await checkpoint();
@@ -1039,6 +1042,12 @@ export class EnableBankingProvider extends BaseBankDataProvider {
               continue;
             }
 
+            // Only after matching: a booked copy dated before the link must still upgrade its stored pending row.
+            if (linkDayStart && tx.date < linkDayStart) {
+              skippedPreLinkCount++;
+              continue;
+            }
+
             // Determine transaction type from metadata
             const isExpense = tx.metadata?.isExpense === true;
 
@@ -1096,15 +1105,16 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             stalePendingIgnoredCount > 0 ||
             revokedRemovedCount > 0 ||
             revokedKeptCount > 0 ||
-            softDeletedSkippedCount > 0
+            softDeletedSkippedCount > 0 ||
+            skippedPreLinkCount > 0
           ) {
             logger.info(
-              `Enable Banking sync: ${createdTransactionIds.length} created, ${updatedCount} updated, ${mergedPlannedIds.length} planned confirmed, ${stalePendingIgnoredCount} stale pending ignored, ${revokedRemovedCount} revoked removed, ${revokedKeptCount} revoked kept, ${softDeletedSkippedCount} soft-deleted skipped for account ${account.id}`,
+              `Enable Banking sync: ${createdTransactionIds.length} created, ${updatedCount} updated, ${mergedPlannedIds.length} planned confirmed, ${stalePendingIgnoredCount} stale pending ignored, ${revokedRemovedCount} revoked removed, ${revokedKeptCount} revoked kept, ${softDeletedSkippedCount} soft-deleted skipped, ${skippedPreLinkCount} before the link skipped for account ${account.id}`,
             );
           }
 
           if (oldestPendingDate !== storedOldestPendingDate) {
-            await account.update({ externalData: { ...account.externalData, oldestPendingDate } });
+            await mergeAccountExternalData({ accountId: account.id, patch: { oldestPendingDate } });
           }
 
           await notifyPlannedConfirmations({
@@ -1182,6 +1192,8 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     let unresolvedDays = 0;
     let ratelessDays = 0;
+    // The days before a forward-only link belong to the account's manual history.
+    const linkDayStart = getLinkDayStart({ externalData: account.externalData });
 
     // Ascending, so concurrent syncs of one account take the same `Balances` rows
     // in the same order. Map iteration would follow whatever order Postgres
@@ -1227,7 +1239,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       }
 
       const date = parseBookingDay({ bookingDate });
-      if (!date) continue;
+      if (!date || (linkDayStart && date < linkDayStart)) continue;
 
       const closingRow = rowsById.get(closingRowId)!;
       const closingBalance = (closingRow.externalData as { balanceAfter?: AmountType } | null)!.balanceAfter!;
@@ -1569,7 +1581,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     // Update account's externalData with fresh metadata
     const updatedMetadata = {
-      ...existingMetadata,
       iban: matchingAccount.account_id?.iban,
       product: matchingAccount.product,
       accountServicer: matchingAccount.account_servicer?.name,
@@ -1578,7 +1589,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       rawAccountData: matchingAccount, // Full account data
     };
 
-    await account.update({ externalData: updatedMetadata });
+    await mergeAccountExternalData({ accountId: account.id, patch: updatedMetadata });
 
     logger.info(`Refreshed account metadata for account ${account.id} (uid: ${matchingAccount.uid})`);
 

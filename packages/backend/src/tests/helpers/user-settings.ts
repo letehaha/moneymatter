@@ -29,6 +29,7 @@ import {
   CUSTOM_ENDPOINT_MODEL,
 } from '@tests/mocks/openai-compatible/mock-api';
 import { OPENAI_LISTED_MODELS, VALID_OPENAI_API_KEY } from '@tests/mocks/openai/mock-api';
+import type { Response } from 'express';
 
 import { CustomResponse, makeRequest } from './common';
 
@@ -378,6 +379,6 @@ export async function createOpenAiConnection({
 }
 
 /** The typed helpers describe success bodies only, so an error message needs its own read. */
-export function errorMessage({ response }: { response: { body: unknown } }): string | undefined {
-  return (response.body as { response?: { message?: string } }).response?.message;
+export function errorMessage({ response }: { response: { body: unknown } | Response }): string | undefined {
+  return (response as { body: { response?: { message?: string } } }).body.response?.message;
 }

@@ -1,4 +1,4 @@
-import { isExternalTransaction } from '@/composable/use-bulk-transaction-actions';
+import { isOnBankAccount } from '@/common/utils/bank-row-permissions';
 import {
   RECONCILIATION_MERGE_MAX,
   RECONCILIATION_MERGE_MIN,
@@ -32,7 +32,7 @@ export const getReconciliationBlockReasons = ({
 }): ReconciliationBlockReason[] => {
   const reasons: ReconciliationBlockReason[] = [];
 
-  if (transactions.some((tx) => !isExternalTransaction({ tx, account: accountsRecord[tx.accountId] }))) {
+  if (transactions.some((tx) => !isOnBankAccount({ transaction: tx, account: accountsRecord[tx.accountId] }))) {
     reasons.push('notBankConnected');
   }
   if (transactions.some((tx) => tx.isPlanned)) reasons.push('planned');

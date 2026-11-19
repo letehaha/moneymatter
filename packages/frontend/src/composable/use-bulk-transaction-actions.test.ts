@@ -1,36 +1,87 @@
 import { ACCOUNT_TYPES, type AccountModel, type RecordId, type TransactionModel } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
-import { buildBulkTarget, isExternalTransaction } from './use-bulk-transaction-actions';
+import { buildBulkTarget, isUndeletableTx } from './use-bulk-transaction-actions';
+
+const ACCOUNT_ID = '00000000-0000-0000-0000-000000000100' as RecordId;
+const OPPOSITE_ACCOUNT_ID = '00000000-0000-0000-0000-000000000200' as RecordId;
 
 const buildTx = (overrides: Partial<TransactionModel>): TransactionModel =>
   ({
     id: '00000000-0000-0000-0000-000000000001' as RecordId,
-    accountId: '00000000-0000-0000-0000-000000000100' as RecordId,
+    accountId: ACCOUNT_ID,
     accountType: ACCOUNT_TYPES.system,
     ...overrides,
   }) as TransactionModel;
 
 const buildAccount = (type: ACCOUNT_TYPES): AccountModel => ({ type }) as AccountModel;
 
-describe('isExternalTransaction', () => {
-  it('account type is authoritative when the account is loaded', () => {
-    const tx = buildTx({ accountType: ACCOUNT_TYPES.monobank });
-
-    expect(isExternalTransaction({ tx, account: buildAccount(ACCOUNT_TYPES.system) })).toBe(false);
-    expect(isExternalTransaction({ tx, account: buildAccount(ACCOUNT_TYPES.monobank) })).toBe(true);
+const check = ({
+  tx,
+  account,
+  oppositeTx,
+  oppositeAccount,
+}: {
+  tx: TransactionModel;
+  account: AccountModel | undefined;
+  oppositeTx?: TransactionModel;
+  oppositeAccount?: AccountModel;
+}) =>
+  isUndeletableTx({
+    tx,
+    oppositeTx,
+    accountsRecord: { [ACCOUNT_ID]: account, [OPPOSITE_ACCOUNT_ID]: oppositeAccount },
   });
 
-  it('falls back to tx.accountType when the account has not loaded yet', () => {
-    expect(isExternalTransaction({ tx: buildTx({ accountType: ACCOUNT_TYPES.system }), account: undefined })).toBe(
-      false,
-    );
-    expect(isExternalTransaction({ tx: buildTx({ accountType: ACCOUNT_TYPES.monobank }), account: undefined })).toBe(
+describe('isUndeletableTx', () => {
+  const SEAM = '2026-11-01T00:00:00.000Z';
+  const seamAccount = { type: ACCOUNT_TYPES.monobank, bankSeamAt: SEAM } as AccountModel;
+  const afterSeam = new Date('2026-11-02T12:00:00.000Z');
+
+  it('allows deleting a row on a manual account', () => {
+    expect(check({ tx: buildTx({}), account: buildAccount(ACCOUNT_TYPES.system) })).toBe(false);
+  });
+
+  it('blocks deleting a bank-delivered row', () => {
+    const tx = buildTx({ accountType: ACCOUNT_TYPES.monobank, time: afterSeam });
+    expect(check({ tx, account: seamAccount })).toBe(true);
+  });
+
+  it('blocks deleting a hand-entered row after the bank seam, but not one before it', () => {
+    expect(check({ tx: buildTx({ time: afterSeam }), account: seamAccount })).toBe(true);
+    expect(check({ tx: buildTx({ time: new Date('2026-10-31T12:00:00.000Z') }), account: seamAccount })).toBe(false);
+  });
+
+  it('allows deleting a planned row on a bank account', () => {
+    const tx = buildTx({ isPlanned: true, time: afterSeam });
+    expect(check({ tx, account: buildAccount(ACCOUNT_TYPES.monobank) })).toBe(false);
+  });
+
+  it('falls back to the row accountType when the account is unknown', () => {
+    expect(check({ tx: buildTx({}), account: undefined })).toBe(false);
+    expect(check({ tx: buildTx({ accountType: ACCOUNT_TYPES.monobank }), account: undefined })).toBe(true);
+  });
+
+  it('blocks deleting a deletable transfer leg whose opposite leg is bank-locked', () => {
+    const oppositeTx = buildTx({
+      id: '00000000-0000-0000-0000-000000000002' as RecordId,
+      accountId: OPPOSITE_ACCOUNT_ID,
+      accountType: ACCOUNT_TYPES.monobank,
+      time: afterSeam,
+    });
+    const tx = buildTx({ time: afterSeam });
+
+    expect(check({ tx, account: buildAccount(ACCOUNT_TYPES.system), oppositeTx, oppositeAccount: seamAccount })).toBe(
       true,
     );
     expect(
-      isExternalTransaction({ tx: buildTx({ accountType: ACCOUNT_TYPES.enableBanking }), account: undefined }),
-    ).toBe(true);
+      check({
+        tx,
+        account: buildAccount(ACCOUNT_TYPES.system),
+        oppositeTx: { ...oppositeTx, accountType: ACCOUNT_TYPES.system },
+        oppositeAccount: buildAccount(ACCOUNT_TYPES.system),
+      }),
+    ).toBe(false);
   });
 });
 

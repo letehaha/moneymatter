@@ -13,7 +13,10 @@ import {
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
+import { runPendingLinkAbsorb } from '@services/accounts/absorb-link-residual';
+import { lockLinkedBankAccount } from '@services/accounts/lock-account-row';
 import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
+import { withTransaction } from '@services/common/with-transaction';
 
 import { SyncStatus, setAccountSyncStatus, setAccountsSyncStatus } from '../sync/sync-status-tracker';
 import { PROVIDER_TO_ACCOUNT_TYPE } from '../types';
@@ -358,21 +361,43 @@ export class SimplefinProvider extends BaseBankDataProvider {
           });
         }
 
-        const createdIds = await this.persistAccountTransactions({
-          connection,
-          account,
-          transactions: bucket.transactions,
-          matchPlanned,
-          // The fetched window is the widest any account needs, so each account
-          // gates row creation on its own start.
-          createFromDate,
-        });
-
-        if (bucket.balance != null) {
-          await writeBankBalanceWithHistory({
-            account,
-            balance: Money.fromDecimal(bucket.balance),
+        // Written under the account row lock, which unlink also takes, so rows land only
+        // while the account is still linked to this connection.
+        const createdIds = await withTransaction(async () => {
+          const linked = await lockLinkedBankAccount({
+            accountId: account.id,
+            connectionId,
+            externalId: account.externalId,
           });
+          if (!linked) return null;
+
+          const ids = await this.persistAccountTransactions({
+            connection,
+            account: linked,
+            transactions: bucket.transactions,
+            matchPlanned,
+            // The fetched window is the widest any account needs, so each account
+            // gates row creation on its own start.
+            createFromDate,
+          });
+
+          if (bucket.balance != null) {
+            await writeBankBalanceWithHistory({
+              account: linked,
+              balance: Money.fromDecimal(bucket.balance),
+            });
+          }
+
+          await runPendingLinkAbsorb({ accountId: account.id, userId });
+          return ids;
+        })();
+
+        if (!createdIds) {
+          logger.info(
+            `[SimpleFIN] Sync skipped for account ${account.id}: no longer linked to connection ${connectionId}`,
+          );
+          await setAccountSyncStatus({ accountId: account.id, status: SyncStatus.COMPLETED, userId });
+          continue;
         }
 
         await linkAndEmitSyncedTransactions({

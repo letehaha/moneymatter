@@ -215,6 +215,7 @@ interface ExecuteImportParams {
   defaultCategoryId?: string;
   timezone?: string;
   recalculateBalance?: boolean;
+  skippedAfterBankSeam?: number;
 }
 
 /**
@@ -1107,6 +1108,8 @@ export function getBatchesHistory<R extends boolean | undefined = false>({
     raw,
   });
 }
+
+export const latestBatchId = async () => (await getBatchesHistory({ raw: true })).items[0]!.batchId;
 
 // ============================================
 // Delete Import Batch Endpoint

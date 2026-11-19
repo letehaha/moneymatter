@@ -20,6 +20,7 @@ import Payees from '@models/payees.model';
 import Tags from '@models/tags.model';
 import * as Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
+import { isBeforeSeam, manualRowOnBankAccountMessage, SEAM_ACCOUNT_ATTRIBUTES } from '@services/accounts/seam';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
 import { dailyImportDetails } from '@services/import-export/core/daily-import-details';
@@ -74,27 +75,29 @@ type CreateTxResult = [baseTx: Transactions.default, oppositeTx?: Transactions.d
  * without one is a user typing a transaction, and gets the account's real type.
  *
  * Only a planned row may sit on a provider account without the provider having reported it,
- * because it records an intention the sync is expected to confirm later.
+ * because it records an intention the sync is expected to confirm later. A manual row dated
+ * before the account's bank seam is the user's own history, so it lands there as `system`.
  */
 const resolveAccountTypeForManualWrite = async ({
   accountId,
   accountOwnerUserId,
   isPlanned,
+  time,
 }: {
   accountId: string;
   accountOwnerUserId: number;
   isPlanned: boolean;
+  time: Date;
 }): Promise<ACCOUNT_TYPES> => {
   const account = await findOrThrowNotFound({
     query: Accounts.getAccountById({ id: accountId, userId: accountOwnerUserId }),
     message: t({ key: 'accounts.accountNotFoundForTransaction' }),
   });
 
-  if (account.type !== ACCOUNT_TYPES.system && !isPlanned) {
-    throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
-  }
+  if (account.type === ACCOUNT_TYPES.system || isPlanned) return account.type;
+  if (isBeforeSeam({ account, time })) return ACCOUNT_TYPES.system;
 
-  return account.type;
+  throw new ValidationError({ message: manualRowOnBankAccountMessage({ account, time }) });
 };
 
 type CreateOppositeTransactionParams = [
@@ -212,13 +215,14 @@ export const createOppositeTransaction = async (params: CreateOppositeTransactio
   // caller bug — fail loudly.
   const destAccount = await Accounts.default.findOne({
     where: { id: destinationAccountId, userId: destOwnerUserId },
-    attributes: ['accountCategory', 'type'],
+    attributes: ['accountCategory', ...SEAM_ACCOUNT_ATTRIBUTES],
   });
   if (!destAccount) {
     throw new NotFoundError({ message: t({ key: 'accounts.accountNotFoundForTransaction' }) });
   }
-  if (destAccount.type !== ACCOUNT_TYPES.system) {
-    throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
+  const transferTime = new Date(baseTransaction.time);
+  if (destAccount.type !== ACCOUNT_TYPES.system && !isBeforeSeam({ account: destAccount, time: transferTime })) {
+    throw new ValidationError({ message: manualRowOnBankAccountMessage({ account: destAccount, time: transferTime }) });
   }
   const isLoanDestination = destAccount.accountCategory === ACCOUNT_CATEGORIES.loan;
   // A loan payment is an outflow: the base leg is the expense, the auto-created
@@ -443,6 +447,7 @@ export const createTransaction = withTransaction(
           accountId,
           accountOwnerUserId,
           isPlanned: Boolean(payload.isPlanned),
+          time: payload.time ?? new Date(),
         }));
 
       if (payload.categoryId !== undefined && payload.categoryId !== null) {

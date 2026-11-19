@@ -1,5 +1,6 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
+import { serializeAccount } from '@root/serializers';
 import * as accountsService from '@services/accounts.service';
 import z from 'zod';
 
@@ -15,6 +16,6 @@ export default createController(
       userId: user.id,
     });
 
-    return { data: account };
+    return { data: account ? serializeAccount(account) : null };
   },
 );

@@ -1,5 +1,5 @@
 import type { ExtractedTransaction, TransactionImportDetails } from '@bt/shared/types';
-import { ACCOUNT_TYPES, ImportSource, TRANSACTION_TYPES, VEHICLE_CLASS } from '@bt/shared/types';
+import { ACCOUNT_TYPES, ImportSource, type RecordId, TRANSACTION_TYPES, VEHICLE_CLASS } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -1025,6 +1025,136 @@ describe('Statement Parser - Execute Import endpoint', () => {
       expect(first.imported).toBe(2);
       expect(second.imported).toBe(2);
       expect(second.batchId).not.toBe(first.batchId);
+    });
+  });
+});
+
+const seamStatementDate = ({ daysAgo, time = '12:00:00' }: { daysAgo: number; time?: string }) =>
+  `${format(subDays(new Date(), daysAgo), 'yyyy-MM-dd')} ${time}`;
+
+// Indices 0 and 3 start at the seam; 1 and 4 are skipped by the user. Only "Pre A" (+15) and "Pre B" (−30) land.
+const SEAM_STATEMENT_ROWS: ExtractedTransaction[] = [
+  { date: seamStatementDate({ daysAgo: 0, time: '00:00:00' }), description: 'Post A', amount: 7, type: 'expense' },
+  { date: seamStatementDate({ daysAgo: 8 }), description: 'Skipped 1', amount: 40, type: 'expense' },
+  { date: seamStatementDate({ daysAgo: 6 }), description: 'Pre A', amount: 15, type: 'income' },
+  { date: seamStatementDate({ daysAgo: 0, time: '00:00:00' }), description: 'Post B', amount: 9, type: 'income' },
+  { date: seamStatementDate({ daysAgo: 3 }), description: 'Skipped 2', amount: 25, type: 'expense' },
+  { date: seamStatementDate({ daysAgo: 2 }), description: 'Pre B', amount: 30, type: 'expense' },
+];
+const SEAM_STATEMENT_SKIP_INDICES = [1, 4];
+const SEAM_STATEMENT_PRE_SEAM_NET_OUT = 15;
+
+describe('Statement Parser - import into an account with a bank seam', () => {
+  it('imports the rows before the seam as manual history, skips the rest, and keeps skipIndices on the original rows', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+
+        const summary = await helpers.statementExecuteImportAndWait({
+          payload: {
+            accountId: account.id,
+            transactions: SEAM_STATEMENT_ROWS,
+            skipIndices: SEAM_STATEMENT_SKIP_INDICES,
+            timezone: 'UTC',
+          },
+        });
+        expect(summary).toMatchObject({ imported: 2, skipped: 2, skippedAfterBankSeam: 2, errors: [] });
+
+        const created = await helpers.getTransactions({ batchId: summary.batchId, raw: true });
+        expect(created.map((tx) => tx.note).toSorted()).toEqual(['Pre A', 'Pre B']);
+        expect(created.every((tx) => tx.accountType === ACCOUNT_TYPES.system)).toBe(true);
+
+        await helpers.expectImportOnlyMovedOpening({
+          accountId: account.id,
+          before,
+          shift: SEAM_STATEMENT_PRE_SEAM_NET_OUT,
+        });
+      },
+    });
+  });
+
+  it('leaves a planned row on the seam account unmerged while the same row confirms a plan on a manual account', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const [category] = await helpers.getCategoriesList();
+        const manualAccount = await helpers.createAccount({
+          payload: helpers.buildAccountPayload({ name: 'Wallet', currencyCode: 'USD', initialBalance: 1000 }),
+          raw: true,
+        });
+        const seamAccount = await helpers.createSeamAccount();
+        const planOn = async ({ accountId }: { accountId: string }) =>
+          (
+            await helpers.createPlannedTransaction({
+              payload: {
+                accountId: accountId as RecordId,
+                amount: 25,
+                time: subDays(new Date(), 2).toISOString(),
+                categoryId: category!.id as RecordId,
+              },
+              raw: true,
+            })
+          )[0]!;
+        const manualPlan = await planOn({ accountId: manualAccount.id });
+        const seamPlan = await planOn({ accountId: seamAccount.id });
+        const importRow = ({ accountId }: { accountId: string }) =>
+          helpers.statementExecuteImportAndWait({
+            payload: {
+              accountId,
+              transactions: [
+                { date: seamStatementDate({ daysAgo: 3 }), description: 'Plan match', amount: 25, type: 'expense' },
+              ],
+              skipIndices: [],
+              timezone: 'UTC',
+            },
+          });
+
+        const control = await importRow({ accountId: manualAccount.id });
+        expect(control).toMatchObject({ merged: 1, imported: 0 });
+        const manualRows = await helpers.getTransactions({ accountIds: [manualAccount.id], raw: true });
+        expect(manualRows.find((tx) => tx.id === manualPlan.id)!.isPlanned).toBe(false);
+
+        const before = await helpers.snapshotSeamAccount({ accountId: seamAccount.id });
+        const summary = await importRow({ accountId: seamAccount.id });
+        expect(summary).toMatchObject({ imported: 1, skippedAfterBankSeam: 0, errors: [] });
+        expect(summary.merged ?? 0).toBe(0);
+
+        const seamRows = await helpers.getTransactions({ accountIds: [seamAccount.id], raw: true });
+        expect(seamRows.find((tx) => tx.id === seamPlan.id)!.isPlanned).toBe(true);
+        expect(seamRows.find((tx) => tx.note === 'Plan match')!.id).not.toBe(seamPlan.id);
+        await helpers.expectImportOnlyMovedOpening({ accountId: seamAccount.id, before, shift: 25 });
+      },
+    });
+  });
+
+  it('undoing the batch after unlinking keeps the current balance and restores the opening balance', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+        const summary = await helpers.statementExecuteImportAndWait({
+          payload: {
+            accountId: account.id,
+            transactions: SEAM_STATEMENT_ROWS,
+            skipIndices: SEAM_STATEMENT_SKIP_INDICES,
+            timezone: 'UTC',
+          },
+        });
+        expect(summary.imported).toBe(2);
+        await helpers.unlinkAccountFromBankConnection({ id: account.id, raw: true });
+        const unlinked = await helpers.snapshotSeamAccount({ accountId: account.id });
+
+        const result = await helpers.deleteImportBatch({ batchId: summary.batchId, raw: true });
+        expect(result.deletedCount).toBe(2);
+
+        const after = await helpers.snapshotSeamAccount({ accountId: account.id });
+        expect(after.account.currentBalance).toBe(unlinked.account.currentBalance);
+        expect(after.account.initialBalance).toBe(before.account.initialBalance);
+        expect(after.account.refInitialBalance).toBe(before.account.refInitialBalance);
+      },
     });
   });
 });

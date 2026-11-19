@@ -349,6 +349,8 @@ export const updateAccount = withTransaction(
       payload.status === ACCOUNT_STATUSES.archived && accountData.status !== ACCOUNT_STATUSES.archived;
     if (isArchiving) {
       await performArchiveSideEffects({ account: accountData, userId: accountData.userId });
+      // Unlink rewrites the opening balance; the update below writes it back from this row.
+      await accountData.reload();
     }
 
     const wasAttachable = BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(accountData.accountCategory);

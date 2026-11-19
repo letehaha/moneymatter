@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import CurrencyChip from '@/components/common/currency-chip.vue';
+import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import AccountSelectField from '@/components/fields/account-select-field.vue';
 import FieldError from '@/components/fields/components/field-error.vue';
 import InputField from '@/components/fields/input-field.vue';
@@ -15,6 +16,7 @@ defineProps<{
   currencyCode?: string;
   /** Account and amount can't change here: a linked or bank-synced row. */
   locked?: boolean;
+  isAccountLocked?: boolean;
   disabled?: boolean;
   errorMessage?: string;
 }>();
@@ -45,15 +47,22 @@ defineExpose({
       "
     >
       <div class="flex min-w-0 flex-1 items-center overflow-hidden">
-        <AccountSelectField
-          class="min-w-0 flex-1"
-          embedded
-          :model-value="account"
-          :accounts="accounts"
-          :placeholder="accountPlaceholder"
-          :disabled="disabled || locked"
-          @update:model-value="emit('update:account', $event)"
-        />
+        <ResponsiveTooltip
+          :content="$t('transactions.inlineEdit.bankAccountDescription')"
+          :disabled="!isAccountLocked || locked"
+        >
+          <div class="flex min-w-0 flex-1">
+            <AccountSelectField
+              class="min-w-0 flex-1"
+              embedded
+              :model-value="account"
+              :accounts="accounts"
+              :placeholder="accountPlaceholder"
+              :disabled="disabled || locked || isAccountLocked"
+              @update:model-value="emit('update:account', $event)"
+            />
+          </div>
+        </ResponsiveTooltip>
         <slot name="account-addon" />
       </div>
 

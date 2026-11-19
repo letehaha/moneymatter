@@ -444,6 +444,7 @@ const cellModes = computed<Partial<Record<TABLE_COLUMN, InlineCellMode>>>(() =>
         tx: props.tx,
         column: column.id,
         account: accountFrom.value,
+        oppositeTx: oppositeTx.value ?? undefined,
         oppositeAccount: transferDestinationAccount.value,
         canEdit: canEdit.value,
       }),
