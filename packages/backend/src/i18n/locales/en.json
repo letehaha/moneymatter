@@ -310,7 +310,8 @@
     "providerTypeMismatch": "Connection {{connectionId}} is for provider {{actualType}}, not {{expectedType}}",
     "providerAlreadyRegistered": "Provider {{providerType}} is already registered. Cannot register duplicate providers.",
     "providerNotRegistered": "Provider {{providerType}} is not registered. Available providers: {{available}}",
-    "unexpected": "Unexpected error."
+    "unexpected": "Unexpected error.",
+    "clientUpdateRequired": "This version of the app is no longer supported. Please update it from the App Store."
   },
   "validation": {
     "dateInvalid": "\"date\" is invalid date."

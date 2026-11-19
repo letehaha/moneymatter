@@ -314,7 +314,8 @@
     "providerTypeMismatch": "Підключення {{connectionId}} призначене для провайдера {{actualType}}, а не {{expectedType}}",
     "providerAlreadyRegistered": "Провайдер {{providerType}} вже зареєстрований. Не можна реєструвати дублікати провайдерів.",
     "providerNotRegistered": "Провайдер {{providerType}} не зареєстрований. Доступні провайдери: {{available}}",
-    "unexpected": "Неочікувана помилка."
+    "unexpected": "Неочікувана помилка.",
+    "clientUpdateRequired": "Ця версія застосунку більше не підтримується. Будь ласка, оновіть застосунок через App Store."
   },
   "validation": {
     "dateInvalid": "\"date\" є неправильною датою."
