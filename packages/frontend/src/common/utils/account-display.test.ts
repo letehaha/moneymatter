@@ -33,6 +33,7 @@ const makeAccount = (overrides: Partial<AccountModel> = {}): AccountModel => ({
   logoIcon: null,
   logoImageId: null,
   bankSeamAt: null,
+  externalUrl: null,
   ...overrides,
 });
 

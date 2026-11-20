@@ -43,6 +43,9 @@ export default class Portfolios extends Model {
   @Column({ type: DataType.STRING(3), allowNull: true })
   displayCurrencyCode!: string | null;
 
+  @Column({ type: DataType.STRING(2048), allowNull: true })
+  externalUrl!: string | null;
+
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
   isEnabled!: boolean;
 

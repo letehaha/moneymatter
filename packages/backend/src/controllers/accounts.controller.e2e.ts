@@ -748,4 +748,100 @@ describe('Accounts controller', () => {
       expect(stillExists.id).toBe(account.id);
     });
   });
+
+  describe('externalUrl', () => {
+    it('creates accounts with null by default or with valid http(s) URLs and rejects invalid ones', async () => {
+      const withoutUrl = await helpers.createAccount({ raw: true });
+      expect(withoutUrl.externalUrl).toBeNull();
+
+      for (const url of ['https://www.chase.com/account/1', 'http://localhost:8080/portal']) {
+        const created = await helpers.createAccount({
+          payload: helpers.buildAccountPayload({ externalUrl: url }),
+          raw: true,
+        });
+        expect(created.externalUrl).toBe(url);
+
+        const fetched = await helpers.getAccount({ id: created.id, raw: true });
+        expect(fetched.externalUrl).toBe(url);
+      }
+
+      for (const badUrl of [
+        'ftp://example.com',
+        'javascript:alert(1)',
+        'not-a-url',
+        '',
+        `https://example.com/${'a'.repeat(2049)}`,
+      ]) {
+        const res = await helpers.createAccount({
+          payload: helpers.buildAccountPayload({ externalUrl: badUrl }),
+          raw: false,
+        });
+        expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+      }
+    });
+
+    it('sets, preserves across unrelated updates, clears with null, and rejects invalid URLs on update', async () => {
+      const account = await helpers.createAccount({ raw: true });
+
+      const updated = await helpers.updateAccount({
+        id: account.id,
+        payload: { externalUrl: 'https://portal.bank.example/login' },
+        raw: true,
+      });
+      expect(updated.externalUrl).toBe('https://portal.bank.example/login');
+
+      const renamed = await helpers.updateAccount({
+        id: account.id,
+        payload: { name: 'Renamed With Link' },
+        raw: true,
+      });
+      expect(renamed.name).toBe('Renamed With Link');
+      expect(renamed.externalUrl).toBe('https://portal.bank.example/login');
+
+      for (const badUrl of [
+        'ftp://example.com',
+        'javascript:alert(1)',
+        'not-a-url',
+        '',
+        `https://example.com/${'a'.repeat(2049)}`,
+      ]) {
+        const res = await helpers.updateAccount({
+          id: account.id,
+          payload: { externalUrl: badUrl },
+        });
+        expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+      }
+
+      const cleared = await helpers.updateAccount({
+        id: account.id,
+        payload: { externalUrl: null },
+        raw: true,
+      });
+      expect(cleared.externalUrl).toBeNull();
+
+      const reread = await helpers.getAccount({ id: account.id, raw: true });
+      expect(reread.externalUrl).toBeNull();
+    });
+
+    it('allows setting and clearing externalUrl on a bank-connected account', async () => {
+      const bankAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ type: ACCOUNT_TYPES.monobank }),
+        raw: true,
+      });
+
+      const updated = await helpers.updateAccount({
+        id: bankAccount.id,
+        payload: { externalUrl: 'https://web.monobank.ua/' },
+        raw: true,
+      });
+      expect(updated.externalUrl).toBe('https://web.monobank.ua/');
+
+      const cleared = await helpers.updateAccount({
+        id: bankAccount.id,
+        payload: { externalUrl: null },
+        raw: true,
+      });
+      expect(cleared.externalUrl).toBeNull();
+    });
+  });
 });

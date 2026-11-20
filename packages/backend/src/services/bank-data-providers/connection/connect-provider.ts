@@ -14,11 +14,13 @@ export const connectProvider = withTransaction(
     userId,
     credentials,
     providerName,
+    externalUrl,
   }: {
     providerType: BANK_PROVIDER_TYPE;
     userId: number;
     credentials: Record<string, unknown>;
     providerName?: string;
+    externalUrl?: string | null;
   }): Promise<{ connectionId: string; authUrl?: string; message: string }> => {
     if (!(await isProviderAvailableForUser({ userId, providerType }))) {
       throw new NotAllowedError({ message: t({ key: 'bankDataProviders.providerNotAvailable' }) });
@@ -29,9 +31,12 @@ export const connectProvider = withTransaction(
     // Create connection (stores encrypted credentials)
     const connectionId = await provider.connect(userId, credentials);
 
-    // Update provider name if provided
-    if (providerName) {
-      await BankDataProviderConnections.update({ providerName: providerName }, { where: { id: connectionId } });
+    // Update provider name or external URL if provided
+    const patch: { providerName?: string; externalUrl?: string | null } = {};
+    if (providerName) patch.providerName = providerName;
+    if (externalUrl !== undefined) patch.externalUrl = externalUrl;
+    if (Object.keys(patch).length > 0) {
+      await BankDataProviderConnections.update(patch, { where: { id: connectionId } });
     }
 
     // For Enable Banking, get the authorization URL

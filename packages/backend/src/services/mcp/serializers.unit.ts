@@ -34,6 +34,7 @@ const fullAccount: AccountApiResponse = {
   currencyCode: 'USD',
   userId: 42,
   externalId: 'ext-abc',
+  externalUrl: 'https://bank.example/account',
   status: ACCOUNT_STATUSES.active,
   excludeFromStats: false,
   bankDataProviderConnectionId: 'conn-1',
@@ -116,6 +117,7 @@ describe('MCP serializers', () => {
       for (const dropped of [
         'userId',
         'externalId',
+        'externalUrl',
         'bankDataProviderConnectionId',
         'bankProviderType',
         'bankSeamAt',
@@ -140,6 +142,7 @@ describe('MCP serializers', () => {
         bankDataProviderConnectionId: 'conn-1',
         bankSeamAt: '2026-11-01T00:00:00.000Z',
         needsRelink: true,
+        externalUrl: 'https://bank.example/account',
         logoDomain: null,
       });
     });

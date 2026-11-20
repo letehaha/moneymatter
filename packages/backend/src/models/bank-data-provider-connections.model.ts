@@ -13,6 +13,7 @@ interface BankDataProviderConnectionsAttributes {
   userId: number;
   providerType: BANK_PROVIDER_TYPE;
   providerName: string;
+  externalUrl: string | null;
   isActive: boolean;
   credentials: string; // Encrypted JSON string in DB
   metadata: object;
@@ -67,6 +68,12 @@ export default class BankDataProviderConnections extends Model<BankDataProviderC
     comment: 'User-defined friendly name for this connection',
   })
   providerName!: string;
+
+  @Column({
+    allowNull: true,
+    type: DataType.STRING(2048),
+  })
+  externalUrl!: string | null;
 
   @Column({
     allowNull: false,

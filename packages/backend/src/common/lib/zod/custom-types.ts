@@ -330,3 +330,12 @@ export const percentageFraction = () =>
     .min(0)
     .max(1)
     .transform((v) => v.toString());
+
+const MAX_EXTERNAL_URL_LENGTH = 2048;
+
+/** Optional http(s) URL string capped at 2048 chars (matches the DB VARCHAR(2048) column). */
+export const externalUrl = () =>
+  z
+    .url('Invalid URL')
+    .max(MAX_EXTERNAL_URL_LENGTH, `The URL must not exceed ${MAX_EXTERNAL_URL_LENGTH} characters.`)
+    .regex(/^https?:\/\//i, 'Only http(s) URLs are allowed');

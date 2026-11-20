@@ -11,6 +11,7 @@ interface CreatePortfolioParams {
   portfolioType: PORTFOLIO_TYPE;
   description?: string | null;
   displayCurrencyCode?: string | null;
+  externalUrl?: string | null;
   isEnabled?: boolean;
 }
 
@@ -20,6 +21,7 @@ const createPortfolioImpl = async ({
   portfolioType,
   description = null,
   displayCurrencyCode = null,
+  externalUrl = null,
   isEnabled = true,
 }: CreatePortfolioParams) => {
   // Display currency must be connected to the user, otherwise the summary and
@@ -40,6 +42,7 @@ const createPortfolioImpl = async ({
     portfolioType,
     description,
     displayCurrencyCode,
+    externalUrl,
     isEnabled,
   });
 

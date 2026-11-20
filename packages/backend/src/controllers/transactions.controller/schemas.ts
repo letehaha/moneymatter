@@ -6,7 +6,7 @@ import {
   TRANSACTION_TYPES,
   isTwoLegTransfer,
 } from '@bt/shared/types';
-import { currencyCode, recordId } from '@common/lib/zod/custom-types';
+import { currencyCode, externalUrl, recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
 import { z } from 'zod';
 
@@ -67,11 +67,7 @@ export const locationSchema = z.object({
 });
 
 const transactionDetailFieldsSchema = {
-  externalUrl: z
-    .url('Invalid URL')
-    .max(2048, 'The URL must not exceed 2048 characters.')
-    .regex(/^https?:\/\//i, 'Only http(s) URLs are allowed')
-    .nullish(),
+  externalUrl: externalUrl().nullish(),
   externalReference: z.string().max(255, 'The reference must not exceed 255 characters.').nullish(),
   location: locationSchema.nullish(),
 };

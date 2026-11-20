@@ -52,6 +52,22 @@
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h1 class="truncate text-xl font-semibold tracking-tight">{{ connectionDetails.providerName }}</h1>
 
+              <DesktopOnlyTooltip
+                v-if="externalUrlHref"
+                :content="$t('pages.integrations.details.actions.openExternalUrl')"
+              >
+                <UiButton variant="ghost" size="icon-sm" as-child class="shrink-0">
+                  <a
+                    :href="externalUrlHref"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    :aria-label="$t('pages.integrations.details.actions.openExternalUrl')"
+                  >
+                    <ExternalLinkIcon class="size-3.5" />
+                  </a>
+                </UiButton>
+              </DesktopOnlyTooltip>
+
               <DesktopOnlyTooltip :content="$t('pages.integrations.details.actions.renameButton')">
                 <UiButton
                   variant="ghost"
@@ -335,6 +351,7 @@
     <EditConnectionNameDialog
       v-model:open="isEditNameDialogOpen"
       :provider-name="connectionDetails?.providerName || ''"
+      :external-url="connectionDetails?.externalUrl ?? null"
       :is-saving="isSavingName"
       @save="handleSaveConnectionName"
     />
@@ -360,6 +377,7 @@ import {
 } from '@/api/bank-data-providers';
 import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import { METAINFO_FROM_TYPE } from '@/common/const/bank-providers';
+import { safeExternalUrl } from '@/common/utils/external-url';
 import InputField from '@/components/fields/input-field.vue';
 import TextareaField from '@/components/fields/textarea-field.vue';
 import BankConnectionLogo from '@/components/common/bank-connection-logo.vue';
@@ -395,6 +413,7 @@ import {
   ArrowLeftIcon,
   CircleAlertIcon,
   EllipsisIcon,
+  ExternalLinkIcon,
   KeyRoundIcon,
   PencilIcon,
   RefreshCwIcon,
@@ -442,6 +461,7 @@ const {
 } = useBankConnectionDetails({ connectionId: connectionId, queryOptions: { retry: false } });
 
 const isConnectionNotFound = computed(() => isNotFoundError(error.value));
+const externalUrlHref = computed(() => safeExternalUrl({ value: connectionDetails.value?.externalUrl }));
 
 const providerDisplayName = computed(() => {
   const meta = METAINFO_FROM_TYPE[connectionDetails.value?.providerType ?? ''];
@@ -719,10 +739,17 @@ const { mutate: disconnectMutation, isPending: isDisconnecting } = useMutation({
   },
 });
 
-// Mutation for updating connection name
+// Mutation for updating connection name and external URL
 const { mutate: updateNameMutation, isPending: isSavingName } = useMutation({
-  mutationFn: ({ connectionId: connId, providerName }: { connectionId: string; providerName: string }) =>
-    updateConnectionDetails(connId, { providerName }),
+  mutationFn: ({
+    connectionId: connId,
+    providerName,
+    externalUrl,
+  }: {
+    connectionId: string;
+    providerName: string;
+    externalUrl: string | null;
+  }) => updateConnectionDetails(connId, { providerName, externalUrl }),
   onSuccess: () => {
     addSuccessNotification(t('pages.integrations.notifications.updateNameSuccess'));
     queryClient.invalidateQueries({
@@ -771,8 +798,14 @@ const openReconnectDialog = () => {
   isReconnectDialogOpen.value = true;
 };
 
-const handleSaveConnectionName = (providerName: string) => {
-  updateNameMutation({ connectionId: connectionId.value, providerName });
+const handleSaveConnectionName = ({
+  providerName,
+  externalUrl,
+}: {
+  providerName: string;
+  externalUrl: string | null;
+}) => {
+  updateNameMutation({ connectionId: connectionId.value, providerName, externalUrl });
 };
 
 const handleSyncSelectedAccounts = (payload: { externalIds: string[]; currencyOverrides: Record<string, string> }) => {

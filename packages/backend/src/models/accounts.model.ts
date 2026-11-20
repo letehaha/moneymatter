@@ -33,6 +33,7 @@ interface AccountsAttributes {
   userId: number;
   externalId: string; // represents id from the original external system if exists
   externalData: AccountExternalData | null; // JSON of any addition fields
+  externalUrl: string | null;
   // cashbackType: string; // move to additionalFields that will represent non-unified data
   // maskedPan: string; // move to additionalFields
   // type: string; // move to additionalFields
@@ -133,6 +134,12 @@ export default class Accounts extends Model {
     allowNull: true,
   })
   externalData!: AccountExternalData | null; // JSON of any addition fields
+
+  @Column({
+    type: DataType.STRING(2048),
+    allowNull: true,
+  })
+  externalUrl!: string | null;
   // cashbackType: string;
   // maskedPan: string;
   // type: string;
@@ -249,6 +256,7 @@ export const getAccountById = async ({
 export interface CreateAccountPayload extends EntityLogoPayload {
   externalId?: AccountsAttributes['externalId'];
   externalData?: AccountsAttributes['externalData'];
+  externalUrl?: AccountsAttributes['externalUrl'];
   status?: AccountsAttributes['status'];
   excludeFromStats?: AccountsAttributes['excludeFromStats'];
   accountCategory: AccountsAttributes['accountCategory'];
@@ -306,6 +314,7 @@ export interface UpdateAccountByIdPayload extends EntityLogoPayload {
   status?: AccountsAttributes['status'];
   excludeFromStats?: AccountsAttributes['excludeFromStats'];
   externalData?: AccountsAttributes['externalData'];
+  externalUrl?: AccountsAttributes['externalUrl'];
 }
 
 export async function updateAccountById({ id, userId, ...payload }: UpdateAccountByIdPayload) {

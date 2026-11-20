@@ -7,11 +7,13 @@ import {
   VUE_QUERY_GLOBAL_PREFIXES,
 } from '@/common/const';
 import { ACCOUNT_CATEGORIES_TRANSLATION_KEYS } from '@/common/const/account-categories-verbose';
+import { normalizeExternalUrl, validateOptionalExternalUrl } from '@/common/utils/external-url';
 import AccountLogo from '@/components/common/account-logo.vue';
 import DocsLink from '@/components/common/docs-link.vue';
 import { type LogoSelection, toOptionalLogoPayload } from '@/components/common/logo-selection';
 import LogoSquareField from '@/components/common/logo-square-field.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
+import ExternalUrlField from '@/components/fields/external-url-field.vue';
 import InputField from '@/components/fields/input-field.vue';
 import SelectField from '@/components/fields/select-field.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
@@ -27,7 +29,7 @@ import { ACCOUNT_CATEGORIES, isDedicatedFlowAccountCategory } from '@bt/shared/t
 import { PlusIcon } from '@lucide/vue';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { storeToRefs } from 'pinia';
-import { computed, defineAsyncComponent, reactive } from 'vue';
+import { computed, defineAsyncComponent, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
@@ -59,6 +61,7 @@ const form = reactive<{
   defaultPaymentType: NullablePaymentTypeOption | null;
   initialBalance: number;
   creditLimit: number;
+  externalUrl: string;
   /** Chosen brand or monogram. null = no logo; the account renders its account-type chip (accounts have no auto-resolution). */
   logo: LogoSelection | null;
 }>({
@@ -68,6 +71,7 @@ const form = reactive<{
   defaultPaymentType: NO_PAYMENT_TYPE_OPTION,
   initialBalance: 0,
   creditLimit: 0,
+  externalUrl: '',
   logo: null,
 });
 
@@ -93,9 +97,14 @@ const selectableAccountCategories = computed(() =>
 );
 
 const createAccountMutation = useMutation({ mutationFn: createAccount });
+const showExternalUrlError = ref(false);
+const isExternalUrlValid = computed(() => validateOptionalExternalUrl({ value: form.externalUrl }) === null);
 
 const submit = async () => {
-  if (createAccountMutation.isPending.value || !isFormValid()) return;
+  showExternalUrlError.value = true;
+  if (createAccountMutation.isPending.value || !isFormValid() || !isExternalUrlValid.value) return;
+
+  const normalizedExternalUrl = normalizeExternalUrl({ value: form.externalUrl });
 
   try {
     await createAccountMutation.mutateAsync({
@@ -105,6 +114,7 @@ const submit = async () => {
       defaultPaymentType: form.defaultPaymentType?.value ?? null,
       creditLimit: form.creditLimit,
       initialBalance: form.initialBalance,
+      ...(normalizedExternalUrl ? { externalUrl: normalizedExternalUrl } : {}),
       ...toOptionalLogoPayload({ selection: form.logo }),
     });
 
@@ -228,6 +238,14 @@ const submit = async () => {
       type="number"
       :label="$t('forms.createAccount.creditLimitLabel')"
       :placeholder="$t('forms.createAccount.creditLimitPlaceholder')"
+    />
+
+    <external-url-field
+      v-model="form.externalUrl"
+      :label="$t('forms.createAccount.externalUrlLabel')"
+      :placeholder="$t('forms.createAccount.externalUrlPlaceholder')"
+      :disabled="createAccountMutation.isPending.value"
+      :show-error="showExternalUrlError"
     />
 
     <div class="flex">

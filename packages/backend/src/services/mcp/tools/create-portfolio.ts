@@ -19,6 +19,7 @@ export const createPortfolioTool = defineTool({
     displayCurrencyCode: createPortfolioBodyShape.displayCurrencyCode.describe(
       'Display currency (ISO code) for summary/holdings; must be one of the user currencies. Omit/null = base currency',
     ),
+    externalUrl: createPortfolioBodyShape.externalUrl.describe('Optional http(s) URL for the institution portal'),
   },
   run: async ({ userId, args }) => {
     const portfolio = await createPortfolio({
@@ -27,6 +28,7 @@ export const createPortfolioTool = defineTool({
       portfolioType: args.portfolioType,
       description: args.description ?? null,
       displayCurrencyCode: args.displayCurrencyCode,
+      externalUrl: args.externalUrl ?? null,
       isEnabled: args.isEnabled,
     });
 
