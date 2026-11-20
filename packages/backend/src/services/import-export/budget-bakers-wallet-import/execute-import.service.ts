@@ -5,7 +5,6 @@ import {
   type BudgetBakersWalletImportSummary,
   type CategoryMappingConfig,
   ImportSource,
-  PAYMENT_TYPES,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   type TransactionImportDetails,
@@ -17,6 +16,17 @@ import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import {
+  assertBankLinksUnchanged,
+  dropFromBankSeam,
+  excludeSeamAccounts,
+  linkedAccountIdByName,
+  loadSeamStarts,
+} from '@services/import-export/core/bank-seam';
+import {
+  getAccountDecimals,
+  roundToAccountDecimals,
+} from '@services/import-export/core/duplicates/get-account-decimals';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { ImportJobError } from '@services/import-export/core/queue/import-job-error';
@@ -123,6 +133,7 @@ async function executeBudgetBakersWalletImportImpl({
   const summary: BudgetBakersWalletImportSummary & {
     accountBalanceChanges: AccountBalanceChange[];
     merged: number;
+    skippedAfterBankSeam: number;
   } = {
     accountsCreated: 0,
     accountsLinked: 0,
@@ -135,18 +146,33 @@ async function executeBudgetBakersWalletImportImpl({
     outOfWalletImported: 0,
     merged: 0,
     duplicatesSkipped: 0,
+    skippedAfterBankSeam: 0,
     errors: [],
     accountBalanceChanges: [],
   };
 
   const skipSet = new Set(skipDuplicateIndices);
 
+  const { seamStartByName, seamStartByAccountId } = await loadSeamStarts({
+    userId,
+    accountIdByName: linkedAccountIdByName({ accountMapping: importableMapping }),
+  });
+
   // Drop a transfer when either leg lands on a skipped account: writing the
   // surviving leg alone would reference an account that was never resolved.
-  const importableTransactions = parsed.transactions.filter((tx) => !skippedAccountNames.has(tx.accountName));
-  const transfersToWrite = parsed.transfers.filter(
-    (xfer) => !skippedAccountNames.has(xfer.sourceAccountName) && !skippedAccountNames.has(xfer.destinationAccountName),
-  );
+  const {
+    rows: importableTransactions,
+    transfers: transfersToWrite,
+    droppedCount,
+  } = dropFromBankSeam({
+    seamStartByName,
+    rows: parsed.transactions.filter((tx) => !skippedAccountNames.has(tx.accountName)),
+    transfers: parsed.transfers.filter(
+      (xfer) =>
+        !skippedAccountNames.has(xfer.sourceAccountName) && !skippedAccountNames.has(xfer.destinationAccountName),
+    ),
+  });
+  summary.skippedAfterBankSeam = droppedCount;
 
   // Progress total counts only rows that will actually be written: transactions
   // not flagged as duplicates, plus every paired transfer. Skipped rows never
@@ -220,8 +246,13 @@ async function executeBudgetBakersWalletImportImpl({
       return mapping?.action === 'create-new' ? mapping.currencyCode : undefined;
     },
     resolveFxDate: () => initialBalanceFxDate,
+    allowSeamTargets: true,
   });
   summary.accountsCreated = accountsCreated;
+
+  // Every amount is rounded to its account currency's decimals before it is written and tallied, so
+  // the tally that `finalize` undoes is what the rows stored.
+  const decimalsByAccountId = await getAccountDecimals({ accountIds: accountIdByName.values() });
 
   // Snapshot every linked account BEFORE any row is written: balance-before +
   // boundary day (day of its latest existing transaction). Phase 7 reconciles
@@ -236,9 +267,12 @@ async function executeBudgetBakersWalletImportImpl({
     importDetails,
     createdAccountIds: createdAccounts.map((account) => account.accountId),
   });
+  await assertBankLinksUnchanged({ userId, accountIds: capturedAccountIds, seamStartByAccountId });
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
 
-  const plannedMatchAccountIds = await selectAccountsWithPlannedRows({ accountIds: capturedAccountIds });
+  const plannedMatchAccountIds = await selectAccountsWithPlannedRows({
+    accountIds: excludeSeamAccounts({ accountIds: capturedAccountIds, seamStartByAccountId }),
+  });
 
   // Phase 3: categories. Resolve each mapped category to an id via the shared
   // CSV resolver: link-existing verifies ownership, create-new finds-or-creates
@@ -312,7 +346,7 @@ async function executeBudgetBakersWalletImportImpl({
       // a zero-amount row has no sign (`-0 === 0`) yet still has a real
       // Expense/Income type the user expects to keep.
       const transactionType = tx.type;
-      const amount = Money.fromDecimal(Math.abs(tx.amount));
+      const amount = roundToAccountDecimals({ decimalsByAccountId, accountId, amount: Math.abs(tx.amount) });
 
       // Out-of-wallet legs carry no real category and model money leaving/entering
       // the tracked set of accounts, so they import as `transfer_out_wallet` with
@@ -446,19 +480,29 @@ async function executeBudgetBakersWalletImportImpl({
         });
       }
 
+      const sourceAmount = roundToAccountDecimals({
+        decimalsByAccountId,
+        accountId: sourceAccountId,
+        amount: xfer.sourceAmount,
+      });
+      const destinationAmount = roundToAccountDecimals({
+        decimalsByAccountId,
+        accountId: destinationAccountId,
+        amount: xfer.destinationAmount,
+      });
+
       const [, destinationLeg] = await createTransaction({
         userId,
         accountId: sourceAccountId,
-        amount: Money.fromDecimal(xfer.sourceAmount),
+        amount: sourceAmount,
         commissionRate: Money.zero(),
         note: xfer.note,
         time: new Date(xfer.date),
         transactionType: TRANSACTION_TYPES.expense,
-        paymentType: PAYMENT_TYPES.bankTransfer,
         accountType: ACCOUNT_TYPES.system,
         transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
         destinationAccountId,
-        destinationAmount: Money.fromDecimal(xfer.destinationAmount),
+        destinationAmount,
         externalData: { importDetails },
       });
 
@@ -480,7 +524,7 @@ async function executeBudgetBakersWalletImportImpl({
         rowIso: xfer.date,
         ...signedRowContribution({
           isIncome: false,
-          amount: Money.fromDecimal(xfer.sourceAmount),
+          amount: sourceAmount,
         }),
       });
       reconciler.recordRow({
@@ -488,7 +532,7 @@ async function executeBudgetBakersWalletImportImpl({
         rowIso: xfer.date,
         ...signedRowContribution({
           isIncome: true,
-          amount: Money.fromDecimal(xfer.destinationAmount),
+          amount: destinationAmount,
         }),
       });
 

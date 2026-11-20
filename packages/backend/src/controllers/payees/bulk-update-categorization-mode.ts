@@ -1,12 +1,11 @@
-import { CATEGORIZATION_MODE } from '@bt/shared/types';
 import { createController } from '@controllers/helpers/controller-factory';
 import * as payeesService from '@services/payees';
 import { z } from 'zod';
 
+import { bulkUpdateCategorizationModeBodySchema } from './shared-schemas';
+
 const schema = z.object({
-  body: z.object({
-    mode: z.nativeEnum(CATEGORIZATION_MODE),
-  }),
+  body: bulkUpdateCategorizationModeBodySchema,
 });
 
 /**

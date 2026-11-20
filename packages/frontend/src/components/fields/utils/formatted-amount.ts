@@ -4,6 +4,8 @@
  * All parsing uses a canonical '.'; the component normalizes locale separators in/out.
  */
 
+import { DEFAULT_CURRENCY_DECIMALS } from '@/js/helpers/currency-decimals';
+
 interface AmountSeparators {
   decimal: string;
   group: string;
@@ -17,9 +19,6 @@ export const getAmountSeparators = (): AmountSeparators => {
     group: parts.find((part) => part.type === 'group')?.value ?? ',',
   };
 };
-
-/** Decimals applied when a field is not told its currency's. */
-export const DEFAULT_AMOUNT_DECIMALS = 2;
 
 /**
  * Splits typed input into a numeric value + fragment (the decimal tail a Number
@@ -38,7 +37,7 @@ export const parseAmountInput = ({
   raw,
   decimalSeparator,
   groupSeparator = '',
-  decimals: maxDecimals = DEFAULT_AMOUNT_DECIMALS,
+  decimals: maxDecimals = DEFAULT_CURRENCY_DECIMALS,
 }: {
   raw: string;
   decimalSeparator: string;
@@ -80,6 +79,26 @@ export const parseAmountInput = ({
 
   const numeric = Number(normalized);
   return { fragment, numeric: Number.isNaN(numeric) ? null : numeric };
+};
+
+/**
+ * Keeps at most `decimals` digits after the '.' of a plain number string; 0 drops the '.'
+ * as well. Exponent notation ("1.5e3") comes back unchanged: slicing it would cut the exponent.
+ */
+export const limitDecimalDigits = ({ raw, decimals }: { raw: string; decimals: number }): string => {
+  const dot = raw.indexOf('.');
+  if (dot === -1 || /e/i.test(raw)) return raw;
+  return decimals === 0 ? raw.slice(0, dot) : raw.slice(0, dot + 1 + decimals);
+};
+
+/**
+ * Cuts a number to `decimals` digits the way typing does: extra digits are dropped, not
+ * rounded. A value only `String` writes in exponent notation (below 1e-6) is rounded instead.
+ */
+export const limitAmountDecimals = ({ value, decimals }: { value: number; decimals: number }): number => {
+  const raw = String(value);
+  if (/e/i.test(raw)) return Number(value.toFixed(decimals));
+  return Number(limitDecimalDigits({ raw, decimals }));
 };
 
 const isCaretAnchorChar = ({ char, decimalSeparator }: { char: string; decimalSeparator: string }): boolean =>

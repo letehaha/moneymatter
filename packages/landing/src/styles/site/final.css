@@ -1,0 +1,91 @@
+.hero-note a {
+  font-weight: 600;
+  color: var(--fg);
+  text-underline-offset: 3px;
+}
+.final h2 {
+  margin-inline: auto;
+  max-width: 44rem;
+  font-family: var(--display);
+  font-size: clamp(30px, 5vw, 52px);
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: var(--display-tracking);
+}
+.final-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(48px, 8cqi, 88px) 20px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  text-align: center;
+  background: radial-gradient(60% 90% at 50% 0, color-mix(in srgb, var(--accent) 15%, var(--card)), var(--card) 72%);
+  box-shadow:
+    var(--shadow-pop),
+    inset 0 1px 0 var(--edge);
+}
+.final-scene {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  width: max(760px, 104.5cqi);
+  aspect-ratio: 5 / 4;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.final-scene svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.final-scene :is(polygon, .ln, .wire-line, .floor-grid, .port) {
+  vector-effect: non-scaling-stroke;
+}
+.final-logo {
+  width: 52px;
+  height: 52px;
+  margin-bottom: 22px;
+}
+.final-sub {
+  margin: 16px auto 0;
+  max-width: 34rem;
+  font-size: 18px;
+  color: var(--muted);
+}
+.final-ticks {
+  margin: 30px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 22px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.final-ticks li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.final-ticks .ic {
+  width: 13px;
+  height: 13px;
+  color: var(--plus);
+}
+@container sec (max-width: 480px) {
+  .final h2 {
+    font-size: clamp(28px, 9.4cqi, 40px);
+  }
+}
+.final {
+  text-align: center;
+  padding-block: 96px;
+  font-family: var(--sans);
+}
+/* Preflight strips link underlines. */
+.hero-note a {
+  text-decoration: underline;
+}

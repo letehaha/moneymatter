@@ -14,6 +14,7 @@ import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
 import { isOnOrAfterAnchorDay } from '@services/loans/anchor-day';
 import { lockLoanAccountRow, projectLoanOverpay } from '@services/loans/project-loan-overpay';
+import { assertNotInPayment } from '@services/transactions/payment-legs';
 import { updateTransaction } from '@services/transactions/update-transaction';
 
 interface LinkLoanPaymentsParams {
@@ -71,6 +72,7 @@ const linkLoanPaymentsImpl = async ({
     // Stale or tampered selection — fail the whole batch rather than silently link a subset.
     throw new ValidationError({ message: t({ key: 'loans.linkPaymentsInvalidSelection' }) });
   }
+  await assertNotInPayment({ transactionIds });
 
   // Validate eligibility and pre-compute each loan-side amount before any write,
   // so an ineligible row aborts the batch atomically.
@@ -104,19 +106,19 @@ const linkLoanPaymentsImpl = async ({
     }),
   );
 
-  const postAnchorSum = plans
-    .filter((plan) => plan.countsTowardBalance)
-    .reduce((sum, plan) => sum.add(plan.destinationAmount), Money.zero());
-
   // Loan balances are negative (liability); income legs add toward zero. A
   // positive projection means the batch overshoots the owed amount.
+  const outstanding = loanAccount.currentBalance;
   const { projectedBalance, overpaysBy } = projectLoanOverpay({
-    projectedBalance: loanAccount.currentBalance.add(postAnchorSum),
+    projectedBalance: Money.sum([
+      outstanding,
+      ...plans.filter((plan) => plan.countsTowardBalance).map((plan) => plan.destinationAmount),
+    ]),
   });
   if (overpaysBy.isPositive() && !confirmOverpay) {
     const details: LoanPaymentOverpayDetails = {
       projectedBalance: projectedBalance.toNumber(),
-      maxLinkable: loanAccount.currentBalance.abs().toNumber(),
+      maxLinkable: outstanding.abs().toNumber(),
       overpayBy: projectedBalance.toNumber(),
     };
     throw new ValidationError({

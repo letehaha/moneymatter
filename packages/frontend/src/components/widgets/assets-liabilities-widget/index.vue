@@ -219,7 +219,7 @@ watch([scrollRef, legendRows], () => measure(), { flush: 'post' });
           <div
             v-for="row in legendRows"
             :key="row.key"
-            class="hover:bg-muted/50 grid grid-cols-[8px_minmax(0,1fr)_auto_auto] items-center gap-2.5 rounded-md px-2 py-1 text-sm transition-colors"
+            class="hover:bg-hover grid grid-cols-[8px_minmax(0,1fr)_auto_auto] items-center gap-2.5 rounded-md px-2 py-1 text-sm transition-colors"
             @mouseenter="hoveredKey = row.key"
             @mouseleave="hoveredKey = null"
           >

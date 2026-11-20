@@ -5,6 +5,7 @@ import * as transactionsService from '@services/transactions/bulk-update';
 import { resolveBulkTargetIds } from '@services/transactions/matching-transactions';
 import { z } from 'zod';
 
+import { payeeIdSchema } from './schemas';
 import { bulkTargetFields, bulkTargetIssue, hasOneBulkTarget, toBulkTarget } from './transaction-filters';
 
 const tagModeSchema = z.enum(BULK_UPDATE_TAG_MODES);
@@ -17,16 +18,18 @@ const bodyZodSchema = z
     tagMode: tagModeSchema.optional(),
     note: z.string().max(1000, 'Note must not exceed 1000 characters').optional(),
     // Nullable on the wire: explicit `null` clears the Payee, undefined leaves it untouched.
-    payeeId: recordId().nullable().optional(),
+    payeeId: payeeIdSchema(),
+    excludeFromStats: z.boolean().optional(),
   })
   .refine(
     (data) =>
       data.categoryId !== undefined ||
       data.tagIds !== undefined ||
       data.note !== undefined ||
-      data.payeeId !== undefined,
+      data.payeeId !== undefined ||
+      data.excludeFromStats !== undefined,
     {
-      message: 'At least one field (categoryId, tagIds, note, or payeeId) must be provided',
+      message: 'At least one field (categoryId, tagIds, note, payeeId, or excludeFromStats) must be provided',
     },
   )
   .refine(hasOneBulkTarget, bulkTargetIssue);
@@ -36,7 +39,7 @@ const schema = z.object({
 });
 
 export default createController(schema, async ({ user, body }) => {
-  const { categoryId, tagIds, tagMode, note, payeeId } = body;
+  const { categoryId, tagIds, tagMode, note, payeeId, excludeFromStats } = body;
   const { id: userId } = user;
 
   const transactionIds = await resolveBulkTargetIds({ userId, ...toBulkTarget(body) });
@@ -49,6 +52,7 @@ export default createController(schema, async ({ user, body }) => {
     tagMode,
     note,
     payeeId,
+    excludeFromStats,
   });
 
   return { data: result };

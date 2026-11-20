@@ -13,6 +13,7 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { usePrioritizedCurrencies } from '@/composable/data-queries/prioritized-currencies';
 import { useInvalidateSubscriptionQueries } from '@/composable/data-queries/subscriptions';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { ApiErrorResponseError } from '@/js/errors';
 import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
@@ -23,6 +24,8 @@ import { useCurrenciesStore } from '@/stores';
 import {
   type CurrencyModel,
   SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_LIMITS,
+  SUBSCRIPTION_INTERVAL_UNITS,
   SUBSCRIPTION_TYPES,
   type SubscriptionModel,
   TRANSACTION_TYPES,
@@ -35,7 +38,8 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 import { type QuickAddFormState, buildQuickAddPayload } from '../quick-add-payload';
-import { formatFrequency } from '../utils';
+import { formatFrequency, isIntervalCountValid } from '../utils';
+import CustomIntervalFields from './custom-interval-fields.vue';
 
 const FORM_ID = 'quick-add-subscription-form';
 
@@ -66,6 +70,8 @@ const getInitialState = (): QuickAddFormState => ({
   expectedAmount: null,
   expectedCurrencyCode: baseCurrency.value?.currencyCode ?? '',
   frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+  intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+  intervalCount: null,
   nextPaymentDate: null,
   maxOccurrences: null,
   logo: null,
@@ -101,6 +107,7 @@ const selectedCurrency = computed(
 );
 
 const amountDecimals = computed(() => getCurrencyDecimals({ code: form.value.expectedCurrencyCode }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
 
 const installmentTotalLabel = computed(() => {
   const { expectedAmount, maxOccurrences, expectedCurrencyCode } = form.value;
@@ -118,6 +125,7 @@ const validationRules = computed(() => ({
         return value !== null && value > 0;
       },
     ),
+    currencyDecimal: helpers.withMessage(() => currencyDecimal.message.value, currencyDecimal.rule.value),
   },
   expectedCurrencyCode: {
     requiredWithAmount: helpers.withMessage(
@@ -125,6 +133,18 @@ const validationRules = computed(() => ({
       (value: string, siblings: QuickAddFormState) => {
         if (siblings.expectedAmount === null || siblings.expectedAmount <= 0) return true;
         return !!value;
+      },
+    ),
+  },
+  intervalCount: {
+    validForCustom: helpers.withMessage(
+      () =>
+        t('planned.subscriptions.form.validationIntervalCount', {
+          max: SUBSCRIPTION_INTERVAL_LIMITS.max[form.value.intervalUnit],
+        }),
+      (value: number | null, siblings: QuickAddFormState) => {
+        if (siblings.frequency !== SUBSCRIPTION_FREQUENCIES.custom) return true;
+        return isIntervalCountValid({ unit: siblings.intervalUnit, count: value });
       },
     ),
   },
@@ -229,9 +249,7 @@ const handleSubmit = () => {
             :class="
               cn(
                 'border-input focus-visible:ring-ring flex flex-col items-center justify-center gap-1.5 rounded-lg border px-2 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-                form.type === option.value
-                  ? 'border-primary bg-primary/5'
-                  : 'hover:bg-accent hover:text-accent-foreground',
+                form.type === option.value ? 'border-primary bg-primary/5' : 'hover:bg-hover',
               )
             "
             @click="form.type = option.value"
@@ -282,9 +300,7 @@ const handleSubmit = () => {
             :class="
               cn(
                 'border-input focus-visible:ring-ring rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-                form.frequency === frequency
-                  ? 'border-primary bg-primary/5'
-                  : 'hover:bg-accent hover:text-accent-foreground',
+                form.frequency === frequency ? 'border-primary bg-primary/5' : 'hover:bg-hover',
               )
             "
             @click="form.frequency = frequency"
@@ -292,6 +308,13 @@ const handleSubmit = () => {
             {{ formatFrequency({ frequency, t }) }}
           </button>
         </div>
+        <CustomIntervalFields
+          v-if="form.frequency === SUBSCRIPTION_FREQUENCIES.custom"
+          v-model:count="form.intervalCount"
+          v-model:unit="form.intervalUnit"
+          :count-error-message="getFieldErrorMessage('form.intervalCount')"
+          @count-blur="touchField('form.intervalCount')"
+        />
       </div>
 
       <div class="grid gap-2">

@@ -50,6 +50,24 @@
         "buttonShort": "Delete",
         "disabledTooltip": "You cannot delete this currency because it is still connected to account(s).",
         "successfullyDeleted": "Successfully deleted.",
+        "foreignAmountsWarning": "Foreign amounts recorded in this currency will be removed from your transactions. Amounts in the account currency stay unchanged.",
+        "inUse": {
+          "title": "This currency is still in use. Remove or change these first:",
+          "trashed": "(in trash)",
+          "types": {
+            "account": "Accounts",
+            "portfolio": "Portfolio display currency",
+            "holding": "Holdings",
+            "portfolioCash": "Portfolio cash",
+            "portfolioTransfer": "Portfolio transfers",
+            "investmentTransaction": "Investment transactions",
+            "subscription": "Recurring payments",
+            "transactionTemplate": "Transaction templates",
+            "budget": "Budgets",
+            "goal": "Goals",
+            "ventureDeal": "Venture deals"
+          }
+        },
         "errors": {
           "deleteFailed": "Unexpected error. Currency is not deleted."
         }

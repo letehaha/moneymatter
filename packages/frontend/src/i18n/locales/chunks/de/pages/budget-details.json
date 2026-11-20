@@ -2,9 +2,9 @@
   "pages": {
     "budgets": {
       "transactionsList": {
-        "loadError": "Couldn't load transactions.",
+        "loadError": "Transaktionen konnten nicht geladen werden.",
         "selectionModeWarning": "Auswahlmodus – wähle Transaktionen zum Aufheben der Verknüpfung",
-        "selectAll": "Alles auswählen",
+        "selectAll": "Alle auswählen",
         "selected": "{count} ausgewählt",
         "unlink": "Verknüpfung aufheben",
         "cancel": "Abbrechen",
@@ -17,8 +17,8 @@
         "addTransactions": "Transaktionen hinzufügen",
         "add": "Hinzufügen",
         "loadingMore": "Mehr laden...",
-        "unlinkError": "Failed to unlink transactions",
-        "addError": "Failed to add transactions"
+        "unlinkError": "Verknüpfung der Transaktionen konnte nicht aufgehoben werden",
+        "addError": "Hinzufügen der Transaktionen fehlgeschlagen"
       }
     },
     "budgetDetails": {
@@ -62,41 +62,43 @@
         "incomeLabel": "Einnahmen:",
         "expensesLabel": "Ausgaben:",
         "kpi": {
-          "dailyPace": "Daily pace",
-          "perDay": "/ day",
-          "allowedPerDay": "allowed {amount} / day · {elapsed} of {total} days",
-          "daysElapsed": "{elapsed} of {total} days",
-          "projectedTotal": "Projected total",
-          "projectedLimit": "at this pace · limit {amount}",
-          "averagePerDay": "Average per day",
-          "firstTransaction": "First transaction",
-          "lastTransaction": "Last transaction",
+          "dailyPace": "Tägliches Tempo",
+          "perDay": "/ Tag",
+          "allowedPerDay": "erlaubt {amount} / Tag · {elapsed} von {total} Tagen",
+          "neededPerDay": "benötigt {amount} / Tag · {elapsed} von {total} Tagen",
+          "daysElapsed": "{elapsed} von {total} Tagen",
+          "projectedTotal": "Voraussichtliche Gesamtsumme",
+          "projectedLimit": "bei diesem Tempo · Limit {amount}",
+          "averagePerDay": "Durchschnitt pro Tag",
+          "firstTransaction": "Erste Transaktion",
+          "lastTransaction": "Letzte Transaktion",
           "transactions": "Transaktionen",
           "avgAmount": "Ø {amount}",
-          "biggestDay": "Biggest day",
-          "shareOfTotal": "{percent}% of total"
+          "biggestDay": "Umsatzstärkster Tag",
+          "shareOfTotal": "{percent}% der Gesamtsumme"
         },
-        "byCategory": "By category",
-        "categoriesCount": "{count} category | {count} categories",
-        "byCurrency": "By currency",
-        "asPaid": "as paid",
-        "timeline": "Verlauf",
-        "todayMarker": "today {date}",
-        "timelineAria": "Cumulative spending over time with per-period bars",
-        "limitLabel": "{amount} limit",
-        "cumulativeLabel": "Cumulative",
+        "byCategory": "Nach Kategorie",
+        "categoriesCount": "{count} Kategorie | {count} Kategorien",
+        "byCurrency": "Nach Währung",
+        "asPaid": "als bezahlt",
+        "timeline": "Zeitstrahl",
+        "todayMarker": "heute {date}",
+        "timelineAria": "Kumulierte Ausgaben im Zeitverlauf mit Balken pro Zeitraum",
+        "limitLabel": "{amount} Limit",
+        "cumulativeLabel": "Kumuliert",
         "legend": {
-          "cumulative": "Spent, cumulative",
-          "evenPace": "Even pace to the limit",
-          "projection": "Hochrechnung",
-          "daily": "Per day",
-          "weekly": "Per week",
-          "monthly": "Per month"
+          "cumulative": "Ausgegeben, kumuliert",
+          "earnedCumulative": "Eingenommen, kumuliert",
+          "evenPace": "Gleichmäßiges Tempo bis zum Limit",
+          "projection": "Projektion",
+          "daily": "Pro Tag",
+          "weekly": "Pro Woche",
+          "monthly": "Pro Monat"
         },
-        "topPayees": "Top payees",
-        "bySpend": "by spend",
-        "noPayee": "Kein ZahlungsempfängerEmpfänger",
-        "txCount": "{count} Transaktionen"
+        "topPayees": "Top-Zahlungsempfänger",
+        "bySpend": "nach Ausgaben",
+        "noPayee": "Kein Zahlungsempfänger",
+        "txCount": "{count} Tx"
       },
       "sharing": {
         "inviteAnother": "Jemanden einladen",
@@ -105,7 +107,7 @@
         "loadError": "Mitglieder konnten nicht geladen werden.",
         "permissions": {
           "read": "Nur anzeigen",
-          "write": "Eigene Transaktionen zuweisen",
+          "write": "Eigene Transaktionen anhängen",
           "manage": "Verwalten"
         },
         "member": {

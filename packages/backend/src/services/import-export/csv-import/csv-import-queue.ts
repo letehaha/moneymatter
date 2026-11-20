@@ -34,6 +34,7 @@ interface CsvImportJobData extends SentryTraceData {
   /** When true, rows dated on/after a linked account's pre-import boundary move
    *  its current balance; when false/absent the pre-import balance is preserved. */
   recalculateBalance?: boolean;
+  skippedAfterBankSeam?: number;
 }
 
 const {
@@ -60,6 +61,7 @@ const {
       defaultCategoryId,
       timezone,
       recalculateBalance,
+      skippedAfterBankSeam,
     } = job.data;
 
     // Re-parse server-side rather than shipping `validRows` through Redis.
@@ -93,6 +95,7 @@ const {
       defaultAccountId: resolvedDefaultAccountId,
       defaultCategoryId: resolvedDefaultCategoryId,
       recalculateBalance,
+      reviewSkippedAfterBankSeam: skippedAfterBankSeam,
       onProgress,
     });
   },
@@ -115,6 +118,7 @@ export async function queueCsvImport({
   defaultCategoryId,
   timezone,
   recalculateBalance,
+  skippedAfterBankSeam,
 }: {
   userId: number;
   fileContent: string;
@@ -129,6 +133,7 @@ export async function queueCsvImport({
   defaultCategoryId?: string;
   timezone?: string;
   recalculateBalance?: boolean;
+  skippedAfterBankSeam?: number;
 }): Promise<string> {
   // Random suffix (not a timestamp): two imports the same user fires within the
   // same millisecond would otherwise collide on one id, and BullMQ silently drops
@@ -148,6 +153,7 @@ export async function queueCsvImport({
     defaultCategoryId,
     timezone,
     recalculateBalance,
+    skippedAfterBankSeam,
   };
 
   await enqueue({ userId, jobId, data });

@@ -34,7 +34,7 @@
               :class="
                 cn(
                   'border-border bg-card sticky top-0 z-20 cursor-pointer border-b px-3 py-2 text-right font-medium whitespace-nowrap select-none',
-                  'focus-visible:outline-primary/50 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2',
+                  'focus-visible:outline-primary/50 focus-visible:outline-2 focus-visible:-outline-offset-2',
                   hoveredColKey === col.key && 'bg-muted',
                 )
               "
@@ -54,7 +54,7 @@
               :class="
                 cn(
                   'border-border bg-card sticky top-0 right-0 z-30 cursor-pointer border-b border-l px-3 py-2 text-right font-semibold whitespace-nowrap select-none',
-                  'focus-visible:outline-primary/50 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2',
+                  'focus-visible:outline-primary/50 focus-visible:outline-2 focus-visible:-outline-offset-2',
                   hoveredColKey === TOTAL_COLUMN_KEY && 'bg-muted',
                 )
               "
@@ -75,13 +75,13 @@
         </thead>
 
         <tbody>
-          <tr v-for="row in visibleRows" :key="row.id" class="group/row hover:bg-muted/30">
+          <tr v-for="row in visibleRows" :key="row.id" class="group/row hover:bg-hover">
             <!-- Row label (sticky first column) -->
             <th
               scope="row"
               :class="
                 cn(
-                  'border-border bg-card group-hover/row:bg-accent sticky left-0 z-10 border-r border-b px-3 py-1.5 text-left font-normal',
+                  'border-border bg-card sticky left-0 z-10 border-r border-b px-3 py-1.5 text-left font-normal group-hover/row:bg-[linear-gradient(var(--color-hover),var(--color-hover))]',
                   row.kind === 'child' && 'pl-8',
                 )
               "
@@ -143,7 +143,7 @@
             <td
               :class="
                 cn(
-                  'border-border bg-card group-hover/row:bg-accent sticky right-0 z-10 border-b border-l px-3 py-1.5 text-right font-semibold tabular-nums',
+                  'border-border bg-card sticky right-0 z-10 border-b border-l px-3 py-1.5 text-right font-semibold tabular-nums group-hover/row:bg-[linear-gradient(var(--color-hover),var(--color-hover))]',
                   hoveredColKey === TOTAL_COLUMN_KEY && 'bg-muted',
                 )
               "
@@ -154,9 +154,9 @@
           </tr>
         </tbody>
 
-        <tfoot>
+        <tfoot class="bg-card sticky bottom-0 z-20">
           <tr class="bg-muted/40 font-semibold">
-            <th class="border-border bg-muted sticky bottom-0 left-0 z-10 border-t border-r px-3 py-2 text-left">
+            <th class="border-border bg-muted sticky left-0 z-10 border-t border-r px-3 py-2 text-left">
               {{ $t('pivotReport.table.total') }}
             </th>
             <td
@@ -172,10 +172,39 @@
             >
               {{ formatMoney(data.columnTotals[col.key] ?? 0) }}
             </td>
-            <td
-              class="border-border bg-muted sticky right-0 bottom-0 z-10 border-t border-l px-3 py-2 text-right tabular-nums"
-            >
+            <td class="border-border bg-muted sticky right-0 z-10 border-t border-l px-3 py-2 text-right tabular-nums">
               {{ formatMoney(data.grandTotal) }}
+            </td>
+          </tr>
+          <tr v-if="netTotals" class="font-semibold">
+            <th class="border-border bg-muted sticky left-0 z-10 border-t border-r px-3 py-2 text-left">
+              {{ $t('pivotReport.table.net') }}
+            </th>
+            <td
+              v-for="col in columns"
+              :key="col.key"
+              :class="
+                cn(
+                  'border-border bg-muted/40 border-t px-3 py-2 text-right tabular-nums',
+                  netClass(netTotals.columnTotals[col.key] ?? 0),
+                  hoveredColKey === col.key && 'bg-foreground/10',
+                )
+              "
+              @mouseenter="hoveredColKey = col.key"
+            >
+              {{ formatSignedMoney(netTotals.columnTotals[col.key] ?? 0) }}
+            </td>
+            <td
+              :class="
+                cn(
+                  'border-border bg-muted sticky right-0 z-10 border-t border-l px-3 py-2 text-right tabular-nums',
+                  netClass(netTotals.grandTotal),
+                  hoveredColKey === TOTAL_COLUMN_KEY && 'bg-foreground/10',
+                )
+              "
+              @mouseenter="hoveredColKey = TOTAL_COLUMN_KEY"
+            >
+              {{ formatSignedMoney(netTotals.grandTotal) }}
             </td>
           </tr>
         </tfoot>
@@ -199,6 +228,7 @@ import { type CSSProperties, type Component, computed, ref } from 'vue';
 import {
   TOTAL_COLUMN_KEY,
   type PivotSortDirection,
+  type PivotTotals,
   computeAllCollapsed,
   computeColumnMax,
   computeDelta,
@@ -216,6 +246,7 @@ const props = defineProps<{
   heatmap: boolean;
   showDelta: boolean;
   rowHeaderLabel: string;
+  netTotals: PivotTotals | null;
 }>();
 
 const { formatCompactAmount } = useFormatCurrency();
@@ -303,6 +334,14 @@ const cellStyle = ({ value, columnKey }: { value: number; columnKey: string }): 
 };
 
 const formatMoney = (value: number): string => formatCompactAmount(value, currencyCode.value);
+
+const formatSignedMoney = (value: number): string => {
+  if (value === 0) return formatMoney(0);
+  return `${value > 0 ? '+' : '−'}${formatMoney(Math.abs(value))}`;
+};
+
+const netClass = (value: number): string | false =>
+  value !== 0 && (value > 0 ? 'text-app-income-color' : 'text-app-expense-color');
 
 const deltaValue = ({ row, index }: { row: PivotRow; index: number }): number | null => {
   if (!props.showDelta || index === 0) return null;

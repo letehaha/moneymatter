@@ -1,9 +1,10 @@
-import { SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
+import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 
 import {
   type TransactionForGrouping,
+  detectFixedDayCadence,
   isFuzzyNameMatch,
   mapIntervalToFrequency,
   normalizeNote,
@@ -188,5 +189,73 @@ describe('splitByAmountBuckets', () => {
 
     const looseBuckets = splitByAmountBuckets({ transactions: txs, tolerance: 0.2 });
     expect(looseBuckets).toHaveLength(1);
+  });
+});
+
+describe('detectFixedDayCadence', () => {
+  const DAY_MS = 86_400_000;
+  /** Payments every `days` days from Jan 5, 2026, at varying times of day. */
+  const everyNDays = ({ days, count }: { days: number; count: number }) =>
+    Array.from(
+      { length: count },
+      (_, i) => new Date(Date.UTC(2026, 0, 5) + i * days * DAY_MS + (i % 2 ? 9 : 17) * 3_600_000),
+    );
+  const onDayOfMonth = ({ day, count }: { day: number; count: number }) =>
+    Array.from({ length: count }, (_, i) => {
+      const lastDay = new Date(Date.UTC(2026, i + 1, 0)).getUTCDate();
+      return new Date(Date.UTC(2026, i, Math.min(day, lastDay), 12));
+    });
+
+  it('finds every 30 days from four payments', () => {
+    expect(detectFixedDayCadence({ dates: everyNDays({ days: 30, count: 4 }) })).toEqual({
+      unit: SUBSCRIPTION_INTERVAL_UNITS.day,
+      count: 30,
+    });
+  });
+
+  it('finds every 28 days, in any input order', () => {
+    expect(detectFixedDayCadence({ dates: everyNDays({ days: 28, count: 5 }).toReversed() })).toEqual({
+      unit: SUBSCRIPTION_INTERVAL_UNITS.day,
+      count: 28,
+    });
+  });
+
+  it.each([10, 31])('leaves a calendar-monthly bill on day %i to the presets', (day) => {
+    expect(detectFixedDayCadence({ dates: onDayOfMonth({ day, count: 12 }) })).toBeNull();
+  });
+
+  it.each([
+    ['quarterly', ['2025-05-10', '2025-08-10', '2025-11-10', '2026-02-10']],
+    ['bimonthly', ['2025-04-10', '2025-06-10', '2025-08-10', '2025-10-10']],
+  ])('leaves a calendar-%s bill with equal day gaps to the presets', (_, isoDates) => {
+    expect(detectFixedDayCadence({ dates: isoDates.map((isoDate) => new Date(isoDate)) })).toBeNull();
+  });
+
+  it('counts UTC days, whatever the time of day', () => {
+    const dates = [0, 30, 60, 90].map((offset, i) => new Date(Date.UTC(2026, 0, 5 + offset, i % 2 ? 23 : 0, 30)));
+    expect(detectFixedDayCadence({ dates })).toEqual({ unit: SUBSCRIPTION_INTERVAL_UNITS.day, count: 30 });
+  });
+
+  it('leaves every 14 days to the biweekly preset', () => {
+    expect(detectFixedDayCadence({ dates: everyNDays({ days: 14, count: 6 }) })).toBeNull();
+  });
+
+  it('ignores cadences shorter than a week', () => {
+    expect(detectFixedDayCadence({ dates: everyNDays({ days: 3, count: 6 }) })).toBeNull();
+  });
+
+  it('gives up on a missed payment', () => {
+    const dates = everyNDays({ days: 30, count: 5 }).filter((_, i) => i !== 2);
+    expect(detectFixedDayCadence({ dates })).toBeNull();
+  });
+
+  it('gives up when one interval is a day off', () => {
+    const dates = everyNDays({ days: 30, count: 4 });
+    dates[3] = new Date(dates[3]!.getTime() + DAY_MS);
+    expect(detectFixedDayCadence({ dates })).toBeNull();
+  });
+
+  it('needs at least three intervals', () => {
+    expect(detectFixedDayCadence({ dates: everyNDays({ days: 30, count: 3 }) })).toBeNull();
   });
 });

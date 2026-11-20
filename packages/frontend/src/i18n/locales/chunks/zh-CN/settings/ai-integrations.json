@@ -33,7 +33,7 @@
       "actions": {
         "addCustomConnector": "Add custom connector",
         "addConnector": "Add connector",
-        "add": "添加"
+        "add": "Add"
       },
       "connectedApps": {
         "title": "Active connectors",
@@ -57,7 +57,8 @@
         "financeWrite": "Edit financial data",
         "financeDelete": "Delete financial data",
         "profileRead": "Read profile",
-        "offlineAccess": "Offline access"
+        "offlineAccess": "Offline access",
+        "toolset": "Tools: {name}"
       }
     }
   }

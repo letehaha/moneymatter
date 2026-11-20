@@ -9,12 +9,12 @@ export default createController(
   z.object({
     params: z.object({ dealId: recordId() }),
     body: z.object({
-      type: z.nativeEnum(VENTURE_EVENT_TYPE),
+      type: z.enum(VENTURE_EVENT_TYPE),
       eventDate: dateString(),
       grossAmount: decimalString().nullable().optional(),
       navAfter: decimalString().nullable().optional(),
       quantityPct: decimalString().nullable().optional(),
-      cashFlowMode: z.nativeEnum(VENTURE_CASH_FLOW_MODE),
+      cashFlowMode: z.enum(VENTURE_CASH_FLOW_MODE),
       transactionIds: z.array(recordId()).optional(),
       lpNetAmountOverride: decimalString().nullable().optional(),
       gpCarryOverride: decimalString().nullable().optional(),

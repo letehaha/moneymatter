@@ -1,5 +1,5 @@
 import { UserRole } from '@bt/shared/types';
-import { authPool } from '@config/auth';
+import { OAUTH_RESOURCE_IDENTIFIERS, authPool } from '@config/auth';
 import { Unauthorized } from '@js/errors';
 import { CacheClient } from '@js/utils/cache';
 import { logger } from '@js/utils/logger';
@@ -21,7 +21,11 @@ interface TokenRow {
   userId: string;
   clientId: string;
   scopes: string | null;
+  resources: string | null;
   expiresAt: string | null;
+  revoked: string | null;
+  sessionId: string | null;
+  sessionExpiresAt: string | null;
 }
 
 export interface McpAuthInfo {
@@ -47,18 +51,20 @@ function hashToken({ token }: { token: string }): string {
 }
 
 /**
- * Verify an OAuth access token by querying the ba_oauth_access_token table directly.
+ * Verify an OAuth access token by querying the ba_oauth_access_token table directly,
+ * mirroring better-auth's opaque-token introspection: expiry, `revoked`, the ended
+ * session of a session-bound token, and the resource binding (RFC 8707).
  * Tokens are stored as SHA-256 hashes (base64url) by better-auth's oauth-provider.
- * Resolves the app user from the auth user ID stored on the token.
  */
 async function verifyAccessToken({ token }: { token: string }): Promise<McpAuthInfo> {
   const hashedToken = hashToken({ token });
 
-  // Query the OAuth access token table directly
   const result = await authPool.query<TokenRow>(
-    `SELECT "userId", "clientId", "scopes", "expiresAt"
-     FROM "ba_oauth_access_token"
-     WHERE "token" = $1
+    `SELECT at."userId", at."clientId", at."scopes", at."resources", at."expiresAt", at."revoked",
+            at."sessionId", s."expiresAt" AS "sessionExpiresAt"
+     FROM "ba_oauth_access_token" at
+     LEFT JOIN "ba_session" s ON s.id = at."sessionId"
+     WHERE at."token" = $1
      LIMIT 1`,
     [hashedToken],
   );
@@ -68,9 +74,22 @@ async function verifyAccessToken({ token }: { token: string }): Promise<McpAuthI
     throw new Unauthorized({ message: 'Token not found' });
   }
 
-  // Check expiration
-  if (tokenRecord.expiresAt && new Date(tokenRecord.expiresAt) < new Date()) {
+  if (!tokenRecord.expiresAt || new Date(tokenRecord.expiresAt) < new Date()) {
     throw new Unauthorized({ message: 'Token expired' });
+  }
+
+  if (tokenRecord.revoked) {
+    throw new Unauthorized({ message: 'Token revoked' });
+  }
+
+  if (tokenRecord.sessionId && (!tokenRecord.sessionExpiresAt || new Date(tokenRecord.sessionExpiresAt) < new Date())) {
+    throw new Unauthorized({ message: 'Token session ended' });
+  }
+
+  // Tokens issued before resource binding carry no resources and stay valid.
+  const resources = parseScopes({ scopes: tokenRecord.resources });
+  if (resources.length > 0 && !resources.some((r) => OAUTH_RESOURCE_IDENTIFIERS.includes(r))) {
+    throw new Unauthorized({ message: 'Token not issued for this resource' });
   }
 
   const authUserId = tokenRecord.userId;

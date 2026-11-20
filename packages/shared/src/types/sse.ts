@@ -5,6 +5,7 @@
  */
 import type { BackupRestoreSseProgress } from './backup';
 import type { BaseCurrencyChangeStatus } from './currencies';
+import type { EntityLogoFields } from './entity-logo';
 import type {
   BudgetBakersWalletImportProgress,
   CsvImportProgress,
@@ -68,7 +69,7 @@ export type AiCategorizationStatus =
 /**
  * Account sync status for SYNC_STATUS_CHANGED event
  */
-export interface SyncAccountStatus {
+export interface SyncAccountStatus extends EntityLogoFields {
   accountId: string;
   status: string;
   startedAt: string | null;
@@ -76,6 +77,9 @@ export interface SyncAccountStatus {
   error: string | null;
   accountName: string;
   providerType: string;
+  bankDataProviderConnectionId: string;
+  /** logo.dev domain resolved from the connection's bank name; clients add their own token and size. */
+  bankLogoDomain: string | null;
 }
 
 /**
@@ -88,6 +92,7 @@ export interface ConnectionNeedingReauth {
   providerType: string;
   providerName: string;
   bankName: string | null;
+  bankLogoDomain: string | null;
   accountsCount: number;
   deactivatedAt: string | null;
 }

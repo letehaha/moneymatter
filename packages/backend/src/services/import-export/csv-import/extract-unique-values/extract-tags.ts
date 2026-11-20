@@ -5,7 +5,7 @@ import { splitTagCell } from '@services/import-export/core/parse/split-tag-cell'
 
 /**
  * Extract the distinct tag strings the import will need to map. A row's tags
- * live in one comma-delimited column; each cell is split into individual names
+ * live in one comma- or semicolon-delimited column; each cell is split into individual names
  * so a value like `food, travel` surfaces both as separate mapping rows. The
  * result is sorted for a stable mapping table and excludes blanks.
  *

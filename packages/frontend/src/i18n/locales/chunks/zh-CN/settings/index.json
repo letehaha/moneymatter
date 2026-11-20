@@ -2,7 +2,7 @@
   "settings": {
     "navigation": {
       "currencies": "Currencies",
-      "categories": "分类",
+      "categories": "Categories",
       "tags": "Tags",
       "accountsGroups": "Accounts groups",
       "importData": "Import/Export",
@@ -13,13 +13,13 @@
       "household": "Household",
       "personalGroup": "Personal",
       "workspaceGroup": "Workspace",
-      "appearance": "外观",
-      "language": "语言",
+      "appearance": "Appearance",
+      "language": "Language",
       "general": "General",
       "payees": "Payees",
-      "subscriptions": "Scheduled payments",
-      "planBilling": "订阅与支付",
-      "collapse": "Collapse"
+      "planBilling": "Plan & billing",
+      "collapse": "Collapse",
+      "resize": "Resize navigation"
     },
     "backToSettings": "Back to settings"
   }

@@ -174,3 +174,26 @@ describe('buildFilterParams', () => {
     expect(params).not.toHaveProperty('to');
   });
 });
+
+describe('buildFilterParams search', () => {
+  it('sends the trimmed search text', () => {
+    expect(buildFilterParams({ filter: makeFilters({ search: '  coffee shop ' }) }).search).toBe('coffee shop');
+  });
+
+  it('omits search when it is empty or only whitespace', () => {
+    expect(buildFilterParams({ filter: makeFilters({ search: '   ' }) })).not.toHaveProperty('search');
+    expect(buildFilterParams({ filter: makeFilters() })).not.toHaveProperty('search');
+  });
+});
+
+describe('parseStoredFilters legacy noteIncludes', () => {
+  const parse = (filters: object) => parseStoredFilters({ raw: JSON.stringify({ filters }) })?.filters;
+
+  it('maps noteIncludes onto search and drops the old key', () => {
+    expect(parse({ noteIncludes: 'amazon, nike' })).toEqual({ search: 'amazon  nike' });
+  });
+
+  it('keeps an existing search', () => {
+    expect(parse({ noteIncludes: 'lidl', search: 'coffee' })).toEqual({ search: 'coffee' });
+  });
+});

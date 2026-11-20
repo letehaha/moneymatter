@@ -54,11 +54,11 @@ export default class TransactionSplits extends Model {
   categoryId!: RecordId;
 
   /** Amount in account currency (same as transaction.amount) */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare amount: Money;
 
   /** Amount in base currency (same as transaction.refAmount) */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
+  @MoneyField({ allowNull: true, defaultValue: '0' })
   declare refAmount: Money | null;
 
   // Optional per-split note, max 100 chars
@@ -123,6 +123,9 @@ export const deleteSplitById = async ({ id, userId }: { id: string; userId: numb
 export const getSplitById = async ({ id, userId }: { id: string; userId: number }) => {
   return TransactionSplits.findOne({
     where: { id, userId },
-    include: [{ model: Categories, as: 'category' }],
+    include: [
+      { model: Categories, as: 'category' },
+      { model: Transactions, as: 'transaction', attributes: [], required: true },
+    ],
   });
 };

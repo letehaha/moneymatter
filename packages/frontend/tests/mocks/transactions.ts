@@ -49,6 +49,7 @@ const buildCommonTxBody = (overrides: Partial<TransactionModel> = {}): Transacti
     refundLinked: false,
     refAmountMissing: false,
     isPlanned: false,
+    excludeFromStats: false,
     creatorSnapshot: null,
     createdAt: new Date(),
     updatedAt: new Date(),

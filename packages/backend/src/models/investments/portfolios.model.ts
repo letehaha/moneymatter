@@ -1,3 +1,4 @@
+import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
 import { RecordId } from '@bt/shared/types';
 import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
 import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
@@ -44,8 +45,26 @@ export default class Portfolios extends Model {
   @Column({ type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH), allowNull: true })
   displayCurrencyCode!: string | null;
 
+  @Column({ type: DataType.STRING(MAX_EXTERNAL_URL_LENGTH), allowNull: true })
+  externalUrl!: string | null;
+
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
   isEnabled!: boolean;
+
+  @Column({ type: DataType.STRING(253), allowNull: true })
+  logoDomain!: string | null;
+
+  @Column({ type: DataType.STRING(16), allowNull: true })
+  logoInitials!: string | null;
+
+  @Column({ type: DataType.STRING(7), allowNull: true })
+  logoColor!: string | null;
+
+  @Column({ type: DataType.STRING(64), allowNull: true })
+  logoIcon!: string | null;
+
+  @Column({ type: DataType.UUID, allowNull: true })
+  logoImageId!: string | null;
 
   @Column({ type: DataType.DATE, allowNull: false })
   declare createdAt: Date;

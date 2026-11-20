@@ -18,6 +18,7 @@
         "updateError": "Pri pokuse o aktualizáciu účtu došlo k chybe",
         "nameLabel": "Názov účtu",
         "namePlaceholder": "Názov účtu",
+        "openExternalUrl": "Otvoriť externý odkaz",
         "transferToPortfolio": "Presun do portfólia",
         "editAccountName": "Upraviť názov účtu",
         "save": "Uložiť",
@@ -149,7 +150,9 @@
         "residualAdjustmentDescription": "Pridá jednu transakciu na úpravu zostatku s dnešným dátumom. Vaše minulé zostatky zostanú presne také, aké sú.",
         "residualOpeningLabel": "Zmeniť počiatočný zostatok",
         "residualOpeningDescription": "Posunie počiatočný zostatok účtu o rozdiel, takže sa posunú aj všetky minulé zostatky. Zvoľte túto možnosť, ak na začiatku histórie chýbajú transakcie.",
-        "residualHint": "Konečná suma sa určí po prvej synchronizácii, preto sa môže mierne líšiť od tohto náhľadu."
+        "residualHint": "Konečná suma sa určí po prvej synchronizácii, preto sa môže mierne líšiť od tohto náhľadu.",
+        "linkFailed": "Pri prepájaní účtu sa vyskytla chyba",
+        "refreshFailed": "Účet bol prepojený, ale obnovenie účtov zlyhalo. Ak niečo vyzerá neaktuálne, načítajte stránku znova."
       },
       "tabs": {
         "details": "Podrobnosti",
@@ -175,6 +178,16 @@
         "editAccountCategory": "Upraviť kategóriu",
         "accountCategoryUpdateSuccess": "Kategória účtu aktualizovaná",
         "accountCategoryUpdateError": "Aktualizácia kategórie účtu zlyhala",
+        "defaultPaymentType": "Predvolený spôsob platby:",
+        "editDefaultPaymentType": "Upraviť predvolený spôsob platby",
+        "defaultPaymentTypeUpdateSuccess": "Predvolený spôsob platby aktualizovaný",
+        "defaultPaymentTypeUpdateError": "Predvolený spôsob platby sa nepodarilo aktualizovať",
+        "externalUrl": "Externá URL:",
+        "externalUrlPlaceholder": "https://banka.priklad.sk",
+        "externalUrlNotSet": "Nenastavené",
+        "editExternalUrl": "Upraviť externú URL",
+        "externalUrlUpdateSuccess": "Externá URL aktualizovaná",
+        "externalUrlUpdateError": "Aktualizácia externej URL zlyhala",
         "currency": "Mena:",
         "main": "(hlavná)",
         "exchangeRate": "Výmenný kurz:",
@@ -215,7 +228,7 @@
         "syncStarted": "Synchronizácia začala...",
         "accessForbidden": "Prístup zamietnutý",
         "failed": "Synchronizácia transakcií zlyhala",
-        "syncQueued": "Transaction sync queued: {batches} batch, about {minutes} min | Transaction sync queued: {batches} batches, about {minutes} min"
+        "syncQueued": "Synchronizácia transakcií v poradí: {batches} dávka, približne {minutes} min | Synchronizácia transakcií v poradí: {batches} dávky, približne {minutes} min | Synchronizácia transakcií v poradí: {batches} dávok, približne {minutes} min"
       },
       "reconcileDuplicates": {
         "title": "Zlúčiť duplicitné transakcie",
@@ -241,6 +254,7 @@
       },
       "rightPanel": {
         "transactions": "Transakcie",
+        "viewAll": "Zobraziť všetko",
         "analyticsSoon": "Analytika (čoskoro)"
       },
       "integrations": {
@@ -349,9 +363,9 @@
         "empty": "Zatiaľ žiadne ručné úpravy hodnoty. Prepíšte hodnotu a zaznamenajte ju.",
         "delete": "Zmazať",
         "deleteTitle": "Zmazať túto úpravu?",
-        "deleteDescription": "Po odstránení tejto úpravy sa odpisovanie znova viaže na predchádzajúcu úpravu (alebo na pôvodný nákup, ak žiadna nie je). Súvisiaca transakcia sa zmaže.",
+        "deleteDescription": "Odstránením tejto úpravy sa odpisy znova viažu na predchádzajúcu úpravu (alebo na pôvodný nákup, ak žiadna nie je). Súvisiaca transakcia sa presunie do koša, kde ju môžete 30 dní obnoviť.",
         "deleteConfirm": "Vymazať",
-        "deleteSuccess": "Úprava odstránená",
+        "deleteSuccess": "Úprava odstránená a jej transakcia presunutá do koša",
         "deleteError": "Úpravu sa nepodarilo odstrániť"
       },
       "sections": {

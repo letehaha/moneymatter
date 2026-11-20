@@ -1,28 +1,28 @@
 {
   "errors": {
     "api": {
-      "failedToFetch": "Failed to fetch data from the server.",
-      "failedToFetchSelfHost": "Cannot reach the server. The backend may still be starting (~30s after startup), or your ALLOWED_ORIGINS env var does not include this URL.",
-      "unexpectedError": "Unexpected error.",
-      "sessionExpired": "Your session has expired. Please sign in again",
-      "payloadTooLarge": "The request is too large. Please try importing fewer items at a time",
-      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+      "failedToFetch": "Impossible de récupérer les données depuis le serveur.",
+      "failedToFetchSelfHost": "Impossible de joindre le serveur. Le backend est peut-être encore en cours de démarrage (~30 s après le lancement), ou votre variable d'environnement ALLOWED_ORIGINS n'inclut pas cette URL.",
+      "unexpectedError": "Une erreur inattendue est survenue.",
+      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter",
+      "payloadTooLarge": "La requête est trop volumineuse. Veuillez importer moins d'éléments à la fois",
+      "tooManyRequests": "Trop de tentatives. Veuillez patienter un instant avant de réessayer."
     },
     "auth": {
-      "reauthenticationRequired": "For your security, sign in again to make this change.",
-      "passwordTooShort": "Password is too short.",
-      "passwordTooLong": "Password is too long.",
-      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
-      "accountAlreadyLinked": "This account is already linked to another user.",
-      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
-      "passkeyAlreadyRegistered": "This passkey is already registered."
+      "reauthenticationRequired": "Pour votre sécurité, veuillez vous reconnecter afin d'effectuer cette modification.",
+      "passwordTooShort": "Le mot de passe est trop court.",
+      "passwordTooLong": "Le mot de passe est trop long.",
+      "providerNotConfigured": "Ce fournisseur d'authentification n'est pas configuré sur ce serveur.",
+      "accountAlreadyLinked": "Ce compte est déjà associé à un autre utilisateur.",
+      "cannotUnlinkLastAccount": "Vous ne pouvez pas supprimer votre unique méthode de connexion.",
+      "passkeyAlreadyRegistered": "Cette clé d'accès (passkey) est déjà enregistrée."
     },
     "notFound": {
-      "title": "This page is off the books",
-      "description": "We couldn't find what you were looking for. The link may be broken, or the page may have moved.",
-      "attemptedLabel": "You tried to visit: ",
-      "goBack": "Go back",
-      "goHome": "Take me home"
+      "title": "Cette page n'est pas dans les comptes",
+      "description": "Impossible de trouver ce que vous cherchez. Le lien est peut-être rompu ou la page a été déplacée.",
+      "attemptedLabel": "Vous avez tenté d'accéder à : ",
+      "goBack": "Retour",
+      "goHome": "Retourner à l'accueil"
     }
   }
 }

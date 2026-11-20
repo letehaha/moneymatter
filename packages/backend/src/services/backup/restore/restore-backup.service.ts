@@ -15,8 +15,10 @@ import { loadValidatedArchive } from './load-validated-archive';
 import { USER_ROW_GUARDED_FK } from './owned-reference-guard';
 import { triggerPostRestorePriceSync } from './post-restore-price-sync';
 import {
+  remapCategoryOrderIds,
   remapFireSettingsIds,
   remapIncomeCategoryIds,
+  remapIosAddExpenseCategoryIds,
   remapSavedPivotViewIds,
   remapSavedTransactionViewIds,
 } from './remap-embedded-references';
@@ -108,7 +110,11 @@ async function upsertUserSettings({
   // are stripped here too, so a hand-edited archive can't bring ciphertext in.
   const settings = stripConnectionKeys({ settings: unifyAiConnections({ settings: src.settings }) });
   const parsed = ZodSettingsSchema.safeParse(settings);
-  const restored = parsed.success ? parsed : ZodSettingsSchema.omit({ fire: true }).safeParse(settings);
+  // Old history snapshots can fail a later-tightened limit; that drops the history alone, not a valid `fire`.
+  const withoutHistory = parsed.success ? parsed : ZodSettingsSchema.omit({ fireHistory: true }).safeParse(settings);
+  const restored = withoutHistory.success
+    ? withoutHistory
+    : ZodSettingsSchema.omit({ fire: true, fireHistory: true }).safeParse(settings);
   if (!restored.success) {
     logger.warn('Backup restore: settings failed schema and were reset', { userId, issues: restored.error.issues });
     // A backup taken across a settings-schema change can carry a blob the current
@@ -126,12 +132,15 @@ async function upsertUserSettings({
   const restoredSettings: SettingsSchema = restored.data;
 
   // Category/account/payee/portfolio UUIDs may be reminted on restore, so rewrite the ids saved
-  // inside Pivot views, Transactions views, the FIRE slice and the income categories before persisting
-  // the settings blob.
+  // inside Pivot views, Transactions views, the FIRE slice, the income categories, the iOS
+  // Add Expense categories and the category order before persisting the settings blob.
   remapSavedPivotViewIds({ views: restoredSettings.savedPivotViews, insertedIds });
   remapSavedTransactionViewIds({ views: restoredSettings.savedTransactionViews, insertedIds });
   remapFireSettingsIds({ fire: restoredSettings.fire, insertedIds });
+  for (const entry of restoredSettings.fireHistory ?? []) remapFireSettingsIds({ fire: entry.fire, insertedIds });
   remapIncomeCategoryIds({ settings: restoredSettings, insertedIds });
+  remapIosAddExpenseCategoryIds({ settings: restoredSettings, insertedIds });
+  remapCategoryOrderIds({ settings: restoredSettings, insertedIds });
 
   await UserSettings.create({ userId, settings: restoredSettings });
 }

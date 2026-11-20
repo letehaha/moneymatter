@@ -27,7 +27,7 @@ export default class VentureEventLinks extends Model {
   @Column({ type: DataType.UUID, allowNull: false, unique: true })
   transactionId!: RecordId;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare amount: Money;
 
   @ForeignKey(() => Currencies)

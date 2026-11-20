@@ -518,7 +518,7 @@ describe('Budget Bakers Wallet import — auto-create Payee', () => {
     expect(progress.summary.payeesCreated).toBe(0);
     expect(progress.summary.tagsCreated).toBe(1);
 
-    const txs = await helpers.getTransactions({ includeTags: true, raw: true });
+    const txs = await helpers.getTransactions({ raw: true });
     const unionRow = txs.find((t) => t.note === 'union-row')!;
     expect(unionRow).toBeDefined();
     // The row linked to the pre-existing Payee, so its defaults are in play.

@@ -36,14 +36,16 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   // better-auth extensions — account credential management, no monetary data.
   'POST /api/v1/auth/set-password',
 
-  // Notifications read-marking — high-frequency, non-monetary state.
+  // Notifications: read-marking and admin broadcasts, non-monetary state.
   'POST /api/v1/notifications/read-all',
   'POST /api/v1/notifications/:id/read',
+  'POST /api/v1/admin/notifications/broadcast',
 
   // Billing and admin plan grants: Stripe sessions and plan flags, no monetary data.
   'PATCH /api/v1/admin/users/:id/plan',
   'POST /api/v1/billing/checkout',
   'POST /api/v1/billing/portal',
+  'POST /api/v1/billing/apple/transactions',
 
   // Lease extension writes no financial data, and refusing it mid-wizard would
   // drop the user's upload for nothing.
@@ -73,9 +75,12 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   'PUT /api/v1/user/settings/onboarding',
   'PUT /api/v1/user/update',
 
-  // Invoice matching only ranks candidates; the one write is the non-monetary trial counter.
+  // Invoice matching, receipt and message extraction store nothing. The invoice and receipt
+  // routes write only the non-monetary trial counter.
   'POST /api/v1/transactions/match-invoice',
   'POST /api/v1/transactions/match-invoice/candidates',
+  'POST /api/v1/transactions/extract-receipt',
+  'POST /api/v1/transactions/extract-message',
 
   // AI categorization writes categoryId/categorizationMeta only, never ref amounts,
   // so a base-currency migration and a run cannot corrupt each other.

@@ -46,7 +46,7 @@ export const updateTransactionTemplate = withTransaction(
       ...(fields.originalCurrencyCode !== undefined && { originalCurrencyCode: fields.originalCurrencyCode }),
     };
 
-    await assertTemplateConsistent({
+    const { accountCurrencyCode } = await assertTemplateConsistent({
       userId,
       amount: merged.amount,
       accountId: merged.accountId,
@@ -55,7 +55,12 @@ export const updateTransactionTemplate = withTransaction(
       tagIds: mergedTagIds,
     });
 
-    const amount = await roundTemplateAmount({ userId, accountId: merged.accountId, amount: merged.amount });
+    // Only an amount the payload sends, or one a new account puts in another currency, is rounded:
+    // a rename keeps the stored amount as it is.
+    const amount =
+      fields.amount !== undefined || fields.accountId !== undefined
+        ? await roundTemplateAmount({ userId, currencyCode: accountCurrencyCode, amount: merged.amount })
+        : merged.amount;
 
     await writeOrConflict(() => template.update({ ...merged, amount }));
 

@@ -10,13 +10,18 @@ import { logger } from '@js/utils/logger';
 import ImportBatchAccountEffects from '@models/import-batch-account-effects.model';
 import ImportBatches from '@models/import-batches.model';
 import { countTransactions, findTransactions, updateTransactions } from '@models/transactions-query';
+import { trashedWhere } from '@models/transactions-query/deletion-where';
 import * as Transactions from '@models/transactions.model';
 import { deleteAccountById } from '@services/accounts.service';
 import { absorbBalanceAdjustment } from '@services/accounts/absorb-balance-adjustment';
 import { lockAccountRow } from '@services/accounts/lock-account-row';
+import { type SeamAccount, getSeamStart, isRowDeletableOnAccount } from '@services/accounts/seam';
+import { revalueBalanceHistory } from '@services/balances/revalue-balance-history.service';
 import { withTransaction } from '@services/common/with-transaction';
+import { isImportBatchUnfinished } from '@services/import-export/core/unfinished-import';
 import { bulkDelete } from '@services/transactions/bulk-delete';
-import { Op } from 'sequelize';
+import { destroyTrashedRows } from '@services/transactions/trash/delete-trashed';
+import { Op, literal, where as sequelizeWhere } from 'sequelize';
 
 interface DeleteImportBatchParams {
   userId: number;
@@ -35,11 +40,6 @@ interface DeleteImportBatchParams {
 // per-row loop would exceed the HTTP timeout at that scale, so larger batches run
 // as a background job (see delete-batch-queue.ts).
 const MAX_SYNC_BATCH_DELETE_TRANSACTIONS = 1000;
-
-// ponytail: age heuristic, not a liveness check. A crashed import worker blocks undo
-// of its batch until BullMQ fails the stalled job or this passes. Store the BullMQ job id on the batch row and ask
-// the queue instead if that ever hurts.
-const UNFINISHED_IMPORT_UNDO_BLOCK_MS = 3 * 60 * 60 * 1000;
 
 export class ImportBatchTooLargeError extends Error {
   readonly rowCount: number;
@@ -63,6 +63,8 @@ export class ImportBatchTooLargeError extends Error {
  * A batchId with no matching rows and no batch row is a no-op success, not a 404: it's
  * already deleted or belongs to another user, not a mistaken id to correct.
  */
+type BatchLeg = { id: string; transferId: string | null; transferNature: TRANSACTION_TRANSFER_NATURE };
+
 const deleteImportBatchImpl = async ({
   userId,
   batchId,
@@ -74,7 +76,7 @@ const deleteImportBatchImpl = async ({
 
   // Undoing while the importer still writes rows and has yet to absorb leaves the
   // balance shifted by whatever lands after the undo.
-  if (batch && !batch.finishedAt && Date.now() - batch.importedAt.getTime() < UNFINISHED_IMPORT_UNDO_BLOCK_MS) {
+  if (batch && isImportBatchUnfinished({ batch })) {
     throw new LockedError({ message: t({ key: 'importExport.batchDeleteImportStillRunning' }) });
   }
 
@@ -85,16 +87,38 @@ const deleteImportBatchImpl = async ({
     balanceAdjustments: 'include',
     // The uuid column matches any letter case, the stamp is matched as text.
     batchId: batch?.batchId ?? batchId,
-    attributes: ['id', 'accountId', 'transferId', 'transferNature'],
+    attributes: ['id', 'accountId', 'accountType', 'time', 'transferId', 'transferNature'],
     isRaw: true,
   })) as unknown as {
     id: string;
     accountId: string;
+    accountType: ACCOUNT_TYPES;
+    time: Date;
     transferId: string | null;
     transferNature: TRANSACTION_TRANSFER_NATURE;
   }[];
 
-  if (rows.length === 0 && !batch) {
+  // Trashed rows of the batch go for good too; their balance was taken back when they were trashed.
+  const trashedRows = await findTransactions({
+    planned: 'exclude',
+    access: { creator: userId },
+    completeness: 'all',
+    balanceAdjustments: 'include',
+    paranoid: false,
+    where: {
+      ...trashedWhere,
+      [Op.and]: [
+        sequelizeWhere(
+          literal(`"Transactions"."externalData"->'importDetails'->>'batchId'`),
+          batch?.batchId ?? batchId,
+        ),
+      ],
+    },
+    attributes: ['id', 'transferId', 'transferNature'],
+  });
+  const trashedIds = trashedRows.map((row) => row.id);
+
+  if (rows.length === 0 && trashedIds.length === 0 && !batch) {
     return { deletedCount: 0, deletedIds: [], createdAccountIds: [] };
   }
 
@@ -108,22 +132,31 @@ const deleteImportBatchImpl = async ({
   // Take FOR UPDATE on every affected account, in finalize's order, before any row is
   // deleted. The delete hooks take FOR NO KEY UPDATE, and upgrading that to the reversal's
   // FOR UPDATE afterwards deadlocks against a concurrent insert on the same account.
+  // A seam account takes the undo through the seam-aware delete.
   const bankLinkedAccountIds: string[] = [];
+  const seamAccounts = new Map<string, SeamAccount>();
   for (const accountId of accountIds) {
     const account = await lockAccountRow({ accountId });
-    if (account && account.type !== ACCOUNT_TYPES.system) bankLinkedAccountIds.push(accountId);
+    if (!account || account.type === ACCOUNT_TYPES.system) continue;
+    if (getSeamStart({ account })) seamAccounts.set(accountId, account);
+    else bankLinkedAccountIds.push(accountId);
   }
+
+  // Rows `bulkDelete` would refuse: on a seam account, dated from its seam on.
+  const rowsOwnedBySeamCount = rows.filter((row) => {
+    const account = seamAccounts.get(row.accountId);
+    return account && !isRowDeletableOnAccount({ account, transaction: row });
+  }).length;
 
   // `accountType` on a transaction is a creation-time snapshot, so the type comes from
   // the locked account row: a bank link cannot land between this check and the reversal
   // and desync a provider-synced balance.
-  // TODO: support undoing a batch whose account was later bank-linked by reconciling
-  // against the provider sync instead of refusing outright.
-  if (bankLinkedAccountIds.length > 0) {
+  if (bankLinkedAccountIds.length > 0 || rowsOwnedBySeamCount > 0) {
     logger.info('[import batch undo] Refused: batch touches a now bank-linked account', {
       userId,
       batchId,
       bankLinkedAccountIds,
+      rowsOwnedBySeamCount,
     });
     throw new ValidationError({
       message: t({ key: 'importExport.batchDeleteBankLinkedAccount' }),
@@ -134,31 +167,41 @@ const deleteImportBatchImpl = async ({
   // row linked to a pre-existing manual transaction would silently destroy it too, uncounted.
   // Transfers created entirely within this batch (both legs present) are exempt: their
   // normal cascade-delete-together destroys nothing external.
-  const transactionIds = rows.map((row) => row.id);
-  const batchRowIds = new Set(transactionIds);
-  const linkedLegs = rows.filter((row) => isTwoLegTransfer(row.transferNature) && row.transferId);
+  // Pairs are trashed together, so a trashed leg's twin is a trashed row, and a live leg's twin a live one.
+  const findExternalTwins = async ({ legs, trashed }: { legs: BatchLeg[]; trashed: boolean }) => {
+    const linkedLegs = legs.filter((row) => isTwoLegTransfer(row.transferNature) && row.transferId);
+    if (linkedLegs.length === 0) return { twinIds: [] as string[], legsWithTwin: [] as BatchLeg[] };
 
-  let externalTwinIds: string[] = [];
-  let legsWithExternalTwin: typeof linkedLegs = [];
-  if (linkedLegs.length > 0) {
+    const ownIds = new Set(legs.map((row) => row.id));
     // Unauthenticated on purpose, mirroring `deleteTransaction`'s own cascade lookup: a
     // cross-user (shared-account) transfer's twin can belong to a different userId.
-    const transferIds = [...new Set(linkedLegs.map((row) => row.transferId!))];
     const twins = (await findTransactions({
       planned: 'include',
       access: 'unscoped-internal',
       balanceAdjustments: 'include',
       completeness: 'all',
-      where: { transferId: { [Op.in]: transferIds } },
+      paranoid: !trashed,
+      where: {
+        transferId: { [Op.in]: [...new Set(linkedLegs.map((row) => row.transferId!))] },
+        ...(trashed ? trashedWhere : {}),
+      },
       attributes: ['id', 'transferId'],
       raw: true,
     })) as unknown as { id: string; transferId: string }[];
 
-    const externalTwins = twins.filter((twin) => !batchRowIds.has(twin.id));
+    const externalTwins = twins.filter((twin) => !ownIds.has(twin.id));
     const transferIdsWithExternalTwin = new Set(externalTwins.map((twin) => twin.transferId));
-    externalTwinIds = externalTwins.map((twin) => twin.id);
-    legsWithExternalTwin = linkedLegs.filter((row) => transferIdsWithExternalTwin.has(row.transferId!));
-  }
+    return {
+      twinIds: externalTwins.map((twin) => twin.id),
+      legsWithTwin: linkedLegs.filter((row) => transferIdsWithExternalTwin.has(row.transferId!)),
+    };
+  };
+
+  const transactionIds = rows.map((row) => row.id);
+  const liveTwins = await findExternalTwins({ legs: rows, trashed: false });
+  const trashedTwins = await findExternalTwins({ legs: trashedRows, trashed: true });
+  const externalTwinIds = [...liveTwins.twinIds, ...trashedTwins.twinIds];
+  const legsWithExternalTwin = [...liveTwins.legsWithTwin, ...trashedTwins.legsWithTwin];
 
   const unlinkExternalTwins = externalTwinIds.length > 0 && !deleteLinkedTransfers;
 
@@ -192,17 +235,26 @@ const deleteImportBatchImpl = async ({
       values: { transferId: null, transferNature: TRANSACTION_TRANSFER_NATURE.transfer_out_wallet },
       where: {
         transferId: { [Op.in]: [...new Set(legsWithExternalTwin.map((row) => row.transferId!))] },
+        [Op.or]: [{ deletedAt: null }, trashedWhere],
       },
+      paranoid: false,
     });
   }
 
   // Never chunk this list: `bulkDelete` skips a cascade-deleted transfer twin only
   // within one call. A twin in a later chunk gets re-queried after deletion and 404s.
   if (transactionIds.length > 0) {
-    await bulkDelete({ userId, transactionIds, maxCount: Infinity });
+    await bulkDelete({ userId, transactionIds, maxCount: Infinity, permanent: true });
+  }
+  const trashedToDestroy = [...trashedIds, ...(deleteLinkedTransfers ? trashedTwins.twinIds : [])];
+  await destroyTrashedRows({ transactionIds: trashedToDestroy });
+
+  // Inline so a failed rebuild fails the undo; it re-derives a seam account's opening balance.
+  for (const accountId of seamAccounts.keys()) {
+    await revalueBalanceHistory({ accountId });
   }
 
-  for (const effect of absorbedEffects) {
+  for (const effect of absorbedEffects.filter(({ accountId }) => !seamAccounts.has(accountId))) {
     await absorbBalanceAdjustment({
       userId,
       accountId: effect.accountId,
@@ -216,7 +268,7 @@ const deleteImportBatchImpl = async ({
 
   // `bulkDelete`'s result omits cascade-deleted twins. Once it returns, every batch row
   // plus the opted-in twins is gone, so report the full list.
-  const deletedIds = deleteLinkedTransfers ? [...transactionIds, ...externalTwinIds] : transactionIds;
+  const deletedIds = [...transactionIds, ...(deleteLinkedTransfers ? liveTwins.twinIds : []), ...trashedToDestroy];
   return {
     deletedCount: deletedIds.length,
     deletedIds,

@@ -449,6 +449,39 @@ describe('getTransferRecommendations', () => {
         });
         expect(unknownAccount).toEqual([]);
       });
+
+      it("returns an empty array for another user's transaction or account", async () => {
+        const otherUser = await helpers.provisionSecondUserWithBaseCurrency();
+        const foreign = await helpers.asUser({
+          cookies: otherUser.cookies,
+          fn: async () => {
+            const account = await helpers.createAccount({ raw: true });
+            const category = await helpers.addCustomCategory({ name: 'Other', color: '#0000FF', raw: true });
+            const [expense] = await helpers.createTransaction({
+              payload: helpers.buildTransactionPayload({
+                accountId: account.id,
+                categoryId: category.id,
+                amount: 100,
+                transactionType: TRANSACTION_TYPES.expense,
+              }),
+              raw: true,
+            });
+            return { accountId: account.id, transactionId: expense.id };
+          },
+        });
+
+        expect(await helpers.getTransferRecommendations({ transactionId: foreign.transactionId, raw: true })).toEqual(
+          [],
+        );
+        expect(
+          await helpers.getTransferRecommendations({
+            transactionType: TRANSACTION_TYPES.expense,
+            originAmount: 100,
+            accountId: foreign.accountId,
+            raw: true,
+          }),
+        ).toEqual([]);
+      });
     });
   });
 

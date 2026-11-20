@@ -1,9 +1,11 @@
+import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
 import {
   ACCOUNT_CATEGORIES,
   ACCOUNT_STATUSES,
   ACCOUNT_TYPES,
   type AccountExternalData,
   type EntityLogoPayload,
+  PAYMENT_TYPES,
   RecordId,
 } from '@bt/shared/types';
 import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
@@ -30,10 +32,12 @@ interface AccountsAttributes {
   refCreditLimit: Money | null;
   type: ACCOUNT_TYPES;
   accountCategory: ACCOUNT_CATEGORIES;
+  defaultPaymentType: PAYMENT_TYPES | null;
   currencyCode: string;
   userId: number;
   externalId: string; // represents id from the original external system if exists
   externalData: AccountExternalData | null; // JSON of any addition fields
+  externalUrl: string | null;
   // cashbackType: string; // move to additionalFields that will represent non-unified data
   // maskedPan: string; // move to additionalFields
   // type: string; // move to additionalFields
@@ -71,23 +75,27 @@ export default class Accounts extends Model {
   @Column({ allowNull: false, type: DataType.STRING })
   name!: string;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare initialBalance: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
+  @MoneyField({ allowNull: true, defaultValue: '0' })
   declare refInitialBalance: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare currentBalance: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
+  @MoneyField({ allowNull: true, defaultValue: '0' })
   declare refCurrentBalance: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare creditLimit: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
+  @MoneyField({ allowNull: true, defaultValue: '0' })
   declare refCreditLimit: Money | null;
+
+  /** Native balance at the start of the bank seam day; null when the account has no seam. */
+  @MoneyField({ allowNull: true })
+  declare seamBalance: Money | null;
 
   @Column({
     type: DataType.STRING,
@@ -103,6 +111,12 @@ export default class Accounts extends Model {
     validate: { isIn: [Object.values(ACCOUNT_CATEGORIES)] },
   })
   accountCategory!: ACCOUNT_CATEGORIES;
+
+  @Column({
+    allowNull: true,
+    type: DataType.ENUM(...Object.values(PAYMENT_TYPES)),
+  })
+  defaultPaymentType!: PAYMENT_TYPES | null;
 
   @ForeignKey(() => Currencies)
   @Column({ type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
@@ -124,6 +138,12 @@ export default class Accounts extends Model {
     allowNull: true,
   })
   externalData!: AccountExternalData | null; // JSON of any addition fields
+
+  @Column({
+    type: DataType.STRING(MAX_EXTERNAL_URL_LENGTH),
+    allowNull: true,
+  })
+  externalUrl!: string | null;
   // cashbackType: string;
   // maskedPan: string;
   // type: string;
@@ -240,9 +260,11 @@ export const getAccountById = async ({
 export interface CreateAccountPayload extends EntityLogoPayload {
   externalId?: AccountsAttributes['externalId'];
   externalData?: AccountsAttributes['externalData'];
+  externalUrl?: AccountsAttributes['externalUrl'];
   status?: AccountsAttributes['status'];
   excludeFromStats?: AccountsAttributes['excludeFromStats'];
   accountCategory: AccountsAttributes['accountCategory'];
+  defaultPaymentType?: AccountsAttributes['defaultPaymentType'];
   currencyCode: AccountsAttributes['currencyCode'];
   name: AccountsAttributes['name'];
   initialBalance: AccountsAttributes['initialBalance'];
@@ -292,6 +314,7 @@ export interface UpdateAccountByIdPayload extends EntityLogoPayload {
   userId: AccountsAttributes['userId'];
   externalId?: AccountsAttributes['externalId'];
   accountCategory?: AccountsAttributes['accountCategory'];
+  defaultPaymentType?: AccountsAttributes['defaultPaymentType'];
   // currency updating is disabled
   // currencyCode?: AccountsAttributes['currencyCode'];
   name?: AccountsAttributes['name'];
@@ -304,22 +327,31 @@ export interface UpdateAccountByIdPayload extends EntityLogoPayload {
   status?: AccountsAttributes['status'];
   excludeFromStats?: AccountsAttributes['excludeFromStats'];
   externalData?: AccountsAttributes['externalData'];
+  externalUrl?: AccountsAttributes['externalUrl'];
 }
 
-export async function updateAccountById({ id, userId, ...payload }: UpdateAccountByIdPayload) {
+export async function updateAccountById({
+  id,
+  userId,
+  currencyCode,
+  ...payload
+}: UpdateAccountByIdPayload & {
+  /** The stored account currency, read from the row when omitted. Only rounds; it is never written. */
+  currencyCode?: AccountsAttributes['currencyCode'];
+}) {
   const where = { id, userId };
 
   const { initialBalance, currentBalance, creditLimit } = payload;
   let rounded = {};
 
   if (initialBalance !== undefined || currentBalance !== undefined || creditLimit !== undefined) {
-    const stored = await Accounts.findOne({ where, attributes: ['currencyCode'] });
+    const code = currencyCode ?? (await Accounts.findOne({ where, attributes: ['currencyCode'] }))?.currencyCode;
 
-    if (stored) {
+    if (code) {
       rounded = await roundMoneyValues({
         values: { initialBalance, currentBalance, creditLimit },
         userId,
-        currencyCode: stored.currencyCode,
+        currencyCode: code,
         mode: 'half-up',
       });
     }

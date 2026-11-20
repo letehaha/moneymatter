@@ -1,8 +1,9 @@
 import type { CombinedBalanceHistoryEntity } from '@/api/stats';
 import type { DashboardWidgetConfig } from '@/api/user-settings';
-import { format, parseISO, startOfDay, subDays } from 'date-fns';
+import { getPrevPeriod, isFullMonthPeriod } from '@/composable/use-period-navigation';
+import { format, isSameMonth, parseISO, startOfDay, subDays } from 'date-fns';
 
-import { computePrevPeriod, computeTrendPeriods, isFullMonthPeriod } from '../cash-flow-widget/helpers';
+import { computeTrendPeriods } from '../cash-flow-widget/helpers';
 import { type NetWorthIncludeSettings, composeNetWorth } from '../net-worth-composition';
 
 export type { NetWorthIncludeSettings };
@@ -119,8 +120,8 @@ export function readNetWorthSettings({
  * Range the widget fetches: one day before the earliest trend window starts, so every
  * window (and the period itself) has a baseline point preceding it.
  */
-export function computeFetchRange({ period }: { period: DatePeriod }): DatePeriod {
-  const [earliestWindow] = computeTrendPeriods(period);
+export function computeFetchRange({ period, payday }: { period: DatePeriod; payday?: number }): DatePeriod {
+  const [earliestWindow] = computeTrendPeriods({ ...period, payday });
 
   return {
     from: subDays(earliestWindow.from, 1),
@@ -184,8 +185,8 @@ export function computeEndNetWorth({
 }
 
 /**
- * Change over the window preceding the period — the previous calendar month for a
- * whole month, otherwise the same-length window ending the day before it.
+ * Change over the window preceding the period — the previous whole month for a
+ * calendar or pay month, otherwise the same-length window ending the day before it.
  * Unavailable when the series holds nothing before the period, which makes the
  * comparison meaningless rather than zero.
  */
@@ -193,15 +194,17 @@ export function computePrevDelta({
   series,
   settings,
   period,
+  payday,
 }: {
   series: Series;
   settings: NetWorthIncludeSettings;
   period: DatePeriod;
+  payday?: number;
 }): NetWorthPrevDelta {
   const normalized = normalizeSeries({ series });
   if (!lastPointBefore({ normalized, date: period.from })) return { available: false };
 
-  const prevPeriod = computePrevPeriod(period);
+  const prevPeriod = getPrevPeriod({ period, payday });
   const start = startNetWorthOf({ normalized, settings, period: prevPeriod });
   const end = endNetWorthOf({ normalized, settings, period: prevPeriod });
 
@@ -227,15 +230,17 @@ export function computeTrendBars({
   series,
   settings,
   period,
+  payday,
 }: {
   series: Series;
   settings: NetWorthIncludeSettings;
   period: DatePeriod;
+  payday?: number;
 }): NetWorthTrendBar[] {
   const normalized = normalizeSeries({ series });
 
-  return computeTrendPeriods(period).map((window) => {
-    const isWholeMonth = isFullMonthPeriod(window);
+  return computeTrendPeriods({ ...period, payday }).map((window) => {
+    const isWholeMonth = isSameMonth(window.from, window.to) && isFullMonthPeriod({ period: window });
     const label = isWholeMonth
       ? format(window.from, 'MMM')
       : `${format(window.from, 'MMM d')} - ${format(window.to, 'MMM d')}`;

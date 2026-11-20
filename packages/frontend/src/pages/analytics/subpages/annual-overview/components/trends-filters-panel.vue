@@ -2,23 +2,6 @@
   <div class="space-y-4">
     <div class="space-y-2">
       <div class="flex items-center justify-between gap-2">
-        <p class="text-muted-foreground text-xs font-medium">{{ $t('analytics.trends.filters.categories') }}</p>
-        <PillTabs
-          size="sm"
-          :items="modeItems"
-          :model-value="filters.categories.mode"
-          @update:model-value="(value) => patchGroup({ key: 'categories', changes: { mode: toMode(value) } })"
-        />
-      </div>
-      <ComboboxCategories
-        :category-ids="filters.categories.ids"
-        :mode="filters.categories.mode"
-        @update:category-ids="(value) => patchGroup({ key: 'categories', changes: { ids: value } })"
-      />
-    </div>
-
-    <div class="space-y-2">
-      <div class="flex items-center justify-between gap-2">
         <p class="text-muted-foreground text-xs font-medium">{{ $t('analytics.trends.filters.payees') }}</p>
         <PillTabs
           size="sm"
@@ -63,7 +46,7 @@
         variant="ghost"
         size="sm"
         :disabled="activeCount === 0"
-        @click="emit('update:filters', emptyTrendsFilters())"
+        @click="emit('update:filters', { ...emptyTrendsFilters(), categories: filters.categories })"
       >
         <RotateCcwIcon class="size-3.5" />
         {{ $t('analytics.trends.filters.reset') }}
@@ -73,7 +56,6 @@
 </template>
 
 <script setup lang="ts">
-import ComboboxCategories from '@/components/common/combobox-categories.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
 import PayeeMultiSelectField from '@/components/fields/payee-multi-select-field.vue';
 import { Button } from '@/components/lib/ui/button';

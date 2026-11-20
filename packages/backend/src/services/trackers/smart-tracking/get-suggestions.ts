@@ -9,12 +9,13 @@ import TrackerSuggestions from '@models/tracker-suggestions.model';
 import TrackerTransactions from '@models/tracker-transactions.model';
 import type Trackers from '@models/trackers.model';
 import { findTransactions } from '@models/transactions-query';
+import { liveTransactionExistsSql } from '@models/transactions-query/deletion-where';
 import type Transactions from '@models/transactions.model';
 import { resolveAIConfiguration } from '@services/ai';
 import { isWithinAiAllowance } from '@services/ai/ai-allowance';
 import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
 import { getConnectionInfos } from '@services/user-settings/ai-connections';
-import { Op } from 'sequelize';
+import { Op, literal } from 'sequelize';
 
 import { findOwnedTracker } from './find-owned-tracker';
 import { getTrackerScanBlocker } from './run-tracker-scan';
@@ -47,13 +48,17 @@ export const getTrackerSuggestions = async ({
 }): Promise<TrackerSuggestionsResponse<Transactions>> => {
   const tracker = await findOwnedTracker({ userId, trackerId });
 
-  const [pendingRows, matchedRows] = await Promise.all([
+  const [pendingRows, rejectedRows, matchedRows] = await Promise.all([
     TrackerSuggestions.findAll({
       where: { trackerId, status: TRACKER_SUGGESTION_STATUS.pending },
       order: [
         ['score', 'DESC'],
         ['createdAt', 'ASC'],
       ],
+    }),
+    TrackerSuggestions.findAll({
+      where: { trackerId, status: TRACKER_SUGGESTION_STATUS.rejected },
+      order: [['resolvedAt', 'DESC']],
     }),
     // Rows an unlink or a manual link created carry score 0, so they are not AI matches.
     TrackerSuggestions.findAll({
@@ -67,18 +72,22 @@ export const getTrackerSuggestions = async ({
   ]);
 
   const [transactions, stillLinked, scanState, pausedReason] = await Promise.all([
-    pendingRows.length
+    pendingRows.length || rejectedRows.length
       ? findTransactions({
           planned: 'include',
           access: { creator: userId },
           balanceAdjustments: 'include',
           completeness: 'all',
-          where: { id: pendingRows.map((row) => row.transactionId) },
+          where: { id: [...pendingRows, ...rejectedRows].map((row) => row.transactionId) },
         })
       : ([] as Transactions[]),
     matchedRows.length
       ? TrackerTransactions.findAll({
-          where: { trackerId, transactionId: matchedRows.map((row) => row.transactionId) },
+          where: {
+            trackerId,
+            transactionId: matchedRows.map((row) => row.transactionId),
+            [Op.and]: literal(liveTransactionExistsSql({ idColumnSql: '"TrackerTransactions"."transactionId"' })),
+          },
           attributes: ['transactionId'],
         })
       : ([] as TrackerTransactions[]),
@@ -89,11 +98,15 @@ export const getTrackerSuggestions = async ({
   const transactionById = new Map(transactions.map((tx) => [tx.id, tx]));
   const linkedIds = new Set(stillLinked.map((row) => row.transactionId));
 
-  return {
-    pending: pendingRows.flatMap((row) => {
+  const withTransactions = ({ rows }: { rows: TrackerSuggestions[] }) =>
+    rows.flatMap((row) => {
       const transaction = transactionById.get(row.transactionId);
       return transaction ? [{ id: row.id, score: row.score, reason: row.reason, transaction }] : [];
-    }),
+    });
+
+  return {
+    pending: withTransactions({ rows: pendingRows }),
+    rejected: withTransactions({ rows: rejectedRows }),
     aiMatched: matchedRows
       .filter((row) => linkedIds.has(row.transactionId))
       .map((row) => ({ id: row.id, transactionId: row.transactionId, reason: row.reason })),

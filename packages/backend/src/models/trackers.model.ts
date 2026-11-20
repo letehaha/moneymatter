@@ -1,6 +1,6 @@
 import {
+  TRACKER_LIMIT_KINDS,
   TRACKER_STATUSES,
-  TRACKER_TYPES,
   RecordId,
   TRACKER_AI_DEFAULT_PRE_WINDOW_DAYS,
   type TrackerAiPreWindowDays,
@@ -9,15 +9,17 @@ import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
 import Categories from '@models/categories.model';
+import Tags from '@models/tags.model';
 import Transactions from '@models/transactions.model';
 import Users from '@models/users.model';
 import { Table, Column, Model, ForeignKey, DataType, BelongsToMany, HasMany } from 'sequelize-typescript';
 
 import TrackerCategories from './tracker-categories.model';
 import TrackerLines from './tracker-lines.model';
+import TrackerTags from './tracker-tags.model';
 import TrackerTransactions from './tracker-transactions.model';
 
-/** Watches spending over a date range, by linked categories or hand-picked transactions. */
+/** Watches spending over a date range: hand-picked transactions plus, with rules on, ones matching its categories or tags. */
 @Table({
   timestamps: false,
 })
@@ -31,21 +33,20 @@ export default class Trackers extends Model {
   @Column({ allowNull: false, type: DataType.ENUM({ values: Object.values(TRACKER_STATUSES) }) })
   status!: TRACKER_STATUSES;
 
-  @Column({
-    allowNull: false,
-    defaultValue: TRACKER_TYPES.manual,
-    type: DataType.ENUM(...Object.values(TRACKER_TYPES)),
-  })
-  type!: TRACKER_TYPES;
-
   @Column({ type: DataType.DATE, allowNull: true })
   startDate!: Date | null;
 
   @Column({ type: DataType.DATE, allowNull: true })
   endDate!: Date | null;
 
-  @Column({ defaultValue: false, type: DataType.BOOLEAN })
-  autoInclude!: boolean;
+  @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
+  rulesEnabled!: boolean;
+
+  @Column({ allowNull: false, defaultValue: true, type: DataType.BOOLEAN })
+  rulesCleanup!: boolean;
+
+  @Column({ type: DataType.DATE, allowNull: true })
+  rulesSyncedAt!: Date | null;
 
   @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
   archivePromptDismissed!: boolean;
@@ -65,8 +66,15 @@ export default class Trackers extends Model {
   @Column({ type: DataType.UUID, allowNull: true })
   logoImageId!: string | null;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
+  @MoneyField({ allowNull: true })
   declare limitAmount: Money | null;
+
+  @Column({
+    allowNull: false,
+    defaultValue: TRACKER_LIMIT_KINDS.spending,
+    type: DataType.STRING(20),
+  })
+  limitKind!: TRACKER_LIMIT_KINDS;
 
   @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
   aiEnabled!: boolean;
@@ -101,6 +109,13 @@ export default class Trackers extends Model {
     otherKey: 'categoryId',
   })
   categories!: Categories[];
+
+  @BelongsToMany(() => Tags, {
+    through: { model: () => TrackerTags, unique: false },
+    foreignKey: 'trackerId',
+    otherKey: 'tagId',
+  })
+  tags!: Tags[];
 
   @HasMany(() => TrackerLines, { foreignKey: 'trackerId', onDelete: 'CASCADE' })
   lines?: TrackerLines[];

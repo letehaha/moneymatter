@@ -133,7 +133,6 @@ async function sendRemindBeforeNotifications({ today }: { today: string }): Prom
           // through to re-queue the email.
           if (existing && (existing.emailSent || !subscription.notifyEmail)) continue;
 
-          // expectedAmount on the model is raw cents (BIGINT).
           const expectedDecimal = moneyToApiDecimalOrNull(subscription.expectedAmount);
 
           // Claim the slot BEFORE firing the in-app notification or queuing the

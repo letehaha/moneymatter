@@ -169,7 +169,10 @@ const CARD_FIELD_LAYOUT = {
 const cardLayout = (col: MappingTableColumn) => CARD_FIELD_LAYOUT[col.cardValue ?? 'stack'];
 
 const isExpanded = (item: T, index: number): boolean => props.isRowExpanded?.(item, index) ?? false;
-const rowClass = (item: T, index: number): string => props.getRowClass?.(item, index) ?? '';
+const rowClass = (item: T, index: number): string => {
+  const callerClass = props.getRowClass?.(item, index);
+  return callerClass ? `${callerClass} fields-plain` : '';
+};
 </script>
 
 <template>
@@ -182,7 +185,7 @@ const rowClass = (item: T, index: number): string => props.getRowClass?.(item, i
     <template v-else>
       <!-- WIDE: CSS-grid table -->
       <div
-        :class="cn('border-border bg-muted/50 overflow-hidden rounded-lg border', GRID_BREAKPOINT.grid)"
+        :class="cn('border-border bg-card dark:bg-muted/50 overflow-hidden rounded-lg border', GRID_BREAKPOINT.grid)"
         role="table"
       >
         <!-- Header -->

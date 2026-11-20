@@ -1,9 +1,112 @@
-import { API_ERROR_CODES, API_RESPONSE_STATUS, BANK_PROVIDER_TYPE, asDecimal } from '@bt/shared/types';
+import {
+  API_ERROR_CODES,
+  API_RESPONSE_STATUS,
+  BANK_PROVIDER_TYPE,
+  type RecordId,
+  TRANSACTION_TRANSFER_NATURE,
+  TRANSACTION_TYPES,
+  asDecimal,
+} from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
-import { VALID_LUNCHFLOW_API_KEY, getLunchFlowTransactionsMock } from '@tests/mocks/lunchflow/mock-api';
+import {
+  VALID_LUNCHFLOW_API_KEY,
+  getLunchFlowBalanceMock,
+  getLunchFlowTransactionsMock,
+} from '@tests/mocks/lunchflow/mock-api';
 import { VALID_MONOBANK_TOKEN } from '@tests/mocks/monobank/mock-api';
+
+// Bank-linked accounts reject manual rows, so every precondition is built on a manual
+// USD account (the currency of LunchFlow account 1001) before it gets linked.
+const setupLinkedLoanSource = async () => {
+  const { account: sourceAccount } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
+  const loan = await helpers.createLoan({
+    payload: helpers.buildCreateLoanPayload({ initialBalance: 1_000, originalPrincipal: 1_000 }),
+    raw: true,
+  });
+
+  const [payment] = await helpers.createTransaction({
+    payload: {
+      ...helpers.buildTransactionPayload({ accountId: sourceAccount.id, amount: 300 }),
+      transferNature: TRANSACTION_TRANSFER_NATURE.transfer_to_loan,
+      destinationAmount: 300,
+      destinationAccountId: loan.id as RecordId,
+    },
+    raw: true,
+  });
+
+  return { sourceAccount, loan, payment: payment! };
+};
+
+const setupCrossUserTransfer = async () => {
+  const { account: sourceAccount } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
+
+  const recipient = await helpers.provisionSecondUserWithBaseCurrency();
+  const recipientUser = await helpers.findAppUserByEmail({ email: recipient.email });
+
+  const destAccount = await helpers.asUser({
+    cookies: recipient.cookies,
+    fn: async () => (await helpers.createAccountWithNewCurrency({ currency: 'USD' })).account,
+  });
+
+  const invitation = await helpers.asUser({
+    cookies: recipient.cookies,
+    fn: () => helpers.createHouseholdInvitation({ ownerUserId: recipientUser.id, inviteeEmail: 'test1@test.local' }),
+  });
+  await helpers.acceptShareInvitation({ token: invitation.token, raw: true });
+
+  const [sourceLeg, partnerLeg] = await helpers.createTransaction({
+    payload: {
+      ...helpers.buildTransactionPayload({
+        accountId: sourceAccount.id,
+        amount: 50,
+        transactionType: TRANSACTION_TYPES.expense,
+      }),
+      transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+      destinationAmount: 50,
+      destinationAccountId: destAccount.id,
+    },
+    raw: true,
+  });
+  expect(partnerLeg!.accountId).toBe(destAccount.id);
+  expect(partnerLeg!.transferId).toBe(sourceLeg!.transferId);
+
+  return { sourceAccount, destAccount, recipient, partnerLeg: partnerLeg! };
+};
+
+const expectDisconnectBlocked = async ({
+  connectionId,
+  accountId,
+  loanId,
+  messagePattern,
+}: {
+  connectionId: string;
+  accountId: string;
+  loanId: string;
+  messagePattern: RegExp;
+}) => {
+  const loanBefore = await helpers.getLoanById({ id: loanId, raw: true });
+
+  const response = await helpers.bankDataProviders.disconnectProvider({
+    connectionId,
+    removeAssociatedAccounts: true,
+  });
+
+  expect(response.statusCode).toBe(422);
+  const errorBody = response.body.response as unknown as { code: string; message: string };
+  expect(errorBody.code).toBe(API_ERROR_CODES.validationError);
+  expect(errorBody.message).toMatch(messagePattern);
+
+  const { connections } = await helpers.bankDataProviders.listUserConnections({ raw: true });
+  expect(connections.some((c) => c.id === connectionId)).toBe(true);
+
+  const accountsAfter = await helpers.getAccounts();
+  expect(accountsAfter.some((acc) => acc.id === accountId)).toBe(true);
+
+  const loanAfter = await helpers.getLoanById({ id: loanId, raw: true });
+  expect(loanAfter.currentBalance).toBe(loanBefore.currentBalance);
+};
 
 /**
  * E2E tests for DELETE /bank-data-providers/connections/:connectionId.
@@ -134,4 +237,100 @@ describe('Disconnect provider', () => {
     expect(after.buckets[0]!.byPortfolio).toEqual([]);
     expect(after.portfolios).toEqual([]);
   }, 60_000);
+
+  describe('removeAssociatedAccounts: true', () => {
+    it('rejects when a linked account has paid into a loan', async () => {
+      const { sourceAccount, loan } = await setupLinkedLoanSource();
+      const { connectionId } = await helpers.lunchflow.linkManualAccount({ accountId: sourceAccount.id });
+
+      await expectDisconnectBlocked({
+        connectionId,
+        accountId: sourceAccount.id,
+        loanId: loan.id,
+        messagePattern: /delete or reassign them/i,
+      });
+    }, 60_000);
+
+    it('rejects with a Trash-specific message when the linked account only has trashed loan payments', async () => {
+      const { sourceAccount, loan, payment } = await setupLinkedLoanSource();
+      expect((await helpers.deleteTransaction({ id: payment.id })).statusCode).toBe(200);
+      const { connectionId } = await helpers.lunchflow.linkManualAccount({ accountId: sourceAccount.id });
+
+      await expectDisconnectBlocked({
+        connectionId,
+        accountId: sourceAccount.id,
+        loanId: loan.id,
+        messagePattern: /permanently from trash/i,
+      });
+    }, 60_000);
+
+    it("converts the partner leg on another user's account to out_of_wallet", async () => {
+      const { sourceAccount, destAccount, recipient, partnerLeg } = await setupCrossUserTransfer();
+
+      const { connectionId } = await helpers.lunchflow.linkManualAccount({ accountId: sourceAccount.id });
+
+      const response = await helpers.bankDataProviders.disconnectProvider({
+        connectionId,
+        removeAssociatedAccounts: true,
+      });
+      expect(response.statusCode).toBe(200);
+
+      const partnerAfter = await helpers.asUser({
+        cookies: recipient.cookies,
+        fn: () => helpers.getTransactionById({ id: partnerLeg.id, raw: true }),
+      });
+      expect(partnerAfter).not.toBeNull();
+      expect(partnerAfter!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.transfer_out_wallet);
+      expect(partnerAfter!.transferId).toBeNull();
+
+      const destAccountResponse = await helpers.asUser({
+        cookies: recipient.cookies,
+        fn: () => helpers.getAccount({ id: destAccount.id, raw: false }),
+      });
+      expect(destAccountResponse.statusCode).toBe(200);
+    }, 60_000);
+
+    it('rolls back deletions of earlier accounts when a later linked account is blocked', async () => {
+      const { sourceAccount: transferAccount, recipient, partnerLeg } = await setupCrossUserTransfer();
+      const { sourceAccount: loanAccount, loan } = await setupLinkedLoanSource();
+
+      // Mock account 1002 reports EUR; the loan source is USD.
+      global.mswMockServer.use(
+        getLunchFlowBalanceMock({
+          accountId: 1002,
+          response: { balance: { amount: asDecimal(850), currency: 'USD' } },
+        }),
+      );
+      const { connectionId } = await helpers.lunchflow.linkManualAccount({ accountId: transferAccount.id });
+
+      const linkResponse = await helpers.linkAccountToBankConnection({
+        id: loanAccount.id,
+        connectionId,
+        externalAccountId: '1002',
+      });
+      expect(linkResponse.statusCode).toBe(200);
+
+      const { connection } = await helpers.bankDataProviders.getConnectionDetails({ connectionId, raw: true });
+      expect(connection.accounts.map((acc) => acc.id).toSorted()).toEqual(
+        [transferAccount.id, loanAccount.id].toSorted(),
+      );
+
+      await expectDisconnectBlocked({
+        connectionId,
+        accountId: loanAccount.id,
+        loanId: loan.id,
+        messagePattern: /delete or reassign them/i,
+      });
+
+      const accountsAfter = await helpers.getAccounts();
+      expect(accountsAfter.some((acc) => acc.id === transferAccount.id)).toBe(true);
+
+      const partnerAfter = await helpers.asUser({
+        cookies: recipient.cookies,
+        fn: () => helpers.getTransactionById({ id: partnerLeg.id, raw: true }),
+      });
+      expect(partnerAfter!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.common_transfer);
+      expect(partnerAfter!.transferId).not.toBeNull();
+    }, 60_000);
+  });
 });

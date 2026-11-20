@@ -7,7 +7,6 @@ import type { RecordId } from './record-id';
 export enum CATEGORIZATION_SOURCE {
   manual = 'manual',
   ai = 'ai',
-  mccRule = 'mcc_rule',
   userRule = 'user_rule',
   subscriptionRule = 'subscription_rule',
   payeeRule = 'payee_rule',

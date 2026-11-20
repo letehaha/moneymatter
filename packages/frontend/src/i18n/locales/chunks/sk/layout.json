@@ -8,18 +8,23 @@
     "allTransactions": "Všetky transakcie",
     "transactions": "Transakcie",
     "transactionGroups": "Skupiny",
+    "trash": "Kôš",
     "analytics": "Analytika",
     "optimizations": "Optimalizácie",
     "automations": "Automatizácie",
     "accountDetails": "Nastavenia účtu",
     "helpAndDocs": "Pomoc a dokumentácia",
+    "community": "Komunita",
     "logout": "Odhlásiť sa",
     "appVersion": "Verzia aplikácie {version}",
+    "updateAvailable": "K dispozícii je aktualizácia",
+    "updateToVersion": "Aktualizovať - {version}",
     "settings": "Nastavenia",
     "planned": {
-      "planned": "Plánované",
+      "planned": "Plánovanie",
       "subscriptions": "Opakujúce sa platby",
-      "budgets": "Sledovače"
+      "budgets": "Sledovače",
+      "goals": "Ciele"
     },
     "venture": "Rizikový kapitál",
     "budget": "Rozpočet"
@@ -27,6 +32,7 @@
   "sidebar": {
     "collapse": "Zbaliť bočný panel",
     "expand": "Otvoriť bočný panel",
+    "resize": "Zmeniť veľkosť bočného panela",
     "settings": {
       "title": "Nastavenia",
       "sections": {
@@ -91,9 +97,9 @@
     }
   },
   "themeSelector": {
-    "light": "Svetlá",
-    "dark": "Tmavá",
-    "system": "Systémová"
+    "light": "Svetlý",
+    "dark": "Tmavý",
+    "system": "Systémový"
   },
   "feedback": {
     "dialog": {
@@ -115,6 +121,10 @@
       "thanks": "Ďakujeme, čítame každú správu.",
       "unavailable": "Odosielanie je momentálne nedostupné. Použite namiesto toho nástenku nižšie.",
       "or": "alebo",
+      "reddit": {
+        "title": "Spýtajte sa komunity na Reddite",
+        "description": "Získajte pomoc od ostatných používateľov, zdieľajte, ako máte všetko nastavené, a sledujte novinky."
+      },
       "board": {
         "title": "Uverejnite to na verejnej nástenke",
         "description": "Hlasujte za nápady iných, pozrite si, čo je už naplánované, a dostanete odpoveď aj na svoj vlastný."
@@ -267,8 +277,8 @@
             "description": "Zorganizujte si transakcie podľa typu"
           },
           "create-tag": {
-            "title": "Vytvorte štítok",
-            "description": "Pridajte štítky a zoskupte súvisiace transakcie"
+            "title": "Vytvorte značku",
+            "description": "Pridajte značky a zoskupte súvisiace transakcie"
           },
           "create-budget": {
             "title": "Nastavte si sledovač",
@@ -283,7 +293,7 @@
             "description": "Zorganizujte si účty podľa typu alebo účelu"
           },
           "setup-tag-reminder": {
-            "title": "Nastavte pripomienku štítku",
+            "title": "Nastavte pripomienku značky",
             "description": "Nechajte sa upozorniť na opakujúce sa výdavky"
           },
           "connect-bank": {

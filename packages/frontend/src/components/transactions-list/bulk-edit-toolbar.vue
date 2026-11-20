@@ -31,7 +31,7 @@ const props = defineProps<{
   isLoading: boolean;
   isAllSelected: boolean;
   /** Selection contains bank-connected transactions, which the backend refuses to delete. */
-  hasExternalSelected?: boolean;
+  hasUndeletableSelected?: boolean;
   selectedTotals: SelectedTotals;
   /** Totals of the whole filtered set, shown while nothing is selected. */
   matchingSummary?: TransactionsSummaryResponse;
@@ -93,7 +93,7 @@ const handleEdit = () => {
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button variant="outline" size="sm" :disabled="!hasSelection || isLoading">
-            <ListOrderedIcon class="mr-1.5 size-4" />
+            <ListOrderedIcon class="size-4" />
             <ChevronDownIcon class="size-3.5" />
           </Button>
         </DropdownMenuTrigger>
@@ -110,7 +110,7 @@ const handleEdit = () => {
             <ListPlusIcon class="mr-2 size-4" />
             {{ t('transactions.transactionGroups.bulkActions.addToExistingGroup') }}
           </DropdownMenuItem>
-          <DropdownMenuItem :disabled="hasExternalSelected" class="text-destructive-text" @select="emit('delete')">
+          <DropdownMenuItem :disabled="hasUndeletableSelected" class="text-destructive-text" @select="emit('delete')">
             <Trash2Icon class="mr-2 size-4" />
             {{ t('transactions.bulkDelete.button') }}
           </DropdownMenuItem>
@@ -146,14 +146,14 @@ const handleEdit = () => {
 
       <DesktopOnlyTooltip
         :content="
-          hasExternalSelected ? t('transactions.bulkDelete.externalTooltip') : t('transactions.bulkDelete.button')
+          hasUndeletableSelected ? t('transactions.bulkDelete.externalTooltip') : t('transactions.bulkDelete.button')
         "
       >
         <span class="inline-flex">
           <Button
             variant="soft-destructive"
             size="sm"
-            :disabled="!hasSelection || isLoading || hasExternalSelected"
+            :disabled="!hasSelection || isLoading || hasUndeletableSelected"
             @click="emit('delete')"
           >
             <Trash2Icon class="size-4" />

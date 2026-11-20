@@ -5,7 +5,7 @@ import { getOrCreateUserSettings } from './get-or-create-user-settings';
 import { type RedactedSettingsSchema, redactKeyMaterial } from './redact-key-material';
 import { mergeIntoStoredSettings, stripServiceOwnedSlices } from './service-owned-slices';
 
-type IncomingSettings = Omit<SettingsSchema, 'ai' | 'fire'> & {
+type IncomingSettings = Omit<SettingsSchema, 'ai' | 'fire' | 'fireHistory'> & {
   ai?: Omit<NonNullable<SettingsSchema['ai']>, 'connections' | 'featureConfigs'>;
 };
 

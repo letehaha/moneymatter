@@ -460,6 +460,23 @@ describe('Monobank Data Provider E2E', () => {
       expect(byNote('WITH NEITHER').externalReference).toBeNull();
     }, 30000);
 
+    it('leaves repeat-MCC transactions uncategorized so AI can pick them up', async () => {
+      const { account } = await helpers.monobank.mockTransactions({
+        transactions: [{ amount: -1000, description: 'CAFE ONE', mcc: 5814 }],
+      });
+      await helpers.monobank.mockTransactions({
+        transactions: [{ amount: -2000, description: 'CAFE TWO', mcc: 5814 }],
+      });
+
+      let rows = await helpers.getTransactions({ accountIds: [account.id], raw: true });
+      for (let attempt = 0; attempt < 10 && rows.length < 2; attempt += 1) {
+        await helpers.sleep(300);
+        rows = await helpers.getTransactions({ accountIds: [account.id], raw: true });
+      }
+      expect(rows).toHaveLength(2);
+      for (const row of rows) expect(row.categorizationMeta).toBeNull();
+    }, 30000);
+
     it('should return 404 for non-existent connection', async () => {
       const result = await helpers.bankDataProviders.connectSelectedAccounts({
         connectionId: generateRandomRecordId(),
@@ -584,7 +601,7 @@ describe('Monobank Data Provider E2E', () => {
         date: new Date(),
         baseCode: 'UAH',
       });
-      expect(refCreditLimitCents).toEqualRefValue(expected.toCents());
+      expect(created!.refCreditLimit!.toNumber()).toEqualRefValue(expected.toNumber());
     });
 
     it('should set refCreditLimit = 0 when the account has no credit limit', async () => {
@@ -1253,6 +1270,24 @@ describe('Monobank Data Provider E2E', () => {
       // we must NOT tell them the credentials are invalid.
       expect(result.status).not.toEqual(ERROR_CODES.Forbidden);
       expect(result.status).toBeGreaterThanOrEqual(400);
+    });
+
+    it('refreshCredentials: should keep the connection active with no deactivation reason for a valid token', async () => {
+      const { connectionId } = await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.MONOBANK,
+        credentials: { apiToken: VALID_MONOBANK_TOKEN },
+        raw: true,
+      });
+
+      const result = await helpers.bankDataProviders.updateConnectionDetails({
+        connectionId,
+        credentials: { apiToken: VALID_MONOBANK_TOKEN },
+      });
+      expect(result.status).toBe(200);
+
+      const { connection } = await helpers.bankDataProviders.getConnectionDetails({ connectionId, raw: true });
+      expect(connection.isActive).toBe(true);
+      expect(connection.deactivationReason).toBeNull();
     });
   });
 

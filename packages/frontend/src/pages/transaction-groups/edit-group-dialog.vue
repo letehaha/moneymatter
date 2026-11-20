@@ -5,8 +5,9 @@ import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import { Button } from '@/components/lib/ui/button';
 import InputField from '@/components/fields/input-field.vue';
 import TextareaField from '@/components/fields/textarea-field.vue';
-import { SaveIcon } from '@lucide/vue';
-import { reactive, watch } from 'vue';
+import { useNotificationCenter } from '@/components/notification-center';
+import { extractApiErrorMessage } from '@/js/errors';
+import { reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -21,6 +22,8 @@ const emit = defineEmits<{
   saved: [];
 }>();
 
+const { addErrorNotification } = useNotificationCenter();
+
 const form = reactive({ name: '', note: '' as string | undefined });
 
 watch(
@@ -33,17 +36,26 @@ watch(
   },
 );
 
+const isSaving = ref(false);
+
 const save = async () => {
   if (!props.group || !form.name.trim()) return;
-  await transactionGroupsApi.updateTransactionGroup({
-    id: props.group.id,
-    payload: {
-      name: form.name.trim(),
-      note: form.note?.trim() || null,
-    },
-  });
-  emit('update:open', false);
-  emit('saved');
+  isSaving.value = true;
+  try {
+    await transactionGroupsApi.updateTransactionGroup({
+      id: props.group.id,
+      payload: {
+        name: form.name.trim(),
+        note: form.note?.trim() || null,
+      },
+    });
+    emit('update:open', false);
+    emit('saved');
+  } catch (error) {
+    addErrorNotification(extractApiErrorMessage(error) || t('transactionGroups.groupDialog.saveError'));
+  } finally {
+    isSaving.value = false;
+  }
 };
 </script>
 
@@ -60,13 +72,12 @@ const save = async () => {
         :rows="2"
         :placeholder="t('transactionGroups.groupDialog.notePlaceholder')"
       />
-      <div class="flex gap-2">
-        <Button size="sm" @click="save">
-          <SaveIcon class="mr-1 size-3.5" />
-          {{ t('transactionGroups.groupDialog.savingAction') }}
-        </Button>
-        <Button variant="ghost" size="sm" @click="emit('update:open', false)">
+      <div class="flex justify-end gap-2">
+        <Button variant="ghost" @click="emit('update:open', false)">
           {{ t('transactionGroups.groupDialog.cancelButton') }}
+        </Button>
+        <Button :disabled="!form.name.trim() || isSaving" @click="save">
+          {{ t('transactionGroups.groupDialog.savingAction') }}
         </Button>
       </div>
     </div>

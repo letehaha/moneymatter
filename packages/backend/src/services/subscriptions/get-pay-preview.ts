@@ -1,5 +1,5 @@
 import { type RecordId, SUBSCRIPTION_LINK_STATUS } from '@bt/shared/types';
-import { Money, centsToApiDecimalOrNull, moneyToApiDecimalOrNull } from '@common/types/money';
+import { Money, moneyToApiDecimalOrNull } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { ValidationError } from '@js/errors';
 import * as Accounts from '@models/accounts.model';
@@ -102,6 +102,8 @@ async function findLinkedPaymentsForPeriod({
       calculateNextDueDate({
         currentDueDate: period.dueDate,
         frequency: subscription.frequency,
+        intervalUnit: subscription.intervalUnit,
+        intervalCount: subscription.intervalCount,
         anchorDay: subscription.anchorDay ?? dueStart.getUTCDate(),
       }),
   });
@@ -158,7 +160,6 @@ export const getSubscriptionPayPreview = withTransaction(
 
     const linkedPayments = periodId ? await findLinkedPaymentsForPeriod({ userId, subscription, periodId }) : [];
 
-    // expectedAmount on the model is raw cents (BIGINT).
     const expectedAmount = moneyToApiDecimalOrNull(subscription.expectedAmount);
 
     if (subscription.accountId == null) {
@@ -202,7 +203,7 @@ export const getSubscriptionPayPreview = withTransaction(
       accountCurrencyCode,
       subscriptionCurrencyCode: subscription.expectedCurrencyCode,
       expectedAmount,
-      convertedAmount: centsToApiDecimalOrNull(converted),
+      convertedAmount: moneyToApiDecimalOrNull(converted),
       linkedPayments,
     };
   },

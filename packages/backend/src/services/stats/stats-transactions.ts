@@ -3,7 +3,7 @@ import Accounts from '@models/accounts.model';
 import { AccessPolicy, PlannedPolicy, findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { endOfDay } from 'date-fns';
-import { FindAttributeOptions, Includeable, Op, Order, WhereOptions } from 'sequelize';
+import { FindAttributeOptions, Includeable, Op, Order, WhereOptions, literal } from 'sequelize';
 
 import { CategoryRefundPair, resolveRefundPairs } from './category-allocation';
 
@@ -18,6 +18,7 @@ import { CategoryRefundPair, resolveRefundPairs } from './category-allocation';
  * balance-adjustment rows are out. The one transfer that stays is the cash leg of a loan
  * payment: money leaving the user's pocket to service debt is spend to them, even though the
  * paired income leg on the loan account is only a liability reduction and never counts.
+ * `transfers: 'include'` lifts the transfer exclusion for reports where the user explicitly opts in.
  */
 type StatsRefundsPolicy =
   | 'net' // caller nets refunds itself: rows come back with their refund pairs resolved
@@ -42,6 +43,7 @@ type StatsRefundsOptions =
 type StatsTransactionsOptions = StatsRefundsOptions & {
   access: AccessPolicy;
   planned: PlannedPolicy;
+  transfers?: 'exclude' | 'include';
   window: StatsWindow;
   where?: WhereOptions;
   attributes?: FindAttributeOptions;
@@ -59,12 +61,44 @@ export interface StatsTransactionsResult {
   refundPairs: CategoryRefundPair[];
 }
 
-const moneyMovementWhere: WhereOptions = {
+export const moneyMovementWhere: WhereOptions = {
   [Op.or]: [
     { transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer },
     { transferNature: TRANSACTION_TRANSFER_NATURE.transfer_to_loan, transactionType: TRANSACTION_TYPES.expense },
   ],
 };
+
+/**
+ * Drops a row when any live member of its refund group is flagged. Each check correlates on an
+ * indexed column; a single IN/UNION form plans as an anti join over every flagged row DB-wide.
+ */
+export const excludeFromStatsSql = ({ alias = '"Transactions"' }: { alias?: string } = {}): string => `(
+  ${alias}."excludeFromStats" = false
+  AND NOT EXISTS (
+    SELECT 1 FROM "RefundTransactions" r
+    JOIN "Transactions" g ON g."id" = r."originalTxId"
+    WHERE r."refundTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM "RefundTransactions" r
+    JOIN "Transactions" g ON g."id" = r."refundTxId"
+    WHERE r."originalTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM "RefundTransactions" own
+    JOIN "RefundTransactions" sib ON sib."originalTxId" = own."originalTxId"
+    JOIN "Transactions" g ON g."id" = sib."refundTxId"
+    WHERE own."refundTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM "RefundTransactions" own
+    JOIN "RefundTransactions" sib ON sib."refundTxId" = own."refundTxId"
+    JOIN "Transactions" g ON g."id" = sib."originalTxId"
+    WHERE own."originalTxId" = ${alias}."id" AND g."excludeFromStats" AND g."deletedAt" IS NULL
+  )
+)`;
+
+export const excludeFromStatsWhere: WhereOptions = literal(excludeFromStatsSql());
 
 /**
  * A `to` day string is stretched to end-of-day only when `from` bounds the other side; an
@@ -87,11 +121,11 @@ const windowWhere = ({ window }: { window: StatsWindow }): WhereOptions | null =
 };
 
 /**
- * `refunds: 'net'` needs the projection to carry `id`, `refAmount`, `categoryId`,
+ * `refunds: 'net'` needs the projection to carry `id`, `amount`, `refAmount`, `categoryId`,
  * `transactionType`, `time` and `refundLinked` — the pair resolver reads them off the rows.
  */
 export const statsTransactions = async (options: StatsTransactionsOptions): Promise<StatsTransactionsResult> => {
-  const { access, planned, refunds, window, where, attributes, include = [], order } = options;
+  const { access, planned, refunds, transfers = 'exclude', window, where, attributes, include = [], order } = options;
   // Op.and rather than a merged object: a caller's own `time` clause or Op.or must never
   // overwrite (or be overwritten by) the window and refund fragments.
   const timeWhere = windowWhere({ window });
@@ -99,7 +133,8 @@ export const statsTransactions = async (options: StatsTransactionsOptions): Prom
     ...(timeWhere ? [timeWhere] : []),
     ...(refunds === 'exclude-refund-rows' ? [{ refundLinked: false }] : []),
     ...(where ? [where] : []),
-    moneyMovementWhere,
+    ...(transfers === 'exclude' ? [moneyMovementWhere] : []),
+    excludeFromStatsWhere,
   ];
 
   const rows = await findTransactions({

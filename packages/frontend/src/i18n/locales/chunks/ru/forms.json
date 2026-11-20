@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Выберите валюту отображения",
       "displayCurrencyBaseOption": "Базовая валюта ({code})",
       "displayCurrencyDescription": "Стоимость портфеля и статистика конвертируются в эту валюту по текущему обменному курсу.",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Отмена",
       "submitButton": "Сохранить изменения",
       "submitButtonLoading": "Сохранение...",
@@ -128,7 +130,7 @@
       "namePlaceholder": "Название счёта",
       "currencyLabel": "Валюта",
       "currencyPlaceholder": "Выберите валюту",
-      "addCurrencyButton": "Добавить новую валюту +",
+      "addCurrencyButton": "Добавить новую валюту",
       "initialBalanceLabel": "Начальный баланс",
       "initialBalancePlaceholder": "Начальный баланс",
       "initialBalanceHelpLink": "What should I enter?",
@@ -136,6 +138,9 @@
       "accountCategoryPlaceholder": "Выберите категорию счёта",
       "creditLimitLabel": "Кредитный лимит",
       "creditLimitPlaceholder": "Кредитный лимит",
+      "defaultPaymentTypeLabel": "Тип платежа по умолчанию",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Создать",
       "submitButtonLoading": "Создание...",
       "notifications": {
@@ -189,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Введите корректную сумму (не более 2 знаков после запятой)",
-      "mustBePositive": "Сумма должна быть положительной"
+      "mustBePositive": "Сумма должна быть положительной",
+      "httpUrl": "Enter a valid http(s) URL",
+      "maxLength": "Must not exceed {max} characters"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "Исходная валюта",
@@ -300,7 +307,8 @@
         "interestRateRange": "Процентная ставка должна быть от 0 до 99.9999.",
         "termRange": "Срок должен составлять от 1 до 1200 месяцев.",
         "paymentDayRange": "День месяца должен быть от 1 до 31.",
-        "asOfInFuture": "Дата не может быть в будущем"
+        "asOfInFuture": "Дата не может быть в будущем",
+        "startDateInFuture": "Start date can't be in the future"
       },
       "balanceExceedsPrincipalWarning": "Остаток задолженности выше первоначальной суммы кредита — перепроверьте значения."
     }
@@ -324,7 +332,7 @@
     },
     "currencySelect": {
       "yourCurrencies": "Ваши валюты",
-      "otherCurrencies": "Other currencies"
+      "otherCurrencies": "Другие валюты"
     },
     "comboboxAccounts": {
       "allAccounts": "Все счета",
@@ -354,7 +362,7 @@
       "placeholder": "Выберите категории...",
       "searchPlaceholder": "Поиск категорий...",
       "noCategoriesFound": "Категории не найдены",
-      "takenBy": "In {name}"
+      "takenBy": "В {name}"
     },
     "payeeMultiSelect": {
       "label": "Все получатели",
@@ -366,13 +374,13 @@
       "blankOption": "Без получателя"
     },
     "budgetMultiSelect": {
-      "label": "Все бюджеты",
-      "selectedMany": "Выбрано бюджетов: {n}",
-      "searchPlaceholder": "Поиск бюджетов",
-      "noResults": "Бюджеты не найдены",
-      "unknownBudget": "Неизвестный бюджет",
-      "blankOption": "Not in any tracker",
-      "loadError": "Не удалось загрузить бюджеты. Попробуйте снова."
+      "label": "Все трекеры",
+      "selectedMany": "Выбрано {n} трекеров",
+      "searchPlaceholder": "Поиск трекеров",
+      "noResults": "Трекеры не найдены",
+      "unknownBudget": "Неизвестный трекер",
+      "blankOption": "Нет ни в одном трекере",
+      "loadError": "Не удалось загрузить трекеры. Попробуйте снова."
     },
     "payeeSelect": {
       "placeholder": "Выберите получателя",

@@ -1,14 +1,11 @@
 import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
-import { t } from '@i18n/index';
-import { ValidationError } from '@js/errors';
 import RefundTransactions from '@models/refund-transactions.model';
 import TransactionSplits, {
   CreateSplitPayload,
   bulkCreateSplits,
   deleteSplitsForTransaction,
 } from '@models/transaction-splits.model';
-import Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 
@@ -31,10 +28,37 @@ interface ManageSplitsParams {
   transferNature?: string;
 }
 
+const sumSplits = ({ splits }: { splits: SplitInput[] }): Money =>
+  Money.sum(splits.map((split) => split.amount ?? Money.zero()));
+
+/** Takes whatever the splits exceed `total` by off the largest splits first. */
+const trimSplitsToTotal = ({ splits, total }: { splits: SplitInput[]; total: Money }): SplitInput[] => {
+  let excess = sumSplits({ splits }).subtract(total);
+  if (!excess.isPositive()) return splits;
+
+  const trimmed = [...splits];
+  const amountOf = ({ index }: { index: number }) => (splits[index]!.amount ?? Money.zero()).toBig();
+  const largestFirst = splits
+    .map((_, index) => index)
+    .toSorted((a, b) => amountOf({ index: b }).cmp(amountOf({ index: a })));
+
+  for (const index of largestFirst) {
+    const amount = trimmed[index]!.amount;
+    if (!excess.isPositive() || !amount?.isPositive()) break;
+
+    const cut = amount.lessThan(excess) ? amount : excess;
+    trimmed[index] = { ...trimmed[index]!, amount: amount.subtract(cut) };
+    excess = excess.subtract(cut);
+  }
+
+  return trimmed;
+};
+
 /**
  * Creates or updates splits for a transaction.
  * Validates splits, deletes existing ones, and creates new ones.
- * Also handles refund link migration when splits are recreated.
+ * Also handles refund link migration when splits are recreated. Refund caps are not checked
+ * here: callers run `validateRefundLinks` afterwards, in the same DB transaction.
  *
  * Auth is gated by the parent transaction's account (callers run this only after
  * confirming write access). Lookups inside this helper key off `transactionId`
@@ -53,53 +77,41 @@ export const manageSplits = async ({
   transactionTime,
   transferNature,
 }: ManageSplitsParams): Promise<TransactionSplits[]> => {
-  // Splits and the transaction they divide are compared and stored at the transaction currency's
-  // decimals, so the sum check judges exactly the values that end up in the table.
   const transactionDecimals = await getCurrencyDecimals({
     userId: categoryOwnerUserId ?? userId,
     code: transactionCurrencyCode,
   });
   const transactionAmount = requestedTransactionAmount.round(transactionDecimals);
-  const splits = requestedSplits?.map((split) => ({
+  const roundedSplits = requestedSplits?.map((split) => ({
     ...split,
     amount: split.amount?.round(transactionDecimals) ?? split.amount,
   }));
+  // Rounding is monotonic, so any split sum that fits the entered amount also fits once both are
+  // rounded, even when callers pass the amount already rounded. Rounding each split can still push
+  // their sum over, so the excess comes off the splits before the validator checks the rounded sum.
+  const splits =
+    requestedSplits && sumSplits({ splits: requestedSplits }).round(transactionDecimals).lte(transactionAmount)
+      ? trimSplitsToTotal({ splits: roundedSplits!, total: transactionAmount })
+      : roundedSplits;
 
   // Fetch existing splits — keyed by transactionId; userId is creator metadata only.
   const existingSplits = await TransactionSplits.findAll({
     where: { transactionId },
   });
 
-  // Build a map of categoryId -> refund info for existing splits.
-  // `refundIds` holds the RefundTransactions row ids: the old splits get deleted further
-  // down, and the FK is ON DELETE SET NULL, so `splitId` stops identifying these rows.
-  const refundsByCategoryId = new Map<
-    string,
-    {
-      totalRefundedRefAmount: Money;
-      refundIds: string[];
-      refundAmounts: { amount: Money; currencyCode: string }[];
-    }
-  >();
+  // categoryId -> RefundTransactions row ids. The old splits get deleted further down, and
+  // the FK is ON DELETE SET NULL, so `splitId` stops identifying these rows.
+  const refundsByCategoryId = new Map<string, { refundIds: string[] }>();
 
   // Query refunds for each split that exists
   for (const existingSplit of existingSplits) {
     const refunds = await RefundTransactions.findAll({
       where: { splitId: existingSplit.id },
-      include: [{ model: Transactions, as: 'refundTransaction' }],
+      attributes: ['id'],
     });
 
     if (refunds.length > 0) {
-      const totalRefunded = Money.sum(refunds.map((r) => r.refundTransaction.refAmount?.abs() ?? Money.zero()));
-      const refundAmounts = refunds.map((r) => ({
-        amount: r.refundTransaction.amount.abs(),
-        currencyCode: r.refundTransaction.currencyCode,
-      }));
-      refundsByCategoryId.set(existingSplit.categoryId, {
-        totalRefundedRefAmount: totalRefunded,
-        refundIds: refunds.map((r) => r.id),
-        refundAmounts,
-      });
+      refundsByCategoryId.set(existingSplit.categoryId, { refundIds: refunds.map((r) => r.id) });
     }
   }
 
@@ -118,7 +130,7 @@ export const manageSplits = async ({
   await assertValidSplits({
     splits,
     transactionAmount,
-    minSplitAmount: Money.fromDecimal(1).divide(10 ** transactionDecimals),
+    minSplitAmount: Money.fromMinorUnits({ value: 1, decimals: transactionDecimals }),
     categoryOwnerUserId: categoryOwnerUserId ?? userId,
     transferNature: transferNature as Parameters<typeof assertValidSplits>[0]['transferNature'],
   });
@@ -153,19 +165,6 @@ export const manageSplits = async ({
             date: transactionTime,
           });
         }
-      }
-
-      // Validate: if this category had refunds, new refAmount must be >= total refunded
-      const existingRefundInfo = refundsByCategoryId.get(split.categoryId);
-      if (existingRefundInfo && refAmount && refAmount.lessThan(existingRefundInfo.totalRefundedRefAmount)) {
-        // Format refund amounts in their original currencies for user-friendly display
-        const refundDescriptions = existingRefundInfo.refundAmounts.map(
-          (r) => `${r.amount.toNumber().toFixed(2)} ${r.currencyCode}`,
-        );
-        const refundsText = refundDescriptions.join(', ');
-        throw new ValidationError({
-          message: t({ key: 'transactions.splits.cannotReduceBelowRefunded', variables: { refundsText } }),
-        });
       }
 
       return {

@@ -3,7 +3,7 @@
 // month-end clamp-down, and the snap-back guarantee (anchorDay, not the prior
 // clamped day, is always the source of truth for the next month's day).
 
-import { SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
+import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 
 import { calculateNextDueDate } from './calculate-next-due-date';
@@ -148,6 +148,65 @@ describe('calculateNextDueDate', () => {
         anchorDay: 15,
       });
       expect(result).toBe('2027-01-15');
+    });
+  });
+
+  describe('custom frequency', () => {
+    const custom = SUBSCRIPTION_FREQUENCIES.custom;
+
+    it('every 30 days: adds exactly 30 days, across a month end', () => {
+      const result = calculateNextDueDate({
+        currentDueDate: '2026-01-15',
+        frequency: custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+        intervalCount: 30,
+        anchorDay: 15,
+      });
+      expect(result).toBe('2026-02-14');
+    });
+
+    it('every 3 weeks: adds exactly 21 days', () => {
+      const result = calculateNextDueDate({
+        currentDueDate: '2026-12-20',
+        frequency: custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.week,
+        intervalCount: 3,
+        anchorDay: 20,
+      });
+      expect(result).toBe('2027-01-10');
+    });
+
+    it('every 2 months: clamps to Feb 28 and snaps back to the anchor day', () => {
+      const february = calculateNextDueDate({
+        currentDueDate: '2025-12-31',
+        frequency: custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.month,
+        intervalCount: 2,
+        anchorDay: 31,
+      });
+      const april = calculateNextDueDate({
+        currentDueDate: february,
+        frequency: custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.month,
+        intervalCount: 2,
+        anchorDay: 31,
+      });
+      expect([february, april]).toEqual(['2026-02-28', '2026-04-30']);
+    });
+
+    it('every 2 years: Feb 29 anchor lands on the next leap day', () => {
+      const result = calculateNextDueDate({
+        currentDueDate: '2026-02-28',
+        frequency: custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.year,
+        intervalCount: 2,
+        anchorDay: 29,
+      });
+      expect(result).toBe('2028-02-29');
+    });
+
+    it('throws without a step', () => {
+      expect(() => calculateNextDueDate({ currentDueDate: '2026-01-15', frequency: custom, anchorDay: 15 })).toThrow();
     });
   });
 });

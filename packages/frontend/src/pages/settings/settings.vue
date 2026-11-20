@@ -17,20 +17,29 @@
     <nav
       v-if="!isOnChildRoute || !isCompactLayout"
       :class="[
-        'border-border bg-card/50 shrink-0 rounded-lg border backdrop-blur-sm',
-        isTransitionReady && 'transition-all duration-200',
-        isCompactLayout ? 'w-full' : isCollapsed ? 'w-14' : 'w-full lg:w-52',
+        'border-border bg-card dark:bg-card/50 shadow-card shrink-0 rounded-lg border backdrop-blur-sm dark:shadow-none',
+        isTransitionReady && !isResizing && 'transition-all duration-200',
+        isCompactLayout ? 'w-full' : isCollapsed && 'w-14',
         !isCompactLayout && 'sticky top-[calc(var(--header-height)+1rem)] self-start',
       ]"
+      :style="isCompactLayout || isCollapsed ? undefined : { width: `${navWidth}px` }"
     >
+      <ResizeHandle
+        v-if="!isCompactLayout && !isCollapsed"
+        edge="right"
+        :label="$t('settings.navigation.resize')"
+        @start="startResize"
+        @reset="resetWidth"
+      />
       <ScrollArea :class="navMaxHeight" :viewport-class="cn('p-2', navMaxHeight)">
-        <div class="flex flex-col gap-4 overflow-hidden">
+        <div ref="navListRef" class="relative isolate -m-1 flex flex-col gap-4 overflow-hidden p-1">
+          <div v-bind="indicator" />
           <button
             v-if="!isCompactLayout"
             :class="
               cn(
                 'text-muted-foreground flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                'hover:bg-accent hover:text-foreground',
+                'hover:bg-hover hover:text-foreground',
               )
             "
             @click="isCollapsed = !isCollapsed"
@@ -59,15 +68,28 @@
                     :to="tab.to"
                     :class="
                       cn(
-                        'text-muted-foreground flex items-center gap-2 rounded-md px-3 py-2 whitespace-nowrap transition-colors',
-                        'hover:bg-accent hover:text-foreground',
-                        '[&.router-link-active]:bg-accent [&.router-link-active]:text-foreground',
+                        'group text-foreground dark:text-muted-foreground flex items-center gap-2 rounded-md px-3 py-2 whitespace-nowrap transition-colors',
+                        'hover:bg-hover hover:text-foreground',
+                        '[&.router-link-active]:text-foreground [&.router-link-active]:hover:bg-transparent',
                         isCompactLayout ? 'text-sm md:gap-4 md:text-base' : 'text-sm',
                       )
                     "
                   >
-                    <component :is="tab.icon" :class="cn('size-4 shrink-0', isCompactLayout && 'md:size-5')" />
-                    <span :class="['transition-opacity duration-200', isIconOnly ? 'opacity-0' : 'opacity-100']">
+                    <component
+                      :is="tab.icon"
+                      :class="
+                        cn(
+                          'group-[.router-link-active]:text-primary-text size-4 shrink-0',
+                          isCompactLayout && 'md:size-5',
+                        )
+                      "
+                    />
+                    <span
+                      :class="[
+                        'min-w-0 truncate transition-opacity duration-200',
+                        isIconOnly ? 'opacity-0' : 'opacity-100',
+                      ]"
+                    >
                       {{ tab.label }}
                     </span>
                     <NewBadge
@@ -90,14 +112,19 @@
                 rel="noopener noreferrer"
                 :class="
                   cn(
-                    'text-muted-foreground flex items-center gap-2 rounded-md px-3 py-2 whitespace-nowrap transition-colors',
-                    'hover:bg-accent hover:text-foreground',
+                    'text-foreground dark:text-muted-foreground flex items-center gap-2 rounded-md px-3 py-2 whitespace-nowrap transition-colors',
+                    'hover:bg-hover hover:text-foreground',
                     isCompactLayout ? 'text-sm md:gap-4 md:text-base' : 'text-sm',
                   )
                 "
               >
                 <BookOpenIcon :class="cn('size-4 shrink-0', isCompactLayout && 'md:size-5')" />
-                <span :class="['transition-opacity duration-200', isIconOnly ? 'opacity-0' : 'opacity-100']">
+                <span
+                  :class="[
+                    'min-w-0 truncate transition-opacity duration-200',
+                    isIconOnly ? 'opacity-0' : 'opacity-100',
+                  ]"
+                >
                   {{ $t('navigation.helpAndDocs') }}
                 </span>
                 <ExternalLinkIcon v-if="!isIconOnly" class="text-muted-foreground ml-auto size-3" />
@@ -121,12 +148,15 @@
 </template>
 
 <script setup lang="ts">
+import ResizeHandle from '@/components/common/resize-handle.vue';
 import { config } from '@/common/config';
 import BackLink from '@/components/common/back-link.vue';
 import NewBadge from '@/components/common/new-badge.vue';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useAfterMountTransition } from '@/composable/use-after-mount-transition';
+import { SUB_NAV_WIDTH, useResizableWidth } from '@/composable/use-resizable-width';
+import { useSlidingIndicator } from '@/composable/use-sliding-indicator';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
@@ -134,7 +164,6 @@ import { useUserStore } from '@/stores';
 import { useElementSize, useLocalStorage } from '@vueuse/core';
 import {
   BookOpenIcon,
-  CalendarClockIcon,
   ChevronRightIcon,
   CircleDollarSignIcon,
   CreditCardIcon,
@@ -191,7 +220,24 @@ const isCompactLayout = computed(() => containerWidth.value < 920);
 const navMaxHeight = computed(() => (isCompactLayout.value ? '' : 'max-h-[calc(100dvh-var(--header-height)-2rem)]'));
 const isCollapsed = useLocalStorage('settings-sidebar-collapsed', false);
 const isIconOnly = computed(() => isCollapsed.value && !isCompactLayout.value);
+const {
+  width: navWidth,
+  isResizing,
+  startResize,
+  resetWidth,
+} = useResizableWidth({
+  storageKey: 'settings-sidebar-width',
+  ...SUB_NAV_WIDTH,
+  edge: 'right',
+});
 const isTransitionReady = useAfterMountTransition();
+
+const navListRef = ref<HTMLElement | null>(null);
+const { indicator } = useSlidingIndicator({
+  containerRef: navListRef,
+  activeSelector: '.router-link-active',
+  activeKey: () => route.name,
+});
 const showAdminTab = ref(user.value?.isAdmin ?? false);
 
 const isOnChildRoute = computed(() => route.name !== ROUTES_NAMES.settings);
@@ -269,12 +315,6 @@ const workspaceTabs = computed<Tab[]>(() => {
       label: t('settings.navigation.payees'),
       to: { name: ROUTES_NAMES.settingsPayees },
       icon: StoreIcon,
-    },
-    {
-      name: 'subscriptions',
-      label: t('settings.navigation.subscriptions'),
-      to: { name: ROUTES_NAMES.settingsSubscriptions },
-      icon: CalendarClockIcon,
     },
     {
       name: 'accounts',

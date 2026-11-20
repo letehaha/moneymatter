@@ -81,6 +81,24 @@ describe('computeHoldingsValueByDate', () => {
     expect(result.get('2024-05-11')).toBe(0);
   });
 
+  it('floors each holding to a whole unit by default and keeps decimals with floorValues: false', () => {
+    const run = (floorValues?: boolean) =>
+      computeHoldingsValueByDate({
+        uniqueDates: ['2024-05-10'],
+        portfolioIds: ['p1'],
+        transactionsByPortfolio: groupByPortfolio([
+          tx({ category: INVESTMENT_TRANSACTION_CATEGORY.buy, date: '2024-05-09', quantity: 10, refAmount: 1000 }),
+        ]),
+        securitiesById: securityMap(stockSecurity('sec-1')),
+        findPriceForDate: () => 110.55,
+        getExchangeRate: noopRate,
+        floorValues,
+      }).get('2024-05-10');
+
+    expect(run()).toBe(1105);
+    expect(run(false)).toBeCloseTo(1105.5, 6);
+  });
+
   it('values a long position at market price * quantity * rate (floored)', () => {
     // 10 shares bought on day -1 at refAmount 1000; price 110 on day 0; rate 1.
     // Market value = 10 * 110 * 1 = 1100.

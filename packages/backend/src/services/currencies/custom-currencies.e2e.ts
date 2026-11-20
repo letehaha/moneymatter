@@ -162,7 +162,7 @@ describe('Custom currencies', () => {
       ['a code with a symbol character', { ...sat(), code: 'S-T' }],
       ['a code that is too short', { ...sat(), code: 'S' }],
       ['a code that is too long', { ...sat(), code: 'A'.repeat(17) }],
-      ['more than 18 decimals', sat({ decimals: 19 })],
+      ['more than 8 decimals', sat({ decimals: 9 })],
       ['a negative number of decimals', sat({ decimals: -1 })],
       ['a fractional number of decimals', sat({ decimals: 1.5 })],
       ['an empty name', sat({ name: '  ' })],

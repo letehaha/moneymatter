@@ -13,6 +13,16 @@ import { Op, QueryTypes } from 'sequelize';
 
 export type FeatureAccess = 'plan' | 'trial' | 'denied';
 
+export const FEATURE_NOT_IN_PLAN_MESSAGE = 'This feature is not included in your current plan.';
+
+export const hasFeature = ({
+  entitlements,
+  feature,
+}: {
+  entitlements: Pick<Entitlements, 'features'>;
+  feature: Feature;
+}) => entitlements.features.includes(feature);
+
 export const getTrialUsage = async ({ userId }: { userId: number }): Promise<Partial<Record<Feature, number>>> => {
   const rows = await FeatureUsages.findAll({
     where: { userId, feature: { [Op.in]: TRIALABLE_FEATURES } },
@@ -73,7 +83,7 @@ export function getFeatureAccess({
   entitlements: Entitlements;
   feature: Feature;
 }): FeatureAccess {
-  if (entitlements.features.includes(feature)) return 'plan';
+  if (hasFeature({ entitlements, feature })) return 'plan';
 
   const limit = FEATURE_TRIAL_LIMITS[feature];
   if (!limit) return 'denied';

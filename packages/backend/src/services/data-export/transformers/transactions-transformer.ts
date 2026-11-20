@@ -1,4 +1,6 @@
 import { RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
+import type { Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import Categories from '@models/categories.model';
@@ -11,6 +13,8 @@ import TransactionSplits from '@models/transaction-splits.model';
 import TransactionTags from '@models/transaction-tags.model';
 import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
+import { getCategoryPathNames } from '@services/categories/category-hierarchy';
+import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { Op } from 'sequelize';
 
 import type { ExportDateRange, TransactionRow } from '../types';
@@ -19,7 +23,8 @@ import { buildAccountIdsClause, buildDateRangeClause, resolveRelationName } from
 interface CategoryView {
   id: string;
   name: string;
-  parentName: string | null;
+  category: string;
+  subcategory: string;
 }
 
 function deriveExportType({ tx }: { tx: Transactions }): 'income' | 'expense' | 'transfer_in' | 'transfer_out' {
@@ -30,8 +35,9 @@ function deriveExportType({ tx }: { tx: Transactions }): 'income' | 'expense' | 
   return tx.transactionType === TRANSACTION_TYPES.income ? 'income' : 'expense';
 }
 
-function fmtAmount({ value }: { value: number }): string {
-  return value.toFixed(2);
+/** An amount in a text column, written at its currency's decimals like the numeric columns. */
+function fmtAmount({ value, decimals }: { value: Money; decimals: number }): string {
+  return value.toDecimalString(decimals);
 }
 
 /**
@@ -41,9 +47,17 @@ function fmtAmount({ value }: { value: number }): string {
  * `"2025-12-04 Chase Checking -45.20 USD"` tells the reader exactly which other
  * row to find without a lookup table.
  */
-function describeTransaction({ tx, accountName }: { tx: Transactions; accountName: string }): string {
+function describeTransaction({
+  tx,
+  accountName,
+  decimals,
+}: {
+  tx: Transactions;
+  accountName: string;
+  decimals: number;
+}): string {
   const date = tx.time instanceof Date ? tx.time.toISOString().slice(0, 10) : String(tx.time).slice(0, 10);
-  const amount = fmtAmount({ value: tx.amount.toNumber() });
+  const amount = fmtAmount({ value: tx.amount, decimals });
   const signed = tx.transactionType === TRANSACTION_TYPES.income ? amount : `-${amount}`;
   return `${date} ${accountName} ${signed} ${tx.currencyCode}`;
 }
@@ -78,14 +92,17 @@ export async function transformTransactions({
   const categoryIds = [...new Set(transactions.map((t) => t.categoryId).filter((id): id is RecordId => Boolean(id)))];
   const payeeIds = [...new Set(transactions.map((t) => t.payeeId).filter((id): id is RecordId => Boolean(id)))];
 
+  // A member's transactions can sit on an owner's shared account, so names resolve against
+  // every account the user can read; the filter keeps a stray foreign id from leaking a name.
+  const accessibleAccountIds = new Set(await getAccessibleAccountIdsForUser({ userId }));
+  async function findAccountNames({ ids }: { ids: RecordId[] }): Promise<Accounts[]> {
+    const scoped = ids.filter((id) => accessibleAccountIds.has(String(id)));
+    if (!scoped.length) return [];
+    return Accounts.findAll({ where: { id: { [Op.in]: scoped } }, attributes: ['id', 'name'] });
+  }
+
   const [accounts, categories, payees, splits, tagLinks, allTags, refundLinks, subLinks] = await Promise.all([
-    // Scope the account lookup to the current user so a stray cross-user
-    // accountId (legacy data, future cross-account share, malformed row)
-    // cannot leak another user's account name into the export's Account
-    // column. Every other transformer in this module follows the same shape.
-    accountIds.length
-      ? Accounts.findAll({ where: { userId, id: { [Op.in]: accountIds } }, attributes: ['id', 'name'] })
-      : Promise.resolve([] as Accounts[]),
+    findAccountNames({ ids: accountIds }),
     Categories.findAll({ where: { userId }, attributes: ['id', 'name', 'parentId'] }),
     payeeIds.length
       ? Payees.findAll({ where: { userId, id: { [Op.in]: payeeIds } }, attributes: ['id', 'name'] })
@@ -101,16 +118,11 @@ export async function transformTransactions({
   const payeeNameById = new Map(payees.map((p) => [String(p.id), p.name]));
   const tagNameById = new Map(allTags.map((t) => [t.id, t.name]));
 
+  const categoryById = new Map<string, Categories>(categories.map((c) => [c.id, c]));
   const categoryViewById = new Map<string, CategoryView>();
   for (const cat of categories) {
-    categoryViewById.set(cat.id, { id: cat.id, name: cat.name, parentName: null });
-  }
-  for (const cat of categories) {
-    if (cat.parentId) {
-      const view = categoryViewById.get(cat.id);
-      const parent = categoryViewById.get(cat.parentId);
-      if (view && parent) view.parentName = parent.name;
-    }
+    const [root = cat.name, ...rest] = getCategoryPathNames({ categoryId: cat.id, byId: categoryById });
+    categoryViewById.set(cat.id, { id: cat.id, name: cat.name, category: root, subcategory: rest.join(' > ') });
   }
   // Resolve referenced categories that don't belong to the user (e.g. share recipient
   // transactions attributed to an owner-only category). Don't synthesize a fake row
@@ -123,7 +135,7 @@ export async function transformTransactions({
         attributes: ['id', 'name', 'parentId'],
       });
       for (const cat of externalCats) {
-        categoryViewById.set(cat.id, { id: cat.id, name: cat.name, parentName: null });
+        categoryViewById.set(cat.id, { id: cat.id, name: cat.name, category: cat.name, subcategory: '' });
       }
     }
   }
@@ -150,15 +162,15 @@ export async function transformTransactions({
     tagNamesByTxId.set(link.transactionId, list);
   }
 
-  // refundLinks: row { originalTxId, refundTxId }. The refund row needs to point
-  // back at its original; the original row should optionally show "refunded by".
-  // For the export we only fill RefundOf on the refund side – surfacing both
-  // directions doubles the cell noise without adding information.
-  const refundOriginalByRefundId = new Map<string, RecordId>();
+  // RefundOf is filled on the refund side only – surfacing both directions
+  // doubles the cell noise without adding information. A refund can link to
+  // several originals, each covering `amount` of the refund (NULL = all of it).
+  const refundLinksByRefundId = new Map<string, RefundTransactions[]>();
   for (const link of refundLinks) {
-    if (link.refundTxId && link.originalTxId) {
-      refundOriginalByRefundId.set(String(link.refundTxId), link.originalTxId);
-    }
+    if (!link.refundTxId || !link.originalTxId) continue;
+    const list = refundLinksByRefundId.get(String(link.refundTxId)) ?? [];
+    list.push(link);
+    refundLinksByRefundId.set(String(link.refundTxId), list);
   }
 
   // Transfer pairs share a transferId. For a given tx, find the other tx with
@@ -183,8 +195,9 @@ export async function transformTransactions({
       .map(([transferId]) => transferId);
     const missingOriginalIds: RecordId[] = [];
     for (const tx of transactions) {
-      const originalId = refundOriginalByRefundId.get(String(tx.id));
-      if (originalId && !txById.has(originalId)) missingOriginalIds.push(originalId);
+      for (const link of refundLinksByRefundId.get(String(tx.id)) ?? []) {
+        if (!txById.has(link.originalTxId!)) missingOriginalIds.push(link.originalTxId!);
+      }
     }
 
     if (lonelyTransferIds.length || missingOriginalIds.length) {
@@ -216,12 +229,8 @@ export async function transformTransactions({
             .filter((id): id is RecordId => Boolean(id) && !accountNameById.has(String(id))),
         ),
       ];
-      if (extraAccountIds.length) {
-        const extraAccounts = await Accounts.findAll({
-          where: { userId, id: { [Op.in]: extraAccountIds } },
-          attributes: ['id', 'name'],
-        });
-        for (const account of extraAccounts) accountNameById.set(String(account.id), account.name);
+      for (const account of await findAccountNames({ ids: extraAccountIds })) {
+        accountNameById.set(String(account.id), account.name);
       }
     }
   }
@@ -266,6 +275,12 @@ export async function transformTransactions({
         })
       : '';
 
+  const currencyCodes = [...new Set([...txById.values()].map((tx) => tx.currencyCode))];
+  const decimalsByCurrency = new Map(
+    await Promise.all(currencyCodes.map(async (code) => [code, await getCurrencyDecimals({ userId, code })] as const)),
+  );
+  const decimalsOf = ({ tx }: { tx: Transactions }): number => decimalsByCurrency.get(tx.currencyCode)!;
+
   return transactions.map((tx): TransactionRow => {
     const accountName = resolveAccountName({ id: tx.accountId, context: `transaction ${tx.id}` });
     const view = tx.categoryId ? categoryViewById.get(tx.categoryId) : undefined;
@@ -280,8 +295,8 @@ export async function transformTransactions({
       categoryName = resolveCategoryName({ id: tx.categoryId, context: `transaction ${tx.id}` });
       subcategoryName = '';
     } else {
-      categoryName = view.parentName ?? view.name;
-      subcategoryName = view.parentName ? view.name : '';
+      categoryName = view.category;
+      subcategoryName = view.subcategory;
     }
 
     const txSplits = splitsByTxId.get(tx.id) ?? [];
@@ -299,23 +314,29 @@ export async function transformTransactions({
               id: s.categoryId,
               context: `transaction ${tx.id} split ${s.id}`,
             });
-            return `${catName}: ${fmtAmount({ value: s.amount.toNumber() })}`;
+            return `${catName}: ${fmtAmount({ value: s.amount, decimals: decimalsOf({ tx }) })}`;
           })
           .join(' | ')
       : '';
 
-    let refundOf = '';
-    const originalId = refundOriginalByRefundId.get(String(tx.id));
-    if (originalId) {
-      const original = txById.get(originalId);
-      if (original) {
+    const refundOf = (refundLinksByRefundId.get(String(tx.id)) ?? [])
+      .flatMap((link) => {
+        const original = txById.get(link.originalTxId!);
+        if (!original) return [];
         const originalAccountName = resolveAccountName({
           id: original.accountId,
           context: `transaction ${tx.id} refund-of`,
         });
-        refundOf = describeTransaction({ tx: original, accountName: originalAccountName });
-      }
-    }
+        const described = describeTransaction({
+          tx: original,
+          accountName: originalAccountName,
+          decimals: decimalsOf({ tx: original }),
+        });
+        return link.amount
+          ? [`${described} (${fmtAmount({ value: link.amount, decimals: decimalsOf({ tx }) })} ${tx.currencyCode})`]
+          : [described];
+      })
+      .join(' | ');
 
     let linkedTransfer = '';
     if (tx.transferId) {
@@ -325,7 +346,11 @@ export async function transformTransactions({
           id: pair.accountId,
           context: `transaction ${tx.id} transfer-pair`,
         });
-        linkedTransfer = describeTransaction({ tx: pair, accountName: pairAccountName });
+        linkedTransfer = describeTransaction({
+          tx: pair,
+          accountName: pairAccountName,
+          decimals: decimalsOf({ tx: pair }),
+        });
       }
     }
 
@@ -358,6 +383,7 @@ export async function transformTransactions({
       linkedTransfer,
       subscription: subNameByTxId.get(tx.id) ?? '',
       isPlanned: tx.isPlanned,
+      excludeFromStats: tx.excludeFromStats,
     };
   });
 }

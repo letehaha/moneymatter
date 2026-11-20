@@ -26,9 +26,9 @@ import { HttpResponse, http } from 'msw';
 
 import { SyncStatus } from '../sync/sync-status-tracker';
 
-// getExchangeRate pivots through USD and truncates the rate to 5 decimals.
-const EUR_TO_AED = Math.trunc((AED_PER_USD / EUR_PER_USD) * 100_000) / 100_000;
-const EUR_TO_JPY = Math.trunc((JPY_PER_USD / EUR_PER_USD) * 100_000) / 100_000;
+// getExchangeRate pivots through USD and rounds the rate to 12 significant digits.
+const EUR_TO_AED = Number((AED_PER_USD / EUR_PER_USD).toPrecision(12));
+const EUR_TO_JPY = Number((JPY_PER_USD / EUR_PER_USD).toPrecision(12));
 const utcDateDaysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString().split('T')[0]!;
 
 /**
@@ -71,6 +71,46 @@ async function setupActiveConnection(): Promise<{
 }
 
 useSelfHost();
+
+const connectWithMockedCurrency = async ({
+  currency,
+  currencyOverrides,
+}: {
+  currency: string;
+  currencyOverrides?: Record<string, string>;
+}) => {
+  const connectResult = await helpers.bankDataProviders.connectProvider({
+    providerType: BANK_PROVIDER_TYPE.ENABLE_BANKING,
+    credentials: helpers.enablebanking.mockCredentials(),
+    raw: true,
+  });
+  const state = await helpers.enablebanking.getConnectionState(connectResult.connectionId);
+  await helpers.makeRequest({
+    method: 'post',
+    url: '/bank-data-providers/enablebanking/oauth-callback',
+    payload: {
+      connectionId: connectResult.connectionId,
+      code: helpers.enablebanking.mockAuthCode,
+      state,
+    },
+  });
+
+  // Force every fetched account's currency while preserving its stable
+  // identification_hash, so the selected account routes that currency into
+  // the connect path.
+  global.mswMockServer.use(
+    http.get('https://api.enablebanking.com/accounts/:accountId/details', ({ params }) =>
+      HttpResponse.json({ ...getMockedAccountDetails(params.accountId as string), currency }),
+    ),
+  );
+
+  const result = await helpers.bankDataProviders.connectSelectedAccounts({
+    connectionId: connectResult.connectionId,
+    accountExternalIds: [MOCK_IDENTIFICATION_HASH_1],
+    currencyOverrides,
+  });
+  return { connectionId: connectResult.connectionId, result };
+};
 
 describe('Enable Banking Data Provider E2E', () => {
   // Reset mock session counter before each test to ensure predictable behavior
@@ -214,47 +254,13 @@ describe('Enable Banking Data Provider E2E', () => {
   // user must pick one explicitly during connect. Other ISO non-currency codes
   // still reject with 400.
   describe('unsupported account currency', () => {
-    const connectWithMockedCurrency = async (currency: string, currencyOverrides?: Record<string, string>) => {
-      const connectResult = await helpers.bankDataProviders.connectProvider({
-        providerType: BANK_PROVIDER_TYPE.ENABLE_BANKING,
-        credentials: helpers.enablebanking.mockCredentials(),
-        raw: true,
-      });
-      const state = await helpers.enablebanking.getConnectionState(connectResult.connectionId);
-      await helpers.makeRequest({
-        method: 'post',
-        url: '/bank-data-providers/enablebanking/oauth-callback',
-        payload: {
-          connectionId: connectResult.connectionId,
-          code: helpers.enablebanking.mockAuthCode,
-          state,
-        },
-      });
-
-      // Force every fetched account's currency while preserving its stable
-      // identification_hash, so the selected account routes that currency into
-      // the connect path.
-      global.mswMockServer.use(
-        http.get('https://api.enablebanking.com/accounts/:accountId/details', ({ params }) =>
-          HttpResponse.json({ ...getMockedAccountDetails(params.accountId as string), currency }),
-        ),
-      );
-
-      const result = await helpers.bankDataProviders.connectSelectedAccounts({
-        connectionId: connectResult.connectionId,
-        accountExternalIds: [MOCK_IDENTIFICATION_HASH_1],
-        currencyOverrides,
-      });
-      return { connectionId: connectResult.connectionId, result };
-    };
-
     it('treats an empty bank-reported currency as "XXX" and requires an explicit choice', async () => {
-      const { result } = await connectWithMockedCurrency('');
+      const { result } = await connectWithMockedCurrency({ currency: '' });
       expect(result.status).toEqual(ERROR_CODES.ValidationError);
     });
 
     it('rejects "XXX" (no currency) without an explicit currency choice, creating nothing', async () => {
-      const { connectionId, result } = await connectWithMockedCurrency('XXX');
+      const { connectionId, result } = await connectWithMockedCurrency({ currency: 'XXX' });
       expect(result.status).toEqual(ERROR_CODES.ValidationError);
 
       const { connection } = await helpers.bankDataProviders.getConnectionDetails({
@@ -265,8 +271,9 @@ describe('Enable Banking Data Provider E2E', () => {
     });
 
     it('connects a "XXX" (no currency) account with the user-chosen currency', async () => {
-      const { connectionId, result } = await connectWithMockedCurrency('XXX', {
-        [MOCK_IDENTIFICATION_HASH_1]: 'EUR',
+      const { connectionId, result } = await connectWithMockedCurrency({
+        currency: 'XXX',
+        currencyOverrides: { [MOCK_IDENTIFICATION_HASH_1]: 'EUR' },
       });
       expect(result.status).toEqual(200);
 
@@ -283,7 +290,7 @@ describe('Enable Banking Data Provider E2E', () => {
     });
 
     it('rejects an account whose currency is another ISO non-currency (XAU) with a 400, creating nothing', async () => {
-      const { connectionId, result } = await connectWithMockedCurrency('XAU');
+      const { connectionId, result } = await connectWithMockedCurrency({ currency: 'XAU' });
       expect(result.status).toEqual(ERROR_CODES.BadRequest);
 
       // The account-creation transaction rolled back, so nothing is linked.
@@ -292,6 +299,95 @@ describe('Enable Banking Data Provider E2E', () => {
         raw: true,
       });
       expect(connection.accounts.length).toBe(0);
+    });
+  });
+
+  describe('accounts in currencies without two decimals', () => {
+    const connectAccountIn = async ({
+      currency,
+      balance,
+      transactionAmount,
+    }: {
+      currency: string;
+      balance: string;
+      transactionAmount: string;
+    }) => {
+      const today = new Date().toISOString().slice(0, 10);
+      helpers.enablebanking.setFixedTransactions([
+        {
+          entryReference: `precision_${currency}`,
+          amount: transactionAmount,
+          currency,
+          isExpense: true,
+          bookingDate: today,
+          transactionDate: today,
+          balanceAfter: balance,
+        },
+      ]);
+      global.mswMockServer.use(
+        http.get('https://api.enablebanking.com/accounts/:accountId/balances', () =>
+          HttpResponse.json({
+            balances: [{ balance_type: 'ITAV', balance_amount: { amount: balance, currency }, reference_date: today }],
+          }),
+        ),
+      );
+
+      const { connectionId, result } = await connectWithMockedCurrency({ currency });
+      const { syncedAccounts } = helpers.extractResponse(result);
+
+      const accountId = syncedAccounts[0]!.id;
+      const account = await helpers.getAccount({ id: accountId, raw: true });
+      const [transaction] = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+
+      return { connectionId, accountId, account, transaction: transaction! };
+    };
+
+    it('stores a JPY account balance and transaction as whole yen', async () => {
+      const { account, transaction } = await connectAccountIn({
+        currency: 'JPY',
+        balance: '152345',
+        transactionAmount: '1500',
+      });
+
+      expect(account.currencyCode).toBe('JPY');
+      expect(Number(account.currentBalance)).toBe(152345);
+      expect(Number(transaction.amount)).toBe(1500);
+    });
+
+    it('stores a KWD account balance and transaction at 3 decimals and dedups them on re-sync', async () => {
+      const { connectionId, accountId, account, transaction } = await connectAccountIn({
+        currency: 'KWD',
+        balance: '10.567',
+        transactionAmount: '1.234',
+      });
+
+      expect(account.currencyCode).toBe('KWD');
+      expect(Number(account.currentBalance)).toBe(10.567);
+      expect(Number(transaction.amount)).toBe(1.234);
+
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+
+      const transactions = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+      expect(transactions.length).toBe(1);
+      expect(transactions[0]!.id).toBe(transaction.id);
+      expect(Number(transactions[0]!.amount)).toBe(1.234);
+    });
+
+    it('rounds a EUR amount with a third decimal to cents and dedups it on re-sync', async () => {
+      const { connectionId, accountId, transaction } = await connectAccountIn({
+        currency: 'EUR',
+        balance: '987.65',
+        transactionAmount: '12.345',
+      });
+
+      expect(Number(transaction.amount)).toBe(12.35);
+
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+
+      const transactions = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+      expect(transactions.length).toBe(1);
+      expect(transactions[0]!.id).toBe(transaction.id);
+      expect(Number(transactions[0]!.amount)).toBe(12.35);
     });
   });
 
@@ -1899,9 +1995,9 @@ describe('Enable Banking Data Provider E2E', () => {
       ];
 
       // `date` is typed as a Date but the endpoint serializes it as 'yyyy-MM-dd'.
-      const bookingDayCents = ({ balances }: { balances: { date: Date | string; amount: number }[] }) => {
+      const bookingDayBalance = ({ balances }: { balances: { date: Date | string; amount: number }[] }) => {
         const row = balances.find((balance) => String(balance.date) === BOOKING_DATE);
-        return row ? Math.round(row.amount * 100) : null;
+        return row ? row.amount : null;
       };
 
       const connectAccountWithLadder = async ({
@@ -1965,14 +2061,12 @@ describe('Enable Banking Data Provider E2E', () => {
         // Pinned to the value, not the sign: every other row of the day converts to
         // a different figure, and so does an unconverted, inverted or cents-scaled
         // reading of the right one.
-        expect(bookingDayCents({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED * 100);
+        expect(bookingDayBalance({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED);
       });
 
       it('rounds the converted balance to the decimals of a base currency without any', async () => {
-        const jpyUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'JPY' });
-
-        await helpers.asUser({
-          cookies: jpyUser.cookies,
+        await helpers.asNewUserWithBaseCurrency({
+          currencyCode: 'JPY',
           fn: async () => {
             const { balances } = await connectAccountWithLadder();
             const row = balances.find((balance) => String(balance.date) === BOOKING_DATE);
@@ -1997,7 +2091,7 @@ describe('Enable Banking Data Provider E2E', () => {
         // Both rows landed, so a blank day is a refusal to guess rather than a sync
         // that stored nothing.
         expect(storedTransactions).toHaveLength(2);
-        expect(bookingDayCents({ balances })).toBeNull();
+        expect(bookingDayBalance({ balances })).toBeNull();
       });
 
       it('leaves the day blank when a booked row carries no balance at all', async () => {
@@ -2019,7 +2113,7 @@ describe('Enable Banking Data Provider E2E', () => {
         });
 
         expect(storedTransactions).toHaveLength(5);
-        expect(bookingDayCents({ balances })).toBeNull();
+        expect(bookingDayBalance({ balances })).toBeNull();
       });
 
       it('ignores a pending row, whose balance is available rather than booked', async () => {
@@ -2043,7 +2137,7 @@ describe('Enable Banking Data Provider E2E', () => {
         // The pending row is stored; it just has no say in the booked ladder. Were
         // it counted, the day would gain a second candidate and resolve to nothing.
         expect(storedTransactions).toHaveLength(5);
-        expect(bookingDayCents({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED * 100);
+        expect(bookingDayBalance({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED);
       });
 
       it('resolves a booking day whose rows arrive across two syncs', async () => {
@@ -2065,7 +2159,7 @@ describe('Enable Banking Data Provider E2E', () => {
         const { balances, storedTransactions } = await readLadderState({ accountId });
 
         expect(storedTransactions).toHaveLength(4);
-        expect(bookingDayCents({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED * 100);
+        expect(bookingDayBalance({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED);
       });
     });
   });
@@ -2661,7 +2755,7 @@ describe('Enable Banking Data Provider E2E', () => {
         url: '/bank-data-providers/sync/status',
       });
       expect(status.body.response.connectionsNeedingReauth).toEqual(
-        expect.arrayContaining([expect.objectContaining({ connectionId })]),
+        expect.arrayContaining([expect.objectContaining({ connectionId, bankLogoDomain: 'nordea.fi' })]),
       );
     });
 
@@ -3079,6 +3173,47 @@ describe('Enable Banking Data Provider E2E', () => {
 
       const account = await helpers.getAccount({ id: accountId, raw: true });
       expect(account.currentBalance).toBe(1523.45);
+    });
+  });
+
+  describe('Negative balance on an account that cannot be overdrawn', () => {
+    const mockBank = ({ cashAccountType, creditLimit }: { cashAccountType: string; creditLimit?: string }) =>
+      global.mswMockServer.use(
+        http.get('https://api.enablebanking.com/accounts/:accountId/details', ({ params }) =>
+          HttpResponse.json({
+            ...getMockedAccountDetails(params.accountId as string),
+            cash_account_type: cashAccountType,
+            ...(creditLimit && { credit_limit: { amount: creditLimit, currency: 'EUR' } }),
+          }),
+        ),
+        http.get('https://api.enablebanking.com/accounts/:accountId/balances', () =>
+          HttpResponse.json({
+            balances: [{ balance_type: 'ITAV', balance_amount: { amount: '-1523.45', currency: 'EUR' } }],
+          }),
+        ),
+      );
+
+    it('shows a savings account as positive on link and after sync', async () => {
+      mockBank({ cashAccountType: 'SVGS' });
+      const { connectionId, accountId } = await setupActiveConnection();
+
+      expect((await helpers.getAccount({ id: accountId, raw: true })).currentBalance).toBe(1523.45);
+
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+      expect((await helpers.getAccount({ id: accountId, raw: true })).currentBalance).toBe(1523.45);
+    });
+
+    it.each([
+      ['an overdrawn current account', { cashAccountType: 'CACC' }],
+      ['a savings account with a credit line', { cashAccountType: 'SVGS', creditLimit: '5000.00' }],
+    ])('keeps %s negative', async (_, bank) => {
+      mockBank(bank);
+      const { connectionId, accountId } = await setupActiveConnection();
+
+      expect((await helpers.getAccount({ id: accountId, raw: true })).currentBalance).toBe(-1523.45);
+
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+      expect((await helpers.getAccount({ id: accountId, raw: true })).currentBalance).toBe(-1523.45);
     });
   });
 });

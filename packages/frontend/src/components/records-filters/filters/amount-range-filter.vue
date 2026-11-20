@@ -10,6 +10,7 @@
           ? $t('transactions.filters.amountRange.compactFrom')
           : $t('transactions.filters.amountRange.placeholderFrom')
       "
+      :size="size"
       :class="joined ? 'flex-1 rounded-r-none border-r-0' : 'flex-1'"
       @update:model-value="$emit('update:amount-gte', $event)"
     />
@@ -23,6 +24,7 @@
           ? $t('transactions.filters.amountRange.compactTo')
           : $t('transactions.filters.amountRange.placeholderTo')
       "
+      :size="size"
       :class="joined ? 'flex-1 rounded-none border-r-0' : 'flex-1'"
       @update:model-value="$emit('update:amount-lte', $event)"
     />
@@ -31,6 +33,8 @@
 
 <script lang="ts" setup>
 import InputField from '@/components/fields/input-field.vue';
+import { type ControlSize } from '@/components/lib/ui/control-size';
+import { type PropType } from 'vue';
 
 defineProps({
   amountGte: {
@@ -55,6 +59,9 @@ defineProps({
   joined: {
     type: Boolean,
     default: false,
+  },
+  size: {
+    type: String as PropType<ControlSize>,
   },
 });
 

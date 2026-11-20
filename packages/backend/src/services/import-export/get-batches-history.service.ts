@@ -2,7 +2,8 @@ import { type ImportBatchSummary, type ImportBatchesHistoryResponse, type Import
 import ImportBatchAccountEffects from '@models/import-batch-account-effects.model';
 import ImportBatches from '@models/import-batches.model';
 import { findTransactions } from '@models/transactions-query';
-import { col, fn, literal } from 'sequelize';
+import { trashedWhere } from '@models/transactions-query/deletion-where';
+import { Op, col, fn, literal } from 'sequelize';
 
 const BATCH_ID_EXPR = `"Transactions"."externalData"->'importDetails'->>'batchId'`;
 const SOURCE_EXPR = `"Transactions"."externalData"->'importDetails'->>'source'`;
@@ -35,11 +36,12 @@ export async function listBatchesHistory({
   const [groups, batches] = await Promise.all([
     findTransactions({
       // Same row set undo deletes, so `transactionCount` matches its `deletedCount`:
-      // no planned rows (imports never write them), adjustments and transfer legs kept.
+      // no planned rows (imports never write them), adjustments, transfer legs and trashed rows kept.
       planned: 'exclude',
       access: { creator: userId },
       balanceAdjustments: 'include',
-      where: literal(`${BATCH_ID_EXPR} IS NOT NULL`),
+      paranoid: false,
+      where: { [Op.and]: [literal(`${BATCH_ID_EXPR} IS NOT NULL`), { [Op.or]: [{ deletedAt: null }, trashedWhere] }] },
       completeness: 'all',
       attributes: [
         [literal(BATCH_ID_EXPR), 'batchId'],

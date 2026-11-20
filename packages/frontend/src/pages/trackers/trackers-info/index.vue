@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { loadTrackerById } from '@/api/trackers';
+import { loadTrackerById, syncTrackerRules } from '@/api/trackers';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import ResourceNotFound from '@/components/common/resource-not-found.vue';
 import { useNotificationCenter } from '@/components/notification-center';
-import { isNotFoundError } from '@/js/errors';
+import { ApiErrorResponseError, isNotFoundError } from '@/js/errors';
+import { captureException } from '@/lib/sentry';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useQuery } from '@tanstack/vue-query';
 import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
+import { useInvalidateTracker } from '../components/use-tracker-actions';
 import TrackerDetailSkeleton from './tracker-detail-skeleton.vue';
 import TrackerDetails from './tracker-details.vue';
 
@@ -31,6 +33,24 @@ const {
 });
 
 const isNotFound = computed(() => isError.value && isNotFoundError(error.value));
+
+// The page's other queries load in parallel, so rules sync on its own and refetch only when links changed.
+const invalidateTracker = useInvalidateTracker();
+watch(
+  () => (trackerItem.value?.rulesEnabled ? trackerItem.value.id : null),
+  async (trackerId) => {
+    if (!trackerId) return;
+    try {
+      const { added, removed } = await syncTrackerRules({ trackerId });
+      if (added > 0 || removed > 0) await invalidateTracker({ trackerId });
+    } catch (syncError) {
+      if (!(syncError instanceof ApiErrorResponseError)) {
+        captureException({ error: syncError, context: { scope: 'tracker:rules-sync', trackerId } });
+      }
+    }
+  },
+  { immediate: true },
+);
 
 watch(
   error,

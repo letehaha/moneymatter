@@ -8,25 +8,31 @@
     "allTransactions": "Все транзакции",
     "transactions": "Транзакции",
     "transactionGroups": "Группы",
+    "trash": "Корзина",
     "analytics": "Аналитика",
     "optimizations": "Оптимизации",
     "automations": "Автоматизации",
     "accountDetails": "Сведения о счёте",
-    "helpAndDocs": "Help & docs",
+    "helpAndDocs": "Помощь и документация",
+    "community": "Сообщество",
     "logout": "Выйти",
-    "appVersion": "App version {version}",
+    "appVersion": "Версия приложения {version}",
+    "updateAvailable": "Доступно обновление",
+    "updateToVersion": "Обновление · {version}",
     "settings": "Настройки",
     "planned": {
       "planned": "Запланированные",
       "subscriptions": "Регулярные платежи",
-      "budgets": "Бюджеты"
+      "budgets": "Бюджеты",
+      "goals": "Цели"
     },
     "venture": "Венчурные инвестиции",
-    "budget": "Budget"
+    "budget": "Бюджет"
   },
   "sidebar": {
-    "collapse": "Collapse sidebar",
-    "expand": "Expand sidebar",
+    "collapse": "Свернуть панель",
+    "expand": "Развернуть панель",
+    "resize": "Изменить размер панели",
     "settings": {
       "title": "Настройки",
       "sections": {
@@ -107,7 +113,7 @@
         "other": "Другое"
       },
       "docsHint": "Not sure how something works? Check the {link} first.",
-      "docsHintLink": "docs",
+      "docsHintLink": "документация",
       "messageLabel": "Ваш отзыв",
       "messagePlaceholder": "Что произошло или что вы хотели бы увидеть?",
       "messageRequired": "Перед отправкой напишите сообщение.",
@@ -115,6 +121,10 @@
       "thanks": "Спасибо, мы читаем каждое сообщение.",
       "unavailable": "Отправка сейчас недоступна. Используйте доску ниже.",
       "or": "или",
+      "reddit": {
+        "title": "Ask the community on Reddit",
+        "description": "Get help from other users, share how you set things up, and follow updates."
+      },
       "board": {
         "title": "Опубликовать на публичной доске",
         "description": "Голосуйте за идеи других пользователей, смотрите, что уже запланировано, и получайте ответы на свои предложения."

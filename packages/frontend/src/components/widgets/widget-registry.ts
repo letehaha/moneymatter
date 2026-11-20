@@ -69,6 +69,19 @@ export const WIDGET_REGISTRY: Record<string, WidgetDefinition> = {
     component: () => import('@/components/widgets/expenses-structure/index.vue'),
     needsPeriod: true,
   },
+  'tag-analysis': {
+    id: 'tag-analysis',
+    name: 'dashboard.widgets.registry.tagAnalysis.name',
+    description: 'dashboard.widgets.registry.tagAnalysis.description',
+    defaultColSpan: 2,
+    defaultRowSpan: 1,
+    allowedSizes: [
+      { colSpan: 1, rowSpan: 1, label: '1×1' },
+      { colSpan: 2, rowSpan: 1, label: '2×1' },
+    ],
+    component: () => import('@/components/widgets/tag-analysis/index.vue'),
+    needsPeriod: true,
+  },
   'latest-records': {
     id: 'latest-records',
     name: 'dashboard.widgets.registry.latestRecords.name',
@@ -81,17 +94,6 @@ export const WIDGET_REGISTRY: Record<string, WidgetDefinition> = {
     ],
     component: () => import('@/components/widgets/latest-records.vue'),
     needsPeriod: false,
-    configOptions: [
-      {
-        key: 'includeScheduled',
-        label: 'widgets.latestRecords.config.includeScheduled.label',
-        defaultValue: 'true',
-        choices: [
-          { value: 'true', label: 'widgets.latestRecords.config.includeScheduled.on' },
-          { value: 'false', label: 'widgets.latestRecords.config.includeScheduled.off' },
-        ],
-      },
-    ],
   },
   'category-spending-tracker': {
     id: 'category-spending-tracker',
@@ -241,6 +243,24 @@ export const WIDGET_REGISTRY: Record<string, WidgetDefinition> = {
       { colSpan: 1, rowSpan: 2, label: '1×2' },
     ],
     component: () => import('@/components/widgets/trackers-widget/index.vue'),
+    needsPeriod: false,
+  },
+  goals: {
+    id: 'goals',
+    name: 'dashboard.widgets.registry.goals.name',
+    description: 'dashboard.widgets.registry.goals.description',
+    defaultColSpan: 1,
+    defaultRowSpan: 1,
+    allowedSizes: [
+      { colSpan: 1, rowSpan: 1, label: '1×1' },
+      { colSpan: 1, rowSpan: 2, label: '1×2' },
+      { colSpan: 2, rowSpan: 1, label: '2×1' },
+    ],
+    // Status and timing copy comes from the goals page chunk.
+    component: () =>
+      Promise.all([import('@/components/widgets/goals-widget/index.vue'), ensureChunkLoaded('pages/goals')]).then(
+        ([component]) => component,
+      ),
     needsPeriod: false,
   },
   [FIRE_WIDGET_ID]: {

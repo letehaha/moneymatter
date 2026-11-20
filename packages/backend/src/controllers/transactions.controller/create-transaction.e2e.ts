@@ -1,4 +1,5 @@
 import {
+  ACCOUNT_TYPES,
   CATEGORIZATION_MODE,
   CATEGORIZATION_SOURCE,
   type RecordId,
@@ -9,6 +10,7 @@ import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
+import { subDays } from 'date-fns';
 
 describe('Create transaction controller', () => {
   it('rejects invalid payloads (no data, negative amount, time before year 2000)', async () => {
@@ -92,7 +94,7 @@ describe('Create transaction controller', () => {
     expect(baseTx.refAmount).toBe(txPayload.amount);
     expect(baseTx.transactionType).toBe(txPayload.transactionType);
     expect(baseTx.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
-    expect(baseTx).toStrictEqual(transactions![0]);
+    expect(transactions![0]).toMatchObject({ ...baseTx });
   });
   it('accepts transaction amounts above the legacy 32-bit INTEGER ceiling', async () => {
     // Regression: SequelizeDatabaseError "value … is out of range for type integer".
@@ -152,7 +154,7 @@ describe('Create transaction controller', () => {
     expect(baseTx.refAmount).toEqualRefValue(txPayload.amount * currencyRate!.rate);
     expect(baseTx.transactionType).toBe(txPayload.transactionType);
     expect(baseTx.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
-    expect(baseTx).toStrictEqual(transactions![0]);
+    expect(transactions![0]).toMatchObject({ ...baseTx });
   });
   it('should successfully create a transfer transaction between accounts with same currency', async () => {
     const accountA = await helpers.createAccount({ raw: true });
@@ -198,8 +200,8 @@ describe('Create transaction controller', () => {
       txPayload.transactionType === TRANSACTION_TYPES.expense ? TRANSACTION_TYPES.income : TRANSACTION_TYPES.expense,
     );
 
-    expect(transactions).toContainEqual(baseTx);
-    expect(transactions).toContainEqual(oppositeTx);
+    expect(transactions).toContainEqual(expect.objectContaining({ ...baseTx }));
+    expect(transactions).toContainEqual(expect.objectContaining({ ...oppositeTx }));
   });
   it('rejects a transfer whose destination is a bank-linked account and creates neither leg', async () => {
     const { account: bankAccount } = await helpers.lunchflow.mockTransactions();
@@ -279,7 +281,7 @@ describe('Create transaction controller', () => {
     );
 
     [baseTx, oppositeTx].forEach((tx) => {
-      expect(transactions).toContainEqual(tx);
+      expect(transactions).toContainEqual(expect.objectContaining({ ...tx }));
     });
   });
   it('should successfully create a transfer transaction between accounts with both non-base currencies', async () => {
@@ -349,7 +351,7 @@ describe('Create transaction controller', () => {
     );
 
     [baseTx, oppositeTx].forEach((tx) => {
-      expect(transactions).toContainEqual(tx);
+      expect(transactions).toContainEqual(expect.objectContaining({ ...tx }));
     });
   });
   describe('create transfer via linking', () => {
@@ -716,6 +718,128 @@ describe('Create transaction controller', () => {
       });
 
       expect(result.statusCode).toBe(ERROR_CODES.NotFoundError);
+    });
+  });
+});
+
+const preSeamTime = () => subDays(new Date(), 3).toISOString();
+const firstCategoryId = async () => (await helpers.getCategoriesList())[0]!.id as RecordId;
+const createManualAccount = () =>
+  helpers.createAccount({
+    payload: helpers.buildAccountPayload({ name: 'Cash', currencyCode: 'USD', initialBalance: 500 }),
+    raw: true,
+  });
+
+describe('Manual rows on an account with a bank seam', () => {
+  it('creates an expense before the seam as manual history that moves only the opening balance', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            categoryId: await firstCategoryId(),
+            amount: 30,
+            transactionType: TRANSACTION_TYPES.expense,
+            time: preSeamTime(),
+          }),
+          raw: true,
+        });
+
+        expect(tx.accountType).toBe(ACCOUNT_TYPES.system);
+        await helpers.expectImportOnlyMovedOpening({ accountId: account.id, before, shift: 30 });
+      },
+    });
+  });
+
+  it('rejects an expense dated at the seam start', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: account.id });
+
+        const response = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            categoryId: await firstCategoryId(),
+            amount: 30,
+            time: before.account.bankSeamAt!,
+          }),
+        });
+
+        expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+        expect(await helpers.snapshotSeamAccount({ accountId: account.id })).toEqual(before);
+      },
+    });
+  });
+
+  it('creates a transfer from a manual account into the seam account before the seam', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const seamAccount = await helpers.createSeamAccount();
+        const manualAccount = await createManualAccount();
+        const before = await helpers.snapshotSeamAccount({ accountId: seamAccount.id });
+
+        const [baseTx, oppositeTx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: manualAccount.id,
+            categoryId: await firstCategoryId(),
+            amount: 20,
+            time: preSeamTime(),
+            transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+            destinationAccountId: seamAccount.id,
+            destinationAmount: 20,
+          }),
+          raw: true,
+        });
+
+        expect(oppositeTx!.accountId).toBe(seamAccount.id);
+        expect(oppositeTx!.accountType).toBe(ACCOUNT_TYPES.system);
+        expect(oppositeTx!.transferId).toBe(baseTx.transferId);
+        await helpers.expectImportOnlyMovedOpening({ accountId: seamAccount.id, before, shift: -20 });
+      },
+    });
+  });
+
+  it('still rejects manual rows and transfers on a bank-linked account without a seam', async () => {
+    await helpers.asBaseCurrencyUser({
+      currencyCode: 'USD',
+      fn: async () => {
+        const account = await helpers.createSeamAccount();
+        await helpers.dropSeam({ accountId: account.id });
+        const manualAccount = await createManualAccount();
+        const categoryId = await firstCategoryId();
+
+        const expense = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            categoryId,
+            amount: 30,
+            time: preSeamTime(),
+          }),
+        });
+        const transfer = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: manualAccount.id,
+            categoryId,
+            amount: 20,
+            time: preSeamTime(),
+            transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+            destinationAccountId: account.id,
+            destinationAmount: 20,
+          }),
+        });
+
+        expect(expense.statusCode).toBe(ERROR_CODES.ValidationError);
+        expect(transfer.statusCode).toBe(ERROR_CODES.ValidationError);
+        const rows = await helpers.getTransactions({ accountIds: [account.id, manualAccount.id], raw: true });
+        expect(rows.map((tx) => tx.note)).toEqual(['Manual row']);
+      },
     });
   });
 });

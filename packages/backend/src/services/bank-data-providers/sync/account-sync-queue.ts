@@ -5,6 +5,7 @@ import { logger } from '@js/utils/logger';
 import { SentryTraceData, withQueueProcessSpan, withQueuePublishSpan } from '@js/utils/sentry';
 import { Job, Queue, Worker } from 'bullmq';
 
+import { AccountUnlinkedDuringSyncError } from '../base-provider';
 import { syncTransactionsForAccount, withAccountSyncLock } from '../connection/sync-transactions-for-account';
 import { bankProviderRegistry } from '../registry';
 import { SyncStatus, setAccountsSyncStatus } from './sync-status-tracker';
@@ -90,6 +91,8 @@ async function processAccountSync({
 
     await syncTransactionsForAccount({ connectionId, userId, accountId });
   } catch (error) {
+    // The sync already logged it and marked the account COMPLETED.
+    if (error instanceof AccountUnlinkedDuringSyncError) return;
     // LockedError is not a job failure to retry, but the accounts must not stay SYNCING forever.
     const message =
       error instanceof LockedError ? 'A sync for this account is already running.' : (error as Error).message;

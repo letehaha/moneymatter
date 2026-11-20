@@ -1,0 +1,20 @@
+[
+  {
+    "id": "01a1cf52-7c14-74ad-b633-79dd6b3d26d6",
+    "lineId": "01a1cf52-7c13-7052-aef7-a8b1a12d145a",
+    "categoryId": "01a1cf52-7bbe-7396-b489-d4c15cfad9ef",
+    "fromDate": "2026-10-01",
+    "untilDate": null,
+    "createdAt": "2026-11-12T10:34:11.860Z",
+    "updatedAt": "2026-11-12T10:34:11.860Z"
+  },
+  {
+    "id": "01a1cf52-7c22-725d-a6ef-c7a39fd0ca63",
+    "lineId": "01a1cf52-7c21-70ca-b7e8-9be45e3879ec",
+    "categoryId": "01a1cf52-7bb3-733f-917b-24c01ef7ad0f",
+    "fromDate": "2026-10-01",
+    "untilDate": null,
+    "createdAt": "2026-11-12T10:34:11.874Z",
+    "updatedAt": "2026-11-12T10:34:11.874Z"
+  }
+]

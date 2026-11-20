@@ -1,8 +1,20 @@
-import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { type RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
+import { endOfDay, startOfDay, subDays, subMonths } from 'date-fns';
+
+// 50.00 sits inside its own ±5000-cent recommendation window, so every row is a candidate by amount.
+const createFiftyOf =
+  ({ accountId, transactionType }: { accountId: RecordId; transactionType: TRANSACTION_TYPES }) =>
+  (params: { amount?: number; time?: string; refundForTxId?: RecordId } = {}) =>
+    helpers
+      .createTransaction({
+        payload: { ...helpers.buildTransactionPayload({ accountId, amount: 50, transactionType }), ...params },
+        raw: true,
+      })
+      .then(([tx]) => tx);
 
 describe('getRefundRecommendations', () => {
   describe('success cases', () => {
@@ -108,6 +120,44 @@ describe('getRefundRecommendations', () => {
 
         expect(response.some((tx) => tx.id === incomeInRange.id)).toBe(true);
         expect(response.some((tx) => tx.id === incomeOutOfRange.id)).toBe(false);
+      });
+    });
+
+    describe('date window', () => {
+      it('only recommends candidates from the last 6 months', async () => {
+        const account = await helpers.createAccount({ raw: true });
+
+        const [expenseTx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 50,
+            transactionType: TRANSACTION_TYPES.expense,
+          }),
+          raw: true,
+        });
+        const [recentIncome] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 50,
+            transactionType: TRANSACTION_TYPES.income,
+            time: subMonths(new Date(), 3).toISOString(),
+          }),
+          raw: true,
+        });
+        const [staleIncome] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 50,
+            transactionType: TRANSACTION_TYPES.income,
+            time: subMonths(new Date(), 8).toISOString(),
+          }),
+          raw: true,
+        });
+
+        const response = await helpers.getRefundRecommendations({ transactionId: expenseTx.id, raw: true });
+
+        expect(response.some((tx) => tx.id === recentIncome.id)).toBe(true);
+        expect(response.some((tx) => tx.id === staleIncome.id)).toBe(false);
       });
     });
 
@@ -313,6 +363,104 @@ describe('getRefundRecommendations', () => {
         expect(ids).toContain(ownRefundIncome.id);
         expect(ids).not.toContain(otherRefundIncome.id);
       });
+
+      it('refundRole original drops rows already refunded and rows refunding another purchase', async () => {
+        const account = await helpers.createAccount({ raw: true });
+        const income = createFiftyOf({ accountId: account.id, transactionType: TRANSACTION_TYPES.income });
+        const expense = createFiftyOf({ accountId: account.id, transactionType: TRANSACTION_TYPES.expense });
+
+        const currentExpense = await expense();
+        const ownRefundIncome = await income({ amount: 20, refundForTxId: currentExpense.id });
+        const refundedIncome = await income();
+        await expense({ amount: 20, refundForTxId: refundedIncome.id });
+        const otherExpense = await expense();
+        const multiRefundIncome = await income({ refundForTxId: otherExpense.id });
+        const plainIncome = await income();
+        const sharedRefundIncome = await income();
+        const sharedWithExpense = await expense();
+        const unrelatedExpense = await expense();
+        await helpers.createSingleRefund(
+          { originalTxId: currentExpense.id, refundTxId: sharedRefundIncome.id, amount: 20 },
+          true,
+        );
+        await helpers.createSingleRefund(
+          { originalTxId: sharedWithExpense.id, refundTxId: sharedRefundIncome.id, amount: 30 },
+          true,
+        );
+
+        const response = await helpers.getRefundRecommendations({
+          transactionId: currentExpense.id,
+          refundRole: 'original',
+          raw: true,
+        });
+
+        const ids = response.map((tx) => tx.id);
+        expect(ids).toContain(plainIncome.id);
+        expect(ids).toContain(ownRefundIncome.id);
+        expect(ids).toContain(sharedRefundIncome.id);
+        expect(ids).not.toContain(multiRefundIncome.id);
+        expect(ids).not.toContain(refundedIncome.id);
+
+        const unrelatedResponse = await helpers.getRefundRecommendations({
+          transactionId: unrelatedExpense.id,
+          refundRole: 'original',
+          raw: true,
+        });
+
+        const unrelatedIds = unrelatedResponse.map((tx) => tx.id);
+        expect(unrelatedIds).toContain(plainIncome.id);
+        expect(unrelatedIds).not.toContain(sharedRefundIncome.id);
+        expect(unrelatedIds).not.toContain(ownRefundIncome.id);
+      });
+
+      it('pivot bounds decide the role per row, for a saved transaction and for form data alike', async () => {
+        const account = await helpers.createAccount({ raw: true });
+        const income = createFiftyOf({ accountId: account.id, transactionType: TRANSACTION_TYPES.income });
+        const expense = createFiftyOf({ accountId: account.id, transactionType: TRANSACTION_TYPES.expense });
+
+        // All inside the 6-month recommendation window.
+        const pivotDay = subDays(new Date(), 10);
+        const before = subDays(new Date(), 20).toISOString();
+        const after = subDays(new Date(), 5).toISOString();
+        const pivot = {
+          refundPivotFrom: startOfDay(pivotDay).toISOString(),
+          refundPivotTo: endOfDay(pivotDay).toISOString(),
+        };
+
+        const currentExpense = await expense({ time: pivotDay.toISOString() });
+
+        const expenseA = await expense({ time: before });
+        const refundBefore = await income({ time: before, refundForTxId: expenseA.id });
+        const refundedBefore = await income({ time: before });
+        await expense({ amount: 20, time: before, refundForTxId: refundedBefore.id });
+
+        const refundedAfter = await income({ time: after });
+        await expense({ amount: 20, time: after, refundForTxId: refundedAfter.id });
+        const expenseB = await expense({ time: before });
+        const multiRefundAfter = await income({ time: after, refundForTxId: expenseB.id });
+
+        const forSaved = await helpers.getRefundRecommendations({
+          transactionId: currentExpense.id,
+          ...pivot,
+          raw: true,
+        });
+        const forFormData = await helpers.getRefundRecommendations({
+          transactionType: TRANSACTION_TYPES.expense,
+          originAmount: 50,
+          accountId: account.id,
+          ...pivot,
+          raw: true,
+        });
+
+        for (const response of [forSaved, forFormData]) {
+          const ids = response.map((tx) => tx.id);
+          expect(response.every((tx) => tx.transactionType === TRANSACTION_TYPES.income)).toBe(true);
+          expect(ids).toContain(refundedBefore.id);
+          expect(ids).toContain(multiRefundAfter.id);
+          expect(ids).not.toContain(refundBefore.id);
+          expect(ids).not.toContain(refundedAfter.id);
+        }
+      });
     });
 
     describe('result limiting', () => {
@@ -387,6 +535,37 @@ describe('getRefundRecommendations', () => {
 
         expect(unknownAccount).toEqual([]);
       });
+
+      it("returns an empty array for another user's transaction or account", async () => {
+        const otherUser = await helpers.provisionSecondUserWithBaseCurrency();
+        const foreign = await helpers.asUser({
+          cookies: otherUser.cookies,
+          fn: async () => {
+            const account = await helpers.createAccount({ raw: true });
+            const category = await helpers.addCustomCategory({ name: 'Other', color: '#0000FF', raw: true });
+            const [expense] = await helpers.createTransaction({
+              payload: helpers.buildTransactionPayload({
+                accountId: account.id,
+                categoryId: category.id,
+                amount: 50,
+                transactionType: TRANSACTION_TYPES.expense,
+              }),
+              raw: true,
+            });
+            return { accountId: account.id, transactionId: expense.id };
+          },
+        });
+
+        expect(await helpers.getRefundRecommendations({ transactionId: foreign.transactionId, raw: true })).toEqual([]);
+        expect(
+          await helpers.getRefundRecommendations({
+            transactionType: TRANSACTION_TYPES.expense,
+            originAmount: 50,
+            accountId: foreign.accountId,
+            raw: true,
+          }),
+        ).toEqual([]);
+      });
     });
 
     describe('splits inclusion', () => {
@@ -456,6 +635,24 @@ describe('getRefundRecommendations', () => {
         {
           name: 'invalid accountId',
           params: { transactionType: TRANSACTION_TYPES.expense, originAmount: 50, accountId: 'not-a-uuid' },
+        },
+        {
+          name: 'refundPivotFrom without refundPivotTo',
+          params: {
+            transactionType: TRANSACTION_TYPES.expense,
+            originAmount: 50,
+            accountId: account.id,
+            refundPivotFrom: '2024-06-15T00:00:00.000Z',
+          },
+        },
+        {
+          name: 'invalid refundRole',
+          params: {
+            transactionType: TRANSACTION_TYPES.expense,
+            originAmount: 50,
+            accountId: account.id,
+            refundRole: 'both' as 'refund',
+          },
         },
       ];
 

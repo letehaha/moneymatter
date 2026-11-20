@@ -40,6 +40,15 @@ UxaMcWvIpy51nH62k9jrTyw=
 
 const WALUTOMAT_BASE_URL = 'https://api.walutomat.pl/api/v2.0.0';
 
+const forbiddenResponse = () =>
+  HttpResponse.json(
+    {
+      success: false,
+      errors: [{ key: 'UNAUTHORIZED', description: 'Invalid API key' }],
+    },
+    { status: 403 },
+  );
+
 /**
  * Override handler for balances endpoint with custom response.
  */
@@ -56,21 +65,42 @@ export const getWalutomatBalancesMock = ({
   });
 };
 
+export const getWalutomatForbiddenBalancesMock = () =>
+  http.get(`${WALUTOMAT_BASE_URL}/account/balances`, () => forbiddenResponse());
+
 /**
  * Override handler for history endpoint with custom response.
  */
 export const getWalutomatHistoryMock = ({
   response,
+  respectDateRange = false,
 }: {
   response?: ReturnType<typeof getMockedWalutomatHistory>;
+  /** Filter items by the `dateFrom`/`dateTo` query params, like the real API. */
+  respectDateRange?: boolean;
 } = {}) => {
-  return http.get(`${WALUTOMAT_BASE_URL}/account/history`, () => {
+  return http.get(`${WALUTOMAT_BASE_URL}/account/history`, ({ request }) => {
+    const items = response || getMockedWalutomatHistory();
+    const params = new URL(request.url).searchParams;
+    const dateFrom = params.get('dateFrom');
+    const dateTo = params.get('dateTo');
+    const from = dateFrom ? new Date(dateFrom).getTime() : -Infinity;
+    const to = dateTo ? new Date(dateTo).getTime() : Infinity;
+
     return HttpResponse.json({
       success: true,
-      result: response || getMockedWalutomatHistory(),
+      result: respectDateRange
+        ? items.filter((item) => {
+            const ts = new Date(item.ts).getTime();
+            return ts >= from && ts <= to;
+          })
+        : items,
     });
   });
 };
+
+export const getWalutomatForbiddenHistoryMock = () =>
+  http.get(`${WALUTOMAT_BASE_URL}/account/history`, () => forbiddenResponse());
 
 /**
  * Override handler for history endpoint that returns different items per currency.
@@ -103,13 +133,7 @@ export const walutomatHandlers = [
     const validKeys = [VALID_WALUTOMAT_API_KEY, VALID_WALUTOMAT_API_KEY_2];
 
     if (!apiKey || !validKeys.includes(apiKey)) {
-      return HttpResponse.json(
-        {
-          success: false,
-          errors: [{ key: 'UNAUTHORIZED', description: 'Invalid API key' }],
-        },
-        { status: 403 },
-      );
+      return forbiddenResponse();
     }
 
     return HttpResponse.json({
@@ -124,13 +148,7 @@ export const walutomatHandlers = [
     const validKeys = [VALID_WALUTOMAT_API_KEY, VALID_WALUTOMAT_API_KEY_2];
 
     if (!apiKey || !validKeys.includes(apiKey)) {
-      return HttpResponse.json(
-        {
-          success: false,
-          errors: [{ key: 'UNAUTHORIZED', description: 'Invalid API key' }],
-        },
-        { status: 403 },
-      );
+      return forbiddenResponse();
     }
 
     // Parse currency filter from query params

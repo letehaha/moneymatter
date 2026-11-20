@@ -37,7 +37,13 @@
       "auto": "Auto",
       "name": "Name",
       "balance": "Balance",
-      "ariaLabel": "Sort accounts"
+      "ariaLabel": "Sort accounts",
+      "direction": {
+        "aToZ": "A to Z",
+        "zToA": "Z to A",
+        "highestFirst": "Highest first",
+        "lowestFirst": "Lowest first"
+      }
     },
     "status": {
       "active": "Active",

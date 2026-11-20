@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
+import { toLocalNumber } from '@/js/helpers/formatters';
 import { cn } from '@/lib/utils';
 import { computed } from 'vue';
 
@@ -21,7 +22,7 @@ const props = withDefaults(
 
 const rawString = computed(() => trimTrailingZeros(String(props.value)));
 const displayValue = computed(() =>
-  Number(props.value).toLocaleString(undefined, { maximumFractionDigits: props.maxDecimals }),
+  toLocalNumber(props.value, { minimumFractionDigits: 0, maximumFractionDigits: props.maxDecimals }),
 );
 const shouldReveal = computed(() => exceedsMaxDecimals({ value: rawString.value, maxDecimals: props.maxDecimals }));
 </script>

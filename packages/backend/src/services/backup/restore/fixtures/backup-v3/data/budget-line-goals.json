@@ -1,0 +1,36 @@
+[
+  {
+    "id": "01a1cf52-7c57-712e-84b0-4c6c59a822bb",
+    "lineId": "01a1cf52-7c21-70ca-b7e8-9be45e3879ec",
+    "frequency": "every_period",
+    "behavior": "budget_another",
+    "amount": 12045,
+    "weekday": null,
+    "anchorDate": null,
+    "repeatEvery": null,
+    "repeatUnit": null,
+    "stopAtBalance": 30015,
+    "fundingCap": null,
+    "startPeriodStart": "2026-11-01",
+    "snoozedPeriodStart": null,
+    "createdAt": "2026-11-12T10:34:11.927Z",
+    "updatedAt": "2026-11-12T10:34:11.927Z"
+  },
+  {
+    "id": "01a1cf52-7c61-716d-8124-fe694553efb4",
+    "lineId": "01a1cf52-7c13-7052-aef7-a8b1a12d145a",
+    "frequency": "every_period",
+    "behavior": "refill_up_to",
+    "amount": 90040,
+    "weekday": null,
+    "anchorDate": null,
+    "repeatEvery": null,
+    "repeatUnit": null,
+    "stopAtBalance": null,
+    "fundingCap": 25035,
+    "startPeriodStart": "2026-11-01",
+    "snoozedPeriodStart": null,
+    "createdAt": "2026-11-12T10:34:11.937Z",
+    "updatedAt": "2026-11-12T10:34:11.937Z"
+  }
+]

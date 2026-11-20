@@ -161,7 +161,7 @@ export async function resolveCustomRate({
   if (pair.quoteCode !== userDefault.currency.code) return null;
 
   const [userRate] = await UserExchangeRates.getRates({ userId, pair });
-  if (!userRate) return null;
+  if (!userRate || !(userRate.rate > 0)) return null;
 
   return { ...userRate, rate: formatRate(userRate.rate), custom: true };
 }
@@ -221,6 +221,16 @@ async function computeCrossRate({
       rate: formatRate(rateValue(quoteLookup) / rateValue(baseLookup)),
       date: rateDateOf(quoteLookup, date),
     };
+  }
+
+  // A zero row on either leg gives 0 or Infinity, never a usable rate.
+  if (!Number.isFinite(result.rate) || result.rate <= 0) {
+    throw new ExchangeRateUnavailableError({
+      message: t({
+        key: 'currencies.exchangeRateNotAvailable',
+        variables: { baseCode: pair.baseCode, quoteCode: pair.quoteCode, date: date.toISOString() },
+      }),
+    });
   }
 
   const cacheable = baseLookup.kind === 'exact' && quoteLookup.kind === 'exact';

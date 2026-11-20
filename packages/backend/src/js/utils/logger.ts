@@ -62,6 +62,16 @@ const transportsArray: winston.transport[] = [new transports.Console()];
 const { GRAFANA_LOKI_HOST, GRAFANA_LOKI_AUTH, GRAFANA_LOKI_USER_ID } = process.env;
 const isGrafanaConfigured = Boolean(GRAFANA_LOKI_HOST && GRAFANA_LOKI_AUTH && GRAFANA_LOKI_USER_ID);
 
+// winston-loki sends every meta field as Loki structured metadata, and Loki rejects the
+// whole batch if any value is not a string (null requestId, numbers, objects). winston-loki
+// ignores the 400, so those batches vanish. The full record still lives in the JSON line.
+export const lokiStringMetadataOnly = format((info) => {
+  for (const [key, value] of Object.entries(info)) {
+    if (typeof value !== 'string') delete info[key];
+  }
+  return info;
+});
+
 if (isGrafanaConfigured && GRAFANA_LOKI_HOST && GRAFANA_LOKI_AUTH && GRAFANA_LOKI_USER_ID) {
   transportsArray.push(
     new LokiTransport({
@@ -71,7 +81,7 @@ if (isGrafanaConfigured && GRAFANA_LOKI_HOST && GRAFANA_LOKI_AUTH && GRAFANA_LOK
         service: 'budget-tracker-be',
         env: process.env.NODE_ENV,
       },
-      format: winston.format.json(),
+      format: lokiStringMetadataOnly(),
       json: true,
       replaceTimestamp: true,
       level: 'debug',

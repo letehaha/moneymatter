@@ -1,7 +1,6 @@
 import {
   ACCOUNT_TYPES,
   ImportSource,
-  PAYMENT_TYPES,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   YNAB_FLAG_HEX,
@@ -129,9 +128,9 @@ async function executeYnabImportImpl({
   // want to re-import. `alwaysCreate` bypasses the link-existing path entirely;
   // currency comes from the per-account mapping and the starting balance is
   // converted at the earliest CSV date via `initialBalanceFxDate`.
-  const startingBalanceCentsByName = new Map<string, number>();
+  const startingBalanceByName = new Map<string, Money>();
   for (const ynabAccount of importableAccounts) {
-    startingBalanceCentsByName.set(ynabAccount.originalName, Money.fromDecimal(ynabAccount.startingBalance).toCents());
+    startingBalanceByName.set(ynabAccount.originalName, Money.fromDecimal(ynabAccount.startingBalance));
   }
   const { accountNameToId: accountIdByName, accountsCreated } = await createAccountsIfNeeded({
     userId,
@@ -140,7 +139,7 @@ async function executeYnabImportImpl({
     alwaysCreate: true,
     resolveCurrencyCode: (accountName) => accountMapping[accountName]?.currencyCode,
     resolveFxDate: () => initialBalanceFxDate,
-    resolveInitialBalanceCents: (accountName) => startingBalanceCentsByName.get(accountName) ?? 0,
+    resolveInitialBalance: (accountName) => startingBalanceByName.get(accountName) ?? Money.zero(),
   });
   summary.accountsCreated = accountsCreated;
 
@@ -196,6 +195,14 @@ async function executeYnabImportImpl({
       payeeIdByNormalized.set(normalized, created.id);
       summary.payeesCreated += 1;
     } catch (err) {
+      // A concurrent writer may have created it after the batched lookup. createPayee's own
+      // transaction has already rolled back, so the re-read runs on a clean connection.
+      const existing = await Payees.findOne({ where: { userId, normalizedName: normalized } });
+      if (existing) {
+        payeeByName.set(payeeName, existing.id);
+        payeeIdByNormalized.set(normalized, existing.id);
+        continue;
+      }
       const message = err instanceof Error ? err.message : 'Unknown error';
       logger.error({ message: `[YNAB import] Failed to create payee "${payeeName}"`, error: err as Error });
       // Surface in summary.errors so the done-step callout tells the user the
@@ -257,7 +264,6 @@ async function executeYnabImportImpl({
         note: tx.memo,
         time: parseIsoToDate(tx.date),
         transactionType,
-        paymentType: PAYMENT_TYPES.creditCard,
         accountType: ACCOUNT_TYPES.system,
         transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
         categoryId,
@@ -308,7 +314,6 @@ async function executeYnabImportImpl({
         note: xfer.memo,
         time: parseIsoToDate(xfer.date),
         transactionType: TRANSACTION_TYPES.expense,
-        paymentType: PAYMENT_TYPES.creditCard,
         accountType: ACCOUNT_TYPES.system,
         transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
         destinationAccountId,

@@ -79,18 +79,22 @@ describe('roundTransactionMoney', () => {
     expect(result.originalAmount!.toNumber()).toBe(1501);
   });
 
-  it('falls back to the account currency for the reference values of a row without a reference currency', async () => {
-    const result = await roundTransactionMoney({
-      values: { amount: money('1.2345'), refAmount: money('1.2345') },
-      userId: USER_ID,
-      currencyCode: 'KWD',
-      refCurrencyCode: undefined,
-      originalCurrencyCode: undefined,
-    });
+  it.each([undefined, null])(
+    'leaves the reference values as given when the reference currency is %s',
+    async (refCurrencyCode) => {
+      const result = await roundTransactionMoney({
+        values: { amount: money('1500.4'), refAmount: money('12.34'), refCommissionRate: money('0.125') },
+        userId: USER_ID,
+        currencyCode: 'JPY',
+        refCurrencyCode,
+        originalCurrencyCode: undefined,
+      });
 
-    expect(result.refAmount!.toDecimalString(3)).toBe('1.235');
-    expect(result.refAmount!.toDecimalString(3)).toBe(result.amount!.toDecimalString(3));
-  });
+      expect(result.amount!.toNumber()).toBe(1500);
+      expect(result.refAmount!.toString()).toBe('12.34');
+      expect(result.refCommissionRate!.toString()).toBe('0.125');
+    },
+  );
 
   it('rounds the reference values half-up when the reference currency is the account currency', async () => {
     const result = await roundTransactionMoney({

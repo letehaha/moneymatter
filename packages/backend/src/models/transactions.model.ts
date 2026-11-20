@@ -4,6 +4,7 @@ import {
   BLANK_FILTER_VALUE,
   CategorizationMeta,
   CATEGORIZATION_SOURCE,
+  type Cents,
   FILTER_OPERATION,
   PAYMENT_TYPES,
   RecordId,
@@ -12,6 +13,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   TransactionCreatorSnapshot,
+  TransactionDeletionReason,
   TransactionLocation,
   TransactionModel,
 } from '@bt/shared/types';
@@ -24,7 +26,7 @@ import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { logger } from '@js/utils/logger';
-import Accounts, { isBankLinkedAccount } from '@models/accounts.model';
+import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import Categories from '@models/categories.model';
 import Currencies from '@models/currencies.model';
@@ -38,6 +40,11 @@ import TransactionGroups, { dissolveUndersizedGroups } from '@models/transaction
 import TransactionSplits from '@models/transaction-splits.model';
 import TransactionTags from '@models/transaction-tags.model';
 import { hasBalanceRelevantChange } from '@models/transactions-balance-relevance';
+import {
+  liveOrExternalTransactionSql,
+  liveTransactionExistsSql,
+  trashedWhere,
+} from '@models/transactions-query/deletion-where';
 import {
   BalanceAdjustmentsPolicy,
   CompletenessPolicy,
@@ -56,6 +63,7 @@ import {
   plannedWhere,
 } from '@models/transactions-query/where-builders';
 import Users from '@models/users.model';
+import { assertRowDeletableOnAccount, getSeamStart, SEAM_ACCOUNT_ATTRIBUTES } from '@services/accounts/seam';
 import { updateAccountBalanceForChangedTx } from '@services/accounts/update-balance-for-changed-tx';
 import {
   Op,
@@ -85,7 +93,13 @@ import {
   HasMany,
 } from 'sequelize-typescript';
 
-const prepareTXInclude = ({ includeSplits, includeTags }: { includeSplits?: boolean; includeTags?: boolean }) => {
+export const prepareTXInclude = ({
+  includeSplits,
+  includeTags,
+}: {
+  includeSplits?: boolean;
+  includeTags?: boolean;
+}) => {
   const include: Includeable[] = [];
 
   if (includeSplits) {
@@ -101,11 +115,38 @@ const prepareTXInclude = ({ includeSplits, includeTags }: { includeSplits?: bool
       model: Tags,
       through: { attributes: [] },
       attributes: ['id', 'name', 'color', 'icon'],
+      required: false,
     });
   }
 
   return include;
 };
+
+// Top-level only: the literal hardcodes the "transactionGroups" alias. transactionCount is the
+// group's live membership size (trashed members excluded), not the members in the current fetch window.
+const groupsInclude = (): Includeable => ({
+  model: TransactionGroups,
+  through: { attributes: [] },
+  attributes: [
+    'id',
+    'name',
+    [
+      literal(`(
+        SELECT COUNT(*)::int
+        FROM "TransactionGroupItems"
+        WHERE "TransactionGroupItems"."groupId" = "transactionGroups"."id"
+          AND ${liveTransactionExistsSql({ idColumnSql: '"TransactionGroupItems"."transactionId"' })}
+      )`),
+      'transactionCount',
+    ],
+  ],
+  required: false,
+});
+
+export const fullTransactionIncludes = () => [
+  ...prepareTXInclude({ includeSplits: true, includeTags: true }),
+  groupsInclude(),
+];
 
 export interface TransactionsAttributes {
   id: string;
@@ -134,8 +175,8 @@ export interface TransactionsAttributes {
   originalId: string; // Stores the original id from external source
   // JSON of any addition fields
   externalData: {
-    operationAmount?: number;
-    balance?: number;
+    operationAmount?: Cents;
+    balance?: Cents;
     hold?: boolean;
     receiptId?: string;
     /** Set on transactions created by the balance-adjustment flow. */
@@ -156,12 +197,39 @@ export interface TransactionsAttributes {
   originalCurrencyCode: string | null;
   refundLinked: boolean;
   isPlanned: boolean;
+  /** Set by the user to keep this row out of the reports: one-off movements such as a property sale. */
+  excludeFromStats: boolean;
   categorizationMeta: CategorizationMeta | null;
   payeeId: string | null;
   payeeLocked: boolean;
+  paymentParentId: string | null;
+  paymentAmount: Money | null;
+  paymentLinkSnapshot: PaymentLinkSnapshot | null;
+  deletionReason: TransactionDeletionReason | null;
   createdAt: Date;
   updatedAt: Date;
 }
+
+/**
+ * The fields an existing row takes from the main row when linked into a payment (plus its tags).
+ * `excludeFromStats` covers the whole payment, so every leg follows the main row.
+ */
+export const PAYMENT_LINK_FIELDS = [
+  'categoryId',
+  'payeeId',
+  'payeeLocked',
+  'note',
+  'categorizationMeta',
+  'excludeFromStats',
+] as const;
+
+export type PaymentLinkFields = Pick<TransactionsAttributes, (typeof PAYMENT_LINK_FIELDS)[number]>;
+
+/** `excludeFromStats` is absent on snapshots stored before the column existed. */
+export type PaymentLinkSnapshot = Omit<PaymentLinkFields, 'excludeFromStats'> & {
+  excludeFromStats?: boolean;
+  tagIds: string[];
+};
 
 @Table({
   timestamps: true,
@@ -175,11 +243,11 @@ export default class Transactions extends Model {
   @Column(IdColumn())
   declare id: RecordId;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare amount: Money;
 
   // Amount in curreny of account
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
+  @MoneyField({ allowNull: true, defaultValue: '0' })
   declare refAmount: Money | null;
 
   @Length({ max: 2000 })
@@ -302,13 +370,13 @@ export default class Transactions extends Model {
   })
   externalData!: TransactionsAttributes['externalData'];
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare commissionRate: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
+  @MoneyField({ allowNull: true, defaultValue: '0' })
   declare refCommissionRate: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare cashbackAmount: Money;
 
   // `true` while the base-currency amounts are `null` because a custom currency had no rate on the
@@ -318,7 +386,7 @@ export default class Transactions extends Model {
 
   // Metadata only: no balance, statistics, tracker or budget-plan path reads these. What the user spent in a
   // foreign currency, with its ISO 4217 code. Both hold a value or both stay null.
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
+  @MoneyField({ allowNull: true })
   declare originalAmount: Money | null;
 
   @ForeignKey(() => Currencies)
@@ -344,7 +412,14 @@ export default class Transactions extends Model {
   })
   declare isPlanned: boolean;
 
-  // Metadata about how this transaction was categorized (manual, ai, mcc_rule, user_rule, subscription_rule, payee_rule)
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  })
+  declare excludeFromStats: boolean;
+
+  // Metadata about how this transaction was categorized (manual, ai, user_rule, subscription_rule, payee_rule)
   @Column({
     type: DataType.JSONB,
     allowNull: true,
@@ -370,6 +445,23 @@ export default class Transactions extends Model {
 
   @Column({ allowNull: true, type: DataType.UUID })
   mergedIntoId!: RecordId | null;
+
+  // Set on the extra rows of a multi-account payment. No `@ForeignKey`, same as
+  // `mergedIntoId`: backup restore relinks it through the registry's self-ref pass.
+  @Column({ allowNull: true, type: DataType.UUID })
+  paymentParentId!: RecordId | null;
+
+  // The row's share in the main row's currency; null when both currencies match.
+  @MoneyField({ allowNull: true })
+  declare paymentAmount: Money | null;
+
+  // A linked row's own values from before the link, restored on unlink. Null on rows the payment created.
+  @Column({ allowNull: true, type: DataType.JSONB })
+  paymentLinkSnapshot!: PaymentLinkSnapshot | null;
+
+  // Required whenever `deletedAt` is set (DB CHECK): 'trash' for user deletes, 'reconciliation' for rows it hid.
+  @Column({ allowNull: true, type: DataType.STRING(20) })
+  deletionReason!: TransactionDeletionReason | null;
 
   // Managed by Sequelize (timestamps: true)
   declare createdAt: Date;
@@ -523,12 +615,62 @@ export default class Transactions extends Model {
     await recomputeLoanBalance({ loanAccountId: accountId });
   }
 
+  /**
+   * True when the seam owns a manual row's balance effect, so the caller skips its own writes.
+   * Rows before the seam schedule its rebuild; a manual row crossing it, or `entersLedger` from
+   * the seam on, throws. Bank rows always get false. Lazy-imported to avoid a model→service cycle.
+   */
+  private static async isBalanceOwnedBySeam({
+    accountId,
+    accountType,
+    times,
+    excludeTransactionId,
+    entersLedger = false,
+  }: {
+    accountId: string;
+    accountType: ACCOUNT_TYPES;
+    times: Date[];
+    excludeTransactionId?: string;
+    entersLedger?: boolean;
+  }): Promise<boolean> {
+    const { schedulePreSeamRebuild } = await import('@services/balances/revalue-balance-history.service');
+    if (accountType === ACCOUNT_TYPES.system) {
+      return schedulePreSeamRebuild({
+        accountId,
+        times,
+        excludeTransactionId,
+        mode: entersLedger ? 'enter-ledger' : 'edit',
+      });
+    }
+
+    await schedulePreSeamRebuild({ accountId, times, excludeTransactionId, mode: 'bank-row' });
+    return false;
+  }
+
+  /** A manual row moving onto or off a seam account would skip the seam's rebuild on both sides. */
+  private static async assertMoveTouchesNoSeam({ sides }: { sides: Transactions[] }): Promise<void> {
+    const { findSeamAccount } = await import('@services/balances/revalue-balance-history.service');
+    for (const { accountId, accountType } of sides) {
+      if (accountType !== ACCOUNT_TYPES.system) continue;
+      const account = await findSeamAccount({ accountId });
+      if (account && getSeamStart({ account })) {
+        throw new ValidationError({ message: t({ key: 'transactions.moveAcrossBankLinkedAccount' }) });
+      }
+    }
+  }
+
   @AfterCreate
   static async updateAccountBalanceAfterCreate(instance: Transactions) {
     const { accountType, accountId, amount, transactionType } = instance;
 
     // A planned row records money that hasn't moved yet.
     if (instance.isPlanned) return;
+
+    if (
+      await Transactions.isBalanceOwnedBySeam({ accountId, accountType, times: [instance.time], entersLedger: true })
+    ) {
+      return;
+    }
 
     if (accountType === ACCOUNT_TYPES.system) {
       await updateAccountBalanceForChangedTx({
@@ -560,6 +702,17 @@ export default class Transactions extends Model {
     becameReal: boolean;
   }): Promise<void> {
     if (becameReal) {
+      if (
+        await Transactions.isBalanceOwnedBySeam({
+          accountId: newData.accountId,
+          accountType: newData.accountType,
+          times: [newData.time],
+          entersLedger: true,
+        })
+      ) {
+        return;
+      }
+
       if (newData.accountType === ACCOUNT_TYPES.system) {
         await updateAccountBalanceForChangedTx({
           accountId: newData.accountId,
@@ -569,6 +722,17 @@ export default class Transactions extends Model {
       }
 
       await Balances.handleTransactionChange({ data: newData });
+      return;
+    }
+
+    if (
+      await Transactions.isBalanceOwnedBySeam({
+        accountId: prevData.accountId,
+        accountType: prevData.accountType,
+        times: [prevData.time],
+        excludeTransactionId: newData.id,
+      })
+    ) {
       return;
     }
 
@@ -621,6 +785,18 @@ export default class Transactions extends Model {
     if (isPlanned) return;
 
     const isAccountChanged = newData.accountId !== prevData.accountId;
+
+    if (isAccountChanged) {
+      await Transactions.assertMoveTouchesNoSeam({ sides: [prevData, newData] });
+    } else if (
+      await Transactions.isBalanceOwnedBySeam({
+        accountId: newData.accountId,
+        accountType: newData.accountType,
+        times: [prevData.time, newData.time],
+      })
+    ) {
+      return;
+    }
 
     if (newData.accountType === ACCOUNT_TYPES.system) {
       if (isAccountChanged) {
@@ -675,13 +851,32 @@ export default class Transactions extends Model {
     }
   }
 
+  /**
+   * Re-applies the balance effect of a trashed row once its `deletedAt` is cleared,
+   * the same way creating it did.
+   */
+  static async applyRestoredBalance(instance: Transactions) {
+    await Transactions.updateAccountBalanceAfterCreate(instance);
+    await Transactions.reconcileVehicleAnchorOnDelete(instance);
+  }
+
   @BeforeDestroy
   static async updateAccountBalanceBeforeDestroy(instance: Transactions) {
     const { accountType, accountId, amount, transactionType } = instance;
 
-    // Planned rows never moved a balance, so there is nothing to take back. Group
-    // bookkeeping below still has to run so groups keep auto-dissolving.
-    if (!instance.isPlanned) {
+    // Planned rows never moved a balance, so there is nothing to take back. A row that is
+    // already soft-deleted had its balance taken back then. Group bookkeeping below still
+    // has to run so groups keep auto-dissolving.
+    if (
+      !instance.isPlanned &&
+      !instance.deletedAt &&
+      !(await Transactions.isBalanceOwnedBySeam({
+        accountId,
+        accountType,
+        times: [instance.time],
+        excludeTransactionId: instance.id,
+      }))
+    ) {
       if (accountType === ACCOUNT_TYPES.system) {
         await updateAccountBalanceForChangedTx({
           accountId,
@@ -823,41 +1018,83 @@ function buildRefundCondition(filter: FILTER_OPERATION | undefined): Record<stri
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// A required include can't express "in none", so the blank case is a correlated subquery.
 // Ids are interpolated into raw SQL, so the UUID check is what keeps it injection-safe.
+function toSqlIdList({ ids, paramName }: { ids: string[]; paramName: string }) {
+  if (ids.some((id) => !UUID_PATTERN.test(id))) {
+    throw new ValidationError({ message: `"${paramName}" must contain valid record ids` });
+  }
+  return ids.map((id) => `'${id}'`).join(', ');
+}
+
+// Correlated subqueries instead of a required include: an include can't express "in none",
+// and joining the junction table would duplicate rows matching several ids.
 function buildNoneOrAnyJunctionCondition({
   ids,
   paramName,
   junctionTable,
   alias,
   column,
+  allowNone = true,
 }: {
   ids: string[];
   paramName: string;
   junctionTable: string;
   alias: string;
   column: string;
+  allowNone?: boolean;
 }) {
-  if (ids.some((id) => !UUID_PATTERN.test(id))) {
-    throw new ValidationError({ message: `"${paramName}" must contain valid record ids` });
-  }
+  const idList = toSqlIdList({ ids, paramName });
   const junction = `SELECT 1 FROM "${junctionTable}" ${alias} WHERE ${alias}."transactionId" = "Transactions"."id"`;
   const inNone = `NOT EXISTS (${junction})`;
   if (!ids.length) return literal(inNone);
-  const inAny = `EXISTS (${junction} AND ${alias}."${column}" IN (${ids.map((id) => `'${id}'`).join(', ')}))`;
-  return literal(`(${inNone} OR ${inAny})`);
+  const inAny = `EXISTS (${junction} AND ${alias}."${column}" IN (${idList}))`;
+  return literal(allowNone ? `(${inNone} OR ${inAny})` : inAny);
+}
+
+// A row linked to `keepLinksWith` stays even when it also has links to other transactions.
+function noLinksOrLinkedToSql({
+  column,
+  otherColumn,
+  keepLinksWith,
+}: {
+  column: 'originalTxId' | 'refundTxId';
+  otherColumn: 'originalTxId' | 'refundTxId';
+  keepLinksWith?: string;
+}) {
+  const links = `SELECT 1 FROM "RefundTransactions" rt WHERE rt."${column}" = "Transactions"."id"
+    AND ${liveOrExternalTransactionSql({ idColumnSql: `rt."${otherColumn}"` })}`;
+  const noLinks = `NOT EXISTS (${links})`;
+  if (!keepLinksWith) return noLinks;
+  if (!UUID_PATTERN.test(keepLinksWith)) {
+    throw new ValidationError({ message: '"keepRefundsForTxId" must be a valid record id' });
+  }
+  return `(${noLinks} OR EXISTS (${links} AND rt."${otherColumn}" = '${keepLinksWith}'))`;
 }
 
 // `refundLinked` can't express this filter: it is true for BOTH sides of a link, while
 // only the refund side is barred from being linked again.
-function buildExcludeRefundTxsCondition({ keepRefundsForTxId }: { keepRefundsForTxId?: string }) {
-  if (keepRefundsForTxId && !UUID_PATTERN.test(keepRefundsForTxId)) {
-    throw new ValidationError({ message: '"keepRefundsForTxId" must be a valid record id' });
-  }
-  // IS DISTINCT FROM: links with a null originalTxId (out-of-system originals) must stay excluded.
-  const keepClause = keepRefundsForTxId ? ` AND rt."originalTxId" IS DISTINCT FROM '${keepRefundsForTxId}'` : '';
+function notARefundSql({ keepLinksWith }: { keepLinksWith?: string }) {
+  return noLinksOrLinkedToSql({ column: 'refundTxId', otherColumn: 'originalTxId', keepLinksWith });
+}
+
+function notRefundedSql({ keepLinksWith }: { keepLinksWith?: string }) {
+  return noLinksOrLinkedToSql({ column: 'originalTxId', otherColumn: 'refundTxId', keepLinksWith });
+}
+
+// Rows before the pivot day, and same-day expenses, are candidate originals and must not already
+// be a refund; everything else is a candidate refund and must not already be refunded.
+// `:refundPivotFrom` / `:refundPivotTo` are bound through the query's replacements.
+function buildRefundPivotCondition({ pivotTxId }: { pivotTxId?: string }) {
+  const isOriginal = `"Transactions"."time" < :refundPivotFrom OR ("Transactions"."time" <= :refundPivotTo AND "Transactions"."transactionType" = '${TRANSACTION_TYPES.expense}')`;
   return literal(
-    `NOT EXISTS (SELECT 1 FROM "RefundTransactions" rt WHERE rt."refundTxId" = "Transactions"."id"${keepClause})`,
+    `CASE WHEN ${isOriginal} THEN ${notARefundSql({ keepLinksWith: pivotTxId })} ELSE ${notRefundedSql({ keepLinksWith: pivotTxId })} END`,
+  );
+}
+
+function buildExcludePaymentLegsCondition({ mainAccountIds }: { mainAccountIds: string[] }) {
+  const ids = toSqlIdList({ ids: mainAccountIds, paramName: 'accountIds' });
+  return literal(
+    `("Transactions"."paymentParentId" IS NULL OR NOT EXISTS (SELECT 1 FROM "Transactions" pm WHERE pm."id" = "Transactions"."paymentParentId" AND pm."deletedAt" IS NULL AND pm."accountId" IN (${ids})))`,
   );
 }
 
@@ -880,16 +1117,17 @@ export const findWithFilters = async ({
   sortBy,
   transferNatures,
   transactionType,
-  includeSplits,
-  includeTags,
-  includeGroups,
+  fullShape,
   isRaw = false,
   excludeTransfer,
   excludeRefunds,
   excludeRefundTxs,
   keepRefundsForTxId,
+  excludeRefundedTxs,
+  refundPivotFrom,
+  refundPivotTo,
   hasAttachment,
-  includeHasAttachments,
+  excludePaymentLegsWithMainIn,
   transferFilter,
   refundFilter,
   startDate,
@@ -901,6 +1139,7 @@ export const findWithFilters = async ({
   categoryIds,
   payeeIds,
   noteSearch,
+  search,
   attributes,
   categorizationSource,
   categorizedAt,
@@ -934,9 +1173,9 @@ export const findWithFilters = async ({
    * fully describes which natures it wants.
    */
   transferNatures?: TRANSACTION_TRANSFER_NATURE[];
-  includeSplits?: boolean;
-  includeTags?: boolean;
-  includeGroups?: boolean;
+  /** Adds splits, tags, groups and a `hasAttachments` flag. The flag costs an EXISTS
+   *  subquery per row, so only client-facing reads ask for it. */
+  fullShape?: boolean;
   isRaw?: boolean;
   excludeTransfer?: boolean;
   excludeRefunds?: boolean;
@@ -946,11 +1185,19 @@ export const findWithFilters = async ({
   /** With `excludeRefundTxs`: keep refunds linked to this original, so an edit dialog
    *  can still list and deselect its own links. */
   keepRefundsForTxId?: string;
+  /** Excludes the original side of refund links: a row picked as a refund can't also be
+   *  an original (`validateRefundLinks` rejects refund-of-refund). */
+  excludeRefundedTxs?: boolean;
+  /** Local-day bounds of the transaction being linked (always both). Rows dated on or before
+   *  that day are kept only if they can still be an original, later rows only if they can
+   *  still be a refund; `keepRefundsForTxId` names the pivot tx so its own links don't count. */
+  refundPivotFrom?: string;
+  refundPivotTo?: string;
   /** Absent = both, `true` = only rows carrying attachments, `false` = only rows without. */
   hasAttachment?: boolean;
-  /** Adds a `hasAttachments` boolean to every row. Costs an EXISTS subquery per row, so
-   *  only the user-facing list asks for it. */
-  includeHasAttachments?: boolean;
+  /** Account ids: drops a multi-account payment's legs whose main row sits on one of
+   *  them, leaving the main row to stand for the whole payment. */
+  excludePaymentLegsWithMainIn?: string[];
   transferFilter?: FILTER_OPERATION;
   refundFilter?: FILTER_OPERATION;
   startDate?: string;
@@ -966,6 +1213,8 @@ export const findWithFilters = async ({
   categoryIds?: string[];
   payeeIds?: string[];
   noteSearch?: string[]; // array of keywords
+  /** Free-text search over note, payee name and tag names. Words are AND-ed, each matched case-insensitively. */
+  search?: string;
   attributes?: (keyof Transactions)[];
   categorizationSource?: CATEGORIZATION_SOURCE;
   /** Exact `categorizationMeta.categorizedAt` stamp, which identifies one categorization run. */
@@ -978,7 +1227,7 @@ export const findWithFilters = async ({
   // set the cap; only read when the result comes back full.
   const truncationProbe = cap ? new Error() : null;
 
-  const queryInclude: Includeable[] = prepareTXInclude({ includeSplits });
+  const queryInclude: Includeable[] = fullShape ? fullTransactionIncludes() : [];
 
   if (excludedAccounts === 'exclude') {
     queryInclude.push({ model: Accounts, where: { excludeFromStats: false }, attributes: [], required: true });
@@ -1025,7 +1274,23 @@ export const findWithFilters = async ({
   }
 
   if (excludeRefundTxs) {
-    pushAndCondition(buildExcludeRefundTxsCondition({ keepRefundsForTxId }));
+    pushAndCondition(literal(notARefundSql({ keepLinksWith: keepRefundsForTxId })));
+  }
+
+  if (excludeRefundedTxs) {
+    pushAndCondition(literal(notRefundedSql({})));
+  }
+
+  const refundPivotReplacements =
+    refundPivotFrom && refundPivotTo
+      ? { refundPivotFrom: new Date(refundPivotFrom), refundPivotTo: new Date(refundPivotTo) }
+      : undefined;
+  if (refundPivotReplacements) {
+    pushAndCondition(buildRefundPivotCondition({ pivotTxId: keepRefundsForTxId }));
+  }
+
+  if (excludePaymentLegsWithMainIn?.length) {
+    pushAndCondition(buildExcludePaymentLegsCondition({ mainAccountIds: excludePaymentLegsWithMainIn }));
   }
 
   if (hasAttachment !== undefined) {
@@ -1169,7 +1434,7 @@ export const findWithFilters = async ({
 
   const hasBlankTag = !!requestedTagIds?.includes(BLANK_FILTER_VALUE);
   const tagIds = hasBlankTag ? requestedTagIds!.filter((id) => id !== BLANK_FILTER_VALUE) : requestedTagIds;
-  if (hasBlankTag) {
+  if (hasBlankTag || tagIds?.length) {
     pushAndCondition(
       buildNoneOrAnyJunctionCondition({
         ids: tagIds!,
@@ -1177,18 +1442,9 @@ export const findWithFilters = async ({
         junctionTable: 'TransactionTags',
         alias: 'tt',
         column: 'tagId',
+        allowNone: hasBlankTag,
       }),
     );
-  }
-
-  // Filter by tagIds - include only transactions with these tags
-  if (tagIds?.length && !hasBlankTag) {
-    queryInclude.push({
-      model: Tags,
-      through: { attributes: [], where: { tagId: { [Op.in]: tagIds } } },
-      attributes: [],
-      required: true,
-    });
   }
 
   // Exclude transactions with specific tags
@@ -1220,25 +1476,26 @@ export const findWithFilters = async ({
     }
   }
 
-  // Include tags in response if requested
-  // Note: when filtering by tagIds, we add a separate non-required include to get all tags
-  if (includeTags) {
-    // Remove any existing Tags include from tagIds filtering (which was required: true)
-    const tagFilterIndex = queryInclude.findIndex((inc) => (inc as { model?: unknown }).model === Tags);
-    if (tagFilterIndex !== -1) {
-      queryInclude.splice(tagFilterIndex, 1);
-    }
-
-    // Add tags include for display (with filtering if tagIds provided)
-    queryInclude.push({
-      model: Tags,
-      through: {
-        attributes: [],
-        ...(tagIds?.length ? { where: { tagId: { [Op.in]: tagIds } } } : {}),
-      },
-      attributes: ['id', 'name', 'color', 'icon'],
-      required: !!tagIds?.length && !hasBlankTag,
-    });
+  // Free-text search: every word must match the note, the payee name or one of the tag names.
+  // Correlated subqueries keep rows unique (a join on tags would duplicate them).
+  // Each word adds two subplans; past ~6 words Postgres JIT-compiles the plan and a search takes seconds.
+  const searchWords = [...new Set((search ?? '').split(/\s+/).filter(Boolean))].slice(0, 6);
+  // Scoping the subqueries by owner lets them use the userId indexes instead of scanning every user's rows.
+  const ownerScope = ({ alias }: { alias: string }) =>
+    access === 'pre-scoped' ? '' : ` AND ${alias}."userId" = ${Number(access.creator)}`;
+  for (const word of searchWords) {
+    const pattern = Transactions.sequelize!.escape(`%${word.replace(/[\\%_]/g, '\\$&')}%`);
+    pushAndCondition(
+      literal(`(
+        "Transactions"."note" ILIKE ${pattern}
+        OR EXISTS (SELECT 1 FROM "Payees" sp WHERE sp."id" = "Transactions"."payeeId" AND sp."name" ILIKE ${pattern}${ownerScope({ alias: 'sp' })})
+        OR EXISTS (
+          SELECT 1 FROM "TransactionTags" stt
+          JOIN "Tags" st ON st."id" = stt."tagId"
+          WHERE stt."transactionId" = "Transactions"."id" AND st."name" ILIKE ${pattern}${ownerScope({ alias: 'st' })}
+        )
+      )`),
+    );
   }
 
   // Add note search condition if provided
@@ -1248,31 +1505,6 @@ export const findWithFilters = async ({
         [Op.iLike]: `%${term}%`,
       })),
     };
-  }
-
-  // Include group membership info if requested. transactionCount is the group's full
-  // membership size (a correlated count over TransactionGroupItems), not the number of
-  // this group's members that happen to be in the current fetch window – so callers that
-  // only load a slice of transactions (e.g. the dashboard widget) can still show the
-  // group's true size.
-  if (includeGroups) {
-    queryInclude.push({
-      model: TransactionGroups,
-      through: { attributes: [] },
-      attributes: [
-        'id',
-        'name',
-        [
-          literal(`(
-            SELECT COUNT(*)::int
-            FROM "TransactionGroupItems"
-            WHERE "TransactionGroupItems"."groupId" = "transactionGroups"."id"
-          )`),
-          'transactionCount',
-        ],
-      ],
-      required: false,
-    });
   }
 
   // Op.and, never a bare key: the policy clauses must not collide with (or be clobbered
@@ -1305,7 +1537,7 @@ export const findWithFilters = async ({
   const { limit, offset } = completenessToPagination({ completeness });
 
   const hasAttachmentsAttribute: ProjectionAlias = [literal(HAS_ATTACHMENTS_SQL), 'hasAttachments'];
-  const resolvedAttributes: FindAttributeOptions | undefined = !includeHasAttachments
+  const resolvedAttributes: FindAttributeOptions | undefined = !fullShape
     ? attributes
     : attributes
       ? [...attributes, hasAttachmentsAttribute]
@@ -1318,9 +1550,8 @@ export const findWithFilters = async ({
     limit,
     order: buildOrderClause({ sortBy, order }),
     raw: isRaw,
-    // When raw is true and includeSplits/includeTags is requested, use nest to preserve nested structure
-    nest: isRaw && (includeSplits || includeTags) ? true : undefined,
     attributes: resolvedAttributes,
+    replacements: refundPivotReplacements,
   });
 
   // `info`, not `warn`: warn ships every occurrence to Sentry as its own event.
@@ -1338,16 +1569,12 @@ export const findWithFilters = async ({
 export const getTransactionById = ({
   id,
   userId,
-  includeSplits,
-  includeTags,
+  include = [],
 }: {
   id: string;
   userId: number;
-  includeSplits?: boolean;
-  includeTags?: boolean;
+  include?: Includeable[];
 }): Promise<Transactions | null> => {
-  const include = prepareTXInclude({ includeSplits, includeTags });
-
   return Transactions.findOne({
     where: { id, userId },
     include,
@@ -1357,13 +1584,16 @@ export const getTransactionById = ({
 export const getTransactionsByTransferId = ({
   transferId,
   accountIds,
+  include = [],
 }: {
   transferId: string;
   accountIds: string[];
+  include?: Includeable[];
 }) => {
   if (accountIds.length === 0) return Promise.resolve([] as Transactions[]);
   return Transactions.findAll({
     where: { transferId, accountId: { [Op.in]: accountIds } },
+    include,
   });
 };
 
@@ -1418,8 +1648,11 @@ type CreateTxOptionalParams = Partial<
     | 'payeeId'
     | 'payeeLocked'
     | 'isPlanned'
+    | 'excludeFromStats'
     | 'originalAmount'
     | 'originalCurrencyCode'
+    | 'paymentParentId'
+    | 'paymentAmount'
   >
 >;
 
@@ -1479,9 +1712,13 @@ export interface UpdateTransactionByIdParams {
   payeeId?: string | null;
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  excludeFromStats?: boolean;
   originalAmount?: Money | null;
   originalCurrencyCode?: string | null;
   externalData?: TransactionsAttributes['externalData'];
+  paymentParentId?: string | null;
+  paymentAmount?: Money | null;
+  paymentLinkSnapshot?: PaymentLinkSnapshot | null;
 }
 
 /**
@@ -1569,6 +1806,7 @@ export const updateTransactions = (
     refundLinked?: boolean;
     payeeId?: string | null;
     payeeLocked?: boolean;
+    excludeFromStats?: boolean;
     categorizationMeta?: CategorizationMeta | null;
   },
   where: Record<string, unknown> & { userId: number },
@@ -1584,23 +1822,38 @@ export const updateTransactions = (
   });
 };
 
-export const deleteTransactionById = async ({ id, userId }: { id: string; userId: number }) => {
+/**
+ * `trash` soft-deletes the row into Trash; the destroy then runs without `force`, so the
+ * destroy hooks still take the balance back.
+ */
+export const deleteTransactionById = async ({
+  id,
+  userId,
+  trash = false,
+}: {
+  id: string;
+  userId: number;
+  trash?: boolean;
+}) => {
   const tx = await getTransactionById({ id, userId });
 
   if (!tx) return true;
 
   // A plan on a provider account is the user's own row that the bank has never reported,
   // so deleting it takes nothing away from the sync.
-  if (!tx.isPlanned && (await isBankLinkedAccount({ id: tx.accountId }))) {
-    throw new ValidationError({
-      message: t({ key: 'transactions.cannotDeleteExternal' }),
-    });
+  if (!tx.isPlanned) {
+    const account = await Accounts.findByPk(tx.accountId, { attributes: [...SEAM_ACCOUNT_ATTRIBUTES] });
+    if (account) assertRowDeletableOnAccount({ account, transaction: tx });
+  }
+
+  if (trash) {
+    await Transactions.update({ ...trashedWhere }, { where: { id, userId }, hooks: false });
   }
 
   return Transactions.destroy({
     where: { id, userId },
     // So that BeforeDestroy will be triggered
     individualHooks: true,
-    force: true,
+    force: !trash,
   });
 };

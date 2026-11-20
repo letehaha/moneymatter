@@ -1,4 +1,4 @@
-import type { AccountExternalData } from '@bt/shared/types';
+import { type AccountExternalData, asDecimal } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import type Accounts from '@models/accounts.model';
 
@@ -15,9 +15,9 @@ const buildLinkedAccount = (linkedAt: string): AccountRow =>
       linkedAt,
       linkingStrategy: 'forward-only',
       balanceReconciliation: {
-        systemBalance: 0,
-        externalBalance: 0,
-        difference: 0,
+        systemBalance: asDecimal(0),
+        externalBalance: asDecimal(0),
+        difference: asDecimal(0),
         adjustmentTransactionId: null,
       },
     },

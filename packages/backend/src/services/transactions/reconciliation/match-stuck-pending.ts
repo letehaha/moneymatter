@@ -1,4 +1,5 @@
 import type { RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import type { Money } from '@common/types/money';
 import { normalizePayeeName } from '@services/payees/normalize-name';
 
 export interface StuckPendingMatchRow {
@@ -6,7 +7,7 @@ export interface StuckPendingMatchRow {
   accountId: RecordId;
   transactionType: TRANSACTION_TYPES;
   time: Date;
-  amountCents: number;
+  amount: Money;
   payeeId: string | null;
   merchantName: string | null;
 }
@@ -39,7 +40,12 @@ export const matchStuckPending = ({
       if (c.accountId !== p.accountId || c.transactionType !== p.transactionType) continue;
       if (timeDiff < 0 || timeDiff > CANDIDATE_WINDOW_MS) continue;
       if (!isSamePayee({ a: p, b: c })) continue;
-      pairs.push({ pendingId: p.id, candidateId: c.id, amountDiff: Math.abs(c.amountCents - p.amountCents), timeDiff });
+      pairs.push({
+        pendingId: p.id,
+        candidateId: c.id,
+        amountDiff: c.amount.subtract(p.amount).abs().toNumber(),
+        timeDiff,
+      });
     }
   }
 

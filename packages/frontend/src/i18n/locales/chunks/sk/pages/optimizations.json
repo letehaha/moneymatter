@@ -121,6 +121,7 @@
         "previousYear": "Predchádzajúci rok"
       },
       "includeOutOfWallet": "Zahrnúť prevody mimo peňaženky",
+      "outOfWalletSwitch": "Prevody mimo peňaženky",
       "skip": {
         "action": "Preskočiť",
         "title": "Preskočiť tento návrh?",
@@ -134,6 +135,44 @@
         "linkError": "Transakcie sa nepodarilo prepojiť",
         "skipSuccess": "Návrh zamietnutý",
         "skipError": "Návrh sa nepodarilo preskočiť"
+      },
+      "aiReview": {
+        "label": "Kontrola pomocou AI",
+        "about": "O kontrole pomocou AI",
+        "plusBadge": "Plus",
+        "description": "AI skontroluje každú zhodu a zobrazí len tie, ktoré vyzerajú ako skutočné prevody medzi vašimi účtami.",
+        "cost": "Každé vyhľadávanie využíva váš mesačný limit AI. Pri vlastnom poskytovateľovi AI ho spoplatňuje tento poskytovateľ. Model vyberte v {link}.",
+        "aiSettingsLink": "Nastavenia AI",
+        "openAiSettings": "Otvoriť nastavenia AI",
+        "blocked": {
+          "plan": {
+            "title": "Kontrola pomocou AI je súčasťou Plus",
+            "body": "Alebo si v nastaveniach AI pripojte vlastného poskytovateľa AI a používajte to na akomkoľvek pláne."
+          },
+          "allowance": {
+            "pill": "Do {date}",
+            "title": "Mesačný limit AI bol vyčerpaný",
+            "body": "Obnoví sa {date}. Ak to chcete používať už teraz, pripojte si vlastného poskytovateľa AI."
+          },
+          "setup": {
+            "pill": "Nastaviť",
+            "title": "Žiadny model AI neodpovedá",
+            "body": "Skontrolujte svojho poskytovateľa AI alebo vyberte model na priraďovanie prevodov."
+          }
+        },
+        "connectOwnModel": "Pripojiť vlastný model",
+        "reviewing": "AI kontroluje zhody…",
+        "verdict": {
+          "likely": "Pravdepodobné",
+          "possible": "Možné"
+        },
+        "nudge": "Odstráňte falošné zhody kontrolou pomocou AI",
+        "rescanHint": "Skontrolovať pomocou AI",
+        "rescanHintTooltip": "Veľa dvojíc dosiahlo menej než 70 %. Vyhľadajte znova s kontrolou pomocou AI a skryte tie, ktoré nie sú prevody. Využíva váš limit AI.",
+        "rescanBanner": {
+          "title": "Veľa dvojíc dosiahlo menej než 70 %",
+          "body": "Kontrola pomocou AI môže skryť tie, ktoré nie sú prevody. Využíva váš limit AI."
+        }
       }
     },
     "reconciliation": {

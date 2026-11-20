@@ -2,6 +2,7 @@ import { isTerminalStripeStatus } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import type Stripe from 'stripe';
 
+import { revokeLifetimePurchase } from './lifetime-purchase.service';
 import { getStripeClient } from './stripe/client';
 
 type RefundEvent = Stripe.ChargeRefundedEvent | Stripe.ChargeDisputeClosedEvent;
@@ -68,16 +69,22 @@ const paidPeriodSubscriptionId = async ({
  * Stripe, as merchant of record, can refund a buyer without us. Money gone for the
  * current period ends the subscription now; the cancel echoes back as
  * `customer.subscription.deleted`, so the mirror follows through the usual path.
+ * A lost one-time lifetime payment revokes the plan it bought instead.
  */
-export async function handleBillingRefund({ event }: { event: RefundEvent }): Promise<'canceled' | 'ignored'> {
+export async function handleBillingRefund({
+  event,
+}: {
+  event: RefundEvent;
+}): Promise<'canceled' | 'revoked' | 'ignored'> {
   const stripe = getStripeClient();
   const paymentIntentId = await fullyLostPaymentIntentId({ event, stripe });
   if (!paymentIntentId) return 'ignored';
 
   const subscriptionId = await paidPeriodSubscriptionId({ paymentIntentId, stripe });
   if (!subscriptionId) {
+    if (await revokeLifetimePurchase({ paymentIntentId, stripe })) return 'revoked';
     logger.warn(
-      `Billing refund ${event.type} ${event.id}: ${paymentIntentId} bought no running period, nothing canceled`,
+      `Billing refund ${event.type} ${event.id}: ${paymentIntentId} bought no running period or held lifetime plan, nothing ended`,
     );
     return 'ignored';
   }

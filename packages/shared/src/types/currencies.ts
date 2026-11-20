@@ -1,3 +1,4 @@
+import { MAX_CURRENCY_DECIMALS } from './money';
 import type { RecordId } from './record-id';
 import type { UserModel } from './users';
 
@@ -30,7 +31,7 @@ export const CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH = 8;
 /** Longest logo URL a custom currency stores. */
 export const CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH = 2048;
 export const CUSTOM_CURRENCY_DECIMALS_MIN = 0;
-export const CUSTOM_CURRENCY_DECIMALS_MAX = 18;
+export const CUSTOM_CURRENCY_DECIMALS_MAX = MAX_CURRENCY_DECIMALS;
 
 export interface CurrencyModel {
   currency: string;
@@ -69,7 +70,7 @@ export interface CustomCurrencyModel extends CurrencyMeta {
 export interface CreateCustomCurrencyBody {
   code: string;
   name: string;
-  /** 0 to 18. */
+  /** 0 to `MAX_CURRENCY_DECIMALS`. */
   decimals: number;
   symbol?: string | null;
 }
@@ -94,7 +95,7 @@ export interface UserCurrencyModel {
   nameOverride: string | null;
   /** Symbol the user gave the currency; `null` keeps `currency.symbol`. */
   symbolOverride: string | null;
-  /** Decimals the user's amounts keep in this currency (0 to 18); `null` keeps `currency.digits`. */
+  /** Decimals the user's amounts keep in this currency (0 to `MAX_CURRENCY_DECIMALS`); `null` keeps `currency.digits`. */
   decimalsOverride: number | null;
   /** https URL of the image the user picked for a custom currency; always `null` on an ISO currency. */
   logoUrl: string | null;

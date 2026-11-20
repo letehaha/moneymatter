@@ -1,4 +1,5 @@
 import { type MinorUnits, asMinorUnits } from '@bt/shared/types';
+import type { CategoryRefundPair } from '@services/stats/category-allocation';
 import { type PeriodBucket, findBucketIndex } from '@services/stats/utils';
 
 import { type SavingsTransactionRow, accumulateSavings } from '../get-net-worth-drivers/savings';
@@ -93,14 +94,16 @@ export const accumulateContributions = ({
  */
 export const accumulateSavingsNet = ({
   transactions,
+  refundPairs,
   buckets,
   decimals,
 }: {
   transactions: SavingsTransactionRow[];
+  refundPairs: CategoryRefundPair[];
   buckets: PeriodBucket[];
   /** Decimals of the base currency: the scale `refAmount` is converted to minor units at. */
   decimals: number;
-}): MinorUnits[] => accumulateSavings({ transactions, buckets, decimals }).map((bucket) => bucket.net);
+}): MinorUnits[] => accumulateSavings({ transactions, refundPairs, buckets, decimals }).map((bucket) => bucket.net);
 
 /**
  * Legend for the stacked chart: one entry per active portfolio, ordered by the

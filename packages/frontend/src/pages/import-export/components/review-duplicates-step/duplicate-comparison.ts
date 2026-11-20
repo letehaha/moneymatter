@@ -1,40 +1,20 @@
 import { formatShortDate } from '@/common/utils/date';
-import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
+import { toLocalCurrencyNumber } from '@/js/helpers/formatters';
 import type { DuplicateMatch } from '@bt/shared/types';
 
 /** Shown in a comparison cell when that side has no value for the field. */
 export const DUPLICATE_PLACEHOLDER = '–';
 
-const formattersByDecimals = new Map<number, Intl.NumberFormat>();
-
-/**
- * Rounds half away from zero on the decimal digits of the number as written (`1.005` -> `1.01`),
- * the way the duplicate key rounds. `Number.toFixed` rounds the binary value instead (`1.005` -> `1.00`).
- */
-const getAmountFormatter = ({ decimals }: { decimals: number }): Intl.NumberFormat => {
-  let formatter = formattersByDecimals.get(decimals);
-
-  if (!formatter) {
-    formatter = new Intl.NumberFormat('en-US', {
-      useGrouping: false,
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-      roundingMode: 'halfExpand',
-      // A negative amount that rounds to zero shows as `0.00`, not `-0.00`
-      signDisplay: 'negative',
-    });
-    formattersByDecimals.set(decimals, formatter);
-  }
-
-  return formatter;
-};
-
 /**
  * detect-duplicates returns decimal amounts; they show at the decimals of the row's currency,
- * rounded half-up like the duplicate key and the import write.
+ * rounded half away from zero on the digits as written (`1.005` -> `1.01`), like the duplicate
+ * key and the import write. A negative amount that rounds to zero shows as `0.00`, not `-0.00`.
  */
 export const formatDuplicateAmount = ({ amount, currencyCode }: { amount: number; currencyCode: string }): string =>
-  getAmountFormatter({ decimals: getCurrencyDecimals({ code: currencyCode }) }).format(amount);
+  toLocalCurrencyNumber(amount, { currency: currencyCode, locale: 'en-US', useGrouping: false }).replace(
+    /^-(?=[0.]+$)/,
+    '',
+  );
 
 /**
  * Locale-aware date formatting for comparison cells. Delegates to formatShortDate,

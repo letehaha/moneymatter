@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { resolveLocale } from '@bt/shared/i18n/locales';
 import { requestContext } from '@common/request-context';
 import { NextFunction, Request, Response } from 'express';
 
-import i18next, { SUPPORTED_LOCALES } from './index';
+import i18next from './index';
 
 /**
  * Middleware to detect and set the user's language preference.
@@ -14,17 +15,8 @@ import i18next, { SUPPORTED_LOCALES } from './index';
  */
 export async function detectLanguage(req: Request, _res: Response, next: NextFunction): Promise<void> {
   try {
-    const supportedLocales = SUPPORTED_LOCALES;
-
-    // Extract locale from query param or Accept-Language header
-    const queryLang = req.query.lang as string | undefined;
-    const headerLang = req.headers['accept-language']?.split(',')[0]?.split('-')[0];
-
-    // Determine final locale with priority
-    const detectedLocale = queryLang || headerLang || 'en';
-
-    // Validate and normalize locale
-    const locale = supportedLocales.includes(detectedLocale) ? detectedLocale : 'en';
+    const queryLang = typeof req.query.lang === 'string' ? req.query.lang : undefined;
+    const locale = resolveLocale({ tag: queryLang || req.headers['accept-language'] });
 
     // Set locale on request for use in controllers/services
     (req as any).locale = locale;

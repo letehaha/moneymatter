@@ -1,5 +1,6 @@
 import { getCombinedBalanceHistory } from '@/api/stats';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { useUserSettings } from '@/composable/data-queries/user-settings';
 import { captureException } from '@/lib/sentry';
 import { useRootStore } from '@/stores';
 import { useQuery } from '@tanstack/vue-query';
@@ -25,19 +26,23 @@ export function useNetWorthData({
 }) {
   const { isAppInitialized } = storeToRefs(useRootStore());
 
-  const fetchRange = computed(() => computeFetchRange({ period: selectedPeriod() }));
+  const { data: userSettings, isPending: isSettingsPending } = useUserSettings();
+  const payday = computed(() => userSettings.value?.payday ?? 1);
+  const isReady = computed(() => isAppInitialized.value && !isSettingsPending.value);
+
+  const fetchRange = computed(() => computeFetchRange({ period: selectedPeriod(), payday: payday.value }));
 
   // The response carries every component, so the include toggles reshape the loaded
   // series client-side and never belong in the key.
   const { data, isFetching, isError, error, refetch } = useQuery({
     queryKey: computed(() => [
       ...VUE_QUERY_CACHE_KEYS.widgetNetWorth,
-      { from: selectedPeriod().from.toISOString(), to: selectedPeriod().to.toISOString() },
+      { from: fetchRange.value.from.toISOString(), to: fetchRange.value.to.toISOString() },
     ]),
     queryFn: () => getCombinedBalanceHistory({ from: fetchRange.value.from, to: fetchRange.value.to }),
     staleTime: Infinity,
     placeholderData: (prev) => prev,
-    enabled: isAppInitialized,
+    enabled: isReady,
   });
 
   watch(error, (value) => {
@@ -57,7 +62,12 @@ export function useNetWorthData({
   );
 
   const prevDelta = computed(() =>
-    computePrevDelta({ series: series.value, settings: settings.value, period: selectedPeriod() }),
+    computePrevDelta({
+      series: series.value,
+      settings: settings.value,
+      period: selectedPeriod(),
+      payday: payday.value,
+    }),
   );
 
   const growthPercent = computed(() =>
@@ -65,12 +75,17 @@ export function useNetWorthData({
   );
 
   const trendWindows = computed(() =>
-    computeTrendBars({ series: series.value, settings: settings.value, period: selectedPeriod() }),
+    computeTrendBars({
+      series: series.value,
+      settings: settings.value,
+      period: selectedPeriod(),
+      payday: payday.value,
+    }),
   );
 
-  // Stays true while the query is disabled by app init, so a stalled init never
+  // Stays true while the query waits for app init and settings, so a stalled init never
   // renders as an empty widget.
-  const isInitialLoading = computed(() => !data.value && (isFetching.value || !isAppInitialized.value));
+  const isInitialLoading = computed(() => !data.value && (isFetching.value || !isReady.value));
   const isEmpty = computed(() => series.value.length === 0);
 
   return {

@@ -1,0 +1,385 @@
+{
+  "budgets": {
+    "title": "Acompanhamentos",
+    "description": "Acompanhe seus gastos e monitore eventos financeiros",
+    "notFound": "Acompanhamento não encontrado",
+    "notFoundDescription": "Não encontramos este acompanhamento. Ele pode ter sido excluído ou você pode não ter acesso a ele.",
+    "backToList": "Voltar para acompanhamentos",
+    "newBudget": "Novo acompanhamento",
+    "createBudget": "Criar acompanhamento",
+    "creation": {
+      "success": "Acompanhamento criado",
+      "error": "Erro inesperado.",
+      "nameLabel": "Nome do acompanhamento",
+      "namePlaceholder": "Digite o nome",
+      "fromDateLabel": "Data inicial",
+      "toDateLabel": "Data final",
+      "limitPlaceholder": "Digite o limite",
+      "submitButton": "Adicionar acompanhamento"
+    },
+    "limitKind": {
+      "label": "Tipo de limite",
+      "whatToChoose": "Qual escolher?",
+      "guideTitle": "Qual limite combina com você?",
+      "goalNote": "Está juntando dinheiro para algo? Nesse caso, {goalLink}: metas acompanham o que você guardou, e acompanhamentos, o que entra ou sai.",
+      "goalLink": "crie uma meta",
+      "kinds": {
+        "spending": {
+          "label": "Gastos",
+          "hint": "Gaste no máximo este valor. Avisa quando os gastos andam mais rápido que o tempo.",
+          "guide": "Para algo específico ou um evento: uma viagem, uma reforma, um ano de mercado. Avisa quando você gasta mais rápido do que o tempo passa.",
+          "amountLabel": "Limite"
+        },
+        "income_target": {
+          "label": "Alvo de receita",
+          "hint": "Ganhe pelo menos este valor. Fica verde enquanto você está no ritmo, e passar do valor é uma vitória.",
+          "guide": "Para o dinheiro que você quer ganhar: salário anual, faturamento como freelancer, renda de aluguel. Fica verde enquanto está no ritmo; passar do valor é uma vitória.",
+          "amountLabel": "Valor-alvo"
+        },
+        "income_cap": {
+          "label": "Teto de receita",
+          "hint": "Fique abaixo desta receita, por exemplo, um limite de imposto ou de benefício. Avisa quando você chega perto.",
+          "guide": "Para a receita que precisa ficar abaixo de um teto: o limite de faturamento do MEI, o limite de renda de um benefício ou de uma bolsa de estudos. Avisa quando você chega perto.",
+          "amountLabel": "Teto"
+        }
+      }
+    },
+    "list": {
+      "loadError": "Não foi possível carregar os acompanhamentos.",
+      "tabCategory": "Acompanhamentos por categoria",
+      "tabManual": "Acompanhamentos manuais",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "deleteSuccess": "Acompanhamento excluído",
+      "deleteError": "Erro inesperado.",
+      "updateSuccess": "Acompanhamento atualizado",
+      "updateError": "Não foi possível atualizar o acompanhamento",
+      "unlinkTransactionsSuccess": "Transações desvinculadas",
+      "deleteDialog": {
+        "title": "Excluir este acompanhamento?",
+        "description": "Ao clicar em “Aceitar”, todas as transações associadas serão desvinculadas do acompanhamento, mas continuarão no sistema."
+      },
+      "limitLabel": "Limite: {amount}",
+      "transactionsCount": "Transações: {count}",
+      "categoriesCount": "Categorias: {count}",
+      "noTransactions": "Nenhuma transação ainda",
+      "noTimePeriod": "Sem período definido",
+      "status": {
+        "ended": "Encerrado",
+        "lastDay": "Último dia",
+        "oneDayLeft": "Falta 1 dia",
+        "daysLeft": "Dias restantes: {count}",
+        "startsToday": "Começa hoje",
+        "startsTomorrow": "Começa amanhã",
+        "startsInDays": "Começa em {count} dias"
+      },
+      "income": "Receitas",
+      "expenses": "Despesas",
+      "net": "Saldo líquido",
+      "used": "Usado",
+      "earned": "Recebido",
+      "archive": "Arquivar",
+      "unarchive": "Desarquivar",
+      "archivedLabel": "Arquivado",
+      "archiveError": "Não foi possível atualizar o status de arquivamento",
+      "showArchived": "Mostrar arquivados",
+      "hideArchived": "Ocultar arquivados",
+      "emptyState": {
+        "title": "Nenhum acompanhamento ainda",
+        "description": "Crie um acompanhamento para começar a acompanhar seus gastos ou monitorar eventos específicos."
+      },
+      "searchPlaceholder": "Buscar acompanhamentos",
+      "filters": {
+        "all": "Todos",
+        "autoAdd": "Adição automática ativa",
+        "handPicked": "Escolhidos a dedo",
+        "archived": "Arquivados"
+      },
+      "groups": {
+        "active": "Ativos agora",
+        "upcoming": "Próximos",
+        "noDates": "Sem datas",
+        "ended": "Encerrados",
+        "archived": "Arquivados",
+        "show": "mostrar",
+        "hide": "ocultar"
+      },
+      "showMoreEnded": "Mostrar mais encerrados ({count})",
+      "row": {
+        "auto": "auto",
+        "transactions": "{count} transação | {count} transações",
+        "moreCategories": "+{count}",
+        "noLimit": "sem limite",
+        "archiveSuggestion": "Arquivar?"
+      },
+      "menu": {
+        "moreActions": "Mais ações",
+        "open": "Abrir",
+        "duplicate": "Duplicar"
+      },
+      "duplicateSuccess": "Acompanhamento duplicado",
+      "duplicateError": "Não foi possível duplicar o acompanhamento",
+      "archiveSuccess": "Acompanhamento arquivado",
+      "unarchiveSuccess": "Acompanhamento desarquivado",
+      "noMatch": {
+        "title": "Nenhum resultado para “{query}”",
+        "titleNoQuery": "Nenhum acompanhamento corresponde a estes filtros",
+        "description": "Tente outro nome ou inclua os acompanhamentos arquivados.",
+        "includeArchived": "Incluir arquivados"
+      },
+      "archivePrompt": {
+        "title": "Arquivar “{name}”?",
+        "endedDaysAgo": "há {count} dia | há {count} dias",
+        "endedMonthsAgo": "há {count} mês | há {count} meses",
+        "description": "Ele terminou {ago}. Acompanhamentos arquivados vão para o grupo “Arquivados” e mantêm suas transações e estatísticas. Você pode desarquivar quando quiser.",
+        "dontAsk": "Não perguntar de novo para este acompanhamento",
+        "notNow": "Agora não",
+        "dismissError": "Não foi possível atualizar o acompanhamento",
+        "dismissSuccess": "Entendido. Não vamos mais sugerir arquivar este acompanhamento."
+      }
+    },
+    "settings": {
+      "nameLabel": "Nome do acompanhamento",
+      "namePlaceholder": "Digite o nome do acompanhamento",
+      "limitPlaceholder": "Digite o valor do limite (opcional)",
+      "startDateLabel": "Data de início",
+      "endDateLabel": "Data de término",
+      "notSet": "Não definido"
+    },
+    "addTransactionsDialog": {
+      "title": "Adicionar transações ao acompanhamento",
+      "addSelected": "Adicionar selecionadas",
+      "clearSelection": "Limpar seleção"
+    },
+    "manualBudget": {
+      "edit": "Editar",
+      "editTitle": "Editar acompanhamento"
+    },
+    "share": {
+      "sharedByBadge": "Compartilhado por {handle}"
+    },
+    "details": {
+      "statsLoadError": "Não foi possível carregar os totais deste acompanhamento.",
+      "transactionsCount": "{count} transação | {count} transações",
+      "tagsCount": "{count} tag | {count} tags",
+      "strip": {
+        "limit": "Limite",
+        "spent": "Gasto",
+        "left": "Restante",
+        "overBy": "Acima em",
+        "earned": "Recebido",
+        "toGo": "Falta",
+        "headroom": "Margem",
+        "aboveTargetBy": "Acima do alvo em",
+        "income": "Receitas",
+        "expenses": "Despesas",
+        "net": "Saldo líquido",
+        "transactions": "Transações",
+        "perDay": "{amount} / dia"
+      },
+      "tabs": {
+        "limits": "Limites"
+      },
+      "autoAdds": "Adiciona automaticamente",
+      "membersLabel": "Membros: {count}",
+      "actions": {
+        "share": "Compartilhar",
+        "setLimits": "Definir limites",
+        "removeLimits": "Remover limites",
+        "duplicate": "Duplicar",
+        "openInTransactions": "Abrir em “Transações”",
+        "more": "Mais ações"
+      },
+      "shareDialog": {
+        "title": "Compartilhar “{name}”"
+      },
+      "removeLimitsDialog": {
+        "title": "Remover todos os limites?",
+        "description": "A linha e o limite dela serão removidos. As transações vinculadas continuam no acompanhamento. | Todas as {count} linhas e os limites delas serão removidos. As transações vinculadas continuam no acompanhamento."
+      },
+      "edit": {
+        "limitHint": "Deixe em branco para acompanhar sem limite.",
+        "datesHint": "Mudar as datas não adiciona nem remove transações já vinculadas."
+      }
+    },
+    "lines": {
+      "addLine": "Adicionar linha",
+      "empty": {
+        "title": "Divida os gastos em linhas",
+        "titleWithLimit": "Divida os {amount} em linhas",
+        "description": "Uma linha é um conjunto de categorias com limite próprio. Os gastos que não se encaixam em nenhuma linha aparecem como “Outros”."
+      },
+      "columns": {
+        "line": "Linha",
+        "limit": "Limite",
+        "spent": "Gasto",
+        "left": "Restante"
+      },
+      "usage": "{percent}% · {spent} de {limit}",
+      "overUsage": "{amount} acima · {spent} de {limit}",
+      "spentOnly": "{amount} gasto",
+      "categoriesCount": "{count} categoria | {count} categorias",
+      "ofLimit": "de {limit}",
+      "editLimitAria": "Editar limite de “{name}”",
+      "noLimitPlaceholder": "Sem limite",
+      "other": {
+        "title": "Outros gastos",
+        "hint": "fora de qualquer linha"
+      },
+      "total": {
+        "title": "Total · {count} linha | Total · {count} linhas",
+        "limitOfOverall": "{sum} de {limit}"
+      },
+      "menu": {
+        "ariaLabel": "Ações da linha",
+        "edit": "Editar linha",
+        "delete": "Excluir linha"
+      },
+      "delete": {
+        "title": "Excluir linha?",
+        "description": "A linha “{name}” será removida e os gastos dela vão aparecer em “Outros”. As transações não são afetadas."
+      },
+      "dialog": {
+        "addTitle": "Adicionar linha",
+        "editTitle": "Editar linha",
+        "nameLabel": "Nome",
+        "namePlaceholder": "ex.: Hotéis",
+        "nameRequired": "Digite um nome",
+        "categoriesLabel": "Categorias",
+        "categoriesPlaceholder": "Escolha as categorias",
+        "categoriesRequired": "Escolha pelo menos uma categoria",
+        "limitLabel": "Limite (opcional)",
+        "limitPlaceholder": "Sem limite",
+        "limitHint": "Deixe em branco para agrupar gastos sem limite."
+      },
+      "notifications": {
+        "limitsRemoved": "Limites removidos",
+        "created": "Linha adicionada",
+        "updated": "Linha atualizada",
+        "deleted": "Linha excluída",
+        "createError": "Não foi possível adicionar a linha",
+        "updateError": "Não foi possível atualizar a linha",
+        "deleteError": "Não foi possível excluir a linha"
+      }
+    },
+    "rules": {
+      "heading": "Adição automática",
+      "switchLabel": "Adicionar transações correspondentes automaticamente",
+      "switchHintOn": "Suas transações dentro do período com qualquer uma destas categorias ou tags são adicionadas.",
+      "switchHintOff": "Só contam as transações que você adicionar manualmente.",
+      "switchHintTurnedOff": "Ao desativar, todas as transações já adicionadas são mantidas.",
+      "categoriesLabel": "Categorias",
+      "categoriesPlaceholder": "Escolha as categorias",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Escolha as tags",
+      "needsCategoryOrTag": "Escolha pelo menos uma categoria ou tag",
+      "cleanupLabel": "Remover transações que deixarem de corresponder",
+      "cleanupHint": "Verificado a cada 6 horas. Transações que você adicionou manualmente nunca são removidas.",
+      "checkedAt": "Verificado {when}",
+      "unlinked": "{count} transação removida. Ela não será adicionada de novo automaticamente. | {count} transações removidas. Elas não serão adicionadas de novo automaticamente.",
+      "confirm": {
+        "title": "Salvar as novas regras de correspondência?",
+        "description": "Depois de salvar, todas as suas transações são verificadas com as novas regras e as correspondentes são adicionadas.",
+        "descriptionWithCleanup": "Depois de salvar, todas as suas transações são verificadas com as novas regras. As correspondentes são adicionadas, e as que foram adicionadas pelas regras e não correspondem mais são removidas. As transações que você adicionou manualmente continuam.",
+        "saveAndCheck": "Salvar e verificar"
+      },
+      "rejected": {
+        "title": "Não adicionadas de novo",
+        "description": "Você removeu estas transações ou as rejeitou como sugestões da IA, então elas são ignoradas. Permita uma e ela volta a ser adicionada se ainda corresponder.",
+        "summary": "{count} transação não será adicionada de novo | {count} transações não serão adicionadas de novo",
+        "review": "Revisar",
+        "aiBadge": "Sugestão da IA",
+        "allowAgain": "Permitir de novo",
+        "allowed": "Permitida de novo",
+        "allowError": "Não foi possível permitir a transação de novo"
+      }
+    },
+    "smartTracking": {
+      "fields": {
+        "heading": "Acompanhamento inteligente",
+        "switchLabel": "Encontrar transações correspondentes para mim",
+        "switchHint": "Verifica transações novas e editadas toda noite. As correspondências certas são adicionadas para você, e o resto fica esperando sua revisão.",
+        "needsStartDate": "Defina uma data de início antes: a IA procura a partir dela.",
+        "noAi": "Configure um modelo de IA em {link} para usar este recurso.",
+        "noAiLink": "Configurações → IA",
+        "allowanceUsed": "A cota de IA acabou. {link} para continuar usando.",
+        "running": "A correspondência está em andamento. Você pode alterar isto quando ela terminar.",
+        "descriptionLabel": "O que entra neste acompanhamento?",
+        "descriptionPlaceholder": "ex.: Duas semanas na Grécia: voos, balsas, carro alugado, hotéis nas ilhas",
+        "descriptionRequired": "Descreva o que entra aqui para a IA saber o que procurar.",
+        "preWindowLabel": "Procurar também antes da data de início",
+        "preWindowPlaceholder": "Escolha até quando procurar para trás",
+        "preWindowHint": "Encontra voos e hotéis reservados com antecedência.",
+        "preWindowOptions": {
+          "none": "Não procurar antes",
+          "twoWeeks": "2 semanas",
+          "oneMonth": "1 mês",
+          "twoMonths": "2 meses",
+          "threeMonths": "3 meses",
+          "sixMonths": "6 meses"
+        },
+        "costNote": "A primeira varredura verifica todas as transações desde o início da janela retroativa até a data de término. Períodos longos podem esgotar sua cota mensal de IA ou gerar custo direto se você usa sua própria chave.",
+        "usesIncluded": "Usa a IA incluída. Conta para sua cota mensal de IA.",
+        "usesOwnModel": "Usa seu próprio modelo · {model}"
+      },
+      "pausedUntil": "Pausado até {date}",
+      "connectOwnModel": "Conectar seu próprio modelo",
+      "plan": {
+        "locked": "O acompanhamento inteligente faz parte do plano Plus. Faça upgrade ou conecte sua própria chave de IA para continuar usando.",
+        "connectOwnKey": "Conectar sua própria chave",
+        "upgrade": "Fazer upgrade",
+        "startTrial": "Começar teste grátis",
+        "trialDaysLeft": "Teste grátis: falta {n} dia | Teste grátis: faltam {n} dias",
+        "trialHint": "Inclui um teste grátis de {days} dias. Ele começa quando você ativa o acompanhamento inteligente."
+      },
+      "turnedOn": "O acompanhamento inteligente está ativo. Os primeiros resultados chegam em um ou dois minutos.",
+      "undo": "Desfazer",
+      "unlinked": "Desvinculada. A IA não vai adicioná-la de novo. | {count} transações desvinculadas. A IA não vai adicioná-las de novo.",
+      "relinkError": "Não foi possível adicionar as transações de volta. Tente de novo.",
+      "strip": {
+        "tip": "Deixe a IA encontrar transações para este acompanhamento",
+        "turnOn": "Ativar",
+        "hide": "Ocultar",
+        "scanning": "Procurando transações correspondentes…",
+        "startedAt": "Iniciado {time}",
+        "toReview": "A revisar: {count}",
+        "checkedAt": "verificado {when}",
+        "review": "Revisar",
+        "idle": "Acompanhamento inteligente ativo · nada novo para revisar",
+        "settings": "Configurações",
+        "paused": "Pausado",
+        "allowanceUsed": "A cota de IA acabou",
+        "unavailable": "A conexão com a IA parou de funcionar",
+        "fixInSettings": "Corrigir nas configurações",
+        "ended": "Acompanhamento inteligente parado · o acompanhamento terminou há mais de 14 dias",
+        "noStartDate": "Defina uma data de início para usar o acompanhamento inteligente"
+      },
+      "hideTip": {
+        "title": "Ocultar esta dica?",
+        "description": "Você ainda pode ativar o acompanhamento inteligente nas configurações do acompanhamento.",
+        "neverShow": "Não mostrar de novo",
+        "neverShowHint": "Oculta a dica em todos os acompanhamentos, não só neste.",
+        "confirm": "Ocultar"
+      },
+      "review": {
+        "sectionTitle": "A revisar ({count})",
+        "confidence": {
+          "likely": "Provável",
+          "possible": "Possível"
+        },
+        "add": "Adicionar",
+        "skip": "Ignorar",
+        "addAria": "Adicionar “{name}” a “{tracker}”",
+        "skipAria": "Ignorar “{name}”",
+        "addAll": "Adicionar todas ({count})",
+        "addAllShort": "Adicionar todas",
+        "skipAll": "Ignorar todas",
+        "added": "{count} transação adicionada a “{name}” | {count} transações adicionadas a “{name}”",
+        "skipped": "Ignorada. A IA não vai sugeri-la de novo. | {count} transações ignoradas. A IA não vai sugeri-las de novo.",
+        "acceptError": "Não foi possível adicionar as transações sugeridas. Tente de novo.",
+        "rejectError": "Não foi possível ignorar as transações sugeridas. Tente de novo.",
+        "restoreError": "Não foi possível desfazer. Tente de novo."
+      }
+    }
+  }
+}

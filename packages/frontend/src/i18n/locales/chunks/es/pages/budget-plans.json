@@ -106,6 +106,7 @@
       "goToAccounts": "Ir a cuentas",
       "cadenceLabel": "Restablecer",
       "startsOnLabel": "Comienza en",
+      "startsOnOutOfRange": "Elige una fecha desde {from} hasta hoy.",
       "accountsLabel": "Cuentas",
       "accountsPlaceholder": "Seleccionar cuentas",
       "rolloverLabel": "Rollover",
@@ -180,7 +181,7 @@
         "question": "¿Suscripciones de pago?",
         "many": "Muchos",
         "few": "Unos pocos",
-        "none": "Ninguna"
+        "none": "Nada"
       },
       "focus": {
         "questionHistory": "¿Qué quiere ver con atención?",
@@ -193,9 +194,9 @@
         "question": "¿Cuán detallado debería ser su presupuesto?",
         "compact": "Compacta",
         "compactHint": "6–8 líneas",
-        "balanced": "Equilibrado",
+        "balanced": "Balanceado",
         "balancedHint": "10–12 líneas",
-        "detailed": "Detallada",
+        "detailed": "Detallado",
         "detailedHint": "Hasta 20 líneas"
       },
       "contextError": "No se pudo cargar tu gasto. Vuelve a intentarlo.",
@@ -235,7 +236,11 @@
       "activity": "Actividad",
       "available": "Disponible",
       "overrideBadge": "reemplazo",
-      "carriesDeficit": "tiene déficit",
+      "carryBadge": {
+        "floor": "superávit",
+        "signed": "superávit y déficit",
+        "none": "comienza de cero"
+      },
       "lineActions": "Acciones de línea",
       "editLine": "Editar línea",
       "archiveLine": "Archivar línea",
@@ -251,7 +256,7 @@
       "archiveManyTitle": "¿Archivar {count} línea? | ¿Archivar {count} líneas?",
       "archiveManyDescription": "Deja de contar a partir de este período. Los últimos períodos mantienen sus números. Puede restaurarlo más tarde desde \"Archivado\".",
       "deleteLine": "Eliminar línea",
-      "deleteTitle": "¿Eliminar este grupo?",
+      "deleteTitle": "¿Eliminar \"{name}\"?",
       "deleteDescription": "Las cantidades asignadas se eliminan y sus gastos se mostrarán fuera de sus líneas. Esto no se puede deshacer.",
       "deleteHistoryDescription": "Se elimina de cada período, incluyendo los pasados, y se eliminan los importes asignados. Su gasto se mostrará fuera de sus líneas. Esto no se puede deshacer.",
       "deletePermanently": "Eliminar permanentemente",
@@ -331,11 +336,11 @@
         "changedSince": "Qué cambió desde {period}",
         "changedThisPeriod": "Qué cambió este período",
         "startingBalance": "Saldo inicial",
-        "income": "Ingreso",
+        "income": "Ingresos",
         "outsideSpending": "Gastar fuera de tus líneas",
         "fromLines": "Desde líneas (rollover regresado / exceso de gasto cubierto)",
         "assigned": "Asignado este período",
-        "cashHint": "Efectivo en las cuentas del plan, menos límites de crédito.",
+        "cashHint": "Efectivo en las cuentas del plan. Los límites de crédito se restan cuando se incluyen límites de crédito en el saldo.",
         "inLinesHint": "Todo actualmente en sus líneas.",
         "driftHint": "Tasa de movimientos y saldos no explicados por las transacciones.",
         "committedLaterHint": "Ya asignado en un período posterior.",
@@ -372,6 +377,8 @@
       "pace": "Ritmo de gasto",
       "spent": "Gastado",
       "elapsed": "Período transcurrido",
+      "usuallyByToday": "Normalmente para hoy",
+      "slowDown": "Ralentiza hasta ~{perDay}/día para que dure",
       "spentOfTotal": "{spent} de {total}",
       "daysLeft": "{n} restante",
       "scheduled": "Programado",
@@ -415,9 +422,9 @@
       "nameLabel": "Nombre del grupo",
       "namePlaceholder": "ej. Facturas",
       "created": "Grupo creado",
-      "updated": "El grupo ha sido actualizado",
+      "updated": "Grupo actualizado",
       "error": "No se pudo guardar el grupo",
-      "lineGroupLabel": "Agrupar",
+      "lineGroupLabel": "Grupo",
       "lineGroupPlaceholder": "Selecciona un grupo",
       "noGroup": "Sin grupo",
       "layoutTitle": "Administrar diseño",
@@ -425,6 +432,12 @@
       "ungrouped": "Sin agrupar",
       "layoutSaved": "Diseño guardado",
       "layoutError": "No se pudo guardar el diseño"
+    },
+    "pace": {
+      "aheadUsual": "{amount} por encima del ritmo habitual",
+      "aheadEven": "{amount} por delante del ritmo",
+      "aheadUsualPerDay": "{amount} por delante del ritmo habitual · ~{perDay}/día restante durante {count} día | {amount} por delante del ritmo habitual · ~{perDay}/día restante durante {count} días",
+      "aheadEvenPerDay": "{amount} por delante del ritmo · ~{perDay}/día restante por {count} día | {amount} por delante del ritmo · ~{perDay}/día restante durante {count} días"
     },
     "options": {
       "title": "Opciones",
@@ -434,7 +447,8 @@
       "rowBarGoal": "Barra de objetivo",
       "rowBarCombined": "Barra combinada",
       "rowBarSplit": "Dividir barras",
-      "rowBarNone": "Sin barra"
+      "rowBarNone": "Sin barra",
+      "paceHint": "Pista de ritmo"
     },
     "goals": {
       "askHint": "Asigne esta cantidad aquí para permanecer en el plazo.",
@@ -457,7 +471,7 @@
       "progressOf": "{progress} de {target} ({percent}%)",
       "toGo": "{amount} para ir",
       "assignAsk": "Presupuesto {amount}",
-      "unsnooze": "Reanudar suscripción",
+      "unsnooze": "Reanudar",
       "edit": "Editar objetivo",
       "delete": "Eliminar objetivo",
       "deleteTitle": "Eliminar objetivo",
@@ -529,7 +543,7 @@
       "saveError": "No se pudo guardar el objetivo",
       "details": "Detalle del objetivo",
       "stats": {
-        "saved": "Ahorrado",
+        "saved": "Ahorro",
         "target": "Objetivo",
         "leftToSave": "Queda por guardar",
         "balance": "Saldo",

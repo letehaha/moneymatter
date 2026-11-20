@@ -65,8 +65,8 @@ defineOptions({
 });
 
 // Brand logos served statically from `public/`.
-const YNAB_LOGO = '/img/logos/ynab.png';
-const BUDGETBAKERS_LOGO = '/img/logos/budgetbakers.png';
+const YNAB_LOGO = '/img/logos/ynab.webp';
+const BUDGETBAKERS_LOGO = '/img/logos/budgetbakers.webp';
 
 interface ImportSource {
   // Doubles as the Vue list key and the i18n namespace segment under `settings.dataManagement`.

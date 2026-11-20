@@ -7,7 +7,7 @@
         "features": "AI-функции",
         "models": "AI models",
         "connectedApps": "Connectors (MCP)",
-        "invalidConnectionsTooltip": "One of your AI models needs attention"
+        "invalidConnectionsTooltip": "Одна из ваших моделей ИИ требует внимания"
       },
       "credentialStatus": {
         "validated": "Проверено {timeAgo}",
@@ -17,8 +17,8 @@
       "features": {
         "title": "AI-функции",
         "description": "Настройте модель для каждой функции на базе AI",
-        "howItWorks": "How it works",
-        "loadError": "Couldn't load your AI features."
+        "howItWorks": "Как это работает",
+        "loadError": "Не удалось загрузить ваши ИИ функции."
       },
       "categorization": {
         "howItWorks": {
@@ -40,12 +40,12 @@
         }
       },
       "modelSelector": {
-        "placeholder": "Pick a model",
+        "placeholder": "Выберите модель",
         "automaticOption": "Automatic",
         "automaticOptionWithTarget": "Automatic · {target}",
-        "serverOption": "MoneyMatter AI · included",
+        "serverOption": "MoneyMatter AI · включен",
         "connectionOption": "{name} · {model}",
-        "connectionOptionNeedsAttention": "{name} · {model} (needs attention)",
+        "connectionOptionNeedsAttention": "{name} · {model} (требует внимания)",
         "badges": {
           "yourKey": "Ваш ключ",
           "yourKeyTooltip": "Эта функция использует ваш личный API-ключ. Вы полностью контролируете использование и расходы, а ограничения нашего сервера не применяются.",
@@ -55,7 +55,8 @@
         "modelLabel": "Модель",
         "modelInfo": {
           "estimatedCost": "Ориент. стоимость:",
-          "per100Transactions": "за 100 транзакций"
+          "per100Transactions": "за 100 транзакций",
+          "per100Pairs": "per 100 pairs"
         },
         "notifications": {
           "updateSuccess": "Модель успешно обновлена",
@@ -65,25 +66,25 @@
         },
         "empty": {
           "title": "No AI model yet",
-          "description": "Add your own AI model to use this feature."
+          "description": "Добавьте свою собственную ИИ модель для использования этой функции."
         },
         "allConnectionsDown": "All your AI models need attention, so this feature is paused. Fix one in {link}.",
         "allConnectionsDownLink": "AI models"
       },
       "modelGuide": {
-        "trigger": "Which model fits?",
-        "tierHeading": "{tier} model is enough",
+        "trigger": "Какая модель подходит?",
+        "tierHeading": "{tier} модели достаточно",
         "tiers": {
-          "light": "Светлая",
+          "light": "Light",
           "balanced": "Balanced",
           "smart": "Smart"
         },
         "needsLabel": "Needs",
         "picksLabel": "Good picks",
-        "yourModel": "Your model",
-        "source": "Model details from models.dev",
+        "yourModel": "Ваша модель",
+        "source": "Подробнее о модели из models.dev",
         "needs": {
-          "textOnly": "Text only",
+          "textOnly": "Только текст",
           "runsOften": "Runs on every sync",
           "longAnswers": "Long answers",
           "readsFiles": "Reads images & PDFs",
@@ -94,14 +95,16 @@
           "statementParsing": "Reads the whole statement and writes back every row, so it needs a model that stays accurate over long text.",
           "investmentTransactionsParsing": "Turns broker exports into buy and sell rows. Long exports need a model that can write long answers.",
           "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs.",
-          "trackerMatching": "A short, repetitive job that runs every day. A small model handles it well and keeps the cost down."
+          "trackerMatching": "A short, repetitive job that runs every day. A small model handles it well and keeps the cost down.",
+          "transferMatching": "Reads short pairs of transactions and answers with a one-word verdict, so a light, cheap model is enough."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",
           "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
           "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
           "receiptParsing": "Gemini Flash · Claude Sonnet",
-          "trackerMatching": "Gemini Flash Lite · Claude Haiku"
+          "trackerMatching": "Gemini Flash Lite · Claude Haiku",
+          "transferMatching": "Gemini Flash Lite · Claude Haiku"
         },
         "verdict": {
           "fit": "Good fit",
@@ -109,11 +112,11 @@
           "unknown": "Not checked"
         },
         "warning": {
-          "readsFiles": "Can't read files",
-          "readsText": "Can't read text",
-          "readsImages": "Can't read images",
-          "readsPdfs": "Can't read PDFs",
-          "longAnswers": "Short answers only",
+          "readsFiles": "Не удаётся прочитать файлы",
+          "readsText": "Не удаётся прочитать текст",
+          "readsImages": "Не удаётся прочитать изображения",
+          "readsPdfs": "Не удаётся прочитать PDF",
+          "longAnswers": "Только краткие ответы",
           "structuredAnswers": "No structured answers"
         },
         "checks": {
@@ -151,11 +154,11 @@
           "ariaLabel": "About AI models",
           "text": "You can add the same provider more than once with different models. Name them by how smart they are, like 'Claude smart' and 'Claude fast', then pick the right one for each feature."
         },
-        "addButton": "Add model",
+        "addButton": "Добавить модель",
         "capReached": "You've reached the limit of {max} AI models. Remove one to add another.",
         "duplicateName": "{name} copy",
         "empty": {
-          "title": "No AI models yet",
+          "title": "Пока нет ИИ моделей",
           "description": "Add a model with your own API key, or connect a local one like Ollama or LM Studio."
         },
         "loadError": {
@@ -171,10 +174,10 @@
         },
         "actions": {
           "menuAriaLabel": "AI model actions",
-          "duplicate": "Дубликат",
+          "duplicate": "Duplicate",
           "setDefault": "Set as default",
           "remove": "Remove",
-          "reconnect": "Переподключить",
+          "reconnect": "Reconnect",
           "enterKey": "Enter API key"
         },
         "removeDialog": {
@@ -210,22 +213,22 @@
           "titleDuplicate": "Duplicate AI model",
           "providerLabel": "Provider",
           "providerPlaceholder": "Select a provider",
-          "nameLabel": "Название",
+          "nameLabel": "Name",
           "baseUrlLabel": "Base URL",
           "baseUrlPlaceholder": "https://example.com/v1",
-          "apiKeyLabel": "API-ключ",
+          "apiKeyLabel": "API key",
           "apiKeyPlaceholder": "Paste your API key",
           "apiKeyGetHint": "Get a key at {link}.",
           "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",
           "apiKeySavedHint": "Leave blank to keep the saved key.",
           "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
           "removeApiKeyButton": "Remove API key",
-          "modelLabel": "Модель",
+          "modelLabel": "Model",
           "modelPlaceholder": "Type or pick a model",
           "modelListEmpty": "No models to pick from. Type the model name your server uses.",
           "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
           "testButton": "Test connection",
-          "saveButton": "Сохранить изменения",
+          "saveButton": "Save changes",
           "localNetworkOnly": "MoneyMatter can't reach a server on your own computer, like {hostname} or {ip}. Expose it through a tunnel such as ngrok or Cloudflare Tunnel, then paste the tunnel's URL here.",
           "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
         },

@@ -9,10 +9,10 @@ class DecimalFixture extends Model {
   @Column({ type: DataType.INTEGER, primaryKey: true })
   declare id: number;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare amount: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
+  @MoneyField({ allowNull: true })
   declare optionalAmount: Money | null;
 }
 
@@ -24,17 +24,12 @@ new Sequelize({
 });
 
 describe('@MoneyField decimal storage', () => {
-  it('stores a Money value with every decimal it carries, padded to the column scale', () => {
+  it('stores a Money value with every decimal it carries, padded to the column scale, not rounded to cents', () => {
     const row = DecimalFixture.build({ id: 1 });
 
     row.amount = Money.fromDecimal('0.00040641');
-
     expect(row.getDataValue('amount')).toBe('0.000406410000000000');
     expect(row.amount.toDecimalString(8)).toBe('0.00040641');
-  });
-
-  it('does not round to the 2 decimals of a cent', () => {
-    const row = DecimalFixture.build({ id: 1 });
 
     row.amount = Money.fromDecimal('1.005');
     expect(row.getDataValue('amount')).toBe('1.005000000000000000');
@@ -70,7 +65,6 @@ describe('toMoneyColumnValue', () => {
     row.amount = money;
 
     expect(toMoneyColumnValue({ money })).toBe(row.getDataValue('amount'));
-    expect(toMoneyColumnValue({ money })).toBe('12.345000000000000000');
   });
 
   it('keeps the sign and pads to the column scale', () => {

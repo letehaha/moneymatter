@@ -31,10 +31,10 @@ const resolveSettledAt = ({
   anchorDate: string;
   legs: Transactions[];
 }): string => {
-  if (!anchorBalance.isNegative()) return new Date(anchorDate).toISOString();
+  let cumulativeBalance = anchorBalance;
+  if (!cumulativeBalance.isNegative()) return new Date(anchorDate).toISOString();
 
   const sortedLegs = [...legs].toSorted((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
-  let cumulativeBalance = anchorBalance;
   for (const leg of sortedLegs) {
     cumulativeBalance = cumulativeBalance.add(leg.amount);
     if (!cumulativeBalance.isNegative()) return new Date(leg.time).toISOString();
@@ -93,24 +93,18 @@ const recomputeLoanBalanceImpl = async ({
     anchorDate,
   });
 
-  // The native legs are summed in minor units at the loan currency's decimals, the base-currency
-  // (ref) legs at the base currency's, so neither side is ever rounded to cents.
+  // The Balances replay walks the native legs at the loan currency's decimals, the ref ones at the
+  // base currency's.
   const [decimals, baseDecimals] = await Promise.all([
     getCurrencyDecimals({ userId: account.userId, code: account.currencyCode }),
     getBaseCurrencyDecimals({ userId: account.userId }),
   ]);
 
-  // Income legs move a negative liability balance toward zero, so they add.
-  let sumMinor = 0;
-  for (const leg of legs) {
-    sumMinor += leg.amount.toMinorUnits({ decimals });
-  }
-
   // Loan balances are stored negative (liability); income legs add toward zero.
   // A batch that overshoots the owed amount would push the balance positive
   // (credit), but a loan never carries credit — the outstanding balance is
   // floored at zero and the excess stays only on the cash-account expense legs.
-  const rawCurrentBalance = account.initialBalance.add(Money.fromMinorUnits({ value: sumMinor, decimals }));
+  const rawCurrentBalance = Money.sum([account.initialBalance, ...legs.map((leg) => leg.amount)]);
   const newCurrentBalance = rawCurrentBalance.isPositive() ? Money.zero() : rawCurrentBalance;
 
   // The base-currency outstanding is a spot measure of the native outstanding — the
@@ -183,7 +177,7 @@ const recomputeLoanBalanceImpl = async ({
       anchorDate,
       openingBalance: account.initialBalance,
       decimals,
-      pickMinor: ({ leg }) => leg.amount.toMinorUnits({ decimals }),
+      pickAmount: ({ leg }) => leg.amount,
     }).map((row) => [row.date, row.balance]),
   );
 
@@ -192,7 +186,7 @@ const recomputeLoanBalanceImpl = async ({
     anchorDate,
     openingBalance: account.refInitialBalance ?? Money.zero(),
     decimals: baseDecimals,
-    pickMinor: ({ leg }) => leg.refAmount?.toMinorUnits({ decimals: baseDecimals }) ?? 0,
+    pickAmount: ({ leg }) => leg.refAmount ?? Money.zero(),
   }).map((row) => {
     // A day whose native outstanding is floored to zero is settled — nothing is
     // owed, so its base-currency row is zero too. The ref accumulator

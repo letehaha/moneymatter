@@ -395,7 +395,7 @@ if (!isAdmin.value) {
               <li
                 v-for="sec in query.data.value || []"
                 :key="sec.symbol"
-                class="hover:bg-muted/40 grid cursor-pointer grid-cols-[auto_auto_1fr_auto_auto] items-center gap-2 px-2 py-1"
+                class="hover:bg-hover grid cursor-pointer grid-cols-[auto_auto_1fr_auto_auto] items-center gap-2 px-2 py-1"
                 @click="selectSecurity(sec)"
               >
                 <SecurityLogo :security="sec" class="size-5" />

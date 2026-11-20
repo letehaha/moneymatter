@@ -245,6 +245,59 @@ describe('GET /stats/net-worth-drivers', () => {
       // salary is the whole income side.
       expect(buckets[0]!.savings).toEqual({ income: 5000, expenses: 600, net: 4400 });
     });
+
+    it('nets each side of a cross-month refund in its own transaction month', async () => {
+      const account = await helpers.createAccount({ raw: true });
+
+      const [expenseTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 2000,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: '2026-01-10T10:00:00.000Z',
+        }),
+        raw: true,
+      });
+      const [refundTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 500,
+          transactionType: TRANSACTION_TYPES.income,
+          time: '2026-02-05T10:00:00.000Z',
+        }),
+        raw: true,
+      });
+      await helpers.createSingleRefund({ originalTxId: expenseTx.id, refundTxId: refundTx.id });
+      await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 1000,
+          transactionType: TRANSACTION_TYPES.income,
+          time: '2026-02-15T10:00:00.000Z',
+        }),
+        raw: true,
+      });
+
+      const { buckets } = await helpers.getNetWorthDrivers({ ...RANGE, raw: true });
+      expect(buckets[0]!.savings).toEqual({ income: 0, expenses: 1500, net: -1500 });
+      expect(buckets[1]!.savings).toEqual({ income: 1000, expenses: 0, net: 1000 });
+
+      const january = await helpers.getNetWorthDrivers({
+        from: JAN.start,
+        to: JAN.end,
+        granularity: 'monthly',
+        raw: true,
+      });
+      expect(january.buckets[0]!.savings).toEqual({ income: 0, expenses: 1500, net: -1500 });
+
+      const february = await helpers.getNetWorthDrivers({
+        from: FEB.start,
+        to: FEB.end,
+        granularity: 'monthly',
+        raw: true,
+      });
+      expect(february.buckets[0]!.savings).toEqual({ income: 1000, expenses: 0, net: 1000 });
+    });
   });
 
   describe('investment growth', () => {

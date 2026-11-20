@@ -24,6 +24,18 @@ export const VERBOSE_PAYMENT_TYPES: VerbosePaymentType[] = [
   { value: PAYMENT_TYPES.webPayment, label: 'common.paymentTypes.webPayment' },
 ];
 
+export type NullablePaymentTypeOption = {
+  value: PAYMENT_TYPES | null;
+  label: string;
+};
+
+export const NO_PAYMENT_TYPE_OPTION: NullablePaymentTypeOption = { value: null, label: 'common.paymentTypes.none' };
+
+export const NULLABLE_PAYMENT_TYPE_OPTIONS: NullablePaymentTypeOption[] = [
+  NO_PAYMENT_TYPE_OPTION,
+  ...VERBOSE_PAYMENT_TYPES,
+];
+
 const OUT_OF_WALLET_ACCOUNT_NAME_KEY = 'common.outOfWallet';
 
 type OutOfWalletAccountModel = AccountModel & {

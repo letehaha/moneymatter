@@ -1,6 +1,6 @@
 {
   "loans": {
-    "title": "贷款",
+    "title": "Loans",
     "loadError": "Failed to load loans.",
     "tryAgain": "Try again",
     "addButton": {
@@ -34,10 +34,10 @@
       "editDescription": "Update the loan's terms. Changes to the rate, term, or planned payment are recorded in the events timeline."
     },
     "settings": {
-      "title": "设置",
+      "title": "Settings",
       "editTitle": "Edit loan details",
       "editDescription": "Update the name, balance, rate, term, payment fields, or lender info.",
-      "editButton": "编辑",
+      "editButton": "Edit",
       "excludeFromStatsTitle": "Exclude from statistics",
       "excludeFromStatsDescription": "Hide this loan from net worth, charts, and reports without archiving it.",
       "archiveTitle": "Archive loan",
@@ -45,13 +45,13 @@
       "archiveButton": "Archive",
       "archivedTitle": "This loan is archived",
       "archivedDescription": "It's hidden from the sidebar and account pickers and listed under Archived on the loans page. Restore it to resume tracking.",
-      "unarchiveButton": "恢复",
+      "unarchiveButton": "Restore",
       "archiveConfirmTitle": "Archive this loan?",
       "archiveConfirmDescription": "{name} will move to the Archived section on this page and be hidden from the sidebar and account pickers.",
       "archiveAlsoExclude": "Also exclude from statistics",
       "deleteTitle": "Delete loan",
       "deleteDescription": "Permanently removes the loan and its history. This cannot be undone.",
-      "deleteButton": "删除",
+      "deleteButton": "Delete",
       "deleteConfirmTitle": "Delete this loan permanently?",
       "deleteConfirmDescription": "{name} and all its events will be permanently removed. This cannot be undone.",
       "toggleSuccess": "Setting updated",
@@ -90,7 +90,7 @@
     },
     "list": {
       "columns": {
-        "loan": "贷款",
+        "loan": "Loan",
         "progress": "Progress",
         "balance": "Balance",
         "apr": "APR",

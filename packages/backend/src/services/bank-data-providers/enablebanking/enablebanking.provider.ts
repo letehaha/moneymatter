@@ -5,7 +5,7 @@ import {
   BANK_PROVIDER_TYPE,
   DEACTIVATION_REASON,
   NO_CURRENCY_CODE,
-  PAYMENT_TYPES,
+  TRANSACTION_DELETION_REASON,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
@@ -18,48 +18,44 @@ import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import {
-  countTransactions,
-  findOneTransaction,
-  findTransactions,
-  updateTransactions,
-} from '@models/transactions-query';
+import { countTransactions, findOneTransaction, findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { getUserDefaultCategory } from '@models/users.model';
 import { FRONTEND_BASE_URL } from '@root/config';
-import {
-  BaseBankDataProvider,
-  DateRange,
-  ProviderAccount,
-  ProviderBalance,
-  ProviderMetadata,
-  ProviderTransaction,
-} from '@services/bank-data-providers';
+import { getLinkDayStart } from '@services/accounts/seam';
+import { BaseBankDataProvider, ProviderAccount, ProviderMetadata } from '@services/bank-data-providers';
 import { createTransaction } from '@services/transactions';
+import { syncLegsOfMains } from '@services/transactions/payment-legs';
 import { accountHasPlannedRows } from '@services/transactions/planned-matching';
 import { getExchangeRate } from '@services/user-exchange-rate/get-exchange-rate.service';
 import { getUserSettings } from '@services/user-settings/get-user-settings';
 import { addDays, subDays } from 'date-fns';
 import { Op, Sequelize } from 'sequelize';
 
+import { clampSyncStartToLink } from '../utils/clamp-sync-start-to-link';
 import { encryptCredentials } from '../utils/credential-encryption';
+import { findSyncAnchor } from '../utils/find-sync-anchor';
+import { mergeAccountExternalData } from '../utils/merge-account-external-data';
 import { notifyPlannedConfirmations } from '../utils/notify-planned-confirmations';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { EnableBankingApiClient, isAspspDateRangeRejection } from './api-client';
 import {
   AmountType,
   CreditDebitIndicator,
+  DateRange,
   EnableBankingAccount,
   EnableBankingConnectionParams,
   EnableBankingCredentials,
   EnableBankingMetadata,
   OAuthCallbackParams,
+  ProviderBalance,
+  ProviderTransaction,
   PSUType,
   StartAuthorizationResponse,
   TransactionStatus,
   TransactionsFetchStrategy,
 } from './types';
-import { balancesForLog, pickAccountBalance } from './utils/balances';
+import { balancesForLog, correctInvertedSavingsBalance, pickAccountBalance } from './utils/balances';
 import { filterIbanCompatible, haveSameParties, pickNearestByDate } from './utils/candidate-selection';
 import { calculateConsentValidUntil } from './utils/consent';
 import {
@@ -69,35 +65,38 @@ import {
   PENDING_UPGRADE_WINDOW_DAYS,
 } from './utils/constants';
 import { type ClosingBalanceRow, findClosingRowId } from './utils/daily-closing-balance';
+import { hasDependentRows } from './utils/has-dependent-rows';
 import { generateState, validatePrivateKey, validateState } from './utils/jwt-utils';
-import { type EditMergeSkipReason, hasManualStamp, planEditMerge } from './utils/plan-edit-merge';
 import { generateTransactionHash, getTransactionDateString } from './utils/transaction-hash';
 import {
   cleanMerchantName,
   deriveNoteFromRaw,
   getBookingDate,
-  getCounterpartyIban,
   getEntryReference,
   getRawTransaction,
   getRawTransactionStatus,
   getReferenceNumber,
-  hasSettledStatus,
-  isBookedCanonical,
   isNonLedgerStatus,
   isPreBookingRow,
   isPreBookingStatus,
   isRevokedStatus,
   parseBookingDay,
   syncGeneratedNote,
-  toEditMergeSide,
   whereNoEntryReference,
   wherePreBookingStatus,
   withoutUndefinedValues,
 } from './utils/transaction-metadata';
 
-type ReconcileSkipReason = EditMergeSkipReason | 'dependent_rows' | 'categorization_conflict';
-
 const getRedirectUrl = () => process.env.ENABLE_BANKING_REDIRECT_URL || `${FRONTEND_BASE_URL}/bank-callback`;
+
+/** A bank-reported decimal amount, or null when it is not a plain decimal. */
+const parseBalanceAmount = ({ amount }: { amount: string }): Money | null => {
+  try {
+    return Money.fromDecimal(amount);
+  } catch {
+    return null;
+  }
+};
 
 /**
  * Enable Banking provider implementation
@@ -273,7 +272,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         uid: account.uid,
         iban: account.account_id?.iban,
         currency: account.currency,
-        name: account.name || account.owner_name,
+        name: account.name,
       })),
       state: undefined, // Clear state after successful auth
       consentValidFrom: consentValidFrom.toISOString(),
@@ -290,9 +289,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     await connection.save();
 
-    // Update externalId for existing accounts after reconnection
-    // Enable Banking assigns new UUIDs after each authorization, but IBAN stays the same
-    await this.updateExistingAccountExternalIds({
+    await this.refreshExistingAccountsMetadata({
       connectionId,
       userId: connection.userId,
       newAccounts: sessionResponse.accounts,
@@ -300,15 +297,11 @@ export class EnableBankingProvider extends BaseBankDataProvider {
   }
 
   /**
-   * Update existing accounts after reconnection.
-   * Enable Banking assigns new UIDs after each authorization, but identification_hash stays the same.
-   * This method:
-   * 1. Matches accounts by IBAN + currency
-   * 2. Updates externalData with new rawAccountData and uid (for API calls)
-   * 3. Migrates transaction hashes if externalId changes (from old uid to identification_hash)
-   * 4. Updates externalId to identification_hash (stable across sessions)
+   * Enable Banking assigns new UIDs after each authorization, so existing accounts get the
+   * fresh uid (for API calls) and rawAccountData. externalId is never rewritten: transaction
+   * hashes are derived from it.
    */
-  private async updateExistingAccountExternalIds({
+  private async refreshExistingAccountsMetadata({
     connectionId,
     userId,
     newAccounts,
@@ -337,11 +330,16 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       // Primary: match by identification_hash (externalId now stores this stable ID)
       let matchingNewAccount = newAccounts.find((newAcc) => newAcc.identification_hash === existingAccount.externalId);
 
-      // Fallback: match by IBAN + currency (for legacy accounts where externalId was uid)
+      // Fallback: the bank changed identification_hash for this account
       if (!matchingNewAccount && existingIban) {
         matchingNewAccount = newAccounts.find(
           (newAcc) => newAcc.account_id?.iban === existingIban && newAcc.currency === existingAccount.currencyCode,
         );
+        if (matchingNewAccount) {
+          logger.warn(
+            `Account ${existingAccount.id} matched by IBAN: identification_hash changed from ${existingAccount.externalId} to ${matchingNewAccount.identification_hash}`,
+          );
+        }
       }
 
       if (!matchingNewAccount) {
@@ -353,37 +351,17 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         continue;
       }
 
-      // The stable identifier we should use for externalId
-      const newExternalId = matchingNewAccount.identification_hash;
-
       // Update externalData with fresh account data (including uid for API calls)
       const updatedMetadata = {
-        ...existingMetadata,
         iban: matchingNewAccount.account_id?.iban,
         product: matchingNewAccount.product,
-        ownerName: matchingNewAccount.owner_name,
         accountServicer: matchingNewAccount.account_servicer?.name,
         bic: matchingNewAccount.account_servicer?.bic_fi,
         uid: matchingNewAccount.uid, // Session-specific uid for API calls
         rawAccountData: matchingNewAccount, // Full account data
       };
 
-      // Check if we need to migrate transaction hashes
-      // This happens when externalId was previously set to uid (old behavior)
-      // and now we're updating it to identification_hash (new stable identifier)
-      if (existingAccount.externalId !== newExternalId) {
-        await this.migrateTransactionHashes({
-          account: existingAccount,
-          newExternalId,
-        });
-        // Reload to get updated externalId
-        await existingAccount.reload();
-      }
-
-      // Update externalData (always update to get fresh uid and rawAccountData)
-      await existingAccount.update({
-        externalData: updatedMetadata,
-      });
+      await mergeAccountExternalData({ accountId: existingAccount.id, patch: updatedMetadata });
     }
   }
 
@@ -481,7 +459,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     const connection = await this.getConnection(connectionId);
     this.validateProviderType(connection);
 
-    // Try to revoke session at Enable Banking
     try {
       const credentials = (await this.getDecryptedCredentials(connectionId)) as unknown as EnableBankingCredentials;
       if (credentials.sessionId) {
@@ -489,15 +466,13 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         await apiClient.deleteSession(credentials.sessionId);
       }
     } catch (error) {
-      // Log error but continue with disconnection
       logger.error(
         { message: 'Failed to revoke Enable Banking session on disconnect', error: error as Error },
         { connectionId },
       );
     }
 
-    // Delete the connection (CASCADE will handle related accounts)
-    await connection.destroy();
+    await super.disconnect(connectionId);
   }
 
   async validateCredentials(credentials: unknown): Promise<boolean> {
@@ -582,20 +557,28 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             balances: balancesForLog({ balances }),
           });
 
-          // Convert balance from string to system amount (cents as integer)
-          const balanceFloat = primaryBalance?.balance_amount ? parseFloat(primaryBalance.balance_amount.amount) : 0;
-          const balanceSystemAmount = Money.fromDecimal(balanceFloat).toCents();
+          const balanceAmount = primaryBalance?.balance_amount
+            ? parseBalanceAmount({ amount: primaryBalance.balance_amount.amount })
+            : null;
+          if (primaryBalance?.balance_amount && !balanceAmount) {
+            logger.warn('Enable Banking balance ignored: unparsable amount', {
+              connectionId,
+              accountId,
+              identificationHash: details.identification_hash,
+              amount: primaryBalance.balance_amount.amount,
+            });
+          }
           const creditLimitCurrencyMatches = Boolean(
             details.currency &&
             details.credit_limit?.currency &&
             details.credit_limit.currency.toUpperCase() === details.currency.toUpperCase(),
           );
-          const creditLimitFloat = parseFloat(details.credit_limit?.amount ?? '');
-          const creditLimitCents =
-            creditLimitCurrencyMatches && Number.isFinite(creditLimitFloat) && creditLimitFloat > 0
-              ? Money.fromDecimal(creditLimitFloat).toCents()
-              : 0;
-          if (details.credit_limit && (!creditLimitCurrencyMatches || !Number.isFinite(creditLimitFloat))) {
+          const creditLimitAmount = details.credit_limit
+            ? parseBalanceAmount({ amount: details.credit_limit.amount })
+            : null;
+          const creditLimit =
+            creditLimitCurrencyMatches && creditLimitAmount?.isPositive() ? creditLimitAmount : Money.zero();
+          if (details.credit_limit && (!creditLimitCurrencyMatches || !creditLimitAmount)) {
             logger.info(
               creditLimitCurrencyMatches
                 ? 'Enable Banking credit limit ignored: unparsable amount'
@@ -616,15 +599,21 @@ export class EnableBankingProvider extends BaseBankDataProvider {
               details.product ||
               `Account ${details.account_id?.iban?.slice(-4) || accountId.slice(-4)}`,
             type: 'debit' as const, // Enable Banking doesn't distinguish, default to debit
-            balance: balanceSystemAmount,
+            balance:
+              balanceAmount === null
+                ? null
+                : correctInvertedSavingsBalance({
+                    balance: balanceAmount,
+                    cashAccountType: details.cash_account_type,
+                    creditLimit,
+                  }),
+            creditLimit,
             // Empty/missing currency → ISO "XXX" (no currency), so connect
             // requires an explicit user choice instead of failing downstream.
             currency: details.currency?.toUpperCase() || NO_CURRENCY_CODE,
             metadata: {
-              creditLimit: creditLimitCents,
               iban: details.account_id?.iban,
               product: details.product,
-              ownerName: details.owner_name,
               accountServicer: details.account_servicer?.name,
               bic: details.account_servicer?.bic_fi,
               // Store the session-specific uid for API calls (balances, transactions)
@@ -646,21 +635,22 @@ export class EnableBankingProvider extends BaseBankDataProvider {
   // Transaction Operations
   // ============================================================================
 
-  /**
-   * Fetch transactions from Enable Banking API
-   * @param connectionId - Connection ID
-   * @param accountApiUid - Session-specific uid for API calls
-   * @param dateRange - Optional date range filter
-   * @param accountExternalIdForHash - Stable identifier for hash generation (defaults to accountApiUid for backward compatibility)
-   * @param strategy - Omitted means the bank is asked for exactly `dateRange`
-   */
-  async fetchTransactions(
-    connectionId: string,
-    accountApiUid: string,
-    dateRange?: DateRange,
-    accountExternalIdForHash?: string,
-    strategy?: TransactionsFetchStrategy,
-  ): Promise<ProviderTransaction[]> {
+  private async fetchTransactions({
+    connectionId,
+    accountApiUid,
+    dateRange,
+    accountExternalIdForHash,
+    strategy,
+  }: {
+    connectionId: string;
+    /** Session-specific uid for API calls */
+    accountApiUid: string;
+    dateRange: DateRange;
+    /** Stable identifier for hash generation */
+    accountExternalIdForHash: string;
+    /** Omitted means the bank is asked for exactly `dateRange` */
+    strategy?: TransactionsFetchStrategy;
+  }): Promise<ProviderTransaction[]> {
     const credentials = await this.getValidatedCredentials(connectionId);
 
     if (!credentials.sessionId) {
@@ -669,13 +659,10 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     const apiClient = new EnableBankingApiClient(credentials);
 
-    // Use the stable externalId for hashing (identification_hash), or fall back to apiUid for backward compatibility
-    const hashId = accountExternalIdForHash || accountApiUid;
-
     // Get all transactions for the date range
     const transactions = await apiClient.getAllTransactions(accountApiUid, {
-      date_from: dateRange?.from?.toISOString().split('T')[0],
-      date_to: dateRange?.to?.toISOString().split('T')[0],
+      date_from: dateRange.from.toISOString().split('T')[0],
+      date_to: dateRange.to.toISOString().split('T')[0],
       strategy,
     });
 
@@ -696,21 +683,29 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     return importable.map((tx) => {
       const isExpense = tx.credit_debit_indicator === CreditDebitIndicator.DBIT;
-      const amountFloat = parseFloat(tx.transaction_amount.amount);
-      const amountSystemAmount = Money.fromDecimal(amountFloat).toCents();
       const merchantName = (isExpense ? tx.creditor?.name : tx.debtor?.name) || 'Unknown';
 
       // Generate unique hash from transaction data
       // Use stable externalId (identification_hash) for hashing, not session-specific uid
-      const uniqueId = generateTransactionHash({ tx, accountExternalId: hashId });
+      const uniqueId = generateTransactionHash({ tx, accountExternalId: accountExternalIdForHash });
 
       // Get the transaction date using priority-based selection
       const transactionDateString = getTransactionDateString({ tx });
       const transactionDate = transactionDateString ? new Date(transactionDateString) : new Date();
 
+      let amount: Money;
+      try {
+        amount = Money.fromDecimal(tx.transaction_amount.amount);
+      } catch (error) {
+        throw new Error(
+          `Enable Banking transaction ${uniqueId} on account ${accountExternalIdForHash}: unparsable amount "${tx.transaction_amount.amount}"`,
+          { cause: error },
+        );
+      }
+
       return {
         externalId: uniqueId,
-        amount: amountSystemAmount,
+        amount,
         currency: tx.transaction_amount.currency,
         date: transactionDate,
         description: deriveNoteFromRaw({ rawTransaction: tx }),
@@ -766,7 +761,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             throw new BadRequestError({ message: t({ key: 'accounts.accountNoExternalIdEnableBanking' }) });
           }
 
-          // Get metadata for API calls and migrations
+          // Get metadata for API calls
           let metadata = account.externalData as Record<string, unknown> | null;
           let rawAccountData = metadata?.rawAccountData as EnableBankingAccount | undefined;
 
@@ -789,27 +784,9 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           // Fall back to externalId for backward compatibility
           const apiUid = (metadata?.uid as string) || account.externalId;
 
-          // Check if we need to migrate transaction hashes
-          // This happens when account was created with uid as externalId but now has identification_hash available
-          if (rawAccountData?.identification_hash && account.externalId !== rawAccountData.identification_hash) {
-            await this.migrateTransactionHashes({
-              account,
-              newExternalId: rawAccountData.identification_hash,
-            });
-            // Reload account to get updated externalId
-            await account.reload();
-          }
-
           // Find the most recent transaction
-          const latestTransaction = await findOneTransaction({
-            planned: 'exclude',
-            access: 'unscoped-internal',
-            balanceAdjustments: 'include',
-            where: { accountId: account.id },
-            order: [['time', 'DESC']],
-          });
-
           const to = new Date();
+          const anchor = await findSyncAnchor({ account, to });
 
           // Incremental: `from` anchored to last tx, pulled back to the oldest payment the
           // previous sync saw pending. That payment books under its original date, so a
@@ -822,7 +799,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           // A bank may stop listing a payment as pending before it lists the booked copy,
           // so the stored pending row keeps the range open too. Older rows are skipped:
           // their booked copy could no longer upgrade them.
-          const oldestStoredPendingRow = latestTransaction
+          const oldestStoredPendingRow = anchor
             ? await findOneTransaction({
                 planned: 'exclude',
                 access: 'unscoped-internal',
@@ -835,23 +812,27 @@ export class EnableBankingProvider extends BaseBankDataProvider {
                 order: [['time', 'ASC']],
               })
             : null;
-          const fetchedTransactions = latestTransaction
-            ? await this.fetchTransactions(
+          const fetchedTransactions = anchor
+            ? await this.fetchTransactions({
                 connectionId,
-                apiUid,
-                {
-                  from: new Date(
-                    Math.min(
-                      latestTransaction.time.getTime(),
-                      to.getTime(),
-                      (typeof storedOldestPendingDate === 'string' && Date.parse(storedOldestPendingDate)) || Infinity,
-                      oldestStoredPendingRow?.time.getTime() ?? Infinity,
+                accountApiUid: apiUid,
+                dateRange: {
+                  from: clampSyncStartToLink({
+                    account,
+                    from: new Date(
+                      Math.min(
+                        anchor.getTime(),
+                        to.getTime(),
+                        (typeof storedOldestPendingDate === 'string' && Date.parse(storedOldestPendingDate)) ||
+                          Infinity,
+                        oldestStoredPendingRow?.time.getTime() ?? Infinity,
+                      ),
                     ),
-                  ),
+                  }),
                   to,
                 },
-                account.externalId,
-              )
+                accountExternalIdForHash: account.externalId,
+              })
             : await this.fetchInitialTransactionsWithShrinkingWindow({
                 connectionId,
                 apiUid,
@@ -870,9 +851,12 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           // A skipped pending payload returns as BOOK on a later sync. Rows stored while
           // the setting was on still get booked or revoked through the matcher below.
           const { importPendingBankTransactions } = await getUserSettings({ userId: connection.userId });
-          const providerTransactions = importPendingBankTransactions
+          // Rounded once here so matching and the stored row see the same amount.
+          const amountDecimals = await getCurrencyDecimals({ userId, code: account.currencyCode });
+          const importable = importPendingBankTransactions
             ? fetchedTransactions
             : fetchedTransactions.filter((tx) => !isPendingPayload(tx));
+          const providerTransactions = importable.map((tx) => ({ ...tx, amount: tx.amount.round(amountDecimals) }));
 
           // Sort transactions by date (ascending) so the last transaction for each day
           // will have the correct end-of-day balance in balance_after_transaction.
@@ -895,7 +879,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           const mergedPlannedIds: string[] = [];
           // Only the incremental branch may confirm a plan: the initial history fetch
           // reaches years back, where a same-amount charge would eat an unrelated plan.
-          const matchPlanned = Boolean(latestTransaction) && (await accountHasPlannedRows({ accountId: account.id }));
+          const matchPlanned = anchor !== null && (await accountHasPlannedRows({ accountId: account.id }));
           // Tier 4 costs one extra query per unmatched row, and on an initial 3-year
           // sync every row is unmatched. Flips to true as soon as this run stores a
           // pending row so a same-batch booked copy can still upgrade it.
@@ -909,7 +893,9 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           let revokedRemovedCount = 0;
           let revokedKeptCount = 0;
           let softDeletedSkippedCount = 0;
+          let skippedPreLinkCount = 0;
           const checkpoint = this.createBaseCurrencyLockCheckpoint({ userId });
+          const linkDayStart = anchor ? getLinkDayStart({ externalData: account.externalData }) : null;
 
           for (const tx of providerTransactions) {
             await checkpoint();
@@ -931,7 +917,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             if (isRevokedStatus({ status: incomingStatus })) {
               const storedStatus = getRawTransactionStatus({ externalData: existingTx?.externalData });
               if (existingTx && !existingTx.deletedAt && isPreBookingStatus({ status: storedStatus })) {
-                if (await this.hasDependentRows({ tx: existingTx })) {
+                if (await hasDependentRows({ tx: existingTx })) {
                   revokedKeptCount++;
                   logger.info(
                     `Enable Banking sync: account ${account.id} kept ${incomingStatus} tx ${existingTx.id} – dependent_rows`,
@@ -951,14 +937,17 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             // A removed pending row the bank now books is a real charge: it comes back and is upgraded below.
             if (
               existingTx?.deletedAt &&
+              existingTx.deletionReason === TRANSACTION_DELETION_REASON.reconciliation &&
               !existingTx.mergedIntoId &&
               incomingStatus === TransactionStatus.BOOK &&
               isPreBookingRow({ tx: existingTx })
             ) {
+              // `deletedAt` is read-only on the instance, so only restore() can clear it.
+              existingTx.set({ deletionReason: null });
               await existingTx.restore();
             }
 
-            // Soft-deleted: the user removed it via reconciliation, so the bank copy must not come back.
+            // Soft-deleted: the user removed it via reconciliation or Trash, so the bank copy must not come back.
             // Only a booking is handed to a still-pending merge survivor: any other payload would
             // re-anchor the survivor onto the removed row's identity and break its own matching.
             if (existingTx?.deletedAt) {
@@ -1075,11 +1064,18 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
               if (Object.keys(updates).length > 0) {
                 await existingTx.update(updates);
+                await syncLegsOfMains({ mainIds: [existingTx.id] });
                 updatedCount++;
               }
               if (pendingBecameBooked) {
                 bookedUpgradedTransactionIds.push(existingTx.id);
               }
+              continue;
+            }
+
+            // Only after matching: a booked copy dated before the link must still upgrade its stored pending row.
+            if (linkDayStart && tx.date < linkDayStart) {
+              skippedPreLinkCount++;
               continue;
             }
 
@@ -1099,7 +1095,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
               originalId: tx.externalId,
               note: tx.description,
               externalReference: getReferenceNumber({ externalData: tx.metadata }),
-              amount: Money.fromCents(Math.abs(tx.amount)), // Ensure positive value
+              amount: tx.amount.abs(),
               time: tx.date,
               externalData: {
                 ...tx.metadata,
@@ -1110,7 +1106,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
               accountId: account.id,
               userId: connection.userId,
               transactionType: isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income,
-              paymentType: PAYMENT_TYPES.bankTransfer,
               categoryId: defaultCategoryId,
               transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
               accountType: ACCOUNT_TYPES.enableBanking,
@@ -1141,15 +1136,16 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             stalePendingIgnoredCount > 0 ||
             revokedRemovedCount > 0 ||
             revokedKeptCount > 0 ||
-            softDeletedSkippedCount > 0
+            softDeletedSkippedCount > 0 ||
+            skippedPreLinkCount > 0
           ) {
             logger.info(
-              `Enable Banking sync: ${createdTransactionIds.length} created, ${updatedCount} updated, ${mergedPlannedIds.length} planned confirmed, ${stalePendingIgnoredCount} stale pending ignored, ${revokedRemovedCount} revoked removed, ${revokedKeptCount} revoked kept, ${softDeletedSkippedCount} soft-deleted skipped for account ${account.id}`,
+              `Enable Banking sync: ${createdTransactionIds.length} created, ${updatedCount} updated, ${mergedPlannedIds.length} planned confirmed, ${stalePendingIgnoredCount} stale pending ignored, ${revokedRemovedCount} revoked removed, ${revokedKeptCount} revoked kept, ${softDeletedSkippedCount} soft-deleted skipped, ${skippedPreLinkCount} before the link skipped for account ${account.id}`,
             );
           }
 
           if (oldestPendingDate !== storedOldestPendingDate) {
-            await account.update({ externalData: { ...account.externalData, oldestPendingDate } });
+            await mergeAccountExternalData({ accountId: account.id, patch: { oldestPendingDate } });
           }
 
           await notifyPlannedConfirmations({
@@ -1164,8 +1160,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
           // Always update account balance from bank when syncing
           // This ensures balance stays accurate even if no new transactions were found
-          const balance = await this.fetchBalance(connectionId, apiUid);
-          await writeBankBalanceWithHistory({ account, balance: Money.fromCents(balance.amount) });
+          await this.writeBalanceFromBank({ connectionId, apiUid, account });
 
           return { transactionIds: createdTransactionIds, extraAutoLinkCandidateIds: bookedUpgradedTransactionIds };
         },
@@ -1228,14 +1223,18 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     let unresolvedDays = 0;
     let ratelessDays = 0;
+    const decimals = await getCurrencyDecimals({ userId: account.userId, code: account.currencyCode });
+    // The days before a forward-only link belong to the account's manual history.
+    const linkDayStart = getLinkDayStart({ externalData: account.externalData });
 
     // Ascending, so concurrent syncs of one account take the same `Balances` rows
     // in the same order. Map iteration would follow whatever order Postgres
     // returned, and these row locks are held until the sync transaction commits.
-    for (const bookingDate of [...rowsByBookingDate.keys()].sort()) {
+    for (const bookingDate of [...rowsByBookingDate.keys()].toSorted()) {
       const dayRows = rowsByBookingDate.get(bookingDate)!;
       const ladder: ClosingBalanceRow[] = [];
       const rowsById = new Map<string, Transactions>();
+      const balanceAfterById = new Map<string, Money>();
       let dayHasUnusableRow = false;
 
       for (const row of dayRows) {
@@ -1244,26 +1243,31 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         if (isPreBookingStatus({ status: getRawTransactionStatus({ externalData: row.externalData }) })) continue;
 
         const balanceAfter = (row.externalData as { balanceAfter?: AmountType } | null)?.balanceAfter;
-        const balanceDecimal = balanceAfter ? Number.parseFloat(balanceAfter.amount) : Number.NaN;
+        const balanceAmount = balanceAfter ? parseBalanceAmount({ amount: balanceAfter.amount }) : null;
 
         // A booked row the ladder cannot use is a missing rung, and a day with a
         // hole in it has no determinable close: the rows either side of the hole
         // no longer rule each other out, so a mid-day row can end up looking like
         // the day's last.
-        if (!balanceAfter || balanceAfter.currency !== row.currencyCode || !Number.isFinite(balanceDecimal)) {
+        if (!balanceAfter || balanceAfter.currency !== row.currencyCode || !balanceAmount) {
           dayHasUnusableRow = true;
           break;
         }
 
-        const signedCents =
-          row.transactionType === TRANSACTION_TYPES.income ? row.amount.toCents() : -row.amount.toCents();
-
-        ladder.push({
-          id: row.id,
-          balanceAfterCents: Math.round(balanceDecimal * 100),
-          deltaCents: signedCents,
-        });
+        try {
+          const amountMinorUnits = row.amount.toMinorUnits({ decimals });
+          ladder.push({
+            id: row.id,
+            balanceAfterMinorUnits: balanceAmount.toMinorUnits({ decimals }),
+            deltaMinorUnits: row.transactionType === TRANSACTION_TYPES.income ? amountMinorUnits : -amountMinorUnits,
+          });
+        } catch {
+          // A balance beyond the safe minor-unit range is as unusable as a missing one.
+          dayHasUnusableRow = true;
+          break;
+        }
         rowsById.set(row.id, row);
+        balanceAfterById.set(row.id, balanceAmount);
       }
 
       const closingRowId = dayHasUnusableRow ? null : findClosingRowId({ rows: ladder });
@@ -1273,10 +1277,10 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       }
 
       const date = parseBookingDay({ bookingDate });
-      if (!date) continue;
+      if (!date || (linkDayStart && date < linkDayStart)) continue;
 
       const closingRow = rowsById.get(closingRowId)!;
-      const closingBalance = (closingRow.externalData as { balanceAfter?: AmountType } | null)!.balanceAfter!;
+      const closingBalance = balanceAfterById.get(closingRowId)!;
 
       let convertedBalance: Money;
       try {
@@ -1286,7 +1290,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           baseCode: closingRow.currencyCode,
           quoteCode: closingRow.refCurrencyCode,
         });
-        convertedBalance = Money.fromDecimal(closingBalance.amount).multiply(exchangeRateData.rate);
+        convertedBalance = closingBalance.multiply(exchangeRateData.rate);
       } catch {
         // A day with no rate on record is one day of chart, and this pass runs
         // late enough that throwing would discard every transaction the sync just
@@ -1341,13 +1345,13 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     for (const days of INITIAL_SYNC_FALLBACK_DAYS) {
       const from = new Date(to.getTime() - days * MS_PER_DAY);
       try {
-        return await this.fetchTransactions(
+        return await this.fetchTransactions({
           connectionId,
-          apiUid,
-          { from, to },
-          accountExternalId,
-          TransactionsFetchStrategy.LONGEST,
-        );
+          accountApiUid: apiUid,
+          dateRange: { from, to },
+          accountExternalIdForHash: accountExternalId,
+          strategy: TransactionsFetchStrategy.LONGEST,
+        });
       } catch (error) {
         if (!isAspspDateRangeRejection(error)) {
           logger.info(`Enable Banking initial sync: non-retryable error during ${days}-day window attempt`, {
@@ -1377,7 +1381,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
   // Balance Operations
   // ============================================================================
 
-  async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
+  private async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance | null> {
     const credentials = await this.getValidatedCredentials(connectionId);
 
     if (!credentials.sessionId) {
@@ -1399,31 +1403,46 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       throw new NotFoundError({ message: t({ key: 'bankDataProviders.enableBanking.noBalanceInfo' }) });
     }
 
-    const balanceFloat = parseFloat(balance.balance_amount.amount);
-    const balanceSystemAmount = Money.fromDecimal(balanceFloat).toCents();
+    const amount = parseBalanceAmount({ amount: balance.balance_amount.amount });
+    if (!amount) {
+      logger.warn('Enable Banking balance ignored: unparsable amount', {
+        connectionId,
+        accountExternalId,
+        amount: balance.balance_amount.amount,
+      });
+      return null;
+    }
 
     return {
-      amount: balanceSystemAmount,
+      amount,
       currency: balance.balance_amount.currency,
       asOf: balance.reference_date ? new Date(balance.reference_date) : new Date(),
     };
   }
 
-  async refreshBalance(connectionId: string, systemAccountId: string): Promise<void> {
-    const account = await this.getSystemAccount(systemAccountId);
-
-    if (!account.externalId) {
-      throw new BadRequestError({ message: t({ key: 'accounts.accountNoExternalId' }) });
-    }
-
-    // Get uid from metadata for API calls (session-specific)
-    // Fall back to externalId for backward compatibility
-    const metadata = account.externalData as Record<string, unknown> | null;
-    const apiUid = (metadata?.uid as string) || account.externalId;
-
+  private async writeBalanceFromBank({
+    connectionId,
+    apiUid,
+    account,
+  }: {
+    connectionId: string;
+    apiUid: string;
+    account: Accounts;
+  }): Promise<void> {
     const balance = await this.fetchBalance(connectionId, apiUid);
+    if (!balance) return;
+    const rawAccountData = (account.externalData as Record<string, unknown> | null)?.rawAccountData as
+      | EnableBankingAccount
+      | undefined;
 
-    await writeBankBalanceWithHistory({ account, balance: Money.fromCents(balance.amount) });
+    await writeBankBalanceWithHistory({
+      account,
+      balance: correctInvertedSavingsBalance({
+        balance: balance.amount,
+        cashAccountType: rawAccountData?.cash_account_type,
+        creditLimit: account.creditLimit,
+      }),
+    });
   }
 
   // ============================================================================
@@ -1587,11 +1606,16 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     // Primary: match by identification_hash (externalId now stores this stable ID)
     let matchingAccount = validAccountsDetails.find((details) => details.identification_hash === account.externalId);
 
-    // Fallback: match by IBAN + currency (for legacy accounts where externalId was uid)
+    // Fallback: the bank changed identification_hash for this account
     if (!matchingAccount && existingIban) {
       matchingAccount = validAccountsDetails.find(
         (details) => details.account_id?.iban === existingIban && details.currency === account.currencyCode,
       );
+      if (matchingAccount) {
+        logger.warn(
+          `Account ${account.id} matched by IBAN: identification_hash changed from ${account.externalId} to ${matchingAccount.identification_hash}`,
+        );
+      }
     }
 
     if (!matchingAccount) {
@@ -1605,102 +1629,19 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     // Update account's externalData with fresh metadata
     const updatedMetadata = {
-      ...existingMetadata,
       iban: matchingAccount.account_id?.iban,
       product: matchingAccount.product,
-      ownerName: matchingAccount.owner_name,
       accountServicer: matchingAccount.account_servicer?.name,
       bic: matchingAccount.account_servicer?.bic_fi,
       uid: matchingAccount.uid, // Session-specific uid for API calls
       rawAccountData: matchingAccount, // Full account data
     };
 
-    await account.update({ externalData: updatedMetadata });
+    await mergeAccountExternalData({ accountId: account.id, patch: updatedMetadata });
 
     logger.info(`Refreshed account metadata for account ${account.id} (uid: ${matchingAccount.uid})`);
 
     return matchingAccount;
-  }
-
-  /**
-   * Migrate transaction hashes when account externalId changes.
-   * This recalculates all transaction originalIds using the new externalId.
-   *
-   * @param account - The account whose transactions need migration
-   * @param newExternalId - The new externalId (identification_hash)
-   * @returns Number of transactions migrated
-   *
-   * @deprecated Temporary migration for legacy accounts (pre-identification_hash).
-   * Can be removed once all accounts have been migrated to use identification_hash as externalId.
-   */
-  private async migrateTransactionHashes({
-    account,
-    newExternalId,
-  }: {
-    account: Accounts;
-    newExternalId: string;
-  }): Promise<number> {
-    // Skip if externalId hasn't changed
-    if (account.externalId === newExternalId) {
-      return 0;
-    }
-
-    logger.info(
-      `Migrating transaction hashes for account ${account.id} from ${account.externalId} to ${newExternalId}`,
-    );
-
-    // Get all transactions for this account
-    const transactions = await findTransactions({
-      planned: 'exclude',
-      access: 'unscoped-internal',
-      balanceAdjustments: 'include',
-      completeness: 'all',
-      where: { accountId: account.id },
-      paranoid: false,
-    });
-
-    let migratedCount = 0;
-
-    for (const tx of transactions) {
-      const rawTransaction = getRawTransaction({ externalData: tx.externalData });
-
-      if (!rawTransaction) {
-        logger.info(`Transaction ${tx.id} has no rawTransaction in externalData, skipping migration`);
-        continue;
-      }
-
-      // Calculate new hash using the new externalId (identification_hash)
-      const newOriginalId = generateTransactionHash({
-        tx: rawTransaction,
-        accountExternalId: newExternalId,
-      });
-
-      const updates: { originalId?: string; externalData?: Transactions['externalData'] } = {};
-      if (tx.originalId !== newOriginalId) {
-        updates.originalId = newOriginalId;
-      }
-
-      const externalData = tx.externalData as Record<string, unknown> | null;
-      if (externalData && externalData.pendingHash !== undefined) {
-        // pendingHash was derived from the old account externalId and the pending-era
-        // payload is gone, so it can never be recomputed or matched again.
-        const withoutPendingHash = { ...externalData };
-        delete withoutPendingHash.pendingHash;
-        updates.externalData = withoutPendingHash;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        await tx.update(updates);
-        if (updates.originalId) migratedCount++;
-      }
-    }
-
-    // Update account's externalId to the new value
-    await account.update({ externalId: newExternalId });
-
-    logger.info(`Migrated ${migratedCount} transaction hashes for account ${account.id}`);
-
-    return migratedCount;
   }
 
   /**
@@ -1719,6 +1660,38 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     ownAccountIds: string[];
   }): Promise<Transactions | null> {
     const entryReference = tx.metadata?.entryReference as string | undefined;
+    const isExpense = tx.metadata?.isExpense === true;
+    const transactionType = isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income;
+
+    const isBooked = getRawTransactionStatus({ externalData: tx.metadata }) === TransactionStatus.BOOK;
+    const incomingRaw = getRawTransaction({ externalData: tx.metadata });
+    const sameMoney = { amount: toMoneyColumnValue({ money: tx.amount.abs() }), transactionType };
+
+    // A bank can reuse one entry_reference for a card capture and the release of its unused hold, so a booked
+    // payload only matches a pending row, or one whose amount and direction (or stored booked payload's) agree.
+    const bookedMoneyGate =
+      isBooked && incomingRaw
+        ? [
+            {
+              [Op.or]: [
+                sameMoney,
+                wherePreBookingStatus(),
+                {
+                  [Op.and]: [
+                    Sequelize.where(
+                      Sequelize.literal(`"externalData"#>>'{rawTransaction,transaction_amount,amount}'`),
+                      incomingRaw.transaction_amount.amount,
+                    ),
+                    Sequelize.where(
+                      Sequelize.literal(`"externalData"#>>'{rawTransaction,credit_debit_indicator}'`),
+                      incomingRaw.credit_debit_indicator,
+                    ),
+                  ],
+                },
+              ],
+            },
+          ]
+        : [];
 
     // (1) entry_reference: ASPSP promises this is unique + immutable per account.
     // Cheapest, strongest match – short-circuits the rest.
@@ -1729,7 +1702,10 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         balanceAdjustments: 'include',
         where: {
           accountId,
-          [Op.and]: [Sequelize.where(Sequelize.literal(`"externalData"->>'entryReference'`), entryReference)],
+          [Op.and]: [
+            Sequelize.where(Sequelize.literal(`"externalData"->>'entryReference'`), entryReference),
+            ...bookedMoneyGate,
+          ],
         },
         paranoid: false,
         order: [['deletedAt', 'ASC NULLS FIRST']],
@@ -1750,10 +1726,15 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       balanceAdjustments: 'include',
       where: {
         accountId,
-        [Op.or]: [
-          { originalId: tx.externalId },
-          Sequelize.where(Sequelize.literal(`"externalData"->>'pendingHash'`), tx.externalId),
-          Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx.externalId),
+        [Op.and]: [
+          {
+            [Op.or]: [
+              { originalId: tx.externalId },
+              Sequelize.where(Sequelize.literal(`"externalData"->>'pendingHash'`), tx.externalId),
+              Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx.externalId),
+            ],
+          },
+          ...bookedMoneyGate,
         ],
       },
       paranoid: false,
@@ -1761,17 +1742,13 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     });
     if (byOriginalId) return byOriginalId;
 
-    const isExpense = tx.metadata?.isExpense === true;
-    const transactionType = isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income;
     const counterpartyIban = isExpense
       ? (tx.metadata?.creditorAccount as string | undefined)
       : (tx.metadata?.debtorAccount as string | undefined);
     const fingerprintBase = {
       accountId,
-      // `tx.amount` is in minor units (cents); the column holds decimals.
-      amount: toMoneyColumnValue({ money: Money.fromCents(Math.abs(tx.amount)) }),
       currencyCode: tx.currency,
-      transactionType,
+      ...sameMoney,
     };
 
     // (3) IBAN fingerprint. Safety net for ASPSPs that never populate
@@ -1817,7 +1794,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     // mismatch is the fresh-reference re-issue. A reference-less payload never
     // reaches tier 1, so it may only consume reference-less candidates.
     if (!accountHasPendingRows) return null;
-    if (getRawTransactionStatus({ externalData: tx.metadata }) !== TransactionStatus.BOOK) return null;
+    if (!isBooked) return null;
 
     const pendingPoolWhere = {
       ...fingerprintBase,
@@ -1862,7 +1839,6 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     // Some ASPSPs flag a pending payment with the opposite direction of its booked
     // copy. Only a pending row naming the same parties on the same sides qualifies.
-    const incomingRaw = getRawTransaction({ externalData: tx.metadata });
     if (!incomingRaw) return null;
 
     const mirroredCandidates = await findTransactions({
@@ -1907,304 +1883,5 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       },
     });
     return count > 0;
-  }
-
-  /**
-   * One-time reconciliation of duplicate pairs that predate the live-sync
-   * matcher. Two passes per (amount, currency, type) bucket:
-   *
-   *   a) booked row + leftover pre-booking row, booked at or after pending and
-   *      within PENDING_UPGRADE_WINDOW_DAYS. When the booked row has a
-   *      counterparty IBAN, a pending row carrying the same one wins, an
-   *      IBAN-less one within IBAN_LESS_FALLBACK_WINDOW_DAYS is the fallback, and
-   *      a different IBAN never pairs; when it has none (card purchases) no IBAN
-   *      filtering happens. A pending row with an entryReference only pairs with
-   *      a booked row that has one too. User edits on the pending copy move to
-   *      the survivor.
-   *   b) row with entryReference + row without, within ±2 days and sharing a
-   *      counterparty IBAN.
-   *
-   * Pass (b) is the stricter one: it pairs rows on circumstantial IBAN evidence
-   * alone, so any scalar divergence aborts the merge, whereas pass (a) has the
-   * explicit pre-booking→BOOK signal and can migrate user edits instead. Pass (b) also
-   * compares against canonicals as pass (a) left them, so an edit pass (a) just
-   * migrated can block a later strict merge.
-   *
-   * Both passes refuse to delete an orphan with dependent rows. `mergedCount` and
-   * `skippedCount` are the row-level outcomes callers and tests assert on;
-   * `consideredPairs` and `unresolvedCount` are diagnostics only, and
-   * `unresolvedCount` counts rejected pairs, so one row can add several.
-   */
-  async reconcileDuplicateTransactionsForAccount({
-    accountId,
-  }: {
-    accountId: string;
-  }): Promise<{ mergedCount: number; skippedCount: number; consideredPairs: number; unresolvedCount: number }> {
-    const account = await this.getSystemAccount(accountId);
-    // A planned row records money that has not moved, so it can never be the duplicate
-    // of a bank row — and this pass deletes what it pairs off.
-    const allTxs = await findTransactions({
-      planned: 'exclude',
-      access: 'unscoped-internal',
-      balanceAdjustments: 'include',
-      completeness: 'all',
-      where: { accountId: account.id },
-      order: [['time', 'ASC']],
-    });
-
-    // Bucket by (amount, currency, transactionType) so we only compare candidates
-    // that could plausibly be the same logical tx. The date-window + IBAN gate
-    // happen inside each bucket.
-    const buckets = new Map<string, Transactions[]>();
-    for (const tx of allTxs) {
-      const key = `${tx.amount.toCents()}|${tx.currencyCode}|${tx.transactionType}`;
-      const list = buckets.get(key) ?? [];
-      list.push(tx);
-      buckets.set(key, list);
-    }
-
-    let mergedCount = 0;
-    let skippedCount = 0;
-    let consideredPairs = 0;
-    let unresolvedCount = 0;
-    // The account owner's default category. On a shared account another member's
-    // default reads as a deliberate category, which only makes the merge more
-    // conservative – it never deletes more.
-    const defaultCategoryId = await getUserDefaultCategory({ id: account.userId });
-    const now = new Date();
-    const logSkip = ({ orphanId, reason }: { orphanId: RecordId; reason: ReconcileSkipReason }) => {
-      logger.info(`Reconcile: skipping orphan tx ${orphanId} (account ${account.id}) – ${reason}`);
-    };
-    // The FK's ON DELETE SET NULL would otherwise turn a reconciliation merge into the deleted row into a "remove".
-    const repointMergedRows = ({ fromId, toId }: { fromId: RecordId; toId: RecordId }) =>
-      updateTransactions({
-        values: { mergedIntoId: toId },
-        where: { accountId: account.id, mergedIntoId: fromId },
-        paranoid: false,
-        planned: 'include',
-        access: 'unscoped-internal',
-        balanceAdjustments: 'include',
-      });
-    // Each check is seven COUNT queries and the same pending row is offered to every
-    // booked row in its bucket; nothing inside this run can change the answer.
-    const dependentRowsByTxId = new Map<RecordId, boolean>();
-    const hasDependentRowsMemoized = async ({ tx }: { tx: Transactions }): Promise<boolean> => {
-      const cached = dependentRowsByTxId.get(tx.id);
-      if (cached !== undefined) return cached;
-      const result = await this.hasDependentRows({ tx });
-      dependentRowsByTxId.set(tx.id, result);
-      return result;
-    };
-
-    for (const candidates of buckets.values()) {
-      if (candidates.length < 2) continue;
-
-      const pendingRows = candidates.filter((c) => isPreBookingRow({ tx: c }));
-      const bookedRows = candidates.filter((c) => isBookedCanonical({ tx: c }));
-
-      // Nearest-first over every plausible pair, so the closest booked/pending
-      // couple wins regardless of iteration order. Deletes are irreversible, so
-      // only pairs whose direction is provably consistent (booked at or after
-      // pending) are accepted; that misses the occasional pair whose pending
-      // value_date estimate postdated the booking, which is the cheaper mistake.
-      const pairs: { booked: Transactions; pending: Transactions; distance: number }[] = [];
-      for (const booked of bookedRows) {
-        const bookedHasEntryReference = getEntryReference({ tx: booked }) !== null;
-        // Window first: the IBAN gate's IBAN-less fallback depends on which
-        // candidates are in play, so an out-of-window match must not suppress it.
-        const eligible = pendingRows.filter((pending) => {
-          const distance = booked.time.getTime() - pending.time.getTime();
-          if (distance < 0 || distance > PENDING_UPGRADE_WINDOW_DAYS * MS_PER_DAY) return false;
-          // A referenced pending row can only be re-issued under a fresh
-          // reference, so a reference-less booked row is not its copy.
-          return bookedHasEntryReference || getEntryReference({ tx: pending }) === null;
-        });
-        const ibanCompatible = filterIbanCompatible({
-          candidates: eligible,
-          counterpartyIban: getCounterpartyIban({ tx: booked }),
-          date: booked.time,
-        });
-        unresolvedCount += pendingRows.length - ibanCompatible.length;
-        for (const pending of ibanCompatible) {
-          pairs.push({ booked, pending, distance: booked.time.getTime() - pending.time.getTime() });
-        }
-      }
-      pairs.sort(
-        (a, b) =>
-          a.distance - b.distance || a.booked.id.localeCompare(b.booked.id) || a.pending.id.localeCompare(b.pending.id),
-      );
-      consideredPairs += pairs.length;
-
-      const pairedBooked = new Set<RecordId>();
-      const mergedPending = new Set<RecordId>();
-      // A skipped pair must leave both sides free for other pairs, but pass (b)
-      // still has to keep its hands off anything pass (a) looked at and rejected.
-      const skipTouchedPending = new Set<RecordId>();
-
-      for (const { booked, pending } of pairs) {
-        if (pairedBooked.has(booked.id) || mergedPending.has(pending.id)) {
-          unresolvedCount++;
-          continue;
-        }
-
-        const plan = planEditMerge({
-          orphan: toEditMergeSide({ tx: pending }),
-          canonical: toEditMergeSide({ tx: booked }),
-          orphanSyncNote: syncGeneratedNote({ tx: pending }),
-          canonicalSyncNote: syncGeneratedNote({ tx: booked }),
-          defaultCategoryId,
-          now,
-        });
-        if (plan.action === 'skip') {
-          logSkip({ orphanId: pending.id, reason: plan.reason });
-          skipTouchedPending.add(pending.id);
-          continue;
-        }
-        if (await hasDependentRowsMemoized({ tx: pending })) {
-          logSkip({ orphanId: pending.id, reason: 'dependent_rows' });
-          skipTouchedPending.add(pending.id);
-          continue;
-        }
-
-        const survivorUpdates: typeof plan.valuesToMove & { externalData?: Transactions['externalData'] } = {
-          ...plan.valuesToMove,
-        };
-        const bookedExternalData = booked.externalData as Record<string, unknown> | null;
-        // The pending row's hash is the anchor tier 2 needs when the ASPSP re-sends the
-        // PDNG payload; without it that payload recreates the duplicate just merged away.
-        if (pending.originalId && bookedExternalData?.pendingHash === undefined) {
-          survivorUpdates.externalData = { ...bookedExternalData, pendingHash: pending.originalId };
-        }
-        if (Object.keys(survivorUpdates).length > 0) {
-          await booked.update(survivorUpdates);
-        }
-        await repointMergedRows({ fromId: pending.id, toId: booked.id });
-        await pending.destroy({ force: true });
-        pairedBooked.add(booked.id);
-        mergedPending.add(pending.id);
-        mergedCount++;
-      }
-
-      for (const pendingId of skipTouchedPending) {
-        if (!mergedPending.has(pendingId)) skippedCount++;
-      }
-
-      const canonicalRows = candidates.filter(
-        (c) => getEntryReference({ tx: c }) !== null && hasSettledStatus({ tx: c }),
-      );
-      // Pass (a) survivors stay out of pass (b). The case that motivates it: a booked
-      // row with no entryReference of its own re-enters as an orphan, and pass (b)
-      // would destroy it together with the edits pass (a) migrated onto it.
-      const orphanRows = candidates.filter(
-        (c) =>
-          !mergedPending.has(c.id) &&
-          !skipTouchedPending.has(c.id) &&
-          !pairedBooked.has(c.id) &&
-          getEntryReference({ tx: c }) === null,
-      );
-
-      for (const orphan of orphanRows) {
-        // IBAN gate: require both rows to share the same counterparty IBAN.
-        // Expenses use creditorAccount (money going out to a creditor), income
-        // uses debtorAccount. If the orphan has no IBAN (e.g. a manual entry
-        // that happens to share amount/currency/type with a bank row), skip –
-        // same rule findExistingTransactionForSync applies for live syncs.
-        const orphanIban = getCounterpartyIban({ tx: orphan });
-        if (!orphanIban) {
-          unresolvedCount++;
-          continue;
-        }
-
-        const canonical = canonicalRows.find(
-          (c) =>
-            c.id !== orphan.id &&
-            Math.abs(c.time.getTime() - orphan.time.getTime()) <= FINGERPRINT_WINDOW_DAYS * MS_PER_DAY &&
-            getCounterpartyIban({ tx: c }) === orphanIban,
-        );
-        if (!canonical) {
-          unresolvedCount++;
-          continue;
-        }
-
-        const blocker = await this.findOrphanDeletionBlocker({ orphan, canonical });
-        if (blocker) {
-          logSkip({ orphanId: orphan.id, reason: blocker });
-          skippedCount++;
-          continue;
-        }
-
-        await repointMergedRows({ fromId: orphan.id, toId: canonical.id });
-        await orphan.destroy({ force: true });
-        mergedCount++;
-      }
-    }
-
-    logger.info(
-      `Reconcile complete for account ${account.id}: merged=${mergedCount} skipped=${skippedCount} consideredPairs=${consideredPairs} unresolved=${unresolvedCount}`,
-    );
-
-    return { mergedCount, skippedCount, consideredPairs, unresolvedCount };
-  }
-
-  /**
-   * Conservative gate for reconcile pass (b). Names what would be silently lost
-   * by destroying the orphan – dependent rows (transferId, refundLinked, splits,
-   * tags, refunds, trackers, subscriptions, group membership) or a user-mutable
-   * scalar that diverges from the canonical. Returns null when the orphan is safe
-   * to delete.
-   *
-   * `planEditMerge` is the lenient sibling used by pass (a); pass (b) is
-   * deliberately stricter because its pairing evidence is only circumstantial.
-   */
-  private async findOrphanDeletionBlocker({
-    orphan,
-    canonical,
-  }: {
-    orphan: Transactions;
-    canonical: Transactions;
-  }): Promise<ReconcileSkipReason | null> {
-    const orphanNote = orphan.note ?? '';
-    const canonicalNote = canonical.note ?? '';
-    if (orphanNote !== canonicalNote && orphanNote !== '') return 'note_conflict';
-    if (orphan.categoryId !== canonical.categoryId) return 'category_conflict';
-    // Same category, but only the orphan proves a human picked it. Deleting it
-    // would put the survivor back in the AI-categorization queue.
-    if (
-      hasManualStamp({ meta: orphan.categorizationMeta }) &&
-      !hasManualStamp({ meta: canonical.categorizationMeta })
-    ) {
-      return 'categorization_conflict';
-    }
-    if (orphan.paymentType !== canonical.paymentType) return 'payment_type_conflict';
-    // payeeLocked marks a Payee the user assigned or cleared by hand.
-    if (orphan.payeeLocked && orphan.payeeId !== canonical.payeeId) return 'payee_conflict';
-
-    return (await this.hasDependentRows({ tx: orphan })) ? 'dependent_rows' : null;
-  }
-
-  private async hasDependentRows({ tx }: { tx: Transactions }): Promise<boolean> {
-    if (tx.transferId) return true;
-    if (tx.refundLinked) return true;
-
-    // Loaded lazily to avoid a circular import wave at module load.
-    const TransactionTags = (await import('@models/transaction-tags.model')).default;
-    const TransactionSplits = (await import('@models/transaction-splits.model')).default;
-    const RefundTransactions = (await import('@models/refund-transactions.model')).default;
-    const TrackerTransactions = (await import('@models/tracker-transactions.model')).default;
-    const SubscriptionTransactions = (await import('@models/subscription-transactions.model')).default;
-    const TransactionGroupItems = (await import('@models/transaction-group-items.model')).default;
-
-    const transactionId = tx.id;
-    const counts = await Promise.all([
-      TransactionTags.count({ where: { transactionId } }),
-      TransactionSplits.count({ where: { transactionId } }),
-      RefundTransactions.count({ where: { originalTxId: transactionId } }),
-      RefundTransactions.count({ where: { refundTxId: transactionId } }),
-      TrackerTransactions.count({ where: { transactionId } }),
-      SubscriptionTransactions.count({ where: { transactionId } }),
-      TransactionGroupItems.count({ where: { transactionId } }),
-    ]);
-
-    return counts.some((count) => count > 0);
   }
 }

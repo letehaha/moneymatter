@@ -4,6 +4,7 @@ import BillingSubscriptions from '@models/billing-subscriptions.model';
 import BillingWebhookEvents from '@models/billing-webhook-events.model';
 import Users from '@models/users.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { UniqueConstraintError } from 'sequelize';
 
 import { sendSubscriptionWelcomeEmail } from './send-subscription-welcome-email';
 import type { ParsedSubscriptionEvent } from './stripe/parse-webhook';
@@ -30,7 +31,7 @@ const findUserId = async ({ event }: { event: ParsedSubscriptionEvent }): Promis
   if (event.userId) return event.userId;
 
   const byCustomer = await BillingSubscriptions.findOne({
-    where: { externalCustomerId: event.externalCustomerId },
+    where: { provider: event.provider, externalCustomerId: event.externalCustomerId },
     attributes: ['userId'],
     order: [['createdAt', 'DESC']],
   });
@@ -43,11 +44,13 @@ interface WebhookResult {
 }
 
 const handleBillingWebhookImpl = async ({ event }: { event: ParsedSubscriptionEvent }): Promise<WebhookResult> => {
-  const [, created] = await BillingWebhookEvents.findOrCreate({ where: { eventId: event.eventId } });
-  if (!created) return { outcome: 'duplicate' };
+  if (event.eventId) {
+    const [, created] = await BillingWebhookEvents.findOrCreate({ where: { eventId: event.eventId } });
+    if (!created) return { outcome: 'duplicate' };
+  }
 
   const existing = await BillingSubscriptions.findOne({
-    where: { externalSubscriptionId: event.externalSubscriptionId },
+    where: { provider: event.provider, externalSubscriptionId: event.externalSubscriptionId },
     lock: true,
   });
   if (existing && isStale({ existing, event })) return { outcome: 'stale' };
@@ -84,6 +87,7 @@ const handleBillingWebhookImpl = async ({ event }: { event: ParsedSubscriptionEv
 
   await BillingSubscriptions.create({
     userId,
+    provider: event.provider,
     externalSubscriptionId: event.externalSubscriptionId,
     ...fields,
   });
@@ -95,11 +99,30 @@ const handleBillingWebhookImpl = async ({ event }: { event: ParsedSubscriptionEv
 
 const handleBillingWebhookInTransaction = withTransaction(handleBillingWebhookImpl);
 
+/**
+ * Two deliveries for a subscription with no row yet (an Apple purchase sync racing its
+ * `SUBSCRIBED` notification) both pass the row lock, and the later insert hits the unique
+ * index. Rerunning turns it into an update of the row the first one committed.
+ */
+const runInTransaction = async ({ event }: { event: ParsedSubscriptionEvent }): Promise<WebhookResult> => {
+  try {
+    return await handleBillingWebhookInTransaction({ event });
+  } catch (error) {
+    if (error instanceof UniqueConstraintError) return handleBillingWebhookInTransaction({ event });
+    throw error;
+  }
+};
+
 export const handleBillingWebhook = async ({ event }: { event: ParsedSubscriptionEvent }): Promise<WebhookOutcome> => {
-  const { outcome, startedForUserId } = await handleBillingWebhookInTransaction({ event });
+  const { outcome, startedForUserId } = await runInTransaction({ event });
   // Tracked after commit so a rolled-back webhook never reports a conversion.
   if (startedForUserId) {
-    trackSubscriptionStarted({ userId: startedForUserId, tier: event.tier, billingCycle: event.billingCycle });
+    trackSubscriptionStarted({
+      userId: startedForUserId,
+      provider: event.provider,
+      tier: event.tier,
+      billingCycle: event.billingCycle,
+    });
     await sendSubscriptionWelcomeEmail({ userId: startedForUserId, tier: event.tier });
   }
   return outcome;

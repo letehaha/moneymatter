@@ -28,7 +28,9 @@
       "retry": "Skúsiť znova",
       "copyInviteLink": "Kopírovať pozývací odkaz",
       "moveTo": "Presunúť do…",
-      "learnMore": "Zistiť viac"
+      "learnMore": "Zistiť viac",
+      "undo": "Vrátiť späť",
+      "more": "Viac"
     },
     "ui": {
       "close": "Zavrieť",
@@ -103,7 +105,8 @@
       "debitCard": "Debetná karta",
       "mobilePayment": "Mobilná platba",
       "voucher": "Poukaz",
-      "webPayment": "Platba cez web"
+      "webPayment": "Platba cez web",
+      "none": "Žiadne"
     },
     "vehicleClasses": {
       "sedan": "Sedan",
@@ -139,13 +142,19 @@
         "description": "Prečíta nahranú faktúru alebo účtenku a nájde transakciu, ku ktorej patrí."
       },
       "trackerMatching": {
-        "name": "Tracker matching",
-        "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
+        "name": "Priraďovanie k sledovaču",
+        "description": "Prehľadáva nové transakcie a navrhuje tie, ktoré patria do inteligentného sledovača."
+      },
+      "transferMatching": {
+        "name": "Priraďovanie prevodov",
+        "description": "Skontroluje výsledky vyhľadávania prevodov a zachová dvojice, ktoré vyzerajú ako skutočné prevody"
       }
     },
     "transactions": {
       "delete": {
-        "success": "Úspešne odstránené",
+        "success": "Presunuté do koša",
+        "undoSuccess": "Obnovené",
+        "undoError": "Vrátenie späť sa nepodarilo. Stále ju môžete obnoviť z koša.",
         "error": "Transakciu sa nepodarilo zmazať!"
       },
       "submit": {
@@ -156,6 +165,7 @@
       },
       "record": {
         "addedByTooltip": "Túto transakciu priradil k sledovaču používateľ {handle}",
+        "addedByRule": "Pridané pravidlami sledovača",
         "matchedByAi": "Priradené pomocou AI",
         "externalLinkTooltip": "Otvoriť externý odkaz",
         "locationTooltip": "Otvoriť polohu na mape",
@@ -164,6 +174,13 @@
         "selectRow": "Vybrať transakciu",
         "unselectableReasons": {
           "sharedAccount": "Nedá sa vybrať: táto transakcia je na účte zdieľanom s vami a upravovať ju môže len jeho vlastník."
+        },
+        "payment": {
+          "paidFrom": "Zaplatené z {count} účtov",
+          "receivedInto": "Prijaté na {count} účtov",
+          "partOf": "Súčasť platby {total}",
+          "thisAccount": "(tento účet)",
+          "loadError": "Túto transakciu sa nepodarilo otvoriť. Skúste to znova."
         }
       }
     },
@@ -225,7 +242,7 @@
         "brand": "Značka",
         "letters": "Písmená",
         "icon": "Ikona",
-        "custom": "Image"
+        "custom": "Obrázok"
       },
       "searchPlaceholder": "Názov značky alebo doména",
       "searchHint": "Zadajte názov značky alebo doménu, napríklad amazon.com",
@@ -240,18 +257,22 @@
       "dialogTitle": "Zmeniť logo",
       "resetToAuto": "Vrátiť na automatické",
       "remove": "Odstrániť logo",
+      "pickerDescription": "Vyberte logo firmy alebo namiesto toho použite písmená.",
+      "updatedToast": "Logo aktualizované",
+      "resetToast": "Logo odstránené",
+      "updateError": "Logo sa nepodarilo aktualizovať. Skúste to znova.",
       "lettersLabel": "Písmená (1-2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Farba",
       "colorSwatchAriaLabel": "Použiť farbu {color}",
       "customColorAriaLabel": "Vybrať vlastnú farbu",
       "lettersSelectedLabel": "Písmená “{letters}”",
-      "lettersHint": "1–2 letters or an emoji",
-      "chooseImage": "Choose image",
-      "replaceImage": "Replace image",
-      "imageHint": "Cropped to a square and resized to 200×200 on your device.",
-      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
-      "imageUnreadable": "That file couldn't be read as an image."
+      "lettersHint": "1 – 2 písmená alebo emoji",
+      "chooseImage": "Vyberte obrázok",
+      "replaceImage": "Nahradiť obrázok",
+      "imageHint": "Na vašom zariadení sa oreže na štvorec a zmení veľkosť na 200×200.",
+      "imageTooLarge": "Obrázok má po zmenšení stále viac než 50 KB. Skúste jednoduchší obrázok.",
+      "imageUnreadable": "Tento súbor sa nepodarilo prečítať ako obrázok."
     },
     "iconPicker": {
       "searchPlaceholder": "Hľadať ikony...",
@@ -278,7 +299,20 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "o {duration} skôr",
+        "behind": "o {duration} neskôr",
+        "onPace": "Na dobrej ceste",
+        "backInReach": "Znova dosiahnuteľný",
+        "offTrack": "Na zlej ceste"
       }
+    },
+    "pasteImage": {
+      "button": "Vložte obrázok",
+      "shortcutHint": "alebo stlačte {shortcut}",
+      "noImage": "V schránke sa nenašiel žiadny obrázok.",
+      "readFailed": "Schránku sa nepodarilo prečítať. Povoľte prístup k schránke, alebo vložte obsah klávesovou skratkou."
     }
   },
   "accountGroups": {
@@ -296,6 +330,10 @@
     "link": {
       "success": "Účet bol pridaný do skupiny",
       "error": "Účet sa nepodarilo pridať do skupiny"
+    },
+    "linkMany": {
+      "success": "Účty boli pridané do skupiny",
+      "error": "Účty sa nepodarilo pridať do skupiny"
     },
     "unlink": {
       "success": "Účet bol odstránený zo skupiny",
@@ -319,9 +357,9 @@
     "newRelease": "Nová verzia",
     "trackerAiMatches": {
       "title": "{name}: {summary}",
-      "added": "{count} transaction added | {count} transactions added",
-      "toReview": "{count} transaction to review | {count} transactions to review",
-      "toReviewShort": "{count} to review",
+      "added": "Pridaná {count} transakcia | Pridané {count} transakcie | Pridaných {count} transakcií",
+      "toReview": "{count} transakcia na kontrolu | {count} transakcie na kontrolu | {count} transakcií na kontrolu",
+      "toReviewShort": "{count} na kontrolu",
       "both": "{added}, {toReview}"
     },
     "tagReminder": {
@@ -330,6 +368,13 @@
     },
     "share": {
       "sendFailedHint": "Ak chcete odoslať znova, otvorte panel zdieľania."
+    },
+    "goalReached": {
+      "title": "Cieľ dosiahnutý: {name}",
+      "message": "Usporili ste {amount}."
+    },
+    "unrealizedLossAlert": {
+      "title": "{{count}} pozícia prekročila vaše upozornenie na stratu | {{count}} pozície prekročili vaše upozornenie na stratu | {{count}} pozícií prekročilo vaše upozornenie na stratu"
     }
   },
   "currencyNames": {
@@ -424,7 +469,7 @@
   },
   "billing": {
     "seePlans": "Zobraziť plány",
-    "trialStartFailed": "Couldn't start the free trial. Try again.",
+    "trialStartFailed": "Bezplatnú skúšku sa nepodarilo spustiť. Skúste to znova.",
     "updatePaymentMethod": "Aktualizovať spôsob platby",
     "planRequired": {
       "essential": "Súčasť plánu Essential",
@@ -523,6 +568,12 @@
       "removeTransactionDescriptionNormal": "Naozaj chcete odstrániť túto transakciu zo skupiny?",
       "removeButtonText": "Odstrániť",
       "removeAndDeleteButtonText": "Odstrániť a zmazať skupinu",
+      "removeFromGroup": "Odstrániť zo skupiny",
+      "saveError": "Skupinu sa nepodarilo uložiť",
+      "removeError": "Transakciu sa nepodarilo odstrániť zo skupiny",
+      "manageTransactions": "Spravovať",
+      "showMoreNote": "Zobraziť viac",
+      "showLessNote": "Zobraziť menej",
       "summary": {
         "transactions": "Transakcie",
         "net": "Čistý zostatok",
@@ -532,6 +583,56 @@
     },
     "transactionGroupRecord": {
       "transactionCountLabel": "transakcie"
+    }
+  },
+  "mcpToolsets": {
+    "core": {
+      "label": "Základné",
+      "description": "Účty, transakcie, kategórie, značky, príjemcovia a prehľady"
+    },
+    "subscriptions": {
+      "label": "Pravidelné platby",
+      "description": "Opakované platby, ich obdobia a plánované transakcie"
+    },
+    "budgetPlans": {
+      "label": "Rozpočty",
+      "description": "Plány, riadky, ciele riadkov a sporiace ciele"
+    },
+    "trackers": {
+      "label": "Sledovače",
+      "description": "Sledovače výdavkov a ich návrhy"
+    },
+    "automations": {
+      "label": "Automatizácie",
+      "description": "Pravidlá, aliasy príjemcov, ignorované názvy príjemcov a pripomienky značiek"
+    },
+    "review": {
+      "label": "Kontrola a čistenie",
+      "description": "Zhody prevodov a vrátení platieb, duplikáty a zaseknuté nezaúčtované transakcie"
+    },
+    "groupsTemplates": {
+      "label": "Skupiny a šablóny",
+      "description": "Skupiny transakcií a šablóny transakcií"
+    },
+    "investments": {
+      "label": "Investície",
+      "description": "Portfóliá, pozície, cenné papiere a investičné transakcie"
+    },
+    "ventures": {
+      "label": "Rizikové kapitály",
+      "description": "Platformy venture, obchody a udalosti"
+    },
+    "loansVehicles": {
+      "label": "Úvery a vozidlá",
+      "description": "Úvery s ich splátkami a vozidlá"
+    },
+    "currencies": {
+      "label": "Meny",
+      "description": "Vaše meny a výmenné kurzy"
+    },
+    "imports": {
+      "label": "Importy a zdieľanie",
+      "description": "Dávky importov (zoznam, vrátenie späť) a bankové pripojenia (stav, odpojenie účtu); zdieľanie je len na čítanie."
     }
   }
 }

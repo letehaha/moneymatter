@@ -23,6 +23,7 @@ import {
   useUpdateTransactionTemplate,
 } from '@/composable/data-queries/transaction-templates';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useLinkedCurrencyGroup } from '@/composable/use-linked-currency-group';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
@@ -38,7 +39,7 @@ import {
   type TransactionTemplateModel,
   type CreateTransactionTemplateBody,
 } from '@bt/shared/types';
-import { required, requiredIf } from '@vuelidate/validators';
+import { helpers, required, requiredIf } from '@vuelidate/validators';
 import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -112,6 +113,7 @@ const emptyTemplateForm = () => ({
 
 const form = ref(emptyTemplateForm());
 const amountDecimals = computed(() => getCurrencyDecimals({ code: form.value.account?.currencyCode }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
 
 const nameFieldRef = ref<InstanceType<typeof InputField> | null>(null);
 const nameConflictError = ref<string | null>(null);
@@ -119,9 +121,24 @@ const isDeleteConfirmOpen = ref(false);
 
 const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFormValidation(
   { form },
-  { form: { name: { required }, account: { required: requiredIf(() => !form.value.keepAccount) } } },
+  {
+    form: {
+      name: { required },
+      account: { required: requiredIf(() => !form.value.keepAccount) },
+      amount: {
+        currencyDecimal: helpers.withMessage(
+          () => currencyDecimal.message.value,
+          (value: unknown) => form.value.noAmount || currencyDecimal.isValid(value),
+        ),
+      },
+    },
+  },
   {},
-  { customValidationMessages: { required: t('dialogs.manageTransaction.form.validation.required') } },
+  {
+    customValidationMessages: {
+      required: t('dialogs.manageTransaction.form.validation.required'),
+    },
+  },
 );
 
 const nameErrorMessage = computed(() => nameConflictError.value ?? getFieldErrorMessage('form.name'));
@@ -334,6 +351,8 @@ const confirmDelete = async () => {
           :label="$t('dialogs.manageTransaction.form.amountLabel')"
           :placeholder="$t('dialogs.manageTransaction.form.amountPlaceholder')"
           :disabled="form.noAmount"
+          :error-message="getFieldErrorMessage('form.amount')"
+          @blur="touchField('form.amount')"
         >
           <template #iconTrailing>
             <span>{{ form.account?.currencyCode }}</span>

@@ -112,7 +112,7 @@ describe('Bulk update transactions controller', () => {
 
       expect(result.updatedCount).toBe(2);
 
-      const transactions = (await helpers.getTransactions({ includeTags: true, raw: true }))!;
+      const transactions = (await helpers.getTransactions({ raw: true }))!;
       const updatedTx1 = transactions.find((t) => t.id === tx1.id);
       const updatedTx2 = transactions.find((t) => t.id === tx2.id);
 
@@ -204,7 +204,7 @@ describe('Bulk update transactions controller', () => {
       });
 
       // Get updated transaction to capture new updatedAt
-      let transactions = (await helpers.getTransactions({ includeTags: true, raw: true }))!;
+      let transactions = (await helpers.getTransactions({ raw: true }))!;
       const txWithTag = transactions.find((t) => t.id === tx.id);
       const originalUpdatedAt = txWithTag!.updatedAt;
 
@@ -220,7 +220,7 @@ describe('Bulk update transactions controller', () => {
         raw: true,
       });
 
-      transactions = (await helpers.getTransactions({ includeTags: true, raw: true }))!;
+      transactions = (await helpers.getTransactions({ raw: true }))!;
       const updatedTx = transactions.find((t) => t.id === tx.id);
 
       // Verify tags were replaced
@@ -253,7 +253,7 @@ describe('Bulk update transactions controller', () => {
       });
 
       // Get updated transaction to capture new updatedAt
-      let transactions = (await helpers.getTransactions({ includeTags: true, raw: true }))!;
+      let transactions = (await helpers.getTransactions({ raw: true }))!;
       const txWithTags = transactions.find((t) => t.id === tx.id);
       const originalUpdatedAt = txWithTags!.updatedAt;
 
@@ -269,7 +269,7 @@ describe('Bulk update transactions controller', () => {
         raw: true,
       });
 
-      transactions = (await helpers.getTransactions({ includeTags: true, raw: true }))!;
+      transactions = (await helpers.getTransactions({ raw: true }))!;
       const updatedTx = transactions.find((t) => t.id === tx.id);
 
       // Verify only tag2 remains
@@ -311,6 +311,46 @@ describe('Bulk update transactions controller', () => {
 
       expect(updatedTx1?.note).toBe(newNote);
       expect(updatedTx2?.note).toBe(newNote);
+    });
+  });
+
+  describe('excludeFromStats updates', () => {
+    it('sets and clears excludeFromStats on the selected transactions only', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async () => {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id }),
+          raw: true,
+        });
+        return tx;
+      };
+      const tx1 = await createTx();
+      const tx2 = await createTx();
+      const untouched = await createTx();
+
+      const excluded = await helpers.bulkUpdateTransactions({
+        payload: { transactionIds: [tx1!.id, tx2!.id], excludeFromStats: true },
+        raw: true,
+      });
+      expect(excluded.updatedCount).toBe(2);
+
+      const flagsAfterExclude = new Map(
+        (await helpers.getTransactions({ raw: true }))!.map((t) => [t.id, t.excludeFromStats]),
+      );
+      expect(flagsAfterExclude.get(tx1!.id)).toBe(true);
+      expect(flagsAfterExclude.get(tx2!.id)).toBe(true);
+      expect(flagsAfterExclude.get(untouched!.id)).toBe(false);
+
+      await helpers.bulkUpdateTransactions({
+        payload: { transactionIds: [tx1!.id], excludeFromStats: false },
+        raw: true,
+      });
+
+      const flagsAfterInclude = new Map(
+        (await helpers.getTransactions({ raw: true }))!.map((t) => [t.id, t.excludeFromStats]),
+      );
+      expect(flagsAfterInclude.get(tx1!.id)).toBe(false);
+      expect(flagsAfterInclude.get(tx2!.id)).toBe(true);
     });
   });
 

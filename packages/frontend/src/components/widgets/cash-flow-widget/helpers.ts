@@ -1,5 +1,6 @@
+import { getPrevPeriod } from '@/composable/use-period-navigation';
 import type { CashFlowPeriodData } from '@bt/shared/types';
-import { differenceInDays, endOfMonth, isSameMonth, parseISO, startOfMonth, subDays, subMonths } from 'date-fns';
+import { parseISO } from 'date-fns';
 
 interface DatePeriod {
   from: Date;
@@ -21,52 +22,20 @@ export interface CashFlowTotals {
 // The trend bars show this many past periods before the current one.
 const PREV_PERIOD_COUNT = 5;
 
-/** True when the period spans exactly one whole calendar month. */
-export function isFullMonthPeriod({ from, to }: DatePeriod): boolean {
-  return isSameMonth(from, to) && from.getDate() === 1 && to.getDate() === endOfMonth(to).getDate();
-}
-
-/**
- * The period immediately before the selected one. For a whole month it's the
- * previous calendar month; otherwise it's the same-length window ending the day
- * before `from`.
- */
-export function computePrevPeriod({ from, to }: DatePeriod): DatePeriod {
-  if (isFullMonthPeriod({ from, to })) {
-    const prev = subMonths(from, 1);
-    return { from: startOfMonth(prev), to: endOfMonth(prev) };
-  }
-
-  const durationInDays = differenceInDays(to, from) + 1;
-  return { from: subDays(from, durationInDays), to: subDays(from, 1) };
-}
-
 /**
  * The five periods preceding the selected one, plus the selected one itself
  * (flagged `isCurrent`), oldest first — the buckets behind the trend bars.
  */
-export function computeTrendPeriods({ from, to }: DatePeriod): [TrendPeriod, ...TrendPeriod[]] {
-  const durationInDays = differenceInDays(to, from) + 1;
-  const fullMonth = isFullMonthPeriod({ from, to });
+export function computeTrendPeriods({
+  from,
+  to,
+  payday = 1,
+}: DatePeriod & { payday?: number }): [TrendPeriod, ...TrendPeriod[]] {
+  const periods: [TrendPeriod, ...TrendPeriod[]] = [{ from, to, isCurrent: true }];
 
-  const windowBack = (stepsBack: number): TrendPeriod => {
-    if (fullMonth) {
-      const periodFrom = startOfMonth(subMonths(from, stepsBack));
-      return { from: periodFrom, to: endOfMonth(periodFrom), isCurrent: false };
-    }
-
-    const periodTo = subDays(from, (stepsBack - 1) * durationInDays + 1);
-    return { from: subDays(periodTo, durationInDays - 1), to: periodTo, isCurrent: false };
-  };
-
-  const periods: [TrendPeriod, ...TrendPeriod[]] = [windowBack(PREV_PERIOD_COUNT)];
-
-  for (let i = PREV_PERIOD_COUNT - 1; i >= 1; i--) {
-    periods.push(windowBack(i));
+  for (let i = 0; i < PREV_PERIOD_COUNT; i++) {
+    periods.unshift({ ...getPrevPeriod({ period: periods[0], payday }), isCurrent: false });
   }
-
-  // The selected period is the last (rightmost) bar.
-  periods.push({ from, to, isCurrent: true });
 
   return periods;
 }

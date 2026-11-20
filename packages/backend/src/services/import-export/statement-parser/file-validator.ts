@@ -79,18 +79,16 @@ function isValidTextContent({ buffer }: { buffer: Buffer }): boolean {
   const sampleSize = Math.min(buffer.length, 1000);
   const sample = buffer.subarray(0, sampleSize);
 
-  // Count printable ASCII and common text characters
-  let printableCount = 0;
+  // Bytes >= 0x80 count as text so non-ASCII UTF-8 passes; binary is full of control bytes
+  let textCount = 0;
   for (let i = 0; i < sample.length; i++) {
     const byte = sample[i]!;
-    // Printable ASCII (32-126), tab (9), newline (10), carriage return (13)
-    if ((byte >= 32 && byte <= 126) || byte === 9 || byte === 10 || byte === 13) {
-      printableCount++;
+    if (byte >= 32 || byte === 9 || byte === 10 || byte === 13) {
+      textCount++;
     }
   }
 
-  // If >90% printable, treat as text
-  return printableCount / sample.length > 0.9;
+  return textCount / sample.length > 0.99;
 }
 
 /**

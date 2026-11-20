@@ -1,0 +1,95 @@
+---
+title: Goals
+description: Save toward a target from the accounts you already have. A goal reads your balances, shows how far along you are, your pace, when you'll get there and how much you need each month.
+sidebar:
+  order: 1
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+A goal is something you're saving for, such as a car, a holiday or an emergency fund. You give it a target amount, an optional date and the accounts that hold the money. MoneyMatter then reads those accounts' balances to show how much you've saved, how fast you're saving and when you'll reach the target.
+
+Goals never move money. They don't create transactions or touch your balances. When you add money to a linked account, the goal moves forward on its own.
+
+<Aside type="note" title="Not the same as budget goals">
+These goals are separate from the goals you add to a budget line, which tell the line how much to assign each period. For those, see [Budget goals](/budgeting/goals/).
+</Aside>
+
+## Open Goals
+
+In the sidebar, open **Planning**, then **Goals**.
+
+The page lists your goals in three sections:
+
+- **Active**: goals you're still saving for, including paused ones.
+- **Ended**: goals that reached their target.
+- **Archived**: goals you've put away. This section is collapsed. Click **show** to open it.
+
+Use the search box to find a goal by name. The **Behind schedule** chip shows only goals that are behind or overdue, and **Archived** includes archived goals in the list.
+
+Each row shows the goal's progress bar, how much you've saved of the target, its status, its date (or **no date**) and how much it needs each month. Click a row to open the goal.
+
+## What a goal tracks
+
+- **One target in any currency.** The target can be in your base currency or any other currency, such as a holiday in euros. See [Target currency](/goals/create-and-edit/#target-currency).
+- **Shares of one or more accounts.** For each account, you choose what percentage of its balance counts toward the goal. One account can back several goals, as long as its shares add up to 100% or less. See [Accounts and shares](/goals/create-and-edit/#accounts-and-shares).
+- **Investment and crypto accounts too.** Market moves on those accounts count as progress, up or down. Projections never assume growth.
+- **Progress from real balances.** There's nothing to update by hand. See [How progress is calculated](/goals/how-progress-is-calculated/).
+
+## The goal page
+
+Click a goal to open it. The header shows the goal's name, its status, its date and how many accounts back it, with the accounts listed below. If more than three accounts back it, hover **+N** (or tap it on a phone) to see them all.
+
+A strip of five numbers sits under the header:
+
+| Number | What it shows |
+|---|---|
+| **Target** | The target amount, with the date if the goal has one. |
+| **Saved** | What counts toward the goal right now. Once the goal is reached, this cell shows **Reached** and how far above the target you are. |
+| **Left** | What's still missing. |
+| **Needs** | How much you need to save each month to hit the target date. Goals without a date show **no date**. |
+| **Pace** | How much you're saving a month, and the month you'll reach the target at that pace (**around** a month). |
+
+Below the strip are three tabs:
+
+- **Progress**: your monthly pace, the projected finish, your best month, a timeline chart of what you've saved with the projection and the target line, and the change month by month.
+- **Accounts**: each linked account with its share, its balance and how much of it is counted, plus the **Total counted**. This tab is read-only. To change accounts or shares, use **Edit goal**.
+- **What if**: a sandbox to try a different monthly amount, date or shares. See [What if and feasibility](/goals/what-if-and-feasibility/).
+
+## Statuses
+
+| Status | Meaning |
+|---|---|
+| **Ahead** | At your pace, you reach the target at least a month before the date. |
+| **On track** | At your pace, you reach the target by the date. |
+| **Behind · N mo** | At your pace, you reach the target N months after the date, or you aren't saving toward it at all. |
+| **Overdue** | The date has passed and the target isn't reached. |
+| **Reached** | What's counted has reached the target. |
+| **around** a month | The goal has no date. It shows when you'll reach the target at your pace instead. A goal without a date is never behind. |
+| **No date** | The goal has no date and no pace yet. |
+| **Not enough history** | The accounts don't have three full months of history yet, and you haven't set a monthly amount. See [Pace](/goals/how-progress-is-calculated/#pace). |
+| **No accounts** | No account backs the goal, for example because its only account was deleted. |
+| **Paused** | You paused the goal. |
+| **Archived** | You archived the goal. |
+| **No exchange rate** | There's no exchange rate from the goal's currency to your base currency today, so progress can't be worked out. It comes back once the rate is available. |
+
+## When you reach a goal
+
+When what's counted reaches the target, the goal shows **Reached**, moves to **Ended**, and you get an in-app notification, "Goal reached: [name]". Click it to open the goal. You're notified once per completion. MoneyMatter checks your goals once a day and right after you create or edit one.
+
+A reached goal stays in **Ended** and keeps showing **Reached** even if the balance dips later, so spending some of the money doesn't bring the notification back. If the goal is below its target more than 30 days after you reached it, it goes back to **Active**, and reaching it again sends a new notification. Changing the target amount or the currency also starts over: if the goal is still reached after the change, you're notified again.
+
+To aim higher once a goal is reached, open it and click **Raise target**.
+
+## Plans
+
+Goals are part of the **Essential** and **Plus** plans, and of the 40-day trial every new account starts with. Anyone can open the page and see their goals, but creating, editing and deleting them needs one of those plans.
+
+On the Early Adopter plan, the **Goals** page offers **Start free trial**, a free 14-day trial of goals, once per account. A banner shows the days left, for example "Goals trial · 9 days left". When the trial ends, your goals stay visible, but you need to upgrade to edit them. Read-only accounts can't start the trial. See [Plans and billing](/settings/plans-and-billing/#goals-free-trial).
+
+## Related
+
+- [Create and edit a goal](/goals/create-and-edit/)
+- [How progress is calculated](/goals/how-progress-is-calculated/)
+- [What if and feasibility](/goals/what-if-and-feasibility/)
+- [Dashboard](/stats/dashboard/#goals), for the Goals widget

@@ -281,6 +281,48 @@ describe('bulkScanTransferRecommendations', () => {
       }
     });
 
+    it('includes out-of-wallet transfers only when includeOutOfWallet is set', async () => {
+      const account1 = await helpers.createAccount({ raw: true });
+      const account2 = await helpers.createAccount({ raw: true });
+
+      const [outOfWalletExpense] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account1.id,
+          amount: 640,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: todayISO,
+          transferNature: TRANSACTION_TRANSFER_NATURE.transfer_out_wallet,
+        }),
+        raw: true,
+      });
+      const [regularIncome] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account2.id,
+          amount: 640,
+          transactionType: TRANSACTION_TYPES.income,
+          time: todayISO,
+        }),
+        raw: true,
+      });
+
+      const withoutFlag = await helpers.bulkScanTransferRecommendations({
+        from: thirtyDaysAgo,
+        to: todayISO,
+        raw: true,
+      });
+      expect(withoutFlag.items.some((item) => item.expense.id === outOfWalletExpense.id)).toBe(false);
+
+      const withFlag = await helpers.bulkScanTransferRecommendations({
+        from: thirtyDaysAgo,
+        to: todayISO,
+        includeOutOfWallet: true,
+        raw: true,
+      });
+      const item = withFlag.items.find((entry) => entry.expense.id === outOfWalletExpense.id);
+      expect(item).toBeDefined();
+      expect(item!.matches.some((match) => match.transaction.id === regularIncome.id)).toBe(true);
+    });
+
     it('returns empty results for date range with no expenses', async () => {
       const response = await helpers.bulkScanTransferRecommendations({
         from: subDays(today, 365).toISOString(),
@@ -606,6 +648,51 @@ describe('dismissTransferSuggestion', () => {
         incomeTransactionId: generateRandomRecordId(),
       });
       expect(unknownIds.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+
+    it('refuses a pair when one transaction is unknown or belongs to another user', async () => {
+      const account1 = await helpers.createAccount({ raw: true });
+      const [expense] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account1.id,
+          amount: 450,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: todayISO,
+        }),
+        raw: true,
+      });
+
+      const oneUnknown = await helpers.dismissTransferSuggestion({
+        expenseTransactionId: expense.id,
+        incomeTransactionId: generateRandomRecordId(),
+      });
+      expect(oneUnknown.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const otherUser = await helpers.provisionSecondUserWithBaseCurrency();
+      const foreignIncomeId = await helpers.asUser({
+        cookies: otherUser.cookies,
+        fn: async () => {
+          const account = await helpers.createAccount({ raw: true });
+          const category = await helpers.addCustomCategory({ name: 'Other', color: '#0000FF', raw: true });
+          const [income] = await helpers.createTransaction({
+            payload: helpers.buildTransactionPayload({
+              accountId: account.id,
+              categoryId: category.id,
+              amount: 450,
+              transactionType: TRANSACTION_TYPES.income,
+              time: todayISO,
+            }),
+            raw: true,
+          });
+          return income.id;
+        },
+      });
+
+      const foreign = await helpers.dismissTransferSuggestion({
+        expenseTransactionId: expense.id,
+        incomeTransactionId: foreignIncomeId,
+      });
+      expect(foreign.statusCode).toBe(ERROR_CODES.ValidationError);
     });
   });
 });

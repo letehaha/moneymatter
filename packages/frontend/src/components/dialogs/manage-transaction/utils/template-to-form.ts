@@ -82,6 +82,7 @@ export const templateToForm = ({
       payeeId: template.payeeId ?? null,
       tagIds: template.tagIds.filter((id) => sources.knownTagIds.has(id)),
       paymentType,
+      paymentTypeUserTouched: Boolean(template.paymentType) || Boolean(current.paymentTypeUserTouched),
       note: template.note ?? undefined,
       time: new Date(),
       isPlanned: current.isPlanned,

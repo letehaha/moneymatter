@@ -1,4 +1,5 @@
 import type { CurrencyModel } from '../currencies';
+import type { EntityLogoFields } from '../entity-logo';
 import { TransactionModel } from '../transactions';
 import { VentureDealModel } from './deal.model';
 import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE } from './enums';
@@ -40,7 +41,7 @@ export interface VentureEventLinkModel {
 }
 
 /** The deal a venture-linked transaction belongs to. */
-export interface TransactionVentureLink {
+export interface TransactionVentureLink extends EntityLogoFields {
   dealId: string;
   dealName: string;
   isDealDeleted: boolean;

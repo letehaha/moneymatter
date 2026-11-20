@@ -5,16 +5,14 @@
       <Sidebar v-else />
     </template>
 
-    <ScrollArea ref="scrollAreaRef" class="flex-1" :scroll-area-id="SCROLL_AREA_IDS.dashboard">
-      <ui-header class="bg-background sticky top-0 z-30" />
+    <ScrollArea ref="scrollAreaRef" class="flex-1" scrollbar-class="z-40" :scroll-area-id="SCROLL_AREA_IDS.dashboard">
+      <ui-header class="bg-card dark:bg-background sticky top-0 z-30" />
 
       <template v-if="isAppInitialized">
         <div class="max-md:pb-4">
           <router-view />
         </div>
       </template>
-
-      <ScrollBar />
     </ScrollArea>
 
     <template v-if="isMobileView">
@@ -42,7 +40,7 @@
 import { useHead } from '@unhead/vue';
 import BottomNavbar from '@/components/bottom-navbar.vue';
 import ShareInvitationDialog from '@/components/dialogs/share-invitation-dialog.vue';
-import { ScrollArea, ScrollBar } from '@/components/lib/ui/scroll-area';
+import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { SCROLL_AREA_IDS } from '@/components/lib/ui/scroll-area/types';
 import { QuickStartPanel, QuickStartSidebar, QuickStartTrigger } from '@/components/quick-start';
 import Sidebar from '@/components/sidebar/index.vue';

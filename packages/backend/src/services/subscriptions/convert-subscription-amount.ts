@@ -3,7 +3,7 @@ import Subscriptions from '@models/subscriptions.model';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 
 /**
- * Converts the subscription's billed amount (`expectedAmount` cents, in
+ * Converts the subscription's billed amount (`expectedAmount`, in
  * `expectedCurrencyCode`) into the currency of the account it is paid from,
  * valued at `date`.
  *

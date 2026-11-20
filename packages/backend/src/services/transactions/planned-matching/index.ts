@@ -3,6 +3,7 @@ import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import Transactions from '@models/transactions.model';
 
+import { isDeadlockError } from '../../common/retry-on-deadlock';
 import { runInSavepoint } from '../../common/run-in-savepoint';
 import { findPlannedMatch } from './find-planned-match';
 import { type IncomingTransactionData, mergeIntoPlanned } from './merge-into-planned';
@@ -51,6 +52,8 @@ export const tryMergeIntoPlanned = async ({
 
     return merged;
   } catch (error) {
+    // The savepoint rollback keeps the outer transaction's locks, so a deadlock would recur.
+    if (isDeadlockError(error)) throw error;
     logger.error(
       {
         message: 'Planned-transaction merge failed; creating the incoming transaction normally',

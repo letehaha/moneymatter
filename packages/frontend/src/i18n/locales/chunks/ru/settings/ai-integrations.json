@@ -57,7 +57,8 @@
         "financeWrite": "Edit financial data",
         "financeDelete": "Delete financial data",
         "profileRead": "Чтение профиля",
-        "offlineAccess": "Фоновый доступ"
+        "offlineAccess": "Фоновый доступ",
+        "toolset": "Tools: {name}"
       }
     }
   }

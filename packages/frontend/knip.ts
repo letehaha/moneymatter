@@ -2,7 +2,7 @@ import type { KnipConfig } from 'knip';
 
 const config: KnipConfig = {
   // TODO: fix because it's wrong ignoring them
-  ignoreBinaries: ['knip', 'vue-tsc', 'vitest', 'playwright', 'oxlint'],
+  ignoreBinaries: ['knip', 'vue-tsc', 'vitest', 'playwright', 'oxlint', 'vite'],
   // Colocated unit tests, so exports consumed only by a test are not flagged.
   entry: ['src/**/*.{test,spec}.{ts,tsx}'],
   ignore: [

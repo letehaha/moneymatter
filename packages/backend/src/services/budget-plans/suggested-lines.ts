@@ -5,7 +5,7 @@ import {
   BudgetSuggestionAnswers,
   BudgetSuggestionContext,
 } from '@bt/shared/types';
-import { getBaseCurrencyDecimals, getCurrencyDecimals, roundToCurrency } from '@common/lib/currency-precision';
+import { getBaseCurrencyDecimals, getCurrencyDecimals } from '@common/lib/currency-precision';
 import { requestContext } from '@common/request-context';
 import { Money, minorUnitsToApiDecimal } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
@@ -20,7 +20,7 @@ import Categories from '@models/categories.model';
 import {
   createCategoryClaims,
   expandCategoryIdsWithDescendants,
-  getAncestorIds,
+  getCategoryPathNames,
   getRootCategoryId,
 } from '@services/categories/category-hierarchy';
 import { withTransaction } from '@services/common/with-transaction';
@@ -74,6 +74,8 @@ const STARTER_FOCUS: { parentKey: string; key: string }[] = [
   { parentKey: 'life', key: 'active-sport-fitness' },
   { parentKey: 'life', key: 'holiday-trips-hotels' },
   { parentKey: 'life', key: 'hobbies' },
+  { parentKey: 'life', key: 'gifts' },
+  // Seed key of accounts created before gifts moved to Life; each user has only one of the two.
   { parentKey: 'shopping', key: 'gifts-joy' },
   { parentKey: 'life', key: 'education-development' },
 ];
@@ -196,12 +198,7 @@ const writeLines = withTransaction(
         await BudgetAssignments.create({
           periodId: currentPeriod.id,
           lineId: line.id,
-          baselineAmount: await roundToCurrency({
-            money: Money.fromMinorUnits({ value: baselineMinor, decimals }),
-            userId,
-            currencyCode: plan.currencyCode,
-            mode: 'half-up',
-          }),
+          baselineAmount: Money.fromMinorUnits({ value: baselineMinor, decimals }),
         });
       }
     }
@@ -269,11 +266,6 @@ const subtreeSpendMinor = ({
     0,
   );
 
-const categoryPath = ({ category, byId }: { category: Categories; byId: Map<string, Categories> }): string =>
-  [...getAncestorIds({ categoryId: category.id, byId }).toReversed(), category.id]
-    .map((id) => byId.get(id)!.name)
-    .join(' › ');
-
 /**
  * Lines for the plan's spending categories, arranged by a model when one is
  * available and has spending or the user's answers to go on, and by spend rank
@@ -317,7 +309,7 @@ export const addSuggestedLines = async ({
       : [
           {
             id: category.id,
-            path: categoryPath({ category, byId }),
+            path: getCategoryPathNames({ categoryId: category.id, byId }).join(' › '),
             totalMinor: subtreeMinor({ categoryIds: [category.id] }),
           },
         ],

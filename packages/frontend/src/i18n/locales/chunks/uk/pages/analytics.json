@@ -49,7 +49,8 @@
         "last12Months": "Останні 12 місяців",
         "thisYear": "Цього року",
         "previousYear": "Минулого року",
-        "allTime": "Весь час"
+        "allTime": "Весь час",
+        "currentPayPeriod": "Поточний платіжний цикл"
       },
       "composition": {
         "detail": "Деталізація",
@@ -83,7 +84,7 @@
       }
     },
     "trends": {
-      "subtitle": "Порівняйте витрати, дохід і заощадження з попереднім періодом.",
+      "subtitle": "Порівняйте витрати та дохід із попереднім періодом.",
       "metrics": {
         "expenses": "Витрати",
         "income": "Дохід",
@@ -94,27 +95,63 @@
         "comparisonPeriod": "Попередній період",
         "cumulativeNote": "Накопичувальна сума до цього моменту"
       },
+      "scope": {
+        "label": "Область категорій",
+        "all": "Усі категорії",
+        "up": "На рівень вище",
+        "transactions": "Транзакції",
+        "count": "{count} категорія | {count} категорії | {count} категорій",
+        "more": "+{count}",
+        "allExcept": "Усі, крім: {list}",
+        "clear": "Очистити"
+      },
       "categoryBreakdown": {
         "title": "Розбивка за категоріями",
         "noData": "Немає даних за цей період",
         "viewAll": "Переглянути всі категорії",
-        "moreCount": "ще {count}"
+        "moreCount": "ще {count}",
+        "noSubcategory": "{name} · без підкатегорії",
+        "byLevel": "За рівнем",
+        "detail": "Детально",
+        "others": "Інші"
+      },
+      "hero": {
+        "vsPrevious": "{percent}% проти попереднього періоду",
+        "same": "Так само, як у попередньому періоді"
+      },
+      "overTime": {
+        "title": "У динаміці",
+        "cumulative": "Накопичувально",
+        "perPeriod": "За період",
+        "granularity": {
+          "monthly": "По місяцях",
+          "quarterly": "По кварталах",
+          "yearly": "По роках"
+        }
+      },
+      "transactionsCard": {
+        "title": "Транзакції",
+        "largest": "Найбільші",
+        "recent": "Останні"
       },
       "monthlyComparison": {
-        "title": "Порівняння по місяцях",
         "allCategories": "Усі категорії",
         "average": "Середнє",
         "total": "Усього",
-        "vsLastMonth": "проти попереднього місяця",
-        "viewTransactions": "Переглянути транзакції"
-      },
-      "cumulativeProgress": {
-        "title": "Накопичувальний прогрес"
+        "vsPrevious": {
+          "monthly": "проти минулого місяця",
+          "quarterly": "проти минулого кварталу",
+          "yearly": "проти минулого року"
+        },
+        "show": {
+          "monthly": "Показати цей місяць",
+          "quarterly": "Показати квартал",
+          "yearly": "Показати рік"
+        }
       },
       "filters": {
         "button": "Фільтри",
         "title": "Фільтри",
-        "categories": "Категорії",
         "include": "Включити",
         "exclude": "Виключити",
         "accounts": "Рахунки",
@@ -336,6 +373,45 @@
           "addBirthYear": "Додати рік народження"
         }
       },
+      "pace": {
+        "row": "{status} · порівняно з {anchor}",
+        "noHistory": "Замало історії до періоду: {month}",
+        "loadFailed": "Не вдалося завантажити порівняння",
+        "compareWith": "Порівняти з: {month}",
+        "picker": {
+          "title": "Порівняти з",
+          "rollingLabel": "{month} · 1 рік тому",
+          "rolling": "1 рік тому",
+          "rollingHint": "Рухома · зараз {month}",
+          "specific": "Конкретний місяць",
+          "specificHint": "Не змінюється",
+          "prevYear": "Попередній рік",
+          "nextYear": "Наступний рік",
+          "earliest": "Найраніше — {month}. Для FIRE потрібні 3 місяці відстежених витрат до цього періоду."
+        },
+        "details": {
+          "title": "Темп порівняно з: {month}",
+          "moved": "Ваша дата FIRE змістилася з {from} на {to}.",
+          "withinBand": "Ваша дата FIRE в межах {tolerance} від прогнозу за {month} ({date}).",
+          "backInReach": "За показниками на {month} FIRE був недосяжним. Тепер — {date}.",
+          "offTrack": "Прогноз за {month}: {date}. За сьогоднішніми показниками FIRE недосяжний.",
+          "metric": "Показник",
+          "today": "Сьогодні",
+          "change": "Зміна",
+          "fireDate": "Дата FIRE",
+          "saved": "Накопичено на сьогодні",
+          "spending": "Витрати",
+          "saving": "Заощадження",
+          "expected": "очікується {amount}",
+          "sooner": "на {duration} раніше",
+          "later": "на {duration} пізніше",
+          "sameMonth": "Той самий місяць",
+          "outOfReach": "Недосяжно",
+          "band": "«За графіком» означає в межах {tolerance} (2% часу, що залишився до FIRE).",
+          "recorded": "Баланс, грошовий потік і припущення станом на {date} перераховуються наживо з ваших даних.",
+          "notRecorded": "Баланс і грошовий потік станом на {date} перераховуються наживо з ваших даних. Ваші тогочасні припущення не збережено, тому використано сьогоднішні."
+        }
+      },
       "chart": {
         "ariaLabel": "Історія чистого капіталу та прогнозований шлях до вашого числа FIRE",
         "actual": "Фактично",
@@ -343,7 +419,10 @@
         "range": "Дохідність ±2 п. п.",
         "today": "Сьогодні",
         "typeTarget": "{type} · {amount}",
-        "typeLabel": "{type} · {date}"
+        "typeLabel": "{type} · {date}",
+        "forecast": "Прогноз за {month}",
+        "forecastLabel": "Прогноз за {month} · {date}",
+        "actualSince": "Фактично з: {month}"
       },
       "milestones": {
         "reached": "Досягнуто",
@@ -438,6 +517,7 @@
     },
     "table": {
       "total": "Всього",
+      "net": "Сальдо",
       "collapseAll": "Згорнути все",
       "expandAll": "Розширити все",
       "expandRow": "Розгорнути",

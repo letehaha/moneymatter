@@ -9,6 +9,21 @@
         "successNotification": "Настройка успешно обновлена",
         "errorNotification": "Не удалось обновить настройку"
       },
+      "payday": {
+        "label": "Pay cycle starts on",
+        "description": "Day of the month your pay cycle starts. The dashboard's default period runs from this day to the day before it next month.",
+        "placeholder": "Select day",
+        "successNotification": "Pay cycle start updated"
+      },
+      "unrealizedLossAlert": {
+        "label": "Unrealized loss alerts",
+        "description": "Get one notification when a holding's loss crosses either threshold. Checked daily after market prices update; it won't repeat until the holding recovers.",
+        "percentLabel": "Loss percentage",
+        "percentDescription": "Alert when a holding is down at least this much from its cost.",
+        "amountLabel": "Loss amount",
+        "amountDescription": "Or when the loss reaches this amount in your base currency, whatever the percentage.",
+        "successNotification": "Loss alert settings saved"
+      },
       "manualTransferMatching": {
         "label": "Сопоставлять переводы со счетами с ручным управлением",
         "description": "Разрешить автоматически обнаруженным переводам связывать синхронизированную банковскую транзакцию с созданной вручную.",
@@ -69,6 +84,21 @@
         },
         "successNotification": "Настройки списков счетов обновлены",
         "errorNotification": "Не удалось обновить настройки списков счетов"
+      },
+      "iosAddExpense": {
+        "label": "iPhone Add Expense",
+        "description": "Settings for the Add Expense shortcut on iPhone (Siri, Spotlight and the Action button).",
+        "showBankAccounts": {
+          "label": "Show bank-connected accounts",
+          "description": "Off by default: transactions on bank-connected accounts arrive through sync."
+        },
+        "hiddenCategories": {
+          "label": "Hidden categories",
+          "description": "Checked categories, with their subcategories, are hidden from the shortcut's category list.",
+          "placeholder": "None"
+        },
+        "successNotification": "iPhone Add Expense settings updated",
+        "errorNotification": "Failed to update iPhone Add Expense settings"
       },
       "showUpcomingTransactions": {
         "label": "Показывать предстоящие транзакции",

@@ -12,10 +12,10 @@
     <template v-if="isEditMode && tag">
       <Tabs v-model="activeTab" class="mt-4 mb-auto">
         <TabsList class="grid w-full grid-cols-2">
-          <TabsTrigger value="details" class="data-[state=active]:bg-dialog">
+          <TabsTrigger value="details">
             {{ $t('settings.tags.tabs.details') }}
           </TabsTrigger>
-          <TabsTrigger value="reminders" class="data-[state=active]:bg-dialog">
+          <TabsTrigger value="reminders">
             {{ $t('settings.tags.tabs.reminders') }}
             <span
               v-if="reminders.length > 0"
@@ -56,7 +56,7 @@
             <div
               v-for="reminder in reminders"
               :key="reminder.id"
-              class="hover:bg-accent flex cursor-pointer items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors"
+              class="hover:bg-hover flex cursor-pointer items-center justify-between gap-3 rounded-md border px-3 py-2 transition-colors"
               @click="openReminderDialog({ reminder })"
             >
               <div class="min-w-0 flex-1">

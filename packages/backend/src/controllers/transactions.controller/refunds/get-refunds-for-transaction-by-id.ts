@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 const schema = z.object({
   query: z.object({
-    transactionId: z.string().uuid({ message: 'Invalid transaction ID' }),
+    transactionId: z.uuid({ message: 'Invalid transaction ID' }),
   }),
 });
 
@@ -18,6 +18,6 @@ export default createController(schema, async ({ user, query }) => {
     userId,
   });
 
-  // Serialize: convert cents to decimal for API response
+  // Serialize: Money amounts to API decimals
   return { data: serializeRefundTransactions(refunds) };
 });

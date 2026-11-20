@@ -1,22 +1,16 @@
-import { dateString, isoCurrencyCode, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
+import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { exchangeCurrency } from '@services/investments/portfolios/transfers';
 import { z } from 'zod';
 
+import { exchangeCurrencyBodySchema } from './schemas';
 import { serializeTransferResponse } from './serialize-transfer';
 
 const schema = z.object({
   params: z.object({
     id: recordId(),
   }),
-  body: z.object({
-    fromCurrencyCode: isoCurrencyCode(),
-    toCurrencyCode: isoCurrencyCode(),
-    fromAmount: positiveAmountString(),
-    toAmount: positiveAmountString(),
-    date: dateString(),
-    description: z.string().nullable().optional(),
-  }),
+  body: exchangeCurrencyBodySchema,
 });
 
 export default createController(schema, async ({ user, params, body }) => {

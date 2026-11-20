@@ -6,7 +6,7 @@ export interface TransactionTemplateModel {
   userId: number;
   name: string;
   transactionType: TRANSACTION_TYPES;
-  /** Pinned amount as a decimal (e.g. 9.99); null means the user types it each time. Persisted as cents. */
+  /** Pinned amount as a decimal (e.g. 9.99); null means the user types it each time. */
   amount: number | null;
   /**
    * Null keeps whatever account the form already has selected.

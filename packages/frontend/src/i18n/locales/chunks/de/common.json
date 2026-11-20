@@ -28,7 +28,9 @@
       "retry": "Erneut versuchen",
       "copyInviteLink": "Einladungslink kopieren",
       "moveTo": "Verschieben nach…",
-      "learnMore": "Mehr erfahren"
+      "learnMore": "Mehr erfahren",
+      "undo": "Rückgängig",
+      "more": "Mehr"
     },
     "ui": {
       "close": "Schließen",
@@ -103,7 +105,8 @@
       "debitCard": "Debitkarte",
       "mobilePayment": "Mobiles Bezahlen",
       "voucher": "Gutschein",
-      "webPayment": "Web-Zahlung"
+      "webPayment": "Web-Zahlung",
+      "none": "Keine"
     },
     "vehicleClasses": {
       "sedan": "Limousine",
@@ -139,13 +142,19 @@
         "description": "Liest eine hochgeladene Rechnung oder einen Beleg und findet die dazugehörige Transaktion."
       },
       "trackerMatching": {
-        "name": "Tracker matching",
-        "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
+        "name": "Tracker-Erkennung",
+        "description": "Scannt neue Transaktionen und schlägt diejenigen vor, die zu einem Smart-Tracker gehören."
+      },
+      "transferMatching": {
+        "name": "Umbuchungserkennung",
+        "description": "Überprüft Ergebnisse des Umbuchungs-Scans und behält die Paare bei, die wie echte Umbuchungen aussehen"
       }
     },
     "transactions": {
       "delete": {
-        "success": "Erfolgreich entfernt",
+        "success": "In den Papierkorb verschoben",
+        "undoSuccess": "Wiederhergestellt",
+        "undoError": "Rückgängig machen fehlgeschlagen. Du kannst es weiterhin aus dem Papierkorb wiederherstellen.",
         "error": "Fehler beim Löschen der Transaktion!"
       },
       "submit": {
@@ -156,6 +165,7 @@
       },
       "record": {
         "addedByTooltip": "Diese Transaktion wurde dem Tracker von {handle} hinzugefügt",
+        "addedByRule": "Durch die Regeln des Trackers hinzugefügt",
         "matchedByAi": "Durch KI zugeordnet",
         "externalLinkTooltip": "Externen Link öffnen",
         "locationTooltip": "Standort auf Karte öffnen",
@@ -164,6 +174,13 @@
         "selectRow": "Transaktion auswählen",
         "unselectableReasons": {
           "sharedAccount": "Kann nicht ausgewählt werden: Diese Transaktion befindet sich auf einem mit dir geteilten Konto, und nur dessen Eigentümer kann sie bearbeiten."
+        },
+        "payment": {
+          "paidFrom": "Von {count} Konten bezahlt",
+          "receivedInto": "Auf {count} Konten eingegangen",
+          "partOf": "Teil einer {total}-Zahlung",
+          "thisAccount": "(dieses Konto)",
+          "loadError": "Diese Transaktion konnte nicht geöffnet werden. Versuche es noch einmal."
         }
       }
     },
@@ -225,7 +242,7 @@
         "brand": "Marke",
         "letters": "Buchstaben",
         "icon": "Symbol",
-        "custom": "Image"
+        "custom": "Bild"
       },
       "searchPlaceholder": "Markenname oder Domain",
       "searchHint": "Gib einen Markennamen oder eine Domain wie amazon.com ein",
@@ -240,18 +257,22 @@
       "dialogTitle": "Logo ändern",
       "resetToAuto": "Auf automatisch zurücksetzen",
       "remove": "Logo entfernen",
+      "pickerDescription": "Wähle ein Markenlogo oder verwende stattdessen Buchstaben.",
+      "updatedToast": "Logo aktualisiert",
+      "resetToast": "Logo entfernt",
+      "updateError": "Logo konnte nicht aktualisiert werden. Bitte versuche es erneut.",
       "lettersLabel": "Buchstaben (1–2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Farbe",
       "colorSwatchAriaLabel": "Farbe {color} verwenden",
       "customColorAriaLabel": "Benutzerdefinierte Farbe wählen",
       "lettersSelectedLabel": "Buchstaben \"{letters}\"",
-      "lettersHint": "1–2 letters or an emoji",
-      "chooseImage": "Choose image",
-      "replaceImage": "Replace image",
-      "imageHint": "Cropped to a square and resized to 200×200 on your device.",
-      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
-      "imageUnreadable": "That file couldn't be read as an image."
+      "lettersHint": "1–2 Buchstaben oder ein Emoji",
+      "chooseImage": "Bild auswählen",
+      "replaceImage": "Bild ersetzen",
+      "imageHint": "Wird auf deinem Gerät quadratisch zugeschnitten und auf 200×200 skaliert.",
+      "imageTooLarge": "Das Bild ist nach der Skalierung immer noch über 50 KB groß. Versuche es mit einem einfacheren Bild.",
+      "imageUnreadable": "Diese Datei konnte nicht als Bild gelesen werden."
     },
     "iconPicker": {
       "searchPlaceholder": "Symbol suchen...",
@@ -278,7 +299,20 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "{duration} voraus",
+        "behind": "{duration} im Rückstand",
+        "onPace": "Im Tempo",
+        "backInReach": "Wieder in Reichweite",
+        "offTrack": "Vom Kurs abgekommen"
       }
+    },
+    "pasteImage": {
+      "button": "Bild einfügen",
+      "shortcutHint": "oder drücke {shortcut}",
+      "noImage": "Kein Bild in der Zwischenablage gefunden.",
+      "readFailed": "Die Zwischenablage konnte nicht gelesen werden. Erlaube den Zugriff auf die Zwischenablage oder füge es mit der Tastenkombination ein."
     }
   },
   "accountGroups": {
@@ -296,6 +330,10 @@
     "link": {
       "success": "Konto wurde zur Gruppe hinzugefügt",
       "error": "Konto konnte nicht zur Gruppe hinzugefügt werden"
+    },
+    "linkMany": {
+      "success": "Konten zur Gruppe hinzugefügt",
+      "error": "Konten konnten nicht zur Gruppe hinzugefügt werden"
     },
     "unlink": {
       "success": "Konto wurde aus der Gruppe entfernt",
@@ -319,9 +357,9 @@
     "newRelease": "Neues Release",
     "trackerAiMatches": {
       "title": "{name}: {summary}",
-      "added": "{count} transaction added | {count} transactions added",
-      "toReview": "{count} transaction to review | {count} transactions to review",
-      "toReviewShort": "{count} to review",
+      "added": "{count} Transaktion hinzugefügt | {count} Transaktionen hinzugefügt",
+      "toReview": "{count} Transaktion zu überprüfen | {count} Transaktionen zu überprüfen",
+      "toReviewShort": "{count} zu überprüfen",
       "both": "{added}, {toReview}"
     },
     "tagReminder": {
@@ -330,6 +368,13 @@
     },
     "share": {
       "sendFailedHint": "Öffne das Freigabe-Panel, um erneut zu senden."
+    },
+    "goalReached": {
+      "title": "Ziel erreicht: {name}",
+      "message": "Du hast {amount} gespart."
+    },
+    "unrealizedLossAlert": {
+      "title": "{count} Position hat deinen Verlust-Warnschwellenwert überschritten | {count} Positionen haben deinen Verlust-Warnschwellenwert überschritten"
     }
   },
   "currencyNames": {
@@ -424,7 +469,7 @@
   },
   "billing": {
     "seePlans": "Tarife ansehen",
-    "trialStartFailed": "Couldn't start the free trial. Try again.",
+    "trialStartFailed": "Kostenloser Testzeitraum konnte nicht gestartet werden. Versuche es erneut.",
     "updatePaymentMethod": "Zahlungsmethode aktualisieren",
     "planRequired": {
       "essential": "Enthalten im Essential-Tarif",
@@ -523,6 +568,12 @@
       "removeTransactionDescriptionNormal": "Bist du sicher, dass du diese Transaktion aus der Gruppe entfernen möchtest?",
       "removeButtonText": "Entfernen",
       "removeAndDeleteButtonText": "Entfernen & Gruppe löschen",
+      "removeFromGroup": "Aus Gruppe entfernen",
+      "saveError": "Gruppe konnte nicht gespeichert werden",
+      "removeError": "Transaktion konnte nicht aus der Gruppe entfernt werden",
+      "manageTransactions": "Verwalten",
+      "showMoreNote": "Mehr anzeigen",
+      "showLessNote": "Weniger anzeigen",
       "summary": {
         "transactions": "Transaktionen",
         "net": "Netto",
@@ -532,6 +583,56 @@
     },
     "transactionGroupRecord": {
       "transactionCountLabel": "Transaktionen"
+    }
+  },
+  "mcpToolsets": {
+    "core": {
+      "label": "Kern",
+      "description": "Konten, Transaktionen, Kategorien, Tags, Zahlungsempfänger und Berichte"
+    },
+    "subscriptions": {
+      "label": "Wiederkehrende Zahlungen",
+      "description": "Wiederkehrende Zahlungen, ihre Zeiträume und geplanten Transaktionen"
+    },
+    "budgetPlans": {
+      "label": "Budgetpläne",
+      "description": "Pläne, Linien, Zeilenziele und Sparziele"
+    },
+    "trackers": {
+      "label": "Tracker",
+      "description": "Ausgaben-Tracker und deren Vorschläge"
+    },
+    "automations": {
+      "label": "Automatisierungen",
+      "description": "Regeln, Zahlungsempfänger-Aliase, ignorierte Zahlungsempfängernamen und Tag-Erinnerungen"
+    },
+    "review": {
+      "label": "Überprüfung und Bereinigung",
+      "description": "Umbuchungs- und Rückerstattungsabgleiche, Duplikate und hängende ausstehende Transaktionen"
+    },
+    "groupsTemplates": {
+      "label": "Gruppen und Vorlagen",
+      "description": "Transaktionsgruppen und Transaktionsvorlagen"
+    },
+    "investments": {
+      "label": "Investments",
+      "description": "Portfolios, Positionen, Wertpapiere und Investitionstransaktionen"
+    },
+    "ventures": {
+      "label": "Beteiligungen",
+      "description": "Beteiligungsplattformen, Deals und Events"
+    },
+    "loansVehicles": {
+      "label": "Kredite und Fahrzeuge",
+      "description": "Kredite mit ihren Kreditrückzahlungen und Fahrzeuge"
+    },
+    "currencies": {
+      "label": "Währungen",
+      "description": "Deine Währungen und Wechselkurse"
+    },
+    "imports": {
+      "label": "Importe und Freigaben",
+      "description": "Importstapel (Liste, rückgängig machen) und Bankverbindungen (Status, Konto verknüpfen aufheben); Freigabe ist schreibgeschützt."
     }
   }
 }

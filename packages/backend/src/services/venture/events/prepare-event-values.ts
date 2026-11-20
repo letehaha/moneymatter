@@ -129,7 +129,20 @@ export async function prepareEventValues(input: PrepareEventValuesInput): Promis
     throw new ValidationError({ message: 'grossAmount must be non-negative' });
   }
 
-  // Non-carry cash events: capital_call, fee_payment. lpNetAmount = grossAmount.
+  const filteredPriorEvents = excludeEventId ? priorEvents.filter((e) => e.id !== excludeEventId) : priorEvents;
+  const costBasis = computeCostBasis({
+    dealPrincipal: deal.principal.toDecimalString(10),
+    dealEntryFee: deal.entryFee.toDecimalString(10),
+    events: filteredPriorEvents,
+  });
+
+  if (type === VENTURE_EVENT_TYPE.capital_refund && (gross.lte(0) || gross.gt(costBasis))) {
+    throw new ValidationError({
+      message: `capital_refund must be greater than 0 and at most the cost basis (${costBasis})`,
+    });
+  }
+
+  // Non-carry cash events: lpNetAmount = grossAmount.
   if (!CARRY_BEARING_EVENT_TYPES.includes(type)) {
     const refAmount = await computeRefAmountFor(input.grossAmount);
 
@@ -148,14 +161,6 @@ export async function prepareEventValues(input: PrepareEventValuesInput): Promis
   }
 
   // Carry-bearing: distribution + exit
-  const filteredPriorEvents = excludeEventId ? priorEvents.filter((e) => e.id !== excludeEventId) : priorEvents;
-
-  const costBasis = computeCostBasis({
-    dealPrincipal: deal.principal.toDecimalString(10),
-    dealEntryFee: deal.entryFee.toDecimalString(10),
-    events: filteredPriorEvents,
-  });
-
   const cumulativeReturned = computeCumulativePrincipalReturnedBefore({
     events: filteredPriorEvents,
     beforeEvent: { eventDate, id: excludeEventId ?? null },

@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Pilih mata uang tampilan",
       "displayCurrencyBaseOption": "Mata uang dasar ({code})",
       "displayCurrencyDescription": "Nilai dan statistik portofolio dikonversi ke mata uang ini dengan nilai tukar saat ini.",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Batal",
       "submitButton": "Simpan Perubahan",
       "submitButtonLoading": "Menyimpan...",
@@ -136,6 +138,9 @@
       "accountCategoryPlaceholder": "Pilih kategori akun",
       "creditLimitLabel": "Batas kredit",
       "creditLimitPlaceholder": "Batas kredit",
+      "defaultPaymentTypeLabel": "Default payment type",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Buat",
       "submitButtonLoading": "Membuat...",
       "notifications": {
@@ -189,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Masukkan jumlah yang valid (hingga 2 desimal)",
-      "mustBePositive": "Jumlah harus positif"
+      "mustBePositive": "Jumlah harus positif",
+      "httpUrl": "Enter a valid http(s) URL",
+      "maxLength": "Must not exceed {max} characters"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "Dari Mata Uang",
@@ -300,7 +307,8 @@
         "interestRateRange": "Suku bunga harus antara 0 dan 99.9999.",
         "termRange": "Jangka waktu harus antara 1 dan 1200 bulan.",
         "paymentDayRange": "Hari dalam bulan harus antara 1 dan 31.",
-        "asOfInFuture": "Tanggal tidak boleh di masa depan"
+        "asOfInFuture": "Tanggal tidak boleh di masa depan",
+        "startDateInFuture": "Start date can't be in the future"
       },
       "balanceExceedsPrincipalWarning": "Saldo terutang lebih tinggi dari pokok awal – periksa kembali jumlah ini."
     }
@@ -323,7 +331,7 @@
       "searchPlaceholder": "Cari..."
     },
     "currencySelect": {
-      "yourCurrencies": "Mata uang Anda",
+      "yourCurrencies": "Your currencies",
       "otherCurrencies": "Other currencies"
     },
     "comboboxAccounts": {

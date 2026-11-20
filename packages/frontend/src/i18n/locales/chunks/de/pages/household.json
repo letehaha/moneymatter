@@ -23,7 +23,7 @@
         "emailLabel": "E-Mail",
         "emailPlaceholder": "person{'@'}example.com",
         "permissionLabel": "Berechtigung",
-        "writeScopeLabel": "Bearbeitungsumfang",
+        "writeScopeLabel": "Schreibbereich",
         "submit": "Haushaltseinladung senden",
         "sent": "Einladung gesendet.",
         "error": "Einladung konnte nicht gesendet werden.",

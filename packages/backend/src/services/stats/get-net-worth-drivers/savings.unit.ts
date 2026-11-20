@@ -26,18 +26,21 @@ const buildTx = ({
 });
 
 const buildPair = ({
-  time,
+  expenseTime,
+  incomeTime,
   minor,
   expenseInScope = true,
   incomeInScope = true,
 }: {
-  time: string;
+  expenseTime: string;
+  incomeTime: string;
   minor: number;
   expenseInScope?: boolean;
   incomeInScope?: boolean;
 }): CategoryRefundPair => ({
   minor,
-  time: new Date(time),
+  expenseTime: new Date(expenseTime),
+  incomeTime: new Date(incomeTime),
   expenseCategoryId: 'cat-expense',
   incomeCategoryId: 'cat-income',
   expenseInScope,
@@ -137,41 +140,46 @@ describe('accumulateSavings refund netting', () => {
     buildTx({ time: '2026-01-05T12:00:00.000', amount: 300, transactionType: TRANSACTION_TYPES.expense }),
     buildTx({ time: '2026-01-20T12:00:00.000', amount: 120, transactionType: TRANSACTION_TYPES.income }),
   ];
+  const sameMonthPair = {
+    expenseTime: '2026-01-05T12:00:00.000',
+    incomeTime: '2026-01-20T12:00:00.000',
+    minor: 12_000,
+  };
 
-  it('subtracts a fully in-scope pair from both sides, leaving net untouched', () => {
+  it('subtracts a fully in-scope pair from both sides', () => {
     const [january] = accumulateSavings({
       decimals: 2,
       transactions: spendAndRefund,
       buckets,
-      refundPairs: [buildPair({ time: '2026-01-20T12:00:00.000', minor: 12_000 })],
+      refundPairs: [buildPair(sameMonthPair)],
     });
 
     expect(january).toEqual({ income: 0, expenses: 18_000, net: -18_000 });
   });
 
-  it('leaves both sides gross when the expense half is out of scope', () => {
+  it('nets only the income side when the expense half is out of scope', () => {
     const [january] = accumulateSavings({
       decimals: 2,
       transactions: spendAndRefund,
       buckets,
-      refundPairs: [buildPair({ time: '2026-01-20T12:00:00.000', minor: 12_000, expenseInScope: false })],
+      refundPairs: [buildPair({ ...sameMonthPair, expenseInScope: false })],
     });
 
-    expect(january).toEqual({ income: 12_000, expenses: 30_000, net: -18_000 });
+    expect(january).toEqual({ income: 0, expenses: 30_000, net: -30_000 });
   });
 
-  it('leaves both sides gross when the income half is out of scope', () => {
+  it('nets only the expense side when the income half is out of scope', () => {
     const [january] = accumulateSavings({
       decimals: 2,
       transactions: spendAndRefund,
       buckets,
-      refundPairs: [buildPair({ time: '2026-01-20T12:00:00.000', minor: 12_000, incomeInScope: false })],
+      refundPairs: [buildPair({ ...sameMonthPair, incomeInScope: false })],
     });
 
-    expect(january).toEqual({ income: 12_000, expenses: 30_000, net: -18_000 });
+    expect(january).toEqual({ income: 12_000, expenses: 18_000, net: -6_000 });
   });
 
-  it('nets into the bucket the money came back in, leaving earlier buckets alone', () => {
+  it('nets each side in its own bucket', () => {
     const savings = accumulateSavings({
       decimals: 2,
       transactions: [
@@ -180,22 +188,24 @@ describe('accumulateSavings refund netting', () => {
         buildTx({ time: '2026-02-10T12:00:00.000', amount: 120, transactionType: TRANSACTION_TYPES.income }),
       ],
       buckets,
-      refundPairs: [buildPair({ time: '2026-02-10T12:00:00.000', minor: 12_000 })],
+      refundPairs: [
+        buildPair({ expenseTime: '2026-01-05T12:00:00.000', incomeTime: '2026-02-10T12:00:00.000', minor: 12_000 }),
+      ],
     });
 
-    expect(savings[0]).toEqual({ income: 0, expenses: 30_000, net: -30_000 });
-    expect(savings[1]).toEqual({ income: 0, expenses: 8_000, net: -8_000 });
+    expect(savings[0]).toEqual({ income: 0, expenses: 18_000, net: -18_000 });
+    expect(savings[1]).toEqual({ income: 0, expenses: 20_000, net: -20_000 });
   });
 
-  it('ignores a pair whose refund date falls outside every bucket', () => {
+  it('ignores a side dated outside every bucket', () => {
     const [january] = accumulateSavings({
       decimals: 2,
       transactions: spendAndRefund,
       buckets,
-      refundPairs: [buildPair({ time: '2025-12-20T12:00:00.000', minor: 12_000 })],
+      refundPairs: [buildPair({ ...sameMonthPair, expenseTime: '2025-12-20T12:00:00.000' })],
     });
 
-    expect(january).toEqual({ income: 12_000, expenses: 30_000, net: -18_000 });
+    expect(january).toEqual({ income: 0, expenses: 30_000, net: -30_000 });
   });
 });
 
@@ -215,13 +225,14 @@ describe('accumulateSavings at the base currency decimals', () => {
     const [january] = accumulateSavings({
       decimals: 0,
       transactions: [
-        buildTx({ time: '2026-01-10T12:00:00.000', amount: 1555, transactionType: TRANSACTION_TYPES.income }),
-        buildTx({ time: '2026-01-20T12:00:00.000', amount: 300, transactionType: TRANSACTION_TYPES.expense }),
+        buildTx({ time: '2026-01-10T12:00:00.000', amount: 1555.5, transactionType: TRANSACTION_TYPES.income }),
+        buildTx({ time: '2026-01-20T12:00:00.000', amount: 300.4, transactionType: TRANSACTION_TYPES.expense }),
       ],
       buckets,
     });
 
-    expect(january).toEqual({ income: 1_555, expenses: 300, net: 1_255 });
+    // Each row rounds half-up to whole units before it is summed: 1555.5 -> 1556, 300.4 -> 300.
+    expect(january).toEqual({ income: 1_556, expenses: 300, net: 1_256 });
   });
 
   it('nets a refund pair handed over in the same minor units', () => {
@@ -229,7 +240,9 @@ describe('accumulateSavings at the base currency decimals', () => {
       decimals: 3,
       transactions,
       buckets,
-      refundPairs: [buildPair({ time: '2026-01-20T12:00:00.000', minor: 500 })],
+      refundPairs: [
+        buildPair({ expenseTime: '2026-01-20T12:00:00.000', incomeTime: '2026-01-10T12:00:00.000', minor: 500 }),
+      ],
     });
 
     expect(january).toEqual({ income: 278, expenses: 734, net: -456 });

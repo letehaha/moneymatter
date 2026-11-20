@@ -62,7 +62,20 @@
         "monthly": "Ежемесячно",
         "quarterly": "Ежеквартально",
         "semiAnnual": "Раз в полгода",
-        "annual": "Ежегодно"
+        "annual": "Ежегодно",
+        "custom": "Custom",
+        "every": {
+          "day": "Every day | Every {count} days",
+          "week": "Every week | Every {count} weeks",
+          "month": "Every month | Every {count} months",
+          "year": "Every year | Every {count} years"
+        },
+        "units": {
+          "day": "день | дней",
+          "week": "неделя | неделей",
+          "month": "месяц | месяцев",
+          "year": "год | лет"
+        }
       },
       "matchSource": {
         "manual": "Вручную",
@@ -86,6 +99,11 @@
         "amountPlaceholder": "0.00",
         "currencyLabel": "Валюта",
         "frequencyLabel": "Периодичность",
+        "intervalCountLabel": "Повторять каждые",
+        "intervalCountPlaceholder": "например, 30",
+        "intervalUnitLabel": "Unit",
+        "intervalUnitPlaceholder": "Select a unit",
+        "validationIntervalCount": "Enter a whole number from 1 to {max}",
         "startDateLabel": "Дата начала",
         "endDateLabel": "Дата окончания",
         "accountLabel": "Счёт",
@@ -262,6 +280,7 @@
         "dueOn": "Срок {date}",
         "paidAt": "Оплачено {date}",
         "viewTransaction": "Просмотреть транзакцию",
+        "paymentInTrash": "Payment in Trash",
         "actions": {
           "markPaid": "Отметить оплаченным",
           "skip": "Пропустить"

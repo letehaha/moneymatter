@@ -37,7 +37,13 @@
       "auto": "Automaticky",
       "name": "Názov",
       "balance": "Zostatok",
-      "ariaLabel": "Zoradiť účty"
+      "ariaLabel": "Zoradiť účty",
+      "direction": {
+        "aToZ": "A až Z",
+        "zToA": "Z až A",
+        "highestFirst": "Najvyššie na prvom mieste",
+        "lowestFirst": "Najnižšie na prvom mieste"
+      }
     },
     "status": {
       "active": "Aktívne",

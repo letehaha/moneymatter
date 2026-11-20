@@ -21,6 +21,7 @@
             <InputField
               :model-value="customPayment"
               type="number"
+              :decimals="decimals"
               :only-positive="true"
               :aria-label="$t('loans.detail.payoffChart.customPaymentLabel')"
               :placeholder="customPaymentPlaceholder"
@@ -353,7 +354,7 @@ const comparisons = computed(() => {
 
     if (baseline) {
       const { savesInterest, costsInterest, faster, slower, sameInterest, sameTime, interestDelta, monthsDelta } =
-        comparePayoffScenarios({ scenario, baseline });
+        comparePayoffScenarios({ scenario, baseline, decimals: decimals.value });
 
       result.push({
         key,

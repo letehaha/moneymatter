@@ -75,6 +75,7 @@
       "types": {
         "initial_investment": "Початкова інвестиція",
         "capital_call": "Запит капіталу",
+        "capital_refund": "Повернення капіталу",
         "distribution": "Виплата",
         "nav_update": "Оновлення NAV",
         "exit": "Вихід",

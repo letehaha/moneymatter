@@ -8,16 +8,17 @@
       "currentPlanEyebrow": "Plan actual",
       "updatePaymentMethod": "Actualizar método de pago",
       "manageBilling": "Administrar la facturación",
+      "manageInAppStore": "Administrar en la App Store",
       "currentPlan": "Plan actual",
       "recommended": "Recomendado",
       "previousPlan": "Plan anterior",
       "yourPlan": "Tu plan",
-      "planned": "Planificado",
+      "planned": "Planificada",
       "voteOnRoadmap": "Votar en el mapa de ruta",
       "roadmapNote": "Sin cargo. Al votarlo y te avisaremos cuando esté listo.",
       "saveUpTo": "Ahorra hasta {percent}%",
       "portalFailed": "No se pudo abrir el portal de facturación. Por favor, inténtelo de nuevo.",
-      "pastDueNote": "Tu último pago ha fallado. Stripe reintentará con tu tarjeta automáticamente en los próximos días. Actualice su método de pago mediante Administrar facturación para mantener el acceso después de {date}.",
+      "pastDueNote": "Tu último pago ha fallado. Stripe reintentará con tu tarjeta automáticamente en los próximos días. Actualice su método de pago mediante Administrar facturación para mantener el acceso después del {date}.",
       "priceNote": "Los precios están en USD, excluyendo impuestos. Tú moneda local y cualquier impuesto aplicable se muestran al momento de hacer el pago.",
       "cycleHint": {
         "year": "La opción anual equivale a 6 meses de la opción mensual. Se factura una vez al año.",
@@ -31,6 +32,7 @@
       "current": {
         "lifetime": "{plan} de por vida",
         "lifetimeMeta": "Todo incluido en Plus. Sin renovación, sin tarjeta ingresada.",
+        "lifetimePurchaseMeta": "No hay renovaciones, no hay tarjeta en el archivo.",
         "earlyAdopterNote": "Gracias por estar aquí desde el inicio. Todo en Plus tal y como existe hoy es tuyo para toda la vida. Las características que añadamos a partir de aquí, y cualquier cosa que nos cueste por usuario para funcionar, sera parte de los planes de pago. ¿Quieres aumentar el plan? 50% de descuento en cualquier plan, para siempre, aplicado automáticamente al momento de la compra.",
         "seats": "Un integrante del hogar | {count} integrantes del hogar",
         "subscription": "{tier} · {cycle}",
@@ -48,6 +50,7 @@
         "activationTimedOut": "Tu pago se ha realizado pero el plan todavía está siendo configurado. Actualiza en un minuto; si nada cambia, contacta con soporte técnico.",
         "activationUnreachable": "No pudimos acceder al servidor para confirmar tu pago. Recarga la página; si el plan aún no está disponible, ponte en contacto con soporte técnico.",
         "accessContinuesUntil": "El acceso continuará hasta {date}",
+        "billedByAppStore": "Facturado a través de la App Store",
         "accessUntil": "Acceso hasta {date}, luego será solo de lectura",
         "resumesOn": "Reanuda automáticamente en {date}",
         "pausedNote": "Mientras la cuenta está en pausa es de solo lectura.",
@@ -77,6 +80,7 @@
       "ctaNote": {
         "keepIt": "Actualiza tu método de pago para mantenerlo.",
         "viaPortal": "Modificado en el portal de facturación.",
+        "viaAppStore": "Los cambios de plan ocurren en la App Store",
         "billedToday": "Facturado hoy. Cancela en cualquier momento.",
         "earlyAdopter": "50% de descuento para la vida, aplicado al momento de la compra"
       },

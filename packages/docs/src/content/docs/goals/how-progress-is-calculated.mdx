@@ -1,0 +1,86 @@
+---
+title: How progress is calculated
+description: Where a goal's saved amount, pace, projected finish and monthly need come from, and what can make them look different from what you expect.
+sidebar:
+  order: 3
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Every number on a goal comes from your account balances. Nothing is stored or entered by hand, so the goal is always as current as your accounts.
+
+## Saved
+
+For each linked account, MoneyMatter takes the balance, subtracts the account's credit limit if it has one, and counts your share of what's left:
+
+**Saved = Σ share × (balance − credit limit)**
+
+A negative balance counts as 0, so an account in the red never pulls a goal backwards.
+
+Example: a goal with 100% of a savings account holding $3,000 and 25% of a current account holding $2,000 has saved $3,000 + $500 = $3,500.
+
+Balances in other currencies are converted to the goal's currency at today's exchange rate.
+
+A few things that are different from the dashboard and reports:
+
+- Accounts with **Exclude from statistics** turned on still count toward goals.
+- Archived accounts still count.
+- The credit limit is always subtracted, whatever **Include credit limits in balance** says in your settings.
+
+**Left** is the target minus **Saved**, and never goes below 0.
+
+## Pace
+
+Your pace is how much a goal grows in a typical month. MoneyMatter looks at the goal's value at the end of each of the last 6 full months, takes the change from one month to the next, and uses the **median** of those changes. The current month isn't used until it's over.
+
+The median means one unusual month, such as a bonus or a big withdrawal, doesn't swing the pace. The goal page tells you how many months the pace is based on, for example "Pace is the median monthly change over the last 6 months."
+
+- **At least 3 months are needed.** With fewer, the goal shows **Not enough history** and has no projected finish yet.
+- **History starts at the newest account.** If one of the goal's accounts has balances only from two months ago, only the months since then count, even if the other accounts are older. Otherwise the new account would look like it saved nothing before it existed.
+- **A monthly amount replaces the pace.** If you turn on **Set a monthly amount** in the goal, that amount is used as the pace, and the goal page says "Pace uses your planned … a month." See [Monthly amount](/goals/create-and-edit/#monthly-amount).
+
+Pace measures how the counted balance changed, not just deposits. Spending from a linked account lowers it, and so does a falling market on an investment account.
+
+## Projected finish
+
+The projected finish is how many months it takes to cover what's left at your pace:
+
+**Months to go = what's left ÷ pace**, rounded up to a whole month.
+
+The goal shows it as the month you'll get there, for example **around** Mar 2027. If your pace is zero or negative, there's no projected finish, and a goal with a date shows **Behind**.
+
+Projections assume no investment growth: only your pace moves the goal forward.
+
+## Needs per month
+
+For a goal with a date, **Needs** is how much you'd have to save each month from today to reach the target on time:
+
+**Needs = what's left ÷ (days left ÷ 30.44)**
+
+It's worked out by the day, not by calendar months, so it doesn't jump at the start of each month. When less than a month is left, or the date has passed, **Needs** is the whole amount that's left.
+
+## Ahead, on track or behind
+
+A goal with a date compares the projected finish with the date:
+
+- **Ahead** when you'd reach the target at least a month before the date.
+- **On track** when you'd reach it by the date.
+- **Behind · N mo** when you'd reach it N months late.
+
+There's no tolerance band. Being a few days late at your pace already counts as behind. See [Statuses](/goals/overview/#statuses) for the full list.
+
+## Things that can surprise you
+
+<Aside type="note" title="Exchange rates in past months">
+Past months of a foreign-currency account are valued at each day's exchange rate, so the pace of such an account includes exchange rate moves, not only what you saved. The current saved amount always uses today's rate.
+</Aside>
+
+- **Credit limits in the past.** An account's current credit limit is subtracted from every past month too. If you changed the limit, older months use the new one.
+- **Transfers between linked accounts.** Moving money between two accounts of the same goal changes nothing if both count at 100%. If their shares differ, the goal moves by the difference.
+- **Market drops.** On investment and crypto accounts, a fall in prices lowers **Saved** and can lower your pace.
+
+## Related
+
+- [Goals](/goals/overview/)
+- [What if and feasibility](/goals/what-if-and-feasibility/)
+- [How stats are calculated](/stats/how-stats-are-calculated/)

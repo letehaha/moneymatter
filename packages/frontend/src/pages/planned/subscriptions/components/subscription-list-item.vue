@@ -79,7 +79,7 @@ const due = computed<{ label: string; chipClass: string } | null>(() => {
   <div
     :class="
       cn(
-        'hover:bg-accent/50 grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3 transition-colors',
+        'hover:bg-hover grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-4 py-3 transition-colors',
         '@[700px]:grid-cols-[minmax(0,1fr)_7rem_6.5rem_auto_2rem_auto] @[700px]:gap-x-4 @[700px]:gap-y-0',
         !subscription.isActive && 'opacity-60',
       )
@@ -117,7 +117,14 @@ const due = computed<{ label: string; chipClass: string } | null>(() => {
             <span class="truncate">{{ subscription.category.name }}</span>
             <span aria-hidden="true">&middot;</span>
           </template>
-          <span class="whitespace-nowrap">{{ formatFrequency({ frequency: subscription.frequency, t }) }}</span>
+          <span class="whitespace-nowrap">{{
+            formatFrequency({
+              frequency: subscription.frequency,
+              intervalUnit: subscription.intervalUnit,
+              intervalCount: subscription.intervalCount,
+              t,
+            })
+          }}</span>
           <template v-if="installmentProgress">
             <span aria-hidden="true">&middot;</span>
             <span class="whitespace-nowrap">

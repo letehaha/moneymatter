@@ -1,0 +1,12 @@
+[
+  {
+    "id": "01a1cf52-7d1c-752b-9aa9-742376264437",
+    "userId": 1,
+    "originalTxId": "01a1cf52-7ce8-76b5-b560-4fbb9f7b0ee1",
+    "refundTxId": "01a1cf52-7d02-7539-9325-677d5168015b",
+    "amount": 1235,
+    "splitId": null,
+    "createdAt": "2026-11-12T10:34:12.124Z",
+    "updatedAt": "2026-11-12T10:34:12.124Z"
+  }
+]

@@ -2,11 +2,29 @@ import { VENTURE_EVENT_TYPE } from '@bt/shared/types/venture';
 import VentureEvents from '@models/venture/venture-events.model';
 import Big from 'big.js';
 
-/**
- * Cost basis = principal + entryFee + Σ capital_calls + Σ fee_payments.
- * The deal's principal + entryFee are stored on the deal itself; cumulative
- * capital_call/fee_payment gross amounts come from the event list.
- */
+/** Signed effect of one event on cost basis: calls and fees add, refunds subtract. */
+export function costBasisDelta({ event }: { event: Pick<VentureEvents, 'type' | 'grossAmount'> }): Big {
+  const gross = new Big(event.grossAmount ? event.grossAmount.toDecimalString(10) : 0);
+  switch (event.type) {
+    case VENTURE_EVENT_TYPE.capital_call:
+    case VENTURE_EVENT_TYPE.fee_payment:
+      return gross;
+    case VENTURE_EVENT_TYPE.capital_refund:
+      return gross.neg();
+    case VENTURE_EVENT_TYPE.initial_investment:
+    case VENTURE_EVENT_TYPE.distribution:
+    case VENTURE_EVENT_TYPE.exit:
+    case VENTURE_EVENT_TYPE.nav_update:
+    case VENTURE_EVENT_TYPE.writedown:
+      return new Big(0);
+    default: {
+      const unhandled: never = event.type;
+      throw new Error(`Unhandled venture event type: ${unhandled}`);
+    }
+  }
+}
+
+/** Cost basis = principal + entryFee + Σ costBasisDelta. */
 export function computeCostBasis({
   dealPrincipal,
   dealEntryFee,
@@ -18,10 +36,7 @@ export function computeCostBasis({
 }): string {
   let basis = new Big(dealPrincipal).plus(dealEntryFee);
   for (const event of events) {
-    if (event.type === VENTURE_EVENT_TYPE.capital_call || event.type === VENTURE_EVENT_TYPE.fee_payment) {
-      const gross = event.grossAmount ? new Big(event.grossAmount.toDecimalString(10)) : new Big(0);
-      basis = basis.plus(gross);
-    }
+    basis = basis.plus(costBasisDelta({ event }));
   }
   return basis.toFixed(10);
 }

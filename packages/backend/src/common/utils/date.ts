@@ -18,3 +18,7 @@ export const toUtcDateString = (date: Date | string): string => {
   const day = date.getUTCDate();
   return `${year}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}`;
 };
+
+/** The calendar day `date` falls on in the IANA `timezone`, as `YYYY-MM-DD`. */
+export const toZonedDateString = ({ date, timezone }: { date: Date; timezone: string }): string =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(date);

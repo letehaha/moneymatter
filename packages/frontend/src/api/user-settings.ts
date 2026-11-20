@@ -2,13 +2,16 @@ import { api } from '@/api/_api';
 import type { SupportedLocale } from '@bt/shared/i18n/locales';
 import type {
   CategoryMappingPreset,
+  CategoryOrder,
   FireSettings,
+  FireSettingsSnapshot,
   PAYMENT_TYPES,
   TransactionOptionalField,
   SidebarSectionsConfig,
   SavedPivotView,
   SavedTransactionView,
   CurrencyDisplayPreference,
+  UnrealizedLossAlertsSettings,
 } from '@bt/shared/types';
 
 export interface DashboardWidgetConfig {
@@ -80,10 +83,11 @@ export interface UiSettings {
   investmentTransactionsTable?: InvestmentTransactionsTableSettings;
 }
 
-export interface SubscriptionsSettings {
-  /** Seeds the auto-record toggle on the create-subscription form; the form
-   *  still lets the user override it per subscription. */
-  defaultAutoRecord?: boolean;
+export interface IosAddExpenseSettings {
+  /** Lists bank-connected accounts in the Add Expense shortcut. Off when unset. */
+  showBankAccounts?: boolean;
+  /** Categories hidden, with their subcategories, from the Add Expense shortcut. */
+  excludedCategoryIds?: string[];
 }
 
 export interface UserSettingsSchema {
@@ -120,12 +124,16 @@ export interface UserSettingsSchema {
   payeeExtractionUsesDescription?: boolean;
   /** Transactions sharing a raw merchant name before a Payee is auto-created. Defaults to 2. */
   payeePromotionThreshold?: 1 | 2 | 3;
+  /** Day of month (1-28) a pay period starts on. Calendar month when unset. */
+  payday?: number;
+  unrealizedLossAlerts?: UnrealizedLossAlertsSettings;
   ui?: UiSettings;
-  subscriptions?: SubscriptionsSettings;
   savedPivotViews?: SavedPivotView[];
   savedTransactionViews?: SavedTransactionView[];
   /** Header "Support" (donation) button visibility. Defaults to visible when unset. */
   showSupportButton?: boolean;
+  /** Transaction rows show the payee's logo instead of the category icon. On when unset. */
+  showPayeeLogos?: boolean;
   /**
    * Hide zero-balance accounts (and account groups emptied by that hiding) from the sidebar
    * Accounts panel. Defaults to visible/off when unset.
@@ -138,6 +146,8 @@ export interface UserSettingsSchema {
     defaultAccountId?: string | null;
     showArchivedInDropdowns?: boolean;
   };
+  /** iOS-only preferences. */
+  ios?: { addExpense?: IosAddExpenseSettings };
   /**
    * Categories whose spending counts as savings in the cash-flow analytics instead of as an
    * expense. Subcategories inherit from their parent. Empty or unset leaves cash flow unchanged.
@@ -154,8 +164,12 @@ export interface UserSettingsSchema {
    * Subcategories inherit from their parent. Empty or unset lists every category for both.
    */
   incomeCategoryIds?: string[];
+  /** Custom category order: parent id (or `CATEGORY_ORDER_ROOT_KEY`) → child ids in display order. */
+  categoryOrder?: CategoryOrder;
   currencyDisplay?: CurrencyDisplayPreference;
   fire?: FireSettings;
+  /** Server-written monthly FIRE settings snapshots, read by the pace comparison. */
+  fireHistory?: FireSettingsSnapshot[];
 }
 
 export const getUserSettings = async (): Promise<UserSettingsSchema> => {

@@ -1,5 +1,7 @@
 import Big from 'big.js';
 
+import { stripThousandsSeparator } from './parse-decimal-amount';
+
 /** The numeric prefix of a cleaned amount token; group 1 is the optional exponent, kept as text. */
 const LEADING_NUMBER = /^(?:\d+\.?\d*|\.\d+)(?:e([+-]?\d+))?/i;
 
@@ -47,12 +49,25 @@ export function parseAmount(amountStr: string): string | null {
   // Remove currency symbols and spaces
   cleanStr = cleanStr.replace(/[$€£¥₴₽\s]/g, '');
 
+  // A sign can also follow the symbol (`$-5.00`, `€+12,50`); with one on both sides they cancel out
+  const isNegativeAfterSymbol = cleanStr.startsWith('-');
+  if (isNegativeAfterSymbol || cleanStr.startsWith('+')) {
+    cleanStr = cleanStr.slice(1);
+  }
+
   // Determine decimal separator
   // If string has both comma and period, the last one is the decimal separator
   const lastComma = cleanStr.lastIndexOf(',');
   const lastPeriod = cleanStr.lastIndexOf('.');
+  const commaCount = cleanStr.split(',').length - 1;
+  const periodCount = cleanStr.split('.').length - 1;
 
-  if (lastComma > lastPeriod) {
+  if ((commaCount > 1 && periodCount === 0) || (periodCount > 1 && commaCount === 0)) {
+    // A separator repeated with no other mark can only group thousands: 3,250,000 / 1.500.000
+    const stripped = stripThousandsSeparator({ value: cleanStr, separator: commaCount > 1 ? ',' : '.' });
+    if (stripped === null) return null;
+    cleanStr = stripped;
+  } else if (lastComma > lastPeriod) {
     // European format: 1.234,56 -> 1234.56
     cleanStr = cleanStr.replace(/\./g, '').replace(',', '.');
   } else {
@@ -81,5 +96,6 @@ export function parseAmount(amountStr: string): string | null {
   }
 
   // Apply negative sign
-  return (isNegativeParens || isNegativeSign ? magnitude.neg() : magnitude).toFixed();
+  const isNegative = (isNegativeParens || isNegativeSign) !== isNegativeAfterSymbol;
+  return (isNegative ? magnitude.neg() : magnitude).toFixed();
 }

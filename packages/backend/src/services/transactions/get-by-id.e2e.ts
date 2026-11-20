@@ -8,6 +8,7 @@ import {
 } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
+import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
 import * as helpers from '@tests/helpers';
 import { addDays } from 'date-fns';
 
@@ -212,6 +213,50 @@ describe('GET /transactions/:id — getTransactionById 4-branch coverage', () =>
     const untaggedRes = await helpers.getTransactionById({ id: untagged.id, raw: true });
     expect(untaggedRes!.tags).toEqual([]);
   });
+
+  it('returns splits with their category, tags and groups to the owner and to a share recipient', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const [primary, splitCategory] = await helpers.getCategoriesList();
+    const tag = await helpers.createTag({ payload: helpers.buildTagPayload({ name: 'Trip' }), raw: true });
+    const [tx] = await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 100,
+          categoryId: primary!.id,
+          splits: [{ categoryId: splitCategory!.id, amount: 40 }],
+        }),
+        tagIds: [tag.id],
+      },
+      raw: true,
+    });
+    const [sibling] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id }),
+      raw: true,
+    });
+    const group = await helpers.createTransactionGroup({
+      payload: helpers.buildTransactionGroupPayload({ transactionIds: [tx.id, sibling.id] }),
+      raw: true,
+    });
+
+    const recipient = await provisionRecipient();
+    await shareAccountWithRecipient({ accountId: account.id, recipient, permission: SHARE_PERMISSIONS.read });
+
+    const ownerView = await helpers.getTransactionById({ id: tx.id, raw: true });
+    const recipientView = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.getTransactionById({ id: tx.id, raw: true }),
+    });
+
+    for (const view of [ownerView, recipientView]) {
+      expect(view!.splits).toHaveLength(1);
+      expect(view!.splits![0]!.category!.id).toBe(splitCategory!.id);
+      expect(view!.tags!.map((t) => t.id)).toEqual([tag.id]);
+      expect(view!.transactionGroups!.map((g) => ({ id: g.id, transactionCount: g.transactionCount }))).toEqual([
+        { id: group.id, transactionCount: 2 },
+      ]);
+    }
+  });
 });
 
 describe('GET /transactions/:id — canEdit flag', () => {
@@ -382,6 +427,41 @@ describe('GET /transactions/by-ids', () => {
     expect(noMatches).toEqual([]);
   });
 
+  it('returns tags, splits with their category and groups on each row', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const [primary, splitCategory] = await helpers.getCategoriesList();
+    const tag = await helpers.createTag({ payload: helpers.buildTagPayload({ name: 'Trip' }), raw: true });
+    const [tx] = await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 100,
+          categoryId: primary!.id,
+          splits: [{ categoryId: splitCategory!.id, amount: 40 }],
+        }),
+        tagIds: [tag.id],
+      },
+      raw: true,
+    });
+    const [sibling] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id }),
+      raw: true,
+    });
+    const group = await helpers.createTransactionGroup({
+      payload: helpers.buildTransactionGroupPayload({ transactionIds: [tx.id, sibling.id] }),
+      raw: true,
+    });
+
+    const [row] = await helpers.getTransactionsByIds({ ids: [tx.id], raw: true });
+
+    expect(row!.tags!.map((t) => t.id)).toEqual([tag.id]);
+    expect(row!.splits).toHaveLength(1);
+    expect(row!.splits![0]!.category!.id).toBe(splitCategory!.id);
+    expect(row!.transactionGroups!.map((g) => ({ id: g.id, transactionCount: g.transactionCount }))).toEqual([
+      { id: group.id, transactionCount: 2 },
+    ]);
+  });
+
   it('returns 422 for malformed or missing ids', async () => {
     const nonNumeric = await helpers.makeRequest({
       method: 'get',
@@ -534,6 +614,40 @@ describe('Retrieve transaction by transfer id', () => {
       raw: true,
     });
     expect(noLegs.length).toBe(0);
+  });
+
+  it('returns tags and groups on each leg', async () => {
+    const accountA = await helpers.createAccount({ raw: true });
+    const accountB = await helpers.createAccount({ raw: true });
+    const tag = await helpers.createTag({ payload: helpers.buildTagPayload({ name: 'Move' }), raw: true });
+    const [base, opposite] = await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({ accountId: accountA.id, amount: 5000 }),
+        transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+        destinationAmount: 5000,
+        destinationAccountId: accountB.id,
+      },
+      raw: true,
+    });
+    await helpers.addTransactionsToTag({ tagId: tag.id, transactionIds: [base.id, opposite!.id], raw: true });
+    const group = await helpers.createTransactionGroup({
+      payload: helpers.buildTransactionGroupPayload({ transactionIds: [base.id, opposite!.id] }),
+      raw: true,
+    });
+
+    const legs = (await helpers.getTransactionsByTransferId({
+      transferId: base.transferId,
+      raw: true,
+    })) as unknown as TransactionApiResponse[];
+
+    expect(legs).toHaveLength(2);
+    for (const leg of legs) {
+      expect(leg.tags!.map((t) => t.id)).toEqual([tag.id]);
+      expect(leg.splits).toEqual([]);
+      expect(leg.transactionGroups!.map((g) => ({ id: g.id, transactionCount: g.transactionCount }))).toEqual([
+        { id: group.id, transactionCount: 2 },
+      ]);
+    }
   });
 
   it('returns both legs to a household recipient even when neither leg was authored by them', async () => {

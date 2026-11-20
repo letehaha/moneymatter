@@ -1,11 +1,12 @@
 import {
   addDays,
   addMonths,
+  differenceInCalendarMonths,
   differenceInDays,
-  endOfMonth,
-  isFirstDayOfMonth,
-  isLastDayOfMonth,
-  startOfMonth,
+  endOfDay,
+  getDate,
+  setDate,
+  startOfDay,
   subDays,
   subMonths,
 } from 'date-fns';
@@ -16,18 +17,27 @@ export interface Period {
   to: Date;
 }
 
+/** The pay period containing `date`, running from `payday` to the day before the next `payday`. */
+export const getPayPeriod = ({ date, payday = 1 }: { date: Date; payday?: number }): Period => {
+  const from = startOfDay(setDate(getDate(date) >= payday ? date : subMonths(date, 1), payday));
+  return { from, to: endOfDay(subDays(addMonths(from, 1), 1)) };
+};
+
 const getMonthCount = ({ period }: { period: Period }): number =>
-  (period.to.getFullYear() - period.from.getFullYear()) * 12 + (period.to.getMonth() - period.from.getMonth()) + 1;
+  differenceInCalendarMonths(addDays(period.to, 1), period.from);
 
-export const isFullMonthPeriod = ({ period }: { period: Period }): boolean =>
-  isFirstDayOfMonth(period.from) && isLastDayOfMonth(period.to);
+export const isFullMonthPeriod = ({ period, payday = 1 }: { period: Period; payday?: number }): boolean =>
+  getDate(period.from) === payday && getDate(addDays(period.to, 1)) === payday;
 
-export const getPrevPeriod = ({ period }: { period: Period }): Period => {
-  if (isFullMonthPeriod({ period })) {
-    const monthCount = getMonthCount({ period });
+// Calendar-aligned ranges (year presets, months picked by hand) keep stepping by whole months under any payday.
+export const isMonthAligned = ({ period, payday }: { period: Period; payday: number }): boolean =>
+  isFullMonthPeriod({ period, payday }) || isFullMonthPeriod({ period });
+
+export const getPrevPeriod = ({ period, payday = 1 }: { period: Period; payday?: number }): Period => {
+  if (isMonthAligned({ period, payday })) {
     return {
-      from: startOfMonth(subMonths(period.from, monthCount)),
-      to: endOfMonth(subMonths(period.to, monthCount)),
+      from: startOfDay(subMonths(period.from, getMonthCount({ period }))),
+      to: endOfDay(subDays(period.from, 1)),
     };
   }
 
@@ -38,12 +48,12 @@ export const getPrevPeriod = ({ period }: { period: Period }): Period => {
   };
 };
 
-export const getNextPeriod = ({ period }: { period: Period }): Period => {
-  if (isFullMonthPeriod({ period })) {
-    const monthCount = getMonthCount({ period });
+export const getNextPeriod = ({ period, payday = 1 }: { period: Period; payday?: number }): Period => {
+  if (isMonthAligned({ period, payday })) {
+    const from = startOfDay(addDays(period.to, 1));
     return {
-      from: startOfMonth(addMonths(period.from, monthCount)),
-      to: endOfMonth(addMonths(period.to, monthCount)),
+      from,
+      to: endOfDay(subDays(addMonths(from, getMonthCount({ period })), 1)),
     };
   }
 
@@ -54,16 +64,22 @@ export const getNextPeriod = ({ period }: { period: Period }): Period => {
   };
 };
 
-export const usePeriodNavigation = ({ period }: { period: MaybeRefOrGetter<Period> }) => {
-  const isFullMonth = computed(() => isFullMonthPeriod({ period: toValue(period) }));
+export const usePeriodNavigation = ({
+  period,
+  payday = 1,
+}: {
+  period: MaybeRefOrGetter<Period>;
+  payday?: MaybeRefOrGetter<number>;
+}) => {
+  const isFullMonth = computed(() => isFullMonthPeriod({ period: toValue(period), payday: toValue(payday) }));
 
   const durationDays = computed(() => {
     const p = toValue(period);
     return differenceInDays(p.to, p.from) + 1;
   });
 
-  const prevPeriod = computed(() => getPrevPeriod({ period: toValue(period) }));
-  const nextPeriod = computed(() => getNextPeriod({ period: toValue(period) }));
+  const prevPeriod = computed(() => getPrevPeriod({ period: toValue(period), payday: toValue(payday) }));
+  const nextPeriod = computed(() => getNextPeriod({ period: toValue(period), payday: toValue(payday) }));
 
   return {
     isFullMonth,

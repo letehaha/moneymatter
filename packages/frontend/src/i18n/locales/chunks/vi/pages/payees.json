@@ -1,11 +1,11 @@
 {
   "payees": {
-    "title": "Người nhận",
+    "title": "Payees",
     "subtitle": "Master list of merchants you transact with",
     "newPayeeButton": "New payee",
     "searchPlaceholder": "Search payees…",
     "columns": {
-      "name": "Tên",
+      "name": "Name",
       "transactionCount": "# tx",
       "netFlow": "Net flow",
       "category": "Category",
@@ -18,7 +18,7 @@
       "label": "Sort by",
       "transactionCount": "Tx amount",
       "netFlow": "Net flow",
-      "name": "Tên",
+      "name": "Name",
       "lastSeen": "Recent activity",
       "defaultTags": "Default tags"
     },
@@ -26,7 +26,7 @@
       "menu": "Actions",
       "rename": "Rename",
       "merge": "Merge into…",
-      "delete": "Xóa",
+      "delete": "Delete",
       "deleteAndIgnore": "Delete & ignore"
     },
     "bulk": {
@@ -69,7 +69,7 @@
       "aliasesEmpty": "No aliases yet. New variants will appear here when this payee matches another merchant name.",
       "cannotDeleteCanonicalAlias": "Cannot delete the alias matching the payee's name. Rename the payee instead.",
       "deleteAliasConfirm": "Remove this alias?",
-      "addAlias": "Thêm",
+      "addAlias": "Add",
       "addAliasTitle": "Add alias",
       "addAliasDescription": "Future transactions whose merchant text normalizes to this alias will automatically link to this payee. Past transactions are unchanged.",
       "addAliasInputLabel": "Merchant name",
@@ -112,7 +112,7 @@
       "unlinked": "Transaction unlinked from payee",
       "unlinkConfirmTitle": "Unlink transaction?",
       "unlinkConfirmDescription": "This transaction will no longer be linked to {name}. Future bank syncs won't re-link it automatically.",
-      "unlinkConfirmLabel": "Gỡ liên kết"
+      "unlinkConfirmLabel": "Unlink"
     },
     "toasts": {
       "created": "Payee created",
@@ -131,7 +131,7 @@
       "generic": "Something went wrong, please try again."
     },
     "tabs": {
-      "manage": "Quản lý",
+      "manage": "Manage",
       "settings": "Settings"
     },
     "settings": {
@@ -164,7 +164,7 @@
       "title": "Ignored merchant names",
       "description": "Raw merchant strings that should never automatically create a payee. Useful for noise like 'Card transfer', 'From: <name>', or refund prefixes. You can still link these names to a payee manually — only automatic matching is blocked.",
       "addPlaceholder": "e.g. Spotify",
-      "addButton": "Thêm",
+      "addButton": "Add",
       "addedToast": "Added to ignored names",
       "addError": "Failed to add to ignored names",
       "removeTooltip": "Remove from ignored list",

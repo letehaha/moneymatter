@@ -19,7 +19,7 @@ interface CreateReleaseNotificationParams {
  * Gets user IDs of users who have been active in the last N days.
  * Uses the ba_session table from better-auth to determine activity.
  */
-async function getRecentlyActiveUserIds(): Promise<number[]> {
+export async function getRecentlyActiveUserIds(): Promise<number[]> {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - RECENT_ACTIVITY_DAYS);
 

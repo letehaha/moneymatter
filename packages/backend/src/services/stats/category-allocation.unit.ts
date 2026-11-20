@@ -32,6 +32,7 @@ const buildTransaction = ({
   refundLinked?: boolean;
 }) => ({
   id,
+  amount: Money.fromDecimal(refAmount),
   refAmount: Money.fromDecimal(refAmount),
   categoryId,
   transactionType,
@@ -46,34 +47,18 @@ beforeEach(() => {
 });
 
 describe('computeCategoryAllocations minor units', () => {
-  it('keeps the third decimal of a KWD amount', async () => {
+  it.each([
+    [3, '1.234', 1234],
+    [2, '1.234', 123],
+    [0, '1500', 1500],
+  ])('converts at %s decimals: %s -> %s minor units', async (decimals, refAmount, minor) => {
     const { base } = await computeCategoryAllocations({
-      transactions: [buildTransaction({ id: 'tx-1', refAmount: '1.234' })],
+      transactions: [buildTransaction({ id: 'tx-1', refAmount })],
       applyRefunds: false,
-      decimals: 3,
+      decimals,
     });
 
-    expect(base.map((leg) => leg.minor)).toEqual([1234]);
-  });
-
-  it('rounds the same amount to cents at 2 decimals', async () => {
-    const { base } = await computeCategoryAllocations({
-      transactions: [buildTransaction({ id: 'tx-1', refAmount: '1.234' })],
-      applyRefunds: false,
-      decimals: 2,
-    });
-
-    expect(base.map((leg) => leg.minor)).toEqual([123]);
-  });
-
-  it('keeps whole units at 0 decimals', async () => {
-    const { base } = await computeCategoryAllocations({
-      transactions: [buildTransaction({ id: 'tx-1', refAmount: '1500' })],
-      applyRefunds: false,
-      decimals: 0,
-    });
-
-    expect(base.map((leg) => leg.minor)).toEqual([1500]);
+    expect(base.map((leg) => leg.minor)).toEqual([minor]);
   });
 
   it('gives the primary category what the splits leave at 3 decimals', async () => {
@@ -96,7 +81,9 @@ describe('computeCategoryAllocations minor units', () => {
 
 describe('resolveRefundPairs minor units', () => {
   it('reports the refund magnitude with its third decimal', async () => {
-    refundsFindAll.mockResolvedValue([{ originalTxId: 'tx-1', refundTxId: 'tx-2', splitId: null, userId: 1 }]);
+    refundsFindAll.mockResolvedValue([
+      { originalTxId: 'tx-1', refundTxId: 'tx-2', splitId: null, userId: 1, amount: null },
+    ]);
 
     const pairs = await resolveRefundPairs({
       transactions: [
@@ -114,6 +101,37 @@ describe('resolveRefundPairs minor units', () => {
 
     expect(pairs).toEqual([
       expect.objectContaining({ minor: 778, expenseCategoryId: 'cat-a', incomeCategoryId: 'cat-b' }),
+    ]);
+  });
+});
+
+describe('resolveRefundPairs partial links', () => {
+  it('rounds the linked share of the refund to the third decimal', async () => {
+    // 1 of the refund's 3 native units links to the expense: 1.001 * 1 / 3 = 0.33366..., which
+    // rounds half-up to 0.334 at 3 decimals.
+    refundsFindAll.mockResolvedValue([
+      { originalTxId: 'tx-1', refundTxId: 'tx-2', splitId: null, userId: 1, amount: Money.fromDecimal('1') },
+    ]);
+
+    const pairs = await resolveRefundPairs({
+      transactions: [
+        buildTransaction({ id: 'tx-1', refAmount: '1.234', refundLinked: true }),
+        {
+          ...buildTransaction({
+            id: 'tx-2',
+            refAmount: '1.001',
+            categoryId: 'cat-b',
+            transactionType: TRANSACTION_TYPES.income,
+            refundLinked: true,
+          }),
+          amount: Money.fromDecimal('3'),
+        },
+      ],
+      decimals: 3,
+    });
+
+    expect(pairs).toEqual([
+      expect.objectContaining({ minor: 334, expenseCategoryId: 'cat-a', incomeCategoryId: 'cat-b' }),
     ]);
   });
 });

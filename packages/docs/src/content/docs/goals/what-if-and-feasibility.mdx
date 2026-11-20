@@ -1,0 +1,69 @@
+---
+title: What if and feasibility
+description: Try a different monthly amount, date or account shares on a goal without saving anything, and check whether all your goals fit in what you typically save.
+sidebar:
+  order: 4
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Two tools help you plan: the **What if** tab tries out changes on one goal, and the banner on the **Goals** page checks whether all your goals together fit in what you save.
+
+## What if
+
+Open a goal and choose the **What if** tab. It's a sandbox: nothing changes until you apply it in **Edit goal**.
+
+The tab isn't shown for reached or archived goals, or while the goal's currency has no exchange rate.
+
+You can change three things:
+
+- **Monthly toward this goal**: type an amount or drag the slider. Left empty, it uses **Auto**, your actual pace, for example "Auto $420". If you've changed it, **Use Auto** goes back. If the accounts don't have enough history yet, there's no **Auto** and you enter an amount.
+- **Target date**: pick another date, or clear it to see the projected month instead.
+- **Account shares**: change how much of each linked account counts, up to what's free on it. A share of 0 leaves the account out. To add a new account, use **Edit goal**.
+
+The **Now vs what if** table compares the goal as it is with your changes:
+
+| Row | What it shows |
+|---|---|
+| **Monthly toward goal** | The monthly amount used, tagged **Auto** when it's your actual pace. |
+| **Reached around** | The month you'd reach the target. |
+| **Against target** | How that compares with the date: **N mo early**, **On time** or **N mo late**. |
+| **Needs per month** | How much you'd need each month to hit the date. |
+
+If an account counts by less than 100%, the money you deposit into it doesn't all count. The tab tells you how much to deposit, for example "To count $100 a month toward this goal, deposit $400 into Savings." That's a 25% share: $100 ÷ 25%.
+
+### Apply your changes
+
+<Steps>
+
+1. Click **Apply in Edit goal**. The goal window opens with your monthly amount, date and shares filled in.
+2. Check the changes and click **Save changes**.
+
+</Steps>
+
+Click **Reset** to go back to the goal as it is. The sandbox also resets when the goal is saved.
+
+## Can you afford your goals?
+
+When your active goals need more each month than you typically save, a warning banner appears at the top of the **Goals** page, for example "Your goals need $1,500/mo, you save a median $1,150/mo", followed by how much you're short each month. When your goals fit, there's no banner.
+
+Click **Show goals** to see each goal's monthly amount and whether it **Fits** or **Doesn't fit**.
+
+### How the check works
+
+- **What you typically save** is the median monthly net flow (income minus expenses) of your own accounts over the last 12 complete months. Transfers between your own accounts are left out, so moving money to savings doesn't count as spending. Planned transactions aren't included. It's the same figure the [FIRE planner](/stats/fire-planner/) starts from.
+- **What a goal needs** is the larger of its **Needs** per month and its monthly amount. Goals without a date count with their monthly amount.
+- **Goals are funded nearest date first**, and goals without a date last. A goal fits only if it and every goal before it fit in what you save.
+- **Only active goals count.** Paused, reached and archived goals are left out.
+
+If your accounts have fewer than 3 months of history, the check is skipped and no banner appears.
+
+<Aside type="note" title="Good to know">
+A transfer between your accounts that's recorded as two separate transactions, instead of a linked transfer, counts as income and an expense, which can skew what you typically save. See [Link existing transactions](/transfers-and-refunds/link-existing-transactions/).
+</Aside>
+
+## Related
+
+- [Goals](/goals/overview/)
+- [Create and edit a goal](/goals/create-and-edit/)
+- [How progress is calculated](/goals/how-progress-is-calculated/)

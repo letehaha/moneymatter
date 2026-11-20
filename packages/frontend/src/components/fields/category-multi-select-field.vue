@@ -8,7 +8,9 @@
             :disabled="disabled"
             :class="
               cn(
-                'border-input bg-input-background ring-offset-background flex min-h-10 w-full items-center gap-2 rounded-md border px-3 py-2 text-sm md:min-h-9',
+                'border-input bg-input-background ring-offset-background flex w-full items-center gap-2 rounded-md border px-3 text-sm',
+                size === 'xs' || size === 'sm' ? 'py-1' : 'py-2',
+                controlMinHeight[size],
                 'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden',
                 disabled && 'cursor-not-allowed opacity-50',
               )
@@ -35,45 +37,48 @@
           </button>
         </PopoverTrigger>
         <PopoverContent class="w-80 p-0" align="start">
-          <div class="border-border border-b p-2">
-            <div
-              class="border-input bg-input-background flex h-9 w-full items-center gap-2 rounded-md border px-3 text-sm"
-            >
-              <SearchIcon class="text-muted-foreground size-4" />
-              <input
-                v-model="searchQuery"
-                type="text"
-                class="min-w-0 flex-1 bg-transparent outline-none"
-                :placeholder="$t('fields.categoryMultiSelect.searchPlaceholder')"
-              />
-              <button
-                v-if="searchQuery.length"
-                type="button"
-                class="text-muted-foreground hover:text-foreground shrink-0"
-                @click="searchQuery = ''"
+          <ListboxRoot multiple :model-value="listboxValue" highlight-on-hover>
+            <div class="border-border border-b p-2">
+              <div
+                class="border-input bg-input-background flex h-9 w-full items-center gap-2 rounded-md border px-3 text-sm"
               >
-                <XIcon class="size-4" />
-              </button>
+                <SearchIcon class="text-muted-foreground size-4" />
+                <ListboxFilter
+                  v-model="searchQuery"
+                  class="min-w-0 flex-1 bg-transparent outline-none"
+                  :placeholder="$t('fields.categoryMultiSelect.searchPlaceholder')"
+                />
+                <button
+                  v-if="searchQuery.length"
+                  type="button"
+                  class="text-muted-foreground hover:text-foreground shrink-0"
+                  @mousedown.prevent
+                  @click="searchQuery = ''"
+                >
+                  <XIcon class="size-4" />
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="max-h-75 overflow-auto p-2">
-            <div v-if="filteredCategories.length === 0" class="text-muted-foreground py-4 text-center text-sm">
-              {{ $t('fields.categoryMultiSelect.noCategoriesFound') }}
-            </div>
-            <div v-else class="space-y-1">
-              <CategoryItem
-                v-for="category in filteredCategories"
-                :key="category.id"
-                :category="category"
-                :depth="0"
-                :is-searching="isSearching"
-                :is-selected="isSelected"
-                :get-descendant-count="getDescendantCount"
-                :taken-by="takenBy"
-                @toggle="toggleCategory"
-              />
-            </div>
-          </div>
+            <ListboxContent class="max-h-75 overflow-auto p-2">
+              <div v-if="filteredCategories.length === 0" class="text-muted-foreground py-4 text-center text-sm">
+                {{ $t('fields.categoryMultiSelect.noCategoriesFound') }}
+              </div>
+              <div v-else class="space-y-1">
+                <CategoryItem
+                  v-for="category in filteredCategories"
+                  :key="category.id"
+                  :category="category"
+                  :depth="0"
+                  :is-searching="isSearching"
+                  :is-selected="isSelected"
+                  :get-descendant-count="getDescendantCount"
+                  :taken-by="takenBy"
+                  :is-covered="isCovered"
+                  @toggle="toggleCategory"
+                />
+              </div>
+            </ListboxContent>
+          </ListboxRoot>
         </PopoverContent>
       </Popover>
     </FieldLabel>
@@ -87,12 +92,14 @@ import { collectDescendantIds } from '@/components/common/combobox-categories.he
 import FieldError from '@/components/fields/components/field-error.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import CategoryItem from '@/components/fields/category-multi-select-item.vue';
+import { type ControlSize, controlMinHeight } from '@/components/lib/ui/control-size';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { cn } from '@/lib/utils';
 import { useCategoriesStore } from '@/stores';
 import { CATEGORY_TYPES } from '@bt/shared/types';
 import { ChevronsUpDownIcon, SearchIcon, XIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
+import { ListboxContent, ListboxFilter, ListboxRoot } from 'reka-ui';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -107,6 +114,9 @@ const props = withDefaults(
     takenBy?: Record<string, string>;
     /** Ids rendered as chips; defaults to `modelValue`. */
     chipIds?: string[];
+    /** A selected category covers its subtree: descendants render checked and locked, and aren't stored. */
+    coverSubtree?: boolean;
+    size?: ControlSize;
   }>(),
   {
     label: undefined,
@@ -115,6 +125,7 @@ const props = withDefaults(
     errorMessage: undefined,
     takenBy: () => ({}),
     chipIds: undefined,
+    size: 'default',
   },
 );
 
@@ -188,7 +199,19 @@ const filteredCategories = computed(() => {
   return findMatchingCategories(availableCategories.value, query);
 });
 
-const isSelected = (categoryId: string) => selectedCategoryIds.value.has(categoryId);
+const coveredIds = computed(() => {
+  const ids = new Set<string>();
+  if (!props.coverSubtree) return ids;
+  for (const id of props.modelValue ?? []) {
+    const category = findCategory(availableCategories.value, (cat) => cat.id === id);
+    if (category) for (const descendantId of collectDescendantIds({ category })) ids.add(descendantId);
+  }
+  return ids;
+});
+
+const isCovered = (categoryId: string) => coveredIds.value.has(categoryId);
+const listboxValue = computed(() => [...(props.modelValue ?? []), ...coveredIds.value]);
+const isSelected = (categoryId: string) => selectedCategoryIds.value.has(categoryId) || isCovered(categoryId);
 
 const getDescendantCount = (category: FormattedCategory): number => collectDescendantIds({ category }).length;
 
@@ -196,7 +219,7 @@ const toggleCategory = (categoryId: string) => {
   const currentIds = new Set(props.modelValue ?? []);
   const category = categoriesMap.value[categoryId];
 
-  if (!category || (!currentIds.has(categoryId) && props.takenBy[categoryId])) return;
+  if (!category || (!currentIds.has(categoryId) && (isCovered(categoryId) || props.takenBy[categoryId]))) return;
 
   // Find the category in the formatted structure to get its descendants
   const formattedCategory = findCategory(availableCategories.value, (cat) => cat.id === categoryId);
@@ -209,10 +232,11 @@ const toggleCategory = (categoryId: string) => {
       currentIds.delete(id);
     }
   } else {
-    // Check: add this category and all its descendants
+    // Check: add this category; descendants are added too, or dropped when the selection covers them
     currentIds.add(categoryId);
     for (const id of descendantIds) {
-      currentIds.add(id);
+      if (props.coverSubtree) currentIds.delete(id);
+      else currentIds.add(id);
     }
   }
 

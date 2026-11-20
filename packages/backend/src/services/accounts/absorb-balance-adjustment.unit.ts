@@ -88,6 +88,7 @@ const USER_ID = 42;
  */
 function buildAccount({
   id = generateRandomRecordId(),
+  userId = USER_ID,
   name = 'Account',
   type = ACCOUNT_TYPES.monobank,
   accountCategory = ACCOUNT_CATEGORIES.general,
@@ -96,8 +97,10 @@ function buildAccount({
   refCurrentBalance = Money.zero(),
   initialBalance = Money.zero(),
   refInitialBalance = Money.zero(),
+  creditLimit = Money.zero(),
 }: {
   id?: string;
+  userId?: number;
   name?: string;
   type?: ACCOUNT_TYPES;
   accountCategory?: ACCOUNT_CATEGORIES;
@@ -106,9 +109,11 @@ function buildAccount({
   refCurrentBalance?: Money;
   initialBalance?: Money;
   refInitialBalance?: Money;
+  creditLimit?: Money;
 } = {}): AccountRow {
   return {
     id,
+    userId,
     name,
     type,
     accountCategory,
@@ -117,6 +122,7 @@ function buildAccount({
     refCurrentBalance,
     initialBalance,
     refInitialBalance,
+    creditLimit,
   } as unknown as AccountRow;
 }
 
@@ -126,6 +132,7 @@ type UpdatePayload = {
   userId: number;
   currentBalance: Money;
   refCurrentBalance: Money;
+  refCreditLimit?: Money;
   initialBalance?: Money;
 };
 
@@ -324,6 +331,53 @@ describe('absorbBalanceAdjustment', () => {
     expect(restampMock).toHaveBeenCalledTimes(1);
     expect(setTodayRowToSpotMock).toHaveBeenCalledTimes(1);
     expect(setTodayRowToSpotMock).toHaveBeenCalledWith({ account: refreshedRow });
+  });
+
+  it('re-measures refCreditLimit alongside refCurrentBalance', async () => {
+    const accountId = generateRandomRecordId();
+    findOneMock.mockResolvedValue(
+      buildAccount({
+        id: accountId,
+        currentBalance: Money.fromDecimal(100),
+        creditLimit: Money.fromDecimal(1000),
+      }) as never,
+    );
+
+    await absorbBalanceAdjustment({
+      userId: USER_ID,
+      accountId,
+      amountDelta: Money.fromDecimal(50),
+    });
+
+    const payload = lastUpdatePayload();
+    expect(payload.refCurrentBalance.toCents()).toBe(Money.fromDecimal(150).toCents());
+    expect(payload.refCreditLimit!.toCents()).toBe(Money.fromDecimal(1000).toCents());
+    expect(calculateRefAmountMock).toHaveBeenCalledTimes(2);
+    expect(calculateRefAmountMock.mock.calls[1]![0]).toEqual(
+      expect.objectContaining({ userId: USER_ID, baseCode: 'USD', bypassCache: true }),
+    );
+  });
+
+  it('keeps the stored refCreditLimit by omitting the column when the spot remeasure fails', async () => {
+    const accountId = generateRandomRecordId();
+    findOneMock.mockResolvedValue(
+      buildAccount({
+        id: accountId,
+        currentBalance: Money.fromDecimal(100),
+        creditLimit: Money.fromDecimal(1000),
+      }) as never,
+    );
+    calculateRefAmountMock.mockRejectedValue(new Error('exchange rate unavailable'));
+
+    await absorbBalanceAdjustment({
+      userId: USER_ID,
+      accountId,
+      amountDelta: Money.fromDecimal(50),
+    });
+
+    const payload = lastUpdatePayload();
+    expect(payload.currentBalance.toCents()).toBe(Money.fromDecimal(150).toCents());
+    expect(payload).not.toHaveProperty('refCreditLimit');
   });
 
   it('throws ValidationError and never writes when the account is not found', async () => {

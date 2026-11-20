@@ -2,6 +2,7 @@ import type { EmbeddedCategoryModel } from './categories';
 import type { EntityLogoFields } from './entity-logo';
 import type { RecordId } from './record-id';
 import type { ResourceShareInfo } from './sharing';
+import type { TagModel } from './tags';
 import type { TransactionModel } from './transactions';
 
 // Everything in this file belongs to the user-facing "Trackers" (`Trackers` table).
@@ -12,9 +13,11 @@ export enum TRACKER_STATUSES {
   archived = 'archived',
 }
 
-export enum TRACKER_TYPES {
-  manual = 'manual',
-  category = 'category',
+/** How the overall limit reads: a spending ceiling, an income goal to reach, or an income ceiling to stay under. */
+export enum TRACKER_LIMIT_KINDS {
+  spending = 'spending',
+  incomeTarget = 'income_target',
+  incomeCap = 'income_cap',
 }
 
 /** Per-category limit inside a tracker (`TrackerLines` table). */
@@ -41,32 +44,30 @@ export interface TrackerModel extends EntityLogoFields {
   userId: number;
   status: string;
   name: string;
-  type: TRACKER_TYPES;
   startDate: Date | null;
   endDate: Date | null;
   /** Decimal; null = no overall limit. */
   limitAmount: number | null;
-  autoInclude: boolean;
+  limitKind: TRACKER_LIMIT_KINDS;
+  /** Owner's transactions in the date range matching any of `categories` or `tags` get linked automatically. */
+  rulesEnabled: boolean;
+  /** Rule-added links whose transaction stopped matching are removed on the next sync. */
+  rulesCleanup: boolean;
+  rulesSyncedAt: Date | null;
   /** The "Archive?" suggestion chip stays hidden once the user opts out for this tracker. */
   archivePromptDismissed: boolean;
-  /** Smart tracking: AI links matching transactions to this manual tracker. Owner-only. */
+  /** Smart tracking: AI links matching transactions to this tracker. Owner-only. */
   aiEnabled: boolean;
   aiDescription: string | null;
   /** How many days before `startDate` the AI also looks at. One of `TRACKER_AI_PRE_WINDOW_DAYS`. */
   aiPreWindowDays: TrackerAiPreWindowDays;
   aiLastScannedAt: Date | null;
-  /**
-   * Category IDs for category-based trackers.
-   * Use for CREATE/UPDATE requests - the backend will expand parent IDs to include children.
-   * Not populated in GET responses (use `categories` array instead).
-   */
+  /** Rule categories. Write-only; matched exactly, so subcategories must be listed too. */
   categoryIds?: string[];
-  /**
-   * Full category objects for category-based trackers.
-   * Populated in GET responses when the tracker has associated categories.
-   * Read-only - for mutations, use `categoryIds`.
-   */
+  /** Rule categories, read-only. */
   categories?: EmbeddedCategoryModel[];
+  /** Rule tags, read-only. */
+  tags?: Pick<TagModel, 'id' | 'name' | 'color' | 'icon'>[];
   /** Ordered by `position`. Present on GET list/detail responses. */
   lines: TrackerLineModel[];
   /** Present on user-facing list/detail responses; absent on internal serializations. */
@@ -85,7 +86,7 @@ export interface TrackerStatsResponse {
     actualExpense: number;
     /** Net difference, income minus expenses. */
     balance: number;
-    /** Percentage used (0-100+), null without an overall limit. */
+    /** Percent of the limit reached (0-100+), null without an overall limit. Net spending for `spending`, net income otherwise. */
     utilizationRate: null | number;
     transactionsCount: number;
     firstTransactionDate: string | null;
@@ -175,12 +176,20 @@ export interface TrackerPendingSuggestion<TTransaction = TransactionModel> {
   transaction: TTransaction;
 }
 
+/** POST /trackers/:id/sync */
+export interface TrackerSyncResponse {
+  added: number;
+  removed: number;
+}
+
 /** GET /trackers/:id/suggestions */
 export interface TrackerSuggestionsResponse<TTransaction = TransactionModel> {
   /** Highest score first. */
   pending: TrackerPendingSuggestion<TTransaction>[];
   /** Linked transactions the AI matched, for an "AI" badge on the tracker's rows. `id` is the suggestion's, for reject. */
   aiMatched: { id: RecordId; transactionId: RecordId; reason: string }[];
+  /** Removed or rejected transactions that rules and AI skip. Score 0 = removed by hand. Restore to allow again. */
+  rejected: TrackerPendingSuggestion<TTransaction>[];
   scan: {
     status: TrackerScanStatus;
     startedAt: Date | null;

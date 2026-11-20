@@ -4,7 +4,10 @@ import {
   type YnabImportProgress,
   type YnabImportSummary,
 } from '@bt/shared/types';
+import { t } from '@i18n/index';
+import { LockedError } from '@js/errors';
 import { SentryTraceData } from '@js/utils/sentry';
+import { withLock } from '@services/common/lock';
 import { createImportJobQueue } from '@services/import-export/core/queue/create-import-job-queue';
 import { randomUUID } from 'node:crypto';
 
@@ -54,7 +57,24 @@ export async function queueYnabImport({
   const jobId = `ynab-import-${userId}-${randomUUID()}`;
   const data: YnabImportJobData = { userId, fileContent, accountMapping };
 
-  await enqueue({ userId, jobId, data });
+  // Two imports of one user race on payee creation and both write every row.
+  // The lock makes check-then-add atomic against a near-simultaneous second request.
+  const isAlreadyRunning = await withLock(
+    `ynab-import-enqueue:${userId}`,
+    async () => {
+      const inflight = await ynabImportQueue.getJobs(['active', 'waiting', 'delayed']);
+      if (inflight.some((job) => job.data.userId === userId)) return true;
+      await enqueue({ userId, jobId, data });
+      return false;
+    },
+    { ttl: 60 },
+  )().catch((err) => {
+    if (err instanceof LockedError) return true;
+    throw err;
+  });
+  if (isAlreadyRunning) {
+    throw new LockedError({ message: t({ key: 'importExport.ynab.importAlreadyInProgress' }) });
+  }
 
   return jobId;
 }

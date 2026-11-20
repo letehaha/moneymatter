@@ -28,7 +28,9 @@
       "retry": "Try again",
       "copyInviteLink": "Copy invite link",
       "moveTo": "Move to…",
-      "learnMore": "Learn more"
+      "learnMore": "Learn more",
+      "undo": "Undo",
+      "more": "More"
     },
     "ui": {
       "close": "Close",
@@ -103,7 +105,8 @@
       "debitCard": "Debit card",
       "mobilePayment": "Mobile payment",
       "voucher": "Voucher",
-      "webPayment": "Web payment"
+      "webPayment": "Web payment",
+      "none": "None"
     },
     "vehicleClasses": {
       "sedan": "Sedan",
@@ -149,7 +152,9 @@
     },
     "transactions": {
       "delete": {
-        "success": "Successfully removed",
+        "success": "Moved to Trash",
+        "undoSuccess": "Restored",
+        "undoError": "Couldn't undo. You can still restore it from the Trash.",
         "error": "Failed to delete transaction!"
       },
       "submit": {
@@ -160,6 +165,7 @@
       },
       "record": {
         "addedByTooltip": "This transaction was attached to the tracker by {handle}",
+        "addedByRule": "Added by the tracker's rules",
         "matchedByAi": "Matched by AI",
         "externalLinkTooltip": "Open external link",
         "locationTooltip": "Open location on the map",
@@ -170,7 +176,14 @@
           "sharedAccount": "Can't be selected: this transaction is on an account shared with you, and only its owner can edit it."
         },
         "missingRate": "No rate",
-        "missingRateTooltip": "No exchange rate was available for this currency on the transaction date, so the amount is left out of base-currency totals. Set a rate in Settings → Currencies, then edit the transaction to value it."
+        "missingRateTooltip": "No exchange rate was available for this currency on the transaction date, so the amount is left out of base-currency totals. Set a rate in Settings → Currencies, then edit the transaction to value it.",
+        "payment": {
+          "paidFrom": "Paid from {count} accounts",
+          "receivedInto": "Received into {count} accounts",
+          "partOf": "Part of a {total} payment",
+          "thisAccount": "(this account)",
+          "loadError": "Couldn't open this transaction. Try again."
+        }
       }
     },
     "outOfWallet": "Out of wallet",
@@ -246,6 +259,10 @@
       "dialogTitle": "Change logo",
       "resetToAuto": "Reset to automatic",
       "remove": "Remove logo",
+      "pickerDescription": "Pick a brand logo or use letters instead.",
+      "updatedToast": "Logo updated",
+      "resetToast": "Logo removed",
+      "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Letters (1–2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Color",
@@ -284,7 +301,20 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "{duration} ahead",
+        "behind": "{duration} behind",
+        "onPace": "On pace",
+        "backInReach": "Back within reach",
+        "offTrack": "Off track"
       }
+    },
+    "pasteImage": {
+      "button": "Paste image",
+      "shortcutHint": "or press {shortcut}",
+      "noImage": "No image found in the clipboard.",
+      "readFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut."
     }
   },
   "accountGroups": {
@@ -340,6 +370,13 @@
     },
     "share": {
       "sendFailedHint": "Open the sharing panel to resend."
+    },
+    "goalReached": {
+      "title": "Goal reached: {name}",
+      "message": "You've saved {amount}."
+    },
+    "unrealizedLossAlert": {
+      "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"
     }
   },
   "currencyNames": {
@@ -533,6 +570,12 @@
       "removeTransactionDescriptionNormal": "Are you sure you want to remove this transaction from the group?",
       "removeButtonText": "Remove",
       "removeAndDeleteButtonText": "Remove & delete group",
+      "removeFromGroup": "Remove from group",
+      "saveError": "Couldn't save the group",
+      "removeError": "Couldn't remove the transaction from the group",
+      "manageTransactions": "Manage",
+      "showMoreNote": "Show more",
+      "showLessNote": "Show less",
       "summary": {
         "transactions": "Transactions",
         "net": "Net",
@@ -542,6 +585,56 @@
     },
     "transactionGroupRecord": {
       "transactionCountLabel": "transactions"
+    }
+  },
+  "mcpToolsets": {
+    "core": {
+      "label": "Core",
+      "description": "Accounts, transactions, categories, tags, payees and reports"
+    },
+    "subscriptions": {
+      "label": "Recurring payments",
+      "description": "Recurring payments, their periods and planned transactions"
+    },
+    "budgetPlans": {
+      "label": "Budget plans",
+      "description": "Plans, lines, line goals and savings goals"
+    },
+    "trackers": {
+      "label": "Trackers",
+      "description": "Spending trackers and their suggestions"
+    },
+    "automations": {
+      "label": "Automations",
+      "description": "Rules, payee aliases, ignored payee names and tag reminders"
+    },
+    "review": {
+      "label": "Review and cleanup",
+      "description": "Transfer and refund matches, duplicates and stuck pending transactions"
+    },
+    "groupsTemplates": {
+      "label": "Groups and templates",
+      "description": "Transaction groups and transaction templates"
+    },
+    "investments": {
+      "label": "Investments",
+      "description": "Portfolios, holdings, securities and investment transactions"
+    },
+    "ventures": {
+      "label": "Ventures",
+      "description": "Venture platforms, deals and events"
+    },
+    "loansVehicles": {
+      "label": "Loans and vehicles",
+      "description": "Loans with their payments, and vehicles"
+    },
+    "currencies": {
+      "label": "Currencies",
+      "description": "Your currencies and exchange rates"
+    },
+    "imports": {
+      "label": "Imports and sharing",
+      "description": "Import batches (list, undo) and bank connections (status, unlink an account); sharing is read only."
     }
   }
 }

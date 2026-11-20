@@ -1,3 +1,4 @@
+import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
 import { BANK_PROVIDER_TYPE, RecordId } from '@bt/shared/types';
 import { IdColumn } from '@common/types/id-column';
 import Accounts from '@models/accounts.model';
@@ -13,6 +14,7 @@ interface BankDataProviderConnectionsAttributes {
   userId: number;
   providerType: BANK_PROVIDER_TYPE;
   providerName: string;
+  externalUrl: string | null;
   isActive: boolean;
   credentials: string; // Encrypted JSON string in DB
   metadata: object;
@@ -67,6 +69,12 @@ export default class BankDataProviderConnections extends Model<BankDataProviderC
     comment: 'User-defined friendly name for this connection',
   })
   providerName!: string;
+
+  @Column({
+    allowNull: true,
+    type: DataType.STRING(MAX_EXTERNAL_URL_LENGTH),
+  })
+  externalUrl!: string | null;
 
   @Column({
     allowNull: false,

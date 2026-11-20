@@ -1,9 +1,7 @@
-import { TRACKER_TYPES, SHARE_PERMISSIONS } from '@bt/shared/types';
-import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
+import { SHARE_PERMISSIONS } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import TrackerTransactions, { TrackerTransactionMetadata } from '@models/tracker-transactions.model';
-import Trackers from '@models/trackers.model';
 import { findTransactions } from '@models/transactions-query';
 import { withTransaction } from '@services/common/with-transaction';
 import { Op } from 'sequelize';
@@ -28,23 +26,11 @@ export const addTransactionsToTracker = withTransaction(async (payload: AddTrans
     requiredPermission: SHARE_PERMISSIONS.write,
   });
 
-  const tracker = await findOrThrowNotFound({
-    query: Trackers.findOne({ where: { id: trackerId, userId: ownerUserId } }),
-    message: t({ key: 'budgets.budgetNotFound' }),
-  });
-
-  // Category trackers auto-track transactions by category - manual linking is not allowed
-  if (tracker.type === TRACKER_TYPES.category) {
-    throw new ValidationError({ message: t({ key: 'budgets.cannotManuallyLinkToCategoryBudget' }) });
-  }
-
-  // Recipients can only attach THEIR OWN transactions to a shared manual tracker. Owners
-  // can attach anything they own. The transaction's category does NOT need to match the
-  // tracker's category list (per "Category mismatch on attach" decision — category list
-  // governs auto-include, not manual attachment).
+  // Recipients can only attach THEIR OWN transactions to a shared tracker. Owners can attach
+  // anything they own, whether or not it matches the tracker's rules.
   const txOwnerUserId = isOwner ? ownerUserId : userId;
-  // Plans are attachable on purpose: owners track their own planned spend in manual
-  // trackers; recipients never see them via stats scoping.
+  // Plans are attachable on purpose: owners track their own planned spend in trackers;
+  // recipients never see them via stats scoping.
   const transactions = await findTransactions({
     planned: 'include',
     access: { creator: txOwnerUserId },

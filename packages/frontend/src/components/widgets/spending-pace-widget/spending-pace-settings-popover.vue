@@ -14,6 +14,7 @@
             </header>
 
             <div class="flex flex-col p-2">
+              <IncludePlannedMenuItem test-id-prefix="sp" :default-value="INCLUDE_PLANNED_DEFAULT" />
               <Button
                 variant="ghost"
                 class="h-auto w-full justify-between px-2 py-2 text-left font-normal whitespace-normal"
@@ -82,10 +83,11 @@ import SlidingPanels from '@/components/common/sliding-panels.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
+import IncludePlannedMenuItem from '@/components/widgets/components/include-planned-menu-item.vue';
 import { ArrowLeftIcon, ChevronRightIcon, SettingsIcon } from '@lucide/vue';
 import { ref, watch } from 'vue';
 
-import { DEFAULT_SPIKE_PERCENT, SPIKE_PERCENT_MAX, SPIKE_PERCENT_MIN } from './helpers';
+import { DEFAULT_SPIKE_PERCENT, INCLUDE_PLANNED_DEFAULT, SPIKE_PERCENT_MAX, SPIKE_PERCENT_MIN } from './helpers';
 
 const PANEL_TRANSITION_DURATION = 320;
 

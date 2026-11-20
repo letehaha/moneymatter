@@ -18,6 +18,7 @@
         "updateError": "Terjadi kesalahan saat mencoba memperbarui akun",
         "nameLabel": "Nama akun",
         "namePlaceholder": "Nama akun",
+        "openExternalUrl": "Open external link",
         "transferToPortfolio": "Transfer ke Portofolio",
         "editAccountName": "Edit Nama Akun",
         "save": "Simpan",
@@ -149,7 +150,9 @@
         "residualAdjustmentDescription": "Adds one balance adjustment transaction dated today. Your past balances stay exactly as they are.",
         "residualOpeningLabel": "Change the starting balance",
         "residualOpeningDescription": "Moves the account's starting balance by the difference, so every past balance shifts too. Pick this if transactions are missing from the start of the history.",
-        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview."
+        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview.",
+        "linkFailed": "An error occurred while trying to link account",
+        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
       },
       "tabs": {
         "details": "Detail",
@@ -175,6 +178,16 @@
         "editAccountCategory": "Edit kategori",
         "accountCategoryUpdateSuccess": "Kategori akun diperbarui",
         "accountCategoryUpdateError": "Gagal memperbarui kategori akun",
+        "defaultPaymentType": "Default payment type:",
+        "editDefaultPaymentType": "Edit default payment type",
+        "defaultPaymentTypeUpdateSuccess": "Default payment type updated",
+        "defaultPaymentTypeUpdateError": "Failed to update default payment type",
+        "externalUrl": "External URL:",
+        "externalUrlPlaceholder": "https://bank.example.com",
+        "externalUrlNotSet": "Not set",
+        "editExternalUrl": "Edit external URL",
+        "externalUrlUpdateSuccess": "External URL updated",
+        "externalUrlUpdateError": "Failed to update external URL",
         "currency": "Mata Uang:",
         "main": "(utama)",
         "exchangeRate": "Nilai Tukar:",
@@ -222,7 +235,7 @@
         "description": "Folds leftover pending rows into the booked transactions that replaced them.",
         "button": "Merge duplicates",
         "running": "Merging…",
-        "confirm": "Gabungkan",
+        "confirm": "Merge",
         "confirmTitle": "Merge duplicate transactions?",
         "confirmDescription": "Pending rows that match a booked transaction on this account will be deleted. Notes and categories you set on them move to the booked transaction. This cannot be undone.",
         "result": "Merged {merged} duplicate(s), skipped {skipped}.",
@@ -241,6 +254,7 @@
       },
       "rightPanel": {
         "transactions": "Transaksi",
+        "viewAll": "View all",
         "analyticsSoon": "Analitik (segera)"
       },
       "integrations": {

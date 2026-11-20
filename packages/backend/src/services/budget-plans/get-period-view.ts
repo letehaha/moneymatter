@@ -3,15 +3,17 @@ import {
   BudgetPlanCoverage,
   BudgetPlanGoalsSummary,
   BudgetPlanLineGroup,
+  BudgetPlanLinePace,
   BudgetPlanPeriodView,
   BudgetPlanPeriodViewLineGoal,
   BudgetPlanPool,
 } from '@bt/shared/types';
 import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { minorUnitsToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
-import { toUtcDateString } from '@common/utils/date';
+import { toUtcDateString, toZonedDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { NotFoundError } from '@js/errors';
+import { logger } from '@js/utils/logger';
 import BudgetAssignments from '@models/budget-assignments.model';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import BudgetLineGoals from '@models/budget-line-goals.model';
@@ -29,26 +31,25 @@ import { GoalEvaluation, GoalPeriodAssigned, GoalSpec, evaluateGoal } from './fo
 import { assignmentMinorUnits } from './fold/resolve-assigned';
 import { goalSpecToApi, toGoalSpec } from './line-goals';
 import { loadGroups } from './line-groups';
+import { periodPaces } from './period-pace';
 import { ensurePeriods, loadLines } from './periods/ensure-periods';
 import { ownerCategories } from './validate-line-categories';
 
 const poolToApi = ({ pool, decimals }: { pool: BudgetPlanPool; decimals: number }): BudgetPlanPool => {
-  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
-
   return {
-    readyToAssign: toDecimal(pool.readyToAssign),
-    committedLater: toDecimal(pool.committedLater),
+    readyToAssign: minorUnitsToApiDecimal({ value: pool.readyToAssign, decimals }),
+    committedLater: minorUnitsToApiDecimal({ value: pool.committedLater, decimals }),
     flow: {
-      leftOver: toDecimal(pool.flow.leftOver),
-      income: toDecimal(pool.flow.income),
-      outsideSpending: toDecimal(pool.flow.outsideSpending),
-      fromLines: toDecimal(pool.flow.fromLines),
-      assigned: toDecimal(pool.flow.assigned),
+      leftOver: minorUnitsToApiDecimal({ value: pool.flow.leftOver, decimals }),
+      income: minorUnitsToApiDecimal({ value: pool.flow.income, decimals }),
+      outsideSpending: minorUnitsToApiDecimal({ value: pool.flow.outsideSpending, decimals }),
+      fromLines: minorUnitsToApiDecimal({ value: pool.flow.fromLines, decimals }),
+      assigned: minorUnitsToApiDecimal({ value: pool.flow.assigned, decimals }),
     },
     balance: {
-      cash: toDecimal(pool.balance.cash),
-      inLines: toDecimal(pool.balance.inLines),
-      drift: toDecimal(pool.balance.drift),
+      cash: minorUnitsToApiDecimal({ value: pool.balance.cash, decimals }),
+      inLines: minorUnitsToApiDecimal({ value: pool.balance.inLines, decimals }),
+      drift: minorUnitsToApiDecimal({ value: pool.balance.drift, decimals }),
     },
   };
 };
@@ -60,12 +61,14 @@ const periodPool = async ({
   periodId,
   today,
   decimals,
+  timezone,
 }: {
   plan: BudgetPlans;
   views: FoldedPeriodView[];
   periodId: RecordId;
   today: string;
   decimals: number;
+  timezone: string;
 }): Promise<{ pool: BudgetPlanPool; nextReadyToAssign: number | null } | null> => {
   if (!plan.poolFrom) return null;
   const poolFrom = toUtcDateString(plan.poolFrom);
@@ -79,6 +82,7 @@ const periodPool = async ({
     opening: poolFrom,
     closing: view.period.endDate < tomorrow ? view.period.endDate : tomorrow,
     decimals,
+    timezone,
   });
 
   const entries = foldPool({ periods: poolViews, openingCash: opening });
@@ -152,15 +156,17 @@ const goalsSummary = ({
   asks: Map<string, GoalEvaluation>;
   decimals: number;
 }): BudgetPlanGoalsSummary => {
-  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
   const results = [...asks.entries()];
   return {
     count: results.length,
-    totalTarget: toDecimal(results.reduce((sum, [, result]) => sum + result.periodTarget, 0)),
-    stillNeeded: toDecimal(results.reduce((sum, [, result]) => sum + result.ask, 0)),
+    totalTarget: minorUnitsToApiDecimal({
+      value: results.reduce((sum, [, result]) => sum + result.periodTarget, 0),
+      decimals,
+    }),
+    stillNeeded: minorUnitsToApiDecimal({ value: results.reduce((sum, [, result]) => sum + result.ask, 0), decimals }),
     underfunded: results
       .filter(([, result]) => result.status === 'underfunded')
-      .map(([lineId, result]) => ({ lineId, ask: toDecimal(result.ask) })),
+      .map(([lineId, result]) => ({ lineId, ask: minorUnitsToApiDecimal({ value: result.ask, decimals }) })),
     expectedIncome: moneyToApiDecimalOrNull(plan.expectedIncome),
   };
 };
@@ -187,7 +193,6 @@ const nextCoverage = ({
   nextReadyToAssign: number;
   decimals: number;
 }): BudgetPlanCoverage => {
-  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
   const asks = evaluateGoals({ plan, view: next, views: history, goals, assignedSetAside: false });
   const recent = history.slice(-HISTORY_PERIODS);
 
@@ -213,10 +218,10 @@ const nextCoverage = ({
     periodId: next.period.id,
     startDate: next.period.startDate,
     endDate: next.period.endDate,
-    target: toDecimal(target),
-    linedUp: toDecimal(linedUp),
+    target: minorUnitsToApiDecimal({ value: target, decimals }),
+    linedUp: minorUnitsToApiDecimal({ value: linedUp, decimals }),
     percent: target > 0 ? Math.min(100, Math.floor((linedUp * 100) / target)) : 0,
-    left: toDecimal(left),
+    left: minorUnitsToApiDecimal({ value: left, decimals }),
     state,
   };
 };
@@ -230,25 +235,24 @@ const goalToApi = ({
   result: GoalEvaluation;
   decimals: number;
 }): BudgetPlanPeriodViewLineGoal => {
-  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
   const { lineId: _lineId, snoozedPeriodStart: _snoozedPeriodStart, ...settings } = goalSpecToApi({ goal, decimals });
   return {
     ...settings,
     dueDate: result.dueDate,
-    ask: toDecimal(result.ask),
-    target: toDecimal(result.target),
-    periodTarget: toDecimal(result.periodTarget),
-    progress: toDecimal(result.progress),
+    ask: minorUnitsToApiDecimal({ value: result.ask, decimals }),
+    target: minorUnitsToApiDecimal({ value: result.target, decimals }),
+    periodTarget: minorUnitsToApiDecimal({ value: result.periodTarget, decimals }),
+    progress: minorUnitsToApiDecimal({ value: result.progress, decimals }),
     status: result.status,
-    budgetAmount: toDecimal(result.budgetAmount),
+    budgetAmount: minorUnitsToApiDecimal({ value: result.budgetAmount, decimals }),
     occurrences: result.occurrences,
     fundedThrough: result.fundedThrough,
     nextNeededDate: result.nextNeededDate,
     fundingPlan:
       result.fundingPlan?.map((row) => ({
         periodStart: row.periodStart,
-        amount: toDecimal(row.amount),
-        leftAfter: toDecimal(row.leftAfter),
+        amount: minorUnitsToApiDecimal({ value: row.amount, decimals }),
+        leftAfter: minorUnitsToApiDecimal({ value: row.leftAfter, decimals }),
       })) ?? null,
   };
 };
@@ -264,6 +268,7 @@ const toApi = ({
   goalsSummary: summary,
   coverage,
   decimals,
+  paces,
 }: {
   view: FoldedPeriodView;
   groups: BudgetPlanLineGroup[];
@@ -276,16 +281,15 @@ const toApi = ({
   goalsSummary: BudgetPlanGoalsSummary | null;
   coverage: BudgetPlanCoverage | null;
   decimals: number;
+  paces: Map<string, BudgetPlanLinePace>;
 }): BudgetPlanPeriodView => {
-  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
-
   return {
     period: view.period,
     header: {
-      totalAssigned: toDecimal(view.header.totalAssigned),
-      totalActivity: toDecimal(view.header.totalActivity),
-      totalAvailable: toDecimal(view.header.totalAvailable),
-      totalCarriedIn: toDecimal(view.header.totalCarriedIn),
+      totalAssigned: minorUnitsToApiDecimal({ value: view.header.totalAssigned, decimals }),
+      totalActivity: minorUnitsToApiDecimal({ value: view.header.totalActivity, decimals }),
+      totalAvailable: minorUnitsToApiDecimal({ value: view.header.totalAvailable, decimals }),
+      totalCarriedIn: minorUnitsToApiDecimal({ value: view.header.totalCarriedIn, decimals }),
     },
     groups,
     lines: view.lines.map((line) => ({
@@ -294,20 +298,21 @@ const toApi = ({
       sortOrder: line.sortOrder,
       groupId: groupIds.get(line.lineId) ?? null,
       categoryIds: line.categoryIds,
-      assigned: toDecimal(line.assigned),
-      poolAssigned: toDecimal(poolAssigned?.get(line.lineId) ?? line.assigned),
+      assigned: minorUnitsToApiDecimal({ value: line.assigned, decimals }),
+      poolAssigned: minorUnitsToApiDecimal({ value: poolAssigned?.get(line.lineId) ?? line.assigned, decimals }),
       assignedSource: line.assignedSource,
-      activity: toDecimal(line.activity),
-      carriedIn: toDecimal(line.carriedIn),
-      available: toDecimal(line.available),
+      activity: minorUnitsToApiDecimal({ value: line.activity, decimals }),
+      carriedIn: minorUnitsToApiDecimal({ value: line.carriedIn, decimals }),
+      available: minorUnitsToApiDecimal({ value: line.available, decimals }),
       carryPolicy: line.carryPolicy,
       goal: asks.has(line.lineId)
         ? goalToApi({ goal: goals.get(line.lineId)!, result: asks.get(line.lineId)!, decimals })
         : null,
+      pace: paces.get(line.lineId) ?? null,
     })),
     unbudgeted: view.unbudgeted.map((entry) => ({
       categoryId: entry.categoryId,
-      activity: toDecimal(entry.activity),
+      activity: minorUnitsToApiDecimal({ value: entry.activity, decimals }),
     })),
     pool: pool && poolToApi({ pool, decimals }),
     goals: summary,
@@ -315,31 +320,31 @@ const toApi = ({
   };
 };
 
-const loadGoals = async ({
-  planId,
-  decimals,
-}: {
-  planId: RecordId;
-  decimals: number;
-}): Promise<Map<string, LineGoal>> => {
-  const rows = await BudgetLineGoals.findAll({
+const loadGoalRows = ({ planId }: { planId: RecordId }): Promise<BudgetLineGoals[]> =>
+  BudgetLineGoals.findAll({
     include: [{ model: BudgetLines, where: { planId }, attributes: [] }],
   });
-  return new Map(rows.map((row) => [row.lineId, toGoalSpec({ row, decimals })]));
-};
 
 /**
  * Everything `foldPlan` needs for the whole plan, periods ensured through today, plus the plan
  * currency's `decimals` its minor units are at.
  */
-export const loadFoldInput = async ({ plan, today }: { plan: BudgetPlans; today: string }) => {
+export const loadFoldInput = async ({
+  plan,
+  today,
+  timezone,
+}: {
+  plan: BudgetPlans;
+  today: string;
+  timezone: string;
+}) => {
   const periods = await ensurePeriods({ plan, today });
   const decimals = await getCurrencyDecimals({ userId: plan.userId, code: plan.currencyCode });
 
   const [lines, { categories }, activityRows] = await Promise.all([
     loadLines({ planId: plan.id }),
     ownerCategories({ userId: plan.userId }),
-    getPlanActivity({ plan, periods, decimals }),
+    getPlanActivity({ plan, periods, decimals, timezone }),
   ]);
 
   const lineIds = lines.map((line) => line.id);
@@ -368,22 +373,30 @@ export const loadFoldInput = async ({ plan, today }: { plan: BudgetPlans; today:
   };
 };
 
+export type FoldInput = Awaited<ReturnType<typeof loadFoldInput>>;
+
 /** Folds the whole plan from the epoch to answer for one period. */
 export const getPeriodView = async ({
   userId,
   planId,
   periodId,
+  timezone,
 }: {
   userId: number;
   planId: RecordId;
   periodId: RecordId;
+  timezone: string;
 }): Promise<BudgetPlanPeriodView> => {
   const plan = await findPlan({ planId, userId });
 
-  const today = toUtcDateString(new Date());
-  const [foldInput, groups] = await Promise.all([loadFoldInput({ plan, today }), loadGroups({ planId: plan.id })]);
+  const today = toZonedDateString({ date: new Date(), timezone });
+  const [foldInput, groups, goalRows] = await Promise.all([
+    loadFoldInput({ plan, today, timezone }),
+    loadGroups({ planId: plan.id }),
+    loadGoalRows({ planId: plan.id }),
+  ]);
   const { decimals } = foldInput;
-  const goals = await loadGoals({ planId: plan.id, decimals });
+  const goals = new Map(goalRows.map((row) => [row.lineId, toGoalSpec({ row, decimals })]));
   const index = foldInput.periods.findIndex((period) => period.id === periodId);
   if (index === -1) {
     throw new NotFoundError({
@@ -394,7 +407,13 @@ export const getPeriodView = async ({
   const views = foldPlan(foldInput);
   const view = views[index]!;
   const explicitViews = plan.poolFrom ? foldPlan({ ...foldInput, explicitFutureOnly: true }) : [];
-  const poolResult = plan.poolFrom ? await periodPool({ plan, views: explicitViews, periodId, today, decimals }) : null;
+  const [poolResult, paces] = await Promise.all([
+    plan.poolFrom ? periodPool({ plan, views: explicitViews, periodId, today, decimals, timezone }) : null,
+    periodPaces({ plan, foldInput, index, view, today, timezone }).catch((error) => {
+      logger.error({ message: 'Failed to compute budget line paces', error }, { planId: plan.id, periodId });
+      return new Map<string, BudgetPlanLinePace>();
+    }),
+  ]);
 
   const asks = evaluateGoals({ plan, view, views, goals });
   const next = explicitViews[index + 1];
@@ -421,5 +440,6 @@ export const getPeriodView = async ({
     goalsSummary: goals.size ? goalsSummary({ plan, asks, decimals }) : null,
     coverage,
     decimals,
+    paces,
   });
 };

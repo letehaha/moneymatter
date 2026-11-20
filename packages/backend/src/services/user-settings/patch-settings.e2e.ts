@@ -1,4 +1,4 @@
-import { MAX_SAVED_TRANSACTION_VIEWS, PAYMENT_TYPES } from '@bt/shared/types';
+import { CATEGORY_ORDER_ROOT_KEY, MAX_SAVED_TRANSACTION_VIEWS, PAYMENT_TYPES } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -26,6 +26,32 @@ describe('Patch user settings', () => {
   it('rejects incomeCategoryIds that are not uuids', async () => {
     const res = await helpers.patchUserSettings({ patch: { incomeCategoryIds: ['nope'] } });
     expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+  });
+
+  it('persists categoryOrder per parent, replacing only the patched lists', async () => {
+    const [first, second, third] = (await helpers.getCategoriesList()).map((category) => category.id);
+    expect((await helpers.getUserSettings({ raw: true })).categoryOrder).toBeUndefined();
+
+    await helpers.patchUserSettings({
+      raw: true,
+      patch: { categoryOrder: { [CATEGORY_ORDER_ROOT_KEY]: [first!, second!], [first!]: [third!] } },
+    });
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { categoryOrder: { [CATEGORY_ORDER_ROOT_KEY]: [second!] } },
+    });
+
+    expect(patched.categoryOrder).toStrictEqual({ [CATEGORY_ORDER_ROOT_KEY]: [second], [first!]: [third] });
+  });
+
+  it('rejects categoryOrder ids and parent keys that are not uuids', async () => {
+    const badId = await helpers.patchUserSettings({
+      patch: { categoryOrder: { [CATEGORY_ORDER_ROOT_KEY]: ['nope'] } },
+    });
+    expect(badId.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const badKey = await helpers.patchUserSettings({ patch: { categoryOrder: { Root: [] } } });
+    expect(badKey.statusCode).toBe(ERROR_CODES.ValidationError);
   });
 
   it('creates settings from defaults when the user has none stored yet', async () => {
@@ -178,6 +204,17 @@ describe('Patch user settings', () => {
     expect((await helpers.getUserSettings({ raw: true })).ui?.transactionForm?.optionalFields).toStrictEqual([]);
   });
 
+  it('persists showPayeeLogos and rejects a non-boolean', async () => {
+    expect((await helpers.getUserSettings({ raw: true })).showPayeeLogos).toBeUndefined();
+
+    const patched = await helpers.patchUserSettings({ raw: true, patch: { showPayeeLogos: false } });
+    expect(patched.showPayeeLogos).toBe(false);
+
+    const rejected = await helpers.patchUserSettings({ patch: { showPayeeLogos: 'no' } });
+    expect(rejected.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((await helpers.getUserSettings({ raw: true })).showPayeeLogos).toBe(false);
+  });
+
   it('persists ui.transactionForm.mapPicker and rejects a non-boolean', async () => {
     const patched = await helpers.patchUserSettings({
       raw: true,
@@ -296,7 +333,7 @@ describe('Patch user settings', () => {
     const view = {
       id: generateRandomRecordId(),
       name: 'Groceries',
-      filters: { accountIds: ['a1'], noteIncludes: 'lidl' },
+      filters: { accountIds: ['a1'], search: 'lidl' },
       sorting: { sortBy: 'time', order: 'DESC' },
       datePreset: 'last3Months',
     };
@@ -321,6 +358,9 @@ describe('Patch user settings', () => {
     };
 
     const invalidPatches: Record<string, unknown>[] = [
+      { payday: 0 },
+      { payday: 29 },
+      { payday: 1.5 },
       { savedPivotViews: [{ id: generateRandomRecordId(), name: '', config: validPivotConfig }] },
       { savedPivotViews: [{ id: generateRandomRecordId(), name: 'a'.repeat(121), config: validPivotConfig }] },
       { savedTransactionViews: [{ id: generateRandomRecordId(), name: '', filters: {} }] },
@@ -341,6 +381,9 @@ describe('Patch user settings', () => {
       { import: { recalculateAccountBalance: 'yes' } },
       { accounts: { defaultAccountId: 'not-a-uuid' } },
       { accounts: { showArchivedInDropdowns: 'yes' } },
+      { ios: { addExpense: { showBankAccounts: 'yes' } } },
+      { ios: { addExpense: { excludedCategoryIds: ['not-a-uuid'] } } },
+      { ios: { addExpense: { excludedCategoryIds: Array.from({ length: 501 }, () => generateRandomRecordId()) } } },
       { currencyDisplay: 'code' },
     ];
 
@@ -420,6 +463,62 @@ describe('Patch user settings', () => {
       },
     });
     expect(overCap.statusCode).toBe(ERROR_CODES.ValidationError);
+  });
+
+  it('persists the ios slice and keeps it through patches of other keys', async () => {
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { ios: { addExpense: { showBankAccounts: true } } },
+    });
+    expect(patched.ios).toStrictEqual({ addExpense: { showBankAccounts: true } });
+
+    const fetched = await helpers.getUserSettings({ raw: true });
+    expect(fetched.ios).toStrictEqual({ addExpense: { showBankAccounts: true } });
+
+    await helpers.patchUserSettings({
+      raw: true,
+      patch: { accounts: { showArchivedInDropdowns: true } },
+    });
+
+    const afterOtherPatch = await helpers.getUserSettings({ raw: true });
+    expect(afterOtherPatch.ios).toStrictEqual({ addExpense: { showBankAccounts: true } });
+
+    await helpers.patchUserSettings({
+      raw: true,
+      patch: { ios: { addExpense: { showBankAccounts: false } } },
+    });
+
+    const afterToggleOff = await helpers.getUserSettings({ raw: true });
+    expect(afterToggleOff.ios).toStrictEqual({ addExpense: { showBankAccounts: false } });
+  });
+
+  it('replaces ios.addExpense.excludedCategoryIds wholesale without touching showBankAccounts', async () => {
+    const [first, second, third] = [generateRandomRecordId(), generateRandomRecordId(), generateRandomRecordId()];
+
+    await helpers.patchUserSettings({ raw: true, patch: { ios: { addExpense: { showBankAccounts: true } } } });
+
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { ios: { addExpense: { excludedCategoryIds: [first, second, third] } } },
+    });
+    expect(patched.ios).toStrictEqual({
+      addExpense: { showBankAccounts: true, excludedCategoryIds: [first, second, third] },
+    });
+
+    const fetched = await helpers.getUserSettings({ raw: true });
+    expect(fetched.ios).toStrictEqual(patched.ios);
+
+    await helpers.patchUserSettings({ raw: true, patch: { ios: { addExpense: { excludedCategoryIds: [second] } } } });
+    const shrunk = await helpers.getUserSettings({ raw: true });
+    expect(shrunk.ios).toStrictEqual({ addExpense: { showBankAccounts: true, excludedCategoryIds: [second] } });
+
+    await helpers.patchUserSettings({ raw: true, patch: { ios: { addExpense: { showBankAccounts: false } } } });
+    const afterToggle = await helpers.getUserSettings({ raw: true });
+    expect(afterToggle.ios).toStrictEqual({ addExpense: { showBankAccounts: false, excludedCategoryIds: [second] } });
+
+    await helpers.patchUserSettings({ raw: true, patch: { ios: { addExpense: { excludedCategoryIds: [] } } } });
+    const cleared = await helpers.getUserSettings({ raw: true });
+    expect(cleared.ios).toStrictEqual({ addExpense: { showBankAccounts: false, excludedCategoryIds: [] } });
   });
 
   it('persists, merges and clears the accounts slice', async () => {

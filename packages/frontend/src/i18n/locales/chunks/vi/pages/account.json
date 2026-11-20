@@ -18,9 +18,10 @@
         "updateError": "An error occured while trying to update account",
         "nameLabel": "Account name",
         "namePlaceholder": "Account name",
+        "openExternalUrl": "Open external link",
         "transferToPortfolio": "Transfer to portfolio",
         "editAccountName": "Edit account name",
-        "save": "Lưu",
+        "save": "Save",
         "accountActions": "Account actions",
         "renameAccount": "Rename account",
         "adjustBalance": "Adjust balance",
@@ -40,7 +41,7 @@
         "adjustByAmount": "Adjust by amount",
         "newBalance": "New balance",
         "enterTargetBalance": "Enter target balance",
-        "amount": "Số tiền",
+        "amount": "Amount",
         "enterAmount": "Enter amount",
         "income": "Income",
         "expense": "Expense",
@@ -51,7 +52,7 @@
         "transactionNote": "Transaction note",
         "optionalNote": "Optional note",
         "effectiveDate": "Effective date",
-        "cancel": "Hủy",
+        "cancel": "Cancel",
         "confirm": "Confirm",
         "saving": "Saving...",
         "successNotification": "Balance adjusted successfully",
@@ -120,7 +121,7 @@
       "link": {
         "selectConnection": "Select a bank connection",
         "selectExternalAccount": "Select an external account",
-        "loading": "Đang tải...",
+        "loading": "Loading...",
         "title": "Link account to bank connection",
         "description": "Connect this system account to a bank connection for automatic transaction syncing.",
         "whatWillHappen": "What will happen:",
@@ -149,13 +150,15 @@
         "residualAdjustmentDescription": "Adds one balance adjustment transaction dated today. Your past balances stay exactly as they are.",
         "residualOpeningLabel": "Change the starting balance",
         "residualOpeningDescription": "Moves the account's starting balance by the difference, so every past balance shifts too. Pick this if transactions are missing from the start of the history.",
-        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview."
+        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview.",
+        "linkFailed": "An error occurred while trying to link account",
+        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
       },
       "tabs": {
-        "details": "Chi tiết",
+        "details": "Details",
         "settings": "Settings",
         "integrations": "Data connection",
-        "sharing": "Chia sẻ"
+        "sharing": "Sharing"
       },
       "details": {
         "creditLimit": "Credit limit:",
@@ -163,7 +166,7 @@
         "editCreditLimit": "Edit credit limit",
         "creditLimitUpdateSuccess": "Credit limit updated",
         "creditLimitUpdateError": "Failed to update credit limit",
-        "save": "Lưu",
+        "save": "Save",
         "initialBalance": "Initial balance:",
         "editInitialBalance": "Edit initial balance",
         "initialBalancePlaceholder": "Enter initial balance",
@@ -175,12 +178,22 @@
         "editAccountCategory": "Edit category",
         "accountCategoryUpdateSuccess": "Account category updated",
         "accountCategoryUpdateError": "Failed to update account category",
+        "defaultPaymentType": "Default payment type:",
+        "editDefaultPaymentType": "Edit default payment type",
+        "defaultPaymentTypeUpdateSuccess": "Default payment type updated",
+        "defaultPaymentTypeUpdateError": "Failed to update default payment type",
+        "externalUrl": "External URL:",
+        "externalUrlPlaceholder": "https://bank.example.com",
+        "externalUrlNotSet": "Not set",
+        "editExternalUrl": "Edit external URL",
+        "externalUrlUpdateSuccess": "External URL updated",
+        "externalUrlUpdateError": "Failed to update external URL",
         "currency": "Currency:",
         "main": "(main)",
         "exchangeRate": "Exchange rate:",
         "exchangeRateLiveUpdate": "Exchange rate live update:",
-        "enabled": "Đã bật",
-        "disabled": "Đã tắt"
+        "enabled": "Enabled",
+        "disabled": "Disabled"
       },
       "group": {
         "label": "Account group",
@@ -189,7 +202,7 @@
       },
       "visibility": {
         "updateSuccess": "Updated successfully",
-        "unexpectedError": "Đã xảy ra lỗi ngoài dự kiến"
+        "unexpectedError": "Unexpected error"
       },
       "excludeFromStats": {
         "label": "Exclude from statistics",
@@ -200,7 +213,7 @@
         "title": "Load transactions for selected period",
         "notLinked": "This account is not linked to a bank connection",
         "dateRangeExceeds": "Date range cannot exceed 1 year",
-        "loading": "Đang tải...",
+        "loading": "Loading...",
         "selectPeriod": "Select period",
         "loadButton": "Load transactions",
         "failed": "Không thể tải giao dịch.",
@@ -236,11 +249,12 @@
         "connectionSettings": "Connection settings",
         "settings": "Settings",
         "ifPersists": ". If the issue persists, use",
-        "unlink": "Gỡ liên kết",
+        "unlink": "Unlink",
         "belowThenLink": "below, then link it again."
       },
       "rightPanel": {
-        "transactions": "Giao dịch",
+        "transactions": "Transactions",
+        "viewAll": "View all",
         "analyticsSoon": "Analytics (soon)"
       },
       "integrations": {
@@ -252,24 +266,24 @@
         }
       },
       "sharing": {
-        "title": "Chia sẻ",
+        "title": "Sharing",
         "description": "Manage who can see and edit this account.",
         "inviteAnother": "Invite another",
-        "membersHeading": "Thành viên",
-        "pendingHeading": "Lời mời đang chờ",
+        "membersHeading": "Members",
+        "pendingHeading": "Pending invitations",
         "loadError": "Failed to load sharing details.",
         "permissions": {
-          "read": "Xem",
-          "write": "Chỉnh sửa",
-          "manage": "Quản lý"
+          "read": "Read",
+          "write": "Write",
+          "manage": "Manage"
         },
         "writeScope": {
           "all": "All transactions",
           "own": "Own transactions only"
         },
         "member": {
-          "you": "Bạn",
-          "roleOwner": "Chủ sở hữu",
+          "you": "you",
+          "roleOwner": "Owner",
           "roleRecipient": "Recipient",
           "ownerHint": "Full control",
           "revoke": "Remove access",
@@ -282,16 +296,16 @@
           "revokeError": "Could not remove access."
         },
         "pending": {
-          "empty": "Không có lời mời nào đang chờ xử lý.",
-          "resend": "Gửi lại",
-          "cancel": "Hủy lời mời",
-          "cancelTitle": "Hủy lời mời?",
+          "empty": "No pending invitations.",
+          "resend": "Resend",
+          "cancel": "Cancel invitation",
+          "cancelTitle": "Cancel invitation?",
           "cancelDescription": "The invitation sent to {email} will be revoked.",
-          "cancelConfirm": "Hủy lời mời",
-          "resendSuccess": "Đã gửi lại lời mời.",
+          "cancelConfirm": "Cancel invitation",
+          "resendSuccess": "Invitation resent.",
           "resendDeliveryFailed": "Invitation updated but the email could not be delivered.",
           "resendError": "Could not resend invitation.",
-          "cancelSuccess": "Đã hủy lời mời.",
+          "cancelSuccess": "Invitation cancelled.",
           "cancelError": "Could not cancel invitation."
         }
       }
@@ -342,16 +356,16 @@
         "errorNotification": "Failed to update vehicle value",
         "confirm": "Save value",
         "saving": "Saving...",
-        "cancel": "Hủy"
+        "cancel": "Cancel"
       },
       "overrideHistory": {
         "title": "Override history",
         "empty": "No manual overrides yet. Override the value to record one.",
-        "delete": "Xóa",
+        "delete": "Delete",
         "deleteTitle": "Delete this override?",
-        "deleteDescription": "Removing this override re-anchors the depreciation to the previous override (or original purchase if none). The associated transaction will be deleted.",
-        "deleteConfirm": "Xóa",
-        "deleteSuccess": "Override removed",
+        "deleteDescription": "Removing this override re-anchors the depreciation to the previous override (or original purchase if none). The associated transaction will be moved to Trash, where you can restore it for 30 days.",
+        "deleteConfirm": "Delete",
+        "deleteSuccess": "Override removed and its transaction moved to Trash",
         "deleteError": "Failed to remove override"
       },
       "sections": {

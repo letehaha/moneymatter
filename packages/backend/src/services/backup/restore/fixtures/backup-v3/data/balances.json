@@ -1,0 +1,82 @@
+[
+  {
+    "id": "01a1cf52-7b96-7436-99a5-81065c28dd6a",
+    "date": "2026-11-12",
+    "amount": 45360,
+    "accountId": "01a1cf52-7b93-74fb-b7c2-131b123c1dee",
+    "createdAt": "2026-11-12T10:34:11.734Z",
+    "updatedAt": "2026-11-12T10:34:12.294Z"
+  },
+  {
+    "id": "01a1cf52-7ba7-730d-8b80-5cf0965801c5",
+    "date": "2026-11-12",
+    "amount": 1129,
+    "accountId": "01a1cf52-7ba5-74ea-be29-373ee3a75b65",
+    "createdAt": "2026-11-12T10:34:11.751Z",
+    "updatedAt": "2026-11-12T10:34:12.429Z"
+  },
+  {
+    "id": "01a1cf52-7c9e-754f-9e03-2e6d6b052d35",
+    "date": "2026-11-12",
+    "amount": 1500075,
+    "accountId": "01a1cf52-7c9c-710b-ae64-25998da608a3",
+    "createdAt": "2026-11-12T10:34:11.999Z",
+    "updatedAt": "2026-11-12T10:34:12.049Z"
+  },
+  {
+    "id": "01a1cf52-7dfd-71be-81eb-5d26ea295534",
+    "date": "2026-08-11",
+    "amount": 7525,
+    "accountId": "01a1cf52-7ba5-74ea-be29-373ee3a75b65",
+    "createdAt": "2026-11-12T10:34:12.350Z",
+    "updatedAt": "2026-11-12T10:34:12.350Z"
+  },
+  {
+    "id": "01a1cf52-7dff-7775-8140-b701540aa5b6",
+    "date": "2026-08-12",
+    "amount": 5926,
+    "accountId": "01a1cf52-7ba5-74ea-be29-373ee3a75b65",
+    "createdAt": "2026-11-12T10:34:12.351Z",
+    "updatedAt": "2026-11-12T10:34:12.351Z"
+  },
+  {
+    "id": "01a1cf52-7e1a-778b-a8e1-9c2a2d386cd8",
+    "date": "2026-09-01",
+    "amount": 5926,
+    "accountId": "01a1cf52-7ba5-74ea-be29-373ee3a75b65",
+    "createdAt": "2026-11-12T10:34:12.378Z",
+    "updatedAt": "2026-11-12T10:34:12.378Z"
+  },
+  {
+    "id": "01a1cf52-7e1f-7723-aa7e-9ce1b7d7e541",
+    "date": "2026-09-12",
+    "amount": 4327,
+    "accountId": "01a1cf52-7ba5-74ea-be29-373ee3a75b65",
+    "createdAt": "2026-11-12T10:34:12.383Z",
+    "updatedAt": "2026-11-12T10:34:12.383Z"
+  },
+  {
+    "id": "01a1cf52-7e41-70ab-97c8-8594942c01c5",
+    "date": "2026-10-01",
+    "amount": 4327,
+    "accountId": "01a1cf52-7ba5-74ea-be29-373ee3a75b65",
+    "createdAt": "2026-11-12T10:34:12.417Z",
+    "updatedAt": "2026-11-12T10:34:12.417Z"
+  },
+  {
+    "id": "01a1cf52-7e43-768a-8bfa-267bd6da788e",
+    "date": "2026-10-12",
+    "amount": 2728,
+    "accountId": "01a1cf52-7ba5-74ea-be29-373ee3a75b65",
+    "createdAt": "2026-11-12T10:34:12.419Z",
+    "updatedAt": "2026-11-12T10:34:12.419Z"
+  },
+  {
+    "id": "01a1cf52-7e5e-70fe-96ab-01231c79e70d",
+    "date": "2026-11-01",
+    "amount": 2728,
+    "accountId": "01a1cf52-7ba5-74ea-be29-373ee3a75b65",
+    "createdAt": "2026-11-12T10:34:12.446Z",
+    "updatedAt": "2026-11-12T10:34:12.446Z"
+  }
+]

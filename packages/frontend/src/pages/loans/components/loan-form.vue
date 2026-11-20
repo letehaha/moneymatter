@@ -8,11 +8,12 @@ import UiButton from '@/components/lib/ui/button/Button.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useCurrencyName, useFormatCurrency } from '@/composable';
 import { useFormValidation } from '@/composable/form-validator';
-import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
+import { getCurrencyDecimals, roundToDecimals } from '@/js/helpers/currency-decimals';
 import { useCurrenciesStore } from '@/stores';
 import { type CurrencyModel, LOAN_TYPE, SUPPORTED_LOAN_TYPES } from '@bt/shared/types';
 import { between, helpers, integer, maxLength, required } from '@vuelidate/validators';
-import { differenceInCalendarMonths, format, parseISO } from 'date-fns';
+import { differenceInCalendarMonths, format, isValid, parseISO } from 'date-fns';
 import { InfoIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, reactive } from 'vue';
@@ -126,6 +127,7 @@ const loanTypeOptions = computed(() =>
 const selectedLoanType = computed(() => loanTypeOptions.value.find((o) => o.value === form.loanType) ?? null);
 
 const amountDecimals = computed(() => getCurrencyDecimals({ code: form.currencyCode }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
 const selectedCurrency = computed(
   () => isoCurrenciesVerbose.value.linked.find((item) => item.code === form.currencyCode) ?? null,
 );
@@ -167,8 +169,8 @@ const estimatedMinPaymentLabel = computed(() => {
 
 const applyEstimatedMinPayment = () => {
   if (estimatedMinPayment.value === null) return;
-  // Round to 2 decimals – field is for user-quoted amounts, not the raw long-division result.
-  form.minPayment = Math.round(estimatedMinPayment.value * 100) / 100;
+  // Rounded to the currency's decimals – the field holds a quoted amount, not the raw long-division result.
+  form.minPayment = roundToDecimals({ value: estimatedMinPayment.value, decimals: amountDecimals.value });
 };
 
 // Balance above principal is legitimate (negative amortization, capitalized interest) — soft heads-up,
@@ -215,17 +217,27 @@ const notInFuture = helpers.withMessage(
   (v: unknown) => typeof v !== 'string' || v <= format(new Date(), 'yyyy-MM-dd'),
 );
 
+const startDateNotInFuture = helpers.withMessage(
+  () => t('forms.loan.errors.startDateInFuture'),
+  (v: unknown) => !(v instanceof Date) || !isValid(v) || format(v, 'yyyy-MM-dd') <= format(new Date(), 'yyyy-MM-dd'),
+);
+
+const currencyDecimalRule = helpers.withMessage(() => currencyDecimal.message.value, currencyDecimal.rule.value);
+
 const validationRules = {
   name: { required: helpers.withMessage(() => t('forms.loan.errors.required'), required), maxLength: maxLength(200) },
   currencyCode: { required: helpers.withMessage(() => t('forms.loan.errors.required'), required) },
   balance: {
     required: helpers.withMessage(() => t('forms.loan.errors.required'), required),
     nonNegative: nonNegativeMoney,
+    currencyDecimal: currencyDecimalRule,
   },
   balanceAsOf: { notInFuture },
+  startDate: { notInFuture: startDateNotInFuture },
   originalPrincipal: {
     required: helpers.withMessage(() => t('forms.loan.errors.required'), required),
     positive: positiveMoney,
+    currencyDecimal: currencyDecimalRule,
   },
   interestRate: {
     required: helpers.withMessage(() => t('forms.loan.errors.required'), required),
@@ -241,8 +253,8 @@ const validationRules = {
       (v: unknown) => v === null || v === undefined || (Number(v) >= MIN_TERM_MONTHS && Number(v) <= MAX_TERM_MONTHS),
     ),
   },
-  minPayment: { nonNegative: nonNegativeMoney },
-  plannedPayment: { nonNegative: nonNegativeMoney },
+  minPayment: { nonNegative: nonNegativeMoney, currencyDecimal: currencyDecimalRule },
+  plannedPayment: { nonNegative: nonNegativeMoney, currencyDecimal: currencyDecimalRule },
   paymentDayOfMonth: {
     integer,
     range: helpers.withMessage(
@@ -384,6 +396,7 @@ const submit = () => {
       :label="$t('forms.loan.startDateLabel')"
       :placeholder="$t('forms.loan.startDatePlaceholder')"
       :calendar-options="{ maxDate: new Date() }"
+      :error-message="getFieldErrorMessage('form.startDate')"
     >
       <template #label-after>
         <HintIcon :content="$t('forms.loan.startDateTooltip')" />

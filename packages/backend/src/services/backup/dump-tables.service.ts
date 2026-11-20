@@ -5,7 +5,6 @@ import Currencies from '@models/currencies.model';
 import Holdings from '@models/investments/holdings.model';
 import InvestmentTransaction from '@models/investments/investment-transaction.model';
 import Securities from '@models/investments/securities.model';
-import MerchantCategoryCodes from '@models/merchant-category-codes.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { applyCurrencyOverrides } from '@services/currencies/effective-currency';
 import isPlainObject from 'lodash/isPlainObject';
@@ -90,21 +89,6 @@ function stripAiKeys({ rows }: { rows: Row[] }): void {
   for (const row of rows) row.settings = stripConnectionKeys({ settings: row.settings });
 }
 
-/** Attach each row's MCC natural `code` (stored as a string) for restore remap. */
-async function attachMccCodes({ rows }: { rows: Row[] }): Promise<void> {
-  const mccIds = [...new Set(rows.map((r) => r.mccId).filter((id): id is number => id != null))];
-  if (mccIds.length === 0) return;
-  const codes = (await MerchantCategoryCodes.findAll({
-    where: { id: { [Op.in]: mccIds } },
-    attributes: ['id', 'code'],
-    raw: true,
-  })) as unknown as { id: number; code: string | number }[];
-  const codeById = new Map(codes.map((c) => [c.id, String(c.code)]));
-  for (const row of rows) {
-    row.mccCode = row.mccId != null ? (codeById.get(row.mccId as number) ?? null) : null;
-  }
-}
-
 async function dumpTable({
   def,
   userId,
@@ -140,7 +124,6 @@ async function dumpTable({
   if (def.stripSecret === 'bankCredentials') {
     for (const row of rows) row.credentials = null;
   }
-  if (def.enrichMccCode) await attachMccCodes({ rows });
 
   return { path: `data/${def.fileName}.json`, rows: rows.length, buffer: toBuffer({ value: rows }) };
 }

@@ -10,9 +10,9 @@
       "netWorthDrivers": "Net worth drivers",
       "investmentContributions": "Contributions",
       "netWorthHistory": "Net worth history",
-      "collapse": "Thu gọn",
+      "collapse": "Collapse",
       "sections": {
-        "investments": "Đầu tư"
+        "investments": "Investments"
       },
       "fire": "FIRE"
     },
@@ -49,7 +49,8 @@
         "last12Months": "Last 12 months",
         "thisYear": "This year",
         "previousYear": "Previous year",
-        "allTime": "All time"
+        "allTime": "All time",
+        "currentPayPeriod": "Current pay period"
       },
       "composition": {
         "detail": "Detail",
@@ -63,11 +64,11 @@
         "savings": "Savings",
         "taxes": "Taxes",
         "deficit": "Deficit",
-        "other": "Khác",
+        "other": "Other",
         "noData": "No transactions in this period",
         "noDataHint": "Pick another period or click a bar in the chart above",
         "loadError": "Failed to load composition",
-        "amount": "Số tiền",
+        "amount": "Amount",
         "shareOfIncome": "Share of income",
         "shareOfExpenses": "Share of expenses",
         "saved": "Saved",
@@ -78,12 +79,12 @@
         "deficitOverspend": "Expenses exceeded income by {amount}. The gap was covered from existing account balances.",
         "deficitInvested": "Portfolio contributions ({invested}) exceeded this period's net savings ({saved}). The difference came from existing account balances.",
         "deficitBoth": "Expenses exceeded income by {overspend}, and {invested} was still moved into portfolios. Both were covered from existing account balances.",
-        "andMore": "+{count} mục nữa",
+        "andMore": "+{count} more",
         "settings": "Chart settings"
       }
     },
     "trends": {
-      "subtitle": "Compare spending, income and savings with the previous period.",
+      "subtitle": "Compare spending and income with the previous period.",
       "metrics": {
         "expenses": "Expenses",
         "income": "Income",
@@ -94,32 +95,68 @@
         "comparisonPeriod": "Previous period",
         "cumulativeNote": "Cumulative total up to this point"
       },
+      "scope": {
+        "label": "Category scope",
+        "all": "All categories",
+        "up": "Up one level",
+        "transactions": "Transactions",
+        "count": "{count} category | {count} categories",
+        "more": "+{count}",
+        "allExcept": "All except {list}",
+        "clear": "Clear"
+      },
       "categoryBreakdown": {
         "title": "Category breakdown",
         "noData": "No data for this period",
         "viewAll": "View all categories",
-        "moreCount": "{count} more"
+        "moreCount": "{count} more",
+        "noSubcategory": "{name} · no subcategory",
+        "byLevel": "By level",
+        "detail": "Detail",
+        "others": "Others"
+      },
+      "hero": {
+        "vsPrevious": "{percent}% vs previous period",
+        "same": "Same as previous period"
+      },
+      "overTime": {
+        "title": "Over time",
+        "cumulative": "Cumulative",
+        "perPeriod": "Per period",
+        "granularity": {
+          "monthly": "Monthly",
+          "quarterly": "Quarterly",
+          "yearly": "Yearly"
+        }
+      },
+      "transactionsCard": {
+        "title": "Transactions",
+        "largest": "Largest",
+        "recent": "Recent"
       },
       "monthlyComparison": {
-        "title": "Monthly comparison",
         "allCategories": "All categories",
         "average": "Average",
         "total": "Total",
-        "vsLastMonth": "vs previous month",
-        "viewTransactions": "View transactions"
-      },
-      "cumulativeProgress": {
-        "title": "Cumulative progress"
+        "vsPrevious": {
+          "monthly": "vs last month",
+          "quarterly": "vs last quarter",
+          "yearly": "vs last year"
+        },
+        "show": {
+          "monthly": "Show this month",
+          "quarterly": "Show quarter",
+          "yearly": "Show year"
+        }
       },
       "filters": {
         "button": "Filters",
         "title": "Filters",
-        "categories": "Danh mục",
         "include": "Include",
         "exclude": "Exclude",
-        "accounts": "Tài khoản",
-        "payees": "Người nhận",
-        "tags": "Thẻ",
+        "accounts": "Accounts",
+        "payees": "Payees",
+        "tags": "Tags",
         "reset": "Reset"
       },
       "legend": {
@@ -221,11 +258,11 @@
         "countsCash": "Cash & bank accounts",
         "countsPortfolios": "Investment portfolios",
         "countsVentures": "Ventures",
-        "countsVehicles": "Phương tiện",
+        "countsVehicles": "Vehicles",
         "countsLoans": "Loans",
         "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
         "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",
-        "archivedNoteLink": "Xem xét",
+        "archivedNoteLink": "Review",
         "presetLabel": "{label} · ≈{real} real ({nominal} nominal, {inflation} US inflation)",
         "inflationLabel": "Inflation",
         "inflationBuiltIn": "{pct}% · built into this preset",
@@ -336,6 +373,45 @@
           "addBirthYear": "Add birth year"
         }
       },
+      "pace": {
+        "row": "{status} vs {anchor}",
+        "noHistory": "Not enough history before {month}",
+        "loadFailed": "Couldn't load the comparison",
+        "compareWith": "Compare with {month}",
+        "picker": {
+          "title": "Compare with",
+          "rollingLabel": "{month} · 1 year ago",
+          "rolling": "1 year ago",
+          "rollingHint": "Rolling · currently {month}",
+          "specific": "Specific month",
+          "specificHint": "Stays fixed",
+          "prevYear": "Previous year",
+          "nextYear": "Next year",
+          "earliest": "Earliest is {month}. FIRE needs 3 months of tracked spending before it."
+        },
+        "details": {
+          "title": "Pace since {month}",
+          "moved": "Your FIRE date moved from {from} to {to}.",
+          "withinBand": "Your FIRE date is within {tolerance} of the {month} forecast ({date}).",
+          "backInReach": "On {month}'s numbers FIRE was out of reach. Now it's {date}.",
+          "offTrack": "The {month} forecast was {date}. On today's numbers FIRE is out of reach.",
+          "metric": "Metric",
+          "today": "Today",
+          "change": "Change",
+          "fireDate": "FIRE date",
+          "saved": "Saved by now",
+          "spending": "Spending",
+          "saving": "Saving",
+          "expected": "{amount} expected",
+          "sooner": "{duration} sooner",
+          "later": "{duration} later",
+          "sameMonth": "Same month",
+          "outOfReach": "Out of reach",
+          "band": "On pace means within {tolerance} (2% of the time left to FIRE).",
+          "recorded": "Balance, cash flow and assumptions as of {date} are recomputed live from your data.",
+          "notRecorded": "Balance and cash flow as of {date} are recomputed live from your data. Your assumptions from then weren't recorded, so today's are used."
+        }
+      },
       "chart": {
         "ariaLabel": "Net worth history and projected path to your FIRE number",
         "actual": "Actual",
@@ -343,7 +419,10 @@
         "range": "±2 pts return",
         "today": "Today",
         "typeTarget": "{type} · {amount}",
-        "typeLabel": "{type} · {date}"
+        "typeLabel": "{type} · {date}",
+        "forecast": "{month} forecast",
+        "forecastLabel": "{month} forecast · {date}",
+        "actualSince": "Actual since {month}"
       },
       "milestones": {
         "reached": "Reached",
@@ -408,9 +487,9 @@
       "period": "Period",
       "allCategories": "All",
       "button": "Filters",
-      "categories": "Danh mục",
-      "payees": "Người nhận",
-      "accounts": "Tài khoản",
+      "categories": "Categories",
+      "payees": "Payees",
+      "accounts": "Accounts",
       "reset": "Reset",
       "resetTooltip": "Reset to defaults"
     },
@@ -438,10 +517,11 @@
     },
     "table": {
       "total": "Total",
+      "net": "Net",
       "collapseAll": "Collapse all",
       "expandAll": "Expand all",
-      "expandRow": "Mở rộng",
-      "collapseRow": "Thu gọn"
+      "expandRow": "Expand",
+      "collapseRow": "Collapse"
     },
     "states": {
       "emptyTitle": "No data for this selection",
@@ -469,7 +549,7 @@
     "granularity": {
       "monthly": "Monthly",
       "quarterly": "Quarterly",
-      "yearly": "Hằng năm"
+      "yearly": "Yearly"
     },
     "chart": {
       "title": "Saved vs. grown",
@@ -537,7 +617,7 @@
     "granularity": {
       "monthly": "Monthly",
       "quarterly": "Quarterly",
-      "yearly": "Hằng năm"
+      "yearly": "Yearly"
     },
     "cards": {
       "totalContributed": "Total contributed",
@@ -550,7 +630,7 @@
     "states": {
       "noData": "No contributions in this range",
       "noDataHint": "Move money into a portfolio during this period to see it here.",
-      "noPortfoliosTitle": "Chưa có danh mục đầu tư nào",
+      "noPortfoliosTitle": "No portfolios yet",
       "noPortfoliosPlaceholder": "Create a portfolio and start investing to track your contributions here.",
       "noPortfoliosAction": "Add a portfolio",
       "loadError": "Couldn't load contributions"
@@ -562,7 +642,7 @@
       "weekly": "Weekly",
       "monthly": "Monthly",
       "quarterly": "Quarterly",
-      "yearly": "Hằng năm"
+      "yearly": "Yearly"
     },
     "kindFilter": {
       "all": "All liabilities",
@@ -572,8 +652,8 @@
     },
     "assetKinds": {
       "cash": "Cash & accounts",
-      "investments": "Đầu tư",
-      "vehicles": "Phương tiện",
+      "investments": "Investments",
+      "vehicles": "Vehicles",
       "ventures": "Ventures"
     },
     "assetFilter": {
@@ -590,8 +670,8 @@
       "noLiabilities": "You had no liabilities during the selected period."
     },
     "chart": {
-      "assets": "Tài sản",
-      "liabilities": "Nợ phải trả",
+      "assets": "Assets",
+      "liabilities": "Liabilities",
       "netWorth": "Net worth",
       "averageLiabilities": "Avg. liabilities",
       "liabilitiesZoomed": "Liabilities scale zoomed"

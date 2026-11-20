@@ -1,11 +1,9 @@
-import type { RecordId } from '@bt/shared/types';
-import { ACCOUNT_TYPES } from '@bt/shared/types';
+import type { CurrencyInUseDetails, RecordId } from '@bt/shared/types';
+import { ACCOUNT_TYPES, API_ERROR_CODES } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
-import * as Accounts from '@models/accounts.model';
 import * as Currencies from '@models/currencies.model';
-import Holdings from '@models/investments/holdings.model';
-import Portfolios from '@models/investments/portfolios.model';
+import { updateTransactions } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import * as Users from '@models/users.model';
@@ -13,6 +11,7 @@ import * as Users from '@models/users.model';
 import { withTransaction } from './common/with-transaction';
 import { addUserCurrencies } from './currencies/add-user-currency';
 import { withEffectiveCurrency } from './currencies/effective-currency';
+import { getCurrencyInUseBlockers } from './currencies/get-currency-in-use-blockers';
 import { revalueAccountsInCurrencies } from './user-exchange-rate/revalue-accounts-in-currencies';
 
 export const getUser = async (id: number) => {
@@ -252,68 +251,27 @@ export const deleteUserCurrency = withTransaction(
       });
     }
 
-    const accounts = await Accounts.getAccountsByCurrency({
-      userId,
-      currencyCode,
-    });
+    const blockers = await getCurrencyInUseBlockers({ userId, currencyCode });
 
-    if (accounts.length) {
+    if (blockers.length) {
       throw new ValidationError({
-        message: t({
-          key: 'userCurrencies.cannotDeleteCurrencyWithAccounts',
-          variables: { accountNames: accounts.map((item) => item.name).join(', ') },
-        }),
-        details: {
-          accounts,
-        },
+        code: API_ERROR_CODES.currencyInUse,
+        message: t({ key: 'userCurrencies.currencyInUse', variables: { currencyCode } }),
+        details: { blockers } satisfies CurrencyInUseDetails,
       });
     }
 
-    // Holdings own their currency too: refAmount lookups on investment txs
-    // require the link, so disconnect must not leave orphan investments behind.
-    // Include soft-deleted portfolios (trash) so a user can't remove a currency
-    // whose holdings would resurface broken when the portfolio is restored.
-    const userPortfolios = await Portfolios.findAll({
-      where: { userId },
+    // Transactions.currencyCode is the account currency, so the account blocker covers it;
+    // only the foreign-amount metadata can still reference this currency.
+    await updateTransactions({
+      planned: 'include',
+      access: { creator: userId },
+      balanceAdjustments: 'include',
+      where: { originalCurrencyCode: currencyCode },
+      values: { originalAmount: null, originalCurrencyCode: null },
+      // Trashed transactions can be restored (reconciliation, bank sync).
       paranoid: false,
-      attributes: ['id'],
-      raw: true,
     });
-
-    if (userPortfolios.length) {
-      const holdingInCurrency = await Holdings.findOne({
-        where: {
-          currencyCode,
-          portfolioId: userPortfolios.map((p) => p.id),
-        },
-        attributes: ['portfolioId'],
-      });
-
-      if (holdingInCurrency) {
-        throw new ValidationError({
-          message: t({
-            key: 'userCurrencies.cannotDeleteCurrencyWithInvestments',
-            variables: { currencyCode },
-          }),
-        });
-      }
-    }
-
-    const defaultCurrency = await UsersCurrencies.getCurrency({
-      userId,
-      isDefaultCurrency: true,
-    });
-
-    if (!defaultCurrency) {
-      throw new UnexpectedError({ message: t({ key: 'userCurrencies.defaultCurrencyNotPresent' }) });
-    }
-
-    await Transactions.updateTransactions(
-      {
-        currencyCode: defaultCurrency.currencyCode,
-      },
-      { userId, currencyCode: passedCurrency.currencyCode },
-    );
 
     await UsersCurrencies.deleteCurrency({
       userId,

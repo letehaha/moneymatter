@@ -190,11 +190,6 @@ export interface GetSessionResponse {
 }
 
 /**
- * @deprecated Use GetSessionResponse instead
- */
-export interface SessionDetails extends GetSessionResponse {}
-
-/**
  * OAuth callback parameters
  */
 export interface OAuthCallbackParams {

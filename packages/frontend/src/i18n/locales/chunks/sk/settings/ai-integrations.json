@@ -57,7 +57,8 @@
         "financeWrite": "Úprava finančných údajov",
         "financeDelete": "Mazanie finančných údajov",
         "profileRead": "Čítanie profilu",
-        "offlineAccess": "Prístup v režime offline"
+        "offlineAccess": "Prístup v režime offline",
+        "toolset": "Nástroje: {name}"
       }
     }
   }

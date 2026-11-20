@@ -12,7 +12,9 @@ import axios, { AxiosInstance } from 'axios';
 
 import { SimplefinAccountSet, SimplefinGetAccountsParams } from './types';
 
-const REQUEST_TIMEOUT_MS = 30_000;
+// The bridge answers a full /accounts call only after polling every institution, which can exceed 30s.
+const ACCOUNTS_REQUEST_TIMEOUT_MS = 300_000;
+const CLAIM_REQUEST_TIMEOUT_MS = 30_000;
 
 /** Protocol version we request — v2 gives structured `errlist` + `connections`. */
 const SIMPLEFIN_PROTOCOL_VERSION = 2;
@@ -51,7 +53,7 @@ export class SimplefinApiClient {
     this.client = axios.create({
       baseURL,
       auth: { username, password },
-      timeout: REQUEST_TIMEOUT_MS,
+      timeout: ACCOUNTS_REQUEST_TIMEOUT_MS,
     });
   }
 
@@ -77,7 +79,7 @@ export class SimplefinApiClient {
       // SimpleFIN requires an empty body with explicit zero Content-Length.
       const response = await axios.post(claimUrl, null, {
         headers: { 'Content-Length': 0 },
-        timeout: REQUEST_TIMEOUT_MS,
+        timeout: CLAIM_REQUEST_TIMEOUT_MS,
         responseType: 'text',
       });
       const accessUrl = String(response.data).trim();

@@ -6,7 +6,7 @@ import { CURRENCY_CODE_MAX_LENGTH as SHARED_CURRENCY_CODE_MAX_LENGTH } from '@bt
  * migration widens these columns, and a model unit test keeps this list in step with the declarations.
  *
  * The migration does not read this list: it has its own frozen snapshot in
- * `migrations/utils/currency-code-columns-20261016.ts`, so a column added here never reaches it.
+ * `migrations/utils/currency-code-columns-20261120.ts`, so a column added here never reaches it.
  *
  * Currency-code columns of investments (`Holdings`, `InvestmentTransactions`, `Securities`,
  * `SecurityCurrencyCaches`) are `varchar(255)` without a foreign key and are not listed: custom
@@ -32,6 +32,7 @@ export const CURRENCY_CODE_COLUMNS: readonly CurrencyCodeColumnSpec[] = [
   { table: 'BudgetPlans', column: 'currencyCode' },
   { table: 'ExchangeRates', column: 'baseCode' },
   { table: 'ExchangeRates', column: 'quoteCode' },
+  { table: 'Goals', column: 'currencyCode' },
   { table: 'PortfolioBalances', column: 'currencyCode' },
   { table: 'PortfolioTransfers', column: 'currencyCode' },
   { table: 'PortfolioTransfers', column: 'toCurrencyCode' },

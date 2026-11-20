@@ -25,7 +25,7 @@ const onChange = (value: unknown) => {
 
 <template>
   <Select.Select :model-value="modelValue" @update:model-value="onChange">
-    <Select.SelectTrigger class="h-9 w-auto gap-2" :aria-label="$t('planned.subscriptions.sort.ariaLabel')">
+    <Select.SelectTrigger size="sm" class="w-auto gap-2" :aria-label="$t('planned.subscriptions.sort.ariaLabel')">
       <span class="text-muted-foreground shrink-0">{{ $t('planned.subscriptions.sort.label') }}</span>
       <Select.SelectValue class="max-xs:hidden" />
     </Select.SelectTrigger>

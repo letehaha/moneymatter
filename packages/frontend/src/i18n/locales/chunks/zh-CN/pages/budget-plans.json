@@ -23,7 +23,7 @@
         "none": "Every line starts at zero, whatever happened before."
       },
       "deleteTitle": "Delete this budget",
-      "delete": "移动到回收站",
+      "delete": "Move to trash",
       "deleteCaption": "Kept for 30 days, then deleted.",
       "deleteConfirmTitle": "Move this budget to trash?",
       "deleteConfirmDescription": "It's kept for 30 days, then deleted. You can restore it until then.",
@@ -81,7 +81,7 @@
       "description": "Kept for {days} days, then removed for good.",
       "deletedOn": "Deleted {date}",
       "daysLeft": "{n} day left | {n} days left",
-      "restore": "恢复",
+      "restore": "Restore",
       "restorePlan": "Restore {name}",
       "restored": "Budget restored",
       "restoreError": "Could not restore the budget",
@@ -106,6 +106,7 @@
       "goToAccounts": "Go to accounts",
       "cadenceLabel": "Resets",
       "startsOnLabel": "Starts on",
+      "startsOnOutOfRange": "Pick a date from {from} to today.",
       "accountsLabel": "Accounts",
       "accountsPlaceholder": "Select accounts",
       "rolloverLabel": "Rollover",
@@ -129,7 +130,7 @@
         "months": "Months"
       },
       "customEveryError": "Enter a whole number from 1 to {max}.",
-      "recommended": "推荐"
+      "recommended": "Recommended"
     },
     "suggest": {
       "title": "Shape your lines",
@@ -235,7 +236,11 @@
       "activity": "Activity",
       "available": "Available",
       "overrideBadge": "override",
-      "carriesDeficit": "carries deficit",
+      "carryBadge": {
+        "floor": "carries surplus",
+        "signed": "carries surplus & deficit",
+        "none": "starts fresh"
+      },
       "lineActions": "Line actions",
       "editLine": "Edit line",
       "archiveLine": "Archive line",
@@ -275,7 +280,7 @@
       "title": "Archived lines",
       "description": "A restored line resumes from the current period. Past periods stay as they are.",
       "archivedFrom": "Archived from {date}",
-      "restore": "恢复",
+      "restore": "Restore",
       "restoreLine": "Restore {name}",
       "deleteLine": "Delete {name}",
       "restored": "Line restored",
@@ -286,7 +291,7 @@
       "editTitle": "Edit line",
       "nameLabel": "Name",
       "namePlaceholder": "Groceries",
-      "categoriesLabel": "分类",
+      "categoriesLabel": "Categories",
       "categoriesPlaceholder": "Select categories",
       "created": "Line added",
       "updated": "Line updated",
@@ -335,7 +340,7 @@
         "outsideSpending": "Spending outside your lines",
         "fromLines": "From lines (rollover returned / overspending covered)",
         "assigned": "Assigned this period",
-        "cashHint": "Cash in the plan's accounts, minus credit limits.",
+        "cashHint": "Cash in the plan's accounts. Credit limits are subtracted when Include credit limits in balance is on.",
         "inLinesHint": "Everything currently in your lines.",
         "driftHint": "Rate moves and balances not explained by transactions.",
         "committedLaterHint": "Already assigned in a later period.",
@@ -372,6 +377,8 @@
       "pace": "Spending pace",
       "spent": "Spent",
       "elapsed": "Period elapsed",
+      "usuallyByToday": "Usually by today",
+      "slowDown": "Slow down to ~{perDay}/day to make it last",
       "spentOfTotal": "{spent} of {total}",
       "daysLeft": "{n}d left",
       "scheduled": "Scheduled",
@@ -395,7 +402,7 @@
     },
     "groups": {
       "headerLabel": "Line group",
-      "add": "新增群组",
+      "add": "Add group",
       "collapseAll": "Collapse all groups",
       "expandAll": "Expand all groups",
       "collapse": "Collapse {name}",
@@ -412,19 +419,25 @@
       "deleteError": "Could not delete the group",
       "createTitle": "New group",
       "editTitle": "Edit group",
-      "nameLabel": "分组名",
+      "nameLabel": "Group name",
       "namePlaceholder": "e.g. Bills",
       "created": "Group created",
       "updated": "Group updated",
       "error": "Could not save the group",
       "lineGroupLabel": "Group",
       "lineGroupPlaceholder": "Select a group",
-      "noGroup": "无分组",
+      "noGroup": "No group",
       "layoutTitle": "Manage layout",
       "layoutDescription": "Drag lines within and between groups, and drag groups to reorder them.",
       "ungrouped": "Ungrouped",
       "layoutSaved": "Layout saved",
       "layoutError": "Could not save the layout"
+    },
+    "pace": {
+      "aheadUsual": "{amount} ahead of usual pace",
+      "aheadEven": "{amount} ahead of pace",
+      "aheadUsualPerDay": "{amount} ahead of usual pace · ~{perDay}/day left for {count} day | {amount} ahead of usual pace · ~{perDay}/day left for {count} days",
+      "aheadEvenPerDay": "{amount} ahead of pace · ~{perDay}/day left for {count} day | {amount} ahead of pace · ~{perDay}/day left for {count} days"
     },
     "options": {
       "title": "Options",
@@ -434,7 +447,8 @@
       "rowBarGoal": "Goal bar",
       "rowBarCombined": "Combined bar",
       "rowBarSplit": "Split bars",
-      "rowBarNone": "No bar"
+      "rowBarNone": "No bar",
+      "paceHint": "Pace hint"
     },
     "goals": {
       "askHint": "Assign this amount here to stay on track.",

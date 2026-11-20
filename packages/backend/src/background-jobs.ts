@@ -11,6 +11,7 @@ import { cryptoPricesSyncCron } from './crons/crypto-prices-sync';
 import { demoCleanupCron } from './crons/demo-cleanup';
 import { demoTemplateRefreshCron } from './crons/demo-template-refresh';
 import { loadCurrencyRatesJob } from './crons/exchange-rates';
+import { goalsReachedCheckCron } from './crons/goals-reached-check';
 import { purgeDeletedPortfoliosCron } from './crons/purge-deleted-portfolios';
 import { securitiesDailySyncCron } from './crons/securities-daily-sync';
 import { shareInvitationsExpireCron } from './crons/share-invitations-expire';
@@ -20,7 +21,9 @@ import { subscriptionAutoRecordCron } from './crons/subscription-auto-record';
 import { subscriptionCandidateDetectionCron } from './crons/subscription-candidate-detection';
 import { subscriptionRemindersCron } from './crons/subscription-reminders-check';
 import { tagRemindersCron } from './crons/tag-reminders-check';
+import { trackerRulesSyncCron } from './crons/tracker-rules-sync';
 import { trackerSmartScanCron } from './crons/tracker-smart-scan';
+import { transactionsTrashPurgeCron } from './crons/transactions-trash-purge';
 import { initializeHistoricalRates } from './services/exchange-rates/initialize-historical-rates.service';
 
 const allEnvCrons = [demoCleanupCron, demoTemplateRefreshCron];
@@ -30,6 +33,7 @@ const prodOnlyCrons = [
   cryptoPricesSyncCron,
   tagRemindersCron,
   stuckPendingCheckCron,
+  goalsReachedCheckCron,
   subscriptionRemindersCron,
   subscriptionAutoRecordCron,
   subscriptionCandidateDetectionCron,
@@ -37,10 +41,12 @@ const prodOnlyCrons = [
   shareResourceOrphanCleanupCron,
   purgeDeletedPortfoliosCron,
   budgetPlansPurgeCron,
+  transactionsTrashPurgeCron,
   balanceRevalueSweepCron,
   attachmentsOrphanSweepCron,
   bankAccountsSyncCron,
   trackerSmartScanCron,
+  trackerRulesSyncCron,
   aiUsageMonthEndCron,
 ];
 

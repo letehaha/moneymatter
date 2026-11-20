@@ -26,7 +26,7 @@ const BASE_CLASSES =
           BASE_CLASSES,
           model === TRANSACTION_TYPES.expense
             ? 'bg-app-expense-color/15 text-app-expense-color font-semibold shadow-sm'
-            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+            : 'text-muted-foreground hover:text-foreground hover:bg-hover',
         )
       "
       @click="model = TRANSACTION_TYPES.expense"
@@ -43,7 +43,7 @@ const BASE_CLASSES =
           BASE_CLASSES,
           model === TRANSACTION_TYPES.income
             ? 'bg-app-income-color/15 text-app-income-color font-semibold shadow-sm'
-            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+            : 'text-muted-foreground hover:text-foreground hover:bg-hover',
         )
       "
       @click="model = TRANSACTION_TYPES.income"

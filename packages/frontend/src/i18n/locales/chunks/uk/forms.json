@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Виберіть валюту відображення",
       "displayCurrencyBaseOption": "Базова валюта ({code})",
       "displayCurrencyDescription": "Вартість портфеля та статистика перетворюються на цю валюту за поточним курсом обміну.",
+      "externalUrlLabel": "Зовнішнє посилання (необов'язково)",
+      "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Скасувати",
       "submitButton": "Зберегти зміни",
       "submitButtonLoading": "Збереження...",
@@ -136,6 +138,9 @@
       "accountCategoryPlaceholder": "Виберіть категорію рахунку",
       "creditLimitLabel": "Кредитний ліміт",
       "creditLimitPlaceholder": "Кредитний ліміт",
+      "defaultPaymentTypeLabel": "Тип платежу за замовчуванням",
+      "externalUrlLabel": "Зовнішнє посилання (необов'язково)",
+      "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Створити",
       "submitButtonLoading": "Створення...",
       "notifications": {
@@ -188,8 +193,11 @@
       }
     },
     "validators": {
-      "invalidCurrencyDecimal": "Введіть коректну суму (до {decimals} знаків після коми)",
-      "mustBePositive": "Сума має бути додатною"
+      "invalidCurrencyDecimal": "Введіть коректну суму (до {decimals} десяткового знака) | Введіть коректну суму (до {decimals} десяткових знаків) | Введіть коректну суму (до {decimals} десяткових знаків)",
+      "invalidCurrencyWholeAmount": "Введіть цілу суму",
+      "mustBePositive": "Сума має бути додатною",
+      "httpUrl": "Введіть коректне http(s)-посилання",
+      "maxLength": "Не повинно перевищувати {max} символів"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "З валюти",
@@ -300,7 +308,8 @@
         "interestRateRange": "Процентна ставка має бути від 0 до 99.9999.",
         "termRange": "Строк має бути від 1 до 1200 місяців.",
         "paymentDayRange": "День місяця має бути від 1 до 31.",
-        "asOfInFuture": "Дата не може бути в майбутньому"
+        "asOfInFuture": "Дата не може бути в майбутньому",
+        "startDateInFuture": "Дата початку не може бути в майбутньому"
       },
       "balanceExceedsPrincipalWarning": "Залишок боргу перевищує початкову суму боргу – перевірте ці суми ще раз."
     }

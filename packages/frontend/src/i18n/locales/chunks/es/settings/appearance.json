@@ -25,6 +25,11 @@
         "title": "Símbolos de moneda",
         "description": "Cómo se muestra la moneda en los importes. Los símbolos cortos se ven como Rp, ₴ o zł en lugar de IDR, UAH o PLN, pero las monedas que comparten símbolo (USD, CAD, AUD, SGD) se muestran todas como $.",
         "narrowSymbol": "Usar símbolos de moneda cortos"
+      },
+      "transactions": {
+        "title": "Transacciones",
+        "description": "Mostrar el logo del beneficiario en lugar del icono de la categoría en las filas de la transacción, cuando el beneficiario tiene una.",
+        "payeeLogos": "Logos del beneficiario"
       }
     }
   }

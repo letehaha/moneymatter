@@ -57,7 +57,7 @@ const iconConfig = computed(() => {
         :class="
           cn(
             'flex w-full items-center gap-2 py-2 text-left transition-colors',
-            'hover:bg-muted/50 -mx-2 rounded-md px-2',
+            'hover:bg-hover -mx-2 rounded-md px-2',
             isComplete && 'opacity-60',
           )
         "

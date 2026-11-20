@@ -6,16 +6,16 @@
       "unexpectedError": "Neočakávaná chyba.",
       "sessionExpired": "Vaša relácia vypršala. Prihláste sa znova, prosím",
       "payloadTooLarge": "Požiadavka je príliš veľká. Skúste importovať menej položiek naraz, prosím.",
-      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+      "tooManyRequests": "Príliš veľa pokusov. Počkajte chvíľu a skúste to znova, prosím."
     },
     "auth": {
-      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "reauthenticationRequired": "Z bezpečnostných dôvodov sa na vykonanie tejto zmeny prihláste znova.",
       "passwordTooShort": "Heslo je príliš krátke.",
       "passwordTooLong": "Heslo je príliš dlhé.",
-      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
-      "accountAlreadyLinked": "This account is already linked to another user.",
-      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
-      "passkeyAlreadyRegistered": "This passkey is already registered."
+      "providerNotConfigured": "Tento poskytovateľ prihlásenia nie je na tomto serveri nakonfigurovaný.",
+      "accountAlreadyLinked": "Tento účet je už prepojený s iným používateľom.",
+      "cannotUnlinkLastAccount": "Svoj jediný spôsob prihlásenia nemôžete odstrániť.",
+      "passkeyAlreadyRegistered": "Tento prístupový kľúč už je zaregistrovaný."
     },
     "notFound": {
       "title": "Táto stránka nie je uvedená v zozname",

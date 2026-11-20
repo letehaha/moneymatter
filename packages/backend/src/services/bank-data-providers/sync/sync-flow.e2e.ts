@@ -1,5 +1,5 @@
 import { ACCOUNT_STATUSES, BANK_PROVIDER_TYPE, DEACTIVATION_REASON } from '@bt/shared/types';
-import { beforeEach, describe, expect, it } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { redisClient } from '@root/redis-client';
 import { buildLockKey } from '@services/currencies/base-currency-lock';
 import * as helpers from '@tests/helpers';
@@ -8,6 +8,7 @@ import { MOCK_IDENTIFICATION_HASH_1, getMockedTransactions } from '@tests/mocks/
 import { MONOBANK_URLS_MOCK, VALID_MONOBANK_TOKEN, getMonobankTransactionsMock } from '@tests/mocks/monobank/mock-api';
 import { HttpResponse, http } from 'msw';
 
+import { accountSyncQueue } from './account-sync-queue';
 import { REDIS_KEYS, SyncStatus } from './sync-status-tracker';
 
 /**
@@ -452,6 +453,9 @@ describe('Sync Flow E2E', () => {
       expect(response.status).toBe(200);
       expect(response.body.response.totalAccounts).toBe(2);
       expect(response.body.response.queuedAccounts).toBe(2);
+
+      const status = await helpers.bankDataProviders.getAccountsSyncStatus({ raw: true });
+      expect(status.lastSyncAt).not.toBeNull();
     });
 
     it('should handle sync when no accounts are connected', async () => {
@@ -463,6 +467,61 @@ describe('Sync Flow E2E', () => {
       expect(response.status).toBe(200);
       expect(response.body.response.totalAccounts).toBe(0);
       expect(response.body.response.queuedAccounts).toBe(0);
+
+      const status = await helpers.bankDataProviders.getAccountsSyncStatus({ raw: true });
+      expect(status.lastSyncAt).not.toBeNull();
+    });
+
+    it('does not throttle the next auto-sync when queueing the manual sync fails', async () => {
+      const connectionResult = await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.MONOBANK,
+        credentials: { apiToken: VALID_MONOBANK_TOKEN },
+        raw: true,
+      });
+
+      const { accounts: externalAccounts } = await helpers.bankDataProviders.listExternalAccounts({
+        connectionId: connectionResult.connectionId,
+        raw: true,
+      });
+
+      const mockTransactions = helpers.monobank.mockedTransactionData(5);
+      global.mswMockServer.use(getMonobankTransactionsMock({ response: mockTransactions }));
+
+      await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId: connectionResult.connectionId,
+        accountExternalIds: externalAccounts.slice(0, 2).map((a: { externalId: string }) => a.externalId),
+        raw: true,
+      });
+
+      // getJob is stubbed so a connect-time job still being removed can't make enqueue skip add.
+      const getJobSpy = jest.spyOn(accountSyncQueue, 'getJob').mockResolvedValue(undefined);
+      const addSpy = jest.spyOn(accountSyncQueue, 'add').mockRejectedValueOnce(new Error('Queue unavailable'));
+
+      try {
+        const triggerResponse = await helpers.makeRequest({
+          method: 'post',
+          url: '/bank-data-providers/sync/trigger',
+        });
+
+        expect(addSpy).toHaveBeenCalled();
+        expect(triggerResponse.status).toBe(500);
+
+        const status = await helpers.bankDataProviders.getAccountsSyncStatus({ raw: true });
+        expect(status.lastSyncAt).toBeNull();
+
+        const checkResponse = await helpers.makeRequest({
+          method: 'get',
+          url: '/bank-data-providers/sync/check',
+        });
+
+        expect(checkResponse.status).toBe(200);
+        expect(checkResponse.body.response.syncTriggered).toBe(true);
+      } finally {
+        getJobSpy.mockRestore();
+        addSpy.mockRestore();
+      }
+
+      await helpers.bankDataProviders.waitForAccountsSyncToSettle();
     });
 
     it('should skip disabled accounts from sync', async () => {

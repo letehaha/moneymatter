@@ -5,9 +5,7 @@ import { Op } from 'sequelize';
 import { Table, Column, Model, ForeignKey, DataType, BelongsToMany } from 'sequelize-typescript';
 
 import CategoryTags from './category-tags.model';
-import MerchantCategoryCodes from './merchant-category-codes.model';
 import Tags from './tags.model';
-import UserMerchantCategoryCodes from './user-merchant-category-codes.model';
 import Users from './users.model';
 
 @Table({
@@ -54,12 +52,6 @@ export default class Categories extends Model {
 
   @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
   applyDefaultTagsOnAiCategorization!: boolean;
-
-  @BelongsToMany(() => MerchantCategoryCodes, {
-    as: 'merchantCodes',
-    through: () => UserMerchantCategoryCodes,
-  })
-  categoryId!: number;
 
   @BelongsToMany(() => Tags, {
     through: () => CategoryTags,

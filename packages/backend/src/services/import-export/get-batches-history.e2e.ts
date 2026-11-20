@@ -1,4 +1,4 @@
-import { ImportSource } from '@bt/shared/types';
+import { ImportSource, type RecordId } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 import { asUser, signUpSecondUser, withoutSession } from '@tests/helpers/share';
@@ -78,7 +78,7 @@ describe('GET /import/batches-history', () => {
     expect(otherHistory).toEqual({ items: [], totalCount: 0 });
   });
 
-  it('keeps a batch listed after its rows were deleted by hand while it still has an absorb to undo', async () => {
+  it('keeps a batch listed after its rows were deleted for good while it still has an absorb to undo', async () => {
     const account = await helpers.createAccount({ raw: true });
     const summary = await helpers.runCsvImport({ accountId: account.id, currencyCode: account.currencyCode });
 
@@ -86,6 +86,7 @@ describe('GET /import/batches-history', () => {
       payload: { transactionIds: summary.newTransactionIds },
     });
     expect(manualDelete.statusCode).toBe(200);
+    await helpers.deleteTrash({ transactionIds: summary.newTransactionIds as RecordId[], raw: true });
 
     expect(await helpers.getBatchesHistory({ raw: true })).toEqual({
       items: [
@@ -120,6 +121,13 @@ describe('GET /import/batches-history', () => {
     });
     expect(manualDelete.statusCode).toBe(200);
 
+    // Trashed rows are still undoable, so the batch stays listed and counts them.
+    expect((await helpers.getBatchesHistory({ raw: true })).items).toEqual([
+      expect.objectContaining({ batchId: summary.batchId, transactionCount: summary.newTransactionIds.length }),
+    ]);
+
+    await helpers.deleteTrash({ transactionIds: summary.newTransactionIds as RecordId[], raw: true });
+
     expect(await helpers.getBatchesHistory({ raw: true })).toEqual({ items: [], totalCount: 0 });
   });
 
@@ -147,7 +155,11 @@ describe('GET /import/batches-history', () => {
       (item) => item.batchId === creating.batchId,
     );
     expect(emptied).toEqual(
-      expect.objectContaining({ transactionCount: 0, accountIds: [created.id], createdAccountCount: 1 }),
+      expect.objectContaining({
+        transactionCount: creating.newTransactionIds.length,
+        accountIds: [created.id],
+        createdAccountCount: 1,
+      }),
     );
 
     await helpers.deleteImportBatch({ batchId: creating.batchId, raw: true });

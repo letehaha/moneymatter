@@ -1,4 +1,4 @@
-import { type SecuritySearchResult } from '@bt/shared/types/investments';
+import { ASSET_CLASS, type SecuritySearchResult } from '@bt/shared/types/investments';
 import { logger } from '@js/utils';
 import Securities from '@models/investments/securities.model';
 import SecurityPricing from '@models/investments/security-pricing.model';
@@ -7,6 +7,7 @@ import { withTransaction } from '@services/common/with-transaction';
 import { dataProviderFactory } from '../data-providers';
 import { toProviderSymbol } from '../data-providers/base-provider';
 import { upsertSecuritiesFromSearch } from '../securities-manage';
+import { startOfDayUtc } from '../securities-price/pricing-anchor';
 
 interface AddSecurityFromSearchParams {
   searchResult: SecuritySearchResult;
@@ -46,17 +47,27 @@ const addSecurityFromSearchImpl = async ({
       // TODO: consider using composite provider here
       const priceData = await provider.getLatestPrice(toProviderSymbol(priceQuerySymbol));
 
-      // Store the price in SecurityPricing table
-      await SecurityPricing.create({
-        securityId: security.id,
-        date: priceData.date,
-        priceClose: priceData.priceClose.toString(),
-        source: provider.providerName,
-      });
+      // Stocks keep one row per UTC day, so the first price must land on the day's row, which the
+      // daily sync later overwrites with the final close. An intraday timestamp would outrank that
+      // close. Crypto stores intraday snapshots, so it keeps the provider's timestamp.
+      const date = security.assetClass === ASSET_CLASS.crypto ? priceData.date : startOfDayUtc(priceData.date);
+
+      // The day's row may already exist when a security is added again.
+      await SecurityPricing.bulkCreate(
+        [
+          {
+            securityId: security.id,
+            date,
+            priceClose: priceData.priceClose.toString(),
+            source: provider.providerName,
+          },
+        ],
+        { updateOnDuplicate: ['priceClose', 'source'] },
+      );
 
       latestPrice = {
         price: priceData.priceClose,
-        date: priceData.date,
+        date,
       };
 
       // Update the security's last price sync timestamp

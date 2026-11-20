@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AccountLogo from '@/components/common/account-logo.vue';
+import ExternalUrlLinkButton from '@/components/common/external-url-link-button.vue';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -158,6 +159,8 @@ watch([formEditingPopoverOpen, () => props.account.id], () => {
           <div v-else class="flex min-w-0 items-center gap-2 text-xl">
             <span class="truncate">{{ account.name }}</span>
           </div>
+
+          <ExternalUrlLinkButton :url="account.externalUrl" :label="$t('pages.account.header.openExternalUrl')" />
         </div>
 
         <div class="flex gap-2">

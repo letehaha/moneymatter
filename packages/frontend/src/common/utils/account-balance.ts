@@ -20,25 +20,24 @@ interface AccountDisplayBalances {
 /**
  * Credit drawn on an account, for either the native or the ref balance pair.
  * When the balance itself embeds the credit limit, used is the limit minus the
- * balance at any sign. Otherwise a positive balance is available credit and a
- * negative one is debt owed; zero is ambiguous, so the caller decides whether it
- * reads as a fully drawn card.
+ * balance at any sign. Otherwise a negative balance is debt owed, and a positive
+ * or zero one is either available credit (used = limit minus balance) or, for
+ * debt-style tracking, an overpaid or untouched card with nothing drawn.
  */
 export const computeCreditUsed = ({
   balance,
   creditLimit,
   balanceIncludesCreditLimit,
-  zeroBalanceMeansFullyDrawn,
+  balanceIsAvailableCredit,
 }: {
   balance: number;
   creditLimit: number;
   balanceIncludesCreditLimit: boolean;
-  zeroBalanceMeansFullyDrawn: boolean;
+  balanceIsAvailableCredit: boolean;
 }): number => {
   if (balanceIncludesCreditLimit) return Math.max(creditLimit - balance, 0);
-  if (balance > 0) return Math.max(creditLimit - balance, 0);
   if (balance < 0) return -balance;
-  return zeroBalanceMeansFullyDrawn ? creditLimit : 0;
+  return balanceIsAvailableCredit ? Math.max(creditLimit - balance, 0) : 0;
 };
 
 /**

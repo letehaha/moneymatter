@@ -4,14 +4,18 @@ import {
   AI_CUSTOM_INSTRUCTIONS_MAX_LENGTH,
   AI_FEATURE,
   AI_PROVIDER,
+  CATEGORY_ORDER_ROOT_KEY,
   CURRENCY_DISPLAY_PREFERENCES,
   type CategoryMappingPreset,
   type Equals,
   type Expect,
+  FIRE_HISTORY_BASELINE_MONTH,
+  FIRE_HISTORY_MAX_ENTRIES,
   FIRE_LIMITS,
   FIRE_MAX_EXCLUDED_CATEGORIES,
   FIRE_TARGET_TYPES,
   type FireSettings,
+  type FireSettingsSnapshot,
   MAX_AI_CONNECTIONS,
   MAX_CATEGORY_MAPPING_PRESETS,
   MAX_SAVED_TRANSACTION_VIEWS,
@@ -31,6 +35,8 @@ import {
   TRANSACTION_DATE_PRESETS,
   TRANSACTION_OPTIONAL_FIELDS,
   TRANSACTION_SORT_FIELD,
+  UNREALIZED_LOSS_ALERT_LIMITS,
+  type UnrealizedLossAlertsSettings,
 } from '@bt/shared/types';
 import { dateRange, withDateOrder } from '@common/lib/zod/custom-types';
 import { IdColumn } from '@common/types/id-column';
@@ -46,7 +52,7 @@ import Users from './users.model';
 
 /** `connectionId: null` is an explicit pick of the included server model. */
 const ZodAiFeatureConfigSchema = z.object({
-  feature: z.nativeEnum(AI_FEATURE),
+  feature: z.enum(AI_FEATURE),
   connectionId: z.string().nullable(),
 });
 
@@ -55,16 +61,16 @@ const ZodAiFeatureConfigSchema = z.object({
 const ZodAiConnectionSchema = z
   .object({
     id: z.string(),
-    provider: z.nativeEnum(AI_PROVIDER),
+    provider: z.enum(AI_PROVIDER),
     name: nameField,
     baseUrl: baseUrlField.optional(),
     keyEncrypted: z.string().optional(),
     model: modelField,
-    createdAt: z.string().datetime(),
+    createdAt: z.iso.datetime(),
     status: z.enum(['valid', 'invalid']),
-    lastValidatedAt: z.string().datetime(),
+    lastValidatedAt: z.iso.datetime(),
     lastError: z.string().optional(),
-    invalidatedAt: z.string().datetime().optional(),
+    invalidatedAt: z.iso.datetime().optional(),
   })
   .superRefine((connection, ctx) => {
     // Native providers always dial their official API, so a stored base URL would be dead weight.
@@ -99,14 +105,14 @@ const ZodNotificationPreferencesSchema = z.object({
 const ZodOnboardingStateSchema = z.object({
   completedTasks: z.array(z.string()).default([]),
   isDismissed: z.boolean().default(false),
-  dismissedAt: z.string().datetime().nullable().default(null),
+  dismissedAt: z.iso.datetime().nullable().default(null),
 });
 
 // Schema for partial updates - no defaults so only provided fields are included
 export const ZodOnboardingStateUpdateSchema = z.object({
   completedTasks: z.array(z.string()).optional(),
   isDismissed: z.boolean().optional(),
-  dismissedAt: z.string().datetime().nullable().optional(),
+  dismissedAt: z.iso.datetime().nullable().optional(),
 });
 
 export type OnboardingStateSchema = z.infer<typeof ZodOnboardingStateSchema>;
@@ -221,12 +227,6 @@ const ZodUiSettingsSchema = z.object({
   investmentTransactionsTable: ZodInvestmentTransactionsTableSettingsSchema.optional(),
 });
 
-// Subscription-related defaults. `defaultAutoRecord` only seeds the auto-record toggle on
-// the create-subscription form; the user can still override it per subscription.
-const ZodSubscriptionsSettingsSchema = z.object({
-  defaultAutoRecord: z.boolean().optional(),
-});
-
 // A category mapping remembered from a finished import, keyed by a fingerprint of the source
 // layout. Untrusted client input, so the per-value union is validated in full.
 const ZodCategoryMappingPresetSchema = z.object({
@@ -259,6 +259,20 @@ const ZodAccountsSettingsSchema = z.object({
   showArchivedInDropdowns: z.boolean().optional(),
 });
 
+const IOS_ADD_EXPENSE_MAX_EXCLUDED_CATEGORIES = 500;
+
+// iOS-only preferences for the Add Expense shortcut. `showBankAccounts` lists bank-connected
+// accounts, hidden when unset. `excludedCategoryIds` hides those categories and their subtrees,
+// so categories created later are shown.
+const ZodIosSettingsSchema = z.object({
+  addExpense: z
+    .object({
+      showBankAccounts: z.boolean().optional(),
+      excludedCategoryIds: z.array(z.uuid()).max(IOS_ADD_EXPENSE_MAX_EXCLUDED_CATEGORIES).optional(),
+    })
+    .optional(),
+});
+
 // A saved Pivot Report "view", persisted in the settings JSONB with no dedicated table.
 // Reuses `dateRange()` + `withDateOrder()` so a saved view can't hold a range the live
 // report would 400 on.
@@ -288,12 +302,19 @@ const ZodSavedTransactionViewSchema = z.object({
   id: z.string(),
   name: z.string().min(1).max(SAVED_TRANSACTION_VIEW_NAME_MAX_LENGTH),
   filters: z.record(z.string(), z.unknown()),
-  sorting: z.object({ sortBy: z.nativeEnum(TRANSACTION_SORT_FIELD), order: z.nativeEnum(SORT_DIRECTIONS) }).optional(),
+  sorting: z.object({ sortBy: z.enum(TRANSACTION_SORT_FIELD), order: z.enum(SORT_DIRECTIONS) }).optional(),
   datePreset: z.enum(TRANSACTION_DATE_PRESETS).optional(),
 });
 
+// A parent category id, or `CATEGORY_ORDER_ROOT_KEY` for the top-level list.
+const ZodCategoryOrderKeySchema = z
+  .string()
+  .refine((key) => key === CATEGORY_ORDER_ROOT_KEY || z.uuid().safeParse(key).success);
+
 const fireRange = ({ key }: { key: keyof typeof FIRE_LIMITS }) =>
   z.number().min(FIRE_LIMITS[key].min).max(FIRE_LIMITS[key].max);
+
+const FIRE_MONTH_REGEX = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 // No `.default()` anywhere: the PATCH deep merge would write defaults over stored values.
 const ZodFireSettingsSchema = z.object({
@@ -313,6 +334,30 @@ const ZodFireSettingsSchema = z.object({
   birthYear: fireRange({ key: 'birthYear' }).int().nullable().optional(),
   coastTargetAge: fireRange({ key: 'coastTargetAge' }).int().optional(),
   targetType: z.enum(FIRE_TARGET_TYPES).optional(),
+  paceAnchor: z.string().regex(FIRE_MONTH_REGEX).nullable().optional(),
+});
+
+const ZodFireSettingsSnapshotSchema = z.object({
+  month: z.string().refine((month) => month === FIRE_HISTORY_BASELINE_MONTH || FIRE_MONTH_REGEX.test(month)),
+  fire: ZodFireSettingsSchema,
+});
+
+// Day of month a pay period starts on; 1 (calendar month) when unset. Capped at 28 so every month has it.
+const ZodPaydaySchema = z.number().int().min(1).max(28);
+
+// Opt-in. Unset thresholds fall back to `UNREALIZED_LOSS_ALERT_DEFAULTS`; no `.default()` so the PATCH merge keeps stored values.
+const ZodUnrealizedLossAlertsSchema = z.object({
+  enabled: z.boolean().optional(),
+  percentThreshold: z
+    .number()
+    .min(UNREALIZED_LOSS_ALERT_LIMITS.percentThreshold.min)
+    .max(UNREALIZED_LOSS_ALERT_LIMITS.percentThreshold.max)
+    .optional(),
+  amountThreshold: z
+    .number()
+    .min(UNREALIZED_LOSS_ALERT_LIMITS.amountThreshold.min)
+    .max(UNREALIZED_LOSS_ALERT_LIMITS.amountThreshold.max)
+    .optional(),
 });
 
 export const ZodSettingsSchema = z.object({
@@ -325,9 +370,9 @@ export const ZodSettingsSchema = z.object({
   sidebarSections: ZodSidebarSectionsSchema.optional(),
   sidebarNav: ZodSidebarNavSchema.optional(),
   ui: ZodUiSettingsSchema.optional(),
-  subscriptions: ZodSubscriptionsSettingsSchema.optional(),
   import: ZodImportSettingsSchema.optional(),
   accounts: ZodAccountsSettingsSchema.optional(),
+  ios: ZodIosSettingsSchema.optional(),
   savedPivotViews: z.array(ZodSavedPivotViewSchema).optional(),
   savedTransactionViews: z.array(ZodSavedTransactionViewSchema).max(MAX_SAVED_TRANSACTION_VIEWS).optional(),
   // When true, Payee extraction falls back to the transaction description/note when the
@@ -340,6 +385,8 @@ export const ZodSettingsSchema = z.object({
   payeePromotionThreshold: z.number().int().min(1).max(3).optional(),
   // Header "Support" (donation) button. Visible when unset; users opt out in Appearance settings.
   showSupportButton: z.boolean().optional(),
+  // Transaction rows show the payee's logo instead of the category icon when the payee has one. On when unset.
+  showPayeeLogos: z.boolean().optional(),
   // When true, the sidebar Accounts panel hides accounts whose display balance is
   // zero, and hides any account group left with no non-zero account. Off by default.
   hideZeroBalances: z.boolean().optional(),
@@ -364,8 +411,15 @@ export const ZodSettingsSchema = z.object({
   // Categories offered for income transactions; every other category is offered for expenses.
   // Stored only: the frontend category picker applies it.
   incomeCategoryIds: z.array(z.uuid()).optional(),
+  // Custom category order: parent id (or `CATEGORY_ORDER_ROOT_KEY`) → child ids in display order.
+  // Stored only: the frontend sorts by it, falling back to alphabetical for unlisted categories.
+  categoryOrder: z.record(ZodCategoryOrderKeySchema, z.array(z.uuid())).optional(),
   currencyDisplay: z.enum(CURRENCY_DISPLAY_PREFERENCES).optional(),
   fire: ZodFireSettingsSchema.optional(),
+  // Server-owned, oldest first: written by the PATCH that changes `fire`.
+  fireHistory: z.array(ZodFireSettingsSnapshotSchema).max(FIRE_HISTORY_MAX_ENTRIES).optional(),
+  payday: ZodPaydaySchema.optional(),
+  unrealizedLossAlerts: ZodUnrealizedLossAlertsSchema.optional(),
 });
 
 export type SettingsSchema = z.infer<typeof ZodSettingsSchema>;
@@ -445,11 +499,6 @@ export const ZodSettingsPatchSchema = z.object({
         .optional(),
     })
     .optional(),
-  subscriptions: z
-    .object({
-      defaultAutoRecord: z.boolean().optional(),
-    })
-    .optional(),
   import: z
     .object({
       recalculateAccountBalance: z.boolean().optional(),
@@ -458,12 +507,14 @@ export const ZodSettingsPatchSchema = z.object({
     })
     .optional(),
   accounts: ZodAccountsSettingsSchema.optional(),
+  ios: ZodIosSettingsSchema.optional(),
   // Same element schema as `ZodSettingsSchema`, defaults and all, so the two can't drift.
   savedPivotViews: z.array(ZodSavedPivotViewSchema).optional(),
   savedTransactionViews: z.array(ZodSavedTransactionViewSchema).max(MAX_SAVED_TRANSACTION_VIEWS).optional(),
   payeeExtractionUsesDescription: z.boolean().optional(),
   payeePromotionThreshold: z.number().int().min(1).max(3).optional(),
   showSupportButton: z.boolean().optional(),
+  showPayeeLogos: z.boolean().optional(),
   hideZeroBalances: z.boolean().optional(),
   hideSmartTrackingTip: z.boolean().optional(),
   matchTransfersWithManualAccounts: z.boolean().optional(),
@@ -472,8 +523,11 @@ export const ZodSettingsPatchSchema = z.object({
   savingsCategoryIds: z.array(z.uuid()).optional(),
   taxCategoryIds: z.array(z.uuid()).optional(),
   incomeCategoryIds: z.array(z.uuid()).optional(),
+  categoryOrder: z.record(ZodCategoryOrderKeySchema, z.array(z.uuid()).optional()).optional(),
   currencyDisplay: z.enum(CURRENCY_DISPLAY_PREFERENCES).optional(),
   fire: ZodFireSettingsSchema.optional(),
+  payday: ZodPaydaySchema.optional(),
+  unrealizedLossAlerts: ZodUnrealizedLossAlertsSchema.optional(),
 });
 
 export type SettingsPatchSchema = z.infer<typeof ZodSettingsPatchSchema>;
@@ -487,7 +541,7 @@ type DeepPartial<T> = {
       : T[K];
 };
 
-type PatchableSettings = Omit<SettingsSchema, 'onboarding' | 'ai'> & {
+type PatchableSettings = Omit<SettingsSchema, 'onboarding' | 'ai' | 'fireHistory'> & {
   ai?: Omit<NonNullable<SettingsSchema['ai']>, 'connections' | 'featureConfigs'>;
 };
 
@@ -500,7 +554,17 @@ type PatchableSettings = Omit<SettingsSchema, 'onboarding' | 'ai'> & {
 export type SettingsPatchSchemaIsInSync = Expect<Equals<SettingsPatchSchema, DeepPartial<PatchableSettings>>>;
 
 /** @public exported only so the assertion isn't flagged as unused. */
+export type UnrealizedLossAlertsSchemaIsInSync = Expect<
+  Equals<z.infer<typeof ZodUnrealizedLossAlertsSchema>, UnrealizedLossAlertsSettings>
+>;
+
+/** @public exported only so the assertion isn't flagged as unused. */
 export type FireSettingsSchemaIsInSync = Expect<Equals<z.infer<typeof ZodFireSettingsSchema>, FireSettings>>;
+
+/** @public exported only so the assertion isn't flagged as unused. */
+export type FireSettingsSnapshotSchemaIsInSync = Expect<
+  Equals<z.infer<typeof ZodFireSettingsSnapshotSchema>, FireSettingsSnapshot>
+>;
 
 /**
  * Compile-time drift guard: the persisted saved-pivot-view schema must infer exactly the shared

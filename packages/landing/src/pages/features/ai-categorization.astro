@@ -1,0 +1,116 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Automatic categorization for bank sync and imported statements',
+    text: 'Connect a bank and new transactions get a category shortly after they arrive, with nothing to approve first. AI reads the note and merchant, then picks from your own category list, using a subcategory when one fits, so your reports keep the structure you set up. If it picks wrong, change the category and your choice stays. Statements you import with the Statement Parser, from a PDF, CSV or TXT file, are categorized the same way.',
+  },
+  {
+    heading: 'Categorize older transactions and imported history in bulk',
+    text: 'Open Transactions, then Optimizations, and choose AI categorization. The Categorize tab lists transactions still in your default category, such as imported history or entries you never sorted. Select some or run it on all of them, then open the History tab to see each run and what it changed.',
+    bullets: [
+      'One run covers the 5,000 most recent transactions, so a long history takes several. The included AI allows three runs an hour, and your own model has no such limit',
+      'A transaction AI cannot place stays in your default category for you to sort by hand, and the run reports how many it skipped',
+      'Importing a CSV? AI match links the category names in your file to your closest existing categories, so you can skip mapping them one by one',
+    ],
+  },
+  {
+    heading: 'Set a default category per payee, or let AI decide',
+    text: 'Some merchants always mean one thing, and others sell everything. Each payee can have a default category and a setting for how AI treats it, so your coffee shop stays in Bar, cafe while AI looks at each Amazon order on its own.',
+    bullets: [
+      'Always use payee category, the default: new transactions get the default category and AI leaves them alone',
+      'Use as a hint: new transactions get the default category, and AI can replace it based on the details',
+      'Off: the default category is never applied automatically, and AI decides on its own',
+    ],
+    screenshot: {
+      name: 'features/transactions/payee-detail-page',
+      alt: "A payee's page with its transaction count, net flow and top category, the Categorization section with a default category and AI categorization set to Always use payee category, and two aliases",
+      width: 872,
+      height: 857,
+    },
+  },
+  {
+    heading: 'Use the included AI or your own OpenAI, Anthropic or Gemini key',
+    text: "Plus and the 40-day trial include MoneyMatter's AI with no setup. On any plan you can add your own model instead: an Anthropic, OpenAI or Gemini key, or any OpenAI-compatible endpoint such as OpenRouter. Your provider bills you directly, and your own model never counts toward the monthly allowance.",
+    bullets: [
+      'Once you add a model, categorization uses it. To keep the included AI for categorization, pick it on the AI Features tab while your plan includes it',
+      'If your own model stops working, categorization stops instead of switching to the included AI, so your data only goes to the provider you chose',
+    ],
+    screenshot: {
+      name: 'features/ai/ai-features-tab',
+      alt: 'The AI Features tab of AI Settings, with the Included AI usage meter at the top and the list of features, each with the model that powers it',
+      width: 884,
+      height: 910,
+    },
+  },
+  {
+    heading: 'Custom categorization instructions for your own model',
+    text: "You can write up to 2,000 characters of instructions, and they apply only when your own model does the categorizing. Use them for what a bank description cannot show, such as 'My freelance income comes from Acme Corp' or 'Transactions from Starbucks should be Coffee'. The model still chooses only from your category list.",
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Categorization after a bank sync needs a bank connection, which is on Plus and the 40-day trial. On Essential, AI categorization needs your own model and covers Statement Parser imports and on-demand runs.',
+  'Transactions you add by hand are not categorized when you save them. Use a payee default, or run the on-demand tool afterwards.',
+  'The included AI has a monthly allowance shared with other AI features, and it resets on the 1st. If it runs out first and you have no model of your own, bank transactions synced in the meantime stay in your default category until you run the on-demand tool.',
+];
+
+const FAQ = [
+  {
+    question: 'How much does AI categorization cost?',
+    answer:
+      "AI categorization comes with Plus, at $8 a month or $55 a year before tax, within a monthly allowance of MoneyMatter's AI. Essential, at $5 a month or $30 a year, needs your own model, which your AI provider bills you for. New cloud accounts start with a 40-day free trial and no card, and self-hosting is free.",
+  },
+  {
+    question: 'What transaction data is sent to the AI?',
+    answer:
+      'AI categorization sends the amount, currency, date, account name, note and payee of each transaction, plus your category names. Balances and other account data are not part of the request. It goes to the included AI or to the provider of the model you added.',
+  },
+  {
+    question: 'Can I turn off AI categorization?',
+    answer:
+      'No single switch turns it off. On Plus and during the trial, new bank transactions go to the included AI unless their payee has a default category and is set to Always use payee category. Connect your own model and the data goes to that provider instead. On Essential or a self-hosted install, AI stays off until you add a model.',
+  },
+  {
+    question: 'Can I use my own OpenAI or Anthropic key, or a local model?',
+    answer:
+      'Yes, on any plan, from the AI models tab of AI Settings. A self-hosted install can use a model on your own network, such as Ollama or LM Studio. On the cloud version, a custom endpoint must be reachable from the internet.',
+  },
+  {
+    question: 'Will AI overwrite categories I already set?',
+    answer:
+      'No. AI categorization leaves alone any category you set by hand, any category from an automation rule, and its own earlier picks. The one exception is a payee set to Use as a hint, where AI can replace the default category on new transactions.',
+  },
+  {
+    question: 'Does AI categorization learn from my corrections?',
+    answer:
+      'No. Each AI categorization run works from the transaction details and your category list, and your past corrections are not sent. To stop a repeat mistake, set a payee default, add an automation rule, or write custom instructions if you use your own model.',
+  },
+  {
+    question: 'Does AI categorization work when self-hosting?',
+    answer:
+      'Yes. A self-hosted install has no plans or allowance. You add a key or a model on the AI models tab or in the server settings, and AI categorization then works as on the cloud version.',
+  },
+];
+
+const GUIDES = [
+  { label: 'AI features', href: 'https://docs.moneymatter.app/ai/ai-features/' },
+  { label: 'Payees and default categories', href: 'https://docs.moneymatter.app/transactions/payees/' },
+  { label: 'Import from CSV', href: 'https://docs.moneymatter.app/import/import-from-csv/' },
+];
+
+const RELATED = ['/features/automation-rules', '/features/payees', '/features/categories-and-tags'];
+---
+
+<FeatureLayout
+  title="AI Transaction Categorization App | MoneyMatter"
+  description="Sort bank-synced and imported transactions into your own categories with AI transaction categorization, on Plus or with your own model on any plan."
+  heading="AI transaction categorization that uses your own categories"
+  intro="AI transaction categorization in MoneyMatter picks a category for new bank transactions from your own list, and you can sort older transactions on demand. It runs on the included AI on Plus and during the 40-day trial, or on your own model on any plan."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

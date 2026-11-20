@@ -10,14 +10,18 @@ import {
   endOfQuarter,
   endOfWeek,
   endOfYear,
+  getDate,
   isBefore,
   max,
   min,
+  setDate,
   startOfDay,
   startOfMonth,
   startOfQuarter,
   startOfWeek,
   startOfYear,
+  subDays,
+  subMonths,
 } from 'date-fns';
 import { Op } from 'sequelize';
 
@@ -95,6 +99,13 @@ const GRANULARITY_SPECS: Record<StatsGranularity, GranularitySpec> = {
   daily: { startOf: startOfDay, endOf: endOfDay, advance: (date) => addDays(date, 1) },
 };
 
+// A pay month runs from `payday` to the day before the next one; payday 1 is the calendar month.
+const getPayMonthSpec = (payday: number): GranularitySpec => ({
+  startOf: (date) => startOfDay(setDate(getDate(date) >= payday ? date : subMonths(date, 1), payday)),
+  endOf: (periodStart) => endOfDay(subDays(addMonths(periodStart, 1), 1)),
+  advance: (date) => addMonths(date, 1),
+});
+
 /**
  * Generates the [from, to] time buckets (one per report column) for a granularity. Both edges are
  * clamped to the requested range exactly — the first bucket starts at `from`, the last ends at
@@ -105,12 +116,15 @@ export const generatePeriodBuckets = ({
   from,
   to,
   granularity,
+  payday = 1,
 }: {
   from: string;
   to: string;
   granularity: StatsGranularity;
+  /** Day of month (1-28) `monthly` buckets start on. */
+  payday?: number;
 }): PeriodBucket[] => {
-  const spec = GRANULARITY_SPECS[granularity];
+  const spec = granularity === 'monthly' && payday !== 1 ? getPayMonthSpec(payday) : GRANULARITY_SPECS[granularity];
   const buckets: PeriodBucket[] = [];
   const startDate = new Date(from);
   const endDate = endOfDay(new Date(to));

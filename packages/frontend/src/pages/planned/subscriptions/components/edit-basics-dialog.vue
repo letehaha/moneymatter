@@ -18,6 +18,7 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { usePrioritizedCurrencies } from '@/composable/data-queries/prioritized-currencies';
 import { useInvalidateSubscriptionQueries, useResetSubscriptionLogo } from '@/composable/data-queries/subscriptions';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { ApiErrorResponseError } from '@/js/errors';
 import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
@@ -124,6 +125,7 @@ const selectedCurrency = computed(() => {
 });
 
 const amountDecimals = computed(() => getCurrencyDecimals({ code: form.value.expectedCurrencyCode }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
 
 const isIncome = computed(() => props.subscription.transactionType === TRANSACTION_TYPES.income);
 
@@ -144,6 +146,7 @@ const validationRules = computed(() => ({
         return value !== null && value > 0;
       },
     ),
+    currencyDecimal: helpers.withMessage(() => currencyDecimal.message.value, currencyDecimal.rule.value),
   },
   expectedCurrencyCode: {
     requiredWithAmount: helpers.withMessage(
@@ -339,7 +342,10 @@ const handleSubmit = async () => {
         />
       </div>
 
-      <div v-if="needsInstallmentSchedule" class="border-border bg-muted/20 grid gap-3 rounded-lg border p-3">
+      <div
+        v-if="needsInstallmentSchedule"
+        class="border-border bg-muted/20 fields-plain grid gap-3 rounded-lg border p-3"
+      >
         <p class="text-muted-foreground text-xs">
           {{ $t('planned.subscriptions.editors.basics.installmentScheduleRequired') }}
         </p>

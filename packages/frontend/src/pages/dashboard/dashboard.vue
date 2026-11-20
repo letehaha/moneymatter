@@ -13,13 +13,15 @@
           isEditMode && 'max-md:hidden',
           'max-md:right-0 max-md:left-0',
           'sticky max-md:-bottom-px max-md:-mb-8 md:top-(--header-height)',
-          'md:order-first md:mx-0 md:-mt-1 md:mb-2 md:border-t-0 md:py-1',
+          'md:order-first md:-mx-6 md:-mt-1 md:mb-2 md:border-t-0 md:px-6 md:py-1',
+          isScrolled &&
+            'md:bg-card/95 md:supports-backdrop-filter:bg-card/95 dark:md:bg-background/95 dark:md:supports-backdrop-filter:bg-background/80 md:border-b dark:md:border-b-0',
         ])
       "
     >
       <div class="grid grid-cols-[1fr_auto_1fr] items-center">
         <div />
-        <PeriodSelector v-model="currentPeriod" />
+        <PeriodSelector v-model="currentPeriod" :payday="payday" />
         <DashboardEditToolbar
           class="hidden justify-self-end md:flex"
           :is-edit-mode="isEditMode"
@@ -59,12 +61,17 @@
 <script lang="ts" setup>
 import RecoveryMethodBanner from '@/components/banners/recovery-method-banner.vue';
 import PageWrapper from '@/components/common/page-wrapper.vue';
+import { SCROLL_AREA_IDS } from '@/components/lib/ui/scroll-area/types';
 import DashboardOnboarding from '@/components/widgets/dashboard-onboarding.vue';
+import { useUserSettings } from '@/composable/data-queries/user-settings';
+import { useScrollAreaContainer } from '@/composable/scroll-area-container';
+import { getPayPeriod } from '@/composable/use-period-navigation';
 import { cn } from '@/lib/utils';
 import { useAccountsStore } from '@/stores';
-import { endOfMonth, parseISO, startOfMonth } from 'date-fns';
+import { useScroll } from '@vueuse/core';
+import { isSameDay, parseISO } from 'date-fns';
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import DashboardEditToolbar from './components/dashboard-edit-toolbar.vue';
@@ -85,7 +92,14 @@ defineOptions({
 const gridRef = ref<InstanceType<typeof DashboardGrid> | null>(null);
 const isEditMode = computed(() => gridRef.value?.isEditMode ?? false);
 
-// Get initial period from URL or default to current month
+const scrollContainer = useScrollAreaContainer(SCROLL_AREA_IDS.dashboard);
+const { y: scrollY } = useScroll(() => scrollContainer.value?.viewportElement ?? null);
+const isScrolled = computed(() => scrollY.value > 0);
+
+const { data: userSettings } = useUserSettings();
+const payday = computed(() => userSettings.value?.payday ?? 1);
+
+// Get initial period from URL or default to the current pay period
 const getInitialPeriod = (): Period => {
   const { from, to } = route.query;
   if (from && to) {
@@ -94,11 +108,16 @@ const getInitialPeriod = (): Period => {
       to: parseISO(to as string),
     };
   }
-  return {
-    from: startOfMonth(new Date()),
-    to: endOfMonth(new Date()),
-  };
+  return getPayPeriod({ date: new Date(), payday: payday.value });
 };
 
 const currentPeriod = ref<Period>(getInitialPeriod());
+
+// Settings can arrive after mount; move the period only if it is still the old default.
+watch(payday, (newPayday, oldPayday) => {
+  const oldDefault = getPayPeriod({ date: new Date(), payday: oldPayday });
+  if (isSameDay(currentPeriod.value.from, oldDefault.from) && isSameDay(currentPeriod.value.to, oldDefault.to)) {
+    currentPeriod.value = getPayPeriod({ date: new Date(), payday: newPayday });
+  }
+});
 </script>

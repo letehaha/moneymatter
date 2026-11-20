@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Štruktúra výdavkov",
+        "incomeTitle": "Štruktúra príjmov",
         "today": "Dnes",
         "vsPreviousPeriod": "vs. predchádzajúce obdobie",
-        "viewButton": "Zobraziť"
+        "viewButton": "Zobraziť",
+        "back": "Späť",
+        "openInAnalytics": "Otvoriť v Analytike",
+        "metric": {
+          "expenses": "Výdavky",
+          "income": "Príjmy"
+        },
+        "seeTransactions": "Zobraziť transakcie"
       },
       "latestTransactions": {
         "title": "Posledné transakcie",
@@ -121,6 +129,7 @@
         "title": "Sledované kategórie",
         "addCategory": "Pridať kategóriu",
         "selectCategories": "Vybrať kategórie",
+        "showTrend": "Zobraziť 6-mesačný trend",
         "sort": {
           "title": "Zoradiť podľa",
           "custom": "Vlastné poradie",
@@ -145,10 +154,11 @@
       "netWorth": {
         "title": "Čistá hodnota majetku",
         "description": "Ako sa čistá hodnota majetku zmenila za vybrané obdobie. Zohľadňuje každú zmenu zostatku: účty, investície, pôžičky a hodnoty aktív.",
-        "vsPrevious": "vs. predchádzajúce obdobie",
+        "vsPrevious": "oproti predchádzajúcemu obdobiu",
         "start": "Začiatok",
         "end": "Koniec",
         "growth": "Nárast",
+        "changeInPeriod": "Zmena za {period}",
         "previousPeriodsTrend": "Trend predchádzajúcich období",
         "excludedTooltip": "Vylúčené z čistej hodnoty majetku: {components}",
         "viewHistory": "Zobraziť históriu",
@@ -236,6 +246,7 @@
         },
         "hints": {
           "noHistory": "Porovnanie sa zobrazí po vašom prvom celom mesiaci.",
+          "plannedFailed": "Plánované transakcie sa nepodarilo načítať. Predpoveď ich nemusí zahŕňať.",
           "fewMonths": "Priemer za {n} celý mesiac, ktorý zatiaľ máte. | Priemer za {n} celé mesiace, ktoré zatiaľ máte. | Priemer za {n} celých mesiacov, ktoré zatiaľ máte."
         },
         "loadFailed": "Vaše výdavky sa nepodarilo načítať.",
@@ -264,7 +275,7 @@
         "amount": "Dane",
         "shareOfIncome": "Podiel na príjmoch",
         "shareOfTaxes": "Podiel daní",
-        "other": "Ostatné",
+        "other": "Iné",
         "moreCategories": "{count} ďalších",
         "viewDetails": "Zobraziť peňažný tok",
         "loadFailed": "Daňové údaje sa nepodarilo načítať.",
@@ -298,7 +309,10 @@
         "daysLeft": "zostáva {count} deň | zostávajú {count} dni | zostáva {count} dní",
         "lastDay": "Posledný deň obdobia",
         "empty": "Zatiaľ žiadny rozpočet",
-        "create": "Nastavte si rozpočet"
+        "create": "Nastavte si rozpočet",
+        "sort": {
+          "overspent": "Najviac prečerpané ako prvé"
+        }
       },
       "trackers": {
         "spentOfLimit": "{spent} z {limit}",
@@ -308,6 +322,28 @@
         "empty": "Zatiaľ žiadne sledovače",
         "ended": "Ukončené",
         "create": "Vytvoriť sledovač"
+      },
+      "tagAnalysis": {
+        "title": "Analýza značiek",
+        "noTagsTitle": "Nie sú vybrané žiadne značky",
+        "noTagsDescription": "Značky na porovnanie vyberte v nastaveniach widgetu.",
+        "ofIncome": "z príjmu",
+        "remaining": "Nepridelené",
+        "targetTooltip": "Cieľ: {value} %",
+        "settings": {
+          "tagsLabel": "Značky",
+          "tagsPlaceholder": "Vyberte značky",
+          "targetsLabel": "Ciele, %",
+          "targetsNoneSet": "Nenastavené",
+          "targetsSetCount": "Nastavené: {set} z {total}",
+          "targetsEmpty": "Najprv pridajte značky, aby ste mohli nastaviť ich ciele",
+          "targetPlaceholder": "Žiadne",
+          "percentBaseLabel": "Percento z",
+          "percentBaseTags": "Vybrané značky",
+          "percentBaseIncome": "Príjem",
+          "includeTransfersLabel": "Zahrnúť prevody",
+          "includeTransfersDescription": "Počítať prevody na vaše vlastné účty a portfóliá ako výdavky"
+        }
       },
       "emptyState": "Za vybraný časový interval nie sú žiadne údaje.",
       "registry": {
@@ -374,6 +410,29 @@
         "trackers": {
           "name": "Sledovače",
           "description": "Každý aktívny sledovač s tým, koľko z jeho limitu je vyčerpané, a jeho bilancia"
+        },
+        "goals": {
+          "name": "Ciele",
+          "description": "Postup k vašim sporiacim cieľom",
+          "savedOfTarget": "{saved} z {target}",
+          "empty": {
+            "title": "Žiadne aktívne ciele",
+            "description": "Nastavte si cieľ a sledujte, ako blízko k nemu ste.",
+            "action": "Vytvoriť cieľ"
+          },
+          "locked": {
+            "title": "Ciele sú uzamknuté",
+            "description": "Šetrite na to, na čom záleží, a sledujte, či ste na dobrej ceste. Dostupné v platených plánoch.",
+            "action": "Zistiť viac"
+          },
+          "settings": {
+            "showReached": "Zobraziť dosiahnuté ciele"
+          },
+          "reachedSection": "Dosiahnutý"
+        },
+        "tagAnalysis": {
+          "name": "Analýza značiek",
+          "description": "Pozrite si, ako sa vaše výdavky rozdeľujú medzi vybrané značky, napríklad potreby, priania a úspory"
         }
       }
     },
@@ -393,6 +452,8 @@
       "payAction": "Označiť ako zaplatené",
       "listTitle": "Nadchádzajúce",
       "dueCount": "Splatné: {count}",
+      "daysLate": "{count} d po splatnosti",
+      "overdueCount": "{count} po splatnosti",
       "nothingDue": "V najbližších 3 dňoch nič nie je splatné",
       "overdueHint": "Po splatnosti od {date}",
       "dueSoonHint": "Splatné v nasledujúcich 3 dňoch",
@@ -404,13 +465,6 @@
       "loadFailed": "Pravidelné platby sa nepodarilo načítať"
     },
     "latestRecords": {
-      "config": {
-        "includeScheduled": {
-          "label": "Zahrnúť naplánované platby",
-          "on": "Zap.",
-          "off": "Vyp."
-        }
-      },
       "settings": {
         "excludeTitle": "Vylúčiť transakcie",
         "excludeTransfersDescription": "Skryť prevody medzi vlastnými účtami",
@@ -419,11 +473,14 @@
         "excludeBalanceAdjustmentsDescription": "Skryť transakcie na úpravu zostatku",
         "plannedTitle": "Plánované transakcie",
         "excludePlannedDescription": "Skryť čakajúce plánované transakcie zo zoznamu",
+        "scheduledTitle": "Pravidelné platby",
+        "excludeScheduledDescription": "Skryť zo zoznamu nadchádzajúce a po termíne splatnosti platby predplatného",
+        "scheduledSaveError": "Nastavenie plánovaných platieb sa nepodarilo aktualizovať",
         "nothingExcluded": "Nič nie je vylúčené",
-        "tagsStyleTitle": "Štítky",
+        "tagsStyleTitle": "Značky",
         "tagsStyleNames": "Názvy",
         "tagsStyleBars": "Pruhy",
-        "tagsStyleSaveError": "Štýl štítkov sa nepodarilo uložiť. Skúste to znova, prosím.",
+        "tagsStyleSaveError": "Štýl značiek sa nepodarilo uložiť. Skúste to znova, prosím.",
         "showAccountTitle": "Účet",
         "showAccountDescription": "Zobraziť logo účtu pri každej transakcii",
         "showAccountSaveError": "Nastavenie účtu sa nepodarilo uložiť. Skúste to znova, prosím."
@@ -452,10 +509,10 @@
       "unitMonths": "{n} mes. | {n} mes. | {n} mes.",
       "atAge": "vo veku {age}",
       "nextMilestone": "Ďalší medzník",
-      "saved": "Ušetrené",
+      "saved": "Usporené",
       "progress": "Priebeh",
       "coastFire": "Coast FIRE",
-      "reached": "Dosiahnuté",
+      "reached": "Dosiahnutý",
       "milestoneIn": "{pct} % za {duration}",
       "typeNumber": "Cieľové číslo {type}",
       "atRate": "pri {rate}%",
@@ -480,7 +537,8 @@
         "title": "Naplánujte si cestu k FIRE",
         "description": "Funkcia Plus",
         "action": "Odomknúť"
-      }
+      },
+      "paceVs": "oproti {month}"
     }
   }
 }

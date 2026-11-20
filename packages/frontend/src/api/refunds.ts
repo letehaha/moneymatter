@@ -3,11 +3,13 @@ import { TransactionModel } from '@bt/shared/types';
 
 type RefundRelationship = {
   id: string;
-  originalTxId: string;
+  originalTxId: string | null;
   refundTxId: string;
   /** The split this refund targets. Null if refunding the whole transaction. */
   splitId: string | null;
-  originalTransaction: TransactionModel;
+  /** Share of the refund tx, in its currency. Null when the link covers the whole refund. */
+  amount: number | null;
+  originalTransaction?: TransactionModel;
   refundTransaction: TransactionModel;
 };
 

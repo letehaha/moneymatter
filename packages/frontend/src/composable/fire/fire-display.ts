@@ -9,8 +9,11 @@ export const displayProgressPct = ({ ratio, reached }: { ratio: number; reached:
   return reached ? pct : Math.min(NOT_REACHED_CEILING_PCT, pct);
 };
 
+export const formatPctNumber = ({ pct }: { pct: number }): string =>
+  toLocalNumber(pct, { maximumFractionDigits: 1, minimumFractionDigits: 0 });
+
 export const formatProgressPct = ({ ratio, reached }: { ratio: number; reached: boolean }): string =>
-  `${toLocalNumber(displayProgressPct({ ratio, reached }), { maximumFractionDigits: 1, minimumFractionDigits: 0 })}%`;
+  `${formatPctNumber({ pct: displayProgressPct({ ratio, reached }) })}%`;
 
 export const milestoneLabel = ({ pct, targetName }: { pct: number; targetName: string }): string =>
   pct === 100 ? targetName : `${pct}%`;

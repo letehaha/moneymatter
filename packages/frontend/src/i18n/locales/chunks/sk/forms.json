@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Vyberte zobrazovanú menu",
       "displayCurrencyBaseOption": "Základná mena ({code})",
       "displayCurrencyDescription": "Hodnota portfólia a štatistiky sa prepočítavajú na túto menu podľa aktuálneho výmenného kurzu.",
+      "externalUrlLabel": "Externá URL (voliteľná)",
+      "externalUrlPlaceholder": "https://spojenie.priklad.com",
       "cancelButton": "Zrušiť",
       "submitButton": "Uložiť zmeny",
       "submitButtonLoading": "Ukladanie...",
@@ -136,6 +138,9 @@
       "accountCategoryPlaceholder": "Vyberte kategóriu účtu",
       "creditLimitLabel": "Úverový limit",
       "creditLimitPlaceholder": "Úverový limit",
+      "defaultPaymentTypeLabel": "Predvolený spôsob platby",
+      "externalUrlLabel": "Externá URL (voliteľná)",
+      "externalUrlPlaceholder": "https://banka.priklad.sk",
       "submitButton": "Vytvoriť",
       "submitButtonLoading": "Vytváranie...",
       "notifications": {
@@ -189,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Zadajte platnú sumu (najviac 2 desatinné miesta)",
-      "mustBePositive": "Suma musí byť kladná"
+      "mustBePositive": "Suma musí byť kladná",
+      "httpUrl": "Zadajte platnú URL adresu vo formáte http(s)",
+      "maxLength": "Nesmie presiahnuť {max} znakov"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "Zdrojová mena",
@@ -300,7 +307,8 @@
         "interestRateRange": "Úroková sadzba musí byť medzi 0 a 99,9999.",
         "termRange": "Doba splácania musí byť medzi 1 a 1200 mesiacmi.",
         "paymentDayRange": "Deň v mesiaci musí byť medzi 1 a 31.",
-        "asOfInFuture": "Dátum nemôže byť v budúcnosti"
+        "asOfInFuture": "Dátum nemôže byť v budúcnosti",
+        "startDateInFuture": "Dátum začiatku nemôže byť v budúcnosti"
       },
       "balanceExceedsPrincipalWarning": "Nesplatený zostatok je vyšší než pôvodná istina — skontrolujte tieto sumy."
     }
@@ -347,8 +355,8 @@
       "ungrouped": "Bez skupiny"
     },
     "tagSelect": {
-      "placeholder": "Vyberte štítky...",
-      "noTagsAvailable": "Nie sú dostupné žiadne štítky"
+      "placeholder": "Vyberte značky...",
+      "noTagsAvailable": "Nie sú dostupné žiadne značky"
     },
     "categoryMultiSelect": {
       "placeholder": "Vyberte kategórie...",
@@ -371,7 +379,7 @@
       "searchPlaceholder": "Hľadať sledovače",
       "noResults": "Nenašli sa žiadne sledovače",
       "unknownBudget": "Neznámy sledovač",
-      "blankOption": "Not in any tracker",
+      "blankOption": "V žiadnom sledovači",
       "loadError": "Sledovače sa nepodarilo načítať. Skúste to znova, prosím."
     },
     "payeeSelect": {

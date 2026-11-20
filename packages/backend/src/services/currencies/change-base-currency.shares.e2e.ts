@@ -62,6 +62,37 @@ describe('Change Base Currency — active share guard', () => {
     );
   });
 
+  it('rejects the change for both sides of an accepted tracker share', async () => {
+    const tracker = await helpers.createTracker({ name: 'Shared tracker', raw: true });
+    const recipient = await helpers.provisionSecondUserWithBaseCurrency();
+
+    const invitation = await helpers.createShareInvitation({
+      inviteeEmail: recipient.email,
+      resourceType: RESOURCE_TYPES.tracker,
+      resourceId: tracker.id,
+      permission: SHARE_PERMISSIONS.read,
+      raw: true,
+    });
+    await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.acceptShareInvitation({ token: invitation.token, raw: true }),
+    });
+
+    const ownerRes = await callChangeBase();
+    expect((ownerRes.body.response as unknown as ErrorResponse).code).toBe(API_ERROR_CODES.baseCurrencyLockedByShares);
+
+    const recipientRes = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: async () => {
+        await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+        return callChangeBase();
+      },
+    });
+    expect((recipientRes.body.response as unknown as ErrorResponse).code).toBe(
+      API_ERROR_CODES.baseCurrencyLockedByShares,
+    );
+  });
+
   it('allows the change when only a pending (not-yet-accepted) invitation exists', async () => {
     const account = await helpers.createAccount({ raw: true });
     const recipient = await helpers.provisionSecondUserWithBaseCurrency();

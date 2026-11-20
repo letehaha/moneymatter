@@ -9,6 +9,7 @@ import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
  *   - Monobank stores its token under `apiToken` (same key the connect flow uses).
  *   - SimpleFIN reconnects by claiming a fresh setup token, sent as `setupToken`.
  *   - Walutomat needs an API key plus a private key.
+ *   - Akahu needs its User Access Token plus the App ID Token.
  *   - LunchFlow (and any other single-key provider) uses `apiKey`.
  */
 export function buildProviderCredentials({
@@ -27,6 +28,8 @@ export function buildProviderCredentials({
       return { setupToken: apiKey };
     case BANK_PROVIDER_TYPE.WALUTOMAT:
       return { apiKey, privateKey };
+    case BANK_PROVIDER_TYPE.AKAHU:
+      return { userToken: apiKey, appToken: privateKey };
     default:
       return { apiKey };
   }

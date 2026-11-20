@@ -1,4 +1,5 @@
 import { RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import { describe, expect, it } from '@jest/globals';
 
 import { matchStuckPending, type StuckPendingMatchRow } from './match-stuck-pending';
@@ -18,7 +19,7 @@ const row = ({
   accountId: accountId as RecordId,
   transactionType: TRANSACTION_TYPES.expense,
   time: new Date(BASE),
-  amountCents: 1000,
+  amount: Money.fromDecimal(10),
   payeeId: null,
   merchantName: 'Coffee Shop',
   ...overrides,
@@ -64,10 +65,10 @@ describe('matchStuckPending', () => {
 
   it('assigns one-to-one by smallest amount difference, then time difference', () => {
     const matches = matchStuckPending({
-      pending: [row({ id: 'p1', amountCents: 1000 }), row({ id: 'p2', amountCents: 1500 })],
+      pending: [row({ id: 'p1', amount: Money.fromDecimal(10) }), row({ id: 'p2', amount: Money.fromDecimal(15) })],
       pool: [
-        row({ id: 'c-exact', amountCents: 1000, time: new Date(BASE + 3 * DAY) }),
-        row({ id: 'c-near', amountCents: 1000, time: new Date(BASE + DAY) }),
+        row({ id: 'c-exact', amount: Money.fromDecimal(10), time: new Date(BASE + 3 * DAY) }),
+        row({ id: 'c-near', amount: Money.fromDecimal(10), time: new Date(BASE + DAY) }),
       ],
     });
 
@@ -77,12 +78,25 @@ describe('matchStuckPending', () => {
 
   it('matches globally by smallest difference, not per pending row in list order', () => {
     const matches = matchStuckPending({
-      pending: [row({ id: 'p1', amountCents: 1000 }), row({ id: 'p2', amountCents: 1100 })],
-      pool: [row({ id: 'c1', amountCents: 1100 }), row({ id: 'c2', amountCents: 1200 })],
+      pending: [row({ id: 'p1', amount: Money.fromDecimal(10) }), row({ id: 'p2', amount: Money.fromDecimal(11) })],
+      pool: [row({ id: 'c1', amount: Money.fromDecimal(11) }), row({ id: 'c2', amount: Money.fromDecimal(12) })],
     });
 
     expect(matches.get('p2' as RecordId)).toBe('c1');
     expect(matches.get('p1' as RecordId)).toBe('c2');
+  });
+
+  it('ranks by the amount difference at every decimal the currency carries', () => {
+    // A 3-decimal currency: both candidates round to the same cent, only the exact one has no difference.
+    const matches = matchStuckPending({
+      pending: [row({ id: 'p1', amount: Money.fromDecimal('1.001') })],
+      pool: [
+        row({ id: 'c-off', amount: Money.fromDecimal('1.004'), time: new Date(BASE + DAY) }),
+        row({ id: 'c-exact', amount: Money.fromDecimal('1.001'), time: new Date(BASE + 3 * DAY) }),
+      ],
+    });
+
+    expect(matches.get('p1' as RecordId)).toBe('c-exact');
   });
 
   it('never matches rows that have neither a payee nor a usable merchant name', () => {

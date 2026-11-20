@@ -38,7 +38,9 @@
         {{ $t('dialogs.categoryExclusions.nothingExcluded') }}
       </p>
 
-      <div class="border-input flex items-center gap-2 rounded-md border px-3 py-2">
+      <div
+        class="border-input bg-input-background flex h-9 items-center gap-2 rounded-md border px-3 py-2 dark:bg-transparent"
+      >
         <SearchIcon class="text-muted-foreground size-4 shrink-0" />
         <input
           ref="inputRef"

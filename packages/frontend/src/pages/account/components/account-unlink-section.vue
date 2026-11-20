@@ -4,6 +4,8 @@ import ClickToCopy from '@/components/common/click-to-copy.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useNotificationCenter } from '@/components/notification-center';
+import { extractApiErrorMessage } from '@/js/errors';
+import { captureException } from '@/lib/sentry';
 import { useAccountsStore } from '@/stores';
 import { AccountModel } from '@bt/shared/types';
 import { Unlink } from '@lucide/vue';
@@ -35,8 +37,10 @@ const unlinkAccount = async () => {
     });
     addSuccessNotification(t('pages.account.unlink.success', { accountName }));
     confirmAccountName.value = '';
-  } catch {
-    addErrorNotification(t('pages.account.unlink.error'));
+  } catch (error) {
+    const apiMessage = extractApiErrorMessage(error);
+    if (!apiMessage) captureException({ error, context: { source: 'unlinkAccount', accountId: props.account.id } });
+    addErrorNotification(apiMessage || t('pages.account.unlink.error'));
     isAccountUnlinking.value = false;
   }
 };

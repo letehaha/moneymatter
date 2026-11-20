@@ -1,11 +1,12 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { restorePlan } from '@services/budget-plans/restore-plan';
+import { restorePlanBodySchema } from '@services/budget-plans/zod-schemas';
 import { z } from 'zod';
 
 const schema = z.object({
   params: z.object({ planId: recordId() }),
-  body: z.strictObject({ replace: z.boolean().optional() }).optional(),
+  body: restorePlanBodySchema,
 });
 
 export default createController(schema, async ({ user, params, body }) => {

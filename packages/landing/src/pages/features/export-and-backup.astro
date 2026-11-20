@@ -1,0 +1,105 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Export transactions to CSV or Excel for spreadsheets and taxes',
+    text: "Say your accountant asks for last year's transactions on two accounts. Open Settings, then Import/Export, then Export. Pick a format, set the dates and accounts, and download a zip. Accounts, categories and payees appear by name and amounts are plain decimals, so the file is ready to sort and total in a spreadsheet.",
+    bullets: [
+      'CSV gives you one file per type of data, Excel gives you one workbook with a sheet for each, and JSON gives you one file for scripts',
+      'Choose any of four groups: transactions, budgets, subscriptions and investments',
+      'Each transaction shows its amount in both the original currency and your base currency',
+    ],
+  },
+  {
+    heading: 'Export your data after you cancel or your trial ends',
+    text: 'Nothing is deleted when a trial or subscription ends. Your account becomes read-only, and you can still sign in, view everything, download an export and download attachments from your transactions.',
+    screenshot: {
+      name: 'features/settings/read-only-banner',
+      alt: 'The MoneyMatter dashboard with a banner saying the trial has ended and data can still be viewed and exported, and a notification with a See plans button',
+      width: 1280,
+      height: 800,
+    },
+  },
+  {
+    heading: 'A full backup of your budget data in one zip file',
+    text: 'A backup is a complete copy of your MoneyMatter data that can put your account back as it was. Take one before a big cleanup or a large import, so you have a way back if the result is not what you wanted. Go to Settings, Security, Backup & restore and click Download.',
+    bullets: [
+      'Downloading a backup is included in Essential and Plus, in the 40-day free trial, and on a self-hosted server',
+      'Bank access tokens and your own AI keys stay out of the file, so you reconnect your banks and enter your keys again after a restore',
+      'The zip is not encrypted, so store it as carefully as any other financial record',
+    ],
+    screenshot: {
+      name: 'features/settings/backup-and-restore',
+      alt: 'The Backup & restore tab in Security Settings with the Download and Select backup file buttons, the What a backup leaves out popover open, and the note about transaction attachments',
+      width: 852,
+      height: 567,
+    },
+  },
+  {
+    heading: 'Restoring a backup replaces everything in your account',
+    text: 'A restore deletes all the data currently in your account and puts the backup in its place. You cannot undo a completed restore, so download a fresh backup first if you are unsure. MoneyMatter checks the file before it deletes anything, and a restore that fails partway leaves your existing data as it was. On the cloud, restoring needs a paid plan and is not part of the free trial.',
+  },
+  {
+    heading: 'Move between the cloud and self-hosting with one backup file',
+    text: 'The same backup file works in both directions. Download it from the install you are leaving, create an account on the other one, and restore it there. You can try the cloud during the free trial, then move your data to your own server without paying for a plan.',
+    bullets: [
+      'On the cloud, the account you restore into must use the same email address as the backup',
+      'Each backup carries the data of one login, so a household with separate logins moves one person at a time',
+    ],
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Exports and backups do not contain transaction attachments, such as receipts and invoices.',
+  'A read-only account can export but cannot download a backup. If you might want to restore your data or move to your own server, download a backup before your trial or plan ends.',
+];
+
+const FAQ = [
+  {
+    question: 'Can I export my budget data to Excel or CSV?',
+    answer:
+      'Yes. MoneyMatter exports to CSV, Excel or JSON on every plan, during the free trial and on a self-hosted server.',
+  },
+  {
+    question: 'What is the difference between an export and a backup?',
+    answer:
+      'An export is a readable file for spreadsheets, taxes or another app, and you can filter it, but it cannot put your account back as it was. A backup is a full copy made for restoring into MoneyMatter, with no filters, and it is not meant to be opened in a spreadsheet.',
+  },
+  {
+    question: 'Can I export my data after I cancel my subscription?',
+    answer:
+      'Yes. When a MoneyMatter subscription ends, your account turns read-only and nothing is deleted, so you can sign in and export your data. If you subscribe again later, everything is editable again.',
+  },
+  {
+    question: 'Does MoneyMatter back up my data automatically?',
+    answer:
+      'No. MoneyMatter does not create backup files for you on a schedule, so you download them yourself from Settings. On your own server, you can run the database and attachment backup commands from the setup guide on any schedule you like.',
+  },
+  {
+    question: 'How do I back up receipts and attachments?',
+    answer:
+      'On the MoneyMatter cloud, you download each attachment from its own transaction, one at a time. A self-hosted server can back up all of them from the command line along with the database.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Backup and restore', href: 'https://docs.moneymatter.app/settings/security-and-account/' },
+  { label: 'Read-only mode and plans', href: 'https://docs.moneymatter.app/settings/plans-and-billing/' },
+  { label: 'Move between the cloud and your own server', href: 'https://docs.moneymatter.app/getting-started/self-hosting/' },
+];
+
+const RELATED = ['/features/import-transactions', '/features/self-hosting', '/features/security-and-privacy'];
+---
+
+<FeatureLayout
+  title="Budget App with CSV and Excel Export | MoneyMatter"
+  description="A budget app with CSV and Excel export that still works after your plan ends. Download a full backup to restore your account or move it to your own server."
+  heading="Budget app with CSV and Excel export, plus full backups"
+  intro="MoneyMatter is a budget app with CSV and Excel export, so you can take your data to a spreadsheet whenever you want, even after your plan ends. When you need a complete copy, a backup file can put your account back as it was or move it to your own server."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

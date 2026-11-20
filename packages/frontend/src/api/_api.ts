@@ -44,7 +44,7 @@ interface ApiCall {
    * Takes precedence over `data`.
    */
   rawBody?: BodyInit;
-  /** Request headers merged over the defaults (Content-Type, session, locale). */
+  /** Request headers merged over the defaults (Content-Type, session, locale, timezone). */
   headers?: Record<string, string>;
   options?: {
     needRaw?: boolean;
@@ -75,6 +75,7 @@ const t = (key: string, fallback: string): string => {
 };
 
 const PLAN_REQUIRED_NOTIFICATION_ID = 'plan-required-error';
+const BACKGROUND_JOB_POLL_MS = 2000;
 
 /** Persistent toast for a 402: the user cannot retry the action without picking a plan. */
 export const notifyPlanRequired = ({ message }: { message: string }) => {
@@ -216,7 +217,7 @@ class ApiCaller {
    *
    * @private
    */
-  async _call(opts: ApiCall) {
+  async _call(opts: ApiCall): Promise<ApiValidResponse> {
     // TypeScript is dump and things that URLSearchParams only records with string-only
     // values, but it's not
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -232,6 +233,7 @@ class ApiCaller {
         'Content-Type': 'application/json',
         'X-Session-ID': window.sessionStorage?.getItem(SESSION_ID_KEY) || '',
         'Accept-Language': getCurrentLocale(), // Send current locale to backend
+        'X-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
         ...opts.headers,
       },
       // Include credentials (cookies) for session-based authentication
@@ -315,12 +317,17 @@ class ApiCaller {
 
     try {
       parsed = await result.json();
-    } catch {
-      // Response body is not JSON. Happens for raw infrastructure errors that
-      // never reach our `apiResponseMiddleware` envelope – e.g. body-parser's
-      // 413 Payload Too Large (plain text) or a gateway HTML 5xx page.
-      // Without this, `result.json()` throws a SyntaxError that escapes to the
-      // caller and surfaces as "Unexpected token <".
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') throw e;
+      // Our backend always answers 2xx with JSON, so an unreadable 2xx body was cut off in transit.
+      if (result.ok || !(e instanceof SyntaxError)) {
+        const message = t('errors.api.failedToFetch', 'Failed to connect to server');
+        if (!isSilent) {
+          addNotification({ id: 'api-fetching-error', text: message, type: NotificationType.error });
+        }
+        throw new errors.NetworkError(message);
+      }
+      // A non-JSON error body (body-parser's plain-text 413, a gateway HTML 5xx) becomes an API error.
       const message =
         result.status === 413
           ? t('errors.api.payloadTooLarge', 'The request is too large. Please try importing fewer items at a time')
@@ -337,6 +344,15 @@ class ApiCaller {
     const { status, response } = parsed;
 
     if (status === API_RESPONSE_STATUS.success) {
+      // Long AI calls run as server-side jobs, so a browser or proxy timeout cannot cut them off.
+      if (result.status === 202 && response?.backgroundJobId) {
+        await new Promise((resolve) => setTimeout(resolve, BACKGROUND_JOB_POLL_MS));
+        return this._call({
+          method: 'GET',
+          endpoint: `/background-jobs/${response.backgroundJobId}`,
+          options: opts.options,
+        });
+      }
       return response;
     }
 

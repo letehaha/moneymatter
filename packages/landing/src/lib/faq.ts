@@ -8,7 +8,7 @@ export const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: 'Which banks are supported?',
     answer:
-      'Thousands of banks in 30+ countries. LunchFlow and SimpleFIN connect banks across the US, Canada and Europe. Monobank covers Ukraine. You open an account with the provider and MoneyMatter syncs from it. Bank sync comes with the Plus plan. If your bank is missing, import CSV, OFX or statement files.',
+      'Thousands of banks in 30+ countries. LunchFlow and SimpleFIN connect banks across the US, Canada and Europe. Monobank covers Ukraine, Akahu covers New Zealand. You open an account with the provider and MoneyMatter syncs from it. Bank sync comes with the Plus plan. If your bank is missing, import CSV, OFX or statement files.',
   },
   {
     question: 'What happens after the 40-day trial?',

@@ -1,0 +1,139 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Import from CSV, OFX, QFX, PDF or another budgeting app',
+    text: 'Banks export a CSV, an OFX file or only a PDF, and each budgeting app has its own format. In Settings, under Import/Export, you pick the importer that fits your file.',
+    bullets: [
+      'CSV files from your bank, in any column order, as long as they have a date column and an amount column',
+      'OFX and QFX statements for bank accounts and credit cards. Investment statements are not supported',
+      'PDF statements, photos of paper statements, banking app screenshots and receipts, read by AI',
+      'Register files from YNAB, CSV exports from Wallet by BudgetBakers and .mny files from Microsoft Money',
+    ],
+    screenshot: {
+      name: 'import-sources',
+      alt: 'The list of importers: Import from any Text Source, Import CSV, OFX or QFX statement, Import from YNAB, Wallet (BudgetBakers) and Microsoft Money',
+      width: 672,
+      height: 541,
+    },
+  },
+  {
+    heading: "CSV import that works with your bank's file layout",
+    text: 'Every bank lays out its CSV differently, so you tell MoneyMatter what each column means, and it suggests matches from your headers. For dates like 01/02/2024, you choose day-first or month-first yourself, because only you know whether that is January or February.',
+    bullets: [
+      'Upload several files in one import, such as one export per month, as long as they share the same columns',
+      'Put every row in one account, or use an account column to link each name to an existing account or create a new one',
+      'Read income and expenses from the sign of the amount or from a debit/credit column',
+      "Match the file's category names to your categories, or create new ones, then reuse that mapping on your next import",
+    ],
+  },
+  {
+    heading: 'Import PDF bank statements with AI',
+    text: 'When your bank only gives you PDFs, upload the statement and AI lists the transactions for you to check before anything is saved. You see the model and estimated cost before it runs. A receipt becomes one transaction for its total. MoneyMatter then tries to categorize the imported transactions with AI.',
+    bullets: [
+      'Plus and the trial can use the AI included with MoneyMatter, which has usage limits',
+      'On Essential, you use your own AI model and pay your provider directly. Plus can do this too',
+      'Self-hosted installs use your own AI key or a model running on your own network',
+    ],
+  },
+  {
+    heading: 'Import from YNAB, Wallet by BudgetBakers or Microsoft Money',
+    text: 'Leaving another budgeting app? Each importer shows what it found before you commit, and transfers between your accounts arrive as transfers.',
+    bullets: [
+      'YNAB: accounts, transactions, categories, payees and flags as tags. Your Register file only holds transactions, so budget amounts and targets stay behind',
+      'Wallet by BudgetBakers: categories, payees and labels as tags, into new or existing accounts. Wallet must be set to English or Spanish when you export',
+      'Microsoft Money: banking, credit card, cash, asset and liability accounts, including from password-protected files. Investment and loan accounts are skipped',
+    ],
+  },
+  {
+    heading: 'Catch duplicate transactions and keep your balance correct',
+    text: "Adding history to an account you already use can double up transactions or move a balance that was correct. Say your card shows 1,200 EUR today, matching your bank. By default, importing last year's transactions leaves it at 1,200 EUR.",
+    bullets: [
+      'Rows that match a transaction already in the account are flagged and skipped unless you tick them',
+      'OFX files usually give each transaction an ID, so you can import overlapping statements without bringing the same transaction in twice',
+      "For a new account, you can enter today's balance and MoneyMatter works out the starting balance from it",
+    ],
+    screenshot: {
+      name: 'features/import/csv-review-duplicates',
+      alt: 'The Review step of a CSV import with total, valid, invalid and duplicate counts, the Update account balances checkbox, and a potential duplicate shown beside the existing transaction and ticked to import anyway',
+      width: 872,
+      height: 564,
+    },
+  },
+  {
+    heading: 'Undo an import from Import History',
+    text: 'Imported the wrong file, or into the wrong account? Import History lists every import with its date, source and counts. Open one to see only the transactions it added, or delete it. Deleting removes those transactions and any accounts it created that are left empty, and reverses any change it made to an opening balance.',
+    screenshot: {
+      name: 'features/import/import-history',
+      alt: 'The Import History page listing past YNAB, OFX and CSV imports, each with its date, transaction count, account count and a delete button',
+      width: 872,
+      height: 437,
+    },
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'You cannot import into an account connected to a bank.',
+  'Each CSV import is limited to about 10 MB and 50,000 rows, so split a very long history into several imports.',
+  'AI can miss lines in a statement, so compare the imported count with the original.',
+  'When a trial or plan ends, your account becomes read-only. You can still export your data, but you cannot import.',
+];
+
+const FAQ = [
+  {
+    question: 'Can I import a PDF bank statement?',
+    answer:
+      'Yes. Upload it to Import from any Text Source, and AI lists the transactions for you to check, usually in 30 to 60 seconds. Password-protected PDFs work. Keep each file under about 7.5 MB, and split a longer statement into several files. A scanned PDF has no text for AI to read, so upload a photo or screenshot of its pages instead.',
+  },
+  {
+    question: 'Can I import transactions from an Excel file?',
+    answer:
+      'Not directly. Save the sheet as a CSV file, then use the CSV importer and map its columns.',
+  },
+  {
+    question: 'Do I need a paid plan to import transactions?',
+    answer:
+      'Yes, after the 40-day free trial, which needs no card and includes every importer. The CSV, OFX, YNAB, Wallet and Microsoft Money importers are part of both paid plans, and Essential costs $5 a month or $30 a year before tax. If you self-host MoneyMatter, every importer is available with no plan to buy.',
+  },
+  {
+    question: 'What if my budgeting app has no importer?',
+    answer:
+      'If it can export a CSV, use the CSV importer and map the columns yourself. You can also request a dedicated importer on the roadmap.',
+  },
+  {
+    question: 'Will importing create duplicate transactions?',
+    answer:
+      'Not in accounts you already have, where each row is compared by day, amount and direction. New accounts have nothing to compare against, so importing the same file twice into new accounts, which is what YNAB imports always create, adds a second copy. You can delete the extra import from Import History.',
+  },
+  {
+    question: 'Will importing old transactions change my current balance?',
+    answer:
+      "Not by default. If you tick Update account balances from imported transactions, only rows dated on or after the account's latest existing transaction change its balance. AI statement imports are the exception: they always change the balance of an existing account, even for old transactions.",
+  },
+  {
+    question: 'Can I undo an import?',
+    answer:
+      'Yes, from Import History, as long as its accounts have not been connected to a bank since. Deleting is permanent. Categories, payees and tags the import created stay, and you can delete them yourself.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Import from CSV', href: 'https://docs.moneymatter.app/import/import-from-csv/' },
+  { label: 'Other import sources', href: 'https://docs.moneymatter.app/import/other-import-sources/' },
+];
+
+const RELATED = ['/features/bank-sync', '/features/categories-and-tags', '/features/export-and-backup'];
+---
+
+<FeatureLayout
+  title="Import Bank Transactions from CSV, OFX and PDF | MoneyMatter"
+  description="Import bank transactions from CSV, OFX, QFX or PDF statements, or from YNAB, Wallet and Microsoft Money. Check duplicates first and undo any import later."
+  heading="Import bank transactions from CSV, OFX and PDF statements"
+  intro="Import bank transactions into MoneyMatter from a CSV, OFX or QFX file, a PDF statement or the budgeting app you are leaving. You check what was found before anything is saved, and you can delete the whole import later if it went wrong."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

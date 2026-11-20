@@ -1,6 +1,6 @@
 import { trackEvent } from '../index';
 
-export type LoginMethod = 'email' | 'google' | 'github' | 'apple' | 'passkey';
+export type LoginMethod = 'email' | 'google' | 'github' | 'apple' | 'oidc' | 'passkey';
 
 /**
  * Track user login event.

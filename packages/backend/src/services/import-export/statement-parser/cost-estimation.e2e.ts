@@ -101,6 +101,36 @@ describe('Statement parser cost estimation', () => {
     expect(estimate.estimatedInputTokens).toBeGreaterThan(0);
   });
 
+  it('estimates a CSV written in a non-Latin script', async () => {
+    await createFirstConnection();
+
+    const georgianCsv = [
+      'თარიღი,დანიშნულება,,GEL',
+      '21/10/2026,"გადახდა - თანხა: GEL14.00; ობიექტი: GEORGIAN POST",,-14.00',
+      '22/10/2026,"გადახდა - თანხა: GEL3.50; ობიექტი: ყავა",,-3.50',
+    ].join('\n');
+
+    const estimate = await helpers.statementEstimateCost({
+      payload: { fileBase64: Buffer.from(georgianCsv, 'utf-8').toString('base64') },
+      raw: true,
+    });
+
+    expect(estimate.fileType).toBe('csv');
+  });
+
+  it('rejects binary content even though most of its bytes are above 0x7F', async () => {
+    const binary = Buffer.from(Array.from({ length: 1024 }, (_, i) => i % 256));
+
+    const response = await helpers.makeRequest({
+      method: 'post',
+      url: '/import/text-source/estimate-cost',
+      payload: { fileBase64: binary.toString('base64') },
+    });
+
+    expect(response.statusCode).not.toBe(200);
+    expect(response.body.response.message).toBe(t({ key: 'statementParser.unsupportedFileTypeWithImages' }));
+  });
+
   it('answers 422 for an image over the 4MB cap', async () => {
     await createFirstConnection();
     const pngHeader = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "01a1cf52-7d87-724c-bcfa-d495bbd13f07",
+    "ventureEventId": "01a1cf52-7d6f-76ca-871a-ed662f8656b1",
+    "transactionId": "01a1cf52-7d52-7003-a0dd-f81cf74d201c",
+    "amount": "1736.4500000000",
+    "currencyCode": "AED",
+    "linkedAt": "2026-11-12T10:34:12.231Z",
+    "metaData": {
+      "originalTransactionState": {
+        "note": "Venture investment",
+        "time": "2026-11-12T00:00:00.000Z",
+        "amount": 173645,
+        "accountId": "01a1cf52-7b93-74fb-b7c2-131b123c1dee",
+        "refAmount": 173645,
+        "categoryId": "01a1cf52-7b18-70ce-95da-d09624ad6500",
+        "transferId": null,
+        "paymentType": "creditCard",
+        "currencyCode": "AED",
+        "transferNature": "not_transfer",
+        "refCurrencyCode": "AED",
+        "transactionType": "expense"
+      }
+    },
+    "createdAt": "2026-11-12T10:34:12.231Z",
+    "updatedAt": "2026-11-12T10:34:12.231Z"
+  }
+]

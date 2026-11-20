@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Витрати за категоріями",
+        "incomeTitle": "Доходи за категоріями",
         "today": "Сьогодні",
         "vsPreviousPeriod": "до попереднього періоду",
-        "viewButton": "Переглянути"
+        "viewButton": "Переглянути",
+        "back": "Назад",
+        "openInAnalytics": "Відкрити в Аналітиці",
+        "metric": {
+          "expenses": "Витрати",
+          "income": "Доходи"
+        },
+        "seeTransactions": "Переглянути транзакції"
       },
       "latestTransactions": {
         "title": "Останні транзакції",
@@ -238,6 +246,7 @@
         },
         "hints": {
           "noHistory": "Порівняння з'явиться після вашого першого повного місяця.",
+          "plannedFailed": "Не вдалося завантажити заплановані транзакції. Прогноз може їх не враховувати.",
           "fewMonths": "Середнє за {n} повний місяць наразі | Середнє за {n} повні місяці наразі | Середнє за {n} повних місяців наразі"
         },
         "loadFailed": "Не вдалося завантажити ваші витрати.",
@@ -300,7 +309,10 @@
         "daysLeft": "Залишився {count} день | Залишилось {count} дні | Залишилось {count} днів",
         "lastDay": "Останній день періоду",
         "empty": "Бюджету ще немає",
-        "create": "Налаштувати бюджет"
+        "create": "Налаштувати бюджет",
+        "sort": {
+          "overspent": "Спочатку найбільші перевитрати"
+        }
       },
       "trackers": {
         "spentOfLimit": "{spent} із {limit}",
@@ -310,6 +322,28 @@
         "empty": "Трекерів ще немає",
         "ended": "Завершено",
         "create": "Створити трекер"
+      },
+      "tagAnalysis": {
+        "title": "Аналіз тегів",
+        "noTagsTitle": "Теги не вибрано",
+        "noTagsDescription": "Виберіть теги для порівняння в налаштуваннях віджета.",
+        "ofIncome": "від доходу",
+        "remaining": "Нерозподілене",
+        "targetTooltip": "Ціль: {value}%",
+        "settings": {
+          "tagsLabel": "Теги",
+          "tagsPlaceholder": "Виберіть теги",
+          "targetsLabel": "Цілі, %",
+          "targetsNoneSet": "Не задано",
+          "targetsSetCount": "Задано {set} із {total}",
+          "targetsEmpty": "Спочатку додайте теги, щоб задати для них цілі",
+          "targetPlaceholder": "Немає",
+          "percentBaseLabel": "Відсоток від",
+          "percentBaseTags": "Вибраних тегів",
+          "percentBaseIncome": "Доходу",
+          "includeTransfersLabel": "Враховувати перекази",
+          "includeTransfersDescription": "Рахувати перекази на ваші рахунки й портфелі як витрати"
+        }
       },
       "emptyState": "Немає даних за вибраний період часу.",
       "registry": {
@@ -376,6 +410,29 @@
         "trackers": {
           "name": "Трекери",
           "description": "Кожен активний трекер: скільки ліміту використано та його сальдо"
+        },
+        "goals": {
+          "name": "Цілі",
+          "description": "Прогрес досягнення ваших цілей заощаджень",
+          "savedOfTarget": "{saved} з {target}",
+          "empty": {
+            "title": "Активних цілей немає",
+            "description": "Поставте ціль і дивіться, наскільки ви близькі до неї.",
+            "action": "Створити ціль"
+          },
+          "locked": {
+            "title": "Цілі заблоковано",
+            "description": "Накопичуйте на важливе й дивіться, чи встигаєте. Доступно на платних планах.",
+            "action": "Дізнатися більше"
+          },
+          "settings": {
+            "showReached": "Показувати досягнуті цілі"
+          },
+          "reachedSection": "Досягнуті"
+        },
+        "tagAnalysis": {
+          "name": "Аналіз тегів",
+          "description": "Дивіться, як ваші витрати розподіляються між вибраними тегами, як-от потреби, бажання й заощадження"
         }
       }
     },
@@ -395,6 +452,8 @@
       "payAction": "Позначити як сплачено",
       "listTitle": "Найближчі",
       "dueCount": "До сплати: {count}",
+      "daysLate": "{count} дн. простр.",
+      "overdueCount": "Прострочено: {count}",
       "nothingDue": "Найближчі 3 дні без платежів",
       "overdueHint": "Прострочено з {date}",
       "dueSoonHint": "Строк оплати протягом 3 днів",
@@ -406,13 +465,6 @@
       "loadFailed": "Не вдалося завантажити регулярні платежі"
     },
     "latestRecords": {
-      "config": {
-        "includeScheduled": {
-          "label": "Включити регулярні платежі",
-          "on": "Увім.",
-          "off": "Вимк."
-        }
-      },
       "settings": {
         "excludeTitle": "Виключити транзакції",
         "excludeTransfersDescription": "Приховати перекази між власними рахунками",
@@ -421,6 +473,9 @@
         "excludeBalanceAdjustmentsDescription": "Приховати транзакції коригування балансу",
         "plannedTitle": "Заплановані транзакції",
         "excludePlannedDescription": "Приховати непідтверджені заплановані транзакції зі списку",
+        "scheduledTitle": "Регулярні платежі",
+        "excludeScheduledDescription": "Приховати найближчі та прострочені регулярні платежі зі списку",
+        "scheduledSaveError": "Не вдалося зберегти налаштування регулярних платежів. Спробуйте ще раз.",
         "nothingExcluded": "Нічого не виключено",
         "tagsStyleTitle": "Теги",
         "tagsStyleNames": "Назви",
@@ -482,7 +537,8 @@
         "title": "Сплануйте свій шлях до FIRE",
         "description": "Функція Plus",
         "action": "Розблокувати"
-      }
+      },
+      "paceVs": "порівняно з: {month}"
     }
   }
 }

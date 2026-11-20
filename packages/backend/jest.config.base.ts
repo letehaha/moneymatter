@@ -45,10 +45,7 @@ export default {
     '^@better-auth/oauth-provider$': '<rootDir>/src/tests/mocks/better-auth/oauth-provider.ts',
     '^better-auth/plugins$': '<rootDir>/src/tests/mocks/better-auth/plugins.ts',
     '^@better-auth/passkey$': '<rootDir>/src/tests/mocks/better-auth/passkey.ts',
-    // Mock MCP SDK ESM modules with our CommonJS compatible versions
-    '^@modelcontextprotocol/sdk/server/mcp\\.js$': '<rootDir>/src/tests/mocks/mcp-sdk/server-mcp.ts',
-    '^@modelcontextprotocol/sdk/server/streamableHttp\\.js$':
-      '<rootDir>/src/tests/mocks/mcp-sdk/server-streamable-http.ts',
+    '^@better-auth/expo$': '<rootDir>/src/tests/mocks/better-auth/expo.ts',
     '@bt/shared/(.*)': '<rootDir>/../shared/src/$1',
     '@routes/(.*)': '<rootDir>/src/routes/$1',
     '@middlewares/(.*)': '<rootDir>/src/middlewares/$1',

@@ -58,7 +58,7 @@ The catch is that currencies sharing a symbol all look the same: USD, CAD, AUD a
 Pick the language for the app. It switches right away.
 
 - **English** and **Українська** are maintained by the MoneyMatter team.
-- **Español**, **Bahasa**, **Русский**, **Slovenčina** and **Deutsch** are under **Community translations**. Volunteers translate them on Crowdin, and anything not translated yet is shown in English.
+- **Español**, **Bahasa**, **Русский**, **Slovenčina**, **Deutsch**, **Français**, **Português (Brasil)** and **Italiano** are under **Community translations**. Volunteers translate them on Crowdin, and anything not translated yet is shown in English.
 
 To fix a translation or help with a language, click **Contribute on Crowdin** in the **Missing or wrong translations?** box. You can also request a new language from the feature board linked there.
 
@@ -92,6 +92,7 @@ This changes more than charts:
 
 - **Stats:** the dashboard's **Balance trend** and **Net Worth** widgets, and the **Net Worth History** report in Analytics.
 - **Displayed balances:** the account list in the sidebar, the **Accounts** page, the account's own page, and account group totals.
+- **Budget:** **Budgetable money** and **Ready to Assign** in a budget that uses the pool.
 
 Only accounts with a credit limit above 0 are affected. In stats, the limit isn't subtracted for loans, cars, or accounts with [**Exclude from statistics**](/accounts/manage-accounts/#exclude-an-account-from-statistics) turned on.
 
@@ -129,6 +130,13 @@ With no default set, the first active account is used.
 Off by default. When it's off, archived accounts are hidden from account pickers, such as the one in the transaction form. An archived account that's already selected, for example on a transaction you're editing, is still shown.
 
 If your default account is archived, it's ignored while this setting is off.
+
+### iPhone Add Expense
+
+Controls what the [Add Expense shortcut](/iphone/add-expense-shortcut/) on iPhone offers.
+
+- **Show bank-connected accounts**: off by default, because transactions on bank-connected accounts arrive through sync. Turn it on to list them too.
+- **Hidden categories**: checked categories, with their subcategories, are hidden from the shortcut's category list.
 
 ### Quick Start guide
 
@@ -186,7 +194,6 @@ The settings menu has more pages. Here's what each one is for.
 - **Payees**: the list of merchants you transact with. See [Payees](/transactions/payees/).
 - **Accounts groups**: organize accounts into groups. See [Account groups](/accounts/account-groups/).
 - **Import/Export**: bring in data from files and other apps, or download your data as a zip for spreadsheets, taxes or moving elsewhere. See [Import from CSV](/import/import-from-csv/) and [Other import sources](/import/other-import-sources/).
-- **Scheduled payments**: manage payments that repeat on a schedule.
 - **AI**: pick which AI model powers each feature, add your own models, and connect AI apps to your data.
 - **Shared with me**: data other people have shared with you.
 - **Household**: share your data with other people.

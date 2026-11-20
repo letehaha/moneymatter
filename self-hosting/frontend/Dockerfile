@@ -3,7 +3,7 @@
 # Astro landing), nothing arch-specific — so multi-arch builds run the heavy
 # JS build once natively instead of emulating it under QEMU per target arch.
 # The production nginx stage stays flag-less so it builds per target arch.
-FROM --platform=$BUILDPLATFORM node:24.21.0 AS build-stage
+FROM --platform=$BUILDPLATFORM node:24.22.1 AS build-stage
 
 WORKDIR /app
 
@@ -65,6 +65,8 @@ RUN NODE_OPTIONS="--max-old-space-size=$NODE_BUILD_HEAP_MB" npm run build
 
 # 🚀 Stage 2️⃣: Production
 FROM nginx:1.27-alpine AS production-stage
+
+LABEL org.opencontainers.image.source="https://github.com/letehaha/moneymatter"
 
 # The Sentry release is the only baked runtime fallback: it must match the
 # source maps CI uploaded while building this exact image, so it ships inside

@@ -231,8 +231,8 @@ const confirmDeletion = async () => {
       <DemoRestricted feature="attach_file" content-class="block w-full">
         <Button
           type="button"
-          variant="outline"
-          class="border-input bg-input-background h-auto min-h-10 w-full justify-start px-3 font-normal md:min-h-9"
+          variant="field"
+          class="h-auto min-h-10 w-full justify-start px-3"
           :disabled="userStore.isDemo"
           @click="isDialogOpen = true"
         >
@@ -274,6 +274,7 @@ const confirmDeletion = async () => {
           :idle-text="$t('dialogs.manageTransaction.form.attachments.dropzone.idle')"
           :drag-text="$t('dialogs.manageTransaction.form.attachments.dropzone.drag')"
           @update:model-value="uploadFiles"
+          @error="(message: string) => message && addErrorNotification(message)"
         >
           <template #hint>
             {{

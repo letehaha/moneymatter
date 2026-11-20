@@ -10,7 +10,9 @@ const props = defineProps<{
 }>();
 
 const { filterAccounts } = useHideZeroBalances();
-const visibleAccounts = computed(() => filterAccounts(props.accounts));
+const visibleAccounts = computed(() =>
+  [...filterAccounts(props.accounts)].sort((a, b) => a.name.localeCompare(b.name)),
+);
 </script>
 
 <template>

@@ -3,11 +3,12 @@
     :class="
       cn(
         'flex items-center justify-center gap-0.5',
+        fluid && 'min-w-0',
         variant === 'solid' && 'border-input bg-input-background h-9 rounded-md border px-0.5',
       )
     "
   >
-    <Button size="icon-sm" variant="ghost" @click="selectPrevPeriod">
+    <Button size="icon-sm" variant="ghost" class="shrink-0" @click="selectPrevPeriod">
       <ChevronLeft :size="16" />
     </Button>
 
@@ -15,16 +16,16 @@
       <template #trigger="{ triggerText }">
         <Button
           variant="ghost"
-          size="sm"
-          :class="cn('hover:bg-accent min-w-55 font-medium', variant === 'solid' && 'h-8')"
+          :size="variant === 'solid' ? 'xs' : 'sm'"
+          :class="cn('font-medium', fluid ? 'min-w-0 flex-1' : 'min-w-55')"
         >
-          <CalendarIcon class="mr-1.5 size-3.5" />
-          {{ triggerText }}
+          <CalendarIcon class="size-3.5 shrink-0" />
+          <span class="truncate">{{ triggerText }}</span>
         </Button>
       </template>
     </DateSelector>
 
-    <Button size="icon-sm" variant="ghost" :disabled="isNextDisabled" @click="selectNextPeriod">
+    <Button size="icon-sm" variant="ghost" class="shrink-0" :disabled="isNextDisabled" @click="selectNextPeriod">
       <ChevronRight :size="16" />
     </Button>
   </div>
@@ -35,8 +36,8 @@ import Button from '@/components/lib/ui/button/Button.vue';
 import { DateSelector, type DateSelectorPreset } from '@/components/lib/ui/date-selector';
 import { cn } from '@/lib/utils';
 import { useEarliestTransactionDate } from '@/composable/data-queries/earliest-transaction-date';
-import { type Period, usePeriodNavigation } from '@/composable/use-period-navigation';
-import { endOfMonth, endOfYear, isAfter, startOfMonth, startOfYear, subMonths, subYears } from 'date-fns';
+import { type Period, getPayPeriod, usePeriodNavigation } from '@/composable/use-period-navigation';
+import { endOfYear, isAfter, startOfYear, subMonths, subYears } from 'date-fns';
 import { CalendarIcon, ChevronLeft, ChevronRight } from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -47,8 +48,11 @@ const props = withDefaults(
   defineProps<{
     modelValue: Period;
     variant?: 'ghost' | 'solid';
+    payday?: number;
+    /** Shrinks with its container and truncates the label instead of holding a fixed minimum width. */
+    fluid?: boolean;
   }>(),
-  { variant: 'ghost' },
+  { variant: 'ghost', payday: 1 },
 );
 
 const emit = defineEmits<{
@@ -62,6 +66,7 @@ const period = computed({
 
 const { prevPeriod, nextPeriod } = usePeriodNavigation({
   period: () => props.modelValue,
+  payday: () => props.payday,
 });
 
 const { earliestDate } = useEarliestTransactionDate();
@@ -76,27 +81,26 @@ function selectNextPeriod() {
   period.value = nextPeriod.value;
 }
 
+const lastPayPeriods = (count: number) => (): Period => {
+  const current = getPayPeriod({ date: new Date(), payday: props.payday });
+  return { from: subMonths(current.from, count - 1), to: current.to };
+};
+
 const quickPresets = computed<DateSelectorPreset[]>(() => [
+  ...(props.payday !== 1
+    ? [{ label: t('analytics.cashFlow.periods.currentPayPeriod'), getValue: lastPayPeriods(1) }]
+    : []),
   {
     label: t('analytics.cashFlow.periods.last3Months'),
-    getValue: () => ({
-      from: startOfMonth(subMonths(new Date(), 2)),
-      to: endOfMonth(new Date()),
-    }),
+    getValue: lastPayPeriods(3),
   },
   {
     label: t('analytics.cashFlow.periods.last6Months'),
-    getValue: () => ({
-      from: startOfMonth(subMonths(new Date(), 5)),
-      to: endOfMonth(new Date()),
-    }),
+    getValue: lastPayPeriods(6),
   },
   {
     label: t('analytics.cashFlow.periods.last12Months'),
-    getValue: () => ({
-      from: startOfMonth(subMonths(new Date(), 11)),
-      to: endOfMonth(new Date()),
-    }),
+    getValue: lastPayPeriods(12),
   },
   {
     label: t('analytics.cashFlow.periods.thisYear'),

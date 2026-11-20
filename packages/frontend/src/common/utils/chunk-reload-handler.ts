@@ -59,11 +59,15 @@ let navigateTimer: number | null = null;
 let pendingTarget: string | null = null;
 const NAVIGATE_DEFER_MS = 50;
 
+// Per page load: every recovery is a full navigation, so a later incident starts with a fresh module.
+let capExhaustedReported = false;
+
 /**
  * Returns `true` while a recovery navigation is scheduled (callers should
  * suppress their default error handling), `false` when the retry cap is
- * exhausted — then the incident is reported to Sentry so the genuine
- * deploy/CDN problem is visible instead of the user being silently stranded.
+ * exhausted — then the incident is reported to Sentry, once per page load, so
+ * the genuine deploy/CDN problem is visible instead of the user being silently
+ * stranded.
  *
  * @public exported only for the unit test — see `isStaleChunkError` above.
  */
@@ -73,6 +77,8 @@ export const scheduleRecovery = ({ error, redirectTo }: { error: Error; redirect
 
   const current = readCounter();
   if (current >= MAX_RELOAD_ATTEMPTS) {
+    if (capExhaustedReported) return false;
+    capExhaustedReported = true;
     // Wrapped in a fresh error: the original chunk-failure messages are in
     // Sentry's ignoreErrors (recovered incidents are noise), so the
     // cap-exhausted report needs a message those patterns can't match.

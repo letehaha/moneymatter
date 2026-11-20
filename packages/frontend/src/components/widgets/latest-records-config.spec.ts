@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildLatestRecordsTransferNatures,
   readLatestRecordsExclusions,
+  readLatestRecordsIncludeScheduled,
   readLatestRecordsTagsVariant,
 } from './latest-records-config';
 
@@ -36,6 +37,17 @@ describe('readLatestRecordsExclusions', () => {
         }),
       }),
     ).toEqual({ excludeTransfers: true, excludeOutOfWallet: false, excludeBalanceAdjustments: true });
+  });
+});
+
+describe('readLatestRecordsIncludeScheduled', () => {
+  it('shows scheduled rows unless stored as boolean or legacy string false', () => {
+    expect(readLatestRecordsIncludeScheduled({ widgetConfig: widgetConfig() })).toBe(true);
+    expect(readLatestRecordsIncludeScheduled({ widgetConfig: widgetConfig({ includeScheduled: 'true' }) })).toBe(true);
+    expect(readLatestRecordsIncludeScheduled({ widgetConfig: widgetConfig({ includeScheduled: false }) })).toBe(false);
+    expect(readLatestRecordsIncludeScheduled({ widgetConfig: widgetConfig({ includeScheduled: 'false' }) })).toBe(
+      false,
+    );
   });
 });
 

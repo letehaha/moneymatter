@@ -1,75 +1,75 @@
 {
   "pages": {
     "household": {
-      "title": "Household",
-      "description": "Invite trusted people to share access to all the accounts you own. Members see your accounts and (with write access) can record transactions on them.",
+      "title": "Foyer",
+      "description": "Invitez des proches de confiance pour partager l'accès à tous vos comptes. Les membres voient vos comptes et (avec les droits d'écriture) peuvent y enregistrer des opérations.",
       "myHousehold": {
-        "title": "My household",
-        "description": "People here get access to every account you own. Per-account shares always override household access."
+        "title": "Mon foyer",
+        "description": "Les membres ici ont accès à tous vos comptes. Les accès partagés par compte prévalent toujours sur l'accès du foyer."
       },
-      "youOwner": "You — owner",
-      "noMembers": "No one has joined your household yet.",
-      "loadMembersError": "Couldn't load household members. Try refreshing.",
+      "youOwner": "Vous — propriétaire",
+      "noMembers": "Personne n'a encore rejoint votre foyer.",
+      "loadMembersError": "Impossible de charger les membres du foyer. Essayez d'actualiser.",
       "permissions": {
-        "read": "Read",
-        "write": "Write",
-        "manage": "Manage"
+        "read": "Lecture",
+        "write": "Écriture",
+        "manage": "Gestion"
       },
       "writeScope": {
-        "all": "Can edit any transaction",
-        "own": "Can edit only their own transactions"
+        "all": "Peut modifier toutes les opérations",
+        "own": "Peut modifier uniquement ses propres opérations"
       },
       "invite": {
-        "emailLabel": "Email",
-        "emailPlaceholder": "person{'@'}example.com",
-        "permissionLabel": "Permission",
-        "writeScopeLabel": "Write scope",
-        "submit": "Send household invite",
-        "sent": "Invitation sent.",
-        "error": "Couldn't send the invitation.",
-        "emailDeliveryFailed": "Invitation created, but the email couldn't be delivered. You can resend it from the invitations panel."
+        "emailLabel": "E-mail",
+        "emailPlaceholder": "personne{'@'}exemple.com",
+        "permissionLabel": "Autorisation",
+        "writeScopeLabel": "Périmètre d'écriture",
+        "submit": "Envoyer l'invitation au foyer",
+        "sent": "Invitation envoyée.",
+        "error": "Impossible d'envoyer l'invitation.",
+        "emailDeliveryFailed": "Invitation créée, mais l'e-mail n'a pas pu être envoyé. Vous pouvez le renvoyer depuis le volet des invitations."
       },
       "revoke": {
-        "action": "Remove",
-        "title": "Remove household member?",
-        "description": "{handle} will lose access to every account in your household. Per-account shares (if any) are unaffected.",
-        "confirm": "Remove",
-        "success": "Member removed.",
-        "error": "Couldn't remove this member."
+        "action": "Supprimer",
+        "title": "Supprimer le membre du foyer ?",
+        "description": "{handle} perdra l'accès à tous les comptes de votre foyer. Les accès partagés par compte (le cas échéant) ne sont pas affectés.",
+        "confirm": "Supprimer",
+        "success": "Membre supprimé.",
+        "error": "Impossible de supprimer ce membre."
       },
       "permissionChange": {
-        "setRead": "Make read-only",
-        "setWrite": "Allow writes",
-        "success": "Permission updated.",
-        "error": "Couldn't update permission."
+        "setRead": "Passer en lecture seule",
+        "setWrite": "Autoriser l'écriture",
+        "success": "Autorisation mise à jour.",
+        "error": "Impossible de mettre à jour l'autorisation."
       },
       "imIn": {
-        "title": "Households I'm in",
-        "description": "Other people's households you've joined. Leaving drops your access to every account they shared this way.",
-        "empty": "You haven't joined anyone else's household.",
-        "unnamedHousehold": "{'@'}{handle}'s household",
-        "loadError": "Couldn't load the households you're in. Try again later."
+        "title": "Foyers dont je fais partie",
+        "description": "Les foyers d'autres personnes que vous avez rejoints. Quitter un foyer supprime votre accès à tous les comptes partagés de cette manière.",
+        "empty": "Vous n'avez rejoint le foyer de personne d'autre.",
+        "unnamedHousehold": "Foyer de {'@'}{handle}",
+        "loadError": "Impossible de charger les foyers dont vous faites partie. Réessayez plus tard."
       },
       "leave": {
-        "action": "Leave",
-        "title": "Leave this household?",
-        "description": "You'll lose access to every account {owner} shares through their household. Per-account shares (if any) are unaffected.",
-        "confirm": "Leave",
-        "success": "You left the household.",
-        "error": "Couldn't leave the household."
+        "action": "Quitter",
+        "title": "Quitter ce foyer ?",
+        "description": "Vous perdrez l'accès à tous les comptes que {owner} partage via son foyer. Les accès partagés par compte (le cas échéant) ne sont pas affectés.",
+        "confirm": "Quitter",
+        "success": "Vous avez quitté le foyer.",
+        "error": "Impossible de quitter le foyer."
       },
       "pending": {
-        "badge": "Pending",
-        "resend": "Resend",
-        "cancel": "Cancel",
-        "cancelTitle": "Cancel invitation?",
-        "cancelDescription": "Cancel the pending invitation sent to {email}? They will no longer be able to accept it.",
-        "cancelConfirm": "Cancel invitation",
-        "cancelSuccess": "Invitation cancelled.",
-        "cancelError": "Failed to cancel invitation.",
-        "resendSuccess": "Invitation resent.",
-        "resendError": "Failed to resend invitation.",
-        "resendDeliveryFailed": "Invitation updated, but the email could not be sent. Try again later."
+        "badge": "En attente",
+        "resend": "Renvoyer",
+        "cancel": "Annuler",
+        "cancelTitle": "Annuler l'invitation ?",
+        "cancelDescription": "Annuler l'invitation en attente envoyée à {email} ? Cette personne ne pourra plus l'accepter.",
+        "cancelConfirm": "Annuler l'invitation",
+        "cancelSuccess": "Invitation annulée.",
+        "cancelError": "Échec de l'annulation de l'invitation.",
+        "resendSuccess": "Invitation renvoyée.",
+        "resendError": "Échec du renvoi de l'invitation.",
+        "resendDeliveryFailed": "Invitation mise à jour, mais l'e-mail n'a pas pu être envoyé. Réessayez plus tard."
       }
     }
   }

@@ -37,8 +37,8 @@
       "addMatchingRules": "Zuordnungsregeln hinzufügen",
       "updateMatchingRules": "Zuordnungsregeln aktualisieren",
       "linked": {
-        "totalPaid": "Insgesamt gezahlt",
-        "average": "Durchschnittlich",
+        "totalPaid": "Insgesamt bezahlt",
+        "average": "Durchschnitt",
         "lastPayment": "Letzte Zahlung",
         "driftUp": "↑ {percent}% seit der ersten Zahlung ({date})",
         "driftDown": "↓ {percent}% seit der ersten Zahlung ({date})",
@@ -62,7 +62,20 @@
         "monthly": "Monatlich",
         "quarterly": "Vierteljährlich",
         "semiAnnual": "Halbjährlich",
-        "annual": "Jährlich"
+        "annual": "Jährlich",
+        "custom": "Benutzerdefiniert",
+        "every": {
+          "day": "Jeden Tag | Alle {count} Tage",
+          "week": "Jede Woche | Alle {count} Wochen",
+          "month": "Jeden Monat | Alle {count} Monate",
+          "year": "Jedes Jahr | Alle {count} Jahre"
+        },
+        "units": {
+          "day": "Tag | Tage",
+          "week": "Woche | Wochen",
+          "month": "Monat | Monate",
+          "year": "Jahr | Jahre"
+        }
       },
       "matchSource": {
         "manual": "Manuell",
@@ -86,6 +99,11 @@
         "amountPlaceholder": "0.00",
         "currencyLabel": "Währung",
         "frequencyLabel": "Häufigkeit",
+        "intervalCountLabel": "Wiederholen alle",
+        "intervalCountPlaceholder": "z.B. 30",
+        "intervalUnitLabel": "Einheit",
+        "intervalUnitPlaceholder": "Einheit auswählen",
+        "validationIntervalCount": "Gib eine ganze Zahl von 1 bis {max} ein",
         "startDateLabel": "Startdatum",
         "endDateLabel": "Enddatum",
         "accountLabel": "Konto",
@@ -262,6 +280,7 @@
         "dueOn": "Fällig am {date}",
         "paidAt": "Bezahlt am {date}",
         "viewTransaction": "Transaktion anzeigen",
+        "paymentInTrash": "Zahlung im Papierkorb",
         "actions": {
           "markPaid": "Als bezahlt markieren",
           "skip": "Überspringen"

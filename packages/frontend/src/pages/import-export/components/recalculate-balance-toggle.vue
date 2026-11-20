@@ -23,7 +23,7 @@ withDefaults(
 
 <template>
   <div class="border-border overflow-hidden rounded-md border">
-    <label class="hover:bg-muted/50 flex cursor-pointer items-start gap-3 p-4 transition-colors">
+    <label class="hover:bg-hover flex cursor-pointer items-start gap-3 p-4 transition-colors">
       <Checkbox
         :model-value="model"
         :disabled="settingsLoading"

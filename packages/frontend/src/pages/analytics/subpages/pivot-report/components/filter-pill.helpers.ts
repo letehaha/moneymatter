@@ -9,8 +9,8 @@ import { cn } from '@/lib/utils';
  */
 export const filterPillClass = ({ active }: { active: boolean }): string =>
   cn(
-    'flex h-8 min-h-8 w-auto max-w-full min-w-0 items-center gap-1.5 rounded-md border px-3 py-1 text-sm font-normal md:h-8 md:min-h-8',
+    'flex h-9 min-h-9 w-auto max-w-full min-w-0 items-center gap-1.5 rounded-md border px-3 py-1 text-sm font-normal',
     active
       ? 'border-primary/60 bg-primary/10 text-foreground hover:bg-primary/15'
-      : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground',
+      : 'border-border bg-background text-muted-foreground hover:bg-hover hover:text-foreground',
   );

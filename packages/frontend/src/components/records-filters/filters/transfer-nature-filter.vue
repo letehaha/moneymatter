@@ -6,7 +6,12 @@
       <span class="flex w-full">
         <Popover.PopoverTrigger
           :disabled="isDisabled"
-          class="border-input bg-input-background ring-offset-background focus-visible:ring-ring flex h-10 w-full items-center justify-between gap-2 rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+          :class="
+            cn(
+              'border-input bg-input-background ring-offset-background focus-visible:ring-ring flex w-full items-center justify-between gap-2 rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+              controlHeight[size],
+            )
+          "
         >
           <span class="min-w-0 flex-1 truncate text-left">{{ triggerLabel }}</span>
           <ChevronDownIcon class="text-muted-foreground size-4 shrink-0" />
@@ -36,18 +41,24 @@
 
 <script lang="ts" setup>
 import { Button } from '@/components/lib/ui/button';
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import * as Popover from '@/components/lib/ui/popover';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { SELECTABLE_TRANSFER_NATURES } from '@/components/records-filters/const';
+import { cn } from '@/lib/utils';
 import { FILTER_OPERATION, TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
 import { CheckIcon, ChevronDownIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-const props = defineProps<{
-  transferNatures: TRANSACTION_TRANSFER_NATURE[];
-  transferFilter: FILTER_OPERATION;
-}>();
+const props = withDefaults(
+  defineProps<{
+    transferNatures: TRANSACTION_TRANSFER_NATURE[];
+    transferFilter: FILTER_OPERATION;
+    size?: ControlSize;
+  }>(),
+  { size: 'default' },
+);
 
 const emit = defineEmits<{
   'update:transfer-natures': [value: TRANSACTION_TRANSFER_NATURE[]];

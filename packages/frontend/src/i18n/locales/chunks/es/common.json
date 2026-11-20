@@ -28,7 +28,9 @@
       "retry": "Reintentar",
       "copyInviteLink": "Copiar enlace de invitación",
       "moveTo": "Mover a…",
-      "learnMore": "Saber más"
+      "learnMore": "Saber más",
+      "undo": "Deshacer",
+      "more": "Más"
     },
     "ui": {
       "close": "Cerrar",
@@ -103,7 +105,8 @@
       "debitCard": "Tarjeta de débito",
       "mobilePayment": "Pago móvil",
       "voucher": "Vale",
-      "webPayment": "Pago web"
+      "webPayment": "Pago web",
+      "none": "Nada"
     },
     "vehicleClasses": {
       "sedan": "Sedán",
@@ -139,13 +142,19 @@
         "description": "Lee una factura o recibo subido y encuentra la transacción a la que pertenece."
       },
       "trackerMatching": {
-        "name": "Tracker matching",
-        "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
+        "name": "Coincidencia de rastreador",
+        "description": "Escanea nuevas transacciones y sugiere las que pertenecen a un rastreador inteligente."
+      },
+      "transferMatching": {
+        "name": "Transferir coincidencia",
+        "description": "Comprueba la transferencia de resultados del escaneo y mantiene los pares que parecen transferencias reales"
       }
     },
     "transactions": {
       "delete": {
-        "success": "Eliminado correctamente",
+        "success": "Movido a la papelera",
+        "undoSuccess": "Restaurado",
+        "undoError": "No se pudo deshacer. Todavía puede restaurarlo desde la basura.",
         "error": "Error al eliminar la transacción"
       },
       "submit": {
@@ -156,6 +165,7 @@
       },
       "record": {
         "addedByTooltip": "{handle} adjuntó esta transacción al presupuesto",
+        "addedByRule": "Agregado por las reglas del rastreador",
         "matchedByAi": "Coincidencia por IA",
         "externalLinkTooltip": "Abrir enlace externo",
         "locationTooltip": "Abrir ubicación en el mapa",
@@ -164,6 +174,13 @@
         "selectRow": "Seleccionar transacción",
         "unselectableReasons": {
           "sharedAccount": "No se puede seleccionar: esta transacción pertenece a una cuenta compartida contigo, y solo su propietario puede editarla."
+        },
+        "payment": {
+          "paidFrom": "Pagado desde {count} cuentas",
+          "receivedInto": "Recibido en {count} cuentas",
+          "partOf": "Parte de un pago de {total}",
+          "thisAccount": "(esta cuenta)",
+          "loadError": "No se pudo agregar las transacciones de vuelta. Inténtelo de nuevo."
         }
       }
     },
@@ -225,7 +242,7 @@
         "brand": "Marca",
         "letters": "Letras",
         "icon": "Icono",
-        "custom": "Image"
+        "custom": "Imagen"
       },
       "searchPlaceholder": "Nombre de marca o dominio",
       "searchHint": "Escriba un nombre de marca o un dominio como amazon.com",
@@ -240,18 +257,22 @@
       "dialogTitle": "Cambiar logo",
       "resetToAuto": "Restablecer a automático",
       "remove": "Quitar logo",
+      "pickerDescription": "Elige un logo de marca o usa letras en su lugar.",
+      "updatedToast": "Logo actualizado",
+      "resetToast": "Logo eliminado",
+      "updateError": "No se pudo actualizar el logo. Vuelve a intentarlo.",
       "lettersLabel": "Letras (1–2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Color",
       "colorSwatchAriaLabel": "Usar color {color}",
       "customColorAriaLabel": "Elegir un color personalizado",
       "lettersSelectedLabel": "Letras “{letters}”",
-      "lettersHint": "1–2 letters or an emoji",
-      "chooseImage": "Choose image",
-      "replaceImage": "Replace image",
-      "imageHint": "Cropped to a square and resized to 200×200 on your device.",
-      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
-      "imageUnreadable": "That file couldn't be read as an image."
+      "lettersHint": "1–2 letras o un emoji",
+      "chooseImage": "Elige una imagen",
+      "replaceImage": "Reemplazar imagen",
+      "imageHint": "Recortado a un cuadrado y redimensionado a 200×200 en tu dispositivo.",
+      "imageTooLarge": "La imagen tiene aún más de 50 KB después de cambiar el tamaño. Prueba con una imagen más sencilla.",
+      "imageUnreadable": "No se ha podido leer {name} como una imagen."
     },
     "iconPicker": {
       "searchPlaceholder": "Buscar iconos...",
@@ -264,7 +285,7 @@
       "preparing": "Preparándose",
       "finishing": "Finalizando",
       "takingLong": "Esto está tardando más de lo habitual, grandes lotes pueden tardar varios minutos. Mantenga esta página abierta.",
-      "unreachableTitle": "No se puede contactar con el servidor",
+      "unreachableTitle": "No se puede conectar con el servidor",
       "unreachableDescription": "El borrado puede estar ejecutándose. Descartar para seguir usando la aplicación, y volver a cargar más tarde para ver el resultado.",
       "failedTitle": "No se pudo eliminar",
       "dismiss": "Descartar"
@@ -278,7 +299,20 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "{duration} adelante",
+        "behind": "{duration} por detrás",
+        "onPace": "En ritmo",
+        "backInReach": "Volver a su alcance",
+        "offTrack": "Fuera de lo previsto"
       }
+    },
+    "pasteImage": {
+      "button": "Pegar imagen",
+      "shortcutHint": "o presiona {{shortcut}}",
+      "noImage": "No se ha encontrado ninguna imagen en el portapapeles.",
+      "readFailed": "No se pudo leer el portapapeles. Permitir el acceso al portapapeles o pegar con el acceso directo del teclado."
     }
   },
   "accountGroups": {
@@ -294,6 +328,10 @@
       "error": "Error al eliminar el grupo"
     },
     "link": {
+      "success": "La cuenta ha sido añadida al grupo",
+      "error": "Error al añadir la cuenta al grupo"
+    },
+    "linkMany": {
       "success": "La cuenta ha sido añadida al grupo",
       "error": "Error al añadir la cuenta al grupo"
     },
@@ -318,10 +356,10 @@
     "newVersion": "Nueva versión {version}",
     "newRelease": "Nueva versión publicada",
     "trackerAiMatches": {
-      "title": "{name}: {summary}",
-      "added": "{count} transaction added | {count} transactions added",
-      "toReview": "{count} transaction to review | {count} transactions to review",
-      "toReviewShort": "{count} to review",
+      "title": "{name} · {summary}",
+      "added": "Transacción {count} añadida | {count} transacciones añadidas",
+      "toReview": "Transacción {count} a revisar | {count} transacciones a revisar",
+      "toReviewShort": "{count} a revisar",
       "both": "{added}, {toReview}"
     },
     "tagReminder": {
@@ -330,6 +368,13 @@
     },
     "share": {
       "sendFailedHint": "Abra el panel de compartir para reenviar."
+    },
+    "goalReached": {
+      "title": "Objetivo alcanzado: {name}",
+      "message": "Has guardado {amount}."
+    },
+    "unrealizedLossAlert": {
+      "title": "{count} sosteniendo tu alerta de pérdida | {count} existencias cruzaron tu alerta de pérdida"
     }
   },
   "currencyNames": {
@@ -424,7 +469,7 @@
   },
   "billing": {
     "seePlans": "Ver planes",
-    "trialStartFailed": "Couldn't start the free trial. Try again.",
+    "trialStartFailed": "No se pudo iniciar la prueba gratuita. Inténtalo de nuevo.",
     "updatePaymentMethod": "Actualice su método de pago",
     "planRequired": {
       "essential": "Incluido en el Plan Esencial",
@@ -523,6 +568,12 @@
       "removeTransactionDescriptionNormal": "¿Está seguro de que desea quitar esta transacción del grupo?",
       "removeButtonText": "Quitar",
       "removeAndDeleteButtonText": "Quitar y eliminar el grupo",
+      "removeFromGroup": "Quitar del grupo",
+      "saveError": "No se pudo guardar el grupo",
+      "removeError": "No se pudo eliminar la transacción del grupo",
+      "manageTransactions": "Gestionar",
+      "showMoreNote": "Mostrar más",
+      "showLessNote": "Mostrar menos",
       "summary": {
         "transactions": "Transacciones",
         "net": "Neto",
@@ -532,6 +583,56 @@
     },
     "transactionGroupRecord": {
       "transactionCountLabel": "transacciones"
+    }
+  },
+  "mcpToolsets": {
+    "core": {
+      "label": "Núcleo",
+      "description": "Cuentas, transacciones, categorías, etiquetas, beneficiarios y reportes"
+    },
+    "subscriptions": {
+      "label": "Pagos recurrentes",
+      "description": "Pagos recurrientes, sus períodos y transacciones planificadas"
+    },
+    "budgetPlans": {
+      "label": "Planes de presupuesto",
+      "description": "Planes, líneas, metas de línea y objetivos de ahorro"
+    },
+    "trackers": {
+      "label": "Rastreadores",
+      "description": "Rastreadores de gastos y sus sugerencias"
+    },
+    "automations": {
+      "label": "Automatizaciones",
+      "description": "Reglas, alias de beneficiario, nombres de beneficiarios ignorados y recordatorios de etiquetas"
+    },
+    "review": {
+      "label": "Revisar y limpiar",
+      "description": "Transferir y reembolsar partidos, duplicar y atascar transacciones pendientes"
+    },
+    "groupsTemplates": {
+      "label": "Grupos y plantillas",
+      "description": "Grupos de transacciones y plantillas de transacción"
+    },
+    "investments": {
+      "label": "Inversiones",
+      "description": "Carteras, tenencias, valores y transacciones de inversión"
+    },
+    "ventures": {
+      "label": "Ventures",
+      "description": "Plataformas de ventas, ofertas y eventos"
+    },
+    "loansVehicles": {
+      "label": "Préstamos y vehículos",
+      "description": "Préstamos con sus pagos y vehículos"
+    },
+    "currencies": {
+      "label": "Monedas",
+      "description": "Sus monedas y tipos de cambio"
+    },
+    "imports": {
+      "label": "Importar y compartir",
+      "description": "Importar lotes (lista, deshacer) y conexiones bancarias (estado, desvincular una cuenta); compartir sólo es de lectura."
     }
   }
 }

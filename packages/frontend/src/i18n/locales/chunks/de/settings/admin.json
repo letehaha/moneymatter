@@ -30,7 +30,7 @@
         },
         "dateRangeInfo": {
           "loading": "Datumsbereichsinformationen werden geladen...",
-          "title": "Verfügbarer Datumsbereich für Wechselkurse ({currency}):",
+          "title": "Verfügbarer Zeitraum für Wechselkurse ({currency}):",
           "tooltipText": "Du kannst Wertpapierpreise nur für Daten hochladen, für die uns Wechselkurse vorliegen. Andernfalls ist es nicht möglich, den Wertpapierpreis in andere Währungen umzurechnen. Wenn du ältere Daten benötigst, lade zuerst Wechselkurse hoch. Andernfalls werden Datensätze je nach der in den nächsten Schritten gewählten Option automatisch gefiltert (ausgelassen) oder die Upload-Anfrage schlägt fehl."
         },
         "fileUpload": {
@@ -95,7 +95,7 @@
           },
           "backButton": "Zurück",
           "uploadButton": "Preise hochladen",
-          "uploadingButton": "Wird hochgeladen..."
+          "uploadingButton": "Hochgeladen..."
         },
         "result": {
           "title": "Upload abgeschlossen!",
@@ -112,6 +112,46 @@
           "uploadSuccess": "{count} Preisdatensatz erfolgreich hochgeladen | {count} Preisdatensätze erfolgreich hochgeladen",
           "uploadFailed": "Upload fehlgeschlagen: {error}"
         }
+      },
+      "broadcast": {
+        "title": "Benachrichtigung senden",
+        "description": "Sende eine In-App-Benachrichtigung an jeden Benutzer, der in den letzten 30 Tagen aktiv war, oder nur an die von dir aufgelisteten Benutzer-IDs und E-Mail-Adressen. Wenn ein Link angegeben ist, öffnet ein Klick darauf den Link in einem neuen Tab, und das erneute Senden desselben Links überspringt Benutzer, die ihn bereits erhalten haben.",
+        "fields": {
+          "title": "Titel",
+          "titlePlaceholder": "z.B. iOS-App ist in der Public Beta 📱",
+          "message": "Nachricht",
+          "messagePlaceholder": "Optionaler Text, der unter dem Titel angezeigt wird",
+          "url": "Link",
+          "urlPlaceholder": "https://... (optional)",
+          "urlError": "Link muss mit https:// beginnen",
+          "icon": "Symbol",
+          "recipients": "Empfänger",
+          "recipientsPlaceholder": "Optionale Benutzer-IDs oder E-Mail-Adressen, durch Kommas getrennt, z.B. 12, jane@example.com. Leer = alle aktiven Benutzer",
+          "recipientsError": "Verwende positive ganzzahlige IDs oder gültige E-Mail-Adressen, getrennt durch Kommas"
+        },
+        "icons": {
+          "info": "Info",
+          "announcement": "Ankündigung",
+          "success": "Erfolg",
+          "warning": "Warnung"
+        },
+        "button": "Benachrichtigung senden",
+        "confirm": {
+          "title": "An alle aktiven Benutzer senden?",
+          "titleSelected": "An {count} Benutzer senden?",
+          "description": "Dadurch wird eine Benachrichtigung für jeden Benutzer erstellt, der in den letzten 30 Tagen aktiv war. Dies kann nicht rückgängig gemacht werden.",
+          "descriptionSelected": "Unbekannte IDs und E-Mail-Adressen werden übersprungen. Dies kann nicht rückgängig gemacht werden.",
+          "button": "Senden"
+        },
+        "notifications": {
+          "success": "Benachrichtigung an {count} Benutzer gesendet",
+          "failed": "Benachrichtigung konnte nicht gesendet werden",
+          "noneCreated": "Es wurden keine Benachrichtigungen gesendet: Keine passenden Benutzer oder sie haben diesen Link bereits erhalten"
+        }
+      },
+      "tabs": {
+        "investments": "Investments",
+        "notifications": "Benachrichtigungen"
       }
     }
   }

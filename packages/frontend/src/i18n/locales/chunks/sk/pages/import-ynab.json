@@ -3,7 +3,7 @@
     "importExport": {
       "ynabImport": {
         "pageTitle": "Import z YNAB",
-        "pageDescription": "Nahrajte export Register.csv z YNAB a prenesite účty, transakcie, kategórie, protistrany a štítky do MoneyMatter.",
+        "pageDescription": "Nahrajte export Register.csv z YNAB a prenesite účty, transakcie, kategórie, protistrany a značky do MoneyMatter.",
         "stepper": {
           "steps": {
             "upload": "Nahratie",
@@ -26,7 +26,7 @@
           "accounts": "Účty",
           "categories": "Kategórie",
           "payees": "Príjemcovia",
-          "tags": "Štítky",
+          "tags": "Značky",
           "transactions": "Transakcie",
           "transfers": "Prevody",
           "dateRange": "Rozsah: {from} → {to}",
@@ -49,7 +49,7 @@
         "execute": {
           "starting": "Spúšťanie importu…",
           "progressCount": "{processed} / {total}",
-          "statusQueued": "V rade",
+          "statusQueued": "V poradí",
           "statusRunning": "Importovanie...",
           "statusCompleted": "Hotovo",
           "statusFailed": "Zlyhalo",
@@ -62,14 +62,14 @@
           "accountsSkipped": "Preskočené účty",
           "categoriesCreated": "Vytvorené kategórie",
           "payeesCreated": "Vytvorené protistrany",
-          "tagsCreated": "Vytvorené štítky",
+          "tagsCreated": "Vytvorené značky",
           "transactionsImported": "Importované transakcie",
           "transfersImported": "Importované prevody",
           "splitsDetected": "Rozpoznané rozdelené skupiny",
           "errorsTitle": "Riadky, ktoré sa nepodarilo importovať: {count}",
           "errors": {
-            "payeeCreateFailed": "Could not create payee \"{payeeName}\". Its transactions were imported without a payee.",
-            "rowImportFailed": "This row could not be imported."
+            "payeeCreateFailed": "Príjemcu „{payeeName}“ sa nepodarilo vytvoriť. Jeho transakcie boli importované bez príjemcu.",
+            "rowImportFailed": "Tento riadok sa nepodarilo importovať."
           },
           "viewTransactions": "Zobraziť transakcie",
           "importAnother": "Importovať ďalší súbor"

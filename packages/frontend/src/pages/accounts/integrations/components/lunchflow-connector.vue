@@ -65,7 +65,7 @@
               </div>
               <div class="text-right">
                 <div class="text-sm font-medium">
-                  {{ formatBalance(account.balance, account.currency) }}
+                  {{ formatUIAmount(account.balance, { currency: account.currency }) }}
                 </div>
                 <div class="text-muted-foreground text-xs">{{ account.currency }}</div>
               </div>
@@ -83,7 +83,7 @@
                   <Tooltip.TooltipTrigger as-child>
                     <UiButton variant="ghost" size="sm" :disabled="isLoading" @click="handleSkipImport">
                       {{ t('pages.integrations.lunchflow.skipButton') }}
-                      <InfoIcon class="text-muted-foreground ml-1 size-3.5" />
+                      <InfoIcon class="text-muted-foreground size-3.5" />
                     </UiButton>
                   </Tooltip.TooltipTrigger>
                   <Tooltip.TooltipContent class="max-w-60 p-3">
@@ -252,6 +252,4 @@ const getErrorMessage = (error: unknown): string | undefined => {
   if (error instanceof Error && error.message) return error.message;
   return undefined;
 };
-
-const formatBalance = (balance: number, currency: string) => formatUIAmount(balance, { currency });
 </script>

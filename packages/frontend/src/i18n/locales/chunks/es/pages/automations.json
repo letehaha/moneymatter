@@ -230,7 +230,7 @@
         "noneDescription": "Ninguna transacción pasada en tus cuentas sincronizadas o importadas coinciden con estas condiciones."
       },
       "selectAll": "Seleccionar todo",
-      "selectedCount": "{count} seleccionadas",
+      "selectedCount": "{count} seleccionado",
       "irreversible": "Esto no se puede deshacer. Revise la lista con cuidado.",
       "applyAction": "Importar {count} transacciones",
       "confirm": {

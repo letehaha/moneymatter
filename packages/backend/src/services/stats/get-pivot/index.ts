@@ -32,6 +32,7 @@ interface GetPivotReportParams {
   accountIds?: string[];
   categoryIds?: string[];
   payeeIds?: string[];
+  includeTransfers?: boolean;
   /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
   decimals: number;
 }
@@ -39,9 +40,9 @@ interface GetPivotReportParams {
 /**
  * Cross-tabs a row dimension (category / subcategory / payee / tag) against a time dimension,
  * summing `refAmount` (base currency) into integer minor units. Split transactions are distributed and
- * refunds are netted (cash-basis, in the bucket the money returned in) across every dimension —
- * a refunded amount never counts as spend regardless of how the report is grouped. Netting is
- * skipped for `measure === 'income'` (an income report's "refund" leg is itself the income).
+ * refunds are netted across every dimension on whichever side the report measures, in that leg's
+ * own bucket when the leg is in the report — a refunded amount never counts as spend or as income,
+ * so an income report minus an expense report nets each refund exactly once.
  *
  * Per-dimension aggregation, assembly and hydration live behind a `PivotDimensionStrategy`
  * (see `./dimensions`); this orchestrator only owns the shared query, bucketing and totals.
@@ -56,6 +57,7 @@ export const getPivotReport = async ({
   accountIds,
   categoryIds,
   payeeIds,
+  includeTransfers,
   decimals,
 }: GetPivotReportParams): Promise<PivotReportResultMinor> => {
   const buckets = generatePivotBuckets({ from, to, granularity });
@@ -79,6 +81,7 @@ export const getPivotReport = async ({
   }
 
   const strategy = getPivotStrategy({ rowDimension });
+  const side = TRANSACTION_TYPES[measure];
 
   // The report is money that moved, so planned rows are out with no way to opt back in.
   // Refunds are netted per dimension by the strategies, not by the read model.
@@ -86,9 +89,10 @@ export const getPivotReport = async ({
     access: { accessibleTo: userId },
     planned: 'exclude',
     refunds: 'ignore',
+    transfers: includeTransfers ? 'include' : 'exclude',
     window: { from, to },
     where: {
-      transactionType: measure === 'income' ? TRANSACTION_TYPES.income : TRANSACTION_TYPES.expense,
+      transactionType: side,
       ...(accountIds && accountIds.length > 0 ? { accountId: { [Op.in]: accountIds } } : {}),
       ...(payeeIds && payeeIds.length > 0 ? { payeeId: { [Op.in]: payeeIds } } : {}),
       ...(expandedCategoryIds && expandedCategoryIds.length > 0
@@ -96,7 +100,17 @@ export const getPivotReport = async ({
         : {}),
     },
     include: strategy.buildInclude(),
-    attributes: ['id', 'time', 'refAmount', 'transactionType', 'categoryId', 'payeeId', 'accountId', 'refundLinked'],
+    attributes: [
+      'id',
+      'time',
+      'amount',
+      'refAmount',
+      'transactionType',
+      'categoryId',
+      'payeeId',
+      'accountId',
+      'refundLinked',
+    ],
   });
 
   // rowKey -> (columnKey -> minor units). Filled by the dimension strategy.
@@ -118,7 +132,7 @@ export const getPivotReport = async ({
     bucketIndexForTime,
     categoryMap,
     getRootCategoryId,
-    measure,
+    side,
     cellData,
     addCell,
     decimals,
@@ -146,8 +160,7 @@ export const getPivotReport = async ({
     label: getBucketLabel({ periodStart: bucket.periodStart, granularity }),
   }));
 
-  // Every user has a base currency, so this normally resolves; the empty-string fallback is a
-  // defensive last resort the client already guards against (it never invents a wrong currency).
+  // A user who has not picked a base currency yet gets an empty code, never a guessed one.
   const baseCurrency = (await getBaseCurrency({ userId }))?.currencyCode ?? '';
 
   if (strategy.hydrate) await strategy.hydrate({ userId, rows });

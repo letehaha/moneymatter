@@ -41,7 +41,10 @@
           "link": "Gagal menautkan akun. Silakan coba lagi."
         },
         "unauthorizedClient": "Aplikasi ini tidak diizinkan menggunakan metode autentikasi ini",
-        "temporarilyUnavailable": "Layanan autentikasi untuk sementara tidak tersedia. Silakan coba lagi nanti."
+        "temporarilyUnavailable": "Layanan autentikasi untuk sementara tidak tersedia. Silakan coba lagi nanti.",
+        "unableToLinkAccount": "We couldn't link this account because this server doesn't treat the provider's email as verified. Contact your administrator.",
+        "emailDoesNotMatch": "The email on this provider account doesn't match your account email. Use a provider account with the same email.",
+        "emailNotVerified": "Check your email to verify your address, then sign in again."
       }
     }
   }

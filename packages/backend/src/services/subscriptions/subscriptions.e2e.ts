@@ -1,6 +1,7 @@
 import { API_ERROR_CODES, SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
+import UsersCurrencies from '@models/users-currencies.model';
 import * as helpers from '@tests/helpers';
 import { ErrorResponse } from '@tests/helpers/common';
 import { subMonths } from 'date-fns';
@@ -647,13 +648,8 @@ describe('Subscriptions', () => {
           raw: true,
         });
 
-        // Sever the auto-created connection to reproduce pre-guard data.
-        await helpers.makeRequest({
-          method: 'delete',
-          url: '/user/currency',
-          payload: { currencyCode: 'UAH' },
-          raw: true,
-        });
+        // The API blocks disconnecting a currency a subscription uses; drop the link directly.
+        await UsersCurrencies.destroy({ where: { currencyCode: 'UAH' } });
 
         const res = await helpers.getSubscriptionsSummary();
         expect(res.statusCode).toBe(422);
@@ -778,6 +774,26 @@ describe('Subscriptions', () => {
         const twelveMonths = await helpers.getSubscriptionsSummary({ lookbackMonths: 12, raw: true });
         expect(twelveMonths.averageMonthlyIncome).toBe(75);
         expect(twelveMonths.lookbackMonths).toBe(12);
+      });
+
+      it('rounds the average monthly income to the base currency decimals', async () => {
+        const account = await helpers.createAccount({ raw: true });
+
+        const recent = subMonths(new Date(), 1);
+        recent.setDate(10);
+        await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 100,
+            transactionType: TRANSACTION_TYPES.income,
+            time: recent.toISOString(),
+          }),
+          raw: true,
+        });
+
+        // 100 / 3 = 33.333…, shown at the base currency's 2 decimals.
+        const summary = await helpers.getSubscriptionsSummary({ lookbackMonths: 3, raw: true });
+        expect(summary.averageMonthlyIncome).toBe(33.33);
       });
 
       it('averages qualifying income and derives percentOfIncome, ignoring out-of-window income', async () => {

@@ -9,6 +9,7 @@ import {
   computeAllCollapsed,
   computeColumnMax,
   computeDelta,
+  computeNetTotals,
   computeVisibleRows,
   findMatchingViewId,
   getRowValue,
@@ -212,5 +213,20 @@ describe('saved-view config matching', () => {
     ];
     expect(findMatchingViewId({ config: base, views })).toBe('v2');
     expect(findMatchingViewId({ config: { ...base, granularity: 'yearly' }, views })).toBeNull();
+  });
+});
+
+describe('computeNetTotals', () => {
+  const income = { columnTotals: { a: 500, b: 100 }, grandTotal: 600 };
+  const expense = { columnTotals: { a: 200, b: 300, c: 40 }, grandTotal: 540 };
+  const expected = { columnTotals: { a: 300, b: -200, c: -40 }, grandTotal: 60 };
+
+  it('subtracts expense from income whichever measure is primary', () => {
+    expect(computeNetTotals({ measure: 'income', current: income, opposite: expense })).toEqual(expected);
+    expect(computeNetTotals({ measure: 'expense', current: expense, opposite: income })).toEqual(expected);
+  });
+
+  it('is null until both reports have loaded', () => {
+    expect(computeNetTotals({ measure: 'expense', current: expense, opposite: undefined })).toBeNull();
   });
 });

@@ -1,7 +1,7 @@
 <template>
   <!-- Borders live on cells, not the row: the table uses border-separate, where <tr> borders don't render -->
   <tr
-    :class="['group/row hover:bg-muted/50 h-10 cursor-pointer divide-x transition-colors', isPlannedRow && 'bg-muted']"
+    :class="['group/row hover:bg-hover h-10 cursor-pointer divide-x transition-colors', isPlannedRow && 'bg-muted']"
     aria-haspopup="true"
     :data-index="index"
     @click="onRowClick"
@@ -29,6 +29,7 @@
         </label>
 
         <PlannedIndicator v-if="!isPlannedRow" compact hide-confirmed :transaction="tx" />
+        <ExcludeFromStatsIndicator compact :transaction="tx" />
       </div>
     </td>
 
@@ -63,32 +64,42 @@
       <template v-else-if="column.id === TABLE_COLUMN.account">
         <div class="flex items-center gap-1.5">
           <AccountLogo v-if="accountFrom" :account="accountFrom" class="size-5 shrink-0" />
-          <span class="max-w-36 truncate">{{ accountFrom?.name }}</span>
+          <span class="truncate">{{ accountFrom?.name }}</span>
+          <PaymentIndicator :transaction="tx" />
           <template v-if="isTwoLegTransferRow">
-            <ArrowRightIcon :size="13" class="shrink-0 opacity-60" />
+            <ArrowRightIcon :size="13" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
             <AccountLogo
               v-if="transferDestinationAccount"
               :account="transferDestinationAccount"
               class="size-5 shrink-0"
             />
-            <span class="max-w-36 truncate">{{ transferDestinationName }}</span>
+            <span class="truncate">{{ transferDestinationName }}</span>
           </template>
           <template v-else-if="isOutOfWalletTransfer">
-            <ArrowRightIcon :size="13" class="shrink-0 opacity-60" />
+            <ArrowRightIcon :size="13" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
             <span class="text-muted-foreground">{{ $t('transactions.table.outOfWallet') }}</span>
           </template>
           <template v-else-if="isPortfolioLinked">
-            <ArrowRightIcon :size="13" class="shrink-0 opacity-60" />
-            <BriefcaseIcon :size="13" class="text-app-transfer-color shrink-0" />
-            <span class="max-w-36 truncate">{{ portfolioName }}</span>
+            <ArrowRightIcon :size="13" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
+            <BrandLogo
+              v-if="portfolioLogoSelection"
+              v-bind="toLogoDisplayProps({ selection: portfolioLogoSelection })"
+              :name="portfolioName"
+              class="size-5 shrink-0"
+            />
+            <BriefcaseIcon v-else :size="13" class="text-app-transfer-color shrink-0" />
+            <span class="truncate">{{ portfolioName }}</span>
           </template>
           <template v-else-if="ventureLinkData">
-            <ArrowRightIcon
-              :size="13"
-              :class="['shrink-0 opacity-60', tx.transactionType === TRANSACTION_TYPES.income && 'rotate-180']"
+            <ArrowRightIcon :size="13" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
+            <BrandLogo
+              v-if="ventureLogoSelection"
+              v-bind="toLogoDisplayProps({ selection: ventureLogoSelection })"
+              :name="ventureLinkData.dealName"
+              class="size-5 shrink-0"
             />
-            <RocketIcon :size="13" class="text-app-transfer-color shrink-0" />
-            <span :class="['max-w-36 truncate', ventureLinkData.isDealDeleted && 'text-muted-foreground line-through']">
+            <RocketIcon v-else :size="13" class="text-app-transfer-color shrink-0" />
+            <span :class="['truncate', ventureLinkData.isDealDeleted && 'text-muted-foreground line-through']">
               {{ ventureLinkData.dealName }}
             </span>
           </template>
@@ -100,7 +111,7 @@
         <div class="flex items-center gap-2">
           <template v-if="!isTransferRow && category">
             <CategoryCircle :category="category" />
-            <span class="max-w-32 truncate">{{ category.name }}</span>
+            <span class="truncate">{{ category.name }}</span>
           </template>
           <span v-else class="text-muted-foreground">—</span>
           <AttachmentIndicator :transaction="tx" />
@@ -112,7 +123,7 @@
         <div v-if="payee" class="flex items-center gap-2">
           <BrandLogo v-bind="toEntityLogoDisplayProps(payee)" :name="payee.name" class="size-5 shrink-0" />
           <DesktopOnlyTooltip :content="payee.name" only-when-truncated>
-            <span class="max-w-32 truncate">{{ payee.name }}</span>
+            <span class="truncate">{{ payee.name }}</span>
           </DesktopOnlyTooltip>
         </div>
         <span v-else class="text-muted-foreground">—</span>
@@ -139,21 +150,28 @@
       <!-- Note -->
       <template v-else-if="column.id === TABLE_COLUMN.note">
         <DesktopOnlyTooltip v-if="tx.note" :content="tx.note">
-          <span class="text-muted-foreground block max-w-40 truncate">{{ tx.note }}</span>
+          <span class="text-muted-foreground block truncate">{{ tx.note }}</span>
         </DesktopOnlyTooltip>
       </template>
 
       <!-- Tags -->
       <template v-else-if="column.id === TABLE_COLUMN.tags">
-        <DesktopOnlyTooltip v-if="txTags.length" :disabled="txTags.length <= 1">
+        <DesktopOnlyTooltip v-if="txTags.length" :disabled="hiddenTagsCount === 0">
           <div class="flex items-center gap-1">
-            <span
-              class="inline-block max-w-37.5 truncate rounded-full px-2 py-0.5 text-xs font-medium text-white/90"
-              :style="{ backgroundColor: txTags[0]!.color }"
+            <!-- Chips that don't fit wrap onto a clipped second line. -->
+            <div :ref="setTagsListRef" class="flex h-5 min-w-0 flex-wrap gap-1 overflow-hidden">
+              <span
+                v-for="tag in txTags"
+                :key="tag.id"
+                class="inline-block max-w-full truncate rounded-full px-2 py-0.5 text-xs font-medium text-white/90"
+                :style="{ backgroundColor: tag.color }"
+              >
+                {{ tag.name }}
+              </span>
+            </div>
+            <span v-if="hiddenTagsCount > 0" class="text-muted-foreground shrink-0 text-xs"
+              >+{{ hiddenTagsCount }}</span
             >
-              {{ txTags[0]!.name }}
-            </span>
-            <span v-if="hiddenTagsCount > 0" class="text-muted-foreground text-xs">+{{ hiddenTagsCount }}</span>
           </div>
           <template #content>
             <ScrollArea class="max-h-75">
@@ -181,7 +199,7 @@
 
       <!-- Group -->
       <template v-else-if="column.id === TABLE_COLUMN.group">
-        <span v-if="groupName" class="max-w-32 truncate">{{ groupName }}</span>
+        <span v-if="groupName" class="block truncate">{{ groupName }}</span>
       </template>
 
       <!-- Refund indicator -->
@@ -232,15 +250,18 @@
 <script lang="ts" setup>
 import AccountLogo from '@/components/common/account-logo.vue';
 import BrandLogo from '@/components/common/brand-logo.vue';
-import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
+import { toEntityLogoDisplayProps, toLogoDisplayProps, toLogoSelection } from '@/components/common/logo-selection';
 import CategoryCircle from '@/components/common/category-circle.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { getPaymentRowAmounts } from '@/components/dialogs/manage-transaction/utils/payment-legs';
 import AttachmentIndicator from '@/components/transactions-list/indicators/attachment-indicator.vue';
 import MissingRateIndicator from '@/components/transactions-list/indicators/missing-rate-indicator.vue';
+import PaymentIndicator from '@/components/transactions-list/indicators/payment-indicator.vue';
+import ExcludeFromStatsIndicator from '@/components/transactions-list/indicators/exclude-from-stats-indicator.vue';
 import PlannedIndicator from '@/components/transactions-list/indicators/planned-indicator.vue';
 import RefundIndicator from '@/components/transactions-list/indicators/refund-indicator.vue';
 import SplitIndicator from '@/components/transactions-list/indicators/split-indicator.vue';
@@ -250,6 +271,7 @@ import { useTransactionPortfolioLink } from '@/composable/data-queries/portfolio
 import { useTransactionVentureLink } from '@/composable/data-queries/venture/events';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useAccountAccess } from '@/composable/use-account-access';
+import { useFittingChips } from '@/composable/use-fitting-chips';
 import { formatUIAmount } from '@/js/helpers';
 import { isPlanMatchWindowExpired } from '@/common/utils/planned-transactions';
 import { cn } from '@/lib/utils';
@@ -288,8 +310,6 @@ import {
   isInlineEditableColumn,
 } from './inline-cell-mode';
 import { type InlineCellSaveState, inlineCellKey } from './use-inline-transaction-edit';
-
-const MAX_VISIBLE_TAGS = 1;
 
 const CELL_MODE_CLASSES: Record<InlineCellMode, string> = {
   edit: 'cursor-text hover:inset-ring hover:inset-ring-ring touch:active:bg-accent touch:active:duration-0',
@@ -351,6 +371,7 @@ const { accountsRecord } = storeToRefs(useAccountsStore());
 const { formatBaseCurrency } = useFormatCurrency();
 const { user } = storeToRefs(useUserStore());
 
+const ownLegIsIncome = computed(() => props.tx.transactionType === TRANSACTION_TYPES.income);
 const isTwoLegTransferRow = computed(() => isTwoLegTransfer(props.tx.transferNature));
 const isOutOfWalletTransfer = computed(
   () => props.tx.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_out_wallet,
@@ -368,6 +389,8 @@ const portfolioLinkId = computed(() => (isPortfolioLinked.value ? props.tx.id : 
 const { data: portfolioLinkData } = useTransactionPortfolioLink(portfolioLinkId);
 const portfolioName = computed(() => portfolioLinkData.value?.portfolioName ?? '');
 const { data: ventureLinkData } = useTransactionVentureLink(() => props.tx);
+const portfolioLogoSelection = computed(() => toLogoSelection(portfolioLinkData.value ?? {}));
+const ventureLogoSelection = computed(() => toLogoSelection(ventureLinkData.value ?? {}));
 
 const category = computed(() => categoriesMap.value[props.tx.categoryId]);
 const accountFrom = computed(() => accountsRecord.value[props.tx.accountId]);
@@ -388,12 +411,16 @@ const amountColorClass = computed(() => {
 
 const signedAmount = (amount: number) => (props.tx.transactionType === TRANSACTION_TYPES.expense ? -amount : amount);
 
+const rowAmounts = computed(() => getPaymentRowAmounts({ transaction: props.tx }));
 const formattedAmount = computed(() =>
-  formatUIAmount(signedAmount(props.tx.amount), { currency: props.tx.currencyCode, meta: props.tx.currencyMeta }),
+  formatUIAmount(signedAmount(rowAmounts.value.amount), {
+    currency: props.tx.currencyCode,
+    meta: props.tx.currencyMeta,
+  }),
 );
 // A transaction in a custom currency has no base-currency amount until a rate exists.
 const formattedRefAmount = computed(() =>
-  props.tx.refAmount === null ? '' : formatBaseCurrency(signedAmount(props.tx.refAmount)),
+  rowAmounts.value.refAmount === null ? '' : formatBaseCurrency(signedAmount(rowAmounts.value.refAmount)),
 );
 
 const formattedOriginalAmount = computed(() => {
@@ -403,7 +430,7 @@ const formattedOriginalAmount = computed(() => {
 });
 
 const txTags = computed(() => props.tx.tags ?? []);
-const hiddenTagsCount = computed(() => Math.max(0, txTags.value.length - MAX_VISIBLE_TAGS));
+const { setListRef: setTagsListRef, hiddenCount: hiddenTagsCount } = useFittingChips({ items: txTags });
 
 const groupName = computed(() => props.tx.transactionGroups?.[0]?.name);
 
@@ -425,6 +452,7 @@ const cellModes = computed<Partial<Record<TABLE_COLUMN, InlineCellMode>>>(() =>
         tx: props.tx,
         column: column.id,
         account: accountFrom.value,
+        oppositeTx: oppositeTx.value ?? undefined,
         oppositeAccount: transferDestinationAccount.value,
         canEdit: canEdit.value,
       }),

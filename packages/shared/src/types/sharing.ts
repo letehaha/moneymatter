@@ -10,10 +10,9 @@ import type { RecordId } from './record-id';
  *   that shape so service-layer bugs cannot poison the table.
  * - `tracker`: a single tracker is shared. Recipients see the tracker's metadata,
  *   stats, and linked transactions in full. `write` recipients can attach /
- *   detach **their own** transactions on manual trackers only – they cannot
- *   edit tracker metadata, archive, or manage other recipients (all `manage`-
- *   only). Household membership does NOT auto-grant tracker access; trackers
- *   are explicit-share only.
+ *   detach **their own** transactions – they cannot edit tracker metadata,
+ *   archive, or manage other recipients (all `manage`-only). Household
+ *   membership does NOT auto-grant tracker access; trackers are explicit-share only.
  */
 export const RESOURCE_TYPES = {
   account: 'account',

@@ -8,7 +8,7 @@ import { useFormValidation } from '@/composable';
 import { useAdjustAccountBalance } from '@/composable/data-queries/accounts';
 import { useAccountCurrencyCode } from '@/composable/use-account-currency-code';
 import { useAccountDisplayBalance } from '@/composable/use-account-display-balance';
-import { getCurrencyDecimals, toLocalCurrencyNumber } from '@/js/helpers';
+import { getCurrencyDecimals, toLocalCurrencyNumber, trimAmountNoise } from '@/js/helpers';
 import * as validators from '@/js/helpers/validators';
 import { captureException } from '@/lib/sentry';
 import { cn } from '@/lib/utils';
@@ -55,7 +55,6 @@ const rules = computed(() => ({
   form: {
     amount: {
       required: validators.required,
-      currencyDecimal: validators.maxDecimalPoints(decimals.value),
       ...(mode.value === 'adjust-by' ? { minValue: validators.minValue(0) } : {}),
     },
     note: {},
@@ -68,7 +67,6 @@ const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFo
   undefined,
   {
     customValidationMessages: {
-      currencyDecimal: computed(() => t('forms.validators.invalidCurrencyDecimal', { decimals: decimals.value })),
       minValue: t('forms.validators.mustBePositive'),
     },
   },
@@ -79,10 +77,12 @@ const computedTarget = computed<number | null>(() => {
   if (form.value.amount === null) return null;
   if (mode.value === 'set-to') {
     // User enters in display-balance terms; convert back to actual
-    return hasCreditLimitAdjustment.value ? form.value.amount + props.account.creditLimit : form.value.amount;
+    return hasCreditLimitAdjustment.value
+      ? trimAmountNoise({ value: form.value.amount + props.account.creditLimit, decimals: decimals.value })
+      : form.value.amount;
   }
   const sign = direction.value === 'income' ? 1 : -1;
-  return props.account.currentBalance + sign * form.value.amount;
+  return trimAmountNoise({ value: props.account.currentBalance + sign * form.value.amount, decimals: decimals.value });
 });
 
 // Display target for the preview (what the user sees as the "new balance")

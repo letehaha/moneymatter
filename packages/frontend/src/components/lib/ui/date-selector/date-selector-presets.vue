@@ -37,8 +37,8 @@ function isPresetActive(preset: DateSelectorPreset): boolean {
       type="button"
       :class="
         cn(
-          'text-muted-foreground hover:bg-accent hover:text-foreground rounded-md px-2 py-1.5 text-left text-sm whitespace-nowrap transition-colors',
-          isPresetActive(preset) && 'bg-accent text-foreground font-medium',
+          'text-muted-foreground hover:bg-hover hover:text-foreground rounded-md px-2 py-1.5 text-left text-sm whitespace-nowrap transition-colors',
+          isPresetActive(preset) && 'bg-accent hover:bg-accent text-foreground font-medium',
         )
       "
       @click="emit('apply', preset.getValue())"

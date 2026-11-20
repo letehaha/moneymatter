@@ -21,10 +21,25 @@ export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 export enum OAUTH_PROVIDER {
   google = 'google',
   github = 'github',
+  apple = 'apple',
+  // Generic OpenID Connect provider configured by a self-hoster (Pocket ID, Authelia, Keycloak, ...)
+  oidc = 'oidc',
 }
 
-// Array of all providers for iteration (e.g., trustedProviders config)
+// Array of all providers for iteration (e.g., login method lists)
 export const OAUTH_PROVIDERS_LIST = Object.values(OAUTH_PROVIDER);
+
+/** Built-in providers configured via client id/secret env vars; OIDC is reported separately. */
+export type SocialOAuthProvider = Exclude<OAUTH_PROVIDER, OAUTH_PROVIDER.oidc>;
+
+/** Response of `GET /auth/features`: server-side auth capabilities the pre-login pages adapt to. */
+export interface AuthFeaturesResponse {
+  emailEnabled: boolean;
+  /** Social providers whose credentials are configured. */
+  socialProviders: SocialOAuthProvider[];
+  /** Generic OIDC sign-in; null when the server has no OIDC provider configured. */
+  oidc: { name: string } | null;
+}
 
 export interface UserModel {
   id: number;
@@ -40,6 +55,8 @@ export interface UserModel {
   role: UserRole;
   /** @deprecated Use role === 'admin' instead */
   isAdmin?: boolean;
+  /** iOS passes it as `appAccountToken` on every App Store purchase, so Apple notifications map back to this user. */
+  appStoreAccountToken: string;
   /** Feeds the demo-account expiry countdown. */
   createdAt: Date;
   /** Present on `GET /user` only. */

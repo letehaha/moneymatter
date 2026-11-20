@@ -1,5 +1,6 @@
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useNotificationCenter } from '@/components/notification-center';
+import { extractApiErrorMessage, isHandledByApiClient } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
 import { useUserStore } from '@/stores';
 import { type AI_FEATURE, FEATURE_TRIAL_DAYS, type Feature, getAiFeatureEntitlement } from '@bt/shared/types';
@@ -7,13 +8,11 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-export const useAiFeatureAccess = ({ aiFeature }: { aiFeature: AI_FEATURE }) => {
+export const useFeatureTrialAccess = ({ feature }: { feature: Feature }) => {
   const userStore = useUserStore();
-  const queryClient = useQueryClient();
   const { t } = useI18n();
   const { addErrorNotification } = useNotificationCenter();
 
-  const feature = getAiFeatureEntitlement({ feature: aiFeature });
   const trialDays = (FEATURE_TRIAL_DAYS as Partial<Record<Feature, number>>)[feature] ?? null;
 
   const isPlanGated = computed(() => userStore.isFeatureGated(feature));
@@ -30,11 +29,12 @@ export const useAiFeatureAccess = ({ aiFeature }: { aiFeature: AI_FEATURE }) => 
     isStartingTrial.value = true;
     try {
       await userStore.startFeatureTrial({ feature });
-      void queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.aiFeaturesStatus });
       return true;
     } catch (error) {
-      captureException({ error, context: { scope: 'ai-feature:start-trial', aiFeature } });
-      addErrorNotification(t('billing.trialStartFailed'));
+      if (!isHandledByApiClient({ error })) {
+        captureException({ error, context: { scope: 'feature-trial:start', feature } });
+        addErrorNotification(extractApiErrorMessage(error) || t('billing.trialStartFailed'));
+      }
       return false;
     } finally {
       isStartingTrial.value = false;
@@ -42,4 +42,17 @@ export const useAiFeatureAccess = ({ aiFeature }: { aiFeature: AI_FEATURE }) => 
   };
 
   return { isPlanGated, hasTrialRecord, isTrialAvailable, trialDaysLeft, trialDays, startTrial, isStartingTrial };
+};
+
+export const useAiFeatureAccess = ({ aiFeature }: { aiFeature: AI_FEATURE }) => {
+  const queryClient = useQueryClient();
+  const access = useFeatureTrialAccess({ feature: getAiFeatureEntitlement({ feature: aiFeature }) });
+
+  const startTrial = async (): Promise<boolean> => {
+    const started = await access.startTrial();
+    if (started) void queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.aiFeaturesStatus });
+    return started;
+  };
+
+  return { ...access, startTrial };
 };

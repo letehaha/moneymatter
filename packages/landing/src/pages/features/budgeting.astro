@@ -1,0 +1,138 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Budget by category and see what is left',
+    text: 'Split your plan into lines such as Groceries or Rent, each covering one or more categories. Every line shows what you assigned, what you spent and what is available for the period, so one look tells you that Eating out is 20 over while Groceries still has 65 left. Going over a line turns it red and blocks nothing.',
+    bullets: [
+      'Group lines under headings such as Bills or Everyday',
+      'Choose which accounts count, such as your checking account and credit card but not your savings',
+      'Spending in categories without a line is listed below the grid, so you can add a line for it or leave it out',
+    ],
+    screenshot: {
+      name: 'features/budgeting/lines-grid',
+      alt: 'The budget grid with Bills, Everyday and Life groups, lines showing Assigned, Activity and Available amounts, goal statuses, one overspent line in red, and a Total row',
+      width: 1132,
+      height: 722,
+    },
+  },
+  {
+    heading: 'Biweekly, weekly or monthly budgets that follow your paycheck',
+    text: 'If you get paid every two weeks, a calendar-month budget rarely fits. Choose a monthly, semi-monthly, biweekly or weekly reset, or a custom one such as every 10 days or every 3 months. You can assign money up to 12 periods ahead, which helps when you already know a big month is coming.',
+  },
+  {
+    heading: 'Budget rollover: carry leftovers, carry overspending, or start fresh',
+    text: 'Set a rollover rule for the whole budget, then give any line its own. With 400 assigned to Groceries and 50 left in March, Carry surplus starts April at 450. If you overspent by 50 instead, Carry surplus and deficit starts April at 350, and Start fresh each period starts at 400 either way.',
+    bullets: [
+      'Amounts you set From now on repeat every period, so a month that goes to plan needs no work',
+      'Hosting guests in May? Set 500 for This period only, and June goes back to 400',
+    ],
+    screenshot: {
+      name: 'features/budgeting/assign-popover',
+      alt: 'The assign window under a Groceries line with 400 entered, From now on selected, and Carry surplus as the Rollover rule',
+      width: 1122,
+      height: 366,
+    },
+  },
+  {
+    heading: 'Budget goals for yearly bills, sinking funds and savings',
+    text: 'Give a line a goal and it tells you how much it needs. A 1,200 yearly car insurance payment is spread across the periods before its due date, and the line shows what to assign this month. You assign the amount yourself or accept what the goal asks for with one click.',
+    bullets: [
+      'Refill a line to a set level, so you only assign the gap after a quiet month',
+      'Build a balance by a date, or with no deadline for something like an emergency fund',
+      'Plan by weekday: 50 every Friday asks for 250 in a month with five Fridays',
+    ],
+    screenshot: {
+      name: 'features/budgeting/goal-editor',
+      alt: 'The Create goal window for a Car insurance line set to Yearly and Budget another, with 1,200 as the amount each year, a first due date and a summary sentence',
+      width: 572,
+      height: 921,
+    },
+  },
+  {
+    heading: 'Build your first budget from your real spending',
+    text: "Smart pre-fill looks at the last 3 full calendar months on your budget's accounts and suggests lines with amounts. If you averaged 342 a month on groceries, a monthly budget starts that line at 350. On MoneyMatter Cloud, an AI model sorts your categories into named groups and lines, and the amounts always come from your own history. Self-hosted without an AI key, you get lines for your top spending categories.",
+    bullets: [
+      'Optional setup questions let you pick how detailed the budget is and which spending to watch closely',
+      'With no history, you get a starter set of lines at 0 to fill in',
+    ],
+  },
+  {
+    heading: 'Check spending pace and upcoming bills during the period',
+    text: 'A side panel next to the grid shows what is still coming and whether you are on pace, for the whole budget or for one line when you click it.',
+    bullets: [
+      'Scheduled lists the recurring bills and planned transactions still to come this period',
+      'Spending pace compares how much of your money is gone with how much of the period has passed',
+      'Assigned vs spent charts your last 6 periods, so you can see which amounts are unrealistic',
+    ],
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'You can have one budget at a time. For a trip or a project, use a spending tracker alongside it.',
+  'The reset schedule cannot be changed after you create the budget, so pick the one your income follows.',
+  'A budget only counts accounts you own. Accounts a partner shares with you cannot be added to it.',
+  'Bank sync is not part of the Essential plan. On Essential, your budget updates from transactions you enter or import yourself.',
+];
+
+const FAQ = [
+  {
+    question: 'Is MoneyMatter a zero-based budgeting app?',
+    answer:
+      'No. In MoneyMatter you give each budget line an amount for the period, but nothing compares what you assign with the money in your accounts, so you can assign more than you hold. If giving every dollar a job is the reason you budget, a zero-based app such as YNAB is the better fit.',
+  },
+  {
+    question: 'Can I budget biweekly or by paycheck?',
+    answer:
+      'Yes. A MoneyMatter budget can reset biweekly if you are paid every other week, or semi-monthly if you are paid twice a month, with periods about half a month apart, such as the 1st and the 16th. You can start it on your last payday, as long as that was less than one reset ago, and the periods follow from that date.',
+  },
+  {
+    question: 'Does unspent budget money roll over to the next month?',
+    answer:
+      'Yes. By default, MoneyMatter uses Carry surplus, which moves leftovers to the next period and leaves overspending behind. You can also carry both, or start every period fresh. Money that is not carried stops counting.',
+  },
+  {
+    question: 'How does budgeting handle credit card payments and refunds?',
+    answer:
+      'A credit card on your MoneyMatter budget counts each purchase when you make it. Paying off the card is a transfer between your own accounts, and transfers are not spending, so nothing counts twice. A refund in the same category adds back to the line, and each part of a split transaction counts toward the line that covers its category.',
+  },
+  {
+    question: 'Can I budget with accounts in several currencies?',
+    answer:
+      'Yes. A MoneyMatter budget is in your base currency, and spending from accounts in other currencies is converted into it. Your base currency is locked while the budget exists, so to change it you need to move the budget to trash first.',
+  },
+  {
+    question: 'Can I import my budget from YNAB?',
+    answer:
+      'Partly. MoneyMatter imports your YNAB accounts, transactions, categories, payees and flags, but not your assigned amounts. Once the transactions are in, Smart pre-fill can suggest lines and amounts from that history.',
+  },
+  {
+    question: 'Is MoneyMatter budgeting free?',
+    answer:
+      'Only with the free trial or self-hosting. MoneyMatter Cloud includes budgeting in the 40-day trial, and then in Essential at $5 a month or $30 a year, or Plus at $8 a month or $55 a year, before tax. If the trial ends without a subscription, your account turns read-only and nothing is deleted. Self-hosting is free with every feature.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Start budgeting', href: 'https://docs.moneymatter.app/budgeting/start-budgeting/' },
+  { label: 'Budget lines and groups', href: 'https://docs.moneymatter.app/budgeting/lines-and-groups/' },
+  { label: 'Assigning and rollover', href: 'https://docs.moneymatter.app/budgeting/assigning-and-rollover/' },
+  { label: 'Budget goals', href: 'https://docs.moneymatter.app/budgeting/goals/' },
+  { label: 'The side panel', href: 'https://docs.moneymatter.app/budgeting/side-panel/' },
+];
+
+const RELATED = ['/features/spending-trackers', '/features/savings-goals', '/features/categories-and-tags'];
+---
+
+<FeatureLayout
+  title="Budgeting App with Rollover and Goals | MoneyMatter"
+  description="A budgeting app where you plan by category on your pay schedule, start from your real spending, roll over leftovers and fund yearly bills with goals."
+  heading="A budgeting app with rollover, goals and biweekly budgets"
+  intro="MoneyMatter is a budgeting app where you decide what you can spend on groceries, rent and everything else, then see what is left as you spend. Your budget can reset on your pay schedule, start from your real spending history and carry leftovers forward. It is part of both paid plans and the 40-day free trial."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

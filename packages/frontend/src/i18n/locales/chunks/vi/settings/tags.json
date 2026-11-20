@@ -1,7 +1,7 @@
 {
   "settings": {
     "tags": {
-      "title": "Thẻ",
+      "title": "Tags",
       "addButton": "Thêm thẻ",
       "empty": "Chưa có thẻ nào. Tạo thẻ đầu tiên để sắp xếp các giao dịch của bạn.",
       "tabs": {
@@ -18,14 +18,14 @@
         "iconPlaceholder": "Chọn biểu tượng",
         "description": "Mô tả",
         "descriptionPlaceholder": "Mô tả không bắt buộc",
-        "saveButton": "Lưu",
-        "previewPlaceholder": "Tên thẻ"
+        "saveButton": "Save",
+        "previewPlaceholder": "Tag name"
       },
       "delete": {
         "title": "Xóa thẻ?",
         "description": "Thẻ \"{name}\" sẽ bị xóa vĩnh viễn và gỡ khỏi tất cả giao dịch. Không thể hoàn tác thao tác này.",
-        "deleteButton": "Xóa",
-        "cancelButton": "Hủy"
+        "deleteButton": "Delete",
+        "cancelButton": "Cancel"
       },
       "notifications": {
         "createSuccess": "Đã tạo thẻ",
@@ -53,11 +53,11 @@
           "dayOfMonth": "Ngày trong tháng",
           "dayOfMonthPlaceholder": "Chọn ngày",
           "dayOfMonthHint": "Với những tháng có ít ngày hơn, ngày cuối cùng của tháng sẽ được chọn.",
-          "isEnabled": "Đã bật",
-          "saveButton": "Lưu"
+          "isEnabled": "Enabled",
+          "saveButton": "Save"
         },
         "types": {
-          "amountThreshold": "Ngưỡng số tiền",
+          "amountThreshold": "Amount threshold",
           "amountThresholdDescription": "Thông báo khi chi tiêu vượt quá một số tiền nhất định.",
           "existenceCheck": "Kiểm tra hoạt động",
           "existenceCheckDescription": "Thông báo khi có giao dịch gắn thẻ này."
@@ -79,8 +79,8 @@
         "delete": {
           "title": "Xóa lời nhắc?",
           "description": "Lời nhắc này sẽ bị xóa vĩnh viễn. Không thể hoàn tác thao tác này.",
-          "deleteButton": "Xóa",
-          "cancelButton": "Hủy"
+          "deleteButton": "Delete",
+          "cancelButton": "Cancel"
         },
         "notifications": {
           "createSuccess": "Đã tạo lời nhắc",

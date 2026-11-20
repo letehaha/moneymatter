@@ -30,6 +30,7 @@ import WidgetWrapper from './components/widget-wrapper.vue';
 import {
   buildLatestRecordsTransferNatures,
   readLatestRecordsExclusions,
+  readLatestRecordsIncludeScheduled,
   readLatestRecordsTagsVariant,
 } from './latest-records-config';
 import { useIncludePlannedConfig, useWidgetConfigFlag } from './use-include-planned-config';
@@ -42,14 +43,7 @@ const { isAppInitialized } = storeToRefs(useRootStore());
 const { formatAmountByCurrencyCode, formatBaseCurrency } = useFormatCurrency();
 const widgetConfigRef = inject<Ref<DashboardWidgetConfig> | null>('dashboard-widget-config', null);
 
-// Whether the widget should show the scheduled row. Stored as the string 'true'/'false'
-// (config values are always strings in the segmented-button config UI); default true.
-const includeScheduled = computed(() => {
-  const raw = widgetConfigRef?.value?.config?.includeScheduled;
-  // Explicit opt-out only; undefined (first use) defaults to enabled.
-  return raw !== 'false';
-});
-
+const includeScheduled = computed(() => readLatestRecordsIncludeScheduled({ widgetConfig: widgetConfigRef?.value }));
 const exclusions = computed(() => readLatestRecordsExclusions({ widgetConfig: widgetConfigRef?.value }));
 const transferNatures = computed(() => buildLatestRecordsTransferNatures(exclusions.value));
 const excludeBalanceAdjustments = computed(() => exclusions.value.excludeBalanceAdjustments);
@@ -68,9 +62,6 @@ const { data: transactions, isFetching: isTxFetching } = useQuery({
     apiLoadTransactions({
       limit: 40,
       offset: 0,
-      includeSplits: true,
-      includeTags: true,
-      includeGroups: true,
       transferNatures: transferNatures.value,
       excludeBalanceAdjustments: excludeBalanceAdjustments.value || undefined,
       ...(includePlanned.value ? {} : { isPlanned: false }),

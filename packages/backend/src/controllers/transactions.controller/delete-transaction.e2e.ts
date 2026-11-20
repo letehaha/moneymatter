@@ -114,21 +114,24 @@ describe('Delete transaction controller', () => {
       expect(res.statusCode).toEqual(ERROR_CODES.ValidationError);
     });
 
-    it('cannot delete a manual transaction once its account is linked to a bank', async () => {
+    it('cannot delete a manual transaction on a bank-linked account without a seam', async () => {
       const { account } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
       const [tx] = await helpers.createTransaction({
         payload: helpers.buildTransactionPayload({ accountId: account.id }),
         raw: true,
       });
       await helpers.lunchflow.linkManualAccount({ accountId: account.id });
+      await helpers.dropSeam({ accountId: account.id });
+      const accountBefore = await helpers.getAccount({ id: account.id, raw: true });
 
       const res = await helpers.deleteTransaction({ id: tx.id });
 
       expect(res.statusCode).toEqual(ERROR_CODES.ValidationError);
       expect((await helpers.getTransactionById({ id: tx.id, raw: true }))?.accountId).toBe(account.id);
+      expect(await helpers.getAccount({ id: account.id, raw: true })).toEqual(accountBefore);
     });
 
-    it('cannot delete a transfer leg whose twin sits on a bank-linked account', async () => {
+    it('cannot delete a transfer leg whose twin sits on a bank-linked account without a seam', async () => {
       const { account: linkedAccount } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
       const manualAccount = await helpers.createAccount({ raw: true });
       const [linkedLeg, manualLeg] = await helpers.createTransaction({
@@ -141,12 +144,17 @@ describe('Delete transaction controller', () => {
         raw: true,
       });
       await helpers.lunchflow.linkManualAccount({ accountId: linkedAccount.id });
+      await helpers.dropSeam({ accountId: linkedAccount.id });
+      const linkedBefore = await helpers.getAccount({ id: linkedAccount.id, raw: true });
+      const manualBefore = await helpers.getAccount({ id: manualAccount.id, raw: true });
 
       const res = await helpers.deleteTransaction({ id: manualLeg!.id });
 
       expect(res.statusCode).toEqual(ERROR_CODES.ValidationError);
       expect((await helpers.getTransactionById({ id: linkedLeg.id, raw: true }))?.accountId).toBe(linkedAccount.id);
       expect((await helpers.getTransactionById({ id: manualLeg!.id, raw: true }))?.accountId).toBe(manualAccount.id);
+      expect(await helpers.getAccount({ id: linkedAccount.id, raw: true })).toEqual(linkedBefore);
+      expect(await helpers.getAccount({ id: manualAccount.id, raw: true })).toEqual(manualBefore);
     });
   });
   describe('refunded transactions', () => {

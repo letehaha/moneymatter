@@ -1,6 +1,7 @@
 import { logger } from '@js/utils/logger';
 import { getUserSettings } from '@services/user-settings/get-user-settings';
 
+import { isDeadlockError } from '../common/retry-on-deadlock';
 import { runInSavepoint } from '../common/run-in-savepoint';
 import { resolvePayeeForRawMerchant } from './extraction.service';
 
@@ -41,6 +42,9 @@ export const resolvePayeeForIncomingRow = async ({
     );
     return extraction.payeeId;
   } catch (error) {
+    // Rolling back to the savepoint keeps this transaction's earlier locks, so the other side
+    // stays blocked on us; only aborting the whole transaction lets the caller retry it.
+    if (isDeadlockError(error)) throw error;
     logger.error(
       {
         message: failureLogMessage,

@@ -2,11 +2,11 @@ import { addMonths } from 'date-fns';
 import { describe, expect, it } from 'vitest';
 
 import {
-  SAME_INTEREST_EPSILON,
   comparePayoffScenarios,
   computeMinimumPaymentFromTerm,
   computePayoffScenario,
   roundHalfToEven,
+  type PayoffScenario,
 } from './payoff-schedule';
 
 describe('roundHalfToEven', () => {
@@ -147,25 +147,30 @@ describe('computePayoffScenario at the loan currency decimals', () => {
     expect(result.points[1]!.balance).toBe(510.126);
   });
 
-  it('works in whole units for a 0-decimal currency', () => {
-    const result = computePayoffScenario({ balance: 1000, interestRate: 0, payment: 300, today, decimals: 0 });
+  it('accrues interest in whole units, half to even, for a 0-decimal currency', () => {
+    // 1,050 at 12% APR (1%/mo): interest 10.5 rounds to 10, so the balance after paying 500 is 560.
+    const result = computePayoffScenario({ balance: 1050, interestRate: 12, payment: 500, today, decimals: 0 });
 
-    expect(result.monthsRemaining).toBe(4);
-    expect(result.points[1]).toMatchObject({ month: 1, balance: 700 });
+    expect(result.points[1]!.balance).toBe(560);
+    expect(result.points.every((point) => Number.isInteger(point.balance))).toBe(true);
+    expect(Number.isInteger(result.totalInterest)).toBe(true);
   });
 });
 
 describe('computeMinimumPaymentFromTerm at the loan currency decimals', () => {
-  it('rounds the level payment to 3 decimals for KWD', () => {
-    // 1000 / 3 months with no interest: 333.333 KWD
-    expect(computeMinimumPaymentFromTerm({ principal: 1000, interestRate: 0, termMonths: 3, decimals: 3 })).toBe(
-      333.333,
-    );
-  });
-
-  it('rounds the level payment to a whole unit for a 0-decimal currency', () => {
-    expect(computeMinimumPaymentFromTerm({ principal: 1000, interestRate: 0, termMonths: 3, decimals: 0 })).toBe(333);
-  });
+  it.each<[number, number, number, number, number]>([
+    [1000, 0, 3, 3, 333.333],
+    [1000, 0, 3, 0, 333],
+    // 340.0221…
+    [1000, 12, 3, 3, 340.022],
+    // 8884.878…
+    [100000, 12, 12, 0, 8885],
+  ])(
+    '%d at %d%% over %d months rounds to %d decimals: %d',
+    (principal, interestRate, termMonths, decimals, expected) => {
+      expect(computeMinimumPaymentFromTerm({ principal, interestRate, termMonths, decimals })).toBe(expected);
+    },
+  );
 });
 
 describe('comparePayoffScenarios', () => {
@@ -181,7 +186,7 @@ describe('comparePayoffScenarios', () => {
   it('scenario paying MORE saves interest and finishes faster', () => {
     // 9,000/mo pays off sooner with less total interest than 7,000/mo.
     const scenario = computePayoffScenario({ balance, interestRate, payment: 9000, today, decimals: 2 });
-    const result = comparePayoffScenarios({ scenario, baseline });
+    const result = comparePayoffScenarios({ scenario, baseline, decimals: 2 });
 
     expect(result.interestDelta).toBeLessThan(0);
     expect(result.monthsDelta).toBeLessThan(0);
@@ -196,7 +201,7 @@ describe('comparePayoffScenarios', () => {
   it('scenario paying LESS costs more interest and finishes slower', () => {
     // 5,500/mo barely covers interest — takes much longer, accumulates more interest.
     const scenario = computePayoffScenario({ balance, interestRate, payment: 5500, today, decimals: 2 });
-    const result = comparePayoffScenarios({ scenario, baseline });
+    const result = comparePayoffScenarios({ scenario, baseline, decimals: 2 });
 
     expect(result.interestDelta).toBeGreaterThan(0);
     expect(result.monthsDelta).toBeGreaterThan(0);
@@ -210,7 +215,7 @@ describe('comparePayoffScenarios', () => {
 
   it('identical payments produce zero deltas and sameInterest + sameTime', () => {
     // Comparing baseline to itself — deltas must be exactly 0.
-    const result = comparePayoffScenarios({ scenario: baseline, baseline });
+    const result = comparePayoffScenarios({ scenario: baseline, baseline, decimals: 2 });
 
     expect(result.interestDelta).toBe(0);
     expect(result.monthsDelta).toBe(0);
@@ -222,28 +227,34 @@ describe('comparePayoffScenarios', () => {
     expect(result.slower).toBe(false);
   });
 
-  it('sub-cent interest difference registers as sameInterest via SAME_INTEREST_EPSILON', () => {
-    // totalInterest differs by 0.001, under SAME_INTEREST_EPSILON (0.005).
-    const syntheticBaseline: import('./payoff-schedule').PayoffScenario = {
-      paysOff: true,
-      monthsRemaining: 91,
-      payoffDate: baseline.payoffDate,
-      totalInterest: 137000.0,
-      points: [],
-    };
-    const syntheticScenario: import('./payoff-schedule').PayoffScenario = {
-      paysOff: true,
-      monthsRemaining: 91,
-      payoffDate: baseline.payoffDate,
-      totalInterest: 137000.001,
-      points: [],
-    };
+  const syntheticScenario = ({ totalInterest }: { totalInterest: number }): PayoffScenario => ({
+    paysOff: true,
+    monthsRemaining: 91,
+    payoffDate: baseline.payoffDate,
+    totalInterest,
+    points: [],
+  });
 
-    const result = comparePayoffScenarios({ scenario: syntheticScenario, baseline: syntheticBaseline });
+  it('a difference below the minor unit reads as sameInterest', () => {
+    const result = comparePayoffScenarios({
+      scenario: syntheticScenario({ totalInterest: 137000.001 }),
+      baseline: syntheticScenario({ totalInterest: 137000 }),
+      decimals: 2,
+    });
 
-    expect(Math.abs(result.interestDelta)).toBeLessThan(SAME_INTEREST_EPSILON);
     expect(result.sameInterest).toBe(true);
     expect(result.costsInterest).toBe(false);
     expect(result.savesInterest).toBe(false);
+  });
+
+  it('a one-minor-unit difference counts at the loan decimals (BTC: 8)', () => {
+    const result = comparePayoffScenarios({
+      scenario: syntheticScenario({ totalInterest: 0.01229999 }),
+      baseline: syntheticScenario({ totalInterest: 0.0123 }),
+      decimals: 8,
+    });
+
+    expect(result.sameInterest).toBe(false);
+    expect(result.savesInterest).toBe(true);
   });
 });

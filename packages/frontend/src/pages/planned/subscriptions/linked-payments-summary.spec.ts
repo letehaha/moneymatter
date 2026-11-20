@@ -1,4 +1,4 @@
-import { SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
+import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -28,10 +28,14 @@ const buildTx = (overrides: Partial<TestPayment> = {}): TestPayment => ({
 const buildSummary = ({
   transactions,
   frequency = SUBSCRIPTION_FREQUENCIES.monthly,
+  intervalUnit,
+  intervalCount,
 }: {
   transactions: TestPayment[];
   frequency?: SUBSCRIPTION_FREQUENCIES;
-}) => buildLinkedPaymentsSummary({ transactions, frequency });
+  intervalUnit?: SUBSCRIPTION_INTERVAL_UNITS;
+  intervalCount?: number;
+}) => buildLinkedPaymentsSummary({ transactions, frequency, intervalUnit, intervalCount });
 
 const paymentBars = ({ chart }: { chart: LinkedPaymentsChartSlot[] | null }): LinkedPaymentsChartBar[] =>
   (chart ?? []).filter((slot): slot is LinkedPaymentsChartBar => slot.kind === 'payment');
@@ -375,6 +379,24 @@ describe('buildLinkedPaymentsSummary', () => {
 
       expect(gaps({ chart: summary.chart })).toEqual([]);
       expect(summary.chart).toHaveLength(4);
+    });
+
+    it('counts skipped periods of a custom every-10-days step', () => {
+      const summary = buildSummary({
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+        intervalCount: 10,
+        transactions: [
+          buildTx({ id: 'a', time: '2026-01-01T10:00:00.000Z' }),
+          buildTx({ id: 'b', time: '2026-01-11T10:00:00.000Z' }),
+          buildTx({ id: 'c', time: '2026-02-10T10:00:00.000Z' }),
+          buildTx({ id: 'd', time: '2026-02-20T10:00:00.000Z' }),
+        ],
+      });
+
+      expect(gaps({ chart: summary.chart })).toEqual([
+        { kind: 'gap', id: 'gap-b-c', missedCount: 2, slotCount: 2, rangeLabel: 'Jan 26' },
+      ]);
     });
 
     it('keeps two payments inside one period adjacent', () => {

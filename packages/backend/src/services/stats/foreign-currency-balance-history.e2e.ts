@@ -52,14 +52,14 @@ describe('Balance history for foreign-currency accounts', () => {
 
     const rows = await helpers.getBalanceHistory({ accountId: account.id, raw: true });
 
-    expect(helpers.balanceCentsOn({ rows, date: DEPOSIT_DATE })).toEqualRefValue(
-      HOLDINGS_INR_CENTS * helpers.INR_TO_AED_AT_DEPOSIT,
+    expect(helpers.balanceOn({ rows, date: DEPOSIT_DATE })).toEqualRefValue(
+      (HOLDINGS_INR_CENTS / 100) * helpers.INR_TO_AED_AT_DEPOSIT,
     );
-    expect(helpers.balanceCentsOn({ rows, date: LATER_DATE })).toEqualRefValue(
-      HOLDINGS_INR_CENTS * helpers.INR_TO_AED_AFTER,
+    expect(helpers.balanceOn({ rows, date: LATER_DATE })).toEqualRefValue(
+      (HOLDINGS_INR_CENTS / 100) * helpers.INR_TO_AED_AFTER,
     );
-    expect(helpers.balanceCentsOn({ rows, date: TODAY })).toEqualRefValue(
-      HOLDINGS_INR_CENTS * helpers.INR_TO_AED_AFTER,
+    expect(helpers.balanceOn({ rows, date: TODAY })).toEqualRefValue(
+      (HOLDINGS_INR_CENTS / 100) * helpers.INR_TO_AED_AFTER,
     );
     expect(helpers.balanceCentsOn({ rows, date: YESTERDAY })).toBe(helpers.balanceCentsOn({ rows, date: TODAY }));
 

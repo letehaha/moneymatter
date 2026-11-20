@@ -1,7 +1,7 @@
 {
   "pages": {
     "household": {
-      "title": "Hộ gia đình",
+      "title": "Household",
       "description": "Mời những người bạn tin tưởng cùng truy cập tất cả tài khoản bạn sở hữu. Thành viên có thể xem các tài khoản của bạn và (nếu có quyền chỉnh sửa) ghi nhận giao dịch trên đó.",
       "myHousehold": {
         "title": "Hộ gia đình của tôi",
@@ -11,9 +11,9 @@
       "noMembers": "Chưa có ai tham gia hộ gia đình của bạn.",
       "loadMembersError": "Không tải được thành viên hộ gia đình. Hãy thử tải lại trang.",
       "permissions": {
-        "read": "Xem",
-        "write": "Chỉnh sửa",
-        "manage": "Quản lý"
+        "read": "Read",
+        "write": "Write",
+        "manage": "Manage"
       },
       "writeScope": {
         "all": "Có thể chỉnh sửa bất kỳ giao dịch nào",
@@ -51,17 +51,17 @@
         "loadError": "Không tải được các hộ gia đình bạn tham gia. Hãy thử lại sau."
       },
       "leave": {
-        "action": "Rời",
+        "action": "Leave",
         "title": "Rời khỏi hộ gia đình này?",
         "description": "Bạn sẽ mất quyền truy cập vào mọi tài khoản mà {owner} chia sẻ qua hộ gia đình. Quyền chia sẻ riêng theo từng tài khoản (nếu có) không bị ảnh hưởng.",
-        "confirm": "Rời",
+        "confirm": "Leave",
         "success": "Bạn đã rời khỏi hộ gia đình.",
         "error": "Không rời khỏi hộ gia đình được."
       },
       "pending": {
         "badge": "Đang chờ",
         "resend": "Gửi lại",
-        "cancel": "Hủy",
+        "cancel": "Cancel",
         "cancelTitle": "Hủy lời mời?",
         "cancelDescription": "Hủy lời mời đang chờ gửi đến {email}? Người nhận sẽ không thể chấp nhận lời mời nữa.",
         "cancelConfirm": "Hủy lời mời",

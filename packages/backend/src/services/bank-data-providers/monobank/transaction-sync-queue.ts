@@ -1,10 +1,4 @@
-import {
-  ACCOUNT_TYPES,
-  CATEGORIZATION_SOURCE,
-  PAYMENT_TYPES,
-  TRANSACTION_TRANSFER_NATURE,
-  TRANSACTION_TYPES,
-} from '@bt/shared/types';
+import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import type { RecordId } from '@bt/shared/types';
 import { ExternalMonobankTransactionResponse } from '@bt/shared/types/external-services';
 import { Money } from '@common/types/money';
@@ -12,19 +6,21 @@ import { logger } from '@js/utils/logger';
 import { SentryTraceData, withQueueProcessSpan, withQueuePublishSpan } from '@js/utils/sentry';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import * as MerchantCategoryCodes from '@models/merchant-category-codes.model';
+import { namespace } from '@models/connection';
 import { findOneTransaction } from '@models/transactions-query';
-import * as UserMerchantCategoryCodes from '@models/user-merchant-category-codes.model';
 import * as Users from '@models/users.model';
 import { redisClient } from '@root/redis-client';
 import { runPendingLinkAbsorb } from '@services/accounts/absorb-link-residual';
+import { isLinkedToBank, lockLinkedBankAccount } from '@services/accounts/lock-account-row';
 import { runWithBalanceRevalueBatch } from '@services/balances/revalue-balance-history.service';
+import { withTransaction } from '@services/common/with-transaction';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import * as transactionsService from '@services/transactions';
 import { accountHasPlannedRows } from '@services/transactions/planned-matching';
 import { Job, Queue, UnrecoverableError, Worker } from 'bullmq';
 import crypto from 'crypto';
 import IORedis from 'ioredis';
+import { AsyncLocalStorage } from 'node:async_hooks';
 
 import { SyncStatus, setAccountSyncStatus } from '../sync/sync-status-tracker';
 import { linkAndEmitSyncedTransactions } from '../utils/link-and-emit-synced-transactions';
@@ -98,6 +94,18 @@ interface QueueBundle {
 
 const bundles = new Map<string, QueueBundle>();
 
+// A worker runs its jobs in the async context it was constructed in, and bundles are often first
+// built inside a request or a sync transaction. Built from the module-load context with no CLS
+// transaction, jobs never join the caller's transaction or its drained revalue batch.
+const runInModuleLoadContext = AsyncLocalStorage.snapshot();
+const createDetachedBundle = ({ tokenHash }: { tokenHash: string }): QueueBundle =>
+  runInModuleLoadContext(() =>
+    namespace.runAndReturn(() => {
+      namespace.set('transaction', undefined);
+      return createBundle(tokenHash);
+    }),
+  );
+
 const queueDefaultJobOptions = {
   attempts: 2,
   backoff: {
@@ -119,8 +127,17 @@ function buildJobProcessor(queueName: string) {
       queueName,
       job,
       fn: async () => {
-        const { userId, accountId, externalAccountId, apiToken, fromTimestamp, toTimestamp, batchIndex, totalBatches } =
-          job.data;
+        const {
+          userId,
+          accountId,
+          connectionId,
+          externalAccountId,
+          apiToken,
+          fromTimestamp,
+          toTimestamp,
+          batchIndex,
+          totalBatches,
+        } = job.data;
 
         logger.info(
           `[WORKER] Processing Monobank transaction sync batch ${batchIndex + 1}/${totalBatches} for account ${accountId} (externalId: ${externalAccountId})`,
@@ -140,19 +157,32 @@ function buildJobProcessor(queueName: string) {
           return { success: false, batchIndex, totalBatches, transactionCount: 0 };
         }
 
-        // Set status to SYNCING when worker starts (only for first batch)
-        if (batchIndex === 0) {
-          await setAccountSyncStatus({ accountId, status: SyncStatus.SYNCING, userId });
-        }
-
-        // Update job progress
-        await job.updateProgress({
-          batchIndex,
-          totalBatches,
-          status: 'fetching',
-        });
+        // The account left this connection (unlink) while the batch waited or fetched.
+        const skipUnlinkedBatch = async () => {
+          await setAccountSyncStatus({ accountId, status: SyncStatus.COMPLETED, userId });
+          logger.info(
+            `[WORKER] Skipping Monobank batch ${batchIndex + 1}/${totalBatches}: account ${accountId} no longer linked to connection ${connectionId}`,
+          );
+          return { success: false, skipped: true, batchIndex, totalBatches, transactionCount: 0 };
+        };
 
         try {
+          const linkedNow = await Accounts.findByPk(accountId);
+          if (!isLinkedToBank({ account: linkedNow, connectionId, externalId: externalAccountId })) {
+            return await skipUnlinkedBatch();
+          }
+
+          // Set status to SYNCING when worker starts (only for first batch)
+          if (batchIndex === 0) {
+            await setAccountSyncStatus({ accountId, status: SyncStatus.SYNCING, userId });
+          }
+
+          await job.updateProgress({
+            batchIndex,
+            totalBatches,
+            status: 'fetching',
+          });
+
           const apiClient = new MonobankApiClient(apiToken);
 
           // Fetch transactions from Monobank API
@@ -170,57 +200,51 @@ function buildJobProcessor(queueName: string) {
             transactionCount: transactions.length,
           });
 
-          // Process each transaction and collect created IDs
-          const createdTransactionIds: string[] = [];
-          let mergedIntoPlannedCount = 0;
+          // Fetched outside any lock; written under the account row lock, which unlink also takes,
+          // so rows land only while the account is still linked to this connection.
+          const persisted = await withTransaction(async () => {
+            const account = await lockLinkedBankAccount({ accountId, connectionId, externalId: externalAccountId });
+            if (!account) return null;
 
-          // One probe per batch instead of one per row: an account with no plans skips the
-          // matcher entirely.
-          const matchPlanned = job.data.matchPlanned === true && (await accountHasPlannedRows({ accountId }));
+            // Process each transaction and collect created IDs
+            const createdTransactionIds: string[] = [];
+            let mergedIntoPlannedCount = 0;
 
-          // Sort transactions by date (ascending) so the last transaction for each day
-          // This is important for Balances.handleTransactionChange() which uses the
-          // balance from the last-processed transaction for each date.
-          transactions.sort((a, b) => a.time - b.time);
+            // One probe per batch instead of one per row: an account with no plans skips the
+            // matcher entirely.
+            const matchPlanned = job.data.matchPlanned === true && (await accountHasPlannedRows({ accountId }));
 
-          for (let i = 0; i < transactions.length; i++) {
-            const result = await createMonobankTransaction({
-              data: transactions[i]!,
-              accountId,
-              userId,
-              matchPlanned,
-            });
-            if (result.mergedIntoPlanned) {
-              mergedIntoPlannedCount += 1;
-            } else if (result.createdId !== undefined) {
-              createdTransactionIds.push(result.createdId);
-            }
+            // Sort transactions by date (ascending) so the last transaction for each day
+            // This is important for Balances.handleTransactionChange() which uses the
+            // balance from the last-processed transaction for each date.
+            transactions.sort((a, b) => a.time - b.time);
 
-            // Update progress periodically
-            if (i % 10 === 0) {
-              await job.updateProgress({
-                batchIndex,
-                totalBatches,
-                status: 'processing',
-                transactionCount: transactions.length,
-                processedCount: i + 1,
+            for (let i = 0; i < transactions.length; i++) {
+              const result = await createMonobankTransaction({
+                data: transactions[i]!,
+                accountId,
+                userId,
+                matchPlanned,
               });
+              if (result.mergedIntoPlanned) {
+                mergedIntoPlannedCount += 1;
+              } else if (result.createdId !== undefined) {
+                createdTransactionIds.push(result.createdId);
+              }
+
+              // Update progress periodically
+              if (i % 10 === 0) {
+                await job.updateProgress({
+                  batchIndex,
+                  totalBatches,
+                  status: 'processing',
+                  transactionCount: transactions.length,
+                  processedCount: i + 1,
+                });
+              }
             }
-          }
 
-          await linkAndEmitSyncedTransactions({ userId, accountId, transactionIds: createdTransactionIds });
-
-          if (mergedIntoPlannedCount > 0) {
-            logger.info(
-              `[WORKER] Batch ${batchIndex + 1}/${totalBatches}: ${mergedIntoPlannedCount} planned transaction(s) confirmed for account ${accountId}`,
-            );
-            await notifyPlannedConfirmations({ userId, accountId, mergedCount: mergedIntoPlannedCount });
-          }
-
-          // Update account metadata and balance after processing all transactions in this batch.
-          const account = await Accounts.findByPk(accountId);
-
-          if (account) {
+            // Update account metadata and balance after processing all transactions in this batch.
             // Stamp lastSyncedAt via jsonb_set: a whole-blob read-modify-write
             // races concurrent metadata writers (the completion path clearing
             // `pendingAbsorb`, the link flow writing bankConnection) and would
@@ -287,6 +311,19 @@ function buildJobProcessor(queueName: string) {
             }
 
             logger.info(`Account ${accountId} balance after save: ${account.currentBalance}`);
+
+            return { createdTransactionIds, mergedIntoPlannedCount };
+          })();
+          if (!persisted) return await skipUnlinkedBatch();
+          const { createdTransactionIds, mergedIntoPlannedCount } = persisted;
+
+          await linkAndEmitSyncedTransactions({ userId, accountId, transactionIds: createdTransactionIds });
+
+          if (mergedIntoPlannedCount > 0) {
+            logger.info(
+              `[WORKER] Batch ${batchIndex + 1}/${totalBatches}: ${mergedIntoPlannedCount} planned transaction(s) confirmed for account ${accountId}`,
+            );
+            await notifyPlannedConfirmations({ userId, accountId, mergedCount: mergedIntoPlannedCount });
           }
 
           logger.info(`[WORKER] Completed batch ${batchIndex + 1}/${totalBatches} for account ${accountId}`);
@@ -379,7 +416,7 @@ function getOrCreateBundle(apiToken: string): QueueBundle {
   const tokenHash = hashApiToken(apiToken);
   let bundle = bundles.get(tokenHash);
   if (!bundle) {
-    bundle = createBundle(tokenHash);
+    bundle = createDetachedBundle({ tokenHash });
     bundles.set(tokenHash, bundle);
   }
   return bundle;
@@ -463,7 +500,7 @@ async function recoverExistingQueues(): Promise<void> {
 
     for (const tokenHash of discovered) {
       if (!bundles.has(tokenHash)) {
-        bundles.set(tokenHash, createBundle(tokenHash));
+        bundles.set(tokenHash, createDetachedBundle({ tokenHash }));
       }
     }
 
@@ -510,59 +547,17 @@ async function createMonobankTransaction({
     return { mergedIntoPlanned: false };
   }
 
-  // Get or create MCC code
-  let mccRecord = await MerchantCategoryCodes.getByCode({ code: data.mcc });
+  // Leaves `categorizationMeta` null so AI and payee rules can still claim the row.
+  const categoryId = await Users.getUserDefaultCategory({ id: userId });
 
-  if (!mccRecord) {
-    mccRecord = await MerchantCategoryCodes.addCode({ code: data.mcc });
-  }
-
-  // Get or create user MCC mapping to category
-  const userMcc = await UserMerchantCategoryCodes.getByPassedParams({
-    mccId: mccRecord.get('id'),
-    userId,
-  });
-
-  let categoryId: string;
-  // Distinguishes "this categoryId came from the user's MCC mapping" (which
-  // `payee_rule` is allowed to override) from "this is just the default
-  // fallback" (which leaves `categorizationMeta` null so any later source can
-  // claim the row).
-  let mccFromUserMapping = false;
-
-  if (userMcc.length) {
-    categoryId = userMcc[0]!.get('categoryId');
-    mccFromUserMapping = true;
-  } else {
-    // Use default category for this user
-    categoryId = await Users.getUserDefaultCategory({ id: userId });
-
-    // Create mapping for future transactions
-    await UserMerchantCategoryCodes.createEntry({
-      mccId: mccRecord.get('id'),
-      userId,
-      categoryId,
-    });
-  }
-
-  // Create transaction in database. `counterName` is the Monobank-reported
-  // merchant string — surfaced both into `externalData` for audit and as
-  // `rawMerchantName` so the createTransaction pipeline can resolve a Payee.
-  // `categorizationMeta` flags MCC-derived categories so `payee_rule` knows it
-  // may override them; the user-default fallback path leaves meta null on
-  // purpose so any later source can still win.
+  // `counterName` is the Monobank-reported merchant string, kept in
+  // `externalData` for audit and passed as `rawMerchantName` to resolve a Payee.
   const counterName = data.counterName?.trim() ?? '';
-  const mccDerivedMeta = mccFromUserMapping
-    ? {
-        source: CATEGORIZATION_SOURCE.mccRule,
-        categorizedAt: new Date().toISOString(),
-      }
-    : null;
   const createResult = await transactionsService.createTransaction({
     originalId: data.id,
     note: data.description,
     externalReference: (data.receiptId?.trim() || data.invoiceId?.trim())?.slice(0, 255) || null,
-    amount: Money.fromCents(Math.abs(data.amount)),
+    amount: Money.fromCents(data.amount).abs(),
     time: new Date(data.time * 1000),
     externalData: {
       operationAmount: data.operationAmount,
@@ -576,9 +571,7 @@ async function createMonobankTransaction({
     accountId,
     userId,
     transactionType: data.amount > 0 ? TRANSACTION_TYPES.income : TRANSACTION_TYPES.expense,
-    paymentType: PAYMENT_TYPES.creditCard,
     categoryId,
-    categorizationMeta: mccDerivedMeta,
     transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
     accountType: ACCOUNT_TYPES.monobank,
     rawMerchantName: counterName || null,
@@ -607,36 +600,17 @@ function jobGroupCompletionsKey(jobGroupId: string): string {
 /**
  * Runs the deferred post-link absorb before flipping the status to COMPLETED,
  * so status waiters observe the reconciled account.
- *
- * `swallowAbsorbError` is safe only where no ambient CLS transaction exists
- * (the worker's 'completed' event): there a failed absorb rolls itself back
- * and the still-set `pendingAbsorb` retries next group. Inside an ambient
- * transaction the error must propagate, or a half-applied opening-balance
- * move commits.
  */
 async function finalizeSyncGroup({
   accountId,
   userId,
   connectionId,
-  swallowAbsorbError,
 }: {
   accountId: RecordId;
   userId: number;
   connectionId: string;
-  swallowAbsorbError: boolean;
 }): Promise<void> {
-  if (swallowAbsorbError) {
-    try {
-      await runPendingLinkAbsorb({ accountId: String(accountId), userId });
-    } catch (error) {
-      logger.error(
-        { message: '[Monobank] Deferred post-link residual absorb failed', error: error as Error },
-        { accountId, userId },
-      );
-    }
-  } else {
-    await runPendingLinkAbsorb({ accountId: String(accountId), userId });
-  }
+  await runPendingLinkAbsorb({ accountId: String(accountId), userId });
 
   await Promise.all([
     setAccountSyncStatus({ accountId, status: SyncStatus.COMPLETED, userId }),
@@ -673,9 +647,21 @@ export async function handleCompletedBatch(job: Job<TransactionSyncJobData>): Pr
 
   if (completedCount < totalBatches) return;
 
-  await finalizeSyncGroup({ accountId, userId, connectionId, swallowAbsorbError: true });
+  // A skipped batch already settled the status of an account that left the connection.
+  if (!(job.returnvalue as { skipped?: boolean } | undefined)?.skipped) {
+    try {
+      await finalizeSyncGroup({ accountId, userId, connectionId });
+      logger.info(`All batches completed for account ${accountId}, status set to COMPLETED`);
+    } catch (error) {
+      // `pendingAbsorb` stays set, so the next sync retries the absorb.
+      logger.error(
+        { message: '[Monobank] Finalizing the sync group failed', error: error as Error },
+        { accountId, userId },
+      );
+      await setAccountSyncStatus({ accountId, status: SyncStatus.FAILED, error: (error as Error).message, userId });
+    }
+  }
   await redisClient.del(counterKey);
-  logger.info(`All batches completed for account ${accountId}, status set to COMPLETED`);
 }
 
 /**
@@ -757,7 +743,7 @@ export async function queueTransactionSync(params: {
   // batches, so no worker completion ever fires: finalize here or the account
   // sits in QUEUED forever and a pending link absorb never runs.
   if (chunks.length === 0) {
-    await finalizeSyncGroup({ accountId, userId, connectionId, swallowAbsorbError: false });
+    await finalizeSyncGroup({ accountId, userId, connectionId });
     logger.info(`[QUEUE] Empty sync window for account ${accountId} (group: ${jobGroupId}), finalized without batches`);
     return { jobGroupId, totalBatches: 0, estimatedMinutes: 0 };
   }
@@ -979,12 +965,6 @@ export async function getActiveJobsForUser(userId: number): Promise<
 }
 
 /**
- * Remove all pending/delayed jobs belonging to a user across every per-token
- * queue. Used during user deletion so leftover work doesn't try to touch
- * tables of a user that no longer exists. 'active' jobs are locked by their
- * worker and intentionally skipped — they finish on their own.
- */
-/**
  * Force a fresh recovery scan, bypassing the memoized `ensureMonobankQueueRecovery`,
  * so per-token bundles created since boot — including by another process — are
  * discovered. The base-currency drain calls this before counting a user's
@@ -1007,6 +987,11 @@ export async function countUnfinishedMonobankJobsForUser({ userId }: { userId: n
   return jobsPerBundle.flat().filter((job) => job.data.userId === userId).length;
 }
 
+/**
+ * Remove a user's waiting/delayed jobs across every per-token queue, for user deletion and the
+ * base-currency drain. 'active' jobs are locked by their worker and finish on their own.
+ * Uses the memoized recovery; the drain calls {@link refreshMonobankBundleDiscovery} first.
+ */
 export async function removePendingJobsForUser({
   userId,
 }: {
@@ -1030,7 +1015,7 @@ export async function removePendingJobsForUser({
           // Job may have become active between getJobs and remove - ignore lock errors,
           // but log the actual error so we can spot non-lock failures (Redis disconnect,
           // etc.) instead of misattributing every miss to a transient lock race.
-          logger.warn(`Could not remove job during user deletion. jobId: ${job.id}`, { error: error as Error });
+          logger.warn(`Could not remove pending job. jobId: ${job.id}`, { error: error as Error });
         }),
     ),
   );

@@ -8,7 +8,7 @@
           "stepTitle": "Lade deine Wallet-CSV-Datei hoch",
           "description": "Lade eine oder mehrere Wallet-CSV-Exportdateien hoch, um Transaktionen zu importieren. Alle Dateien müssen dieselben Spalten haben.",
           "maxSize": "Maximale Dateigröße: 10 MB",
-          "parsing": "Verarbeite…",
+          "parsing": "Analysiere...",
           "errors": {
             "invalidFormatNamed": "\"{name}\" ist keine CSV-Datei.",
             "parseFailed": "Datei konnte nicht verarbeitet werden. Bitte überprüfe das Format und versuche es erneut.",
@@ -48,7 +48,7 @@
           "starting": "Starte Import…",
           "progressCount": "{processed} / {total}",
           "statusQueued": "In Warteschlange",
-          "statusRunning": "Importieren…",
+          "statusRunning": "Importiere...",
           "statusCompleted": "Abgeschlossen",
           "statusFailed": "Fehlgeschlagen",
           "failed": "Import fehlgeschlagen.",
@@ -63,7 +63,7 @@
           "allFailedDescription": "Es wurden keine Zeilen importiert. Überprüfe die Fehler unten und versuche es erneut.",
           "accountsCreated": "Konten erstellt",
           "accountsLinked": "Konten verknüpft",
-          "accountsSkipped": "Konten übersprungen",
+          "accountsSkipped": "Übersprungene Konten",
           "categoriesCreated": "Kategorien erstellt",
           "tagsCreated": "Tags erstellt",
           "transactionsImported": "Transaktionen importiert",
@@ -74,9 +74,9 @@
           "errorsTitle": "{count} Zeilen fehlgeschlagen | {count} Zeile fehlgeschlagen | {count} Zeilen fehlgeschlagen",
           "errorsOverflow": "+{count} weitere",
           "errors": {
-            "rowImportFailed": "This row could not be imported.",
-            "payeeDefaultTagsFailed": "The transaction was imported, but the payee's default tags could not be applied.",
-            "accountBalanceDesync": "An account balance could not be updated after the import and may be incorrect."
+            "rowImportFailed": "Diese Zeile konnte nicht importiert werden.",
+            "payeeDefaultTagsFailed": "Die Transaktion wurde importiert, aber die Standard-Tags des Zahlungsempfängers konnten nicht angewendet werden.",
+            "accountBalanceDesync": "Ein Kontostand konnte nach dem Import nicht aktualisiert werden und ist möglicherweise fehlerhaft."
           },
           "balanceWarningTitle": "Einige Kontosalden könnten fehlerhaft sein",
           "balanceWarningBody": "Wir konnten den Saldo eines oder mehrerer bestehender Konten nach dem Import nicht zurücksetzen. Überprüfe die betroffenen Konten.",
@@ -98,7 +98,7 @@
             "currentBalanceLabel": "Aktueller Saldo (optional)",
             "currentBalancePlaceholder": "Leer lassen, um die importierte Gesamtsumme zu verwenden",
             "willCreateHint": "Erstellt ein neues {currency}-Konto",
-            "skippedNote": "{count} Konto/Konten werden übersprungen. Ihre Transaktionen – und alle Umbuchungen zu oder von ihnen – werden nicht importiert."
+            "skippedNote": "{count} Konto/Konten werden übersprungen. Ihre Transaktionen – sowie alle Transfers von oder zu ihnen – werden nicht importiert."
           },
           "categories": {
             "sectionTitle": "Kategorien"
@@ -131,10 +131,10 @@
           "duplicatesHint": "Ausgewählte Zeilen werden trotzdem importiert; nicht ausgewählte Duplikate werden übersprungen.",
           "back": "Zurück",
           "importButton": "{count} Transaktionen importieren",
-          "importing": "Importieren…"
+          "importing": "Importiere..."
         },
         "errors": {
-          "fileMissing": "No file loaded. Please upload your Wallet export again."
+          "fileMissing": "Keine Datei geladen. Bitte lade deinen Wallet-Export erneut hoch."
         }
       }
     }

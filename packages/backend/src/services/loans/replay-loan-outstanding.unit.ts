@@ -13,9 +13,9 @@ const replay = ({ legs, anchorDate, opening }: { legs: FakeLeg[]; anchorDate: st
   replayLoanOutstanding({
     legs,
     anchorDate,
-    openingBalance: Money.fromCents(opening),
+    openingBalance: Money.fromDecimal(opening / 100),
     decimals: 2,
-    pickMinor: ({ leg }) => leg.cents,
+    pickAmount: ({ leg }) => Money.fromDecimal(leg.cents / 100),
   }).map((point) => ({ date: point.date, cents: point.balance.toCents() }));
 
 describe('replayLoanOutstanding', () => {
@@ -77,7 +77,7 @@ const replay3 = ({ legs, opening }: { legs: FakeLeg[]; opening: Money }) =>
     anchorDate: '2024-01-01',
     openingBalance: opening,
     decimals: 3,
-    pickMinor: ({ leg }) => leg.cents,
+    pickAmount: ({ leg }) => Money.fromMinorUnits({ value: leg.cents, decimals: 3 }),
   }).map((point) => ({ date: point.date, balance: point.balance.toNumber() }));
 
 describe('replayLoanOutstanding at 3 decimals', () => {

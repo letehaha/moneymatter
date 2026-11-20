@@ -194,7 +194,6 @@ describe('Planned transactions – merge on import', () => {
 
       const merged = await helpers.getTransactionById({
         id: plan.id,
-        includeSplits: true,
         raw: true,
       });
       expect(merged!.isPlanned).toBe(false);
@@ -212,7 +211,6 @@ describe('Planned transactions – merge on import', () => {
 
       const withTags = await helpers.getTransactions({
         accountIds: [account.id],
-        includeTags: true,
         raw: true,
       });
       expect(withTags).toHaveLength(1);

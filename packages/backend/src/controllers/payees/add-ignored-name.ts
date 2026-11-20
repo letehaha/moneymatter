@@ -2,11 +2,10 @@ import { createController } from '@controllers/helpers/controller-factory';
 import * as payeesService from '@services/payees';
 import { z } from 'zod';
 
+import { addIgnoredNameBodySchema } from './shared-schemas';
+
 const schema = z.object({
-  body: z.object({
-    rawName: z.string().trim().min(1).max(500),
-    force: z.boolean().optional(),
-  }),
+  body: addIgnoredNameBodySchema,
 });
 
 export default createController(schema, async ({ user, body }) => {

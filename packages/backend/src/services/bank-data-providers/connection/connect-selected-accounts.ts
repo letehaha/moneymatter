@@ -1,14 +1,15 @@
 import {
   ACCOUNT_CATEGORIES,
   ACCOUNT_STATUSES,
+  type AccountExternalData,
   API_ERROR_CODES,
   BANK_PROVIDER_TYPE,
   NO_CURRENCY_CODE,
 } from '@bt/shared/types';
-import { roundMoneyValues } from '@common/lib/currency-precision';
+import { roundMoneyValues, roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
-import { BadRequestError, NotFoundError, ValidationError } from '@js/errors';
+import { BadRequestError, NotFoundError, ServiceUnavailableError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import { type BankProvider, trackBankConnected } from '@js/utils/posthog';
 import AccountGrouping from '@models/accounts-groups/account-grouping.model';
@@ -19,16 +20,17 @@ import { NON_CURRENCY_CODES } from '@models/currencies.model';
 import Subscriptions from '@models/subscriptions.model';
 import { calculateRefAmountOrNull } from '@root/services/calculate-ref-amount.service';
 import { withTransaction } from '@root/services/common/with-transaction';
-import {
-  PROVIDER_TO_ACCOUNT_TYPE,
-  restoreRelinkedTransactionsAccountType,
-} from '@services/accounts/restore-relinked-transactions-account-type';
+import { lockAccountRow } from '@services/accounts/lock-account-row';
+import { restoreRelinkedTransactionsAccountType } from '@services/accounts/restore-relinked-transactions-account-type';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
 import { resolveVisibleCurrencies } from '@services/currencies/assert-currency-codes-visible';
+import { assertNoUnfinishedImport } from '@services/import-export/core/unfinished-import';
 
 import { bankProviderRegistry } from '../registry';
 import { enqueueAccountSync } from '../sync/account-sync-queue';
 import type { AccountWithConnection } from '../sync/get-user-sync-status';
+import { PROVIDER_TO_ACCOUNT_TYPE, type ProviderAccount } from '../types';
+import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 
 const PROVIDER_TO_ANALYTICS_TYPE: Record<BANK_PROVIDER_TYPE, BankProvider> = {
   [BANK_PROVIDER_TYPE.MONOBANK]: 'monobank',
@@ -36,6 +38,7 @@ const PROVIDER_TO_ANALYTICS_TYPE: Record<BANK_PROVIDER_TYPE, BankProvider> = {
   [BANK_PROVIDER_TYPE.LUNCHFLOW]: 'lunchflow',
   [BANK_PROVIDER_TYPE.WALUTOMAT]: 'walutomat',
   [BANK_PROVIDER_TYPE.SIMPLEFIN]: 'simplefin',
+  [BANK_PROVIDER_TYPE.AKAHU]: 'akahu',
 };
 
 /**
@@ -74,6 +77,27 @@ export const assertExternalAccountNotLinkedElsewhere = async ({
       },
     }),
   });
+};
+
+/** The bank balance a link anchors on; refuses rather than anchoring on a balance the bank did not report. */
+export const requireProviderBalance = async ({
+  providerAccount,
+  userId,
+  currencyCode,
+}: {
+  providerAccount: ProviderAccount;
+  userId: number;
+  currencyCode: string;
+}): Promise<Money> => {
+  if (providerAccount.balance === null) {
+    throw new ServiceUnavailableError({
+      message: t({
+        key: 'bankDataProviders.accountBalanceUnavailable',
+        variables: { account: providerAccount.name || providerAccount.externalId },
+      }),
+    });
+  }
+  return roundToCurrency({ money: providerAccount.balance, userId, currencyCode, mode: 'half-up' });
 };
 
 /**
@@ -125,13 +149,14 @@ const createAccountsForConnection = withTransaction(
     const createdAccounts: Accounts[] = [];
     for (const providerAccount of selectedAccounts) {
       // Check if account already exists (still linked to this connection)
-      let existingAccount = await Accounts.findOne({
+      const alreadyLinked = await Accounts.findOne({
         where: {
           userId,
           externalId: providerAccount.externalId,
           bankDataProviderConnectionId: connectionId,
         },
       });
+      let existingAccount = alreadyLinked;
 
       // If not found, check for a previously-linked account (disconnected
       // accounts have their connection history stored in externalData after
@@ -155,6 +180,9 @@ const createAccountsForConnection = withTransaction(
         });
       }
 
+      // An account found only through its connection history was unlinked and is being linked again.
+      const isRelink = !alreadyLinked && !!existingAccount;
+
       if (existingAccount) {
         // Re-linking keeps the stored currency (currency is immutable), so a
         // currency override sent for this account is intentionally ignored.
@@ -165,6 +193,47 @@ const createAccountsForConnection = withTransaction(
               `${providerAccount.externalId}: stored currency "${existingAccount.currencyCode}" is immutable.`,
           );
         }
+        if (isRelink) {
+          // Locked before the import check: an import opening its batch now waits and sees this relink.
+          const locked = await lockAccountRow({ accountId: existingAccount.id, userId, noKey: true });
+          if (locked?.bankDataProviderConnectionId) {
+            await assertExternalAccountNotLinkedElsewhere({
+              userId,
+              providerType: connection.providerType,
+              externalId: providerAccount.externalId,
+            });
+          }
+          if (!locked || locked.bankDataProviderConnectionId !== null) {
+            throw new NotFoundError({
+              message: t({ key: 'bankDataProviders.accountNotLinkedToConnection' }),
+              code: API_ERROR_CODES.notFound,
+            });
+          }
+          existingAccount = locked;
+          await assertNoUnfinishedImport({ userId });
+        }
+
+        const previousLink = existingAccount.externalData?.bankConnection;
+        const relinkBankBalance = isRelink
+          ? await requireProviderBalance({ providerAccount, userId, currencyCode: existingAccount.currencyCode })
+          : null;
+        // A relink starts a new link day. The queued sync's absorb stamps S from the bank
+        // balance, so nothing from the previous link carries over.
+        const bankConnection: AccountExternalData['bankConnection'] = relinkBankBalance
+          ? {
+              linkedAt: new Date().toISOString(),
+              linkingStrategy: 'forward-only',
+              balanceReconciliation: {
+                systemBalance: existingAccount.currentBalance.toNumber(),
+                externalBalance: relinkBankBalance.toNumber(),
+                difference: relinkBankBalance.subtract(existingAccount.currentBalance).toNumber(),
+                adjustmentTransactionId: null,
+                residualTarget: previousLink?.balanceReconciliation?.residualTarget,
+                pendingAbsorb: true,
+              },
+            }
+          : previousLink;
+
         // Re-link and re-activate the account
         await existingAccount.update({
           status: ACCOUNT_STATUSES.active,
@@ -172,8 +241,12 @@ const createAccountsForConnection = withTransaction(
           bankDataProviderConnectionId: connectionId,
           externalId: providerAccount.externalId,
           // Provider metadata can carry session-bound ids, so the stored copy must follow the new connection.
-          externalData: { ...existingAccount.externalData, ...providerAccount.metadata },
+          externalData: { ...existingAccount.externalData, ...providerAccount.metadata, bankConnection },
         });
+        if (relinkBankBalance) {
+          // The queued sync may store no rows and so write no balance; S must start from the bank's figure.
+          await writeBankBalanceWithHistory({ account: existingAccount, balance: relinkBankBalance });
+        }
         await Subscriptions.update(
           { autoRecord: false },
           { where: { accountId: existingAccount.id, autoRecord: true } },
@@ -230,11 +303,11 @@ const createAccountsForConnection = withTransaction(
         }
         await addUserCurrencies([{ userId, currencyCode: currency.code }]);
 
-        // `ProviderAccount.balance` and the `creditLimit` metadata are minor units (cents).
+        // ponytail: a new account still opens at 0 when the bank omits its balance; the first sync writes the real one.
         const { providerBalance, creditLimit } = await roundMoneyValues({
           values: {
-            providerBalance: Money.fromCents(providerAccount.balance),
-            creditLimit: Money.fromCents((providerAccount.metadata?.creditLimit as number) || 0),
+            providerBalance: providerAccount.balance ?? Money.zero(),
+            creditLimit: providerAccount.creditLimit ?? Money.zero(),
           },
           userId,
           currencyCode: providerAccount.currency,
@@ -277,7 +350,7 @@ const createAccountsForConnection = withTransaction(
           creditLimit,
           refCreditLimit,
           externalId: providerAccount.externalId,
-          externalData: { ...(providerAccount.metadata || {}), ...(currencyFallback && { currencyFallback }) },
+          externalData: { ...providerAccount.metadata, ...(currencyFallback && { currencyFallback }) },
           bankDataProviderConnectionId: connectionId,
         });
         createdAccounts.push(newAccount);

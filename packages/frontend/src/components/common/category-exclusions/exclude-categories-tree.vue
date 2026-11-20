@@ -3,7 +3,7 @@
     <template v-for="node in nodes" :key="node.category.id">
       <button
         type="button"
-        class="hover:bg-muted/60 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm"
+        class="hover:bg-hover flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm"
         :class="{ 'text-muted-foreground': isExcluded({ categoryId: node.category.id }) }"
         :data-testid="`ec-row-${node.category.id}`"
         @click="emit('toggle', { categoryId: node.category.id })"

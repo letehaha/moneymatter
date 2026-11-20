@@ -4,11 +4,12 @@ import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import { Button } from '@/components/lib/ui/button';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { invalidateTransactionGroupQueries } from '@/composable/data-queries/transaction-groups';
-import { getApiErrorMessage } from '@/js/errors';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { CheckIcon, SearchIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { getGroupErrorMessage } from './group-error-message';
 
 const { t } = useI18n();
 
@@ -70,12 +71,7 @@ const handleSubmit = async () => {
     emit('update:open', false);
     emit('added');
   } catch (e) {
-    error.value = getApiErrorMessage({
-      e,
-      t,
-      conflictKey: 'transactions.transactionGroups.errors.alreadyInGroup',
-      fallbackKey: 'transactions.transactionGroups.errors.addFailed',
-    });
+    error.value = getGroupErrorMessage({ e, t, fallbackKey: 'transactions.transactionGroups.errors.addFailed' });
   } finally {
     isSubmitting.value = false;
   }
@@ -119,7 +115,7 @@ const handleSubmit = async () => {
           :key="group.id"
           :class="[
             'flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition-colors',
-            selectedGroupId === group.id ? 'bg-primary/10 text-primary-text' : 'hover:bg-muted',
+            selectedGroupId === group.id ? 'bg-primary/10 text-primary-text' : 'hover:bg-hover',
           ]"
           @click="selectedGroupId = group.id"
         >

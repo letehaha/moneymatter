@@ -7,6 +7,7 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable/formatters';
 import { cn } from '@/lib/utils';
 import { getTrackerSpent } from '@/pages/trackers/trackers-info/tracker-summary';
+import TrackerLogo from '@/pages/trackers/components/tracker-logo.vue';
 import UtilizationBar from '@/pages/trackers/components/utilization-bar.vue';
 import { getTrackerTimeStatus } from '@/pages/trackers/tracker-time-status';
 import { utilizationClasses } from '@/pages/trackers/utilization-classes';
@@ -56,7 +57,7 @@ const rows = computed(() =>
           summary,
           utilizationRate,
           ended: getTrackerTimeStatus({ startDate: tracker.startDate, endDate: tracker.endDate }).kind === 'ended',
-          tone: utilizationClasses({ rate: utilizationRate ?? 0 }),
+          tone: utilizationClasses({ rate: utilizationRate ?? 0, tracker }),
         },
       ];
     }),
@@ -106,7 +107,7 @@ const retry = () => {
       </div>
     </div>
 
-    <div v-else-if="!rows.length" class="flex min-h-[220px] flex-col items-center justify-center gap-3 text-center">
+    <div v-else-if="!rows.length" class="flex min-h-55 flex-col items-center justify-center gap-3 text-center">
       <TargetIcon class="text-muted-foreground size-10" />
       <p class="text-muted-foreground text-sm">{{ $t('dashboard.widgets.trackers.empty') }}</p>
       <router-link
@@ -123,12 +124,11 @@ const retry = () => {
           v-for="row in rows"
           :key="row.tracker.id"
           :to="{ name: ROUTES_NAMES.plannedTrackerDetails, params: { id: row.tracker.id } }"
-          :class="
-            cn('hover:bg-foreground/5 -mx-2 block rounded-md px-2 py-2 transition-colors', row.ended && 'opacity-60')
-          "
+          :class="cn('hover:bg-hover -mx-2 block rounded-md px-2 py-2 transition-colors', row.ended && 'opacity-60')"
         >
           <span class="flex min-w-0 items-baseline justify-between gap-3">
             <span class="flex min-w-0 items-baseline gap-2">
+              <TrackerLogo :tracker="row.tracker" class="size-5 shrink-0 self-center rounded" />
               <span class="min-w-0 truncate text-sm font-semibold">{{ row.tracker.name }}</span>
               <span v-if="row.ended" class="text-muted-foreground shrink-0 text-xs">
                 {{ $t('dashboard.widgets.trackers.ended') }}
@@ -145,14 +145,21 @@ const retry = () => {
             </span>
           </span>
 
-          <UtilizationBar v-if="row.utilizationRate !== null" :rate="row.utilizationRate" class="mt-1.5" />
+          <UtilizationBar
+            v-if="row.utilizationRate !== null"
+            :rate="row.utilizationRate"
+            :tracker="row.tracker"
+            class="mt-1.5"
+          />
 
           <span class="text-muted-foreground mt-1 flex justify-between gap-3 text-xs leading-4 tabular-nums">
             <span class="min-w-0 truncate">
               {{
                 row.utilizationRate !== null
                   ? $t('dashboard.widgets.trackers.spentOfLimit', {
-                      spent: formatBaseCurrency(getTrackerSpent({ summary: row.summary })),
+                      spent: formatBaseCurrency(
+                        getTrackerSpent({ summary: row.summary, limitKind: row.tracker.limitKind }),
+                      ),
                       limit: formatBaseCurrency(row.tracker.limitAmount ?? 0),
                     })
                   : $t('dashboard.widgets.trackers.inOut', {

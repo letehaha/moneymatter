@@ -67,7 +67,7 @@ export const resetCurrencyDecimals = (): void => {
 const intlDecimalsCache = new Map<string, number | null>();
 
 /** Decimals `Intl` (ISO 4217 / CLDR) knows for a code, or null for codes it rejects. */
-export const resolveIntlCurrencyDecimals = ({ code }: { code: string }): number | null => {
+const resolveIntlCurrencyDecimals = ({ code }: { code: string }): number | null => {
   const cached = intlDecimalsCache.get(code);
   if (cached !== undefined) return cached;
 
@@ -123,6 +123,15 @@ export const getCurrencyDecimals = ({
   meta?: CurrencyMeta | null;
 }): number => resolveCurrencyDisplay({ code, meta }).decimals;
 
+/** One minor unit of the currency: the smallest amount it can carry (0.01 USD, 1 JPY). */
+export const getSmallestCurrencyUnit = ({
+  code,
+  meta,
+}: {
+  code: string | null | undefined;
+  meta?: CurrencyMeta | null;
+}): number => 10 ** -getCurrencyDecimals({ code, meta });
+
 /** True when `Intl` can format the code in currency style (ISO codes). */
 export const isIntlCurrencyCode = ({ code }: { code: string }): boolean =>
   resolveIntlCurrencyDecimals({ code }) !== null;
@@ -133,3 +142,21 @@ export const isIntlCurrencyCode = ({ code }: { code: string }): boolean =>
  */
 export const trimAmountNoise = ({ value, decimals }: { value: number; decimals: number }): number =>
   Number(value.toFixed(decimals));
+
+/** Moves the decimal point via the exponent, so 1.005 shifts to exactly 100.5, not 100.49999999999999. */
+const shiftDecimalPoint = ({ value, by }: { value: number; by: number }): number => {
+  const [mantissa, exponent = '0'] = String(value).split('e');
+  return Number(`${mantissa}e${Number(exponent) + by}`);
+};
+
+/**
+ * Rounds a computed amount (a conversion, an estimate, a share at a rate) half-up, away
+ * from zero, to `decimals` digits, like the backend's `Money.round`.
+ */
+export const roundToDecimals = ({ value, decimals }: { value: number; decimals: number }): number => {
+  const rounded = shiftDecimalPoint({
+    value: Math.round(shiftDecimalPoint({ value: Math.abs(value), by: decimals })),
+    by: -decimals,
+  });
+  return value < 0 && rounded !== 0 ? -rounded : rounded;
+};

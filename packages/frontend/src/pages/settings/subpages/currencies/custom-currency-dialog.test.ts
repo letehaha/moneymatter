@@ -144,7 +144,7 @@ describe('CustomCurrencyDialog', () => {
       ['an ISO code', { code: 'USD', name: 'Dollar', decimals: '2' }, 'This is an ISO currency code'],
       ['a malformed code', { code: 'U', name: 'Tether', decimals: '6' }, 'Use 2 to 16 capital letters or digits'],
       ['a missing name', { code: 'USDT', name: ' ', decimals: '6' }, 'Enter a name'],
-      ['decimals above 18', { code: 'USDT', name: 'Tether', decimals: '19' }, 'Enter a whole number from 0 to 18'],
+      ['decimals above 8', { code: 'USDT', name: 'Tether', decimals: '9' }, 'Enter a whole number from 0 to 8'],
     ])('refuses %s without calling the API', async (_label, values, message) => {
       const wrapper = mountDialog();
 

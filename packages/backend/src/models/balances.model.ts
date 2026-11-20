@@ -10,6 +10,7 @@ import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField, toMoneyColumnValue } from '@common/types/money-column';
 import { logger } from '@js/utils';
+import { getLinkDayStart, isBeforeSeamStart } from '@services/accounts/seam';
 import { runInSavepoint } from '@services/common/run-in-savepoint';
 import { getExchangeRate } from '@services/user-exchange-rate/get-exchange-rate.service';
 import { subDays, startOfMonth, startOfDay } from 'date-fns';
@@ -45,7 +46,7 @@ export default class Balances extends Model {
    * specific date.
    * `amount` is in the BASE currency. So it represents a `refAmount` (`refBalance`)
    */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare amount: Money;
 
   @ForeignKey(() => Accounts)
@@ -54,18 +55,6 @@ export default class Balances extends Model {
 
   @BelongsTo(() => Accounts)
   account!: Accounts;
-
-  // Method to calculate the total balance across all accounts
-  static async getTotalBalance({ userId }: { userId: number }): Promise<number> {
-    const userAccounts = await Accounts.findAll({ where: { userId: userId } });
-    const accountIds = userAccounts.map((account) => account.id);
-
-    const result = await Balances.sum('amount', {
-      where: { accountId: accountIds },
-    });
-
-    return result || 0;
-  }
 
   // Method to retrieve total balance history for specified dates and accounts
   static async getTotalBalanceHistory(payload: GetTotalBalanceHistoryPayload): Promise<Balances[]> {
@@ -246,8 +235,13 @@ export default class Balances extends Model {
         // TODO: we probably need to avoid updating opposite_tx refAmount based on
         // original-tx refAmount
         const balance = (data.externalData as TransactionsAttributes['externalData']).balance;
-
         if (balance !== undefined) {
+          // The days before a forward-only link belong to the account's manual history.
+          const { findSeamAccount } = await import('@services/balances/revalue-balance-history.service');
+          const linkedAccount = await findSeamAccount({ accountId });
+          const linkDayStart = linkedAccount && getLinkDayStart({ externalData: linkedAccount.externalData });
+          if (linkDayStart && isBeforeSeamStart({ seamStart: linkDayStart, time })) break;
+
           const exchangeRateData = await getExchangeRate({
             userId: data.userId,
             date,
@@ -277,7 +271,8 @@ export default class Balances extends Model {
 
       case ACCOUNT_TYPES.lunchflow:
       case ACCOUNT_TYPES.walutomat:
-      case ACCOUNT_TYPES.simplefin: {
+      case ACCOUNT_TYPES.simplefin:
+      case ACCOUNT_TYPES.akahu: {
         // No per-tx balance from upstream – only the authoritative end-of-sync
         // `writeBankBalanceWithHistory` writes for these providers. Chart
         // gaps for past days fill in over time as new syncs land each day.

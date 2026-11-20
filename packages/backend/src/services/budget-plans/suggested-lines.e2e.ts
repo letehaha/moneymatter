@@ -436,7 +436,7 @@ describe('Suggested budget lines', () => {
           { parentKey: 'life', key: 'active-sport-fitness' },
           { parentKey: 'life', key: 'holiday-trips-hotels' },
           { parentKey: 'life', key: 'hobbies' },
-          { parentKey: 'shopping', key: 'gifts-joy' },
+          { parentKey: 'life', key: 'gifts' },
           { parentKey: 'life', key: 'education-development' },
         ].map((entry) => ({ id: findCategory({ categories, ...entry }).id, monthlyAvg: null })),
       });
@@ -871,87 +871,47 @@ describe('Suggested budget lines', () => {
   });
 
   describe('base currency decimals', () => {
-    /** Runs `fn` as a user whose base currency has its own decimals, holding one account in it. */
-    const inBaseCurrency = async ({
-      currencyCode,
-      fn,
-    }: {
-      currencyCode: string;
-      fn: (params: { accountId: RecordId; groceries: CategoryModel }) => Promise<void>;
-    }) => {
-      const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode });
+    it.each([
+      { currencyCode: 'KWD', amount: 301.25, monthlyAvg: 100.417, assigned: 110 },
+      { currencyCode: 'JPY', amount: 12_345, monthlyAvg: 4115, assigned: 4120 },
+    ])(
+      'averages the history at the decimals of $currencyCode and rounds the plan up to a whole 10',
+      async ({ currencyCode, amount, monthlyAvg, assigned }) => {
+        await helpers.asNewUserWithBaseCurrency({
+          currencyCode,
+          fn: async () => {
+            const account = await helpers.createAccount({
+              payload: helpers.buildAccountPayload({ currencyCode }),
+              raw: true,
+            });
+            const groceries = findCategory({
+              categories: await helpers.getCategoriesList(),
+              parentKey: 'food',
+              key: 'groceries',
+            });
+            await createTx({ accountId: account.id, categoryId: groceries.id, amount, monthsAgo: 1 });
 
-      await helpers.asUser({
-        cookies: user.cookies,
-        fn: async () => {
-          await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
-          const account = await helpers.createAccount({
-            payload: helpers.buildAccountPayload({ currencyCode }),
-            raw: true,
-          });
-          const groceries = findCategory({
-            categories: await helpers.getCategoriesList(),
-            parentKey: 'food',
-            key: 'groceries',
-          });
-          await fn({ accountId: account.id, groceries });
-        },
-      });
-    };
+            const context = await helpers.getBudgetSuggestionContext({ accountIds: account.id, raw: true });
+            expect(context).toEqual({
+              hasHistory: true,
+              categories: [{ id: groceries.parentId, monthlyAvg }],
+            });
 
-    it('averages the history at 3 decimals and rounds a KWD plan up to a whole 10 KWD', async () => {
-      await inBaseCurrency({
-        currencyCode: 'KWD',
-        fn: async ({ accountId, groceries }) => {
-          await createTx({ accountId, categoryId: groceries.id, amount: 301.25, monthsAgo: 1 });
+            const { plan } = await helpers.createBudgetPlan({
+              payload: { accountIds: [account.id], withSuggestedLines: true },
+              raw: true,
+            });
+            const view = await currentView({ planId: plan.id });
 
-          const context = await helpers.getBudgetSuggestionContext({ accountIds: accountId, raw: true });
-          expect(context).toEqual({
-            hasHistory: true,
-            categories: [{ id: groceries.parentId, monthlyAvg: 100.417 }],
-          });
-
-          const { plan } = await helpers.createBudgetPlan({
-            payload: { accountIds: [accountId], withSuggestedLines: true },
-            raw: true,
-          });
-          const view = await currentView({ planId: plan.id });
-
-          expect(view.lines).toHaveLength(1);
-          expect(view.lines[0]).toMatchObject({
-            categoryIds: [groceries.id],
-            assigned: 110,
-            assignedSource: 'baseline',
-          });
-        },
-      });
-    });
-
-    it('averages the history in whole units and rounds a JPY plan up to a whole 10 JPY', async () => {
-      await inBaseCurrency({
-        currencyCode: 'JPY',
-        fn: async ({ accountId, groceries }) => {
-          await createTx({ accountId, categoryId: groceries.id, amount: 12_345, monthsAgo: 1 });
-
-          const context = await helpers.getBudgetSuggestionContext({ accountIds: accountId, raw: true });
-          expect(context).toEqual({
-            hasHistory: true,
-            categories: [{ id: groceries.parentId, monthlyAvg: 4115 }],
-          });
-
-          const { plan } = await helpers.createBudgetPlan({
-            payload: { accountIds: [accountId], withSuggestedLines: true },
-            raw: true,
-          });
-          const view = await currentView({ planId: plan.id });
-
-          expect(view.lines[0]).toMatchObject({
-            categoryIds: [groceries.id],
-            assigned: 4120,
-            assignedSource: 'baseline',
-          });
-        },
-      });
-    });
+            expect(view.lines).toHaveLength(1);
+            expect(view.lines[0]).toMatchObject({
+              categoryIds: [groceries.id],
+              assigned,
+              assignedSource: 'baseline',
+            });
+          },
+        });
+      },
+    );
   });
 });

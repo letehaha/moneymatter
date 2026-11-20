@@ -28,6 +28,13 @@ describe('buildProviderCredentials', () => {
     ).toEqual({ apiKey: 'wal-key', privateKey: 'wal-private' });
   });
 
+  it('sends the user and app tokens for Akahu', () => {
+    expect(buildProviderCredentials({ providerType: BANK_PROVIDER_TYPE.AKAHU, apiKey: 'u', privateKey: 'a' })).toEqual({
+      userToken: 'u',
+      appToken: 'a',
+    });
+  });
+
   it('sends `apiKey` for LunchFlow', () => {
     expect(buildProviderCredentials({ providerType: BANK_PROVIDER_TYPE.LUNCHFLOW, apiKey: 'lf-key' })).toEqual({
       apiKey: 'lf-key',

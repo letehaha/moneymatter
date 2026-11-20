@@ -1,0 +1,19 @@
+{
+  "settings": {
+    "language": {
+      "title": "Idioma",
+      "description": "Idioma de exibição da interface do app.",
+      "community": {
+        "title": "Traduções da comunidade",
+        "hint": "Traduzido por voluntários no Crowdin. O que ainda não foi traduzido aparece em inglês."
+      },
+      "contribute": {
+        "title": "Faltou alguma tradução ou tem algo errado?",
+        "description": "Os idiomas da comunidade são traduzidos no Crowdin. Você pode pedir um novo idioma, sugerir correções ou traduzir textos você mesmo — sem precisar programar.",
+        "requestNote": "Prefere não usar o Crowdin? Peça um idioma no nosso {boardLink}.",
+        "requestNoteLink": "quadro de sugestões",
+        "action": "Contribuir no Crowdin"
+      }
+    }
+  }
+}

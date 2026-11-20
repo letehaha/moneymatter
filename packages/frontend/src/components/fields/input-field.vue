@@ -43,9 +43,10 @@
           spellcheck="false"
           :class="
             cn(
-              'border-input bg-input-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50 md:h-9',
+              'border-input bg-input-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50',
               $slots.iconTrailing && 'pr-12',
               $slots.iconLeading && 'pl-10',
+              controlHeight[size],
               (computedAttrs.class as string) ?? '',
             )
           "
@@ -73,42 +74,49 @@
 </template>
 
 <script lang="ts" setup>
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import { cn } from '@/lib/utils';
 import { HTMLAttributes, computed, onMounted, ref, useAttrs, watch } from 'vue';
 
 import FieldError from './components/field-error.vue';
 import FieldLabel from './components/field-label.vue';
+import { limitAmountDecimals, limitDecimalDigits } from './utils/formatted-amount';
 
 enum MODEL_EVENTS {
   input = 'update:modelValue',
 }
 
-const props = defineProps<{
-  label?: string;
-  modelValue?: string | number | null;
-  type?: string;
-  disabled?: boolean;
-  tabindex?: string;
-  errorMessage?: string;
-  /** `absolute` keeps the field's height fixed while the message shows; the parent must leave room below. */
-  errorPlacement?: 'inline' | 'absolute';
-  inputFieldStyles?: HTMLAttributes['style'];
-  onlyPositive?: boolean;
-  /**
-   * Caps the decimals a `number` input keeps (the amount's currency decimals): digits typed or
-   * pasted past the cap are dropped, and 0 drops the decimal point as well. Unset keeps any precision.
-   */
-  decimals?: number;
-  autofocus?: boolean;
-  trailingIconCssClass?: string;
-  leadingIconCssClass?: string;
-  placeholder?: string;
-  /**
-   * Wraps the field in a `div` instead of a `label`. Needed when `label-right` holds a clickable
-   * control: it precedes the input in tree order, so a `label` would send every click to it.
-   */
-  nonLabelWrapper?: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    label?: string;
+    modelValue?: string | number | null;
+    type?: string;
+    disabled?: boolean;
+    tabindex?: string;
+    errorMessage?: string;
+    /** `absolute` keeps the field's height fixed while the message shows; the parent must leave room below. */
+    errorPlacement?: 'inline' | 'absolute';
+    inputFieldStyles?: HTMLAttributes['style'];
+    onlyPositive?: boolean;
+    /**
+     * Caps the decimals a `number` input keeps (the amount's currency decimals): digits typed or
+     * pasted past the cap are dropped, and 0 drops the decimal point as well. A model value with more
+     * digits is kept for the form to reject. Unset keeps any precision.
+     */
+    decimals?: number;
+    autofocus?: boolean;
+    trailingIconCssClass?: string;
+    leadingIconCssClass?: string;
+    placeholder?: string;
+    /**
+     * Wraps the field in a `div` instead of a `label`. Needed when `label-right` holds a clickable
+     * control: it precedes the input in tree order, so a `label` would send every click to it.
+     */
+    nonLabelWrapper?: boolean;
+    size?: ControlSize;
+  }>(),
+  { size: 'default' },
+);
 
 const emits = defineEmits<{
   (e: MODEL_EVENTS.input, payload: string | number | null): void;
@@ -171,10 +179,20 @@ watch(
   },
 );
 
-const limitDecimals = (raw: string): string => {
-  const dot = raw.indexOf('.');
-  if (props.decimals === undefined || dot === -1) return raw;
-  return props.decimals === 0 ? raw.slice(0, dot) : raw.slice(0, dot + 1 + props.decimals);
+const limitDecimals = ({ raw }: { raw: string }): string => {
+  if (props.decimals === undefined) return raw;
+  // Pasted exponent notation ("1.5e3") is capped on its value, then shown as a plain number.
+  if (/e/i.test(raw)) {
+    const value = Number(raw);
+    return Number.isFinite(value) ? String(limitAmountDecimals({ value, decimals: props.decimals })) : raw;
+  }
+  return limitDecimalDigits({ raw, decimals: props.decimals });
+};
+
+const toFiniteNumber = ({ raw }: { raw: string }): number | null => {
+  if (raw === '') return null;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
 };
 
 const onInput = (event: Event) => {
@@ -184,10 +202,10 @@ const onInput = (event: Event) => {
 
   // For number inputs, preserve raw value to handle intermediate decimal states
   if (props.type === 'number') {
-    const limited = limitDecimals(target.value);
+    const limited = limitDecimals({ raw: target.value });
     if (limited !== target.value) target.value = limited;
     rawNumberInput.value = limited;
-    const numValue = limited === '' ? null : Number(limited);
+    const numValue = toFiniteNumber({ raw: limited });
     if (props.modelValue === numValue) return;
     emits(MODEL_EVENTS.input, numValue);
   } else {

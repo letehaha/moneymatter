@@ -38,7 +38,7 @@
         }}
       </p>
       <p v-else>{{ $t('pages.statementParser.accountSelection.currencyNotDetected') }}</p>
-      <div class="mt-3 max-w-xs">
+      <div class="fields-plain mt-3 max-w-xs">
         <Select.Select
           :model-value="store.manualCurrency ?? undefined"
           @update:model-value="(v: any) => handleCurrencyChange(v as string)"

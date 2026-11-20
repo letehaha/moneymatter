@@ -59,10 +59,7 @@ const needsReauth = computed(() => isAccountNeedingReauth(props.account));
           </ResponsiveTooltip>
         </div>
         <DesktopOnlyTooltip :content="formatAmountByCurrencyCode(displayBalance, account.currencyCode)">
-          <span
-            class="text-amount shrink-0 text-sm"
-            :class="displayBalance >= 0 ? 'text-muted-foreground' : 'text-destructive-text'"
-          >
+          <span class="text-amount shrink-0 text-sm font-medium" :class="displayBalance < 0 && 'text-destructive-text'">
             {{ formatCompactAmount(displayBalance, account.currencyCode) }}
           </span>
         </DesktopOnlyTooltip>

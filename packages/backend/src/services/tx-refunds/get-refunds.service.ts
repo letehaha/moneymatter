@@ -1,8 +1,9 @@
 import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import * as RefundTransactions from '@models/refund-transactions.model';
+import { liveOrExternalTransactionSql } from '@models/transactions-query/deletion-where';
 import * as Transactions from '@models/transactions.model';
-import type { WhereOptions } from 'sequelize';
+import { Op, type WhereOptions, literal } from 'sequelize';
 
 interface FiltersStructure {
   categoryId?: string;
@@ -45,6 +46,7 @@ export const getRefundTransactions = async ({
     const { rows, count: total } = await RefundTransactions.default.findAndCountAll({
       where: {
         userId,
+        [Op.and]: literal(liveOrExternalTransactionSql({ idColumnSql: '"RefundTransactions"."originalTxId"' })),
       },
       include: [
         {
@@ -59,6 +61,7 @@ export const getRefundTransactions = async ({
         {
           model: Transactions.default,
           as: 'refundTransaction',
+          required: true,
         },
       ],
       limit,

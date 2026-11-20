@@ -24,7 +24,7 @@ export interface CustomCurrencyDefinition {
 }
 
 /** A backup row that is a well-formed custom currency definition, or `null`. */
-const parseDefinition = ({ row }: { row: Row }): CustomCurrencyDefinition | null => {
+export const parseCustomCurrencyDefinition = ({ row }: { row: Row }): CustomCurrencyDefinition | null => {
   const { code, currency: name, digits, symbol } = row;
 
   if (typeof code !== 'string' || !isCurrencyCodeFormat(code) || code.length > CURRENCY_CODE_MAX_LENGTH) return null;
@@ -72,7 +72,7 @@ export const restoreCustomCurrencies = async ({
   let invalidCount = 0;
 
   for (const row of archive.reference.customCurrencies) {
-    const definition = parseDefinition({ row });
+    const definition = parseCustomCurrencyDefinition({ row });
     if (definition) definitions.set(definition.code, definition);
     else invalidCount += 1;
   }

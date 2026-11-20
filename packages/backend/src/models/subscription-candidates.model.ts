@@ -1,4 +1,9 @@
-import { SUBSCRIPTION_CANDIDATE_STATUS, SUBSCRIPTION_FREQUENCIES, RecordId } from '@bt/shared/types';
+import {
+  SUBSCRIPTION_CANDIDATE_STATUS,
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
+  RecordId,
+} from '@bt/shared/types';
 import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
@@ -31,13 +36,27 @@ export default class SubscriptionCandidates extends Model {
   })
   suggestedName!: string;
 
+  // VARCHAR + TS-side enum (project convention: no DB enums), guarded by a CHECK.
   @Column({
-    type: DataType.ENUM(...Object.values(SUBSCRIPTION_FREQUENCIES)),
+    type: DataType.STRING(50),
     allowNull: false,
   })
   detectedFrequency!: SUBSCRIPTION_FREQUENCIES;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  // The detected step when `detectedFrequency` is `custom`; both null for the presets.
+  @Column({
+    type: DataType.STRING(10),
+    allowNull: true,
+  })
+  detectedIntervalUnit!: SUBSCRIPTION_INTERVAL_UNITS | null;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  detectedIntervalCount!: number | null;
+
+  @MoneyField()
   declare averageAmount: Money;
 
   @Column({

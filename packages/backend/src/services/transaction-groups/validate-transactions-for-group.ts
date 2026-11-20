@@ -1,5 +1,7 @@
+import type { TransactionGroupConflictDetails } from '@bt/shared/types';
 import { ConflictError, ValidationError } from '@js/errors';
 import TransactionGroupItems from '@models/transaction-group-items.model';
+import TransactionGroups from '@models/transaction-groups.model';
 import { countTransactions } from '@models/transactions-query';
 import { Op } from 'sequelize';
 
@@ -39,15 +41,22 @@ export async function validateTransactionsForGroup({
     where: {
       transactionId: { [Op.in]: transactionIds },
     },
-    attributes: ['transactionId'],
+    attributes: ['transactionId', 'groupId'],
   });
 
   if (existingGroupItems.length > 0) {
+    const groups = await TransactionGroups.findAll({
+      where: { userId, id: { [Op.in]: [...new Set(existingGroupItems.map((item) => item.groupId))] } },
+      attributes: ['id', 'name'],
+      order: [['name', 'ASC']],
+    });
+
     throw new ConflictError({
       message: 'Some transactions already belong to a group.',
       details: {
         transactionIds: existingGroupItems.map((item) => item.transactionId),
-      },
+        groups: groups.map(({ id, name }) => ({ id, name })),
+      } satisfies TransactionGroupConflictDetails,
     });
   }
 }

@@ -134,7 +134,9 @@
           "noErrors": "Sin errores",
           "balanceWarningTitle": "Los saldos de las cuentas pueden estar desincronizados",
           "balanceWarningBody": "Las transacciones se importaron, pero no se pudieron actualizar los saldos de algunas cuentas después. Revise estas cuentas y ajuste sus saldos manualmente si es necesario."
-        }
+        },
+        "bankSeamRecalculateHint": "Bank-linked accounts keep the balance their bank reports, so this setting doesn't change them.",
+        "bankSeamRecalculateAllHint": "Opening balance is recalculated automatically for bank-linked accounts."
       },
       "columnMapping": {
         "stepTitle": "Mapear columnas",
@@ -307,7 +309,8 @@
           "account": "Cuenta",
           "currency": "Moneda",
           "transactionType": "Tipo de transacción",
-          "payee": "Beneficiario"
+          "payee": "Beneficiario",
+          "tags": "Etiquetas"
         },
         "dateFormat": {
           "label": "Formato de fecha",
@@ -327,10 +330,10 @@
           "error": "Error"
         },
         "rowErrors": {
-          "payeeDefaultTagsFailed": "The transaction was imported, but the payee's default tags could not be applied.",
-          "accountUnresolved": "The account for this row could not be resolved, so the row was skipped.",
-          "readBackFailed": "The transaction was created but could not be read back, so it is missing from the imported count.",
-          "generic": "This row could not be imported."
+          "payeeDefaultTagsFailed": "La transacción fue importada, pero las etiquetas por defecto del beneficiario no pudieron ser aplicadas.",
+          "accountUnresolved": "La cuenta de este registro no pudo ser resuelta, por lo que el registro fue omitido.",
+          "readBackFailed": "La transacción fue creada pero no se pudo leer de nuevo, por lo que falta en el recuento importado.",
+          "generic": "Esta fila no pudo ser importada."
         }
       }
     }

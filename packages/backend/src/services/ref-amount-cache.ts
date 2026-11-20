@@ -1,6 +1,7 @@
 import { MONEY_COLUMN_SCALE } from '@common/lib/money-columns';
 import type { Money } from '@common/types/money';
 import { CacheClient } from '@js/utils/cache';
+import { runAfterCommit } from '@services/common/run-after-commit';
 
 /**
  * Cache namespace of converted amounts. Cached values are exact decimal strings; the
@@ -35,6 +36,13 @@ export const buildRefAmountCacheKey = ({
 export const serializeRefAmountCacheValue = ({ amount }: { amount: Money }): string =>
   amount.toDecimalString(MONEY_COLUMN_SCALE);
 
-/** Redis pattern matching every cached converted amount of one user. Every invalidator uses it. */
+/** Redis pattern matching every cached converted amount of one user. */
 export const buildRefAmountCachePattern = ({ userId }: { userId: number }): string =>
   `${REF_AMOUNT_CACHE_NAMESPACE}:${userId}:*`;
+
+/**
+ * Drops every cached converted amount of the user once the ambient transaction commits, so a
+ * concurrent read can't re-cache a pre-commit value. Never throws: `CacheClient.delete` logs failures.
+ */
+export const clearRefAmountCache = ({ userId }: { userId: number }): Promise<void> =>
+  runAfterCommit({ fn: () => refAmountCache.delete(buildRefAmountCachePattern({ userId }), true) });

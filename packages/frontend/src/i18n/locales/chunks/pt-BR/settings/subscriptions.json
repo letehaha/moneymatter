@@ -1,0 +1,13 @@
+{
+  "settings": {
+    "subscriptions": {
+      "title": "Pagamentos recorrentes",
+      "defaultAutoRecord": {
+        "label": "Registro automático ativado por padrão em novos pagamentos recorrentes",
+        "help": "Quando ativado, a opção de registro automático já vem ligada no formulário de novo pagamento recorrente. Você pode mudar isso em cada pagamento recorrente.",
+        "successNotification": "Configuração salva",
+        "errorNotification": "Não foi possível salvar a configuração"
+      }
+    }
+  }
+}

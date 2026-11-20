@@ -1,5 +1,6 @@
 import { logger } from '@js/utils/logger';
 
+import { AkahuProvider } from './akahu';
 import { EnableBankingProvider } from './enablebanking';
 import { LunchFlowProvider } from './lunchflow/lunchflow.provider';
 import { MonobankProvider } from './monobank';
@@ -28,6 +29,9 @@ export function initializeBankProviders(): void {
 
     // Register SimpleFIN Bridge provider
     bankProviderRegistry.register(new SimplefinProvider());
+
+    // Register Akahu (NZ open banking, personal apps) provider
+    bankProviderRegistry.register(new AkahuProvider());
 
     const registeredTypes = bankProviderRegistry.listTypes();
     logger.info(

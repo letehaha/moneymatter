@@ -27,6 +27,10 @@
         "walutomat": {
           "name": "Walutomat",
           "description": "Польская платформа обмена валют с поддержкой 23 валют"
+        },
+        "akahu": {
+          "name": "Akahu",
+          "description": "Sync transactions from New Zealand banks for free via an Akahu personal app"
         }
       },
       "monobank": {
@@ -116,6 +120,8 @@
             "fillForm": "Заполните форму следующими значениями:",
             "appName": "Название приложения:",
             "redirectUrls": "Разрешённые URL перенаправления:",
+            "httpsRequired": "Enable Banking only accepts https redirect URLs. Serve this instance over HTTPS, set {envVar} to its public callback URL (e.g. {example}), recreate the backend container, and enter the same URL in this field. {link}",
+            "httpsRequiredLink": "How to set it up",
             "appDescription": "Описание приложения:",
             "emailProtection": "Email для вопросов защиты данных:",
             "privacyUrl": "URL политики конфиденциальности:",
@@ -291,6 +297,35 @@
           "closeButton": "Понятно"
         }
       },
+      "akahu": {
+        "userTokenLabel": "User Access Token",
+        "userTokenPlaceholder": "Enter your Akahu User Access Token",
+        "userTokenHint": "Shown on your personal app page at my.akahu.nz",
+        "appTokenLabel": "App ID Token",
+        "appTokenPlaceholder": "Enter your Akahu App ID Token",
+        "appTokenHint": "Also shown on the same page",
+        "help": {
+          "trigger": "Where do I find my Akahu tokens?",
+          "title": "Get your Akahu personal app tokens",
+          "step1": "Open your {link} while signed in to Akahu.",
+          "step2": "Create a personal app (or open an existing one) — connect your bank accounts in Akahu first.",
+          "step3": "Copy the User Access Token and the App ID Token and paste both into the fields above."
+        },
+        "backButton": "Back",
+        "connectingButton": "Connecting...",
+        "connectButton": "Connect",
+        "loadingAccounts": "Loading accounts...",
+        "accountsPreviewHint": "Found {count} account(s). All accounts will be imported.",
+        "importingButton": "Importing...",
+        "importButton": "Import {count} account(s)",
+        "importSuccess": "Connected {count} account(s). Transactions are syncing in the background.",
+        "skipButton": "Пропустить",
+        "skipTooltip": "Skip importing to connect only specific accounts later, or to relink existing accounts from their settings.",
+        "errors": {
+          "connectFailed": "Failed to connect to Akahu",
+          "importFailed": "Failed to import accounts"
+        }
+      },
       "notifications": {
         "disconnectSuccess": "Интеграция успешно отключена",
         "disconnectFailed": "Не удалось отключить интеграцию",
@@ -337,6 +372,7 @@
           "syncFailed": "Не удалось запустить синхронизацию"
         },
         "actions": {
+          "openExternalUrl": "Open external link",
           "renameButton": "Переименовать подключение",
           "disconnectButton": "Отключить интеграцию",
           "manage": "Управление"
@@ -396,6 +432,8 @@
           "title": "Изменить название подключения",
           "description": "Задайте подключению собственное название, чтобы его было легче различать.",
           "label": "Название подключения",
+          "externalUrlLabel": "External URL (optional)",
+          "externalUrlPlaceholder": "https://bridge.example.com",
           "saving": "Сохранение...",
           "save": "Сохранить"
         },
@@ -447,7 +485,8 @@
         "enableBanking": "Поскольку полноценная интеграция стоит несколько тысяч долларов в месяц, подключение возможно только через собственный разработческий аккаунт Enable Banking и настройку «тестового» приложения с реальными банковскими подключениями, сертификатами и ключами. Требуются умеренные технические знания",
         "lunchflow": "Подключите банки на стороне LunchFlow, затем создайте и вставьте API-ключ LunchFlow",
         "simplefin": "SimpleFIN Bridge — платный сервис. Создайте аккаунт Bridge, свяжите банк и вставьте токен настройки — разработческая настройка не требуется.",
-        "walutomat": "Требуется создать пару RSA-ключей и загрузить открытый ключ в панель Walutomat"
+        "walutomat": "Требуется создать пару RSA-ключей и загрузить открытый ключ в панель Walutomat",
+        "akahu": "Free for your own accounts: create an Akahu personal app at my.akahu.nz, connect your NZ banks there, then paste the two tokens"
       }
     },
     "connectionName": {

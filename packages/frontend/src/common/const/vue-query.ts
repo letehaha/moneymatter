@@ -33,11 +33,14 @@ const { transactionChange, securityPriceChange, bankConnectionChange, ventureCha
   VUE_QUERY_GLOBAL_PREFIXES;
 
 const budgetPlans = [transactionChange, 'budget-plans'] as const;
+const goals = [transactionChange, 'goals'] as const;
 
 export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   // auth
   signupsOpen: ['signups-open'] as const,
   authFeatures: ['auth-features'] as const,
+  // self-host update check
+  latestRelease: ['latest-release'] as const,
   // currencies
   allCurrencies: [VUE_QUERY_GLOBAL_PREFIXES.currencies, 'all'] as const,
   userCurrencies: [VUE_QUERY_GLOBAL_PREFIXES.currencies, 'user'] as const,
@@ -66,8 +69,11 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
 
   // widget expenses structure
   widgetExpensesStructureTotal: [transactionChange, 'widget-expenses-structure-total'] as const,
-  widgetExpensesStructureCurrentAmount: [transactionChange, 'widget-expenses-structure-current-amount'] as const,
-  widgetExpensesStructurePrevAmount: [transactionChange, 'widget-expenses-structure-prev-amount'] as const,
+  widgetExpensesStructurePrevTotal: [transactionChange, 'widget-expenses-structure-prev-total'] as const,
+
+  // widget tag analysis
+  widgetTagAnalysis: [transactionChange, 'widget-tag-analysis'] as const,
+  widgetTagAnalysisIncome: [transactionChange, 'widget-tag-analysis-income'] as const,
 
   // widget latest records
   widgetLatestRecords: [transactionChange, 'widget-latest-records'] as const,
@@ -132,6 +138,7 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   fireVentureContributions: [transactionChange, ventureChange, 'fire-venture-contributions'] as const,
   analyticsCumulative: [transactionChange, 'analytics-cumulative'] as const,
   analyticsSpendingsByCategories: [transactionChange, 'analytics-spendings-by-categories'] as const,
+  analyticsLargestTransactions: [transactionChange, 'analytics-largest-transactions'] as const,
   earliestTransactionDate: [transactionChange, 'earliest-transaction-date'] as const,
 
   recordsPageRecordsList: [transactionChange, 'records-page-records-list'] as const,
@@ -141,6 +148,7 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   transactionAttachments: ['transaction-attachments'] as const,
 
   recordsPageTransactionList: [transactionChange, 'records-page'] as const,
+  paymentLinkCandidates: [transactionChange, 'payment-link-candidates'] as const,
 
   accountSpecificTransactions: [transactionChange, 'account-transactions'] as const,
 
@@ -166,10 +174,14 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   budgetPlanScheduled: [...budgetPlans, 'scheduled'] as const,
   budgetSuggestionContext: [...budgetPlans, 'suggestion-context'] as const,
 
+  goals,
+  goalsList: [...goals, 'list'] as const,
+  // append the goalId when using
+  goalDetails: [...goals, 'details'] as const,
+
   trackerAddingTransactionList: [transactionChange, 'tracker-adding-transaction-list'] as const,
   trackerStats: [transactionChange, 'tracker-stats'] as const,
   trackerSpendingStats: [transactionChange, 'tracker-spending-stats'] as const,
-  trackerCategoryTransactions: [transactionChange, 'tracker-category-transactions'] as const,
   // append the trackerId when using
   trackerSuggestions: [transactionChange, 'tracker-suggestions'] as const,
 
@@ -250,6 +262,7 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
 
   // MCP connected apps
   mcpConnectedApps: ['mcp-connected-apps'] as const,
+  mcpToolsets: ['mcp-toolsets'] as const,
 
   // AI settings
   aiFeaturesStatus: ['ai-settings', 'features'] as const,
@@ -266,6 +279,7 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
 
   reconciliationStuckPending: [transactionChange, 'reconciliation-stuck-pending'] as const,
   reconciliationHistory: [transactionChange, 'reconciliation-history'] as const,
+  transactionsTrash: [transactionChange, 'transactions-trash'] as const,
 
   // A completed import creates transactions, so the transactionChange invalidation
   // refreshes the batch list alongside everything else it creates/moves.

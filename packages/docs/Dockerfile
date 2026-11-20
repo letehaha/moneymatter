@@ -1,6 +1,6 @@
 # Build context is packages/docs: the docs site is a standalone npm project
 # (not a root workspace) so its dependencies never touch the app's lockfile.
-FROM --platform=$BUILDPLATFORM node:24.21.0 AS build-stage
+FROM --platform=$BUILDPLATFORM node:24.22.1 AS build-stage
 
 WORKDIR /app
 COPY package*.json ./

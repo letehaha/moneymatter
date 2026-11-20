@@ -12,16 +12,6 @@
       >
         <template #hint>{{ $t('pages.statementParser.uploadExtract.supportedFormats') }}</template>
       </MultiFileDropzone>
-
-      <div v-if="canReadClipboard" class="flex items-center justify-end gap-3">
-        <span class="text-muted-foreground hidden text-xs [@media(hover:hover)]:inline">
-          {{ $t('pages.statementParser.uploadExtract.pasteShortcutHint', { shortcut: pasteShortcut }) }}
-        </span>
-        <Button variant="outline" size="sm" :disabled="isBusy" @click="handlePasteFromClipboard">
-          <ClipboardPasteIcon class="size-4" />
-          {{ $t('pages.statementParser.uploadExtract.pasteImageButton') }}
-        </Button>
-      </div>
     </div>
 
     <Callout v-if="dropzoneError || fileError" variant="destructive">
@@ -266,7 +256,6 @@
 <script setup lang="ts">
 import { logClientEvent } from '@/api/client-logs';
 import { formatBytes } from '@/common/utils/format-bytes';
-import { isMacPlatform } from '@/common/utils/platform';
 import AiEstimatedCost from '@/components/common/ai-estimated-cost.vue';
 import AiUsageBadge from '@/components/common/ai-usage/ai-usage-badge.vue';
 import ApiKeySourceBadge from '@/components/common/api-key-source-badge.vue';
@@ -287,16 +276,13 @@ import {
   ArrowRightIcon,
   CalculatorIcon,
   CheckCircleIcon,
-  ClipboardPasteIcon,
   FileTextIcon,
   Loader2Icon,
   SparklesIcon,
 } from '@lucide/vue';
-import { useEventListener } from '@vueuse/core';
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { imageFilesFromClipboardEvent, readClipboardImages } from '../utils/clipboard-images';
 import {
   type FileRejectionReason,
   MAX_FILE_SIZE,
@@ -322,8 +308,6 @@ const isIngesting = ref(false);
 
 const dropzoneFiles = computed(() => store.fileEntries.map((entry) => entry.file));
 const isBusy = computed(() => isIngesting.value || store.isEstimating || store.isExtracting);
-const canReadClipboard = typeof navigator.clipboard?.read === 'function';
-const pasteShortcut = isMacPlatform() ? '⌘V' : 'Ctrl+V';
 const totals = computed(() => store.costEstimateTotals);
 
 const pendingEstimateCount = computed(() => store.pendingEstimateEntries.length);
@@ -551,38 +535,6 @@ async function handleSelectionChange(files: File[]) {
   } finally {
     isIngesting.value = false;
   }
-}
-
-function isEditableTarget({ target }: { target: EventTarget | null }): boolean {
-  return (
-    target instanceof HTMLElement &&
-    (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
-  );
-}
-
-function handlePaste(event: ClipboardEvent) {
-  if (isBusy.value || isEditableTarget({ target: event.target })) return;
-  const pasted = imageFilesFromClipboardEvent({ event });
-  if (!pasted.length) return;
-  event.preventDefault();
-  void handleSelectionChange([...dropzoneFiles.value, ...pasted]);
-}
-
-useEventListener(document, 'paste', handlePaste);
-
-async function handlePasteFromClipboard() {
-  let pasted: File[];
-  try {
-    pasted = await readClipboardImages();
-  } catch {
-    fileError.value = t('pages.statementParser.uploadExtract.clipboardReadFailed');
-    return;
-  }
-  if (!pasted.length) {
-    fileError.value = t('pages.statementParser.uploadExtract.clipboardNoImage');
-    return;
-  }
-  await handleSelectionChange([...dropzoneFiles.value, ...pasted]);
 }
 
 async function handlePasswordSubmit({ id }: { id: string }) {

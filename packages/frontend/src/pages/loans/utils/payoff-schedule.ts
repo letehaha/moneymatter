@@ -1,3 +1,4 @@
+import { roundToDecimals } from '@/js/helpers/currency-decimals';
 import { addMonths } from 'date-fns';
 
 /**
@@ -42,17 +43,15 @@ export function computeMinimumPaymentFromTerm({
 }): number | null {
   if (!termMonths || termMonths <= 0 || principal <= 0) return null;
 
-  const minorPerUnit = 10 ** decimals;
-
   if (interestRate === 0) {
-    return Math.round((principal / termMonths) * minorPerUnit) / minorPerUnit;
+    return roundToDecimals({ value: principal / termMonths, decimals });
   }
 
   const monthlyRate = interestRate / 100 / MONTHS_PER_YEAR;
   const payment = (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths));
   // Half-up to the minor unit (displayed-payment convention) — unlike the half-to-even
   // interest accrual, which must mirror the backend.
-  return Math.round(payment * minorPerUnit) / minorPerUnit;
+  return roundToDecimals({ value: payment, decimals });
 }
 
 export interface PayoffPoint {
@@ -171,9 +170,6 @@ export function computePayoffScenario({
   };
 }
 
-/** Below this absolute interest delta (decimal currency units), two scenarios read as "the same" interest. */
-export const SAME_INTEREST_EPSILON = 0.005;
-
 interface PayoffComparison {
   /** scenario.totalInterest − baseline.totalInterest (decimal). Negative = scenario saves interest. */
   interestDelta: number;
@@ -194,13 +190,16 @@ interface PayoffComparison {
 export function comparePayoffScenarios({
   scenario,
   baseline,
+  decimals,
 }: {
   scenario: PayoffScenario;
   baseline: PayoffScenario;
+  /** Decimals of the loan currency: deltas under its minor unit read as the same interest. */
+  decimals: number;
 }): PayoffComparison {
   const interestDelta = (scenario.totalInterest ?? 0) - (baseline.totalInterest ?? 0);
   const monthsDelta = (scenario.monthsRemaining ?? 0) - (baseline.monthsRemaining ?? 0);
-  const sameInterest = Math.abs(interestDelta) < SAME_INTEREST_EPSILON;
+  const sameInterest = Math.round(interestDelta * 10 ** decimals) === 0;
   const sameTime = monthsDelta === 0;
   return {
     interestDelta,

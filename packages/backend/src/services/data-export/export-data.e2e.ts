@@ -2,6 +2,12 @@ import {
   API_ERROR_CODES,
   BANK_PROVIDER_TYPE,
   PAYMENT_TYPES,
+  RecordId,
+  RESOURCE_TYPES,
+  SHARE_PERMISSIONS,
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
+  TRANSACTIONS_WRITE_SCOPES,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   VEHICLE_CLASS,
@@ -91,6 +97,46 @@ describe('Data export (POST /user/data-export)', () => {
       expect(stringified).not.toMatch(account.id);
       expect(stringified).not.toMatch(category.id);
       expect(exported?.tags).toEqual(['denorm-tag']);
+    });
+
+    it('exports the root as Category and the rest of the path as Subcategory for nested categories', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const categoryIdByNote: Record<string, RecordId> = {};
+      for (const rootName of ['Boy', 'Girl']) {
+        const root = await helpers.addCustomCategory({ name: rootName, color: '#123456', raw: true });
+        const food = await helpers.addCustomCategory({ name: 'Food', color: '#123456', parentId: root.id, raw: true });
+        const chicken = await helpers.addCustomCategory({
+          name: 'Chicken',
+          color: '#123456',
+          parentId: food.id,
+          raw: true,
+        });
+        categoryIdByNote[`${rootName}-root`] = root.id;
+        categoryIdByNote[`${rootName}-food`] = food.id;
+        categoryIdByNote[`${rootName}-chicken`] = chicken.id;
+      }
+      for (const [note, categoryId] of Object.entries(categoryIdByNote)) {
+        await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            categoryId,
+            amount: 10,
+            transactionType: TRANSACTION_TYPES.expense,
+            note,
+          }),
+          raw: true,
+        });
+      }
+
+      const response = await helpers.exportData({ format: 'json' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const data = archive.json as { transactions: Array<Record<string, unknown>> };
+      const byNote = (note: string) => data.transactions.find((t) => t.note === note);
+
+      expect(byNote('Boy-root')).toMatchObject({ category: 'Boy', subcategory: '' });
+      expect(byNote('Boy-food')).toMatchObject({ category: 'Boy', subcategory: 'Food' });
+      expect(byNote('Boy-chicken')).toMatchObject({ category: 'Boy', subcategory: 'Food > Chicken' });
+      expect(byNote('Girl-chicken')).toMatchObject({ category: 'Girl', subcategory: 'Food > Chicken' });
     });
 
     it('does NOT leak bank-provider credentials when a real provider connection exists', async () => {
@@ -355,6 +401,73 @@ describe('Data export (POST /user/data-export)', () => {
       expect(csvRow?.SplitDetails).toContain('Drinks: 5.00');
     });
 
+    it('writes split and refund amounts at the decimals of their currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['KWD', 'JPY'], raw: true });
+      const kwdAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'KWD', name: 'KWD wallet' }),
+        raw: true,
+      });
+      const jpyAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'JPY', name: 'JPY wallet' }),
+        raw: true,
+      });
+      const food = await helpers.addCustomCategory({ name: 'Food', color: '#AABBCC', raw: true });
+      const drinks = await helpers.addCustomCategory({ name: 'Drinks', color: '#AABBDD', raw: true });
+
+      const [kwdTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: kwdAccount.id,
+          categoryId: food.id,
+          amount: 2,
+          transactionType: TRANSACTION_TYPES.expense,
+          note: 'KWD dinner',
+        }),
+        raw: true,
+      });
+      await helpers.updateTransaction({
+        id: kwdTx!.id,
+        payload: {
+          splits: [
+            { categoryId: food.id, amount: 1.234 },
+            { categoryId: drinks.id, amount: 0.766 },
+          ],
+        },
+        raw: true,
+      });
+
+      const [purchase] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: jpyAccount.id,
+          amount: 5000,
+          transactionType: TRANSACTION_TYPES.expense,
+          note: 'JPY purchase',
+        }),
+        raw: true,
+      });
+      const [refund] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: jpyAccount.id,
+          amount: 2000,
+          transactionType: TRANSACTION_TYPES.income,
+          note: 'JPY refund',
+        }),
+        raw: true,
+      });
+      await helpers.createSingleRefund({ originalTxId: purchase!.id, refundTxId: refund!.id, amount: 1500 }, true);
+
+      const response = await helpers.exportData({ format: 'csv' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('transactions.csv')! });
+
+      const splitRow = rows.find((r) => r.Note === 'KWD dinner');
+      expect(splitRow?.SplitDetails).toContain('Food: 1.234');
+      expect(splitRow?.SplitDetails).toContain('Drinks: 0.766');
+
+      const refundRow = rows.find((r) => r.Note === 'JPY refund');
+      expect(refundRow?.RefundOf).toContain('-5000 JPY');
+      expect(refundRow?.RefundOf).toContain('(1500 JPY)');
+    });
+
     it('renders refund linkage as a human-readable string in RefundOf column', async () => {
       const account = await helpers.createAccount({ raw: true });
       const purchase = await helpers.createTransaction({
@@ -388,6 +501,69 @@ describe('Data export (POST /user/data-export)', () => {
       // not a UUID.
       expect(refundRow?.RefundOf).toContain(account.name);
       expect(refundRow?.RefundOf).not.toContain(originalTx!.id);
+    });
+
+    it('names every original with its share in RefundOf when a refund has several partial links', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, type, note }: { amount: number; type: TRANSACTION_TYPES; note: string }) => {
+        const result = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType: type, note }),
+          raw: true,
+        });
+        return (Array.isArray(result) ? result[0] : result)!;
+      };
+      const firstOriginal = await createTx({ amount: 60, type: TRANSACTION_TYPES.expense, note: 'First purchase' });
+      const secondOriginal = await createTx({ amount: 50, type: TRANSACTION_TYPES.expense, note: 'Second purchase' });
+      const refundTx = await createTx({ amount: 100, type: TRANSACTION_TYPES.income, note: 'Combined refund' });
+
+      await helpers.createSingleRefund({ originalTxId: firstOriginal.id, refundTxId: refundTx.id, amount: 60 }, true);
+      await helpers.createSingleRefund({ originalTxId: secondOriginal.id, refundTxId: refundTx.id, amount: 40 }, true);
+
+      const response = await helpers.exportData({ format: 'csv' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('transactions.csv')! });
+      const refundRow = rows.find((r) => r.Note === 'Combined refund');
+      const parts = (refundRow?.RefundOf ?? '').split(' | ');
+
+      expect(parts).toHaveLength(2);
+      expect(parts).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(new RegExp(`${account.name} -60\\.00 \\w+ \\(60\\.00 ${refundTx.currencyCode}\\)$`)),
+          expect.stringMatching(new RegExp(`${account.name} -50\\.00 \\w+ \\(40\\.00 ${refundTx.currencyCode}\\)$`)),
+        ]),
+      );
+    });
+
+    it('renders a full-refund link in RefundOf without a share suffix next to a partial link on another refund', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, type, note }: { amount: number; type: TRANSACTION_TYPES; note: string }) => {
+        const result = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType: type, note }),
+          raw: true,
+        });
+        return (Array.isArray(result) ? result[0] : result)!;
+      };
+      const fullOriginal = await createTx({ amount: 80, type: TRANSACTION_TYPES.expense, note: 'Fully refunded' });
+      const fullRefund = await createTx({ amount: 30, type: TRANSACTION_TYPES.income, note: 'Full refund' });
+      const partialOriginal = await createTx({ amount: 50, type: TRANSACTION_TYPES.expense, note: 'Partly refunded' });
+      const partialRefund = await createTx({ amount: 50, type: TRANSACTION_TYPES.income, note: 'Partial refund' });
+
+      await helpers.createSingleRefund({ originalTxId: fullOriginal.id, refundTxId: fullRefund.id }, true);
+      await helpers.createSingleRefund(
+        { originalTxId: partialOriginal.id, refundTxId: partialRefund.id, amount: 20 },
+        true,
+      );
+
+      const response = await helpers.exportData({ format: 'csv' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('transactions.csv')! });
+
+      expect(rows.find((r) => r.Note === 'Full refund')?.RefundOf).toMatch(
+        new RegExp(`^\\d{4}-\\d{2}-\\d{2} ${account.name} -80\\.00 ${fullOriginal.currencyCode}$`),
+      );
+      expect(rows.find((r) => r.Note === 'Partial refund')?.RefundOf).toMatch(
+        new RegExp(`${account.name} -50\\.00 \\w+ \\(20\\.00 ${partialRefund.currencyCode}\\)$`),
+      );
     });
 
     it('classifies transfer-nature transactions as transfer_in/transfer_out in the Type column', async () => {
@@ -606,6 +782,30 @@ describe('Data export (POST /user/data-export)', () => {
       const seeded = rows.find((r) => r.Name === 'Open-ended tracker');
       expect(seeded).toBeDefined();
       expect(seeded?.LimitAmount).toBe('');
+      expect(seeded?.LimitKind).toBe('spending');
+    });
+  });
+
+  describe('Portfolio cash balances', () => {
+    it('writes each cash balance at the decimals of its currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['KWD', 'JPY'], raw: true });
+      const portfolio = await helpers.createPortfolio({ payload: { name: 'Cash portfolio' }, raw: true });
+      for (const [currencyCode, amount] of [
+        ['KWD', '1.234'],
+        ['JPY', '5000'],
+      ] as const) {
+        await helpers.directCashTransaction({
+          portfolioId: portfolio.id,
+          payload: { type: 'deposit', amount, currencyCode, date: '2025-06-15' },
+          raw: true,
+        });
+      }
+
+      const response = await helpers.exportData({ format: 'csv' });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('portfolios.csv')! });
+
+      expect(rows.find((r) => r.Name === 'Cash portfolio')?.CashBalances).toBe('JPY: 5000 | KWD: 1.234');
     });
   });
 
@@ -758,6 +958,39 @@ describe('Data export (POST /user/data-export)', () => {
       // Defends against a regression that re-renames the column.
       expect(Object.keys(row!)).not.toContain('NextDue');
     });
+
+    it('exports the step of a custom frequency and leaves it empty for a preset', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const base = {
+        startDate: '2026-01-01',
+        expectedAmount: 10,
+        expectedCurrencyCode: account.currencyCode,
+        raw: true as const,
+      };
+      await helpers.createSubscription({
+        ...base,
+        name: 'Every 30 days sub',
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+        intervalCount: 30,
+      });
+      await helpers.createSubscription({ ...base, name: 'Monthly sub', frequency: SUBSCRIPTION_FREQUENCIES.monthly });
+
+      const response = await helpers.exportData({ format: 'csv', groups: ['subscriptions'] });
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const rows = helpers.parseExportCsv({ buffer: archive.files.get('subscriptions.csv')! });
+
+      expect(rows.find((r) => r.Name === 'Every 30 days sub')).toMatchObject({
+        Frequency: 'custom',
+        IntervalUnit: 'day',
+        IntervalCount: '30',
+      });
+      expect(rows.find((r) => r.Name === 'Monthly sub')).toMatchObject({
+        Frequency: 'monthly',
+        IntervalUnit: '',
+        IntervalCount: '',
+      });
+    });
   });
 
   describe('Cross-user isolation', () => {
@@ -840,6 +1073,46 @@ describe('Data export (POST /user/data-export)', () => {
       expect(stringified).not.toContain(foreignNeedle.note);
       expect(stringified).not.toContain(foreignNeedle.payee);
       expect(stringified).not.toContain(foreignNeedle.payeeAlias);
+    });
+
+    it("names the owner's shared account on a member's transaction instead of the unresolved sentinel", async () => {
+      const sharedAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Shared household account' }),
+        raw: true,
+      });
+      const member = await helpers.provisionSecondUserWithBaseCurrency();
+      const invitation = await helpers.createShareInvitation({
+        inviteeEmail: member.email,
+        resourceType: RESOURCE_TYPES.account,
+        resourceId: sharedAccount.id,
+        permission: SHARE_PERMISSIONS.write,
+        policy: { transactionsWriteScope: TRANSACTIONS_WRITE_SCOPES.all },
+        raw: true,
+      });
+
+      const response = await helpers.asUser({
+        cookies: member.cookies,
+        fn: async () => {
+          await helpers.acceptShareInvitation({ token: invitation.token, raw: true });
+          await helpers.createTransaction({
+            payload: helpers.buildTransactionPayload({
+              accountId: sharedAccount.id,
+              amount: 12,
+              transactionType: TRANSACTION_TYPES.expense,
+              note: 'Member row on shared account',
+            }),
+            raw: true,
+          });
+          return helpers.exportData({ format: 'json' });
+        },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const archive = helpers.parseExportArchive({ buffer: response.body });
+      const data = archive.json as { transactions: Array<Record<string, unknown>> };
+      const row = data.transactions.find((t) => t.note === 'Member row on shared account');
+      expect(row).toBeDefined();
+      expect(row?.account).toBe('Shared household account');
     });
   });
 
@@ -1303,6 +1576,75 @@ describe('Data export (POST /user/data-export)', () => {
       expect(transferRows[0]!.LinkedTransfer).toContain(dest.name);
       expect(transferRows[0]!.LinkedTransfer).toBe(unfilteredOutLeg!.LinkedTransfer);
     });
+
+    it('still names every original with its share in RefundOf when the originals sit on a filtered-out account', async () => {
+      const originAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Refund origin' }),
+        raw: true,
+      });
+      const refundAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Refund target' }),
+        raw: true,
+      });
+      const createTx = async ({
+        accountId,
+        amount,
+        type,
+        note,
+      }: {
+        accountId: RecordId;
+        amount: number;
+        type: TRANSACTION_TYPES;
+        note: string;
+      }) => {
+        const result = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId, amount, transactionType: type, note }),
+          raw: true,
+        });
+        return (Array.isArray(result) ? result[0] : result)!;
+      };
+      const firstOriginal = await createTx({
+        accountId: originAccount.id,
+        amount: 60,
+        type: TRANSACTION_TYPES.expense,
+        note: 'Filtered first purchase',
+      });
+      const secondOriginal = await createTx({
+        accountId: originAccount.id,
+        amount: 50,
+        type: TRANSACTION_TYPES.expense,
+        note: 'Filtered second purchase',
+      });
+      const refundTx = await createTx({
+        accountId: refundAccount.id,
+        amount: 100,
+        type: TRANSACTION_TYPES.income,
+        note: 'Cross-account refund',
+      });
+
+      await helpers.createSingleRefund({ originalTxId: firstOriginal.id, refundTxId: refundTx.id, amount: 60 }, true);
+      await helpers.createSingleRefund({ originalTxId: secondOriginal.id, refundTxId: refundTx.id, amount: 40 }, true);
+
+      const response = await helpers.exportData({ format: 'csv', accountIds: [refundAccount.id] });
+      expect(response.statusCode).toBe(200);
+      const rows = helpers.parseExportCsv({
+        buffer: helpers.parseExportArchive({ buffer: response.body }).files.get('transactions.csv')!,
+      });
+
+      expect(rows.map((r) => r.Note)).toEqual(['Cross-account refund']);
+      const parts = (rows[0]!.RefundOf ?? '').split(' | ');
+      expect(parts).toHaveLength(2);
+      expect(parts).toEqual(
+        expect.arrayContaining([
+          expect.stringMatching(
+            new RegExp(`${originAccount.name} -60\\.00 \\w+ \\(60\\.00 ${refundTx.currencyCode}\\)$`),
+          ),
+          expect.stringMatching(
+            new RegExp(`${originAccount.name} -50\\.00 \\w+ \\(40\\.00 ${refundTx.currencyCode}\\)$`),
+          ),
+        ]),
+      );
+    });
   });
 
   describe('Budget plans', () => {
@@ -1553,13 +1895,9 @@ describe('Data export (POST /user/data-export)', () => {
       };
 
       it('exports a KWD plan at 3 decimals', async () => {
-        const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-        const data = await helpers.asUser({
-          cookies: user.cookies,
-          fn: async () => {
-            await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
-            return exportDecimalsPlan({ currencyCode: 'KWD', goal: 10.125, assigned: 1.234, spent: 0.5 });
-          },
+        const data = await helpers.asNewUserWithBaseCurrency({
+          currencyCode: 'KWD',
+          fn: () => exportDecimalsPlan({ currencyCode: 'KWD', goal: 10.125, assigned: 1.234, spent: 0.5 }),
         });
 
         expect(data.budget_lines[0]).toMatchObject({ goal: 'Budget another 10.125 every period', currency: 'KWD' });
@@ -1569,18 +1907,6 @@ describe('Data export (POST /user/data-export)', () => {
           available: 0.734,
           currency: 'KWD',
         });
-      });
-
-      it('keeps the 2-decimal values for a 2-decimal plan', async () => {
-        const data = await exportDecimalsPlan({
-          currencyCode: global.BASE_CURRENCY.code,
-          goal: 10.12,
-          assigned: 1.23,
-          spent: 0.5,
-        });
-
-        expect(data.budget_lines[0]).toMatchObject({ goal: 'Budget another 10.12 every period' });
-        expect(data.budget_periods[0]).toMatchObject({ assigned: 1.23, spent: 0.5, available: 0.73 });
       });
     });
 
@@ -1612,6 +1938,85 @@ describe('Data export (POST /user/data-export)', () => {
 
       expect(data.budget_lines.map((row) => [row.plan, row.line])).toEqual([['Live plan', 'Live line']]);
       expect(data.budget_periods.map((row) => [row.plan, row.line])).toEqual([['Live plan', 'Live line']]);
+    });
+  });
+
+  describe('Goals', () => {
+    it('exports goals with decimal amounts, named account shares and fixed amounts', async () => {
+      const savings = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Goal savings' }),
+        raw: true,
+      });
+      const cash = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Goal cash' }),
+        raw: true,
+      });
+      await helpers.createGoal({
+        payload: {
+          name: 'Trip',
+          targetAmount: 2500.5,
+          targetDate: '2030-06-01',
+          plannedMonthly: 150,
+          accounts: [
+            { accountId: savings.id, sharePercent: 60 },
+            { accountId: cash.id, fixedAmount: 500 },
+          ],
+        },
+        raw: true,
+      });
+      const car = await helpers.createGoal({
+        payload: { name: 'Car', targetAmount: 10000, accounts: [{ accountId: savings.id, sharePercent: 40 }] },
+        raw: true,
+      });
+      await helpers.updateGoal({ goalId: car.id, payload: { status: 'paused' }, raw: true });
+
+      const response = await helpers.exportData({ format: 'json', groups: ['budgets'] });
+      expect(response.statusCode).toBe(200);
+      const data = helpers.parseExportArchive({ buffer: response.body }).json as {
+        goals: Array<Record<string, unknown>>;
+      };
+      const currency = global.BASE_CURRENCY_CODE;
+
+      expect(data.goals).toEqual([
+        {
+          name: 'Trip',
+          status: 'active',
+          targetAmount: 2500.5,
+          currency,
+          targetDate: '2030-06-01',
+          plannedMonthly: 150,
+          accounts: [`Goal cash: 500 ${currency} fixed`, 'Goal savings: 60%'],
+          achievedAt: '',
+          achievedAmount: null,
+        },
+        {
+          name: 'Car',
+          status: 'paused',
+          targetAmount: 10000,
+          currency,
+          targetDate: '',
+          plannedMonthly: null,
+          accounts: ['Goal savings: 40%'],
+          achievedAt: '',
+          achievedAmount: null,
+        },
+      ]);
+
+      const csv = await helpers.exportData({ format: 'csv', groups: ['budgets'] });
+      const rows = helpers.parseExportCsv({
+        buffer: helpers.parseExportArchive({ buffer: csv.body }).files.get('goals.csv')!,
+      });
+      expect(rows.find((row) => row.Name === 'Trip')).toMatchObject({
+        TargetAmount: '2500.5',
+        Accounts: `Goal cash: 500 ${currency} fixed; Goal savings: 60%`,
+      });
+    });
+
+    it('emits an empty goals file for a user without goals', async () => {
+      const response = await helpers.exportData({ format: 'json', groups: ['budgets'] });
+      expect(response.statusCode).toBe(200);
+      const data = helpers.parseExportArchive({ buffer: response.body }).json as { goals: unknown[] };
+      expect(data.goals).toEqual([]);
     });
   });
 

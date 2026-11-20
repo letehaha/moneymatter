@@ -18,7 +18,7 @@
       "emptyTitle": "Keine passenden Transaktionen",
       "emptyDescription": "Keine Transaktionen entsprechen diesen Filtern. Versuche, den Datumsbereich zu erweitern oder Filter zu löschen.",
       "selectedCount": "{count} ausgewählt",
-      "clearSelection": "Zurücksetzen",
+      "clearSelection": "Aufheben",
       "linkSelected": "{count} verknüpfen",
       "success": "{count} Zahlung mit dem Kredit verknüpft. | {count} Zahlungen mit dem Kredit verknüpft.",
       "preAnchorWarning": "{count} ausgewählte Zahlung liegt vor dem Saldo-Stichtag des Kredits ({date}) – sie wird nur als Verlauf verknüpft und verringert nicht den offenen Saldo. | {count} ausgewählte Zahlungen liegen vor dem Saldo-Stichtag des Kredits ({date}) – sie werden nur als Verlauf verknüpft und verringern nicht den offenen Saldo.",
@@ -103,7 +103,7 @@
       "ofPrincipal": "von {amount}"
     },
     "types": {
-      "mortgage": "Immobilienkredit",
+      "mortgage": "Hypothek",
       "auto": "Fahrzeugkredit",
       "student": "Studienkredit",
       "personal": "Personalkredit",

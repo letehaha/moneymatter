@@ -5,9 +5,11 @@ import TrackerCategories from '@models/tracker-categories.model';
 import TrackerTransactions from '@models/tracker-transactions.model';
 import Trackers from '@models/trackers.model';
 import { findTransactions } from '@models/transactions-query';
+import { liveTransactionExistsSql } from '@models/transactions-query/deletion-where';
 import Transactions from '@models/transactions.model';
 import { getBaseCurrency } from '@models/users-currencies.model';
-import { Op } from 'sequelize';
+import { excludeFromStatsSql } from '@services/stats/stats-transactions';
+import { Op, literal } from 'sequelize';
 
 import type { TrackerRow } from '../types';
 import { toDateOnly } from './utils';
@@ -28,7 +30,12 @@ export async function transformTrackers({ userId }: { userId: number }): Promise
 
   const [trackerCategoriesLinks, trackerTransactionLinks] = await Promise.all([
     TrackerCategories.findAll({ where: { trackerId: { [Op.in]: trackerIds } } }),
-    TrackerTransactions.findAll({ where: { trackerId: { [Op.in]: trackerIds } } }),
+    TrackerTransactions.findAll({
+      where: {
+        trackerId: { [Op.in]: trackerIds },
+        [Op.and]: literal(liveTransactionExistsSql({ idColumnSql: '"TrackerTransactions"."transactionId"' })),
+      },
+    }),
   ]);
 
   const categoryIds = [...new Set(trackerCategoriesLinks.map((l) => l.categoryId))];
@@ -50,6 +57,7 @@ export async function transformTrackers({ userId }: { userId: number }): Promise
           access: { creator: userId },
           balanceAdjustments: 'include',
           completeness: 'all',
+          attributes: { include: [[literal(excludeFromStatsSql()), 'countsInStats']] },
         })
       : Promise.resolve([] as Transactions[]),
   ]);
@@ -65,6 +73,7 @@ export async function transformTrackers({ userId }: { userId: number }): Promise
       );
       continue;
     }
+    if (!tx.get('countsInStats')) continue;
     const list = txByTrackerId.get(link.trackerId) ?? [];
     list.push(tx);
     txByTrackerId.set(link.trackerId, list);
@@ -95,6 +104,7 @@ export async function transformTrackers({ userId }: { userId: number }): Promise
       periodStart: tracker.startDate ? toDateOnly({ value: tracker.startDate }) : '',
       periodEnd: tracker.endDate ? toDateOnly({ value: tracker.endDate }) : '',
       limitAmount: moneyToApiDecimalOrNull(tracker.limitAmount),
+      limitKind: tracker.limitKind,
       currency: baseCurrencyCode,
       categories: (categoriesByTrackerId.get(tracker.id) ?? []).toSorted(),
       spentAmount: spentAmount.toNumber(),

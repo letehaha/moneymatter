@@ -64,6 +64,7 @@ export interface TransactionRow {
   linkedTransfer: string;
   subscription: string;
   isPlanned: boolean;
+  excludeFromStats: boolean;
 }
 
 export interface AccountRow {
@@ -128,6 +129,7 @@ export interface TrackerRow {
   periodStart: string;
   periodEnd: string;
   limitAmount: number | null;
+  limitKind: string;
   currency: string;
   categories: string[];
   spentAmount: number;
@@ -155,6 +157,19 @@ export interface BudgetPeriodRow {
   currency: string;
 }
 
+export interface GoalRow {
+  name: string;
+  status: string;
+  targetAmount: number;
+  currency: string;
+  targetDate: string;
+  plannedMonthly: number | null;
+  /** One `"<account>: <share>%"` entry per backing account. */
+  accounts: string[];
+  achievedAt: string;
+  achievedAmount: number | null;
+}
+
 export interface SubscriptionRow {
   name: string;
   /**
@@ -165,6 +180,10 @@ export interface SubscriptionRow {
   amount: number | null;
   currency: string;
   frequency: string;
+  /** Unit of a custom frequency's step ('day', 'week', 'month', 'year'); empty for a preset. */
+  intervalUnit: string;
+  /** Count of a custom frequency's step; null for a preset. */
+  intervalCount: number | null;
   startDate: string;
   endDate: string;
   category: string;
@@ -255,6 +274,7 @@ export type ExportTable =
   | { name: 'trackers'; rows: TrackerRow[] }
   | { name: 'budget_lines'; rows: BudgetLineRow[] }
   | { name: 'budget_periods'; rows: BudgetPeriodRow[] }
+  | { name: 'goals'; rows: GoalRow[] }
   | { name: 'subscriptions'; rows: SubscriptionRow[] }
   | { name: 'transaction_templates'; rows: TransactionTemplateRow[] }
   | { name: 'portfolios'; rows: PortfolioRow[] }

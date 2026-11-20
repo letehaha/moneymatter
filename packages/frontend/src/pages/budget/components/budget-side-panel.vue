@@ -29,6 +29,7 @@ import { type Component, computed } from 'vue';
 import {
   type GoalPeriodUnit,
   type PanelContext,
+  aggregatePace,
   amountToneClass,
   formatPeriodLabel,
   isPastPeriod,
@@ -67,7 +68,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ close: []; selectLine: [lineId: string] }>();
 
-const { formatBaseCurrency } = useFormatCurrency();
+const { formatBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
 const { locale } = useDateLocale();
 const openSections = usePanelSections({ drawer: props.drawer });
 
@@ -75,7 +76,7 @@ const line = computed(() => (props.lines.length === 1 ? props.lines[0] : undefin
 const lineIds = computed(() => props.lines.map((entry) => entry.lineId));
 const figures = computed(() => {
   if (line.value) return line.value;
-  if (props.lines.length) return sumLineTotals({ lines: props.lines });
+  if (props.lines.length) return sumLineTotals({ lines: props.lines, decimals: baseCurrencyDecimals.value });
   const { totalCarriedIn, totalAssigned, totalActivity, totalAvailable } = props.view.header;
   return { carriedIn: totalCarriedIn, assigned: totalAssigned, activity: totalActivity, available: totalAvailable };
 });
@@ -115,6 +116,7 @@ const context = computed<PanelContext>(() => ({
   figures: figures.value,
   trends: trends.value,
   scheduled: scheduled.value,
+  pace: aggregatePace({ lines: props.lines.length ? props.lines : props.view.lines }),
 }));
 
 const sections = computed(() => {

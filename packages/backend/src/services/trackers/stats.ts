@@ -1,21 +1,18 @@
-import { TRACKER_TYPES, type RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { type RecordId, TRACKER_LIMIT_KINDS, TRANSACTION_TYPES } from '@bt/shared/types';
+import { getReportBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
-import Accounts from '@models/accounts.model';
 import Categories from '@models/categories.model';
 import TrackerLines from '@models/tracker-lines.model';
 import Trackers from '@models/trackers.model';
-import TransactionSplits from '@models/transaction-splits.model';
-import { PlannedPolicy, transactionsInclude } from '@models/transactions-query';
-import * as Transactions from '@models/transactions.model';
-import { statsTransactions } from '@services/stats/stats-transactions';
+import { findTransactions } from '@models/transactions-query';
+import type * as Transactions from '@models/transactions.model';
+import { excludeFromStatsWhere, moneyMovementWhere } from '@services/stats/stats-transactions';
 import { includeLines } from '@services/trackers/get-trackers';
 import { Op } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
 import { authorizeTrackerRead } from './authorize-tracker-access';
-import { buildDateFilter } from './utils/build-date-filter';
 import { fetchTrackerRefundPairs } from './utils/refund-pairs';
 import { buildSharedTrackerMergeMap } from './utils/shared-category-merge-map';
 
@@ -25,7 +22,7 @@ export interface StatsResponse {
     actualIncome: number;
     actualExpense: number;
     balance: number; // Net difference
-    utilizationRate: null | number; // Percentage used (0-100)
+    utilizationRate: null | number; // Percent of the limit reached (0-100+)
     transactionsCount: number;
     firstTransactionDate: string | null; // ISO date string of earliest transaction
     lastTransactionDate: string | null; // ISO date string of latest transaction
@@ -36,9 +33,19 @@ export interface StatsResponse {
   otherSpent: number;
 }
 
+type TrackerLimit = { minor: number; kind: TRACKER_LIMIT_KINDS } | null;
+
+const setUtilizationRate = ({ result, limit }: { result: StatsResponse; limit: TrackerLimit }) => {
+  // A limit stored at a base with more decimals can round to 0 minor units at the current base.
+  if (!limit || limit.minor <= 0) return;
+  const { balance } = result.summary;
+  const reached = limit.kind === TRACKER_LIMIT_KINDS.spending ? Math.max(0, -balance) : Math.max(0, balance);
+  result.summary.utilizationRate = (reached / limit.minor) * 100;
+};
+
 interface ExpenseEntry {
   categoryId: string;
-  cents: number;
+  minor: number;
 }
 
 export const getResponseInitialState = (): StatsResponse => ({
@@ -75,10 +82,10 @@ const splitExpensesByLines = ({
   });
 
   let otherSpent = 0;
-  for (const { categoryId, cents } of expenses) {
+  for (const { categoryId, minor } of expenses) {
     const index = lineIndexByCategory.get(categoryId);
-    if (index === undefined) otherSpent += cents;
-    else totals[index]!.spent += cents;
+    if (index === undefined) otherSpent += minor;
+    else totals[index]!.spent += minor;
   }
 
   return { lines: totals, otherSpent };
@@ -97,30 +104,24 @@ const buildCategoryCanonicalizer = async ({
 
   const categories = (await Categories.findAll({
     where: { userId: { [Op.in]: [...userIds] } },
-    attributes: ['id', 'key', 'userId'],
+    attributes: ['id', 'key', 'parentId', 'userId'],
     raw: true,
-  })) as unknown as { id: RecordId; key: string | null; userId: number }[];
+  })) as unknown as { id: RecordId; key: string | null; parentId: RecordId | null; userId: number }[];
   const mergeMap = buildSharedTrackerMergeMap({ categories, ownerUserId });
   return (categoryId) => mergeMap.get(categoryId) ?? categoryId;
 };
 
 /**
- * Calculate stats for manual trackers using TrackerTransactions junction table.
- *
  * Junction-only scope on the transaction lookup: any row in `TrackerTransactions` for
  * this tracker is counted, regardless of `Transactions.userId`. This is what lets a
  * `write` recipient's attached transactions contribute to the shared-tracker totals
  * (income/expense/balance/utilization). The caller's authorization happens upstream
  * via `authorizeTrackerRead`, so we trust the trackerId scope here.
  *
- * Category trackers keep the legacy owner-only filter — recipients can't manually
- * attach to a category tracker (it'd trip `budgets.cannotManuallyLinkToCategoryBudget`), so
- * widening that path would be a no-op today.
- *
  * Planned rows are the exception to the junction-only scope: only the caller's own
  * plans count, so a recipient's totals never include the owner's plans.
  */
-const getManualTrackerStats = async ({
+const getLinkedTransactionsStats = async ({
   trackerId,
   callerUserId,
   lines,
@@ -139,165 +140,30 @@ const getManualTrackerStats = async ({
   const transactions: Pick<
     Transactions.default,
     'id' | 'time' | 'amount' | 'refAmount' | 'transactionType' | 'refundLinked' | 'categoryId' | 'userId'
-  >[] = await Transactions.findWithFilters({
-    excludeTransfer: true,
-    trackerIds: [trackerId],
+  >[] = await findTransactions({
+    where: { [Op.and]: [moneyMovementWhere, excludeFromStatsWhere] },
+    access: { trackerScoped: [trackerId as RecordId] },
     completeness: 'all',
     planned: { visibleTo: callerUserId },
-    access: 'pre-scoped',
     balanceAdjustments: 'include',
     attributes: ['id', 'time', 'amount', 'refAmount', 'transactionType', 'refundLinked', 'categoryId', 'userId'],
   });
 
-  const limitAmount = trackerDetails.limitAmount?.toMinorUnits({ decimals }) ?? null;
-  const result = aggregateTransactionStats({ transactions, limitAmount, decimals });
-  await applyRefundAdjustments({ countedTransactions: transactions, result, limitAmount, decimals });
+  const limit: TrackerLimit = trackerDetails.limitAmount
+    ? { minor: trackerDetails.limitAmount.toMinorUnits({ decimals }), kind: trackerDetails.limitKind }
+    : null;
+  const result = aggregateTransactionStats({ transactions, limit, decimals });
+  await applyRefundAdjustments({ countedTransactions: transactions, result, limit, decimals });
 
   const canonicalize = await buildCategoryCanonicalizer({ ownerUserId: trackerDetails.userId, transactions });
 
   // ponytail: matches on the primary categoryId, so a split transaction lands whole in one line.
-  // Read the transaction's splits here if manual trackers need per-split line totals.
+  // Read the transaction's splits here if trackers need per-split line totals.
   const expenses = transactions.flatMap((tx) =>
     tx.transactionType === TRANSACTION_TYPES.expense && tx.refAmount !== null
-      ? [{ categoryId: canonicalize(tx.categoryId), cents: tx.refAmount.toMinorUnits({ decimals }) }]
+      ? [{ categoryId: canonicalize(tx.categoryId), minor: tx.refAmount.toMinorUnits({ decimals }) }]
       : [],
   );
-  return { ...result, ...splitExpensesByLines({ lines, expenses }) };
-};
-
-/**
- * Calculate stats for category-based trackers.
- * Handles split transactions correctly by only counting the split amount for matching categories.
- */
-const getCategoryTrackerStats = async ({
-  userId,
-  trackerId,
-  isOwner,
-  lines,
-  decimals,
-}: {
-  userId: number;
-  trackerId: string;
-  isOwner: boolean;
-  lines: TrackerLines[];
-  decimals: number;
-}): Promise<StatsResponse> => {
-  const trackerDetails = await findOrThrowNotFound({
-    query: Trackers.findByPk(trackerId, {
-      include: [{ model: Categories, as: 'categories', attributes: ['id'] }],
-    }),
-    message: t({ key: 'budgets.budgetNotFound' }),
-  });
-
-  const categoryIds = trackerDetails.categories?.map((c) => c.id) || [];
-
-  if (!categoryIds.length) {
-    return { ...getResponseInitialState(), ...splitExpensesByLines({ lines, expenses: [] }) };
-  }
-
-  const dateFilter = buildDateFilter({
-    startDate: trackerDetails.startDate,
-    endDate: trackerDetails.endDate,
-  });
-
-  // Planned rows are owner-only: they count as spent for the owner, but a share
-  // recipient must never see them.
-  const planned: PlannedPolicy = isOwner ? 'include' : 'exclude';
-
-  // Get transactions where primary category matches and have no splits
-  const { rows: primaryCategoryTransactions } = await statsTransactions({
-    access: { creator: userId },
-    planned,
-    refunds: 'ignore',
-    window: { from: trackerDetails.startDate ?? undefined, to: trackerDetails.endDate ?? undefined },
-    where: { categoryId: { [Op.in]: categoryIds } },
-    include: [{ model: TransactionSplits, as: 'splits', required: false }],
-  });
-
-  // Get splits that match the categories
-  const matchingSplits = await TransactionSplits.findAll({
-    where: {
-      userId,
-      categoryId: { [Op.in]: categoryIds },
-    },
-    include: [
-      transactionsInclude({
-        planned,
-        required: true,
-        as: 'transaction',
-        where: {
-          transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-          ...dateFilter,
-        },
-        attributes: ['id', 'time', 'transactionType', 'refundLinked'],
-        include: [{ model: Accounts, where: { excludeFromStats: false }, attributes: [] }],
-      }),
-    ],
-  });
-
-  const result = getResponseInitialState();
-  const countedTransactions: { id: string; refundLinked: boolean }[] = [];
-  const expenses: ExpenseEntry[] = [];
-
-  // Process primary category transactions (only those WITHOUT splits)
-  for (const tx of primaryCategoryTransactions) {
-    const splits = tx.get('splits') as TransactionSplits[] | undefined;
-
-    // If transaction has splits, skip it here - we'll count the split amounts separately
-    if (splits && splits.length > 0) {
-      continue;
-    }
-
-    // A row with no base-currency amount (custom currency, no rate yet) is left out of every figure.
-    if (tx.refAmount === null) continue;
-
-    countedTransactions.push({ id: tx.id, refundLinked: tx.refundLinked });
-    const isExpense = tx.transactionType === TRANSACTION_TYPES.expense;
-
-    if (isExpense) {
-      result.summary.actualExpense += tx.refAmount.toMinorUnits({ decimals });
-      result.summary.balance -= tx.refAmount.toMinorUnits({ decimals });
-      expenses.push({ categoryId: tx.categoryId, cents: tx.refAmount.toMinorUnits({ decimals }) });
-    } else {
-      result.summary.actualIncome += tx.refAmount.toMinorUnits({ decimals });
-      result.summary.balance += tx.refAmount.toMinorUnits({ decimals });
-    }
-
-    updateDateRange(result, tx.time);
-  }
-
-  // Process splits - only count the split's refAmount
-  for (const split of matchingSplits) {
-    const transaction = split.get('transaction') as Transactions.default;
-    if (!transaction || split.refAmount === null) continue;
-
-    countedTransactions.push({ id: transaction.id, refundLinked: transaction.refundLinked });
-    const isExpense = transaction.transactionType === TRANSACTION_TYPES.expense;
-
-    if (isExpense) {
-      result.summary.actualExpense += split.refAmount.toMinorUnits({ decimals });
-      result.summary.balance -= split.refAmount.toMinorUnits({ decimals });
-      expenses.push({ categoryId: split.categoryId, cents: split.refAmount.toMinorUnits({ decimals }) });
-    } else {
-      result.summary.actualIncome += split.refAmount.toMinorUnits({ decimals });
-      result.summary.balance += split.refAmount.toMinorUnits({ decimals });
-    }
-
-    updateDateRange(result, transaction.time);
-  }
-
-  const uniqueCountedIds = new Set(countedTransactions.map((tx) => tx.id));
-  result.summary.transactionsCount = uniqueCountedIds.size;
-
-  const limitAmount = trackerDetails.limitAmount?.toMinorUnits({ decimals }) ?? null;
-
-  if (limitAmount !== null) {
-    const netSpending = Math.max(0, -result.summary.balance);
-    result.summary.utilizationRate = (netSpending / limitAmount) * 100;
-  }
-
-  await applyRefundAdjustments({ countedTransactions, result, limitAmount, decimals });
-
   return { ...result, ...splitExpensesByLines({ lines, expenses }) };
 };
 
@@ -317,25 +183,25 @@ const updateDateRange = (result: StatsResponse, time: Date) => {
 /**
  * Nets out refund pairs from actualIncome/actualExpense so a refund-income doesn't inflate
  * income and the matching expense reflects net spend (matching the global "Expenses Structure"
- * widget). For each refund where a side is in the tracker, we subtract `refundTx.refAmount`
+ * widget). For each refund where a side is in the tracker, we subtract the pair's `shareRefAmount`
  * from that side. Balance and utilizationRate are recomputed from the adjusted totals.
  */
 const applyRefundAdjustments = async ({
   countedTransactions,
   result,
-  limitAmount,
+  limit,
   decimals,
 }: {
   countedTransactions: { id: string; refundLinked: boolean }[];
   result: StatsResponse;
-  limitAmount: number | null;
+  limit: TrackerLimit;
   decimals: number;
 }): Promise<void> => {
-  const pairs = await fetchTrackerRefundPairs({ countedTransactions });
+  const pairs = await fetchTrackerRefundPairs({ countedTransactions, decimals });
   if (pairs.length === 0) return;
 
   for (const pair of pairs) {
-    const adjustment = pair.refundTx.refAmount.toMinorUnits({ decimals });
+    const adjustment = pair.shareRefAmount.toMinorUnits({ decimals });
 
     if (pair.originalInScope) {
       if (pair.originalTx.transactionType === TRANSACTION_TYPES.expense) {
@@ -355,10 +221,7 @@ const applyRefundAdjustments = async ({
   }
 
   result.summary.balance = result.summary.actualIncome - result.summary.actualExpense;
-  if (limitAmount !== null) {
-    const netSpending = Math.max(0, -result.summary.balance);
-    result.summary.utilizationRate = (netSpending / limitAmount) * 100;
-  }
+  setUtilizationRate({ result, limit });
 };
 
 /**
@@ -366,11 +229,11 @@ const applyRefundAdjustments = async ({
  */
 const aggregateTransactionStats = ({
   transactions,
-  limitAmount,
+  limit,
   decimals,
 }: {
   transactions: Pick<Transactions.default, 'time' | 'refAmount' | 'transactionType'>[];
-  limitAmount: number | null;
+  limit: TrackerLimit;
   decimals: number;
 }): StatsResponse => {
   // A row with no base-currency amount (custom currency, no rate yet) is left out of every figure.
@@ -394,42 +257,43 @@ const aggregateTransactionStats = ({
     return acc;
   }, getResponseInitialState());
 
-  result.summary.transactionsCount = valued.length;
-
-  if (limitAmount !== null) {
-    const netSpending = Math.max(0, -result.summary.balance);
-    result.summary.utilizationRate = (netSpending / limitAmount) * 100;
-  }
+  result.summary.transactionsCount = transactions.length;
+  setUtilizationRate({ result, limit });
 
   return result;
 };
 
 /** The stats with the `decimals` their minor units are at, which the serializer needs to turn them into decimals. */
-interface TrackerStatsResult {
-  stats: StatsResponse;
+export interface TrackerStatsWithDecimals<TStats> {
+  stats: TStats;
   decimals: number;
 }
 
 export const getTrackerStats = withTransaction(
-  async ({ userId, trackerId }: { userId: number; trackerId: string }): Promise<TrackerStatsResult> => {
-    // Share-aware auth: recipient sees the same numbers the owner would (per PRD
-    // visibility decision). Downstream queries scope against the owner's userId so
-    // a recipient's unrelated transactions don't filter the result.
-    const { ownerUserId, isOwner } = await authorizeTrackerRead({ userId, trackerId });
+  async ({
+    userId,
+    trackerId,
+  }: {
+    userId: number;
+    trackerId: string;
+  }): Promise<TrackerStatsWithDecimals<StatsResponse>> => {
+    // Share-aware auth: recipient sees the same numbers the owner would (per PRD visibility decision).
+    const { ownerUserId } = await authorizeTrackerRead({ userId, trackerId });
 
     const trackerDetails = await findOrThrowNotFound({
-      query: Trackers.findByPk(trackerId, { attributes: ['id', 'type'], include: [includeLines] }),
+      query: Trackers.findByPk(trackerId, { attributes: ['id'], include: [includeLines] }),
       message: t({ key: 'budgets.budgetNotFound' }),
     });
-    const lines = trackerDetails.lines ?? [];
 
     // The tracker's amounts are in its owner's base currency, whoever reads them.
-    const decimals = await getBaseCurrencyDecimals({ userId: ownerUserId });
+    const decimals = await getReportBaseCurrencyDecimals({ userId: ownerUserId });
 
-    const stats =
-      trackerDetails.type === TRACKER_TYPES.category
-        ? await getCategoryTrackerStats({ userId: ownerUserId, trackerId, isOwner, lines, decimals })
-        : await getManualTrackerStats({ trackerId, callerUserId: userId, lines, decimals });
+    const stats = await getLinkedTransactionsStats({
+      trackerId,
+      callerUserId: userId,
+      lines: trackerDetails.lines ?? [],
+      decimals,
+    });
 
     return { stats, decimals };
   },

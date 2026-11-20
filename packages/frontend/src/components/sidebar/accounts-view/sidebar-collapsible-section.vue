@@ -36,13 +36,13 @@ const onHeaderClick = () => {
   <button
     ref="headerRef"
     type="button"
-    class="bg-card hover:bg-accent sticky z-(--z-over-default) flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-semibold transition-colors"
+    class="bg-background dark:bg-card sticky z-(--z-over-default) flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-semibold hover:bg-[linear-gradient(var(--color-hover),var(--color-hover))]"
     :class="[topClass, bottomClass]"
     @click="onHeaderClick"
   >
     <ChevronRightIcon :class="['size-4 shrink-0 transition-transform duration-200', { 'rotate-90': open }]" />
     <component :is="icon" class="text-muted-foreground size-4 shrink-0" />
-    <span>{{ label }}</span>
+    <span class="min-w-0 truncate">{{ label }}</span>
     <span class="ml-auto shrink-0">
       <slot name="trailing">
         <span v-if="count" class="text-muted-foreground text-xs tabular-nums">

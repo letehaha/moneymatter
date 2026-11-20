@@ -5,46 +5,40 @@ import { computeAccountDisplayBalances, computeCreditUsed } from './account-bala
 describe('computeCreditUsed', () => {
   const manual = { balanceIncludesCreditLimit: false };
 
-  it('derives used from limit minus balance for an available-credit balance, tie-break on', () => {
-    expect(computeCreditUsed({ ...manual, balance: 4000, creditLimit: 5000, zeroBalanceMeansFullyDrawn: true })).toBe(
+  it('derives used from limit minus balance for an available-credit balance', () => {
+    expect(computeCreditUsed({ ...manual, balance: 4000, creditLimit: 5000, balanceIsAvailableCredit: true })).toBe(
       1000,
     );
   });
 
-  it('derives used from limit minus balance for an available-credit balance, tie-break off', () => {
-    expect(computeCreditUsed({ ...manual, balance: 700, creditLimit: 1000, zeroBalanceMeansFullyDrawn: false })).toBe(
-      300,
-    );
-  });
-
-  it('treats a negative balance as direct debt, tie-break off', () => {
+  it('reads a positive debt-style balance as an overpayment with nothing drawn', () => {
     expect(
-      computeCreditUsed({ ...manual, balance: -275, creditLimit: 150_000, zeroBalanceMeansFullyDrawn: false }),
-    ).toBe(275);
+      computeCreditUsed({ ...manual, balance: 100, creditLimit: 10_000_000, balanceIsAvailableCredit: false }),
+    ).toBe(0);
   });
 
-  it('treats a negative balance as direct debt, tie-break on', () => {
-    expect(computeCreditUsed({ ...manual, balance: -300, creditLimit: 1000, zeroBalanceMeansFullyDrawn: true })).toBe(
+  it('treats a negative debt-style balance as direct debt', () => {
+    expect(computeCreditUsed({ ...manual, balance: -275, creditLimit: 150_000, balanceIsAvailableCredit: false })).toBe(
+      275,
+    );
+  });
+
+  it('treats a negative available-credit balance as direct debt', () => {
+    expect(computeCreditUsed({ ...manual, balance: -300, creditLimit: 1000, balanceIsAvailableCredit: true })).toBe(
       300,
     );
   });
 
-  it('reads a zero balance as an untouched card when the tie-break is off', () => {
-    expect(computeCreditUsed({ ...manual, balance: 0, creditLimit: 150_000, zeroBalanceMeansFullyDrawn: false })).toBe(
-      0,
-    );
+  it('reads a zero debt-style balance as an untouched card', () => {
+    expect(computeCreditUsed({ ...manual, balance: 0, creditLimit: 150_000, balanceIsAvailableCredit: false })).toBe(0);
   });
 
-  it('reads a zero balance as a fully drawn card when the tie-break is on', () => {
-    expect(computeCreditUsed({ ...manual, balance: 0, creditLimit: 5000, zeroBalanceMeansFullyDrawn: true })).toBe(
-      5000,
-    );
+  it('reads a zero available-credit balance as a fully drawn card', () => {
+    expect(computeCreditUsed({ ...manual, balance: 0, creditLimit: 5000, balanceIsAvailableCredit: true })).toBe(5000);
   });
 
   it('clamps to zero when own money sits on top of the limit', () => {
-    expect(computeCreditUsed({ ...manual, balance: 6000, creditLimit: 5000, zeroBalanceMeansFullyDrawn: true })).toBe(
-      0,
-    );
+    expect(computeCreditUsed({ ...manual, balance: 6000, creditLimit: 5000, balanceIsAvailableCredit: true })).toBe(0);
   });
 
   it('reads a zero balance as fully drawn when the balance embeds the credit limit', () => {
@@ -53,7 +47,7 @@ describe('computeCreditUsed', () => {
         balance: 0,
         creditLimit: 1000,
         balanceIncludesCreditLimit: true,
-        zeroBalanceMeansFullyDrawn: false,
+        balanceIsAvailableCredit: false,
       }),
     ).toBe(1000);
   });

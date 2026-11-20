@@ -62,7 +62,7 @@ const strokeDasharray = (progress: number) => {
     <button
       v-if="!isPanelOpen"
       type="button"
-      class="hover:bg-muted/50 flex h-full w-full flex-col items-center gap-3 py-4 transition-colors"
+      class="hover:bg-hover flex h-full w-full flex-col items-center gap-3 py-4 transition-colors"
       @click="handleToggle"
     >
       <!-- Expand chevron -->

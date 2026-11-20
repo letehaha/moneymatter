@@ -55,7 +55,8 @@
         "modelLabel": "Modell",
         "modelInfo": {
           "estimatedCost": "Geschätzte Kosten:",
-          "per100Transactions": "pro 100 Transaktionen"
+          "per100Transactions": "pro 100 Transaktionen",
+          "per100Pairs": "pro 100 Paare"
         },
         "notifications": {
           "updateSuccess": "Modell erfolgreich aktualisiert",
@@ -94,14 +95,16 @@
           "statementParsing": "Liest den gesamten Kontoauszug und gibt jede Zeile zurück – erfordert daher ein Modell, das auch bei langen Texten präzise bleibt.",
           "investmentTransactionsParsing": "Wandelt Broker-Exporte in Kauf- und Verkaufenzeilen um. Lange Exporte benötigen ein Modell, das lange Antworten schreiben kann.",
           "receiptParsing": "Das Modell analysiert die Belegdatei selbst, muss also Bilder und PDFs lesen können.",
-          "trackerMatching": "A short, repetitive job that runs every day. A small model handles it well and keeps the cost down."
+          "trackerMatching": "Eine kurze, wiederkehrende Aufgabe. Ein kleines Modell meistert das gut und hält die Kosten niedrig.",
+          "transferMatching": "Liest kurze Transaktionspaare und antwortet mit einem Urteil aus einem einzigen Wort, sodass ein leichtes, günstiges Modell ausreicht."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",
           "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
           "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
           "receiptParsing": "Gemini Flash · Claude Sonnet",
-          "trackerMatching": "Gemini Flash Lite · Claude Haiku"
+          "trackerMatching": "Gemini Flash Lite · Claude Haiku",
+          "transferMatching": "Gemini Flash Lite · Claude Haiku"
         },
         "verdict": {
           "fit": "Gut geeignet",

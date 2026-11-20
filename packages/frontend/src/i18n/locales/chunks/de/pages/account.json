@@ -18,6 +18,7 @@
         "updateError": "Beim Aktualisieren des Kontos ist ein Fehler aufgetreten",
         "nameLabel": "Kontoname",
         "namePlaceholder": "Kontoname",
+        "openExternalUrl": "Open external link",
         "transferToPortfolio": "In Portfolio umbuchen",
         "editAccountName": "Kontonamen bearbeiten",
         "save": "Speichern",
@@ -115,7 +116,7 @@
         "error": "Konto konnte nicht aktualisiert werden",
         "archivedTitle": "Archiviertes Konto",
         "archivedDescription": "Dieses Konto ist archiviert. Es erscheint nicht in deiner Seitenleiste und akzeptiert keine neuen Transaktionen.",
-        "unarchiveButton": "Konto dearchivieren"
+        "unarchiveButton": "Konto reaktivieren"
       },
       "link": {
         "selectConnection": "Bankverbindung auswählen",
@@ -149,7 +150,9 @@
         "residualAdjustmentDescription": "Fügt eine Saldokorrektur-Transaktion mit heutigem Datum hinzu. Deine vergangenen Salden bleiben unverändert.",
         "residualOpeningLabel": "Anfangssaldo ändern",
         "residualOpeningDescription": "Verschiebt den Anfangssaldo des Kontos um die Differenz, sodass sich auch jeder vergangene Saldo verschiebt. Wähle dies, wenn am Anfang des Verlaufs Transaktionen fehlen.",
-        "residualHint": "Der endgültige Betrag wird nach der ersten Synchronisierung festgelegt, daher kann er leicht von dieser Vorschau abweichen."
+        "residualHint": "Der endgültige Betrag wird nach der ersten Synchronisierung festgelegt, daher kann er leicht von dieser Vorschau abweichen.",
+        "linkFailed": "An error occurred while trying to link account",
+        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
       },
       "tabs": {
         "details": "Details",
@@ -175,6 +178,16 @@
         "editAccountCategory": "Kategorie bearbeiten",
         "accountCategoryUpdateSuccess": "Kontokategorie aktualisiert",
         "accountCategoryUpdateError": "Fehler beim Aktualisieren der Kontokategorie",
+        "defaultPaymentType": "Standard-Zahlungsart:",
+        "editDefaultPaymentType": "Standard-Zahlungsart bearbeiten",
+        "defaultPaymentTypeUpdateSuccess": "Standard-Zahlungsart aktualisiert",
+        "defaultPaymentTypeUpdateError": "Aktualisierung der Standard-Zahlungsart fehlgeschlagen",
+        "externalUrl": "External URL:",
+        "externalUrlPlaceholder": "https://bank.example.com",
+        "externalUrlNotSet": "Not set",
+        "editExternalUrl": "Edit external URL",
+        "externalUrlUpdateSuccess": "External URL updated",
+        "externalUrlUpdateError": "Failed to update external URL",
         "currency": "Währung:",
         "main": "(Hauptwährung)",
         "exchangeRate": "Wechselkurs:",
@@ -209,13 +222,13 @@
       "syncTransactions": {
         "title": "Neueste Transaktionen synchronisieren",
         "autoSyncInfo": "Transaktionen werden alle 12 Stunden automatisch synchronisiert",
-        "syncing": "Synchronisieren...",
+        "syncing": "Synchronisierung läuft...",
         "syncButton": "Sync",
         "notLinked": "Dieses Konto ist nicht mit einer Bankverbindung verknüpft",
         "syncStarted": "Synchronisierung gestartet...",
         "accessForbidden": "Zugriff verweigert",
         "failed": "Transaktionen konnten nicht synchronisiert werden",
-        "syncQueued": "Transaction sync queued: {batches} batch, about {minutes} min | Transaction sync queued: {batches} batches, about {minutes} min"
+        "syncQueued": "Transaktions-Synchronisierung eingereiht: {batches} Paket, ca. {minutes} Min. | Transaktions-Synchronisierung eingereiht: {batches} Pakete, ca. {minutes} Min."
       },
       "reconcileDuplicates": {
         "title": "Doppelte Transaktionen zusammenführen",
@@ -241,6 +254,7 @@
       },
       "rightPanel": {
         "transactions": "Transaktionen",
+        "viewAll": "Alle anzeigen",
         "analyticsSoon": "Analysen (demnächst)"
       },
       "integrations": {
@@ -349,9 +363,9 @@
         "empty": "Noch keine manuellen Anpassungen. Passe den Wert an, um eine Anpassung zu erfassen.",
         "delete": "Löschen",
         "deleteTitle": "Diese Anpassung löschen?",
-        "deleteDescription": "Das Entfernen dieser Anpassung verankert den Wertverlust wieder an der vorherigen Anpassung (oder dem ursprünglichen Kauf, falls keine vorhanden ist). Die zugehörige Transaktion wird gelöscht.",
+        "deleteDescription": "Das Entfernen dieser Anpassung verankert die Abschreibung neu beim vorherigen Wert (oder beim Originalkauf, falls keiner vorhanden ist). Die zugehörige Transaktion wird in den Papierkorb verschoben, wo du sie 30 Tage lang wiederherstellen kannst.",
         "deleteConfirm": "Löschen",
-        "deleteSuccess": "Anpassung entfernt",
+        "deleteSuccess": "Anpassung entfernt und zugehörige Transaktion in den Papierkorb verschoben",
         "deleteError": "Anpassung konnte nicht entfernt werden"
       },
       "sections": {

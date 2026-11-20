@@ -101,7 +101,9 @@ const categoryRows = computed(() =>
 );
 
 const sortBy = computed(() => readCategorySort({ config: widgetConfigRef?.value?.config }));
-const displayRows = computed(() => sortCategoryRows({ rows: categoryRows.value, sortBy: sortBy.value }));
+const displayRows = computed(() =>
+  sortCategoryRows({ rows: categoryRows.value, sortBy: sortBy.value, getAmount: (row) => row.netAmount }),
+);
 
 // Mutable copy for drag-and-drop reordering
 const draggableRows = ref<typeof categoryRows.value>([]);
@@ -327,7 +329,7 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
                   <button
                     type="button"
                     data-testid="cst-settings-add-category"
-                    class="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-medium transition-colors"
+                    class="hover:bg-hover flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-medium transition-colors"
                     @click="addCategoryFromSettings"
                   >
                     <PlusIcon class="text-muted-foreground size-4" />
@@ -341,7 +343,7 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
                   v-if="!isCustomizing"
                   type="button"
                   data-testid="cst-settings-sort"
-                  class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                   @click="settingsView = 'sort'"
                 >
                   <span class="flex flex-col">
@@ -385,7 +387,7 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
                   :key="option"
                   type="button"
                   :data-testid="`cst-sort-${option}`"
-                  class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                   @click="setSortBy({ value: option })"
                 >
                   <span class="text-sm">{{ t(CATEGORY_SORT_LABELS[option]) }}</span>
@@ -423,7 +425,7 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
             <div
               v-for="(item, index) in draggableRows"
               :key="item.id"
-              class="hover:bg-muted/50 flex h-9 cursor-pointer items-center gap-1 rounded-md py-0.5 pr-3 pl-1 transition-colors"
+              class="hover:bg-hover flex h-9 cursor-pointer items-center gap-1 rounded-md py-0.5 pr-3 pl-1 transition-colors"
               @click="openPickerForReplace({ categoryId: item.id })"
             >
               <div
@@ -459,7 +461,7 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
             <button
               v-for="item in displayRows"
               :key="item.id"
-              class="hover:bg-muted/50 flex h-9 w-full items-center gap-2 rounded-md px-3 py-0.5 text-left transition-colors"
+              class="hover:bg-hover flex h-9 w-full items-center gap-2 rounded-md px-3 py-0.5 text-left transition-colors"
               @click="navigateToTransactions({ categoryId: item.id })"
             >
               <CategoryCircle :category-id="item.id" />
@@ -488,7 +490,7 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
             v-for="n in ghostSlotCount"
             :key="`ghost-${n}`"
             data-testid="cst-add-slot"
-            class="border-muted-foreground/30 hover:bg-muted/50 text-muted-foreground mx-1 flex h-9 items-center gap-2 rounded-md border border-dashed px-2 py-0.5 transition-colors"
+            class="border-muted-foreground/30 hover:bg-hover text-muted-foreground mx-1 flex h-9 items-center gap-2 rounded-md border border-dashed px-2 py-0.5 transition-colors"
             @click="openPickerForAdd"
           >
             <PlusIcon class="size-3.5" />

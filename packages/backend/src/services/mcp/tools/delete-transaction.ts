@@ -1,30 +1,20 @@
 import { recordId } from '@common/lib/zod/custom-types';
-import { trackMcpToolUsed } from '@js/utils/posthog';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { deleteTransaction } from '@services/transactions/delete-transaction';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { defineTool } from '../define-tool';
 
-const inputSchema = {
-  id: recordId().describe('ID of the transaction to delete'),
-};
+export const deleteTransactionTool = defineTool({
+  name: 'delete_transaction',
+  toolset: 'core',
+  access: 'delete',
+  description:
+    'Move a transaction to Trash by ID. It is hidden everywhere and balances are reversed; the user can restore it in the app within 30 days, after which it is deleted for good. For transfer transactions, both sides of the transfer go to Trash. Transactions on bank-connected accounts are refused, except planned ones and hand-entered ones dated before the bankSeamAt of their account (see get_account); deleting one of those moves the opening balance instead, since the bank keeps the current balance. Rejected for transactions that belong to a payment, a portfolio or a venture: they must be unlinked first.',
+  input: {
+    id: recordId().describe('ID of the transaction to delete'),
+  },
+  run: async ({ userId, args }) => {
+    await deleteTransaction({ id: args.id, userId });
 
-export function registerDeleteTransaction(server: McpServer) {
-  server.registerTool(
-    'delete_transaction',
-    {
-      description:
-        'Permanently delete a transaction by ID. DESTRUCTIVE: this cannot be undone. For transfer transactions, both sides of the transfer are deleted.',
-      inputSchema,
-    },
-    async (args, extra) => {
-      const userId = getUserId({ extra });
-      requireScope({ extra, scope: 'finance:delete' });
-      trackMcpToolUsed({ userId, tool: 'delete_transaction', clientId: extra.authInfo?.clientId });
-
-      await deleteTransaction({ id: args.id, userId });
-
-      return jsonContent({ data: { deleted: true, id: args.id } });
-    },
-  );
-}
+    return { deleted: true, id: args.id };
+  },
+});

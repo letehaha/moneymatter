@@ -8,7 +8,7 @@ import { useFormatCurrency } from '@/composable';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
 import { useCurrenciesStore } from '@/stores';
-import type { TrackerModel, TrackerStatsResponse } from '@bt/shared/types';
+import { TRACKER_LIMIT_KINDS, type TrackerModel, type TrackerStatsResponse } from '@bt/shared/types';
 import { BarChart3Icon, TriangleAlertIcon } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
 import { sumBy } from 'lodash-es';
@@ -25,6 +25,7 @@ import {
   getCumulativeSeries,
   getPercent,
   getPeriodProgress,
+  getProjectionTone,
   getTrackerPace,
 } from './tracker-insights';
 
@@ -35,7 +36,7 @@ const props = defineProps<{
 
 const { t } = useI18n();
 const { format } = useDateLocale();
-const { formatWholeBaseCurrency: formatWholeBase, formatCompactAmount } = useFormatCurrency();
+const { formatWholeOrCompactAmount, formatSignedWholeOrCompactAmount, formatCompactAmount } = useFormatCurrency();
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
 
 const trackerId = computed(() => props.tracker.id);
@@ -50,17 +51,31 @@ const isEmpty = computed(
   () => !!data.value && data.value.spendingsByCategory.length === 0 && data.value.spendingOverTime.periods.length === 0,
 );
 
-const series = computed(() => getCumulativeSeries({ periods: data.value?.spendingOverTime.periods ?? [] }));
+const series = computed(() =>
+  getCumulativeSeries({ periods: data.value?.spendingOverTime.periods ?? [], limitKind: props.tracker.limitKind }),
+);
+const PROJECTION_TEXT_CLASSES = {
+  success: 'text-success-text',
+  warning: 'text-warning-text',
+  destructive: 'text-destructive-text',
+  none: '',
+};
+const isTarget = computed(() => props.tracker.limitKind === TRACKER_LIMIT_KINDS.incomeTarget);
 // The timeline is clipped to the tracker window, so linked rows outside it only show up in the overall total.
-const expense = computed(() => props.stats?.summary.actualExpense ?? sumBy(series.value, 'expense'));
+const measuredTotal = computed(() =>
+  props.tracker.limitKind === TRACKER_LIMIT_KINDS.spending
+    ? (props.stats?.summary.actualExpense ?? sumBy(series.value, 'expense'))
+    : (props.stats?.summary.actualIncome ?? sumBy(series.value, 'income')),
+);
 const spent = computed(() =>
-  props.stats ? getTrackerSpent({ summary: props.stats.summary }) : (series.value.at(-1)?.cumulative ?? 0),
+  props.stats
+    ? getTrackerSpent({ summary: props.stats.summary, limitKind: props.tracker.limitKind })
+    : (series.value.at(-1)?.cumulative ?? 0),
 );
 const baseCode = computed(() => baseCurrency.value?.currency?.code ?? '');
 const formatBaseCurrency = (amount: number) => formatCompactAmount(amount, baseCode.value);
-const COMPACT_AMOUNT_THRESHOLD = 10_000;
 const formatWholeBaseCurrency = (amount: number) =>
-  Math.abs(amount) >= COMPACT_AMOUNT_THRESHOLD ? formatCompactAmount(amount, baseCode.value) : formatWholeBase(amount);
+  formatWholeOrCompactAmount({ amount, currencyCode: baseCode.value });
 const limit = computed(() => props.tracker.limitAmount || null);
 const progress = computed(() =>
   getPeriodProgress({ startDate: props.tracker.startDate, endDate: props.tracker.endDate }),
@@ -76,8 +91,6 @@ const formatDate = ({ value, pattern }: { value: string | Date | null | undefine
 };
 const formatDay = (value: string | Date) => formatDate({ value, pattern: 'MMM d' });
 const formatFullDate = (value: string | null | undefined) => formatDate({ value, pattern: 'MMM d, yyyy' });
-const formatSigned = (value: number) =>
-  `${value > 0 ? '+' : value < 0 ? '−' : ''}${formatWholeBaseCurrency(Math.abs(value))}`;
 
 interface KpiCell {
   key: string;
@@ -99,6 +112,10 @@ const paceCell = computed<KpiCell>(() => {
   }
   const { dailyPace, allowedPerDay } = pace.value;
   const days = { elapsed: progress.value.elapsedDays, total: progress.value.totalDays };
+  const isOffPace =
+    allowedPerDay !== null &&
+    dailyPace !== null &&
+    (isTarget.value ? dailyPace < allowedPerDay : dailyPace > allowedPerDay);
   return {
     key: 'pace',
     label: t('pages.budgetDetails.statistics.kpi.dailyPace'),
@@ -107,11 +124,11 @@ const paceCell = computed<KpiCell>(() => {
     sub:
       allowedPerDay === null
         ? t('pages.budgetDetails.statistics.kpi.daysElapsed', days)
-        : t('pages.budgetDetails.statistics.kpi.allowedPerDay', {
+        : t(`pages.budgetDetails.statistics.kpi.${isTarget.value ? 'neededPerDay' : 'allowedPerDay'}`, {
             amount: formatWholeBaseCurrency(allowedPerDay),
             ...days,
           }),
-    valueClass: allowedPerDay !== null && dailyPace !== null && dailyPace > allowedPerDay ? 'text-warning-text' : '',
+    valueClass: isOffPace ? 'text-warning-text' : '',
   };
 });
 
@@ -145,9 +162,13 @@ const projectionCell = computed<KpiCell>(() => {
     key: 'projection',
     label: t('pages.budgetDetails.statistics.kpi.projectedTotal'),
     value: projectedTotal === null ? '—' : formatWholeBaseCurrency(projectedTotal),
-    suffix: projectedDelta === null ? undefined : formatSigned(projectedDelta),
+    suffix:
+      projectedDelta === null
+        ? undefined
+        : formatSignedWholeOrCompactAmount({ amount: projectedDelta, currencyCode: baseCode.value }),
     sub: t('pages.budgetDetails.statistics.kpi.projectedLimit', { amount: formatWholeBaseCurrency(limit.value) }),
-    valueClass: projectedDelta === null ? '' : projectedDelta > 0 ? 'text-destructive-text' : 'text-success-text',
+    valueClass:
+      PROJECTION_TEXT_CLASSES[getProjectionTone({ delta: projectedDelta, isTarget: isTarget.value }) ?? 'none'],
   };
 });
 
@@ -162,7 +183,9 @@ const kpis = computed<KpiCell[]>(() => {
       label: t('pages.budgetDetails.statistics.kpi.transactions'),
       value: count === undefined ? '—' : String(count),
       suffix: count
-        ? t('pages.budgetDetails.statistics.kpi.avgAmount', { amount: formatWholeBaseCurrency(expense.value / count) })
+        ? t('pages.budgetDetails.statistics.kpi.avgAmount', {
+            amount: formatWholeBaseCurrency(measuredTotal.value / count),
+          })
         : undefined,
     },
     {
@@ -172,7 +195,7 @@ const kpis = computed<KpiCell[]>(() => {
       suffix: biggestDay ? formatDay(biggestDay.date) : undefined,
       sub: biggestDay
         ? t('pages.budgetDetails.statistics.kpi.shareOfTotal', {
-            percent: Math.round(getPercent({ part: biggestDay.expense, total: expense.value })),
+            percent: Math.round(getPercent({ part: biggestDay.expense, total: measuredTotal.value })),
           })
         : undefined,
     },
@@ -334,6 +357,7 @@ const showProjection = computed(() => !!limit.value && !!progress.value?.isActiv
           <TrackerTimelineChart
             v-if="series.length"
             :series="series"
+            :limit-kind="tracker.limitKind"
             :granularity="data.spendingOverTime.granularity"
             :range-start="rangeStart"
             :range-end="rangeEnd"
@@ -378,7 +402,7 @@ const showProjection = computed(() => !!limit.value && !!progress.value?.isActiv
             <div class="text-right font-semibold whitespace-nowrap">
               {{ formatBaseCurrency(payee.amount) }}
               <span class="text-muted-foreground ml-1 font-medium">
-                {{ Math.round(getPercent({ part: payee.amount, total: expense })) }}%
+                {{ Math.round(getPercent({ part: payee.amount, total: measuredTotal })) }}%
               </span>
             </div>
           </div>

@@ -77,7 +77,7 @@ const syncLunchFlow = async ({ transactions }: { transactions: LunchFlowApiTrans
 };
 
 const txByNote = async (note: string) => {
-  const list = await helpers.getTransactions({ includeTags: true, raw: true });
+  const list = await helpers.getTransactions({ raw: true });
   return list.find((tx) => tx.note === note);
 };
 
@@ -215,7 +215,7 @@ describe('Transaction automations hook', () => {
 
     const defaultCategoryId = await userDefaultCategoryId();
 
-    const transactions = await helpers.getTransactions({ includeTags: true, raw: true });
+    const transactions = await helpers.getTransactions({ raw: true });
     const byNote = (note: string) => transactions.find((tx) => tx.note === note);
 
     const uber = byNote('UBER TRIP 4521');
@@ -546,19 +546,12 @@ describe('Transaction automations hook', () => {
     expect((await helpers.getAutomationById({ id: rule.id }))?.matchCount).toBe(1);
   });
 
-  it('overwrites an mcc_rule stamp on a Monobank row', async () => {
+  it('categorizes a matching Monobank row and leaves the rest unstamped', async () => {
     const category = await helpers.addCustomCategory({ name: 'Groceries', color: '#888888', raw: true });
     await noteRule({
       name: 'Auchan is groceries',
       keyword: 'auchan match',
       actions: [{ type: 'set_category', categoryId: category.id }],
-    });
-
-    // First sync seeds the user's MCC → default-category mapping (that row itself lands
-    // with no stamp). Rows in the second sync are therefore stamped `mcc_rule` before the
-    // hook runs: the control row keeps that stamp, the matching row must flip to user_rule.
-    await helpers.monobank.mockTransactions({
-      transactions: [{ mcc: 5411, originalMcc: 5411, description: 'mcc seed', time: subDays(new Date(), 3) }],
     });
 
     const { account } = await helpers.monobank.mockTransactions({
@@ -572,7 +565,7 @@ describe('Transaction automations hook', () => {
 
     const control = rows.find((tx) => tx.note === 'mcc control');
     expect(control?.categoryId).toBe(await userDefaultCategoryId());
-    expect(control?.categorizationMeta).toMatchObject({ source: CATEGORIZATION_SOURCE.mccRule });
+    expect(control?.categorizationMeta).toBeNull();
 
     const matched = rows.find((tx) => tx.note === 'auchan match');
     expect(matched?.categoryId).toBe(category.id);

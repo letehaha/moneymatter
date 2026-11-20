@@ -6,12 +6,12 @@ import {
 } from '@bt/shared/types/investments';
 import { recordId } from '@common/lib/zod/custom-types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
-import { toAiExtractionHttpError } from '@controllers/helpers/ai-extraction-http-error';
 import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { CustomError, UnexpectedError } from '@js/errors';
 import { logger } from '@js/utils';
 import Portfolios from '@models/investments/portfolios.model';
+import { toAiExtractionHttpError } from '@services/import-export/core/ai-extraction-http-error';
 import {
   extractInvestmentTransactionsWithAI,
   groupRowsIntoHoldings,
@@ -43,7 +43,7 @@ const columnMappingSchema = z.object({
   defaultAssetClassHint: z.enum(['crypto', 'stocks']),
   sideValueMapping: z.record(
     z.string(),
-    z.union([z.nativeEnum(INVESTMENT_TRANSACTION_CATEGORY), z.literal(INVESTMENT_IMPORT_SIDE_SKIP)]),
+    z.union([z.enum(INVESTMENT_TRANSACTION_CATEGORY), z.literal(INVESTMENT_IMPORT_SIDE_SKIP)]),
   ),
 });
 
@@ -94,6 +94,7 @@ export const extractController = createController(
       throw new UnexpectedError({ message: t({ key: 'investments.import.extractFailed' }) });
     }
   },
+  { inBackground: ({ body }) => body.source === 'ai' },
 );
 
 type ExtractBody = z.infer<typeof extractBodySchema>;

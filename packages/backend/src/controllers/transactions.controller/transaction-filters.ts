@@ -6,7 +6,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
-import { booleanQuery, dateRange, recordId, withDateOrder } from '@common/lib/zod/custom-types';
+import { booleanQuery, dateBound, dateRange, recordId, withDateOrder } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
 import { z } from 'zod';
 
@@ -25,10 +25,10 @@ const csvArray = <T extends z.ZodTypeAny>({ item }: { item: T }) =>
  *  the list, its summary, and bulk actions targeting "everything matching". */
 export const transactionFilterFields = {
   // Exact set of transferNature values to include. Supersedes transferFilter when present.
-  transferNatures: csvArray({ item: z.nativeEnum(TRANSACTION_TRANSFER_NATURE) }).optional(),
+  transferNatures: csvArray({ item: z.enum(TRANSACTION_TRANSFER_NATURE) }).optional(),
   ...dateRange({ precision: 'datetime' }),
-  transactionType: z.nativeEnum(TRANSACTION_TYPES).optional(),
-  accountType: z.nativeEnum(ACCOUNT_TYPES).optional(),
+  transactionType: z.enum(TRANSACTION_TYPES).optional(),
+  accountType: z.enum(ACCOUNT_TYPES).optional(),
   accountIds: csvArray({ item: recordId() }).optional(),
   trackerIds: csvArray({ item: idOrBlank }).optional(),
   excludedTrackerIds: csvArray({ item: recordId() }).optional(),
@@ -43,13 +43,20 @@ export const transactionFilterFields = {
   excludeRefundTxs: booleanQuery().optional(),
   // With excludeRefundTxs: keep refunds linked to this transaction visible.
   keepRefundsForTxId: recordId().optional(),
+  // Excludes originals that already carry a refund link.
+  excludeRefundedTxs: booleanQuery().optional(),
+  // Local-day bounds of the transaction being linked, always as a pair: rows before them
+  // (and same-day expenses) must still be linkable as originals, later rows as refunds.
+  // keepRefundsForTxId names that transaction so its own links don't exclude their rows.
+  refundPivotFrom: dateBound({ precision: 'datetime' }).optional(),
+  refundPivotTo: dateBound({ precision: 'datetime' }).optional(),
   excludeBalanceAdjustments: booleanQuery().optional(),
   // Absent = both, true = only with attachments, false = only without.
   hasAttachment: booleanQuery().optional(),
   // Absent = both, true = only planned, false = exclude planned.
   isPlanned: booleanQuery().optional(),
-  transferFilter: z.nativeEnum(FILTER_OPERATION).optional(),
-  refundFilter: z.nativeEnum(FILTER_OPERATION).optional(),
+  transferFilter: z.enum(FILTER_OPERATION).optional(),
+  refundFilter: z.enum(FILTER_OPERATION).optional(),
   // Amount filters accept decimals from API
   amountLte: z.preprocess((val) => Number(val), z.number().positive()).optional(),
   amountGte: z.preprocess((val) => Number(val), z.number().positive()).optional(),
@@ -63,8 +70,15 @@ export const transactionFilterFields = {
       if (!val || val === '') return undefined;
       return parseCommaSeparatedStrings(val);
     }),
-  categorizationSource: z.nativeEnum(CATEGORIZATION_SOURCE).optional(),
-  categorizedAt: z.string().datetime().optional(),
+  // Free text matched against note, payee name and tag names; words are AND-ed.
+  search: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .transform((val) => val || undefined),
+  categorizationSource: z.enum(CATEGORIZATION_SOURCE).optional(),
+  categorizedAt: z.iso.datetime().optional(),
   batchId: recordId().optional(),
 };
 
@@ -76,8 +90,19 @@ export const amountRangeIssue = {
   path: ['amountGte'],
 };
 
+export const isRefundPivotPaired = (data: { refundPivotFrom?: string; refundPivotTo?: string }) =>
+  (data.refundPivotFrom === undefined) === (data.refundPivotTo === undefined);
+
+export const refundPivotPairIssue = {
+  message: 'refundPivotFrom and refundPivotTo must be provided together',
+  path: ['refundPivotFrom'],
+};
+
 export const transactionFiltersSchema = withDateOrder(
-  z.object(transactionFilterFields).refine(isAmountRangeOrdered, amountRangeIssue),
+  z
+    .object(transactionFilterFields)
+    .refine(isAmountRangeOrdered, amountRangeIssue)
+    .refine(isRefundPivotPaired, refundPivotPairIssue),
 );
 
 /**
@@ -105,7 +130,13 @@ export const bulkTargetFields = {
   selection: z
     .object({
       // Strict: an unknown key silently dropped here would widen a destructive action.
-      filters: withDateOrder(z.object(transactionFilterFields).strict().refine(isAmountRangeOrdered, amountRangeIssue)),
+      filters: withDateOrder(
+        z
+          .object(transactionFilterFields)
+          .strict()
+          .refine(isAmountRangeOrdered, amountRangeIssue)
+          .refine(isRefundPivotPaired, refundPivotPairIssue),
+      ),
       excludedIds: z.array(recordId()).optional().default([]),
     })
     .optional(),

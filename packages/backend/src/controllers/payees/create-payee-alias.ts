@@ -4,14 +4,13 @@ import * as payeesService from '@services/payees';
 import { z } from 'zod';
 
 import { serializePayee } from './serializer';
+import { createPayeeAliasBodySchema } from './shared-schemas';
 
 const schema = z.object({
   params: z.object({
     id: recordId(),
   }),
-  body: z.object({
-    rawName: z.string().trim().min(1).max(500),
-  }),
+  body: createPayeeAliasBodySchema,
 });
 
 export default createController(schema, async ({ user, params, body }) => {

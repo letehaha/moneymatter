@@ -1,6 +1,6 @@
 ---
 title: Search and filter
-description: Find transactions with filters and note search, switch between list and table views, and select several transactions to edit, group or delete them at once.
+description: Find transactions with search and filters, switch between list and table views, and select several transactions to edit, group or delete them at once.
 sidebar:
   order: 2
 ---
@@ -61,7 +61,6 @@ Your filters and sorting stay in place while you move around the app in the same
 | Categories | Only transactions in the categories you pick. Picking a parent category also picks all its subcategories. |
 | **Transaction type** | **All types**, **Income** or **Expense**. |
 | **Amount range** | A minimum and/or maximum amount. |
-| **Notes** | Words to look for in notes. See [search notes](#search-notes). |
 | **Tags** | Transactions with any of the tags you pick. Choose **No tags** to find untagged transactions. |
 | **Payees** | Transactions with any of the payees you pick. Choose **No payee** to find ones without a payee. |
 | **Refunds** | **All**, **Exclude** or **Only** transactions that are part of a refund link: both the refund and the purchase it refunds. |
@@ -75,16 +74,16 @@ A few details worth knowing:
 - **The categories filter also looks inside splits.** A transaction split between Groceries and Drug-store, chemist shows up when you filter by either one, and the whole transaction is listed. See [split a transaction](/transactions/split-a-transaction/).
 - **Refunds and Transfers both set to Only** show transactions that are refunds *or* transfers.
 
-### Search notes
+### Search
 
-The **Notes** filter searches the text of transaction notes. In table view, add it from **Filters** → **Notes**. In the filter panel, it's the **Note includes (comma-separated):** field.
+The search box at the top of the list looks through transaction notes, payee names and tag names. Results update as you type.
 
-It ignores upper and lower case, and matches any part of the note, so "amaz" finds "Amazon order".
+It ignores upper and lower case, and matches any part of the text, so "amaz" finds "Amazon order".
 
-To search for several words at once, separate them with commas, for example `amazon, nike`. A transaction matches if its note contains **any** of the words.
+Type several words to narrow the results. A transaction matches only if it contains **every** word, each in its note, payee or tags. For example, `starbucks latte` finds a Starbucks transaction with "latte" in its note.
 
-<Aside type="caution" title="Only notes are searched">
-The search doesn't look at payee names, category names or amounts. To find everything from one shop, use the **Payees** filter instead.
+<Aside type="caution" title="Categories and amounts aren't searched">
+To find transactions by category or amount, use the **Categories** or **Amount** filter.
 </Aside>
 
 ### Open the list from a category
@@ -120,11 +119,11 @@ With rows selected you can **Edit**, **Group** or **Delete** them. On a phone, l
 
 1. Select the transactions.
 2. Click **Edit**. The **Edit N transactions** window opens.
-3. Fill in only what you want to change: **Category**, **Payee**, **Tags** or **Note**. Empty fields are left alone.
-4. If you picked tags, choose a **Tag action**:
-   - **Add to existing tags** (the default) keeps the tags each transaction already has.
-   - **Replace all tags** swaps them for the ones you picked.
-   - **Remove these tags** takes the picked tags off.
+3. Fill in only what you want to change: **Category**, **Payee** or **Tags**. For **Note** or **Exclude from stats**, click it in the **Add** row first. Empty fields, and fields you didn't add, are left alone.
+4. If you picked tags, choose what happens to them with the tabs above the **Tags** field:
+   - **Add** (the default) keeps the tags each transaction already has.
+   - **Replace** swaps them for the ones you picked.
+   - **Remove** takes the picked tags off.
 5. Click **Apply changes**, check the summary in **Confirm changes**, and click **Apply**.
 
 </Steps>
@@ -133,8 +132,8 @@ Picking a payee also fills in that payee's auto-apply tags, which you can remove
 
 <Screenshot
   src="/screenshots/transactions/bulk-edit-dialog.png"
-  alt="The Edit 4 transactions window with two tags picked and the Tag action options Add to existing tags, Replace all tags and Remove these tags."
-  hint="Select 4 transactions on /transactions and click Edit. Pick two tags so the Tag action radio appears, with 'Add to existing tags' selected. Leave Category, Payee and Note empty. Crop to the window."
+  alt="The Edit 4 transactions window with two tags picked and the Add, Replace and Remove tabs above the Tags field, with Add selected."
+  hint="Select 4 transactions on /transactions and click Edit. Pick two tags so the Add, Replace and Remove tabs become active, with Add selected. Leave Category, Payee and Note empty. Crop to the window."
 />
 
 Things to watch for:
@@ -142,6 +141,7 @@ Things to watch for:
 - **A new note replaces the old one** on every selected transaction. It isn't added to the end. If you also change the category, transfers in the selection keep their old note. Edit notes on transfers in a separate bulk edit.
 - **You can't clear a field in bulk.** Leaving the note or payee empty means "don't change", not "remove".
 - **Category changes skip transfers.** Transfers don't use categories, so they keep what they have. If you selected only transfers and set a category, the edit is refused.
+- **Exclude from stats** works like [the same switch](/transactions/add-and-edit/#more-options) on a single transaction. Switched on, it takes the selected transactions out of the reports. Switched off, it brings them back. Click **×** next to it to leave them as they are.
 - **Payees set in bulk are locked**, the same as when you set them by hand. Automatic payee detection won't change them later.
 
 ### Group transactions
@@ -167,7 +167,7 @@ To add transactions to a group you already have:
 
 </Steps>
 
-- A group can hold 2 to 50 transactions, and a transaction can only be in one group.
+- A group can hold 2 to 500 transactions, and a transaction can only be in one group.
 - Groups are just labels. They don't change any amounts or stats.
 - In list view, a group shows as one row. It expands into its transactions when any filter other than the date is active.
 - Deleting a group keeps its transactions.

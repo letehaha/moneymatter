@@ -12,4 +12,5 @@ export const aiMapCategoriesController = createController(
     const data = await aiMapImportCategories({ userId: user.id, sourceCategories: body.sourceCategories });
     return { data };
   },
+  { inBackground: true },
 );

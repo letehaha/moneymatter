@@ -8,7 +8,7 @@
         cn(
           'grid w-full grid-cols-[minmax(0,1fr)_14px] items-center gap-3 px-4 py-3 text-left',
           !isBase &&
-            'hover:bg-muted/40 focus-visible:ring-ring/40 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
+            'hover:bg-hover focus-visible:ring-ring/40 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
         )
       "
       @click="onTriggerClick"
@@ -75,25 +75,19 @@
           </div>
         </div>
 
-        <div class="pl-12 @[30rem]/currencies:pl-0 @[30rem]/currencies:text-right">
-          <template v-if="isBase">
+        <div v-if="!isBase" class="pl-12 @[30rem]/currencies:pl-0 @[30rem]/currencies:text-right">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-0.5 @[30rem]/currencies:block">
             <div class="text-sm font-semibold tabular-nums">
-              1
-              <span class="text-muted-foreground text-xs font-normal">{{ code }} / {{ code }}</span>
+              <span class="text-muted-foreground text-xs font-normal">1 {{ code }} =</span>
+              {{ rateDisplay }}
+              <span class="text-muted-foreground text-xs font-normal">{{ baseCode }}</span>
             </div>
-          </template>
-          <template v-else>
-            <div class="flex flex-wrap items-baseline gap-x-4 gap-y-0.5 @[30rem]/currencies:block">
-              <div class="text-sm font-semibold tabular-nums">
-                {{ rateDisplay }}
-                <span class="text-muted-foreground text-xs font-normal">{{ code }} / {{ baseCode }}</span>
-              </div>
-              <div class="text-sm font-semibold tabular-nums">
-                {{ quoteRateDisplay }}
-                <span class="text-muted-foreground text-xs font-normal"> {{ baseCode }} / {{ code }}</span>
-              </div>
+            <div class="text-sm font-semibold tabular-nums">
+              <span class="text-muted-foreground text-xs font-normal">1 {{ baseCode }} =</span>
+              {{ quoteRateDisplay }}
+              <span class="text-muted-foreground text-xs font-normal">{{ code }}</span>
             </div>
-          </template>
+          </div>
         </div>
       </div>
 
@@ -107,7 +101,7 @@
     </component>
 
     <CollapsibleContent v-if="!isBase" scroll-into-view>
-      <div class="border-border/60 bg-muted/20 border-t px-4 py-4">
+      <div class="border-border/60 bg-muted/20 fields-plain border-t px-4 py-4">
         <ExchangeRateForm
           :currency="currency"
           :is-form-disabled="isFormDisabled"
@@ -162,6 +156,7 @@ import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useCurrencyName } from '@/composable';
 import CurrencyIcon from '@/components/common/currency-icon.vue';
 import { Button } from '@/components/lib/ui/button';
+import { toLocalNumber } from '@/js/helpers/formatters';
 import { Collapsible, CollapsibleContent } from '@/components/lib/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { useCurrenciesStore } from '@/stores';
@@ -216,13 +211,14 @@ const currencyName = computed(() =>
 );
 
 // A custom currency can be worth a tiny fraction of its quote, so its rate shows more digits.
+const RATE_MAX_FRACTION_DIGITS = 6;
 const CUSTOM_RATE_MAX_FRACTION_DIGITS = 12;
 const formatRate = (value: number) =>
   Number.isFinite(value)
-    ? value.toLocaleString(
-        undefined,
-        isCustomCurrency.value ? { maximumFractionDigits: CUSTOM_RATE_MAX_FRACTION_DIGITS } : undefined,
-      )
+    ? toLocalNumber(value, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: isCustomCurrency.value ? CUSTOM_RATE_MAX_FRACTION_DIGITS : RATE_MAX_FRACTION_DIGITS,
+      })
     : '—';
 const rateDisplay = computed(() => formatRate(props.currency.rate));
 const quoteRateDisplay = computed(() => formatRate(props.currency.quoteRate));

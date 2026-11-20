@@ -6,6 +6,7 @@ import * as Popover from '@/components/lib/ui/popover';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormValidation } from '@/composable';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { ApiErrorResponseError } from '@/js/errors';
 import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import * as validators from '@/js/helpers/validators';
@@ -32,12 +33,13 @@ const form = ref({
 });
 
 const decimals = computed(() => getCurrencyDecimals({ code: props.currencyCode, meta: props.account.currencyMeta }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals });
 
 const rules = computed(() => ({
   form: {
     initialBalance: {
       required: validators.required,
-      currencyDecimal: validators.maxDecimalPoints(decimals.value),
+      currencyDecimal: currencyDecimal.rule.value,
     },
   },
 }));
@@ -48,7 +50,7 @@ const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFo
   undefined,
   {
     customValidationMessages: {
-      currencyDecimal: computed(() => t('forms.validators.invalidCurrencyDecimal', { decimals: decimals.value })),
+      currencyDecimal: currencyDecimal.message,
     },
   },
 );

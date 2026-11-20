@@ -239,7 +239,7 @@ const isEverythingEmpty = computed(() => !pendingReceivedInvitations.value.lengt
                   :disabled="leaveMutation.isPending.value"
                   @click="openLeave(row)"
                 >
-                  <LogOutIcon class="mr-2 size-4" />
+                  <LogOutIcon class="size-4" />
                   {{ $t('pages.sharedWithMe.leave') }}
                 </Button>
               </div>

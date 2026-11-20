@@ -478,7 +478,6 @@ describe('Locale-aware signup', () => {
     'shopping/home-garden',
     'shopping/pets-animals',
     'shopping/electronics-accessories',
-    'shopping/gifts-joy',
     'shopping/stationery-tools',
     'shopping/free-time',
     'shopping/drugstore-chemist',
@@ -507,7 +506,8 @@ describe('Locale-aware signup', () => {
     'life/books-audio-subscriptions',
     'life/tv-streaming',
     'life/holiday-trips-hotels',
-    'life/charity-gifts',
+    'life/gifts',
+    'life/charity',
     'life/alcohol-tobacco',
     'life/lottery-gambling',
     'communication/phone-cell-phone',
@@ -604,7 +604,7 @@ describe('Locale-aware signup', () => {
   });
 
   it('should create English category names when Accept-Language is unsupported', async () => {
-    const cookies = await signupWithLocale({ email: `fr-test-${Date.now()}@test.local`, locale: 'fr' });
+    const cookies = await signupWithLocale({ email: `ja-test-${Date.now()}@test.local`, locale: 'ja' });
     const categories = await getCategoriesForSession({ cookies });
 
     const mainCategoryNames = categories.filter((c) => c.parentId === null).map((c) => c.name);

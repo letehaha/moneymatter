@@ -1,40 +1,40 @@
 {
   "auth": {
     "signup": {
-      "title": "Create an account",
-      "divider": "Or continue with email",
-      "submitButton": "Sign up",
-      "alreadyHaveAccount": "Already have an account?",
-      "signInLink": "Sign in",
+      "title": "Créer un compte",
+      "divider": "Ou continuer par e-mail",
+      "submitButton": "S'inscrire",
+      "alreadyHaveAccount": "Vous avez déjà un compte ?",
+      "signInLink": "Se connecter",
       "labels": {
-        "displayName": "Display name",
-        "verifyPassword": "Verify password"
+        "displayName": "Nom d'affichage",
+        "verifyPassword": "Confirmer le mot de passe"
       },
       "placeholders": {
-        "displayName": "ie. John Snow",
-        "verifyPassword": "Verify password"
+        "displayName": "ex. John Snow",
+        "verifyPassword": "Confirmer le mot de passe"
       },
       "errors": {
-        "invalidEmail": "Please enter a valid email address.",
-        "passwordTooShort": "Password is too short.",
-        "passwordTooLong": "Password is too long.",
-        "invalidPassword": "Invalid password.",
-        "userExists": "User with that email already exists.",
-        "signupsDisabled": "Sign-ups are disabled by the administrator of this instance.",
-        "genericErrorRetry": "An error occurred. Please try again.",
-        "oauthFailed": "Failed to sign up with {provider}. Please try again.",
-        "oauthNotConfigured": "{provider} sign-in is not configured on this server."
+        "invalidEmail": "Veuillez saisir une adresse e-mail valide.",
+        "passwordTooShort": "Le mot de passe est trop court.",
+        "passwordTooLong": "Le mot de passe est trop long.",
+        "invalidPassword": "Mot de passe non valide.",
+        "userExists": "Un utilisateur avec cette adresse e-mail existe déjà.",
+        "signupsDisabled": "Les inscriptions sont désactivées par l'administrateur de cette instance.",
+        "genericErrorRetry": "Une erreur est survenue. Veuillez réessayer.",
+        "oauthFailed": "Échec de l'inscription avec {provider}. Veuillez réessayer.",
+        "oauthNotConfigured": "La connexion avec {provider} n'est pas configurée sur ce serveur."
       }
     },
     "shared": {
-      "divider": "Or continue with",
+      "divider": "Ou continuer avec",
       "passkeyButton": {
-        "signIn": "Sign in with passkey",
-        "register": "Add passkey"
+        "signIn": "Se connecter avec une clé d'accès",
+        "register": "Ajouter une clé d'accès"
       },
       "oauthButton": {
-        "signIn": "Sign in with {provider}",
-        "signUp": "Sign up with {provider}"
+        "signIn": "Se connecter avec {provider}",
+        "signUp": "S'inscrire avec {provider}"
       }
     }
   }

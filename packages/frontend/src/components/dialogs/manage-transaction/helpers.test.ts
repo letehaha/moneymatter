@@ -29,7 +29,6 @@ import {
   getFormTypeFromTransaction,
   getTxTypeFromFormType,
   getUnlistedCategoryIds,
-  isConnectedAccount,
   isTxEditableAsManual,
   prepopulateForm,
   resolveFormIsPlanned,
@@ -63,7 +62,7 @@ describe('components/modals/modify-record/helpers', () => {
           fromAmount: args[0] as number,
           toAmount: args[1] as number,
           isCurrenciesDifferent: args[2] as boolean,
-          isRecordExternal: args[3] as boolean,
+          isRecordPinned: args[3] as boolean,
           sourceTransaction: args[4] as TransactionModel,
         }),
       ).toBe(expected);
@@ -433,6 +432,32 @@ describe('components/modals/modify-record/helpers', () => {
       expect(result!.originalAmount).toBe(1500);
       expect(result!.originalCurrency).toBeNull();
     });
+
+    it('hydrates excludeFromStats from the transaction', () => {
+      const result = prepopulateForm({
+        transaction: buildSystemExpenseTransaction({ excludeFromStats: true }),
+        oppositeTransaction: undefined,
+        accounts: accountsRecord,
+        categories: categoriesRecord,
+        formattedCategories: USER_CATEGORIES,
+        systemCurrencies: SYSTEM_CURRENCIES,
+      });
+
+      expect(result!.excludeFromStats).toBe(true);
+    });
+
+    it('defaults excludeFromStats to false', () => {
+      const result = prepopulateForm({
+        transaction: buildSystemExpenseTransaction(),
+        oppositeTransaction: undefined,
+        accounts: accountsRecord,
+        categories: categoriesRecord,
+        formattedCategories: USER_CATEGORIES,
+        systemCurrencies: SYSTEM_CURRENCIES,
+      });
+
+      expect(result!.excludeFromStats).toBe(false);
+    });
   });
 
   describe('canDeleteTransaction', () => {
@@ -497,6 +522,53 @@ describe('components/modals/modify-record/helpers', () => {
       );
     });
 
+    it.each([
+      ['before', '2999-01-01T00:00:00.000Z', true],
+      ['on or after', '2000-01-01T00:00:00.000Z', false],
+    ] as const)(
+      'for a manual row dated %s the seam of an account linked to a bank later',
+      (_label, bankSeamAt, expected) => {
+        const seamAccount = { ...destMonobankAccount, bankSeamAt };
+        const transaction = buildSystemExpenseTransaction({ accountId: seamAccount.id });
+        expect(
+          canDeleteTransaction({
+            transaction,
+            oppositeTransaction: undefined,
+            accounts: { ...accounts, [seamAccount.id]: seamAccount },
+            canMutate: true,
+          }),
+        ).toBe(expected);
+      },
+    );
+
+    describe('when the opposite transfer leg sits on a seam account', () => {
+      const SEAM = '2026-11-01T00:00:00.000Z';
+      const seamAccount = { ...destMonobankAccount, bankSeamAt: SEAM };
+      const seamAccounts = { ...accounts, [seamAccount.id]: seamAccount };
+      const transaction = buildSystemTransferExpenseTransaction({ accountId: sourceAccount.id! });
+      const buildOpposite = (overrides: Partial<TransactionModel>) =>
+        buildSystemTransferOppositeTransaction({
+          accountId: seamAccount.id,
+          transferId: transaction.transferId,
+          ...overrides,
+        });
+
+      it.each([
+        ['a pre-seam manual row', { time: new Date('2026-10-31T23:59:59.999Z') }, true],
+        ['a manual row on the seam day', { time: new Date(SEAM) }, false],
+        ['a bank-delivered row', { time: new Date(SEAM), accountType: ACCOUNT_TYPES.monobank }, false],
+      ] as const)('with %s as the opposite leg', (_label, overrides, expected) => {
+        expect(
+          canDeleteTransaction({
+            transaction,
+            oppositeTransaction: buildOpposite(overrides),
+            accounts: seamAccounts,
+            canMutate: true,
+          }),
+        ).toBe(expected);
+      });
+    });
+
     it('returns true for a planned row on a provider-linked account', () => {
       const transaction = buildSystemExpenseTransaction({ accountId: destMonobankAccount.id, isPlanned: true });
       expect(canDeleteTransaction({ transaction, oppositeTransaction: undefined, accounts, canMutate: true })).toBe(
@@ -510,17 +582,48 @@ describe('components/modals/modify-record/helpers', () => {
         false,
       );
     });
+
+    it('returns false for a payment leg', () => {
+      const transaction = buildSystemExpenseTransaction({
+        accountId: sourceAccount.id!,
+        paymentParentId: '00000000-0000-0000-0000-000000000077' as RecordId,
+      });
+      expect(canDeleteTransaction({ transaction, oppositeTransaction: undefined, accounts, canMutate: true })).toBe(
+        false,
+      );
+    });
+
+    it('returns false for a payment main row with parts', () => {
+      const transaction = buildSystemExpenseTransaction({ accountId: sourceAccount.id! });
+      transaction.paymentParts = [
+        { transactionId: transaction.id },
+        { transactionId: '00000000-0000-0000-0000-000000000078' },
+      ] as TransactionModel['paymentParts'];
+      expect(canDeleteTransaction({ transaction, oppositeTransaction: undefined, accounts, canMutate: true })).toBe(
+        false,
+      );
+    });
+
+    it.each([TRANSACTION_TRANSFER_NATURE.transfer_to_portfolio, TRANSACTION_TRANSFER_NATURE.transfer_to_venture])(
+      'leaves a %s row to the backend',
+      (transferNature) => {
+        const transaction = buildSystemExpenseTransaction({ accountId: sourceAccount.id!, transferNature });
+        expect(canDeleteTransaction({ transaction, oppositeTransaction: undefined, accounts, canMutate: true })).toBe(
+          true,
+        );
+      },
+    );
   });
 
   describe('isTxEditableAsManual', () => {
     it('is true for any transaction on a manual account', () => {
-      expect(isTxEditableAsManual({ transaction: buildSystemExpenseTransaction(), isRecordExternal: false })).toBe(
+      expect(isTxEditableAsManual({ transaction: buildSystemExpenseTransaction(), isRecordBankLocked: false })).toBe(
         true,
       );
     });
 
     it('is false for a synced transaction', () => {
-      expect(isTxEditableAsManual({ transaction: buildSystemExpenseTransaction(), isRecordExternal: true })).toBe(
+      expect(isTxEditableAsManual({ transaction: buildSystemExpenseTransaction(), isRecordBankLocked: true })).toBe(
         false,
       );
     });
@@ -529,23 +632,9 @@ describe('components/modals/modify-record/helpers', () => {
       expect(
         isTxEditableAsManual({
           transaction: buildSystemExpenseTransaction({ isPlanned: true }),
-          isRecordExternal: true,
+          isRecordBankLocked: true,
         }),
       ).toBe(true);
-    });
-  });
-
-  describe('isConnectedAccount', () => {
-    it('is false for the out-of-wallet account', () => {
-      expect(isConnectedAccount({ account: OUT_OF_WALLET_ACCOUNT_MOCK })).toBe(false);
-    });
-
-    it('is false for a system account', () => {
-      expect(isConnectedAccount({ account: { type: ACCOUNT_TYPES.system } })).toBe(false);
-    });
-
-    it('is true for a bank-connected account', () => {
-      expect(isConnectedAccount({ account: { type: ACCOUNT_TYPES.monobank } })).toBe(true);
     });
   });
 

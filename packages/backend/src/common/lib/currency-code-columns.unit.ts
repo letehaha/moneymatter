@@ -2,11 +2,11 @@ import { describe, expect, it } from '@jest/globals';
 import { connection } from '@models/connection';
 
 import {
-  CURRENCY_CODE_COLUMNS_20261016,
-  CURRENCY_CODE_MAX_LENGTH_20261016,
-  ISO_CURRENCY_CODE_LENGTH_20261016,
-  NULLABLE_REF_COLUMNS_20261016,
-} from '../../migrations/utils/currency-code-columns-20261016';
+  CURRENCY_CODE_COLUMNS_20261120,
+  CURRENCY_CODE_MAX_LENGTH_20261120,
+  ISO_CURRENCY_CODE_LENGTH_20261120,
+  NULLABLE_REF_COLUMNS_20261120,
+} from '../../migrations/utils/currency-code-columns-20261120';
 import {
   CURRENCY_CODE_COLUMNS,
   CURRENCY_CODE_MAX_LENGTH,
@@ -102,9 +102,9 @@ describe('custom-currencies migration snapshot', () => {
   // change adds a column to a live list, relax this to "every snapshot entry is still listed" and
   // leave the snapshot alone.
   it('matches the live lists while they have not grown past the migration', () => {
-    expect(CURRENCY_CODE_COLUMNS_20261016).toEqual(CURRENCY_CODE_COLUMNS);
-    expect(NULLABLE_REF_COLUMNS_20261016).toEqual(NULLABLE_REF_COLUMNS);
-    expect(CURRENCY_CODE_MAX_LENGTH_20261016).toBe(CURRENCY_CODE_MAX_LENGTH);
-    expect(ISO_CURRENCY_CODE_LENGTH_20261016).toBe(ISO_CURRENCY_CODE_LENGTH);
+    expect(CURRENCY_CODE_COLUMNS_20261120).toEqual(CURRENCY_CODE_COLUMNS);
+    expect(NULLABLE_REF_COLUMNS_20261120).toEqual(NULLABLE_REF_COLUMNS);
+    expect(CURRENCY_CODE_MAX_LENGTH_20261120).toBe(CURRENCY_CODE_MAX_LENGTH);
+    expect(ISO_CURRENCY_CODE_LENGTH_20261120).toBe(ISO_CURRENCY_CODE_LENGTH);
   });
 });

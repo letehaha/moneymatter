@@ -6,7 +6,7 @@ import Button from '@/components/lib/ui/button/Button.vue';
 import { Card } from '@/components/lib/ui/card';
 import ErrorState from '@/components/widgets/components/error-state.vue';
 import { cn } from '@/lib/utils';
-import { TRACKER_TYPES, type TrackerModel } from '@bt/shared/types';
+import type { TrackerModel } from '@bt/shared/types';
 import { PlusIcon, SearchIcon, TargetIcon } from '@lucide/vue';
 import { useQueries, useQuery } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
@@ -43,7 +43,9 @@ const {
 const trackers = computed(() => trackersList.value ?? []);
 
 const search = ref('');
-const typeFilter = ref<'all' | TRACKER_TYPES>('all');
+const typeFilter = ref<'all' | 'autoAdd' | 'handPicked'>('all');
+const matchesTypeFilter = ({ tracker }: { tracker: TrackerModel }) =>
+  typeFilter.value === 'all' || tracker.rulesEnabled === (typeFilter.value === 'autoAdd');
 const showArchived = ref(false);
 const showAllEnded = ref(false);
 
@@ -52,8 +54,8 @@ const groupedAll = computed(() => trackers.value.map((tracker) => ({ tracker, gr
 const counts = computed(() => {
   const live = groupedAll.value.filter(({ group }) => group !== 'archived');
   return {
-    manual: live.filter(({ tracker }) => tracker.type === TRACKER_TYPES.manual).length,
-    category: live.filter(({ tracker }) => tracker.type === TRACKER_TYPES.category).length,
+    autoAdd: live.filter(({ tracker }) => tracker.rulesEnabled).length,
+    handPicked: live.filter(({ tracker }) => !tracker.rulesEnabled).length,
     archived: groupedAll.value.length - live.length,
   };
 });
@@ -62,7 +64,7 @@ const groups = computed(() => {
   const query = search.value.trim().toLowerCase();
   const byGroup = new Map<TrackerGroup, TrackerModel[]>();
   for (const { tracker, group } of groupedAll.value) {
-    if (typeFilter.value !== 'all' && tracker.type !== typeFilter.value) continue;
+    if (!matchesTypeFilter({ tracker })) continue;
     if (query && !tracker.name.toLowerCase().includes(query)) continue;
     byGroup.set(group, [...(byGroup.get(group) ?? []), tracker]);
   }
@@ -143,20 +145,20 @@ const chipClass = ({ active }: { active: boolean }) =>
           <Button
             variant="secondary"
             size="sm"
-            :class="chipClass({ active: typeFilter === TRACKER_TYPES.manual })"
-            :aria-pressed="typeFilter === TRACKER_TYPES.manual"
-            @click="typeFilter = TRACKER_TYPES.manual"
+            :class="chipClass({ active: typeFilter === 'autoAdd' })"
+            :aria-pressed="typeFilter === 'autoAdd'"
+            @click="typeFilter = 'autoAdd'"
           >
-            {{ $t('budgets.list.filters.manual') }}{{ formatCount(counts.manual) }}
+            {{ $t('budgets.list.filters.autoAdd') }}{{ formatCount(counts.autoAdd) }}
           </Button>
           <Button
             variant="secondary"
             size="sm"
-            :class="chipClass({ active: typeFilter === TRACKER_TYPES.category })"
-            :aria-pressed="typeFilter === TRACKER_TYPES.category"
-            @click="typeFilter = TRACKER_TYPES.category"
+            :class="chipClass({ active: typeFilter === 'handPicked' })"
+            :aria-pressed="typeFilter === 'handPicked'"
+            @click="typeFilter = 'handPicked'"
           >
-            {{ $t('budgets.list.filters.category') }}{{ formatCount(counts.category) }}
+            {{ $t('budgets.list.filters.handPicked') }}{{ formatCount(counts.handPicked) }}
           </Button>
           <Button
             v-if="isPending || counts.archived"

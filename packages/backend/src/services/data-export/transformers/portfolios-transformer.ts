@@ -1,3 +1,4 @@
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import PortfolioBalances from '@models/investments/portfolio-balances.model';
 import Portfolios from '@models/investments/portfolios.model';
 import { Op } from 'sequelize';
@@ -19,6 +20,11 @@ export async function transformPortfolios({ userId }: { userId: number }): Promi
     balancesByPortfolio.set(balance.portfolioId, list);
   }
 
+  const currencyCodes = [...new Set(balances.map((balance) => balance.currencyCode))];
+  const decimalsByCurrency = new Map(
+    await Promise.all(currencyCodes.map(async (code) => [code, await getCurrencyDecimals({ userId, code })] as const)),
+  );
+
   return portfolios.map((portfolio): PortfolioRow => {
     const owned = balancesByPortfolio.get(portfolio.id);
     if (!owned || owned.length === 0) {
@@ -33,7 +39,9 @@ export async function transformPortfolios({ userId }: { userId: number }): Promi
     // exports of the same data.
     const sorted = owned.toSorted((a, b) => a.currencyCode.localeCompare(b.currencyCode));
     const structured = sorted.map((b) => ({ currency: b.currencyCode, balance: b.totalCash.toNumber() }));
-    const details = sorted.map((b) => `${b.currencyCode}: ${b.totalCash.toNumber().toFixed(2)}`).join(' | ');
+    const details = sorted
+      .map((b) => `${b.currencyCode}: ${b.totalCash.toDecimalString(decimalsByCurrency.get(b.currencyCode)!)}`)
+      .join(' | ');
     return {
       name: portfolio.name,
       cashBalances: structured,

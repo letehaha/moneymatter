@@ -118,10 +118,10 @@
           "accountsCreated": "Vytvorené účty",
           "accountsSkipped": "Preskočené účty",
           "categoriesCreated": "Vytvorené kategórie",
-          "tagsCreated": "Vytvorené štítky",
+          "tagsCreated": "Vytvorené značky",
           "payeesCreated": "Vytvorené protistrany",
           "importErrors": "Chyby importu",
-          "rowNumber": "Riadok č.",
+          "rowNumber": "Riadok #",
           "error": "Chyba",
           "batchIdLabel": "ID dávky",
           "batchIdDescription": "Pomocou tohto ID nájdete všetky transakcie z tohto importu.",
@@ -134,11 +134,13 @@
           "noErrors": "Bez chýb",
           "balanceWarningTitle": "Zostatky účtov nemusia byť zosúladené",
           "balanceWarningBody": "Transakcie boli importované, no zostatky niektorých účtov sa následne nepodarilo aktualizovať. Skontrolujte tieto účty a v prípade potreby upravte ich zostatky ručne."
-        }
+        },
+        "bankSeamRecalculateHint": "Účty prepojené s bankou si ponechávajú zostatok, ktorý nahlási ich banka, preto sa ich toto nastavenie netýka.",
+        "bankSeamRecalculateAllHint": "Počiatočný zostatok sa pri účtoch prepojených s bankou prepočítava automaticky."
       },
       "columnMapping": {
         "stepTitle": "Priradiť stĺpce",
-        "description": "Priraďte svoje stĺpce CSV k požadovaným poliam",
+        "description": "Priraďte svoje stĺpce z CSV k požadovaným poliam",
         "file": "Súbor",
         "totalRows": "Celkový počet riadkov",
         "delimiter": "Oddeľovač",
@@ -220,7 +222,7 @@
         }
       },
       "tagMappingTable": {
-        "csvTagName": "Hodnota štítku z CSV"
+        "csvTagName": "Hodnota značky z CSV"
       },
       "resolveValues": {
         "selectAction": "Vyberte akciu",
@@ -237,9 +239,9 @@
           "tooltips": {
             "mapExactMatchesAccounts": "Prepojí každý účet z CSV s existujúcim účtom rovnakého názvu a meny. Účty bez presnej zhody zostanú nezmenené.",
             "mapExactMatchesCategories": "Prepojí každú kategóriu z CSV s existujúcou kategóriou rovnakého názvu. Kategórie bez presnej zhody zostanú nezmenené.",
-            "mapExactMatchesTags": "Prepojí každý štítok z CSV s existujúcim štítkom rovnakého názvu. Štítky bez presnej zhody zostanú nezmenené.",
+            "mapExactMatchesTags": "Prepojí každú značku z CSV s existujúcou značkou rovnakého názvu. Značky bez presnej zhody zostanú nezmenené.",
             "createNewForUnmatched": "Pri každom riadku, ktorý nie je prepojený s existujúcim záznamom, nastaví „Vytvoriť nový\". Už prepojené riadky zostanú nezmenené.",
-            "skipAll": "Preskočí každý štítok — žiadny sa neimportuje ani nevytvorí.",
+            "skipAll": "Preskočí každá značka — žiadny sa neimportuje ani nevytvorí.",
             "reset": "Vymaže všetky voľby a znova spustí automatické priraďovanie."
           }
         },
@@ -264,17 +266,17 @@
           "csvName": "Kategória z CSV"
         },
         "tags": {
-          "sectionTitle": "Priradenie štítkov",
+          "sectionTitle": "Priradenie značiek",
           "resolvedCount": "Priradených {resolved} z {total}",
-          "csvName": "Štítok z CSV",
+          "csvName": "Značka z CSV",
           "action": "Akcia",
-          "target": "Cieľový štítok",
-          "selectTarget": "Vyberte štítok",
+          "target": "Cieľová značka",
+          "selectTarget": "Vyberte značku",
           "willCreate": "Vytvorí sa „{name}\"",
           "willSkip": "Preskočí sa",
-          "noExistingTags": "Nie sú dostupné žiadne existujúce štítky na prepojenie",
-          "loadFailed": "Štítky sa nepodarilo načítať",
-          "empty": "V CSV sa nenašli žiadne štítky"
+          "noExistingTags": "Nie sú dostupné žiadne existujúce značky na prepojenie",
+          "loadFailed": "Značky sa nepodarilo načítať",
+          "empty": "V CSV sa nenašli žiadne značky"
         },
         "detectError": "Nepodarilo sa pokračovať. Skúste to znova, prosím.",
         "extractFailed": "Hodnoty na priradenie sa nepodarilo načítať. Vráťte sa späť a skúste to znova, prosím.",
@@ -307,7 +309,8 @@
           "account": "Účet",
           "currency": "Mena",
           "transactionType": "Typ transakcie",
-          "payee": "Protistrana"
+          "payee": "Protistrana",
+          "tags": "Značky"
         },
         "dateFormat": {
           "label": "Formát dátumu",
@@ -327,10 +330,10 @@
           "error": "Chyba"
         },
         "rowErrors": {
-          "payeeDefaultTagsFailed": "The transaction was imported, but the payee's default tags could not be applied.",
-          "accountUnresolved": "The account for this row could not be resolved, so the row was skipped.",
-          "readBackFailed": "The transaction was created but could not be read back, so it is missing from the imported count.",
-          "generic": "This row could not be imported."
+          "payeeDefaultTagsFailed": "Transakcia bola importovaná, ale predvolené značky príjemcu sa nepodarilo použiť.",
+          "accountUnresolved": "Účet pre tento riadok sa nepodarilo určiť, riadok preto bol vynechaný.",
+          "readBackFailed": "Transakcia bola vytvorená, ale nepodarilo sa ju opätovne načítať, preto chýba v počte importovaných.",
+          "generic": "Tento riadok sa nepodarilo importovať."
         }
       }
     }

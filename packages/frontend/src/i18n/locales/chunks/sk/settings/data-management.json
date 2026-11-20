@@ -35,6 +35,9 @@
         "title": "Microsoft Money",
         "listDescription": "Importujte súbor .mny z Microsoft Money"
       },
+      "messageImport": {
+        "title": "Synchronizácia správ v iOS"
+      },
       "importHistory": {
         "title": "História importov",
         "listDescription": "Prezrite si minulé importy a to, čo vytvorili"
@@ -72,7 +75,7 @@
           "selectAll": "Vybrať všetko",
           "deselectAll": "Zrušiť výber",
           "transactions": "Transakcie a účty",
-          "transactionsDescription": "Transakcie, účty, história zostatkov, kategórie, štítky, vozidlá",
+          "transactionsDescription": "Transakcie, účty, história zostatkov, kategórie, značky, vozidlá",
           "budgets": "Rozpočty",
           "budgetsDescription": "Vlastné sledovače s priradenými kategóriami a súčtami výdavkov",
           "subscriptions": "Predplatné a pripomienky",

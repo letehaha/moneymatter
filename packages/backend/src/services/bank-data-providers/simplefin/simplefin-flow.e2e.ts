@@ -1,5 +1,6 @@
 import {
   ACCOUNT_TYPES,
+  type AccountApiResponse,
   API_ERROR_CODES,
   BANK_PROVIDER_TYPE,
   DEACTIVATION_REASON,
@@ -126,6 +127,8 @@ const waitForCompletedSync = async ({ accountId }: { accountId: string }): Promi
   const { accounts } = await helpers.bankDataProviders.getAccountsSyncStatus({ raw: true });
   expect(accounts.find((account) => account.accountId === accountId)?.status).toBe(SyncStatus.COMPLETED);
 };
+
+const isBridgeWarning = ([message]: unknown[]) => message === '[SimpleFIN] Bridge warning';
 
 describe('SimpleFIN Data Provider E2E', () => {
   describe('Complete connection flow', () => {
@@ -287,12 +290,12 @@ describe('SimpleFIN Data Provider E2E', () => {
       });
 
       const { accounts } = await helpers.bankDataProviders.listExternalAccounts({ connectionId, raw: true });
-      const account = accounts[0]!;
+      const account = accounts.find((a: { externalId: string }) => a.externalId === SIMPLEFIN_ACCOUNT_1)!;
       expect(account).toHaveProperty('externalId');
       expect(account).toHaveProperty('name');
       expect(account).toHaveProperty('balance');
       expect(account.currency).toBe('USD');
-      expect(typeof account.balance).toBe('number');
+      expect(account.balance).toBe(1523.45);
       expect(account.metadata?.institutionDomain).toBe('testbank.example');
     });
 
@@ -328,6 +331,7 @@ describe('SimpleFIN Data Provider E2E', () => {
 
       const transactions = await Transactions.findAll({ where: { accountId }, raw: true });
       expect(transactions.length).toBe(MOCK_AMOUNT);
+      for (const tx of transactions) expect(tx.accountType).toBe(ACCOUNT_TYPES.simplefin);
     });
 
     it('skips pending transactions (posted = 0)', async () => {
@@ -608,7 +612,33 @@ describe('SimpleFIN Data Provider E2E', () => {
       expect(result.createdCount).toBe(3);
     });
 
-    it('warns once per load for legacy bridge errors repeated on every window', async () => {
+    it('accepts a full leap year (366 days) as a one-year range', async () => {
+      const connectionId = await connectSimplefin();
+      const accountId = await importFirstAccount(connectionId);
+
+      const from = '2024-01-01T00:00:00.000Z';
+
+      const exactYear = await helpers.bankDataProviders.loadTransactionsForPeriod({
+        connectionId,
+        accountId,
+        from,
+        to: '2025-01-01T00:00:00.000Z',
+      });
+      expect(exactYear.statusCode).toBe(200);
+
+      const overYear = await helpers.bankDataProviders.loadTransactionsForPeriod({
+        connectionId,
+        accountId,
+        from,
+        to: '2025-01-01T00:00:00.001Z',
+      });
+      expect(overYear.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((helpers.extractResponse(overYear) as unknown as helpers.ErrorResponse).message).toBe(
+        'Date range cannot exceed 1 year.',
+      );
+    });
+
+    it('logs legacy bridge errors at info, never warn, so they stay out of Sentry', async () => {
       const connectionId = await connectSimplefin();
       const accountId = await importFirstAccount(connectionId);
 
@@ -617,6 +647,7 @@ describe('SimpleFIN Data Provider E2E', () => {
       );
 
       const warnSpy = jest.spyOn(logger, 'warn');
+      const infoSpy = jest.spyOn(logger, 'info');
       try {
         const result = (await helpers.bankDataProviders.loadTransactionsForPeriod({
           connectionId,
@@ -627,10 +658,14 @@ describe('SimpleFIN Data Provider E2E', () => {
         })) as unknown as { totalBatches: number };
         expect(result.totalBatches).toBeGreaterThanOrEqual(3);
 
-        const bridgeWarnings = warnSpy.mock.calls.filter(([message]) => message === '[SimpleFIN] Bridge warning');
-        expect(bridgeWarnings).toEqual([['[SimpleFIN] Bridge warning', { bridgeMessages: ['bridge text'] }]]);
+        expect(warnSpy.mock.calls.filter(isBridgeWarning)).toEqual([]);
+        expect(infoSpy.mock.calls.filter(isBridgeWarning)[0]).toEqual([
+          '[SimpleFIN] Bridge warning',
+          { bridgeMessages: ['bridge text'] },
+        ]);
       } finally {
         warnSpy.mockRestore();
+        infoSpy.mockRestore();
       }
     });
   });
@@ -1255,6 +1290,36 @@ describe('SimpleFIN Data Provider E2E', () => {
       const stored = await Transactions.findAll({ where: { accountId } });
       expect(stored.filter((tx) => tx.originalId !== null).length).toBe(0);
       expect(stored.length).toBe(1);
+    });
+
+    it('starts a new link day anchored on the bank balance when the connect flow relinks the account', async () => {
+      const accountId = await createTrackedAccount({ manualSpentAt: subDays(new Date(), 10) });
+      const connectionId = await connectSimplefin();
+      global.mswMockServer.use(getSimplefinAccountsMock({ response: getMockedSimplefinAccountSet() }));
+      await helpers.linkAccountToBankConnection({
+        id: accountId,
+        connectionId,
+        externalAccountId: SIMPLEFIN_ACCOUNT_1,
+        raw: true,
+      });
+      await waitForCompletedSync({ accountId });
+      await helpers.unlinkAccountFromBankConnection({ id: accountId, raw: true });
+
+      await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId,
+        accountExternalIds: [SIMPLEFIN_ACCOUNT_1],
+        raw: true,
+      });
+      await waitForCompletedSync({ accountId });
+
+      const relinked = (await helpers.getAccount({ id: accountId, raw: true })) as unknown as AccountApiResponse;
+      const today = new Date();
+      expect(relinked.bankSeamAt).toBe(
+        new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())).toISOString(),
+      );
+      // S is the bank's 1523.45 with no rows from the link day on; the −40 manual row sits before it.
+      expect(relinked.currentBalance).toBe(1523.45);
+      expect(relinked.initialBalance).toBe(1563.45);
     });
   });
 

@@ -3,7 +3,7 @@
     "title": "Konten",
     "createAccount": "Konto erstellen",
     "createVehicle": "Fahrzeug hinzufügen",
-    "actionsMenu": "Kontoaktionen",
+    "actionsMenu": "Kontenaktionen",
     "sections": {
       "archived": "Archiviert",
       "manual": "Manuelle Konten",
@@ -37,7 +37,13 @@
       "auto": "Auto",
       "name": "Name",
       "balance": "Kontostand",
-      "ariaLabel": "Konten sortieren"
+      "ariaLabel": "Konten sortieren",
+      "direction": {
+        "aToZ": "A bis Z",
+        "zToA": "Z bis A",
+        "highestFirst": "Höchste zuerst",
+        "lowestFirst": "Niedrigste zuerst"
+      }
     },
     "status": {
       "active": "Aktiv",

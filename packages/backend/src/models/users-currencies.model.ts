@@ -1,8 +1,10 @@
-import { RecordId } from '@bt/shared/types';
+import { CUSTOM_CURRENCY_DECIMALS_MAX, CUSTOM_CURRENCY_DECIMALS_MIN, RecordId } from '@bt/shared/types';
 import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { IdColumn } from '@common/types/id-column';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
+import { t } from '@i18n/index';
+import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { Op } from 'sequelize';
 import {
@@ -18,7 +20,7 @@ import {
   AfterBulkDestroy,
 } from 'sequelize-typescript';
 
-import Currencies from './currencies.model';
+import Currencies, { NON_CURRENCY_CODES } from './currencies.model';
 import Users from './users.model';
 
 @Table({
@@ -79,8 +81,13 @@ export default class UsersCurrencies extends Model {
   @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(8) })
   symbolOverride!: string | null;
 
-  /** Decimals the user's amounts keep in this currency (0 to 18); `null` keeps "Currencies"."digits". */
-  @Column({ allowNull: true, defaultValue: null, type: DataType.INTEGER, validate: { min: 0, max: 18 } })
+  /** Decimals the user's amounts keep in this currency; `null` keeps "Currencies"."digits". */
+  @Column({
+    allowNull: true,
+    defaultValue: null,
+    type: DataType.INTEGER,
+    validate: { min: CUSTOM_CURRENCY_DECIMALS_MIN, max: CUSTOM_CURRENCY_DECIMALS_MAX },
+  })
   decimalsOverride!: number | null;
 
   /** https URL of the image the user picked for a custom currency; `null` draws a monogram. Always `null` on an ISO row. */
@@ -181,6 +188,12 @@ export const addCurrency = async ({
     raw: true,
   });
   if (existingCurrency) return existingCurrency;
+
+  if (NON_CURRENCY_CODES.includes(currencyCode)) {
+    throw new ValidationError({
+      message: t({ key: 'csvImport.currencyNotSupported', variables: { currency: currencyCode } }),
+    });
+  }
 
   return UsersCurrencies.create(
     {

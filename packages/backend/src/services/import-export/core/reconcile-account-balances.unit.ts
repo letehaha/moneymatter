@@ -22,6 +22,11 @@ jest.mock('@services/accounts/absorb-balance-adjustment', () => ({
   __esModule: true,
   absorbBalanceAdjustment: jest.fn(),
 }));
+// Rounds like a 0-decimal currency (JPY), so a fractional entered balance shows the rounding.
+jest.mock('@common/lib/currency-precision', () => ({
+  __esModule: true,
+  roundToCurrency: async ({ money }: { money: Money }) => money.round(0),
+}));
 jest.mock('@services/accounts/lock-account-row', () => ({ __esModule: true, lockAccountRow: jest.fn() }));
 // The real wrapper needs a DB connection this unit test has none of.
 jest.mock('@services/common/with-transaction', () => ({
@@ -508,7 +513,7 @@ describe('finalize — created accounts', () => {
     expect(accountBalanceChanges[0]).not.toHaveProperty('delta');
   });
 
-  it('forces targetCurrentBalance via updateAccount and records the shift for undo', async () => {
+  it('forces the rounded targetCurrentBalance via updateAccount and records that shift for undo', async () => {
     const createdId = generateRandomRecordId();
     mockAccounts([
       { account: buildAccount({ id: createdId, name: 'Targeted', currentBalance: Money.fromDecimal(5000.5) }) },
@@ -530,13 +535,13 @@ describe('finalize — created accounts', () => {
     expect(updateAccountMock).toHaveBeenCalledTimes(1);
     const call = updateAccountMock.mock.calls[0]![0] as { id: string; currentBalance: Money };
     expect(call.id).toBe(createdId);
-    expect(call.currentBalance.toNumber()).toBe(5000.5);
+    expect(call.currentBalance.toNumber()).toBe(5001);
     expect(updateEffectMock).toHaveBeenCalledTimes(1);
     const [values, options] = updateEffectMock.mock.calls[0]! as unknown as [
       { absorbedAmount: Money },
       { where: { importBatchId: string; accountId: string } },
     ];
-    expect(values.absorbedAmount.toNumber()).toBe(6700.5);
+    expect(values.absorbedAmount.toNumber()).toBe(6701);
     expect(options.where).toEqual({ importBatchId: IMPORT_BATCH_ID, accountId: createdId });
     expect(createEffectMock).not.toHaveBeenCalled();
     expect(accountBalanceChanges[0]).toMatchObject({ balanceAfter: 5000.5, isNewAccount: true });

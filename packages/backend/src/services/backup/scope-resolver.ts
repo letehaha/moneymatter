@@ -3,6 +3,7 @@ import Accounts from '@models/accounts.model';
 import BudgetLines from '@models/budget-lines.model';
 import BudgetPlans from '@models/budget-plans.model';
 import Categories from '@models/categories.model';
+import Goals from '@models/goals.model';
 import ImportBatches from '@models/import-batches.model';
 import Portfolios from '@models/investments/portfolios.model';
 import Payees from '@models/payees.model';
@@ -69,6 +70,7 @@ export function createScopeResolver({ userId }: { userId: number }) {
       if (trackerIds.length === 0) return [];
       return idsWhere({ model: TrackerLines, where: { trackerId: { [Op.in]: trackerIds } } });
     },
+    goals: () => idsWhere({ model: Goals, where: { userId } }),
   };
 
   function getScope({ scope }: { scope: BackupParentScope }): Promise<RecordId[]> {

@@ -1,7 +1,7 @@
 import type { ReconciliationActionResponse, RecordId } from '@bt/shared/types';
 import { withTransaction } from '@services/common/with-transaction';
 
-import { detachLinks, loadReconcilableRows, softDeleteTransactions } from './helpers';
+import { detachLinks, loadReconcilableRows, scheduleRevalueOfAccounts, softDeleteTransactions } from './helpers';
 
 export const removeTransactions = withTransaction(
   async ({
@@ -16,6 +16,7 @@ export const removeTransactions = withTransaction(
 
     await detachLinks({ transactionIds: removedIds });
     await softDeleteTransactions({ userId, transactionIds: removedIds, mergedIntoId: null });
+    await scheduleRevalueOfAccounts({ rows });
 
     return { removedIds };
   },

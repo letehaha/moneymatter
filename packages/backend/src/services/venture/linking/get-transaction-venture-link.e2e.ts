@@ -14,7 +14,6 @@ const createLinkedTransaction = async () => {
   const [tx] = await helpers.createTransaction({
     payload: helpers.buildTransactionPayload({
       accountId: account.id,
-      // principal 16000 + 8.5% entry fee: a linked initial investment must match it.
       amount: 17360,
       transactionType: TRANSACTION_TYPES.expense,
     }),
@@ -44,7 +43,21 @@ describe('GET /transactions/:transactionId/venture-link', () => {
       dealId: deal.id,
       dealName: 'SK 116',
       isDealDeleted: false,
+      logoDomain: null,
+      logoInitials: null,
+      logoColor: null,
+      logoIcon: null,
+      logoImageId: null,
     });
+  });
+
+  it("returns the deal's logo", async () => {
+    const { deal, tx } = await createLinkedTransaction();
+    await helpers.updateVentureDeal({ dealId: deal.id, payload: { logoDomain: 'stripe.com' } });
+
+    const link = await helpers.getTransactionVentureLink({ transactionId: tx.id, raw: true });
+
+    expect(link.logoDomain).toBe('stripe.com');
   });
 
   it('flags a soft-deleted deal while still resolving its name', async () => {

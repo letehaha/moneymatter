@@ -41,7 +41,10 @@
           "link": "No se pudo vincular la cuenta. Por favor, inténtelo de nuevo."
         },
         "unauthorizedClient": "Esta aplicación no está autorizada para usar este método de autenticación",
-        "temporarilyUnavailable": "El servicio de autenticación no está disponible temporalmente. Por favor, inténtelo de nuevo más tarde."
+        "temporarilyUnavailable": "El servicio de autenticación no está disponible temporalmente. Por favor, inténtelo de nuevo más tarde.",
+        "unableToLinkAccount": "No pudimos vincular esta cuenta porque este servidor no trata el correo electrónico del proveedor como verificado. Contacte con su administrador.",
+        "emailDoesNotMatch": "El correo electrónico de esta cuenta de proveedor no coincide con el correo electrónico de su cuenta. Utilice una cuenta de proveedor con el mismo correo electrónico.",
+        "emailNotVerified": "Revisa tu correo electrónico para verificar tu dirección y luego inicia sesión de nuevo."
       }
     }
   }

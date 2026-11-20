@@ -19,7 +19,8 @@ import {
   resolveFormIsPlanned,
   resolveOriginalCurrencyPair,
 } from '../helpers';
-import { type FormSplit, UI_FORM_STRUCT } from '../types';
+import { type FormSplit, type RefundWithSplit, UI_FORM_STRUCT } from '../types';
+import { resolvePaymentLegsUpdate } from './payment-legs';
 import { resolveFormLocation } from './resolve-form-location';
 
 /**
@@ -56,12 +57,30 @@ const formSplitsToApiSplits = ({
   return validSplits;
 };
 
+// A zero share is what an amount change leaves for a purchase the refund no longer reaches.
+const toRefundsTargets = ({ links }: { links: RefundWithSplit[] }) =>
+  links
+    .filter((link) => link.amount !== 0)
+    .map((link) => ({
+      txId: link.transaction.id,
+      splitId: (link.splitId ?? null) as RecordId | null,
+      amount: link.amount ?? null,
+    }));
+
+const toRefundedByTxIds = ({ links }: { links: RefundWithSplit[] }) =>
+  links
+    .filter((link) => link.amount !== 0)
+    .map((link) =>
+      link.amount === undefined ? { txId: link.transaction.id } : { txId: link.transaction.id, amount: link.amount },
+    );
+
 export const prepareTxUpdationParams = ({
   form,
   transaction,
   linkedTransaction,
   isTransferTx,
-  isRecordExternal,
+  isRecordBankLocked,
+  isRecordOnBankAccount,
   isCurrenciesDifferent,
   isOriginalRefundsOverriden,
 }: {
@@ -69,7 +88,9 @@ export const prepareTxUpdationParams = ({
   linkedTransaction?: TransactionModel | null;
   form: UI_FORM_STRUCT;
   isTransferTx: boolean;
-  isRecordExternal: boolean;
+  isRecordBankLocked: boolean;
+  /** The row sits on a bank-linked account, so it can never move to another one. */
+  isRecordOnBankAccount: boolean;
   isCurrenciesDifferent: boolean;
   isOriginalRefundsOverriden: boolean;
 }) => {
@@ -83,6 +104,10 @@ export const prepareTxUpdationParams = ({
   if (location !== undefined) externalFields.location = location;
 
   const accountId = account?.id ?? undefined;
+  // An income row that can't leave its bank account stays the income leg; the picked source becomes the other leg.
+  const isPinnedIncome =
+    isTransferTx && isRecordOnBankAccount && transaction.transactionType === TRANSACTION_TYPES.income;
+  const isRecordPinned = isRecordBankLocked || isPinnedIncome;
 
   let editionParams: Parameters<typeof editTransaction>[0] = {
     txId: transaction.id,
@@ -94,7 +119,9 @@ export const prepareTxUpdationParams = ({
     // link (422). Backstops the clearing watcher.
     const expectedRefundType = getOppositeTxType(getTxTypeFromFormType(formTxType));
     const refundsTx =
-      form.refundsTx && form.refundsTx.transaction.transactionType !== expectedRefundType ? undefined : form.refundsTx;
+      form.refundsTx && form.refundsTx.some((r) => r.transaction.transactionType !== expectedRefundType)
+        ? undefined
+        : form.refundsTx;
     const refundedByTxs =
       form.refundedByTxs && form.refundedByTxs.some((r) => r.transaction.transactionType !== expectedRefundType)
         ? undefined
@@ -102,48 +129,23 @@ export const prepareTxUpdationParams = ({
 
     // Make sure that only one non-nullish field is being sent to the API
     if (refundsTx && refundedByTxs === null) {
-      editionParams.refundsTxId = refundsTx ? refundsTx.transaction.id : null;
-      editionParams.refundsSplitId = (refundsTx?.splitId ?? null) as RecordId | null;
+      editionParams.refundsTargets = toRefundsTargets({ links: refundsTx });
     } else if (refundsTx === null && refundedByTxs) {
-      editionParams.refundedByTxIds = refundedByTxs ? refundedByTxs.map((i) => i.transaction.id) : null;
-      // Build splitId mapping for refunded-by transactions
-      if (refundedByTxs) {
-        const splitMapping: Record<string, string> = {};
-        refundedByTxs.forEach((r) => {
-          if (r.splitId) {
-            splitMapping[r.transaction.id] = r.splitId;
-          }
-        });
-        if (Object.keys(splitMapping).length > 0) {
-          editionParams.refundedBySplitIds = splitMapping;
-        }
-      }
+      editionParams.refundedByTxIds = toRefundedByTxIds({ links: refundedByTxs });
     } else if (refundsTx === null && refundedByTxs === undefined) {
-      editionParams.refundsTxId = null;
-      editionParams.refundsSplitId = null;
+      editionParams.refundsTargets = null;
     } else if (refundedByTxs === null && refundsTx === undefined) {
       editionParams.refundedByTxIds = null;
-      editionParams.refundedBySplitIds = null;
+    } else if (refundsTx === null && refundedByTxs === null) {
+      // Both sides cleared in one form session: a null target list removes links in either direction.
+      editionParams.refundsTargets = null;
     } else {
-      editionParams.refundsTxId = refundsTx ? refundsTx.transaction.id : undefined;
-      editionParams.refundsSplitId = (refundsTx?.splitId ?? undefined) as RecordId | undefined;
-      editionParams.refundedByTxIds = refundedByTxs ? refundedByTxs.map((i) => i.transaction.id) : undefined;
-      // Build splitId mapping for refunded-by transactions
-      if (refundedByTxs) {
-        const splitMapping: Record<string, string> = {};
-        refundedByTxs.forEach((r) => {
-          if (r.splitId) {
-            splitMapping[r.transaction.id] = r.splitId;
-          }
-        });
-        if (Object.keys(splitMapping).length > 0) {
-          editionParams.refundedBySplitIds = splitMapping;
-        }
-      }
+      if (refundsTx) editionParams.refundsTargets = toRefundsTargets({ links: refundsTx });
+      editionParams.refundedByTxIds = refundedByTxs ? toRefundedByTxIds({ links: refundedByTxs }) : undefined;
     }
   }
 
-  if (!isTxEditableAsManual({ transaction, isRecordExternal })) {
+  if (!isTxEditableAsManual({ transaction, isRecordBankLocked })) {
     editionParams = {
       ...editionParams,
       note,
@@ -163,11 +165,22 @@ export const prepareTxUpdationParams = ({
       accountId,
       transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
     };
+    if (isPinnedIncome) {
+      editionParams.accountId = transaction.accountId;
+      editionParams.transactionType = TRANSACTION_TYPES.income;
+      editionParams.amount = getDestinationAmount({
+        sourceTransaction: transaction,
+        isRecordPinned: false,
+        fromAmount: Number(form.amount),
+        toAmount: Number(form.targetAmount),
+        isCurrenciesDifferent,
+      });
+    }
   }
 
   if (isTransferTx) {
     const destinationAccount = getDestinationAccount({
-      isRecordExternal,
+      isRecordPinned,
       account: form.account!,
       toAccount: form.toAccount!,
       sourceTransaction: transaction,
@@ -179,18 +192,18 @@ export const prepareTxUpdationParams = ({
       if (isOutOfWalletAccount(destinationAccount)) {
         editionParams.transferNature = TRANSACTION_TRANSFER_NATURE.transfer_out_wallet;
         // Don't set transactionType for external transactions - it's a restricted field
-        if (!isRecordExternal) {
+        if (!isRecordPinned) {
           editionParams.transactionType = TRANSACTION_TYPES.expense;
         }
       } else if (isOutOfWalletAccount(form.account!)) {
         // Don't set transactionType for external transactions - it's a restricted field
-        if (!isRecordExternal) {
+        if (!isRecordBankLocked) {
           editionParams.transactionType = TRANSACTION_TYPES.income;
         }
         editionParams.accountId = destinationAccount.id;
         editionParams.amount = getDestinationAmount({
           sourceTransaction: transaction,
-          isRecordExternal,
+          isRecordPinned,
           fromAmount: Number(form.amount),
           toAmount: Number(form.targetAmount),
           isCurrenciesDifferent,
@@ -200,7 +213,7 @@ export const prepareTxUpdationParams = ({
         editionParams.destinationAccountId = destinationAccount.id;
         editionParams.destinationAmount = getDestinationAmount({
           sourceTransaction: transaction,
-          isRecordExternal,
+          isRecordPinned,
           fromAmount: Number(form.amount),
           toAmount: Number(form.targetAmount),
           isCurrenciesDifferent,
@@ -263,6 +276,9 @@ export const prepareTxUpdationParams = ({
       editionParams.originalAmount = null;
       editionParams.originalCurrencyCode = null;
     }
+
+    const paymentLegs = resolvePaymentLegsUpdate({ form, transaction });
+    if (paymentLegs !== undefined) editionParams.paymentLegs = paymentLegs;
   }
 
   // Handle tag IDs - compare original tags with form tags to detect changes
@@ -294,6 +310,12 @@ export const prepareTxUpdationParams = ({
   const formIsPlanned = resolveFormIsPlanned({ form });
   if (formIsPlanned !== Boolean(transaction.isPlanned)) {
     editionParams.isPlanned = formIsPlanned;
+  }
+
+  // Delta only: an unrelated edit must not re-assert the flag.
+  const formExcludeFromStats = Boolean(form.excludeFromStats);
+  if (formExcludeFromStats !== Boolean(transaction.excludeFromStats)) {
+    editionParams.excludeFromStats = formExcludeFromStats;
   }
 
   return editionParams;

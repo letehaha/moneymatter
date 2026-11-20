@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computeCreditUsed } from '@/common/utils/account-balance';
+import AccountLogo from '@/components/common/account-logo.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
@@ -38,20 +39,20 @@ const creditAccounts = computed(() => {
       // Provider-synced (non-system) cards report a balance that already nets off the
       // credit limit, so their drawn amount is the limit minus the balance at any sign.
       const balanceIncludesCreditLimit = a.type !== ACCOUNT_TYPES.system;
-      // Only breaks the tie at balance 0: with the setting on, a zero balance
-      // means the whole limit is drawn instead of an untouched card.
-      const zeroBalanceMeansFullyDrawn = !!userSettings.value?.includeCreditLimitInStats;
+      // With the setting off, manual cards track debt, so a positive balance is an overpayment.
+      const balanceIsAvailableCredit = !!userSettings.value?.includeCreditLimitInStats;
       const used = computeCreditUsed({
         balance: a.currentBalance,
         creditLimit: a.creditLimit,
         balanceIncludesCreditLimit,
-        zeroBalanceMeansFullyDrawn,
+        balanceIsAvailableCredit,
       });
       const limit = a.creditLimit;
       const utilization = limit > 0 ? Math.round((used / limit) * 100) : 0;
 
       return {
         id: a.id,
+        account: a,
         name: a.name,
         currencyCode: a.currencyCode,
         used,
@@ -65,7 +66,7 @@ const creditAccounts = computed(() => {
                 balance: a.refCurrentBalance,
                 creditLimit: a.refCreditLimit,
                 balanceIncludesCreditLimit,
-                zeroBalanceMeansFullyDrawn,
+                balanceIsAvailableCredit,
               }),
         refLimit: a.refCreditLimit ?? 0,
       };
@@ -159,10 +160,13 @@ const getUtilizationColors = ({ utilization }: { utilization: number }) => {
               v-for="account in creditAccounts"
               :key="account.id"
               :to="{ name: ROUTES_NAMES.account, params: { id: account.id } }"
-              class="hover:bg-muted/50 flex flex-col gap-1.5 rounded-md px-3 py-2 transition-colors"
+              class="hover:bg-hover flex flex-col gap-1.5 rounded-md px-3 py-2 transition-colors"
             >
               <div class="flex items-center justify-between gap-2">
-                <span class="truncate text-sm font-medium">{{ account.name }}</span>
+                <span class="flex min-w-0 items-center gap-2">
+                  <AccountLogo :account="account.account" class="size-5 shrink-0" />
+                  <span class="truncate text-sm font-medium">{{ account.name }}</span>
+                </span>
                 <div class="flex shrink-0 items-center gap-2">
                   <DesktopOnlyTooltip
                     :content="`${formatAmountByCurrencyCode(account.used, account.currencyCode)} / ${formatAmountByCurrencyCode(account.limit, account.currencyCode)}`"

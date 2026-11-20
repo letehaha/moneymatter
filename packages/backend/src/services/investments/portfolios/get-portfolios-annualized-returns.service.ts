@@ -33,6 +33,8 @@ const FALLBACK_LOOKBACK_DAYS = 7;
 
 interface GetPortfoliosAnnualizedReturnsParams {
   userId: number;
+  /** `YYYY-MM-DD`: compute as if this day were today. A future day clamps to today. */
+  asOf?: string;
 }
 
 // Raw query — decimal Money columns come back as Postgres-formatted strings
@@ -83,6 +85,7 @@ interface HoldingState {
  */
 export const getPortfoliosAnnualizedReturns = async ({
   userId,
+  asOf,
 }: GetPortfoliosAnnualizedReturnsParams): Promise<PortfolioAnnualizedReturnModel[]> => {
   const [userBaseCurrency, portfolios] = await Promise.all([
     UsersCurrencies.findOne({
@@ -102,7 +105,8 @@ export const getPortfoliosAnnualizedReturns = async ({
   }
 
   const baseCurrencyCode = userBaseCurrency.currencyCode;
-  const today = toUtcDateString(new Date());
+  const realToday = toUtcDateString(new Date());
+  const today = asOf && asOf < realToday ? asOf : realToday;
   // Inclusive end of today in UTC for the `date` filter. `date` is a timestamptz,
   // so a bare `Op.lte: today` ('YYYY-MM-DD') would cast to today's midnight and
   // silently drop every trade timestamped later in the day. Bounding by the last

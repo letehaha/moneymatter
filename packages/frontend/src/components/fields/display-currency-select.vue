@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import FieldLabel from '@/components/fields/components/field-label.vue';
+import type { ControlSize } from '@/components/lib/ui/control-size';
 import * as Select from '@/components/lib/ui/select';
 import { useCurrencyName } from '@/composable';
 import { useCurrenciesStore } from '@/stores';
@@ -13,6 +14,7 @@ const BASE_CURRENCY_VALUE = 'base';
 const props = defineProps<{
   modelValue: string | null;
   disabled?: boolean;
+  size?: ControlSize;
 }>();
 
 const emit = defineEmits<{
@@ -37,7 +39,7 @@ const onSelect = (val: unknown) => {
   <div>
     <FieldLabel :label="$t('forms.portfolioSettings.displayCurrencyLabel')">
       <Select.Select :model-value="internalValue" :disabled="disabled" @update:model-value="onSelect">
-        <Select.SelectTrigger>
+        <Select.SelectTrigger :size="size">
           <Select.SelectValue :placeholder="$t('forms.portfolioSettings.displayCurrencyPlaceholder')" />
         </Select.SelectTrigger>
         <Select.SelectContent>

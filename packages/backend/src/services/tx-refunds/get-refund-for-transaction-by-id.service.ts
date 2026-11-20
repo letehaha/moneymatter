@@ -1,7 +1,10 @@
 import { logger } from '@js/utils/logger';
 import * as RefundTransactions from '@models/refund-transactions.model';
+import TransactionSplits from '@models/transaction-splits.model';
+import { liveOrExternalTransactionSql } from '@models/transactions-query/deletion-where';
 import * as Transactions from '@models/transactions.model';
-import { Op } from 'sequelize';
+import { attachRefundedAmounts } from '@services/tx-refunds/attach-refunded-amounts';
+import { Op, literal } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
 
@@ -15,6 +18,8 @@ export const getRefundsForTransactionById = withTransaction(
     try {
       const refunds = await RefundTransactions.default.findAll({
         where: {
+          userId,
+          [Op.and]: literal(liveOrExternalTransactionSql({ idColumnSql: '"RefundTransactions"."originalTxId"' })),
           [Op.or]: [
             {
               originalTxId: transactionId,
@@ -29,6 +34,9 @@ export const getRefundsForTransactionById = withTransaction(
             model: Transactions.default,
             as: 'originalTransaction',
             where: { userId },
+            // Optional so links to a purchase outside the app (NULL originalTxId) are returned too.
+            required: false,
+            include: [{ model: TransactionSplits, as: 'splits' }],
           },
           {
             model: Transactions.default,
@@ -36,6 +44,10 @@ export const getRefundsForTransactionById = withTransaction(
             where: { userId },
           },
         ],
+      });
+
+      await attachRefundedAmounts({
+        transactions: refunds.flatMap((r) => (r.originalTransaction ? [r.originalTransaction] : [])),
       });
 
       return refunds;

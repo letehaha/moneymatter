@@ -150,11 +150,11 @@ export class YahooDataProvider extends BaseSecurityDataProvider {
 
       const quote = await this.client.quote(providerSymbol);
 
-      if (!quote || !quote.regularMarketPreviousClose) {
+      if (!quote || !quote.regularMarketPrice) {
         throw new Error(`No quote data found for symbol: ${providerSymbol}`);
       }
 
-      const priceClose = toMajorUnit({ price: quote.regularMarketPreviousClose, currency: quote.currency });
+      const priceClose = toMajorUnit({ price: quote.regularMarketPrice, currency: quote.currency });
       if (!quote.regularMarketTime) {
         logger.info(`Missing regularMarketTime for ${providerSymbol}, using current time as fallback`);
       }

@@ -41,6 +41,8 @@ export const settleNearestOpenPeriod = async ({
     periods: openPeriods,
     transactionTime,
     frequency: subscription.frequency,
+    intervalUnit: subscription.intervalUnit,
+    intervalCount: subscription.intervalCount,
   });
   if (!period) return;
 

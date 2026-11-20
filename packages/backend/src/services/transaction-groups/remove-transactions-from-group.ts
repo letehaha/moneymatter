@@ -1,12 +1,13 @@
-import type { RecordId } from '@bt/shared/types';
+import { TRANSACTION_GROUP_MIN_SIZE, type RecordId } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { ConflictError, ValidationError } from '@js/errors';
 import TransactionGroupItems from '@models/transaction-group-items.model';
 import TransactionGroups from '@models/transaction-groups.model';
+import { liveTransactionExistsSql } from '@models/transactions-query/deletion-where';
 import { withTransaction } from '@services/common/with-transaction';
-import { Op } from 'sequelize';
+import { Op, literal } from 'sequelize';
 
-import { MIN_GROUP_SIZE, INCLUDE_GROUP_TRANSACTIONS } from './constants';
+import { INCLUDE_GROUP_TRANSACTIONS } from './constants';
 import { resolveTransferPairs } from './resolve-transfer-pairs';
 
 interface RemoveTransactionsFromGroupPayload {
@@ -55,13 +56,16 @@ export const removeTransactionsFromGroup = withTransaction(async (payload: Remov
 
   const idsToRemove = allItemsToRemove.map((item) => item.transactionId);
 
-  const currentCount = await TransactionGroupItems.count({
-    where: { groupId },
+  // Trashed members don't count, so a group left with one live member dissolves.
+  const remainingCount = await TransactionGroupItems.count({
+    where: {
+      groupId,
+      ...(idsToRemove.length ? { transactionId: { [Op.notIn]: idsToRemove } } : {}),
+      [Op.and]: literal(liveTransactionExistsSql({ idColumnSql: '"TransactionGroupItems"."transactionId"' })),
+    },
   });
 
-  const remainingCount = currentCount - idsToRemove.length;
-
-  if (remainingCount < MIN_GROUP_SIZE) {
+  if (remainingCount < TRANSACTION_GROUP_MIN_SIZE) {
     if (!force) {
       throw new ConflictError({
         message: `Removing these transactions would leave only ${Math.max(0, remainingCount)} transaction(s) in the group. The group will be dissolved.`,

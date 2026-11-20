@@ -4,18 +4,13 @@
     :class="
       cn(
         LOAN_LIST_GRID_COLS,
-        'hover:bg-muted/40 focus-visible:ring-ring/40 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-y-3 px-4 py-4',
+        'hover:bg-hover focus-visible:ring-ring/40 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-y-3 px-4 py-4',
         'transition-colors focus-visible:ring-2 focus-visible:outline-none @[56rem]/loans-list:py-3.5',
       )
     "
   >
     <div class="flex min-w-0 items-center gap-3">
-      <div
-        :class="cn('flex size-9 shrink-0 items-center justify-center rounded-lg', loanTypeTintedChipClass)"
-        aria-hidden="true"
-      >
-        <component :is="loanTypeIconComponent" class="size-[18px]" stroke-width="2" />
-      </div>
+      <LoanLogo :loan="loan" class="size-9" />
       <div class="min-w-0">
         <div class="flex min-w-0 items-center gap-2">
           <span class="truncate text-sm font-semibold">{{ loan.name }}</span>
@@ -91,6 +86,7 @@
 
 <script setup lang="ts">
 import type { LoanApi } from '@/api/loans';
+import LoanLogo from '@/components/common/loan-logo.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable/formatters';
 import { cn } from '@/lib/utils';
@@ -101,7 +97,6 @@ import { useI18n } from 'vue-i18n';
 import { RouterLink } from 'vue-router';
 
 import { useLoanProjectionDisplay } from '../composables/use-loan-projection-display';
-import { getLoanTypeIcon, getLoanTypeTintedChipClass } from '../loan-type-presentation';
 import { outstandingAmount } from '../utils/outstanding-amount';
 import { LOAN_LIST_GRID_COLS } from './loan-list-grid';
 
@@ -152,10 +147,4 @@ const subLine = computed(() => {
   const lender = props.loan.loanDetails.lenderName;
   return lender ? `${typeLabel} · ${lender}` : `${typeLabel} · ${props.loan.currencyCode}`;
 });
-
-const loanTypeTintedChipClass = computed(() =>
-  getLoanTypeTintedChipClass({ loanType: props.loan.loanDetails.loanType }),
-);
-
-const loanTypeIconComponent = computed(() => getLoanTypeIcon({ loanType: props.loan.loanDetails.loanType }));
 </script>

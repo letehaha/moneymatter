@@ -55,6 +55,8 @@ export async function ensureNextPeriodExists({ subscription }: { subscription: S
   const nextDueDate = calculateNextDueDate({
     currentDueDate: latestPeriod.dueDate,
     frequency: subscription.frequency,
+    intervalUnit: subscription.intervalUnit,
+    intervalCount: subscription.intervalCount,
     anchorDay,
   });
 

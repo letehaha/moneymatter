@@ -81,6 +81,7 @@ export const scanAutomationMatches = async ({
     where: {
       ...buildEligibilityWhere({ bankAccountIds }),
       ...sqlPrefilter({ conditions }),
+      paymentParentId: null,
       ...(transactionIds ? { id: { [Op.in]: transactionIds } } : {}),
     },
   });

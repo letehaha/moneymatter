@@ -315,6 +315,30 @@ describe('Payees API', () => {
       expect(cleared.defaultCategoryId).toBeNull();
     });
 
+    it('rejects invalid update payloads', async () => {
+      const created = await helpers.createPayee({
+        payload: helpers.buildPayeePayload({ name: 'Validation Target' }),
+        raw: true,
+      });
+      const invalidPayloads: Array<Record<string, unknown>> = [
+        { name: '   ' },
+        { name: 'x'.repeat(201) },
+        { categorizationMode: 'nope' },
+        { defaultTagIds: 'not-a-list' },
+        { defaultCategoryId: 'not-a-uuid' },
+        { logoDomain: 'netflix.com', logoInitials: 'NF' },
+        { logoColor: 'red' },
+      ];
+
+      for (const payload of invalidPayloads) {
+        const res = await helpers.updatePayee({ id: created.id, payload: payload as never, raw: false });
+        expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+      }
+
+      const after = await helpers.getPayeeById({ id: created.id, raw: true });
+      expect(after.name).toBe('Validation Target');
+    });
+
     it('returns 409 when renaming to a colliding name', async () => {
       await helpers.createPayee({
         payload: helpers.buildPayeePayload({ name: 'Existing One' }),
@@ -563,6 +587,9 @@ describe('Payees API', () => {
 
       const emptyName = await helpers.createPayeeAlias({ payeeId: other.id, rawName: '   ', raw: false });
       expect(emptyName.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const tooLong = await helpers.createPayeeAlias({ payeeId: other.id, rawName: 'x'.repeat(501), raw: false });
+      expect(tooLong.statusCode).toBe(ERROR_CODES.ValidationError);
 
       // Same normalized form ("variant a") – the second insert must fail
       // before hitting the UNIQUE index so the caller gets a friendly 409.

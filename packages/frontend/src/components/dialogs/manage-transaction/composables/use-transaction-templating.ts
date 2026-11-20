@@ -154,7 +154,7 @@ export const useTransactionTemplating = ({
   let isFocusAfterApplyPending = false;
 
   const onApply = (template: TransactionTemplateModel) => {
-    if (form.value.splits?.length || form.value.refundsTx || form.value.refundedByTxs?.length) {
+    if (form.value.splits?.length || form.value.refundsTx?.length || form.value.refundedByTxs?.length) {
       pendingApply.value = template;
       isApplyConfirmOpen.value = true;
       return;

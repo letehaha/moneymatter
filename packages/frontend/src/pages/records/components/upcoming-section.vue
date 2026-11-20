@@ -16,7 +16,7 @@ import { PENDING_PLANNED_LIMIT, usePendingPlannedTransactions } from '@/composab
 import { useSubscriptionsList } from '@/composable/data-queries/subscriptions';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
-import { formatUIAmount } from '@/js/helpers';
+import { formatUIAmount, toLocalCurrencyNumber } from '@/js/helpers';
 import SubscriptionMarkPaidDialog from '@/pages/planned/subscriptions/components/subscription-mark-paid-dialog.vue';
 import { useCategoriesStore } from '@/stores';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
@@ -246,7 +246,8 @@ function confirmDeletePlan() {
               {{ $t('records.upcomingSection.scheduledBadge') }}
             </span>
             <span v-if="sub.expectedAmount != null" class="text-muted-foreground text-xs">
-              {{ sub.expectedCurrencyCode }} {{ sub.expectedAmount.toLocaleString() }}
+              {{ sub.expectedCurrencyCode }}
+              {{ toLocalCurrencyNumber(sub.expectedAmount, { currency: sub.expectedCurrencyCode ?? undefined }) }}
             </span>
           </div>
         </div>

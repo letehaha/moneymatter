@@ -1,0 +1,63 @@
+{
+  "oauth": {
+    "authorize": {
+      "title": "“{name}” quer acessar seus dados do MoneyMatter",
+      "redirect_notice": "Depois da aprovação, você será redirecionado para {host}. Só continue se reconhecer este endereço.",
+      "description": "Este app está pedindo estas permissões:",
+      "approve": "Aprovar",
+      "deny": "Recusar",
+      "footer": "Você pode revogar o acesso quando quiser em “Configurações → IA → Conectores (MCP)”.",
+      "error": "Não foi possível processar a solicitação. Tente de novo.",
+      "unexpected_response": "Resposta inesperada do servidor. Tente de novo.",
+      "always_granted": "Sempre concedida",
+      "optional": "Opcional",
+      "delete_warning": "Conceda só a apps em que você confia totalmente",
+      "unknown_app": "Um aplicativo",
+      "steps": {
+        "permissions": "Permissions",
+        "tools": "Tools"
+      },
+      "continue": "Continue",
+      "back": "Back",
+      "toolsets": {
+        "intro": "Pick what {name} can work with. Each extra set adds tools that {name} loads into every chat.",
+        "add_all": "Add all",
+        "core_only": "Core only",
+        "always_on": "{count} tool, always on | {count} tools, always on",
+        "tool_count": "{count} tool | {count} tools",
+        "selected": "{count} tool selected | {count} tools selected",
+        "of_total": "of {total}",
+        "counter_label": "Selected tools",
+        "fits_cap": "Fits every app, including ChatGPT and VS Code Copilot ({cap} tools max).",
+        "over_cap": "Over {cap} tools. ChatGPT and VS Code Copilot won't load this many.",
+        "load_error": "Couldn't load the toolsets. Allow access to use the core tools, and reconnect later to add more."
+      }
+    },
+    "scopes": {
+      "finance_read": {
+        "label": "Ver seus dados financeiros",
+        "desc": "Ler contas, transações, acompanhamentos, categorias, tags, carteiras e estatísticas de gastos."
+      },
+      "finance_write": {
+        "label": "Criar e editar seus dados financeiros",
+        "desc": "Adicionar e atualizar transações, acompanhamentos, pagamentos recorrentes, posições de investimento e mais."
+      },
+      "finance_delete": {
+        "label": "Excluir seus dados financeiros",
+        "desc": "Remover permanentemente transações, contas, acompanhamentos e outros registros."
+      },
+      "profile_read": {
+        "label": "Ver seu perfil",
+        "desc": "Ver seu nome, e-mail e moeda padrão."
+      },
+      "offline_access": {
+        "label": "Manter a conexão em segundo plano",
+        "desc": "Manter o acesso ativo sem pedir sua autorização de novo a cada sessão."
+      },
+      "unknown": {
+        "label": "Permissão adicional",
+        "desc": "O app pediu uma permissão que o MoneyMatter não reconhece."
+      }
+    }
+  }
+}

@@ -6,7 +6,8 @@
           :disabled="disabled"
           :class="
             cn(
-              'border-input bg-input-background ring-offset-background focus-visible:ring-ring flex h-10 w-full items-center gap-2 overflow-hidden rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:h-9',
+              'border-input bg-input-background ring-offset-background focus-visible:ring-ring flex w-full items-center gap-2 overflow-hidden rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+              controlHeight[size],
               disabled && 'cursor-not-allowed opacity-50',
               triggerClass,
             )
@@ -30,24 +31,25 @@
           :side-offset="4"
           align="start"
         >
-          <div v-if="searchable" class="flex items-center gap-2 p-2 pb-0">
-            <div
-              class="border-input bg-input-background flex h-9 min-w-0 flex-1 items-center gap-2 rounded-md border px-3 text-sm"
-            >
-              <SearchIcon class="text-muted-foreground size-4 shrink-0" />
-              <input
-                v-model="searchTerm"
-                type="text"
-                class="min-w-0 flex-1 bg-transparent outline-none"
-                :placeholder="searchPlaceholder"
-              />
+          <ListboxRoot ref="listboxRef" multiple :model-value="selected" highlight-on-hover>
+            <div v-if="searchable" class="flex items-center gap-2 p-2 pb-0">
+              <div
+                class="border-input bg-input-background flex h-9 min-w-0 flex-1 items-center gap-2 rounded-md border px-3 text-sm"
+              >
+                <SearchIcon class="text-muted-foreground size-4 shrink-0" />
+                <ListboxFilter
+                  v-model="searchTerm"
+                  class="min-w-0 flex-1 bg-transparent outline-none"
+                  :placeholder="searchPlaceholder"
+                />
+              </div>
+              <Button v-if="active" variant="ghost" size="sm" class="shrink-0" @click="emit('clear')">
+                {{ $t('common.actions.clear') }}
+              </Button>
             </div>
-            <Button v-if="active" variant="ghost" size="sm" class="shrink-0" @click="emit('clear')">
-              {{ $t('common.actions.clear') }}
-            </Button>
-          </div>
 
-          <slot :search-term="searchTerm" :is-open="isOpen" />
+            <slot :search-term="searchTerm" :is-open="isOpen" />
+          </ListboxRoot>
         </PopoverContent>
       </Popover>
     </FieldLabel>
@@ -60,10 +62,12 @@ import FieldError from '@/components/fields/components/field-error.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import MultiSelectTriggerContent from '@/components/fields/multi-select-trigger-content.vue';
 import { Button } from '@/components/lib/ui/button';
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { cn } from '@/lib/utils';
 import { SearchIcon } from '@lucide/vue';
-import { watch } from 'vue';
+import { ListboxFilter, ListboxRoot } from 'reka-ui';
+import { ref, watch } from 'vue';
 
 /**
  * Popover shell shared by the multi-select filter fields (categories / payees /
@@ -74,7 +78,8 @@ import { watch } from 'vue';
  * opinion on how the list renders or how items are picked.
  *
  * The `#default` slot receives `{ searchTerm, isOpen }` and renders the list body
- * (including its own scroll container and empty state). The `#leading` slot is
+ * (including its own scroll container and empty state) as a reka `ListboxContent`
+ * of `MultiSelectItem` rows, so the search input's arrow keys and Enter drive it. The `#leading` slot is
  * forwarded into the trigger for per-entity chrome (e.g. a payee brand logo).
  */
 withDefaults(
@@ -103,6 +108,9 @@ withDefaults(
     fieldLabel?: string;
     /** Optional validation error rendered below the trigger. */
     errorMessage?: string;
+    /** Values of the checked rows. */
+    selected?: string[];
+    size?: ControlSize;
   }>(),
   {
     searchPlaceholder: undefined,
@@ -113,6 +121,8 @@ withDefaults(
     disabled: false,
     fieldLabel: undefined,
     errorMessage: undefined,
+    selected: () => [],
+    size: 'default',
   },
 );
 
@@ -120,6 +130,9 @@ const emit = defineEmits<{ clear: [] }>();
 
 const isOpen = defineModel<boolean>('open', { default: false });
 const searchTerm = defineModel<string>('searchTerm', { default: '' });
+
+const listboxRef = ref<{ highlightFirstItem: () => void } | null>(null);
+defineExpose({ highlightFirstItem: () => listboxRef.value?.highlightFirstItem() });
 
 // Reopen clean: drop the previous query when the panel closes.
 watch(isOpen, (open) => {

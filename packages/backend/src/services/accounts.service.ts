@@ -21,6 +21,7 @@ import Balances from '@models/balances.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
 import { countTransactions } from '@models/transactions-query';
+import { trashedWhere } from '@models/transactions-query/deletion-where';
 import { getBaseCurrency } from '@models/users-currencies.model';
 import Users from '@models/users.model';
 import { isRevaluedAccount, scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
@@ -28,6 +29,7 @@ import { applyManualLogoPatch } from '@services/brand-logos';
 import { attachEligibleAccounts } from '@services/budget-plans/auto-attach-account';
 import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
+import { releaseIneligibleGoalShares } from '@services/goals/release-ineligible-goal-shares';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 import {
   cleanupAccountSharesInTx,
@@ -42,6 +44,7 @@ import {
 } from '@services/sharing/get-shared-accounts.service';
 import { convertCrossUserTransfersForAccountIds } from '@services/sharing/household/convert-cross-user-transfers.service';
 import { pauseAutomationsReferencing } from '@services/transaction-automations/references';
+import { unlinkPaymentLegsOfAccounts } from '@services/transactions/payment-legs';
 import { Op } from 'sequelize';
 
 import { absorbBalanceAdjustment } from './accounts/absorb-balance-adjustment';
@@ -86,8 +89,7 @@ async function attachBankProviderTypes(accounts: AccountWithRelinkStatus[]): Pro
 
 /**
  * Check if an Enable Banking account needs to be re-linked.
- * This is true when the account has rawAccountData with identification_hash,
- * but the externalId doesn't match (meaning it was created with uid instead).
+ * True when externalId no longer matches the bank-reported identification_hash.
  */
 function checkNeedsRelink(account: Accounts.default): boolean {
   // Only check accounts linked to a bank connection
@@ -370,6 +372,8 @@ export const updateAccount = withTransaction(
       payload.status === ACCOUNT_STATUSES.archived && accountData.status !== ACCOUNT_STATUSES.archived;
     if (isArchiving) {
       await performArchiveSideEffects({ account: accountData, userId: accountData.userId });
+      // Unlink rewrites the opening balance; the update below writes it back from this row.
+      await accountData.reload();
     }
 
     const wasAttachable = BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(accountData.accountCategory);
@@ -379,6 +383,13 @@ export const updateAccount = withTransaction(
         : BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(payload.accountCategory);
     if (wasAttachable && !isAttachable) {
       await BudgetPlanAccounts.destroy({ where: { accountId: accountData.id } });
+    }
+    if (payload.accountCategory !== undefined && payload.accountCategory !== accountData.accountCategory) {
+      await releaseIneligibleGoalShares({
+        accountId: accountData.id,
+        userId: accountData.userId,
+        accountCategory: payload.accountCategory,
+      });
     }
 
     // Rounded to the account currency's decimals before the change checks and the ref stamps.
@@ -392,8 +403,12 @@ export const updateAccount = withTransaction(
 
     const currentBalanceIsChanging =
       payload.currentBalance !== undefined && !payload.currentBalance.equals(accountData.currentBalance);
-    let initialBalance: Money = accountData.initialBalance;
+    const creditLimitIsChanging =
+      payload.creditLimit !== undefined && !payload.creditLimit.equals(accountData.creditLimit);
+    // Written only when it moves, so an unrelated edit never re-rounds a stored opening balance.
+    let initialBalance: Money | undefined;
     let refCurrentBalance: Money | null = accountData.refCurrentBalance;
+    let refCreditLimit: Money | null = accountData.refCreditLimit;
 
     /**
      * If `currentBalance` is changing, it means user want to change current balance
@@ -407,35 +422,27 @@ export const updateAccount = withTransaction(
       // `currentBalance = initialBalance + Σ(tx)` keeps holding. Its ref side is
       // restamped below at the boundary-date rate, not delta-shifted.
       if (accountData.type === ACCOUNT_TYPES.system) {
-        initialBalance = initialBalance.add(diff);
+        initialBalance = accountData.initialBalance.add(diff);
       }
-
-      // `refCurrentBalance` is a spot measure – the new native balance at the latest
-      // rate – not the stored ref plus a delta (that would keep the stored blend of
-      // historical rates alive). Cache bypassed so a just-edited rate is observed.
-      refCurrentBalance = await calculateRefAmountOrNull({
-        userId: accountData.userId,
-        amount: payload.currentBalance!,
-        baseCode: accountData.currencyCode,
-        date: new Date(),
-        bypassCache: true,
-      });
     }
 
-    // Credit limit changes recalculate refCreditLimit. It's separate from balance –
-    // it doesn't affect currentBalance/refCurrentBalance; the display layer applies
-    // it via `displayBalance = currentBalance - creditLimit`.
-    const creditLimitIsChanging =
-      payload.creditLimit !== undefined && !payload.creditLimit.equals(accountData.creditLimit);
-    let adjustedRefCreditLimit: Money | null | undefined;
+    // Both ref fields are spot measures at the latest rate (cache bypassed so a
+    // just-edited rate is observed). Re-measure them together: the card and stats
+    // net them as `refCurrentBalance - refCreditLimit`, so they must share a rate.
+    if (currentBalanceIsChanging || creditLimitIsChanging) {
+      // `null` for a custom currency without a rate.
+      const measureSpot = ({ amount }: { amount: Money }) =>
+        calculateRefAmountOrNull({
+          userId: accountData.userId,
+          amount,
+          baseCode: accountData.currencyCode,
+          date: new Date(),
+          bypassCache: true,
+        });
+      const nextCreditLimit = payload.creditLimit ?? accountData.creditLimit;
 
-    if (creditLimitIsChanging) {
-      adjustedRefCreditLimit = await calculateRefAmountOrNull({
-        userId: accountData.userId,
-        amount: payload.creditLimit!,
-        baseCode: accountData.currencyCode,
-        date: new Date(),
-      });
+      refCurrentBalance = await measureSpot({ amount: payload.currentBalance ?? accountData.currentBalance });
+      refCreditLimit = nextCreditLimit.isZero() ? Money.zero() : await measureSpot({ amount: nextCreditLimit });
     }
 
     const logoPatch = applyManualLogoPatch({
@@ -450,10 +457,11 @@ export const updateAccount = withTransaction(
       id,
       externalId,
       ...payload,
+      currencyCode: accountData.currencyCode,
       ...logoPatch,
-      initialBalance,
+      ...(initialBalance !== undefined && { initialBalance }),
       refCurrentBalance,
-      ...(adjustedRefCreditLimit !== undefined ? { refCreditLimit: adjustedRefCreditLimit } : {}),
+      refCreditLimit,
     });
 
     if (!result) {
@@ -500,7 +508,7 @@ export const updateAccount = withTransaction(
 
     // Today's net-worth row is a stock equal to the spot `refCurrentBalance`. Pin it
     // last, after the restamp's history cascade, so the spot value wins.
-    if (currentBalanceIsChanging && !revalueOwnsHistory) {
+    if ((currentBalanceIsChanging || creditLimitIsChanging) && !revalueOwnsHistory) {
       await Balances.setTodayRowToSpot({ account: finalAccount });
     }
 
@@ -520,7 +528,7 @@ interface DeleteAccountByIdInTxResult {
   accountSnapshot: { id: string; name: string };
 }
 
-const deleteAccountByIdInTx = withTransaction(
+export const deleteAccountByIdInTx = withTransaction(
   async ({
     id,
     userId,
@@ -538,16 +546,24 @@ const deleteAccountByIdInTx = withTransaction(
     // Cascade-deleting would wipe the source legs of loan payments made from this
     // account; the model hooks would treat that as reversals and silently restore
     // the loan's owed balance. Block until those payments are cleared.
-    const loanPaymentCount = await countTransactions({
-      planned: 'exclude',
-      access: { creator: userId },
-      transfers: { natures: [TRANSACTION_TRANSFER_NATURE.transfer_to_loan] },
-      balanceAdjustments: 'include',
-      where: { accountId: id },
-    });
-    if (loanPaymentCount > 0) {
+    const countLoanPayments = ({ trashed }: { trashed: boolean }) =>
+      countTransactions({
+        planned: 'exclude',
+        access: { creator: userId },
+        transfers: { natures: [TRANSACTION_TRANSFER_NATURE.transfer_to_loan] },
+        balanceAdjustments: 'include',
+        where: trashed ? { accountId: id, ...trashedWhere } : { accountId: id },
+        paranoid: !trashed,
+      });
+    if ((await countLoanPayments({ trashed: false })) > 0) {
       throw new ValidationError({
         message: t({ key: 'accounts.deleteBlockedByLoanPayments' }),
+      });
+    }
+    // Restoring a trashed loan leg whose cash leg was cascaded away would orphan it.
+    if ((await countLoanPayments({ trashed: true })) > 0) {
+      throw new ValidationError({
+        message: t({ key: 'accounts.deleteBlockedByTrashedLoanPayments' }),
       });
     }
 
@@ -574,6 +590,8 @@ const deleteAccountByIdInTx = withTransaction(
     if (removePortfolioTransfers) {
       await removePortfolioTransfersForAccounts({ userId, accountIds: [id] });
     }
+
+    await unlinkPaymentLegsOfAccounts({ userId, accountIds: [id] });
 
     const affectedRows = await Accounts.deleteAccountById({ id, userId });
     if (affectedRows === 0) {

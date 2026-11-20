@@ -7,6 +7,7 @@ export const formatFiat = (value: unknown): string => Number(value).toFixed(2);
 
 // Module-level so plain helpers, not just composables, follow the user's setting.
 export const currencyDisplayPreference = ref<CurrencyDisplayPreference>('symbol');
+export const numberFormatLocale = ref('en-US');
 
 export function toLocalNumber(
   value: string | number | undefined | null,
@@ -15,7 +16,7 @@ export function toLocalNumber(
   } = {},
 ): string {
   if (value !== undefined && value !== null) {
-    return Number(value).toLocaleString(options.locale ?? 'en-US', {
+    return Number(value).toLocaleString(options.locale ?? numberFormatLocale.value, {
       ...options,
       maximumFractionDigits: options.maximumFractionDigits ?? 5,
       minimumFractionDigits: options.minimumFractionDigits ?? 2,
@@ -177,6 +178,52 @@ export const formatCompactFiat = ({ amount, currency }: { amount: number; curren
 /** Full amount under 1,000, K/M/B suffix from there up. */
 export const formatShortFiat = ({ amount, currency }: { amount: number; currency?: string }) =>
   Math.abs(amount) >= 1_000 ? formatCompactFiat({ amount, currency }) : formatUIAmount(amount, { currency });
+
+const compactRoundingStep = (abs: number) => (abs >= 1e9 ? 1e7 : abs >= 1e6 ? 1e4 : abs >= 1e5 ? 1e3 : 10);
+
+/**
+ * Full amount with cents under `from` (default 10,000). From there k/M/B with up to 2 decimals
+ * ("₴42.6k", "₴1.24M"), except 100k–1M, which drops them ("₴385k").
+ */
+export const formatCompactUIAmount = ({
+  amount,
+  currency,
+  from = 10_000,
+}: {
+  amount: number;
+  currency?: string;
+  from?: number;
+}) => {
+  if (!(Math.abs(amount) >= from)) return formatUIAmount(amount, { currency });
+
+  // Rounds before the suffix is picked, so 999,600 reads "₴1M" rather than "₴1000k".
+  const step = compactRoundingStep(Math.abs(amount));
+  const rounded = Math.round(amount / step) * step;
+  const abs = Math.abs(rounded);
+
+  return formatLargeNumber(rounded, {
+    isFiat: true,
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: abs >= 100_000 && abs < 1_000_000 ? 0 : 2,
+  });
+};
+
+/** Whole units under 1,000, then K/M/B with at most one decimal ("$813", "$7.8K", "$1.2M"). */
+export const formatTinyUIAmount = ({ amount, currency }: { amount: number; currency?: string }) => {
+  const whole = Math.round(amount);
+  const abs = Math.abs(whole);
+  if (!(abs >= 1_000)) return formatUIAmount(whole, { currency, fractionDigits: 0 });
+
+  // Rounds before the suffix is picked, so 999,960 reads "$1M" rather than "$1000K".
+  const step = abs >= 1e6 ? 1e5 : 100;
+  return formatLargeNumber(Math.round(amount / step) * step, {
+    isFiat: true,
+    currency,
+    thousandSuffix: 'K',
+    maximumFractionDigits: 1,
+  });
+};
 
 export function formatUIAmount(
   value: number,

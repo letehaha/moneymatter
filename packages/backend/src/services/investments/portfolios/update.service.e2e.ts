@@ -6,6 +6,80 @@ import * as helpers from '@tests/helpers';
 
 describe('Update Portfolio Service E2E', () => {
   describe('PUT /investments/portfolios/:id', () => {
+    describe('Logo', () => {
+      it('sets, swaps and clears the logo', async () => {
+        const created = await helpers.createPortfolio({ raw: true });
+        expect(created.logoDomain).toBeNull();
+
+        const withBrand = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { logoDomain: 'vanguard.com' },
+          raw: true,
+        });
+        expect(withBrand.logoDomain).toBe('vanguard.com');
+
+        const withMonogram = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { logoInitials: 'VG', logoColor: '#7355be' },
+          raw: true,
+        });
+        expect(withMonogram).toMatchObject({ logoDomain: null, logoInitials: 'VG', logoColor: '#7355be' });
+
+        const cleared = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { logoDomain: null, logoInitials: null, logoIcon: null },
+          raw: true,
+        });
+        expect(cleared).toMatchObject({ logoDomain: null, logoInitials: null, logoColor: null, logoIcon: null });
+
+        const listed = await helpers.listPortfolios({ raw: true });
+        expect(listed.data.find((portfolio) => portfolio.id === created.id)?.logoDomain).toBeNull();
+      });
+
+      it('recolors a stored monogram and rejects a color with nothing to paint', async () => {
+        const created = await helpers.createPortfolio({ raw: true });
+
+        const noMonogram = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { logoColor: '#7355be' },
+        });
+        expect(noMonogram.statusCode).toBe(ERROR_CODES.ValidationError);
+
+        await helpers.updatePortfolio({ portfolioId: created.id, payload: { logoInitials: 'VG' }, raw: true });
+        const recolored = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { logoColor: '#16a34a' },
+          raw: true,
+        });
+        expect(recolored).toMatchObject({ logoInitials: 'VG', logoColor: '#16a34a' });
+      });
+
+      it('keeps the logo on a non-logo update', async () => {
+        const created = await helpers.createPortfolio({ raw: true });
+
+        await helpers.updatePortfolio({ portfolioId: created.id, payload: { logoDomain: 'example.com' }, raw: true });
+
+        const renamed = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { name: 'Renamed' },
+          raw: true,
+        });
+
+        expect(renamed).toMatchObject({ name: 'Renamed', logoDomain: 'example.com' });
+      });
+
+      it('rejects two logo types in one request', async () => {
+        const created = await helpers.createPortfolio({ raw: true });
+
+        const response = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { logoDomain: 'vanguard.com', logoInitials: 'VG' },
+        });
+
+        expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      });
+    });
+
     describe('Success cases', () => {
       it('should perform multiple successful update operations', async () => {
         // Create a single portfolio for all update tests
@@ -132,6 +206,39 @@ describe('Update Portfolio Service E2E', () => {
         expect(resetResponse.statusCode).toBe(200);
         expect(helpers.extractResponse(resetResponse).displayCurrencyCode).toBeNull();
       }, 30000);
+
+      it('should set, preserve across unrelated updates, and clear externalUrl', async () => {
+        const created = await helpers.createPortfolio({
+          payload: { name: 'URL Portfolio' },
+          raw: true,
+        });
+        expect(created.externalUrl).toBeNull();
+
+        const withUrl = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { externalUrl: 'https://investor.vanguard.com/' },
+          raw: true,
+        });
+        expect(withUrl.externalUrl).toBe('https://investor.vanguard.com/');
+
+        const renamed = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { name: 'Renamed URL Portfolio' },
+          raw: true,
+        });
+        expect(renamed.name).toBe('Renamed URL Portfolio');
+        expect(renamed.externalUrl).toBe('https://investor.vanguard.com/');
+
+        const cleared = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { externalUrl: null },
+          raw: true,
+        });
+        expect(cleared.externalUrl).toBeNull();
+
+        const listed = await helpers.listPortfolios({ raw: true });
+        expect(listed.data.find((p) => p.id === created.id)?.externalUrl).toBeNull();
+      });
     });
 
     describe('Error cases', () => {
@@ -207,6 +314,20 @@ describe('Update Portfolio Service E2E', () => {
           payload: { name: 'Test' },
         });
         expect(invalidPortfolioId.statusCode).toBe(ERROR_CODES.ValidationError);
+
+        for (const badUrl of [
+          'ftp://broker.example',
+          'javascript:alert(1)',
+          'not-a-url',
+          '',
+          `https://broker.example/${'a'.repeat(2049)}`,
+        ]) {
+          const invalidUrl = await helpers.updatePortfolio({
+            portfolioId: createdPortfolio.id,
+            payload: { externalUrl: badUrl },
+          });
+          expect(invalidUrl.statusCode).toBe(ERROR_CODES.ValidationError);
+        }
       }, 30000);
     });
   });

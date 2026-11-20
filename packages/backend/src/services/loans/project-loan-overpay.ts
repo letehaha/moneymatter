@@ -37,7 +37,7 @@ export const sumPostAnchorPaymentLegs = async ({
   anchorDate: string;
 }): Promise<Money> => {
   const legs = await getPostAnchorPaymentLegs({ loanAccountId, userId, anchorDate });
-  return legs.reduce((sum, leg) => sum.add(leg.amount), Money.zero());
+  return Money.sum(legs.map((leg) => leg.amount));
 };
 
 /**
@@ -45,8 +45,6 @@ export const sumPostAnchorPaymentLegs = async ({
  * balances are negative (liability); income legs add toward zero, so a positive
  * projected balance means the payment overshoots the owed amount. The overpay
  * amount is that positive remainder (zero when the balance stays at/below zero).
- * Balances and payment legs are stored at the loan currency's decimals, so the
- * exact comparison matches the recompute's zero floor.
  */
 export const projectLoanOverpay = ({
   projectedBalance,

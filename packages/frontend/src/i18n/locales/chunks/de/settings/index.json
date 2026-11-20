@@ -17,9 +17,9 @@
       "language": "Sprache",
       "general": "Allgemein",
       "payees": "Zahlungsempfänger",
-      "subscriptions": "Geplante Zahlungen",
       "planBilling": "Tarif & Abrechnung",
-      "collapse": "Einklappen"
+      "collapse": "Einklappen",
+      "resize": "Navigation anpassen"
     },
     "backToSettings": "Zurück zu den Einstellungen"
   }

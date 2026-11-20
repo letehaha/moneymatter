@@ -150,7 +150,7 @@
             <div class="bg-muted/30 h-3 w-48 animate-pulse rounded" />
             <div class="bg-muted/30 h-3 w-28 animate-pulse rounded" />
           </div>
-          <div class="bg-muted/40 h-8 w-16 animate-pulse rounded" />
+          <div class="bg-muted/40 h-9 w-16 animate-pulse rounded" />
         </div>
       </div>
 
@@ -211,11 +211,13 @@ import { Separator } from '@/components/lib/ui/separator';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { MCP_TOOLSET_LABELS } from '@/common/const/mcp-toolsets';
 import { HIDDEN_OAUTH_SCOPES } from '@/common/const/oauth-scopes';
 import { useClipboard } from '@vueuse/core';
 import { useDateLocale } from '@/composable/use-date-locale';
 import ClaudeLogo from '@/assets/icons/logos/claude.svg';
 import OpenAiLogo from '@/assets/icons/logos/openai.svg';
+import { MCP_OPTIONAL_TOOLSETS, mcpToolsetScope } from '@bt/shared/types';
 import { CheckIcon, ChevronDownIcon, CopyIcon, ExternalLinkIcon, PlugIcon } from '@lucide/vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -288,8 +290,16 @@ function formatScopes(scopes: string[]) {
   };
   return scopes
     .filter((s) => !HIDDEN_OAUTH_SCOPES.has(s))
-    .map((s) => labels[s] || s)
+    .map((s) => labels[s] || toolsetScopeLabel({ scope: s }) || s)
     .join(', ');
+}
+
+/** Names the toolset a `toolset:<id>` scope grants, or `null` for any other scope. */
+function toolsetScopeLabel({ scope }: { scope: string }): string | null {
+  const toolset = MCP_OPTIONAL_TOOLSETS.find((id) => mcpToolsetScope({ toolset: id }) === scope);
+  return toolset
+    ? t('settings.aiIntegrations.scopes.toolset', { name: t(MCP_TOOLSET_LABELS[toolset].labelKey) })
+    : null;
 }
 
 function handleRevoke(clientId: string) {

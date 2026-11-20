@@ -52,6 +52,24 @@
         "buttonShort": "Delete",
         "disabledTooltip": "You cannot delete this currency because it is still connected to account(s).",
         "successfullyDeleted": "Successfully deleted.",
+        "foreignAmountsWarning": "Foreign amounts recorded in this currency will be removed from your transactions. Amounts in the account currency stay unchanged.",
+        "inUse": {
+          "title": "This currency is still in use. Remove or change these first:",
+          "trashed": "(in trash)",
+          "types": {
+            "account": "Accounts",
+            "portfolio": "Portfolio display currency",
+            "holding": "Holdings",
+            "portfolioCash": "Portfolio cash",
+            "portfolioTransfer": "Portfolio transfers",
+            "investmentTransaction": "Investment transactions",
+            "subscription": "Recurring payments",
+            "transactionTemplate": "Transaction templates",
+            "budget": "Budgets",
+            "goal": "Goals",
+            "ventureDeal": "Venture deals"
+          }
+        },
         "errors": {
           "deleteFailed": "Unexpected error. Currency is not deleted."
         }
@@ -101,7 +119,7 @@
         "symbolPlaceholder": "₮",
         "decimalsLabel": "Decimals",
         "decimalsPlaceholder": "6",
-        "decimalsHint": "Amounts keep up to this many digits after the decimal point (0 to 18).",
+        "decimalsHint": "Amounts keep up to this many digits after the decimal point (0 to 8).",
         "decimalsLockedHint": "Decimals can change only while no account, transaction or template uses {code}.",
         "preview": "Example: {value}",
         "createButton": "Add currency",
@@ -117,7 +135,7 @@
           "codeExists": "You already have a currency with this code",
           "nameRequired": "Enter a name",
           "symbolTooLong": "Use up to 8 characters",
-          "decimalsRange": "Enter a whole number from 0 to 18",
+          "decimalsRange": "Enter a whole number from 0 to 8",
           "createFailed": "Unexpected error. Custom currency is not added.",
           "updateFailed": "Unexpected error. Custom currency is not updated."
         }

@@ -24,6 +24,8 @@ import { connection } from './connection';
 import CurrenciesModel from './currencies.model';
 import ExchangeRatesModel from './exchange-rates.model';
 import FeatureUsagesModel from './feature-usages.model';
+import GoalAccountsModel from './goal-accounts.model';
+import GoalsModel from './goals.model';
 import ImportBatchAccountEffectsModel from './import-batch-account-effects.model';
 import ImportBatchesModel from './import-batches.model';
 import HoldingsModel from './investments/holdings.model';
@@ -35,7 +37,6 @@ import SecuritiesModel from './investments/securities.model';
 import SecurityCurrencyCacheModel from './investments/security-currency-cache.model';
 import SecurityPricingModel from './investments/security-pricing.model';
 import LoanDetailsModel from './loan-details.model';
-import MerchantCategoryCodesModel from './merchant-category-codes.model';
 import NotificationsModel from './notifications.model';
 import PayeeAliasesModel from './payee-aliases.model';
 import PayeeIgnoredNamesModel from './payee-ignored-names.model';
@@ -57,6 +58,7 @@ import TrackerCategoriesModel from './tracker-categories.model';
 import TrackerLineCategoriesModel from './tracker-line-categories.model';
 import TrackerLinesModel from './tracker-lines.model';
 import TrackerSuggestionsModel from './tracker-suggestions.model';
+import TrackerTagsModel from './tracker-tags.model';
 import TrackerTransactionsModel from './tracker-transactions.model';
 import TrackersModel from './trackers.model';
 import TransactionAttachmentsModel from './transaction-attachments.model';
@@ -70,7 +72,6 @@ import TransactionTemplatesModel from './transaction-templates.model';
 import TransactionsModel from './transactions.model';
 import TransferSuggestionDismissalsModel from './transfer-suggestion-dismissals.model';
 import UserExchangeRatesModel from './user-exchange-rates.model';
-import UserMerchantCategoryCodesModel from './user-merchant-category-codes.model';
 import UserSettingsModel from './user-settings.model';
 import UsersCurrenciesModel from './users-currencies.model';
 import UsersModel from './users.model';
@@ -106,20 +107,19 @@ const models = [
   CurrenciesModel,
   ExchangeRatesModel,
   FeatureUsagesModel,
-  MerchantCategoryCodesModel,
   NotificationsModel,
   RefundTransactionsModel,
   ResourceSharesModel,
   ShareInvitationsModel,
   TransactionsModel,
   UserExchangeRatesModel,
-  UserMerchantCategoryCodesModel,
   UserSettingsModel,
   UsersCurrenciesModel,
   AccountGroupingModel,
   AccountGroupsModel,
   TrackersModel,
   TrackerCategoriesModel,
+  TrackerTagsModel,
   TrackerTransactionsModel,
   TrackerLinesModel,
   TrackerSuggestionsModel,
@@ -174,6 +174,8 @@ const models = [
   BudgetPeriodsModel,
   BudgetAssignmentsModel,
   BudgetPlanAccountsModel,
+  GoalsModel,
+  GoalAccountsModel,
 ];
 
 const sequelize = new Sequelize({

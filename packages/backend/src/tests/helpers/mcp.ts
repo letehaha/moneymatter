@@ -1,3 +1,4 @@
+import type { GetMcpToolsetsResponse } from '@bt/shared/types';
 import { authPool } from '@config/auth';
 import { app } from '@root/app';
 import { API_PREFIX } from '@root/config';
@@ -50,6 +51,20 @@ export async function getConnectedApps({
   });
 
   return result;
+}
+
+export async function getMcpToolsets({ raw }: { raw?: false }): Promise<CustomResponse<GetMcpToolsetsResponse>>;
+export async function getMcpToolsets({ raw }: { raw?: true }): Promise<GetMcpToolsetsResponse>;
+export async function getMcpToolsets({
+  raw = true,
+}: {
+  raw?: boolean;
+} = {}): Promise<CustomResponse<GetMcpToolsetsResponse> | GetMcpToolsetsResponse> {
+  return helpers.makeRequest({
+    method: 'get',
+    url: '/user/settings/mcp/toolsets',
+    raw,
+  });
 }
 
 export async function revokeConnectedApp({
@@ -181,15 +196,49 @@ export async function createTestMcpBearerToken({ scopes }: { scopes: string[] })
 export function requestMcp({
   method = 'post',
   token,
+  sessionId,
   body,
 }: {
   method?: 'post' | 'get' | 'delete';
   token?: string;
+  sessionId?: string;
   body?: object;
 }) {
-  const req = request(app)[method]('/mcp');
+  // The Accept header a Streamable HTTP client sends; the transport answers 406 without it.
+  const req = request(app)[method]('/mcp').set('Accept', 'application/json, text/event-stream');
   if (token) req.set('Authorization', `Bearer ${token}`);
+  if (sessionId) req.set('mcp-session-id', sessionId);
   return req.send(body);
+}
+
+/** The JSON-RPC message of an `/mcp` answer: the transport streams it as one SSE `data:` line. */
+export function readMcpMessage({ res }: { res: request.Response }): {
+  id?: number;
+  result?: Record<string, unknown>;
+  error?: { code: number; message: string };
+} {
+  const dataLine = res.text.split('\n').find((line) => line.startsWith('data: '));
+  if (!dataLine) throw new Error(`No SSE data line in the MCP answer (status ${res.status}): ${res.text}`);
+  return JSON.parse(dataLine.slice('data: '.length));
+}
+
+/** Calls one tool over `/mcp` the way a stateless client does: no `initialize`, no session id unless given. */
+export function callMcpTool({
+  token,
+  name,
+  args = {},
+  sessionId,
+}: {
+  token: string;
+  name: string;
+  args?: Record<string, unknown>;
+  sessionId?: string;
+}) {
+  return requestMcp({
+    token,
+    sessionId,
+    body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } },
+  });
 }
 
 /**

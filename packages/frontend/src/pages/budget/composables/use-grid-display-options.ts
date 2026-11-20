@@ -19,5 +19,7 @@ export const useGridDisplayOptions = () => {
     },
   });
 
-  return { rowBars };
+  const paceHint = useLocalStorage<boolean>('budget-plan:pace-hint', false);
+
+  return { rowBars, paceHint };
 };

@@ -34,6 +34,8 @@ interface GainsTransactionRow {
   /** DECIMAL(20,10) strings. */
   price: string;
   fees: string;
+  /** DECIMAL(20,10) string. Cash moved in the holding's currency; net of fees for dividends. */
+  amount: string;
 }
 
 interface HoldingValue {
@@ -55,12 +57,14 @@ interface HoldingValue {
   unrealizedGainPercent?: string;
   realizedGainValue?: string;
   realizedGainPercent?: string;
+  dividendIncome: string;
   // Present only when the portfolio has a displayCurrencyCode; percent fields are ratios and need no conversion
   displayCurrencyCode?: string;
   displayCostBasis?: string;
   displayMarketValue?: string;
   displayUnrealizedGainValue?: string;
   displayRealizedGainValue?: string;
+  displayDividendIncome?: string;
   // Internal: holding→base rate already resolved here; not part of the holdings API response
   baseRate?: number;
 }
@@ -107,7 +111,7 @@ const getHoldingValuesImpl = async ({ portfolioId, date, userId }: GetHoldingVal
       ['date', 'ASC'],
       ['createdAt', 'ASC'],
     ],
-    attributes: ['securityId', 'date', 'category', 'quantity', 'price', 'fees'],
+    attributes: ['securityId', 'date', 'category', 'quantity', 'price', 'fees', 'amount'],
     raw: true,
   })) as unknown as GainsTransactionRow[];
 
@@ -167,12 +171,10 @@ const getHoldingValuesImpl = async ({ portfolioId, date, userId }: GetHoldingVal
     const userCurrency = await UsersCurrencies.getCurrency({ userId, isDefaultCurrency: true });
     baseCurrencyCode = userCurrency?.currency.code;
 
-    // Display currency applies only while it stays connected to the user; otherwise holdings carry no display fields.
     const portfolio = await Portfolios.findByPk(portfolioId);
-    if (portfolio?.displayCurrencyCode) {
-      const connected = await UsersCurrencies.getCurrency({ userId, currencyCode: portfolio.displayCurrencyCode });
-      if (connected) displayCurrencyCode = portfolio.displayCurrencyCode;
-    }
+    // Never write here (e.g. addUserCurrencies): its per-user advisory lock, held by a caller's
+    // transaction that then awaits a deduplicated call blocked on that lock, deadlocks both requests.
+    displayCurrencyCode = portfolio?.displayCurrencyCode ?? undefined;
   }
 
   // A failed base-rate lookup is cached as null so those holdings report refMarketValue 0.
@@ -277,6 +279,12 @@ const getHoldingValuesImpl = async ({ portfolioId, date, userId }: GetHoldingVal
       securityTransactions,
     );
 
+    const dividendIncome = securityTransactions
+      .filter((tx) => tx.category === INVESTMENT_TRANSACTION_CATEGORY.dividend)
+      .reduce((sum, tx) => sum.add(Money.fromDecimal(tx.amount)), Money.zero())
+      .toNumber()
+      .toFixed(2);
+
     const displayRate = await getDisplayRate(holding.currencyCode);
 
     holdingValues.push({
@@ -296,6 +304,7 @@ const getHoldingValuesImpl = async ({ portfolioId, date, userId }: GetHoldingVal
       unrealizedGainPercent: gains.unrealizedGainPercent.toFixed(2),
       realizedGainValue: gains.realizedGainValue.toFixed(2),
       realizedGainPercent: gains.realizedGainPercent.toFixed(2),
+      dividendIncome,
       ...(baseRate !== null && { baseRate }),
       ...(displayRate !== null && {
         displayCurrencyCode,
@@ -306,6 +315,7 @@ const getHoldingValuesImpl = async ({ portfolioId, date, userId }: GetHoldingVal
         displayMarketValue: toDisplay({ decimal: marketValue, rate: displayRate }),
         displayUnrealizedGainValue: toDisplay({ decimal: gains.unrealizedGainValue.toFixed(2), rate: displayRate }),
         displayRealizedGainValue: toDisplay({ decimal: gains.realizedGainValue.toFixed(2), rate: displayRate }),
+        displayDividendIncome: toDisplay({ decimal: dividendIncome, rate: displayRate }),
       }),
     });
   }
@@ -316,8 +326,7 @@ const getHoldingValuesImpl = async ({ portfolioId, date, userId }: GetHoldingVal
 // Do not call `withTransaction` here because it's fundamentally not compatible
 // with `withDeduplication`. Also on 99.99% `withTransaction` will already be
 // defined on the level above, since this service is not really callable alone
-// It also doesn't really update anything in the DB, so even if it will be called without
-// `withTransaction` and something fails, we don't really need to undo anything, since there's nothing to undo
+// It is read-only, so a run without `withTransaction` leaves nothing to undo.
 
 export const getHoldingValues = withDeduplication(getHoldingValuesImpl, {
   keyGenerator: ({ portfolioId, date, userId }) =>

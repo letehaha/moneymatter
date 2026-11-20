@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { ACCOUNT_CATEGORIES_TRANSLATION_KEYS } from '@/common/const';
+import {
+  ACCOUNT_CATEGORIES_TRANSLATION_KEYS,
+  NO_PAYMENT_TYPE_OPTION,
+  NULLABLE_PAYMENT_TYPE_OPTIONS,
+} from '@/common/const';
+import { formatExternalUrlLabel, safeExternalUrl } from '@/common/utils/external-url';
 import * as Collapsible from '@/components/lib/ui/collapsible';
 import { Separator } from '@/components/lib/ui/separator';
 import * as Tabs from '@/components/lib/ui/tabs';
@@ -8,7 +13,7 @@ import { useAccountCurrencyCode } from '@/composable/use-account-currency-code';
 import { toLocalCurrencyNumber } from '@/js/helpers';
 import { useCurrenciesStore } from '@/stores';
 import { ACCOUNT_TYPES, AccountModel, isDedicatedFlowAccountCategory } from '@bt/shared/types';
-import { ChevronDownIcon, ChevronUpIcon } from '@lucide/vue';
+import { ChevronDownIcon, ChevronUpIcon, ExternalLinkIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, defineAsyncComponent, ref, toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -16,6 +21,10 @@ import { useI18n } from 'vue-i18n';
 const CreditLimitEditPopover = defineAsyncComponent(() => import('./credit-limit-edit-popover.vue'));
 const InitialBalanceEditPopover = defineAsyncComponent(() => import('./initial-balance-edit-popover.vue'));
 const AccountCategoryEditPopover = defineAsyncComponent(() => import('./account-category-edit-popover.vue'));
+const AccountDefaultPaymentTypeEditPopover = defineAsyncComponent(
+  () => import('./account-default-payment-type-edit-popover.vue'),
+);
+const AccountExternalUrlEditPopover = defineAsyncComponent(() => import('./account-external-url-edit-popover.vue'));
 
 const { t } = useI18n();
 
@@ -33,8 +42,19 @@ const { isOwner } = useAccountAccess(toRef(() => props.account));
 const isCategoryEditable = computed(
   () => isOwner.value && !isDedicatedFlowAccountCategory(props.account.accountCategory),
 );
+const defaultPaymentTypeLabelKey = computed(
+  () =>
+    (
+      NULLABLE_PAYMENT_TYPE_OPTIONS.find((option) => option.value === (props.account.defaultPaymentType ?? null)) ??
+      NO_PAYMENT_TYPE_OPTION
+    ).label,
+);
 const isInitialBalanceEditable = computed(
   () => isCategoryEditable.value && props.account.type === ACCOUNT_TYPES.system,
+);
+const externalUrlHref = computed(() => safeExternalUrl({ value: props.account.externalUrl }));
+const externalUrlLabel = computed(() =>
+  externalUrlHref.value ? formatExternalUrlLabel({ value: externalUrlHref.value }) : null,
 );
 </script>
 
@@ -73,6 +93,37 @@ const isInitialBalanceEditable = computed(
           </span>
 
           <AccountCategoryEditPopover v-if="isCategoryEditable" :account="account" />
+        </div>
+      </div>
+      <Separator />
+      <div class="flex items-center justify-between gap-2">
+        <span>{{ t('pages.account.details.defaultPaymentType') }}</span>
+
+        <div class="flex items-center gap-1.5">
+          <span>{{ t(defaultPaymentTypeLabelKey) }}</span>
+
+          <AccountDefaultPaymentTypeEditPopover v-if="isOwner" :account="account" />
+        </div>
+      </div>
+      <Separator />
+
+      <div class="flex items-center justify-between gap-2">
+        <span>{{ $t('pages.account.details.externalUrl') }}</span>
+
+        <div class="flex min-w-0 items-center gap-1.5">
+          <a
+            v-if="externalUrlHref"
+            :href="externalUrlHref"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-primary-text inline-flex max-w-52 items-center gap-1 hover:underline"
+          >
+            <span class="truncate">{{ externalUrlLabel }}</span>
+            <ExternalLinkIcon class="size-3.5 shrink-0" />
+          </a>
+          <span v-else class="text-muted-foreground">{{ $t('pages.account.details.externalUrlNotSet') }}</span>
+
+          <AccountExternalUrlEditPopover v-if="isOwner" :account="account" />
         </div>
       </div>
       <Separator />

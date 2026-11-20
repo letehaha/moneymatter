@@ -1,9 +1,11 @@
 import {
+  BILLING_PROVIDERS,
   BillingCycle,
   BillingTier,
   PLANS,
   Plan,
   STRIPE_PRICE_IDS,
+  isEntitledSubscription,
   isTerminalStripeStatus,
   isTerminalSubscription,
 } from '@bt/shared/types';
@@ -16,6 +18,8 @@ import { getEmailForUser } from '@services/sharing/find-user-by-email.service';
 import { getStripeClient, getStripeEnv } from './stripe/client';
 
 const ALREADY_SUBSCRIBED = 'Already subscribed. Use the billing portal to change the plan.';
+export const MANAGED_BY_APP_STORE =
+  'Your subscription is billed through the App Store. Manage it in your Apple ID settings.';
 /** Created by hand under this fixed id in both Stripe modes, so no per-mode map. */
 const EARLY_ADOPTER_COUPON_ID = 'early_adopter_50';
 
@@ -42,17 +46,22 @@ export async function createCheckoutSession({
   const priceId = STRIPE_PRICE_IDS[getStripeEnv()][tier][cycle];
   if (!priceId) throw new Error(`No Stripe price id configured for ${tier}.${cycle}`);
 
-  // Latest row carries the customer to reuse; any non-terminal row means changes go through the portal.
+  // Latest Stripe row carries the customer to reuse; any non-terminal row means changes go through the portal.
   const subscriptions = await BillingSubscriptions.findAll({
     where: { userId },
-    attributes: ['externalCustomerId', 'status'],
+    attributes: ['provider', 'externalCustomerId', 'status', 'currentPeriodEndsAt'],
     order: [['createdAt', 'DESC']],
   });
-  if (subscriptions.some((s) => !isTerminalSubscription(s))) {
+  if (subscriptions.some((s) => s.provider === BILLING_PROVIDERS.stripe && !isTerminalSubscription(s))) {
     throw new ValidationError({ message: ALREADY_SUBSCRIBED });
   }
+  // Apple keeps a failed renewal in billing retry for up to 60 days with no access, so only
+  // an entitled Apple row blocks paying on the web.
+  if (subscriptions.some((s) => s.provider === BILLING_PROVIDERS.apple && isEntitledSubscription(s))) {
+    throw new ValidationError({ message: MANAGED_BY_APP_STORE });
+  }
 
-  const customerId = subscriptions[0]?.externalCustomerId;
+  const customerId = subscriptions.find((s) => s.provider === BILLING_PROVIDERS.stripe)?.externalCustomerId;
   const customerParams: { customer?: string; customer_email?: string } = {};
   if (customerId) {
     customerParams.customer = customerId;

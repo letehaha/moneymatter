@@ -20,7 +20,7 @@ Bank connections are part of the Plus plan, and they're included in your free tr
 
 ## Supported banks and services
 
-MoneyMatter connects through five providers. Some talk to one bank directly, others connect you to thousands of banks.
+MoneyMatter connects through six providers. Some talk to one bank directly, others connect you to thousands of banks.
 
 | Provider | Where | Cost | Setup | What you need |
 |---|---|---|---|---|
@@ -29,6 +29,7 @@ MoneyMatter connects through five providers. Some talk to one bank directly, oth
 | **Monobank** | Ukraine | **Free** | **Easy to setup** | A personal **API Token**, which you create at api.monobank.ua. The token is read-only. |
 | **Enable Banking** (**Beta**) | EU and UK. 6,000+ banks through open banking. | **Free** | **Very difficult to setup** | Your own Enable Banking developer application: its **Application ID** and **Private Key**. |
 | **Walutomat** | Poland. The currency exchange platform, with 23 currencies. | **Free** | **Medium setup** | An **API Key** and **Private Key (PEM)**. You create a key pair and upload the public key in Walutomat (Settings → API). |
+| **Akahu** | New Zealand. Most major banks (ASB, Westpac, BNZ, ANZ, Kiwibank and more) through open banking. | **Free** | **Easy to setup** | Your own Akahu personal app: its **App Token** and **User Token**. You create the app and grant it access in your Akahu dashboard (my.akahu.nz). |
 
 "Paid" means the provider charges for its own service, separately from your MoneyMatter plan. Lunch Flow and SimpleFIN are independent services that connect to your bank for you.
 
@@ -42,7 +43,7 @@ Enable Banking doesn't offer an affordable ready-made connection, so you registe
 
 1. In the sidebar, open **Accounts** → **All Accounts**.
 2. In the **Bank connections** section, click **Connect bank**.
-3. In **Add Integration**, pick your region to narrow the list (**All**, **US & Canada**, **EU & UK**, **Ukraine** or **Poland**), then choose a provider. If you chose Enable Banking, follow [Connect with Enable Banking](#connect-with-enable-banking) instead.
+3. In **Add Integration**, pick your region to narrow the list (**All**, **US & Canada**, **EU & UK**, **Ukraine**, **Poland** or **New Zealand**), then choose a provider. If you chose Enable Banking, follow [Connect with Enable Banking](#connect-with-enable-banking) instead.
 4. Paste your credentials and click **Connect**. Each form has a help link, such as **Where do I get an API token?**, with instructions for getting them.
 5. Choose the accounts to add, then click the button below the list (see [Choosing accounts](#choosing-accounts)).
 
@@ -52,8 +53,8 @@ You'll see "Transactions are syncing in the background". The accounts appear rig
 
 <Screenshot
   src="/screenshots/import/bank-add-integration.png"
-  alt="The Add Integration dialog with region filters at the top and the list of providers: Lunch Flow, SimpleFIN, Monobank, Enable Banking and Walutomat."
-  hint="On a Plus or trial account, open /accounts and click Connect bank. Keep the All filter selected so all five providers show with their region, price and setup labels. Crop to the dialog."
+  alt="The Add Integration dialog with region filters at the top and the list of providers: Lunch Flow, SimpleFIN, Monobank, Enable Banking, Walutomat and Akahu."
+  hint="On a Plus or trial account, open /accounts and click Connect bank. Keep the All filter selected so all six providers show with their region, price and setup labels. Crop to the dialog."
 />
 
 ### Choosing accounts
@@ -64,6 +65,7 @@ What you see after **Connect** depends on the provider:
 - **SimpleFIN**: tick the accounts, then click **Import 2 accounts**.
 - **Walutomat**: each currency wallet is its own account. Tick the wallets, then click **Import 2 wallet(s)**.
 - **Lunch Flow**: all accounts from your Lunch Flow account are imported together. Click **Import 3 account(s)**, or **Skip** if you only want some of them. You can then add specific accounts later from the connection's page, or link them to accounts you already have.
+- **Akahu**: all accounts shared with your Akahu app are imported together. Click **Import 3 account(s)**, or **Skip** if you only want some of them. Share only the accounts you want in your Akahu app, and only those will appear. You can then add specific accounts later from the connection's page, or link them to accounts you already have.
 
 If the bank doesn't say which currency an account uses, you'll be asked to **Choose currency**. Choose carefully: it can't be changed later.
 
@@ -123,7 +125,7 @@ Both accounts must use the same currency. If they don't, you'll see **⚠️ Can
 What linking does:
 
 - **Your existing transactions stay as they are.**
-- **The history you entered yourself isn't downloaded again.** With Monobank, SimpleFIN and Lunch Flow, syncing starts from the moment you link. With Enable Banking and Walutomat, it starts from your newest transaction in the account.
+- **The history you entered yourself isn't downloaded again.** With Monobank, SimpleFIN, Lunch Flow and Akahu, syncing starts from the moment you link. With Enable Banking and Walutomat, it starts from your newest transaction in the account.
 - **The balance becomes your bank's balance.** Any difference between the two is absorbed into the account's initial balance. No extra transaction is created.
 - **The account now follows the bank's rules.** See [what you can edit](#what-you-can-edit).
 
@@ -166,6 +168,7 @@ If you use **Sync Now** in the header less than 4 hours after the last sync, Mon
 | Walutomat | The last 12 months |
 | Enable Banking | As much as your bank allows: about 3 years, 2 years, 1 year or 90 days, depending on the bank |
 | Lunch Flow | Whatever Lunch Flow has for the account |
+| Akahu | As far back as your Akahu app can see: up to 2 years |
 
 After that, each sync picks up from your newest transaction.
 

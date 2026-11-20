@@ -2,13 +2,7 @@ import type { CashFlowPeriodData } from '@bt/shared/types';
 import { format, parseISO } from 'date-fns';
 import { describe, expect, it } from 'vitest';
 
-import {
-  buildSavingsRateLine,
-  computePrevPeriod,
-  computeTrendPeriods,
-  isFullMonthPeriod,
-  sliceCashFlowTotals,
-} from './helpers';
+import { buildSavingsRateLine, computeTrendPeriods, sliceCashFlowTotals } from './helpers';
 
 const ymd = (date: Date) => format(date, 'yyyy-MM-dd');
 
@@ -37,39 +31,6 @@ const PERIODS: CashFlowPeriodData[] = [
   period({ start: '2026-07-01', income: 1500, expenses: 600 }),
 ];
 
-describe('isFullMonthPeriod', () => {
-  it('is true for a whole calendar month', () => {
-    expect(isFullMonthPeriod({ from: parseISO('2026-07-01'), to: parseISO('2026-07-31') })).toBe(true);
-  });
-
-  it('is true for February (short month)', () => {
-    expect(isFullMonthPeriod({ from: parseISO('2026-02-01'), to: parseISO('2026-02-28') })).toBe(true);
-  });
-
-  it('is false for a partial month', () => {
-    expect(isFullMonthPeriod({ from: parseISO('2026-07-01'), to: parseISO('2026-07-20') })).toBe(false);
-  });
-
-  it('is false for a range spanning two months', () => {
-    expect(isFullMonthPeriod({ from: parseISO('2026-06-15'), to: parseISO('2026-07-15') })).toBe(false);
-  });
-});
-
-describe('computePrevPeriod', () => {
-  it('returns the previous calendar month for a full month', () => {
-    const prev = computePrevPeriod({ from: parseISO('2026-07-01'), to: parseISO('2026-07-31') });
-    expect(ymd(prev.from)).toBe('2026-06-01');
-    expect(ymd(prev.to)).toBe('2026-06-30');
-  });
-
-  it('returns the same-length window ending the day before, for a custom range', () => {
-    // Jul 10–20 is 11 days → prev is Jun 29–Jul 9.
-    const prev = computePrevPeriod({ from: parseISO('2026-07-10'), to: parseISO('2026-07-20') });
-    expect(ymd(prev.from)).toBe('2026-06-29');
-    expect(ymd(prev.to)).toBe('2026-07-09');
-  });
-});
-
 describe('computeTrendPeriods', () => {
   it('returns 5 past months + the current month for a full month', () => {
     const periods = computeTrendPeriods({ from: parseISO('2026-07-01'), to: parseISO('2026-07-31') });
@@ -96,6 +57,36 @@ describe('computeTrendPeriods', () => {
     // Each window is the same 11-day length, back-to-back.
     expect(ymd(periods[5]!.from)).toBe('2026-07-10');
     expect(ymd(periods[4]!.to)).toBe('2026-07-09');
+  });
+});
+
+describe('pay periods', () => {
+  const PAY_PERIOD = { from: parseISO('2026-09-22'), to: parseISO('2026-10-21'), payday: 22 };
+
+  it('steps back by whole pay months regardless of their length', () => {
+    const periods = computeTrendPeriods(PAY_PERIOD);
+    expect([ymd(periods[4]!.from), ymd(periods[4]!.to)]).toEqual(['2026-08-22', '2026-09-21']);
+
+    expect(periods.map((p) => ymd(p.from))).toEqual([
+      '2026-04-22',
+      '2026-05-22',
+      '2026-06-22',
+      '2026-07-22',
+      '2026-08-22',
+      '2026-09-22',
+    ]);
+  });
+
+  it('steps back by calendar months for a calendar month under a payday, across the year end', () => {
+    const periods = computeTrendPeriods({ from: parseISO('2026-02-01'), to: parseISO('2026-02-28'), payday: 22 });
+    expect(periods.map((p) => ymd(p.from))).toEqual([
+      '2025-09-01',
+      '2025-10-01',
+      '2025-11-01',
+      '2025-12-01',
+      '2026-01-01',
+      '2026-02-01',
+    ]);
   });
 });
 

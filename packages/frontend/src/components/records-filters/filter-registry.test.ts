@@ -16,6 +16,7 @@ const makeFilters = (overrides: Partial<FiltersStruct> = {}): FiltersStruct => (
 
 /** One narrowing value per filter – keys must stay in sync with the registry. */
 const NARROWING_EXAMPLES: Record<FilterKey, Partial<FiltersStruct>> = {
+  search: { search: 'coffee' },
   date: { start: new Date('2026-01-01') },
   accounts: { accountIds: ['acc-1'] },
   categories: { categoryIds: ['cat-1'] },
@@ -30,7 +31,6 @@ const NARROWING_EXAMPLES: Record<FilterKey, Partial<FiltersStruct>> = {
   refunds: { refundFilter: FILTER_OPERATION.exclude },
   transfers: { transferFilter: FILTER_OPERATION.only },
   planned: { plannedFilter: FILTER_OPERATION.only },
-  note: { noteIncludes: 'coffee' },
   attachments: { attachmentFilter: FILTER_OPERATION.only },
 };
 
@@ -46,8 +46,8 @@ describe('FILTER_REGISTRY', () => {
       expect(definition.isActive(makeFilters(NARROWING_EXAMPLES[key]))).toBe(true);
     });
 
-    it('treats a whitespace-only note as inactive', () => {
-      expect(FILTER_REGISTRY.note.isActive(makeFilters({ noteIncludes: '   ' }))).toBe(false);
+    it('treats a whitespace-only search as inactive', () => {
+      expect(FILTER_REGISTRY.search.isActive(makeFilters({ search: '   ' }))).toBe(false);
     });
   });
 

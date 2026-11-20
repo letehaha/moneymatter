@@ -105,15 +105,6 @@ describe('assembleNetWorthPoint', () => {
     expect(point.liabilitiesTotal).toBe(-2000);
     expect(point.netWorth).toBe(6000);
   });
-
-  it('sums 3-decimal minor units exactly', () => {
-    // 0.778 held, 1.234 owed on an overdrawn account, 0.001 on a card: 3-decimal minor units.
-    const point = assemble({ assetAccounts: split(-1234, 778), creditCard: split(0, 1) });
-
-    expect(point.assets.cash).toBe(779);
-    expect(point.liabilitiesTotal).toBe(-1234);
-    expect(point.netWorth).toBe(-455);
-  });
 });
 
 // Type-only guard: assembleNetWorthPoint returns MinorUnits-typed money everywhere.

@@ -1,13 +1,13 @@
 {
   "auth": {
     "signup": {
-      "title": "Crea un account",
-      "divider": "Oppure continua con l'email",
+      "title": "Crea un profilo",
+      "divider": "Oppure continuare con l'email",
       "submitButton": "Registrati",
-      "alreadyHaveAccount": "Ha già un account?",
+      "alreadyHaveAccount": "Profilo già esistente?",
       "signInLink": "Accedi",
       "labels": {
-        "displayName": "Nome da visalizzare",
+        "displayName": "Nome da visualizzare",
         "verifyPassword": "Verifica password"
       },
       "placeholders": {
@@ -15,26 +15,26 @@
         "verifyPassword": "Verifica password"
       },
       "errors": {
-        "invalidEmail": "Immetti un indirizzo e-mail valido.",
+        "invalidEmail": "Inserire un indirizzo email valido.",
         "passwordTooShort": "La password è troppo corta.",
         "passwordTooLong": "La password è troppo lunga.",
         "invalidPassword": "Password non valida.",
         "userExists": "Esiste già un utente con questa email.",
-        "signupsDisabled": "Le iscrizioni sono state disabilitate dall'amministratore.",
-        "genericErrorRetry": "Si è verificato un errore. Riprova.",
-        "oauthFailed": "Impossibile registrarsi con {provider}. Per favore riprova.",
+        "signupsDisabled": "Le registrazioni sono state disabilitate dall'amministratore.",
+        "genericErrorRetry": "Si è verificato un errore. Riprovare.",
+        "oauthFailed": "Registrazione con {provider} non riuscita. Riprovare.",
         "oauthNotConfigured": "L'accesso {provider} non è configurato su questo server."
       }
     },
     "shared": {
-      "divider": "Oppure continua con",
+      "divider": "Oppure continuare con",
       "passkeyButton": {
         "signIn": "Accedi con Passkey",
         "register": "Aggiungi Passkey"
       },
       "oauthButton": {
         "signIn": "Accedi con {provider}",
-        "signUp": "Iscriviti con {provider}"
+        "signUp": "Registrati con {provider}"
       }
     }
   }

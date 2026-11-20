@@ -37,7 +37,13 @@
       "auto": "Авто",
       "name": "Назва",
       "balance": "Баланс",
-      "ariaLabel": "Сортувати рахунки"
+      "ariaLabel": "Сортувати рахунки",
+      "direction": {
+        "aToZ": "Від А до Я",
+        "zToA": "Від Я до А",
+        "highestFirst": "Спочатку найбільші",
+        "lowestFirst": "Спочатку найменші"
+      }
     },
     "status": {
       "active": "Активний",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { readCategorySort, sortCategoryRows } from './sort-category-rows';
+import { type CategorySort, readCategorySort, sortCategoryRows } from './sort-category-rows';
 
 const rows = [
   { id: 'groceries', netAmount: -50 },
@@ -9,8 +9,10 @@ const rows = [
   { id: 'idle', netAmount: 0 },
 ];
 
-const ids = ({ sortBy }: { sortBy: Parameters<typeof sortCategoryRows>[0]['sortBy'] }) =>
-  sortCategoryRows({ rows, sortBy }).map((row) => row.id);
+const getAmount = (row: { netAmount: number }) => row.netAmount;
+
+const ids = ({ sortBy, from = rows }: { sortBy: CategorySort; from?: typeof rows }) =>
+  sortCategoryRows({ rows: from, sortBy, getAmount }).map((row) => row.id);
 
 describe('sortCategoryRows', () => {
   it('keeps the user order for custom', () => {
@@ -32,12 +34,12 @@ describe('sortCategoryRows', () => {
       { id: 'c', netAmount: 0 },
     ];
 
-    expect(sortCategoryRows({ rows: tied, sortBy: 'spend-desc' }).map((row) => row.id)).toEqual(['b', 'a', 'c']);
-    expect(sortCategoryRows({ rows: tied, sortBy: 'spend-asc' }).map((row) => row.id)).toEqual(['a', 'c', 'b']);
+    expect(ids({ sortBy: 'spend-desc', from: tied })).toEqual(['b', 'a', 'c']);
+    expect(ids({ sortBy: 'spend-asc', from: tied })).toEqual(['a', 'c', 'b']);
   });
 
   it('does not mutate the input', () => {
-    sortCategoryRows({ rows, sortBy: 'spend-desc' });
+    sortCategoryRows({ rows, sortBy: 'spend-desc', getAmount });
     expect(rows[0]!.id).toBe('groceries');
   });
 });

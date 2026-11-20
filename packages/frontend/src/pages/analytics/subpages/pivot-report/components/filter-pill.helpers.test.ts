@@ -3,12 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { filterPillClass } from './filter-pill.helpers';
 
 describe('filterPillClass', () => {
-  it('keeps the compact pill height on md screens for both states', () => {
+  it('uses a fixed 36px pill height with no viewport overrides in both states', () => {
     for (const active of [true, false]) {
       const result = filterPillClass({ active });
-      expect(result).toContain('h-8');
-      expect(result).toContain('md:h-8');
-      expect(result).toContain('md:min-h-8');
+      expect(result.split(' ')).toEqual(expect.arrayContaining(['h-9', 'min-h-9']));
+      expect(result).not.toContain('md:');
     }
   });
 

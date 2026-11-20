@@ -50,6 +50,24 @@
         "buttonShort": "Eliminar",
         "disabledTooltip": "No puede eliminar esta moneda porque aún está conectada a una o más cuentas.",
         "successfullyDeleted": "Eliminada correctamente.",
+        "foreignAmountsWarning": "Las cantidades extranjeras registradas en esta moneda se eliminarán de sus transacciones. Las cantidades en la moneda de la cuenta permanecerán sin cambios.",
+        "inUse": {
+          "title": "Esta moneda todavía está en uso. Elimina o cambia estos primero:",
+          "trashed": "(en la papelera)",
+          "types": {
+            "account": "Cuentas",
+            "portfolio": "Moneda de visualización de portafolio",
+            "holding": "Posiciones",
+            "portfolioCash": "Efectivo del portafolio",
+            "portfolioTransfer": "Transferencias de portafolio",
+            "investmentTransaction": "Transacciones de inversión",
+            "subscription": "Pagos recurrentes",
+            "transactionTemplate": "Plantillas de la transacción",
+            "budget": "Presupuestos",
+            "goal": "Objetivos",
+            "ventureDeal": "Ofertas Venture "
+          }
+        },
         "errors": {
           "deleteFailed": "Error inesperado. La moneda no ha sido eliminada."
         }

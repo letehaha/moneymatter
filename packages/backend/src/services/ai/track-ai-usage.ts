@@ -17,7 +17,7 @@ export async function trackAiUsage({
   usage,
 }: {
   userId: number;
-  feature: AI_FEATURE | 'budget_suggestions';
+  feature: AI_FEATURE | 'budget_suggestions' | 'message_extraction';
   aiClient: { provider: AI_PROVIDER; modelId: string; usingUserKey: boolean };
   usage: { inputTokens?: number; outputTokens?: number } | undefined;
 }): Promise<void> {

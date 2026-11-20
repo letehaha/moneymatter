@@ -1,0 +1,426 @@
+.fp-hero {
+  padding-block: 56px 96px;
+  text-align: center;
+}
+.fp-crumbs ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0 4px;
+  font: 500 12px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.fp-crumbs ol::before {
+  content: '';
+  flex: none;
+  width: 10px;
+  height: 9px;
+  margin-right: 8px;
+  background: var(--accent);
+  -webkit-mask: var(--mark-m) no-repeat 0 0 / 10px 9px;
+  mask: var(--mark-m) no-repeat 0 0 / 10px 9px;
+}
+.fp-crumbs li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.fp-crumbs li + li::before {
+  content: '/';
+  color: var(--muted);
+}
+.fp-crumbs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 4px;
+  color: var(--accent-text);
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+.fp-crumbs a:hover {
+  text-decoration: underline;
+}
+.fp-crumbs [aria-current] {
+  padding-inline: 4px;
+}
+.fp-hero h1 {
+  margin: 6px auto 0;
+  max-width: 17em;
+  font-family: var(--display);
+  font-size: clamp(32px, 5cqi, 56px);
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.032em;
+}
+.fp-intro {
+  margin: 20px auto 0;
+  max-width: 44rem;
+  font-size: clamp(16px, 1.7cqi, 18px);
+  color: var(--muted);
+}
+.fp-note {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px 20px;
+}
+.fp-note strong {
+  font-weight: 600;
+  color: var(--fg);
+}
+.fp-hero .eyebrow {
+  justify-content: center;
+}
+.fp-hero-shot {
+  max-width: 64rem;
+  margin: 56px auto 0;
+  text-align: left;
+}
+/* A section cannot query its own .wrap container: 591px is a 559px wrap plus the 16px gutters. */
+@media (max-width: 591px) {
+  .fp-hero {
+    padding-block: 40px 72px;
+  }
+}
+@container sec (max-width: 559px) {
+  .fp-hero-shot {
+    margin-top: 40px;
+  }
+}
+
+.fp-zoom {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: var(--well);
+  box-shadow: inset 0 2px 6px var(--well-shade);
+  cursor: zoom-in;
+}
+.fp-zoom img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 36rem;
+  object-fit: contain;
+}
+.fp-zoom-ic {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--block) 70%, transparent);
+  color: var(--block-fg);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.fp-zoom:hover .fp-zoom-ic,
+.fp-zoom:focus-visible .fp-zoom-ic {
+  opacity: 1;
+}
+@media (hover: none) {
+  .fp-zoom-ic {
+    opacity: 1;
+  }
+}
+.fp-zoom-dialog {
+  margin: auto;
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  cursor: zoom-out;
+}
+.fp-zoom-dialog::backdrop {
+  background: color-mix(in srgb, var(--block) 88%, transparent);
+}
+.fp-zoom-dialog img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  border-radius: 8px;
+}
+.fp-zoom-close {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--block) 70%, transparent);
+  color: var(--block-fg);
+  cursor: pointer;
+}
+html:has(#screenshot-zoom[open]) {
+  overflow: hidden;
+}
+
+.fp-row {
+  display: grid;
+  gap: 28px;
+  align-items: center;
+}
+.fp-row + .fp-row {
+  margin-top: 72px;
+}
+.fp-copy h2 {
+  margin: 0;
+  font-size: clamp(22px, 2.6cqi, 30px);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.fp-copy .idx {
+  display: block;
+  margin-bottom: 14px;
+}
+.fp-copy > p {
+  margin-top: 14px;
+  max-width: 40rem;
+  color: var(--muted);
+}
+.fp-media {
+  margin: 0;
+}
+.fp-text {
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+}
+.fp-text:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.fp-text + .fp-text {
+  margin-top: 40px;
+}
+.fp-know {
+  margin-top: 72px;
+  padding: 22px 24px;
+}
+.fp-know h2 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.fp-know ul {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  color: var(--muted);
+}
+.fp-know li {
+  padding-block: 12px;
+}
+.fp-know li + li {
+  border-top: 1px solid var(--border);
+}
+@container sec (min-width: 860px) {
+  .fp-row {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 64px;
+  }
+  .fp-row + .fp-row {
+    margin-top: 104px;
+  }
+  .fp-flip {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  }
+  .fp-text {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fp-flip > .fp-media {
+    order: -1;
+  }
+  .fp-text .fp-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    column-gap: 64px;
+    align-items: start;
+  }
+  .fp-text .fp-copy > h2 {
+    grid-row: 1 / span 2;
+  }
+  .fp-text .fp-copy > :not(h2) {
+    grid-column: 2;
+  }
+  .fp-text .fp-copy > p {
+    margin-top: 0;
+  }
+  .fp-text .ticks {
+    margin-top: 16px;
+  }
+  .fp-row + .fp-text,
+  .fp-text + .fp-row {
+    margin-top: 88px;
+  }
+  .fp-text + .fp-text {
+    margin-top: 40px;
+  }
+  .fp-know {
+    margin-top: 104px;
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 64px;
+    padding: 28px 32px;
+  }
+  .fp-know ul {
+    margin-top: 0;
+  }
+  .fp-know li:first-child {
+    padding-top: 0;
+  }
+  .fp-know li:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.fp-guides {
+  margin-top: 28px;
+  padding: 8px;
+}
+.fp-guides p {
+  padding: 8px 10px 6px;
+  font: 500 11.5px/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.fp-guides ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fp-guides a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s;
+}
+.fp-guides a:hover {
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+}
+.fp-guides a > .ic {
+  margin-left: auto;
+  color: var(--muted);
+}
+.fp-faq .faq-ask button {
+  width: 44px;
+  height: 44px;
+}
+
+.fp-related-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+.fp-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent-text);
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+.fp-all:hover {
+  text-decoration: underline;
+}
+.fp-cards {
+  margin: 40px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+.fp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 18px;
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.fp-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.fp-card-top > .ic {
+  color: var(--muted);
+  transition:
+    color 0.2s,
+    transform 0.2s;
+}
+.fp-card:hover .fp-card-top > .ic {
+  color: var(--accent);
+  transform: translateX(3px);
+}
+.fp-card strong {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.fp-card strong + span {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .fp-zoom-ic,
+  .fp-card,
+  .fp-card-top > .ic {
+    transition: none;
+  }
+  .fp-card:hover,
+  .fp-card:hover .fp-card-top > .ic {
+    transform: none;
+  }
+}
+@container sec (min-width: 700px) {
+  .fp-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+.fp-group + .fp-group {
+  margin-top: 88px;
+}

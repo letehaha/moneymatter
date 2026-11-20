@@ -21,7 +21,7 @@ const mountIt = (props: { value: string | number; maxDecimals: number; triggerCl
   });
 
 const localized = ({ value, decimals }: { value: number; decimals: number }) =>
-  value.toLocaleString(undefined, { maximumFractionDigits: decimals });
+  value.toLocaleString('en-US', { maximumFractionDigits: decimals });
 
 describe('PrecisionNumber', () => {
   describe('rendering', () => {

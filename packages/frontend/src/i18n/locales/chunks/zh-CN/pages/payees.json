@@ -26,7 +26,7 @@
       "menu": "Actions",
       "rename": "Rename",
       "merge": "Merge into…",
-      "delete": "删除",
+      "delete": "Delete",
       "deleteAndIgnore": "Delete & ignore"
     },
     "bulk": {
@@ -46,7 +46,7 @@
     },
     "form": {
       "namePlaceholder": "Enter payee name",
-      "categoryPlaceholder": "选择分类",
+      "categoryPlaceholder": "Select a category",
       "categorizationMode": {
         "label": "AI categorization",
         "enforce": {
@@ -69,7 +69,7 @@
       "aliasesEmpty": "No aliases yet. New variants will appear here when this payee matches another merchant name.",
       "cannotDeleteCanonicalAlias": "Cannot delete the alias matching the payee's name. Rename the payee instead.",
       "deleteAliasConfirm": "Remove this alias?",
-      "addAlias": "添加",
+      "addAlias": "Add",
       "addAliasTitle": "Add alias",
       "addAliasDescription": "Future transactions whose merchant text normalizes to this alias will automatically link to this payee. Past transactions are unchanged.",
       "addAliasInputLabel": "Merchant name",
@@ -84,7 +84,7 @@
       "mergeDescription": "Pick the target payee. All transactions and aliases move to the target; this payee is deleted.",
       "confirmMerge": "Merge",
       "topCategoryHint": "The category most frequently used in transactions linked to this payee. Used as a fallback when no default category is set.",
-      "defaultCategoryPlaceholder": "选择分类",
+      "defaultCategoryPlaceholder": "Select a category",
       "defaultTagsLabel": "Auto-apply tags",
       "defaultTagsPlaceholder": "Select tags to auto-apply",
       "defaultTagsHint": "These tags are automatically added to new transactions linked to this payee (bank syncs and imports).",
@@ -132,7 +132,7 @@
     },
     "tabs": {
       "manage": "Manage",
-      "settings": "设置"
+      "settings": "Settings"
     },
     "settings": {
       "title": "Payee detection settings",
@@ -164,7 +164,7 @@
       "title": "Ignored merchant names",
       "description": "Raw merchant strings that should never automatically create a payee. Useful for noise like 'Card transfer', 'From: <name>', or refund prefixes. You can still link these names to a payee manually — only automatic matching is blocked.",
       "addPlaceholder": "e.g. Spotify",
-      "addButton": "添加",
+      "addButton": "Add",
       "addedToast": "Added to ignored names",
       "addError": "Failed to add to ignored names",
       "removeTooltip": "Remove from ignored list",

@@ -7,6 +7,8 @@
  * tokens. These helpers take the already-serialized, already-decimal output and keep only the
  * fields an assistant reasons about. The shared serializers stay untouched.
  */
+import { goalDisplayStatus, toGoalCurrency } from '@bt/shared/goals/goal-math';
+import type { GoalInsights, GoalModel, RecordId } from '@bt/shared/types';
 import { INVESTMENT_DECIMAL_SCALE } from '@common/types/money';
 import type Accounts from '@models/accounts.model';
 import type Categories from '@models/categories.model';
@@ -23,6 +25,7 @@ export function slimAccountsForMcp(accounts: AccountApiResponse[]) {
     name: a.name,
     type: a.type,
     accountCategory: a.accountCategory,
+    defaultPaymentType: a.defaultPaymentType,
     currencyCode: a.currencyCode,
     currentBalance: a.currentBalance,
     refCurrentBalance: a.refCurrentBalance,
@@ -31,6 +34,29 @@ export function slimAccountsForMcp(accounts: AccountApiResponse[]) {
     status: a.status,
     excludeFromStats: a.excludeFromStats,
   }));
+}
+
+/**
+ * The detail view of one account: the list fields plus what a single-account read, a write
+ * result or a bank unlink needs (opening balance, bank link, logo, currency precision, share).
+ */
+export function slimAccountDetailForMcp(account: AccountApiResponse) {
+  const [slim] = slimAccountsForMcp([account]);
+  return {
+    ...slim,
+    defaultPaymentType: account.defaultPaymentType,
+    initialBalance: account.initialBalance,
+    refInitialBalance: account.refInitialBalance,
+    bankDataProviderConnectionId: account.bankDataProviderConnectionId,
+    bankProviderType: account.bankProviderType,
+    bankSeamAt: account.bankSeamAt,
+    needsRelink: account.needsRelink,
+    externalUrl: account.externalUrl,
+    logoDomain: account.logoDomain,
+    logoInitials: account.logoInitials,
+    logoColor: account.logoColor,
+    share: account.share,
+  };
 }
 
 export function slimPortfolioTransferForMcp(transfer: PortfolioTransfers) {
@@ -61,25 +87,49 @@ export function slimPortfolioTransferForMcp(transfer: PortfolioTransfers) {
   };
 }
 
-export function slimTransactionsForMcp(txs: TransactionApiResponse[]) {
-  return txs.map((tx) => ({
-    id: tx.id,
-    time: tx.time,
-    amount: tx.amount,
-    refAmount: tx.refAmount,
-    currencyCode: tx.currencyCode,
-    note: tx.note,
-    transactionType: tx.transactionType,
-    transferNature: tx.transferNature,
-    accountId: tx.accountId,
-    categoryId: tx.categoryId,
-    isPlanned: tx.isPlanned,
-    ...(tx.tags && { tags: tx.tags.map((t) => ({ id: t.id, name: t.name })) }),
-    ...(tx.splits && {
-      splits: tx.splits.map((s) => ({ categoryId: s.categoryId, amount: s.amount, note: s.note })),
-    }),
-    ...(tx.transactionGroups && { transactionGroups: tx.transactionGroups }),
-  }));
+/**
+ * A transaction as an assistant reads it. `payeeNames` maps the caller's payee ids to names
+ * (`getPayeeNames`); a transaction with no payee, or one whose payee is not the caller's, gets
+ * `payee: null`. It is required so no tool serializes a transaction without its payee.
+ *
+ * `transferId` is shared by the two legs of a linked transfer, so an assistant can see which rows
+ * are paired and read both legs with `get_transactions_by_id`.
+ */
+export function slimTransactionsForMcp({
+  transactions,
+  payeeNames,
+}: {
+  transactions: TransactionApiResponse[];
+  payeeNames: ReadonlyMap<string, string>;
+}) {
+  return transactions.map((tx) => {
+    const payeeName = tx.payeeId ? payeeNames.get(tx.payeeId) : undefined;
+
+    return {
+      id: tx.id,
+      time: tx.time,
+      amount: tx.amount,
+      refAmount: tx.refAmount,
+      currencyCode: tx.currencyCode,
+      note: tx.note,
+      transactionType: tx.transactionType,
+      transferNature: tx.transferNature,
+      transferId: tx.transferId,
+      accountId: tx.accountId,
+      categoryId: tx.categoryId,
+      isPlanned: tx.isPlanned,
+      excludeFromStats: tx.excludeFromStats,
+      payeeId: tx.payeeId,
+      payee: tx.payeeId && payeeName !== undefined ? { id: tx.payeeId, name: payeeName } : null,
+      ...(tx.tags && { tags: tx.tags.map((t) => ({ id: t.id, name: t.name })) }),
+      ...(tx.splits && {
+        splits: tx.splits.map((s) => ({ categoryId: s.categoryId, amount: s.amount, note: s.note })),
+      }),
+      ...(tx.transactionGroups && { transactionGroups: tx.transactionGroups }),
+      ...(tx.paymentParts && { paymentParts: tx.paymentParts }),
+      ...(tx.paymentTotal !== undefined && { paymentTotal: tx.paymentTotal }),
+    };
+  });
 }
 
 /**
@@ -96,6 +146,8 @@ export type SubscriptionDetailForMcp = Pick<
   | 'name'
   | 'type'
   | 'frequency'
+  | 'intervalUnit'
+  | 'intervalCount'
   | 'startDate'
   | 'endDate'
   | 'isActive'
@@ -128,6 +180,8 @@ export function slimSubscriptionDetailForMcp(sub: SubscriptionDetailForMcp) {
     expectedAmount: sub.expectedAmount,
     expectedCurrencyCode: sub.expectedCurrencyCode,
     frequency: sub.frequency,
+    intervalUnit: sub.intervalUnit,
+    intervalCount: sub.intervalCount,
     startDate: sub.startDate,
     endDate: sub.endDate,
     isActive: sub.isActive,
@@ -151,4 +205,44 @@ export function slimSubscriptionDetailForMcp(sub: SubscriptionDetailForMcp) {
       matchedAt: tx.SubscriptionTransactions?.matchedAt ?? null,
     })),
   };
+}
+
+const goalProgressForMcp = ({ goal, insights }: { goal: GoalModel; insights: GoalInsights }) => {
+  const inGoalCurrency = (amount: number | null) =>
+    toGoalCurrency({ amount, rateToBase: insights.rateToBase, decimals: insights.goalDecimals });
+
+  return {
+    status: goalDisplayStatus(goal),
+    currentValue: inGoalCurrency(insights.currentValue),
+    remaining: inGoalCurrency(insights.remaining),
+    pace: inGoalCurrency(insights.pace),
+    historicalPace: inGoalCurrency(insights.historicalPace),
+    neededMonthly: inGoalCurrency(insights.neededMonthly),
+    etaMonths: insights.etaMonths,
+    daysLeft: insights.daysLeft,
+  };
+};
+
+/** Every amount is in the goal currency; the per-account history behind the insights is dropped. */
+export function slimGoalsForMcp({ goals, accountNames }: { goals: GoalModel[]; accountNames: Map<RecordId, string> }) {
+  return goals.map((goal) => ({
+    id: goal.id,
+    name: goal.name,
+    status: goal.status,
+    currencyCode: goal.currencyCode,
+    targetAmount: goal.targetAmount,
+    targetDate: goal.targetDate,
+    plannedMonthly: goal.plannedMonthly,
+    achievedAt: goal.achievedAt,
+    achievedAmount: goal.achievedAmount,
+    reachedHoldDays: goal.reachedHoldDays,
+    progress: goal.insights ? goalProgressForMcp({ goal, insights: goal.insights }) : null,
+    accounts: goal.accounts.map(({ accountId, sharePercent, fixedAmount, fixedPosition }) => ({
+      accountId,
+      accountName: accountNames.get(accountId) ?? null,
+      sharePercent,
+      fixedAmount,
+      fixedPosition,
+    })),
+  }));
 }

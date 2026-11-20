@@ -29,7 +29,7 @@
       <div class="flex justify-end">
         <UiButton :disabled="isUploading" @click="handleUpload">
           <template v-if="isUploading">
-            <LoaderIcon class="mr-2 size-4 animate-spin" />
+            <LoaderIcon class="size-4 animate-spin" />
             {{ $t('pages.importExport.csvImport.fileUpload.parsing') }}
           </template>
           <template v-else>

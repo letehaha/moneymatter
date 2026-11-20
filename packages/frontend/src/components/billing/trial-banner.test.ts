@@ -34,6 +34,7 @@ const i18n = createI18n({
 });
 
 const subscription = ({ status }: { status: BillingSubscriptionSummary['status'] }): BillingSubscriptionSummary => ({
+  provider: 'stripe',
   externalSubscriptionId: `sub_${status}`,
   tier: 'plus',
   status,

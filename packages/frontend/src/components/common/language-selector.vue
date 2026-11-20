@@ -11,7 +11,7 @@
         </template>
       </Button>
     </Popover.PopoverTrigger>
-    <Popover.PopoverContent class="w-44" align="end">
+    <Popover.PopoverContent class="w-56" align="end">
       <div class="space-y-1">
         <div v-if="showHeader" class="mb-2 text-sm font-medium">
           {{ $t('header.language') }}
@@ -19,10 +19,8 @@
         <button
           v-for="locale in availableLocales"
           :key="locale.value"
-          class="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
-          :class="{
-            'bg-accent': currentLocale === locale.value,
-          }"
+          class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors"
+          :class="currentLocale === locale.value ? 'bg-accent' : 'hover:bg-hover'"
           @click="handleLocaleChange(locale.value)"
         >
           <img :src="locale.flagSrc" :alt="locale.native" class="h-4 w-5.5 rounded-sm object-cover" />
@@ -37,7 +35,7 @@
 import { api } from '@/api';
 import Button from '@/components/lib/ui/button/Button.vue';
 import * as Popover from '@/components/lib/ui/popover';
-import { getCurrentLocale, setLocale } from '@/i18n';
+import { FLAG_SRCS, getCurrentLocale, setLocale } from '@/i18n';
 import { trackAnalyticsEvent } from '@/lib/posthog';
 import { LOCALE_NAMES, SUPPORTED_LOCALES, type SupportedLocale } from '@bt/shared/i18n/locales';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -68,16 +66,6 @@ const props = withDefaults(
 const queryClient = useQueryClient();
 
 const currentLocale = ref<SupportedLocale>(getCurrentLocale() as SupportedLocale);
-
-const FLAG_SRCS: Record<SupportedLocale, string> = {
-  [SUPPORTED_LOCALES.ENGLISH]: '/img/flags/gb.svg',
-  [SUPPORTED_LOCALES.UKRAINIAN]: '/img/flags/ua.svg',
-  [SUPPORTED_LOCALES.SPANISH]: '/img/flags/es.png',
-  [SUPPORTED_LOCALES.INDONESIAN]: '/img/flags/id.svg',
-  [SUPPORTED_LOCALES.RUSSIAN]: '/img/flags/ru.svg',
-  [SUPPORTED_LOCALES.SLOVAK]: '/img/flags/sk.svg',
-  [SUPPORTED_LOCALES.GERMAN]: '/img/flags/de.svg',
-};
 
 const currentFlagSrc = computed(() => FLAG_SRCS[currentLocale.value]);
 const currentLocaleNative = computed(() => LOCALE_NAMES[currentLocale.value].native);

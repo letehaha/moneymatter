@@ -69,6 +69,8 @@ describe('parseDecimalAmount', () => {
       ['only whitespace', '   '],
       ['only separators', '.,'],
       ['a malformed group', '1.2.3'],
+      ['an empty first group', ',250,000'],
+      ['a first group over three digits', '1234,567.89'],
     ])('refuses %s', (_label, raw) => {
       expect(parseDecimalAmount({ raw })).toBeNull();
     });

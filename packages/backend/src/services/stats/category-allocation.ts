@@ -3,6 +3,7 @@ import { Money } from '@common/types/money';
 import RefundTransactions from '@models/refund-transactions.model';
 import TransactionSplits from '@models/transaction-splits.model';
 import { findTransactions } from '@models/transactions-query';
+import { refundShareRefAmount } from '@services/tx-refunds/refund-share';
 import { Op } from 'sequelize';
 
 /**
@@ -13,9 +14,9 @@ import { Op } from 'sequelize';
  *
  * - Split transactions distribute across their categories — the primary category gets
  *   `tx.refAmount − Σ splits` (only when positive), each split its own `split.refAmount`.
- * - Refunds net cash-basis: a refund emits a negative leg at the refunded category, stamped with
- *   the *refund tx's* own date (so it lands in the bucket the money came back in). The refunded
- *   category is the targeted split's category, else the original expense's category.
+ * - Refunds emit a negative leg for the measured side of each pair, stamped with that side's own
+ *   transaction date and only when that transaction is in the passed set. The refunded category
+ *   is the targeted split's category, else the original's category.
  *
  * The engine stays grouping-agnostic: legs are keyed by the exact `categoryId` (null = the
  * uncategorized residual) and carry their transaction's type, so a report that shows income and
@@ -23,14 +24,15 @@ import { Op } from 'sequelize';
  * grouping key (root category, selected ancestor, exact subcategory) and decides whether to keep
  * the time axis.
  *
- * Refund legs are returned separately so a consumer can drop a refund whose category never received
- * any base spend in range (avoids phantom negative rows for out-of-range originals). A consumer
- * that needs both sides of a refund calls `resolveRefundPairs` directly.
+ * Refund legs are returned separately so a consumer can drop one whose category got no base leg:
+ * a refund of a whole transaction whose splits consume its entire amount. A consumer that needs
+ * both sides of a refund calls `resolveRefundPairs` and reads each side through `refundLegs`.
  */
 
 /** Minimal transaction shape the engine needs; both stats consumers already load these columns. */
 interface AllocatableTransaction {
   id: string;
+  amount: Money;
   /** `null` while a custom currency has no rate: the row contributes to no figure. */
   refAmount: Money | null;
   categoryId: string | null;
@@ -45,7 +47,7 @@ export interface CategoryAllocationLeg {
   categoryId: string | null;
   /** Base legs are positive; refund legs are negative. Integer minor units of the base currency. */
   minor: number;
-  /** Base legs use the transaction's own date; refund legs use the refund tx's date. */
+  /** The date of the transaction this leg nets against. */
   time: Date;
   /** Type of the transaction this leg came from; a split leg inherits its parent transaction's. */
   transactionType: TRANSACTION_TYPES;
@@ -62,16 +64,16 @@ export interface CategoryAllocations {
  * A refund pair resolved to the category each side of a report should net against.
  *
  * A refund always pairs one expense with one income (`createSingleRefund` rejects same-type pairs),
- * so both sides are named: an expense report nets against `expenseCategoryId`, an income report
- * against `incomeCategoryId`. A report that shows both sides (cash flow) subtracts `minor` from
- * each of them in the same bucket, which leaves its net flow untouched.
+ * so both sides are named: an expense report nets against `expenseCategoryId` at `expenseTime`, an
+ * income report against `incomeCategoryId` at `incomeTime`. A report that shows both sides (cash
+ * flow) subtracts `minor` from each side in that side's own bucket.
  *
  * When the refund targets a split, that split belongs to the *original* transaction, so its
  * category replaces the original's on whichever of the two sides the original sits.
  *
  * The `…InScope` flags say whether that side's transaction was in the set handed to
- * `resolveRefundPairs`. A side that was only fetched to resolve the pair contributed no positive
- * amount to the caller's report, so netting against it would invent money.
+ * `resolveRefundPairs`. Only an in-scope side is netted (`refundLegs` enforces it): a side fetched
+ * just to resolve the pair contributed nothing to the caller's report, so netting it would invent money.
  *
  * Two siblings resolve refunds for other reports and stay separate on purpose: trackers'
  * `TrackerRefundPair` keys its scope flags on original/refund rather than expense/income, and the
@@ -80,8 +82,8 @@ export interface CategoryAllocations {
 export interface CategoryRefundPair {
   /** Refund magnitude in integer minor units of the base currency, always positive: callers negate it. */
   minor: number;
-  /** The refund tx's own date — the bucket the money actually moved in. */
-  time: Date;
+  expenseTime: Date;
+  incomeTime: Date;
   expenseCategoryId: string | null;
   incomeCategoryId: string | null;
   expenseInScope: boolean;
@@ -89,6 +91,7 @@ export interface CategoryRefundPair {
 }
 
 interface TxEntry {
+  amount: Money;
   refAmount: Money | null;
   categoryId: string | null;
   transactionType: TRANSACTION_TYPES;
@@ -96,11 +99,13 @@ interface TxEntry {
 }
 
 const toTxEntry = (tx: {
+  amount: Money;
   refAmount: Money | null;
   categoryId: string | null;
   transactionType: TRANSACTION_TYPES;
   time: Date | string;
 }): TxEntry => ({
+  amount: tx.amount,
   refAmount: tx.refAmount,
   categoryId: tx.categoryId,
   transactionType: tx.transactionType,
@@ -109,7 +114,7 @@ const toTxEntry = (tx: {
 
 /**
  * Resolves every refund touching `transactions` into a pair of categories plus the magnitude and
- * date of the money that came back. A pair surfaces as soon as *either* of its two transactions is
+ * each side's own date. A pair surfaces as soon as *either* of its two transactions is
  * in the passed set, so a consumer holding both sides (cash flow) always sees the pair exactly once.
  *
  * Pairs whose counterpart transaction no longer exists are dropped rather than half-applied.
@@ -161,7 +166,7 @@ export const resolveRefundPairs = async ({
         id: { [Op.in]: [...missingTxIds] },
         userId: { [Op.in]: [...new Set(refunds.map((refund) => refund.userId))] },
       },
-      attributes: ['id', 'refAmount', 'categoryId', 'transactionType', 'time'],
+      attributes: ['id', 'amount', 'refAmount', 'categoryId', 'transactionType', 'time'],
     });
     for (const tx of missingTxs) txMap.set(tx.id, toTxEntry(tx));
   }
@@ -181,28 +186,103 @@ export const resolveRefundPairs = async ({
     const originalTx = txMap.get(refund.originalTxId);
     const refundTx = txMap.get(refund.refundTxId);
     if (!originalTx || !refundTx) continue;
-    // A refund with no base-currency amount has no magnitude to net.
-    if (refundTx.refAmount === null) continue;
+    // A refund with no base-currency amount has no magnitude to net, and an unpriced original
+    // contributed nothing to net against.
+    if (refundTx.refAmount === null || originalTx.refAmount === null) continue;
 
     // `splitId` always points at a split of the original tx (enforced when the refund is created),
     // so the split's category stands in for the original's on whichever side the original sits.
     const splitCategoryId = refund.splitId ? splitCategoryById.get(refund.splitId) : undefined;
     const originalCategoryId = splitCategoryId !== undefined ? splitCategoryId : originalTx.categoryId;
-    const originalIsExpense = originalTx.transactionType === TRANSACTION_TYPES.expense;
-    const originalInScope = inScopeTxIds.has(refund.originalTxId);
-    const refundInScope = inScopeTxIds.has(refund.refundTxId);
+    const original = {
+      time: originalTx.time,
+      categoryId: originalCategoryId,
+      inScope: inScopeTxIds.has(refund.originalTxId),
+    };
+    const counterpart = {
+      time: refundTx.time,
+      categoryId: refundTx.categoryId,
+      inScope: inScopeTxIds.has(refund.refundTxId),
+    };
+    const [expense, income] =
+      originalTx.transactionType === TRANSACTION_TYPES.expense ? [original, counterpart] : [counterpart, original];
 
     pairs.push({
-      minor: refundTx.refAmount.toMinorUnits({ decimals }),
-      time: refundTx.time,
-      expenseCategoryId: originalIsExpense ? originalCategoryId : refundTx.categoryId,
-      incomeCategoryId: originalIsExpense ? refundTx.categoryId : originalCategoryId,
-      expenseInScope: originalIsExpense ? originalInScope : refundInScope,
-      incomeInScope: originalIsExpense ? refundInScope : originalInScope,
+      minor: refundShareRefAmount({
+        link: refund,
+        refundTx: { amount: refundTx.amount, refAmount: refundTx.refAmount },
+        decimals,
+      }).toMinorUnits({ decimals }),
+      expenseTime: expense.time,
+      incomeTime: income.time,
+      expenseCategoryId: expense.categoryId,
+      incomeCategoryId: income.categoryId,
+      expenseInScope: expense.inScope,
+      incomeInScope: income.inScope,
     });
   }
 
   return pairs;
+};
+
+/** Negative netting legs for one side of each pair, dated at that side's own tx; out-of-scope sides are dropped. */
+export const refundLegs = ({
+  pairs,
+  side,
+}: {
+  pairs: CategoryRefundPair[];
+  side: TRANSACTION_TYPES;
+}): { categoryId: string | null; minor: number; time: Date }[] =>
+  side === TRANSACTION_TYPES.income
+    ? pairs
+        .filter((pair) => pair.incomeInScope)
+        .map((pair) => ({ categoryId: pair.incomeCategoryId, minor: -pair.minor, time: pair.incomeTime }))
+    : pairs
+        .filter((pair) => pair.expenseInScope)
+        .map((pair) => ({ categoryId: pair.expenseCategoryId, minor: -pair.minor, time: pair.expenseTime }));
+
+export const loadSplitsByTxId = async ({
+  transactionIds,
+}: {
+  transactionIds: string[];
+}): Promise<Map<string, TransactionSplits[]>> => {
+  const splits = await TransactionSplits.findAll({
+    where: { transactionId: { [Op.in]: transactionIds } },
+    attributes: ['id', 'transactionId', 'categoryId', 'refAmount'],
+  });
+  const splitsByTxId = new Map<string, TransactionSplits[]>();
+  for (const split of splits) {
+    const existing = splitsByTxId.get(split.transactionId) ?? [];
+    existing.push(split);
+    splitsByTxId.set(split.transactionId, existing);
+  }
+  return splitsByTxId;
+};
+
+/**
+ * The primary category keeps `minor − Σ splits` (only when positive), each split its own amount.
+ * `minor` and the legs are integer minor units of the base currency at `decimals`.
+ */
+export const allocateTransaction = ({
+  minor,
+  categoryId,
+  splits = [],
+  decimals,
+}: {
+  minor: number;
+  categoryId: string | null;
+  splits?: Pick<TransactionSplits, 'categoryId' | 'refAmount'>[];
+  decimals: number;
+}): { categoryId: string | null; minor: number }[] => {
+  if (splits.length === 0) return [{ categoryId, minor }];
+
+  const splitLegs = splits.flatMap((split) =>
+    split.refAmount === null
+      ? []
+      : [{ categoryId: split.categoryId, minor: split.refAmount.toMinorUnits({ decimals }) }],
+  );
+  const primaryMinor = minor - splitLegs.reduce((sum, leg) => sum + leg.minor, 0);
+  return primaryMinor > 0 ? [{ categoryId, minor: primaryMinor }, ...splitLegs] : splitLegs;
 };
 
 export const computeCategoryAllocations = async ({
@@ -220,22 +300,10 @@ export const computeCategoryAllocations = async ({
 }): Promise<CategoryAllocations> => {
   if (transactions.length === 0) return { base: [], refunds: [] };
 
-  const txIds = transactions.map((tx) => tx.id);
-
-  const [splits, refundPairs] = await Promise.all([
-    TransactionSplits.findAll({
-      where: { transactionId: { [Op.in]: txIds } },
-      attributes: ['id', 'transactionId', 'categoryId', 'refAmount'],
-    }),
+  const [splitsByTxId, refundPairs] = await Promise.all([
+    loadSplitsByTxId({ transactionIds: transactions.map((tx) => tx.id) }),
     applyRefunds ? resolveRefundPairs({ transactions, decimals }) : Promise.resolve<CategoryRefundPair[]>([]),
   ]);
-
-  const splitsByTxId = new Map<string, TransactionSplits[]>();
-  for (const split of splits) {
-    const existing = splitsByTxId.get(split.transactionId) ?? [];
-    existing.push(split);
-    splitsByTxId.set(split.transactionId, existing);
-  }
 
   const base: CategoryAllocationLeg[] = [];
   for (const tx of transactions) {
@@ -243,31 +311,19 @@ export const computeCategoryAllocations = async ({
     if (tx.refAmount === null) continue;
 
     const time = new Date(tx.time);
-    const transactionType = tx.transactionType;
-    const txSplits = splitsByTxId.get(tx.id);
-    if (txSplits && txSplits.length > 0) {
-      const valuedSplits = txSplits.flatMap((split) =>
-        split.refAmount === null
-          ? []
-          : [{ categoryId: split.categoryId, minor: split.refAmount.toMinorUnits({ decimals }) }],
-      );
-      const splitsTotal = valuedSplits.reduce((sum, split) => sum + split.minor, 0);
-      const primaryAmount = tx.refAmount.toMinorUnits({ decimals }) - splitsTotal;
-      if (primaryAmount > 0) base.push({ categoryId: tx.categoryId, minor: primaryAmount, time, transactionType });
-      for (const split of valuedSplits) {
-        base.push({ categoryId: split.categoryId, minor: split.minor, time, transactionType });
-      }
-    } else {
-      base.push({ categoryId: tx.categoryId, minor: tx.refAmount.toMinorUnits({ decimals }), time, transactionType });
-    }
+    const legs = allocateTransaction({
+      minor: tx.refAmount.toMinorUnits({ decimals }),
+      categoryId: tx.categoryId,
+      splits: splitsByTxId.get(tx.id),
+      decimals,
+    });
+    for (const leg of legs) base.push({ ...leg, time, transactionType: tx.transactionType });
   }
 
-  const refundLegs: CategoryAllocationLeg[] = refundPairs.map((pair) => ({
-    categoryId: refundSide === TRANSACTION_TYPES.income ? pair.incomeCategoryId : pair.expenseCategoryId,
-    minor: -pair.minor,
-    time: pair.time,
+  const refunds = refundLegs({ pairs: refundPairs, side: refundSide }).map((leg) => ({
+    ...leg,
     transactionType: refundSide,
   }));
 
-  return { base, refunds: refundLegs };
+  return { base, refunds };
 };

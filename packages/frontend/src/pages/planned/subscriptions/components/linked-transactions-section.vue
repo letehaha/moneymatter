@@ -49,6 +49,8 @@ const summary = computed(() =>
   buildLinkedPaymentsSummary({
     transactions: props.subscription.transactions ?? [],
     frequency: props.subscription.frequency,
+    intervalUnit: props.subscription.intervalUnit,
+    intervalCount: props.subscription.intervalCount,
   }),
 );
 
@@ -372,7 +374,7 @@ const getMatchSourceDotClass = ({ source }: { source: string }): string =>
           <div
             v-for="tx in group.payments"
             :key="tx.id"
-            class="group/row border-border/50 hover:bg-muted/30 flex items-center gap-2.5 border-t px-2.5 py-2 @lg/linked:gap-3 @lg/linked:px-3.5"
+            class="group/row border-border/50 hover:bg-hover flex items-center gap-2.5 border-t px-2.5 py-2 @lg/linked:gap-3 @lg/linked:px-3.5"
           >
             <span class="text-muted-foreground w-12 shrink-0 font-mono text-[11px] tabular-nums @lg/linked:text-xs">
               {{ format(new Date(tx.time), 'd MMM') }}

@@ -701,6 +701,95 @@ describe('Investment transactions AI import — E2E', () => {
       // Original transaction should still be there.
       const txs = await InvestmentTransaction.findAll({ where: { securityId: btc!.id }, order: [['date', 'ASC']] });
       expect(txs).toHaveLength(2);
+      expect(txs[1]!.date.toISOString()).toBe('2024-02-01T12:00:00.000Z');
+    });
+
+    it('imports stock sells listed above the buys that fund them, including same-day pairs', async () => {
+      const portfolio = await helpers.createPortfolio({
+        payload: helpers.buildPortfolioPayload({ name: 'Stocks' }),
+        raw: true,
+      });
+      const [aapl] = await helpers.seedSecurities([{ symbol: 'AAPL', name: 'Apple Inc.' }]);
+
+      const result = await helpers.investmentImportExecute({
+        payload: {
+          holdings: [
+            {
+              tempId: 'holding-1',
+              parsedSymbol: 'AAPL',
+              parsedName: 'Apple Inc.',
+              resolvedSecurity: {
+                securityId: aapl!.id,
+                providerSymbol: aapl!.providerSymbol,
+                symbol: 'AAPL',
+                name: 'Apple Inc.',
+                assetClass: aapl!.assetClass,
+                providerName: aapl!.providerName,
+                currencyCode: aapl!.currencyCode,
+                exchangeName: aapl!.exchangeName ?? undefined,
+                alreadyInDb: true,
+              },
+              resolvedConfidence: 'auto',
+              portfolioId: portfolio.id,
+              currencyCode: aapl!.currencyCode,
+              hasExistingHolding: false,
+              transactions: [
+                {
+                  tempId: 'tx-sell',
+                  date: '2024-03-01',
+                  side: 'sell',
+                  quantity: '4',
+                  price: '180',
+                  fees: '0',
+                  amount: '720',
+                  possibleDuplicateOf: null,
+                },
+                {
+                  tempId: 'tx-same-day-sell',
+                  date: '2024-04-01',
+                  side: 'sell',
+                  quantity: '8',
+                  price: '200',
+                  fees: '0',
+                  amount: '1600',
+                  possibleDuplicateOf: null,
+                },
+                {
+                  tempId: 'tx-same-day-buy',
+                  date: '2024-04-01',
+                  side: 'buy',
+                  quantity: '5',
+                  price: '190',
+                  fees: '0',
+                  amount: '950',
+                  possibleDuplicateOf: null,
+                },
+                {
+                  tempId: 'tx-buy',
+                  date: '2024-01-01',
+                  side: 'buy',
+                  quantity: '10',
+                  price: '150',
+                  fees: '0',
+                  amount: '1500',
+                  possibleDuplicateOf: null,
+                },
+              ],
+            },
+          ],
+          skipTempIds: [],
+        },
+        raw: true,
+      });
+
+      expect(result.warnings).toEqual([]);
+      expect(result.createdTransactions).toBe(4);
+      const [holding] = await helpers.getHoldings({
+        portfolioId: portfolio.id,
+        payload: { securityId: aapl!.id },
+        raw: true,
+      });
+      expect(holding!.quantity).toBeNumericEqual(3);
     });
 
     it('imports dividend rows as cash income and still rejects fee rows', async () => {

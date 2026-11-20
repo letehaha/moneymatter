@@ -15,8 +15,8 @@ const schema = z.object({
       .preprocess((val) => Number(val), z.number().int().nonnegative())
       .optional()
       .default(0),
-    sortBy: z.nativeEnum(TRANSACTION_SORT_FIELD).optional(),
-    order: z.nativeEnum(SORT_DIRECTIONS).optional().default(SORT_DIRECTIONS.desc),
+    sortBy: z.enum(TRANSACTION_SORT_FIELD).optional(),
+    order: z.enum(SORT_DIRECTIONS).optional().default(SORT_DIRECTIONS.desc),
   }),
 });
 

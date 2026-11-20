@@ -1,14 +1,17 @@
 import { ACCOUNT_TYPES, PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
-import type { TransactionLocation } from '@bt/shared/types';
+import type { ImportSource, TransactionLocation } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import * as Transactions from '@models/transactions.model';
 
+import type { PaymentLegParam } from './payment-legs';
 import { SplitInput } from './splits/types';
 
 export type CreateTransactionParams = Omit<
   Transactions.CreateTransactionPayload,
-  'refAmount' | 'transferId' | 'currencyCode' | 'refCurrencyCode' | 'accountType'
+  'refAmount' | 'transferId' | 'currencyCode' | 'refCurrencyCode' | 'accountType' | 'paymentType'
 > & {
+  /** Falls back to the account's `defaultPaymentType`, then `bankTransfer`. */
+  paymentType?: PAYMENT_TYPES;
   /**
    * Provider and importer code declares the type it syncs into. Leaving it out marks the row
    * as user-typed: the create path then reads the real type off the account, and rejects a
@@ -20,6 +23,8 @@ export type CreateTransactionParams = Omit<
   destinationTransactionId?: string;
   refundsTxId?: string;
   refundsSplitId?: string;
+  /** Share of the new refund tx linked to `refundsTxId`; omitted means the whole refund. */
+  refundsAmount?: Money;
   splits?: SplitInput[];
   tagIds?: string[];
   /**
@@ -51,6 +56,13 @@ export type CreateTransactionParams = Omit<
    * entry is never overridden; API integrations posting bank data opt in per request.
    */
   applyAutomations?: boolean;
+  /**
+   * Files the row under the day's import batch of this source, so import history lists it and can
+   * undo it. Ignored for a planned row, which cannot carry an import stamp.
+   */
+  importSource?: ImportSource.messageImport;
+  /** The other accounts of a multi-account payment; the main row keeps `accountId` and `amount`. */
+  paymentLegs?: PaymentLegParam[];
 };
 
 interface UpdateParams {
@@ -67,17 +79,20 @@ interface UpdateParams {
   accountId?: string;
   categoryId?: string;
   transferNature?: TRANSACTION_TRANSFER_NATURE;
-  refundsTxId?: string | null;
-  refundsSplitId?: string | null;
-  refundedByTxIds?: string[] | null;
+  /** `amount` undefined keeps the share of an existing link, null links the whole refund. */
+  refundedByTxIds?: { txId: string; amount?: Money | null }[] | null;
+  refundsTargets?: { txId: string; splitId?: string | null; amount?: Money | null }[] | null;
   splits?: SplitInput[] | null; // null to clear all splits
   tagIds?: string[] | null; // null to clear all tags
   payeeId?: string | null;
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  excludeFromStats?: boolean;
   /** `null` clears the stored metadata; both fields move together. */
   originalAmount?: Money | null;
   originalCurrencyCode?: string | null;
+  /** Full replacement of the payment's other accounts; `null` drops them, absent keeps them. */
+  paymentLegs?: PaymentLegParam[] | null;
 }
 
 interface UpdateTransferParams {

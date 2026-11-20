@@ -19,5 +19,10 @@
     ]
   },
   "sortTailwindcss": {},
-  "ignorePatterns": ["packages/frontend/src/data/lucide-icons.json", "**/dist", "packages/docs/**/*.mdx"]
+  "ignorePatterns": [
+    "packages/frontend/src/data/lucide-icons.json",
+    "packages/landing/public/img/landing/home/*.json",
+    "**/dist",
+    "packages/docs/**/*.mdx"
+  ]
 }

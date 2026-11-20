@@ -65,6 +65,8 @@ services:
       - test-redis
     environment:
       - NODE_ENV=test
+      # Tests derive "today" and the UTC link day from local dates; they must agree.
+      - TZ=UTC
       # so package `config` will look into the correct place
       - NODE_CONFIG_DIR=./packages/backend/config
       # Jest runs CommonJS here, so --experimental-vm-modules must stay out: with it

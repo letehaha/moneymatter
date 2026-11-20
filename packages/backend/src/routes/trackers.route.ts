@@ -3,7 +3,6 @@ import createTracker from '@controllers/trackers/create-tracker';
 import deleteTracker from '@controllers/trackers/delete-tracker';
 import duplicateTracker from '@controllers/trackers/duplicate-tracker';
 import editTracker from '@controllers/trackers/edit-tracker';
-import getCategoryTrackerTransactions from '@controllers/trackers/get-category-tracker-transactions';
 import getTrackerSpendingStats from '@controllers/trackers/get-spending-stats';
 import getTrackerStats from '@controllers/trackers/get-stats';
 import { getTrackerById, getTrackers } from '@controllers/trackers/get-trackers';
@@ -17,6 +16,7 @@ import {
   rejectSuggestions,
   restoreSuggestions,
 } from '@controllers/trackers/suggestions/resolve-suggestions';
+import syncTrackerRules from '@controllers/trackers/sync-rules';
 import archiveTracker from '@controllers/trackers/toggle-archive';
 import { authenticateSession } from '@middlewares/better-auth';
 import { blockDemoUsers } from '@middlewares/block-demo-users';
@@ -32,13 +32,13 @@ router.get('/', getTrackers);
 router.get('/:id', getTrackerById);
 router.get('/:id/stats', getTrackerStats);
 router.get('/:id/spending-stats', getTrackerSpendingStats);
-router.get('/:id/category-transactions', getCategoryTrackerTransactions);
 router.get('/:id/suggestions', getTrackerSuggestions);
 router.post('/', blockDemoUsers, checkBaseCurrencyLock, createTracker);
 router.put('/:id', blockDemoUsers, checkBaseCurrencyLock, editTracker);
 router.patch('/:id/archive', blockDemoUsers, checkBaseCurrencyLock, archiveTracker);
 router.delete('/:id', blockDemoUsers, checkBaseCurrencyLock, deleteTracker);
 router.post('/:id/duplicate', blockDemoUsers, checkBaseCurrencyLock, duplicateTracker);
+router.post('/:id/sync', checkBaseCurrencyLock, syncTrackerRules);
 
 router.post('/:id/lines', blockDemoUsers, checkBaseCurrencyLock, createTrackerLine);
 router.put('/:id/lines/:lineId', blockDemoUsers, checkBaseCurrencyLock, updateTrackerLine);

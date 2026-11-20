@@ -1,8 +1,7 @@
+import { MCP_SCOPES_SUPPORTED } from '@services/mcp/oauth-scopes';
 import { Express, Request, Response } from 'express';
 
 import { API_PREFIX, BETTER_AUTH_BASE_URL, MCP_BASE_URL } from '../config';
-
-const MCP_SCOPES_SUPPORTED = ['finance:read', 'finance:write', 'finance:delete', 'profile:read', 'offline_access'];
 
 /**
  * Set up OAuth discovery and metadata routes required by MCP clients.

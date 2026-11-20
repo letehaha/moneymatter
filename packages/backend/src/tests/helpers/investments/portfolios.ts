@@ -6,6 +6,7 @@ import { createPortfolio as _createPortfolio } from '@services/investments/portf
 import { deletePortfolio as _deletePortfolio } from '@services/investments/portfolios/delete.service';
 import { getPortfolioSummaries as _getPortfolioSummaries } from '@services/investments/portfolios/get-portfolio-summaries.service';
 import { getPortfolioSummary as _getPortfolioSummary } from '@services/investments/portfolios/get-portfolio-summary.service';
+import { getPortfolioValueHistory as _getPortfolioValueHistory } from '@services/investments/portfolios/get-portfolio-value-history.service';
 import { getPortfoliosAnnualizedReturns as _getPortfoliosAnnualizedReturns } from '@services/investments/portfolios/get-portfolios-annualized-returns.service';
 import { getPortfolio as _getPortfolio } from '@services/investments/portfolios/get.service';
 import { listPortfolios as _listPortfolios } from '@services/investments/portfolios/list.service';
@@ -19,6 +20,7 @@ export function buildPortfolioPayload({
   portfolioType = PORTFOLIO_TYPE.investment,
   description = 'Test portfolio description',
   displayCurrencyCode,
+  externalUrl,
   isEnabled = true,
 }: Partial<Omit<Parameters<typeof _createPortfolio>[0], 'userId'>> = {}): Omit<
   Parameters<typeof _createPortfolio>[0],
@@ -29,6 +31,7 @@ export function buildPortfolioPayload({
     portfolioType,
     description,
     ...(displayCurrencyCode !== undefined ? { displayCurrencyCode } : {}),
+    ...(externalUrl !== undefined ? { externalUrl } : {}),
     isEnabled,
   };
 }
@@ -203,6 +206,25 @@ export async function getPortfolioSummary<R extends boolean | undefined = false>
   });
 }
 
+export async function getPortfolioValueHistory<R extends boolean | undefined = false>({
+  portfolioId,
+  from,
+  to,
+  raw,
+}: {
+  portfolioId: string;
+  from?: string;
+  to?: string;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _getPortfolioValueHistory>>, R>({
+    method: 'get',
+    url: `/investments/portfolios/${portfolioId}/value-history`,
+    payload: removeUndefinedKeys({ from, to }),
+    raw,
+  });
+}
+
 export async function getPortfolioSummaries<R extends boolean | undefined = false>({
   raw,
 }: {
@@ -216,13 +238,16 @@ export async function getPortfolioSummaries<R extends boolean | undefined = fals
 }
 
 export async function getPortfoliosAnnualizedReturns<R extends boolean | undefined = false>({
+  asOf,
   raw,
 }: {
+  asOf?: string;
   raw?: R;
 } = {}) {
   return makeRequest<Awaited<ReturnType<typeof _getPortfoliosAnnualizedReturns>>, R>({
     method: 'get',
     url: '/investments/portfolios/annualized-returns',
+    payload: asOf === undefined ? undefined : { asOf },
     raw,
   });
 }

@@ -48,6 +48,7 @@ export function createSessionHooks({ pool }: { pool: Pool }) {
               google: 'google',
               github: 'github',
               apple: 'apple',
+              oidc: 'oidc',
               passkey: 'passkey',
             };
             const method: LoginMethod = providerToMethod[providerId ?? ''] ?? 'email';

@@ -46,6 +46,16 @@ describe('agent-skills drift', () => {
     }
   });
 
+  it('no served skill contains merge-conflict markers', () => {
+    const conflictMarker = /^(<<<<<<<|=======|>>>>>>>|> > > > > > >)/;
+
+    for (const skill of readIndex().skills) {
+      const lines = fs.readFileSync(resolveLocalPath(skill.url), 'utf-8').split('\n');
+
+      expect(lines.filter((line) => conflictMarker.test(line))).toEqual([]);
+    }
+  });
+
   it('skill names are unique', () => {
     const names = readIndex().skills.map((s) => s.name);
     expect(new Set(names).size).toBe(names.length);

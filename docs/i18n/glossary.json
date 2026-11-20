@@ -2067,14 +2067,6 @@
     "ukNote": "In automations.subtitle 'first matching rule' is not this term: «перше правило, що збіглося»."
   },
   {
-    "term": "MCC",
-    "partOfSpeech": "noun",
-    "definition": "Merchant category code: a standard card-network code for the type of business. 'MCC rule' is a categorization source. Usually kept as the acronym.",
-    "translatable": true,
-    "uk": "MCC",
-    "ukNote": "In compounds put the acronym after the noun: «правило MCC» (or «MCC-правило»), not «MCC правило»."
-  },
-  {
     "term": "MCP",
     "partOfSpeech": "proper noun",
     "definition": "Model Context Protocol: the open standard that lets AI assistants such as Claude or ChatGPT connect to the user's MoneyMatter data through its MCP server. Do not translate.",
@@ -3010,7 +3002,7 @@
   {
     "term": "rule",
     "partOfSpeech": "noun",
-    "definition": "A set of conditions that triggers an action: one automation, a matching rule of a recurring payment, or a categorization source (MCC rule, payee rule, user rule).",
+    "definition": "A set of conditions that triggers an action: one automation, a matching rule of a recurring payment, or a categorization source (payee rule, user rule).",
     "translatable": true,
     "uk": "правило"
   },

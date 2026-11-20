@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { loadRefundRecommendations, loadTransactions } from '@/api/transactions';
+import { type RefundRole, loadRefundRecommendations, loadTransactions } from '@/api/transactions';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import DateField from '@/components/fields/date-field.vue';
@@ -14,17 +14,26 @@ import { cn } from '@/lib/utils';
 import { TRANSACTION_TYPES, TransactionModel } from '@bt/shared/types';
 import { useInfiniteQuery, useQuery } from '@tanstack/vue-query';
 import { refDebounced, useResizeObserver } from '@vueuse/core';
-import { isDate } from 'date-fns';
+import { endOfDay, isDate, startOfDay } from 'date-fns';
 import { isEqual, isNil, omitBy } from 'lodash-es';
 import { CircleAlert, ListFilterIcon, SearchIcon, SparklesIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import { getOppositeTxType } from '../../helpers';
+import { isDatedAfterPivotDay } from '../../utils/derive-refund-role';
+
 interface RecordListModalProps {
+  /** Type of the rows to list: the opposite of the entry being linked. */
   transactionType: TRANSACTION_TYPES;
   selectedTransactions: TransactionModel[];
+  /** Saved links of the current entry; listed even when the server filters drop them. */
+  savedTransactions?: TransactionModel[];
   onSelect: (item: TransactionModel) => void;
-  /** Renders per-row checkboxes for the "refunded by" multi-selection mode. */
-  multiSelect?: boolean;
+  /** Side of the link the current entry is on; `null` until the first tick decides it. */
+  role: RefundRole | null;
+  /** Live form time of the current entry. */
+  currentTime: Date;
+  isRecordCreation?: boolean;
   /** Origin transaction ID (for recommendations when editing) */
   originTransactionId?: string;
   /** Origin transaction amount for recommendations (used when creating new tx) */
@@ -34,6 +43,25 @@ interface RecordListModalProps {
 }
 
 const props = defineProps<RecordListModalProps>();
+
+const pivot = computed(() => ({
+  refundPivotFrom: startOfDay(props.currentTime).toISOString(),
+  refundPivotTo: endOfDay(props.currentTime).toISOString(),
+}));
+
+// Until the role is known, the server keeps earlier rows that can be originals and later rows
+// that can be refunds; `keepRefundsForTxId` spares the current entry's own links either way.
+const roleFilters = computed(() => {
+  if (props.role === 'refund') return { excludeRefundTxs: true, keepRefundsForTxId: props.originTransactionId };
+  if (props.role === 'original') {
+    return { excludeRefundTxs: true, excludeRefundedTxs: true, keepRefundsForTxId: props.originTransactionId };
+  }
+  return { ...pivot.value, keepRefundsForTxId: props.originTransactionId };
+});
+
+// The create API can only save "this new entry refunds an earlier row".
+const isRowSelectable = (tx: TransactionModel) =>
+  !props.isRecordCreation || !isDatedAfterPivotDay({ rowTime: tx.time, currentTime: props.currentTime });
 
 const DEFAULT_FILTERS: {
   start: Date | undefined;
@@ -84,19 +112,20 @@ const canFetchRecommendations = computed(() => {
   return !!(props.originAmount && props.originAmount > 0 && props.originAccountId);
 });
 
-// Build query params for recommendations
-const recommendationsQueryParams = computed(() => {
-  if (props.originTransactionId) {
-    return { transactionId: props.originTransactionId };
-  }
-  return {
-    transactionType: props.transactionType,
-    originAmount: props.originAmount!,
-    accountId: props.originAccountId!,
-  };
-});
+const recommendationsQueryParams = computed(() => ({
+  ...(props.originTransactionId
+    ? { transactionId: props.originTransactionId }
+    : {
+        transactionType: getOppositeTxType(props.transactionType),
+        originAmount: props.originAmount!,
+        accountId: props.originAccountId!,
+      }),
+  refundRole: props.role ?? undefined,
+  ...pivot.value,
+  includeRefundedAmount: true,
+}));
 
-// Fetch recommendations
+// Both queries cache forever, so everything that changes the server filter is part of the key.
 const { data: recommendations } = useQuery({
   queryKey: [
     ...VUE_QUERY_CACHE_KEYS.recordsPageTransactionList,
@@ -105,14 +134,17 @@ const { data: recommendations } = useQuery({
     props.transactionType,
     props.originAmount,
     props.originAccountId,
+    computed(() => props.role),
+    computed(() => props.currentTime.getTime()),
   ],
   queryFn: () => loadRefundRecommendations(recommendationsQueryParams.value),
   enabled: canFetchRecommendations,
   staleTime: Infinity,
 });
 
-// Get recommendation IDs to exclude from the main list
+const selectedTxsIds = computed(() => new Set(props.selectedTransactions.map((i) => i.id)));
 const recommendationIds = computed(() => new Set(recommendations.value?.map((r) => r.id) ?? []));
+const recommendedRows = computed(() => recommendations.value ?? []);
 
 const limit = 15;
 const fetchTransactions = ({
@@ -133,14 +165,10 @@ const fetchTransactions = ({
         offset,
         transactionType: props.transactionType,
         excludeTransfer: true,
-        // Originals that already carry partial refunds stay listed; only transactions
-        // already acting as a refund are dropped — except refunds of the edited tx,
-        // which must stay visible so their links can be toggled off.
-        excludeRefundTxs: true,
-        keepRefundsForTxId: props.originTransactionId,
+        ...roleFilters.value,
         // Planned rows can't be refund-linked, so they are not valid candidates either.
         isPlanned: false,
-        includeSplits: true, // Include splits so we can show split selector
+        includeRefundedAmount: true,
         noteSearch: search,
         to: isDate(filter.end) ? filter.end!.toISOString() : undefined,
         from: isDate(filter.start) ? filter.start!.toISOString() : undefined,
@@ -159,12 +187,12 @@ const {
   isFetchingNextPage,
   isFetched,
 } = useInfiniteQuery({
-  // originTransactionId is part of the key: the request keeps that tx's own refunds
-  // in the results, so pages cached for one tx must not serve another.
   queryKey: [
     ...VUE_QUERY_CACHE_KEYS.recordsPageTransactionList,
     props.transactionType,
     props.originTransactionId,
+    computed(() => props.role),
+    computed(() => props.currentTime.getTime()),
     appliedFilters,
     noteSearch,
   ],
@@ -180,25 +208,31 @@ const {
 });
 
 const showRecommendations = computed(
-  () => Boolean(recommendations.value?.length) && !isAnyFiltersApplied.value && !isSearchActive.value,
+  () => Boolean(recommendedRows.value.length) && !isAnyFiltersApplied.value && !isSearchActive.value,
+);
+
+// A refund shared with another purchase fails the purchase-side filters, so saved links are
+// prepended here; without that a ticked link could not be seen or unticked.
+const savedRows = computed(() =>
+  isAnyFiltersApplied.value || isSearchActive.value ? [] : (props.savedTransactions ?? []),
 );
 
 // Recommendations are excluded from the main list only while their own section renders them.
 const filteredTransactions = computed(() => {
-  const allTransactions = transactionsPages.value?.pages?.flat() ?? [];
-  if (!showRecommendations.value) return allTransactions;
-  return allTransactions.filter((tx) => !recommendationIds.value.has(tx.id));
+  const hiddenIds = showRecommendations.value ? recommendationIds.value : new Set<string>();
+  const saved = savedRows.value.filter((tx) => !hiddenIds.has(tx.id));
+  const savedIds = new Set(saved.map((tx) => tx.id));
+  const fetched = (transactionsPages.value?.pages?.flat() ?? []).filter(
+    (tx) => !hiddenIds.has(tx.id) && !savedIds.has(tx.id),
+  );
+  return [...saved, ...fetched];
 });
 
-const selectedTxsIds = computed(() => new Set(props.selectedTransactions.map((i) => i.id)));
-
 const handlerRecordClick = (transaction: TransactionModel) => {
-  props.onSelect(transaction);
+  if (isRowSelectable(transaction)) props.onSelect(transaction);
 };
 
-const hasAnyTransactions = computed(
-  () => (recommendations.value?.length ?? 0) > 0 || filteredTransactions.value.length > 0,
-);
+const hasAnyTransactions = computed(() => recommendedRows.value.length > 0 || filteredTransactions.value.length > 0);
 
 // 32px compact record (24px category circle + py-1) + the 1px selection border it is wrapped in
 const TRANSACTION_ROW_HEIGHT = 34;
@@ -326,25 +360,28 @@ const { virtualRows, totalSize } = useVirtualizedInfiniteScroll({
               <span>{{ $t('dialogs.manageTransaction.refundRecordsList.recommendedLabel') }}</span>
             </div>
             <div class="space-y-1">
-              <template v-for="item in recommendations" :key="item.id">
-                <div
-                  :class="
-                    cn(
-                      'rounded-xl border border-transparent transition-colors',
-                      selectedTxsIds.has(item.id) && 'border-primary/70 bg-primary/10',
-                    )
-                  "
-                >
-                  <TransactionRecrod
-                    :tx="item"
-                    compact
-                    :show-checkbox="multiSelect"
-                    :is-selected="selectedTxsIds.has(item.id)"
-                    @record-click="(payload) => handlerRecordClick(payload[0])"
-                    @selection-change="handlerRecordClick(item)"
-                  />
-                </div>
-              </template>
+              <div
+                v-for="item in recommendedRows"
+                :key="item.id"
+                :class="
+                  cn(
+                    'rounded-xl border border-transparent transition-colors',
+                    selectedTxsIds.has(item.id) && 'border-primary/70 bg-primary/10',
+                    !isRowSelectable(item) && 'opacity-60',
+                  )
+                "
+              >
+                <TransactionRecrod
+                  :tx="item"
+                  compact
+                  show-checkbox
+                  :is-selectable="isRowSelectable(item)"
+                  :unselectable-hint="$t('dialogs.manageTransaction.markAsRefund.refundedByCreationHint')"
+                  :is-selected="selectedTxsIds.has(item.id)"
+                  @record-click="(payload) => handlerRecordClick(payload[0])"
+                  @selection-change="handlerRecordClick(item)"
+                />
+              </div>
             </div>
           </div>
 
@@ -379,13 +416,16 @@ const { virtualRows, totalSize } = useVirtualizedInfiniteScroll({
                 cn(
                   'rounded-xl border border-transparent transition-colors',
                   selectedTxsIds.has(filteredTransactions[virtualRow.index]!.id) && 'border-primary/70 bg-primary/10',
+                  !isRowSelectable(filteredTransactions[virtualRow.index]!) && 'opacity-60',
                 )
               "
             >
               <TransactionRecrod
                 :tx="filteredTransactions[virtualRow.index]!"
                 compact
-                :show-checkbox="multiSelect"
+                show-checkbox
+                :is-selectable="isRowSelectable(filteredTransactions[virtualRow.index]!)"
+                :unselectable-hint="$t('dialogs.manageTransaction.markAsRefund.refundedByCreationHint')"
                 :is-selected="selectedTxsIds.has(filteredTransactions[virtualRow.index]!.id)"
                 @record-click="(payload) => handlerRecordClick(payload[0])"
                 @selection-change="handlerRecordClick(filteredTransactions[virtualRow.index]!)"

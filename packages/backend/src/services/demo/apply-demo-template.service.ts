@@ -1,4 +1,4 @@
-import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, asCents } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
@@ -24,6 +24,7 @@ import {
   setupVehicles,
   setupVentures,
 } from './seed-demo-data.service';
+import { setupGoals } from './seed-goals.service';
 import { setupInvestments } from './seed-investments.service';
 import { seedPayees } from './seed-payees.service';
 import { setupSubscriptions } from './seed-subscriptions.service';
@@ -188,8 +189,8 @@ export async function applyDemoTemplate({
   await Transactions.bulkCreate(
     rows.map((row) => ({
       ...row,
-      amount: Money.fromCents(row.amount),
-      refAmount: Money.fromCents(row.refAmount),
+      amount: Money.fromCents(asCents(row.amount)),
+      refAmount: Money.fromCents(asCents(row.refAmount)),
     })),
     { hooks: false, validate: false },
   );
@@ -330,6 +331,9 @@ export async function applyDemoTemplate({
   await setupVehicles({ userId, referenceDate });
   await setupLoans({ userId, referenceDate });
   await setupVentures({ userId, referenceDate });
+  if (savingsAccountId) {
+    await setupGoals({ userId, savingsAccountId, referenceDate });
+  }
   const accountGroupIdByName = await setupAccountGroups({ userId });
   await setupAutomations({
     userId,

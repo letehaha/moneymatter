@@ -217,6 +217,7 @@ const onSectionExpand = async ({ headerEl, wrapperEl }: { headerEl?: HTMLElement
         >
           <template v-if="baseCurrencyCode" #trailing>
             <GroupTotal
+              tiny
               :amount="bankAccountsTotal.total"
               :currency-code="baseCurrencyCode"
               :is-approx="bankAccountsTotal.isApprox"
@@ -238,6 +239,7 @@ const onSectionExpand = async ({ headerEl, wrapperEl }: { headerEl?: HTMLElement
         >
           <template v-if="baseCurrencyCode" #trailing>
             <GroupTotal
+              tiny
               :amount="portfoliosTotal.total"
               :currency-code="baseCurrencyCode"
               :is-approx="portfoliosTotal.isApprox"
@@ -272,6 +274,7 @@ const onSectionExpand = async ({ headerEl, wrapperEl }: { headerEl?: HTMLElement
         >
           <template v-if="baseCurrencyCode" #trailing>
             <GroupTotal
+              tiny
               :amount="carsTotal.total"
               :currency-code="baseCurrencyCode"
               :is-approx="carsTotal.isApprox"
@@ -292,6 +295,7 @@ const onSectionExpand = async ({ headerEl, wrapperEl }: { headerEl?: HTMLElement
         >
           <template v-if="baseCurrencyCode" #trailing>
             <GroupTotal
+              tiny
               :amount="loansTotal.total"
               :currency-code="baseCurrencyCode"
               :is-approx="loansTotal.isApprox"

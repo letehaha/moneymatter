@@ -1,6 +1,6 @@
 <template>
   <div
-    class="hover:bg-muted/40 relative flex items-center gap-3 px-4 py-4 transition-colors @[40rem]/archived-list:py-3.5"
+    class="hover:bg-hover relative flex items-center gap-3 px-4 py-4 transition-colors @[40rem]/archived-list:py-3.5"
   >
     <!-- Overlay link keeps the whole row clickable without nesting the restore button inside an anchor. -->
     <RouterLink
@@ -9,12 +9,7 @@
       :aria-label="loan.name"
     />
 
-    <div
-      :class="cn('flex size-8 shrink-0 items-center justify-center rounded-lg opacity-70', loanTypeTintedChipClass)"
-      aria-hidden="true"
-    >
-      <component :is="loanTypeIconComponent" class="size-4" stroke-width="2" />
-    </div>
+    <LoanLogo :loan="loan" class="size-8 opacity-70" />
 
     <div class="min-w-0 flex-1">
       <div class="flex min-w-0 items-center gap-2">
@@ -53,10 +48,10 @@
 
 <script setup lang="ts">
 import type { LoanApi } from '@/api/loans';
+import LoanLogo from '@/components/common/loan-logo.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable/formatters';
-import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
 import { ArchiveIcon, ArchiveRestoreIcon } from '@lucide/vue';
 import { computed } from 'vue';
@@ -64,7 +59,6 @@ import { useI18n } from 'vue-i18n';
 import { RouterLink } from 'vue-router';
 
 import { useUnarchiveLoan } from '../composables/use-unarchive-loan';
-import { getLoanTypeIcon, getLoanTypeTintedChipClass } from '../loan-type-presentation';
 import { outstandingAmount } from '../utils/outstanding-amount';
 
 const props = defineProps<{ loan: LoanApi }>();
@@ -82,10 +76,4 @@ const subLine = computed(() => {
   const lender = props.loan.loanDetails.lenderName;
   return lender ? `${typeLabel} · ${lender}` : `${typeLabel} · ${props.loan.currencyCode}`;
 });
-
-const loanTypeTintedChipClass = computed(() =>
-  getLoanTypeTintedChipClass({ loanType: props.loan.loanDetails.loanType }),
-);
-
-const loanTypeIconComponent = computed(() => getLoanTypeIcon({ loanType: props.loan.loanDetails.loanType }));
 </script>
