@@ -18,6 +18,7 @@
         "updateError": "Si è verificato un errore durante l'aggiornamento del conto",
         "nameLabel": "Nome del conto",
         "namePlaceholder": "Nome del conto",
+        "openExternalUrl": "Open external link",
         "transferToPortfolio": "Trasferisci al portafoglio",
         "editAccountName": "Modifica nome del conto",
         "save": "Salva",
@@ -149,7 +150,9 @@
         "residualAdjustmentDescription": "Aggiunge una transazione di rettifica del saldo con data odierna. I saldi passati restano esattamente come sono.",
         "residualOpeningLabel": "Modifica il saldo iniziale",
         "residualOpeningDescription": "Sposta il saldo iniziale del conto della differenza, quindi cambiano anche tutti i saldi passati. Scegliere questa opzione se mancano transazioni all'inizio dello storico.",
-        "residualHint": "L'importo finale viene impostato dopo la prima sincronizzazione, quindi può differire leggermente da questa anteprima."
+        "residualHint": "L'importo finale viene impostato dopo la prima sincronizzazione, quindi può differire leggermente da questa anteprima.",
+        "linkFailed": "Si è verificato un errore durante il collegamento del conto",
+        "refreshFailed": "Conto collegato, ma l'aggiornamento dei conti non è riuscito. Ricaricare la pagina se qualche dato sembra non aggiornato."
       },
       "tabs": {
         "details": "Dettagli",
@@ -179,6 +182,12 @@
         "editDefaultPaymentType": "Modifica tipo di pagamento predefinito",
         "defaultPaymentTypeUpdateSuccess": "Tipo di pagamento predefinito aggiornato",
         "defaultPaymentTypeUpdateError": "Impossibile aggiornare il tipo di pagamento predefinito",
+        "externalUrl": "External URL:",
+        "externalUrlPlaceholder": "https://bank.example.com",
+        "externalUrlNotSet": "Not set",
+        "editExternalUrl": "Edit external URL",
+        "externalUrlUpdateSuccess": "External URL updated",
+        "externalUrlUpdateError": "Failed to update external URL",
         "currency": "Valuta:",
         "main": "(principale)",
         "exchangeRate": "Tasso di cambio:",

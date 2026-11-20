@@ -192,6 +192,8 @@
         "nameRequired": "Názov skupiny je povinný",
         "minTransactions": "Vyberte aspoň {min} transakcie",
         "alreadyInGroup": "Niektoré vybrané transakcie už do skupiny patria",
+        "tooManyTransactions": "Skupina môže obsahovať najviac {max} transakcií, touto akciou by ich bolo {count}. Prevody sa počítajú z oboch strán. Zrušte výber niektorých transakcií alebo ich rozdeľte do viacerých skupín.",
+        "alreadyInNamedGroup": "Niektoré vybrané transakcie sú už zaradené v: {name}. Transakcia môže byť len v jednej skupine – najprv ju odtiaľ odstráňte.",
         "createFailed": "Vytvorenie skupiny zlyhalo",
         "addFailed": "Pridanie do skupiny transakcií zlyhalo"
       }
@@ -260,7 +262,7 @@
     },
     "bulkDelete": {
       "button": "Zmazať",
-      "externalTooltip": "Výber obsahuje transakcie synchronizované s bankou, ktoré nemožno zmazať.",
+      "externalTooltip": "Výber obsahuje transakcie synchronizované z banky alebo s dátumom od dňa prepojenia účtu, ktoré nemožno zmazať.",
       "confirmButton": "Zmazať",
       "confirmTitle": "Zmazať {count} transakcií?",
       "confirmDescription": "V koši zostanú 30 dní, dovtedy ich môžete obnoviť. Prevody presunú obe strany.",
@@ -269,10 +271,15 @@
       "noneDeletedMessage": "Nič sa nepresunulo do koša: 1 transakcia je prepojená s platbou, portfóliom alebo venture. | Nič sa nepresunulo do koša: {count} transakcie sú prepojené s platbou, portfóliom alebo venture. | Nič sa nepresunulo do koša: {count} transakcií je prepojených s platbou, portfóliom alebo venture.",
       "unexpectedError": "Transakcie sa nepodarilo zmazať. Skúste to znova, prosím."
     },
+    "bankSeamDateError": "Tento účet je synchronizovaný s bankou od {date}. Vyberte skorší dátum.",
     "inlineEdit": {
       "saveFailed": "{field} sa nepodarilo uložiť. Skúste to znova.",
       "bankTitle": "Nastavené vašou bankou",
       "bankDescription": "Dátum, účet a suma sa synchronizujú z vášho bankového pripojenia. Všetko ostatné na tejto transakcii môžete zmeniť.",
+      "bankAccountTitle": "Prepojené s bankou",
+      "bankAccountDescription": "Tento účet je prepojený s bankou, preto transakciu nemožno presunúť na iný účet. Všetko ostatné môžete upraviť.",
+      "manualAfterLinkTitle": "Uzamknuté od prepojenia s bankou",
+      "manualAfterLinkDescription": "Tento účet je synchronizovaný s bankou od {date}, preto túto transakciu nemožno zmazať a jej dátum ani suma sa už nedajú zmeniť.",
       "managedTitle": "Spravované inde",
       "managedDescription": "Táto transakcia patrí k portfóliu, investícii, vozidlu alebo pôžičke. Upravte ju na jej vlastnej stránke, aby zostali zostatky správne.",
       "gotIt": "Rozumiem",

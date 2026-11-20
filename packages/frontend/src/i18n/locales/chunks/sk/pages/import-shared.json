@@ -17,7 +17,8 @@
         "categoryNameTooLong": "Názov kategórie „{name}“ je príliš dlhý ({length} znakov); maximum je {max}.",
         "payeeNameTooLong": "Názov príjemcu „{name}“ je príliš dlhý ({length} znakov); maximum je {max}.",
         "accountMappingMissing": "Tieto účty zo súboru nemajú priradenie: {accounts}. Vráťte sa späť a priraďte ich.",
-        "linkedAccountNotFound": "Účet prepojený s „{account}“ už neexistuje. Vráťte sa späť a vyberte iný účet alebo vytvorte nový."
+        "linkedAccountNotFound": "Účet prepojený s „{account}“ už neexistuje. Vráťte sa späť a vyberte iný účet alebo vytvorte nový.",
+        "bankLinkChanged": "Prepojenie účtu s bankou sa po kontrole zmenilo. Vráťte sa na krok kontroly a spustite ju znova."
       },
       "importResults": {
         "findTransfers": "Nájsť prevody"
@@ -108,6 +109,8 @@
       "renameAria": "Premenovať priradenie",
       "deleteAria": "Zmazať priradenie",
       "confirmRenameAria": "Uložiť názov"
-    }
+    },
+    "bankSeamSkipped": "{count} riadok s dátumom {date} alebo neskorším bol vynechaný: bankové pripojenie už poskytuje transakcie od tohto dňa. | {count} riadky s dátumom {date} alebo neskorším boli vynechané: bankové pripojenie už poskytuje transakcie od tohto dňa. | {count} riadkov s dátumom {date} alebo neskorším bolo vynechaných: bankové pripojenie už poskytuje transakcie od tohto dňa.",
+    "bankSeamSkippedNoDate": "{count} riadok s dátumom od dňa prepojenia účtu s bankou bol vynechaný: bankové pripojenie už poskytuje transakcie od tohto dňa. | {count} riadky s dátumom od dňa prepojenia účtu s bankou boli vynechané: bankové pripojenie už poskytuje transakcie od tohto dňa. | {count} riadkov s dátumom od dňa prepojenia účtu s bankou bolo vynechaných: bankové pripojenie už poskytuje transakcie od tohto dňa."
   }
 }

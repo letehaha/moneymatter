@@ -18,8 +18,8 @@
       "general": "General",
       "payees": "Beneficiarios",
       "planBilling": "Planes y facturación",
-      "collapse": "Collapse",
-      "resize": "Resize navigation"
+      "collapse": "Contraer",
+      "resize": "Redimensionar navegación"
     },
     "backToSettings": "Volver a ajustes"
   }

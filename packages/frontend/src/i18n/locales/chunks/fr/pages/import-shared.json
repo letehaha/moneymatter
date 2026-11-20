@@ -17,7 +17,8 @@
         "categoryNameTooLong": "Le nom de catégorie « {name} » est trop long ({length} caractères) ; la limite est de {max}.",
         "payeeNameTooLong": "Le nom de tiers « {name} » est trop long ({length} caractères) ; la limite est de {max}.",
         "accountMappingMissing": "Ces comptes du fichier ne sont pas associés : {accounts}. Revenez en arrière pour associer chacun d'eux.",
-        "linkedAccountNotFound": "Le compte associé à « {account} » n'existe plus. Revenez en arrière et sélectionnez un autre compte ou créez-en un nouveau."
+        "linkedAccountNotFound": "Le compte associé à « {account} » n'existe plus. Revenez en arrière et sélectionnez un autre compte ou créez-en un nouveau.",
+        "bankLinkChanged": "An account's bank link changed after the review. Go back to the review step and run it again."
       },
       "importResults": {
         "findTransfers": "Rechercher les transferts"
@@ -108,6 +109,8 @@
       "renameAria": "Renommer le mappage",
       "deleteAria": "Supprimer le mappage",
       "confirmRenameAria": "Enregistrer le nom"
-    }
+    },
+    "bankSeamSkipped": "{count} row dated on or after {date} was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after {date} were skipped: the bank connection already provides transactions from that day.",
+    "bankSeamSkippedNoDate": "{count} row dated on or after the day its account was connected to a bank was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after the day their account was connected to a bank were skipped: the bank connection already provides transactions from that day."
   }
 }

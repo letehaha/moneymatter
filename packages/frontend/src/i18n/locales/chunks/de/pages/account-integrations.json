@@ -372,6 +372,7 @@
           "syncFailed": "Synchronisierung konnte nicht gestartet werden"
         },
         "actions": {
+          "openExternalUrl": "Open external link",
           "renameButton": "Verbindung umbenennen",
           "disconnectButton": "Integration trennen",
           "manage": "Verwalten"
@@ -431,6 +432,8 @@
           "title": "Verbindungsname bearbeiten",
           "description": "Gib deiner Verbindung einen benutzerdefinierten Namen, um sie leicht zu identifizieren.",
           "label": "Verbindungsname",
+          "externalUrlLabel": "External URL (optional)",
+          "externalUrlPlaceholder": "https://bridge.example.com",
           "saving": "Speichern...",
           "save": "Speichern"
         },

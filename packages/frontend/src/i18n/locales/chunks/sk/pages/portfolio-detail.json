@@ -9,6 +9,7 @@
     "backToInvestments": "Späť na Investície",
     "subtitle": "Prehľad portfólia",
     "actions": {
+      "openExternalUrl": "Otvoriť externý odkaz",
       "transfer": "Prevod",
       "edit": "Upraviť",
       "delete": "Zmazať",

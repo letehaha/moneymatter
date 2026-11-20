@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Anzeigewährung auswählen",
       "displayCurrencyBaseOption": "Basiswährung ({code})",
       "displayCurrencyDescription": "Portfoliowert und Statistiken werden zum aktuellen Wechselkurs in diese Währung umgerechnet.",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Abbrechen",
       "submitButton": "Speichern",
       "submitButtonLoading": "Wird gespeichert …",
@@ -137,6 +139,8 @@
       "creditLimitLabel": "Kreditrahmen",
       "creditLimitPlaceholder": "Kreditrahmen",
       "defaultPaymentTypeLabel": "Standard-Zahlungsart",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Erstellen",
       "submitButtonLoading": "Wird erstellt...",
       "notifications": {
@@ -190,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Gib einen gültigen Betrag ein (bis zu 2 Nachkommastellen)",
-      "mustBePositive": "Betrag muss positiv sein"
+      "mustBePositive": "Betrag muss positiv sein",
+      "httpUrl": "Enter a valid http(s) URL",
+      "maxLength": "Must not exceed {max} characters"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "Quellwährung",

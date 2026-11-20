@@ -192,6 +192,8 @@
         "nameRequired": "Le nom du groupe est obligatoire",
         "minTransactions": "Sélectionnez au moins {min} opérations",
         "alreadyInGroup": "Certaines opérations sélectionnées appartiennent déjà à un groupe",
+        "tooManyTransactions": "A group can hold up to {max} transactions, this would make {count}. Transfers count both sides. Deselect some or split them into several groups.",
+        "alreadyInNamedGroup": "Some selected transactions are already in: {name}. A transaction can only be in one group – remove it from there first.",
         "createFailed": "Impossible de créer le groupe",
         "addFailed": "Impossible d'ajouter les opérations au groupe"
       }
@@ -269,10 +271,15 @@
       "noneDeletedMessage": "Nothing moved to Trash: 1 transaction is linked to a payment, portfolio or venture. | Nothing moved to Trash: {count} transactions are linked to a payment, portfolio or venture.",
       "unexpectedError": "Impossible de supprimer les opérations. Veuillez réessayer."
     },
+    "bankSeamDateError": "This account has been synced with your bank since {date}. Pick an earlier date.",
     "inlineEdit": {
       "saveFailed": "Impossible d'enregistrer {field}. Réessayez.",
       "bankTitle": "Défini par votre banque",
       "bankDescription": "La date, le compte et le montant sont synchronisés depuis votre banque. Vous pouvez modifier tout le reste sur cette opération.",
+      "bankAccountTitle": "Connected to a bank",
+      "bankAccountDescription": "This account is connected to a bank, so the transaction can't be moved to another account. Everything else on it is yours to change.",
+      "manualAfterLinkTitle": "Locked since the bank link",
+      "manualAfterLinkDescription": "This account has been synced with your bank since {date}, so this transaction can't be deleted and its date and amount can no longer change.",
       "managedTitle": "Géré ailleurs",
       "managedDescription": "Cette opération est associée à un portefeuille, un investissement, un véhicule ou un prêt. Modifiez-la depuis sa propre page pour préserver l'exactitude des soldes.",
       "gotIt": "Compris",

@@ -44,16 +44,16 @@
         "rename": {
           "title": "Renombrar grupo",
           "description": "Haga clic en el logotipo para elegir un logotipo de banco, iniciales o un color.",
-          "submit": "Save changes"
+          "submit": "Guardar cambios"
         },
         "move": {
-          "title": "Move “{name}”",
+          "title": "Mover «{name}»",
           "description": "Sus subgrupos y cuentas se mueven con ella.",
           "parentLabel": "Grupo padre",
           "parentPlaceholder": "Seleccionar grupo padre",
           "noParent": "Ningún padre",
           "hint": "Elige \"Sin padre\" para convertirlo en un grupo de alto nivel.",
-          "submit": "Move"
+          "submit": "Mover"
         },
         "addAccounts": {
           "title": "Añadir cuentas a “{name}”",
@@ -77,24 +77,24 @@
       },
       "tree": {
         "groupsCount": "{count} grupo | {count} grupos",
-        "syncedBadge": "Synced",
-        "expand": "Expand",
-        "collapse": "Collapse",
-        "renameTooltip": "Rename",
-        "moreActions": "More actions",
+        "syncedBadge": "Sincronizado",
+        "expand": "Expandir",
+        "collapse": "Contraer",
+        "renameTooltip": "Renombrar",
+        "moreActions": "Más acciones",
         "menu": {
           "rename": "Cambiar el nombre y el logotipo",
           "move": "Mover a otro grupo",
-          "newSubgroup": "New subgroup",
+          "newSubgroup": "Nuevo subgrupo",
           "addAccounts": "Añadir cuentas",
-          "delete": "Delete group"
+          "delete": "Eliminar grupo"
         }
       },
       "organize": {
-        "button": "Organize",
+        "button": "Organizar",
         "hint": "Arrastra un grupo a otro para anidarlo",
-        "save": "Save changes",
-        "topLevel": "Top level",
+        "save": "Guardar cambios",
+        "topLevel": "Nivel superior",
         "dropToTopLevel": "Suelte aquí para convertir «{name}» en una categoría de nivel superior",
         "movesCount": "Mover {count} | Mover {count}",
         "moveInside": "Mover dentro",

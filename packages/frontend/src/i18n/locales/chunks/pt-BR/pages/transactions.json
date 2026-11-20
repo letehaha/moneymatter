@@ -192,6 +192,8 @@
         "nameRequired": "Digite um nome para o grupo.",
         "minTransactions": "Escolha pelo menos {min} transações",
         "alreadyInGroup": "Algumas transações selecionadas já pertencem a um grupo",
+        "tooManyTransactions": "A group can hold up to {max} transactions, this would make {count}. Transfers count both sides. Deselect some or split them into several groups.",
+        "alreadyInNamedGroup": "Some selected transactions are already in: {name}. A transaction can only be in one group – remove it from there first.",
         "createFailed": "Não foi possível criar o grupo",
         "addFailed": "Não foi possível adicionar as transações ao grupo"
       }
@@ -269,10 +271,15 @@
       "noneDeletedMessage": "Nothing moved to Trash: 1 transaction is linked to a payment, portfolio or venture. | Nothing moved to Trash: {count} transactions are linked to a payment, portfolio or venture.",
       "unexpectedError": "Não foi possível excluir as transações. Tente de novo."
     },
+    "bankSeamDateError": "This account has been synced with your bank since {date}. Pick an earlier date.",
     "inlineEdit": {
       "saveFailed": "Não foi possível salvar o campo {field}. Tente de novo.",
       "bankTitle": "Definido pelo seu banco",
       "bankDescription": "Data, conta e valor são sincronizados pela sua conexão bancária. Todo o resto desta transação você pode alterar.",
+      "bankAccountTitle": "Connected to a bank",
+      "bankAccountDescription": "This account is connected to a bank, so the transaction can't be moved to another account. Everything else on it is yours to change.",
+      "manualAfterLinkTitle": "Locked since the bank link",
+      "manualAfterLinkDescription": "This account has been synced with your bank since {date}, so this transaction can't be deleted and its date and amount can no longer change.",
       "managedTitle": "Gerenciada em outro lugar",
       "managedDescription": "Esta transação pertence a uma carteira, investimento, veículo ou empréstimo. Altere-a na página correspondente para manter os saldos corretos.",
       "gotIt": "Entendi",

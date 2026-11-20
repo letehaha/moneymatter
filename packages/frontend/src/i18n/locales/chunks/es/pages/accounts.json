@@ -39,10 +39,10 @@
       "balance": "Saldo",
       "ariaLabel": "Ordenar cuentas",
       "direction": {
-        "aToZ": "A to Z",
-        "zToA": "Z to A",
-        "highestFirst": "Highest first",
-        "lowestFirst": "Lowest first"
+        "aToZ": "A a Z",
+        "zToA": "Z a A",
+        "highestFirst": "Más alto primero",
+        "lowestFirst": "Más bajo primero"
       }
     },
     "status": {
