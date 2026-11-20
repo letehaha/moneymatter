@@ -52,6 +52,8 @@
         },
         "descriptionLabel": "Descrição (opcional)",
         "descriptionPlaceholder": "Uma breve descrição desta carteira...",
+        "externalUrlLabel": "External URL (optional)",
+        "externalUrlPlaceholder": "https://broker.example.com",
         "submitButton": "Criar carteira",
         "submitButtonLoading": "Criando..."
       },

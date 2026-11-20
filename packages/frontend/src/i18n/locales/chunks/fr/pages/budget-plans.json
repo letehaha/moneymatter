@@ -377,6 +377,8 @@
       "pace": "Rythme des dépenses",
       "spent": "Dépensé",
       "elapsed": "Temps écoulé",
+      "usuallyByToday": "Usually by today",
+      "slowDown": "Slow down to ~{perDay}/day to make it last",
       "spentOfTotal": "{spent} sur {total}",
       "daysLeft": "{n} j restants",
       "scheduled": "Planifié",
@@ -431,6 +433,12 @@
       "layoutSaved": "Disposition enregistrée",
       "layoutError": "Impossible d'enregistrer la disposition"
     },
+    "pace": {
+      "aheadUsual": "{amount} ahead of usual pace",
+      "aheadEven": "{amount} ahead of pace",
+      "aheadUsualPerDay": "{amount} ahead of usual pace · ~{perDay}/day left for {count} day | {amount} ahead of usual pace · ~{perDay}/day left for {count} days",
+      "aheadEvenPerDay": "{amount} ahead of pace · ~{perDay}/day left for {count} day | {amount} ahead of pace · ~{perDay}/day left for {count} days"
+    },
     "options": {
       "title": "Options",
       "manageLayout": "Gérer la disposition",
@@ -439,7 +447,8 @@
       "rowBarGoal": "Barre d'objectif",
       "rowBarCombined": "Barre combinée",
       "rowBarSplit": "Barres séparées",
-      "rowBarNone": "Aucune barre"
+      "rowBarNone": "Aucune barre",
+      "paceHint": "Pace hint"
     },
     "goals": {
       "askHint": "Allouez ce montant ici pour garder le cap.",

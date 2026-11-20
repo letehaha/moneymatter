@@ -9,6 +9,7 @@
     "backToInvestments": "Назад к инвестициям",
     "subtitle": "Обзор портфеля",
     "actions": {
+      "openExternalUrl": "Open external link",
       "transfer": "Перевод",
       "edit": "Изменить",
       "delete": "Удалить",

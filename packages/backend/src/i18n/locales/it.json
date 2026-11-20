@@ -17,7 +17,9 @@
     "loanCategoryImmutable": "La categoria di un conto di prestito non può essere modificata.",
     "dedicatedFlowCategoryNotAllowed": "I conti dei prestiti e dei veicoli devono essere creati attraverso le pagine dedicate, non attraverso la pagina dei conti generici.",
     "initialBalanceOnlySystem": "Il saldo iniziale può essere modificato solo per i conti a gestione manuale",
-    "initialAndCurrentBalanceTogether": "Saldo iniziale e saldo corrente non possono essere modificati nella stessa richiesta"
+    "initialAndCurrentBalanceTogether": "Saldo iniziale e saldo corrente non possono essere modificati nella stessa richiesta",
+    "onlySystemAccountsCanBeLinked": "Solo i conti creati manualmente possono essere collegati a una connessione bancaria.",
+    "bankLinkImportStillRunning": "È ancora in corso un'importazione. Attendere che termini prima di collegare, scollegare, archiviare o disconnettere un conto bancario. Se l'importazione si è interrotta, questo blocco si rimuove da solo 3 ore dopo il suo avvio."
   },
   "balanceAdjustment": {
     "defaultNote": "Correzione del saldo",
@@ -56,6 +58,12 @@
     "cannotCreateWithParams": "Impossibile creare la transazione con i parametri forniti",
     "idCannotBeChanged": "L'ID non può essere modificato",
     "editReadonlyFields": "Tentativo di modificare campi in sola lettura del conto esterno",
+    "preSeamTimeOnOrAfterLinkDay": "Una transazione manuale su un conto collegato a una banca deve avere una data precedente al {{date}}, giorno in cui il conto è stato collegato.",
+    "manualRowOnOrAfterLinkDay": "Questa transazione ha una data uguale o successiva al {{date}}, giorno in cui il conto è stato collegato alla banca. Da quel giorno fanno fede i dati della banca, quindi non può essere modificata né eliminata.",
+    "manualRowOnOrAfterLinkDayCreate": "Dal {{date}} in poi i dati provengono dalla banca, quindi una transazione manuale deve avere una data precedente al {{date}}.",
+    "bulkDeleteBankRowsSelected": "Le transazioni sincronizzate dalla banca e quelle con data uguale o successiva al giorno del collegamento del conto non possono essere eliminate.",
+    "oppositeLegOnBankAccount": "L'altro lato di questo trasferimento si trova su un conto collegato a una banca, quindi lì questa modifica non è consentita.",
+    "moveAcrossBankLinkedAccount": "Una transazione non può essere spostata su o da un conto collegato a una banca. Eliminarla e aggiungerla di nuovo sull'altro conto.",
     "changeTypeNotAllowed": "Non è consentito cambiare \"transactionType\" dei conti non di sistema",
     "bothRefundFieldsNotAllowed": "Non è possibile usare contemporaneamente \"refundedByTxIds\" e \"refundsTargets\". Sceglierne uno.",
     "oppositeTransactionNotFound": "Impossibile trovare la transazione complementare per effettuare un aggiornamento",
@@ -302,7 +310,8 @@
     "providerTypeMismatch": "La connessione {{connectionId}} è per il provider {{actualType}}, non {{expectedType}}",
     "providerAlreadyRegistered": "Il provider {{providerType}} è già registrato. Impossibile registrare provider duplicati.",
     "providerNotRegistered": "Il provider {{providerType}} non è registrato. Provider disponibili: {{available}}",
-    "unexpected": "Errore imprevisto."
+    "unexpected": "Errore imprevisto.",
+    "clientUpdateRequired": "Questa versione dell'app non è più supportata. Aggiornarla dall'App Store."
   },
   "validation": {
     "dateInvalid": "\"date\" non è una data valida."
@@ -323,6 +332,7 @@
     "failedToFetchCountries": "Impossibile recuperare l'elenco dei paesi. Verificare le credenziali.",
     "accountNotLinkedToConnection": "Conto non trovato o non collegato a questa connessione",
     "accountAlreadyConnectedToAnotherConnection": "Il conto \"{{account}}\" è già collegato tramite \"{{connection}}\". Scollegarlo prima da lì.",
+    "accountBalanceUnavailable": "Impossibile ottenere dalla banca il saldo attuale di {{account}}. Riprovare tra qualche minuto.",
     "cannotLoadBeforeLinkDate": "Impossibile caricare transazioni precedenti alla data di collegamento del conto ({{linkedAt}}). Il conto è stato collegato con la strategia \"forward-only\" per evitare la duplicazione dei dati.",
     "dateRangeExceedsLimit": "L'intervallo di date non può superare 1 anno.",
     "fromAfterTo": "La data \"from\" deve essere precedente alla data \"to\"",
@@ -429,7 +439,8 @@
     "transactionTypeValuesNotCovered": "La colonna del tipo di transazione contiene valori non presenti negli elenchi entrate/uscite: {{uncovered}}. Valori trovati: {{found}}",
     "selectedAccountNotFound": "Il conto selezionato non è stato trovato o non appartiene all'utente.",
     "selectedCategoryNotFound": "La categoria selezionata non è stata trovata o non appartiene all'utente.",
-    "linkedAccountCurrencyMismatch": "Per collegare un conto esistente le valute devono coincidere: {{mismatches}}. Collegare un conto con la stessa valuta o crearne uno nuovo."
+    "linkedAccountCurrencyMismatch": "Per collegare un conto esistente le valute devono coincidere: {{mismatches}}. Collegare un conto con la stessa valuta o crearne uno nuovo.",
+    "bankLinkChangedSinceReview": "Il collegamento bancario di un conto in questa importazione è cambiato dopo la revisione. Tornare al passaggio di revisione ed eseguirlo di nuovo."
   },
   "ofxImport": {
     "noFileUploaded": "Nessun file caricato. Inviare il file OFX o QFX come corpo grezzo della richiesta.",

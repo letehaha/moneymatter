@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Select display currency",
       "displayCurrencyBaseOption": "Base currency ({code})",
       "displayCurrencyDescription": "Portfolio value and stats are converted to this currency at the current exchange rate.",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Cancel",
       "submitButton": "Save changes",
       "submitButtonLoading": "Saving...",
@@ -137,6 +139,8 @@
       "creditLimitLabel": "Credit limit",
       "creditLimitPlaceholder": "Credit limit",
       "defaultPaymentTypeLabel": "Default payment type",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Create",
       "submitButtonLoading": "Creating...",
       "notifications": {
@@ -190,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Enter a valid amount (up to 2 decimal places)",
-      "mustBePositive": "Amount must be positive"
+      "mustBePositive": "Amount must be positive",
+      "httpUrl": "Enter a valid http(s) URL",
+      "maxLength": "Must not exceed {max} characters"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "From currency",

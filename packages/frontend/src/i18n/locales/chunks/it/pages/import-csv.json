@@ -134,7 +134,9 @@
           "noErrors": "Nessun errore",
           "balanceWarningTitle": "I saldi dei conti potrebbero non essere allineati",
           "balanceWarningBody": "Le transazioni sono state importate, ma non è stato possibile aggiornare successivamente alcuni saldi. Controllare questi conti e rettificarne i saldi manualmente se necessario."
-        }
+        },
+        "bankSeamRecalculateHint": "I conti collegati a una banca mantengono il saldo comunicato dalla banca, quindi questa impostazione non li modifica.",
+        "bankSeamRecalculateAllHint": "Per i conti collegati a una banca il saldo iniziale viene ricalcolato automaticamente."
       },
       "columnMapping": {
         "stepTitle": "Mappatura colonne",
@@ -308,7 +310,7 @@
           "currency": "Valuta",
           "transactionType": "Tipo di transazione",
           "payee": "Beneficiario",
-          "tags": "Tags"
+          "tags": "Etichette"
         },
         "dateFormat": {
           "label": "Formato data",

@@ -17,7 +17,9 @@
     "loanCategoryImmutable": "Kategóriu účtu pôžičky nemožno zmeniť.",
     "dedicatedFlowCategoryNotAllowed": "Účty pôžičiek a vozidiel sa musia vytvárať cez svoje vyhradené rozhrania, nie cez všeobecné rozhranie účtov.",
     "initialBalanceOnlySystem": "Počiatočný zostatok možno zmeniť len pri manuálnych účtoch",
-    "initialAndCurrentBalanceTogether": "Počiatočný zostatok a aktuálny zostatok nemožno zmeniť v rámci jednej požiadavky"
+    "initialAndCurrentBalanceTogether": "Počiatočný zostatok a aktuálny zostatok nemožno zmeniť v rámci jednej požiadavky",
+    "onlySystemAccountsCanBeLinked": "K bankovému pripojeniu možno prepojiť len ručne vytvorené účty.",
+    "bankLinkImportStillRunning": "Import stále prebieha. Pred prepojením, zrušením prepojenia, archiváciou alebo odpojením bankového účtu počkajte na jeho dokončenie. Ak sa import zastavil, blokovanie sa samo zruší 3 hodiny po jeho spustení."
   },
   "balanceAdjustment": {
     "defaultNote": "Úprava zostatku",
@@ -56,6 +58,12 @@
     "cannotCreateWithParams": "Transakciu so zadanými parametrami sa nepodarilo vytvoriť",
     "idCannotBeChanged": "ID nemožno zmeniť",
     "editReadonlyFields": "Pokus o úpravu polí externého účtu, ktoré sú len na čítanie",
+    "preSeamTimeOnOrAfterLinkDay": "Ručne zadaná transakcia na účte prepojenom s bankou musí mať dátum pred {{date}}, teda pred dňom prepojenia účtu.",
+    "manualRowOnOrAfterLinkDay": "Táto transakcia má dátum od {{date}}, teda od dňa prepojenia účtu s bankou. Od tohto dňa platia záznamy banky, preto ju nemožno upraviť ani zmazať.",
+    "manualRowOnOrAfterLinkDayCreate": "Všetko od {{date}} spravuje banka, preto musí mať ručná transakcia dátum pred {{date}}.",
+    "bulkDeleteBankRowsSelected": "Transakcie synchronizované z banky a transakcie s dátumom od dňa prepojenia účtu nemožno zmazať.",
+    "oppositeLegOnBankAccount": "Druhá strana tohto prevodu je na účte prepojenom s bankou, preto tu táto zmena nie je povolená.",
+    "moveAcrossBankLinkedAccount": "Transakciu nemožno presunúť na účet prepojený s bankou ani z neho. Zmažte ju a pridajte znova na druhom účte.",
     "changeTypeNotAllowed": "Zmena „transactionType\" pri nesystémovom účte nie je povolená",
     "bothRefundFieldsNotAllowed": "Nemožno použiť súčasne „refundedByTxIds\" aj „refundsTargets\". Vyberte jedno z nich, prosím.",
     "oppositeTransactionNotFound": "Opačnú transakciu na aktualizáciu sa nepodarilo nájsť",
@@ -302,7 +310,8 @@
     "providerTypeMismatch": "Pripojenie {{connectionId}} je pre poskytovateľa {{actualType}}, nie {{expectedType}}",
     "providerAlreadyRegistered": "Poskytovateľ {{providerType}} je už zaregistrovaný. Duplicitných poskytovateľov nemožno registrovať.",
     "providerNotRegistered": "Poskytovateľ {{providerType}} nie je zaregistrovaný. Dostupní poskytovatelia: {{available}}",
-    "unexpected": "Neočakávaná chyba."
+    "unexpected": "Neočakávaná chyba.",
+    "clientUpdateRequired": "Táto verzia aplikácie už nie je podporovaná. Aktualizujte ju z App Store, prosím."
   },
   "validation": {
     "dateInvalid": "„date\" je neplatný dátum."
@@ -323,6 +332,7 @@
     "failedToFetchCountries": "Krajiny sa nepodarilo načítať. Skontrolujte svoje prístupové údaje, prosím.",
     "accountNotLinkedToConnection": "Účet sa nenašiel, alebo nie je prepojený s týmto pripojením",
     "accountAlreadyConnectedToAnotherConnection": "Účet „{{account}}\" je už pripojený cez „{{connection}}\". Najprv ho tam odpojte.",
+    "accountBalanceUnavailable": "Nepodarilo sa získať aktuálny zostatok účtu {{account}} z banky. Skúste to znova o niekoľko minút, prosím.",
     "cannotLoadBeforeLinkDate": "Transakcie spred dátumu prepojenia účtu ({{linkedAt}}) sa nedajú načítať. Tento účet bol prepojený stratégiou „len dopredu\", aby sa predišlo duplicite údajov.",
     "dateRangeExceedsLimit": "Rozsah dátumov nesmie presiahnuť 1 rok.",
     "fromAfterTo": "Dátum „from\" musí byť pred dátumom „to\"",
@@ -429,7 +439,8 @@
     "transactionTypeValuesNotCovered": "Stĺpec typu transakcie obsahuje hodnoty, ktoré nepokrývajú zoznamy príjmov/výdavkov: {{uncovered}}. Nájdené hodnoty: {{found}}",
     "selectedAccountNotFound": "Vybraný účet sa nenašiel, alebo vám nepatrí.",
     "selectedCategoryNotFound": "Vybraná kategória sa nenašla, alebo vám nepatrí.",
-    "linkedAccountCurrencyMismatch": "Na prepojenie s existujúcim účtom sa musia zhodovať meny: {{mismatches}}. Prepojte účet s rovnakou menou, alebo vytvorte nový."
+    "linkedAccountCurrencyMismatch": "Na prepojenie s existujúcim účtom sa musia zhodovať meny: {{mismatches}}. Prepojte účet s rovnakou menou, alebo vytvorte nový.",
+    "bankLinkChangedSinceReview": "Prepojenie jedného z účtov v tomto importe s bankou sa po kontrole zmenilo. Vráťte sa na krok kontroly a spustite ju znova."
   },
   "ofxImport": {
     "noFileUploaded": "Nebol nahraný žiadny súbor. Odošlite súbor OFX alebo QFX ako surové telo požiadavky.",

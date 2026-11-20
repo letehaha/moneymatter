@@ -17,7 +17,9 @@
     "loanCategoryImmutable": "La catégorie d'un compte de prêt ne peut pas être modifiée.",
     "dedicatedFlowCategoryNotAllowed": "Les comptes de prêt et de véhicule doivent être créés via leurs parcours dédiés, et non via le parcours de compte classique.",
     "initialBalanceOnlySystem": "Le solde initial ne peut être modifié que pour les comptes manuels",
-    "initialAndCurrentBalanceTogether": "Le solde initial et le solde actuel ne peuvent pas être modifiés dans la même requête"
+    "initialAndCurrentBalanceTogether": "Le solde initial et le solde actuel ne peuvent pas être modifiés dans la même requête",
+    "onlySystemAccountsCanBeLinked": "Only manually created accounts can be linked to a bank connection.",
+    "bankLinkImportStillRunning": "An import is still running. Wait for it to finish before linking, unlinking, archiving or disconnecting a bank account. If the import stopped, this block clears on its own 3 hours after the import started."
   },
   "balanceAdjustment": {
     "defaultNote": "Ajustement de solde",
@@ -56,6 +58,12 @@
     "cannotCreateWithParams": "Impossible de créer l'opération avec les paramètres fournis",
     "idCannotBeChanged": "L'identifiant ne peut pas être modifié",
     "editReadonlyFields": "Tentative de modification de champs en lecture seule du compte externe",
+    "preSeamTimeOnOrAfterLinkDay": "A manual transaction on a bank-linked account must stay dated before {{date}}, the day the account was linked.",
+    "manualRowOnOrAfterLinkDay": "This transaction is dated on or after {{date}}, the day the account was linked to the bank. From that day on, the bank's records are what counts, so it can't be edited or deleted.",
+    "manualRowOnOrAfterLinkDayCreate": "Your bank owns everything from {{date}} on, so a manual transaction must be dated before {{date}}.",
+    "bulkDeleteBankRowsSelected": "Transactions synced from your bank, and ones dated on or after the day the account was linked, can't be deleted.",
+    "oppositeLegOnBankAccount": "The other side of this transfer is on a bank-linked account, so this change isn't allowed there.",
+    "moveAcrossBankLinkedAccount": "A transaction can't be moved onto or off a bank-linked account. Delete it and add it again on the other account.",
     "changeTypeNotAllowed": "Il est interdit de modifier \"transactionType\" pour un compte non-système",
     "bothRefundFieldsNotAllowed": "Vous ne pouvez pas utiliser simultanément \"refundedByTxIds\" et \"refundsTxId\". Veuillez choisir l'un ou l'autre.",
     "oppositeTransactionNotFound": "Impossible de trouver l'opération opposée pour effectuer la mise à jour",
@@ -302,7 +310,8 @@
     "providerTypeMismatch": "La connexion {{connectionId}} correspond au fournisseur {{actualType}}, et non {{expectedType}}",
     "providerAlreadyRegistered": "Le fournisseur {{providerType}} est déjà enregistré. Impossible d'enregistrer des fournisseurs en double.",
     "providerNotRegistered": "Le fournisseur {{providerType}} n'est pas enregistré. Fournisseurs disponibles : {{available}}",
-    "unexpected": "Une erreur inattendue s'est produite."
+    "unexpected": "Une erreur inattendue s'est produite.",
+    "clientUpdateRequired": "This version of the app is no longer supported. Please update it from the App Store."
   },
   "validation": {
     "dateInvalid": "« date » n'est pas une date valide."
@@ -323,6 +332,7 @@
     "failedToFetchCountries": "Échec de la récupération des pays. Veuillez vérifier vos identifiants.",
     "accountNotLinkedToConnection": "Compte introuvable ou non associé à cette connexion",
     "accountAlreadyConnectedToAnotherConnection": "Le compte « {{account}} » est déjà associé via « {{connection}} ». Déconnectez-le d'abord de cette connexion.",
+    "accountBalanceUnavailable": "Couldn't get the current balance of {{account}} from the bank. Please try again in a few minutes.",
     "cannotLoadBeforeLinkDate": "Impossible de charger les opérations antérieures à la date d'association du compte ({{linkedAt}}). Ce compte a été associé avec une stratégie « à partir de maintenant » pour éviter les doublons.",
     "dateRangeExceedsLimit": "La période ne peut pas dépasser 1 an.",
     "fromAfterTo": "La date de début doit être antérieure à la date de fin",
@@ -429,7 +439,8 @@
     "transactionTypeValuesNotCovered": "La colonne du type d'opération contient des valeurs non prises en compte par les listes de revenus/dépenses : {{uncovered}}. Valeurs trouvées : {{found}}",
     "selectedAccountNotFound": "Le compte sélectionné est introuvable ou ne vous appartient pas.",
     "selectedCategoryNotFound": "La catégorie sélectionnée est introuvable ou ne vous appartient pas.",
-    "linkedAccountCurrencyMismatch": "Les devises doivent correspondre pour associer un compte existant : {{mismatches}}. Associez un compte avec la même devise ou créez-en un nouveau."
+    "linkedAccountCurrencyMismatch": "Les devises doivent correspondre pour associer un compte existant : {{mismatches}}. Associez un compte avec la même devise ou créez-en un nouveau.",
+    "bankLinkChangedSinceReview": "The bank link of an account in this import changed after the review. Go back to the review step and run it again."
   },
   "ofxImport": {
     "noFileUploaded": "Aucun fichier n'a été téléversé. Envoyez le fichier OFX ou QFX dans le corps brut de la requête.",

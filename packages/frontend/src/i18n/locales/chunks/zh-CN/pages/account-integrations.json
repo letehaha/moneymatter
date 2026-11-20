@@ -331,8 +331,8 @@
         "disconnectFailed": "Failed to disconnect integration",
         "connectAccountsSuccess": "Accounts connected. Transactions are syncing in the background.",
         "connectAccountsFailed": "Failed to connect accounts",
-        "updateNameSuccess": "Connection name updated successfully",
-        "updateNameFailed": "Failed to update connection name",
+        "updateNameSuccess": "Connection updated successfully",
+        "updateNameFailed": "Failed to update connection",
         "connectionEstablished": "Bank connection established successfully!"
       },
       "details": {
@@ -372,7 +372,8 @@
           "syncFailed": "Failed to start sync"
         },
         "actions": {
-          "renameButton": "Rename connection",
+          "openExternalUrl": "Open external link",
+          "renameButton": "Edit connection",
           "disconnectButton": "Disconnect integration",
           "manage": "Manage"
         },
@@ -428,9 +429,11 @@
           "disconnect": "Disconnect"
         },
         "editName": {
-          "title": "Edit connection name",
-          "description": "Give your connection a custom name to easily identify it.",
+          "title": "Edit connection",
+          "description": "Update the display name or institution portal link for this connection.",
           "label": "Connection name",
+          "externalUrlLabel": "External URL (optional)",
+          "externalUrlPlaceholder": "https://bridge.example.com",
           "saving": "Saving...",
           "save": "Save"
         },

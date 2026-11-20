@@ -377,6 +377,8 @@
       "pace": "Tempo čerpania",
       "spent": "Minuté",
       "elapsed": "Uplynulo z obdobia",
+      "usuallyByToday": "Zvyčajne do dnešného dňa",
+      "slowDown": "Spomaľte na ~{perDay}/deň, aby to vystačilo",
       "spentOfTotal": "{spent} z {total}",
       "daysLeft": "zostáva {n} dní",
       "scheduled": "Naplánované",
@@ -431,6 +433,12 @@
       "layoutSaved": "Rozloženie bolo uložené",
       "layoutError": "Rozloženie sa nepodarilo uložiť"
     },
+    "pace": {
+      "aheadUsual": "{amount} nad obvyklým tempom",
+      "aheadEven": "{amount} nad tempom",
+      "aheadUsualPerDay": "{amount} nad obvyklým tempom · zostáva ~{perDay}/deň na {count} deň | {amount} nad obvyklým tempom · zostáva ~{perDay}/deň na {count} dni | {amount} nad obvyklým tempom · zostáva ~{perDay}/deň na {count} dní",
+      "aheadEvenPerDay": "{amount} nad tempom · zostáva ~{perDay}/deň na {count} deň | {amount} nad tempom · zostáva ~{perDay}/deň na {count} dni | {amount} nad tempom · zostáva ~{perDay}/deň na {count} dní"
+    },
     "options": {
       "title": "Možnosti",
       "manageLayout": "Spravovať rozloženie",
@@ -439,7 +447,8 @@
       "rowBarGoal": "Pruh cieľa",
       "rowBarCombined": "Kombinovaný pruh",
       "rowBarSplit": "Oddelené pruhy",
-      "rowBarNone": "Bez pruhu"
+      "rowBarNone": "Bez pruhu",
+      "paceHint": "Nápoveda k tempu"
     },
     "goals": {
       "askHint": "Priraďte túto sumu sem, aby ste zostali na dobrej ceste.",

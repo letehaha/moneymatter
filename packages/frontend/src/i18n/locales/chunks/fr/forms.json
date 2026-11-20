@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Sélectionner la devise d'affichage",
       "displayCurrencyBaseOption": "Devise de référence ({code})",
       "displayCurrencyDescription": "La valeur et les statistiques du portefeuille sont converties dans cette devise au taux de change actuel.",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Annuler",
       "submitButton": "Enregistrer les modifications",
       "submitButtonLoading": "Enregistrement...",
@@ -137,6 +139,8 @@
       "creditLimitLabel": "Plafond de crédit",
       "creditLimitPlaceholder": "Plafond de crédit",
       "defaultPaymentTypeLabel": "Default payment type",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Créer",
       "submitButtonLoading": "Création en cours...",
       "notifications": {
@@ -190,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Saisissez un montant valide (jusqu'à 2 décimales)",
-      "mustBePositive": "Le montant doit être positif"
+      "mustBePositive": "Le montant doit être positif",
+      "httpUrl": "Enter a valid http(s) URL",
+      "maxLength": "Must not exceed {max} characters"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "Devise source",

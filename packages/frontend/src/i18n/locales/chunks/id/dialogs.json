@@ -52,6 +52,8 @@
         },
         "descriptionLabel": "Deskripsi (opsional)",
         "descriptionPlaceholder": "Deskripsi singkat tentang portofolio ini...",
+        "externalUrlLabel": "External URL (optional)",
+        "externalUrlPlaceholder": "https://broker.example.com",
         "submitButton": "Buat Portofolio",
         "submitButtonLoading": "Membuat..."
       },

@@ -18,6 +18,7 @@
         "updateError": "Se produjo un error al intentar actualizar la cuenta",
         "nameLabel": "Nombre de la cuenta",
         "namePlaceholder": "Nombre de la cuenta",
+        "openExternalUrl": "Open external link",
         "transferToPortfolio": "Transferir a Cartera",
         "editAccountName": "Editar nombre de la cuenta",
         "save": "Guardar",
@@ -149,7 +150,9 @@
         "residualAdjustmentDescription": "Añade una transacción de ajuste de balance con fecha de hoy. Tus balances pasados permanecen exactamente como están.",
         "residualOpeningLabel": "Cambiar el saldo inicial",
         "residualOpeningDescription": "Mueve el saldo inicial de la cuenta por la diferencia, así que cada saldo pasado también cambia. Escoge esto si las transacciones faltan desde el comienzo del historial.",
-        "residualHint": "La cantidad final se establece después de la primera sincronización, por lo que puede diferir un poco de esta vista previa."
+        "residualHint": "La cantidad final se establece después de la primera sincronización, por lo que puede diferir un poco de esta vista previa.",
+        "linkFailed": "An error occurred while trying to link account",
+        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
       },
       "tabs": {
         "details": "Detalles",
@@ -177,8 +180,14 @@
         "accountCategoryUpdateError": "Error al actualizar la categoría de cuenta",
         "defaultPaymentType": "Tipo de pago por defecto:",
         "editDefaultPaymentType": "Editar tipo de pago por defecto",
-        "defaultPaymentTypeUpdateSuccess": "Default payment type updated",
-        "defaultPaymentTypeUpdateError": "Failed to update default payment type",
+        "defaultPaymentTypeUpdateSuccess": "Tipo de pago predeterminado actualizado",
+        "defaultPaymentTypeUpdateError": "Error al actualizar el tipo de pago predeterminado",
+        "externalUrl": "External URL:",
+        "externalUrlPlaceholder": "https://bank.example.com",
+        "externalUrlNotSet": "Not set",
+        "editExternalUrl": "Edit external URL",
+        "externalUrlUpdateSuccess": "External URL updated",
+        "externalUrlUpdateError": "Failed to update external URL",
         "currency": "Moneda:",
         "main": "(principal)",
         "exchangeRate": "Tipo de cambio:",
@@ -226,7 +235,7 @@
         "description": "Pega las filas pendientes en las transacciones reservadas que las reemplazaron.",
         "button": "Fusionar duplicados",
         "running": "Fusionando…",
-        "confirm": "Merge",
+        "confirm": "Combinar",
         "confirmTitle": "¿Fusionar transacciones duplicadas?",
         "confirmDescription": "Los registros pendientes que coincidan con una transacción reservada en esta cuenta serán eliminados. Notas y categorías que ha establecido al mover a la transacción reservada. Esto no se puede deshacer.",
         "result": "Fusionado {merged} duplicado(s), omitió {skipped}.",
@@ -245,7 +254,7 @@
       },
       "rightPanel": {
         "transactions": "Transacciones",
-        "viewAll": "View all",
+        "viewAll": "Ver todo",
         "analyticsSoon": "Analítica (próximamente)"
       },
       "integrations": {

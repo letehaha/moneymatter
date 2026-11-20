@@ -134,7 +134,9 @@
           "noErrors": "Ошибок нет",
           "balanceWarningTitle": "Балансы счетов могут быть не синхронизированы",
           "balanceWarningBody": "Транзакции были импортированы, но после этого не удалось обновить балансы некоторых счетов. Проверьте эти счета и при необходимости скорректируйте их балансы вручную."
-        }
+        },
+        "bankSeamRecalculateHint": "Bank-linked accounts keep the balance their bank reports, so this setting doesn't change them.",
+        "bankSeamRecalculateAllHint": "Opening balance is recalculated automatically for bank-linked accounts."
       },
       "columnMapping": {
         "stepTitle": "Сопоставление столбцов",

@@ -9,6 +9,7 @@
     "backToInvestments": "Quay lại mục Đầu tư",
     "subtitle": "Tổng quan danh mục đầu tư",
     "actions": {
+      "openExternalUrl": "Open external link",
       "transfer": "Transfer",
       "edit": "Chỉnh sửa",
       "delete": "Delete",

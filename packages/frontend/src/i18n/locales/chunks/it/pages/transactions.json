@@ -123,10 +123,10 @@
       "tagModeAddHint": "Mantiene le etichette attuali e aggiunge queste.",
       "tagModeReplaceHint": "Rimuove tutte le etichette attuali, poi aggiunge queste.",
       "tagModeRemoveHint": "Rimuove solo queste etichette. Le altre restano.",
-      "excludeFromStatsHint": "On keeps the selected transactions out of reports, dashboard widgets, budgets and trackers. Off brings them back. Balances aren't affected.",
-      "excludeFromStatsDontChange": "Don't change stats",
-      "confirmExcludeFromStats": "Exclude from stats",
-      "confirmIncludeInStats": "Include in stats",
+      "excludeFromStatsHint": "Attivo: le transazioni selezionate vengono escluse dai report, dai widget della dashboard, dai Budget e dai Tracker. Disattivo: vengono reincluse. I saldi non cambiano.",
+      "excludeFromStatsDontChange": "Non modificare le statistiche",
+      "confirmExcludeFromStats": "Escludi dalle statistiche",
+      "confirmIncludeInStats": "Includi nelle statistiche",
       "totals": {
         "income": "Entrate",
         "expense": "Uscite",
@@ -192,6 +192,8 @@
         "nameRequired": "Il nome del gruppo è obbligatorio",
         "minTransactions": "Selezionare almeno {min} transazioni",
         "alreadyInGroup": "Alcune transazioni selezionate appartengono già a un gruppo",
+        "tooManyTransactions": "Un gruppo può contenere fino a {max} transazioni, così diventerebbero {count}. I trasferimenti contano entrambi i lati. Deselezionarne alcune o suddividerle in più gruppi.",
+        "alreadyInNamedGroup": "Alcune transazioni selezionate sono già in: {name}. Una transazione può far parte di un solo gruppo – rimuoverla prima da lì.",
         "createFailed": "Impossibile creare il gruppo",
         "addFailed": "Impossibile aggiungere le transazioni al gruppo"
       }
@@ -260,7 +262,7 @@
     },
     "bulkDelete": {
       "button": "Elimina",
-      "externalTooltip": "La selezione contiene transazioni sincronizzate dalla banca, che non possono essere eliminate.",
+      "externalTooltip": "La selezione contiene transazioni sincronizzate dalla banca, o con data uguale o successiva al giorno del collegamento del conto, che non possono essere eliminate.",
       "confirmButton": "Elimina",
       "confirmTitle": "Eliminare {count} transazioni?",
       "confirmDescription": "Restano nel Cestino per 30 giorni e fino ad allora sarà possibile ripristinarle. Per i trasferimenti vengono spostati entrambi i lati.",
@@ -269,10 +271,15 @@
       "noneDeletedMessage": "Nulla spostato nel Cestino: 1 transazione è collegata a un pagamento, un portafoglio o un venture capital. | Nulla spostato nel Cestino: {count} transazioni sono collegate a un pagamento, un portafoglio o un venture capital.",
       "unexpectedError": "Impossibile eliminare le transazioni. Riprovare."
     },
+    "bankSeamDateError": "Questo conto è sincronizzato con la banca dal {date}. Scegliere una data precedente.",
     "inlineEdit": {
       "saveFailed": "Impossibile salvare {field}. Riprovare.",
       "bankTitle": "Impostato dalla banca",
       "bankDescription": "Data, conto e importo vengono sincronizzati dalla connessione bancaria. Tutto il resto di questa transazione è modificabile.",
+      "bankAccountTitle": "Collegato a una banca",
+      "bankAccountDescription": "Questo conto è collegato a una banca, quindi la transazione non può essere spostata su un altro conto. Tutto il resto si può modificare liberamente.",
+      "manualAfterLinkTitle": "Bloccata dal collegamento bancario",
+      "manualAfterLinkDescription": "Questo conto è sincronizzato con la banca dal {date}, quindi questa transazione non può essere eliminata e la sua data e il suo importo non possono più cambiare.",
       "managedTitle": "Gestita altrove",
       "managedDescription": "Questa transazione appartiene a un portafoglio, un investimento, un veicolo o un prestito. Modificarla dalla relativa pagina affinché i saldi restino corretti.",
       "gotIt": "Ho capito",
