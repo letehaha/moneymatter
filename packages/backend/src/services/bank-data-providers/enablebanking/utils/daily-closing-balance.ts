@@ -1,8 +1,8 @@
-/** One booked row's place in a booking day's balance ladder, in account-currency cents. */
+/** One booked row's place in a booking day's balance ladder, in the account currency's minor units. */
 export interface ClosingBalanceRow {
   id: string;
-  balanceAfterCents: number;
-  deltaCents: number;
+  balanceAfterMinorUnits: number;
+  deltaMinorUnits: number;
 }
 
 /**
@@ -26,7 +26,8 @@ export function findClosingRowId({ rows }: { rows: ClosingBalanceRow[] }): strin
     (candidate) =>
       !rows.some(
         (other) =>
-          other.id !== candidate.id && other.balanceAfterCents - other.deltaCents === candidate.balanceAfterCents,
+          other.id !== candidate.id &&
+          other.balanceAfterMinorUnits - other.deltaMinorUnits === candidate.balanceAfterMinorUnits,
       ),
   );
 
@@ -57,8 +58,8 @@ function walksBackOverEveryRow({
   let current = closingRow;
 
   for (;;) {
-    const previousBalance = current.balanceAfterCents - current.deltaCents;
-    const predecessors = rows.filter((row) => !visited.has(row.id) && row.balanceAfterCents === previousBalance);
+    const previousBalance = current.balanceAfterMinorUnits - current.deltaMinorUnits;
+    const predecessors = rows.filter((row) => !visited.has(row.id) && row.balanceAfterMinorUnits === previousBalance);
 
     if (predecessors.length !== 1) {
       return predecessors.length === 0 && visited.size === rows.length;

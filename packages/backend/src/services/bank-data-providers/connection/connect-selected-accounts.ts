@@ -88,7 +88,7 @@ export const requireProviderBalance = ({ providerAccount }: { providerAccount: P
       }),
     });
   }
-  return Money.fromCents(providerAccount.balance);
+  return providerAccount.balance;
 };
 
 /**
@@ -289,12 +289,11 @@ const createAccountsForConnection = withTransaction(
         }
         await addUserCurrencies([{ userId, currencyCode: currency.code }]);
 
-        // `ProviderAccount.balance` and the `creditLimit` metadata are minor units (cents).
         // ponytail: a new account still opens at 0 when the bank omits its balance; the first sync writes the real one.
         const { providerBalance, creditLimit } = await roundMoneyValues({
           values: {
-            providerBalance: Money.fromCents(providerAccount.balance ?? 0),
-            creditLimit: Money.fromCents((providerAccount.metadata?.creditLimit as number) || 0),
+            providerBalance: providerAccount.balance ?? Money.zero(),
+            creditLimit: providerAccount.creditLimit ?? Money.zero(),
           },
           userId,
           currencyCode: providerAccount.currency,

@@ -19,13 +19,13 @@ export function pickAccountBalance({ balances }: { balances: EnableBankingBalanc
 export function correctInvertedSavingsBalance({
   balance,
   cashAccountType,
-  creditLimitCents,
+  creditLimit,
 }: {
   balance: Money;
   cashAccountType: CashAccountType | undefined;
-  creditLimitCents: number | undefined;
+  creditLimit: Money;
 }): Money {
-  return cashAccountType === CashAccountType.SVGS && !creditLimitCents && balance.isNegative()
+  return cashAccountType === CashAccountType.SVGS && creditLimit.isZero() && balance.isNegative()
     ? balance.negate()
     : balance;
 }

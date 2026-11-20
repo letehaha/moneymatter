@@ -332,14 +332,14 @@ describe('Enable Banking Data Provider E2E', () => {
         ),
       );
 
-      const { result } = await connectWithMockedCurrency({ currency });
+      const { connectionId, result } = await connectWithMockedCurrency({ currency });
       const { syncedAccounts } = helpers.extractResponse(result);
 
       const accountId = syncedAccounts[0]!.id;
       const account = await helpers.getAccount({ id: accountId, raw: true });
       const [transaction] = await helpers.getTransactions({ accountIds: [accountId], raw: true });
 
-      return { account, transaction: transaction! };
+      return { connectionId, accountId, account, transaction: transaction! };
     };
 
     it('stores a JPY account balance and transaction as whole yen', async () => {
@@ -354,18 +354,40 @@ describe('Enable Banking Data Provider E2E', () => {
       expect(Number(transaction.amount)).toBe(1500);
     });
 
-    // The provider adapters normalize every amount to 2-decimal cents, so a KWD third decimal is
-    // lost before it reaches storage. This pins that behaviour until the adapters carry decimals.
-    it('stores a KWD account balance and transaction at 2 decimals, the provider boundary precision', async () => {
-      const { account, transaction } = await connectAccountIn({
+    it('stores a KWD account balance and transaction at 3 decimals and dedups them on re-sync', async () => {
+      const { connectionId, accountId, account, transaction } = await connectAccountIn({
         currency: 'KWD',
-        balance: '1523.456',
+        balance: '10.567',
         transactionAmount: '1.234',
       });
 
       expect(account.currencyCode).toBe('KWD');
-      expect(Number(account.currentBalance)).toBe(1523.46);
-      expect(Number(transaction.amount)).toBe(1.23);
+      expect(Number(account.currentBalance)).toBe(10.567);
+      expect(Number(transaction.amount)).toBe(1.234);
+
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+
+      const transactions = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+      expect(transactions.length).toBe(1);
+      expect(transactions[0]!.id).toBe(transaction.id);
+      expect(Number(transactions[0]!.amount)).toBe(1.234);
+    });
+
+    it('rounds a EUR amount with a third decimal to cents and dedups it on re-sync', async () => {
+      const { connectionId, accountId, transaction } = await connectAccountIn({
+        currency: 'EUR',
+        balance: '987.65',
+        transactionAmount: '12.345',
+      });
+
+      expect(Number(transaction.amount)).toBe(12.35);
+
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+
+      const transactions = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+      expect(transactions.length).toBe(1);
+      expect(transactions[0]!.id).toBe(transaction.id);
+      expect(Number(transactions[0]!.amount)).toBe(12.35);
     });
   });
 
