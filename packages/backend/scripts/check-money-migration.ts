@@ -274,6 +274,24 @@ const JSON_SEEDS: Record<string, Record<string, unknown>[]> = {
     { metaData: { originalTransactionState: { amount: 1999, refAmount: -100050, transferId: null } } },
     { metaData: { somethingElse: { amount: 5 } } },
   ],
+  Accounts: [
+    {
+      externalData: {
+        systemBalance: 5,
+        bankConnection: {
+          linkedAt: '2026-01-01T00:00:00.000Z',
+          balanceReconciliation: {
+            systemBalance: 100050,
+            externalBalance: -99950,
+            difference: -200000,
+            adjustmentTransactionId: null,
+            absorbedResidual: null,
+          },
+        },
+      },
+    },
+    { externalData: { iban: 'UA00' } },
+  ],
 };
 
 const expectedJson = ({
@@ -285,7 +303,7 @@ const expectedJson = ({
   index: number;
   direction: Direction;
 }): Record<string, unknown> => {
-  const seed = JSON_SEEDS[table][index];
+  const seed = JSON_SEEDS[table]![index]!;
   const convert = (n: number): number => (direction === 'cents' ? n : n / 100);
 
   if (table === 'TagReminders') {
@@ -298,6 +316,21 @@ const expectedJson = ({
           },
         }
       : { settings };
+  }
+
+  if (table === 'Accounts') {
+    const externalData = seed.externalData as { bankConnection?: { balanceReconciliation: Record<string, unknown> } };
+    const reconciliation = externalData.bankConnection?.balanceReconciliation;
+    if (!reconciliation) return { externalData };
+    const converted = Object.fromEntries(
+      Object.entries(reconciliation).map(([key, value]) => [key, typeof value === 'number' ? convert(value) : value]),
+    );
+    return {
+      externalData: {
+        ...externalData,
+        bankConnection: { ...externalData.bankConnection, balanceReconciliation: converted },
+      },
+    };
   }
 
   if (table === 'VentureEventLinks' || table === 'PortfolioTransfers') {
@@ -357,12 +390,14 @@ const seedTable = async ({
   const seeded: SeededRow[] = [];
 
   const jsonSeeds = jsonField && !givenPlans ? JSON_SEEDS[table] : null;
-  // JSON tables alternate A and B rows too, so their own money columns get NULL and negative values.
+  const tablePlans = rowPlans({ table });
+  // A JSON seed row takes the table's plan at its index, else alternates A and B so its own
+  // money columns still get NULL and negative values.
   const plans: RowPlan[] =
     givenPlans ??
     (jsonSeeds
-      ? jsonSeeds.map((_, i) => ({ kind: i % 2 === 0 ? ('A' as const) : ('B' as const) }))
-      : rowPlans({ table }));
+      ? jsonSeeds.map((_, i) => tablePlans[i] ?? { kind: i % 2 === 0 ? ('A' as const) : ('B' as const) })
+      : tablePlans);
 
   for (const [planIndex, plan] of plans.entries()) {
     rowCounter += 1;
@@ -377,7 +412,7 @@ const seedTable = async ({
           `SELECT enumlabel FROM pg_enum e JOIN pg_type t ON t.oid = e.enumtypid
            WHERE t.typname = ${sqlLiteral(info.udt_name)} ORDER BY enumsortorder LIMIT 1`,
         );
-        enumLabel = (labels as { enumlabel: string }[])[0].enumlabel;
+        enumLabel = (labels as { enumlabel: string }[])[0]!.enumlabel;
       }
       values.set(info.column_name, RAW(requiredFiller({ info, enumLabel })));
     }
@@ -386,12 +421,12 @@ const seedTable = async ({
     for (const [index, column] of moneyColumns.entries()) {
       const nullable = columns.find((info) => info.column_name === column)?.is_nullable === 'YES';
       const defaultCents = plan.kind === 'A' ? centsA(index) : nullable ? null : -(7 + index);
-      cents[column] = plan.cents && column in plan.cents ? plan.cents[column] : defaultCents;
+      cents[column] = plan.cents && column in plan.cents ? plan.cents[column]! : defaultCents;
       values.set(column, cents[column]);
     }
 
     for (const [column, value] of Object.entries(plan.overrides ?? {})) values.set(column, value);
-    if (jsonSeeds && jsonField) values.set(jsonField.column, jsonSeeds[planIndex][jsonField.column]);
+    if (jsonSeeds && jsonField) values.set(jsonField.column, jsonSeeds[planIndex]![jsonField.column]);
 
     if (pk.includes('id') && !values.has('id')) {
       const idInfo = columns.find((info) => info.column_name === 'id');
@@ -404,7 +439,7 @@ const seedTable = async ({
        VALUES (${names.map((name) => literal(values.get(name))).join(', ')})
        RETURNING ${pk.map(quote).join(', ')}`,
     );
-    const key = (rows as Record<string, unknown>[])[0];
+    const key = (rows as Record<string, unknown>[])[0]!;
     seeded.push({ table, key, cents });
   }
 
@@ -465,11 +500,22 @@ const seedRoundingCases = async ({ sequelize }: { sequelize: Sequelize }): Promi
     table: 'TransactionSplits',
     plan: { kind: 'B', overrides: { transactionId: transaction.key.id }, cents: { amount: 50, refAmount: 150 } },
   });
+  const reconciliationCents = {
+    systemBalance: 100049,
+    externalBalance: 150050,
+    difference: 50001,
+    absorbedResidual: -150050,
+  };
   const account = await seedOne({
     table: 'Accounts',
     plan: {
       kind: 'B',
-      overrides: { currencyCode: 'JPY', userId: ROUNDING_USER_ID, type: 'monobank' },
+      overrides: {
+        currencyCode: 'JPY',
+        userId: ROUNDING_USER_ID,
+        type: 'monobank',
+        externalData: { bankConnection: { balanceReconciliation: reconciliationCents } },
+      },
       cents: {
         initialBalance: 0,
         refInitialBalance: 0,
@@ -656,6 +702,29 @@ const seedRoundingCases = async ({ sequelize }: { sequelize: Sequelize }): Promi
         refCreditLimit: '0',
         seamBalance: '1001',
       },
+      json: {
+        column: 'externalData',
+        decimal: {
+          bankConnection: {
+            balanceReconciliation: {
+              systemBalance: 1000,
+              externalBalance: 1501,
+              difference: 500,
+              absorbedResidual: -1501,
+            },
+          },
+        },
+        cents: {
+          bankConnection: {
+            balanceReconciliation: {
+              systemBalance: 100000,
+              externalBalance: 150100,
+              difference: 50000,
+              absorbedResidual: -150100,
+            },
+          },
+        },
+      },
     },
     { row: goal, rounded: { targetAmount: '0.4', plannedMonthly: '3', achievedAmount: null } },
     {
@@ -827,7 +896,7 @@ const assertView = async ({
     `-- planned-ok: the check counts every seeded row, planned and soft-deleted ones included
      SELECT (SELECT count(*) FROM real_transactions)::int AS in_view, (SELECT count(*) FROM "Transactions")::int AS in_table`,
   );
-  const { in_view: inView, in_table: inTable } = (counts as { in_view: number; in_table: number }[])[0];
+  const { in_view: inView, in_table: inTable } = (counts as { in_view: number; in_table: number }[])[0]!;
   check({
     ok: inTable === 5 && inView === 1,
     label: `${step}: view keeps only the real, non-deleted row (${inView} of ${inTable})`,
@@ -1029,7 +1098,7 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
       label: `up rejects a non-number under ${probe.table}.${probe.column} "${probe.key}"`,
     });
     await sequelize.query(
-      `UPDATE ${quote(probe.table)} SET ${quote(probe.column)} = ${sqlLiteral(original.value)}::jsonb WHERE ${where}`,
+      `UPDATE ${quote(probe.table)} SET ${quote(probe.column)} = ${sqlLiteral(original!.value)}::jsonb WHERE ${where}`,
     );
   }
   await assertState({ expected: 'cents', step: 'after rejected up (json)', rows: seeded });
@@ -1054,7 +1123,7 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
   await assertRounding({ sequelize, cases: roundingCases, expected: 'decimal', step: 'second up' });
 
   // A mix of integer and decimal columns makes `up` and `down` refuse before any change.
-  const mixedColumn = MONEY_COLUMNS[MONEY_COLUMNS.length - 1];
+  const mixedColumn = MONEY_COLUMNS[MONEY_COLUMNS.length - 1]!;
   const mixedSql = `ALTER TABLE ${quote(mixedColumn.table)} ALTER COLUMN ${quote(mixedColumn.column)}`;
   await sequelize.query(`${mixedSql} TYPE BIGINT USING round(${quote(mixedColumn.column)} * 100)::bigint`);
   for (const direction of ['up', 'down'] as const) {

@@ -567,6 +567,10 @@ const JSON_KEY_CURRENCIES: Record<string, (params: { objectSql: string }) => Rec
       convertedFrom: `(${objectSql} ->> 'currencyCode')`,
     },
   }),
+  'Accounts.externalData': () => {
+    const currency = { currency: '"Accounts"."currencyCode"' };
+    return { systemBalance: currency, externalBalance: currency, difference: currency, absorbedResidual: currency };
+  },
 };
 
 /**

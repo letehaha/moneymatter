@@ -6,7 +6,7 @@ import {
   BANK_PROVIDER_TYPE,
   NO_CURRENCY_CODE,
 } from '@bt/shared/types';
-import { roundMoneyValues } from '@common/lib/currency-precision';
+import { roundMoneyValues, roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, NotFoundError, ServiceUnavailableError, ValidationError } from '@js/errors';
@@ -79,7 +79,15 @@ export const assertExternalAccountNotLinkedElsewhere = async ({
 };
 
 /** The bank balance a link anchors on; refuses rather than anchoring on a balance the bank did not report. */
-export const requireProviderBalance = ({ providerAccount }: { providerAccount: ProviderAccount }): Money => {
+export const requireProviderBalance = async ({
+  providerAccount,
+  userId,
+  currencyCode,
+}: {
+  providerAccount: ProviderAccount;
+  userId: number;
+  currencyCode: string;
+}): Promise<Money> => {
   if (providerAccount.balance === null) {
     throw new ServiceUnavailableError({
       message: t({
@@ -88,7 +96,7 @@ export const requireProviderBalance = ({ providerAccount }: { providerAccount: P
       }),
     });
   }
-  return providerAccount.balance;
+  return roundToCurrency({ money: providerAccount.balance, userId, currencyCode, mode: 'half-up' });
 };
 
 /**
@@ -205,7 +213,9 @@ const createAccountsForConnection = withTransaction(
         }
 
         const previousLink = existingAccount.externalData?.bankConnection;
-        const relinkBankBalance = isRelink ? requireProviderBalance({ providerAccount }) : null;
+        const relinkBankBalance = isRelink
+          ? await requireProviderBalance({ providerAccount, userId, currencyCode: existingAccount.currencyCode })
+          : null;
         // A relink starts a new link day. The queued sync's absorb stamps S from the bank
         // balance, so nothing from the previous link carries over.
         const bankConnection: AccountExternalData['bankConnection'] = relinkBankBalance
@@ -213,9 +223,9 @@ const createAccountsForConnection = withTransaction(
               linkedAt: new Date().toISOString(),
               linkingStrategy: 'forward-only',
               balanceReconciliation: {
-                systemBalance: existingAccount.currentBalance.toCents(),
-                externalBalance: relinkBankBalance.toCents(),
-                difference: relinkBankBalance.subtract(existingAccount.currentBalance).toCents(),
+                systemBalance: existingAccount.currentBalance.toNumber(),
+                externalBalance: relinkBankBalance.toNumber(),
+                difference: relinkBankBalance.subtract(existingAccount.currentBalance).toNumber(),
                 adjustmentTransactionId: null,
                 residualTarget: previousLink?.balanceReconciliation?.residualTarget,
                 pendingAbsorb: true,

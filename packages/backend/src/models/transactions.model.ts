@@ -4,6 +4,7 @@ import {
   BLANK_FILTER_VALUE,
   CategorizationMeta,
   CATEGORIZATION_SOURCE,
+  type Cents,
   FILTER_OPERATION,
   PAYMENT_TYPES,
   RecordId,
@@ -173,8 +174,8 @@ export interface TransactionsAttributes {
   originalId: string; // Stores the original id from external source
   // JSON of any addition fields
   externalData: {
-    operationAmount?: number;
-    balance?: number;
+    operationAmount?: Cents;
+    balance?: Cents;
     hold?: boolean;
     receiptId?: string;
     /** Set on transactions created by the balance-adjustment flow. */

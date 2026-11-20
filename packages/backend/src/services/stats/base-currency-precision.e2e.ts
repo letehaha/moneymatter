@@ -1,8 +1,14 @@
-import { ACCOUNT_CATEGORIES, type RecordId, TRANSACTION_TYPES, VEHICLE_CLASS } from '@bt/shared/types';
+import {
+  ACCOUNT_CATEGORIES,
+  DEPRECIATION_PRESET,
+  type RecordId,
+  TRANSACTION_TYPES,
+  VEHICLE_CLASS,
+} from '@bt/shared/types';
 import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE } from '@bt/shared/types/venture';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
-import { addDays, format, subDays } from 'date-fns';
+import { addDays, format, subDays, subYears } from 'date-fns';
 
 /**
  * The stats reports compute in integer minor units at the base currency's decimals, so a
@@ -369,7 +375,7 @@ describe('Stats in the base currency decimals', () => {
       });
     });
 
-    it('reports investment contributions at 3 decimals', async () => {
+    it('reports investment contributions and net worth at 3 decimals', async () => {
       await inKwdBook(async () => {
         const portfolio = await helpers.createPortfolio({ payload: { name: 'Precision portfolio' }, raw: true });
         await helpers.directCashTransaction({
@@ -387,10 +393,13 @@ describe('Stats in the base currency decimals', () => {
             decimals: 3,
           }),
         ).toBe(12.345);
+
+        const { points } = await helpers.getNetWorthHistory({ ...WINDOW, granularity: 'weekly', raw: true });
+        expect(points.at(-1)!.assets.investments).toBe(12.345);
       });
     });
 
-    it('reports venture contributions at 3 decimals', async () => {
+    it('reports venture contributions and net worth at 3 decimals', async () => {
       await inKwdBook(async ({ baseAccountId, categoryId }) => {
         const deal = await helpers.createVentureDeal({
           payload: {
@@ -422,6 +431,9 @@ describe('Stats in the base currency decimals', () => {
         const contributions = await helpers.getVentureContributions({ ...WINDOW, raw: true });
 
         expect(contributions).toEqual([{ dealId: deal.id, name: 'Precision deal', amount: 2.469 }]);
+
+        const { points } = await helpers.getNetWorthHistory({ ...WINDOW, granularity: 'weekly', raw: true });
+        expect(points.at(-1)!.assets.ventures).toBe(2.469);
       });
     });
   });
@@ -573,6 +585,30 @@ describe('Stats in the base currency decimals', () => {
             raw: true,
           });
           expect(points.at(-1)!.assets.vehicles).toBe(expected);
+        },
+      });
+    });
+
+    it('reports a depreciated JPY vehicle in whole yen for a JPY-base user', async () => {
+      await helpers.asNewUserWithBaseCurrency({
+        currencyCode: 'JPY',
+        fn: async () => {
+          await helpers.createVehicle({
+            name: 'Precision car',
+            currencyCode: 'JPY',
+            make: 'Toyota',
+            model: 'Camry',
+            year: 2020,
+            vehicleClass: VEHICLE_CLASS.sedan,
+            purchasePrice: 1_234_567,
+            purchaseDate: format(subYears(NOW, 2), 'yyyy-MM-dd'),
+            depreciationPreset: DEPRECIATION_PRESET.custom,
+            customAnnualRatePct: 10,
+            raw: true,
+          });
+
+          // Two years at 10% leave 999_999.27, held as 999_999.
+          expect(await todayVehiclesBalance()).toBe(999_999);
         },
       });
     });

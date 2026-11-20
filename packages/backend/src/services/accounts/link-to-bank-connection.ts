@@ -151,10 +151,13 @@ export const linkAccountToBankConnection = withTransaction(
     });
     await assertNoUnfinishedImport({ userId });
 
-    const systemBalanceCents = lockedAccount.currentBalance.toCents();
-    const bankBalance = requireProviderBalance({ providerAccount: externalAccount });
-    const externalBalanceCents = bankBalance.toCents();
-    const balanceDifference = externalBalanceCents - systemBalanceCents;
+    const systemBalance = lockedAccount.currentBalance;
+    const bankBalance = await requireProviderBalance({
+      providerAccount: externalAccount,
+      userId,
+      currencyCode: lockedAccount.currencyCode,
+    });
+    const balanceDifference = bankBalance.subtract(systemBalance).toNumber();
 
     const isQueuedSyncProvider = provider.metadata.features.queuedSync === true;
 
@@ -170,8 +173,8 @@ export const linkAccountToBankConnection = withTransaction(
         linkedAt,
         linkingStrategy: 'forward-only' as const,
         balanceReconciliation: {
-          systemBalance: systemBalanceCents,
-          externalBalance: externalBalanceCents,
+          systemBalance: systemBalance.toNumber(),
+          externalBalance: bankBalance.toNumber(),
           difference: balanceDifference,
           adjustmentTransactionId: null,
           residualTarget,

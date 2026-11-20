@@ -382,6 +382,27 @@ describe('Goal insights at the base currency decimals', () => {
     expect(goal.achievedAt).toBe(null);
   });
 
+  it('reaches a 3-decimal goal exactly at its target', async () => {
+    const goal = await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
+      fn: async () => {
+        const account = await createAccount({ initialBalance: 10.004, currencyCode: 'KWD' });
+        return helpers.createGoal({
+          payload: {
+            accounts: [{ accountId: account.id, sharePercent: 100 }],
+            currencyCode: 'KWD',
+            targetAmount: 10.004,
+          },
+          raw: true,
+        });
+      },
+    });
+
+    expect(goal.insights).toMatchObject({ status: 'reached', currentValue: 10.004, remaining: 0 });
+    expect(goal.achievedAt).not.toBeNull();
+    expect(goal.achievedAmount).toBe(10.004);
+  });
+
   it('counts whole units toward a 0-decimal goal', async () => {
     const goal = await helpers.asNewUserWithBaseCurrency({
       currencyCode: 'JPY',

@@ -161,7 +161,7 @@ describe('deleteImportBatch', () => {
   it('locks the affected accounts before deleting and reverses nothing when the batch has no batch row', async () => {
     mockRows(2);
     effectsFindAllMock.mockResolvedValue([
-      { accountId: 'acc-2', absorbedAmount: Money.fromCents(1500), createdByImport: false },
+      { accountId: 'acc-2', absorbedAmount: Money.fromDecimal(15), createdByImport: false },
     ]);
 
     const result = await deleteImportBatch({ userId: USER_ID, batchId: BATCH_ID });
@@ -233,7 +233,7 @@ describe('deleteImportBatch', () => {
     mockRows(2);
     mockBatch({ importedAt: new Date(), finishedAt: null });
     effectsFindAllMock.mockResolvedValue([
-      { accountId: 'acc-1', absorbedAmount: Money.fromCents(1500), createdByImport: false },
+      { accountId: 'acc-1', absorbedAmount: Money.fromDecimal(15), createdByImport: false },
     ]);
 
     await expect(deleteImportBatch({ userId: USER_ID, batchId: BATCH_ID })).rejects.toBeInstanceOf(LockedError);
@@ -256,7 +256,7 @@ describe('deleteImportBatch', () => {
     mockRows(2);
     const batch = mockBatch({ importedAt: new Date(Date.now() - HOUR_MS), finishedAt: new Date() });
     effectsFindAllMock.mockResolvedValue([
-      { accountId: 'acc-2', absorbedAmount: Money.fromCents(1500), createdByImport: false },
+      { accountId: 'acc-2', absorbedAmount: Money.fromDecimal(15), createdByImport: false },
       { accountId: 'acc-3', absorbedAmount: Money.zero(), createdByImport: true },
     ]);
 
@@ -296,7 +296,7 @@ describe('deleteImportBatch', () => {
     mockRows(2);
     const batch = mockBatch({ importedAt: new Date(Date.now() - HOUR_MS), finishedAt: new Date() });
     effectsFindAllMock.mockResolvedValue([
-      { accountId: 'acc-2', absorbedAmount: Money.fromCents(1500), createdByImport: false },
+      { accountId: 'acc-2', absorbedAmount: Money.fromDecimal(15), createdByImport: false },
     ]);
     lockAccountRowMock.mockImplementation(async ({ accountId }) => ({
       id: accountId,
@@ -315,7 +315,7 @@ describe('deleteImportBatch', () => {
       lockAccountRowMock.mockImplementation(async ({ accountId }) => ({
         id: accountId,
         type: ACCOUNT_TYPES.lunchflow,
-        seamBalance: Money.fromCents(120_000),
+        seamBalance: Money.fromDecimal(1200),
         externalData: { bankConnection: { linkedAt: new Date().toISOString(), linkingStrategy: 'forward-only' } },
       }));
 
@@ -323,7 +323,7 @@ describe('deleteImportBatch', () => {
       mockRows(2);
       mockBatch({ importedAt: new Date(Date.now() - HOUR_MS), finishedAt: new Date() });
       effectsFindAllMock.mockResolvedValue([
-        { accountId: 'acc-1', absorbedAmount: Money.fromCents(1500), createdByImport: false },
+        { accountId: 'acc-1', absorbedAmount: Money.fromDecimal(15), createdByImport: false },
       ]);
       mockSeamAccount();
 

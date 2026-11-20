@@ -1,4 +1,4 @@
-import { ACCOUNT_TYPES, type AccountExternalData } from '@bt/shared/types';
+import { ACCOUNT_TYPES, type AccountExternalData, asDecimal } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { Money } from '@common/types/money';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
@@ -119,9 +119,9 @@ function buildReconciliation({
       linkedAt: '2024-06-01T00:00:00.000Z',
       linkingStrategy: 'forward-only',
       balanceReconciliation: {
-        systemBalance: 10,
-        externalBalance: 12,
-        difference: 2,
+        systemBalance: asDecimal(10),
+        externalBalance: asDecimal(12),
+        difference: asDecimal(2),
         adjustmentTransactionId: null,
         ...(pendingAbsorb === undefined ? {} : { pendingAbsorb }),
       },
@@ -132,7 +132,7 @@ function buildReconciliation({
 
 /** Sets the ledger sum the raw SELECT reports back; the argument is in cents, the DECIMAL column answers in decimals. */
 const mockSignedSum = (cents: number) =>
-  queryMock.mockResolvedValue([{ signedSum: Money.fromCents(cents).toDecimalString(18) }] as never);
+  queryMock.mockResolvedValue([{ signedSum: Money.fromDecimal(cents / 100).toDecimalString(18) }] as never);
 
 const lastUpdatePayload = () => accountsUpdateMock.mock.calls[0]![0] as unknown as { initialBalance: Money };
 
@@ -197,7 +197,7 @@ describe('absorbLinkResidual', () => {
 
     const result = await absorbLinkResidual({ accountId, userId: USER_ID });
 
-    expect(result).toEqual({ absorbedResidual: Money.fromDecimal(50).toCents() });
+    expect(result).toEqual({ absorbedResidual: 50 });
     expect(accountsUpdateMock).toHaveBeenCalledTimes(1);
     expect(lastUpdatePayload().initialBalance.toCents()).toBe(Money.fromDecimal(100).toCents());
     expect(accountsUpdateMock.mock.calls[0]![1]).toEqual(
@@ -219,7 +219,7 @@ describe('absorbLinkResidual', () => {
 
     const result = await absorbLinkResidual({ accountId, userId: USER_ID });
 
-    expect(result).toEqual({ absorbedResidual: Money.fromDecimal(-30).toCents() });
+    expect(result).toEqual({ absorbedResidual: -30 });
     expect(lastUpdatePayload().initialBalance.toCents()).toBe(Money.fromDecimal(20).toCents());
     expect(restampMock).toHaveBeenCalledTimes(1);
   });
@@ -237,7 +237,7 @@ describe('absorbLinkResidual', () => {
 
     const result = await absorbLinkResidual({ accountId, userId: USER_ID });
 
-    expect(result).toEqual({ absorbedResidual: Money.fromDecimal(60).toCents() });
+    expect(result).toEqual({ absorbedResidual: 60 });
     expect(lastUpdatePayload().initialBalance.toCents()).toBe(Money.fromDecimal(70).toCents());
   });
 
@@ -276,7 +276,7 @@ describe('absorbLinkResidual', () => {
 
       const result = await absorbLinkResidual({ accountId, userId: USER_ID });
 
-      expect(result).toEqual({ absorbedResidual: Money.fromDecimal(50).toCents() });
+      expect(result).toEqual({ absorbedResidual: 50 });
       expect(setTodayRowToSpotMock).toHaveBeenCalledTimes(1);
     },
   );
@@ -293,7 +293,7 @@ describe('absorbLinkResidual', () => {
 
     const result = await absorbLinkResidual({ accountId, userId: USER_ID });
 
-    expect(result).toEqual({ absorbedResidual: Money.fromDecimal(50).toCents() });
+    expect(result).toEqual({ absorbedResidual: 50 });
     expect(loggerErrorMock).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ code: 'ACCOUNT_LINK_RESIDUAL_REREAD_MISSED' }),
@@ -367,7 +367,7 @@ describe('runPendingLinkAbsorb', () => {
 
     const result = await runPendingLinkAbsorb({ accountId, userId: USER_ID });
 
-    expect(result).toEqual({ absorbedResidual: Money.fromDecimal(50).toCents() });
+    expect(result).toEqual({ absorbedResidual: 50 });
     expect(stampSeamBalanceMock).toHaveBeenCalledTimes(1);
     expect(stampSeamBalanceMock).toHaveBeenCalledWith({ accountId });
     expect(stampSeamBalanceMock.mock.invocationCallOrder[0]!).toBeGreaterThan(
@@ -387,7 +387,7 @@ describe('runPendingLinkAbsorb', () => {
             difference: 2,
             adjustmentTransactionId: null,
             pendingAbsorb: false,
-            absorbedResidual: Money.fromDecimal(50).toCents(),
+            absorbedResidual: 50,
           },
         },
       },
@@ -442,7 +442,7 @@ describe('runPendingLinkAbsorb', () => {
 
     const result = await runPendingLinkAbsorb({ accountId, userId: USER_ID });
 
-    expect(result).toEqual({ absorbedResidual: Money.fromDecimal(50).toCents() });
+    expect(result).toEqual({ absorbedResidual: 50 });
     expect(pending.update).not.toHaveBeenCalled();
   });
 
@@ -465,7 +465,7 @@ describe('runPendingLinkAbsorb', () => {
 
     const result = await runPendingLinkAbsorb({ accountId, userId: USER_ID });
 
-    expect(result).toEqual({ absorbedResidual: Money.fromDecimal(50).toCents() });
+    expect(result).toEqual({ absorbedResidual: 50 });
     expect(fresh.update).not.toHaveBeenCalled();
   });
 
@@ -489,7 +489,7 @@ describe('runPendingLinkAbsorb', () => {
 
     const result = await runPendingLinkAbsorb({ accountId, userId: USER_ID });
 
-    expect(result).toEqual({ absorbedResidual: Money.fromDecimal(50).toCents() });
+    expect(result).toEqual({ absorbedResidual: 50 });
     expect(loggerErrorMock).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ code: 'LINK_ABSORB_RATE_FALLBACK' }),
@@ -500,7 +500,7 @@ describe('runPendingLinkAbsorb', () => {
     const written = fresh.update.mock.calls[0]![0] as { externalData: AccountExternalData };
     expect(written.externalData.bankConnection!.balanceReconciliation).toMatchObject({
       pendingAbsorb: false,
-      absorbedResidual: Money.fromDecimal(50).toCents(),
+      absorbedResidual: 50,
     });
   });
 

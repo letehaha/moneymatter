@@ -111,13 +111,15 @@ describe('Vehicles', () => {
     });
 
     it.each([
-      // 1_234_567.4 rounds to 1_234_567; two years at 10% leave 999_999.27, held as 999_999.
-      { currencyCode: 'JPY', purchasePrice: 1_234_567.4, anchor: 1_234_567, value: 999_999 },
-      // 1234.5674 rounds to 1234.567; two years at 10% leave 999.99927, held as 999.999.
-      { currencyCode: 'KWD', purchasePrice: 1234.5674, anchor: 1234.567, value: 999.999 },
+      // 1_234_567.4 rounds to 1_234_567; two years at 10% leave 999_999.27, held as 999_999,
+      // and at 20% leave 790_122.88, held as 790_123.
+      { currencyCode: 'JPY', purchasePrice: 1_234_567.4, anchor: 1_234_567, value: 999_999, refreshed: 790_123 },
+      // 1234.5674 rounds to 1234.567; two years at 10% leave 999.99927, held as 999.999,
+      // and at 20% leave 790.12288, held as 790.123.
+      { currencyCode: 'KWD', purchasePrice: 1234.5674, anchor: 1234.567, value: 999.999, refreshed: 790.123 },
     ])(
-      'depreciates a $currencyCode vehicle bought two years ago at the currency decimals',
-      async ({ currencyCode, purchasePrice, anchor, value }) => {
+      'depreciates a $currencyCode vehicle bought two years ago at the currency decimals, on create and on refresh',
+      async ({ currencyCode, purchasePrice, anchor, value, refreshed }) => {
         const vehicle = await helpers.createVehicle({
           ...basePayload({
             currencyCode,
@@ -131,6 +133,9 @@ describe('Vehicles', () => {
 
         expect(vehicle.purchasePrice).toBe(anchor);
         expect(vehicle.account!.currentBalance).toBe(value);
+
+        const updated = await helpers.updateVehicle({ id: vehicle.id, customAnnualRatePct: 20, raw: true });
+        expect(updated.account!.currentBalance).toBe(refreshed);
       },
     );
   });

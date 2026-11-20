@@ -132,8 +132,7 @@ export const absorbLinkResidual = withTransaction(
       initialBalanceAfter: initialBalanceAfter.toNumber(),
     });
 
-    // The reconciliation snapshot keeps its figures in cents (`AccountExternalData`).
-    return { absorbedResidual: identityGap.toCents() };
+    return { absorbedResidual: identityGap.toNumber() };
   },
 );
 
@@ -158,7 +157,7 @@ const absorbIntoNativeOpeningBalance = async ({
   if (gap.isZero()) return {};
 
   await Accounts.update({ initialBalance: account.initialBalance.add(gap) }, { where: { id: accountId, userId } });
-  return { absorbedResidual: gap.toCents() };
+  return { absorbedResidual: gap.toNumber() };
 };
 
 /**

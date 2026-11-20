@@ -48,11 +48,11 @@ import { Op } from 'sequelize';
 const extractError = (response: unknown) =>
   (response as helpers.CustomResponse<unknown>).body.response as unknown as { code: string; message: string };
 
-/** Bank-reported balance, in dollars (LunchFlow account 1001 is USD). */
-const mockBankBalance = ({ amount }: { amount: number }) =>
+/** Bank-reported balance of LunchFlow account 1001, in dollars unless `currency` says otherwise. */
+const mockBankBalance = ({ amount, currency = 'USD' }: { amount: number; currency?: string }) =>
   getLunchFlowBalanceMock({
     accountId: LUNCHFLOW_EXTERNAL_ACCOUNT_ID,
-    response: { balance: { amount: asDecimal(amount), currency: 'USD' } },
+    response: { balance: { amount: asDecimal(amount), currency } },
   });
 
 // The list reads raw rows, so `amount` is the DECIMAL column's exact string.
@@ -90,12 +90,14 @@ const seedManualHistory = async ({ accountId, amount }: { accountId: RecordId; a
 };
 
 const setupLinkedScenario = async ({
+  currencyCode = 'USD',
   initialBalance,
   bankBalance,
   bankTransactions,
   beforeLink,
   residualTarget,
 }: {
+  currencyCode?: string;
   initialBalance: number;
   bankBalance: number;
   bankTransactions: ReturnType<typeof getMockedLunchFlowTransactions>;
@@ -103,16 +105,7 @@ const setupLinkedScenario = async ({
   /** Seeds account state (e.g. manual transactions) between creation and linking. */
   beforeLink?: ({ accountId }: { accountId: Accounts['id'] }) => Promise<void>;
 }) => {
-  await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
-
-  const account = await helpers.createAccount({
-    payload: helpers.buildAccountPayload({
-      name: 'Linkable system account',
-      currencyCode: 'USD',
-      initialBalance,
-    }),
-    raw: true,
-  });
+  const account = await helpers.createAccountIn({ currencyCode, name: 'Linkable system account', initialBalance });
 
   if (beforeLink) await beforeLink({ accountId: account.id });
 
@@ -124,7 +117,7 @@ const setupLinkedScenario = async ({
 
   global.mswMockServer.use(
     getLunchFlowTransactionsMock({ response: bankTransactions, accountId: LUNCHFLOW_EXTERNAL_ACCOUNT_ID }),
-    mockBankBalance({ amount: bankBalance }),
+    mockBankBalance({ amount: bankBalance, currency: currencyCode }),
   );
 
   const preLinkAccount = (await Accounts.findByPk(account.id))!;
@@ -138,7 +131,12 @@ const setupLinkedScenario = async ({
   });
   expect(linkResponse.statusCode).toBe(200);
 
-  return { account, preLinkAccount, connectionId };
+  return {
+    account,
+    preLinkAccount,
+    connectionId,
+    balanceDifference: helpers.extractResponse(linkResponse).balanceDifference,
+  };
 };
 
 /** Rejects with a clear message instead of hanging until the Jest timeout. */
@@ -203,11 +201,12 @@ describe('Balance reconciliation when linking account to a bank connection', () 
   });
 
   it('absorbs a residual difference into initialBalance when the bank returns no transactions', async () => {
-    const { account, preLinkAccount } = await setupLinkedScenario({
+    const { account, preLinkAccount, balanceDifference } = await setupLinkedScenario({
       initialBalance: 1000,
       bankBalance: 1100,
       bankTransactions: { transactions: [], total: 0 },
     });
+    expect(balanceDifference).toBe(100);
 
     const updatedAccount = (await Accounts.findByPk(account.id))!;
     const transactions = await Transactions.findAll({ where: { accountId: account.id }, raw: true });
@@ -217,7 +216,13 @@ describe('Balance reconciliation when linking account to a bank connection', () 
     );
     expect(adjustments.length).toBe(0);
 
-    expect(readReconciliation(updatedAccount).residualTarget).toBe('opening-balance');
+    expect(readReconciliation(updatedAccount)).toMatchObject({
+      residualTarget: 'opening-balance',
+      systemBalance: 1000,
+      externalBalance: 1100,
+      difference: 100,
+      absorbedResidual: 100,
+    });
     expect(updatedAccount.currentBalance.toNumber()).toBe(1100);
     // The unexplainable +100 must land in initialBalance, not in a visible row.
     expect(updatedAccount.initialBalance.toNumber()).toBe(1100);
@@ -236,6 +241,23 @@ describe('Balance reconciliation when linking account to a bank connection', () 
     const todayRow = await readTodayBalanceRow({ accountId: account.id });
     expect(todayRow).not.toBeNull();
     expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance.toCents());
+  });
+
+  it('rounds the bank balance to the account currency decimals before reconciling', async () => {
+    const { account, balanceDifference } = await setupLinkedScenario({
+      currencyCode: 'JPY',
+      initialBalance: 1000,
+      bankBalance: 1500.6,
+      bankTransactions: { transactions: [], total: 0 },
+    });
+    expect(balanceDifference).toBe(501);
+
+    expect(readReconciliation((await Accounts.findByPk(account.id))!)).toMatchObject({
+      systemBalance: 1000,
+      externalBalance: 1501,
+      difference: 501,
+      absorbedResidual: 501,
+    });
   });
 
   it('absorbs the whole pre-link gap without importing pre-link bank history over manual rows', async () => {
@@ -739,6 +761,13 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       expect(updatedAccount.currentBalance.toNumber()).toBe(1000);
       // The unexplainable +100 must land in the opening balance.
       expect(updatedAccount.initialBalance.toNumber()).toBe(1000);
+      expect(readReconciliation(updatedAccount)).toMatchObject({
+        pendingAbsorb: false,
+        systemBalance: 900,
+        externalBalance: 1000,
+        difference: 100,
+        absorbedResidual: 100,
+      });
       expect(updatedAccount.initialBalance.toCents() + sumSignedCents(transactions)).toBe(
         updatedAccount.currentBalance.toCents(),
       );
@@ -1069,7 +1098,11 @@ describe('Balance reconciliation when linking account to a bank connection', () 
         expect(updatedAccount.creditLimit.toNumber()).toBe(0);
         expect(updatedAccount.currentBalance.toNumber()).toBe(0);
         expect(updatedAccount.initialBalance.toNumber()).toBe(-30_000);
-        expect(readReconciliation(updatedAccount).difference).toBe(3_449_752);
+        expect(readReconciliation(updatedAccount)).toMatchObject({
+          systemBalance: -34_497.52,
+          externalBalance: 0,
+          difference: 34_497.52,
+        });
         expect(updatedAccount.initialBalance.toCents() + sumSignedCents(transactions)).toBe(
           updatedAccount.currentBalance.toCents(),
         );

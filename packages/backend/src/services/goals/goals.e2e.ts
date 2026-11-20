@@ -751,11 +751,6 @@ describe('Goal fixed amounts', () => {
   });
 });
 
-const createAccountIn = async ({ currencyCode }: { currencyCode: string }) => {
-  await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
-  return helpers.createAccount({ payload: helpers.buildAccountPayload({ currencyCode }), raw: true });
-};
-
 describe('Goal amounts at the currency decimals', () => {
   it.each([
     { label: '2-decimal', currencyCode: undefined, sent: [100.555, 10.005, 200.545], stored: [100.56, 10.01, 200.55] },
@@ -801,7 +796,7 @@ describe('Goal amounts at the currency decimals', () => {
   });
 
   it("rounds a fixed amount to its account's currency", async () => {
-    const account = await createAccountIn({ currencyCode: 'JPY' });
+    const account = await helpers.createAccountIn({ currencyCode: 'JPY' });
 
     const goal = await helpers.createGoal({
       payload: { targetAmount: 1, accounts: [{ accountId: account.id, fixedAmount: 1000.5 }] },
@@ -832,7 +827,7 @@ describe('Goal amounts at the currency decimals', () => {
   });
 
   it('keeps a stored fixed amount as it is when a write does not send the shares', async () => {
-    const account = await createAccountIn({ currencyCode: 'JPY' });
+    const account = await helpers.createAccountIn({ currencyCode: 'JPY' });
     const goal = await helpers.createGoal({
       payload: { targetAmount: 1, accounts: [{ accountId: account.id, fixedAmount: 1000 }] },
       raw: true,

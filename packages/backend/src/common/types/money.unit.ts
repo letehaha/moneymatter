@@ -1,3 +1,4 @@
+import { asCents } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 
 import {
@@ -15,37 +16,37 @@ describe('Money value object', () => {
 
   describe('fromCents', () => {
     it('creates Money from positive cents', () => {
-      const m = Money.fromCents(1550);
+      const m = Money.fromCents(asCents(1550));
       expect(m.toNumber()).toBe(15.5);
       expect(m.toCents()).toBe(1550);
     });
 
     it('creates Money from zero cents', () => {
-      const m = Money.fromCents(0);
+      const m = Money.fromCents(asCents(0));
       expect(m.toNumber()).toBe(0);
       expect(m.toCents()).toBe(0);
     });
 
     it('creates Money from negative cents', () => {
-      const m = Money.fromCents(-500);
+      const m = Money.fromCents(asCents(-500));
       expect(m.toNumber()).toBe(-5);
       expect(m.toCents()).toBe(-500);
     });
 
     it('rejects NaN', () => {
-      expect(() => Money.fromCents(NaN)).toThrow('expected finite number');
+      expect(() => Money.fromCents(asCents(NaN))).toThrow('expected finite number');
     });
 
     it('rejects Infinity', () => {
-      expect(() => Money.fromCents(Infinity)).toThrow('expected finite number');
+      expect(() => Money.fromCents(asCents(Infinity))).toThrow('expected finite number');
     });
 
     it('rejects -Infinity', () => {
-      expect(() => Money.fromCents(-Infinity)).toThrow('expected finite number');
+      expect(() => Money.fromCents(asCents(-Infinity))).toThrow('expected finite number');
     });
 
     it('rejects non-integer', () => {
-      expect(() => Money.fromCents(15.5)).toThrow('expected integer');
+      expect(() => Money.fromCents(asCents(15.5))).toThrow('expected integer');
     });
   });
 
@@ -265,7 +266,7 @@ describe('Money value object', () => {
     });
 
     it('equals: fromCents and fromDecimal represent same value', () => {
-      const fromCents = Money.fromCents(1550);
+      const fromCents = Money.fromCents(asCents(1550));
       const fromDecimal = Money.fromDecimal(15.5);
       expect(fromCents.equals(fromDecimal)).toBe(true);
     });
@@ -384,7 +385,7 @@ describe('Money value object', () => {
 
   describe('unification', () => {
     it('$15.50 from cents and from decimal are equal', () => {
-      const fromCents = Money.fromCents(1550);
+      const fromCents = Money.fromCents(asCents(1550));
       const fromDecimal = Money.fromDecimal(15.5);
       expect(fromCents.equals(fromDecimal)).toBe(true);
       expect(fromCents.toCents()).toBe(fromDecimal.toCents());
@@ -392,7 +393,7 @@ describe('Money value object', () => {
     });
 
     it('arithmetic works across both creation paths', () => {
-      const fromCents = Money.fromCents(1000); // $10.00
+      const fromCents = Money.fromCents(asCents(1000)); // $10.00
       const fromDecimal = Money.fromDecimal(5.5); // $5.50
       const result = fromCents.add(fromDecimal);
       expect(result.toNumber()).toBe(15.5);

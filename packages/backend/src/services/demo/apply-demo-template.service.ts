@@ -1,4 +1,4 @@
-import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, asCents } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
@@ -189,8 +189,8 @@ export async function applyDemoTemplate({
   await Transactions.bulkCreate(
     rows.map((row) => ({
       ...row,
-      amount: Money.fromCents(row.amount),
-      refAmount: Money.fromCents(row.refAmount),
+      amount: Money.fromCents(asCents(row.amount)),
+      refAmount: Money.fromCents(asCents(row.refAmount)),
     })),
     { hooks: false, validate: false },
   );

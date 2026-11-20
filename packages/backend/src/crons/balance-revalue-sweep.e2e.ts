@@ -33,7 +33,12 @@ const writeBalanceRow = async ({ accountId, date, cents }: { accountId: string; 
      VALUES (:id, :accountId, :date, :amount, NOW(), NOW())
      ON CONFLICT ("accountId", "date") DO UPDATE SET "amount" = EXCLUDED."amount"`,
     {
-      replacements: { id: uuidv7(), accountId, date: dayKey(date), amount: Money.fromCents(cents).toDecimalString(18) },
+      replacements: {
+        id: uuidv7(),
+        accountId,
+        date: dayKey(date),
+        amount: Money.fromDecimal(cents / 100).toDecimalString(18),
+      },
     },
   );
 };

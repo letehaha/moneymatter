@@ -934,14 +934,6 @@ describe('Multi-account payments: guards and cleanup', () => {
   });
 });
 
-const createAccountIn = async ({ currencyCode }: { currencyCode: string }) => {
-  await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
-  return helpers.createAccount({
-    payload: helpers.buildAccountPayload({ currencyCode, initialBalance: 1000 }),
-    raw: true,
-  });
-};
-
 const paymentAmountOf = async ({ legAccountId }: { legAccountId: string }) => {
   const [main] = (await helpers.getTransactions({ raw: true }))!.filter((tx) => tx.paymentParts);
   return main!.paymentParts!.find((part) => part.accountId === legAccountId)!.paymentAmount;
@@ -954,7 +946,7 @@ describe('Multi-account payments: amounts at the currency decimals', () => {
   ])(
     "rounds a leg's payment amount $paymentAmount half-up to $expected on a $currencyCode main row",
     async ({ currencyCode, mainAmount, paymentAmount, expected }) => {
-      const main = await createAccountIn({ currencyCode });
+      const main = await helpers.createAccountIn({ currencyCode, initialBalance: 1000 });
       const [aedLeg] = await createManualAccounts({ count: 1 });
 
       await createPayment({
@@ -968,9 +960,9 @@ describe('Multi-account payments: amounts at the currency decimals', () => {
   );
 
   it('rejects a payment amount that rounds to zero, and a leg amount that rounds to zero', async () => {
-    const usdMain = await createAccountIn({ currencyCode: 'USD' });
+    const usdMain = await helpers.createAccountIn({ currencyCode: 'USD', initialBalance: 1000 });
     const [aedLeg] = await createManualAccounts({ count: 1 });
-    const jpyLeg = await createAccountIn({ currencyCode: 'JPY' });
+    const jpyLeg = await helpers.createAccountIn({ currencyCode: 'JPY', initialBalance: 1000 });
 
     const zeroShare = await helpers.createTransaction({
       payload: helpers.buildTransactionPayload({

@@ -120,6 +120,7 @@ const JSON_KEY_CURRENCIES: Record<string, Record<string, CurrencySource>> = {
     amount: SNAPSHOT_AMOUNT,
     refAmount: { currency: base, convertedFrom: snapshot('currencyCode') },
   },
+  'accounts.externalData': { systemBalance: OWN, externalBalance: OWN, difference: OWN, absorbedResidual: OWN },
 };
 
 /** File-attribute keys of the money columns and JSON keys without a currency source. */

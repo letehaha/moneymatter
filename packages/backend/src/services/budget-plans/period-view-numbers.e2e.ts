@@ -571,21 +571,25 @@ describe('Budget plan period view: plan currency decimals', () => {
       time: at({ period: periods[0]! }),
     });
 
-    return view({ planId: plan.id, period: periods[0]! });
+    const { periods: trend } = await helpers.getBudgetPlanTrends({ planId: plan.id, raw: true });
+
+    return { result: await view({ planId: plan.id, period: periods[0]! }), trend: trend[0]! };
   };
 
   it.each([
     { currencyCode: 'KWD', assigned: 1.234, spent: 0.5, available: 0.734 },
     { currencyCode: 'JPY', assigned: 1500, spent: 400, available: 1100 },
   ])(
-    'reports assigned, activity and available at the decimals of a $currencyCode plan',
+    'reports assigned, activity and available at the decimals of a $currencyCode plan, trends included',
     async ({ currencyCode, assigned, spent, available }) => {
-      const result = await helpers.asNewUserWithBaseCurrency({
+      const { result, trend } = await helpers.asNewUserWithBaseCurrency({
         currencyCode,
         fn: () => assignAndSpend({ currencyCode, assigned, spent }),
       });
 
       expect(result.lines[0]).toMatchObject({ assigned, activity: -spent, available });
+      expect(trend).toMatchObject({ periodId: result.period.id, assigned, activity: -spent, available, carriedIn: 0 });
+      expect(trend.lines[0]).toMatchObject({ assigned, activity: -spent, available });
       expect(result.header).toEqual({
         totalAssigned: assigned,
         totalActivity: -spent,

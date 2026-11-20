@@ -105,4 +105,12 @@ export const MONEY_JSON_FIELDS_20261115: readonly MoneyJsonFieldSpec[] = [
     path: ['originalTransactionState'],
     keys: ['amount', 'refAmount'],
   },
+  // The balances compared when an account was linked to a bank.
+  {
+    table: 'Accounts',
+    column: 'externalData',
+    shape: 'object',
+    path: ['bankConnection', 'balanceReconciliation'],
+    keys: ['systemBalance', 'externalBalance', 'difference', 'absorbedResidual'],
+  },
 ];

@@ -4,6 +4,7 @@ import {
   SUBSCRIPTION_PERIOD_STATUSES,
   SUBSCRIPTION_TYPES,
   type SubscriptionMatchingRules,
+  asCents,
 } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
@@ -112,8 +113,8 @@ export async function setupSubscriptions({
           operator: 'between',
           // Rule bounds are decimals; the config holds cents.
           value: {
-            min: Money.fromCents(config.expectedAmount - toleranceCents).toNumber(),
-            max: Money.fromCents(config.expectedAmount + toleranceCents).toNumber(),
+            min: Money.fromCents(asCents(config.expectedAmount - toleranceCents)).toNumber(),
+            max: Money.fromCents(asCents(config.expectedAmount + toleranceCents)).toNumber(),
           },
           currencyCode: DEMO_CONFIG.baseCurrency,
         },
@@ -126,7 +127,7 @@ export async function setupSubscriptions({
       type: SUBSCRIPTION_TYPES.subscription,
       frequency: config.frequency,
       // The service takes a decimal; the config holds cents.
-      expectedAmount: Money.fromCents(config.expectedAmount).toNumber(),
+      expectedAmount: Money.fromCents(asCents(config.expectedAmount)).toNumber(),
       expectedCurrencyCode: DEMO_CONFIG.baseCurrency,
       startDate,
       // Passing a dueDate is what opens the first period and sets `anchorDay`.

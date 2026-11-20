@@ -42,7 +42,7 @@ describe('calculateRefAmountFromParams', () => {
       // -200 cents * 1.5 = -300 cents
       const result = calculateRefAmountFromParams({
         ...TWO_DECIMALS,
-        amount: Money.fromCents(-200),
+        amount: Money.fromDecimal(-2),
         rate: 1.5,
       });
       expect(result.toCents()).toBe(-300);
@@ -55,7 +55,7 @@ describe('calculateRefAmountFromParams', () => {
       expect(() =>
         calculateRefAmountFromParams({
           ...TWO_DECIMALS,
-          amount: Money.fromCents(205),
+          amount: Money.fromDecimal(2.05),
           rate: 0.5,
           useFloorAbs: false,
         }),
@@ -66,7 +66,7 @@ describe('calculateRefAmountFromParams', () => {
       // 205 cents (= $2.05) * 0.5 = $1.025 — should keep the half-cent precision
       const result = calculateRefAmountFromParams({
         ...TWO_DECIMALS,
-        amount: Money.fromCents(205),
+        amount: Money.fromDecimal(2.05),
         rate: 0.5,
         useFloorAbs: false,
       });
@@ -76,7 +76,7 @@ describe('calculateRefAmountFromParams', () => {
     it('preserves sign for negative amounts with fractional results', () => {
       const result = calculateRefAmountFromParams({
         ...TWO_DECIMALS,
-        amount: Money.fromCents(-205),
+        amount: Money.fromDecimal(-2.05),
         rate: 0.5,
         useFloorAbs: false,
       });

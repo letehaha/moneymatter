@@ -3,15 +3,6 @@ import { describe, expect, it } from '@jest/globals';
 import { connection } from '@models/connection';
 import * as helpers from '@tests/helpers';
 
-const createAccountIn = async ({ currencyCode, initialBalance }: { currencyCode: string; initialBalance?: number }) => {
-  await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
-
-  return helpers.createAccount({
-    payload: helpers.buildAccountPayload({ currencyCode, ...(initialBalance !== undefined && { initialBalance }) }),
-    raw: true,
-  });
-};
-
 const createTransactionOf = async ({
   accountId,
   amount,
@@ -43,7 +34,7 @@ describe('Currency precision', () => {
       { currencyCode: 'KWD', amount: 1.234, expected: 1.234 },
       { currencyCode: 'JPY', amount: 1500.6, expected: 1501 },
     ])('stores a $currencyCode amount of $amount as $expected', async ({ currencyCode, amount, expected }) => {
-      const account = await createAccountIn({ currencyCode });
+      const account = await helpers.createAccountIn({ currencyCode });
 
       const transaction = await createTransactionOf({ accountId: account.id, amount });
 
@@ -51,7 +42,7 @@ describe('Currency precision', () => {
     });
 
     it('keeps a KWD balance equal to the exact sum of its transactions', async () => {
-      const account = await createAccountIn({ currencyCode: 'KWD' });
+      const account = await helpers.createAccountIn({ currencyCode: 'KWD' });
 
       await createTransactionOf({ accountId: account.id, amount: 1.234 });
       await createTransactionOf({
@@ -70,7 +61,7 @@ describe('Currency precision', () => {
       await helpers.asNewUserWithBaseCurrency({
         currencyCode: 'KWD',
         fn: async () => {
-          const account = await createAccountIn({ currencyCode: 'JPY' });
+          const account = await helpers.createAccountIn({ currencyCode: 'JPY' });
           // The suite-wide default category belongs to the primary user.
           const category = await helpers.addCustomCategory({
             name: 'Precision',
@@ -114,12 +105,7 @@ describe('Currency precision', () => {
     ])(
       'rounds a $currencyCode opening balance and credit limit to the currency decimals',
       async ({ currencyCode, initialBalance, creditLimit, expected: [expectedBalance, expectedCreditLimit] }) => {
-        await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
-
-        const account = await helpers.createAccount({
-          payload: helpers.buildAccountPayload({ currencyCode, initialBalance, creditLimit }),
-          raw: true,
-        });
+        const account = await helpers.createAccountIn({ currencyCode, initialBalance, creditLimit });
 
         expect(Number(account.initialBalance)).toBe(expectedBalance);
         expect(Number(account.currentBalance)).toBe(expectedBalance);
@@ -128,7 +114,7 @@ describe('Currency precision', () => {
     );
 
     it('rounds the target of a balance adjustment to the account currency', async () => {
-      const account = await createAccountIn({ currencyCode: 'KWD', initialBalance: 10 });
+      const account = await helpers.createAccountIn({ currencyCode: 'KWD', initialBalance: 10 });
 
       await helpers.balanceAdjustment({ id: account.id, payload: { targetBalance: asDecimal(12.3456) }, raw: true });
 
@@ -139,8 +125,8 @@ describe('Currency precision', () => {
 
   describe('transfers between currencies of different decimals', () => {
     it('rounds each leg to its own currency and keeps the balances exact', async () => {
-      const jpyAccount = await createAccountIn({ currencyCode: 'JPY', initialBalance: 10000 });
-      const kwdAccount = await createAccountIn({ currencyCode: 'KWD' });
+      const jpyAccount = await helpers.createAccountIn({ currencyCode: 'JPY', initialBalance: 10000 });
+      const kwdAccount = await helpers.createAccountIn({ currencyCode: 'KWD' });
       await helpers.updateUserCurrency({ currency: { currencyCode: 'JPY', liveRateUpdate: false }, raw: true });
       await helpers.updateUserCurrency({ currency: { currencyCode: 'KWD', liveRateUpdate: false }, raw: true });
       await helpers.editCurrencyExchangeRate({
@@ -179,7 +165,7 @@ describe('Currency precision', () => {
 
   describe('splits', () => {
     it('compares the splits with the transaction at the currency decimals', async () => {
-      const account = await createAccountIn({ currencyCode: 'KWD' });
+      const account = await helpers.createAccountIn({ currencyCode: 'KWD' });
       const categories = await helpers.getCategoriesList();
 
       // Unrounded, 5.0624 + 5.0624 = 10.1248 exceeds 10.1236; rounded, 5.062 + 5.062 fits 10.124.
@@ -203,7 +189,7 @@ describe('Currency precision', () => {
     });
 
     it('rejects splits that still exceed the transaction after rounding', async () => {
-      const account = await createAccountIn({ currencyCode: 'JPY' });
+      const account = await helpers.createAccountIn({ currencyCode: 'JPY' });
       const categories = await helpers.getCategoriesList();
 
       const response = await helpers.createTransaction({
@@ -224,7 +210,7 @@ describe('Currency precision', () => {
     });
 
     it('accepts splits that fit the transaction unrounded and keeps their rounded sum within it', async () => {
-      const account = await createAccountIn({ currencyCode: 'JPY' });
+      const account = await helpers.createAccountIn({ currencyCode: 'JPY' });
       const categories = await helpers.getCategoriesList();
 
       // 500.5 + 499.5 fits 1000, but rounds half-up to 501 + 500.
@@ -251,7 +237,7 @@ describe('Currency precision', () => {
 
   describe('same-currency reference amount', () => {
     it('keeps the reference amount of a base-currency portfolio transfer equal to the rounded amount', async () => {
-      const account = await createAccountIn({ currencyCode: global.BASE_CURRENCY.code });
+      const account = await helpers.createAccountIn({ currencyCode: global.BASE_CURRENCY.code });
       const portfolio = await helpers.createPortfolio({
         payload: helpers.buildPortfolioPayload({ name: 'Precision' }),
         raw: true,
@@ -272,7 +258,7 @@ describe('Currency precision', () => {
 
   describe('metadata-only edits', () => {
     it('keeps a stored amount that has more decimals than its currency, and the balance, untouched', async () => {
-      const account = await createAccountIn({ currencyCode: 'JPY' });
+      const account = await helpers.createAccountIn({ currencyCode: 'JPY' });
       await helpers.updateUserCurrency({ currency: { currencyCode: 'JPY', liveRateUpdate: false }, raw: true });
       await helpers.editCurrencyExchangeRate({
         pairs: [
@@ -302,7 +288,7 @@ describe('Currency precision', () => {
     });
 
     it('still rounds an amount that the edit changes', async () => {
-      const account = await createAccountIn({ currencyCode: 'JPY' });
+      const account = await helpers.createAccountIn({ currencyCode: 'JPY' });
       const transaction = await createTransactionOf({ accountId: account.id, amount: 10 });
 
       const [updated] = await helpers.updateTransaction({
@@ -316,8 +302,8 @@ describe('Currency precision', () => {
   });
   describe('a positive amount that rounds to zero', () => {
     const createUsdToJpyTransfer = async ({ destinationAmount }: { destinationAmount: number }) => {
-      const usdAccount = await createAccountIn({ currencyCode: 'USD', initialBalance: 100 });
-      const jpyAccount = await createAccountIn({ currencyCode: 'JPY' });
+      const usdAccount = await helpers.createAccountIn({ currencyCode: 'USD', initialBalance: 100 });
+      const jpyAccount = await helpers.createAccountIn({ currencyCode: 'JPY' });
 
       const response = await helpers.createTransaction({
         payload: {
@@ -358,7 +344,7 @@ describe('Currency precision', () => {
   describe('account edits', () => {
     /** A 0-decimal account as the decimal migration leaves it, from 100040 cents: a sub-unit digit on each balance. */
     const createMigratedJpyAccount = async () => {
-      const account = await createAccountIn({ currencyCode: 'JPY', initialBalance: 1000 });
+      const account = await helpers.createAccountIn({ currencyCode: 'JPY', initialBalance: 1000 });
       await connection.sequelize.query(
         `UPDATE "Accounts" SET "initialBalance" = 1000.4, "currentBalance" = 1000.4 WHERE "id" = :id`,
         { replacements: { id: account.id } },
@@ -383,7 +369,7 @@ describe('Currency precision', () => {
     ])(
       'rounds an edited $currencyCode balance and credit limit to the currency decimals',
       async ({ currencyCode, currentBalance, creditLimit, expected: [expectedBalance, expectedCreditLimit] }) => {
-        const account = await createAccountIn({ currencyCode, initialBalance: 10 });
+        const account = await helpers.createAccountIn({ currencyCode, initialBalance: 10 });
 
         await helpers.updateAccount({ id: account.id, payload: { currentBalance, creditLimit }, raw: true });
 

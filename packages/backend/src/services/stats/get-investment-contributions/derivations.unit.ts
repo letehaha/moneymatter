@@ -99,17 +99,17 @@ describe('accumulateSavingsNet', () => {
       transactions: [
         {
           time: '2026-01-10T12:00:00.000Z',
-          refAmount: Money.fromCents(50_000),
+          refAmount: Money.fromDecimal(500),
           transactionType: TRANSACTION_TYPES.income,
         },
         {
           time: '2026-01-20T12:00:00.000Z',
-          refAmount: Money.fromCents(20_000),
+          refAmount: Money.fromDecimal(200),
           transactionType: TRANSACTION_TYPES.expense,
         },
         {
           time: '2026-02-05T12:00:00.000Z',
-          refAmount: Money.fromCents(30_000),
+          refAmount: Money.fromDecimal(300),
           transactionType: TRANSACTION_TYPES.expense,
         },
       ],
@@ -128,7 +128,7 @@ describe('accumulateSavingsNet', () => {
       transactions: [
         {
           time: '2025-12-31T12:00:00.000Z',
-          refAmount: Money.fromCents(99_900),
+          refAmount: Money.fromDecimal(999),
           transactionType: TRANSACTION_TYPES.income,
         },
       ],

@@ -142,6 +142,60 @@ describe('Restoring a format version 1 backup (cents to decimals)', () => {
     }
   });
 
+  it('rounds the cents of a JPY account to whole yen', async () => {
+    const base64 = await buildFixtureUpload({
+      edit: (files) => {
+        for (const name of ['accounts', 'transactions', 'users-currencies']) {
+          const path = `data/${name}.json`;
+          const rows = JSON.parse(files.get(path)!.toString('utf8')) as Row[];
+          for (const row of rows) if (row.currencyCode === 'USD') row.currencyCode = 'JPY';
+          if (name === 'accounts') {
+            rows.find((row) => row.name === 'Dollars')!.externalData = {
+              bankConnection: {
+                linkedAt: '2025-03-01T00:00:00.000Z',
+                linkingStrategy: 'forward-only',
+                balanceReconciliation: {
+                  systemBalance: 100049,
+                  externalBalance: 150050,
+                  difference: 50001,
+                  adjustmentTransactionId: null,
+                  absorbedResidual: null,
+                },
+              },
+            };
+          }
+          files.set(path, Buffer.from(JSON.stringify(rows)));
+        }
+      },
+    });
+
+    await helpers.restoreBackupAndWait({ fileContent: base64 });
+
+    const archive = await helpers.exportParsedBackup();
+    // 20000 and 28010 cents read as 200 and 280.1, which lands as 280 yen.
+    const yen = helpers.findBackupRow({
+      rows: helpers.backupRows({ archive, name: 'accounts' }),
+      key: 'name',
+      value: 'Dollars',
+    });
+    expect(yen.currencyCode).toBe('JPY');
+    helpers.expectDecimal({ actual: yen.initialBalance, expected: '200' });
+    helpers.expectDecimal({ actual: yen.currentBalance, expected: '280' });
+    expect(yen.externalData).toMatchObject({
+      bankConnection: {
+        balanceReconciliation: { systemBalance: 1000, externalBalance: 1501, difference: 500, absorbedResidual: null },
+      },
+    });
+    // 8010 cents read as 80.1; its AED refAmount keeps 2 decimals.
+    const refund = helpers.findBackupRow({
+      rows: helpers.backupRows({ archive, name: 'transactions' }),
+      key: 'note',
+      value: 'Refund',
+    });
+    helpers.expectDecimal({ actual: refund.amount, expected: '80' });
+    helpers.expectDecimal({ actual: refund.refAmount, expected: '320.4' });
+  });
+
   it('rejects an amount that is not a number with a 422', async () => {
     const base64 = await buildFixtureUpload({
       edit: (files) => {

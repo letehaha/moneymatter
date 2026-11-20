@@ -1,5 +1,4 @@
-import type { RecordId } from '@bt/shared/types';
-import type { BudgetPlanCarryPolicy, SetBudgetLineGoalPayload } from '@bt/shared/types';
+import { type BudgetPlanCarryPolicy, type RecordId, type SetBudgetLineGoalPayload, asCents } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { logger } from '@js/utils/logger';
@@ -184,7 +183,9 @@ export async function setupBudgetPlan({
         groupId: group.id,
         activeFrom: epochDate,
       });
-      const amount = Money.fromCents(Math.ceil((monthlyCents * fundingRatio) / ROUND_UP_TO_CENTS) * ROUND_UP_TO_CENTS);
+      const amount = Money.fromCents(
+        asCents(Math.ceil((monthlyCents * fundingRatio) / ROUND_UP_TO_CENTS) * ROUND_UP_TO_CENTS),
+      );
 
       // A baseline and a rollover rule on the first period run on through every later one.
       await BudgetAssignments.create({

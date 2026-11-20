@@ -14,7 +14,7 @@ export const assertDecimals = ({ decimals, caller }: { decimals: number; caller:
  * Immutable Money value object backed by big.js for precise arithmetic.
  *
  * Internal representation: actual decimal value (not cents).
- * - `Money.fromCents(1550)` internally stores Big(15.50)
+ * - `Money.fromCents(asCents(1550))` internally stores Big(15.50)
  * - `Money.fromDecimal(15.50)` internally stores Big(15.50)
  * - Both regular transactions and investments produce the same internal representation
  *
@@ -48,9 +48,9 @@ export class Money {
    * Divides by 100 to get the actual decimal value.
    *
    * @example
-   * Money.fromCents(1550) // represents $15.50
+   * Money.fromCents(asCents(1550)) // represents $15.50
    */
-  static fromCents(n: number): Money {
+  static fromCents(n: Cents): Money {
     if (!Number.isFinite(n)) {
       throw new Error(`Money.fromCents: expected finite number, got ${n}`);
     }
