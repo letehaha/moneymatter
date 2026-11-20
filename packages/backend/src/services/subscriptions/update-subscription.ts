@@ -8,7 +8,8 @@ import {
   SUBSCRIPTION_TYPES,
   SubscriptionMatchingRules,
 } from '@bt/shared/types';
-import { Money, centsToApiDecimalOrNull } from '@common/types/money';
+import { roundToCurrency } from '@common/lib/currency-precision';
+import { Money, moneyToApiDecimalOrNull } from '@common/types/money';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
 import { resolveManualLogoFields } from '@services/brand-logos';
@@ -93,7 +94,7 @@ export const updateSubscription = withTransaction(
     });
 
     // Validate the merged amount/currency pairing (only null-ness matters, so the
-    // stored cents vs. the incoming decimal is irrelevant). Covers MCP callers that
+    // stored Money vs. the incoming decimal is irrelevant). Covers MCP callers that
     // send a partial payload the controller's request schema can't reconcile.
     assertAmountCurrencyConsistent({
       expectedAmount: fields.expectedAmount !== undefined ? fields.expectedAmount : subscription.expectedAmount,
@@ -188,15 +189,30 @@ export const updateSubscription = withTransaction(
     const wasInstallment = subscription.type === SUBSCRIPTION_TYPES.installment;
     const previousDueDate = subscription.dueDate;
 
-    // The API exchanges decimals; the cents-backed column takes a Money (or null
-    // to clear). Convert only when the caller sent the field, so an omitted
-    // expectedAmount leaves the stored amount untouched.
+    // The amount is stored at its currency's decimals, so a currency change re-rounds the stored
+    // amount too. An omitted amount on an unchanged currency stays untouched.
     const { expectedAmount: expectedAmountInput, ...restFields } = fields;
+    const expectedCurrencyCode = fields.expectedCurrencyCode ?? subscription.expectedCurrencyCode;
+    const currencyChanged =
+      fields.expectedCurrencyCode != null && fields.expectedCurrencyCode !== subscription.expectedCurrencyCode;
+    let nextAmount: Money | null | undefined;
+    if (expectedAmountInput !== undefined) {
+      nextAmount = expectedAmountInput === null ? null : Money.fromDecimal(expectedAmountInput);
+    } else if (currencyChanged) {
+      nextAmount = subscription.expectedAmount;
+    }
+    if (nextAmount) {
+      // `assertAmountCurrencyConsistent` above already rejects an amount without a currency.
+      nextAmount = await roundToCurrency({
+        money: nextAmount,
+        userId,
+        currencyCode: expectedCurrencyCode!,
+        mode: 'half-up',
+      });
+    }
     await subscription.update({
       ...restFields,
-      ...(expectedAmountInput !== undefined
-        ? { expectedAmount: expectedAmountInput != null ? Money.fromDecimal(expectedAmountInput) : null }
-        : {}),
+      ...(nextAmount !== undefined && { expectedAmount: nextAmount }),
     });
 
     // Keep the live schedule in step with an edited due date. Realigning only fires
@@ -277,12 +293,11 @@ export const updateSubscription = withTransaction(
       await subscription.$set('tags', uniqueTagIds);
     }
 
-    // Surface expectedAmount as a decimal so the response matches GET (the
-    // column holds raw cents).
+    // Surface expectedAmount as a decimal number so the response matches GET.
     const plain = subscription.toJSON() as Subscriptions;
     return {
       ...plain,
-      expectedAmount: centsToApiDecimalOrNull(plain.expectedAmount),
+      expectedAmount: moneyToApiDecimalOrNull(plain.expectedAmount),
       tagIds: uniqueTagIds ?? (await getSubscriptionTagIds({ subscriptionId: id })),
     };
   },

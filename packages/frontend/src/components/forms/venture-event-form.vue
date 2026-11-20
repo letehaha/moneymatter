@@ -9,6 +9,7 @@ import * as Select from '@/components/lib/ui/select';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { getErrorMessage } from '@/common/utils/error-message';
 import { isDecimal } from '@/common/utils/validators';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useCreateVentureEvent, useVentureEvents } from '@/composable/data-queries/venture/events';
 import VentureEventCashFlowPicker from '@/components/forms/venture-event-cash-flow-picker.vue';
 import {
@@ -38,6 +39,7 @@ const emit = defineEmits<Emit>();
 
 const createMutation = useCreateVentureEvent();
 const { data: existingEvents } = useVentureEvents(() => props.deal.id);
+const amountDecimals = computed(() => getCurrencyDecimals({ code: props.deal.currencyCode }));
 
 const hasInitialInvestment = computed(() =>
   (existingEvents.value ?? []).some((e) => e.type === VENTURE_EVENT_TYPE.initial_investment),
@@ -162,7 +164,7 @@ const eventTypeLabel = (type: VENTURE_EVENT_TYPE): string => `venture.events.typ
       v-if="requiresGross"
       v-model="form.grossAmount"
       type="number"
-      step="0.01"
+      :decimals="amountDecimals"
       :label="$t('venture.events.form.grossAmountLabel')"
       :disabled="isPending"
     />
@@ -171,7 +173,7 @@ const eventTypeLabel = (type: VENTURE_EVENT_TYPE): string => `venture.events.typ
       v-if="requiresNav"
       v-model="form.navAfter"
       type="number"
-      step="0.01"
+      :decimals="amountDecimals"
       :label="$t('venture.events.form.navAfterLabel')"
       :disabled="isPending"
     />
@@ -193,14 +195,14 @@ const eventTypeLabel = (type: VENTURE_EVENT_TYPE): string => `venture.events.typ
         <InputField
           v-model="form.gpCarryOverride"
           type="number"
-          step="0.01"
+          :decimals="amountDecimals"
           :label="$t('venture.events.form.gpCarryLabel')"
           :disabled="isPending"
         />
         <InputField
           v-model="form.lpNetAmountOverride"
           type="number"
-          step="0.01"
+          :decimals="amountDecimals"
           :label="$t('venture.events.form.lpNetLabel')"
           :disabled="isPending"
         />

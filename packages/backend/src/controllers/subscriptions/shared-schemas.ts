@@ -127,7 +127,6 @@ export const createSubscriptionBodyShape = {
     .enum(Object.values(TRANSACTION_TYPES) as [TRANSACTION_TYPES, ...TRANSACTION_TYPES[]])
     .optional()
     .default(TRANSACTION_TYPES.expense),
-  // Decimal amount (e.g. 9.99). Stored as cents internally by the service.
   expectedAmount: z.number().nonnegative().nullable().optional(),
   expectedCurrencyCode: currencyCode().nullable().optional(),
   frequency: z.enum(
@@ -228,7 +227,6 @@ export const createSubscriptionBodySchema = withDateOrder(
 export const updateSubscriptionBodyShape = {
   name: z.string().min(1).max(200).trim().optional(),
   type: z.enum(Object.values(SUBSCRIPTION_TYPES) as [SUBSCRIPTION_TYPES, ...SUBSCRIPTION_TYPES[]]).optional(),
-  // Decimal amount (e.g. 9.99). Stored as cents internally by the service.
   expectedAmount: z.number().nonnegative().nullable().optional(),
   expectedCurrencyCode: currencyCode().nullable().optional(),
   frequency: z

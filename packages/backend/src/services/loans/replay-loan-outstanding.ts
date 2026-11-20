@@ -5,7 +5,7 @@ import { utcDayKey } from '@services/loans/anchor-day';
  * Replay a loan's post-anchor payment legs into a per-day outstanding-balance
  * series: the anchor snapshot followed by one cumulative end-of-day point per
  * calendar day that has legs. Both the native-currency history endpoint and the
- * base-currency Balances rebuild run the same walk — `pickCents` selects which
+ * base-currency Balances rebuild run the same walk — `pickAmount` selects which
  * amount (nominal vs. ref) each leg contributes, and `openingBalance` is the
  * matching anchor snapshot; everything else about the walk is identical, so the
  * two currencies can never disagree on day grouping, ordering, or the zero floor.
@@ -24,33 +24,36 @@ export const replayLoanOutstanding = <TLeg extends { time: Date | string }>({
   legs,
   anchorDate,
   openingBalance,
-  pickCents,
+  decimals,
+  pickAmount,
 }: {
   legs: TLeg[];
   /** yyyy-MM-dd inclusive boundary; the opening balance is the outstanding before this day's payments. */
   anchorDate: string;
   openingBalance: Money;
-  /** Cents this leg contributes to the outstanding — `amount` for native currency, `refAmount` for base. */
-  pickCents: ({ leg }: { leg: TLeg }) => number;
+  /** Decimals of the currency the opening balance and the picked amounts are in (loan currency for native, base currency for base). */
+  decimals: number;
+  /** Amount this leg contributes to the outstanding — `amount` for native currency, `refAmount` for base. */
+  pickAmount: ({ leg }: { leg: TLeg }) => Money;
 }): { date: string; balance: Money }[] => {
-  const centsByDay = new Map<string, number>();
+  const minorByDay = new Map<string, number>();
   for (const leg of legs) {
     const legDay = utcDayKey({ date: leg.time });
     const day = legDay < anchorDate ? anchorDate : legDay;
-    centsByDay.set(day, (centsByDay.get(day) ?? 0) + pickCents({ leg }));
+    minorByDay.set(day, (minorByDay.get(day) ?? 0) + pickAmount({ leg }).toMinorUnits({ decimals }));
   }
 
   // Anchor point first (same-day payments fold in — the boundary is inclusive),
   // then one cumulative point per later day with legs.
   const series: { date: string; balance: Money }[] = [];
-  let runningBalance = openingBalance;
-  if (!centsByDay.has(anchorDate)) {
-    series.push({ date: anchorDate, balance: runningBalance });
+  const toBalance = (minor: number) => Money.fromMinorUnits({ value: minor, decimals });
+  let runningMinor: number = openingBalance.toMinorUnits({ decimals });
+  if (!minorByDay.has(anchorDate)) {
+    series.push({ date: anchorDate, balance: toBalance(runningMinor) });
   }
-  for (const day of [...centsByDay.keys()].toSorted()) {
-    runningBalance = runningBalance.add(Money.fromCents(centsByDay.get(day)!));
-    if (runningBalance.isPositive()) runningBalance = Money.zero();
-    series.push({ date: day, balance: runningBalance });
+  for (const day of [...minorByDay.keys()].toSorted()) {
+    runningMinor = Math.min(0, runningMinor + minorByDay.get(day)!);
+    series.push({ date: day, balance: toBalance(runningMinor) });
   }
 
   return series;

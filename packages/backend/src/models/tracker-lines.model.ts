@@ -26,7 +26,7 @@ export default class TrackerLines extends Model {
   @Column({ type: DataType.STRING(200), allowNull: false })
   name!: string;
 
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ allowNull: true })
   declare limitAmount: Money | null;
 
   @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })

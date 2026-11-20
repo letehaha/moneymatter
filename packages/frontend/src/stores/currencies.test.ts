@@ -1,3 +1,4 @@
+import { getCurrencyDecimals, resetCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import type { CurrencyModel, UserCurrencyModel } from '@bt/shared/types';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -21,6 +22,7 @@ const linked = ({ id, code }: { id: number; code: string }) =>
 
 describe('currencies store', () => {
   beforeEach(() => {
+    resetCurrencyDecimals();
     setActivePinia(createPinia());
     api.getAllCurrencies.mockResolvedValue(['AED', 'EUR', 'GEL', 'UAH', 'USD'].map(system));
     api.loadUserCurrencies.mockResolvedValue([linked({ id: 1, code: 'USD' }), linked({ id: 2, code: 'EUR' })]);
@@ -42,5 +44,38 @@ describe('currencies store', () => {
     await store.loadBaseCurrency();
 
     expect(store.systemCurrencies.map((item) => item.code)).toEqual(['EUR', 'USD', 'UAH', 'AED', 'GEL']);
+  });
+
+  it('registers the decimals of linked currencies, which win over the system list', async () => {
+    api.getAllCurrencies.mockResolvedValue([
+      { code: 'KWD', digits: 3 },
+      { code: 'HUF', digits: 0 },
+      { code: 'USDT', digits: 6 },
+    ]);
+    api.loadUserCurrencies.mockResolvedValue([
+      { id: 1, currencyCode: 'HUF', currency: { code: 'HUF', digits: 2 } },
+      { id: 2, currencyCode: 'IQD', currency: { code: 'IQD', digits: 3 } },
+    ]);
+    const store = useCurrenciesStore();
+
+    await store.loadCurrencies();
+
+    expect(getCurrencyDecimals({ code: 'KWD' })).toBe(3);
+    expect(getCurrencyDecimals({ code: 'USDT' })).toBe(6);
+    expect(getCurrencyDecimals({ code: 'HUF' })).toBe(2);
+    expect(getCurrencyDecimals({ code: 'IQD' })).toBe(3);
+  });
+
+  it('registers the decimals of the base currency', async () => {
+    api.loadUserBaseCurrency.mockResolvedValue({
+      id: 3,
+      currencyCode: 'USDT',
+      currency: { code: 'USDT', digits: 6 },
+    });
+    const store = useCurrenciesStore();
+
+    await store.loadBaseCurrency();
+
+    expect(getCurrencyDecimals({ code: 'USDT' })).toBe(6);
   });
 });

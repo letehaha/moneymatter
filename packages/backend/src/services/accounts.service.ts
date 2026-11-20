@@ -9,10 +9,12 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   isDedicatedFlowAccountCategory,
 } from '@bt/shared/types';
+import { roundMoneyValues, roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { CustomError, ERROR_CODES, NotFoundError, UnexpectedError, ValidationError } from '@js/errors';
+import { removeUndefinedKeys } from '@js/helpers';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
@@ -208,7 +210,7 @@ export const createAccount = withTransaction(
   ): Promise<Accounts.default | null> => {
     try {
       const { logoDomain, logoInitials, logoColor, logoIcon, ...rest } = payload;
-      const { userId, accountCategory, creditLimit, currencyCode, initialBalance } = rest;
+      const { userId, accountCategory, currencyCode } = rest;
 
       if (accountCategory && isDedicatedFlowAccountCategory(accountCategory)) {
         throw new ValidationError({
@@ -217,6 +219,15 @@ export const createAccount = withTransaction(
       }
 
       await ensureUserCurrencyConnected({ userId, currencyCode });
+
+      // Rounded before the ref stamps are derived from them: a same-currency stamp is the native
+      // value itself.
+      const { creditLimit, initialBalance } = await roundMoneyValues({
+        values: { creditLimit: rest.creditLimit, initialBalance: rest.initialBalance },
+        userId,
+        currencyCode,
+        mode: 'half-up',
+      });
 
       const refCreditLimit = await calculateRefAmount({
         userId: userId,
@@ -238,6 +249,8 @@ export const createAccount = withTransaction(
 
       return await Accounts.createAccount({
         ...rest,
+        creditLimit,
+        initialBalance,
         refCreditLimit,
         refInitialBalance,
         ...applyManualLogoPatch({ patch: { logoDomain, logoInitials, logoColor, logoIcon } }),
@@ -269,7 +282,13 @@ const updateInitialBalance = withTransaction(
       });
     }
 
-    const delta = initialBalance.subtract(account.initialBalance);
+    const roundedInitialBalance = await roundToCurrency({
+      money: initialBalance,
+      userId,
+      currencyCode: account.currencyCode,
+      mode: 'half-up',
+    });
+    const delta = roundedInitialBalance.subtract(account.initialBalance);
     if (delta.isZero()) return;
 
     await absorbBalanceAdjustment({ userId, accountId, amountDelta: delta });
@@ -369,11 +388,21 @@ export const updateAccount = withTransaction(
       });
     }
 
+    // Rounded to the account currency's decimals before the change checks and the ref stamps.
+    const roundedBalances = await roundMoneyValues({
+      values: { currentBalance: payload.currentBalance, creditLimit: payload.creditLimit },
+      userId: accountData.userId,
+      currencyCode: accountData.currencyCode,
+      mode: 'half-up',
+    });
+    payload = { ...payload, ...removeUndefinedKeys(roundedBalances) };
+
     const currentBalanceIsChanging =
       payload.currentBalance !== undefined && !payload.currentBalance.equals(accountData.currentBalance);
     const creditLimitIsChanging =
       payload.creditLimit !== undefined && !payload.creditLimit.equals(accountData.creditLimit);
-    let initialBalance: Money = accountData.initialBalance;
+    // Written only when it moves, so an unrelated edit never re-rounds a stored opening balance.
+    let initialBalance: Money | undefined;
     let refCurrentBalance: Money = accountData.refCurrentBalance;
     let refCreditLimit: Money = accountData.refCreditLimit;
 
@@ -389,7 +418,7 @@ export const updateAccount = withTransaction(
       // `currentBalance = initialBalance + Σ(tx)` keeps holding. Its ref side is
       // restamped below at the boundary-date rate, not delta-shifted.
       if (accountData.type === ACCOUNT_TYPES.system) {
-        initialBalance = initialBalance.add(diff);
+        initialBalance = accountData.initialBalance.add(diff);
       }
     }
 
@@ -423,8 +452,9 @@ export const updateAccount = withTransaction(
       id,
       externalId,
       ...payload,
+      currencyCode: accountData.currencyCode,
       ...logoPatch,
-      initialBalance,
+      ...(initialBalance !== undefined && { initialBalance }),
       refCurrentBalance,
       refCreditLimit,
     });

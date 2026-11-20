@@ -12,6 +12,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
+import { getCurrencyDecimals, getMaxAmountForDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
@@ -110,6 +111,9 @@ async function executeImportImpl({
   // One probe for the whole run instead of one per row.
   const matchPlanned = !seamStart && (await accountHasPlannedRows({ accountId }));
 
+  const decimals = await getCurrencyDecimals({ userId, code: account.currencyCode });
+  const maxAmount = Money.fromDecimal(Math.min(1_000_000_000, getMaxAmountForDecimals({ decimals }).toNumber()));
+
   // A code missing from Currencies would fail the row on its foreign key, so its pair is dropped instead.
   const originalCurrencyCodes = [
     ...new Set(transactionsToImport.flatMap((tx) => (tx.originalCurrencyCode ? [tx.originalCurrencyCode] : []))),
@@ -171,21 +175,23 @@ async function executeImportImpl({
         continue;
       }
 
+      // Note: tx.amount is in decimal format from AI extraction (e.g., 35 means 35.00)
+      const amount = Money.fromDecimal(tx.amount).round(decimals);
+
       // Validate: amount must be positive (type determines income/expense direction)
-      if (tx.amount <= 0) {
+      if (!amount.isPositive()) {
         errors.push({ transactionIndex: i, code: 'AMOUNT_NOT_POSITIVE', params: { amount: tx.amount } });
         continue;
       }
 
-      // Validate: amount should not exceed reasonable threshold (1 billion)
-      const MAX_AMOUNT = 1_000_000_000;
-      if (tx.amount > MAX_AMOUNT) {
-        errors.push({ transactionIndex: i, code: 'AMOUNT_TOO_LARGE', params: { amount: tx.amount, max: MAX_AMOUNT } });
+      if (amount.greaterThan(maxAmount)) {
+        errors.push({
+          transactionIndex: i,
+          code: 'AMOUNT_TOO_LARGE',
+          params: { amount: tx.amount, max: maxAmount.toNumber() },
+        });
         continue;
       }
-
-      // Note: tx.amount is in decimal format from AI extraction (e.g., 35 means 35.00)
-      const amount = Money.fromDecimal(tx.amount);
 
       const original =
         tx.originalAmount !== undefined &&

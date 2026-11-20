@@ -289,12 +289,12 @@ describe('SimpleFIN Data Provider E2E', () => {
       });
 
       const { accounts } = await helpers.bankDataProviders.listExternalAccounts({ connectionId, raw: true });
-      const account = accounts[0]!;
+      const account = accounts.find((a: { externalId: string }) => a.externalId === SIMPLEFIN_ACCOUNT_1)!;
       expect(account).toHaveProperty('externalId');
       expect(account).toHaveProperty('name');
       expect(account).toHaveProperty('balance');
       expect(account.currency).toBe('USD');
-      expect(typeof account.balance).toBe('number');
+      expect(account.balance).toBe(1523.45);
       expect(account.metadata?.institutionDomain).toBe('testbank.example');
     });
 

@@ -1,6 +1,13 @@
+import { asCents } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 
-import { Money } from './money';
+import {
+  Money,
+  minorUnitsToApiDecimal,
+  minorUnitsToApiDecimalOrNull,
+  moneyToApiDecimal,
+  moneyToApiDecimalOrNull,
+} from './money';
 
 describe('Money value object', () => {
   // ==========================================================================
@@ -9,37 +16,37 @@ describe('Money value object', () => {
 
   describe('fromCents', () => {
     it('creates Money from positive cents', () => {
-      const m = Money.fromCents(1550);
+      const m = Money.fromCents(asCents(1550));
       expect(m.toNumber()).toBe(15.5);
       expect(m.toCents()).toBe(1550);
     });
 
     it('creates Money from zero cents', () => {
-      const m = Money.fromCents(0);
+      const m = Money.fromCents(asCents(0));
       expect(m.toNumber()).toBe(0);
       expect(m.toCents()).toBe(0);
     });
 
     it('creates Money from negative cents', () => {
-      const m = Money.fromCents(-500);
+      const m = Money.fromCents(asCents(-500));
       expect(m.toNumber()).toBe(-5);
       expect(m.toCents()).toBe(-500);
     });
 
     it('rejects NaN', () => {
-      expect(() => Money.fromCents(NaN)).toThrow('expected finite number');
+      expect(() => Money.fromCents(asCents(NaN))).toThrow('expected finite number');
     });
 
     it('rejects Infinity', () => {
-      expect(() => Money.fromCents(Infinity)).toThrow('expected finite number');
+      expect(() => Money.fromCents(asCents(Infinity))).toThrow('expected finite number');
     });
 
     it('rejects -Infinity', () => {
-      expect(() => Money.fromCents(-Infinity)).toThrow('expected finite number');
+      expect(() => Money.fromCents(asCents(-Infinity))).toThrow('expected finite number');
     });
 
     it('rejects non-integer', () => {
-      expect(() => Money.fromCents(15.5)).toThrow('expected integer');
+      expect(() => Money.fromCents(asCents(15.5))).toThrow('expected integer');
     });
   });
 
@@ -182,9 +189,9 @@ describe('Money value object', () => {
       expect(Money.zero().negate().isZero()).toBe(true);
     });
 
-    it('round defaults to 2 decimal places', () => {
+    it('round to 2 decimal places', () => {
       const m = Money.fromDecimal(10.456);
-      expect(m.round().toNumber()).toBe(10.46);
+      expect(m.round(2).toNumber()).toBe(10.46);
     });
 
     it('round to custom decimal places', () => {
@@ -194,7 +201,19 @@ describe('Money value object', () => {
 
     it('round half up', () => {
       const m = Money.fromDecimal(10.125);
-      expect(m.round().toNumber()).toBe(10.13);
+      expect(m.round(2).toNumber()).toBe(10.13);
+    });
+
+    it('roundHalfEven rounds a tie to the even neighbour', () => {
+      expect(Money.fromDecimal('10.125').roundHalfEven(2).toNumber()).toBe(10.12);
+      expect(Money.fromDecimal('10.135').roundHalfEven(2).toNumber()).toBe(10.14);
+      expect(Money.fromDecimal('-10.125').roundHalfEven(2).toNumber()).toBe(-10.12);
+    });
+
+    it('roundHalfEven rounds a non-tie to the nearest value', () => {
+      expect(Money.fromDecimal('10.1251').roundHalfEven(2).toNumber()).toBe(10.13);
+      expect(Money.fromDecimal('2.5').roundHalfEven(0).toNumber()).toBe(2);
+      expect(Money.fromDecimal('3.5').roundHalfEven(0).toNumber()).toBe(4);
     });
   });
 
@@ -247,7 +266,7 @@ describe('Money value object', () => {
     });
 
     it('equals: fromCents and fromDecimal represent same value', () => {
-      const fromCents = Money.fromCents(1550);
+      const fromCents = Money.fromCents(asCents(1550));
       const fromDecimal = Money.fromDecimal(15.5);
       expect(fromCents.equals(fromDecimal)).toBe(true);
     });
@@ -366,7 +385,7 @@ describe('Money value object', () => {
 
   describe('unification', () => {
     it('$15.50 from cents and from decimal are equal', () => {
-      const fromCents = Money.fromCents(1550);
+      const fromCents = Money.fromCents(asCents(1550));
       const fromDecimal = Money.fromDecimal(15.5);
       expect(fromCents.equals(fromDecimal)).toBe(true);
       expect(fromCents.toCents()).toBe(fromDecimal.toCents());
@@ -374,11 +393,152 @@ describe('Money value object', () => {
     });
 
     it('arithmetic works across both creation paths', () => {
-      const fromCents = Money.fromCents(1000); // $10.00
+      const fromCents = Money.fromCents(asCents(1000)); // $10.00
       const fromDecimal = Money.fromDecimal(5.5); // $5.50
       const result = fromCents.add(fromDecimal);
       expect(result.toNumber()).toBe(15.5);
       expect(result.toCents()).toBe(1550);
+    });
+  });
+});
+
+describe('API decimal helpers', () => {
+  it('moneyToApiDecimal reads a Money and the exact string of a raw DECIMAL column alike', () => {
+    expect(moneyToApiDecimal(Money.fromDecimal('25.5'))).toBe(25.5);
+    expect(moneyToApiDecimal('25.500000000000000000')).toBe(25.5);
+    expect(moneyToApiDecimal('-0.000406410000000000')).toBe(-0.00040641);
+  });
+
+  it('moneyToApiDecimalOrNull passes null and undefined through', () => {
+    expect(moneyToApiDecimalOrNull(null)).toBeNull();
+    expect(moneyToApiDecimalOrNull(undefined)).toBeNull();
+    expect(moneyToApiDecimalOrNull('1.250000000000000000')).toBe(1.25);
+  });
+});
+
+describe('minor units', () => {
+  const DECIMALS = [0, 2, 3, 4, 8];
+
+  describe('toMinorUnits', () => {
+    it('scales an exact amount by the currency decimals', () => {
+      expect(Money.fromDecimal('15.5').toMinorUnits({ decimals: 0 })).toBe(16);
+      expect(Money.fromDecimal('1500').toMinorUnits({ decimals: 0 })).toBe(1500);
+      expect(Money.fromDecimal('15.5').toMinorUnits({ decimals: 2 })).toBe(1550);
+      expect(Money.fromDecimal('1.234').toMinorUnits({ decimals: 3 })).toBe(1234);
+      expect(Money.fromDecimal('-1.234').toMinorUnits({ decimals: 3 })).toBe(-1234);
+      expect(Money.fromDecimal('0.1234').toMinorUnits({ decimals: 4 })).toBe(1234);
+      expect(Money.fromDecimal('0.12345678').toMinorUnits({ decimals: 8 })).toBe(12345678);
+      expect(Money.fromDecimal('-0.12345678').toMinorUnits({ decimals: 8 })).toBe(-12345678);
+    });
+
+    it('rounds excess precision half-up, away from zero on a tie', () => {
+      expect(Money.fromDecimal('0.5').toMinorUnits({ decimals: 0 })).toBe(1);
+      expect(Money.fromDecimal('-0.5').toMinorUnits({ decimals: 0 })).toBe(-1);
+      expect(Money.fromDecimal('0.4999').toMinorUnits({ decimals: 0 })).toBe(0);
+      expect(Money.fromDecimal('0.005').toMinorUnits({ decimals: 2 })).toBe(1);
+      expect(Money.fromDecimal('-0.005').toMinorUnits({ decimals: 2 })).toBe(-1);
+      expect(Money.fromDecimal('1.2345').toMinorUnits({ decimals: 3 })).toBe(1235);
+      expect(Money.fromDecimal('-1.2345').toMinorUnits({ decimals: 3 })).toBe(-1235);
+      expect(Money.fromDecimal('0.00005').toMinorUnits({ decimals: 4 })).toBe(1);
+      expect(Money.fromDecimal('0.123456785').toMinorUnits({ decimals: 8 })).toBe(12345679);
+    });
+
+    it('returns 0 for zero at every scale, never negative zero', () => {
+      for (const decimals of DECIMALS) {
+        expect(Object.is(Money.zero().toMinorUnits({ decimals }), 0)).toBe(true);
+      }
+      expect(Object.is(Money.fromDecimal('-0.4').toMinorUnits({ decimals: 0 }), 0)).toBe(true);
+    });
+
+    it('survives floating point sums', () => {
+      const m = Money.fromDecimal(0.1).add(Money.fromDecimal(0.2));
+      expect(m.toMinorUnits({ decimals: 3 })).toBe(300);
+    });
+
+    it('rejects decimals that are not a non-negative integer', () => {
+      expect(() => Money.zero().toMinorUnits({ decimals: -1 })).toThrow('expected a non-negative integer');
+      expect(() => Money.zero().toMinorUnits({ decimals: 2.5 })).toThrow('expected a non-negative integer');
+      expect(() => Money.zero().toMinorUnits({ decimals: NaN })).toThrow('expected a non-negative integer');
+      expect(() => Money.zero().toMinorUnits({ decimals: 9 })).toThrow('supported maximum of 8');
+    });
+
+    it.each([
+      { decimals: 2, max: '90071992547409.91', over: '90071992547409.92' },
+      { decimals: 3, max: '9007199254740.991', over: '9007199254740.992' },
+    ])('keeps the largest safe integer and rejects one past it at $decimals decimals', ({ decimals, max, over }) => {
+      expect(Money.fromDecimal(max).toMinorUnits({ decimals })).toBe(Number.MAX_SAFE_INTEGER);
+      expect(Money.fromDecimal(`-${max}`).toMinorUnits({ decimals })).toBe(-Number.MAX_SAFE_INTEGER);
+      expect(() => Money.fromDecimal(over).toMinorUnits({ decimals })).toThrow('exceeds the safe integer range');
+      expect(() => Money.fromDecimal(`-${over}`).toMinorUnits({ decimals })).toThrow('exceeds the safe integer range');
+    });
+  });
+
+  describe('fromMinorUnits', () => {
+    it('reads the integer at the currency decimals', () => {
+      expect(Money.fromMinorUnits({ value: 1500, decimals: 0 }).toString()).toBe('1500');
+      expect(Money.fromMinorUnits({ value: 1550, decimals: 2 }).toString()).toBe('15.5');
+      expect(Money.fromMinorUnits({ value: -1234, decimals: 3 }).toString()).toBe('-1.234');
+      expect(Money.fromMinorUnits({ value: 1234, decimals: 4 }).toString()).toBe('0.1234');
+      expect(Money.fromMinorUnits({ value: 12345678, decimals: 8 }).toString()).toBe('0.12345678');
+    });
+
+    it('round-trips with toMinorUnits at every scale', () => {
+      for (const decimals of DECIMALS) {
+        for (const value of [0, 1, -1, 7, -7, 123456789, -123456789]) {
+          const money = Money.fromMinorUnits({ value, decimals });
+          expect(money.toMinorUnits({ decimals })).toBe(value);
+        }
+      }
+    });
+
+    it('rejects a non-finite or non-integer value', () => {
+      expect(() => Money.fromMinorUnits({ value: NaN, decimals: 2 })).toThrow('expected finite number');
+      expect(() => Money.fromMinorUnits({ value: Infinity, decimals: 2 })).toThrow('expected finite number');
+      expect(() => Money.fromMinorUnits({ value: 1.5, decimals: 2 })).toThrow('expected integer');
+    });
+
+    it.each([
+      { decimals: 2, max: '90071992547409.91' },
+      { decimals: 3, max: '9007199254740.991' },
+    ])('reads the largest safe integer and rejects one past it at $decimals decimals', ({ decimals, max }) => {
+      expect(Money.fromMinorUnits({ value: Number.MAX_SAFE_INTEGER, decimals }).toString()).toBe(max);
+      expect(Money.fromMinorUnits({ value: -Number.MAX_SAFE_INTEGER, decimals }).toString()).toBe(`-${max}`);
+      expect(() => Money.fromMinorUnits({ value: Number.MAX_SAFE_INTEGER + 1, decimals })).toThrow(
+        'expected a safe integer',
+      );
+      expect(() => Money.fromMinorUnits({ value: -Number.MAX_SAFE_INTEGER - 1, decimals })).toThrow(
+        'expected a safe integer',
+      );
+    });
+  });
+
+  describe('minorUnitsToApiDecimal', () => {
+    it('converts minor units at the currency decimals to an API decimal', () => {
+      expect(minorUnitsToApiDecimal({ value: 1500, decimals: 0 })).toBe(1500);
+      expect(minorUnitsToApiDecimal({ value: 1550, decimals: 2 })).toBe(15.5);
+      expect(minorUnitsToApiDecimal({ value: -1234, decimals: 3 })).toBe(-1.234);
+      expect(minorUnitsToApiDecimal({ value: 12345678, decimals: 8 })).toBe(0.12345678);
+    });
+
+    it('rejects a non-integer number', () => {
+      expect(() => minorUnitsToApiDecimal({ value: 1.5, decimals: 3 })).toThrow('expected integer');
+    });
+
+    it('minorUnitsToApiDecimalOrNull passes null and undefined through', () => {
+      expect(minorUnitsToApiDecimalOrNull({ value: null, decimals: 3 })).toBeNull();
+      expect(minorUnitsToApiDecimalOrNull({ value: undefined, decimals: 3 })).toBeNull();
+      expect(minorUnitsToApiDecimalOrNull({ value: 0, decimals: 3 })).toBe(0);
+      expect(minorUnitsToApiDecimalOrNull({ value: 1234, decimals: 3 })).toBe(1.234);
+    });
+  });
+
+  // The engine tasks rely on a 2-decimal currency computing exactly as the cents helpers do.
+  describe('equality with the cents helpers at 2 decimals', () => {
+    const VALUES = ['0.005', '-0.005', '90071992547409.91'];
+
+    it.each(VALUES)('toMinorUnits(2) equals toCents for %s', (value) => {
+      const money = Money.fromDecimal(value);
+      expect(money.toMinorUnits({ decimals: 2 })).toBe(money.toCents());
     });
   });
 });

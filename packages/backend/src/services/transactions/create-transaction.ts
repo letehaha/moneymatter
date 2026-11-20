@@ -8,6 +8,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
+import { roundTransactionMoney } from '@common/lib/round-transaction-money';
 import { UnwrapPromise } from '@common/types';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
@@ -47,6 +48,7 @@ import { createSingleRefund } from '../tx-refunds/create-single-refund.service';
 import { syncPaymentLegs } from './payment-legs';
 import { tryMergeIntoPlanned } from './planned-matching';
 import { assertPlannedCreateAllowed } from './planned-matching/assert-planned-invariants';
+import { roundPositiveAmount } from './round-positive-amount';
 import { manageSplits } from './splits';
 import { linkTransactions } from './transactions-linking';
 import type { CreateTransactionParams, UpdateTransactionParams } from './types';
@@ -184,9 +186,14 @@ export const calcTransferTransactionRefAmount = async ({
 export const createOppositeTransaction = async (params: CreateOppositeTransactionParams) => {
   const [creationParams, baseTransaction] = params;
 
-  const { destinationAmount, destinationAccountId, userId, transactionType } = creationParams;
+  const {
+    destinationAmount: requestedDestinationAmount,
+    destinationAccountId,
+    userId,
+    transactionType,
+  } = creationParams;
 
-  if (!destinationAmount || !destinationAccountId) {
+  if (!requestedDestinationAmount || !destinationAccountId) {
     throw new ValidationError({
       message: t({ key: 'transactions.missingRequiredFields' }),
     });
@@ -215,11 +222,16 @@ export const createOppositeTransaction = async (params: CreateOppositeTransactio
   // caller bug — fail loudly.
   const destAccount = await Accounts.default.findOne({
     where: { id: destinationAccountId, userId: destOwnerUserId },
-    attributes: ['accountCategory', ...SEAM_ACCOUNT_ATTRIBUTES],
+    attributes: ['accountCategory', 'currencyCode', ...SEAM_ACCOUNT_ATTRIBUTES],
   });
   if (!destAccount) {
     throw new NotFoundError({ message: t({ key: 'accounts.accountNotFoundForTransaction' }) });
   }
+  const destinationAmount = await roundPositiveAmount({
+    money: requestedDestinationAmount,
+    userId: destOwnerUserId,
+    currencyCode: destAccount.currencyCode,
+  });
   const transferTime = new Date(baseTransaction.time);
   if (destAccount.type !== ACCOUNT_TYPES.system && !isBeforeSeam({ account: destAccount, time: transferTime })) {
     throw new ValidationError({ message: manualRowOnBankAccountMessage({ account: destAccount, time: transferTime }) });
@@ -473,6 +485,32 @@ export const createTransaction = withTransaction(
       // Auto-connect so the guard stays internal and not user-facing.
       if (!isOwner && generalTxCurrency.code !== defaultUserCurrency.code) {
         await ensureUserCurrencyConnected({ userId, currencyCode: generalTxCurrency.code });
+      }
+
+      // Every figure the caller entered is rounded to the account currency's decimals once, here, so
+      // the planned-row match, the split-sum check and the ref conversion below all see the amounts
+      // the row will store.
+      const roundedAmounts = await roundTransactionMoney({
+        values: {
+          amount,
+          commissionRate,
+          cashbackAmount: payload.cashbackAmount,
+          originalAmount: payload.originalAmount,
+        },
+        userId: accountOwnerUserId,
+        currencyCode: generalTxCurrency.code,
+        refCurrencyCode: undefined,
+        originalCurrencyCode: payload.originalCurrencyCode,
+      });
+      amount = roundedAmounts.amount!;
+      commissionRate = roundedAmounts.commissionRate!;
+      payload.cashbackAmount = roundedAmounts.cashbackAmount;
+      payload.originalAmount = roundedAmounts.originalAmount;
+
+      if (payload.isPlanned && !amount.isPositive()) {
+        throw new ValidationError({
+          message: t({ key: 'transactions.amountBelowSmallestUnit', variables: { code: generalTxCurrency.code } }),
+        });
       }
 
       if (matchPlanned && transferNature === TRANSACTION_TRANSFER_NATURE.not_transfer && !payload.isPlanned) {

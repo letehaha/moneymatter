@@ -17,8 +17,8 @@ const elapsedPercent = ({ period }: { period: Period }) => {
   return (day / totalDays) * 100;
 };
 
-const setup = async () => {
-  const account = await helpers.createAccount({ raw: true });
+const setup = async ({ currencyCode = global.BASE_CURRENCY.code }: { currencyCode?: string } = {}) => {
+  const account = await helpers.createAccount({ payload: helpers.buildAccountPayload({ currencyCode }), raw: true });
   const { plan } = await helpers.createBudgetPlan({
     payload: { accountIds: [account.id], epochDate: helpers.budgetPeriodStart({ monthsAgo: 3 }) },
     raw: true,
@@ -65,17 +65,19 @@ const spendOnFirstDay = ({
   accountId,
   categoryId,
   period,
+  amount = 100,
 }: {
   accountId: RecordId;
   categoryId: RecordId;
   period: Period;
+  amount?: number;
 }) =>
   helpers.createTransaction({
     payload: {
       ...helpers.buildTransactionPayload({
         accountId,
         categoryId,
-        amount: 100,
+        amount,
         transactionType: TRANSACTION_TYPES.expense,
       }),
       time: new Date(Date.parse(`${period.startDate}T12:00:00.000Z`)).toISOString(),
@@ -98,6 +100,24 @@ describe('Budget plan period view: line pace', () => {
       basis: 'history',
       expectedPercent: 100,
     });
+  });
+
+  it('reads the history of a KWD plan at 3 decimals, where fils-sized spending still counts', async () => {
+    const pace = await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
+      fn: async () => {
+        const { account, planId, periods, prior, current, addLine, fund } = await setup({ currencyCode: 'KWD' });
+        const { category, line } = await addLine({ name: 'Snacks', sortOrder: 0, activeFrom: periods[0]!.startDate });
+        await fund({ lineId: line.id, period: periods[0]!, amount: 1 });
+        for (const period of prior.slice(-2)) {
+          await spendOnFirstDay({ accountId: account.id, categoryId: category.id, period, amount: 0.004 });
+        }
+        return paceOf({ planId, period: current, lineId: line.id });
+      },
+    });
+
+    // At 2 decimals 0.004 is no spend at all, which would fall back to time elapsed.
+    expect(pace).toEqual({ basis: 'history', expectedPercent: 100 });
   });
 
   it('uses the schedule for a new line whose only payment fell due on the first day', async () => {

@@ -9,6 +9,7 @@ import {
   TRANSACTION_TYPES,
   TransactionTypeOptionValue,
   asDecimal,
+  asCents,
 } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { expect } from '@jest/globals';
@@ -121,7 +122,7 @@ export const rowsBeforeSeam = ({
 
 export const sumCents = ({ rows }: { rows: { cents: number }[] }) => rows.reduce((sum, row) => sum + row.cents, 0);
 
-export const centsToDecimal = ({ cents }: { cents: number }) => Money.fromCents(cents).toNumber();
+export const centsToDecimal = ({ cents }: { cents: number }) => Money.fromCents(asCents(cents)).toNumber();
 
 export const asDatasetUser = async ({ dataset, fn }: { dataset: SeamDatasetKey; fn: () => Promise<void> }) => {
   const config = SEAM_DATASETS[dataset];

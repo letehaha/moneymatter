@@ -138,7 +138,7 @@ describe('Statement Parser - Execute Import endpoint', () => {
               amount: 120.5,
               type: 'expense',
               originalAmount: 5000.55,
-              originalCurrencyCode: 'JPY',
+              originalCurrencyCode: 'CHF',
               externalReference: 'Ref 8F2K91',
             },
             {
@@ -167,7 +167,7 @@ describe('Statement Parser - Execute Import endpoint', () => {
       expect(byNote('Hotel abroad')).toMatchObject({
         amount: 120.5,
         originalAmount: 5000.55,
-        originalCurrencyCode: 'JPY',
+        originalCurrencyCode: 'CHF',
         externalReference: 'Ref 8F2K91',
       });
       expect(byNote('Local shop')).toMatchObject({
@@ -199,7 +199,7 @@ describe('Statement Parser - Execute Import endpoint', () => {
               amount: 120.5,
               type: 'expense',
               originalAmount: 5000.55,
-              originalCurrencyCode: 'JPY',
+              originalCurrencyCode: 'CHF',
             },
           ],
           skipIndices: [],
@@ -213,7 +213,7 @@ describe('Statement Parser - Execute Import endpoint', () => {
         isPlanned: false,
         amount: 120.5,
         originalAmount: 5000.55,
-        originalCurrencyCode: 'JPY',
+        originalCurrencyCode: 'CHF',
       });
     });
 
@@ -568,6 +568,25 @@ describe('Statement Parser - Execute Import endpoint', () => {
       });
       expect(errorByIndex.has(4)).toBe(false);
       expect(errorByIndex.has(5)).toBe(false);
+    });
+
+    it('rejects an amount that rounds to zero in the account currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['JPY'], raw: true });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'JPY' }),
+        raw: true,
+      });
+
+      const result = await helpers.statementExecuteImportAndWait({
+        payload: {
+          accountId: account.id,
+          transactions: [{ date: '2024-01-15', description: 'Sub-yen', amount: 0.4, type: 'expense' }],
+          skipIndices: [],
+        },
+      });
+
+      expect(result.imported).toBe(0);
+      expect(result.errors).toEqual([{ transactionIndex: 0, code: 'AMOUNT_NOT_POSITIVE', params: { amount: 0.4 } }]);
     });
   });
 

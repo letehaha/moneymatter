@@ -5,11 +5,16 @@ import {
   type BackupRestoreStatusResponse,
   parseFilenameFromContentDisposition,
 } from '@bt/shared/types';
+import { expect } from '@jest/globals';
 import { app } from '@root/app';
 import { API_PREFIX } from '@root/config';
 import { sha256Hex } from '@services/backup/sha256';
+import { RateLimitService } from '@services/common/rate-limit.service';
 import AdmZip from 'adm-zip';
+import Big from 'big.js';
 import JSZip from 'jszip';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import request from 'supertest';
 
 import { makeRequest } from './common';
@@ -222,3 +227,80 @@ export async function waitForRestore({
   }
   throw new Error(`Backup restore job ${jobId} did not finish within ${timeoutMs}ms`);
 }
+
+type BackupRow = Record<string, unknown>;
+
+/** Export and restore have their own per-user rate buckets, enforced in the test env. */
+export async function resetBackupRateLimits(): Promise<void> {
+  const user = (await makeRequest({ method: 'get', url: '/user', raw: true })) as { id: number };
+  await RateLimitService.resetRateLimit(`backup:user:${user.id}`);
+  await RateLimitService.resetRateLimit(`backup-restore:user:${user.id}`);
+}
+
+/** Read an unpacked archive directory into the path-to-buffer map `repackBackup` takes. */
+export function readBackupFixture({ dir }: { dir: string }): Map<string, Buffer> {
+  const files = new Map<string, Buffer>();
+  const walk = (current: string) => {
+    for (const entry of readdirSync(current)) {
+      const full = join(current, entry);
+      if (statSync(full).isDirectory()) walk(full);
+      else files.set(relative(dir, full), readFileSync(full));
+    }
+  };
+  walk(dir);
+  return files;
+}
+
+/** Restore `fileContent` and wait for the job, asserting it is accepted and completes. */
+export async function restoreBackupAndWait({ fileContent }: { fileContent: string }) {
+  const restore = await restoreBackup({ fileContent });
+  expect({ statusCode: restore.statusCode, message: restore.message }).toEqual({ statusCode: 200, message: null });
+  const status = await waitForRestore({ jobId: restore.jobId! });
+  expect({ status: status.status, error: status.error }).toEqual({ status: 'completed', error: undefined });
+  return status;
+}
+
+export async function exportParsedBackup(): Promise<ParsedBackupArchive> {
+  const response = await exportBackup();
+  expect(response.statusCode).toBe(200);
+  return parseBackupArchive({ buffer: response.body });
+}
+
+export function backupRows({ archive, name }: { archive: ParsedBackupArchive; name: string }): BackupRow[] {
+  return archive.readData({ name }) as BackupRow[];
+}
+
+export function findBackupRow({ rows, key, value }: { rows: BackupRow[]; key: string; value: unknown }): BackupRow {
+  const row = rows.find((candidate) => candidate[key] === value);
+  expect(row).toBeDefined();
+  return row!;
+}
+
+/** Exact equality of a dumped DECIMAL (a string like "1500.750000000000000000") with an expected decimal. */
+export function expectDecimal({ actual, expected }: { actual: unknown; expected: string }): void {
+  expect(typeof actual).toBe('string');
+  expect(new Big(actual as string).eq(expected)).toBe(true);
+}
+
+function deepSort(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(deepSort);
+  if (value && typeof value === 'object') {
+    const out: BackupRow = {};
+    for (const key of Object.keys(value as BackupRow).toSorted()) out[key] = deepSort((value as BackupRow)[key]);
+    return out;
+  }
+  return value;
+}
+
+/** Order-independent, key-sorted canonical form of a dumped row array, for deep equality. */
+export function canonicalBackupRows({ rows }: { rows: unknown }): string[] {
+  return (Array.isArray(rows) ? rows : []).map((row) => JSON.stringify(deepSort(row))).toSorted();
+}
+
+export const BLOCKING_RESTORE_WARNING_CODES = new Set([
+  'foreign_reference_dropped',
+  'foreign_reference_nulled',
+  'invalid_row_dropped',
+  'currency_missing',
+  'unknown_column_dropped',
+]);

@@ -30,13 +30,13 @@ export default class Goals extends Model {
   @Column({ type: DataType.STRING(3), allowNull: false })
   currencyCode!: string;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare targetAmount: Money;
 
   @Column({ type: DataType.DATEONLY, allowNull: true })
   targetDate!: string | null;
 
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ allowNull: true })
   declare plannedMonthly: Money | null;
 
   @Column({ type: DataType.STRING(20), allowNull: false, defaultValue: 'active' })
@@ -46,7 +46,7 @@ export default class Goals extends Model {
   @Column({ type: DataType.DATE, allowNull: true })
   achievedAt!: Date | null;
 
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ allowNull: true })
   declare achievedAmount: Money | null;
 
   @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: GOAL_REACHED_HOLD_DAYS_DEFAULT })

@@ -13,7 +13,7 @@ export const listExternalAccounts = withTransaction(
   }: {
     connectionId: string;
     userId: number;
-  }): Promise<(Omit<ProviderAccount, 'balance'> & { balance: Decimal; creditLimit: Decimal })[]> => {
+  }): Promise<(Omit<ProviderAccount, 'balance' | 'creditLimit'> & { balance: Decimal; creditLimit: Decimal })[]> => {
     const connection = await BankDataProviderConnections.findOne({
       where: {
         id: connectionId,
@@ -35,8 +35,8 @@ export const listExternalAccounts = withTransaction(
       externalId: acc.externalId,
       name: acc.name,
       type: acc.type,
-      balance: Money.fromCents(acc.balance ?? 0).toNumber(),
-      creditLimit: Money.fromCents(Number(acc.metadata?.creditLimit) || 0).toNumber(),
+      balance: (acc.balance ?? Money.zero()).toNumber(),
+      creditLimit: (acc.creditLimit ?? Money.zero()).toNumber(),
       currency: acc.currency,
       metadata: acc.metadata,
     }));

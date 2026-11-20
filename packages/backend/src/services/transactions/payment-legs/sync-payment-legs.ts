@@ -11,6 +11,7 @@ import * as Transactions from '@models/transactions.model';
 import { isPreBookingRow } from '@services/bank-data-providers/enablebanking/utils/transaction-metadata';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
+import { roundPositiveAmount } from '@services/transactions/round-positive-amount';
 import { Op } from 'sequelize';
 
 import { findPaymentRows } from './find-payment-rows';
@@ -50,18 +51,27 @@ const getTagIds = async ({ transactionId }: { transactionId: string }) =>
     (row) => row.tagId,
   );
 
-const resolvePaymentAmount = ({
+/**
+ * The share a cross-currency leg pays, in the main row's currency. The user enters it, so it rounds
+ * half-up to that currency's decimals; a stored share is already there and stays as it is.
+ */
+const resolvePaymentAmount = async ({
+  userId,
   main,
   currencyCode,
   paymentAmount,
+  storedShare,
 }: {
+  userId: number;
   main: Transactions.default;
   currencyCode: string;
-  paymentAmount: Money | null | undefined;
+  paymentAmount: Money | undefined;
+  storedShare?: Money | null;
 }) => {
   if (currencyCode === main.currencyCode) return null;
-  if (!paymentAmount) throw invalid({ key: 'transactions.paymentAmountRequired' });
-  return paymentAmount;
+  if (paymentAmount) return roundPositiveAmount({ money: paymentAmount, userId, currencyCode: main.currencyCode });
+  if (!storedShare) throw invalid({ key: 'transactions.paymentAmountRequired' });
+  return storedShare;
 };
 
 const legRefAmount = ({
@@ -119,11 +129,12 @@ const createLeg = async ({
   if (!account || account.type !== ACCOUNT_TYPES.system || account.id === main.accountId) {
     throw invalid({ key: 'transactions.paymentLegInvalidAccount' });
   }
+  const legAmount = await roundPositiveAmount({ money: amount, userId, currencyCode: account.currencyCode });
 
   const leg = await Transactions.createTransaction({
-    ...createdLegFields({ main, amount }),
+    ...createdLegFields({ main, amount: legAmount }),
     paymentType: account.defaultPaymentType ?? main.paymentType,
-    refAmount: await legRefAmount({ ownerId: userId, main, amount, currencyCode: account.currencyCode }),
+    refAmount: await legRefAmount({ ownerId: userId, main, amount: legAmount, currencyCode: account.currencyCode }),
     userId,
     accountId,
     currencyCode: account.currencyCode,
@@ -131,7 +142,7 @@ const createLeg = async ({
     accountType: account.type,
     transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
     paymentParentId: main.id,
-    paymentAmount: resolvePaymentAmount({ main, currencyCode: account.currencyCode, paymentAmount }),
+    paymentAmount: await resolvePaymentAmount({ userId, main, currencyCode: account.currencyCode, paymentAmount }),
   });
   await leg!.$set('tags', await getTagIds({ transactionId: main.id }));
 };
@@ -209,7 +220,10 @@ const copyToLegs = async ({
   await assertLegAccounts({ main, legs: legs.map(({ row }) => row) });
   const tagIds = await getTagIds({ transactionId: main.id });
 
-  for (const { row, amount = row.amount, paymentAmount } of legs) {
+  for (const { row, amount: requestedAmount, paymentAmount } of legs) {
+    const amount = requestedAmount
+      ? await roundPositiveAmount({ money: requestedAmount, userId: row.userId, currencyCode: row.currencyCode })
+      : row.amount;
     const isLinked = isLinkedLeg(row);
     if (isLinked && row.transactionType !== main.transactionType) {
       throw invalid({ key: 'transactions.paymentLinkedTypeMismatch' });
@@ -226,10 +240,12 @@ const copyToLegs = async ({
     const updated = await Transactions.updateTransactionById({
       id: row.id,
       userId: row.userId,
-      paymentAmount: resolvePaymentAmount({
+      paymentAmount: await resolvePaymentAmount({
+        userId: row.userId,
         main,
         currencyCode: row.currencyCode,
-        paymentAmount: paymentAmount ?? storedShare,
+        paymentAmount,
+        storedShare,
       }),
       ...(isLinked ? { ...pickLinkFields({ row: main }), payeeLocked: true } : createdLegFields({ main, amount })),
       ...(!isLinked &&

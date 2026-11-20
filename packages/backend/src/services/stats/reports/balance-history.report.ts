@@ -1,3 +1,4 @@
+import { getReportBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { serializeBalanceHistory } from '@root/serializers/stats.serializer';
 
 import { getBalanceHistory } from '../get-balance-history';
@@ -22,5 +23,6 @@ export const getBalanceHistoryReport = async ({
     return serializeBalanceHistory(await getBalanceHistoryForAccount({ userId, from, to, accountId }));
   }
 
-  return serializeBalanceHistory(await getBalanceHistory({ userId, accountScope: 'accessible', from, to }));
+  const decimals = await getReportBaseCurrencyDecimals({ userId });
+  return serializeBalanceHistory(await getBalanceHistory({ userId, accountScope: 'accessible', from, to, decimals }));
 };

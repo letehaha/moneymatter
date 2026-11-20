@@ -1,6 +1,7 @@
-import type { AccountModel, GoalAccountHistory, GoalAccountShare, GoalInsights, RecordId } from '@bt/shared/types';
+import type { AccountModel, GoalAccountHistory, GoalAccountShare, RecordId } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
+import { buildInsights } from '../test-fixtures';
 import {
   MAX_PROJECTION_MONTHS,
   formatRowAmount,
@@ -32,24 +33,6 @@ const buildHistory = (overrides: Partial<GoalAccountHistory> = {}): GoalAccountH
   creditLimit: 0,
   firstDataDate: null,
   monthEndBalances: [],
-  ...overrides,
-});
-
-const buildInsights = (overrides: Partial<GoalInsights> = {}): GoalInsights => ({
-  status: 'on_track',
-  currentValue: 0,
-  remaining: 0,
-  monthEndValues: [],
-  historicalPace: null,
-  historyMonths: 0,
-  pace: null,
-  etaMonths: null,
-  neededMonthly: null,
-  daysLeft: null,
-  monthsLeft: null,
-  input: { today: '2026-10-20', months: [], accounts: [], targetAmount: 0, targetDate: null, plannedMonthly: null },
-  rateToBase: 1,
-  baseCurrencyCode: 'USD',
   ...overrides,
 });
 

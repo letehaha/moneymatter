@@ -13,6 +13,7 @@ import type { AkahuApiTransaction, AkahuApiTransactionsResponse } from '@service
 import * as helpers from '@tests/helpers';
 import {
   AKAHU_ACCOUNT_1_ID,
+  AKAHU_ACCOUNT_CREDIT_ID,
   AKAHU_ACCOUNT_INACTIVE_ID,
   AKAHU_ACCOUNT_NO_TX_ID,
   getMockedAkahuAccounts,
@@ -126,6 +127,22 @@ describe('Akahu Data Provider E2E', () => {
 
       const first = accounts.find((a: { externalId: string }) => a.externalId === AKAHU_ACCOUNT_1_ID);
       expect(first).toMatchObject({ balance: 1523.45, currency: 'NZD', metadata: { institutionName: 'Test Bank NZ' } });
+    });
+
+    it('reports a credit account limit as a positive decimal and stores it on connect', async () => {
+      const { connectionId } = await helpers.akahu.pairAkahuUser();
+
+      const { accounts } = await helpers.bankDataProviders.listExternalAccounts({ connectionId, raw: true });
+      const credit = accounts.find((a: { externalId: string }) => a.externalId === AKAHU_ACCOUNT_CREDIT_ID);
+      expect(credit).toMatchObject({ balance: -120.5, creditLimit: 500 });
+
+      const { syncedAccounts } = await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId,
+        accountExternalIds: [AKAHU_ACCOUNT_CREDIT_ID],
+        raw: true,
+      });
+      const account = await helpers.getAccount({ id: syncedAccounts[0]!.id, raw: true });
+      expect(account.creditLimit).toBe(500);
     });
   });
 

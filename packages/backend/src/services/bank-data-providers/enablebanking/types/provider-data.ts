@@ -1,4 +1,4 @@
-import type { Cents } from '@bt/shared/types';
+import type { Money } from '@common/types/money';
 
 /**
  * Date range for querying transactions
@@ -14,8 +14,8 @@ export interface DateRange {
 export interface ProviderTransaction {
   /** Provider's unique identifier for this transaction */
   externalId: string;
-  /** Transaction amount in cents (positive for income, negative for expense) */
-  amount: Cents;
+  /** Transaction amount as the bank reports it (positive for income, negative for expense) */
+  amount: Money;
   /** Currency code */
   currency: string;
   /** Transaction date */
@@ -34,8 +34,7 @@ export interface ProviderTransaction {
  * Account balance information from provider
  */
 export interface ProviderBalance {
-  /** Balance amount (in cents) */
-  amount: Cents;
+  amount: Money;
   /** Currency code */
   currency: string;
   /** Timestamp when balance was retrieved */

@@ -37,43 +37,41 @@ const convert: ConvertAmount = ({ amount, from, to }) =>
 describe('fillRefundShares', () => {
   it('fills in tick order, each target capped by what is left of it', () => {
     expect(
-      fillRefundShares({
-        refundAmount: 100,
-        targets: [{ cap: 30 }, { cap: 50 }, { cap: 40 }],
-      }),
+      fillRefundShares({ decimals: 2, refundAmount: 100, targets: [{ cap: 30 }, { cap: 50 }, { cap: 40 }] }),
     ).toEqual([30, 50, 20]);
   });
 
   it('gives zero once the refund is used up', () => {
-    expect(fillRefundShares({ refundAmount: 20, targets: [{ cap: 30 }, { cap: 10 }] })).toEqual([20, 0]);
+    expect(fillRefundShares({ decimals: 2, refundAmount: 20, targets: [{ cap: 30 }, { cap: 10 }] })).toEqual([20, 0]);
   });
 
   it('caps a partly refunded purchase by its remainder, not its amount', () => {
     const { cap } = getRefundTargetCap({
+      decimals: 2,
       link: { transaction: purchase({ id: 'a', amount: 100, refundedAmount: 60 }) },
       refundCurrencyCode: 'UAH',
       convert,
     });
     expect(cap).toBe(40);
-    expect(fillRefundShares({ refundAmount: 100, targets: [{ cap }] })).toEqual([40]);
+    expect(fillRefundShares({ decimals: 2, refundAmount: 100, targets: [{ cap }] })).toEqual([40]);
   });
 
   it('keeps preset shares and fills the rest from what is left', () => {
     expect(
-      fillRefundShares({
-        refundAmount: 100,
-        targets: [{ cap: 80, share: 25 }, { cap: 90 }],
-      }),
+      fillRefundShares({ decimals: 2, refundAmount: 100, targets: [{ cap: 80, share: 25 }, { cap: 90 }] }),
     ).toEqual([25, 75]);
   });
 
   it('lets an unbounded target take everything left', () => {
-    expect(fillRefundShares({ refundAmount: 99.99, targets: [{ cap: 40 }, { cap: null }] })).toEqual([40, 59.99]);
+    expect(fillRefundShares({ decimals: 2, refundAmount: 99.99, targets: [{ cap: 40 }, { cap: null }] })).toEqual([
+      40, 59.99,
+    ]);
   });
 
   it('gives the last rate-estimated target the exact remainder instead of an orphan cent', () => {
     expect(
       fillRefundShares({
+        decimals: 2,
         refundAmount: 100,
         targets: [
           { cap: 33.33, isCapApprox: true },
@@ -85,17 +83,20 @@ describe('fillRefundShares', () => {
   });
 
   it('leaves a same-currency remainder unassigned', () => {
-    expect(fillRefundShares({ refundAmount: 100, targets: [{ cap: 99.99 }] })).toEqual([99.99]);
+    expect(fillRefundShares({ decimals: 2, refundAmount: 100, targets: [{ cap: 99.99 }] })).toEqual([99.99]);
   });
 
   it('returns zero shares when nothing of the refund is left', () => {
-    expect(fillRefundShares({ refundAmount: 50, targets: [{ cap: 80, share: 50 }, { cap: 20 }] })).toEqual([50, 0]);
+    expect(fillRefundShares({ decimals: 2, refundAmount: 50, targets: [{ cap: 80, share: 50 }, { cap: 20 }] })).toEqual(
+      [50, 0],
+    );
   });
 });
 
 describe('getRefundTargetCap', () => {
   it('does not count this refund’s own saved share as refunded by others', () => {
     const result = getRefundTargetCap({
+      decimals: 2,
       link: { transaction: purchase({ id: 'a', amount: 100, refundedAmount: 70 }) },
       refundCurrencyCode: 'UAH',
       savedShares: { [refundShareKey({ txId: 'a' })]: 30 },
@@ -107,6 +108,7 @@ describe('getRefundTargetCap', () => {
   it('treats an unknown refunded amount as nothing refunded yet', () => {
     expect(
       getRefundTargetCap({
+        decimals: 2,
         link: { transaction: purchase({ id: 'a', amount: 100 }) },
         refundCurrencyCode: 'UAH',
         savedShares: { [refundShareKey({ txId: 'a' })]: 30 },
@@ -121,9 +123,9 @@ describe('getRefundTargetCap', () => {
       amount: 100,
       splits: [{ id: 's1', amount: 25, refundedAmount: 5 }] as TransactionModel['splits'],
     });
-    expect(getRefundTargetCap({ link: { transaction, splitId: 's1' }, refundCurrencyCode: 'UAH', convert }).cap).toBe(
-      20,
-    );
+    expect(
+      getRefundTargetCap({ decimals: 2, link: { transaction, splitId: 's1' }, refundCurrencyCode: 'UAH', convert }).cap,
+    ).toBe(20);
   });
 
   it('caps the main part of a split purchase by what is left of the whole purchase', () => {
@@ -133,7 +135,7 @@ describe('getRefundTargetCap', () => {
       refundedAmount: 30,
       splits: [{ id: 's1', amount: 40, refundedAmount: 30 }] as TransactionModel['splits'],
     });
-    expect(getRefundTargetCap({ link: { transaction }, refundCurrencyCode: 'UAH', convert }).cap).toBe(70);
+    expect(getRefundTargetCap({ decimals: 2, link: { transaction }, refundCurrencyCode: 'UAH', convert }).cap).toBe(70);
   });
 
   it('caps a split target by what is left of the whole purchase', () => {
@@ -144,7 +146,7 @@ describe('getRefundTargetCap', () => {
       splits: [{ id: 's1', amount: 40, refundedAmount: 0 }] as TransactionModel['splits'],
     });
     expect(
-      getRefundTargetCap({ link: { transaction, splitId: 's1' }, refundCurrencyCode: 'UAH', convert }),
+      getRefundTargetCap({ decimals: 2, link: { transaction, splitId: 's1' }, refundCurrencyCode: 'UAH', convert }),
     ).toMatchObject({ cap: 20, purchaseAmount: 40, refundedByOthers: 20 });
   });
 
@@ -157,6 +159,7 @@ describe('getRefundTargetCap', () => {
     });
     expect(
       getRefundTargetCap({
+        decimals: 2,
         link: { transaction, splitId: 's1' },
         refundCurrencyCode: 'UAH',
         savedShares: { [refundShareKey({ txId: 'p' })]: 50 },
@@ -174,6 +177,7 @@ describe('getRefundTargetCap', () => {
     });
     expect(
       getRefundTargetCap({
+        decimals: 2,
         link: { transaction },
         refundCurrencyCode: 'UAH',
         savedShares: { [refundShareKey({ txId: 'p', splitId: 's1' })]: 40 },
@@ -194,6 +198,7 @@ describe('getRefundTargetCap', () => {
     });
     expect(
       getRefundTargetCap({
+        decimals: 2,
         link: { transaction, splitId: 's1' },
         refundCurrencyCode: 'UAH',
         savedShares: { [refundShareKey({ txId: 'p', splitId: 's2' })]: 30 },
@@ -205,6 +210,7 @@ describe('getRefundTargetCap', () => {
   it('converts a cross-currency purchase remainder into the refund currency', () => {
     expect(
       getRefundTargetCap({
+        decimals: 2,
         link: { transaction: purchase({ id: 'a', amount: 25, currencyCode: 'PLN' }) },
         refundCurrencyCode: 'UAH',
         convert,
@@ -212,9 +218,24 @@ describe('getRefundTargetCap', () => {
     ).toMatchObject({ cap: 653, isCapApprox: true, isSameCurrency: false });
   });
 
+  it.each<[number, number]>([
+    [12.34, 1851],
+    [0.4, 60],
+  ])('keeps the cents of a %d USD remainder when converting it to a JPY refund (%d)', (amount, cap) => {
+    expect(
+      getRefundTargetCap({
+        decimals: 0,
+        link: { transaction: purchase({ id: 'a', amount, currencyCode: 'USD' }) },
+        refundCurrencyCode: 'JPY',
+        convert: ({ amount: value }) => value * 150,
+      }),
+    ).toMatchObject({ cap, refundedByOthers: 0 });
+  });
+
   it('has no cap when the rate is missing', () => {
     expect(
       getRefundTargetCap({
+        decimals: 2,
         link: { transaction: purchase({ id: 'a', amount: 25, currencyCode: 'EUR' }) },
         refundCurrencyCode: 'UAH',
         convert,
@@ -225,6 +246,7 @@ describe('getRefundTargetCap', () => {
   it('keeps a tiny cross-currency remainder tickable with a one-cent cap', () => {
     expect(
       getRefundTargetCap({
+        decimals: 2,
         link: { transaction: purchase({ id: 'a', amount: 0.01, currencyCode: 'PLN' }) },
         refundCurrencyCode: 'USD',
         convert: () => 0.0018,
@@ -235,6 +257,7 @@ describe('getRefundTargetCap', () => {
   it('caps a fully refunded cross-currency purchase at zero', () => {
     expect(
       getRefundTargetCap({
+        decimals: 2,
         link: { transaction: purchase({ id: 'a', amount: 25, currencyCode: 'PLN', refundedAmount: 25 }) },
         refundCurrencyCode: 'UAH',
         convert,
@@ -251,9 +274,14 @@ describe('refillRefundLinks', () => {
       { transaction: purchase({ id: 'c', amount: 25, currencyCode: 'PLN' }), amount: null },
     ];
     expect(
-      refillRefundLinks({ links, refundAmount: 1000, refundCurrencyCode: 'UAH', savedShares: {}, convert }).map(
-        (link) => link.amount,
-      ),
+      refillRefundLinks({
+        decimals: 2,
+        links,
+        refundAmount: 1000,
+        refundCurrencyCode: 'UAH',
+        savedShares: {},
+        convert,
+      }).map((link) => link.amount),
     ).toEqual([50, 300, 650]);
   });
 
@@ -263,9 +291,14 @@ describe('refillRefundLinks', () => {
       { transaction: purchase({ id: 'b', amount: 300 }), amount: null },
     ];
     expect(
-      refillRefundLinks({ links, refundAmount: 100, refundCurrencyCode: 'UAH', savedShares: {}, convert }).map(
-        (link) => link.amount,
-      ),
+      refillRefundLinks({
+        decimals: 2,
+        links,
+        refundAmount: 100,
+        refundCurrencyCode: 'UAH',
+        savedShares: {},
+        convert,
+      }).map((link) => link.amount),
     ).toEqual([40, 60]);
   });
 
@@ -278,6 +311,7 @@ describe('refillRefundLinks', () => {
     });
     expect(
       refillRefundLinks({
+        decimals: 2,
         links: [{ transaction, splitId: 's1', amount: null }],
         refundAmount: 40,
         refundCurrencyCode: 'UAH',
@@ -298,7 +332,9 @@ describe('refillRefundedByLinks', () => {
       { transaction: income({ id: 'r2', amount: 6800 }), isAdjusted: false },
     ];
     expect(
-      refillRefundedByLinks({ links, purchaseAmount: 2000, purchaseCurrencyCode: 'UAH' }).map((link) => link.amount),
+      refillRefundedByLinks({ decimals: 2, links, purchaseAmount: 2000, purchaseCurrencyCode: 'UAH' }).map(
+        (link) => link.amount,
+      ),
     ).toEqual([1500, 500]);
   });
 
@@ -308,7 +344,9 @@ describe('refillRefundedByLinks', () => {
       { transaction: income({ id: 'r2', amount: 30, currencyCode: 'PLN' }), amount: null },
     ];
     expect(
-      refillRefundedByLinks({ links, purchaseAmount: 2000, purchaseCurrencyCode: 'UAH' }).map((link) => link.amount),
+      refillRefundedByLinks({ decimals: 2, links, purchaseAmount: 2000, purchaseCurrencyCode: 'UAH' }).map(
+        (link) => link.amount,
+      ),
     ).toEqual([undefined, null]);
   });
 });
@@ -316,6 +354,7 @@ describe('refillRefundedByLinks', () => {
 describe('validateRefundShares', () => {
   it('accepts shares within the refund and the purchase remainders', () => {
     const result = validateRefundShares({
+      decimals: 2,
       refundAmount: 100,
       targets: [
         { share: 30, cap: 30, isSameCurrency: true },
@@ -333,12 +372,14 @@ describe('validateRefundShares', () => {
 
   it('accepts a partial assignment below the refund amount', () => {
     expect(
-      validateRefundShares({ refundAmount: 100, targets: [{ share: 40, cap: 50, isSameCurrency: true }] }).isValid,
+      validateRefundShares({ decimals: 2, refundAmount: 100, targets: [{ share: 40, cap: 50, isSameCurrency: true }] })
+        .isValid,
     ).toBe(true);
   });
 
   it('rejects a total above the refund amount', () => {
     const result = validateRefundShares({
+      decimals: 2,
       refundAmount: 100,
       targets: [
         { share: 60, cap: 60, isSameCurrency: true },
@@ -351,6 +392,7 @@ describe('validateRefundShares', () => {
 
   it('rejects a same-currency share above what is left of the purchase', () => {
     const result = validateRefundShares({
+      decimals: 2,
       refundAmount: 100,
       targets: [{ share: 60, cap: 50, isSameCurrency: true }],
     });
@@ -360,6 +402,7 @@ describe('validateRefundShares', () => {
 
   it('only warns about a cross-currency share above the converted purchase', () => {
     const result = validateRefundShares({
+      decimals: 2,
       refundAmount: 100,
       targets: [{ share: 60, cap: 5, isSameCurrency: false }],
     });
@@ -370,6 +413,7 @@ describe('validateRefundShares', () => {
 
   it.each([0, null, -5])('rejects a share of %s', (share) => {
     const result = validateRefundShares({
+      decimals: 2,
       refundAmount: 100,
       targets: [{ share, cap: 50, isSameCurrency: true }],
     });
@@ -380,14 +424,14 @@ describe('validateRefundShares', () => {
 
 describe('finalizeRefundShares', () => {
   it('stores a single whole-refund target as amount null', () => {
-    expect(finalizeRefundShares({ refundAmount: 100, links: [{ transaction: tx('a'), amount: 100 }] })).toEqual([
-      { transaction: tx('a'), amount: null },
-    ]);
+    expect(
+      finalizeRefundShares({ decimals: 2, refundAmount: 100, links: [{ transaction: tx('a'), amount: 100 }] }),
+    ).toEqual([{ transaction: tx('a'), amount: null }]);
   });
 
   it('keeps a single partial share', () => {
     const links = [{ transaction: tx('a'), amount: 40 }];
-    expect(finalizeRefundShares({ refundAmount: 100, links })).toBe(links);
+    expect(finalizeRefundShares({ decimals: 2, refundAmount: 100, links })).toBe(links);
   });
 
   it('keeps every share when several targets are linked', () => {
@@ -395,6 +439,64 @@ describe('finalizeRefundShares', () => {
       { transaction: tx('a'), amount: 60 },
       { transaction: tx('b'), amount: 40 },
     ];
-    expect(finalizeRefundShares({ refundAmount: 100, links })).toBe(links);
+    expect(finalizeRefundShares({ decimals: 2, refundAmount: 100, links })).toBe(links);
+  });
+});
+
+describe('refund shares at the refund currency decimals', () => {
+  it.each<[number, number, { cap: number | null }[], number[]]>([
+    [3, 3.579, [{ cap: 1.234 }, { cap: 2.345 }], [1.234, 2.345]],
+    [0, 1001, [{ cap: 500 }, { cap: null }], [500, 501]],
+  ])('fills shares at %d decimals: %d', (decimals, refundAmount, targets, expected) => {
+    expect(fillRefundShares({ decimals, refundAmount, targets })).toEqual(expected);
+  });
+
+  it.each<[number, number, number]>([
+    [3, 1.005, 1.004],
+    [0, 1000, 999],
+  ])(
+    'lets the last approximate target swallow one stray minor unit at %d decimals: %d over a cap of %d',
+    (decimals, refundAmount, cap) => {
+      expect(fillRefundShares({ decimals, refundAmount, targets: [{ cap, isCapApprox: true }] })).toEqual([
+        refundAmount,
+      ]);
+    },
+  );
+
+  it('caps a 3-decimal purchase by its exact remainder', () => {
+    const { cap } = getRefundTargetCap({
+      decimals: 3,
+      link: { transaction: purchase({ id: 'a', amount: 1.234, currencyCode: 'KWD' }) },
+      refundCurrencyCode: 'KWD',
+      convert,
+    });
+    expect(cap).toBe(1.234);
+  });
+
+  it('flags a 3-decimal share over its purchase by one minor unit', () => {
+    const result = validateRefundShares({
+      decimals: 3,
+      refundAmount: 5,
+      targets: [{ share: 1.231, cap: 1.23, isSameCurrency: true }],
+    });
+    expect(result.errors).toEqual(['exceedsPurchase']);
+  });
+
+  it('sums 3-decimal shares exactly', () => {
+    const result = validateRefundShares({
+      decimals: 3,
+      refundAmount: 3.579,
+      targets: [
+        { share: 1.234, cap: 1.234, isSameCurrency: true },
+        { share: 2.345, cap: 2.345, isSameCurrency: true },
+      ],
+    });
+    expect(result.assigned).toBe(3.579);
+    expect(result.isValid).toBe(true);
+  });
+
+  it('keeps a single 3-decimal share that falls short of the refund by a minor unit', () => {
+    const links = [{ transaction: tx('a'), amount: 1.231 }];
+    expect(finalizeRefundShares({ decimals: 3, refundAmount: 1.234, links })).toBe(links);
   });
 });

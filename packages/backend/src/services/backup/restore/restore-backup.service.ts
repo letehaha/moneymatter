@@ -162,7 +162,7 @@ export async function restoreUserBackup({
   onProgress?: ProgressCallback;
 }): Promise<BackupRestoreSummary> {
   await onProgress?.({ phase: 'validating' });
-  const { archive, analysis } = await loadValidatedArchive({ fileContent });
+  const { archive, analysis, currencyCodes } = await loadValidatedArchive({ fileContent });
 
   await onProgress?.({ phase: 'preparing-securities' });
   const securities = await resolveSecurities({ archive, analysis });
@@ -184,6 +184,7 @@ export async function restoreUserBackup({
         analysis,
         targetUserId: user.id,
         securitiesRemap: securities.remap,
+        currencyCodes,
         transaction,
         onProgress: ({ tier, table, insertedRows }) => onProgress?.({ phase: 'restoring', tier, table, insertedRows }),
       });

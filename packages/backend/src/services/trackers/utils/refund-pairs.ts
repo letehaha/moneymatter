@@ -43,8 +43,11 @@ export interface TrackerRefundPair {
  */
 export const fetchTrackerRefundPairs = async ({
   countedTransactions,
+  decimals,
 }: {
   countedTransactions: { id: string; refundLinked: boolean }[];
+  /** Decimals of the base currency: each link's share rounds to them. */
+  decimals: number;
 }): Promise<TrackerRefundPair[]> => {
   const trackerTxIds = new Set(countedTransactions.map((t) => t.id));
   const txIdsWithRefunds = countedTransactions.filter((t) => t.refundLinked).map((t) => t.id);
@@ -104,7 +107,7 @@ export const fetchTrackerRefundPairs = async ({
     pairs.push({
       originalTx,
       refundTx,
-      shareRefAmount: refundShareRefAmount({ link: refund, refundTx }),
+      shareRefAmount: refundShareRefAmount({ link: refund, refundTx, decimals }),
       originalInScope: trackerTxIds.has(originalTx.id),
       refundInScope: trackerTxIds.has(refundTx.id),
     });

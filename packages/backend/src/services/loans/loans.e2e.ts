@@ -359,6 +359,36 @@ describe('Loans read API', () => {
   });
 
   describe('POST /loans', () => {
+    it('stores every loan amount at the decimals of the loan currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['JPY', 'KWD'], raw: true });
+
+      const jpy = await helpers.createLoan({
+        payload: helpers.buildCreateLoanPayload({
+          currencyCode: 'JPY',
+          initialBalance: 900_000.6,
+          originalPrincipal: 1_000_000.5,
+          plannedPayment: 20_000.4,
+          minPayment: 15_000.5,
+        }),
+        raw: true,
+      });
+      expect(jpy.currentBalance).toBe(-900_001);
+      expect(jpy.loanDetails.originalPrincipal).toBe(1_000_001);
+      expect(jpy.loanDetails.plannedPayment).toBe(20_000);
+      expect(jpy.loanDetails.minPayment).toBe(15_001);
+
+      const kwd = await helpers.createLoan({
+        payload: helpers.buildCreateLoanPayload({
+          currencyCode: 'KWD',
+          initialBalance: 900.4567,
+          originalPrincipal: 1000.0005,
+        }),
+        raw: true,
+      });
+      expect(kwd.currentBalance).toBe(-900.457);
+      expect(kwd.loanDetails.originalPrincipal).toBe(1000.001);
+    });
+
     it('creates an Account + LoanDetails atomically and serializes the same shape on create, detail and list', async () => {
       const result = await helpers.createLoan({
         payload: helpers.buildCreateLoanPayload(),
@@ -498,6 +528,31 @@ describe('Loans read API', () => {
   });
 
   describe('PATCH /loans/:id', () => {
+    it.each([
+      {
+        currencyCode: 'USD',
+        sent: { plannedPayment: 1500.555, minPayment: 99.994, currentBalance: 1234.565 },
+        stored: { plannedPayment: 1500.56, minPayment: 99.99, currentBalance: -1234.57 },
+      },
+      {
+        currencyCode: 'JPY',
+        sent: { plannedPayment: 1500.5, minPayment: 99.4, currentBalance: 1234.5 },
+        stored: { plannedPayment: 1501, minPayment: 99, currentBalance: -1235 },
+      },
+    ])('rounds the amounts of a $currencyCode loan half-up to its decimals', async ({ currencyCode, sent, stored }) => {
+      await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+      const created = await helpers.createLoan({
+        payload: helpers.buildCreateLoanPayload({ currencyCode }),
+        raw: true,
+      });
+
+      const updated = await helpers.updateLoan({ id: created.id, payload: sent, raw: true });
+
+      expect(updated.loanDetails.plannedPayment).toBe(stored.plannedPayment);
+      expect(updated.loanDetails.minPayment).toBe(stored.minPayment);
+      expect(updated.currentBalance).toBe(stored.currentBalance);
+    });
+
     it('appends rate_change, term_change and planned_payment_change events as those fields change', async () => {
       const created = await helpers.createLoan({
         payload: helpers.buildCreateLoanPayload(),

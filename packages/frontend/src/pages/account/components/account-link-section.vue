@@ -18,6 +18,7 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { ApiErrorResponseError } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
 import { useFormatCurrency } from '@/composable/formatters';
+import { getCurrencyDecimals, trimAmountNoise } from '@/js/helpers/currency-decimals';
 import { cn } from '@/lib/utils';
 import { useAccountsStore } from '@/stores';
 import { AccountModel, type LinkResidualTarget } from '@bt/shared/types';
@@ -144,7 +145,12 @@ const externalOwnFunds = computed(() =>
 );
 
 const balanceDifference = computed(() =>
-  selectedExternalAccount.value ? Number((externalOwnFunds.value - systemOwnFunds.value).toFixed(2)) : 0,
+  selectedExternalAccount.value
+    ? trimAmountNoise({
+        value: externalOwnFunds.value - systemOwnFunds.value,
+        decimals: getCurrencyDecimals({ code: props.account.currencyCode }),
+      })
+    : 0,
 );
 
 const currencyMismatch = computed(() => {

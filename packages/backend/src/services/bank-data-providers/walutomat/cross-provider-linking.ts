@@ -1,4 +1,5 @@
 import { ACCOUNT_TYPES, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import { findTransactions } from '@models/transactions-query';
@@ -61,7 +62,7 @@ function hasRivalLeg({
     if (consumed.has(leg.id)) return false;
     if (leg.transactionType === counterpart.transactionType) return false;
     if (leg.currencyCode !== counterpart.currencyCode) return false;
-    if (leg.amount.toCents() !== counterpart.amount.toCents()) return false;
+    if (!leg.amount.equals(counterpart.amount)) return false;
 
     const legTime = new Date(leg.time);
     if (
@@ -97,7 +98,7 @@ function hasRivalLeg({
  *
  * Matching criteria (all must be true):
  * - Account IBAN matches Walutomat's sourceAccount/destinationAccount
- * - Exact same amount (to the cent)
+ * - Exact same amount
  * - Same currency
  * - Date within ±3 days
  * - Opposite transaction type (PAYOUT→income, PAYIN→expense)
@@ -210,8 +211,7 @@ async function linkCrossProviderTransfersLocked({
         transactionType: expectedOppositeType,
         refundLinked: false,
         currencyCode: tx.currencyCode,
-        // amount is stored as cents in DB, tx.amount is a Money object
-        amount: tx.amount.toCents(),
+        amount: toMoneyColumnValue({ money: tx.amount }),
         time: { [Op.between]: [dateFrom, dateTo] },
       },
     });

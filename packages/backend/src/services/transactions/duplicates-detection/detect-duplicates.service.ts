@@ -1,5 +1,9 @@
-import { Cents, TRANSACTION_TYPES, asCents } from '@bt/shared/types';
+import { type Decimal, TRANSACTION_TYPES } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
+import * as Accounts from '@models/accounts.model';
 import * as Transactions from '@models/transactions.model';
+
+import { duplicateAmountKey } from './amount-key';
 
 /**
  * Generic transaction interface for duplicate detection.
@@ -8,8 +12,8 @@ import * as Transactions from '@models/transactions.model';
 export interface TransactionToCheck {
   /** Date in YYYY-MM-DD or YYYY-MM-DD HH:MM:SS format */
   date: string;
-  /** Amount in system format (integer, cents) */
-  amount: Cents;
+  /** Absolute amount as a decimal. It is rounded to the account currency's decimals before it is compared. */
+  amount: number;
   /** Transaction type */
   type: 'income' | 'expense';
 }
@@ -20,7 +24,8 @@ export interface TransactionToCheck {
 interface ExistingTransactionMatch {
   id: string;
   date: string;
-  amount: Cents;
+  /** Absolute decimal at the account currency's decimals. */
+  amount: Decimal;
   note: string;
 }
 
@@ -49,7 +54,7 @@ interface DetectDuplicatesParams<T extends TransactionToCheck> {
  *
  * Matching criteria:
  * - Same date (day only, ignores time)
- * - Same amount (exact match)
+ * - Same amount, after rounding the incoming one to the account currency's decimals
  * - Same transaction type (income/expense)
  *
  * This is intentionally simple and doesn't use description matching because:
@@ -92,6 +97,14 @@ export async function detectDuplicates<T extends TransactionToCheck>({
     return duplicates;
   }
 
+  // The account's own currency sets the scale the amounts are compared at. An account the user
+  // does not own has no transactions of theirs to match.
+  const account = await Accounts.getAccountById({ userId, id: accountId });
+  if (!account) {
+    return duplicates;
+  }
+  const decimals = await getCurrencyDecimals({ userId: account.userId, code: account.currencyCode });
+
   // Get date range from transactions
   const dates = transactions.map((t) => t.date.split(' ')[0]!);
   const minDate = dates.reduce((a, b) => (a < b ? a : b));
@@ -122,7 +135,7 @@ export async function detectDuplicates<T extends TransactionToCheck>({
   for (const tx of existingTransactions) {
     const dateStr = new Date(tx.time).toISOString().split('T')[0];
     const type = tx.transactionType === TRANSACTION_TYPES.income ? 'income' : 'expense';
-    const key = `${dateStr}:${Math.abs(tx.amount.toCents())}:${type}`;
+    const key = `${dateStr}:${duplicateAmountKey({ amount: tx.amount, decimals })}:${type}`;
 
     if (!existingMap.has(key)) {
       existingMap.set(key, []);
@@ -134,7 +147,7 @@ export async function detectDuplicates<T extends TransactionToCheck>({
   for (let i = 0; i < transactions.length; i++) {
     const tx = transactions[i]!;
     const dateStr = tx.date.split(' ')[0]!;
-    const key = `${dateStr}:${tx.amount}:${tx.type}`;
+    const key = `${dateStr}:${duplicateAmountKey({ amount: tx.amount, decimals })}:${tx.type}`;
 
     const candidates = existingMap.get(key);
     if (!candidates || candidates.length === 0) {
@@ -150,7 +163,7 @@ export async function detectDuplicates<T extends TransactionToCheck>({
       existing: {
         id: bestMatch.id,
         date: new Date(bestMatch.time).toISOString().split('T')[0]!,
-        amount: asCents(Math.abs(bestMatch.amount.toCents())),
+        amount: bestMatch.amount.abs().toNumber(),
         note: bestMatch.note || '',
       },
     });

@@ -1,4 +1,5 @@
 import { type RecordId, TRACKER_LIMIT_KINDS, TRANSACTION_TYPES } from '@bt/shared/types';
+import { getReportBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import Categories from '@models/categories.model';
@@ -15,6 +16,7 @@ import { authorizeTrackerRead } from './authorize-tracker-access';
 import { fetchTrackerRefundPairs } from './utils/refund-pairs';
 import { buildSharedTrackerMergeMap } from './utils/shared-category-merge-map';
 
+/** Sums in integer minor units at the tracker owner's base currency decimals. */
 export interface StatsResponse {
   summary: {
     actualIncome: number;
@@ -25,24 +27,25 @@ export interface StatsResponse {
     firstTransactionDate: string | null; // ISO date string of earliest transaction
     lastTransactionDate: string | null; // ISO date string of latest transaction
   };
-  /** Cents, in line `position` order. */
+  /** Minor units, in line `position` order. */
   lines: { lineId: RecordId; spent: number }[];
-  /** Cents of expenses no line matched. */
+  /** Minor units of expenses no line matched. */
   otherSpent: number;
 }
 
-type TrackerLimit = { cents: number; kind: TRACKER_LIMIT_KINDS } | null;
+type TrackerLimit = { minor: number; kind: TRACKER_LIMIT_KINDS } | null;
 
 const setUtilizationRate = ({ result, limit }: { result: StatsResponse; limit: TrackerLimit }) => {
-  if (!limit) return;
+  // A limit stored at a base with more decimals can round to 0 minor units at the current base.
+  if (!limit || limit.minor <= 0) return;
   const { balance } = result.summary;
   const reached = limit.kind === TRACKER_LIMIT_KINDS.spending ? Math.max(0, -balance) : Math.max(0, balance);
-  result.summary.utilizationRate = (reached / limit.cents) * 100;
+  result.summary.utilizationRate = (reached / limit.minor) * 100;
 };
 
 interface ExpenseEntry {
   categoryId: string;
-  cents: number;
+  minor: number;
 }
 
 export const getResponseInitialState = (): StatsResponse => ({
@@ -79,10 +82,10 @@ const splitExpensesByLines = ({
   });
 
   let otherSpent = 0;
-  for (const { categoryId, cents } of expenses) {
+  for (const { categoryId, minor } of expenses) {
     const index = lineIndexByCategory.get(categoryId);
-    if (index === undefined) otherSpent += cents;
-    else totals[index]!.spent += cents;
+    if (index === undefined) otherSpent += minor;
+    else totals[index]!.spent += minor;
   }
 
   return { lines: totals, otherSpent };
@@ -122,10 +125,12 @@ const getLinkedTransactionsStats = async ({
   trackerId,
   callerUserId,
   lines,
+  decimals,
 }: {
   trackerId: string;
   callerUserId: number;
   lines: TrackerLines[];
+  decimals: number;
 }): Promise<StatsResponse> => {
   const trackerDetails = await findOrThrowNotFound({
     query: Trackers.findByPk(trackerId),
@@ -145,10 +150,10 @@ const getLinkedTransactionsStats = async ({
   });
 
   const limit: TrackerLimit = trackerDetails.limitAmount
-    ? { cents: trackerDetails.limitAmount.toCents(), kind: trackerDetails.limitKind }
+    ? { minor: trackerDetails.limitAmount.toMinorUnits({ decimals }), kind: trackerDetails.limitKind }
     : null;
-  const result = aggregateTransactionStats({ transactions, limit });
-  await applyRefundAdjustments({ countedTransactions: transactions, result, limit });
+  const result = aggregateTransactionStats({ transactions, limit, decimals });
+  await applyRefundAdjustments({ countedTransactions: transactions, result, limit, decimals });
 
   const canonicalize = await buildCategoryCanonicalizer({ ownerUserId: trackerDetails.userId, transactions });
 
@@ -156,7 +161,7 @@ const getLinkedTransactionsStats = async ({
   // Read the transaction's splits here if trackers need per-split line totals.
   const expenses = transactions
     .filter((tx) => tx.transactionType === TRANSACTION_TYPES.expense)
-    .map((tx) => ({ categoryId: canonicalize(tx.categoryId), cents: tx.refAmount.toCents() }));
+    .map((tx) => ({ categoryId: canonicalize(tx.categoryId), minor: tx.refAmount.toMinorUnits({ decimals }) }));
   return { ...result, ...splitExpensesByLines({ lines, expenses }) };
 };
 
@@ -183,16 +188,18 @@ const applyRefundAdjustments = async ({
   countedTransactions,
   result,
   limit,
+  decimals,
 }: {
   countedTransactions: { id: string; refundLinked: boolean }[];
   result: StatsResponse;
   limit: TrackerLimit;
+  decimals: number;
 }): Promise<void> => {
-  const pairs = await fetchTrackerRefundPairs({ countedTransactions });
+  const pairs = await fetchTrackerRefundPairs({ countedTransactions, decimals });
   if (pairs.length === 0) return;
 
   for (const pair of pairs) {
-    const adjustment = pair.shareRefAmount.toCents();
+    const adjustment = pair.shareRefAmount.toMinorUnits({ decimals });
 
     if (pair.originalInScope) {
       if (pair.originalTx.transactionType === TRANSACTION_TYPES.expense) {
@@ -221,13 +228,15 @@ const applyRefundAdjustments = async ({
 const aggregateTransactionStats = ({
   transactions,
   limit,
+  decimals,
 }: {
   transactions: Pick<Transactions.default, 'time' | 'refAmount' | 'transactionType'>[];
   limit: TrackerLimit;
+  decimals: number;
 }): StatsResponse => {
   const result = transactions.reduce((acc, curr) => {
     const isExpense = curr.transactionType === TRANSACTION_TYPES.expense;
-    const refAmount = curr.refAmount.toCents();
+    const refAmount = curr.refAmount.toMinorUnits({ decimals });
 
     if (isExpense) {
       acc.summary.actualExpense += refAmount;
@@ -247,16 +256,38 @@ const aggregateTransactionStats = ({
   return result;
 };
 
+/** The stats with the `decimals` their minor units are at, which the serializer needs to turn them into decimals. */
+export interface TrackerStatsWithDecimals<TStats> {
+  stats: TStats;
+  decimals: number;
+}
+
 export const getTrackerStats = withTransaction(
-  async ({ userId, trackerId }: { userId: number; trackerId: string }): Promise<StatsResponse> => {
+  async ({
+    userId,
+    trackerId,
+  }: {
+    userId: number;
+    trackerId: string;
+  }): Promise<TrackerStatsWithDecimals<StatsResponse>> => {
     // Share-aware auth: recipient sees the same numbers the owner would (per PRD visibility decision).
-    await authorizeTrackerRead({ userId, trackerId });
+    const { ownerUserId } = await authorizeTrackerRead({ userId, trackerId });
 
     const trackerDetails = await findOrThrowNotFound({
       query: Trackers.findByPk(trackerId, { attributes: ['id'], include: [includeLines] }),
       message: t({ key: 'budgets.budgetNotFound' }),
     });
 
-    return getLinkedTransactionsStats({ trackerId, callerUserId: userId, lines: trackerDetails.lines ?? [] });
+    // The tracker's amounts are in its owner's base currency, whoever reads them.
+    const decimals = await getReportBaseCurrencyDecimals({ userId: ownerUserId });
+
+    const stats = await getLinkedTransactionsStats({
+      trackerId,
+      callerUserId: userId,
+      lines: trackerDetails.lines ?? [],
+      decimals,
+    });
+
+    return { stats, decimals };
   },
 );

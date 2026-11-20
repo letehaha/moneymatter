@@ -24,7 +24,7 @@ export const setBudgetPlanLineGoalTool = defineTool({
       'budget_another: assign amount each time. refill_up_to: top the line up to amount. reach_balance: reach a balance of amount. every_period, weekly, biweekly and yearly allow budget_another and refill_up_to; by_date allows all three; open_ended allows only reach_balance',
     ),
     amount: goalFields.amount.describe(
-      'Goal amount in the plan currency, greater than 0, with no more decimal places than the plan currency has',
+      'Goal amount in the plan currency, greater than 0, rounded half-up to the plan currency decimals',
     ),
     weekday: goalFields.weekday.describe(
       'Day of the week, 0 (Sunday) to 6 (Saturday). Required for weekly, refused otherwise',

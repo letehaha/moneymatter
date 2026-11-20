@@ -244,7 +244,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
         externalId: account.id,
         name: account.name,
         type: 'bank' as const,
-        balance: Money.fromDecimal(account.balance).toCents(),
+        balance: Money.fromDecimal(account.balance),
         currency,
         metadata: {
           institutionName: org.name,

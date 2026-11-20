@@ -1,4 +1,4 @@
-import type { Cents, DuplicateMatch } from '@bt/shared/types';
+import type { DuplicateMatch } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -19,7 +19,7 @@ const makeMatch = (
   importedTransaction: {
     rowIndex: 2,
     date: '2026-06-16',
-    amount: 25000 as Cents,
+    amount: 250,
     description: 'Clips BYD',
     accountName: 'Checking',
     currencyCode: 'USD',
@@ -29,7 +29,7 @@ const makeMatch = (
   existingTransaction: {
     id: 'tx-1',
     date: '2026-06-16',
-    amount: 25000 as Cents,
+    amount: 250,
     note: 'Clips BYD',
     accountId: 'acc-1',
     ...existing,
@@ -37,10 +37,31 @@ const makeMatch = (
 });
 
 describe('formatDuplicateAmount', () => {
-  it('converts integer cents to a 2-decimal string', () => {
-    expect(formatDuplicateAmount(25000)).toBe('250.00');
-    expect(formatDuplicateAmount(88256)).toBe('882.56');
-    expect(formatDuplicateAmount(0)).toBe('0.00');
+  it('shows a 2-decimal currency with 2 decimals', () => {
+    expect(formatDuplicateAmount({ amount: 250, currencyCode: 'USD' })).toBe('250.00');
+    expect(formatDuplicateAmount({ amount: 882.56, currencyCode: 'USD' })).toBe('882.56');
+    expect(formatDuplicateAmount({ amount: 0, currencyCode: 'USD' })).toBe('0.00');
+  });
+
+  it('shows a 3-decimal currency with 3 decimals', () => {
+    expect(formatDuplicateAmount({ amount: 1.234, currencyCode: 'KWD' })).toBe('1.234');
+    expect(formatDuplicateAmount({ amount: 1.2, currencyCode: 'KWD' })).toBe('1.200');
+  });
+
+  it('shows a 0-decimal currency without a fraction', () => {
+    expect(formatDuplicateAmount({ amount: 1501, currencyCode: 'JPY' })).toBe('1501');
+  });
+
+  it('rounds half away from zero on the written decimals, like the duplicate key', () => {
+    expect(formatDuplicateAmount({ amount: 1.005, currencyCode: 'USD' })).toBe('1.01');
+    expect(formatDuplicateAmount({ amount: 2.675, currencyCode: 'USD' })).toBe('2.68');
+    expect(formatDuplicateAmount({ amount: -1.005, currencyCode: 'USD' })).toBe('-1.01');
+    expect(formatDuplicateAmount({ amount: 1.2345, currencyCode: 'KWD' })).toBe('1.235');
+    expect(formatDuplicateAmount({ amount: 0.5, currencyCode: 'JPY' })).toBe('1');
+  });
+
+  it('shows a negative amount that rounds to zero without a sign', () => {
+    expect(formatDuplicateAmount({ amount: -0.001, currencyCode: 'USD' })).toBe('0.00');
   });
 });
 
@@ -68,6 +89,17 @@ describe('buildComparisonRows', () => {
     const date = rows.find((row) => row.key === 'date');
     expect(date).toEqual({ key: 'date', csv: '16 Jun 2026', existing: '16 Jun 2026' });
     expect(date?.emphasis).toBeUndefined();
+  });
+
+  it('formats both amounts at the row currency decimals', () => {
+    const rows = buildComparisonRows(makeMatch({ amount: 1.234, currencyCode: 'KWD' }, { amount: 1.231 }));
+
+    expect(rows.find((row) => row.key === 'amount')).toEqual({
+      key: 'amount',
+      csv: '1.234',
+      existing: '1.231',
+      emphasis: true,
+    });
   });
 
   it('keeps the note row when only one side has a value, nulling the empty side', () => {

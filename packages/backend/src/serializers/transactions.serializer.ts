@@ -14,7 +14,7 @@ import type {
   TransactionLocation,
   TransactionPaymentPart,
 } from '@bt/shared/types';
-import { Money, centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
+import { Money, moneyToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import type Tags from '@models/tags.model';
 import type TransactionGroups from '@models/transaction-groups.model';
 import type TransactionSplits from '@models/transaction-splits.model';
@@ -219,8 +219,8 @@ function serializeTransactionSplit(split: SerializableSplit): TransactionSplitAp
   return {
     id: split.id,
     categoryId: split.categoryId,
-    amount: centsToApiDecimal(split.amount),
-    refAmount: centsToApiDecimal(split.refAmount),
+    amount: moneyToApiDecimal(split.amount),
+    refAmount: moneyToApiDecimal(split.refAmount),
     note: split.note,
     ...(split.category && {
       category: {
@@ -230,7 +230,7 @@ function serializeTransactionSplit(split: SerializableSplit): TransactionSplitAp
         icon: split.category.icon,
       },
     }),
-    ...(split.refundedAmount && { refundedAmount: centsToApiDecimal(split.refundedAmount) }),
+    ...(split.refundedAmount && { refundedAmount: moneyToApiDecimal(split.refundedAmount) }),
   };
 }
 
@@ -261,12 +261,12 @@ export function serializeTransaction(
 
   return {
     id: tx.id,
-    amount: centsToApiDecimal(tx.amount),
-    refAmount: centsToApiDecimal(tx.refAmount),
-    commissionRate: centsToApiDecimal(tx.commissionRate),
-    refCommissionRate: centsToApiDecimal(tx.refCommissionRate),
-    cashbackAmount: centsToApiDecimal(tx.cashbackAmount),
-    originalAmount: centsToApiDecimalOrNull(tx.originalAmount),
+    amount: moneyToApiDecimal(tx.amount),
+    refAmount: moneyToApiDecimal(tx.refAmount),
+    commissionRate: moneyToApiDecimal(tx.commissionRate),
+    refCommissionRate: moneyToApiDecimal(tx.refCommissionRate),
+    cashbackAmount: moneyToApiDecimal(tx.cashbackAmount),
+    originalAmount: moneyToApiDecimalOrNull(tx.originalAmount),
     originalCurrencyCode: tx.originalCurrencyCode ?? null,
     note: tx.note,
     externalUrl: tx.externalUrl ?? null,
@@ -285,7 +285,7 @@ export function serializeTransaction(
     transferId: tx.transferId,
     originalId: tx.originalId,
     refundLinked: tx.refundLinked,
-    ...(tx.refundedAmount && { refundedAmount: centsToApiDecimal(tx.refundedAmount) }),
+    ...(tx.refundedAmount && { refundedAmount: moneyToApiDecimal(tx.refundedAmount) }),
     isPlanned: tx.isPlanned ?? false,
     excludeFromStats: tx.excludeFromStats ?? false,
     plannedMerge: extractPlannedMerge({ externalData: tx.externalData }),
@@ -333,11 +333,11 @@ export function serializeTransaction(
     ...(tx.paymentParts && {
       paymentParts: tx.paymentParts.map((part) => ({
         ...part,
-        amount: centsToApiDecimal(part.amount),
-        paymentAmount: centsToApiDecimal(part.paymentAmount),
+        amount: moneyToApiDecimal(part.amount),
+        paymentAmount: moneyToApiDecimal(part.paymentAmount),
       })),
     }),
-    ...(tx.paymentTotal && { paymentTotal: centsToApiDecimal(tx.paymentTotal) }),
+    ...(tx.paymentTotal && { paymentTotal: moneyToApiDecimal(tx.paymentTotal) }),
   };
 }
 
@@ -378,7 +378,7 @@ export function serializeTransactionTuple(
 // ============================================================================
 
 /**
- * Deserialize a create transaction request from API decimal format to internal cents format
+ * Deserialize a create transaction request from API decimal format to internal `Money` values
  */
 export function deserializeCreateTransaction(req: CreateTransactionRequest, userId: number): CreateTransactionInternal {
   return {

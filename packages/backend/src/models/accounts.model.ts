@@ -8,9 +8,11 @@ import {
   PAYMENT_TYPES,
   RecordId,
 } from '@bt/shared/types';
+import { roundMoneyValues } from '@common/lib/currency-precision';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
+import { removeUndefinedKeys } from '@js/helpers';
 import Balances from '@models/balances.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import Currencies from '@models/currencies.model';
@@ -72,26 +74,26 @@ export default class Accounts extends Model {
   @Column({ allowNull: false, type: DataType.STRING })
   name!: string;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare initialBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare refInitialBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare currentBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare refCurrentBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare creditLimit: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField()
   declare refCreditLimit: Money;
 
   /** Native balance at the start of the bank seam day; null when the account has no seam. */
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ allowNull: true })
   declare seamBalance: Money | null;
 
   @Column({
@@ -279,14 +281,23 @@ export const createAccount = async ({
   excludeFromStats = false,
   ...rest
 }: CreateAccountPayload) => {
+  const { initialBalance, creditLimit } = await roundMoneyValues({
+    values: { initialBalance: rest.initialBalance, creditLimit: rest.creditLimit },
+    userId,
+    currencyCode: rest.currencyCode,
+    mode: 'half-up',
+  });
+
   const response = await Accounts.create({
     userId,
     type,
     status,
     excludeFromStats,
-    currentBalance: rest.initialBalance,
+    currentBalance: initialBalance,
     refCurrentBalance: rest.refInitialBalance,
     ...rest,
+    initialBalance,
+    creditLimit,
   });
 
   const account = await getAccountById({
@@ -318,10 +329,34 @@ export interface UpdateAccountByIdPayload extends EntityLogoPayload {
   externalUrl?: AccountsAttributes['externalUrl'];
 }
 
-export async function updateAccountById({ id, userId, ...payload }: UpdateAccountByIdPayload) {
+export async function updateAccountById({
+  id,
+  userId,
+  currencyCode,
+  ...payload
+}: UpdateAccountByIdPayload & {
+  /** The stored account currency, read from the row when omitted. Only rounds; it is never written. */
+  currencyCode?: AccountsAttributes['currencyCode'];
+}) {
   const where = { id, userId };
 
-  await Accounts.update(payload, { where });
+  const { initialBalance, currentBalance, creditLimit } = payload;
+  let rounded = {};
+
+  if (initialBalance !== undefined || currentBalance !== undefined || creditLimit !== undefined) {
+    const code = currencyCode ?? (await Accounts.findOne({ where, attributes: ['currencyCode'] }))?.currencyCode;
+
+    if (code) {
+      rounded = await roundMoneyValues({
+        values: { initialBalance, currentBalance, creditLimit },
+        userId,
+        currencyCode: code,
+        mode: 'half-up',
+      });
+    }
+  }
+
+  await Accounts.update({ ...payload, ...removeUndefinedKeys(rounded) }, { where });
 
   const account = await getAccountById(where);
 

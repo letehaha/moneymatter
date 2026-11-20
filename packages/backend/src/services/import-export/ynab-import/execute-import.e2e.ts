@@ -405,4 +405,26 @@ describe('Execute YNAB import endpoint', () => {
     expect(rejection.statusCode).toBe(ERROR_CODES.ValidationError);
     expect(rejection.body.response.message).toContain('currencyCode');
   });
+  it('opens a 3-decimal account at its exact starting balance, with rows at the same precision', async () => {
+    const fileContent = [
+      '"Account","Flag","Date","Payee","Category Group/Category","Category Group","Category","Memo","Outflow","Inflow","Cleared"',
+      '"Kuwait","","06/01/2026","Starting Balance","Inflow: Ready to Assign","Inflow","Ready to Assign","",0.000,100.125,"Cleared"',
+      '"Kuwait","","06/02/2026","Lunch Place","Wants: Dining","Wants","Dining","Lunch",1.234,0.000,"Cleared"',
+    ].join('\n');
+
+    const { jobId } = await helpers.executeYnab({
+      payload: { fileContent, accountMapping: { Kuwait: { currencyCode: 'KWD' } } },
+      raw: true,
+    });
+    const progress = await waitForYnabImportCompletion({ jobId });
+    expectYnabImportCompleted(progress);
+    expect(progress.summary.errors).toHaveLength(0);
+
+    const account = (await helpers.getAccounts()).find((a) => a.name === 'Kuwait')!;
+    expect(account.currencyCode).toBe('KWD');
+    expect(Number(account.initialBalance)).toBe(100.125);
+
+    const lunch = (await helpers.getTransactions({ raw: true })).find((tx) => tx.note === 'Lunch');
+    expect(Number(lunch!.amount)).toBe(1.234);
+  });
 });

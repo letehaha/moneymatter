@@ -29,7 +29,7 @@ export default createController(schema, async ({ user, query }) => {
 
   const { rows: refundTransactions, meta } = await getRefundTransactions(filters);
 
-  // Serialize: convert cents to decimal for API response
+  // Serialize: Money amounts to API decimals
   return {
     data: {
       data: serializeRefundTransactions(refundTransactions),

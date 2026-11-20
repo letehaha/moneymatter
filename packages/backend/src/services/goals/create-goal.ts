@@ -6,6 +6,7 @@ import { withTransaction } from '@services/common/with-transaction';
 
 import { syncSavedGoal } from './check-goals-reached';
 import { assertGoalCurrencyConvertible } from './goal-insights';
+import { roundGoalAmount } from './round-goal-amount';
 import { writeGoalShares } from './share-capacity';
 
 type CreateGoalParams = CreateGoalPayload & { userId: number };
@@ -30,14 +31,20 @@ const createGoalImpl = withTransaction(
     await assertGoalCurrencyConvertible({ userId, currencyCode });
 
     const logoPatch = await applyLogoWrite({ write: { logoDomain, logoInitials, logoColor, logoIcon, logoImage } });
+    const round = ({ amount }: { amount: number }) =>
+      roundGoalAmount({ money: Money.fromDecimal(amount), userId, currencyCode });
+    const amounts = {
+      targetAmount: await round({ amount: targetAmount }),
+      plannedMonthly: plannedMonthly === null ? null : await round({ amount: plannedMonthly }),
+    };
 
     const goal = await Goals.create({
       userId,
       name,
       currencyCode,
-      targetAmount: Money.fromDecimal(targetAmount),
+      targetAmount: amounts.targetAmount,
       targetDate,
-      plannedMonthly: plannedMonthly === null ? null : Money.fromDecimal(plannedMonthly),
+      plannedMonthly: amounts.plannedMonthly,
       ...(sortOrder !== undefined && { sortOrder }),
       ...(reachedHoldDays !== undefined && { reachedHoldDays }),
       ...logoPatch,

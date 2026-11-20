@@ -12,11 +12,11 @@ const categories = [
 ];
 const byId = new Map(categories.map((category) => [category.id, category]));
 const candidates = [
-  { id: 'food', path: 'Food', totalCents: 105000 },
-  { id: 'groceries', path: 'Food › Groceries', totalCents: 90000 },
-  { id: 'restaurant', path: 'Food › Restaurant', totalCents: 15000 },
-  { id: 'rent', path: 'Housing › Rent', totalCents: 100000 },
-  { id: 'fuel', path: 'Fuel', totalCents: 0 },
+  { id: 'food', path: 'Food', totalMinor: 105000 },
+  { id: 'groceries', path: 'Food › Groceries', totalMinor: 90000 },
+  { id: 'restaurant', path: 'Food › Restaurant', totalMinor: 15000 },
+  { id: 'rent', path: 'Housing › Rent', totalMinor: 100000 },
+  { id: 'fuel', path: 'Fuel', totalMinor: 0 },
 ];
 
 describe('sanitizeLayout', () => {
@@ -125,7 +125,7 @@ describe('sanitizeLayout', () => {
     const many = Array.from({ length: MAX_AI_GROUPS + 2 }, (_, index) => ({
       id: `c${index}`,
       path: `C${index}`,
-      totalCents: 1000,
+      totalMinor: 1000,
     }));
     const layout = sanitizeLayout({
       byId: new Map(many.map((candidate) => [candidate.id, { id: candidate.id, parentId: null }])),
@@ -140,7 +140,7 @@ describe('sanitizeLayout', () => {
     const many = Array.from({ length: MAX_AI_LINES + 3 }, (_, index) => ({
       id: `c${index}`,
       path: `C${index}`,
-      totalCents: 1000,
+      totalMinor: 1000,
     }));
     const layout = sanitizeLayout({
       byId: new Map(many.map((candidate) => [candidate.id, { id: candidate.id, parentId: null }])),

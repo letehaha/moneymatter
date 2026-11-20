@@ -1,6 +1,7 @@
 import type { GoalInsights, GoalModel, RecordId } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
+import { buildInsights } from '../test-fixtures';
 import { computeGoalsFeasibility } from './use-goals-feasibility';
 
 const NOW = new Date(2026, 9, 20);
@@ -27,24 +28,6 @@ const periodsFrom = ({ netFlows }: { netFlows: number[] }) =>
     netFlow,
   }));
 
-const buildInsights = (overrides: Partial<GoalInsights> = {}): GoalInsights => ({
-  status: 'on_track',
-  currentValue: 0,
-  remaining: 0,
-  monthEndValues: [],
-  historicalPace: null,
-  historyMonths: 0,
-  pace: null,
-  etaMonths: null,
-  neededMonthly: null,
-  daysLeft: null,
-  monthsLeft: null,
-  input: { today: '2026-10-20', months: [], accounts: [], targetAmount: 0, targetDate: null, plannedMonthly: null },
-  rateToBase: 1,
-  baseCurrencyCode: 'UAH',
-  ...overrides,
-});
-
 const buildGoal = ({
   id,
   insights,
@@ -65,7 +48,7 @@ const buildGoal = ({
   reachedHoldDays: 30,
   sortOrder: 0,
   accounts: [],
-  insights: insights === null ? null : buildInsights(insights),
+  insights: insights === null ? null : buildInsights({ baseCurrencyCode: 'UAH', ...insights }),
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   logoDomain: null,

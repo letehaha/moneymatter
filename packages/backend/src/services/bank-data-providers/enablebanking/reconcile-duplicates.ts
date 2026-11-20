@@ -105,7 +105,7 @@ async function reconcileDuplicateTransactionsForAccount({
   // happen inside each bucket.
   const buckets = new Map<string, Transactions[]>();
   for (const tx of allTxs) {
-    const key = `${tx.amount.toCents()}|${tx.currencyCode}|${tx.transactionType}`;
+    const key = `${tx.amount.toString()}|${tx.currencyCode}|${tx.transactionType}`;
     const list = buckets.get(key) ?? [];
     list.push(tx);
     buckets.set(key, list);

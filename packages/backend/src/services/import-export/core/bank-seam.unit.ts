@@ -24,7 +24,7 @@ const SEAM_B = new Date('2025-11-20T00:00:00.000Z');
 const linkedAccount = ({
   id,
   linkedAt,
-  seamBalance = Money.fromCents(100_000),
+  seamBalance = Money.fromDecimal(1000),
 }: {
   id: string;
   linkedAt: string;

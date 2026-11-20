@@ -205,17 +205,18 @@ export function balanceAdjustment<R extends boolean | undefined = undefined>({
   });
 }
 
+export const createAccountIn = async ({
+  currencyCode,
+  ...overrides
+}: { currencyCode: string } & Partial<CreateAccountBody>) => {
+  await addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+
+  return createAccount({ payload: buildAccountPayload({ currencyCode, ...overrides }), raw: true });
+};
+
 export const createAccountWithNewCurrency = async ({ currency }: { currency: string }) => {
   const currencyA: Currencies = global.MODELS_CURRENCIES!.find((item: Currencies) => item.code === currency);
-  await addUserCurrencies({ currencyCodes: [currencyA.code] });
-
-  const account = await createAccount({
-    payload: {
-      ...buildAccountPayload(),
-      currencyCode: currencyA.code,
-    },
-    raw: true,
-  });
+  const account = await createAccountIn({ currencyCode: currencyA.code });
 
   const currencies = await getCurrenciesRates({ codes: [currency] });
 

@@ -44,8 +44,8 @@ interface AllocatableTransaction {
 export interface CategoryAllocationLeg {
   /** Exact category id, or null for the uncategorized residual. */
   categoryId: string | null;
-  /** Base legs are positive; refund legs are negative. Integer cents (base/reference currency). */
-  cents: number;
+  /** Base legs are positive; refund legs are negative. Integer minor units of the base currency. */
+  minor: number;
   /** The date of the transaction this leg nets against. */
   time: Date;
   /** Type of the transaction this leg came from; a split leg inherits its parent transaction's. */
@@ -65,7 +65,7 @@ export interface CategoryAllocations {
  * A refund always pairs one expense with one income (`createSingleRefund` rejects same-type pairs),
  * so both sides are named: an expense report nets against `expenseCategoryId` at `expenseTime`, an
  * income report against `incomeCategoryId` at `incomeTime`. A report that shows both sides (cash
- * flow) subtracts `cents` from each side in that side's own bucket.
+ * flow) subtracts `minor` from each side in that side's own bucket.
  *
  * When the refund targets a split, that split belongs to the *original* transaction, so its
  * category replaces the original's on whichever of the two sides the original sits.
@@ -79,8 +79,8 @@ export interface CategoryAllocations {
  * pivot's `WholeTxRefund` carries payee/tag, which splits don't have.
  */
 export interface CategoryRefundPair {
-  /** Refund magnitude in integer cents (base/reference currency), always positive: callers negate it. */
-  cents: number;
+  /** Refund magnitude in integer minor units of the base currency, always positive: callers negate it. */
+  minor: number;
   expenseTime: Date;
   incomeTime: Date;
   expenseCategoryId: string | null;
@@ -120,8 +120,11 @@ const toTxEntry = (tx: {
  */
 export const resolveRefundPairs = async ({
   transactions,
+  decimals,
 }: {
   transactions: AllocatableTransaction[];
+  /** Decimals of the base currency: the scale the pairs' minor units are at. */
+  decimals: number;
 }): Promise<CategoryRefundPair[]> => {
   const txIdsWithRefunds = transactions.filter((tx) => tx.refundLinked).map((tx) => tx.id);
   if (txIdsWithRefunds.length === 0) return [];
@@ -201,7 +204,7 @@ export const resolveRefundPairs = async ({
       originalTx.transactionType === TRANSACTION_TYPES.expense ? [original, counterpart] : [counterpart, original];
 
     pairs.push({
-      cents: refundShareRefAmount({ link: refund, refundTx }).toCents(),
+      minor: refundShareRefAmount({ link: refund, refundTx, decimals }).toMinorUnits({ decimals }),
       expenseTime: expense.time,
       incomeTime: income.time,
       expenseCategoryId: expense.categoryId,
@@ -221,14 +224,14 @@ export const refundLegs = ({
 }: {
   pairs: CategoryRefundPair[];
   side: TRANSACTION_TYPES;
-}): { categoryId: string | null; cents: number; time: Date }[] =>
+}): { categoryId: string | null; minor: number; time: Date }[] =>
   side === TRANSACTION_TYPES.income
     ? pairs
         .filter((pair) => pair.incomeInScope)
-        .map((pair) => ({ categoryId: pair.incomeCategoryId, cents: -pair.cents, time: pair.incomeTime }))
+        .map((pair) => ({ categoryId: pair.incomeCategoryId, minor: -pair.minor, time: pair.incomeTime }))
     : pairs
         .filter((pair) => pair.expenseInScope)
-        .map((pair) => ({ categoryId: pair.expenseCategoryId, cents: -pair.cents, time: pair.expenseTime }));
+        .map((pair) => ({ categoryId: pair.expenseCategoryId, minor: -pair.minor, time: pair.expenseTime }));
 
 export const loadSplitsByTxId = async ({
   transactionIds,
@@ -248,30 +251,41 @@ export const loadSplitsByTxId = async ({
   return splitsByTxId;
 };
 
-/** The primary category keeps `cents − Σ splits` (only when positive), each split its own amount. */
+/**
+ * The primary category keeps `minor − Σ splits` (only when positive), each split its own amount.
+ * `minor` and the legs are integer minor units of the base currency at `decimals`.
+ */
 export const allocateTransaction = ({
-  cents,
+  minor,
   categoryId,
   splits = [],
+  decimals,
 }: {
-  cents: number;
+  minor: number;
   categoryId: string | null;
   splits?: Pick<TransactionSplits, 'categoryId' | 'refAmount'>[];
-}): { categoryId: string | null; cents: number }[] => {
-  if (splits.length === 0) return [{ categoryId, cents }];
+  decimals: number;
+}): { categoryId: string | null; minor: number }[] => {
+  if (splits.length === 0) return [{ categoryId, minor }];
 
-  const splitLegs = splits.map((split) => ({ categoryId: split.categoryId, cents: split.refAmount.toCents() }));
-  const primaryCents = cents - splitLegs.reduce((sum, leg) => sum + leg.cents, 0);
-  return primaryCents > 0 ? [{ categoryId, cents: primaryCents }, ...splitLegs] : splitLegs;
+  const splitLegs = splits.map((split) => ({
+    categoryId: split.categoryId,
+    minor: split.refAmount.toMinorUnits({ decimals }),
+  }));
+  const primaryMinor = minor - splitLegs.reduce((sum, leg) => sum + leg.minor, 0);
+  return primaryMinor > 0 ? [{ categoryId, minor: primaryMinor }, ...splitLegs] : splitLegs;
 };
 
 export const computeCategoryAllocations = async ({
   transactions,
   applyRefunds,
+  decimals,
   refundSide = TRANSACTION_TYPES.expense,
 }: {
   transactions: AllocatableTransaction[];
   applyRefunds: boolean;
+  /** Decimals of the base currency: the scale the legs' minor units are at. */
+  decimals: number;
   /** Which side of each refund pair the negative legs net against, so a refund never shows up as income. */
   refundSide?: TRANSACTION_TYPES;
 }): Promise<CategoryAllocations> => {
@@ -279,16 +293,17 @@ export const computeCategoryAllocations = async ({
 
   const [splitsByTxId, refundPairs] = await Promise.all([
     loadSplitsByTxId({ transactionIds: transactions.map((tx) => tx.id) }),
-    applyRefunds ? resolveRefundPairs({ transactions }) : Promise.resolve<CategoryRefundPair[]>([]),
+    applyRefunds ? resolveRefundPairs({ transactions, decimals }) : Promise.resolve<CategoryRefundPair[]>([]),
   ]);
 
   const base: CategoryAllocationLeg[] = [];
   for (const tx of transactions) {
     const time = new Date(tx.time);
     const legs = allocateTransaction({
-      cents: tx.refAmount.toCents(),
+      minor: tx.refAmount.toMinorUnits({ decimals }),
       categoryId: tx.categoryId,
       splits: splitsByTxId.get(tx.id),
+      decimals,
     });
     for (const leg of legs) base.push({ ...leg, time, transactionType: tx.transactionType });
   }

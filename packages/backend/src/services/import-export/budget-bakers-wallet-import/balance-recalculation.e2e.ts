@@ -498,8 +498,8 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
     });
   });
 
-  it('rejects a create-new currentBalance beyond the integer-cents cap with 422 on both signs', async () => {
-    // The bound is symmetric: a target past ±20,000,000 fails Zod validation
+  it('rejects a create-new currentBalance beyond the balance cap with 422 on both signs', async () => {
+    // The bound is symmetric: a target past ±1e13 fails Zod validation
     // synchronously with 422 and never enqueues a job.
     const fileContent = [
       CSV_HEADER,
@@ -513,7 +513,7 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
       }),
     ].join('\n');
 
-    for (const currentBalance of [20_000_001, -20_000_001]) {
+    for (const currentBalance of [1e13 + 1, -1e13 - 1]) {
       const response = await helpers.executeBudgetBakersWallet({
         payload: {
           fileContent,
@@ -528,12 +528,12 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
     }
   });
 
-  it('accepts a create-new currentBalance exactly on the integer-cents cap (both signs)', async () => {
-    // The cap is inclusive: ±20,000,000 is the last accepted value, so the
+  it('accepts a create-new currentBalance exactly on the balance cap (both signs)', async () => {
+    // The cap is inclusive: ±1e13 is the last accepted value, so the
     // import must run to completion and leave each account on its exact
     // boundary balance.
-    const positiveName = 'Boundary UAH 20000000';
-    const negativeName = 'Boundary UAH -20000000';
+    const positiveName = 'Boundary UAH 1e13';
+    const negativeName = 'Boundary UAH -1e13';
     const fileContent = [
       CSV_HEADER,
       walletRow({
@@ -557,8 +557,8 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
     const progress = await runImport({
       fileContent,
       accountMapping: {
-        [positiveName]: { action: 'create-new', currencyCode: 'UAH', currentBalance: 20_000_000 },
-        [negativeName]: { action: 'create-new', currencyCode: 'UAH', currentBalance: -20_000_000 },
+        [positiveName]: { action: 'create-new', currencyCode: 'UAH', currentBalance: 1e13 },
+        [negativeName]: { action: 'create-new', currencyCode: 'UAH', currentBalance: -1e13 },
       },
       recalculateBalance: true,
     });
@@ -570,8 +570,8 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
     // The imported +100 income is absorbed into initialBalance so currentBalance
     // lands exactly on the entered boundary value.
     for (const [name, currentBalance] of [
-      [positiveName, 20_000_000],
-      [negativeName, -20_000_000],
+      [positiveName, 1e13],
+      [negativeName, -1e13],
     ] as const) {
       const created = accounts.find((a) => a.name === name)!;
       expect(created).toBeDefined();
@@ -579,15 +579,14 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
     }
   });
 
-  it('recalc ON: a row that fails at the database layer is excluded from the balance and reported in errors', async () => {
+  it('recalc ON: a row that fails on write is excluded from the balance and reported in errors', async () => {
     const { account, balanceBefore } = await createLinkedAccountWithBoundaryTx({
       boundaryTime: '2025-06-01T12:00:00Z',
     });
 
-    // The middle row's amount overflows the BIGINT cents column (1e17 currency
-    // units → 1e19 cents, past the BIGINT max of 9,223,372,036,854,775,807), so
-    // its insert fails at the database layer and rolls back only itself — the
-    // surrounding rows on the same account still commit. All three rows are
+    // The middle row's amount is past the largest amount the currency allows,
+    // so its write is rejected and rolls back only itself — the surrounding
+    // rows on the same account still commit. All three rows are
     // newer than the boundary, so the two survivors move the balance.
     const fileContent = [
       CSV_HEADER,
@@ -602,7 +601,7 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
       walletRow({
         account: 'Mono UAH',
         currency: 'UAH',
-        amount: '100000000000000000',
+        amount: '1000000000000000000',
         type: 'Income',
         date: '2025-06-16T10:00:00.000Z',
         note: 'Overflow row',
@@ -699,4 +698,89 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
       expect(loanProgress.error).toContain('cannot be an import target');
     }
   }, 30_000);
+  describe('amounts at the account currency decimals', () => {
+    // `finalize` undoes the tallied rows when recalc is off, so a tally of the file's 12.345 next to a
+    // stored 12.35 would leave the balance off by the rounding difference.
+    const expectBalanceKept = async ({
+      currencyCode,
+      amount,
+      storedAmount,
+    }: {
+      currencyCode: string;
+      amount: string;
+      storedAmount: number;
+    }) => {
+      await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode, initialBalance: 100 }),
+        raw: true,
+      });
+
+      const progress = await runImport({
+        fileContent: [
+          CSV_HEADER,
+          ...['2025-06-15T10:00:00.000Z', '2025-06-16T10:00:00.000Z'].map((date, index) =>
+            walletRow({
+              account: 'Precise',
+              currency: currencyCode,
+              amount,
+              type: 'Income',
+              date,
+              note: `Row ${index}`,
+            }),
+          ),
+        ].join('\n'),
+        accountMapping: { Precise: { action: 'link-existing', accountId: account.id } },
+        recalculateBalance: false,
+      });
+      expectCompleted(progress);
+      expect(progress.summary.transactionsImported).toBe(2);
+      expect(progress.summary.errors).toHaveLength(0);
+
+      expect(Number((await helpers.getAccount({ id: account.id, raw: true })).currentBalance)).toBe(100);
+      const stored = (await helpers.getTransactions({ raw: true })).filter((tx) => tx.accountId === account.id);
+      expect(stored.map((tx) => tx.amount)).toEqual([storedAmount, storedAmount]);
+    };
+
+    it('keeps a 2-decimal balance when two 12.345 rows are stored as 12.35', async () => {
+      await expectBalanceKept({ currencyCode: 'USD', amount: '12.345', storedAmount: 12.35 });
+    });
+
+    it('keeps a JPY balance when two 1500.5 rows are stored as 1501', async () => {
+      await expectBalanceKept({ currencyCode: 'JPY', amount: '1500.5', storedAmount: 1501 });
+    });
+
+    it('keeps both balances when a transfer of 12.345 is stored as 12.35 on each leg', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+      const [source, destination] = await Promise.all(
+        ['Wallet src', 'Wallet dst'].map((name) =>
+          helpers.createAccount({
+            payload: helpers.buildAccountPayload({ currencyCode: 'USD', name, initialBalance: 100 }),
+            raw: true,
+          }),
+        ),
+      );
+
+      const progress = await runImport({
+        fileContent: [
+          CSV_HEADER,
+          'Src USD;Transfer, withdraw;USD;12.345;12.345;Expense;Cash;;2025-07-15T10:00:00.000Z;true;;',
+          'Dst USD;Transfer, withdraw;USD;12.345;12.345;Income;Cash;;2025-07-15T10:00:00.000Z;true;;',
+        ].join('\n'),
+        accountMapping: {
+          'Src USD': { action: 'link-existing', accountId: source!.id },
+          'Dst USD': { action: 'link-existing', accountId: destination!.id },
+        },
+        recalculateBalance: false,
+      });
+      expectCompleted(progress);
+      expect(progress.summary.transfersImported).toBe(1);
+      expect(progress.summary.errors).toHaveLength(0);
+
+      for (const account of [source!, destination!]) {
+        expect(Number((await helpers.getAccount({ id: account.id, raw: true })).currentBalance)).toBe(100);
+      }
+      expect((await helpers.getTransactions({ raw: true })).map((tx) => tx.amount)).toEqual([12.35, 12.35]);
+    });
+  });
 });

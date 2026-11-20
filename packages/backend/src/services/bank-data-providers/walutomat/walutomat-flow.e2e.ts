@@ -216,7 +216,7 @@ describe('Walutomat Data Provider E2E', () => {
       expect(eurWallet).toBeDefined();
       expect(eurWallet.currency).toBe('EUR');
       expect(eurWallet.name).toBe('EUR Wallet');
-      expect(typeof eurWallet.balance).toBe('number');
+      expect(eurWallet.balance).toBe(1450.5);
 
       // Verify wallet-pln
       const plnWallet = accounts.find((a: { externalId: string }) => a.externalId === 'wallet-pln')!;

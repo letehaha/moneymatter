@@ -11,10 +11,12 @@ jest.mock('./category-allocation', () => ({ __esModule: true, resolveRefundPairs
 /* eslint-disable import/first */
 import { findTransactions } from '@models/transactions-query';
 
+import { resolveRefundPairs } from './category-allocation';
 import { excludeFromStatsWhere, statsTransactions } from './stats-transactions';
 /* eslint-enable import/first */
 
 const findTransactionsMock = jest.mocked(findTransactions);
+const resolveRefundPairsMock = jest.mocked(resolveRefundPairs);
 
 type TimeBounds = { [Op.gte]?: Date; [Op.lte]?: Date };
 
@@ -70,5 +72,21 @@ describe('statsTransactions window bounds', () => {
     expect(fragments).toHaveLength(2);
     expect(Object.getOwnPropertySymbols(fragments[0]!)).toContain(Op.or);
     expect(fragments).toContain(excludeFromStatsWhere);
+  });
+});
+
+describe('statsTransactions refund pairs', () => {
+  it('leaves the pairs empty when refunds are not netted', async () => {
+    findTransactionsMock.mockResolvedValue([{ id: 'tx-1' }] as never);
+
+    const result = await statsTransactions({
+      access: { creator: 7 },
+      planned: 'exclude',
+      refunds: 'ignore',
+      window: {},
+    });
+
+    expect(result.refundPairs).toEqual([]);
+    expect(resolveRefundPairsMock).not.toHaveBeenCalled();
   });
 });

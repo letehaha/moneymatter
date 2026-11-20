@@ -6,6 +6,7 @@ import {
   type LinkResidualTarget,
   type RecordId,
 } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
@@ -127,7 +128,12 @@ export const linkAccountToBankConnection = withTransaction(
 
     // Stored balances include the credit limit. Adopting the bank's limit shifts
     // the stored balance by the same delta so displayed history stays put.
-    const newCreditLimit = Money.fromCents(Number(externalAccount.metadata?.creditLimit) || 0);
+    const newCreditLimit = await roundToCurrency({
+      money: externalAccount.creditLimit ?? Money.zero(),
+      userId,
+      currencyCode: account.currencyCode,
+      mode: 'half-up',
+    });
     if (!newCreditLimit.equals(account.creditLimit)) {
       await updateAccount({
         id: accountId,
@@ -145,9 +151,13 @@ export const linkAccountToBankConnection = withTransaction(
     });
     await assertNoUnfinishedImport({ userId });
 
-    const systemBalance = lockedAccount.currentBalance.toCents();
-    const externalBalance = requireProviderBalance({ providerAccount: externalAccount }).toCents();
-    const balanceDifference = externalBalance - systemBalance;
+    const systemBalance = lockedAccount.currentBalance;
+    const bankBalance = await requireProviderBalance({
+      providerAccount: externalAccount,
+      userId,
+      currencyCode: lockedAccount.currencyCode,
+    });
+    const balanceDifference = bankBalance.subtract(systemBalance).toNumber();
 
     const isQueuedSyncProvider = provider.metadata.features.queuedSync === true;
 
@@ -163,8 +173,8 @@ export const linkAccountToBankConnection = withTransaction(
         linkedAt,
         linkingStrategy: 'forward-only' as const,
         balanceReconciliation: {
-          systemBalance,
-          externalBalance,
+          systemBalance: systemBalance.toNumber(),
+          externalBalance: bankBalance.toNumber(),
           difference: balanceDifference,
           adjustmentTransactionId: null,
           residualTarget,
@@ -209,7 +219,7 @@ export const linkAccountToBankConnection = withTransaction(
       // The bank balance is already in hand from fetchAccounts; write it now
       // or the account keeps the stale pre-link figure while the queue drains,
       // forever when the sync window returns nothing.
-      await writeBankBalanceWithHistory({ account: lockedAccount, balance: Money.fromCents(externalBalance) });
+      await writeBankBalanceWithHistory({ account: lockedAccount, balance: bankBalance });
 
       // Enqueue only after this transaction commits: the first queue batch
       // runs immediately, and a worker racing an uncommitted link would read
@@ -261,7 +271,7 @@ export const linkAccountToBankConnection = withTransaction(
 
       // The sync's own balance write is best-effort; without it S would anchor on the pre-link balance.
       await lockedAccount.reload();
-      await writeBankBalanceWithHistory({ account: lockedAccount, balance: Money.fromCents(externalBalance) });
+      await writeBankBalanceWithHistory({ account: lockedAccount, balance: bankBalance });
 
       const residualOutcome = await absorbLinkResidualWithRateFallback({ accountId, userId, residualTarget });
       await stampSeamBalance({ accountId });

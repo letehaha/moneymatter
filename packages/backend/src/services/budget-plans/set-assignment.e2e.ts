@@ -303,16 +303,34 @@ describe('Budget plan assignment guards', () => {
     );
   });
 
-  it('rejects an amount with more than 2 decimals or above 1e13', async () => {
+  it('rejects an amount above 1e13', async () => {
     const { planId, periods, line } = await setup();
     const target = { planId, periodId: periods[0]!.id, lineId: line.id };
 
     expect(
-      (await helpers.setBudgetAssignment({ ...target, payload: { scope: 'from_here', amount: 1.234 } })).statusCode,
-    ).toBe(ERROR_CODES.ValidationError);
-    expect(
       (await helpers.setBudgetAssignment({ ...target, payload: { scope: 'from_here', amount: 1e13 + 1 } })).statusCode,
     ).toBe(ERROR_CODES.ValidationError);
+  });
+
+  it.each([
+    { currencyCode: 'USD', amount: 1.235, stored: 1.24 },
+    { currencyCode: 'KWD', amount: 1.2345, stored: 1.235 },
+    // iOS builds that validate at 2 decimals send this for a JPY plan.
+    { currencyCode: 'JPY', amount: 1500.5, stored: 1501 },
+  ])('rounds $amount half-up to $stored in a $currencyCode plan', async ({ currencyCode, amount, stored }) => {
+    await helpers.asNewUserWithBaseCurrency({
+      currencyCode,
+      fn: async () => {
+        const { planId, periods, line } = await setup();
+        const target = { planId, periodId: periods[0]!.id, lineId: line.id };
+
+        const res = await helpers.setBudgetAssignment({ ...target, payload: { scope: 'from_here', amount } });
+
+        expect(res.statusCode).toBe(200);
+        expect(helpers.extractResponse(res).lines[0]).toMatchObject({ assigned: stored });
+        expect((await storedRows({ lineId: line.id }))[0]!.baselineAmount!.toNumber()).toBe(stored);
+      },
+    });
   });
 
   it('404s on an unknown period, an unknown line, and a period of another plan', async () => {

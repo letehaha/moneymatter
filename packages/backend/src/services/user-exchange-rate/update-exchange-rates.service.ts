@@ -1,5 +1,6 @@
 import * as UserExchangeRates from '@models/user-exchange-rates.model';
 import { remeasureRefBalances } from '@services/accounts/remeasure-ref-balances';
+import { clearRefAmountCache } from '@services/ref-amount-cache';
 
 import { withTransaction } from '../common/with-transaction';
 import { revalueAccountsInCurrencies } from './revalue-accounts-in-currencies';
@@ -19,6 +20,7 @@ export const editUserExchangeRates = withTransaction(
     const remeasure = await remeasureRefBalances({ userId });
 
     await revalueAccountsInCurrencies({ userId, pairs });
+    await clearRefAmountCache({ userId });
 
     return { rates, remeasure };
   },

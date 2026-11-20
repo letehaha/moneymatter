@@ -1,9 +1,11 @@
 import type { DuplicateMatch, ParsedTransactionRow } from '@bt/shared/types';
-import { asCents, TRANSACTION_TYPES } from '@bt/shared/types';
+import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { findTransactions } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
+import { decimalsOfAccount, getAccountDecimals } from '@services/import-export/core/duplicates/get-account-decimals';
 import { importDayKey } from '@services/import-export/core/duplicates/import-day-key';
+import { duplicateAmountKey } from '@services/transactions/duplicates-detection/amount-key';
 import { Op } from 'sequelize';
 
 import { readOfxUpload } from './upload-cache';
@@ -47,7 +49,7 @@ export async function detectOfxDuplicates({
       rowIndex: tx.rowIndex,
       originalId: tx.sourceTransactionKey,
       date: tx.date,
-      amount: asCents(Money.fromDecimal(tx.amount).abs().toCents()),
+      amount: Money.fromDecimal(tx.amount).abs().toNumber(),
       description: tx.note,
       accountName: tx.sourceAccountKey,
       currencyCode: currencyByAccountKey.get(tx.sourceAccountKey)!,
@@ -97,6 +99,7 @@ async function findOfxDuplicates({
   const minDay = importDayKey({ iso: dates.reduce((left, right) => (left < right ? left : right)) });
   const maxDay = importDayKey({ iso: dates.reduce((left, right) => (left > right ? left : right)) });
   const accountIds = [...new Set(fallbackRows.map((row) => accountNameToId.get(row.accountName)!))];
+  const decimalsByAccountId = await getAccountDecimals({ accountIds });
   const existing = await Transactions.findWithFilters({
     access: { creator: userId },
     accountIds,
@@ -114,7 +117,8 @@ async function findOfxDuplicates({
     const key = fallbackKey({
       accountId: transaction.accountId,
       date: new Date(transaction.time).toISOString(),
-      amount: Math.abs(transaction.amount.toCents()),
+      amount: transaction.amount,
+      decimals: decimalsOfAccount({ decimalsByAccountId, accountId: transaction.accountId }),
       transactionType: transaction.transactionType,
     });
     if (!firstByFallbackKey.has(key)) firstByFallbackKey.set(key, transaction);
@@ -122,9 +126,12 @@ async function findOfxDuplicates({
 
   for (const row of fallbackRows) {
     const accountId = accountNameToId.get(row.accountName)!;
+    const decimals = decimalsByAccountId.get(accountId);
+    if (decimals === undefined) continue;
+
     const transactionType = row.transactionType === 'income' ? TRANSACTION_TYPES.income : TRANSACTION_TYPES.expense;
     const transaction = firstByFallbackKey.get(
-      fallbackKey({ accountId, date: row.date, amount: row.amount, transactionType }),
+      fallbackKey({ accountId, date: row.date, amount: row.amount, decimals, transactionType }),
     );
     if (transaction) duplicates.push(toDuplicateMatch({ row, transaction, matchType: 'exact' }));
   }
@@ -132,18 +139,21 @@ async function findOfxDuplicates({
   return duplicates;
 }
 
+/** The amount is keyed at the account currency's `decimals`, rounded half-up, so both sides compare one value. */
 function fallbackKey({
   accountId,
   date,
   amount,
+  decimals,
   transactionType,
 }: {
   accountId: string;
   date: string;
-  amount: number;
+  amount: Money | number;
+  decimals: number;
   transactionType: TRANSACTION_TYPES;
 }): string {
-  return `${accountId}:${importDayKey({ iso: date })}:${amount}:${transactionType}`;
+  return `${accountId}:${importDayKey({ iso: date })}:${duplicateAmountKey({ amount, decimals })}:${transactionType}`;
 }
 
 function toDuplicateMatch({
@@ -161,7 +171,7 @@ function toDuplicateMatch({
     existingTransaction: {
       id: transaction.id,
       date: importDayKey({ iso: new Date(transaction.time).toISOString() }),
-      amount: transaction.amount.toCents(),
+      amount: transaction.amount.toNumber(),
       note: transaction.note || '',
       accountId: transaction.accountId,
     },

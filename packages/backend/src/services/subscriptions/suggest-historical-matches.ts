@@ -1,5 +1,6 @@
 import { SUBSCRIPTION_LINK_STATUS, SubscriptionMatchingRule } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import SubscriptionTransactions from '@models/subscription-transactions.model';
 import { findTransactions } from '@models/transactions-query';
 import type Transactions from '@models/transactions.model';
@@ -88,8 +89,8 @@ export const suggestHistoricalMatches = async ({
 };
 
 interface AmountRuleWithCurrency {
-  minCents: number;
-  maxCents: number;
+  min: Money;
+  max: Money;
   currencyCode: string;
 }
 
@@ -115,22 +116,18 @@ function buildWhereFromRules({ rules }: { rules: SubscriptionMatchingRule[] }): 
       }
       case 'amount': {
         if (rule.operator === 'between' && typeof rule.value === 'object' && !Array.isArray(rule.value)) {
-          const { min, max } = rule.value as { min: number; max: number };
-          // Rule bounds are decimals; the `amount` column and the tolerance math below are cents.
-          const minCents = Money.fromDecimal(min).toCents();
-          const maxCents = Money.fromDecimal(max).toCents();
+          // Rule bounds are decimals, compared exactly with amounts at their currency's decimals.
+          const bounds = rule.value as { min: number; max: number };
+          const min = Money.fromDecimal(bounds.min);
+          const max = Money.fromDecimal(bounds.max);
 
           if (rule.currencyCode) {
             // Cross-currency amount rules need post-processing
-            crossCurrencyAmountRules.push({
-              minCents,
-              maxCents,
-              currencyCode: rule.currencyCode,
-            });
+            crossCurrencyAmountRules.push({ min, max, currencyCode: rule.currencyCode });
           } else {
             // Same-currency amount rules can use SQL
             sqlConditions.push({
-              amount: { [Op.between]: [minCents, maxCents] },
+              amount: { [Op.between]: [toMoneyColumnValue({ money: min }), toMoneyColumnValue({ money: max })] },
             });
           }
         }
@@ -178,8 +175,7 @@ async function filterByCrossCurrencyAmount({
 
       // If currencies match, compare directly
       if (tx.currencyCode === rule.currencyCode) {
-        const amountCents = amount.toCents();
-        if (amountCents < rule.minCents || amountCents > rule.maxCents) {
+        if (amount.lessThan(rule.min) || amount.greaterThan(rule.max)) {
           matchesAllRules = false;
           break;
         }
@@ -203,10 +199,9 @@ async function filterByCrossCurrencyAmount({
       }
 
       // Apply tolerance (same as matching-engine.ts)
-      const tolerantMin = Math.floor(rule.minCents * (1 - CROSS_CURRENCY_TOLERANCE));
-      const tolerantMax = Math.ceil(rule.maxCents * (1 + CROSS_CURRENCY_TOLERANCE));
-      const amountCents = amount.toCents();
-      if (amountCents < tolerantMin || amountCents > tolerantMax) {
+      const tolerantMin = rule.min.multiply(1 - CROSS_CURRENCY_TOLERANCE);
+      const tolerantMax = rule.max.multiply(1 + CROSS_CURRENCY_TOLERANCE);
+      if (amount.lessThan(tolerantMin) || amount.greaterThan(tolerantMax)) {
         matchesAllRules = false;
         break;
       }

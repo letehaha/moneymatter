@@ -137,7 +137,8 @@ export class AkahuProvider extends BaseBankDataProvider {
       externalId: account._id,
       name: account.name,
       type: 'bank' as const,
-      balance: account.balance.current == null ? null : Money.fromDecimal(account.balance.current).toCents(),
+      balance: account.balance.current == null ? null : Money.fromDecimal(account.balance.current),
+      creditLimit: Money.fromDecimal(Math.abs(account.balance.limit ?? 0)),
       currency,
       metadata: {
         institutionName: account.connection?.name ?? null,
@@ -146,7 +147,6 @@ export class AkahuProvider extends BaseBankDataProvider {
         accountNumber: account.formatted_account ?? null,
         holder: account.meta?.holder ?? null,
         status: account.status,
-        creditLimit: account.balance.limit ? Money.fromDecimal(Math.abs(account.balance.limit)).toCents() : 0,
       },
     };
   }

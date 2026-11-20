@@ -1,7 +1,18 @@
+import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { Op } from 'sequelize';
-import { Table, Column, Model, BelongsToMany, DataType } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  BelongsToMany,
+  DataType,
+  AfterSave,
+  AfterDestroy,
+  AfterBulkUpdate,
+  AfterBulkDestroy,
+} from 'sequelize-typescript';
 
 import UsersCurrencies from './users-currencies.model';
 import Users from './users.model';
@@ -44,6 +55,19 @@ export default class Currencies extends Model {
 
   @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
   isDisabled!: boolean;
+
+  // Cached decimals (`getCurrencyDecimals`) derive from `digits`, so any change to a row drops them.
+  @AfterSave
+  @AfterDestroy
+  static invalidateDecimalsCacheForRow(instance: Currencies) {
+    invalidateCurrencyDecimalsCache({ code: instance.code });
+  }
+
+  @AfterBulkUpdate
+  @AfterBulkDestroy
+  static invalidateDecimalsCacheForBulk() {
+    invalidateCurrencyDecimalsCache();
+  }
 }
 
 /**

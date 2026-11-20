@@ -1,4 +1,5 @@
 import { SORT_DIRECTIONS, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import Transactions from '@models/transactions.model';
 import { getDismissalsForUser } from '@models/transfer-suggestion-dismissals.model';
 import { getTransactions } from '@services/transactions/get-transactions';
@@ -52,23 +53,23 @@ function isEligibleCandidate({
 }
 
 function calculateConfidence({
-  expenseRefAmountCents,
-  matchRefAmountCents,
+  expenseRefAmount,
+  matchRefAmount,
   expenseTime,
   matchTime,
   expenseCurrency,
   matchCurrency,
 }: {
-  expenseRefAmountCents: number;
-  matchRefAmountCents: number;
+  expenseRefAmount: Money;
+  matchRefAmount: Money;
   expenseTime: Date;
   matchTime: Date;
   expenseCurrency: string;
   matchCurrency: string;
 }): number {
   // Amount proximity: 50% weight
-  const maxAmountDiff = expenseRefAmountCents * RECOMMENDATION_PERCENT_RANGE;
-  const actualAmountDiff = Math.abs(matchRefAmountCents - expenseRefAmountCents);
+  const maxAmountDiff = expenseRefAmount.multiply(RECOMMENDATION_PERCENT_RANGE).toNumber();
+  const actualAmountDiff = matchRefAmount.subtract(expenseRefAmount).abs().toNumber();
   const amountScore =
     maxAmountDiff > 0 ? CONFIDENCE_WEIGHT_AMOUNT * (1 - actualAmountDiff / maxAmountDiff) : CONFIDENCE_WEIGHT_AMOUNT;
 
@@ -171,9 +172,9 @@ export async function bulkScanTransferRecommendations({
   let results: BulkScanItem[] = [];
 
   for (const expense of eligibleExpenses) {
-    const expenseRefCents = expense.refAmount.toCents();
-    const lowerBound = Math.max(0, Math.floor(expenseRefCents * (1 - RECOMMENDATION_PERCENT_RANGE)));
-    const upperBound = Math.ceil(expenseRefCents * (1 + RECOMMENDATION_PERCENT_RANGE));
+    const lower = expense.refAmount.multiply(1 - RECOMMENDATION_PERCENT_RANGE);
+    const lowerBound = lower.isNegative() ? Money.zero() : lower;
+    const upperBound = expense.refAmount.multiply(1 + RECOMMENDATION_PERCENT_RANGE);
     const expenseTime = new Date(expense.time);
 
     const matchCandidates: BulkScanMatch[] = [];
@@ -186,8 +187,7 @@ export async function bulkScanTransferRecommendations({
       if (income.accountId === expense.accountId) continue;
 
       // Amount within ±10%
-      const incomeRefCents = income.refAmount.toCents();
-      if (incomeRefCents < lowerBound || incomeRefCents > upperBound) continue;
+      if (income.refAmount.lessThan(lowerBound) || income.refAmount.greaterThan(upperBound)) continue;
 
       // Date within ±14 days
       const incomeTime = new Date(income.time);
@@ -195,8 +195,8 @@ export async function bulkScanTransferRecommendations({
       if (daysDiff > RECOMMENDATION_DAYS_RANGE) continue;
 
       const confidence = calculateConfidence({
-        expenseRefAmountCents: expenseRefCents,
-        matchRefAmountCents: incomeRefCents,
+        expenseRefAmount: expense.refAmount,
+        matchRefAmount: income.refAmount,
         expenseTime,
         matchTime: incomeTime,
         expenseCurrency: expense.currencyCode,

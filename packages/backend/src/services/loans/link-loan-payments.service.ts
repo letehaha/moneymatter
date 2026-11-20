@@ -106,19 +106,19 @@ const linkLoanPaymentsImpl = async ({
     }),
   );
 
-  const postAnchorSum = plans
-    .filter((plan) => plan.countsTowardBalance)
-    .reduce((sum, plan) => sum.add(plan.destinationAmount), Money.zero());
-
   // Loan balances are negative (liability); income legs add toward zero. A
   // positive projection means the batch overshoots the owed amount.
+  const outstanding = loanAccount.currentBalance;
   const { projectedBalance, overpaysBy } = projectLoanOverpay({
-    projectedBalance: loanAccount.currentBalance.add(postAnchorSum),
+    projectedBalance: Money.sum([
+      outstanding,
+      ...plans.filter((plan) => plan.countsTowardBalance).map((plan) => plan.destinationAmount),
+    ]),
   });
-  if (overpaysBy.toCents() > 0 && !confirmOverpay) {
+  if (overpaysBy.isPositive() && !confirmOverpay) {
     const details: LoanPaymentOverpayDetails = {
       projectedBalance: projectedBalance.toNumber(),
-      maxLinkable: loanAccount.currentBalance.abs().toNumber(),
+      maxLinkable: outstanding.abs().toNumber(),
       overpayBy: projectedBalance.toNumber(),
     };
     throw new ValidationError({

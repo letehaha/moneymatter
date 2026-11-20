@@ -4,7 +4,7 @@ import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
-import { formatCompactUIAmount, formatUIAmount } from '@/js/helpers';
+import { formatCompactUIAmount, formatUIAmount, getCurrencyDecimals } from '@/js/helpers';
 import { cn } from '@/lib/utils';
 import { useCategoriesStore } from '@/stores';
 import { TRANSACTION_TYPES, TransactionModel, TransactionSplitModel } from '@bt/shared/types';
@@ -21,7 +21,7 @@ import {
   getRefundTargetCap,
   isRefundShareAdjusted,
   refillRefundSide,
-  round2,
+  roundShare,
   validateRefundShares,
 } from '../../utils/refund-shares';
 import { getRefundTargetLabel } from '../../utils/refund-target-label';
@@ -102,6 +102,7 @@ const ticked = computed(() => selection.value ?? []);
 const tickedCount = computed(() => ticked.value.length);
 
 const refundAmount = computed(() => (props.currentAmount && props.currentAmount > 0 ? props.currentAmount : 0));
+const decimals = computed(() => getCurrencyDecimals({ code: props.currentCurrencyCode }));
 
 const refill = ({ links, role: side }: { links: RefundWithSplit[]; role: RefundRole | null }) =>
   refillRefundSide({
@@ -109,6 +110,7 @@ const refill = ({ links, role: side }: { links: RefundWithSplit[]; role: RefundR
     role: side,
     amount: props.currentAmount,
     currencyCode: props.currentCurrencyCode,
+    decimals: decimals.value,
     savedShares: props.savedRefundShares,
     convert,
   });
@@ -140,7 +142,7 @@ const setLinks = ({ next }: { next: RefundWithSplit[] }) => {
 };
 
 const sumShares = ({ links }: { links: RefundWithSplit[] }) =>
-  round2({ value: links.reduce((sum, link) => sum + (link.amount ?? 0), 0) });
+  roundShare({ value: links.reduce((sum, link) => sum + (link.amount ?? 0), 0), decimals: decimals.value });
 
 const addRefundTarget = ({ target }: { target: RefundWithSplit }) => {
   const others = props.isRecordCreation ? [] : ticked.value;
@@ -219,6 +221,7 @@ const refundRows = computed(() =>
         ...getRefundTargetCap({
           link,
           refundCurrencyCode: props.currentCurrencyCode,
+          decimals: decimals.value,
           savedShares: props.savedRefundShares,
           convert,
         }),
@@ -231,6 +234,7 @@ const isShareCheckActive = computed(() => refundAmount.value > 0 && refundRows.v
 const shareValidation = computed(() =>
   validateRefundShares({
     refundAmount: refundAmount.value,
+    decimals: decimals.value,
     targets: refundRows.value.map((row) => ({
       share: row.link.amount,
       cap: row.cap,
@@ -258,8 +262,11 @@ const refundedByRows = computed(() =>
 const refundedByTotals = computed(() => {
   const rows = refundedByRows.value;
   return {
-    paid: round2({ value: rows.reduce((sum, row) => sum + (row.contribution ?? 0), 0) }),
-    sameCurrencyPaid: round2({ value: rows.reduce((sum, row) => sum + (row.isSameCurrency ? row.share : 0), 0) }),
+    paid: roundShare({ value: rows.reduce((sum, row) => sum + (row.contribution ?? 0), 0), decimals: decimals.value }),
+    sameCurrencyPaid: roundShare({
+      value: rows.reduce((sum, row) => sum + (row.isSameCurrency ? row.share : 0), 0),
+      decimals: decimals.value,
+    }),
     isApprox: rows.some((row) => !row.isSameCurrency),
   };
 });
@@ -393,7 +400,10 @@ const saveState = () => {
   } else if (role.value === 'original') {
     emit('update:refundedBy', next);
   } else {
-    emit('update:refunds', finalizeRefundShares({ links: next, refundAmount: props.currentAmount }));
+    emit(
+      'update:refunds',
+      finalizeRefundShares({ links: next, refundAmount: props.currentAmount, decimals: decimals.value }),
+    );
   }
   isDialogOpen.value = false;
 };

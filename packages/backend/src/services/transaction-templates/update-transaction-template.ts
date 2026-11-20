@@ -6,7 +6,7 @@ import TransactionTemplates from '@models/transaction-templates.model';
 import { withTransaction } from '@services/common/with-transaction';
 
 import { assertTemplateConsistent } from './assert-template-consistent';
-import { loadTemplateTagIds, serializeTemplate, writeOrConflict } from './helpers';
+import { loadTemplateTagIds, roundTemplateAmount, serializeTemplate, writeOrConflict } from './helpers';
 
 type UpdateTransactionTemplateParams = UpdateTransactionTemplateBody & { id: RecordId; userId: number };
 
@@ -43,7 +43,7 @@ export const updateTransactionTemplate = withTransaction(
       ...(fields.originalCurrencyCode !== undefined && { originalCurrencyCode: fields.originalCurrencyCode }),
     };
 
-    await assertTemplateConsistent({
+    const { accountCurrencyCode } = await assertTemplateConsistent({
       userId,
       amount: merged.amount,
       accountId: merged.accountId,
@@ -52,7 +52,14 @@ export const updateTransactionTemplate = withTransaction(
       tagIds: mergedTagIds,
     });
 
-    await writeOrConflict(() => template.update(merged));
+    // Only an amount the payload sends, or one a new account puts in another currency, is rounded:
+    // a rename keeps the stored amount as it is.
+    const amount =
+      fields.amount !== undefined || fields.accountId !== undefined
+        ? await roundTemplateAmount({ userId, currencyCode: accountCurrencyCode, amount: merged.amount })
+        : merged.amount;
+
+    await writeOrConflict(() => template.update({ ...merged, amount }));
 
     if (tagIds !== undefined) {
       await template.$set('tags', tagIds);

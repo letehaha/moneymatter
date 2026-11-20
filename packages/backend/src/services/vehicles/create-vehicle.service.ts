@@ -1,4 +1,5 @@
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPES, DEPRECIATION_PRESET, VEHICLE_CLASS } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { ValidationError } from '@js/errors';
 import Accounts, { createAccount as createAccountInDb } from '@models/accounts.model';
@@ -6,6 +7,7 @@ import Vehicles from '@models/vehicles.model';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
+import { roundPositiveAmount } from '@services/transactions/round-positive-amount';
 import { parseISO } from 'date-fns';
 
 import { computeVehicleValue } from './compute-vehicle-value';
@@ -56,17 +58,20 @@ const createVehicleImpl = async (params: CreateVehicleParams) => {
   const now = new Date();
   const anchorDate = parseISO(purchaseDate);
 
+  const anchorPrice = await roundPositiveAmount({ money: purchasePrice, userId, currencyCode });
+  const decimals = await getCurrencyDecimals({ userId, code: currencyCode });
+
   // Compute today's depreciated value — that becomes the account's initial balance.
   // Historical Balances rows are not backfilled in P1 (documented limitation).
   const currentValue = computeVehicleValue({
-    anchorValue: purchasePrice,
+    anchorValue: anchorPrice,
     anchorDate,
     asOf: now,
     vehicleClass,
     preset: depreciationPreset,
     customAnnualRatePct,
     salvageFloorPct,
-  });
+  }).round(decimals);
 
   const refCurrentValue = await calculateRefAmount({
     userId,
@@ -101,7 +106,7 @@ const createVehicleImpl = async (params: CreateVehicleParams) => {
     trim,
     year,
     vehicleClass,
-    purchasePrice,
+    purchasePrice: anchorPrice,
     purchaseDate,
     depreciationPreset,
     customAnnualRatePct,

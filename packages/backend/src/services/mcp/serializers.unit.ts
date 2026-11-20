@@ -392,8 +392,10 @@ describe('MCP serializers', () => {
         targetAmount: 10000,
         targetDate: null,
         plannedMonthly: null,
+        decimals: 2,
       },
       rateToBase: 2,
+      goalDecimals: 2,
       baseCurrencyCode: 'UAH',
     } as GoalInsights;
     const goal = {

@@ -225,10 +225,10 @@ const toggleAll = () => {
 const { formatAmountByCurrencyCode } = useFormatCurrency();
 
 const secondaryMeta = (account: AvailableAccount): string | null => {
-  const { iban, creditLimitCents } = getAccountSecondaryMeta({ metadata: account.metadata });
-  if (creditLimitCents) {
+  const { iban } = getAccountSecondaryMeta({ metadata: account.metadata });
+  if (account.creditLimit > 0) {
     return t('pages.integrations.details.fetchAccountsDialog.creditLimitMeta', {
-      amount: formatAmountByCurrencyCode(creditLimitCents / 100, account.currency),
+      amount: formatAmountByCurrencyCode(account.creditLimit, account.currency),
     });
   }
   if (iban) return formatIbanCompact({ iban });

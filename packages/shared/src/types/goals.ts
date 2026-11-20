@@ -114,6 +114,8 @@ export interface GoalMathInput {
   targetAmount: number;
   targetDate: string | null;
   plannedMonthly: number | null;
+  /** Decimals of the base currency: the math runs in its minor units. */
+  decimals: number;
 }
 
 /** Amounts are base-currency decimals. */
@@ -146,6 +148,8 @@ export interface GoalInsights extends GoalProgress {
   input: GoalMathInput;
   /** Base-currency units per one unit of the goal currency, today. */
   rateToBase: number;
+  /** Decimals of the goal currency, which an amount divided by `rateToBase` rounds to. */
+  goalDecimals: number;
   baseCurrencyCode: string;
 }
 

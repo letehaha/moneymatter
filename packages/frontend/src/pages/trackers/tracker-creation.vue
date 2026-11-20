@@ -12,6 +12,7 @@ import { useOnboardingStore } from '@/stores/onboarding';
 import { TRACKER_LIMIT_KINDS } from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
+import { useFormatCurrency } from '@/composable/formatters';
 import { useI18n } from 'vue-i18n';
 
 import {
@@ -48,6 +49,7 @@ const TRACKER_DEFAULT_VALUES: {
 
 const emits = defineEmits(['create-tracker']);
 const { t } = useI18n();
+const { baseCurrencyDecimals } = useFormatCurrency();
 const { addSuccessNotification } = useNotificationCenter();
 
 const queryClient = useQueryClient();
@@ -142,6 +144,9 @@ const submit = () => {
       <LimitKindField v-model="form.limitKind" />
       <InputField
         v-model.number="form.limitAmount"
+        type="number"
+        :decimals="baseCurrencyDecimals"
+        only-positive
         :label="$t(`budgets.limitKind.kinds.${form.limitKind}.amountLabel`)"
         :placeholder="$t('budgets.creation.limitPlaceholder')"
       />

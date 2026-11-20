@@ -51,6 +51,20 @@ describe('Add user currencies', () => {
     expect(emptyList.statusCode).toEqual(ERROR_CODES.ValidationError);
   });
 
+  it.each(['XAU', 'XDR'])('rejects the non-currency code %s on add and on account create', async (code) => {
+    const addRes = await helpers.addUserCurrencies({ currencyCodes: [code] });
+    expect(addRes.statusCode).toEqual(ERROR_CODES.ValidationError);
+
+    const accountRes = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ currencyCode: code, initialBalance: 0.5 }),
+      raw: false,
+    });
+    expect(accountRes.statusCode).toEqual(ERROR_CODES.ValidationError);
+
+    const userCurrencies = await helpers.getUserCurrencies();
+    expect(userCurrencies.some((item) => item.currencyCode === code)).toBe(false);
+  });
+
   it('should successfully add currencies without optional fields', async () => {
     const allCurrencies = await helpers.getAllCurrencies();
     const uah = allCurrencies.find((i) => i.code === 'UAH')!;

@@ -23,11 +23,11 @@ import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE } from '@bt/shared/types/ven
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { t } from '@i18n/index';
 import { beforeEach, describe, expect, it } from '@jest/globals';
-import { RateLimitService } from '@services/common/rate-limit.service';
 import { PNG_1X1_BYTES, PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 import { VALID_ANTHROPIC_API_KEY } from '@tests/mocks/anthropic/mock-api';
 import { VALID_MONOBANK_TOKEN } from '@tests/mocks/monobank/mock-api';
+import Big from 'big.js';
 import { format } from 'date-fns';
 import { randomUUID } from 'node:crypto';
 
@@ -41,24 +41,6 @@ const IMPORT_BATCH_TABLES = ['import-batches', 'import-batch-account-effects'];
 // `user-settings` are re-created rather than bulk-inserted (fresh ids/timestamps,
 // Zod-normalized settings).
 const ROUNDTRIP_EXCLUDED = new Set(['user', 'user-settings']);
-
-// --- Canonicalization: order-independent, key-sorted deep equality -----------
-
-function deepSort(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(deepSort);
-  if (value && typeof value === 'object') {
-    const out: Row = {};
-    for (const key of Object.keys(value as Row).sort()) out[key] = deepSort((value as Row)[key]);
-    return out;
-  }
-  return value;
-}
-
-/** A stable, sorted list of canonical JSON strings for a row array. */
-function canonicalRows(rows: unknown): string[] {
-  const arr = Array.isArray(rows) ? rows : [];
-  return arr.map((row) => JSON.stringify(deepSort(row))).sort();
-}
 
 // --- Archive read/write helpers (for building tampered uploads) --------------
 
@@ -439,11 +421,7 @@ async function readBudgetPlan({ planId }: { planId: string }) {
 describe('Data backup restore (POST /user/backup/restore)', () => {
   // Export and restore have their own per-user rate buckets (5 per 15 min each),
   // enforced in the test env. Reset both for the primary user before each case.
-  beforeEach(async () => {
-    const userId = await getCurrentUserId();
-    await RateLimitService.resetRateLimit(`backup:user:${userId}`);
-    await RateLimitService.resetRateLimit(`backup-restore:user:${userId}`);
-  });
+  beforeEach(() => helpers.resetBackupRateLimits());
 
   describe('Round-trip', () => {
     it('restoring an export into the same user reproduces every table byte-for-byte, with no foreign-reference warnings', async () => {
@@ -487,18 +465,18 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       for (const name of dataNames) {
         if (ROUNDTRIP_EXCLUDED.has(name)) continue;
-        const before = canonicalRows(firstArchive.readData({ name }));
-        const after = canonicalRows(secondArchive.readData({ name }));
+        const before = helpers.canonicalBackupRows({ rows: firstArchive.readData({ name }) });
+        const after = helpers.canonicalBackupRows({ rows: secondArchive.readData({ name }) });
         expect({ name, rows: after }).toEqual({ name, rows: before });
       }
 
       // reference/securities.json must also round-trip (prices aren't part of a backup).
-      const secBefore = canonicalRows(
-        readArchiveJson({ files: firstArchive.files, path: 'reference/securities.json' }),
-      );
-      const secAfter = canonicalRows(
-        readArchiveJson({ files: secondArchive.files, path: 'reference/securities.json' }),
-      );
+      const secBefore = helpers.canonicalBackupRows({
+        rows: readArchiveJson({ files: firstArchive.files, path: 'reference/securities.json' }),
+      });
+      const secAfter = helpers.canonicalBackupRows({
+        rows: readArchiveJson({ files: secondArchive.files, path: 'reference/securities.json' }),
+      });
       expect(secAfter).toEqual(secBefore);
       expect(secBefore.length).toBeGreaterThan(0);
 
@@ -1131,9 +1109,9 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const secondArchive = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
       for (const name of BUDGET_PLAN_FILES) {
-        expect({ name, rows: canonicalRows(secondArchive.readData({ name })) }).toEqual({
+        expect({ name, rows: helpers.canonicalBackupRows({ rows: secondArchive.readData({ name }) }) }).toEqual({
           name,
-          rows: canonicalRows(firstArchive.readData({ name })),
+          rows: helpers.canonicalBackupRows({ rows: firstArchive.readData({ name }) }),
         });
       }
 
@@ -1285,9 +1263,9 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const secondArchive = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
       for (const name of ['goals', 'goal-accounts']) {
-        expect({ name, rows: canonicalRows(secondArchive.readData({ name })) }).toEqual({
+        expect({ name, rows: helpers.canonicalBackupRows({ rows: secondArchive.readData({ name }) }) }).toEqual({
           name,
-          rows: canonicalRows(firstArchive.readData({ name })),
+          rows: helpers.canonicalBackupRows({ rows: firstArchive.readData({ name }) }),
         });
       }
     }, 30000);
@@ -2008,6 +1986,30 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
   });
 
   describe('Legacy v1 archives', () => {
+    /** The money columns of the ledger these tests build, by backup file. Written out so the test does not share the converter's list. */
+    const LEDGER_MONEY_COLUMNS: Record<string, string[]> = {
+      accounts: [
+        'initialBalance',
+        'refInitialBalance',
+        'currentBalance',
+        'refCurrentBalance',
+        'creditLimit',
+        'refCreditLimit',
+      ],
+      balances: ['amount'],
+      transactions: [
+        'amount',
+        'refAmount',
+        'commissionRate',
+        'refCommissionRate',
+        'cashbackAmount',
+        'originalAmount',
+        'paymentAmount',
+      ],
+      trackers: ['limitAmount'],
+      'tracker-lines': ['limitAmount'],
+    };
+
     const LEGACY_TRACKER_FILES: [string, string][] = [
       ['trackers', 'budgets'],
       ['tracker-transactions', 'budget-transactions'],
@@ -2015,8 +2017,9 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
     ];
 
     /**
-     * Rewrite a current archive into the v1 shape: budget-named tracker files, `budgetId` keys, old stored values,
-     * and `type: 'category'` trackers with no rule columns, tracker tags or rule links.
+     * Rewrite a current archive into the v1 shape: money as integer cents, budget-named tracker files,
+     * `budgetId` keys, old stored values, and `type: 'category'` trackers with no rule columns, tracker
+     * tags or rule links. Only money columns are rewritten: the ledger here keeps none inside JSON fields.
      */
     function toLegacyArchive({
       files,
@@ -2029,6 +2032,18 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       categoryTrackerIds: string[];
       userId: number;
     }) {
+      for (const [fileName, attrNames] of Object.entries(LEDGER_MONEY_COLUMNS)) {
+        const path = `data/${fileName}.json`;
+        const rows = readArchiveJson({ files, path }) as Row[] | null;
+        if (!rows) continue;
+        for (const row of rows) {
+          for (const attrName of attrNames) {
+            if (row[attrName] != null) row[attrName] = new Big(row[attrName] as string).times(100).toNumber();
+          }
+        }
+        writeArchiveJson({ files, path, value: rows });
+      }
+
       const trackerRows = readArchiveJson({ files, path: 'data/trackers.json' }) as Row[];
       const legacyTrackerRows = trackerRows.map((row) => {
         const legacy: Row = {

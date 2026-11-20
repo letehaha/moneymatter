@@ -15,7 +15,7 @@ import { amountToneClass, buildPoolTakeBackPayload, pickTakeBackLine, takeBackCa
 // Stays mounted while hidden: unmounting it in the render that closes its drawer can leave the page inert.
 const props = defineProps<{ planId: string; view: BudgetPlanPeriodView; visible: boolean }>();
 
-const { formatBaseCurrency } = useFormatCurrency();
+const { baseCurrencyDecimals, formatBaseCurrency } = useFormatCurrency();
 
 const isOpen = ref(false);
 const lineId = ref<string | null>(null);
@@ -38,7 +38,9 @@ watch(isOpen, (open) => {
 });
 
 const payload = computed(() =>
-  selectedLine.value ? buildPoolTakeBackPayload({ line: selectedLine.value, amount: amount.value }) : null,
+  selectedLine.value
+    ? buildPoolTakeBackPayload({ line: selectedLine.value, amount: amount.value, decimals: baseCurrencyDecimals.value })
+    : null,
 );
 
 const { isPending, mutate } = useSetAssignment({
@@ -90,6 +92,7 @@ const submit = () => {
       </SelectField>
 
       <FormattedAmountField
+        :decimals="baseCurrencyDecimals"
         :model-value="amount"
         :label="$t('budgetPlans.pool.amountLabel')"
         :placeholder="$t('budgetPlans.assign.amountPlaceholder')"

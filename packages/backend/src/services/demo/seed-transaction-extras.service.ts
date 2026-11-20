@@ -1,4 +1,4 @@
-import type { RecordId } from '@bt/shared/types';
+import { type RecordId, asCents } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import RefundTransactions from '@models/refund-transactions.model';
@@ -85,8 +85,8 @@ async function seedSplits({ userId, splits }: { userId: number; splits: SplitInp
     transactionId: split.transactionId,
     userId,
     categoryId: split.categoryId,
-    amount: Money.fromCents(split.amount),
-    refAmount: Money.fromCents(split.refAmount),
+    amount: Money.fromCents(asCents(split.amount)),
+    refAmount: Money.fromCents(asCents(split.refAmount)),
     note: split.note ? split.note.slice(0, MAX_NOTE_LENGTH) : null,
   }));
 

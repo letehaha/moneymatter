@@ -38,10 +38,6 @@ const seedHistoricalRates = async () => {
   );
 };
 
-// API responses serialize Money as decimals; assertions compare cents so the
-// `toEqualRefValue` matcher's banker's rounding + ±1 tolerance applies cleanly.
-const decimalToCents = (decimal: unknown) => Math.round(Number(decimal) * 100);
-
 const createEurAccount = async () => {
   await helpers.addUserCurrencies({ currencyCodes: ['EUR'] });
   return helpers.createAccount({
@@ -88,12 +84,12 @@ describe('Account ref balances are spot measures', () => {
     });
 
     // The flow keeps its historical tx-date rate…
-    expect(decimalToCents(Number(tx.refAmount))).toEqualRefValue(10000 * HISTORICAL_EUR_TO_AED);
+    expect(Number(tx.refAmount)).toEqualRefValue(100 * HISTORICAL_EUR_TO_AED);
 
     // …while the stock is measured at the latest rate.
     const updated = await helpers.getAccount({ id: account.id, raw: true });
     expect(Number(updated.currentBalance)).toBe(100);
-    expect(decimalToCents(updated.refCurrentBalance)).toEqualRefValue(10000 * SPOT_EUR_TO_AED);
+    expect(Number(updated.refCurrentBalance)).toEqualRefValue(100 * SPOT_EUR_TO_AED);
   });
 
   it('remeasures stored ref balances when the rate sync runs', async () => {
@@ -109,7 +105,7 @@ describe('Account ref balances are spot measures', () => {
     });
 
     const beforeSync = await helpers.getAccount({ id: account.id, raw: true });
-    expect(decimalToCents(beforeSync.refCurrentBalance)).toEqualRefValue(10000 * SPOT_EUR_TO_AED);
+    expect(Number(beforeSync.refCurrentBalance)).toEqualRefValue(100 * SPOT_EUR_TO_AED);
 
     // Overnight rate move: EUR weakens against USD in the stored basket. The
     // stored balance must NOT react on its own – only the sync's remeasure pass
@@ -122,12 +118,12 @@ describe('Account ref balances are spot measures', () => {
     );
 
     const stillStale = await helpers.getAccount({ id: account.id, raw: true });
-    expect(decimalToCents(stillStale.refCurrentBalance)).toEqualRefValue(10000 * SPOT_EUR_TO_AED);
+    expect(Number(stillStale.refCurrentBalance)).toEqualRefValue(100 * SPOT_EUR_TO_AED);
 
     await expect(helpers.syncExchangeRates().then((r) => r.statusCode)).resolves.toBe(200);
 
     const remeasured = await helpers.getAccount({ id: account.id, raw: true });
-    expect(decimalToCents(remeasured.refCurrentBalance)).toEqualRefValue(10000 * (AED_PER_USD / newEurPerUsd));
+    expect(Number(remeasured.refCurrentBalance)).toEqualRefValue(100 * (AED_PER_USD / newEurPerUsd));
   });
 
   it('restamps refInitialBalance at the earliest-transaction date rate when backdated transactions land', async () => {
@@ -137,7 +133,7 @@ describe('Account ref balances are spot measures', () => {
       payload: helpers.buildAccountPayload({ currencyCode: 'EUR', initialBalance: 200 }),
       raw: true,
     });
-    expect(decimalToCents(account.refInitialBalance)).toEqualRefValue(20000 * SPOT_EUR_TO_AED);
+    expect(Number(account.refInitialBalance)).toEqualRefValue(200 * SPOT_EUR_TO_AED);
 
     await seedHistoricalRates();
 
@@ -155,13 +151,13 @@ describe('Account ref balances are spot measures', () => {
     });
 
     const restamped = await helpers.getAccount({ id: account.id, raw: true });
-    expect(decimalToCents(restamped.refInitialBalance)).toEqualRefValue(20000 * HISTORICAL_EUR_TO_AED);
+    expect(Number(restamped.refInitialBalance)).toEqualRefValue(200 * HISTORICAL_EUR_TO_AED);
 
     // Deleting the earliest transaction moves the boundary back to the account's
     // creation date – the stamp returns to (approximately) today's rate.
     await helpers.deleteTransaction({ id: tx.id });
     const reverted = await helpers.getAccount({ id: account.id, raw: true });
-    expect(decimalToCents(reverted.refInitialBalance)).toEqualRefValue(20000 * SPOT_EUR_TO_AED);
+    expect(Number(reverted.refInitialBalance)).toEqualRefValue(200 * SPOT_EUR_TO_AED);
   });
 
   it("pins today's net-worth history point to zero when the native balance nets to zero (chart matches the card)", async () => {
@@ -291,7 +287,7 @@ describe('Account ref balances are spot measures', () => {
     // The loan's today row is untouched by the remeasure — its replay value stands…
     expect(Number(loanTodayAfter!.amount)).toBe(Number(loanTodayBefore!.amount));
     // …while the normal cross-currency account's today row IS re-pinned to the new spot.
-    expect(decimalToCents(controlTodayAfter!.amount)).toEqualRefValue(10000 * (AED_PER_USD / newEurPerUsd));
+    expect(Number(controlTodayAfter!.amount)).toEqualRefValue(100 * (AED_PER_USD / newEurPerUsd));
   });
 
   it('re-measures refCurrentBalance, refInitialBalance, and today’s row to spot when the balance is PATCHed after the rate diverged', async () => {
@@ -332,16 +328,16 @@ describe('Account ref balances are spot measures', () => {
     expect(Number(patched.currentBalance)).toBe(500);
     // refCurrentBalance is the SPOT of the new native balance at rate B (500 * B),
     // not the pre-PATCH ref (300 at the market rate) plus a delta.
-    expect(decimalToCents(patched.refCurrentBalance)).toEqualRefValue(50000 * SPOT_B);
+    expect(Number(patched.refCurrentBalance)).toEqualRefValue(500 * SPOT_B);
     // refInitialBalance is the new opening (400) restamped at the boundary (7.0) rate.
-    expect(decimalToCents(patched.refInitialBalance)).toEqualRefValue(40000 * HISTORICAL_EUR_TO_AED);
+    expect(Number(patched.refInitialBalance)).toEqualRefValue(400 * HISTORICAL_EUR_TO_AED);
 
     // Today's net-worth row must equal the new spot too.
     const history = await helpers.getBalanceHistory({ accountId: account.id, raw: true });
     const todayKey = format(startOfDay(new Date()), 'yyyy-MM-dd');
     const todayRow = history.find((row) => format(new Date(row.date), 'yyyy-MM-dd') === todayKey);
     expect(todayRow).toBeDefined();
-    expect(decimalToCents(todayRow!.amount)).toEqualRefValue(50000 * SPOT_B);
+    expect(Number(todayRow!.amount)).toEqualRefValue(500 * SPOT_B);
   });
 
   it('keeps ref balances identical to native balances for base-currency accounts', async () => {
@@ -376,7 +372,7 @@ describe('Account ref balances are spot measures', () => {
 
     const beforeDelete = await helpers.getAccount({ id: account.id, raw: true });
     expect(Number(beforeDelete.currentBalance)).toBe(100);
-    expect(decimalToCents(beforeDelete.refCurrentBalance)).toEqualRefValue(10000 * SPOT_EUR_TO_AED);
+    expect(Number(beforeDelete.refCurrentBalance)).toEqualRefValue(100 * SPOT_EUR_TO_AED);
 
     // Simulate a total FX-data gap for EUR: drop every stored USD-pivot row that
     // could convert EUR, on any date (the global beforeEach only clears
@@ -428,7 +424,7 @@ describe('Account ref balances are spot measures', () => {
       });
 
       const updated = await helpers.getAccount({ id: account.id, raw: true });
-      expect(decimalToCents(updated.refCreditLimit)).toEqualRefValue(100000 * SPOT_EUR_TO_AED);
+      expect(Number(updated.refCreditLimit)).toEqualRefValue(1000 * SPOT_EUR_TO_AED);
     });
 
     it('when the balance is edited directly', async () => {
@@ -437,7 +433,7 @@ describe('Account ref balances are spot measures', () => {
       await helpers.updateAccount({ id: account.id, payload: { currentBalance: 500 }, raw: true });
 
       const updated = await helpers.getAccount({ id: account.id, raw: true });
-      expect(decimalToCents(updated.refCreditLimit)).toEqualRefValue(100000 * SPOT_EUR_TO_AED);
+      expect(Number(updated.refCreditLimit)).toEqualRefValue(1000 * SPOT_EUR_TO_AED);
     });
 
     it('when the opening balance is edited', async () => {
@@ -446,7 +442,7 @@ describe('Account ref balances are spot measures', () => {
       await helpers.updateAccount({ id: account.id, payload: { initialBalance: 500 }, raw: true });
 
       const updated = await helpers.getAccount({ id: account.id, raw: true });
-      expect(decimalToCents(updated.refCreditLimit)).toEqualRefValue(100000 * SPOT_EUR_TO_AED);
+      expect(Number(updated.refCreditLimit)).toEqualRefValue(1000 * SPOT_EUR_TO_AED);
     });
 
     it('when only the credit limit is edited, refCurrentBalance included', async () => {
@@ -459,8 +455,8 @@ describe('Account ref balances are spot measures', () => {
       await helpers.updateAccount({ id: account.id, payload: { creditLimit: 2000 }, raw: true });
 
       const updated = await helpers.getAccount({ id: account.id, raw: true });
-      expect(decimalToCents(updated.refCurrentBalance)).toEqualRefValue(10000 * SPOT_EUR_TO_AED);
-      expect(decimalToCents(updated.refCreditLimit)).toEqualRefValue(200000 * SPOT_EUR_TO_AED);
+      expect(Number(updated.refCurrentBalance)).toEqualRefValue(100 * SPOT_EUR_TO_AED);
+      expect(Number(updated.refCreditLimit)).toEqualRefValue(2000 * SPOT_EUR_TO_AED);
     });
   });
 });

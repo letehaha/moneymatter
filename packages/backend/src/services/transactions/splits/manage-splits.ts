@@ -1,4 +1,5 @@
-import type { Money } from '@common/types/money';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
+import { Money } from '@common/types/money';
 import RefundTransactions from '@models/refund-transactions.model';
 import TransactionSplits, {
   CreateSplitPayload,
@@ -27,6 +28,32 @@ interface ManageSplitsParams {
   transferNature?: string;
 }
 
+const sumSplits = ({ splits }: { splits: SplitInput[] }): Money =>
+  Money.sum(splits.map((split) => split.amount ?? Money.zero()));
+
+/** Takes whatever the splits exceed `total` by off the largest splits first. */
+const trimSplitsToTotal = ({ splits, total }: { splits: SplitInput[]; total: Money }): SplitInput[] => {
+  let excess = sumSplits({ splits }).subtract(total);
+  if (!excess.isPositive()) return splits;
+
+  const trimmed = [...splits];
+  const amountOf = ({ index }: { index: number }) => (splits[index]!.amount ?? Money.zero()).toBig();
+  const largestFirst = splits
+    .map((_, index) => index)
+    .toSorted((a, b) => amountOf({ index: b }).cmp(amountOf({ index: a })));
+
+  for (const index of largestFirst) {
+    const amount = trimmed[index]!.amount;
+    if (!excess.isPositive() || !amount?.isPositive()) break;
+
+    const cut = amount.lessThan(excess) ? amount : excess;
+    trimmed[index] = { ...trimmed[index]!, amount: amount.subtract(cut) };
+    excess = excess.subtract(cut);
+  }
+
+  return trimmed;
+};
+
 /**
  * Creates or updates splits for a transaction.
  * Validates splits, deletes existing ones, and creates new ones.
@@ -44,12 +71,29 @@ export const manageSplits = async ({
   transactionId,
   userId,
   categoryOwnerUserId,
-  splits,
-  transactionAmount,
+  splits: requestedSplits,
+  transactionAmount: requestedTransactionAmount,
   transactionCurrencyCode,
   transactionTime,
   transferNature,
 }: ManageSplitsParams): Promise<TransactionSplits[]> => {
+  const transactionDecimals = await getCurrencyDecimals({
+    userId: categoryOwnerUserId ?? userId,
+    code: transactionCurrencyCode,
+  });
+  const transactionAmount = requestedTransactionAmount.round(transactionDecimals);
+  const roundedSplits = requestedSplits?.map((split) => ({
+    ...split,
+    amount: split.amount?.round(transactionDecimals) ?? split.amount,
+  }));
+  // Rounding is monotonic, so any split sum that fits the entered amount also fits once both are
+  // rounded, even when callers pass the amount already rounded. Rounding each split can still push
+  // their sum over, so the excess comes off the splits before the validator checks the rounded sum.
+  const splits =
+    requestedSplits && sumSplits({ splits: requestedSplits }).round(transactionDecimals).lte(transactionAmount)
+      ? trimSplitsToTotal({ splits: roundedSplits!, total: transactionAmount })
+      : roundedSplits;
+
   // Fetch existing splits — keyed by transactionId; userId is creator metadata only.
   const existingSplits = await TransactionSplits.findAll({
     where: { transactionId },
@@ -86,6 +130,7 @@ export const manageSplits = async ({
   await assertValidSplits({
     splits,
     transactionAmount,
+    minSplitAmount: Money.fromMinorUnits({ value: 1, decimals: transactionDecimals }),
     categoryOwnerUserId: categoryOwnerUserId ?? userId,
     transferNature: transferNature as Parameters<typeof assertValidSplits>[0]['transferNature'],
   });
@@ -97,6 +142,7 @@ export const manageSplits = async ({
   });
 
   const isBaseCurrency = transactionCurrencyCode === baseCurrency.code;
+  const baseDecimals = await getCurrencyDecimals({ userId, code: baseCurrency.code });
 
   // Prepare split payloads with calculated refAmounts
   const splitPayloads: CreateSplitPayload[] = await Promise.all(
@@ -107,7 +153,7 @@ export const manageSplits = async ({
       if (!isBaseCurrency) {
         if (split.refAmount !== undefined) {
           // Use provided refAmount if available
-          refAmount = split.refAmount;
+          refAmount = split.refAmount.round(baseDecimals);
         } else {
           // Calculate refAmount based on exchange rate
           refAmount = await calculateRefAmount({

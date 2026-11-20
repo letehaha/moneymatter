@@ -1,25 +1,29 @@
-import { type Cents, RecordId } from '@bt/shared/types';
-import { roundHalfToEven } from '@common/utils/round-half-to-even';
+import { type MinorUnits, RecordId } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
 import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
 import { buildDailyPairRateResolver, toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
-import { getCreditLimitCentsByAccount } from '@services/stats/get-credit-limit-adjustment';
+import { getCreditLimitMinorByAccount } from '@services/stats/get-credit-limit-adjustment';
 import { resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
 import { getUserSettings } from '@services/user-settings/get-user-settings';
 import { QueryTypes } from 'sequelize';
 
 import { localMidnight, utcInstant } from '../date-ranges';
 
+/** Money columns and SUMs arrive from the raw query as DECIMAL strings in major units. */
 interface CashRow {
   accountId: RecordId;
   currencyCode: string;
-  nativeLimit: string | number;
-  nativeOpening: string | number;
-  opening: string | number;
-  closing: string | number;
+  nativeLimit: string;
+  nativeOpening: string;
+  opening: string;
+  closing: string;
 }
+
+const decimalToMinor = ({ value, decimals }: { value: string; decimals: number }): number =>
+  Money.fromDecimal(value).toMinorUnits({ decimals });
 
 /**
  * The rate Balances revalue uses for a day: the user's manual rate, else the
@@ -53,7 +57,7 @@ const storedRate = async ({
 };
 
 /**
- * Base-currency cents held in the plan's accounts just before the `opening` and
+ * Base-currency minor units at `decimals` (converted from the DECIMAL columns at the query boundary) held in the plan's accounts just before the `opening` and
  * `closing` days start ('yyyy-MM-dd', in `timezone`): the current balance minus every
  * transaction from then on, a card net of its credit limit when the user's
  * include-credit-limits setting is on. A foreign account's
@@ -66,11 +70,14 @@ export const getPlanCash = async ({
   plan,
   opening,
   closing,
+  decimals,
   timezone,
 }: {
   plan: BudgetPlans;
   opening: string;
   closing: string;
+  /** The plan currency's decimals, which is the base currency's. */
+  decimals: number;
   timezone: string;
 }): Promise<{ opening: number; closing: number }> => {
   const openingAt = localMidnight({ param: 'opening' });
@@ -78,15 +85,15 @@ export const getPlanCash = async ({
   const [limits, baseCurrency, rows] = await Promise.all([
     getUserSettings({ userId: plan.userId }).then((settings) =>
       settings.includeCreditLimitInStats
-        ? getCreditLimitCentsByAccount({ userId: plan.userId, accountScope: 'owned' })
-        : new Map<RecordId, Cents>(),
+        ? getCreditLimitMinorByAccount({ userId: plan.userId, accountScope: 'owned', decimals })
+        : new Map<RecordId, MinorUnits>(),
     ),
     getBaseCurrency({ userId: plan.userId }),
     connection.sequelize.query(
       `
       WITH signed AS (
         SELECT t."accountId", t."time",
-               CASE WHEN t."transactionType" = 'income' THEN t."refAmount" ELSE -t."refAmount" END AS "cents",
+               CASE WHEN t."transactionType" = 'income' THEN t."refAmount" ELSE -t."refAmount" END AS "ref",
                CASE WHEN t."transactionType" = 'income' THEN t."amount" ELSE -t."amount" END AS "native"
         FROM real_transactions t
         JOIN "BudgetPlanAccounts" pa ON pa."accountId" = t."accountId" AND pa."planId" = :planId
@@ -94,8 +101,8 @@ export const getPlanCash = async ({
       )
       SELECT a.id AS "accountId", a."currencyCode", a."creditLimit" AS "nativeLimit",
              a."currentBalance" - COALESCE(SUM(s."native") FILTER (WHERE s."time" >= ${openingAt}), 0) AS "nativeOpening",
-             a."refCurrentBalance" - COALESCE(SUM(s."cents") FILTER (WHERE s."time" >= ${openingAt}), 0) AS "opening",
-             a."refCurrentBalance" - COALESCE(SUM(s."cents") FILTER (WHERE s."time" >= ${closingAt}), 0) AS "closing"
+             a."refCurrentBalance" - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= ${openingAt}), 0) AS "opening",
+             a."refCurrentBalance" - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= ${closingAt}), 0) AS "closing"
       FROM "BudgetPlanAccounts" pa
       JOIN "Accounts" a ON a.id = pa."accountId" AND a."excludeFromStats" = false AND a."userId" = :ownerId
       LEFT JOIN signed s ON s."accountId" = a.id
@@ -118,7 +125,7 @@ export const getPlanCash = async ({
   const openings = await Promise.all(
     rows.map(async (row) => {
       if (row.currencyCode === baseCurrency?.currencyCode)
-        return Number(row.opening) - (limits.get(row.accountId) ?? 0);
+        return decimalToMinor({ value: row.opening, decimals }) - (limits.get(row.accountId) ?? 0);
 
       const rate = await storedRate({
         userId: plan.userId,
@@ -132,16 +139,25 @@ export const getPlanCash = async ({
           accountId: row.accountId,
           currency: row.currencyCode,
         });
-        return Number(row.opening) - (limits.get(row.accountId) ?? 0);
+        return decimalToMinor({ value: row.opening, decimals }) - (limits.get(row.accountId) ?? 0);
       }
 
-      const nativeLimit = limits.has(row.accountId) ? Number(row.nativeLimit) : 0;
-      return roundHalfToEven((Number(row.nativeOpening) - nativeLimit) * rate);
+      // The native figure stays a decimal through the rate and is rounded once, to the base minor unit:
+      // rounding it to the base scale first would lose value (USD 0.60 at 100 JPY/USD is 60 JPY, not 100).
+      const nativeLimit = limits.has(row.accountId) ? Money.fromDecimal(row.nativeLimit) : Money.zero();
+      return Money.fromDecimal(row.nativeOpening)
+        .subtract(nativeLimit)
+        .multiply(rate)
+        .roundHalfEven(decimals)
+        .toMinorUnits({ decimals });
     }),
   );
 
   return {
-    opening: openings.reduce((sum, cents) => sum + cents, 0),
-    closing: rows.reduce((sum, row) => sum + Number(row.closing) - (limits.get(row.accountId) ?? 0), 0),
+    opening: openings.reduce((sum, minor) => sum + minor, 0),
+    closing: rows.reduce(
+      (sum, row) => sum + decimalToMinor({ value: row.closing, decimals }) - (limits.get(row.accountId) ?? 0),
+      0,
+    ),
   };
 };

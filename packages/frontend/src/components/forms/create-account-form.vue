@@ -21,6 +21,8 @@ import * as Select from '@/components/lib/ui/select';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useCurrencyName } from '@/composable';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import * as validators from '@/js/helpers/validators';
 import { trackAnalyticsEvent } from '@/lib/posthog';
 import { useCurrenciesStore } from '@/stores';
@@ -75,9 +77,20 @@ const form = reactive<{
   logo: null,
 });
 
+const amountDecimals = computed(() => getCurrencyDecimals({ code: form.currencyCode }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
+
 const { isFormValid, touchField, getFieldErrorMessage } = useFormValidation(
   { form },
-  { form: { name: { required: validators.required } } },
+  {
+    form: {
+      name: { required: validators.required },
+      initialBalance: { currencyDecimal: currencyDecimal.rule.value },
+      creditLimit: { currencyDecimal: currencyDecimal.rule.value },
+    },
+  },
+  undefined,
+  { customValidationMessages: { currencyDecimal: currencyDecimal.message } },
 );
 
 const logoPlaceholderAccount = computed(() => ({
@@ -201,8 +214,11 @@ const submit = async () => {
     <input-field
       v-model="form.initialBalance"
       type="number"
+      :decimals="amountDecimals"
       :label="$t('forms.createAccount.initialBalanceLabel')"
       :placeholder="$t('forms.createAccount.initialBalancePlaceholder')"
+      :error-message="getFieldErrorMessage('form.initialBalance')"
+      @blur="touchField('form.initialBalance')"
     >
       <template #label-right>
         <DocsLink path="/accounts/create-an-account/#choose-the-right-initial-balance" class="text-xs">
@@ -236,8 +252,11 @@ const submit = async () => {
     <input-field
       v-model="form.creditLimit"
       type="number"
+      :decimals="amountDecimals"
       :label="$t('forms.createAccount.creditLimitLabel')"
       :placeholder="$t('forms.createAccount.creditLimitPlaceholder')"
+      :error-message="getFieldErrorMessage('form.creditLimit')"
+      @blur="touchField('form.creditLimit')"
     />
 
     <external-url-field

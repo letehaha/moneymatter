@@ -1,5 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { BudgetPlanCarryPolicy } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ConflictError } from '@js/errors';
@@ -36,6 +37,15 @@ const updatePlanImpl = async ({
   expectedIncome?: number | null;
 }) => {
   const plan = await findPlan({ planId, userId, lock: true });
+  const income =
+    expectedIncome == null
+      ? expectedIncome
+      : await roundToCurrency({
+          money: Money.fromDecimal(expectedIncome),
+          userId,
+          currencyCode: plan.currencyCode,
+          mode: 'half-up',
+        });
 
   let poolFrom: string | null | undefined;
   if (poolEnabled === false) poolFrom = null;
@@ -51,7 +61,7 @@ const updatePlanImpl = async ({
       carryPolicy,
       poolFrom,
       zeroSum: poolOn ? zeroSum : false,
-      expectedIncome: expectedIncome == null ? expectedIncome : Money.fromDecimal(expectedIncome),
+      expectedIncome: income,
     }),
   );
 

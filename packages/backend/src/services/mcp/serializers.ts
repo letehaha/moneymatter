@@ -208,7 +208,8 @@ export function slimSubscriptionDetailForMcp(sub: SubscriptionDetailForMcp) {
 }
 
 const goalProgressForMcp = ({ goal, insights }: { goal: GoalModel; insights: GoalInsights }) => {
-  const inGoalCurrency = (amount: number | null) => toGoalCurrency({ amount, rateToBase: insights.rateToBase });
+  const inGoalCurrency = (amount: number | null) =>
+    toGoalCurrency({ amount, rateToBase: insights.rateToBase, decimals: insights.goalDecimals });
 
   return {
     status: goalDisplayStatus(goal),

@@ -1,3 +1,4 @@
+import { trimAmountNoise } from '@/js/helpers/currency-decimals';
 import { cn } from '@/lib/utils';
 import {
   type AccountModel,
@@ -357,14 +358,17 @@ export const buildAssignmentPayload = ({
 export const buildPoolAssignPayload = ({
   line,
   amount,
+  decimals,
 }: {
   line: Pick<BudgetPlanPeriodViewLine, 'assigned' | 'assignedSource' | 'carryPolicy'>;
   amount: number | null;
+  /** Decimals of the plan's base currency. */
+  decimals: number;
 }): SetBudgetPlanAssignmentPayload | null => {
   if (!amount || amount <= 0) return null;
   return buildAssignmentPayload({
     line,
-    amount: Math.round((line.assigned + amount) * 100) / 100,
+    amount: trimAmountNoise({ value: line.assigned + amount, decimals }),
     scope: 'this_period',
     carryPolicy: line.carryPolicy,
   });
@@ -374,14 +378,17 @@ export const buildPoolAssignPayload = ({
 export const buildPoolTakeBackPayload = ({
   line,
   amount,
+  decimals,
 }: {
   line: Pick<BudgetPlanPeriodViewLine, 'assigned' | 'poolAssigned' | 'assignedSource' | 'carryPolicy'>;
   amount: number | null;
+  /** Decimals of the plan's base currency. */
+  decimals: number;
 }): SetBudgetPlanAssignmentPayload | null => {
   if (!amount || amount <= 0 || amount > line.poolAssigned) return null;
   return buildAssignmentPayload({
     line,
-    amount: Math.round((line.assigned - amount) * 100) / 100,
+    amount: trimAmountNoise({ value: line.assigned - amount, decimals }),
     scope: 'this_period',
     carryPolicy: line.carryPolicy,
   });
@@ -1175,10 +1182,10 @@ export const groupLines = <T extends { groupId: string | null }, G extends { id:
   };
 };
 
-export const sumLineTotals = ({ lines }: { lines: LineAmounts[] }) => {
-  // Rounds off float residue; `|| 0` turns -0 into 0, which would format as "−$0.00".
+export const sumLineTotals = ({ lines, decimals }: { lines: LineAmounts[]; decimals: number }) => {
+  // Trims float residue; `|| 0` turns -0 into 0, which would format as "−$0.00".
   const sum = ({ key }: { key: keyof LineAmounts }) =>
-    Math.round(lines.reduce((total, line) => total + line[key], 0) * 100) / 100 || 0;
+    trimAmountNoise({ value: lines.reduce((total, line) => total + line[key], 0), decimals }) || 0;
   return {
     carriedIn: sum({ key: 'carriedIn' }),
     assigned: sum({ key: 'assigned' }),

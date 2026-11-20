@@ -355,7 +355,15 @@ export async function provisionSecondUserWithBaseCurrency({
   return handle;
 }
 
-export async function asBaseCurrencyUser({ currencyCode, fn }: { currencyCode: string; fn: () => Promise<void> }) {
-  const user = await provisionSecondUserWithBaseCurrency({ currencyCode });
-  await asUser({ cookies: user.cookies, fn });
+export async function asNewUserWithBaseCurrency<T>({
+  currencyCode,
+  fn,
+}: {
+  currencyCode: string;
+  fn: () => Promise<T>;
+}): Promise<T> {
+  const { cookies } = await provisionSecondUserWithBaseCurrency({ currencyCode });
+  return asUser({ cookies, fn });
 }
+
+export const asBaseCurrencyUser = asNewUserWithBaseCurrency;

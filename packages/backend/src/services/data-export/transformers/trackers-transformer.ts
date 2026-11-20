@@ -1,4 +1,4 @@
-import { Money, centsToApiDecimalOrNull } from '@common/types/money';
+import { Money, moneyToApiDecimalOrNull } from '@common/types/money';
 import { logger } from '@js/utils';
 import Categories from '@models/categories.model';
 import TrackerCategories from '@models/tracker-categories.model';
@@ -102,7 +102,7 @@ export async function transformTrackers({ userId }: { userId: number }): Promise
       status: tracker.status,
       periodStart: tracker.startDate ? toDateOnly({ value: tracker.startDate }) : '',
       periodEnd: tracker.endDate ? toDateOnly({ value: tracker.endDate }) : '',
-      limitAmount: centsToApiDecimalOrNull(tracker.limitAmount),
+      limitAmount: moneyToApiDecimalOrNull(tracker.limitAmount),
       limitKind: tracker.limitKind,
       currency: baseCurrencyCode,
       categories: (categoriesByTrackerId.get(tracker.id) ?? []).toSorted(),

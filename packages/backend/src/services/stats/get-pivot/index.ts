@@ -18,9 +18,9 @@ import { Op } from 'sequelize';
 import { findBucketIndex } from '../utils';
 import { generatePivotBuckets, getBucketKey, getBucketLabel } from './buckets';
 import { getPivotStrategy } from './dimensions';
-import type { PivotReportResultCents, PivotReportRowCents } from './rows';
+import type { PivotReportResultMinor, PivotReportRowMinor } from './rows';
 
-export type { PivotReportResultCents } from './rows';
+export type { PivotReportResultMinor } from './rows';
 
 interface GetPivotReportParams {
   userId: number;
@@ -33,11 +33,13 @@ interface GetPivotReportParams {
   categoryIds?: string[];
   payeeIds?: string[];
   includeTransfers?: boolean;
+  /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
+  decimals: number;
 }
 
 /**
  * Cross-tabs a row dimension (category / subcategory / payee / tag) against a time dimension,
- * summing `refAmount` (base currency) into integer cents. Split transactions are distributed and
+ * summing `refAmount` (base currency) into integer minor units. Split transactions are distributed and
  * refunds are netted across every dimension on whichever side the report measures, in that leg's
  * own bucket when the leg is in the report — a refunded amount never counts as spend or as income,
  * so an income report minus an expense report nets each refund exactly once.
@@ -56,7 +58,8 @@ export const getPivotReport = async ({
   categoryIds,
   payeeIds,
   includeTransfers,
-}: GetPivotReportParams): Promise<PivotReportResultCents> => {
+  decimals,
+}: GetPivotReportParams): Promise<PivotReportResultMinor> => {
   const buckets = generatePivotBuckets({ from, to, granularity });
   const columnKeys = buckets.map((bucket) => getBucketKey({ periodStart: bucket.periodStart, granularity }));
 
@@ -110,15 +113,15 @@ export const getPivotReport = async ({
     ],
   });
 
-  // rowKey -> (columnKey -> cents). Filled by the dimension strategy.
+  // rowKey -> (columnKey -> minor units). Filled by the dimension strategy.
   const cellData = new Map<string, Map<string, number>>();
-  const addCell = ({ rowKey, columnKey, cents }: { rowKey: string; columnKey: string; cents: number }): void => {
+  const addCell = ({ rowKey, columnKey, minor }: { rowKey: string; columnKey: string; minor: number }): void => {
     let columns = cellData.get(rowKey);
     if (!columns) {
       columns = new Map<string, number>();
       cellData.set(rowKey, columns);
     }
-    columns.set(columnKey, (columns.get(columnKey) ?? 0) + cents);
+    columns.set(columnKey, (columns.get(columnKey) ?? 0) + minor);
   };
 
   const bucketIndexForTime = (time: Date): number => findBucketIndex({ transactionTime: time, buckets });
@@ -132,9 +135,10 @@ export const getPivotReport = async ({
     side,
     cellData,
     addCell,
+    decimals,
   });
 
-  const rows: PivotReportRowCents[] = strategy.assembleRows({ cellData, categoryMap, getRootCategoryId });
+  const rows: PivotReportRowMinor[] = strategy.assembleRows({ cellData, categoryMap, getRootCategoryId });
 
   // Column totals sum only top-level rows (parents already roll up their children) to avoid
   // double counting.
@@ -142,8 +146,8 @@ export const getPivotReport = async ({
   for (const columnKey of columnKeys) columnTotals[columnKey] = 0;
   for (const row of rows) {
     if (row.kind === 'child') continue;
-    for (const [columnKey, cents] of Object.entries(row.values)) {
-      columnTotals[columnKey] = (columnTotals[columnKey] ?? 0) + cents;
+    for (const [columnKey, minor] of Object.entries(row.values)) {
+      columnTotals[columnKey] = (columnTotals[columnKey] ?? 0) + minor;
     }
   }
   let grandTotal = 0;
@@ -156,8 +160,7 @@ export const getPivotReport = async ({
     label: getBucketLabel({ periodStart: bucket.periodStart, granularity }),
   }));
 
-  // Every user has a base currency, so this normally resolves; the empty-string fallback is a
-  // defensive last resort the client already guards against (it never invents a wrong currency).
+  // A user who has not picked a base currency yet gets an empty code, never a guessed one.
   const baseCurrency = (await getBaseCurrency({ userId }))?.currencyCode ?? '';
 
   if (strategy.hydrate) await strategy.hydrate({ userId, rows });

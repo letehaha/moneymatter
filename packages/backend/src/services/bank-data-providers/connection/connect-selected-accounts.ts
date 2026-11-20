@@ -6,6 +6,7 @@ import {
   BANK_PROVIDER_TYPE,
   NO_CURRENCY_CODE,
 } from '@bt/shared/types';
+import { roundMoneyValues, roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, NotFoundError, ServiceUnavailableError, ValidationError } from '@js/errors';
@@ -78,7 +79,15 @@ export const assertExternalAccountNotLinkedElsewhere = async ({
 };
 
 /** The bank balance a link anchors on; refuses rather than anchoring on a balance the bank did not report. */
-export const requireProviderBalance = ({ providerAccount }: { providerAccount: ProviderAccount }): Money => {
+export const requireProviderBalance = async ({
+  providerAccount,
+  userId,
+  currencyCode,
+}: {
+  providerAccount: ProviderAccount;
+  userId: number;
+  currencyCode: string;
+}): Promise<Money> => {
   if (providerAccount.balance === null) {
     throw new ServiceUnavailableError({
       message: t({
@@ -87,7 +96,7 @@ export const requireProviderBalance = ({ providerAccount }: { providerAccount: P
       }),
     });
   }
-  return Money.fromCents(providerAccount.balance);
+  return roundToCurrency({ money: providerAccount.balance, userId, currencyCode, mode: 'half-up' });
 };
 
 /**
@@ -204,7 +213,9 @@ const createAccountsForConnection = withTransaction(
         }
 
         const previousLink = existingAccount.externalData?.bankConnection;
-        const relinkBankBalance = isRelink ? requireProviderBalance({ providerAccount }) : null;
+        const relinkBankBalance = isRelink
+          ? await requireProviderBalance({ providerAccount, userId, currencyCode: existingAccount.currencyCode })
+          : null;
         // A relink starts a new link day. The queued sync's absorb stamps S from the bank
         // balance, so nothing from the previous link carries over.
         const bankConnection: AccountExternalData['bankConnection'] = relinkBankBalance
@@ -212,9 +223,9 @@ const createAccountsForConnection = withTransaction(
               linkedAt: new Date().toISOString(),
               linkingStrategy: 'forward-only',
               balanceReconciliation: {
-                systemBalance: existingAccount.currentBalance.toCents(),
-                externalBalance: relinkBankBalance.toCents(),
-                difference: relinkBankBalance.subtract(existingAccount.currentBalance).toCents(),
+                systemBalance: existingAccount.currentBalance.toNumber(),
+                externalBalance: relinkBankBalance.toNumber(),
+                difference: relinkBankBalance.subtract(existingAccount.currentBalance).toNumber(),
                 adjustmentTransactionId: null,
                 residualTarget: previousLink?.balanceReconciliation?.residualTarget,
                 pendingAbsorb: true,
@@ -288,26 +299,33 @@ const createAccountsForConnection = withTransaction(
         }
         await addUserCurrencies([{ userId, currencyCode: currency.code }]);
 
-        const now = new Date();
         // ponytail: a new account still opens at 0 when the bank omits its balance; the first sync writes the real one.
-        const openingBalance = Money.fromCents(providerAccount.balance ?? 0);
+        const { providerBalance, creditLimit } = await roundMoneyValues({
+          values: {
+            providerBalance: providerAccount.balance ?? Money.zero(),
+            creditLimit: providerAccount.creditLimit ?? Money.zero(),
+          },
+          userId,
+          currencyCode: providerAccount.currency,
+          mode: 'half-up',
+        });
+
+        const now = new Date();
         const accountRefBalance = await calculateRefAmount({
-          amount: openingBalance,
+          amount: providerBalance,
           userId,
           date: now,
           baseCode: providerAccount.currency,
         });
 
-        const creditLimitCents = (providerAccount.metadata?.creditLimit as number) || 0;
-        const refCreditLimit =
-          creditLimitCents > 0
-            ? await calculateRefAmount({
-                amount: Money.fromCents(creditLimitCents),
-                userId,
-                date: now,
-                baseCode: providerAccount.currency,
-              })
-            : Money.zero();
+        const refCreditLimit = creditLimit.isPositive()
+          ? await calculateRefAmount({
+              amount: creditLimit,
+              userId,
+              date: now,
+              baseCode: providerAccount.currency,
+            })
+          : Money.zero();
 
         // Create new account
         const accountName =
@@ -321,11 +339,11 @@ const createAccountsForConnection = withTransaction(
           type: PROVIDER_TO_ACCOUNT_TYPE[connection.providerType as BANK_PROVIDER_TYPE],
           accountCategory: ACCOUNT_CATEGORIES.general,
           currencyCode: providerAccount.currency,
-          initialBalance: openingBalance,
+          initialBalance: providerBalance,
           refInitialBalance: accountRefBalance,
-          currentBalance: openingBalance,
+          currentBalance: providerBalance,
           refCurrentBalance: accountRefBalance,
-          creditLimit: creditLimitCents,
+          creditLimit,
           refCreditLimit,
           externalId: providerAccount.externalId,
           externalData: { ...providerAccount.metadata, ...(currencyFallback && { currencyFallback }) },

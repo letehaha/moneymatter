@@ -1,0 +1,11 @@
+[
+  {
+    "id": "01a1cf52-7d37-7172-b342-76bb078dde57",
+    "trackerId": "01a1cf52-7d2b-748c-bbc4-046ed239e4df",
+    "name": "Food line",
+    "limitAmount": 12050,
+    "position": 0,
+    "createdAt": "2026-11-12T10:34:12.151Z",
+    "updatedAt": "2026-11-12T10:34:12.151Z"
+  }
+]

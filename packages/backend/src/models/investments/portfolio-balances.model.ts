@@ -23,16 +23,16 @@ export default class PortfolioBalances extends Model {
   @Column({ type: DataType.STRING(3), allowNull: false })
   currencyCode!: string;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare availableCash: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare totalCash: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare refAvailableCash: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare refTotalCash: Money;
 
   @Column({ type: DataType.DATE, allowNull: false })

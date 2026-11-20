@@ -1,5 +1,4 @@
 import type { ExtractedTransaction, StatementDuplicateMatch } from '@bt/shared/types';
-import { Money, centsToApiDecimal } from '@common/types/money';
 import { detectDuplicates as genericDetectDuplicates } from '@root/services/transactions/duplicates-detection/detect-duplicates.service';
 
 interface DetectDuplicatesParams {
@@ -11,23 +10,19 @@ interface DetectDuplicatesParams {
 /**
  * Detect duplicate transactions for statement import.
  *
- * Extracted amounts are decimals (same format execute-import accepts), while the
- * generic matcher compares cents, so amounts are converted on the way in and out.
+ * Extracted amounts are decimals (same format execute-import accepts), and so is the generic
+ * matcher's input and output, which rounds them to the account currency's decimals itself.
  */
 export async function detectDuplicates({
   userId,
   accountId,
   transactions,
 }: DetectDuplicatesParams): Promise<StatementDuplicateMatch[]> {
-  const duplicates = await genericDetectDuplicates({
-    userId,
-    accountId,
-    transactions: transactions.map((tx) => ({ ...tx, amount: Money.fromDecimal(tx.amount).toCents() })),
-  });
+  const duplicates = await genericDetectDuplicates({ userId, accountId, transactions });
 
   return duplicates.map((d) => ({
     transactionIndex: d.index,
     extractedTransaction: transactions[d.index]!,
-    existingTransaction: { ...d.existing, amount: centsToApiDecimal(d.existing.amount) },
+    existingTransaction: d.existing,
   }));
 }

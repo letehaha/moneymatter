@@ -261,6 +261,35 @@ describe('Create transaction with splits', () => {
 
     expect(txWithSplits.splits![0]!.refAmount).toEqualRefValue(400 * currencyRate!.rate);
   });
+
+  it('accepts splits that fit the entered amount when both round above the stored amount', async () => {
+    await helpers.addUserCurrencies({ currencyCodes: ['JPY'], raw: true });
+    const account = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ currencyCode: 'JPY' }),
+      raw: true,
+    });
+    const categories = await helpers.getCategoriesList();
+
+    // Old iOS builds check 500.7 + 499.7 <= 1000.4 unrounded; rounded they are 501 + 500 against 1000.
+    const response = await postTransaction(
+      helpers.buildTransactionPayload({
+        accountId: account.id,
+        categoryId: categories[0]!.id,
+        amount: 1000.4,
+        splits: [
+          { categoryId: categories[1]!.id, amount: 500.7 },
+          { categoryId: categories[2]!.id, amount: 499.7 },
+        ],
+      }),
+    );
+    expect(response.statusCode).toBe(200);
+
+    const stored = await readSplits();
+    const splitAmounts = stored.splits!.map((split) => Number(split.amount));
+    expect(Number(stored.amount)).toBe(1000);
+    expect(splitAmounts.every(Number.isInteger)).toBe(true);
+    expect(splitAmounts.reduce((sum, amount) => sum + amount, 0)).toBeLessThanOrEqual(1000);
+  });
 });
 
 describe('Update transaction with splits', () => {

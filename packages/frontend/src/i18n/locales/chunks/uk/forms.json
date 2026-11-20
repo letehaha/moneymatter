@@ -193,7 +193,8 @@
       }
     },
     "validators": {
-      "invalidCurrencyDecimal": "Введіть коректну суму (до 2 знаків після коми)",
+      "invalidCurrencyDecimal": "Введіть коректну суму (до {decimals} десяткового знака) | Введіть коректну суму (до {decimals} десяткових знаків) | Введіть коректну суму (до {decimals} десяткових знаків)",
+      "invalidCurrencyWholeAmount": "Введіть цілу суму",
       "mustBePositive": "Сума має бути додатною",
       "httpUrl": "Введіть коректне http(s)-посилання",
       "maxLength": "Не повинно перевищувати {max} символів"

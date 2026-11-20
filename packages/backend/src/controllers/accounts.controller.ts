@@ -19,7 +19,6 @@ export const getAccounts = createController(z.object({}), async ({ user }) => {
   // breaks the response.
   await refreshStaleVehicleValuesForUser({ userId });
   const accounts = await accountsService.getAccounts({ userId });
-  // Serialize: convert cents to decimal for API response
   return { data: serializeAccounts(accounts) };
 });
 
@@ -34,7 +33,6 @@ export const getAccountById = createController(
     const { id: userId } = user;
 
     const account = await accountsService.getAccountById({ userId, id });
-    // Serialize: convert cents to decimal for API response
     return { data: account ? serializeAccount(account) : null };
   },
 );
@@ -66,7 +64,6 @@ export const createAccount = createController(
       });
     }
 
-    // Convert decimal amounts to cents
     const account = await accountsService.createAccount({
       accountCategory,
       defaultPaymentType,
@@ -83,7 +80,6 @@ export const createAccount = createController(
       logoIcon,
     });
 
-    // Serialize: convert cents to decimal for API response
     return { data: account ? serializeAccount(account) : null };
   },
 );
@@ -120,7 +116,6 @@ export const updateAccount = createController(
     // guard lives in `accountsService.updateAccount` (not here) so every caller
     // — HTTP, MCP, internal — is covered, not just this controller.
 
-    // Convert decimal amounts to cents
     const result = await accountsService.updateAccount({
       id,
       userId,
@@ -143,7 +138,6 @@ export const updateAccount = createController(
       }),
     });
 
-    // Serialize: convert cents to decimal for API response
     return { data: result ? serializeAccount(result) : null };
   },
 );

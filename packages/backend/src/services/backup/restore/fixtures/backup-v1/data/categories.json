@@ -1,0 +1,24 @@
+[
+  {
+    "id": "0191a000-0000-7000-8000-000000000001",
+    "name": "Food & Drinks",
+    "key": "food",
+    "icon": "food-20-filled",
+    "color": "#e74c3c",
+    "type": "custom",
+    "parentId": null,
+    "userId": 1,
+    "applyDefaultTagsOnAiCategorization": false
+  },
+  {
+    "id": "0191a000-0000-7000-8000-000000000002",
+    "name": "Shopping",
+    "key": "shopping",
+    "icon": "shopping-bag-20-filled",
+    "color": "#3498db",
+    "type": "custom",
+    "parentId": null,
+    "userId": 1,
+    "applyDefaultTagsOnAiCategorization": false
+  }
+]

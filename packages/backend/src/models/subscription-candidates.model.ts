@@ -5,6 +5,8 @@ import {
   RecordId,
 } from '@bt/shared/types';
 import { IdColumn } from '@common/types/id-column';
+import { Money } from '@common/types/money';
+import { MoneyField } from '@common/types/money-column';
 import { Table, Column, Model, ForeignKey, BelongsTo, DataType } from 'sequelize-typescript';
 
 import Accounts from './accounts.model';
@@ -53,12 +55,8 @@ export default class SubscriptionCandidates extends Model {
   })
   detectedIntervalCount!: number | null;
 
-  @Column({
-    type: DataType.BIGINT,
-    allowNull: false,
-    comment: 'Average amount in cents',
-  })
-  averageAmount!: number;
+  @MoneyField()
+  declare averageAmount: Money;
 
   @Column({
     type: DataType.STRING(3),

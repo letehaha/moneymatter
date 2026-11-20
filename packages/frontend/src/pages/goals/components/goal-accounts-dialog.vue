@@ -9,6 +9,7 @@ import { Label } from '@/components/lib/ui/label';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { useFormatCurrency } from '@/composable';
 import { useGoals } from '@/composable/data-queries/goals';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { cn } from '@/lib/utils';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import { FULL_SHARE, roundShare } from '@bt/shared/goals/goal-math';
@@ -34,7 +35,7 @@ const open = defineModel<boolean>('open', { required: true });
 const emit = defineEmits<{ 'update:modelValue': [shares: GoalAccountShare[]] }>();
 
 const { t } = useI18n();
-const { formatAmountByCurrencyCode, formatBaseCurrency } = useFormatCurrency();
+const { formatAmountByCurrencyCode, formatBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
 const { accounts, accountsRecord, isAccountsFetched } = storeToRefs(useAccountsStore());
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const { data: goals, isLoading: isGoalsLoading, refetch: refetchGoals } = useGoals();
@@ -193,6 +194,7 @@ const countedOf = ({ row }: { row: AccountRow }) => {
       share: share.mode === 'percent' ? { ...share, sharePercent: Math.min(share.sharePercent ?? 0, row.max) } : share,
     }),
     holders: row.fixedHolders,
+    baseDecimals: baseCurrencyDecimals.value,
   });
 };
 
@@ -389,6 +391,9 @@ const apply = () => {
                   "
                   type="number"
                   only-positive
+                  :decimals="
+                    isAmountMode({ row }) ? getCurrencyDecimals({ code: row.account.currencyCode }) : undefined
+                  "
                   :placeholder="
                     isAmountMode({ row })
                       ? $t('goals.accountsDialog.amountPlaceholder')

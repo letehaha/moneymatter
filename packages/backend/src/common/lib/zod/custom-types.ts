@@ -11,6 +11,7 @@ import {
   BUDGET_SUGGESTION_SUBSCRIPTIONS,
   BUDGET_SUGGESTION_TRANSPORT,
 } from '@bt/shared/types';
+import { MONEY_COLUMN_SCALE } from '@common/lib/money-columns';
 import { Money } from '@common/types/money';
 import cc from 'currency-codes';
 import { z } from 'zod';
@@ -60,11 +61,19 @@ export const uniqueRecordIds = ({ min, max }: { min?: number; max?: number } = {
  */
 export const decimalMoney = () => z.number().transform((val) => Money.fromDecimal(val));
 
-/** A plain decimal (no Money transform) of at most 2 places, capped at 1e13; `positive` excludes 0. */
+/**
+ * A plain decimal (no Money transform), capped at 1e13; `positive` excludes 0.
+ *
+ * The schema only enforces what the storage can hold. How many decimals the amount may carry
+ * depends on the currency it is denominated in, which the request does not name, so the service
+ * that knows the currency rounds it (`roundToCurrency`, or `roundGoalAmount` for amounts that must
+ * stay above 0).
+ */
 export const boundedDecimalAmount = ({ positive = false }: { positive?: boolean } = {}) =>
-  (positive ? z.number().positive() : z.number().min(0))
-    .max(1e13)
-    .refine((value) => /^\d+(\.\d{1,2})?$/.test(String(value)), 'At most 2 decimal places');
+  (positive ? z.number().positive() : z.number().min(0)).max(1e13).refine((value) => {
+    const money = Money.fromDecimal(value);
+    return money.round(MONEY_COLUMN_SCALE).equals(money);
+  }, `At most ${MONEY_COLUMN_SCALE} decimal places`);
 
 /** Name of a budget plan, line or line group. */
 export const budgetPlanName = () => z.string().trim().min(1).max(BUDGET_PLAN_NAME_MAX_LENGTH);

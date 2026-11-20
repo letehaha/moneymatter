@@ -2,6 +2,7 @@
 import type { RefundRole } from '@/api/transactions';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { cn } from '@/lib/utils';
 import { useCategoriesStore } from '@/stores';
 import { TRANSACTION_TYPES } from '@bt/shared/types';
@@ -65,15 +66,19 @@ const withoutRefund = ({
 }) => {
   const remaining = list.filter((item) => item.transaction.id !== removed.transaction.id);
   if (!remaining.length) return clearedValue();
+  const decimals = getCurrencyDecimals({ code: props.currentCurrencyCode });
   const refilled = refillRefundSide({
     links: remaining,
     role,
     amount: props.currentAmount,
     currencyCode: props.currentCurrencyCode,
+    decimals,
     savedShares: props.savedRefundShares,
     convert,
   });
-  return role === 'refund' ? finalizeRefundShares({ links: refilled, refundAmount: props.currentAmount }) : refilled;
+  return role === 'refund'
+    ? finalizeRefundShares({ links: refilled, refundAmount: props.currentAmount, decimals })
+    : refilled;
 };
 
 const removeRefund = (removed: RefundWithSplit) => {

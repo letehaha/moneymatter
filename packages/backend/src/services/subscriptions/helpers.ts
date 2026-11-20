@@ -21,7 +21,7 @@ import Tags from '@models/tags.model';
  * So `expectedAmount` and `expectedCurrencyCode` must travel together: both set
  * or both null. Enforced in the service layer (the HTTP controllers check too,
  * but MCP callers reach the service directly). Pass the merged post-update
- * values; only their null-ness matters, so cents-vs-decimal is irrelevant here.
+ * values; only their null-ness matters.
  */
 export const assertAmountCurrencyConsistent = ({
   expectedAmount,

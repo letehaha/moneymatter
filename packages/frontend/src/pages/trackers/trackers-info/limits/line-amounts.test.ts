@@ -31,6 +31,7 @@ const stats = ({ lines, otherSpent = 0 }: { lines: [string, number][]; otherSpen
 describe('buildLineRows', () => {
   it('orders by position and computes spent, left and percent', () => {
     const rows = buildLineRows({
+      decimals: 2,
       lines: [
         line({ id: 'food', position: 2, limitAmount: 500 }),
         line({ id: 'hotels', position: 1, limitAmount: 1000 }),
@@ -49,12 +50,17 @@ describe('buildLineRows', () => {
   });
 
   it('treats missing stats as zero spent', () => {
-    const [row] = buildLineRows({ lines: [line({ id: 'a', position: 0, limitAmount: 100 })], stats: undefined });
+    const [row] = buildLineRows({
+      decimals: 2,
+      lines: [line({ id: 'a', position: 0, limitAmount: 100 })],
+      stats: undefined,
+    });
     expect(row).toMatchObject({ spent: 0, left: 100, percent: 0, isOver: false });
   });
 
   it('leaves left and percent empty without a limit', () => {
     const [row] = buildLineRows({
+      decimals: 2,
       lines: [line({ id: 'a', position: 0, limitAmount: null })],
       stats: stats({ lines: [['a', 40]] }),
     });
@@ -63,6 +69,7 @@ describe('buildLineRows', () => {
 
   it('does not flag a line spent exactly to its limit as over', () => {
     const [row] = buildLineRows({
+      decimals: 2,
       lines: [line({ id: 'a', position: 0, limitAmount: 0.3 })],
       stats: stats({ lines: [['a', 0.1 + 0.2]] }),
     });
@@ -71,6 +78,7 @@ describe('buildLineRows', () => {
 
   it('handles a zero limit', () => {
     const [row] = buildLineRows({
+      decimals: 2,
       lines: [line({ id: 'a', position: 0, limitAmount: 0 })],
       stats: stats({ lines: [['a', 10]] }),
     });
@@ -81,6 +89,7 @@ describe('buildLineRows', () => {
 describe('buildLinesTotals', () => {
   it('sums limits of limited lines and includes other spending', () => {
     const rows = buildLineRows({
+      decimals: 2,
       lines: [
         line({ id: 'a', position: 0, limitAmount: 1000 }),
         line({ id: 'b', position: 1, limitAmount: 800 }),
@@ -96,15 +105,43 @@ describe('buildLinesTotals', () => {
       }),
     });
 
-    expect(buildLinesTotals({ rows, otherSpent: 276 })).toEqual({ limitSum: 1800, spent: 1780, left: 20 });
+    expect(buildLinesTotals({ decimals: 2, rows, otherSpent: 276 })).toEqual({ limitSum: 1800, spent: 1780, left: 20 });
   });
 
   it('has no limit sum or left when no line has a limit', () => {
     const rows = buildLineRows({
+      decimals: 2,
       lines: [line({ id: 'a', position: 0, limitAmount: null })],
       stats: stats({ lines: [['a', 50]] }),
     });
 
-    expect(buildLinesTotals({ rows, otherSpent: 0 })).toEqual({ limitSum: null, spent: 50, left: null });
+    expect(buildLinesTotals({ decimals: 2, rows, otherSpent: 0 })).toEqual({ limitSum: null, spent: 50, left: null });
+  });
+});
+
+describe('line amounts at the base currency decimals', () => {
+  it.each<[number, number, number, number]>([
+    [3, 10.004, 10.005, -0.001],
+    [0, 1000, 1001, -1],
+  ])('at %d decimals flags a line over its %d limit by one minor unit', (decimals, limitAmount, spent, left) => {
+    const [row] = buildLineRows({
+      decimals,
+      lines: [line({ id: 'a', position: 0, limitAmount })],
+      stats: stats({ lines: [['a', spent]] }),
+    });
+    expect(row).toMatchObject({ left, isOver: true });
+  });
+
+  it('keeps the third decimal in the totals', () => {
+    const rows = buildLineRows({
+      decimals: 3,
+      lines: [line({ id: 'a', position: 0, limitAmount: 1.234 })],
+      stats: stats({ lines: [['a', 0.001]] }),
+    });
+    expect(buildLinesTotals({ decimals: 3, rows, otherSpent: 2.345 })).toEqual({
+      limitSum: 1.234,
+      spent: 2.346,
+      left: -1.112,
+    });
   });
 });

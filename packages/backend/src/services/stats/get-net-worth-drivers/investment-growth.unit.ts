@@ -1,13 +1,13 @@
-import { type Cents, INVESTMENT_TRANSACTION_CATEGORY, asCents } from '@bt/shared/types';
+import { type MinorUnits, INVESTMENT_TRANSACTION_CATEGORY, asMinorUnits } from '@bt/shared/types';
 
 import {
-  type InvestmentGrowthCents,
+  type InvestmentGrowthMinor,
   type PortfolioGrowthSeries,
   accumulateInvestmentFlows,
   computeInvestmentGrowth,
   foldPortfolioGrowth,
 } from './investment-growth';
-import type { InvestmentFlowRow, InvestmentFlowsCents } from './types';
+import type { InvestmentFlowRow, InvestmentFlowsMinor } from './types';
 
 // `InvestmentFlowRow` mirrors a `raw: true` query result — DECIMAL fields are
 // plain strings, exactly as the pg driver returns them.
@@ -29,22 +29,22 @@ const buildTx = ({
   refFees: String(fees),
 });
 
-/** Cents-branded flow bucket from decimal-free integer inputs, defaulting each leg to zero. */
+/** MinorUnits-branded flow bucket from decimal-free integer inputs, defaulting each leg to zero. */
 const flowsBucket = ({
   buyNotional = 0,
   sellNotional = 0,
   dividendsGross = 0,
   feesAndTaxes = 0,
-}: Partial<Record<keyof InvestmentFlowsCents, number>> = {}): InvestmentFlowsCents => ({
-  buyNotional: asCents(buyNotional),
-  sellNotional: asCents(sellNotional),
-  dividendsGross: asCents(dividendsGross),
-  feesAndTaxes: asCents(feesAndTaxes),
+}: Partial<Record<keyof InvestmentFlowsMinor, number>> = {}): InvestmentFlowsMinor => ({
+  buyNotional: asMinorUnits(buyNotional),
+  sellNotional: asMinorUnits(sellNotional),
+  dividendsGross: asMinorUnits(dividendsGross),
+  feesAndTaxes: asMinorUnits(feesAndTaxes),
 });
 
-/** Cents-branded holdings snapshot map keyed by date string. */
-const holdings = (entries: Record<string, number>): Map<string, Cents> =>
-  new Map(Object.entries(entries).map(([date, cents]): [string, Cents] => [date, asCents(cents)]));
+/** MinorUnits-branded holdings snapshot map keyed by date string. */
+const holdings = (entries: Record<string, number>): Map<string, MinorUnits> =>
+  new Map(Object.entries(entries).map(([date, minor]): [string, MinorUnits] => [date, asMinorUnits(minor)]));
 
 describe('accumulateInvestmentFlows', () => {
   const boundaryDates = ['2025-12-31', '2026-01-31', '2026-02-28'];
@@ -52,6 +52,7 @@ describe('accumulateInvestmentFlows', () => {
   it('takes fees out of buy and sell notional', () => {
     // A $600 purchase with a $10 fee is stored as 610; a $200 sale with a $5 fee as 195.
     const flows = accumulateInvestmentFlows({
+      decimals: 2,
       transactions: [
         buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.buy, date: '2026-01-10', amount: 610, fees: 10 }),
         buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.sell, date: '2026-01-20', amount: 195, fees: 5 }),
@@ -69,6 +70,7 @@ describe('accumulateInvestmentFlows', () => {
 
   it('counts dividends gross and their fee once', () => {
     const flows = accumulateInvestmentFlows({
+      decimals: 2,
       transactions: [
         buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.dividend, date: '2026-01-15', amount: 48, fees: 2 }),
       ],
@@ -82,6 +84,7 @@ describe('accumulateInvestmentFlows', () => {
   it('counts a standalone fee or tax row once, at its full amount', () => {
     // A standalone fee row has no notional, so refAmount and refFees are the same value.
     const flows = accumulateInvestmentFlows({
+      decimals: 2,
       transactions: [
         buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.fee, date: '2026-01-05', amount: 12, fees: 12 }),
         buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.tax, date: '2026-01-06', amount: 30, fees: 0 }),
@@ -94,6 +97,7 @@ describe('accumulateInvestmentFlows', () => {
 
   it('ignores categories that move neither cash nor shares', () => {
     const flows = accumulateInvestmentFlows({
+      decimals: 2,
       transactions: [
         buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.transfer, date: '2026-01-10', amount: 5_000 }),
         buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.cancel, date: '2026-01-11', amount: 100 }),
@@ -107,6 +111,7 @@ describe('accumulateInvestmentFlows', () => {
 
   it('assigns each trade to the bucket whose holdings snapshots bracket it', () => {
     const flows = accumulateInvestmentFlows({
+      decimals: 2,
       transactions: [
         // The opening snapshot day itself already includes this trade, so it belongs to no bucket.
         buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.buy, date: '2025-12-31', amount: 100 }),
@@ -125,8 +130,21 @@ describe('accumulateInvestmentFlows', () => {
     expect(flows[1]!.buyNotional).toBe(80_000);
   });
 
+  it('converts the cash legs at the decimals handed in', () => {
+    const flows = accumulateInvestmentFlows({
+      decimals: 3,
+      transactions: [
+        buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.buy, date: '2026-01-10', amount: 6.101, fees: 0.101 }),
+        buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.dividend, date: '2026-01-15', amount: 0.478, fees: 0.022 }),
+      ],
+      boundaryDates,
+    });
+
+    expect(flows[0]).toEqual({ buyNotional: 6_000, sellNotional: 0, dividendsGross: 500, feesAndTaxes: 123 });
+  });
+
   it('returns a zeroed bucket per period when there are no transactions', () => {
-    const flows = accumulateInvestmentFlows({ transactions: [], boundaryDates });
+    const flows = accumulateInvestmentFlows({ decimals: 2, transactions: [], boundaryDates });
 
     expect(flows).toHaveLength(2);
     expect(flows[0]).toEqual({ buyNotional: 0, sellNotional: 0, dividendsGross: 0, feesAndTaxes: 0 });
@@ -140,7 +158,7 @@ describe('computeInvestmentGrowth', () => {
     // 10 shares held from $100 to $150.
     const [result] = computeInvestmentGrowth({
       flows: [flowsBucket()],
-      holdingsCentsByDate: holdings({
+      holdingsMinorByDate: holdings({
         '2025-12-31': 100_000,
         '2026-01-31': 150_000,
       }),
@@ -155,7 +173,7 @@ describe('computeInvestmentGrowth', () => {
     // Growth is the $50 gain on 10 held shares plus the $30 gain on 5 bought ones, not the $600 spent.
     const [result] = computeInvestmentGrowth({
       flows: [flowsBucket({ buyNotional: 60_000 })],
-      holdingsCentsByDate: holdings({
+      holdingsMinorByDate: holdings({
         '2025-12-31': 100_000,
         '2026-01-31': 225_000,
       }),
@@ -170,7 +188,7 @@ describe('computeInvestmentGrowth', () => {
     // Sell everything at cost: holdings drain to zero but nothing was gained or lost.
     const [result] = computeInvestmentGrowth({
       flows: [flowsBucket({ sellNotional: 100_000 })],
-      holdingsCentsByDate: holdings({
+      holdingsMinorByDate: holdings({
         '2025-12-31': 100_000,
         '2026-01-31': 0,
       }),
@@ -183,7 +201,7 @@ describe('computeInvestmentGrowth', () => {
   it('adds dividends and subtracts fees and taxes', () => {
     const [result] = computeInvestmentGrowth({
       flows: [flowsBucket({ dividendsGross: 5_000, feesAndTaxes: 1_000 })],
-      holdingsCentsByDate: holdings({
+      holdingsMinorByDate: holdings({
         '2025-12-31': 100_000,
         '2026-01-31': 150_000,
       }),
@@ -196,7 +214,7 @@ describe('computeInvestmentGrowth', () => {
   it('reports a losing period as negative growth', () => {
     const [result] = computeInvestmentGrowth({
       flows: [flowsBucket()],
-      holdingsCentsByDate: holdings({
+      holdingsMinorByDate: holdings({
         '2025-12-31': 150_000,
         '2026-01-31': 100_000,
       }),
@@ -209,7 +227,7 @@ describe('computeInvestmentGrowth', () => {
   it('always re-adds its components to growth', () => {
     const [result] = computeInvestmentGrowth({
       flows: [flowsBucket({ buyNotional: 33_333, sellNotional: 11_111, dividendsGross: 777, feesAndTaxes: 999 })],
-      holdingsCentsByDate: holdings({
+      holdingsMinorByDate: holdings({
         '2025-12-31': 123_456,
         '2026-01-31': 234_567,
       }),
@@ -222,7 +240,7 @@ describe('computeInvestmentGrowth', () => {
   it('treats a period with no holdings on either side as zero growth', () => {
     const [result] = computeInvestmentGrowth({
       flows: [flowsBucket()],
-      holdingsCentsByDate: holdings({}),
+      holdingsMinorByDate: holdings({}),
       boundaryDates,
     });
 
@@ -232,7 +250,7 @@ describe('computeInvestmentGrowth', () => {
   it('chains buckets so one bucket close is the next bucket open', () => {
     const results = computeInvestmentGrowth({
       flows: [flowsBucket(), flowsBucket()],
-      holdingsCentsByDate: holdings({
+      holdingsMinorByDate: holdings({
         '2025-12-31': 100_000,
         '2026-01-31': 120_000,
         '2026-02-28': 90_000,
@@ -253,7 +271,7 @@ describe('computeInvestmentGrowth', () => {
     // sell-then-rebuy notionals cancel, so the rotation adds only the two price moves.
     const results = computeInvestmentGrowth({
       flows: [flowsBucket(), flowsBucket({ buyNotional: 1_200_000, sellNotional: 1_200_000 }), flowsBucket()],
-      holdingsCentsByDate: holdings({
+      holdingsMinorByDate: holdings({
         '2025-12-31': 1_000_000,
         '2026-01-31': 1_200_000,
         '2026-02-28': 1_200_000,
@@ -278,11 +296,11 @@ describe('foldPortfolioGrowth', () => {
     priceEffect = 0,
     dividends = 0,
     feesAndTaxes = 0,
-  }: Partial<Record<keyof InvestmentGrowthCents, number>> = {}): InvestmentGrowthCents => ({
-    growth: asCents(growth),
-    priceEffect: asCents(priceEffect),
-    dividends: asCents(dividends),
-    feesAndTaxes: asCents(feesAndTaxes),
+  }: Partial<Record<keyof InvestmentGrowthMinor, number>> = {}): InvestmentGrowthMinor => ({
+    growth: asMinorUnits(growth),
+    priceEffect: asMinorUnits(priceEffect),
+    dividends: asMinorUnits(dividends),
+    feesAndTaxes: asMinorUnits(feesAndTaxes),
   });
 
   const buildSeries = ({
@@ -293,7 +311,7 @@ describe('foldPortfolioGrowth', () => {
   }: {
     portfolioId: string;
     name: string;
-    growth: InvestmentGrowthCents[];
+    growth: InvestmentGrowthMinor[];
     hasActivity?: boolean;
   }): PortfolioGrowthSeries => ({ portfolioId, name, growth, hasActivity });
 

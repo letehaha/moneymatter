@@ -1,6 +1,7 @@
 import { toggleBudgetLineGoalSnooze } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
+import { useFormatCurrency } from '@/composable/formatters';
 import type { BudgetPlanPeriodViewLine } from '@bt/shared/types';
 import { type MaybeRefOrGetter, toValue } from 'vue';
 
@@ -23,6 +24,7 @@ export const useGoalActions = ({
   });
 
   const { isPending: isBudgeting, mutate: assign } = useSetAssignment();
+  const { baseCurrencyDecimals } = useFormatCurrency();
 
   const params = () => ({ planId: toValue(planId), lineId: toValue(line).lineId, periodId: toValue(periodId) });
 
@@ -33,7 +35,11 @@ export const useGoalActions = ({
   /** Adds the goal's budget amount on top of this period's assigned. */
   const budgetGoal = () => {
     const current = toValue(line);
-    const payload = buildPoolAssignPayload({ line: current, amount: current.goal?.budgetAmount ?? null });
+    const payload = buildPoolAssignPayload({
+      line: current,
+      amount: current.goal?.budgetAmount ?? null,
+      decimals: baseCurrencyDecimals.value,
+    });
     if (payload && !isBudgeting.value) assign({ ...params(), payload });
   };
 

@@ -33,6 +33,8 @@ interface GetCumulativeDataParams extends StatsScopeFilters {
   categoryIds?: string[];
   /** Expanded to descendants before the query, so hiding a parent hides its children. */
   excludedCategoryIds?: string[];
+  /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
+  decimals: number;
 }
 
 /** Both category id lists are already expanded to descendants. */
@@ -61,6 +63,7 @@ export const getCumulativeData = async ({
   excludedTagIds,
   categoryIds,
   excludedCategoryIds,
+  decimals,
 }: GetCumulativeDataParams): Promise<GetCumulativeResponse> => {
   // Use parseISO for consistent date parsing (treats dates as local time, not UTC)
   const fromDate = parseISO(from);
@@ -101,9 +104,9 @@ export const getCumulativeData = async ({
     excludeCategoryIds,
   };
 
-  const currentPeriodData = await getPeriodData({ userId, from, to, metric, ...scope });
+  const currentPeriodData = await getPeriodData({ userId, from, to, metric, decimals, ...scope });
 
-  const previousPeriodData = await getPeriodData({ userId, from: prevFrom, to: prevTo, metric, ...scope });
+  const previousPeriodData = await getPeriodData({ userId, from: prevFrom, to: prevTo, metric, decimals, ...scope });
 
   // Calculate period-over-period percent change
   let percentChange = 0;
@@ -140,6 +143,7 @@ async function getPeriodData({
   excludedTagIds,
   includeCategoryIds,
   excludeCategoryIds,
+  decimals,
 }: PeriodDataParams): Promise<CumulativePeriodData> {
   // Use parseISO for consistent date parsing (treats dates as local time, not UTC)
   const fromDate = parseISO(from);
@@ -154,6 +158,7 @@ async function getPeriodData({
     access: { accessibleTo: userId },
     planned: 'exclude',
     refunds: 'net',
+    decimals,
     window: { from, to: effectiveTo },
     // ponytail: query-level category filter ignores split legs; route through computeCategoryAllocations if totals must match cash-flow exactly
     where: {
@@ -183,18 +188,18 @@ async function getPeriodData({
     const monthEntry = monthlyDataMap.get(monthKey)!;
 
     if (tx.transactionType === TRANSACTION_TYPES.income) {
-      monthEntry.income += tx.refAmount.toCents();
+      monthEntry.income += tx.refAmount.toMinorUnits({ decimals });
     } else if (tx.transactionType === TRANSACTION_TYPES.expense) {
-      monthEntry.expenses += Math.abs(tx.refAmount.toCents());
+      monthEntry.expenses += Math.abs(tx.refAmount.toMinorUnits({ decimals }));
     }
   }
 
   // Refunded money was neither spent nor earned. An in-scope side's own tx already filled its month.
   for (const leg of refundLegs({ pairs: refundPairs, side: TRANSACTION_TYPES.expense })) {
-    monthlyDataMap.get(monthKeyFor({ time: leg.time }))!.expenses += leg.cents;
+    monthlyDataMap.get(monthKeyFor({ time: leg.time }))!.expenses += leg.minor;
   }
   for (const leg of refundLegs({ pairs: refundPairs, side: TRANSACTION_TYPES.income })) {
-    monthlyDataMap.get(monthKeyFor({ time: leg.time }))!.income += leg.cents;
+    monthlyDataMap.get(monthKeyFor({ time: leg.time }))!.income += leg.minor;
   }
 
   // Build cumulative data based on metric

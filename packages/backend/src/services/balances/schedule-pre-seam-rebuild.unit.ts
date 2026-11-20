@@ -43,7 +43,7 @@ import { runWithBalanceRevalueBatch, schedulePreSeamRebuild } from './revalue-ba
 
 const SEAM_ACCOUNT = {
   type: ACCOUNT_TYPES.lunchflow,
-  seamBalance: Money.fromCents(120_000),
+  seamBalance: Money.fromDecimal(1200),
   externalData: {
     bankConnection: {
       linkedAt: '2026-11-10T15:30:00.000Z',

@@ -1,4 +1,5 @@
 import type { EntityLogoFields, EntityLogoPayload } from './entity-logo';
+import type { Decimal } from './money';
 import type { RecordId } from './record-id';
 import type { ResourceShareInfo } from './sharing';
 import type { PAYMENT_TYPES } from './transactions';
@@ -99,14 +100,14 @@ export interface AccountExternalData {
     linkedAt: string; // ISO date string
     linkingStrategy: 'forward-only' | 'full-reconciliation';
     balanceReconciliation: {
-      systemBalance: number;
-      externalBalance: number;
-      difference: number;
+      systemBalance: Decimal;
+      externalBalance: Decimal;
+      difference: Decimal;
       adjustmentTransactionId: RecordId | null;
       /** Where the post-link residual goes. Absent means the opening-balance path. */
       residualTarget?: LinkResidualTarget;
-      /** Residual the post-link sync left unexplained, in cents, folded into the opening balance. */
-      absorbedResidual?: number;
+      /** Residual the post-link sync left unexplained, folded into the opening balance. */
+      absorbedResidual?: Decimal;
       /**
        * Set at link time for queue-synced providers, whose residual cannot be
        * measured until the worker persists the sync. The queue's completion
@@ -150,8 +151,8 @@ export interface AccountModel extends EntityLogoFields {
 }
 
 /**
- * Serialized account wire shape (DB → API): every monetary field is a decimal
- * (cents converted on the way out), `id`/`type`/`accountCategory` are plain
+ * Serialized account wire shape (DB → API): every monetary field is a decimal,
+ * `id`/`type`/`accountCategory` are plain
  * strings, and owner-only bank-link metadata is stripped for share recipients.
  * The single source of truth for both the backend serializer's return type and
  * the frontend loan/account response shapes, so the two can't drift.
