@@ -52,6 +52,8 @@
         },
         "descriptionLabel": "描述（可选）",
         "descriptionPlaceholder": "此组合的简要描述……",
+        "externalUrlLabel": "External URL (optional)",
+        "externalUrlPlaceholder": "https://broker.example.com",
         "submitButton": "创建投资组合",
         "submitButtonLoading": "创建中……"
       },

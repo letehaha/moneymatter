@@ -52,6 +52,7 @@ export function serializeAccount(
     currencyCode: account.currencyCode,
     userId: account.userId,
     externalId: isRecipient ? null : (account.externalId ?? null),
+    externalUrl: account.externalUrl ?? null,
     status: account.status,
     excludeFromStats: account.excludeFromStats,
     bankDataProviderConnectionId: isRecipient ? null : (account.bankDataProviderConnectionId ?? null),

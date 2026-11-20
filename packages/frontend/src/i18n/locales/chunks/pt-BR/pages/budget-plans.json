@@ -377,6 +377,8 @@
       "pace": "Ritmo de gastos",
       "spent": "Gasto",
       "elapsed": "Período decorrido",
+      "usuallyByToday": "Usually by today",
+      "slowDown": "Slow down to ~{perDay}/day to make it last",
       "spentOfTotal": "{spent} de {total}",
       "daysLeft": "faltam {n} d",
       "scheduled": "Agendado",
@@ -431,6 +433,12 @@
       "layoutSaved": "Layout salvo",
       "layoutError": "Não foi possível salvar o layout"
     },
+    "pace": {
+      "aheadUsual": "{amount} ahead of usual pace",
+      "aheadEven": "{amount} ahead of pace",
+      "aheadUsualPerDay": "{amount} ahead of usual pace · ~{perDay}/day left for {count} day | {amount} ahead of usual pace · ~{perDay}/day left for {count} days",
+      "aheadEvenPerDay": "{amount} ahead of pace · ~{perDay}/day left for {count} day | {amount} ahead of pace · ~{perDay}/day left for {count} days"
+    },
     "options": {
       "title": "Opções",
       "manageLayout": "Organizar layout",
@@ -439,7 +447,8 @@
       "rowBarGoal": "Barra da meta",
       "rowBarCombined": "Barra combinada",
       "rowBarSplit": "Barras separadas",
-      "rowBarNone": "Sem barra"
+      "rowBarNone": "Sem barra",
+      "paceHint": "Pace hint"
     },
     "goals": {
       "askHint": "Atribua este valor aqui para manter o ritmo.",

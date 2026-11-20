@@ -18,6 +18,7 @@
         "updateError": "Произошла ошибка при обновлении счёта",
         "nameLabel": "Название счёта",
         "namePlaceholder": "Название счёта",
+        "openExternalUrl": "Open external link",
         "transferToPortfolio": "Перенести в портфель",
         "editAccountName": "Изменить название счёта",
         "save": "Сохранить",
@@ -149,7 +150,9 @@
         "residualAdjustmentDescription": "Adds one balance adjustment transaction dated today. Your past balances stay exactly as they are.",
         "residualOpeningLabel": "Change the starting balance",
         "residualOpeningDescription": "Moves the account's starting balance by the difference, so every past balance shifts too. Pick this if transactions are missing from the start of the history.",
-        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview."
+        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview.",
+        "linkFailed": "An error occurred while trying to link account",
+        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
       },
       "tabs": {
         "details": "Сведения",
@@ -179,6 +182,12 @@
         "editDefaultPaymentType": "Изменить тип платежа по умолчанию",
         "defaultPaymentTypeUpdateSuccess": "Тип платежа по умолчанию обновлен",
         "defaultPaymentTypeUpdateError": "Не удалось обновить тип платежа по умолчанию",
+        "externalUrl": "External URL:",
+        "externalUrlPlaceholder": "https://bank.example.com",
+        "externalUrlNotSet": "Not set",
+        "editExternalUrl": "Edit external URL",
+        "externalUrlUpdateSuccess": "External URL updated",
+        "externalUrlUpdateError": "Failed to update external URL",
         "currency": "Валюта:",
         "main": "(основной)",
         "exchangeRate": "Обменный курс:",

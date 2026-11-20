@@ -52,6 +52,8 @@
         },
         "descriptionLabel": "Описание (необязательно)",
         "descriptionPlaceholder": "Краткое описание этого портфеля...",
+        "externalUrlLabel": "External URL (optional)",
+        "externalUrlPlaceholder": "https://broker.example.com",
         "submitButton": "Создать портфель",
         "submitButtonLoading": "Создание..."
       },

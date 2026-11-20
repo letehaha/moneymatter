@@ -201,6 +201,24 @@ describe('parseOfx', () => {
     expect(parseOfx({ bytes }).transactions).toHaveLength(2);
   });
 
+  const sgmlHeader =
+    'OFXHEADER:100\r\nDATA:OFXSGML\r\nVERSION:102\r\nSECURITY:NONE\r\nENCODING:USASCII\r\nCHARSET:1252\r\nCOMPRESSION:NONE\r\nOLDFILEUID:NONE\r\nNEWFILEUID:NONE';
+  const sgmlBody = bankStatementWithRows({ rows: amountRow({ amount: '-1', i: 0 }) });
+
+  it.each([
+    ['no blank line before <OFX>', `${sgmlHeader}\r\n${sgmlBody}`],
+    ['leading whitespace before OFXHEADER', `\r\n\n ${sgmlHeader}\r\n\r\n${sgmlBody}`],
+  ])('accepts an OFX 1.x header with %s', (_name, source) => {
+    expect(parseOfx({ bytes: Buffer.from(source, 'latin1') }).transactions).toHaveLength(1);
+  });
+
+  it.each([['<OFX></OFX>'], ['<html><body>Error</body></html>'], ['not an OFX document']])(
+    'reports a missing header for %s',
+    (source) => {
+      expect(() => parseOfx({ bytes: Buffer.from(source) })).toThrow('ofxImport.errors.headerMissing');
+    },
+  );
+
   it('keeps non-ASCII bytes when the header declares CHARSET:NONE', () => {
     const row = '<STMTTRN><TRNTYPE>DEBIT<DTPOSTED>20260801<TRNAMT>-1<FITID>x<NAME>Caf\u00e9</STMTTRN>';
     const bytes = withHeader({ body: bankStatementWithRows({ rows: row }), charset: 'NONE' });

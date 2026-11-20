@@ -52,6 +52,8 @@
         },
         "descriptionLabel": "Description (optional)",
         "descriptionPlaceholder": "A brief description of this portfolio...",
+        "externalUrlLabel": "External URL (optional)",
+        "externalUrlPlaceholder": "https://broker.example.com",
         "submitButton": "Create portfolio",
         "submitButtonLoading": "Creating..."
       },

@@ -10,7 +10,7 @@ export const getAccountTool = defineTool({
   toolset: 'core',
   access: 'read',
   description:
-    'Read one account: balances (original and base currency), opening balance, credit limit, category, status, bank link (bankSeamAt: for an account linked to a bank later, the start of the link day; hand-entered transactions before it stay editable) and logo, plus transactionCount, the number of transactions the account holds (null for an account shared with the user). Use it before update_account or delete_account.',
+    'Read one account: balances (original and base currency), opening balance, credit limit, category, status, externalUrl, bank link (bankSeamAt: for an account linked to a bank later, the start of the link day; hand-entered transactions before it stay editable) and logo, plus transactionCount, the number of transactions the account holds (null for an account shared with the user). Use it before update_account or delete_account.',
   input: {
     accountId: recordId().describe('ID of the account to read.'),
   },

@@ -86,6 +86,16 @@ describe('create_portfolio displayCurrencyCode', () => {
     await tool.handler({ ...base, displayCurrencyCode: 'EUR' }, WRITE);
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ displayCurrencyCode: 'EUR' }));
   });
+
+  it('accepts an optional http(s) externalUrl or null and rejects invalid schemes', async () => {
+    expect(schema.safeParse({ ...base, externalUrl: 'https://broker.example/portfolio' }).success).toBe(true);
+    expect(schema.safeParse({ ...base, externalUrl: null }).success).toBe(true);
+    expect(schema.safeParse({ ...base, externalUrl: 'ftp://broker.example' }).success).toBe(false);
+
+    create.mockResolvedValue({ id: ID_A } as never);
+    await tool.handler({ ...base, externalUrl: 'https://broker.example/portfolio' }, WRITE);
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ externalUrl: 'https://broker.example/portfolio' }));
+  });
 });
 
 describe('update_portfolio displayCurrencyCode', () => {
@@ -103,6 +113,18 @@ describe('update_portfolio displayCurrencyCode', () => {
     expect(update).toHaveBeenLastCalledWith(expect.objectContaining({ displayCurrencyCode: 'EUR' }));
     await tool.handler({ portfolioId: ID_A, displayCurrencyCode: null }, WRITE);
     expect(update).toHaveBeenLastCalledWith(expect.objectContaining({ displayCurrencyCode: null }));
+  });
+
+  it('accepts an http(s) externalUrl or null clear and rejects invalid schemes', async () => {
+    expect(schema.safeParse({ portfolioId: ID_A, externalUrl: 'https://broker.example/p' }).success).toBe(true);
+    expect(schema.safeParse({ portfolioId: ID_A, externalUrl: null }).success).toBe(true);
+    expect(schema.safeParse({ portfolioId: ID_A, externalUrl: 'javascript:alert(1)' }).success).toBe(false);
+
+    update.mockResolvedValue({ id: ID_A } as never);
+    await tool.handler({ portfolioId: ID_A, externalUrl: 'https://broker.example/p' }, WRITE);
+    expect(update).toHaveBeenLastCalledWith(expect.objectContaining({ externalUrl: 'https://broker.example/p' }));
+    await tool.handler({ portfolioId: ID_A, externalUrl: null }, WRITE);
+    expect(update).toHaveBeenLastCalledWith(expect.objectContaining({ externalUrl: null }));
   });
 });
 

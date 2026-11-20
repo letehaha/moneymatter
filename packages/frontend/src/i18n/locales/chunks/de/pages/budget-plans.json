@@ -377,6 +377,8 @@
       "pace": "Ausgabentempo",
       "spent": "Ausgegeben",
       "elapsed": "Vergangene Zeit",
+      "usuallyByToday": "Usually by today",
+      "slowDown": "Slow down to ~{perDay}/day to make it last",
       "spentOfTotal": "{spent} von {total}",
       "daysLeft": "Noch {n} T.",
       "scheduled": "Geplant",
@@ -431,6 +433,12 @@
       "layoutSaved": "Layout gespeichert",
       "layoutError": "Layout konnte nicht gespeichert werden"
     },
+    "pace": {
+      "aheadUsual": "{amount} ahead of usual pace",
+      "aheadEven": "{amount} ahead of pace",
+      "aheadUsualPerDay": "{amount} ahead of usual pace · ~{perDay}/day left for {count} day | {amount} ahead of usual pace · ~{perDay}/day left for {count} days",
+      "aheadEvenPerDay": "{amount} ahead of pace · ~{perDay}/day left for {count} day | {amount} ahead of pace · ~{perDay}/day left for {count} days"
+    },
     "options": {
       "title": "Optionen",
       "manageLayout": "Layout verwalten",
@@ -439,7 +447,8 @@
       "rowBarGoal": "Zielbalken",
       "rowBarCombined": "Kombinierter Balken",
       "rowBarSplit": "Geteilte Balken",
-      "rowBarNone": "Kein Balken"
+      "rowBarNone": "Kein Balken",
+      "paceHint": "Pace hint"
     },
     "goals": {
       "askHint": "Weise hier diesen Betrag zu, um auf Kurs zu bleiben.",

@@ -423,6 +423,7 @@ describe('set_budget_plan_assignment', () => {
     expect(setAssignmentService).toHaveBeenCalledTimes(1);
     expect(setAssignmentService).toHaveBeenCalledWith({
       userId: 42,
+      timezone: 'UTC',
       planId: PLAN_ID,
       periodId: PERIOD_ID,
       lineId: LINE_ID,
@@ -438,6 +439,7 @@ describe('set_budget_plan_assignment', () => {
     await call({ tool, args: { ...base, scope: 'this_period', amount: null, carryPolicy: 'signed' } });
     expect(setAssignmentService).toHaveBeenLastCalledWith({
       userId: 42,
+      timezone: 'UTC',
       planId: PLAN_ID,
       periodId: PERIOD_ID,
       lineId: LINE_ID,
@@ -449,6 +451,7 @@ describe('set_budget_plan_assignment', () => {
     await call({ tool, args: { ...base, carryPolicy: null } });
     expect(setAssignmentService).toHaveBeenLastCalledWith({
       userId: 42,
+      timezone: 'UTC',
       planId: PLAN_ID,
       periodId: PERIOD_ID,
       lineId: LINE_ID,

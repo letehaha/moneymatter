@@ -7,7 +7,7 @@ import { connection } from '@models/connection';
 import { excludeFromStatsSql } from '@services/stats/stats-transactions';
 import { QueryTypes } from 'sequelize';
 
-import { utcInstant } from '../date-ranges';
+import { localMidnight } from '../date-ranges';
 import { FoldActivityRow } from '../fold/fold-plan';
 
 interface RawActivityRow {
@@ -29,6 +29,7 @@ const queryActivity = async ({
   until,
   byDay,
   decimals,
+  timezone,
 }: {
   plan: BudgetPlans;
   from: string | Date;
@@ -36,8 +37,9 @@ const queryActivity = async ({
   byDay: boolean;
   /** The plan currency's decimals. */
   decimals: number;
+  timezone: string;
 }): Promise<RawActivityRow[]> => {
-  const dayOffset = `(x."time" AT TIME ZONE 'UTC')::date - p."startDate"`;
+  const dayOffset = `(x."time" AT TIME ZONE :timezone)::date - p."startDate"`;
 
   const rows: RawActivityRow[] = await connection.sequelize.query(
     `
@@ -46,11 +48,11 @@ const queryActivity = async ({
       FROM real_transactions t
       JOIN "BudgetPlanAccounts" pa ON pa."accountId" = t."accountId" AND pa."planId" = :planId
       JOIN "Accounts" a ON a.id = t."accountId" AND a."excludeFromStats" = false AND a."userId" = :ownerId
-      WHERE t."time" >= :fromUtc AND t."time" < :toUtc
+      WHERE t."time" >= ${localMidnight({ param: 'from' })} AND t."time" < ${localMidnight({ param: 'until' })}
         AND ${excludeFromStatsSql({ alias: 't' })}
         AND ( t."transferNature" = 'not_transfer'
            OR (t."transferNature" = 'transfer_to_loan' AND t."transactionType" = 'expense')
-           OR ( t."time" >= :poolFromUtc AND NOT EXISTS (
+           OR ( t."time" >= ${localMidnight({ param: 'poolFrom' })} AND NOT EXISTS (
                   SELECT 1 FROM real_transactions o
                   JOIN "BudgetPlanAccounts" opa ON opa."accountId" = o."accountId" AND opa."planId" = :planId
                   JOIN "Accounts" oa ON oa.id = o."accountId" AND oa."excludeFromStats" = false
@@ -129,10 +131,10 @@ const queryActivity = async ({
     FROM attributed x
     JOIN "BudgetPeriods" p
       ON p."planId" = :planId
-     AND x."time" >= (p."startDate"::timestamp AT TIME ZONE 'UTC')
-     AND x."time" <  (p."endDate"::timestamp   AT TIME ZONE 'UTC')
-    -- A NULL :poolFromUtc makes the comparison NULL, which keeps the row out.
-    WHERE x."categoryId" IS NOT NULL OR x."time" >= :poolFromUtc
+     AND x."time" >= (p."startDate"::timestamp AT TIME ZONE :timezone)
+     AND x."time" <  (p."endDate"::timestamp   AT TIME ZONE :timezone)
+    -- A NULL pool start makes the comparison NULL, which keeps the row out.
+    WHERE x."categoryId" IS NOT NULL OR x."time" >= ${localMidnight({ param: 'poolFrom' })}
     GROUP BY p.id, x."categoryId"${byDay ? `, ${dayOffset}` : ''}
     `,
     {
@@ -140,9 +142,10 @@ const queryActivity = async ({
       replacements: {
         planId: plan.id,
         ownerId: plan.userId,
-        fromUtc: utcInstant({ date: from }),
-        toUtc: utcInstant({ date: until }),
-        poolFromUtc: plan.poolFrom ? utcInstant({ date: plan.poolFrom }) : null,
+        from: toUtcDateString(from),
+        until: toUtcDateString(until),
+        poolFrom: plan.poolFrom ? toUtcDateString(plan.poolFrom) : null,
+        timezone,
         decimals,
       },
     },
@@ -164,16 +167,18 @@ export const getPlanActivity = async ({
   plan,
   periods,
   decimals,
+  timezone,
 }: {
   plan: BudgetPlans;
   periods: BudgetPeriods[];
   /** The plan currency's decimals. */
   decimals: number;
+  timezone: string;
 }): Promise<FoldActivityRow[]> => {
   const lastEnd = periods.at(-1)?.endDate;
   if (!lastEnd) return [];
 
-  const rows = await queryActivity({ plan, from: plan.epochDate, until: lastEnd, byDay: false, decimals });
+  const rows = await queryActivity({ plan, from: plan.epochDate, until: lastEnd, byDay: false, decimals, timezone });
   return rows.map((row) => ({
     periodId: row.periodId,
     categoryId: row.categoryId,
@@ -190,11 +195,13 @@ export const getPlanDailyActivity = async ({
   plan,
   periods,
   decimals,
+  timezone,
 }: {
   plan: BudgetPlans;
   periods: BudgetPeriods[];
   /** The plan currency's decimals. */
   decimals: number;
+  timezone: string;
 }): Promise<PlanDailyActivityRow[]> => {
   const first = periods[0];
   const last = periods.at(-1);
@@ -208,6 +215,7 @@ export const getPlanDailyActivity = async ({
     until: last.endDate,
     byDay: true,
     decimals,
+    timezone,
   });
   return rows.map((row) => ({
     periodId: row.periodId,

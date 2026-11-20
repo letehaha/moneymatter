@@ -18,6 +18,7 @@
         "updateError": "Beim Aktualisieren des Kontos ist ein Fehler aufgetreten",
         "nameLabel": "Kontoname",
         "namePlaceholder": "Kontoname",
+        "openExternalUrl": "Open external link",
         "transferToPortfolio": "In Portfolio umbuchen",
         "editAccountName": "Kontonamen bearbeiten",
         "save": "Speichern",
@@ -149,7 +150,9 @@
         "residualAdjustmentDescription": "Fügt eine Saldokorrektur-Transaktion mit heutigem Datum hinzu. Deine vergangenen Salden bleiben unverändert.",
         "residualOpeningLabel": "Anfangssaldo ändern",
         "residualOpeningDescription": "Verschiebt den Anfangssaldo des Kontos um die Differenz, sodass sich auch jeder vergangene Saldo verschiebt. Wähle dies, wenn am Anfang des Verlaufs Transaktionen fehlen.",
-        "residualHint": "Der endgültige Betrag wird nach der ersten Synchronisierung festgelegt, daher kann er leicht von dieser Vorschau abweichen."
+        "residualHint": "Der endgültige Betrag wird nach der ersten Synchronisierung festgelegt, daher kann er leicht von dieser Vorschau abweichen.",
+        "linkFailed": "An error occurred while trying to link account",
+        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
       },
       "tabs": {
         "details": "Details",
@@ -179,6 +182,12 @@
         "editDefaultPaymentType": "Standard-Zahlungsart bearbeiten",
         "defaultPaymentTypeUpdateSuccess": "Standard-Zahlungsart aktualisiert",
         "defaultPaymentTypeUpdateError": "Aktualisierung der Standard-Zahlungsart fehlgeschlagen",
+        "externalUrl": "External URL:",
+        "externalUrlPlaceholder": "https://bank.example.com",
+        "externalUrlNotSet": "Not set",
+        "editExternalUrl": "Edit external URL",
+        "externalUrlUpdateSuccess": "External URL updated",
+        "externalUrlUpdateError": "Failed to update external URL",
         "currency": "Währung:",
         "main": "(Hauptwährung)",
         "exchangeRate": "Wechselkurs:",

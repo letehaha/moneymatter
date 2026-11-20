@@ -372,6 +372,7 @@
           "syncFailed": "Échec du lancement de la synchronisation"
         },
         "actions": {
+          "openExternalUrl": "Open external link",
           "renameButton": "Renommer la connexion",
           "disconnectButton": "Déconnecter l'intégration",
           "manage": "Gérer"
@@ -431,6 +432,8 @@
           "title": "Modifier le nom de la connexion",
           "description": "Attribuez un nom personnalisé à votre connexion pour l'identifier facilement.",
           "label": "Nom de la connexion",
+          "externalUrlLabel": "External URL (optional)",
+          "externalUrlPlaceholder": "https://bridge.example.com",
           "saving": "Enregistrement...",
           "save": "Enregistrer"
         },

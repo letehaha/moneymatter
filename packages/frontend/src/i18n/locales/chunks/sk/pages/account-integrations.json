@@ -331,8 +331,8 @@
         "disconnectFailed": "Integráciu sa nepodarilo odpojiť",
         "connectAccountsSuccess": "Účty pripojené. Transakcie sa synchronizujú na pozadí.",
         "connectAccountsFailed": "Účty sa nepodarilo pripojiť",
-        "updateNameSuccess": "Názov pripojenia bol úspešne zmenený",
-        "updateNameFailed": "Názov pripojenia sa nepodarilo zmeniť",
+        "updateNameSuccess": "Pripojenie bolo úspešne aktualizované",
+        "updateNameFailed": "Pripojenie sa nepodarilo aktualizovať",
         "connectionEstablished": "Bankové pripojenie bolo úspešne nadviazané!"
       },
       "details": {
@@ -372,7 +372,8 @@
           "syncFailed": "Synchronizáciu sa nepodarilo spustiť"
         },
         "actions": {
-          "renameButton": "Premenovať pripojenie",
+          "openExternalUrl": "Otvoriť externý odkaz",
+          "renameButton": "Upraviť pripojenie",
           "disconnectButton": "Odpojiť integráciu",
           "manage": "Spravovať"
         },
@@ -428,9 +429,11 @@
           "disconnect": "Odpojiť"
         },
         "editName": {
-          "title": "Upraviť názov pripojenia",
-          "description": "Dajte pripojeniu vlastný názov, aby ste ho ľahko identifikovali.",
+          "title": "Upraviť pripojenie",
+          "description": "Upravte zobrazovaný názov alebo odkaz na portál inštitúcie pre toto pripojenie.",
           "label": "Názov pripojenia",
+          "externalUrlLabel": "Externá URL (voliteľná)",
+          "externalUrlPlaceholder": "https://spojenie.priklad.com",
           "saving": "Ukladanie...",
           "save": "Uložiť"
         },

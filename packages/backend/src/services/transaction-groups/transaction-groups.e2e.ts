@@ -1,10 +1,16 @@
 import type { RecordId } from '@bt/shared/types';
-import { TRANSACTION_TYPES } from '@bt/shared/types';
-import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
+import {
+  TRANSACTION_GROUP_MAX_SIZE,
+  TRANSACTION_TRANSFER_NATURE,
+  TRANSACTION_TYPES,
+  type TransactionGroupConflictDetails,
+  type TransactionGroupSizeLimitDetails,
+} from '@bt/shared/types';
+import { generateRandomRecordId, NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
-import { MAX_GROUP_SIZE } from '@services/transaction-groups/constants';
 import * as helpers from '@tests/helpers';
+import type { ErrorResponse } from '@tests/helpers/common';
 
 // The test DB pool caps at 50 connections and every create contends on the same account row,
 // so the fixture is built in bounded batches rather than one unbounded Promise.all.
@@ -14,6 +20,11 @@ const CREATE_BATCH_SIZE = 10;
 // part of the TransactionGroups model type – read it through a narrowed shape.
 const readGroups = ({ transactionGroups }: { transactionGroups?: unknown }) =>
   (transactionGroups ?? []) as { name: string; transactionCount: number }[];
+
+const readErrorDetails = ({ body }: { body: { response: unknown } }) =>
+  (body.response as ErrorResponse).details as
+    | Partial<TransactionGroupSizeLimitDetails & TransactionGroupConflictDetails>
+    | undefined;
 
 describe('Transaction Groups API', () => {
   const createTransactions = async ({ accountId, count }: { accountId: RecordId; count: number }) => {
@@ -110,7 +121,7 @@ describe('Transaction Groups API', () => {
       const txs = await createTransactions({ accountId: account.id, count: 3 });
 
       // Create first group with tx[0] and tx[1]
-      await helpers.createTransactionGroup({
+      const group1 = await helpers.createTransactionGroup({
         payload: helpers.buildTransactionGroupPayload({
           name: 'Group 1',
           transactionIds: [txs[0]!.id, txs[1]!.id],
@@ -128,6 +139,48 @@ describe('Transaction Groups API', () => {
       });
 
       expect(response.statusCode).toBe(ERROR_CODES.ConflictError);
+      expect(readErrorDetails(response)?.groups).toEqual([{ id: group1.id, name: 'Group 1' }]);
+    });
+
+    it('lists each conflicting group once, sorted by name', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const txs = await createTransactions({ accountId: account.id, count: 5 });
+
+      const beta = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({ name: 'Beta', transactionIds: [txs[0]!.id, txs[1]!.id] }),
+        raw: true,
+      });
+      const alpha = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({ name: 'Alpha', transactionIds: [txs[2]!.id, txs[3]!.id] }),
+        raw: true,
+      });
+
+      const response = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({
+          name: 'Overlap',
+          transactionIds: [txs[0]!.id, txs[1]!.id, txs[2]!.id, txs[4]!.id],
+        }),
+        raw: false,
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ConflictError);
+      expect(readErrorDetails(response)?.groups).toEqual([
+        { id: alpha.id, name: 'Alpha' },
+        { id: beta.id, name: 'Beta' },
+      ]);
+    });
+
+    it('rejects more than the max ids at request validation, without size details', async () => {
+      const response = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({
+          name: 'Too Many Ids',
+          transactionIds: Array.from({ length: TRANSACTION_GROUP_MAX_SIZE + 1 }, () => generateRandomRecordId()),
+        }),
+        raw: false,
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(readErrorDetails(response)?.maxSize).toBeUndefined();
     });
   });
 
@@ -388,7 +441,7 @@ describe('Transaction Groups API', () => {
       const account = await helpers.createAccount({ raw: true });
       const txs = await createTransactions({ accountId: account.id, count: 4 });
 
-      await helpers.createTransactionGroup({
+      const groupX = await helpers.createTransactionGroup({
         payload: helpers.buildTransactionGroupPayload({
           name: 'Group X',
           transactionIds: [txs[0]!.id, txs[1]!.id],
@@ -412,11 +465,39 @@ describe('Transaction Groups API', () => {
       });
 
       expect(response.statusCode).toBe(ERROR_CODES.ConflictError);
+      expect(readErrorDetails(response)?.groups).toEqual([{ id: groupX.id, name: 'Group X' }]);
     });
 
-    it('fails when exceeding max group size', async () => {
+    // One fixture for every size-limit path: building MAX transactions is the slow part.
+    it('enforces the max group size on create and add, counting both transfer legs', async () => {
       const account = await helpers.createAccount({ raw: true });
-      const txs = await createTransactions({ accountId: account.id, count: MAX_GROUP_SIZE });
+      const txs = await createTransactions({ accountId: account.id, count: TRANSACTION_GROUP_MAX_SIZE });
+
+      const destination = await helpers.createAccount({ raw: true });
+      const [transferLeg] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({ accountId: account.id, amount: 77 }),
+          transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+          destinationAmount: 77,
+          destinationAccountId: destination.id,
+        },
+        raw: true,
+      });
+
+      const createResponse = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({
+          name: 'Too Big',
+          transactionIds: [...txs.slice(1).map((t) => t.id), transferLeg.id],
+        }),
+        raw: false,
+      });
+
+      expect(createResponse.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(readErrorDetails(createResponse)).toEqual({
+        maxSize: TRANSACTION_GROUP_MAX_SIZE,
+        count: TRANSACTION_GROUP_MAX_SIZE + 1,
+      });
+      expect(await helpers.getTransactionGroups({ raw: true })).toEqual([]);
 
       const group = await helpers.createTransactionGroup({
         payload: helpers.buildTransactionGroupPayload({
@@ -442,7 +523,23 @@ describe('Transaction Groups API', () => {
       });
 
       expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
-    });
+      expect(readErrorDetails(response)).toEqual({
+        maxSize: TRANSACTION_GROUP_MAX_SIZE,
+        count: TRANSACTION_GROUP_MAX_SIZE + 1,
+      });
+
+      const transferResponse = await helpers.addTransactionsToGroup({
+        groupId: group.id,
+        transactionIds: [transferLeg.id],
+        raw: false,
+      });
+
+      expect(transferResponse.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(readErrorDetails(transferResponse)).toEqual({
+        maxSize: TRANSACTION_GROUP_MAX_SIZE,
+        count: TRANSACTION_GROUP_MAX_SIZE + 2,
+      });
+    }, 60_000);
   });
 
   describe('DELETE /transaction-groups/:id/transactions (remove)', () => {

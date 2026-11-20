@@ -9,6 +9,7 @@
     "backToInvestments": "Voltar para investimentos",
     "subtitle": "Visão geral da carteira",
     "actions": {
+      "openExternalUrl": "Open external link",
       "transfer": "Transferir",
       "edit": "Editar",
       "delete": "Excluir",

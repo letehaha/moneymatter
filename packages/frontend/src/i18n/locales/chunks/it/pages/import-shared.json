@@ -17,7 +17,8 @@
         "categoryNameTooLong": "Il nome della categoria \"{name}\" è troppo lungo ({length} caratteri); il massimo è {max}.",
         "payeeNameTooLong": "Il nome del beneficiario \"{name}\" è troppo lungo ({length} caratteri); il massimo è {max}.",
         "accountMappingMissing": "Questi conti del file non hanno una mappatura: {accounts}. Tornare indietro e mapparli tutti.",
-        "linkedAccountNotFound": "Il conto collegato a \"{account}\" non esiste più. Tornare indietro e scegliere un altro conto o crearne uno nuovo."
+        "linkedAccountNotFound": "Il conto collegato a \"{account}\" non esiste più. Tornare indietro e scegliere un altro conto o crearne uno nuovo.",
+        "bankLinkChanged": "Il collegamento bancario di un conto è cambiato dopo la revisione. Tornare al passaggio di revisione ed eseguirlo di nuovo."
       },
       "importResults": {
         "findTransfers": "Trova trasferimenti"
@@ -108,6 +109,8 @@
       "renameAria": "Rinomina mappatura",
       "deleteAria": "Elimina mappatura",
       "confirmRenameAria": "Salva nome"
-    }
+    },
+    "bankSeamSkipped": "{count} riga con data uguale o successiva al {date} è stata saltata: la connessione bancaria fornisce già le transazioni da quel giorno. | {count} righe con data uguale o successiva al {date} sono state saltate: la connessione bancaria fornisce già le transazioni da quel giorno.",
+    "bankSeamSkippedNoDate": "{count} riga con data uguale o successiva al giorno in cui il suo conto è stato collegato a una banca è stata saltata: la connessione bancaria fornisce già le transazioni da quel giorno. | {count} righe con data uguale o successiva al giorno in cui il loro conto è stato collegato a una banca sono state saltate: la connessione bancaria fornisce già le transazioni da quel giorno."
   }
 }

@@ -28,6 +28,6 @@ export const setBudgetPlanAssignmentTool = defineTool({
   },
   run: async ({ userId, args }) => {
     const { planId, periodId, lineId, ...body } = args;
-    return setAssignment({ userId, planId, periodId, lineId, ...setAssignmentBodySchema.parse(body) });
+    return setAssignment({ userId, planId, periodId, lineId, ...setAssignmentBodySchema.parse(body), timezone: 'UTC' });
   },
 });

@@ -134,7 +134,9 @@
           "noErrors": "Aucune erreur",
           "balanceWarningTitle": "Les soldes des comptes peuvent ne pas être synchronisés",
           "balanceWarningBody": "Les opérations ont été importées, mais certains soldes de comptes n'ont pas pu être actualisés par la suite. Vérifiez ces comptes et ajustez leurs soldes manuellement si nécessaire."
-        }
+        },
+        "bankSeamRecalculateHint": "Bank-linked accounts keep the balance their bank reports, so this setting doesn't change them.",
+        "bankSeamRecalculateAllHint": "Opening balance is recalculated automatically for bank-linked accounts."
       },
       "columnMapping": {
         "stepTitle": "Associer les colonnes",

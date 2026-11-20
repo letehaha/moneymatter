@@ -11,6 +11,7 @@ export * from './categories';
 export * from './tags';
 export * from './payees';
 export * from './transactions';
+export * from './transaction-groups';
 
 export * from './categorization';
 export * from './transaction-automations';

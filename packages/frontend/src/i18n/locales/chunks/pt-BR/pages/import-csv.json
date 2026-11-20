@@ -134,7 +134,9 @@
           "noErrors": "Nenhum erro",
           "balanceWarningTitle": "Os saldos das contas podem estar desatualizados",
           "balanceWarningBody": "As transações foram importadas, mas não foi possível atualizar o saldo de algumas contas depois. Confira essas contas e ajuste os saldos manualmente, se necessário."
-        }
+        },
+        "bankSeamRecalculateHint": "Bank-linked accounts keep the balance their bank reports, so this setting doesn't change them.",
+        "bankSeamRecalculateAllHint": "Opening balance is recalculated automatically for bank-linked accounts."
       },
       "columnMapping": {
         "stepTitle": "Mapear colunas",

@@ -27,9 +27,9 @@
         "narrowSymbol": "Usar símbolos de moneda cortos"
       },
       "transactions": {
-        "title": "Transactions",
-        "description": "Show the payee's logo instead of the category icon in transaction rows, when the payee has one.",
-        "payeeLogos": "Payee logos"
+        "title": "Transacciones",
+        "description": "Mostrar el logo del beneficiario en lugar del icono de la categoría en las filas de la transacción, cuando el beneficiario tiene una.",
+        "payeeLogos": "Logos del beneficiario"
       }
     }
   }

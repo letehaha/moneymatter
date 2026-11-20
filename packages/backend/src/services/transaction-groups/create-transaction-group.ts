@@ -1,10 +1,15 @@
-import type { RecordId } from '@bt/shared/types';
+import {
+  TRANSACTION_GROUP_MAX_SIZE,
+  TRANSACTION_GROUP_MIN_SIZE,
+  type RecordId,
+  type TransactionGroupSizeLimitDetails,
+} from '@bt/shared/types';
 import { ValidationError } from '@js/errors';
 import TransactionGroupItems from '@models/transaction-group-items.model';
 import TransactionGroups from '@models/transaction-groups.model';
 import { withTransaction } from '@services/common/with-transaction';
 
-import { MIN_GROUP_SIZE, MAX_GROUP_SIZE, INCLUDE_GROUP_TRANSACTIONS } from './constants';
+import { INCLUDE_GROUP_TRANSACTIONS } from './constants';
 import { resolveTransferPairs } from './resolve-transfer-pairs';
 import { validateTransactionsForGroup } from './validate-transactions-for-group';
 
@@ -21,9 +26,19 @@ export const createTransactionGroup = withTransaction(async (payload: CreateTran
   // Auto-include opposite sides of transfer pairs
   const expandedIds = await resolveTransferPairs({ transactionIds, userId });
 
-  if (expandedIds.length < MIN_GROUP_SIZE || expandedIds.length > MAX_GROUP_SIZE) {
+  if (expandedIds.length < TRANSACTION_GROUP_MIN_SIZE) {
     throw new ValidationError({
-      message: `A group must contain between ${MIN_GROUP_SIZE} and ${MAX_GROUP_SIZE} transactions.`,
+      message: `A group must contain between ${TRANSACTION_GROUP_MIN_SIZE} and ${TRANSACTION_GROUP_MAX_SIZE} transactions.`,
+    });
+  }
+
+  if (expandedIds.length > TRANSACTION_GROUP_MAX_SIZE) {
+    throw new ValidationError({
+      message: `A group must contain between ${TRANSACTION_GROUP_MIN_SIZE} and ${TRANSACTION_GROUP_MAX_SIZE} transactions.`,
+      details: {
+        maxSize: TRANSACTION_GROUP_MAX_SIZE,
+        count: expandedIds.length,
+      } satisfies TransactionGroupSizeLimitDetails,
     });
   }
 

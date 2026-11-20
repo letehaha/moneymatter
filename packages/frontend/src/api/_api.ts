@@ -44,7 +44,7 @@ interface ApiCall {
    * Takes precedence over `data`.
    */
   rawBody?: BodyInit;
-  /** Request headers merged over the defaults (Content-Type, session, locale). */
+  /** Request headers merged over the defaults (Content-Type, session, locale, timezone). */
   headers?: Record<string, string>;
   options?: {
     needRaw?: boolean;
@@ -233,6 +233,7 @@ class ApiCaller {
         'Content-Type': 'application/json',
         'X-Session-ID': window.sessionStorage?.getItem(SESSION_ID_KEY) || '',
         'Accept-Language': getCurrentLocale(), // Send current locale to backend
+        'X-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
         ...opts.headers,
       },
       // Include credentials (cookies) for session-based authentication

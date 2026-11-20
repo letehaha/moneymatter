@@ -5,10 +5,12 @@ import { Button } from '@/components/lib/ui/button';
 import InputField from '@/components/fields/input-field.vue';
 import TextareaField from '@/components/fields/textarea-field.vue';
 import { invalidateTransactionGroupQueries } from '@/composable/data-queries/transaction-groups';
-import { getApiErrorMessage } from '@/js/errors';
+import { TRANSACTION_GROUP_MAX_SIZE, TRANSACTION_GROUP_MIN_SIZE } from '@bt/shared/types';
 import { useQueryClient } from '@tanstack/vue-query';
 import { reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { getGroupErrorMessage } from './group-error-message';
 
 const { t } = useI18n();
 
@@ -48,8 +50,15 @@ const handleSubmit = async () => {
     error.value = t('transactions.transactionGroups.errors.nameRequired');
     return;
   }
-  if (props.transactionIds.length < 2) {
-    error.value = t('transactions.transactionGroups.errors.minTransactions', { min: 2 });
+  if (props.transactionIds.length < TRANSACTION_GROUP_MIN_SIZE) {
+    error.value = t('transactions.transactionGroups.errors.minTransactions', { min: TRANSACTION_GROUP_MIN_SIZE });
+    return;
+  }
+  if (props.transactionIds.length > TRANSACTION_GROUP_MAX_SIZE) {
+    error.value = t('transactions.transactionGroups.errors.tooManyTransactions', {
+      max: TRANSACTION_GROUP_MAX_SIZE,
+      count: props.transactionIds.length,
+    });
     return;
   }
 
@@ -68,12 +77,7 @@ const handleSubmit = async () => {
     emit('update:open', false);
     emit('created');
   } catch (e) {
-    error.value = getApiErrorMessage({
-      e,
-      t,
-      conflictKey: 'transactions.transactionGroups.errors.alreadyInGroup',
-      fallbackKey: 'transactions.transactionGroups.errors.createFailed',
-    });
+    error.value = getGroupErrorMessage({ e, t, fallbackKey: 'transactions.transactionGroups.errors.createFailed' });
   } finally {
     isSubmitting.value = false;
   }

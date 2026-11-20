@@ -13,7 +13,7 @@ export const updateAccountTool = defineTool({
   toolset: 'core',
   access: 'write',
   description:
-    'Update an account: name, accountCategory, defaultPaymentType (null clears it), creditLimit, excludeFromStats, logo, and balances. currentBalance is allowed only on manual (system) accounts and moves the opening balance by the difference; initialBalance and currentBalance cannot be sent together. An account cannot be moved into or out of the vehicle category, or into loan. Amounts are decimals. Archiving is not done here: use archive_account.',
+    'Update an account: name, accountCategory, defaultPaymentType (null clears it), creditLimit, excludeFromStats, externalUrl (http(s) URL; null clears it), logo, and balances. currentBalance is allowed only on manual (system) accounts and moves the opening balance by the difference; initialBalance and currentBalance cannot be sent together. An account cannot be moved into or out of the vehicle category, or into loan. Amounts are decimals. Archiving is not done here: use archive_account.',
   input: {
     accountId: recordId().describe('ID of the account to update.'),
     ...updateAccountBodyFields,
@@ -28,6 +28,7 @@ export const updateAccountTool = defineTool({
       excludeFromStats,
       currentBalance,
       initialBalance,
+      externalUrl,
       ...logo
     } = updateAccountBodySchema.parse(body);
 
@@ -46,6 +47,7 @@ export const updateAccountTool = defineTool({
         initialBalance: initialBalance !== undefined ? Money.fromDecimal(initialBalance) : undefined,
         name,
         creditLimit: creditLimit !== undefined ? Money.fromDecimal(creditLimit) : undefined,
+        externalUrl,
         ...logo,
       }),
     });

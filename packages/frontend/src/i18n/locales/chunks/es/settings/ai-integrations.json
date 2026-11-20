@@ -58,7 +58,7 @@
         "financeDelete": "Eliminar sus datos financieros",
         "profileRead": "Leer perfil",
         "offlineAccess": "Acceso sin conexión",
-        "toolset": "Tools: {name}"
+        "toolset": "Herramientas: {name}"
       }
     }
   }

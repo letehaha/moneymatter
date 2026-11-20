@@ -10,7 +10,7 @@ export const getPortfoliosTool = defineTool({
   toolset: 'investments',
   access: 'read',
   description:
-    "List the user's investment portfolios. Returns id, name, portfolio type (investment/retirement/savings/other), description, enabled state, and creation date. Use the returned id with get_portfolio_summary, get_portfolio_holdings, get_portfolio_balances, and get_investment_transactions.",
+    "List the user's investment portfolios. Returns id, name, portfolio type (investment/retirement/savings/other), description, externalUrl, enabled state, and creation date. Use the returned id with get_portfolio_summary, get_portfolio_holdings, get_portfolio_balances, and get_investment_transactions.",
   input: {
     portfolioType: z
       .enum([PORTFOLIO_TYPE.investment, PORTFOLIO_TYPE.retirement, PORTFOLIO_TYPE.savings, PORTFOLIO_TYPE.other])

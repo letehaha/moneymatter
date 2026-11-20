@@ -135,6 +135,7 @@ export interface AccountModel extends EntityLogoFields {
   currencyCode: string;
   userId: number;
   externalId?: RecordId;
+  externalUrl: string | null;
   status: ACCOUNT_STATUSES;
   excludeFromStats: boolean;
   bankDataProviderConnectionId?: RecordId;
@@ -171,6 +172,7 @@ export interface AccountApiResponse extends EntityLogoFields {
   currencyCode: string;
   userId: number;
   externalId: string | null;
+  externalUrl: string | null;
   status: ACCOUNT_STATUSES;
   excludeFromStats: boolean;
   bankDataProviderConnectionId: string | null;
@@ -234,6 +236,7 @@ export interface CreateAccountBody extends NullableBodyPayload, EntityLogoPayloa
   initialBalance: AccountModel['initialBalance'];
   creditLimit: AccountModel['creditLimit'];
   type?: AccountModel['type'];
+  externalUrl?: string | null;
 }
 
 export interface UpdateAccountBody extends NullableBodyPayload, EntityLogoPayload {
@@ -245,4 +248,5 @@ export interface UpdateAccountBody extends NullableBodyPayload, EntityLogoPayloa
   creditLimit?: AccountModel['creditLimit'];
   status?: ACCOUNT_STATUSES;
   excludeFromStats?: boolean;
+  externalUrl?: string | null;
 }

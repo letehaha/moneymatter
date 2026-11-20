@@ -9,6 +9,7 @@
     "backToInvestments": "Kembali ke Investasi",
     "subtitle": "Ikhtisar Portofolio",
     "actions": {
+      "openExternalUrl": "Open external link",
       "transfer": "Transfer",
       "edit": "Sunting",
       "delete": "Hapus",
