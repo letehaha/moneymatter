@@ -1,3 +1,5 @@
+import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
+
 const protocolOf = (value: string) => {
   try {
     return new URL(value).protocol;
@@ -5,8 +7,6 @@ const protocolOf = (value: string) => {
     return null;
   }
 };
-
-export const MAX_EXTERNAL_URL_LENGTH = 2048;
 
 // Render guard for user-supplied links: only the API validates the scheme, and
 // restored backups bypass it, so a `javascript:` value must never reach an href.
@@ -38,12 +38,9 @@ export const validateOptionalExternalUrl = ({
   return null;
 };
 
+/** Expects a URL that already passed `safeExternalUrl`. */
 export const formatExternalUrlLabel = ({ value }: { value: string }): string => {
-  try {
-    const url = new URL(value);
-    const path = url.pathname === '/' ? '' : url.pathname;
-    return `${url.host}${path}${url.search}`;
-  } catch {
-    return value;
-  }
+  const url = new URL(value);
+  const path = url.pathname === '/' ? '' : url.pathname;
+  return `${url.host}${path}${url.search}`;
 };

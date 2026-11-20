@@ -48,7 +48,6 @@ describe('Bank connection externalUrl E2E', () => {
     });
     expect(setRes.connection.externalUrl).toBe('https://portal.bank.example/bridge');
 
-    // Rename without sending externalUrl: the stored URL must remain intact.
     const renamed = await helpers.bankDataProviders.updateConnectionDetails({
       connectionId,
       providerName: 'Renamed Connection',
@@ -112,6 +111,9 @@ describe('Bank connection externalUrl E2E', () => {
       });
       expect(updateRes.statusCode).toBe(ERROR_CODES.ValidationError);
     }
+
+    const emptyRes = await helpers.bankDataProviders.updateConnectionDetails({ connectionId, raw: false });
+    expect(emptyRes.statusCode).toBe(ERROR_CODES.ValidationError);
 
     const notFoundRes = await helpers.bankDataProviders.updateConnectionDetails({
       connectionId: generateRandomRecordId(),

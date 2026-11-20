@@ -52,21 +52,10 @@
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h1 class="truncate text-xl font-semibold tracking-tight">{{ connectionDetails.providerName }}</h1>
 
-              <DesktopOnlyTooltip
-                v-if="externalUrlHref"
-                :content="$t('pages.integrations.details.actions.openExternalUrl')"
-              >
-                <UiButton variant="ghost" size="icon-sm" as-child class="shrink-0">
-                  <a
-                    :href="externalUrlHref"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    :aria-label="$t('pages.integrations.details.actions.openExternalUrl')"
-                  >
-                    <ExternalLinkIcon class="size-3.5" />
-                  </a>
-                </UiButton>
-              </DesktopOnlyTooltip>
+              <ExternalUrlLinkButton
+                :url="connectionDetails.externalUrl"
+                :label="$t('pages.integrations.details.actions.openExternalUrl')"
+              />
 
               <DesktopOnlyTooltip :content="$t('pages.integrations.details.actions.renameButton')">
                 <UiButton
@@ -377,10 +366,10 @@ import {
 } from '@/api/bank-data-providers';
 import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import { METAINFO_FROM_TYPE } from '@/common/const/bank-providers';
-import { safeExternalUrl } from '@/common/utils/external-url';
 import InputField from '@/components/fields/input-field.vue';
 import TextareaField from '@/components/fields/textarea-field.vue';
 import BankConnectionLogo from '@/components/common/bank-connection-logo.vue';
+import ExternalUrlLinkButton from '@/components/common/external-url-link-button.vue';
 import BankProviderLogo from '@/components/common/bank-providers/bank-provider-logo.vue';
 import {
   DropdownMenu,
@@ -413,7 +402,6 @@ import {
   ArrowLeftIcon,
   CircleAlertIcon,
   EllipsisIcon,
-  ExternalLinkIcon,
   KeyRoundIcon,
   PencilIcon,
   RefreshCwIcon,
@@ -461,7 +449,6 @@ const {
 } = useBankConnectionDetails({ connectionId: connectionId, queryOptions: { retry: false } });
 
 const isConnectionNotFound = computed(() => isNotFoundError(error.value));
-const externalUrlHref = computed(() => safeExternalUrl({ value: connectionDetails.value?.externalUrl }));
 
 const providerDisplayName = computed(() => {
   const meta = METAINFO_FROM_TYPE[connectionDetails.value?.providerType ?? ''];

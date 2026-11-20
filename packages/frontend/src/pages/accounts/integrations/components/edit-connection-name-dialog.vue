@@ -16,8 +16,8 @@
 
         <ExternalUrlField
           v-model="localExternalUrl"
-          :label="t('pages.integrations.dialogs.editName.externalUrlLabel')"
-          :placeholder="t('pages.integrations.dialogs.editName.externalUrlPlaceholder')"
+          :label="$t('pages.integrations.dialogs.editName.externalUrlLabel')"
+          :placeholder="$t('pages.integrations.dialogs.editName.externalUrlPlaceholder')"
           :disabled="isSaving"
         />
       </div>
@@ -97,13 +97,6 @@ watch(
   () => props.providerName,
   (newValue) => {
     localProviderName.value = newValue;
-  },
-);
-
-watch(
-  () => props.externalUrl,
-  (newValue) => {
-    localExternalUrl.value = newValue ?? '';
   },
 );
 

@@ -1,7 +1,7 @@
+import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
 import { describe, expect, it } from 'vitest';
 
 import {
-  MAX_EXTERNAL_URL_LENGTH,
   formatExternalUrlLabel,
   isHttpUrl,
   isHttpsUrl,
@@ -53,6 +53,5 @@ describe('external-url', () => {
     expect(formatExternalUrlLabel({ value: 'https://www.chase.com/account/1?tab=main' })).toBe(
       'www.chase.com/account/1?tab=main',
     );
-    expect(formatExternalUrlLabel({ value: 'not-a-url' })).toBe('not-a-url');
   });
 });

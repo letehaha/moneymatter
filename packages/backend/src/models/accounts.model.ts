@@ -1,3 +1,4 @@
+import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
 import {
   ACCOUNT_CATEGORIES,
   ACCOUNT_STATUSES,
@@ -136,7 +137,7 @@ export default class Accounts extends Model {
   externalData!: AccountExternalData | null; // JSON of any addition fields
 
   @Column({
-    type: DataType.STRING(2048),
+    type: DataType.STRING(MAX_EXTERNAL_URL_LENGTH),
     allowNull: true,
   })
   externalUrl!: string | null;

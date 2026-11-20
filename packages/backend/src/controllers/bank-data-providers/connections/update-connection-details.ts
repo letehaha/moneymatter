@@ -5,8 +5,7 @@ import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { bankProviderRegistry } from '@services/bank-data-providers';
-import { updateConnectionExternalUrl } from '@services/bank-data-providers/connection/update-connection-external-url';
-import { updateConnectionName } from '@services/bank-data-providers/connection/update-connection-name';
+import { updateConnectionDetails } from '@services/bank-data-providers/connection/update-connection-details';
 import { z } from 'zod';
 
 export default createController(
@@ -38,19 +37,11 @@ export default createController(
       message: t({ key: 'errors.connectionNotFound' }),
     });
 
-    if (body.providerName !== undefined) {
-      await updateConnectionName({
+    if (body.providerName !== undefined || body.externalUrl !== undefined) {
+      await updateConnectionDetails({
         connectionId: connection.id,
         userId: user.id,
         providerName: body.providerName,
-      });
-      await connection.reload();
-    }
-
-    if (body.externalUrl !== undefined) {
-      await updateConnectionExternalUrl({
-        connectionId: connection.id,
-        userId: user.id,
         externalUrl: body.externalUrl,
       });
       await connection.reload();
@@ -69,7 +60,7 @@ export default createController(
           id: connection.id,
           providerName: connection.providerName,
           providerType: connection.providerType,
-          externalUrl: connection.externalUrl ?? null,
+          externalUrl: connection.externalUrl,
           isActive: connection.isActive,
           lastSyncAt: connection.lastSyncAt,
           createdAt: connection.createdAt,

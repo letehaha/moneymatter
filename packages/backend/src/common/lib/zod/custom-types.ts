@@ -1,3 +1,4 @@
+import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
 import type { RecordId } from '@bt/shared/types';
 import {
   type BudgetSuggestionAnswers,
@@ -331,9 +332,7 @@ export const percentageFraction = () =>
     .max(1)
     .transform((v) => v.toString());
 
-const MAX_EXTERNAL_URL_LENGTH = 2048;
-
-/** Optional http(s) URL string capped at 2048 chars (matches the DB VARCHAR(2048) column). */
+/** http(s) URL string capped at the DB `externalUrl` VARCHAR length. */
 export const externalUrl = () =>
   z
     .url('Invalid URL')

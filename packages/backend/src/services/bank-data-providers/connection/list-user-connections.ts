@@ -33,7 +33,7 @@ export const listUserConnections = async ({
       id: conn.id,
       providerType: conn.providerType,
       providerName: conn.providerName,
-      externalUrl: conn.externalUrl ?? null,
+      externalUrl: conn.externalUrl,
       isActive: conn.isActive,
       lastSyncAt: conn.lastSyncAt,
       accountsCount: conn.accounts?.length || 0,

@@ -108,11 +108,11 @@ const externalUrlLabel = computed(() =>
       <Separator />
 
       <div class="flex items-center justify-between gap-2">
-        <span>{{ t('pages.account.details.externalUrl') }}</span>
+        <span>{{ $t('pages.account.details.externalUrl') }}</span>
 
         <div class="flex min-w-0 items-center gap-1.5">
           <a
-            v-if="externalUrlHref && externalUrlLabel"
+            v-if="externalUrlHref"
             :href="externalUrlHref"
             target="_blank"
             rel="noopener noreferrer"
@@ -121,7 +121,7 @@ const externalUrlLabel = computed(() =>
             <span class="truncate">{{ externalUrlLabel }}</span>
             <ExternalLinkIcon class="size-3.5 shrink-0" />
           </a>
-          <span v-else class="text-muted-foreground">{{ t('pages.account.details.externalUrlNotSet') }}</span>
+          <span v-else class="text-muted-foreground">{{ $t('pages.account.details.externalUrlNotSet') }}</span>
 
           <AccountExternalUrlEditPopover v-if="isOwner" :account="account" />
         </div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { safeExternalUrl } from '@/common/utils/external-url';
 import AccountLogo from '@/components/common/account-logo.vue';
+import ExternalUrlLinkButton from '@/components/common/external-url-link-button.vue';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +22,7 @@ import { toLocalCurrencyNumber } from '@/js/helpers';
 import * as validators from '@/js/helpers/validators';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import { ACCOUNT_TYPES, AccountModel, SHARE_PERMISSIONS, TRANSACTIONS_WRITE_SCOPES } from '@bt/shared/types';
-import { ArrowRightLeftIcon, ExternalLinkIcon, MoreVerticalIcon, PencilIcon, ScaleIcon, Share2Icon } from '@lucide/vue';
+import { ArrowRightLeftIcon, MoreVerticalIcon, PencilIcon, ScaleIcon, Share2Icon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref, toRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -44,7 +44,6 @@ const { addSuccessNotification, addErrorNotification } = useNotificationCenter()
 const { t } = useI18n();
 
 const isSystemAccount = computed(() => props.account.type === ACCOUNT_TYPES.system);
-const externalUrlHref = computed(() => safeExternalUrl({ value: props.account.externalUrl }));
 
 const { formatPlannedDate } = usePlannedDateLabel();
 
@@ -158,18 +157,7 @@ watch([formEditingPopoverOpen, () => props.account.id], () => {
             <span class="truncate">{{ account.name }}</span>
           </div>
 
-          <Tooltip.DesktopOnlyTooltip v-if="externalUrlHref" :content="t('pages.account.header.openExternalUrl')">
-            <Button variant="ghost" size="icon-sm" as-child class="shrink-0">
-              <a
-                :href="externalUrlHref"
-                target="_blank"
-                rel="noopener noreferrer"
-                :aria-label="t('pages.account.header.openExternalUrl')"
-              >
-                <ExternalLinkIcon class="size-4" />
-              </a>
-            </Button>
-          </Tooltip.DesktopOnlyTooltip>
+          <ExternalUrlLinkButton :url="account.externalUrl" :label="$t('pages.account.header.openExternalUrl')" />
         </div>
 
         <div class="flex gap-2">

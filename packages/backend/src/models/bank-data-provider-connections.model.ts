@@ -1,3 +1,4 @@
+import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
 import { BANK_PROVIDER_TYPE, RecordId } from '@bt/shared/types';
 import { IdColumn } from '@common/types/id-column';
 import Accounts from '@models/accounts.model';
@@ -71,7 +72,7 @@ export default class BankDataProviderConnections extends Model<BankDataProviderC
 
   @Column({
     allowNull: true,
-    type: DataType.STRING(2048),
+    type: DataType.STRING(MAX_EXTERNAL_URL_LENGTH),
   })
   externalUrl!: string | null;
 

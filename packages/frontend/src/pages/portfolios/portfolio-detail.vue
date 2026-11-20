@@ -38,18 +38,10 @@
             <div>
               <div v-if="portfolio" class="flex items-center gap-2">
                 <h1 class="text-2xl font-semibold tracking-tight">{{ portfolio.name }}</h1>
-                <DesktopOnlyTooltip v-if="externalUrlHref" :content="$t('portfolioDetail.actions.openExternalUrl')">
-                  <UiButton variant="ghost" size="icon-sm" as-child class="shrink-0">
-                    <a
-                      :href="externalUrlHref"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      :aria-label="$t('portfolioDetail.actions.openExternalUrl')"
-                    >
-                      <ExternalLinkIcon class="size-4" />
-                    </a>
-                  </UiButton>
-                </DesktopOnlyTooltip>
+                <ExternalUrlLinkButton
+                  :url="portfolio.externalUrl"
+                  :label="$t('portfolioDetail.actions.openExternalUrl')"
+                />
               </div>
               <h1 v-else-if="isLoading" class="text-2xl font-semibold tracking-tight">
                 {{ $t('portfolioDetail.loading') }}
@@ -106,20 +98,19 @@
 </template>
 
 <script setup lang="ts">
-import { safeExternalUrl } from '@/common/utils/external-url';
 import PageWrapper from '@/components/common/page-wrapper.vue';
 import ResourceNotFound from '@/components/common/resource-not-found.vue';
 import EditableEntityLogo from '@/components/common/editable-entity-logo.vue';
+import ExternalUrlLinkButton from '@/components/common/external-url-link-button.vue';
 import PortfolioLogo from '@/components/common/portfolio-logo.vue';
 import DeletePortfolioDialog from '@/components/dialogs/delete-portfolio-dialog.vue';
 import EditPortfolioDialog from '@/components/dialogs/edit-portfolio-dialog.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
-import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { usePortfolio, useUpdatePortfolio } from '@/composable/data-queries/portfolios';
 import { isResourceMissingError } from '@/js/errors';
 import { ROUTES_NAMES } from '@/routes/constants';
 import type { NonImageLogoPayload } from '@bt/shared/types';
-import { AlertCircleIcon, ChevronLeftIcon, ExternalLinkIcon, PencilIcon, Trash2Icon } from '@lucide/vue';
+import { AlertCircleIcon, ChevronLeftIcon, PencilIcon, Trash2Icon } from '@lucide/vue';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -132,7 +123,6 @@ const router = useRouter();
 const portfolioId = computed(() => String(route.params.portfolioId));
 
 const { data: portfolio, isLoading, isError, error, refetch } = usePortfolio(portfolioId, { retry: false });
-const externalUrlHref = computed(() => safeExternalUrl({ value: portfolio.value?.externalUrl }));
 
 const updatePortfolio = useUpdatePortfolio();
 const saveLogo = ({ payload }: { payload: NonImageLogoPayload }) =>
