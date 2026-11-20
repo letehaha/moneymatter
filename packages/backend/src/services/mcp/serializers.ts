@@ -51,6 +51,7 @@ export function slimAccountDetailForMcp(account: AccountApiResponse) {
     bankProviderType: account.bankProviderType,
     bankSeamAt: account.bankSeamAt,
     needsRelink: account.needsRelink,
+    externalUrl: account.externalUrl,
     logoDomain: account.logoDomain,
     logoInitials: account.logoInitials,
     logoColor: account.logoColor,

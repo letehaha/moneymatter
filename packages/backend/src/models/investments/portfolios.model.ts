@@ -1,3 +1,4 @@
+import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
 import { RecordId } from '@bt/shared/types';
 import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
 import { IdColumn } from '@common/types/id-column';
@@ -42,6 +43,9 @@ export default class Portfolios extends Model {
    */
   @Column({ type: DataType.STRING(3), allowNull: true })
   displayCurrencyCode!: string | null;
+
+  @Column({ type: DataType.STRING(MAX_EXTERNAL_URL_LENGTH), allowNull: true })
+  externalUrl!: string | null;
 
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
   isEnabled!: boolean;

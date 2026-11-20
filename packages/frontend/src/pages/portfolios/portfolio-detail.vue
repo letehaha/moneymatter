@@ -36,7 +36,13 @@
             </EditableEntityLogo>
             <div v-else-if="isLoading" class="bg-muted size-10 animate-pulse rounded-lg" />
             <div>
-              <h1 v-if="portfolio" class="text-2xl font-semibold tracking-tight">{{ portfolio.name }}</h1>
+              <div v-if="portfolio" class="flex items-center gap-2">
+                <h1 class="text-2xl font-semibold tracking-tight">{{ portfolio.name }}</h1>
+                <ExternalUrlLinkButton
+                  :url="portfolio.externalUrl"
+                  :label="$t('portfolioDetail.actions.openExternalUrl')"
+                />
+              </div>
               <h1 v-else-if="isLoading" class="text-2xl font-semibold tracking-tight">
                 {{ $t('portfolioDetail.loading') }}
               </h1>
@@ -95,6 +101,7 @@
 import PageWrapper from '@/components/common/page-wrapper.vue';
 import ResourceNotFound from '@/components/common/resource-not-found.vue';
 import EditableEntityLogo from '@/components/common/editable-entity-logo.vue';
+import ExternalUrlLinkButton from '@/components/common/external-url-link-button.vue';
 import PortfolioLogo from '@/components/common/portfolio-logo.vue';
 import DeletePortfolioDialog from '@/components/dialogs/delete-portfolio-dialog.vue';
 import EditPortfolioDialog from '@/components/dialogs/edit-portfolio-dialog.vue';

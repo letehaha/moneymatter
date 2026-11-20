@@ -1,5 +1,5 @@
 import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
-import { dateString, currencyCode, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
+import { dateString, currencyCode, externalUrl, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
 import { logoFieldsShape, refineLogoFields } from '@controllers/common/logo-fields.schema';
 import { z } from 'zod';
 
@@ -33,6 +33,7 @@ export const createPortfolioBodyShape = {
   portfolioType: z.enum(PORTFOLIO_TYPE).default(PORTFOLIO_TYPE.investment),
   description: z.string().max(500, 'Description must be 500 characters or less').optional(),
   displayCurrencyCode: currencyCode().nullable().optional(),
+  externalUrl: externalUrl().nullish(),
   isEnabled: z.boolean().default(true),
 };
 
@@ -42,6 +43,7 @@ export const updatePortfolioBodyShape = {
   portfolioType: z.enum(PORTFOLIO_TYPE).optional(),
   description: z.string().nullable().optional(),
   displayCurrencyCode: currencyCode().nullable().optional(),
+  externalUrl: externalUrl().nullish(),
   isEnabled: z.boolean().optional(),
   ...logoFieldsShape,
 };

@@ -206,6 +206,39 @@ describe('Update Portfolio Service E2E', () => {
         expect(resetResponse.statusCode).toBe(200);
         expect(helpers.extractResponse(resetResponse).displayCurrencyCode).toBeNull();
       }, 30000);
+
+      it('should set, preserve across unrelated updates, and clear externalUrl', async () => {
+        const created = await helpers.createPortfolio({
+          payload: { name: 'URL Portfolio' },
+          raw: true,
+        });
+        expect(created.externalUrl).toBeNull();
+
+        const withUrl = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { externalUrl: 'https://investor.vanguard.com/' },
+          raw: true,
+        });
+        expect(withUrl.externalUrl).toBe('https://investor.vanguard.com/');
+
+        const renamed = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { name: 'Renamed URL Portfolio' },
+          raw: true,
+        });
+        expect(renamed.name).toBe('Renamed URL Portfolio');
+        expect(renamed.externalUrl).toBe('https://investor.vanguard.com/');
+
+        const cleared = await helpers.updatePortfolio({
+          portfolioId: created.id,
+          payload: { externalUrl: null },
+          raw: true,
+        });
+        expect(cleared.externalUrl).toBeNull();
+
+        const listed = await helpers.listPortfolios({ raw: true });
+        expect(listed.data.find((p) => p.id === created.id)?.externalUrl).toBeNull();
+      });
     });
 
     describe('Error cases', () => {
@@ -281,6 +314,20 @@ describe('Update Portfolio Service E2E', () => {
           payload: { name: 'Test' },
         });
         expect(invalidPortfolioId.statusCode).toBe(ERROR_CODES.ValidationError);
+
+        for (const badUrl of [
+          'ftp://broker.example',
+          'javascript:alert(1)',
+          'not-a-url',
+          '',
+          `https://broker.example/${'a'.repeat(2049)}`,
+        ]) {
+          const invalidUrl = await helpers.updatePortfolio({
+            portfolioId: createdPortfolio.id,
+            payload: { externalUrl: badUrl },
+          });
+          expect(invalidUrl.statusCode).toBe(ERROR_CODES.ValidationError);
+        }
       }, 30000);
     });
   });

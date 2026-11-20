@@ -60,6 +60,7 @@ const makeAccountRow = ({
   currencyCode: 'USD',
   userId,
   externalId: null,
+  externalUrl: null,
   status: 'active',
   excludeFromStats: false,
   bankDataProviderConnectionId: null,
@@ -140,6 +141,7 @@ describe('create_account', () => {
         accountCategory: ACCOUNT_CATEGORIES.saving,
         initialBalance: 10.25,
         creditLimit: 500,
+        externalUrl: 'https://bank.example/checking',
         logoDomain: 'example.com',
       }).success,
     ).toBe(true);
@@ -154,6 +156,8 @@ describe('create_account', () => {
     { label: 'an invalid currency code', input: { currencyCode: '!' } },
     { label: 'an unknown category', input: { accountCategory: 'piggy' } },
     { label: 'a negative credit limit', input: { creditLimit: -1 } },
+    { label: 'a non-http externalUrl', input: { externalUrl: 'ftp://example.com' } },
+    { label: 'a malformed externalUrl', input: { externalUrl: 'not-a-url' } },
   ])('rejects $label', ({ input: patch }) => {
     expect(schema.safeParse({ ...input, ...patch }).success).toBe(false);
   });
@@ -168,7 +172,13 @@ describe('create_account', () => {
     service.createAccount.mockResolvedValueOnce(makeAccountRow() as never);
 
     const result = await tool.handler(
-      { ...input, initialBalance: 100, creditLimit: 50.5, logoDomain: 'example.com' },
+      {
+        ...input,
+        initialBalance: 100,
+        creditLimit: 50.5,
+        externalUrl: 'https://bank.example/savings',
+        logoDomain: 'example.com',
+      },
       WRITE,
     );
 
@@ -180,6 +190,7 @@ describe('create_account', () => {
       currencyCode: 'EUR',
       type: ACCOUNT_TYPES.system,
       accountCategory: ACCOUNT_CATEGORIES.general,
+      externalUrl: 'https://bank.example/savings',
       logoDomain: 'example.com',
     });
     expect(payload.initialBalance.toNumber()).toBe(100);
@@ -237,11 +248,13 @@ describe('update_account', () => {
         excludeFromStats: true,
         currentBalance: -5,
         initialBalance: 3,
+        externalUrl: 'https://bank.example/account',
         logoDomain: null,
         logoInitials: null,
         logoColor: null,
       }).success,
     ).toBe(true);
+    expect(schema.safeParse({ accountId: ACCOUNT_ID, externalUrl: null }).success).toBe(true);
     expect(Object.keys(tool.config.inputSchema!.shape)).not.toContain('status');
   });
 
@@ -250,6 +263,7 @@ describe('update_account', () => {
     { label: 'a blank name', input: { name: '' } },
     { label: 'a negative credit limit', input: { creditLimit: -1 } },
     { label: 'an unknown category', input: { accountCategory: 'piggy' } },
+    { label: 'a javascript externalUrl', input: { externalUrl: 'javascript:alert(1)' } },
   ])('rejects $label', ({ input }) => {
     expect(schema.safeParse({ accountId: ACCOUNT_ID, name: 'x', ...input }).success).toBe(false);
   });
@@ -269,6 +283,7 @@ describe('update_account', () => {
         creditLimit: 20,
         excludeFromStats: true,
         currentBalance: 12.5,
+        externalUrl: null,
         logoDomain: null,
       },
       WRITE,
@@ -284,6 +299,7 @@ describe('update_account', () => {
       userId: 42,
       name: 'Renamed',
       excludeFromStats: true,
+      externalUrl: null,
       logoDomain: null,
     });
     expect(payload.creditLimit.toNumber()).toBe(20);

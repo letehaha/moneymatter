@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Виберіть валюту відображення",
       "displayCurrencyBaseOption": "Базова валюта ({code})",
       "displayCurrencyDescription": "Вартість портфеля та статистика перетворюються на цю валюту за поточним курсом обміну.",
+      "externalUrlLabel": "Зовнішнє посилання (необов'язково)",
+      "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Скасувати",
       "submitButton": "Зберегти зміни",
       "submitButtonLoading": "Збереження...",
@@ -137,6 +139,8 @@
       "creditLimitLabel": "Кредитний ліміт",
       "creditLimitPlaceholder": "Кредитний ліміт",
       "defaultPaymentTypeLabel": "Тип платежу за замовчуванням",
+      "externalUrlLabel": "Зовнішнє посилання (необов'язково)",
+      "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Створити",
       "submitButtonLoading": "Створення...",
       "notifications": {
@@ -190,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Введіть коректну суму (до 2 знаків після коми)",
-      "mustBePositive": "Сума має бути додатною"
+      "mustBePositive": "Сума має бути додатною",
+      "httpUrl": "Введіть коректне http(s)-посилання",
+      "maxLength": "Не повинно перевищувати {max} символів"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "З валюти",

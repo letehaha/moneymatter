@@ -1,5 +1,5 @@
 import { ACCOUNT_CATEGORIES, ACCOUNT_STATUSES, ACCOUNT_TYPES, PAYMENT_TYPES } from '@bt/shared/types';
-import { currencyCode } from '@common/lib/zod/custom-types';
+import { currencyCode, externalUrl } from '@common/lib/zod/custom-types';
 import { logoFieldsShape, refineLogoFields, refineLogoFieldsOnCreate } from '@controllers/common/logo-fields.schema';
 import { z } from 'zod';
 
@@ -18,6 +18,7 @@ export const createAccountBodyFields = {
   // Amount fields are decimals; callers convert them with `Money.fromDecimal`.
   initialBalance: z.number().optional().default(0),
   creditLimit: z.number().min(0).optional().default(0),
+  externalUrl: externalUrl().nullish(),
   // Absent key → column stays null; a brand domain and monogram letters evict each other.
   ...logoFieldsShape,
 };
@@ -38,6 +39,7 @@ export const updateAccountBodyFields = {
   excludeFromStats: z.boolean().optional(),
   currentBalance: z.number().optional(),
   initialBalance: z.number().optional(),
+  externalUrl: externalUrl().nullish(),
   // Absent key → no change; a present key is written as given (null clears it), and a brand
   // domain and monogram letters evict each other.
   ...logoFieldsShape,

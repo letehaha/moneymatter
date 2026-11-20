@@ -23,11 +23,13 @@ export function connectProvider<R extends boolean | undefined = false>({
   providerType,
   credentials,
   providerName,
+  externalUrl,
   raw,
 }: {
   providerType: BANK_PROVIDER_TYPE;
   credentials: Record<string, unknown>;
   providerName?: string;
+  externalUrl?: string | null;
   raw?: R;
 }): UtilizeReturnType<typeof connectProviderService.connectProvider, R> {
   return makeRequest<Awaited<ReturnType<typeof connectProviderService.connectProvider>>, R>({
@@ -36,6 +38,7 @@ export function connectProvider<R extends boolean | undefined = false>({
     payload: {
       credentials,
       ...(providerName && { providerName }),
+      ...(externalUrl !== undefined && { externalUrl }),
     },
     raw,
   });
@@ -314,11 +317,13 @@ export function updateConnectionDetails<R extends boolean | undefined = false>({
   connectionId,
   providerName,
   credentials,
+  externalUrl,
   raw,
 }: {
   connectionId: string;
   providerName?: string;
   credentials?: Record<string, unknown>;
+  externalUrl?: string | null;
   raw?: R;
 }) {
   return makeRequest<
@@ -327,6 +332,7 @@ export function updateConnectionDetails<R extends boolean | undefined = false>({
         id: string;
         providerName: string;
         providerType: string;
+        externalUrl: string | null;
         isActive: boolean;
         lastSyncAt: string | null;
         createdAt: string;
@@ -340,6 +346,7 @@ export function updateConnectionDetails<R extends boolean | undefined = false>({
     payload: {
       ...(providerName !== undefined && { providerName }),
       ...(credentials !== undefined && { credentials }),
+      ...(externalUrl !== undefined && { externalUrl }),
     },
     raw,
   });

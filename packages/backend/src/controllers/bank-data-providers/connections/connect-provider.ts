@@ -1,4 +1,5 @@
 import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
+import { externalUrl } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { connectProvider } from '@root/services/bank-data-providers/connection/connect-provider';
 import { z } from 'zod';
@@ -11,6 +12,7 @@ export default createController(
     body: z.object({
       credentials: z.record(z.string(), z.unknown()),
       providerName: z.string().optional(),
+      externalUrl: externalUrl().nullish(),
     }),
   }),
   async ({ user, params, body }) => {
@@ -19,6 +21,7 @@ export default createController(
       userId: user.id,
       credentials: body.credentials,
       providerName: body.providerName,
+      externalUrl: body.externalUrl,
     });
 
     return {

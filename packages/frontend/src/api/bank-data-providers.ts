@@ -28,6 +28,7 @@ export interface BankConnection {
   id: string;
   providerType: BANK_PROVIDER_TYPE;
   providerName: string;
+  externalUrl: string | null;
   isActive: boolean;
   lastSyncAt: string | null;
   accountsCount: number;
@@ -40,6 +41,7 @@ interface BankConnectionDetails {
   id: string;
   providerType: BANK_PROVIDER_TYPE;
   providerName: string;
+  externalUrl: string | null;
   isActive: boolean;
   lastSyncAt: string | null;
   createdAt: string;
@@ -152,7 +154,7 @@ export const reauthorizeConnection = async (connectionId: string): Promise<{ aut
 
 export const updateConnectionDetails = async (
   connectionId: string,
-  details: { providerName?: string; credentials?: Record<string, unknown> },
+  details: { providerName?: string; credentials?: Record<string, unknown>; externalUrl?: string | null },
 ): Promise<{ message: string; connection: BankConnectionDetails }> => {
   const response = await api.patch(`/bank-data-providers/connections/${connectionId}`, details);
   return response;

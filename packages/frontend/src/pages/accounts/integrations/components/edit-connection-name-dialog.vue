@@ -6,12 +6,19 @@
         <DialogDescription>{{ t('pages.integrations.dialogs.editName.description') }}</DialogDescription>
       </DialogHeader>
 
-      <div class="py-4">
+      <div class="space-y-4 py-4">
         <InputField
           v-model="localProviderName"
           :label="t('pages.integrations.dialogs.editName.label')"
           :placeholder="$t('pages.connectionName.placeholder')"
           @keyup.enter="handleSave"
+        />
+
+        <ExternalUrlField
+          v-model="localExternalUrl"
+          :label="$t('pages.integrations.dialogs.editName.externalUrlLabel')"
+          :placeholder="$t('pages.integrations.dialogs.editName.externalUrlPlaceholder')"
+          :disabled="isSaving"
         />
       </div>
 
@@ -19,7 +26,7 @@
         <UiButton variant="outline" @click="handleCancel" :disabled="isSaving">
           {{ $t('common.actions.cancel') }}
         </UiButton>
-        <UiButton @click="handleSave" :disabled="!localProviderName.trim() || isSaving">
+        <UiButton @click="handleSave" :disabled="isSaveDisabled">
           {{
             isSaving ? t('pages.integrations.dialogs.editName.saving') : t('pages.integrations.dialogs.editName.save')
           }}
@@ -30,6 +37,8 @@
 </template>
 
 <script lang="ts" setup>
+import { normalizeExternalUrl, validateOptionalExternalUrl } from '@/common/utils/external-url';
+import ExternalUrlField from '@/components/fields/external-url-field.vue';
 import InputField from '@/components/fields/input-field.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import {
@@ -40,7 +49,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/lib/ui/dialog';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -48,16 +57,29 @@ const { t } = useI18n();
 const props = defineProps<{
   open: boolean;
   providerName: string;
+  externalUrl?: string | null;
   isSaving?: boolean;
 }>();
 
 const emit = defineEmits<{
   'update:open': [value: boolean];
-  save: [providerName: string];
+  save: [payload: { providerName: string; externalUrl: string | null }];
 }>();
 
 const isOpen = ref(props.open);
 const localProviderName = ref(props.providerName);
+const localExternalUrl = ref(props.externalUrl ?? '');
+
+const normalizedExternalUrl = computed(() => normalizeExternalUrl({ value: localExternalUrl.value }));
+const isExternalUrlValid = computed(() => validateOptionalExternalUrl({ value: localExternalUrl.value }) === null);
+const hasChanges = computed(
+  () =>
+    localProviderName.value.trim() !== props.providerName.trim() ||
+    normalizedExternalUrl.value !== (props.externalUrl ?? null),
+);
+const isSaveDisabled = computed(
+  () => !localProviderName.value.trim() || !isExternalUrlValid.value || !hasChanges.value || Boolean(props.isSaving),
+);
 
 watch(
   () => props.open,
@@ -66,6 +88,7 @@ watch(
     // Reset the local value when dialog opens
     if (newValue) {
       localProviderName.value = props.providerName;
+      localExternalUrl.value = props.externalUrl ?? '';
     }
   },
 );
@@ -82,8 +105,11 @@ watch(isOpen, (newValue) => {
 });
 
 const handleSave = () => {
-  if (localProviderName.value.trim()) {
-    emit('save', localProviderName.value.trim());
+  if (!isSaveDisabled.value) {
+    emit('save', {
+      providerName: localProviderName.value.trim(),
+      externalUrl: normalizedExternalUrl.value,
+    });
   }
 };
 

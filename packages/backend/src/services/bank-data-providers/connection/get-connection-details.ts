@@ -15,6 +15,7 @@ export interface ConnectionDetailsResponse {
   id: string;
   providerType: string;
   providerName: string;
+  externalUrl: string | null;
   isActive: boolean;
   lastSyncAt: string | null;
   createdAt: string;
@@ -90,6 +91,7 @@ export async function getConnectionDetails(params: GetConnectionDetailsParams): 
     id: connection.id,
     providerType: connection.providerType,
     providerName: connection.providerName,
+    externalUrl: connection.externalUrl,
     isActive: connection.isActive,
     lastSyncAt: connection.lastSyncAt?.toISOString() || null,
     createdAt: connection.createdAt.toISOString(),
