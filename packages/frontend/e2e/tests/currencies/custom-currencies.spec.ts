@@ -18,7 +18,8 @@ const DECIMALS = 6;
 const RATE = '1.5';
 const ACCOUNT_NAME = 'Tether Wallet';
 const AMOUNT = 12.345678;
-const FORMATTED_AMOUNT = '12.345678 USDT';
+const SHORTENED_AMOUNT = '12.35 USDT';
+const FULL_AMOUNT = '12.345678 USDT';
 const creds = buildTestCredentials({ prefix: 'customccy' });
 
 test.describe.configure({ mode: 'serial' });
@@ -59,7 +60,7 @@ test.describe('Custom currencies', () => {
     await expect(row).toContainText(`1 ${CODE} = ${RATE} ${BASE_CURRENCY}`);
   });
 
-  test('a transaction in it shows 6 decimals', async ({ page }) => {
+  test('a transaction in it shows a shortened amount with all 6 decimals in a tooltip', async ({ page }) => {
     const accountId = extractId(
       await createAccount({ request: api, name: ACCOUNT_NAME, currencyCode: CODE, initialBalance: 0 }),
     );
@@ -67,7 +68,11 @@ test.describe('Custom currencies', () => {
 
     await page.goto('/transactions');
 
-    await expect(page.getByText(FORMATTED_AMOUNT).first()).toBeVisible();
+    const shortened = page.getByRole('row').getByText(SHORTENED_AMOUNT).first();
+    await expect(shortened).toBeVisible();
+
+    await shortened.hover();
+    await expect(page.getByText(FULL_AMOUNT)).toBeVisible();
   });
 
   test('the decimals are locked while an account holds the currency', async ({ page }) => {

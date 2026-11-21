@@ -109,11 +109,9 @@ async function fillDirectForm({
 async function fillTransferFormManual({
   page,
   amount,
-  selectCurrency,
 }: {
   page: import('@playwright/test').Page;
   amount: string;
-  selectCurrency?: boolean;
 }): Promise<void> {
   const dialog = page.getByRole('dialog');
 
@@ -121,11 +119,6 @@ async function fillTransferFormManual({
   await pickDialogSelect({ page, nth: 0, optionName: testAccount.name });
 
   await dialog.locator('input[type="number"]').fill(amount);
-
-  // For withdrawal+transfer, also select currency (second combobox)
-  if (selectCurrency) {
-    await pickDialogSelect({ page, nth: 1, optionName: CURRENCY });
-  }
 }
 
 async function linkExistingTransaction({ page }: { page: import('@playwright/test').Page }): Promise<void> {
@@ -211,7 +204,7 @@ test.describe('Portfolio Cash Transactions – All 6 Submit Paths', () => {
     await selectOuterTab({ page, tab: 'withdrawal' });
     await selectInnerTab({ page, tab: 'transfer' });
 
-    await fillTransferFormManual({ page, amount: '150', selectCurrency: true });
+    await fillTransferFormManual({ page, amount: '150' });
     await submitForm({ page });
     await confirmAndWait({ page });
   });
