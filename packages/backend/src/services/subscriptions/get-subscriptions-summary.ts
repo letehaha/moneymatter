@@ -152,7 +152,12 @@ const getSubscriptionsSummaryImpl = async ({
       const refAmount = calculateRefAmountFromParams({
         amount: sub.expectedAmount!,
         rate,
-        ...(await getConversionDecimals({ userId, baseCode: currencyCode, quoteCode: baseCurrencyCode })),
+        ...(await getConversionDecimals({
+          userId,
+          definitionOwnerUserId: userId,
+          baseCode: currencyCode,
+          quoteCode: baseCurrencyCode,
+        })),
       });
 
       const multiplier = monthlyMultiplier(sub);

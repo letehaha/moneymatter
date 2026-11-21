@@ -85,7 +85,7 @@ export const adjustAccountBalance = withTransaction(
     }
 
     // The target is what the account will hold, so it carries the account currency's decimals.
-    const decimals = await getCurrencyDecimals({ userId, code: account.currencyCode });
+    const decimals = await getCurrencyDecimals({ userId: account.userId, code: account.currencyCode });
     const targetBalance = requestedTargetBalance.round(decimals);
 
     if (account.type !== ACCOUNT_TYPES.system) {

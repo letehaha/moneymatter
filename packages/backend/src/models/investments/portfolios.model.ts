@@ -1,6 +1,7 @@
 import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
 import { RecordId } from '@bt/shared/types';
 import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { IdColumn } from '@common/types/id-column';
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany, Index } from 'sequelize-typescript';
 
@@ -41,7 +42,7 @@ export default class Portfolios extends Model {
    * Currency the portfolio's summary/stats are converted to for display (e.g. PLN to match a Polish broker).
    * Display-only — stored ref* values stay in base currency. Null means the user's base currency.
    */
-  @Column({ type: DataType.STRING(3), allowNull: true })
+  @Column({ type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH), allowNull: true })
   displayCurrencyCode!: string | null;
 
   @Column({ type: DataType.STRING(MAX_EXTERNAL_URL_LENGTH), allowNull: true })

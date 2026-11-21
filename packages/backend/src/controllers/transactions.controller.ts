@@ -2,6 +2,7 @@ import { SHARE_PERMISSIONS, TRANSACTIONS_WRITE_SCOPES } from '@bt/shared/types';
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { serializeTransaction, serializeTransactions } from '@root/serializers';
+import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { isPermissionAtLeast } from '@services/sharing/auth/permission-rank';
 import * as transactionsService from '@services/transactions';
@@ -38,6 +39,7 @@ export const getTransactionById = createController(
 
     // Mutate the tx instance so the serializer's property-existence check picks it up.
     Object.assign(tx, { canEdit });
+    await attachTransactionCurrencyMeta({ transactions: [tx] });
     await attachPaymentParts({
       transactions: [tx],
       collapsed: false,
@@ -63,7 +65,8 @@ export const getTransactionsByTransferId = createController(
       userId,
     });
 
-    // Serialize: convert cents to decimal for API response
+    await attachTransactionCurrencyMeta({ transactions });
+
     return { data: serializeTransactions(transactions) };
   },
 );

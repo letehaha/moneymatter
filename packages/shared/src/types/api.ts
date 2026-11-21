@@ -103,7 +103,8 @@ export type CurrencyInUseBlocker = {
     | 'transactionTemplate'
     | 'budget'
     | 'goal'
-    | 'ventureDeal';
+    | 'ventureDeal'
+    | 'customCurrency';
   id: string;
   name: string;
   trashed?: boolean;

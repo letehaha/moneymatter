@@ -5,6 +5,7 @@ import {
   SharePermission,
   TransactionCreatorSnapshot,
 } from '@bt/shared/types';
+import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { CacheClient } from '@js/utils/cache';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
@@ -17,6 +18,7 @@ import { Op, type Transaction } from 'sequelize';
 import { removePendingJobsForUser } from '../bank-data-providers/monobank/transaction-sync-queue';
 import { REDIS_KEYS as SYNC_REDIS_KEYS, clearAccountSyncStatus } from '../bank-data-providers/sync/sync-status-tracker';
 import { withTransaction } from '../common/with-transaction';
+import { pruneUnusedCustomCurrencies } from '../currencies/prune-custom-currencies';
 import { clearRefAmountCache } from '../ref-amount-cache';
 import { fanOutNotifications } from '../sharing/fan-out-notifications';
 import { convertCrossUserTransfersForAccountIds } from '../sharing/household/convert-cross-user-transfers.service';
@@ -151,6 +153,7 @@ export const runUserDestroyLifecycle = async ({
     //    the route auth and the tx (concurrent delete from another session).
     const txResult = await runDestroyInTx({ userId, destroyInTx, stampCreatorSnapshot });
     if (!txResult) return false;
+    invalidateCurrencyDecimalsCache({ userId });
 
     const { notificationTargets, householdRevokedTargets, householdOwnerNotifyTargets, ownerSnapshot } = txResult;
 
@@ -244,6 +247,9 @@ const runDestroyInTx = withTransaction(
     // the hook so callers that write more rows use the same transaction directly.
     const transaction = namespace.get('transaction') as Transaction;
     await destroyInTx({ user, transaction });
+
+    // The destroy removed this user's currency holdings; a custom currency nobody holds any more goes with them.
+    await pruneUnusedCustomCurrencies();
 
     return {
       notificationTargets,

@@ -50,6 +50,12 @@ interface AutomationBody {
   actions: AutomationAction[];
 }
 
+/** Currency codes the amount conditions name (`currency.mode === 'specific'`). */
+export const collectAutomationCurrencyCodes = ({ conditions }: { conditions: AutomationConditions }): string[] =>
+  conditions.items.flatMap((item) =>
+    item.field === 'amount' && item.currency.mode === 'specific' ? [item.currency.code] : [],
+  );
+
 export const collectAutomationRefs = ({ conditions, actions }: AutomationBody): AutomationRef[] => {
   const refs: AutomationRef[] = [];
 

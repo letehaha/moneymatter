@@ -13,7 +13,6 @@ import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { Separator } from '@/components/lib/ui/separator';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import TransactionRecord from '@/components/transactions-list/transaction-record.vue';
-import { useFormatCurrency } from '@/composable';
 import {
   useAccountToPortfolioTransfer,
   useCreateDirectCashTransaction,
@@ -24,6 +23,7 @@ import { usePortfolioCurrencySorting } from '@/composable/data-queries/use-portf
 import { useFormValidation } from '@/composable/form-validator';
 import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs';
+import { formatAccountAmount, formatUIAmount } from '@/js/helpers';
 import { getCurrencyDecimals, getSmallestCurrencyUnit } from '@/js/helpers/currency-decimals';
 import { useAccountsStore } from '@/stores';
 import type { AccountModel, PortfolioModel, TransactionModel, UserCurrencyModel } from '@bt/shared/types';
@@ -56,7 +56,6 @@ const accountsStore = useAccountsStore();
 // Loan accounts excluded – money only flows INTO a loan (transfer_to_loan), so they can't be a transfer source.
 const { txTargetableSourceAccountsActiveFirst: txTargetableAccountsActiveFirst, accountsRecord } =
   storeToRefs(accountsStore);
-const { formatAmountByCurrencyCode } = useFormatCurrency();
 const { sortedCurrencies, currencyLabel } = usePortfolioCurrencySorting(computed(() => props.portfolioId));
 const { resolveDefaultAccount } = useAccountDropdownPrefs();
 
@@ -173,8 +172,11 @@ const transferCurrencyCode = computed(() => transferForm.selectedAccount?.curren
 const directDecimals = computed(() =>
   directCurrencyCode.value ? getCurrencyDecimals({ code: directCurrencyCode.value }) : undefined,
 );
+const transferCurrencyMeta = computed(() => transferForm.selectedAccount?.currencyMeta);
 const transferDecimals = computed(() =>
-  transferCurrencyCode.value ? getCurrencyDecimals({ code: transferCurrencyCode.value }) : undefined,
+  transferCurrencyCode.value
+    ? getCurrencyDecimals({ code: transferCurrencyCode.value, meta: transferCurrencyMeta.value })
+    : undefined,
 );
 const directCurrencyDecimal = useCurrencyDecimalRule({ decimals: directDecimals });
 const transferCurrencyDecimal = useCurrencyDecimalRule({ decimals: transferDecimals });
@@ -213,7 +215,7 @@ const transferValidationRules = computed(() => ({
   selectedAccount: { required },
   amount: {
     required,
-    minValue: minValue(getSmallestCurrencyUnit({ code: transferCurrencyCode.value })),
+    minValue: minValue(getSmallestCurrencyUnit({ code: transferCurrencyCode.value, meta: transferCurrencyMeta.value })),
     currencyDecimal: transferCurrencyDecimal.rule.value,
   },
 }));
@@ -261,7 +263,7 @@ const prepareConfirmationData = () => {
 
   if (isLinkMode.value && linkedTransaction.value) {
     const tx = linkedTransaction.value;
-    amount = formatAmountByCurrencyCode(tx.amount, tx.currencyCode);
+    amount = formatAccountAmount({ amount: tx.amount, account: tx, fullPrecision: true });
     const accountName =
       accountsRecord.value[tx.accountId]?.name || t('forms.directCashTransaction.linkedTransactionLabel');
 
@@ -275,7 +277,10 @@ const prepareConfirmationData = () => {
       toName = accountName;
     }
   } else {
-    amount = formatAmountByCurrencyCode(Number(transferForm.amount), transferCurrencyCode.value ?? '');
+    amount = formatUIAmount(Number(transferForm.amount), {
+      currency: transferCurrencyCode.value,
+      meta: transferCurrencyMeta.value,
+    });
     const accountName = transferForm.selectedAccount?.name || '';
 
     if (operationType.value === 'deposit') {

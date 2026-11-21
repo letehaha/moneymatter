@@ -57,6 +57,7 @@ export const FEATURES = {
   budget_plan: 'budget_plan',
   smart_tracking: 'smart_tracking',
   goals: 'goals',
+  custom_currencies: 'custom_currencies',
 } as const;
 export type Feature = (typeof FEATURES)[keyof typeof FEATURES];
 
@@ -95,6 +96,7 @@ const PLUS_FEATURES: readonly Feature[] = [
   FEATURES.invoice_matching,
   FEATURES.fire_planner,
   FEATURES.smart_tracking,
+  FEATURES.custom_currencies,
 ];
 /** Plus as of launch (2026-09-15), inlined: a feature added to ESSENTIAL_FEATURES later is paid for early adopters. */
 const EARLY_ADOPTER_FEATURES: readonly Feature[] = [

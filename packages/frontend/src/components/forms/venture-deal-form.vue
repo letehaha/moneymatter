@@ -41,7 +41,7 @@ const { data: platformsData } = useVenturePlatforms();
 const platforms = computed<VenturePlatformModel[]>(() => platformsData.value?.data ?? []);
 
 const currenciesStore = useCurrenciesStore();
-const userCurrencies = computed(() => currenciesStore.currencies);
+const userCurrencies = computed(() => currenciesStore.currencies.filter((c) => !c.currency?.isCustom));
 
 const NO_PLATFORM = '__none__';
 

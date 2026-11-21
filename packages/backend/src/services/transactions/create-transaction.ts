@@ -24,6 +24,7 @@ import * as UsersCurrencies from '@models/users-currencies.model';
 import { isBeforeSeam, manualRowOnBankAccountMessage, SEAM_ACCOUNT_ATTRIBUTES } from '@services/accounts/seam';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { dailyImportDetails } from '@services/import-export/core/daily-import-details';
 import { assertLoanPaymentAllowed } from '@services/loans/assert-loan-payment-allowed';
 import { applyPayeeCategorization } from '@services/payees/apply-categorization';
@@ -127,6 +128,7 @@ type CreateOppositeTransactionParams = [
  */
 export const calcTransferTransactionRefAmount = async ({
   userId,
+  definitionOwnerUserId,
   baseTransaction,
   destinationAmount,
   oppositeTxCurrencyCode,
@@ -134,6 +136,8 @@ export const calcTransferTransactionRefAmount = async ({
   date,
 }: {
   userId: number;
+  /** Owner of the destination account, whose definition of its currency rounds the amount. */
+  definitionOwnerUserId: number;
   baseTransaction: Transactions.default;
   destinationAmount: Money;
   oppositeTxCurrencyCode: string;
@@ -163,6 +167,7 @@ export const calcTransferTransactionRefAmount = async ({
   } else if (!isSourceRef && !isOppositeRef) {
     oppositeRefAmount = await calculateRefAmount({
       userId,
+      definitionOwnerUserId,
       amount: destinationAmount,
       baseCode: oppositeTxCurrencyCode,
       quoteCode: baseCurrency.currency.code,
@@ -304,6 +309,7 @@ export const createOppositeTransaction = async (params: CreateOppositeTransactio
     } else {
       oppositeRefAmount = await calculateRefAmount({
         userId: destOwnerUserId,
+        definitionOwnerUserId: destOwnerUserId,
         amount: destinationAmount,
         baseCode: oppositeTxCurrency.code,
         quoteCode: destOwnerBaseCurrency.currency.code,
@@ -313,6 +319,7 @@ export const createOppositeTransaction = async (params: CreateOppositeTransactio
   } else {
     const result = await calcTransferTransactionRefAmount({
       userId,
+      definitionOwnerUserId: destOwnerUserId,
       baseTransaction: baseTx,
       destinationAmount,
       oppositeTxCurrencyCode: oppositeTxCurrency.code,
@@ -330,6 +337,7 @@ export const createOppositeTransaction = async (params: CreateOppositeTransactio
 
   const oppositeTx = await Transactions.createTransaction({
     userId: destOwnerUserId,
+    definitionOwnerUserId: destOwnerUserId,
     amount: destinationAmount,
     refAmount: oppositeRefAmount,
     note: baseTransaction.note,
@@ -398,6 +406,12 @@ export const createTransaction = withTransaction(
     if (matchPlanned && paymentLegs?.length) {
       throw new ValidationError({ message: t({ key: 'transactions.paymentLegsNotAllowed' }) });
     }
+
+    await assertCurrencyCodesVisible({
+      userId,
+      codes: [payload.originalCurrencyCode],
+      allowedWithoutPlan: [payload.originalCurrencyCode],
+    });
 
     try {
       // Captured before the coercion below, which would hide a non-positive amount from
@@ -484,7 +498,11 @@ export const createTransaction = withTransaction(
       // would otherwise trip `currencyNotConnected` inside the ref-amount lookup.
       // Auto-connect so the guard stays internal and not user-facing.
       if (!isOwner && generalTxCurrency.code !== defaultUserCurrency.code) {
-        await ensureUserCurrencyConnected({ userId, currencyCode: generalTxCurrency.code });
+        await ensureUserCurrencyConnected({
+          userId,
+          currencyCode: generalTxCurrency.code,
+          definitionOwnerUserId: accountOwnerUserId,
+        });
       }
 
       // Every figure the caller entered is rounded to the account currency's decimals once, here, so
@@ -497,7 +515,8 @@ export const createTransaction = withTransaction(
           cashbackAmount: payload.cashbackAmount,
           originalAmount: payload.originalAmount,
         },
-        userId: accountOwnerUserId,
+        userId,
+        definitionOwnerUserId: accountOwnerUserId,
         currencyCode: generalTxCurrency.code,
         refCurrencyCode: undefined,
         originalCurrencyCode: payload.originalCurrencyCode,
@@ -587,6 +606,7 @@ export const createTransaction = withTransaction(
         commissionRate,
         refCommissionRate: commissionRate,
         userId,
+        definitionOwnerUserId: accountOwnerUserId,
         accountId,
         accountType,
         transferNature,
@@ -601,6 +621,7 @@ export const createTransaction = withTransaction(
       if (defaultUserCurrency.code !== generalTxCurrency.code) {
         generalTxParams.refAmount = await calculateRefAmount({
           userId,
+          definitionOwnerUserId: accountOwnerUserId,
           amount: generalTxParams.amount,
           baseCode: generalTxCurrency.code,
           quoteCode: defaultUserCurrency.code,
@@ -608,6 +629,7 @@ export const createTransaction = withTransaction(
         });
         generalTxParams.refCommissionRate = await calculateRefAmount({
           userId,
+          definitionOwnerUserId: accountOwnerUserId,
           amount: generalTxParams.commissionRate || Money.zero(),
           baseCode: generalTxCurrency.code,
           quoteCode: defaultUserCurrency.code,
@@ -678,7 +700,7 @@ export const createTransaction = withTransaction(
         await manageSplits({
           transactionId: baseTransaction!.id,
           userId,
-          categoryOwnerUserId: accountOwnerUserId,
+          accountOwnerUserId,
           splits,
           transactionAmount: amount,
           transactionCurrencyCode: generalTxCurrency.code,

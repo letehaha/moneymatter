@@ -26,12 +26,16 @@ interface TransactionMoneyFields {
 export const roundTransactionMoney = async <TValues extends TransactionMoneyFields>({
   values,
   userId,
+  definitionOwnerUserId,
   currencyCode,
   refCurrencyCode,
   originalCurrencyCode,
 }: {
   values: TValues;
+  /** The writer, whose definition of `originalCurrencyCode` rounds `originalAmount`. */
   userId: number;
+  /** Whose definition of `currencyCode` rounds the native amounts: the account owner's. */
+  definitionOwnerUserId: number;
   currencyCode: string;
   refCurrencyCode: string | null | undefined;
   originalCurrencyCode: string | null | undefined;
@@ -40,7 +44,7 @@ export const roundTransactionMoney = async <TValues extends TransactionMoneyFiel
 
   const roundedNative = await roundMoneyValues({
     values: { amount: native.amount, commissionRate: native.commissionRate, cashbackAmount: native.cashbackAmount },
-    userId,
+    userId: definitionOwnerUserId,
     currencyCode,
     mode: 'half-up',
   });

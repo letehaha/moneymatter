@@ -262,6 +262,7 @@
     "securitySearchResultNotRecognized": "Security search result is not recognized or has expired. Search for the security again.",
     "currencyForSecurityNotFound": "Currency for security not found.",
     "currencyNotFound": "Currency not found",
+    "customCurrencyNotSupported": "Portfolios support ISO 4217 currencies only. \"{{code}}\" is a custom currency",
     "transactionNotFound": "Investment transaction not found",
     "userBaseCurrencyNotFound": "User base currency not found",
     "insufficientSharesToSell": "Insufficient shares to sell. After this update, you would have {{adjustedQuantity}} shares but are trying to sell {{sellQuantity}} shares.",
@@ -609,7 +610,23 @@
     "currencyNotConnected": "Asked currency is not connected",
     "exchangeRateNotAvailable": "Exchange rate not available for {{baseCode}}/{{quoteCode}} on {{date}}",
     "unknownCurrencyCode": "Unknown currency code: {{code}}",
-    "amountExceedsDecimals": "{{code}} allows at most {{decimals}} decimal places"
+    "invalidCode": "Invalid currency code \"{{code}}\". Use 2 to 16 letters or digits, e.g. \"USD\".",
+    "invalidCodeIso": "Invalid currency code \"{{code}}\". Use an ISO 4217 code, e.g. \"USD\".",
+    "invalidCodeWithCustom": "Invalid currency code \"{{code}}\". Use an ISO 4217 code, e.g. \"USD\", or one of your custom currencies: {{customCodes}}.",
+    "amountExceedsDecimals": "{{code}} allows at most {{decimals}} decimal places",
+    "customCurrencyNotFound": "Custom currency \"{{code}}\" was not found",
+    "customCurrencyIsoCode": "\"{{code}}\" is an ISO 4217 currency code and cannot be defined as a custom currency",
+    "customCurrencyAlreadyDefined": "You already have a currency with the code \"{{code}}\"",
+    "customCurrencyDecimalsInUse": "You can't change the decimals of {{code}} while your data uses it.",
+    "customCurrencyUseCustomEndpoint": "\"{{code}}\" is a custom currency. Remove it from your custom currencies instead",
+    "customCurrencyCannotBeBase": "\"{{code}}\" is a custom currency and cannot be the base currency",
+    "customCurrencyRateBetweenCustom": "Custom currencies are quoted in ISO currencies only: \"{{baseCode}}\" and \"{{quoteCode}}\" are both custom currencies",
+    "customCurrencyLastRate": "\"{{code}}\" is a custom currency and always needs a rate. Set a new rate instead of removing the last one",
+    "customCurrencyQuoteNotIso": "The rate of a custom currency must be given in an ISO currency, and \"{{code}}\" is a custom currency",
+    "customCurrencyRateNeedsQuote": "Set a base currency first, or give the rate of the custom currency in an ISO currency you hold",
+    "customCurrencyOneQuote": "\"{{code}}\" has a single quote currency. Send its rates against one currency only",
+    "customCurrencyRateViaPairs": "\"{{code}}\" is a custom currency. Change its rate from its exchange rate instead",
+    "customCurrencyDefinitionConflict": "Your own \"{{code}}\" has different decimals than the account owner's \"{{code}}\", so you can't add or edit \"{{code}}\" transactions on this shared account"
   },
   "userSettings": {
     "userSettingsNotFound": "User settings not found"
@@ -888,6 +905,8 @@
         "checksumMismatch": "Backup file {{path}} failed its integrity check (checksum mismatch).",
         "amountNotCents": "Backup file {{path}} is corrupt: it contains an invalid amount ({{value}}).",
         "differentAccount": "This backup was exported by a different account and cannot be restored here.",
+        "customCurrencyInvalid": "The backup's custom currency \"{{code}}\" has an invalid name, symbol or decimals, so it cannot be restored",
+        "customCurrencyWithoutRate": "The backup's custom currency \"{{code}}\" needs exactly one positive exchange rate against an ISO currency, so it cannot be restored",
         "alreadyInProgress": "A backup restore is already in progress. Wait for it to finish before starting another.",
         "failed": "The backup restore failed. Your existing data was not changed."
       }

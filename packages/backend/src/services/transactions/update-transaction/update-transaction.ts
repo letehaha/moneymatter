@@ -22,6 +22,7 @@ import {
 } from '@services/accounts/seam';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { assertLoanEditAllowed } from '@services/loans/assert-loan-edit-allowed';
 import { deriveImpliedDestinationAmount } from '@services/loans/implied-destination-amount';
 import {
@@ -255,6 +256,9 @@ const makeBasicBaseTxUpdation = async (
     // (the row's actual `userId`), not the caller. They differ when a recipient
     // edits an owner-created transaction with `transactionsWriteScope: 'all'`.
     userId: ctx.txCreatorUserId,
+    definitionOwnerUserId: ctx.accountOwnerUserId,
+    // The original currency was checked as visible to the caller, so it rounds with the caller's definition.
+    originalCurrencyOwnerUserId: ctx.callerUserId,
     transactionType,
     paymentType: newData.paymentType,
     accountId: newData.accountId,
@@ -350,6 +354,7 @@ const makeBasicBaseTxUpdation = async (
   if (defaultUserCurrency.code !== baseTransactionUpdateParams.currencyCode) {
     baseTransactionUpdateParams.refAmount = await calculateRefAmount({
       userId: newData.userId,
+      definitionOwnerUserId: ctx.accountOwnerUserId,
       amount: effectiveAmount,
       baseCode: baseTransactionUpdateParams.currencyCode,
       quoteCode: defaultUserCurrency.code,
@@ -496,7 +501,7 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
     });
   }
 
-  await assertTxWriteAccess({
+  const { ownerUserId: oppositeOwnerUserId } = await assertTxWriteAccess({
     userId,
     tx: oppositeTx,
     notFoundKey: 'transactions.oppositeTransactionNotFound',
@@ -546,6 +551,10 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
     };
   }
 
+  // A moved leg lands on an account of the caller's (looked up by `userId` above). The leg's author may
+  // not hold the account owner's custom currency, so its amounts round at the owner's definition.
+  const destinationOwnerUserId = isDestinationAccountChanged ? userId : oppositeOwnerUserId;
+
   // A base-amount edit must keep the pair in sync. Same-currency legs of a
   // transfer are always equal, so the destination leg mirrors the base amount
   // 1:1; with different currencies there is no exchange rate to assume, so
@@ -569,13 +578,13 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
   if (destinationAmount !== undefined) {
     updateOppositeTxParams.amount = await roundPositiveAmount({
       money: destinationAmount,
-      userId: oppositeTx.userId,
+      userId: destinationOwnerUserId,
       currencyCode: updateOppositeTxParams.currencyCode,
     });
   } else if (updateOppositeTxParams.amount !== undefined || isDestinationAccountChanged) {
     updateOppositeTxParams.amount = await roundToCurrency({
       money: updateOppositeTxParams.amount ?? oppositeTx.amount,
-      userId: oppositeTx.userId,
+      userId: destinationOwnerUserId,
       currencyCode: updateOppositeTxParams.currencyCode,
       mode: 'half-up',
     });
@@ -619,6 +628,7 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
 
   const { oppositeRefAmount, baseTransaction: updatedBaseTransaction } = await calcTransferTransactionRefAmount({
     userId,
+    definitionOwnerUserId: destinationOwnerUserId,
     baseTransaction,
     destinationAmount: effectiveDestinationAmount,
     oppositeTxCurrencyCode: updateOppositeTxParams.currencyCode,
@@ -628,7 +638,10 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
   updateOppositeTxParams.refAmount = oppositeRefAmount;
   baseTransaction = updatedBaseTransaction;
 
-  const destinationTransaction = await Transactions.updateTransactionById(updateOppositeTxParams);
+  const destinationTransaction = await Transactions.updateTransactionById({
+    ...updateOppositeTxParams,
+    definitionOwnerUserId: destinationOwnerUserId,
+  });
 
   return { baseTx: baseTransaction, oppositeTx: destinationTransaction };
 };
@@ -712,6 +725,12 @@ export const updateTransaction = withTransaction(
     payload: UpdateTransactionParams,
   ): Promise<[baseTx: Transactions.default, oppositeTx?: Transactions.default]> => {
     try {
+      await assertCurrencyCodesVisible({
+        userId: payload.userId,
+        codes: [payload.originalCurrencyCode],
+        allowedWithoutPlan: [payload.originalCurrencyCode],
+      });
+
       // Single fetch + write-authorization gate. `getWritableTransactionById` throws 404
       // when the caller has no claim, 401 when scope: 'own' is violated. Returns a
       // pre-resolved `authCtx` so this service doesn't reassemble auth primitives.
@@ -779,6 +798,7 @@ export const updateTransaction = withTransaction(
           await ensureUserCurrencyConnected({
             userId: ctx.callerUserId,
             currencyCode: prevData.currencyCode,
+            definitionOwnerUserId: authCtx.accountOwnerUserId,
           });
         }
       }
@@ -857,12 +877,12 @@ export const updateTransaction = withTransaction(
         } else {
           // Update splits. `userId` here is creator metadata stamped on newly
           // inserted split rows — internal lookups inside `manageSplits` are keyed
-          // by `transactionId` only. `categoryOwnerUserId` scopes the category-existence
+          // by `transactionId` only. `accountOwnerUserId` scopes the category-existence
           // check so recipients on shared accounts validate against the owner's set.
           await manageSplits({
             transactionId: baseTransaction.id,
             userId: ctx.callerUserId,
-            categoryOwnerUserId: ctx.accountOwnerUserId,
+            accountOwnerUserId: ctx.accountOwnerUserId,
             splits: payload.splits,
             transactionAmount: baseTransaction.amount,
             transactionCurrencyCode: baseTransaction.currencyCode,

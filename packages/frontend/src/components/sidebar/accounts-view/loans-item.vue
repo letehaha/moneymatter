@@ -31,7 +31,11 @@ const balance = computed(() => props.loan.currentBalance);
           <LoanLogo :loan="loan" class="size-5" />
           <span class="truncate text-sm">{{ loan.name }}</span>
         </div>
-        <DesktopOnlyTooltip :content="formatAmountByCurrencyCode(balance, loan.currencyCode)">
+        <DesktopOnlyTooltip
+          :content="
+            formatAmountByCurrencyCode({ amount: balance, currencyCode: loan.currencyCode, fullPrecision: true })
+          "
+        >
           <span class="text-amount shrink-0 text-sm font-medium" :class="balance < 0 && 'text-destructive-text'">
             {{ formatCompactAmount(balance, loan.currencyCode) }}
           </span>

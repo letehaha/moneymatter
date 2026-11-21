@@ -49,6 +49,7 @@ export async function writeBankBalanceWithHistory({
     calculateRefAmount({
       amount,
       userId: account.userId,
+      definitionOwnerUserId: account.userId,
       date: today,
       baseCode: account.currencyCode,
       bypassCache: true,

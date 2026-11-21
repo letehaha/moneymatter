@@ -146,6 +146,7 @@ export async function restampForExistingTransaction({
     baseCode: tx.currencyCode,
     quoteCode: refCurrencyCode,
     userId,
+    definitionOwnerUserId: userId,
     date: tx.time,
   });
   return { refCurrencyCode, refAmount };

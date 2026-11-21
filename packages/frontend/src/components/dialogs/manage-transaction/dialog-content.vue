@@ -715,8 +715,14 @@ const isCurrenciesDifferent = computed(() => {
 const currencyCode = computed(() => form.value.account?.currencyCode);
 
 // Amount inputs keep only the decimals their currency stores.
-const amountDecimals = computed(() => getCurrencyDecimals({ code: currencyCode.value }));
-const targetAmountDecimals = computed(() => getCurrencyDecimals({ code: form.value.toAccount?.currencyCode }));
+// An account's amounts follow the account owner's definition of its currency (`currencyMeta`),
+// which differs from the viewer's own list when a shared account's code is defined twice.
+const amountDecimals = computed(() =>
+  getCurrencyDecimals({ code: currencyCode.value, meta: form.value.account?.currencyMeta }),
+);
+const targetAmountDecimals = computed(() =>
+  getCurrencyDecimals({ code: form.value.toAccount?.currencyCode, meta: form.value.toAccount?.currencyMeta }),
+);
 const amountDecimalRule = useCurrencyDecimalRule({ decimals: amountDecimals });
 const targetAmountDecimalRule = useCurrencyDecimalRule({ decimals: targetAmountDecimals });
 const originalAmountDecimalRule = useCurrencyDecimalRule({
@@ -916,7 +922,10 @@ const validationRules = computed(() => {
   const loanOverpayRule = helpers.withMessage(
     () =>
       t('dialogs.loanPayment.overpayError', {
-        max: formatAmountByCurrencyCode(loanOverpayMax.value, form.value.toAccount?.currencyCode ?? ''),
+        max: formatAmountByCurrencyCode({
+          amount: loanOverpayMax.value,
+          currencyCode: form.value.toAccount?.currencyCode ?? '',
+        }),
       }),
     (value: unknown) => {
       if (value == null || value === '') return true;
@@ -1410,7 +1419,7 @@ const paymentTotalLabel = computed(() =>
       mainCurrencyCode: form.value.account?.currencyCode,
       decimals: amountDecimals.value,
     }),
-    { currency: currencyCode.value },
+    { currency: currencyCode.value, meta: form.value.account?.currencyMeta, fullPrecision: true },
   ),
 );
 const targetAmountFieldRef = ref<InstanceType<typeof InputField> | null>(null);
@@ -2130,7 +2139,7 @@ onUnmounted(() => {
                     </span>
                   </span>
                   <span class="text-muted-foreground flex items-center gap-1.5 tabular-nums">
-                    {{ formatUIAmount(splitsTotal, { currency: currencyCode }) }}
+                    {{ formatUIAmount(splitsTotal, { currency: currencyCode, meta: form.account?.currencyMeta }) }}
                     <span aria-hidden="true">·</span>
                     {{ $t('dialogs.manageTransaction.form.editSplit') }}
                   </span>
@@ -2143,6 +2152,7 @@ onUnmounted(() => {
                 v-model="form.splits"
                 :total-amount="form.amount ? Number(form.amount) : null"
                 :currency-code="currencyCode"
+                :currency-meta="form.account?.currencyMeta"
                 :main-category="form.category"
                 :categories="effectiveFormattedCategories"
               />

@@ -1,4 +1,5 @@
 import { PAYMENT_TYPES, RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
@@ -79,7 +80,7 @@ export default class TransactionTemplates extends Model {
   note!: string | null;
 
   @ForeignKey(() => Currencies)
-  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(3) })
+  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   originalCurrencyCode!: string | null;
 
   declare createdAt: Date;

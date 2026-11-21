@@ -13,6 +13,7 @@ type Row = Record<string, unknown>;
  * files are the source of truth; the expected decimals below are those cents divided by 100.
  */
 const FIXTURE_DIR = join(__dirname, 'fixtures', 'backup-v1');
+const NO_LOGO = { logoDomain: null, logoInitials: null, logoColor: null, logoIcon: null, logoImageId: null };
 
 async function buildFixtureUpload({ edit }: { edit?: (files: Map<string, Buffer>) => void } = {}): Promise<string> {
   const files = helpers.readBackupFixture({ dir: FIXTURE_DIR });
@@ -117,6 +118,18 @@ describe('Restoring a format version 1 backup (cents to decimals)', () => {
       { type: 'balance_correction', at: '2024-02-01T00:00:00.000Z', fromCents: 199000, toCents: 198750.25 },
       { type: 'rate_change', at: '2024-03-01T00:00:00.000Z', from: 5, to: 6 },
     ]);
+  });
+
+  it('restores holdings from an archive that predates the currency logo with no logo', async () => {
+    await helpers.restoreBackupAndWait({ fileContent: await buildFixtureUpload() });
+
+    const holdings = helpers.backupRows({ archive: await helpers.exportParsedBackup(), name: 'users-currencies' });
+    expect(holdings.length).toBeGreaterThan(0);
+    for (const holding of holdings) expect(holding).toMatchObject(NO_LOGO);
+
+    const userCurrencies = await helpers.getUserCurrencies();
+    expect(userCurrencies.length).toBeGreaterThan(0);
+    for (const item of userCurrencies) expect(item).toMatchObject(NO_LOGO);
   });
 
   it('exports the restored ledger as a format version 4 archive that round-trips exactly', async () => {

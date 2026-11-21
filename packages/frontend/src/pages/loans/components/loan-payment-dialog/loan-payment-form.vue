@@ -75,8 +75,11 @@ const form = ref<{
 
 const sourceCurrency = computed(() => form.value.account?.currencyCode);
 const loanCurrency = computed(() => props.loanAccount.currencyCode);
-const sourceDecimals = computed(() => getCurrencyDecimals({ code: sourceCurrency.value }));
-const loanDecimals = computed(() => getCurrencyDecimals({ code: loanCurrency.value }));
+const sourceMeta = computed(() => form.value.account?.currencyMeta);
+const sourceDecimals = computed(() => getCurrencyDecimals({ code: sourceCurrency.value, meta: sourceMeta.value }));
+const loanDecimals = computed(() =>
+  getCurrencyDecimals({ code: loanCurrency.value, meta: props.loanAccount.currencyMeta }),
+);
 const sourceDecimal = useCurrencyDecimalRule({ decimals: sourceDecimals });
 
 const isCurrenciesDifferent = computed(
@@ -143,7 +146,10 @@ const validationRules = computed(() => {
   const overpayRule = helpers.withMessage(
     () =>
       t('dialogs.loanPayment.overpayError', {
-        max: formatAmountByCurrencyCode(maxLoanPaymentAllowed.value, props.loanAccount.currencyCode),
+        max: formatAmountByCurrencyCode({
+          amount: maxLoanPaymentAllowed.value,
+          currencyCode: props.loanAccount.currencyCode,
+        }),
       }),
     (value: unknown) => {
       // Pre-anchor payments never enter the post-anchor balance sum, so the backend
@@ -164,19 +170,21 @@ const validationRules = computed(() => {
       amount: isCurrenciesDifferent.value
         ? {
             required,
-            minValue: minValue(getSmallestCurrencyUnit({ code: sourceCurrency.value })),
+            minValue: minValue(getSmallestCurrencyUnit({ code: sourceCurrency.value, meta: sourceMeta.value })),
             currencyDecimal: sourceDecimal.rule.value,
           }
         : {
             required,
-            minValue: minValue(getSmallestCurrencyUnit({ code: sourceCurrency.value })),
+            minValue: minValue(getSmallestCurrencyUnit({ code: sourceCurrency.value, meta: sourceMeta.value })),
             notOverpay: overpayRule,
             currencyDecimal: sourceDecimal.rule.value,
           },
       targetAmount: isCurrenciesDifferent.value
         ? {
             required,
-            minValue: minValue(getSmallestCurrencyUnit({ code: loanCurrency.value })),
+            minValue: minValue(
+              getSmallestCurrencyUnit({ code: loanCurrency.value, meta: props.loanAccount.currencyMeta }),
+            ),
             notOverpay: overpayRule,
           }
         : {},

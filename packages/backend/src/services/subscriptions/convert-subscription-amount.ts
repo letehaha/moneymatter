@@ -35,6 +35,7 @@ export async function convertSubscriptionAmountToAccountCurrency({
 
   return calculateRefAmount({
     userId: subscription.userId,
+    definitionOwnerUserId: subscription.userId,
     amount: expected,
     baseCode: subscription.expectedCurrencyCode,
     quoteCode: accountCurrencyCode,

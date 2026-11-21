@@ -169,6 +169,7 @@ async function calculateMatchScore({
       const converted = await calculateRefAmount({
         amount: transaction.amount.abs(),
         userId,
+        definitionOwnerUserId: userId,
         date: transaction.time,
         baseCode: transaction.currencyCode,
         quoteCode: subscription.expectedCurrencyCode,
@@ -211,6 +212,7 @@ async function evaluateRule({ rule, transaction, userId }: EvaluateRuleParams): 
         const converted = await calculateRefAmount({
           amount,
           userId,
+          definitionOwnerUserId: userId,
           date: transaction.time,
           baseCode: transaction.currencyCode,
           quoteCode: rule.currencyCode,

@@ -32,7 +32,13 @@
       </Button>
     </div>
 
+    <p v-if="currency.isCustomCurrency" class="text-muted-foreground mt-4 flex items-start gap-1 text-xs leading-5">
+      <InfoIcon class="text-primary-text mt-1 size-3.5 shrink-0" />
+      {{ $t('settings.currencies.custom.rateHint', { code: currency.quoteCode }) }}
+    </p>
+
     <label
+      v-else
       class="mt-4 flex cursor-pointer items-start justify-between gap-4 aria-disabled:cursor-default"
       :aria-disabled="isFormDisabled"
     >
@@ -67,12 +73,13 @@ import { InfoIcon } from '@lucide/vue';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { roundRate } from '../rate-precision';
 import { CurrencyWithExchangeRate } from '../types';
 
-const calculateRatio = (value: number) => {
-  const exp = 10 ** 6;
-  const num = 1 / value;
-  const result = Math.round(num * exp) / exp;
+const RATIO_DECIMALS = 6;
+
+const calculateRatio = ({ value, isCustom }: { value: number | string; isCustom: boolean }) => {
+  const result = roundRate({ value: 1 / Number(value), isCustom, isoDecimals: RATIO_DECIMALS });
 
   return Number.isFinite(result) ? result : 0;
 };
@@ -100,17 +107,19 @@ const notifyIfBalancesNotRefreshed = (failed: number) => {
   }
 };
 
-const form = reactive({
+const form = reactive<{ baseRate: number | string; quoteRate: number | string }>({
   baseRate: props.currency.rate,
   quoteRate: props.currency.quoteRate,
 });
 const isBaseEditing = ref(false);
 const isQuoteEditing = ref(false);
-const isLiveRateEnabled = ref<boolean>(!props.currency.custom);
+// A custom currency has no market rate to follow, so only the user's own rate applies.
+const isLiveRateEnabled = ref<boolean>(!props.currency.isCustomCurrency && !props.currency.custom);
 
 const isRateChanged = computed(
   () => +props.currency.rate !== +form.baseRate || +props.currency.quoteRate !== +form.quoteRate,
 );
+const hasRateValue = computed(() => Number(form.baseRate) > 0 && Number(form.quoteRate) > 0);
 
 // Disabling live update reveals Save immediately (even before an edit) so the row shows
 // the intended next action. Re-enabling live update also needs Save to drop the custom rate.
@@ -118,10 +127,8 @@ const shouldShowSaveButton = computed(() => {
   return !isLiveRateEnabled.value || props.currency.custom;
 });
 
-// Live off: only actionable once the rate actually changed. Live on: Save drops the custom rate.
-const canSubmit = computed(() =>
-  isLiveRateEnabled.value ? true : isRateChanged.value && form.baseRate > 0 && form.quoteRate > 0,
-);
+// Live off: only actionable once the rate actually changed to a usable one. Live on: Save drops the custom rate.
+const canSubmit = computed(() => (isLiveRateEnabled.value ? true : isRateChanged.value && hasRateValue.value));
 
 const onBaseFocus = () => {
   isBaseEditing.value = true;
@@ -140,7 +147,7 @@ watch(
   () => form.baseRate,
   (value) => {
     if (isBaseEditing.value) {
-      form.quoteRate = calculateRatio(value);
+      form.quoteRate = calculateRatio({ value, isCustom: props.currency.isCustomCurrency });
     }
   },
 );
@@ -148,7 +155,7 @@ watch(
   () => form.quoteRate,
   (value) => {
     if (isQuoteEditing.value) {
-      form.baseRate = calculateRatio(value);
+      form.baseRate = calculateRatio({ value, isCustom: props.currency.isCustomCurrency });
     }
   },
 );

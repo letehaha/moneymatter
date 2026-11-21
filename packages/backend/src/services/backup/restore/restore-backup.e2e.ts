@@ -1949,7 +1949,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
   });
 
   describe('Atomicity', () => {
-    it('rolls back a restore whose data violates a foreign key, leaving the original data intact', async () => {
+    it('rolls back a restore whose data the database rejects, leaving the original data intact', async () => {
       const { accountA, tx } = await seedBasicData();
       const accountsBefore = await helpers.getAccounts();
       const accountIdsBefore = accountsBefore.map((a) => a.id).sort();
@@ -1959,15 +1959,12 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       const { buffer } = await exportArchive();
       const { files } = helpers.parseBackupArchive({ buffer });
 
-      // Point a transaction at a currency the instance doesn't have — a real FK
-      // violation (Currencies) the worker hits mid-insert. It must be a FK the
-      // owned-reference guard does NOT cover: a foreign *owned* FK (e.g. accountId)
-      // would be dropped-and-repaired and the restore would complete, so use a
-      // global-catalog FK to exercise rollback on a genuine failure. Checksums are
-      // refreshed so preflight passes.
+      // A value no restore check looks at, so the insert itself fails mid-restore. A foreign
+      // owned id or an unknown currency would be dropped with a warning and the restore would
+      // complete. Checksums are refreshed so preflight passes.
       const transactions = readArchiveJson({ files, path: 'data/transactions.json' }) as Row[];
       const target = transactions.find((t) => t.id === tx.id) ?? transactions[0]!;
-      target.currencyCode = 'ZZZ';
+      target.time = 'not-a-date';
       writeArchiveJson({ files, path: 'data/transactions.json', value: transactions });
       const base64 = await helpers.repackBackup({ files });
 

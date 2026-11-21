@@ -3,8 +3,9 @@ import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import TransactionAutomations from '@models/transaction-automations.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 
-import { validateAutomationRefs } from './references';
+import { collectAutomationCurrencyCodes, validateAutomationRefs } from './references';
 
 export const createAutomation = withTransaction(
   async ({
@@ -26,6 +27,7 @@ export const createAutomation = withTransaction(
     }
 
     await validateAutomationRefs({ userId, conditions, actions });
+    await assertCurrencyCodesVisible({ userId, codes: collectAutomationCurrencyCodes({ conditions }) });
 
     const maxPosition = await TransactionAutomations.max<number | null, TransactionAutomations>('position', {
       where: { userId },

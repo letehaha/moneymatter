@@ -3,8 +3,9 @@ import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import TransactionAutomations from '@models/transaction-automations.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 
-import { validateAutomationRefs } from './references';
+import { collectAutomationCurrencyCodes, validateAutomationRefs } from './references';
 
 /**
  * Partial update. Re-enabling re-checks every reference, so a rule paused by a
@@ -31,6 +32,14 @@ export const updateAutomation = withTransaction(
       query: TransactionAutomations.findOne({ where: { id, userId } }),
       message: t({ key: 'automations.automationNotFound' }),
     });
+
+    if (conditions) {
+      await assertCurrencyCodesVisible({
+        userId,
+        codes: collectAutomationCurrencyCodes({ conditions }),
+        allowedWithoutPlan: collectAutomationCurrencyCodes({ conditions: automation.conditions }),
+      });
+    }
 
     const refsRevalidated = Boolean(conditions || actions || isEnabled === true);
     if (refsRevalidated) {

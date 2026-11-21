@@ -7,6 +7,7 @@ import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { formatUIAmount, getCurrencyDecimals, trimAmountNoise } from '@/js/helpers';
 import { cn } from '@/lib/utils';
+import type { CurrencyMeta } from '@bt/shared/types';
 import { PlusIcon, SplitIcon, XIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -25,6 +26,8 @@ const props = defineProps<{
   modelValue: FormSplit[] | undefined;
   totalAmount: number | null;
   currencyCode: string | undefined;
+  /** The account owner's definition of the currency; its decimals win over the viewer's own list. */
+  currencyMeta?: CurrencyMeta;
   mainCategory: FormattedCategory | null | undefined;
   /**
    * Category set the split rows render. The parent dialog routes this through
@@ -64,7 +67,7 @@ watch(isOpen, (open) => {
 
 const hasExistingSplits = computed(() => props.modelValue && props.modelValue.length > 0);
 
-const decimals = computed(() => getCurrencyDecimals({ code: props.currencyCode }));
+const decimals = computed(() => getCurrencyDecimals({ code: props.currencyCode, meta: props.currencyMeta }));
 
 const splitsTotal = computed(() =>
   trimAmountNoise({
@@ -204,7 +207,7 @@ const handleClearAll = () => {
             </span>
           </div>
           <span class="shrink-0 text-sm font-medium tabular-nums">
-            {{ formatUIAmount(mainCategoryAmount, { currency: currencyCode }) }}
+            {{ formatUIAmount(mainCategoryAmount, { currency: currencyCode, meta: currencyMeta }) }}
           </span>
         </div>
       </div>
@@ -287,13 +290,13 @@ const handleClearAll = () => {
         <div class="flex items-center justify-between text-sm">
           <span class="text-muted-foreground">{{ $t('dialogs.manageTransaction.splitDialog.totalAmountLabel') }}</span>
           <span class="font-medium tabular-nums">
-            {{ formatUIAmount(totalAmount ?? 0, { currency: currencyCode }) }}
+            {{ formatUIAmount(totalAmount ?? 0, { currency: currencyCode, meta: currencyMeta }) }}
           </span>
         </div>
         <div class="mt-2 flex items-center justify-between text-sm">
           <span class="text-muted-foreground">{{ $t('dialogs.manageTransaction.splitDialog.splitTotalLabel') }}</span>
           <span class="font-medium tabular-nums">
-            {{ formatUIAmount(splitsTotal, { currency: currencyCode }) }}
+            {{ formatUIAmount(splitsTotal, { currency: currencyCode, meta: currencyMeta }) }}
           </span>
         </div>
         <div class="mt-2 flex items-center justify-between text-sm">
@@ -307,7 +310,7 @@ const handleClearAll = () => {
               'text-success-text': mainCategoryAmount >= 0,
             }"
           >
-            {{ formatUIAmount(mainCategoryAmount, { currency: currencyCode }) }}
+            {{ formatUIAmount(mainCategoryAmount, { currency: currencyCode, meta: currencyMeta }) }}
           </span>
         </div>
         <FieldError

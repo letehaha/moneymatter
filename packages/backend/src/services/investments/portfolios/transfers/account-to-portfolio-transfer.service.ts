@@ -58,6 +58,7 @@ const accountToPortfolioTransferImpl = async ({
   // Create expense Transaction on the account
   const newTx = await Transactions.createTransaction({
     userId,
+    definitionOwnerUserId: userId,
     amount: txAmount,
     refAmount,
     transactionType: TRANSACTION_TYPES.expense,

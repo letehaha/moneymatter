@@ -12,7 +12,7 @@ export const setExchangeRatesTool = defineTool({
   toolset: 'currencies',
   access: 'write',
   description:
-    "Set the user's own exchange rates for currency pairs. Every pair needs its opposite in the same call (EUR to USD and USD to EUR), and a pair cannot have the same base and quote. Account balances are re-measured at the new rate. Returns the stored rates and how many account balances were re-measured.",
+    "Set the user's own exchange rates for currency pairs. Every pair needs its opposite in the same call (EUR to USD and USD to EUR), a pair cannot have the same base and quote, and a pair of two custom currencies is refused (a custom currency is quoted in an ISO currency). A custom currency's pair replaces its single quote; the quote must be an ISO currency the user holds, and one call cannot quote a custom currency in two currencies. Account balances are re-measured at the new rate. Returns the stored rates and how many account balances were re-measured.",
   input: {
     pairs: z
       .array(exchangeRatePairWithRateSchema)

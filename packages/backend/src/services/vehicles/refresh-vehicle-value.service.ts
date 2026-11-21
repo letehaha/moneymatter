@@ -98,6 +98,7 @@ const refreshVehicleValueIfStaleImpl = async ({
 
   const newRefValue = await calculateRefAmount({
     userId: vehicle.userId,
+    definitionOwnerUserId: vehicle.userId,
     amount: newValue,
     baseCode: account.currencyCode,
     date: now,

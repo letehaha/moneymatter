@@ -24,7 +24,9 @@
         "custom": "Custom",
         "live": "Live",
         "unused": "Unused",
-        "accountsCount": "{count} account | {count} accounts"
+        "accountsCount": "{count} account | {count} accounts",
+        "customCurrency": "Custom currency",
+        "edit": "Edit"
       },
       "empty": {
         "title": "No other currencies yet",
@@ -65,7 +67,8 @@
             "transactionTemplate": "Transaction templates",
             "budget": "Budgets",
             "goal": "Goals",
-            "ventureDeal": "Venture deals"
+            "ventureDeal": "Venture deals",
+            "customCurrency": "Custom currencies quoted in it"
           }
         },
         "errors": {
@@ -102,7 +105,47 @@
           "lockedShares": "You have {count} active account share. Revoke it from the account first. | You have {count} active account shares. Revoke them from each account first.",
           "lockedBudgetPlan": "An active budget plan is blocking the change. Delete it first. | {count} active budget plans are blocking the change. Delete them first."
         }
-      }
+      },
+      "custom": {
+        "addButton": "Add custom currency",
+        "createTitle": "Add custom currency",
+        "createDescription": "Define a currency that is not an ISO currency, such as a stablecoin or a crypto asset. Only you can see it.",
+        "editTitle": "Edit custom currency",
+        "editDescription": "Changes apply to every account and transaction you hold in this currency.",
+        "codeLabel": "Code",
+        "codePlaceholder": "USDT",
+        "nameLabel": "Name",
+        "namePlaceholder": "Tether",
+        "symbolLabel": "Symbol (optional)",
+        "symbolPlaceholder": "₮",
+        "decimalsLabel": "Decimals",
+        "decimalsPlaceholder": "6",
+        "decimalsHint": "Amounts keep up to this many digits after the decimal point (0 to 8).",
+        "decimalsLockedHint": "Decimals can change only while no account, transaction or template uses {code}.",
+        "preview": "Example: {value}",
+        "createButton": "Add currency",
+        "saveButton": "Save changes",
+        "cancelButton": "Cancel",
+        "rateHint": "A custom currency has no market rate. The rate you set against {code} values its transactions in your base currency.",
+        "rateLabel": "Rate",
+        "ratePlaceholder": "1.00",
+        "createRateHint": "What one unit of this currency is worth in your base currency. You can change it later from its row.",
+        "successfullyCreated": "Custom currency added",
+        "successfullyUpdated": "Custom currency updated",
+        "errors": {
+          "codeRequired": "Enter a code",
+          "codeFormat": "Use 2 to 16 capital letters or digits",
+          "codeIsIso": "This is an ISO currency code. Add it from the currency list instead",
+          "codeExists": "You already have a currency with this code",
+          "nameRequired": "Enter a name",
+          "symbolTooLong": "Use up to 8 characters",
+          "decimalsRange": "Enter a whole number from 0 to 8",
+          "rateRequired": "Enter a rate above 0",
+          "createFailed": "Unexpected error. Custom currency is not added.",
+          "updateFailed": "Unexpected error. Custom currency is not updated."
+        }
+      },
+      "refreshFailed": "Saved, but the currency list could not refresh. Reload the page if anything looks stale."
     }
   }
 }

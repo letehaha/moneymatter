@@ -45,7 +45,7 @@ const currencyCode = computed(() => summary.value?.currencyCode ?? 'USD');
         </template>
         <DesktopOnlyTooltip
           v-else-if="totalValue !== null"
-          :content="formatAmountByCurrencyCode(totalValue, currencyCode)"
+          :content="formatAmountByCurrencyCode({ amount: totalValue, currencyCode, fullPrecision: true })"
         >
           <span class="text-amount shrink-0 text-sm font-medium">
             {{ formatCompactAmount(totalValue, currencyCode) }}

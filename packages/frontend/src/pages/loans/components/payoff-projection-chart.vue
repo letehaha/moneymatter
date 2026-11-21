@@ -211,7 +211,7 @@ const plannedPayment = computed(() => props.loan.loanDetails.plannedPayment);
 
 const decimals = computed(() => getCurrencyDecimals({ code: currencyCode.value }));
 
-const formatCurrency = (amount: number) => formatAmountByCurrencyCode(amount, currencyCode.value);
+const formatCurrency = (amount: number) => formatAmountByCurrencyCode({ amount, currencyCode: currencyCode.value });
 
 const currencySymbol = computed(() => getCurrencySymbol(currencyCode.value));
 

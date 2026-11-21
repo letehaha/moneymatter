@@ -21,6 +21,7 @@ import GoalAccounts from '@models/goal-accounts.model';
 import Goals from '@models/goals.model';
 import { getBaseCurrency } from '@models/users-currencies.model';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { getPerAccountBalanceHistory, toBalanceDateKey } from '@services/stats/get-balance-history';
 import { getExchangeRate } from '@services/user-exchange-rate';
 import { eachMonthOfInterval, endOfMonth, format, min, startOfMonth, subMonths } from 'date-fns';
@@ -79,6 +80,7 @@ export const assertGoalCurrencyConvertible = async ({
   userId: number;
   currencyCode: string;
 }): Promise<void> => {
+  await assertCurrencyCodesVisible({ userId, codes: [currencyCode] });
   const { currencyCode: baseCurrencyCode } = await getBaseCurrency({ userId });
   await requireRateToBase({ userId, currencyCode, baseCurrencyCode });
 };
@@ -117,7 +119,12 @@ export const loadConversionDecimals = async ({
         async (currencyCode) =>
           [
             currencyCode,
-            await getConversionDecimals({ userId, baseCode: currencyCode, quoteCode: baseCurrencyCode }),
+            await getConversionDecimals({
+              userId,
+              definitionOwnerUserId: userId,
+              baseCode: currencyCode,
+              quoteCode: baseCurrencyCode,
+            }),
           ] as const,
       ),
     ),

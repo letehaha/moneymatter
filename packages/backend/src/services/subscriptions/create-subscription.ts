@@ -14,6 +14,7 @@ import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
 import { enqueueLogoResolutionAfterCommit, resolveManualLogoFields } from '@services/brand-logos';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 
 import {
@@ -76,6 +77,11 @@ export const createSubscription = withTransaction(
     logoIcon,
     ...rest
   }: CreateSubscriptionParams) => {
+    await assertCurrencyCodesVisible({
+      userId,
+      codes: [expectedCurrencyCode, ...matchingRules.rules.map((rule) => rule.currencyCode)],
+    });
+
     if (accountId) {
       await validateAccountOwnership({ accountId, userId });
     }

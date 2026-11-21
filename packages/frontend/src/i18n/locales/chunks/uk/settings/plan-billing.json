@@ -119,6 +119,7 @@
             "bankProviders": "Банківські підключення (Monobank, Enable Banking, SimpleFIN, Lunch Flow, Walutomat)",
             "ourAiKey": "AI-функції на нашому ключі з лімітом чесного використання",
             "firePlanner": "Планувальник FIRE",
+            "customCurrencies": "Власні валюти",
             "seats": "5 місць для учасників"
           }
         },

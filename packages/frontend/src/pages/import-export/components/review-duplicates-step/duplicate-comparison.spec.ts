@@ -1,3 +1,4 @@
+import { registerCurrencyDecimals, resetCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import type { DuplicateMatch } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
@@ -62,6 +63,13 @@ describe('formatDuplicateAmount', () => {
 
   it('shows a negative amount that rounds to zero without a sign', () => {
     expect(formatDuplicateAmount({ amount: -0.001, currencyCode: 'USD' })).toBe('0.00');
+  });
+
+  it('shows every digit of a custom currency, so amounts differing past the 4th significant digit stay apart', () => {
+    registerCurrencyDecimals({ entries: [{ code: 'BTC', decimals: 8, isCustom: true }] });
+    expect(formatDuplicateAmount({ amount: 1.23456789, currencyCode: 'BTC' })).toBe('1.23456789');
+    expect(formatDuplicateAmount({ amount: 1.5, currencyCode: 'BTC' })).toBe('1.50');
+    resetCurrencyDecimals();
   });
 });
 

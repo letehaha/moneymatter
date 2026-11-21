@@ -5,6 +5,7 @@ import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Currencies from '@models/currencies.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
+import { includesCustomCurrencyCode } from '@services/currencies/custom-currency-codes';
 import * as userExchangeRateService from '@services/user-exchange-rate';
 
 import { calculateRefAmountFromParams } from './calculate-ref-amount.utils';
@@ -26,11 +27,11 @@ import { buildRefAmountCacheKey, refAmountCache, serializeRefAmountCacheValue } 
  * @returns {Promise<number>} The reference amount after conversion, or the original amount if the base currency is the user's default or the same as the quote currency.
  * @throws {Error} Throws an error if the exchange rate cannot be fetched or the transaction fails.
  * @example
- * const refAmount = await calculateRefAmount({ amount: 100, userId: 42, baseCode: 'USD', quoteCode: 'EUR' });
- * const refAmountForDefaultUserCurrency = await calculateRefAmount({ amount: 100, userId: 42, baseCode: 'USD' });
+ * const refAmount = await calculateRefAmount({ amount: 100, userId: 42, definitionOwnerUserId: 42, baseCode: 'USD', quoteCode: 'EUR' });
+ * const refAmountForDefaultUserCurrency = await calculateRefAmount({ amount: 100, userId: 42, definitionOwnerUserId: 42, baseCode: 'USD' });
  */
 async function calculateRefAmountImpl(params: Params): Promise<Money> {
-  const { baseCode, quoteCode, userId, amount, bypassCache = false } = params;
+  const { baseCode, quoteCode, userId, amount, bypassCache = false, definitionOwnerUserId } = params;
 
   const dateStr = new Date(params.date).toISOString().split('T')[0]!;
 
@@ -64,6 +65,11 @@ async function calculateRefAmountImpl(params: Params): Promise<Money> {
       });
     }
 
+    // A custom conversion depends on the definition owner's decimals, which the cache key does not
+    // carry, so it is never cached.
+    const involvesCustomCurrency = await includesCustomCurrencyCode({ codes: [baseCode, resolvedQuoteCode] });
+    const useCache = !bypassCache && !involvesCustomCurrency;
+
     const cacheKey = buildRefAmountCacheKey({
       userId,
       amount,
@@ -72,7 +78,7 @@ async function calculateRefAmountImpl(params: Params): Promise<Money> {
       dateStr,
     });
 
-    if (!bypassCache) {
+    if (useCache) {
       const cachedAmount = await refAmountCache.read(cacheKey);
 
       if (cachedAmount !== null) {
@@ -82,7 +88,7 @@ async function calculateRefAmountImpl(params: Params): Promise<Money> {
 
     // If baseCode equals the resolved quote currency, no conversion is needed.
     if (resolvedQuoteCode === baseCode) {
-      if (!bypassCache) {
+      if (useCache) {
         await refAmountCache.write({ key: cacheKey, value: serializeRefAmountCacheValue({ amount }) });
       }
       return amount;
@@ -96,14 +102,19 @@ async function calculateRefAmountImpl(params: Params): Promise<Money> {
       bypassCache,
     });
 
-    const decimals = await getConversionDecimals({ userId, baseCode, quoteCode: resolvedQuoteCode });
+    const decimals = await getConversionDecimals({
+      userId,
+      baseCode,
+      quoteCode: resolvedQuoteCode,
+      definitionOwnerUserId,
+    });
 
     const finalAmount = calculateRefAmountFromParams({ amount, rate: result.rate, ...decimals });
 
     // Cache the final result as an exact decimal string. Skipped under `bypassCache` (see its doc):
     // a write-back inside an uncommitted rate-write transaction would poison the
     // cache on rollback.
-    if (!bypassCache) {
+    if (useCache) {
       await refAmountCache.write({ key: cacheKey, value: serializeRefAmountCacheValue({ amount: finalAmount }) });
     }
 
@@ -120,7 +131,13 @@ export { calculateRefAmountFromParams } from './calculate-ref-amount.utils';
 
 type Params = {
   amount: Money;
+  /** User whose base currency and rates drive the conversion. */
   userId: number;
+  /**
+   * Whose definition of `baseCode` rounds the amount before it converts: the account owner for an
+   * amount on an account, `userId` for the user's own entities.
+   */
+  definitionOwnerUserId: number;
   date: Date | string;
   baseCode: string;
   quoteCode?: string;

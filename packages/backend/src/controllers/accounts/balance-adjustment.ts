@@ -4,6 +4,7 @@ import { serializeTransaction } from '@root/serializers';
 import { serializeAccount } from '@root/serializers/accounts.serializer';
 import { getAccountById } from '@services/accounts.service';
 import { adjustAccountBalance } from '@services/accounts/balance-adjustment';
+import { attachAccountCurrencyMeta, attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import { z } from 'zod';
 
 export default createController(
@@ -33,6 +34,8 @@ export default createController(
     });
 
     const account = await getAccountById({ id: accountId, userId });
+    if (account) await attachAccountCurrencyMeta({ accounts: [account] });
+    await attachTransactionCurrencyMeta({ transactions: [result.transaction] });
 
     return {
       data: {

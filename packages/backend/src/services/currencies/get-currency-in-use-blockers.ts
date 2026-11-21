@@ -1,4 +1,5 @@
-import type { CurrencyInUseBlocker, RecordId } from '@bt/shared/types';
+import { API_ERROR_CODES, type CurrencyInUseBlocker, type CurrencyInUseDetails, type RecordId } from '@bt/shared/types';
+import { ValidationError } from '@js/errors';
 import * as Accounts from '@models/accounts.model';
 import BudgetPlans from '@models/budget-plans.model';
 import Goals from '@models/goals.model';
@@ -10,12 +11,17 @@ import Portfolios from '@models/investments/portfolios.model';
 import Securities from '@models/investments/securities.model';
 import Subscriptions from '@models/subscriptions.model';
 import TransactionTemplates from '@models/transaction-templates.model';
+import { updateTransactions } from '@models/transactions-query';
+import UserExchangeRates from '@models/user-exchange-rates.model';
+import UsersCurrencies from '@models/users-currencies.model';
 import VentureDeals from '@models/venture/venture-deals.model';
 import VentureEventLinks from '@models/venture/venture-event-links.model';
 import VentureEvents from '@models/venture/venture-events.model';
 import { Op } from 'sequelize';
 
-export const getCurrencyInUseBlockers = async ({
+import { findCustomCurrencyCodes } from './custom-currency-codes';
+
+const getCurrencyInUseBlockers = async ({
   userId,
   currencyCode,
 }: {
@@ -149,5 +155,61 @@ export const getCurrencyInUseBlockers = async ({
   });
   deals.forEach((d) => push({ type: 'ventureDeal', id: d.id, name: d.name, trashed: !!d.deletedAt }));
 
+  // A custom currency always keeps a rate against its ISO quote.
+  const quotedRates = await UserExchangeRates.findAll({
+    where: { userId, quoteCode: currencyCode },
+    attributes: ['baseCode'],
+    raw: true,
+  });
+  const quotedCustomCodes = await findCustomCurrencyCodes({ codes: quotedRates.map((rate) => rate.baseCode) });
+  if (quotedCustomCodes.size) {
+    const quotedCustom = await UsersCurrencies.findAll({
+      where: { userId, currencyCode: { [Op.in]: [...quotedCustomCodes] } },
+      attributes: ['currencyCode', 'nameOverride'],
+    });
+    quotedCustom.forEach((held) =>
+      push({ type: 'customCurrency', id: held.currencyCode, name: held.nameOverride ?? held.currencyCode }),
+    );
+  }
+
   return blockers;
 };
+
+/**
+ * Throws `currencyInUse` (422) with the blockers in `details` while any of the user's rows use the
+ * currency. `Transactions.currencyCode` is the account currency, so the account blocker covers the
+ * user's own accounts; `extraBlockers` adds what a caller checks on top.
+ */
+export const assertCurrencyNotInUse = async ({
+  userId,
+  currencyCode,
+  message,
+  extraBlockers = [],
+}: {
+  userId: number;
+  currencyCode: string;
+  message: string;
+  extraBlockers?: CurrencyInUseBlocker[];
+}): Promise<void> => {
+  const blockers = [...(await getCurrencyInUseBlockers({ userId, currencyCode })), ...extraBlockers];
+
+  if (blockers.length) {
+    throw new ValidationError({
+      code: API_ERROR_CODES.currencyInUse,
+      message,
+      details: { blockers } satisfies CurrencyInUseDetails,
+    });
+  }
+};
+
+/** Drops the foreign-amount metadata in the currency: the one reference the blockers let through. */
+export const clearForeignAmountsInCurrency = ({ userId, currencyCode }: { userId: number; currencyCode: string }) =>
+  updateTransactions({
+    planned: 'include',
+    access: { creator: userId },
+    balanceAdjustments: 'include',
+    where: { originalCurrencyCode: currencyCode },
+    values: { originalAmount: null, originalCurrencyCode: null },
+    // Trashed transactions can be restored (reconciliation, bank sync).
+    paranoid: false,
+  });

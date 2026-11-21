@@ -27,6 +27,7 @@ export async function measureSpotRefBalance({
   try {
     return await calculateRefAmount({
       userId,
+      definitionOwnerUserId: userId,
       amount,
       baseCode,
       date: new Date(),

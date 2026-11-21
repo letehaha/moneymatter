@@ -91,7 +91,7 @@ describe('js/helpers/formatters', () => {
 
       test('a code Intl rejects renders its registered decimals with the code appended', () => {
         registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6 }] });
-        expect(formatUIAmount(0.5, { currency: 'USDT' })).toBe('0.500000 USDT');
+        expect(formatUIAmount(0.5, { currency: 'USDT' })).toBe('0.50 USDT');
       });
 
       test('a registered value wins over the ISO one', () => {
@@ -101,7 +101,114 @@ describe('js/helpers/formatters', () => {
 
       test('toLocalCurrencyNumber follows the registered decimals', () => {
         registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6 }] });
-        expect(toLocalCurrencyNumber(1.5, { currency: 'USDT' })).toBe('1.500000');
+        expect(toLocalCurrencyNumber(1.5, { currency: 'USDT' })).toBe('1.50');
+      });
+    });
+
+    describe('custom currencies', () => {
+      afterEach(() => {
+        resetCurrencyDecimals();
+      });
+
+      test('a code Intl rejects renders as a plain number plus the code', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6, isCustom: true }] });
+        expect(formatUIAmount(12.345678, { currency: 'USDT' })).toBe('12.35 USDT');
+      });
+
+      test('a three-letter code Intl would accept still renders as custom, never in currency style', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+        const out = formatUIAmount(1234.6, { currency: 'SAT' });
+
+        expect(out).toBe('1,235 SAT');
+        expect(out).not.toContain('\u00a0');
+      });
+
+      test('the symbol replaces the code when the currency has one', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6, isCustom: true, symbol: '₮' }] });
+        expect(formatUIAmount(-0.5, { currency: 'USDT' })).toBe('-0.50 ₮');
+      });
+
+      test('an explicit meta decides the decimals and the kind of a code the viewer does not define', () => {
+        expect(
+          formatUIAmount(0.12345678, { currency: 'SAT', meta: { decimals: 8, symbol: null, isCustom: true } }),
+        ).toBe('0.1235 SAT');
+      });
+
+      test("a collaborator whose SAT has 0 decimals sees the owner's 8 on the owner's account", () => {
+        registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+        const ownerMeta = { decimals: 8, symbol: null, isCustom: true };
+
+        expect(formatUIAmount(1.5, { currency: 'SAT', meta: ownerMeta })).toBe('1.50 SAT');
+        expect(formatUIAmount(1.5, { currency: 'SAT' })).toBe('2 SAT');
+      });
+
+      test('toLocalCurrencyNumber follows an explicit meta', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+        expect(
+          toLocalCurrencyNumber(1.5, { currency: 'SAT', meta: { decimals: 3, symbol: null, isCustom: true } }),
+        ).toBe('1.50');
+      });
+
+      test('an ISO currency keeps currency style with its registered decimals', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'KWD', decimals: 3, isCustom: false }] });
+        expect(formatUIAmount(1.5, { currency: 'KWD' })).toBe(
+          new Intl.NumberFormat('en-US', { style: 'currency', currency: 'KWD', minimumFractionDigits: 3 }).format(1.5),
+        );
+      });
+
+      test('a three-letter code missing from the loaded catalogue renders as custom', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USD', decimals: 2 }], replace: true });
+        expect(formatUIAmount(1.5, { currency: 'ABC' })).toBe('1.50 ABC');
+      });
+
+      test.each([
+        [1, '1.00 BTC'],
+        [1000, '1,000.00 BTC'],
+        [1.23456789, '1.235 BTC'],
+        [0.00012345, '0.0001235 BTC'],
+        [1234.5678, '1,234.57 BTC'],
+        [0.99996, '1.00 BTC'],
+        [0.1 + 0.2, '0.30 BTC'],
+        [0, '0.00 BTC'],
+        [-0.00012345, '-0.0001235 BTC'],
+      ])('%s shows 4 significant digits with 2 to 8 decimals: %s', (amount, expected) => {
+        registerCurrencyDecimals({ entries: [{ code: 'BTC', decimals: 8, isCustom: true }] });
+        expect(formatUIAmount(amount, { currency: 'BTC' })).toBe(expected);
+      });
+
+      test('fullPrecision keeps every digit the currency carries, trimming trailing zeros', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'BTC', decimals: 8, isCustom: true }] });
+        expect(formatUIAmount(1.23456789, { currency: 'BTC', fullPrecision: true })).toBe('1.23456789 BTC');
+        expect(formatUIAmount(1, { currency: 'BTC', fullPrecision: true })).toBe('1.00 BTC');
+        expect(formatUIAmount(0.1 + 0.2, { currency: 'BTC', fullPrecision: true })).toBe('0.30 BTC');
+        expect(toLocalCurrencyNumber(1.23456789, { currency: 'BTC', fullPrecision: true })).toBe('1.23456789');
+        expect(toLocalCurrencyNumber(1.23456789, { currency: 'BTC' })).toBe('1.235');
+      });
+
+      test('never shows more decimals than the currency carries, nor pads past them', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'XSIX', decimals: 6, isCustom: true }] });
+        expect(formatUIAmount(0.00012345, { currency: 'XSIX' })).toBe('0.000123 XSIX');
+
+        registerCurrencyDecimals({ entries: [{ code: 'XONE', decimals: 1, isCustom: true }] });
+        expect(formatUIAmount(1, { currency: 'XONE' })).toBe('1.0 XONE');
+        expect(formatUIAmount(1.2345, { currency: 'XONE' })).toBe('1.2 XONE');
+      });
+
+      test('explicit fraction digits win over the shortened display', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'BTC', decimals: 8, isCustom: true }] });
+        expect(formatUIAmount(1.23456789, { currency: 'BTC', fractionDigits: 0 })).toBe('1 BTC');
+      });
+
+      test('an ISO currency ignores fullPrecision', () => {
+        expect(formatUIAmount(1.5, { currency: 'USD', fullPrecision: true })).toBe('$1.50');
+      });
+
+      test('a compact amount puts the scale suffix before the label', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6, isCustom: true }] });
+        expect(formatCompactUIAmount({ amount: 42_600, currency: 'USDT' })).toBe('42.6k USDT');
+
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6, isCustom: true, symbol: '₮' }] });
+        expect(formatCompactUIAmount({ amount: 42_600, currency: 'USDT' })).toBe('42.6k ₮');
       });
     });
 

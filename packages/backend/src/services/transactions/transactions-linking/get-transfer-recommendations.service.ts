@@ -84,6 +84,7 @@ export async function getTransferRecommendations({
     refAmountCenter = await calculateRefAmount({
       amount: Money.fromDecimal(originAmount!),
       userId,
+      definitionOwnerUserId: userId,
       baseCode: account.currencyCode,
       date: new Date(),
     });

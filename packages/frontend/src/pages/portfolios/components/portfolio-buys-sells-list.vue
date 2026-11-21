@@ -39,10 +39,10 @@
 
         <div class="text-right">
           <p class="text-sm font-semibold" :class="getAmountColor(tx.category)">
-            {{ formatAmountByCurrencyCode(Number(tx.amount), tx.currencyCode) }}
+            {{ formatAmountByCurrencyCode({ amount: Number(tx.amount), currencyCode: tx.currencyCode }) }}
           </p>
           <p v-if="tx.price" class="text-muted-foreground text-xs">
-            @ {{ formatAmountByCurrencyCode(Number(tx.price), tx.currencyCode) }}
+            @ {{ formatAmountByCurrencyCode({ amount: Number(tx.price), currencyCode: tx.currencyCode }) }}
           </p>
         </div>
       </div>

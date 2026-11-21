@@ -35,7 +35,7 @@ const open = defineModel<boolean>('open', { required: true });
 const emit = defineEmits<{ 'update:modelValue': [shares: GoalAccountShare[]] }>();
 
 const { t } = useI18n();
-const { formatAmountByCurrencyCode, formatBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
+const { formatAccountAmount, formatBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
 const { accounts, accountsRecord, isAccountsFetched } = storeToRefs(useAccountsStore());
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const { data: goals, isLoading: isGoalsLoading, refetch: refetchGoals } = useGoals();
@@ -269,7 +269,7 @@ const unavailableLabel = ({ share }: { share: GoalAccountShare }) =>
   formatGoalLinkLabel({
     share,
     currencyCode: accountsRecord.value[share.accountId]?.currencyCode,
-    formatAmount: ({ amount, currencyCode }) => formatAmountByCurrencyCode(amount, currencyCode),
+    formatAmount: ({ amount }) => formatAccountAmount({ amount, account: accountsRecord.value[share.accountId]! }),
   });
 
 const selectedCount = computed(() => checkedRows.value.length + keptUnavailableShares.value.length);
@@ -368,7 +368,7 @@ const apply = () => {
               <span class="text-muted-foreground block truncate text-xs font-normal">{{ caption(row) }}</span>
             </Label>
             <div class="text-right text-sm tabular-nums">
-              <div>{{ formatAmountByCurrencyCode(row.account.currentBalance, row.account.currencyCode) }}</div>
+              <div>{{ formatAccountAmount({ amount: row.account.currentBalance, account: row.account }) }}</div>
               <div v-if="row.account.currencyCode !== baseCurrency?.currencyCode" class="text-muted-foreground text-xs">
                 ≈ {{ formatBaseCurrency(row.account.refCurrentBalance) }}
               </div>
@@ -392,7 +392,9 @@ const apply = () => {
                   type="number"
                   only-positive
                   :decimals="
-                    isAmountMode({ row }) ? getCurrencyDecimals({ code: row.account.currencyCode }) : undefined
+                    isAmountMode({ row })
+                      ? getCurrencyDecimals({ code: row.account.currencyCode, meta: row.account.currencyMeta })
+                      : undefined
                   "
                   :placeholder="
                     isAmountMode({ row })
@@ -452,7 +454,7 @@ const apply = () => {
                     }}
                   </span>
                   <span class="tabular-nums">
-                    {{ formatAmountByCurrencyCode(item.fixedAmount, row.account.currencyCode) }}
+                    {{ formatAccountAmount({ amount: item.fixedAmount, account: row.account }) }}
                   </span>
                   <div v-if="item.id === OWN_ORDER_ID" class="flex">
                     <Button

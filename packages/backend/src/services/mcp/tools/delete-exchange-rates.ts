@@ -12,7 +12,7 @@ export const deleteExchangeRatesTool = defineTool({
   toolset: 'currencies',
   access: 'delete',
   description:
-    "Remove the user's own exchange rates for currency pairs, so the pair falls back to the market rate. Every pair needs its opposite in the same call. Returns how many account balances were re-measured.",
+    "Remove the user's own exchange rates for currency pairs, so the pair falls back to the market rate. Every pair needs its opposite in the same call. A custom currency has no market rate, so removing its last rate is refused. Returns how many account balances were re-measured.",
   input: {
     pairs: z
       .array(exchangeRatePairSchema)

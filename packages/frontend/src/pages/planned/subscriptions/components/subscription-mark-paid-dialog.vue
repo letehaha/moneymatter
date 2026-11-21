@@ -183,7 +183,12 @@ const dialogAmountCurrency = computed(() => {
   return accountCurrencyFor(sub) ?? sub.expectedCurrencyCode ?? null;
 });
 
-const amountDecimals = computed(() => getCurrencyDecimals({ code: dialogAmountCurrency.value }));
+const amountDecimals = computed(() => {
+  const sub = activeSubscription.value;
+  const accountId = sub ? (sub.accountId ?? selectedAccountId.value) : null;
+  const account = accountId ? accountsRecord.value[accountId] : undefined;
+  return getCurrencyDecimals({ code: dialogAmountCurrency.value, meta: account?.currencyMeta });
+});
 const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
 const amountDecimalError = computed(() =>
   isBooking.value && !currencyDecimal.isValid(amount.value) ? currencyDecimal.message.value : undefined,
@@ -375,7 +380,7 @@ defineExpose({ triggerPay, isPending });
             </span>
           </div>
           <span class="font-medium whitespace-nowrap">
-            {{ formatAmountByCurrencyCode(candidate.amount, candidate.currencyCode) }}
+            {{ formatAmountByCurrencyCode({ amount: candidate.amount, currencyCode: candidate.currencyCode }) }}
           </span>
         </Label>
       </RadioGroup>

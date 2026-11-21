@@ -49,7 +49,12 @@ async function convertToBaseCurrency({
     return calculateRefAmountFromParams({
       amount: Money.fromDecimal(invoice.totalAmount),
       rate,
-      ...(await getConversionDecimals({ userId, baseCode: invoice.currencyCode, quoteCode: base.currency.code })),
+      ...(await getConversionDecimals({
+        userId,
+        definitionOwnerUserId: userId,
+        baseCode: invoice.currencyCode,
+        quoteCode: base.currency.code,
+      })),
     });
   } catch (error) {
     logger.warn('[Invoice Matching] Invoice currency could not be converted, matching on raw amounts', {

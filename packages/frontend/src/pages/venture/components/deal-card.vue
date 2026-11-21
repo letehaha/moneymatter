@@ -40,7 +40,7 @@ const { formatAmountByCurrencyCode } = useFormatCurrency();
             {{ $t('venture.deals.principal') }}
           </div>
           <div class="mt-0.5 text-lg font-semibold tabular-nums">
-            {{ formatAmountByCurrencyCode(Number(deal.principal), deal.currencyCode) }}
+            {{ formatAmountByCurrencyCode({ amount: Number(deal.principal), currencyCode: deal.currencyCode }) }}
           </div>
         </div>
         <div>
@@ -48,7 +48,7 @@ const { formatAmountByCurrencyCode } = useFormatCurrency();
             {{ $t('venture.deals.entryFee') }}
           </div>
           <div class="text-muted-foreground mt-0.5 text-sm tabular-nums">
-            {{ formatAmountByCurrencyCode(Number(deal.entryFee), deal.currencyCode) }}
+            {{ formatAmountByCurrencyCode({ amount: Number(deal.entryFee), currencyCode: deal.currencyCode }) }}
           </div>
         </div>
         <div>

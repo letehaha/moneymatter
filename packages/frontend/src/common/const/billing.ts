@@ -58,7 +58,7 @@ export const MAX_YEARLY_SAVINGS_PERCENT = Math.max(
 /** i18n keys under `settings.planBilling.tiers.<tier>.features`. Premium is a roadmap card, not for sale. */
 export const FEATURE_KEYS: Record<BillingTier | 'premium', readonly string[]> = {
   essential: ['imports', 'investments', 'ownAiKey', 'backup', 'mcp', 'seats'],
-  plus: ['everythingInEssential', 'bankProviders', 'ourAiKey', 'firePlanner', 'seats'],
+  plus: ['everythingInEssential', 'bankProviders', 'ourAiKey', 'firePlanner', 'customCurrencies', 'seats'],
   premium: ['everythingInPlus', 'builtInBankSync', 'realtimePrices', 'higherAiCap', 'seats'],
 };
 

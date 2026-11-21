@@ -16,6 +16,7 @@ jest.mock('@services/user.service', () => ({
 jest.mock('@services/currencies/add-user-currency', () => ({ addUserCurrencies: jest.fn() }));
 jest.mock('@services/user-exchange-rate', () => ({ getExchangeRate: jest.fn(), getUserExchangeRates: jest.fn() }));
 jest.mock('@services/exchange-rates', () => ({ getExchangeRatesForDate: jest.fn() }));
+jest.mock('@services/currencies/assert-currency-codes-visible', () => ({ assertCurrencyCodesVisible: jest.fn() }));
 jest.mock('@services/system-currencies', () => ({ getAllSystemCurrencies: jest.fn() }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
@@ -150,8 +151,8 @@ describe('get_exchange_rate', () => {
   });
 
   it('rejects a code that is not a currency code', () => {
-    expect(schema.safeParse({ date: '2026-10-18', from: 'USD', to: 'EU' }).success).toBe(false);
-    expect(schema.safeParse({ date: '2026-10-18', from: 'USD', to: 'EURO' }).success).toBe(false);
+    expect(schema.safeParse({ date: '2026-10-18', from: 'USD', to: 'E' }).success).toBe(false);
+    expect(schema.safeParse({ date: '2026-10-18', from: 'USD', to: 'EU-R' }).success).toBe(false);
   });
 
   it('returns the global rates of the date when no code is given', async () => {

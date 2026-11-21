@@ -3,6 +3,7 @@ import { CustomResponse } from '@common/types';
 import { errorHandler } from '@controllers/helpers';
 import { ValidationError } from '@js/errors';
 import { serializeTransaction } from '@root/serializers';
+import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import * as transactionsService from '@services/transactions';
 
 export const linkTransactions = async (req, res: CustomResponse) => {
@@ -20,6 +21,8 @@ export const linkTransactions = async (req, res: CustomResponse) => {
       userId,
       ids,
     });
+
+    await attachTransactionCurrencyMeta({ transactions: linkedPairs.flat() });
 
     // Serialize: Money amounts to API decimals
     // Result is [[baseTx, oppositeTx], ...] - serialize each transaction in each pair

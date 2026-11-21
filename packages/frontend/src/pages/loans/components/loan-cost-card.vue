@@ -58,7 +58,8 @@ const props = defineProps<{ loan: LoanApi }>();
 
 const { formatAmountByCurrencyCode } = useFormatCurrency();
 
-const formatCurrency = (amount: number) => formatAmountByCurrencyCode(amount, props.loan.currencyCode);
+const formatCurrency = (amount: number) =>
+  formatAmountByCurrencyCode({ amount, currencyCode: props.loan.currencyCode });
 
 const costSplit = computed(() =>
   getLoanCostSplit({

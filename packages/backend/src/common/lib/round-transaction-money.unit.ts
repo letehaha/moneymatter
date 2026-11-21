@@ -1,11 +1,21 @@
 import { Money } from '@common/types/money';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-const DIGITS_BY_CODE: Record<string, number> = { USD: 2, JPY: 0, KWD: 3, BTC: 8 };
+const DIGITS_BY_CODE: Record<string, number> = { USD: 2, JPY: 0, KWD: 3, BTC: 8, SAT: 4 };
+const OVERRIDE_BY_USER: Record<number, number> = { 1: 8, 2: 0 };
 
 jest.mock('@models/currencies.model', () => ({
   __esModule: true,
   default: { findOne: jest.fn() },
+}));
+jest.mock('@models/users-currencies.model', () => ({
+  __esModule: true,
+  default: {
+    findOne: jest.fn(async (options: { where: { userId: number } }) => {
+      const override = OVERRIDE_BY_USER[options.where.userId];
+      return override === undefined ? null : { decimalsOverride: override };
+    }),
+  },
 }));
 
 /* eslint-disable import/first */
@@ -25,7 +35,7 @@ describe('roundTransactionMoney', () => {
     (Currencies.findOne as jest.Mock<(...args: unknown[]) => Promise<unknown>>).mockImplementation(async (options) => {
       const code = (options as { where: { code: string } }).where.code;
       const digits = DIGITS_BY_CODE[code];
-      return digits === undefined ? null : { code, digits };
+      return digits === undefined ? null : { code, digits, isCustom: code === 'SAT' };
     });
   });
 
@@ -33,6 +43,7 @@ describe('roundTransactionMoney', () => {
     const result = await roundTransactionMoney({
       values: { amount: money('1.2345'), commissionRate: money('0.0005'), cashbackAmount: money('0.0004') },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'KWD',
       refCurrencyCode: 'USD',
       originalCurrencyCode: null,
@@ -47,6 +58,7 @@ describe('roundTransactionMoney', () => {
     const result = await roundTransactionMoney({
       values: { refAmount: money('0.025'), refCommissionRate: money('0.035') },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'JPY',
       refCurrencyCode: 'USD',
       originalCurrencyCode: null,
@@ -60,6 +72,7 @@ describe('roundTransactionMoney', () => {
     const result = await roundTransactionMoney({
       values: { amount: money('12.5'), originalAmount: money('1500.6') },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'USD',
       refCurrencyCode: 'USD',
       originalCurrencyCode: 'JPY',
@@ -75,6 +88,7 @@ describe('roundTransactionMoney', () => {
       const result = await roundTransactionMoney({
         values: { amount: money('1500.4'), refAmount: money('12.34'), refCommissionRate: money('0.125') },
         userId: USER_ID,
+        definitionOwnerUserId: USER_ID,
         currencyCode: 'JPY',
         refCurrencyCode,
         originalCurrencyCode: undefined,
@@ -95,6 +109,7 @@ describe('roundTransactionMoney', () => {
         refCommissionRate: money('0.025'),
       },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'USD',
       refCurrencyCode: 'USD',
       originalCurrencyCode: null,
@@ -110,6 +125,7 @@ describe('roundTransactionMoney', () => {
     const result = await roundTransactionMoney({
       values: { amount: money('3.456'), originalAmount: null },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'USD',
       refCurrencyCode: 'USD',
       originalCurrencyCode: null,
@@ -125,11 +141,58 @@ describe('roundTransactionMoney', () => {
     const result = await roundTransactionMoney({
       values: { amount: money('0.000406419') },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'BTC',
       refCurrencyCode: 'USD',
       originalCurrencyCode: null,
     });
 
     expect(result.amount!.toDecimalString(8)).toBe('0.00040642');
+  });
+
+  describe('on a shared account', () => {
+    const AUTHOR_ID = 2;
+    const OWNER_ID = 1;
+
+    it("rounds the native amounts with the account owner's decimals, not the author's", async () => {
+      const result = await roundTransactionMoney({
+        values: { amount: money('1.25'), commissionRate: money('0.00000001') },
+        userId: AUTHOR_ID,
+        definitionOwnerUserId: OWNER_ID,
+        currencyCode: 'SAT',
+        refCurrencyCode: 'USD',
+        originalCurrencyCode: null,
+      });
+
+      expect(result.amount!.toDecimalString(8)).toBe('1.25000000');
+      expect(result.commissionRate!.toDecimalString(8)).toBe('0.00000001');
+    });
+
+    it("rounds the original amount with the author's decimals", async () => {
+      const result = await roundTransactionMoney({
+        values: { amount: money('1.25'), originalAmount: money('1.25') },
+        userId: AUTHOR_ID,
+        definitionOwnerUserId: OWNER_ID,
+        currencyCode: 'SAT',
+        refCurrencyCode: 'USD',
+        originalCurrencyCode: 'SAT',
+      });
+
+      expect(result.amount!.toDecimalString(8)).toBe('1.25000000');
+      expect(result.originalAmount!.toDecimalString(0)).toBe('1');
+    });
+
+    it("rounds the reference values to the author's base currency", async () => {
+      const result = await roundTransactionMoney({
+        values: { amount: money('1.25'), refAmount: money('0.0049') },
+        userId: AUTHOR_ID,
+        definitionOwnerUserId: OWNER_ID,
+        currencyCode: 'SAT',
+        refCurrencyCode: 'USD',
+        originalCurrencyCode: null,
+      });
+
+      expect(result.refAmount!.toDecimalString(2)).toBe('0.00');
+    });
   });
 });

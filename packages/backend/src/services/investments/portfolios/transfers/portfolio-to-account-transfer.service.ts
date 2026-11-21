@@ -121,6 +121,7 @@ const portfolioToAccountTransferImpl = async ({
 
     const newTx = await Transactions.createTransaction({
       userId,
+      definitionOwnerUserId: userId,
       amount: txAmount,
       refAmount,
       transactionType: TRANSACTION_TYPES.income,

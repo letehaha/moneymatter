@@ -1,9 +1,10 @@
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
-import { connection } from '@models/connection';
 import * as UsersCurrencies from '@models/users-currencies.model';
 
 import { withTransaction } from '../common/with-transaction';
+import { assertCurrencyCodesVisible } from './assert-currency-codes-visible';
+import { lockUserCurrencies } from './lock-user-currencies';
 
 export const addUserCurrencies = withTransaction(
   async (
@@ -18,10 +19,14 @@ export const addUserCurrencies = withTransaction(
       throw new ValidationError({ message: t({ key: 'currencies.listIsEmpty' }) });
     }
 
-    // ponytail: no unique index on (userId, currencyCode); a unique index + dedupe migration would make this lock unnecessary
-    await connection.sequelize.query(`SELECT pg_advisory_xact_lock(hashtext('users-currencies'), :userId)`, {
-      replacements: { userId: currencies[0].userId },
+    // A custom code is attachable only by a user that already holds it (the custom-currency
+    // endpoints create that row); this entry point never links someone else's definition.
+    await assertCurrencyCodesVisible({
+      userId: currencies[0].userId,
+      codes: currencies.map((item) => item.currencyCode),
     });
+
+    await lockUserCurrencies({ userId: currencies[0].userId });
 
     const existingCurrencies = await UsersCurrencies.getCurrencies({
       userId: currencies[0].userId,

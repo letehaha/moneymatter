@@ -598,6 +598,7 @@ describe('Monobank Data Provider E2E', () => {
       const expected = await calculateRefAmount({
         amount: Money.fromCents(creditLimitCents),
         userId: created!.userId,
+        definitionOwnerUserId: created!.userId,
         date: new Date(),
         baseCode: 'UAH',
       });

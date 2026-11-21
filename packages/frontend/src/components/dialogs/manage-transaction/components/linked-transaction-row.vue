@@ -58,7 +58,7 @@ const label = computed(() => {
         "
         class="text-amount"
       >
-        {{ formatUIAmount(transaction.amount, { currency: transaction.currencyCode }) }}
+        {{ formatUIAmount(transaction.amount, { currency: transaction.currencyCode, meta: transaction.currencyMeta }) }}
       </span>
       <span class="text-muted-foreground text-xs">{{ format(new Date(transaction.time), 'd MMM') }}</span>
       <DesktopOnlyTooltip :content="removeLabel">

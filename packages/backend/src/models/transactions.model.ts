@@ -17,6 +17,7 @@ import {
   TransactionLocation,
   TransactionModel,
 } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { roundTransactionMoney } from '@common/lib/round-transaction-money';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
@@ -25,7 +26,7 @@ import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { logger } from '@js/utils/logger';
-import Accounts from '@models/accounts.model';
+import Accounts, { getAccountOwnerUserId } from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import Categories from '@models/categories.model';
 import Currencies from '@models/currencies.model';
@@ -328,7 +329,7 @@ export default class Transactions extends Model {
   category!: Categories;
 
   @ForeignKey(() => Currencies)
-  @Column({ allowNull: true, type: DataType.STRING(3) })
+  @Column({ allowNull: true, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   currencyCode!: string;
 
   @Column({
@@ -339,7 +340,7 @@ export default class Transactions extends Model {
   accountType!: ACCOUNT_TYPES;
 
   @ForeignKey(() => Currencies)
-  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(3) })
+  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   refCurrencyCode!: string;
 
   @Column({
@@ -383,7 +384,7 @@ export default class Transactions extends Model {
   declare originalAmount: Money | null;
 
   @ForeignKey(() => Currencies)
-  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(3) })
+  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   originalCurrencyCode!: string | null;
 
   // Represents if the transaction refunds another tx, or is being refunded by other. Added only for
@@ -1635,13 +1636,18 @@ type CreateTxOptionalParams = Partial<
   >
 >;
 
-export type CreateTransactionPayload = CreateTxRequiredParams & CreateTxOptionalParams;
+export type CreateTransactionPayload = CreateTxRequiredParams &
+  CreateTxOptionalParams & {
+    /** Owner of the account; its definition of the currency governs the native amounts. */
+    definitionOwnerUserId: number;
+  };
 
-export const createTransaction = async ({ userId, ...rest }: CreateTransactionPayload) => {
+export const createTransaction = async ({ userId, definitionOwnerUserId, ...rest }: CreateTransactionPayload) => {
   const { amount, commissionRate, cashbackAmount, originalAmount, refAmount, refCommissionRate } = rest;
   const rounded = await roundTransactionMoney({
     values: { amount, commissionRate, cashbackAmount, originalAmount, refAmount, refCommissionRate },
     userId,
+    definitionOwnerUserId,
     currencyCode: rest.currencyCode,
     refCurrencyCode: rest.refCurrencyCode,
     originalCurrencyCode: rest.originalCurrencyCode,
@@ -1658,6 +1664,10 @@ export const createTransaction = async ({ userId, ...rest }: CreateTransactionPa
 export interface UpdateTransactionByIdParams {
   id: string;
   userId: number;
+  /** Owner of the account; its definition of the currency governs the native amounts. Looked up when absent. */
+  definitionOwnerUserId?: number;
+  /** Whose definition of `originalCurrencyCode` rounds `originalAmount`: the caller. Defaults to `userId`. */
+  originalCurrencyOwnerUserId?: number;
   amount?: Money;
   refAmount?: Money;
   note?: string | null;
@@ -1696,11 +1706,15 @@ export interface UpdateTransactionByIdParams {
 const roundUpdatePayloadMoney = async ({
   id,
   userId,
+  definitionOwnerUserId,
+  originalCurrencyOwnerUserId = userId,
   payload,
 }: {
   id: string;
   userId: number;
-  payload: Omit<UpdateTransactionByIdParams, 'id' | 'userId'>;
+  definitionOwnerUserId?: number;
+  originalCurrencyOwnerUserId?: number;
+  payload: Omit<UpdateTransactionByIdParams, 'id' | 'userId' | 'definitionOwnerUserId' | 'originalCurrencyOwnerUserId'>;
 }) => {
   const { amount, refAmount, originalAmount } = payload;
 
@@ -1710,25 +1724,30 @@ const roundUpdatePayloadMoney = async ({
 
   const needsStoredRow =
     payload.currencyCode === undefined ||
+    (definitionOwnerUserId === undefined && payload.accountId === undefined) ||
     (refAmount !== undefined && payload.refCurrencyCode === undefined) ||
     (originalAmount !== undefined && originalAmount !== null && payload.originalCurrencyCode === undefined);
 
   const stored = needsStoredRow
     ? await Transactions.findOne({
         where: { id, userId },
-        attributes: ['currencyCode', 'refCurrencyCode', 'originalCurrencyCode'],
+        attributes: ['accountId', 'currencyCode', 'refCurrencyCode', 'originalCurrencyCode'],
         paranoid: false,
       })
     : null;
 
   const currencyCode = payload.currencyCode ?? stored?.currencyCode;
 
+  const accountId = payload.accountId ?? stored?.accountId;
+  const ownerUserId = definitionOwnerUserId ?? (accountId ? await getAccountOwnerUserId({ id: accountId }) : undefined);
+
   // No row and no currency: nothing to round against, and the update matches nothing anyway.
-  if (!currencyCode) return {};
+  if (!currencyCode || ownerUserId === undefined) return {};
 
   return roundTransactionMoney({
     values: { amount, refAmount, originalAmount },
-    userId,
+    userId: originalCurrencyOwnerUserId,
+    definitionOwnerUserId: ownerUserId,
     currencyCode,
     refCurrencyCode: payload.refCurrencyCode ?? stored?.refCurrencyCode,
     originalCurrencyCode: payload.originalCurrencyCode ?? stored?.originalCurrencyCode,
@@ -1736,7 +1755,7 @@ const roundUpdatePayloadMoney = async ({
 };
 
 export const updateTransactionById = async (
-  { id, userId, ...payload }: UpdateTransactionByIdParams,
+  { id, userId, definitionOwnerUserId, originalCurrencyOwnerUserId, ...payload }: UpdateTransactionByIdParams,
   {
     // For refunds we need to have an option to disable them. Otherwise there will be some kind of
     // deadlock - request stucks forever with no error message. TODO: consider removing this logic at all
@@ -1745,7 +1764,13 @@ export const updateTransactionById = async (
 ) => {
   const where = { id, userId };
 
-  const rounded = await roundUpdatePayloadMoney({ id, userId, payload });
+  const rounded = await roundUpdatePayloadMoney({
+    id,
+    userId,
+    definitionOwnerUserId,
+    originalCurrencyOwnerUserId,
+    payload,
+  });
 
   await Transactions.update(removeUndefinedKeys({ ...payload, ...rounded }), {
     where,

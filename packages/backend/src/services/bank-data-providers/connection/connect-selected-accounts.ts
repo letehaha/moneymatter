@@ -16,13 +16,14 @@ import AccountGrouping from '@models/accounts-groups/account-grouping.model';
 import AccountGroup from '@models/accounts-groups/account-groups.model';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import { NON_CURRENCY_CODES, getCurrency } from '@models/currencies.model';
+import { NON_CURRENCY_CODES } from '@models/currencies.model';
 import Subscriptions from '@models/subscriptions.model';
 import { calculateRefAmount } from '@root/services/calculate-ref-amount.service';
 import { withTransaction } from '@root/services/common/with-transaction';
 import { lockAccountRow } from '@services/accounts/lock-account-row';
 import { restoreRelinkedTransactionsAccountType } from '@services/accounts/restore-relinked-transactions-account-type';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import { resolveVisibleCurrencies } from '@services/currencies/assert-currency-codes-visible';
 import { assertNoUnfinishedImport } from '@services/import-export/core/unfinished-import';
 
 import { bankProviderRegistry } from '../registry';
@@ -286,9 +287,12 @@ const createAccountsForConnection = withTransaction(
           providerAccount.currency = override;
         }
 
-        // Reject unknown codes and ISO 4217 non-currencies (metals, test codes):
-        // they have no exchange rate, so calculateRefAmount below would throw a 500.
-        const currency = await getCurrency({ code: providerAccount.currency.toUpperCase() });
+        // Reject unknown codes, other users' custom codes (the user's own are fine, e.g. a
+        // currency override picked for an "XXX" account) and ISO 4217 non-currencies (metals,
+        // test codes): they have no exchange rate, so calculateRefAmount below would throw a 500.
+        const {
+          visible: [currency],
+        } = await resolveVisibleCurrencies({ userId, codes: [providerAccount.currency] });
         if (!currency || NON_CURRENCY_CODES.includes(currency.code)) {
           throw new BadRequestError({
             message: t({
@@ -314,6 +318,7 @@ const createAccountsForConnection = withTransaction(
         const accountRefBalance = await calculateRefAmount({
           amount: providerBalance,
           userId,
+          definitionOwnerUserId: userId,
           date: now,
           baseCode: providerAccount.currency,
         });
@@ -322,6 +327,7 @@ const createAccountsForConnection = withTransaction(
           ? await calculateRefAmount({
               amount: creditLimit,
               userId,
+              definitionOwnerUserId: userId,
               date: now,
               baseCode: providerAccount.currency,
             })

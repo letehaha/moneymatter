@@ -357,6 +357,7 @@ const localCalculateRefAmount = async ({
   });
   const decimals = await getConversionDecimals({
     userId: exchangeRateParams.userId,
+    definitionOwnerUserId: exchangeRateParams.userId,
     baseCode: exchangeRateParams.baseCode,
     quoteCode: exchangeRateParams.quoteCode,
   });
@@ -724,7 +725,12 @@ async function rebuildBalances(params: {
   });
 
   const updates: { id: string; amount: Money }[] = [];
-  const decimals = await getConversionDecimals({ userId, baseCode: oldCurrencyCode, quoteCode: newCurrencyCode });
+  const decimals = await getConversionDecimals({
+    userId,
+    definitionOwnerUserId: userId,
+    baseCode: oldCurrencyCode,
+    quoteCode: newCurrencyCode,
+  });
 
   for (const balance of balances) {
     const rate = resolveRate?.(toDayKey(balance.date)) ?? null;
@@ -983,7 +989,12 @@ async function convertFireSettingsAmounts({
     quoteCode: newCurrencyCode,
     date: new Date(),
   });
-  const decimals = await getConversionDecimals({ userId, baseCode: oldCurrencyCode, quoteCode: newCurrencyCode });
+  const decimals = await getConversionDecimals({
+    userId,
+    definitionOwnerUserId: userId,
+    baseCode: oldCurrencyCode,
+    quoteCode: newCurrencyCode,
+  });
   const convert = ({ fire: settings }: { fire: FireSettings }): FireSettings => {
     const converted = { ...settings };
     for (const key of FIRE_AMOUNT_KEYS) {

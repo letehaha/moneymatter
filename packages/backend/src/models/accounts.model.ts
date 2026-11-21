@@ -8,10 +8,12 @@ import {
   PAYMENT_TYPES,
   RecordId,
 } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { roundMoneyValues } from '@common/lib/currency-precision';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
+import { UnexpectedError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import Balances from '@models/balances.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
@@ -118,7 +120,7 @@ export default class Accounts extends Model {
   defaultPaymentType!: PAYMENT_TYPES | null;
 
   @ForeignKey(() => Currencies)
-  @Column({ type: DataType.STRING(3) })
+  @Column({ type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   currencyCode!: string;
 
   @ForeignKey(() => Users)
@@ -372,6 +374,14 @@ export const isBankLinkedAccount = async ({ id }: { id: string }) => {
   const account = await Accounts.findByPk(id, { attributes: ['type'] });
 
   return Boolean(account) && account!.type !== ACCOUNT_TYPES.system;
+};
+
+/** Owner of the account, whose definition of its currency governs every amount on it. */
+export const getAccountOwnerUserId = async ({ id }: { id: string }): Promise<number> => {
+  const account = await Accounts.findByPk(id, { attributes: ['userId'] });
+  if (!account) throw new UnexpectedError({ message: `Account ${id} does not exist` });
+
+  return account.userId;
 };
 
 export const getAccountCurrency = async ({ userId, id }: { userId: number; id: string }) => {

@@ -9,6 +9,10 @@ jest.mock('@models/users-currencies.model', () => ({
   getBaseCurrency: jest.fn(),
 }));
 
+jest.mock('@services/currencies/custom-currency-codes', () => ({
+  includesCustomCurrencyCode: () => Promise.resolve(false),
+}));
+
 const XOF_PER_USD = { value: 0 };
 jest.mock('@services/exchange-rates/resolve-usd-rates', () => ({
   resolveUsdRates: ({ codes }: { codes: string[] }) =>

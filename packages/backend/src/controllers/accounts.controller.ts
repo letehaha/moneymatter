@@ -6,6 +6,7 @@ import { removeUndefinedKeys } from '@js/helpers';
 import { serializeAccount, serializeAccounts } from '@root/serializers';
 import * as accountsService from '@services/accounts.service';
 import { assertAccountUpdateAllowed } from '@services/accounts/assert-account-update-allowed';
+import { attachAccountCurrencyMeta } from '@services/currencies/effective-currency';
 import { refreshStaleVehicleValuesForUser } from '@services/vehicles/refresh-vehicle-value.service';
 import { z } from 'zod';
 
@@ -19,6 +20,7 @@ export const getAccounts = createController(z.object({}), async ({ user }) => {
   // breaks the response.
   await refreshStaleVehicleValuesForUser({ userId });
   const accounts = await accountsService.getAccounts({ userId });
+  await attachAccountCurrencyMeta({ accounts });
   return { data: serializeAccounts(accounts) };
 });
 
@@ -33,6 +35,7 @@ export const getAccountById = createController(
     const { id: userId } = user;
 
     const account = await accountsService.getAccountById({ userId, id });
+    if (account) await attachAccountCurrencyMeta({ accounts: [account] });
     return { data: account ? serializeAccount(account) : null };
   },
 );
@@ -80,6 +83,7 @@ export const createAccount = createController(
       logoIcon,
     });
 
+    if (account) await attachAccountCurrencyMeta({ accounts: [account] });
     return { data: account ? serializeAccount(account) : null };
   },
 );
@@ -138,6 +142,7 @@ export const updateAccount = createController(
       }),
     });
 
+    if (result) await attachAccountCurrencyMeta({ accounts: [result] });
     return { data: result ? serializeAccount(result) : null };
   },
 );

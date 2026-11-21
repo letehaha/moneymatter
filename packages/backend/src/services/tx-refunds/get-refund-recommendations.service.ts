@@ -99,6 +99,7 @@ export async function getRefundRecommendations({
     refAmountCenter = await calculateRefAmount({
       amount: Money.fromDecimal(originAmount!),
       userId,
+      definitionOwnerUserId: userId,
       baseCode: account.currencyCode,
       date: new Date(),
     });

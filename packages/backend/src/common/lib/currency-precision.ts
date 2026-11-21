@@ -1,9 +1,9 @@
 import { getCachedCurrencyDecimals, setCachedCurrencyDecimals } from '@common/lib/currency-decimals-cache';
 import { assertDecimals, Money } from '@common/types/money';
 import { t } from '@i18n/index';
-import { NotFoundError, ValidationError } from '@js/errors';
+import { NotFoundError, UnexpectedError, ValidationError } from '@js/errors';
 import Currencies from '@models/currencies.model';
-import { getBaseCurrency } from '@models/users-currencies.model';
+import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
 
 export interface ConversionDecimals {
   /** Decimals of the amount's own currency; the amount is rounded to them before it is converted. */
@@ -57,14 +57,11 @@ const roundAt = ({
 };
 
 /**
- * Number of decimal places the currency carries: `Currencies.digits` for `code`. The result
- * depends on the code alone; `userId` names the user the amount belongs to and does not change it.
- *
- * Results are cached per code; the `Currencies` model hooks drop the cache whenever a currency
- * row changes.
+ * Decimals the currency carries for the user. A custom code without the user's definition throws,
+ * because the global row is a stub. For an amount on an account, pass the account owner's id.
  */
-export const getCurrencyDecimals = async ({ code }: { userId: number; code: string }): Promise<number> => {
-  const cached = getCachedCurrencyDecimals({ code });
+export const getCurrencyDecimals = async ({ userId, code }: { userId: number; code: string }): Promise<number> => {
+  const cached = getCachedCurrencyDecimals({ code }) ?? getCachedCurrencyDecimals({ userId, code });
   if (cached !== undefined) return cached;
 
   const currency = await Currencies.findOne({ where: { code } });
@@ -73,10 +70,23 @@ export const getCurrencyDecimals = async ({ code }: { userId: number; code: stri
     throw new NotFoundError({ message: t({ key: 'currencies.unknownCurrencyCode', variables: { code } }) });
   }
 
-  assertDecimals({ decimals: currency.digits, caller: `Currency ${code}` });
-  setCachedCurrencyDecimals({ code, decimals: currency.digits });
+  const decimals = currency.isCustom
+    ? (
+        await UsersCurrencies.findOne({
+          where: { userId, currencyCode: code },
+          attributes: ['decimalsOverride'],
+        })
+      )?.decimalsOverride
+    : currency.digits;
 
-  return currency.digits;
+  if (decimals == null) {
+    throw new UnexpectedError({ message: `User ${userId} has no definition of the custom currency ${code}` });
+  }
+  assertDecimals({ decimals, caller: `Currency ${code}` });
+
+  setCachedCurrencyDecimals({ userId: currency.isCustom ? userId : undefined, code, decimals });
+
+  return decimals;
 };
 
 /** Code and decimals of the user's base currency, or null for a user who has not picked one yet. */
@@ -124,13 +134,17 @@ export const getConversionDecimals = async ({
   userId,
   baseCode,
   quoteCode,
+  definitionOwnerUserId,
 }: {
+  /** Whose definition of `quoteCode` applies: the user the amount converts for. */
   userId: number;
   baseCode: string;
   quoteCode: string;
+  /** Whose definition of `baseCode` applies: the account owner's for an amount on an account. */
+  definitionOwnerUserId: number;
 }): Promise<ConversionDecimals> => {
   const [baseDecimals, quoteDecimals] = await Promise.all([
-    getCurrencyDecimals({ userId, code: baseCode }),
+    getCurrencyDecimals({ userId: definitionOwnerUserId, code: baseCode }),
     getCurrencyDecimals({ userId, code: quoteCode }),
   ]);
 

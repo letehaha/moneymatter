@@ -11,10 +11,12 @@ export const DUPLICATE_PLACEHOLDER = '–';
  * key and the import write. A negative amount that rounds to zero shows as `0.00`, not `-0.00`.
  */
 export const formatDuplicateAmount = ({ amount, currencyCode }: { amount: number; currencyCode: string }): string =>
-  toLocalCurrencyNumber(amount, { currency: currencyCode, locale: 'en-US', useGrouping: false }).replace(
-    /^-(?=[0.]+$)/,
-    '',
-  );
+  toLocalCurrencyNumber(amount, {
+    currency: currencyCode,
+    locale: 'en-US',
+    useGrouping: false,
+    fullPrecision: true,
+  }).replace(/^-(?=[0.]+$)/, '');
 
 /**
  * Locale-aware date formatting for comparison cells. Delegates to formatShortDate,

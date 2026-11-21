@@ -18,11 +18,11 @@ import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import { trackImportCompleted } from '@js/utils/posthog';
 import * as Accounts from '@models/accounts.model';
-import { getCurrencies } from '@models/currencies.model';
 import * as Users from '@models/users.model';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
 import { getSeamStart } from '@services/accounts/seam';
 import { CATEGORIZATION_SCOPE, queueCategorizationJob } from '@services/ai-categorization';
+import { resolveVisibleCurrencies } from '@services/currencies/assert-currency-codes-visible';
 import { assertImportTargetNotBankLinked } from '@services/import-export/core/assert-import-target-not-bank-linked';
 import { assertBankLinksUnchanged, isFromBankSeam } from '@services/import-export/core/bank-seam';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
@@ -114,14 +114,13 @@ async function executeImportImpl({
   const decimals = await getCurrencyDecimals({ userId, code: account.currencyCode });
   const maxAmount = Money.fromDecimal(Math.min(1_000_000_000, getMaxAmountForDecimals({ decimals }).toNumber()));
 
-  // A code missing from Currencies would fail the row on its foreign key, so its pair is dropped instead.
+  // A code the user cannot use (unknown, or another user's custom currency) would fail the row, so
+  // its pair is dropped instead.
   const originalCurrencyCodes = [
     ...new Set(transactionsToImport.flatMap((tx) => (tx.originalCurrencyCode ? [tx.originalCurrencyCode] : []))),
   ];
   const knownOriginalCurrencyCodes = new Set(
-    originalCurrencyCodes.length
-      ? (await getCurrencies({ codes: originalCurrencyCodes })).map((currency) => currency.code)
-      : [],
+    (await resolveVisibleCurrencies({ userId, codes: originalCurrencyCodes })).visible.map((currency) => currency.code),
   );
 
   // Create transactions

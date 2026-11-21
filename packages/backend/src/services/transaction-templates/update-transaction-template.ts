@@ -4,6 +4,7 @@ import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import TransactionTemplates from '@models/transaction-templates.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 
 import { assertTemplateConsistent } from './assert-template-consistent';
 import { loadTemplateTagIds, roundTemplateAmount, serializeTemplate, writeOrConflict } from './helpers';
@@ -15,6 +16,12 @@ export const updateTransactionTemplate = withTransaction(
     const template = await findOrThrowNotFound({
       query: TransactionTemplates.findOne({ where: { id, userId } }),
       message: t({ key: 'transactionTemplates.notFound' }),
+    });
+
+    await assertCurrencyCodesVisible({
+      userId,
+      codes: [fields.originalCurrencyCode],
+      allowedWithoutPlan: [template.originalCurrencyCode],
     });
 
     const mergedTagIds = tagIds ?? (await loadTemplateTagIds({ templateIds: [id] })).get(id) ?? [];

@@ -184,7 +184,7 @@ export const getPaymentLegExcessDecimals = ({
   mainCurrencyCode: string | undefined;
 }): number | null => {
   if (leg.isLinked || leg.amount == null) return null;
-  const decimals = getCurrencyDecimals({ code: leg.currencyCode ?? mainCurrencyCode });
+  const decimals = getCurrencyDecimals({ code: leg.currencyCode ?? mainCurrencyCode, meta: leg.account?.currencyMeta });
   return maxDecimalPoints(decimals)(leg.amount) ? null : decimals;
 };
 

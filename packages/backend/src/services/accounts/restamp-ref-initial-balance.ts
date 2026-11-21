@@ -47,6 +47,7 @@ export const measureRefInitialBalanceAtBoundary = async ({
 
   return calculateRefAmount({
     userId: account.userId,
+    definitionOwnerUserId: account.userId,
     amount: initialBalance,
     baseCode: account.currencyCode,
     date: earliestTx?.time ?? new Date(),

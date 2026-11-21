@@ -65,7 +65,16 @@ const externalUrlLabel = computed(() =>
         <span>{{ t('pages.account.details.creditLimit') }}</span>
 
         <div class="flex items-center gap-1.5">
-          <span>{{ toLocalCurrencyNumber(account.creditLimit, { currency: currencyCode }) }} {{ currencyCode }}</span>
+          <span
+            >{{
+              toLocalCurrencyNumber(account.creditLimit, {
+                currency: currencyCode,
+                meta: account.currencyMeta,
+                fullPrecision: true,
+              })
+            }}
+            {{ currencyCode }}</span
+          >
 
           <CreditLimitEditPopover v-if="isOwner" :account="account" :currency-code="currencyCode" />
         </div>
@@ -77,7 +86,14 @@ const externalUrlLabel = computed(() =>
 
         <div class="flex items-center gap-1.5">
           <span
-            >{{ toLocalCurrencyNumber(account.initialBalance, { currency: currencyCode }) }} {{ currencyCode }}</span
+            >{{
+              toLocalCurrencyNumber(account.initialBalance, {
+                currency: currencyCode,
+                meta: account.currencyMeta,
+                fullPrecision: true,
+              })
+            }}
+            {{ currencyCode }}</span
           >
 
           <InitialBalanceEditPopover v-if="isInitialBalanceEditable" :account="account" :currency-code="currencyCode" />

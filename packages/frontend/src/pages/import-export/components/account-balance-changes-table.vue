@@ -30,7 +30,7 @@ const { t } = useI18n();
 defineProps<{ changes: AccountBalanceChange[] }>();
 
 const { accountsRecord } = storeToRefs(useAccountsStore());
-const { formatAmountByCurrencyCode } = useFormatCurrency();
+const { formatAccountAmount } = useFormatCurrency();
 
 /**
  * Rows for accounts that existed before the import — the only
@@ -42,7 +42,7 @@ type ExistingAccountChange = Extract<AccountBalanceChange, { isNewAccount: false
 
 function formatAmount({ change, amount }: { change: AccountBalanceChange; amount: number }): string {
   const account = accountsRecord.value[change.accountId];
-  if (account) return formatAmountByCurrencyCode(amount, account.currencyCode);
+  if (account) return formatAccountAmount({ amount, account, fullPrecision: true });
   return toLocalNumber(amount, { maximumFractionDigits: 2 });
 }
 

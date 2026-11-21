@@ -519,7 +519,7 @@ const leadTotalLabel = computed(() => {
   const codes = new Set(accounts.map((account) => account.currencyCode));
   if (codes.size !== 1) return null;
   const total = accounts.reduce((sum, account) => sum + account.currentBalance, 0);
-  return formatAmountByCurrencyCode(total, [...codes][0]!);
+  return formatAmountByCurrencyCode({ amount: total, currencyCode: [...codes][0]! });
 });
 
 const summarySubtitle = computed(() => {

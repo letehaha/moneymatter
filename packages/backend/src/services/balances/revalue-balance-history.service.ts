@@ -23,6 +23,7 @@ import {
   type SeamAccount,
 } from '@services/accounts/seam';
 import { withTransaction } from '@services/common/with-transaction';
+import { includesCustomCurrencyCode } from '@services/currencies/custom-currency-codes';
 import {
   buildDailyPairRateResolver,
   type DailyPairRateResolver,
@@ -30,6 +31,8 @@ import {
   toDayKey,
 } from '@services/exchange-rates/build-daily-pair-rate-resolver';
 import { resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
+import { findCustomCurrencyQuote } from '@services/user-exchange-rate/resolve-custom-pair-rate';
+import Big from 'big.js';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { QueryTypes } from 'sequelize';
 import { v7 as uuidv7 } from 'uuid';
@@ -169,22 +172,26 @@ const writeBalanceRows = async ({
   );
 };
 
-/** Each day's rate to the owner's base currency, or null when the pair has no stored rate. */
-const buildRateForDay = async ({
+type RatedAccount = Pick<Accounts, 'id' | 'userId' | 'currencyCode'>;
+
+/** Each day's rate of an ISO currency to the owner's base currency, or null when the pair has no stored rate. */
+const buildIsoRateForDay = async ({
   account,
+  currencyCode,
   baseCurrencyCode,
   from,
   to,
 }: {
-  account: Accounts;
+  account: RatedAccount;
+  currencyCode: string;
   baseCurrencyCode: string;
   from: Date;
   to: Date;
 }): Promise<DailyPairRateResolver | null> => {
-  if (account.currencyCode === baseCurrencyCode) return () => 1;
+  if (currencyCode === baseCurrencyCode) return () => 1;
 
   const userCurrency = (await UsersCurrencies.findOne({
-    where: { userId: account.userId, currencyCode: account.currencyCode },
+    where: { userId: account.userId, currencyCode },
     attributes: ['liveRateUpdate'],
     raw: true,
   })) as { liveRateUpdate: boolean | null } | null;
@@ -195,14 +202,14 @@ const buildRateForDay = async ({
     (
       await resolveCustomRate({
         userId: account.userId,
-        pair: { baseCode: account.currencyCode, quoteCode: baseCurrencyCode },
+        pair: { baseCode: currencyCode, quoteCode: baseCurrencyCode },
         liveRateUpdate: userCurrency?.liveRateUpdate ?? null,
       })
     )?.rate ?? null;
   if (flatCustomRate !== null) return () => flatCustomRate;
 
   const resolveRate = await buildDailyPairRateResolver({
-    baseCode: account.currencyCode,
+    baseCode: currencyCode,
     quoteCode: baseCurrencyCode,
     from,
     to,
@@ -211,11 +218,57 @@ const buildRateForDay = async ({
   if (!resolveRate) {
     logger.warn('No stored exchange rate for pair; account left untouched', {
       accountId: account.id,
-      pair: `${account.currencyCode}/${baseCurrencyCode}`,
+      pair: `${currencyCode}/${baseCurrencyCode}`,
     });
   }
 
   return resolveRate;
+};
+
+/**
+ * Each day's rate to the owner's base currency, or null when the pair has no stored rate. A custom
+ * currency is priced the way its transactions are: the user's flat rate in its ISO quote, times that
+ * quote's daily rate to the base.
+ */
+export const buildRateForDay = async ({
+  account,
+  baseCurrencyCode,
+  from,
+  to,
+}: {
+  account: RatedAccount;
+  baseCurrencyCode: string;
+  from: Date;
+  to: Date;
+}): Promise<DailyPairRateResolver | null> => {
+  if (account.currencyCode === baseCurrencyCode) return () => 1;
+  if (!(await includesCustomCurrencyCode({ codes: [account.currencyCode] }))) {
+    return buildIsoRateForDay({ account, currencyCode: account.currencyCode, baseCurrencyCode, from, to });
+  }
+
+  const quote = await findCustomCurrencyQuote({
+    userId: account.userId,
+    code: account.currencyCode,
+    preferredQuoteCode: baseCurrencyCode,
+  });
+  if (!quote) {
+    logger.error('Custom currency has no rate; account left untouched', { accountId: account.id });
+    return null;
+  }
+
+  const resolveIsoRate = await buildIsoRateForDay({
+    account,
+    currencyCode: quote.quoteCode,
+    baseCurrencyCode,
+    from,
+    to,
+  });
+  if (!resolveIsoRate) return null;
+
+  return (dayKey) => {
+    const isoRate = resolveIsoRate(dayKey);
+    return isoRate === null ? null : new Big(quote.rate).times(isoRate).toNumber();
+  };
 };
 
 /**

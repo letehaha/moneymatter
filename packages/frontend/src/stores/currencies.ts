@@ -12,11 +12,8 @@ export const useCurrenciesStore = defineStore('currencies', () => {
   const baseCurrency = ref<UserCurrencyModel | null>(null);
   const isBaseCurrencyExists = computed(() => Boolean(baseCurrency.value));
 
-  const systemCurrenciesVerbose = computed<{
-    linked: CurrencyModel[];
-    unlinked: CurrencyModel[];
-  }>(() =>
-    systemCurrencies.value.reduce(
+  const splitByLinked = ({ list }: { list: CurrencyModel[] }) =>
+    list.reduce(
       (acc, curr) => {
         if (currencies.value.find((item) => item.currencyCode === curr.code)) {
           acc.linked.push(curr);
@@ -26,8 +23,16 @@ export const useCurrenciesStore = defineStore('currencies', () => {
         return acc;
       },
       { linked: [] as CurrencyModel[], unlinked: [] as CurrencyModel[] },
-    ),
-  );
+    );
+
+  // `systemCurrencies` is what every picker lists: the ISO catalogue plus the user's own
+  // custom currencies (the public catalogue never carries those).
+  const systemCurrenciesVerbose = computed(() => splitByLinked({ list: systemCurrencies.value }));
+
+  // Contexts that accept ISO codes only (loans, vehicles, investments)
+  // must not offer a custom currency the backend would reject.
+  const isoCurrencies = computed(() => systemCurrencies.value.filter((item) => !item.isCustom));
+  const isoCurrenciesVerbose = computed(() => splitByLinked({ list: isoCurrencies.value }));
 
   const currenciesMap = computed(() =>
     currencies.value.reduce(
@@ -50,9 +55,12 @@ export const useCurrenciesStore = defineStore('currencies', () => {
 
   // Formatters and amount inputs outside the store resolve decimals by code, so every
   // list the store receives is registered with the registry they read.
-  const registerDecimals = ({ items }: { items: Array<CurrencyModel | undefined> }) =>
+  const registerDecimals = ({ items, replace }: { items: Array<CurrencyModel | undefined>; replace?: boolean }) =>
     registerCurrencyDecimals({
-      entries: items.flatMap((item) => (item ? [{ code: item.code, decimals: item.digits }] : [])),
+      entries: items.flatMap((item) =>
+        item ? [{ code: item.code, decimals: item.digits, isCustom: item.isCustom, symbol: item.symbol }] : [],
+      ),
+      replace,
     });
 
   // Both fetches run through the vue-query cache (staleTime Infinity) so they dedupe on
@@ -83,8 +91,14 @@ export const useCurrenciesStore = defineStore('currencies', () => {
     ]);
 
     currencies.value = userCurrencies;
-    systemCurrencies.value = systemOnes;
-    registerDecimals({ items: [...systemOnes, ...userCurrencies.map((item) => item.currency)] });
+    systemCurrencies.value = [
+      ...systemOnes,
+      ...userCurrencies.flatMap((item) => (item.currency?.isCustom ? [item.currency] : [])),
+    ];
+    registerDecimals({
+      items: [...systemOnes, baseCurrency.value?.currency, ...userCurrencies.map((item) => item.currency)],
+      replace: true,
+    });
     orderLinkedFirst();
   };
 
@@ -119,6 +133,8 @@ export const useCurrenciesStore = defineStore('currencies', () => {
     systemCurrencies,
     currenciesMap,
     systemCurrenciesVerbose,
+    isoCurrencies,
+    isoCurrenciesVerbose,
     isBaseCurrencyExists,
     loadCurrencies,
     loadBaseCurrency,

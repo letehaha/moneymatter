@@ -27,6 +27,7 @@ const remeasureAccountRefBalances = withTransaction(
       // currency and rate resolution (connected-currency, custom rates) runs
       // against the owner.
       userId: account.userId,
+      definitionOwnerUserId: account.userId,
       amount: account.currentBalance,
       baseCode: account.currencyCode,
       date: new Date(),
@@ -36,6 +37,7 @@ const remeasureAccountRefBalances = withTransaction(
       ? Money.zero()
       : await calculateRefAmount({
           userId: account.userId,
+          definitionOwnerUserId: account.userId,
           amount: account.creditLimit,
           baseCode: account.currencyCode,
           date: new Date(),

@@ -1227,6 +1227,16 @@
       "description": "Add currencies to the ones the user holds, so accounts and transactions can use them. Requires finance:write scope."
     },
     {
+      "name": "create_custom_currency",
+      "toolset": "currencies",
+      "description": "Define a custom currency for the user (points, crypto tokens, a local unit). Requires finance:write scope."
+    },
+    {
+      "name": "delete_custom_currency",
+      "toolset": "currencies",
+      "description": "Permanently delete one of the user's custom currencies together with the user's own exchange rates for it. Requires finance:delete scope."
+    },
+    {
       "name": "delete_exchange_rates",
       "toolset": "currencies",
       "description": "Remove the user's own exchange rates for currency pairs, so the pair falls back to the market rate. Requires finance:delete scope."
@@ -1247,6 +1257,11 @@
       "description": "Get the currencies the user holds: baseCurrency (the reporting currency, null before one is set), currencies (every held currency with its settings: liveRateUpdate and exchangeRate) and exchangeRates (today's rate of each currency to the base)."
     },
     {
+      "name": "list_custom_currencies",
+      "toolset": "currencies",
+      "description": "List the user's custom currencies (their own units such as points or crypto tokens, not ISO codes)."
+    },
+    {
       "name": "list_supported_currencies",
       "toolset": "currencies",
       "description": "List every ISO 4217 currency the app supports, with its code, name and decimals."
@@ -1255,6 +1270,11 @@
       "name": "set_exchange_rates",
       "toolset": "currencies",
       "description": "Set the user's own exchange rates for currency pairs. Requires finance:write scope."
+    },
+    {
+      "name": "update_custom_currency",
+      "toolset": "currencies",
+      "description": "Update one of the user's custom currencies. Requires finance:write scope."
     },
     {
       "name": "update_user_currency",
