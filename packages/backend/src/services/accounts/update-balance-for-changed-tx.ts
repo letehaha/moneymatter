@@ -99,24 +99,28 @@ async function updateAccountBalanceForChangedTxImpl({
   // running sum of per-transaction `refAmount`s — those carry historical rates and
   // would leave a ref residue on an account drained back to zero.
   //
-  // `measureSpotRefBalance` returns `undefined` when no rate reaches the pair; the stored
+  // `measureSpotRefBalance` returns null when no rate reaches the pair; the stored
   // ref balance is kept (the daily remeasure self-heals it) so a delete never
-  // fails. It returns `null` for a custom currency without a rate, which is stored as
-  // such. Dynamic import for the module-comment reason: it statically pulls in the
+  // fails. Dynamic import for the module-comment reason: it statically pulls in the
   // exchange-rate stack, which must not load while transactions.model is still in
   // the model loader.
-  const { measureSpotRefBalance } = await import('./measure-spot-ref-balance');
-  const measuredRefBalance = await measureSpotRefBalance({
-    // Owner of the account, not the tx author — ref balances live in the owner's
-    // base currency (shared accounts can be written by recipients).
-    userId: account.userId,
-    amount: newCurrentBalance,
-    baseCode: account.currencyCode,
-    site: 'updateAccountBalanceForChangedTx',
-  });
-  const refCurrentBalance = measuredRefBalance === undefined ? account.refCurrentBalance : measuredRefBalance;
+  const { measureSpotRefBalance, measureSpotRefCreditLimit } = await import('./measure-spot-ref-balance');
+  const refCurrentBalance =
+    (await measureSpotRefBalance({
+      // Owner of the account, not the tx author — ref balances live in the owner's
+      // base currency (shared accounts can be written by recipients).
+      userId: account.userId,
+      amount: newCurrentBalance,
+      baseCode: account.currencyCode,
+      site: 'updateAccountBalanceForChangedTx',
+    })) ?? account.refCurrentBalance;
+  const refCreditLimit =
+    (await measureSpotRefCreditLimit({ account, site: 'updateAccountBalanceForChangedTx' })) ?? account.refCreditLimit;
 
-  await Accounts.update({ currentBalance: newCurrentBalance, refCurrentBalance }, { where: { id: accountId } });
+  await Accounts.update(
+    { currentBalance: newCurrentBalance, refCurrentBalance, refCreditLimit },
+    { where: { id: accountId } },
+  );
 
   // A changed transaction can move the account's ledger boundary (its earliest
   // transaction date), and `refInitialBalance` is stamped at the boundary's rate.

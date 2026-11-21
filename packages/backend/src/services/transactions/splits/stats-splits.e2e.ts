@@ -237,7 +237,6 @@ describe('Statistics with transaction splits', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const splitB = transactions![0]!.splits!.find((s) => s.categoryId === categoryB.id)!;
         const splitC = transactions![0]!.splits!.find((s) => s.categoryId === categoryC.id)!;
@@ -306,7 +305,6 @@ describe('Statistics with transaction splits', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split = transactions![0]!.splits![0]!;
 
@@ -397,7 +395,6 @@ describe('Statistics with transaction splits', () => {
 
         const transactions = await helpers.getTransactions({
           raw: true,
-          includeSplits: true,
         });
         const split1 = transactions!.find((t) => t.id === tx1.id)!.splits![0]!;
         const split2 = transactions!.find((t) => t.id === tx2.id)!.splits![0]!;

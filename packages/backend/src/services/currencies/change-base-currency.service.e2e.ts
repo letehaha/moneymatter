@@ -14,8 +14,10 @@ import Transactions from '@models/transactions.model';
 import { redisClient } from '@root/redis-client';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
 import { buildLockKey } from '@services/currencies/base-currency-lock';
+import { exchangeRateProviderRegistry } from '@services/exchange-rates/providers';
 import * as userExchangeRateService from '@services/user-exchange-rate';
 import * as helpers from '@tests/helpers';
+import cc from 'currency-codes';
 
 describe('Change Base Currency', () => {
   beforeEach(async () => {
@@ -40,6 +42,24 @@ describe('Change Base Currency', () => {
       // may be left behind — otherwise the user would be blocked by a phantom change.
       const lock = await redisClient.get(buildLockKey(userId));
       expect(lock).toBeNull();
+    });
+
+    it('rejects an ISO code without historical rate coverage with the supported list, and takes no lock', async () => {
+      const { id: userId } = await helpers.getUserInfo({ raw: true });
+      const unsupportedCode = cc
+        .codes()
+        .find((code) => !exchangeRateProviderRegistry.isCurrencySupportedForHistoricalData(code));
+      expect(unsupportedCode).toBeDefined();
+      const supportedCurrencies = exchangeRateProviderRegistry.getSupportedCurrenciesForHistoricalData();
+      expect(supportedCurrencies.length).toBeGreaterThan(0);
+
+      const res = await helpers.changeBaseCurrency({ newCurrencyCode: unsupportedCode! });
+
+      expect(res.statusCode).toEqual(ERROR_CODES.ValidationError);
+      const { message } = (res as unknown as { body: { response: { message: string } } }).body.response;
+      expect(message).toContain(unsupportedCode);
+      expect(message).toContain(supportedCurrencies.join(', '));
+      expect(await redisClient.get(buildLockKey(userId))).toBeNull();
     });
 
     it('recalculates transactions, accounts and balance history while preserving nominal values', async () => {
@@ -421,23 +441,24 @@ describe('Change Base Currency', () => {
         userExchangeRateService.getExchangeRate({ userId, date: eurTxDate, baseCode: 'EUR', quoteCode: 'USD' }),
       ]);
 
-      // Validate UAH transaction calculation using the actual service function
+      // Validate UAH transaction calculation using the actual service function. `raw: true` reads
+      // the DECIMAL columns as text, so both sides are compared as exact Money values.
       const expectedUahRefAmount = calculateRefAmountFromParams({
         baseDecimals: 2,
         quoteDecimals: 2,
-        amount: Money.fromCents(Number(sampleUahTx.amount)),
+        amount: Money.fromDecimal(sampleUahTx.amount),
         rate: uahExchangeRate.rate,
       });
-      expect(Number(sampleUahTx.refAmount)).toEqualRefValue(expectedUahRefAmount.toCents());
+      expect(Money.fromDecimal(sampleUahTx.refAmount).toDecimalString(2)).toBe(expectedUahRefAmount.toDecimalString(2));
 
       // Validate EUR transaction calculation using the actual service function
       const expectedEurRefAmount = calculateRefAmountFromParams({
         baseDecimals: 2,
         quoteDecimals: 2,
-        amount: Money.fromCents(Number(sampleEurTx.amount)),
+        amount: Money.fromDecimal(sampleEurTx.amount),
         rate: eurExchangeRate.rate,
       });
-      expect(Number(sampleEurTx.refAmount)).toEqualRefValue(expectedEurRefAmount.toCents());
+      expect(Money.fromDecimal(sampleEurTx.refAmount).toDecimalString(2)).toBe(expectedEurRefAmount.toDecimalString(2));
 
       // Validate USD transaction (should be 1:1)
       expect(sampleUsdTx.refAmount).toEqual(sampleUsdTx.amount);
@@ -570,6 +591,90 @@ describe('Change Base Currency', () => {
       expect(newAccountFromDb!.refInitialBalance).toBeDefined();
       // Since EUR != USD, ref should differ from original
       expect(newAccountFromDb!.refInitialBalance).not.toEqual(newAccountFromDb!.initialBalance);
+    });
+
+    it('re-values every row at the decimals of a new base currency without minor units', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['JPY'], raw: true });
+      const usdAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'USD to JPY', currencyCode: 'USD', initialBalance: 1000.55 }),
+        raw: true,
+      });
+      const [created] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: usdAccount.id,
+          amount: 12.34,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: new Date('2024-01-10').toISOString(),
+        }),
+        raw: true,
+      });
+
+      const status = await helpers.changeBaseCurrencyAndWait({ newCurrencyCode: 'JPY' });
+      helpers.expectBaseCurrencyChangeCompleted(status);
+
+      const tx = (await Transactions.findByPk(created!.id, { raw: true }))!;
+      const userId = (await helpers.getUserCurrencies())[0]!.userId;
+      const { rate } = await userExchangeRateService.getExchangeRate({
+        userId,
+        date: new Date(tx.time),
+        baseCode: 'USD',
+        quoteCode: 'JPY',
+      });
+      const expectedRefAmount = calculateRefAmountFromParams({
+        baseDecimals: 2,
+        quoteDecimals: 0,
+        amount: Money.fromDecimal('12.34'),
+        rate,
+      });
+
+      expect(tx.refCurrencyCode).toBe('JPY');
+      expect(Money.fromDecimal(tx.refAmount).toDecimalString(2)).toBe(expectedRefAmount.toDecimalString(2));
+      expect(Number.isInteger(Number(tx.refAmount))).toBe(true);
+
+      const account = (await Accounts.findByPk(usdAccount.id))!;
+      expect(Number.isInteger(account.refInitialBalance.toNumber())).toBe(true);
+      expect(Number.isInteger(account.refCurrentBalance.toNumber())).toBe(true);
+
+      const balances = await helpers.getBalanceHistory({ accountId: usdAccount.id, raw: true });
+      expect(balances.length).toBeGreaterThan(0);
+      expect(balances.every((row) => Number.isInteger(Number(row.amount)))).toBe(true);
+    });
+
+    it('re-derives split refAmounts from the parent so category legs stay in the new base', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['JPY'], raw: true });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'GBP splits', currencyCode: 'GBP' }),
+        raw: true,
+      });
+      const categories = await helpers.getCategoriesList();
+      await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          categoryId: categories[0]!.id,
+          amount: 100.01,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: new Date('2024-01-10').toISOString(),
+          splits: [
+            { categoryId: categories[1]!.id, amount: 33.33 },
+            { categoryId: categories[2]!.id, amount: 33.34 },
+            { categoryId: categories[3]!.id, amount: 33.34 },
+          ],
+        }),
+        raw: true,
+      });
+
+      const status = await helpers.changeBaseCurrencyAndWait({ newCurrencyCode: 'JPY' });
+      helpers.expectBaseCurrencyChangeCompleted(status);
+
+      const [tx] = (await helpers.getTransactions({ raw: true }))!;
+      const txRefAmount = Number(tx!.refAmount);
+      const splits = tx!.splits!.map((split) => ({ amount: Number(split.amount), refAmount: Number(split.refAmount) }));
+      expect(splits).toHaveLength(3);
+      for (const split of splits) {
+        expect(Number.isInteger(split.refAmount)).toBe(true);
+        expect(Math.abs(split.refAmount - (split.amount * txRefAmount) / Number(tx!.amount))).toBeLessThanOrEqual(1);
+      }
+      expect(splits.reduce((sum, split) => sum + split.refAmount, 0)).toBeLessThanOrEqual(txRefAmount);
     });
 
     it('should prevent concurrent base currency change requests using the enqueue lock', async () => {

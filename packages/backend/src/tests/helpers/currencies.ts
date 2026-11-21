@@ -9,10 +9,8 @@ import type {
   UpdateCurrencyRateSourceBody,
   UpdateCustomCurrencyBody,
 } from '@bt/shared/types';
-import { CURRENCY_CODE_COLUMNS } from '@common/lib/currency-code-columns';
 import Currencies from '@models/currencies.model';
 import ExchangeRates from '@models/exchange-rates.model';
-import { connection } from '@models/index';
 import { UpdateExchangeRatePair } from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { addUserCurrencies as apiAddUserCurrencies } from '@root/services/currencies/add-user-currency';
@@ -83,14 +81,11 @@ export function addUserCurrencyByCode<R extends boolean | undefined = undefined>
   });
 }
 
-export function deleteUserCurrency<R extends boolean | undefined = undefined>({
-  currencyCode,
-  raw,
-}: {
-  currencyCode: string;
-  raw?: R;
-}) {
-  return makeRequest<Awaited<ReturnType<typeof apiDeleteUserCurrency>>, R>({
+export function deleteUserCurrency<
+  T = Awaited<ReturnType<typeof apiDeleteUserCurrency>>,
+  R extends boolean | undefined = undefined,
+>({ currencyCode, raw }: { currencyCode: string; raw?: R }) {
+  return makeRequest<T, R>({
     method: 'delete',
     url: '/user/currency',
     payload: { currencyCode },
@@ -245,50 +240,6 @@ export function expectBaseCurrencyChangeFailed(
   if (status.state !== 'failed') {
     throw new Error(`Expected failed base-currency change, got state="${status.state}".`);
   }
-}
-
-/**
- * Insert a user-defined currency straight into the shared `Currencies` table, the way the custom-currency
- * endpoint will. The table survives the between-test truncation, so every test that calls this must pair it
- * with {@link removeCustomCurrencyRow}.
- */
-export async function seedCustomCurrencyRow({
-  code,
-  name = code,
-  digits = 8,
-  createdByUserId = null,
-}: {
-  code: string;
-  name?: string;
-  digits?: number;
-  createdByUserId?: number | null;
-}) {
-  return Currencies.create({
-    code,
-    currency: name,
-    digits,
-    number: null,
-    isCustom: true,
-    createdByUserId,
-  });
-}
-
-/**
- * Remove a row created by {@link seedCustomCurrencyRow} together with the rows that reference it: every
- * currency-code column is cleared, transactions first and accounts last, so a test that went on to create
- * accounts or transactions in the custom currency can still clean up.
- */
-export async function removeCustomCurrencyRow({ code }: { code: string }) {
-  const rank = (table: string) => (table === 'Transactions' ? 0 : table === 'Accounts' ? 2 : 1);
-  const ordered = CURRENCY_CODE_COLUMNS.filter(({ table }) => table !== 'Currencies').toSorted(
-    (a, b) => rank(a.table) - rank(b.table),
-  );
-
-  for (const { table, column } of ordered) {
-    await connection.sequelize.query(`DELETE FROM "${table}" WHERE "${column}" = :code`, { replacements: { code } });
-  }
-
-  await Currencies.destroy({ where: { code, isCustom: true } });
 }
 
 export function listCustomCurrencies<R extends boolean | undefined = undefined>({ raw }: { raw?: R } = {}) {

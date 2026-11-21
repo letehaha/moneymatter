@@ -63,6 +63,7 @@
       :heatmap="persisted.heatmap"
       :show-delta="persisted.showDelta"
       :row-header-label="rowHeaderLabel"
+      :net-totals="netTotals"
     />
   </div>
 </template>
@@ -140,7 +141,7 @@ const liveConfig = computed(() => ({
   showDelta: persisted.value.showDelta,
 }));
 
-const { query } = usePivotReport({ config: liveConfig });
+const { query, netTotals } = usePivotReport({ config: liveConfig });
 const report = computed(() => query.data.value);
 
 const rowHeaderLabel = computed(() => t(`pivotReport.dimensions.${persisted.value.rowDimension}`));

@@ -4,7 +4,7 @@ import { serializeTransaction } from '@root/serializers';
 import { serializeAccount } from '@root/serializers/accounts.serializer';
 import { getAccountById } from '@services/accounts.service';
 import { adjustAccountBalance } from '@services/accounts/balance-adjustment';
-import { attachAccountCurrencyMeta } from '@services/currencies/effective-currency';
+import { attachAccountCurrencyMeta, attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import { z } from 'zod';
 
 export default createController(
@@ -14,7 +14,7 @@ export default createController(
     }),
     body: z.object({
       targetBalance: decimalMoney(),
-      note: z.string().optional(),
+      note: z.string().max(1000, 'Note must not exceed 1000 characters').optional(),
       // ISO date string ("2025-04-12" or full ISO). Effective date the user
       // wants the adjustment recorded against — defaults to "now" server-side.
       time: z.coerce.date().optional(),
@@ -35,6 +35,7 @@ export default createController(
 
     const account = await getAccountById({ id: accountId, userId });
     if (account) await attachAccountCurrencyMeta({ accounts: [account] });
+    await attachTransactionCurrencyMeta({ transactions: [result.transaction] });
 
     return {
       data: {

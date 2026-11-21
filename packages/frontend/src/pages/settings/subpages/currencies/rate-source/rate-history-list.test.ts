@@ -317,6 +317,13 @@ describe('RateHistoryList', () => {
       expect(mockLoad).toHaveBeenCalledTimes(1);
     });
 
+    it('offers no remove for the only rate, since a custom currency always keeps one', async () => {
+      const wrapper = await mountWith({ items: [LATEST] });
+
+      expect(rows(wrapper)[0]!.find('[data-testid="rate-history-edit"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="rate-history-remove"]').exists()).toBe(false);
+    });
+
     it('lets a rate quoted in a currency the user does not hold be removed but not edited', async () => {
       const unheld = buildRate({ quoteCode: 'EUR', rate: 0.9, effectiveDate: '2026-09-01', source: 'coingecko' });
       const wrapper = await mountWith({ items: [LATEST, unheld] });

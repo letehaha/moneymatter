@@ -43,6 +43,16 @@ export const buildLatestRecordsTransferNatures = ({
   return Object.values(TRANSACTION_TRANSFER_NATURE).filter((nature) => !excluded.includes(nature));
 };
 
+/** Older configs store the flag as the string `'false'`, so both forms read as off. */
+export const readLatestRecordsIncludeScheduled = ({
+  widgetConfig,
+}: {
+  widgetConfig: DashboardWidgetConfig | null | undefined;
+}): boolean => {
+  const value = widgetConfig?.config?.includeScheduled;
+  return value !== false && value !== 'false';
+};
+
 /** Chips stay the default; only an explicit `rails` opts in. */
 export const readLatestRecordsTagsVariant = ({
   widgetConfig,

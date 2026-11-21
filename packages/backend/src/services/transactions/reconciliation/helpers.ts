@@ -1,13 +1,17 @@
 import { isLinkedTransfer, ACCOUNT_TYPES, RecordId, SUBSCRIPTION_LINK_STATUS } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
+import RefundTransactions from '@models/refund-transactions.model';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import SubscriptionTransactions from '@models/subscription-transactions.model';
 import TrackerTransactions from '@models/tracker-transactions.model';
 import TransactionGroupItems from '@models/transaction-group-items.model';
 import { dissolveUndersizedGroups } from '@models/transaction-groups.model';
 import { findTransactions, updateTransactions } from '@models/transactions-query';
+import { reconciliationRemovedWhere } from '@models/transactions-query/deletion-where';
 import type Transactions from '@models/transactions.model';
+import { scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
+import { assertNotInPayment, unlinkPaymentLegs } from '@services/transactions/payment-legs';
 import { Op } from 'sequelize';
 
 export const rejectIfAny = ({ rows, key }: { rows: Transactions[]; key: string }) => {
@@ -45,7 +49,16 @@ export const loadReconcilableRows = async ({
     rows: rows.filter((tx) => isLinkedTransfer({ tx })),
     key: 'transactions.reconciliation.transferNotAllowed',
   });
-  rejectIfAny({ rows: rows.filter((row) => row.refundLinked), key: 'transactions.reconciliation.refundNotAllowed' });
+  // Link rows, not `refundLinked`: the flag is off while the counterpart sits in Trash.
+  const refundLinks = await RefundTransactions.findAll({
+    where: { [Op.or]: [{ originalTxId: { [Op.in]: transactionIds } }, { refundTxId: { [Op.in]: transactionIds } }] },
+    attributes: ['originalTxId', 'refundTxId'],
+  });
+  const refundLinkedIds = new Set(refundLinks.flatMap((link) => [link.originalTxId, link.refundTxId]));
+  rejectIfAny({
+    rows: rows.filter((row) => refundLinkedIds.has(row.id)),
+    key: 'transactions.reconciliation.refundNotAllowed',
+  });
 
   return rows;
 };
@@ -67,7 +80,9 @@ export const detachLinks = async ({ transactionIds }: { transactionIds: RecordId
 };
 
 // Hooks stay off: provider balances are bank-authoritative, so hiding a row moves no balance.
-export const softDeleteTransactions = ({
+// A linked row leaves its payment first. Main rows holding other rows and the rows a payment
+// created are rejected: hiding one with hooks off would strand the rest of its payment.
+export const softDeleteTransactions = async ({
   userId,
   transactionIds,
   mergedIntoId,
@@ -75,11 +90,22 @@ export const softDeleteTransactions = ({
   userId: number;
   transactionIds: RecordId[];
   mergedIntoId: RecordId | null;
-}) =>
-  updateTransactions({
-    values: { deletedAt: new Date(), mergedIntoId },
+}) => {
+  await unlinkPaymentLegs({ where: { id: { [Op.in]: transactionIds } } });
+  await assertNotInPayment({ transactionIds });
+
+  return updateTransactions({
+    values: { deletedAt: new Date(), mergedIntoId, ...reconciliationRemovedWhere },
     where: { id: { [Op.in]: transactionIds } },
     planned: 'exclude',
     access: { creator: userId },
     balanceAdjustments: 'include',
   });
+};
+
+/** Reconciliation writes run with hooks off, so a seam account's history before the link day is rebuilt here. */
+export const scheduleRevalueOfAccounts = async ({ rows }: { rows: Pick<Transactions, 'accountId'>[] }) => {
+  for (const accountId of new Set(rows.map((row) => row.accountId))) {
+    await scheduleBalanceRevalue({ accountId });
+  }
+};

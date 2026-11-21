@@ -52,6 +52,25 @@
         "buttonShort": "Delete",
         "disabledTooltip": "You cannot delete this currency because it is still connected to account(s).",
         "successfullyDeleted": "Successfully deleted.",
+        "foreignAmountsWarning": "Foreign amounts recorded in this currency will be removed from your transactions. Amounts in the account currency stay unchanged.",
+        "inUse": {
+          "title": "This currency is still in use. Remove or change these first:",
+          "trashed": "(in trash)",
+          "types": {
+            "account": "Accounts",
+            "portfolio": "Portfolio display currency",
+            "holding": "Holdings",
+            "portfolioCash": "Portfolio cash",
+            "portfolioTransfer": "Portfolio transfers",
+            "investmentTransaction": "Investment transactions",
+            "subscription": "Recurring payments",
+            "transactionTemplate": "Transaction templates",
+            "budget": "Budgets",
+            "goal": "Goals",
+            "ventureDeal": "Venture deals",
+            "customCurrency": "Custom currencies quoted in it"
+          }
+        },
         "errors": {
           "deleteFailed": "Unexpected error. Currency is not deleted."
         }
@@ -101,22 +120,18 @@
         "symbolPlaceholder": "₮",
         "decimalsLabel": "Decimals",
         "decimalsPlaceholder": "6",
-        "decimalsHint": "Amounts keep up to this many digits after the decimal point (0 to 18).",
+        "decimalsHint": "Amounts keep up to this many digits after the decimal point (0 to 8).",
         "decimalsLockedHint": "Decimals can change only while no account, transaction or template uses {code}.",
         "preview": "Example: {value}",
         "createButton": "Add currency",
         "saveButton": "Save changes",
         "cancelButton": "Cancel",
-        "rateHint": "A custom currency has no market rate. Set its rate against {code} so transactions can be valued in your base currency; without a rate they are saved without a base-currency amount.",
+        "rateHint": "A custom currency has no market rate. The rate you set against {code} values its transactions in your base currency.",
+        "rateLabel": "Rate",
+        "ratePlaceholder": "1.00",
+        "createRateHint": "What one unit of this currency is worth in your base currency. You can change it later from its row.",
         "successfullyCreated": "Custom currency added",
         "successfullyUpdated": "Custom currency updated",
-        "logo": {
-          "label": "Logo",
-          "hint": "Shown next to the code wherever the currency appears. Without one, a monogram is drawn.",
-          "clear": "Clear logo",
-          "searchLabel": "Pick a logo from CoinGecko",
-          "searchPlaceholder": "Search by name or symbol, for example Bitcoin"
-        },
         "errors": {
           "codeRequired": "Enter a code",
           "codeFormat": "Use 2 to 16 capital letters or digits",
@@ -124,7 +139,8 @@
           "codeExists": "You already have a currency with this code",
           "nameRequired": "Enter a name",
           "symbolTooLong": "Use up to 8 characters",
-          "decimalsRange": "Enter a whole number from 0 to 18",
+          "decimalsRange": "Enter a whole number from 0 to 8",
+          "rateRequired": "Enter a rate above 0",
           "createFailed": "Unexpected error. Custom currency is not added.",
           "updateFailed": "Unexpected error. Custom currency is not updated."
         }
@@ -140,7 +156,7 @@
         },
         "sourceDescriptions": {
           "manual": "Enter the rates yourself, each from the date it starts to apply.",
-          "peg": "Price {code} as a multiple of another currency, such as a stablecoin pegged to the dollar.",
+          "peg": "Price {code} as a multiple of an ISO currency, such as a stablecoin pegged to the dollar.",
           "coingecko": "Daily prices of a coin from CoinGecko.",
           "http": "Daily prices from a JSON endpoint you provide."
         },
@@ -153,7 +169,7 @@
           "effectiveFromLabel": "Effective from",
           "datedHint": "A rate applies from its date until the next one. A transaction uses the rate in effect on its own date.",
           "removeTitle": "Remove a rate?",
-          "removeDescription": "Removes the rate of {code} that starts on {date}. The days it covered fall back to the earlier rate, or to no rate if there is none.",
+          "removeDescription": "Removes the rate of {code} that starts on {date}. The days it covered use the previous rate, or the next later rate if this is the earliest. The last rate of a custom currency cannot be removed.",
           "removeConfirm": "Remove rate",
           "successfullyRemoved": "Rate removed",
           "errors": {
@@ -241,7 +257,8 @@
           "editDescription": "Changes the rate of {code} that starts on {date}.",
           "successfullyUpdated": "Rate updated"
         }
-      }
+      },
+      "refreshFailed": "Saved, but the currency list could not refresh. Reload the page if anything looks stale."
     }
   }
 }

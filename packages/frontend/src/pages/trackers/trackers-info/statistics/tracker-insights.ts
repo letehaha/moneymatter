@@ -1,4 +1,4 @@
-import type { TrackerSpendingByCategoryItem, TrackerSpendingPeriod } from '@bt/shared/types';
+import { TRACKER_LIMIT_KINDS, type TrackerSpendingByCategoryItem, type TrackerSpendingPeriod } from '@bt/shared/types';
 import { differenceInCalendarDays, parseISO } from 'date-fns';
 
 import { parseTrackerDate } from '../../tracker-time-status';
@@ -62,6 +62,19 @@ export const getTrackerPace = ({
   return { dailyPace, allowedPerDay, projectedTotal, projectedDelta };
 };
 
+/** Exceeding the limit is a win for an income target and a warning otherwise; a target that falls short only warns. */
+export const getProjectionTone = ({
+  delta,
+  isTarget,
+}: {
+  delta: number | null;
+  isTarget: boolean;
+}): 'success' | 'warning' | 'destructive' | null => {
+  if (delta === null) return null;
+  if (isTarget) return delta >= 0 ? 'success' : 'warning';
+  return delta > 0 ? 'destructive' : 'success';
+};
+
 export const getAveragePerDay = ({
   spent,
   firstDate,
@@ -92,15 +105,24 @@ export const getCategorySplits = ({ items }: { items: TrackerSpendingByCategoryI
 };
 
 export interface CumulativePoint extends TrackerSpendingPeriod {
+  /** The period's expense for a spending limit, its income for the income kinds. */
+  amount: number;
   cumulative: number;
 }
 
-export const getCumulativeSeries = ({ periods }: { periods: TrackerSpendingPeriod[] }): CumulativePoint[] => {
+export const getCumulativeSeries = ({
+  periods,
+  limitKind,
+}: {
+  periods: TrackerSpendingPeriod[];
+  limitKind: TRACKER_LIMIT_KINDS;
+}): CumulativePoint[] => {
+  const isSpending = limitKind === TRACKER_LIMIT_KINDS.spending;
   let running = 0;
   return [...periods]
     .sort((a, b) => parseISO(a.periodStart).getTime() - parseISO(b.periodStart).getTime())
     .map((period) => {
-      running += period.expense - period.income;
-      return { ...period, cumulative: Math.max(0, running) };
+      running += isSpending ? period.expense - period.income : period.income - period.expense;
+      return { ...period, amount: isSpending ? period.expense : period.income, cumulative: Math.max(0, running) };
     });
 };

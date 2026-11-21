@@ -41,6 +41,7 @@ const I18N_CHUNKS = [
   'pages/import-ofx',
   'pages/investments-import',
   'pages/planned',
+  'pages/goals',
   'pages/optimizations',
   'pages/automations',
   'pages/shared-with-me',
@@ -60,7 +61,6 @@ const I18N_CHUNKS = [
   'settings/security',
   'settings/admin',
   'settings/ai-integrations',
-  'settings/subscriptions',
   'settings/plan-billing',
   // Auth pages (OAuth)
   'auth/oauth-authorize',

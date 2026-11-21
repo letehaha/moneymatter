@@ -57,6 +57,7 @@ const createLoanImpl = async (params: CreateLoanParams) => {
   const negativeBalance = initialBalance.negate();
   const refNegativeBalance = await calculateRefAmount({
     userId,
+    definitionOwnerUserId: userId,
     amount: negativeBalance,
     baseCode: currencyCode,
     date: now,
@@ -64,6 +65,7 @@ const createLoanImpl = async (params: CreateLoanParams) => {
 
   const refOriginalPrincipal = await calculateRefAmount({
     userId,
+    definitionOwnerUserId: userId,
     amount: originalPrincipal,
     baseCode: currencyCode,
     date: now,
@@ -72,12 +74,24 @@ const createLoanImpl = async (params: CreateLoanParams) => {
   const refMinPayment =
     minPayment === null
       ? null
-      : await calculateRefAmount({ userId, amount: minPayment, baseCode: currencyCode, date: now });
+      : await calculateRefAmount({
+          userId,
+          definitionOwnerUserId: userId,
+          amount: minPayment,
+          baseCode: currencyCode,
+          date: now,
+        });
 
   const refPlannedPayment =
     plannedPayment === null
       ? null
-      : await calculateRefAmount({ userId, amount: plannedPayment, baseCode: currencyCode, date: now });
+      : await calculateRefAmount({
+          userId,
+          definitionOwnerUserId: userId,
+          amount: plannedPayment,
+          baseCode: currencyCode,
+          date: now,
+        });
 
   const zero = Money.zero();
 

@@ -28,7 +28,7 @@ const bigMax = (a: Big, b: Big | number): Big => {
 interface ComputeCarryInput {
   /** Gross amount of this distribution/exit event (LP-positive). */
   grossAmount: string;
-  /** Cost basis of the deal — principal + entryFee + Σcalls + Σfees so far. */
+  /** Cost basis of the deal — principal + entryFee + Σcalls + Σfees − Σrefunds so far. */
   costBasis: string;
   /** Sum of `principalReturnedThisEvent` from all prior distribution/exit events. */
   cumulativeLpPrincipalReturned: string;

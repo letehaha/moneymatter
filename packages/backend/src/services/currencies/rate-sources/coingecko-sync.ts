@@ -49,45 +49,6 @@ const parseConfig = (rateSourceConfig: unknown): CoingeckoRateSourceConfig | nul
   return parsed.success ? parsed.data : null;
 };
 
-/**
- * Fetches the last year of a coin's prices and stores them for the user's currency. Runs after the
- * rate source is saved; the save has committed by then, so a failure here is logged and the
- * currency stays on its source, which the daily sync backfills again while it has no rates.
- */
-export const backfillCoingeckoRates = async ({
-  userId,
-  currencyCode,
-}: {
-  userId: number;
-  currencyCode: string;
-}): Promise<{ status: 'done'; ratesWritten: number } | { status: 'skipped' | 'failed' }> => {
-  const held = await UsersCurrencies.findOne({ where: { userId, currencyCode, rateSource: SOURCE }, raw: true });
-  const config = held ? parseConfig(held.rateSourceConfig) : null;
-  if (!held || !config) return { status: 'skipped' };
-
-  try {
-    const rates = await fetchCoingeckoHistory({ coinId: config.coinId, quoteCurrency: config.quoteCurrency });
-    const ratesWritten = await storeSyncedRates({
-      userId,
-      currencyCode,
-      quoteCurrency: config.quoteCurrency,
-      rates,
-      kind: 'backfill',
-      source: SOURCE,
-      fetchedWith: { rateSourceConfig: held.rateSourceConfig },
-    });
-
-    return { status: 'done', ratesWritten };
-  } catch (error) {
-    logger.error(
-      { message: `CoinGecko backfill failed for ${currencyCode} of user ${userId}`, error: error as Error },
-      { code: 'COINGECKO_RATE_BACKFILL_FAILED' },
-    );
-
-    return { status: 'failed' };
-  }
-};
-
 const loadGroups = async (): Promise<{ needHistory: CoinGroup[]; needLatest: CoinGroup[] }> => {
   const configured = await UsersCurrencies.findAll({
     where: { rateSource: SOURCE },
@@ -136,8 +97,8 @@ const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve,
  * Daily sync of every user's CoinGecko-sourced currencies. A coin is fetched once per day however
  * many users take it, and each user gets the rate stored in their own configured quote currency.
  *
- * - A currency that has no rates from this source yet (its backfill failed, or it was never run)
- *   is backfilled with the last year instead.
+ * - A currency that has no rates from this source in its quote (a restored backup, say) is
+ *   backfilled with the last year instead.
  * - The others get today's price from one batched call per quote currency.
  * - A failed call is logged and leaves the last rate in force; a 429 ends the run, because every
  *   further call would be refused too. The next run starts again.

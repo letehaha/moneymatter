@@ -1,11 +1,14 @@
-import { ASSET_CLASS, SECURITY_PROVIDER } from '@bt/shared/types';
+import { API_ERROR_CODES, ASSET_CLASS, SECURITY_PROVIDER } from '@bt/shared/types';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
+import { ERROR_CODES } from '@js/errors';
 import ExchangeRates from '@models/exchange-rates.model';
 import Portfolios from '@models/investments/portfolios.model';
 import Securities from '@models/investments/securities.model';
 import SecurityPricing from '@models/investments/security-pricing.model';
+import UsersCurrencies from '@models/users-currencies.model';
 import { API_LAYER_BASE_CURRENCY_CODE } from '@services/exchange-rates/constants';
 import * as helpers from '@tests/helpers';
+import { ErrorResponse } from '@tests/helpers/common';
 // USD-based rates served by the mocked rates provider for on-demand date
 // lookups. The user's base currency is global.BASE_CURRENCY_CODE (AED), so the
 // base→EUR conversion rate is EUR_PER_USD / AED_PER_USD via the USD pivot.
@@ -307,7 +310,7 @@ describe('Portfolio Summary (GET /investments/portfolios/:id/summary)', () => {
       expect(parseFloat(summary.totalPortfolioValueInBaseCurrency)).toBeCloseTo(1100, 1);
     });
 
-    it('falls back to base currency when the display currency equals base, has no rate, is reset to null, or is disconnected', async () => {
+    it('falls back to base currency when the display currency equals base, has no rate, or is reset to null', async () => {
       await helpers.addUserCurrencyByCode({ code: 'EUR', raw: true });
       // SSP exists in the Currencies table (so it can be connected and set as a
       // display currency) but the mocked rate providers serve no USD→SSP rate,
@@ -359,29 +362,42 @@ describe('Portfolio Summary (GET /investments/portfolios/:id/summary)', () => {
       });
       expect(resetSummary.currencyCode).toBe(global.BASE_CURRENCY_CODE);
       expect(resetSummary.totalCashInBaseCurrency).toBe('1000.00');
+    }, 30000);
 
-      await helpers.updatePortfolio({
-        portfolioId: portfolio.id,
-        payload: { displayCurrencyCode: 'EUR' },
-      });
+    it('rejects disconnecting a display currency of a portfolio, whether active or trashed', async () => {
+      await helpers.addUserCurrencyByCode({ code: 'EUR', raw: true });
+      await helpers.updatePortfolio({ portfolioId: portfolio.id, payload: { displayCurrencyCode: 'EUR' } });
 
-      // Disconnect the currency through the API; the portfolio keeps the stale
-      // displayCurrencyCode, so the summary must degrade gracefully.
-      const deleteResponse = await helpers.makeRequest({
-        method: 'delete',
-        url: '/user/currency',
-        payload: { currencyCode: 'EUR' },
-      });
-      expect(deleteResponse.statusCode).toBe(200);
+      const activeResponse = await helpers.deleteUserCurrency({ currencyCode: 'EUR' });
+      expect(activeResponse.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await helpers.getUserCurrencies()).map((item) => item.currencyCode)).toContain('EUR');
 
-      const disconnectedSummary = await helpers.getPortfolioSummary({
-        portfolioId: portfolio.id,
-        raw: true,
+      await helpers.deletePortfolio({ portfolioId: portfolio.id });
+
+      const trashedResponse = await helpers.deleteUserCurrency({ currencyCode: 'EUR' });
+      expect(trashedResponse.statusCode).toBe(ERROR_CODES.ValidationError);
+      const err = trashedResponse.body.response as unknown as ErrorResponse;
+      expect(err.code).toBe(API_ERROR_CODES.currencyInUse);
+      expect(err.details).toEqual({
+        blockers: [expect.objectContaining({ type: 'portfolio', id: portfolio.id, trashed: true })],
       });
-      expect(disconnectedSummary.currencyCode).toBe(global.BASE_CURRENCY_CODE);
-      expect(disconnectedSummary.totalCashInBaseCurrency).toBe('1000.00');
-      expect(disconnectedSummary.totalPortfolioValue).toBe('1000.00');
-      expect(disconnectedSummary.totalPortfolioValueInBaseCurrency).toBe('1000.00');
+      expect((await helpers.getUserCurrencies()).map((item) => item.currencyCode)).toContain('EUR');
+    });
+
+    it('reconnects an orphaned display currency and converts the summary to it', async () => {
+      await helpers.addUserCurrencyByCode({ code: 'EUR', raw: true });
+      await helpers.updatePortfolio({ portfolioId: portfolio.id, payload: { displayCurrencyCode: 'EUR' } });
+
+      // The API guard blocks this disconnect; the orphan state exists in production data.
+      await UsersCurrencies.destroy({ where: { currencyCode: 'EUR' } });
+
+      const summary = await helpers.getPortfolioSummary({ portfolioId: portfolio.id, raw: true });
+
+      expect(summary.currencyCode).toBe('EUR');
+      expect(parseFloat(summary.totalPortfolioValue)).toBeCloseTo((1000 * EUR_PER_USD) / AED_PER_USD, 1);
+
+      const userCurrencies = await helpers.getUserCurrencies();
+      expect(userCurrencies.map((item) => item.currencyCode)).toContain('EUR');
     }, 30000);
   });
 
@@ -400,7 +416,9 @@ describe('Portfolio Summary (GET /investments/portfolios/:id/summary)', () => {
     });
 
     it('converts cost basis at the current rate when the holding currency moved since the buy', async () => {
-      await ExchangeRates.create({
+      // Upsert: an earlier test file in the same worker may have fetched and stored
+      // this date's whole rate basket, USD→base included.
+      await ExchangeRates.upsert({
         baseCode: API_LAYER_BASE_CURRENCY_CODE,
         quoteCode: global.BASE_CURRENCY_CODE,
         rate: BUY_DATE_USD_TO_BASE,

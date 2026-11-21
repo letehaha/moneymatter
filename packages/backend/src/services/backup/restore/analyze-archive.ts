@@ -41,24 +41,15 @@ function collectFileColumns({ rows }: { rows: Row[] }): Set<string> {
  * Column tolerance for one table: intersect the live model's attributes with
  * the file's columns. A model column absent from the file is tolerable when the
  * DB can fill it (nullable / default / serial) and required otherwise; a file
- * column absent from the model is always dropped. `ignoreFileColumns` skips
- * synthetic export-only keys (e.g. the MCC `mccCode`) from the dropped set.
+ * column absent from the model is always dropped.
  */
-function buildTableColumnPlan({
-  model,
-  rows,
-  ignoreFileColumns,
-}: {
-  model: AnyModel;
-  rows: Row[];
-  ignoreFileColumns?: Set<string>;
-}): TableColumnPlan {
+function buildTableColumnPlan({ model, rows }: { model: AnyModel; rows: Row[] }): TableColumnPlan {
   const fileColumns = collectFileColumns({ rows });
   const attributeInfos = getModelAttributeInfos({ model });
   const attrNames = new Set(attributeInfos.map((a) => a.attrName));
 
   const columns = attributeInfos.filter((a) => fileColumns.has(a.attrName));
-  const droppedColumns = [...fileColumns].filter((c) => !attrNames.has(c) && !(ignoreFileColumns?.has(c) ?? false));
+  const droppedColumns = [...fileColumns].filter((c) => !attrNames.has(c));
   const missingRequired = attributeInfos
     .filter((a) => !fileColumns.has(a.attrName) && !a.allowNull && !a.hasDefault && !a.autoIncrement)
     .map((a) => a.attrName);
@@ -98,13 +89,11 @@ export function analyzeArchive({ archive }: { archive: ParsedArchive }): Archive
     model,
     rows,
     present,
-    ignoreFileColumns,
   }: {
     key: string;
     model: AnyModel;
     rows: Row[];
     present: boolean;
-    ignoreFileColumns?: Set<string>;
   }) => {
     if (!present) {
       warnings.push({ code: 'table_missing_treated_empty', table: key });
@@ -114,7 +103,7 @@ export function analyzeArchive({ archive }: { archive: ParsedArchive }): Archive
       plans.set(key, { columns: [], droppedColumns: [], missingRequired: [] });
       return;
     }
-    const plan = buildTableColumnPlan({ model, rows, ignoreFileColumns });
+    const plan = buildTableColumnPlan({ model, rows });
     plans.set(key, plan);
     if (plan.missingRequired.length > 0) {
       hardFailReasons.push(
@@ -141,7 +130,6 @@ export function analyzeArchive({ archive }: { archive: ParsedArchive }): Archive
       model: def.model,
       rows: archive.data.get(def.fileName) ?? [],
       present: archive.data.has(def.fileName),
-      ignoreFileColumns: def.enrichMccCode ? new Set(['mccCode']) : undefined,
     });
   }
 

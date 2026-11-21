@@ -1,5 +1,11 @@
 import { FORM_TYPES, type TransactionPrefill, type UI_FORM_STRUCT } from '../types';
 
+// A linked transaction can't join a second payment, and a saved part's id would point at the source row.
+const duplicatePaymentLegs = ({ legs }: { legs: UI_FORM_STRUCT['paymentLegs'] }) => {
+  const copies = legs?.filter((leg) => !leg.isLinked).map((leg) => ({ ...leg, transactionId: undefined }));
+  return copies?.length ? copies : undefined;
+};
+
 export const formToDuplicatePrefill = ({ form, now }: { form: UI_FORM_STRUCT; now: Date }): TransactionPrefill => {
   const common = {
     type: form.type,
@@ -9,6 +15,7 @@ export const formToDuplicatePrefill = ({ form, now }: { form: UI_FORM_STRUCT; no
     tagIds: [...(form.tagIds ?? [])],
     paymentType: form.paymentType,
     note: form.note,
+    excludeFromStats: Boolean(form.excludeFromStats),
   };
 
   // The form keeps the source leg in account/amount and the destination in toAccount/targetAmount,
@@ -35,5 +42,6 @@ export const formToDuplicatePrefill = ({ form, now }: { form: UI_FORM_STRUCT; no
     originalCurrency: form.originalCurrency ?? null,
     isPlanned: Boolean(form.isPlanned),
     splits: form.splits?.map(({ category, amount, note }) => ({ category, amount, note })),
+    paymentLegs: duplicatePaymentLegs({ legs: form.paymentLegs }),
   };
 };

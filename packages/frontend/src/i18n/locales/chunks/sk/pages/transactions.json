@@ -45,14 +45,12 @@
         "exclude": "Vylúčiť",
         "only": "Iba"
       },
-      "noteIncludes": {
-        "label": "Poznámka obsahuje (oddelené čiarkami):",
-        "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Hľadať v poznámkach"
+      "search": {
+        "placeholder": "Hľadať v poznámkach, príjemcoch a značkách"
       },
       "tags": {
         "allTags": "Všetky značky",
-        "tagSingular": "štítok",
+        "tagSingular": "značka",
         "tagPlural": "značky",
         "selected": "vybrané",
         "searchPlaceholder": "Hľadať značky...",
@@ -66,10 +64,9 @@
       "removeFilter": "Odstrániť filter",
       "menu": {
         "type": "Typ",
-        "tags": "Štítky",
+        "tags": "Značky",
         "budgets": "Sledovače",
-        "amount": "Rozsah sumy",
-        "note": "Poznámky"
+        "amount": "Rozsah sumy"
       },
       "transferNature": {
         "label": "Druhy prevodov",
@@ -100,8 +97,8 @@
       "categoryPlaceholder": "Vyberte kategóriu...",
       "payeeLabel": "Protistrana",
       "payeePlaceholder": "Vyberte protistranu...",
-      "tagsLabel": "Štítky",
-      "tagsPlaceholder": "Vyberte štítky...",
+      "tagsLabel": "Značky",
+      "tagsPlaceholder": "Vyberte značky...",
       "noteLabel": "Poznámka",
       "notePlaceholder": "Zadajte poznámku...",
       "applyButton": "Použiť zmeny",
@@ -110,16 +107,26 @@
       "confirmDescription": "Chystáte sa aktualizovať {count} transakcií:",
       "confirmCategoryLabel": "Kategória",
       "confirmPayeeLabel": "Protistrana",
-      "confirmTagsLabel": "Štítky",
+      "confirmTagsLabel": "Značky",
       "confirmNoteLabel": "Poznámka",
       "cancelButton": "Zrušiť",
       "confirmApplyButton": "Použiť",
       "successMessage": "Úspešne aktualizovaných {count} transakcií",
       "unexpectedError": "Vyskytla sa neočakávaná chyba",
-      "tagModeLabel": "Akcia so štítkami",
-      "tagModeAdd": "Pridať k existujúcim štítkom",
-      "tagModeReplace": "Nahradiť všetky štítky",
-      "tagModeRemove": "Odstrániť tieto štítky",
+      "tagModeLabel": "Akcia so značkami",
+      "tagModeAdd": "Pridať k existujúcim značkám",
+      "tagModeReplace": "Nahradiť všetky značky",
+      "tagModeRemove": "Odstrániť tieto značky",
+      "tagModeAddShort": "Pridať",
+      "tagModeReplaceShort": "Nahradiť",
+      "tagModeRemoveShort": "Odstrániť",
+      "tagModeAddHint": "Ponechá súčasné značky a pridá tieto.",
+      "tagModeReplaceHint": "Odstráni všetky súčasné značky a potom pridá tieto.",
+      "tagModeRemoveHint": "Odstráni len tieto značky. Ostatné značky zostanú.",
+      "excludeFromStatsHint": "Zapnutie vylúči vybrané transakcie z reportov, widgetov na nástenke, rozpočtov a sledovačov. Vypnutie ich vráti späť. Zostatky to neovplyvní.",
+      "excludeFromStatsDontChange": "Nemeniť štatistiky",
+      "confirmExcludeFromStats": "Vylúčiť zo štatistík",
+      "confirmIncludeInStats": "Zahrnúť do štatistík",
       "totals": {
         "income": "Príjmy",
         "expense": "Výdavky",
@@ -160,15 +167,40 @@
         "noGroupsMessage": "Zatiaľ neexistujú žiadne skupiny transakcií.",
         "emptyStateHint": "Na stránke „Transakcie“ vyberte transakcie a kliknite na „Vytvoriť skupinu“, aby ste mohli začať.",
         "transactionCountLabel": "transakcie",
-        "deleteError": "Vymazanie skupiny zlyhalo. Skúste to znovu, prosím."
+        "deleteError": "Vymazanie skupiny zlyhalo. Skúste to znovu, prosím.",
+        "loadError": "Skupiny transakcií sa nepodarilo načítať",
+        "description": "Zoskupte súvisiace transakcie, napríklad výlet alebo sled prevodov, a zobrazte si ich spolu.",
+        "noMatchTitle": "Vášmu hľadaniu nezodpovedajú žiadne skupiny",
+        "moreActions": "Ďalšie možnosti pre {name}",
+        "columns": {
+          "name": "Názov",
+          "transactions": "Transakcie",
+          "date": "Dátum",
+          "net": "Čistý zostatok"
+        },
+        "sort": {
+          "label": "Zoradiť skupiny",
+          "dateDesc": "Najnovšie prvé",
+          "dateAsc": "Najstaršie prvé",
+          "nameAsc": "Názov A–Z",
+          "nameDesc": "Názov Z–A",
+          "amountDesc": "Čisté: od najvyššieho",
+          "amountAsc": "Čisté: od najnižšieho"
+        }
       },
       "errors": {
         "nameRequired": "Názov skupiny je povinný",
         "minTransactions": "Vyberte aspoň {min} transakcie",
         "alreadyInGroup": "Niektoré vybrané transakcie už do skupiny patria",
+        "tooManyTransactions": "Skupina môže obsahovať najviac {max} transakcií, touto akciou by ich bolo {count}. Prevody sa počítajú z oboch strán. Zrušte výber niektorých transakcií alebo ich rozdeľte do viacerých skupín.",
+        "alreadyInNamedGroup": "Niektoré vybrané transakcie sú už zaradené v: {name}. Transakcia môže byť len v jednej skupine – najprv ju odtiaľ odstráňte.",
         "createFailed": "Vytvorenie skupiny zlyhalo",
         "addFailed": "Pridanie do skupiny transakcií zlyhalo"
       }
+    },
+    "excludeFromStats": {
+      "label": "Vylúčené zo štatistík",
+      "tooltip": "Nezahŕňa sa do reportov, widgetov na nástenke, rozpočtov a sledovačov. Stále sa započítava do zostatku a zostáva v zozname transakcií."
     },
     "planned": {
       "label": "Naplánované",
@@ -191,7 +223,7 @@
         "refAmount": "Suma v základnej mene",
         "originalAmount": "Pôvodná suma",
         "note": "Poznámka",
-        "tags": "Štítky",
+        "tags": "Značky",
         "categorizationSource": "Zaradil",
         "group": "Skupina",
         "refund": "Vrátenie platby",
@@ -215,7 +247,6 @@
       "categorizationSourceValues": {
         "manual": "Ručne",
         "ai": "AI",
-        "mcc_rule": "Pravidlo MCC",
         "user_rule": "Používateľské pravidlo",
         "subscription_rule": "Pravidlo predplatného",
         "payee_rule": "Pravidlo protistrany"
@@ -231,22 +262,29 @@
     },
     "bulkDelete": {
       "button": "Zmazať",
-      "externalTooltip": "Výber obsahuje transakcie synchronizované s bankou, ktoré nemožno zmazať.",
+      "externalTooltip": "Výber obsahuje transakcie synchronizované z banky alebo s dátumom od dňa prepojenia účtu, ktoré nemožno zmazať.",
       "confirmButton": "Zmazať",
       "confirmTitle": "Zmazať {count} transakcií?",
-      "confirmDescription": "Túto akciu nie je možné vrátiť späť. Pri prevodoch sa odstránia obe strany.",
-      "successMessage": "Zmazaných {count} transakcií",
+      "confirmDescription": "V koši zostanú 30 dní, dovtedy ich môžete obnoviť. Prevody presunú obe strany.",
+      "successMessage": "1 transakcia presunutá do koša | {count} transakcie presunuté do koša | {count} transakcií presunutých do koša",
+      "skippedMessage": "1 bola vynechaná, pretože je prepojená s platbou, portfóliom alebo venture. | {count} boli vynechané, pretože sú prepojené s platbou, portfóliom alebo venture. | {count} bolo vynechaných, pretože sú prepojené s platbou, portfóliom alebo venture.",
+      "noneDeletedMessage": "Nič sa nepresunulo do koša: 1 transakcia je prepojená s platbou, portfóliom alebo venture. | Nič sa nepresunulo do koša: {count} transakcie sú prepojené s platbou, portfóliom alebo venture. | Nič sa nepresunulo do koša: {count} transakcií je prepojených s platbou, portfóliom alebo venture.",
       "unexpectedError": "Transakcie sa nepodarilo zmazať. Skúste to znova, prosím."
     },
+    "bankSeamDateError": "Tento účet je synchronizovaný s bankou od {date}. Vyberte skorší dátum.",
     "inlineEdit": {
       "saveFailed": "{field} sa nepodarilo uložiť. Skúste to znova.",
       "bankTitle": "Nastavené vašou bankou",
       "bankDescription": "Dátum, účet a suma sa synchronizujú z vášho bankového pripojenia. Všetko ostatné na tejto transakcii môžete zmeniť.",
+      "bankAccountTitle": "Prepojené s bankou",
+      "bankAccountDescription": "Tento účet je prepojený s bankou, preto transakciu nemožno presunúť na iný účet. Všetko ostatné môžete upraviť.",
+      "manualAfterLinkTitle": "Uzamknuté od prepojenia s bankou",
+      "manualAfterLinkDescription": "Tento účet je synchronizovaný s bankou od {date}, preto túto transakciu nemožno zmazať a jej dátum ani suma sa už nedajú zmeniť.",
       "managedTitle": "Spravované inde",
       "managedDescription": "Táto transakcia patrí k portfóliu, investícii, vozidlu alebo pôžičke. Upravte ju na jej vlastnej stránke, aby zostali zostatky správne.",
       "gotIt": "Rozumiem",
       "openDetails": "Otvoriť podrobnosti",
-      "tooManyTags": "Najviac {max} štítkov na transakciu"
+      "tooManyTags": "Najviac {max} značiek na transakciu"
     },
     "savedViews": {
       "trigger": "Pohľady",
@@ -272,6 +310,50 @@
       "deleteTitle": "Zmazať pohľad „{name}”?",
       "deleteDescription": "Vaše transakcie nie sú dotknuté. Túto akciu nie je možné vrátiť späť.",
       "filtersCount": "{count} filter | {count} filtre | {count} filtrov"
+    },
+    "trashPage": {
+      "title": "Kôš",
+      "description": "Najnovšie odstránené ako prvé. Každá sa natrvalo odstráni po {days} dňoch. Vyberte jednu a uvidíte, čo sa s ňou obnoví.",
+      "expiringBanner": "{count} sa natrvalo odstráni do {days}.",
+      "expiringCount": "1 transakcia | {count} transakcie | {count} transakcií",
+      "expiringDays": "1 deň | {count} dni | {count} dní",
+      "loadError": "Kôš sa nepodarilo načítať",
+      "emptyTitle": "Kôš je prázdny",
+      "emptyDescription": "Odstránené transakcie tu zostanú {days} dní, kým sa natrvalo odstránia.",
+      "daysLeft": "zostáva 1 deň | zostávajú {count} dni | zostáva {count} dní",
+      "deletedOn": "zmazané {date}",
+      "transferTitle": "Prevod z {from} na {to}",
+      "unknownAccount": "Neznámy účet",
+      "restore": "Obnoviť",
+      "deletePermanently": "Zmazať natrvalo",
+      "deleteConfirmTitle": "Zmazať natrvalo?",
+      "deleteConfirmDescription": "Táto transakcia bude natrvalo odstránená. Túto akciu nemožno vrátiť späť.",
+      "notifications": {
+        "restored": "Transakcia obnovená",
+        "restoreError": "Transakciu sa nepodarilo obnoviť",
+        "deleted": "Transakcia bola natrvalo odstránená",
+        "deleteError": "Transakciu sa nepodarilo odstrániť",
+        "restoredWithDroppedRefundLinks": "Obnovené. 1 prepojenie vrátenia sa nepodarilo obnoviť, pretože už nezodpovedá. | Obnovené. {count} prepojenia vrátenia sa nepodarilo obnoviť, pretože už nezodpovedajú. | Obnovené. {count} prepojení vrátenia sa nepodarilo obnoviť, pretože už nezodpovedajú."
+      },
+      "comesBack": {
+        "title": "Obnoví sa spolu s",
+        "basics": "Kategória, poznámka a príjemca",
+        "splits": "1 rozdelenie | {n} rozdelenia | {n} rozdelení",
+        "tags": "1 značka | {n} značky | {n} značiek",
+        "attachments": "1 príloha | {n} prílohy | {n} príloh",
+        "otherLeg": "Druhá strana: {accountName} · {amountText}",
+        "balance": "Zostatok účtu sa prepočíta",
+        "balances": "Oba zostatky sa prepočítajú",
+        "counterpartInTrash": "Obnoví sa, keď sa obnoví aj prepojená transakcia.",
+        "links": {
+          "refund": "Prepojenie vrátenia s „{name}“",
+          "tracker": "Sledovač „{name}“",
+          "group": "Skupina „{name}“",
+          "subscription": "Predplatné „{name}“",
+          "subscriptionPeriod": "Platba predplatného splatná {name}",
+          "unnamed": "Bez názvu"
+        }
+      }
     }
   },
   "records": {
@@ -286,7 +368,7 @@
       "morePlans": "+{count} ďalších plánovaných",
       "morePlansAtLeast": "+{count}+ ďalších plánovaných",
       "deletePlanTitle": "Zmazať plánovanú transakciu?",
-      "deletePlanDescription": "Túto akciu nie je možné vrátiť späť.",
+      "deletePlanDescription": "V koši zostane 30 dní, dovtedy ju môžete obnoviť.",
       "plansLoadFailed": "Plánované transakcie sa nepodarilo načítať",
       "confirmAction": "Potvrdiť",
       "confirmTooltip": "Peniaze sa presunuli — zaznamenajte to a aktualizujte zostatok",

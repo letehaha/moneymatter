@@ -1,4 +1,4 @@
-import { type FormattedCategory } from '@/common/types';
+import { type CategoryDropPosition, type FormattedCategory } from '@/common/types';
 import Accordion from '@/components/common/accordion/accordion.vue';
 import commonEn from '@/i18n/locales/chunks/en/common.json';
 import { category } from '@/pages/settings/subpages/categories/test-fixtures';
@@ -30,7 +30,7 @@ const mountTree = ({
 }: {
   draggable?: boolean;
   draggedCategoryId?: string | null;
-  dropError?: (params: { target: FormattedCategory; depth: number }) => string | null;
+  dropError?: (params: { target: FormattedCategory; depth: number; position: CategoryDropPosition }) => string | null;
 } = {}) =>
   mount(Accordion, {
     props: {
@@ -115,7 +115,29 @@ describe('Accordion drag handles', () => {
     expect(rootRow.classes()).toContain('ring-primary');
 
     await rootRow.trigger('drop', { dataTransfer: buildDataTransfer() });
-    expect(wrapper.emitted('drop')?.map(([cat]) => (cat as FormattedCategory).id)).toEqual([root.id]);
+    expect(wrapper.emitted('drop')).toEqual([[{ target: root, position: 'inside' }]]);
+  });
+
+  it('reorders instead of nesting when dropped on the top or bottom edge of a row', async () => {
+    const wrapper = mountTree({ draggedCategoryId: child.id });
+    const rootRow = rowOf(wrapper, 0);
+    vi.spyOn(rootRow.element, 'getBoundingClientRect').mockReturnValue({ top: 0, height: 40 } as DOMRect);
+
+    await rootRow.trigger('dragover', { clientY: 2, dataTransfer: buildDataTransfer() });
+    expect(rootRow.classes()).toContain('before:bg-primary');
+    expect(rootRow.classes()).not.toContain('ring-primary');
+
+    await rootRow.trigger('drop', { clientY: 38, dataTransfer: buildDataTransfer() });
+    expect(wrapper.emitted('drop')).toEqual([[{ target: root, position: 'after' }]]);
+  });
+
+  it('dims a row only when neither nesting nor reordering next to it is allowed', () => {
+    const wrapper = mountTree({
+      draggedCategoryId: grandChild.id,
+      dropError: ({ target, position }) => (target.id === root.id && position === 'inside' ? 'Too deep' : null),
+    });
+
+    expect(rowOf(wrapper, 0).classes()).not.toContain('opacity-40');
   });
 
   it('dims invalid targets while a drag is active, leaving valid ones crisp', () => {

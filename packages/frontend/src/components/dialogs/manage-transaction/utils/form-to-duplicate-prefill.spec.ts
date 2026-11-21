@@ -59,7 +59,7 @@ const createForm = (overrides: Partial<UI_FORM_STRUCT> = {}): UI_FORM_STRUCT => 
   longitude: 30.52,
   type: FORM_TYPES.expense,
   refundedByTxs: [{ transaction: { id: 'r1' } as TransactionModel }],
-  refundsTx: { transaction: { id: 'r2' } as TransactionModel },
+  refundsTx: [{ transaction: { id: 'r2' } as TransactionModel }],
   tagIds: ['t1', 't2'],
   payeeId: 'p1',
   categoryUserTouched: false,
@@ -83,6 +83,7 @@ describe('formToDuplicatePrefill', () => {
       tagIds: ['t1', 't2'],
       paymentType: form.paymentType,
       note: 'Weekly shop',
+      excludeFromStats: false,
       externalUrl: 'https://example.com/receipt',
       externalReference: 'INV-1',
       latitude: 50.45,
@@ -91,7 +92,41 @@ describe('formToDuplicatePrefill', () => {
       originalCurrency: form.originalCurrency,
       isPlanned: true,
       splits: undefined,
+      paymentLegs: undefined,
     });
+  });
+
+  it('carries the created payment legs as new rows', () => {
+    const voucher = createAccount({ id: 'a-voucher' as RecordId });
+    const form = createForm({
+      paymentLegs: [
+        { transactionId: 'tx-leg' as RecordId, account: voucher, accountId: voucher.id, amount: 30 },
+        { account: voucher, amount: 5, currencyCode: 'EUR', paymentAmount: 6, isPaymentAmountEdited: true },
+      ],
+    });
+    const prefill = formToDuplicatePrefill({ form, now: NOW });
+
+    expect(prefill.paymentLegs).toEqual([
+      { account: voucher, accountId: voucher.id, amount: 30 },
+      { account: voucher, amount: 5, currencyCode: 'EUR', paymentAmount: 6, isPaymentAmountEdited: true },
+    ]);
+    expect(prefill.paymentLegs![0]!.transactionId).toBeUndefined();
+    expect(prefill.paymentLegs![0]).not.toBe(form.paymentLegs![0]);
+  });
+
+  it('leaves out linked payment legs', () => {
+    const voucher = createAccount({ id: 'a-voucher' as RecordId });
+    const linked = { transactionId: 'tx-linked' as RecordId, account: voucher, amount: 30, isLinked: true };
+
+    expect(formToDuplicatePrefill({ form: createForm({ paymentLegs: [linked] }), now: NOW }).paymentLegs).toBe(
+      undefined,
+    );
+    expect(
+      formToDuplicatePrefill({
+        form: createForm({ paymentLegs: [linked, { account: voucher, amount: 5 }] }),
+        now: NOW,
+      }).paymentLegs,
+    ).toEqual([{ account: voucher, amount: 5 }]);
   });
 
   it('leaves out refund links and transfer fields', () => {
@@ -123,6 +158,12 @@ describe('formToDuplicatePrefill', () => {
       { category: food, amount: 10, note: 'first' },
       { category: home, amount: 5, note: null },
     ]);
+  });
+
+  it('keeps the excludeFromStats flag', () => {
+    expect(formToDuplicatePrefill({ form: createForm({ excludeFromStats: true }), now: NOW }).excludeFromStats).toBe(
+      true,
+    );
   });
 
   it('does not share the tag array with the source form', () => {
@@ -183,8 +224,15 @@ describe('formToDuplicatePrefill for transfers', () => {
       tagIds: ['t1', 't2'],
       paymentType: form.paymentType,
       note: 'Weekly shop',
+      excludeFromStats: false,
       originalAmount: null,
       originalCurrency: null,
+    });
+  });
+
+  it('keeps the excludeFromStats flag', () => {
+    expect(formToDuplicatePrefill({ form: createTransferForm({ excludeFromStats: true }), now: NOW })).toMatchObject({
+      excludeFromStats: true,
     });
   });
 

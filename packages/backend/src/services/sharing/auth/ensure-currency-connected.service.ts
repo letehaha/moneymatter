@@ -1,6 +1,17 @@
+import type { PegRateSourceConfig } from '@bt/shared/types';
+import { t } from '@i18n/index';
+import { UnexpectedError, ValidationError } from '@js/errors';
+import { logger } from '@js/utils/logger';
 import Currencies from '@models/currencies.model';
+import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrenciesModel, * as UsersCurrencies from '@models/users-currencies.model';
+import { LOGO_FIELD_KEYS } from '@services/brand-logos/apply-manual-logo-patch';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
+import { lockUserCurrencies } from '@services/currencies/lock-user-currencies';
+import { copyLogoImageIfPresent } from '@services/logo-images/logo-images.service';
+import pick from 'lodash/pick';
+import { Op } from 'sequelize';
 
 /**
  * Idempotently ensure that `currencyCode` is connected to the user and return
@@ -13,13 +24,12 @@ import { withTransaction } from '@services/common/with-transaction';
  * downstream ref-amount lookup. Runs inside the surrounding `withTransaction`
  * context so the insert rolls back with the rest of the write on failure.
  *
- * A custom currency connected this way takes the name, symbol, decimals and logo of
- * `definitionOwnerUserId` (the account owner), so the recipient sees the code the way the
- * account's owner defined it instead of whatever the creator of the global row chose.
+ * A custom currency is connected only from `definitionOwnerUserId` (the account owner), whose
+ * definition and rates the user gets a copy of; a custom code neither user holds is rejected like an
+ * unknown one.
  *
- * NOTE: UsersCurrencies has no UNIQUE(userId, currencyCode) index, so
- * insert-or-adopt via savepoint (see run-in-savepoint.ts) would catch nothing
- * here — find-or-create (UsersCurrencies.addCurrency) is the contract.
+ * UsersCurrencies has no UNIQUE(userId, currencyCode) index, so the miss is re-checked under the
+ * per-user lock before inserting.
  */
 export const ensureUserCurrencyConnected = withTransaction(
   async ({
@@ -31,35 +41,77 @@ export const ensureUserCurrencyConnected = withTransaction(
     currencyCode: string;
     definitionOwnerUserId?: number;
   }) => {
-    const alreadyConnected = await UsersCurrenciesModel.findOne({
-      where: { userId, currencyCode },
-      attributes: ['id'],
-    });
-    const connected = await UsersCurrencies.addCurrency({ userId, currencyCode });
-    if (alreadyConnected) return connected;
+    const isOtherOwner = definitionOwnerUserId !== undefined && definitionOwnerUserId !== userId;
+    const findOwnerRow = () =>
+      isOtherOwner ? UsersCurrenciesModel.findOne({ where: { userId: definitionOwnerUserId, currencyCode } }) : null;
 
-    // A custom currency has no market rates: the connection uses the user's own rate, and takes
-    // the account owner's definition when there is one.
-    const currency = await Currencies.findByPk(currencyCode);
-    if (!currency?.isCustom) return connected;
+    const findExisting = async () => {
+      const row = await UsersCurrenciesModel.findOne({ where: { userId, currencyCode } });
+      // Only a custom holding carries decimals of its own.
+      if (row?.decimalsOverride == null || !isOtherOwner) return row;
 
-    const ownerRow =
-      definitionOwnerUserId !== undefined && definitionOwnerUserId !== userId
-        ? await UsersCurrenciesModel.findOne({ where: { userId: definitionOwnerUserId, currencyCode } })
-        : null;
-    const changes = {
-      liveRateUpdate: false,
-      ...(ownerRow && {
-        nameOverride: ownerRow.nameOverride,
-        symbolOverride: ownerRow.symbolOverride,
-        decimalsOverride: ownerRow.decimalsOverride,
-        logoUrl: ownerRow.logoUrl,
-      }),
+      // ponytail: a connected copy keeps no provenance, so a self-made definition is told apart by
+      // its decimals only; a same-decimals one, or a copy whose rate went stale, still prices with
+      // the caller's rates. Upgrade path: price the custom leg with the owner's rates.
+      const ownerRow = await findOwnerRow();
+      if (ownerRow && ownerRow.decimalsOverride !== row.decimalsOverride) {
+        throw new ValidationError({
+          message: t({ key: 'currencies.customCurrencyDefinitionConflict', variables: { code: currencyCode } }),
+        });
+      }
+
+      return row;
     };
+    const existing = await findExisting();
+    if (existing) return existing;
 
-    await UsersCurrenciesModel.update(changes, { where: { userId, currencyCode } });
-    Object.assign(connected, changes);
+    await lockUserCurrencies({ userId });
+    const lockedExisting = await findExisting();
+    if (lockedExisting) return lockedExisting;
 
-    return connected;
+    const currency = await Currencies.findByPk(currencyCode);
+    if (!currency?.isCustom) return UsersCurrencies.addCurrency({ userId, currencyCode });
+
+    const ownerRow = await findOwnerRow();
+    if (!ownerRow) {
+      await assertCurrencyCodesVisible({ userId, codes: [currencyCode] });
+      throw new UnexpectedError({ message: `Custom currency ${currencyCode} is visible without a holding` });
+    }
+
+    const ownerRates = await UserExchangeRates.findAll({
+      where: { userId: ownerRow.userId, [Op.or]: [{ baseCode: currencyCode }, { quoteCode: currencyCode }] },
+      attributes: ['baseCode', 'quoteCode', 'rate', 'effectiveDate', 'source'],
+      raw: true,
+    });
+    await UserExchangeRates.bulkCreate(ownerRates.map((rate) => ({ ...rate, userId })));
+
+    // A peg values the currency without stored rows, so its config is copied. A synced source is not:
+    // it would fetch on the user's behalf, and its encrypted headers belong to the owner.
+    const isPeg = ownerRow.rateSource === 'peg';
+    const quotes = new Set(ownerRates.filter((rate) => rate.baseCode === currencyCode).map((rate) => rate.quoteCode));
+    if (isPeg) quotes.add((ownerRow.rateSourceConfig as PegRateSourceConfig).pegCurrency);
+    for (const quote of quotes) await UsersCurrencies.addCurrency({ userId, currencyCode: quote });
+
+    return UsersCurrenciesModel.create({
+      userId,
+      currencyCode,
+      liveRateUpdate: false,
+      isDefaultCurrency: false,
+      nameOverride: ownerRow.nameOverride,
+      symbolOverride: ownerRow.symbolOverride,
+      decimalsOverride: ownerRow.decimalsOverride,
+      rateSource: isPeg ? 'peg' : 'manual',
+      rateSourceConfig: isPeg ? ownerRow.rateSourceConfig : null,
+      ...pick(ownerRow, LOGO_FIELD_KEYS),
+      // A logo blob has one owner row, which deletes it on edit or delete. A failed copy must not
+      // fail the collaborator's write, so the copy goes without the image.
+      logoImageId: await copyLogoImageIfPresent({ id: ownerRow.logoImageId }).catch((error: unknown) => {
+        logger.error(
+          { message: 'Failed to copy a custom currency logo image', error: error as Error },
+          { code: 'LOGO_IMAGE_COPY_FAILED', logoImageId: ownerRow.logoImageId },
+        );
+        return null;
+      }),
+    });
   },
 );

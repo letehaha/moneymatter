@@ -440,6 +440,19 @@ describe('custom currencies', () => {
     expect(result?.transactions[0]).toMatchObject({ originalAmount: 1.2, originalCurrencyCode: 'USD' });
   });
 
+  it("reads one of the user's custom codes as the statement currency", () => {
+    const response = ['Binance,1234,2026-06-01,2026-06-16,USDT', ROW].join('\n');
+
+    expect(parseAIResponse({ response })?.metadata.currencyCode).toBeNull();
+    expect(parseAIResponse({ response, customCurrencyCodes: ['USDT'] })?.metadata.currencyCode).toBe('USDT');
+  });
+
+  it('prefers the currency slot over an earlier field that matches a custom code', () => {
+    const response = ['Bank,1234,2026-06-01,2026-06-16,USD', ROW].join('\n');
+
+    expect(parseAIResponse({ response, customCurrencyCodes: ['1234'] })?.metadata.currencyCode).toBe('USD');
+  });
+
   it("adds the user's custom codes to the system prompt, and only then", () => {
     expect(buildStatementExtractionSystemPrompt()).toBe(STATEMENT_EXTRACTION_SYSTEM_PROMPT);
     expect(buildStatementExtractionSystemPrompt({ customCurrencyCodes: [] })).toBe(STATEMENT_EXTRACTION_SYSTEM_PROMPT);

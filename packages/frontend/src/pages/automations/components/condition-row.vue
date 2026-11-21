@@ -271,7 +271,7 @@ const setDay = ({ key, value }: { key: 'min' | 'max'; value: string | number | n
         <Button
           type="button"
           variant="soft-destructive"
-          size="icon-sm"
+          size="icon"
           class="ml-auto shrink-0"
           :aria-label="$t('automations.editor.removeCondition')"
           @click="emit('remove')"

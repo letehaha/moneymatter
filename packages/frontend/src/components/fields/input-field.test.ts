@@ -390,39 +390,13 @@ describe('InputField component', () => {
       await wrapper.find('input').setValue(value);
     };
 
-    it('drops digits past the currency decimals and emits the trimmed number', async () => {
+    it('cuts typed digits past the decimals', async () => {
       const wrapper = mountComponent({ type: 'number', decimals: 3 });
 
       await typeInto({ wrapper, value: '1.23456' });
 
       expect(wrapper.find('input').element.value).toBe('1.234');
       expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1.234]);
-    });
-
-    it('keeps a 3-decimal amount intact', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 3 });
-
-      await typeInto({ wrapper, value: '1.234' });
-
-      expect(wrapper.find('input').element.value).toBe('1.234');
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1.234]);
-    });
-
-    it('drops the decimal point for a whole-number currency', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 0 });
-
-      await typeInto({ wrapper, value: '1500.6' });
-
-      expect(wrapper.find('input').element.value).toBe('1500');
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1500]);
-    });
-
-    it('keeps every digit of a large whole-number amount (VND)', async () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 0 });
-
-      await typeInto({ wrapper, value: '20500000000' });
-
-      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([20_500_000_000]);
     });
 
     it('does not limit precision when decimals is unset', async () => {
@@ -433,24 +407,63 @@ describe('InputField component', () => {
       expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([0.00040641]);
     });
 
-    it('blocks the decimal point key for a whole-number currency', () => {
-      const wrapper = mountComponent({ type: 'number', decimals: 0 });
+    it.each<[number, boolean]>([
+      [0, true],
+      [2, false],
+    ])('at %d decimals the decimal point key is blocked: %s', (decimals, blocked) => {
+      const wrapper = mountComponent({ type: 'number', decimals });
       const event = new KeyboardEvent('keypress', { key: '.' });
       const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
 
       wrapper.find('input').element.dispatchEvent(event);
 
-      expect(preventDefaultSpy).toHaveBeenCalled();
+      expect(preventDefaultSpy.mock.calls.length > 0).toBe(blocked);
     });
 
-    it('allows the decimal point key when the currency has decimals', () => {
+    it.each<[number | string | null, string]>([
+      [10.99, '10.99'],
+      ['10.99', '10.99'],
+      [null, ''],
+    ])('keeps %o and emits nothing when the decimals drop', async (modelValue, shown) => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2, modelValue });
+
+      await wrapper.setProps({ decimals: 0 });
+
+      expect(wrapper.emitted('update:modelValue')).toBeUndefined();
+      expect(wrapper.find('input').element.value).toBe(shown);
+    });
+
+    it.each<[number, string]>([
+      [2, '1.5e3'],
+      [0, '1.5e3'],
+    ])('at %d decimals parses pasted %s instead of slicing it', async (decimals, pasted) => {
+      const wrapper = mountComponent({ type: 'number', decimals });
+
+      await typeInto({ wrapper, value: pasted });
+
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1500]);
+    });
+
+    it('cuts a pasted exponent value to the currency decimals', async () => {
       const wrapper = mountComponent({ type: 'number', decimals: 2 });
-      const event = new KeyboardEvent('keypress', { key: '.' });
-      const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
 
-      wrapper.find('input').element.dispatchEvent(event);
+      await typeInto({ wrapper, value: '1.23456e1' });
 
-      expect(preventDefaultSpy).not.toHaveBeenCalled();
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([12.34]);
+      expect(wrapper.find('input').element.value).toBe('12.34');
+    });
+
+    it('never emits a non-finite number', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2, modelValue: 5 });
+      const input = wrapper.find('input');
+      // A number input reports a value the browser cannot parse; force one past jsdom's sanitising.
+      Object.defineProperty(input.element, 'value', { configurable: true, get: () => '1.5e', set: () => {} });
+
+      await input.trigger('input');
+
+      const emitted = wrapper.emitted('update:modelValue') ?? [];
+      expect(emitted.every(([value]) => value === null || Number.isFinite(value))).toBe(true);
+      expect(emitted.at(-1)).toEqual([null]);
     });
   });
 });

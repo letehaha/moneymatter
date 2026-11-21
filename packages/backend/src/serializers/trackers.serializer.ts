@@ -6,15 +6,16 @@
  * Deserializers convert API decimal inputs to Money.
  */
 import {
-  TRACKER_TYPES,
   type TrackerSpendingByCategoryItem,
   type TrackerSpendingStatsResponse,
   type TrackerStatsResponse,
   type EntityLogoFields,
+  type TRACKER_LIMIT_KINDS,
   ResourceShareInfo,
 } from '@bt/shared/types';
-import { Money, minorUnitsToApiDecimal, moneyToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
+import { minorUnitsToApiDecimal, moneyToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import type Categories from '@models/categories.model';
+import type Tags from '@models/tags.model';
 import type TrackerLines from '@models/tracker-lines.model';
 import type Trackers from '@models/trackers.model';
 import type { TrackerShareContext } from '@services/sharing/get-shared-trackers.service';
@@ -39,17 +40,20 @@ interface TrackerApiResponse extends EntityLogoFields {
   userId: number;
   name: string;
   status: string;
-  type: TRACKER_TYPES;
   startDate: Date | null;
   endDate: Date | null;
-  autoInclude: boolean;
   limitAmount: number | null;
+  limitKind: TRACKER_LIMIT_KINDS;
+  rulesEnabled: boolean;
+  rulesCleanup: boolean;
+  rulesSyncedAt: Date | null;
   archivePromptDismissed: boolean;
   aiEnabled: boolean;
   aiDescription: string | null;
   aiPreWindowDays: number;
   aiLastScannedAt: Date | null;
   categories: TrackerCategoryResponse[];
+  tags: Pick<Tags, 'id' | 'name' | 'color' | 'icon'>[];
   lines: TrackerLineResponse[];
   /** Present on user-facing list/detail responses when share context is attached. */
   share?: ResourceShareInfo;
@@ -100,11 +104,13 @@ export function serializeTracker(tracker: Trackers & { _shareContext?: TrackerSh
     userId: tracker.userId,
     name: tracker.name,
     status: tracker.status,
-    type: tracker.type,
     startDate: tracker.startDate,
     endDate: tracker.endDate,
-    autoInclude: tracker.autoInclude,
     limitAmount: moneyToApiDecimalOrNull(tracker.limitAmount),
+    limitKind: tracker.limitKind,
+    rulesEnabled: tracker.rulesEnabled,
+    rulesCleanup: tracker.rulesCleanup,
+    rulesSyncedAt: tracker.rulesSyncedAt,
     archivePromptDismissed: tracker.archivePromptDismissed,
     aiEnabled: isRecipient ? false : tracker.aiEnabled,
     aiDescription: isRecipient ? null : tracker.aiDescription,
@@ -112,6 +118,7 @@ export function serializeTracker(tracker: Trackers & { _shareContext?: TrackerSh
     aiLastScannedAt: isRecipient ? null : tracker.aiLastScannedAt,
     ...serializeLogoFields({ entity: tracker }),
     categories,
+    tags: (tracker.tags || []).map(({ id, name, color, icon }) => ({ id, name, color, icon })),
     lines: (tracker.lines || []).map(serializeTrackerLine),
   };
 
@@ -144,7 +151,13 @@ export function serializeTrackers(
 /**
  * Serialize tracker stats to API decimal format. The sums are minor units at `decimals`.
  */
-export function serializeTrackerStats({ stats, decimals }: { stats: StatsResponse; decimals: number }): TrackerStatsResponse {
+export function serializeTrackerStats({
+  stats,
+  decimals,
+}: {
+  stats: StatsResponse;
+  decimals: number;
+}): TrackerStatsResponse {
   return {
     summary: {
       actualIncome: minorUnitsToApiDecimal({ value: stats.summary.actualIncome, decimals }),
@@ -155,7 +168,10 @@ export function serializeTrackerStats({ stats, decimals }: { stats: StatsRespons
       firstTransactionDate: stats.summary.firstTransactionDate,
       lastTransactionDate: stats.summary.lastTransactionDate,
     },
-    lines: stats.lines.map((line) => ({ lineId: line.lineId, spent: minorUnitsToApiDecimal({ value: line.spent, decimals }) })),
+    lines: stats.lines.map((line) => ({
+      lineId: line.lineId,
+      spent: minorUnitsToApiDecimal({ value: line.spent, decimals }),
+    })),
     otherSpent: minorUnitsToApiDecimal({ value: stats.otherSpent, decimals }),
   };
 }
@@ -205,7 +221,10 @@ export function serializeTrackerSpendingStats({
       amount: moneyToApiDecimal(item.amount),
       refAmount: minorUnitsToApiDecimal({ value: item.refAmount, decimals }),
     })),
-    topPayees: stats.topPayees.map((payee) => ({ ...payee, amount: minorUnitsToApiDecimal({ value: payee.amount, decimals }) })),
+    topPayees: stats.topPayees.map((payee) => ({
+      ...payee,
+      amount: minorUnitsToApiDecimal({ value: payee.amount, decimals }),
+    })),
     biggestDay: stats.biggestDay && {
       date: stats.biggestDay.date,
       expense: minorUnitsToApiDecimal({ value: stats.biggestDay.expense, decimals }),

@@ -61,7 +61,7 @@ POST /bank-data-providers/monobank/connect
 - Fetches transactions in 31-day chunks
 - Processes in **descending order** (newest first) for better UX
 - Works backward through history until all data loaded
-- **Progress tracking** available via `getTransactionSyncProgress`
+- **Progress tracking** available via `GET /connections/:connectionId/sync-job-progress`
 
 ## Technical Details
 

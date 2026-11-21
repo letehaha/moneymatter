@@ -1,18 +1,21 @@
+import type { NonImageLogoPayload } from '@bt/shared/types';
 import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import Portfolios from '@models/investments/portfolios.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
+import { applyManualLogoPatch } from '@services/brand-logos';
 import { withTransaction } from '@services/common/with-transaction';
 
-interface UpdatePortfolioParams {
+interface UpdatePortfolioParams extends NonImageLogoPayload {
   userId: number;
   portfolioId: string;
   name?: string;
   portfolioType?: PORTFOLIO_TYPE;
   description?: string | null;
   displayCurrencyCode?: string | null;
+  externalUrl?: string | null;
   isEnabled?: boolean;
 }
 
@@ -23,7 +26,12 @@ const updatePortfolioImpl = async ({
   portfolioType,
   description,
   displayCurrencyCode,
+  externalUrl,
   isEnabled,
+  logoDomain,
+  logoInitials,
+  logoColor,
+  logoIcon,
 }: UpdatePortfolioParams) => {
   // Find the portfolio and verify ownership
   const portfolio = await findOrThrowNotFound({
@@ -51,9 +59,15 @@ const updatePortfolioImpl = async ({
   if (portfolioType !== undefined) updateData.portfolioType = portfolioType;
   if (description !== undefined) updateData.description = description;
   if (displayCurrencyCode !== undefined) updateData.displayCurrencyCode = displayCurrencyCode;
+  if (externalUrl !== undefined) updateData.externalUrl = externalUrl;
   if (isEnabled !== undefined) updateData.isEnabled = isEnabled;
 
-  await portfolio.update(updateData);
+  const logoPatch = applyManualLogoPatch({
+    patch: { logoDomain, logoInitials, logoColor, logoIcon },
+    stored: portfolio,
+  });
+
+  await portfolio.update({ ...updateData, ...logoPatch });
 
   return portfolio.reload();
 };

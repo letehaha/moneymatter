@@ -3,6 +3,8 @@
     <div class="flex flex-col gap-3 @[26rem]/currencies:flex-row @[26rem]/currencies:items-end">
       <input-field
         v-model="form.baseRate"
+        type="number"
+        only-positive
         class="min-w-0 @[26rem]/currencies:flex-1"
         :label="`1 ${currency.currency?.code} =`"
         :placeholder="$t('settings.currencies.exchangeRate.ratePlaceholder')"
@@ -11,6 +13,8 @@
       />
       <input-field
         v-model="form.quoteRate"
+        type="number"
+        only-positive
         class="min-w-0 @[26rem]/currencies:flex-1"
         :label="`1 ${currency.quoteCode} =`"
         :placeholder="$t('settings.currencies.exchangeRate.ratePlaceholder')"
@@ -18,7 +22,7 @@
         @focus="onQuoteFocus"
       />
       <DateField
-        v-if="isCustomCurrency"
+        v-if="currency.isCustomCurrency"
         v-model="effectiveDate"
         mode="date"
         class="min-w-0 @[26rem]/currencies:flex-1"
@@ -38,7 +42,7 @@
       </Button>
     </div>
 
-    <template v-if="isCustomCurrency">
+    <template v-if="currency.isCustomCurrency">
       <p class="text-muted-foreground mt-4 flex items-start gap-1 text-xs leading-5">
         <InfoIcon class="text-primary-text mt-1 size-3.5 shrink-0" />
         {{ $t('settings.currencies.custom.rateHint', { code: currency.quoteCode }) }}
@@ -115,19 +119,14 @@ const notifyIfBalancesNotRefreshed = (failed: number) => {
   }
 };
 
-const isCustomCurrency = computed(() => Boolean(props.currency.currency?.isCustom));
-
-// A custom currency starts without a rate; the fields stay empty until the user enters one.
-const toFieldValue = (value: number): number | string => (Number.isFinite(value) ? value : '');
-
 const form = reactive<{ baseRate: number | string; quoteRate: number | string }>({
-  baseRate: toFieldValue(props.currency.rate),
-  quoteRate: toFieldValue(props.currency.quoteRate),
+  baseRate: props.currency.rate,
+  quoteRate: props.currency.quoteRate,
 });
 const isBaseEditing = ref(false);
 const isQuoteEditing = ref(false);
 // A custom currency has no market rate to follow, so only the user's own rate applies.
-const isLiveRateEnabled = ref<boolean>(!isCustomCurrency.value && !props.currency.custom);
+const isLiveRateEnabled = ref<boolean>(!props.currency.isCustomCurrency && !props.currency.custom);
 
 // A rate of a custom currency starts to apply on a day of its own; today unless the user picks another.
 const effectiveDate = ref(new Date());
@@ -135,7 +134,7 @@ const effectiveDateOptions = { maxDate: new Date() };
 const isDateChanged = computed(() => !isToday(effectiveDate.value));
 // Rates between ISO currencies apply to every day and refuse a date.
 const datedFields = computed(() =>
-  isCustomCurrency.value ? { effectiveDate: format(effectiveDate.value, API_DATE_FORMAT) } : {},
+  props.currency.isCustomCurrency ? { effectiveDate: format(effectiveDate.value, API_DATE_FORMAT) } : {},
 );
 
 const isRateChanged = computed(
@@ -149,14 +148,12 @@ const shouldShowSaveButton = computed(() => {
   return !isLiveRateEnabled.value || props.currency.custom;
 });
 
-// Live off: only actionable once the rate actually changed (a custom currency also needs a usable
-// rate). Live on: Save drops the custom rate.
+// Live off: only actionable once the rate (or a custom currency's start day) changed and both rates
+// are usable. Live on: Save drops the custom rate.
 const canSubmit = computed(() =>
   isLiveRateEnabled.value
     ? true
-    : isCustomCurrency.value
-      ? hasRateValue.value && (isRateChanged.value || isDateChanged.value)
-      : isRateChanged.value,
+    : hasRateValue.value && (isRateChanged.value || (props.currency.isCustomCurrency && isDateChanged.value)),
 );
 
 const onBaseFocus = () => {
@@ -176,7 +173,7 @@ watch(
   () => form.baseRate,
   (value) => {
     if (isBaseEditing.value) {
-      form.quoteRate = calculateRatio({ value, isCustomCurrency: isCustomCurrency.value });
+      form.quoteRate = calculateRatio({ value, isCustom: props.currency.isCustomCurrency });
     }
   },
 );
@@ -184,7 +181,7 @@ watch(
   () => form.quoteRate,
   (value) => {
     if (isQuoteEditing.value) {
-      form.baseRate = calculateRatio({ value, isCustomCurrency: isCustomCurrency.value });
+      form.baseRate = calculateRatio({ value, isCustom: props.currency.isCustomCurrency });
     }
   },
 );
@@ -251,7 +248,7 @@ const updateExchangeRates = async () => {
 
 const onSubmitHandler = async () => {
   emit('trigger-disabled', true);
-  if (!isLiveRateEnabled.value && (isRateChanged.value || (isCustomCurrency.value && isDateChanged.value))) {
+  if (!isLiveRateEnabled.value && (isRateChanged.value || (props.currency.isCustomCurrency && isDateChanged.value))) {
     await updateExchangeRates();
   } else if (isLiveRateEnabled.value) {
     await deleteExchangeRates();

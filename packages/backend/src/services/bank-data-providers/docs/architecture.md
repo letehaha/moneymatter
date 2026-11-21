@@ -39,7 +39,6 @@ The bank-data-providers system is a modular framework for connecting users' bank
 │  └──────────────────────────┘                                  │
 │                                                                 │
 │  ┌─ PROVIDER INTERFACE ─────────────────────────────────────┐  │
-│  │ IBankDataProvider (types.ts)                             │  │
 │  │ BaseBankDataProvider (abstract base class)               │  │
 │  │ BankProviderRegistry (singleton)                         │  │
 │  └──────────────────────────────────────────────────────────┘  │
@@ -329,6 +328,8 @@ Fetch all user's bank-connected accounts, grouped by connection
        ↓
 enqueueAccountSync() per connection: accounts set to QUEUED, jobs added
        ↓
+Last-sync time recorded only if every connection queued (throttles GET /sync/check)
+       ↓
 `account-sync` BullMQ worker (concurrency 5) picks jobs up
        ↓
 Frontend polls GET /sync/status for progress
@@ -376,7 +377,8 @@ provider.disconnect(connectionId)
 ```
 DELETE /connections/{connectionId}?removeAssociatedAccounts=true
        ↓
-Permanently delete all linked accounts (and their transactions via CASCADE)
+deleteAccountByIdInTx() per linked account (same steps as DELETE /accounts/:id,
+incl. loan-payment guards; one transaction, so a blocked account rolls back the disconnect)
        ↓
 provider.disconnect(connectionId)
 ```
@@ -463,22 +465,20 @@ If a user unlinks, adds a manual transaction dated today, then relinks — witho
 
 ## Flow 7: Auth Failure Tracking
 
-Providers that use API keys (LunchFlow) track consecutive authentication failures:
+LunchFlow, Akahu, Walutomat and SimpleFIN wrap authenticated API calls in `withAuthTracking()` (base provider):
 
 ```
-API call fails with ForbiddenError
+withAuthTracking({ connectionId, request })
        ↓
-handleAuthError()
+Success → reset consecutiveAuthFailures to 0
+       ↓
+Auth error (ForbiddenError, or provider-specific isAuthError()) → handleAuthError() (private)
   • Increment consecutiveAuthFailures in metadata
-  • If failures >= 2: deactivate connection (isActive = false)
-  • Store deactivationReason = 'auth_failure'
-       ↓
-On next successful API call:
-  resetAuthFailures()
-  • Reset counter to 0
+  • If failures >= 2: isActive = false, deactivationReason = 'auth_failure'
+  • Rethrow the error
 ```
 
-User can reactivate by updating credentials via `refreshCredentials()`.
+`refreshCredentials()` in those providers plus Monobank calls `reactivateConnection()`, which resets the counter, clears `deactivationReason` and sets `isActive = true` before the single `save()` that persists the new credentials. Enable Banking has its own auth handling.
 
 ---
 
@@ -570,7 +570,6 @@ bank-data-providers/
 │   ├── list-external-accounts.ts # Stage 1: list accounts
 │   ├── connect-selected-accounts.ts # Stage 2: create accounts
 │   ├── sync-transactions-for-account.ts
-│   ├── reconcile-duplicates-for-account.ts
 │   ├── disconnect-provider.ts
 │   └── get-connection-details.ts
 ├── sync/
@@ -588,9 +587,11 @@ bank-data-providers/
 ├── enablebanking/
 │   ├── enablebanking.provider.ts # Provider implementation
 │   ├── api-client.ts             # HTTP client + JWT
+│   ├── reconcile-duplicates.ts   # One-time duplicate reconciliation (POST /connections/:id/reconcile-duplicates)
 │   ├── aspsp.service.ts          # Bank listing
 │   ├── types.ts
 │   ├── utils/
+│   │   ├── has-dependent-rows.ts     # Whether deleting a row would drop user links
 │   │   ├── jwt-utils.ts              # JWT generation
 │   │   ├── plan-edit-merge.ts        # Pure edit-preservation policy for reconcile
 │   │   ├── plan-edit-merge.unit.ts   # Unit tests for the merge policy

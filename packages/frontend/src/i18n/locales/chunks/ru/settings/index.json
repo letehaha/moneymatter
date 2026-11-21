@@ -17,9 +17,9 @@
       "language": "Язык",
       "general": "Общие",
       "payees": "Получатели",
-      "subscriptions": "Запланированные платежи",
       "planBilling": "Plan & billing",
-      "collapse": "Свернуть"
+      "collapse": "Свернуть",
+      "resize": "Resize navigation"
     },
     "backToSettings": "Назад к настройкам"
   }

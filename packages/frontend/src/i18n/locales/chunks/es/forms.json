@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Seleccione moneda de visualización",
       "displayCurrencyBaseOption": "Moneda base ({code})",
       "displayCurrencyDescription": "El valor de la cartera y las estadísticas se convierten a esta moneda al tipo de cambio actual.",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Cancelar",
       "submitButton": "Guardar cambios",
       "submitButtonLoading": "Guardando...",
@@ -136,6 +138,9 @@
       "accountCategoryPlaceholder": "Seleccionar categoría de cuenta",
       "creditLimitLabel": "Límite de crédito",
       "creditLimitPlaceholder": "Límite de crédito",
+      "defaultPaymentTypeLabel": "Tipo de pago por defecto",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Crear",
       "submitButtonLoading": "Creando...",
       "notifications": {
@@ -189,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Introduzca un importe válido (hasta 2 decimales)",
-      "mustBePositive": "El importe debe ser positivo"
+      "mustBePositive": "El importe debe ser positivo",
+      "httpUrl": "Enter a valid http(s) URL",
+      "maxLength": "Must not exceed {max} characters"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "Moneda de origen",
@@ -300,7 +307,8 @@
         "interestRateRange": "El tipo de interés debe estar entre 0 y 99,9999.",
         "termRange": "El plazo debe estar entre 1 y 1200 meses.",
         "paymentDayRange": "El día del mes debe estar entre 1 y 31.",
-        "asOfInFuture": "La fecha no puede ser futura"
+        "asOfInFuture": "La fecha no puede ser futura",
+        "startDateInFuture": "La fecha de inicio no puede ser una fecha futura"
       },
       "balanceExceedsPrincipalWarning": "El saldo pendiente es mayor que el principal original: compruebe estos importes."
     }
@@ -371,7 +379,7 @@
       "searchPlaceholder": "Buscar presupuestos",
       "noResults": "No se encontraron presupuestos",
       "unknownBudget": "Presupuesto desconocido",
-      "blankOption": "Not in any tracker",
+      "blankOption": "No en ningún rastreador",
       "loadError": "No se pudieron cargar los presupuestos. Inténtelo de nuevo."
     },
     "payeeSelect": {

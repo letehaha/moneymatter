@@ -19,7 +19,7 @@ import { getUserSettings } from '@services/user-settings/get-user-settings';
 import { format } from 'date-fns';
 import { Op } from 'sequelize';
 
-import { computeCategoryAllocations } from './category-allocation';
+import { computeCategoryAllocations, refundLegs } from './category-allocation';
 import { findBucketIndex, generatePeriodBuckets } from './utils';
 
 const MAX_DAILY_BUCKETS = 366;
@@ -38,6 +38,8 @@ interface GetCashFlowParams extends StatsScopeFilters {
   excludedCategoryIds?: RecordId[];
   /** Drops pending planned rows, leaving only money that actually moved. */
   excludePlanned?: boolean;
+  /** Starts `monthly` buckets on the user's payday instead of the 1st. */
+  alignToPayday?: boolean;
   /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
   decimals: number;
 }
@@ -101,8 +103,9 @@ const getAggregationCategoryId = ({
  *
  * Spend is routed through the shared category-allocation engine, so split transactions land on
  * their own categories and a refund reduces the side it reverses instead of inflating the other
- * one — the same numbers the expenses-structure and pivot reports show. Both halves of a refund
- * pair are subtracted in the same bucket, so netting never moves a period's net cash.
+ * one — the same numbers the expenses-structure and pivot reports show. Each in-scope side of a
+ * refund pair is subtracted in its own transaction's bucket, so a month reads the same alone or
+ * inside a longer range.
  *
  * Wrapped in a transaction so the category-map and transaction reads share one
  * pinned Postgres connection instead of a pool checkout per query — checkouts
@@ -123,9 +126,11 @@ export const getCashFlow = withTransaction(
     categoryIds,
     excludedCategoryIds,
     excludePlanned,
+    alignToPayday,
     decimals,
   }: GetCashFlowParams): Promise<GetCashFlowResponse> => {
-    const buckets = generatePeriodBuckets({ from, to, granularity });
+    const { savingsCategoryIds, payday } = await getUserSettings({ userId });
+    const buckets = generatePeriodBuckets({ from, to, granularity, payday: alignToPayday ? payday : 1 });
 
     if (granularity === 'daily' && buckets.length > MAX_DAILY_BUCKETS) {
       throw new ValidationError({
@@ -187,7 +192,7 @@ export const getCashFlow = withTransaction(
           ...buildStatsScopeWhere({ accountId, accountIds, payeeIds, excludedPayeeIds, tagIds, excludedTagIds }),
         ],
       },
-      attributes: ['id', 'time', 'refAmount', 'transactionType', 'categoryId', 'refundLinked'],
+      attributes: ['id', 'time', 'amount', 'refAmount', 'transactionType', 'categoryId', 'refundLinked'],
     });
 
     // Each leg carries its transaction's type, so one call covers both directions.
@@ -213,7 +218,6 @@ export const getCashFlow = withTransaction(
 
     // Categories the user counts as savings drop out of the report the same way an explicitly
     // excluded one does: money moved there is saved rather than spent, so it must not lower netFlow.
-    const { savingsCategoryIds } = await getUserSettings({ userId });
     const hiddenCategoryIds = [...(excludedCategoryIds ?? []), ...(savingsCategoryIds ?? [])];
 
     // Hiding a parent hides everything under it, including subcategories created after the caller
@@ -292,16 +296,11 @@ export const getCashFlow = withTransaction(
       });
     }
 
-    for (const pair of refundPairs) {
-      // Netting needs both halves of the pair inside this report's scope. When an account, category
-      // or date filter admits only one of them, subtracting that half alone would take away money
-      // the other half never contributed — the range/filter simply keeps both sides gross instead.
-      if (!pair.expenseInScope || !pair.incomeInScope) continue;
-
-      // Both halves land in the refund's own bucket, so the period keeps the net cash it saw while
-      // the money stops counting as spend on one side and as income on the other.
-      applyLeg({ categoryId: pair.expenseCategoryId, minor: -pair.minor, time: pair.time, isExpense: true });
-      applyLeg({ categoryId: pair.incomeCategoryId, minor: -pair.minor, time: pair.time, isExpense: false });
+    for (const leg of refundLegs({ pairs: refundPairs, side: TRANSACTION_TYPES.expense })) {
+      applyLeg({ ...leg, isExpense: true });
+    }
+    for (const leg of refundLegs({ pairs: refundPairs, side: TRANSACTION_TYPES.income })) {
+      applyLeg({ ...leg, isExpense: false });
     }
 
     // Every period reports the same category set (stacked bars need a stable series list), so the

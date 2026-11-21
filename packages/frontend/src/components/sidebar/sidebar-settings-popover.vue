@@ -64,7 +64,7 @@ const goTo = (target: View) => {
 
               <button
                 type="button"
-                class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                 @click="goTo('sections')"
               >
                 <span class="flex flex-col">

@@ -15,7 +15,7 @@
  *
  * Protocol reference: https://www.simplefin.org/protocol.html
  */
-import type { DeactivationReason } from '@bt/shared/types';
+import type { AuthTrackingMetadata } from '../types';
 
 /**
  * Credentials we persist (encrypted) for a SimpleFIN connection.
@@ -40,12 +40,10 @@ export interface SimplefinConnectInput {
 /**
  * Non-secret connection metadata stored alongside the encrypted credentials.
  */
-export interface SimplefinMetadata {
+export interface SimplefinMetadata extends AuthTrackingMetadata {
   /** Display name of the financial institution / org, when provided. */
   orgName?: string;
   accountCount?: number;
-  consecutiveAuthFailures?: number;
-  deactivationReason?: DeactivationReason | null;
 }
 
 // ============================================================================

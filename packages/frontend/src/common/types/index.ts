@@ -10,3 +10,6 @@ export interface ApiBaseError {
 export interface FormattedCategory extends CategoryModel {
   subCategories: FormattedCategory[];
 }
+
+/** Where a dragged category lands relative to the row it is dropped on. */
+export type CategoryDropPosition = 'before' | 'inside' | 'after';

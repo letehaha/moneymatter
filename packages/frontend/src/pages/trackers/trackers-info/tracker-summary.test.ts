@@ -1,3 +1,4 @@
+import { TRACKER_LIMIT_KINDS } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
 import { getTrackerLimitSummary, getTrackerSpent } from './tracker-summary';
@@ -7,6 +8,7 @@ describe('getTrackerLimitSummary', () => {
     expect(
       getTrackerLimitSummary({
         limitAmount: 2000,
+        limitKind: TRACKER_LIMIT_KINDS.spending,
         summary: { balance: -1780, utilizationRate: 89 },
         timeStatus: { kind: 'active', daysLeft: 6 },
       }),
@@ -16,6 +18,7 @@ describe('getTrackerLimitSummary', () => {
   it('treats a positive balance as nothing spent', () => {
     const summary = getTrackerLimitSummary({
       limitAmount: 100,
+      limitKind: TRACKER_LIMIT_KINDS.spending,
       summary: { balance: 50, utilizationRate: 0 },
       timeStatus: { kind: 'noDates' },
     });
@@ -25,6 +28,7 @@ describe('getTrackerLimitSummary', () => {
   it('returns a negative left and no pace when over the limit', () => {
     const summary = getTrackerLimitSummary({
       limitAmount: 1000,
+      limitKind: TRACKER_LIMIT_KINDS.spending,
       summary: { balance: -1040, utilizationRate: 104 },
       timeStatus: { kind: 'active', daysLeft: 3 },
     });
@@ -34,6 +38,7 @@ describe('getTrackerLimitSummary', () => {
   it('puts everything left on the last day', () => {
     const summary = getTrackerLimitSummary({
       limitAmount: 100,
+      limitKind: TRACKER_LIMIT_KINDS.spending,
       summary: { balance: -40, utilizationRate: 40 },
       timeStatus: { kind: 'active', daysLeft: 0 },
     });
@@ -41,7 +46,11 @@ describe('getTrackerLimitSummary', () => {
   });
 
   it('has no pace without an end date or outside the active period', () => {
-    const base = { limitAmount: 100, summary: { balance: -40, utilizationRate: 40 } };
+    const base = {
+      limitAmount: 100,
+      limitKind: TRACKER_LIMIT_KINDS.spending,
+      summary: { balance: -40, utilizationRate: 40 },
+    };
     expect(getTrackerLimitSummary({ ...base, timeStatus: { kind: 'active', daysLeft: null } }).dailyPace).toBeNull();
     expect(getTrackerLimitSummary({ ...base, timeStatus: { kind: 'ended', daysSinceEnd: 2 } }).dailyPace).toBeNull();
     expect(getTrackerLimitSummary({ ...base, timeStatus: { kind: 'upcoming', daysUntil: 2 } }).dailyPace).toBeNull();
@@ -50,7 +59,12 @@ describe('getTrackerLimitSummary', () => {
 
 describe('getTrackerSpent', () => {
   it('measures net spend from the balance, never below zero', () => {
-    expect(getTrackerSpent({ summary: { balance: -300 } })).toBe(300);
-    expect(getTrackerSpent({ summary: { balance: 120 } })).toBe(0);
+    expect(getTrackerSpent({ summary: { balance: -300 }, limitKind: TRACKER_LIMIT_KINDS.spending })).toBe(300);
+    expect(getTrackerSpent({ summary: { balance: 120 }, limitKind: TRACKER_LIMIT_KINDS.spending })).toBe(0);
+  });
+
+  it('measures net income for the income kinds, never below zero', () => {
+    expect(getTrackerSpent({ summary: { balance: 500 }, limitKind: TRACKER_LIMIT_KINDS.incomeTarget })).toBe(500);
+    expect(getTrackerSpent({ summary: { balance: -50 }, limitKind: TRACKER_LIMIT_KINDS.incomeCap })).toBe(0);
   });
 });

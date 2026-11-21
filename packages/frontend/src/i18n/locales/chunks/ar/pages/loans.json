@@ -1,6 +1,6 @@
 {
   "loans": {
-    "title": "القروض",
+    "title": "Loans",
     "loadError": "Failed to load loans.",
     "tryAgain": "Try again",
     "addButton": {

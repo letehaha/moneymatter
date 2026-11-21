@@ -21,8 +21,7 @@ export const resetSubscriptionLogo = withTransaction(async ({ id, userId }: { id
   await subscription.save();
   enqueueLogoResolutionAfterCommit({ entity: 'subscription', id });
 
-  // Surface expectedAmount as a decimal so the response matches GET (the column
-  // holds raw cents).
+  // Surface expectedAmount as a decimal so the response matches GET.
   const plain = subscription.toJSON() as Subscriptions;
   return {
     ...plain,

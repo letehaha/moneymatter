@@ -1,11 +1,12 @@
-import { budgetPlanName, recordId } from '@common/lib/zod/custom-types';
+import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { createGroup } from '@services/budget-plans/line-groups';
+import { createGroupBodySchema } from '@services/budget-plans/zod-schemas';
 import { z } from 'zod';
 
 const schema = z.object({
   params: z.object({ planId: recordId() }),
-  body: z.strictObject({ name: budgetPlanName() }),
+  body: createGroupBodySchema,
 });
 
 export default createController(schema, async ({ user, params, body }) => {

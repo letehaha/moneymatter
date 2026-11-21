@@ -6,7 +6,15 @@
  * Deserializers convert API decimal inputs to Money.
  */
 import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
-import type { CategorizationMeta, CurrencyMeta, RecordId, TransactionLocation } from '@bt/shared/types';
+import type {
+  CategorizationMeta,
+  CurrencyMeta,
+  ImportSource,
+  PaymentLegInput,
+  RecordId,
+  TransactionLocation,
+  TransactionPaymentPart,
+} from '@bt/shared/types';
 import { Money, moneyToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import type Tags from '@models/tags.model';
 import type TransactionGroups from '@models/transaction-groups.model';
@@ -16,6 +24,7 @@ import {
   getRawTransactionStatus,
   isPreBookingStatus,
 } from '@services/bank-data-providers/enablebanking/utils/transaction-metadata';
+import type { PaymentLegParam, PaymentPart } from '@services/transactions/payment-legs';
 
 // ============================================================================
 // Response Types
@@ -25,8 +34,7 @@ interface TransactionSplitApiResponse {
   id: string;
   categoryId: string;
   amount: number;
-  /** `null` while a custom currency has no rate on the transaction's date. */
-  refAmount: number | null;
+  refAmount: number;
   note: string | null;
   category?: {
     id: string;
@@ -34,15 +42,15 @@ interface TransactionSplitApiResponse {
     color: string;
     icon: string;
   };
+  refundedAmount?: number;
 }
 
 export interface TransactionApiResponse {
   id: string;
   amount: number;
-  /** `null` while a custom currency has no rate on the transaction's date; see `refAmountMissing`. */
-  refAmount: number | null;
+  refAmount: number;
   commissionRate: number;
-  refCommissionRate: number | null;
+  refCommissionRate: number;
   cashbackAmount: number;
   originalAmount: number | null;
   originalCurrencyCode: string | null;
@@ -63,13 +71,14 @@ export interface TransactionApiResponse {
   transferId: string | null;
   originalId: string | null;
   refundLinked: boolean;
-  /** `true` while the base-currency amounts could not be computed for a custom currency. */
-  refAmountMissing: boolean;
+  /** Set on list reads with `includeRefundedAmount` and on each refund link's `originalTransaction`. */
+  refundedAmount?: number;
   /** Present on list reads only. */
   hasAttachments?: boolean;
   /** Decimals, symbol and kind of the account currency as the account owner defines them. */
   currencyMeta?: CurrencyMeta;
   isPlanned: boolean;
+  excludeFromStats: boolean;
   /** Set when a bank transaction merged into this row while it was planned. */
   plannedMerge: { mergedAt: string } | null;
   /** Bank reported the row as PDNG/HOLD and has not booked it yet. */
@@ -100,12 +109,19 @@ export interface TransactionApiResponse {
    *  only on tracker-scoped fetches; absent on the global tx list and on detail lookups
    *  outside a tracker context. `null` means owner-attached (no chip needed in the UI). */
   addedBy?: { id: number; username: string; avatar: string | null } | null;
+  /** Tracker-scoped fetches only: the tracker's rules linked this row. */
+  addedByRule?: boolean;
   /** Whether the caller has write access to this row. The frontend uses this to render
    *  an inert "Transaction Details" dialog (disabled fields, hidden submit/delete) when
    *  the caller can see the tx — typically via a tracker share — but has no write claim
    *  on the parent account. Absent on paths that don't compute it (single-tx writes,
    *  internal fetches). */
   canEdit?: boolean;
+  paymentParentId: string | null;
+  /** List and detail reads: every row of the multi-account payment, main first. */
+  paymentParts?: TransactionPaymentPart[];
+  /** Lists that hide the legs: the whole payment's sum, on its main row. */
+  paymentTotal?: number;
 }
 
 // ============================================================================
@@ -122,7 +138,7 @@ interface CreateTransactionRequest {
   location?: TransactionLocation | null;
   time?: string;
   transactionType: TRANSACTION_TYPES;
-  paymentType: PAYMENT_TYPES;
+  paymentType?: PAYMENT_TYPES;
   accountId: RecordId;
   destinationAccountId?: string;
   destinationTransactionId?: string;
@@ -130,6 +146,7 @@ interface CreateTransactionRequest {
   transferNature: TRANSACTION_TRANSFER_NATURE;
   refundForTxId?: string;
   refundForSplitId?: string;
+  refundForAmount?: number;
   splits?: Array<{
     categoryId: RecordId;
     amount: number; // decimal from API
@@ -139,9 +156,12 @@ interface CreateTransactionRequest {
   payeeId?: RecordId | null;
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  excludeFromStats?: boolean;
   applyAutomations?: boolean;
+  importSource?: ImportSource.messageImport;
   originalAmount?: number; // decimal from API
   originalCurrencyCode?: string;
+  paymentLegs?: PaymentLegInput[];
 }
 
 // ============================================================================
@@ -159,7 +179,7 @@ interface CreateTransactionInternal {
   location?: TransactionLocation | null;
   time?: Date;
   transactionType: TRANSACTION_TYPES;
-  paymentType: PAYMENT_TYPES;
+  paymentType?: PAYMENT_TYPES;
   accountId: RecordId;
   destinationAccountId?: string;
   destinationTransactionId?: string;
@@ -167,6 +187,7 @@ interface CreateTransactionInternal {
   transferNature: TRANSACTION_TRANSFER_NATURE;
   refundsTxId?: string;
   refundsSplitId?: string;
+  refundsAmount?: Money;
   splits?: Array<{
     categoryId: RecordId;
     amount: Money;
@@ -177,9 +198,12 @@ interface CreateTransactionInternal {
   payeeId?: RecordId | null;
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  excludeFromStats?: boolean;
   applyAutomations?: boolean;
+  importSource?: ImportSource.messageImport;
   originalAmount?: Money;
   originalCurrencyCode?: string;
+  paymentLegs?: PaymentLegParam[];
 }
 
 // ============================================================================
@@ -189,14 +213,17 @@ interface CreateTransactionInternal {
 /**
  * Serialize a transaction split from DB format to API response
  */
-function serializeTransactionSplit(
-  split: TransactionSplits & { category?: { id: string; name: string; color: string; icon: string } },
-): TransactionSplitApiResponse {
+type SerializableSplit = TransactionSplits & {
+  category?: { id: string; name: string; color: string; icon: string };
+  refundedAmount?: Money;
+};
+
+function serializeTransactionSplit(split: SerializableSplit): TransactionSplitApiResponse {
   return {
     id: split.id,
     categoryId: split.categoryId,
     amount: moneyToApiDecimal(split.amount),
-    refAmount: moneyToApiDecimalOrNull(split.refAmount),
+    refAmount: moneyToApiDecimal(split.refAmount),
     note: split.note,
     ...(split.category && {
       category: {
@@ -206,6 +233,7 @@ function serializeTransactionSplit(
         icon: split.category.icon,
       },
     }),
+    ...(split.refundedAmount && { refundedAmount: moneyToApiDecimal(split.refundedAmount) }),
   };
 }
 
@@ -223,8 +251,12 @@ export function serializeTransaction(
     tags?: Tags[];
     transactionGroups?: TransactionGroups[];
     addedBy?: { id: number; username: string; avatar: string | null } | null;
+    addedByRule?: boolean;
     canEdit?: boolean;
     currencyMeta?: CurrencyMeta;
+    paymentParts?: PaymentPart[];
+    paymentTotal?: Money;
+    refundedAmount?: Money;
   },
 ): TransactionApiResponse {
   // Aliased literal: a plain property on raw rows, dataValues-only on model instances.
@@ -234,9 +266,9 @@ export function serializeTransaction(
   return {
     id: tx.id,
     amount: moneyToApiDecimal(tx.amount),
-    refAmount: moneyToApiDecimalOrNull(tx.refAmount),
+    refAmount: moneyToApiDecimal(tx.refAmount),
     commissionRate: moneyToApiDecimal(tx.commissionRate),
-    refCommissionRate: moneyToApiDecimalOrNull(tx.refCommissionRate),
+    refCommissionRate: moneyToApiDecimal(tx.refCommissionRate),
     cashbackAmount: moneyToApiDecimal(tx.cashbackAmount),
     originalAmount: moneyToApiDecimalOrNull(tx.originalAmount),
     originalCurrencyCode: tx.originalCurrencyCode ?? null,
@@ -257,21 +289,19 @@ export function serializeTransaction(
     transferId: tx.transferId,
     originalId: tx.originalId,
     refundLinked: tx.refundLinked,
-    refAmountMissing: tx.refAmountMissing ?? false,
+    ...(tx.refundedAmount && { refundedAmount: moneyToApiDecimal(tx.refundedAmount) }),
     isPlanned: tx.isPlanned ?? false,
+    excludeFromStats: tx.excludeFromStats ?? false,
     plannedMerge: extractPlannedMerge({ externalData: tx.externalData }),
     isPending: isPreBookingStatus({ status: getRawTransactionStatus({ externalData: tx.externalData }) }),
     payeeId: tx.payeeId ?? null,
     payeeLocked: tx.payeeLocked ?? false,
     categorizationMeta: tx.categorizationMeta ?? null,
+    paymentParentId: tx.paymentParentId ?? null,
     createdAt: tx.createdAt,
     updatedAt: tx.updatedAt,
     ...(tx.splits && {
-      splits: tx.splits.map((split) =>
-        serializeTransactionSplit(
-          split as TransactionSplits & { category?: { id: string; name: string; color: string; icon: string } },
-        ),
-      ),
+      splits: tx.splits.map((split) => serializeTransactionSplit(split as SerializableSplit)),
     }),
     ...(tx.tags && {
       tags: tx.tags.map((tag) => ({
@@ -299,11 +329,20 @@ export function serializeTransaction(
     // the frontend can distinguish "no metadata yet" from "tx is owned by the tracker
     // owner". Use a property-existence check rather than truthiness to preserve null.
     ...('addedBy' in tx ? { addedBy: tx.addedBy ?? null } : {}),
+    ...(tx.addedByRule && { addedByRule: true }),
     // `canEdit` is omitted on paths that don't compute it (write returns, internal
     // fetches). Property-existence check so an explicit `false` survives serialization.
     ...('canEdit' in tx ? { canEdit: tx.canEdit ?? false } : {}),
     ...(hasAttachments !== undefined && { hasAttachments }),
     ...(tx.currencyMeta && { currencyMeta: tx.currencyMeta }),
+    ...(tx.paymentParts && {
+      paymentParts: tx.paymentParts.map((part) => ({
+        ...part,
+        amount: moneyToApiDecimal(part.amount),
+        paymentAmount: moneyToApiDecimal(part.paymentAmount),
+      })),
+    }),
+    ...(tx.paymentTotal && { paymentTotal: moneyToApiDecimal(tx.paymentTotal) }),
   };
 }
 
@@ -317,7 +356,11 @@ export function serializeTransactions(
       tags?: Tags[];
       transactionGroups?: TransactionGroups[];
       addedBy?: { id: number; username: string; avatar: string | null } | null;
+      addedByRule?: boolean;
       canEdit?: boolean;
+      paymentParts?: PaymentPart[];
+      paymentTotal?: Money;
+      refundedAmount?: Money;
     }
   >,
 ): TransactionApiResponse[] {
@@ -361,6 +404,7 @@ export function deserializeCreateTransaction(req: CreateTransactionRequest, user
     transferNature: req.transferNature,
     refundsTxId: req.refundForTxId,
     refundsSplitId: req.refundForSplitId,
+    refundsAmount: req.refundForAmount !== undefined ? Money.fromDecimal(req.refundForAmount) : undefined,
     splits: req.splits?.map((split) => ({
       categoryId: split.categoryId,
       amount: Money.fromDecimal(split.amount),
@@ -371,8 +415,23 @@ export function deserializeCreateTransaction(req: CreateTransactionRequest, user
     payeeId: req.payeeId,
     payeeLocked: req.payeeLocked,
     isPlanned: req.isPlanned,
+    excludeFromStats: req.excludeFromStats,
     applyAutomations: req.applyAutomations,
+    importSource: req.importSource,
     originalAmount: req.originalAmount !== undefined ? Money.fromDecimal(req.originalAmount) : undefined,
     originalCurrencyCode: req.originalCurrencyCode,
+    paymentLegs: req.paymentLegs && deserializePaymentLegs({ legs: req.paymentLegs }),
   };
 }
+
+export const deserializePaymentLegs = ({ legs }: { legs: PaymentLegInput[] }): PaymentLegParam[] =>
+  legs.map((leg) => {
+    const paymentAmount = leg.paymentAmount !== undefined ? Money.fromDecimal(leg.paymentAmount) : undefined;
+    return leg.accountId === undefined
+      ? {
+          transactionId: leg.transactionId,
+          amount: leg.amount !== undefined ? Money.fromDecimal(leg.amount) : undefined,
+          paymentAmount,
+        }
+      : { accountId: leg.accountId, amount: Money.fromDecimal(leg.amount), paymentAmount };
+  });

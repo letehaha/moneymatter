@@ -37,9 +37,10 @@ vi.mock('@/stores', async () => {
   return {
     useCurrenciesStore: () => ({
       currencies: ref([
-        { currencyCode: 'USD', currency: { currency: 'US Dollar' } },
-        { currencyCode: 'USDT', currency: { currency: 'Tether' } },
-        { currencyCode: 'USDC', currency: { currency: 'USD Coin' } },
+        { currencyCode: 'USD', currency: { currency: 'US Dollar', isCustom: false } },
+        { currencyCode: 'EUR', currency: { currency: 'Euro', isCustom: false } },
+        { currencyCode: 'USDT', currency: { currency: 'Tether', isCustom: true } },
+        { currencyCode: 'USDC', currency: { currency: 'USD Coin', isCustom: true } },
       ]),
       isoCurrencies: ref([
         { code: 'USD', currency: 'US Dollar' },
@@ -135,9 +136,11 @@ const buildCurrency = (patch: Partial<UserCurrencyModel> = {}): CurrencyWithExch
     rateSource: 'manual',
     rateSourceConfig: null,
     currency: { code: 'BTC', currency: 'Bitcoin', isCustom: true },
-    rate: 0,
+    name: 'Bitcoin',
+    isCustomCurrency: true,
+    rate: 50000,
     quoteCode: 'USD',
-    quoteRate: 0,
+    quoteRate: 0.00002,
     ...patch,
   }) as unknown as CurrencyWithExchangeRate;
 
@@ -301,13 +304,15 @@ describe('RateSourceEditor', () => {
   });
 
   describe('peg source', () => {
-    it('saves the peg currency and factor, lists the other held currencies and refreshes after saving', async () => {
+    it('saves the peg currency and factor, offers only the held ISO currencies and refreshes after saving', async () => {
       const wrapper = mountEditor();
 
       await selectTab(wrapper, 'peg');
-      const options = wrapper.findAll('[data-testid="rate-source-peg-currency"] option').map((item) => item.text());
-      expect(options).toContain('USDT · Tether');
-      expect(options).not.toContain('BTC');
+      const values = wrapper
+        .findAll('[data-testid="rate-source-peg-currency"] option')
+        .map((item) => item.attributes('value'))
+        .filter(Boolean);
+      expect(values).toEqual(['USD', 'EUR']);
 
       await wrapper.find('[data-testid="rate-source-peg-currency"]').setValue('USD');
       await setInput(wrapper, 'rate-source-peg-factor', '0.5');
@@ -431,15 +436,15 @@ describe('RateSourceEditor', () => {
 
     it("shows the API's explanation of a refusal", async () => {
       mockUpdate.mockRejectedValue(
-        new ApiErrorResponseError('bad', { code: API_ERROR_CODES.validationError, message: 'Peg cycle detected' }),
+        new ApiErrorResponseError('bad', { code: API_ERROR_CODES.validationError, message: 'No EUR rate yet' }),
       );
       const wrapper = mountEditor();
 
       await selectTab(wrapper, 'peg');
-      await wrapper.find('[data-testid="rate-source-peg-currency"]').setValue('USDT');
+      await wrapper.find('[data-testid="rate-source-peg-currency"]').setValue('EUR');
       await save(wrapper);
 
-      expect(wrapper.find('[data-testid="rate-source-error"]').text()).toBe('Peg cycle detected');
+      expect(wrapper.find('[data-testid="rate-source-error"]').text()).toBe('No EUR rate yet');
     });
   });
 
@@ -473,6 +478,25 @@ describe('RateSourceEditor', () => {
           },
         },
       });
+    });
+
+    it('shows why the first fetch failed and does not report the source as saved', async () => {
+      mockUpdate.mockRejectedValue(
+        new ApiErrorResponseError('bad', {
+          code: API_ERROR_CODES.validationError,
+          message: 'No rate for BTC',
+          details: { reason: 'http_status' },
+        }),
+      );
+      const wrapper = mountEditor();
+
+      await fillHttp(wrapper);
+      await save(wrapper);
+
+      expect(wrapper.find('[data-testid="rate-source-error"]').text()).toContain('No rate for BTC');
+      expect(wrapper.find('[data-testid="rate-source-error-reason"]').exists()).toBe(true);
+      expect(mockAddSuccess).not.toHaveBeenCalled();
+      expect(wrapper.emitted('changed')).toBeUndefined();
     });
 
     it('masks header values while they are typed', async () => {

@@ -5,6 +5,7 @@ type AnyFn = (...args: unknown[]) => Promise<unknown>;
 jest.mock('@models/users-currencies.model', () => ({ __esModule: true, default: { findOne: jest.fn() } }));
 
 /* eslint-disable import/first */
+import { UnexpectedError } from '@js/errors';
 import UsersCurrencies from '@models/users-currencies.model';
 
 import { findPeg } from './peg';
@@ -20,7 +21,7 @@ describe('findPeg', () => {
   it('reads the peg currency and factor of a pegged currency', async () => {
     findHeld.mockResolvedValue({ rateSource: 'peg', rateSourceConfig: { pegCurrency: 'USD', factor: 1.5 } });
 
-    expect(await findPeg({ userId: 1, code: 'USDT' })).toEqual({ kind: 'peg', quoteCode: 'USD', factor: 1.5 });
+    expect(await findPeg({ userId: 1, code: 'USDT' })).toEqual({ quoteCode: 'USD', factor: 1.5 });
     expect(findHeld).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: 1, currencyCode: 'USDT' } }));
   });
 
@@ -31,7 +32,7 @@ describe('findPeg', () => {
   ])('reports no peg for %s', async (_name, held) => {
     findHeld.mockResolvedValue(held);
 
-    expect(await findPeg({ userId: 1, code: 'USDT' })).toEqual({ kind: 'none' });
+    expect(await findPeg({ userId: 1, code: 'USDT' })).toBeNull();
   });
 
   it.each([
@@ -39,10 +40,11 @@ describe('findPeg', () => {
     ['an unknown key', { pegCurrency: 'USD', factor: 1, extra: true }],
     ['a non-positive factor', { pegCurrency: 'USD', factor: 0 }],
     ['a currency code of the wrong shape', { pegCurrency: 'U$D', factor: 1 }],
+    ['a code that is not ISO', { pegCurrency: 'USDT', factor: 1 }],
     ['a factor that is not a number', { pegCurrency: 'USD', factor: 'one' }],
-  ])('reports an unreadable peg for %s', async (_name, rateSourceConfig) => {
+  ])('throws for an unreadable peg with %s', async (_name, rateSourceConfig) => {
     findHeld.mockResolvedValue({ rateSource: 'peg', rateSourceConfig });
 
-    expect(await findPeg({ userId: 1, code: 'USDT' })).toEqual({ kind: 'invalid' });
+    await expect(findPeg({ userId: 1, code: 'USDT' })).rejects.toBeInstanceOf(UnexpectedError);
   });
 });

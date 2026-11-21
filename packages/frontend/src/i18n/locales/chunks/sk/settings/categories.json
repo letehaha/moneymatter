@@ -7,7 +7,7 @@
       "organizeButton": "Usporiadať",
       "empty": "Zatiaľ žiadne kategórie. Vytvorte prvú kategóriu a začnite.",
       "categoriesCount": "{n} kategória | {n} kategórie | {n} kategórií",
-      "organizeHint": "Presuňte na novú nadradenú kategóriu, alebo pustite sem pre najvyššiu úroveň.",
+      "organizeHint": "Pustením na kategóriu ju vnoríte, pustením medzi kategórie zmeníte poradie",
       "dropToTopLevel": "Pustite sem a „{name}\" sa stane kategóriou najvyššej úrovne",
       "movesQueued": "{n} presun čaká | {n} presuny čakajú | {n} presunov čaká",
       "unqueueMove": "Odstrániť tento presun",

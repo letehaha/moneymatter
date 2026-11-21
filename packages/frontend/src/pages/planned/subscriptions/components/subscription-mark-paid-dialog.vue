@@ -8,7 +8,7 @@ import {
 import { VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import { getAccountDisplayLabel } from '@/common/utils/account-display';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
-import { isConnectedAccount } from '@/components/dialogs/manage-transaction/helpers';
+import { isBankAccount } from '@/common/utils/bank-row-permissions';
 import AccountSelectField from '@/components/fields/account-select-field.vue';
 import DateField from '@/components/fields/date-field.vue';
 import InputField from '@/components/fields/input-field.vue';
@@ -19,6 +19,7 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { useInvalidateSubscriptionQueries } from '@/composable/data-queries/subscriptions';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { ApiErrorResponseError } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
@@ -102,17 +103,17 @@ const isPending = computed(() => isMarkPending.value || isPreviewLoading.value);
 
 const hasAccount = computed(() => activeSubscription.value?.accountId != null);
 
-const isBankAccount = computed(() => {
+const isAccountBankLinked = computed(() => {
   const accountId = activeSubscription.value?.accountId;
   const account = accountId ? accountsRecord.value[accountId] : null;
-  return !!account && isConnectedAccount({ account });
+  return !!account && isBankAccount({ account });
 });
 
 /** Recording choices offered for the active subscription; the radio is shown only when there is more than one. */
 const modeOptions = computed<RecordMode[]>(() => {
   const options: RecordMode[] = linkedPayments.value.length > 0 ? ['existing'] : [];
   if (!hasAccount.value) return [...options, 'mark', 'transaction'];
-  return [...options, isBankAccount.value ? 'mark' : 'transaction'];
+  return [...options, isAccountBankLinked.value ? 'mark' : 'transaction'];
 });
 
 const modeLabels = computed<Record<RecordMode, { title: string; description: string }>>(() => ({
@@ -182,7 +183,16 @@ const dialogAmountCurrency = computed(() => {
   return accountCurrencyFor(sub) ?? sub.expectedCurrencyCode ?? null;
 });
 
-const amountDecimals = computed(() => getCurrencyDecimals({ code: dialogAmountCurrency.value }));
+const amountDecimals = computed(() => {
+  const sub = activeSubscription.value;
+  const accountId = sub ? (sub.accountId ?? selectedAccountId.value) : null;
+  const account = accountId ? accountsRecord.value[accountId] : undefined;
+  return getCurrencyDecimals({ code: dialogAmountCurrency.value, meta: account?.currencyMeta });
+});
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
+const amountDecimalError = computed(() =>
+  isBooking.value && !currencyDecimal.isValid(amount.value) ? currencyDecimal.message.value : undefined,
+);
 
 const isConfirmDisabled = computed(() => {
   if (isPending.value) return true;
@@ -190,7 +200,7 @@ const isConfirmDisabled = computed(() => {
   if (!isBooking.value) return false;
   // Booking against a not-yet-linked account requires picking one.
   if (!hasAccount.value && !selectedAccountId.value) return true;
-  return !amount.value || Number(amount.value) <= 0;
+  return !amount.value || Number(amount.value) <= 0 || !!amountDecimalError.value;
 });
 
 const confirmLabel = computed(() => {
@@ -257,7 +267,7 @@ async function triggerPay({ subscription, periodId }: { subscription: PayableSub
   }
 
   const account = accountsRecord.value[subscription.accountId];
-  if (account && isConnectedAccount({ account })) {
+  if (account && isBankAccount({ account })) {
     markPaid({ id: subscription.id, periodId });
     return;
   }
@@ -330,8 +340,8 @@ defineExpose({ triggerPay, isPending });
           :key="mode"
           :class="
             cn(
-              'border-input hover:bg-accent hover:text-accent-foreground flex cursor-pointer flex-col gap-1 rounded-md border p-3 transition-colors',
-              recordMode === mode && 'border-primary bg-primary/5',
+              'border-input hover:bg-hover flex cursor-pointer flex-col gap-1 rounded-md border p-3 transition-colors',
+              recordMode === mode && 'border-primary bg-primary/5 hover:bg-primary/5',
             )
           "
         >
@@ -354,8 +364,8 @@ defineExpose({ triggerPay, isPending });
           :key="candidate.id"
           :class="
             cn(
-              'border-input hover:bg-accent flex cursor-pointer items-center gap-3 rounded-md border p-3 text-sm transition-colors',
-              selectedLinkedPaymentId === candidate.id && 'border-primary bg-primary/5',
+              'border-input hover:bg-hover flex cursor-pointer items-center gap-3 rounded-md border p-3 text-sm transition-colors',
+              selectedLinkedPaymentId === candidate.id && 'border-primary bg-primary/5 hover:bg-primary/5',
             )
           "
         >
@@ -370,7 +380,7 @@ defineExpose({ triggerPay, isPending });
             </span>
           </div>
           <span class="font-medium whitespace-nowrap">
-            {{ formatAmountByCurrencyCode(candidate.amount, candidate.currencyCode) }}
+            {{ formatAmountByCurrencyCode({ amount: candidate.amount, currencyCode: candidate.currencyCode }) }}
           </span>
         </Label>
       </RadioGroup>
@@ -390,10 +400,10 @@ defineExpose({ triggerPay, isPending });
           v-model="amount"
           type="number"
           :decimals="amountDecimals"
-          min="0.01"
           only-positive
           :label="$t('dialogs.subscriptionMarkPaid.amountLabel')"
           :placeholder="$t('dialogs.subscriptionMarkPaid.amountPlaceholder')"
+          :error-message="amountDecimalError"
         >
           <template v-if="dialogAmountCurrency" #iconTrailing>
             <span>{{ dialogAmountCurrency }}</span>

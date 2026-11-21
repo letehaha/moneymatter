@@ -18,6 +18,7 @@
         "updateError": "An error occured while trying to update account",
         "nameLabel": "Account name",
         "namePlaceholder": "Account name",
+        "openExternalUrl": "Open external link",
         "transferToPortfolio": "Transfer to portfolio",
         "editAccountName": "Edit account name",
         "save": "Save",
@@ -25,9 +26,9 @@
         "renameAccount": "Rename account",
         "adjustBalance": "Adjust balance",
         "adjustBalanceTooltip": "Only available for manually-managed accounts",
-        "share": "分享账户",
+        "share": "Share account",
         "shareBadge": {
-          "read": "仅浏览",
+          "read": "View only",
           "writeOwn": "Can edit own transactions",
           "writeAll": "Can edit transactions",
           "manage": "Manager"
@@ -51,8 +52,8 @@
         "transactionNote": "Transaction note",
         "optionalNote": "Optional note",
         "effectiveDate": "Effective date",
-        "cancel": "取消",
-        "confirm": "确认",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
         "saving": "Saving...",
         "successNotification": "Balance adjusted successfully",
         "errorNotification": "Failed to adjust balance"
@@ -120,7 +121,7 @@
       "link": {
         "selectConnection": "Select a bank connection",
         "selectExternalAccount": "Select an external account",
-        "loading": "加载中……",
+        "loading": "Loading...",
         "title": "Link account to bank connection",
         "description": "Connect this system account to a bank connection for automatic transaction syncing.",
         "whatWillHappen": "What will happen:",
@@ -149,11 +150,13 @@
         "residualAdjustmentDescription": "Adds one balance adjustment transaction dated today. Your past balances stay exactly as they are.",
         "residualOpeningLabel": "Change the starting balance",
         "residualOpeningDescription": "Moves the account's starting balance by the difference, so every past balance shifts too. Pick this if transactions are missing from the start of the history.",
-        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview."
+        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview.",
+        "linkFailed": "An error occurred while trying to link account",
+        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
       },
       "tabs": {
         "details": "Details",
-        "settings": "设置",
+        "settings": "Settings",
         "integrations": "Data connection",
         "sharing": "Sharing"
       },
@@ -172,11 +175,21 @@
         "initialBalanceUpdateError": "Failed to update initial balance",
         "accountType": "Account type:",
         "accountCategory": "Account category:",
-        "editAccountCategory": "编辑分类",
+        "editAccountCategory": "Edit category",
         "accountCategoryUpdateSuccess": "Account category updated",
         "accountCategoryUpdateError": "Failed to update account category",
+        "defaultPaymentType": "Default payment type:",
+        "editDefaultPaymentType": "Edit default payment type",
+        "defaultPaymentTypeUpdateSuccess": "Default payment type updated",
+        "defaultPaymentTypeUpdateError": "Failed to update default payment type",
+        "externalUrl": "External URL:",
+        "externalUrlPlaceholder": "https://bank.example.com",
+        "externalUrlNotSet": "Not set",
+        "editExternalUrl": "Edit external URL",
+        "externalUrlUpdateSuccess": "External URL updated",
+        "externalUrlUpdateError": "Failed to update external URL",
         "currency": "Currency:",
-        "main": "（主分类）",
+        "main": "(main)",
         "exchangeRate": "Exchange rate:",
         "exchangeRateLiveUpdate": "Exchange rate live update:",
         "enabled": "Enabled",
@@ -189,7 +202,7 @@
       },
       "visibility": {
         "updateSuccess": "Updated successfully",
-        "unexpectedError": "未知错误"
+        "unexpectedError": "Unexpected error"
       },
       "excludeFromStats": {
         "label": "Exclude from statistics",
@@ -200,7 +213,7 @@
         "title": "Load transactions for selected period",
         "notLinked": "This account is not linked to a bank connection",
         "dateRangeExceeds": "Date range cannot exceed 1 year",
-        "loading": "加载中……",
+        "loading": "Loading...",
         "selectPeriod": "Select period",
         "loadButton": "Load transactions",
         "failed": "Failed to load transactions",
@@ -234,13 +247,14 @@
         "connectionValidity": "Connection validity",
         "in": "in",
         "connectionSettings": "Connection settings",
-        "settings": "设置",
+        "settings": "Settings",
         "ifPersists": ". If the issue persists, use",
         "unlink": "Unlink",
         "belowThenLink": "below, then link it again."
       },
       "rightPanel": {
         "transactions": "Transactions",
+        "viewAll": "View all",
         "analyticsSoon": "Analytics (soon)"
       },
       "integrations": {
@@ -264,7 +278,7 @@
           "manage": "Manage"
         },
         "writeScope": {
-          "all": "所有交易",
+          "all": "All transactions",
           "own": "Own transactions only"
         },
         "member": {
@@ -299,7 +313,7 @@
     "vehicleDetails": {
       "notFound": "Vehicle not found",
       "backToAccounts": "Back to accounts",
-      "editButton": "编辑",
+      "editButton": "Edit",
       "overrideValueButton": "Override value",
       "currentValue": "Current value",
       "purchasePrice": "Purchase price",
@@ -342,16 +356,16 @@
         "errorNotification": "Failed to update vehicle value",
         "confirm": "Save value",
         "saving": "Saving...",
-        "cancel": "取消"
+        "cancel": "Cancel"
       },
       "overrideHistory": {
         "title": "Override history",
         "empty": "No manual overrides yet. Override the value to record one.",
-        "delete": "删除",
+        "delete": "Delete",
         "deleteTitle": "Delete this override?",
-        "deleteDescription": "Removing this override re-anchors the depreciation to the previous override (or original purchase if none). The associated transaction will be deleted.",
-        "deleteConfirm": "删除",
-        "deleteSuccess": "Override removed",
+        "deleteDescription": "Removing this override re-anchors the depreciation to the previous override (or original purchase if none). The associated transaction will be moved to Trash, where you can restore it for 30 days.",
+        "deleteConfirm": "Delete",
+        "deleteSuccess": "Override removed and its transaction moved to Trash",
         "deleteError": "Failed to remove override"
       },
       "sections": {

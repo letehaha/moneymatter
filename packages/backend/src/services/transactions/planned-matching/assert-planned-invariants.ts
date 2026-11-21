@@ -86,8 +86,8 @@ interface PlannedStandaloneUpdate {
   destinationAccountId?: string;
   destinationAmount?: Money;
   destinationTransactionId?: string;
-  refundsTxId?: string | null;
-  refundedByTxIds?: string[] | null;
+  refundsTargets?: { txId: string }[] | null;
+  refundedByTxIds?: { txId: string }[] | null;
 }
 
 /**
@@ -119,7 +119,7 @@ export const assertPlannedStandalone = async ({
     Boolean(update?.destinationAccountId) ||
     Boolean(update?.destinationAmount) ||
     Boolean(update?.destinationTransactionId) ||
-    Boolean(update?.refundsTxId) ||
+    Boolean(update?.refundsTargets?.length) ||
     Boolean(update?.refundedByTxIds?.length);
 
   if (entangled) {

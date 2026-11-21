@@ -12,7 +12,7 @@ jest.mock('./category-allocation', () => ({ __esModule: true, resolveRefundPairs
 import { findTransactions } from '@models/transactions-query';
 
 import { resolveRefundPairs } from './category-allocation';
-import { statsTransactions } from './stats-transactions';
+import { excludeFromStatsWhere, statsTransactions } from './stats-transactions';
 /* eslint-enable import/first */
 
 const findTransactionsMock = jest.mocked(findTransactions);
@@ -65,30 +65,17 @@ describe('statsTransactions window bounds', () => {
     expect(bounds[Op.lte]).toBeUndefined();
   });
 
-  it('states only the money-movement clause for an unbounded window', async () => {
+  it('states the money-movement clause and the reporting opt-out for an unbounded window', async () => {
     await statsTransactions({ access: { creator: 7 }, planned: 'exclude', refunds: 'ignore', window: {} });
 
-    expect(lastWhere()![Op.and]).toHaveLength(1);
+    const fragments = lastWhere()![Op.and];
+    expect(fragments).toHaveLength(2);
+    expect(Object.getOwnPropertySymbols(fragments[0]!)).toContain(Op.or);
+    expect(fragments).toContain(excludeFromStatsWhere);
   });
 });
 
 describe('statsTransactions refund pairs', () => {
-  it('resolves the pairs at the decimals of the base currency', async () => {
-    const rows = [{ id: 'tx-1' }];
-    findTransactionsMock.mockResolvedValue(rows as never);
-    resolveRefundPairsMock.mockResolvedValue([]);
-
-    await statsTransactions({
-      access: { creator: 7 },
-      planned: 'exclude',
-      refunds: 'net',
-      decimals: 3,
-      window: {},
-    });
-
-    expect(resolveRefundPairsMock).toHaveBeenCalledWith({ transactions: rows, decimals: 3 });
-  });
-
   it('leaves the pairs empty when refunds are not netted', async () => {
     findTransactionsMock.mockResolvedValue([{ id: 'tx-1' }] as never);
 

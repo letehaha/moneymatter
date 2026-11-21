@@ -1,0 +1,514 @@
+.hero > .wrap {
+  position: relative;
+}
+.wall-inner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 100%;
+  transform: rotate(-5deg) scale(0.72);
+  transform-origin: 50% 40%;
+}
+/* 860px = twice the 430px clear zone of the mask below: at this width the wall is fully masked out. */
+@media (max-width: 860px) {
+  .wall {
+    display: none;
+  }
+}
+.hero {
+  position: relative;
+  overflow: clip;
+  text-align: center;
+  padding-block: 104px 76px;
+  background:
+    radial-gradient(36% 480px at 0 170px, var(--wall-tint), transparent 72%),
+    radial-gradient(36% 480px at 100% 170px, var(--wall-tint), transparent 72%),
+    radial-gradient(70% 520px at 50% -80px, var(--wash), transparent 70%),
+    radial-gradient(46% 360px at 50% 72%, var(--glow), transparent 72%);
+}
+.hero-sub {
+  margin: 18px auto 0;
+  max-width: 36rem;
+  font-size: clamp(16px, 1.6vw, 18px);
+  color: var(--muted);
+}
+.wall {
+  position: absolute;
+  inset: 0 0 auto 0;
+  overflow: hidden;
+  pointer-events: none;
+  text-align: left;
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  height: 760px;
+  opacity: calc(0.6 * var(--wall-o, 1));
+  -webkit-mask-image:
+    linear-gradient(
+      to right,
+      #000 calc(50% - 640px),
+      transparent calc(50% - 430px),
+      transparent calc(50% + 430px),
+      #000 calc(50% + 640px)
+    ),
+    linear-gradient(to bottom, #000 40%, transparent 72%);
+  mask-image:
+    linear-gradient(
+      to right,
+      #000 calc(50% - 640px),
+      transparent calc(50% - 430px),
+      transparent calc(50% + 430px),
+      #000 calc(50% + 640px)
+    ),
+    linear-gradient(to bottom, #000 40%, transparent 72%);
+}
+.wall-inner > div {
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px var(--wall-edge),
+    0 22px 44px -26px var(--wall-shadow);
+}
+.wall-inner {
+  animation: wall-drift 48s ease-in-out infinite alternate;
+}
+@keyframes wall-drift {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: -48px -30px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wall-inner {
+    animation: none;
+  }
+}
+.isl-card {
+  position: absolute;
+  z-index: 3;
+  width: 264px;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    var(--shadow-pop),
+    inset 0 1px 0 var(--edge);
+  font-size: 13.5px;
+  line-height: 1.45;
+  animation: card-in 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .isl-card {
+    animation: none;
+  }
+}
+.isl-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.isl-card p {
+  margin-top: 4px;
+  color: var(--muted);
+}
+.isl-card ul {
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+}
+.isl-card li {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  gap: 8px;
+}
+.isl-card li svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
+  color: var(--accent);
+}
+.isl-card li.next {
+  color: var(--muted);
+}
+.isl-card li.next i {
+  width: 8px;
+  height: 8px;
+  margin: 6px 3px 0;
+  border: 1.5px dashed var(--line);
+  border-radius: 50%;
+}
+.isl-card[data-card='liabilities'],
+.isl-card[data-card='investments'] {
+  left: 0;
+  top: 0;
+}
+.isl-card[data-card='accounts'],
+.isl-card[data-card='vehicles'] {
+  right: 0;
+  top: 0;
+}
+.isl-card[data-card='realestate'] {
+  left: 0;
+  bottom: 0;
+}
+.isl-card[data-card='commodities'] {
+  left: 60%;
+  bottom: 0;
+}
+.isl-card[data-card='pension'] {
+  right: 0;
+  bottom: 0;
+}
+.iso-legend {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 13px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.chip:hover {
+  border-color: var(--line);
+}
+.chip[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.chip small {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.iso-hint {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+@container iso (max-width: 940px) {
+  .isl-card,
+  .isl-card[data-card] {
+    position: static;
+    width: auto;
+    margin-top: 14px;
+  }
+}
+.iso {
+  container: iso / inline-size;
+  margin-top: 68px;
+  text-align: left;
+}
+.iso-view {
+  position: relative;
+}
+.iso-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.iso-svg polygon,
+.iso-svg .ln,
+.iso-svg .wire-line,
+.iso-svg .floor-grid,
+.iso-svg .port,
+.iso-svg .pill rect {
+  vector-effect: non-scaling-stroke;
+}
+.ft {
+  fill: var(--iso-top);
+}
+.fl {
+  fill: var(--iso-left);
+}
+.fr {
+  fill: var(--iso-right);
+}
+.fs {
+  fill: var(--iso-side);
+}
+.ft,
+.fl,
+.fr,
+.fs,
+.ln {
+  stroke: var(--iso-stroke);
+  stroke-width: 1.15;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.ln {
+  fill: none;
+}
+.wheel {
+  fill: var(--iso-stroke);
+  stroke: var(--iso-top);
+  stroke-width: 2;
+}
+.ft.ac {
+  fill: color-mix(in srgb, var(--accent) 70%, #fff);
+}
+.fl.ac {
+  fill: var(--accent);
+}
+.fr.ac {
+  fill: color-mix(in srgb, var(--accent) 80%, #000);
+}
+.fs.ac {
+  fill: color-mix(in srgb, var(--accent) 88%, #000);
+}
+.ft.ac,
+.fl.ac,
+.fr.ac,
+.fs.ac {
+  stroke: color-mix(in srgb, var(--accent) 64%, #000);
+}
+.ft.board {
+  fill: var(--iso-board);
+}
+.fs.board {
+  fill: var(--iso-board-side);
+}
+.ft.logo {
+  fill: url(#iso-logo);
+  stroke: #6d3fd1;
+}
+.fs.logo {
+  fill: #6a34c8;
+  stroke: #5a2bb0;
+}
+:is(.iso-svg, .final-scene) .floor-grid {
+  fill: none;
+  stroke: var(--iso-grid);
+  stroke-width: 1;
+}
+.glow-a {
+  stop-color: var(--accent);
+  stop-opacity: var(--iso-glow);
+}
+.glow-b {
+  stop-color: var(--accent);
+  stop-opacity: 0;
+}
+.shade-a {
+  stop-color: var(--iso-shade);
+  stop-opacity: var(--iso-shade-o);
+}
+.shade-b {
+  stop-color: var(--iso-shade);
+  stop-opacity: 0;
+}
+.wire-line {
+  fill: none;
+  stroke: var(--iso-wire);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 6;
+  stroke-linecap: round;
+  transition: stroke 0.25s;
+}
+.wire.soon .wire-line {
+  opacity: 0.7;
+}
+.wire.on .wire-line {
+  stroke: var(--accent);
+}
+.port {
+  fill: var(--iso-top);
+  stroke: var(--iso-stroke);
+  stroke-width: 1.15;
+  transition:
+    fill 0.5s,
+    stroke 0.5s;
+}
+.port.ping {
+  fill: var(--accent);
+  stroke: var(--accent);
+  transition: none;
+}
+.wire.on .port {
+  stroke: var(--accent);
+}
+.dot {
+  fill: var(--accent);
+}
+.lbl {
+  font: 700 14px var(--sans);
+  fill: var(--fg);
+  letter-spacing: -0.01em;
+}
+.cap {
+  font: 500 9.5px var(--mono);
+  fill: var(--muted);
+  letter-spacing: 0.08em;
+}
+.num {
+  font: 700 21px var(--display);
+  fill: var(--fg);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.num.sm {
+  font-size: 16px;
+}
+.area {
+  fill: var(--accent-soft);
+}
+.spark {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.spark-end {
+  fill: var(--accent);
+  stroke: var(--iso-top);
+  stroke-width: 2;
+}
+.bar {
+  fill: var(--iso-mute);
+}
+.bar.ac {
+  fill: var(--accent);
+}
+.gauge.ac {
+  stroke: var(--accent);
+}
+.hit {
+  fill: transparent;
+  stroke: none;
+}
+.isl {
+  cursor: pointer;
+}
+.isl-lift {
+  transition: transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.isl.on .isl-lift {
+  transform: translateY(-9px);
+}
+.isl.on .ft.plate {
+  fill: color-mix(in srgb, var(--accent) 10%, var(--iso-top));
+  stroke: var(--accent);
+  stroke-dasharray: none;
+}
+.isl.on .fs.plate {
+  fill: color-mix(in srgb, var(--accent) 22%, var(--iso-side));
+  stroke: var(--accent);
+  stroke-dasharray: none;
+}
+.isl.soon .plate {
+  stroke-dasharray: 4 4;
+}
+.isl.soon .ft.plate {
+  fill: var(--iso-soon-top);
+}
+.isl.soon .fs.plate {
+  fill: var(--iso-soon-side);
+}
+.isl.soon .obj {
+  opacity: 0.55;
+}
+.isl.soon.on .obj {
+  opacity: 0.85;
+}
+.isl.soon .lbl {
+  fill: var(--muted);
+}
+.pill rect {
+  fill: var(--bg);
+  stroke: var(--iso-stroke);
+  stroke-width: 1;
+}
+.pill text {
+  font: 600 9px var(--mono);
+  fill: var(--muted);
+  letter-spacing: 0.1em;
+}
+.hero h1 {
+  margin-top: 0;
+  font-family: var(--display);
+  font-size: clamp(34px, 4.7vw, 58px);
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.032em;
+}
+.hero-ios {
+  margin-top: 26px;
+}
+.tf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 22px 9px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  background: #000;
+  color: #fff;
+  text-align: left;
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+.tf-badge:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+.tf-badge svg {
+  width: 28px;
+  height: 28px;
+  flex: none;
+}
+.tf-badge small {
+  display: block;
+  font-size: 12px;
+  line-height: 1.25;
+}
+.tf-badge strong {
+  display: block;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+.hero .eyebrow {
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.hero .eyebrow a {
+  text-decoration: none;
+}
+.hero .eyebrow a:hover {
+  text-decoration: underline;
+}

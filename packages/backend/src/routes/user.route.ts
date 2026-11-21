@@ -26,6 +26,7 @@ import {
 } from '@controllers/currencies/rate-source';
 import { exportDataController } from '@controllers/data-export/export-data.controller';
 import { getConnectedAppsController, revokeConnectedAppController } from '@controllers/mcp/connected-apps.controller';
+import { getMcpToolsetsController } from '@controllers/mcp/toolsets.controller';
 import {
   createConnectionController,
   deleteConnectionController,
@@ -113,7 +114,12 @@ router.post('/currencies', checkBaseCurrencyLock, addUserCurrencies);
 router.get('/currencies/custom', listCustomCurrencies);
 // Coin lookup for the CoinGecko rate-source editor; read-only, so it is not behind the guard.
 router.get('/currencies/coingecko/search', findCoingeckoCoins);
-router.post('/currencies/custom', checkBaseCurrencyLock, createCustomCurrency);
+router.post(
+  '/currencies/custom',
+  requireFeature(FEATURES.custom_currencies),
+  checkBaseCurrencyLock,
+  createCustomCurrency,
+);
 router.put('/currencies/custom/:code', checkBaseCurrencyLock, updateCustomCurrency);
 router.delete('/currencies/custom/:code', checkBaseCurrencyLock, deleteCustomCurrency);
 router.post('/currencies/base', checkBaseCurrencyLock, setBaseUserCurrency);
@@ -178,5 +184,7 @@ router.post(
 // MCP Connected Apps
 router.get('/settings/mcp/connected-apps', getConnectedAppsController);
 router.delete('/settings/mcp/connected-apps/:clientId', revokeConnectedAppController);
+// The consent screen reads the toolsets and their tool counts from here.
+router.get('/settings/mcp/toolsets', getMcpToolsetsController);
 
 export default router;

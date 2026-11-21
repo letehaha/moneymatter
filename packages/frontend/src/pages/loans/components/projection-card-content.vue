@@ -72,7 +72,7 @@ const currency = computed(() => props.loan.currencyCode);
 
 const formatCurrency = (amount: number | null) => {
   if (amount === null) return '—';
-  return formatAmountByCurrencyCode(amount, currency.value);
+  return formatAmountByCurrencyCode({ amount, currencyCode: currency.value });
 };
 
 const paidPercentDisplay = computed(() => `${props.loan.projection.paidToDatePercent.toFixed(1)}%`);

@@ -11,8 +11,10 @@ export type TransferDestinationType = 'account' | 'portfolio' | 'loan';
 export const useTransferFormLogic = ({
   form,
   isTransferTx,
-  isRecordExternal,
-  isOppositeTxExternal,
+  isRecordBankLocked,
+  isOppositeBankLocked,
+  isRecordOnBankAccount,
+  isOppositeOnBankAccount,
   transaction,
   oppositeTransaction,
   linkedTransaction,
@@ -20,8 +22,12 @@ export const useTransferFormLogic = ({
 }: {
   form: Ref<UI_FORM_STRUCT>;
   isTransferTx: Ref<boolean>;
-  isRecordExternal: Ref<boolean>;
-  isOppositeTxExternal: Ref<boolean>;
+  /** The leg's amount is bank-owned. */
+  isRecordBankLocked: Ref<boolean>;
+  isOppositeBankLocked: Ref<boolean>;
+  /** The leg sits on a bank-linked account, so it can never move to another one. */
+  isRecordOnBankAccount: Ref<boolean>;
+  isOppositeOnBankAccount: Ref<boolean>;
   transaction: TransactionModel | undefined;
   oppositeTransaction: TransactionModel | undefined;
   linkedTransaction: Ref<TransactionModel | null>;
@@ -47,12 +53,24 @@ export const useTransferFormLogic = ({
     return isTransferTx.value;
   });
 
+  const isAmountFieldDisabled = computed(() => {
+    if (isRecordBankLocked.value) {
+      if (!isTransferTx.value) return true;
+      if (transaction?.transactionType === TRANSACTION_TYPES.expense) return true;
+    }
+    if (isOppositeBankLocked.value && oppositeTransaction?.transactionType === TRANSACTION_TYPES.expense) return true;
+    // Means it's "Out of wallet"
+    if (form.value.account?.id === OUT_OF_WALLET_ACCOUNT_MOCK.id) return true;
+    if (isTransferTx.value && linkedTransaction.value) return true;
+    return false;
+  });
+
   const isTargetAmountFieldDisabled = computed(() => {
-    if (isRecordExternal.value) {
+    if (isRecordBankLocked.value) {
       if (!isTransferTx.value) return true;
       if (transaction?.transactionType === TRANSACTION_TYPES.income) return true;
     }
-    if (isOppositeTxExternal.value) {
+    if (isOppositeBankLocked.value) {
       if (oppositeTransaction?.transactionType === TRANSACTION_TYPES.income) return true;
     }
     // Means it's "Out of wallet"
@@ -66,20 +84,22 @@ export const useTransferFormLogic = ({
   );
 
   const fromAccountFieldDisabled = computed(() => {
-    if (isRecordExternal.value) {
+    if (isRecordOnBankAccount.value) {
       if (!isTransferTx.value) return true;
       if (transaction?.transactionType === TRANSACTION_TYPES.expense) return true;
     }
+    if (isOppositeOnBankAccount.value && oppositeTransaction?.transactionType === TRANSACTION_TYPES.expense)
+      return true;
     if (isTransferTx.value && linkedTransaction.value) return true;
     return false;
   });
 
   const toAccountFieldDisabled = computed(() => {
-    if (isRecordExternal.value) {
+    if (isRecordOnBankAccount.value) {
       if (!isTransferTx.value) return true;
       if (transaction?.transactionType === TRANSACTION_TYPES.income) return true;
     }
-    if (isOppositeTxExternal.value) {
+    if (isOppositeOnBankAccount.value) {
       if (oppositeTransaction?.transactionType === TRANSACTION_TYPES.income) return true;
     }
     if (isTransferTx.value && linkedTransaction.value) return true;
@@ -102,6 +122,7 @@ export const useTransferFormLogic = ({
   );
 
   return {
+    isAmountFieldDisabled,
     isTargetFieldVisible,
     isTargetAmountFieldDisabled,
     targetCurrency,

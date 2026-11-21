@@ -146,8 +146,7 @@ const significantTransactions = computed(() => {
   return props.transactions
     .filter((tx) => {
       if (isTwoLegTransfer(tx.transferNature)) return false;
-      // No base-currency amount (custom currency, no rate yet): it did not move the base-currency balance.
-      if (tx.refAmount === null || Math.abs(tx.refAmount) < threshold) return false;
+      if (Math.abs(tx.refAmount) < threshold) return false;
       // Out-of-wallet transfers don't have a matching type, keep them based on amount sign
       if (tx.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_out_wallet) return true;
       return tx.transactionType === relevantType;

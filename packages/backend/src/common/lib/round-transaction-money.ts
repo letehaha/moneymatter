@@ -1,13 +1,14 @@
 import { roundMoneyValues } from '@common/lib/currency-precision';
 import type { Money } from '@common/types/money';
+import { removeUndefinedKeys } from '@js/helpers';
 
 interface TransactionMoneyFields {
   amount?: Money;
   commissionRate?: Money;
   cashbackAmount?: Money;
   originalAmount?: Money | null;
-  refAmount?: Money | null;
-  refCommissionRate?: Money | null;
+  refAmount?: Money;
+  refCommissionRate?: Money;
 }
 
 /**
@@ -17,22 +18,24 @@ interface TransactionMoneyFields {
  * currency; converted values (`refAmount`, `refCommissionRate`) round half-even to the reference
  * currency. A field that is absent stays absent, so a partial update keeps its meaning.
  *
- * `refCurrencyCode` falls back to the account currency: a row without a reference currency holds
- * its reference values in the account's own. When the reference currency is the account currency,
- * no conversion happened and each reference value is its native value, so it rounds half-up like
- * the native one and the two stay equal.
+ * Without `refCurrencyCode` the reference values are left as given, since there is no currency to
+ * round them to. When the reference currency is the account currency, no conversion happened and
+ * each reference value is its native value, so it rounds half-up like the native one and the two
+ * stay equal.
  */
 export const roundTransactionMoney = async <TValues extends TransactionMoneyFields>({
   values,
   userId,
-  accountOwnerUserId = userId,
+  definitionOwnerUserId,
   currencyCode,
   refCurrencyCode,
   originalCurrencyCode,
 }: {
   values: TValues;
+  /** The writer, whose definition of `originalCurrencyCode` rounds `originalAmount`. */
   userId: number;
-  accountOwnerUserId?: number;
+  /** Whose definition of `currencyCode` rounds the native amounts: the account owner's. */
+  definitionOwnerUserId: number;
   currencyCode: string;
   refCurrencyCode: string | null | undefined;
   originalCurrencyCode: string | null | undefined;
@@ -41,18 +44,18 @@ export const roundTransactionMoney = async <TValues extends TransactionMoneyFiel
 
   const roundedNative = await roundMoneyValues({
     values: { amount: native.amount, commissionRate: native.commissionRate, cashbackAmount: native.cashbackAmount },
-    userId: accountOwnerUserId,
+    userId: definitionOwnerUserId,
     currencyCode,
     mode: 'half-up',
   });
-  const resolvedRefCurrencyCode = refCurrencyCode ?? currencyCode;
-  const roundedRef = await roundMoneyValues({
-    values: { refAmount, refCommissionRate },
-    // A reference value in the account's own currency is its native value, so it follows the owner.
-    userId: resolvedRefCurrencyCode === currencyCode ? accountOwnerUserId : userId,
-    currencyCode: resolvedRefCurrencyCode,
-    mode: resolvedRefCurrencyCode === currencyCode ? 'half-up' : 'half-even',
-  });
+  const roundedRef = refCurrencyCode
+    ? await roundMoneyValues({
+        values: { refAmount, refCommissionRate },
+        userId,
+        currencyCode: refCurrencyCode,
+        mode: refCurrencyCode === currencyCode ? 'half-up' : 'half-even',
+      })
+    : { refAmount, refCommissionRate };
   // An original amount without its currency cannot be rounded to a currency. It is stored as given,
   // like the row itself, which a validation upstream keeps from happening.
   const roundedOriginal = originalCurrencyCode
@@ -66,9 +69,6 @@ export const roundTransactionMoney = async <TValues extends TransactionMoneyFiel
 
   return {
     ...values,
-    ...stripUndefined({ ...roundedNative, ...roundedRef, ...roundedOriginal }),
+    ...removeUndefinedKeys({ ...roundedNative, ...roundedRef, ...roundedOriginal }),
   };
 };
-
-const stripUndefined = <TObject extends Record<string, unknown>>(object: TObject): Partial<TObject> =>
-  Object.fromEntries(Object.entries(object).filter(([, value]) => value !== undefined)) as Partial<TObject>;

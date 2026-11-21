@@ -65,19 +65,16 @@
 </template>
 
 <script lang="ts" setup>
-import { getAuthFeatures } from '@/api/auth';
-import { VUE_QUERY_CACHE_KEYS } from '@/common/const/vue-query';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/lib/ui/card';
 import { useNotificationCenter } from '@/components/notification-center';
-import { useFormValidation } from '@/composable';
+import { useAuthFeatures, useFormValidation } from '@/composable';
 import { email, required } from '@/js/helpers/validators';
 import { authClient } from '@/lib/auth-client';
 import { captureException } from '@/lib/sentry';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { KeyRoundIcon, MailIcon } from '@lucide/vue';
-import { useQuery } from '@tanstack/vue-query';
 import { computed, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -90,10 +87,7 @@ const { t } = useI18n();
 const router = useRouter();
 const { addErrorNotification, addSuccessNotification } = useNotificationCenter();
 
-const { data: authFeatures } = useQuery({
-  queryKey: VUE_QUERY_CACHE_KEYS.authFeatures,
-  queryFn: getAuthFeatures,
-});
+const { authFeatures } = useAuthFeatures();
 const isResetDisabledByServer = ref(false);
 const isUnavailable = computed(() => authFeatures.value?.emailEnabled === false || isResetDisabledByServer.value);
 

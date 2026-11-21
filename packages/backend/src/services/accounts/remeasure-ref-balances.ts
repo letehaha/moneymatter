@@ -1,10 +1,10 @@
 import { RefBalanceRemeasureResult } from '@bt/shared/types';
-import { Money, moneyEqualsOrNull } from '@common/types/money';
+import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import { namespace } from '@models/connection';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { DatabaseError } from 'sequelize';
@@ -22,12 +22,12 @@ import { DatabaseError } from 'sequelize';
  */
 const remeasureAccountRefBalances = withTransaction(
   async ({ account }: { account: Accounts }): Promise<'skipped' | 'updated'> => {
-    // A custom currency without a rate measures as `null` (not yet valued) instead of failing the sweep.
-    const refCurrentBalance = await calculateRefAmountOrNull({
+    const refCurrentBalance = await calculateRefAmount({
       // Account owner, not the caller: ref balances live in the OWNER's base
       // currency and rate resolution (connected-currency, custom rates) runs
       // against the owner.
       userId: account.userId,
+      definitionOwnerUserId: account.userId,
       amount: account.currentBalance,
       baseCode: account.currencyCode,
       date: new Date(),
@@ -35,18 +35,16 @@ const remeasureAccountRefBalances = withTransaction(
     });
     const refCreditLimit = account.creditLimit.isZero()
       ? Money.zero()
-      : await calculateRefAmountOrNull({
+      : await calculateRefAmount({
           userId: account.userId,
+          definitionOwnerUserId: account.userId,
           amount: account.creditLimit,
           baseCode: account.currencyCode,
           date: new Date(),
           bypassCache: true,
         });
 
-    if (
-      moneyEqualsOrNull(refCurrentBalance, account.refCurrentBalance) &&
-      moneyEqualsOrNull(refCreditLimit, account.refCreditLimit)
-    ) {
+    if (refCurrentBalance.equals(account.refCurrentBalance) && refCreditLimit.equals(account.refCreditLimit)) {
       return 'skipped';
     }
 

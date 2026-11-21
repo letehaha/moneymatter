@@ -62,7 +62,20 @@
         "monthly": "Mensual",
         "quarterly": "Trimestral",
         "semiAnnual": "Semestral",
-        "annual": "Anual"
+        "annual": "Anual",
+        "custom": "Personalizado",
+        "every": {
+          "day": "Todos los días | Cada {count} días",
+          "week": "Todas las semanas | Cada {count} semanas",
+          "month": "Cada mes | Cada {count} meses",
+          "year": "Cada año | Cada {count} años"
+        },
+        "units": {
+          "day": "día | días",
+          "week": "semana | semanas",
+          "month": "mes | meses",
+          "year": "año | años"
+        }
       },
       "matchSource": {
         "manual": "Manual",
@@ -86,6 +99,11 @@
         "amountPlaceholder": "0.00",
         "currencyLabel": "Moneda",
         "frequencyLabel": "Frecuencia",
+        "intervalCountLabel": "Repetir cada",
+        "intervalCountPlaceholder": "ej. 30",
+        "intervalUnitLabel": "Unidad",
+        "intervalUnitPlaceholder": "Seleccionar una unidad",
+        "validationIntervalCount": "Introduce un número entero del 1 al {max}",
         "startDateLabel": "Fecha de inicio",
         "endDateLabel": "Fecha de fin",
         "accountLabel": "Cuenta",
@@ -262,6 +280,7 @@
         "dueOn": "Vence {date}",
         "paidAt": "Pagado {date}",
         "viewTransaction": "Ver transacción",
+        "paymentInTrash": "Pago en Papelera",
         "actions": {
           "markPaid": "Marcar como pagado",
           "skip": "Omitir"

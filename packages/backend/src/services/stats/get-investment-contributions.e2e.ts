@@ -161,6 +161,34 @@ describe('GET /stats/investment-contributions', () => {
     expect(portfolios).toEqual([]);
   });
 
+  it('nets each side of a cross-month refund out of savings in its own month', async () => {
+    const account = await helpers.createAccount({ raw: true });
+
+    const [expenseTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 2000,
+        transactionType: TRANSACTION_TYPES.expense,
+        time: '2026-01-10T10:00:00.000Z',
+      }),
+      raw: true,
+    });
+    const [refundTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 500,
+        transactionType: TRANSACTION_TYPES.income,
+        time: '2026-02-05T10:00:00.000Z',
+      }),
+      raw: true,
+    });
+    await helpers.createSingleRefund({ originalTxId: expenseTx.id, refundTxId: refundTx.id });
+
+    const { buckets } = await helpers.getInvestmentContributions({ ...RANGE, raw: true });
+
+    expect(buckets.map((bucket) => bucket.savingsNet)).toEqual([-1500, 0]);
+  });
+
   it('returns zeroed buckets and an empty legend for a user with no portfolios', async () => {
     const { buckets, portfolios } = await helpers.getInvestmentContributions({ ...RANGE, raw: true });
 
@@ -342,6 +370,21 @@ describe('GET /stats/investment-contributions', () => {
 
       expect(response.statusCode).toBe(404);
     });
+
+    it('rejects a non-boolean isAdjustment and leaves the contribution untouched', async () => {
+      const portfolio = await createNamedPortfolio({ name: 'Bad flag' });
+      const transfer = await deposit({ portfolioId: portfolio.id, amount: '300', date: '2026-01-12' });
+
+      const response = await helpers.setTransferAdjustment({
+        portfolioId: portfolio.id,
+        transferId: transfer.id,
+        payload: { isAdjustment: 'yes' as unknown as boolean },
+      });
+      expect(response.statusCode).toBe(422);
+
+      const after = await helpers.getInvestmentContributions({ ...RANGE, raw: true });
+      expect(after.buckets[0]!.total).toBe(300);
+    }, 60_000);
   });
 
   describe('validation', () => {

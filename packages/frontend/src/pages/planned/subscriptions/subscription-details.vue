@@ -210,7 +210,7 @@ const KIND_LABEL_KEYS: Record<SUBSCRIPTION_TYPES, string> = {
 const formattedAmount = computed(() => {
   const sub = subscription.value;
   if (!sub?.expectedAmount || !sub.expectedCurrencyCode) return null;
-  return `${getTransactionTypePrefix(sub.transactionType)}${formatAmountByCurrencyCode(sub.expectedAmount, sub.expectedCurrencyCode)}`;
+  return `${getTransactionTypePrefix(sub.transactionType)}${formatAmountByCurrencyCode({ amount: sub.expectedAmount, currencyCode: sub.expectedCurrencyCode })}`;
 });
 
 const remindersSummary = computed(() => {
@@ -287,7 +287,7 @@ const installmentProgress = computed(() => {
   const percent = isCompleted.value ? 100 : total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
   const remainingTotal =
     sub.expectedAmount != null && sub.expectedCurrencyCode != null
-      ? formatAmountByCurrencyCode(remaining * sub.expectedAmount, sub.expectedCurrencyCode)
+      ? formatAmountByCurrencyCode({ amount: remaining * sub.expectedAmount, currencyCode: sub.expectedCurrencyCode })
       : null;
 
   return { total, paid, remaining, percent, remainingTotal };
@@ -634,7 +634,16 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
           <dl class="grid gap-1.5 text-sm">
             <div class="flex items-baseline justify-between gap-3">
               <dt class="text-muted-foreground">{{ $t('planned.subscriptions.frequencyLabel') }}</dt>
-              <dd class="text-right font-medium">{{ formatFrequency({ frequency: subscription.frequency, t }) }}</dd>
+              <dd class="text-right font-medium">
+                {{
+                  formatFrequency({
+                    frequency: subscription.frequency,
+                    intervalUnit: subscription.intervalUnit,
+                    intervalCount: subscription.intervalCount,
+                    t,
+                  })
+                }}
+              </dd>
             </div>
             <div class="flex items-baseline justify-between gap-3">
               <dt class="text-muted-foreground">{{ $t('planned.subscriptions.nextExpected') }}</dt>
@@ -904,8 +913,15 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
                   <p v-if="period.paidAt" class="text-muted-foreground text-xs">
                     {{ $t('planned.subscriptions.periods.paidAt', { date: format(new Date(period.paidAt), 'PP') }) }}
                   </p>
+                  <p
+                    v-if="period.transactionId && period.transactionInTrash"
+                    class="text-muted-foreground flex items-center gap-1 text-xs"
+                  >
+                    <Trash2Icon class="size-3" />
+                    {{ $t('planned.subscriptions.periods.paymentInTrash') }}
+                  </p>
                   <Button
-                    v-if="period.transactionId"
+                    v-else-if="period.transactionId"
                     type="button"
                     variant="link"
                     size="sm"

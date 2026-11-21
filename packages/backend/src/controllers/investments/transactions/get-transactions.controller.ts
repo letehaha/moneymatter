@@ -11,7 +11,7 @@ const schema = z.object({
       ...dateRange({ precision: 'datetime' }),
       portfolioId: recordId().optional(),
       securityId: recordId().optional(),
-      category: z.nativeEnum(INVESTMENT_TRANSACTION_CATEGORY).optional(),
+      category: z.enum(INVESTMENT_TRANSACTION_CATEGORY).optional(),
       limit: z.coerce.number().int().min(1).max(100).optional().default(20),
       offset: z.coerce.number().int().min(0).optional().default(0),
     }),

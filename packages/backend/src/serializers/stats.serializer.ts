@@ -120,14 +120,16 @@ export function serializeSpendingsByCategoriesByType({
   spendings: GetSpendingsByCategoriesByTypeReturnType;
   decimals: number;
 }): GetSpendingsByCategoriesByTypeApiResponse {
+  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
+
   const result: GetSpendingsByCategoriesByTypeApiResponse = {};
 
   for (const [categoryId, spending] of Object.entries(spendings)) {
     result[categoryId] = {
       name: spending.name,
       color: spending.color,
-      income: minorUnitsToApiDecimal({ value: spending.income, decimals }),
-      expense: minorUnitsToApiDecimal({ value: spending.expense, decimals }),
+      income: toDecimal(spending.income),
+      expense: toDecimal(spending.expense),
     };
   }
 
@@ -206,7 +208,7 @@ export function serializeCashFlow({
 // ============================================================================
 
 // Convert every minor-units amount in a keyed record to an API decimal, preserving the key type
-// — a closed-kind record (assets/liabilities) whose exact keys are kept intact.
+// (pivot columns or the closed asset/liability kinds).
 const decimalizeMinorValues = <K extends string>({
   values,
   decimals,
@@ -232,6 +234,8 @@ export function serializePivotReport({
   result: PivotReportResultMinor;
   decimals: number;
 }): GetPivotReportResponse {
+  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
+
   return {
     columns: result.columns,
     rows: result.rows.map((row) => ({
@@ -243,10 +247,10 @@ export function serializePivotReport({
       parentId: row.parentId,
       kind: row.kind,
       values: decimalizeMinorValues({ values: row.values, decimals }),
-      total: minorUnitsToApiDecimal({ value: row.total, decimals }),
+      total: toDecimal(row.total),
     })),
     columnTotals: decimalizeMinorValues({ values: result.columnTotals, decimals }),
-    grandTotal: minorUnitsToApiDecimal({ value: result.grandTotal, decimals }),
+    grandTotal: toDecimal(result.grandTotal),
     currencyCode: result.currencyCode,
   };
 }
@@ -284,15 +288,17 @@ function serializeCumulativePeriod({
   period: CumulativePeriodData;
   decimals: number;
 }): CumulativePeriodDataApiResponse {
+  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
+
   return {
     year: period.year,
     data: period.data.map((monthData) => ({
       month: monthData.month,
       monthLabel: monthData.monthLabel,
-      value: minorUnitsToApiDecimal({ value: monthData.value, decimals }),
-      periodValue: minorUnitsToApiDecimal({ value: monthData.periodValue, decimals }),
+      value: toDecimal(monthData.value),
+      periodValue: toDecimal(monthData.periodValue),
     })),
-    total: minorUnitsToApiDecimal({ value: period.total, decimals }),
+    total: toDecimal(period.total),
   };
 }
 
@@ -337,14 +343,16 @@ export function serializeCombinedBalanceHistory({
   items: CombinedBalanceHistoryItem[];
   decimals: number;
 }): CombinedBalanceHistoryItemApiResponse[] {
+  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
+
   return items.map((item) => ({
     date: item.date,
-    accountsBalance: minorUnitsToApiDecimal({ value: item.accountsBalance, decimals }),
-    portfoliosBalance: minorUnitsToApiDecimal({ value: item.portfoliosBalance, decimals }),
-    venturesBalance: minorUnitsToApiDecimal({ value: item.venturesBalance, decimals }),
-    vehiclesBalance: minorUnitsToApiDecimal({ value: item.vehiclesBalance, decimals }),
-    loansBalance: minorUnitsToApiDecimal({ value: item.loansBalance, decimals }),
-    totalBalance: minorUnitsToApiDecimal({ value: item.totalBalance, decimals }),
+    accountsBalance: toDecimal(item.accountsBalance),
+    portfoliosBalance: toDecimal(item.portfoliosBalance),
+    venturesBalance: toDecimal(item.venturesBalance),
+    vehiclesBalance: toDecimal(item.vehiclesBalance),
+    loansBalance: toDecimal(item.loansBalance),
+    totalBalance: toDecimal(item.totalBalance),
   }));
 }
 
@@ -382,28 +390,30 @@ export function serializeNetWorthDrivers({
   result: NetWorthDriversResultMinor;
   decimals: number;
 }): GetNetWorthDriversResponse {
+  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
+
   return {
     buckets: result.buckets.map((bucket) => ({
       periodStart: bucket.periodStart,
       periodEnd: bucket.periodEnd,
       savings: {
-        income: minorUnitsToApiDecimal({ value: bucket.savings.income, decimals }),
-        expenses: minorUnitsToApiDecimal({ value: bucket.savings.expenses, decimals }),
-        net: minorUnitsToApiDecimal({ value: bucket.savings.net, decimals }),
+        income: toDecimal(bucket.savings.income),
+        expenses: toDecimal(bucket.savings.expenses),
+        net: toDecimal(bucket.savings.net),
       },
       investments: {
-        growth: minorUnitsToApiDecimal({ value: bucket.investments.growth, decimals }),
-        priceEffect: minorUnitsToApiDecimal({ value: bucket.investments.priceEffect, decimals }),
-        dividends: minorUnitsToApiDecimal({ value: bucket.investments.dividends, decimals }),
-        feesAndTaxes: minorUnitsToApiDecimal({ value: bucket.investments.feesAndTaxes, decimals }),
+        growth: toDecimal(bucket.investments.growth),
+        priceEffect: toDecimal(bucket.investments.priceEffect),
+        dividends: toDecimal(bucket.investments.dividends),
+        feesAndTaxes: toDecimal(bucket.investments.feesAndTaxes),
         byPortfolio: bucket.investments.byPortfolio.map((slice) => ({
           portfolioId: slice.portfolioId,
-          growth: minorUnitsToApiDecimal({ value: slice.growth, decimals }),
+          growth: toDecimal(slice.growth),
         })),
       },
       composition: {
-        holdingsValue: minorUnitsToApiDecimal({ value: bucket.composition.holdingsValue, decimals }),
-        cashValue: minorUnitsToApiDecimal({ value: bucket.composition.cashValue, decimals }),
+        holdingsValue: toDecimal(bucket.composition.holdingsValue),
+        cashValue: toDecimal(bucket.composition.cashValue),
       },
     })),
     portfolios: result.portfolios,
@@ -430,14 +440,16 @@ export function serializeNetWorthHistory({
   result: NetWorthHistoryResultMinor;
   decimals: number;
 }): GetNetWorthHistoryResponse {
+  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
+
   return {
     points: result.points.map((point) => ({
       date: point.date,
       assets: decimalizeMinorValues({ values: point.assets, decimals }),
-      assetsTotal: minorUnitsToApiDecimal({ value: point.assetsTotal, decimals }),
+      assetsTotal: toDecimal(point.assetsTotal),
       liabilities: decimalizeMinorValues({ values: point.liabilities, decimals }),
-      liabilitiesTotal: minorUnitsToApiDecimal({ value: point.liabilitiesTotal, decimals }),
-      netWorth: minorUnitsToApiDecimal({ value: point.netWorth, decimals }),
+      liabilitiesTotal: toDecimal(point.liabilitiesTotal),
+      netWorth: toDecimal(point.netWorth),
     })),
     // Kept off the response entirely when the service reports nothing degraded: the
     // contract lets a client decide on `degraded` alone whether to warn, and a
@@ -463,16 +475,18 @@ export function serializeInvestmentContributions({
   result: InvestmentContributionsResultMinor;
   decimals: number;
 }): GetInvestmentContributionsResponse {
+  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
+
   return {
     buckets: result.buckets.map((bucket) => ({
       periodStart: bucket.periodStart,
       periodEnd: bucket.periodEnd,
-      total: minorUnitsToApiDecimal({ value: bucket.total, decimals }),
+      total: toDecimal(bucket.total),
       byPortfolio: bucket.byPortfolio.map((slice) => ({
         portfolioId: slice.portfolioId,
-        amount: minorUnitsToApiDecimal({ value: slice.amount, decimals }),
+        amount: toDecimal(slice.amount),
       })),
-      savingsNet: minorUnitsToApiDecimal({ value: bucket.savingsNet, decimals }),
+      savingsNet: toDecimal(bucket.savingsNet),
     })),
     portfolios: result.portfolios,
   };

@@ -16,7 +16,7 @@
             <div class="flex flex-col p-2">
               <button
                 type="button"
-                class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
                 @click="goTo('exclusions')"
               >
                 <span class="flex flex-col">
@@ -137,6 +137,21 @@
                   @update:model-value="onExcludePlannedToggle"
                 />
               </div>
+
+              <div class="flex items-center justify-between gap-2 rounded-md px-2 py-2">
+                <span class="flex flex-col">
+                  <span class="text-sm font-medium">{{ $t('widgets.latestRecords.settings.scheduledTitle') }}</span>
+                  <span class="text-muted-foreground text-xs">
+                    {{ $t('widgets.latestRecords.settings.excludeScheduledDescription') }}
+                  </span>
+                </span>
+                <Switch
+                  data-testid="lr-exclude-scheduled-switch"
+                  :model-value="!includeScheduled"
+                  :disabled="isUpdating"
+                  @update:model-value="(value) => setIncludeScheduled({ value: !value })"
+                />
+              </div>
             </div>
           </div>
         </template>
@@ -164,13 +179,21 @@ import type { Ref } from 'vue';
 import { computed, inject, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { readLatestRecordsExclusions, readLatestRecordsTagsVariant } from '../latest-records-config';
+import {
+  readLatestRecordsExclusions,
+  readLatestRecordsIncludeScheduled,
+  readLatestRecordsTagsVariant,
+} from '../latest-records-config';
 
 const PANEL_TRANSITION_DURATION = 320;
 
 const { t } = useI18n({ useScope: 'global' });
 const widgetConfigRef = inject<Ref<DashboardWidgetConfig> | null>('dashboard-widget-config', null);
-const { data: userSettingsData, mutateAsync: saveUserSettings, isUpdating } = useUserSettings();
+const { isUpdating } = useUserSettings();
+const saveWidgetConfig =
+  inject<(params: { widgetId: string; config: Record<string, unknown> }) => Promise<void>>(
+    'dashboard-save-widget-config',
+  );
 
 const isOpen = ref(false);
 type View = 'main' | 'exclusions';
@@ -178,6 +201,11 @@ const view = ref<View>('main');
 
 const exclusions = computed(() => readLatestRecordsExclusions({ widgetConfig: widgetConfigRef?.value }));
 const tagsVariant = computed(() => readLatestRecordsTagsVariant({ widgetConfig: widgetConfigRef?.value }));
+const includeScheduled = computed(() => readLatestRecordsIncludeScheduled({ widgetConfig: widgetConfigRef?.value }));
+const { setFlag: setIncludeScheduled } = useWidgetConfigFlag({
+  key: 'includeScheduled',
+  saveErrorKey: 'widgets.latestRecords.settings.scheduledSaveError',
+});
 const { isOn: showAccount, setFlag: setShowAccount } = useWidgetConfigFlag({
   key: 'showAccount',
   saveErrorKey: 'widgets.latestRecords.settings.showAccountSaveError',
@@ -204,6 +232,9 @@ const exclusionsSummary = computed(() => {
   if (!includePlanned.value) {
     excluded.push(t('widgets.latestRecords.settings.plannedTitle'));
   }
+  if (!includeScheduled.value) {
+    excluded.push(t('widgets.latestRecords.settings.scheduledTitle'));
+  }
   return excluded.length === 0 ? t('widgets.latestRecords.settings.nothingExcluded') : excluded.join(', ');
 });
 
@@ -221,19 +252,8 @@ function goTo(target: View) {
 }
 
 async function persistConfig(patch: Record<string, unknown>) {
-  const settings = userSettingsData.value;
-  if (!settings || !widgetConfigRef?.value) return;
-
-  const widgets = [...(settings.dashboard?.widgets ?? [])];
-  const idx = widgets.findIndex((w) => w.widgetId === widgetConfigRef.value!.widgetId);
-  if (idx === -1) return;
-
-  widgets[idx] = {
-    ...widgets[idx]!,
-    config: { ...widgets[idx]!.config, ...patch },
-  };
-
-  await saveUserSettings({ ...settings, dashboard: { widgets } });
+  if (!saveWidgetConfig || !widgetConfigRef?.value) return;
+  await saveWidgetConfig({ widgetId: widgetConfigRef.value.widgetId, config: patch });
 }
 
 async function onTagsVariantChange(value: string) {

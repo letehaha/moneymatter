@@ -11,8 +11,8 @@
       popover-class-name="md:min-w-[600px]"
     >
       <template #trigger="{ triggerText }">
-        <Button variant="ghost" size="sm" class="hover:bg-accent min-w-48 font-medium">
-          <CalendarIcon class="mr-1.5 size-3.5" />
+        <Button variant="ghost" size="sm" class="min-w-48 font-medium">
+          <CalendarIcon class="size-3.5" />
           {{ triggerText }}
         </Button>
       </template>
@@ -28,18 +28,8 @@
 import Button from '@/components/lib/ui/button/Button.vue';
 import { DateSelector, type DateSelectorPreset } from '@/components/lib/ui/date-selector';
 import { useEarliestTransactionDate } from '@/composable/data-queries/earliest-transaction-date';
-import { usePeriodNavigation } from '@/composable/use-period-navigation';
-import {
-  format as dateFnsFormat,
-  endOfMonth,
-  endOfYear,
-  isSameDay,
-  isSameMonth,
-  startOfMonth,
-  startOfYear,
-  subMonths,
-  subYears,
-} from 'date-fns';
+import { getPayPeriod, usePeriodNavigation } from '@/composable/use-period-navigation';
+import { format as dateFnsFormat, endOfYear, isBefore, isSameDay, startOfYear, subMonths, subYears } from 'date-fns';
 import { CalendarIcon, ChevronLeft, ChevronRight } from '@lucide/vue';
 import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -50,6 +40,7 @@ const { t } = useI18n();
 
 const props = defineProps<{
   modelValue: Period;
+  payday: number;
 }>();
 
 const emit = defineEmits<{
@@ -63,11 +54,19 @@ const period = computed({
 
 const { prevPeriod, nextPeriod } = usePeriodNavigation({
   period: () => props.modelValue,
+  payday: () => props.payday,
 });
+
+const getCurrentPayPeriod = () => getPayPeriod({ date: new Date(), payday: props.payday });
+
+const lastPayPeriods = (count: number) => (): Period => {
+  const current = getCurrentPayPeriod();
+  return { from: subMonths(current.from, count - 1), to: current.to };
+};
 
 const { earliestDate } = useEarliestTransactionDate();
 
-const isNextDisabled = computed(() => isSameMonth(new Date(), props.modelValue.to));
+const isNextDisabled = computed(() => !isBefore(props.modelValue.to, getCurrentPayPeriod().from));
 
 function selectPrevPeriod() {
   period.value = prevPeriod.value;
@@ -77,9 +76,9 @@ function selectNextPeriod() {
   period.value = nextPeriod.value;
 }
 
-function isCurrentMonthPeriod(p: Period): boolean {
-  const now = new Date();
-  return isSameDay(p.from, startOfMonth(now)) && isSameDay(p.to, endOfMonth(now));
+function isCurrentPayPeriod(p: Period): boolean {
+  const current = getCurrentPayPeriod();
+  return isSameDay(p.from, current.from) && isSameDay(p.to, current.to);
 }
 
 // Sync period to URL using history.replaceState
@@ -88,7 +87,7 @@ watch(
   (p) => {
     const url = new URL(window.location.href);
 
-    if (isCurrentMonthPeriod(p)) {
+    if (isCurrentPayPeriod(p)) {
       url.search = '';
     } else {
       url.searchParams.set('from', dateFnsFormat(p.from, 'yyyy-MM-dd'));
@@ -103,31 +102,19 @@ watch(
 const quickPresets = computed<DateSelectorPreset[]>(() => [
   {
     label: t('dashboard.periodSelector.presets.currentMonth'),
-    getValue: () => ({
-      from: startOfMonth(new Date()),
-      to: endOfMonth(new Date()),
-    }),
+    getValue: getCurrentPayPeriod,
   },
   {
     label: t('dashboard.periodSelector.presets.last3Months'),
-    getValue: () => ({
-      from: startOfMonth(subMonths(new Date(), 2)),
-      to: endOfMonth(new Date()),
-    }),
+    getValue: lastPayPeriods(3),
   },
   {
     label: t('dashboard.periodSelector.presets.last6Months'),
-    getValue: () => ({
-      from: startOfMonth(subMonths(new Date(), 5)),
-      to: endOfMonth(new Date()),
-    }),
+    getValue: lastPayPeriods(6),
   },
   {
     label: t('dashboard.periodSelector.presets.lastYear'),
-    getValue: () => ({
-      from: startOfMonth(subMonths(new Date(), 11)),
-      to: endOfMonth(new Date()),
-    }),
+    getValue: lastPayPeriods(12),
   },
   {
     label: t('dashboard.periodSelector.presets.thisYear'),

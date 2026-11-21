@@ -106,6 +106,7 @@
       "goToAccounts": "Prejsť na účty",
       "cadenceLabel": "Obnovuje sa",
       "startsOnLabel": "Začína",
+      "startsOnOutOfRange": "Vyberte dátum od {from} po dnešný deň.",
       "accountsLabel": "Účty",
       "accountsPlaceholder": "Vyberte účty",
       "rolloverLabel": "Prenos",
@@ -235,7 +236,11 @@
       "activity": "Pohyb",
       "available": "K dispozícii",
       "overrideBadge": "prepísané",
-      "carriesDeficit": "prenáša nedostatok",
+      "carryBadge": {
+        "floor": "prenáša prebytok",
+        "signed": "prenáša prebytok aj deficit",
+        "none": "začína odznova"
+      },
       "lineActions": "Akcie riadku",
       "editLine": "Upraviť riadok",
       "archiveLine": "Archivovať riadok",
@@ -331,11 +336,11 @@
         "changedSince": "Čo sa zmenilo od obdobia {period}",
         "changedThisPeriod": "Čo sa zmenilo v tomto období",
         "startingBalance": "Počiatočný zostatok",
-        "income": "Príjem",
+        "income": "Príjmy",
         "outsideSpending": "Výdavky mimo vašich riadkov",
         "fromLines": "Z riadkov (vrátený prenos / pokryté prečerpanie)",
         "assigned": "Priradené v tomto období",
-        "cashHint": "Hotovosť na účtoch plánu, mínus kreditné limity.",
+        "cashHint": "Prostriedky na účtoch rozpočtu. Úverové limity sa odpočítajú, keď je zapnuté „Zahrnúť úverové limity do zostatku.",
         "inLinesHint": "Všetko, čo je momentálne vo vašich riadkoch.",
         "driftHint": "Pohyby kurzu a zostatky nevysvetlené transakciami.",
         "committedLaterHint": "Už priradené v neskoršom období.",
@@ -372,6 +377,8 @@
       "pace": "Tempo čerpania",
       "spent": "Minuté",
       "elapsed": "Uplynulo z obdobia",
+      "usuallyByToday": "Zvyčajne do dnešného dňa",
+      "slowDown": "Spomaľte na ~{perDay}/deň, aby to vystačilo",
       "spentOfTotal": "{spent} z {total}",
       "daysLeft": "zostáva {n} dní",
       "scheduled": "Naplánované",
@@ -426,6 +433,12 @@
       "layoutSaved": "Rozloženie bolo uložené",
       "layoutError": "Rozloženie sa nepodarilo uložiť"
     },
+    "pace": {
+      "aheadUsual": "{amount} nad obvyklým tempom",
+      "aheadEven": "{amount} nad tempom",
+      "aheadUsualPerDay": "{amount} nad obvyklým tempom · zostáva ~{perDay}/deň na {count} deň | {amount} nad obvyklým tempom · zostáva ~{perDay}/deň na {count} dni | {amount} nad obvyklým tempom · zostáva ~{perDay}/deň na {count} dní",
+      "aheadEvenPerDay": "{amount} nad tempom · zostáva ~{perDay}/deň na {count} deň | {amount} nad tempom · zostáva ~{perDay}/deň na {count} dni | {amount} nad tempom · zostáva ~{perDay}/deň na {count} dní"
+    },
     "options": {
       "title": "Možnosti",
       "manageLayout": "Spravovať rozloženie",
@@ -434,7 +447,8 @@
       "rowBarGoal": "Pruh cieľa",
       "rowBarCombined": "Kombinovaný pruh",
       "rowBarSplit": "Oddelené pruhy",
-      "rowBarNone": "Bez pruhu"
+      "rowBarNone": "Bez pruhu",
+      "paceHint": "Nápoveda k tempu"
     },
     "goals": {
       "askHint": "Priraďte túto sumu sem, aby ste zostali na dobrej ceste.",

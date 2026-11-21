@@ -51,6 +51,20 @@ describe('Add user currencies', () => {
     expect(emptyList.statusCode).toEqual(ERROR_CODES.ValidationError);
   });
 
+  it.each(['XAU', 'XDR'])('rejects the non-currency code %s on add and on account create', async (code) => {
+    const addRes = await helpers.addUserCurrencies({ currencyCodes: [code] });
+    expect(addRes.statusCode).toEqual(ERROR_CODES.ValidationError);
+
+    const accountRes = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ currencyCode: code, initialBalance: 0.5 }),
+      raw: false,
+    });
+    expect(accountRes.statusCode).toEqual(ERROR_CODES.ValidationError);
+
+    const userCurrencies = await helpers.getUserCurrencies();
+    expect(userCurrencies.some((item) => item.currencyCode === code)).toBe(false);
+  });
+
   it('should successfully add currencies without optional fields', async () => {
     const allCurrencies = await helpers.getAllCurrencies();
     const uah = allCurrencies.find((i) => i.code === 'UAH')!;
@@ -66,6 +80,17 @@ describe('Add user currencies', () => {
     expect(returnedValues[0]!.currencyCode).toBe(uah.code);
     expect(returnedValues[0]!.exchangeRate).toBeNull();
     expect(returnedValues[0]!.liveRateUpdate).toBe(true);
+  });
+
+  it('keeps a single connection when the same currency is added by concurrent requests', async () => {
+    const responses = await Promise.all(
+      Array.from({ length: 5 }, () => helpers.addUserCurrencies({ currencyCodes: ['EUR'] })),
+    );
+
+    expect(responses.every((res) => res.statusCode === 200)).toBe(true);
+
+    const userCurrencies = await helpers.getUserCurrencies();
+    expect(userCurrencies.filter((item) => item.currencyCode === 'EUR')).toHaveLength(1);
   });
 
   it('should successfully resolve when trying to add duplicate currencies', async () => {

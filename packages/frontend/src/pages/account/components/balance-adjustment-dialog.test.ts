@@ -169,26 +169,19 @@ describe('BalanceAdjustmentDialog', () => {
       expect(confirmBtn(w).attributes('disabled')).toBeUndefined();
     });
 
-    it('drops decimals past the 2 a USD account stores before submitting', async () => {
-      const w = mountDialog();
-      await enterAmountAndSubmit(w, 100.123);
+    it.each<[string, number, number]>([
+      ['USD', 100.123, 100.12],
+      ['KWD', 100.1234, 100.123],
+      ['JPY', 1500.6, 1500],
+    ])(
+      'cuts a %s amount to the currency decimals before submitting: %d → %d',
+      async (currencyCode, typed, submitted) => {
+        const w = mountDialog({ currencyCode });
+        await enterAmountAndSubmit(w, typed);
 
-      expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 100.12 }));
-    });
-
-    it('keeps 3 decimals for a KWD account', async () => {
-      const w = mountDialog({ currencyCode: 'KWD' });
-      await enterAmountAndSubmit(w, 100.1234);
-
-      expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 100.123 }));
-    });
-
-    it('drops the fraction for a JPY account', async () => {
-      const w = mountDialog({ currencyCode: 'JPY' });
-      await enterAmountAndSubmit(w, 1500.6);
-
-      expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 1500 }));
-    });
+        expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: submitted }));
+      },
+    );
 
     it("follows the account owner's decimals when the viewer defines the same custom code differently", async () => {
       registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
@@ -277,6 +270,14 @@ describe('BalanceAdjustmentDialog', () => {
       await enterAmountAndSubmit(w, 200);
 
       expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 800 }));
+    });
+
+    it('sends a fractional target without float noise', async () => {
+      const w = mountDialog({ currencyCode: 'KWD', currentBalance: 1000.1 });
+      await switchToAdjustBy(w);
+      await enterAmountAndSubmit(w, 0.2);
+
+      expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 1000.3 }));
     });
 
     it('disables confirm when amount results in zero diff', async () => {

@@ -9,10 +9,10 @@ export interface CurrencyOption {
 }
 
 /**
- * Options for the currency pickers of the rate-source editor: the currencies a custom currency can
- * be pegged to (any the user holds) and the ISO currencies a synced source can quote in.
+ * Options for the currency pickers of the rate-source editor. Every rate of a custom currency is
+ * quoted in an ISO currency: a peg targets one the user holds, a synced source quotes in any.
  */
-export const useCurrencyOptions = ({ excludeCode }: { excludeCode: () => string }) => {
+export const useCurrencyOptions = () => {
   const currenciesStore = useCurrenciesStore();
   const { currencies, isoCurrencies } = storeToRefs(currenciesStore);
   const { getCurrencyName } = useCurrencyName();
@@ -24,7 +24,7 @@ export const useCurrencyOptions = ({ excludeCode }: { excludeCode: () => string 
 
   const pegOptions = computed(() =>
     currencies.value
-      .filter((item) => item.currencyCode !== excludeCode())
+      .filter((item) => !item.currency?.isCustom)
       .map((item) => toOption({ code: item.currencyCode, name: item.currency?.currency })),
   );
 

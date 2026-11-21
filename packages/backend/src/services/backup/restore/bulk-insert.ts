@@ -11,7 +11,7 @@ type AnyModel = ModelStatic<Model>;
  * Project one raw dumped row onto the insert plan's columns, keyed by DB column
  * name (what `bulkInsert` writes). Every plan column is set — missing keys land
  * as NULL — so all records in a batch share one column set. `overrides` carries
- * remapped values (userId, mccId, securityId, self-ref parent, credentials).
+ * remapped values (userId, securityId, self-ref parent, credentials).
  */
 export function buildInsertRecord({
   row,

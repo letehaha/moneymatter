@@ -1,4 +1,5 @@
 import { type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 import { addMonths, endOfMonth, format, setDate, startOfMonth } from 'date-fns';
@@ -63,6 +64,73 @@ describe('[Stats] Monthly spendings by categories', () => {
     expect(february!.categories[childCategory.id]).toMatchObject({ income: 0, expense: 0 });
     expect(march!.categories[rootCategory.id]).toMatchObject({ income: 0, expense: 40 });
     expect(march!.categories[childCategory.id]).toMatchObject({ income: 0, expense: 0 });
+  });
+
+  it('nets each side of a cross-month refund in its own transaction month', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const category = await helpers.addCustomCategory({
+      name: `CrossMonthRefund-${generateRandomRecordId()}`,
+      color: '#123123',
+      raw: true,
+    });
+
+    const [expenseTx] = await createTx({
+      accountId: account.id,
+      categoryId: category.id,
+      amount: 100,
+      time: '2025-01-10T12:00:00.000Z',
+    });
+    const [refundTx] = await createTx({
+      accountId: account.id,
+      categoryId: category.id,
+      amount: 30,
+      time: '2025-02-05T12:00:00.000Z',
+      transactionType: TRANSACTION_TYPES.income,
+    });
+    await helpers.createSingleRefund({ originalTxId: expenseTx!.id, refundTxId: refundTx!.id });
+
+    const both = await helpers.getMonthlySpendingsByCategories({
+      from: '2025-01-01',
+      to: '2025-02-28',
+      categoryIds: [category.id],
+      raw: true,
+    });
+    expect(both[0]!.categories[category.id]).toMatchObject({ income: 0, expense: 70 });
+    expect(both[1]!.categories[category.id]).toMatchObject({ income: 0, expense: 0 });
+
+    const january = await helpers.getMonthlySpendingsByCategories({
+      from: '2025-01-01',
+      to: '2025-01-31',
+      categoryIds: [category.id],
+      raw: true,
+    });
+    expect(january[0]!.categories[category.id]).toMatchObject({ income: 0, expense: 70 });
+
+    const february = await helpers.getMonthlySpendingsByCategories({
+      from: '2025-02-01',
+      to: '2025-02-28',
+      categoryIds: [category.id],
+      raw: true,
+    });
+    expect(february[0]!.categories[category.id]).toMatchObject({ income: 0, expense: 0 });
+
+    const januaryTotals = await helpers.getSpendingsByCategories({
+      from: '2025-01-01',
+      to: '2025-01-31',
+      categoryIds: [category.id],
+      groupByType: true,
+      raw: true,
+    });
+    expect(januaryTotals[category.id]).toMatchObject({ income: 0, expense: 70 });
+
+    const februaryTotals = await helpers.getSpendingsByCategories({
+      from: '2025-02-01',
+      to: '2025-02-28',
+      categoryIds: [category.id],
+      groupByType: true,
+      raw: true,
+    });
+    expect(februaryTotals[category.id]).toMatchObject({ income: 0, expense: 0 });
   });
 
   it('returns every month of the range with zeroed selected categories when there is no data', async () => {

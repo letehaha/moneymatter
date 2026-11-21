@@ -56,18 +56,25 @@ export async function getBalanceHistory<R extends boolean | undefined = undefine
   return result;
 }
 
-const dateKey = (date: string | Date) => (typeof date === 'string' ? date.slice(0, 10) : format(date, 'yyyy-MM-dd'));
+export const dateKey = ({ date }: { date: string | Date }) =>
+  (typeof date === 'string' ? date : date.toISOString()).slice(0, 10);
 
-/** What the chart reads on `date`: the latest row dated on or before it, in cents. */
-export const balanceCentsOn = ({ rows, date }: { rows: { date: string | Date; amount: unknown }[]; date: Date }) => {
+type BalanceRow = { date: string | Date; amount: unknown };
+
+/** What the chart reads on `date`: the latest row dated on or before it, as a decimal. */
+export const balanceOn = ({ rows, date }: { rows: BalanceRow[]; date: Date }) => {
   const key = format(date, 'yyyy-MM-dd');
   const latest = rows
-    .filter((row) => dateKey(row.date) <= key)
-    .toSorted((a, b) => dateKey(a.date).localeCompare(dateKey(b.date)))
+    .filter((row) => dateKey({ date: row.date }) <= key)
+    .toSorted((a, b) => dateKey({ date: a.date }).localeCompare(dateKey({ date: b.date })))
     .at(-1);
 
-  return latest ? Math.round(Number(latest.amount) * 100) : 0;
+  return latest ? Number(latest.amount) : 0;
 };
+
+/** `balanceOn` in cents. */
+export const balanceCentsOn = ({ rows, date }: { rows: BalanceRow[]; date: Date }) =>
+  Math.round(balanceOn({ rows, date }) * 100);
 
 export const getSpendingsByCategories = async ({
   raw = false,
@@ -199,6 +206,7 @@ export async function getCashFlow<R extends boolean | undefined = undefined>({
   categoryIds,
   excludedCategoryIds,
   excludePlanned,
+  alignToPayday,
   raw,
 }: {
   from: string;
@@ -213,6 +221,7 @@ export async function getCashFlow<R extends boolean | undefined = undefined>({
   categoryIds?: string[];
   excludedCategoryIds?: string[];
   excludePlanned?: boolean;
+  alignToPayday?: boolean;
   raw?: R;
 }) {
   const params = new URLSearchParams();
@@ -226,6 +235,7 @@ export async function getCashFlow<R extends boolean | undefined = undefined>({
     params.append('excludedCategoryIds', excludedCategoryIds.join(','));
   }
   if (excludePlanned !== undefined) params.append('excludePlanned', String(excludePlanned));
+  if (alignToPayday !== undefined) params.append('alignToPayday', String(alignToPayday));
 
   const result = await helpers.makeRequest<GetCashFlowResponse, R>({
     method: 'get',
@@ -342,6 +352,7 @@ export async function getPivotReport<R extends boolean | undefined = undefined>(
   accountIds,
   categoryIds,
   payeeIds,
+  includeTransfers,
   raw,
 }: {
   from: string;
@@ -352,6 +363,7 @@ export async function getPivotReport<R extends boolean | undefined = undefined>(
   accountIds?: string[];
   categoryIds?: string[];
   payeeIds?: string[];
+  includeTransfers?: boolean;
   raw?: R;
 }) {
   const params = new URLSearchParams();
@@ -363,6 +375,7 @@ export async function getPivotReport<R extends boolean | undefined = undefined>(
   if (accountIds && accountIds.length > 0) params.append('accountIds', accountIds.join(','));
   if (categoryIds && categoryIds.length > 0) params.append('categoryIds', categoryIds.join(','));
   if (payeeIds && payeeIds.length > 0) params.append('payeeIds', payeeIds.join(','));
+  if (includeTransfers) params.append('includeTransfers', 'true');
 
   const result = await helpers.makeRequest<GetPivotReportResponse, R>({
     method: 'get',

@@ -3,9 +3,9 @@ import { accountBaseValue } from './accounts-sort';
 /** The only fields the overview roll-up reads off an account. */
 interface OverviewAccount {
   currentBalance: number;
-  refCurrentBalance: number | null;
+  refCurrentBalance: number;
   creditLimit: number;
-  refCreditLimit: number | null;
+  refCreditLimit: number;
   currencyCode: string;
 }
 

@@ -1417,6 +1417,7 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     symbol: null,
   },
 ];
+const NO_LOGO = { logoDomain: null, logoInitials: null, logoColor: null, logoIcon: null, logoImageId: null };
 export const USER_BASE_CURRENCY_CODE = 'UAH';
 export const USER_BASE_CURRENCY: UserCurrencyModel = {
   id: '00000000-0000-0000-0000-000000000010' as RecordId,
@@ -1428,7 +1429,7 @@ export const USER_BASE_CURRENCY: UserCurrencyModel = {
   nameOverride: null,
   symbolOverride: null,
   decimalsOverride: null,
-  logoUrl: null,
+  ...NO_LOGO,
   rateSource: 'provider',
   rateSourceConfig: null,
   currency: SYSTEM_CURRENCIES.find((item) => item.code === USER_BASE_CURRENCY_CODE),
@@ -1446,7 +1447,7 @@ export const USER_CURRENCIES: UserCurrencyModel[] = [
     nameOverride: null,
     symbolOverride: null,
     decimalsOverride: null,
-    logoUrl: null,
+    ...NO_LOGO,
     rateSource: 'provider',
     rateSourceConfig: null,
     currency: SYSTEM_CURRENCIES.find((item) => item.code === 'EUR'),
@@ -1461,7 +1462,7 @@ export const USER_CURRENCIES: UserCurrencyModel[] = [
     nameOverride: null,
     symbolOverride: null,
     decimalsOverride: null,
-    logoUrl: null,
+    ...NO_LOGO,
     rateSource: 'provider',
     rateSourceConfig: null,
     currency: SYSTEM_CURRENCIES.find((item) => item.code === 'USD'),

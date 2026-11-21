@@ -1,34 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { DEACTIVATION_REASON, type DeactivationReason, type RecordId } from '@bt/shared/types';
+import { API_ERROR_CODES, DEACTIVATION_REASON, type RecordId } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
-import { ForbiddenError, ServiceUnavailableError } from '@js/errors';
+import { ForbiddenError, NotFoundError, ServiceUnavailableError } from '@js/errors';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
+import { runOutsideTransaction } from '@models/connection';
+import { runPendingLinkAbsorb } from '@services/accounts/absorb-link-residual';
+import { lockLinkedBankAccount } from '@services/accounts/lock-account-row';
+import { isDeadlockError } from '@services/common/retry-on-deadlock';
+import { withTransaction } from '@services/common/with-transaction';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
 import { SyncStatus, setAccountSyncStatus } from './sync/sync-status-tracker';
-import {
-  DateRange,
-  IBankDataProvider,
-  LoadTransactionsForPeriodResult,
-  ProviderAccount,
-  ProviderBalance,
-  ProviderMetadata,
-  ProviderTransaction,
-} from './types';
+import { AuthTrackingMetadata, LoadTransactionsForPeriodResult, ProviderAccount, ProviderMetadata } from './types';
 import { linkAndEmitSyncedTransactions } from './utils/link-and-emit-synced-transactions';
-
-/**
- * Shape of connection-metadata fields used by the shared auth-failure
- * tracking. Provider-specific metadata interfaces should include these
- * fields (and may add their own).
- */
-interface AuthTrackingMetadata {
-  consecutiveAuthFailures?: number;
-  deactivationReason?: DeactivationReason | null;
-}
 
 /**
  * After this many consecutive auth failures the connection is auto-deactivated
@@ -50,13 +36,16 @@ class BaseCurrencyChangeLockedError extends Error {
   }
 }
 
+/** An unlink committed while the sync fetched: its rows roll back and the account counts as synced. */
+export class AccountUnlinkedDuringSyncError extends NotFoundError {}
+
 /**
  * Abstract base class for all bank data providers.
  * Provides common functionality and enforces implementation of required methods.
  *
  * All providers (Monobank, Enable Banking, etc.) should extend this class.
  */
-export abstract class BaseBankDataProvider implements IBankDataProvider {
+export abstract class BaseBankDataProvider {
   // ============================================================================
   // Abstract Properties - Must be implemented by child classes
   // ============================================================================
@@ -105,6 +94,14 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
     });
   }
 
+  /** `label` for the first connection of this provider, `label (n)` for the n-th. */
+  protected async nextConnectionName({ userId, label }: { userId: number; label: string }): Promise<string> {
+    const existingConnections = await BankDataProviderConnections.count({
+      where: { userId, providerType: this.metadata.type },
+    });
+    return existingConnections > 0 ? `${label} (${existingConnections + 1})` : label;
+  }
+
   /**
    * Get decrypted credentials for a connection
    * @param connectionId - Connection ID
@@ -130,26 +127,62 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
   }
 
   /**
-   * Increment the connection's consecutive auth-failure counter and deactivate
-   * the connection once the threshold is reached. Called by providers in the
-   * catch branch of an authenticated call. No-ops for non-auth errors so call
-   * sites can pass any caught error.
+   * Run an authenticated upstream request with auth-failure tracking: reset the
+   * failure counter on success, count (and possibly deactivate) on an auth error,
+   * and rethrow any error.
    */
-  protected async handleAuthError({ connectionId, error }: { connectionId: string; error: unknown }): Promise<void> {
+  protected async withAuthTracking<T>({
+    connectionId,
+    request,
+  }: {
+    connectionId: string;
+    request: () => Promise<T>;
+  }): Promise<T> {
+    try {
+      const result = await request();
+      await this.resetAuthFailures(connectionId);
+      return result;
+    } catch (error) {
+      await this.handleAuthError({ connectionId, error });
+      throw error;
+    }
+  }
+
+  /**
+   * Clear auth-failure state and reactivate after a credential refresh. Does not
+   * save: the caller's single save() must persist credentials and this state together.
+   */
+  protected reactivateConnection({ connection }: { connection: BankDataProviderConnections }): void {
+    this.writeAuthMetadata({ connection, patch: { consecutiveAuthFailures: 0, deactivationReason: null } });
+    connection.isActive = true;
+  }
+
+  // Always a new object: Sequelize only flags a JSONB column changed when its reference changes.
+  private writeAuthMetadata({
+    connection,
+    patch,
+  }: {
+    connection: BankDataProviderConnections;
+    patch: AuthTrackingMetadata;
+  }): void {
+    connection.metadata = { ...(connection.metadata as AuthTrackingMetadata | null), ...patch };
+  }
+
+  /**
+   * Increment the connection's consecutive auth-failure counter and deactivate
+   * the connection once the threshold is reached. No-ops for non-auth errors.
+   */
+  private async handleAuthError({ connectionId, error }: { connectionId: string; error: unknown }): Promise<void> {
     if (!this.isAuthError(error)) return;
 
     try {
       const connection = await this.getConnection(connectionId);
-      // Spread into a NEW object: Sequelize only flags a JSON(B) column dirty
-      // when its reference changes, so mutating the existing metadata in place
-      // and re-assigning the same reference would not persist on save().
-      const metadata: AuthTrackingMetadata = { ...(connection.metadata as AuthTrackingMetadata) };
-      const failures = (metadata.consecutiveAuthFailures || 0) + 1;
-      metadata.consecutiveAuthFailures = failures;
+      const failures = ((connection.metadata as AuthTrackingMetadata | null)?.consecutiveAuthFailures || 0) + 1;
+      const patch: AuthTrackingMetadata = { consecutiveAuthFailures: failures };
 
       if (failures >= AUTH_FAILURE_DEACTIVATION_THRESHOLD) {
         connection.isActive = false;
-        metadata.deactivationReason = DEACTIVATION_REASON.AUTH_FAILURE;
+        patch.deactivationReason = DEACTIVATION_REASON.AUTH_FAILURE;
         // Designed response to a user's credentials going stale, surfaced by
         // the connection-status badge — not a fault worth a Sentry event.
         logger.info(
@@ -157,7 +190,7 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
         );
       }
 
-      connection.metadata = metadata as any;
+      this.writeAuthMetadata({ connection, patch });
       // `{ transaction: null }` bypasses the ambient CLS transaction: an auth
       // failure surfaces while a sync is being rolled back, so this write must
       // commit independently or the failure count (and deactivation) would be
@@ -176,16 +209,14 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
    * Failures here are swallowed because the recorded count is non-critical:
    * we'd rather risk an extra deactivation than fail a working request.
    */
-  protected async resetAuthFailures(connectionId: string): Promise<void> {
+  private async resetAuthFailures(connectionId: string): Promise<void> {
     try {
       const connection = await this.getConnection(connectionId);
-      // New object reference so Sequelize persists the reset (see handleAuthError).
-      const metadata: AuthTrackingMetadata = { ...(connection.metadata as AuthTrackingMetadata) };
+      const consecutiveAuthFailures = (connection.metadata as AuthTrackingMetadata | null)?.consecutiveAuthFailures;
 
-      if (metadata.consecutiveAuthFailures && metadata.consecutiveAuthFailures > 0) {
-        metadata.consecutiveAuthFailures = 0;
-        connection.metadata = metadata as any;
-        // Commit outside any ambient sync transaction (see handleAuthError).
+      if (consecutiveAuthFailures) {
+        this.writeAuthMetadata({ connection, patch: { consecutiveAuthFailures: 0 } });
+        // Commit outside any ambient sync transaction.
         await connection.save({ transaction: null });
       }
     } catch {
@@ -279,9 +310,19 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
     await setAccountSyncStatus({ accountId: systemAccountId, status: SyncStatus.SYNCING, userId });
 
     try {
-      const result = await work();
-
-      await this.updateLastSync(connectionId);
+      // The link is re-checked under the row lock only after every fetch: an unlink that
+      // committed meanwhile rolls back all rows this sync wrote.
+      const result = await withTransaction(async () => {
+        const synced = await work();
+        if (!(await lockLinkedBankAccount({ accountId: systemAccountId, connectionId }))) {
+          throw new AccountUnlinkedDuringSyncError({
+            message: t({ key: 'bankDataProviders.accountNotLinkedToConnection' }),
+            code: API_ERROR_CODES.notFound,
+          });
+        }
+        await this.updateLastSync(connectionId);
+        return synced;
+      })();
 
       await linkAndEmitSyncedTransactions({
         userId,
@@ -290,10 +331,31 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
         extraAutoLinkCandidateIds: result.extraAutoLinkCandidateIds,
       });
 
+      await runPendingLinkAbsorb({ accountId: systemAccountId, userId });
+
       await setAccountSyncStatus({ accountId: systemAccountId, status: SyncStatus.COMPLETED, userId });
 
       return result;
     } catch (error) {
+      if (error instanceof AccountUnlinkedDuringSyncError) {
+        logger.info('[Bank Sync] Account unlinked during sync, its rows rolled back', {
+          accountId: systemAccountId,
+          connectionId,
+        });
+        // Outside the ambient transaction: it rolls back, so a COMPLETED deferred to its commit never lands.
+        try {
+          await runOutsideTransaction(() =>
+            setAccountSyncStatus({ accountId: systemAccountId, status: SyncStatus.COMPLETED, userId }),
+          );
+        } catch (statusError) {
+          logger.warn('[Bank Sync] Failed to mark the unlinked account COMPLETED', {
+            accountId: systemAccountId,
+            connectionId,
+            error: statusError instanceof Error ? statusError.message : String(statusError),
+          });
+        }
+        throw error;
+      }
       if (error instanceof ServiceUnavailableError) {
         // An unreachable bank provider is an expected outage, so it stays out of Sentry.
         logger.info('[Bank Sync] Bank provider unavailable, sync skipped', {
@@ -301,6 +363,9 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
           connectionId,
           reason: error.message,
         });
+      } else if (isDeadlockError(error)) {
+        // Propagates to syncTransactionsForAccount, which retries it; a failed retry is reported upstream.
+        logger.info('[Bank Sync] Sync deadlocked with a concurrent sync', { accountId: systemAccountId, connectionId });
       } else {
         logger.error({ message: errorLogMessage, error: error as Error });
       }
@@ -328,12 +393,10 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
   protected async runQueuedSync<T>({
     systemAccountId,
     userId,
-    errorLogMessage,
     enqueue,
   }: {
     systemAccountId: RecordId;
     userId: number;
-    errorLogMessage?: string;
     enqueue: () => Promise<T>;
   }): Promise<T> {
     await setAccountSyncStatus({ accountId: systemAccountId, status: SyncStatus.QUEUED, userId });
@@ -343,9 +406,6 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
     } catch (error) {
       // Just in case, catch any errors that happened before and during queueing
       // Everything that happens inside workers is handled by workers
-      if (errorLogMessage) {
-        logger.error({ message: errorLogMessage, error: error as Error });
-      }
       const message = error instanceof Error ? error.message : 'Unknown error';
       await setAccountSyncStatus({
         accountId: systemAccountId,
@@ -358,7 +418,7 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
   }
 
   // ============================================================================
-  // Abstract Methods - Must be implemented by child classes
+  // Provider contract
   // ============================================================================
 
   /**
@@ -370,10 +430,15 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
   abstract connect(userId: number, credentials: unknown): Promise<string>;
 
   /**
-   * Disconnect and remove a provider connection
+   * Disconnect and remove a provider connection. A provider whose upstream holds
+   * a revocable session or consent must override this to revoke it.
    * @param connectionId - Connection to disconnect
    */
-  abstract disconnect(connectionId: string): Promise<void>;
+  async disconnect(connectionId: string): Promise<void> {
+    const connection = await this.getConnection(connectionId);
+    this.validateProviderType(connection);
+    await connection.destroy();
+  }
 
   /**
    * Validate credentials by testing connection to provider
@@ -397,19 +462,6 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
   abstract fetchAccounts(connectionId: string): Promise<ProviderAccount[]>;
 
   /**
-   * Fetch transactions for a specific account (without saving to DB)
-   * @param connectionId - Connection ID
-   * @param accountExternalId - Provider's account ID
-   * @param dateRange - Optional date range to filter transactions
-   * @returns List of transactions
-   */
-  abstract fetchTransactions(
-    connectionId: string,
-    accountExternalId: string,
-    dateRange?: DateRange,
-  ): Promise<ProviderTransaction[]>;
-
-  /**
    * Sync transactions for a specific account to our database
    * @param connectionId - Connection ID
    * @param systemAccountId - Our internal account ID
@@ -425,36 +477,6 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
     systemAccountId: string;
     userId: number;
   }): Promise<void | { jobGroupId: string; totalBatches: number; estimatedMinutes: number }>;
-
-  /**
-   * Fetch current balance for a specific account
-   * @param connectionId - Connection ID
-   * @param accountExternalId - Provider's account ID
-   * @returns Current balance
-   */
-  abstract fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance>;
-
-  /**
-   * Refresh balance for a specific account in our system
-   * @param connectionId - Connection ID
-   * @param systemAccountId - Our internal account ID
-   */
-  abstract refreshBalance(connectionId: string, systemAccountId: string): Promise<void>;
-
-  /**
-   * Set up webhook for real-time updates (if supported)
-   * Optional method - only implement if provider supports webhooks
-   * @param connectionId - Connection to set up webhook for
-   * @param webhookUrl - URL to receive webhook notifications
-   */
-  setupWebhook?(connectionId: string, webhookUrl: string): Promise<void>;
-
-  /**
-   * Handle incoming webhook payload (if supported)
-   * Optional method - only implement if provider supports webhooks
-   * @param payload - Webhook payload from provider
-   */
-  handleWebhook?(payload: unknown): Promise<void>;
 
   /**
    * Load transactions for an explicit historical window (the account-details
@@ -473,8 +495,9 @@ export abstract class BaseBankDataProvider implements IBankDataProvider {
    * Sync several accounts of one connection in a single batched pass (optional).
    * Implemented only by providers whose upstream returns every account (with
    * transactions) in one response — e.g. SimpleFIN's `/accounts` — so the
-   * orchestrators can fetch once per window instead of once per account.
-   * Marks each account's sync status internally.
+   * orchestrators can fetch once per window instead of once per account,
+   * respecting tight request budgets. Providers without it fall back to the
+   * per-account `syncTransactions`. Marks each account's sync status internally.
    */
   syncConnectionAccounts?(args: { connectionId: string; userId: number; systemAccountIds: string[] }): Promise<void>;
 }

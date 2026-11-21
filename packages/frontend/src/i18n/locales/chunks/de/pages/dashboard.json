@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Ausgabenstruktur",
+        "incomeTitle": "Einnahmenstruktur",
         "today": "Heute",
         "vsPreviousPeriod": "gegenüber vorherigem Zeitraum",
-        "viewButton": "Anzeigen"
+        "viewButton": "Anzeigen",
+        "back": "Zurück",
+        "openInAnalytics": "In Analysen öffnen",
+        "metric": {
+          "expenses": "Ausgaben",
+          "income": "Einnahmen"
+        },
+        "seeTransactions": "Transaktionen anzeigen"
       },
       "latestTransactions": {
         "title": "Neueste Transaktionen",
@@ -121,6 +129,7 @@
         "title": "Kategorien-Beobachtungsliste",
         "addCategory": "Kategorie hinzufügen",
         "selectCategories": "Kategorien auswählen",
+        "showTrend": "6-Monats-Trend anzeigen",
         "sort": {
           "title": "Sortieren nach",
           "custom": "Benutzerdefinierte Reihenfolge",
@@ -149,6 +158,7 @@
         "start": "Beginn",
         "end": "Ende",
         "growth": "Wachstum",
+        "changeInPeriod": "Änderung in {period}",
         "previousPeriodsTrend": "Trend vorheriger Zeiträume",
         "excludedTooltip": "Vom Nettovermögen ausgeschlossen: {components}",
         "viewHistory": "Verlauf anzeigen",
@@ -178,7 +188,7 @@
       },
       "cashAccounts": {
         "vsLastMonth": "vs. Vormonat",
-        "runwayUnit": "Mon.",
+        "runwayUnit": "Mo.",
         "runwayLabel": "an Ausgaben",
         "loadFailed": "Deine Konten konnten nicht geladen werden",
         "runwayHint": {
@@ -236,6 +246,7 @@
         },
         "hints": {
           "noHistory": "Der Vergleich erscheint nach deinem ersten vollen Monat.",
+          "plannedFailed": "Geplante Transaktionen konnten nicht geladen werden. Die Prognose enthält sie möglicherweise nicht.",
           "fewMonths": "Durchschnitt des {n} vollen Monats, den du bisher hast. | Durchschnitt der {n} vollen Monate, die du bisher hast."
         },
         "loadFailed": "Deine Ausgaben konnten nicht geladen werden.",
@@ -262,9 +273,9 @@
         "vsTrailingRate": "{delta} Prozentpunkte ggü. 12-Monats-Satz {rate}",
         "average": "Ø {amount}",
         "amount": "Steuern",
-        "shareOfIncome": "Anteil an Einnahmen",
+        "shareOfIncome": "Anteil am Einkommen",
         "shareOfTaxes": "Steueranteil",
-        "other": "Sonstiges",
+        "other": "Sonstige",
         "moreCategories": "{count} weitere",
         "viewDetails": "Cashflow anzeigen",
         "loadFailed": "Steuerdaten konnten nicht geladen werden.",
@@ -298,7 +309,10 @@
         "daysLeft": "Noch {count} Tag | Noch {count} Tage",
         "lastDay": "Letzter Tag des Zeitraums",
         "empty": "Noch kein Budget",
-        "create": "Budget einrichten"
+        "create": "Budget einrichten",
+        "sort": {
+          "overspent": "Größte Überziehung zuerst"
+        }
       },
       "trackers": {
         "spentOfLimit": "{spent} von {limit}",
@@ -308,6 +322,28 @@
         "empty": "Noch keine Tracker",
         "ended": "Beendet",
         "create": "Tracker erstellen"
+      },
+      "tagAnalysis": {
+        "title": "Tag-Analyse",
+        "noTagsTitle": "Keine Tags ausgewählt",
+        "noTagsDescription": "Wähle in den Widget-Einstellungen die zu vergleichenden Tags aus.",
+        "ofIncome": "des Einkommens",
+        "remaining": "Nicht zugewiesen",
+        "targetTooltip": "Ziel: {value}%",
+        "settings": {
+          "tagsLabel": "Tags",
+          "tagsPlaceholder": "Tags auswählen",
+          "targetsLabel": "Ziele, %",
+          "targetsNoneSet": "Keine festgelegt",
+          "targetsSetCount": "{set} von {total} festgelegt",
+          "targetsEmpty": "Füge zuerst Tags hinzu, um deren Ziele festzulegen",
+          "targetPlaceholder": "Keine",
+          "percentBaseLabel": "Prozent von",
+          "percentBaseTags": "Ausgewählte Tags",
+          "percentBaseIncome": "Einkommen",
+          "includeTransfersLabel": "Transfers einbeziehen",
+          "includeTransfersDescription": "Transfers auf eigene Konten und Portfolios als Ausgaben werten"
+        }
       },
       "emptyState": "Keine Daten im ausgewählten Zeitintervall vorhanden.",
       "registry": {
@@ -374,6 +410,29 @@
         "trackers": {
           "name": "Tracker",
           "description": "Jeder aktive Tracker mit genutztem Limit und Netto-Saldo"
+        },
+        "goals": {
+          "name": "Ziele",
+          "description": "Fortschritt deiner Sparziele",
+          "savedOfTarget": "{saved} von {target}",
+          "empty": {
+            "title": "Keine aktiven Ziele",
+            "description": "Setze ein Ziel und sieh, wie nah du dran bist.",
+            "action": "Ziel erstellen"
+          },
+          "locked": {
+            "title": "Ziele sind gesperrt",
+            "description": "Spare für das, was zählt, und sieh, ob du im Zeitplan bist. Verfügbar in kostenpflichtigen Abos.",
+            "action": "Mehr erfahren"
+          },
+          "settings": {
+            "showReached": "Erreichte Ziele anzeigen"
+          },
+          "reachedSection": "Erreicht"
+        },
+        "tagAnalysis": {
+          "name": "Tag-Analyse",
+          "description": "Sieh dir an, wie sich deine Ausgaben auf ausgewählte Tags wie Bedürfnisse, Wünsche und Ersparnisse verteilen"
         }
       }
     },
@@ -393,6 +452,8 @@
       "payAction": "Bezahlt",
       "listTitle": "Bevorstehend",
       "dueCount": "{count} fällig",
+      "daysLate": "{count}d late",
+      "overdueCount": "{count} overdue",
       "nothingDue": "Nichts fällig in 3 Tagen",
       "overdueHint": "Überfällig seit {date}",
       "dueSoonHint": "Fällig in den nächsten 3 Tagen",
@@ -404,13 +465,6 @@
       "loadFailed": "Wiederkehrende Zahlungen konnten nicht geladen werden"
     },
     "latestRecords": {
-      "config": {
-        "includeScheduled": {
-          "label": "Geplante Zahlungen einbeziehen",
-          "on": "Ein",
-          "off": "Aus"
-        }
-      },
       "settings": {
         "excludeTitle": "Transaktionen ausschließen",
         "excludeTransfersDescription": "Umbuchungen zwischen eigenen Konten ausblenden",
@@ -419,6 +473,9 @@
         "excludeBalanceAdjustmentsDescription": "Saldokorrektur-Transaktionen ausblenden",
         "plannedTitle": "Geplante Transaktionen",
         "excludePlannedDescription": "Ausstehende geplante Transaktionen aus der Liste ausblenden",
+        "scheduledTitle": "Geplante Zahlungen",
+        "excludeScheduledDescription": "Kommende und überfällige Abo-Zahlungen aus der Liste ausblenden",
+        "scheduledSaveError": "Einstellung für geplante Zahlungen konnte nicht aktualisiert werden",
         "nothingExcluded": "Nichts ausgeschlossen",
         "tagsStyleTitle": "Tags",
         "tagsStyleNames": "Namen",
@@ -480,7 +537,8 @@
         "title": "Plane deinen Weg zu FIRE",
         "description": "Plus-Funktion",
         "action": "Freischalten"
-      }
+      },
+      "paceVs": "vs. {month}"
     }
   }
 }

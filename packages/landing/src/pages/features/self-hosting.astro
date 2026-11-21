@@ -1,0 +1,117 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Free and open source personal finance, with every feature on',
+    text: 'Budgets, investments, bank sync, AI features and reports all work on a self-hosted install, for every user, with no trial or plan to buy. The code is open source under AGPL-3.0, so you can read it or build the images yourself.',
+    bullets: [
+      'Give each person their own account, with no limit on the number of users',
+      'Exchange rates and stock prices work with no API key',
+      'A self-hosted install sends no analytics',
+    ],
+    screenshot: {
+      name: 'features/getting-started/app-overview',
+      alt: 'The MoneyMatter dashboard with the sidebar, account balances list, and the Balance trend, Latest Transactions, Cash Flow, Expenses Structure and Categories Watchlist widgets',
+      width: 1440,
+      height: 900,
+    },
+  },
+  {
+    heading: 'Server requirements: Docker and 2 GB of RAM',
+    text: 'You need a machine with Docker Engine, the Compose plugin and at least 2 GB of RAM. A small VPS running Ubuntu or Debian is the common choice. Images are published for amd64 and arm64, so ARM servers work too. To try it on your own computer or home network, you need no domain or HTTPS.',
+  },
+  {
+    heading: 'Install with Docker Compose in four steps',
+    text: 'The stack pulls ready-made images and includes PostgreSQL, Redis and an exchange-rate service, so there is nothing else to install. You can also deploy the same stack from the Portainer UI.',
+    bullets: [
+      'Clone the repository and open its self-hosting folder',
+      'Copy .env.example to .env, fill in four secrets generated with openssl and set the address you will open the app at',
+      'Run docker compose up -d and wait about a minute for the database to set up',
+      'Open that address in your browser, on port 8080 by default, and create your account',
+    ],
+  },
+  {
+    heading: 'Add HTTPS with your own reverse proxy or the Traefik overlay',
+    text: "The whole app sits behind one host port. Point the reverse proxy you already run at it, set your public address in .env and close direct access to the port. The guides have recipes for Nginx Proxy Manager, Caddy, Traefik, plain nginx and Cloudflare Tunnel. If you have no proxy, an optional Traefik overlay adds one with free Let's Encrypt certificates. Sign-ups stay open by default, so cap or close them before a public install goes online.",
+  },
+  {
+    heading: 'Bank sync, AI and single sign-on with your own keys',
+    text: 'These features use an outside service, and they stay off until you set it up.',
+    bullets: [
+      'Bank sync: each person adds their own provider credentials in the app. LunchFlow and SimpleFIN charge for their own service. Akahu and the smaller direct connections are free',
+      'AI features: your own AI key, or a model running on your own network',
+      'Claude or ChatGPT over MCP: set your MCP address and make the install reachable from the internet over HTTPS',
+      'Sign-in: your own Google, GitHub or Apple app, or your own OpenID Connect provider such as Pocket ID, Authelia or Keycloak',
+      'Crypto prices need a CoinGecko key, and brand logos need a logo.dev key',
+    ],
+  },
+  {
+    heading: 'Update to a new version in two commands',
+    text: 'The user menu shows when a new release is out. Take a backup, then run docker compose pull followed by docker compose up -d. Database changes apply on their own when the new version starts. To stay on one release, pin its version in .env.',
+  },
+  {
+    heading: 'Back up your data or move to another server',
+    text: 'Your data lives in two places, the database and the files attached to transactions, and the guide has the commands for both. That same backup moves your install to another server. Attachments can stay in the Docker volume, in a host folder such as a NAS mount, or in S3-compatible storage.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Docker Compose is the only supported setup. There are no Kubernetes or Helm charts, and no install without Docker.',
+  'Nothing backs itself up or updates itself. You schedule the backups, run the updates and keep the server patched.',
+  'Email needs a Resend key. Without one, you share invitation links by hand, the Forgot password? link is hidden and sign-ups skip email verification.',
+];
+
+const FAQ = [
+  {
+    question: 'Is self-hosted MoneyMatter really free?',
+    answer:
+      'Yes. Self-hosted MoneyMatter is free with no time limit. You pay only for your own server and any paid outside service you choose, such as LunchFlow or SimpleFIN for bank sync, or an AI provider.',
+  },
+  {
+    question: 'Should I self-host or use the MoneyMatter cloud?',
+    answer:
+      'Self-host if you already run a server or want your data on your own hardware at no subscription cost. Choose the cloud if you would rather not run one: hosting, updates, security patches and the stock, crypto and logo data feeds are handled for you, on a paid plan after the free trial.',
+  },
+  {
+    question: 'Can I run MoneyMatter on a Raspberry Pi or a Synology NAS?',
+    answer:
+      'Yes, if the device has an amd64 or arm64 processor, Docker with the Compose plugin and at least 2 GB of RAM. A Raspberry Pi needs a 64-bit OS. On Synology Container Manager, which reserves low ports, set LISTEN_PORT above 1024 in .env.',
+  },
+  {
+    question: 'Can my family share one self-hosted install?',
+    answer:
+      "Yes. Each person creates their own account on the install, and you can invite up to 10 people to your household. The same limit applies separately to each account you share, and you don't count toward it.",
+  },
+  {
+    question: 'Does a self-hosted budget app send my data anywhere?',
+    answer:
+      'Self-hosted MoneyMatter keeps your finances in your own database and sends nothing to moneymatter.app. The stack does fetch public data: exchange rates, prices for the stocks you hold, and the latest release number from GitHub. Bank providers, AI services and anything else you turn on receive the data they need to work.',
+  },
+  {
+    question: 'Can I move from the MoneyMatter cloud to my own server?',
+    answer:
+      'Yes, in both directions. Download a backup in Settings, create an account on the other install and restore it there, which replaces everything in that account. Bank credentials, AI keys and attachments are not in the backup, so you reconnect banks and re-enter keys afterward. Moving to the cloud needs a paid plan and the same email address as the account the backup came from.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Self-host MoneyMatter with Docker', href: 'https://docs.moneymatter.app/getting-started/self-hosting/' },
+  { label: 'Bank connections', href: 'https://docs.moneymatter.app/import/bank-connections/' },
+  { label: 'Backup and restore', href: 'https://docs.moneymatter.app/settings/security-and-account/' },
+];
+
+const RELATED = ['/features/export-and-backup', '/features/security-and-privacy', '/features/mcp-ai-assistants'];
+---
+
+<FeatureLayout
+  title="Free Self-Hosted Budget App with Docker | MoneyMatter"
+  description="A free, open source self-hosted budget app. Run every MoneyMatter feature on your own server with Docker Compose, with your data in your own database."
+  heading="A free self-hosted budget app you run with Docker Compose"
+  intro="MoneyMatter is a free, open source self-hosted budget app that runs on your own server, with your data in your own database. It is the same app as the cloud, with every feature on and no plans or billing."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

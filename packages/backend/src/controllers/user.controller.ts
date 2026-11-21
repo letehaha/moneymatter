@@ -1,11 +1,14 @@
 import { API_ERROR_CODES, DAY_TRIALABLE_FEATURES, UserInfoResponse } from '@bt/shared/types';
-import { currencyCode, isoCurrencyCode } from '@common/lib/zod/custom-types';
+import { isoCurrencyCode } from '@common/lib/zod/custom-types';
+import {
+  deleteUserCurrencyBodySchema,
+  editUserCurrencyBodySchema,
+} from '@controllers/currencies/user-currency-body.schema';
 import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { ConflictError, NotFoundError, ValidationError } from '@js/errors';
 import { isAdminUsername } from '@middlewares/admin-only';
 import { invalidateAppUserCache } from '@middlewares/better-auth';
-import { ExchangeRatePair } from '@models/user-exchange-rates.model';
 import { resolveEntitlements } from '@services/entitlements/resolve-entitlements.service';
 import { startFeatureTrial as startFeatureTrialService } from '@services/entitlements/start-feature-trial.service';
 import { getEmailForUser } from '@services/sharing/find-user-by-email.service';
@@ -160,11 +163,7 @@ export const setBaseUserCurrency = createController(
 
 export const editUserCurrency = createController(
   z.object({
-    body: z.object({
-      currencyCode: currencyCode(),
-      exchangeRate: z.number().optional(),
-      liveRateUpdate: z.boolean().optional(),
-    }),
+    body: editUserCurrencyBodySchema,
   }),
   async ({ user, body }) => {
     const result = await userService.editUserCurrency({
@@ -179,9 +178,7 @@ export const editUserCurrency = createController(
 
 export const deleteUserCurrency = createController(
   z.object({
-    body: z.object({
-      currencyCode: currencyCode(),
-    }),
+    body: deleteUserCurrencyBodySchema,
   }),
   async ({ user, body }) => {
     await userService.deleteUserCurrency({
@@ -199,15 +196,13 @@ export const getCurrenciesExchangeRates = createController(z.object({}), async (
 export const removeUserCurrencyExchangeRate = createController(
   z.object({
     body: z.object({
-      pairs: z.array(removeExchangeRatePairSchema),
+      pairs: z.array(removeExchangeRatePairSchema).nonempty(),
     }),
   }),
   async ({ user, body }) => {
-    const { pairs } = body;
-
     const data = await userExchangeRates.removeUserExchangeRates({
       userId: user.id,
-      pairs: pairs as ExchangeRatePair[],
+      pairs: body.pairs,
     });
 
     return { data };

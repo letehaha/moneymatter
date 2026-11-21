@@ -67,7 +67,7 @@
           "starting": "Starte Import…",
           "progressCount": "{processed} / {total}",
           "statusQueued": "In Warteschlange",
-          "statusRunning": "Importieren…",
+          "statusRunning": "Wird importiert...",
           "statusCompleted": "Abgeschlossen",
           "statusFailed": "Fehlgeschlagen",
           "failed": "Import fehlgeschlagen.",
@@ -95,7 +95,7 @@
           "invalidWillBeSkipped": "ungültige Zeilen werden übersprungen.",
           "duplicatesWillBeSkipped": "Duplikate werden übersprungen.",
           "backToMapping": "Zurück zur Zuordnung",
-          "importing": "Importieren...",
+          "importing": "Wird importiert...",
           "importButton": "{count} Transaktionen importieren",
           "unpriceableTitle": "{count} Zeile(n) können nicht bewertet werden – kein Wechselkurs gefunden",
           "unpriceableDescription": "Diese Zeilen verwenden eine Währung, für die kein Wechselkurs gespeichert ist und die nicht in deine Basiswährung umgerechnet werden kann. Du musst sie überspringen oder den Import abbrechen.",
@@ -116,7 +116,7 @@
           "imported": "Importiert",
           "skippedDuplicates": "Übersprungen (Duplikate)",
           "accountsCreated": "Konten erstellt",
-          "accountsSkipped": "Konten übersprungen",
+          "accountsSkipped": "Übersprungene Konten",
           "categoriesCreated": "Kategorien erstellt",
           "tagsCreated": "Tags erstellt",
           "payeesCreated": "Zahlungsempfänger erstellt",
@@ -134,15 +134,17 @@
           "noErrors": "Keine Fehler",
           "balanceWarningTitle": "Kontosalden könnten fehlerhaft sein",
           "balanceWarningBody": "Die Transaktionen wurden importiert, aber einige Kontosalden konnten danach nicht aktualisiert werden. Überprüfe diese Konten und passe ihre Salden bei Bedarf manuell an.v"
-        }
+        },
+        "bankSeamRecalculateHint": "Bank-linked accounts keep the balance their bank reports, so this setting doesn't change them.",
+        "bankSeamRecalculateAllHint": "Opening balance is recalculated automatically for bank-linked accounts."
       },
       "columnMapping": {
         "stepTitle": "Spalten zuordnen",
         "description": "Ordne deine CSV-Spalten den erforderlichen Feldern zu",
         "file": "Datei",
-        "totalRows": "Zeilen insgesamt",
+        "totalRows": "Zeilen gesamt",
         "delimiter": "Trennzeichen",
-        "detecting": "Erkenne Duplikate…"
+        "detecting": "Duplikate werden gesucht..."
       },
       "common": {
         "selectOption": "Option auswählen...",
@@ -226,7 +228,7 @@
         "selectAction": "Aktion auswählen",
         "actions": {
           "createNew": "Neu erstellen",
-          "linkExisting": "Verknüpfen",
+          "linkExisting": "Mit bestehendem verknüpfen",
           "skip": "Überspringen"
         },
         "quickActions": {
@@ -307,7 +309,8 @@
           "account": "Konto",
           "currency": "Währung",
           "transactionType": "Transaktionstyp",
-          "payee": "Zahlungsempfänger"
+          "payee": "Zahlungsempfänger",
+          "tags": "Tags"
         },
         "dateFormat": {
           "label": "Datumsformat",
@@ -327,10 +330,10 @@
           "error": "Fehler"
         },
         "rowErrors": {
-          "payeeDefaultTagsFailed": "The transaction was imported, but the payee's default tags could not be applied.",
-          "accountUnresolved": "The account for this row could not be resolved, so the row was skipped.",
-          "readBackFailed": "The transaction was created but could not be read back, so it is missing from the imported count.",
-          "generic": "This row could not be imported."
+          "payeeDefaultTagsFailed": "Die Transaktion wurde importiert, aber die Standard-Tags des Zahlungsempfängers konnten nicht angewendet werden.",
+          "accountUnresolved": "Das Konto für diese Zeile konnte nicht zugeordnet werden, daher wurde die Zeile übersprungen.",
+          "readBackFailed": "Die Transaktion wurde gespeichert, konnte aber nicht verifiziert werden und fehlt daher in der Import-Zusammenfassung.",
+          "generic": "Diese Zeile konnte nicht importiert werden."
         }
       }
     }

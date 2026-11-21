@@ -8,6 +8,7 @@ import Portfolios from '@models/investments/portfolios.model';
 import * as Transactions from '@models/transactions.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { updatePortfolioBalance } from '@services/investments/portfolios/balances';
+import { assertNotInPayment } from '@services/transactions/payment-legs';
 import { format } from 'date-fns';
 
 import {
@@ -57,8 +58,8 @@ const linkTransactionToPortfolioImpl = async ({
     });
   }
 
+  await assertNotInPayment({ transactionIds: [transactionId] });
   await findPortfolioOrThrow({ portfolioId, userId, role: 'generic' });
-  // Before the restamp: a custom currency without a rate would otherwise reach the transfer as null.
   await findCurrencyOrThrow({ currencyCode: tx.currencyCode });
 
   const amount = tx.amount.toDecimalString(10);
@@ -89,7 +90,7 @@ const linkTransactionToPortfolioImpl = async ({
         transferId: tx.transferId,
         categoryId: tx.categoryId,
         amount: tx.amount.toNumber(),
-        refAmount: tx.refAmount?.toNumber() ?? null,
+        refAmount: tx.refAmount.toNumber(),
         accountId: tx.accountId,
         transactionType: tx.transactionType,
         paymentType: tx.paymentType,

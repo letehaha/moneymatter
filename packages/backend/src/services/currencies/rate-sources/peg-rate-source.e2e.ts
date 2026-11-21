@@ -18,8 +18,11 @@ const DAY_1 = dayKey({ daysAgo: 15 });
 const DAY_2 = dayKey({ daysAgo: 14 });
 const SEEDED_DAYS = [DAY_1, DAY_2];
 
-const createCurrency = async ({ code }: { code: string }) => {
-  const response = await helpers.createCustomCurrency({ payload: { code, name: code, decimals: 6 } });
+/** A custom currency on manual rates, first worth `rate` dollars from today on. */
+const createCurrency = async ({ code, rate = 7 }: { code: string; rate?: number }) => {
+  const response = await helpers.createCustomCurrency({
+    payload: { code, name: code, decimals: 6, rate: { value: rate, quoteCode: QUOTE } },
+  });
   expect(response.statusCode).toBe(201);
 };
 
@@ -100,7 +103,6 @@ describe('Pegged currencies', () => {
     const created = await createTx({ accountId: usdt.id, amount: 12.345678, day: DAY_1 });
 
     expect(created.refAmount).toBe(12.35);
-    expect(created.refAmountMissing).toBe(false);
   });
 
   it('crosses the peg currency into the base with the market rate of the transaction day', async () => {
@@ -152,34 +154,18 @@ describe('Pegged currencies', () => {
     expect(created.refAmount).toBe(10 * 5 * MARKET_AED_PER_USD);
   });
 
-  it('follows a peg onto a custom currency through its dated manual rate', async () => {
-    await createCurrency({ code: 'USDT' });
-    await createCurrency({ code: 'USDC' });
-    await setManualRates({ code: 'USDT', rate: 1, quote: QUOTE, effectiveDate: DAY_1 });
-    await setManualRates({ code: 'USDT', rate: 2, quote: QUOTE, effectiveDate: DAY_2 });
-    await pegTo({ code: 'USDC', pegCurrency: 'USDT' });
+  it('refuses a peg onto a custom currency and keeps the stored rates', async () => {
+    await createCurrency({ code: 'USDT', rate: 1 });
+    await createCurrency({ code: 'USDC', rate: 2 });
+
+    const refused = await helpers.setCurrencyRateSource({
+      code: 'USDC',
+      payload: { rateSource: 'peg', config: { pegCurrency: 'USDT', factor: 1 } },
+    });
+
+    expect(refused.statusCode).toBe(422);
     const usdc = await createAccountIn({ code: 'USDC' });
-
-    const first = await createTx({ accountId: usdc.id, amount: 10, day: DAY_1 });
-    const second = await createTx({ accountId: usdc.id, amount: 10, day: DAY_2 });
-
-    expect(first.refAmount).toBe(10 * MARKET_AED_PER_USD);
-    expect(second.refAmount).toBe(20 * MARKET_AED_PER_USD);
-  });
-
-  it('treats a peg cycle as unavailable: no rate, and a flagged transaction instead of a hang', async () => {
-    await createCurrency({ code: 'USDT' });
-    await createCurrency({ code: 'USDC' });
-    await pegTo({ code: 'USDT', pegCurrency: 'USDC' });
-    await pegTo({ code: 'USDC', pegCurrency: 'USDT' });
-    const usdt = await createAccountIn({ code: 'USDT' });
-
-    expect((await rateOn({ from: 'USDT', to: QUOTE, day: DAY_1 })).statusCode).toBe(404);
-    expect((await rateOn({ from: QUOTE, to: 'USDC', day: DAY_1 })).statusCode).toBe(404);
-
-    const created = await createTx({ accountId: usdt.id, amount: 10, day: DAY_1 });
-
-    expect(created.refAmount).toBeNull();
-    expect(created.refAmountMissing).toBe(true);
+    const created = await createTx({ accountId: usdc.id, amount: 10, day: DAY_1 });
+    expect(created.refAmount).toBe(10 * 2 * MARKET_AED_PER_USD);
   });
 });

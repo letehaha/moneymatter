@@ -7,7 +7,10 @@ import Categories from '@models/categories.model';
 import Payees from '@models/payees.model';
 import Tags from '@models/tags.model';
 
-/** Validates the merged post-write state, so a partial update cannot leave an invalid row. */
+/**
+ * Validates the merged post-write state, so a partial update cannot leave an invalid row. Returns the
+ * currency of the account it checked, which a pinned amount is denominated in.
+ */
 export const assertTemplateConsistent = async ({
   userId,
   amount,
@@ -22,15 +25,16 @@ export const assertTemplateConsistent = async ({
   categoryId: RecordId | null;
   payeeId: RecordId | null;
   tagIds: RecordId[];
-}) => {
+}): Promise<{ accountCurrencyCode: string | null }> => {
   if (amount !== null && accountId == null) {
     throw new ValidationError({ message: t({ key: 'transactionTemplates.amountRequiresAccount' }) });
   }
 
+  let accountCurrencyCode: string | null = null;
   if (accountId) {
     const account = await Accounts.findOne({
       where: { id: accountId, userId },
-      attributes: ['id', 'type', 'status'],
+      attributes: ['id', 'type', 'status', 'currencyCode'],
     });
     if (!account) {
       throw new NotFoundError({ message: t({ key: 'transactionTemplates.accountNotFound' }) });
@@ -41,6 +45,7 @@ export const assertTemplateConsistent = async ({
     if (account.status !== ACCOUNT_STATUSES.active) {
       throw new ValidationError({ message: t({ key: 'transactionTemplates.accountArchived' }) });
     }
+    accountCurrencyCode = account.currencyCode;
   }
 
   if (categoryId) {
@@ -63,4 +68,6 @@ export const assertTemplateConsistent = async ({
       throw new NotFoundError({ message: t({ key: 'transactionTemplates.tagsNotFound' }) });
     }
   }
+
+  return { accountCurrencyCode };
 };

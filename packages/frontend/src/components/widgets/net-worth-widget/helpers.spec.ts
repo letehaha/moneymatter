@@ -63,6 +63,7 @@ const SERIES: CombinedBalanceHistoryEntity[] = [
 
 const JULY = { from: parseISO('2026-07-01'), to: parseISO('2026-07-31') };
 const QUARTER = { from: parseISO('2026-07-01'), to: parseISO('2026-09-30') };
+const PAY_MONTH = { from: parseISO('2026-01-22'), to: parseISO('2026-02-21') };
 
 describe('effectiveNetWorth', () => {
   it('sums every component when all are included', () => {
@@ -133,11 +134,18 @@ describe('computeFetchRange', () => {
     expect(ymd(range.to)).toBe('2026-07-31');
   });
 
-  it('covers the earliest quarter-length window plus its baseline day', () => {
+  it('covers the earliest quarter plus its baseline day', () => {
     const range = computeFetchRange({ period: QUARTER });
 
-    expect(ymd(range.from)).toBe('2025-03-27');
+    expect(ymd(range.from)).toBe('2025-03-31');
     expect(ymd(range.to)).toBe('2026-09-30');
+  });
+
+  it('steps back by whole pay months across the year end', () => {
+    const range = computeFetchRange({ period: PAY_MONTH, payday: 22 });
+
+    expect(ymd(range.from)).toBe('2025-08-21');
+    expect(ymd(range.to)).toBe('2026-02-21');
   });
 });
 
@@ -242,6 +250,21 @@ describe('computeGrowthPercent', () => {
 });
 
 describe('computeTrendBars', () => {
+  it('labels pay-month bars by their date range', () => {
+    const labels = computeTrendBars({ series: SERIES, settings: ALL_INCLUDED, period: PAY_MONTH, payday: 22 }).map(
+      (bar) => bar.label,
+    );
+
+    expect(labels).toEqual([
+      'Aug 22 - Sep 21',
+      'Sep 22 - Oct 21',
+      'Oct 22 - Nov 21',
+      'Nov 22 - Dec 21',
+      'Dec 22 - Jan 21',
+      'Jan 22 - Feb 21',
+    ]);
+  });
+
   it('returns six calendar months for a full-month period', () => {
     const bars = computeTrendBars({ series: SERIES, settings: ALL_INCLUDED, period: JULY });
 
@@ -316,17 +339,17 @@ describe('computeTrendBars', () => {
     expect(lastDelta(withoutLoans)).toBe(0);
   });
 
-  it('tiles six quarter-length windows back-to-back for a quarter period', () => {
+  it('steps back by whole calendar quarters for a quarter period', () => {
     const bars = computeTrendBars({ series: [], settings: ALL_INCLUDED, period: QUARTER });
 
     expect(bars).toHaveLength(6);
-    expect(bars.map((bar) => bar.shortLabel)).toEqual(['Mar 25', 'Jun 25', 'Sep 25', 'Dec 25', 'Mar 26', 'Jul 26']);
+    expect(bars.map((bar) => bar.shortLabel)).toEqual(['Apr 25', 'Jul 25', 'Oct 25', 'Jan 26', 'Apr 26', 'Jul 26']);
     expect(bars.map((bar) => bar.label)).toEqual([
-      'Mar 28 - Jun 27',
-      'Jun 28 - Sep 27',
-      'Sep 28 - Dec 28',
-      'Dec 29 - Mar 30',
-      'Mar 31 - Jun 30',
+      'Apr 1 - Jun 30',
+      'Jul 1 - Sep 30',
+      'Oct 1 - Dec 31',
+      'Jan 1 - Mar 31',
+      'Apr 1 - Jun 30',
       'Jul 1 - Sep 30',
     ]);
   });

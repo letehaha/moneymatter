@@ -1,4 +1,4 @@
-import type { RecordId } from '@bt/shared/types';
+import { type RecordId, TRACKER_LIMIT_KINDS } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -7,6 +7,7 @@ import {
   getCumulativeSeries,
   getPercent,
   getPeriodProgress,
+  getProjectionTone,
   getTrackerPace,
 } from './tracker-insights';
 
@@ -129,6 +130,7 @@ describe('getCumulativeSeries', () => {
         { periodStart: '2026-03-02', periodEnd: '2026-03-02', expense: 5, income: 0 },
         { periodStart: '2026-03-01', periodEnd: '2026-03-01', expense: 10, income: 3 },
       ],
+      limitKind: TRACKER_LIMIT_KINDS.spending,
     });
     expect(series.map((p) => [p.periodStart, p.cumulative])).toEqual([
       ['2026-03-01', 7],
@@ -143,7 +145,32 @@ describe('getCumulativeSeries', () => {
         { periodStart: '2026-03-02', periodEnd: '2026-03-02', expense: 4, income: 0 },
         { periodStart: '2026-03-03', periodEnd: '2026-03-03', expense: 20, income: 0 },
       ],
+      limitKind: TRACKER_LIMIT_KINDS.spending,
     });
     expect(series.map((p) => p.cumulative)).toEqual([0, 0, 14]);
+  });
+
+  it('accumulates net income with per-period income as the amount for the income kinds', () => {
+    const series = getCumulativeSeries({
+      periods: [
+        { periodStart: '2026-03-01', periodEnd: '2026-03-01', expense: 3, income: 10 },
+        { periodStart: '2026-03-02', periodEnd: '2026-03-02', expense: 0, income: 5 },
+      ],
+      limitKind: TRACKER_LIMIT_KINDS.incomeTarget,
+    });
+    expect(series.map((p) => [p.amount, p.cumulative])).toEqual([
+      [10, 7],
+      [5, 12],
+    ]);
+  });
+});
+
+describe('getProjectionTone', () => {
+  it('treats overshooting as a win only for an income target', () => {
+    expect(getProjectionTone({ delta: 50, isTarget: false })).toBe('destructive');
+    expect(getProjectionTone({ delta: -50, isTarget: false })).toBe('success');
+    expect(getProjectionTone({ delta: 50, isTarget: true })).toBe('success');
+    expect(getProjectionTone({ delta: -50, isTarget: true })).toBe('warning');
+    expect(getProjectionTone({ delta: null, isTarget: true })).toBeNull();
   });
 });

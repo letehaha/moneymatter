@@ -6,12 +6,25 @@
     <div
       v-if="showSuccessMessage"
       class="mb-3 flex items-center gap-2 rounded-md p-3 text-sm"
-      :class="hasFailedAccounts ? 'bg-destructive/10 text-destructive-text' : 'bg-success text-success-text'"
+      :class="hasFailedAccounts ? 'bg-destructive/10 text-destructive-text' : 'bg-muted'"
     >
-      <component :is="hasFailedAccounts ? XCircleIcon : CheckCircle2" class="size-5 shrink-0" />
-      <span class="font-medium">{{
-        hasFailedAccounts ? $t('syncStatusTooltip.syncCompletedWithErrors') : $t('syncStatusTooltip.syncedSuccessfully')
-      }}</span>
+      <component
+        :is="hasFailedAccounts ? XCircleIcon : CheckCircle2"
+        class="size-5 shrink-0"
+        :class="{ 'text-success-text': !hasFailedAccounts }"
+      />
+      <div class="min-w-0">
+        <div class="font-medium">
+          {{
+            hasFailedAccounts
+              ? $t('syncStatusTooltip.syncCompletedWithErrors')
+              : $t('syncStatusTooltip.syncedSuccessfully')
+          }}
+        </div>
+        <div v-if="!hasFailedAccounts && lastSyncTimestamp" class="text-muted-foreground text-xs">
+          {{ $t('syncStatusTooltip.lastSynced') }} {{ formatLastSyncTime(lastSyncTimestamp) }}
+        </div>
+      </div>
     </div>
 
     <!-- Stuck-sync banner -->
@@ -185,7 +198,7 @@
         :disabled="isLoading || accountStatuses.length === 0"
         @click="$emit('triggerSync')"
       >
-        <RefreshCcw :class="{ 'animate-spin': isLoading }" class="mr-2 size-4" />
+        <RefreshCcw :class="{ 'animate-spin': isLoading }" class="size-4" />
         {{
           syncStuck || hasFailedAccounts
             ? $t('syncStatusTooltip.retrySyncButton')
@@ -308,7 +321,7 @@ const getStatusColor = (status: SyncStatus) => {
     case SyncStatus.QUEUED:
       return 'text-yellow-500';
     case SyncStatus.COMPLETED:
-      return 'text-green-500';
+      return 'text-success-text';
     case SyncStatus.FAILED:
       return 'text-destructive-text';
     default:

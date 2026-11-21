@@ -44,10 +44,10 @@ export default class PortfolioTransfers extends Model {
   @Column({ type: DataType.UUID, allowNull: true })
   toAccountId!: RecordId | null;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare amount: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare refAmount: Money;
 
   @ForeignKey(() => Currencies)
@@ -92,10 +92,10 @@ export default class PortfolioTransfers extends Model {
   @Column({ type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH), allowNull: true, defaultValue: null })
   toCurrencyCode!: string | null;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare toAmount: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare refToAmount: Money | null;
 
   @BelongsTo(() => Currencies, 'toCurrencyCode')

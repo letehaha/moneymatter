@@ -2,6 +2,8 @@ import { ACCOUNT_STATUSES } from '@bt/shared/types';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 
+import { getConnectionBankName, resolveBankLogoDomain } from '../utils/bank-institutions';
+
 export const listUserConnections = async ({
   userId,
 }: {
@@ -9,8 +11,8 @@ export const listUserConnections = async ({
 }): Promise<
   (Pick<
     BankDataProviderConnections,
-    'id' | 'providerType' | 'providerName' | 'isActive' | 'lastSyncAt' | 'createdAt'
-  > & { accountsCount: number; bankName: string | null })[]
+    'id' | 'providerType' | 'providerName' | 'externalUrl' | 'isActive' | 'lastSyncAt' | 'createdAt'
+  > & { accountsCount: number; bankName: string | null; bankLogoDomain: string | null })[]
 > => {
   const connections = await BankDataProviderConnections.findAll({
     where: { userId },
@@ -25,17 +27,19 @@ export const listUserConnections = async ({
     order: [['createdAt', 'DESC']],
   });
 
-  return connections.map((conn) => ({
-    id: conn.id,
-    providerType: conn.providerType,
-    providerName: conn.providerName,
-    isActive: conn.isActive,
-    lastSyncAt: conn.lastSyncAt,
-    accountsCount: conn.accounts?.length || 0,
-    createdAt: conn.createdAt,
-    bankName:
-      typeof (conn.metadata as Record<string, unknown>)?.bankName === 'string'
-        ? ((conn.metadata as Record<string, unknown>).bankName as string)
-        : null,
-  }));
+  return connections.map((conn) => {
+    const bankName = getConnectionBankName({ metadata: conn.metadata });
+    return {
+      id: conn.id,
+      providerType: conn.providerType,
+      providerName: conn.providerName,
+      externalUrl: conn.externalUrl,
+      isActive: conn.isActive,
+      lastSyncAt: conn.lastSyncAt,
+      accountsCount: conn.accounts?.length || 0,
+      createdAt: conn.createdAt,
+      bankName,
+      bankLogoDomain: resolveBankLogoDomain({ bankName }),
+    };
+  });
 };

@@ -1,0 +1,113 @@
+{
+  "settings": {
+    "accountGroups": {
+      "page": {
+        "title": "Grupos de contas",
+        "description": "Organize as contas em grupos. As conexões bancárias criam e gerenciam os próprios grupos automaticamente.",
+        "addButton": "Adicionar grupo"
+      },
+      "empty": {
+        "title": "Nenhum grupo de contas ainda",
+        "description": "Agrupe as contas por banco, moeda ou finalidade para manter sua lista de contas organizada."
+      },
+      "loadError": {
+        "title": "Não foi possível carregar seus grupos",
+        "description": "Algo deu errado ao buscar seus grupos de contas. Confira sua conexão e tente de novo.",
+        "retry": "Tentar de novo"
+      },
+      "row": {
+        "bankBadgeTooltip": "Este grupo foi criado quando você conectou o banco, mas ele não representa a conexão em si — você pode renomeá-lo, mover contas ou excluí-lo. As contas continuam sincronizadas de qualquer forma.",
+        "accountsCount": "{count} conta | {count} contas",
+        "noAccounts": "Nenhuma conta",
+        "accountsElsewhere": "{count} conta sincronizada em outros grupos | {count} contas sincronizadas em outros grupos",
+        "manageConnection": "Gerenciar conexão"
+      },
+      "update": {
+        "label": "Nome do grupo",
+        "placeholder": "Digite o nome do grupo",
+        "emptyNameError": "Digite um nome para o grupo."
+      },
+      "accounts": {
+        "unlinkTooltip": "Remover do grupo",
+        "removeConfirmTitle": "Remover a conta “{name}” deste grupo?",
+        "removeConfirmDescription": "A conta não é excluída — ela só sai deste grupo.",
+        "removeConfirmAction": "Remover"
+      },
+      "delete": {
+        "button": "Excluir grupo",
+        "confirmTitle": "Excluir o grupo “{name}”?",
+        "accountsKept": "As contas são mantidas — elas só ficam sem grupo.",
+        "syncContinues": "A sincronização bancária continua — a conexão é independente deste grupo.",
+        "ungroupedHeading": "Vão ficar sem grupo"
+      },
+      "dialogs": {
+        "rename": {
+          "title": "Renomear grupo",
+          "description": "Clique no logo para escolher o logo de um banco, iniciais ou uma cor.",
+          "submit": "Salvar alterações"
+        },
+        "move": {
+          "title": "Mover “{name}”",
+          "description": "Os subgrupos e as contas dele vão junto.",
+          "parentLabel": "Grupo principal",
+          "parentPlaceholder": "Escolha um grupo principal",
+          "noParent": "Nenhum",
+          "hint": "Escolha “Nenhum” para deixá-lo no nível principal.",
+          "submit": "Mover"
+        },
+        "addAccounts": {
+          "title": "Adicionar contas a “{name}”",
+          "description": "Uma conta pertence a um só grupo. Se você escolher uma conta de outro grupo, ela será movida para cá.",
+          "searchPlaceholder": "Buscar contas",
+          "sections": {
+            "ungrouped": "Sem grupo",
+            "inOtherGroups": "Em outros grupos",
+            "alreadyInGroup": "Já em “{name}”"
+          },
+          "inGroupCaption": "Em {path}",
+          "noResults": "Nenhuma conta corresponde à sua busca",
+          "noAccounts": "Nenhuma conta para adicionar",
+          "summary": {
+            "selected": "Selecionadas: {selected}",
+            "movesFromGroup": "Selecionadas: {selected}; {count} sai de “{group}” | Selecionadas: {selected}; {count} saem de “{group}”",
+            "movesFromOtherGroups": "Selecionadas: {selected}; {count} sai de outros grupos | Selecionadas: {selected}; {count} saem de outros grupos"
+          },
+          "submit": "Adicionar {count} conta | Adicionar {count} contas"
+        }
+      },
+      "tree": {
+        "groupsCount": "{count} grupo | {count} grupos",
+        "syncedBadge": "Sincronizado",
+        "expand": "Expandir",
+        "collapse": "Recolher",
+        "renameTooltip": "Renomear",
+        "moreActions": "Mais ações",
+        "menu": {
+          "rename": "Renomear e trocar o logo",
+          "move": "Mover para outro grupo",
+          "newSubgroup": "Novo subgrupo",
+          "addAccounts": "Adicionar contas",
+          "delete": "Excluir grupo"
+        }
+      },
+      "organize": {
+        "button": "Organizar",
+        "hint": "Arraste um grupo para cima de outro para colocá-lo dentro dele",
+        "save": "Salvar alterações",
+        "topLevel": "Nível principal",
+        "dropToTopLevel": "Solte aqui para deixar “{name}” no nível principal",
+        "movesCount": "{count} movimentação | {count} movimentações",
+        "moveInside": "Mover para dentro",
+        "moved": "Movido",
+        "saveSuccess": "Grupos reorganizados",
+        "saveFailed": "Não foi possível salvar {count} movimentação. Tente de novo. | Não foi possível salvar {count} movimentações. Tente de novo.",
+        "staleMovesRemoved": "{count} movimentação pendente que não se aplica mais foi removida | {count} movimentações pendentes que não se aplicam mais foram removidas",
+        "dropErrors": {
+          "currentParent": "Já está neste grupo",
+          "insideItself": "Não é possível mover um grupo para dentro de um subgrupo dele",
+          "alreadyTopLevel": "Já está no nível principal"
+        }
+      }
+    }
+  }
+}

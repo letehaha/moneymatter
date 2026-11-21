@@ -260,7 +260,7 @@ describe('Budget line goals: CRUD', () => {
       { frequency: 'every_period', behavior: 'refill_up_to', amount: 10, fundingCap: -1 },
       { frequency: 'every_period', behavior: 'budget_another', amount: 0 },
       { frequency: 'every_period', behavior: 'budget_another', amount: -5 },
-      { frequency: 'every_period', behavior: 'budget_another', amount: 10.005 },
+      { frequency: 'every_period', behavior: 'budget_another', amount: 0.004 },
       { frequency: 'monthly', behavior: 'budget_another', amount: 10 },
       { behavior: 'budget_another', amount: 10 },
     ];
@@ -859,13 +859,9 @@ describe('Budget line goals: plan currency decimals', () => {
   };
 
   it('keeps a KWD goal, its target and its ask at 3 decimals', async () => {
-    const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-    const { saved, before, after } = await helpers.asUser({
-      cookies: user.cookies,
-      fn: async () => {
-        await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
-        return goalFlow({ currencyCode: 'KWD', goalAmount: 10.125, assigned: 1.234 });
-      },
+    const { saved, before, after } = await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
+      fn: () => goalFlow({ currencyCode: 'KWD', goalAmount: 10.125, assigned: 1.234 }),
     });
 
     expect(saved).toMatchObject({ amount: 10.125, stopAtBalance: 20.25 });
@@ -873,15 +869,42 @@ describe('Budget line goals: plan currency decimals', () => {
     expect(after).toMatchObject({ amount: 10.125, target: 10.125, periodTarget: 10.125, ask: 8.891, progress: 1.234 });
   });
 
-  it('keeps the 2-decimal values for a 2-decimal plan', async () => {
-    const { saved, before, after } = await goalFlow({
-      currencyCode: global.BASE_CURRENCY.code,
-      goalAmount: 10.12,
-      assigned: 1.23,
-    });
+  it('rounds goal amounts half-up to the plan currency and refuses one that rounds to nothing', async () => {
+    await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
+      fn: async () => {
+        const { plan } = await helpers.createBudgetPlan({ raw: true });
+        const category = await helpers.addCustomCategory({ name: 'Food', color: '#111111', raw: true });
+        const line = await helpers.createBudgetPlanLine({
+          planId: plan.id,
+          payload: { name: 'Food', categoryIds: [category.id] },
+          raw: true,
+        });
+        const target = { planId: plan.id, lineId: line.id };
 
-    expect(saved).toMatchObject({ amount: 10.12, stopAtBalance: 20.24 });
-    expect(before).toMatchObject({ target: 10.12, periodTarget: 10.12, ask: 10.12, progress: 0 });
-    expect(after).toMatchObject({ target: 10.12, ask: 8.89, progress: 1.23 });
+        expect(
+          await setGoal({
+            ...target,
+            payload: { frequency: 'every_period', behavior: 'budget_another', amount: 10.1245, stopAtBalance: 20.2505 },
+          }),
+        ).toMatchObject({ amount: 10.125, stopAtBalance: 20.251 });
+        expect(
+          await setGoal({
+            ...target,
+            payload: { frequency: 'every_period', behavior: 'refill_up_to', amount: 10, fundingCap: 5.0005 },
+          }),
+        ).toMatchObject({ amount: 10, fundingCap: 5.001 });
+
+        const vanishing: SetBudgetLineGoalPayload[] = [
+          { frequency: 'every_period', behavior: 'budget_another', amount: 0.0004 },
+          { frequency: 'every_period', behavior: 'budget_another', amount: 10, stopAtBalance: 0.0004 },
+          { frequency: 'every_period', behavior: 'refill_up_to', amount: 10, fundingCap: 0.0004 },
+        ];
+        for (const payload of vanishing) {
+          const res = await helpers.setBudgetLineGoal({ ...target, payload });
+          expect({ payload, statusCode: res.statusCode }).toEqual({ payload, statusCode: ERROR_CODES.ValidationError });
+        }
+      },
+    });
   });
 });

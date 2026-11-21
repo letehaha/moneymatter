@@ -2,27 +2,27 @@
   "pages": {
     "importExport": {
       "importHistory": {
-        "pageTitle": "Import history",
-        "pageDescription": "See your past imports and drill into exactly what accounts and transactions each one created.",
-        "loadError": "Couldn't load your import history.",
-        "emptyTitle": "No imports yet",
-        "emptyDescription": "Once you import transactions, they'll show up here.",
-        "emptyAction": "Import data",
-        "transactionCount": "{count} transaction | {count} transactions",
+        "pageTitle": "Cronologia delle importazioni",
+        "pageDescription": "Consultare le importazioni passate e vedere esattamente quali conti e transazioni ha creato ciascuna.",
+        "loadError": "Impossibile caricare la cronologia delle importazioni.",
+        "emptyTitle": "Ancora nessuna importazione",
+        "emptyDescription": "Dopo aver importato transazioni, compariranno qui.",
+        "emptyAction": "Importa dati",
+        "transactionCount": "{count} transazione | {count} transazioni",
         "accountCount": "{count} conto | {count} conti",
-        "deleteButton": "Delete import",
-        "deleteConfirmTitle": "Delete this import batch?",
-        "deleteConfirmDescription": "This will permanently delete {count} transaction from this import. This action cannot be undone. | This will permanently delete {count} transactions from this import. This action cannot be undone.",
-        "deleteConfirmDescriptionNoTransactions": "The transactions from this import are already deleted. This removes what is left of the import, including any balance adjustment it made to your accounts.",
-        "deleteConfirmCreatedAccountsNote": "Accounts created by this import are also removed if they have no other transactions.",
-        "deleteSuccessMessage": "Deleted {count} transaction | Deleted {count} transactions",
-        "deleteSuccessNoTransactions": "Import deleted",
-        "deleteUnexpectedError": "Something went wrong while deleting the import batch. Please try again.",
-        "deleteLinkedTransfersWarningTitle": "This import is linked to another transaction",
-        "deleteLinkedTransfersCheckbox": "Also delete the linked transfer transaction",
-        "deleteLinkedTransfersDescription": "By default, any transaction linked to this import as a transfer is only unlinked, not deleted. Checking this box will permanently delete it too — this cannot be undone.",
-        "deleteLinkedTransfersConfirmTitle": "Delete the linked transaction too?",
-        "deleteLinkedTransfersConfirmDescription": "You're about to permanently delete a transaction outside this import batch, not just unlink it. This action cannot be undone."
+        "deleteButton": "Elimina importazione",
+        "deleteConfirmTitle": "Eliminare questo lotto di importazione?",
+        "deleteConfirmDescription": "Verrà eliminata definitivamente {count} transazione di questa importazione. Questa azione non può essere annullata. | Verranno eliminate definitivamente {count} transazioni di questa importazione. Questa azione non può essere annullata.",
+        "deleteConfirmDescriptionNoTransactions": "Le transazioni di questa importazione sono già state eliminate. Viene rimosso quanto resta dell'importazione, comprese le eventuali rettifiche di saldo applicate ai conti.",
+        "deleteConfirmCreatedAccountsNote": "Vengono rimossi anche i conti creati da questa importazione, se non hanno altre transazioni.",
+        "deleteSuccessMessage": "{count} transazione eliminata | {count} transazioni eliminate",
+        "deleteSuccessNoTransactions": "Importazione eliminata",
+        "deleteUnexpectedError": "Si è verificato un problema durante l'eliminazione del lotto di importazione. Riprovare.",
+        "deleteLinkedTransfersWarningTitle": "Questa importazione è collegata a un'altra transazione",
+        "deleteLinkedTransfersCheckbox": "Elimina anche la transazione di trasferimento collegata",
+        "deleteLinkedTransfersDescription": "Per impostazione predefinita, qualsiasi transazione collegata a questa importazione come trasferimento viene solo scollegata, non eliminata. Selezionando questa casella verrà eliminata definitivamente: l'operazione non può essere annullata.",
+        "deleteLinkedTransfersConfirmTitle": "Eliminare anche la transazione collegata?",
+        "deleteLinkedTransfersConfirmDescription": "Si sta per eliminare definitivamente una transazione esterna a questo lotto di importazione, non solo scollegarla. Questa azione non può essere annullata."
       }
     }
   }

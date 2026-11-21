@@ -17,8 +17,7 @@ interface UnlinkTxFromEventParams {
  * Removes one link row, restoring the original transaction state captured
  * at link time. Tx amount itself is not touched (linking didn't change it).
  *
- * The event's `cashFlowMode` and `lpNetAmount` are not modified here — the
- * caller (event service) decides whether the remaining sum still matches.
+ * The event's `cashFlowMode` and `lpNetAmount` are not modified here.
  *
  * When `eventId` is provided, validates that the link belongs to that event
  * so that a mismatched URL path (DELETE /events/X/links/Y where Y belongs
@@ -49,7 +48,7 @@ const unlinkTxFromEventImpl = async ({ userId, eventId, linkId }: UnlinkTxFromEv
     userId,
     transferNature: snapshot.transferNature ?? TRANSACTION_TRANSFER_NATURE.not_transfer,
     refCurrencyCode: snapshot.refCurrencyCode,
-    refAmount: snapshot.refAmount === null ? null : Money.fromDecimal(snapshot.refAmount),
+    refAmount: Money.fromDecimal(snapshot.refAmount),
   });
 
   await link.destroy();

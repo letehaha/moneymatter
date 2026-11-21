@@ -162,6 +162,16 @@ describe('parseYnabRegister', () => {
         ).toBeNull();
       });
 
+      it('skips a tag that is not a currency and reads a later one', () => {
+        expect(
+          parseYnabRegister({ fileContent: fileFor('Retirement (401K) (USD)') }).accounts[0]!.detectedCurrency,
+        ).toBe('USD');
+        expect(
+          parseYnabRegister({ fileContent: fileFor('Joint (JOINT) (USDT)'), customCurrencyCodes: ['USDT'] })
+            .accounts[0]!.detectedCurrency,
+        ).toBe('USDT');
+      });
+
       it('reads a three-letter code whatever it spells, as before', () => {
         expect(parseYnabRegister({ fileContent: fileFor('Wallet (SAT)') }).accounts[0]!.detectedCurrency).toBe('SAT');
       });

@@ -27,7 +27,7 @@
         },
         "preview": {
           "accountsHelper": "Cấu hình cách xử lý từng tài khoản được phát hiện khi nhập.",
-          "accounts": "Tài khoản",
+          "accounts": "Accounts",
           "transactions": "Giao dịch",
           "rowPrefix": "Hàng {rowIndex}: "
         },
@@ -66,8 +66,8 @@
           "accountsSkipped": "Đã bỏ qua tài khoản",
           "categoriesCreated": "Categories created",
           "tagsCreated": "Tags created",
-          "transactionsImported": "Giao dịch đã nhập",
-          "transfersImported": "Giao dịch chuyển khoản đã nhập",
+          "transactionsImported": "Transactions imported",
+          "transfersImported": "Transfers imported",
           "outOfWalletImported": "Đã nhập giao dịch ngoài Wallet",
           "mergedIntoPlanned": "Đã gộp vào giao dịch dự kiến",
           "duplicatesSkipped": "Đã bỏ qua giao dịch trùng lặp",
@@ -81,27 +81,27 @@
           "balanceWarningTitle": "Một số số dư tài khoản có thể không chính xác",
           "balanceWarningBody": "Không thể đặt lại số dư của một hoặc nhiều tài khoản hiện có sau khi nhập. Hãy kiểm tra các tài khoản bị ảnh hưởng.",
           "viewTransactions": "Xem giao dịch",
-          "importAnother": "Nhập tệp khác"
+          "importAnother": "Import another file"
         },
         "stepper": {
           "steps": {
             "upload": "Tải lên",
             "resolve": "Xử lý",
-            "review": "Xem xét",
+            "review": "Review",
             "results": "Hoàn tất"
           }
         },
         "resolve": {
           "resolvedCounterWord": "đã xử lý",
           "accounts": {
-            "sectionTitle": "Tài khoản",
-            "currentBalanceLabel": "Số dư hiện tại (không bắt buộc)",
+            "sectionTitle": "Accounts",
+            "currentBalanceLabel": "Current balance (optional)",
             "currentBalancePlaceholder": "Để trống để dùng tổng số tiền đã nhập",
             "willCreateHint": "Sẽ tạo tài khoản {currency} mới",
             "skippedNote": "{count} tài khoản sẽ bị bỏ qua. Giao dịch của các tài khoản này — cùng mọi khoản chuyển đến hoặc từ những tài khoản đó — sẽ không được nhập."
           },
           "categories": {
-            "sectionTitle": "Danh mục"
+            "sectionTitle": "Categories"
           },
           "quickActions": {
             "mapExactMatches": "Ghép các mục khớp chính xác",
@@ -123,10 +123,10 @@
           "transactions": "Giao dịch",
           "transfersDetected": "Đã phát hiện giao dịch chuyển tiền",
           "outOfWallet": "Ngoài Wallet",
-          "duplicatesSkipped": "Đã bỏ qua giao dịch trùng lặp",
+          "duplicatesSkipped": "Duplicates skipped",
           "willImport": "Sẽ nhập",
           "warningsTitle": "{count} cảnh báo",
-          "rowPrefix": "Dòng {rowIndex}:",
+          "rowPrefix": "Row {rowIndex}:",
           "duplicatesTitle": "{count} giao dịch có thể bị trùng lặp",
           "duplicatesHint": "Các hàng được chọn vẫn sẽ được nhập; các mục trùng lặp không được chọn sẽ bị bỏ qua.",
           "back": "Quay lại",

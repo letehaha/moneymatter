@@ -1,4 +1,4 @@
-import { TRACKER_TYPES, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import { type RecordId, TRACKER_LIMIT_KINDS, TRANSACTION_TYPES } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -67,7 +67,7 @@ describe('Get tracker spending stats', () => {
     });
     const categoryTracker = await helpers.createTracker({
       name: 'empty-category-tracker',
-      type: TRACKER_TYPES.category,
+      rulesEnabled: true,
       categoryIds: [category.id],
       startDate: '2025-04-01T00:00:00Z',
       endDate: '2025-04-30T23:59:59Z',
@@ -190,6 +190,73 @@ describe('Get tracker spending stats', () => {
       // Sum of all period income should equal total income
       const totalIncome = result.spendingOverTime.periods.reduce((sum, p) => sum + p.income, 0);
       expect(totalIncome).toBe(1000);
+    });
+
+    it('breaks down income instead of expenses for an income limit', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const salary = await helpers.addCustomCategory({ name: 'Salary', color: '#00AA00', raw: true });
+      const food = await helpers.addCustomCategory({ name: 'Food', color: '#FF0000', raw: true });
+
+      const createTx = async ({
+        amount,
+        categoryId,
+        transactionType,
+        time,
+      }: {
+        amount: number;
+        categoryId: RecordId;
+        transactionType: TRANSACTION_TYPES;
+        time: string;
+      }) => {
+        const [tx] = await helpers.createTransaction({
+          raw: true,
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount,
+            categoryId,
+            transactionType,
+            time,
+          }),
+        });
+        return tx.id;
+      };
+      const transactionIds = [
+        await createTx({
+          amount: 900,
+          categoryId: salary.id,
+          transactionType: TRANSACTION_TYPES.income,
+          time: '2025-03-10T10:00:00Z',
+        }),
+        await createTx({
+          amount: 400,
+          categoryId: salary.id,
+          transactionType: TRANSACTION_TYPES.income,
+          time: '2025-03-12T10:00:00Z',
+        }),
+        await createTx({
+          amount: 1500,
+          categoryId: food.id,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: '2025-03-15T10:00:00Z',
+        }),
+      ];
+
+      const tracker = await helpers.createTracker({
+        name: 'income-breakdown',
+        limitAmount: 5000,
+        limitKind: TRACKER_LIMIT_KINDS.incomeTarget,
+        startDate: '2025-03-01T00:00:00Z',
+        endDate: '2025-03-31T23:59:59Z',
+        raw: true,
+      });
+      await helpers.addTransactionsToTracker({ id: tracker.id, payload: { transactionIds } });
+
+      const result = await helpers.getTrackerSpendingStats({ id: tracker.id, raw: true });
+
+      expect(result.spendingsByCategory).toHaveLength(1);
+      expect(result.spendingsByCategory[0]).toMatchObject({ categoryId: salary.id, amount: 1300 });
+      expect(result.biggestDay).toEqual({ date: '2025-03-10', expense: 900 });
+      expect(result.topPayees.reduce((sum, payee) => sum + payee.amount, 0)).toBe(1300);
     });
 
     it('returns subcategory breakdown for transactions under child categories', async () => {
@@ -392,7 +459,7 @@ describe('Get tracker spending stats', () => {
 
       const tracker = await helpers.createTracker({
         name: 'food-category-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category1.id, category2.id],
         startDate: '2025-04-01T00:00:00Z',
         endDate: '2025-04-30T23:59:59Z',
@@ -458,11 +525,10 @@ describe('Get tracker spending stats', () => {
         }),
       });
 
-      // Tracker tracks the parent category (descendants auto-included)
       const tracker = await helpers.createTracker({
         name: 'food-subcategory-tracker',
-        type: TRACKER_TYPES.category,
-        categoryIds: [parentCategory.id],
+        rulesEnabled: true,
+        categoryIds: [parentCategory.id, childCategory1.id, childCategory2.id],
         startDate: '2025-04-01T00:00:00Z',
         endDate: '2025-04-30T23:59:59Z',
         raw: true,
@@ -485,7 +551,7 @@ describe('Get tracker spending stats', () => {
       expect(children![1]!.amount).toBe(350);
     });
 
-    it('handles split transactions correctly for category tracker', async () => {
+    it('counts a split transaction in full when one split matches', async () => {
       const account = await helpers.createAccount({ raw: true });
 
       const category1 = await helpers.addCustomCategory({
@@ -518,7 +584,7 @@ describe('Get tracker spending stats', () => {
       // Tracker only tracks category1
       const tracker = await helpers.createTracker({
         name: 'split-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category1.id],
         startDate: '2025-05-01T00:00:00Z',
         endDate: '2025-05-31T23:59:59Z',
@@ -527,10 +593,10 @@ describe('Get tracker spending stats', () => {
 
       const result = await helpers.getTrackerSpendingStats({ id: tracker.id, raw: true });
 
-      // Should only count the split amount for category1 (600)
+      // A matching split links the whole transaction, counted under its primary category.
       expect(result.spendingsByCategory).toHaveLength(1);
       expect(result.spendingsByCategory[0]!.name).toBe('SplitCat1');
-      expect(result.spendingsByCategory[0]!.amount).toBe(600);
+      expect(result.spendingsByCategory[0]!.amount).toBe(1000);
     });
   });
 
@@ -619,7 +685,53 @@ describe('Get tracker spending stats', () => {
       expect(result.biggestDay).toEqual({ date: '2025-04-10', expense: 300 });
     }, 60_000);
 
-    it('attaches a split-targeted refund to the split’s category, not the original primary category', async () => {
+    it('nets an income refunded by a linked expense out of an income limit breakdown', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const salary = await helpers.addCustomCategory({ name: 'Salary', color: '#00AA00', raw: true });
+
+      const [incomeTx] = await helpers.createTransaction({
+        raw: true,
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 900,
+          categoryId: salary.id,
+          transactionType: TRANSACTION_TYPES.income,
+          time: '2025-04-10T10:00:00Z',
+        }),
+      });
+      const [refundExpenseTx] = await helpers.createTransaction({
+        raw: true,
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 300,
+          categoryId: salary.id,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: '2025-04-12T10:00:00Z',
+        }),
+      });
+
+      await helpers.createSingleRefund({ originalTxId: incomeTx.id, refundTxId: refundExpenseTx.id }, true);
+
+      const tracker = await helpers.createTracker({
+        name: 'income-refund-breakdown',
+        limitAmount: 5000,
+        limitKind: TRACKER_LIMIT_KINDS.incomeTarget,
+        startDate: '2025-04-01T00:00:00Z',
+        endDate: '2025-04-30T23:59:59Z',
+        raw: true,
+      });
+      await helpers.addTransactionsToTracker({
+        id: tracker.id,
+        payload: { transactionIds: [incomeTx.id, refundExpenseTx.id] },
+      });
+
+      const result = await helpers.getTrackerSpendingStats({ id: tracker.id, raw: true });
+
+      expect(result.spendingsByCategory).toHaveLength(1);
+      expect(result.spendingsByCategory[0]).toMatchObject({ categoryId: salary.id, amount: 600 });
+    }, 60_000);
+
+    it('nets a split-targeted refund against the primary category the split transaction is counted under', async () => {
       const account = await helpers.createAccount({ raw: true });
       const primaryCategory = await helpers.addCustomCategory({
         name: 'Primary',
@@ -645,7 +757,7 @@ describe('Get tracker spending stats', () => {
         }),
       });
 
-      const txWithSplits = await helpers.getTransactions({ raw: true, includeSplits: true });
+      const txWithSplits = await helpers.getTransactions({ raw: true });
       const split = txWithSplits.find((t) => t.id === expenseTx.id)!.splits![0]!;
 
       // Refund-income $3 targeting the $3 split.
@@ -665,10 +777,9 @@ describe('Get tracker spending stats', () => {
         true,
       );
 
-      // Category tracker tracking only splitCategory — only the $3 split is counted.
       const tracker = await helpers.createTracker({
         name: 'split-refund-category-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [splitCategory.id],
         startDate: '2025-07-01T00:00:00Z',
         endDate: '2025-07-31T23:59:59Z',
@@ -677,10 +788,9 @@ describe('Get tracker spending stats', () => {
 
       const result = await helpers.getTrackerSpendingStats({ id: tracker.id, raw: true });
 
-      // The refund must net out the split's category to zero. If splitId is ignored, the
-      // adjustment would target the original tx's primary category (which isn't even tracked
-      // by this tracker), and SplitCat would remain at $3.
-      expect(result.spendingsByCategory).toHaveLength(0);
+      expect(result.spendingsByCategory).toEqual([
+        expect.objectContaining({ categoryId: primaryCategory.id, amount: 700 }),
+      ]);
     });
 
     it('nets out refunds for a category tracker', async () => {
@@ -716,7 +826,7 @@ describe('Get tracker spending stats', () => {
 
       const tracker = await helpers.createTracker({
         name: 'category-refund-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category.id],
         startDate: '2025-06-01T00:00:00Z',
         endDate: '2025-06-30T23:59:59Z',
@@ -922,7 +1032,7 @@ describe('Get tracker spending stats', () => {
 
       const tracker = await helpers.createTracker({
         name: 'split-payee-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [first!.id, second!.id],
         startDate: '2025-11-01T00:00:00Z',
         endDate: '2025-11-30T23:59:59Z',
@@ -1014,39 +1124,22 @@ describe('Get tracker spending stats', () => {
   });
 
   describe('Base currency decimals', () => {
-    it('reports categories and periods at 3 decimals for a KWD-base user', async () => {
-      const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-
-      await helpers.asUser({
-        cookies: kwdUser.cookies,
+    it('reports categories and periods at the 3 decimals of a KWD base currency', async () => {
+      const expense = 1.234;
+      const income = 2.005;
+      const { categoryId, result } = await helpers.asNewUserWithBaseCurrency({
+        currencyCode: 'KWD',
         fn: async () => {
-          const { trackerId, categoryId } = await seed({
-            currencyCode: 'KWD',
-            amounts: { expense: 1.234, income: 2.005 },
-          });
-
-          const result = await helpers.getTrackerSpendingStats({ id: trackerId, raw: true });
-
-          expect(result.spendingsByCategory).toMatchObject([{ categoryId, amount: 1.234 }]);
-          const totalExpense = result.spendingOverTime.periods.reduce((sum, period) => sum + period.expense, 0);
-          const totalIncome = result.spendingOverTime.periods.reduce((sum, period) => sum + period.income, 0);
-          expect(Number(totalExpense.toFixed(3))).toBe(1.234);
-          expect(Number(totalIncome.toFixed(3))).toBe(2.005);
+          const { trackerId, categoryId } = await seed({ currencyCode: 'KWD', amounts: { expense, income } });
+          return { categoryId, result: await helpers.getTrackerSpendingStats({ id: trackerId, raw: true }) };
         },
       });
-    });
 
-    it('keeps the 2-decimal values for a 2-decimal base user', async () => {
-      const { trackerId, categoryId } = await seed({
-        currencyCode: global.BASE_CURRENCY.code,
-        amounts: { expense: 1.23, income: 2.01 },
-      });
-
-      const result = await helpers.getTrackerSpendingStats({ id: trackerId, raw: true });
-
-      expect(result.spendingsByCategory).toMatchObject([{ categoryId, amount: 1.23 }]);
+      expect(result.spendingsByCategory).toMatchObject([{ categoryId, amount: expense }]);
       const totalExpense = result.spendingOverTime.periods.reduce((sum, period) => sum + period.expense, 0);
-      expect(Number(totalExpense.toFixed(2))).toBe(1.23);
+      const totalIncome = result.spendingOverTime.periods.reduce((sum, period) => sum + period.income, 0);
+      expect(Number(totalExpense.toFixed(3))).toBe(expense);
+      expect(Number(totalIncome.toFixed(3))).toBe(income);
     });
   });
 });

@@ -2,7 +2,6 @@ import type { BackupRestoreWarning, BackupRestoreWarningCode } from '@bt/shared/
 
 const WARNING_KEYS = {
   shares_skipped: 'settings.security.backup.restore.warnings.sharesSkipped',
-  mcc_code_missing: 'settings.security.backup.restore.warnings.mccCodeMissing',
   currency_missing: 'settings.security.backup.restore.warnings.currencyMissing',
   unknown_table_ignored: 'settings.security.backup.restore.warnings.unknownTableIgnored',
   unknown_column_dropped: 'settings.security.backup.restore.warnings.unknownColumnDropped',

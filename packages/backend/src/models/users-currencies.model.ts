@@ -1,14 +1,18 @@
-import type {
-  CoingeckoRateSourceConfig,
-  CurrencyRateSource,
-  HttpRateSourceConfig,
-  PegRateSourceConfig,
-  RecordId,
+import {
+  CUSTOM_CURRENCY_DECIMALS_MAX,
+  CUSTOM_CURRENCY_DECIMALS_MIN,
+  type CoingeckoRateSourceConfig,
+  type CurrencyRateSource,
+  type HttpRateSourceConfig,
+  type PegRateSourceConfig,
+  type RecordId,
 } from '@bt/shared/types';
 import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { IdColumn } from '@common/types/id-column';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
+import { t } from '@i18n/index';
+import { UnexpectedError, ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { Op } from 'sequelize';
 import {
@@ -20,12 +24,10 @@ import {
   DataType,
   AfterSave,
   AfterDestroy,
-  AfterBulkUpdate,
-  AfterBulkDestroy,
   DefaultScope,
 } from 'sequelize-typescript';
 
-import Currencies from './currencies.model';
+import Currencies, { NON_CURRENCY_CODES } from './currencies.model';
 import Users from './users.model';
 
 // The encrypted request headers of an HTTP rate source stay out of every ordinary read, so no
@@ -82,21 +84,38 @@ export default class UsersCurrencies extends Model {
   })
   isDefaultCurrency!: boolean;
 
-  /** Display name the user gave the currency; `null` keeps the name from "Currencies". */
+  /** Name of a custom currency as this user defines it; `null` on an ISO row. */
   @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(255) })
   nameOverride!: string | null;
 
-  /** Symbol the user gave the currency; `null` keeps the symbol from "Currencies". */
+  /** Symbol of a custom currency as this user defines it; `null` for none and on an ISO row. */
   @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(8) })
   symbolOverride!: string | null;
 
-  /** Decimals the user's amounts keep in this currency (0 to 18); `null` keeps "Currencies"."digits". */
-  @Column({ allowNull: true, defaultValue: null, type: DataType.INTEGER, validate: { min: 0, max: 18 } })
+  /** Decimals of a custom currency as this user defines it; `null` on an ISO row, which keeps "Currencies"."digits". */
+  @Column({
+    allowNull: true,
+    defaultValue: null,
+    type: DataType.INTEGER,
+    validate: { min: CUSTOM_CURRENCY_DECIMALS_MIN, max: CUSTOM_CURRENCY_DECIMALS_MAX },
+  })
   decimalsOverride!: number | null;
 
-  /** https URL of the image the user picked for a custom currency; `null` draws a monogram. Always `null` on an ISO row. */
-  @Column({ allowNull: true, defaultValue: null, type: DataType.TEXT })
-  logoUrl!: string | null;
+  // The logo of a custom currency; always `null` on an ISO row.
+  @Column({ allowNull: true, type: DataType.STRING(253) })
+  logoDomain!: string | null;
+
+  @Column({ allowNull: true, type: DataType.STRING(16) })
+  logoInitials!: string | null;
+
+  @Column({ allowNull: true, type: DataType.STRING(7) })
+  logoColor!: string | null;
+
+  @Column({ allowNull: true, type: DataType.STRING(64) })
+  logoIcon!: string | null;
+
+  @Column({ allowNull: true, type: DataType.UUID })
+  logoImageId!: string | null;
 
   /** Where the user's rates for the currency come from; the settings of each source are in `rateSourceConfig`. */
   @Column({ allowNull: false, defaultValue: 'provider', type: DataType.STRING(16) })
@@ -124,12 +143,6 @@ export default class UsersCurrencies extends Model {
   @AfterDestroy
   static invalidateDecimalsCacheForRow(instance: UsersCurrencies) {
     invalidateCurrencyDecimalsCache({ userId: instance.userId, code: instance.currencyCode });
-  }
-
-  @AfterBulkUpdate
-  @AfterBulkDestroy
-  static invalidateDecimalsCacheForBulk() {
-    invalidateCurrencyDecimalsCache();
   }
 }
 
@@ -203,7 +216,7 @@ export const addCurrency = async ({
   liveRateUpdate?: boolean;
   isDefaultCurrency?: boolean;
 }) => {
-  await findOrThrowNotFound({
+  const currency = await findOrThrowNotFound({
     query: Currencies.findByPk(currencyCode),
     message: 'Currency with provided code does not exist!',
   });
@@ -213,6 +226,18 @@ export const addCurrency = async ({
     raw: true,
   });
   if (existingCurrency) return existingCurrency;
+
+  if (currency.isCustom) {
+    throw new UnexpectedError({
+      message: `addCurrency cannot hold the custom currency ${currencyCode}; use createCustomCurrency or ensureUserCurrencyConnected`,
+    });
+  }
+
+  if (NON_CURRENCY_CODES.includes(currencyCode)) {
+    throw new ValidationError({
+      message: t({ key: 'csvImport.currencyNotSupported', variables: { currency: currencyCode } }),
+    });
+  }
 
   return UsersCurrencies.create(
     {

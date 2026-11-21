@@ -7,9 +7,10 @@ import { API_LAYER_BASE_CURRENCY_CODE } from './constants';
 
 export const MS_PER_DAY = 86_400_000;
 
-/** Same 5-decimal truncation `getExchangeRate` applies, so a resolved rate matches
- *  what every other conversion in the app produces for that day. */
-export const formatRate = (rate: number) => Math.trunc(rate * 100000) / 100000;
+/** Same rounding `getExchangeRate` applies, so a resolved rate matches what every other
+ *  conversion in the app produces for that day. Significant digits, not fixed decimals,
+ *  because rates like IRR->USD sit near 5e-7. */
+export const formatRate = (rate: number) => Number(rate.toPrecision(12));
 
 /** UTC calendar day of a timestamp, or the day part of a `DATEONLY` string. */
 export const toDayKey = (date: Date | string): string =>
@@ -22,7 +23,7 @@ export type DailyPairRateResolver = (dayKey: string) => number | null;
  * most recent earlier day, else the earliest day known for that currency.
  *
  * Returns `null` when either leg has no stored rate dated on or before `to`. The
- * resolver returns `null` only for a day whose rate is zero or truncates to zero.
+ * resolver returns `null` only for a day whose rate is zero.
  */
 export const buildDailyPairRateResolver = async ({
   baseCode,
@@ -79,8 +80,7 @@ export const buildDailyPairRateResolver = async ({
     const usdToQuote = findLatestUsdRate(quoteCode, dayKey);
     if (!usdToBase || !usdToQuote || usdToBase.rate === 0) return null;
 
-    // Truncation to 5 decimals collapses a sub-0.00001 rate to 0, and a zero rate
-    // would be written as a valid history of zero balances.
+    // A zero rate would be written as a valid history of zero balances.
     const rate = formatRate(usdToQuote.rate / usdToBase.rate);
     return rate > 0 ? rate : null;
   };

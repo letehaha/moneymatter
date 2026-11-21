@@ -7,7 +7,7 @@ import { buildFeatureStatusPayload, isRequestWithinAiAllowance } from './build-f
 
 const schema = z.object({
   params: z.object({
-    feature: z.nativeEnum(AI_FEATURE),
+    feature: z.enum(AI_FEATURE),
   }),
 });
 

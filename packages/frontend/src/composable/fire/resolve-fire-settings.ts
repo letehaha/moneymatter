@@ -16,7 +16,7 @@ export const PRESET_INFLATION_PCT = 3;
 export type FireReturnFallback = 'portfolio-unavailable' | 'custom-missing';
 
 export type ResolvedFireSettings = {
-  [K in keyof FireSettings]-?: Exclude<FireSettings[K], undefined>;
+  [K in Exclude<keyof FireSettings, 'paceAnchor'>]-?: Exclude<FireSettings[K], undefined>;
 } & {
   realAnnual: number;
   effectiveInflationPct: number;

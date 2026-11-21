@@ -1,7 +1,7 @@
+import { MAX_EXTERNAL_URL_LENGTH } from '@bt/shared/const/entity-external-url';
 import type { RecordId } from '@bt/shared/types';
 import {
   type BudgetSuggestionAnswers,
-  CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH,
   BUDGET_PLAN_NAME_MAX_LENGTH,
   BUDGET_SUGGESTION_DETAILS,
   BUDGET_SUGGESTION_EATS_OUT,
@@ -30,7 +30,7 @@ import { z } from 'zod';
  * arithmetic coercion and cross-string mixups. Use this validator anywhere
  * an entity ID enters the system from the API surface.
  *
- * Users, Currencies, ExchangeRates, and MerchantCategoryCodes still use
+ * Users, Currencies, and ExchangeRates still use
  * integer keys and are out of scope for this validator.
  */
 export const recordId = () => z.uuid().transform((v) => v as RecordId);
@@ -62,20 +62,19 @@ export const uniqueRecordIds = ({ min, max }: { min?: number; max?: number } = {
  */
 export const decimalMoney = () => z.number().transform((val) => Money.fromDecimal(val));
 
-// The most decimals the money columns can store is their scale.
-const DECIMAL_AMOUNT_PATTERN = new RegExp(`^\\d+(\\.\\d{1,${MONEY_COLUMN_SCALE}})?$`);
-
 /**
  * A plain decimal (no Money transform), capped at 1e13; `positive` excludes 0.
  *
  * The schema only enforces what the storage can hold. How many decimals the amount may carry
  * depends on the currency it is denominated in, which the request does not name, so the service
- * that knows the currency checks it with `assertMoneyFitsCurrency`.
+ * that knows the currency rounds it (`roundToCurrency`, or `roundGoalAmount` for amounts that must
+ * stay above 0).
  */
 export const boundedDecimalAmount = ({ positive = false }: { positive?: boolean } = {}) =>
-  (positive ? z.number().positive() : z.number().min(0))
-    .max(1e13)
-    .refine((value) => DECIMAL_AMOUNT_PATTERN.test(String(value)), `At most ${MONEY_COLUMN_SCALE} decimal places`);
+  (positive ? z.number().positive() : z.number().min(0)).max(1e13).refine((value) => {
+    const money = Money.fromDecimal(value);
+    return money.round(MONEY_COLUMN_SCALE).equals(money);
+  }, `At most ${MONEY_COLUMN_SCALE} decimal places`);
 
 /** Name of a budget plan, line or line group. */
 export const budgetPlanName = () => z.string().trim().min(1).max(BUDGET_PLAN_NAME_MAX_LENGTH);
@@ -109,20 +108,6 @@ export const currencyCode = () =>
   z.string().trim().toUpperCase().refine(isCurrencyCodeFormat, {
     message: 'Invalid currency code. Use 2 to 16 letters or digits, e.g. "USD".',
   });
-
-/**
- * Logo of a custom currency: an absolute `https:` URL of at most `CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH`
- * characters, or `null` to clear it. Any other scheme (`http:`, `javascript:`, `data:`) is refused, so
- * a stored logo is always safe to hand to an `<img src>`.
- *
- * @example
- * body: z.object({ logoUrl: currencyLogoUrl().optional() })  // absent keeps, null clears
- */
-export const currencyLogoUrl = () =>
-  z
-    .url({ protocol: /^https$/ })
-    .max(CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH)
-    .nullable();
 
 /**
  * Currency-code validator for contexts that only accept ISO 4217 codes (base currency,
@@ -188,7 +173,7 @@ export const commaSeparatedRecordIds = z.string().transform((str, ctx) => {
 
   if (ids.some((id) => id === null)) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'Not all values are valid record IDs',
     });
     return z.NEVER;
@@ -216,7 +201,7 @@ export const booleanQuery = () =>
     }
 
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: 'custom',
       message: 'Boolean value must be "true", "false", "1", or "0"',
     });
     return z.NEVER;
@@ -242,7 +227,7 @@ export const dateBound = ({
   precision = 'date',
   offset = false,
 }: { precision?: DateRangePrecision; offset?: boolean } = {}): z.ZodType<string> =>
-  precision === 'datetime' ? z.string().datetime({ offset }) : z.iso.date('Invalid calendar date');
+  precision === 'datetime' ? z.iso.datetime({ offset }) : z.iso.date('Invalid calendar date');
 
 // Compares two bounds as instants, so it is correct for calendar days, UTC
 // datetimes, and offset datetimes alike (each parses to a comparable epoch).
@@ -354,7 +339,7 @@ export const decimalString = () =>
   z.union([z.string(), z.number()]).transform((v, ctx) => {
     const s = typeof v === 'number' ? v.toString() : v;
     if (!/^-?\d+(\.\d+)?$/.test(s)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Invalid decimal' });
+      ctx.addIssue({ code: 'custom', message: 'Invalid decimal' });
       return z.NEVER;
     }
     return s;
@@ -371,3 +356,10 @@ export const percentageFraction = () =>
     .min(0)
     .max(1)
     .transform((v) => v.toString());
+
+/** http(s) URL string capped at the DB `externalUrl` VARCHAR length. */
+export const externalUrl = () =>
+  z
+    .url('Invalid URL')
+    .max(MAX_EXTERNAL_URL_LENGTH, `The URL must not exceed ${MAX_EXTERNAL_URL_LENGTH} characters.`)
+    .regex(/^https?:\/\//i, 'Only http(s) URLs are allowed');

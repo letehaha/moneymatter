@@ -22,7 +22,7 @@
       <div
         v-for="account in sortedAccounts"
         :key="account.id"
-        class="border-border/60 hover:bg-muted/40 relative grid min-h-[52px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 border-b px-4 py-2 transition-colors @2xl/accounts:grid-cols-[minmax(0,1fr)_200px_150px] @2xl/accounts:gap-y-0 @2xl/accounts:py-0"
+        class="border-border/60 hover:bg-hover relative grid min-h-[52px] grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 border-b px-4 py-2 transition-colors @2xl/accounts:grid-cols-[minmax(0,1fr)_200px_150px] @2xl/accounts:gap-y-0 @2xl/accounts:py-0"
       >
         <router-link
           class="absolute inset-0"
@@ -75,7 +75,8 @@
       <div v-if="remainingCount" class="p-2">
         <UiButton
           variant="ghost"
-          class="text-primary-text h-11 w-full justify-center rounded-lg border border-dashed"
+          size="lg"
+          class="text-primary-text w-full justify-center rounded-lg border border-dashed px-4"
           @click="emit('connectRemaining')"
         >
           <PlusIcon class="size-4" />

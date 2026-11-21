@@ -159,7 +159,7 @@ async function handleImport() {
 
       <!-- Voided rows: opt in to keep them as zero-amount records -->
       <div v-if="includedVoidedCount > 0" class="border-border overflow-hidden rounded-md border">
-        <label class="hover:bg-muted/50 flex cursor-pointer items-start gap-3 p-4 transition-colors">
+        <label class="hover:bg-hover flex cursor-pointer items-start gap-3 p-4 transition-colors">
           <Checkbox
             :model-value="store.includeVoidedTransactions"
             class="mt-0.5"

@@ -1,0 +1,23 @@
+[
+  {
+    "id": "01a1cf52-7ca1-756a-b310-9079d458ab6d",
+    "accountId": "01a1cf52-7c9c-710b-ae64-25998da608a3",
+    "userId": 1,
+    "make": "Toyota",
+    "model": "Corolla",
+    "trim": null,
+    "year": 2020,
+    "vehicleClass": "sedan",
+    "purchasePrice": 2000050,
+    "purchaseDate": "2022-01-01",
+    "valueAnchor": 1500075,
+    "valueAnchorDate": "2026-11-12",
+    "depreciationPreset": "class-default",
+    "customAnnualRatePct": null,
+    "salvageFloorPct": "10.00",
+    "currentMileage": null,
+    "valueLastComputedAt": "2026-11-12T10:34:12.053Z",
+    "createdAt": "2026-11-12T10:34:12.002Z",
+    "updatedAt": "2026-11-12T10:34:12.055Z"
+  }
+]

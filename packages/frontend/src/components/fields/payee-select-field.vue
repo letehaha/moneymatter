@@ -3,10 +3,12 @@ import { useAccountPayees, usePayeeLookup, usePayees } from '@/composable/data-q
 import * as Popover from '@/components/lib/ui/popover';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { Button } from '@/components/lib/ui/button';
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import { cn } from '@/lib/utils';
-import { PlusIcon, SearchIcon, XIcon } from '@lucide/vue';
-import { useDebounce } from '@vueuse/core';
-import { computed, ref } from 'vue';
+import { CheckIcon, PlusIcon, SearchIcon, XIcon } from '@lucide/vue';
+import { refDebounced } from '@vueuse/core';
+import { ListboxContent, ListboxFilter, ListboxItem, ListboxItemIndicator, ListboxRoot } from 'reka-ui';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { PayeeModel, TransactionLocation } from '@bt/shared/types';
 import PayeeFormDialog from '@/pages/settings/subpages/payees/components/payee-form-dialog.vue';
@@ -38,6 +40,7 @@ interface Props {
    * owner's namespace from a transaction form).
    */
   ownerScoped?: boolean;
+  size?: ControlSize;
 }
 const props = withDefaults(defineProps<Props>(), {
   label: undefined,
@@ -46,6 +49,7 @@ const props = withDefaults(defineProps<Props>(), {
   excludeId: null,
   accountId: null,
   ownerScoped: false,
+  size: 'default',
 });
 
 const emit = defineEmits<{
@@ -73,7 +77,7 @@ const { t } = useI18n();
 
 const isOpen = ref(false);
 const inputValue = ref('');
-const debouncedRaw = useDebounce(inputValue, DEBOUNCE_MS);
+const debouncedRaw = refDebounced(inputValue, DEBOUNCE_MS);
 const debouncedQuery = computed(() => debouncedRaw.value.trim());
 
 // Sort by last-seen so the most recently used payees lead – that's what the
@@ -104,6 +108,12 @@ const isFetching = computed(() => (props.ownerScoped ? ownerFetch.isFetching.val
 const displayPayees = computed(() =>
   props.excludeId ? allPayees.value.filter((p) => p.id !== props.excludeId) : allPayees.value,
 );
+
+// Results land after the debounced fetch, not on input: re-highlight then, and ignore
+// picks until then so Enter can't choose a row from the previous query's list.
+const listboxRef = ref<{ highlightFirstItem: () => void } | null>(null);
+watch(displayPayees, () => listboxRef.value?.highlightFirstItem());
+const isSearchPending = computed(() => inputValue.value.trim() !== debouncedQuery.value || isFetching.value);
 
 // Inline create is hidden in owner-scoped mode – the caller can't create
 // payees in the account owner's namespace from the transaction form.
@@ -184,9 +194,10 @@ function handlePayeeCreated(payee: PayeeModel) {
           :disabled="disabled"
           :class="
             cn(
-              'border-input bg-input-background ring-offset-background flex h-10 w-full items-center gap-2 rounded-md border px-3 py-2 text-sm md:h-9',
+              'border-input bg-input-background ring-offset-background flex w-full items-center gap-2 rounded-md border px-3 py-2 text-sm',
               'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden',
               disabled && 'cursor-not-allowed opacity-50',
+              controlHeight[size],
             )
           "
           data-test="payee-select-field"
@@ -219,43 +230,45 @@ function handlePayeeCreated(payee: PayeeModel) {
       </Popover.PopoverTrigger>
 
       <Popover.PopoverContent class="w-(--reka-popover-trigger-width) p-0" align="start" :side-offset="4">
-        <div class="border-input border-b p-2">
-          <div class="relative">
-            <SearchIcon class="text-muted-foreground absolute top-1/2 left-2 size-4 -translate-y-1/2" />
-            <input
-              v-model="inputValue"
-              type="text"
-              class="border-input bg-input-background h-9 w-full rounded-md border pr-2 pl-8 text-sm focus:outline-none"
-              :placeholder="t('fields.payeeSelect.searchPlaceholder')"
-              data-test="payee-select-search"
-            />
-          </div>
-        </div>
-
-        <ScrollArea :class="showCreateAffordance ? 'max-h-72' : 'max-h-64'">
-          <div role="listbox">
-            <button
-              v-for="item in displayPayees"
-              :key="item.id"
-              type="button"
-              role="option"
-              :aria-selected="modelValue === item.id"
-              class="hover:bg-popover-foreground/10 flex w-full items-center gap-2 border-none p-2 text-left text-sm"
-              :class="{ 'bg-primary/15 hover:bg-primary/20': modelValue === item.id }"
-              @click="selectPayee(item)"
-            >
-              <BrandLogo v-bind="toEntityLogoDisplayProps(item)" :name="item.name" class="size-6 shrink-0" />
-              <span class="min-w-0 grow truncate">{{ item.name }}</span>
-            </button>
-
-            <div
-              v-if="displayPayees.length === 0 && !isFetching && !showCreateAffordance"
-              class="text-muted-foreground p-4 text-center text-sm"
-            >
-              {{ $t('fields.payeeSelect.empty') }}
+        <ListboxRoot ref="listboxRef" :model-value="modelValue ?? null" highlight-on-hover>
+          <div class="border-input border-b p-2">
+            <div class="relative">
+              <SearchIcon class="text-muted-foreground absolute top-1/2 left-2 size-4 -translate-y-1/2" />
+              <ListboxFilter
+                v-model="inputValue"
+                class="border-input bg-input-background h-9 w-full rounded-md border pr-2 pl-8 text-sm focus:outline-none"
+                :placeholder="t('fields.payeeSelect.searchPlaceholder')"
+                data-test="payee-select-search"
+              />
             </div>
           </div>
-        </ScrollArea>
+
+          <ScrollArea :class="showCreateAffordance ? 'max-h-72' : 'max-h-64'">
+            <ListboxContent class="p-1">
+              <ListboxItem
+                v-for="item in displayPayees"
+                :key="item.id"
+                :value="item.id"
+                class="data-highlighted:bg-hover flex cursor-pointer items-center gap-2 rounded-sm p-2 text-sm data-[state=checked]:font-medium"
+                @mousedown.prevent
+                @select.prevent="!isSearchPending && selectPayee(item)"
+              >
+                <BrandLogo v-bind="toEntityLogoDisplayProps(item)" :name="item.name" class="size-6 shrink-0" />
+                <span class="min-w-0 grow truncate">{{ item.name }}</span>
+                <ListboxItemIndicator class="shrink-0">
+                  <CheckIcon class="text-primary-text size-4" />
+                </ListboxItemIndicator>
+              </ListboxItem>
+
+              <div
+                v-if="displayPayees.length === 0 && !isFetching && !showCreateAffordance"
+                class="text-muted-foreground p-4 text-center text-sm"
+              >
+                {{ $t('fields.payeeSelect.empty') }}
+              </div>
+            </ListboxContent>
+          </ScrollArea>
+        </ListboxRoot>
 
         <!-- Pinned outside the ScrollArea so it stays visible while the user
              scrolls the list. -->

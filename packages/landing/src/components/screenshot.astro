@@ -1,36 +1,37 @@
 ---
+import { existsSync } from 'node:fs';
+
 interface Props {
   name: string;
   alt: string;
   width: number;
   height: number;
-  mobile?: { width: number; height: number };
-  class?: string;
+  loading?: 'eager' | 'lazy';
 }
 
-const { name, alt, width, height, mobile, class: className } = Astro.props;
+const { name, alt, width, height, loading = 'lazy' } = Astro.props;
 const base = `/img/landing/screenshots/${name}`;
+if (!existsSync(`public${base}@1x.webp`)) throw new Error(`Missing screenshot: ${name}`);
+const variants = existsSync(`public${base}-light@1x.webp`)
+  ? [
+      { src: `${base}-light`, theme: 'shot-light' },
+      { src: base, theme: 'shot-dark' },
+    ]
+  : [{ src: base, theme: undefined }];
 ---
 
-<picture>
-  {
-    mobile && (
-      <source
-        media="(max-width: 639px)"
-        srcset={`${base}-mobile@1x.webp 1x, ${base}-mobile@2x.webp 2x`}
-        width={mobile.width}
-        height={mobile.height}
+{
+  variants.map(({ src, theme }) => (
+    <picture class:list={['shot', theme]}>
+      <img
+        src={`${src}@1x.webp`}
+        srcset={`${src}@1x.webp 1x, ${src}@2x.webp 2x`}
+        alt={alt}
+        width={width}
+        height={height}
+        loading={loading}
+        decoding="async"
       />
-    )
-  }
-  <img
-    src={`${base}@1x.webp`}
-    srcset={`${base}@1x.webp 1x, ${base}@2x.webp 2x`}
-    alt={alt}
-    width={width}
-    height={height}
-    class:list={['w-full', className]}
-    loading="lazy"
-    decoding="async"
-  />
-</picture>
+    </picture>
+  ))
+}

@@ -6,9 +6,9 @@ import { pegRateSourceConfigSchema } from './rate-sources';
 import type { DependencyEdge } from './recompute-scope';
 
 /**
- * The user's custom currencies that are valued through another currency: one pegged to it, or one
- * whose stored rate quotes it. The source may be an ISO currency (a custom currency pegged to EUR
- * moves with the EUR rate). A peg whose saved config cannot be read leads nowhere.
+ * The user's custom currencies that are valued through an ISO currency: pegged to it, or quoting it
+ * in a stored rate. A custom currency pegged to EUR moves with the EUR rate. A peg whose saved config
+ * cannot be read, and a source that is itself custom, lead nowhere.
  */
 export const loadDependencyEdges = async ({ userId }: { userId: number }): Promise<DependencyEdge[]> => {
   const pegged = await UsersCurrencies.findAll({
@@ -28,10 +28,10 @@ export const loadDependencyEdges = async ({ userId }: { userId: number }): Promi
     group: ['baseCode', 'quoteCode'],
     raw: true,
   });
-  const customBases = await findCustomCurrencyCodes({ codes: quoted.map((row) => row.baseCode) });
-  const quoteEdges = quoted
-    .filter((row) => customBases.has(row.baseCode))
-    .map((row): DependencyEdge => ({ dependent: row.baseCode, source: row.quoteCode }));
+  const quoteEdges = quoted.map((row): DependencyEdge => ({ dependent: row.baseCode, source: row.quoteCode }));
 
-  return [...pegEdges, ...quoteEdges];
+  const edges = [...pegEdges, ...quoteEdges];
+  const customCodes = await findCustomCurrencyCodes({ codes: edges.flatMap((edge) => [edge.dependent, edge.source]) });
+
+  return edges.filter((edge) => customCodes.has(edge.dependent) && !customCodes.has(edge.source));
 };

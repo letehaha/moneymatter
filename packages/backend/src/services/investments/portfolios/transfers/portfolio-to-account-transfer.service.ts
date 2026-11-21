@@ -9,6 +9,7 @@ import Portfolios from '@models/investments/portfolios.model';
 import * as Transactions from '@models/transactions.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { updatePortfolioBalance } from '@services/investments/portfolios/balances';
+import { roundPositiveAmount } from '@services/transactions/round-positive-amount';
 
 import {
   assertAccountNotBankLinked,
@@ -49,8 +50,25 @@ const portfolioToAccountTransferImpl = async ({
   const account = await findAccountOrThrow({ accountId, userId, role: 'destination' });
   await findCurrencyOrThrow({ currencyCode });
 
+  if (currencyCode !== account.currencyCode) {
+    throw new ValidationError({
+      message: t({
+        key: 'investments.transferCurrencyMustMatchAccount',
+        variables: { currency: account.currencyCode },
+      }),
+    });
+  }
+
+  const txAmount = await roundPositiveAmount({ money: Money.fromDecimal(amount), userId, currencyCode });
+  const roundedAmount = txAmount.toDecimalString(10);
   const refCurrencyCode = await getUserBaseCurrencyCode({ userId });
-  const refAmount = await computeRefAmount({ amount, currencyCode, userId, date, baseCurrencyCode: refCurrencyCode });
+  const refAmount = await computeRefAmount({
+    amount: roundedAmount,
+    currencyCode,
+    userId,
+    date,
+    baseCurrencyCode: refCurrencyCode,
+  });
 
   let linkedTransactionId: string;
 
@@ -66,6 +84,12 @@ const portfolioToAccountTransferImpl = async ({
     if (existingTx.transactionType !== TRANSACTION_TYPES.income) {
       throw new ValidationError({
         message: 'Only income transactions can be linked to portfolio withdrawals.',
+      });
+    }
+
+    if (existingTx.accountId !== accountId) {
+      throw new ValidationError({
+        message: t({ key: 'investments.linkedTransactionMustBelongToDestinationAccount' }),
       });
     }
 
@@ -95,19 +119,11 @@ const portfolioToAccountTransferImpl = async ({
   } else {
     assertAccountNotBankLinked({ account });
 
-    const txAmount = Money.fromDecimal(amount);
-    const txRefAmount = await computeRefAmount({
-      amount,
-      currencyCode: account.currencyCode,
-      userId,
-      date,
-      baseCurrencyCode: refCurrencyCode,
-    });
-
     const newTx = await Transactions.createTransaction({
       userId,
+      definitionOwnerUserId: userId,
       amount: txAmount,
-      refAmount: txRefAmount,
+      refAmount,
       transactionType: TRANSACTION_TYPES.income,
       paymentType: PAYMENT_TYPES.bankTransfer,
       accountId,
@@ -129,7 +145,7 @@ const portfolioToAccountTransferImpl = async ({
     toAccountId: accountId,
     fromAccountId: null,
     toPortfolioId: null,
-    amount,
+    amount: roundedAmount,
     refAmount,
     currencyCode,
     date,
@@ -138,7 +154,7 @@ const portfolioToAccountTransferImpl = async ({
   });
 
   // Update portfolio cash balance (decrease)
-  const negated = negateAmount({ amount });
+  const negated = negateAmount({ amount: roundedAmount });
   await updatePortfolioBalance({
     userId,
     portfolioId,

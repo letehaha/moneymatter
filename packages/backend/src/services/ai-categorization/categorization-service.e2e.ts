@@ -100,8 +100,6 @@ describe('AI Categorization Service E2E', () => {
 
       expect(transactions.length).toBe(MOCK_TRANSACTION_COUNT);
 
-      // Sync-time MCC rules run before AI and legitimately stamp `mcc_rule` when a
-      // random mock MCC hits a mapping, so only the `ai` source proves a run happened.
       for (const tx of transactions) {
         expect(tx.categorizationMeta?.source).not.toBe(CATEGORIZATION_SOURCE.ai);
       }

@@ -160,7 +160,7 @@ const quickPresets = computed<DateSelectorPreset[]>(() => [
         popover-class-name="md:min-w-[600px]"
       >
         <template #trigger="{ triggerText }">
-          <Button variant="outline" size="sm" class="h-9 font-semibold @max-2xl/scanbar:order-first">
+          <Button variant="outline" size="sm" class="font-semibold @max-2xl/scanbar:order-first">
             <CalendarIcon class="size-4" />
             {{ triggerText }}
             <ChevronDownIcon class="text-muted-foreground size-4" />
@@ -177,7 +177,7 @@ const quickPresets = computed<DateSelectorPreset[]>(() => [
 
       <Popover v-if="aiBlocker">
         <PopoverTrigger as-child>
-          <Button variant="secondary" :class="cn(chipClass, 'text-muted-foreground hover:text-foreground')">
+          <Button variant="secondary" size="sm" :class="cn(chipClass, 'text-muted-foreground hover:text-foreground')">
             <LockIcon class="size-4" />
             {{ $t('optimizations.transferSuggestions.aiReview.label') }}
             <span :class="cn('rounded px-1.5 py-0.5 text-xs font-bold', blockerView.pillClass)">
@@ -244,12 +244,7 @@ const quickPresets = computed<DateSelectorPreset[]>(() => [
         </PopoverContent>
       </Popover>
 
-      <Button
-        :disabled="isLoading"
-        size="sm"
-        class="ml-auto h-9 px-4 @max-2xl/scanbar:order-first"
-        @click="$emit('scan')"
-      >
+      <Button :disabled="isLoading" size="sm" class="ml-auto px-4 @max-2xl/scanbar:order-first" @click="$emit('scan')">
         <LoaderCircleIcon v-if="isLoading" class="size-4 animate-spin" />
         <SearchIcon v-else class="size-4" />
         {{ $t('common.actions.scan') }}

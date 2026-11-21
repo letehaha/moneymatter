@@ -4,7 +4,6 @@ import { ValidationError } from '@js/errors';
 import type UserExchangeRates from '@models/user-exchange-rates.model';
 import { toEffectiveDate } from '@models/user-exchange-rates.model';
 import { getBaseCurrency } from '@models/users-currencies.model';
-import { isSourceOwnedRateSource } from '@services/user-exchange-rate/resolve-custom-pair-rate';
 
 import { countStoredCustomRates, findStoredCustomRate, findStoredPairRate, listStoredCustomRates } from './manual';
 import { findHeldCurrency } from './set-rate-source.service';
@@ -12,10 +11,10 @@ import { findHeldCurrency } from './set-rate-source.service';
 type StoredRate = Pick<UserExchangeRates, 'quoteCode' | 'effectiveDate'>;
 
 /**
- * The stored rate that values a custom code in the user's base currency today, as the first step of
- * `resolveCustomPairRate` picks it: none while the code follows a peg (it overrides every stored
- * row); for a manual code the exact pair to the base, if one is stored; otherwise the latest row in
- * whichever quote it was entered in.
+ * The stored rate that values a custom code in the user's base currency today, as the resolver picks
+ * it: none while the code follows a peg; for a manual code the exact pair to the base, if one is
+ * stored; otherwise the latest row on or before today, else the earliest row, which values every
+ * day before it.
  */
 const findRateInForce = async ({
   userId,
@@ -30,7 +29,7 @@ const findRateInForce = async ({
 
   const asOfDate = toEffectiveDate({ date: new Date() });
 
-  if (!isSourceOwnedRateSource({ rateSource })) {
+  if (rateSource === 'manual') {
     const base = await getBaseCurrency({ userId });
     const exact = base
       ? await findStoredPairRate({ userId, baseCode: code, quoteCode: base.currencyCode, asOfDate })
@@ -38,7 +37,7 @@ const findRateInForce = async ({
     if (exact) return exact;
   }
 
-  return findStoredCustomRate({ userId, baseCode: code, asOfDate, excludedQuotes: [code] });
+  return findStoredCustomRate({ userId, baseCode: code, asOfDate });
 };
 
 /**

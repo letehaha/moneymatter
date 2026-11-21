@@ -13,11 +13,15 @@ type UpdateTransactionTemplateParams = UpdateTransactionTemplateBody & { id: Rec
 
 export const updateTransactionTemplate = withTransaction(
   async ({ id, userId, tagIds, ...fields }: UpdateTransactionTemplateParams): Promise<TransactionTemplateModel> => {
-    await assertCurrencyCodesVisible({ userId, codes: [fields.originalCurrencyCode] });
-
     const template = await findOrThrowNotFound({
       query: TransactionTemplates.findOne({ where: { id, userId } }),
       message: t({ key: 'transactionTemplates.notFound' }),
+    });
+
+    await assertCurrencyCodesVisible({
+      userId,
+      codes: [fields.originalCurrencyCode],
+      allowedWithoutPlan: [template.originalCurrencyCode],
     });
 
     const mergedTagIds = tagIds ?? (await loadTemplateTagIds({ templateIds: [id] })).get(id) ?? [];
@@ -46,7 +50,7 @@ export const updateTransactionTemplate = withTransaction(
       ...(fields.originalCurrencyCode !== undefined && { originalCurrencyCode: fields.originalCurrencyCode }),
     };
 
-    await assertTemplateConsistent({
+    const { accountCurrencyCode } = await assertTemplateConsistent({
       userId,
       amount: merged.amount,
       accountId: merged.accountId,
@@ -55,7 +59,12 @@ export const updateTransactionTemplate = withTransaction(
       tagIds: mergedTagIds,
     });
 
-    const amount = await roundTemplateAmount({ userId, accountId: merged.accountId, amount: merged.amount });
+    // Only an amount the payload sends, or one a new account puts in another currency, is rounded:
+    // a rename keeps the stored amount as it is.
+    const amount =
+      fields.amount !== undefined || fields.accountId !== undefined
+        ? await roundTemplateAmount({ userId, currencyCode: accountCurrencyCode, amount: merged.amount })
+        : merged.amount;
 
     await writeOrConflict(() => template.update({ ...merged, amount }));
 

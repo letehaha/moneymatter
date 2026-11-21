@@ -1,17 +1,16 @@
-import { RecordId } from '@bt/shared/types';
+import { type MinorUnits, RecordId } from '@bt/shared/types';
 import { Money } from '@common/types/money';
-import { ExchangeRateUnavailableError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
-import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
-import { includesCustomCurrencyCode } from '@services/currencies/custom-currency-codes';
-import { buildDailyPairRateResolver, toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
+import { getBaseCurrency } from '@models/users-currencies.model';
+import { buildRateForDay } from '@services/balances/revalue-balance-history.service';
+import { toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
 import { getCreditLimitMinorByAccount } from '@services/stats/get-credit-limit-adjustment';
-import { getExchangeRate, resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
+import { getUserSettings } from '@services/user-settings/get-user-settings';
 import { QueryTypes } from 'sequelize';
 
-import { utcInstant } from '../date-ranges';
+import { localMidnight, utcInstant } from '../date-ranges';
 
 /** Money columns and SUMs arrive from the raw query as DECIMAL strings in major units. */
 interface CashRow {
@@ -27,52 +26,10 @@ const decimalToMinor = ({ value, decimals }: { value: string; decimals: number }
   Money.fromDecimal(value).toMinorUnits({ decimals });
 
 /**
- * The rate Balances revalue uses for a day: the user's manual rate, else the
- * latest stored market rate on or before it. A pair with a custom currency has no market rate:
- * it takes the rate the user's own rates give for that day, the same one `revalueBalanceHistory`
- * writes. Reads only, never fetches a provider.
- */
-const storedRate = async ({
-  userId,
-  baseCode,
-  quoteCode,
-  date,
-}: {
-  userId: number;
-  baseCode: string;
-  quoteCode: string;
-  date: Date;
-}): Promise<number | null> => {
-  if (await includesCustomCurrencyCode({ codes: [baseCode, quoteCode] })) {
-    try {
-      const { rate } = await getExchangeRate({ userId, baseCode, quoteCode, date, requireUserConnection: false });
-      return rate;
-    } catch (error) {
-      if (error instanceof ExchangeRateUnavailableError) return null;
-      throw error;
-    }
-  }
-
-  const userCurrency = (await UsersCurrencies.findOne({
-    where: { userId, currencyCode: baseCode },
-    attributes: ['liveRateUpdate'],
-    raw: true,
-  })) as { liveRateUpdate: boolean | null } | null;
-  const custom = await resolveCustomRate({
-    userId,
-    pair: { baseCode, quoteCode },
-    liveRateUpdate: userCurrency?.liveRateUpdate ?? null,
-  });
-  if (custom) return custom.rate;
-
-  const resolve = await buildDailyPairRateResolver({ baseCode, quoteCode, from: date, to: date });
-  return resolve?.(toDayKey(date)) ?? null;
-};
-
-/**
  * Base-currency minor units at `decimals` (converted from the DECIMAL columns at the query boundary) held in the plan's accounts just before the `opening` and
- * `closing` days start ('yyyy-MM-dd', UTC): the current balance minus every
- * transaction from then on, a card net of its credit limit. A foreign account's
+ * `closing` days start ('yyyy-MM-dd', in `timezone`): the current balance minus every
+ * transaction from then on, a card net of its credit limit when the user's
+ * include-credit-limits setting is on. A foreign account's
  * opening is valued at the opening day's rate, so a later rate move shows as drift.
  *
  * ponytail: every attached account counts as attached since the epoch; an
@@ -83,16 +40,23 @@ export const getPlanCash = async ({
   opening,
   closing,
   decimals,
+  timezone,
 }: {
   plan: BudgetPlans;
   opening: string;
   closing: string;
   /** The plan currency's decimals, which is the base currency's. */
   decimals: number;
+  timezone: string;
 }): Promise<{ opening: number; closing: number }> => {
-  const openingUtc = utcInstant({ date: opening });
+  const openingAt = localMidnight({ param: 'opening' });
+  const closingAt = localMidnight({ param: 'closing' });
   const [limits, baseCurrency, rows] = await Promise.all([
-    getCreditLimitMinorByAccount({ userId: plan.userId, accountScope: 'owned', decimals }),
+    getUserSettings({ userId: plan.userId }).then((settings) =>
+      settings.includeCreditLimitInStats
+        ? getCreditLimitMinorByAccount({ userId: plan.userId, accountScope: 'owned', decimals })
+        : new Map<RecordId, MinorUnits>(),
+    ),
     getBaseCurrency({ userId: plan.userId }),
     connection.sequelize.query(
       `
@@ -102,12 +66,12 @@ export const getPlanCash = async ({
                CASE WHEN t."transactionType" = 'income' THEN t."amount" ELSE -t."amount" END AS "native"
         FROM real_transactions t
         JOIN "BudgetPlanAccounts" pa ON pa."accountId" = t."accountId" AND pa."planId" = :planId
-        WHERE t."time" >= LEAST(CAST(:openingUtc AS timestamptz), CAST(:closingUtc AS timestamptz))
+        WHERE t."time" >= LEAST(${openingAt}, ${closingAt})
       )
       SELECT a.id AS "accountId", a."currencyCode", a."creditLimit" AS "nativeLimit",
-             a."currentBalance" - COALESCE(SUM(s."native") FILTER (WHERE s."time" >= :openingUtc), 0) AS "nativeOpening",
-             COALESCE(a."refCurrentBalance", 0) - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= :openingUtc), 0) AS "opening",
-             COALESCE(a."refCurrentBalance", 0) - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= :closingUtc), 0) AS "closing"
+             a."currentBalance" - COALESCE(SUM(s."native") FILTER (WHERE s."time" >= ${openingAt}), 0) AS "nativeOpening",
+             a."refCurrentBalance" - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= ${openingAt}), 0) AS "opening",
+             a."refCurrentBalance" - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= ${closingAt}), 0) AS "closing"
       FROM "BudgetPlanAccounts" pa
       JOIN "Accounts" a ON a.id = pa."accountId" AND a."excludeFromStats" = false AND a."userId" = :ownerId
       LEFT JOIN signed s ON s."accountId" = a.id
@@ -119,8 +83,9 @@ export const getPlanCash = async ({
         replacements: {
           planId: plan.id,
           ownerId: plan.userId,
-          openingUtc,
-          closingUtc: utcInstant({ date: closing }),
+          opening,
+          closing,
+          timezone,
         },
       },
     ) as Promise<CashRow[]>,
@@ -131,12 +96,15 @@ export const getPlanCash = async ({
       if (row.currencyCode === baseCurrency?.currencyCode)
         return decimalToMinor({ value: row.opening, decimals }) - (limits.get(row.accountId) ?? 0);
 
-      const rate = await storedRate({
-        userId: plan.userId,
-        baseCode: row.currencyCode,
-        quoteCode: baseCurrency!.currencyCode,
-        date: openingUtc,
+      // The rate Balances revalue uses for the day; it reads stored rates only, never a provider.
+      const openingDate = utcInstant({ date: opening });
+      const rateForDay = await buildRateForDay({
+        account: { id: row.accountId, userId: plan.userId, currencyCode: row.currencyCode },
+        baseCurrencyCode: baseCurrency!.currencyCode,
+        from: openingDate,
+        to: openingDate,
       });
+      const rate = rateForDay?.(toDayKey(openingDate)) ?? null;
       if (rate === null) {
         logger.warn('[Budget plans] No stored rate for an opening balance, using the current-rate value', {
           planId: plan.id,

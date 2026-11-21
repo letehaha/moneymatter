@@ -1,0 +1,347 @@
+{
+  "goals": {
+    "title": "Metas",
+    "description": "Junte dinheiro para seus objetivos com as contas que você já tem",
+    "newGoal": "Nova meta",
+    "list": {
+      "searchPlaceholder": "Buscar metas",
+      "filters": {
+        "all": "Todas",
+        "behind": "Fora do prazo",
+        "archived": "Arquivadas"
+      },
+      "sections": {
+        "active": "Ativas",
+        "ended": "Encerradas",
+        "archived": "Arquivadas",
+        "show": "mostrar",
+        "hide": "ocultar"
+      },
+      "loadError": "Não foi possível carregar suas metas.",
+      "emptyState": {
+        "title": "Nenhuma meta ainda",
+        "description": "Vincule uma meta às contas onde o dinheiro está. O progresso é atualizado conforme os saldos mudam."
+      },
+      "noMatch": {
+        "title": "Nada corresponde a “{query}”",
+        "titleNoQuery": "Nenhuma meta corresponde a estes filtros",
+        "description": "Tente outro nome ou inclua as metas arquivadas.",
+        "includeArchived": "Incluir arquivadas"
+      },
+      "row": {
+        "saved": "Guardado",
+        "ofTarget": "de {amount}",
+        "accountShare": "{name} {share}%",
+        "accountFixed": "{name} {amount}",
+        "reachedOn": "alcançada em {date}",
+        "byDate": "até {date}",
+        "noDate": "sem data",
+        "neededMonthly": "precisa de {amount}/mês"
+      },
+      "menu": {
+        "moreActions": "Mais ações para “{name}”"
+      }
+    },
+    "status": {
+      "reached": "Alcançada",
+      "ahead": "Adiantada",
+      "onTrack": "No ritmo",
+      "behind": "Atrasada",
+      "behindBy": "Atrasada · {count} mês | Atrasada · {count} meses",
+      "overdue": "Vencida",
+      "noDate": "Sem data",
+      "around": "por volta de {date}",
+      "insufficientHistory": "Histórico insuficiente",
+      "noAccounts": "Sem contas",
+      "paused": "Pausada",
+      "archived": "Arquivada",
+      "noRate": "Sem cotação de câmbio"
+    },
+    "actions": {
+      "edit": "Editar",
+      "pause": "Pausar",
+      "resume": "Retomar",
+      "archive": "Arquivar",
+      "unarchive": "Desarquivar",
+      "delete": "Excluir"
+    },
+    "deleteDialog": {
+      "title": "Excluir esta meta?",
+      "description": "A meta e as partes das contas vinculadas a ela são removidas. Suas contas e transações continuam como estão."
+    },
+    "toasts": {
+      "created": "Meta criada",
+      "saved": "Meta salva",
+      "paused": "Meta pausada",
+      "archived": "Meta arquivada",
+      "deleted": "Meta excluída",
+      "saveError": "Não foi possível salvar a meta",
+      "deleteError": "Não foi possível excluir a meta"
+    },
+    "access": {
+      "trialDaysLeft": "Teste de metas · falta {n} dia | Teste de metas · faltam {n} dias",
+      "trialTitle": "Teste as metas grátis por 14 dias",
+      "trialDescription": "Criar e editar metas faz parte do plano Essential. Comece um teste gratuito para criar sua primeira meta.",
+      "startTrial": "Começar teste gratuito",
+      "trialEnded": "Seu teste de metas terminou. Suas metas continuam visíveis; mude de plano para editá-las."
+    },
+    "details": {
+      "backToList": "Voltar para as metas",
+      "notFound": {
+        "title": "Meta não encontrada",
+        "description": "Talvez ela tenha sido excluída."
+      },
+      "loadError": "Não foi possível carregar esta meta",
+      "perMonth": "/mês",
+      "actions": {
+        "raiseTarget": "Aumentar o valor-alvo",
+        "more": "Mais ações da meta"
+      },
+      "tabs": {
+        "progress": "Progresso",
+        "accounts": "Contas",
+        "whatIf": "Simulação"
+      },
+      "strip": {
+        "target": "Valor-alvo",
+        "saved": "Guardado",
+        "left": "Falta",
+        "needs": "Precisa",
+        "pace": "Ritmo",
+        "reached": "Alcançada",
+        "aboveTarget": "{amount} acima do valor-alvo",
+        "notEnoughHistory": "histórico insuficiente",
+        "around": "por volta de {date}",
+        "dueInDays": "vence em {count} dia | vence em {count} dias",
+        "overdue": "vencida"
+      },
+      "accounts": {
+        "label": "Contas",
+        "count": "{count} conta | {count} contas",
+        "showAll": "Mostrar todas as contas ({count})",
+        "countedToward": "Conta para “{name}”",
+        "shareOf": "{share}% de {amount}",
+        "fixed": "{amount} fixo",
+        "fixedShort": "{counted} de {amount} fixos. A conta tem menos saldo do que os valores fixos.",
+        "shareOfLeft": "{share}% dos {amount} que sobram depois dos valores fixos",
+        "sharePlain": "{share}%",
+        "totalCounted": "Total considerado",
+        "readOnlyHint": "Só lê os saldos, nunca movimenta dinheiro",
+        "wholeAccount": "Conta inteira",
+        "shareHere": "{share}% aqui",
+        "shareHereFree": "{share}% aqui · {free}% livre",
+        "fixedHere": "{amount} fixos desta conta",
+        "emptyDescription": "Vincule contas em “Editar meta” para acompanhar o progresso.",
+        "columns": {
+          "account": "Conta",
+          "share": "Percentual",
+          "balance": "Saldo",
+          "counted": "Considerado"
+        },
+        "archived": "Arquivada",
+        "percentOfSaved": "{percent}% do guardado",
+        "total": "Total · {count} conta | Total · {count} contas",
+        "ofBalance": "de {amount}",
+        "unavailableAccount": "Conta indisponível",
+        "balanceUnavailable": "Saldo indisponível"
+      },
+      "noRate": {
+        "title": "Cotação de câmbio indisponível",
+        "description": "O progresso aparece assim que a cotação de hoje para {currency} estiver disponível."
+      },
+      "progress": {
+        "kpi": {
+          "monthlyPace": "Ritmo mensal",
+          "needs": "precisa de {amount}/mês",
+          "projectedFinish": "Conclusão prevista",
+          "onTime": "no prazo",
+          "early": "Meses de antecedência: {count}",
+          "late": "Meses de atraso: {count}",
+          "targetDate": "Data-alvo: {date}",
+          "savedIn": "Meses guardando: {count}",
+          "bestMonth": "Melhor mês",
+          "shareOfGrowth": "{percent}% do crescimento no período",
+          "leftDueInDays": "Faltam {amount}, vence em {count} dia | Faltam {amount}, vence em {count} dias",
+          "leftOverdue": "Faltam {amount}, vencida"
+        },
+        "timeline": "Linha do tempo",
+        "noHistory": "Nenhum histórico ainda",
+        "insufficient": {
+          "title": "Ainda não há histórico suficiente para calcular o ritmo",
+          "description": "Para calcular o ritmo, são necessários {min} meses completos de histórico. Meses disponíveis nestas contas: {count}. Defina um plano mensal em “Editar meta” para ver uma previsão agora."
+        },
+        "notes": {
+          "plannedPace": "O ritmo usa os {amount} por mês que você planejou.",
+          "historyPace": "O ritmo é a variação mensal mediana do último {count} mês. | O ritmo é a variação mensal mediana dos últimos {count} meses.",
+          "fxDrift": "Os meses anteriores das contas em moeda estrangeira incluem variações cambiais.",
+          "marketMoves": "As variações de mercado nas contas de investimento contam como progresso. As projeções não consideram crescimento.",
+          "staysReached": "Continua alcançada mesmo que o saldo caia depois."
+        },
+        "chartAria": "Valor guardado para a meta ao longo do tempo",
+        "legend": {
+          "saved": "Guardado",
+          "projection": "Projeção",
+          "target": "Valor-alvo"
+        },
+        "monthlyChange": "Variação mensal"
+      },
+      "staleData": "Não foi possível atualizar esta meta. Mostrando os últimos dados carregados."
+    },
+    "form": {
+      "createTitle": "Nova meta",
+      "editTitle": "Editar meta",
+      "description": "O progresso usa os saldos das suas contas. Nenhum dinheiro é movimentado.",
+      "nameLabel": "Nome",
+      "namePlaceholder": "ex.: Carro ou Reserva de emergência",
+      "targetAmountLabel": "Valor-alvo",
+      "targetAmountPlaceholder": "Digite um valor",
+      "currencyLabel": "Moeda",
+      "currencyPlaceholder": "Escolha uma moeda",
+      "targetDateLabel": "Data-alvo",
+      "targetDateHint": "Opcional. Defina uma data para saber se você está no ritmo. Sem ela, estimamos quando você vai chegar lá.",
+      "accountsLabel": "Contas",
+      "noAccounts": "Nenhuma conta ainda",
+      "countsNow": "Considera {amount} agora",
+      "manageAccounts": "Gerenciar contas",
+      "addAccounts": "Adicionar contas",
+      "accountsHint": "Os saldos destas contas contam para a meta.",
+      "plannedMonthlyLabel": "Definir um valor mensal",
+      "plannedMonthlyHint": "Desligado, usa a variação mensal mediana dos últimos 6 meses.",
+      "plannedMonthlyPlaceholder": "Digite um valor mensal",
+      "holdDaysLabel": "Manter “Alcançada” depois de uma queda",
+      "holdDaysPlaceholder": "30",
+      "holdDaysUnit": "dias",
+      "holdDaysHint": "Durante esse número de dias depois que a meta chega ao valor-alvo, uma queda abaixo dele não desfaz o “Alcançada”. Use 0 para acompanhar o saldo em tempo real.",
+      "summary": {
+        "dated": "Chegar a {target} até {date}.",
+        "undated": "Chegar a {target}, sem prazo.",
+        "needed": "Para isso, você precisa de cerca de {amount} por mês a partir de hoje.",
+        "covered": "Suas contas já cobrem esse valor.",
+        "planned": "Você planeja guardar {amount} por mês."
+      },
+      "thisGoal": "esta meta",
+      "createSubmit": "Criar meta",
+      "errors": {
+        "nameRequired": "Digite um nome",
+        "amountRequired": "Digite um valor maior que 0",
+        "dateNotFuture": "Escolha uma data depois de hoje",
+        "accountsRequired": "Adicione pelo menos uma conta",
+        "shareCapacity": "A conta “{account}” só tem {free}% livre. Diminua o percentual dela em “Gerenciar contas”.",
+        "shareCapacityGeneric": "Uma conta não tem percentual livre suficiente. Diminua o percentual dela em “Gerenciar contas”.",
+        "fixedBelowTarget": "Os valores fixos somam menos que o valor-alvo. Aumente um valor ou considere uma conta por percentual.",
+        "holdDaysRange": "Digite um número inteiro de dias de 0 a 365"
+      },
+      "unavailableAccount": "Conta indisponível",
+      "accountsMissing": "{count} conta está indisponível e não é considerada | {count} contas estão indisponíveis e não são consideradas"
+    },
+    "accountsDialog": {
+      "title": "Contas da meta “{name}”",
+      "description": "Marque as contas que contam para a meta “{name}” e quanto de cada uma.",
+      "fixedFirst": "Os valores fixos saem primeiro do saldo da conta. Os percentuais dividem o que sobra.",
+      "mode": {
+        "percent": "Percentual",
+        "amount": "Valor"
+      },
+      "searchPlaceholder": "Buscar contas",
+      "holder": "{share}% em “{name}”",
+      "archived": "Arquivada",
+      "fixedOnly": "Totalmente usada: {holders} · só valor fixo",
+      "free": "{free}% livre",
+      "wholeAccount": "Conta inteira · considera {amount}",
+      "maxShare": "Máx. {max}% · considera {amount}",
+      "counts": "Considera {amount}",
+      "shareAriaLabel": "Percentual de “{name}”",
+      "amountAriaLabel": "Valor fixo de “{name}”",
+      "errors": {
+        "invalid": "Digite um percentual maior que 0%",
+        "invalidAmount": "Digite um valor maior que 0",
+        "overMax": "Máx. {max}%",
+        "overMaxUsedBy": "Máx. {max}% ({holders})",
+        "noShareLeft": "Não há percentual livre: {holders}. Use um valor fixo."
+      },
+      "noMatch": "Nenhuma conta corresponde a “{query}”",
+      "marketNote": "As variações de mercado nas contas de investimento e cripto contam como progresso. As projeções não consideram crescimento.",
+      "total": "Nenhuma conta escolhida | {count} conta · considera {amount} | {count} contas · considera {amount}",
+      "fixToSave": "Corrija “{name}” para salvar",
+      "done": "Concluir",
+      "emptyState": {
+        "title": "Nenhuma conta para vincular",
+        "description": "As metas consideram suas contas de dinheiro, conta corrente, poupança, investimento e cripto."
+      },
+      "unavailableCaption": "Indisponível · mantida até você desmarcar",
+      "sharePlaceholder": "100",
+      "amountPlaceholder": "Valor",
+      "order": {
+        "hint": "Se o saldo não for suficiente, os valores fixos são preenchidos de cima para baixo. Arraste para mudar.",
+        "dragLabel": "Arraste para mudar a ordem",
+        "thisGoal": "{name} · esta meta",
+        "moveUp": "Mover para cima",
+        "moveDown": "Mover para baixo"
+      },
+      "fixedCurrencyNote": "Os valores fixos estão na moeda da conta."
+    },
+    "feasibility": {
+      "summary": "Suas metas precisam de {needed}/mês, e você guarda uma mediana de {saving}/mês",
+      "short": "Faltam {amount} por mês.",
+      "showGoals": "Mostrar metas",
+      "hideGoals": "Ocultar metas",
+      "perMonth": "{amount}/mês",
+      "goalFits": "Cabe",
+      "goalDoesNotFit": "Não cabe",
+      "footnote": "“Você costuma guardar” é a mediana do fluxo líquido mensal dos últimos 12 meses completos. Transferências entre suas próprias contas ficam de fora. As metas são verificadas a partir da data mais próxima.",
+      "dueIn": "Vence em {count} dia | Vence em {count} dias",
+      "dueNote": "Metas que vencem em até um mês ou já vencidas não entram no total mensal."
+    },
+    "whatIf": {
+      "monthly": {
+        "label": "Valor mensal para esta meta",
+        "placeholder": "Automático",
+        "auto": "Automático: {amount}",
+        "autoHint": "O valor automático de {amount} é a variação mensal mediana dos últimos {count} meses",
+        "noAuto": "Ainda não há histórico suficiente para o valor automático. Digite um valor.",
+        "useAuto": "Usar automático"
+      },
+      "targetDate": {
+        "label": "Data-alvo",
+        "hint": "Opcional. Sem ela, você vê o mês previsto, nunca “atrasada”."
+      },
+      "shares": {
+        "label": "Percentuais das contas",
+        "counted": "Considera {amount} · {percent}%",
+        "whole": "Conta inteira · considera {amount}",
+        "fixed": "Valor fixo · considera {amount}",
+        "free": "{free}% livre · considera {amount}",
+        "inputLabel": "Percentual de “{name}”",
+        "placeholder": "0",
+        "capacityPending": "Não é possível mudar os percentuais até suas outras metas carregarem."
+      },
+      "compare": {
+        "title": "Agora × simulação",
+        "from": "a partir de {date}",
+        "now": "Agora",
+        "whatIf": "Simulação",
+        "monthly": "Valor mensal para a meta",
+        "reached": "Alcançada por volta de",
+        "against": "Em relação à data-alvo",
+        "needed": "Precisa por mês",
+        "reachedAlready": "Alcançada",
+        "offset": {
+          "early": "Meses de antecedência: {count}",
+          "onTime": "No prazo",
+          "late": "Meses de atraso: {count}"
+        }
+      },
+      "autoTag": "Automático",
+      "deposit": {
+        "sentence": "Para considerar {amount} por mês nesta meta, deposite {deposits}.",
+        "item": "{amount} em “{account}”"
+      },
+      "sandboxHint": "Uma simulação. Nada muda até você aplicar em “Editar meta”.",
+      "reset": "Redefinir",
+      "apply": "Aplicar em “Editar meta”"
+    },
+    "docs": {
+      "howItWorks": "Como as metas funcionam"
+    }
+  }
+}

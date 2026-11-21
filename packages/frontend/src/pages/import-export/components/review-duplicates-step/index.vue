@@ -42,11 +42,25 @@
         </div>
       </div>
 
+      <BankSeamSkippedCallout :count="store.skippedAfterBankSeam" :accounts="store.seamTargets.seamAccounts" />
+
+      <!-- A seam account's balance is owned by its bank feed, so the toggle does nothing when every target is one. -->
       <RecalculateBalanceToggle
+        v-if="!store.seamTargets.isEveryTargetSeam"
         v-model="store.recalculateBalance"
         :settings-loading="store.recalculateBalanceSettingLoading"
         :settings-load-failed="store.recalculateBalanceSettingLoadFailed"
       />
+      <p
+        v-if="store.seamTargets.seamAccounts.length > 0"
+        :class="cn('text-muted-foreground', store.seamTargets.isEveryTargetSeam ? 'text-sm' : '-mt-3 text-xs')"
+      >
+        {{
+          store.seamTargets.isEveryTargetSeam
+            ? $t('pages.importExport.csvImport.bankSeamRecalculateAllHint')
+            : $t('pages.importExport.csvImport.bankSeamRecalculateHint')
+        }}
+      </p>
 
       <!-- Invalid rows table -->
       <section v-if="store.invalidRows.length > 0" aria-labelledby="invalid-rows-heading">
@@ -192,13 +206,13 @@
       <!-- Footer actions — hidden when the unpriceable consent panel is active (it has its own buttons) -->
       <div v-if="store.unpriceableRows.length === 0" class="flex items-center justify-between gap-3 pt-2">
         <UiButton variant="ghost" @click="store.goBack()">
-          <ChevronLeftIcon class="mr-1.5 size-4" />
+          <ChevronLeftIcon class="size-4" />
           {{ $t('pages.importExport.csvImport.review.backToMapping') }}
         </UiButton>
 
         <UiButton :disabled="store.importSummary.willImport === 0 || store.isExecuting" @click="handleExecuteImport">
           <template v-if="store.isExecuting">
-            <LoaderCircleIcon class="mr-1.5 size-4 animate-spin" />
+            <LoaderCircleIcon class="size-4 animate-spin" />
             {{ $t('pages.importExport.csvImport.review.importing') }}
           </template>
           <template v-else>
@@ -207,7 +221,7 @@
                 count: store.importSummary.willImport,
               })
             }}
-            <ChevronRightIcon class="ml-1.5 size-4" />
+            <ChevronRightIcon class="size-4" />
           </template>
         </UiButton>
       </div>
@@ -222,6 +236,8 @@ import { Callout } from '@/components/lib/ui/callout';
 import { MappingTable, type MappingTableColumn } from '@/components/lib/ui/mapping-table';
 import { StatCard } from '@/components/lib/ui/stat-card';
 import { StatusIndicator } from '@/components/lib/ui/status-indicator';
+import { cn } from '@/lib/utils';
+import BankSeamSkippedCallout from '@/pages/import-export/components/bank-seam-skipped-callout.vue';
 import RecalculateBalanceToggle from '@/pages/import-export/components/recalculate-balance-toggle.vue';
 import { useImportExportStore } from '@/stores/import-export';
 import type { InvalidRow } from '@bt/shared/types';
@@ -239,7 +255,11 @@ const store = useImportExportStore();
 // detectDuplicates() also advances to 'review' on success — if we're already
 // here (re-render) and data exists, skip the call.
 onMounted(async () => {
-  const hasData = store.validRows.length > 0 || store.invalidRows.length > 0 || store.duplicates.length > 0;
+  const hasData =
+    store.validRows.length > 0 ||
+    store.invalidRows.length > 0 ||
+    store.duplicates.length > 0 ||
+    store.skippedAfterBankSeam > 0;
 
   if (!hasData && !store.isDetectingDuplicates) {
     try {

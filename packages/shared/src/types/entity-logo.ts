@@ -52,6 +52,9 @@ export type EntityLogoWritePayload = Partial<Omit<EntityLogoFields, 'logoImageId
   logoImage?: string | null;
 };
 
+/** What an endpoint without image upload accepts. */
+export type NonImageLogoPayload = Omit<EntityLogoWritePayload, 'logoImage'>;
+
 /** Logo columns a write path may set on an entity a background resolver also
  *  writes (payees, subscriptions): the payload keys plus the ownership stamp
  *  that keeps the resolver off a user-picked logo. */

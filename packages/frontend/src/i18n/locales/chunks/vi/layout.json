@@ -1,25 +1,30 @@
 {
   "navigation": {
     "dashboard": "Dashboard",
-    "accounts": "Tài khoản",
+    "accounts": "Accounts",
     "accountsList": "All accounts",
-    "investments": "Đầu tư",
+    "investments": "Investments",
     "loans": "Loans",
     "allTransactions": "All transactions",
-    "transactions": "Giao dịch",
+    "transactions": "Transactions",
     "transactionGroups": "Groups",
+    "trash": "Trash",
     "analytics": "Analytics",
     "optimizations": "Optimizations",
     "automations": "Automations",
     "accountDetails": "Account details",
     "helpAndDocs": "Help & docs",
-    "logout": "Đăng xuất",
+    "community": "Community",
+    "logout": "Logout",
     "appVersion": "App version {version}",
+    "updateAvailable": "Update available",
+    "updateToVersion": "Update · {version}",
     "settings": "Settings",
     "planned": {
-      "planned": "Planned",
+      "planned": "Planning",
       "subscriptions": "Recurring payments",
-      "budgets": "Ngân sách"
+      "budgets": "Trackers",
+      "goals": "Goals"
     },
     "venture": "Venture",
     "budget": "Budget"
@@ -27,12 +32,13 @@
   "sidebar": {
     "collapse": "Collapse sidebar",
     "expand": "Expand sidebar",
+    "resize": "Resize sidebar",
     "settings": {
       "title": "Settings",
       "sections": {
-        "label": "Các mục trên thanh bên",
-        "description": "Chọn những mục sẽ hiển thị trên thanh bên.",
-        "alwaysVisibleTooltip": "Mục này luôn hiển thị."
+        "label": "Sidebar sections",
+        "description": "Pick which sections appear in the sidebar.",
+        "alwaysVisibleTooltip": "This section is always visible."
       },
       "hideZeroBalances": {
         "label": "Hide zero balances",
@@ -40,30 +46,30 @@
       }
     },
     "accountsView": {
-      "title": "Tài khoản",
+      "title": "Accounts",
       "bankAccounts": "Bank accounts",
       "newAccount": "New account",
       "newAccountsGroup": "New accounts group",
       "portfolios": "Portfolios",
       "newPortfolio": "New portfolio",
-      "noPortfolios": "Chưa có danh mục đầu tư nào",
+      "noPortfolios": "No portfolios yet",
       "ventures": "Ventures",
-      "cars": "Phương tiện",
+      "cars": "Vehicles",
       "loans": "Loans",
       "collapseNavigation": "Collapse navigation",
-      "viaHousehold": "Được chia sẻ qua hộ gia đình của {handle}",
-      "sharedBy": "Được chia sẻ bởi {handle}",
+      "viaHousehold": "Shared via {handle}'s household",
+      "sharedBy": "Shared by {handle}",
       "needsReauthTooltip": "Connection expired. Reconnect to resume syncing."
     }
   },
   "header": {
-    "add": "Thêm",
-    "importData": "Nhập dữ liệu",
+    "add": "Add",
+    "importData": "Import data",
     "moreActions": "More ways to add data",
     "importDataHint": "CSV file or bank statement",
     "attachInvoice": "Attach invoice",
     "attachInvoiceHint": "We find the transaction it belongs to",
-    "language": "Ngôn ngữ",
+    "language": "Language",
     "newTransaction": "Add transaction",
     "settings": "Settings",
     "feedback": "Send feedback",
@@ -99,7 +105,7 @@
     "dialog": {
       "title": "Leave feedback",
       "description": "Tell us what is working and what is not.",
-      "typeLabel": "Loại",
+      "typeLabel": "Type",
       "typePlaceholder": "Choose a type",
       "types": {
         "bug": "Something is broken",
@@ -115,6 +121,10 @@
       "thanks": "Thanks, we read every message.",
       "unavailable": "Sending is unavailable right now. Use the board below instead.",
       "or": "or",
+      "reddit": {
+        "title": "Ask the community on Reddit",
+        "description": "Get help from other users, share how you set things up, and follow updates."
+      },
       "board": {
         "title": "Post it on the public board",
         "description": "Vote on other people's ideas, see what is already planned, and get a reply on yours."
@@ -174,7 +184,7 @@
     "connectionValiditySection": "Connection validity",
     "connectionLabel": "Connection #{id}",
     "step2Full": "If any accounts remain listed below after reconnection, go to each account and manually {unlink} then {link} again.",
-    "unlinkAction": "Gỡ liên kết",
+    "unlinkAction": "Unlink",
     "linkAction": "Link"
   },
   "pages": {
@@ -197,7 +207,7 @@
       "title": "Welcome to MoneyMatter",
       "subtitle": "Get started by setting up your first account",
       "createManualAccount": {
-        "title": "Tạo tài khoản thủ công",
+        "title": "Create manual account",
         "description": "Track cash, savings, or any account manually"
       },
       "connectBank": {
@@ -227,7 +237,7 @@
             "title": "Explore analytics"
           },
           "ai-settings": {
-            "title": "Tính năng AI"
+            "title": "AI features"
           },
           "sharing": {
             "title": "Sharing & household"
@@ -291,7 +301,7 @@
             "description": "Sync transactions automatically"
           },
           "import-csv": {
-            "title": "Nhập từ nguồn văn bản bất kỳ",
+            "title": "Import from any text source",
             "description": "Import from CSV, PDF, or bank statements"
           },
           "view-annual-overview": {

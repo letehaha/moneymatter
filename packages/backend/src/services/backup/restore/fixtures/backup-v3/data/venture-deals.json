@@ -1,0 +1,31 @@
+[
+  {
+    "id": "01a1cf52-7d43-74dc-8c43-29ac47b15793",
+    "userId": 1,
+    "platformId": null,
+    "name": "Seed deal",
+    "vehicleType": "spv",
+    "spvSubtype": null,
+    "logoDomain": null,
+    "logoInitials": null,
+    "logoColor": null,
+    "logoIcon": null,
+    "logoImageId": null,
+    "targetCompany": null,
+    "currencyCode": "AED",
+    "status": "outstanding",
+    "principal": "16000.0000000000",
+    "entryFee": "1360.0000000000",
+    "entryFeePct": "0.085000",
+    "mgmtFeePct": "0.000000",
+    "carryPct": "0.200000",
+    "hurdlePct": "0.000000",
+    "investmentDate": "2026-03-24",
+    "expectedExitDate": null,
+    "notes": null,
+    "metaData": null,
+    "createdAt": "2026-11-12T10:34:12.163Z",
+    "updatedAt": "2026-11-12T10:34:12.163Z",
+    "deletedAt": null
+  }
+]

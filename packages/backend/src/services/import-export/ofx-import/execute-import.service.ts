@@ -16,8 +16,18 @@ import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
-import * as Transactions from '@models/transactions.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import {
+  assertBankLinksUnchanged,
+  dropFromBankSeam,
+  excludeSeamAccounts,
+  linkedAccountIdByName,
+  loadSeamStarts,
+} from '@services/import-export/core/bank-seam';
+import {
+  getAccountDecimals,
+  roundToAccountDecimals,
+} from '@services/import-export/core/duplicates/get-account-decimals';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { startBalanceReconciliation } from '@services/import-export/core/reconcile-account-balances';
@@ -37,6 +47,7 @@ import { selectAccountsWithPlannedRows } from '@services/transactions/planned-ma
 import { UniqueConstraintError } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
+import { findTransactionsByOriginalIds } from './detect-duplicates.service';
 import { deleteOfxUpload, readOfxUpload } from './upload-cache';
 
 function resolveAccountCategory({ statementType, accountType }: { statementType: string; accountType: string }) {
@@ -145,6 +156,7 @@ async function executeOfxImportImpl({
     transactionsImported: 0,
     duplicatesSkipped: 0,
     merged: 0,
+    skippedAfterBankSeam: 0,
     errors: [],
     accountBalanceChanges: [],
   };
@@ -158,6 +170,11 @@ async function executeOfxImportImpl({
     (account) => accountMapping[account.sourceAccountKey]!.action === 'link-existing',
   ).length;
 
+  const { seamStartByName, seamStartByAccountId } = await loadSeamStarts({
+    userId,
+    accountIdByName: linkedAccountIdByName({ accountMapping: mappingWithoutSkipped }),
+  });
+
   const fxDate = parsed.dateRange ? new Date(parsed.dateRange.from) : new Date();
   const { accountNameToId: accountIdByKey, accountsCreated } = await createAccountsIfNeeded({
     userId,
@@ -170,6 +187,7 @@ async function executeOfxImportImpl({
       return mapping?.action === 'create-new' ? mapping.name : accountByKey.get(key)!.suggestedLocalName;
     },
     resolveAccountCategory: (key) => resolveAccountCategory(accountByKey.get(key)!),
+    allowSeamTargets: true,
   });
   summary.accountsCreated = accountsCreated;
 
@@ -182,11 +200,23 @@ async function executeOfxImportImpl({
     importDetails,
     createdAccountIds: createdAccounts.map((account) => account.accountId),
   });
+  await assertBankLinksUnchanged({ userId, accountIds: capturedAccountIds, seamStartByAccountId });
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
-  const plannedAccountIds = await selectAccountsWithPlannedRows({ accountIds: capturedAccountIds });
+  // Every amount is rounded to its account currency's decimals before it is written and tallied, so
+  // the tally that `finalize` undoes is what the rows stored.
+  const decimalsByAccountId = await getAccountDecimals({ accountIds: accountIdByKey.values() });
+  const plannedAccountIds = await selectAccountsWithPlannedRows({
+    accountIds: excludeSeamAccounts({ accountIds: capturedAccountIds, seamStartByAccountId }),
+  });
 
   const skipSet = new Set(skipDuplicateIndices);
-  const rows = parsed.transactions.filter((tx) => !skippedKeys.has(tx.sourceAccountKey));
+  const importableRows = parsed.transactions.filter((tx) => !skippedKeys.has(tx.sourceAccountKey));
+  const { rows, droppedCount } = dropFromBankSeam({
+    seamStartByName,
+    rows: importableRows.map((tx) => ({ ...tx, accountName: tx.sourceAccountKey })),
+    transfers: [],
+  });
+  summary.skippedAfterBankSeam = droppedCount;
   const rowsToWrite = rows.filter((tx) => !skipSet.has(tx.rowIndex));
   if (onProgress) await onProgress(0, rowsToWrite.length);
 
@@ -197,10 +227,7 @@ async function executeOfxImportImpl({
   summary.payeesCreated = payeesCreated;
 
   const originalIds = rowsToWrite.map((tx) => tx.sourceTransactionKey).filter((id): id is string => Boolean(id));
-  const existingIdRows =
-    originalIds.length > 0
-      ? await Transactions.getTransactionsByArrayOfField({ fieldName: 'originalId', fieldValues: originalIds, userId })
-      : [];
+  const existingIdRows = originalIds.length > 0 ? await findTransactionsByOriginalIds({ userId, originalIds }) : [];
   const existingKeys = new Set(existingIdRows.map((tx) => `${tx.accountId}:${tx.originalId}`));
 
   let processedCount = 0;
@@ -220,7 +247,7 @@ async function executeOfxImportImpl({
     }
 
     try {
-      const amount = Money.fromDecimal(tx.amount).abs();
+      const amount = roundToAccountDecimals({ decimalsByAccountId, accountId, amount: tx.amount }).abs();
       const result = await createTransaction({
         userId,
         accountId,

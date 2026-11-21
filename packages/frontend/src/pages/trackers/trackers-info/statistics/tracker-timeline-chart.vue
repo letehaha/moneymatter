@@ -18,8 +18,12 @@
           <ChartTooltipHeader>{{ tooltip.period }}</ChartTooltipHeader>
           <ChartTooltipRow
             color="var(--primary)"
-            :label="$t('pages.budgetDetails.statistics.expensesLabel')"
-            :value="formatBaseCurrency(tooltip.expense)"
+            :label="
+              isSpending
+                ? $t('pages.budgetDetails.statistics.expensesLabel')
+                : $t('pages.budgetDetails.statistics.incomeLabel')
+            "
+            :value="formatBaseCurrency(tooltip.amount)"
           />
           <ChartTooltipRow
             color="var(--muted-foreground)"
@@ -32,7 +36,11 @@
 
     <div class="text-muted-foreground mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
       <span class="flex items-center gap-1.5">
-        <i class="bg-primary inline-block h-0.5 w-3" />{{ $t('pages.budgetDetails.statistics.legend.cumulative') }}
+        <i class="bg-primary inline-block h-0.5 w-3" />{{
+          isSpending
+            ? $t('pages.budgetDetails.statistics.legend.cumulative')
+            : $t('pages.budgetDetails.statistics.legend.earnedCumulative')
+        }}
       </span>
       <span v-if="limit" class="flex items-center gap-1.5">
         <i class="bg-muted-foreground inline-block h-0.5 w-3" />{{
@@ -40,7 +48,7 @@
         }}
       </span>
       <span v-if="projectedTotal !== null" class="flex items-center gap-1.5">
-        <i class="bg-destructive-text inline-block h-0.5 w-3" />{{
+        <i :class="['inline-block h-0.5 w-3', PROJECTION_TONES[projectionTone].bg]" />{{
           $t('pages.budgetDetails.statistics.legend.projection')
         }}
       </span>
@@ -59,17 +67,18 @@ import { getChartColors } from '@/composable/charts/chart-colors';
 import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
-import type { TrackerSpendingGranularity } from '@bt/shared/types';
+import { TRACKER_LIMIT_KINDS, type TrackerSpendingGranularity } from '@bt/shared/types';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
 import { addDays, isSameMonth, max as maxDate, min as minDate, parseISO } from 'date-fns';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { type CumulativePoint, getPercent } from './tracker-insights';
+import { type CumulativePoint, getPercent, getProjectionTone } from './tracker-insights';
 
 const props = defineProps<{
   series: CumulativePoint[];
+  limitKind: TRACKER_LIMIT_KINDS;
   granularity: TrackerSpendingGranularity;
   rangeStart: Date | null;
   rangeEnd: Date | null;
@@ -80,6 +89,19 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+const isSpending = computed(() => props.limitKind === TRACKER_LIMIT_KINDS.spending);
+const PROJECTION_TONES = {
+  success: { bg: 'bg-success-text', stroke: 'successText' },
+  warning: { bg: 'bg-warning-text', stroke: 'warningText' },
+  destructive: { bg: 'bg-destructive-text', stroke: 'destructiveText' },
+} as const;
+const projectionTone = computed(
+  () =>
+    getProjectionTone({
+      delta: props.projectedTotal !== null && props.limit ? props.projectedTotal - props.limit : null,
+      isTarget: props.limitKind === TRACKER_LIMIT_KINDS.incomeTarget,
+    }) ?? 'destructive',
+);
 
 const perPeriodLabel = computed(
   () =>
@@ -96,7 +118,7 @@ const containerRef = ref<HTMLDivElement | null>(null);
 const svgRef = ref<SVGSVGElement | null>(null);
 const tooltipRef = ref<HTMLDivElement | null>(null);
 
-const tooltip = reactive({ visible: false, x: 0, y: 0, period: '', expense: 0, cumulative: 0 });
+const tooltip = reactive({ visible: false, x: 0, y: 0, period: '', amount: 0, cumulative: 0 });
 
 const { updateTooltipPosition } = useChartTooltipPosition({ containerRef, tooltipRef, tooltip, strategy: 'fixed' });
 
@@ -139,12 +161,7 @@ const renderChart = () => {
   const spent = props.series[props.series.length - 1]!.cumulative;
 
   const xScale = d3.scaleTime().domain([domainStart, domainEnd]).range([0, innerWidth]);
-  const yMax = Math.max(
-    spent,
-    d3.max(props.series, (d) => d.expense) ?? 0,
-    props.limit ?? 0,
-    props.projectedTotal ?? 0,
-  );
+  const yMax = Math.max(spent, d3.max(props.series, (d) => d.amount) ?? 0, props.limit ?? 0, props.projectedTotal ?? 0);
   const yScale = d3
     .scaleLinear()
     .domain([0, yMax || 1])
@@ -188,9 +205,9 @@ const renderChart = () => {
 
     g.append('rect')
       .attr('x', x0 + padding)
-      .attr('y', yScale(point.expense))
+      .attr('y', yScale(point.amount))
       .attr('width', Math.max(1, bandWidth - padding * 2))
-      .attr('height', innerHeight - yScale(point.expense))
+      .attr('height', innerHeight - yScale(point.amount))
       .attr('fill', colors.primary)
       .attr('fill-opacity', 0.3)
       .attr('rx', 2);
@@ -203,7 +220,7 @@ const renderChart = () => {
       .attr('fill', 'transparent')
       .on('mouseenter', (event: MouseEvent) => {
         tooltip.period = formatPeriod(point);
-        tooltip.expense = point.expense;
+        tooltip.amount = point.amount;
         tooltip.cumulative = point.cumulative;
         tooltip.visible = true;
         updateTooltipPosition(event);
@@ -268,7 +285,7 @@ const renderChart = () => {
       .attr('y1', yScale(spent))
       .attr('x2', xScale(domainEnd))
       .attr('y2', yScale(props.projectedTotal))
-      .attr('stroke', colors.destructiveText)
+      .attr('stroke', colors[PROJECTION_TONES[projectionTone.value].stroke])
       .attr('stroke-width', 1.5)
       .attr('stroke-dasharray', '3 3');
 

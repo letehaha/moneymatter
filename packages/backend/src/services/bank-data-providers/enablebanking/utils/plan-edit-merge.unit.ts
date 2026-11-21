@@ -9,7 +9,7 @@ const NOW = new Date('2026-05-01T12:00:00.000Z');
 
 const MANUAL: CategorizationMeta = { source: CATEGORIZATION_SOURCE.manual, categorizedAt: '2026-01-01T00:00:00.000Z' };
 const AI: CategorizationMeta = { source: CATEGORIZATION_SOURCE.ai, categorizedAt: '2026-01-01T00:00:00.000Z' };
-const MCC_RULE: CategorizationMeta = { source: CATEGORIZATION_SOURCE.mccRule };
+const PAYEE_RULE: CategorizationMeta = { source: CATEGORIZATION_SOURCE.payeeRule };
 const SYNTHESIZED_MANUAL: CategorizationMeta = {
   source: CATEGORIZATION_SOURCE.manual,
   categorizedAt: NOW.toISOString(),
@@ -32,11 +32,13 @@ function plan({
   canonical,
   orphanSyncNote = SYNC_NOTE,
   canonicalSyncNote = SYNC_NOTE,
+  defaultPaymentType = null,
 }: {
   orphan: EditMergeSide;
   canonical: EditMergeSide;
   orphanSyncNote?: string | null;
   canonicalSyncNote?: string | null;
+  defaultPaymentType?: PAYMENT_TYPES | null;
 }) {
   return planEditMerge({
     orphan,
@@ -44,6 +46,7 @@ function plan({
     orphanSyncNote,
     canonicalSyncNote,
     defaultCategoryId: DEFAULT_CATEGORY_ID,
+    defaultPaymentType,
     now: NOW,
   });
 }
@@ -182,9 +185,9 @@ describe('planEditMerge – category', () => {
     expect(result).toEqual({ action: 'merge', valuesToMove: {} });
   });
 
-  it('does not treat an mcc-rule categorized orphan as a user edit', () => {
+  it('does not treat a payee-rule categorized orphan as a user edit', () => {
     const result = plan({
-      orphan: side({ categoryId: 'category-groceries', categorizationMeta: MCC_RULE }),
+      orphan: side({ categoryId: 'category-groceries', categorizationMeta: PAYEE_RULE }),
       canonical: side(),
     });
 
@@ -316,6 +319,53 @@ describe('planEditMerge – paymentType', () => {
     const result = plan({
       orphan: side({ paymentType: PAYMENT_TYPES.cash }),
       canonical: side({ paymentType: PAYMENT_TYPES.creditCard }),
+    });
+
+    expect(result).toEqual({ action: 'skip', reason: 'payment_type_conflict' });
+  });
+});
+
+describe('planEditMerge – paymentType with an account default', () => {
+  const defaultPaymentType = PAYMENT_TYPES.cash;
+
+  it('moves nothing when both sides carry the account default', () => {
+    const result = plan({
+      orphan: side({ paymentType: PAYMENT_TYPES.cash }),
+      canonical: side({ paymentType: PAYMENT_TYPES.cash }),
+      defaultPaymentType,
+    });
+
+    expect(result).toEqual({ action: 'merge', valuesToMove: {} });
+  });
+
+  it('does not treat a stale bankTransfer orphan as a user edit', () => {
+    const result = plan({
+      orphan: side({ paymentType: PAYMENT_TYPES.bankTransfer }),
+      canonical: side({ paymentType: PAYMENT_TYPES.cash }),
+      defaultPaymentType,
+    });
+
+    expect(result).toEqual({ action: 'merge', valuesToMove: {} });
+  });
+
+  it('moves an orphan payment type that differs from both sync values', () => {
+    const result = plan({
+      orphan: side({ paymentType: PAYMENT_TYPES.debitCard }),
+      canonical: side({ paymentType: PAYMENT_TYPES.cash }),
+      defaultPaymentType,
+    });
+
+    expect(result).toEqual({
+      action: 'merge',
+      valuesToMove: { paymentType: PAYMENT_TYPES.debitCard },
+    });
+  });
+
+  it('skips when both sides differ from the sync values', () => {
+    const result = plan({
+      orphan: side({ paymentType: PAYMENT_TYPES.debitCard }),
+      canonical: side({ paymentType: PAYMENT_TYPES.creditCard }),
+      defaultPaymentType,
     });
 
     expect(result).toEqual({ action: 'skip', reason: 'payment_type_conflict' });

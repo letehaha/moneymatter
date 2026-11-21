@@ -18,6 +18,7 @@ jest.mock('@models/payee-aliases.model', () => ({ __esModule: true, default: {} 
 jest.mock('./apply-categorization', () => ({ __esModule: true, applyPayeeCategorization: jest.fn() }));
 jest.mock('./apply-default-tags', () => ({ __esModule: true, applyPayeeDefaultTags: jest.fn() }));
 jest.mock('./apply-default-location', () => ({ __esModule: true, applyPayeeDefaultLocation: jest.fn() }));
+jest.mock('@services/transactions/payment-legs', () => ({ __esModule: true, syncLegsOfMains: jest.fn() }));
 jest.mock('./payee-namespace', () => ({
   __esModule: true,
   ensureAliasExists: jest.fn(),
@@ -84,6 +85,7 @@ describe('runNoteFuzzyBackfill candidate scan', () => {
       payeeId: null,
       payeeLocked: false,
       note: { [Op.ne]: null },
+      paymentParentId: null,
     });
   });
 

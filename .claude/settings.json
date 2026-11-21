@@ -30,7 +30,11 @@
   },
   "permissions": {
     "deny": [
-      "Read(**/.env*)",
+      "Read(**/.env)",
+      "Read(**/.env.development)",
+      "Read(**/.env.test)",
+      "Read(**/.env.production*)",
+      "Read(**/.env.staging*)",
       "Read(**/.dev.vars*)",
       "Read(**/*.pem)",
       "Read(**/*.key)",

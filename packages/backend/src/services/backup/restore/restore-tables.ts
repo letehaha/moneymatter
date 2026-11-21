@@ -1,14 +1,13 @@
 import type { BackupRestoreWarning } from '@bt/shared/types';
 import { DEACTIVATION_REASON } from '@bt/shared/types';
-import { currencyLogoUrl } from '@common/lib/zod/custom-types';
-import Currencies from '@models/currencies.model';
-import MerchantCategoryCodes from '@models/merchant-category-codes.model';
+import { CURRENCY_CODE_COLUMNS } from '@common/lib/currency-code-columns';
 import { encryptCredentials } from '@services/bank-data-providers/utils/credential-encryption';
+import { LOGO_FIELD_KEYS } from '@services/brand-logos/apply-manual-logo-patch';
 import { copyLogoImageIfPresent } from '@services/logo-images/logo-images.service';
+import { syncRefundLinkedFlags } from '@services/tx-refunds/sync-refund-linked-flags';
 import type { Transaction } from 'sequelize';
 import { validate as isUuid, v7 as uuidv7 } from 'uuid';
 
-import { withoutHeaderNames } from '../rate-source-headers';
 import { BACKUP_TABLES, type BackupTableDef } from '../registry';
 import type { ArchiveAnalysis, TableColumnPlan } from './analyze-archive';
 import { buildInsertRecord, runBulkInsert } from './bulk-insert';
@@ -25,12 +24,8 @@ type TableProgressCallback = (params: { tier: number; table: string; insertedRow
 interface InsertContext {
   targetUserId: number;
   securitiesRemap: Map<string, string>;
-  /** Target MCC id keyed by natural code (compared as strings). */
-  mccByCode: Map<string, number>;
   /** Currency codes a restored row may name: the ISO seed plus the custom codes this backup defines. */
   currencyCodes: Set<string>;
-  /** Custom codes that exist on this instance but that this backup does not define: not the restorer's to use. */
-  unheldCustomCodes: Set<string>;
   /** Definitions of the backup's custom currencies, keyed by code. */
   customDefinitions: Map<string, CustomCurrencyDefinition>;
   /** Guarded FK columns per backup file name, derived from model metadata. */
@@ -43,26 +38,22 @@ interface InsertContext {
   warnings: BackupRestoreWarning[];
 }
 
-/**
- * The attributes of a table that hold a currency code, found by name so a new table or column is
- * covered without a list to maintain (`currencyCode`, `originalCurrencyCode`, `toCurrencyCode`, ...).
- */
-const CURRENCY_CODE_ATTRIBUTE = /currencycode$/i;
+/** The attributes of a table whose column is a foreign key to `Currencies`. */
+const getCurrencyCodeAttributes = ({ def }: { def: BackupTableDef }): string[] => {
+  const table = String(def.model.getTableName());
+  const columns = new Set(CURRENCY_CODE_COLUMNS.filter((spec) => spec.table === table).map((spec) => spec.column));
 
-const getCurrencyCodeAttributes = ({ def }: { def: BackupTableDef }): string[] =>
-  Object.keys(def.model.getAttributes()).filter((attrName) => CURRENCY_CODE_ATTRIBUTE.test(attrName));
+  return Object.entries(def.model.getAttributes())
+    .filter(([, attribute]) => attribute.field !== undefined && columns.has(attribute.field))
+    .map(([attrName]) => attrName);
+};
 
 const HTTP_FINGERPRINT_PATTERN = /^[0-9a-f]{64}$/;
 
 const hasColumn = ({ plan, field }: { plan: TableColumnPlan; field: string }): boolean =>
   plan.columns.some((c) => c.field === field);
 
-/**
- * Rewrite one row's remappable columns and decide whether it survives. Returns
- * the overrides to layer onto the insert record, or `null` to drop the row —
- * `null` means only "MCC code missing on this target". The caller tallies the
- * drops into one aggregated warning rather than one per row.
- */
+/** Rewrite one row's remappable columns into overrides layered onto the insert record. */
 function buildRowOverrides({
   def,
   plan,
@@ -73,7 +64,7 @@ function buildRowOverrides({
   plan: TableColumnPlan;
   row: Row;
   ctx: InsertContext;
-}): Row | null {
+}): Row {
   const overrides: Row = {};
 
   // userId / ownerUserId → the logged-in target user (constant substitution).
@@ -87,50 +78,31 @@ function buildRowOverrides({
     if (resolved) overrides.securityId = resolved;
   }
 
-  // mccId → target id via the natural code carried on the row. Codes are stored
-  // as Postgres strings, so compare as strings. A code absent on the target
-  // means the row can't be linked — drop it (the caller aggregates the warning).
-  if (def.enrichMccCode && row.mccId != null) {
-    const code = row.mccCode != null ? String(row.mccCode) : null;
-    const targetMccId = code != null ? ctx.mccByCode.get(code) : undefined;
-    if (targetMccId === undefined) return null;
-    overrides.mccId = targetMccId;
-  }
-
-  // A custom currency's name, symbol, decimals and logo live in the user's overrides. A row without them
-  // takes the backup's definition (the user's own, see `dumpCustomCurrencies`), so the restored
-  // holding never falls back to a global row another user defined. A row that carries its decimals
-  // holds a complete definition: its empty symbol was cleared on purpose and stays cleared, as in
-  // `applyCurrencyOverrides`. Every row gets all four keys, keeping the batch's column set uniform.
+  // The validated definition replaces the archive's override and rate-source columns; an ISO row
+  // carries none, no logo either, and its source follows its live-rate flag. Every row gets every
+  // key, keeping the batch's column set uniform.
   if (def.fileName === 'users-currencies') {
     const definition = ctx.customDefinitions.get(String(row.currencyCode));
-    const isComplete = row.decimalsOverride != null;
-    overrides.nameOverride = row.nameOverride ?? definition?.name ?? null;
-    overrides.symbolOverride = isComplete
-      ? (row.symbolOverride ?? null)
-      : (row.symbolOverride ?? definition?.symbol ?? null);
-    overrides.decimalsOverride = row.decimalsOverride ?? definition?.decimals ?? null;
-    // The logo is an https URL on a custom code only; anything else in the archive restores as no logo.
-    const logo = definition ? currencyLogoUrl().safeParse(row.logoUrl) : null;
-    overrides.logoUrl = logo?.success ? logo.data : null;
-  }
+    overrides.nameOverride = definition?.name ?? null;
+    overrides.symbolOverride = definition?.symbol ?? null;
+    overrides.decimalsOverride = definition?.decimals ?? null;
+    for (const key of LOGO_FIELD_KEYS) overrides[key] = definition ? (row[key] ?? null) : null;
 
-  // The request headers of an HTTP rate source never travel: whatever an archive claims about
-  // them is dropped, so the source starts without headers and the user enters them again.
-  if (def.stripSecret === 'rateSourceHeaders') {
-    if (hasColumn({ plan, field: 'rateSourceConfig' })) {
-      overrides.rateSourceConfig = withoutHeaderNames({ config: row.rateSourceConfig }) ?? null;
-    }
-    if (hasColumn({ plan, field: 'rateSourceHeadersEncrypted' })) overrides.rateSourceHeadersEncrypted = null;
-    // The history fingerprint is a SHA-256 hex digest; anything else in an archive is dropped, and
-    // the stored rates are then matched through the saved config as for a source saved before it.
-    if (hasColumn({ plan, field: 'rateSourceHttpFingerprint' })) {
-      overrides.rateSourceHttpFingerprint =
-        typeof row.rateSourceHttpFingerprint === 'string' &&
-        HTTP_FINGERPRINT_PATTERN.test(row.rateSourceHttpFingerprint)
-          ? row.rateSourceHttpFingerprint
-          : null;
-    }
+    const setting = definition?.rateSourceSetting ?? {
+      rateSource: row.liveRateUpdate === false ? 'manual' : 'provider',
+      rateSourceConfig: null,
+    };
+    overrides.rateSource = setting.rateSource;
+    overrides.rateSourceConfig = setting.rateSourceConfig;
+    // The request headers never travel: the user enters them again.
+    overrides.rateSourceHeadersEncrypted = null;
+    // A SHA-256 hex digest or nothing; without one, stored HTTP rates are matched through the saved config.
+    overrides.rateSourceHttpFingerprint =
+      definition &&
+      typeof row.rateSourceHttpFingerprint === 'string' &&
+      HTTP_FINGERPRINT_PATTERN.test(row.rateSourceHttpFingerprint)
+        ? row.rateSourceHttpFingerprint
+        : null;
   }
 
   // Bank credentials never travel: re-encrypt an empty stub on THIS instance and
@@ -173,7 +145,7 @@ async function insertTable({
 }): Promise<number> {
   if (rows.length === 0) return 0;
 
-  const selfRefColumn = def.selfRefColumn;
+  const selfRefColumns = def.selfRefColumns ?? [];
   const targetTable = String(def.model.getTableName());
   let ownMap = ctx.insertedIds.get(targetTable);
   if (!ownMap) {
@@ -215,37 +187,33 @@ async function insertTable({
 
   const currencyAttributes = getCurrencyCodeAttributes({ def });
 
-  // The self-ref column is validated in the second pass, not here — exclude it.
-  const guardedFks = (ctx.guardedFkMap.get(def.fileName) ?? []).filter((fk) => fk.attrName !== selfRefColumn);
+  // Self-ref columns are validated in the second pass, not here — exclude them.
+  const guardedFks = (ctx.guardedFkMap.get(def.fileName) ?? []).filter((fk) => !selfRefColumns.includes(fk.attrName));
 
-  const secondPass: Array<{ finalId: string; oldParent: unknown }> = [];
+  const secondPass: Array<{ column: string; finalId: string; oldParent: unknown }> = [];
   const records: Row[] = [];
 
   // Tally dropped rows so each reason becomes one aggregated warning (with a total
   // count) instead of one warning per dropped row.
-  let droppedMccCount = 0;
   let droppedCurrencyCount = 0;
   let droppedInvalidCount = 0;
   const fkDroppedByColumn = new Map<string, number>();
   const fkNulledByColumn = new Map<string, number>();
 
+  const linksPerRefundTx = new Map<string, number>();
+  if (def.fileName === 'refund-transactions') {
+    for (const row of rows) {
+      const refundTxId = String(row.refundTxId);
+      linksPerRefundTx.set(refundTxId, (linksPerRefundTx.get(refundTxId) ?? 0) + 1);
+    }
+  }
+  const refundTxIdsWithDroppedLinks = new Set<string>();
+
   for (const row of rows) {
     const overrides = buildRowOverrides({ def, plan, row, ctx });
-    if (overrides === null) {
-      droppedMccCount += 1;
-      continue;
-    }
 
-    // Skip a row whose currency isn't seeded on the target (users-currencies).
-    if (def.requireSeededCurrency && !ctx.currencyCodes.has(String(row.currencyCode))) {
-      droppedCurrencyCount += 1;
-      continue;
-    }
-
-    // Skip a row of any table that names a custom currency the backup does not define. The foreign
-    // key accepts the code (another user's global row exists), but the restorer holds no definition
-    // of it, so the row would read that user's name, symbol and decimals.
-    if (currencyAttributes.some((attrName) => ctx.unheldCustomCodes.has(String(row[attrName])))) {
+    // Another user's custom code passes the foreign key, but this user would hold no definition of it.
+    if (currencyAttributes.some((attrName) => row[attrName] != null && !ctx.currencyCodes.has(String(row[attrName])))) {
       droppedCurrencyCount += 1;
       continue;
     }
@@ -261,6 +229,15 @@ async function insertTable({
       fkDroppedByColumn.set(column, (fkDroppedByColumn.get(column) ?? 0) + 1);
       continue;
     }
+    // A null-original (external) link must be its refund's only link, and covers the whole refund.
+    if (def.fileName === 'refund-transactions' && guard.nulledColumns.includes('originalTxId')) {
+      if ((linksPerRefundTx.get(String(row.refundTxId)) ?? 0) > 1) {
+        fkDroppedByColumn.set('originalTxId', (fkDroppedByColumn.get('originalTxId') ?? 0) + 1);
+        refundTxIdsWithDroppedLinks.add(String(guard.overrides.refundTxId));
+        continue;
+      }
+      if (hasColumn({ plan, field: 'amount' })) guard.overrides.amount = null;
+    }
     for (const column of guard.nulledColumns) {
       fkNulledByColumn.set(column, (fkNulledByColumn.get(column) ?? 0) + 1);
     }
@@ -268,7 +245,7 @@ async function insertTable({
 
     // A logo blob has one owner row, which deletes it on edit or delete, so every
     // restored row gets its own copy. Rollback orphans are left to the orphan sweep.
-    if (hasColumn({ plan, field: 'logoImageId' }) && row.logoImageId != null) {
+    if (hasColumn({ plan, field: 'logoImageId' }) && row.logoImageId != null && overrides.logoImageId !== null) {
       const id = String(row.logoImageId);
       overrides.logoImageId = isUuid(id) ? await copyLogoImageIfPresent({ id }) : null;
     }
@@ -283,21 +260,15 @@ async function insertTable({
       overrides.id = finalId;
     }
 
-    if (selfRefColumn && row[selfRefColumn] != null && finalId != null) {
-      secondPass.push({ finalId, oldParent: row[selfRefColumn] });
-      overrides[selfRefColumn] = null;
+    for (const column of selfRefColumns) {
+      if (row[column] == null || finalId == null) continue;
+      secondPass.push({ column, finalId, oldParent: row[column] });
+      overrides[column] = null;
     }
 
     records.push(buildInsertRecord({ row, plan, overrides }));
   }
 
-  if (droppedMccCount > 0) {
-    ctx.warnings.push({
-      code: 'mcc_code_missing',
-      table: def.fileName,
-      count: droppedMccCount,
-    });
-  }
   if (droppedCurrencyCount > 0) {
     ctx.warnings.push({
       code: 'currency_missing',
@@ -321,15 +292,24 @@ async function insertTable({
 
   const inserted = await runBulkInsert({ model: def.model, records, transaction: ctx.transaction });
 
-  if (selfRefColumn && secondPass.length) {
+  // Trashed rows are restored too, and restored rows keep their backup timestamps.
+  await syncRefundLinkedFlags({
+    transactionIds: [...refundTxIdsWithDroppedLinks],
+    transaction: ctx.transaction,
+    paranoid: false,
+    silent: true,
+  });
+
+  for (const selfRefColumn of selfRefColumns) {
     // Repoint each child at its parent's final id; a parent outside this table's
     // own remapped ids (forged, or dropped upstream) stays null.
     const byParent = new Map<string, string[]>();
-    let selfRefNulled = 0;
-    for (const { finalId, oldParent } of secondPass) {
+    const orphanIds: string[] = [];
+    for (const { column, finalId, oldParent } of secondPass) {
+      if (column !== selfRefColumn) continue;
       const mappedParent = ownMap.get(String(oldParent));
       if (mappedParent === undefined) {
-        selfRefNulled += 1;
+        orphanIds.push(finalId);
         continue;
       }
       const bucket = byParent.get(mappedParent);
@@ -342,12 +322,20 @@ async function insertTable({
         { where: { id: ids }, transaction: ctx.transaction, paranoid: false },
       );
     }
-    if (selfRefNulled > 0) {
+    if (orphanIds.length) {
+      const orphanValues = def.selfRefOrphanValues?.[selfRefColumn];
+      if (orphanValues) {
+        await def.model.update(orphanValues, {
+          where: { id: orphanIds },
+          transaction: ctx.transaction,
+          paranoid: false,
+        });
+      }
       ctx.warnings.push({
         code: 'foreign_reference_nulled',
         table: def.fileName,
         column: selfRefColumn,
-        count: selfRefNulled,
+        count: orphanIds.length,
       });
     }
   }
@@ -366,7 +354,8 @@ export async function insertRestoreTables({
   analysis,
   targetUserId,
   securitiesRemap,
-  customCurrencies,
+  currencyCodes,
+  customDefinitions,
   transaction,
   onProgress,
 }: {
@@ -374,8 +363,8 @@ export async function insertRestoreTables({
   analysis: ArchiveAnalysis;
   targetUserId: number;
   securitiesRemap: Map<string, string>;
-  /** Custom codes the restore made available, with their definitions. */
-  customCurrencies: { codes: Set<string>; definitions: Map<string, CustomCurrencyDefinition> };
+  currencyCodes: Set<string>;
+  customDefinitions: Map<string, CustomCurrencyDefinition>;
   transaction: Transaction;
   onProgress?: TableProgressCallback;
 }): Promise<{
@@ -387,29 +376,11 @@ export async function insertRestoreTables({
   const insertedByTable: Record<string, number> = {};
   const insertedIds = new Map<string, Map<string, string>>();
 
-  const needsMcc = BACKUP_TABLES.some((d) => d.enrichMccCode && (archive.data.get(d.fileName)?.length ?? 0) > 0);
-  const [mccRows, currencyRows] = await Promise.all([
-    needsMcc
-      ? (MerchantCategoryCodes.findAll({ attributes: ['id', 'code'], raw: true }) as unknown as Promise<
-          Array<{ id: number; code: string | number }>
-        >)
-      : Promise.resolve<Array<{ id: number; code: string | number }>>([]),
-    Currencies.findAll({ attributes: ['code', 'isCustom'], raw: true }) as unknown as Promise<
-      Array<{ code: string; isCustom: boolean }>
-    >,
-  ]);
-
   const ctx: InsertContext = {
     targetUserId,
     securitiesRemap,
-    mccByCode: new Map(mccRows.map((r) => [String(r.code), r.id])),
-    currencyCodes: new Set(
-      currencyRows.filter((r) => !r.isCustom || customCurrencies.codes.has(r.code)).map((r) => r.code),
-    ),
-    unheldCustomCodes: new Set(
-      currencyRows.filter((r) => r.isCustom && !customCurrencies.codes.has(r.code)).map((r) => r.code),
-    ),
-    customDefinitions: customCurrencies.definitions,
+    currencyCodes,
+    customDefinitions,
     guardedFkMap: buildGuardedReferenceMap(),
     insertedIds,
     transaction,

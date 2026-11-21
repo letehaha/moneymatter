@@ -4,7 +4,7 @@
     :class="
       cn(
         'grid grid-cols-[minmax(0,1fr)_auto_14px] items-center gap-3 px-4 py-3',
-        'hover:bg-muted/40 focus-visible:ring-ring/40 transition-colors focus-visible:ring-2 focus-visible:outline-none',
+        'hover:bg-hover focus-visible:ring-ring/40 transition-colors focus-visible:ring-2 focus-visible:outline-none',
       )
     "
   >
@@ -53,16 +53,13 @@
         class="text-sm font-semibold tabular-nums"
         :class="displayBalance < 0 ? 'text-destructive-text' : 'text-foreground'"
       >
-        {{ formatAmountByCurrencyCode(displayBalance, account.currencyCode, account.currencyMeta) }}
+        <CurrencyAmount :amount="displayBalance" :owner="account" />
       </div>
       <div
         v-if="account.currencyCode !== baseCurrencyCode"
         class="text-muted-foreground mt-0.5 text-[11px] tabular-nums"
       >
-        <template v-if="account.refCurrentBalance === null">{{
-          $t('common.transactions.record.missingRate')
-        }}</template>
-        <template v-else>≈ {{ formatBaseCurrency(displayRefBalance) }}</template>
+        ≈ {{ formatBaseCurrency(displayRefBalance) }}
       </div>
     </div>
 
@@ -73,6 +70,7 @@
 <script setup lang="ts">
 import { ACCOUNT_CATEGORIES_TRANSLATION_KEYS } from '@/common/const/account-categories-verbose';
 import AccountLogo from '@/components/common/account-logo.vue';
+import CurrencyAmount from '@/components/common/currency-amount.vue';
 import CurrencyIcon from '@/components/common/currency-icon.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable';
@@ -96,7 +94,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const { formatAmountByCurrencyCode, formatBaseCurrency } = useFormatCurrency();
+const { formatBaseCurrency } = useFormatCurrency();
 
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const baseCurrencyCode = computed(() => baseCurrency.value?.currency?.code);

@@ -49,6 +49,8 @@ const summary = computed(() =>
   buildLinkedPaymentsSummary({
     transactions: props.subscription.transactions ?? [],
     frequency: props.subscription.frequency,
+    intervalUnit: props.subscription.intervalUnit,
+    intervalCount: props.subscription.intervalCount,
   }),
 );
 
@@ -86,7 +88,7 @@ const pendingUnlinkLabel = computed(() => {
 });
 
 const formatNativeLines = ({ totals }: { totals: LinkedPaymentsCurrencyTotal[] }): string[] =>
-  totals.map(({ currencyCode, total }) => formatAmountByCurrencyCode(total, currencyCode));
+  totals.map(({ currencyCode, total }) => formatAmountByCurrencyCode({ amount: total, currencyCode }));
 
 // Currencies are never joined with an arithmetic separator: "A + B" claims an
 // addition the app can't perform. The middle dot lists them without that claim.
@@ -105,7 +107,7 @@ const showApprox = computed(() => summary.value.stats.isConverted && !missingRef
 const primaryTotal = computed(() => {
   const { refTotal, refCurrencyCode, totalsByCurrency } = summary.value.stats;
   if (missingRefRates.value) return formatNativeList({ totals: totalsByCurrency });
-  return refCurrencyCode ? formatAmountByCurrencyCode(refTotal, refCurrencyCode) : '–';
+  return refCurrencyCode ? formatAmountByCurrencyCode({ amount: refTotal, currencyCode: refCurrencyCode }) : '–';
 });
 
 /** Mixed native currencies: the breakdown only works as a per-line tooltip list. */
@@ -125,17 +127,19 @@ const nativeTotalLine = computed(() => {
 const formattedAverage = computed(() => {
   const { refAverage, refCurrencyCode, nativeAverage } = summary.value.stats;
   if (missingRefRates.value) {
-    return nativeAverage ? formatAmountByCurrencyCode(nativeAverage.amount, nativeAverage.currencyCode) : '–';
+    return nativeAverage
+      ? formatAmountByCurrencyCode({ amount: nativeAverage.amount, currencyCode: nativeAverage.currencyCode })
+      : '–';
   }
   if (refAverage === null || !refCurrencyCode) return '–';
-  return formatAmountByCurrencyCode(refAverage, refCurrencyCode);
+  return formatAmountByCurrencyCode({ amount: refAverage, currencyCode: refCurrencyCode });
 });
 
 /** The provider's sticker price, shown when the whole history is billed in one foreign currency. */
 const nativeAverageLine = computed(() => {
   const { nativeAverage, refCurrencyCode } = summary.value.stats;
   if (!showApprox.value || !nativeAverage || nativeAverage.currencyCode === refCurrencyCode) return null;
-  return formatAmountByCurrencyCode(nativeAverage.amount, nativeAverage.currencyCode);
+  return formatAmountByCurrencyCode({ amount: nativeAverage.amount, currencyCode: nativeAverage.currencyCode });
 });
 
 interface YearTotalDisplay {
@@ -152,7 +156,7 @@ const yearGroupRows = computed(() =>
       ratesMissing || !refCurrencyCode
         ? { text: formatNativeList({ totals: group.totalsByCurrency }), converted: false, breakdownLines: [] }
         : {
-            text: formatAmountByCurrencyCode(group.refTotal, refCurrencyCode),
+            text: formatAmountByCurrencyCode({ amount: group.refTotal, currencyCode: refCurrencyCode }),
             converted: group.isConverted,
             breakdownLines: group.isConverted ? formatNativeLines({ totals: group.totalsByCurrency }) : [],
           };
@@ -179,10 +183,10 @@ const gapBlockStyle = ({ gap }: { gap: LinkedPaymentsChartGap }) => ({
 
 /** Expenses read with a leading minus, matching how transaction rows render amounts. */
 const formatRowAmount = ({ tx }: { tx: LinkedTransaction }): string =>
-  formatAmountByCurrencyCode(
-    tx.transactionType === TRANSACTION_TYPES.expense ? -tx.amount : tx.amount,
-    tx.currencyCode,
-  );
+  formatAmountByCurrencyCode({
+    amount: tx.transactionType === TRANSACTION_TYPES.expense ? -tx.amount : tx.amount,
+    currencyCode: tx.currencyCode,
+  });
 
 const MATCH_SOURCE_DOT_CLASSES: Record<string, string> = {
   [SUBSCRIPTION_MATCH_SOURCE.rule]: 'bg-success-text',
@@ -298,13 +302,19 @@ const getMatchSourceDotClass = ({ source }: { source: string }): string =>
                 <template #content>
                   <ChartTooltipHeader>{{ chartSlot.monthLabel }}</ChartTooltipHeader>
                   <div class="font-semibold whitespace-nowrap tabular-nums">
-                    {{ formatAmountByCurrencyCode(chartSlot.amount, chartSlot.currencyCode) }}
+                    {{ formatAmountByCurrencyCode({ amount: chartSlot.amount, currencyCode: chartSlot.currencyCode }) }}
                   </div>
                   <div
                     v-if="chartSlot.currencyCode !== chartSlot.refCurrencyCode"
                     class="text-card-tooltip-muted mt-0.5 whitespace-nowrap tabular-nums"
                   >
-                    ≈ {{ formatAmountByCurrencyCode(chartSlot.refAmount, chartSlot.refCurrencyCode) }}
+                    ≈
+                    {{
+                      formatAmountByCurrencyCode({
+                        amount: chartSlot.refAmount,
+                        currencyCode: chartSlot.refCurrencyCode,
+                      })
+                    }}
                   </div>
                 </template>
               </ResponsiveTooltip>
@@ -372,7 +382,7 @@ const getMatchSourceDotClass = ({ source }: { source: string }): string =>
           <div
             v-for="tx in group.payments"
             :key="tx.id"
-            class="group/row border-border/50 hover:bg-muted/30 flex items-center gap-2.5 border-t px-2.5 py-2 @lg/linked:gap-3 @lg/linked:px-3.5"
+            class="group/row border-border/50 hover:bg-hover flex items-center gap-2.5 border-t px-2.5 py-2 @lg/linked:gap-3 @lg/linked:px-3.5"
           >
             <span class="text-muted-foreground w-12 shrink-0 font-mono text-[11px] tabular-nums @lg/linked:text-xs">
               {{ format(new Date(tx.time), 'd MMM') }}

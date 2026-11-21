@@ -5,20 +5,17 @@ import {
   type TRANSACTION_SORT_FIELD,
 } from '@bt/shared/types';
 import Accounts from '@models/accounts.model';
-import Categories from '@models/categories.model';
-import Tags from '@models/tags.model';
-import TransactionGroups from '@models/transaction-groups.model';
-import TransactionSplits from '@models/transaction-splits.model';
 import { countTransactions, findTransactions } from '@models/transactions-query';
-import Transactions, { buildOrderClause } from '@models/transactions.model';
+import Transactions, { buildOrderClause, fullTransactionIncludes } from '@models/transactions.model';
 import { getUserDefaultCategory } from '@models/users.model';
-import { type Includeable, Op, type WhereOptions, literal } from 'sequelize';
+import { type Includeable, Op, type WhereOptions } from 'sequelize';
 
 import { CATEGORIZATION_SCOPE, type CategorizationScope } from './categorization-scope';
 
 export type CandidateWhere = {
   categorizationMeta: null;
   transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer;
+  paymentParentId: null;
   categoryId?: string;
 };
 
@@ -64,6 +61,8 @@ export async function buildCandidateWhere({
   const base = {
     categorizationMeta: null,
     transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
+    // A payment's other rows take their category from the main row.
+    paymentParentId: null,
   } as const;
 
   if (scope === CATEGORIZATION_SCOPE.anyCategory) return base;
@@ -167,37 +166,7 @@ export async function listCandidateTransactions({
       access: { accountOwner: userId },
       balanceAdjustments: 'include',
       completeness: { page: { offset, limit } },
-      include: [
-        ...criteria.include,
-        {
-          model: TransactionSplits,
-          as: 'splits',
-          include: [{ model: Categories, as: 'category' }],
-        },
-        {
-          model: Tags,
-          through: { attributes: [] },
-          attributes: ['id', 'name', 'color', 'icon'],
-          required: false,
-        },
-        {
-          model: TransactionGroups,
-          through: { attributes: [] },
-          attributes: [
-            'id',
-            'name',
-            [
-              literal(`(
-              SELECT COUNT(*)::int
-              FROM "TransactionGroupItems"
-              WHERE "TransactionGroupItems"."groupId" = "transactionGroups"."id"
-            )`),
-              'transactionCount',
-            ],
-          ],
-          required: false,
-        },
-      ],
+      include: [...criteria.include, ...fullTransactionIncludes()],
       order: buildOrderClause({ sortBy, order }),
     }),
     isFirstPage ? countCandidateTransactions({ userId }) : null,

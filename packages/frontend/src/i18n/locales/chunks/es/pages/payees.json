@@ -31,7 +31,7 @@
     },
     "bulk": {
       "select": "Seleccionar",
-      "selectedCount": "{count} seleccionadas",
+      "selectedCount": "{count} seleccionado",
       "clearSelection": "Limpiar selección",
       "selectAll": "Seleccionar todos los beneficiarios cargados",
       "selectRow": "Seleccionar {name}",

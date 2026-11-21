@@ -34,8 +34,13 @@ const setup = async ({ monthsAgo = 2 }: { monthsAgo?: number } = {}) => {
   return { account, food, groceries, transport, planId: plan.id, periods, line };
 };
 
-const view = ({ planId, period }: { planId: string; period: Period }) =>
-  helpers.getBudgetPlanPeriodView({ planId, periodId: period.id, raw: true });
+const view = ({ planId, period, timezone }: { planId: string; period: Period; timezone?: string }) =>
+  helpers.getBudgetPlanPeriodView({
+    planId,
+    periodId: period.id,
+    headers: timezone ? { 'X-Timezone': timezone } : {},
+    raw: true,
+  });
 
 interface TxParams {
   accountId: RecordId;
@@ -123,6 +128,54 @@ describe('Budget plan period view: activity attribution', () => {
 
     expect((await view({ planId, period: periods[0]! })).lines[0]!.activity).toBe(-10);
     expect((await view({ planId, period: periods[1]! })).lines[0]!.activity).toBe(-20);
+  });
+
+  describe('X-Timezone day boundaries', () => {
+    const setupLocalFirstOfMonthExpense = async () => {
+      const ctx = await setup();
+      await expense({
+        accountId: ctx.account.id,
+        categoryId: ctx.food.id,
+        amount: 10,
+        time: new Date(`${ctx.periods[1]!.startDate}T02:22:00+03:00`).toISOString(),
+      });
+      return ctx;
+    };
+
+    it('counts an expense on the local 1st in the period starting that day', async () => {
+      const { planId, periods } = await setupLocalFirstOfMonthExpense();
+      const timezone = 'Europe/Istanbul';
+
+      expect((await view({ planId, period: periods[1]!, timezone })).lines[0]!.activity).toBe(-10);
+      expect((await view({ planId, period: periods[0]!, timezone })).lines[0]!.activity).toBe(0);
+    });
+
+    it('falls back to UTC days without the header', async () => {
+      const { planId, periods } = await setupLocalFirstOfMonthExpense();
+
+      expect((await view({ planId, period: periods[0]! })).lines[0]!.activity).toBe(-10);
+      expect((await view({ planId, period: periods[1]! })).lines[0]!.activity).toBe(0);
+    });
+
+    it.each([{ timezone: 'Europe/Kyiv' }, { timezone: 'Asia/Calcutta' }])(
+      'counts the local-1st expense in the later period for $timezone',
+      async ({ timezone }) => {
+        const { planId, periods } = await setupLocalFirstOfMonthExpense();
+
+        expect((await view({ planId, period: periods[1]!, timezone })).lines[0]!.activity).toBe(-10);
+        expect((await view({ planId, period: periods[0]!, timezone })).lines[0]!.activity).toBe(0);
+      },
+    );
+
+    it.each([{ timezone: 'garbage/Zone' }, { timezone: '+03:00' }])(
+      'falls back to UTC days for an unusable $timezone header',
+      async ({ timezone }) => {
+        const { planId, periods } = await setupLocalFirstOfMonthExpense();
+
+        expect((await view({ planId, period: periods[0]!, timezone })).lines[0]!.activity).toBe(-10);
+        expect((await view({ planId, period: periods[1]!, timezone })).lines[0]!.activity).toBe(0);
+      },
+    );
   });
 
   it('returns uncovered negative spending as unbudgeted, rolled up to the root category', async () => {
@@ -357,7 +410,7 @@ describe('Budget plan period view: refunds', () => {
       time: at({ period: periods[0]! }),
       splits: [{ categoryId: food.id, amount: 30 }],
     });
-    const transactions = await helpers.getTransactions({ raw: true, includeSplits: true });
+    const transactions = await helpers.getTransactions({ raw: true });
     const split = transactions!.find((transaction) => transaction.id === original.id)!.splits![0]!;
 
     const [refund] = await income({
@@ -532,18 +585,6 @@ describe('Budget plan period view: line edits', () => {
   });
 });
 
-/** Runs `fn` as a user whose base currency (and so whose plan currency) is `currencyCode`. */
-const inBaseCurrency = async <T>({ currencyCode, fn }: { currencyCode: string; fn: () => Promise<T> }): Promise<T> => {
-  const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode });
-  return helpers.asUser({
-    cookies: user.cookies,
-    fn: async () => {
-      await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
-      return fn();
-    },
-  });
-};
-
 describe('Budget plan period view: plan currency decimals', () => {
   const assignAndSpend = async ({
     currencyCode,
@@ -583,42 +624,33 @@ describe('Budget plan period view: plan currency decimals', () => {
       time: at({ period: periods[0]! }),
     });
 
-    return view({ planId: plan.id, period: periods[0]! });
+    const { periods: trend } = await helpers.getBudgetPlanTrends({ planId: plan.id, raw: true });
+
+    return { result: await view({ planId: plan.id, period: periods[0]! }), trend: trend[0]! };
   };
 
-  it('reports assigned, activity and available at 3 decimals for a KWD plan', async () => {
-    const result = await inBaseCurrency({
-      currencyCode: 'KWD',
-      fn: () => assignAndSpend({ currencyCode: 'KWD', assigned: 1.234, spent: 0.5 }),
-    });
+  it.each([
+    { currencyCode: 'KWD', assigned: 1.234, spent: 0.5, available: 0.734 },
+    { currencyCode: 'JPY', assigned: 1500, spent: 400, available: 1100 },
+  ])(
+    'reports assigned, activity and available at the decimals of a $currencyCode plan, trends included',
+    async ({ currencyCode, assigned, spent, available }) => {
+      const { result, trend } = await helpers.asNewUserWithBaseCurrency({
+        currencyCode,
+        fn: () => assignAndSpend({ currencyCode, assigned, spent }),
+      });
 
-    expect(result.lines[0]).toMatchObject({ assigned: 1.234, activity: -0.5, available: 0.734 });
-    expect(result.header).toEqual({
-      totalAssigned: 1.234,
-      totalActivity: -0.5,
-      totalAvailable: 0.734,
-      totalCarriedIn: 0,
-    });
-  });
-
-  it('reports whole units for a JPY plan', async () => {
-    const result = await inBaseCurrency({
-      currencyCode: 'JPY',
-      fn: () => assignAndSpend({ currencyCode: 'JPY', assigned: 1500, spent: 400 }),
-    });
-
-    expect(result.lines[0]).toMatchObject({ assigned: 1500, activity: -400, available: 1100 });
-  });
-
-  it('keeps the 2-decimal values for a 2-decimal plan', async () => {
-    const result = await assignAndSpend({
-      currencyCode: global.BASE_CURRENCY.code,
-      assigned: 1.23,
-      spent: 0.5,
-    });
-
-    expect(result.lines[0]).toMatchObject({ assigned: 1.23, activity: -0.5, available: 0.73 });
-  });
+      expect(result.lines[0]).toMatchObject({ assigned, activity: -spent, available });
+      expect(trend).toMatchObject({ periodId: result.period.id, assigned, activity: -spent, available, carriedIn: 0 });
+      expect(trend.lines[0]).toMatchObject({ assigned, activity: -spent, available });
+      expect(result.header).toEqual({
+        totalAssigned: assigned,
+        totalActivity: -spent,
+        totalAvailable: available,
+        totalCarriedIn: 0,
+      });
+    },
+  );
 
   describe('pool cash held in a foreign account', () => {
     /** A pooled plan holding one USD account whose manual rate to the base is `rate`. */
@@ -649,7 +681,7 @@ describe('Budget plan period view: plan currency decimals', () => {
     };
 
     it('values a USD opening at 3 decimals in a KWD plan', async () => {
-      const pool = await inBaseCurrency({
+      const pool = await helpers.asNewUserWithBaseCurrency({
         currencyCode: 'KWD',
         fn: () => openingCash({ balance: 1.23, rate: 0.30712, baseCode: 'KWD' }),
       });
@@ -659,13 +691,55 @@ describe('Budget plan period view: plan currency decimals', () => {
     });
 
     it('does not round a USD opening to whole yen before the rate is applied', async () => {
-      const pool = await inBaseCurrency({
+      const pool = await helpers.asNewUserWithBaseCurrency({
         currencyCode: 'JPY',
         fn: () => openingCash({ balance: 0.6, rate: 100, baseCode: 'JPY' }),
       });
 
       expect(pool.flow.leftOver).toBe(60);
       expect(pool.balance.cash).toBe(60);
+    });
+
+    it('values a custom-currency opening through its USD quote', async () => {
+      const baseCode = global.BASE_CURRENCY.code;
+      await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+      await helpers.updateUserCurrency({ currency: { currencyCode: 'USD', liveRateUpdate: false }, raw: true });
+      await helpers.editCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'USD', quoteCode: baseCode, rate: 4 },
+          { baseCode, quoteCode: 'USD', rate: 0.25 },
+        ],
+      });
+      await helpers.createCustomCurrency({
+        payload: { code: 'SAT', name: 'Satoshi', decimals: 8, rate: { value: 0.5, quoteCode: 'USD' } },
+        raw: true,
+      });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'SAT', initialBalance: 3 }),
+        raw: true,
+      });
+      const { plan } = await helpers.createBudgetPlan({
+        payload: {
+          accountIds: [account.id],
+          epochDate: helpers.budgetPeriodStart({ monthsAgo: 1 }),
+          poolEnabled: true,
+        },
+        raw: true,
+      });
+      await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 10,
+          transactionType: TRANSACTION_TYPES.income,
+        }),
+        raw: true,
+      });
+      const periods = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
+
+      const { pool } = await view({ planId: plan.id, period: periods[0]! });
+
+      // 3 SAT x 0.5 USD x 4 base per USD; the income after the opening day is not part of it.
+      expect(pool!.flow.leftOver).toBe(6);
     });
   });
 });

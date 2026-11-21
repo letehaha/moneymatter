@@ -9,6 +9,21 @@
         "successNotification": "Ajuste actualizado correctamente",
         "errorNotification": "Error al actualizar el ajuste"
       },
+      "payday": {
+        "label": "El ciclo de pago comienza el",
+        "description": "Día del mes que comienza tu ciclo de pago. El período predeterminado del tablero de control se extiende de este día al día anterior al mes próximo.",
+        "placeholder": "Seleccionar día",
+        "successNotification": "Inicio del ciclo de pago actualizado"
+      },
+      "unrealizedLossAlert": {
+        "label": "Alertas de pérdida no realizadas",
+        "description": "Obtenga una notificación cuando la pérdida de una posición cruce cualquiera de los umbrales. Verificada diariamente después de la actualización de los precios del mercado; no se repetirá hasta que la tenencia se recupere.",
+        "percentLabel": "Porcentaje de pérdida",
+        "percentDescription": "Recibir una alerta cuando una posición haya bajado al menos esta cantidad respecto a su costo.",
+        "amountLabel": "Cantidad perdida",
+        "amountDescription": "O cuando la pérdida alcanza esta cantidad en su moneda base, sea cual sea el porcentaje.",
+        "successNotification": "Configuración de alerta de pérdida guardada"
+      },
       "manualTransferMatching": {
         "label": "Asociar transferencias con cuentas manuales",
         "description": "Permite que las transferencias detectadas automáticamente vinculen una transacción bancaria sincronizada con una que usted creó manualmente.",
@@ -69,6 +84,21 @@
         },
         "successNotification": "Ajustes del selector de cuentas actualizados",
         "errorNotification": "Error al actualizar los ajustes del selector de cuentas"
+      },
+      "iosAddExpense": {
+        "label": "Añadir Gasto en iPhone",
+        "description": "Configuración del atajo Añadir Gastos en iPhone (Siri, Spotlight y el botón de Acción).",
+        "showBankAccounts": {
+          "label": "Mostrar cuentas conectadas al banco",
+          "description": "De forma predeterminada: las transacciones en cuentas conectadas con el banco llegan a través de sincronizaciones."
+        },
+        "hiddenCategories": {
+          "label": "Categorías ocultas",
+          "description": "Las categorías marcadas, con sus subcategorías, se ocultan de la lista de categorías del atajo directo.",
+          "placeholder": "Nada"
+        },
+        "successNotification": "Configuración de Añadir Gastos de iPhone actualizada",
+        "errorNotification": "Error al actualizar los ajustes de Añadir Gastos de iPhone"
       },
       "showUpcomingTransactions": {
         "label": "Mostrar transacciones próximas",

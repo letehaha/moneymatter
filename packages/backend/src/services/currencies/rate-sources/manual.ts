@@ -4,10 +4,15 @@ import { Op, type Order } from 'sequelize';
 /**
  * Manual rates (and the rows the synced sources write) live in `UserExchangeRates`, one row per pair
  * and start day. A day takes the row that started most recently on or before it, and the one
- * written last when several start on the same day. A day before the first row has no rate.
+ * written last when several start on the same day.
  */
 const LATEST_FIRST: Order = [
   ['effectiveDate', 'DESC'],
+  ['date', 'DESC'],
+];
+
+const EARLIEST_FIRST: Order = [
+  ['effectiveDate', 'ASC'],
   ['date', 'DESC'],
 ];
 
@@ -37,7 +42,7 @@ export const countStoredCustomRates = async ({ userId, baseCode }: { userId: num
   return UserExchangeRates.count({ where: { userId, baseCode } });
 };
 
-/** The user's stored rate for exactly this pair on a day. */
+/** The user's stored rate for exactly this pair on a day; `null` before the pair's first rate. */
 export const findStoredPairRate = async ({
   userId,
   baseCode,
@@ -50,31 +55,33 @@ export const findStoredPairRate = async ({
   asOfDate: string;
 }) => {
   return UserExchangeRates.findOne({
-    where: { userId, baseCode, quoteCode, effectiveDate: { [Op.lte]: asOfDate } },
+    where: { userId, baseCode, quoteCode, rate: { [Op.gt]: 0 }, effectiveDate: { [Op.lte]: asOfDate } },
     order: LATEST_FIRST,
     raw: true,
   });
 };
 
 /**
- * The user's stored rate for a custom code on a day, in whichever quote currency it was entered in
- * and skipping rates that quote a code in `excludedQuotes`. The rate stays in that quote, so a
- * base-currency change never rewrites it.
+ * The user's stored rate for a custom code on a day, in whichever quote it was entered in. A day
+ * before the first rate takes the earliest one, so a custom currency with any rate is valued on
+ * every day. `null` only when it has no rate at all.
  */
 export const findStoredCustomRate = async ({
   userId,
   baseCode,
   asOfDate,
-  excludedQuotes,
 }: {
   userId: number;
   baseCode: string;
   asOfDate: string;
-  excludedQuotes: readonly string[];
 }) => {
-  return UserExchangeRates.findOne({
-    where: { userId, baseCode, quoteCode: { [Op.notIn]: excludedQuotes }, effectiveDate: { [Op.lte]: asOfDate } },
-    order: LATEST_FIRST,
-    raw: true,
-  });
+  const where = { userId, baseCode, rate: { [Op.gt]: 0 } };
+
+  return (
+    (await UserExchangeRates.findOne({
+      where: { ...where, effectiveDate: { [Op.lte]: asOfDate } },
+      order: LATEST_FIRST,
+      raw: true,
+    })) ?? UserExchangeRates.findOne({ where, order: EARLIEST_FIRST, raw: true })
+  );
 };

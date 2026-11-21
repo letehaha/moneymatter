@@ -8,6 +8,7 @@
       "currentPlanEyebrow": "Aktueller Tarif",
       "updatePaymentMethod": "Zahlungsmethode aktualisieren",
       "manageBilling": "Abrechnung verwalten",
+      "manageInAppStore": "Im App Store verwalten",
       "currentPlan": "Aktueller Tarif",
       "recommended": "Empfohlen",
       "previousPlan": "Vorheriger Tarif",
@@ -31,6 +32,7 @@
       "current": {
         "lifetime": "{plan} · Lebenslang",
         "lifetimeMeta": "Alles aus Plus. Keine Verlängerung, keine Karte hinterlegt.",
+        "lifetimePurchaseMeta": "No renewal, no card on file.",
         "earlyAdopterNote": "Danke, dass du von Anfang an dabei bist. Alles aus Plus im heutigen Umfang gehört dir lebenslang. Funktionen, die wir ab jetzt hinzufügen, und alles, was uns pro Benutzer Kosten verursacht, gehört zu den kostenpflichtigen Tarifen. Möchtest du sie? 50% Rabatt auf jeden Tarif, für immer, automatisch beim Checkout angewendet.",
         "seats": "1 Haushaltsplatz | {count} Haushaltsplätze",
         "subscription": "{tier} · {cycle}",
@@ -48,6 +50,7 @@
         "activationTimedOut": "Deine Zahlung war erfolgreich, aber der Tarif wird noch eingerichtet. Lade die Seite in einer Minute neu; falls sich nichts ändert, kontaktiere den Support.",
         "activationUnreachable": "Der Server konnte nicht erreicht werden, um deine Zahlung zu bestätigen. Lade die Seite neu; falls der Tarif weiterhin fehlt, kontaktiere den Support.",
         "accessContinuesUntil": "Zugriff bleibt bis zum {date} bestehen",
+        "billedByAppStore": "Über den App Store abgerechnet",
         "accessUntil": "Zugriff bis zum {date}, danach schreibgeschützt",
         "resumesOn": "Wird am {date} automatisch fortgesetzt",
         "pausedNote": "Während der Pause ist das Konto schreibgeschützt.",
@@ -77,6 +80,7 @@
       "ctaNote": {
         "keepIt": "Aktualisiere deine Zahlungsmethode, um den Tarif zu behalten.",
         "viaPortal": "Im Abrechnungsportal geändert.",
+        "viaAppStore": "Tarifänderungen erfolgen im App Store",
         "billedToday": "Heute abgerechnet. Jederzeit kündbar.",
         "earlyAdopter": "50% Rabatt für immer, wird beim Checkout angewendet"
       },

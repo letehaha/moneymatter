@@ -55,8 +55,8 @@ export const authorizeTrackerAccess = async ({
 };
 
 /**
- * Convenience wrapper for read-only paths (stats, spending-stats, category-tracker-tx
- * lookups). The required permission is fixed at `read` so callers don't have to import
+ * Convenience wrapper for read-only paths (stats, spending-stats, rules sync on visit).
+ * The required permission is fixed at `read` so callers don't have to import
  * `SHARE_PERMISSIONS` themselves.
  */
 export const authorizeTrackerRead = ({ userId, trackerId }: { userId: number; trackerId: string }) =>

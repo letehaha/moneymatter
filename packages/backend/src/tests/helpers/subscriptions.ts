@@ -3,6 +3,7 @@ import {
   RemindBeforePreset,
   SUBSCRIPTION_CANDIDATE_STATUS,
   SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
   SUBSCRIPTION_TYPES,
   TRANSACTION_TYPES,
   SubscriptionModel,
@@ -36,6 +37,8 @@ interface CreateSubscriptionPayload extends EntityLogoPayload {
   expectedAmount?: number | null;
   expectedCurrencyCode?: string | null;
   frequency: SUBSCRIPTION_FREQUENCIES;
+  intervalUnit?: SUBSCRIPTION_INTERVAL_UNITS | null;
+  intervalCount?: number | null;
   startDate: string;
   endDate?: string | null;
   accountId?: string | null;
@@ -58,6 +61,8 @@ interface UpdateSubscriptionPayload extends EntityLogoPayload {
   expectedAmount?: number | null;
   expectedCurrencyCode?: string | null;
   frequency?: SUBSCRIPTION_FREQUENCIES;
+  intervalUnit?: SUBSCRIPTION_INTERVAL_UNITS | null;
+  intervalCount?: number | null;
   startDate?: string;
   endDate?: string | null;
   accountId?: string | null;

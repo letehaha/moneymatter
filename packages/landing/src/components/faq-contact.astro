@@ -1,0 +1,47 @@
+---
+import LucideIcon from '@/components/lucide-icon.astro';
+import { REDDIT_URL, SUPPORT_EMAIL } from '@/lib/github-api';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n(Astro);
+
+const ROUTES = [
+  {
+    title: t('Ask the community'),
+    text: t('Questions and tips on Reddit'),
+    href: REDDIT_URL,
+    icon: 'messages-square',
+    track: 'landing_reddit_clicked',
+  },
+  {
+    title: t('Request a feature or report a bug'),
+    text: t('Vote and follow progress on Featurebase'),
+    href: 'https://moneymatter.featurebase.app',
+    icon: 'lightbulb',
+  },
+  { title: t('Email support'), text: SUPPORT_EMAIL, href: `mailto:${SUPPORT_EMAIL}`, icon: 'mail' },
+];
+---
+
+<ul class="faq-contact">
+  {
+    ROUTES.map((route) => (
+      <li>
+        <a
+          class="plate strip mailcard"
+          href={route.href}
+          {...(route.href.startsWith('https:') && { target: '_blank', rel: 'noopener noreferrer' })}
+          {...('track' in route && { 'data-track': route.track, 'data-track-location': 'faq' })}
+        >
+          <span class="itile">
+            <LucideIcon name={route.icon} class="ic" />
+          </span>
+          <span>
+            <strong>{route.title}</strong>
+            <span>{route.text}</span>
+          </span>
+        </a>
+      </li>
+    ))
+  }
+</ul>

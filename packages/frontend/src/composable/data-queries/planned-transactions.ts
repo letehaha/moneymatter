@@ -27,9 +27,6 @@ export const usePendingPlannedTransactions = ({ enabled }: { enabled?: MaybeRefO
         offset: 0,
         sortBy: TRANSACTION_SORT_FIELD.time,
         order: SORT_DIRECTIONS.asc,
-        // Rows from here feed the edit dialog, which needs the full transaction.
-        includeTags: true,
-        includeSplits: true,
       }),
     enabled: computed(() => (enabled === undefined ? true : toValue(enabled))),
     staleTime: 60_000,

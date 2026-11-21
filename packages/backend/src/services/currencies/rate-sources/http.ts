@@ -97,8 +97,8 @@ const discard = (stream: { cancel: () => Promise<void> } | null | undefined): vo
   stream?.cancel().catch(() => undefined);
 };
 
-/** The body as text, or `too_large` as soon as it passes `maxBytes`. */
-const readBodyWithLimit = async ({ response, maxBytes }: { response: Response; maxBytes: number }): Promise<string> => {
+/** The body, or `too_large` as soon as it passes `maxBytes`. */
+const readBodyWithLimit = async ({ response, maxBytes }: { response: Response; maxBytes: number }): Promise<Buffer> => {
   const tooLarge = () =>
     new HttpRateSourceError({ reason: 'too_large', message: `The response is larger than ${maxBytes / 1024} KB` });
 
@@ -108,7 +108,7 @@ const readBodyWithLimit = async ({ response, maxBytes }: { response: Response; m
     throw tooLarge();
   }
 
-  if (!response.body) return '';
+  if (!response.body) return Buffer.alloc(0);
 
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -127,7 +127,7 @@ const readBodyWithLimit = async ({ response, maxBytes }: { response: Response; m
     chunks.push(value);
   }
 
-  return Buffer.concat(chunks).toString('utf8');
+  return Buffer.concat(chunks);
 };
 
 // Duck-typed: the abort reason is a DOMException, which is not always an `Error` of this realm.
@@ -138,7 +138,7 @@ const isAbort = (error: unknown): boolean => {
 };
 
 /**
- * GETs a JSON document from a user-supplied URL.
+ * GETs a document from a user-supplied URL and returns its bytes and content type.
  *
  * - The request goes through `createGuardedFetch`, so on a cloud instance it can reach public hosts
  *   only; with the guard on, the URL must also be https. A self-hosted instance (guard off) may
@@ -148,19 +148,21 @@ const isAbort = (error: unknown): boolean => {
  * - The call ends after `timeoutMs` and the body after `maxBytes`.
  * - The returned errors never carry the URL or the headers, which may hold an API key.
  */
-export const fetchJson = async ({
+export const fetchBody = async ({
   url,
   headers = {},
+  accept,
   timeoutMs = HTTP_SOURCE_TIMEOUT_MS,
   maxBytes = HTTP_SOURCE_MAX_RESPONSE_BYTES,
   fetchImpl = createGuardedFetch(),
 }: {
   url: string;
   headers?: Record<string, string>;
+  accept: string;
   timeoutMs?: number;
   maxBytes?: number;
   fetchImpl?: typeof globalThis.fetch;
-}): Promise<unknown> => {
+}): Promise<{ body: Buffer; contentType: string | null }> => {
   if (!isGuardBypassed() && new URL(url).protocol !== 'https:') {
     throw new HttpRateSourceError({
       reason: 'https_required',
@@ -172,7 +174,7 @@ export const fetchJson = async ({
   try {
     response = await fetchImpl(url, {
       method: 'GET',
-      headers: { Accept: 'application/json', ...headers },
+      headers: { Accept: accept, ...headers },
       redirect: 'error',
       signal: AbortSignal.timeout(timeoutMs),
     });
@@ -200,9 +202,9 @@ export const fetchJson = async ({
     throw new HttpRateSourceError({ reason: 'http_status', message: `The server answered ${response.status}` });
   }
 
-  let text: string;
+  let body: Buffer;
   try {
-    text = await readBodyWithLimit({ response, maxBytes });
+    body = await readBodyWithLimit({ response, maxBytes });
   } catch (error) {
     if (error instanceof HttpRateSourceError) throw error;
     if (isAbort(error)) {
@@ -215,8 +217,27 @@ export const fetchJson = async ({
     throw new HttpRateSourceError({ reason: 'network', message: 'The response could not be read' });
   }
 
+  return { body, contentType: response.headers.get('content-type') };
+};
+
+/** GETs a JSON document from a user-supplied URL, under the rules of {@link fetchBody}. */
+export const fetchJson = async ({
+  url,
+  headers,
+  timeoutMs,
+  maxBytes,
+  fetchImpl,
+}: {
+  url: string;
+  headers?: Record<string, string>;
+  timeoutMs?: number;
+  maxBytes?: number;
+  fetchImpl?: typeof globalThis.fetch;
+}): Promise<unknown> => {
+  const { body } = await fetchBody({ url, headers, accept: 'application/json', timeoutMs, maxBytes, fetchImpl });
+
   try {
-    return JSON.parse(text);
+    return JSON.parse(body.toString('utf8'));
   } catch {
     throw new HttpRateSourceError({ reason: 'not_json', message: 'The response is not JSON' });
   }

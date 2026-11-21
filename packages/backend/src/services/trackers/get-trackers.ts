@@ -1,5 +1,6 @@
 import { TRACKER_STATUSES, TrackerModel } from '@bt/shared/types';
 import Categories from '@models/categories.model';
+import Tags from '@models/tags.model';
 import TrackerLines from '@models/tracker-lines.model';
 import Trackers from '@models/trackers.model';
 import Users from '@models/users.model';
@@ -24,6 +25,13 @@ export const includeCategories = {
   model: Categories,
   as: 'categories',
   attributes: categoryAttributes,
+};
+
+export const includeTags = {
+  model: Tags,
+  as: 'tags',
+  attributes: ['id', 'name', 'color', 'icon'],
+  through: { attributes: [] },
 };
 
 export const includeLineCategories = {
@@ -66,12 +74,12 @@ export const getTrackers = withTransaction(
     const [ownedTrackers, sharedTrackers, ownerUser] = await Promise.all([
       Trackers.findAll({
         where: { userId, ...statusWhere },
-        include: [includeCategories, includeLines],
+        include: [includeCategories, includeTags, includeLines],
       }),
       getSharedTrackersForUser({
         userId,
         where: statusWhere,
-        include: [includeCategories, includeLines],
+        include: [includeCategories, includeTags, includeLines],
       }),
       Users.findByPk(userId),
     ]);
@@ -99,7 +107,7 @@ export const getTrackerById = withTransaction(
   }): Promise<TrackerWithShareContext | null> => {
     const owned = await Trackers.findOne({
       where: { userId, id },
-      include: [includeCategories, includeLines],
+      include: [includeCategories, includeTags, includeLines],
     });
 
     if (owned) {
@@ -112,7 +120,7 @@ export const getTrackerById = withTransaction(
 
     // Not owned — fall through to the shared lookup. `getSharedTrackerById` runs the
     // central auth check and returns the tracker with a recipient share context attached.
-    const shared = await getSharedTrackerById({ userId, id, include: [includeCategories, includeLines] });
+    const shared = await getSharedTrackerById({ userId, id, include: [includeCategories, includeTags, includeLines] });
     return (shared as TrackerWithShareContext | null) ?? null;
   },
 );

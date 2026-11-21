@@ -1,17 +1,17 @@
 {
   "auth": {
     "verifyEmail": {
-      "title": "Controlla la tua casella di posta",
-      "description": "Abbiamo inviato un link di verifica a",
-      "descriptionYourEmail": "la tua email",
-      "descriptionContinued": ". Clicca sul link per verificare il tuo account.",
-      "didntReceive": "Non hai ricevuto l'email? Controlla la cartella spam o",
-      "resend": "clicca qui per inviare nuovamente il codice",
+      "title": "Controllare la casella di posta",
+      "description": "Un link di verifica è stato inviato all'indirizzo",
+      "descriptionYourEmail": "email registrato",
+      "descriptionContinued": ". Fare clic sul link per verificare il profilo.",
+      "didntReceive": "Email non ricevuta? Controllare la cartella spam o",
+      "resend": "fare clic qui per inviare di nuovo il codice",
       "sending": "Invio in corso...",
       "resendIn": "Invia nuovamente in {count}s",
-      "backToSignIn": "Torna al Login",
-      "resendSuccess": "Posta di verifica inviata. Controlla la tua casella di posta.",
-      "resendError": "Impossibile inviare nuovamente l’email di verifica. Si prega di riprovare."
+      "backToSignIn": "Torna all'accesso",
+      "resendSuccess": "Email di verifica inviata. Controllare la casella di posta.",
+      "resendError": "Impossibile inviare nuovamente l'email di verifica. Riprovare."
     }
   }
 }

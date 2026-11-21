@@ -15,7 +15,7 @@ import { addDays } from 'date-fns';
 const FUTURE_TIME = () => addDays(new Date(), 5).toISOString();
 
 const readSplits = async ({ id }: { id: RecordId }) =>
-  (await helpers.getTransactions({ raw: true, includeSplits: true }))!.find((tx) => tx.id === id)!.splits!;
+  (await helpers.getTransactions({ raw: true }))!.find((tx) => tx.id === id)!.splits!;
 
 describe('GET /categories/:id/transaction-count', () => {
   let category: CategoryModel;
@@ -38,18 +38,84 @@ describe('GET /categories/:id/transaction-count', () => {
       raw: true,
     });
 
-  it('returns zero for an empty or unknown category, and rejects a malformed id', async () => {
+  it('returns zero for an empty category, and rejects a malformed id', async () => {
     expect(await helpers.getCategoryTransactionCount({ categoryId: category.id, raw: true })).toEqual({
-      transactionCount: 0,
-    });
-
-    expect(await helpers.getCategoryTransactionCount({ categoryId: NONEXISTENT_ID, raw: true })).toEqual({
       transactionCount: 0,
     });
 
     const malformed = await helpers.getCategoryTransactionCount({ categoryId: 'not-a-uuid' });
 
     expect(malformed.statusCode).toBe(ERROR_CODES.ValidationError);
+  });
+
+  it('answers 404 for an unknown category instead of a count', async () => {
+    const response = await helpers.getCategoryTransactionCount({ categoryId: NONEXISTENT_ID });
+
+    expect(response.statusCode).toBe(ERROR_CODES.NotFoundError);
+  });
+
+  describe("another user's category", () => {
+    let other: Awaited<ReturnType<typeof helpers.provisionSecondUserWithBaseCurrency>>;
+    let otherCategory: CategoryModel;
+
+    beforeEach(async () => {
+      other = await helpers.provisionSecondUserWithBaseCurrency();
+      otherCategory = await helpers.asUser({
+        cookies: other.cookies,
+        fn: () => helpers.addCustomCategory({ name: 'Private', color: '#123456', raw: true }),
+      });
+    });
+
+    it('answers 404 to a caller with no access, even when the category carries splits', async () => {
+      await helpers.asUser({
+        cookies: other.cookies,
+        fn: async () => {
+          const otherAccountId = (await helpers.createAccount({ raw: true })).id;
+          const primary = await helpers.addCustomCategory({ name: 'Primary', color: '#FF0000', raw: true });
+          await helpers.createTransaction({
+            payload: helpers.buildTransactionPayload({
+              accountId: otherAccountId,
+              categoryId: primary.id,
+              amount: 1000,
+              splits: [{ categoryId: otherCategory.id, amount: 400 }],
+            }),
+            raw: true,
+          });
+        },
+      });
+
+      const response = await helpers.getCategoryTransactionCount({ categoryId: otherCategory.id });
+
+      expect(response.statusCode).toBe(ERROR_CODES.NotFoundError);
+    });
+
+    it("still counts the owner's category for a recipient of one of the owner's shared accounts", async () => {
+      const invitation = await helpers.createShareInvitation({
+        inviteeEmail: other.email,
+        resourceType: RESOURCE_TYPES.account,
+        resourceId: accountId,
+        permission: SHARE_PERMISSIONS.write,
+        policy: { transactionsWriteScope: TRANSACTIONS_WRITE_SCOPES.all },
+        raw: true,
+      });
+      await helpers.asUser({
+        cookies: other.cookies,
+        fn: () => helpers.acceptShareInvitation({ token: invitation.token, raw: true }),
+      });
+
+      const count = await helpers.asUser({
+        cookies: other.cookies,
+        fn: async () => {
+          await helpers.createTransaction({
+            payload: helpers.buildTransactionPayload({ accountId, categoryId: category.id, amount: 100 }),
+            raw: true,
+          });
+          return helpers.getCategoryTransactionCount({ categoryId: category.id, raw: true });
+        },
+      });
+
+      expect(count).toEqual({ transactionCount: 1 });
+    });
   });
 
   it('counts real and planned transactions', async () => {
@@ -230,11 +296,17 @@ describe('GET /categories/:id/transaction-count', () => {
     });
   });
 
-  it('stops counting a planned transaction once it is deleted', async () => {
+  it('keeps counting a trashed planned transaction until it is deleted permanently', async () => {
     const [real] = await createReal({ amount: 100 });
     const [planned] = await createPlanned({ amount: 200 });
 
     await helpers.deleteTransaction({ id: planned.id });
+
+    expect(await helpers.getCategoryTransactionCount({ categoryId: category.id, raw: true })).toEqual({
+      transactionCount: 2,
+    });
+
+    await helpers.deleteTrash({ transactionIds: [planned.id], raw: true });
 
     expect(await helpers.getCategoryTransactionCount({ categoryId: category.id, raw: true })).toEqual({
       transactionCount: 1,

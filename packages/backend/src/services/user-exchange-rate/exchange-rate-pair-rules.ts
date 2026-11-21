@@ -16,8 +16,8 @@ export const editExchangeRatePairSchema = z
 
 /** One pair of a removal. */
 export const removeExchangeRatePairSchema = z.object({
-  baseCode: z.string(),
-  quoteCode: z.string(),
+  baseCode: currencyCode(),
+  quoteCode: currencyCode(),
   rate: z.number().optional(),
   // Removes only the rate that starts on this day; every rate of the pair when omitted.
   effectiveDate: dateBound().optional(),
@@ -26,7 +26,7 @@ export const removeExchangeRatePairSchema = z.object({
 type Pair = { baseCode: string; quoteCode: string };
 
 const hasOpposite = ({ pair, pairs }: { pair: Pair; pairs: Pair[] }): boolean =>
-  pairs.some((item) => item.baseCode === pair.quoteCode);
+  pairs.some((item) => item.baseCode === pair.quoteCode && item.quoteCode === pair.baseCode);
 
 /**
  * The rules of an edit that the body shape cannot hold: a pair never has the same base and quote, and
@@ -49,7 +49,7 @@ export const assertEditPairRules = ({ pairs }: { pairs: Pair[] }): void => {
 export const assertRemovePairRules = ({ pairs }: { pairs: Pair[] }): void => {
   if (!pairs.every((pair) => hasOpposite({ pair, pairs }))) {
     throw new ValidationError({
-      message: "When removing base-qoute pair rate, you need to also remove opposite pair's rate.",
+      message: "When removing base-quote pair rate, you need to also remove opposite pair's rate.",
     });
   }
 };

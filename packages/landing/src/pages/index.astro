@@ -1,32 +1,31 @@
 ---
 import BaseLayout from '@/layouts/base-layout.astro';
-import BackgroundOrbs from '@/components/background-orbs.astro';
 import LandingHeader from '@/components/landing-header.astro';
-import HeroSection from '@/components/hero-section.astro';
-import HowItWorksSection from '@/components/how-it-works-section.astro';
-import ComparisonSection from '@/components/comparison-section.astro';
-import FeaturesSection from '@/components/features-section.astro';
-import McpSection from '@/components/mcp-section.astro';
-import SelfHostSection from '@/components/self-host-section.astro';
-import PricingSection from '@/components/pricing-section.astro';
-import FaqSection from '@/components/faq-section.astro';
-import CommunitySection from '@/components/community-section.astro';
+import HeroSection from '@/components/home/hero-section.astro';
+import DemoSection from '@/components/home/demo-section.astro';
+import FlowSection from '@/components/home/flow-section.astro';
+import AutomationSection from '@/components/home/automation-section.astro';
+import CoverageSection from '@/components/home/coverage-section.astro';
+import FeaturesSection from '@/components/home/features-section.astro';
+import PlanSection from '@/components/home/plan-section.astro';
+import AiSection from '@/components/home/ai-section.astro';
+import ReviewsSection from '@/components/home/reviews-section.astro';
+import PricingSection from '@/components/home/pricing-section.astro';
+import OpenSourceSection from '@/components/home/open-source-section.astro';
+import FaqSection from '@/components/home/faq-section.astro';
 import CtaSection from '@/components/cta-section.astro';
 import LandingFooter from '@/components/landing-footer.astro';
 
-import TryDemoButton from '@/components/try-demo-button.vue';
-import GitHubActivity from '@/components/github-activity.vue';
-import DemoPortal from '@/components/demo-portal.vue';
 import { FAQ_ITEMS } from '@/lib/faq';
-import { getGitHubStarsLabel } from '@/lib/github-stars';
+import { useI18n } from '@/i18n';
 
-const starsLabel = await getGitHubStarsLabel();
+const { t, url, locale } = useI18n(Astro);
+const homeUrl = new URL(url({ href: '/' }), Astro.site).href;
 ---
 
 <BaseLayout
-  title="Open-Source Budget Tracker & Personal Finance App | MoneyMatter"
-  description="Open-source budget tracking app. Connect your banks, track expenses, set budgets, and monitor investments. Self-host with Docker or use our cloud. Your data stays yours."
-  canonicalUrl="https://moneymatter.app/"
+  title={t('Open-Source Budget Tracker & Personal Finance App | MoneyMatter')}
+  description={t('Open-source budget tracking app. Connect your banks, track expenses, set budgets, and monitor investments. Self-host with Docker or use our cloud. Your data stays yours.')}
 >
   <!-- Structured Data (JSON-LD) -->
   <script type="application/ld+json" set:html={JSON.stringify({
@@ -35,20 +34,20 @@ const starsLabel = await getGitHubStarsLabel();
       {
         "@type": "WebSite",
         "@id": "https://moneymatter.app/#website",
-        "url": "https://moneymatter.app/",
+        "url": homeUrl,
         "name": "MoneyMatter",
-        "description": "Open-source budget tracking app for personal finance management.",
-        "inLanguage": "en"
+        "description": t("Open-source budget tracking app for personal finance management."),
+        "inLanguage": locale
       },
       {
         "@type": "SoftwareApplication",
         "@id": "https://moneymatter.app/#app",
         "name": "MoneyMatter",
-        "description": "Open-source budget tracking app. Connect your banks, track expenses, set budgets, and monitor investments. Self-host with Docker or use our cloud. Your data stays yours.",
-        "url": "https://moneymatter.app/",
+        "description": t("Open-source budget tracking app. Connect your banks, track expenses, set budgets, and monitor investments. Self-host with Docker or use our cloud. Your data stays yours."),
+        "url": homeUrl,
         "applicationCategory": "FinanceApplication",
         "operatingSystem": "Web",
-        "browserRequirements": "Requires JavaScript. Works best in modern browsers.",
+        "browserRequirements": t("Requires JavaScript. Works best in modern browsers."),
         "offers": [
           { "@type": "Offer", "name": "Essential", "price": "30", "priceCurrency": "USD" },
           { "@type": "Offer", "name": "Plus", "price": "55", "priceCurrency": "USD" }
@@ -64,7 +63,7 @@ const starsLabel = await getGitHubStarsLabel();
           "CSV and bank statement import",
           "Self-hosting option",
           "Data export"
-        ],
+        ].map((feature) => t(feature)),
         "screenshot": "https://moneymatter.app/img/og-image.jpg",
         "author": {
           "@type": "Person",
@@ -78,39 +77,28 @@ const starsLabel = await getGitHubStarsLabel();
         "@id": "https://moneymatter.app/#faq",
         "mainEntity": FAQ_ITEMS.map((item) => ({
           "@type": "Question",
-          "name": item.question,
-          "acceptedAnswer": { "@type": "Answer", "text": item.answer }
+          "name": t(item.question),
+          "acceptedAnswer": { "@type": "Answer", "text": t(item.answer) }
         }))
       }
     ]
   })} />
 
-  <div class="bg-background text-foreground landing-page min-h-screen">
-    <BackgroundOrbs />
-    <LandingHeader />
-
-    <HeroSection>
-      <TryDemoButton slot="try-demo" client:load />
-      <GitHubActivity slot="github-activity" starsLabel={starsLabel} client:visible />
-      <DemoPortal slot="demo-portal" client:visible />
-    </HeroSection>
-
-    <HowItWorksSection />
-    <ComparisonSection />
+  <LandingHeader />
+  <main id="main">
+    <HeroSection />
+    <DemoSection />
+    <FlowSection />
+    <AutomationSection />
+    <CoverageSection />
     <FeaturesSection />
-    <McpSection />
-    <SelfHostSection />
+    <PlanSection />
+    <AiSection />
+    <ReviewsSection />
     <PricingSection />
+    <OpenSourceSection />
     <FaqSection />
-    <CommunitySection />
-    <CtaSection />
-    <LandingFooter />
-  </div>
+    <CtaSection illustration />
+  </main>
+  <LandingFooter />
 </BaseLayout>
-
-<style>
-  .landing-page {
-    font-family: 'Montserrat', system-ui, sans-serif;
-    overflow-y: auto;
-  }
-</style>

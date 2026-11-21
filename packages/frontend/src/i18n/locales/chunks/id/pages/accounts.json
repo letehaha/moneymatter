@@ -37,7 +37,13 @@
       "auto": "Otomatis",
       "name": "Nama",
       "balance": "Saldo",
-      "ariaLabel": "Urutkan akun"
+      "ariaLabel": "Urutkan akun",
+      "direction": {
+        "aToZ": "A to Z",
+        "zToA": "Z to A",
+        "highestFirst": "Highest first",
+        "lowestFirst": "Lowest first"
+      }
     },
     "status": {
       "active": "Aktif",

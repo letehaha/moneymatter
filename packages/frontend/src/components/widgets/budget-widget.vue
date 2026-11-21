@@ -1,9 +1,13 @@
 <script lang="ts" setup>
 import { loadBudgetPlanPeriodView, loadBudgetPlanPeriods, loadBudgetPlans } from '@/api/budget-plans';
+import type { DashboardWidgetConfig } from '@/api/user-settings';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import { buttonVariants } from '@/components/lib/ui/button';
+import SlidingPanels from '@/components/common/sliding-panels.vue';
+import { Button, buttonVariants } from '@/components/lib/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { useNotificationCenter } from '@/components/notification-center';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
@@ -11,25 +15,31 @@ import BudgetLineBars from '@/pages/budget/components/budget-line-bars.vue';
 import BudgetLineSpentText from '@/pages/budget/components/budget-line-spent-text.vue';
 import { useGridDisplayOptions } from '@/pages/budget/composables/use-grid-display-options';
 import {
-  amountToneClass,
+  aggregatePace,
   availablePillClass,
   formatPeriodShortLabel,
   goalStatusDisplay,
   groupLines,
+  linePaceOf,
+  paceStateOf,
   periodProgress,
   periodSpend,
-  sumLineTotals,
 } from '@/pages/budget/helpers';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useRootStore } from '@/stores';
 import type { BudgetPlanPeriodViewLine } from '@bt/shared/types';
-import { ArrowUpRightIcon, WalletIcon } from '@lucide/vue';
+import { ArrowLeftIcon, ArrowUpRightIcon, CheckIcon, ChevronRightIcon, SettingsIcon, WalletIcon } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
 import { createReusableTemplate, useElementVisibility, useScroll } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
-import { computed, useTemplateRef, watch } from 'vue';
+import { type Ref, computed, inject, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import {
+  CATEGORY_SORT_LABELS,
+  CATEGORY_SORT_OPTIONS,
+  sortCategoryRows,
+} from './category-spending-tracker/sort-category-rows';
 import ErrorState from './components/error-state.vue';
 import WidgetWrapper from './components/widget-wrapper.vue';
 
@@ -38,8 +48,15 @@ const { isAppInitialized } = storeToRefs(useRootStore());
 const { formatBaseCurrency, formatShortBaseCurrency } = useFormatCurrency();
 const { locale } = useDateLocale();
 const { rowBars } = useGridDisplayOptions();
+const { addErrorNotification } = useNotificationCenter();
 
-const [DefineRing, Ring] = createReusableTemplate<{ strokeWidth: number }>();
+const widgetConfigRef = inject<Ref<DashboardWidgetConfig> | null>('dashboard-widget-config', null);
+const saveWidgetConfig =
+  inject<(params: { widgetId: string; config: Record<string, unknown> }) => Promise<void>>(
+    'dashboard-save-widget-config',
+  );
+
+const [DefineRing, Ring] = createReusableTemplate<{ strokeWidth: number; showTick?: boolean }>();
 const [DefineLine, Line] = createReusableTemplate<{ line: BudgetPlanPeriodViewLine }>();
 
 const plansQuery = useQuery({
@@ -89,6 +106,31 @@ const spentPercent = computed(() => spend.value.percent);
 const funded = computed(() => spend.value.funded);
 const available = computed(() => view.value?.header.totalAvailable ?? 0);
 const isOver = computed(() => available.value < 0);
+const planPace = computed(() => aggregatePace({ lines: view.value?.lines ?? [] }));
+const isAhead = computed(
+  () =>
+    paceStateOf({
+      spentPercent: spentPercent.value,
+      expectedPercent: planPace.value?.expectedPercent ?? null,
+      isOver: isOver.value,
+    }) === 'ahead',
+);
+
+const RING_CENTER = 18;
+const TICK_OVERHANG = 1;
+const TICK_STROKE = 0.6;
+const ringTick = computed(() => {
+  if (!planPace.value) return null;
+  const angle = (planPace.value.expectedPercent / 100) * 2 * Math.PI;
+  const point = ({ radius }: { radius: number }) => ({
+    x: RING_CENTER + radius * Math.cos(angle),
+    y: RING_CENTER + radius * Math.sin(angle),
+  });
+  const reach = HEADLINE_RING_STROKE / 2 + TICK_OVERHANG;
+  const from = point({ radius: RING_RADIUS - reach });
+  const to = point({ radius: RING_RADIUS + reach });
+  return { x1: from.x, y1: from.y, x2: to.x, y2: to.y };
+});
 
 const headerHeadline = computed(() =>
   t(isOver.value ? 'dashboard.widgets.budget.headerOver' : 'dashboard.widgets.budget.headerLeft', {
@@ -101,16 +143,46 @@ const periodLabel = computed(() =>
 );
 const daysLeft = computed(() => (view.value ? periodProgress(view.value.period).daysLeft : 0));
 
-const sections = computed(() => {
+const SORT_OPTIONS = [...CATEGORY_SORT_OPTIONS, 'overspent'] as const;
+type BudgetSort = (typeof SORT_OPTIONS)[number];
+const SORT_LABELS: Record<BudgetSort, string> = {
+  ...CATEGORY_SORT_LABELS,
+  overspent: 'dashboard.widgets.budget.sort.overspent',
+};
+
+const sortBy = computed<BudgetSort>(
+  () => SORT_OPTIONS.find((option) => option === widgetConfigRef?.value?.config?.sortBy) ?? 'custom',
+);
+
+const lines = computed(() => {
   const { ungrouped, groups } = groupLines({
     lines: view.value?.lines ?? [],
     groups: view.value?.groups ?? [],
   });
-  return {
-    ungrouped,
-    groups: groups.map((section) => ({ ...section, totals: sumLineTotals({ lines: section.lines }) })),
-  };
+  const rows = [...ungrouped, ...groups.flatMap((section) => section.lines)];
+  if (sortBy.value === 'overspent') return rows.sort((a, b) => a.available - b.available);
+  return sortCategoryRows({ rows, sortBy: sortBy.value, getAmount: (line) => line.activity });
 });
+
+const isSettingsOpen = ref(false);
+const settingsView = ref<'main' | 'sort'>('main');
+
+watch(isSettingsOpen, (open) => {
+  if (open) settingsView.value = 'main';
+});
+
+const setSortBy = async ({ value }: { value: BudgetSort }) => {
+  settingsView.value = 'main';
+  if (!saveWidgetConfig || !widgetConfigRef?.value) return;
+
+  try {
+    await saveWidgetConfig({ widgetId: widgetConfigRef.value.widgetId, config: { sortBy: value } });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    addErrorNotification(t('errors.api.unexpectedError'));
+  }
+};
 
 const goalDisplays = computed(
   () =>
@@ -135,22 +207,39 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
 </script>
 
 <template>
-  <DefineRing v-slot="{ strokeWidth }">
+  <DefineRing v-slot="{ strokeWidth, showTick }">
     <svg viewBox="0 0 36 36" class="size-full -rotate-90" aria-hidden="true">
-      <circle cx="18" cy="18" :r="RING_RADIUS" fill="none" class="stroke-foreground/10" :stroke-width="strokeWidth" />
+      <circle
+        :cx="RING_CENTER"
+        :cy="RING_CENTER"
+        :r="RING_RADIUS"
+        fill="none"
+        class="stroke-foreground/10"
+        :stroke-width="strokeWidth"
+      />
       <circle
         v-if="spentPercent > 0"
-        cx="18"
-        cy="18"
+        :cx="RING_CENTER"
+        :cy="RING_CENTER"
         :r="RING_RADIUS"
         fill="none"
         path-length="100"
         stroke-linecap="round"
         :class="
-          cn('transition-[stroke-dasharray] duration-500', isOver ? 'stroke-app-expense-color' : 'stroke-success-text')
+          cn(
+            'transition-[stroke-dasharray] duration-500',
+            isOver ? 'stroke-app-expense-color' : isAhead ? 'stroke-warning-text' : 'stroke-success-text',
+          )
         "
         :stroke-width="strokeWidth"
         :stroke-dasharray="`${spentPercent} 100`"
+      />
+      <line
+        v-if="showTick && ringTick"
+        v-bind="ringTick"
+        class="stroke-foreground"
+        :stroke-width="TICK_STROKE"
+        stroke-linecap="round"
       />
     </svg>
   </DefineRing>
@@ -166,6 +255,7 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
               availablePillClass({
                 amount: line.available,
                 underfunded: goalDisplays.get(line.lineId)?.kind === 'underfunded',
+                ahead: linePaceOf({ line }).state === 'ahead',
               }),
             )
           "
@@ -194,6 +284,70 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
         <span class="size-4 shrink-0"><Ring :stroke-width="HEADER_RING_STROKE" /></span>
         {{ headerHeadline }}
       </span>
+
+      <Popover v-if="widgetConfigRef && view" v-model:open="isSettingsOpen">
+        <PopoverTrigger as-child>
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            :aria-label="$t('common.actions.settings')"
+            data-testid="budget-widget-settings-btn"
+          >
+            <SettingsIcon class="text-muted-foreground size-4" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent class="w-72 overflow-hidden p-0" align="end">
+          <SlidingPanels v-model="settingsView" :panels="['main', 'sort']">
+            <template #main>
+              <header class="border-b px-3 py-2 text-sm font-medium">{{ $t('common.actions.settings') }}</header>
+              <div class="flex flex-col p-2">
+                <button
+                  type="button"
+                  data-testid="budget-widget-settings-sort"
+                  class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  @click="settingsView = 'sort'"
+                >
+                  <span class="flex flex-col">
+                    <span class="text-sm font-medium">{{ $t('dashboard.widgets.categoryTracker.sort.title') }}</span>
+                    <span class="text-muted-foreground text-xs">{{ $t(SORT_LABELS[sortBy]) }}</span>
+                  </span>
+                  <ChevronRightIcon class="text-muted-foreground size-4" />
+                </button>
+              </div>
+            </template>
+
+            <template #sort>
+              <header class="flex items-center gap-2 border-b px-2 py-2">
+                <DesktopOnlyTooltip :content="$t('common.actions.back')">
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    type="button"
+                    :aria-label="$t('common.actions.back')"
+                    @click="settingsView = 'main'"
+                  >
+                    <ArrowLeftIcon class="size-4" />
+                  </Button>
+                </DesktopOnlyTooltip>
+                <span class="text-sm font-medium">{{ $t('dashboard.widgets.categoryTracker.sort.title') }}</span>
+              </header>
+              <div class="flex flex-col p-2">
+                <button
+                  v-for="option in SORT_OPTIONS"
+                  :key="option"
+                  type="button"
+                  :data-testid="`budget-widget-sort-${option}`"
+                  class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  @click="setSortBy({ value: option })"
+                >
+                  <span class="text-sm">{{ $t(SORT_LABELS[option]) }}</span>
+                  <CheckIcon v-if="sortBy === option" class="text-primary-text size-4" />
+                </button>
+              </div>
+            </template>
+          </SlidingPanels>
+        </PopoverContent>
+      </Popover>
 
       <DesktopOnlyTooltip :content="$t('common.actions.viewAll')">
         <span class="inline-flex">
@@ -254,7 +408,7 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
           role="img"
           :aria-label="$t('dashboard.widgets.budget.ringLabel', { percent: Math.round(spentPercent) })"
         >
-          <Ring :stroke-width="HEADLINE_RING_STROKE" />
+          <Ring :stroke-width="HEADLINE_RING_STROKE" :show-tick="true" />
           <div class="absolute inset-0 flex flex-col items-center justify-center">
             <span class="text-2xl leading-tight font-bold tabular-nums">{{ Math.round(spentPercent) }}%</span>
             <span class="text-muted-foreground text-xs">{{ $t('dashboard.widgets.budget.spent') }}</span>
@@ -263,7 +417,11 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
         <div class="min-w-0">
           <p
             :class="
-              cn('text-3xl leading-tight font-bold tracking-tight tabular-nums', isOver && 'text-app-expense-color')
+              cn(
+                'text-3xl leading-tight font-bold tracking-tight tabular-nums',
+                isOver && 'text-app-expense-color',
+                isAhead && 'text-warning-text',
+              )
             "
           >
             {{ formatBaseCurrency(Math.abs(available)) }}
@@ -287,22 +445,8 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
       </div>
 
       <div class="divide-border/60 divide-y">
-        <Line v-for="line in sections.ungrouped" :key="line.lineId" :line="line" />
+        <Line v-for="line in lines" :key="line.lineId" :line="line" />
       </div>
-
-      <template v-for="section in sections.groups" :key="section.group.id">
-        <div
-          class="bg-card border-border/60 sticky top-0 z-1 flex items-center justify-between gap-3 border-b py-1.5 text-xs font-semibold"
-        >
-          <span class="text-muted-foreground min-w-0 truncate tracking-wide uppercase">{{ section.group.name }}</span>
-          <span :class="cn('shrink-0 tabular-nums', amountToneClass({ amount: section.totals.available }))">
-            {{ formatShortBaseCurrency({ amount: section.totals.available }) }}
-          </span>
-        </div>
-        <div class="divide-border/60 divide-y">
-          <Line v-for="line in section.lines" :key="line.lineId" :line="line" />
-        </div>
-      </template>
     </ScrollArea>
   </WidgetWrapper>
 </template>

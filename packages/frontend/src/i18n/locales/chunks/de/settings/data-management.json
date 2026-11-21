@@ -35,6 +35,9 @@
         "title": "Microsoft Money",
         "listDescription": "Importiere eine .mny-Datei aus Microsoft Money"
       },
+      "messageImport": {
+        "title": "iOS-Nachrichtensynchronisierung"
+      },
       "importHistory": {
         "title": "Importverlauf",
         "listDescription": "Sieh vergangene Importe an und was durch sie erstellt wurde"
@@ -69,13 +72,13 @@
         },
         "groups": {
           "label": "Was enthalten sein soll",
-          "selectAll": "Alles auswählen",
+          "selectAll": "Alle auswählen",
           "deselectAll": "Alle abwählen",
           "transactions": "Transaktionen & Konten",
           "transactionsDescription": "Transaktionen, Konten, Kontostandshistorie, Kategorien, Tags, Fahrzeuge",
           "budgets": "Tracker",
           "budgetsDescription": "Benutzerdefinierte Tracker mit verknüpften Kategorien und Ausgabensummen",
-          "subscriptions": "Wiederkehrende Zahlungen & Erinnerungen",
+          "subscriptions": "Abos & Erinnerungen",
           "subscriptionsDescription": "Wiederkehrende Abonnements und Zahlungserinnerungen",
           "investments": "Investments",
           "investmentsDescription": "Portfolios, Bestände, Investment-Transaktionen, Umbuchungen"

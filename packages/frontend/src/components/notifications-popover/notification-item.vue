@@ -1,22 +1,26 @@
 <script setup lang="ts">
 import type { NotificationStruct } from '@/api/notifications';
+import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
 import {
   ChangelogNotificationPayload,
+  type GoalReachedNotificationPayload,
   NOTIFICATION_STATUSES,
   NOTIFICATION_TYPES,
   NotificationType,
   type ShareInvitationNotificationPayload,
   type ShareInvitationSendFailedPayload,
   type ShareLifecycleNotificationPayload,
+  type SystemNotificationPayload,
   TagReminderNotificationPayload,
   type TrackerAiMatchesNotificationPayload,
+  type UnrealizedLossAlertNotificationPayload,
 } from '@bt/shared/types';
 import {
-  AlertTriangleIcon,
   CalendarCheckIcon,
   CalendarClockIcon,
   ClockIcon,
+  FlagIcon,
   HandshakeIcon,
   HomeIcon,
   HourglassIcon,
@@ -29,6 +33,7 @@ import {
   SparklesIcon,
   TagIcon,
   Trash2Icon,
+  TrendingDownIcon,
   UserXIcon,
   WalletIcon,
   XIcon,
@@ -38,6 +43,7 @@ import { useI18n } from 'vue-i18n';
 import ChangelogContent from './changelog-content.vue';
 import DefaultContent from './default-content.vue';
 import ShareContent from './share-content.vue';
+import { getSystemIconVisual } from './system-icons';
 import TagReminderContent from './tag-reminder-content.vue';
 
 const SHARE_NOTIFICATION_TYPES: NotificationType[] = [
@@ -70,15 +76,19 @@ const emit = defineEmits<{
   dismiss: [id: string];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const { formatDistanceToNow } = useDateLocale();
+const { formatAmountByCurrencyCode } = useFormatCurrency();
 
-const getIcon = (type: NotificationType) => {
-  switch (type) {
+const getSystemVisual = (notification: NotificationStruct) =>
+  getSystemIconVisual((notification.payload as SystemNotificationPayload | undefined)?.icon);
+
+const getIcon = (notification: NotificationStruct) => {
+  switch (notification.type) {
     case NOTIFICATION_TYPES.trackerAlert:
       return WalletIcon;
     case NOTIFICATION_TYPES.system:
-      return AlertTriangleIcon;
+      return getSystemVisual(notification).icon;
     case NOTIFICATION_TYPES.changelog:
     case NOTIFICATION_TYPES.trackerAiMatches:
       return SparklesIcon;
@@ -90,6 +100,10 @@ const getIcon = (type: NotificationType) => {
       return CalendarCheckIcon;
     case NOTIFICATION_TYPES.stuckPending:
       return HourglassIcon;
+    case NOTIFICATION_TYPES.goalReached:
+      return FlagIcon;
+    case NOTIFICATION_TYPES.unrealizedLossAlert:
+      return TrendingDownIcon;
     case NOTIFICATION_TYPES.shareInvitationReceived:
     case NOTIFICATION_TYPES.householdInvitationReceived:
       return MailIcon;
@@ -123,12 +137,12 @@ const getIcon = (type: NotificationType) => {
   }
 };
 
-const getIconBg = (type: NotificationType) => {
-  switch (type) {
+const getIconBg = (notification: NotificationStruct) => {
+  switch (notification.type) {
     case NOTIFICATION_TYPES.trackerAlert:
       return 'bg-orange-500';
     case NOTIFICATION_TYPES.system:
-      return 'bg-blue-500';
+      return getSystemVisual(notification).bg;
     case NOTIFICATION_TYPES.changelog:
       return 'bg-purple-500';
     case NOTIFICATION_TYPES.trackerAiMatches:
@@ -141,6 +155,10 @@ const getIconBg = (type: NotificationType) => {
       return 'bg-teal-500';
     case NOTIFICATION_TYPES.stuckPending:
       return 'bg-yellow-500';
+    case NOTIFICATION_TYPES.goalReached:
+      return 'bg-success';
+    case NOTIFICATION_TYPES.unrealizedLossAlert:
+      return 'bg-destructive';
     case NOTIFICATION_TYPES.shareInvitationReceived:
     case NOTIFICATION_TYPES.householdInvitationReceived:
       return 'bg-violet-500';
@@ -193,7 +211,44 @@ const getTitle = (notification: NotificationStruct): string => {
     }
     return t('notifications.trackerAiMatches.title', { name: trackerName, summary });
   }
+  if (notification.type === NOTIFICATION_TYPES.goalReached) {
+    const payload = notification.payload as Partial<GoalReachedNotificationPayload> | undefined;
+    if (payload?.goalName) return t('notifications.goalReached.title', { name: payload.goalName });
+  }
+  if (notification.type === NOTIFICATION_TYPES.unrealizedLossAlert) {
+    const count = (notification.payload as Partial<UnrealizedLossAlertNotificationPayload>)?.holdings?.length;
+    if (count) return t('notifications.unrealizedLossAlert.title', { count }, count);
+  }
   return notification.title || '';
+};
+
+const getMessage = (notification: NotificationStruct): string | null => {
+  if (notification.type === NOTIFICATION_TYPES.goalReached) {
+    const payload = notification.payload as Partial<GoalReachedNotificationPayload> | undefined;
+    if (typeof payload?.achievedAmount === 'number' && payload.currencyCode) {
+      return t('notifications.goalReached.message', {
+        amount: formatAmountByCurrencyCode({ amount: payload.achievedAmount, currencyCode: payload.currencyCode }),
+      });
+    }
+  }
+  if (notification.type === NOTIFICATION_TYPES.unrealizedLossAlert) {
+    const payload = notification.payload as Partial<UnrealizedLossAlertNotificationPayload> | undefined;
+    const currencyCode = payload?.currencyCode;
+    if (payload?.holdings?.length && currencyCode) {
+      return payload.holdings
+        .map(({ symbol, lossPercent, lossAmount }) => {
+          const amount =
+            lossAmount === null ? '' : ` · ${formatAmountByCurrencyCode({ amount: -lossAmount, currencyCode })}`;
+          const percent = lossPercent.toLocaleString(locale.value, {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          });
+          return `${symbol} −${percent}%${amount}`;
+        })
+        .join(', ');
+    }
+  }
+  return notification.message;
 };
 
 const formatRelativeTime = (date: Date | string) => {
@@ -213,16 +268,14 @@ const handleDismiss = (event: Event) => {
 <template>
   <div
     :class="[
-      'group hover:bg-accent relative cursor-pointer px-4 py-3 transition-colors',
-      notification.status === NOTIFICATION_STATUSES.unread && 'bg-accent/50',
+      'group relative cursor-pointer px-4 py-3 transition-colors',
+      notification.status === NOTIFICATION_STATUSES.unread ? 'bg-accent/50 hover:bg-accent' : 'hover:bg-hover',
     ]"
     @click="handleClick"
   >
     <div class="flex items-start gap-3">
-      <div
-        :class="['mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full', getIconBg(notification.type)]"
-      >
-        <component :is="getIcon(notification.type)" class="size-4 text-white" />
+      <div :class="['mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full', getIconBg(notification)]">
+        <component :is="getIcon(notification)" class="size-4 text-white" />
       </div>
       <div class="min-w-0 flex-1">
         <div class="flex items-start justify-between gap-2">
@@ -267,7 +320,7 @@ const handleDismiss = (event: Event) => {
               | undefined
           "
         />
-        <DefaultContent v-else :message="notification.message" />
+        <DefaultContent v-else :message="getMessage(notification)" />
 
         <p class="text-muted-foreground mt-1 text-xs">
           {{ formatRelativeTime(notification.createdAt) }}

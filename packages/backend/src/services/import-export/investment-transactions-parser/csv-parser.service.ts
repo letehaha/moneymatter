@@ -52,9 +52,9 @@ interface ParseInvestmentCsvResult {
  * canonical decimal-string form for downstream Big.js usage, or null when
  * the input doesn't parse as a finite positive number.
  *
- * We can't reuse the bank-import `parseAmount` directly — that one returns
- * cents (integer) and accepts signed amounts. Investment quantities/prices
- * are unsigned decimals; sign is encoded in the side column.
+ * We can't reuse the bank-import `parseAmount` directly — that one accepts
+ * signed amounts. Investment quantities/prices are unsigned decimals; sign is
+ * encoded in the side column.
  */
 function parseDecimal(raw: string): string | null {
   if (!raw) return null;

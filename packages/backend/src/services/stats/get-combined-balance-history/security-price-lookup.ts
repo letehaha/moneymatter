@@ -3,8 +3,8 @@ import SecurityPricing from '@models/investments/security-pricing.model';
 
 import { formatDateKey } from './types';
 
-// `index.ts` fetches these `raw: true` (no Money hydration), so priceClose is a
-// raw DECIMAL string; Money is still allowed for hydrated callers (unit tests).
+// Loaded via raw SQL (no Money hydration), so priceClose is a raw DECIMAL
+// string; Money is still allowed for hydrated callers (unit tests).
 type SecurityPriceRow = Pick<SecurityPricing, 'securityId' | 'date'> & {
   priceClose: Money | string;
 };

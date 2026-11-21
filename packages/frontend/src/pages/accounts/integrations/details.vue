@@ -52,6 +52,11 @@
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
               <h1 class="truncate text-xl font-semibold tracking-tight">{{ connectionDetails.providerName }}</h1>
 
+              <ExternalUrlLinkButton
+                :url="connectionDetails.externalUrl"
+                :label="$t('pages.integrations.details.actions.openExternalUrl')"
+              />
+
               <DesktopOnlyTooltip :content="$t('pages.integrations.details.actions.renameButton')">
                 <UiButton
                   variant="ghost"
@@ -269,8 +274,16 @@
             <InputField
               v-model="newApiKey"
               type="password"
-              :label="$t('pages.integrations.updateCredentials.apiKeyLabel')"
-              :placeholder="$t('pages.integrations.updateCredentials.apiKeyPlaceholder')"
+              :label="
+                connectionDetails.providerType === BANK_PROVIDER_TYPE.AKAHU
+                  ? $t('pages.integrations.akahu.userTokenLabel')
+                  : $t('pages.integrations.updateCredentials.apiKeyLabel')
+              "
+              :placeholder="
+                connectionDetails.providerType === BANK_PROVIDER_TYPE.AKAHU
+                  ? $t('pages.integrations.akahu.userTokenPlaceholder')
+                  : $t('pages.integrations.updateCredentials.apiKeyPlaceholder')
+              "
             />
             <TextareaField
               v-if="connectionDetails.providerType === BANK_PROVIDER_TYPE.WALUTOMAT"
@@ -278,6 +291,13 @@
               :rows="6"
               :label="$t('pages.integrations.walutomat.privateKeyLabel')"
               :placeholder="$t('pages.integrations.walutomat.privateKeyPlaceholder')"
+            />
+            <InputField
+              v-else-if="connectionDetails.providerType === BANK_PROVIDER_TYPE.AKAHU"
+              v-model="newPrivateKey"
+              type="password"
+              :label="$t('pages.integrations.akahu.appTokenLabel')"
+              :placeholder="$t('pages.integrations.akahu.appTokenPlaceholder')"
             />
           </div>
           <DialogFooter class="mt-6 grid gap-3 sm:grid-cols-2">
@@ -320,6 +340,7 @@
     <EditConnectionNameDialog
       v-model:open="isEditNameDialogOpen"
       :provider-name="connectionDetails?.providerName || ''"
+      :external-url="connectionDetails?.externalUrl ?? null"
       :is-saving="isSavingName"
       @save="handleSaveConnectionName"
     />
@@ -348,6 +369,7 @@ import { METAINFO_FROM_TYPE } from '@/common/const/bank-providers';
 import InputField from '@/components/fields/input-field.vue';
 import TextareaField from '@/components/fields/textarea-field.vue';
 import BankConnectionLogo from '@/components/common/bank-connection-logo.vue';
+import ExternalUrlLinkButton from '@/components/common/external-url-link-button.vue';
 import BankProviderLogo from '@/components/common/bank-providers/bank-provider-logo.vue';
 import {
   DropdownMenu,
@@ -497,7 +519,7 @@ const leadTotalLabel = computed(() => {
   const codes = new Set(accounts.map((account) => account.currencyCode));
   if (codes.size !== 1) return null;
   const total = accounts.reduce((sum, account) => sum + account.currentBalance, 0);
-  return formatAmountByCurrencyCode(total, [...codes][0]!);
+  return formatAmountByCurrencyCode({ amount: total, currencyCode: [...codes][0]! });
 });
 
 const summarySubtitle = computed(() => {
@@ -539,9 +561,12 @@ const { mutate: updateCredentialsMutation, isPending: isUpdatingCredentials } = 
 });
 
 const canUpdateCredentials = computed(() => {
-  if (!newApiKey.value) return false;
-  if (connectionDetails.value?.providerType === BANK_PROVIDER_TYPE.WALUTOMAT) {
-    return !!newPrivateKey.value;
+  if (!newApiKey.value.trim()) return false;
+  if (
+    connectionDetails.value?.providerType === BANK_PROVIDER_TYPE.WALUTOMAT ||
+    connectionDetails.value?.providerType === BANK_PROVIDER_TYPE.AKAHU
+  ) {
+    return !!newPrivateKey.value.trim();
   }
   return true;
 });
@@ -551,8 +576,8 @@ const handleUpdateCredentials = () => {
 
   const credentials = buildProviderCredentials({
     providerType: connectionDetails.value?.providerType,
-    apiKey: newApiKey.value,
-    privateKey: newPrivateKey.value,
+    apiKey: newApiKey.value.trim(),
+    privateKey: newPrivateKey.value.trim(),
   });
   updateCredentialsMutation(credentials);
 };
@@ -701,10 +726,17 @@ const { mutate: disconnectMutation, isPending: isDisconnecting } = useMutation({
   },
 });
 
-// Mutation for updating connection name
+// Mutation for updating connection name and external URL
 const { mutate: updateNameMutation, isPending: isSavingName } = useMutation({
-  mutationFn: ({ connectionId: connId, providerName }: { connectionId: string; providerName: string }) =>
-    updateConnectionDetails(connId, { providerName }),
+  mutationFn: ({
+    connectionId: connId,
+    providerName,
+    externalUrl,
+  }: {
+    connectionId: string;
+    providerName: string;
+    externalUrl: string | null;
+  }) => updateConnectionDetails(connId, { providerName, externalUrl }),
   onSuccess: () => {
     addSuccessNotification(t('pages.integrations.notifications.updateNameSuccess'));
     queryClient.invalidateQueries({
@@ -753,8 +785,14 @@ const openReconnectDialog = () => {
   isReconnectDialogOpen.value = true;
 };
 
-const handleSaveConnectionName = (providerName: string) => {
-  updateNameMutation({ connectionId: connectionId.value, providerName });
+const handleSaveConnectionName = ({
+  providerName,
+  externalUrl,
+}: {
+  providerName: string;
+  externalUrl: string | null;
+}) => {
+  updateNameMutation({ connectionId: connectionId.value, providerName, externalUrl });
 };
 
 const handleSyncSelectedAccounts = (payload: { externalIds: string[]; currencyOverrides: Record<string, string> }) => {

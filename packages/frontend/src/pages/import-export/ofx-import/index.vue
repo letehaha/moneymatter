@@ -32,7 +32,7 @@
         $t('pages.importExport.ofxImport.leaseExpired.action')
       }}</Button>
     </Callout>
-    <ImportWizardStepper
+    <WizardStepper
       class="mb-6"
       :steps="stepperSteps"
       :current-step-key="store.currentStepKey"
@@ -65,7 +65,7 @@ import { storeToRefs } from 'pinia';
 import { computed, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 
-import ImportWizardStepper from '../components/import-wizard-stepper.vue';
+import WizardStepper from '@/components/common/wizard-stepper.vue';
 import DoneStep from './components/done-step.vue';
 import ExecuteStep from './components/execute-step.vue';
 import FileUploadStep from './components/file-upload-step.vue';

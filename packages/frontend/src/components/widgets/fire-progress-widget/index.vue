@@ -4,8 +4,10 @@ import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useUserSettings } from '@/composable/data-queries/user-settings';
 import { type FireMilestone, type FireWarning, UNREACHABLE_PMT_MONTHS } from '@/composable/fire/build-fire-plan';
-import { displayProgressPct } from '@/composable/fire/fire-display';
+import { displayProgressPct, formatPctNumber } from '@/composable/fire/fire-display';
 import { monthsToLabel } from '@/composable/fire/fire-math';
+import { PACE_TONE_CLASS, paceChip } from '@/composable/fire/fire-pace-display';
+import { useFirePace } from '@/composable/fire/use-fire-pace';
 import { useFirePlan, useResolvedFireSettings } from '@/composable/fire/use-fire-plan';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
@@ -37,6 +39,7 @@ const widgetConfigRef = inject<Ref<DashboardWidgetConfig> | null>('dashboard-wid
 const isNumbers = computed(() => widgetConfigRef?.value?.config?.style === 'numbers');
 const isWide = computed(() => (widgetConfigRef?.value?.colSpan ?? 1) >= 2);
 const showPath = computed(() => isNumbers.value && isWide.value);
+const showsMilestones = computed(() => isNumbers.value || isWide.value);
 
 const userStore = useUserStore();
 const isGated = computed(() => userStore.isFeatureGated(FEATURES.fire_planner));
@@ -59,8 +62,20 @@ const {
   refetch: refetchPlan,
 } = useFirePlan({
   settings,
-  includeHistory: showPath,
+  includeHistory: showsMilestones,
   enabled: () => !isGated.value,
+});
+
+const { pace, isLoading: isPaceLoading } = useFirePace({
+  plan,
+  fire: () => userSettings.value?.fire,
+  history: () => userSettings.value?.fireHistory,
+  enabled: () => !isGated.value,
+});
+const paceLine = computed(() => {
+  const chip = pace.value ? paceChip({ pace: pace.value, t }) : null;
+  if (!pace.value || !chip) return null;
+  return { ...chip, month: format(pace.value.anchor.date, 'LLL yyyy') };
 });
 
 const fireRoute = { name: ROUTES_NAMES.analyticsFire };
@@ -77,11 +92,9 @@ const retry = () => {
 const needsSetup = computed(() => plan.value.status === 'no-data' || plan.value.status === 'needs-spending');
 
 const pct = computed(() =>
-  Math.min(
-    100,
-    Math.floor(displayProgressPct({ ratio: plan.value.progress ?? 0, reached: plan.value.status === 'reached' })),
-  ),
+  Math.min(100, displayProgressPct({ ratio: plan.value.progress ?? 0, reached: plan.value.status === 'reached' })),
 );
+const pctText = computed(() => formatPctNumber({ pct: pct.value }));
 const tone = computed<'primary' | 'success' | 'warning'>(() => {
   if (plan.value.status === 'reached') return 'success';
   if (plan.value.status === 'unreachable') return 'warning';
@@ -103,8 +116,8 @@ const ringLabel = computed(() => {
   const type = targetName.value;
   if (plan.value.status === 'reached') return t('widgets.fireProgress.ringLabelReachedFor', { type });
   if (plan.value.status === 'unreachable')
-    return t('widgets.fireProgress.ringLabelUnreachableFor', { pct: pct.value, type });
-  return t('widgets.fireProgress.ringLabelFor', { pct: pct.value, type, duration: durationLeft.value });
+    return t('widgets.fireProgress.ringLabelUnreachableFor', { pct: pctText.value, type });
+  return t('widgets.fireProgress.ringLabelFor', { pct: pctText.value, type, duration: durationLeft.value });
 });
 
 const nextMilestone = computed(() => {
@@ -175,6 +188,7 @@ const pmtDuration = computed(() => formatDuration({ months: UNREACHABLE_PMT_MONT
 
 const [DefineHero, ReuseHero] = createReusableTemplate<{ numberClass: string; unitClass: string; withPct?: boolean }>();
 const [DefineHeroPct, ReuseHeroPct] = createReusableTemplate();
+const [DefinePace, ReusePace] = createReusableTemplate();
 const [DefineLedger, ReuseLedger] = createReusableTemplate();
 const [DefineTimeline, ReuseTimeline] = createReusableTemplate();
 const [DefineStepper, ReuseStepper] = createReusableTemplate();
@@ -206,9 +220,34 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
         {{ $t('widgets.fireProgress.progress') }}
       </p>
       <p class="col-start-2 row-start-2 text-right text-3xl leading-none font-extrabold tracking-tight tabular-nums">
-        {{ pct }}<span class="text-muted-foreground text-lg font-semibold tracking-normal">%</span>
+        {{ pctText }}<span class="text-muted-foreground text-lg font-semibold tracking-normal">%</span>
       </p>
     </DefineHeroPct>
+
+    <DefinePace>
+      <span
+        v-if="isPaceLoading"
+        class="bg-muted col-span-full inline-block h-5 w-40 animate-pulse rounded-full"
+        role="status"
+        :aria-label="$t('common.loading')"
+      />
+      <p v-else-if="paceLine" class="col-span-full flex flex-wrap items-center gap-1.5 tabular-nums">
+        <span
+          :class="
+            cn(
+              'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold',
+              PACE_TONE_CLASS[paceLine.tone],
+            )
+          "
+        >
+          <component :is="paceLine.icon" class="size-3.5" />
+          {{ paceLine.label }}
+        </span>
+        <span class="text-muted-foreground text-xs">{{
+          $t('widgets.fireProgress.paceVs', { month: paceLine.month })
+        }}</span>
+      </p>
+    </DefinePace>
 
     <DefineHero v-slot="{ numberClass, unitClass, withPct }">
       <div v-if="plan.status === 'reached' && plan.reached" class="flex flex-col gap-1">
@@ -243,6 +282,7 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
           </template>
           <template #duration>{{ pmtDuration }}</template>
         </i18n-t>
+        <ReusePace />
         <ReuseHeroPct v-if="withPct" />
       </div>
 
@@ -293,6 +333,7 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
             </span>
           </DesktopOnlyTooltip>
         </p>
+        <ReusePace />
         <ReuseHeroPct v-if="withPct" />
       </div>
     </DefineHero>
@@ -341,7 +382,7 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
           <li class="absolute top-0 left-0 flex flex-col items-start gap-1.5">
             <span class="bg-primary-text border-primary-text size-2.5 rounded-full border-2" />
             <b class="text-foreground text-xs">{{ $t('widgets.fireProgress.chart.today') }}</b>
-            <span>{{ pct }}%</span>
+            <span>{{ pctText }}%</span>
           </li>
           <li
             v-for="(m, i) in milestoneNodes"
@@ -394,7 +435,7 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
           <span class="bg-primary-text border-primary-text mt-0.75 size-2.5 rounded-full border-2" />
           <span>
             <b class="block">{{ $t('widgets.fireProgress.chart.today') }}</b>
-            <span class="text-muted-foreground">{{ pct }}% · {{ balanceOfTarget }}</span>
+            <span class="text-muted-foreground">{{ pctText }}% · {{ balanceOfTarget }}</span>
           </span>
         </li>
         <li
@@ -568,7 +609,7 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
         <FireRing :pct="pct" :tone="tone" :label="ringLabel" class="size-26 @sm:size-36 @3xl:size-44">
           <CheckIcon v-if="plan.status === 'reached'" class="text-success-text size-10 @sm:size-14" :stroke-width="3" />
           <template v-else>
-            <span class="text-xl font-extrabold tabular-nums @sm:text-3xl">{{ pct }}%</span>
+            <span class="text-xl font-extrabold tabular-nums @sm:text-3xl">{{ pctText }}%</span>
             <span class="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase @sm:text-[11px]">
               {{ $t('widgets.fireProgress.toType', { type: targetName }) }}
             </span>

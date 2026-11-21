@@ -1,0 +1,96 @@
+{
+  "settings": {
+    "tags": {
+      "title": "Tags",
+      "addButton": "Adicionar tag",
+      "empty": "Nenhuma tag ainda. Crie sua primeira tag para organizar suas transações.",
+      "tabs": {
+        "details": "Detalhes",
+        "reminders": "Lembretes"
+      },
+      "form": {
+        "createTitle": "Criar tag",
+        "editTitle": "Editar tag",
+        "name": "Nome",
+        "namePlaceholder": "Nome da tag",
+        "color": "Cor",
+        "icon": "Ícone",
+        "iconPlaceholder": "Escolha um ícone",
+        "description": "Descrição",
+        "descriptionPlaceholder": "Descrição (opcional)",
+        "saveButton": "Salvar",
+        "previewPlaceholder": "Nome da tag"
+      },
+      "delete": {
+        "title": "Excluir tag?",
+        "description": "A tag “{name}” será excluída permanentemente e removida de todas as transações. Não é possível desfazer esta ação.",
+        "deleteButton": "Excluir",
+        "cancelButton": "Cancelar"
+      },
+      "notifications": {
+        "createSuccess": "Tag criada",
+        "createFailed": "Não foi possível criar a tag",
+        "updateSuccess": "Tag atualizada",
+        "updateFailed": "Não foi possível atualizar a tag",
+        "deleteSuccess": "Tag excluída",
+        "deleteFailed": "Não foi possível excluir a tag"
+      },
+      "reminders": {
+        "addButton": "Adicionar lembrete",
+        "empty": "Nenhum lembrete ainda. Crie um lembrete para ser avisado sobre a atividade desta tag.",
+        "enabled": "Ativado",
+        "disabled": "Desativado",
+        "form": {
+          "createTitle": "Criar lembrete",
+          "editTitle": "Editar lembrete",
+          "type": "Tipo de lembrete",
+          "typePlaceholder": "Escolha um tipo",
+          "amountThreshold": "Valor-limite",
+          "amountThresholdPlaceholder": "Digite o valor-limite",
+          "amountThresholdHint": "Receba um aviso quando os gastos com esta tag passarem deste valor",
+          "frequency": "Frequência",
+          "frequencyPlaceholder": "Escolha uma frequência",
+          "dayOfMonth": "Dia do mês",
+          "dayOfMonthPlaceholder": "Escolha um dia",
+          "dayOfMonthHint": "Em meses com menos dias, será usado o último dia",
+          "isEnabled": "Ativado",
+          "saveButton": "Salvar"
+        },
+        "types": {
+          "amountThreshold": "Valor-limite",
+          "amountThresholdDescription": "Avisar quando os gastos passarem de um determinado valor",
+          "existenceCheck": "Verificação de atividade",
+          "existenceCheckDescription": "Avisar quando houver transações com esta tag"
+        },
+        "frequencies": {
+          "immediate": "Imediato",
+          "immediateDescription": "Dispara quando transações recebem a tag (intervalo mínimo de 24h)",
+          "daily": "Diário",
+          "dailyDescription": "Verificar todos os dias",
+          "weekly": "Semanal",
+          "weeklyDescription": "Verificar toda segunda-feira",
+          "monthly": "Mensal",
+          "monthlyDescription": "Verificar em um dia específico de cada mês",
+          "quarterly": "Trimestral",
+          "quarterlyDescription": "Verificar a cada 3 meses (jan., abr., jul., out.)",
+          "yearly": "Anual",
+          "yearlyDescription": "Verificar uma vez por ano, em janeiro"
+        },
+        "delete": {
+          "title": "Excluir lembrete?",
+          "description": "Este lembrete será excluído permanentemente. Não é possível desfazer esta ação.",
+          "deleteButton": "Excluir",
+          "cancelButton": "Cancelar"
+        },
+        "notifications": {
+          "createSuccess": "Lembrete criado",
+          "createFailed": "Não foi possível criar o lembrete",
+          "updateSuccess": "Lembrete atualizado",
+          "updateFailed": "Não foi possível atualizar o lembrete",
+          "deleteSuccess": "Lembrete excluído",
+          "deleteFailed": "Não foi possível excluir o lembrete"
+        }
+      }
+    }
+  }
+}

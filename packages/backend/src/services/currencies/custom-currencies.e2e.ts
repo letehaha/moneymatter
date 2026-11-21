@@ -1,12 +1,19 @@
 import {
+  API_ERROR_CODES,
   type AccountApiResponse,
+  type CreateCustomCurrencyBody,
+  type EntityLogoFields,
+  PLANS,
   type RecordId,
   RESOURCE_TYPES,
   SHARE_PERMISSIONS,
   TRANSACTIONS_WRITE_SCOPES,
   TRANSACTION_TYPES,
+  type UpdateCustomCurrencyBody,
+  type UpdateGoalPayload,
 } from '@bt/shared/types';
 import { beforeEach, describe, expect, it } from '@jest/globals';
+import { ERROR_CODES } from '@js/errors';
 import Currencies from '@models/currencies.model';
 import { connection } from '@models/index';
 import UserExchangeRates from '@models/user-exchange-rates.model';
@@ -14,34 +21,47 @@ import UsersCurrencies from '@models/users-currencies.model';
 import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
 import { RateLimitService } from '@services/common/rate-limit.service';
 import { pruneUnusedCustomCurrencies } from '@services/currencies/prune-custom-currencies';
+import { PNG_1X1_DATA_URL, WEBP_1X1_BYTES, WEBP_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 import type { ErrorResponse } from '@tests/helpers/common';
+import { randomUUID } from 'crypto';
 
 const SAT = 'SAT';
 const USDT = 'USDT';
 /** AED per 1 unit of the custom currency in the tests below. */
 const RATE = 2;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const NO_LOGO = {
+  logoDomain: null,
+  logoInitials: null,
+  logoColor: null,
+  logoIcon: null,
+  logoImageId: null,
+};
+
+const pickLogo = ({ logoDomain, logoInitials, logoColor, logoIcon, logoImageId }: EntityLogoFields) => ({
+  logoDomain,
+  logoInitials,
+  logoColor,
+  logoIcon,
+  logoImageId,
+});
+
+const heldLogo = async ({ code }: { code: string }) =>
+  pickLogo((await helpers.getUserCurrencies()).find((item) => item.currencyCode === code)!);
 
 const sat = ({
   decimals = 8,
   name = 'Satoshi',
   symbol,
-}: { decimals?: number; name?: string; symbol?: string } = {}) => ({
+  rate = RATE,
+}: { decimals?: number; name?: string; symbol?: string; rate?: number } = {}) => ({
   code: SAT,
   name,
   decimals,
   ...(symbol !== undefined && { symbol }),
+  rate: { value: rate },
 });
-
-/** The user's own rate between a custom code and the base currency, in both directions. */
-const setRate = ({ code, rate = RATE }: { code: string; rate?: number }) =>
-  helpers.editCurrencyExchangeRate({
-    pairs: [
-      { baseCode: code, quoteCode: global.BASE_CURRENCY_CODE, rate },
-      { baseCode: global.BASE_CURRENCY_CODE, quoteCode: code, rate: 1 / rate },
-    ],
-    raw: true,
-  });
 
 const createCustomAccount = async ({ code, name = 'Custom account' }: { code: string; name?: string }) => {
   const response = await helpers.createAccount({
@@ -98,6 +118,12 @@ const restoreArchive = async ({ fileContent }: { fileContent: string }) => {
 
 const errorOf = (response: { body: { response: unknown } }) => response.body.response as ErrorResponse;
 
+const expectPlanRequired = (response: unknown) => {
+  const { statusCode, body } = response as { statusCode: number; body: { response: ErrorResponse } };
+  expect(statusCode).toBe(ERROR_CODES.PaymentRequired);
+  expect(body.response.code).toBe(API_ERROR_CODES.planRequired);
+};
+
 /** Polls until a transaction waits on the row lock the prune takes (`FOR UPDATE OF c`). */
 const waitForBlockedPrune = async () => {
   for (let attempt = 0; attempt < 100; attempt += 1) {
@@ -133,10 +159,69 @@ describe('Custom currencies', () => {
         decimals: 8,
         symbol: 'sat',
         isCustom: true,
-        logoUrl: null,
+        logoDomain: null,
+        logoInitials: null,
+        logoColor: null,
+        logoIcon: null,
+        logoImageId: null,
       });
 
       expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([created.body.response]);
+    });
+
+    it('stores the rate against the base currency in both directions', async () => {
+      await helpers.createCustomCurrency({ payload: sat({ rate: 4 }) });
+
+      const rates = await UserExchangeRates.findAll({
+        where: { userId: await userId() },
+        attributes: ['baseCode', 'quoteCode', 'rate'],
+      });
+      expect(rates.map(({ baseCode, quoteCode, rate }) => ({ baseCode, quoteCode, rate }))).toEqual(
+        expect.arrayContaining([
+          { baseCode: SAT, quoteCode: global.BASE_CURRENCY_CODE, rate: 4 },
+          { baseCode: global.BASE_CURRENCY_CODE, quoteCode: SAT, rate: 0.25 },
+        ]),
+      );
+      const account = await createCustomAccount({ code: SAT });
+      const transaction = await createExpense({ accountId: account.id, amount: 1.5 });
+      expect(Number(transaction.refAmount)).toBe(6);
+    });
+
+    it('quotes the rate in another ISO currency the user holds', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+
+      const created = await helpers.createCustomCurrency({
+        payload: { ...sat(), rate: { value: 3, quoteCode: 'usd' } },
+      });
+
+      expect(created.statusCode).toBe(201);
+      expect(await UserExchangeRates.count({ where: { baseCode: SAT, quoteCode: 'USD' } })).toBe(1);
+      expect(await UserExchangeRates.count({ where: { baseCode: SAT, quoteCode: global.BASE_CURRENCY_CODE } })).toBe(0);
+    });
+
+    it('rejects a quote the user does not hold or that is a custom currency, and creates nothing', async () => {
+      await helpers.createCustomCurrency({ payload: { ...sat(), code: USDT } });
+
+      for (const quoteCode of ['JPY', USDT]) {
+        const response = await helpers.createCustomCurrency({ payload: { ...sat(), rate: { value: 1, quoteCode } } });
+        expect(response.statusCode).toBe(422);
+      }
+
+      expect((await helpers.listCustomCurrencies({ raw: true })).map((item) => item.code)).toEqual([USDT]);
+      expect(await UserExchangeRates.count({ where: { baseCode: SAT } })).toBe(0);
+    });
+
+    it('keeps no user definition in the shared global row', async () => {
+      await helpers.createCustomCurrency({ payload: sat({ decimals: 3, name: 'Sats', symbol: 'S' }) });
+
+      expect((await Currencies.findByPk(SAT))!.get({ plain: true })).toEqual({
+        code: SAT,
+        currency: SAT,
+        digits: 8,
+        number: null,
+        isCustom: true,
+        isDisabled: false,
+      });
     });
 
     it('shows the currency, with the user definition applied, in the user currency list', async () => {
@@ -162,13 +247,16 @@ describe('Custom currencies', () => {
       ['a code with a symbol character', { ...sat(), code: 'S-T' }],
       ['a code that is too short', { ...sat(), code: 'S' }],
       ['a code that is too long', { ...sat(), code: 'A'.repeat(17) }],
-      ['more than 18 decimals', sat({ decimals: 19 })],
+      ['more than 8 decimals', sat({ decimals: 9 })],
       ['a negative number of decimals', sat({ decimals: -1 })],
       ['a fractional number of decimals', sat({ decimals: 1.5 })],
       ['an empty name', sat({ name: '  ' })],
       ['a symbol over 8 characters', sat({ symbol: 'TOOLONGSYM' })],
+      ['no rate', { code: SAT, name: 'Satoshi', decimals: 8 }],
+      ['a zero rate', sat({ rate: 0 })],
+      ['a negative rate', sat({ rate: -1 })],
     ])('rejects %s with 422', async (_label, payload) => {
-      const response = await helpers.createCustomCurrency({ payload });
+      const response = await helpers.createCustomCurrency({ payload: payload as CreateCustomCurrencyBody });
 
       expect(response.statusCode).toBe(422);
     });
@@ -192,7 +280,7 @@ describe('Custom currencies', () => {
 
     it("keeps another user's currency out of reach", async () => {
       await helpers.createCustomCurrency({ payload: sat() });
-      const other = await helpers.signUpSecondUser();
+      const other = await helpers.provisionSecondUserWithBaseCurrency();
 
       await helpers.asUser({
         cookies: other.cookies,
@@ -217,7 +305,6 @@ describe('Custom currencies', () => {
     it('lets two users define the same code with their own decimals and stores each one precision', async () => {
       const alice = await helpers.createCustomCurrency({ payload: sat({ decimals: 8 }), raw: true });
       expect(alice.decimals).toBe(8);
-      await setRate({ code: SAT });
       const aliceAccount = await createCustomAccount({ code: SAT });
       const aliceTx = await createExpense({ accountId: aliceAccount.id, amount: 0.123456789 });
 
@@ -229,7 +316,6 @@ describe('Custom currencies', () => {
           expect(created.statusCode).toBe(201);
           expect(created.body.response).toMatchObject({ decimals: 0, name: 'Sats' });
 
-          await setRate({ code: SAT });
           const bobAccount = await createCustomAccount({ code: SAT });
           const bobTx = await createExpense({ accountId: bobAccount.id, amount: 1.5, ownCategory: true });
 
@@ -253,7 +339,6 @@ describe('Custom currencies', () => {
   describe('PUT /user/currencies/custom/:code', () => {
     it('renames the currency and changes its symbol at any time', async () => {
       await helpers.createCustomCurrency({ payload: sat({ symbol: 'S' }) });
-      await setRate({ code: SAT });
       await createCustomAccount({ code: SAT });
 
       const updated = await helpers.updateCustomCurrency({ code: SAT, payload: { name: 'Sats', symbol: null } });
@@ -265,7 +350,11 @@ describe('Custom currencies', () => {
         decimals: 8,
         symbol: null,
         isCustom: true,
-        logoUrl: null,
+        logoDomain: null,
+        logoInitials: null,
+        logoColor: null,
+        logoIcon: null,
+        logoImageId: null,
       });
     });
 
@@ -279,30 +368,52 @@ describe('Custom currencies', () => {
       expect((await helpers.getUserCurrencies()).find((item) => item.currencyCode === SAT)!.currency.digits).toBe(2);
 
       // New amounts round to the new decimals.
-      await setRate({ code: SAT });
       const account = await createCustomAccount({ code: SAT });
       const transaction = await createExpense({ accountId: account.id, amount: 1.005 });
       expect(Number(transaction.amount)).toBe(1.01);
       // The base-currency value follows the rounded native amount: 1.01 x RATE.
       expect(Number(transaction.refAmount)).toBe(2.02);
-      expect(transaction.refAmountMissing).toBe(false);
     });
 
-    it('refuses a decimals change with 409 while an account uses the currency', async () => {
+    it('refuses a decimals change with 422 and the blockers while an account uses the currency', async () => {
       await helpers.createCustomCurrency({ payload: sat({ decimals: 8 }) });
-      await setRate({ code: SAT });
-      await createCustomAccount({ code: SAT });
+      const account = await createCustomAccount({ code: SAT });
 
       const response = await helpers.updateCustomCurrency({ code: SAT, payload: { decimals: 2 } });
 
-      expect(response.statusCode).toBe(409);
-      expect(errorOf(response).details).toEqual({ usedBy: ['accounts'] });
+      expect(response.statusCode).toBe(422);
+      expect(errorOf(response).code).toBe(API_ERROR_CODES.currencyInUse);
+      expect(errorOf(response).details).toEqual({
+        blockers: [{ type: 'account', id: account.id, name: account.name }],
+      });
       expect((await helpers.listCustomCurrencies({ raw: true }))[0]!.decimals).toBe(8);
+    });
+
+    it('changes the decimals and clears foreign amounts in the currency, as a delete does', async () => {
+      await helpers.createCustomCurrency({ payload: sat({ decimals: 8 }) });
+      const account = await helpers.createAccount({ raw: true });
+      const [transaction] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 10,
+          originalAmount: 0.12345678,
+          originalCurrencyCode: SAT,
+        }),
+        raw: true,
+      });
+
+      const response = await helpers.updateCustomCurrency({ code: SAT, payload: { decimals: 2 } });
+      expect(response.statusCode).toBe(200);
+      expect((await helpers.listCustomCurrencies({ raw: true }))[0]!.decimals).toBe(2);
+
+      const cleared = await helpers.getTransactionById({ id: transaction.id, raw: true });
+      expect(cleared!.originalAmount).toBeNull();
+      expect(cleared!.originalCurrencyCode).toBeNull();
+      expect(Number(cleared!.amount)).toBe(10);
     });
 
     it('accepts the decimals the currency already has even while it is in use', async () => {
       await helpers.createCustomCurrency({ payload: sat({ decimals: 8 }) });
-      await setRate({ code: SAT });
       await createCustomAccount({ code: SAT });
 
       const response = await helpers.updateCustomCurrency({ code: SAT, payload: { decimals: 8, name: 'Sats' } });
@@ -318,87 +429,110 @@ describe('Custom currencies', () => {
     });
 
     describe('logo', () => {
-      const LOGO = 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png';
-
-      const logoOfListedCurrency = async () =>
-        (await helpers.listCustomCurrencies({ raw: true })).find((item) => item.code === SAT)!.logoUrl;
-      const logoOfUserCurrency = async ({ code }: { code: string }) =>
-        (await helpers.getUserCurrencies()).find((item) => item.currencyCode === code)!.logoUrl;
+      const listedLogo = async () => {
+        const listed = (await helpers.listCustomCurrencies({ raw: true })).find((item) => item.code === SAT)!;
+        return pickLogo(listed);
+      };
 
       it('starts without a logo', async () => {
         const created = await helpers.createCustomCurrency({ payload: sat() });
 
-        expect(created.body.response).toMatchObject({ logoUrl: null });
-        expect(await logoOfUserCurrency({ code: SAT })).toBeNull();
+        expect(created.body.response).toMatchObject(NO_LOGO);
+        expect(await heldLogo({ code: SAT })).toEqual(NO_LOGO);
       });
 
-      it('stores an https logo and returns it from both currency lists', async () => {
-        await helpers.createCustomCurrency({ payload: sat() });
+      it('creates a currency with a monogram and returns it from both currency lists', async () => {
+        const created = await helpers.createCustomCurrency({
+          payload: { ...sat(), logoInitials: 'S', logoColor: '#ff9900' },
+        });
 
-        const updated = await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: LOGO } });
-
-        expect(updated.statusCode).toBe(200);
-        expect(updated.body.response).toMatchObject({ code: SAT, logoUrl: LOGO });
-        expect(await logoOfListedCurrency()).toBe(LOGO);
-        expect(await logoOfUserCurrency({ code: SAT })).toBe(LOGO);
+        expect(created.statusCode).toBe(201);
+        const logo = { ...NO_LOGO, logoInitials: 'S', logoColor: '#ff9900' };
+        expect(created.body.response).toMatchObject(logo);
+        expect(await listedLogo()).toEqual(logo);
+        expect(await heldLogo({ code: SAT })).toEqual(logo);
       });
 
-      it('keeps the logo when a later update does not send one', async () => {
-        await helpers.createCustomCurrency({ payload: sat() });
-        await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: LOGO } });
+      it('replaces one logo kind with another and keeps the logo when an update does not send one', async () => {
+        await helpers.createCustomCurrency({ payload: { ...sat(), logoInitials: 'S', logoColor: '#ff9900' } });
+
+        const branded = await helpers.updateCustomCurrency({ code: SAT, payload: { logoDomain: 'bitcoin.org' } });
+        expect(branded.statusCode).toBe(200);
+        expect(branded.body.response).toMatchObject({ ...NO_LOGO, logoDomain: 'bitcoin.org' });
 
         const renamed = await helpers.updateCustomCurrency({ code: SAT, payload: { name: 'Sats' } });
-
-        expect(renamed.statusCode).toBe(200);
-        expect(renamed.body.response).toMatchObject({ name: 'Sats', logoUrl: LOGO });
-        expect(await logoOfUserCurrency({ code: SAT })).toBe(LOGO);
+        expect(renamed.body.response).toMatchObject({ name: 'Sats', logoDomain: 'bitcoin.org' });
+        expect(await heldLogo({ code: SAT })).toEqual({ ...NO_LOGO, logoDomain: 'bitcoin.org' });
       });
 
-      it('clears the logo with null', async () => {
-        await helpers.createCustomCurrency({ payload: sat() });
-        await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: LOGO } });
+      it('stores an uploaded image, replaces it and deletes the old one', async () => {
+        const created = await helpers.createCustomCurrency({ payload: { ...sat(), logoImage: PNG_1X1_DATA_URL } });
+        const firstId = created.body.response.logoImageId!;
+        expect(firstId).toMatch(UUID_PATTERN);
+        expect((await helpers.getLogoImage({ id: firstId })).statusCode).toBe(200);
 
-        const cleared = await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: null } });
+        const replaced = await helpers.updateCustomCurrency({ code: SAT, payload: { logoImage: WEBP_1X1_DATA_URL } });
+        const secondId = replaced.body.response.logoImageId!;
+        expect(secondId).toMatch(UUID_PATTERN);
+        expect(secondId).not.toBe(firstId);
+        expect((await helpers.getLogoImage({ id: firstId })).statusCode).toBe(ERROR_CODES.NotFoundError);
+
+        const image = await helpers.getLogoImage({ id: secondId });
+        expect(image.statusCode).toBe(200);
+        expect(image.body.equals(WEBP_1X1_BYTES)).toBe(true);
+      });
+
+      it('clears the image with logoImage null and deletes it', async () => {
+        const created = await helpers.createCustomCurrency({ payload: { ...sat(), logoImage: PNG_1X1_DATA_URL } });
+        const imageId = created.body.response.logoImageId!;
+
+        const cleared = await helpers.updateCustomCurrency({ code: SAT, payload: { logoImage: null } });
 
         expect(cleared.statusCode).toBe(200);
-        expect(cleared.body.response).toMatchObject({ logoUrl: null });
-        expect(await logoOfUserCurrency({ code: SAT })).toBeNull();
+        expect(cleared.body.response).toMatchObject(NO_LOGO);
+        expect((await helpers.getLogoImage({ id: imageId })).statusCode).toBe(ERROR_CODES.NotFoundError);
+      });
+
+      it('deletes the image together with the currency', async () => {
+        const created = await helpers.createCustomCurrency({ payload: { ...sat(), logoImage: PNG_1X1_DATA_URL } });
+        const imageId = created.body.response.logoImageId!;
+
+        expect((await helpers.deleteCustomCurrency({ code: SAT })).statusCode).toBe(200);
+
+        expect((await helpers.getLogoImage({ id: imageId })).statusCode).toBe(ERROR_CODES.NotFoundError);
       });
 
       it.each([
-        ['an http URL', 'http://coin-images.coingecko.com/bitcoin.png'],
-        ['a javascript URL', 'javascript:alert(1)'],
-        ['a data URL', 'data:image/png;base64,AAAA'],
-        ['text that is not a URL', 'bitcoin'],
-        ['an empty string', ''],
-        ['a URL of 2049 characters', `https://example.com/${'a'.repeat(2049 - 'https://example.com/'.length)}`],
-      ])('rejects %s with 422 and keeps the stored logo', async (_label, logoUrl) => {
-        await helpers.createCustomCurrency({ payload: sat() });
-        await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: LOGO } });
+        ['two logo kinds at once', { logoDomain: 'bitcoin.org', logoInitials: 'S' }],
+        ['a domain with a slash', { logoDomain: 'bitcoin.org/logo' }],
+        ['an image that is not a data URL', { logoImage: 'https://example.com/logo.png' }],
+        ['a logoUrl', { logoUrl: 'https://example.com/logo.png' }],
+      ])('rejects %s with 422 and keeps the stored logo', async (_label, payload) => {
+        await helpers.createCustomCurrency({ payload: { ...sat(), logoInitials: 'S' } });
 
-        const response = await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl } });
+        const response = await helpers.updateCustomCurrency({
+          code: SAT,
+          payload: payload as UpdateCustomCurrencyBody,
+        });
 
         expect(response.statusCode).toBe(422);
-        expect(await logoOfUserCurrency({ code: SAT })).toBe(LOGO);
+        expect(await heldLogo({ code: SAT })).toEqual({ ...NO_LOGO, logoInitials: 'S' });
       });
 
-      it('accepts a URL of exactly 2048 characters', async () => {
-        await helpers.createCustomCurrency({ payload: sat() });
-        const longUrl = `https://example.com/${'a'.repeat(2048 - 'https://example.com/'.length)}`;
+      it('rejects a color without a monogram or an icon on create', async () => {
+        const response = await helpers.createCustomCurrency({ payload: { ...sat(), logoColor: '#ff9900' } });
 
-        const response = await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: longUrl } });
-
-        expect(response.statusCode).toBe(200);
-        expect(await logoOfUserCurrency({ code: SAT })).toBe(longUrl);
+        expect(response.statusCode).toBe(422);
+        expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([]);
       });
 
       it('answers 404 for an ISO code and leaves its logo empty', async () => {
         await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
 
-        const response = await helpers.updateCustomCurrency({ code: 'USD', payload: { logoUrl: LOGO } });
+        const response = await helpers.updateCustomCurrency({ code: 'USD', payload: { logoInitials: 'U' } });
 
         expect(response.statusCode).toBe(404);
-        expect(await logoOfUserCurrency({ code: 'USD' })).toBeNull();
+        expect(await heldLogo({ code: 'USD' })).toEqual(NO_LOGO);
       });
     });
   });
@@ -406,7 +540,6 @@ describe('Custom currencies', () => {
   describe('DELETE /user/currencies/custom/:code', () => {
     it('removes an unused currency together with its rates and its global row', async () => {
       await helpers.createCustomCurrency({ payload: sat() });
-      await setRate({ code: SAT });
       expect(await UserExchangeRates.count({ where: { baseCode: SAT } })).toBe(1);
 
       const response = await helpers.deleteCustomCurrency({ code: SAT });
@@ -417,21 +550,39 @@ describe('Custom currencies', () => {
       expect(await Currencies.findByPk(SAT)).toBeNull();
     });
 
-    it('refuses with 409 while an account uses the currency', async () => {
+    it('refuses with 422 and the blockers while an account uses the currency', async () => {
       await helpers.createCustomCurrency({ payload: sat() });
-      await setRate({ code: SAT });
-      await createCustomAccount({ code: SAT });
+      const account = await createCustomAccount({ code: SAT });
 
       const response = await helpers.deleteCustomCurrency({ code: SAT });
 
-      expect(response.statusCode).toBe(409);
-      expect(errorOf(response).details).toEqual({ usedBy: ['accounts'] });
+      expect(response.statusCode).toBe(422);
+      expect(errorOf(response).code).toBe(API_ERROR_CODES.currencyInUse);
+      expect(errorOf(response).details).toEqual({
+        blockers: [{ type: 'account', id: account.id, name: account.name }],
+      });
       expect(await helpers.listCustomCurrencies({ raw: true })).toHaveLength(1);
+    });
+
+    it('refuses while only a goal uses the currency, and so does a decimals change', async () => {
+      await helpers.createCustomCurrency({ payload: sat() });
+      const goal = await helpers.createGoal({ payload: { name: 'Sats stash', currencyCode: SAT }, raw: true });
+      const blockers = [{ type: 'goal', id: goal.id, name: 'Sats stash' }];
+
+      const deleted = await helpers.deleteCustomCurrency({ code: SAT });
+      expect(deleted.statusCode).toBe(422);
+      expect(errorOf(deleted).details).toEqual({ blockers });
+
+      const updated = await helpers.updateCustomCurrency({ code: SAT, payload: { decimals: 2 } });
+      expect(updated.statusCode).toBe(422);
+      expect(errorOf(updated).details).toEqual({ blockers });
+
+      expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([expect.objectContaining({ decimals: 8 })]);
     });
 
     it('keeps the global row for the other users who still hold the code', async () => {
       await helpers.createCustomCurrency({ payload: sat() });
-      const bob = await helpers.signUpSecondUser();
+      const bob = await helpers.provisionSecondUserWithBaseCurrency();
       await helpers.asUser({
         cookies: bob.cookies,
         fn: () => helpers.createCustomCurrency({ payload: sat({ decimals: 0 }), raw: true }),
@@ -439,10 +590,7 @@ describe('Custom currencies', () => {
 
       await helpers.deleteCustomCurrency({ code: SAT });
 
-      const row = await Currencies.findByPk(SAT);
-      expect(row).not.toBeNull();
-      // The creator no longer holds it, so the row stops naming them.
-      expect(row!.createdByUserId).toBeNull();
+      expect(await Currencies.findByPk(SAT)).not.toBeNull();
       expect(
         await helpers.asUser({ cookies: bob.cookies, fn: () => helpers.listCustomCurrencies({ raw: true }) }),
       ).toHaveLength(1);
@@ -463,10 +611,9 @@ describe('Custom currencies', () => {
   });
 
   describe('a shared account in a custom currency', () => {
-    it("rounds every native amount with the account owner's decimals, whoever enters it", async () => {
-      // Alice owns SAT with 8 decimals; Bob defines the same code with 0.
+    /** Alice's SAT account (8 decimals) shared with write access to Bob; `bobDecimals` makes Bob define SAT himself. */
+    const shareSatAccountWithBob = async ({ bobDecimals }: { bobDecimals?: number } = {}) => {
       await helpers.createCustomCurrency({ payload: sat({ decimals: 8 }) });
-      await setRate({ code: SAT });
       const account = await createCustomAccount({ code: SAT, name: 'Shared SAT' });
 
       const bob = await helpers.provisionSecondUserWithBaseCurrency();
@@ -478,14 +625,137 @@ describe('Custom currencies', () => {
         policy: { transactionsWriteScope: TRANSACTIONS_WRITE_SCOPES.all },
         raw: true,
       });
-
       await helpers.asUser({
         cookies: bob.cookies,
         fn: async () => {
           await helpers.acceptShareInvitation({ token: invitation.token, raw: true });
-          await helpers.createCustomCurrency({ payload: sat({ decimals: 0 }), raw: true });
-          await setRate({ code: SAT, rate: 4 });
+          if (bobDecimals !== undefined) {
+            await helpers.createCustomCurrency({ payload: sat({ decimals: bobDecimals, rate: 4 }), raw: true });
+          }
+        },
+      });
 
+      return { account, bob };
+    };
+
+    const createIncomeOn = async ({ accountId, amount }: { accountId: string; amount: number }) => {
+      const [created] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: accountId as RecordId,
+          amount,
+          transactionType: TRANSACTION_TYPES.income,
+        }),
+        raw: true,
+      });
+
+      return created!;
+    };
+
+    it("gives a collaborator its own copy of the owner's logo image, which outlives the owner's edit", async () => {
+      const { account, bob } = await shareSatAccountWithBob();
+      const ownerLogo = await helpers.updateCustomCurrency({
+        code: SAT,
+        payload: { logoImage: PNG_1X1_DATA_URL },
+        raw: true,
+      });
+
+      const bobLogoId = await helpers.asUser({
+        cookies: bob.cookies,
+        fn: async () => {
+          await createIncomeOn({ accountId: account.id, amount: 1 });
+          const copy = (await helpers.listCustomCurrencies({ raw: true })).find((item) => item.code === SAT)!;
+          return copy.logoImageId;
+        },
+      });
+
+      expect(bobLogoId).toMatch(UUID_PATTERN);
+      expect(bobLogoId).not.toBe(ownerLogo.logoImageId);
+
+      await helpers.updateCustomCurrency({ code: SAT, payload: { logoImage: null } });
+      expect((await helpers.getLogoImage({ id: ownerLogo.logoImageId! })).statusCode).toBe(ERROR_CODES.NotFoundError);
+
+      const bobImage = await helpers.asUser({
+        cookies: bob.cookies,
+        fn: () => helpers.getLogoImage({ id: bobLogoId! }),
+      });
+      expect(bobImage.statusCode).toBe(200);
+    });
+
+    it('lets a collaborator write while neither user has custom currencies in the plan', async () => {
+      const { account, bob } = await shareSatAccountWithBob();
+      const { authUserId } = await helpers.findAppUserByEmail({ email: bob.email });
+      await helpers.setUserBilling({ authUserId, plan: PLANS.essential });
+      await helpers.setUserBilling({ plan: PLANS.essential });
+
+      const write = await helpers.asUser({
+        cookies: bob.cookies,
+        fn: () =>
+          helpers.createTransaction({
+            payload: helpers.buildTransactionPayload({
+              accountId: account.id as RecordId,
+              amount: 1,
+              transactionType: TRANSACTION_TYPES.income,
+            }),
+            raw: false,
+          }),
+      });
+
+      expect(write.statusCode).toBe(200);
+    });
+
+    it("rounds a refund share on the shared account with the owner's decimals", async () => {
+      const { account, bob } = await shareSatAccountWithBob();
+
+      await helpers.asUser({
+        cookies: bob.cookies,
+        fn: async () => {
+          const ownAccount = await helpers.createAccount({ raw: true });
+          const purchase = await createExpense({ accountId: ownAccount.id, amount: 10, ownCategory: true });
+          const refund = await createIncomeOn({ accountId: account.id, amount: 1.25 });
+
+          const link = await helpers.createSingleRefund(
+            { originalTxId: purchase.id, refundTxId: refund.id, amount: 0.5 },
+            true,
+          );
+
+          expect(link.amount).toBe(0.5);
+        },
+      });
+    });
+
+    it("rounds the shared-account leg of an edited transfer with the owner's decimals", async () => {
+      const { account, bob } = await shareSatAccountWithBob();
+
+      await helpers.asUser({
+        cookies: bob.cookies,
+        fn: async () => {
+          const ownAccount = await helpers.createAccount({ raw: true });
+          const outflow = await createExpense({ accountId: ownAccount.id, amount: 10, ownCategory: true });
+          const inflow = await createIncomeOn({ accountId: account.id, amount: 1.25 });
+          const link = await helpers.linkTransactions({
+            payload: { ids: [[outflow.id as RecordId, inflow.id as RecordId]] },
+          });
+          expect(link.statusCode).toBe(200);
+
+          const [, opposite] = await helpers.updateTransaction({
+            id: outflow.id as RecordId,
+            payload: { destinationAmount: 0.5 },
+            raw: true,
+          });
+
+          expect(opposite!.id).toBe(inflow.id);
+          expect(Number(opposite!.amount)).toBe(0.5);
+        },
+      });
+    });
+
+    it('refuses a write by a collaborator whose own definition of the code has other decimals', async () => {
+      const { account, bob } = await shareSatAccountWithBob({ bobDecimals: 0 });
+      const aliceTx = await createExpense({ accountId: account.id, amount: 1.25 });
+
+      await helpers.asUser({
+        cookies: bob.cookies,
+        fn: async () => {
           const create = await helpers.createTransaction({
             payload: helpers.buildTransactionPayload({
               accountId: account.id as RecordId,
@@ -494,41 +764,121 @@ describe('Custom currencies', () => {
             }),
             raw: false,
           });
-          expect(create.statusCode).toBe(200);
-          const [created] = (create as unknown as { body: { response: TransactionApiResponse[] } }).body.response;
+          expect(create.statusCode).toBe(422);
 
-          // Bob's own definition would make this 1; the owner's makes it 1.25.
-          expect(Number(created!.amount)).toBe(1.25);
-          expect(Number(created!.refAmount)).toBe(5);
-          expect(created!.currencyMeta).toEqual({ decimals: 8, symbol: null, isCustom: true });
+          const edit = await helpers.updateTransaction({ id: aliceTx.id as RecordId, payload: { amount: 2 } });
+          expect(edit.statusCode).toBe(422);
 
-          // The owner's decimals also cap the extra precision.
-          const precise = await createExpense({ accountId: account.id, amount: 0.123456789 });
-          expect(Number(precise.amount)).toBe(0.12345679);
-
-          const sharedAccount = (await helpers.getAccounts()).find(
-            (candidate) => candidate.id === account.id,
-          ) as unknown as AccountApiResponse | undefined;
-          expect(sharedAccount?.currencyMeta).toEqual({ decimals: 8, symbol: null, isCustom: true });
-
-          const list = await accountTransactions({ accountId: account.id });
-          expect(list).toHaveLength(2);
-          expect(list.every((transaction) => transaction.currencyMeta?.decimals === 8)).toBe(true);
-
-          // Bob's own list still shows his definition.
           expect((await helpers.listCustomCurrencies({ raw: true }))[0]!.decimals).toBe(0);
         },
       });
 
-      // The rows the account holds keep the owner's precision for the owner too.
       const ownerView = await accountTransactions({ accountId: account.id });
-      expect(ownerView.map((transaction) => Number(transaction.amount)).toSorted()).toEqual([0.12345679, 1.25]);
+      expect(ownerView.map((transaction) => Number(transaction.amount))).toEqual([1.25]);
+    });
+
+    it("lets a collaborator whose definition has the owner's decimals write with the owner's precision", async () => {
+      const { account, bob } = await shareSatAccountWithBob({ bobDecimals: 8 });
+
+      await helpers.asUser({
+        cookies: bob.cookies,
+        fn: async () => {
+          const precise = await createExpense({ accountId: account.id, amount: 0.123456789 });
+          expect(Number(precise.amount)).toBe(0.12345679);
+          expect(precise.currencyMeta).toEqual({ decimals: 8, symbol: null, isCustom: true });
+          // Priced at Bob's own rate (4), not Alice's (2).
+          expect(Number(precise.refAmount)).toBe(0.49);
+
+          const deleted = await helpers.deleteCustomCurrency({ code: SAT });
+          expect(deleted.statusCode).toBe(422);
+          expect(errorOf(deleted).details).toEqual({
+            blockers: [{ type: 'account', id: account.id, name: 'Shared SAT' }],
+          });
+        },
+      });
+    });
+  });
+
+  describe('without custom currencies in the plan', () => {
+    const lapsedWithSatAccount = async () => {
+      await helpers.createCustomCurrency({ payload: sat() });
+      const account = await createCustomAccount({ code: SAT });
+      const transaction = await createExpense({ accountId: account.id, amount: 1 });
+      await helpers.setUserBilling({ plan: PLANS.essential });
+
+      return { account, transaction };
+    };
+
+    it('refuses with 402 a new custom currency, an account in one and a goal in one', async () => {
+      await lapsedWithSatAccount();
+
+      expectPlanRequired(await helpers.createCustomCurrency({ payload: { ...sat(), code: USDT } }));
+      expectPlanRequired(
+        await helpers.createAccount({
+          payload: helpers.buildAccountPayload({ currencyCode: SAT, initialBalance: 0 }),
+          raw: false,
+        }),
+      );
+      expectPlanRequired(await helpers.createGoal({ payload: { currencyCode: SAT } }));
+    });
+
+    it('lets a transaction on a custom-currency account be created and edited', async () => {
+      const { account } = await lapsedWithSatAccount();
+
+      const created = await createExpense({ accountId: account.id, amount: 2 });
+      const edited = await helpers.updateTransaction({ id: created.id as RecordId, payload: { amount: 3 } });
+      expect(edited.statusCode).toBe(200);
+    });
+
+    it('lets a custom-currency goal be renamed and its accounts changed, and refuses a goal moved to one', async () => {
+      await helpers.createCustomCurrency({ payload: sat() });
+      const satAccount = await createCustomAccount({ code: SAT });
+      const isoAccount = await helpers.createAccount({ raw: true });
+      const satShare = { accountId: satAccount.id as RecordId, sharePercent: 100 };
+      const isoShare = { accountId: isoAccount.id as RecordId, sharePercent: 100 };
+      const goal = await helpers.createGoal({ payload: { currencyCode: SAT, accounts: [satShare] }, raw: true });
+      const isoGoal = await helpers.createGoal({ raw: true });
+      await helpers.setUserBilling({ plan: PLANS.essential });
+
+      const patchGoal = (payload: UpdateGoalPayload) => helpers.updateGoal({ goalId: goal.id, payload });
+      expect((await patchGoal({ name: 'Renamed' })).statusCode).toBe(200);
+      expect((await patchGoal({ accounts: [satShare, isoShare] })).statusCode).toBe(200);
+      expect((await patchGoal({ accounts: [isoShare] })).statusCode).toBe(200);
+
+      expectPlanRequired(await helpers.updateGoal({ goalId: isoGoal.id, payload: { currencyCode: SAT } }));
+    });
+
+    it('keeps the data readable and lets the account be renamed and the currency edited, re-rated and deleted', async () => {
+      const { account, transaction } = await lapsedWithSatAccount();
+
+      expect((await helpers.listCustomCurrencies({ raw: true })).map((item) => item.code)).toEqual([SAT]);
+      expect(await accountTransactions({ accountId: account.id })).toHaveLength(1);
+
+      expect((await helpers.updateAccount({ id: account.id, payload: { name: 'Renamed' } })).statusCode).toBe(200);
+      expect((await helpers.updateCustomCurrency({ code: SAT, payload: { name: 'Sats' } })).statusCode).toBe(200);
+      const rates = await helpers.makeRequest({
+        method: 'put',
+        url: '/user/currency/rates',
+        payload: {
+          pairs: [
+            { baseCode: SAT, quoteCode: global.BASE_CURRENCY_CODE, rate: 4 },
+            { baseCode: global.BASE_CURRENCY_CODE, quoteCode: SAT, rate: 0.25 },
+          ],
+        },
+      });
+      expect(rates.statusCode).toBe(200);
+
+      expect((await helpers.deleteTransaction({ id: transaction.id })).statusCode).toBe(200);
+      expect((await helpers.deleteAccount({ id: account.id, raw: false })).statusCode).toBe(200);
+      expect((await helpers.deleteCustomCurrency({ code: SAT })).statusCode).toBe(200);
     });
   });
 
   describe('where custom currencies are not accepted', () => {
     it('keeps ISO-only validation for loans, portfolios and the base currency', async () => {
-      await helpers.createCustomCurrency({ payload: { code: USDT, name: 'Tether', decimals: 6 } });
+      await helpers.createCustomCurrency({
+        payload: { code: USDT, name: 'Tether', decimals: 6, rate: { value: RATE } },
+      });
 
       const loan = await helpers.createLoan({ payload: helpers.buildCreateLoanPayload({ currencyCode: USDT }) });
       expect(loan.statusCode).toBe(422);
@@ -555,7 +905,7 @@ describe('Custom currencies', () => {
     });
 
     it('removes the global row of a user who deleted their account and was its only holder', async () => {
-      const bob = await helpers.signUpSecondUser();
+      const bob = await helpers.provisionSecondUserWithBaseCurrency();
       await helpers.asUser({
         cookies: bob.cookies,
         fn: async () => {
@@ -570,21 +920,18 @@ describe('Custom currencies', () => {
       expect(await Currencies.findByPk(SAT)).toBeNull();
     });
 
-    it('keeps the row, without the departed creator, when another user holds the same code', async () => {
-      const bob = await helpers.signUpSecondUser();
+    it('keeps the row when another user holds the same code', async () => {
+      const bob = await helpers.provisionSecondUserWithBaseCurrency();
       await helpers.asUser({
         cookies: bob.cookies,
         fn: () => helpers.createCustomCurrency({ payload: sat({ decimals: 0 }), raw: true }),
       });
-      expect((await Currencies.findByPk(SAT))!.createdByUserId).not.toBeNull();
 
       await helpers.createCustomCurrency({ payload: sat({ decimals: 8 }), raw: true });
 
       await helpers.asUser({ cookies: bob.cookies, fn: () => helpers.deleteUserAccount() });
 
-      const row = await Currencies.findByPk(SAT);
-      expect(row).not.toBeNull();
-      expect(row!.createdByUserId).toBeNull();
+      expect(await Currencies.findByPk(SAT)).not.toBeNull();
       expect((await helpers.listCustomCurrencies({ raw: true }))[0]).toMatchObject({ code: SAT, decimals: 8 });
     });
 
@@ -614,7 +961,14 @@ describe('Custom currencies', () => {
       await waitForBlockedPrune();
 
       await UsersCurrencies.create(
-        { userId: id, currencyCode: SAT, liveRateUpdate: false, isDefaultCurrency: false },
+        {
+          userId: id,
+          currencyCode: SAT,
+          liveRateUpdate: false,
+          isDefaultCurrency: false,
+          nameOverride: 'Satoshi',
+          decimalsOverride: 8,
+        },
         { transaction: adopter },
       );
       await adopter.commit();
@@ -632,17 +986,21 @@ describe('Custom currencies', () => {
     });
 
     it('carries the definition, the overrides and the account of a custom currency to a fresh instance', async () => {
-      await helpers.createCustomCurrency({ payload: { code: USDT, name: 'Tether', decimals: 6, symbol: 'T' } });
-      await setRate({ code: USDT, rate: 3.5 });
+      await helpers.createCustomCurrency({
+        payload: { code: USDT, name: 'Tether', decimals: 6, symbol: 'T', rate: { value: 3.5 } },
+      });
       const account = await createCustomAccount({ code: USDT, name: 'Stable' });
       await createExpense({ accountId: account.id, amount: 0.123456 });
 
       const exported = await helpers.exportBackup();
       expect(exported.statusCode).toBe(200);
       const archive = helpers.parseBackupArchive({ buffer: exported.body });
-      const reference = JSON.parse(archive.files.get('reference/custom-currencies.json')!.toString('utf8'));
-      expect(reference).toEqual([{ code: USDT, currency: 'Tether', digits: 6, symbol: 'T', isCustom: true }]);
-      expect(JSON.stringify(reference)).not.toContain('createdByUserId');
+      const holdings = archive.readData({ name: 'users-currencies' }) as Record<string, unknown>[];
+      expect(holdings.find((row) => row.currencyCode === USDT)).toMatchObject({
+        nameOverride: 'Tether',
+        symbolOverride: 'T',
+        decimalsOverride: 6,
+      });
 
       // A fresh instance has neither the user rows nor the global currency row.
       await helpers.wipeUserData();
@@ -653,12 +1011,15 @@ describe('Custom currencies', () => {
       const status = await helpers.waitForRestore({ jobId: restore.jobId! });
       expect(status.status).toBe('completed');
 
-      const row = await Currencies.findByPk(USDT);
-      expect(row).toMatchObject({ isCustom: true, digits: 6, symbol: 'T', number: null });
-      expect(row!.createdByUserId).not.toBeNull();
+      expect(await Currencies.findByPk(USDT)).toMatchObject({
+        currency: USDT,
+        isCustom: true,
+        digits: 8,
+        number: null,
+      });
 
       expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([
-        { code: USDT, name: 'Tether', decimals: 6, symbol: 'T', isCustom: true, logoUrl: null },
+        { code: USDT, name: 'Tether', decimals: 6, symbol: 'T', isCustom: true, ...NO_LOGO },
       ]);
 
       const restoredAccount = (await helpers.getAccounts()).find((candidate) => candidate.name === 'Stable');
@@ -668,33 +1029,80 @@ describe('Custom currencies', () => {
       expect(restoredTransactions.map((transaction) => Number(transaction.amount))).toContain(0.123456);
     });
 
-    it('carries the logo of a custom currency through export and restore', async () => {
-      const logoUrl = 'https://coin-images.coingecko.com/coins/images/325/large/Tether.png';
-      await helpers.createCustomCurrency({ payload: { code: USDT, name: 'Tether', decimals: 6, symbol: 'T' } });
-      await helpers.updateCustomCurrency({ code: USDT, payload: { logoUrl } });
+    it('refuses with 422 an archive that defines a custom code twice', async () => {
+      await helpers.createCustomCurrency({ payload: sat() });
+      const exported = await helpers.exportBackup();
+      const archive = helpers.parseBackupArchive({ buffer: exported.body });
+      const holdings = archive.readData({ name: 'users-currencies' }) as Record<string, unknown>[];
+      const satHolding = holdings.find((row) => row.currencyCode === SAT)!;
+      archive.files.set(
+        'data/users-currencies.json',
+        Buffer.from(JSON.stringify([...holdings, { ...satHolding, id: randomUUID(), decimalsOverride: 2 }])),
+      );
+
+      const restore = await helpers.restoreBackup({
+        fileContent: await helpers.repackBackup({ files: archive.files }),
+      });
+
+      expect(restore.statusCode).toBe(422);
+      expect(restore.message).toContain(`"${SAT}"`);
+      expect(await UsersCurrencies.count({ where: { userId: await userId(), currencyCode: SAT } })).toBe(1);
+    });
+
+    it('refuses with 422 an archive whose custom definition breaks the definition rules', async () => {
+      await helpers.createCustomCurrency({ payload: sat() });
+      const exported = await helpers.exportBackup();
+      const archive = helpers.parseBackupArchive({ buffer: exported.body });
+      const holdings = archive.readData({ name: 'users-currencies' }) as Record<string, unknown>[];
+      archive.files.set(
+        'data/users-currencies.json',
+        Buffer.from(
+          JSON.stringify(holdings.map((row) => (row.currencyCode === SAT ? { ...row, decimalsOverride: 99 } : row))),
+        ),
+      );
+
+      const restore = await helpers.restoreBackup({
+        fileContent: await helpers.repackBackup({ files: archive.files }),
+      });
+
+      expect(restore.statusCode).toBe(422);
+      expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([expect.objectContaining({ code: SAT })]);
+    });
+
+    it('carries the logo image of a custom currency through export and restore as its own copy', async () => {
+      const created = await helpers.createCustomCurrency({
+        payload: { code: USDT, name: 'Tether', decimals: 6, rate: { value: RATE }, logoImage: PNG_1X1_DATA_URL },
+        raw: true,
+      });
 
       const exported = await helpers.exportBackup();
       const archive = helpers.parseBackupArchive({ buffer: exported.body });
-      const holdings = archive.readData({ name: 'users-currencies' }) as { currencyCode: string; logoUrl: unknown }[];
-      expect(holdings.find((row) => row.currencyCode === USDT)!.logoUrl).toBe(logoUrl);
+      const holdings = archive.readData({ name: 'users-currencies' }) as Record<string, unknown>[];
+      expect(holdings.find((row) => row.currencyCode === USDT)!.logoImageId).toBe(created.logoImageId);
 
       await helpers.wipeUserData();
       const status = await restoreArchive({ fileContent: exported.body.toString('base64') });
       expect(status.status).toBe('completed');
 
-      expect((await helpers.listCustomCurrencies({ raw: true })).find((item) => item.code === USDT)!.logoUrl).toBe(
-        logoUrl,
-      );
+      const restored = (await helpers.listCustomCurrencies({ raw: true })).find((item) => item.code === USDT)!;
+      expect(restored.logoImageId).toMatch(UUID_PATTERN);
+      expect(restored.logoImageId).not.toBe(created.logoImageId);
+      expect((await helpers.getLogoImage({ id: restored.logoImageId! })).statusCode).toBe(200);
     });
 
-    it('drops a logo that is not an https URL when an archive carries one', async () => {
-      await helpers.createCustomCurrency({ payload: { code: USDT, name: 'Tether', decimals: 6 } });
+    it('restores an ISO holding without a logo when an archive carries one', async () => {
+      const created = await helpers.createCustomCurrency({
+        payload: { code: USDT, name: 'Tether', decimals: 6, rate: { value: RATE }, logoImage: PNG_1X1_DATA_URL },
+        raw: true,
+      });
 
       const exported = await helpers.exportBackup();
       const archive = helpers.parseBackupArchive({ buffer: exported.body });
       const holdings = archive.readData({ name: 'users-currencies' }) as Record<string, unknown>[];
       const forged = holdings.map((row) =>
-        row.currencyCode === USDT ? { ...row, logoUrl: 'javascript:alert(1)' } : row,
+        row.currencyCode === global.BASE_CURRENCY_CODE
+          ? { ...row, logoInitials: 'X', logoColor: '#ff0000', logoImageId: created.logoImageId }
+          : row,
       );
       archive.files.set('data/users-currencies.json', Buffer.from(JSON.stringify(forged)));
 
@@ -702,68 +1110,48 @@ describe('Custom currencies', () => {
       const status = await restoreArchive({ fileContent: await helpers.repackBackup({ files: archive.files }) });
       expect(status.status).toBe('completed');
 
-      expect(
-        (await helpers.listCustomCurrencies({ raw: true })).find((item) => item.code === USDT)!.logoUrl,
-      ).toBeNull();
+      expect(await heldLogo({ code: global.BASE_CURRENCY_CODE })).toEqual(NO_LOGO);
+      expect((await heldLogo({ code: USDT })).logoImageId).toMatch(UUID_PATTERN);
     });
 
     describe('when another user defined the same code first', () => {
       const defineAsBob = async () => {
-        const bob = await helpers.signUpSecondUser();
+        const bob = await helpers.provisionSecondUserWithBaseCurrency();
         await helpers.asUser({
           cookies: bob.cookies,
           fn: () =>
             helpers.createCustomCurrency({
-              payload: { code: SAT, name: 'Bob Sats', decimals: 3, symbol: 'b' },
+              payload: { code: SAT, name: 'Bob Sats', decimals: 3, symbol: 'b', rate: { value: RATE } },
               raw: true,
             }),
         });
+        return bob;
       };
 
-      it("exports the user's own definition, not the one the global row holds, and restores it as theirs", async () => {
-        await defineAsBob();
+      it("exports the user's own definition and restores it as theirs", async () => {
+        const bob = await defineAsBob();
         await helpers.createCustomCurrency({ payload: sat({ name: 'My Sats', decimals: 8 }) });
 
         const exported = await helpers.exportBackup();
         const archive = helpers.parseBackupArchive({ buffer: exported.body });
-        const reference = JSON.parse(archive.files.get('reference/custom-currencies.json')!.toString('utf8'));
-        expect(reference).toEqual([{ code: SAT, currency: 'My Sats', digits: 8, symbol: null, isCustom: true }]);
-        expect(JSON.stringify(reference)).not.toContain('Bob');
+        const holdings = archive.readData({ name: 'users-currencies' }) as Record<string, unknown>[];
+        expect(holdings.find((row) => row.currencyCode === SAT)).toMatchObject({
+          nameOverride: 'My Sats',
+          decimalsOverride: 8,
+          symbolOverride: null,
+        });
+        expect(JSON.stringify(holdings)).not.toContain('Bob');
 
         await helpers.wipeUserData();
         const status = await restoreArchive({ fileContent: exported.body.toString('base64') });
         expect(status.status).toBe('completed');
 
         expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([
-          { code: SAT, name: 'My Sats', decimals: 8, symbol: null, isCustom: true, logoUrl: null },
+          { code: SAT, name: 'My Sats', decimals: 8, symbol: null, isCustom: true, ...NO_LOGO },
         ]);
-        // Bob's definition on the global row is untouched.
-        expect(await Currencies.findByPk(SAT)).toMatchObject({ currency: 'Bob Sats', digits: 3, symbol: 'b' });
-      });
-
-      it('keeps a symbol the user cleared cleared, even when the archive carries a symbol for the code', async () => {
-        await defineAsBob();
-        await helpers.createCustomCurrency({ payload: sat({ name: 'My Sats', decimals: 8, symbol: 'S' }) });
-        await helpers.updateCustomCurrency({ code: SAT, payload: { symbol: null } });
-
-        const exported = await helpers.exportBackup();
-        const archive = helpers.parseBackupArchive({ buffer: exported.body });
-        const reference = JSON.parse(archive.files.get('reference/custom-currencies.json')!.toString('utf8'));
-        expect(reference).toEqual([{ code: SAT, currency: 'My Sats', digits: 8, symbol: null, isCustom: true }]);
-
-        // An archive written before the definition followed the user's overrides carried the symbol
-        // of the global row; the cleared symbol in `users-currencies` still wins.
-        archive.files.set(
-          'reference/custom-currencies.json',
-          Buffer.from(JSON.stringify([{ ...reference[0], symbol: 'S' }])),
-        );
-        await helpers.wipeUserData();
-        const status = await restoreArchive({ fileContent: await helpers.repackBackup({ files: archive.files }) });
-        expect(status.status).toBe('completed');
-
-        expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([
-          { code: SAT, name: 'My Sats', decimals: 8, symbol: null, isCustom: true, logoUrl: null },
-        ]);
+        expect(
+          await helpers.asUser({ cookies: bob.cookies, fn: () => helpers.listCustomCurrencies({ raw: true }) }),
+        ).toEqual([expect.objectContaining({ name: 'Bob Sats', decimals: 3, symbol: 'b' })]);
       });
 
       it('drops an account that names the code without the archive defining it, and says so', async () => {
@@ -796,18 +1184,36 @@ describe('Custom currencies', () => {
     });
 
     it("never attaches another user's custom currency that an archive names without defining", async () => {
-      const bob = await helpers.signUpSecondUser();
+      const bob = await helpers.provisionSecondUserWithBaseCurrency();
       await helpers.asUser({
         cookies: bob.cookies,
-        fn: () => helpers.createCustomCurrency({ payload: { code: USDT, name: 'Bob USDT', decimals: 2 }, raw: true }),
+        fn: () =>
+          helpers.createCustomCurrency({
+            payload: { code: USDT, name: 'Bob USDT', decimals: 2, rate: { value: RATE } },
+            raw: true,
+          }),
       });
 
-      await helpers.createCustomCurrency({ payload: { code: USDT, name: 'Tether', decimals: 6 } });
+      await helpers.createCustomCurrency({
+        payload: { code: USDT, name: 'Tether', decimals: 6, rate: { value: RATE } },
+      });
       const exported = await helpers.exportBackup();
       const archive = helpers.parseBackupArchive({ buffer: exported.body });
 
       // The archive keeps the user holding but loses the definition that vouches for it.
-      archive.files.set('reference/custom-currencies.json', Buffer.from('[]'));
+      const holdings = archive.readData({ name: 'users-currencies' }) as Record<string, unknown>[];
+      archive.files.set(
+        'data/users-currencies.json',
+        Buffer.from(
+          JSON.stringify(
+            holdings.map((row) =>
+              row.currencyCode === USDT
+                ? { ...row, nameOverride: null, symbolOverride: null, decimalsOverride: null }
+                : row,
+            ),
+          ),
+        ),
+      );
       const tampered = await helpers.repackBackup({ files: archive.files });
 
       const restore = await helpers.restoreBackup({ fileContent: tampered });
@@ -815,6 +1221,37 @@ describe('Custom currencies', () => {
       expect(status.status).toBe('completed');
 
       expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([]);
+      const rates = await UserExchangeRates.findAll({
+        where: { userId: await userId() },
+        attributes: ['baseCode', 'quoteCode'],
+      });
+      expect(rates.filter((rate) => rate.baseCode === USDT || rate.quoteCode === USDT)).toEqual([]);
+    });
+
+    it('refuses with 422 an archive that defines a code that is ISO on this instance', async () => {
+      const base = global.BASE_CURRENCY_CODE;
+      const exported = await helpers.exportBackup();
+      const archive = helpers.parseBackupArchive({ buffer: exported.body });
+      const holdings = archive.readData({ name: 'users-currencies' }) as Record<string, unknown>[];
+      archive.files.set(
+        'data/users-currencies.json',
+        Buffer.from(
+          JSON.stringify(
+            holdings.map((row) =>
+              row.currencyCode === base
+                ? { ...row, nameOverride: 'Fake', symbolOverride: 'F', decimalsOverride: 8 }
+                : row,
+            ),
+          ),
+        ),
+      );
+
+      const restore = await helpers.restoreBackup({
+        fileContent: await helpers.repackBackup({ files: archive.files }),
+      });
+
+      expect(restore.statusCode).toBe(422);
+      expect(restore.message).toContain(`"${base}" is an ISO 4217 currency code`);
     });
   });
 });

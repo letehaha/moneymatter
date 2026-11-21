@@ -17,6 +17,7 @@
  */
 import { MappingTable, type MappingTableColumn } from '@/components/lib/ui/mapping-table';
 import { useFormatCurrency } from '@/composable/formatters';
+import { toLocalNumber } from '@/js/helpers/formatters';
 import { cn } from '@/lib/utils';
 import { useAccountsStore } from '@/stores/accounts';
 import type { AccountBalanceChange } from '@bt/shared/types';
@@ -29,7 +30,7 @@ const { t } = useI18n();
 defineProps<{ changes: AccountBalanceChange[] }>();
 
 const { accountsRecord } = storeToRefs(useAccountsStore());
-const { formatAmountByCurrencyCode } = useFormatCurrency();
+const { formatAccountAmount } = useFormatCurrency();
 
 /**
  * Rows for accounts that existed before the import — the only
@@ -41,8 +42,8 @@ type ExistingAccountChange = Extract<AccountBalanceChange, { isNewAccount: false
 
 function formatAmount({ change, amount }: { change: AccountBalanceChange; amount: number }): string {
   const account = accountsRecord.value[change.accountId];
-  if (account) return formatAmountByCurrencyCode(amount, account.currencyCode);
-  return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (account) return formatAccountAmount({ amount, account, fullPrecision: true });
+  return toLocalNumber(amount, { maximumFractionDigits: 2 });
 }
 
 function formatDelta(change: ExistingAccountChange): string {

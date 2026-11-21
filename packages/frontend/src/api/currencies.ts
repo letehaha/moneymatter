@@ -98,14 +98,14 @@ export const loadUserBaseCurrency = (): Promise<UserCurrencyModel> => api.get('/
 export const createCustomCurrency = (body: CreateCustomCurrencyBody): Promise<CustomCurrencyModel> =>
   api.post('/user/currencies/custom', body);
 
-/** Changing `decimals` is allowed only while none of the user's rows use the currency (409 otherwise). */
+/** Changing `decimals` is allowed only while none of the user's rows use the currency (422 `currencyInUse` otherwise). */
 export const updateCustomCurrency = ({
   code,
   ...body
 }: UpdateCustomCurrencyBody & { code: string }): Promise<CustomCurrencyModel> =>
   api.put(`/user/currencies/custom/${encodeURIComponent(code)}`, body);
 
-/** Allowed only while none of the user's rows use the currency (409 otherwise). */
+/** Allowed only while none of the user's rows use the currency (422 `currencyInUse` otherwise). */
 export const deleteCustomCurrency = ({ code }: { code: string }): Promise<void> =>
   api.delete(`/user/currencies/custom/${encodeURIComponent(code)}`);
 

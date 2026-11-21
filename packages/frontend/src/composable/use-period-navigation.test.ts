@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import {
   type Period,
   getNextPeriod,
+  getPayPeriod,
   getPrevPeriod,
   isFullMonthPeriod,
   usePeriodNavigation,
@@ -179,5 +180,65 @@ describe('usePeriodNavigation', () => {
 
     expect(isFullMonth.value).toBe(false);
     expect(durationDays.value).toBe(10);
+  });
+});
+
+describe('payday', () => {
+  const payday = 25;
+
+  it('getPayPeriod returns the period containing the date', () => {
+    const before = getPayPeriod({ date: date(2025, 3, 10), payday });
+    expectDateEqual(before.from, date(2025, 2, 25));
+    expectDateEqual(before.to, date(2025, 3, 24));
+
+    const onPayday = getPayPeriod({ date: date(2025, 3, 25), payday });
+    expectDateEqual(onPayday.from, date(2025, 3, 25));
+    expectDateEqual(onPayday.to, date(2025, 4, 24));
+
+    const calendar = getPayPeriod({ date: date(2024, 2, 10) });
+    expectDateEqual(calendar.from, date(2024, 2, 1));
+    expectDateEqual(calendar.to, date(2024, 2, 29));
+  });
+
+  it('getPayPeriod handles month-end dates', () => {
+    const period = getPayPeriod({ date: date(2025, 3, 31), payday });
+    expectDateEqual(period.from, date(2025, 3, 25));
+    expectDateEqual(period.to, date(2025, 4, 24));
+  });
+
+  it('navigates whole pay periods across year boundaries', () => {
+    const period = getPayPeriod({ date: date(2025, 1, 5), payday });
+    expect(isFullMonthPeriod({ period, payday })).toBe(true);
+    expect(isFullMonthPeriod({ period })).toBe(false);
+
+    const prev = getPrevPeriod({ period, payday });
+    expectDateEqual(prev.from, date(2024, 11, 25));
+    expectDateEqual(prev.to, date(2024, 12, 24));
+
+    const next = getNextPeriod({ period, payday });
+    expectDateEqual(next.from, date(2025, 1, 25));
+    expectDateEqual(next.to, date(2025, 2, 24));
+  });
+
+  it('keeps the span when navigating multi-period ranges', () => {
+    const period = { from: date(2025, 1, 25), to: date(2025, 4, 24) };
+    const prev = getPrevPeriod({ period, payday });
+    expectDateEqual(prev.from, date(2024, 10, 25));
+    expectDateEqual(prev.to, date(2025, 1, 24));
+
+    const next = getNextPeriod({ period, payday });
+    expectDateEqual(next.from, date(2025, 4, 25));
+    expectDateEqual(next.to, date(2025, 7, 24));
+  });
+
+  it('still steps calendar-aligned ranges by whole months', () => {
+    const year = { from: date(2025, 1, 1), to: date(2025, 12, 31) };
+    const prevYear = getPrevPeriod({ period: year, payday });
+    expectDateEqual(prevYear.from, date(2024, 1, 1));
+    expectDateEqual(prevYear.to, date(2024, 12, 31));
+
+    const nextMonth = getNextPeriod({ period: { from: date(2025, 2, 1), to: date(2025, 2, 28) }, payday });
+    expectDateEqual(nextMonth.from, date(2025, 3, 1));
+    expectDateEqual(nextMonth.to, date(2025, 3, 31));
   });
 });

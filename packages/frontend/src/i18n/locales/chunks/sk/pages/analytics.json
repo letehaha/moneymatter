@@ -49,7 +49,8 @@
         "last12Months": "Posledných 12 mesiacov",
         "thisYear": "Tento rok",
         "previousYear": "Predchádzajúci rok",
-        "allTime": "Za celý čas"
+        "allTime": "Za celý čas",
+        "currentPayPeriod": "Aktuálne výplatné obdobie"
       },
       "composition": {
         "detail": "Detail",
@@ -70,7 +71,7 @@
         "amount": "Suma",
         "shareOfIncome": "Podiel na príjmoch",
         "shareOfExpenses": "Podiel na výdavkoch",
-        "saved": "Ušetrené",
+        "saved": "Usporené",
         "pctOfIncome": "{pct} z príjmov",
         "pctSavingsRate": "Miera úspor: {pct}",
         "keptAsCash": "Ponechané v hotovosti",
@@ -83,7 +84,7 @@
       }
     },
     "trends": {
-      "subtitle": "Porovnajte výdavky, príjmy a úspory s predchádzajúcim obdobím.",
+      "subtitle": "Porovnajte výdavky a príjmy s predchádzajúcim obdobím.",
       "metrics": {
         "expenses": "Výdavky",
         "income": "Príjmy",
@@ -94,39 +95,75 @@
         "comparisonPeriod": "Predchádzajúce obdobie",
         "cumulativeNote": "Kumulatívny súčet k tomuto bodu"
       },
+      "scope": {
+        "label": "Rozsah kategórií",
+        "all": "Všetky kategórie",
+        "up": "O úroveň vyššie",
+        "transactions": "Transakcie",
+        "count": "{count} kategória | {count} kategórie | {count} kategórií",
+        "more": "+{count}",
+        "allExcept": "Všetko okrem {list}",
+        "clear": "Vymazať"
+      },
       "categoryBreakdown": {
         "title": "Rozdelenie podľa kategórií",
         "noData": "Za toto obdobie nie sú žiadne údaje",
         "viewAll": "Zobraziť všetky kategórie",
-        "moreCount": "{count} ďalších"
+        "moreCount": "{count} ďalších",
+        "noSubcategory": "{name} · bez podkategórie",
+        "byLevel": "Podľa úrovne",
+        "detail": "Detail",
+        "others": "Ostatné"
+      },
+      "hero": {
+        "vsPrevious": "{percent} % oproti predchádzajúcemu obdobiu",
+        "same": "Rovnaké ako v predchádzajúcom období"
+      },
+      "overTime": {
+        "title": "V čase",
+        "cumulative": "Kumulatívne",
+        "perPeriod": "Za obdobie",
+        "granularity": {
+          "monthly": "Mesačne",
+          "quarterly": "Štvrťročne",
+          "yearly": "Ročne"
+        }
+      },
+      "transactionsCard": {
+        "title": "Transakcie",
+        "largest": "Najväčšie",
+        "recent": "Nedávne"
       },
       "monthlyComparison": {
-        "title": "Mesačné porovnanie",
         "allCategories": "Všetky kategórie",
         "average": "Priemer",
         "total": "Spolu",
-        "vsLastMonth": "vs. predchádzajúci mesiac",
-        "viewTransactions": "Zobraziť transakcie"
-      },
-      "cumulativeProgress": {
-        "title": "Kumulatívny priebeh"
+        "vsPrevious": {
+          "monthly": "oproti minulému mesiacu",
+          "quarterly": "oproti minulému štvrťroku",
+          "yearly": "oproti minulému roku"
+        },
+        "show": {
+          "monthly": "Zobraziť tento mesiac",
+          "quarterly": "Zobraziť štvrťrok",
+          "yearly": "Zobraziť rok"
+        }
       },
       "filters": {
         "button": "Filtre",
         "title": "Filtre",
-        "categories": "Kategórie",
         "include": "Zahrnúť",
         "exclude": "Vylúčiť",
         "accounts": "Účty",
         "payees": "Príjemcovia",
-        "tags": "Štítky",
+        "tags": "Značky",
         "reset": "Vynulovať"
       },
       "legend": {
         "hide": "Skryť z grafu",
         "show": "Zobraziť v grafe"
       },
-      "vsPreviousPeriod": "vs. predchádzajúce obdobie",
+      "vsPreviousPeriod": "oproti predchádzajúcemu obdobiu",
       "loadError": "Údaje sa nepodarilo načítať",
       "noData": "Nie sú dostupné žiadne údaje",
       "noDataHint": "Za toto obdobie nie sú zaznamenané žiadne transakcie"
@@ -325,7 +362,7 @@
         "nextGoal": "{name} · ďalší",
         "eta": "za {duration}",
         "growthOnly": "len rast",
-        "reached": "Dosiahnuté",
+        "reached": "Dosiahnutý",
         "reachedCoast": "Dosiahnuté · sporenie je teraz voliteľné",
         "reachedBaristaCovers": "Príjem z čiastočného úväzku pokryje vaše výdavky",
         "actions": {
@@ -336,6 +373,45 @@
           "addBirthYear": "Pridať rok narodenia"
         }
       },
+      "pace": {
+        "row": "{status} oproti {anchor}",
+        "noHistory": "Nedostatočná história pred {month}",
+        "loadFailed": "Porovnanie sa nepodarilo načítať",
+        "compareWith": "Porovnať s {month}",
+        "picker": {
+          "title": "Porovnať s",
+          "rollingLabel": "{month} · pred 1 rokom",
+          "rolling": "pred 1 rokom",
+          "rollingHint": "Posuvné · aktuálne {month}",
+          "specific": "Konkrétny mesiac",
+          "specificHint": "Zostáva pevný",
+          "prevYear": "Predchádzajúci rok",
+          "nextYear": "Nasledujúci rok",
+          "earliest": "Najskorší je {month}. FIRE potrebuje pred ním 3 mesiace sledovaných výdavkov."
+        },
+        "details": {
+          "title": "Tempo od {month}",
+          "moved": "Váš dátum FIRE sa posunul z {from} na {to}.",
+          "withinBand": "Váš dátum FIRE je v rámci {tolerance} od predpovede z {month} ({date}).",
+          "backInReach": "Podľa čísel z {month} bol FIRE nedosiahnuteľný. Teraz je to {date}.",
+          "offTrack": "Predpoveď z {month} bola {date}. Podľa dnešných čísel je FIRE nedosiahnuteľný.",
+          "metric": "Metrika",
+          "today": "Dnes",
+          "change": "Zmeniť",
+          "fireDate": "Dátum FIRE",
+          "saved": "Usporené doteraz",
+          "spending": "Výdavky",
+          "saving": "Sporenie",
+          "expected": "očakávané {amount}",
+          "sooner": "o {duration} skôr",
+          "later": "o {duration} neskôr",
+          "sameMonth": "Rovnaký mesiac",
+          "outOfReach": "Nedosiahnuteľný",
+          "band": "Na dobrej ceste znamená v rámci {tolerance} (2 % zostávajúceho času do FIRE).",
+          "recorded": "Zostatok, cash flow a predpoklady k {date} sa prepočítavajú naživo z vašich dát.",
+          "notRecorded": "Zostatok a cash flow k {date} sa prepočítavajú naživo z vašich dát. Vaše vtedajšie predpoklady neboli zaznamenané, preto sa používajú dnešné."
+        }
+      },
       "chart": {
         "ariaLabel": "História čistej hodnoty majetku a predpokladaná cesta k vášmu cieľovému číslu FIRE",
         "actual": "Skutočnosť",
@@ -343,10 +419,13 @@
         "range": "±2 body výnosu",
         "today": "Dnes",
         "typeTarget": "{type} · {amount}",
-        "typeLabel": "{type} · {date}"
+        "typeLabel": "{type} · {date}",
+        "forecast": "Predpoveď na {month}",
+        "forecastLabel": "Predpoveď na {month} · {date}",
+        "actualSince": "Skutočnosť od {month}"
       },
       "milestones": {
-        "reached": "Dosiahnuté",
+        "reached": "Dosiahnutý",
         "reachedOn": "Dosiahnuté {date}",
         "eta": "za {duration} · {date}"
       },
@@ -438,6 +517,7 @@
     },
     "table": {
       "total": "Spolu",
+      "net": "Čistý zostatok",
       "collapseAll": "Zbaliť všetko",
       "expandAll": "Rozbaliť všetko",
       "expandRow": "Rozbaliť",
@@ -458,7 +538,7 @@
     "calcInfo": {
       "trigger": "Ako sa to počíta",
       "title": "Ako sa to počíta",
-      "savedHeading": "Ušetrené",
+      "savedHeading": "Usporené",
       "savedBody": "Peniaze, ktoré si odložíte — príjmy mínus výdavky. Presun peňazí medzi vlastnými účtami alebo do investičného portfólia sa nepočíta ako sporenie.",
       "grownHeading": "Zhodnotenie",
       "grownBody": "To, ako sa vďaka trhu vyvinula hodnota vašich pozícií — zmeny cien, plus dividendy, mínus poplatky. Vložené peniaze sa nikdy nepočítajú ako zhodnotenie.",
@@ -474,7 +554,7 @@
     "chart": {
       "title": "Úspory vs. zhodnotenie",
       "subtitle": "Kumulatívne súčty za vybrané obdobie.",
-      "saved": "Ušetrené",
+      "saved": "Usporené",
       "grown": "Zhodnotenie",
       "totalGained": "Celkový zisk",
       "thisPeriod": "Toto obdobie",
@@ -545,7 +625,7 @@
       "averagePerPeriod": "Priemer za obdobie"
     },
     "chart": {
-      "vsPrevious": "vs. predchádzajúce obdobie"
+      "vsPrevious": "oproti predchádzajúcemu obdobiu"
     },
     "states": {
       "noData": "V tomto rozsahu nie sú žiadne vklady",

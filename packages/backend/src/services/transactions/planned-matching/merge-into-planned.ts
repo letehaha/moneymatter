@@ -1,8 +1,8 @@
 import { ACCOUNT_TYPES, type TransactionLocation } from '@bt/shared/types';
-import { roundTransactionMoney } from '@common/lib/round-transaction-money';
 import { Money } from '@common/types/money';
+import { getAccountOwnerUserId } from '@models/accounts.model';
 import Transactions from '@models/transactions.model';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { resolvePayeeForIncomingRow } from '@services/payees/resolve-payee-for-incoming-row';
 
 export interface IncomingTransactionData {
@@ -45,29 +45,15 @@ export const mergeIntoPlanned = async ({
   planned: Transactions;
   incoming: IncomingTransactionData;
 }): Promise<Transactions> => {
-  const originalSource = planned.originalCurrencyCode ? planned : incoming;
-
-  const {
-    commissionRate = Money.zero(),
-    cashbackAmount = Money.zero(),
-    originalAmount = null,
-  } = await roundTransactionMoney({
-    values: {
-      commissionRate: incoming.commissionRate,
-      cashbackAmount: incoming.cashbackAmount,
-      originalAmount: originalSource.originalAmount ?? null,
-    },
-    userId: planned.userId,
-    currencyCode: planned.currencyCode,
-    refCurrencyCode: planned.refCurrencyCode,
-    originalCurrencyCode: originalSource.originalCurrencyCode,
-  });
+  const commissionRate = incoming.commissionRate ?? Money.zero();
   const isRefCurrency = planned.refCurrencyCode === planned.currencyCode;
+  const definitionOwnerUserId = isRefCurrency ? planned.userId : await getAccountOwnerUserId({ id: planned.accountId });
 
   const refAmount = isRefCurrency
     ? planned.amount
-    : await calculateRefAmountOrNull({
+    : await calculateRefAmount({
         userId: planned.userId,
+        definitionOwnerUserId,
         amount: planned.amount,
         baseCode: planned.currencyCode,
         quoteCode: planned.refCurrencyCode,
@@ -76,8 +62,9 @@ export const mergeIntoPlanned = async ({
 
   const refCommissionRate = isRefCurrency
     ? commissionRate
-    : await calculateRefAmountOrNull({
+    : await calculateRefAmount({
         userId: planned.userId,
+        definitionOwnerUserId,
         amount: commissionRate,
         baseCode: planned.currencyCode,
         quoteCode: planned.refCurrencyCode,
@@ -98,11 +85,13 @@ export const mergeIntoPlanned = async ({
           logContext: { plannedTransactionId: planned.id, accountId: planned.accountId },
         }));
 
+  const originalSource = planned.originalCurrencyCode ? planned : incoming;
+
   await planned.update({
     refAmount,
     refCommissionRate,
     commissionRate,
-    cashbackAmount,
+    cashbackAmount: incoming.cashbackAmount ?? Money.zero(),
     time: incoming.time,
     originalId: incoming.originalId ?? null,
     accountType: incoming.accountType,
@@ -110,7 +99,7 @@ export const mergeIntoPlanned = async ({
     externalUrl: planned.externalUrl ?? incoming.externalUrl ?? null,
     externalReference: planned.externalReference ?? incoming.externalReference ?? null,
     location: planned.location ?? incoming.location ?? null,
-    originalAmount,
+    originalAmount: originalSource.originalAmount ?? null,
     originalCurrencyCode: originalSource.originalCurrencyCode ?? null,
     externalData: {
       ...incoming.externalData,

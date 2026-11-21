@@ -1,3 +1,5 @@
+import type { LogoSelection } from '@/components/common/logo-selection';
+import LogoSquareField from '@/components/common/logo-square-field.vue';
 import formsEn from '@/i18n/locales/chunks/en/forms.json';
 import currenciesEn from '@/i18n/locales/chunks/en/settings/currencies.json';
 import { ApiErrorResponseError } from '@/js/errors';
@@ -9,37 +11,32 @@ import { createI18n } from 'vue-i18n';
 import CustomCurrencyDialog from './custom-currency-dialog.vue';
 import type { EditableCustomCurrency } from './types';
 
-const { mockCreate, mockUpdate, mockSearch, mockLoadCurrencies, mockAddSuccess, state } = vi.hoisted(() => ({
+const { mockCreate, mockUpdate, mockLoadCurrencies, mockAddSuccess, mockAddWarning, state } = vi.hoisted(() => ({
   mockCreate: vi.fn(),
   mockUpdate: vi.fn(),
-  mockSearch: vi.fn(),
   mockLoadCurrencies: vi.fn(),
   mockAddSuccess: vi.fn(),
-  state: { userCurrencyCodes: [] as string[] },
+  mockAddWarning: vi.fn(),
+  state: {
+    userCurrencies: [] as Array<{ currencyCode: string }>,
+  },
 }));
 
 vi.mock('@/api/currencies', () => ({
   createCustomCurrency: mockCreate,
   updateCustomCurrency: mockUpdate,
-  searchCoingeckoCoins: mockSearch,
+  getBaseCurrencyChangeStatus: vi.fn(),
 }));
-
-// The icon reads the user's currency list; here it only reports which logo the dialog hands it.
-vi.mock('@/components/common/currency-icon.vue', async () => {
-  const { defineComponent, h } = await import('vue');
-  return {
-    default: defineComponent({
-      name: 'CurrencyIconStub',
-      props: ['code', 'size', 'logoUrl'],
-      setup: (props) => () =>
-        h('span', { 'data-testid': 'currency-icon-stub', 'data-code': props.code, 'data-logo': props.logoUrl ?? '' }),
-    }),
-  };
-});
 
 vi.mock('@/components/notification-center', () => ({
-  useNotificationCenter: () => ({ addSuccessNotification: mockAddSuccess, addErrorNotification: vi.fn() }),
+  useNotificationCenter: () => ({
+    addSuccessNotification: mockAddSuccess,
+    addWarningNotification: mockAddWarning,
+    addErrorNotification: vi.fn(),
+  }),
 }));
+
+vi.mock('@/lib/sentry', () => ({ captureException: vi.fn() }));
 
 vi.mock('pinia', async (importOriginal) => {
   const original = await importOriginal<typeof import('pinia')>();
@@ -50,7 +47,7 @@ vi.mock('@/stores', async () => {
   const { computed, ref } = await import('vue');
   return {
     useCurrenciesStore: () => ({
-      currencies: computed(() => state.userCurrencyCodes.map((currencyCode) => ({ currencyCode }))),
+      currencies: computed(() => state.userCurrencies),
       isoCurrencies: ref([{ code: 'USD' }, { code: 'EUR' }]),
       loadCurrencies: mockLoadCurrencies,
     }),
@@ -102,12 +99,13 @@ const field = (wrapper: VueWrapper, testId: string) =>
 
 const fill = async (
   wrapper: VueWrapper,
-  values: { code?: string; name?: string; symbol?: string; decimals?: string },
+  values: { code?: string; name?: string; symbol?: string; decimals?: string; rate?: string },
 ) => {
   if (values.code !== undefined) await field(wrapper, 'custom-currency-code').setValue(values.code);
   if (values.name !== undefined) await field(wrapper, 'custom-currency-name').setValue(values.name);
   if (values.symbol !== undefined) await field(wrapper, 'custom-currency-symbol').setValue(values.symbol);
   if (values.decimals !== undefined) await field(wrapper, 'custom-currency-decimals').setValue(values.decimals);
+  if (values.rate !== undefined) await field(wrapper, 'custom-currency-rate').setValue(values.rate);
 };
 
 const submit = async (wrapper: VueWrapper) => {
@@ -115,49 +113,46 @@ const submit = async (wrapper: VueWrapper) => {
   await flushPromises();
 };
 
-const TETHER: EditableCustomCurrency = { code: 'USDT', name: 'Tether', symbol: '₮', decimals: 6 };
-const TETHER_LOGO = 'https://img.test/usdt.png';
-const SEARCH_DEBOUNCE_MS = 300;
-
-const COIN = {
-  coinId: 'tether',
-  symbol: 'usdt',
+const TETHER: EditableCustomCurrency = {
+  code: 'USDT',
   name: 'Tether',
-  logoUrl: 'https://img.test/tether.png',
-  marketCapRank: 3,
-};
-const COIN_WITHOUT_LOGO = {
-  coinId: 'tether-gold',
-  symbol: 'xaut',
-  name: 'Tether Gold',
-  logoUrl: null,
-  marketCapRank: 40,
+  symbol: '₮',
+  decimals: 6,
+  logoDomain: null,
+  logoInitials: null,
+  logoColor: null,
+  logoIcon: null,
+  logoImageId: null,
 };
 
-const iconLogo = (wrapper: VueWrapper) => wrapper.get('[data-testid="currency-icon-stub"]').attributes('data-logo');
-
-const searchCoins = async (wrapper: VueWrapper, term: string) => {
-  await field(wrapper, 'rate-source-coin-search').setValue(term);
-  await vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS);
+const pickLogo = async (wrapper: VueWrapper, selection: LogoSelection | null) => {
+  wrapper.getComponent(LogoSquareField).vm.$emit('update:modelValue', selection);
   await flushPromises();
 };
 
 describe('CustomCurrencyDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    state.userCurrencyCodes = [];
+    state.userCurrencies = [{ currencyCode: 'USD' }];
     mockCreate.mockResolvedValue({});
     mockUpdate.mockResolvedValue({});
+    mockLoadCurrencies.mockResolvedValue(undefined);
   });
 
   describe('creating', () => {
-    it('uppercases the code, sends the definition and refreshes the currency list', async () => {
+    it('uppercases the code, sends the definition with its rate in the base currency and refreshes', async () => {
       const wrapper = mountDialog();
 
-      await fill(wrapper, { code: 'usdt', name: ' Tether ', symbol: '₮', decimals: '6' });
+      await fill(wrapper, { code: 'usdt', name: ' Tether ', symbol: '₮', decimals: '6', rate: '1.0002' });
       await submit(wrapper);
 
-      expect(mockCreate).toHaveBeenCalledWith({ code: 'USDT', name: 'Tether', symbol: '₮', decimals: 6 });
+      expect(mockCreate).toHaveBeenCalledWith({
+        code: 'USDT',
+        name: 'Tether',
+        symbol: '₮',
+        decimals: 6,
+        rate: { value: 1.0002 },
+      });
       expect(mockLoadCurrencies).toHaveBeenCalledWith({ force: true });
       expect(mockAddSuccess).toHaveBeenCalledWith('Custom currency added');
       expect(wrapper.emitted('update:open')?.at(-1)).toEqual([false]);
@@ -166,10 +161,63 @@ describe('CustomCurrencyDialog', () => {
     it('sends no symbol when the field is left empty, and accepts 0 decimals', async () => {
       const wrapper = mountDialog();
 
-      await fill(wrapper, { code: 'SAT', name: 'Satoshi', decimals: '0' });
+      await fill(wrapper, { code: 'SAT', name: 'Satoshi', decimals: '0', rate: '0.0006' });
       await submit(wrapper);
 
-      expect(mockCreate).toHaveBeenCalledWith({ code: 'SAT', name: 'Satoshi', symbol: null, decimals: 0 });
+      expect(mockCreate).toHaveBeenCalledWith({
+        code: 'SAT',
+        name: 'Satoshi',
+        symbol: null,
+        decimals: 0,
+        rate: { value: 0.0006 },
+      });
+    });
+
+    it('previews the symbol monogram the currency is drawn with until a logo is picked', async () => {
+      const wrapper = mountDialog();
+
+      await fill(wrapper, { code: 'usdt', name: 'Tether', symbol: '₮' });
+
+      expect(wrapper.get('[data-testid="custom-currency-logo-placeholder"]').text()).toBe('₮');
+    });
+
+    it('sends the logo the user picked', async () => {
+      const wrapper = mountDialog();
+
+      await fill(wrapper, { code: 'SAT', name: 'Satoshi', decimals: '8', rate: '1' });
+      await pickLogo(wrapper, { kind: 'monogram', initials: 'S', color: '#f7931a' });
+      await submit(wrapper);
+
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ code: 'SAT', logoInitials: 'S', logoColor: '#f7931a' }),
+      );
+    });
+
+    it.each<[string, string]>([
+      ['an empty rate', ''],
+      ['a zero rate', '0'],
+      ['a negative rate', '-1'],
+    ])('refuses %s without calling the API', async (_label, rate) => {
+      const wrapper = mountDialog();
+
+      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6', rate });
+      await submit(wrapper);
+
+      expect(mockCreate).not.toHaveBeenCalled();
+      expect(wrapper.text()).toContain('Enter a rate above 0');
+    });
+
+    it('reports success and closes even when the currency list fails to refresh', async () => {
+      mockLoadCurrencies.mockRejectedValue(new Error('offline'));
+      const wrapper = mountDialog();
+
+      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6', rate: '1' });
+      await submit(wrapper);
+
+      expect(mockAddSuccess).toHaveBeenCalledWith('Custom currency added');
+      expect(wrapper.emitted('update:open')?.at(-1)).toEqual([false]);
+      expect(mockAddWarning).toHaveBeenCalled();
+      expect(wrapper.find('[data-testid="custom-currency-error"]').exists()).toBe(false);
     });
 
     it('previews an amount with the chosen decimals and symbol', async () => {
@@ -180,11 +228,19 @@ describe('CustomCurrencyDialog', () => {
       expect(wrapper.find('[data-testid="custom-currency-preview"]').text()).toBe('Example: 1,234.5000 ₮');
     });
 
-    it.each<[string, { code: string; name: string; decimals: string }, string]>([
-      ['an ISO code', { code: 'USD', name: 'Dollar', decimals: '2' }, 'This is an ISO currency code'],
-      ['a malformed code', { code: 'U', name: 'Tether', decimals: '6' }, 'Use 2 to 16 capital letters or digits'],
-      ['a missing name', { code: 'USDT', name: ' ', decimals: '6' }, 'Enter a name'],
-      ['decimals above 18', { code: 'USDT', name: 'Tether', decimals: '19' }, 'Enter a whole number from 0 to 18'],
+    it.each<[string, { code: string; name: string; decimals: string; rate: string }, string]>([
+      ['an ISO code', { code: 'USD', name: 'Dollar', decimals: '2', rate: '1' }, 'This is an ISO currency code'],
+      [
+        'a malformed code',
+        { code: 'U', name: 'Tether', decimals: '6', rate: '1' },
+        'Use 2 to 16 capital letters or digits',
+      ],
+      ['a missing name', { code: 'USDT', name: ' ', decimals: '6', rate: '1' }, 'Enter a name'],
+      [
+        'decimals above 8',
+        { code: 'USDT', name: 'Tether', decimals: '9', rate: '1' },
+        'Enter a whole number from 0 to 8',
+      ],
     ])('refuses %s without calling the API', async (_label, values, message) => {
       const wrapper = mountDialog();
 
@@ -196,10 +252,10 @@ describe('CustomCurrencyDialog', () => {
     });
 
     it('refuses a code the user already holds', async () => {
-      state.userCurrencyCodes = ['USDT'];
+      state.userCurrencies.push({ currencyCode: 'USDT' });
       const wrapper = mountDialog();
 
-      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6' });
+      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6', rate: '1' });
       await submit(wrapper);
 
       expect(mockCreate).not.toHaveBeenCalled();
@@ -212,11 +268,23 @@ describe('CustomCurrencyDialog', () => {
       );
       const wrapper = mountDialog();
 
-      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6' });
+      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6', rate: '1' });
       await submit(wrapper);
 
       expect(wrapper.find('[data-testid="custom-currency-error"]').text()).toBe('Code is taken');
       expect(mockLoadCurrencies).not.toHaveBeenCalled();
+    });
+
+    it('leaves a plan refusal to the API client toast', async () => {
+      mockCreate.mockRejectedValue(
+        new ApiErrorResponseError('plan', { code: API_ERROR_CODES.planRequired, message: 'Upgrade to Plus' }),
+      );
+      const wrapper = mountDialog();
+
+      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6', rate: '1' });
+      await submit(wrapper);
+
+      expect(wrapper.find('[data-testid="custom-currency-error"]').exists()).toBe(false);
     });
   });
 
@@ -233,6 +301,36 @@ describe('CustomCurrencyDialog', () => {
       expect(mockAddSuccess).toHaveBeenCalledWith('Custom currency updated');
     });
 
+    it('opens on the stored logo and leaves it alone when untouched', async () => {
+      const wrapper = mountDialog({ currency: { ...TETHER, logoDomain: 'tether.to' } });
+
+      expect(wrapper.getComponent(LogoSquareField).props('modelValue')).toEqual({
+        kind: 'brand',
+        domain: 'tether.to',
+      });
+
+      await submit(wrapper);
+
+      expect(mockUpdate).toHaveBeenCalledWith({ code: 'USDT', name: 'Tether', symbol: '₮' });
+    });
+
+    it('removes a stored image with logoImage null', async () => {
+      const wrapper = mountDialog({ currency: { ...TETHER, logoImageId: '00000000-0000-4000-8000-000000000001' } });
+
+      await pickLogo(wrapper, null);
+      await submit(wrapper);
+
+      expect(mockUpdate).toHaveBeenCalledWith({
+        code: 'USDT',
+        name: 'Tether',
+        symbol: '₮',
+        logoDomain: null,
+        logoInitials: null,
+        logoIcon: null,
+        logoImage: null,
+      });
+    });
+
     it('clears the symbol with null', async () => {
       const wrapper = mountDialog({ currency: TETHER });
 
@@ -244,8 +342,14 @@ describe('CustomCurrencyDialog', () => {
 
     it('sends the new decimals while no account holds the currency', async () => {
       const wrapper = mountDialog({ currency: TETHER, accountsCount: 0 });
+      const warning = () => wrapper.find('[data-testid="custom-currency-decimals-warning"]');
+
+      expect(warning().exists()).toBe(false);
 
       await fill(wrapper, { decimals: '8' });
+
+      expect(warning().text()).toBe(i18n.global.t('settings.currencies.delete.foreignAmountsWarning'));
+
       await submit(wrapper);
 
       expect(mockUpdate).toHaveBeenCalledWith({ code: 'USDT', name: 'Tether', symbol: '₮', decimals: 8 });
@@ -261,12 +365,12 @@ describe('CustomCurrencyDialog', () => {
     });
 
     it('surfaces the API refusal of a decimals change on a currency a transaction still uses', async () => {
-      const message = 'Cannot change the decimals of "USDT": your transactions still use it';
+      const message = 'Cannot change the decimals of "USDT": it is still in use';
       mockUpdate.mockRejectedValue(
         new ApiErrorResponseError(message, {
-          code: API_ERROR_CODES.conflict,
+          code: API_ERROR_CODES.currencyInUse,
           message,
-          details: { usedBy: ['transactions'] },
+          details: { blockers: [{ type: 'goal', id: '1', name: 'Trip' }] },
         }),
       );
       const wrapper = mountDialog({ currency: TETHER, accountsCount: 0 });
@@ -275,109 +379,8 @@ describe('CustomCurrencyDialog', () => {
       await submit(wrapper);
 
       expect(wrapper.find('[data-testid="custom-currency-error"]').text()).toBe(message);
+      expect(wrapper.find('[data-testid="currency-blocker-list"]').text()).toContain('Trip');
       expect(wrapper.emitted('update:open')).toBeUndefined();
-    });
-  });
-  describe('logo', () => {
-    beforeEach(() => {
-      vi.useFakeTimers();
-      mockSearch.mockResolvedValue([COIN, COIN_WITHOUT_LOGO]);
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    it('has no logo field while creating, since the icon needs a saved currency', () => {
-      const wrapper = mountDialog();
-
-      expect(wrapper.find('[data-testid="custom-currency-logo"]').exists()).toBe(false);
-    });
-
-    it('previews the saved logo and sends none when the field is untouched', async () => {
-      const wrapper = mountDialog({ currency: { ...TETHER, logoUrl: TETHER_LOGO } });
-
-      expect(wrapper.get('[data-testid="currency-icon-stub"]').attributes('data-code')).toBe('USDT');
-      expect(iconLogo(wrapper)).toBe(TETHER_LOGO);
-
-      await fill(wrapper, { name: 'Tether USD' });
-      await submit(wrapper);
-
-      expect(mockUpdate).toHaveBeenCalledWith({ code: 'USDT', name: 'Tether USD', symbol: '₮' });
-    });
-
-    it('searches CoinGecko, previews the picked coin and sends its logo on save', async () => {
-      const wrapper = mountDialog({ currency: TETHER });
-      expect(iconLogo(wrapper)).toBe('');
-
-      await searchCoins(wrapper, 'teth');
-      expect(mockSearch).toHaveBeenCalledWith({ query: 'teth' });
-      await wrapper.find('[data-testid="rate-source-coin-tether"]').trigger('click');
-
-      expect(iconLogo(wrapper)).toBe('https://img.test/tether.png');
-
-      await submit(wrapper);
-
-      expect(mockUpdate).toHaveBeenCalledWith({
-        code: 'USDT',
-        name: 'Tether',
-        symbol: '₮',
-        logoUrl: 'https://img.test/tether.png',
-      });
-    });
-
-    it('leaves the logo as it is when the picked coin has no image', async () => {
-      const wrapper = mountDialog({ currency: { ...TETHER, logoUrl: TETHER_LOGO } });
-
-      await searchCoins(wrapper, 'teth');
-      await wrapper.find('[data-testid="rate-source-coin-tether-gold"]').trigger('click');
-
-      expect(iconLogo(wrapper)).toBe(TETHER_LOGO);
-
-      await submit(wrapper);
-
-      expect(mockUpdate).toHaveBeenCalledWith({ code: 'USDT', name: 'Tether', symbol: '₮' });
-    });
-
-    it('clears the logo with null', async () => {
-      const wrapper = mountDialog({ currency: { ...TETHER, logoUrl: TETHER_LOGO } });
-
-      await wrapper.find('[data-testid="custom-currency-logo-clear"]').trigger('click');
-
-      expect(iconLogo(wrapper)).toBe('');
-      expect(wrapper.find('[data-testid="custom-currency-logo-clear"]').exists()).toBe(false);
-
-      await submit(wrapper);
-
-      expect(mockUpdate).toHaveBeenCalledWith({ code: 'USDT', name: 'Tether', symbol: '₮', logoUrl: null });
-    });
-
-    it('offers no clear button while the currency has no logo', () => {
-      const wrapper = mountDialog({ currency: TETHER });
-
-      expect(wrapper.find('[data-testid="custom-currency-logo-clear"]').exists()).toBe(false);
-    });
-
-    it('does not submit the form when Enter is pressed in the search box', async () => {
-      const wrapper = mountDialog({ currency: TETHER });
-
-      await field(wrapper, 'rate-source-coin-search').trigger('keydown.enter');
-
-      expect(mockUpdate).not.toHaveBeenCalled();
-    });
-
-    it('forgets an unsaved pick when the dialog is opened again', async () => {
-      const wrapper = mountDialog({ currency: TETHER });
-      await searchCoins(wrapper, 'teth');
-      await wrapper.find('[data-testid="rate-source-coin-tether"]').trigger('click');
-      expect(iconLogo(wrapper)).toBe('https://img.test/tether.png');
-
-      await wrapper.setProps({ open: false });
-      await wrapper.setProps({ open: true });
-
-      expect(iconLogo(wrapper)).toBe('');
-      await submit(wrapper);
-      expect(mockUpdate).toHaveBeenCalledWith({ code: 'USDT', name: 'Tether', symbol: '₮' });
     });
   });
 });

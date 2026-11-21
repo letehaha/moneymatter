@@ -9,9 +9,9 @@ const schema = z.object({
   query: z.object({
     categoryId: recordId().optional(),
     accountId: recordId().optional(),
-    transactionType: z.nativeEnum(TRANSACTION_TYPES).optional(),
-    page: z.coerce.number().int().positive().finite(),
-    limit: z.coerce.number().int().positive().finite(),
+    transactionType: z.enum(TRANSACTION_TYPES).optional(),
+    page: z.coerce.number().int().positive(),
+    limit: z.coerce.number().int().positive(),
   }),
 });
 
@@ -29,7 +29,7 @@ export default createController(schema, async ({ user, query }) => {
 
   const { rows: refundTransactions, meta } = await getRefundTransactions(filters);
 
-  // Serialize: convert cents to decimal for API response
+  // Serialize: Money amounts to API decimals
   return {
     data: {
       data: serializeRefundTransactions(refundTransactions),

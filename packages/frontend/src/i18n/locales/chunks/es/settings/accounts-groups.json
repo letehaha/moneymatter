@@ -16,25 +16,18 @@
         "retry": "Intentar de nuevo"
       },
       "row": {
-        "bankBadge": "Conexión bancaria",
-        "bankBadgeShort": "Conexión",
         "bankBadgeTooltip": "Este grupo se creó al conectar el banco, pero no representa la conexión en sí — puede renombrarlo, mover cuentas o eliminarlo libremente. Las cuentas seguirán sincronizándose de todos modos.",
         "accountsCount": "{count} cuenta | {count} cuentas",
         "noAccounts": "Sin cuentas",
         "accountsElsewhere": "{count} cuenta sincronizada en otros grupos | {count} cuentas sincronizadas en otros grupos",
-        "inParent": "en {name}",
         "manageConnection": "Gestionar conexión"
       },
       "update": {
         "label": "Nombre del grupo",
         "placeholder": "Introduzca el nombre del grupo",
-        "saveButton": "Guardar",
         "emptyNameError": "El nombre del grupo no puede estar vacío"
       },
       "accounts": {
-        "heading": "Cuentas de este grupo",
-        "empty": "Aún no hay cuentas en este grupo. Añada cuentas a un grupo desde la página de la cuenta.",
-        "emptyBankLinked": "Las cuentas de esta conexión están organizadas en otros grupos — moverlas no afecta la sincronización.",
         "unlinkTooltip": "Quitar del grupo",
         "removeConfirmTitle": "¿Quitar \"{name}\" de este grupo?",
         "removeConfirmDescription": "La cuenta no se elimina — solo deja de pertenecer a este grupo.",
@@ -46,6 +39,74 @@
         "accountsKept": "Las cuentas se conservan — simplemente dejan de estar agrupadas.",
         "syncContinues": "La sincronización bancaria continúa — la conexión es independiente de este grupo.",
         "ungroupedHeading": "Quedarán sin agrupar"
+      },
+      "dialogs": {
+        "rename": {
+          "title": "Renombrar grupo",
+          "description": "Haga clic en el logotipo para elegir un logotipo de banco, iniciales o un color.",
+          "submit": "Guardar cambios"
+        },
+        "move": {
+          "title": "Mover «{name}»",
+          "description": "Sus subgrupos y cuentas se mueven con ella.",
+          "parentLabel": "Grupo padre",
+          "parentPlaceholder": "Seleccionar grupo padre",
+          "noParent": "Ningún padre",
+          "hint": "Elige \"Sin padre\" para convertirlo en un grupo de alto nivel.",
+          "submit": "Mover"
+        },
+        "addAccounts": {
+          "title": "Añadir cuentas a “{name}”",
+          "description": "Una cuenta pertenece a un grupo. Seleccionando una de otro grupo la mueve aquí.",
+          "searchPlaceholder": "Buscar cuentas",
+          "sections": {
+            "ungrouped": "No está en ningún grupo",
+            "inOtherGroups": "En otros grupos",
+            "alreadyInGroup": "Ya está en {name}"
+          },
+          "inGroupCaption": "En {path}",
+          "noResults": "Ningún grupo coincide con su búsqueda",
+          "noAccounts": "Sin cuentas para asignar",
+          "summary": {
+            "selected": "{selected} seleccionadas",
+            "movesFromGroup": "{selected} seleccionado, {count} movimiento desde {group} | {selected} seleccionados, {count} movimientos desde {group}",
+            "movesFromOtherGroups": "{selected} seleccionado, {count} movido desde otros grupos | {selected} seleccionados, {count} movido desde otros grupos"
+          },
+          "submit": "Añadir {count} cuenta | Añadir {count} cuentas"
+        }
+      },
+      "tree": {
+        "groupsCount": "{count} grupo | {count} grupos",
+        "syncedBadge": "Sincronizado",
+        "expand": "Expandir",
+        "collapse": "Contraer",
+        "renameTooltip": "Renombrar",
+        "moreActions": "Más acciones",
+        "menu": {
+          "rename": "Cambiar el nombre y el logotipo",
+          "move": "Mover a otro grupo",
+          "newSubgroup": "Nuevo subgrupo",
+          "addAccounts": "Añadir cuentas",
+          "delete": "Eliminar grupo"
+        }
+      },
+      "organize": {
+        "button": "Organizar",
+        "hint": "Arrastra un grupo a otro para anidarlo",
+        "save": "Guardar cambios",
+        "topLevel": "Nivel superior",
+        "dropToTopLevel": "Suelte aquí para convertir «{name}» en una categoría de nivel superior",
+        "movesCount": "Mover {count} | Mover {count}",
+        "moveInside": "Mover dentro",
+        "moved": "Movido",
+        "saveSuccess": "Grupos reorganizados",
+        "saveFailed": "No se pudo guardar el movimiento {count} . Inténtalo de nuevo. | No se pudo guardar los movimientos de {count} . Inténtalo de nuevo.",
+        "staleMovesRemoved": "Se eliminó {count} movimiento en cola que ya no aplica | Se eliminaron {count} movimientos en cola que ya no aplican",
+        "dropErrors": {
+          "currentParent": "Ya está en este grupo.",
+          "insideItself": "No se puede mover un grupo dentro de su propio subgrupo",
+          "alreadyTopLevel": "Ya es una categoría de nivel superior"
+        }
       }
     }
   }

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { SMART_TRACKING_DEFAULTS, buildTrackerPayload, buildSmartTrackingPatch } from './build-tracker-payload';
+import {
+  SMART_TRACKING_DEFAULTS,
+  TRACKER_RULES_DEFAULTS,
+  buildTrackerPayload,
+  buildSmartTrackingPatch,
+  changesRuleMatches,
+  isTrackerRulesIncomplete,
+} from './build-tracker-payload';
 
 describe('buildTrackerPayload', () => {
   const baseValues = { name: 'Groceries', startDate: null, endDate: null };
@@ -29,27 +36,13 @@ describe('buildTrackerPayload', () => {
     expect(payload.endDate).toBe(new Date(2026, 8, 30, 23, 59, 59, 999).toISOString());
   });
 
-  it('includes categoryIds only when given', () => {
-    expect('categoryIds' in buildTrackerPayload({ ...baseValues, limitAmount: null })).toBe(false);
-    expect(buildTrackerPayload({ ...baseValues, limitAmount: null, categoryIds: ['cat-1'] })).toEqual({
-      name: 'Groceries',
-      limitAmount: null,
+  it('handles create-form values: undefined dates', () => {
+    expect(buildTrackerPayload({ name: 'Trip', limitAmount: 500, startDate: undefined, endDate: undefined })).toEqual({
+      name: 'Trip',
+      limitAmount: 500,
       startDate: null,
       endDate: null,
-      categoryIds: ['cat-1'],
     });
-  });
-
-  it('handles create-form values: undefined dates and an empty category list', () => {
-    expect(
-      buildTrackerPayload({
-        name: 'Trip',
-        limitAmount: 500,
-        startDate: undefined,
-        endDate: undefined,
-        categoryIds: [],
-      }),
-    ).toEqual({ name: 'Trip', limitAmount: 500, startDate: null, endDate: null, categoryIds: [] });
   });
 });
 
@@ -78,5 +71,60 @@ describe('buildSmartTrackingPatch', () => {
     expect(
       buildSmartTrackingPatch({ values: { ...SMART_TRACKING_DEFAULTS, aiEnabled: true, aiDescription: 'Trip' } }),
     ).toEqual({ aiEnabled: true, aiDescription: 'Trip' });
+  });
+});
+
+describe('isTrackerRulesIncomplete', () => {
+  it('needs a category or a tag only while rules are on', () => {
+    expect(isTrackerRulesIncomplete({ values: TRACKER_RULES_DEFAULTS })).toBe(false);
+    expect(isTrackerRulesIncomplete({ values: { ...TRACKER_RULES_DEFAULTS, rulesEnabled: true } })).toBe(true);
+    expect(isTrackerRulesIncomplete({ values: { ...TRACKER_RULES_DEFAULTS, rulesEnabled: true, tagIds: ['t'] } })).toBe(
+      false,
+    );
+  });
+});
+
+describe('changesRuleMatches', () => {
+  const stored = { ...TRACKER_RULES_DEFAULTS, rulesEnabled: true, categoryIds: ['a', 'b'] };
+  const storedDates = { startDate: '2026-01-01', endDate: null };
+
+  it('is false for an unchanged rule set, in any order', () => {
+    expect(
+      changesRuleMatches({ values: { ...stored, categoryIds: ['b', 'a'] }, stored, dates: storedDates, storedDates }),
+    ).toBe(false);
+  });
+
+  it('is false when rules are turned off', () => {
+    expect(
+      changesRuleMatches({ values: { ...stored, rulesEnabled: false }, stored, dates: storedDates, storedDates }),
+    ).toBe(false);
+  });
+
+  it('is false when cleanup is turned off', () => {
+    expect(
+      changesRuleMatches({ values: { ...stored, rulesCleanup: false }, stored, dates: storedDates, storedDates }),
+    ).toBe(false);
+  });
+
+  it('is false while rules stay off', () => {
+    const off = { ...stored, rulesEnabled: false };
+    expect(
+      changesRuleMatches({ values: { ...off, tagIds: ['t'] }, stored: off, dates: storedDates, storedDates }),
+    ).toBe(false);
+  });
+
+  it.each([
+    ['rules turned on', { values: stored, stored: { ...stored, rulesEnabled: false } }],
+    ['a tag added', { values: { ...stored, tagIds: ['t'] }, stored }],
+    ['a category removed', { values: { ...stored, categoryIds: ['a'] }, stored }],
+    ['cleanup turned on', { values: stored, stored: { ...stored, rulesCleanup: false } }],
+  ])('is true when %s', (_label, { values, stored: before }) => {
+    expect(changesRuleMatches({ values, stored: before, dates: storedDates, storedDates })).toBe(true);
+  });
+
+  it('is true when a date moves', () => {
+    expect(
+      changesRuleMatches({ values: stored, stored, dates: { ...storedDates, endDate: '2026-02-01' }, storedDates }),
+    ).toBe(true);
   });
 });

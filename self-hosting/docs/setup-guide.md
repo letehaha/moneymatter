@@ -297,9 +297,14 @@ Compose recreates only the containers whose image changed. The backend runs
 any new database migrations on boot, so its healthcheck stays red for a
 minute, same as on first start. Take a [backup](#5-backups) before updating.
 
-To pin the stack to an exact build instead of following `latest`, set
-`IMAGE_TAG=sha-<commit>` in `.env` (every published image is also tagged with
-its commit SHA). A pinned stack only updates when you change the pin.
+To pin the stack instead of following `latest`, set `IMAGE_TAG=v<version>`
+(e.g. `v1.2.3`) in `.env`. Each release gets one `v*` tag that never moves;
+`latest` moves with every build, and `sha-<commit>` tags pin an exact commit.
+A pinned stack only updates when you change the pin.
+
+Renovate's compose manager can't resolve `image: ...:${IMAGE_TAG:-latest}`,
+so Renovate users should hardcode the tag in `docker-compose.yml`. Diun and
+WUD are unaffected.
 
 ---
 

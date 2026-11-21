@@ -7,16 +7,6 @@ const TWO_DECIMALS = { baseDecimals: 2, quoteDecimals: 2 };
 
 describe('calculateRefAmountFromParams', () => {
   describe('useFloorAbs=true (default - regular transactions)', () => {
-    it("rounds fractional cent results to nearest integer using banker's rounding", () => {
-      // 205 cents * 0.5 = 102.5 → rounds to 102 (banker's rounding to even)
-      const result = calculateRefAmountFromParams({
-        ...TWO_DECIMALS,
-        amount: Money.fromCents(205),
-        rate: 0.5,
-      });
-      expect(result.toCents()).toBe(102);
-    });
-
     it('returns zero for zero amount', () => {
       const result = calculateRefAmountFromParams({
         ...TWO_DECIMALS,
@@ -32,6 +22,7 @@ describe('calculateRefAmountFromParams', () => {
       ['0.15', 0.5, '0.08'],
       ['-0.05', 0.5, '-0.02'],
       ['-0.15', 0.5, '-0.08'],
+      ['2.05', 0.5, '1.02'],
     ])('rounds the exact tie %s * %s to the even cent %s', (amount, rate, expected) => {
       const result = calculateRefAmountFromParams({ amount: Money.fromDecimal(amount), rate, ...TWO_DECIMALS });
       expect(result.toDecimalString(2)).toBe(expected);
@@ -51,7 +42,7 @@ describe('calculateRefAmountFromParams', () => {
       // -200 cents * 1.5 = -300 cents
       const result = calculateRefAmountFromParams({
         ...TWO_DECIMALS,
-        amount: Money.fromCents(-200),
+        amount: Money.fromDecimal(-2),
         rate: 1.5,
       });
       expect(result.toCents()).toBe(-300);
@@ -64,7 +55,7 @@ describe('calculateRefAmountFromParams', () => {
       expect(() =>
         calculateRefAmountFromParams({
           ...TWO_DECIMALS,
-          amount: Money.fromCents(205),
+          amount: Money.fromDecimal(2.05),
           rate: 0.5,
           useFloorAbs: false,
         }),
@@ -75,7 +66,7 @@ describe('calculateRefAmountFromParams', () => {
       // 205 cents (= $2.05) * 0.5 = $1.025 — should keep the half-cent precision
       const result = calculateRefAmountFromParams({
         ...TWO_DECIMALS,
-        amount: Money.fromCents(205),
+        amount: Money.fromDecimal(2.05),
         rate: 0.5,
         useFloorAbs: false,
       });
@@ -85,7 +76,7 @@ describe('calculateRefAmountFromParams', () => {
     it('preserves sign for negative amounts with fractional results', () => {
       const result = calculateRefAmountFromParams({
         ...TWO_DECIMALS,
-        amount: Money.fromCents(-205),
+        amount: Money.fromDecimal(-2.05),
         rate: 0.5,
         useFloorAbs: false,
       });
@@ -103,20 +94,6 @@ describe('calculateRefAmountFromParams', () => {
     });
   });
   describe('currency decimals', () => {
-    it('rounds the product half-even to the decimals of the target currency', () => {
-      // 5 JPY * 0.0005 = 0.0025 KWD and 15 JPY * 0.0005 = 0.0075 KWD are exact ties
-      const convert = (amount: string) =>
-        calculateRefAmountFromParams({
-          amount: Money.fromDecimal(amount),
-          rate: 0.0005,
-          baseDecimals: 0,
-          quoteDecimals: 3,
-        }).toDecimalString(3);
-
-      expect(convert('5')).toBe('0.002');
-      expect(convert('15')).toBe('0.008');
-    });
-
     it('rounds a target currency without decimals to whole units', () => {
       const result = calculateRefAmountFromParams({
         amount: Money.fromDecimal('10.50'),

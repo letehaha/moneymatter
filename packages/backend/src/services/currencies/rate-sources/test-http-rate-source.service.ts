@@ -10,8 +10,9 @@ import { assertHttpSourceAllowed, findHeldCurrency, resolveHttpHeaders } from '.
 /**
  * Asks an HTTP source for the rate of one day without saving anything, so the editor can show the
  * price the settings produce before they are kept. A request that fails is an answer, not an error:
- * `ok: false` says why (the saved headers can no longer be read, for one). A body the source may not be set with (a currency that is not the user's,
- * an ISO currency, a quote that is not ISO, http on a cloud instance) is rejected like a save.
+ * `ok: false` says why (the saved headers can no longer be read, for one). A body the source may not
+ * be set with (a currency that is not the user's, an ISO currency, a quote that is not ISO, http on a
+ * cloud instance) is rejected like a save.
  */
 export const testHttpRateSource = async ({
   userId,
@@ -23,7 +24,7 @@ export const testHttpRateSource = async ({
   body: z.infer<typeof testRateSourceBodySchema>;
 }): Promise<TestCurrencyRateSourceResponse> => {
   const held = await findHeldCurrency({ userId, code });
-  await assertHttpSourceAllowed({ userId, code, held, config: body.config });
+  assertHttpSourceAllowed({ code, held, config: body.config });
 
   const headers = resolveHttpHeaders({ body, held });
   if (headers === null) {

@@ -17,9 +17,9 @@
       "language": "Bahasa",
       "general": "Statistik",
       "payees": "Penerima",
-      "subscriptions": "Pembayaran terjadwal",
       "planBilling": "Plan & billing",
-      "collapse": "Ciutkan"
+      "collapse": "Collapse",
+      "resize": "Resize navigation"
     },
     "backToSettings": "Kembali ke Pengaturan"
   }

@@ -1,11 +1,14 @@
 import type { CurrencyMeta } from '@bt/shared/types';
+import { UnexpectedError } from '@js/errors';
 import Accounts from '@models/accounts.model';
 import Currencies from '@models/currencies.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { Op } from 'sequelize';
 
+import { includesCustomCurrencyCode } from './custom-currency-codes';
+
 /** A currency as one user sees it: the global row with that user's overrides applied. */
-export interface EffectiveCurrency extends CurrencyMeta {
+interface EffectiveCurrency extends CurrencyMeta {
   code: string;
   name: string;
 }
@@ -16,46 +19,49 @@ interface OverrideFields {
   decimalsOverride: number | null;
 }
 
+type CurrencyRow = Pick<Currencies, 'code' | 'currency' | 'digits' | 'isCustom'>;
+
+const hasDefinition = (
+  overrides: OverrideFields | null | undefined,
+): overrides is OverrideFields & { nameOverride: string; decimalsOverride: number } =>
+  overrides?.nameOverride != null && overrides.decimalsOverride != null;
+
 /**
- * The global row with the user's overrides on top; a `null` override keeps the global value, except
- * for the symbol of a row that carries its decimals (see below). Only custom currencies carry
- * overrides, so an ISO row ignores them.
+ * An ISO currency as its global row describes it, or a custom currency as the user's
+ * `UsersCurrencies` row defines it. The global row of a custom code is a stub, so a custom code
+ * without the user's definition throws.
  */
 export const applyCurrencyOverrides = ({
   currency,
   overrides,
 }: {
-  currency: Pick<Currencies, 'code' | 'currency' | 'digits' | 'symbol' | 'isCustom'>;
+  currency: CurrencyRow;
   overrides: OverrideFields | null | undefined;
 }): EffectiveCurrency => {
-  const applied = currency.isCustom ? overrides : null;
-  // A row that carries its decimals holds the user's complete definition, so its empty symbol means
-  // "no symbol" rather than "take the symbol of whoever created the global row".
-  const isDefined = applied != null && applied.decimalsOverride != null;
+  if (!currency.isCustom) {
+    return { code: currency.code, name: currency.currency, decimals: currency.digits, symbol: null, isCustom: false };
+  }
+
+  if (!hasDefinition(overrides)) {
+    throw new UnexpectedError({ message: `Custom currency ${currency.code} has no definition for this user` });
+  }
 
   return {
     code: currency.code,
-    name: applied?.nameOverride ?? currency.currency,
-    decimals: applied?.decimalsOverride ?? currency.digits,
-    symbol: isDefined ? applied.symbolOverride : (applied?.symbolOverride ?? currency.symbol),
-    isCustom: currency.isCustom,
+    name: overrides.nameOverride,
+    decimals: overrides.decimalsOverride,
+    symbol: overrides.symbolOverride,
+    isCustom: true,
   };
 };
 
-/**
- * A `UsersCurrencies` row with its joined `Currencies` row, the custom currency's name, symbol and
- * decimals replaced by the user's own. Rows of ISO currencies come back untouched.
- */
-export const withEffectiveCurrency = <
-  TItem extends OverrideFields & {
-    currency?: Pick<Currencies, 'code' | 'currency' | 'digits' | 'symbol' | 'isCustom'>;
-  },
->({
+/** A `UsersCurrencies` row with its joined `Currencies` row replaced by the effective currency. */
+export const withEffectiveCurrency = <TItem extends OverrideFields & { currency?: CurrencyRow }>({
   item,
 }: {
   item: TItem;
 }): TItem => {
-  if (!item.currency?.isCustom) return item;
+  if (!item.currency) return item;
 
   const effective = applyCurrencyOverrides({ currency: item.currency, overrides: item });
 
@@ -75,8 +81,7 @@ const buildCurrencyPairKey = ({ ownerUserId, code }: CurrencyOwnerPair) => `${ow
 
 /**
  * Effective currencies for `(owner, code)` pairs, keyed by `buildCurrencyPairKey`. ISO currencies
- * ignore the owner. A custom code takes the owner's overrides, and falls back to the global row
- * when the owner holds no `UsersCurrencies` row for it.
+ * ignore the owner. A custom code takes the owner's definition and is left out when the owner has none.
  */
 const getEffectiveCurrencies = async ({
   pairs,
@@ -106,12 +111,10 @@ const getEffectiveCurrencies = async ({
 
   for (const pair of pairs) {
     const currency = rowByCode.get(pair.code);
-    if (!currency) continue;
+    const overrides = overrideByPair.get(buildCurrencyPairKey(pair));
+    if (!currency || (currency.isCustom && !hasDefinition(overrides))) continue;
 
-    result.set(
-      buildCurrencyPairKey(pair),
-      applyCurrencyOverrides({ currency, overrides: overrideByPair.get(buildCurrencyPairKey(pair)) }),
-    );
+    result.set(buildCurrencyPairKey(pair), applyCurrencyOverrides({ currency, overrides }));
   }
 
   return result;
@@ -153,12 +156,8 @@ export const attachTransactionCurrencyMeta = async <TTransaction extends { accou
   const transactions = candidates.filter((tx): tx is TTransaction => tx !== null && tx !== undefined);
   if (!transactions.length) return;
 
-  const codes = [...new Set(transactions.map((tx) => tx.currencyCode))];
-  const rows = await Currencies.findAll({ where: { code: { [Op.in]: codes } } });
-  const hasCustom = rows.some((row) => row.isCustom);
-
   const ownerByAccountId = new Map<string, number>();
-  if (hasCustom) {
+  if (await includesCustomCurrencyCode({ codes: transactions.map((tx) => tx.currencyCode) })) {
     const accountIds = [...new Set(transactions.map((tx) => tx.accountId))];
     const accounts = await Accounts.findAll({
       where: { id: { [Op.in]: accountIds } },
@@ -167,14 +166,15 @@ export const attachTransactionCurrencyMeta = async <TTransaction extends { accou
     accounts.forEach((account) => ownerByAccountId.set(account.id, account.userId));
   }
 
-  const effective = await getEffectiveCurrencies({
-    pairs: transactions.map((tx) => ({ ownerUserId: ownerByAccountId.get(tx.accountId) ?? 0, code: tx.currencyCode })),
+  // ISO pairs ignore the owner, so `-1` only marks a transaction whose account was not found.
+  const pairOf = ({ tx }: { tx: TTransaction }) => ({
+    ownerUserId: ownerByAccountId.get(tx.accountId) ?? -1,
+    code: tx.currencyCode,
   });
+  const effective = await getEffectiveCurrencies({ pairs: transactions.map((tx) => pairOf({ tx })) });
 
   for (const tx of transactions) {
-    const currency = effective.get(
-      buildCurrencyPairKey({ ownerUserId: ownerByAccountId.get(tx.accountId) ?? 0, code: tx.currencyCode }),
-    );
+    const currency = effective.get(buildCurrencyPairKey(pairOf({ tx })));
     if (currency) Object.assign(tx, { currencyMeta: toMeta(currency) });
   }
 };

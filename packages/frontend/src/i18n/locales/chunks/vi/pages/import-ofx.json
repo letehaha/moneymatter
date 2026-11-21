@@ -8,7 +8,7 @@
           "steps": {
             "upload": "Tải lên",
             "resolve": "Ghép tài khoản",
-            "review": "Xem xét",
+            "review": "Review",
             "results": "Xong"
           }
         },
@@ -27,7 +27,7 @@
         },
         "resolve": {
           "accounts": {
-            "sectionTitle": "Tài khoản",
+            "sectionTitle": "Accounts",
             "nameLabel": "Tên tài khoản",
             "namePlaceholder": "Nhập tên tài khoản",
             "currentBalanceLabel": "Số dư hiện tại",
@@ -75,7 +75,7 @@
           "importButton": "Nhập {count} giao dịch | Nhập {count} giao dịch"
         },
         "execute": {
-          "starting": "Đang bắt đầu nhập…",
+          "starting": "Starting the import…",
           "progressCount": "{processed} trên {total}",
           "failed": "Không thể nhập dữ liệu.",
           "partialImportNote": "Một số giao dịch có thể đã được nhập.",
@@ -97,7 +97,7 @@
           "accountsLinked": "Tài khoản đã liên kết",
           "accountsSkipped": "Tài khoản bị bỏ qua",
           "payeesCreated": "Payees created",
-          "transactionsImported": "Giao dịch đã nhập",
+          "transactionsImported": "Transactions imported",
           "duplicatesSkipped": "Giao dịch trùng lặp bị bỏ qua",
           "mergedIntoPlanned": "Đã gộp vào giao dịch dự kiến",
           "balanceWarningTitle": "Một số số dư có thể không chính xác",
@@ -109,14 +109,14 @@
             "accountBalanceDesync": "An account balance could not be updated after the import.",
             "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed."
           },
-          "rowPrefix": "Dòng {rowIndex}:",
+          "rowPrefix": "Row {rowIndex}:",
           "viewTransactions": "Xem giao dịch",
-          "importAnother": "Nhập tệp khác"
+          "importAnother": "Import another file"
         },
         "leaseExpired": {
           "title": "Tệp bạn đã tải lên không còn khả dụng",
           "description": "Bản đã phân tích của tệp OFX hoặc QFX không còn khả dụng sau một thời gian không hoạt động. Các lựa chọn ghép của bạn không được lưu. Hãy bắt đầu nhập lại.",
-          "action": "Bắt đầu lại"
+          "action": "Start over"
         },
         "leaseResourceLabel": "Tệp bạn đã tải lên"
       }

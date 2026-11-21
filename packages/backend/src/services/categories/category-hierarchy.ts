@@ -51,6 +51,16 @@ export const getAncestorIds = <T extends { id: string; parentId: string | null }
   return ancestors;
 };
 
+/** Category names from the root down to the category itself. */
+export const getCategoryPathNames = <T extends { id: string; parentId: string | null; name: string }>({
+  categoryId,
+  byId,
+}: {
+  categoryId: string;
+  byId: Map<string, T>;
+}): string[] =>
+  [...getAncestorIds({ categoryId, byId }).toReversed(), categoryId].flatMap((id) => byId.get(id)?.name ?? []);
+
 /** Categories handed out one by one; a category overlaps when it, an ancestor or a descendant is already taken. */
 export const createCategoryClaims = <T extends { id: string; parentId: string | null }>({
   byId,

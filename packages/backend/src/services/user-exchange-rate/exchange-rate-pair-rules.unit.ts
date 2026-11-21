@@ -36,10 +36,18 @@ describe('assertRemovePairRules', () => {
     expect(() => assertRemovePairRules({ pairs: [USD_EUR, EUR_USD] })).not.toThrow();
   });
 
+  it('refuses a pair whose opposite has another quote', () => {
+    expect(() =>
+      assertRemovePairRules({
+        pairs: [USD_EUR, { baseCode: 'EUR', quoteCode: 'GBP' }, { baseCode: 'GBP', quoteCode: 'USD' }],
+      }),
+    ).toThrow(ValidationError);
+  });
+
   it('refuses a one-sided pair', () => {
     expect(() => assertRemovePairRules({ pairs: [USD_EUR] })).toThrow(ValidationError);
     expect(() => assertRemovePairRules({ pairs: [USD_EUR] })).toThrow(
-      "When removing base-qoute pair rate, you need to also remove opposite pair's rate.",
+      "When removing base-quote pair rate, you need to also remove opposite pair's rate.",
     );
   });
 });

@@ -3,6 +3,7 @@ import PayeeAliases from '@models/payee-aliases.model';
 import Payees from '@models/payees.model';
 import { findTransactions, updateTransactions } from '@models/transactions-query';
 import { enqueueLogoResolutionAfterCommit } from '@services/brand-logos';
+import { syncLegsOfMains } from '@services/transactions/payment-legs';
 import { getUserSettings } from '@services/user-settings/get-user-settings';
 import { Op } from 'sequelize';
 
@@ -91,6 +92,7 @@ async function collectPriorUnmatched({
     where: {
       payeeId: null,
       payeeLocked: false,
+      paymentParentId: null,
     },
     attributes: ['id', 'externalData', 'note'],
   });
@@ -220,6 +222,7 @@ export const resolvePayeeForRawMerchant = withTransaction(
           balanceAdjustments: 'include',
           where: { id: { [Op.in]: priorIds } },
         });
+        await syncLegsOfMains({ mainIds: priorIds });
       }
       logger.info('[Payee extraction] promoted from occurrences', {
         userId,

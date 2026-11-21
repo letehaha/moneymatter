@@ -84,7 +84,7 @@ watch(
         <div class="text-muted-foreground mx-2">→</div>
         <select
           v-model="fieldMapping[required]"
-          class="border-border bg-background flex-1 rounded border px-3 py-2 text-sm"
+          class="border-input bg-input-background h-10 flex-1 rounded border px-3 py-2 text-sm"
         >
           <option value="">{{ $t('settings.admin.priceUpload.fieldMapper.selectField') }}</option>
           <option v-for="field in fileFields" :key="field" :value="field">
@@ -102,7 +102,10 @@ watch(
       <p class="text-muted-foreground text-xs">
         {{ $t('settings.admin.priceUpload.fieldMapper.dateFormatDescription') }}
       </p>
-      <select v-model="dateFormat" class="border-border bg-background w-full rounded border px-3 py-2 text-sm">
+      <select
+        v-model="dateFormat"
+        class="border-input bg-input-background h-10 w-full rounded border px-3 py-2 text-sm"
+      >
         <option value="dd/MM/yyyy">{{ $t('settings.admin.priceUpload.fieldMapper.dateFormats.ddMMyyyySlash') }}</option>
         <option value="MM/dd/yyyy">{{ $t('settings.admin.priceUpload.fieldMapper.dateFormats.MMddyyyySlash') }}</option>
         <option value="yyyy-MM-dd">{{ $t('settings.admin.priceUpload.fieldMapper.dateFormats.yyyyMMddDash') }}</option>

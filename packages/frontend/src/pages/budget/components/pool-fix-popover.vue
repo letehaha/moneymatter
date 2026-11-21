@@ -38,7 +38,9 @@ watch(isOpen, (open) => {
 });
 
 const payload = computed(() =>
-  selectedLine.value ? buildPoolTakeBackPayload({ line: selectedLine.value, amount: amount.value }) : null,
+  selectedLine.value
+    ? buildPoolTakeBackPayload({ line: selectedLine.value, amount: amount.value, decimals: baseCurrencyDecimals.value })
+    : null,
 );
 
 const { isPending, mutate } = useSetAssignment({

@@ -1,0 +1,228 @@
+---
+import '@/styles/home/pricing.css';
+import { GITHUB_URL } from '@/lib/github-api';
+import { useI18n } from '@/i18n';
+
+const { t } = useI18n(Astro);
+
+const plans: {
+  name: string;
+  tagline: string;
+  yearly: number;
+  monthly: number;
+  tag?: string;
+  highlight?: boolean;
+  planned?: boolean;
+  lead?: number;
+  features: string[];
+}[] = [
+  {
+    name: 'Essential',
+    tagline: 'Manual entry and everything that is local math.',
+    yearly: 30,
+    monthly: 5,
+    features: [
+      'Imports: CSV, OFX, YNAB, Wallet, MS Money',
+      'Investments, loans, vehicles, venture',
+      'AI features with your own API key',
+      'Backup export and restore',
+      'MCP server for AI agents',
+      '2 household seats',
+    ],
+  },
+  {
+    name: 'Plus',
+    tagline: 'Everything around bring-your-own bank connections.',
+    yearly: 55,
+    monthly: 8,
+    tag: 'Includes bank sync',
+    highlight: true,
+    lead: 1,
+    features: [
+      'Everything in Essential',
+      'Bank sync: LunchFlow, SimpleFIN, Monobank, Akahu',
+      'AI features on our key, no setup',
+      'FIRE planner',
+      '5 household seats',
+    ],
+  },
+  {
+    name: 'Premium',
+    tagline: 'Bank connections we run for you.',
+    planned: true,
+    yearly: 80,
+    monthly: 12,
+    features: [
+      'Everything in Plus',
+      'Bank sync we run: no API keys, no provider subscription',
+      '2 banks included (unlimited accounts), extra banks $2/mo',
+      'Real-time security prices',
+      'Higher AI usage cap',
+      '10 household seats',
+    ],
+  },
+];
+---
+
+<section class="sec sec-soft" id="pricing">
+  <div class="wrap">
+    <p class="eyebrow">{t('Pricing')}</p>
+    <h2>{t('Simple pricing, with 40 days to decide')}</h2>
+    <p class="lede">{t('Try every cloud feature for 40 days, no card needed.')}</p>
+    <div class="tiers">
+      {
+        plans.map((plan) => (
+          <article class:list={['plate tier', { 'tier-main': plan.highlight, 'tier-soon': plan.planned }]}>
+            <div class="tier-top">
+              <h3>{t(plan.name)}</h3>
+              {plan.tag && <span class="tier-tag">{t(plan.tag)}</span>}
+              {plan.planned && <span class="tag">{t('Planned')}</span>}
+            </div>
+            <p class="tier-desc">{t(plan.tagline)}</p>
+            <div class="tier-price">
+              <strong>${plan.yearly}</strong>
+              <span>
+                {t('/year')}<em class="save">{t(`Save $${plan.monthly * 12 - plan.yearly}/yr`)}</em>
+                <small>{t(`or $${plan.monthly}/month`)}</small>
+              </span>
+            </div>
+            {plan.planned ? (
+              <button type="button" class="btn btn-quiet" id="premium-early-access">
+                {t('Get early access')}
+              </button>
+            ) : (
+              <a
+                class:list={['btn', plan.highlight ? 'btn-primary' : 'btn-quiet']}
+                href="/sign-up"
+                data-track="landing_cta_clicked"
+                data-track-location="pricing"
+              >
+                {t('Try for free')}
+              </a>
+            )}
+            <ul class="tier-list">
+              {plan.features.map((feature, index) => (
+                <li class:list={{ lead: index === plan.lead }}>
+                  <svg aria-hidden="true" class="ic">
+                    <use href="#i-check" />
+                  </svg>
+                  {t(feature)}
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+    <div class="plate strip selfhost">
+      <span class="itile"><svg aria-hidden="true" class="ic"><use href="#r-server" /></svg></span>
+      <div>
+        <strong>{t('Self-hosting is free, forever')}</strong>
+        <span>{t('The same app on your own server, with Docker Compose.')}</span>
+      </div>
+      <a
+        href={`${GITHUB_URL}/tree/main/self-hosting`}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-track="landing_github_clicked"
+        data-track-location="self_host"
+        >{t('Self-host guide')}<svg aria-hidden="true" class="ic"><use href="#f-to" /></svg></a
+      >
+    </div>
+    <p class="plans-note">{t('Prices in USD. Taxes are calculated at checkout. Cancel anytime.')}</p>
+  </div>
+
+  <dialog id="premium-early-access-dialog" class="ea-dialog" aria-labelledby="premium-early-access-title" closedby="any">
+    <form method="dialog">
+      <button class="ea-close" aria-label={t('Close')}>&times;</button>
+    </form>
+    <form id="premium-early-access-form">
+      <h3 id="premium-early-access-title">{t('Premium is coming')}</h3>
+      <p
+        set:html={t(
+          "We'll open Premium once enough people want it. Leave your email and we'll let you know when it's available, or just count your vote.",
+        )}
+      />
+      <input name="email" type="email" required aria-label={t('Email')} autocomplete="email" placeholder="you@example.com" />
+      <div class="ea-actions">
+        <button type="submit" value="email" class="btn btn-primary">{t('Notify me')}</button>
+        <button type="submit" value="vote" formnovalidate class="btn btn-quiet">{t('Just count my vote')}</button>
+      </div>
+      <p
+        id="premium-early-access-error"
+        role="alert"
+        hidden
+        set:html={t(`Couldn't send that. Please email <a href="mailto:{email}">{email}</a> instead.`, {
+          email: 'support@moneymatter.app',
+        })}
+      />
+    </form>
+    <div id="premium-early-access-thanks" hidden>
+      <h3 tabindex="-1">{t('Thanks, your vote is counted')}</h3>
+      <p id="premium-early-access-thanks-email" hidden set:html={t("We'll email you when Premium opens.")} />
+      <form method="dialog" class="ea-actions">
+        <button class="btn btn-quiet">{t('Close')}</button>
+      </form>
+    </div>
+  </dialog>
+</section>
+
+<script>
+  import { deliverAnalyticsEvent, trackAnalyticsEvent } from '@/lib/posthog';
+
+  const VOTED_KEY = 'premium-early-access';
+
+  const dialog = document.getElementById('premium-early-access-dialog') as HTMLDialogElement | null;
+  const form = document.getElementById('premium-early-access-form') as HTMLFormElement | null;
+  const thanks = document.getElementById('premium-early-access-thanks');
+  const thanksEmail = document.getElementById('premium-early-access-thanks-email');
+  const error = document.getElementById('premium-early-access-error');
+
+  if (dialog && form && thanks && thanksEmail && error) {
+    const showThanks = ({ withEmail }: { withEmail: boolean }) => {
+      form.hidden = true;
+      thanks.hidden = false;
+      thanksEmail.hidden = !withEmail;
+    };
+
+    document.getElementById('premium-early-access')?.addEventListener('click', () => {
+      trackAnalyticsEvent({ event: 'landing_premium_early_access_clicked', properties: { location: 'pricing' } });
+      dialog.showModal();
+    });
+
+    // Storage throws when the browser blocks it; the dialog must keep working without it.
+    try {
+      const saved = localStorage.getItem(VOTED_KEY);
+      if (saved) showThanks({ withEmail: saved === 'email' });
+    } catch {}
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const submitter = event.submitter as HTMLButtonElement | null;
+      const withEmail = submitter?.value === 'email';
+      const buttons = form.querySelectorAll('button');
+
+      buttons.forEach((button) => (button.disabled = true));
+      error.hidden = true;
+      const sent = await deliverAnalyticsEvent({
+        event: 'landing_premium_early_access_submitted',
+        properties: withEmail
+          ? { with_email: true, email: String(new FormData(form).get('email')).trim() }
+          : { with_email: false },
+      });
+      buttons.forEach((button) => (button.disabled = false));
+
+      if (!sent) {
+        error.hidden = false;
+        submitter?.focus();
+        return;
+      }
+
+      showThanks({ withEmail });
+      thanks.querySelector('h3')?.focus();
+      try {
+        localStorage.setItem(VOTED_KEY, withEmail ? 'email' : 'vote');
+      } catch {}
+    });
+  }
+</script>

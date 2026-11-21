@@ -9,10 +9,10 @@ import {
   ACCOUNT_TYPES,
   CATEGORIZATION_TRIGGER,
   ImportSource,
-  PAYMENT_TYPES,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
+import { getCurrencyDecimals, getMaxAmountForDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
@@ -20,9 +20,11 @@ import { trackImportCompleted } from '@js/utils/posthog';
 import * as Accounts from '@models/accounts.model';
 import * as Users from '@models/users.model';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
+import { getSeamStart } from '@services/accounts/seam';
 import { CATEGORIZATION_SCOPE, queueCategorizationJob } from '@services/ai-categorization';
 import { resolveVisibleCurrencies } from '@services/currencies/assert-currency-codes-visible';
 import { assertImportTargetNotBankLinked } from '@services/import-export/core/assert-import-target-not-bank-linked';
+import { assertBankLinksUnchanged, isFromBankSeam } from '@services/import-export/core/bank-seam';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { anchorImportDate } from '@services/import-export/core/parse/anchor-import-date';
 import { createTransaction } from '@services/transactions';
@@ -84,6 +86,7 @@ async function executeImportImpl({
       imported: 0,
       merged: 0,
       skipped: skipIndices.length,
+      skippedAfterBankSeam: 0,
       errors: [],
       newTransactionIds: [],
       batchId,
@@ -99,13 +102,17 @@ async function executeImportImpl({
     });
   }
   assertNotDerivedBalanceAccount({ account, actionPhrase: 'be an import target' });
-  assertImportTargetNotBankLinked({ account });
+  assertImportTargetNotBankLinked({ account, allowSeam: true });
+  const seamStart = getSeamStart({ account });
 
   // Get user's default category
   const defaultCategoryId = await Users.getUserDefaultCategory({ id: userId });
 
   // One probe for the whole run instead of one per row.
-  const matchPlanned = await accountHasPlannedRows({ accountId });
+  const matchPlanned = !seamStart && (await accountHasPlannedRows({ accountId }));
+
+  const decimals = await getCurrencyDecimals({ userId, code: account.currencyCode });
+  const maxAmount = Money.fromDecimal(Math.min(1_000_000_000, getMaxAmountForDecimals({ decimals }).toNumber()));
 
   // A code the user cannot use (unknown, or another user's custom currency) would fail the row, so
   // its pair is dropped instead.
@@ -120,6 +127,7 @@ async function executeImportImpl({
   const errors: StatementImportError[] = [];
   const newTransactionIds: string[] = [];
   let mergedCount = 0;
+  let skippedAfterBankSeam = 0;
 
   let processedCount = 0;
   const tick = async () => {
@@ -128,6 +136,11 @@ async function executeImportImpl({
   };
 
   await openImportBatch({ userId, importDetails });
+  await assertBankLinksUnchanged({
+    userId,
+    accountIds: [accountId],
+    seamStartByAccountId: new Map(seamStart ? [[accountId, seamStart]] : []),
+  });
 
   for (let i = 0; i < transactions.length; i++) {
     // Skip if in skip list
@@ -156,21 +169,28 @@ async function executeImportImpl({
         continue;
       }
 
-      // Validate: amount must be positive (type determines income/expense direction)
-      if (tx.amount <= 0) {
-        errors.push({ transactionIndex: i, code: 'AMOUNT_NOT_POSITIVE', params: { amount: tx.amount } });
-        continue;
-      }
-
-      // Validate: amount should not exceed reasonable threshold (1 billion)
-      const MAX_AMOUNT = 1_000_000_000;
-      if (tx.amount > MAX_AMOUNT) {
-        errors.push({ transactionIndex: i, code: 'AMOUNT_TOO_LARGE', params: { amount: tx.amount, max: MAX_AMOUNT } });
+      if (isFromBankSeam({ seamStart, time: txDate })) {
+        skippedAfterBankSeam += 1;
         continue;
       }
 
       // Note: tx.amount is in decimal format from AI extraction (e.g., 35 means 35.00)
-      const amount = Money.fromDecimal(tx.amount);
+      const amount = Money.fromDecimal(tx.amount).round(decimals);
+
+      // Validate: amount must be positive (type determines income/expense direction)
+      if (!amount.isPositive()) {
+        errors.push({ transactionIndex: i, code: 'AMOUNT_NOT_POSITIVE', params: { amount: tx.amount } });
+        continue;
+      }
+
+      if (amount.greaterThan(maxAmount)) {
+        errors.push({
+          transactionIndex: i,
+          code: 'AMOUNT_TOO_LARGE',
+          params: { amount: tx.amount, max: maxAmount.toNumber() },
+        });
+        continue;
+      }
 
       const original =
         tx.originalAmount !== undefined &&
@@ -192,7 +212,6 @@ async function executeImportImpl({
         note: tx.description,
         time: txDate,
         transactionType: tx.type === 'income' ? TRANSACTION_TYPES.income : TRANSACTION_TYPES.expense,
-        paymentType: PAYMENT_TYPES.creditCard,
         accountId,
         categoryId: defaultCategoryId,
         accountType: ACCOUNT_TYPES.system,
@@ -240,6 +259,7 @@ async function executeImportImpl({
     imported: newTransactionIds.length,
     merged: mergedCount,
     skipped: skipIndices.length,
+    skippedAfterBankSeam,
     errors,
     newTransactionIds,
     batchId,

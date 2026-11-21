@@ -24,7 +24,7 @@ import { captureException } from '@/lib/sentry';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAccountsStore, useUserStore } from '@/stores';
 import { BUDGET_PLAN_MAX_INTERVAL_N, type BudgetPlanCarryPolicy, type BudgetSuggestionAnswers } from '@bt/shared/types';
-import { endOfDay, isAfter, isSameDay, startOfMonth, startOfWeek } from 'date-fns';
+import { isBefore, isSameDay, startOfMonth, startOfWeek } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -37,8 +37,10 @@ import {
   type BudgetCustomCadenceUnit,
   CARRY_POLICY_OPTIONS,
   buildCreatePlanPayload,
+  earliestValidPlanStart,
   isAttachableAccount,
   isValidCustomInterval,
+  isValidPlanStart,
   BUDGET_POOL_ENABLED,
 } from '../helpers';
 import SuggestionWizard from './suggestion-wizard.vue';
@@ -50,7 +52,7 @@ const { addInfoNotification, addWarningNotification } = useNotificationCenter();
 const router = useRouter();
 const { activeAccounts, isAccountsFetched, isAccountsError } = storeToRefs(useAccountsStore());
 const userStore = useUserStore();
-const { locale } = useDateLocale();
+const { locale, format } = useDateLocale();
 const isExitPage = useIsAiUsageExitPage();
 const { isReached } = useAiAllowance();
 const isAiReached = computed(() => isReached());
@@ -59,6 +61,7 @@ const preset = ref<BudgetCadencePreset>('monthly');
 const customUnit = ref<BudgetCustomCadenceUnit>('days');
 const customEvery = ref<number | null>(null);
 const editedStartsOn = ref<Date>();
+const today = ref(new Date());
 const accountIds = ref<string[]>([]);
 const carryPolicy = ref<BudgetPlanCarryPolicy>('floor');
 const poolEnabled = ref(false);
@@ -67,18 +70,43 @@ const askQuestions = ref(true);
 const isAskingQuestions = ref(false);
 const opensQuestions = computed(() => withSuggestedLines.value && askQuestions.value && !isAiReached.value);
 
+const isCustomValid = computed(
+  () => preset.value !== 'custom' || isValidCustomInterval({ unit: customUnit.value, every: customEvery.value }),
+);
+const cadenceChoice = computed(() => ({
+  preset: preset.value,
+  custom: customEvery.value === null ? undefined : { unit: customUnit.value, every: customEvery.value },
+}));
+const minStartsOn = computed(() =>
+  isCustomValid.value ? earliestValidPlanStart({ ...cadenceChoice.value, today: today.value }) : undefined,
+);
+
 const startsOn = computed(() => {
   if (editedStartsOn.value) return editedStartsOn.value;
-  const today = new Date();
   const isMonthBased =
     preset.value === 'monthly' ||
     preset.value === 'semiMonthly' ||
     (preset.value === 'custom' && customUnit.value === 'months');
-  return isMonthBased
-    ? startOfMonth(today)
-    : startOfWeek(today, {
+  const defaultStart = isMonthBased
+    ? startOfMonth(today.value)
+    : startOfWeek(today.value, {
         weekStartsOn: locale.value.options?.weekStartsOn ?? 1,
       });
+  return minStartsOn.value && isBefore(defaultStart, minStartsOn.value) ? minStartsOn.value : defaultStart;
+});
+
+const isStartsOnValid = computed(
+  () =>
+    !minStartsOn.value || isValidPlanStart({ ...cadenceChoice.value, startsOn: startsOn.value, today: today.value }),
+);
+const startsOnError = computed(() =>
+  minStartsOn.value && !isStartsOnValid.value
+    ? t('budgetPlans.create.startsOnOutOfRange', { from: format(minStartsOn.value, 'd MMM yyyy') })
+    : undefined,
+);
+
+watch([preset, customUnit], () => {
+  if (editedStartsOn.value && !isStartsOnValid.value) editedStartsOn.value = undefined;
 });
 
 // DateField emits every model change back, so only a different day counts as a user edit.
@@ -96,6 +124,7 @@ const hasNoEligibleAccounts = computed(
 watch([isOpen, isAccountsFetched], ([open], [wasOpen]) => {
   if (!open) return;
   if (!wasOpen) {
+    today.value = new Date();
     editedStartsOn.value = undefined;
     isAskingQuestions.value = false;
   }
@@ -118,9 +147,6 @@ const setCustomEvery = ({ value }: { value: string | number | null }) => {
   customEvery.value = parsed !== null && Number.isFinite(parsed) ? parsed : null;
 };
 
-const isCustomValid = computed(
-  () => preset.value !== 'custom' || isValidCustomInterval({ unit: customUnit.value, every: customEvery.value }),
-);
 const customEveryError = computed(() =>
   customEvery.value !== null && !isCustomValid.value
     ? t('budgetPlans.create.customEveryError', { max: BUDGET_PLAN_MAX_INTERVAL_N[customUnit.value] })
@@ -146,11 +172,7 @@ const { isPending, mutate } = useInvalidatingMutation({
 });
 
 const isSubmitDisabled = computed(
-  () =>
-    isPending.value ||
-    accountIds.value.length === 0 ||
-    !isCustomValid.value ||
-    isAfter(startsOn.value, endOfDay(new Date())),
+  () => isPending.value || accountIds.value.length === 0 || !isCustomValid.value || !isStartsOnValid.value,
 );
 
 const create = ({ answers }: { answers?: BudgetSuggestionAnswers } = {}) => {
@@ -160,8 +182,7 @@ const create = ({ answers }: { answers?: BudgetSuggestionAnswers } = {}) => {
       payload: {
         ...buildCreatePlanPayload({
           name: t('budgetPlans.defaultName'),
-          preset: preset.value,
-          custom: customEvery.value === null ? undefined : { unit: customUnit.value, every: customEvery.value },
+          ...cadenceChoice.value,
           startsOn: startsOn.value,
           accountIds: accountIds.value,
           carryPolicy: carryPolicy.value,
@@ -250,7 +271,8 @@ const submit = () => {
         :model-value="startsOn"
         mode="date"
         :label="$t('budgetPlans.create.startsOnLabel')"
-        :calendar-options="{ maxDate: new Date() }"
+        :calendar-options="{ minDate: minStartsOn, maxDate: today }"
+        :error-message="startsOnError"
         @update:model-value="(value) => setStartsOn({ value })"
       />
 

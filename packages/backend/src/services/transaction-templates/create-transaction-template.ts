@@ -27,9 +27,20 @@ export const createTransactionTemplate = withTransaction(
 
     const requestedAmount = amount === null ? null : Money.fromDecimal(amount);
 
-    await assertTemplateConsistent({ userId, amount: requestedAmount, accountId, categoryId, payeeId, tagIds });
+    const { accountCurrencyCode } = await assertTemplateConsistent({
+      userId,
+      amount: requestedAmount,
+      accountId,
+      categoryId,
+      payeeId,
+      tagIds,
+    });
 
-    const storedAmount = await roundTemplateAmount({ userId, accountId, amount: requestedAmount });
+    const storedAmount = await roundTemplateAmount({
+      userId,
+      currencyCode: accountCurrencyCode,
+      amount: requestedAmount,
+    });
 
     const template = await writeOrConflict(() =>
       TransactionTemplates.create({

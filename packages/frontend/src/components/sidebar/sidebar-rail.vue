@@ -31,12 +31,7 @@ import { useSidebarSectionTotals } from './accounts-view/helpers/use-sidebar-sec
 import LoansList from './accounts-view/loans-list.vue';
 import PortfoliosList from './accounts-view/portfolios-list.vue';
 import VenturesList from './accounts-view/ventures-list.vue';
-import {
-  SIDEBAR_BUDGET_NAV_ITEM,
-  SIDEBAR_NAV_CHILDREN,
-  type SidebarNavChild,
-  useAccountsNavChildren,
-} from './nav-items';
+import { SIDEBAR_NAV_CHILDREN, type SidebarNavChild, useAccountsNavChildren } from './nav-items';
 import RailIconTrigger from './rail-icon-trigger.vue';
 import { useSidebarNavRoutes } from './use-nav-routes';
 import { useSidebarCollapsed } from './use-sidebar-collapsed';
@@ -45,7 +40,7 @@ import UserMenu from './user-menu.vue';
 const { t } = useI18n();
 const route = useRoute();
 const { isCollapsed } = useSidebarCollapsed();
-const { isAccountsRoute, isTransactionsRoute, isBudgetRoute, isPlannedRoute } = useSidebarNavRoutes();
+const { isAccountsRoute, isTransactionsRoute, isPlannedRoute, isChildActive } = useSidebarNavRoutes();
 const accountsNavChildren = useAccountsNavChildren();
 
 const {
@@ -111,13 +106,7 @@ const navItems = computed<RailNavItem[]>(() => [
     children: SIDEBAR_NAV_CHILDREN.transactions,
   },
   {
-    routeName: SIDEBAR_BUDGET_NAV_ITEM.routeName,
-    icon: SIDEBAR_BUDGET_NAV_ITEM.icon,
-    label: t(SIDEBAR_BUDGET_NAV_ITEM.labelKey),
-    active: isBudgetRoute.value,
-  },
-  {
-    routeName: ROUTES_NAMES.planned,
+    routeName: ROUTES_NAMES.budget,
     icon: CalendarClockIcon,
     label: t('navigation.planned.planned'),
     active: isPlannedRoute.value,
@@ -191,7 +180,7 @@ const sectionItems = computed<RailSectionItem[]>(() => {
 </script>
 
 <template>
-  <Card class="flex h-full w-16 flex-col rounded-none">
+  <Card class="bg-background dark:bg-card flex h-full w-16 flex-col rounded-none">
     <div class="flex h-14 shrink-0 items-center justify-center">
       <div
         class="bg-primary/10 text-primary-text flex size-8 items-center justify-center rounded-md text-sm font-semibold"
@@ -211,7 +200,12 @@ const sectionItems = computed<RailSectionItem[]>(() => {
             @update:open="setFlyoutOpen({ key: item.routeName, open: $event })"
           >
             <RailIconTrigger :to="{ name: item.routeName }" :aria-label="item.label">
-              <ui-button variant="ghost" as="span" size="icon" :class="cn(item.active && 'bg-primary/10')">
+              <ui-button
+                variant="ghost"
+                as="span"
+                size="icon"
+                :class="cn(item.active && 'bg-primary/10 hover:bg-primary/10')"
+              >
                 <component :is="item.icon" :class="cn('size-4 shrink-0', item.active && 'text-primary-text')" />
               </ui-button>
             </RailIconTrigger>
@@ -231,9 +225,15 @@ const sectionItems = computed<RailSectionItem[]>(() => {
                     variant="ghost"
                     as="span"
                     size="sm"
-                    :class="['w-full justify-start gap-2 px-3', isActive && 'bg-primary/10 text-foreground']"
+                    :class="[
+                      'w-full justify-start gap-2 px-3',
+                      isChildActive({ child, isActive }) && 'bg-primary/10 hover:bg-primary/10 text-foreground',
+                    ]"
                   >
-                    <component :is="child.icon" :class="['size-4 shrink-0', isActive && 'text-primary-text']" />
+                    <component
+                      :is="child.icon"
+                      :class="['size-4 shrink-0', isChildActive({ child, isActive }) && 'text-primary-text']"
+                    />
                     <span>{{ $t(child.labelKey) }}</span>
                   </ui-button>
                 </router-link>
@@ -248,7 +248,7 @@ const sectionItems = computed<RailSectionItem[]>(() => {
                 as="span"
                 size="icon"
                 :aria-label="item.label"
-                :class="cn((item.active ?? isActive) && 'bg-primary/10')"
+                :class="cn((item.active ?? isActive) && 'bg-primary/10 hover:bg-primary/10')"
               >
                 <component
                   :is="item.icon"
@@ -280,11 +280,12 @@ const sectionItems = computed<RailSectionItem[]>(() => {
             <div class="grid grid-cols-[minmax(0,1fr)] gap-1">
               <router-link
                 :to="{ name: section.routeName }"
-                class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-1.5"
+                class="hover:bg-hover flex items-center justify-between gap-2 rounded-md px-2 py-1.5"
               >
                 <span class="text-sm font-medium">{{ section.label }}</span>
                 <GroupTotal
                   v-if="section.total && baseCurrencyCode"
+                  tiny
                   :amount="section.total.total"
                   :currency-code="baseCurrencyCode"
                   :is-approx="section.total.isApprox"

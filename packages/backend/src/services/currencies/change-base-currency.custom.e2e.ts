@@ -16,19 +16,14 @@ const pairRates = ({ code, rate, quote = QUOTE }: { code: string; rate: number; 
   { baseCode: quote, quoteCode: code, rate: 1 / rate },
 ];
 
-/** A custom rate applies from the day it starts; these tests back-date their transactions, so it starts long ago. */
-const RATE_START = '2000-01-01';
-
 const setRates = (pairs: { baseCode: string; quoteCode: string; rate: number }[]) =>
-  helpers.editCurrencyExchangeRate({
-    pairs: pairs.map((pair) =>
-      pair.baseCode === 'USDT' || pair.quoteCode === 'USDT' ? { ...pair, effectiveDate: RATE_START } : pair,
-    ),
-    raw: true,
-  });
+  helpers.editCurrencyExchangeRate({ pairs, raw: true });
 
+/** Priced 1:1 in `QUOTE`. */
 const createCurrency = async ({ code, decimals = 6 }: { code: string; decimals?: number }) => {
-  const response = await helpers.createCustomCurrency({ payload: { code, name: code, decimals } });
+  const response = await helpers.createCustomCurrency({
+    payload: { code, name: code, decimals, rate: { value: 1, quoteCode: QUOTE } },
+  });
   expect(response.statusCode).toBe(201);
 };
 
@@ -97,12 +92,10 @@ describe('Change base currency with custom currency holdings', () => {
   describe('with a rate for the custom currency', () => {
     it('crosses the stored quote into the new base like an ISO holding, leaving every rate row alone', async () => {
       await createCurrency({ code: 'USDT' });
-      await setRates(pairRates({ code: 'USDT', rate: 1 }));
       const usdt = await createAccountIn({ code: 'USDT' });
       const usd = await createAccountIn({ code: QUOTE });
       const usdtTx = await createTx({ accountId: usdt.id, amount: 100 });
       const usdTx = await createTx({ accountId: usd.id, amount: 100 });
-      expect(usdtTx.refAmount).not.toBeNull();
       expect(usdtTx.refAmount).toBe(usdTx.refAmount);
 
       const ratesBefore = await snapshotUserRates();
@@ -112,16 +105,13 @@ describe('Change base currency with custom currency holdings', () => {
 
       const [usdtAfter, usdAfter] = await Promise.all([readTx({ id: usdtTx.id }), readTx({ id: usdTx.id })]);
       expect(usdtAfter.refCurrencyCode).toBe(NEW_BASE);
-      expect(usdtAfter.refAmount).not.toBeNull();
       expect(usdtAfter.refAmount).not.toBe(usdtTx.refAmount);
-      expect(usdtAfter.refAmountMissing).toBe(false);
       // A USDT priced 1:1 in USD is worth exactly what the USD holding is, on the same day.
       expect(usdtAfter.refAmount).toBe(usdAfter.refAmount);
 
       const [usdtAccount, usdAccount] = await Promise.all([readAccount({ id: usdt.id }), readAccount({ id: usd.id })]);
       expect(usdtAccount.currencyCode).toBe('USDT');
       expect(usdtAccount.currentBalance).toBe(100);
-      expect(usdtAccount.refCurrentBalance).not.toBeNull();
       expect(usdtAccount.refCurrentBalance).toBe(usdAccount.refCurrentBalance);
 
       expect(await snapshotUserRates()).toEqual(ratesBefore);
@@ -129,7 +119,6 @@ describe('Change base currency with custom currency holdings', () => {
 
     it('expresses the balance history of the custom account in the new base', async () => {
       await createCurrency({ code: 'USDT' });
-      await setRates(pairRates({ code: 'USDT', rate: 1 }));
       const usdt = await createAccountIn({ code: 'USDT' });
       const usd = await createAccountIn({ code: QUOTE });
       await createTx({ accountId: usdt.id, amount: 100 });
@@ -145,16 +134,13 @@ describe('Change base currency with custom currency holdings', () => {
       expect(afterCents).toBeGreaterThan(0);
       expect(afterCents).not.toBe(beforeCents);
       expect(afterCents).toBe(await todayCents({ accountId: usd.id }));
-      expect(afterCents).toBe(Math.round((await readAccount({ id: usdt.id })).refCurrentBalance! * 100));
+      expect(afterCents).toBe(Math.round((await readAccount({ id: usdt.id })).refCurrentBalance * 100));
     }, 60000);
 
     it('keeps an ISO manual rate untouched and values USDT and USD alike before and after the change', async () => {
       await createCurrency({ code: 'USDT' });
       // USDT is worth 1 USD; the user also set USD to EUR by hand.
-      await setRates([
-        ...pairRates({ code: 'USDT', rate: 1 }),
-        ...pairRates({ code: QUOTE, rate: 0.95, quote: NEW_BASE }),
-      ]);
+      await setRates(pairRates({ code: QUOTE, rate: 0.95, quote: NEW_BASE }));
       const usdt = await createAccountIn({ code: 'USDT' });
       const usd = await createAccountIn({ code: QUOTE });
       const usdtTx = await createTx({ accountId: usdt.id, amount: 100 });
@@ -167,7 +153,6 @@ describe('Change base currency with custom currency holdings', () => {
       // The manual USD to EUR rate belongs to the new base only once the base is flipped, so the
       // rebuild itself values both legs from the market, and equally.
       const [usdtAfter, usdAfterRebuild] = await Promise.all([readTx({ id: usdtTx.id }), readTx({ id: usdTx.id })]);
-      expect(usdtAfter.refAmount).not.toBeNull();
       expect(usdtAfter.refAmount).toBe(usdAfterRebuild.refAmount);
       expect(await snapshotUserRates()).toEqual(ratesBefore);
 
@@ -180,57 +165,9 @@ describe('Change base currency with custom currency holdings', () => {
     }, 60000);
   });
 
-  describe('without a rate for the custom currency', () => {
-    it('completes the change and leaves the custom rows without a base-currency amount', async () => {
-      await createCurrency({ code: 'USDT' });
-      const usdt = await createAccountIn({ code: 'USDT' });
-      const usd = await createAccountIn({ code: QUOTE });
-      const usdtTx = await createTx({ accountId: usdt.id, amount: 100 });
-      const usdTx = await createTx({ accountId: usd.id, amount: 100 });
-      expect(usdtTx.refAmountMissing).toBe(true);
-
-      const status = await helpers.changeBaseCurrencyAndWait({ newCurrencyCode: NEW_BASE });
-      helpers.expectBaseCurrencyChangeCompleted(status);
-
-      const [usdtAfter, usdAfter] = await Promise.all([readTx({ id: usdtTx.id }), readTx({ id: usdTx.id })]);
-      expect(usdtAfter.refAmount).toBeNull();
-      expect(usdtAfter.refAmountMissing).toBe(true);
-      expect(usdtAfter.refCurrencyCode).toBe(NEW_BASE);
-      expect(usdtAfter.amount).toBe(100);
-
-      // The ISO holding converts as usual.
-      expect(usdAfter.refAmount).not.toBeNull();
-      expect(usdAfter.refAmount).not.toBe(usdTx.refAmount);
-      expect(usdAfter.refAmountMissing).toBe(false);
-
-      const account = await readAccount({ id: usdt.id });
-      expect(account.currentBalance).toBe(100);
-      expect(account.refCurrentBalance).toBeNull();
-      expect((await readAccount({ id: usd.id })).refCurrentBalance).not.toBeNull();
-
-      const newBase = (await helpers.getUserCurrencies()).find((item) => item.isDefaultCurrency)!;
-      expect(newBase.currencyCode).toBe(NEW_BASE);
-    }, 60000);
-
-    it('values the account once the rate is entered after the change', async () => {
-      await createCurrency({ code: 'USDT' });
-      const usdt = await createAccountIn({ code: 'USDT' });
-      await createTx({ accountId: usdt.id, amount: 100 });
-
-      helpers.expectBaseCurrencyChangeCompleted(await helpers.changeBaseCurrencyAndWait({ newCurrencyCode: NEW_BASE }));
-      expect(await historyOf({ accountId: usdt.id })).toEqual([]);
-
-      await setRates(pairRates({ code: 'USDT', rate: 0.9, quote: NEW_BASE }));
-
-      expect((await readAccount({ id: usdt.id })).refCurrentBalance).toBe(90);
-      expect(await todayCents({ accountId: usdt.id })).toBe(9000);
-    }, 60000);
-  });
-
   describe('a rate edit after the custom account has a history', () => {
     it('rebuilds the history when the custom rate itself changes', async () => {
       await createCurrency({ code: 'USDT' });
-      await setRates(pairRates({ code: 'USDT', rate: 1 }));
       const usdt = await createAccountIn({ code: 'USDT' });
       await createTx({ accountId: usdt.id, amount: 100 });
       const before = await todayCents({ accountId: usdt.id });
@@ -246,7 +183,7 @@ describe('Change base currency with custom currency holdings', () => {
 
     it('rebuilds the history when the ISO rate of its stored quote changes', async () => {
       await createCurrency({ code: 'USDT' });
-      await setRates([...pairRates({ code: 'USDT', rate: 1 }), ...pairRates({ code: QUOTE, rate: 4, quote: BASE() })]);
+      await setRates(pairRates({ code: QUOTE, rate: 4, quote: BASE() }));
       const usdt = await createAccountIn({ code: 'USDT' });
       await createTx({ accountId: usdt.id, amount: 100 });
       expect(await todayCents({ accountId: usdt.id })).toBe(40000);
@@ -254,24 +191,6 @@ describe('Change base currency with custom currency holdings', () => {
       await setRates(pairRates({ code: QUOTE, rate: 5, quote: BASE() }));
 
       expect(await todayCents({ accountId: usdt.id })).toBe(50000);
-    }, 60000);
-
-    it('clears the history while the custom currency has no rate', async () => {
-      await createCurrency({ code: 'USDT' });
-      await setRates(pairRates({ code: 'USDT', rate: 1 }));
-      const usdt = await createAccountIn({ code: 'USDT' });
-      await createTx({ accountId: usdt.id, amount: 100 });
-      expect(await todayCents({ accountId: usdt.id })).toBeGreaterThan(0);
-
-      await helpers.removeCurrencyExchangeRate({
-        pairs: [
-          { baseCode: 'USDT', quoteCode: QUOTE },
-          { baseCode: QUOTE, quoteCode: 'USDT' },
-        ],
-        raw: true,
-      });
-
-      expect(await historyOf({ accountId: usdt.id })).toEqual([]);
     }, 60000);
   });
 });

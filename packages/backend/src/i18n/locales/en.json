@@ -8,16 +8,18 @@
     "groupNotFound": "Group or account not found",
     "accountNotFound": "Account not found!",
     "accountUpdateFailed": "Account updation is not successful",
-    "accountNoExternalId": "Account does not have external ID",
     "accountNoExternalIdMonobank": "Account does not have external ID from Monobank",
     "accountNoExternalIdEnableBanking": "Account does not have external ID from Enable Banking",
     "accountNotFoundForTransaction": "Account not found for this transaction",
     "deleteBlockedByLoanPayments": "This account has loan payments. Delete or reassign them before deleting the account.",
+    "deleteBlockedByTrashedLoanPayments": "This account has loan payments in Trash. Delete them permanently from Trash before deleting the account.",
     "loanBalanceUseUpdateLoan": "Change a loan's outstanding balance from its loan page, not from account settings.",
     "loanCategoryImmutable": "A loan account's category can't be changed.",
     "dedicatedFlowCategoryNotAllowed": "Loan and vehicle accounts must be created through their dedicated endpoints, not the generic accounts endpoint.",
     "initialBalanceOnlySystem": "Initial balance can only be changed for manual accounts",
-    "initialAndCurrentBalanceTogether": "Initial balance and current balance can't be changed in the same request"
+    "initialAndCurrentBalanceTogether": "Initial balance and current balance can't be changed in the same request",
+    "onlySystemAccountsCanBeLinked": "Only manually created accounts can be linked to a bank connection.",
+    "bankLinkImportStillRunning": "An import is still running. Wait for it to finish before linking, unlinking, archiving or disconnecting a bank account. If the import stopped, this block clears on its own 3 hours after the import started."
   },
   "balanceAdjustment": {
     "defaultNote": "Balance adjustment",
@@ -39,6 +41,7 @@
     "systemCannotBeMoved": "System categories cannot be moved.",
     "parentNotFound": "Category with such parentId doesn't exist.",
     "systemParentForbidden": "System categories cannot be used as a parent.",
+    "defaultCannotBeDeleted": "This category holds uncategorized transactions and cannot be deleted.",
     "ownParent": "Category cannot be its own parent.",
     "underOwnSubcategory": "Category cannot be moved under its own subcategory.",
     "nestingTooDeep": "Categories cannot be nested deeper than {{max}} levels."
@@ -47,6 +50,7 @@
     "notFound": "Transaction not found",
     "missingRequiredFields": "One of required fields are missing: destinationAmount, destinationAccountId.",
     "destinationAmountRequiredCrossCurrency": "destinationAmount is required when changing the amount of a cross-currency transfer.",
+    "amountBelowSmallestUnit": "The amount is below the smallest unit of {{code}}.",
     "refundAndTransferNotAllowed": "It is not allowed to create a transaction that is a refund and a transfer at the same time",
     "notOwnTransaction": "You can only edit or delete transactions you created on this shared account.",
     "sharedAccountChangeNotSupported": "Moving a transaction to a different account is only allowed for the account owner.",
@@ -55,8 +59,14 @@
     "cannotCreateWithParams": "Cannot create transaction with provided params",
     "idCannotBeChanged": "id cannot be changed",
     "editReadonlyFields": "Attempt to edit readonly fields of the external account",
+    "preSeamTimeOnOrAfterLinkDay": "A manual transaction on a bank-linked account must stay dated before {{date}}, the day the account was linked.",
+    "manualRowOnOrAfterLinkDay": "This transaction is dated on or after {{date}}, the day the account was linked to the bank. From that day on, the bank's records are what counts, so it can't be edited or deleted.",
+    "manualRowOnOrAfterLinkDayCreate": "Your bank owns everything from {{date}} on, so a manual transaction must be dated before {{date}}.",
+    "bulkDeleteBankRowsSelected": "Transactions synced from your bank, and ones dated on or after the day the account was linked, can't be deleted.",
+    "oppositeLegOnBankAccount": "The other side of this transfer is on a bank-linked account, so this change isn't allowed there.",
+    "moveAcrossBankLinkedAccount": "A transaction can't be moved onto or off a bank-linked account. Delete it and add it again on the other account.",
     "changeTypeNotAllowed": "It's disallowed to change \"transactionType\" of the non-system account",
-    "bothRefundFieldsNotAllowed": "You cannot use both \"refundedByTxIds\" and \"refundsTxId\" simultaneously. Please choose one or the other.",
+    "bothRefundFieldsNotAllowed": "You cannot use both \"refundedByTxIds\" and \"refundsTargets\" simultaneously. Please choose one or the other.",
     "oppositeTransactionNotFound": "Cannot find opposite tx to make an updation",
     "transactionIdNotExist": "Transaction with provided `id` does not exist!",
     "notAuthorizedToEdit": "You are not authorized to edit this transaction.",
@@ -91,6 +101,25 @@
     "plannedUnflipOnConnectedAccount": "This plan is on a bank-connected account, so your bank confirms it automatically. Delete if it is no longer expected.",
     "plannedCannotConfirmPayment": "A planned transaction cannot confirm a payment. Wait for it to be confirmed, then link it.",
     "plannedCannotBeRefundLinked": "A planned transaction cannot be part of a refund link.",
+    "paymentLegsNotAllowed": "Only a regular income or expense on your own account can be split across several accounts. Transfers, refunds, planned and category-split transactions can't.",
+    "inPaymentNotAllowed": "This transaction is part of a payment from several accounts. Remove it from the payment first.",
+    "paymentLegInvalidAccount": "Each new part must be on one of your other manual accounts.",
+    "paymentLegDuplicateAccount": "Each new part must be on a different account.",
+    "paymentLegEditThroughMain": "This is part of a payment from several accounts. Edit the main transaction instead.",
+    "paymentAmountRequired": "Enter the amount in the main transaction's currency for every part in a different currency.",
+    "paymentLinkNotAllowed": "This transaction can't be linked to the payment. Only your own income or expense of the same type can be linked – not a transfer, refund, split, pending transaction or part of another payment.",
+    "paymentLinkedAmountFixed": "The amount of a linked transaction can't be changed.",
+    "paymentLinkedTypeMismatch": "Linked transactions must have the same type as the payment. Unlink them first.",
+    "refunds": {
+      "wholeLinkWithPartials": "A whole-refund link cannot be combined with partial links",
+      "externalLinkWithOthers": "A refund for a purchase outside the app cannot be combined with other refund links",
+      "externalLinkWithAmount": "A refund of a transaction outside the app cannot have a partial amount; it always covers the whole refund.",
+      "totalExceedsRefund": "Total refund link amounts cannot be greater than the refund transaction amount",
+      "totalExceedsSplit": "Total refund amount cannot be greater than the split amount",
+      "totalExceedsOriginal": "Total refund amount cannot be greater than the original transaction amount",
+      "refundOfRefund": "Cannot refund a \"refund\" transaction",
+      "duplicateLink": "This refund is already linked to that transaction"
+    },
     "splits": {
       "splitsOnTransfer": "Cannot add splits to transfer transactions",
       "splitLimitExceeded": "Maximum {{max}} splits allowed per transaction",
@@ -104,8 +133,7 @@
       "exceedTotal": "Total split amount ({{total}}) exceeds transaction amount ({{transactionAmount}})",
       "invalidData": "Invalid split data",
       "splitNotFound": "Split not found",
-      "cannotDeleteWithRefunds": "Cannot delete split that has refunds targeting it",
-      "cannotReduceBelowRefunded": "This split has refunds totaling {{refundsText}}. You cannot reduce it below the refunded amount. To reduce further, first unlink the refunds."
+      "cannotDeleteWithRefunds": "Cannot delete split that has refunds targeting it"
     },
     "reconciliation": {
       "systemNotAllowed": "Only bank-connected transactions can be merged or removed.",
@@ -126,6 +154,13 @@
         "message_one": "1 transaction has been pending for over a week. Check it with your bank so your balance stays accurate.",
         "message_other": "{{count}} transactions have been pending for over a week. Check them with your bank so your balance stays accurate."
       }
+    },
+    "trash": {
+      "paymentNotTrashable": "Remove it from the payment first to delete it.",
+      "portfolioNotTrashable": "Unlink it from the portfolio first to delete it.",
+      "ventureNotTrashable": "Unlink it from the venture first to delete it.",
+      "accountTypeChanged": "This transaction can't be restored because its account type has changed.",
+      "loanPaymentLegMissing": "This loan payment can't be restored because its other side was deleted."
     }
   },
   "budgets": {
@@ -134,14 +169,11 @@
     "onlyOwnerCanDuplicate": "Only the owner can duplicate this tracker",
     "someTransactionIdsInvalid": "Some transactions IDs are invalid",
     "transactionsAddedSuccessfully": "Transactions added successfully",
-    "cannotManuallyLinkToCategoryBudget": "Cannot manually link transactions to category-based trackers. Transactions are tracked automatically by category.",
     "someCategoryIdsInvalid": "Some category IDs are invalid or do not exist",
-    "notCategoryBudget": "This endpoint is only available for category-based trackers",
-    "lineCategoryOutsideTracker": "A tracker line can only use categories tracked by its tracker",
     "startDateAfterEndDate": "Start date must be on or before the end date",
+    "rulesNeedCategoryOrTag": "Pick at least one category or tag to add transactions automatically.",
     "smartTracking": {
       "ownerOnly": "Only the tracker owner can change smart tracking.",
-      "manualOnly": "Smart tracking works only for manual trackers.",
       "descriptionRequired": "Describe what this tracker is for to turn on smart tracking.",
       "startDateRequired": "Set a start date to turn on smart tracking.",
       "scanRunning": "Matching is running for this tracker. Try again when it finishes.",
@@ -193,6 +225,7 @@
     "reminderAlreadyExists": "An identical reminder already exists for this tag",
     "amountThresholdRequired": "Amount threshold is required for amount threshold reminders",
     "maxRemindersReached": "Maximum number of reminders (50) reached",
+    "amountThresholdRoundsToZero": "The threshold rounds to zero in your base currency (decimal places: {{decimals}}). Enter a larger amount.",
     "notifications": {
       "thresholdExceeded": {
         "title": "Tag Spending Alert",
@@ -235,6 +268,7 @@
     "insufficientSharesToSell": "Insufficient shares to sell. After this update, you would have {{adjustedQuantity}} shares but are trying to sell {{sellQuantity}} shares.",
     "sourceAndDestinationMustDiffer": "Source and destination portfolios must be different",
     "transferAmountMustBePositive": "Transfer amount must be greater than zero",
+    "transferCurrencyMustMatchAccount": "The transfer currency must match the destination account's currency ({{currency}}).",
     "sourcePortfolioNotFound": "Source portfolio not found",
     "destinationPortfolioNotFound": "Destination portfolio not found",
     "sourceAccountNotFound": "Source account not found",
@@ -242,6 +276,7 @@
     "cannotDeleteHoldingWithActivePosition": "Cannot delete a holding with an active position. Please sell or transfer all shares first.",
     "transactionAlreadyTransfer": "Transaction is already marked as a transfer and cannot be linked to a portfolio.",
     "transactionAlreadyLinkedToPortfolio": "Transaction is already linked to a portfolio transfer.",
+    "linkedTransactionMustBelongToDestinationAccount": "The linked transaction must belong to the destination account.",
     "transactionAlreadyLinkedToVenture": "Transaction is already linked to a venture deal",
     "portfolioTransferNotFound": "Portfolio transfer not found",
     "exchangeCurrenciesMustDiffer": "Exchange currencies must be different",
@@ -250,6 +285,10 @@
       "tokenLimitExceededSuggestion": "Split the upload into smaller files or use a model with a larger context window.",
       "extractFailed": "Couldn't extract investment transactions from this file. Please try again.",
       "csvColumnNotFound": "Column \"{{column}}\" was not found in the CSV headers."
+    },
+    "unrealizedLossAlert": {
+      "title_one": "{{count}} holding crossed your loss alert",
+      "title_other": "{{count}} holdings crossed your loss alert"
     }
   },
   "landingFaq": {
@@ -270,13 +309,13 @@
     "connectionNotFound": "Connection not found",
     "connectionNotFoundOrNotYours": "Connection not found or does not belong to you",
     "providerNoReauthorization": "Provider {{providerType}} does not support reauthorization",
-    "providerNotFoundInRegistry": "Provider {{providerType}} not found in registry",
     "connectionIdNotFound": "Bank data provider connection {{connectionId}} not found",
     "accountIdNotFound": "Account {{accountId}} not found",
     "providerTypeMismatch": "Connection {{connectionId}} is for provider {{actualType}}, not {{expectedType}}",
     "providerAlreadyRegistered": "Provider {{providerType}} is already registered. Cannot register duplicate providers.",
     "providerNotRegistered": "Provider {{providerType}} is not registered. Available providers: {{available}}",
-    "unexpected": "Unexpected error."
+    "unexpected": "Unexpected error.",
+    "clientUpdateRequired": "This version of the app is no longer supported. Please update it from the App Store."
   },
   "validation": {
     "dateInvalid": "\"date\" is invalid date."
@@ -297,6 +336,7 @@
     "failedToFetchCountries": "Failed to fetch countries. Please check your credentials.",
     "accountNotLinkedToConnection": "Account not found or not linked to this connection",
     "accountAlreadyConnectedToAnotherConnection": "Account \"{{account}}\" is already connected through \"{{connection}}\". Disconnect it there first.",
+    "accountBalanceUnavailable": "Couldn't get the current balance of {{account}} from the bank. Please try again in a few minutes.",
     "cannotLoadBeforeLinkDate": "Cannot load transactions before account link date ({{linkedAt}}). This account was linked using \"forward-only\" strategy to prevent data duplication.",
     "dateRangeExceedsLimit": "Date range cannot exceed 1 year.",
     "fromAfterTo": "\"from\" date must be before \"to\" date",
@@ -309,7 +349,7 @@
     "periodLoadNotSupported": "Loading transactions for a custom period is not supported by this provider.",
     "transactionsLoadedCount": "Loaded {{count}} transactions.",
     "transactionsAllDuplicates": "Found {{count}} transactions for this period — all were already imported.",
-    "transactionsNoneInPeriod": "The provider returned no transactions for this period.",
+    "transactionsNoneInPeriod": "The data provider didn't return any transactions for this period.",
     "apiError": "{{provider}} API error: {{message}}",
     "simplefinUnreachable": "SimpleFIN is temporarily unreachable. Please try again later.",
     "currencySelectionRequired": "Account \"{{account}}\" has no currency reported by the bank — choose a currency for it before connecting.",
@@ -318,9 +358,7 @@
       "invalidCredentialsFormat": "Invalid credentials format for Monobank",
       "invalidApiToken": "Invalid Monobank API token",
       "rateLimitExceeded": "Monobank API rate limit exceeded. Please try again in a minute.",
-      "accountNotFound": "Account {{accountExternalId}} not found in Monobank",
       "accountReconnectRequired": "This account is no longer available at Monobank. Please reconnect your Monobank connection to resume syncing.",
-      "webhookNotImplemented": "handleWebhook not yet implemented for Monobank",
       "unknownCurrencyCode": "Unknown currency code: {{numericCode}}",
       "geoBlocked": "Monobank is blocking requests from this server's IP. Disable VPN or use a Ukrainian IP address.",
       "geoBlockedProduction": "Monobank sync is temporarily unavailable. We've been notified and are working on it. Please contact support if this is urgent."
@@ -351,6 +389,13 @@
       "accountNoExternalId": "Account has no external ID for LunchFlow sync.",
       "accountNotFound": "LunchFlow account not found."
     },
+    "akahu": {
+      "invalidCredentialsFormat": "Invalid Akahu credentials format. User Access Token and App ID Token are required.",
+      "invalidTokens": "Invalid Akahu tokens. Check the User Access Token and App ID Token from your Akahu app page.",
+      "accountNoExternalId": "Account has no external ID for Akahu sync.",
+      "accountNotFound": "Akahu account not found.",
+      "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly."
+    },
     "simplefin": {
       "invalidCredentialsFormat": "Invalid SimpleFIN credentials format.",
       "invalidSetupToken": "Invalid or already-used SimpleFIN setup token. Generate a new one from the SimpleFIN Bridge and try again.",
@@ -364,8 +409,7 @@
     "walutomat": {
       "invalidCredentialsFormat": "Invalid Walutomat credentials format. API key and private key are required.",
       "invalidApiKey": "Invalid Walutomat API key or private key.",
-      "accountNoExternalId": "Walutomat account has no external ID.",
-      "walletNotFound": "Walutomat wallet not found for currency: {{currency}}"
+      "accountNoExternalId": "Walutomat account has no external ID."
     }
   },
   "csvImport": {
@@ -399,7 +443,8 @@
     "transactionTypeValuesNotCovered": "Transaction type column has values not covered by income/expense lists: {{uncovered}}. Found values: {{found}}",
     "selectedAccountNotFound": "The selected account was not found or does not belong to you.",
     "selectedCategoryNotFound": "The selected category was not found or does not belong to you.",
-    "linkedAccountCurrencyMismatch": "Currencies must match to link an existing account: {{mismatches}}. Link an account with the same currency or create a new one."
+    "linkedAccountCurrencyMismatch": "Currencies must match to link an existing account: {{mismatches}}. Link an account with the same currency or create a new one.",
+    "bankLinkChangedSinceReview": "The bank link of an account in this import changed after the review. Go back to the review step and run it again."
   },
   "ofxImport": {
     "noFileUploaded": "No file was uploaded. Send the OFX or QFX file as the raw request body.",
@@ -461,6 +506,7 @@
     "aiRateLimited": "AI provider rate limit reached. Please try again in a few minutes.",
     "aiExtractionFailed": "AI extraction failed. Please try again.",
     "ynab": {
+      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
       "parse": {
         "fileEmpty": "YNAB Register.csv is empty.",
         "unparseable": "YNAB Register.csv could not be parsed as a CSV file.",
@@ -549,6 +595,7 @@
   "currencies": {
     "notSupportedForBaseCurrency": "Changing base currency to {{currency}} is not supported. Only these currencies are supported: {{supportedCurrencies}}.",
     "listIsEmpty": "Currencies list is empty",
+    "amountTooLarge": "{{code}} amounts can be at most {{max, number}}",
     "noBaseCurrency": "User does not have a base currency set",
     "alreadyBaseCurrency": "The selected currency is already a base currency",
     "baseCurrencyLockedByShares": "Cannot change base currency while you have active shared resources. Revoke or leave them first.",
@@ -563,21 +610,32 @@
     "currencyNotConnected": "Asked currency is not connected",
     "exchangeRateNotAvailable": "Exchange rate not available for {{baseCode}}/{{quoteCode}} on {{date}}",
     "unknownCurrencyCode": "Unknown currency code: {{code}}",
+    "invalidCode": "Invalid currency code \"{{code}}\". Use 2 to 16 letters or digits, e.g. \"USD\".",
+    "invalidCodeIso": "Invalid currency code \"{{code}}\". Use an ISO 4217 code, e.g. \"USD\".",
+    "invalidCodeWithCustom": "Invalid currency code \"{{code}}\". Use an ISO 4217 code, e.g. \"USD\", or one of your custom currencies: {{customCodes}}.",
     "amountExceedsDecimals": "{{code}} allows at most {{decimals}} decimal places",
     "customCurrencyNotFound": "Custom currency \"{{code}}\" was not found",
     "customCurrencyIsoCode": "\"{{code}}\" is an ISO 4217 currency code and cannot be defined as a custom currency",
     "customCurrencyAlreadyDefined": "You already have a currency with the code \"{{code}}\"",
-    "customCurrencyInUse": "Cannot delete \"{{code}}\": your {{usedBy}} still use it",
-    "customCurrencyDecimalsInUse": "Cannot change the decimals of \"{{code}}\": your {{usedBy}} still use it",
+    "customCurrencyDecimalsInUse": "You can't change the decimals of {{code}} while your data uses it.",
     "customCurrencyUseCustomEndpoint": "\"{{code}}\" is a custom currency. Remove it from your custom currencies instead",
     "customCurrencyCannotBeBase": "\"{{code}}\" is a custom currency and cannot be the base currency",
+    "customCurrencyRateBetweenCustom": "Custom currencies are quoted in ISO currencies only: \"{{baseCode}}\" and \"{{quoteCode}}\" are both custom currencies",
+    "customCurrencyLastRate": "\"{{code}}\" is a custom currency and always needs a rate. Set a new rate instead of removing the last one",
+    "customCurrencyQuoteNotIso": "The rate of a custom currency must be given in an ISO currency, and \"{{code}}\" is a custom currency",
+    "customCurrencyRateNeedsQuote": "Set a base currency first, or give the rate of the custom currency in an ISO currency you hold",
+    "customCurrencyOneQuote": "\"{{code}}\" has a single quote currency. Send its rates against one currency only",
+    "customCurrencyRateViaPairs": "\"{{code}}\" is a custom currency. Change its rate from its exchange rate instead",
+    "customCurrencyDefinitionConflict": "Your own \"{{code}}\" has different decimals than the account owner's \"{{code}}\", so you can't add or edit \"{{code}}\" transactions on this shared account",
     "rateSourceCurrencyNotHeld": "\"{{code}}\" is not in your currencies",
     "rateSourceIsoNotAllowed": "\"{{code}}\" is an ISO currency, so its rate source can only be the market provider or manual rates",
     "rateHistoryIsoNotAllowed": "\"{{code}}\" is an ISO currency, so it has one undated rate and no rate history",
     "rateSourceCustomNoProvider": "\"{{code}}\" is a custom currency and has no market provider. Use manual rates, a peg, CoinGecko or an HTTP source",
-    "rateSourcePegSelf": "\"{{code}}\" cannot be pegged to itself",
     "rateSourceHttpsRequired": "Rates from an HTTP source must be fetched over https",
-    "rateSourceHeadersUnreadable": "Cannot read the saved request headers of \"{{code}}\" (the server secret changed). Enter the headers again"
+    "rateSourceHeadersUnreadable": "Cannot read the saved request headers of \"{{code}}\" (the server secret changed). Enter the headers again",
+    "rateSourceFirstFetchFailed": "Couldn't get a rate for \"{{code}}\" from this source, so it wasn't saved. Check its settings and try again.",
+    "rateSourceLeavesNoRate": "\"{{code}}\" is a custom currency and always needs a rate. This source would leave it without one, so it wasn't saved.",
+    "rateSourceChangedMeanwhile": "The rate source of \"{{code}}\" changed while this one was being saved. Reload and try again."
   },
   "userSettings": {
     "userSettingsNotFound": "User settings not found"
@@ -590,9 +648,7 @@
     "currencyCodeNotExist": "Currency with passed code does not exist.",
     "currencyNotExist": "Currency with code \"{{currencyCode}}\" does not exist.",
     "cannotDeleteDefaultCurrency": "It is not allowed to delete default currency. Unmake it default first.",
-    "cannotDeleteCurrencyWithAccounts": "It is not allowed to delete currency associated with any accounts. Delete accounts first. Accounts names: \"{{accountNames}}\".",
-    "cannotDeleteCurrencyWithInvestments": "It is not allowed to delete currency \"{{currencyCode}}\" while it is used by investment holdings. Delete those holdings first.",
-    "defaultCurrencyNotPresent": "Cannot delete currency. Default currency is not present in the system"
+    "currencyInUse": "{{currencyCode}} can't be deleted because it's still in use."
   },
   "ai": {
     "connectionNotFound": "AI model not found.",
@@ -654,7 +710,6 @@
         "home-garden": "Home, garden",
         "pets-animals": "Pets, animals",
         "electronics-accessories": "Electronics, accessories",
-        "gifts-joy": "Gifts, joy",
         "stationery-tools": "Stationery, tools",
         "free-time": "Free time",
         "drugstore-chemist": "Drug-store, chemist"
@@ -691,7 +746,8 @@
         "books-audio-subscriptions": "Books, audio, subscriptions",
         "tv-streaming": "TV, Streaming",
         "holiday-trips-hotels": "Holiday, trips, hotels",
-        "charity-gifts": "Charity, gifts",
+        "gifts": "Gifts",
+        "charity": "Charity",
         "alcohol-tobacco": "Alcohol, tobacco",
         "lottery-gambling": "Lottery, gambling"
       },
@@ -747,6 +803,11 @@
         "requiresAccountField": "Auto-record requires an account to book the transaction against.",
         "requiresAmountField": "Auto-record requires expectedAmount and expectedCurrencyCode.",
         "excludesMatchingField": "Auto-record and matching rules are mutually exclusive."
+      },
+      "customInterval": {
+        "required": "A custom frequency needs an interval unit and count.",
+        "presetConflict": "An interval unit and count can only be set with the custom frequency.",
+        "countOutOfRange": "The interval count must be between {{min}} and {{max}} for this unit."
       }
     }
   },
@@ -851,7 +912,10 @@
         "malformedManifestEntry": "Backup archive has a malformed manifest entry for {{path}}.",
         "missingFile": "Backup archive is missing {{path}} listed in its manifest.",
         "checksumMismatch": "Backup file {{path}} failed its integrity check (checksum mismatch).",
+        "amountNotCents": "Backup file {{path}} is corrupt: it contains an invalid amount ({{value}}).",
         "differentAccount": "This backup was exported by a different account and cannot be restored here.",
+        "customCurrencyInvalid": "The backup's custom currency \"{{code}}\" has an invalid definition or rate source, so it cannot be restored",
+        "customCurrencyWithoutRate": "The backup's custom currency \"{{code}}\" needs a positive exchange rate against an ISO currency, or a peg to one, so it cannot be restored",
         "alreadyInProgress": "A backup restore is already in progress. Wait for it to finish before starting another.",
         "failed": "The backup restore failed. Your existing data was not changed."
       }
@@ -859,5 +923,20 @@
   },
   "dataExport": {
     "tooManyRows": "Export would contain {{rowCount, number}} rows, which exceeds the limit of {{limit, number}}."
+  },
+  "goals": {
+    "goalNotFound": "Goal not found.",
+    "accountNotFound": "One of the selected accounts was not found.",
+    "accountNotEligible": "{{accountName}} can't count toward a goal. Pick a cash, current, savings, investment or crypto account.",
+    "shareCapacityExceeded": "{{accountName}} has {{free}}% free: you asked for {{requested}}%, and other goals already use {{usedByOtherGoals}}%.",
+    "fixedAmountsBelowTarget": "Fixed amounts add up to {{total}} {{currencyCode}}, below the {{target}} {{currencyCode}} target. Raise an amount or count an account by percent.",
+    "currencyRateUnavailable": "{{currencyCode}} can't be converted to your base currency right now. Pick another currency or try again later.",
+    "reachedNotification": {
+      "title": "Goal reached: {{name}}",
+      "message": "You've saved {{amount}} {{currencyCode}}."
+    }
+  },
+  "backgroundJobs": {
+    "notFound": "This task is no longer running – the server may have restarted. Please try again."
   }
 }

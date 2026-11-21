@@ -29,7 +29,7 @@
           <DesktopOnlyTooltip :content="$t('transactions.bulkEdit.editButton')" :disabled="!isMobileMode">
             <Button
               variant="outline"
-              :size="isMobileMode ? 'icon-sm' : 'sm'"
+              :size="isMobileMode ? 'icon-sm' : 'xs'"
               :disabled="isBulkLoading"
               :aria-label="isMobileMode ? $t('transactions.bulkEdit.editButton') : undefined"
               @click="isBulkEditDialogOpen = true"
@@ -52,7 +52,7 @@
                 <DropdownMenuTrigger as-child>
                   <Button
                     variant="outline"
-                    :size="isMobileMode ? 'icon-sm' : 'sm'"
+                    :size="isMobileMode ? 'icon-sm' : 'xs'"
                     :disabled="isBulkLoading || isGroupingBlocked"
                     :aria-label="
                       isMobileMode ? $t('transactions.transactionGroups.bulkActions.groupButton') : undefined
@@ -82,14 +82,14 @@
                tap the disabled button and read the reason as a popover (a regular
                hover-only tooltip would never surface on mobile). -->
           <ResponsiveTooltip
-            v-if="hasExternalSelected"
+            v-if="hasUndeletableSelected"
             content-class-name="max-w-75"
             :content="$t('transactions.bulkDelete.externalTooltip')"
           >
             <span class="inline-flex">
               <Button
                 variant="soft-destructive"
-                :size="isMobileMode ? 'icon-sm' : 'sm'"
+                :size="isMobileMode ? 'icon-sm' : 'xs'"
                 disabled
                 :aria-label="isMobileMode ? $t('transactions.bulkDelete.button') : undefined"
               >
@@ -103,7 +103,7 @@
           <DesktopOnlyTooltip v-else :content="$t('transactions.bulkDelete.button')" :disabled="!isMobileMode">
             <Button
               variant="soft-destructive"
-              :size="isMobileMode ? 'icon-sm' : 'sm'"
+              :size="isMobileMode ? 'icon-sm' : 'xs'"
               :disabled="isBulkLoading"
               :aria-label="isMobileMode ? $t('transactions.bulkDelete.button') : undefined"
               @click="isBulkDeleteDialogOpen = true"
@@ -163,7 +163,7 @@
       >
         <thead class="sticky top-0 z-2">
           <tr class="text-muted-foreground divide-x text-xs font-medium tracking-wider uppercase">
-            <th class="bg-muted sticky left-0 z-1 w-8 border-b">
+            <th class="bg-table-header sticky left-0 z-1 w-8 border-b">
               <label class="flex size-full items-center justify-center">
                 <Checkbox :model-value="selectAllState" @update:model-value="handleSelectAllToggle" />
               </label>
@@ -172,7 +172,7 @@
               v-for="(column, index) in renderedColumns"
               :key="column.id"
               :class="[
-                'bg-muted relative overflow-hidden border-b px-3 py-2 whitespace-nowrap',
+                'bg-table-header relative overflow-hidden border-b px-3 py-2 whitespace-nowrap',
                 column.align === 'right' ? 'text-right' : 'text-left',
               ]"
               :style="{ width: `${columnLayout.widths[index]}px` }"
@@ -208,7 +208,7 @@
                 @dblclick="emit('resize-column', { id: column.id, widthPx: null })"
               />
             </th>
-            <th class="bg-muted sticky right-0 z-1 border-b" :style="{ width: `${detailsColumnWidthPx}px` }" />
+            <th class="bg-table-header sticky right-0 z-1 border-b" :style="{ width: `${detailsColumnWidthPx}px` }" />
           </tr>
         </thead>
 
@@ -276,6 +276,7 @@
       v-if="editTarget"
       :key="inlineCellKey({ txId: editTarget.tx.id, column: editTarget.column })"
       :tx="editTarget.tx"
+      :opposite-tx="editTarget.oppositeTx"
       :column="editTarget.column"
       :label="editTarget.label"
       :mode="editTarget.mode"
@@ -447,7 +448,7 @@ const {
   toggleTransaction,
   clearSelection,
   getUnselectableReason,
-  hasExternalSelected,
+  hasUndeletableSelected,
   selectedTotals,
   selectAllState,
   handleSelectAllToggle,

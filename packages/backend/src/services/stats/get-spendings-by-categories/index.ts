@@ -92,7 +92,6 @@ const getMonthlySpendingsByCategories = withTransaction(
 
     const buckets = generatePeriodBuckets({ from: params.from, to: params.to, granularity: 'monthly' });
     const byBucket = buckets.map((): CategoryAllocations => ({ base: [], refunds: [] }));
-    // A refund dated outside the range has no month here, so it is left out.
     for (const side of ['base', 'refunds'] as const) {
       for (const leg of allocations[side]) {
         byBucket[findBucketIndex({ transactionTime: leg.time, buckets })]?.[side].push(leg);
@@ -183,8 +182,7 @@ export async function getMonthlySpendingsByCategoriesByType(
  * Grouping depends on the request: with no `selectedCategoryIds` every leg rolls up to its root
  * category; with a selection each leg rolls up to its nearest selected ancestor (and every
  * selected category is seeded to 0 so it always shows). A refund leg only subtracts when its
- * group already received spend — a refund whose original expense fell outside the range/filter
- * never conjures a phantom negative row.
+ * group already received spend, so it never conjures a phantom negative row.
  *
  * `excludedCategoryIds` drops legs one by one rather than filtering the query: a split whose own
  * category stays visible must still count even when its transaction's primary category is hidden,
@@ -276,8 +274,7 @@ function groupAllocations({
     const groupId = getGroupId(leg.categoryId);
     if (groupId === null) continue;
 
-    // Guard: only net against a group that actually received spend in range. `leg.minor` is
-    // already negative. A group refunded past its own spend reports 0 — the response carries
+    // `leg.minor` is already negative. A group refunded past its own spend reports 0 — the response carries
     // expense magnitudes, and a negative one renders as an invisible donut slice that still
     // drags the centre total down.
     const existing = result[groupId];

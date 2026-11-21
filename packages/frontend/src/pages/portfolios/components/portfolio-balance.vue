@@ -139,6 +139,7 @@
 import { Card } from '@/components/lib/ui/card';
 import { usePortfolioSummary } from '@/composable/data-queries/portfolio-summary';
 import { useFormatCurrency } from '@/composable/formatters';
+import { toLocalNumber } from '@/js/helpers/formatters';
 import { getGainColorClass } from '@/composable/gain-color';
 import { useCurrenciesStore } from '@/stores/currencies';
 import { TrendingDownIcon, TrendingUpIcon } from '@lucide/vue';
@@ -156,12 +157,9 @@ const { currencies } = storeToRefs(useCurrenciesStore());
 const formatCurrency = (amount: number, currencyCode: string) => {
   const userCurrency = currencies.value.find((c) => c.currency?.code === currencyCode.toUpperCase());
   if (!userCurrency) {
-    return amount.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    return toLocalNumber(amount, { maximumFractionDigits: 2 });
   }
-  return formatAmountByCurrencyCode(amount, userCurrency.currencyCode);
+  return formatAmountByCurrencyCode({ amount, currencyCode: userCurrency.currencyCode });
 };
 
 const getTotalGainValue = () => {

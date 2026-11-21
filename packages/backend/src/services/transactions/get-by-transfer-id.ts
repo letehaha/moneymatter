@@ -12,6 +12,10 @@ import { withTransaction } from '../common/with-transaction';
 export const getTransactionsByTransferId = withTransaction(
   async ({ transferId, userId }: { transferId: string; userId: number }) => {
     const accessibleAccountIds = await getAccessibleAccountIdsForUser({ userId });
-    return Transactions.getTransactionsByTransferId({ transferId, accountIds: accessibleAccountIds });
+    return Transactions.getTransactionsByTransferId({
+      transferId,
+      accountIds: accessibleAccountIds,
+      include: Transactions.fullTransactionIncludes(),
+    });
   },
 );

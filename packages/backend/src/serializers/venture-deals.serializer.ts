@@ -2,6 +2,7 @@ import type { VentureDealModel } from '@bt/shared/types';
 import type VentureDeals from '@models/venture/venture-deals.model';
 
 import { serializeCurrency } from './currency.serializer';
+import { serializeLogoFields } from './logo-fields.serializer';
 import { serializeVentureEvents } from './venture-events.serializer';
 import { serializeVenturePlatform } from './venture-platforms.serializer';
 
@@ -25,6 +26,7 @@ export function serializeVentureDeal(deal: VentureDeals): VentureDealModel {
     investmentDate: deal.investmentDate,
     expectedExitDate: deal.expectedExitDate,
     notes: deal.notes,
+    ...serializeLogoFields({ entity: deal }),
     platform: deal.platform ? serializeVenturePlatform(deal.platform) : undefined,
     currency: deal.currency ? serializeCurrency(deal.currency) : undefined,
     events: deal.events ? serializeVentureEvents(deal.events) : undefined,

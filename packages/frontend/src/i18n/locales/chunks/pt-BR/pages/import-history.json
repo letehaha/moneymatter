@@ -1,0 +1,29 @@
+{
+  "pages": {
+    "importExport": {
+      "importHistory": {
+        "pageTitle": "Histórico de importações",
+        "pageDescription": "Veja suas importações anteriores e confira exatamente quais contas e transações cada uma criou.",
+        "loadError": "Não foi possível carregar seu histórico de importações.",
+        "emptyTitle": "Nenhuma importação ainda",
+        "emptyDescription": "Quando você importar transações, elas vão aparecer aqui.",
+        "emptyAction": "Importar dados",
+        "transactionCount": "{count} transação | {count} transações",
+        "accountCount": "{count} conta | {count} contas",
+        "deleteButton": "Excluir importação",
+        "deleteConfirmTitle": "Excluir esta importação?",
+        "deleteConfirmDescription": "Isso vai excluir permanentemente {count} transação desta importação. Não é possível desfazer esta ação. | Isso vai excluir permanentemente {count} transações desta importação. Não é possível desfazer esta ação.",
+        "deleteConfirmDescriptionNoTransactions": "As transações desta importação já foram excluídas. Isso remove o que sobrou da importação, incluindo qualquer ajuste de saldo que ela tenha feito nas suas contas.",
+        "deleteConfirmCreatedAccountsNote": "As contas criadas por esta importação também serão removidas se não tiverem outras transações.",
+        "deleteSuccessMessage": "{count} transação excluída | {count} transações excluídas",
+        "deleteSuccessNoTransactions": "Importação excluída",
+        "deleteUnexpectedError": "Algo deu errado ao excluir a importação. Tente de novo.",
+        "deleteLinkedTransfersWarningTitle": "Esta importação está vinculada a outra transação",
+        "deleteLinkedTransfersCheckbox": "Excluir também a transação de transferência vinculada",
+        "deleteLinkedTransfersDescription": "Por padrão, qualquer transação vinculada a esta importação como transferência só é desvinculada, não excluída. Se você marcar esta opção, ela também será excluída permanentemente — não é possível desfazer esta ação.",
+        "deleteLinkedTransfersConfirmTitle": "Excluir também a transação vinculada?",
+        "deleteLinkedTransfersConfirmDescription": "Você está prestes a excluir permanentemente uma transação que não faz parte desta importação, em vez de só desvinculá-la. Não é possível desfazer esta ação."
+      }
+    }
+  }
+}

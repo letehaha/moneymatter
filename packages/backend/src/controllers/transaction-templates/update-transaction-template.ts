@@ -3,11 +3,11 @@ import { createController } from '@controllers/helpers/controller-factory';
 import { updateTransactionTemplate } from '@services/transaction-templates';
 import { z } from 'zod';
 
-import { templateBodySchema } from './schema';
+import { updateTemplateBodySchema } from './schema';
 
 const schema = z.object({
   params: z.object({ id: recordId() }),
-  body: templateBodySchema.partial(),
+  body: updateTemplateBodySchema,
 });
 
 export default createController(schema, async ({ user, params, body }) => {

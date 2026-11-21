@@ -235,6 +235,28 @@ describe('Budget plan CRUD', () => {
     }
   });
 
+  it('rounds an expected income half-up to the decimals of the plan currency', async () => {
+    const created = await helpers.createBudgetPlan({ raw: true });
+    const planId = created.plan.id;
+
+    const updated = await helpers.updateBudgetPlan({ planId, payload: { expectedIncome: 2500.555 }, raw: true });
+    expect(updated.plan.expectedIncome).toBe(2500.56);
+
+    await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
+      fn: async () => {
+        const kwdPlan = await helpers.createBudgetPlan({ raw: true });
+        const kwdUpdated = await helpers.updateBudgetPlan({
+          planId: kwdPlan.plan.id,
+          payload: { expectedIncome: 2500.5555 },
+          raw: true,
+        });
+        expect(kwdUpdated.plan.expectedIncome).toBe(2500.556);
+      },
+    });
+    expect((await helpers.getBudgetPlan({ planId, raw: true })).plan.expectedIncome).toBe(2500.56);
+  });
+
   it('soft-deletes a plan out of the list, out of GET and out of every write', async () => {
     const created = await helpers.createBudgetPlan({ raw: true });
     const planId = created.plan.id;

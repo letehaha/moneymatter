@@ -17,9 +17,9 @@
       "language": "Language",
       "general": "General",
       "payees": "Payees",
-      "subscriptions": "Scheduled payments",
       "planBilling": "Plan & billing",
-      "collapse": "Collapse"
+      "collapse": "Collapse",
+      "resize": "Resize navigation"
     },
     "backToSettings": "Back to settings"
   }

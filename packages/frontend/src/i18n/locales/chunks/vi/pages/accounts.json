@@ -1,13 +1,13 @@
 {
   "accounts": {
-    "title": "Tài khoản",
+    "title": "Accounts",
     "createAccount": "Tạo tài khoản",
     "createVehicle": "Thêm phương tiện",
     "actionsMenu": "Thao tác tài khoản",
     "sections": {
       "archived": "Đã lưu trữ",
       "manual": "Tài khoản thủ công",
-      "sharedWithMe": "Được chia sẻ với tôi",
+      "sharedWithMe": "Shared with me",
       "vehicles": "Phương tiện",
       "bankConnections": "Kết nối ngân hàng"
     },
@@ -24,7 +24,7 @@
       "vehicles": "Phương tiện",
       "projected": "Dự kiến {amount} · {count} giao dịch đến hết {date} | Dự kiến {amount} · {count} giao dịch đến hết {date}"
     },
-    "sharedBy": "Được chia sẻ bởi {handle}",
+    "sharedBy": "Shared by {handle}",
     "viaHousehold": "Được chia sẻ qua hộ gia đình của {handle}",
     "connect": "Kết nối",
     "connectBank": "Kết nối ngân hàng",
@@ -37,7 +37,13 @@
       "auto": "Tự động",
       "name": "Tên",
       "balance": "Số dư",
-      "ariaLabel": "Sắp xếp tài khoản"
+      "ariaLabel": "Sắp xếp tài khoản",
+      "direction": {
+        "aToZ": "A to Z",
+        "zToA": "Z to A",
+        "highestFirst": "Highest first",
+        "lowestFirst": "Lowest first"
+      }
     },
     "status": {
       "active": "Đang hoạt động",

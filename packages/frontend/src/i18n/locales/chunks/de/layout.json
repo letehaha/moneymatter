@@ -8,25 +8,31 @@
     "allTransactions": "Alle Transaktionen",
     "transactions": "Transaktionen",
     "transactionGroups": "Gruppen",
+    "trash": "Papierkorb",
     "analytics": "Analysen",
     "optimizations": "Optimierungen",
     "automations": "Automatisierungen",
     "accountDetails": "Kontodetails",
     "helpAndDocs": "Hilfe & Dokumentation",
+    "community": "Community",
     "logout": "Abmelden",
     "appVersion": "App-Version {version}",
+    "updateAvailable": "Update verfügbar",
+    "updateToVersion": "Update · {version}",
     "settings": "Einstellungen",
     "planned": {
       "planned": "Geplant",
       "subscriptions": "Wiederkehrende Zahlungen",
-      "budgets": "Tracker"
+      "budgets": "Tracker",
+      "goals": "Ziele"
     },
     "venture": "Beteiligungen",
     "budget": "Budget"
   },
   "sidebar": {
     "collapse": "Seitenleiste einklappen",
-    "expand": "Seitenleiste ausklappen",
+    "expand": "Seitenleiste aufklappen",
+    "resize": "Seitenleiste anpassen",
     "settings": {
       "title": "Einstellungen",
       "sections": {
@@ -115,6 +121,10 @@
       "thanks": "Danke, wir lesen jede Nachricht.",
       "unavailable": "Das Senden ist derzeit nicht verfügbar. Nutze stattdessen das Board unten.",
       "or": "oder",
+      "reddit": {
+        "title": "Frag die Community auf Reddit",
+        "description": "Hol dir Hilfe von anderen Nutzern, teile deine Einstellungen und verfolge Updates."
+      },
       "board": {
         "title": "Auf dem öffentlichen Board posten",
         "description": "Stimme über die Ideen anderer ab, sieh, was bereits geplant ist, und erhalte Antworten auf deine Ideen."

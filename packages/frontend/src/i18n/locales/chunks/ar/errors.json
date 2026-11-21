@@ -10,8 +10,8 @@
     },
     "auth": {
       "reauthenticationRequired": "For your security, sign in again to make this change.",
-      "passwordTooShort": "كلمة السر قصيرة جدا.",
-      "passwordTooLong": "كلمة السر طويلة جداً.",
+      "passwordTooShort": "Password is too short.",
+      "passwordTooLong": "Password is too long.",
       "providerNotConfigured": "This sign-in provider isn't configured on this server.",
       "accountAlreadyLinked": "This account is already linked to another user.",
       "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",

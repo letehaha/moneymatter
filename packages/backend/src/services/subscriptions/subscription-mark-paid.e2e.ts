@@ -9,6 +9,7 @@ import {
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
+import UsersCurrencies from '@models/users-currencies.model';
 import * as helpers from '@tests/helpers';
 import { addDays, addMonths, format } from 'date-fns';
 
@@ -1135,10 +1136,10 @@ describe('Cross-currency pay when the billed currency is unconnected', () => {
       raw: true,
     });
 
-    // Create connects the billed currency so conversions work. Disconnect it here
-    // to reproduce a subscription whose currency the user later removed — the
+    // Create connects the billed currency so conversions work. The API blocks
+    // disconnecting it, so drop the link directly to reproduce orphaned data — the
     // preview must still open (degraded amount) rather than 4xx/5xx.
-    await helpers.deleteUserCurrency({ currencyCode: uahCode, raw: true });
+    await UsersCurrencies.destroy({ where: { currencyCode: uahCode } });
 
     const preview = await helpers.getSubscriptionPayPreview({ id: sub.id, raw: true });
     expect(preview.isCrossCurrency).toBe(true);

@@ -1,0 +1,72 @@
+---
+title: Add Expense shortcut
+description: Log an expense from Siri, Spotlight or the Action button without opening the MoneyMatter iPhone app.
+sidebar:
+  order: 2
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import PhoneVideo from '~/components/phone-video.astro';
+import Screenshot from '~/components/screenshot.astro';
+
+**Add Expense** logs a cash or card expense in a few taps, without opening the MoneyMatter iPhone app. It asks for the account, the amount and the category, and that's it. You add the rest later in the app.
+
+## Before you start
+
+- **Your phone must be unlocked.**
+- **Open MoneyMatter once while signed in.** That loads your accounts and categories onto the phone. Until then, the shortcut says "Open MoneyMatter to load your accounts and categories, then try again."
+
+## Start it
+
+Use whichever is closest:
+
+- **Siri**: say "Add expense in MoneyMatter", "Log expense in MoneyMatter" or "MoneyMatter expense".
+- **Spotlight**: swipe down on the Home Screen and search for **Add Expense**.
+- **Action button** (iPhone 15 Pro and later): open the **Settings** app → **Action Button**, swipe to **Shortcut**, then choose **MoneyMatter** → **Add Expense**.
+- **Shortcuts app**: in **Library**, open **MoneyMatter** and tap **Add Expense**.
+
+<PhoneVideo
+  src="/videos/iphone/add-expense.mp4"
+  label="Screen recording of Add Expense started from the Shortcuts app: picking Everyday Card, entering 8, picking Bar, cafe, then opening MoneyMatter where the expense appears in Latest transactions."
+/>
+
+## Log an expense
+
+<Steps>
+
+1. **Account**: pick the account you paid from.
+2. **Amount**: type the amount. It's in the currency of the account you picked.
+3. **Category**: pick one. **Which category?** lists up to 10 categories you used recently first, then all your categories A to Z, so a recent category shows up twice.
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/iphone/add-expense-category.png"
+  phone
+  alt="The Which category? list of Add Expense on iPhone: Groceries, Bar, cafe and Restaurant, fast-food used recently at the top, then all categories in alphabetical order."
+  hint="iPhone screenshot, light and dark. Run Add Expense, pick an account, enter an amount, and capture the category step with a few recent categories."
+/>
+
+Shortcuts confirms the saved expense. It's created in MoneyMatter the next time you open the app. Open it to add a payee, note or anything else.
+
+- **No AI and no internet needed.** You can log an expense offline. It's sent when you next open the app.
+- **Bank-connected accounts** get a planned transaction. It's confirmed when your bank sync reports the same amount. If the bank never reports it, delete the planned transaction.
+- **Manual accounts** get a regular transaction.
+
+## Choose what the shortcut lists
+
+By default, **Add Expense** only offers your manual accounts, because payments on bank-connected accounts arrive through sync. You can change this, and hide categories you never use for quick expenses.
+
+- **In the web app**: open **Settings** → **General** and find **iPhone Add Expense**.
+- **On iPhone**: tap your avatar → **Settings** → **General** → **Add Expense shortcut**.
+
+| Setting | What it does |
+|---|---|
+| **Show bank-connected accounts** | Off by default. Turn it on to list bank-connected accounts too. |
+| **Hidden categories** | Checked categories don't appear in the shortcut's category list. Hiding a category hides its subcategories too. |
+
+## Related
+
+- [Log payments automatically on iPhone](/iphone/payment-automations/)
+- [Add and edit transactions](/transactions/add-and-edit/)
+- [General settings](/settings/general-settings/#iphone-add-expense)

@@ -1,5 +1,6 @@
 import { ASSET_CLASS, INVESTMENT_TRANSACTION_CATEGORY, SECURITY_PROVIDER } from '@bt/shared/types';
 import { beforeEach, describe, expect, it } from '@jest/globals';
+import { ERROR_CODES } from '@js/errors';
 import ExchangeRates from '@models/exchange-rates.model';
 import Portfolios from '@models/investments/portfolios.model';
 import Securities from '@models/investments/securities.model';
@@ -7,7 +8,7 @@ import SecurityPricing from '@models/investments/security-pricing.model';
 import UserExchangeRates from '@models/user-exchange-rates.model';
 import { API_LAYER_BASE_CURRENCY_CODE } from '@services/exchange-rates/constants';
 import * as helpers from '@tests/helpers';
-import { format, parseISO, subDays } from 'date-fns';
+import { addDays, format, parseISO, subDays } from 'date-fns';
 
 const today = () => format(new Date(), 'yyyy-MM-dd');
 const daysAgo = ({ days }: { days: number }) => format(subDays(new Date(), days), 'yyyy-MM-dd');
@@ -549,6 +550,81 @@ describe('GET /investments/portfolios/annualized-returns', () => {
       // Gross (10) would give 10%, gross plus fee (12) 12%.
       expect(entry.periodDays).toBe(365);
       expect(entry.annualizedReturn).toBeCloseTo(8, 0);
+    });
+
+    describe('asOf', () => {
+      const buy = async ({ securityId, days, price }: { securityId: string; days: number; price: string }) =>
+        helpers.createInvestmentTransaction({
+          payload: {
+            portfolioId: portfolio.id,
+            securityId,
+            category: INVESTMENT_TRANSACTION_CATEGORY.buy,
+            date: daysAgo({ days }),
+            quantity: '1',
+            price,
+          },
+          raw: true,
+        });
+
+      const seedTwoYearHistory = async () => {
+        const security = await createBaseCurrencySecurity({ symbol: 'ASOF' });
+        await helpers.createHolding({ payload: { portfolioId: portfolio.id, securityId: security.id } });
+        await buy({ securityId: security.id, days: 730, price: '100' });
+        await buy({ securityId: security.id, days: 100, price: '150' });
+        await seedPrices({
+          securityId: security.id,
+          points: [
+            { date: daysAgo({ days: 730 }), price: '100' },
+            { date: daysAgo({ days: 365 }), price: '110' },
+            { date: daysAgo({ days: 100 }), price: '150' },
+            { date: today(), price: '200' },
+          ],
+        });
+      };
+
+      const getEntry = async ({ asOf }: { asOf?: string }) =>
+        (await helpers.getPortfoliosAnnualizedReturns({ asOf, raw: true })).find(
+          (r) => r.portfolioId === portfolio.id,
+        )!;
+
+      it('ignores trades and prices after asOf', async () => {
+        await seedTwoYearHistory();
+
+        const asOfEntry = await getEntry({ asOf: daysAgo({ days: 365 }) });
+        const currentEntry = await getEntry({});
+
+        // 100 → 110 over the 365 days up to asOf.
+        expect(asOfEntry.startDate).toBe(daysAgo({ days: 730 }));
+        expect(asOfEntry.periodDays).toBe(365);
+        expect(asOfEntry.annualizedReturn).toBeCloseTo(10, 1);
+        // 100 → 150 → 200 chained over 730 days: factor 2.
+        expect(currentEntry.periodDays).toBe(730);
+        expect(currentEntry.annualizedReturn).toBeCloseTo(41.42, 1);
+      });
+
+      it('reports no history when asOf precedes the first trade', async () => {
+        await seedTwoYearHistory();
+
+        const entry = await getEntry({ asOf: daysAgo({ days: 800 }) });
+
+        expect(entry.annualizedReturn).toBeNull();
+        expect(entry.hasEnoughHistory).toBe(false);
+        expect(entry.startDate).toBeNull();
+        expect(entry.periodDays).toBe(0);
+      });
+
+      it('clamps a future asOf to today', async () => {
+        await seedTwoYearHistory();
+
+        const futureEntry = await getEntry({ asOf: format(addDays(new Date(), 30), 'yyyy-MM-dd') });
+
+        expect(futureEntry).toStrictEqual(await getEntry({}));
+      });
+
+      it.each(['2025-13-01', 'not-a-date', '2025-02-30'])('rejects asOf %s with a validation error', async (asOf) => {
+        const response = await helpers.getPortfoliosAnnualizedReturns({ asOf });
+        expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      });
     });
   });
 });

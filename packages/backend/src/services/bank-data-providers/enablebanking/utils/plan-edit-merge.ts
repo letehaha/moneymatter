@@ -55,6 +55,17 @@ function categorizationSignal({
   return side.categoryId !== defaultCategoryId ? 'legacy' : 'none';
 }
 
+/** Sync writes the account default, or `bankTransfer` on rows synced before the default was set/changed. */
+export function isSyncPaymentType({
+  paymentType,
+  defaultPaymentType,
+}: {
+  paymentType: PAYMENT_TYPES;
+  defaultPaymentType: PAYMENT_TYPES | null;
+}): boolean {
+  return paymentType === PAYMENT_TYPES.bankTransfer || paymentType === defaultPaymentType;
+}
+
 export function hasManualStamp({ meta }: { meta: CategorizationMeta | null }): boolean {
   return meta?.source === CATEGORIZATION_SOURCE.manual;
 }
@@ -74,6 +85,7 @@ export function planEditMerge({
   orphanSyncNote,
   canonicalSyncNote,
   defaultCategoryId,
+  defaultPaymentType,
   now,
 }: {
   orphan: EditMergeSide;
@@ -81,6 +93,7 @@ export function planEditMerge({
   orphanSyncNote: string | null;
   canonicalSyncNote: string | null;
   defaultCategoryId: string;
+  defaultPaymentType: PAYMENT_TYPES | null;
   now: Date;
 }): EditMergePlan {
   const valuesToMove: EditMergeValues = {};
@@ -123,8 +136,8 @@ export function planEditMerge({
   }
 
   if (orphan.paymentType !== canonical.paymentType) {
-    const orphanEdited = orphan.paymentType !== PAYMENT_TYPES.bankTransfer;
-    const canonicalEdited = canonical.paymentType !== PAYMENT_TYPES.bankTransfer;
+    const orphanEdited = !isSyncPaymentType({ paymentType: orphan.paymentType, defaultPaymentType });
+    const canonicalEdited = !isSyncPaymentType({ paymentType: canonical.paymentType, defaultPaymentType });
     if (orphanEdited && canonicalEdited) return { action: 'skip', reason: 'payment_type_conflict' };
     if (orphanEdited) valuesToMove.paymentType = orphan.paymentType;
   }

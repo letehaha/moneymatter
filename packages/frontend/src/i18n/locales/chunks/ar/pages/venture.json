@@ -1,6 +1,6 @@
 {
   "venture": {
-    "title": "مشروع",
+    "title": "Venture",
     "subtitle": "Track private venture investments — SPVs, syndicates, fund deals.",
     "managePlatforms": "Manage platforms",
     "platforms": {
@@ -75,6 +75,7 @@
       "types": {
         "initial_investment": "Initial investment",
         "capital_call": "Capital call",
+        "capital_refund": "Capital refund",
         "distribution": "Distribution",
         "nav_update": "NAV update",
         "exit": "Exit",

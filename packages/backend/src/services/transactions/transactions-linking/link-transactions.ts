@@ -13,6 +13,8 @@ import { findTransactions, updateTransactions } from '@models/transactions-query
 import * as Transactions from '@models/transactions.model';
 import { withTransaction } from '@root/services/common/with-transaction';
 import { assertTxWriteAccess } from '@services/sharing/auth/authorize-account-write.service';
+import { assertNotInPayment } from '@services/transactions/payment-legs';
+import { validateRefundLinks } from '@services/tx-refunds/validate-refund-links';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -125,6 +127,8 @@ export const linkTransactions = withTransaction(
           });
         }
 
+        await assertNotInPayment({ transactionIds: [baseTxId, oppositeTxId] });
+
         // `validateTransactionLinking` already rejects `transfer_to_loan` legs as
         // already-linked, so a link can never legitimately land on a loan account.
         // Guard the impossible case loudly — stamping either nature here would
@@ -152,6 +156,10 @@ export const linkTransactions = withTransaction(
           where: { id: { [Op.in]: [baseTxId, oppositeTxId] } },
           returning: true,
         });
+
+        for (const tx of [base, opposite]) {
+          await validateRefundLinks({ userId: tx.userId, txId: tx.id });
+        }
 
         result.push([
           results.find((tx) => tx.id === baseTxId),

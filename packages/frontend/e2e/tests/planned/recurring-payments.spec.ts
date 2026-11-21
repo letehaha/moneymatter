@@ -12,6 +12,7 @@ const NAME_PLACEHOLDER = 'e.g. Netflix, Electricity bill';
 const AMOUNT_PLACEHOLDER = '0.00';
 const NOTES_PLACEHOLDER = 'Optional notes about this subscription';
 const KEYWORD_PLACEHOLDER = 'Enter keyword';
+const INTERVAL_COUNT_PLACEHOLDER = 'e.g. 30';
 
 const QUICK_ADD_NAME = 'E2E Quick Netflix';
 const SEEDED_NAME = 'E2E Seeded Gym';
@@ -169,6 +170,21 @@ test.describe('Recurring Payments', () => {
     await waitForSuccessToast({ page });
     await expect(summaryCard({ page, title: 'Schedule' })).toContainText('Annual', { timeout: 15_000 });
     await expect(page.getByText(DUE_DATE_LABEL).first()).toBeVisible({ timeout: 15_000 });
+  });
+
+  test('schedule editor sets a custom 30-day interval', async ({ page }) => {
+    await gotoDetails({ page });
+
+    const dialog = await openCardEditor({ page, title: 'Schedule' });
+
+    await pickDialogSelect({ page, nth: 0, optionName: /^Custom$/ });
+    await dialog.getByPlaceholder(INTERVAL_COUNT_PLACEHOLDER).fill('30');
+    await pickDialogSelect({ page, nth: 1, optionName: /^days$/ });
+
+    await dialog.getByRole('button', { name: 'Update', exact: true }).click();
+
+    await waitForSuccessToast({ page });
+    await expect(summaryCard({ page, title: 'Schedule' })).toContainText('Every 30 days', { timeout: 15_000 });
   });
 
   // ─── 5. Automation guard + matching rules ───────────────────────────

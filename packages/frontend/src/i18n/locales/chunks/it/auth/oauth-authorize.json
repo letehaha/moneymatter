@@ -1,43 +1,62 @@
 {
   "oauth": {
     "authorize": {
-      "title": "{name} vuole accedere ai tuoi dati MoneyMatter",
-      "redirect_notice": "After approval you will be redirected to {host}. Only continue if you recognize this address.",
+      "title": "{name} richiede l'accesso ai dati MoneyMatter",
+      "redirect_notice": "Dopo l'approvazione si verrà reindirizzati a {host}. Continuare solo se si riconosce questo indirizzo.",
       "description": "Questa app sta richiedendo i seguenti permessi:",
-      "approve": "Aprrova",
+      "approve": "Approva",
       "deny": "Nega",
-      "footer": "Puoi revocare l'accesso in qualsiasi momento da Impostazioni > Integrazioni IA.",
+      "footer": "L'accesso può essere revocato in qualsiasi momento da Impostazioni > Integrazioni IA.",
       "error": "Impossibile elaborare la richiesta. Riprovare.",
-      "unexpected_response": "Risposta inattesa dal server. Riprova.",
+      "unexpected_response": "Risposta inattesa dal server. Riprovare.",
       "always_granted": "Sempre concesso",
-      "optional": "Opzionale",
-      "delete_warning": "Concedi l'accesso solo ad applicazioni fidate",
-      "unknown_app": "Un'applicazione"
+      "optional": "Facoltativo",
+      "delete_warning": "Concedere l'accesso solo ad applicazioni affidabili",
+      "unknown_app": "Un'applicazione",
+      "steps": {
+        "permissions": "Permessi",
+        "tools": "Strumenti"
+      },
+      "continue": "Continua",
+      "back": "Indietro",
+      "toolsets": {
+        "intro": "Scegliere con cosa può lavorare {name}. Ogni set aggiuntivo aggiunge strumenti che {name} carica in ogni chat.",
+        "add_all": "Aggiungi tutti",
+        "core_only": "Solo base",
+        "always_on": "{count} strumento, sempre attivo | {count} strumenti, sempre attivi",
+        "tool_count": "{count} strumento | {count} strumenti",
+        "selected": "{count} strumento selezionato | {count} strumenti selezionati",
+        "of_total": "su {total}",
+        "counter_label": "Strumenti selezionati",
+        "fits_cap": "Compatibile con tutte le app, inclusi ChatGPT e VS Code Copilot (massimo {cap} strumenti).",
+        "over_cap": "Oltre {cap} strumenti. ChatGPT e VS Code Copilot non ne caricano così tanti.",
+        "load_error": "Impossibile caricare i set di strumenti. Consentire l'accesso per usare gli strumenti di base e ricollegarsi più tardi per aggiungerne altri."
+      }
     },
     "scopes": {
       "finance_read": {
-        "label": "Visualizza i tuoi dati finanziari",
-        "desc": "Leggi conti, transazioni, budget, categorie, etichette, portafogli e statistiche di spesa."
+        "label": "Visualizzare i dati finanziari",
+        "desc": "Lettura di conti, transazioni, tracker, categorie, etichette, portafogli e statistiche di spesa."
       },
       "finance_write": {
-        "label": "Crea e modifica i tuoi dati finanziari",
-        "desc": "Aggiungi e aggiorna transazioni, budget, abbonamenti, investimenti e altro."
+        "label": "Creare e modificare i dati finanziari",
+        "desc": "Aggiunta e aggiornamento di transazioni, tracker, abbonamenti, investimenti e altro."
       },
       "finance_delete": {
-        "label": "Elimina i tuoi dati finanziari",
-        "desc": "Rimuovi permanentemente transazioni, conti, budget e altri dati."
+        "label": "Eliminare i dati finanziari",
+        "desc": "Rimozione definitiva di transazioni, conti, tracker e altri dati."
       },
       "profile_read": {
-        "label": "Visualizza il tuo profilo",
-        "desc": "Vedi il tuo nome, email e valuta predefinita."
+        "label": "Visualizzare il profilo",
+        "desc": "Visualizzazione di nome, email e valuta predefinita."
       },
       "offline_access": {
-        "label": "Rimani connesso in background",
-        "desc": "Mantieni attivo l'accesso senza richiedere il permesso ogni sessione."
+        "label": "Mantenere la connessione in background",
+        "desc": "Accesso mantenuto attivo senza richiedere l'autorizzazione a ogni sessione."
       },
       "unknown": {
         "label": "Permessi aggiuntivi",
-        "desc": "L'app ha richiesto una autorizzazione sconosciuta da MoneyMatter."
+        "desc": "L'app ha richiesto un'autorizzazione sconosciuta a MoneyMatter."
       }
     }
   }

@@ -8,7 +8,8 @@
       "currentPlanEyebrow": "Gói hiện tại",
       "updatePaymentMethod": "Cập nhật phương thức thanh toán",
       "manageBilling": "Quản lý thanh toán",
-      "currentPlan": "Gói hiện tại",
+      "manageInAppStore": "Manage in the App Store",
+      "currentPlan": "Current plan",
       "recommended": "Được đề xuất",
       "previousPlan": "Gói trước đây",
       "yourPlan": "Gói của bạn",
@@ -31,6 +32,7 @@
       "current": {
         "lifetime": "{plan} · trọn đời",
         "lifetimeMeta": "Có tất cả tính năng của Plus. Không gia hạn, không cần lưu thẻ.",
+        "lifetimePurchaseMeta": "No renewal, no card on file.",
         "earlyAdopterNote": "Cảm ơn bạn đã đồng hành từ những ngày đầu. Bạn sẽ được dùng trọn đời mọi tính năng Plus hiện có. Các tính năng được bổ sung sau này và những tính năng phát sinh chi phí theo từng người dùng sẽ thuộc các gói trả phí. Muốn sử dụng? Bạn được giảm 50% vĩnh viễn cho mọi gói; ưu đãi sẽ tự động áp dụng khi thanh toán.",
         "seats": "1 thành viên hộ gia đình | {count} thành viên hộ gia đình",
         "subscription": "{tier} · {cycle}",
@@ -48,6 +50,7 @@
         "activationTimedOut": "Thanh toán đã thành công nhưng gói vẫn đang được thiết lập. Hãy làm mới trang sau một phút; nếu trạng thái không thay đổi, vui lòng liên hệ bộ phận hỗ trợ.",
         "activationUnreachable": "Chúng tôi không thể kết nối với máy chủ để xác nhận thanh toán. Hãy tải lại trang; nếu gói vẫn chưa hiển thị, vui lòng liên hệ bộ phận hỗ trợ.",
         "accessContinuesUntil": "Bạn có thể tiếp tục sử dụng đến {date}",
+        "billedByAppStore": "Billed through the App Store",
         "accessUntil": "Bạn có thể sử dụng đến {date}, sau đó tài khoản sẽ chỉ có quyền xem",
         "resumesOn": "Tự động tiếp tục vào {date}",
         "pausedNote": "Trong thời gian tạm dừng, tài khoản chỉ có quyền xem.",
@@ -65,7 +68,7 @@
         "trial": "Tính năng Plus",
         "processing": "Đang xử lý",
         "earlyAdopter": "Người dùng từ những ngày đầu",
-        "endsOn": "Kết thúc vào {date}"
+        "endsOn": "Ends {date}"
       },
       "cta": {
         "activating": "Đang kích hoạt…",
@@ -77,6 +80,7 @@
       "ctaNote": {
         "keepIt": "Hãy cập nhật phương thức thanh toán để tiếp tục sử dụng gói.",
         "viaPortal": "Đã thay đổi trong cổng thanh toán.",
+        "viaAppStore": "Plan changes happen in the App Store",
         "billedToday": "Thanh toán ngay hôm nay. Có thể hủy bất cứ lúc nào.",
         "earlyAdopter": "Giảm 50% trọn đời, tự động áp dụng khi thanh toán"
       },
@@ -88,7 +92,7 @@
       },
       "cycle": {
         "month": "Hàng tháng",
-        "year": "Hằng năm"
+        "year": "Yearly"
       },
       "perCycle": {
         "month": "/tháng",

@@ -15,11 +15,11 @@
       "workspaceGroup": "Espacio de trabajo",
       "appearance": "Apariencia",
       "language": "Idioma",
-      "general": "Estadísticas",
+      "general": "General",
       "payees": "Beneficiarios",
-      "subscriptions": "Pagos programados",
       "planBilling": "Planes y facturación",
-      "collapse": "Contraer"
+      "collapse": "Contraer",
+      "resize": "Redimensionar navegación"
     },
     "backToSettings": "Volver a ajustes"
   }

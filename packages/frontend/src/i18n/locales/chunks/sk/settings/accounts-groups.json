@@ -16,25 +16,18 @@
         "retry": "Skúsiť znova"
       },
       "row": {
-        "bankBadge": "Vytvorené bankovým pripojením",
-        "bankBadgeShort": "Pripojenie",
         "bankBadgeTooltip": "Táto skupina vznikla pri pripojení banky, no nepredstavuje samotné pripojenie — môžete ju voľne premenovať, presúvať z nej účty alebo ju zmazať. Účty zostanú synchronizované bez ohľadu na to.",
         "accountsCount": "{count} účet | {count} účty | {count} účtov",
         "noAccounts": "Žiadne účty",
         "accountsElsewhere": "{count} synchronizovaný účet v iných skupinách | {count} synchronizované účty v iných skupinách | {count} synchronizovaných účtov v iných skupinách",
-        "inParent": "v {name}",
         "manageConnection": "Spravovať pripojenie"
       },
       "update": {
         "label": "Názov skupiny",
         "placeholder": "Zadajte názov skupiny",
-        "saveButton": "Uložiť",
         "emptyNameError": "Názov skupiny nemôže byť prázdny"
       },
       "accounts": {
-        "heading": "Účty v tejto skupine",
-        "empty": "Zatiaľ žiadne účty v tejto skupine. Účty do skupiny pridáte na stránke účtu.",
-        "emptyBankLinked": "Účty tohto pripojenia sú usporiadané v iných skupinách — ich presunutie neovplyvní synchronizáciu.",
         "unlinkTooltip": "Odstrániť zo skupiny",
         "removeConfirmTitle": "Odstrániť „{name}“ z tejto skupiny?",
         "removeConfirmDescription": "Účet sa nezmaže — len opustí túto skupinu.",
@@ -46,6 +39,74 @@
         "accountsKept": "Účty zostanú zachované — len prestanú byť v skupine.",
         "syncContinues": "Banková synchronizácia pokračuje — pripojenie je nezávislé od tejto skupiny.",
         "ungroupedHeading": "Ostávajú bez skupiny"
+      },
+      "dialogs": {
+        "rename": {
+          "title": "Premenovať skupinu",
+          "description": "Kliknutím na logo vyberiete logo banky, iniciály alebo farbu.",
+          "submit": "Uložiť zmeny"
+        },
+        "move": {
+          "title": "Presunúť „{name}\"",
+          "description": "Jej podskupiny a účty sa presunú s ňou.",
+          "parentLabel": "Nadradená skupina",
+          "parentPlaceholder": "Vyberte nadradenú skupinu",
+          "noParent": "Bez nadradenej skupiny",
+          "hint": "Výberom „Bez nadradenej skupiny“ z nej vytvoríte skupinu najvyššej úrovne.",
+          "submit": "Presunúť"
+        },
+        "addAccounts": {
+          "title": "Pridať účty do „{name}“",
+          "description": "Účet patrí do jednej skupiny. Výberom účtu z inej skupiny ho sem presunete.",
+          "searchPlaceholder": "Hľadať účty",
+          "sections": {
+            "ungrouped": "Nie je v skupine",
+            "inOtherGroups": "V iných skupinách",
+            "alreadyInGroup": "Už je v {name}"
+          },
+          "inGroupCaption": "V {path}",
+          "noResults": "Vášmu hľadaniu nezodpovedajú žiadne účty",
+          "noAccounts": "Žiadne účty na pridanie",
+          "summary": {
+            "selected": "Vybraných: {selected}",
+            "movesFromGroup": "Vybraných: {selected}, {count} presun z {group} | Vybraných: {selected}, {count} presuny z {group} | Vybraných: {selected}, {count} presunov z {group}",
+            "movesFromOtherGroups": "Vybraných: {selected}, {count} presun z iných skupín | Vybraných: {selected}, {count} presuny z iných skupín | Vybraných: {selected}, {count} presunov z iných skupín"
+          },
+          "submit": "Pridať {count} účet | Pridať {count} účty | Pridať {count} účtov"
+        }
+      },
+      "tree": {
+        "groupsCount": "{count} skupina | {count} skupiny | {count} skupín",
+        "syncedBadge": "Synchronizované",
+        "expand": "Rozbaliť",
+        "collapse": "Zbaliť",
+        "renameTooltip": "Premenovať",
+        "moreActions": "Ďalšie akcie",
+        "menu": {
+          "rename": "Premenovať a zmeniť logo",
+          "move": "Presunúť do inej skupiny",
+          "newSubgroup": "Nová podskupina",
+          "addAccounts": "Pridať účty",
+          "delete": "Zmazať skupinu"
+        }
+      },
+      "organize": {
+        "button": "Usporiadanie",
+        "hint": "Potiahnutím jednej skupiny na druhú ju do nej vnoríte",
+        "save": "Uložiť zmeny",
+        "topLevel": "Najvyššia úroveň",
+        "dropToTopLevel": "Pustite tu, ak chcete z „{name}“ vytvoriť skupinu najvyššej úrovne",
+        "movesCount": "{count} presun | {count} presuny | {count} presunov",
+        "moveInside": "Presunúť do vnútra",
+        "moved": "Presunuté",
+        "saveSuccess": "Skupiny boli reorganizované",
+        "saveFailed": "Nepodarilo sa uložiť {count} presun. Skúste to znova. | Nepodarilo sa uložiť {count} presuny. Skúste to znova. | Nepodarilo sa uložiť {count} presunov. Skúste to znova.",
+        "staleMovesRemoved": "Odstránený {count} naplánovaný presun, ktorý už nie je platný | Odstránené {count} naplánované presuny, ktoré už nie sú platné | Odstránených {count} naplánovaných presunov, ktoré už nie sú platné",
+        "dropErrors": {
+          "currentParent": "Už je v tejto skupine",
+          "insideItself": "Skupinu nemožno presunúť do jej vlastnej podskupiny",
+          "alreadyTopLevel": "Už je skupinou najvyššej úrovne"
+        }
       }
     }
   }

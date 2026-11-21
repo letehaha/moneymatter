@@ -119,21 +119,6 @@ export class MonobankApiClient {
   }
 
   /**
-   * Set webhook URL for real-time transaction notifications
-   * Rate limit: once per 60 seconds
-   *
-   * @param webhookUrl - URL to receive webhook notifications
-   * @link https://api.monobank.ua/docs/#tag/Kliyentski-personalni-dani/paths/~1personal~1webhook/post
-   */
-  async setWebhook(webhookUrl: string): Promise<void> {
-    try {
-      await this.client.post('/personal/webhook', { webHookUrl: webhookUrl });
-    } catch (error) {
-      this.handleApiError(error, 'setWebhook');
-    }
-  }
-
-  /**
    * Handle API errors with proper logging and throw appropriate custom errors
    * @param error - Error object from axios
    * @param method - API method name for logging

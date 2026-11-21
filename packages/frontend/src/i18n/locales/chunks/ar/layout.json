@@ -8,18 +8,23 @@
     "allTransactions": "كل المعاملات",
     "transactions": "المعاملات",
     "transactionGroups": "المجموعات",
+    "trash": "Trash",
     "analytics": "التحليلات",
     "optimizations": "Optimizations",
     "automations": "الأتمتة",
     "accountDetails": "تفاصيل الحساب",
     "helpAndDocs": "المساعدة و الوثائق",
-    "logout": "تسجيل خروج",
+    "community": "Community",
+    "logout": "Logout",
     "appVersion": "إصدار التطبيق ‏{version}",
+    "updateAvailable": "Update available",
+    "updateToVersion": "Update · {version}",
     "settings": "الإعدادات",
     "planned": {
       "planned": "مخطط له",
       "subscriptions": "المدفوعات المتكررة",
-      "budgets": "الميزانيات"
+      "budgets": "الميزانيات",
+      "goals": "Goals"
     },
     "venture": "مشروع",
     "budget": "Budget"
@@ -27,6 +32,7 @@
   "sidebar": {
     "collapse": "إخفاء الشريط الجانبي",
     "expand": "توسيع الشريط الجانبي",
+    "resize": "Resize sidebar",
     "settings": {
       "title": "الإعدادات",
       "sections": {
@@ -49,7 +55,7 @@
       "noPortfolios": "لا توجد محافظ حتى الآن",
       "ventures": "المشاريع",
       "cars": "السيارات",
-      "loans": "القروض",
+      "loans": "Loans",
       "collapseNavigation": "إغلاق التنقل",
       "viaHousehold": "Shared via {handle}'s household",
       "sharedBy": "Shared by {handle}",
@@ -115,6 +121,10 @@
       "thanks": "شكرًا، نحن نقرأ كل رسالة.",
       "unavailable": "الإرسال غير متوفر الآن. استخدم اللوحة أدناه بدلاً من ذلك.",
       "or": "أو",
+      "reddit": {
+        "title": "Ask the community on Reddit",
+        "description": "Get help from other users, share how you set things up, and follow updates."
+      },
       "board": {
         "title": "شاركه على اللوحة العامة",
         "description": "صوّت على أفكار الآخرين، واطلع على ما تم التخطيط له بالفعل، وستنال رد على أفكارك."
@@ -130,7 +140,7 @@
     "progress": "{current} من {total} تمت مزامنته",
     "progressPercentage": "{percentage}%",
     "statuses": {
-      "syncing": "المزامنة",
+      "syncing": "Syncing",
       "queued": "قيد الانتظار",
       "synced": "تمت المزامنة",
       "failed": "فشل",
@@ -170,7 +180,7 @@
     "title": "تمكين البنك: يتطلب تفعيل",
     "description": "هذه الحسابات المرتبطة بـتمكين البنك تحتاج إلى تحديث بسبب تغيير في مخطط البيانات. هذا إجراء لمرة واحدة لتحسين موثوقية المزامنة.",
     "step1Full": "لتوفير وقتك، جرب أولا إعادة الاتصال الكامل بالنك. ستجد زر {reconnect} ضمن قسم {connectionValidity} في صفحة كل اتصال:",
-    "reconnectButton": "إعادة الاتصال",
+    "reconnectButton": "Reconnect",
     "connectionValiditySection": "صحة الاتصال",
     "connectionLabel": "الاتصال #{id}",
     "step2Full": "إذا بقيت أي حسابات في الأسفل بعد إعادة الاتصال، فانتقل إلى كل حساب وقم يدويا بـ {unlink} ثم {link} مرة أخرى.",

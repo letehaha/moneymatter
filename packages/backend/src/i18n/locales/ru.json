@@ -2,22 +2,24 @@
   "common": {
     "processAlreadyLocked": "Процесс синхронизации для \"{{lockKey}}\" уже заблокирован.",
     "serviceTemporarilyUnavailable": "Сервис временно недоступен. Попробуйте снова.",
-    "jobInterruptedByServerUpdate": "A server update interrupted this before it finished, so nothing was changed."
+    "jobInterruptedByServerUpdate": "Обновление сервера было прервано до его завершения, никаких изменений не было произведено."
   },
   "accounts": {
     "groupNotFound": "Группа или счёт не найдены",
     "accountNotFound": "Счёт не найден!",
     "accountUpdateFailed": "Не удалось обновить счёт",
-    "accountNoExternalId": "У счёта нет внешнего ID",
     "accountNoExternalIdMonobank": "У счёта нет внешнего ID Monobank",
     "accountNoExternalIdEnableBanking": "У счёта нет внешнего ID Enable Banking",
     "accountNotFoundForTransaction": "Счёт для этой транзакции не найден",
     "deleteBlockedByLoanPayments": "У этого счёта есть платежи по кредиту. Удалите или переназначьте их перед удалением счёта.",
+    "deleteBlockedByTrashedLoanPayments": "У этого аккаунта есть платежи в Корзине. Удалите их, прежде чем удалять аккаунт.",
     "loanBalanceUseUpdateLoan": "Изменяйте остаток задолженности по кредиту на странице кредита, а не в настройках счёта.",
     "loanCategoryImmutable": "Категорию кредитного счёта нельзя изменить.",
     "dedicatedFlowCategoryNotAllowed": "Кредитные счета и счета транспортных средств должны создаваться через специальные эндпоинты, а не через общий эндпоинт счетов.",
-    "initialBalanceOnlySystem": "Initial balance can only be changed for manual accounts",
-    "initialAndCurrentBalanceTogether": "Initial balance and current balance can't be changed in the same request"
+    "initialBalanceOnlySystem": "Начальный баланс может быть изменен только для ручных учетных записей",
+    "initialAndCurrentBalanceTogether": "Начальный баланс и текущий баланс не могут быть изменены в одном запросе",
+    "onlySystemAccountsCanBeLinked": "Only manually created accounts can be linked to a bank connection.",
+    "bankLinkImportStillRunning": "An import is still running. Wait for it to finish before linking, unlinking, archiving or disconnecting a bank account. If the import stopped, this block clears on its own 3 hours after the import started."
   },
   "balanceAdjustment": {
     "defaultNote": "Корректировка баланса",
@@ -29,6 +31,7 @@
     "groupNotFound": "Группа не найдена",
     "groupUpdateFailed": "Не удалось обновить группу",
     "parentGroupNotExist": "Родитель с таким id не существует.",
+    "parentGroupCycle": "Группа не может быть размещена внутри самой себя или одной из своих подгрупп.",
     "parentGroupDoesNotExist": "Родительская группа не существует.",
     "accountNotFound": "Счёт с таким id не найден.",
     "accountGroupNotFound": "Группа счетов с таким id не найдена."
@@ -38,6 +41,7 @@
     "systemCannotBeMoved": "Системные категории нельзя перемещать.",
     "parentNotFound": "Категория с таким parentId не существует.",
     "systemParentForbidden": "Системные категории нельзя использовать как родительские.",
+    "defaultCannotBeDeleted": "Эта категория содержит транзакции без категории и не может быть удалена.",
     "ownParent": "Категория не может быть родительской для самой себя.",
     "underOwnSubcategory": "Категорию нельзя переместить в её собственную подкатегорию.",
     "nestingTooDeep": "Категории нельзя вкладывать глубже чем на {{max}} уровней."
@@ -54,13 +58,19 @@
     "cannotCreateWithParams": "Не удалось создать транзакцию с указанными параметрами",
     "idCannotBeChanged": "id нельзя изменить",
     "editReadonlyFields": "Попытка изменить доступные только для чтения поля внешнего счёта",
+    "preSeamTimeOnOrAfterLinkDay": "A manual transaction on a bank-linked account must stay dated before {{date}}, the day the account was linked.",
+    "manualRowOnOrAfterLinkDay": "This transaction is dated on or after {{date}}, the day the account was linked to the bank. From that day on, the bank's records are what counts, so it can't be edited or deleted.",
+    "manualRowOnOrAfterLinkDayCreate": "Your bank owns everything from {{date}} on, so a manual transaction must be dated before {{date}}.",
+    "bulkDeleteBankRowsSelected": "Transactions synced from your bank, and ones dated on or after the day the account was linked, can't be deleted.",
+    "oppositeLegOnBankAccount": "The other side of this transfer is on a bank-linked account, so this change isn't allowed there.",
+    "moveAcrossBankLinkedAccount": "A transaction can't be moved onto or off a bank-linked account. Delete it and add it again on the other account.",
     "changeTypeNotAllowed": "Нельзя изменять \"transactionType\" для несистемного счёта",
     "bothRefundFieldsNotAllowed": "Нельзя одновременно использовать \"refundedByTxIds\" и \"refundsTxId\". Выберите одно из этих полей.",
     "oppositeTransactionNotFound": "Не удалось найти противоположную транзакцию для обновления",
     "transactionIdNotExist": "Транзакция с указанным `id` не существует!",
     "notAuthorizedToEdit": "У вас нет прав на редактирование этой транзакции.",
     "cannotDeleteExternal": "Внешние транзакции нельзя удалять вручную",
-    "bulkDeleteLimitExceeded": "You can delete up to 500 transactions at once. Narrow the selection and try again.",
+    "bulkDeleteLimitExceeded": "Вы можете удалить не более 500 транзакций за раз. Сократите количество и повторите попытку.",
     "unexpectedDeleteIssue": "Возникла непредвиденная ошибка при удалении транзакции",
     "linkSelfNotAllowed": "Нельзя связать транзакцию саму с собой.",
     "linkSameTypeNotAllowed": "Нельзя связать транзакцию с другой транзакцией с тем же \"transactionType\".",
@@ -90,6 +100,25 @@
     "plannedUnflipOnConnectedAccount": "Эта запланированная транзакция находится на счёте, подключённом к банку, поэтому банк подтвердит её автоматически. Удалите её, если она больше не ожидается.",
     "plannedCannotConfirmPayment": "Запланированная транзакция не может подтвердить платёж. Дождитесь её подтверждения, затем свяжите её.",
     "plannedCannotBeRefundLinked": "Запланированная транзакция не может участвовать в связи возврата.",
+    "paymentLegsNotAllowed": "Только регулярный доход или расходы на свой счет могут быть разделены по нескольким счетам. Переводы, возвраты, запланированные и транзакции, разделенные категории нельзя разделить.",
+    "inPaymentNotAllowed": "Эта транзакция является частью платежа из нескольких счетов. Сначала удалите её из платежа.",
+    "paymentLegInvalidAccount": "Each new part must be on one of your other manual accounts.",
+    "paymentLegDuplicateAccount": "Each new part must be on a different account.",
+    "paymentLegEditThroughMain": "This is part of a payment from several accounts. Edit the main transaction instead.",
+    "paymentAmountRequired": "Enter the amount in the main transaction's currency for every part in a different currency.",
+    "paymentLinkNotAllowed": "This transaction can't be linked to the payment. Only your own income or expense of the same type can be linked – not a transfer, refund, split, pending transaction or part of another payment.",
+    "paymentLinkedAmountFixed": "The amount of a linked transaction can't be changed.",
+    "paymentLinkedTypeMismatch": "Linked transactions must have the same type as the payment. Unlink them first.",
+    "refunds": {
+      "wholeLinkWithPartials": "A whole-refund link cannot be combined with partial links",
+      "externalLinkWithOthers": "A refund for a purchase outside the app cannot be combined with other refund links",
+      "externalLinkWithAmount": "A refund of a transaction outside the app cannot have a partial amount; it always covers the whole refund.",
+      "totalExceedsRefund": "Total refund link amounts cannot be greater than the refund transaction amount",
+      "totalExceedsSplit": "Total refund amount cannot be greater than the split amount",
+      "totalExceedsOriginal": "Total refund amount cannot be greater than the original transaction amount",
+      "refundOfRefund": "Cannot refund a \"refund\" transaction",
+      "duplicateLink": "This refund is already linked to that transaction"
+    },
     "splits": {
       "splitsOnTransfer": "Нельзя добавлять разбиения к транзакциям-переводам",
       "splitLimitExceeded": "Для одной транзакции разрешено не более {{max}} разбиений",
@@ -103,8 +132,7 @@
       "exceedTotal": "Общая сумма разбиений ({{total}}) превышает сумму транзакции ({{transactionAmount}})",
       "invalidData": "Некорректные данные разбиения",
       "splitNotFound": "Разбиение не найдено",
-      "cannotDeleteWithRefunds": "Нельзя удалить разбиение, на которое ссылаются возвраты",
-      "cannotReduceBelowRefunded": "Для этого разбиения есть возвраты на общую сумму {{refundsText}}. Нельзя уменьшить его ниже суммы возвратов. Чтобы уменьшить сумму ещё больше, сначала отвяжите возвраты."
+      "cannotDeleteWithRefunds": "Нельзя удалить разбиение, на которое ссылаются возвраты"
     },
     "reconciliation": {
       "systemNotAllowed": "Only bank-connected transactions can be merged or removed.",
@@ -125,22 +153,26 @@
         "message_one": "1 transaction has been pending for over a week. Check it with your bank so your balance stays accurate.",
         "message_other": "{{count}} transactions have been pending for over a week. Check them with your bank so your balance stays accurate."
       }
+    },
+    "trash": {
+      "paymentNotTrashable": "Remove it from the payment first to delete it.",
+      "portfolioNotTrashable": "Unlink it from the portfolio first to delete it.",
+      "ventureNotTrashable": "Unlink it from the venture first to delete it.",
+      "accountTypeChanged": "This transaction can't be restored because its account type has changed.",
+      "loanPaymentLegMissing": "This loan payment can't be restored because its other side was deleted."
     }
   },
   "budgets": {
     "budgetNotFound": "Бюджет не найден",
     "lineNotFound": "Tracker line not found",
-    "onlyOwnerCanDuplicate": "Only the owner can duplicate this tracker",
+    "onlyOwnerCanDuplicate": "Только владелец может продублировать этот трекер",
     "someTransactionIdsInvalid": "Некоторые ID транзакций недействительны",
     "transactionsAddedSuccessfully": "Транзакции успешно добавлены",
-    "cannotManuallyLinkToCategoryBudget": "Нельзя вручную связывать транзакции с бюджетами по категориям. Транзакции отслеживаются автоматически по категории.",
     "someCategoryIdsInvalid": "Некоторые ID категорий недействительны или не существуют",
-    "notCategoryBudget": "Этот эндпоинт доступен только для бюджетов по категориям",
-    "lineCategoryOutsideTracker": "A tracker line can only use categories tracked by its tracker",
-    "startDateAfterEndDate": "Start date must be on or before the end date",
+    "startDateAfterEndDate": "Дата начала должна быть не позднее даты окончания",
+    "rulesNeedCategoryOrTag": "Выберите хотя бы одну категорию или тег, чтобы автоматически добавлять транзакции.",
     "smartTracking": {
       "ownerOnly": "Only the tracker owner can change smart tracking.",
-      "manualOnly": "Smart tracking works only for manual trackers.",
       "descriptionRequired": "Describe what this tracker is for to turn on smart tracking.",
       "startDateRequired": "Set a start date to turn on smart tracking.",
       "scanRunning": "Matching is running for this tracker. Try again when it finishes.",
@@ -175,7 +207,7 @@
     "openEndedGoalCannotSnooze": "An open-ended goal can't be snoozed.",
     "zeroSumNeedsPool": "Keeping Ready to Assign at 0 needs a plan funded from a pool.",
     "suggestedGroups": {
-      "bills": "Счета",
+      "bills": "Платежи",
       "everyday": "Everyday",
       "life": "Life"
     }
@@ -240,6 +272,7 @@
     "cannotDeleteHoldingWithActivePosition": "Нельзя удалить позицию с активным остатком. Сначала продайте или переведите все бумаги.",
     "transactionAlreadyTransfer": "Транзакция уже отмечена как перевод и не может быть связана с портфелем.",
     "transactionAlreadyLinkedToPortfolio": "Транзакция уже связана с переводом в портфель.",
+    "linkedTransactionMustBelongToDestinationAccount": "The linked transaction must belong to the destination account.",
     "transactionAlreadyLinkedToVenture": "Транзакция уже связана с венчурной сделкой",
     "portfolioTransferNotFound": "Перевод в портфель не найден",
     "exchangeCurrenciesMustDiffer": "Валюты обмена должны различаться",
@@ -248,6 +281,10 @@
       "tokenLimitExceededSuggestion": "Split the upload into smaller files or use a model with a larger context window.",
       "extractFailed": "Couldn't extract investment transactions from this file. Please try again.",
       "csvColumnNotFound": "Column \"{{column}}\" was not found in the CSV headers."
+    },
+    "unrealizedLossAlert": {
+      "title_one": "{{count}} holding crossed your loss alert",
+      "title_other": "{{count}} holdings crossed your loss alert"
     }
   },
   "landingFaq": {
@@ -268,13 +305,13 @@
     "connectionNotFound": "Подключение не найдено",
     "connectionNotFoundOrNotYours": "Подключение не найдено или не принадлежит вам",
     "providerNoReauthorization": "Провайдер {{providerType}} не поддерживает повторную авторизацию",
-    "providerNotFoundInRegistry": "Провайдер {{providerType}} не найден в реестре",
     "connectionIdNotFound": "Подключение к провайдеру банковских данных {{connectionId}} не найдено",
     "accountIdNotFound": "Счёт {{accountId}} не найден",
     "providerTypeMismatch": "Подключение {{connectionId}} относится к провайдеру {{actualType}}, а не {{expectedType}}",
     "providerAlreadyRegistered": "Провайдер {{providerType}} уже зарегистрирован. Нельзя регистрировать дубликаты провайдеров.",
     "providerNotRegistered": "Провайдер {{providerType}} не зарегистрирован. Доступные провайдеры: {{available}}",
-    "unexpected": "Непредвиденная ошибка."
+    "unexpected": "Непредвиденная ошибка.",
+    "clientUpdateRequired": "This version of the app is no longer supported. Please update it from the App Store."
   },
   "validation": {
     "dateInvalid": "\"date\" содержит некорректную дату."
@@ -295,6 +332,7 @@
     "failedToFetchCountries": "Не удалось получить список стран. Проверьте учётные данные.",
     "accountNotLinkedToConnection": "Счёт не найден или не привязан к этому подключению",
     "accountAlreadyConnectedToAnotherConnection": "Account \"{{account}}\" is already connected through \"{{connection}}\". Disconnect it there first.",
+    "accountBalanceUnavailable": "Couldn't get the current balance of {{account}} from the bank. Please try again in a few minutes.",
     "cannotLoadBeforeLinkDate": "Нельзя загружать транзакции до даты привязки счёта ({{linkedAt}}). Счёт был привязан со стратегией \"forward-only\", чтобы предотвратить дублирование данных.",
     "dateRangeExceedsLimit": "Диапазон дат не может превышать 1 год.",
     "fromAfterTo": "Дата \"from\" должна быть раньше даты \"to\"",
@@ -316,9 +354,7 @@
       "invalidCredentialsFormat": "Некорректный формат учётных данных Monobank",
       "invalidApiToken": "Некорректный API-токен Monobank",
       "rateLimitExceeded": "Превышен лимит запросов API Monobank. Попробуйте снова через минуту.",
-      "accountNotFound": "Счёт {{accountExternalId}} не найден в Monobank",
       "accountReconnectRequired": "Этот счёт больше недоступен в Monobank. Переподключите Monobank, чтобы возобновить синхронизацию.",
-      "webhookNotImplemented": "handleWebhook для Monobank пока не реализован",
       "unknownCurrencyCode": "Неизвестный код валюты: {{numericCode}}",
       "geoBlocked": "Monobank блокирует запросы с IP-адреса этого сервера. Отключите VPN или используйте украинский IP-адрес.",
       "geoBlockedProduction": "Синхронизация Monobank временно недоступна. Мы уже уведомлены и работаем над проблемой. Если это срочно, обратитесь в поддержку."
@@ -349,6 +385,13 @@
       "accountNoExternalId": "У счёта нет внешнего ID для синхронизации LunchFlow.",
       "accountNotFound": "Счёт LunchFlow не найден."
     },
+    "akahu": {
+      "invalidCredentialsFormat": "Invalid Akahu credentials format. User Access Token and App ID Token are required.",
+      "invalidTokens": "Invalid Akahu tokens. Check the User Access Token and App ID Token from your Akahu app page.",
+      "accountNoExternalId": "Account has no external ID for Akahu sync.",
+      "accountNotFound": "Akahu account not found.",
+      "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly."
+    },
     "simplefin": {
       "invalidCredentialsFormat": "Некорректный формат учётных данных SimpleFIN.",
       "invalidSetupToken": "Некорректный или уже использованный токен настройки SimpleFIN. Создайте новый в SimpleFIN Bridge и попробуйте снова.",
@@ -362,8 +405,7 @@
     "walutomat": {
       "invalidCredentialsFormat": "Некорректный формат учётных данных Walutomat. Требуются API-ключ и закрытый ключ.",
       "invalidApiKey": "Некорректный API-ключ или закрытый ключ Walutomat.",
-      "accountNoExternalId": "У счёта Walutomat нет внешнего ID.",
-      "walletNotFound": "Кошелёк Walutomat для валюты {{currency}} не найден"
+      "accountNoExternalId": "У счёта Walutomat нет внешнего ID."
     }
   },
   "csvImport": {
@@ -382,22 +424,23 @@
     "amountColumnNotFound": "Столбец суммы \"{{columnName}}\" не найден в CSV",
     "invalidDefaultCurrency": "Некорректный код валюты по умолчанию: \"{{defaultCurrency}}\"",
     "payeeColumnNotFound": "Столбец получателя \"{{column}}\" не найден в заголовках CSV",
-    "currencyColumnNotFound": "Currency column \"{{columnName}}\" not found in CSV",
-    "invalidCurrencyRow": "Row {{row}}: invalid currency \"{{currency}}\"",
+    "currencyColumnNotFound": "Столбец валюты \"{{columnName}}\" не найден в CSV",
+    "invalidCurrencyRow": "Строка {{row}}: недопустимая валюта \"{{currency}}\"",
     "andMoreRows": "...and {{count}} more",
-    "invalidCurrencyCodes": "Invalid currency codes found:\n{{rows}}",
-    "unknownCurrencyCodes": "Unknown currency codes in CSV: {{codes}}. These currencies are not supported by the system.",
+    "invalidCurrencyCodes": "Найдены неверные коды валют:\n{{rows}}",
+    "unknownCurrencyCodes": "Неизвестные коды валюты в CSV: {{codes}}. Эти валюты не поддерживаются системой.",
     "currencyMismatchWarning": "Your CSV contains transactions in {{currencies}} but the selected account uses {{accountCurrency}}. All transactions will be imported using {{accountCurrency}}.",
-    "currencyNotSupported": "Currency \"{{currency}}\" is not supported by the system.",
-    "accountColumnNotFound": "Account column \"{{columnName}}\" not found in CSV",
-    "categoryColumnNotFound": "Category column \"{{columnName}}\" not found in CSV",
-    "tagColumnNotFound": "Tag column \"{{columnName}}\" not found in CSV",
+    "currencyNotSupported": "Валюта \"{{currency}}\" не поддерживается системой.",
+    "accountColumnNotFound": "Столбец счета \"{{columnName}}\" не найден в CSV",
+    "categoryColumnNotFound": "Столбец категории \"{{columnName}}\" не найден в CSV",
+    "tagColumnNotFound": "Столбец тегов \"{{columnName}}\" не найден в CSV",
     "transactionTypeColumnNotFound": "Transaction type column \"{{columnName}}\" not found in CSV",
     "accountMultipleCurrencies": "Account \"{{accountName}}\" has transactions with multiple currencies: {{currencies}}. System accounts can only have one currency.",
     "transactionTypeValuesNotCovered": "Transaction type column has values not covered by income/expense lists: {{uncovered}}. Found values: {{found}}",
     "selectedAccountNotFound": "The selected account was not found or does not belong to you.",
     "selectedCategoryNotFound": "The selected category was not found or does not belong to you.",
-    "linkedAccountCurrencyMismatch": "Currencies must match to link an existing account: {{mismatches}}. Link an account with the same currency or create a new one."
+    "linkedAccountCurrencyMismatch": "Currencies must match to link an existing account: {{mismatches}}. Link an account with the same currency or create a new one.",
+    "bankLinkChangedSinceReview": "The bank link of an account in this import changed after the review. Go back to the review step and run it again."
   },
   "ofxImport": {
     "noFileUploaded": "No file was uploaded. Send the OFX or QFX file as the raw request body.",
@@ -459,6 +502,7 @@
     "aiRateLimited": "AI provider rate limit reached. Please try again in a few minutes.",
     "aiExtractionFailed": "AI extraction failed. Please try again.",
     "ynab": {
+      "importAlreadyInProgress": "A YNAB import is already running. Wait for it to finish before starting another one.",
       "parse": {
         "fileEmpty": "YNAB Register.csv is empty.",
         "unparseable": "YNAB Register.csv could not be parsed as a CSV file.",
@@ -572,9 +616,7 @@
     "currencyCodeNotExist": "Валюта с указанным кодом не существует.",
     "currencyNotExist": "Валюта с кодом \"{{currencyCode}}\" не существует.",
     "cannotDeleteDefaultCurrency": "Нельзя удалить валюту по умолчанию. Сначала снимите с неё статус валюты по умолчанию.",
-    "cannotDeleteCurrencyWithAccounts": "Нельзя удалить валюту, связанную со счетами. Сначала удалите счета. Названия счетов: \"{{accountNames}}\".",
-    "cannotDeleteCurrencyWithInvestments": "Нельзя удалить валюту \"{{currencyCode}}\", пока она используется инвестиционными позициями. Сначала удалите эти позиции.",
-    "defaultCurrencyNotPresent": "Нельзя удалить валюту. Валюта по умолчанию отсутствует в системе"
+    "currencyInUse": "{{currencyCode}} can't be deleted because it's still in use."
   },
   "ai": {
     "connectionNotFound": "AI model not found.",
@@ -636,7 +678,6 @@
         "home-garden": "Дом и сад",
         "pets-animals": "Домашние животные",
         "electronics-accessories": "Электроника и аксессуары",
-        "gifts-joy": "Подарки и радость",
         "stationery-tools": "Канцелярия и инструменты",
         "free-time": "Досуг",
         "drugstore-chemist": "Аптека и бытовая химия"
@@ -673,7 +714,8 @@
         "books-audio-subscriptions": "Книги, аудио и подписки",
         "tv-streaming": "ТВ и стриминг",
         "holiday-trips-hotels": "Отпуск, поездки и отели",
-        "charity-gifts": "Благотворительность и подарки",
+        "gifts": "Gifts",
+        "charity": "Charity",
         "alcohol-tobacco": "Алкоголь и табак",
         "lottery-gambling": "Лотереи и азартные игры"
       },
@@ -729,6 +771,11 @@
         "requiresAccountField": "Для автоматической записи требуется счёт, на который будет проведена транзакция.",
         "requiresAmountField": "Для автоматической записи требуются expectedAmount и expectedCurrencyCode.",
         "excludesMatchingField": "Автоматическая запись и правила сопоставления взаимно исключают друг друга."
+      },
+      "customInterval": {
+        "required": "A custom frequency needs an interval unit and count.",
+        "presetConflict": "An interval unit and count can only be set with the custom frequency.",
+        "countOutOfRange": "The interval count must be between {{min}} and {{max}} for this unit."
       }
     }
   },
@@ -805,8 +852,8 @@
   "auth": {
     "errors": {
       "passwordAlreadySet": "Your account already has a password.",
-      "passwordTooShort": "Пароль слишком короткий.",
-      "passwordTooLong": "Пароль слишком длинный.",
+      "passwordTooShort": "Password is too short.",
+      "passwordTooLong": "Password is too long.",
       "reauthenticationRequired": "For your security, sign in again to make this change.",
       "signupsDisabled": "Signups are disabled by the administrator."
     }
@@ -841,5 +888,20 @@
   },
   "dataExport": {
     "tooManyRows": "Export would contain {{rowCount, number}} rows, which exceeds the limit of {{limit, number}}."
+  },
+  "goals": {
+    "goalNotFound": "Goal not found.",
+    "accountNotFound": "One of the selected accounts was not found.",
+    "accountNotEligible": "{{accountName}} can't count toward a goal. Pick a cash, current, savings, investment or crypto account.",
+    "shareCapacityExceeded": "{{accountName}} has {{free}}% free: you asked for {{requested}}%, and other goals already use {{usedByOtherGoals}}%.",
+    "fixedAmountsBelowTarget": "Fixed amounts add up to {{total}} {{currencyCode}}, below the {{target}} {{currencyCode}} target. Raise an amount or count an account by percent.",
+    "currencyRateUnavailable": "{{currencyCode}} can't be converted to your base currency right now. Pick another currency or try again later.",
+    "reachedNotification": {
+      "title": "Goal reached: {{name}}",
+      "message": "You've saved {{amount}} {{currencyCode}}."
+    }
+  },
+  "backgroundJobs": {
+    "notFound": "This task is no longer running – the server may have restarted. Please try again."
   }
 }

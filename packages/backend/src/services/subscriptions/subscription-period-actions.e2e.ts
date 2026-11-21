@@ -1,5 +1,6 @@
 import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_PERIOD_STATUSES, TRANSACTION_TYPES } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
+import { ERROR_CODES } from '@js/errors';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import * as helpers from '@tests/helpers';
 import { addMonths, format } from 'date-fns';
@@ -194,7 +195,7 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
     expect(activeAfter[0]!.id).toBe(period.id);
   });
 
-  it('succeeds even when the generated transaction was already deleted by the user', async () => {
+  it('removes for good a generated transaction the user moved to the trash', async () => {
     const dueDate = futureDate({ monthsAhead: 1, day: 15 });
     const { sub, period, account } = await createSubWithPeriod({ dueDate });
 
@@ -207,14 +208,22 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
 
     const generatedTxId = paid.transactionId!;
 
-    // User deletes the generated transaction themselves.
     const deleteRes = await helpers.deleteTransaction({ id: generatedTxId });
     expect(deleteRes.statusCode).toBe(200);
 
-    // Balance already restored by the manual deletion.
+    // Trashing takes the balance back; the period stays paid and points at the trashed row.
     expect((await helpers.getAccount({ id: account.id, raw: true })).currentBalance).toBe(1000);
+    const whileTrashed = (await helpers.getSubscriptionPeriods({ id: sub.id, raw: true })).periods.find(
+      (p) => p.id === period.id,
+    )!;
+    expect(whileTrashed.status).toBe(SUBSCRIPTION_PERIOD_STATUSES.paid);
+    expect(whileTrashed.transactionId).toBe(generatedTxId);
+    expect(whileTrashed.transactionInTrash).toBe(true);
+    const detailPeriod = (await helpers.getSubscriptionById({ id: sub.id, raw: true })).periods.find(
+      (p) => p.id === period.id,
+    )!;
+    expect(detailPeriod.transactionInTrash).toBe(true);
 
-    // Revert must not 500 — treats missing transaction as a no-op.
     const reverted = await helpers.revertSubscriptionPeriod({
       id: sub.id,
       periodId: period.id,
@@ -224,12 +233,16 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
     expect([SUBSCRIPTION_PERIOD_STATUSES.upcoming, SUBSCRIPTION_PERIOD_STATUSES.overdue]).toContain(reverted.status);
     expect(reverted.transactionId).toBeNull();
 
-    // Balance not double-restored.
+    // Purged from the trash without reversing the balance a second time.
     const accountAfter = await helpers.getAccount({ id: account.id, raw: true });
     expect(accountAfter.currentBalance).toBe(1000);
+    expect(await helpers.getTrash({ raw: true })).toEqual([]);
   });
 
-  it('keeps the auto-created transaction, detached, when its account is bank-linked', async () => {
+  it.each([
+    ['with a seam, the row dated on or after the link day', false],
+    ['without a seam', true],
+  ])('keeps the auto-created transaction, detached, when its account is bank-linked %s', async (_label, dropSeam) => {
     const { account } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
     const dueDate = futureDate({ monthsAhead: 1, day: 15 });
     const sub = await helpers.createSubscription({
@@ -252,10 +265,11 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
       createTransaction: true,
       raw: true,
     });
-    expect(paid.transactionAutoCreated).toBe(true);
     const generatedTxId = paid.transactionId!;
 
     await helpers.lunchflow.linkManualAccount({ accountId: account.id });
+    if (dropSeam) await helpers.dropSeam({ accountId: account.id });
+    const accountBefore = await helpers.getAccount({ id: account.id, raw: true });
     const txBefore = await helpers.getTransactionById({ id: generatedTxId, raw: true });
 
     const revertRes = await helpers.revertSubscriptionPeriod({
@@ -265,18 +279,15 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
     });
 
     expect(revertRes.statusCode).toBe(200);
-    const reverted = revertRes.body.response;
-    expect([SUBSCRIPTION_PERIOD_STATUSES.upcoming, SUBSCRIPTION_PERIOD_STATUSES.overdue]).toContain(reverted.status);
-    expect(reverted.paidAt).toBeNull();
-    expect(reverted.transactionId).toBeNull();
-    expect(reverted.transactionAutoCreated).toBe(false);
+    expect(revertRes.body.response.transactionId).toBeNull();
+    expect(revertRes.body.response.transactionAutoCreated).toBe(false);
 
     const txAfter = await helpers.getTransactionById({ id: generatedTxId, raw: true });
-    expect(txAfter).not.toBeNull();
     expect(txAfter!.accountId).toBe(account.id);
     expect(txAfter!.amount).toBe(txBefore!.amount);
     expect(txAfter!.transactionType).toBe(TRANSACTION_TYPES.expense);
     expect(txAfter!.time).toBe(txBefore!.time);
+    expect(await helpers.getAccount({ id: account.id, raw: true })).toEqual(accountBefore);
   });
 });
 
@@ -602,4 +613,52 @@ describe('GET /subscriptions/:id/periods', () => {
     const page1Ids = new Set(page1.periods.map((p) => p.id));
     page2.periods.forEach((p) => expect(page1Ids.has(p.id)).toBe(false));
   }, 60_000);
+});
+
+// ---------------------------------------------------------------------------
+// Request validation of the pay body and the periods query
+// ---------------------------------------------------------------------------
+
+describe('Subscription period request validation', () => {
+  it('rejects a pay that both links a transaction and creates one, and a non-positive amount override', async () => {
+    const { account, sub, period } = await createSubWithPeriod({ dueDate: futureDate({ monthsAhead: 1, day: 15 }) });
+    const [tx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id }),
+      raw: true,
+    });
+
+    const bothRes = await helpers.markSubscriptionPeriodPaid({
+      id: sub.id,
+      periodId: period.id,
+      createTransaction: true,
+      transactionId: tx!.id,
+      raw: false,
+    });
+    expect(bothRes.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const zeroRes = await helpers.markSubscriptionPeriodPaid({
+      id: sub.id,
+      periodId: period.id,
+      createTransaction: true,
+      amount: 0,
+      raw: false,
+    });
+    expect(zeroRes.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
+    expect(detail.periods.find((p) => p.id === period.id)!.status).toBe(SUBSCRIPTION_PERIOD_STATUSES.upcoming);
+  });
+
+  it('rejects a periods page larger than 50 and a negative offset', async () => {
+    const { sub } = await createSubWithPeriod({ dueDate: futureDate({ monthsAhead: 1, day: 15 }) });
+
+    const tooBigRes = await helpers.getSubscriptionPeriods({ id: sub.id, limit: 51, raw: false });
+    expect(tooBigRes.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const negativeRes = await helpers.getSubscriptionPeriods({ id: sub.id, offset: -1, raw: false });
+    expect(negativeRes.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const maxRes = await helpers.getSubscriptionPeriods({ id: sub.id, limit: 50, raw: false });
+    expect(maxRes.statusCode).toBe(200);
+  });
 });

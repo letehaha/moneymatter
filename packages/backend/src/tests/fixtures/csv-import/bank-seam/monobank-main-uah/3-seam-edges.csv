@@ -1,0 +1,6 @@
+date,amount,description,category
+2025-11-07T00:00:00Z,-186.20,Edge: start of day before seam,Groceries
+2025-11-07T23:59:00Z,-250.00,Edge: 23:59 day before seam,Dining
+2025-11-08T00:00:00Z,-310.00,Edge: 00:00 seam day,Transport
+2025-11-08T12:00:00Z,-75.50,Edge: 12:00 seam day,Groceries
+2025-11-08T23:59:00Z,1500.00,Edge: 23:59 seam day,Other income

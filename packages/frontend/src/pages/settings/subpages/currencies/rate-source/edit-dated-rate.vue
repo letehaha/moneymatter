@@ -86,7 +86,7 @@ const displayDate = computed(() => format(parseISO(props.effectiveDate), 'PP'));
 
 const seedForm = () => {
   form.baseRate = props.rate;
-  form.quoteRate = calculateRatio({ value: props.rate, isCustomCurrency: true });
+  form.quoteRate = calculateRatio({ value: props.rate, isCustom: true });
 };
 
 // Each opening starts from the stored rate, not from what an earlier, cancelled edit left behind.
@@ -100,11 +100,11 @@ watch(
 
 const onBaseInput = (value: string | number | null) => {
   form.baseRate = value ?? '';
-  form.quoteRate = calculateRatio({ value: form.baseRate, isCustomCurrency: true });
+  form.quoteRate = calculateRatio({ value: form.baseRate, isCustom: true });
 };
 const onQuoteInput = (value: string | number | null) => {
   form.quoteRate = value ?? '';
-  form.baseRate = calculateRatio({ value: form.quoteRate, isCustomCurrency: true });
+  form.baseRate = calculateRatio({ value: form.quoteRate, isCustom: true });
 };
 
 const canSubmit = computed(

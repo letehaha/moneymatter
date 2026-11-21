@@ -55,8 +55,8 @@ export function withImportBatchRecord<P extends { openImportBatch: OpenImportBat
       } as P);
     } finally {
       if (opened) {
-        // Never rethrow: the rows are committed, and an unset `finishedAt` only
-        // delays undo until the unfinished-import cutoff passes.
+        // Never rethrow: the rows are committed. An unset `finishedAt` blocks this batch's undo
+        // and the user's bank link, unlink, archive and disconnect until the unfinished-import cutoff.
         await markImportBatchFinished({ importBatchId: opened.importBatchId }).catch((err) =>
           logger.error(
             { message: '[import batch] Failed to set finishedAt', error: err as Error },

@@ -4,9 +4,9 @@ import { type ClosingBalanceRow, findClosingRowId } from './daily-closing-balanc
 function ladder({ start, amounts }: { start: number; amounts: number[] }): ClosingBalanceRow[] {
   let running = Math.round(start * 100);
   return amounts.map((amount, index) => {
-    const deltaCents = Math.round(amount * 100);
-    running += deltaCents;
-    return { id: `tx${index}`, balanceAfterCents: running, deltaCents };
+    const deltaMinorUnits = Math.round(amount * 100);
+    running += deltaMinorUnits;
+    return { id: `tx${index}`, balanceAfterMinorUnits: running, deltaMinorUnits };
   });
 }
 
@@ -48,8 +48,8 @@ describe('findClosingRowId', () => {
 
   it('bails when two rows sit on the same balance', () => {
     const rows: ClosingBalanceRow[] = [
-      { id: 'a', balanceAfterCents: 90_000, deltaCents: -10_000 },
-      { id: 'b', balanceAfterCents: 90_000, deltaCents: -10_000 },
+      { id: 'a', balanceAfterMinorUnits: 90_000, deltaMinorUnits: -10_000 },
+      { id: 'b', balanceAfterMinorUnits: 90_000, deltaMinorUnits: -10_000 },
     ];
 
     expect(findClosingRowId({ rows })).toBeNull();
@@ -57,8 +57,8 @@ describe('findClosingRowId', () => {
 
   it('bails on a ladder that loops back onto itself', () => {
     const rows: ClosingBalanceRow[] = [
-      { id: 'a', balanceAfterCents: 100_000, deltaCents: 50_000 },
-      { id: 'b', balanceAfterCents: 50_000, deltaCents: -50_000 },
+      { id: 'a', balanceAfterMinorUnits: 100_000, deltaMinorUnits: 50_000 },
+      { id: 'b', balanceAfterMinorUnits: 50_000, deltaMinorUnits: -50_000 },
     ];
 
     expect(findClosingRowId({ rows })).toBeNull();
@@ -69,9 +69,9 @@ describe('findClosingRowId', () => {
     // the unstamped row leaves r1 as the only unchallenged candidate, but the day
     // closed at 900, not 850.
     const rows: ClosingBalanceRow[] = [
-      { id: 'r0', balanceAfterCents: 90_000, deltaCents: -10_000 },
-      { id: 'r1', balanceAfterCents: 85_000, deltaCents: -5_000 },
-      { id: 'r3', balanceAfterCents: 90_000, deltaCents: 8_000 },
+      { id: 'r0', balanceAfterMinorUnits: 90_000, deltaMinorUnits: -10_000 },
+      { id: 'r1', balanceAfterMinorUnits: 85_000, deltaMinorUnits: -5_000 },
+      { id: 'r3', balanceAfterMinorUnits: 90_000, deltaMinorUnits: 8_000 },
     ];
 
     expect(findClosingRowId({ rows })).toBeNull();
@@ -79,8 +79,8 @@ describe('findClosingRowId', () => {
 
   it('bails when a rung is missing from the middle of a straight ladder', () => {
     const rows: ClosingBalanceRow[] = [
-      { id: 'r0', balanceAfterCents: 90_000, deltaCents: -10_000 },
-      { id: 'r2', balanceAfterCents: 70_000, deltaCents: -10_000 },
+      { id: 'r0', balanceAfterMinorUnits: 90_000, deltaMinorUnits: -10_000 },
+      { id: 'r2', balanceAfterMinorUnits: 70_000, deltaMinorUnits: -10_000 },
     ];
 
     expect(findClosingRowId({ rows })).toBeNull();
@@ -93,10 +93,10 @@ describe('findClosingRowId', () => {
     // rather than pick. Deliberate: across six months of production this shape
     // never occurs, and resolving it would need a backtracking search.
     const rows: ClosingBalanceRow[] = [
-      { id: 'a', balanceAfterCents: 90_000, deltaCents: -10_000 },
-      { id: 'b', balanceAfterCents: 95_000, deltaCents: 5_000 },
-      { id: 'c', balanceAfterCents: 90_000, deltaCents: -5_000 },
-      { id: 'd', balanceAfterCents: 89_000, deltaCents: -1_000 },
+      { id: 'a', balanceAfterMinorUnits: 90_000, deltaMinorUnits: -10_000 },
+      { id: 'b', balanceAfterMinorUnits: 95_000, deltaMinorUnits: 5_000 },
+      { id: 'c', balanceAfterMinorUnits: 90_000, deltaMinorUnits: -5_000 },
+      { id: 'd', balanceAfterMinorUnits: 89_000, deltaMinorUnits: -1_000 },
     ];
 
     expect(findClosingRowId({ rows })).toBeNull();
@@ -104,8 +104,8 @@ describe('findClosingRowId', () => {
 
   it('puts a zero-amount row last, since it can only ever follow', () => {
     const rows: ClosingBalanceRow[] = [
-      { id: 'a', balanceAfterCents: 90_000, deltaCents: -10_000 },
-      { id: 'void', balanceAfterCents: 90_000, deltaCents: 0 },
+      { id: 'a', balanceAfterMinorUnits: 90_000, deltaMinorUnits: -10_000 },
+      { id: 'void', balanceAfterMinorUnits: 90_000, deltaMinorUnits: 0 },
     ];
 
     expect(findClosingRowId({ rows })).toBe('void');

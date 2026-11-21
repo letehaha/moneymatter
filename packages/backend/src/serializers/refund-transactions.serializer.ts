@@ -19,6 +19,7 @@ interface RefundTransactionApiResponse {
   originalTxId: string | null;
   refundTxId: string;
   splitId: string | null;
+  amount: number | null;
   createdAt?: Date;
   updatedAt?: Date;
   // Nested transactions (when included)
@@ -41,6 +42,7 @@ export function serializeRefundTransaction(refund: RefundTransactions): RefundTr
     originalTxId: refund.originalTxId,
     refundTxId: refund.refundTxId,
     splitId: refund.splitId,
+    amount: refund.amount?.toNumber() ?? null,
   };
 
   // Include timestamps if available

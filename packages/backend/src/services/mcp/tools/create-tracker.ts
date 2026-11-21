@@ -1,84 +1,98 @@
 import {
   TRACKER_STATUSES,
-  TRACKER_TYPES,
   TRACKER_AI_DEFAULT_PRE_WINDOW_DAYS,
   TRACKER_AI_DESCRIPTION_MAX_LENGTH,
   TRACKER_AI_PRE_WINDOW_DAYS,
 } from '@bt/shared/types';
-import { recordId } from '@common/lib/zod/custom-types';
-import { Money } from '@common/types/money';
+import { createTrackerBodySchema, createTrackerBodyShape } from '@controllers/trackers/shared-schemas';
 import { smartTrackingFieldsShape } from '@controllers/trackers/smart-tracking-fields.schema';
-import { trackMcpToolUsed } from '@js/utils/posthog';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { serializeTracker } from '@root/serializers/trackers.serializer';
 import { createTracker } from '@services/trackers/create-tracker';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { defineTool } from '../define-tool';
 
-const inputSchema = {
-  name: z.string().describe('Tracker name'),
-  status: z
-    .enum([TRACKER_STATUSES.active, TRACKER_STATUSES.archived, TRACKER_STATUSES.closed])
-    .optional()
-    .describe('Tracker status (default: active)'),
-  type: z
-    .enum([TRACKER_TYPES.manual, TRACKER_TYPES.category])
-    .optional()
-    .describe(
-      'Tracker type: manual (transactions linked explicitly) or category (auto-tracks by category). Default: manual',
+export const createTrackerTool = defineTool({
+  name: 'create_tracker',
+  toolset: 'trackers',
+  access: 'write',
+  description:
+    'Create a tracker with an optional spending limit, date range and logo. It does not create or change the period-based Budget plan. Set rulesEnabled with categoryIds and/or tagIds to auto-add matching transactions; link others with add_transactions_to_tracker. Set aiEnabled with aiDescription and startDate to turn on smart tracking; review its suggestions with list_tracker_suggestions. Returns the created tracker with its ID, status, rule categories and tags.',
+  input: {
+    name: createTrackerBodyShape.name.describe('Tracker name, 1-200 characters'),
+    status: z
+      .enum([TRACKER_STATUSES.active, TRACKER_STATUSES.archived, TRACKER_STATUSES.closed])
+      .optional()
+      .describe('Tracker status (default: active)'),
+    rulesEnabled: createTrackerBodyShape.rulesEnabled.describe(
+      "Auto-add the user's transactions in the date range matching any of categoryIds or tagIds. Needs at least one of them. Default: false",
     ),
-  categoryIds: z.array(recordId()).optional().describe('Category IDs to link (only used when type is "category")'),
-  startDate: z.string().optional().describe('Tracker start date (ISO 8601)'),
-  endDate: z.string().optional().describe('Tracker end date (ISO 8601)'),
-  autoInclude: z
-    .boolean()
-    .optional()
-    .describe('Auto-include transactions in the date range when creating (manual trackers only)'),
-  limitAmount: z
-    .number()
-    .optional()
-    .describe("Spending limit as a decimal amount in the user's base currency (e.g. 500.00)"),
-  aiEnabled: smartTrackingFieldsShape.aiEnabled.describe(
-    'Turn on smart tracking: an AI scans the date range and links or suggests matching transactions. Manual trackers only; requires aiDescription and startDate',
-  ),
-  aiDescription: smartTrackingFieldsShape.aiDescription.describe(
-    `Plain-language description of what belongs in the tracker (max ${TRACKER_AI_DESCRIPTION_MAX_LENGTH} chars), e.g. "Trip to Lisbon: flights, hotels, food"`,
-  ),
-  aiPreWindowDays: smartTrackingFieldsShape.aiPreWindowDays.describe(
-    `Days before startDate the AI also scans, for things booked in advance. One of ${TRACKER_AI_PRE_WINDOW_DAYS.join(', ')}. Default: ${TRACKER_AI_DEFAULT_PRE_WINDOW_DAYS}`,
-  ),
-};
+    categoryIds: createTrackerBodyShape.categoryIds.describe(
+      'Rule categories, matched exactly; list subcategories too to include them',
+    ),
+    tagIds: createTrackerBodyShape.tagIds.describe('Rule tags'),
+    rulesCleanup: createTrackerBodyShape.rulesCleanup.describe(
+      'Remove rule-added transactions that stop matching the rules. Default: true',
+    ),
+    startDate: createTrackerBodyShape.startDate.describe('Tracker start, UTC datetime (e.g. "2026-10-01T00:00:00Z")'),
+    endDate: createTrackerBodyShape.endDate.describe('Tracker end, UTC datetime; not before startDate'),
+    limitAmount: z
+      .number()
+      .positive()
+      .nullable()
+      .optional()
+      .describe("Spending limit as a decimal amount in the user's base currency (e.g. 500.00)"),
+    limitKind: createTrackerBodyShape.limitKind.describe(
+      'What limitAmount means: spending (a ceiling, default), income_target (income to reach) or income_cap (income to stay under)',
+    ),
+    logoDomain: createTrackerBodyShape.logoDomain.describe(
+      'Brand domain to take the logo from (e.g. "airbnb.com"), no protocol or slashes. Not together with logoInitials or logoIcon',
+    ),
+    logoInitials: createTrackerBodyShape.logoInitials.describe(
+      'One or two characters shown as a monogram. Not together with logoDomain',
+    ),
+    logoColor: createTrackerBodyShape.logoColor.describe(
+      'Monogram or icon background as #rrggbb; needs logoInitials or logoIcon',
+    ),
+    logoIcon: createTrackerBodyShape.logoIcon.describe(
+      'Icon key shown as the logo (e.g. "airplane-24-regular"). Not together with logoDomain or logoInitials',
+    ),
+    aiEnabled: smartTrackingFieldsShape.aiEnabled.describe(
+      'Turn on smart tracking: an AI scans the date range and links or suggests matching transactions. Requires aiDescription and startDate',
+    ),
+    aiDescription: smartTrackingFieldsShape.aiDescription.describe(
+      `Plain-language description of what belongs in the tracker (max ${TRACKER_AI_DESCRIPTION_MAX_LENGTH} chars), e.g. "Trip to Lisbon: flights, hotels, food"`,
+    ),
+    aiPreWindowDays: smartTrackingFieldsShape.aiPreWindowDays.describe(
+      `Days before startDate the AI also scans, for things booked in advance. One of ${TRACKER_AI_PRE_WINDOW_DAYS.join(', ')}. Default: ${TRACKER_AI_DEFAULT_PRE_WINDOW_DAYS}`,
+    ),
+  },
+  run: async ({ userId, args }) => {
+    // The date-order and logo either-or rules span fields, so they run on the REST body schema.
+    const { status, ...fields } = args;
+    const body = createTrackerBodySchema.parse(fields);
 
-export function registerCreateTracker(server: McpServer) {
-  server.registerTool(
-    'create_tracker',
-    {
-      description:
-        'Create a tracker with an optional spending limit, date range, and linked categories. It does not create or change the period-based Budget plan. Set aiEnabled with aiDescription and startDate to turn on smart tracking (manual trackers only); review its suggestions with list_tracker_suggestions. Returns the created tracker with its ID, status, type, and associated categories.',
-      inputSchema,
-    },
-    async (args, extra) => {
-      const userId = getUserId({ extra });
-      requireScope({ extra, scope: 'finance:write' });
-      trackMcpToolUsed({ userId, tool: 'create_tracker', clientId: extra.authInfo?.clientId });
+    const tracker = await createTracker({
+      userId,
+      name: body.name,
+      status: status ?? TRACKER_STATUSES.active,
+      rulesEnabled: body.rulesEnabled,
+      rulesCleanup: body.rulesCleanup,
+      categoryIds: body.categoryIds,
+      tagIds: body.tagIds,
+      startDate: body.startDate ? new Date(body.startDate) : undefined,
+      endDate: body.endDate ? new Date(body.endDate) : undefined,
+      limitAmount: body.limitAmount,
+      limitKind: body.limitKind,
+      logoDomain: body.logoDomain,
+      logoInitials: body.logoInitials,
+      logoColor: body.logoColor,
+      logoIcon: body.logoIcon,
+      aiEnabled: body.aiEnabled,
+      aiDescription: body.aiDescription,
+      aiPreWindowDays: body.aiPreWindowDays,
+    });
 
-      const tracker = await createTracker({
-        userId,
-        name: args.name,
-        status: args.status ?? TRACKER_STATUSES.active,
-        type: args.type,
-        categoryIds: args.categoryIds,
-        startDate: args.startDate ? new Date(args.startDate) : undefined,
-        endDate: args.endDate ? new Date(args.endDate) : undefined,
-        autoInclude: args.autoInclude,
-        limitAmount: args.limitAmount !== undefined ? Money.fromDecimal(args.limitAmount) : undefined,
-        aiEnabled: args.aiEnabled,
-        aiDescription: args.aiDescription,
-        aiPreWindowDays: args.aiPreWindowDays,
-      });
-
-      return jsonContent({ data: serializeTracker(tracker) });
-    },
-  );
-}
+    return serializeTracker(tracker);
+  },
+});

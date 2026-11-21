@@ -16,6 +16,7 @@ const BASE_CURRENCY = 'USD';
 const CODE = 'USDT';
 const NAME = 'Tether';
 const DECIMALS = 6;
+const RATE = '1.5';
 const ACCOUNT_NAME = 'Tether Wallet';
 const AMOUNT = 12.345678;
 const FORMATTED_AMOUNT = '12.345678 USDT';
@@ -42,13 +43,14 @@ test.describe('Custom currencies', () => {
     await loginViaUI({ page, email: creds.email, password: creds.password });
   });
 
-  test('creates a USDT currency from the currencies settings', async ({ page }) => {
+  test('creates a USDT currency with its rate from the currencies settings', async ({ page }) => {
     await page.goto('/settings/currencies');
 
     await page.getByTestId('add-custom-currency').click();
     await dialogField({ page, testId: 'custom-currency-code' }).fill('usdt');
     await dialogField({ page, testId: 'custom-currency-name' }).fill(NAME);
     await dialogField({ page, testId: 'custom-currency-decimals' }).fill(String(DECIMALS));
+    await dialogField({ page, testId: 'custom-currency-rate' }).fill(RATE);
 
     await expect(page.getByTestId('custom-currency-preview')).toHaveText('Example: 1,234.500000 USDT');
 
@@ -58,9 +60,10 @@ test.describe('Custom currencies', () => {
     const row = page.getByRole('button', { name: new RegExp(NAME) });
     await expect(row).toBeVisible();
     await expect(row.getByTestId('custom-currency-badge')).toBeVisible();
+    await expect(row).toContainText(`1 ${CODE} = ${RATE} ${BASE_CURRENCY}`);
   });
 
-  test('a transaction in it shows 6 decimals and the missing-rate badge until a rate exists', async ({ page }) => {
+  test('a transaction in it shows 6 decimals', async ({ page }) => {
     const accountId = extractId(
       await createAccount({ request: api, name: ACCOUNT_NAME, currencyCode: CODE, initialBalance: 0 }),
     );
@@ -68,9 +71,7 @@ test.describe('Custom currencies', () => {
 
     await page.goto('/transactions');
 
-    // The user has no USDT rate, so the entry is saved with its native amount and no base-currency amount.
     await expect(page.getByText(FORMATTED_AMOUNT).first()).toBeVisible();
-    await expect(page.getByTestId('missing-rate-badge').first()).toBeVisible();
   });
 
   test('the decimals are locked while an account holds the currency', async ({ page }) => {
@@ -85,9 +86,7 @@ test.describe('Custom currencies', () => {
     );
   });
 
-  test('pegging USDT to USD removes the missing-rate badge and values the transaction in the base currency', async ({
-    page,
-  }) => {
+  test('pegging USDT to USD values the transaction in the base currency', async ({ page }) => {
     await page.goto('/settings/currencies');
 
     await page.getByRole('button', { name: new RegExp(NAME) }).click();
@@ -103,7 +102,6 @@ test.describe('Custom currencies', () => {
 
     // 12.345678 USDT at a 1:1 peg is 12.35 in the USD base currency.
     await expect(page.getByText(FORMATTED_AMOUNT).first()).toBeVisible();
-    await expect(page.getByTestId('missing-rate-badge')).toHaveCount(0);
     await expect(page.getByText(/12\.35/).first()).toBeVisible();
   });
 
@@ -136,23 +134,25 @@ test.describe('Custom currencies', () => {
     await page.reload();
     await page.getByRole('button', { name: new RegExp(NAME) }).click();
 
+    // The rate given at creation starts today, so it is the latest one and in force.
     const rows = page.getByTestId('rate-history-row');
-    await expect(rows).toHaveCount(2);
-    await expect(rows.first().getByTestId('rate-history-rate')).toHaveText('1 USDT = 4 USD');
+    await expect(rows).toHaveCount(3);
+    await expect(rows.first().getByTestId('rate-history-rate')).toHaveText(`1 USDT = ${RATE} USD`);
     await expect(rows.first().getByTestId('rate-history-in-force')).toBeVisible();
+    await expect(rows.nth(1).getByTestId('rate-history-rate')).toHaveText('1 USDT = 4 USD');
     await expect(rows.last().getByTestId('rate-history-rate')).toHaveText('1 USDT = 2 USD');
 
-    await rows.first().getByTestId('rate-history-edit').click();
+    await rows.nth(1).getByTestId('rate-history-edit').click();
     await dialogField({ page, testId: 'edit-dated-rate-base' }).fill('5');
     await page.getByTestId('edit-dated-rate-save').click();
     await waitForSuccessToast({ page });
-    await expect(rows.first().getByTestId('rate-history-rate')).toHaveText('1 USDT = 5 USD');
-    await expect(rows).toHaveCount(2);
+    await expect(rows.nth(1).getByTestId('rate-history-rate')).toHaveText('1 USDT = 5 USD');
+    await expect(rows).toHaveCount(3);
 
     await rows.last().getByTestId('rate-history-remove').click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Remove rate' }).click();
     await waitForSuccessToast({ page });
-    await expect(rows).toHaveCount(1);
-    await expect(rows.first().getByTestId('rate-history-rate')).toHaveText('1 USDT = 5 USD');
+    await expect(rows).toHaveCount(2);
+    await expect(rows.last().getByTestId('rate-history-rate')).toHaveText('1 USDT = 5 USD');
   });
 });

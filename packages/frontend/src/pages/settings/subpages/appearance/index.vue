@@ -118,6 +118,27 @@
         </div>
       </div>
 
+      <Separator />
+
+      <div>
+        <h3 class="mb-2 text-lg font-medium">{{ $t('settings.appearance.transactions.title') }}</h3>
+        <p class="mb-4 text-sm leading-relaxed">
+          {{ $t('settings.appearance.transactions.description') }}
+        </p>
+
+        <div class="flex items-center justify-between gap-4">
+          <span class="flex items-center gap-2 text-sm">
+            <StoreIcon class="text-muted-foreground size-4 shrink-0" />
+            {{ $t('settings.appearance.transactions.payeeLogos') }}
+          </span>
+          <Switch
+            :model-value="isPayeeLogosEnabled({ settings: userSettings })"
+            :disabled="isPatching"
+            @update:model-value="(v) => patch({ showPayeeLogos: !!v })"
+          />
+        </div>
+      </div>
+
       <template v-if="isSupportButtonAvailable">
         <Separator />
 
@@ -155,8 +176,9 @@ import { TOGGLEABLE_ACCOUNTS_NAV_CHILDREN } from '@/components/sidebar/nav-items
 import { Switch } from '@/components/lib/ui/switch';
 import { useUserSettings } from '@/composable/data-queries/user-settings';
 import { TOGGLEABLE_SIDEBAR_SECTIONS, useSidebarSections } from '@/composable/use-sidebar-sections';
+import { isPayeeLogosEnabled } from '@/composable/use-payee-logos';
 import { useSupportButton } from '@/composable/use-support-button';
-import { CoinsIcon, HeartIcon, InfoIcon, LayersIcon, MonitorIcon, MoonStarIcon, SunIcon } from '@lucide/vue';
+import { CoinsIcon, HeartIcon, InfoIcon, LayersIcon, MonitorIcon, MoonStarIcon, StoreIcon, SunIcon } from '@lucide/vue';
 import { type Component } from 'vue';
 
 const { sidebarSections, toggleSection, isUpdating } = useSidebarSections();
@@ -167,7 +189,6 @@ const {
   isUpdating: isSupportButtonUpdating,
 } = useSupportButton();
 const { data: userSettings, patch, isPatching } = useUserSettings();
-
 interface ThemeOption {
   value: ThemePreference;
   labelKey: string;

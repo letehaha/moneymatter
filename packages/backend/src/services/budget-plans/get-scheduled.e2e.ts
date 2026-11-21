@@ -1,4 +1,4 @@
-import { SUBSCRIPTION_FREQUENCIES, TRANSACTION_TYPES } from '@bt/shared/types';
+import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_UNITS, TRANSACTION_TYPES } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { toUtcDateString } from '@common/utils/date';
 import { describe, expect, it } from '@jest/globals';
@@ -45,6 +45,8 @@ const subscription = ({
 }: {
   name: string;
   frequency: SUBSCRIPTION_FREQUENCIES;
+  intervalUnit?: SUBSCRIPTION_INTERVAL_UNITS;
+  intervalCount?: number;
   startDate: string;
   dueDate?: string;
   endDate?: string;
@@ -117,6 +119,29 @@ describe('GET /budget-plans/:planId/periods/:periodId/scheduled', () => {
     expect(result.outflows).toEqual({ total: -20 * expected.length, count: expected.length });
   });
 
+  it('gives a custom every-10-days subscription one item every 10 days inside the period', async () => {
+    const { planId, account, next } = await setup();
+    const dueDate = plusDays({ date: next.startDate, days: 1 });
+    await subscription({
+      name: 'Mobile plan',
+      frequency: SUBSCRIPTION_FREQUENCIES.custom,
+      intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+      intervalCount: 10,
+      startDate: dueDate,
+      dueDate,
+      accountId: account.id,
+    });
+
+    const expected: string[] = [];
+    for (let date = dueDate; date < next.endDate; date = plusDays({ date, days: 10 })) expected.push(date);
+
+    const result = await helpers.getBudgetPlanScheduled({ planId, periodId: next.id, raw: true });
+
+    expect(expected.length).toBeGreaterThanOrEqual(3);
+    expect(result.items.map((item) => item.date)).toEqual(expected);
+    expect(result.outflows).toEqual({ total: -20 * expected.length, count: expected.length });
+  });
+
   it('includes planned transactions on attached accounts', async () => {
     const { planId, account, food, line, next } = await setup();
     const outDate = plusDays({ date: next.startDate, days: 5 });
@@ -160,6 +185,37 @@ describe('GET /budget-plans/:planId/periods/:periodId/scheduled', () => {
     expect(result.outflows).toEqual({ total: -50, count: 1 });
     expect(result.inflows).toEqual({ total: 200, count: 1 });
     expect(result.nextDate).toBe(inDate);
+  });
+
+  it('dates a planned transaction by its local day under X-Timezone', async () => {
+    const { planId, account, next, afterNext } = await setup();
+    const lastDay = plusDays({ date: afterNext.startDate, days: -1 });
+    const [planned] = await helpers.createPlannedTransaction({
+      payload: {
+        accountId: account.id,
+        amount: 30,
+        transactionType: TRANSACTION_TYPES.expense,
+        time: `${lastDay}T23:30:00.000Z`,
+      },
+      raw: true,
+    });
+    const scheduled = ({ periodId, timezone }: { periodId: string; timezone?: string }) =>
+      helpers.getBudgetPlanScheduled({
+        planId,
+        periodId,
+        headers: timezone ? { 'X-Timezone': timezone } : {},
+        raw: true,
+      });
+    const timezone = 'Europe/Istanbul';
+
+    expect((await scheduled({ periodId: next.id, timezone })).items).toEqual([]);
+    expect((await scheduled({ periodId: afterNext.id, timezone })).items).toEqual([
+      expect.objectContaining({ source: 'planned', id: planned.id, date: afterNext.startDate }),
+    ]);
+    expect((await scheduled({ periodId: next.id })).items).toEqual([
+      expect.objectContaining({ source: 'planned', id: planned.id, date: lastDay }),
+    ]);
+    expect((await scheduled({ periodId: afterNext.id })).items).toEqual([]);
   });
 
   it('keeps a subscription only when its account is attached, or it has none and a line covers its category', async () => {

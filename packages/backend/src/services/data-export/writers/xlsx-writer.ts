@@ -44,13 +44,8 @@ async function writeXlsx({ tables }: { tables: ExportTable[] }): Promise<BuiltFi
     header.font = { bold: true };
     header.commit();
 
-    // Money columns get `0.00` so Excel renders two decimals while keeping
-    // the cell numeric (sortable, sumable). Per-column to avoid mixed-type
-    // bracket-formatting bugs in older Excel.
-    columns.forEach((col, index) => {
-      if (col.kind === 'money') sheet.getColumn(index + 1).numFmt = '0.00';
-    });
-
+    // Money cells keep Excel's General format: a fixed format would cut or pad
+    // amounts whose currency has more or fewer than its decimals.
     for (const row of table.rows as unknown as Record<string, unknown>[]) {
       sheet.addRow(rowToValues({ columns, row })).commit();
     }

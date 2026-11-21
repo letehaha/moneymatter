@@ -1,8 +1,10 @@
 const cache = new Map<string, number>();
 
-const buildKey = ({ userId, code }: { userId: number; code: string }) => `${userId}:${code}`;
+/** ISO decimals are the same for everyone and sit under the bare code; custom ones under `userId:code`. */
+const buildKey = ({ userId, code }: { userId?: number; code: string }) =>
+  userId === undefined ? code : `${userId}:${code}`;
 
-export const getCachedCurrencyDecimals = ({ userId, code }: { userId: number; code: string }): number | undefined =>
+export const getCachedCurrencyDecimals = ({ userId, code }: { userId?: number; code: string }): number | undefined =>
   cache.get(buildKey({ userId, code }));
 
 export const setCachedCurrencyDecimals = ({
@@ -10,7 +12,7 @@ export const setCachedCurrencyDecimals = ({
   code,
   decimals,
 }: {
-  userId: number;
+  userId?: number;
   code: string;
   decimals: number;
 }): void => {
@@ -19,8 +21,8 @@ export const setCachedCurrencyDecimals = ({
 
 /**
  * Drops cached decimals after a currency or a per-user override changes.
- * Without `userId` the entries of every user for the code are dropped; without `code` the
- * entries of every code for the user are dropped; with neither the whole cache is cleared.
+ * Without `userId` every entry of the code is dropped; without `code` every custom entry of the
+ * user is dropped; with neither the whole cache is cleared.
  */
 export const invalidateCurrencyDecimalsCache = ({ userId, code }: { userId?: number; code?: string } = {}): void => {
   if (userId === undefined && code === undefined) {
@@ -30,7 +32,7 @@ export const invalidateCurrencyDecimalsCache = ({ userId, code }: { userId?: num
 
   for (const key of cache.keys()) {
     const separatorIndex = key.indexOf(':');
-    const keyUserId = key.slice(0, separatorIndex);
+    const keyUserId = separatorIndex === -1 ? undefined : key.slice(0, separatorIndex);
     const keyCode = key.slice(separatorIndex + 1);
 
     if ((userId === undefined || keyUserId === String(userId)) && (code === undefined || keyCode === code)) {

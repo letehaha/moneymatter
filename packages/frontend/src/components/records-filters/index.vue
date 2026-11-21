@@ -34,9 +34,13 @@
       @update:transfer-natures="$emit('update:filters', { ...filters, transferNatures: $event })"
     />
 
-    <NoteIncludesFilter
-      :note-includes="filters.noteIncludes"
-      @update:note-includes="$emit('update:filters', { ...filters, noteIncludes: $event })"
+    <InputField
+      :model-value="filters.search"
+      type="search"
+      maxlength="200"
+      :placeholder="$t('transactions.filters.search.placeholder')"
+      :aria-label="$t('transactions.filters.search.placeholder')"
+      @update:model-value="$emit('update:filters', { ...filters, search: String($event ?? '') })"
     />
 
     <OperationPills
@@ -99,6 +103,7 @@ import UiButton from '@/components/lib/ui/button/Button.vue';
 import { cn } from '@/lib/utils';
 
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
+import InputField from '@/components/fields/input-field.vue';
 import TrackerMultiSelectField from '@/components/fields/tracker-multi-select-field.vue';
 import ComboboxCategories from '@/components/common/combobox-categories.vue';
 
@@ -106,7 +111,6 @@ import { FiltersStruct } from './const';
 import AmountRangeFilter from './filters/amount-range-filter.vue';
 import DateRangeFilter from './filters/date-range-filter.vue';
 import ExclusionsFilter from './filters/exclusions.vue';
-import NoteIncludesFilter from './filters/note-includes.vue';
 import OperationPills from './filters/operation-pills.vue';
 import PayeeMultiSelectField from '@/components/fields/payee-multi-select-field.vue';
 import TagFilter from './filters/tag-filter.vue';

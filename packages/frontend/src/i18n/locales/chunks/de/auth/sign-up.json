@@ -2,7 +2,7 @@
   "auth": {
     "signup": {
       "title": "Ein Konto erstellen",
-      "divider": "Oder weiter mit E-Mail-Adresse",
+      "divider": "Oder mit E-Mail fortfahren",
       "submitButton": "Registrieren",
       "alreadyHaveAccount": "Du hast bereits ein Konto?",
       "signInLink": "Anmelden",
@@ -21,7 +21,7 @@
         "invalidPassword": "Ungültiges Passwort.",
         "userExists": "Ein Benutzer mit dieser E-Mail-Adresse existiert bereits.",
         "signupsDisabled": "Registrierungen wurden vom Administrator dieser Instanz deaktiviert.",
-        "genericErrorRetry": "Es ist ein Fehler aufgetreten. Bitte versuche es erneut.",
+        "genericErrorRetry": "Ein Fehler ist aufgetreten. Bitte versuche es noch einmal.",
         "oauthFailed": "Fehler beim Anmelden mit {provider}. Bitte versuche es erneut.",
         "oauthNotConfigured": "Die Anmeldung mit {provider} ist auf diesem Server nicht konfiguriert."
       }

@@ -18,21 +18,30 @@
     <nav
       v-if="!isOnChildRoute || !isCompactLayout"
       :class="[
-        'border-border bg-card/50 shrink-0 rounded-lg border backdrop-blur-sm',
-        isTransitionReady && 'transition-all duration-200',
-        isCompactLayout ? 'w-full' : isCollapsed ? 'w-14' : 'w-full lg:w-52',
+        'border-border bg-card dark:bg-card/50 shadow-card shrink-0 rounded-lg border backdrop-blur-sm dark:shadow-none',
+        isTransitionReady && !isResizing && 'transition-all duration-200',
+        isCompactLayout ? 'w-full' : isCollapsed && 'w-14',
         !isCompactLayout && 'sticky top-[calc(var(--header-height)+1rem)] self-start',
       ]"
+      :style="isCompactLayout || isCollapsed ? undefined : { width: `${navWidth}px` }"
     >
+      <ResizeHandle
+        v-if="!isCompactLayout && !isCollapsed"
+        edge="right"
+        :label="$t('sidebar.resize')"
+        @start="startResize"
+        @reset="resetWidth"
+      />
       <ScrollArea :class="navMaxHeight" :viewport-class="cn('p-2', navMaxHeight)">
-        <ul class="flex flex-col gap-1 overflow-hidden">
+        <ul ref="navListRef" class="relative isolate -m-1 flex flex-col gap-1 overflow-hidden p-1">
+          <li v-bind="indicator" />
           <!-- Collapse toggle (only on wide layout) -->
           <li v-if="!isCompactLayout" class="border-border mb-1 border-b pb-1">
             <button
               :class="
                 cn(
                   'text-muted-foreground flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors',
-                  'hover:bg-accent hover:text-foreground',
+                  'hover:bg-hover hover:text-foreground',
                 )
               "
               @click="isCollapsed = !isCollapsed"
@@ -68,17 +77,25 @@
                   :to="tab.to"
                   :class="
                     cn(
-                      'text-muted-foreground flex items-center gap-2 rounded-md px-3 py-2 whitespace-nowrap transition-colors',
-                      'hover:bg-accent hover:text-foreground',
-                      '[&.router-link-exact-active]:bg-accent [&.router-link-exact-active]:text-foreground',
+                      'group text-foreground dark:text-muted-foreground flex items-center gap-2 rounded-md px-3 py-2 whitespace-nowrap transition-colors',
+                      'hover:bg-hover hover:text-foreground',
+                      '[&.router-link-exact-active]:text-foreground [&.router-link-exact-active]:hover:bg-transparent',
                       isCompactLayout ? 'text-sm md:gap-4 md:text-base' : 'text-sm',
                     )
                   "
                 >
-                  <component :is="tab.icon" :class="cn('size-4 shrink-0', isCompactLayout && 'md:size-5')" />
+                  <component
+                    :is="tab.icon"
+                    :class="
+                      cn(
+                        'group-[.router-link-exact-active]:text-primary-text size-4 shrink-0',
+                        isCompactLayout && 'md:size-5',
+                      )
+                    "
+                  />
                   <span
                     :class="[
-                      'transition-opacity duration-200',
+                      'min-w-0 truncate transition-opacity duration-200',
                       isCollapsed && !isCompactLayout ? 'opacity-0' : 'opacity-100',
                     ]"
                   >
@@ -122,10 +139,13 @@
 </template>
 
 <script setup lang="ts">
+import ResizeHandle from '@/components/common/resize-handle.vue';
 import DocsLink from '@/components/common/docs-link.vue';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useAfterMountTransition } from '@/composable/use-after-mount-transition';
+import { SUB_NAV_WIDTH, useResizableWidth } from '@/composable/use-resizable-width';
+import { useSlidingIndicator } from '@/composable/use-sliding-indicator';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
@@ -180,8 +200,25 @@ const isMobileView = useWindowBreakpoints(CUSTOM_BREAKPOINTS.uiMobile, {
 const isCompactLayout = computed(() => containerWidth.value < 920);
 const navMaxHeight = computed(() => (isCompactLayout.value ? '' : 'max-h-[calc(100dvh-var(--header-height)-2rem)]'));
 const isCollapsed = useLocalStorage('analytics-sidebar-collapsed', false);
+const {
+  width: navWidth,
+  isResizing,
+  startResize,
+  resetWidth,
+} = useResizableWidth({
+  storageKey: 'analytics-sidebar-width',
+  ...SUB_NAV_WIDTH,
+  edge: 'right',
+});
 
 const isTransitionReady = useAfterMountTransition();
+
+const navListRef = ref<HTMLElement | null>(null);
+const { indicator } = useSlidingIndicator({
+  containerRef: navListRef,
+  activeSelector: '.router-link-exact-active',
+  activeKey: () => route.name,
+});
 
 const isOnChildRoute = computed(() => route.name !== ROUTES_NAMES.analytics);
 

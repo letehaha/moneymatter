@@ -1,7 +1,7 @@
-import { handleBillingWebhook, handleGitHubWebhook } from '@controllers/webhooks.controller';
+import { handleAppleWebhook, handleBillingWebhook, handleGitHubWebhook } from '@controllers/webhooks.controller';
 import { cloudOnly } from '@middlewares/cloud-only';
 import { verifyGitHubWebhook } from '@middlewares/github-webhook';
-import { stripeWebhookRateLimit } from '@middlewares/rate-limit';
+import { billingWebhookRateLimit } from '@middlewares/rate-limit';
 import { verifyStripeWebhook } from '@middlewares/stripe-webhook';
 import { Router } from 'express';
 
@@ -20,6 +20,9 @@ const router = Router({});
  */
 router.post('/github', verifyGitHubWebhook, handleGitHubWebhook);
 
-router.post('/billing', cloudOnly, stripeWebhookRateLimit, verifyStripeWebhook, handleBillingWebhook);
+router.post('/billing', cloudOnly, billingWebhookRateLimit, verifyStripeWebhook, handleBillingWebhook);
+
+/** App Store Server Notifications V2. Set as both the Production and Sandbox URL in App Store Connect. */
+router.post('/apple', cloudOnly, billingWebhookRateLimit, handleAppleWebhook);
 
 export default router;

@@ -35,6 +35,9 @@
         "title": "Microsoft Money",
         "listDescription": "Impor file .mny dari Microsoft Money"
       },
+      "messageImport": {
+        "title": "iOS message sync"
+      },
       "importHistory": {
         "title": "Riwayat Impor",
         "listDescription": "Lihat impor sebelumnya dan apa saja yang dibuatnya"
@@ -94,9 +97,9 @@
           "clear": "Hapus rentang tanggal"
         },
         "accounts": {
-          "label": "Akun",
+          "label": "Accounts",
           "helper": "Export only the selected accounts with their transactions and balance history. Leave empty to export all accounts.",
-          "placeholder": "Semua Akun"
+          "placeholder": "All accounts"
         },
         "listDescription": "Unduh zip untuk spreadsheet, pajak, atau migrasi"
       }

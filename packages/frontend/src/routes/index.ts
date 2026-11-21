@@ -173,13 +173,13 @@ const routes: RouteRecordRaw[] = [
         path: '/budget',
         name: ROUTES_NAMES.budget,
         component: () => import('@/pages/budget/budget.vue'),
-        meta: { navSection: 'budget', i18nChunks: ['pages/budget-plans'] },
+        meta: { navSection: 'planned', i18nChunks: ['pages/budget-plans'] },
       },
       {
         path: '/budget/:planId',
         name: ROUTES_NAMES.budgetPlan,
         component: () => import('@/pages/budget/budget-plan.vue'),
-        meta: { navSection: 'budget', i18nChunks: ['pages/budget-plans'] },
+        meta: { navSection: 'planned', i18nChunks: ['pages/budget-plans'] },
       },
       {
         path: '/planned',
@@ -214,6 +214,18 @@ const routes: RouteRecordRaw[] = [
           },
         ],
       },
+      {
+        path: '/goals',
+        name: ROUTES_NAMES.goals,
+        component: () => import('@/pages/goals/goals.vue'),
+        meta: { navSection: 'planned', i18nChunks: ['pages/goals'] },
+      },
+      {
+        path: '/goals/:goalId',
+        name: ROUTES_NAMES.goalDetails,
+        component: () => import('@/pages/goals/goal-details.vue'),
+        meta: { navSection: 'planned', i18nChunks: ['pages/goals'] },
+      },
       // Backward-compat redirects for the old /planned/subscriptions URLs, so links
       // already sent (e.g. payment reminder emails) still resolve after the rename
       // to /planned/recurring-payments.
@@ -234,6 +246,12 @@ const routes: RouteRecordRaw[] = [
         path: '/transactions',
         name: ROUTES_NAMES.transactions,
         component: () => import('@/pages/records/root.vue'),
+        meta: { navSection: 'transactions', i18nChunks: ['pages/transactions'] },
+      },
+      {
+        path: '/transactions/trash',
+        name: ROUTES_NAMES.transactionsTrash,
+        component: () => import('@/pages/transactions-trash/index.vue'),
         meta: { navSection: 'transactions', i18nChunks: ['pages/transactions'] },
       },
       {
@@ -551,12 +569,6 @@ const routes: RouteRecordRaw[] = [
             name: ROUTES_NAMES.settingsHousehold,
             component: () => import('@/pages/settings/subpages/household/index.vue'),
             meta: { i18nChunks: ['pages/household'] },
-          },
-          {
-            path: 'subscriptions',
-            name: ROUTES_NAMES.settingsSubscriptions,
-            component: () => import('@/pages/settings/subpages/subscriptions/index.vue'),
-            meta: { i18nChunks: ['settings/subscriptions'] },
           },
         ],
       },

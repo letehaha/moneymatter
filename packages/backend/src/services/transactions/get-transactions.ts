@@ -1,10 +1,15 @@
 import { BLANK_FILTER_VALUE } from '@bt/shared/types';
-import TrackerTransactions, { type TrackerTransactionMetadata } from '@models/tracker-transactions.model';
+import TrackerTransactions, {
+  type TrackerTransactionMetadata,
+  isRuleLinkMetadata,
+} from '@models/tracker-transactions.model';
 import Trackers from '@models/trackers.model';
 import * as Transactions from '@models/transactions.model';
 import Users from '@models/users.model';
 import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { getAccessibleTrackerIdsForUser } from '@services/sharing/auth/get-accessible-tracker-ids.service';
+import { attachPaymentParts } from '@services/transactions/payment-legs';
+import { attachRefundedAmounts } from '@services/tx-refunds/attach-refunded-amounts';
 import { Op } from 'sequelize';
 
 type FindWithFiltersParams = Parameters<typeof Transactions.findWithFilters>[0];
@@ -17,7 +22,7 @@ const DEFAULT_PAGE_SIZE = 20;
  * translates the endpoint's `isPlanned` / `excludeBalanceAdjustments` query params. */
 type GetTransactionsParams = Omit<
   FindWithFiltersParams,
-  'isRaw' | 'access' | 'planned' | 'completeness' | 'balanceAdjustments'
+  'access' | 'planned' | 'completeness' | 'balanceAdjustments' | 'fullShape'
 > & {
   userId: number;
   from?: number;
@@ -25,6 +30,7 @@ type GetTransactionsParams = Omit<
   /** Absent = real rows + the caller's own plans; `true` = only the caller's plans; `false` = real rows only. */
   isPlanned?: boolean;
   excludeBalanceAdjustments?: boolean;
+  includeRefundedAmount?: boolean;
 };
 
 /** Internal snapshot of the user who attached a tx to a shared tracker. `null` for
@@ -61,7 +67,18 @@ interface TransactionAddedBy {
  * stats, etc.) call `Transactions.findWithFilters` directly with `access: { creator }`.
  */
 export const getTransactions = async (params: GetTransactionsParams) => {
-  const { userId, accountIds, trackerIds, from, limit, isPlanned, excludeBalanceAdjustments, ...rest } = params;
+  const {
+    userId,
+    accountIds,
+    trackerIds,
+    from,
+    limit,
+    isPlanned,
+    excludeBalanceAdjustments,
+    includeRefundedAmount,
+    isRaw = false,
+    ...rest
+  } = params;
 
   // Tracker-share path: when the caller asks for transactions in specific trackers, we
   // scope visibility through tracker-share (in addition to any account-share lookup,
@@ -87,34 +104,25 @@ export const getTransactions = async (params: GetTransactionsParams) => {
   // membership is the source of truth for what's in the tracker). If the caller passed
   // `accountIds` we still intersect with their accessible-account set so an explicit
   // account filter is honoured.
+  const accessibleAccounts = await getAccessibleAccountIdsForUser({ userId });
   let scopedAccountIds: string[] | undefined;
-  if (trackerGrantsVisibility) {
-    if (accountIds && accountIds.length > 0) {
-      const accessibleAccounts = await getAccessibleAccountIdsForUser({ userId });
-      const accessibleSet = new Set(accessibleAccounts);
-      scopedAccountIds = accountIds.filter((id) => accessibleSet.has(id));
-      if (scopedAccountIds.length === 0) return [];
-    }
-    // else: leave undefined → no account filter, full tracker visibility.
-  } else {
-    const accessibleAccounts = await getAccessibleAccountIdsForUser({ userId });
-    if (accountIds && accountIds.length > 0) {
-      const accessibleSet = new Set(accessibleAccounts);
-      scopedAccountIds = accountIds.filter((id) => accessibleSet.has(id));
-      if (scopedAccountIds.length === 0) return [];
-    } else {
-      if (!accessibleAccounts.length) return [];
-      scopedAccountIds = accessibleAccounts;
-    }
+  if (accountIds && accountIds.length > 0) {
+    const accessibleSet = new Set(accessibleAccounts);
+    scopedAccountIds = accountIds.filter((id) => accessibleSet.has(id));
+    if (scopedAccountIds.length === 0) return [];
+  } else if (!trackerGrantsVisibility) {
+    // With tracker visibility it stays undefined: no account filter, full tracker visibility.
+    if (!accessibleAccounts.length) return [];
+    scopedAccountIds = accessibleAccounts;
   }
 
-  // When includeSplits, includeTags, or includeGroups is true, we need nested data (not raw) to preserve array structure
-  // Raw mode flattens nested includes into dot-notation keys which breaks access
-  const isRaw = !rest.includeSplits && !rest.includeTags && !rest.includeGroups;
+  // Without an account filter the list shows one row per payment; an account view needs
+  // each account's own row of a multi-account payment.
+  const collapsePayments = !accountIds?.length;
 
   // `isPlanned: true` means "only the plans I authored": creator scope is what reproduces
   // that, on top of the account/tracker ids resolved above.
-  const transactions = await Transactions.findWithFilters({
+  const rows = await Transactions.findWithFilters({
     ...rest,
     accountIds: scopedAccountIds,
     trackerIds: scopedTrackerIds,
@@ -128,8 +136,16 @@ export const getTransactions = async (params: GetTransactionsParams) => {
     // The raw ledger view: this list shows balance-adjustment rows unless the client asks
     // to hide them, so it opts out of the boundary's exclude-by-default.
     balanceAdjustments: excludeBalanceAdjustments ? 'exclude' : 'include',
+    excludePaymentLegsWithMainIn: collapsePayments ? accessibleAccounts : undefined,
+    fullShape: !isRaw,
     isRaw,
   });
+  const transactions = await attachPaymentParts({
+    transactions: rows,
+    collapsed: collapsePayments,
+    accessibleAccountIds: accessibleAccounts,
+  });
+  if (includeRefundedAmount) await attachRefundedAmounts({ transactions });
 
   if (!transactions.length || !trackerGrantsVisibility) return transactions;
 
@@ -152,7 +168,7 @@ const attachAddedByMetadata = async <T extends { id: string }>({
 }: {
   transactions: T[];
   trackerIds: string[];
-}): Promise<(T & { addedBy?: TransactionAddedBy | null })[]> => {
+}): Promise<(T & { addedBy?: TransactionAddedBy | null; addedByRule?: boolean })[]> => {
   const txIds = transactions.map((tx) => tx.id);
 
   // Pull the junction rows for every (tracker, tx) pair in scope so we can derive both
@@ -187,8 +203,10 @@ const attachAddedByMetadata = async <T extends { id: string }>({
   // junction lookup; in that case the first row wins, which is fine — the chip is
   // about "who put this in this tracker context".
   const attacherUserIdByTx = new Map<string, number>();
+  const ruleAddedTxIds = new Set<string>();
   for (const row of junctionRows) {
     if (attacherUserIdByTx.has(row.transactionId)) continue;
+    if (isRuleLinkMetadata({ metadata: row.metadata })) ruleAddedTxIds.add(row.transactionId);
     const recipientId = row.metadata?.addedByUserId;
     if (typeof recipientId === 'number') {
       attacherUserIdByTx.set(row.transactionId, recipientId);
@@ -199,7 +217,7 @@ const attachAddedByMetadata = async <T extends { id: string }>({
   }
 
   if (!attacherUserIdByTx.size) {
-    return transactions.map((tx) => Object.assign(tx, { addedBy: null }));
+    return transactions.map((tx) => Object.assign(tx, { addedBy: null, addedByRule: ruleAddedTxIds.has(tx.id) }));
   }
 
   const uniqueUserIds = Array.from(new Set(attacherUserIdByTx.values()));
@@ -212,10 +230,12 @@ const attachAddedByMetadata = async <T extends { id: string }>({
 
   return transactions.map((tx) => {
     const uid = attacherUserIdByTx.get(tx.id);
-    if (uid === undefined) return Object.assign(tx, { addedBy: null });
+    const addedByRule = ruleAddedTxIds.has(tx.id);
+    if (uid === undefined) return Object.assign(tx, { addedBy: null, addedByRule });
     const user = userById.get(uid);
     return Object.assign(tx, {
       addedBy: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
+      addedByRule,
     });
   });
 };

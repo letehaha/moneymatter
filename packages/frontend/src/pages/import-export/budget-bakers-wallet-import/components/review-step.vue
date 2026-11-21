@@ -165,18 +165,18 @@ async function handleImport() {
       <!-- ==================== FOOTER ==================== -->
       <div class="flex items-center justify-between gap-3 pt-2">
         <UiButton variant="ghost" @click="store.goBack()">
-          <ChevronLeftIcon class="mr-1.5 size-4" />
+          <ChevronLeftIcon class="size-4" />
           {{ $t('pages.importExport.budgetBakersWalletImport.review.back') }}
         </UiButton>
 
         <UiButton :disabled="isExecuting" @click="handleImport">
           <template v-if="isExecuting">
-            <LoaderCircleIcon class="mr-1.5 size-4 animate-spin" />
+            <LoaderCircleIcon class="size-4 animate-spin" />
             {{ $t('pages.importExport.budgetBakersWalletImport.review.importing') }}
           </template>
           <template v-else>
             {{ $t('pages.importExport.budgetBakersWalletImport.review.importButton', { count: willImportCount }) }}
-            <ChevronRightIcon class="ml-1.5 size-4" />
+            <ChevronRightIcon class="size-4" />
           </template>
         </UiButton>
       </div>

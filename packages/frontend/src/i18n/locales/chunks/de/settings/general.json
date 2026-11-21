@@ -9,6 +9,21 @@
         "successNotification": "Einstellung erfolgreich aktualisiert",
         "errorNotification": "Einstellung konnte nicht aktualisiert werden"
       },
+      "payday": {
+        "label": "Abrechnungszyklus beginnt am",
+        "description": "Der Tag des Monats, an dem dein Abrechnungszyklus beginnt. Der Standardzeitraum des Dashboards läuft von diesem Tag bis zum Tag vor diesem im nächsten Monat.",
+        "placeholder": "Tag auswählen",
+        "successNotification": "Beginn des Abrechnungszyklus aktualisiert"
+      },
+      "unrealizedLossAlert": {
+        "label": "Warnungen vor nicht realisierten Verlusten",
+        "description": "Erhalte eine Benachrichtigung, wenn der Verlust einer Position einen der beiden Schwellenwerte überschreitet. Wird täglich nach der Aktualisierung der Marktpreise überprüft; es erfolgt keine Wiederholung, bis sich die Position erholt hat.",
+        "percentLabel": "Verlustprozentsatz",
+        "percentDescription": "Warne, wenn eine Position mindestens um diesen Wert unter ihren Anschaffungskosten liegt.",
+        "amountLabel": "Verlustbetrag",
+        "amountDescription": "Oder wenn der Verlust diesen Betrag in deiner Basiswährung erreicht, unabhängig vom Prozentsatz.",
+        "successNotification": "Einstellungen für Verlustwarnungen gespeichert"
+      },
       "manualTransferMatching": {
         "label": "Umbuchungen mit manuellen Konten abgleichen",
         "description": "Ermögliche es automatisch erkannten Umbuchungen, eine synchronisierte Banktransaktion mit einer manuell erstellten Transaktion zu verknüpfen.",
@@ -70,6 +85,21 @@
         "successNotification": "Einstellungen für Konto-Dropdowns aktualisiert",
         "errorNotification": "Einstellungen für Konto-Dropdowns konnten nicht aktualisiert werden"
       },
+      "iosAddExpense": {
+        "label": "Ausgabe hinzufügen (iPhone)",
+        "description": "Einstellungen für den Kurzbefehl \"Ausgabe hinzufügen\" auf dem iPhone (Siri, Spotlight und die Aktionstaste).",
+        "showBankAccounts": {
+          "label": "Bankverknüpfte Konten anzeigen",
+          "description": "Standardmäßig aus: Transaktionen auf bankverknüpften Konten werden über die Synchronisierung abgerufen."
+        },
+        "hiddenCategories": {
+          "label": "Ausgeblendete Kategorien",
+          "description": "Ausgewählte Kategorien werden samt ihrer Unterkategorien in der Kategorienliste des Kurzbefehls ausgeblendet.",
+          "placeholder": "Keine"
+        },
+        "successNotification": "Einstellungen für \"Ausgabe hinzufügen (iPhone)\" aktualisiert",
+        "errorNotification": "Einstellungen für \"Ausgabe hinzufügen (iPhone)\" konnten nicht aktualisiert werden"
+      },
       "showUpcomingTransactions": {
         "label": "Anstehende Transaktionen anzeigen",
         "description": "Hefte einen Abschnitt mit überfälligen geplanten Zahlungen und solchen, die in den nächsten 3 Tagen fällig sind, oben in der Transaktionsliste an.",
@@ -78,7 +108,7 @@
       },
       "transactionFields": {
         "label": "Optionale Transaktionsfelder",
-        "description": "Zusätzliche Felder, die im Transaktionsformular angezeigt werden. Ein Feld, das bereits einen Wert hat, wird immer angezeigt.",
+        "description": "Bietet eine Schaltfläche zum Schnellhinzufügen für diese Felder im Transaktionsformular an. Ein Feld, das bereits einen Wert enthält, wird immer angezeigt.",
         "successNotification": "Transaktionsfelder aktualisiert",
         "errorNotification": "Ein unerwarteter Fehler ist aufgetreten. Einstellung nicht gespeichert",
         "fields": {
@@ -95,7 +125,7 @@
             "description": "Der tatsächlich in einer anderen Währung abgebuchte Betrag, wenn er von der Kontowährung abweicht."
           },
           "location": {
-            "label": "Standort",
+            "label": "Ort",
             "description": "GPS-Koordinaten des Ortes, an dem der Kauf stattgefunden hat. Übernehme den Standort deines Geräts oder gib ihn manuell ein"
           }
         },

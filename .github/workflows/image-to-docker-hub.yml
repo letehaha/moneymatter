@@ -17,18 +17,27 @@ concurrency:
 jobs:
   # Create database backup before deployment
   backup:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: >-
+      ${{ github.event_name == 'workflow_dispatch' || (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_repository.full_name == github.repository) }}
     uses: ./.github/workflows/database-backup.yml
     with:
       backup_reason: 'pre-deployment'
     secrets: inherit
 
   prepare:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: >-
+      ${{ github.event_name == 'workflow_dispatch' || (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_repository.full_name == github.repository) }}
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.vars.outputs.sha }}
       sha_short: ${{ steps.vars.outputs.sha_short }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Check if user is authorized
         if: github.event_name == 'workflow_dispatch'
@@ -47,6 +56,25 @@ jobs:
         env:
           BUILD_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
 
+      # Only main builds get a `v*` tag: a dispatch defaults to dev, which
+      # already carries the next release's version.
+      - if: github.event_name == 'workflow_run'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.vars.outputs.sha }}
+          sparse-checkout: packages/frontend/package.json
+          sparse-checkout-cone-mode: false
+
+      - id: version
+        if: github.event_name == 'workflow_run'
+        run: |
+          VERSION=$(jq -r .version packages/frontend/package.json)
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Invalid version in packages/frontend/package.json: $VERSION"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
   # always(): a failed backup must not block the deploy.
   build-frontend:
     needs: [backup, prepare]
@@ -56,6 +84,30 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.prepare.outputs.sha }}
+
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      # `v*` tags are immutable: pushed only if missing, so a hotfix without a
+      # version bump moves `latest` and `sha-*` but never `v*`. Checked right
+      # before pushing so re-running a failed job can't re-push an existing tag.
+      - id: fe_version
+        if: needs.prepare.outputs.version != ''
+        env:
+          IMAGE: ${{ secrets.DOCKER_HUB_USERNAME }}/budget-tracker-fe
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          ref="$IMAGE:v$VERSION"
+          if err=$(docker buildx imagetools inspect "$ref" 2>&1 >/dev/null); then
+            echo "$ref already exists, not re-tagging"
+          elif [[ "$err" == *"$ref: not found" ]]; then
+            echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Could not check $ref: $err"
+            exit 1
+          fi
 
       # This image is the self-host image: letehaha/budget-tracker-fe is what
       # self-hosters pull. Deployment-specific values (API origin, analytics
@@ -71,7 +123,7 @@ jobs:
           app-commit-hash: ${{ needs.prepare.outputs.sha }}
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-access-token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-          image-tag: latest,sha-${{ needs.prepare.outputs.sha_short }}
+          image-tag: latest,sha-${{ needs.prepare.outputs.sha_short }},${{ steps.fe_version.outputs.tag }}
           # Only the small nginx stage runs per arch, so arm64 stays cheap here.
           platforms: linux/amd64,linux/arm64
           push: 'true'
@@ -102,12 +154,13 @@ jobs:
           push: 'true'
 
   # Each arch builds natively on its own runner; this stitches both into the
-  # multi-arch `latest` and `sha-*` tags.
+  # multi-arch `latest`, `sha-*` and (when new) `v*` tags.
   merge-backend:
     needs: [prepare, build-backend]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && needs.build-backend.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -115,12 +168,27 @@ jobs:
       - env:
           IMAGE: ${{ secrets.DOCKER_HUB_USERNAME }}/budget-tracker-be
           SHA_TAG: sha-${{ needs.prepare.outputs.sha_short }}
+          VERSION: ${{ needs.prepare.outputs.version }}
         run: |
+          VERSION_TAG=
+          if [[ -n "$VERSION" ]]; then
+            ref="$IMAGE:v$VERSION"
+            if err=$(docker buildx imagetools inspect "$ref" 2>&1 >/dev/null); then
+              echo "$ref already exists, not re-tagging"
+            elif [[ "$err" == *"$ref: not found" ]]; then
+              VERSION_TAG="v$VERSION"
+            else
+              echo "::error::Could not check $ref: $err"
+              exit 1
+            fi
+          fi
           docker buildx imagetools create -t "$IMAGE:$SHA_TAG" -t "$IMAGE:latest" \
+            ${VERSION_TAG:+-t "$IMAGE:$VERSION_TAG"} \
             "$IMAGE:$SHA_TAG-amd64" "$IMAGE:$SHA_TAG-arm64"
 
   deploy:
     needs: [build-frontend, merge-backend]
+    if: ${{ !cancelled() && needs.build-frontend.result == 'success' && needs.merge-backend.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Dokploy deployment

@@ -161,14 +161,14 @@ export const landingFaqGlobalRateLimit = createRateLimit({
 });
 
 /**
- * Stripe webhook rate limit (per IP, 120 deliveries per minute). Stripe retries and
+ * Stripe and App Store webhook rate limit (per IP, 120 deliveries per minute). Retries and
  * backfills arrive in bursts, so the budget only has to stop a flood of forged bodies
  * reaching signature verification. Fail-open: a Redis outage must not drop real events.
  */
-export const stripeWebhookRateLimit = createRateLimit({
+export const billingWebhookRateLimit = createRateLimit({
   windowSeconds: 60,
   maxAttempts: 120,
-  keyGenerator: (req: Request) => `stripe-webhook:ip:${req.ip}`,
+  keyGenerator: (req: Request) => `billing-webhook:ip:${req.ip}`,
 });
 
 /**
@@ -249,6 +249,13 @@ export const msMoneyUploadRateLimit = perUserNonDevRateLimit({ prefix: 'ms-money
  */
 export const attachmentUploadRateLimit = perUserNonDevRateLimit({
   prefix: 'attachment-upload',
+  windowSeconds: 60,
+  maxAttempts: 30,
+});
+
+/** Each call is one paid AI request. */
+export const messageExtractionRateLimit = perUserNonDevRateLimit({
+  prefix: 'message-extraction',
   windowSeconds: 60,
   maxAttempts: 30,
 });

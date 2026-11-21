@@ -74,9 +74,9 @@ export const computeCheckedState = ({
   isSearching: boolean;
   /**
    * Check a row purely on its own membership — no parent roll-up, no indeterminate
-   * tri-state from descendant selection. Toggling still cascades down (clicking a
-   * parent selects its whole subtree); this only stops a selected child from making
-   * its ancestors *look* selected. The flattened search view reads self-only too.
+   * tri-state from descendant selection. It only affects how rows look: whether toggling
+   * a parent also selects its subtree is up to `toggleCategorySelection`'s `cascade`. The flattened
+   * search view reads self-only too.
    */
   independent?: boolean;
 }): CheckedState => {
@@ -92,8 +92,8 @@ export const computeCheckedState = ({
   return 'indeterminate';
 };
 
-const idsAffectedByToggle = ({ target, isSearching }: { target: FlatCategory; isSearching: boolean }): string[] =>
-  isSearching ? [target.id] : [target.id, ...target.descendantIds];
+const idsAffectedByToggle = ({ target, cascade }: { target: FlatCategory; cascade: boolean }): string[] =>
+  cascade ? [target.id, ...target.descendantIds] : [target.id];
 
 export const toggleCategorySelection = ({
   item,
@@ -103,6 +103,7 @@ export const toggleCategorySelection = ({
   isSearching,
   isShiftPressed,
   lastClickedIndex,
+  cascade = true,
 }: {
   item: FlatCategory;
   clickedIndex: number;
@@ -111,14 +112,17 @@ export const toggleCategorySelection = ({
   isSearching: boolean;
   isShiftPressed: boolean;
   lastClickedIndex: number | null;
+  /** When false, a toggle never pulls in descendants (the search view behaves this way too). */
+  cascade?: boolean;
 }): string[] => {
   const nextSet = new Set(currentSelection);
-  const clickedIds = idsAffectedByToggle({ target: item, isSearching });
+  const shouldCascade = cascade && !isSearching;
+  const clickedIds = idsAffectedByToggle({ target: item, cascade: shouldCascade });
   const allClickedSelected = clickedIds.every((id) => nextSet.has(id));
   const shouldSelect = !allClickedSelected;
 
   const applyToItem = (target: FlatCategory) => {
-    for (const id of idsAffectedByToggle({ target, isSearching })) {
+    for (const id of idsAffectedByToggle({ target, cascade: shouldCascade })) {
       if (shouldSelect) nextSet.add(id);
       else nextSet.delete(id);
     }

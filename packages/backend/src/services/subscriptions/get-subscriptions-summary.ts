@@ -1,5 +1,12 @@
-import { API_ERROR_CODES, SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
-import { getConversionDecimals } from '@common/lib/currency-precision';
+import { resolveRecurrenceStep, type PresetFrequency, type RecurrenceInput } from '@bt/shared/subscriptions/recurrence';
+import {
+  API_ERROR_CODES,
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
+  SUBSCRIPTION_TYPES,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
+import { getConversionDecimals, getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { CustomError, ValidationError } from '@js/errors';
@@ -39,20 +46,33 @@ const getAverageMonthlyIncome = async ({
 
   let total = Money.zero();
   for (const tx of incomeTxs) {
-    // A row with no base-currency amount yet (custom currency, no rate) is left out of the sum.
-    if (tx.refAmount) total = total.add(tx.refAmount);
+    total = total.add(tx.refAmount);
   }
 
   return total.divide(lookbackMonths);
 };
 
-const MONTHLY_MULTIPLIERS: Record<SUBSCRIPTION_FREQUENCIES, number> = {
+const MONTHLY_MULTIPLIERS: Record<PresetFrequency, number> = {
   [SUBSCRIPTION_FREQUENCIES.weekly]: 4.33,
   [SUBSCRIPTION_FREQUENCIES.biweekly]: 2.17,
   [SUBSCRIPTION_FREQUENCIES.monthly]: 1,
   [SUBSCRIPTION_FREQUENCIES.quarterly]: 1 / 3,
   [SUBSCRIPTION_FREQUENCIES.semiAnnual]: 1 / 6,
   [SUBSCRIPTION_FREQUENCIES.annual]: 1 / 12,
+};
+
+/** Occurrences per month of one unit of a custom step, on the scale the preset table uses. */
+const UNIT_MONTHLY_MULTIPLIERS: Record<SUBSCRIPTION_INTERVAL_UNITS, number> = {
+  [SUBSCRIPTION_INTERVAL_UNITS.day]: 30.44,
+  [SUBSCRIPTION_INTERVAL_UNITS.week]: 4.33,
+  [SUBSCRIPTION_INTERVAL_UNITS.month]: 1,
+  [SUBSCRIPTION_INTERVAL_UNITS.year]: 1 / 12,
+};
+
+const monthlyMultiplier = ({ frequency, intervalUnit, intervalCount }: RecurrenceInput): number => {
+  if (frequency !== SUBSCRIPTION_FREQUENCIES.custom) return MONTHLY_MULTIPLIERS[frequency];
+  const step = resolveRecurrenceStep({ frequency, intervalUnit, intervalCount });
+  return UNIT_MONTHLY_MULTIPLIERS[step.unit] / step.count;
 };
 
 interface GetSubscriptionsSummaryParams {
@@ -76,7 +96,15 @@ const getSubscriptionsSummaryImpl = async ({
 
   const subscriptions = await Subscriptions.findAll({
     where,
-    attributes: ['id', 'expectedAmount', 'expectedCurrencyCode', 'frequency', 'transactionType'],
+    attributes: [
+      'id',
+      'expectedAmount',
+      'expectedCurrencyCode',
+      'frequency',
+      'intervalUnit',
+      'intervalCount',
+      'transactionType',
+    ],
   });
 
   // A user with no base currency row cannot have subscription amounts converted
@@ -124,10 +152,15 @@ const getSubscriptionsSummaryImpl = async ({
       const refAmount = calculateRefAmountFromParams({
         amount: sub.expectedAmount!,
         rate,
-        ...(await getConversionDecimals({ userId, baseCode: currencyCode, quoteCode: baseCurrencyCode })),
+        ...(await getConversionDecimals({
+          userId,
+          definitionOwnerUserId: userId,
+          baseCode: currencyCode,
+          quoteCode: baseCurrencyCode,
+        })),
       });
 
-      const multiplier = MONTHLY_MULTIPLIERS[sub.frequency] ?? 1;
+      const multiplier = monthlyMultiplier(sub);
       const monthlyAmount = refAmount.multiply(multiplier);
       if (isIncome) {
         totalMonthlyIncome = totalMonthlyIncome.add(monthlyAmount);
@@ -162,11 +195,13 @@ const getSubscriptionsSummaryImpl = async ({
     });
   }
 
-  const monthlyCostMoney = totalMonthlyCost.round();
-  const yearlyCostMoney = monthlyCostMoney.multiply(12);
-  const monthlyIncomeMoney = totalMonthlyIncome.round();
+  // The totals are base-currency figures, shown at the base currency's decimals.
+  const baseDecimals = await getCurrencyDecimals({ userId, code: baseCurrencyCode });
+  const monthlyCostMoney = totalMonthlyCost.round(baseDecimals);
+  const yearlyCostMoney = totalMonthlyCost.multiply(12).round(baseDecimals);
+  const monthlyIncomeMoney = totalMonthlyIncome.round(baseDecimals);
 
-  const averageMonthlyIncomeMoney = await getAverageMonthlyIncome({ userId, lookbackMonths });
+  const averageMonthlyIncomeMoney = (await getAverageMonthlyIncome({ userId, lookbackMonths })).round(baseDecimals);
   const averageMonthlyIncome = averageMonthlyIncomeMoney.toNumber();
   const percentOfIncome =
     averageMonthlyIncome > 0 ? Math.round((monthlyCostMoney.toNumber() / averageMonthlyIncome) * 1000) / 10 : null;

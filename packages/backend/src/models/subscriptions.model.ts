@@ -1,5 +1,6 @@
 import {
   SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
   SUBSCRIPTION_TYPES,
   TRANSACTION_TYPES,
   SubscriptionMatchingRules,
@@ -61,7 +62,7 @@ export default class Subscriptions extends Model {
   })
   transactionType!: TRANSACTION_TYPES;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
+  @MoneyField({ allowNull: true })
   declare expectedAmount: Money | null;
 
   @Column({
@@ -70,11 +71,26 @@ export default class Subscriptions extends Model {
   })
   expectedCurrencyCode!: string | null;
 
+  // VARCHAR + TS-side enum (project convention: no DB enums), guarded by a CHECK.
   @Column({
-    type: DataType.ENUM(...Object.values(SUBSCRIPTION_FREQUENCIES)),
+    type: DataType.STRING(50),
     allowNull: false,
   })
   frequency!: SUBSCRIPTION_FREQUENCIES;
+
+  // The step of a `custom` frequency (every intervalCount intervalUnits); both null for
+  // the presets. A CHECK keeps them in step with `frequency`.
+  @Column({
+    type: DataType.STRING(10),
+    allowNull: true,
+  })
+  intervalUnit!: SUBSCRIPTION_INTERVAL_UNITS | null;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+  })
+  intervalCount!: number | null;
 
   @Column({
     type: DataType.DATEONLY,

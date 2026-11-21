@@ -23,14 +23,35 @@
         @blur="touchField('form.code')"
       />
 
-      <InputField
-        v-model="form.name"
-        :label="$t('settings.currencies.custom.nameLabel')"
-        :placeholder="$t('settings.currencies.custom.namePlaceholder')"
-        :error-message="getFieldErrorMessage('form.name')"
-        data-testid="custom-currency-name"
-        @blur="touchField('form.name')"
-      />
+      <div class="flex items-start gap-3">
+        <LogoSquareField
+          v-model="logo"
+          :name-for-search="form.name"
+          :reset-label="$t('common.logo.remove')"
+          :tabs="ALL_LOGO_TABS"
+          :disabled="isPending"
+          align="with-labeled-field"
+        >
+          <template #placeholder>
+            <span
+              class="bg-muted-foreground/15 text-foreground inline-flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-sm leading-none font-semibold tracking-tighter select-none"
+              data-testid="custom-currency-logo-placeholder"
+            >
+              {{ placeholderMonogram }}
+            </span>
+          </template>
+        </LogoSquareField>
+        <div class="min-w-0 flex-1">
+          <InputField
+            v-model="form.name"
+            :label="$t('settings.currencies.custom.nameLabel')"
+            :placeholder="$t('settings.currencies.custom.namePlaceholder')"
+            :error-message="getFieldErrorMessage('form.name')"
+            data-testid="custom-currency-name"
+            @blur="touchField('form.name')"
+          />
+        </div>
+      </div>
 
       <div class="grid grid-cols-2 gap-3">
         <InputField
@@ -64,45 +85,34 @@
         }}
       </p>
 
+      <Callout v-if="isDecimalsChanged" data-testid="custom-currency-decimals-warning">
+        <span>{{ $t('settings.currencies.delete.foreignAmountsWarning') }}</span>
+      </Callout>
+
+      <template v-if="!isEditing">
+        <InputField
+          v-model="form.rate"
+          type="number"
+          only-positive
+          :label="$t('settings.currencies.custom.rateLabel')"
+          :placeholder="$t('settings.currencies.custom.ratePlaceholder')"
+          :error-message="getFieldErrorMessage('form.rate')"
+          data-testid="custom-currency-rate"
+          @blur="touchField('form.rate')"
+        />
+
+        <p class="text-muted-foreground -mt-2 text-xs">{{ $t('settings.currencies.custom.createRateHint') }}</p>
+      </template>
+
       <p v-if="previewLabel" class="text-muted-foreground text-sm tabular-nums" data-testid="custom-currency-preview">
         {{ $t('settings.currencies.custom.preview', { value: previewLabel }) }}
       </p>
 
-      <div v-if="currency" class="grid gap-3" data-testid="custom-currency-logo">
-        <div class="flex items-center gap-3">
-          <CurrencyIcon :code="currency.code" size="size-8" :logo-url="logoUrl" />
-          <div class="min-w-0 flex-1">
-            <p class="text-sm font-medium">{{ $t('settings.currencies.custom.logo.label') }}</p>
-            <p class="text-muted-foreground text-xs leading-5">{{ $t('settings.currencies.custom.logo.hint') }}</p>
-          </div>
-          <Button
-            v-if="logoUrl"
-            type="button"
-            variant="outline"
-            size="sm"
-            :disabled="isPending"
-            data-testid="custom-currency-logo-clear"
-            @click="clearLogo"
-          >
-            {{ $t('settings.currencies.custom.logo.clear') }}
-          </Button>
-        </div>
-
-        <!-- Enter in the search box looks a coin up; it must not submit the whole form. -->
-        <div @keydown.enter.prevent>
-          <CoingeckoCoinSearch
-            :label="$t('settings.currencies.custom.logo.searchLabel')"
-            :placeholder="$t('settings.currencies.custom.logo.searchPlaceholder')"
-            :selected-coin-id="pickedCoinId"
-            :disabled="isPending"
-            @select="pickCoin({ coin: $event })"
-          />
-        </div>
-      </div>
-
       <Callout v-if="formError" variant="destructive" data-testid="custom-currency-error">
         <span>{{ formError }}</span>
       </Callout>
+
+      <CurrencyBlockerList v-if="blockers.length" :blockers="blockers" />
     </form>
 
     <template #footer>
@@ -126,22 +136,33 @@
 
 <script setup lang="ts">
 import { createCustomCurrency, updateCustomCurrency } from '@/api/currencies';
-import CurrencyIcon from '@/components/common/currency-icon.vue';
+import {
+  ALL_LOGO_TABS,
+  type LogoSelection,
+  toLogoPatch,
+  toLogoSelection,
+  toOptionalLogoPayload,
+} from '@/components/common/logo-selection';
+import LogoSquareField from '@/components/common/logo-square-field.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormValidation } from '@/composable/form-validator';
-import { extractApiErrorMessage } from '@/js/errors';
+import { extractApiErrorMessage, isApiErrorWithCode, isHandledByApiClient } from '@/js/errors';
 import { formatUIAmount } from '@/js/helpers';
+import { currencyMonogram } from '@/js/helpers/currency-monogram';
 import { helpers, required } from '@/js/helpers/validators';
 import { useCurrenciesStore } from '@/stores';
 import {
+  API_ERROR_CODES,
   CURRENCY_CODE_PATTERN,
   CUSTOM_CURRENCY_DECIMALS_MAX,
+  CUSTOM_CURRENCY_DECIMALS_MIN,
   CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH,
-  type CoingeckoCoinSearchResult,
+  type CurrencyInUseBlocker,
+  type CurrencyInUseDetails,
   type CurrencyMeta,
 } from '@bt/shared/types';
 import { useMutation } from '@tanstack/vue-query';
@@ -149,7 +170,7 @@ import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import CoingeckoCoinSearch from './coingecko-coin-search.vue';
+import CurrencyBlockerList from './currency-blocker-list.vue';
 import type { EditableCustomCurrency } from './types';
 import { useRefreshAfterCurrencyChange } from './use-refresh-after-currency-change';
 
@@ -170,16 +191,18 @@ interface CustomCurrencyForm {
   name: string;
   symbol: string;
   decimals: number | null;
+  rate: number | null;
 }
 
 const { t } = useI18n();
 const { addSuccessNotification } = useNotificationCenter();
+const refreshAfterChange = useRefreshAfterCurrencyChange();
 const currenciesStore = useCurrenciesStore();
 const { currencies, isoCurrencies } = storeToRefs(currenciesStore);
 
 const isEditing = computed(() => Boolean(props.currency));
 // Decimals are fixed once a row holds an amount in the currency. Accounts are what the page
-// knows about; transactions or templates alone are caught by the API's 409.
+// knows about; the API refuses the change for any other row.
 const isDecimalsLocked = computed(() => isEditing.value && (props.accountsCount ?? 0) > 0);
 
 const buildFormState = (): CustomCurrencyForm => ({
@@ -187,45 +210,41 @@ const buildFormState = (): CustomCurrencyForm => ({
   name: props.currency?.name ?? '',
   symbol: props.currency?.symbol ?? '',
   decimals: props.currency?.decimals ?? null,
+  rate: null,
 });
 
 const form = ref<CustomCurrencyForm>(buildFormState());
 const formError = ref<string | null>(null);
+const blockers = ref<CurrencyInUseBlocker[]>([]);
+const storedLogo = ref<LogoSelection | null>(props.currency ? toLogoSelection(props.currency) : null);
+const logo = ref<LogoSelection | null>(storedLogo.value);
 
-// The logo is kept apart from the form: it is sent only once the user changed it, so editing the
-// other fields never rewrites (or clears) a logo the dialog did not touch.
-const logoUrl = ref<string | null>(props.currency?.logoUrl ?? null);
-const isLogoTouched = ref(false);
-const pickedCoinId = ref<string | undefined>(undefined);
+const placeholderMonogram = computed(() =>
+  currencyMonogram({ code: form.value.code, symbol: form.value.symbol, maxLength: 3 }),
+);
 
-const resetLogo = () => {
-  logoUrl.value = props.currency?.logoUrl ?? null;
-  isLogoTouched.value = false;
-  pickedCoinId.value = undefined;
-};
+const isDecimalsInRange = (value: number | null): value is number =>
+  value !== null &&
+  Number.isInteger(value) &&
+  value >= CUSTOM_CURRENCY_DECIMALS_MIN &&
+  value <= CUSTOM_CURRENCY_DECIMALS_MAX;
+
+const isDecimalsChanged = computed(
+  () =>
+    Boolean(props.currency) &&
+    isDecimalsInRange(form.value.decimals) &&
+    form.value.decimals !== props.currency!.decimals,
+);
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
   form.value = buildFormState();
+  storedLogo.value = props.currency ? toLogoSelection(props.currency) : null;
+  logo.value = storedLogo.value;
   formError.value = null;
-  resetLogo();
+  blockers.value = [];
   resetValidation();
 });
-
-// A coin without an image has nothing to pick, so it leaves the logo as it is.
-const pickCoin = ({ coin }: { coin: CoingeckoCoinSearchResult }) => {
-  if (!coin.logoUrl) return;
-
-  logoUrl.value = coin.logoUrl;
-  isLogoTouched.value = true;
-  pickedCoinId.value = coin.coinId;
-};
-
-const clearLogo = () => {
-  logoUrl.value = null;
-  isLogoTouched.value = true;
-  pickedCoinId.value = undefined;
-};
 
 const onCodeInput = (value: string | number | null) => {
   form.value.code = String(value ?? '')
@@ -262,10 +281,12 @@ const validationRules = computed(() => ({
     ),
   },
   decimals: {
-    range: helpers.withMessage(
-      t('settings.currencies.custom.errors.decimalsRange'),
-      (value: number | null) =>
-        value !== null && Number.isInteger(value) && value >= 0 && value <= CUSTOM_CURRENCY_DECIMALS_MAX,
+    range: helpers.withMessage(t('settings.currencies.custom.errors.decimalsRange'), isDecimalsInRange),
+  },
+  rate: {
+    positive: helpers.withMessage(
+      t('settings.currencies.custom.errors.rateRequired'),
+      (value: number | null) => isEditing.value || (value !== null && Number.isFinite(value) && value > 0),
     ),
   },
 }));
@@ -279,53 +300,61 @@ const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFo
 // before saving.
 const previewLabel = computed(() => {
   const { code, symbol, decimals } = form.value;
-  if (!CURRENCY_CODE_PATTERN.test(code) || decimals === null || decimals < 0 || decimals > CUSTOM_CURRENCY_DECIMALS_MAX)
-    return '';
+  if (!CURRENCY_CODE_PATTERN.test(code) || !isDecimalsInRange(decimals)) return '';
 
   const meta: CurrencyMeta = { decimals, symbol: symbol.trim() || null, isCustom: true };
-  return formatUIAmount(PREVIEW_AMOUNT, { currency: code, meta });
+  return formatUIAmount(PREVIEW_AMOUNT, { currency: code, meta, fractionDigits: decimals });
 });
-
-const refreshAfterChange = useRefreshAfterCurrencyChange();
 
 const { mutate, isPending } = useMutation({
   mutationFn: () => {
-    const { code, name, symbol, decimals } = form.value;
+    const { code, name, symbol, decimals, rate } = form.value;
     const payload = { name: name.trim(), symbol: symbol.trim() || null };
 
     if (props.currency) {
       return updateCustomCurrency({
         code: props.currency.code,
         ...payload,
-        ...(decimals !== props.currency.decimals && decimals !== null ? { decimals } : {}),
-        ...(isLogoTouched.value ? { logoUrl: logoUrl.value } : {}),
+        ...(isDecimalsChanged.value ? { decimals: decimals! } : {}),
+        ...toLogoPatch({ selection: logo.value, stored: storedLogo.value }),
       });
     }
 
-    return createCustomCurrency({ code, ...payload, decimals: decimals! });
+    return createCustomCurrency({
+      code,
+      ...payload,
+      decimals: decimals!,
+      rate: { value: rate! },
+      ...toOptionalLogoPayload({ selection: logo.value }),
+    });
   },
-  onSuccess: async () => {
-    await refreshAfterChange();
+  onSuccess: () => {
     addSuccessNotification(
       isEditing.value
         ? t('settings.currencies.custom.successfullyUpdated')
         : t('settings.currencies.custom.successfullyCreated'),
     );
     open.value = false;
+    void refreshAfterChange();
   },
   onError: (error) => {
+    if (isHandledByApiClient({ error })) return;
     // The API explains the refusal (a decimals change or a code that is taken) in the user's language.
     formError.value =
       extractApiErrorMessage(error) ||
       (isEditing.value
         ? t('settings.currencies.custom.errors.updateFailed')
         : t('settings.currencies.custom.errors.createFailed'));
+    blockers.value = isApiErrorWithCode(error, API_ERROR_CODES.currencyInUse)
+      ? ((error.data.details as CurrencyInUseDetails | undefined)?.blockers ?? [])
+      : [];
   },
 });
 
 const handleSubmit = () => {
   if (!isFormValid()) return;
   formError.value = null;
+  blockers.value = [];
   mutate();
 };
 </script>

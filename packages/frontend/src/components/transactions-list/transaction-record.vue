@@ -1,12 +1,13 @@
 <template>
   <div
     :class="[
-      'group/row hover:bg-muted/50 grid w-full cursor-pointer rounded-md px-2 py-1 transition-colors [content-visibility:auto]',
+      'group/row hover:bg-hover grid w-full cursor-pointer rounded-md px-2 py-1 transition-colors [content-visibility:auto]',
       showCheckbox
         ? 'grid-cols-[auto_minmax(0,1fr)_max-content] items-center gap-2'
-        : shouldShowGroupedTransfer || isLoadingGroupedTransfer
+        : (shouldShowGroupedTransfer && !compact) || isLoadingGroupedTransfer
           ? 'grid-cols-[minmax(0,1fr)_max-content] items-end gap-3'
           : 'grid-cols-[minmax(0,1fr)_max-content] items-center gap-2',
+      shouldShowGroupedTransfer && compact && '@container/tx-record',
     ]"
     aria-haspopup="true"
     @click="transactionEmit"
@@ -15,9 +16,9 @@
     <label v-if="showCheckbox" class="-my-1 -ml-2 flex items-center justify-center self-stretch px-3" @click.stop>
       <Checkbox v-if="isSelectable" v-model="checkedModel" :aria-label="$t('common.transactions.record.selectRow')" />
       <ResponsiveTooltip
-        v-else-if="unselectableReason"
+        v-else-if="unselectableHint || unselectableReason"
         :delay-duration="100"
-        :content="$t(`common.transactions.record.unselectableReasons.${unselectableReason}`)"
+        :content="unselectableHint || $t(`common.transactions.record.unselectableReasons.${unselectableReason}`)"
         content-class-name="max-w-56"
       >
         <InfoIcon class="text-muted-foreground size-3.5 cursor-help" />
@@ -28,7 +29,8 @@
     <div class="flex items-center gap-2 overflow-x-clip">
       <template v-if="!isTransferTransaction && !linkTarget && category">
         <div class="relative shrink-0">
-          <CategoryCircle :category="category" />
+          <BrandLogo v-if="payeeLogo" v-bind="payeeLogo" class="size-6 rounded-full" />
+          <CategoryCircle v-else :category="category" />
           <ResponsiveTooltip v-if="showAccount && accountFrom" :content="accountFrom.name" :delay-duration="100">
             <!-- Backing tracks the row's hover fill so the badge's cut-out never shows as a halo. -->
             <span
@@ -67,12 +69,42 @@
           </div>
           <div class="flex items-center gap-3 text-sm">
             <div v-if="ownLegIsIncome" class="h-4 w-16 animate-pulse rounded bg-white/10"></div>
-            <span v-else class="text-amount text-app-expense-color">{{ formattedExpenseAmount }}</span>
+            <span v-else class="text-amount text-app-expense-color"
+              ><CurrencyAmount v-if="transferSourceLeg" :amount="-transferSourceLeg.amount" :owner="transferSourceLeg"
+            /></span>
             <ArrowRight :size="12" class="opacity-40" />
-            <span v-if="ownLegIsIncome" class="text-amount text-app-income-color">{{ formattedIncomeAmount }}</span>
+            <span v-if="ownLegIsIncome" class="text-amount text-app-income-color"
+              ><CurrencyAmount
+                v-if="transferDestinationLeg"
+                :amount="transferDestinationLeg.amount"
+                :owner="transferDestinationLeg"
+            /></span>
             <div v-else class="h-4 w-16 animate-pulse rounded bg-white/10"></div>
           </div>
         </template>
+        <div v-else-if="shouldShowGroupedTransfer && compact" class="min-w-0">
+          <div class="flex min-w-0 items-center gap-1.5 text-sm tracking-wider">
+            <AccountLogo v-if="transferFromAccount" :account="transferFromAccount" class="size-5 shrink-0" />
+            <span class="truncate">{{ transferFromAccount?.name }}</span>
+            <ArrowRight :size="14" class="shrink-0 opacity-60" />
+            <HandCoinsIcon v-if="isLoanDestination" :size="14" class="text-app-transfer-color shrink-0" />
+            <AccountLogo v-if="transferToAccount" :account="transferToAccount" class="size-5 shrink-0" />
+            <span class="truncate">{{ transferToAccount?.name }}</span>
+          </div>
+          <!-- Too narrow for one line: amounts drop under the accounts. -->
+          <div class="mt-1 flex items-center gap-3 text-sm @lg/tx-record:hidden">
+            <span class="text-amount text-muted-foreground whitespace-nowrap"
+              ><CurrencyAmount v-if="transferSourceLeg" :amount="-transferSourceLeg.amount" :owner="transferSourceLeg"
+            /></span>
+            <ArrowRight :size="12" class="shrink-0 opacity-40" />
+            <span class="text-amount whitespace-nowrap"
+              ><CurrencyAmount
+                v-if="transferDestinationLeg"
+                :amount="transferDestinationLeg.amount"
+                :owner="transferDestinationLeg"
+            /></span>
+          </div>
+        </div>
         <template v-else-if="shouldShowGroupedTransfer">
           <!-- Grouped transfer: show account movement on top with better styling -->
           <div class="mb-1 flex items-center gap-1.5">
@@ -93,9 +125,16 @@
           </div>
           <!-- Show both amounts on bottom with better spacing and typography -->
           <div class="flex items-center gap-3 text-sm">
-            <span class="text-amount text-app-expense-color whitespace-nowrap">{{ formattedExpenseAmount }}</span>
+            <span class="text-amount text-app-expense-color whitespace-nowrap"
+              ><CurrencyAmount v-if="transferSourceLeg" :amount="-transferSourceLeg.amount" :owner="transferSourceLeg"
+            /></span>
             <ArrowRight :size="12" class="opacity-40" />
-            <span class="text-amount text-app-income-color whitespace-nowrap">{{ formattedIncomeAmount }}</span>
+            <span class="text-amount text-app-income-color whitespace-nowrap"
+              ><CurrencyAmount
+                v-if="transferDestinationLeg"
+                :amount="transferDestinationLeg.amount"
+                :owner="transferDestinationLeg"
+            /></span>
           </div>
         </template>
         <template v-else-if="linkTarget">
@@ -104,8 +143,14 @@
             <span class="line-clamp-1 text-sm tracking-wider">
               {{ accountFrom?.name }}
             </span>
-            <ArrowRight :size="14" :class="['shrink-0 opacity-60', linkTarget.flowsToAccount && 'rotate-180']" />
-            <component :is="linkTarget.icon" :size="14" class="text-app-transfer-color shrink-0" />
+            <ArrowRight :size="14" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
+            <BrandLogo
+              v-if="linkTarget.logoSelection"
+              v-bind="toLogoDisplayProps({ selection: linkTarget.logoSelection })"
+              :name="linkTarget.name"
+              class="size-5 shrink-0"
+            />
+            <component :is="linkTarget.icon" v-else :size="14" class="text-app-transfer-color shrink-0" />
             <div v-if="linkTarget.isLoading" class="h-4 w-16 animate-pulse rounded bg-white/10" />
             <template v-else>
               <span
@@ -122,7 +167,7 @@
           <div :class="['flex items-center gap-1.5 text-sm tracking-wider', compact && 'min-w-0']">
             <AccountLogo v-if="accountFrom" :account="accountFrom" class="size-5 shrink-0" />
             <span class="line-clamp-1">{{ transferFromLabel }}</span>
-            <span class="shrink-0">{{ transferSeparator }}</span>
+            <ArrowRight :size="14" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
             <AccountLogo v-if="accountTo" :account="accountTo" class="size-5 shrink-0" />
             <span class="line-clamp-1">{{ transferToLabel }}</span>
           </div>
@@ -145,6 +190,19 @@
               />
             </ResponsiveTooltip>
             <ResponsiveTooltip
+              v-if="transaction.addedByRule"
+              :content="$t('common.transactions.record.addedByRule')"
+              content-class-name="max-w-56"
+              :delay-duration="100"
+            >
+              <ZapIcon
+                class="text-primary-text size-3.5 shrink-0 cursor-help"
+                role="img"
+                :aria-label="$t('common.transactions.record.addedByRule')"
+                @click="isTouch && $event.stopPropagation()"
+              />
+            </ResponsiveTooltip>
+            <ResponsiveTooltip
               v-if="addedByTooltip"
               :content="addedByTooltip"
               content-class-name="max-w-56"
@@ -153,11 +211,12 @@
               <UsersIcon class="text-muted-foreground size-3.5 shrink-0 cursor-help" :aria-label="addedByTooltip" />
             </ResponsiveTooltip>
             <PlannedIndicator v-if="!(hidePlannedMarker && transaction.isPlanned)" :transaction="transaction" />
+            <ExcludeFromStatsIndicator :transaction="transaction" />
             <SplitIndicator :transaction="transaction" />
+            <PaymentIndicator :transaction="transaction" />
             <RefundIndicator v-if="!hideRefundMarker" :transaction="transaction" />
             <TagsIndicator :tags="transaction.tags ?? []" :variant="tagsVariant" />
             <AttachmentIndicator :transaction="transaction" />
-            <MissingRateIndicator :transaction="transaction" />
             <ResponsiveTooltip
               v-if="externalLinkHref && !compact"
               :content="$t('common.transactions.record.externalLinkTooltip')"
@@ -206,13 +265,33 @@
         </span>
       </div>
     </div>
-    <div v-if="shouldShowGroupedTransfer || isLoadingGroupedTransfer" class="flex items-start pt-0.5">
-      <div class="text-muted-foreground text-right text-xs whitespace-nowrap tabular-nums">
+    <div
+      v-if="shouldShowGroupedTransfer && compact"
+      class="flex items-center justify-end gap-2 self-end @lg/tx-record:self-center"
+    >
+      <div v-if="!hideDate" class="text-muted-foreground text-xs whitespace-nowrap">
+        {{ formateDate(transaction.time) }}
+      </div>
+      <div class="hidden items-center gap-1.5 text-sm whitespace-nowrap @lg/tx-record:flex">
+        <span class="text-amount text-muted-foreground"
+          ><CurrencyAmount v-if="transferSourceLeg" :amount="-transferSourceLeg.amount" :owner="transferSourceLeg"
+        /></span>
+        <ArrowRight :size="12" class="shrink-0 opacity-40" />
+        <span class="text-amount"
+          ><CurrencyAmount
+            v-if="transferDestinationLeg"
+            :amount="transferDestinationLeg.amount"
+            :owner="transferDestinationLeg"
+        /></span>
+      </div>
+    </div>
+    <div v-else-if="shouldShowGroupedTransfer || isLoadingGroupedTransfer" class="flex items-start pt-0.5">
+      <div v-if="!hideDate" class="text-muted-foreground text-right text-xs whitespace-nowrap tabular-nums">
         {{ formateDate(transaction.time) }}
       </div>
     </div>
     <div v-else-if="compact" class="flex items-baseline justify-end gap-2">
-      <div class="text-muted-foreground text-xs whitespace-nowrap">
+      <div v-if="!hideDate" class="text-muted-foreground text-xs whitespace-nowrap">
         {{ formateDate(transaction.time) }}
       </div>
       <div
@@ -222,7 +301,7 @@
           transaction.transactionType === TRANSACTION_TYPES.expense && 'text-app-expense-color',
         ]"
       >
-        {{ formattedAmount }}
+        <CurrencyAmount :amount="signedRowAmount" :owner="tx" />
       </div>
     </div>
     <div v-else>
@@ -233,9 +312,12 @@
           transaction.transactionType === TRANSACTION_TYPES.expense && 'text-app-expense-color',
         ]"
       >
-        {{ formattedAmount }}
+        <CurrencyAmount :amount="signedRowAmount" :owner="tx" />
       </div>
-      <div class="text-muted-foreground text-right text-xs">
+      <div v-if="formattedPaymentShare" class="text-muted-foreground text-amount text-right text-xs">
+        ≈ {{ formattedPaymentShare }}
+      </div>
+      <div v-if="!hideDate" class="text-muted-foreground text-right text-xs">
         {{ formateDate(transaction.time) }}
       </div>
     </div>
@@ -244,8 +326,11 @@
 
 <script lang="ts" setup>
 import AccountLogo from '@/components/common/account-logo.vue';
+import BrandLogo from '@/components/common/brand-logo.vue';
+import { toLogoDisplayProps, toLogoSelection } from '@/components/common/logo-selection';
 import CategoryCircle from '@/components/common/category-circle.vue';
 import DeletedBadge from '@/components/common/deleted-badge.vue';
+import CurrencyAmount from '@/components/common/currency-amount.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { isHttpUrl } from '@/common/utils/external-url';
@@ -254,6 +339,12 @@ import { useOppositeTxRecord } from '@/composable/data-queries/opposite-tx-recor
 import type { BulkUnselectableReason } from '@/composable/transaction-selection';
 import { useTransactionPortfolioLink } from '@/composable/data-queries/portfolio-transfers';
 import { useTransactionVentureLink } from '@/composable/data-queries/venture/events';
+import { usePayeeLogos } from '@/composable/use-payee-logos';
+import {
+  getPaymentMainCurrencyCode,
+  getPaymentRowAmounts,
+  isAccountScopedPaymentRow,
+} from '@/components/dialogs/manage-transaction/utils/payment-legs';
 import { formatUIAmount } from '@/js/helpers';
 import { useAccountsStore, useCategoriesStore, useUserStore } from '@/stores';
 import {
@@ -274,15 +365,17 @@ import {
   RocketIcon,
   SparklesIcon,
   UsersIcon,
+  ZapIcon,
 } from '@lucide/vue';
 import { useMediaQuery } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import ExcludeFromStatsIndicator from './indicators/exclude-from-stats-indicator.vue';
 import PlannedIndicator from './indicators/planned-indicator.vue';
 import AttachmentIndicator from './indicators/attachment-indicator.vue';
-import MissingRateIndicator from './indicators/missing-rate-indicator.vue';
+import PaymentIndicator from './indicators/payment-indicator.vue';
 import RefundIndicator from './indicators/refund-indicator.vue';
 import SplitIndicator from './indicators/split-indicator.vue';
 import TagsIndicator, { type TagsIndicatorVariant } from '@/components/common/tags-indicator.vue';
@@ -301,9 +394,13 @@ const props = withDefaults(
     isSelectable?: boolean;
     /** Shown as an explainer tooltip in place of the checkbox when not selectable. */
     unselectableReason?: BulkUnselectableReason | null;
+    /** Free-form text for the same tooltip; takes precedence over `unselectableReason`. */
+    unselectableHint?: string;
     index?: number;
     /** Single-line row: the note renders inline, amount and date share one line. */
     compact?: boolean;
+    /** Set where a parent already shows the date, e.g. a single-day group. */
+    hideDate?: boolean;
     /** Set where planned rows already sit under their own collapsible header. */
     hidePlannedMarker?: boolean;
     hideRefundMarker?: boolean;
@@ -312,6 +409,11 @@ const props = withDefaults(
     showAccount?: boolean;
     /** Marks a row smart tracking linked; the reason shows in its tooltip. */
     aiMatchReason?: string;
+    /**
+     * Opposite transfer leg known up front, e.g. a trashed leg the API no longer returns.
+     * `undefined` fetches it; `null` means there is none.
+     */
+    oppositeTx?: TransactionModel | null;
   }>(),
   {
     asButton: true,
@@ -345,7 +447,12 @@ const isTransferTransaction = computed(
     transaction.value.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_out_wallet,
 );
 
-const { data: oppositeTransferTransaction, isLoading: isLoadingOpposite } = useOppositeTxRecord(() => props.tx);
+const { data: fetchedOppositeTx, isLoading: isLoadingOpposite } = useOppositeTxRecord(() => props.tx, {
+  enabled: () => props.oppositeTx === undefined,
+});
+const oppositeTransferTransaction = computed(() =>
+  props.oppositeTx === undefined ? fetchedOppositeTx.value : props.oppositeTx,
+);
 
 const isPortfolioLinked = computed(
   () => transaction.value.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_to_portfolio,
@@ -361,20 +468,19 @@ const linkTarget = computed(() => {
   if (isPortfolioLinked.value) {
     return {
       icon: BriefcaseIcon,
+      logoSelection: toLogoSelection(portfolioLinkData.value ?? {}),
       name: portfolioName.value,
       isDeleted: isPortfolioDeleted.value,
       isLoading: isLoadingPortfolioLink.value,
-      flowsToAccount: false,
     };
   }
   if (transaction.value.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_to_venture) {
     return {
       icon: RocketIcon,
+      logoSelection: toLogoSelection(ventureLinkData.value ?? {}),
       name: ventureLinkData.value?.dealName ?? '',
       isDeleted: ventureLinkData.value?.isDealDeleted ?? false,
       isLoading: isLoadingVentureLink.value,
-      // Distributions and exits pay out of the deal into the account.
-      flowsToAccount: transaction.value.transactionType === TRANSACTION_TYPES.income,
     };
   }
   return null;
@@ -393,12 +499,11 @@ const isLoadingGroupedTransfer = computed(() => {
   return isTransferTransaction.value && isTwoLegTransfer(transaction.value.transferNature) && isLoadingOpposite.value;
 });
 
-// Grouped transfers are intrinsically two-line, so they keep the stacked layout even in compact mode.
-const isCompactInline = computed(
-  () => props.compact && !shouldShowGroupedTransfer.value && !isLoadingGroupedTransfer.value,
-);
+const isCompactInline = computed(() => props.compact && !isLoadingGroupedTransfer.value);
 
 const category = computed(() => categoriesMap.value[transaction.value.categoryId]);
+const { getPayeeLogo } = usePayeeLogos();
+const payeeLogo = computed(() => getPayeeLogo({ payeeId: transaction.value.payeeId }));
 const externalLinkHref = computed(() =>
   transaction.value.externalUrl && isHttpUrl(transaction.value.externalUrl) ? transaction.value.externalUrl : null,
 );
@@ -437,9 +542,6 @@ const transferToAccount = computed(() =>
 
 const isLoanDestination = computed(() => transferToAccount.value?.accountCategory === ACCOUNT_CATEGORIES.loan);
 
-const transferSeparator = computed(() =>
-  transaction.value.transactionType === TRANSACTION_TYPES.expense ? '=>' : '<=',
-);
 // Accounts can be undefined when hidden from the caller — e.g. a recipient viewing a
 // transfer on a shared account whose other side lives in an unshared private account of
 // the owner. Fall back to a labeled placeholder rather than rendering "undefined".
@@ -470,34 +572,17 @@ const checkedModel = computed({
   },
 });
 
-const formattedAmount = computed(() => {
-  let amount = transaction.value.amount;
-
-  if (transaction.value.transactionType === TRANSACTION_TYPES.expense) {
-    amount *= -1;
-  }
-
-  return formatUIAmount(amount, {
-    currency: props.tx.currencyCode,
-    meta: props.tx.currencyMeta,
-  });
+const signedRowAmount = computed(() => {
+  const { amount } = getPaymentRowAmounts({ transaction: transaction.value });
+  return transaction.value.transactionType === TRANSACTION_TYPES.expense ? -amount : amount;
 });
 
-const formattedExpenseAmount = computed(() => {
-  const leg = transferSourceLeg.value;
-  if (!leg) return '';
-  return formatUIAmount(-leg.amount, {
-    currency: leg.currencyCode,
-    meta: leg.currencyMeta,
-  });
-});
-
-const formattedIncomeAmount = computed(() => {
-  const leg = transferDestinationLeg.value;
-  if (!leg) return '';
-  return formatUIAmount(leg.amount, {
-    currency: leg.currencyCode,
-    meta: leg.currencyMeta,
-  });
+// A part shown on its own account, in a currency other than the payment's.
+const formattedPaymentShare = computed(() => {
+  const own = transaction.value.paymentParts?.find((part) => part.transactionId === transaction.value.id);
+  const mainCurrencyCode = getPaymentMainCurrencyCode({ transaction: transaction.value });
+  if (!own || !isAccountScopedPaymentRow({ transaction: transaction.value }) || own.currencyCode === mainCurrencyCode)
+    return '';
+  return formatUIAmount(own.paymentAmount, { currency: mainCurrencyCode });
 });
 </script>

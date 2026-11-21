@@ -20,7 +20,7 @@
           <div
             v-for="tag in tags"
             :key="tag.id"
-            class="hover:bg-accent flex cursor-pointer items-center gap-3 rounded-md py-2 transition-colors sm:px-3"
+            class="hover:bg-hover flex cursor-pointer items-center gap-3 rounded-md py-2 transition-colors sm:px-3"
             @click="openEditDialog(tag)"
           >
             <div

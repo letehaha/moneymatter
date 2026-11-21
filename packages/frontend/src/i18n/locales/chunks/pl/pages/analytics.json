@@ -49,7 +49,8 @@
         "last12Months": "Last 12 months",
         "thisYear": "This year",
         "previousYear": "Previous year",
-        "allTime": "All time"
+        "allTime": "All time",
+        "currentPayPeriod": "Current pay period"
       },
       "composition": {
         "detail": "Detail",
@@ -83,7 +84,7 @@
       }
     },
     "trends": {
-      "subtitle": "Compare spending, income and savings with the previous period.",
+      "subtitle": "Compare spending and income with the previous period.",
       "metrics": {
         "expenses": "Expenses",
         "income": "Income",
@@ -94,27 +95,63 @@
         "comparisonPeriod": "Previous period",
         "cumulativeNote": "Cumulative total up to this point"
       },
+      "scope": {
+        "label": "Category scope",
+        "all": "All categories",
+        "up": "Up one level",
+        "transactions": "Transactions",
+        "count": "{count} category | {count} categories",
+        "more": "+{count}",
+        "allExcept": "All except {list}",
+        "clear": "Clear"
+      },
       "categoryBreakdown": {
         "title": "Category breakdown",
         "noData": "No data for this period",
         "viewAll": "View all categories",
-        "moreCount": "{count} more"
+        "moreCount": "{count} more",
+        "noSubcategory": "{name} · no subcategory",
+        "byLevel": "By level",
+        "detail": "Detail",
+        "others": "Others"
+      },
+      "hero": {
+        "vsPrevious": "{percent}% vs previous period",
+        "same": "Same as previous period"
+      },
+      "overTime": {
+        "title": "Over time",
+        "cumulative": "Cumulative",
+        "perPeriod": "Per period",
+        "granularity": {
+          "monthly": "Monthly",
+          "quarterly": "Quarterly",
+          "yearly": "Yearly"
+        }
+      },
+      "transactionsCard": {
+        "title": "Transactions",
+        "largest": "Largest",
+        "recent": "Recent"
       },
       "monthlyComparison": {
-        "title": "Monthly comparison",
         "allCategories": "All categories",
         "average": "Average",
         "total": "Total",
-        "vsLastMonth": "vs previous month",
-        "viewTransactions": "View transactions"
-      },
-      "cumulativeProgress": {
-        "title": "Cumulative progress"
+        "vsPrevious": {
+          "monthly": "vs last month",
+          "quarterly": "vs last quarter",
+          "yearly": "vs last year"
+        },
+        "show": {
+          "monthly": "Show this month",
+          "quarterly": "Show quarter",
+          "yearly": "Show year"
+        }
       },
       "filters": {
         "button": "Filters",
         "title": "Filters",
-        "categories": "Categories",
         "include": "Include",
         "exclude": "Exclude",
         "accounts": "Accounts",
@@ -336,6 +373,45 @@
           "addBirthYear": "Add birth year"
         }
       },
+      "pace": {
+        "row": "{status} vs {anchor}",
+        "noHistory": "Not enough history before {month}",
+        "loadFailed": "Couldn't load the comparison",
+        "compareWith": "Compare with {month}",
+        "picker": {
+          "title": "Compare with",
+          "rollingLabel": "{month} · 1 year ago",
+          "rolling": "1 year ago",
+          "rollingHint": "Rolling · currently {month}",
+          "specific": "Specific month",
+          "specificHint": "Stays fixed",
+          "prevYear": "Previous year",
+          "nextYear": "Next year",
+          "earliest": "Earliest is {month}. FIRE needs 3 months of tracked spending before it."
+        },
+        "details": {
+          "title": "Pace since {month}",
+          "moved": "Your FIRE date moved from {from} to {to}.",
+          "withinBand": "Your FIRE date is within {tolerance} of the {month} forecast ({date}).",
+          "backInReach": "On {month}'s numbers FIRE was out of reach. Now it's {date}.",
+          "offTrack": "The {month} forecast was {date}. On today's numbers FIRE is out of reach.",
+          "metric": "Metric",
+          "today": "Today",
+          "change": "Change",
+          "fireDate": "FIRE date",
+          "saved": "Saved by now",
+          "spending": "Spending",
+          "saving": "Saving",
+          "expected": "{amount} expected",
+          "sooner": "{duration} sooner",
+          "later": "{duration} later",
+          "sameMonth": "Same month",
+          "outOfReach": "Out of reach",
+          "band": "On pace means within {tolerance} (2% of the time left to FIRE).",
+          "recorded": "Balance, cash flow and assumptions as of {date} are recomputed live from your data.",
+          "notRecorded": "Balance and cash flow as of {date} are recomputed live from your data. Your assumptions from then weren't recorded, so today's are used."
+        }
+      },
       "chart": {
         "ariaLabel": "Net worth history and projected path to your FIRE number",
         "actual": "Actual",
@@ -343,7 +419,10 @@
         "range": "±2 pts return",
         "today": "Today",
         "typeTarget": "{type} · {amount}",
-        "typeLabel": "{type} · {date}"
+        "typeLabel": "{type} · {date}",
+        "forecast": "{month} forecast",
+        "forecastLabel": "{month} forecast · {date}",
+        "actualSince": "Actual since {month}"
       },
       "milestones": {
         "reached": "Reached",
@@ -438,6 +517,7 @@
     },
     "table": {
       "total": "Total",
+      "net": "Net",
       "collapseAll": "Collapse all",
       "expandAll": "Expand all",
       "expandRow": "Expand",

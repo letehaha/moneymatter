@@ -165,18 +165,21 @@ const createInvestmentTransactionImpl = async (params: CreateTxParams) => {
     calculateRefAmount({
       amount: Money.fromDecimal(amountInSettlement),
       userId,
+      definitionOwnerUserId: userId,
       date,
       baseCode: settlement.settlementCurrencyCode,
     }),
     calculateRefAmount({
       amount: Money.fromDecimal(priceInSettlement),
       userId,
+      definitionOwnerUserId: userId,
       date,
       baseCode: settlement.settlementCurrencyCode,
     }),
     calculateRefAmount({
       amount: Money.fromDecimal(settlement.settlementFees),
       userId,
+      definitionOwnerUserId: userId,
       date,
       baseCode: settlement.settlementCurrencyCode,
     }),
@@ -219,6 +222,9 @@ const createInvestmentTransactionImpl = async (params: CreateTxParams) => {
       totalCashDelta: cashDelta,
     });
   }
+
+  // `recalculateHolding` saves through its own instance; refresh the caller's so its next sell guard sees the new quantity.
+  await preloadedHolding?.reload();
 
   return newTx;
 };

@@ -2,6 +2,7 @@ import type { ACCOUNT_TYPES } from '../accounts';
 import type { EmbeddedCategoryModel } from '../categories';
 import type { CategorizationMeta } from '../categorization';
 import type { CurrencyMeta } from '../currencies';
+import type { ImportSource } from '../import-export/core';
 import { RecordId } from '../record-id';
 import type { TagModel } from '../tags';
 
@@ -60,10 +61,11 @@ export interface TransactionSplitModel {
   userId: number;
   categoryId: RecordId;
   amount: number;
-  /** `null` while a custom currency has no rate on the transaction's date. */
-  refAmount: number | null;
+  refAmount: number;
   note: string | null;
   category?: EmbeddedCategoryModel;
+  /** Same-currency refunds linked to this split. Set on list reads with `includeRefundedAmount` and on each refund link's `originalTransaction` splits. */
+  refundedAmount?: number;
 }
 
 /**
@@ -87,8 +89,8 @@ export interface TransactionLocation {
 export interface TransactionModel {
   id: RecordId;
   amount: number;
-  // Amount in base currency; `null` while a custom currency has no rate on the transaction's date
-  refAmount: number | null;
+  // Amount in base currency
+  refAmount: number;
   note: string;
   /** Link to an order page, booking confirmation, receipt, etc. http(s) only. */
   externalUrl: string | null;
@@ -121,18 +123,20 @@ export interface TransactionModel {
   // hold: boolean;
   // receiptId: RecordId;
   commissionRate: number; // should be comission calculated as refAmount
-  refCommissionRate: number | null; // should be comission calculated as refAmount
+  refCommissionRate: number; // should be comission calculated as refAmount
   cashbackAmount: number; // add to unified
   originalAmount: number | null;
   originalCurrencyCode: string | null;
   refundLinked: boolean;
-  /** `true` while the base-currency amounts could not be computed because a custom currency had no rate on the transaction's date. */
-  refAmountMissing: boolean;
-  /** Serializer-derived, list reads only. */
+  /** Same-currency refunds linked to this tx, in its currency. Set on list reads with `includeRefundedAmount` and on each refund link's `originalTransaction`. */
+  refundedAmount?: number;
+  /** Present on the list endpoint only; absent on create/update responses. */
   hasAttachments?: boolean;
   /** Decimals, symbol and kind of the account currency as the account owner defines them; list and detail reads. */
   currencyMeta?: CurrencyMeta;
   isPlanned: boolean;
+  /** Keeps the row out of the reports without removing it from the ledger. */
+  excludeFromStats: boolean;
   /** Serializer-derived: set when a bank transaction merged into this row while it was planned. */
   plannedMerge?: { mergedAt: string } | null;
   /** Serializer-derived: the bank has not booked this row yet. */
@@ -161,23 +165,30 @@ export interface TransactionModel {
    * edits, categorization rules, or any other column.
    */
   payeeLocked?: boolean;
-  /** Optional splits for multi-category transactions */
+  /** Present on transaction read endpoints; absent on create/update responses. */
   splits?: TransactionSplitModel[];
-  /** Optional tags associated with the transaction (loaded when includeTags=true) */
+  /** Present on transaction read endpoints; absent on create/update responses. */
   tags?: TagModel[];
-  /** Transaction groups this transaction belongs to (loaded when includeGroups=true).
-   *  transactionCount is the group's full membership size, independent of how many of the
-   *  group's members are in the current fetch window. */
+  /** Present on transaction read endpoints; absent on create/update responses.
+   *  transactionCount is the group's full membership size, not the members in the fetch window. */
   transactionGroups?: Array<{ id: RecordId; name: string; transactionCount: number }>;
-  /** Recipient who attached this tx to a shared tracker. Present (possibly `null`) on
-   *  tracker-scoped tx fetches; absent elsewhere. `null` ⇒ owner-attached, no chip in
-   *  the UI. Non-null ⇒ the tracker recipient who clicked Attach for this row. */
+  /** Who attached this tx to the tracker: the recipient who attached it, else the tracker owner
+   *  (also for rule and AI links). Present on tracker-scoped tx fetches; absent elsewhere.
+   *  With several trackers in scope, one link row decides both this and `addedByRule`. */
   addedBy?: { id: number; username: string; avatar: string | null } | null;
+  /** Tracker-scoped fetches only: the tracker's rules linked this row (`addedBy` is then the owner). */
+  addedByRule?: boolean;
   /** Whether the caller has write access to this row. Set by list endpoints so the UI
    *  can render an inert details dialog (vs an edit form) when the row is visible –
    *  typically via a tracker share – but not editable. Absent on write-result payloads
    *  and internal fetches; absent ⇒ "unknown / fall back to opportunistic UI". */
   canEdit?: boolean;
+  /** Set on the legs of a multi-account payment (every row but the main); points at its main row. */
+  paymentParentId?: RecordId | null;
+  /** List and detail reads: every row of the multi-account payment this row is part of, main first. */
+  paymentParts?: TransactionPaymentPart[];
+  /** Lists that hide the legs: the main row stands for the whole payment, and this is its sum. */
+  paymentTotal?: number;
   /** Timestamp when the record was created (defaults to transaction time for existing records) */
   createdAt: Date;
   /** Timestamp when the record was last updated */
@@ -228,6 +239,32 @@ export interface SplitInput {
   note?: string | null;
 }
 
+/**
+ * One row of a multi-account payment. `amount` is in the row's own `currencyCode`;
+ * `paymentAmount` is its share in the main row's currency. `isLinked` marks an existing
+ * transaction that was linked in, as opposed to a row the payment created.
+ */
+export interface TransactionPaymentPart {
+  transactionId: RecordId;
+  accountId: RecordId;
+  amount: number;
+  currencyCode: string;
+  paymentAmount: number;
+  isLinked: boolean;
+}
+
+/**
+ * The other rows of a multi-account payment; the main row keeps `accountId` and `amount`.
+ * With `transactionId` it names an existing row: a current part, or a transaction to link
+ * (whose `amount` can't change). Without it a new row is created on `accountId`.
+ * `paymentAmount` (main row's currency) is required when the row's currency differs from the main's.
+ */
+export type PaymentLegInput =
+  | { transactionId: RecordId; accountId?: never; amount?: number; paymentAmount?: number }
+  | { transactionId?: never; accountId: RecordId; amount: number; paymentAmount?: number };
+
+export const MAX_PAYMENT_LEGS = 4;
+
 export interface CreateTransactionBody {
   amount: TransactionModel['amount'];
   note?: TransactionModel['note'];
@@ -236,7 +273,7 @@ export interface CreateTransactionBody {
   location?: TransactionLocation | null;
   time: string;
   transactionType: TransactionModel['transactionType'];
-  paymentType: TransactionModel['paymentType'];
+  paymentType?: TransactionModel['paymentType'];
   accountId: TransactionModel['accountId'];
   categoryId?: TransactionModel['categoryId'];
   destinationAccountId?: TransactionModel['accountId'];
@@ -248,6 +285,8 @@ export interface CreateTransactionBody {
   refundForTxId?: RecordId;
   // When refunding a split specifically (required when original tx has splits)
   refundForSplitId?: RecordId;
+  // Share of this refund linked to `refundForTxId`, in this tx currency; omitted means the whole refund
+  refundForAmount?: number;
   // Optional splits for multi-category transactions
   splits?: SplitInput[];
   // Optional tag IDs to associate with the transaction
@@ -257,11 +296,16 @@ export interface CreateTransactionBody {
   /** True when the caller wants future syncs to leave this row's Payee link alone. */
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  /** Keeps the row out of the reports without removing it from the ledger. */
+  excludeFromStats?: boolean;
   /** Run the user's automations on a manual-account row; off by default. For API integrations. */
   applyAutomations?: boolean;
+  /** Files the row under the day's import batch of this source; ignored for a planned row. */
+  importSource?: ImportSource.messageImport;
   originalAmount?: number;
   /** Any ISO 4217 code; it does not have to be connected to the user. */
   originalCurrencyCode?: string;
+  paymentLegs?: PaymentLegInput[];
 }
 
 export interface UpdateTransactionBody {
@@ -284,10 +328,12 @@ export interface UpdateTransactionBody {
   refundsTxId?: RecordId | null;
   // When refunding a split specifically (required when original tx has splits)
   refundsSplitId?: RecordId | null;
-  // Pass tx ids that will refund the source tx (with optional splitId for each)
-  refundedByTxIds?: string[] | null;
-  // Mapping of refundTxId -> splitId for split-specific refunds
-  refundedBySplitIds?: Record<string, string> | null;
+  // Tx ids that refund the source tx. `amount` is the share of that refund, null for the whole one;
+  // a bare id or a missing amount keeps the share of an existing link.
+  refundedByTxIds?: (RecordId | { txId: RecordId; amount?: number | null })[] | null;
+  // Splits this refund across several purchases; `amount` is the share of this tx each one covers.
+  // A missing amount means the whole tx and is allowed only for a single target.
+  refundsTargets?: { txId: RecordId; splitId?: RecordId | null; amount?: number | null }[] | null;
   // Optional splits for multi-category transactions (null to clear all splits)
   splits?: SplitInput[] | null;
   // Optional tag IDs to associate with the transaction (null to clear all tags)
@@ -295,9 +341,13 @@ export interface UpdateTransactionBody {
   payeeId?: RecordId | null;
   payeeLocked?: boolean;
   isPlanned?: boolean;
+  /** Keeps the row out of the reports without removing it from the ledger. */
+  excludeFromStats?: boolean;
   /** Send both fields as `null` to clear the pair. */
   originalAmount?: number | null;
   originalCurrencyCode?: string | null;
+  /** Replaces the payment's other accounts; `null` or `[]` turns it back into a single-account row. */
+  paymentLegs?: PaymentLegInput[] | null;
 }
 
 export const BULK_UPDATE_TAG_MODES = ['add', 'replace', 'remove'] as const;
@@ -310,6 +360,7 @@ export type BulkUpdateTransactionsBody = BulkTarget & {
   note?: string;
   // Nullable: explicit `null` clears the Payee, undefined leaves it untouched.
   payeeId?: RecordId | null;
+  excludeFromStats?: boolean;
 };
 
 export interface BulkUpdateTransactionsResponse {
@@ -322,6 +373,8 @@ export type BulkDeleteTransactionsBody = BulkTarget;
 export interface BulkDeleteTransactionsResponse {
   deletedCount: number;
   deletedIds: string[];
+  /** Selected rows that cannot go to Trash (payment, portfolio or venture links) and were left untouched. */
+  skippedIds: string[];
 }
 
 // Refund Recommendations

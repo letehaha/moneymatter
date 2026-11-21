@@ -107,6 +107,8 @@
       </div>
     </div>
 
+    <BankSeamSkippedCallout :count="summary?.skippedAfterBankSeam" :accounts="store.seamTargets.seamAccounts" />
+
     <!-- Per-account balance changes (only present when the import touched balances) -->
     <AccountBalanceChangesTable v-if="summary" :changes="summary.accountBalanceChanges ?? []" />
 
@@ -178,6 +180,7 @@ import { MappingTable, type MappingTableColumn } from '@/components/lib/ui/mappi
 import { StatCard } from '@/components/lib/ui/stat-card';
 import { StatusIndicator } from '@/components/lib/ui/status-indicator';
 import { cn } from '@/lib/utils';
+import BankSeamSkippedCallout from '@/pages/import-export/components/bank-seam-skipped-callout.vue';
 import AccountBalanceChangesTable from '@/pages/import-export/components/account-balance-changes-table.vue';
 import BalanceDesyncCallout from '@/pages/import-export/components/balance-desync-callout.vue';
 import { importErrorMessage } from '@/pages/import-export/utils/import-error-message';
@@ -224,10 +227,7 @@ const errorColumns = computed<MappingTableColumn[]>(() => [
 ]);
 
 const handleViewTransactions = () => {
-  // Deep-link to the batch when the result carries a batchId. The transactions
-  // route doesn't currently support a batch filter via query param, so we
-  // navigate to the transactions list directly.
-  router.push({ name: ROUTES_NAMES.transactions });
+  router.push({ name: ROUTES_NAMES.transactions, query: { batchId: summary.value?.batchId } });
 };
 
 const handleFindTransfers = () => {

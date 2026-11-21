@@ -140,10 +140,10 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
                   type="button"
                   :class="
                     cn(
-                      'focus-visible:bg-accent rounded-md px-3 py-1 text-left text-sm capitalize transition-colors focus-visible:outline-none',
+                      'focus-visible:bg-hover focus-visible:ring-ring rounded-md px-3 py-1 text-left text-sm capitalize transition-colors focus-visible:ring-2 focus-visible:outline-none',
                       i === selectedMonth
                         ? 'bg-accent text-accent-foreground font-medium'
-                        : 'hover:bg-accent hover:text-accent-foreground',
+                        : 'hover:bg-hover hover:text-accent-foreground',
                     )
                   "
                   @click="selectedMonth = i"
@@ -167,10 +167,10 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
                   type="button"
                   :class="
                     cn(
-                      'focus-visible:bg-accent rounded-md px-3 py-1 text-left text-sm transition-colors focus-visible:outline-none',
+                      'focus-visible:bg-hover focus-visible:ring-ring rounded-md px-3 py-1 text-left text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none',
                       y === selectedYear
                         ? 'bg-accent text-accent-foreground font-medium'
-                        : 'hover:bg-accent hover:text-accent-foreground',
+                        : 'hover:bg-hover hover:text-accent-foreground',
                     )
                   "
                   @click="selectedYear = y"

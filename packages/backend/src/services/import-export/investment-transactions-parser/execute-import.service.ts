@@ -22,12 +22,14 @@ import type {
   InvestmentImportHolding,
   InvestmentImportWarning,
 } from '@bt/shared/types/investments';
+import { t } from '@i18n/index';
 import { CustomError } from '@js/errors';
 import { logger } from '@js/utils';
 import Holdings from '@models/investments/holdings.model';
 import Portfolios from '@models/investments/portfolios.model';
 import Securities from '@models/investments/securities.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import { findCustomCurrencyCodes } from '@services/currencies/custom-currency-codes';
 import { upsertSecuritiesFromSearch } from '@services/investments/securities-manage';
 import { syncHistoricalPrices } from '@services/investments/securities-price/historical-sync.service';
 import { createInvestmentTransaction } from '@services/investments/transactions/create.service';
@@ -45,6 +47,8 @@ interface ExecuteImportParams {
  */
 const userFacingReason = ({ error }: { error: unknown }): { reason?: string } =>
   error instanceof CustomError ? { reason: error.message } : {};
+
+const buysFirst = (side: string) => (side === INVESTMENT_TRANSACTION_CATEGORY.buy ? 0 : 1);
 
 export async function executeInvestmentImport({
   userId,
@@ -97,6 +101,23 @@ export async function executeInvestmentImport({
 
     const resolvedSecurity = holding.resolvedSecurity;
     const { providerName } = resolvedSecurity;
+
+    // Investments are ISO-only, and a security row is global.
+    const [customCode] = await findCustomCurrencyCodes({
+      codes: [holding.currencyCode, resolvedSecurity.currencyCode],
+    });
+    if (customCode) {
+      logger.warn(`Skipped "${symbol}": custom currency ${customCode}.`);
+      warnings.push({
+        code: 'HOLDING_SETUP_FAILED',
+        params: {
+          symbol,
+          reason: t({ key: 'investments.customCurrencyNotSupported', variables: { code: customCode } }),
+        },
+      });
+      skippedHoldings += 1;
+      continue;
+    }
 
     // Steps 1+2 below all run unguarded queries (`upsertSecuritiesFromSearch`,
     // `addUserCurrencies`, `Holdings.create`) that can throw on FK violations,
@@ -181,7 +202,11 @@ export async function executeInvestmentImport({
 
     // 3. Insert child transactions one by one through the canonical service
     // – it handles refAmount, recalculation, and cash-balance updates.
-    for (const tx of holding.transactions) {
+    // The sell guard checks the running quantity, so replay oldest-first with buys before sells and dividends on the same day.
+    const orderedTransactions = holding.transactions.toSorted(
+      (a, b) => a.date.localeCompare(b.date) || buysFirst(a.side) - buysFirst(b.side),
+    );
+    for (const tx of orderedTransactions) {
       if (skipSet.has(tx.tempId)) {
         skippedPossibleDuplicates += 1;
         continue;
@@ -198,13 +223,14 @@ export async function executeInvestmentImport({
       }
 
       try {
-        // `preloadedHoldingRef` skips a portfolio + holding lookup per row.
+        // `preloadedHoldingRef` skips the per-row portfolio lookup.
         await createInvestmentTransaction({
           userId,
           portfolioId: holding.portfolioId,
           securityId: security.id,
           category: tx.side as INVESTMENT_TRANSACTION_CATEGORY,
-          date: tx.date,
+          // Noon UTC keeps the calendar day in nearly every timezone; midnight shows the previous day west of UTC.
+          date: `${tx.date}T12:00:00.000Z`,
           quantity: tx.quantity,
           price: tx.price,
           fees: tx.fees,

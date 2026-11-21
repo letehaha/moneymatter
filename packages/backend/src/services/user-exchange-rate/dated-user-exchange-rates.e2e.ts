@@ -44,10 +44,25 @@ const pairRates = ({
 
 const setRates = (pairs: RatePair[]) => helpers.editCurrencyExchangeRate({ pairs, raw: true });
 
-const createCurrency = async ({ code, decimals = 6 }: { code: string; decimals?: number }) => {
-  const response = await helpers.createCustomCurrency({ payload: { code, name: code, decimals } });
+/** A custom currency's first rate starts today, quoted in `quote` (dollars unless given). */
+const createCurrency = async ({
+  code,
+  decimals = 6,
+  rate = 1,
+  quote = QUOTE,
+}: {
+  code: string;
+  decimals?: number;
+  rate?: number;
+  quote?: string;
+}) => {
+  const response = await helpers.createCustomCurrency({
+    payload: { code, name: code, decimals, rate: { value: rate, quoteCode: quote } },
+  });
   expect(response.statusCode).toBe(201);
 };
+
+const TODAY = (): string => new Date().toISOString().slice(0, 10);
 
 const createAccountIn = async ({ code }: { code: string }) => {
   const response = await helpers.createAccount({
@@ -165,7 +180,7 @@ describe('Dated user exchange rates', () => {
 
   describe('custom currencies', () => {
     it('values a back-dated transaction with the rate effective on its date', async () => {
-      await createCurrency({ code: 'USDT' });
+      await createCurrency({ code: 'USDT', rate: 5 });
       await setRates(pairRates({ code: 'USDT', rate: 1, effectiveDate: DAY_1 }));
       await setRates(pairRates({ code: 'USDT', rate: 2, effectiveDate: DAY_3 }));
       const usdt = await createAccountIn({ code: 'USDT' });
@@ -177,23 +192,34 @@ describe('Dated user exchange rates', () => {
       expect(first.refAmount).toBe(10 * 1 * MARKET_AED_PER_USD);
       expect(between.refAmount).toBe(10 * 1 * MARKET_AED_PER_USD);
       expect(later.refAmount).toBe(10 * 2 * MARKET_AED_PER_USD);
-      expect([first, between, later].map((row) => row.refAmountMissing)).toEqual([false, false, false]);
     }, 60000);
 
-    it('leaves a transaction dated before the first rate without a base-currency amount', async () => {
-      await createCurrency({ code: 'USDT' });
-      await setRates(pairRates({ code: 'USDT', rate: 1, effectiveDate: DAY_1 }));
+    it('values a transaction dated before the first rate with the earliest rate', async () => {
+      await createCurrency({ code: 'USDT', rate: 5 });
+      await setRates(pairRates({ code: 'USDT', rate: 1.5, effectiveDate: DAY_1 }));
       const usdt = await createAccountIn({ code: 'USDT' });
 
       const early = await createTx({ accountId: usdt.id, amount: 10, day: DAY_BEFORE });
 
-      expect(early.refAmount).toBeNull();
-      expect(early.refAmountMissing).toBe(true);
-      expect((await readTx({ id: early.id })).refAmountMissing).toBe(true);
+      expect(early.refAmount).toBe(10 * 1.5 * MARKET_AED_PER_USD);
+      expect((await readTx({ id: early.id })).refAmount).toBe(10 * 1.5 * MARKET_AED_PER_USD);
+      expect(await rateValueOn({ from: 'USDT', to: QUOTE, day: DAY_BEFORE })).toBe(1.5);
     });
 
+    it('values the rows before the first rate again when an earlier rate is added', async () => {
+      await createCurrency({ code: 'USDT', rate: 5 });
+      await setRates(pairRates({ code: 'USDT', rate: 1.5, effectiveDate: DAY_2 }));
+      const usdt = await createAccountIn({ code: 'USDT' });
+      const early = await createTx({ accountId: usdt.id, amount: 10, day: DAY_BEFORE });
+      expect(early.refAmount).toBe(10 * 1.5 * MARKET_AED_PER_USD);
+
+      await setRates(pairRates({ code: 'USDT', rate: 2, effectiveDate: DAY_1 }));
+
+      expect((await readTx({ id: early.id })).refAmount).toBe(10 * 2 * MARKET_AED_PER_USD);
+    }, 60000);
+
     it('edits only the day it is given and leaves the other days alone', async () => {
-      await createCurrency({ code: 'USDT' });
+      await createCurrency({ code: 'USDT', rate: 5 });
       await setRates(pairRates({ code: 'USDT', rate: 1, effectiveDate: DAY_1 }));
       await setRates(pairRates({ code: 'USDT', rate: 2, effectiveDate: DAY_3 }));
 
@@ -203,11 +229,12 @@ describe('Dated user exchange rates', () => {
       expect(await rateValueOn({ from: 'USDT', to: QUOTE, day: DAY_1 })).toBe(1);
       expect(await rateValueOn({ from: 'USDT', to: QUOTE, day: DAY_2 })).toBe(1);
       expect(await rateValueOn({ from: 'USDT', to: QUOTE, day: DAY_3 })).toBe(3);
-      expect((await snapshotUserRates()).filter((row) => row.baseCode === 'USDT')).toHaveLength(2);
+      // DAY_1, DAY_3 and the first rate, which starts today.
+      expect((await snapshotUserRates()).filter((row) => row.baseCode === 'USDT')).toHaveLength(3);
     });
 
     it('removes only the rate of the day it is given', async () => {
-      await createCurrency({ code: 'USDT' });
+      await createCurrency({ code: 'USDT', rate: 5 });
       await setRates(pairRates({ code: 'USDT', rate: 1, effectiveDate: DAY_1 }));
       await setRates(pairRates({ code: 'USDT', rate: 2, effectiveDate: DAY_3 }));
 
@@ -221,18 +248,36 @@ describe('Dated user exchange rates', () => {
       expect(removed.statusCode).toBe(200);
 
       expect(await rateValueOn({ from: 'USDT', to: QUOTE, day: DAY_3 })).toBe(1);
-      expect((await snapshotUserRates()).filter((row) => row.baseCode === 'USDT')).toHaveLength(1);
+      expect((await snapshotUserRates()).filter((row) => row.baseCode === 'USDT')).toHaveLength(2);
     });
 
-    it('starts a rate entered without a day today, so it does not reach back before it', async () => {
-      await createCurrency({ code: 'USDT' });
-      const today = new Date().toISOString().slice(0, 10);
+    it('refuses to remove the last rate of a custom currency, by day or for the whole pair', async () => {
+      await createCurrency({ code: 'USDT', rate: 5 });
+      const removeBothWays = (effectiveDate?: string) =>
+        helpers.removeCurrencyExchangeRate({
+          pairs: [
+            { baseCode: 'USDT', quoteCode: QUOTE, effectiveDate },
+            { baseCode: QUOTE, quoteCode: 'USDT', effectiveDate },
+          ],
+          raw: false,
+        });
+
+      expect((await removeBothWays(TODAY())).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await removeBothWays()).statusCode).toBe(ERROR_CODES.ValidationError);
+
+      expect((await snapshotUserRates()).filter((row) => row.baseCode === 'USDT')).toHaveLength(1);
+      expect(await rateValueOn({ from: 'USDT', to: QUOTE, day: DAY_1 })).toBe(5);
+    });
+
+    it('starts a rate entered without a day today and leaves the days of earlier rates alone', async () => {
+      await createCurrency({ code: 'USDT', rate: 5 });
+      await setRates(pairRates({ code: 'USDT', rate: 3, effectiveDate: DAY_1 }));
 
       const { rates } = await setRates(pairRates({ code: 'USDT', rate: 1 }));
 
-      expect(rates.map((row) => row.effectiveDate)).toEqual([today, today]);
-      expect((await rateOn({ from: 'USDT', to: QUOTE, day: DAY_1 })).statusCode).toBe(404);
-      expect(await rateValueOn({ from: 'USDT', to: QUOTE, day: today })).toBe(1);
+      expect(rates.map((row) => row.effectiveDate)).toEqual([TODAY(), TODAY()]);
+      expect(await rateValueOn({ from: 'USDT', to: QUOTE, day: DAY_2 })).toBe(3);
+      expect(await rateValueOn({ from: 'USDT', to: QUOTE, day: TODAY() })).toBe(1);
     });
 
     it('refuses a calendar day that does not exist', async () => {
@@ -246,7 +291,7 @@ describe('Dated user exchange rates', () => {
     });
 
     it('keeps the full precision of a rate so a million units of a tiny coin convert to exactly one', async () => {
-      await createCurrency({ code: 'SAT', decimals: 8 });
+      await createCurrency({ code: 'SAT', decimals: 8, rate: 0.000002, quote: BASE() });
       await setRates(pairRates({ code: 'SAT', rate: 0.000001, quote: BASE(), effectiveDate: DAY_1 }));
       const sat = await createAccountIn({ code: 'SAT' });
 
@@ -257,44 +302,29 @@ describe('Dated user exchange rates', () => {
     });
   });
 
-  describe('rates that quote another custom currency', () => {
-    it('answers unavailable instead of looping when the rates lead back to where they started', async () => {
-      await createCurrency({ code: 'SAT', decimals: 8 });
-      await createCurrency({ code: 'COIN', decimals: 8 });
-      // The editor stores both directions: SAT>COIN and COIN>SAT, and nothing leads out of the pair.
-      await setRates(pairRates({ code: 'SAT', quote: 'COIN', rate: 2, effectiveDate: DAY_1 }));
-      const sat = await createAccountIn({ code: 'SAT' });
+  describe('a rate quoted in another custom currency', () => {
+    it('is refused, and the currency keeps its own rate', async () => {
+      await createCurrency({ code: 'SAT', decimals: 8, rate: 2 });
+      await createCurrency({ code: 'COIN', decimals: 8, rate: 10 });
 
-      expect((await rateOn({ from: 'SAT', to: NEW_BASE, day: DAY_2 })).statusCode).toBe(404);
+      const refused = await helpers.editCurrencyExchangeRate({
+        pairs: pairRates({ code: 'SAT', quote: 'COIN', rate: 2, effectiveDate: DAY_1 }),
+      });
 
-      const created = await createTx({ accountId: sat.id, amount: 5, day: DAY_2 });
-      expect(created.refAmount).toBeNull();
-      expect(created.refAmountMissing).toBe(true);
-    }, 30000);
-
-    it('walks past the reverse rate to the quote that leads to an ISO currency', async () => {
-      await createCurrency({ code: 'SAT', decimals: 8 });
-      await createCurrency({ code: 'COIN', decimals: 8 });
-      await setRates(pairRates({ code: 'COIN', rate: 10, effectiveDate: DAY_1 }));
-      // Written last, so COIN>SAT is the most recent rate quoted from COIN.
-      await setRates(pairRates({ code: 'SAT', quote: 'COIN', rate: 2, effectiveDate: DAY_1 }));
-      const sat = await createAccountIn({ code: 'SAT' });
-
-      // 1 SAT = 2 COIN = 20 USD, and a dollar is worth 4 AED on that day.
-      const created = await createTx({ accountId: sat.id, amount: 5, day: DAY_2 });
-
-      expect(created.refAmount).toBe(5 * 2 * 10 * MARKET_AED_PER_USD);
-      expect(created.refAmountMissing).toBe(false);
-      expect(await rateValueOn({ from: 'SAT', to: NEW_BASE, day: DAY_2 })).toBeCloseTo(2 * 10 * 0.5, 12);
+      expect(refused.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await snapshotUserRates()).filter((row) => row.quoteCode === 'COIN' && row.baseCode === 'SAT')).toEqual(
+        [],
+      );
+      expect(await rateValueOn({ from: 'SAT', to: QUOTE, day: DAY_2 })).toBe(2);
     }, 30000);
   });
 
   describe('changing the base currency', () => {
     it('values a custom holding on each day with its own rate, then the market rate of that day', async () => {
-      await createCurrency({ code: 'USDT' });
+      await createCurrency({ code: 'USDT', rate: 1 });
       await seedMarket({ day: DAY_1, eurPerUsd: 0.8 });
       await seedMarket({ day: DAY_2, eurPerUsd: 0.9 });
-      // USDT is worth one dollar from the first day on and has no later row.
+      // USDT is worth one dollar from the first day on, and from today on as well.
       await setRates(pairRates({ code: 'USDT', rate: 1, effectiveDate: DAY_1 }));
       const usdt = await createAccountIn({ code: 'USDT' });
       const tx = await createTx({ accountId: usdt.id, amount: 10, day: DAY_2 });
@@ -313,7 +343,7 @@ describe('Dated user exchange rates', () => {
     }, 90000);
 
     it('converts every day of a backfilled history with that day', async () => {
-      await createCurrency({ code: 'USDT' });
+      await createCurrency({ code: 'USDT', rate: 3 });
       await seedMarket({ day: DAY_1, eurPerUsd: 0.5 });
       await seedMarket({ day: DAY_2, eurPerUsd: 0.5 });
       await seedMarket({ day: DAY_3, eurPerUsd: 0.25 });
@@ -333,13 +363,12 @@ describe('Dated user exchange rates', () => {
       const rebuilt = await Promise.all(txs.map((row) => readTx({ id: row.id })));
       // amount x USDT rate of the day x EUR per USD of the day
       expect(rebuilt.map((row) => row.refAmount)).toEqual([10 * 1 * 0.5, 10 * 2 * 0.5, 10 * 3 * 0.25]);
-      expect(rebuilt.map((row) => row.refAmountMissing)).toEqual([false, false, false]);
     }, 90000);
   });
 
   describe('backup', () => {
     it('restores every dated rate of a custom currency', async () => {
-      await createCurrency({ code: 'USDT' });
+      await createCurrency({ code: 'USDT', rate: 5 });
       await setRates(pairRates({ code: 'USDT', rate: 1, effectiveDate: DAY_1 }));
       await setRates(pairRates({ code: 'USDT', rate: 2, effectiveDate: DAY_3 }));
 
@@ -347,13 +376,20 @@ describe('Dated user exchange rates', () => {
       expect(exported.statusCode).toBe(200);
       const archive = helpers.parseBackupArchive({ buffer: exported.body });
       const exportedRates = archive.readData({ name: 'user-exchange-rates' }) as { effectiveDate: string }[];
-      expect(exportedRates.map((row) => row.effectiveDate).toSorted()).toEqual([DAY_1, DAY_1, DAY_3, DAY_3]);
+      expect(exportedRates.map((row) => row.effectiveDate).toSorted()).toEqual([
+        DAY_1,
+        DAY_1,
+        DAY_3,
+        DAY_3,
+        TODAY(),
+        TODAY(),
+      ]);
 
       await restoreArchive({ base64: exported.body.toString('base64') });
 
       expect(await rateValueOn({ from: 'USDT', to: QUOTE, day: DAY_2 })).toBe(1);
       expect(await rateValueOn({ from: 'USDT', to: QUOTE, day: DAY_3 })).toBe(2);
-      expect((await snapshotUserRates()).filter((row) => row.baseCode === 'USDT')).toHaveLength(2);
+      expect((await snapshotUserRates()).filter((row) => row.baseCode === 'USDT')).toHaveLength(3);
     }, 90000);
 
     it('restores an archive written before rates were dated, dating each by the day it was saved', async () => {

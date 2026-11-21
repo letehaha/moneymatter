@@ -1,3 +1,9 @@
+import { COMMUNITY_LOCALES, LOCALE_NAMES, SUPPORTED_LOCALES, type SupportedLocale } from '@bt/shared/i18n/locales';
+import { PLANNED_MATCH_WINDOW_DAYS } from '@bt/shared/types';
+
+const languageList = (locales: SupportedLocale[]) =>
+  new Intl.ListFormat('en', { type: 'conjunction' }).format(locales.map((l) => LOCALE_NAMES[l].english));
+
 /**
  * Everything the landing FAQ assistant may state as fact. The model is told to answer from
  * this text alone, so a claim missing here is a claim it refuses to make. Keep it in step
@@ -21,7 +27,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
   turns read-only: you can sign in, view and export data, or delete the account. Nothing is deleted.
 - There is no free cloud plan, only the trial. Self-hosting is free forever with every feature.
 - Essential: $30/year or $5/month. Manual tracking, imports (CSV, OFX, YNAB, Wallet, MS Money),
-  budgets, investments, loans, vehicles, venture, reports, backup export and restore, AI features
+  budgets, savings goals, investments, loans, vehicles, venture, reports, backup export and restore, AI features
   with your own API key, MCP server for AI agents, 2 household seats. No bank sync.
 - Plus: $55/year or $8/month. Everything in Essential, plus bank sync, AI features on our key
   with no setup, 5 household seats.
@@ -50,9 +56,10 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 
 - Bank sync is part of Plus (also in the trial and on self-hosted). Essential does not include it.
 - Providers by region: Monobank (Ukraine). LunchFlow (US, Canada, EU, UK, Australia, New Zealand
-  and more countries worldwide). SimpleFIN (US, Canada). Walutomat (Poland).
+  and more countries worldwide). SimpleFIN (US, Canada). Walutomat (Poland). Akahu (New Zealand).
 - LunchFlow and SimpleFIN are separate paid services: you open an account with them and pay them
-  directly, on top of Plus. Monobank and Walutomat cost nothing extra.
+  directly, on top of Plus. Monobank, Walutomat and Akahu (your own accounts, via a personal app)
+  cost nothing extra.
 - Banks in the EU, the UK and any other country not named above connect through LunchFlow. To
   see whether a country or one specific bank is covered, search LunchFlow's coverage list:
   https://www.lunchflow.app/coverage
@@ -62,7 +69,8 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Sync runs automatically while you use the app, at most once every 12 hours, and you can start a
   sync by hand anytime. Balances update with every sync.
 - History on first connect: 12 months with Walutomat, about 6 months with SimpleFIN, 31 days with
-  Monobank (Monobank's own limit), and whatever LunchFlow has already collected for LunchFlow.
+  Monobank (Monobank's own limit), up to about 2 years with Akahu (its 730-day limit), and
+  whatever LunchFlow has already collected for LunchFlow.
 - A broken connection is flagged and you reconnect it.
 - You can connect several banks, providers and countries at once, and several accounts per bank.
 - Bank-synced transactions: category, note, tags, payee and splits are editable; amount, date,
@@ -91,7 +99,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Rollover: carry leftovers into the next period, carry overspending too, or start fresh. Set for
   the budget, and each line can have its own rule.
 - Goals on a line: fund it every period, refill it up to an amount, or save up to a balance by a
-  date.
+  date. These budget line goals are separate from the savings Goals page described below.
 - A new budget can be pre-filled with lines and amounts from your own spending history, and you
   choose which accounts it counts.
 - Trackers are separate: one spending limit over a date range you choose freely, for a set of
@@ -107,6 +115,32 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
   "safe to spend", percentage rules like 50/30/20, budgets by tag or payee.
 - Debt payoff: the Loans feature projects the payoff date and remaining balance.
 
+## Savings goals
+
+- A goal is a target amount, in any currency, with an optional target date. It lives on its own
+  Goals page (sidebar, Planned > Goals), separate from budgets.
+- Progress is read from real account balances; goals never move money or create transactions.
+  Each linked account counts by a percentage share of its balance (minus its credit limit,
+  never below 0). One account can back several goals, but its shares across active and paused
+  goals cannot pass 100%. Archiving a goal frees its shares; pausing keeps them.
+- Accounts that can back a goal: your own general, cash, current, savings, investment and crypto
+  accounts. Not credit cards, overdrafts, loans, vehicles or accounts shared with you. On
+  investment and crypto accounts market moves count as progress; projections assume no growth.
+- Each goal shows saved, left, pace, a projected finish month and how much is needed per month to
+  hit the date. Pace is the median monthly change over the last 6 full months and needs at least
+  3; an optional planned monthly amount replaces it. Statuses: ahead, on track, behind, overdue,
+  reached, and a projected month for goals without a date.
+- A What-if tab tries another monthly amount, date or account shares without saving anything. A
+  banner compares what all active goals need per month with the median monthly net cash flow of
+  the last 12 complete months and says whether they fit.
+- A dashboard widget lists active goals. Reaching a goal sends one in-app notification.
+- The MCP server can list goals with their progress and create, update or delete them.
+- Goals are included in Essential and Plus (and the 40-day trial). The Early Adopter grant does
+  not include them: early adopters can start a 14-day goals trial from the Goals page. No limit on
+  the number of goals.
+- Not supported: portfolios as goal sources, fixed-amount earmarks ("$3,000 of this account"),
+  moving money into a goal, investment growth projections.
+
 ## Transactions
 
 - Split one transaction across several categories. Transfers between your own accounts are one
@@ -120,6 +154,15 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Reusable transaction templates for quick repeat entries, such as cash spending.
 - Recurring subscriptions are detected from your history and suggested for confirmation. Upcoming
   payments send reminders in the app and by email.
+- Planned transactions: mark an income or expense as planned for money you expect to move. A plan
+  does not count in the balance, budgets or reports until confirmed; accounts show the balance
+  with pending plans added. On a manual account you confirm a plan by hand. A bank sync, or a
+  CSV, OFX, Wallet, MS Money or statement import, confirms it by itself: a transaction on the same
+  account with the same type, currency and amount, within ${PLANNED_MATCH_WINDOW_DAYS} days of the
+  plan's date, merges into the plan instead of adding a duplicate. On a bank-connected account
+  only the sync can confirm a plan, and the first sync after connecting does not merge. YNAB
+  imports do not merge. Each plan is one transaction; for repeating payments use subscriptions.
+  Only the account owner can create plans; transfers and loan or vehicle accounts cannot be planned.
 - Not supported: hiding a single transaction from reports (a whole account can be excluded),
   splitting a bill with another person and settling up, mileage, per-diem or invoicing.
 
@@ -149,6 +192,9 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Cash flow (income against expenses by month), money flow (income sources to categories), pivot
   tables by category, payee or tag per week, month, quarter or year, net worth and balance history.
 - The dashboard is a grid of widgets you add, remove and rearrange.
+- Pay cycle: set the day your pay cycle starts on (1st to 28th) in Settings > General. The
+  dashboard and the Cash Flow report (its monthly bars and money flow chart) then run from that
+  day, for example the 25th to the 24th. Other reports still use calendar months.
 - Not supported: a free-form custom report builder.
 
 ## Family sharing
@@ -158,9 +204,11 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 
 ## Apps, languages, sign-in
 
-- Web app only today. An iOS app is under development, with no release date yet. No Android or
-  desktop app. The web app can be added to a phone home screen as a PWA, but there is no offline mode.
-- Languages: English, Ukrainian, Spanish, Indonesian, Russian. Spanish, Indonesian and Russian
+- Web app, plus an iPhone app in public beta on TestFlight: anyone can join at
+  https://testflight.apple.com/join/tm5q4V5H. It is not on the App Store yet, with no release date.
+  No Android or desktop app. The web app can be added to a phone home screen as a PWA, but has no
+  offline mode.
+- Languages: ${languageList(Object.values(SUPPORTED_LOCALES))}. ${languageList([...COMMUNITY_LOCALES])}
   are community translations. Dark mode is supported.
 - Sign in with email and password, Google, GitHub or passkeys. You can see and log out active
   sessions.
@@ -182,7 +230,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
   payee and your category names. For parsing, the text or image you submit.
 - Without a key on Essential or self-hosted, AI stays off. There is no single off switch on Plus.
 - The MCP server lets an AI assistant work with your data: accounts, transactions, categories,
-  tags, payees, budgets, analytics, investments, subscriptions, automation rules and venture
+  tags, payees, budgets, goals, analytics, investments, subscriptions, automation rules and venture
   deals. You pick one of three access levels when connecting it: read, write, or write and
   delete. It signs in through OAuth (no API tokens) and access can be revoked in settings.
 - Connect it from Settings > AI > Connectors (MCP), with guided setup for Claude and ChatGPT. It
@@ -202,8 +250,9 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 ## Self-hosting
 
 - Same app as the cloud, free, every feature unlocked, no plans or trial. Deployed with Docker
-  Compose. Runs on a $5 VPS. 2 GB RAM minimum. Published images are amd64; ARM hosts such as a
-  Raspberry Pi build from source.
+  Compose. Runs on a $5 VPS. 2 GB RAM minimum. Published images are amd64 and arm64, so ARM
+  hosts such as an ARM VPS or a Raspberry Pi on a 64-bit OS run them directly, no build from
+  source needed.
 - Stack: Postgres, Redis and a bundled exchange-rate service. Docker Compose is the only
   supported setup: no Kubernetes, Helm or Unraid templates, no install without Docker.
 - No domain or HTTPS needed for a local or LAN trial. For public access there are recipes for
@@ -306,6 +355,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Support: support@moneymatter.app
 - Bugs: https://github.com/letehaha/moneymatter/issues
 - Feature requests, voting and roadmap: https://moneymatter.featurebase.app/dashboard/roadmap
+- Community, questions and discussion: https://www.reddit.com/r/moneymatterapp/ (subreddit r/moneymatterapp)
 - There is no Discord, Telegram or Slack community.
 - Tech stack: TypeScript, Node.js with Express, PostgreSQL, Redis, Vue 3. Contributions are
   welcome on GitHub; a CLA is signed on the first pull request.

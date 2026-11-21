@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 import {
   completeOnboarding,
@@ -20,6 +20,8 @@ const txIds: string[] = [];
 const extraTxIds: string[] = [];
 
 let dataSeeded = false;
+
+const groupLink = ({ page, name }: { page: Page; name: string }) => page.getByRole('button', { name, exact: true });
 
 test.describe.configure({ mode: 'serial' });
 
@@ -212,10 +214,7 @@ test.describe('Transaction Groups', () => {
     // Open actions popover (ellipsis menu) — the button with ml-auto in the dialog header
     await dialog.locator('button.ml-auto').click();
 
-    // Click Edit inside the actions menu (renders as a separate dialog in reka-ui)
-    const actionsMenu = page.getByRole('dialog').filter({ hasText: /delete group/i });
-    await expect(actionsMenu).toBeVisible({ timeout: 5_000 });
-    await actionsMenu.getByRole('button', { name: 'Edit' }).click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
 
     // Edit dialog should open (now there are 2 dialogs: group detail + edit form)
     const editDialog = page.getByRole('dialog').filter({ has: page.locator('textarea') });
@@ -297,8 +296,7 @@ test.describe('Transaction Groups', () => {
     await page.waitForURL(/\/transaction-groups/, { timeout: 15_000 });
 
     // Wait for groups list to load
-    const groupCard = page.locator('h3').filter({ hasText: 'E2E Renamed Group' });
-    await expect(groupCard).toBeVisible({ timeout: 10_000 });
+    await expect(groupLink({ page, name: 'E2E Renamed Group' })).toBeVisible({ timeout: 10_000 });
   });
 
   // ─── 8. Search/filter works on /transaction-groups ──────────────────
@@ -308,21 +306,21 @@ test.describe('Transaction Groups', () => {
     await page.waitForURL(/\/transaction-groups/, { timeout: 15_000 });
 
     // Verify the group card is visible initially
-    await expect(page.locator('h3').filter({ hasText: 'E2E Renamed Group' })).toBeVisible({ timeout: 10_000 });
+    await expect(groupLink({ page, name: 'E2E Renamed Group' })).toBeVisible({ timeout: 10_000 });
 
     // Type a non-matching search
-    const searchInput = page.locator('input').first();
+    const searchInput = page.getByRole('searchbox', { name: /search groups/i });
     await searchInput.fill('zzz-nonexistent');
 
     // Group should disappear
-    await expect(page.locator('h3').filter({ hasText: 'E2E Renamed Group' })).not.toBeVisible({ timeout: 5_000 });
+    await expect(groupLink({ page, name: 'E2E Renamed Group' })).not.toBeVisible({ timeout: 5_000 });
 
     // Clear and type a matching search
     await searchInput.clear();
     await searchInput.fill('Renamed');
 
     // Group should reappear
-    await expect(page.locator('h3').filter({ hasText: 'E2E Renamed Group' })).toBeVisible({ timeout: 5_000 });
+    await expect(groupLink({ page, name: 'E2E Renamed Group' })).toBeVisible({ timeout: 5_000 });
   });
 
   // ─── 9. Click group card on /transaction-groups opens detail dialog ─
@@ -331,11 +329,7 @@ test.describe('Transaction Groups', () => {
     await page.goto('/transaction-groups');
     await page.waitForURL(/\/transaction-groups/, { timeout: 15_000 });
 
-    const groupCard = page.locator('h3').filter({ hasText: 'E2E Renamed Group' }).locator('..');
-    await expect(groupCard).toBeVisible({ timeout: 10_000 });
-
-    // Click the card (click the h3 text to avoid the delete button)
-    await page.locator('h3').filter({ hasText: 'E2E Renamed Group' }).click();
+    await groupLink({ page, name: 'E2E Renamed Group' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: 5_000 });
@@ -352,7 +346,7 @@ test.describe('Transaction Groups', () => {
     await page.waitForURL(/\/transaction-groups/, { timeout: 15_000 });
 
     // Open group detail
-    await page.locator('h3').filter({ hasText: 'E2E Renamed Group' }).click();
+    await groupLink({ page, name: 'E2E Renamed Group' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: 5_000 });
@@ -360,10 +354,7 @@ test.describe('Transaction Groups', () => {
     // Open actions popover
     await dialog.locator('button.ml-auto').click();
 
-    // Click Edit inside the actions menu
-    const actionsMenu = page.getByRole('dialog').filter({ hasText: /delete group/i });
-    await expect(actionsMenu).toBeVisible({ timeout: 5_000 });
-    await actionsMenu.getByRole('button', { name: 'Edit' }).click();
+    await page.getByRole('menuitem', { name: 'Edit' }).click();
 
     // Edit dialog
     const editDialog = page.getByRole('dialog').filter({ has: page.locator('textarea') });
@@ -385,7 +376,9 @@ test.describe('Transaction Groups', () => {
     await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 5_000 });
 
     // The note should now be visible on the card
-    await expect(page.getByText('Updated note from groups page')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Updated note from groups page').filter({ visible: true })).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   // ─── 11. Remove transaction from group shows confirmation ───────────
@@ -395,7 +388,7 @@ test.describe('Transaction Groups', () => {
     await page.waitForURL(/\/transaction-groups/, { timeout: 15_000 });
 
     // Open group detail
-    await page.locator('h3').filter({ hasText: 'E2E Renamed Group' }).click();
+    await groupLink({ page, name: 'E2E Renamed Group' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: 5_000 });
@@ -405,12 +398,8 @@ test.describe('Transaction Groups', () => {
     await expect(transactionRows.first()).toBeVisible({ timeout: 10_000 });
     const initialCount = await transactionRows.count();
 
-    // Click remove button (X icon) on first transaction
-    const removeButton = dialog
-      .locator('button')
-      .filter({ has: page.locator('svg.size-3\\.5') })
-      .first();
-    await removeButton.click();
+    await dialog.getByRole('button', { name: 'Manage' }).click();
+    await dialog.getByRole('button', { name: 'Remove from group' }).first().click();
 
     // Confirmation dialog should appear (alert dialog)
     const alertDialog = page.getByRole('alertdialog');
@@ -485,12 +474,10 @@ test.describe('Transaction Groups', () => {
     await page.waitForURL(/\/transaction-groups/, { timeout: 15_000 });
 
     // Both groups should be visible
-    await expect(page.locator('h3').filter({ hasText: 'Group To Delete' })).toBeVisible({ timeout: 10_000 });
+    await expect(groupLink({ page, name: 'Group To Delete' })).toBeVisible({ timeout: 10_000 });
 
-    // Click the delete (trash) button on "Group To Delete" card
-    const deleteCard = page.locator('h3').filter({ hasText: 'Group To Delete' }).locator('..').locator('..');
-    const deleteButton = deleteCard.locator('button').last();
-    await deleteButton.click();
+    await page.getByRole('button', { name: 'More actions for Group To Delete' }).click();
+    await page.getByRole('menuitem', { name: /delete group/i }).click();
 
     // Confirmation dialog appears
     const alertDialog = page.getByRole('alertdialog');
@@ -504,10 +491,10 @@ test.describe('Transaction Groups', () => {
     await expect(alertDialog).not.toBeVisible({ timeout: 5_000 });
 
     // "Group To Delete" should be gone
-    await expect(page.locator('h3').filter({ hasText: 'Group To Delete' })).not.toBeVisible({ timeout: 10_000 });
+    await expect(groupLink({ page, name: 'Group To Delete' })).not.toBeVisible({ timeout: 10_000 });
 
     // The main group should still exist
-    await expect(page.locator('h3').filter({ hasText: 'E2E Renamed Group' })).toBeVisible({ timeout: 5_000 });
+    await expect(groupLink({ page, name: 'E2E Renamed Group' })).toBeVisible({ timeout: 5_000 });
   });
 
   // ─── 15. Create group with minimum 2 transactions (validation) ──────
@@ -584,7 +571,9 @@ test.describe('Transaction Groups', () => {
     await page.waitForURL(/\/transaction-groups/, { timeout: 15_000 });
 
     // The note we set in test 10 should be visible
-    await expect(page.getByText('Updated note from groups page')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Updated note from groups page').filter({ visible: true })).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   // ─── 18. Group dissolves when removing transactions below minimum ───
@@ -613,7 +602,7 @@ test.describe('Transaction Groups', () => {
     await page.waitForURL(/\/transaction-groups/, { timeout: 15_000 });
 
     // Open the group
-    await page.locator('h3').filter({ hasText: 'Dissolving Group' }).click();
+    await groupLink({ page, name: 'Dissolving Group' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: 5_000 });
@@ -621,12 +610,8 @@ test.describe('Transaction Groups', () => {
     // Wait for transactions to load
     await expect(dialog.locator('[aria-haspopup="true"]')).toHaveCount(2, { timeout: 10_000 });
 
-    // Click remove on the first transaction
-    const removeButton = dialog
-      .locator('button')
-      .filter({ has: page.locator('svg.size-3\\.5') })
-      .first();
-    await removeButton.click();
+    await dialog.getByRole('button', { name: 'Manage' }).click();
+    await dialog.getByRole('button', { name: 'Remove from group' }).first().click();
 
     // Confirmation with "Remove and Delete" should appear (because <= 2 transactions)
     const alertDialog = page.getByRole('alertdialog');
@@ -643,7 +628,7 @@ test.describe('Transaction Groups', () => {
     await expect(dialog).not.toBeVisible({ timeout: 10_000 });
 
     // Group should no longer appear in the list
-    await expect(page.locator('h3').filter({ hasText: 'Dissolving Group' })).not.toBeVisible({ timeout: 10_000 });
+    await expect(groupLink({ page, name: 'Dissolving Group' })).not.toBeVisible({ timeout: 10_000 });
   });
 
   // ─── 19. Empty state on /transaction-groups when no groups exist ────
@@ -653,7 +638,7 @@ test.describe('Transaction Groups', () => {
     await page.waitForURL(/\/transaction-groups/, { timeout: 15_000 });
 
     // Type a non-matching search
-    const searchInput = page.locator('input').first();
+    const searchInput = page.getByRole('searchbox', { name: /search groups/i });
     await searchInput.fill('zzz-no-match-at-all-123');
 
     // Empty state message should appear
@@ -686,7 +671,7 @@ test.describe('Transaction Groups', () => {
     await page.waitForURL(/\/transaction-groups/, { timeout: 15_000 });
 
     // Open group detail
-    await page.locator('h3').filter({ hasText: 'Dialog Delete Group' }).click();
+    await groupLink({ page, name: 'Dialog Delete Group' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible({ timeout: 5_000 });
@@ -694,8 +679,7 @@ test.describe('Transaction Groups', () => {
     // Open actions popover
     await dialog.locator('button.ml-auto').click();
 
-    // Click "Delete Group" button directly (its accessible name is unique)
-    await page.getByRole('button', { name: 'Delete Group' }).click();
+    await page.getByRole('menuitem', { name: /delete group/i }).click();
 
     // Confirmation appears
     const alertDialog = page.getByRole('alertdialog');
@@ -709,6 +693,6 @@ test.describe('Transaction Groups', () => {
     await expect(dialog).not.toBeVisible({ timeout: 5_000 });
 
     // Group should be gone from the list
-    await expect(page.locator('h3').filter({ hasText: 'Dialog Delete Group' })).not.toBeVisible({ timeout: 10_000 });
+    await expect(groupLink({ page, name: 'Dialog Delete Group' })).not.toBeVisible({ timeout: 10_000 });
   });
 });

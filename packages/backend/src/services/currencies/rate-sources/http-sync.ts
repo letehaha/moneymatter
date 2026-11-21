@@ -47,13 +47,9 @@ const fetchedWith = ({ target }: { target: Target }): FetchedWith => ({
   rateSourceHeadersEncrypted: target.rateSourceHeadersEncrypted,
 });
 
-const loadTargets = ({ userId, currencyCode }: { userId?: number; currencyCode?: string } = {}): Promise<Target[]> =>
+const loadTargets = (): Promise<Target[]> =>
   UsersCurrencies.unscoped().findAll({
-    where: {
-      rateSource: SOURCE,
-      ...(userId === undefined ? {} : { userId }),
-      ...(currencyCode ? { currencyCode } : {}),
-    },
+    where: { rateSource: SOURCE },
     attributes: ['userId', 'currencyCode', 'rateSourceConfig', 'rateSourceHeadersEncrypted'],
     order: [
       ['userId', 'ASC'],
@@ -81,51 +77,6 @@ const logFailure = ({
     },
     { code },
   );
-};
-
-/**
- * Fetches today's rate of one user's HTTP-sourced currency and stores it. Runs after the source is
- * saved; the save has committed by then, so a failure is logged and the currency stays on its source
- * (the daily sync tries again).
- */
-export const fetchHttpRateAfterSave = async ({
-  userId,
-  currencyCode,
-}: {
-  userId: number;
-  currencyCode: string;
-}): Promise<{ status: 'done'; ratesWritten: number } | { status: 'skipped' | 'failed' }> => {
-  const [target] = await loadTargets({ userId, currencyCode });
-  if (!target) return { status: 'skipped' };
-
-  const read = readTarget({ target });
-  if (!read.ok) {
-    logger.warn(`Skipping the HTTP rate source of ${currencyCode} of user ${userId}: ${read.why}`);
-
-    return { status: 'skipped' };
-  }
-
-  try {
-    const day = toEffectiveDate({ date: new Date() });
-    const rate = await fetchHttpRate({ ...read, code: currencyCode, day });
-    const ratesWritten = await storeSyncedRates({
-      userId,
-      currencyCode,
-      quoteCurrency: read.quoteCurrency,
-      rates: [{ day, rate }],
-      // The source was just saved, so its first rate takes over from whatever priced today's rows
-      // before, which a plain daily rate (it only fills rows waiting for a rate) would leave alone.
-      kind: 'backfill',
-      source: SOURCE,
-      fetchedWith: fetchedWith({ target }),
-    });
-
-    return { status: 'done', ratesWritten };
-  } catch (error) {
-    logFailure({ target: { userId, currencyCode }, error, code: 'HTTP_RATE_SOURCE_FETCH_FAILED' });
-
-    return { status: 'failed' };
-  }
 };
 
 /**

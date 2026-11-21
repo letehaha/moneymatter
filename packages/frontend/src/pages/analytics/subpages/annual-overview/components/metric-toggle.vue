@@ -1,26 +1,19 @@
 <template>
-  <div class="inline-flex gap-1.5">
-    <button
-      v-for="option in options"
-      :key="option.value"
-      type="button"
-      :class="[
-        'flex h-9 items-center justify-center rounded-md px-4 text-sm font-medium transition-all',
-        modelValue === option.value ? option.activeClass : option.inactiveClass,
-      ]"
-      @click="emit('update:modelValue', option.value)"
-    >
-      {{ option.label }}
-    </button>
-  </div>
+  <PillTabs
+    :items="items"
+    :model-value="modelValue"
+    @update:model-value="(value) => emit('update:modelValue', value as MetricType)"
+  />
 </template>
 
 <script setup lang="ts">
-import type { CumulativeMetric } from '@bt/shared/types';
+import { type MetricType } from '@/common/utils/analytics-metric';
+import { type PillTabItem, PillTabs } from '@/components/lib/ui/pill-tabs';
+import { ArrowDownLeftIcon, ArrowUpRightIcon } from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-export type MetricType = CumulativeMetric;
+import { METRIC_LABEL_KEYS } from '../metric-labels';
 
 defineProps<{
   modelValue: MetricType;
@@ -32,24 +25,20 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const options = computed(() => [
+const items = computed<PillTabItem[]>(() => [
   {
-    value: 'expenses' as const,
-    label: t('analytics.trends.metrics.expenses'),
-    activeClass: 'bg-red-500/15 text-red-600 dark:text-red-400 ring-1 ring-red-500/30',
-    inactiveClass: 'text-muted-foreground hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400',
+    value: 'expenses',
+    label: t(METRIC_LABEL_KEYS.expenses),
+    icon: ArrowUpRightIcon,
+    iconClass: 'text-app-expense-color @max-lg/controls:mr-0',
+    labelClass: '@max-lg/controls:sr-only',
   },
   {
-    value: 'income' as const,
-    label: t('analytics.trends.metrics.income'),
-    activeClass: 'bg-green-500/15 text-green-600 dark:text-green-400 ring-1 ring-green-500/30',
-    inactiveClass: 'text-muted-foreground hover:bg-green-500/10 hover:text-green-600 dark:hover:text-green-400',
-  },
-  {
-    value: 'savings' as const,
-    label: t('analytics.trends.metrics.savings'),
-    activeClass: 'bg-violet-500/15 text-violet-600 dark:text-violet-400 ring-1 ring-violet-500/30',
-    inactiveClass: 'text-muted-foreground hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-400',
+    value: 'income',
+    label: t(METRIC_LABEL_KEYS.income),
+    icon: ArrowDownLeftIcon,
+    iconClass: 'text-app-income-color @max-lg/controls:mr-0',
+    labelClass: '@max-lg/controls:sr-only',
   },
 ]);
 </script>

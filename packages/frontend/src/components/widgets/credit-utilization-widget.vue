@@ -1,11 +1,13 @@
 <script lang="ts" setup>
 import { computeCreditUsed } from '@/common/utils/account-balance';
+import AccountLogo from '@/components/common/account-logo.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { useUserSettings } from '@/composable/data-queries/user-settings';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useAnimatedNumber } from '@/composable/use-animated-number';
+import { formatCompactUIAmount } from '@/js/helpers';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import { ACCOUNT_STATUSES, ACCOUNT_TYPES } from '@bt/shared/types';
@@ -26,7 +28,7 @@ const THRESHOLDS = {
 const { accounts, isAccountsFetched } = storeToRefs(useAccountsStore());
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const baseCurrencyCode = computed(() => baseCurrency.value?.currency?.code ?? '');
-const { formatBaseCurrency, formatAmountByCurrencyCode, formatCompactAmount } = useFormatCurrency();
+const { formatBaseCurrency, formatAccountAmount, formatCompactAmount } = useFormatCurrency();
 const { data: userSettings } = useUserSettings();
 
 const creditAccounts = computed(() => {
@@ -38,36 +40,32 @@ const creditAccounts = computed(() => {
       // Provider-synced (non-system) cards report a balance that already nets off the
       // credit limit, so their drawn amount is the limit minus the balance at any sign.
       const balanceIncludesCreditLimit = a.type !== ACCOUNT_TYPES.system;
-      // Only breaks the tie at balance 0: with the setting on, a zero balance
-      // means the whole limit is drawn instead of an untouched card.
-      const zeroBalanceMeansFullyDrawn = !!userSettings.value?.includeCreditLimitInStats;
+      // With the setting off, manual cards track debt, so a positive balance is an overpayment.
+      const balanceIsAvailableCredit = !!userSettings.value?.includeCreditLimitInStats;
       const used = computeCreditUsed({
         balance: a.currentBalance,
         creditLimit: a.creditLimit,
         balanceIncludesCreditLimit,
-        zeroBalanceMeansFullyDrawn,
+        balanceIsAvailableCredit,
       });
       const limit = a.creditLimit;
       const utilization = limit > 0 ? Math.round((used / limit) * 100) : 0;
 
       return {
         id: a.id,
+        account: a,
         name: a.name,
         currencyCode: a.currencyCode,
         used,
         limit,
         utilization: Math.min(utilization, 100),
-        // An account with no base-currency value yet (custom currency, no rate) adds nothing to the totals.
-        refUsed:
-          a.refCurrentBalance === null || a.refCreditLimit === null
-            ? 0
-            : computeCreditUsed({
-                balance: a.refCurrentBalance,
-                creditLimit: a.refCreditLimit,
-                balanceIncludesCreditLimit,
-                zeroBalanceMeansFullyDrawn,
-              }),
-        refLimit: a.refCreditLimit ?? 0,
+        refUsed: computeCreditUsed({
+          balance: a.refCurrentBalance,
+          creditLimit: a.refCreditLimit,
+          balanceIncludesCreditLimit,
+          balanceIsAvailableCredit,
+        }),
+        refLimit: a.refCreditLimit,
       };
     })
     .sort((a, b) => b.utilization - a.utilization);
@@ -159,17 +157,33 @@ const getUtilizationColors = ({ utilization }: { utilization: number }) => {
               v-for="account in creditAccounts"
               :key="account.id"
               :to="{ name: ROUTES_NAMES.account, params: { id: account.id } }"
-              class="hover:bg-muted/50 flex flex-col gap-1.5 rounded-md px-3 py-2 transition-colors"
+              class="hover:bg-hover flex flex-col gap-1.5 rounded-md px-3 py-2 transition-colors"
             >
               <div class="flex items-center justify-between gap-2">
-                <span class="truncate text-sm font-medium">{{ account.name }}</span>
+                <span class="flex min-w-0 items-center gap-2">
+                  <AccountLogo :account="account.account" class="size-5 shrink-0" />
+                  <span class="truncate text-sm font-medium">{{ account.name }}</span>
+                </span>
                 <div class="flex shrink-0 items-center gap-2">
                   <DesktopOnlyTooltip
-                    :content="`${formatAmountByCurrencyCode(account.used, account.currencyCode)} / ${formatAmountByCurrencyCode(account.limit, account.currencyCode)}`"
+                    :content="`${formatAccountAmount({ amount: account.used, account: account.account })} / ${formatAccountAmount({ amount: account.limit, account: account.account })}`"
                   >
                     <span class="text-muted-foreground text-[10px]">
-                      {{ formatCompactAmount(account.used, account.currencyCode) }}
-                      / {{ formatCompactAmount(account.limit, account.currencyCode) }}
+                      {{
+                        formatCompactUIAmount({
+                          amount: account.used,
+                          currency: account.currencyCode,
+                          meta: account.account.currencyMeta,
+                        })
+                      }}
+                      /
+                      {{
+                        formatCompactUIAmount({
+                          amount: account.limit,
+                          currency: account.currencyCode,
+                          meta: account.account.currencyMeta,
+                        })
+                      }}
                     </span>
                   </DesktopOnlyTooltip>
                   <span

@@ -1,14 +1,30 @@
 import type { RecordId } from '@bt/shared/types';
-import { TRANSACTION_TYPES } from '@bt/shared/types';
-import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
+import {
+  TRANSACTION_GROUP_MAX_SIZE,
+  TRANSACTION_TRANSFER_NATURE,
+  TRANSACTION_TYPES,
+  type TransactionGroupConflictDetails,
+  type TransactionGroupSizeLimitDetails,
+} from '@bt/shared/types';
+import { generateRandomRecordId, NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
-import { MAX_GROUP_SIZE } from '@services/transaction-groups/constants';
 import * as helpers from '@tests/helpers';
+import type { ErrorResponse } from '@tests/helpers/common';
 
 // The test DB pool caps at 50 connections and every create contends on the same account row,
 // so the fixture is built in bounded batches rather than one unbounded Promise.all.
 const CREATE_BATCH_SIZE = 10;
+
+// transactionCount is attached via a correlated subquery on the include, so it is not
+// part of the TransactionGroups model type – read it through a narrowed shape.
+const readGroups = ({ transactionGroups }: { transactionGroups?: unknown }) =>
+  (transactionGroups ?? []) as { name: string; transactionCount: number }[];
+
+const readErrorDetails = ({ body }: { body: { response: unknown } }) =>
+  (body.response as ErrorResponse).details as
+    | Partial<TransactionGroupSizeLimitDetails & TransactionGroupConflictDetails>
+    | undefined;
 
 describe('Transaction Groups API', () => {
   const createTransactions = async ({ accountId, count }: { accountId: RecordId; count: number }) => {
@@ -105,7 +121,7 @@ describe('Transaction Groups API', () => {
       const txs = await createTransactions({ accountId: account.id, count: 3 });
 
       // Create first group with tx[0] and tx[1]
-      await helpers.createTransactionGroup({
+      const group1 = await helpers.createTransactionGroup({
         payload: helpers.buildTransactionGroupPayload({
           name: 'Group 1',
           transactionIds: [txs[0]!.id, txs[1]!.id],
@@ -123,6 +139,48 @@ describe('Transaction Groups API', () => {
       });
 
       expect(response.statusCode).toBe(ERROR_CODES.ConflictError);
+      expect(readErrorDetails(response)?.groups).toEqual([{ id: group1.id, name: 'Group 1' }]);
+    });
+
+    it('lists each conflicting group once, sorted by name', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const txs = await createTransactions({ accountId: account.id, count: 5 });
+
+      const beta = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({ name: 'Beta', transactionIds: [txs[0]!.id, txs[1]!.id] }),
+        raw: true,
+      });
+      const alpha = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({ name: 'Alpha', transactionIds: [txs[2]!.id, txs[3]!.id] }),
+        raw: true,
+      });
+
+      const response = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({
+          name: 'Overlap',
+          transactionIds: [txs[0]!.id, txs[1]!.id, txs[2]!.id, txs[4]!.id],
+        }),
+        raw: false,
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ConflictError);
+      expect(readErrorDetails(response)?.groups).toEqual([
+        { id: alpha.id, name: 'Alpha' },
+        { id: beta.id, name: 'Beta' },
+      ]);
+    });
+
+    it('rejects more than the max ids at request validation, without size details', async () => {
+      const response = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({
+          name: 'Too Many Ids',
+          transactionIds: Array.from({ length: TRANSACTION_GROUP_MAX_SIZE + 1 }, () => generateRandomRecordId()),
+        }),
+        raw: false,
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(readErrorDetails(response)?.maxSize).toBeUndefined();
     });
   });
 
@@ -160,7 +218,44 @@ describe('Transaction Groups API', () => {
       expect(new Date(groupB!.dateFrom!).getTime()).toBeLessThanOrEqual(new Date(groupB!.dateTo!).getTime());
     });
 
-    it('includeGroups reports the full group size even when only a slice of members is fetched', async () => {
+    it('returns net amount in base currency as income minus expenses', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, transactionType }: { amount: number; transactionType: TRANSACTION_TYPES }) => {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType }),
+          raw: true,
+        });
+        return tx!;
+      };
+
+      const income = await createTx({ amount: 250.5, transactionType: TRANSACTION_TYPES.income });
+      const expenseA = await createTx({ amount: 100.25, transactionType: TRANSACTION_TYPES.expense });
+      const expenseB = await createTx({ amount: 40, transactionType: TRANSACTION_TYPES.expense });
+      const expenseC = await createTx({ amount: 75.1, transactionType: TRANSACTION_TYPES.expense });
+      const expenseD = await createTx({ amount: 20, transactionType: TRANSACTION_TYPES.expense });
+
+      await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({
+          name: 'Positive',
+          transactionIds: [income.id, expenseA.id, expenseB.id],
+        }),
+        raw: true,
+      });
+      await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({
+          name: 'Negative',
+          transactionIds: [expenseC.id, expenseD.id],
+        }),
+        raw: true,
+      });
+
+      const groups = await helpers.getTransactionGroups({ raw: true });
+
+      expect(groups.find((g) => g.name === 'Positive')!.netRefAmount).toBe(110.25);
+      expect(groups.find((g) => g.name === 'Negative')!.netRefAmount).toBe(-95.1);
+    });
+
+    it('reports the full group size even when only a slice of members is fetched', async () => {
       const account = await helpers.createAccount({ raw: true });
       const txs = await createTransactions({ accountId: account.id, count: 5 });
 
@@ -174,15 +269,9 @@ describe('Transaction Groups API', () => {
 
       // Fetch a window smaller than the group so only some members are returned.
       const windowed = await helpers.getTransactions({
-        includeGroups: true,
         limit: 2,
         raw: true,
       });
-
-      // transactionCount is attached via a correlated subquery on the include, so it is not
-      // part of the TransactionGroups model type – read it through a narrowed shape.
-      const readGroups = (tx: (typeof windowed)[number]) =>
-        (tx.transactionGroups ?? []) as unknown as { name: string; transactionCount: number }[];
 
       const grouped = windowed.filter((tx) => readGroups(tx).some((g) => g.name === 'Windowed Group'));
       expect(grouped.length).toBeGreaterThan(0);
@@ -213,6 +302,40 @@ describe('Transaction Groups API', () => {
       expect(group.id).toBe(created.id);
       expect(group.name).toBe('Detail Group');
       expect(group.transactions).toHaveLength(2);
+    });
+
+    it('returns member transactions with their tags and splits', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const [primary, splitCategory] = await helpers.getCategoriesList();
+      const tag = await helpers.createTag({ payload: helpers.buildTagPayload({ name: 'Trip' }), raw: true });
+      const [rich] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 100,
+            categoryId: primary!.id,
+            splits: [{ categoryId: splitCategory!.id, amount: 40 }],
+          }),
+          tagIds: [tag.id],
+        },
+        raw: true,
+      });
+      const [plain] = await createTransactions({ accountId: account.id, count: 1 });
+
+      const created = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({ transactionIds: [rich!.id, plain!.id] }),
+        raw: true,
+      });
+
+      const { transactions } = await helpers.getTransactionGroupById({ id: created.id, raw: true });
+      const richRow = transactions!.find((tx) => tx.id === rich!.id)!;
+      const plainRow = transactions!.find((tx) => tx.id === plain!.id)!;
+
+      expect(richRow.tags!.map((t) => t.id)).toEqual([tag.id]);
+      expect(richRow.splits).toHaveLength(1);
+      expect(richRow.splits![0]!.category!.id).toBe(splitCategory!.id);
+      expect(plainRow.tags).toEqual([]);
+      expect(plainRow.splits).toEqual([]);
     });
   });
 
@@ -318,7 +441,7 @@ describe('Transaction Groups API', () => {
       const account = await helpers.createAccount({ raw: true });
       const txs = await createTransactions({ accountId: account.id, count: 4 });
 
-      await helpers.createTransactionGroup({
+      const groupX = await helpers.createTransactionGroup({
         payload: helpers.buildTransactionGroupPayload({
           name: 'Group X',
           transactionIds: [txs[0]!.id, txs[1]!.id],
@@ -342,11 +465,39 @@ describe('Transaction Groups API', () => {
       });
 
       expect(response.statusCode).toBe(ERROR_CODES.ConflictError);
+      expect(readErrorDetails(response)?.groups).toEqual([{ id: groupX.id, name: 'Group X' }]);
     });
 
-    it('fails when exceeding max group size', async () => {
+    // One fixture for every size-limit path: building MAX transactions is the slow part.
+    it('enforces the max group size on create and add, counting both transfer legs', async () => {
       const account = await helpers.createAccount({ raw: true });
-      const txs = await createTransactions({ accountId: account.id, count: MAX_GROUP_SIZE });
+      const txs = await createTransactions({ accountId: account.id, count: TRANSACTION_GROUP_MAX_SIZE });
+
+      const destination = await helpers.createAccount({ raw: true });
+      const [transferLeg] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({ accountId: account.id, amount: 77 }),
+          transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+          destinationAmount: 77,
+          destinationAccountId: destination.id,
+        },
+        raw: true,
+      });
+
+      const createResponse = await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({
+          name: 'Too Big',
+          transactionIds: [...txs.slice(1).map((t) => t.id), transferLeg.id],
+        }),
+        raw: false,
+      });
+
+      expect(createResponse.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(readErrorDetails(createResponse)).toEqual({
+        maxSize: TRANSACTION_GROUP_MAX_SIZE,
+        count: TRANSACTION_GROUP_MAX_SIZE + 1,
+      });
+      expect(await helpers.getTransactionGroups({ raw: true })).toEqual([]);
 
       const group = await helpers.createTransactionGroup({
         payload: helpers.buildTransactionGroupPayload({
@@ -372,7 +523,23 @@ describe('Transaction Groups API', () => {
       });
 
       expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
-    });
+      expect(readErrorDetails(response)).toEqual({
+        maxSize: TRANSACTION_GROUP_MAX_SIZE,
+        count: TRANSACTION_GROUP_MAX_SIZE + 1,
+      });
+
+      const transferResponse = await helpers.addTransactionsToGroup({
+        groupId: group.id,
+        transactionIds: [transferLeg.id],
+        raw: false,
+      });
+
+      expect(transferResponse.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(readErrorDetails(transferResponse)).toEqual({
+        maxSize: TRANSACTION_GROUP_MAX_SIZE,
+        count: TRANSACTION_GROUP_MAX_SIZE + 2,
+      });
+    }, 60_000);
   });
 
   describe('DELETE /transaction-groups/:id/transactions (remove)', () => {
@@ -450,7 +617,7 @@ describe('Transaction Groups API', () => {
   });
 
   describe('Auto-dissolve on transaction deletion', () => {
-    it('auto-dissolves group when deleting a transaction leaves < 2 members', async () => {
+    it('keeps a group whose member is trashed and dissolves it once that member is deleted for good', async () => {
       const account = await helpers.createAccount({ raw: true });
       const txs = await createTransactions({ accountId: account.id, count: 2 });
 
@@ -462,10 +629,13 @@ describe('Transaction Groups API', () => {
         raw: true,
       });
 
-      // Delete one transaction
       await helpers.deleteTransaction({ id: txs[0]!.id });
 
-      // Group should be auto-dissolved
+      const whileTrashed = await helpers.getTransactionGroupById({ id: group.id, raw: true });
+      expect(whileTrashed.transactions!.map((tx) => tx.id)).toEqual([txs[1]!.id]);
+
+      await helpers.deleteTrash({ transactionIds: [txs[0]!.id as RecordId], raw: true });
+
       const check = await helpers.getTransactionGroupById({ id: group.id, raw: false });
       expect(check.statusCode).toBe(ERROR_CODES.NotFoundError);
     });
@@ -500,6 +670,7 @@ describe('Transaction Groups API', () => {
       const [income] = await helpers.createTransaction({
         payload: helpers.buildTransactionPayload({
           accountId: accountA.id,
+          amount: 100,
           transactionType: TRANSACTION_TYPES.income,
         }),
         raw: true,
@@ -507,6 +678,7 @@ describe('Transaction Groups API', () => {
       const [expense] = await helpers.createTransaction({
         payload: helpers.buildTransactionPayload({
           accountId: accountB.id,
+          amount: 100,
           transactionType: TRANSACTION_TYPES.expense,
         }),
         raw: true,
@@ -521,6 +693,7 @@ describe('Transaction Groups API', () => {
       const [standalone] = await helpers.createTransaction({
         payload: helpers.buildTransactionPayload({
           accountId: accountA.id,
+          amount: 30,
           transactionType: TRANSACTION_TYPES.expense,
         }),
         raw: true,
@@ -540,6 +713,10 @@ describe('Transaction Groups API', () => {
       expect(txIds).toContain(income.id);
       expect(txIds).toContain(expense.id);
       expect(txIds).toContain(standalone.id);
+
+      // Both transfer legs are in the group, so they cancel out in the net amount.
+      const groups = await helpers.getTransactionGroups({ raw: true });
+      expect(groups.find((g) => g.id === group.id)!.netRefAmount).toBe(-30);
     });
 
     it('auto-includes opposite transfer when adding to an existing group', async () => {

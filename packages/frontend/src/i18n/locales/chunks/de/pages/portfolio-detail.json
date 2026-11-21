@@ -9,6 +9,7 @@
     "backToInvestments": "Zurück zu Investments",
     "subtitle": "Portfolio-Übersicht",
     "actions": {
+      "openExternalUrl": "Open external link",
       "transfer": "Umbuchen",
       "edit": "Bearbeiten",
       "delete": "Löschen",
@@ -26,8 +27,8 @@
       }
     },
     "cashBalances": {
-      "title": "Barbestände",
-      "emptyState": "Keine Barbestände",
+      "title": "Cash-Bestände",
+      "emptyState": "Keine Cash-Bestände",
       "tabs": {
         "balances": "Bestände",
         "cashTransactions": "Transaktionen",

@@ -1,3 +1,5 @@
+import type { EntityLogoFields, EntityLogoWritePayload } from './entity-logo';
+import { MAX_CURRENCY_DECIMALS } from './money';
 import type { RecordId } from './record-id';
 import type { UserModel } from './users';
 
@@ -19,7 +21,7 @@ export enum EXCHANGE_RATE_PROVIDER_TYPE {
 }
 
 /** Shortest currency code, ISO 4217 or user-defined. */
-export const CURRENCY_CODE_MIN_LENGTH = 2;
+const CURRENCY_CODE_MIN_LENGTH = 2;
 /** Longest currency code; the width of every currency-code column. */
 export const CURRENCY_CODE_MAX_LENGTH = 16;
 /** Shape of a currency code: uppercase letters and digits. Says nothing about whether the code exists. */
@@ -27,10 +29,8 @@ export const CURRENCY_CODE_PATTERN = new RegExp(`^[A-Z0-9]{${CURRENCY_CODE_MIN_L
 
 export const CUSTOM_CURRENCY_NAME_MAX_LENGTH = 255;
 export const CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH = 8;
-/** Longest logo URL a custom currency stores. */
-export const CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH = 2048;
 export const CUSTOM_CURRENCY_DECIMALS_MIN = 0;
-export const CUSTOM_CURRENCY_DECIMALS_MAX = 18;
+export const CUSTOM_CURRENCY_DECIMALS_MAX = MAX_CURRENCY_DECIMALS;
 
 export interface CurrencyModel {
   currency: string;
@@ -58,29 +58,27 @@ export interface CurrencyMeta {
 }
 
 /** A user's custom currency as `/user/currencies/custom` returns it, overrides applied. */
-export interface CustomCurrencyModel extends CurrencyMeta {
+export interface CustomCurrencyModel extends CurrencyMeta, EntityLogoFields {
   code: string;
   name: string;
   isCustom: true;
-  /** https URL of the image the user picked for the currency; `null` draws a monogram instead. */
-  logoUrl: string | null;
 }
 
-export interface CreateCustomCurrencyBody {
+export interface CreateCustomCurrencyBody extends EntityLogoWritePayload {
   code: string;
   name: string;
-  /** 0 to 18. */
+  /** 0 to `MAX_CURRENCY_DECIMALS`. */
   decimals: number;
   symbol?: string | null;
+  /** What one unit is worth in `quoteCode`, an ISO currency the user holds (default: the base currency). */
+  rate: { value: number; quoteCode?: string };
 }
 
-export interface UpdateCustomCurrencyBody {
+export interface UpdateCustomCurrencyBody extends EntityLogoWritePayload {
   name?: string;
   /** Changing it is allowed only while none of the user's rows use the currency. */
   decimals?: number;
   symbol?: string | null;
-  /** An https URL, or `null` to clear the logo; absent keeps the stored one. */
-  logoUrl?: string | null;
 }
 
 /**
@@ -96,13 +94,13 @@ export const ISO_CURRENCY_RATE_SOURCES = ['provider', 'manual'] as const satisfi
 /** Quote currency of the synced sources when the config names none. */
 export const DEFAULT_RATE_SOURCE_QUOTE_CURRENCY = 'USD';
 
-/** The rate is `factor` times the rate of `pegCurrency`. */
+/** The rate is `factor` times the rate of `pegCurrency`, an ISO currency. */
 export interface PegRateSourceConfig {
   pegCurrency: string;
   factor: number;
 }
 
-/** Daily prices of one CoinGecko coin, stored in `quoteCurrency`. */
+/** Daily prices of one CoinGecko coin, stored in `quoteCurrency`, an ISO currency. */
 export interface CoingeckoRateSourceConfig {
   coinId: string;
   quoteCurrency: string;
@@ -183,7 +181,7 @@ export type UpdateCurrencyRateSourceBody =
   | {
       rateSource: 'coingecko';
       config: Omit<CoingeckoRateSourceConfig, 'quoteCurrency'> & { quoteCurrency?: string };
-      /** The picked coin's https logo; absent keeps the currency's logo, `null` clears it. */
+      /** The picked coin's https logo, stored as the currency's logo image; absent keeps the logo, `null` clears it. */
       logoUrl?: string | null;
     }
   | { rateSource: 'http'; config: HttpRateSourceInput };
@@ -218,21 +216,20 @@ export interface CurrencyRateHistoryResponse {
   totalCount: number | null;
 }
 
-export interface UserCurrencyModel {
+/** The logo fields carry a custom currency's logo; always `null` on an ISO currency. */
+export interface UserCurrencyModel extends EntityLogoFields {
   id: RecordId;
   userId: number;
   currencyCode: string;
   exchangeRate: number;
   liveRateUpdate: boolean;
   isDefaultCurrency: boolean;
-  /** Name the user gave the currency; `null` keeps `currency.currency`. */
+  /** Raw custom definition: its name. `currency` already carries it; always `null` on an ISO currency. */
   nameOverride: string | null;
-  /** Symbol the user gave the currency; `null` keeps `currency.symbol`. */
+  /** Raw custom definition: its symbol. `currency` already carries it; always `null` on an ISO currency. */
   symbolOverride: string | null;
-  /** Decimals the user's amounts keep in this currency (0 to 18); `null` keeps `currency.digits`. */
+  /** Raw custom definition: its decimals. `currency` already carries them; always `null` on an ISO currency. */
   decimalsOverride: number | null;
-  /** https URL of the image the user picked for a custom currency; always `null` on an ISO currency. */
-  logoUrl: string | null;
   /** Where the currency's rates come from; `provider` until the user picks another source. */
   rateSource: CurrencyRateSource;
   /** Settings of the source; `null` for `provider` and `manual`. */

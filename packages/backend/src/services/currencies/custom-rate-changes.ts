@@ -3,7 +3,7 @@ import { getBaseCurrency } from '@models/users-currencies.model';
 import { findCustomCurrencyCodes } from '@services/currencies/custom-currency-codes';
 import { Op } from 'sequelize';
 
-import type { CustomRateChange, RecomputeMode } from './recompute-scope';
+import type { CustomRateChange } from './recompute-scope';
 
 /** A manual-rate write about to happen, read before it lands. */
 interface PlannedRateChange {
@@ -11,25 +11,14 @@ interface PlannedRateChange {
   quoteCode: string;
   /** First day the change reaches; `null` when every day of the pair is affected. */
   from: string | null;
-  mode: RecomputeMode;
 }
 
 type RatePair = { baseCode: string; quoteCode: string; effectiveDate?: string };
 
 /**
- * The days a manual rate written for a custom currency reaches, read before the write.
- *
- * A rate for a day that has none yet and is not in the past is a new day's rate: it only fills rows
- * waiting for a rate. A rate that replaces one already stored, or that lands on a past day, changes
- * the effective rate of days that were valued under the earlier state, so those are valued again.
- * Removing a rate does the same, and removing a pair without naming a day reaches all of its days.
- *
- * A pair with a custom currency on its base side is a rate a transaction is valued with; the reverse
- * direction the rate editor stores beside every pair is not a change. A manual rate between two ISO
- * currencies that quotes the base currency is a change too: a custom currency pegged to (or quoted
- * in) the base side is worth its ISO rate, and a manual ISO rate applies to every day, so the change
- * has no start or end day. The planned entry names the ISO code; the recompute expands it to the
- * custom currencies behind it.
+ * The days a manual rate write reaches, read before the write. A new day's rate after an earlier one
+ * leaves valued rows alone; a replaced, past, removed or re-quoted rate reaches its days, and a manual
+ * ISO rate into the base reaches every day of the custom currencies valued through it.
  */
 export const planRateChanges = async ({
   userId,
@@ -48,41 +37,46 @@ export const planRateChanges = async ({
   for (const pair of pairs) {
     if (!customCodes.has(pair.baseCode.toUpperCase())) {
       if (baseCurrency && pair.quoteCode === baseCurrency.currency.code) {
-        planned.push({ currencyCode: pair.baseCode, quoteCode: pair.quoteCode, from: null, mode: 'recompute' });
+        planned.push({ currencyCode: pair.baseCode, quoteCode: pair.quoteCode, from: null });
       }
       continue;
     }
 
     if (kind === 'remove') {
-      planned.push({
-        currencyCode: pair.baseCode,
-        quoteCode: pair.quoteCode,
-        from: pair.effectiveDate ?? null,
-        mode: 'recompute',
-      });
+      planned.push({ currencyCode: pair.baseCode, quoteCode: pair.quoteCode, from: pair.effectiveDate ?? null });
+      continue;
+    }
+
+    // A new quote drops the rates of the old one, so every day is valued again.
+    const otherQuotes = await UserExchangeRates.count({
+      where: { userId, baseCode: pair.baseCode, quoteCode: { [Op.ne]: pair.quoteCode } },
+    });
+    if (otherQuotes) {
+      planned.push({ currencyCode: pair.baseCode, quoteCode: pair.quoteCode, from: null });
       continue;
     }
 
     const from = pair.effectiveDate ?? today;
-    const existing = await UserExchangeRates.count({
-      where: { userId, baseCode: pair.baseCode, quoteCode: pair.quoteCode, effectiveDate: from },
-    });
+    if (from >= today) {
+      const existing = await UserExchangeRates.count({
+        where: { userId, baseCode: pair.baseCode, quoteCode: pair.quoteCode, effectiveDate: from },
+      });
+      const earlier = await UserExchangeRates.count({
+        where: { userId, baseCode: pair.baseCode, effectiveDate: { [Op.lt]: from } },
+      });
+      if (existing === 0 && earlier > 0) continue;
+    }
 
-    planned.push({
-      currencyCode: pair.baseCode,
-      quoteCode: pair.quoteCode,
-      from,
-      mode: existing === 0 && from >= today ? 'fill' : 'recompute',
-    });
+    planned.push({ currencyCode: pair.baseCode, quoteCode: pair.quoteCode, from });
   }
 
   return planned;
 };
 
 /**
- * Day of the next stored rate after `after`. A rate quoted in the user's base currency is an exact
- * pair, which keeps applying until the next row of that same pair; any other quote is a step of the
- * walk, which a row of any quote takes over from.
+ * Day of the next stored rate after `from`. A rate quoted in the user's base currency is an exact
+ * pair, which keeps applying until the next row of that same pair; a rate in any other quote is
+ * taken over by the next row of any quote.
  */
 const findNextRateDay = async ({
   userId,
@@ -133,7 +127,7 @@ export const resolveRateChanges = async ({
             baseCurrencyCode: baseCurrency.currency.code,
           });
 
-    changes.push({ currencyCode: change.currencyCode, from: change.from, to, mode: change.mode });
+    changes.push({ currencyCode: change.currencyCode, from: change.from, to });
   }
 
   return changes;

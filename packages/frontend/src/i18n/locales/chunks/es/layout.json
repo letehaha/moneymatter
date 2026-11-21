@@ -8,18 +8,23 @@
     "allTransactions": "Todas las transacciones",
     "transactions": "Transacciones",
     "transactionGroups": "Grupos",
+    "trash": "Papelera",
     "analytics": "Análisis",
     "optimizations": "Optimizaciones",
     "automations": "Automatizaciones",
     "accountDetails": "Detalles de la cuenta",
     "helpAndDocs": "Ayuda & Documentación",
+    "community": "Comunidad",
     "logout": "Cerrar sesión",
-    "appVersion": "App version {version}",
+    "appVersion": "Versión de app {version}",
+    "updateAvailable": "Actualización disponible",
+    "updateToVersion": "Actualizar «{version}»",
     "settings": "Ajustes",
     "planned": {
       "planned": "Planificado",
       "subscriptions": "Cargos recurrentes",
-      "budgets": "Presupuestos"
+      "budgets": "Rastreadores",
+      "goals": "Objetivos"
     },
     "venture": "Venture",
     "budget": "Presupuestos"
@@ -27,6 +32,7 @@
   "sidebar": {
     "collapse": "Contraer barra lateral",
     "expand": "Expandir barra lateral",
+    "resize": "Redimensionar barra lateral",
     "settings": {
       "title": "Ajustes",
       "sections": {
@@ -115,6 +121,10 @@
       "thanks": "Gracias, leemos todos los mensajes.",
       "unavailable": "El envío no está disponible en este momento. Use el tablero de abajo en su lugar.",
       "or": "o",
+      "reddit": {
+        "title": "Preguntar a la comunidad en Reddit",
+        "description": "Obtén ayuda de otros usuarios, comparte cómo configuras las cosas y sigue las actualizaciones."
+      },
       "board": {
         "title": "Publíquelo en el tablero público",
         "description": "Vote las ideas de otras personas, vea qué está ya planificado y reciba una respuesta a la suya."

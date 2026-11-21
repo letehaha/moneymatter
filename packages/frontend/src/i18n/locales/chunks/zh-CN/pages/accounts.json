@@ -1,7 +1,7 @@
 {
   "accounts": {
     "title": "Accounts",
-    "createAccount": "创建账户",
+    "createAccount": "Create account",
     "createVehicle": "Add vehicle",
     "actionsMenu": "Account actions",
     "sections": {
@@ -27,17 +27,23 @@
     "sharedBy": "Shared by {handle}",
     "viaHousehold": "Shared via {handle}'s household",
     "connect": "Connect",
-    "connectBank": "连接银行",
+    "connectBank": "Connect bank",
     "noBanksConnected": "No banks connected yet — connect one to sync balances automatically.",
-    "reconnect": "重新连接",
+    "reconnect": "Reconnect",
     "manageConnection": "Manage connection",
     "accountsCount": "{count} account | {count} accounts",
     "inGroupSubtitle": "in {name}",
     "sort": {
-      "auto": "自动",
+      "auto": "Auto",
       "name": "Name",
       "balance": "Balance",
-      "ariaLabel": "Sort accounts"
+      "ariaLabel": "Sort accounts",
+      "direction": {
+        "aToZ": "A to Z",
+        "zToA": "Z to A",
+        "highestFirst": "Highest first",
+        "lowestFirst": "Lowest first"
+      }
     },
     "status": {
       "active": "Active",

@@ -201,6 +201,27 @@ describe('chunk-reload-handler', () => {
       expect(reloadMock).not.toHaveBeenCalled();
     });
 
+    it('reports a cap-exhausted incident to Sentry only once across all its signals', () => {
+      window.sessionStorage.setItem(RELOAD_COUNTER_KEY, '2');
+      window.sessionStorage.setItem(RELOAD_TIMESTAMP_KEY, String(Date.now()));
+      const { preloadHandler, routerErrorHandler } = install();
+
+      const first = makeEvent(staleError());
+      preloadHandler(first);
+      routerErrorHandler(new Error('Couldn\'t resolve component "default" at "/accounts"'), {
+        fullPath: '/accounts',
+      });
+      const second = makeEvent(staleError());
+      preloadHandler(second);
+
+      expect(captureExceptionMock).toHaveBeenCalledOnce();
+      expect(first.defaultPrevented).toBe(false);
+      expect(second.defaultPrevented).toBe(false);
+      vi.advanceTimersByTime(NAVIGATE_DEFER_MS);
+      expect(reloadMock).not.toHaveBeenCalled();
+      expect(assignMock).not.toHaveBeenCalled();
+    });
+
     it('recovers to the intended route when preloadError and router error describe one incident', () => {
       const { preloadHandler, routerErrorHandler } = install();
 

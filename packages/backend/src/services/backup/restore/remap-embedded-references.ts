@@ -2,6 +2,8 @@ import {
   type AutomationAction,
   type AutomationConditionField,
   type AutomationConditions,
+  CATEGORY_ORDER_ROOT_KEY,
+  type CategoryOrder,
   type FireSettings,
   getPortfolioIdFromIndicatorId,
   isPortfolioIndicatorId,
@@ -23,8 +25,9 @@ import Tags from '@models/tags.model';
 import Trackers from '@models/trackers.model';
 import TransactionAutomations from '@models/transaction-automations.model';
 import Transactions from '@models/transactions.model';
+import type { SettingsSchema } from '@models/user-settings.model';
 import VentureEventLinks from '@models/venture/venture-event-links.model';
-import { Model, type ModelStatic, type Transaction } from 'sequelize';
+import { Model, type ModelStatic, Op, type Transaction, type WhereOptions } from 'sequelize';
 
 import type { BackupFileName } from '../registry';
 import type { ParsedArchive } from './load-archive';
@@ -84,6 +87,7 @@ async function rewriteColumn({
   insertedIds,
   transaction,
   mutate,
+  where,
 }: {
   model: AnyModel;
   fileName: BackupFileName;
@@ -92,6 +96,8 @@ async function rewriteColumn({
   insertedIds: InsertedIds;
   transaction: Transaction;
   mutate: (params: { draft: unknown }) => void;
+  /** Narrows which restored rows may be written, for columns an earlier pass cleared on purpose. */
+  where?: WhereOptions;
 }): Promise<void> {
   const rows = archive.data.get(fileName);
   if (!rows || rows.length === 0) return;
@@ -110,7 +116,7 @@ async function rewriteColumn({
     mutate({ draft });
     if (JSON.stringify(draft) === originalJson) continue;
 
-    await model.update({ [column]: draft }, { where: { id: finalId }, transaction });
+    await model.update({ [column]: draft }, { where: { ...where, id: finalId }, transaction });
   }
 }
 
@@ -168,6 +174,16 @@ export async function remapEmbeddedReferences({
   });
 
   // 2. Transactions.categorizationMeta → subscriptionId (Subscriptions), payeeId (Payees).
+  const mutateCategorizationMeta = ({ draft }: { draft: unknown }): void => {
+    if (typeof draft !== 'object' || draft === null) return;
+    const meta = draft as Record<string, unknown>;
+    if (typeof meta.subscriptionId === 'string')
+      meta.subscriptionId = remapId({ insertedIds, targetTable: tables.subscriptions, oldId: meta.subscriptionId });
+    if (typeof meta.payeeId === 'string')
+      meta.payeeId = remapId({ insertedIds, targetTable: tables.payees, oldId: meta.payeeId });
+    if (typeof meta.ruleId === 'string')
+      meta.ruleId = remapId({ insertedIds, targetTable: tables.transactionAutomations, oldId: meta.ruleId });
+  };
   await rewriteColumn({
     model: Transactions,
     fileName: 'transactions',
@@ -175,15 +191,28 @@ export async function remapEmbeddedReferences({
     archive,
     insertedIds,
     transaction,
+    mutate: mutateCategorizationMeta,
+  });
+
+  // 2b. Transactions.paymentLinkSnapshot → categoryId, payeeId, tagIds[], categorizationMeta.
+  //     Rows whose payment was not restored had the snapshot cleared, so they are skipped.
+  await rewriteColumn({
+    model: Transactions,
+    fileName: 'transactions',
+    column: 'paymentLinkSnapshot',
+    archive,
+    insertedIds,
+    transaction,
+    where: { paymentParentId: { [Op.ne]: null } },
     mutate: ({ draft }) => {
       if (typeof draft !== 'object' || draft === null) return;
-      const meta = draft as Record<string, unknown>;
-      if (typeof meta.subscriptionId === 'string')
-        meta.subscriptionId = remapId({ insertedIds, targetTable: tables.subscriptions, oldId: meta.subscriptionId });
-      if (typeof meta.payeeId === 'string')
-        meta.payeeId = remapId({ insertedIds, targetTable: tables.payees, oldId: meta.payeeId });
-      if (typeof meta.ruleId === 'string')
-        meta.ruleId = remapId({ insertedIds, targetTable: tables.transactionAutomations, oldId: meta.ruleId });
+      const snapshot = draft as Record<string, unknown>;
+      if (typeof snapshot.categoryId === 'string')
+        snapshot.categoryId = remapId({ insertedIds, targetTable: tables.categories, oldId: snapshot.categoryId });
+      if (typeof snapshot.payeeId === 'string')
+        snapshot.payeeId = remapId({ insertedIds, targetTable: tables.payees, oldId: snapshot.payeeId });
+      remapIdArrayInPlace({ arr: snapshot.tagIds, targetTable: tables.tags, insertedIds });
+      mutateCategorizationMeta({ draft: snapshot.categorizationMeta });
     },
   });
 
@@ -363,6 +392,12 @@ export function remapSavedTransactionViewIds({
   }
 }
 
+/** Map category ids to their restored ids, dropping ids the restore did not insert. */
+function remapCategoryIdList({ ids, insertedIds }: { ids: string[]; insertedIds: InsertedIds }): string[] {
+  const categories = insertedIds.get(String(Categories.getTableName()));
+  return ids.flatMap((id) => categories?.get(id) ?? []);
+}
+
 /** Remap FIRE category ids and the `portfolio:<id>` return indicator in place. Every restored
  *  row is in `insertedIds`, so an unmapped id is dangling: it's dropped, and the indicator falls
  *  back to its default. */
@@ -374,11 +409,10 @@ export function remapFireSettingsIds({
   insertedIds: InsertedIds;
 }): void {
   if (!fire) return;
-  const categories = insertedIds.get(String(Categories.getTableName()));
   const portfolios = insertedIds.get(String(Portfolios.getTableName()));
 
   if (fire.spendingExcludedCategoryIds) {
-    fire.spendingExcludedCategoryIds = fire.spendingExcludedCategoryIds.flatMap((id) => categories?.get(id) ?? []);
+    fire.spendingExcludedCategoryIds = remapCategoryIdList({ ids: fire.spendingExcludedCategoryIds, insertedIds });
   }
   if (fire.returnIndicatorId && isPortfolioIndicatorId({ id: fire.returnIndicatorId })) {
     const portfolioId = portfolios?.get(getPortfolioIdFromIndicatorId({ id: fire.returnIndicatorId }));
@@ -396,6 +430,36 @@ export function remapIncomeCategoryIds({
   insertedIds: InsertedIds;
 }): void {
   if (!settings.incomeCategoryIds) return;
+  settings.incomeCategoryIds = remapCategoryIdList({ ids: settings.incomeCategoryIds, insertedIds });
+}
+
+/** Remap `settings.ios.addExpense.excludedCategoryIds` in place, dropping ids the restore did not insert. */
+export function remapIosAddExpenseCategoryIds({
+  settings,
+  insertedIds,
+}: {
+  settings: Pick<SettingsSchema, 'ios'>;
+  insertedIds: InsertedIds;
+}): void {
+  const addExpense = settings.ios?.addExpense;
+  if (!addExpense?.excludedCategoryIds) return;
+  addExpense.excludedCategoryIds = remapCategoryIdList({ ids: addExpense.excludedCategoryIds, insertedIds });
+}
+
+/** Remap `settings.categoryOrder` keys (parent ids) and values in place, dropping ids the restore did not insert. */
+export function remapCategoryOrderIds({
+  settings,
+  insertedIds,
+}: {
+  settings: { categoryOrder?: CategoryOrder };
+  insertedIds: InsertedIds;
+}): void {
+  if (!settings.categoryOrder) return;
   const categories = insertedIds.get(String(Categories.getTableName()));
-  settings.incomeCategoryIds = settings.incomeCategoryIds.flatMap((id) => categories?.get(id) ?? []);
+  settings.categoryOrder = Object.fromEntries(
+    Object.entries(settings.categoryOrder).flatMap(([parentKey, ids]) => {
+      const key = parentKey === CATEGORY_ORDER_ROOT_KEY ? parentKey : categories?.get(parentKey);
+      return key ? [[key, ids.flatMap((id) => categories?.get(id) ?? [])]] : [];
+    }),
+  );
 }

@@ -3,9 +3,13 @@ import { t } from '@i18n/index';
 import { ConflictError, NotFoundError } from '@js/errors';
 import TrackerSuggestions from '@models/tracker-suggestions.model';
 import TrackerTransactions from '@models/tracker-transactions.model';
+import Trackers from '@models/trackers.model';
 import { withTransaction } from '@services/common/with-transaction';
+import partition from 'lodash/partition';
+import { Transaction } from 'sequelize';
 
 import { addTransactionsToTracker } from '../add-transactions-to-tracker';
+import { syncTrackerRules } from '../rules/sync-tracker-rules';
 import { findOwnedTracker } from './find-owned-tracker';
 import { acceptLinkedTransactions, trackSuggestionsResolved } from './suggestion-feedback';
 
@@ -30,6 +34,8 @@ export const resolveTrackerSuggestions = withTransaction(
     action: ResolveSuggestionsAction;
   }): Promise<ResolveTrackerSuggestionsResponse> => {
     await findOwnedTracker({ userId, trackerId });
+    // Tracker row before suggestion rows, the same order syncTrackerRules takes them in.
+    await Trackers.findByPk(trackerId, { attributes: ['id'], lock: Transaction.LOCK.NO_KEY_UPDATE });
 
     const suggestions = await TrackerSuggestions.findAll({
       where: { id: suggestionIds, trackerId },
@@ -71,10 +77,18 @@ export const resolveTrackerSuggestions = withTransaction(
         { where: { id: suggestionIds } },
       );
     } else {
-      await TrackerSuggestions.update(
-        { status: TRACKER_SUGGESTION_STATUS.pending, resolvedAt: null },
-        { where: { id: suggestionIds } },
-      );
+      // Score 0 rows record a hand removal, not an AI verdict: dropping them lets rules and AI consider the transaction again.
+      const [scored, removed] = partition(suggestions, (suggestion) => suggestion.score > 0);
+      if (scored.length) {
+        await TrackerSuggestions.update(
+          { status: TRACKER_SUGGESTION_STATUS.pending, resolvedAt: null },
+          { where: { id: scored.map((suggestion) => suggestion.id) } },
+        );
+      }
+      if (removed.length) {
+        await TrackerSuggestions.destroy({ where: { id: removed.map((suggestion) => suggestion.id) } });
+      }
+      await syncTrackerRules({ trackerId });
     }
 
     trackSuggestionsResolved({ userId, action, suggestions });

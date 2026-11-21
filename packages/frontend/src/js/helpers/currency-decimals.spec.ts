@@ -1,11 +1,13 @@
 import {
   DEFAULT_CURRENCY_DECIMALS,
   getCurrencyDecimals,
+  getSmallestCurrencyUnit,
   isIntlCurrencyCode,
   registerCurrencyDecimals,
   registerFallbackCurrencyMeta,
   resetCurrencyDecimals,
   resolveCurrencyDisplay,
+  roundToDecimals,
   trimAmountNoise,
 } from './currency-decimals';
 
@@ -25,6 +27,20 @@ describe('js/helpers/currency-decimals', () => {
       expect(getCurrencyDecimals({ code })).toBe(expected);
     });
 
+    // CLDR (behind `Intl`) gives IQD 0 digits where ISO 4217 says 3.
+    test('an unregistered IQD takes the Intl decimals', () => {
+      expect(getCurrencyDecimals({ code: 'IQD' })).toBe(0);
+    });
+
+    test.each<[string, number]>([
+      ['HUF', 2],
+      ['IQD', 3],
+    ])('a registered %s takes the backend decimals over Intl: %d', (code, decimals) => {
+      registerCurrencyDecimals({ entries: [{ code, decimals }] });
+
+      expect(getCurrencyDecimals({ code })).toBe(decimals);
+    });
+
     test('an unknown code with nothing registered gets the default', () => {
       expect(getCurrencyDecimals({ code: 'USDT' })).toBe(DEFAULT_CURRENCY_DECIMALS);
     });
@@ -33,18 +49,6 @@ describe('js/helpers/currency-decimals', () => {
       expect(getCurrencyDecimals({ code: undefined })).toBe(DEFAULT_CURRENCY_DECIMALS);
       expect(getCurrencyDecimals({ code: null })).toBe(DEFAULT_CURRENCY_DECIMALS);
       expect(getCurrencyDecimals({ code: '' })).toBe(DEFAULT_CURRENCY_DECIMALS);
-    });
-
-    test('a registered value wins over the ISO one', () => {
-      registerCurrencyDecimals({
-        entries: [
-          { code: 'BTC', decimals: 8 },
-          { code: 'JPY', decimals: 1 },
-        ],
-      });
-
-      expect(getCurrencyDecimals({ code: 'BTC' })).toBe(8);
-      expect(getCurrencyDecimals({ code: 'JPY' })).toBe(1);
     });
 
     test('zero registered decimals are honoured, not treated as missing', () => {
@@ -124,11 +128,60 @@ describe('js/helpers/currency-decimals', () => {
       expect(resolveCurrencyDisplay({ code: 'ETH' }).decimals).toBe(DEFAULT_CURRENCY_DECIMALS);
     });
 
+    test('a replacing registration drops codes the new list no longer has', () => {
+      registerCurrencyDecimals({ entries: [{ code: 'GOLD', decimals: 3, isCustom: true, symbol: 'g' }] });
+      registerCurrencyDecimals({ entries: [{ code: 'USD', decimals: 2 }], replace: true });
+
+      expect(resolveCurrencyDisplay({ code: 'GOLD' })).toEqual({
+        decimals: DEFAULT_CURRENCY_DECIMALS,
+        isCustom: true,
+        symbol: null,
+      });
+    });
+
+    test('once the catalogue is loaded, a code it lacks is custom even when Intl accepts it', () => {
+      expect(resolveCurrencyDisplay({ code: 'SAT' }).isCustom).toBe(false);
+
+      registerCurrencyDecimals({ entries: [{ code: 'USD', decimals: 2 }], replace: true });
+
+      expect(resolveCurrencyDisplay({ code: 'SAT' }).isCustom).toBe(true);
+      expect(resolveCurrencyDisplay({ code: 'USD' }).isCustom).toBe(false);
+    });
+
+    test('the owner definitions are replaced, not merged', () => {
+      registerFallbackCurrencyMeta({ entries: [{ code: 'BTC', meta: { decimals: 8, symbol: null, isCustom: true } }] });
+      registerFallbackCurrencyMeta({ entries: [{ code: 'SAT', meta: { decimals: 0, symbol: null, isCustom: true } }] });
+
+      expect(getCurrencyDecimals({ code: 'BTC' })).toBe(DEFAULT_CURRENCY_DECIMALS);
+      expect(getCurrencyDecimals({ code: 'SAT' })).toBe(0);
+    });
+
     test('reset clears the owner definitions too', () => {
       registerFallbackCurrencyMeta({ entries: [{ code: 'BTC', meta: { decimals: 8, symbol: null, isCustom: true } }] });
       resetCurrencyDecimals();
 
       expect(getCurrencyDecimals({ code: 'BTC' })).toBe(DEFAULT_CURRENCY_DECIMALS);
+    });
+  });
+
+  describe('getSmallestCurrencyUnit', () => {
+    test.each<[string | undefined, number]>([
+      ['USD', 0.01],
+      ['JPY', 1],
+      ['KWD', 0.001],
+      [undefined, 0.01],
+    ])('%s → %d', (code, expected) => {
+      expect(getSmallestCurrencyUnit({ code })).toBe(expected);
+    });
+
+    test('follows a registered precision', () => {
+      registerCurrencyDecimals({ entries: [{ code: 'BTC', decimals: 8 }] });
+
+      expect(getSmallestCurrencyUnit({ code: 'BTC' })).toBe(1e-8);
+    });
+
+    test('follows an explicit meta', () => {
+      expect(getSmallestCurrencyUnit({ code: 'SAT', meta: { decimals: 0, symbol: null, isCustom: true } })).toBe(1);
     });
   });
 
@@ -150,6 +203,32 @@ describe('js/helpers/currency-decimals', () => {
       [20_500_000_000.25 + 0.5, 2, 20_500_000_000.75],
     ])('%d at %d decimals → %d', (value, decimals, expected) => {
       expect(trimAmountNoise({ value, decimals })).toBe(expected);
+    });
+  });
+
+  describe('roundToDecimals', () => {
+    test.each<[number, number, number]>([
+      [1.005 * 1000, 0, 1005],
+      [28567.43, 0, 28567],
+      [28567.5, 0, 28568],
+      [1.2345, 3, 1.235],
+      [1.2344, 3, 1.234],
+      [85607.126, 2, 85607.13],
+      [10.1255, 3, 10.126],
+      [1.005, 2, 1.01],
+      [1.255, 2, 1.26],
+      [2.675, 2, 2.68],
+      [1.0005, 3, 1.001],
+      [0.5, 0, 1],
+      [-0.5, 0, -1],
+      [-1.5, 0, -2],
+      [-2.5, 0, -3],
+      [-1.005, 2, -1.01],
+      [-0.001, 2, 0],
+      [5e-8, 8, 5e-8],
+      [1.5e-7, 7, 2e-7],
+    ])('%d at %d decimals → %d', (value, decimals, expected) => {
+      expect(roundToDecimals({ value, decimals })).toBe(expected);
     });
   });
 });

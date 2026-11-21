@@ -112,6 +112,46 @@
           "uploadSuccess": "Successfully uploaded {count} price record | Successfully uploaded {count} price records",
           "uploadFailed": "Upload failed: {error}"
         }
+      },
+      "broadcast": {
+        "title": "Broadcast notification",
+        "description": "Send an in-app notification to every user active in the last 30 days, or only to the user IDs and emails you list. With a link, clicking it opens the link in a new tab, and re-sending the same link skips users who already got it.",
+        "fields": {
+          "title": "Title",
+          "titlePlaceholder": "e.g. iOS app is in public beta 📱",
+          "message": "Message",
+          "messagePlaceholder": "Optional text shown under the title",
+          "url": "Link",
+          "urlPlaceholder": "https://…  (optional)",
+          "urlError": "Link must start with https://",
+          "icon": "Icon",
+          "recipients": "Recipients",
+          "recipientsPlaceholder": "Optional user IDs or emails, comma-separated, e.g. 12, jane@example.com. Empty = all active users",
+          "recipientsError": "Use positive whole-number IDs or valid emails, separated by commas"
+        },
+        "icons": {
+          "info": "Info",
+          "announcement": "Announcement",
+          "success": "Success",
+          "warning": "Warning"
+        },
+        "button": "Send notification",
+        "confirm": {
+          "title": "Send to all active users?",
+          "titleSelected": "Send to {count} users?",
+          "description": "This creates a notification for every user active in the last 30 days. It can't be undone.",
+          "descriptionSelected": "Unknown IDs and emails are skipped. It can't be undone.",
+          "button": "Send"
+        },
+        "notifications": {
+          "success": "Notification sent to {count} users",
+          "failed": "Failed to send the notification",
+          "noneCreated": "No notifications were sent: no matching users, or they already got this link"
+        }
+      },
+      "tabs": {
+        "investments": "Investments",
+        "notifications": "Notifications"
       }
     }
   }

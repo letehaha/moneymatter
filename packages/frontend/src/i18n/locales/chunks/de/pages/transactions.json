@@ -45,10 +45,8 @@
         "exclude": "Ohne",
         "only": "Nur"
       },
-      "noteIncludes": {
-        "label": "Notiz enthält (kommagetrennt)",
-        "placeholder": "Amazon, Nike",
-        "compactPlaceholder": "In Notizen suchen"
+      "search": {
+        "placeholder": "Notizen, Zahlungsempfänger und Tags durchsuchen"
       },
       "tags": {
         "allTags": "Alle Tags",
@@ -68,8 +66,7 @@
         "type": "Typ",
         "tags": "Tags",
         "budgets": "Tracker",
-        "amount": "Betragsbereich",
-        "note": "Notizen"
+        "amount": "Betragsbereich"
       },
       "transferNature": {
         "label": "Alle Umbuchungsarten",
@@ -88,7 +85,7 @@
       "detailsDescription": "Transaktion anzeigen und bearbeiten"
     },
     "bulkEdit": {
-      "selectAll": "Alles auswählen",
+      "selectAll": "Alle auswählen",
       "selectAllShort": "Alle",
       "cancelSelection": "Auswahl aufheben",
       "editButton": "Bearbeiten",
@@ -120,6 +117,16 @@
       "tagModeAdd": "Zu bestehenden Tags hinzufügen",
       "tagModeReplace": "Alle Tags ersetzen",
       "tagModeRemove": "Diese Tags entfernen",
+      "tagModeAddShort": "Hinzufügen",
+      "tagModeReplaceShort": "Ersetzen",
+      "tagModeRemoveShort": "Entfernen",
+      "tagModeAddHint": "Behält die aktuellen Tags bei und fügt diese hinzu.",
+      "tagModeReplaceHint": "Entfernt alle aktuellen Tags und fügt dann diese hinzu.",
+      "tagModeRemoveHint": "Entfernt nur diese Tags. Andere Tags bleiben erhalten.",
+      "excludeFromStatsHint": "On keeps the selected transactions out of reports, dashboard widgets, budgets and trackers. Off brings them back. Balances aren't affected.",
+      "excludeFromStatsDontChange": "Don't change stats",
+      "confirmExcludeFromStats": "Exclude from stats",
+      "confirmIncludeInStats": "Include in stats",
       "totals": {
         "income": "Einnahmen",
         "expense": "Ausgaben",
@@ -160,15 +167,40 @@
         "noGroupsMessage": "Noch keine Transaktionsgruppen.",
         "emptyStateHint": "Wähle Transaktionen auf der Transaktionsseite aus und klicke auf \"Gruppe erstellen\", um zu starten.",
         "transactionCountLabel": "Transaktionen",
-        "deleteError": "Gruppe konnte nicht gelöscht werden. Bitte versuche es erneut."
+        "deleteError": "Gruppe konnte nicht gelöscht werden. Bitte versuche es erneut.",
+        "loadError": "Transaktionsgruppen konnten nicht geladen werden",
+        "description": "Bündele zusammengehörige Transaktionen, wie eine Reise oder eine Umbuchungskette, und sieh sie dir gemeinsam an.",
+        "noMatchTitle": "Keine Gruppen entsprechen deiner Suche",
+        "moreActions": "Weitere Aktionen für {name}",
+        "columns": {
+          "name": "Name",
+          "transactions": "Transaktionen",
+          "date": "Datum",
+          "net": "Netto"
+        },
+        "sort": {
+          "label": "Gruppen sortieren",
+          "dateDesc": "Neueste zuerst",
+          "dateAsc": "Älteste zuerst",
+          "nameAsc": "Name A–Z",
+          "nameDesc": "Name Z–A",
+          "amountDesc": "Netto: hoch zu niedrig",
+          "amountAsc": "Netto: niedrig zu hoch"
+        }
       },
       "errors": {
         "nameRequired": "Gruppenname ist erforderlich",
         "minTransactions": "Wähle mindestens {min} Transaktionen aus",
         "alreadyInGroup": "Einige ausgewählte Transaktionen gehören bereits zu einer Gruppe",
+        "tooManyTransactions": "A group can hold up to {max} transactions, this would make {count}. Transfers count both sides. Deselect some or split them into several groups.",
+        "alreadyInNamedGroup": "Some selected transactions are already in: {name}. A transaction can only be in one group – remove it from there first.",
         "createFailed": "Gruppe konnte nicht erstellt werden",
         "addFailed": "Transaktionen konnten nicht zur Gruppe hinzugefügt werden"
       }
+    },
+    "excludeFromStats": {
+      "label": "Von Statistiken ausgeschlossen",
+      "tooltip": "Wird aus Berichten, Dashboard-Widgets, Budgetplänen und Trackern herausgehalten. Zählt weiterhin zu deinem Saldo und bleibt in der Transaktionsliste."
     },
     "planned": {
       "label": "Geplant",
@@ -194,8 +226,8 @@
         "tags": "Tags",
         "categorizationSource": "Kategorisiert durch",
         "group": "Gruppe",
-        "refund": "Rückerstattung",
-        "split": "Aufteilen"
+        "refund": "Erstattung",
+        "split": "Aufteilung"
       },
       "outOfWallet": "Extern",
       "hint": "Klicke auf eine Zelle, um sie zu bearbeiten, oder auf ↗, um die vollständige Transaktion zu öffnen. Wähle Zeilen aus, um sie gesammelt zu bearbeiten.",
@@ -215,7 +247,6 @@
       "categorizationSourceValues": {
         "manual": "Manuell",
         "ai": "KI",
-        "mcc_rule": "MCC-Regel",
         "user_rule": "Benutzerregel",
         "subscription_rule": "Abo-Regel",
         "payee_rule": "Zahlungsempfänger-Regel"
@@ -234,14 +265,21 @@
       "externalTooltip": "Auswahl enthält bank-synchronisierte Transaktionen, die nicht gelöscht werden können.",
       "confirmButton": "Löschen",
       "confirmTitle": "{count} Transaktionen löschen?",
-      "confirmDescription": "Diese Aktion kann nicht rückgängig gemacht werden. Bei Umbuchungen werden beide Seiten entfernt.",
-      "successMessage": "{count} Transaktionen gelöscht",
+      "confirmDescription": "Sie bleiben 30 Tage im Papierkorb und du kannst sie bis dahin wiederherstellen. Umbuchungen verschieben beide Seiten.",
+      "successMessage": "1 Transaktion in den Papierkorb verschoben | {count} Transaktionen in den Papierkorb verschoben",
+      "skippedMessage": "1 wurde übersprungen, da es mit einer Zahlung, einem Portfolio oder einem Venture verknüpft ist. | {count} wurden übersprungen, da sie mit einer Zahlung, einem Portfolio oder einem Venture verknüpft sind.",
+      "noneDeletedMessage": "Nichts in den Papierkorb verschoben: 1 Transaktion ist mit einer Zahlung, einem Portfolio oder einem Venture verknüpft. | Nichts in den Papierkorb verschoben: {count} Transaktionen sind mit einer Zahlung, einem Portfolio oder einem Venture verknüpft.",
       "unexpectedError": "Transaktionen konnten nicht gelöscht werden. Bitte versuche es erneut."
     },
+    "bankSeamDateError": "This account has been synced with your bank since {date}. Pick an earlier date.",
     "inlineEdit": {
       "saveFailed": "{field} konnte nicht gespeichert werden. Versuche es erneut.",
       "bankTitle": "Von deiner Bank festgelegt",
       "bankDescription": "Datum, Konto und Betrag werden von deiner Bankverbindung synchronisiert. Alles andere an dieser Transaktion kannst du ändern.",
+      "bankAccountTitle": "Connected to a bank",
+      "bankAccountDescription": "This account is connected to a bank, so the transaction can't be moved to another account. Everything else on it is yours to change.",
+      "manualAfterLinkTitle": "Locked since the bank link",
+      "manualAfterLinkDescription": "This account has been synced with your bank since {date}, so this transaction can't be deleted and its date and amount can no longer change.",
       "managedTitle": "An anderer Stelle verwaltet",
       "managedDescription": "Diese Transaktion gehört zu einem Portfolio, einer Investition, einem Fahrzeug oder einem Kredit. Ändere sie auf der jeweiligen Seite, damit die Salden korrekt bleiben.",
       "gotIt": "Verstanden",
@@ -272,6 +310,50 @@
       "deleteTitle": "Ansicht \"{name}\" löschen?",
       "deleteDescription": "Deine Transaktionen sind davon nicht betroffen. Dies kann nicht rückgängig gemacht werden.",
       "filtersCount": "{count} Filter | {count} Filter"
+    },
+    "trashPage": {
+      "title": "Papierkorb",
+      "description": "Neueste Löschungen zuerst. Jeder Eintrag wird nach {days} Tagen endgültig entfernt. Wähle einen aus, um zu sehen, was damit wiederhergestellt wird.",
+      "expiringBanner": "{count} wird innerhalb von {days} endgültig gelöscht.",
+      "expiringCount": "1 Transaktion | {count} Transaktionen",
+      "expiringDays": "1 Tag | {count} Tagen",
+      "loadError": "Papierkorb konnte nicht geladen werden",
+      "emptyTitle": "Papierkorb ist leer",
+      "emptyDescription": "Gelöschte Transaktionen bleiben {days} Tage hier, bevor sie endgültig entfernt werden.",
+      "daysLeft": "Noch 1 Tag | Noch {count} Tage",
+      "deletedOn": "gelöscht am {date}",
+      "transferTitle": "Umbuchung von {from} zu {to}",
+      "unknownAccount": "Unbekanntes Konto",
+      "restore": "Wiederherstellen",
+      "deletePermanently": "Endgültig löschen",
+      "deleteConfirmTitle": "Endgültig löschen?",
+      "deleteConfirmDescription": "Diese Transaktion wird endgültig entfernt. Dies kann nicht rückgängig gemacht werden.",
+      "notifications": {
+        "restored": "Transaktion wiederhergestellt",
+        "restoreError": "Transaktion konnte nicht wiederhergestellt werden",
+        "deleted": "Transaktion endgültig gelöscht",
+        "deleteError": "Transaktion konnte nicht gelöscht werden",
+        "restoredWithDroppedRefundLinks": "Wiederhergestellt. 1 Erstattungsverknüpfung konnte nicht wiederhergestellt werden, da sie nicht mehr passt. | Wiederhergestellt. {count} Erstattungsverknüpfungen konnten nicht wiederhergestellt werden, da sie nicht mehr passen."
+      },
+      "comesBack": {
+        "title": "Wird wiederhergestellt mit",
+        "basics": "Kategorie, Notiz und Zahlungsempfänger",
+        "splits": "1 Aufteilung | {n} Aufteilungen",
+        "tags": "1 Tag | {n} Tags",
+        "attachments": "1 Anhang | {n} Anhänge",
+        "otherLeg": "Gegenbuchung: {accountName} · {amountText}",
+        "balance": "Kontosaldo wird neu berechnet",
+        "balances": "Beide Salden werden neu berechnet",
+        "counterpartInTrash": "Wird wiederhergestellt, wenn die verknüpfte Transaktion ebenfalls wiederhergestellt wird.",
+        "links": {
+          "refund": "Erstattungsverknüpfung mit \"{name}\"",
+          "tracker": "Tracker \"{name}\"",
+          "group": "Gruppe \"{name}\"",
+          "subscription": "Abonnement \"{name}\"",
+          "subscriptionPeriod": "Abonnementzahlung fällig am {name}",
+          "unnamed": "Ohne Titel"
+        }
+      }
     }
   },
   "records": {
@@ -286,7 +368,7 @@
       "morePlans": "+{count} weitere geplant",
       "morePlansAtLeast": "+{count}+ weitere geplant",
       "deletePlanTitle": "Geplante Transaktion löschen?",
-      "deletePlanDescription": "Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deletePlanDescription": "Es bleibt 30 Tage im Papierkorb und du kannst es bis dahin wiederherstellen.",
       "plansLoadFailed": "Geplante Transaktionen konnten nicht geladen werden",
       "confirmAction": "Bestätigen",
       "confirmTooltip": "Das Geld wurde bewegt — erfasse es und aktualisiere den Kontostand",

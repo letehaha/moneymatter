@@ -5,3 +5,4 @@ export * from './investment-transaction.model';
 export * from './security-pricing.model';
 export * from './portfolio-models';
 export * from './transactions-import';
+export * from './portfolio-value-history.model';

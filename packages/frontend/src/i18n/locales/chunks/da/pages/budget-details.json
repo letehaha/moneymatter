@@ -1,0 +1,143 @@
+{
+  "pages": {
+    "budgets": {
+      "transactionsList": {
+        "loadError": "Couldn't load transactions.",
+        "selectionModeWarning": "Selection mode — choose transactions to unlink",
+        "selectAll": "Select all",
+        "selected": "{count} selected",
+        "unlink": "Unlink",
+        "cancel": "Cancel",
+        "unlinkSelected": "Unlink selected",
+        "noMatchingTransactions": "No matching transactions",
+        "noTransactionsLinked": "No transactions linked",
+        "filterAdjustmentHint": "Try adjusting your filters to see more transactions.",
+        "addTransactionsHint": "Add transactions to this tracker to start tracking your spending.",
+        "resetFilters": "Reset filters",
+        "addTransactions": "Add transactions",
+        "add": "Add",
+        "loadingMore": "Loading more...",
+        "unlinkError": "Failed to unlink transactions",
+        "addError": "Failed to add transactions"
+      }
+    },
+    "budgetDetails": {
+      "notSet": "Not set",
+      "saving": "Saving...",
+      "saveChanges": "Save changes",
+      "loading": "Loading...",
+      "uncategorized": "Uncategorized",
+      "stats": {
+        "income": "Income",
+        "expenses": "Expenses",
+        "netBalance": "Net balance"
+      },
+      "utilization": {
+        "title": "Tracker utilization",
+        "summary": "{spent} of {limit} limit",
+        "na": "N/A"
+      },
+      "noTransactionsYet": "No transactions yet",
+      "transactions": "Transactions",
+      "transactionsLinked": "{count} transaction linked to this tracker | {count} transactions linked to this tracker",
+      "tabs": {
+        "statistics": "Statistics",
+        "transactions": "Transactions",
+        "sharing": "Sharing"
+      },
+      "statistics": {
+        "tabs": {
+          "categories": "Categories",
+          "timeline": "Timeline"
+        },
+        "errorTitle": "Failed to load statistics",
+        "errorDescription": "Something went wrong while loading the data. Please try again later.",
+        "noDataTitle": "No spending data",
+        "noDataDescription": "There's no spending data available for this tracker yet.",
+        "noCategoryData": "No category spending data.",
+        "noTimelineData": "No timeline data.",
+        "total": "Total",
+        "income": "Income",
+        "expenses": "Expenses",
+        "incomeLabel": "Income:",
+        "expensesLabel": "Expenses:",
+        "kpi": {
+          "dailyPace": "Daily pace",
+          "perDay": "/ day",
+          "allowedPerDay": "allowed {amount} / day · {elapsed} of {total} days",
+          "neededPerDay": "needed {amount} / day · {elapsed} of {total} days",
+          "daysElapsed": "{elapsed} of {total} days",
+          "projectedTotal": "Projected total",
+          "projectedLimit": "at this pace · limit {amount}",
+          "averagePerDay": "Average per day",
+          "firstTransaction": "First transaction",
+          "lastTransaction": "Last transaction",
+          "transactions": "Transactions",
+          "avgAmount": "avg {amount}",
+          "biggestDay": "Biggest day",
+          "shareOfTotal": "{percent}% of total"
+        },
+        "byCategory": "By category",
+        "categoriesCount": "{count} category | {count} categories",
+        "byCurrency": "By currency",
+        "asPaid": "as paid",
+        "timeline": "Timeline",
+        "todayMarker": "today {date}",
+        "timelineAria": "Cumulative spending over time with per-period bars",
+        "limitLabel": "{amount} limit",
+        "cumulativeLabel": "Cumulative",
+        "legend": {
+          "cumulative": "Spent, cumulative",
+          "earnedCumulative": "Earned, cumulative",
+          "evenPace": "Even pace to the limit",
+          "projection": "Projection",
+          "daily": "Per day",
+          "weekly": "Per week",
+          "monthly": "Per month"
+        },
+        "topPayees": "Top payees",
+        "bySpend": "by spend",
+        "noPayee": "No payee",
+        "txCount": "{count} tx"
+      },
+      "sharing": {
+        "inviteAnother": "Invite someone",
+        "membersHeading": "Members",
+        "pendingHeading": "Pending invitations",
+        "loadError": "Couldn't load members.",
+        "permissions": {
+          "read": "View only",
+          "write": "Attach own transactions",
+          "manage": "Manage"
+        },
+        "member": {
+          "you": "you",
+          "roleOwner": "Owner",
+          "roleRecipient": "Member",
+          "ownerHint": "Full control of this tracker",
+          "updateSuccess": "Permission updated.",
+          "updateError": "Couldn't update permission.",
+          "revoke": "Revoke access",
+          "revokeConfirm": "Revoke",
+          "revokeTitle": "Revoke access?",
+          "revokeDescription": "{user} will lose access to {budget}.",
+          "revokeSuccess": "Access revoked.",
+          "revokeError": "Couldn't revoke access."
+        },
+        "pending": {
+          "empty": "No pending invitations.",
+          "resend": "Resend",
+          "resendSuccess": "Invitation resent.",
+          "resendError": "Couldn't resend invitation.",
+          "resendDeliveryFailed": "Resent, but the email couldn't be delivered.",
+          "cancel": "Cancel",
+          "cancelConfirm": "Cancel invitation",
+          "cancelTitle": "Cancel invitation?",
+          "cancelDescription": "The invitation to {email} will be cancelled.",
+          "cancelSuccess": "Invitation cancelled.",
+          "cancelError": "Couldn't cancel invitation."
+        }
+      }
+    }
+  }
+}

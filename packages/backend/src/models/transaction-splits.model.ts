@@ -54,12 +54,12 @@ export default class TransactionSplits extends Model {
   categoryId!: RecordId;
 
   /** Amount in account currency (same as transaction.amount) */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare amount: Money;
 
   /** Amount in base currency (same as transaction.refAmount) */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
-  declare refAmount: Money | null;
+  @MoneyField()
+  declare refAmount: Money;
 
   // Optional per-split note, max 100 chars
   @Length({ max: 100 })
@@ -86,8 +86,7 @@ export interface CreateSplitPayload {
   userId: number;
   categoryId: string;
   amount: Money;
-  /** `null` while a custom currency has no rate on the transaction's date. */
-  refAmount: Money | null;
+  refAmount: Money;
   note?: string | null;
 }
 
@@ -123,6 +122,9 @@ export const deleteSplitById = async ({ id, userId }: { id: string; userId: numb
 export const getSplitById = async ({ id, userId }: { id: string; userId: number }) => {
   return TransactionSplits.findOne({
     where: { id, userId },
-    include: [{ model: Categories, as: 'category' }],
+    include: [
+      { model: Categories, as: 'category' },
+      { model: Transactions, as: 'transaction', attributes: [], required: true },
+    ],
   });
 };

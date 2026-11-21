@@ -10,9 +10,6 @@ import { enqueueAccountSync } from './account-sync-queue';
 import { type AccountWithConnection, getUserBankAccounts } from './get-user-sync-status';
 import { shouldTriggerAutoSync, updateLastAutoSync } from './sync-status-tracker';
 
-// Re-export for backwards compatibility
-export { getUserAccountsSyncStatus } from './get-user-sync-status';
-
 interface SyncResult {
   totalAccounts: number;
   queuedAccounts: number;
@@ -22,11 +19,14 @@ interface SyncResult {
  * Queue a transaction sync for every bank-connected account of a user.
  * Returns as soon as the jobs are queued — the frontend polls /sync/status,
  * which the providers update as each account moves SYNCING → COMPLETED/FAILED.
+ * Records the last-sync time only when every job was queued, so a failed run
+ * is retried by the next sync attempt instead of being throttled.
  */
 export async function syncAllUserAccounts(userId: number): Promise<SyncResult> {
   const accounts = await getUserBankAccounts(userId);
 
   if (accounts.length === 0) {
+    await recordLastSync({ userId });
     return { totalAccounts: 0, queuedAccounts: 0 };
   }
 
@@ -69,7 +69,18 @@ export async function syncAllUserAccounts(userId: number): Promise<SyncResult> {
 
   if (firstError) throw firstError;
 
+  await recordLastSync({ userId });
+
   return { totalAccounts: accounts.length, queuedAccounts };
+}
+
+// The jobs are already queued, so a failed write costs one extra sync, not a failed request.
+async function recordLastSync({ userId }: { userId: number }): Promise<void> {
+  try {
+    await updateLastAutoSync(userId);
+  } catch (error) {
+    logger.error({ message: `[Sync Manager] Failed to record last sync for user ${userId}`, error: error as Error });
+  }
 }
 
 export async function queueConnectionSync({
@@ -117,10 +128,5 @@ export async function checkAndTriggerAutoSync(userId: number): Promise<SyncResul
     return null;
   }
 
-  const result = await syncAllUserAccounts(userId);
-
-  // Only after a successful enqueue, so a failed attempt is retried by the next tick.
-  await updateLastAutoSync(userId);
-
-  return result;
+  return syncAllUserAccounts(userId);
 }

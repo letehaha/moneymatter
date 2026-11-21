@@ -1,9 +1,11 @@
 <script lang="ts" setup>
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
+import FieldError from '@/components/fields/components/field-error.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { buildSelectSections } from '@/components/fields/utils/select-sections';
 import { Button } from '@/components/lib/ui/button';
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import * as Select from '@/components/lib/ui/select';
 import { useLinkedCurrencyGroup } from '@/composable/use-linked-currency-group';
 import { formatUIAmount, getCurrencyDecimals } from '@/js/helpers';
@@ -28,6 +30,8 @@ const props = withDefaults(
     suggestVisible?: boolean;
     suggestedAmount?: number | null;
     suggestedDate?: Date;
+    size?: ControlSize;
+    errorMessage?: string;
   }>(),
   {
     amount: null,
@@ -37,6 +41,8 @@ const props = withDefaults(
     suggestVisible: false,
     suggestedAmount: null,
     suggestedDate: undefined,
+    size: 'default',
+    errorMessage: undefined,
   },
 );
 
@@ -44,6 +50,7 @@ const emit = defineEmits<{
   'update:amount': [value: number | null];
   'update:currency': [value: CurrencyModel | null];
   'apply-suggestion': [];
+  blur: [];
 }>();
 
 const searchQuery = ref('');
@@ -126,16 +133,20 @@ watch(
     </template>
 
     <div
+      :data-disabled="disabled || undefined"
       :class="
         cn(
-          'border-input bg-input-background focus-within:border-ring flex h-10 w-full items-stretch overflow-hidden rounded-md border md:h-9',
+          'border-input bg-input-background focus-within:border-ring flex w-full items-stretch overflow-hidden rounded-md border',
+          controlHeight[size],
           disabled && 'opacity-50',
+          errorMessage && 'border-destructive',
         )
       "
     >
       <div class="grid min-w-0 flex-1 items-center">
         <InputField
           :model-value="amount"
+          :size="size"
           type="number"
           :decimals="amountDecimals"
           only-positive
@@ -144,12 +155,13 @@ watch(
           :aria-label="label"
           class="rounded-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
           @update:model-value="onAmountUpdate"
+          @blur="emit('blur')"
         />
       </div>
 
       <Select.Select v-model="selectedKey" :disabled="disabled" @update:open="onOpenChange">
         <Select.SelectTrigger
-          class="border-input hover:text-foreground h-auto w-auto shrink-0 gap-1 rounded-none border-0 border-l bg-transparent px-2.5 text-[13px] focus:ring-0 focus:ring-offset-0 md:h-auto"
+          class="border-input hover:text-foreground h-auto w-auto shrink-0 gap-1 rounded-none border-0 border-l bg-transparent px-2.5 text-[13px] focus:ring-0 focus:ring-offset-0"
           :aria-label="$t('dialogs.manageTransaction.form.originalCurrencyLabel')"
         >
           <span v-if="currency">{{ currency.code }}</span>
@@ -203,6 +215,7 @@ watch(
         </Select.SelectContent>
       </Select.Select>
     </div>
+    <FieldError :error-message="errorMessage" />
 
     <Button
       v-if="suggestVisible && suggestedAmount != null"

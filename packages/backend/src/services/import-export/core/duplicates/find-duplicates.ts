@@ -3,7 +3,7 @@ import { TRANSACTION_TYPES } from '@bt/shared/types';
 import * as Transactions from '@models/transactions.model';
 import { duplicateAmountKey } from '@services/transactions/duplicates-detection/amount-key';
 
-import { getAccountDecimals } from './get-account-decimals';
+import { decimalsOfAccount, getAccountDecimals } from './get-account-decimals';
 import { importDayKey } from './import-day-key';
 
 interface FindDuplicatesParams {
@@ -66,9 +66,7 @@ export async function findDuplicates({
   // Build lookup maps for efficient matching
   const exactMatchMap = new Map<string, Transactions.default[]>();
   for (const tx of existingTransactions) {
-    const decimals = decimalsByAccountId.get(tx.accountId);
-    if (decimals === undefined) continue;
-
+    const decimals = decimalsOfAccount({ decimalsByAccountId, accountId: tx.accountId });
     const dateStr = importDayKey({ iso: new Date(tx.time).toISOString() });
     const key = `${tx.accountId}:${dateStr}:${duplicateAmountKey({ amount: tx.amount, decimals })}`;
 
@@ -86,15 +84,15 @@ export async function findDuplicates({
       continue;
     }
 
-    // `row.date` is a full ISO instant, but existing transactions are keyed by
-    // calendar day above — normalise the row to the same day granularity so a
-    // same-day match still lands in the same bucket.
     const decimals = decimalsByAccountId.get(accountId);
     if (decimals === undefined) {
-      // Not one of the user's accounts, so nothing of theirs can match
+      // Unknown account id
       continue;
     }
 
+    // `row.date` is a full ISO instant, but existing transactions are keyed by
+    // calendar day above — normalise the row to the same day granularity so a
+    // same-day match still lands in the same bucket.
     const rowDateStr = importDayKey({ iso: new Date(row.date).toISOString() });
     const key = `${accountId}:${rowDateStr}:${duplicateAmountKey({ amount: row.amount, decimals })}`;
     const candidates = exactMatchMap.get(key) || [];

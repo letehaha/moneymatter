@@ -4,7 +4,7 @@ export { trackAiCategorization } from './ai-categorization';
 export { trackImportCompleted } from './import';
 export { trackBankConnected, type BankProvider } from './bank-sync';
 export { trackMcpToolUsed } from './mcp';
-export { trackInvoiceMatchRequested } from './invoice-matching';
+export { trackInvoiceMatchRequested, trackReceiptScanned } from './invoice-matching';
 export { trackBackupExported, trackBackupRestored } from './backup';
 export { trackDemoSessionCreated, trackDemoFeatureBlocked } from './demo';
 export {

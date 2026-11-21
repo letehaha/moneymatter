@@ -39,6 +39,13 @@ export const extractApiErrorMessage = (error: unknown): string | undefined =>
   error instanceof ApiErrorResponseError ? error.data?.message : undefined;
 
 /**
+ * The API client already logs out on 401 and toasts a 402 with a "See plans" action,
+ * so a second toast would blame the operation for it.
+ */
+export const isHandledByApiClient = ({ error }: { error: unknown }) =>
+  isApiErrorWithCode(error, API_ERROR_CODES.unauthorized) || isApiErrorWithCode(error, API_ERROR_CODES.planRequired);
+
+/**
  * Detects whether every Zod validation failure on the response originated from
  * a URL path/query param (e.g. `params.id`) rather than the request body.
  * A request that fails purely on URL params never reaches the resource, which

@@ -21,7 +21,7 @@ describe('ZodSettingsSchema – locale field', () => {
   });
 
   it('rejects an unsupported locale', () => {
-    const result = ZodSettingsSchema.safeParse({ locale: 'fr' });
+    const result = ZodSettingsSchema.safeParse({ locale: 'xx' });
     expect(result.success).toBe(false);
   });
 
@@ -50,7 +50,7 @@ describe('ZodSettingsPatchSchema – locale field', () => {
   });
 
   it('rejects an unsupported locale', () => {
-    const result = ZodSettingsPatchSchema.safeParse({ locale: 'fr' });
+    const result = ZodSettingsPatchSchema.safeParse({ locale: 'xx' });
     expect(result.success).toBe(false);
   });
 

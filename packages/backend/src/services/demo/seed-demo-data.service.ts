@@ -2,11 +2,12 @@ import type { RecordId } from '@bt/shared/types';
 import {
   ACCOUNT_TYPES,
   TRACKER_STATUSES,
-  TRACKER_TYPES,
   DEPRECIATION_PRESET,
   LOAN_TYPE,
   SUPPORTED_LOAN_TYPES,
   VEHICLE_CLASS,
+  type Cents,
+  asCents,
 } from '@bt/shared/types';
 import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE, VENTURE_SPV_SUBTYPE } from '@bt/shared/types/venture';
 import { getTranslatedCategories } from '@common/const/default-categories';
@@ -204,8 +205,8 @@ export async function createAccounts({ userId }: { userId: number }): Promise<Ac
       name: accountConfig.name,
       currencyCode: accountConfig.currency,
       accountCategory: accountConfig.type,
-      initialBalance: Money.fromCents(accountConfig.initialBalance),
-      creditLimit: Money.fromCents(accountConfig.creditLimit || 0),
+      initialBalance: Money.fromCents(asCents(accountConfig.initialBalance)),
+      creditLimit: Money.fromCents(asCents(accountConfig.creditLimit || 0)),
       type: ACCOUNT_TYPES.system,
       logoDomain,
       logoInitials,
@@ -220,17 +221,16 @@ export async function createAccounts({ userId }: { userId: number }): Promise<Ac
 }
 
 /** Rounds a cents amount to the nearest $10 so a derived limit reads as a number a person chose. */
-function roundToNearestTenDollars({ cents }: { cents: number }): number {
+function roundToNearestTenDollars({ cents }: { cents: number }): Cents {
   const step = 1000;
-  return Math.max(step, Math.round(cents / step) * step);
+  return asCents(Math.max(step, Math.round(cents / step) * step));
 }
 
 /**
- * Seeds category trackers over a trailing window. Skipping `type: category` or
- * `startDate`/`endDate` breaks the read path: `createTracker` then writes no
- * `TrackerCategories` rows (every card reads zero), or `buildDateFilter` drops
- * the filter and totals all history against a one-month limit. Limits derive
- * from actual spend in the window so the cards keep their under/near/over states.
+ * Seeds rule-based trackers over a trailing window. Skipping `rulesEnabled` links
+ * nothing (every card reads zero); skipping `startDate`/`endDate` totals all history
+ * against a one-month limit. Limits derive from actual spend in the window so the
+ * cards keep their under/near/over states.
  */
 export async function createTrackers({
   userId,
@@ -269,7 +269,7 @@ export async function createTrackers({
       userId,
       name: trackerConfig.name,
       status: TRACKER_STATUSES.active,
-      type: TRACKER_TYPES.category,
+      rulesEnabled: true,
       categoryIds,
       limitAmount: Money.fromCents(roundToNearestTenDollars({ cents: spent / trackerConfig.targetUtilization })),
       startDate: windowStart,

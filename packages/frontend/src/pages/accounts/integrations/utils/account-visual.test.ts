@@ -127,21 +127,15 @@ describe('formatIbanCompact', () => {
 });
 
 describe('getAccountSecondaryMeta', () => {
-  it('extracts iban and positive credit limit', () => {
-    expect(getAccountSecondaryMeta({ metadata: { iban: 'UA21', creditLimit: 4000000 } })).toEqual({
-      iban: 'UA21',
-      creditLimitCents: 4000000,
-    });
+  it('extracts iban', () => {
+    expect(getAccountSecondaryMeta({ metadata: { iban: 'UA21' } })).toEqual({ iban: 'UA21' });
   });
 
-  it('drops zero credit limit and missing iban', () => {
-    expect(getAccountSecondaryMeta({ metadata: { creditLimit: 0 } })).toEqual({
-      iban: null,
-      creditLimitCents: null,
-    });
+  it('drops missing iban', () => {
+    expect(getAccountSecondaryMeta({ metadata: {} })).toEqual({ iban: null });
   });
 
   it('handles absent metadata', () => {
-    expect(getAccountSecondaryMeta({})).toEqual({ iban: null, creditLimitCents: null });
+    expect(getAccountSecondaryMeta({})).toEqual({ iban: null });
   });
 });

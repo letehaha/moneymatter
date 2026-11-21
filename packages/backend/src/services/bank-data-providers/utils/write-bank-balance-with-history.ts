@@ -3,16 +3,17 @@ import { Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { startOfDay } from 'date-fns';
 
 /**
  * Authoritative balance writer for bank-data-provider accounts.
  *
  * Writes the bank's current balance to (a) `Accounts.currentBalance`,
- * (b) `Accounts.refCurrentBalance` (in user's base currency, via
- * `calculateRefAmount`), and (c) a `Balances` snapshot for today (overwrites
- * today's row via the race-safe `INSERT ... ON CONFLICT` path).
+ * (b) `Accounts.refCurrentBalance` and `refCreditLimit` (spot measures at the
+ * latest rate, cache bypassed so both share one rate), and (c) a `Balances`
+ * snapshot for today (overwrites today's row via the race-safe
+ * `INSERT ... ON CONFLICT` path).
  *
  * Per-tx Balances backfill for historical days happens separately, inside
  * `Transactions.@AfterCreate` → `Balances.handleTransactionChange` — see the
@@ -39,17 +40,22 @@ export async function writeBankBalanceWithHistory({
     mode: 'half-up',
   });
 
-  // `null` for a custom currency without a rate: the account keeps no base-currency value until one exists.
-  const refBalance = await calculateRefAmountOrNull({
-    amount: balance,
-    userId: account.userId,
-    date: today,
-    baseCode: account.currencyCode,
-  });
+  // The caller's instance can be stale: sync-created transactions and concurrent
+  // account edits change the row behind it, so read the live values separately.
+  const committed = await Accounts.findByPk(account.id, { attributes: ['id', 'currentBalance', 'creditLimit'] });
+  const creditLimit = committed?.creditLimit ?? account.creditLimit;
 
-  // Sync-created transactions update the account's DB balance behind the caller's
-  // instance, so read the current DB value separately instead of mutating that instance.
-  const committed = await Accounts.findByPk(account.id, { attributes: ['id', 'currentBalance'] });
+  const measureSpot = ({ amount }: { amount: Money }) =>
+    calculateRefAmount({
+      amount,
+      userId: account.userId,
+      definitionOwnerUserId: account.userId,
+      date: today,
+      baseCode: account.currencyCode,
+      bypassCache: true,
+    });
+  const refBalance = await measureSpot({ amount: balance });
+  const refCreditLimit = creditLimit.isZero() ? Money.zero() : await measureSpot({ amount: creditLimit });
 
   const previousCents = committed?.currentBalance?.toCents() ?? null;
   const newCents = balance.toCents();
@@ -66,7 +72,7 @@ export async function writeBankBalanceWithHistory({
     currency: account.currencyCode,
     previousCents,
     newCents,
-    refCents: refBalance?.toCents() ?? null,
+    refCents: refBalance.toCents(),
     signFlipped,
     newIsNegative: newCents < 0,
   });
@@ -74,10 +80,8 @@ export async function writeBankBalanceWithHistory({
   await account.update({
     currentBalance: balance,
     refCurrentBalance: refBalance,
+    refCreditLimit,
   });
-
-  // No history point to pin while the account has no base-currency value.
-  if (refBalance === null) return;
 
   await Balances.updateAccountBalance({
     accountId: account.id,

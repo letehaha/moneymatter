@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import FeedbackIcon from '@/components/common/icons/feedback-icon.vue';
+import ResizeHandle from '@/components/common/resize-handle.vue';
 import FeedbackDialog from '@/components/dialogs/feedback-dialog.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import { Card, CardContent, CardHeader } from '@/components/lib/ui/card';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFeedbackAttention } from '@/composable/use-feedback-attention';
+import { useResizableWidth } from '@/composable/use-resizable-width';
 import { useSupportButton } from '@/composable/use-support-button';
 import { HeartIcon, PanelLeftIcon } from '@lucide/vue';
 
@@ -16,17 +18,36 @@ import { useSidebarCollapsed } from './use-sidebar-collapsed';
 defineProps<{ mobileView?: boolean }>();
 
 const { isCollapsed } = useSidebarCollapsed();
+const { width, startResize, resetWidth } = useResizableWidth({
+  storageKey: 'sidebar:width',
+  minWidth: 220,
+  maxWidth: 420,
+  defaultWidth: 300,
+  edge: 'right',
+});
 const { isPulsing: isFeedbackPulsing, onClick: onFeedbackClick } = useFeedbackAttention();
 const { isSupportButtonVisible, openSupport } = useSupportButton();
 </script>
 
 <template>
-  <component :is="mobileView ? 'div' : Card" class="flex h-full w-75 flex-col rounded-none max-md:w-auto">
+  <component
+    :is="mobileView ? 'div' : Card"
+    class="relative flex h-full flex-col rounded-none"
+    :class="!mobileView && 'bg-background dark:bg-card'"
+    :style="mobileView ? undefined : { width: `${width}px` }"
+  >
+    <ResizeHandle
+      v-if="!mobileView"
+      edge="right"
+      :label="$t('sidebar.resize')"
+      @start="startResize"
+      @reset="resetWidth"
+    />
     <CardHeader class="h-14 px-4 py-3">
       <div class="text-lg font-semibold tracking-tight">MoneyMatter</div>
     </CardHeader>
     <CardContent class="flex max-h-[calc(100%-56px)] grow flex-col gap-3 px-3 pt-0 pb-3 sm:p-3 sm:pt-0">
-      <nav class="grid gap-0.5">
+      <nav class="relative isolate grid gap-0.5">
         <NavigationLinks />
       </nav>
 

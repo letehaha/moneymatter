@@ -6,6 +6,8 @@ import { useQuery } from '@tanstack/vue-query';
 import { format } from 'date-fns';
 import { type ComputedRef, computed } from 'vue';
 
+import { computeNetTotals } from './pivot-derivations';
+
 /** The live, in-memory Pivot config the UI edits (period as Date objects). The
  * persisted saved-view form (`SavedPivotViewConfig`) mirrors this with the
  * period flattened to `yyyy-MM-dd` strings. */
@@ -57,5 +59,25 @@ export const usePivotReport = ({ config }: { config: ComputedRef<PivotLiveConfig
     gcTime: QUERY_CACHE_STALE_TIME.ANALYTICS * 2,
   });
 
-  return { query };
+  // Income − expense per column, so the net is visible without switching the measure.
+  const oppositeParams = computed(() => {
+    const measure: PivotMeasure = queryParams.value.measure === 'income' ? 'expense' : 'income';
+    return { ...queryParams.value, measure };
+  });
+  const oppositeQuery = useQuery({
+    queryKey: [...VUE_QUERY_CACHE_KEYS.analyticsPivotReport, oppositeParams],
+    queryFn: () => getPivotReport(oppositeParams.value),
+    staleTime: QUERY_CACHE_STALE_TIME.ANALYTICS,
+    gcTime: QUERY_CACHE_STALE_TIME.ANALYTICS * 2,
+  });
+
+  const netTotals = computed(() =>
+    computeNetTotals({
+      measure: queryParams.value.measure,
+      current: query.data.value,
+      opposite: oppositeQuery.data.value,
+    }),
+  );
+
+  return { query, netTotals };
 };

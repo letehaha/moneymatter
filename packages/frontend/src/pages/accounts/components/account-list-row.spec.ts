@@ -13,7 +13,7 @@ vi.mock('vue-i18n', async (importOriginal) => ({
   useI18n: () => ({ t: (key: string) => key }),
 }));
 vi.mock('@/composable', () => ({
-  useFormatCurrency: () => ({ formatAmountByCurrencyCode: () => '0', formatBaseCurrency: () => '0' }),
+  useFormatCurrency: () => ({ formatAccountAmount: () => '0', formatBaseCurrency: () => '0' }),
 }));
 vi.mock('@/composable/use-account-display-balance', () => ({
   useAccountDisplayBalance: () => ({ displayBalance: ref(0), displayRefBalance: ref(0) }),

@@ -1,0 +1,113 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Connect your bank through LunchFlow, SimpleFIN or Akahu',
+    text: 'LunchFlow connects to more than 20,000 banks across the USA, EU, UK, Canada, Australia and New Zealand. SimpleFIN covers the USA and Canada, and Akahu covers most major banks in New Zealand. A few smaller direct connections cover other services.',
+    bullets: [
+      'LunchFlow and SimpleFIN are independent paid services. You open an account with them, link your bank there, and pay them directly, on top of your MoneyMatter plan',
+      'Akahu and the smaller direct connections cost nothing extra. You create your own token or keys in that service and paste them in',
+      'Connect several banks, providers and countries at the same time',
+    ],
+    screenshot: {
+      name: 'bank-providers',
+      alt: 'The Add integration dialog with region filters and a list of providers including Lunch Flow, SimpleFIN, Akahu and Monobank, each labelled with its price and setup difficulty',
+      width: 668,
+      height: 446,
+    },
+  },
+  {
+    heading: 'Start with history, or keep the history you have',
+    text: "Paste your provider's credentials and choose the accounts to add. Each one appears with your bank's name and balance, and its transactions follow within minutes. Already tracking an account by hand? Link it to the bank instead. Your existing transactions stay, and the history you entered is not downloaded again.",
+    bullets: [
+      'Depending on the provider, the first sync can load past transactions up to 2 years back, and some providers let you load older ones later',
+    ],
+    screenshot: {
+      name: 'features/import/bank-connection-details',
+      alt: 'A bank connection page with the total balance, connected account count, 12-hour auto-sync, last sync time, a Sync now button and the Manage menu open',
+      width: 1043,
+      height: 423,
+    },
+  },
+  {
+    heading: 'Automatic sync twice a day, at hours you choose',
+    text: "MoneyMatter syncs your connected accounts in the background twice a day, and you pick the two hours in General settings. Set one for early morning and yesterday's spending is there when you check your budget over coffee. Opening the app can also start a sync, and you can start one yourself at any time. After each sync, the balance is set to what your bank reports.",
+    screenshot: {
+      name: 'features/import/bank-data-connection-tab',
+      alt: 'The Data Connection tab of a bank-connected account with Sync latest transactions, Load transactions for selected period and a Danger zone',
+      width: 548,
+      height: 426,
+    },
+  },
+  {
+    heading: 'Less tidying after each sync',
+    text: "New transactions take their payee's default category if it has one, and otherwise AI tries to categorize them for you to review. Pay your credit card from checking, and the payment shows up in both accounts. When both are connected, MoneyMatter links the two sides as a transfer, so the payment does not count as spending.",
+  },
+  {
+    heading: 'Edit the details, keep the numbers matching your bank',
+    text: 'Each sync skips transactions already saved, so running it again does not fill your account with copies. You can change the category, note, payee, tags and splits of a synced transaction, while its amount, date and account stay locked, so your records keep agreeing with the bank.',
+    bullets: [
+      'A payment arrived twice, or your bank released a hold? Merge or remove those transactions in Reconciliation',
+    ],
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'You cannot add transactions by hand or import files into a bank-connected account.',
+  'If you leave Plus or your trial ends, your accounts and transactions stay, but connections stop syncing until you are on Plus.',
+];
+
+const FAQ = [
+  {
+    question: 'Which banks work with MoneyMatter?',
+    answer:
+      'Banks in the USA, Canada, EU, UK, Australia and New Zealand connect through LunchFlow. To check one specific bank or country, search the coverage list at lunchflow.app/coverage. SimpleFIN is an alternative for the USA and Canada, Akahu covers New Zealand, and a few smaller direct connections cover other services.',
+  },
+  {
+    question: 'What if my bank is not supported?',
+    answer:
+      'Import your transactions from CSV, OFX or QFX files instead, into an account you manage by hand. PayPal, Stripe and broker connections are not available through bank sync.',
+  },
+  {
+    question: 'Can MoneyMatter move money from my bank account?',
+    answer:
+      'No. The connection is read-only: it can view accounts, balances and transactions. Your bank password is never stored. MoneyMatter keeps only the provider tokens and keys, encrypted with AES-256-GCM.',
+  },
+  {
+    question: 'How often do transactions sync?',
+    answer:
+      'Twice a day in the background, at hours you can choose. Opening the app can also start a sync, and you can start one yourself at any time.',
+  },
+  {
+    question: 'What does bank sync cost?',
+    answer:
+      'It needs the Plus plan, at $8 a month or $55 a year before tax, and the 40-day trial includes it. The Essential plan does not. LunchFlow and SimpleFIN charge separately for their own service. Akahu and the smaller direct connections add no extra cost.',
+  },
+  {
+    question: 'Does bank sync work when self-hosting?',
+    answer:
+      'Yes. A self-hosted install has every feature with no plan to buy, including bank sync. LunchFlow and SimpleFIN still charge for their own service.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Bank connections', href: 'https://docs.moneymatter.app/import/bank-connections/' },
+  { label: 'Reconciliation', href: 'https://docs.moneymatter.app/transactions/reconciliation/' },
+  { label: 'Plans and billing', href: 'https://docs.moneymatter.app/settings/plans-and-billing/' },
+];
+
+const RELATED = ['/features/import-transactions', '/features/automation-rules', '/features/transfers-and-refunds'];
+---
+
+<FeatureLayout
+  title="Bank Sync for Budgeting | MoneyMatter"
+  description="Sync bank transactions and balances into your budget through LunchFlow, SimpleFIN or Akahu. Read-only, on the Plus plan and in the trial."
+  heading="Bank sync for budgeting, without typing in every purchase"
+  intro="Connect your bank once and MoneyMatter brings in transactions and balances, so your budget stays current without manual entry or file uploads. Connections are read-only, and they are part of the Plus plan and the 40-day free trial."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

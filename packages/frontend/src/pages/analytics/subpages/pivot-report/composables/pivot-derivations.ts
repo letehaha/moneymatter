@@ -1,4 +1,4 @@
-import type { PivotRow, PivotMeasure, SavedPivotViewConfig } from '@bt/shared/types';
+import type { GetPivotReportResponse, PivotRow, PivotMeasure, SavedPivotViewConfig } from '@bt/shared/types';
 
 /**
  * Pure derivation helpers for the Pivot Report grid. Kept free of Vue/reactivity
@@ -150,3 +150,24 @@ export const findMatchingViewId = ({
   config: SavedPivotViewConfig;
   views: { id: string; config: SavedPivotViewConfig }[];
 }): string | null => views.find((view) => arePivotConfigsEqual({ a: view.config, b: config }))?.id ?? null;
+
+export type PivotTotals = Pick<GetPivotReportResponse, 'columnTotals' | 'grandTotal'>;
+
+/** Income − expense per column; both reports carry positive magnitudes. Null until both have loaded. */
+export const computeNetTotals = ({
+  measure,
+  current,
+  opposite,
+}: {
+  measure: PivotMeasure;
+  current: PivotTotals | undefined;
+  opposite: PivotTotals | undefined;
+}): PivotTotals | null => {
+  if (!current || !opposite) return null;
+  const [income, expense] = measure === 'income' ? [current, opposite] : [opposite, current];
+  const columnTotals: Record<string, number> = {};
+  for (const key of new Set([...Object.keys(income.columnTotals), ...Object.keys(expense.columnTotals)])) {
+    columnTotals[key] = (income.columnTotals[key] ?? 0) - (expense.columnTotals[key] ?? 0);
+  }
+  return { columnTotals, grandTotal: income.grandTotal - expense.grandTotal };
+};

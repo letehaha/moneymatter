@@ -11,7 +11,7 @@ import { recomputeCustomRefAmounts } from '../recompute-custom-ref-amounts.servi
 import type { CustomRateChange } from '../recompute-scope';
 
 /** One day's rate of a synced source: `day` is the UTC calendar day (`YYYY-MM-DD`). */
-interface SyncedDailyRate {
+export interface SyncedDailyRate {
   day: string;
   rate: number;
 }
@@ -64,10 +64,11 @@ const isFetchStillCurrent = async ({
  * again.
  *
  * A day the user set by hand keeps their rate. A day a synced source wrote before is replaced when
- * the price differs (a source the user switched from yields to the one in force). A rate for a day
- * that had none is new: when it is today's it only fills rows waiting for a rate, and a backfill
- * (which writes days that may have been valued with an earlier rate) values the rows of those days
- * again.
+ * the price differs (a source the user switched from yields to the one in force). A rate for a new
+ * day of a daily run leaves the rows valued before it as they are; a backfill (which writes days
+ * that were valued with an earlier rate) values the rows of those days again. Days before the first
+ * rate are valued with it, so a backfill that reaches past the first rate values every earlier day
+ * again too.
  *
  * Nothing is written, and 0 comes back, when the user's base currency is being changed (the change
  * rewrites every converted amount, and the next run catches the rates up) or when the currency no
@@ -152,14 +153,14 @@ export const storeSyncedRates = withTransaction(
     const written = [...added, ...replaced].toSorted();
     if (!written.length) return 0;
 
-    const changes: CustomRateChange[] = [];
+    const from = kind === 'backfill' ? written[0]! : replaced.toSorted()[0];
+    if (from === undefined) return written.length;
 
-    if (kind === 'backfill') {
-      changes.push({ currencyCode, from: written[0]!, to: null, mode: 'recompute' });
-    } else {
-      if (replaced.length) changes.push({ currencyCode, from: replaced[0]!, to: null, mode: 'recompute' });
-      if (added.length) changes.push({ currencyCode, from: added[0]!, to: null, mode: 'fill' });
-    }
+    const earlierRate = await UserExchangeRates.findOne({
+      where: { userId, baseCode: currencyCode, effectiveDate: { [Op.lt]: from } },
+      attributes: ['effectiveDate'],
+    });
+    const changes: CustomRateChange[] = [{ currencyCode, from: earlierRate ? from : null, to: null }];
 
     await recomputeCustomRefAmounts({ userId, changes });
 

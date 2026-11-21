@@ -126,9 +126,9 @@
           "errorsOverflow": "…y {count} más",
           "rowPrefix": "Fila {rowIndex}:",
           "errors": {
-            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed.",
-            "accountBalanceDesync": "An account balance could not be updated after the import. Check it and correct it manually.",
-            "rowImportFailed": "This row could not be imported."
+            "rowsSuppressed": "No se pudo importar {count} fila más a partir de esta. Solo se muestran los primeros {listed} errores. | No se pudo importar {count} filas más a partir de esta. Solo se muestran los primeros {listed} errores.",
+            "accountBalanceDesync": "El saldo de una cuenta no se pudo actualizar después de la importación. Compruébalo y corríjalo manualmente.",
+            "rowImportFailed": "Esta fila no pudo ser importada."
           },
           "viewTransactions": "Ver transacciones",
           "importAnother": "Importar otro archivo"

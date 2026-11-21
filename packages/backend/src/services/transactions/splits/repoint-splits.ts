@@ -21,8 +21,7 @@ export const repointSplits = async ({ from, to }: { from: RecordId; to: RecordId
 
     await keeper.update({
       amount: keeper.amount.add(split.amount),
-      // Splits of one transaction are valued together, so a missing value on either keeps the sum missing.
-      refAmount: keeper.refAmount && split.refAmount ? keeper.refAmount.add(split.refAmount) : null,
+      refAmount: keeper.refAmount.add(split.refAmount),
       note: keeper.note ?? split.note,
     });
     await RefundTransactions.update({ splitId: keeper.id }, { where: { splitId: split.id } });

@@ -8,8 +8,11 @@ import { Op } from 'sequelize';
 
 type Period = { id: string; startDate: string; endDate: string };
 
-const setup = async ({ monthsAgo = 2 }: { monthsAgo?: number } = {}) => {
-  const account = await helpers.createAccount({ raw: true });
+const setup = async ({
+  monthsAgo = 2,
+  currencyCode = global.BASE_CURRENCY.code,
+}: { monthsAgo?: number; currencyCode?: string } = {}) => {
+  const account = await helpers.createAccount({ payload: helpers.buildAccountPayload({ currencyCode }), raw: true });
   const food = await helpers.addCustomCategory({ name: 'Food', color: '#111111', raw: true });
   const [groceries, restaurants, transport, bills] = await Promise.all([
     helpers.addCustomCategory({ name: 'Groceries', color: '#222222', parentId: food.id, raw: true }),
@@ -362,6 +365,36 @@ describe('Category delete: budget line merge', () => {
       { assigned: 350 },
       { assigned: 350 },
     ]);
+  });
+
+  it('merges the amounts of a JPY plan as whole yen', async () => {
+    const merged = await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'JPY',
+      fn: async () => {
+        const { planId, groceries, transport, periods } = await setup({ currencyCode: 'JPY' });
+        const source = await addLine({
+          planId,
+          name: 'Groceries',
+          categoryIds: [groceries.id],
+          activeFrom: periods[0]!.startDate,
+        });
+        const target = await addLine({
+          planId,
+          name: 'Transport',
+          categoryIds: [transport.id],
+          activeFrom: periods[0]!.startDate,
+        });
+        await assign({ planId, periodId: periods[0]!.id, lineId: source.id, amount: 1001 });
+        await assign({ planId, periodId: periods[1]!.id, lineId: source.id, amount: 1502 });
+        await assign({ planId, periodId: periods[0]!.id, lineId: target.id, amount: 2003 });
+
+        await deleteCategory({ categoryId: groceries.id, replaceWithCategoryId: transport.id });
+
+        return lineByPeriod({ planId, periods, name: 'Transport' });
+      },
+    });
+
+    expect(merged.map((line) => line?.assigned)).toEqual([3004, 3505, 3505]);
   });
 
   it('keeps the amounts of a closed middle period on the emptied line it merges', async () => {

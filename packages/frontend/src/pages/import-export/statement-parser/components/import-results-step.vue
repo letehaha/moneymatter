@@ -55,6 +55,8 @@
         </div>
       </dl>
 
+      <BankSeamSkippedCallout :count="store.importResult.skippedAfterBankSeam" :accounts="[store.selectedAccount]" />
+
       <div v-if="hasErrors" class="space-y-2">
         <h3 class="text-destructive-text text-sm font-semibold">
           {{ $t('pages.statementParser.importResults.errorsTitle') }}
@@ -204,6 +206,7 @@ import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import BankSeamSkippedCallout from '@/pages/import-export/components/bank-seam-skipped-callout.vue';
 import { ROUTES_NAMES } from '@/routes';
 import { useStatementParserStore } from '@/stores/statement-parser';
 import { ArrowLeftIcon, CircleCheckIcon, Loader2Icon, TriangleAlertIcon } from '@lucide/vue';
@@ -232,7 +235,7 @@ async function handleImport() {
 }
 
 function handleViewTransactions() {
-  router.push({ name: ROUTES_NAMES.transactions });
+  router.push({ name: ROUTES_NAMES.transactions, query: { batchId: store.importResult?.batchId } });
 }
 
 function handleFindTransfers() {

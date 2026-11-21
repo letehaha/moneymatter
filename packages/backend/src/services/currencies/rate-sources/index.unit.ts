@@ -105,6 +105,12 @@ describe('updateRateSourceBodySchema', () => {
     { rateSource: 'manual', config: null },
     { rateSource: 'peg', config: { pegCurrency: 'USD', factor: Infinity } },
     { rateSource: 'peg', config: { pegCurrency: 'USD', factor: Number.NaN } },
+    { rateSource: 'peg', config: { pegCurrency: 'USDT', factor: 1 } },
+    { rateSource: 'coingecko', config: { coinId: 'tether', quoteCurrency: 'BTC' } },
+    { rateSource: 'http', config: { urlTemplate: 'https://x.io/{date}', jsonPath: 'a.b', quoteCurrency: 'SAT' } },
+    { rateSource: 'coingecko', config: { coinId: 'tether' }, logoUrl: 'http://coin-images.coingecko.com/a.png' },
+    { rateSource: 'coingecko', config: { coinId: 'tether' }, logoUrl: 'javascript:alert(1)' },
+    { rateSource: 'coingecko', config: { coinId: 'tether' }, logoUrl: `https://x.io/${'a'.repeat(2048)}` },
   ])('rejects %j', (body) => {
     expect(updateRateSourceBodySchema.safeParse(body).success).toBe(false);
   });

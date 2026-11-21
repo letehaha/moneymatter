@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Select display currency",
       "displayCurrencyBaseOption": "Base currency ({code})",
       "displayCurrencyDescription": "Portfolio value and stats are converted to this currency at the current exchange rate.",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Cancel",
       "submitButton": "Save changes",
       "submitButtonLoading": "Saving...",
@@ -136,6 +138,9 @@
       "accountCategoryPlaceholder": "Select account category",
       "creditLimitLabel": "Credit limit",
       "creditLimitPlaceholder": "Credit limit",
+      "defaultPaymentTypeLabel": "Default payment type",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Create",
       "submitButtonLoading": "Creating...",
       "notifications": {
@@ -189,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Enter a valid amount (up to 2 decimal places)",
-      "mustBePositive": "Amount must be positive"
+      "mustBePositive": "Amount must be positive",
+      "httpUrl": "Enter a valid http(s) URL",
+      "maxLength": "Must not exceed {max} characters"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "From currency",
@@ -300,7 +307,8 @@
         "interestRateRange": "Interest rate must be between 0 and 99.9999.",
         "termRange": "Term must be between 1 and 1200 months.",
         "paymentDayRange": "Day of month must be between 1 and 31.",
-        "asOfInFuture": "Date can't be in the future"
+        "asOfInFuture": "Date can't be in the future",
+        "startDateInFuture": "Start date can't be in the future"
       },
       "balanceExceedsPrincipalWarning": "Outstanding balance is higher than the original principal – double-check these amounts."
     }
@@ -327,7 +335,7 @@
       "otherCurrencies": "Other currencies"
     },
     "comboboxAccounts": {
-      "allAccounts": "كل الحسابات",
+      "allAccounts": "All accounts",
       "account": "account",
       "accountsSelected": "accounts selected",
       "selectedOne": "1 account selected",

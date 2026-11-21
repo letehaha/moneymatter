@@ -62,7 +62,12 @@
       <span>{{ $t('settings.currencies.rateSource.coingecko.notConfigured') }}</span>
     </Callout>
     <Callout v-else-if="saveError" variant="destructive" data-testid="rate-source-error">
-      <span>{{ saveError }}</span>
+      <div>
+        <p>{{ saveError.message }}</p>
+        <p v-if="saveError.reason" class="mt-0.5 text-xs" data-testid="rate-source-error-reason">
+          {{ $t(getTestFailureKey({ reason: saveError.reason })) }}
+        </p>
+      </div>
     </Callout>
 
     <div v-if="isChanged" class="flex justify-end">
@@ -89,8 +94,8 @@ import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { useNotificationCenter } from '@/components/notification-center';
-import { API_ERROR_CODES } from '@bt/shared/types';
-import { extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
+import { API_ERROR_CODES, RATE_SOURCE_TEST_FAILURES, type RateSourceTestFailure } from '@bt/shared/types';
+import { ApiErrorResponseError, extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
 import { useMutation } from '@tanstack/vue-query';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -108,6 +113,7 @@ import {
   buildDraft,
   buildRateSourceBody,
   getSavedHeaderNames,
+  getTestFailureKey,
   isDraftChanged,
   validateDraft,
 } from './rate-source-draft';
@@ -141,7 +147,7 @@ const savedHeaderNames = computed(() => getSavedHeaderNames({ saved: saved.value
 
 const draft = reactive(buildDraft({ saved: saved.value }));
 const showErrors = ref(false);
-const saveError = ref<string | null>(null);
+const saveError = ref<{ message: string; reason?: RateSourceTestFailure } | null>(null);
 const isNotConfigured = ref(false);
 
 const resetDraft = ({ from = saved.value }: { from?: SavedRateSource } = {}) => {
@@ -190,7 +196,12 @@ const { mutate, isPending } = useMutation({
       isNotConfigured.value = true;
       return;
     }
-    saveError.value = extractApiErrorMessage(error) || t('settings.currencies.rateSource.errors.saveFailed');
+    // A synced source is saved only once its first fetch brings a rate; an HTTP one says why it did not.
+    const reason = error instanceof ApiErrorResponseError ? error.data?.details?.reason : undefined;
+    saveError.value = {
+      message: extractApiErrorMessage(error) || t('settings.currencies.rateSource.errors.saveFailed'),
+      reason: RATE_SOURCE_TEST_FAILURES.find((item) => item === reason),
+    };
   },
 });
 

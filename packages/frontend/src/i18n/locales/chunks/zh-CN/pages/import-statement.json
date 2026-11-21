@@ -12,10 +12,10 @@
         }
       },
       "steps": {
-        "accountTitle": "选择账户",
+        "accountTitle": "Select account",
         "accountDescription": "Choose or create an account for the transactions"
       },
-      "selectCurrency": "选择货币",
+      "selectCurrency": "Select currency",
       "selectExistingAccount": "Select existing account",
       "accountNamePlaceholder": "e.g., Main Bank Account",
       "selectAccount": "Select an account",
@@ -37,10 +37,6 @@
         "invalidPdfNamed": "{name} doesn't appear to be a valid PDF. The file may be corrupted or renamed.",
         "invalidImageNamed": "{name} doesn't appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.",
         "invalidTextNamed": "{name} doesn't appear to be a valid {ext} file. The file may be binary or renamed.",
-        "pasteImageButton": "Paste image",
-        "pasteShortcutHint": "or press {shortcut}",
-        "clipboardNoImage": "No image found in the clipboard.",
-        "clipboardReadFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut.",
         "unreadableFiles": "Could not read: {files}",
         "fileStatus": {
           "pending": "Not analyzed",
@@ -124,9 +120,9 @@
         "fromStatement": "(from statement)",
         "currencyLocked": "Currency is locked to match the statement ({currency}).",
         "currencyWillBeAdded": "Note: {currency} will be added to your currencies.",
-        "cancel": "取消",
-        "creating": "创建中……",
-        "createAccount": "创建账户",
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "createAccount": "Create account",
         "validation": {
           "nameRequired": "Account name is required",
           "currencyRequired": "Please select a currency"

@@ -1,14 +1,59 @@
-import { describe, expect, it } from '@jest/globals';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import Coingecko from '@coingecko/coingecko-typescript';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import UserExchangeRates from '@models/user-exchange-rates.model';
 import * as helpers from '@tests/helpers';
 import type { ErrorResponse } from '@tests/helpers/common';
+import { http, HttpResponse } from 'msw';
 
 const USDT = 'USDT';
 const USDC = 'USDC';
 
 const createCustom = (code: string) =>
-  helpers.createCustomCurrency({ payload: { code, name: `${code} coin`, decimals: 6 }, raw: true });
+  helpers.createCustomCurrency({ payload: { code, name: `${code} coin`, decimals: 6, rate: { value: 1 } }, raw: true });
+
+/** CoinGecko answers every history request with today's price. */
+const serveCoingeckoHistory = () => {
+  const now = Date.now();
+  jest.mocked(Coingecko).mockImplementation(
+    () =>
+      ({
+        search: { get: jest.fn<any>().mockResolvedValue({ coins: [] }) },
+        simple: { price: { get: jest.fn<any>().mockResolvedValue({}) } },
+        coins: {
+          marketChart: {
+            get: jest.fn<any>().mockResolvedValue({ prices: [] }),
+            getRange: jest.fn<any>().mockResolvedValue({ prices: [[now, 1.01]] }),
+          },
+        },
+      }) as any,
+  );
+};
+
+/** Answers every request to the test host with a price at `data.price`, `data.rates[0].price` and `bitcoin.usd`. */
+const serveHttpPrice = () => {
+  global.mswMockServer.use(
+    http.get('https://rates.example.test/*', () =>
+      HttpResponse.json({ data: { price: 1.5, rates: [{ price: 1.5 }] }, bitcoin: { usd: 1.5 } }),
+    ),
+  );
+};
+
+/** The outbound guard off, so a request to the MSW test host leaves the process. */
+const asSelfHost = () => {
+  let before: string | undefined;
+
+  beforeEach(() => {
+    before = process.env.IS_SELF_HOST;
+    process.env.IS_SELF_HOST = 'true';
+  });
+
+  afterEach(() => {
+    if (before === undefined) delete process.env.IS_SELF_HOST;
+    else process.env.IS_SELF_HOST = before;
+  });
+};
 
 const savedSource = async ({ code }: { code: string }) => {
   const entry = (await helpers.getUserCurrencies()).find((item) => item.currencyCode === code);
@@ -32,6 +77,8 @@ describe('PUT /user/currencies/:code/rate-source', () => {
   });
 
   describe('valid configurations of a custom currency', () => {
+    asSelfHost();
+
     it('saves a peg and reads it back', async () => {
       await createCustom(USDT);
 
@@ -46,21 +93,9 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       expect(await savedSource({ code: USDT })).toEqual(expected);
     });
 
-    it('pegs one custom currency to another of the same user', async () => {
-      await createCustom(USDT);
-      await createCustom(USDC);
-
-      const response = await helpers.setCurrencyRateSource({
-        code: USDC,
-        payload: { rateSource: 'peg', config: { pegCurrency: USDT, factor: 1 } },
-      });
-
-      expect(response.statusCode).toBe(200);
-      expect((await savedSource({ code: USDC })).rateSourceConfig).toEqual({ pegCurrency: USDT, factor: 1 });
-    });
-
     it('saves a CoinGecko coin, quoted in USD unless the config says otherwise', async () => {
       await createCustom(USDT);
+      serveCoingeckoHistory();
 
       const byDefault = await helpers.setCurrencyRateSource({
         code: USDT,
@@ -85,6 +120,7 @@ describe('PUT /user/currencies/:code/rate-source', () => {
 
     it('saves an HTTP source with its placeholders and JSON path', async () => {
       await createCustom(USDT);
+      serveHttpPrice();
       const config = {
         urlTemplate: 'https://rates.example.test/{code}/{quote}?day={date}',
         jsonPath: 'data.rates[0].price',
@@ -102,6 +138,7 @@ describe('PUT /user/currencies/:code/rate-source', () => {
 
     it('defaults the HTTP quote currency to USD and accepts a $-rooted path', async () => {
       await createCustom(USDT);
+      serveHttpPrice();
 
       const response = await helpers.setCurrencyRateSource({
         code: USDT,
@@ -147,6 +184,30 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       });
 
       expect(await UserExchangeRates.findAll({ where: { userId }, raw: true })).toEqual(before);
+    });
+
+    it('lets only one through when a switch off a peg races the removal of the last stored rate', async () => {
+      await createCustom(USDT);
+      await helpers.setCurrencyRateSource({
+        code: USDT,
+        payload: { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 1 } },
+      });
+      const { id: userId } = await helpers.getUserInfo({ raw: true });
+      const pairs = (await UserExchangeRates.findAll({ where: { userId }, raw: true }))
+        .filter((row) => row.baseCode === USDT || row.quoteCode === USDT)
+        .map(({ baseCode, quoteCode, effectiveDate }) => ({ baseCode, quoteCode, effectiveDate }));
+
+      const [removal, toManual] = await Promise.all([
+        helpers.removeCurrencyExchangeRate({ pairs, raw: false }),
+        helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } }),
+      ]);
+
+      expect([removal.statusCode, toManual.statusCode].toSorted((a, b) => a - b)).toEqual(
+        [200, ERROR_CODES.ValidationError].toSorted((a, b) => a - b),
+      );
+      const { rateSource } = await savedSource({ code: USDT });
+      const rates = await UserExchangeRates.count({ where: { userId, baseCode: USDT } });
+      expect(rateSource === 'peg' || rates > 0).toBe(true);
     });
   });
 
@@ -275,15 +336,19 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       });
     });
 
-    it('rejects a currency pegged to itself', async () => {
+    it('rejects a peg to a custom currency, itself included', async () => {
       await createCustom(USDT);
+      await createCustom(USDC);
 
-      const response = await helpers.setCurrencyRateSource({
-        code: USDT,
-        payload: { rateSource: 'peg', config: { pegCurrency: USDT, factor: 1 } },
-      });
+      for (const pegCurrency of [USDT, USDC]) {
+        const response = await helpers.setCurrencyRateSource({
+          code: USDT,
+          payload: { rateSource: 'peg', config: { pegCurrency, factor: 1 } },
+        });
 
-      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+        expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      }
+      expect(await savedSource({ code: USDT })).toEqual({ rateSource: 'manual', rateSourceConfig: null });
     });
 
     it('rejects a peg to a code the user cannot use', async () => {
@@ -296,7 +361,7 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       expect(unknown.statusCode).toBe(ERROR_CODES.ValidationError);
 
       // Another user's custom code reads exactly like an unknown one.
-      const other = await helpers.signUpSecondUser();
+      const other = await helpers.provisionSecondUserWithBaseCurrency();
       await helpers.asUser({
         cookies: other.cookies,
         fn: async () => {
@@ -335,7 +400,7 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       expect(notHeld.statusCode).toBe(ERROR_CODES.NotFoundError);
 
       await createCustom(USDT);
-      const other = await helpers.signUpSecondUser();
+      const other = await helpers.provisionSecondUserWithBaseCurrency();
       await helpers.asUser({
         cookies: other.cookies,
         fn: async () => {
@@ -350,7 +415,11 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       await helpers.asUser({
         cookies: other.cookies,
         fn: async () => {
-          await createCustom(USDT);
+          await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+          const created = await helpers.createCustomCurrency({
+            payload: { code: USDT, name: 'USDT coin', decimals: 6, rate: { value: 2, quoteCode: 'USD' } },
+          });
+          expect(created.statusCode).toBe(201);
 
           const peg = await helpers.setCurrencyRateSource({
             code: USDT,
@@ -359,22 +428,13 @@ describe('PUT /user/currencies/:code/rate-source', () => {
           expect(peg.statusCode).toBe(200);
           expect((await savedSource({ code: USDT })).rateSource).toBe('peg');
 
-          // A manual rate edit and removal for the same user reach the same recompute.
-          await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+          // A manual rate edit for the same user reaches the same recompute.
           await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
           const pairs = [
             { baseCode: USDT, quoteCode: 'USD', rate: 2 },
             { baseCode: 'USD', quoteCode: USDT, rate: 0.5 },
           ];
           expect((await helpers.editCurrencyExchangeRate({ pairs, raw: false })).statusCode).toBe(200);
-          const removal = await helpers.removeCurrencyExchangeRate({
-            pairs: [
-              { baseCode: USDT, quoteCode: 'USD' },
-              { baseCode: 'USD', quoteCode: USDT },
-            ],
-            raw: false,
-          });
-          expect(removal.statusCode).toBe(200);
         },
       });
     });
@@ -393,6 +453,7 @@ describe('PUT /user/currencies/:code/rate-source', () => {
 
     it('limits how often a user previews a source', async () => {
       await createCustom(USDT);
+      serveHttpPrice();
       const preview = () =>
         helpers.testCurrencyRateSource({
           code: USDT,
@@ -402,12 +463,13 @@ describe('PUT /user/currencies/:code/rate-source', () => {
           },
         });
 
-      // Whatever a preview answers on this instance, only the 21st is refused for the rate.
-      for (let attempt = 0; attempt < 20; attempt++) {
-        expect((await preview()).statusCode).not.toBe(ERROR_CODES.TooManyRequests);
-      }
+      await helpers.withSelfHost(async () => {
+        for (let attempt = 0; attempt < 20; attempt++) {
+          expect((await preview()).statusCode).not.toBe(ERROR_CODES.TooManyRequests);
+        }
 
-      expect((await preview()).statusCode).toBe(ERROR_CODES.TooManyRequests);
+        expect((await preview()).statusCode).toBe(ERROR_CODES.TooManyRequests);
+      });
     });
 
     it('keeps each user their own source for the same custom code', async () => {
@@ -417,7 +479,7 @@ describe('PUT /user/currencies/:code/rate-source', () => {
         payload: { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 1 } },
       });
 
-      const other = await helpers.signUpSecondUser();
+      const other = await helpers.provisionSecondUserWithBaseCurrency();
       await helpers.asUser({
         cookies: other.cookies,
         fn: async () => {

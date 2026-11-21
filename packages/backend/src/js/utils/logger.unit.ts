@@ -21,7 +21,25 @@ jest.mock('./sentry', () => ({
 import { NotFoundError, UnexpectedError, ValidationError } from '@js/errors';
 
 // eslint-disable-next-line import/first
-import { createMessageRateLimiter, logger } from './logger';
+import { createMessageRateLimiter, logger, lokiStringMetadataOnly } from './logger';
+
+describe('lokiStringMetadataOnly', () => {
+  it('keeps only string fields as metadata and leaves the formatted line intact', () => {
+    const MESSAGE = Symbol.for('message');
+    const info = lokiStringMetadataOnly().transform({
+      level: 'info',
+      message: 'sync done',
+      requestId: null,
+      sessionId: 'abc',
+      count: 5,
+      balances: [{ amount: '-1' }],
+      [MESSAGE]: 'full line',
+    }) as Record<string | symbol, unknown>;
+
+    expect(Object.fromEntries(Object.entries(info))).toEqual({ level: 'info', message: 'sync done', sessionId: 'abc' });
+    expect(info[MESSAGE]).toBe('full line');
+  });
+});
 
 describe('logger.error Sentry capture', () => {
   afterEach(() => {

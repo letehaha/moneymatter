@@ -20,6 +20,14 @@ const createTx = async ({
   return tx;
 };
 
+const expenseOnly = ({ count, expense }: { count: number; expense: number }) => ({
+  count,
+  income: 0,
+  expense,
+  net: -expense,
+  transfers: 0,
+});
+
 describe('GET /transactions/summary', () => {
   it('returns zeros when nothing matches', async () => {
     const account = await helpers.createAccount({ raw: true });
@@ -73,6 +81,37 @@ describe('GET /transactions/summary', () => {
     const summary = await helpers.getTransactionsSummary({ tagIds: [tagA.id, tagB.id], raw: true });
 
     expect(summary).toEqual({ count: 2, income: 0, expense: 50, net: -50, transfers: 0 });
+  });
+
+  it('counts only the filtered categories share of a split transaction', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const [primary, splitB, splitC] = await helpers.getCategoriesList();
+    await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 100,
+        categoryId: primary!.id,
+        splits: [
+          { categoryId: splitB!.id, amount: 30 },
+          { categoryId: splitC!.id, amount: 25 },
+        ],
+      }),
+      raw: true,
+    });
+    await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id, amount: 10, categoryId: splitB!.id }),
+      raw: true,
+    });
+
+    const summary = ({ categoryIds }: { categoryIds: string[] }) =>
+      helpers.getTransactionsSummary({ accountIds: [account.id], categoryIds, raw: true });
+
+    expect(await helpers.getTransactionsSummary({ accountIds: [account.id], raw: true })).toEqual(
+      expenseOnly({ count: 2, expense: 110 }),
+    );
+    expect(await summary({ categoryIds: [primary!.id] })).toEqual(expenseOnly({ count: 1, expense: 45 }));
+    expect(await summary({ categoryIds: [splitB!.id] })).toEqual(expenseOnly({ count: 2, expense: 40 }));
+    expect(await summary({ categoryIds: [primary!.id, splitB!.id] })).toEqual(expenseOnly({ count: 2, expense: 85 }));
   });
 
   it('sums foreign-currency rows in the base currency', async () => {

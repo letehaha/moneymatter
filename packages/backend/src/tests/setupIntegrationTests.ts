@@ -2,7 +2,7 @@
 import type { RecordId } from '@bt/shared/types';
 import { until } from '@common/helpers';
 import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
-import { roundHalfToEven } from '@common/utils/round-half-to-even';
+import { Money } from '@common/types/money';
 import { i18nextReady } from '@i18n/index';
 import { afterAll, afterEach, beforeAll, beforeEach, expect, jest } from '@jest/globals';
 import Categories from '@models/categories.model';
@@ -202,7 +202,6 @@ global.APP_AUTH_COOKIES = null;
 const SEED_DATA_TABLES = [
   'sequelizemeta', // Migration tracking (SequelizeMeta)
   'currencies', // All world currencies - seeded in migration
-  'merchantcategorycodes', // MCC codes - seeded in migration
   'exchangerates', // Exchange rates - seeded with historical rates (10 days ago)
 ];
 
@@ -279,6 +278,9 @@ async function waitForRedisConnection() {
   );
 }
 
+// One hundredth plus room for the float error of `received - expected`.
+const REF_VALUE_TOLERANCE = 0.01 + 1e-9;
+
 expect.extend({
   toBeAnythingOrNull(received) {
     if (received !== undefined) {
@@ -301,18 +303,20 @@ expect.extend({
   },
   /**
    * Custom matcher for ref values (refAmount, refInitialBalance, refCurrentBalance, etc.)
-   * Applies roundHalfToEven to the expected value and allows ±1 tolerance for floating point precision.
+   * Rounds the expected value half-even to 2 decimals and passes within one hundredth, which
+   * absorbs float error in the expected rate maths of the test.
    * Use this matcher exclusively for ref* field comparisons involving currency rate calculations.
    */
   toEqualRefValue(received: number, expected: number) {
-    const roundedExpected = roundHalfToEven(expected);
-    const pass = Math.abs(received - roundedExpected) <= 1;
+    const roundedExpected = Money.fromDecimal(expected).roundHalfEven(2).toNumber();
+    const difference = Math.abs(received - roundedExpected);
+    const pass = difference <= REF_VALUE_TOLERANCE;
     return {
       pass,
       message: () =>
         pass
-          ? `expected ${received} not to equal ref value ${roundedExpected} (±1)`
-          : `expected ${received} to equal ref value ${roundedExpected} (±1), difference: ${Math.abs(received - roundedExpected)}`,
+          ? `expected ${received} not to equal ref value ${roundedExpected} (±0.01)`
+          : `expected ${received} to equal ref value ${roundedExpected} (±0.01), difference: ${difference}`,
     };
   },
   toBeNumericEqual(received, expected) {

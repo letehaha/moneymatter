@@ -373,15 +373,13 @@ describe('CSV import balance recalculation', () => {
       });
     });
 
-    it('recalc ON: a row that fails at the database layer is excluded from the balance and reported in errors', async () => {
+    it('recalc ON: a row that fails on write is excluded from the balance and reported in errors', async () => {
       const { account, balanceBefore } = await createAccountWithBoundaryTx({ boundaryTime: '2024-01-10T12:00:00Z' });
 
       // The middle row's amount parses fine (`parseAmount` has no magnitude
-      // bound and 1e18 is an exact decimal, so `Money.fromDecimal` accepts
-      // it too) but overflows the DECIMAL(36,18) money column
-      // (1,000,000,000,000,000,000.00 needs 19 integer digits, the column holds
-      // 18), so its insert fails at the database layer and rolls back only
-      // itself — the surrounding rows still commit.
+      // bound) but is past the largest amount the currency allows, so its
+      // write is rejected and rolls back only itself — the surrounding rows
+      // still commit.
       const rows: CsvRow[] = [
         {
           date: '2024-01-15',
@@ -480,8 +478,8 @@ describe('CSV import balance recalculation', () => {
           type: 'income',
         },
         {
-          // 1e18 currency units need 19 integer digits, past the column's 18: the
-          // insert fails at the database layer and rolls back only itself.
+          // Past the largest amount the currency allows: the write is rejected
+          // and rolls back only itself.
           date: '2024-01-16',
           amount: '1000000000000000000.00',
           description: 'B overflow',
@@ -636,14 +634,13 @@ describe('CSV import balance recalculation', () => {
       ]);
     });
 
-    it('rejects a create-new currentBalance beyond the integer-cents cap with 422', async () => {
-      // Balances persist as INTEGER cents, so a create-new target past the
-      // ±20,000,000 bound must fail Zod validation synchronously (422) instead of
-      // surfacing as a raw integer-overflow deep inside the async job. The bound
-      // is symmetric, so both signs must be rejected the same way.
+    it('rejects a create-new currentBalance beyond the balance cap with 422', async () => {
+      // A create-new target past the ±1e13 bound must fail Zod validation
+      // synchronously (422) instead of failing deep inside the async job. The
+      // bound is symmetric, so both signs must be rejected the same way.
       for (const [accountName, currentBalance] of [
-        ['Big USD', 20_000_001],
-        ['Big Negative USD', -20_000_001],
+        ['Big USD', 1e13 + 1],
+        ['Big Negative USD', -1e13 - 1],
       ] as const) {
         const response = await helpers.executeImport({
           payload: {
@@ -661,13 +658,13 @@ describe('CSV import balance recalculation', () => {
       }
     });
 
-    it('accepts a create-new currentBalance exactly on the integer-cents cap', async () => {
-      // The cap is inclusive: ±20,000,000 is the last accepted value, so the
+    it('accepts a create-new currentBalance exactly on the balance cap', async () => {
+      // The cap is inclusive: ±1e13 is the last accepted value, so the
       // import must run to completion and leave the account on that exact
       // boundary balance. The account is created in the base currency so the
       // forced `refCurrentBalance` equals the entered value (no FX
       // multiplication that could push the ref side past the cap).
-      for (const currentBalance of [20_000_000, -20_000_000]) {
+      for (const currentBalance of [1e13, -1e13]) {
         const accountName = `Boundary ${currentBalance}`;
         const progress = await runImport({
           fileContent: buildCsv(threeRows({ account: accountName, currency: global.BASE_CURRENCY_CODE })),
@@ -958,12 +955,12 @@ describe('CSV import balance recalculation', () => {
       expect(stored.map((tx) => tx.amount)).toEqual([storedAmount, storedAmount]);
     };
 
-    it('keeps a 2-decimal balance when two 12.345 rows are stored as 12.35', async () => {
-      await expectBalanceKept({ currencyCode: null, amount: '12.345', storedAmount: 12.35 });
-    });
-
-    it('keeps a KWD balance when two 1.2345 rows are stored as 1.235', async () => {
-      await expectBalanceKept({ currencyCode: 'KWD', amount: '1.2345', storedAmount: 1.235 });
+    it.each([
+      { currencyCode: null, amount: '12.345', storedAmount: 12.35 },
+      { currencyCode: 'KWD', amount: '1.2345', storedAmount: 1.235 },
+      { currencyCode: 'JPY', amount: '1500.6', storedAmount: 1501 },
+    ])('keeps the balance when two $amount rows are stored as $storedAmount', async (row) => {
+      await expectBalanceKept(row);
     });
   });
 });

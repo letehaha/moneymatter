@@ -1,4 +1,4 @@
-import type { BillingCycle, BillingTier } from '@bt/shared/types';
+import type { BillingCycle, BillingProvider, BillingTier } from '@bt/shared/types';
 
 import { trackEvent } from '../index';
 
@@ -7,10 +7,12 @@ import { trackEvent } from '../index';
  */
 export function trackSubscriptionStarted({
   userId,
+  provider,
   tier,
   billingCycle,
 }: {
   userId: string | number;
+  provider: BillingProvider;
   tier: BillingTier;
   billingCycle: BillingCycle;
 }): void {
@@ -18,6 +20,7 @@ export function trackSubscriptionStarted({
     userId,
     event: 'subscription_started',
     properties: {
+      provider,
       tier,
       billing_cycle: billingCycle,
     },

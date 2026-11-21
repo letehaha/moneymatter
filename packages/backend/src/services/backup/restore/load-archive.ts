@@ -6,8 +6,8 @@ import isPlainObject from 'lodash/isPlainObject';
 
 import { BACKUP_TABLES, type BackupFileName } from '../registry';
 import { sha256Hex } from '../sha256';
-import { FIRST_DECIMAL_MONEY_FORMAT_VERSION, convertV1MoneyToDecimal } from './convert-v1-money';
-import { fillUserRateEffectiveDates } from './fill-user-rate-effective-dates';
+import { FIRST_DECIMAL_MONEY_FORMAT_VERSION, assertDecimalMoney, convertV1MoneyToDecimal } from './convert-v1-money';
+import { fillUserRateEffectiveDates, forceKnownUserRateSources } from './fill-user-rate-effective-dates';
 import { normalizeLegacyArchive } from './normalize-legacy-archive';
 
 const BACKUP_FILE_NAMES = BACKUP_TABLES.map((t) => t.fileName);
@@ -89,7 +89,6 @@ export interface ParsedArchive {
   user: Row | null;
   reference: {
     securities: Row[];
-    customCurrencies: Row[];
   };
   /** Data files present in the zip whose base name isn't a known backup table. */
   unknownFileNames: string[];
@@ -249,9 +248,11 @@ export async function loadBackupArchive({
   if (formatVersion < FIRST_DECIMAL_MONEY_FORMAT_VERSION) {
     convertV1MoneyToDecimal({ data });
   }
+  assertDecimalMoney({ data });
 
   // Rates saved before they were dated carry no day to start from.
   fillUserRateEffectiveDates({ data });
+  forceKnownUserRateSources({ data });
 
   const referenceByName = new Map<string, Row[]>();
   for (const name of BACKUP_REFERENCE_FILE_NAMES) {
@@ -279,7 +280,6 @@ export async function loadBackupArchive({
     user,
     reference: {
       securities: referenceByName.get('securities') ?? [],
-      customCurrencies: referenceByName.get('custom-currencies') ?? [],
     },
     unknownFileNames,
   };

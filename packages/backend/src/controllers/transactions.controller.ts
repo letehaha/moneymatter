@@ -1,10 +1,12 @@
 import { SHARE_PERMISSIONS, TRANSACTIONS_WRITE_SCOPES } from '@bt/shared/types';
-import { booleanQuery, recordId } from '@common/lib/zod/custom-types';
+import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { serializeTransaction, serializeTransactions } from '@root/serializers';
 import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
+import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { isPermissionAtLeast } from '@services/sharing/auth/permission-rank';
 import * as transactionsService from '@services/transactions';
+import { attachPaymentParts } from '@services/transactions/payment-legs';
 import { z } from 'zod';
 
 export const getTransactionById = createController(
@@ -12,23 +14,12 @@ export const getTransactionById = createController(
     params: z.object({
       id: recordId(),
     }),
-    query: z.object({
-      includeSplits: booleanQuery().optional(),
-    }),
   }),
-  async ({ user, params, query }) => {
+  async ({ user, params }) => {
     const { id } = params;
     const { id: userId } = user;
-    const { includeSplits } = query;
 
-    const fetched = await transactionsService.getTransactionById({
-      id,
-      userId,
-      includeSplits,
-      // The edit form seeds `tagIds` from this response; an absent `tags` array would make
-      // the next save submit an empty tag set.
-      includeTags: true,
-    });
+    const fetched = await transactionsService.getTransactionById({ id, userId });
 
     if (!fetched) return { data: null };
 
@@ -49,6 +40,11 @@ export const getTransactionById = createController(
     // Mutate the tx instance so the serializer's property-existence check picks it up.
     Object.assign(tx, { canEdit });
     await attachTransactionCurrencyMeta({ transactions: [tx] });
+    await attachPaymentParts({
+      transactions: [tx],
+      collapsed: false,
+      accessibleAccountIds: await getAccessibleAccountIdsForUser({ userId }),
+    });
 
     return { data: serializeTransaction(tx) };
   },
@@ -69,7 +65,8 @@ export const getTransactionsByTransferId = createController(
       userId,
     });
 
-    // Serialize: convert cents to decimal for API response
+    await attachTransactionCurrencyMeta({ transactions });
+
     return { data: serializeTransactions(transactions) };
   },
 );

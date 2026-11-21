@@ -13,7 +13,7 @@ MoneyMatter is a privacy-first alternative to apps like Mint and YNAB. It is ope
 
 ## Features
 
-- Bank account synchronization (LunchFlow, SimpleFIN, Monobank and Walutomat)
+- Bank account synchronization (LunchFlow, SimpleFIN, Monobank, Walutomat and Akahu)
 - AI-powered transaction categorization that follows your own instructions
 - Budgets with a line per category, rollover and goals
 - Investment portfolio tracking with automatic price updates
@@ -24,6 +24,7 @@ MoneyMatter is a privacy-first alternative to apps like Mint and YNAB. It is ope
 - Detailed analytics and spending reports
 - Full data export
 - Dark mode, mobile-friendly responsive design
+- iPhone app in public beta on TestFlight: https://testflight.apple.com/join/tm5q4V5H
 - PWA (Progressive Web App) support
 
 ## AI Integration (MCP)
@@ -48,6 +49,7 @@ Works with Claude, ChatGPT, OpenClaw, and any MCP-compatible client. Access can 
 ## Links
 
 - [Sign up / Get started](https://moneymatter.app/sign-up)
+- [All features](https://moneymatter.app/features)
 - [GitHub repository](https://github.com/letehaha/moneymatter)
 - [API catalog](https://moneymatter.app/.well-known/api-catalog)
 - [Privacy policy](https://moneymatter.app/privacy-policy)

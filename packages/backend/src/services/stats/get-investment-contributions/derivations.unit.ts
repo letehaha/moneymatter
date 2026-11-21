@@ -99,20 +99,21 @@ describe('accumulateSavingsNet', () => {
       transactions: [
         {
           time: '2026-01-10T12:00:00.000Z',
-          refAmount: Money.fromCents(50_000),
+          refAmount: Money.fromDecimal(500),
           transactionType: TRANSACTION_TYPES.income,
         },
         {
           time: '2026-01-20T12:00:00.000Z',
-          refAmount: Money.fromCents(20_000),
+          refAmount: Money.fromDecimal(200),
           transactionType: TRANSACTION_TYPES.expense,
         },
         {
           time: '2026-02-05T12:00:00.000Z',
-          refAmount: Money.fromCents(30_000),
+          refAmount: Money.fromDecimal(300),
           transactionType: TRANSACTION_TYPES.expense,
         },
       ],
+      refundPairs: [],
       buckets,
     });
 
@@ -127,14 +128,47 @@ describe('accumulateSavingsNet', () => {
       transactions: [
         {
           time: '2025-12-31T12:00:00.000Z',
-          refAmount: Money.fromCents(99_900),
+          refAmount: Money.fromDecimal(999),
           transactionType: TRANSACTION_TYPES.income,
+        },
+      ],
+      refundPairs: [],
+      buckets,
+    });
+
+    expect(savingsNet).toEqual([0, 0, 0]);
+  });
+
+  it('nets each side of a refund pair in its own bucket', () => {
+    const savingsNet = accumulateSavingsNet({
+      decimals: 2,
+      transactions: [
+        {
+          time: '2026-01-10T12:00:00.000Z',
+          refAmount: Money.fromDecimal(200),
+          transactionType: TRANSACTION_TYPES.expense,
+        },
+        {
+          time: '2026-02-05T12:00:00.000Z',
+          refAmount: Money.fromDecimal(50),
+          transactionType: TRANSACTION_TYPES.income,
+        },
+      ],
+      refundPairs: [
+        {
+          minor: 5_000,
+          expenseTime: new Date('2026-01-10T12:00:00.000Z'),
+          incomeTime: new Date('2026-02-05T12:00:00.000Z'),
+          expenseCategoryId: null,
+          incomeCategoryId: null,
+          expenseInScope: true,
+          incomeInScope: true,
         },
       ],
       buckets,
     });
 
-    expect(savingsNet).toEqual([0, 0, 0]);
+    expect(savingsNet).toEqual([-15_000, 0, 0]);
   });
 
   it('keeps the third decimal of a 3-decimal base currency', () => {
@@ -152,6 +186,7 @@ describe('accumulateSavingsNet', () => {
           transactionType: TRANSACTION_TYPES.expense,
         },
       ],
+      refundPairs: [],
       buckets,
     });
 

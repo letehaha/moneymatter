@@ -1,5 +1,11 @@
 import { captureException } from '@/lib/sentry';
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES as LOCALES, type SupportedLocale } from '@bt/shared/i18n/locales';
+import {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES as LOCALES,
+  type SupportedLocale,
+  isSupportedLocale,
+  resolveLocale,
+} from '@bt/shared/i18n/locales';
 import { compile } from '@intlify/core-base';
 import { type I18n, type MessageCompiler, type MessageFunction, createI18n } from 'vue-i18n';
 import type { RouteLocationNormalized } from 'vue-router';
@@ -9,6 +15,19 @@ import enCommon from './locales/chunks/en/common.json';
 import type { ChunkRegistry, I18nChunkName, LoadedChunksMap } from './types';
 
 const SUPPORTED_LOCALES = Object.values(LOCALES);
+
+export const FLAG_SRCS: Record<SupportedLocale, string> = {
+  [LOCALES.ENGLISH]: '/img/flags/gb.svg',
+  [LOCALES.UKRAINIAN]: '/img/flags/ua.svg',
+  [LOCALES.SPANISH]: '/img/flags/es.png',
+  [LOCALES.INDONESIAN]: '/img/flags/id.svg',
+  [LOCALES.RUSSIAN]: '/img/flags/ru.svg',
+  [LOCALES.SLOVAK]: '/img/flags/sk.svg',
+  [LOCALES.GERMAN]: '/img/flags/de.svg',
+  [LOCALES.FRENCH]: '/img/flags/fr.svg',
+  [LOCALES.BRAZILIAN_PORTUGUESE]: '/img/flags/br.svg',
+  [LOCALES.ITALIAN]: '/img/flags/it.svg',
+};
 
 // Track which chunks have been loaded per locale
 const loadedChunks: LoadedChunksMap = new Map([['en', new Set<I18nChunkName>(['common'])]]);
@@ -256,12 +275,7 @@ export async function setLocale(locale: string): Promise<void> {
  */
 export function initializeLocale(): string {
   const storedLocale = localStorage.getItem('preferred-locale');
-  const browserLocale = navigator.language.split('-')[0];
+  if (storedLocale && isSupportedLocale(storedLocale)) return storedLocale;
 
-  const locale =
-    (storedLocale && SUPPORTED_LOCALES.includes(storedLocale as SupportedLocale) ? storedLocale : null) ||
-    (SUPPORTED_LOCALES.includes(browserLocale as SupportedLocale) ? browserLocale : null) ||
-    DEFAULT_LOCALE;
-
-  return locale;
+  return resolveLocale({ tag: navigator.languages.join(',') || navigator.language });
 }

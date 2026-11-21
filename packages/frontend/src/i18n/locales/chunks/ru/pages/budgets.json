@@ -12,19 +12,37 @@
       "error": "Непредвиденная ошибка!",
       "nameLabel": "Название бюджета",
       "namePlaceholder": "Введите название",
-      "typeLabel": "Тип бюджета",
-      "typeManual": "Ручной",
-      "typeManualDescription": "Добавляйте транзакции в этот бюджет вручную",
-      "typeCategory": "По категориям",
-      "typeCategoryDescription": "Автоматически отслеживайте расходы по категориям",
-      "categoriesLabel": "Отслеживаемые категории",
-      "categoriesRequired": "Выберите хотя бы одну категорию",
       "fromDateLabel": "Дата от",
       "toDateLabel": "Дата до",
-      "autoIncludeLabel": "Автоматически включать транзакции",
-      "limitLabel": "Лимит бюджета",
       "limitPlaceholder": "Введите лимит",
       "submitButton": "Добавить бюджет"
+    },
+    "limitKind": {
+      "label": "Limit type",
+      "whatToChoose": "What to choose?",
+      "guideTitle": "Which limit fits?",
+      "goalNote": "Saving up for something? {goalLink} instead: goals track what you've saved, trackers track what flows in or out.",
+      "goalLink": "Create a goal",
+      "kinds": {
+        "spending": {
+          "label": "Spending",
+          "hint": "Spend at most this much. Warns when spending runs ahead of time passing.",
+          "guide": "For a thing or an event: a trip, a renovation, a year of groceries. Warns when you spend faster than time passes.",
+          "amountLabel": "Limit"
+        },
+        "income_target": {
+          "label": "Income target",
+          "hint": "Earn at least this much. Green while you're on pace, and going over is a win.",
+          "guide": "For money you want to bring in: yearly salary, freelance revenue, rental income. Green while on pace; going over is a win.",
+          "amountLabel": "Target amount"
+        },
+        "income_cap": {
+          "label": "Income cap",
+          "hint": "Stay under this income, e.g. a tax or benefits threshold. Warns as you get close.",
+          "guide": "For income you must stay under: a small-business tax threshold, a benefits or student-aid income limit. Warns as you get close.",
+          "amountLabel": "Cap"
+        }
+      }
     },
     "list": {
       "loadError": "Couldn't load trackers.",
@@ -46,7 +64,6 @@
       "categoriesCount": "{count} категорий",
       "noTransactions": "Транзакций пока нет",
       "noTimePeriod": "Период не задан",
-      "autoTracked": "Отслеживается автоматически",
       "status": {
         "ended": "Завершён",
         "lastDay": "Последний день",
@@ -60,6 +77,7 @@
       "expenses": "Расходы",
       "net": "Итог",
       "used": "Использовано",
+      "earned": "Earned",
       "archive": "Архивировать",
       "unarchive": "Восстановить из архива",
       "archivedLabel": "Архивный",
@@ -70,34 +88,34 @@
         "title": "Бюджетов пока нет",
         "description": "Создайте бюджет, чтобы отслеживать расходы или контролировать отдельные финансовые события."
       },
-      "searchPlaceholder": "Поиск бюджетов",
+      "searchPlaceholder": "Search trackers",
       "filters": {
-        "all": "Все",
-        "manual": "Вручную",
-        "category": "Категория",
-        "archived": "Архивные"
+        "all": "All",
+        "autoAdd": "Auto-add on",
+        "handPicked": "Hand-picked",
+        "archived": "Archived"
       },
       "groups": {
         "active": "Active now",
-        "upcoming": "Предстоящее",
+        "upcoming": "Upcoming",
         "noDates": "No dates",
-        "ended": "Завершён",
-        "archived": "Архивные",
+        "ended": "Ended",
+        "archived": "Archived",
         "show": "show",
         "hide": "hide"
       },
       "showMoreEnded": "Show {count} more ended",
       "row": {
         "auto": "auto",
-        "transactions": "{count} транзакция | {count} транзакции | {count} транзакций",
-        "moreCategories": "+ ещё {count}",
+        "transactions": "{count} transaction | {count} transactions",
+        "moreCategories": "+{count} more",
         "noLimit": "no limit",
         "archiveSuggestion": "Archive?"
       },
       "menu": {
-        "moreActions": "Дополнительные действия",
+        "moreActions": "More actions",
         "open": "Open",
-        "duplicate": "Дубликат"
+        "duplicate": "Duplicate"
       },
       "duplicateSuccess": "Tracker duplicated",
       "duplicateError": "Failed to duplicate tracker",
@@ -111,19 +129,18 @@
       },
       "archivePrompt": {
         "title": "Archive \"{name}\"?",
-        "endedDaysAgo": "{count} день назад | {count} дня назад | {count} дней назад",
-        "endedMonthsAgo": "{count} месяц назад | {count} месяца назад | {count} месяцев назад",
+        "endedDaysAgo": "{count} day ago | {count} days ago",
+        "endedMonthsAgo": "{count} month ago | {count} months ago",
         "description": "It ended {ago}. Archived trackers move to the Archived group and keep their transactions and statistics. You can unarchive any time.",
         "dontAsk": "Don't ask for this tracker",
-        "notNow": "Не сейчас",
-        "dismissError": "Не удалось обновить бюджет",
+        "notNow": "Not now",
+        "dismissError": "Failed to update tracker",
         "dismissSuccess": "Got it. We won't suggest archiving this tracker again."
       }
     },
     "settings": {
       "nameLabel": "Название бюджета",
       "namePlaceholder": "Введите название бюджета",
-      "limitLabel": "Лимит бюджета",
       "limitPlaceholder": "Введите сумму лимита (необязательно)",
       "startDateLabel": "Дата начала",
       "endDateLabel": "Дата окончания",
@@ -134,24 +151,6 @@
       "addSelected": "Добавить выбранные",
       "clearSelection": "Очистить выбор"
     },
-    "categoryBudget": {
-      "trackedCategories": "Отслеживаемые категории",
-      "categoriesCount": "Отслеживается категорий: {count}",
-      "autoTrackedInfo": "Транзакции автоматически отслеживаются по категориям",
-      "transactionsTitle": "Транзакции",
-      "transactionsCount": "Транзакций: {count}",
-      "noTransactions": "Транзакций пока нет",
-      "noTransactionsDescription": "Транзакции, соответствующие отслеживаемым категориям, появятся здесь автоматически.",
-      "transactionsLoadError": "Не удалось загрузить транзакции",
-      "categoryBreakdown": "Разбивка по категориям",
-      "edit": "Изменить",
-      "editTitle": "Изменить бюджет",
-      "showMore": "Показать больше",
-      "showLess": "Показать меньше",
-      "settings": {
-        "categoriesLabel": "Отслеживаемые категории"
-      }
-    },
     "manualBudget": {
       "edit": "Изменить",
       "editTitle": "Изменить бюджет"
@@ -161,30 +160,35 @@
     },
     "details": {
       "statsLoadError": "Couldn't load this tracker's totals.",
-      "transactionsCount": "{count} транзакция | {count} транзакции | {count} транзакций",
+      "transactionsCount": "{count} transaction | {count} transactions",
+      "tagsCount": "{count} tag | {count} tags",
       "strip": {
         "limit": "Limit",
         "spent": "Spent",
         "left": "Left",
         "overBy": "Over by",
-        "income": "Доход",
-        "expenses": "Расходы",
-        "net": "Итог",
-        "transactions": "Транзакции",
+        "earned": "Earned",
+        "toGo": "To go",
+        "headroom": "Headroom",
+        "aboveTargetBy": "Above target by",
+        "income": "Income",
+        "expenses": "Expenses",
+        "net": "Net",
+        "transactions": "Transactions",
         "perDay": "{amount} / day"
       },
       "tabs": {
-        "limits": "Лимиты"
+        "limits": "Limits"
       },
-      "tracks": "Tracks",
+      "autoAdds": "Auto-adds",
       "membersLabel": "Members: {count}",
       "actions": {
         "share": "Share",
         "setLimits": "Set limits",
         "removeLimits": "Remove limits",
-        "duplicate": "Дубликат",
+        "duplicate": "Duplicate",
         "openInTransactions": "Open in Transactions",
-        "more": "Дополнительные действия"
+        "more": "More actions"
       },
       "shareDialog": {
         "title": "Share \"{name}\""
@@ -195,8 +199,7 @@
       },
       "edit": {
         "limitHint": "Clear it to track without a limit.",
-        "datesHint": "Changing the dates does not add or remove transactions already linked.",
-        "categoriesHint": "Removing a category also removes it from any line."
+        "datesHint": "Changing the dates does not add or remove transactions already linked."
       }
     },
     "lines": {
@@ -210,7 +213,7 @@
         "line": "Line",
         "limit": "Limit",
         "spent": "Spent",
-        "left": "Left"
+        "left": "Осталось"
       },
       "usage": "{percent}% · {spent} of {limit}",
       "overUsage": "Over by {amount} · {spent} of {limit}",
@@ -239,13 +242,12 @@
       "dialog": {
         "addTitle": "Add line",
         "editTitle": "Edit line",
-        "nameLabel": "Название",
+        "nameLabel": "Name",
         "namePlaceholder": "e.g. Hotels",
         "nameRequired": "Enter a name",
-        "categoriesLabel": "Категории",
+        "categoriesLabel": "Categories",
         "categoriesPlaceholder": "Pick categories",
         "categoriesRequired": "Pick at least one category",
-        "categoryTrackerHint": "This tracker only counts its own categories, so pick from those.",
         "limitLabel": "Limit (optional)",
         "limitPlaceholder": "No limit",
         "limitHint": "Leave empty to group spending without a limit."
@@ -258,6 +260,38 @@
         "createError": "Couldn't add the line",
         "updateError": "Couldn't update the line",
         "deleteError": "Couldn't delete the line"
+      }
+    },
+    "rules": {
+      "heading": "Auto-add",
+      "switchLabel": "Add matching transactions automatically",
+      "switchHintOn": "Your transactions in the date range with any of these categories or tags get added.",
+      "switchHintOff": "Only transactions you add by hand count.",
+      "switchHintTurnedOff": "Turning this off keeps every transaction already added.",
+      "categoriesLabel": "Categories",
+      "categoriesPlaceholder": "Select categories",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Select tags",
+      "needsCategoryOrTag": "Pick at least one category or tag",
+      "cleanupLabel": "Remove transactions that stop matching",
+      "cleanupHint": "Checked every 6 hours. Transactions you added by hand are never removed.",
+      "checkedAt": "Checked {when}",
+      "unlinked": "Removed {count} transaction. It won't be added again automatically. | Removed {count} transactions. They won't be added again automatically.",
+      "confirm": {
+        "title": "Save new matching rules?",
+        "description": "Once saved, all your transactions are checked against the new rules and matching ones are added.",
+        "descriptionWithCleanup": "Once saved, all your transactions are checked against the new rules. Matching ones are added, and ones the rules added that no longer match are removed. Transactions you added by hand stay.",
+        "saveAndCheck": "Save and check"
+      },
+      "rejected": {
+        "title": "Not added again",
+        "description": "You removed these or rejected them as AI suggestions, so they're skipped. Allow one and it's added back if it still matches.",
+        "summary": "{count} transaction won't be added again | {count} transactions won't be added again",
+        "review": "Review",
+        "aiBadge": "AI suggestion",
+        "allowAgain": "Allow again",
+        "allowed": "Allowed again",
+        "allowError": "Couldn't allow the transaction again"
       }
     },
     "smartTracking": {
@@ -284,6 +318,7 @@
           "threeMonths": "3 months",
           "sixMonths": "6 months"
         },
+        "costNote": "The first scan checks every transaction from the look-back window to the end date. Large ranges can use up your monthly AI allowance, or cost you directly if you use your own key.",
         "usesIncluded": "Uses the included AI. Counts toward your monthly AI allowance.",
         "usesOwnModel": "Uses your own model · {model}"
       },
@@ -304,15 +339,15 @@
       "strip": {
         "tip": "Let AI find transactions for this tracker",
         "turnOn": "Turn on",
-        "hide": "Скрыть",
+        "hide": "Hide",
         "scanning": "Looking for matching transactions…",
         "startedAt": "Started {time}",
         "toReview": "{count} to review",
         "checkedAt": "checked {when}",
-        "review": "Просмотреть",
+        "review": "Review",
         "idle": "Smart tracking is on · nothing new to review",
-        "settings": "Настройки",
-        "paused": "Приостановлено",
+        "settings": "Settings",
+        "paused": "Paused",
         "allowanceUsed": "AI allowance used up",
         "unavailable": "AI connection stopped working",
         "fixInSettings": "Fix in Settings",
@@ -324,7 +359,7 @@
         "description": "You can still turn on smart tracking in the tracker's settings.",
         "neverShow": "Never show again",
         "neverShowHint": "Hides it on every tracker, not just this one.",
-        "confirm": "Скрыть"
+        "confirm": "Hide"
       },
       "review": {
         "sectionTitle": "To review ({count})",
@@ -332,13 +367,13 @@
           "likely": "Likely",
           "possible": "Possible"
         },
-        "add": "Добавить",
-        "skip": "Пропустить",
+        "add": "Add",
+        "skip": "Skip",
         "addAria": "Add {name} to {tracker}",
         "skipAria": "Skip {name}",
         "addAll": "Add all {count}",
         "addAllShort": "Add all",
-        "skipAll": "Пропустить все",
+        "skipAll": "Skip all",
         "added": "Added {count} transaction to {name} | Added {count} transactions to {name}",
         "skipped": "Skipped. AI won't suggest it again. | Skipped {count} transactions. AI won't suggest them again.",
         "acceptError": "Couldn't add the suggested transactions. Try again.",

@@ -2,7 +2,7 @@
   "pages": {
     "importExport": {
       "importHistory": {
-        "pageTitle": "Importverlauf",
+        "pageTitle": "Importhistorie",
         "pageDescription": "Sieh deine vergangenen Importe ein und prüfe genau, welche Konten und Transaktionen jeweils erstellt wurden.",
         "loadError": "Dein Importverlauf konnte nicht geladen werden.",
         "emptyTitle": "Noch keine Importe",

@@ -56,6 +56,7 @@ export default class Users extends Model {
   })
   totalBalance!: number;
 
+  /** Category for transactions created without one (bank sync, imports, balance adjustments); doubles as "uncategorized". */
   @Column({ allowNull: true, type: DataType.UUID })
   defaultCategoryId!: RecordId;
 
@@ -80,6 +81,9 @@ export default class Users extends Model {
   /** Cloud only. Null means the user predates trials and resolves as Plus until the grandfather script runs. */
   @Column({ allowNull: true, type: DataType.DATE })
   trialEndsAt!: Date | null;
+
+  @Column({ allowNull: false, unique: true, type: DataType.UUID, defaultValue: DataType.UUIDV4 })
+  appStoreAccountToken!: string;
 
   /** Early adopter budget trial anchor. Written once, never reset. */
   @Column({ allowNull: true, type: DataType.DATE })

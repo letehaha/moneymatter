@@ -1,6 +1,6 @@
 <template>
   <div class="@container/cash-flow space-y-6">
-    <ReportControls v-model:period="selectedPeriod">
+    <ReportControls v-model:period="selectedPeriod" :payday="payday">
       <GranularitySelector
         v-model="selectedGranularity"
         :granularities="PAGE_GRANULARITIES"
@@ -115,20 +115,21 @@ import { useDateLocale } from '@/composable/use-date-locale';
 import { CASH_FLOW_GRANULARITIES, type CashFlowGranularity } from '@bt/shared/types';
 import { keepPreviousData, useQuery } from '@tanstack/vue-query';
 import { useLocalStorage, useSessionStorage } from '@vueuse/core';
-import { differenceInDays, endOfMonth, startOfMonth, subDays, subMonths } from 'date-fns';
+import { differenceInDays, isSameDay, subDays, subMonths } from 'date-fns';
 import { Settings2Icon } from '@lucide/vue';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useFormatCurrency } from '@/composable';
 import { useChartColors } from '@/composable/charts/chart-colors';
 
-import { createPeriodSerializer } from '../../utils';
+import { CASH_FLOW_PERIOD_STORAGE_KEYS, createPeriodSerializer } from '../../utils';
 import CashFlowChart from './components/cash-flow-chart.vue';
 import ChartSkeleton from './components/chart-skeleton.vue';
 import ChartTypeSwitcher, { type ChartType } from './components/chart-type-switcher.vue';
 import GranularitySelector from '../../components/granularity-selector.vue';
 import ReportControls from '../../components/report-controls.vue';
-import type { Period } from '@/composable/use-period-navigation';
+import { type Period, getPayPeriod } from '@/composable/use-period-navigation';
+import { useUserSettings } from '@/composable/data-queries/user-settings';
 import MoneyFlowSection from './components/money-flow-section.vue';
 import SummaryCardSkeleton from './components/summary-card-skeleton.vue';
 import SummaryCard from './components/summary-card.vue';
@@ -146,13 +147,16 @@ const PAGE_GRANULARITIES = CASH_FLOW_GRANULARITIES.filter(
   (granularity): granularity is PageGranularity => granularity !== 'daily',
 );
 
-// Helper to get default period
-const getDefaultPeriod = (): Period => ({
-  from: startOfMonth(subMonths(new Date(), DEFAULT_PERIOD_MONTHS - 1)),
-  to: endOfMonth(new Date()),
-});
+const { data: userSettings } = useUserSettings();
+const payday = computed(() => userSettings.value?.payday ?? 1);
 
-const periodSerializer = createPeriodSerializer({ getDefaultPeriod });
+const getDefaultCompositionPeriod = (day = payday.value): Period => getPayPeriod({ date: new Date(), payday: day });
+const getDefaultPeriod = (day = payday.value): Period => {
+  const current = getDefaultCompositionPeriod(day);
+  return { from: subMonths(current.from, DEFAULT_PERIOD_MONTHS - 1), to: current.to };
+};
+
+const periodSerializer = createPeriodSerializer({ getDefaultPeriod: () => getDefaultPeriod() });
 
 // State with persistence using VueUse
 // localStorage - persists across sessions
@@ -160,17 +164,24 @@ const selectedChartType = useLocalStorage<ChartType>('cash-flow-chart-type', 'mi
 const selectedGranularity = useLocalStorage<PageGranularity>('cash-flow-granularity', 'monthly');
 
 // sessionStorage - clears when tab closes
-const selectedPeriod = useSessionStorage<Period>('cash-flow-period', getDefaultPeriod(), {
+const selectedPeriod = useSessionStorage<Period>(CASH_FLOW_PERIOD_STORAGE_KEYS[0], getDefaultPeriod(), {
   serializer: periodSerializer,
 });
 const showMovingAverage = useSessionStorage('cash-flow-show-moving-avg', true);
 
-const getDefaultCompositionPeriod = (): Period => ({
-  from: startOfMonth(new Date()),
-  to: endOfMonth(new Date()),
+const compositionPeriod = useSessionStorage<Period>(CASH_FLOW_PERIOD_STORAGE_KEYS[1], getDefaultCompositionPeriod(), {
+  serializer: createPeriodSerializer({ getDefaultPeriod: () => getDefaultCompositionPeriod() }),
 });
-const compositionPeriod = useSessionStorage<Period>('cash-flow-composition-period', getDefaultCompositionPeriod(), {
-  serializer: createPeriodSerializer({ getDefaultPeriod: getDefaultCompositionPeriod }),
+
+// Settings can arrive after mount; move a period only if it is still the payday-1 default.
+watch(payday, (newPayday, oldPayday) => {
+  const isSamePeriod = (a: Period, b: Period) => isSameDay(a.from, b.from) && isSameDay(a.to, b.to);
+  if (isSamePeriod(selectedPeriod.value, getDefaultPeriod(oldPayday))) {
+    selectedPeriod.value = getDefaultPeriod(newPayday);
+  }
+  if (isSamePeriod(compositionPeriod.value, getDefaultCompositionPeriod(oldPayday))) {
+    compositionPeriod.value = getDefaultCompositionPeriod(newPayday);
+  }
 });
 
 // Calculate previous period (same duration, immediately before current period)
@@ -199,6 +210,7 @@ const queryParams = computed(() => ({
   from: selectedPeriod.value.from,
   to: selectedPeriod.value.to,
   granularity: selectedGranularity.value,
+  alignToPayday: true,
 }));
 
 // Query params for previous period (for trend comparison)
@@ -206,6 +218,7 @@ const previousQueryParams = computed(() => ({
   from: previousPeriod.value.from,
   to: previousPeriod.value.to,
   granularity: selectedGranularity.value,
+  alignToPayday: true,
 }));
 
 const {

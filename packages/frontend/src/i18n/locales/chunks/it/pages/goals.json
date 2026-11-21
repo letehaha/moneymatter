@@ -1,0 +1,347 @@
+{
+  "goals": {
+    "title": "Obiettivi",
+    "description": "Risparmiare per raggiungere traguardi con i conti già esistenti",
+    "newGoal": "Nuovo obiettivo",
+    "list": {
+      "searchPlaceholder": "Cerca obiettivi",
+      "filters": {
+        "all": "Tutti",
+        "behind": "In ritardo",
+        "archived": "Archiviati"
+      },
+      "sections": {
+        "active": "Attivi",
+        "ended": "Terminati",
+        "archived": "Archiviati",
+        "show": "mostra",
+        "hide": "nascondi"
+      },
+      "loadError": "Impossibile caricare gli obiettivi.",
+      "emptyState": {
+        "title": "Ancora nessun obiettivo",
+        "description": "Associare un obiettivo ai conti che contengono il denaro. I progressi si aggiornano al variare dei saldi."
+      },
+      "noMatch": {
+        "title": "Nessun risultato per \"{query}\"",
+        "titleNoQuery": "Nessun obiettivo corrisponde a questi filtri",
+        "description": "Provare un altro nome o includere gli obiettivi archiviati.",
+        "includeArchived": "Includi archiviati"
+      },
+      "row": {
+        "saved": "Accantonato",
+        "ofTarget": "di {amount}",
+        "accountShare": "{name} {share}%",
+        "accountFixed": "{name} {amount}",
+        "reachedOn": "raggiunto il {date}",
+        "byDate": "entro il {date}",
+        "noDate": "nessuna data",
+        "neededMonthly": "servono {amount}/mese"
+      },
+      "menu": {
+        "moreActions": "Altre azioni per {name}"
+      }
+    },
+    "status": {
+      "reached": "Raggiunto",
+      "ahead": "In anticipo",
+      "onTrack": "In linea",
+      "behind": "In ritardo",
+      "behindBy": "In ritardo · {count} mese | In ritardo · {count} mesi",
+      "overdue": "Scaduto",
+      "noDate": "Nessuna data",
+      "around": "verso il {date}",
+      "insufficientHistory": "Storico insufficiente",
+      "noAccounts": "Nessun conto",
+      "paused": "In pausa",
+      "archived": "Archiviati",
+      "noRate": "Nessun tasso di cambio"
+    },
+    "actions": {
+      "edit": "Modifica",
+      "pause": "Metti in pausa",
+      "resume": "Riprendi",
+      "archive": "Archivia",
+      "unarchive": "Ripristina",
+      "delete": "Elimina"
+    },
+    "deleteDialog": {
+      "title": "Eliminare questo obiettivo?",
+      "description": "L'obiettivo e le relative quote dei conti verranno rimossi. Conti e transazioni restano invariati."
+    },
+    "toasts": {
+      "created": "Obiettivo creato",
+      "saved": "Obiettivo salvato",
+      "paused": "Obiettivo in pausa",
+      "archived": "Obiettivo archiviato",
+      "deleted": "Obiettivo eliminato",
+      "saveError": "Impossibile salvare l'obiettivo",
+      "deleteError": "Impossibile eliminare l'obiettivo"
+    },
+    "access": {
+      "trialDaysLeft": "Prova Obiettivi · {n} giorno rimanente | Prova Obiettivi · {n} giorni rimanenti",
+      "trialTitle": "Prova gli obiettivi gratis per 14 giorni",
+      "trialDescription": "La creazione e la modifica degli obiettivi fanno parte di Essential. Avviare una prova per impostare il primo obiettivo.",
+      "startTrial": "Inizia la prova gratuita",
+      "trialEnded": "La prova di Obiettivi è terminata. Gli obiettivi restano visibili; effettuare l'upgrade per modificarli."
+    },
+    "details": {
+      "backToList": "Torna agli obiettivi",
+      "notFound": {
+        "title": "Obiettivo non trovato",
+        "description": "Potrebbe essere stato eliminato."
+      },
+      "loadError": "Impossibile caricare questo obiettivo",
+      "perMonth": "/mese",
+      "actions": {
+        "raiseTarget": "Alza il traguardo",
+        "more": "Altre azioni sull'obiettivo"
+      },
+      "tabs": {
+        "progress": "Progressi",
+        "accounts": "Conti",
+        "whatIf": "Simulazione"
+      },
+      "strip": {
+        "target": "Traguardo",
+        "saved": "Accantonato",
+        "left": "Rimanente",
+        "needs": "Necessario",
+        "pace": "Ritmo",
+        "reached": "Raggiunto",
+        "aboveTarget": "{amount} oltre il traguardo",
+        "notEnoughHistory": "storico insufficiente",
+        "around": "verso il {date}",
+        "dueInDays": "scade tra {count} giorno | scade tra {count} giorni",
+        "overdue": "scaduto"
+      },
+      "accounts": {
+        "label": "Conti",
+        "count": "{count} conto | {count} conti",
+        "showAll": "Mostra tutti i {count} conti",
+        "countedToward": "Conteggiato per {name}",
+        "shareOf": "{share}% di {amount}",
+        "fixed": "{amount} fisso",
+        "fixedShort": "{counted} di {amount} fissi. Il conto contiene meno dei suoi importi fissi.",
+        "shareOfLeft": "{share}% di {amount} rimanenti dopo gli importi fissi",
+        "sharePlain": "{share}%",
+        "totalCounted": "Totale conteggiato",
+        "readOnlyHint": "Legge i saldi, non sposta mai denaro",
+        "wholeAccount": "Intero conto",
+        "shareHere": "{share}% qui",
+        "shareHereFree": "{share}% qui · {free}% libero",
+        "fixedHere": "{amount} fissi da questo conto",
+        "emptyDescription": "Collegare i conti in Modifica obiettivo per monitorare i progressi.",
+        "columns": {
+          "account": "Conto",
+          "share": "Quota",
+          "balance": "Saldo",
+          "counted": "Conteggiato"
+        },
+        "archived": "Archiviati",
+        "percentOfSaved": "{percent}% del risparmiato",
+        "total": "Totale · {count} conto | Totale · {count} conti",
+        "ofBalance": "di {amount}",
+        "unavailableAccount": "Conto non disponibile",
+        "balanceUnavailable": "Saldo non disponibile"
+      },
+      "noRate": {
+        "title": "Tasso di cambio non disponibile",
+        "description": "I progressi vengono mostrati quando è disponibile il tasso odierno di {currency}."
+      },
+      "progress": {
+        "kpi": {
+          "monthlyPace": "Ritmo mensile",
+          "needs": "servono {amount}/mese",
+          "projectedFinish": "Completamento previsto",
+          "onTime": "in tempo",
+          "early": "{count} mesi in anticipo",
+          "late": "{count} mesi in ritardo",
+          "targetDate": "Traguardo {date}",
+          "savedIn": "Risparmiato in {count} mesi",
+          "bestMonth": "Mese migliore",
+          "shareOfGrowth": "{percent}% della crescita del periodo",
+          "leftDueInDays": "Mancano {amount}, scade tra {count} giorno | Mancano {amount}, scade tra {count} giorni",
+          "leftOverdue": "Mancano {amount}, scaduto"
+        },
+        "timeline": "Cronologia",
+        "noHistory": "Ancora nessuno storico",
+        "insufficient": {
+          "title": "Storico ancora insufficiente per calcolare un ritmo",
+          "description": "Per calcolare un ritmo servono {min} mesi completi di storico; questi conti ne hanno {count}. Impostare un piano mensile in Modifica obiettivo per vedere subito una stima."
+        },
+        "notes": {
+          "plannedPace": "Il ritmo usa i {amount} mensili pianificati.",
+          "historyPace": "Il ritmo è la variazione mensile mediana dell'ultimo mese. | Il ritmo è la variazione mensile mediana degli ultimi {count} mesi.",
+          "fxDrift": "I mesi passati dei conti in valuta estera includono le variazioni del tasso di cambio.",
+          "marketMoves": "Le oscillazioni di mercato dei conti di investimento contano come progressi. Le proiezioni non presuppongono crescita.",
+          "staysReached": "Resta raggiunto anche se in seguito il saldo scende."
+        },
+        "chartAria": "Risparmi dell'obiettivo nel tempo",
+        "legend": {
+          "saved": "Accantonato",
+          "projection": "Proiezione",
+          "target": "Traguardo"
+        },
+        "monthlyChange": "Variazione mensile"
+      },
+      "staleData": "Impossibile aggiornare questo obiettivo. Vengono mostrati gli ultimi dati caricati."
+    },
+    "form": {
+      "createTitle": "Nuovo obiettivo",
+      "editTitle": "Modifica obiettivo",
+      "description": "I progressi leggono i saldi dei conti. Nessun denaro viene spostato.",
+      "nameLabel": "Nome",
+      "namePlaceholder": "es. Auto o Fondo di emergenza",
+      "targetAmountLabel": "Importo obiettivo",
+      "targetAmountPlaceholder": "Inserire un importo",
+      "currencyLabel": "Valuta",
+      "currencyPlaceholder": "Selezionare una valuta",
+      "targetDateLabel": "Data obiettivo",
+      "targetDateHint": "Facoltativa. Impostare una data per verificare se si è in linea. Senza data, verrà stimato quando sarà raggiunto.",
+      "accountsLabel": "Conti",
+      "noAccounts": "Nessun conto",
+      "countsNow": "Conta {amount} ora",
+      "manageAccounts": "Gestisci conti",
+      "addAccounts": "Aggiungi conti",
+      "accountsHint": "I saldi di questi conti contano per l'obiettivo.",
+      "plannedMonthlyLabel": "Imposta un importo mensile",
+      "plannedMonthlyHint": "Se disattivato, usa la variazione mensile mediana degli ultimi 6 mesi.",
+      "plannedMonthlyPlaceholder": "Inserire un importo mensile",
+      "holdDaysLabel": "Mantieni “Raggiunto” dopo un calo",
+      "holdDaysPlaceholder": "30",
+      "holdDaysUnit": "giorni",
+      "holdDaysHint": "Per questo numero di giorni dopo che l'obiettivo ha raggiunto il traguardo, un calo al di sotto non annulla lo stato Raggiunto. Impostare 0 per seguire il saldo in tempo reale.",
+      "summary": {
+        "dated": "Raggiungere {target} entro il {date}.",
+        "undated": "Raggiungere {target}, senza scadenza.",
+        "needed": "Servono circa {amount} al mese da oggi.",
+        "covered": "I conti lo coprono già.",
+        "planned": "Si prevede di risparmiare {amount} al mese."
+      },
+      "thisGoal": "questo obiettivo",
+      "createSubmit": "Crea obiettivo",
+      "errors": {
+        "nameRequired": "Inserire un nome",
+        "amountRequired": "Inserire un importo maggiore di 0",
+        "dateNotFuture": "Scegliere una data successiva a oggi",
+        "accountsRequired": "Aggiungere almeno un conto",
+        "shareCapacity": "{account} ha solo il {free}% libero. Ridurne la quota in Gestisci conti.",
+        "shareCapacityGeneric": "Un conto non ha una quota libera sufficiente. Ridurne la quota in Gestisci conti.",
+        "fixedBelowTarget": "La somma degli importi fissi è inferiore al traguardo. Aumentare un importo o conteggiare un conto in percentuale.",
+        "holdDaysRange": "Inserire un numero intero di giorni da 0 a 365"
+      },
+      "unavailableAccount": "Conto non disponibile",
+      "accountsMissing": "{count} conto non è disponibile e non viene conteggiato | {count} conti non sono disponibili e non vengono conteggiati"
+    },
+    "accountsDialog": {
+      "title": "Conti per {name}",
+      "description": "Selezionare i conti che contano per {name} e in quale misura.",
+      "fixedFirst": "Gli importi fissi vengono prelevati per primi dal saldo del conto. Le percentuali ripartiscono il resto.",
+      "mode": {
+        "percent": "Percentuale",
+        "amount": "Importo"
+      },
+      "searchPlaceholder": "Cercare conti",
+      "holder": "{share}% in {name}",
+      "archived": "Archiviati",
+      "fixedOnly": "Completamente utilizzato: {holders} · solo importo fisso",
+      "free": "{free}% libero",
+      "wholeAccount": "Intero conto · conta {amount}",
+      "maxShare": "Max {max}% · conta {amount}",
+      "counts": "Conta {amount}",
+      "shareAriaLabel": "Quota di {name}",
+      "amountAriaLabel": "Importo fisso da {name}",
+      "errors": {
+        "invalid": "Inserire una quota maggiore di 0%",
+        "invalidAmount": "Inserire un importo maggiore di 0",
+        "overMax": "Max {max}%",
+        "overMaxUsedBy": "Max {max}% ({holders})",
+        "noShareLeft": "Nessuna quota rimasta: {holders}. Usare invece un importo fisso."
+      },
+      "noMatch": "Nessun conto corrisponde a “{query}”",
+      "marketNote": "Le oscillazioni di mercato dei conti di investimento e crypto contano come progressi. Le proiezioni non presuppongono crescita.",
+      "total": "Nessun conto selezionato | {count} conto · conta {amount} | {count} conti · contano {amount}",
+      "fixToSave": "Correggere {name} per salvare",
+      "done": "Fatto",
+      "emptyState": {
+        "title": "Nessun conto da collegare",
+        "description": "Gli obiettivi conteggiano i conti di contanti, correnti, di risparmio, di investimento e crypto di proprietà."
+      },
+      "unavailableCaption": "Non disponibile · mantenuto finché non viene deselezionato",
+      "sharePlaceholder": "100",
+      "amountPlaceholder": "Importo",
+      "order": {
+        "hint": "Se il saldo non basta, gli importi fissi vengono coperti dall'alto verso il basso. Trascinare per cambiare l'ordine.",
+        "dragLabel": "Trascinare per cambiare l'ordine",
+        "thisGoal": "{name} · questo obiettivo",
+        "moveUp": "Sposta su",
+        "moveDown": "Sposta giù"
+      },
+      "fixedCurrencyNote": "Gli importi fissi sono nella valuta del conto."
+    },
+    "feasibility": {
+      "summary": "Gli obiettivi richiedono {needed}/mese, il risparmio mediano è di {saving}/mese",
+      "short": "Mancano {amount} al mese.",
+      "showGoals": "Mostra obiettivi",
+      "hideGoals": "Nascondi obiettivi",
+      "perMonth": "{amount}/mese",
+      "goalFits": "Rientra",
+      "goalDoesNotFit": "Non rientra",
+      "footnote": "\"Risparmio tipico\" è il flusso netto mensile mediano degli ultimi 12 mesi completi. I trasferimenti tra i propri conti sono esclusi. Gli obiettivi vengono verificati a partire dalla data più vicina.",
+      "dueIn": "Scade tra {count} giorno | Scade tra {count} giorni",
+      "dueNote": "Gli obiettivi in scadenza entro un mese o scaduti non rientrano nel totale mensile."
+    },
+    "whatIf": {
+      "monthly": {
+        "label": "Importo mensile per questo obiettivo",
+        "placeholder": "Automatico",
+        "auto": "Automatico {amount}",
+        "autoHint": "Automatico {amount} è la variazione mensile mediana degli ultimi {count} mesi",
+        "noAuto": "Storico ancora insufficiente per la modalità automatica. Inserire un importo.",
+        "useAuto": "Usa automatico"
+      },
+      "targetDate": {
+        "label": "Data obiettivo",
+        "hint": "Facoltativa. Senza data si ottiene un mese previsto, mai “in ritardo”."
+      },
+      "shares": {
+        "label": "Quote dei conti",
+        "counted": "Conta {amount} · {percent}%",
+        "whole": "Intero conto · conta {amount}",
+        "fixed": "Importo fisso · conta {amount}",
+        "free": "{free}% libero · conta {amount}",
+        "inputLabel": "Quota di {name}",
+        "placeholder": "0",
+        "capacityPending": "Le quote non possono essere modificate finché gli altri obiettivi non sono caricati."
+      },
+      "compare": {
+        "title": "Attuale vs simulazione",
+        "from": "dal {date}",
+        "now": "Attuale",
+        "whatIf": "Simulazione",
+        "monthly": "Importo mensile per l'obiettivo",
+        "reached": "Raggiunto verso",
+        "against": "Rispetto al traguardo",
+        "needed": "Necessario al mese",
+        "reachedAlready": "Raggiunto",
+        "offset": {
+          "early": "{count} mesi in anticipo",
+          "onTime": "In tempo",
+          "late": "{count} mesi in ritardo"
+        }
+      },
+      "autoTag": "Automatico",
+      "deposit": {
+        "sentence": "Per destinare {amount} al mese a questo obiettivo, versare {deposits}.",
+        "item": "{amount} su {account}"
+      },
+      "sandboxHint": "Uno spazio di prova. Nulla cambia finché non viene applicato in Modifica obiettivo.",
+      "reset": "Reimposta",
+      "apply": "Applica in Modifica obiettivo"
+    },
+    "docs": {
+      "howItWorks": "Come funzionano gli obiettivi"
+    }
+  }
+}

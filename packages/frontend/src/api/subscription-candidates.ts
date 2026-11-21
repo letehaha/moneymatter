@@ -1,5 +1,5 @@
 import { api } from '@/api/_api';
-import { SUBSCRIPTION_CANDIDATE_STATUS, SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
+import { SUBSCRIPTION_CANDIDATE_STATUS, SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_INTERVAL_UNITS } from '@bt/shared/types';
 
 interface SubscriptionCandidatePossibleMatch {
   id: string;
@@ -10,7 +10,10 @@ export interface SubscriptionCandidate {
   id: string;
   suggestedName: string;
   detectedFrequency: SUBSCRIPTION_FREQUENCIES;
-  /** Average amount as decimal (already converted from cents) */
+  /** Step of a `custom` detected frequency (e.g. every 30 days); null for a preset. */
+  detectedIntervalUnit: SUBSCRIPTION_INTERVAL_UNITS | null;
+  detectedIntervalCount: number | null;
+  /** Average amount as a decimal */
   averageAmount: number;
   currencyCode: string;
   accountId: string | null;

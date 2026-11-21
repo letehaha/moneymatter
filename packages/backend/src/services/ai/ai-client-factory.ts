@@ -4,8 +4,16 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { AINativeProvider, AI_FEATURE, AI_PROVIDER } from '@bt/shared/types';
 import { createGuardedFetch } from '@common/utils/url-guard';
 import type { LanguageModel } from 'ai';
+import { Agent } from 'undici';
 
+import { CUSTOM_ENDPOINT_CALL_TIMEOUT_MS } from './ai-call-guards';
 import { resolveAIConfiguration } from './ai-model-resolver';
+
+/** Node's fetch otherwise gives up after 300s without response headers, which a non-streaming local model can exceed. */
+const customEndpointDispatcher = new Agent({
+  headersTimeout: CUSTOM_ENDPOINT_CALL_TIMEOUT_MS,
+  bodyTimeout: CUSTOM_ENDPOINT_CALL_TIMEOUT_MS,
+});
 
 /**
  * Passed explicitly so the SDKs never fall back to `*_BASE_URL` env vars, which could point
@@ -39,7 +47,8 @@ export function createProviderModel(spec: ProviderModelSpec): LanguageModel {
       // falling back to the server's OPENAI_API_KEY env var.
       apiKey: spec.apiKey || 'no-key-required',
       baseURL: spec.baseUrl,
-      fetch: createGuardedFetch(),
+      fetch: (input, init) =>
+        createGuardedFetch()(input, { ...init, dispatcher: customEndpointDispatcher } as unknown as RequestInit),
     });
     // .chat() targets /chat/completions. The default responses-API path is not
     // served by Ollama, vLLM or most OpenAI-compatible proxies.

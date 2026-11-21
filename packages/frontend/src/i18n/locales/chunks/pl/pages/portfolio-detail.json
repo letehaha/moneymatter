@@ -9,6 +9,7 @@
     "backToInvestments": "Back to investments",
     "subtitle": "Portfolio overview",
     "actions": {
+      "openExternalUrl": "Open external link",
       "transfer": "Transfer",
       "edit": "Edit",
       "delete": "Delete",

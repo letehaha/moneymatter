@@ -27,6 +27,10 @@
         "walutomat": {
           "name": "Walutomat",
           "description": "Polish currency exchange platform with 23 currencies"
+        },
+        "akahu": {
+          "name": "Akahu",
+          "description": "Sync transactions from New Zealand banks for free via an Akahu personal app"
         }
       },
       "monobank": {
@@ -82,7 +86,7 @@
         },
         "buttons": {
           "back": "Back",
-          "loading": "Đang tải...",
+          "loading": "Loading...",
           "next": "Next",
           "syncing": "Syncing...",
           "sync": "Sync {count} account | Sync {count} accounts"
@@ -116,6 +120,8 @@
             "fillForm": "Fill out form with the next values:",
             "appName": "Application name:",
             "redirectUrls": "Allowed redirect URLs:",
+            "httpsRequired": "Enable Banking only accepts https redirect URLs. Serve this instance over HTTPS, set {envVar} to its public callback URL (e.g. {example}), recreate the backend container, and enter the same URL in this field. {link}",
+            "httpsRequiredLink": "How to set it up",
             "appDescription": "Application description:",
             "emailProtection": "Email for data protection matters:",
             "privacyUrl": "Privacy URL:",
@@ -251,7 +257,7 @@
         "help": {
           "trigger": "How do I set up Walutomat API access?"
         },
-        "apiKeyLabel": "Khóa API",
+        "apiKeyLabel": "API key",
         "apiKeyPlaceholder": "Enter your Walutomat API key",
         "apiKeyHint": "Found in your Walutomat dashboard under Settings → API",
         "privateKeyLabel": "Private key (PEM)",
@@ -291,13 +297,42 @@
           "closeButton": "Got it"
         }
       },
+      "akahu": {
+        "userTokenLabel": "User Access Token",
+        "userTokenPlaceholder": "Enter your Akahu User Access Token",
+        "userTokenHint": "Shown on your personal app page at my.akahu.nz",
+        "appTokenLabel": "App ID Token",
+        "appTokenPlaceholder": "Enter your Akahu App ID Token",
+        "appTokenHint": "Also shown on the same page",
+        "help": {
+          "trigger": "Where do I find my Akahu tokens?",
+          "title": "Get your Akahu personal app tokens",
+          "step1": "Open your {link} while signed in to Akahu.",
+          "step2": "Create a personal app (or open an existing one) — connect your bank accounts in Akahu first.",
+          "step3": "Copy the User Access Token and the App ID Token and paste both into the fields above."
+        },
+        "backButton": "Back",
+        "connectingButton": "Connecting...",
+        "connectButton": "Connect",
+        "loadingAccounts": "Loading accounts...",
+        "accountsPreviewHint": "Found {count} account(s). All accounts will be imported.",
+        "importingButton": "Importing...",
+        "importButton": "Import {count} account(s)",
+        "importSuccess": "Connected {count} account(s). Transactions are syncing in the background.",
+        "skipButton": "Skip",
+        "skipTooltip": "Skip importing to connect only specific accounts later, or to relink existing accounts from their settings.",
+        "errors": {
+          "connectFailed": "Failed to connect to Akahu",
+          "importFailed": "Failed to import accounts"
+        }
+      },
       "notifications": {
         "disconnectSuccess": "Integration disconnected successfully",
         "disconnectFailed": "Failed to disconnect integration",
         "connectAccountsSuccess": "Accounts connected. Transactions are syncing in the background.",
         "connectAccountsFailed": "Failed to connect accounts",
-        "updateNameSuccess": "Connection name updated successfully",
-        "updateNameFailed": "Failed to update connection name",
+        "updateNameSuccess": "Connection updated successfully",
+        "updateNameFailed": "Failed to update connection",
         "connectionEstablished": "Bank connection established successfully!"
       },
       "details": {
@@ -337,9 +372,10 @@
           "syncFailed": "Failed to start sync"
         },
         "actions": {
-          "renameButton": "Rename connection",
+          "openExternalUrl": "Open external link",
+          "renameButton": "Edit connection",
           "disconnectButton": "Disconnect integration",
-          "manage": "Quản lý"
+          "manage": "Manage"
         },
         "fetchAccountsDialog": {
           "title": "Connect remaining accounts",
@@ -361,8 +397,8 @@
           "connectedSince": "Connected {date}"
         },
         "summary": {
-          "totalBalance": "Tổng số dư",
-          "accounts": "Tài khoản",
+          "totalBalance": "Total balance",
+          "accounts": "Accounts",
           "accountsCount": "no accounts | {count} account | {count} accounts",
           "lastSync": "Last sync",
           "consent": "Consent",
@@ -393,11 +429,13 @@
           "disconnect": "Disconnect"
         },
         "editName": {
-          "title": "Edit connection name",
-          "description": "Give your connection a custom name to easily identify it.",
+          "title": "Edit connection",
+          "description": "Update the display name or institution portal link for this connection.",
           "label": "Connection name",
+          "externalUrlLabel": "External URL (optional)",
+          "externalUrlPlaceholder": "https://bridge.example.com",
           "saving": "Saving...",
-          "save": "Lưu"
+          "save": "Save"
         },
         "reconnect": {
           "title": "Reconnect integration",
@@ -413,7 +451,7 @@
       },
       "updateCredentials": {
         "title": "Update credentials",
-        "apiKeyLabel": "Khóa API",
+        "apiKeyLabel": "API key",
         "apiKeyPlaceholder": "Enter your API key",
         "updatingButton": "Updating...",
         "updateButton": "Update",
@@ -447,7 +485,8 @@
         "enableBanking": "Since smooth integration requires several thousands $ per month to be paid, it's only possible to connect by creating own EnableBanking dev account, and setting up \"test\" application with real connection to own banks, storing certificates and keys and uploading them here. Moderate technical knowledge required",
         "lunchflow": "Just connect your banks on the LunchFlow side, then create and paste your LunchFlow API key",
         "simplefin": "SimpleFIN Bridge is a paid service. You create a bridge account, link your bank, and paste a setup token — no developer setup required.",
-        "walutomat": "Requires generating an RSA key pair and uploading the public key to Walutomat dashboard"
+        "walutomat": "Requires generating an RSA key pair and uploading the public key to Walutomat dashboard",
+        "akahu": "Free for your own accounts: create an Akahu personal app at my.akahu.nz, connect your NZ banks there, then paste the two tokens"
       }
     },
     "connectionName": {

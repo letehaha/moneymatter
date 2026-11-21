@@ -27,6 +27,10 @@
         "walutomat": {
           "name": "Walutomat",
           "description": "Polnische Währungsumtausch-Plattform mit 23 Währungen"
+        },
+        "akahu": {
+          "name": "Akahu",
+          "description": "Synchronisiere Transaktionen von neuseeländischen Banken kostenlos über eine persönliche Akahu-App"
         }
       },
       "monobank": {
@@ -116,6 +120,8 @@
             "fillForm": "Fülle das Formular mit den folgenden Werten aus:",
             "appName": "Application name:",
             "redirectUrls": "Allowed redirect URLs:",
+            "httpsRequired": "Enable Banking akzeptiert nur HTTPS-Weiterleitungs-URLs. Stelle diese Instanz über HTTPS bereit, setze {envVar} auf ihre öffentliche Callback-URL (z. B. {example}), erstelle den Backend-Container neu und gib dieselbe URL in dieses Feld ein. {link}",
+            "httpsRequiredLink": "Setup-Anleitung",
             "appDescription": "Application description:",
             "emailProtection": "Email for data protection matters:",
             "privacyUrl": "Privacy URL:",
@@ -174,7 +180,7 @@
         "errors": {
           "noAuthUrl": "Keine Autorisierungs-URL vom Server erhalten",
           "failedToLoadBanks": "Banken konnten nicht geladen werden",
-          "failedToConnectProvider": "Verbindung zum Anbieter fehlgeschlagen"
+          "failedToConnectProvider": "Verbindung mit Anbieter fehlgeschlagen"
         },
         "help": {
           "trigger": "Woher bekomme ich die Enable Banking-Zugangsdaten?"
@@ -262,9 +268,9 @@
         "connectingButton": "Verbinden...",
         "loadingWallets": "Währungskonten werden geladen...",
         "selectWalletsHint": "Wähle aus, welche Währungskonten synchronisiert werden sollen ({count} verfügbar)",
-        "selectAll": "Alles auswählen",
+        "selectAll": "Alle auswählen",
         "importButton": "{count} Währungskonto/Währungskonten importieren",
-        "importingButton": "Importieren...",
+        "importingButton": "Importiere...",
         "importSuccess": "{count} Konto/Konten verbunden. Transaktionen werden im Hintergrund synchronisiert.",
         "errors": {
           "connectFailed": "Verbindung zu Walutomat fehlgeschlagen. Überprüfe deine Zugangsdaten.",
@@ -289,6 +295,35 @@
           "securityNoteTitle": "Sicherheitshinweis",
           "securityNoteText": "Dein privater Schlüssel wird vor der Speicherung verschlüsselt und nur zum Signieren von API-Anfragen verwendet. Er wird niemals offengelegt oder an jemanden anderen als Walutomat übermittelt.",
           "closeButton": "Verstanden"
+        }
+      },
+      "akahu": {
+        "userTokenLabel": "Benutzer-Zugriffstoken",
+        "userTokenPlaceholder": "Gib dein Akahu-Benutzer-Zugriffstoken ein",
+        "userTokenHint": "Wird auf deiner persönlichen App-Seite unter my.akahu.nz angezeigt",
+        "appTokenLabel": "App-ID-Token",
+        "appTokenPlaceholder": "Gib dein Akahu-App-ID-Token ein",
+        "appTokenHint": "Wird ebenfalls auf derselben Seite angezeigt",
+        "help": {
+          "trigger": "Wo finde ich meine Akahu-Token?",
+          "title": "Hole dir deine persönlichen App-Token von Akahu",
+          "step1": "Öffne {link}, während du bei Akahu angemeldet bist.",
+          "step2": "Erstelle eine persönliche App (oder öffne eine bestehende) – verbinde zuerst deine Bankkonten in Akahu.",
+          "step3": "Kopiere das Benutzer-Zugriffstoken und das App-ID-Token und füge beide in die Felder oben ein."
+        },
+        "backButton": "Zurück",
+        "connectingButton": "Verbinden...",
+        "connectButton": "Verbinden",
+        "loadingAccounts": "Konten werden geladen...",
+        "accountsPreviewHint": "{count} Konto/Konten gefunden. Alle Konten werden importiert.",
+        "importingButton": "Importiere...",
+        "importButton": "{count} Konto/Konten importieren",
+        "importSuccess": "{count} Konto/Konten verbunden. Transaktionen werden im Hintergrund synchronisiert.",
+        "skipButton": "Überspringen",
+        "skipTooltip": "Import überspringen, um nur bestimmte Konten später zu verbinden oder bestehende Konten in deren Einstellungen neu zu verknüpfen.",
+        "errors": {
+          "connectFailed": "Verbindung zu Akahu fehlgeschlagen",
+          "importFailed": "Import der Konten fehlgeschlagen"
         }
       },
       "notifications": {
@@ -337,6 +372,7 @@
           "syncFailed": "Synchronisierung konnte nicht gestartet werden"
         },
         "actions": {
+          "openExternalUrl": "Open external link",
           "renameButton": "Verbindung umbenennen",
           "disconnectButton": "Integration trennen",
           "manage": "Verwalten"
@@ -396,6 +432,8 @@
           "title": "Verbindungsname bearbeiten",
           "description": "Gib deiner Verbindung einen benutzerdefinierten Namen, um sie leicht zu identifizieren.",
           "label": "Verbindungsname",
+          "externalUrlLabel": "External URL (optional)",
+          "externalUrlPlaceholder": "https://bridge.example.com",
           "saving": "Speichern...",
           "save": "Speichern"
         },
@@ -447,7 +485,8 @@
         "enableBanking": "Da eine reibungslose Integration mehrere Tausend Euro pro Monat kostet, ist eine Verbindung nur möglich, indem du ein eigenes Enable Banking-Entwicklerkonto erstellst, eine \"Test\"-Anwendung mit echtem Zugriff auf deine Konten einrichtest, Zertifikate/Schlüssel speicherst und hier hochlädst. Moderate technische Kenntnisse erforderlich",
         "lunchflow": "Verbinde einfach deine Banken bei LunchFlow, erstelle dann deinen LunchFlow API-Schlüssel und füge ihn hier ein",
         "simplefin": "SimpleFIN Bridge ist ein kostenpflichtiger Dienst. Erstelle ein Brückenkonto, verknüpfe deine Bank und füge ein Setup-Token ein — keine Entwicklereinrichtung erforderlich.",
-        "walutomat": "Erfordert die Generierung eines RSA-Schlüsselpaars und das Hochladen des öffentlichen Schlüssels im Walutomat-Dashboard"
+        "walutomat": "Erfordert die Generierung eines RSA-Schlüsselpaars und das Hochladen des öffentlichen Schlüssels im Walutomat-Dashboard",
+        "akahu": "Kostenlos für deine eigenen Konten: Erstelle eine persönliche Akahu-App auf my.akahu.nz, verbinde dort deine neuseeländischen Banken und füge dann die beiden Token ein"
       }
     },
     "connectionName": {
@@ -460,7 +499,7 @@
       },
       "error": {
         "title": "Autorisierung fehlgeschlagen",
-        "backToIntegrations": "Zurück zu Integrationen"
+        "backToIntegrations": "Zurück zu den Integrationen"
       },
       "success": {
         "title": "Verbindung erfolgreich!",

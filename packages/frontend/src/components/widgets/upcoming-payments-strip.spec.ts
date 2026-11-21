@@ -1,5 +1,10 @@
 import type { SubscriptionListItem } from '@/api/subscriptions';
-import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_PERIOD_STATUSES, TRANSACTION_TYPES } from '@bt/shared/types';
+import {
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
+  SUBSCRIPTION_PERIOD_STATUSES,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 
 import { buildPaymentsStrip } from './upcoming-payments-strip';
 
@@ -27,6 +32,32 @@ const outflowIndexes = ({ days }: { days: { outflow: number }[] }) =>
 const build = (subscriptions: SubscriptionListItem[]) => buildPaymentsStrip({ subscriptions, now: NOW, toBase });
 
 describe('components/widgets/upcoming-payments-strip', () => {
+  test('repeats a custom every-10-days payment across the window', () => {
+    const { days, totalOutflow } = build([
+      sub({
+        nextDueDate: '2026-09-30',
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+        intervalCount: 10,
+      }),
+    ]);
+    expect(outflowIndexes({ days })).toEqual([1, 11, 21]);
+    expect(totalOutflow).toBe(300);
+  });
+
+  test('projects a custom every-28-days payment 28 days on, not a calendar month', () => {
+    const { days } = build([
+      sub({
+        nextDueDate: '2026-09-30',
+        frequency: SUBSCRIPTION_FREQUENCIES.custom,
+        intervalUnit: SUBSCRIPTION_INTERVAL_UNITS.day,
+        intervalCount: 28,
+      }),
+    ]);
+    // Sep 30 + 28 days is Oct 28, inside the window; a monthly schedule would land on Oct 30, past it.
+    expect(outflowIndexes({ days })).toEqual([1, 29]);
+  });
+
   test('repeats a weekly payment across the window', () => {
     const { days, totalOutflow } = build([
       sub({ nextDueDate: '2026-09-30', frequency: SUBSCRIPTION_FREQUENCIES.weekly }),

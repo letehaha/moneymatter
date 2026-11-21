@@ -4,14 +4,15 @@ import {
   API_ERROR_CODES,
   BACKUP_FORMAT_VERSION,
   BANK_PROVIDER_TYPE,
+  CATEGORY_ORDER_ROOT_KEY,
   DEACTIVATION_REASON,
+  FIRE_HISTORY_BASELINE_MONTH,
   ImportSource,
   PLANS,
   RESOURCE_TYPES,
   type RecordId,
   SHARE_PERMISSIONS,
   SUBSCRIPTION_FREQUENCIES,
-  TRACKER_TYPES,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   VEHICLE_CLASS,
@@ -22,11 +23,12 @@ import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE } from '@bt/shared/types/ven
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { t } from '@i18n/index';
 import { beforeEach, describe, expect, it } from '@jest/globals';
-import { RateLimitService } from '@services/common/rate-limit.service';
 import { PNG_1X1_BYTES, PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 import { VALID_ANTHROPIC_API_KEY } from '@tests/mocks/anthropic/mock-api';
 import { VALID_MONOBANK_TOKEN } from '@tests/mocks/monobank/mock-api';
+import Big from 'big.js';
+import { format } from 'date-fns';
 import { randomUUID } from 'node:crypto';
 
 type Row = Record<string, unknown>;
@@ -39,24 +41,6 @@ const IMPORT_BATCH_TABLES = ['import-batches', 'import-batch-account-effects'];
 // `user-settings` are re-created rather than bulk-inserted (fresh ids/timestamps,
 // Zod-normalized settings).
 const ROUNDTRIP_EXCLUDED = new Set(['user', 'user-settings']);
-
-// --- Canonicalization: order-independent, key-sorted deep equality -----------
-
-function deepSort(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(deepSort);
-  if (value && typeof value === 'object') {
-    const out: Row = {};
-    for (const key of Object.keys(value as Row).sort()) out[key] = deepSort((value as Row)[key]);
-    return out;
-  }
-  return value;
-}
-
-/** A stable, sorted list of canonical JSON strings for a row array. */
-function canonicalRows(rows: unknown): string[] {
-  const arr = Array.isArray(rows) ? rows : [];
-  return arr.map((row) => JSON.stringify(deepSort(row))).sort();
-}
 
 // --- Archive read/write helpers (for building tampered uploads) --------------
 
@@ -178,7 +162,17 @@ async function seedRichData() {
     raw: true,
   });
 
-  // Refund: an income transaction refunding the original expense.
+  const [secondExpense] = await helpers.createTransaction({
+    payload: helpers.buildTransactionPayload({
+      accountId: checking.id,
+      amount: 500,
+      transactionType: TRANSACTION_TYPES.expense,
+      categoryId: childCategory.id,
+    }),
+    raw: true,
+  });
+
+  // Refund: one income transaction split across both expenses.
   const [refundTx] = await helpers.createTransaction({
     payload: helpers.buildTransactionPayload({
       accountId: checking.id,
@@ -188,7 +182,8 @@ async function seedRichData() {
     }),
     raw: true,
   });
-  await helpers.createSingleRefund({ originalTxId: expense!.id, refundTxId: refundTx!.id }, true);
+  await helpers.createSingleRefund({ originalTxId: expense!.id, refundTxId: refundTx!.id, amount: 600 }, true);
+  await helpers.createSingleRefund({ originalTxId: secondExpense!.id, refundTxId: refundTx!.id, amount: 400 }, true);
 
   // Tracker over a category, with a linked transaction.
   const tracker = await helpers.createTracker({
@@ -274,7 +269,17 @@ async function seedRichData() {
     raw: true,
   });
 
-  return { checking, savings, parentCategory, childCategory, portfolio, security: security! };
+  return {
+    checking,
+    savings,
+    parentCategory,
+    childCategory,
+    portfolio,
+    security: security!,
+    expense: expense!,
+    secondExpense: secondExpense!,
+    refundTx: refundTx!,
+  };
 }
 
 /** A lighter dataset: two accounts, a category tree, a tagged transaction. */
@@ -416,15 +421,11 @@ async function readBudgetPlan({ planId }: { planId: string }) {
 describe('Data backup restore (POST /user/backup/restore)', () => {
   // Export and restore have their own per-user rate buckets (5 per 15 min each),
   // enforced in the test env. Reset both for the primary user before each case.
-  beforeEach(async () => {
-    const userId = await getCurrentUserId();
-    await RateLimitService.resetRateLimit(`backup:user:${userId}`);
-    await RateLimitService.resetRateLimit(`backup-restore:user:${userId}`);
-  });
+  beforeEach(() => helpers.resetBackupRateLimits());
 
   describe('Round-trip', () => {
     it('restoring an export into the same user reproduces every table byte-for-byte, with no foreign-reference warnings', async () => {
-      await seedRichData();
+      const { expense, secondExpense, refundTx } = await seedRichData();
 
       const first = await exportArchive();
       const firstArchive = helpers.parseBackupArchive({ buffer: first.buffer });
@@ -464,18 +465,18 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       for (const name of dataNames) {
         if (ROUNDTRIP_EXCLUDED.has(name)) continue;
-        const before = canonicalRows(firstArchive.readData({ name }));
-        const after = canonicalRows(secondArchive.readData({ name }));
+        const before = helpers.canonicalBackupRows({ rows: firstArchive.readData({ name }) });
+        const after = helpers.canonicalBackupRows({ rows: secondArchive.readData({ name }) });
         expect({ name, rows: after }).toEqual({ name, rows: before });
       }
 
       // reference/securities.json must also round-trip (prices aren't part of a backup).
-      const secBefore = canonicalRows(
-        readArchiveJson({ files: firstArchive.files, path: 'reference/securities.json' }),
-      );
-      const secAfter = canonicalRows(
-        readArchiveJson({ files: secondArchive.files, path: 'reference/securities.json' }),
-      );
+      const secBefore = helpers.canonicalBackupRows({
+        rows: readArchiveJson({ files: firstArchive.files, path: 'reference/securities.json' }),
+      });
+      const secAfter = helpers.canonicalBackupRows({
+        rows: readArchiveJson({ files: secondArchive.files, path: 'reference/securities.json' }),
+      });
       expect(secAfter).toEqual(secBefore);
       expect(secBefore.length).toBeGreaterThan(0);
 
@@ -494,6 +495,18 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       const restoredCategory = (await helpers.getCategoriesList()).find((row) => row.name === 'Living');
       expect(restoredCategory!.defaultTagIds).toEqual([restoredTag!.id]);
       expect(restoredCategory!.applyDefaultTagsOnAiCategorization).toBe(true);
+
+      const restoredLinks = await helpers.getRefundsForTransaction({ transactionId: refundTx.id, raw: true });
+      expect(restoredLinks.map(({ originalTxId, amount }) => ({ originalTxId, amount }))).toEqual(
+        expect.arrayContaining([
+          { originalTxId: expense.id, amount: 600 },
+          { originalTxId: secondExpense.id, amount: 400 },
+        ]),
+      );
+      expect(restoredLinks).toHaveLength(2);
+      for (const id of [refundTx.id, expense.id, secondExpense.id]) {
+        expect((await helpers.getTransactionById({ id, raw: true }))!.refundLinked).toBe(true);
+      }
     });
 
     it('keeps merged and removed bank rows in reconciliation history', async () => {
@@ -518,6 +531,60 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       expect(await summarizeHistory()).toEqual(before);
     }, 30000);
+
+    it('keeps a rules tracker with its rule tags, rule settings and rule links', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const category = await helpers.addCustomCategory({ name: 'Rule cat', color: '#123456', raw: true });
+      const tag = await helpers.createTag({ payload: { name: 'Rule tag', color: '#123456' }, raw: true });
+      const [categoryTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 700,
+          transactionType: TRANSACTION_TYPES.expense,
+          categoryId: category.id,
+        }),
+        raw: true,
+      });
+      const [taggedTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 300,
+          transactionType: TRANSACTION_TYPES.expense,
+        }),
+        raw: true,
+      });
+      await helpers.addTransactionsToTag({ tagId: tag.id, transactionIds: [taggedTx!.id], raw: true });
+      const tracker = await helpers.createTracker({
+        name: 'Rules tracker',
+        rulesEnabled: true,
+        rulesCleanup: false,
+        categoryIds: [category.id],
+        tagIds: [tag.id],
+        raw: true,
+      });
+
+      const { base64 } = await exportArchive();
+      const restore = await helpers.restoreBackup({ fileContent: base64 });
+      expect(restore.statusCode).toBe(200);
+      expect((await helpers.waitForRestore({ jobId: restore.jobId! })).status).toBe('completed');
+
+      expect(await helpers.getTrackerById({ id: tracker.id, raw: true })).toMatchObject({
+        rulesEnabled: true,
+        rulesCleanup: false,
+        categories: [expect.objectContaining({ id: category.id })],
+        tags: [expect.objectContaining({ id: tag.id })],
+      });
+      const linked = (await helpers.getTransactions({ trackerIds: [tracker.id], raw: true })) as {
+        id: string;
+        addedByRule?: boolean;
+      }[];
+      expect(linked.map((tx) => [tx.id, tx.addedByRule]).toSorted()).toEqual(
+        [
+          [categoryTx!.id, true],
+          [taggedTx!.id, true],
+        ].toSorted(),
+      );
+    });
   });
 
   describe('Cross-user restore', () => {
@@ -720,6 +787,74 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       expect(sourceCurrencyCodesAfter).toEqual(sourceCurrencyCodes);
     });
 
+    it('relinks a multi-account payment to its reminted main row', async () => {
+      const card = await helpers.createAccount({ raw: true });
+      const voucher = await helpers.createAccount({ raw: true });
+      const ownCategory = await helpers.addCustomCategory({ name: 'Snapshot category', color: '#00ff00', raw: true });
+      const ownPayee = await helpers.createPayee({ payload: { name: 'Snapshot payee' }, raw: true });
+      const ownTag = await helpers.createTag({ payload: { name: 'snapshot-tag', color: '#000000' }, raw: true });
+      const [standalone] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: voucher.id,
+          amount: 20,
+          categoryId: ownCategory.id,
+          payeeId: ownPayee.id,
+          tagIds: [ownTag.id],
+        }),
+        raw: true,
+      });
+      const [main] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: card.id,
+          amount: 70,
+          paymentLegs: [{ accountId: voucher.id, amount: 30 }, { transactionId: standalone!.id }],
+        }),
+        raw: true,
+      });
+
+      const { base64 } = await exportArchive();
+      const target = await helpers.provisionSecondUserWithBaseCurrency();
+      await helpers.asUser({
+        cookies: target.cookies,
+        fn: async () => {
+          const restore = await helpers.withSelfHost(() => helpers.restoreBackup({ fileContent: base64 }));
+          expect(restore.statusCode).toBe(200);
+          expect((await helpers.waitForRestore({ jobId: restore.jobId! })).status).toBe('completed');
+
+          const restoredMain = (await helpers.getTransactions({ raw: true })).find((tx) => tx.paymentParts);
+          expect(restoredMain!.id).not.toBe(main!.id);
+          expect(restoredMain!.paymentTotal).toBe(120);
+          expect(restoredMain!.paymentParts!.filter((part) => part.isLinked)).toHaveLength(1);
+
+          const linkedId = restoredMain!.paymentParts!.find((part) => part.isLinked)!.transactionId;
+          const createdId = restoredMain!.paymentParts!.find(
+            (part) => part.transactionId !== restoredMain!.id && !part.isLinked,
+          )!.transactionId;
+          const linked = await helpers.getTransactionById({ id: linkedId, raw: true });
+          expect(linked!.paymentParentId).toBe(restoredMain!.id);
+
+          await helpers.updateTransaction({
+            id: restoredMain!.id,
+            payload: { paymentLegs: [{ transactionId: createdId }] },
+            raw: true,
+          });
+
+          const [categories, payees, tags] = await Promise.all([
+            helpers.getCategoriesList(),
+            helpers.listPayees({ raw: true }),
+            helpers.getTags({ raw: true }),
+          ]);
+          const unlinked = (await helpers.getTransactions({ raw: true }))!.find((tx) => tx.id === linkedId)!;
+          expect(unlinked).toMatchObject({
+            paymentParentId: null,
+            categoryId: categories.find((category) => category.name === 'Snapshot category')!.id,
+            payeeId: payees.find((payee) => payee.name === 'Snapshot payee')!.id,
+          });
+          expect(unlinked.tags!.map((tag) => tag.id)).toEqual([tags.find((tag) => tag.name === 'snapshot-tag')!.id]);
+        },
+      });
+    });
+
     it('remaps the FIRE settings and saved transaction view filters to the reminted ids', async () => {
       const category = await helpers.addCustomCategory({ name: 'Rent', color: '#445566', raw: true });
       const portfolio = await helpers.createPortfolio({ payload: { name: 'FIRE PF' }, raw: true });
@@ -738,6 +873,12 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
         raw: true,
         patch: {
           fire: { spendingExcludedCategoryIds: [category.id], returnIndicatorId: `portfolio:${portfolio.id}` },
+          ios: { addExpense: { showBankAccounts: true, excludedCategoryIds: [category.id, generateRandomRecordId()] } },
+          categoryOrder: {
+            [CATEGORY_ORDER_ROOT_KEY]: [category.id],
+            [category.id]: [category.id, generateRandomRecordId()],
+            [generateRandomRecordId()]: [category.id],
+          },
           savedTransactionViews: [
             {
               id: generateRandomRecordId(),
@@ -781,10 +922,26 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
           expect(targetPayee!.id).not.toBe(payee.id);
           expect(targetTracker!.id).not.toBe(tracker.id);
 
-          const { fire, incomeCategoryIds, savedTransactionViews } = await helpers.getUserSettings({ raw: true });
+          const { fire, fireHistory, incomeCategoryIds, categoryOrder, savedTransactionViews, ios } =
+            await helpers.getUserSettings({ raw: true });
+          expect(ios?.addExpense).toStrictEqual({ showBankAccounts: true, excludedCategoryIds: [targetCategory!.id] });
+          expect(categoryOrder).toStrictEqual({
+            [CATEGORY_ORDER_ROOT_KEY]: [targetCategory!.id],
+            [targetCategory!.id]: [targetCategory!.id],
+          });
           expect(incomeCategoryIds).toEqual([targetCategories.find((c) => c.key === 'income')!.id]);
           expect(fire?.spendingExcludedCategoryIds).toEqual([targetCategory!.id]);
           expect(fire?.returnIndicatorId).toBe(`portfolio:${targetPortfolio!.id}`);
+          expect(fireHistory).toStrictEqual([
+            { month: FIRE_HISTORY_BASELINE_MONTH, fire: {} },
+            {
+              month: format(new Date(), 'yyyy-MM'),
+              fire: {
+                spendingExcludedCategoryIds: [targetCategory!.id],
+                returnIndicatorId: `portfolio:${targetPortfolio!.id}`,
+              },
+            },
+          ]);
           expect(savedTransactionViews).toHaveLength(1);
           expect(savedTransactionViews![0]!.filters).toEqual({
             accountIds: [targetAccount!.id],
@@ -952,9 +1109,9 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const secondArchive = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
       for (const name of BUDGET_PLAN_FILES) {
-        expect({ name, rows: canonicalRows(secondArchive.readData({ name })) }).toEqual({
+        expect({ name, rows: helpers.canonicalBackupRows({ rows: secondArchive.readData({ name }) }) }).toEqual({
           name,
-          rows: canonicalRows(firstArchive.readData({ name })),
+          rows: helpers.canonicalBackupRows({ rows: firstArchive.readData({ name }) }),
         });
       }
 
@@ -1058,6 +1215,101 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       },
       30000,
     );
+  });
+
+  describe('Goals', () => {
+    it('round-trips goals and their account shares, and the restored goals read the same', async () => {
+      const savings = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Goal savings' }),
+        raw: true,
+      });
+      const cash = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Goal cash' }),
+        raw: true,
+      });
+      await helpers.createGoal({
+        payload: {
+          name: 'Trip',
+          targetAmount: 2500.5,
+          targetDate: '2030-06-01',
+          plannedMonthly: 150,
+          logoIcon: 'airplane',
+          accounts: [
+            { accountId: savings.id, sharePercent: 60 },
+            { accountId: cash.id, sharePercent: 33.33 },
+          ],
+        },
+        raw: true,
+      });
+      const car = await helpers.createGoal({
+        payload: { name: 'Car', accounts: [{ accountId: savings.id, sharePercent: 40 }] },
+        raw: true,
+      });
+      await helpers.updateGoal({ goalId: car.id, payload: { status: 'paused' }, raw: true });
+      const before = await helpers.listGoals({ raw: true });
+
+      const first = await exportArchive();
+      const firstArchive = helpers.parseBackupArchive({ buffer: first.buffer });
+      expect((firstArchive.readData({ name: 'goals' }) as unknown[]).length).toBe(2);
+      expect((firstArchive.readData({ name: 'goal-accounts' }) as unknown[]).length).toBe(3);
+
+      const restore = await helpers.restoreBackup({ fileContent: first.base64 });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+      expect(foreignReferenceWarnings(status)).toEqual([]);
+
+      expect(await helpers.listGoals({ raw: true })).toEqual(before);
+
+      const secondArchive = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
+      for (const name of ['goals', 'goal-accounts']) {
+        expect({ name, rows: helpers.canonicalBackupRows({ rows: secondArchive.readData({ name }) }) }).toEqual({
+          name,
+          rows: helpers.canonicalBackupRows({ rows: firstArchive.readData({ name }) }),
+        });
+      }
+    }, 30000);
+
+    it('re-links goal shares to the reminted accounts and gives the goal its own logo copy', async () => {
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Goal source' }),
+        raw: true,
+      });
+      const source = await helpers.createGoal({
+        payload: {
+          name: 'House',
+          logoImage: PNG_1X1_DATA_URL,
+          accounts: [{ accountId: account.id, sharePercent: 75 }],
+        },
+        raw: true,
+      });
+      expect(source.logoImageId).toBeTruthy();
+      const { base64 } = await exportArchive();
+
+      const target = await helpers.provisionSecondUserWithBaseCurrency();
+      await helpers.asUser({
+        cookies: target.cookies,
+        fn: async () => {
+          const restore = await helpers.withSelfHost(() => helpers.restoreBackup({ fileContent: base64 }));
+          expect(restore.statusCode).toBe(200);
+          const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+          expect(status.status).toBe('completed');
+          expect(foreignReferenceWarnings(status)).toEqual([]);
+
+          const targetAccount = (await helpers.getAccounts()).find((a) => a.name === 'Goal source')!;
+          expect(targetAccount.id).not.toBe(account.id);
+
+          const goals = await helpers.listGoals({ raw: true });
+          expect(goals).toHaveLength(1);
+          expect(goals[0]!.id).not.toBe(source.id);
+          expect(goals[0]!.accounts).toEqual([
+            { accountId: targetAccount.id, sharePercent: 75, fixedAmount: null, fixedPosition: null },
+          ]);
+          expect(goals[0]!.logoImageId).toBeTruthy();
+          expect(goals[0]!.logoImageId).not.toBe(source.logoImageId);
+        },
+      });
+    }, 30000);
   });
 
   // Backup files are user-editable (checksums recompute), so a hand-edited archive
@@ -1240,6 +1492,170 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
           expect((await helpers.getCategoriesList()).some((c) => c.id === ids.categoryId)).toBe(true);
         },
       });
+    }, 30000);
+
+    it('drops the links of a multi-link refund whose originals are missing and keeps a lone one as a whole external link', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, transactionType }: { amount: number; transactionType: TRANSACTION_TYPES }) => {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType }),
+          raw: true,
+        });
+        return tx!;
+      };
+      const x1 = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const x2 = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const x3 = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const multiRefund = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.income });
+      const singleRefund = await createTx({ amount: 50, transactionType: TRANSACTION_TYPES.income });
+      await helpers.createSingleRefund({ originalTxId: x1.id, refundTxId: multiRefund.id, amount: 40 }, true);
+      await helpers.createSingleRefund({ originalTxId: x2.id, refundTxId: multiRefund.id, amount: 60 }, true);
+      await helpers.createSingleRefund({ originalTxId: x3.id, refundTxId: singleRefund.id, amount: 20 }, true);
+
+      // Strip the originals from the archive so the guard nulls every link's originalTxId.
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+      const missingIds = new Set([x1.id, x2.id, x3.id]);
+      const transactions = readArchiveJson({ files, path: 'data/transactions.json' }) as Row[];
+      writeArchiveJson({
+        files,
+        path: 'data/transactions.json',
+        value: transactions.filter((t) => !missingIds.has(t.id as RecordId)),
+      });
+      const base64 = await helpers.repackBackup({ files });
+
+      const restore = await helpers.restoreBackup({ fileContent: base64 });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+      expect(status.summary?.warnings).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'foreign_reference_dropped',
+            table: 'refund-transactions',
+            column: 'originalTxId',
+            count: 2,
+          }),
+          expect.objectContaining({
+            code: 'foreign_reference_nulled',
+            table: 'refund-transactions',
+            column: 'originalTxId',
+            count: 1,
+          }),
+        ]),
+      );
+
+      expect(await helpers.getRefundsForTransaction({ transactionId: multiRefund.id, raw: true })).toEqual([]);
+      expect((await helpers.getTransactionById({ id: multiRefund.id, raw: true }))!.refundLinked).toBe(false);
+
+      const singleLinks = await helpers.getRefundsForTransaction({ transactionId: singleRefund.id, raw: true });
+      expect(singleLinks).toHaveLength(1);
+      expect(singleLinks[0]).toMatchObject({ originalTxId: null, amount: null });
+      expect((await helpers.getTransactionById({ id: singleRefund.id, raw: true }))!.refundLinked).toBe(true);
+    }, 30000);
+
+    it('drops only the link whose original is missing and keeps the surviving link of a multi-link refund', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, transactionType }: { amount: number; transactionType: TRANSACTION_TYPES }) => {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType }),
+          raw: true,
+        });
+        return tx!;
+      };
+      const missingOriginal = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const keptOriginal = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const refund = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.income });
+      await helpers.createSingleRefund({ originalTxId: missingOriginal.id, refundTxId: refund.id, amount: 40 }, true);
+      await helpers.createSingleRefund({ originalTxId: keptOriginal.id, refundTxId: refund.id, amount: 60 }, true);
+
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+      const transactions = readArchiveJson({ files, path: 'data/transactions.json' }) as Row[];
+      writeArchiveJson({
+        files,
+        path: 'data/transactions.json',
+        value: transactions.filter((t) => t.id !== missingOriginal.id),
+      });
+      const base64 = await helpers.repackBackup({ files });
+
+      const restore = await helpers.restoreBackup({ fileContent: base64 });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+      expect(status.summary?.warnings).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'foreign_reference_dropped',
+            table: 'refund-transactions',
+            column: 'originalTxId',
+            count: 1,
+          }),
+        ]),
+      );
+
+      const links = await helpers.getRefundsForTransaction({ transactionId: refund.id, raw: true });
+      expect(links.map(({ originalTxId, amount }) => ({ originalTxId, amount }))).toEqual([
+        { originalTxId: keptOriginal.id, amount: 60 },
+      ]);
+      expect((await helpers.getTransactionById({ id: refund.id, raw: true }))!.refundLinked).toBe(true);
+      expect((await helpers.getTransactionById({ id: keptOriginal.id, raw: true }))!.refundLinked).toBe(true);
+    }, 30000);
+
+    it('restores refund links from an archive without link amounts as whole-refund links', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, transactionType }: { amount: number; transactionType: TRANSACTION_TYPES }) => {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType }),
+          raw: true,
+        });
+        return tx!;
+      };
+      const linkedOriginal = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const missingOriginal = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.expense });
+      const linkedRefund = await createTx({ amount: 100, transactionType: TRANSACTION_TYPES.income });
+      const externalRefund = await createTx({ amount: 50, transactionType: TRANSACTION_TYPES.income });
+      await helpers.createSingleRefund(
+        { originalTxId: linkedOriginal.id, refundTxId: linkedRefund.id, amount: 30 },
+        true,
+      );
+      await helpers.createSingleRefund(
+        { originalTxId: missingOriginal.id, refundTxId: externalRefund.id, amount: 20 },
+        true,
+      );
+
+      // The stripped original makes the guard null its link, so the external-link path runs without an amount column.
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+      const transactions = readArchiveJson({ files, path: 'data/transactions.json' }) as Row[];
+      writeArchiveJson({
+        files,
+        path: 'data/transactions.json',
+        value: transactions.filter((t) => t.id !== missingOriginal.id),
+      });
+      const refundLinks = readArchiveJson({ files, path: 'data/refund-transactions.json' }) as Row[];
+      for (const link of refundLinks) delete link.amount;
+      writeArchiveJson({ files, path: 'data/refund-transactions.json', value: refundLinks });
+      const base64 = await helpers.repackBackup({ files });
+
+      const restore = await helpers.restoreBackup({ fileContent: base64 });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+
+      const linkedLinks = await helpers.getRefundsForTransaction({ transactionId: linkedRefund.id, raw: true });
+      expect(linkedLinks.map(({ originalTxId, amount }) => ({ originalTxId, amount }))).toEqual([
+        { originalTxId: linkedOriginal.id, amount: null },
+      ]);
+
+      const externalLinks = await helpers.getRefundsForTransaction({ transactionId: externalRefund.id, raw: true });
+      expect(externalLinks.map(({ originalTxId, amount }) => ({ originalTxId, amount }))).toEqual([
+        { originalTxId: null, amount: null },
+      ]);
+
+      for (const id of [linkedRefund.id, linkedOriginal.id, externalRefund.id]) {
+        expect((await helpers.getTransactionById({ id, raw: true }))!.refundLinked).toBe(true);
+      }
     }, 30000);
   });
 
@@ -1533,7 +1949,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
   });
 
   describe('Atomicity', () => {
-    it('rolls back a restore whose data violates a foreign key, leaving the original data intact', async () => {
+    it('rolls back a restore whose data the database rejects, leaving the original data intact', async () => {
       const { accountA, tx } = await seedBasicData();
       const accountsBefore = await helpers.getAccounts();
       const accountIdsBefore = accountsBefore.map((a) => a.id).sort();
@@ -1543,15 +1959,12 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       const { buffer } = await exportArchive();
       const { files } = helpers.parseBackupArchive({ buffer });
 
-      // Point a transaction at a currency the instance doesn't have — a real FK
-      // violation (Currencies) the worker hits mid-insert. It must be a FK the
-      // owned-reference guard does NOT cover: a foreign *owned* FK (e.g. accountId)
-      // would be dropped-and-repaired and the restore would complete, so use a
-      // global-catalog FK to exercise rollback on a genuine failure. Checksums are
-      // refreshed so preflight passes.
+      // A value no restore check looks at, so the insert itself fails mid-restore. A foreign
+      // owned id or an unknown currency would be dropped with a warning and the restore would
+      // complete. Checksums are refreshed so preflight passes.
       const transactions = readArchiveJson({ files, path: 'data/transactions.json' }) as Row[];
       const target = transactions.find((t) => t.id === tx.id) ?? transactions[0]!;
-      target.currencyCode = 'ZZZ';
+      target.time = 'not-a-date';
       writeArchiveJson({ files, path: 'data/transactions.json', value: transactions });
       const base64 = await helpers.repackBackup({ files });
 
@@ -1570,22 +1983,83 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
   });
 
   describe('Legacy v1 archives', () => {
+    /** The money columns of the ledger these tests build, by backup file. Written out so the test does not share the converter's list. */
+    const LEDGER_MONEY_COLUMNS: Record<string, string[]> = {
+      accounts: [
+        'initialBalance',
+        'refInitialBalance',
+        'currentBalance',
+        'refCurrentBalance',
+        'creditLimit',
+        'refCreditLimit',
+      ],
+      balances: ['amount'],
+      transactions: [
+        'amount',
+        'refAmount',
+        'commissionRate',
+        'refCommissionRate',
+        'cashbackAmount',
+        'originalAmount',
+        'paymentAmount',
+      ],
+      trackers: ['limitAmount'],
+      'tracker-lines': ['limitAmount'],
+    };
+
     const LEGACY_TRACKER_FILES: [string, string][] = [
       ['trackers', 'budgets'],
       ['tracker-transactions', 'budget-transactions'],
       ['tracker-categories', 'budget-categories'],
     ];
 
-    /** Rewrite a current archive into the v1 shape: budget-named tracker files, `budgetId` keys, old stored values. */
+    /**
+     * Rewrite a current archive into the v1 shape: money as integer cents, budget-named tracker files,
+     * `budgetId` keys, old stored values, and `type: 'category'` trackers with no rule columns, tracker
+     * tags or rule links. Only money columns are rewritten: the ledger here keeps none inside JSON fields.
+     */
     function toLegacyArchive({
       files,
       trackerId,
+      categoryTrackerIds,
       userId,
     }: {
       files: Map<string, Buffer>;
       trackerId: string;
+      categoryTrackerIds: string[];
       userId: number;
     }) {
+      for (const [fileName, attrNames] of Object.entries(LEDGER_MONEY_COLUMNS)) {
+        const path = `data/${fileName}.json`;
+        const rows = readArchiveJson({ files, path }) as Row[] | null;
+        if (!rows) continue;
+        for (const row of rows) {
+          for (const attrName of attrNames) {
+            if (row[attrName] != null) row[attrName] = new Big(row[attrName] as string).times(100).toNumber();
+          }
+        }
+        writeArchiveJson({ files, path, value: rows });
+      }
+
+      const trackerRows = readArchiveJson({ files, path: 'data/trackers.json' }) as Row[];
+      const legacyTrackerRows = trackerRows.map((row) => {
+        const legacy: Row = {
+          ...row,
+          type: categoryTrackerIds.includes(row.id as string) ? 'category' : 'manual',
+          autoInclude: false,
+        };
+        for (const key of ['rulesEnabled', 'rulesCleanup', 'rulesSyncedAt']) delete legacy[key];
+        return legacy;
+      });
+      writeArchiveJson({ files, path: 'data/trackers.json', value: legacyTrackerRows });
+      const linkRows = readArchiveJson({ files, path: 'data/tracker-transactions.json' }) as Row[];
+      writeArchiveJson({
+        files,
+        path: 'data/tracker-transactions.json',
+        value: linkRows.filter((row) => (row.metadata as Row | null)?.source !== 'rule'),
+      });
+      files.delete('data/tracker-tags.json');
+
       for (const [name, legacyName] of LEGACY_TRACKER_FILES) {
         files.set(`data/${legacyName}.json`, files.get(`data/${name}.json`)!);
         files.delete(`data/${name}.json`);
@@ -1645,6 +2119,16 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
     it('restores budget-named tracker files, budgetId keys and old stored values into tracker shapes', async () => {
       const account = await helpers.createAccount({ raw: true });
       const category = await helpers.addCustomCategory({ name: 'Legacy cat', color: '#123456', raw: true });
+      const ruleCategory = await helpers.addCustomCategory({ name: 'Legacy rule cat', color: '#123456', raw: true });
+      const [ruleTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 700,
+          transactionType: TRANSACTION_TYPES.expense,
+          categoryId: ruleCategory.id,
+        }),
+        raw: true,
+      });
       const [tx] = await helpers.createTransaction({
         payload: helpers.buildTransactionPayload({
           accountId: account.id,
@@ -1655,12 +2139,13 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
         raw: true,
       });
       const tracker = await helpers.createTracker({ name: 'Legacy tracker', raw: true });
-      await helpers.createTracker({
+      const categoryTracker = await helpers.createTracker({
         name: 'Legacy category tracker',
-        type: TRACKER_TYPES.category,
-        categoryIds: [category.id],
+        rulesEnabled: true,
+        categoryIds: [ruleCategory.id],
         raw: true,
       });
+      const emptyCategoryTracker = await helpers.createTracker({ name: 'Legacy empty category tracker', raw: true });
       await helpers.addTransactionsToTracker({ id: tracker.id, payload: { transactionIds: [tx!.id] }, raw: true });
       await helpers.createTrackerLine({
         trackerId: tracker.id,
@@ -1670,7 +2155,12 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const { buffer } = await exportArchive();
       const { files } = helpers.parseBackupArchive({ buffer });
-      toLegacyArchive({ files, trackerId: tracker.id, userId: await getCurrentUserId() });
+      toLegacyArchive({
+        files,
+        trackerId: tracker.id,
+        categoryTrackerIds: [categoryTracker.id, emptyCategoryTracker.id],
+        userId: await getCurrentUserId(),
+      });
       const base64 = await helpers.repackBackup({ files });
 
       const restore = await helpers.restoreBackup({ fileContent: base64 });
@@ -1681,7 +2171,14 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const restored = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
       const restoredTrackers = restored.readData({ name: 'trackers' }) as Row[];
-      expect(restoredTrackers).toHaveLength(2);
+      expect(restoredTrackers).toHaveLength(3);
+      expect(
+        Object.fromEntries(restoredTrackers.map((row) => [row.name, [row.rulesEnabled, row.rulesSyncedAt]])),
+      ).toEqual({
+        'Legacy tracker': [false, null],
+        'Legacy category tracker': [true, null],
+        'Legacy empty category tracker': [false, null],
+      });
       const restoredIdOf = ({ trackerName }: { trackerName: string }) =>
         restoredTrackers.find((row) => row.name === trackerName)?.id;
       const restoredTrackerId = restoredIdOf({ trackerName: 'Legacy tracker' });
@@ -1723,6 +2220,83 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
         resourceId: tracker.id,
       });
       expect(notifications.some((n) => String(n.type).includes('budget'))).toBe(false);
+
+      const restoredCategoryTrackerId = restoredIdOf({ trackerName: 'Legacy category tracker' })!;
+      expect(await helpers.syncTrackerRules({ id: restoredCategoryTrackerId as string, raw: true })).toEqual({
+        added: 1,
+        removed: 0,
+      });
+      const linked = await helpers.getTransactions({ trackerIds: [restoredCategoryTrackerId as string], raw: true });
+      expect(linked.map((row) => row.amount)).toEqual([ruleTx!.amount]);
+    });
+  });
+
+  describe('Custom currency rate sources', () => {
+    const USDT = 'USDT';
+
+    it('restores an archive written before rate sources: the custom currency keeps its own rates, dated the day they were saved', async () => {
+      await helpers.createCustomCurrency({
+        payload: { code: USDT, name: 'Tether', decimals: 6, rate: { value: 3.5 } },
+        raw: true,
+      });
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+      const holdings = readArchiveJson({ files, path: 'data/users-currencies.json' }) as Row[];
+      const rates = readArchiveJson({ files, path: 'data/user-exchange-rates.json' }) as Row[];
+      const savedDays = rates.filter((row) => row.baseCode === USDT).map((row) => String(row.date).slice(0, 10));
+      expect(savedDays.length).toBeGreaterThan(0);
+
+      writeArchiveJson({
+        files,
+        path: 'data/users-currencies.json',
+        value: holdings.map(
+          ({ rateSource: _source, rateSourceConfig: _config, rateSourceHttpFingerprint: _fingerprint, ...row }) => row,
+        ),
+      });
+      writeArchiveJson({
+        files,
+        path: 'data/user-exchange-rates.json',
+        value: rates.map(({ effectiveDate: _day, source: _source, ...row }) => row),
+      });
+
+      const restore = await helpers.restoreBackup({ fileContent: await helpers.repackBackup({ files }) });
+      expect(restore.statusCode).toBe(200);
+      expect((await helpers.waitForRestore({ jobId: restore.jobId! })).status).toBe('completed');
+
+      const held = await helpers.getUserCurrencies();
+      expect(held.find((row) => row.currencyCode === USDT)).toMatchObject({
+        rateSource: 'manual',
+        rateSourceConfig: null,
+      });
+      for (const row of held.filter((candidate) => candidate.currencyCode !== USDT)) {
+        expect(row.rateSource).toBe(row.liveRateUpdate ? 'provider' : 'manual');
+      }
+
+      const history = await helpers.getCurrencyRateHistory({ code: USDT, raw: true });
+      expect(history.items.map((item) => item.effectiveDate).toSorted()).toEqual(savedDays.toSorted());
+      expect(history.items.every((item) => item.source === 'manual')).toBe(true);
+    });
+
+    it('rejects a custom currency whose rate source cannot be read (422)', async () => {
+      await helpers.createCustomCurrency({
+        payload: { code: USDT, name: 'Tether', decimals: 6, rate: { value: 3.5 } },
+        raw: true,
+      });
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+      const holdings = readArchiveJson({ files, path: 'data/users-currencies.json' }) as Row[];
+      writeArchiveJson({
+        files,
+        path: 'data/users-currencies.json',
+        value: holdings.map((row) =>
+          row.currencyCode === USDT ? { ...row, rateSource: 'peg', rateSourceConfig: { pegCurrency: 'USD' } } : row,
+        ),
+      });
+
+      const restore = await helpers.restoreBackup({ fileContent: await helpers.repackBackup({ files }) });
+
+      expect(restore.statusCode).toBe(422);
+      expect(restore.message).toContain(USDT);
     });
   });
 
@@ -1990,6 +2564,32 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       const fetched = await helpers.getUserSettings({ raw: true });
       expect(fetched.locale).toBe('uk');
       expect(fetched.fire).toBeUndefined();
+    });
+
+    it('drops only an invalid fire history with a fire_settings_reset warning and keeps a valid fire', async () => {
+      await helpers.updateUserSettings({ settings: { locale: 'uk' } });
+      await helpers.patchUserSettings({ patch: { fire: { withdrawalRatePct: 3.5 } } });
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+
+      const settingsRows = readArchiveJson({ files, path: 'data/user-settings.json' }) as Row[];
+      (settingsRows[0]!.settings as Row).fireHistory = [{ month: '2025-13', fire: { withdrawalRatePct: 4 } }];
+      writeArchiveJson({ files, path: 'data/user-settings.json', value: settingsRows });
+      const base64 = await helpers.repackBackup({ files });
+
+      const restore = await helpers.restoreBackup({ fileContent: base64 });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+
+      expect(status.status).toBe('completed');
+      const codes = status.summary?.warnings.map((w) => w.code);
+      expect(codes).toContain('fire_settings_reset');
+      expect(codes).not.toContain('settings_reset');
+
+      const fetched = await helpers.getUserSettings({ raw: true });
+      expect(fetched.locale).toBe('uk');
+      expect(fetched.fire).toMatchObject({ withdrawalRatePct: 3.5 });
+      expect(fetched.fireHistory).toBeUndefined();
     });
 
     it('drops FIRE ids that point at nothing restored and falls back to the default return indicator', async () => {

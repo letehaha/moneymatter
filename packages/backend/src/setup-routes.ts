@@ -1,17 +1,19 @@
+import { resolveLocale } from '@bt/shared/i18n/locales';
 import { requestContext } from '@common/request-context';
 import { logger } from '@js/utils/logger';
 import { Sentry } from '@js/utils/sentry';
+import { clientVersionGate } from '@middlewares/client-version-gate';
 import { toNodeHandler } from 'better-auth/node';
 import { Express, Request, Response } from 'express';
 import http from 'node:http';
 
 import { API_PREFIX } from './config';
 import { auth, authPool } from './config/auth';
-import { SUPPORTED_LOCALES } from './i18n';
 import accountGroupsRoutes from './routes/account-groups';
 import accountsRoutes from './routes/accounts.route';
 import adminRoutes from './routes/admin.route';
 import attachmentsRoutes from './routes/attachments.route';
+import backgroundJobsRoutes from './routes/background-jobs.route';
 import bankDataProvidersRoutes from './routes/bank-data-providers.route';
 import betterAuthExtensionsRoutes from './routes/better-auth-extensions.route';
 import billingRoutes from './routes/billing.route';
@@ -23,6 +25,7 @@ import modelsCurrenciesRoutes from './routes/currencies.route';
 import demoRoutes from './routes/demo.route';
 import exchangeRatesRoutes from './routes/exchange-rates';
 import githubRoutes from './routes/github.route';
+import goalsRoutes from './routes/goals.route';
 import aiMappingRoutes from './routes/import-export/ai-mapping.route';
 import batchesRoutes from './routes/import-export/batches.route';
 import budgetBakersWalletImportRoutes from './routes/import-export/budget-bakers-wallet.route';
@@ -62,6 +65,9 @@ export function setupRoutes(app: Express) {
     res.json({ status: 'ok' });
   });
 
+  // Ahead of every `/auth` handler, so an outdated build gets 426 at sign-in too.
+  app.use(clientVersionGate);
+
   // Better-auth extensions (wraps server-side only APIs like setPassword)
   // Must be mounted BEFORE better-auth handler to take precedence
   app.use(`${API_PREFIX}/auth`, betterAuthExtensionsRoutes);
@@ -75,11 +81,9 @@ export function setupRoutes(app: Express) {
   // We wrap the handler to preserve AsyncLocalStorage context for locale-aware category creation
   const authHandler = toNodeHandler(auth);
 
-  // Patch OAuth2 dynamic client registration requests so they always register as
-  // public clients.  better-auth's oauth-provider treats clients without
-  // `token_endpoint_auth_method: "none"` as confidential and rejects unauthenticated
-  // registration with 401 – even when allowUnauthenticatedClientRegistration is true.
-  // MCP clients (e.g. Claude.ai) often omit this field, so we default it here.
+  // Patch unauthenticated OAuth2 dynamic client registrations so they always register
+  // as public clients. better-auth keeps whatever token_endpoint_auth_method the request
+  // carries, and MCP clients (e.g. Claude.ai) often omit it.
   //
   // We can't patch the stream in-place (Node 23's Fetch API reads the internal
   // buffer directly), so we proxy the request through a local HTTP call with the
@@ -95,12 +99,10 @@ export function setupRoutes(app: Express) {
       try {
         const parsed = JSON.parse(Buffer.concat(chunks).toString());
         const isUnauthenticated = !req.headers.authorization && !req.headers.cookie;
-        const isConfidential = parsed.token_endpoint_auth_method && parsed.token_endpoint_auth_method !== 'none';
 
-        // Unauthenticated + confidential always fails in better-auth (401), so
-        // downgrade to public client.  Authenticated registrations and requests
-        // that are already public pass through unchanged.
-        if (isUnauthenticated && isConfidential) {
+        // An omitted method defaults to client_secret_basic, which would make a self-registered
+        // MCP client confidential and hand it a secret it must then present at the token endpoint.
+        if (isUnauthenticated && parsed.token_endpoint_auth_method !== 'none') {
           parsed.token_endpoint_auth_method = 'none';
         }
         body = Buffer.from(JSON.stringify(parsed));
@@ -167,10 +169,7 @@ export function setupRoutes(app: Express) {
   });
 
   app.all(`${API_PREFIX}/auth/*`, (req: Request, res: Response) => {
-    // Extract locale from Accept-Language header (same logic as detectLanguage middleware)
-    const supportedLocales = SUPPORTED_LOCALES;
-    const headerLang = req.headers['accept-language']?.split(',')[0]?.split('-')[0];
-    const locale = headerLang && supportedLocales.includes(headerLang) ? headerLang : 'en';
+    const locale = resolveLocale({ tag: req.headers['accept-language'] });
 
     // Wrap the handler in AsyncLocalStorage context to ensure locale is available in hooks
     requestContext.run({ locale }, () => {
@@ -182,6 +181,7 @@ export function setupRoutes(app: Express) {
   app.use(`${API_PREFIX}/accounts`, accountsRoutes);
   app.use(`${API_PREFIX}/transactions`, transactionsRoutes);
   app.use(`${API_PREFIX}/attachments`, attachmentsRoutes);
+  app.use(`${API_PREFIX}/background-jobs`, backgroundJobsRoutes);
   app.use(`${API_PREFIX}/logo-images`, logoImagesRoutes);
   app.use(`${API_PREFIX}/categories`, categoriesRoutes);
   app.use(`${API_PREFIX}/models/currencies`, modelsCurrenciesRoutes);
@@ -191,6 +191,7 @@ export function setupRoutes(app: Express) {
   app.use(`${API_PREFIX}/currencies/rates`, exchangeRatesRoutes);
   app.use(`${API_PREFIX}/trackers`, trackersRoutes);
   app.use(`${API_PREFIX}/budget-plans`, budgetPlansRoutes);
+  app.use(`${API_PREFIX}/goals`, goalsRoutes);
   app.use(`${API_PREFIX}/subscriptions`, subscriptionsRoutes);
   app.use(`${API_PREFIX}/tags`, tagsRoutes);
   app.use(`${API_PREFIX}/tag-reminders`, tagRemindersRoutes);

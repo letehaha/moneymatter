@@ -6,7 +6,9 @@ import {
   type LinkResidualTarget,
   type RecordId,
 } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
+import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import AccountGrouping from '@models/accounts-groups/account-grouping.model';
@@ -16,18 +18,21 @@ import BankDataProviderConnections from '@models/bank-data-provider-connections.
 import { namespace } from '@models/connection';
 import Subscriptions from '@models/subscriptions.model';
 import { updateAccount } from '@services/accounts.service';
-import { absorbLinkResidual } from '@services/accounts/absorb-link-residual';
+import { absorbLinkResidualWithRateFallback } from '@services/accounts/absorb-link-residual';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
+import { lockAccountRow } from '@services/accounts/lock-account-row';
+import { restoreRelinkedTransactionsAccountType } from '@services/accounts/restore-relinked-transactions-account-type';
+import { stampSeamBalance } from '@services/balances/revalue-balance-history.service';
+import { PROVIDER_TO_ACCOUNT_TYPE, bankProviderRegistry } from '@services/bank-data-providers';
 import {
-  PROVIDER_TO_ACCOUNT_TYPE,
-  restoreRelinkedTransactionsAccountType,
-} from '@services/accounts/restore-relinked-transactions-account-type';
-import { bankProviderRegistry } from '@services/bank-data-providers';
-import { assertExternalAccountNotLinkedElsewhere } from '@services/bank-data-providers/connection/connect-selected-accounts';
+  assertExternalAccountNotLinkedElsewhere,
+  requireProviderBalance,
+} from '@services/bank-data-providers/connection/connect-selected-accounts';
 import { syncTransactionsForAccount } from '@services/bank-data-providers/connection/sync-transactions-for-account';
 import { SyncStatus, setAccountSyncStatus } from '@services/bank-data-providers/sync/sync-status-tracker';
 import { writeBankBalanceWithHistory } from '@services/bank-data-providers/utils/write-bank-balance-with-history';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertNoUnfinishedImport } from '@services/import-export/core/unfinished-import';
 
 interface LinkAccountToBankConnectionPayload {
   accountId: string;
@@ -41,6 +46,21 @@ interface LinkResult {
   account: Accounts;
   balanceDifference: number;
 }
+
+const assertLinkable = ({ account, accountId }: { account: Accounts | null; accountId: string }): Accounts => {
+  if (!account) {
+    throw new NotFoundError({
+      message: t({ key: 'errors.accountIdNotFound', variables: { accountId } }),
+      code: API_ERROR_CODES.notFound,
+    });
+  }
+  if (account.type !== ACCOUNT_TYPES.system) {
+    throw new ValidationError({
+      message: t({ key: 'accounts.onlySystemAccountsCanBeLinked' }),
+    });
+  }
+  return account;
+};
 
 /**
  * Swaps a system account to the provider's type, syncs the provider's
@@ -58,20 +78,7 @@ export const linkAccountToBankConnection = withTransaction(
     userId,
     residualTarget = 'opening-balance',
   }: LinkAccountToBankConnectionPayload): Promise<LinkResult> => {
-    const account = await getAccountById({ id: accountId, userId });
-
-    if (!account) {
-      throw new NotFoundError({
-        message: `Account with id "${accountId}" not found.`,
-        code: API_ERROR_CODES.notFound,
-      });
-    }
-
-    if (account.type !== ACCOUNT_TYPES.system) {
-      throw new ValidationError({
-        message: 'Only system accounts can be linked to a bank connection.',
-      });
-    }
+    const account = assertLinkable({ account: await getAccountById({ id: accountId, userId }), accountId });
 
     assertNotDerivedBalanceAccount({ account, actionPhrase: 'be linked to a bank connection' });
 
@@ -121,7 +128,12 @@ export const linkAccountToBankConnection = withTransaction(
 
     // Stored balances include the credit limit. Adopting the bank's limit shifts
     // the stored balance by the same delta so displayed history stays put.
-    const newCreditLimit = Money.fromCents(Number(externalAccount.metadata?.creditLimit) || 0);
+    const newCreditLimit = await roundToCurrency({
+      money: externalAccount.creditLimit ?? Money.zero(),
+      userId,
+      currencyCode: account.currencyCode,
+      mode: 'half-up',
+    });
     if (!newCreditLimit.equals(account.creditLimit)) {
       await updateAccount({
         id: accountId,
@@ -132,16 +144,27 @@ export const linkAccountToBankConnection = withTransaction(
       await account.reload();
     }
 
-    const systemBalance = account.currentBalance.toCents();
-    const externalBalance = externalAccount.balance;
-    const balanceDifference = externalBalance - systemBalance;
+    // Locked before the import check: an import opening its batch now waits and sees this link.
+    const lockedAccount = assertLinkable({
+      account: await lockAccountRow({ accountId, userId, noKey: true }),
+      accountId,
+    });
+    await assertNoUnfinishedImport({ userId });
+
+    const systemBalance = lockedAccount.currentBalance;
+    const bankBalance = await requireProviderBalance({
+      providerAccount: externalAccount,
+      userId,
+      currencyCode: lockedAccount.currencyCode,
+    });
+    const balanceDifference = bankBalance.subtract(systemBalance).toNumber();
 
     const isQueuedSyncProvider = provider.metadata.features.queuedSync === true;
 
-    const existingExternalData = account.externalData || {};
+    const existingExternalData = lockedAccount.externalData || {};
     const linkedAt = new Date().toISOString();
 
-    // External account metadata (iban, ownerName, ...) is stored so reconnection
+    // External account metadata (iban, ...) is stored so reconnection
     // flows can match accounts by IBAN.
     const updatedExternalData: AccountExternalData = {
       ...existingExternalData,
@@ -150,8 +173,8 @@ export const linkAccountToBankConnection = withTransaction(
         linkedAt,
         linkingStrategy: 'forward-only' as const,
         balanceReconciliation: {
-          systemBalance,
-          externalBalance,
+          systemBalance: systemBalance.toNumber(),
+          externalBalance: bankBalance.toNumber(),
           difference: balanceDifference,
           adjustmentTransactionId: null,
           residualTarget,
@@ -162,7 +185,7 @@ export const linkAccountToBankConnection = withTransaction(
 
     const newAccountType = PROVIDER_TO_ACCOUNT_TYPE[bankConnection.providerType as BANK_PROVIDER_TYPE];
 
-    await account.update({
+    await lockedAccount.update({
       type: newAccountType,
       externalId: externalAccountId,
       externalData: updatedExternalData,
@@ -196,7 +219,7 @@ export const linkAccountToBankConnection = withTransaction(
       // The bank balance is already in hand from fetchAccounts; write it now
       // or the account keeps the stale pre-link figure while the queue drains,
       // forever when the sync window returns nothing.
-      await writeBankBalanceWithHistory({ account, balance: Money.fromCents(externalBalance) });
+      await writeBankBalanceWithHistory({ account: lockedAccount, balance: bankBalance });
 
       // Enqueue only after this transaction commits: the first queue batch
       // runs immediately, and a worker racing an uncommitted link would read
@@ -215,7 +238,12 @@ export const linkAccountToBankConnection = withTransaction(
             status: SyncStatus.FAILED,
             error: error.message,
             userId,
-          }).catch(() => {});
+          }).catch((statusError: Error) => {
+            logger.warn('Failed to record FAILED sync status after the post-link sync failed', {
+              accountId,
+              error: statusError.message,
+            });
+          });
         });
       };
       if (sequelizeTx) {
@@ -232,29 +260,48 @@ export const linkAccountToBankConnection = withTransaction(
       };
     }
 
-    await syncTransactionsForAccount({
-      connectionId,
-      userId,
-      accountId,
-    });
-
-    const residualOutcome = await absorbLinkResidual({ accountId, userId });
-
-    const updatedAccount = (await Accounts.findByPk(accountId))!;
-
-    if (Object.keys(residualOutcome).length > 0) {
-      const currentExternalData = (updatedAccount.externalData || {}) as AccountExternalData;
-      const connectionMeta = currentExternalData.bankConnection ?? updatedExternalData.bankConnection!;
-
-      await updatedAccount.update({
-        externalData: {
-          ...currentExternalData,
-          bankConnection: {
-            ...connectionMeta,
-            balanceReconciliation: { ...connectionMeta.balanceReconciliation, ...residualOutcome },
-          },
-        },
+    // The inline sync's SYNCING lands at once, its COMPLETED only on commit: a rollback would leave SYNCING.
+    let updatedAccount: Accounts;
+    try {
+      await syncTransactionsForAccount({
+        connectionId,
+        userId,
+        accountId,
       });
+
+      // The sync's own balance write is best-effort; without it S would anchor on the pre-link balance.
+      await lockedAccount.reload();
+      await writeBankBalanceWithHistory({ account: lockedAccount, balance: bankBalance });
+
+      const residualOutcome = await absorbLinkResidualWithRateFallback({ accountId, userId, residualTarget });
+      await stampSeamBalance({ accountId });
+
+      updatedAccount = (await Accounts.findByPk(accountId))!;
+
+      if (Object.keys(residualOutcome).length > 0) {
+        const currentExternalData = (updatedAccount.externalData || {}) as AccountExternalData;
+        const connectionMeta = currentExternalData.bankConnection ?? updatedExternalData.bankConnection!;
+
+        await updatedAccount.update({
+          externalData: {
+            ...currentExternalData,
+            bankConnection: {
+              ...connectionMeta,
+              balanceReconciliation: { ...connectionMeta.balanceReconciliation, ...residualOutcome },
+            },
+          },
+        });
+      }
+    } catch (error) {
+      await setAccountSyncStatus({ accountId: accountId as RecordId, status: SyncStatus.IDLE, userId }).catch(
+        (statusError: Error) => {
+          logger.warn('Failed to reset sync status after a failed inline link', {
+            accountId,
+            error: statusError.message,
+          });
+        },
+      );
+      throw error;
     }
 
     return {

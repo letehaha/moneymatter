@@ -10,6 +10,7 @@ import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField, toMoneyColumnValue } from '@common/types/money-column';
 import { logger } from '@js/utils';
+import { getLinkDayStart, isBeforeSeamStart } from '@services/accounts/seam';
 import { runInSavepoint } from '@services/common/run-in-savepoint';
 import { getExchangeRate } from '@services/user-exchange-rate/get-exchange-rate.service';
 import { subDays, startOfMonth, startOfDay } from 'date-fns';
@@ -45,7 +46,7 @@ export default class Balances extends Model {
    * specific date.
    * `amount` is in the BASE currency. So it represents a `refAmount` (`refBalance`)
    */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare amount: Money;
 
   @ForeignKey(() => Accounts)
@@ -54,18 +55,6 @@ export default class Balances extends Model {
 
   @BelongsTo(() => Accounts)
   account!: Accounts;
-
-  // Method to calculate the total balance across all accounts
-  static async getTotalBalance({ userId }: { userId: number }): Promise<number> {
-    const userAccounts = await Accounts.findAll({ where: { userId: userId } });
-    const accountIds = userAccounts.map((account) => account.id);
-
-    const result = await Balances.sum('amount', {
-      where: { accountId: accountIds },
-    });
-
-    return result || 0;
-  }
 
   // Method to retrieve total balance history for specified dates and accounts
   static async getTotalBalanceHistory(payload: GetTotalBalanceHistoryPayload): Promise<Balances[]> {
@@ -123,9 +112,7 @@ export default class Balances extends Model {
     isDelete?: boolean;
   }) {
     const { accountId, time } = data;
-    // A row without a base-currency amount (a custom currency with no rate yet) moves no balance.
-    const refAmount = data.refAmount ?? Money.zero();
-    let amount: Money = data.transactionType === TRANSACTION_TYPES.income ? refAmount : refAmount.negate();
+    let amount: Money = data.transactionType === TRANSACTION_TYPES.income ? data.refAmount : data.refAmount.negate();
     const date = startOfDay(new Date(time));
 
     switch (data.accountType) {
@@ -168,9 +155,8 @@ export default class Balances extends Model {
           amount = amount.negate(); // Reverse the amount if it's a deletion
         } else if (prevData) {
           const originalDate = startOfDay(new Date(prevData.time));
-          const prevRefAmount = prevData.refAmount ?? Money.zero();
           const originalAmount =
-            prevData.transactionType === TRANSACTION_TYPES.income ? prevRefAmount : prevRefAmount.negate();
+            prevData.transactionType === TRANSACTION_TYPES.income ? prevData.refAmount : prevData.refAmount.negate();
 
           if (
             // If the account ID changed,
@@ -246,8 +232,13 @@ export default class Balances extends Model {
         // TODO: we probably need to avoid updating opposite_tx refAmount based on
         // original-tx refAmount
         const balance = (data.externalData as TransactionsAttributes['externalData']).balance;
-
         if (balance !== undefined) {
+          // The days before a forward-only link belong to the account's manual history.
+          const { findSeamAccount } = await import('@services/balances/revalue-balance-history.service');
+          const linkedAccount = await findSeamAccount({ accountId });
+          const linkDayStart = linkedAccount && getLinkDayStart({ externalData: linkedAccount.externalData });
+          if (linkDayStart && isBeforeSeamStart({ seamStart: linkDayStart, time })) break;
+
           const exchangeRateData = await getExchangeRate({
             userId: data.userId,
             date,
@@ -277,7 +268,8 @@ export default class Balances extends Model {
 
       case ACCOUNT_TYPES.lunchflow:
       case ACCOUNT_TYPES.walutomat:
-      case ACCOUNT_TYPES.simplefin: {
+      case ACCOUNT_TYPES.simplefin:
+      case ACCOUNT_TYPES.akahu: {
         // No per-tx balance from upstream – only the authoritative end-of-sync
         // `writeBankBalanceWithHistory` writes for these providers. Chart
         // gaps for past days fill in over time as new syncs land each day.
@@ -406,7 +398,7 @@ export default class Balances extends Model {
             this.create({
               accountId,
               date: subDays(new Date(date), 1),
-              amount: account!.refInitialBalance ?? Money.zero(),
+              amount: account!.refInitialBalance,
             }),
           );
         } catch (err) {
@@ -421,7 +413,7 @@ export default class Balances extends Model {
             this.create({
               accountId,
               date,
-              amount: (account!.refInitialBalance ?? Money.zero()).add(amount),
+              amount: account!.refInitialBalance.add(amount),
             }),
           );
         } catch (err) {
@@ -472,10 +464,7 @@ export default class Balances extends Model {
    * @param prevAccount - The previous account state (undefined for new accounts)
    */
   static async handleAccountChange({ account, prevAccount }: { account: Accounts; prevAccount?: Accounts }) {
-    const { id: accountId } = account;
-    // An account whose opening balance has no base-currency value yet (a custom currency without
-    // a rate) contributes nothing to the history.
-    const refInitialBalance = account.refInitialBalance ?? Money.zero();
+    const { id: accountId, refInitialBalance } = account;
 
     // Try to find an existing balance for the account
     const record = await this.findOne({
@@ -486,7 +475,7 @@ export default class Balances extends Model {
 
     // If record exists, then it's account updating, otherwise account creation
     if (record && prevAccount) {
-      const diff = refInitialBalance.subtract(prevAccount.refInitialBalance ?? Money.zero());
+      const diff = refInitialBalance.subtract(prevAccount.refInitialBalance);
 
       // Update history for all the records related to that account
       await this.update(
@@ -600,8 +589,6 @@ export default class Balances extends Model {
    */
   static async setTodayRowToSpot({ account }: { account: Accounts }): Promise<void> {
     if (account.accountCategory === ACCOUNT_CATEGORIES.loan) return;
-    // No spot value to pin while a custom currency has no rate.
-    if (account.refCurrentBalance == null) return;
 
     await this.updateAccountBalance({
       accountId: account.id,

@@ -49,7 +49,7 @@ defineProps<{
 
 const model = defineModel<RateSourceDraft['coingecko']>({ required: true });
 
-const { isoOptions } = useCurrencyOptions({ excludeCode: () => '' });
+const { isoOptions } = useCurrencyOptions();
 
 // The coin's logo travels with the save, so the currency's icon becomes the coin's.
 const selectCoin = ({ coin }: { coin: CoingeckoCoinSearchResult }) => {

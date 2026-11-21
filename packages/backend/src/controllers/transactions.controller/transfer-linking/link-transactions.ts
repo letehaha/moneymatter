@@ -24,7 +24,7 @@ export const linkTransactions = async (req, res: CustomResponse) => {
 
     await attachTransactionCurrencyMeta({ transactions: linkedPairs.flat() });
 
-    // Serialize: convert cents to decimal for API response
+    // Serialize: Money amounts to API decimals
     // Result is [[baseTx, oppositeTx], ...] - serialize each transaction in each pair
     const serializedData = linkedPairs.map(([baseTx, oppositeTx]) => [
       serializeTransaction(baseTx),

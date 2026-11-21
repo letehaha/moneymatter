@@ -1,6 +1,6 @@
 import { CATEGORY_TYPES } from '@bt/shared/types';
 
-import { categoryDropError } from './can-drop-category';
+import { categoryDropError, categorySiblingDropError } from './can-drop-category';
 import { category } from './test-fixtures';
 
 const MAX_NESTING = 3;
@@ -94,6 +94,49 @@ describe('categoryDropError', () => {
   test('refuses moving an already-root category to the top level', () => {
     expect(categoryDropError({ dragged: category({ id: 1 }), target: null, maxNesting: MAX_NESTING })).toBe(
       'already-top-level',
+    );
+  });
+});
+
+describe('categorySiblingDropError', () => {
+  test('allows reordering next to a sibling under the current parent', () => {
+    const dragged = category({ id: 2, parentId: 1 });
+
+    expect(
+      categorySiblingDropError({
+        dragged,
+        target: category({ id: 3, parentId: 1 }),
+        targetDepth: 2,
+        maxNesting: MAX_NESTING,
+      }),
+    ).toBeNull();
+  });
+
+  test('refuses self, own descendants and internal categories', () => {
+    const child = category({ id: 2, parentId: 1 });
+    const dragged = category({ id: 1, subCategories: [child] });
+    const internal = category({ id: 9, type: CATEGORY_TYPES.internal });
+
+    expect(categorySiblingDropError({ dragged, target: dragged, targetDepth: 1, maxNesting: MAX_NESTING })).toBe(
+      'self',
+    );
+    expect(categorySiblingDropError({ dragged, target: child, targetDepth: 2, maxNesting: MAX_NESTING })).toBe(
+      'inside-itself',
+    );
+    expect(categorySiblingDropError({ dragged, target: internal, targetDepth: 1, maxNesting: MAX_NESTING })).toBe(
+      'internal-target',
+    );
+  });
+
+  test('refuses a level where the dragged subtree would exceed the nesting limit', () => {
+    const dragged = category({ id: 1, subCategories: [category({ id: 2, parentId: 1 })] });
+    const deepTarget = category({ id: 5, parentId: 4 });
+
+    expect(
+      categorySiblingDropError({ dragged, target: deepTarget, targetDepth: 2, maxNesting: MAX_NESTING }),
+    ).toBeNull();
+    expect(categorySiblingDropError({ dragged, target: deepTarget, targetDepth: 3, maxNesting: MAX_NESTING })).toBe(
+      'children-too-deep',
     );
   });
 });

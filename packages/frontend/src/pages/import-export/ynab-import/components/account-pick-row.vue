@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-muted/30 rounded-md border px-4 py-3" :class="isSkipped ? 'opacity-60' : ''">
+  <div class="bg-muted/30 fields-plain rounded-md border px-4 py-3" :class="isSkipped ? 'opacity-60' : ''">
     <div class="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
       <div class="flex min-w-0 items-baseline gap-2">
         <span class="truncate font-medium">{{ account.originalName }}</span>

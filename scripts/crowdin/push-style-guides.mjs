@@ -17,6 +17,7 @@ const GUIDES = [
   { name: 'MoneyMatter – Shared', file: 'shared.md', languageIds: [] },
   { name: 'MoneyMatter – Ukrainian', file: 'uk.md', languageIds: ['uk'] },
   { name: 'MoneyMatter – Russian and Slovak plurals', file: 'slavic-plurals.md', languageIds: ['ru', 'sk'] },
+  { name: 'MoneyMatter – Brazilian Portuguese', file: 'pt-BR.md', languageIds: ['pt-BR'] },
 ].map((guide) => {
   const text = readFileSync(path.join(GUIDES_DIR, guide.file), 'utf-8');
   return { ...guide, text, bytes: Buffer.byteLength(text) };

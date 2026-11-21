@@ -1,7 +1,7 @@
 import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
-import { findTransactions } from '@models/transactions-query';
+import { findTransactions, updateTransactions } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
 import Users from '@models/users.model';
 import { Op } from 'sequelize';
@@ -47,14 +47,26 @@ const convertPairLegs = async ({
     const suffix = `Transfer ${direction} ${counterpartLabel}`;
     const newNote = leg.note ? `${leg.note}\n${suffix}` : suffix;
 
+    const values = {
+      transferId: null,
+      transferNature: TRANSACTION_TRANSFER_NATURE.transfer_out_wallet,
+      note: newNote,
+    };
     try {
-      await Transactions.updateTransactionById({
-        id: leg.id,
-        userId: leg.userId,
-        transferId: null,
-        transferNature: TRANSACTION_TRANSFER_NATURE.transfer_out_wallet,
-        note: newNote,
-      });
+      if (leg.deletedAt) {
+        // A trashed leg's balance is already reversed, so the write must not fire balance hooks.
+        await updateTransactions({
+          values,
+          where: { id: leg.id },
+          paranoid: false,
+          hooks: false,
+          planned: 'include',
+          access: 'unscoped-internal',
+          balanceAdjustments: 'include',
+        });
+      } else {
+        await Transactions.updateTransactionById({ id: leg.id, userId: leg.userId, ...values });
+      }
     } catch (err) {
       logger.error(
         {
@@ -120,6 +132,7 @@ export const convertCrossUserTransfersToOutOfWallet = async ({
       transferId: { [Op.not]: null },
       accountId: { [Op.in]: accountIds },
     },
+    paranoid: false,
   });
 
   // Group candidates by `transferId` so each pair is processed exactly once. Any group
@@ -204,6 +217,7 @@ export const convertCrossUserTransfersForAccountIds = async ({
     },
     attributes: ['transferId'],
     raw: true,
+    paranoid: false,
   })) as unknown as Array<{ transferId: string | null }>;
 
   const transferIds = Array.from(
@@ -221,6 +235,7 @@ export const convertCrossUserTransfersForAccountIds = async ({
     transfers: { natures: [TRANSACTION_TRANSFER_NATURE.common_transfer] },
     completeness: 'all',
     where: { transferId: { [Op.in]: transferIds } },
+    paranoid: false,
   });
 
   // Step 3: resolve the involved accounts + their owners' usernames so the per-pair

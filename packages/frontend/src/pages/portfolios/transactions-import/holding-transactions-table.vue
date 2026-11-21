@@ -64,7 +64,7 @@ function rowBackgroundClasses(tx: InvestmentImportTransaction): string[] {
 </script>
 
 <template>
-  <div class="bg-muted/20 border-t">
+  <div class="bg-muted/20 fields-plain border-t">
     <!-- Wide column headers -->
     <div
       v-if="!compact"
@@ -103,34 +103,33 @@ function rowBackgroundClasses(tx: InvestmentImportTransaction): string[] {
               ...rowBackgroundClasses(transactions[virtualRow.index]!),
             ]"
           >
-            <InputField
-              v-model="transactions[virtualRow.index]!.date"
-              type="date"
-              class="[&_input]:h-8 [&_input]:px-2 [&_input]:text-sm"
-            />
+            <InputField v-model="transactions[virtualRow.index]!.date" type="date" size="xs" class="[&_input]:px-2" />
             <SelectField
               :model-value="sideOptions.find((o) => o.value === transactions[virtualRow.index]!.side) ?? null"
               :values="sideOptions"
-              class="[&_button]:h-8 [&_button]:text-sm"
+              size="xs"
               @update:model-value="(opt) => opt && (transactions[virtualRow.index]!.side = opt.value)"
             />
             <InputField
               v-model="transactions[virtualRow.index]!.quantity"
               type="text"
               inputmode="decimal"
-              class="[&_input]:h-8 [&_input]:px-2 [&_input]:text-right [&_input]:text-sm"
+              size="xs"
+              class="[&_input]:px-2 [&_input]:text-right"
             />
             <InputField
               v-model="transactions[virtualRow.index]!.price"
               type="text"
               inputmode="decimal"
-              class="[&_input]:h-8 [&_input]:px-2 [&_input]:text-right [&_input]:text-sm"
+              size="xs"
+              class="[&_input]:px-2 [&_input]:text-right"
             />
             <InputField
               v-model="transactions[virtualRow.index]!.fees"
               type="text"
               inputmode="decimal"
-              class="[&_input]:h-8 [&_input]:px-2 [&_input]:text-right [&_input]:text-sm"
+              size="xs"
+              class="[&_input]:px-2 [&_input]:text-right"
             />
             <div class="text-right text-sm tabular-nums">
               {{ Number(transactions[virtualRow.index]!.amount).toFixed(2) }}
@@ -143,9 +142,9 @@ function rowBackgroundClasses(tx: InvestmentImportTransaction): string[] {
               >
                 <Button
                   type="button"
-                  size="sm"
+                  size="xs"
                   :variant="skipTempIds.has(transactions[virtualRow.index]!.tempId) ? 'secondary' : 'soft-destructive'"
-                  class="h-7 gap-1 px-2 text-xs"
+                  class="gap-1 px-2 text-xs"
                   @click="emit('toggle-skip', transactions[virtualRow.index]!.tempId)"
                 >
                   <TriangleAlertIcon class="size-3.5" />
@@ -178,18 +177,14 @@ function rowBackgroundClasses(tx: InvestmentImportTransaction): string[] {
           >
             <div>
               <label class="text-muted-foreground text-xs">{{ $t('investmentsImport.review.cols.date') }}</label>
-              <InputField
-                v-model="transactions[virtualRow.index]!.date"
-                type="date"
-                class="[&_input]:h-9 [&_input]:px-2 [&_input]:text-sm"
-              />
+              <InputField v-model="transactions[virtualRow.index]!.date" type="date" size="sm" class="[&_input]:px-2" />
             </div>
             <div>
               <label class="text-muted-foreground text-xs">{{ $t('investmentsImport.review.cols.side') }}</label>
               <SelectField
                 :model-value="sideOptions.find((o) => o.value === transactions[virtualRow.index]!.side) ?? null"
                 :values="sideOptions"
-                class="[&_button]:h-9 [&_button]:text-sm"
+                size="sm"
                 @update:model-value="(opt) => opt && (transactions[virtualRow.index]!.side = opt.value)"
               />
             </div>
@@ -199,7 +194,8 @@ function rowBackgroundClasses(tx: InvestmentImportTransaction): string[] {
                 v-model="transactions[virtualRow.index]!.quantity"
                 type="text"
                 inputmode="decimal"
-                class="[&_input]:h-9 [&_input]:px-2 [&_input]:text-right [&_input]:text-sm"
+                size="sm"
+                class="[&_input]:px-2 [&_input]:text-right"
               />
             </div>
             <div>
@@ -208,7 +204,8 @@ function rowBackgroundClasses(tx: InvestmentImportTransaction): string[] {
                 v-model="transactions[virtualRow.index]!.price"
                 type="text"
                 inputmode="decimal"
-                class="[&_input]:h-9 [&_input]:px-2 [&_input]:text-right [&_input]:text-sm"
+                size="sm"
+                class="[&_input]:px-2 [&_input]:text-right"
               />
             </div>
             <div>
@@ -217,7 +214,8 @@ function rowBackgroundClasses(tx: InvestmentImportTransaction): string[] {
                 v-model="transactions[virtualRow.index]!.fees"
                 type="text"
                 inputmode="decimal"
-                class="[&_input]:h-9 [&_input]:px-2 [&_input]:text-right [&_input]:text-sm"
+                size="sm"
+                class="[&_input]:px-2 [&_input]:text-right"
               />
             </div>
             <div>
@@ -234,9 +232,9 @@ function rowBackgroundClasses(tx: InvestmentImportTransaction): string[] {
               >
                 <Button
                   type="button"
-                  size="sm"
+                  size="xs"
                   :variant="skipTempIds.has(transactions[virtualRow.index]!.tempId) ? 'secondary' : 'soft-destructive'"
-                  class="h-8 gap-1 text-xs"
+                  class="gap-1 text-xs"
                   @click="emit('toggle-skip', transactions[virtualRow.index]!.tempId)"
                 >
                   <TriangleAlertIcon class="size-3.5" />

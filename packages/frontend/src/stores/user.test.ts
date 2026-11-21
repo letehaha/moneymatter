@@ -35,6 +35,7 @@ const buildSubscription = ({
   status: SubscriptionStatus;
   currentPeriodEndsAt?: string;
 }): BillingSubscriptionSummary => ({
+  provider: 'stripe',
   externalSubscriptionId: `sub_${status}`,
   tier: 'plus',
   status,

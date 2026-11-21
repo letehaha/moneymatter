@@ -199,6 +199,39 @@ describe('Bank connection account group lifecycle', () => {
       expect(unchangedGroup!.name).toBe('My Custom Name');
     });
 
+    it('should set name and externalUrl together and sync the group name', async () => {
+      const { connectionId } = await createConnectionWithAccount({ providerName: 'Original Name' });
+
+      const result = await helpers.bankDataProviders.updateConnectionDetails({
+        connectionId,
+        providerName: 'Renamed Connection',
+        externalUrl: 'https://portal.bank.example/',
+        raw: true,
+      });
+
+      expect(result.connection.providerName).toBe('Renamed Connection');
+      expect(result.connection.externalUrl).toBe('https://portal.bank.example/');
+
+      const groups = await helpers.getAccountGroups({ raw: true });
+      expect(groups.find((g) => g.bankDataProviderConnectionId === connectionId)!.name).toBe('Renamed Connection');
+    });
+
+    it('should leave the group name untouched when only externalUrl changes', async () => {
+      const { connectionId } = await createConnectionWithAccount({ providerName: 'Bank Connection' });
+
+      const result = await helpers.bankDataProviders.updateConnectionDetails({
+        connectionId,
+        externalUrl: 'https://portal.bank.example/',
+        raw: true,
+      });
+
+      expect(result.connection.providerName).toBe('Bank Connection');
+      expect(result.connection.externalUrl).toBe('https://portal.bank.example/');
+
+      const groups = await helpers.getAccountGroups({ raw: true });
+      expect(groups.find((g) => g.bankDataProviderConnectionId === connectionId)!.name).toBe('Bank Connection');
+    });
+
     it('should handle connection without an account group gracefully', async () => {
       const { connectionId } = await helpers.bankDataProviders.connectProvider({
         providerType: BANK_PROVIDER_TYPE.MONOBANK,

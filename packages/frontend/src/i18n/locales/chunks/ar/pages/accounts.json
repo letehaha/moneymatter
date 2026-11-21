@@ -27,9 +27,9 @@
     "sharedBy": "Shared by {handle}",
     "viaHousehold": "Shared via {handle}'s household",
     "connect": "Connect",
-    "connectBank": "الاتصال بالبنك",
+    "connectBank": "Connect bank",
     "noBanksConnected": "No banks connected yet — connect one to sync balances automatically.",
-    "reconnect": "إعادة الاتصال",
+    "reconnect": "Reconnect",
     "manageConnection": "Manage connection",
     "accountsCount": "{count} account | {count} accounts",
     "inGroupSubtitle": "in {name}",
@@ -37,7 +37,13 @@
       "auto": "Auto",
       "name": "Name",
       "balance": "Balance",
-      "ariaLabel": "Sort accounts"
+      "ariaLabel": "Sort accounts",
+      "direction": {
+        "aToZ": "A to Z",
+        "zToA": "Z to A",
+        "highestFirst": "Highest first",
+        "lowestFirst": "Lowest first"
+      }
     },
     "status": {
       "active": "Active",

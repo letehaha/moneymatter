@@ -5,8 +5,8 @@ import { ApiErrorResponseError } from '@/js/errors';
 import { type Ref, computed, inject } from 'vue';
 
 /**
- * A widget counts pending planned transactions unless its config opts out, so every reader
- * treats a missing key as `true`.
+ * For widgets that count pending planned transactions unless their config opts out: a missing
+ * key reads as `true`.
  */
 export const readIncludePlanned = ({ config }: { config: Record<string, unknown> | undefined }): boolean =>
   config?.includePlanned !== false;
@@ -32,11 +32,33 @@ const useConfigSaveError = ({ fallbackKey }: { fallbackKey: string }) => {
 export const useIncludePlannedSaveError = () =>
   useConfigSaveError({ fallbackKey: 'dashboard.widgets.common.includePlannedSaveError' });
 
+/** A missing or non-boolean stored value reads as `defaultValue`. */
+export const readWidgetConfigFlag = ({
+  config,
+  key,
+  defaultValue,
+}: {
+  config: Record<string, unknown> | undefined;
+  key: string;
+  defaultValue: boolean;
+}): boolean => {
+  const value = config?.[key];
+  return typeof value === 'boolean' ? value : defaultValue;
+};
+
 /**
- * Reads and persists one on-by-default boolean of a dashboard widget's config through the
- * shared widget-config injections. A missing key reads as `true`.
+ * Reads and persists one boolean of a dashboard widget's config through the shared
+ * widget-config injections.
  */
-export const useWidgetConfigFlag = ({ key, saveErrorKey }: { key: string; saveErrorKey: string }) => {
+export const useWidgetConfigFlag = ({
+  key,
+  saveErrorKey,
+  defaultValue = true,
+}: {
+  key: string;
+  saveErrorKey: string;
+  defaultValue?: boolean;
+}) => {
   const widgetConfigRef = inject<Ref<DashboardWidgetConfig> | null>('dashboard-widget-config', null);
   const saveWidgetConfig =
     inject<(params: { widgetId: string; config: Record<string, unknown> }) => Promise<void>>(
@@ -45,7 +67,9 @@ export const useWidgetConfigFlag = ({ key, saveErrorKey }: { key: string; saveEr
 
   const notifySaveError = useConfigSaveError({ fallbackKey: saveErrorKey });
 
-  const isOn = computed<boolean>(() => widgetConfigRef?.value?.config?.[key] !== false);
+  const isOn = computed<boolean>(() =>
+    readWidgetConfigFlag({ config: widgetConfigRef?.value?.config, key, defaultValue }),
+  );
 
   const setFlag = async ({ value }: { value: boolean }) => {
     if (!saveWidgetConfig || !widgetConfigRef?.value) return;
@@ -63,10 +87,11 @@ export const useWidgetConfigFlag = ({ key, saveErrorKey }: { key: string; saveEr
   return { widgetConfigRef, isOn, setFlag };
 };
 
-export const useIncludePlannedConfig = () => {
+export const useIncludePlannedConfig = ({ defaultValue = true }: { defaultValue?: boolean } = {}) => {
   const { widgetConfigRef, isOn, setFlag } = useWidgetConfigFlag({
     key: 'includePlanned',
     saveErrorKey: 'dashboard.widgets.common.includePlannedSaveError',
+    defaultValue,
   });
 
   return { widgetConfigRef, includePlanned: isOn, setIncludePlanned: setFlag };

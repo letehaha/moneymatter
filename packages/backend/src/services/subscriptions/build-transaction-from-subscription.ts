@@ -1,4 +1,4 @@
-import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
+import { TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { UnexpectedError, ValidationError } from '@js/errors';
 import * as Accounts from '@models/accounts.model';
@@ -16,8 +16,7 @@ import { getSubscriptionTagIds } from './subscription-tags';
  * The booked direction (expense or income) comes from the subscription's own
  * `transactionType`, against its stored account. `transferNature` is fixed to
  * `not_transfer`; `accountType` is omitted so `createTransaction` resolves it
- * and rejects a manual write onto a bank-connected account. `paymentType` is
- * `bankTransfer` — the closest neutral match for "I paid a recurring bill".
+ * and rejects a manual write onto a bank-connected account.
  *
  * `categoryId` falls back to the user's `defaultCategoryId` when the
  * subscription has none. `createTransaction` accepts a null/undefined category,
@@ -29,7 +28,7 @@ import { getSubscriptionTagIds } from './subscription-tags';
  * a UAH account), the amount is resolved as follows:
  *   - an explicit `amount` override is taken verbatim (already in the account's
  *     currency, confirmed by the user in the pay dialog);
- *   - otherwise the subscription's `expectedAmount` (stored as cents) is
+ *   - otherwise the subscription's `expectedAmount` is
  *     converted into the account currency via
  *     `convertSubscriptionAmountToAccountCurrency`.
  *
@@ -114,7 +113,6 @@ export async function buildTransactionFromSubscription({
     accountId: subscription.accountId,
     amount: amountMoney,
     transactionType: subscription.transactionType,
-    paymentType: PAYMENT_TYPES.bankTransfer,
     transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
     categoryId,
     payeeId: subscription.payeeId ?? undefined,

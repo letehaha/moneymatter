@@ -22,6 +22,7 @@ const makeAccount = (overrides: Partial<AccountModel> = {}): AccountModel => ({
   creditLimit: 0,
   refCreditLimit: 0,
   accountCategory: ACCOUNT_CATEGORIES.general,
+  defaultPaymentType: null,
   currencyCode: 'USD',
   userId: 1,
   status: ACCOUNT_STATUSES.active,
@@ -31,6 +32,8 @@ const makeAccount = (overrides: Partial<AccountModel> = {}): AccountModel => ({
   logoColor: null,
   logoIcon: null,
   logoImageId: null,
+  bankSeamAt: null,
+  externalUrl: null,
   ...overrides,
 });
 

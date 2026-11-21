@@ -11,21 +11,21 @@
         <template v-if="!isMobile">
           <DirectCashTransactionDialog :portfolio-id="portfolioId" :portfolio="portfolio">
             <UiButton variant="outline" size="sm">
-              <PlusIcon class="mr-2 size-4" />
+              <PlusIcon class="size-4" />
               {{ $t('portfolioDetail.cashBalances.cashTransactions.addButton') }}
             </UiButton>
           </DirectCashTransactionDialog>
 
           <PortfolioTransferDialog :portfolio="portfolio" context="portfolio">
             <UiButton variant="outline" size="sm">
-              <ArrowRightLeftIcon class="mr-2 size-4" />
+              <ArrowRightLeftIcon class="size-4" />
               {{ $t('portfolioDetail.actions.transfer') }}
             </UiButton>
           </PortfolioTransferDialog>
 
           <ExchangeCurrencyDialog :portfolio-id="portfolioId" :portfolio="portfolio">
             <UiButton variant="outline" size="sm">
-              <RefreshCwIcon class="mr-2 size-4" />
+              <RefreshCwIcon class="size-4" />
               {{ $t('portfolioDetail.actions.exchangeCurrency') }}
             </UiButton>
           </ExchangeCurrencyDialog>

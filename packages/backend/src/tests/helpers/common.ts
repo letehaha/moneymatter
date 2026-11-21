@@ -10,6 +10,8 @@ interface MakeRequestParams<T> {
   payload?: object | null;
   headers?: object;
   raw?: T;
+  /** Poll an `inBackground` endpoint's job until it settles. Off to see the raw 202. */
+  followBackgroundJob?: boolean;
 }
 
 export interface CustomResponse<T> extends ExpressCustomResponse {
@@ -44,6 +46,7 @@ export async function makeRequest<T = any, R extends boolean | undefined = false
   payload = null,
   headers = {},
   raw = false,
+  followBackgroundJob: follow = true,
 }: MakeRequestParams<R>): Promise<MakeRequestReturn<T, R>> {
   let tempUrl = url;
 
@@ -63,8 +66,21 @@ export async function makeRequest<T = any, R extends boolean | undefined = false
   // If not check for non-GET method, MSW will throw "Invariant Violation: Failed to write to a request stream: stream does not exist" error
   if (method !== 'get' && payloadExists) base.send(payload);
 
-  const result: CustomResponse<T> = await base;
+  const response = await base;
+  const result = (follow ? await followBackgroundJob({ response }) : response) as unknown as CustomResponse<T>;
   return (raw ? extractResponse(result) : result) as MakeRequestReturn<T, R>;
+}
+
+/** `inBackground` endpoints answer 202 with a job id; poll it so tests see the final response. */
+export async function followBackgroundJob({ response }: { response: request.Response }): Promise<request.Response> {
+  let current = response;
+  while (current.status === 202 && current.body?.response?.backgroundJobId) {
+    await sleep(50);
+    const poll = request(app).get(`${API_PREFIX}/background-jobs/${current.body.response.backgroundJobId}`);
+    if (global.APP_AUTH_COOKIES) poll.set('Cookie', global.APP_AUTH_COOKIES);
+    current = await poll;
+  }
+  return current;
 }
 
 /**

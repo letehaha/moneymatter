@@ -27,6 +27,10 @@
         "walutomat": {
           "name": "Walutomat",
           "description": "Platform penukaran mata uang Polandia dengan 23 mata uang"
+        },
+        "akahu": {
+          "name": "Akahu",
+          "description": "Sync transactions from New Zealand banks for free via an Akahu personal app"
         }
       },
       "monobank": {
@@ -116,6 +120,8 @@
             "fillForm": "Isi formulir dengan nilai berikut:",
             "appName": "Nama aplikasi:",
             "redirectUrls": "URL redirect yang diizinkan:",
+            "httpsRequired": "Enable Banking only accepts https redirect URLs. Serve this instance over HTTPS, set {envVar} to its public callback URL (e.g. {example}), recreate the backend container, and enter the same URL in this field. {link}",
+            "httpsRequiredLink": "How to set it up",
             "appDescription": "Deskripsi aplikasi:",
             "emailProtection": "Email untuk masalah perlindungan data:",
             "privacyUrl": "URL Privasi:",
@@ -291,6 +297,35 @@
           "closeButton": "Mengerti"
         }
       },
+      "akahu": {
+        "userTokenLabel": "User Access Token",
+        "userTokenPlaceholder": "Enter your Akahu User Access Token",
+        "userTokenHint": "Shown on your personal app page at my.akahu.nz",
+        "appTokenLabel": "App ID Token",
+        "appTokenPlaceholder": "Enter your Akahu App ID Token",
+        "appTokenHint": "Also shown on the same page",
+        "help": {
+          "trigger": "Where do I find my Akahu tokens?",
+          "title": "Get your Akahu personal app tokens",
+          "step1": "Open your {link} while signed in to Akahu.",
+          "step2": "Create a personal app (or open an existing one) — connect your bank accounts in Akahu first.",
+          "step3": "Copy the User Access Token and the App ID Token and paste both into the fields above."
+        },
+        "backButton": "Back",
+        "connectingButton": "Connecting...",
+        "connectButton": "Connect",
+        "loadingAccounts": "Loading accounts...",
+        "accountsPreviewHint": "Found {count} account(s). All accounts will be imported.",
+        "importingButton": "Importing...",
+        "importButton": "Import {count} account(s)",
+        "importSuccess": "Connected {count} account(s). Transactions are syncing in the background.",
+        "skipButton": "Skip",
+        "skipTooltip": "Skip importing to connect only specific accounts later, or to relink existing accounts from their settings.",
+        "errors": {
+          "connectFailed": "Failed to connect to Akahu",
+          "importFailed": "Failed to import accounts"
+        }
+      },
       "notifications": {
         "disconnectSuccess": "Integrasi berhasil diputuskan",
         "disconnectFailed": "Gagal memutuskan integrasi",
@@ -337,6 +372,7 @@
           "syncFailed": "Gagal memulai sinkronisasi"
         },
         "actions": {
+          "openExternalUrl": "Open external link",
           "renameButton": "Ganti nama koneksi",
           "disconnectButton": "Putuskan Integrasi",
           "manage": "Kelola"
@@ -396,6 +432,8 @@
           "title": "Edit Nama Koneksi",
           "description": "Beri nama khusus untuk koneksi Anda agar mudah diidentifikasi.",
           "label": "Nama Koneksi",
+          "externalUrlLabel": "External URL (optional)",
+          "externalUrlPlaceholder": "https://bridge.example.com",
           "saving": "Menyimpan...",
           "save": "Simpan"
         },
@@ -447,7 +485,8 @@
         "enableBanking": "<<ccr:08d9ab98e4ce,string,310B>>",
         "lunchflow": "Hubungkan bank Anda di sisi LunchFlow, lalu buat dan tempel kunci API LunchFlow Anda",
         "simplefin": "SimpleFIN Bridge adalah layanan berbayar. Buat akun bridge, hubungkan bank, dan tempel token pengaturan — tidak diperlukan pengaturan pengembang.",
-        "walutomat": "Memerlukan pembuatan pasangan kunci RSA dan upload kunci publik ke dashboard Walutomat"
+        "walutomat": "Memerlukan pembuatan pasangan kunci RSA dan upload kunci publik ke dashboard Walutomat",
+        "akahu": "Free for your own accounts: create an Akahu personal app at my.akahu.nz, connect your NZ banks there, then paste the two tokens"
       }
     },
     "connectionName": {

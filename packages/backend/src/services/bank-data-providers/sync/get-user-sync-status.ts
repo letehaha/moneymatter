@@ -3,6 +3,7 @@ import {
   type ConnectionNeedingReauth,
   type ConnectionStatusSummary,
   DEACTIVATION_REASON,
+  type SyncAccountStatus,
 } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
@@ -10,6 +11,7 @@ import BankDataProviderConnections from '@models/bank-data-provider-connections.
 import { DatabaseError, Op, literal } from 'sequelize';
 
 import { computeConsentValidity } from '../connection/consent-validity';
+import { getConnectionBankName, resolveBankLogoDomain } from '../utils/bank-institutions';
 import {
   type AccountSyncStatus,
   SyncStatus,
@@ -109,12 +111,13 @@ async function getConnectionsNeedingReauth(userId: number): Promise<ConnectionNe
     });
 
     return connections.map((conn) => {
-      const metadata = (conn.metadata ?? {}) as Record<string, unknown>;
+      const bankName = getConnectionBankName({ metadata: conn.metadata });
       return {
         connectionId: conn.id,
         providerType: conn.providerType,
         providerName: conn.providerName,
-        bankName: typeof metadata.bankName === 'string' ? metadata.bankName : null,
+        bankName,
+        bankLogoDomain: resolveBankLogoDomain({ bankName }),
         accountsCount: conn.accounts?.length ?? 0,
         deactivatedAt: conn.updatedAt?.toISOString() ?? null,
       };
@@ -163,7 +166,7 @@ async function getConnectionStatuses(userId: number): Promise<ConnectionStatusSu
  */
 export async function getUserAccountsSyncStatus(userId: number): Promise<{
   lastSyncAt: number | null;
-  accounts: Array<AccountSyncStatus & { accountName: string; providerType: string }>;
+  accounts: Array<AccountSyncStatus & SyncAccountStatus>;
   connectionsNeedingReauth: ConnectionNeedingReauth[];
   connectionStatuses: ConnectionStatusSummary[];
   summary: {
@@ -185,11 +188,11 @@ export async function getUserAccountsSyncStatus(userId: number): Promise<{
     getConnectionStatuses(userId),
   ]);
 
-  const accountsById = new Map(accounts.map((a) => [a.id, a]));
   const summary = { total: 0, syncing: 0, queued: 0, completed: 0, failed: 0, idle: 0 };
 
-  const enrichedStatuses = statuses.map((status) => {
-    const account = accountsById.get(status.accountId);
+  // Paired by index: a status parsed from Redis carries its own `accountId`, which nothing checks against the key.
+  const enrichedStatuses = statuses.map((status, i) => {
+    const account = accounts[i]!;
 
     summary.total++;
     switch (status.status) {
@@ -210,10 +213,18 @@ export async function getUserAccountsSyncStatus(userId: number): Promise<{
         break;
     }
 
+    const connection = account.bankDataProviderConnection;
     return {
       ...status,
-      accountName: account?.name || 'Unknown',
-      providerType: account?.bankDataProviderConnection.providerType || 'Unknown',
+      accountName: account.name || 'Unknown',
+      providerType: connection.providerType,
+      bankDataProviderConnectionId: connection.id,
+      logoDomain: account.logoDomain,
+      logoInitials: account.logoInitials,
+      logoColor: account.logoColor,
+      logoIcon: account.logoIcon,
+      logoImageId: account.logoImageId,
+      bankLogoDomain: resolveBankLogoDomain({ bankName: getConnectionBankName({ metadata: connection.metadata }) }),
     };
   });
 

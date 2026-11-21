@@ -75,6 +75,7 @@
       "types": {
         "initial_investment": "Investasi awal",
         "capital_call": "Setoran modal",
+        "capital_refund": "Capital refund",
         "distribution": "Distribusi",
         "nav_update": "Pembaruan NAV",
         "exit": "Keluar",

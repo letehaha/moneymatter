@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 import { ValidationError } from '@js/errors';
 
 import type { BackupFileName } from '../registry';
-import { fillUserRateEffectiveDates } from './fill-user-rate-effective-dates';
+import { fillUserRateEffectiveDates, forceKnownUserRateSources } from './fill-user-rate-effective-dates';
 
 type Row = Record<string, unknown>;
 
@@ -70,5 +70,27 @@ describe('fillUserRateEffectiveDates', () => {
     fillUserRateEffectiveDates({ data });
 
     expect(data.size).toBe(0);
+  });
+});
+
+describe('forceKnownUserRateSources', () => {
+  it('keeps a known source and restores any other as manual', () => {
+    const data = dataOf({
+      rows: [
+        { baseCode: 'BTC', quoteCode: 'USD', source: 'coingecko' },
+        { baseCode: 'ETH', quoteCode: 'USD', source: 'peg' },
+        { baseCode: 'SAT', quoteCode: 'USD', source: { evil: true } },
+        { baseCode: 'XAU', quoteCode: 'USD' },
+      ],
+    });
+
+    forceKnownUserRateSources({ data });
+
+    expect(data.get('user-exchange-rates')!.map((row) => row.source)).toEqual([
+      'coingecko',
+      'manual',
+      'manual',
+      'manual',
+    ]);
   });
 });

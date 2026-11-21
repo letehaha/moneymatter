@@ -7,6 +7,7 @@ import TransactionAutomations from '@models/transaction-automations.model';
 import TransactionTags from '@models/transaction-tags.model';
 import * as Transactions from '@models/transactions.model';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
+import { syncPaymentLegs } from '@services/transactions/payment-legs';
 
 const MAX_NOTE_LENGTH = 2000;
 
@@ -43,6 +44,9 @@ export const applyActions = async ({
   /** Shared stamp so every row of one bulk run carries the same `categorizedAt`. */
   categorizedAt?: string;
 }): Promise<boolean> => {
+  // A payment's leg copies its main row, so rules act on the main only.
+  if (transaction.paymentParentId) return false;
+
   let applied = false;
 
   for (const action of rule.actions) {
@@ -100,6 +104,8 @@ export const applyActions = async ({
     }
     applied = true;
   }
+
+  if (applied) await syncPaymentLegs({ userId, mainTxId: transaction.id });
 
   return applied;
 };

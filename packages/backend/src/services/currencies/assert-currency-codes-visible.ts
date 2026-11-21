@@ -1,7 +1,11 @@
-import { CURRENCY_CODE_PATTERN } from '@bt/shared/types';
-import { ValidationError } from '@js/errors';
+import { FEATURES } from '@bt/shared/types';
+import { isCurrencyCodeFormat, normalizeCurrencyCode } from '@common/lib/currency-code-format';
+import { t } from '@i18n/index';
+import { PlanRequiredError, ValidationError } from '@js/errors';
 import Currencies from '@models/currencies.model';
 import UsersCurrencies from '@models/users-currencies.model';
+import { FEATURE_NOT_IN_PLAN_MESSAGE, hasFeature } from '@services/entitlements/feature-trial.service';
+import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
 import { Op } from 'sequelize';
 
 type CodeInput = string | null | undefined;
@@ -11,20 +15,17 @@ type CodeInput = string | null | undefined;
  *
  * A code is usable when it names an ISO 4217 row, or a custom row the user holds in their own
  * currency list. Another user's custom code is reported as rejected exactly like an unknown one, so
- * the answer never reveals that the code exists. With `isoOnly` a custom code is rejected even when
- * the user holds it, for contexts that keep ISO-only validation (portfolios, securities).
+ * the answer never reveals that the code exists.
  */
 export const resolveVisibleCurrencies = async ({
   userId,
   codes,
-  isoOnly = false,
 }: {
   userId: number;
   codes: readonly CodeInput[];
-  isoOnly?: boolean;
 }): Promise<{ visible: Currencies[]; rejected: string[] }> => {
   const requested = [
-    ...new Set(codes.filter((code): code is string => Boolean(code)).map((code) => code.trim().toUpperCase())),
+    ...new Set(codes.filter((code): code is string => Boolean(code)).map((code) => normalizeCurrencyCode(code))),
   ];
 
   if (!requested.length) return { visible: [], rejected: [] };
@@ -34,7 +35,7 @@ export const resolveVisibleCurrencies = async ({
   const customCodes = rows.filter((row) => row.isCustom).map((row) => row.code);
   const heldCustomCodes = new Set<string>();
 
-  if (customCodes.length && !isoOnly) {
+  if (customCodes.length) {
     const held = await UsersCurrencies.findAll({
       where: { userId, currencyCode: { [Op.in]: customCodes } },
       attributes: ['currencyCode'],
@@ -58,13 +59,10 @@ export const getOwnCustomCurrencyCodes = async ({ userId }: { userId: number }):
     raw: true,
   });
 
-  return held.map((row) => row.currencyCode).sort();
+  return held.map((row) => row.currencyCode).toSorted();
 };
 
-/**
- * The message for a rejected code. It names the choices the user has: ISO 4217 codes, plus their
- * own custom codes unless the context is ISO-only.
- */
+/** The message for a rejected code. It names the choices the user has: ISO 4217 codes, plus their own custom codes. */
 export const buildInvalidCurrencyMessage = ({
   code,
   ownCustomCodes,
@@ -72,13 +70,11 @@ export const buildInvalidCurrencyMessage = ({
   code: string;
   ownCustomCodes: readonly string[];
 }): string => {
-  if (!CURRENCY_CODE_PATTERN.test(code)) {
-    return `Invalid currency code "${code}". Use 2 to 16 letters or digits, e.g. "USD".`;
-  }
+  if (!isCurrencyCodeFormat(code)) return t({ key: 'currencies.invalidCode', variables: { code } });
 
   return ownCustomCodes.length
-    ? `Invalid currency code "${code}". Use an ISO 4217 code, e.g. "USD", or one of your custom currencies: ${ownCustomCodes.join(', ')}.`
-    : `Invalid currency code "${code}". Use an ISO 4217 code, e.g. "USD".`;
+    ? t({ key: 'currencies.invalidCodeWithCustom', variables: { code, customCodes: ownCustomCodes.join(', ') } })
+    : t({ key: 'currencies.invalidCodeIso', variables: { code } });
 };
 
 /**
@@ -86,27 +82,38 @@ export const buildInvalidCurrencyMessage = ({
  * entries are skipped, so optional fields pass straight in. See `resolveVisibleCurrencies` for the
  * visibility rule.
  *
+ * A custom code then needs the custom currencies plan (402), except the ones in `allowedWithoutPlan`:
+ * every code on a read or a transaction write, the codes an edited row already stores.
+ *
  * Run it before any code reaches a foreign key, `ensureUserCurrencyConnected` or an exchange-rate
  * lookup: the request schema only checks the shape of the code.
  */
 export const assertCurrencyCodesVisible = async ({
   userId,
   codes,
-  isoOnly = false,
+  allowedWithoutPlan = [],
 }: {
   userId: number;
   codes: readonly CodeInput[];
-  isoOnly?: boolean;
+  allowedWithoutPlan?: readonly CodeInput[];
 }): Promise<void> => {
-  const { rejected } = await resolveVisibleCurrencies({ userId, codes, isoOnly });
+  const { visible, rejected } = await resolveVisibleCurrencies({ userId, codes });
 
   const [firstRejected] = rejected;
-  if (firstRejected === undefined) return;
+  if (firstRejected !== undefined) {
+    const ownCustomCodes = await getOwnCustomCurrencyCodes({ userId });
 
-  const ownCustomCodes = isoOnly ? [] : await getOwnCustomCurrencyCodes({ userId });
+    throw new ValidationError({
+      message: buildInvalidCurrencyMessage({ code: firstRejected, ownCustomCodes }),
+      details: { rejectedCodes: rejected },
+    });
+  }
 
-  throw new ValidationError({
-    message: buildInvalidCurrencyMessage({ code: firstRejected, ownCustomCodes }),
-    details: { rejectedCodes: rejected },
-  });
+  const allowed = new Set(allowedWithoutPlan.filter(Boolean).map((code) => normalizeCurrencyCode(code!)));
+  if (
+    visible.some((row) => row.isCustom && !allowed.has(row.code)) &&
+    !hasFeature({ entitlements: await getEntitlementsByUserId({ userId }), feature: FEATURES.custom_currencies })
+  ) {
+    throw new PlanRequiredError({ message: FEATURE_NOT_IN_PLAN_MESSAGE });
+  }
 };

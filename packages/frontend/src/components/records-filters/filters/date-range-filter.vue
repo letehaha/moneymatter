@@ -2,13 +2,11 @@
   <DateSelector :model-value="currentPeriod" :presets="presets" @update:model-value="handlePeriodUpdate">
     <template #trigger="{ triggerText }">
       <Button
-        variant="outline"
-        :class="[
-          'bg-input-background w-full justify-start text-left font-normal',
-          !hasDates && 'text-muted-foreground',
-        ]"
+        variant="field"
+        :size="size"
+        :class="['w-full justify-start text-left', !hasDates && 'text-muted-foreground']"
       >
-        <CalendarIcon class="mr-2 size-4 shrink-0" />
+        <CalendarIcon class="size-4 shrink-0" />
         <span class="min-w-0 flex-1 truncate">
           {{ hasDates ? triggerText : $t('transactions.filters.dateRange.placeholder') }}
         </span>
@@ -18,7 +16,7 @@
           role="button"
           tabindex="0"
           :aria-label="$t('common.actions.clear')"
-          class="text-muted-foreground hover:text-foreground -mr-1 ml-1 shrink-0 rounded-sm p-0.5"
+          class="text-muted-foreground hover:text-foreground -mr-1 shrink-0 rounded-sm p-0.5"
           @click.stop="clearDates"
           @keydown.enter.stop.prevent="clearDates"
         >
@@ -31,12 +29,13 @@
 
 <script lang="ts" setup>
 import { Button } from '@/components/lib/ui/button';
+import { type ControlSize } from '@/components/lib/ui/control-size';
 import { DateSelector, type DateSelectorPreset } from '@/components/lib/ui/date-selector';
 import { type Period } from '@/composable/use-period-navigation';
 import { resolveDatePreset } from '@/components/records-filters/saved-views';
 import { endOfMonth, startOfMonth } from 'date-fns';
 import { CalendarIcon, XIcon } from '@lucide/vue';
-import { computed } from 'vue';
+import { type PropType, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -47,6 +46,9 @@ const props = defineProps({
   end: {
     type: Date,
     default: null,
+  },
+  size: {
+    type: String as PropType<ControlSize>,
   },
 });
 

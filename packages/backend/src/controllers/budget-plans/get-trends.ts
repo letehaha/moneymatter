@@ -1,5 +1,6 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
+import { requestTimezone } from '@controllers/helpers/request-timezone';
 import { getTrends } from '@services/budget-plans/get-trends';
 import { z } from 'zod';
 
@@ -11,8 +12,14 @@ const schema = z.object({
   }),
 });
 
-export default createController(schema, async ({ user, params, query }) => {
-  const data = await getTrends({ userId: user.id, planId: params.planId, until: query.until, count: query.count });
+export default createController(schema, async ({ user, params, query, req }) => {
+  const data = await getTrends({
+    userId: user.id,
+    planId: params.planId,
+    until: query.until,
+    count: query.count,
+    timezone: await requestTimezone({ req }),
+  });
 
   return { data };
 });

@@ -286,15 +286,18 @@ export function restoreBudgetPlanLine<R extends boolean | undefined = false>({
 export function getBudgetPlanPeriodView<R extends boolean | undefined = false>({
   planId,
   periodId,
+  headers,
   raw,
 }: {
   planId: string;
   periodId: string;
+  headers?: object;
   raw?: R;
 }) {
   return makeRequest<Awaited<ReturnType<typeof _getPeriodView>>, R>({
     method: 'get',
     url: `/budget-plans/${planId}/periods/${periodId}`,
+    headers,
     raw,
   });
 }
@@ -324,22 +327,25 @@ export function getBudgetPlanTrends<R extends boolean | undefined = false>({
 export function getBudgetPlanScheduled<R extends boolean | undefined = false>({
   planId,
   periodId,
+  headers,
   raw,
 }: {
   planId: string;
   periodId: string;
+  headers?: object;
   raw?: R;
 }) {
   return makeRequest<Awaited<ReturnType<typeof _getScheduled>>, R>({
     method: 'get',
     url: `/budget-plans/${planId}/periods/${periodId}/scheduled`,
+    headers,
     raw,
   });
 }
 
 type SetBudgetAssignmentPayload = Omit<
   Parameters<typeof _setAssignment>[0],
-  'userId' | 'planId' | 'periodId' | 'lineId'
+  'userId' | 'planId' | 'periodId' | 'lineId' | 'timezone'
 >;
 
 export function setBudgetAssignment<R extends boolean | undefined = false>({

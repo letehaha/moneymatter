@@ -2,77 +2,77 @@
   "pages": {
     "importExport": {
       "ynabImport": {
-        "pageTitle": "Import from YNAB",
-        "pageDescription": "Upload your YNAB Register.csv export to bring accounts, transactions, categories, payees and tags into MoneyMatter.",
+        "pageTitle": "Importer depuis YNAB",
+        "pageDescription": "Importez votre fichier d'export YNAB Register.csv pour intégrer vos comptes, opérations, catégories, tiers et étiquettes dans MoneyMatter.",
         "stepper": {
           "steps": {
-            "upload": "Upload",
-            "preview": "Review",
-            "results": "Done"
+            "upload": "Téléverser",
+            "preview": "Vérifier",
+            "results": "Terminé"
           }
         },
         "fileUpload": {
-          "stepTitle": "Drop your Register.csv here",
-          "description": "YNAB → Budget → Export budget → unzip → use the Register.csv file.",
-          "maxSize": "Up to 10 MB.",
-          "parsing": "Parsing…",
-          "continueToPreview": "Continue",
+          "stepTitle": "Déposez votre fichier Register.csv ici",
+          "description": "YNAB → Budget → Exporter le budget → dézipper → utiliser le fichier Register.csv.",
+          "maxSize": "Jusqu'à 10 Mo.",
+          "parsing": "Analyse en cours…",
+          "continueToPreview": "Continuer",
           "errors": {
-            "invalidFormat": "Please upload a .csv file."
+            "invalidFormat": "Veuillez téléverser un fichier .csv."
           }
         },
         "preview": {
-          "emptyList": "Nothing to import here.",
+          "emptyList": "Rien à importer ici.",
           "accounts": "Comptes",
-          "categories": "Categories",
-          "payees": "Payees",
-          "tags": "Tags",
-          "transactions": "Transactions",
-          "transfers": "Transfers",
-          "dateRange": "Range: {from} → {to}",
-          "accountsHelper": "For each YNAB account, confirm the currency.",
-          "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported.",
-          "warningsTitle": "Warnings",
-          "rowPrefix": "Row {rowIndex}:",
-          "startOver": "Start over",
-          "continueToImport": "Start import"
+          "categories": "Catégories",
+          "payees": "Tiers",
+          "tags": "Étiquettes",
+          "transactions": "Opérations",
+          "transfers": "Virements",
+          "dateRange": "Période : {from} → {to}",
+          "accountsHelper": "Pour chaque compte YNAB, confirmez la devise.",
+          "skippedNote": "{count} compte(s) ignoré(s). Leurs opérations — ainsi que tout virement lié — ne seront pas importés.",
+          "warningsTitle": "Avertissements",
+          "rowPrefix": "Ligne {rowIndex} :",
+          "startOver": "Recommencer",
+          "continueToImport": "Lancer l'import"
         },
         "accountRow": {
-          "transactionsCount": "{count} transactions",
-          "startingBalance": "Starting balance",
-          "currencyPlaceholder": "USD",
-          "currencyLabel": "Currency",
-          "currencyInvalid": "Enter a 3-letter currency code (e.g. USD)",
-          "autoDetected": "auto-detected: {code}",
-          "undoSkip": "Include in import"
+          "transactionsCount": "{count} opérations",
+          "startingBalance": "Solde initial",
+          "currencyPlaceholder": "EUR",
+          "currencyLabel": "Devise",
+          "currencyInvalid": "Saisissez un code devise à 3 lettres (ex. EUR)",
+          "autoDetected": "détecté automatiquement : {code}",
+          "undoSkip": "Inclure dans l'import"
         },
         "execute": {
-          "starting": "Starting the import…",
+          "starting": "Démarrage de l'import…",
           "progressCount": "{processed} / {total}",
-          "statusQueued": "Queued",
-          "statusRunning": "Importing…",
-          "statusCompleted": "Done",
-          "statusFailed": "Failed",
-          "failed": "The import couldn't finish."
+          "statusQueued": "En attente",
+          "statusRunning": "Import en cours…",
+          "statusCompleted": "Terminé",
+          "statusFailed": "Échec",
+          "failed": "L'import n'a pas pu se terminer."
         },
         "done": {
-          "successTitle": "Import complete",
-          "successDescription": "Your YNAB data is now in MoneyMatter.",
-          "accountsCreated": "Accounts created",
-          "accountsSkipped": "Accounts skipped",
-          "categoriesCreated": "Categories created",
-          "payeesCreated": "Payees created",
-          "tagsCreated": "Tags created",
-          "transactionsImported": "Transactions imported",
-          "transfersImported": "Transfers imported",
-          "splitsDetected": "Split groups detected",
-          "errorsTitle": "{count} rows failed to import",
+          "successTitle": "Import terminé",
+          "successDescription": "Vos données YNAB sont maintenant dans MoneyMatter.",
+          "accountsCreated": "Comptes créés",
+          "accountsSkipped": "Comptes ignorés",
+          "categoriesCreated": "Catégories créées",
+          "payeesCreated": "Tiers créés",
+          "tagsCreated": "Étiquettes créées",
+          "transactionsImported": "Opérations importées",
+          "transfersImported": "Virements importés",
+          "splitsDetected": "Opérations ventilées détectées",
+          "errorsTitle": "Échec de l'importation de {count} lignes",
           "errors": {
-            "payeeCreateFailed": "Could not create payee \"{payeeName}\". Its transactions were imported without a payee.",
-            "rowImportFailed": "This row could not be imported."
+            "payeeCreateFailed": "Impossible de créer le tiers « {payeeName} ». Ses opérations ont été importées sans tiers.",
+            "rowImportFailed": "Cette ligne n'a pas pu être importée."
           },
-          "viewTransactions": "View transactions",
-          "importAnother": "Import another file"
+          "viewTransactions": "Afficher les opérations",
+          "importAnother": "Importer un autre fichier"
         }
       }
     }

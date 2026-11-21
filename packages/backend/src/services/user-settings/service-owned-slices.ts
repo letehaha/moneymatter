@@ -8,7 +8,7 @@ import omit from 'lodash/omit';
  * or a feature pick naming a connection that exists. `PUT /user/settings` and
  * `PATCH /user/settings` drop these paths from the request.
  */
-const SERVICE_OWNED_SETTING_PATHS = ['onboarding', 'ai.connections', 'ai.featureConfigs'] as const;
+const SERVICE_OWNED_SETTING_PATHS = ['onboarding', 'ai.connections', 'ai.featureConfigs', 'fireHistory'] as const;
 
 export const stripServiceOwnedSlices = <T extends object>({ settings }: { settings: T }): T =>
   omit(settings, [...SERVICE_OWNED_SETTING_PATHS]) as unknown as T;

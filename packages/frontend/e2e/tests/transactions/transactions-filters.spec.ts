@@ -82,7 +82,7 @@ test.describe('Transactions filters (desktop)', () => {
       accountId = extractId(account);
 
       // Three expenses (low amounts) and three incomes (high amounts) with
-      // distinct notes — covers the Type, Amount and Note filter assertions
+      // distinct notes — covers the Type, Amount and search assertions
       // without overlap.
       await createTransaction({
         request: page.request,
@@ -183,10 +183,8 @@ test.describe('Transactions filters (desktop)', () => {
     await expect(tableRows(page)).toHaveCount(6);
   });
 
-  test('adds the Note filter and narrows the table by note text', async ({ page }) => {
-    await addExtraFilter({ page, label: 'Notes' });
-
-    await page.locator('input[placeholder="Search in notes"]').fill('Amazon');
+  test('narrows the table by the search box text', async ({ page }) => {
+    await page.getByRole('searchbox').fill('amazon');
 
     await page.waitForTimeout(FILTER_APPLY_WAIT_MS);
     // "Books from Amazon" + "Refund from Amazon" — case-insensitive match.
@@ -197,21 +195,20 @@ test.describe('Transactions filters (desktop)', () => {
   });
 
   test('removes an extra filter via its X button and restores the chip on next add', async ({ page }) => {
-    await addExtraFilter({ page, label: 'Notes' });
-    const noteInput = page.locator('input[placeholder="Search in notes"]');
-    await expect(noteInput).toBeVisible();
+    await addExtraFilter({ page, label: 'Amount range' });
+    const minAmountInput = page.locator('input[placeholder="Min amount"]');
+    await expect(minAmountInput).toBeVisible();
 
     // Apply a narrowing value first so we can prove the X button both removes
     // the chip and clears the filter value.
-    await noteInput.fill('Starbucks');
+    await minAmountInput.fill('300');
     await page.waitForTimeout(FILTER_APPLY_WAIT_MS);
     await expect(tableRows(page)).toHaveCount(1);
 
-    // The X is the trailing segment of the Notes chip; only one chip is on
-    // screen, so the single "Remove filter" button is unambiguous.
+    // Only one chip is on screen, so the single "Remove filter" button is unambiguous.
     await page.getByRole('button', { name: 'Remove filter' }).click();
 
-    await expect(noteInput).toHaveCount(0);
+    await expect(minAmountInput).toHaveCount(0);
     await page.waitForTimeout(FILTER_APPLY_WAIT_MS);
     await expect(tableRows(page)).toHaveCount(6);
   });

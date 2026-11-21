@@ -57,7 +57,8 @@
         "financeWrite": "Edit financial data",
         "financeDelete": "Delete financial data",
         "profileRead": "Baca profil",
-        "offlineAccess": "Akses offline"
+        "offlineAccess": "Akses offline",
+        "toolset": "Tools: {name}"
       }
     }
   }

@@ -1,4 +1,4 @@
-import { TRACKER_STATUSES, TRACKER_TYPES, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
+import { TRACKER_LIMIT_KINDS, TRACKER_STATUSES, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -24,7 +24,6 @@ describe('Tracker CRUD', () => {
     name: 'Original Tracker',
     startDate: subDays(new Date(), 1).toISOString(),
     endDate: new Date().toISOString(),
-    autoInclude: false,
     limitAmount: 1000,
   };
 
@@ -36,7 +35,6 @@ describe('Tracker CRUD', () => {
         name: trackerName,
         startDate: '2025-03-01T00:00:00Z',
         endDate: '2025-03-31T23:59:59Z',
-        autoInclude: false,
         limitAmount: 1000,
         raw: true,
       });
@@ -54,26 +52,38 @@ describe('Tracker CRUD', () => {
         name: trackerName,
         startDate: '2025-03-01T00:00:00Z',
         endDate: '2025-03-31T23:59:59Z',
-        limitAmount: 100.555,
+        limitAmount: 100.545,
         raw: true,
       });
-      expect(tracker.limitAmount).toBe(100.56);
+      expect(tracker.limitAmount).toBe(100.55);
 
       const edited = await helpers.editTracker({ id: tracker.id, raw: true, params: { limitAmount: 77.774 } });
       expect(edited.limitAmount).toBe(77.77);
+    });
 
-      const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-      await helpers.asUser({
-        cookies: kwdUser.cookies,
+    it('refuses a positive limit that rounds to nothing at the base currency decimals', async () => {
+      const period = { startDate: '2025-03-01T00:00:00Z', endDate: '2025-03-31T23:59:59Z' };
+      const created = await helpers.createTracker({ name: trackerName, ...period, limitAmount: 0.004 });
+      expect(created.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const tracker = await helpers.createTracker({ name: trackerName, ...period, limitAmount: 50, raw: true });
+      const edited = await helpers.editTracker({ id: tracker.id, raw: false, params: { limitAmount: 0.004 } });
+      expect(edited.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await helpers.getTrackerById({ id: tracker.id, raw: true }))!.limitAmount).toBe(50);
+
+      await helpers.asNewUserWithBaseCurrency({
+        currencyCode: 'JPY',
         fn: async () => {
-          const kwdTracker = await helpers.createTracker({
+          const jpyCreated = await helpers.createTracker({ name: trackerName, ...period, limitAmount: 0.4 });
+          expect(jpyCreated.statusCode).toBe(ERROR_CODES.ValidationError);
+
+          const jpyTracker = await helpers.createTracker({
             name: trackerName,
-            startDate: '2025-03-01T00:00:00Z',
-            endDate: '2025-03-31T23:59:59Z',
-            limitAmount: 100.5555,
+            ...period,
+            limitAmount: 1000.5,
             raw: true,
           });
-          expect(kwdTracker.limitAmount).toBe(100.556);
+          expect(jpyTracker.limitAmount).toBe(1001);
         },
       });
     });
@@ -98,51 +108,37 @@ describe('Tracker CRUD', () => {
       expect(response.filter((i) => i.name === trackerName).length).toBeGreaterThanOrEqual(2);
     });
 
-    it('autoInclude links only real transactions from the covered date range', async () => {
-      const account = await helpers.createAccount({ raw: true });
+    it('defaults the limit kind to spending and stores a given one', async () => {
+      const spending = await helpers.createTracker({ name: 'Spending', limitAmount: 100, raw: true });
+      expect(spending.limitKind).toBe(TRACKER_LIMIT_KINDS.spending);
 
-      const [realTx] = await helpers.createTransaction({
-        payload: helpers.buildTransactionPayload({
-          accountId: account.id,
-          amount: 100,
-          transactionType: TRANSACTION_TYPES.expense,
-          time: '2025-03-02T10:00:00Z',
-        }),
+      const income = await helpers.createTracker({
+        name: 'Income',
+        limitAmount: 100,
+        limitKind: TRACKER_LIMIT_KINDS.incomeTarget,
         raw: true,
       });
+      expect(income.limitKind).toBe(TRACKER_LIMIT_KINDS.incomeTarget);
 
-      const [plannedTx] = await helpers.createPlannedTransaction({
-        payload: {
-          accountId: account.id,
-          amount: 250,
-          transactionType: TRANSACTION_TYPES.expense,
-          time: '2025-03-03T10:00:00Z',
-        },
+      const edited = await helpers.editTracker({
+        id: income.id,
+        params: { limitKind: TRACKER_LIMIT_KINDS.incomeCap },
         raw: true,
       });
+      expect(edited.limitKind).toBe(TRACKER_LIMIT_KINDS.incomeCap);
 
-      const tracker = await helpers.createTracker({
-        name: 'Auto-include Planned Tracker',
-        startDate: '2025-03-01T00:00:00Z',
-        endDate: '2025-03-04T23:59:59Z',
-        autoInclude: true,
-        limitAmount: 500,
-        raw: true,
+      const renamed = await helpers.editTracker({ id: income.id, params: { name: 'Renamed' }, raw: true });
+      expect(renamed.limitKind).toBe(TRACKER_LIMIT_KINDS.incomeCap);
+    });
+
+    it('rejects an unknown limit kind', async () => {
+      const response = await helpers.createTracker({
+        name: 'Bad kind',
+        limitKind: 'savings' as TRACKER_LIMIT_KINDS,
+        raw: false,
       });
 
-      const linked = await helpers.getTransactions({ trackerIds: [tracker.id], limit: 30, raw: true });
-      const linkedIds = linked.map((tx) => tx.id);
-
-      expect(linkedIds).toEqual([realTx.id]);
-      expect(linkedIds).not.toContain(plannedTx.id);
-
-      const stats = (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
-
-      expect(stats.summary.actualExpense).toBe(100);
-      expect(stats.summary.actualIncome).toBe(0);
-      expect(stats.summary.balance).toBe(-100);
-      expect(stats.summary.transactionsCount).toBe(1);
-      expect(stats.summary.utilizationRate).toBeCloseTo((100 / 500) * 100, 1);
+      expect(response.statusCode).toEqual(ERROR_CODES.ValidationError);
     });
 
     it('fails validation when start date is later than end date', async () => {
@@ -230,14 +226,6 @@ describe('Tracker CRUD', () => {
       expect(relimited.limitAmount).toBe(5000);
       expect(relimited.name).toBe(newName);
 
-      const autoIncluded = await helpers.editTracker({
-        id: tracker.id,
-        raw: true,
-        params: { autoInclude: true },
-      });
-
-      expect(autoIncluded.autoInclude).toBe(true);
-
       const newStartDate = new Date().toISOString();
       const newEndDate = addDays(new Date(), 30).toISOString();
       const redated = await helpers.editTracker({
@@ -254,7 +242,6 @@ describe('Tracker CRUD', () => {
         startDate: subDays(new Date(), 5).toISOString(),
         endDate: addDays(new Date(), 5).toISOString(),
         limitAmount: 2500,
-        autoInclude: true,
       };
       const fullyUpdated = await helpers.editTracker({
         id: tracker.id,
@@ -273,6 +260,7 @@ describe('Tracker CRUD', () => {
         { limitAmount: -100 },
         { limitAmount: 0 },
         { startDate: 'not-a-date' },
+        { limitKind: 'savings' as TRACKER_LIMIT_KINDS },
         {
           startDate: addDays(new Date(), 30).toISOString(),
           endDate: new Date().toISOString(),
@@ -322,16 +310,6 @@ describe('Tracker CRUD', () => {
 
       const trackerById = await helpers.getTrackerById({ id: tracker.id, raw: true });
       expect(trackerById?.archivePromptDismissed).toBe(true);
-    });
-
-    it('keeps autoInclude when the payload omits it', async () => {
-      const tracker = await helpers.createTracker({ ...baseTrackerMockData, autoInclude: true, raw: true });
-
-      const renamed = await helpers.editTracker({ id: tracker.id, params: { name: 'Renamed' }, raw: true });
-
-      expect(renamed.autoInclude).toBe(true);
-      const trackerById = await helpers.getTrackerById({ id: tracker.id, raw: true });
-      expect(trackerById?.autoInclude).toBe(true);
     });
 
     it('clears the limit and the dates with null', async () => {
@@ -441,7 +419,6 @@ describe('Tracker CRUD', () => {
         name: 'Test Tracker',
         startDate: '2025-03-01T00:00:00Z',
         endDate: '2025-03-31T23:59:59Z',
-        autoInclude: false,
         limitAmount: 1000,
         raw: true,
       });
@@ -459,7 +436,7 @@ describe('Tracker CRUD', () => {
       expect(trackers.find((b) => b.id === tracker.id)).toBeUndefined();
     });
 
-    it('successfully deletes a tracker with transactions when autoInclude is true', async () => {
+    it('successfully deletes a tracker with linked transactions', async () => {
       const account = await helpers.createAccount({ raw: true });
 
       const transactions = await Promise.all([
@@ -489,7 +466,8 @@ describe('Tracker CRUD', () => {
         name: 'Tracker With Transactions',
         startDate: '2025-03-01T00:00:00Z',
         endDate: '2025-03-04T23:59:59Z',
-        autoInclude: true,
+        rulesEnabled: true,
+        categoryIds: [global.DEFAULT_CATEGORY_ID],
         limitAmount: 500,
         raw: true,
       });
@@ -832,7 +810,7 @@ describe('Tracker CRUD', () => {
       const category = await helpers.addCustomCategory({ name: 'Food', color: '#FF0000', raw: true });
       const tracker = await helpers.createTracker({
         name: 'Category Tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category.id],
         logoImage: PNG_1X1_DATA_URL,
         raw: true,

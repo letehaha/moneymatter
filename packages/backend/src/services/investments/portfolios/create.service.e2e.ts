@@ -132,5 +132,34 @@ describe('Create Portfolio Service E2E', () => {
       });
       expect(unconnectedCurrency.statusCode).toBe(ERROR_CODES.ValidationError);
     }, 30000);
+
+    it('should create a portfolio with null externalUrl by default or an optional http(s) URL, and reject invalid URLs', async () => {
+      const withoutUrl = await helpers.createPortfolio({
+        payload: helpers.buildPortfolioPayload({ name: 'No URL Portfolio' }),
+        raw: true,
+      });
+      expect(withoutUrl.externalUrl).toBeNull();
+
+      const withUrl = await helpers.createPortfolio({
+        payload: helpers.buildPortfolioPayload({
+          name: 'Fidelity Portfolio',
+          externalUrl: 'https://www.fidelity.com/',
+        }),
+        raw: true,
+      });
+      expect(withUrl.externalUrl).toBe('https://www.fidelity.com/');
+
+      for (const badUrl of [
+        'ftp://broker.example',
+        'javascript:alert(1)',
+        'not-a-url',
+        `https://broker.example/${'a'.repeat(2049)}`,
+      ]) {
+        const res = await helpers.createPortfolio({
+          payload: helpers.buildPortfolioPayload({ name: 'Bad URL Portfolio', externalUrl: badUrl }),
+        });
+        expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+      }
+    });
   });
 });

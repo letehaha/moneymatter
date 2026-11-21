@@ -1,9 +1,13 @@
+import { expo } from '@better-auth/expo';
 import { oauthProvider } from '@better-auth/oauth-provider';
 import { passkey } from '@better-auth/passkey';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@bt/shared/const/auth';
-import { OAUTH_PROVIDERS_LIST } from '@bt/shared/types';
+import { OAUTH_PROVIDER, SocialOAuthProvider } from '@bt/shared/types';
+import { IOS_APP_ORIGIN } from '@common/const/ios-app-origin';
 import { EnvVar, isEnvConfigured } from '@common/utils/env';
+import { getAppleClientSecretFromEnv } from '@config/apple-client-secret';
 import { createSessionHooks } from '@config/auth-hooks/session-hooks';
+import { oidcConfig } from '@config/oidc';
 import { shouldUseSecureCookies } from '@config/should-use-secure-cookies';
 import { isAuthApiError } from '@controllers/helpers/error-handler';
 import { t } from '@i18n/index';
@@ -14,12 +18,13 @@ import { CLIENT_IP_HEADER } from '@middlewares/client-ip-header';
 import { redisClient } from '@root/redis-client';
 import { appName, fromEmail, isEmailEnabled } from '@services/email';
 import { sendEmail } from '@services/email/send-email';
+import { OAUTH_PROVIDER_SCOPES } from '@services/mcp/oauth-scopes';
 import { createAppUserWithUniqueUsername, seedUserDefaults } from '@services/user/create-user-with-defaults.service';
 import { sendPasswordResetEmail } from '@services/user/send-password-reset-email';
 import { areSignupsOpen } from '@services/user/signups-open.service';
 import bcrypt from 'bcryptjs';
 import { APIError, betterAuth } from 'better-auth';
-import { jwt } from 'better-auth/plugins';
+import { genericOAuth, jwt } from 'better-auth/plugins';
 import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
 
@@ -52,10 +57,20 @@ pool.on('error', (error) => logger.error({ message: 'better-auth pg pool idle cl
 // In dev mode, trust the common localhost variants of the frontend port so a
 // self-host setup with a misconfigured ALLOWED_ORIGINS still completes auth.
 // Mirrors the localhost allow-list in setup-middleware.ts's CORS check.
-// Longest better-auth rate-limit window (core + plugins) is 60s; the limiter
-// resets from `lastRequest` itself, so a longer TTL only affects storage.
-const AUTH_RATE_LIMIT_TTL_SECONDS = 120;
+// Fixed window: the first hit sets the key TTL, later hits only increment, so INCR and
+// EXPIRE must be one atomic step or two hits racing on a fresh key leave it with no TTL.
+const RATE_LIMIT_CONSUME_SCRIPT = `
+local count = redis.call('INCR', KEYS[1])
+if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
+if count > tonumber(ARGV[2]) then return { 0, redis.call('TTL', KEYS[1]) } end
+return { 1, 0 }
+`;
 const SESSION_COOKIE_CACHE_MAX_AGE = 5 * 60;
+
+const OAUTH_BASE_URL = process.env.BETTER_AUTH_URL || 'https://localhost:8081';
+const OAUTH_MCP_URL = process.env.MCP_BASE_URL || OAUTH_BASE_URL;
+// MCP clients send the resource URL (e.g. https://mcp.moneymatter.app/mcp) as the token audience.
+export const OAUTH_RESOURCE_IDENTIFIERS = [...new Set([OAUTH_BASE_URL, OAUTH_MCP_URL, `${OAUTH_MCP_URL}/mcp`])];
 const DEFAULT_SESSION_CACHE_VERSION = '1';
 const sessionCacheVersionKey = ({ userId }: { userId: string }) => `auth:session-cache-version:${userId}`;
 
@@ -63,6 +78,24 @@ const DEV_TRUSTED_ORIGINS =
   process.env.NODE_ENV === 'development'
     ? ['http://localhost:8100', 'https://localhost:8100', 'http://127.0.0.1:8100', 'https://127.0.0.1:8100']
     : [];
+
+// ponytail: signed once at boot and valid for 6 months; a process running longer breaks web Apple sign-in.
+// Re-sign on a timer if deploys ever get that rare.
+const appleClientSecret = getAppleClientSecretFromEnv();
+
+const SOCIAL_PROVIDER_CONFIGURED: Record<SocialOAuthProvider, boolean> = {
+  [OAUTH_PROVIDER.google]:
+    isEnvConfigured(EnvVar.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_ID) &&
+    isEnvConfigured(EnvVar.GOOGLE_CLIENT_SECRET, process.env.GOOGLE_CLIENT_SECRET),
+  [OAUTH_PROVIDER.github]:
+    isEnvConfigured(EnvVar.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_ID) &&
+    isEnvConfigured(EnvVar.GITHUB_CLIENT_SECRET, process.env.GITHUB_CLIENT_SECRET),
+  [OAUTH_PROVIDER.apple]: Boolean(appleClientSecret),
+};
+
+export const ENABLED_SOCIAL_PROVIDERS = (Object.keys(SOCIAL_PROVIDER_CONFIGURED) as SocialOAuthProvider[]).filter(
+  (provider) => SOCIAL_PROVIDER_CONFIGURED[provider],
+);
 
 export const auth = betterAuth({
   database: pool,
@@ -75,6 +108,11 @@ export const auth = betterAuth({
       .map((o) => o.trim())
       .filter(Boolean),
     ...DEV_TRUSTED_ORIGINS,
+    // Native iOS app: callback scheme, and the `expo-origin` value its cookie-bearing requests must send.
+    // Kept out of ALLOWED_ORIGINS, which also feeds browser CORS.
+    IOS_APP_ORIGIN,
+    // Apple posts the OAuth callback (response_mode=form_post) from its own origin.
+    ...(appleClientSecret ? ['https://appleid.apple.com'] : []),
   ],
 
   // Custom table names with ba_ prefix to avoid conflicts
@@ -111,7 +149,11 @@ export const auth = betterAuth({
     // with a verified email, they're the legitimate owner of that email
     accountLinking: {
       enabled: true,
-      trustedProviders: [...OAUTH_PROVIDERS_LIST],
+      // `oidc` is left out because a self-hosted IdP may let users set any email. It can only
+      // link accounts when OIDC_TRUST_EMAIL is on and the IdP reports the email as verified.
+      trustedProviders: [OAUTH_PROVIDER.google, OAUTH_PROVIDER.github, OAUTH_PROVIDER.apple],
+      // Apple's Hide My Email relay addresses never match the user's own email.
+      allowDifferentEmails: true,
     },
   },
   verification: {
@@ -227,21 +269,51 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      enabled:
-        isEnvConfigured(EnvVar.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_ID) &&
-        isEnvConfigured(EnvVar.GOOGLE_CLIENT_SECRET, process.env.GOOGLE_CLIENT_SECRET),
+      enabled: SOCIAL_PROVIDER_CONFIGURED[OAUTH_PROVIDER.google],
     },
     github: {
       clientId: process.env.GITHUB_CLIENT_ID || '',
       clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
-      enabled:
-        isEnvConfigured(EnvVar.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_ID) &&
-        isEnvConfigured(EnvVar.GITHUB_CLIENT_SECRET, process.env.GITHUB_CLIENT_SECRET),
+      enabled: SOCIAL_PROVIDER_CONFIGURED[OAUTH_PROVIDER.github],
+    },
+    apple: {
+      clientId: process.env.APPLE_CLIENT_ID || '',
+      clientSecret: appleClientSecret ?? '',
+      // Web ID tokens are issued to the Services ID, native iOS ones to the app bundle ID.
+      audience: [EnvVar.APPLE_CLIENT_ID, EnvVar.APPLE_APP_BUNDLE_IDENTIFIER].flatMap((name) => {
+        const value = process.env[name];
+        return isEnvConfigured(name, value) ? [value!] : [];
+      }),
+      enabled: SOCIAL_PROVIDER_CONFIGURED[OAUTH_PROVIDER.apple],
     },
   },
 
   // Plugins
   plugins: [
+    ...(oidcConfig
+      ? [
+          genericOAuth({
+            config: [
+              {
+                providerId: OAUTH_PROVIDER.oidc,
+                discoveryUrl: oidcConfig.discoveryUrl,
+                clientId: oidcConfig.clientId,
+                clientSecret: oidcConfig.clientSecret,
+                scopes: ['openid', 'email', 'profile'],
+                pkce: true,
+                requireEmailVerification: isEmailEnabled,
+                requireIdTokenVerification: true,
+                // Off by default: sign-out ends only the MoneyMatter session and keeps the IdP session.
+                disableProviderLogout: !oidcConfig.providerLogout,
+                // better-auth passes the raw claim through and checks truthiness, so "false" would pass.
+                mapProfileToUser: (profile) => ({
+                  emailVerified: oidcConfig?.trustEmail === true && profile.email_verified === true,
+                }),
+              },
+            ],
+          }),
+        ]
+      : []),
     // jwt() must be loaded because @better-auth/oauth-provider references it
     // internally even when disableJwtPlugin is true (unguarded getJwtPlugin calls).
     jwt({
@@ -255,13 +327,8 @@ export const auth = betterAuth({
     oauthProvider({
       loginPage: `${process.env.AUTH_ORIGIN || 'https://localhost:8100'}/sign-in`,
       consentPage: `${process.env.AUTH_ORIGIN || 'https://localhost:8100'}/oauth/authorize`,
-      // 'claudeai' is a no-op scope required as a workaround: Claude.ai adds it to
-      // client registration requests and better-auth rejects unknown scopes with 400.
-      // See: https://github.com/anthropics/claude-ai-mcp/issues/111
-      // finance:write and finance:delete gate mutation tools. They're accepted by the
-      // consent flow but not advertised in public metadata until the first tool using
-      // them ships – see oauth-metadata.route.ts and the static .well-known mirrors.
-      scopes: ['finance:read', 'finance:write', 'finance:delete', 'profile:read', 'offline_access', 'claudeai'],
+      // The MCP scopes plus the 'claudeai' workaround; see oauth-scopes.ts.
+      scopes: [...OAUTH_PROVIDER_SCOPES],
       accessTokenExpiresIn: 72 * 60 * 60, // 72 hours
       refreshTokenExpiresIn: 60 * 24 * 60 * 60, // 60 days
       allowDynamicClientRegistration: true,
@@ -269,17 +336,18 @@ export const auth = betterAuth({
       grantTypes: ['authorization_code', 'refresh_token'],
       // Use opaque tokens stored in DB (not JWTs) – our MCP auth verifies via DB lookup
       disableJwtPlugin: true,
-      // MCP clients send the resource URL (e.g. https://mcp.moneymatter.app/mcp) as the token audience
-      validAudiences: [
-        process.env.BETTER_AUTH_URL || 'https://localhost:8081',
-        process.env.MCP_BASE_URL || process.env.BETTER_AUTH_URL || 'https://localhost:8081',
-        `${process.env.MCP_BASE_URL || process.env.BETTER_AUTH_URL || 'https://localhost:8081'}/mcp`,
-      ],
+      resources: OAUTH_RESOURCE_IDENTIFIERS,
+      // Clients self-register (Claude.ai etc.) and get no ba_oauth_client_resource links,
+      // so per-client linkage would reject every token request with invalid_target.
+      enforcePerClientResources: false,
       schema: {
         oauthClient: { modelName: 'ba_oauth_client' },
         oauthAccessToken: { modelName: 'ba_oauth_access_token' },
         oauthRefreshToken: { modelName: 'ba_oauth_refresh_token' },
         oauthConsent: { modelName: 'ba_oauth_consent' },
+        oauthResource: { modelName: 'ba_oauth_resource' },
+        oauthClientResource: { modelName: 'ba_oauth_client_resource' },
+        oauthClientAssertion: { modelName: 'ba_oauth_client_assertion' },
       },
     }),
     passkey({
@@ -292,6 +360,9 @@ export const auth = betterAuth({
         },
       },
     }),
+    // Native iOS app: /expo-authorization-proxy for OAuth, and the session cookie appended
+    // as ?cookie= on redirects to non-http trusted callbacks. Web flows are untouched.
+    expo(),
   ],
 
   // Enable rate limiting in production only. Disable in test/dev/preview
@@ -301,12 +372,15 @@ export const auth = betterAuth({
     // The default in-memory store only evicts a key when that same key is read
     // again after expiry, so entries for IPs that never return are kept forever.
     customStorage: {
-      get: async (key) => {
-        const raw = await redisClient.get(`auth-rate-limit:${key}`);
-        return raw ? JSON.parse(raw) : null;
-      },
-      set: async (key, value) => {
-        await redisClient.set(`auth-rate-limit:${key}`, JSON.stringify(value), 'EX', AUTH_RATE_LIMIT_TTL_SECONDS);
+      consume: async (key, rule) => {
+        const [allowed, ttl] = (await redisClient.eval(
+          RATE_LIMIT_CONSUME_SCRIPT,
+          1,
+          `auth-rate-limit:${key}`,
+          rule.window,
+          rule.max,
+        )) as [number, number];
+        return { allowed: allowed === 1, retryAfter: allowed === 1 ? null : Math.max(ttl, 1) };
       },
     },
   },

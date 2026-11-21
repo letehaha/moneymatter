@@ -71,6 +71,7 @@
               {{ $t('analytics.fire.hero.unreachable.tooSlow') }}
             </li>
           </ul>
+          <slot name="pace" />
         </div>
         <div
           v-if="plan.unreachable && plan.target !== null"
@@ -146,6 +147,7 @@
           </div>
         </div>
         <div v-if="rangeLabel" class="text-muted-foreground text-xs @2xl/hero:text-sm">{{ rangeLabel }}</div>
+        <div v-if="$slots.pace" class="mt-2"><slot name="pace" /></div>
       </div>
 
       <div

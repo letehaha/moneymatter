@@ -5,12 +5,8 @@
  * Pre-existing tests in `shared-tracker-visibility.service.e2e.ts` cover the parity
  * case (owner txs only, recipient sees same numbers). This file fills the gap that
  * MVP discovered: when a `write` recipient attaches their own transactions to a
- * manual tracker, those rows now count in stats / spending-stats / the tracker tx
- * list, and category breakdowns merge across users by `Categories.key`.
- *
- * Category-type trackers stay owner-only (recipients can't manually attach), so
- * they're not exercised here — see `shared-tracker-writes.service.e2e.ts` for the
- * 400 cannotManuallyLinkToCategoryBudget assertion.
+ * tracker, those rows now count in stats / spending-stats / the tracker tx list,
+ * and category breakdowns merge across users by `Categories.key`.
  */
 
 import { type RecordId, RESOURCE_TYPES, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
@@ -116,8 +112,6 @@ describe('Shared tracker stats with recipient transactions', () => {
         raw: true,
       });
 
-      // autoInclude only fires when startDate+endDate are set on the tracker, so attach
-      // the owner's tx explicitly to keep the test independent of that quirk.
       await helpers.addTransactionsToTracker({
         id: tracker.id,
         payload: { transactionIds: [ownerTx!.id] },
@@ -253,7 +247,6 @@ describe('Shared tracker stats with recipient transactions', () => {
     it("recipient's null-key custom category buckets under a synthetic Other row", async () => {
       const tracker = await helpers.createTracker({
         name: 'Other-bucket breakdown',
-        autoInclude: false,
         limitAmount: 1000,
         raw: true,
       });
@@ -322,7 +315,6 @@ describe('Shared tracker stats with recipient transactions', () => {
 
       const tracker = await helpers.createTracker({
         name: 'AddedBy enrichment',
-        autoInclude: false,
         raw: true,
       });
       // Owner attaches their own tx — junction metadata stays null, but addedBy still

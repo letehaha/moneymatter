@@ -1,9 +1,12 @@
+import { TRANSACTION_DELETION_REASON } from '@bt/shared/types';
 import isPlainObject from 'lodash/isPlainObject';
 
 type Row = Record<string, unknown>;
 
 /** Format version whose archives still carry the pre-rename "budget" names for trackers. */
 const LEGACY_TRACKER_NAMING_VERSION = 1;
+/** Format version whose archives still carry `type: 'category'` trackers instead of rules. */
+const LEGACY_TRACKER_TYPE_VERSION = 2;
 
 const LEGACY_FILE_NAMES: Record<string, string> = {
   budgets: 'trackers',
@@ -64,9 +67,28 @@ function normalizeSettings({ settings }: { settings: Row }): void {
 }
 
 /**
- * Rewrite a v1 archive's tracker file names, row keys and embedded stored values
- * to the current naming, in place. Runs after checksum verification (which uses
- * the original paths) and before any file is mapped to a table.
+ * Category trackers were computed live and have no TrackerTransactions rows. They become rules
+ * trackers that sync on the next visit or cron run. One with no categories stays rules-off.
+ * Every row gets the rule columns: restore writes a key missing from one row as NULL.
+ */
+function normalizeCategoryTrackers({ parsedByPath }: { parsedByPath: Map<string, unknown> }): void {
+  const trackerIdsWithCategories = new Set(
+    rowsAt({ parsedByPath, name: 'tracker-categories' }).map((row) => row.trackerId),
+  );
+  for (const row of rowsAt({ parsedByPath, name: 'trackers' })) {
+    const rulesEnabled = row.type === 'category' && trackerIdsWithCategories.has(row.id);
+    Object.assign(row, { rulesEnabled, rulesCleanup: true, rulesSyncedAt: null });
+    delete row.type;
+    delete row.autoInclude;
+  }
+  if (!parsedByPath.has('data/tracker-tags.json')) parsedByPath.set('data/tracker-tags.json', []);
+}
+
+/**
+ * Rewrite an older archive's tracker file names, row keys and embedded stored values
+ * to the current shapes, and drop files of tables that no longer exist, in place.
+ * Runs after checksum verification (which uses the original paths) and before any
+ * file is mapped to a table.
  */
 export function normalizeLegacyArchive({
   formatVersion,
@@ -75,8 +97,19 @@ export function normalizeLegacyArchive({
   formatVersion: number;
   parsedByPath: Map<string, unknown>;
 }): void {
-  if (formatVersion > LEGACY_TRACKER_NAMING_VERSION) return;
+  // Archives of any version may carry MCC data; `mcc_rule` stamps would lock rows away from AI and payee rules.
+  parsedByPath.delete('data/user-merchant-category-codes.json');
+  for (const row of rowsAt({ parsedByPath, name: 'transactions' })) {
+    if (asObject(row.categorizationMeta)?.source === 'mcc_rule') row.categorizationMeta = null;
+    // Rows soft-deleted before `deletionReason` existed came from reconciliation; the DB CHECK needs a reason.
+    if (row.deletedAt && !row.deletionReason) row.deletionReason = TRANSACTION_DELETION_REASON.reconciliation;
+  }
+  if (formatVersion > LEGACY_TRACKER_TYPE_VERSION) return;
+  if (formatVersion <= LEGACY_TRACKER_NAMING_VERSION) normalizeTrackerNaming({ parsedByPath });
+  normalizeCategoryTrackers({ parsedByPath });
+}
 
+function normalizeTrackerNaming({ parsedByPath }: { parsedByPath: Map<string, unknown> }): void {
   for (const [legacyName, name] of Object.entries(LEGACY_FILE_NAMES)) {
     const legacyPath = `data/${legacyName}.json`;
     const path = `data/${name}.json`;

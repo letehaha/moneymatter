@@ -178,13 +178,13 @@ describe('Change Base Currency — vehicles', () => {
       Accounts.findByPk(suv.accountId),
     ]);
     const camryCurrentBefore = camryBefore!.currentBalance.toNumber();
-    const camryRefCurrentBefore = camryBefore!.refCurrentBalance!.toNumber();
+    const camryRefCurrentBefore = camryBefore!.refCurrentBalance.toNumber();
     const suvCurrentBefore = suvBefore!.currentBalance.toNumber();
     const suvInitialBefore = suvBefore!.initialBalance.toNumber();
 
     // Precondition: current value now sits below the frozen creation (initial) value.
     expect(suvCurrentBefore).toBeLessThan(suvInitialBefore);
-    expect(suvBefore!.refCurrentBalance!.toNumber()).toBeLessThan(suvBefore!.refInitialBalance!.toNumber());
+    expect(suvBefore!.refCurrentBalance.toNumber()).toBeLessThan(suvBefore!.refInitialBalance.toNumber());
 
     const status = await changeBaseTo('USD');
     helpers.expectBaseCurrencyChangeCompleted(status);
@@ -200,7 +200,7 @@ describe('Change Base Currency — vehicles', () => {
     expect(camryAfter!.type).toEqual(ACCOUNT_TYPES.system);
     // Nominal value preserved, ref value recalculated into the new base.
     expect(camryAfter!.currentBalance.toNumber()).toEqual(camryCurrentBefore);
-    expect(camryAfter!.refCurrentBalance!.toNumber()).not.toEqual(camryRefCurrentBefore);
+    expect(camryAfter!.refCurrentBalance.toNumber()).not.toEqual(camryRefCurrentBefore);
 
     // Nominal figures untouched on the depreciated vehicle.
     expect(suvAfter!.currencyCode).toEqual('EUR');
@@ -210,8 +210,8 @@ describe('Change Base Currency — vehicles', () => {
     // refCurrentBalance must keep the depreciated value; snapping up to the creation-time
     // refInitialBalance is the failure this guards. currentBalance < initialBalance with
     // the same EUR→USD rate on both, so the ref values stay strictly ordered.
-    const refCurrentAfter = suvAfter!.refCurrentBalance!.toNumber();
-    const refInitialAfter = suvAfter!.refInitialBalance!.toNumber();
+    const refCurrentAfter = suvAfter!.refCurrentBalance.toNumber();
+    const refInitialAfter = suvAfter!.refInitialBalance.toNumber();
     expect(refCurrentAfter).not.toEqual(refInitialAfter);
     expect(refCurrentAfter).toBeLessThan(refInitialAfter);
   }, 30000);
@@ -238,8 +238,6 @@ const HISTORICAL_DATE = subDays(startOfDay(new Date()), 5);
 const HISTORICAL_EUR_PER_USD = 0.5;
 const HISTORICAL_AED_PER_USD = 3.5;
 const HISTORICAL_EUR_TO_USD = 1 / HISTORICAL_EUR_PER_USD; // 2.0
-
-const decimalToCents = (decimal: unknown) => Math.round(Number(decimal) * 100);
 
 const seedHistoricalRates = async () => {
   // ExchangeRates is keyed on (baseCode, quoteCode, date) and is not truncated between tests, so
@@ -333,7 +331,7 @@ describe('Change base currency — shared-account ledger boundary is author-blin
     // date (2.0) = 400 USD. The boundary is account-scoped (not author-scoped),
     // matching `restampRefInitialBalance`, so a recipient-authored earliest tx sets it.
     const afterChange = await helpers.getAccount({ id: account.id, raw: true });
-    expect(decimalToCents(afterChange.refInitialBalance)).toEqualRefValue(20000 * HISTORICAL_EUR_TO_USD);
+    expect(Number(afterChange.refInitialBalance)).toEqualRefValue(200 * HISTORICAL_EUR_TO_USD);
 
     // A subsequent owner-authored write triggers the account-scoped restamp. Because
     // change-base used the same boundary, refInitialBalance must NOT move — it stays
@@ -349,6 +347,6 @@ describe('Change base currency — shared-account ledger boundary is author-blin
     });
 
     const afterOwnerWrite = await helpers.getAccount({ id: account.id, raw: true });
-    expect(decimalToCents(afterOwnerWrite.refInitialBalance)).toEqualRefValue(20000 * HISTORICAL_EUR_TO_USD);
+    expect(Number(afterOwnerWrite.refInitialBalance)).toEqualRefValue(200 * HISTORICAL_EUR_TO_USD);
   });
 });

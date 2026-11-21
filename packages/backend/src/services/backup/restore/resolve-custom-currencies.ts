@@ -1,129 +1,208 @@
-import {
-  type BackupRestoreWarning,
-  CUSTOM_CURRENCY_DECIMALS_MAX,
-  CUSTOM_CURRENCY_DECIMALS_MIN,
-  CUSTOM_CURRENCY_NAME_MAX_LENGTH,
-  CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH,
-} from '@bt/shared/types';
-import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
-import { isCurrencyCodeFormat } from '@common/lib/currency-code-format';
-import Currencies from '@models/currencies.model';
+import type { CurrencyRateSourceSetting } from '@bt/shared/types';
+import { generateRandomRecordId } from '@common/lib/record-id-helpers';
+import { customCurrencyDefinitionSchema } from '@common/lib/zod/custom-currency-schemas';
+import { t } from '@i18n/index';
+import { ValidationError } from '@js/errors';
+import Currencies, { customCurrencyStub } from '@models/currencies.model';
+import { EMPTY_LOGO_FIELDS } from '@root/serializers/logo-fields.serializer';
 import { insertOrAdopt } from '@services/common/run-in-savepoint';
+import {
+  coingeckoRateSourceConfigSchema,
+  pegRateSourceConfigSchema,
+  storedHttpRateSourceConfigSchema,
+} from '@services/currencies/rate-sources';
 import cc from 'currency-codes';
 import { Op, type Transaction } from 'sequelize';
 
 import type { ParsedArchive } from './load-archive';
-
-type Row = Record<string, unknown>;
 
 export interface CustomCurrencyDefinition {
   code: string;
   name: string;
   decimals: number;
   symbol: string | null;
+  rateSourceSetting: CurrencyRateSourceSetting;
 }
 
-/** A backup row that is a well-formed custom currency definition, or `null`. */
-const parseDefinition = ({ row }: { row: Row }): CustomCurrencyDefinition | null => {
-  const { code, currency: name, digits, symbol } = row;
-
-  if (typeof code !== 'string' || !isCurrencyCodeFormat(code) || code.length > CURRENCY_CODE_MAX_LENGTH) return null;
-  // An ISO code is never user-defined, whatever the archive says.
-  if (cc.code(code) !== undefined) return null;
-  if (typeof name !== 'string' || !name.trim() || name.length > CUSTOM_CURRENCY_NAME_MAX_LENGTH) return null;
-  if (
-    typeof digits !== 'number' ||
-    !Number.isInteger(digits) ||
-    digits < CUSTOM_CURRENCY_DECIMALS_MIN ||
-    digits > CUSTOM_CURRENCY_DECIMALS_MAX
-  )
-    return null;
-  if (
-    symbol != null &&
-    (typeof symbol !== 'string' || !symbol.length || symbol.length > CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH)
-  )
-    return null;
-
-  return { code, name, decimals: digits, symbol: (symbol as string | null | undefined) ?? null };
+/**
+ * A custom row's rate source, validated: no market feed, and every quote an ISO code. A row from an
+ * archive written before rate sources has none and is on its own rates (`manual`). HTTP header names
+ * are cleared because the encrypted headers never travel.
+ */
+const readRateSourceSetting = ({
+  row,
+  isoCodes,
+}: {
+  row: Record<string, unknown>;
+  isoCodes: Set<string>;
+}): CurrencyRateSourceSetting | null => {
+  const config = row.rateSourceConfig;
+  switch (row.rateSource ?? 'manual') {
+    case 'manual':
+      return { rateSource: 'manual', rateSourceConfig: null };
+    case 'peg': {
+      const parsed = pegRateSourceConfigSchema.safeParse(config);
+      return parsed.success && isoCodes.has(parsed.data.pegCurrency)
+        ? { rateSource: 'peg', rateSourceConfig: parsed.data }
+        : null;
+    }
+    case 'coingecko': {
+      const parsed = coingeckoRateSourceConfigSchema.safeParse(config);
+      return parsed.success && isoCodes.has(parsed.data.quoteCurrency)
+        ? { rateSource: 'coingecko', rateSourceConfig: parsed.data }
+        : null;
+    }
+    case 'http': {
+      const parsed = storedHttpRateSourceConfigSchema.safeParse(config);
+      return parsed.success && isoCodes.has(parsed.data.quoteCurrency)
+        ? { rateSource: 'http', rateSourceConfig: { ...parsed.data, headerNames: [] } }
+        : null;
+    }
+    default:
+      return null;
+  }
 };
 
 /**
- * Makes the global `Currencies` rows of the backup's custom currencies exist on this instance:
- * a row that already carries the code is reused as it is (the archive never rewrites a definition
- * another user may hold), and a missing one is created for the restoring user. Runs inside the
- * restore transaction, so a failed restore leaves no row behind.
- *
- * Returns the custom codes that exist after the call. Only those may be attached by the restored
- * `users-currencies` rows: a code the archive does not define stays unattachable, which keeps a
- * crafted archive from linking someone else's custom currency to its uploader.
+ * Custom definitions are the `users-currencies` rows with a name or decimals override; 422 unless each
+ * has a valid rate source, rates that quote ISO codes only, and a value: a peg, or a positive rate of
+ * its own. An unheld quote (a collaborator's copy) gets a holding added.
  */
-export const restoreCustomCurrencies = async ({
+export const readCustomCurrencyDefinitions = ({
   archive,
-  targetUserId,
-  transaction,
-  warnings,
+  isoCodes,
 }: {
   archive: ParsedArchive;
-  targetUserId: number;
-  transaction: Transaction;
-  warnings: BackupRestoreWarning[];
-}): Promise<{ codes: Set<string>; definitions: Map<string, CustomCurrencyDefinition> }> => {
+  isoCodes: Set<string>;
+}): Map<string, CustomCurrencyDefinition> => {
+  const holdings = archive.data.get('users-currencies') ?? [];
+  const rates = archive.data.get('user-exchange-rates') ?? [];
   const definitions = new Map<string, CustomCurrencyDefinition>();
-  let invalidCount = 0;
+  const rowByCode = new Map<string, Record<string, unknown>>();
 
-  for (const row of archive.reference.customCurrencies) {
-    const definition = parseDefinition({ row });
-    if (definition) definitions.set(definition.code, definition);
-    else invalidCount += 1;
+  for (const row of holdings) {
+    if (row.nameOverride == null && row.decimalsOverride == null) continue;
+
+    const code = String(row.currencyCode);
+    if (isoCodes.has(code) || cc.code(code) !== undefined) {
+      throw new ValidationError({ message: t({ key: 'currencies.customCurrencyIsoCode', variables: { code } }) });
+    }
+    if (definitions.has(code)) {
+      throw new ValidationError({
+        message: t({ key: 'currencies.customCurrencyAlreadyDefined', variables: { code } }),
+      });
+    }
+    if (row.isDefaultCurrency) {
+      throw new ValidationError({ message: t({ key: 'currencies.customCurrencyCannotBeBase', variables: { code } }) });
+    }
+
+    const parsed = customCurrencyDefinitionSchema.safeParse({
+      code,
+      name: row.nameOverride,
+      decimals: row.decimalsOverride,
+      symbol: row.symbolOverride,
+    });
+    if (!parsed.success) {
+      throw new ValidationError({
+        message: t({ key: 'backup.restore.errors.customCurrencyInvalid', variables: { code } }),
+      });
+    }
+
+    const rateSourceSetting = readRateSourceSetting({ row, isoCodes });
+    if (!rateSourceSetting) {
+      throw new ValidationError({
+        message: t({ key: 'backup.restore.errors.customCurrencyInvalid', variables: { code } }),
+      });
+    }
+
+    const { name, decimals, symbol } = parsed.data;
+    definitions.set(code, { code, name, decimals, symbol: symbol ?? null, rateSourceSetting });
+    rowByCode.set(code, row);
   }
 
-  if (invalidCount > 0) {
-    warnings.push({
-      code: 'invalid_row_dropped',
-      table: 'custom-currencies',
-      count: invalidCount,
+  const customPair = rates.find(
+    (rate) => definitions.has(String(rate.baseCode)) && definitions.has(String(rate.quoteCode)),
+  );
+  if (customPair) {
+    throw new ValidationError({
+      message: t({
+        key: 'currencies.customCurrencyRateBetweenCustom',
+        variables: { baseCode: String(customPair.baseCode), quoteCode: String(customPair.quoteCode) },
+      }),
     });
   }
 
-  const codes = new Set<string>();
-  if (definitions.size === 0) return { codes, definitions };
+  const heldIsoCodes = new Set(holdings.map((row) => String(row.currencyCode)).filter((code) => isoCodes.has(code)));
 
+  for (const [code, { rateSourceSetting }] of definitions) {
+    const own = rates.filter((rate) => rate.baseCode === code || rate.quoteCode === code);
+    const quotes = new Set(own.map((rate) => String(rate.baseCode === code ? rate.quoteCode : rate.baseCode)));
+    const priced =
+      rateSourceSetting.rateSource === 'peg' || own.some((rate) => rate.baseCode === code && Number(rate.rate) > 0);
+
+    if ([...quotes].some((quote) => !isoCodes.has(quote)) || !priced) {
+      throw new ValidationError({
+        message: t({ key: 'backup.restore.errors.customCurrencyWithoutRate', variables: { code } }),
+      });
+    }
+
+    for (const quote of quotes) {
+      if (heldIsoCodes.has(quote)) continue;
+      holdings.push({
+        ...rowByCode.get(code),
+        id: generateRandomRecordId(),
+        currencyCode: quote,
+        exchangeRate: null,
+        liveRateUpdate: true,
+        isDefaultCurrency: false,
+        nameOverride: null,
+        symbolOverride: null,
+        decimalsOverride: null,
+        ...EMPTY_LOGO_FIELDS,
+      });
+      heldIsoCodes.add(quote);
+    }
+  }
+
+  return definitions;
+};
+
+/**
+ * Ensures a global stub row exists for each of the backup's custom codes. Runs inside the restore
+ * transaction, so a failed restore leaves no stub behind.
+ */
+export const restoreCustomCurrencies = async ({
+  codes,
+  transaction,
+}: {
+  codes: string[];
+  transaction: Transaction;
+}): Promise<void> => {
+  if (!codes.length) return;
+
+  // FOR SHARE, as `createCustomCurrency` takes: `pruneUnusedCustomCurrencies` must not delete a stub
+  // before the restored holding lands. Ordered by code, the order the prune locks in.
+  const lock = transaction.LOCK.SHARE;
   const existing = await Currencies.findAll({
-    where: { code: { [Op.in]: [...definitions.keys()] } },
+    where: { code: { [Op.in]: codes } },
     attributes: ['code', 'isCustom'],
+    order: [['code', 'ASC']],
     transaction,
+    lock,
   });
   const existingByCode = new Map(existing.map((row) => [row.code, row]));
 
-  for (const definition of definitions.values()) {
-    const row = existingByCode.get(definition.code);
-
-    if (row?.isCustom) {
-      codes.add(definition.code);
-      continue;
-    }
-    // The code is an ISO currency on this instance, which no user definition may replace.
-    if (row) continue;
-
+  for (const code of codes) {
     // Another restore or user may define the same new code at the same moment; the loser adopts the winner's row.
-    const created = await insertOrAdopt({
-      insert: () =>
-        Currencies.create(
-          {
-            code: definition.code,
-            currency: definition.name,
-            digits: definition.decimals,
-            number: null,
-            isCustom: true,
-            symbol: definition.symbol,
-            createdByUserId: targetUserId,
-          },
-          { transaction },
-        ),
-      adopt: () => Currencies.findOne({ where: { code: definition.code }, transaction }),
-    });
-    if (created.isCustom) codes.add(definition.code);
-  }
+    const row =
+      existingByCode.get(code) ??
+      (await insertOrAdopt({
+        insert: () => Currencies.create(customCurrencyStub({ code }), { transaction }),
+        adopt: () => Currencies.findOne({ where: { code }, transaction, lock }),
+      }));
 
-  return { codes, definitions };
+    if (!row.isCustom) {
+      throw new ValidationError({ message: t({ key: 'currencies.customCurrencyIsoCode', variables: { code } }) });
+    }
+  }
 };

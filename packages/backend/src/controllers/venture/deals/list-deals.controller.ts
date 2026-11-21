@@ -10,7 +10,7 @@ export default createController(
   z.object({
     query: z
       .object({
-        status: z.nativeEnum(VENTURE_DEAL_STATUS).optional(),
+        status: z.enum(VENTURE_DEAL_STATUS).optional(),
         platformId: recordId().optional(),
         ...paginationFields,
       })

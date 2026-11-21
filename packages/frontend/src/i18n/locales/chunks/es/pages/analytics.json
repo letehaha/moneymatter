@@ -49,7 +49,8 @@
         "last12Months": "Últimos 12 meses",
         "thisYear": "Este año",
         "previousYear": "Año anterior",
-        "allTime": "Todo el tiempo"
+        "allTime": "Todo el tiempo",
+        "currentPayPeriod": "Período de pago actual"
       },
       "composition": {
         "detail": "Detalle",
@@ -60,7 +61,7 @@
         "topN": "Primeros {count}",
         "totalIncome": "Ingreso total",
         "incomePlusDeficit": "Ingreso + déficit",
-        "savings": "Ahorro",
+        "savings": "Ahorros",
         "taxes": "Impuestos",
         "deficit": "Déficit",
         "other": "Otro",
@@ -70,7 +71,7 @@
         "amount": "Importe",
         "shareOfIncome": "Porcentaje del ingreso",
         "shareOfExpenses": "Compartir gastos",
-        "saved": "Ahorrado",
+        "saved": "Ahorro",
         "pctOfIncome": "{pct} de ingreso",
         "pctSavingsRate": "Tasa de ahorro {pct}",
         "keptAsCash": "Mantener como efectivo",
@@ -94,27 +95,63 @@
         "comparisonPeriod": "Período anterior",
         "cumulativeNote": "Total acumulado hasta este punto"
       },
+      "scope": {
+        "label": "Ámbito de categoría",
+        "all": "Todas las categorías",
+        "up": "Subir un nivel",
+        "transactions": "Transacciones",
+        "count": "{count} categoría | {count} categorías",
+        "more": "+{count}",
+        "allExcept": "Todos excepto {list}",
+        "clear": "Limpiar"
+      },
       "categoryBreakdown": {
         "title": "Desglose por categorías",
         "noData": "Sin datos para este período",
         "viewAll": "Ver todas las categorías",
-        "moreCount": "{count} más"
+        "moreCount": "{count} más",
+        "noSubcategory": "{name} · sin subcategoría",
+        "byLevel": "Por nivel",
+        "detail": "Detalle",
+        "others": "Otros"
+      },
+      "hero": {
+        "vsPrevious": "{percent}% vs período anterior",
+        "same": "Igual que el período anterior"
+      },
+      "overTime": {
+        "title": "Con el tiempo",
+        "cumulative": "Acumulativo",
+        "perPeriod": "Por período",
+        "granularity": {
+          "monthly": "Mensual",
+          "quarterly": "Trimestral",
+          "yearly": "Anual"
+        }
+      },
+      "transactionsCard": {
+        "title": "Transacciones",
+        "largest": "Más grande",
+        "recent": "Reciente"
       },
       "monthlyComparison": {
-        "title": "Comparación mensual",
         "allCategories": "Todas las categorías",
         "average": "Media",
         "total": "Total",
-        "vsLastMonth": "vs mes anterior",
-        "viewTransactions": "Ver transacciones"
-      },
-      "cumulativeProgress": {
-        "title": "Progreso acumulado"
+        "vsPrevious": {
+          "monthly": "vs. el mes pasado",
+          "quarterly": "vs último trimestre",
+          "yearly": "vs el año pasado"
+        },
+        "show": {
+          "monthly": "Mostrar este mes",
+          "quarterly": "Mostrar trimestre",
+          "yearly": "Mostrar año"
+        }
       },
       "filters": {
         "button": "Filtros",
         "title": "Filtros",
-        "categories": "Categorías",
         "include": "Incluir",
         "exclude": "Excluir",
         "accounts": "Cuentas",
@@ -336,6 +373,45 @@
           "addBirthYear": "Añadir año de nacimiento"
         }
       },
+      "pace": {
+        "row": "{status} vs. {anchor}",
+        "noHistory": "No hay suficiente historial antes de {month}",
+        "loadFailed": "No se pudo cargar el resumen.",
+        "compareWith": "Comparar con {month}",
+        "picker": {
+          "title": "Comparar con",
+          "rollingLabel": "{month} · hace 1 año",
+          "rolling": "hace 1 año",
+          "rollingHint": "En curso · actualmente {month}",
+          "specific": "Mes específico",
+          "specificHint": "Permanece fijas",
+          "prevYear": "Año anterior",
+          "nextYear": "Próximo año",
+          "earliest": "La más temprana es {month}. FIRE necesita 3 meses de gasto rastreado antes de ella."
+        },
+        "details": {
+          "title": "Ritmo desde {month}",
+          "moved": "Tu FIRE se ha movido de {from} a {to}.",
+          "withinBand": "Su fecha FIRE está dentro de {tolerance} de la previsión de {month} ({date}).",
+          "backInReach": "Los números de {month}estaban fuera de alcance. Ahora es {date}.",
+          "offTrack": "La previsión para {month} fue del {date}. Con las cifras actuales, el movimiento FIRE queda fuera de alcance.",
+          "metric": "Métrica",
+          "today": "Hoy",
+          "change": "Cambio",
+          "fireDate": "Fecha FIRE",
+          "saved": "Guardado por ahora",
+          "spending": "Gastando",
+          "saving": "Guardando",
+          "expected": "{amount} esperado",
+          "sooner": "{duration} antes",
+          "later": "{duration} más tarde",
+          "sameMonth": "Mismo mes",
+          "outOfReach": "Fuera de alcance",
+          "band": "En el ritmo significa dentro de {tolerance} (2% del tiempo restante a FIRE).",
+          "recorded": "El saldo, el flujo de efectivo y los supuestos a partir de {date} se recalcan en vivo a partir de tus datos.",
+          "notRecorded": "El saldo y el flujo de efectivo a partir de {date} se recalcan en vivo a partir de tus datos. Tus supuestos de entonces no fueron registrados, así que hoy se utilizan."
+        }
+      },
       "chart": {
         "ariaLabel": "Historial de valor neto y ruta proyectada a su número de FIRE",
         "actual": "Actual",
@@ -343,7 +419,10 @@
         "range": "±2 pts de retorno",
         "today": "Hoy",
         "typeTarget": "{type} · {amount}",
-        "typeLabel": "{type} · {date}"
+        "typeLabel": "{type} · {date}",
+        "forecast": "Previsión de {month}",
+        "forecastLabel": "Previsión de {month} · {date}",
+        "actualSince": "Actual desde {month}"
       },
       "milestones": {
         "reached": "Alcanzado",
@@ -438,6 +517,7 @@
     },
     "table": {
       "total": "Total",
+      "net": "Neto",
       "collapseAll": "Contraer todo",
       "expandAll": "Expandir todo",
       "expandRow": "Expandir",

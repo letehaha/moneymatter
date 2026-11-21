@@ -2,8 +2,9 @@
 <template>
   <!-- Reusable category list template -->
   <CategoryListTemplate>
-    <div role="listbox">
-      <template v-for="(item, index) in filteredItems" :key="item.id">
+    <ListboxContent class="p-1">
+      <!-- ListboxItem memoizes its attrs, so rows remount when search toggles to update the indent. -->
+      <template v-for="(item, index) in filteredItems" :key="`${item.id}:${isSearching}`">
         <!-- Group separator (shown only when searching) -->
         <div
           v-if="shouldShowSeparator({ item, index })"
@@ -14,24 +15,27 @@
           <div class="bg-border h-px flex-1" />
         </div>
 
-        <button
-          class="text-popover-foreground hover:bg-popover-foreground/10 relative flex w-full cursor-pointer items-center gap-2 border-none p-2 text-left text-sm leading-tight transition-colors duration-300 ease-out"
-          type="button"
-          :class="{ 'bg-primary/15 hover:bg-primary/20': selectedValue?.id === item.id }"
-          :style="{ paddingLeft: `${16 + (isSearching ? 0 : item.depth) * 12}px` }"
-          role="option"
-          :aria-selected="selectedValue?.id === item.id"
-          @mousedown.prevent="selectItem(item)"
+        <ListboxItem
+          :value="item"
+          class="text-popover-foreground data-highlighted:bg-hover relative flex w-full cursor-pointer items-center gap-2 rounded-sm p-2 text-left text-sm leading-tight data-[state=checked]:font-medium"
+          :style="{ paddingLeft: `${8 + (isSearching ? 0 : item.depth) * 12}px` }"
+          @mousedown.prevent
+          @select.prevent="selectItem(item)"
         >
           <CategoryCircle :category="item" :categories-map="categoriesMap" class="shrink-0" />
-          <span class="min-w-0 grow truncate">{{ item.name }}</span>
-        </button>
+          <DesktopOnlyTooltip :content="item.name" only-when-truncated>
+            <span class="min-w-0 grow truncate">{{ item.name }}</span>
+          </DesktopOnlyTooltip>
+          <ListboxItemIndicator class="shrink-0">
+            <CheckIcon class="text-primary-text size-4" />
+          </ListboxItemIndicator>
+        </ListboxItem>
       </template>
 
       <div v-if="filteredItems.length === 0" class="text-muted-foreground p-4 text-center text-sm">
         {{ $t('fields.categorySelect.noCategoriesFound') }}
       </div>
-    </div>
+    </ListboxContent>
   </CategoryListTemplate>
 
   <div
@@ -61,10 +65,11 @@
                 :disabled="disabled"
                 :class="
                   cn(
-                    'border-input bg-input-background ring-offset-background flex h-10 w-full items-center gap-2 rounded-md border px-3 py-2 text-sm md:h-9',
+                    'border-input bg-input-background ring-offset-background flex w-full items-center gap-2 rounded-md border px-3 py-2 text-sm',
                     'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden',
                     disabled && 'cursor-not-allowed opacity-50',
                     $slots['field-right'] && 'min-w-0 flex-1 rounded-r-none border-r-0',
+                    controlHeight[size],
                     $attrs.class ?? '',
                   )
                 "
@@ -108,7 +113,7 @@
                   popoverClassName,
                 )
               "
-              @open-auto-focus.prevent="$nextTick(() => inputRef?.focus())"
+              @open-auto-focus.prevent
             >
               <div
                 v-if="sharedOwnerHandle"
@@ -127,19 +132,18 @@
               <div v-if="unlistedIds" class="text-muted-foreground border-b px-3 py-2 text-xs" role="note">
                 {{ $t('fields.categorySelect.unlistedNotice') }}
               </div>
-              <!-- Search input -->
-              <input
-                ref="inputRef"
-                v-model="searchQuery"
-                type="text"
-                class="w-full border-b bg-transparent px-3 py-2 text-sm outline-none"
-                :placeholder="$t('fields.categorySelect.searchPlaceholder')"
-                :aria-label="$t('fields.categorySelect.searchCategoryLabel')"
-              />
-              <!-- Category list -->
-              <div ref="listRef" class="max-h-87.5 overflow-auto">
-                <CategoryListContent />
-              </div>
+              <ListboxRoot :model-value="selectedValue" by="id" highlight-on-hover>
+                <ListboxFilter
+                  v-model="searchQuery"
+                  auto-focus
+                  class="w-full border-b bg-transparent px-3 py-2 text-sm outline-none"
+                  :placeholder="$t('fields.categorySelect.searchPlaceholder')"
+                  :aria-label="$t('fields.categorySelect.searchCategoryLabel')"
+                />
+                <div class="max-h-87.5 overflow-auto">
+                  <CategoryListContent />
+                </div>
+              </ListboxRoot>
             </Popover.PopoverContent>
           </Popover.Popover>
         </template>
@@ -152,10 +156,11 @@
             :disabled="disabled"
             :class="
               cn(
-                'border-input bg-input-background ring-offset-background flex h-10 w-full items-center gap-2 rounded-md border px-3 py-2 text-sm md:h-9',
+                'border-input bg-input-background ring-offset-background flex w-full items-center gap-2 rounded-md border px-3 py-2 text-sm',
                 'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden',
                 disabled && 'cursor-not-allowed opacity-50',
                 $slots['field-right'] && 'min-w-0 flex-1 rounded-r-none border-r-0',
+                controlHeight[size],
                 $attrs.class ?? '',
               )
             "
@@ -223,34 +228,33 @@
           {{ $t('fields.categorySelect.unlistedNotice') }}
         </div>
 
-        <!-- Search input in drawer -->
-        <div
-          class="border-input bg-input-background mb-3 flex h-10 w-full items-center gap-2 rounded-md border px-3 py-2 text-sm md:h-9"
-        >
-          <input
-            ref="drawerInputRef"
-            v-model="searchQuery"
-            type="text"
-            class="min-w-0 flex-1 bg-transparent outline-none"
-            :placeholder="selectedValue?.name || $t('fields.categorySelect.searchPlaceholder')"
-            :aria-label="$t('fields.categorySelect.searchCategoryLabel')"
-          />
-
-          <button
-            v-if="searchQuery.length"
-            type="button"
-            class="text-muted-foreground hover:text-foreground shrink-0"
-            :aria-label="$t('fields.categorySelect.clearSearchLabel')"
-            @click="searchQuery = ''"
+        <ListboxRoot :model-value="selectedValue" by="id" highlight-on-hover>
+          <div
+            class="border-input bg-input-background mb-3 flex h-9 w-full items-center gap-2 rounded-md border px-3 py-2 text-sm"
           >
-            <XIcon class="size-4" />
-          </button>
-        </div>
+            <ListboxFilter
+              v-model="searchQuery"
+              class="min-w-0 flex-1 bg-transparent outline-none"
+              :placeholder="selectedValue?.name || $t('fields.categorySelect.searchPlaceholder')"
+              :aria-label="$t('fields.categorySelect.searchCategoryLabel')"
+            />
 
-        <!-- Category list -->
-        <div class="h-[50vh] overflow-auto">
-          <CategoryListContent />
-        </div>
+            <button
+              v-if="searchQuery.length"
+              type="button"
+              class="text-muted-foreground hover:text-foreground shrink-0"
+              :aria-label="$t('fields.categorySelect.clearSearchLabel')"
+              @mousedown.prevent
+              @click="searchQuery = ''"
+            >
+              <XIcon class="size-4" />
+            </button>
+          </div>
+
+          <div class="h-[50vh] overflow-auto">
+            <CategoryListContent />
+          </div>
+        </ListboxRoot>
       </Drawer.DrawerContent>
     </Drawer.Drawer>
   </div>
@@ -263,13 +267,16 @@ import CategoryCircle from '@/components/common/category-circle.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import FieldError from '@/components/fields/components/field-error.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
+import { type ControlSize, controlHeight } from '@/components/lib/ui/control-size';
 import * as Drawer from '@/components/lib/ui/drawer';
 import * as Popover from '@/components/lib/ui/popover';
+import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { cn } from '@/lib/utils';
 import { CATEGORY_TYPES, type CategoryModel } from '@bt/shared/types';
 import { createReusableTemplate } from '@vueuse/core';
-import { ChevronDownIcon, InfoIcon, XIcon } from '@lucide/vue';
+import { CheckIcon, ChevronDownIcon, InfoIcon, XIcon } from '@lucide/vue';
+import { ListboxContent, ListboxFilter, ListboxItem, ListboxItemIndicator, ListboxRoot } from 'reka-ui';
 import { computed, ref, watch } from 'vue';
 
 defineOptions({ inheritAttrs: false });
@@ -302,6 +309,7 @@ const props = withDefaults(
     popoverClassName?: string;
     /** Left out of the default list, still found by search. */
     unlistedIds?: Set<string>;
+    size?: ControlSize;
   }>(),
   {
     label: undefined,
@@ -313,6 +321,7 @@ const props = withDefaults(
     sharedOwnerUsername: undefined,
     popoverClassName: undefined,
     unlistedIds: undefined,
+    size: 'default',
   },
 );
 
@@ -328,9 +337,6 @@ const isMobile = useWindowBreakpoints(CUSTOM_BREAKPOINTS.uiMobile);
 
 const selectedValue = ref<FormattedCategory | null>(props.modelValue ?? null);
 const triggerRef = ref<HTMLButtonElement | null>(null);
-const inputRef = ref<HTMLInputElement | null>(null);
-const drawerInputRef = ref<HTMLInputElement | null>(null);
-const listRef = ref<HTMLDivElement | null>(null);
 const searchQuery = ref('');
 const isOpen = ref(false);
 

@@ -28,7 +28,9 @@
       "retry": "Coba lagi",
       "copyInviteLink": "Salin tautan undangan",
       "moveTo": "Pindahkan ke…",
-      "learnMore": "Learn more"
+      "learnMore": "Learn more",
+      "undo": "Undo",
+      "more": "More"
     },
     "ui": {
       "close": "Tutup",
@@ -103,7 +105,8 @@
       "debitCard": "Kartu Debit",
       "mobilePayment": "Pembayaran Seluler",
       "voucher": "Voucher",
-      "webPayment": "Pembayaran Web"
+      "webPayment": "Pembayaran Web",
+      "none": "None"
     },
     "vehicleClasses": {
       "sedan": "Sedan",
@@ -141,11 +144,17 @@
       "trackerMatching": {
         "name": "Tracker matching",
         "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
+      },
+      "transferMatching": {
+        "name": "Transfer matching",
+        "description": "Checks transfer scan results and keeps the pairs that look like real transfers"
       }
     },
     "transactions": {
       "delete": {
         "success": "Berhasil dihapus",
+        "undoSuccess": "Restored",
+        "undoError": "Couldn't undo. You can still restore it from the Trash.",
         "error": "Gagal menghapus transaksi!"
       },
       "submit": {
@@ -156,14 +165,22 @@
       },
       "record": {
         "addedByTooltip": "Transaksi ini dilampirkan ke anggaran oleh {handle}",
-        "matchedByAi": "Dicocokkan oleh AI",
+        "addedByRule": "Added by the tracker's rules",
+        "matchedByAi": "Matched by AI",
         "externalLinkTooltip": "Open external link",
         "locationTooltip": "Open location on the map",
         "attachmentsTooltip": "Has attachments",
         "hiddenAccount": "Akun tersembunyi",
-        "selectRow": "Pilih transaksi",
+        "selectRow": "Select transaction",
         "unselectableReasons": {
           "sharedAccount": "Tidak dapat dipilih: transaksi ini berada di akun yang dibagikan dengan Anda, dan hanya pemiliknya yang dapat mengeditnya."
+        },
+        "payment": {
+          "paidFrom": "Paid from {count} accounts",
+          "receivedInto": "Received into {count} accounts",
+          "partOf": "Part of a {total} payment",
+          "thisAccount": "(this account)",
+          "loadError": "Couldn't open this transaction. Try again."
         }
       }
     },
@@ -224,7 +241,7 @@
       "tabs": {
         "brand": "Merek",
         "letters": "Huruf",
-        "icon": "Ikon",
+        "icon": "Icon",
         "custom": "Image"
       },
       "searchPlaceholder": "Nama merek atau domain",
@@ -240,6 +257,10 @@
       "dialogTitle": "Ganti logo",
       "resetToAuto": "Kembalikan ke otomatis",
       "remove": "Hapus logo",
+      "pickerDescription": "Pick a brand logo or use letters instead.",
+      "updatedToast": "Logo updated",
+      "resetToast": "Logo removed",
+      "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Huruf (1–2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Warna",
@@ -262,12 +283,12 @@
       "description": "A large import batch is being removed. Balances are recalculated when it finishes, so the app is locked until then.",
       "deleting": "Deleting transactions",
       "preparing": "Getting ready",
-      "finishing": "Menyelesaikan",
+      "finishing": "Finishing up",
       "takingLong": "This is taking longer than usual — large batches can take several minutes. Keep this page open.",
-      "unreachableTitle": "Tidak dapat menjangkau server",
+      "unreachableTitle": "Can't reach the server",
       "unreachableDescription": "The delete may still be running. Dismiss to keep using the app, and reload later to see the result.",
       "failedTitle": "Delete failed",
-      "dismiss": "Abaikan"
+      "dismiss": "Dismiss"
     },
     "duration": {
       "years": "{n} yr | {n} yrs",
@@ -278,7 +299,20 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "{duration} ahead",
+        "behind": "{duration} behind",
+        "onPace": "On pace",
+        "backInReach": "Back within reach",
+        "offTrack": "Off track"
       }
+    },
+    "pasteImage": {
+      "button": "Paste image",
+      "shortcutHint": "or press {shortcut}",
+      "noImage": "No image found in the clipboard.",
+      "readFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut."
     }
   },
   "accountGroups": {
@@ -296,6 +330,10 @@
     "link": {
       "success": "Akun telah ditambahkan ke grup",
       "error": "Gagal menambahkan akun ke grup"
+    },
+    "linkMany": {
+      "success": "Accounts added to the group",
+      "error": "Failed to add accounts to the group"
     },
     "unlink": {
       "success": "Akun telah dihapus dari grup",
@@ -330,6 +368,13 @@
     },
     "share": {
       "sendFailedHint": "Buka panel berbagi untuk mengirim ulang."
+    },
+    "goalReached": {
+      "title": "Goal reached: {name}",
+      "message": "You've saved {amount}."
+    },
+    "unrealizedLossAlert": {
+      "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"
     }
   },
   "currencyNames": {
@@ -477,7 +522,7 @@
     "percentUsed": "{percent}% used",
     "resetsOn": "Resets on {date}",
     "connectOwnModel": "Connect your own model",
-    "gotIt": "Mengerti",
+    "gotIt": "Got it",
     "badge": {
       "used": "{percent}% AI used",
       "reached": "AI limit reached"
@@ -523,6 +568,12 @@
       "removeTransactionDescriptionNormal": "Apakah Anda yakin ingin mengeluarkan transaksi ini dari grup?",
       "removeButtonText": "Keluarkan",
       "removeAndDeleteButtonText": "Keluarkan & Hapus Grup",
+      "removeFromGroup": "Remove from group",
+      "saveError": "Couldn't save the group",
+      "removeError": "Couldn't remove the transaction from the group",
+      "manageTransactions": "Manage",
+      "showMoreNote": "Show more",
+      "showLessNote": "Show less",
       "summary": {
         "transactions": "Transaksi",
         "net": "Bersih",
@@ -532,6 +583,56 @@
     },
     "transactionGroupRecord": {
       "transactionCountLabel": "transaksi"
+    }
+  },
+  "mcpToolsets": {
+    "core": {
+      "label": "Core",
+      "description": "Accounts, transactions, categories, tags, payees and reports"
+    },
+    "subscriptions": {
+      "label": "Recurring payments",
+      "description": "Recurring payments, their periods and planned transactions"
+    },
+    "budgetPlans": {
+      "label": "Budget plans",
+      "description": "Plans, lines, line goals and savings goals"
+    },
+    "trackers": {
+      "label": "Trackers",
+      "description": "Spending trackers and their suggestions"
+    },
+    "automations": {
+      "label": "Automations",
+      "description": "Rules, payee aliases, ignored payee names and tag reminders"
+    },
+    "review": {
+      "label": "Review and cleanup",
+      "description": "Transfer and refund matches, duplicates and stuck pending transactions"
+    },
+    "groupsTemplates": {
+      "label": "Groups and templates",
+      "description": "Transaction groups and transaction templates"
+    },
+    "investments": {
+      "label": "Investments",
+      "description": "Portfolios, holdings, securities and investment transactions"
+    },
+    "ventures": {
+      "label": "Ventures",
+      "description": "Venture platforms, deals and events"
+    },
+    "loansVehicles": {
+      "label": "Loans and vehicles",
+      "description": "Loans with their payments, and vehicles"
+    },
+    "currencies": {
+      "label": "Currencies",
+      "description": "Your currencies and exchange rates"
+    },
+    "imports": {
+      "label": "Imports and sharing",
+      "description": "Import batches (list, undo) and bank connections (status, unlink an account); sharing is read only."
     }
   }
 }

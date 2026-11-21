@@ -239,7 +239,7 @@ const props = defineProps<{
 const model = defineModel<RateSourceDraft['http']>({ required: true });
 
 const { t } = useI18n();
-const { isoOptions } = useCurrencyOptions({ excludeCode: () => '' });
+const { isoOptions } = useCurrencyOptions();
 
 const canTest = computed(() => Boolean(model.value.urlTemplate.trim() && model.value.jsonPath.trim()));
 

@@ -4,7 +4,7 @@
       <h2 class="text-muted-foreground text-xs font-semibold tracking-[0.14em] uppercase">{{ title }}</h2>
       <span
         v-if="count !== undefined && count !== ''"
-        class="text-muted-foreground/70 hidden text-xs font-medium tabular-nums @[30rem]/accounts-page:inline"
+        class="text-muted-foreground hidden text-xs font-medium tabular-nums @[30rem]/accounts-page:inline"
       >
         {{ count }}
       </span>

@@ -1,5 +1,4 @@
-import { RECONCILIATION_MERGE_MAX, RECONCILIATION_MERGE_MIN, RECONCILIATION_REMOVE_MAX } from '@bt/shared/types';
-import { recordId, uniqueRecordIds } from '@common/lib/zod/custom-types';
+import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { getReconciliationHistory } from '@services/transactions/reconciliation/get-history';
 import { mergeTransactions } from '@services/transactions/reconciliation/merge-transactions';
@@ -12,21 +11,16 @@ import {
 } from '@services/transactions/reconciliation/stuck-pending';
 import { z } from 'zod';
 
-const idsBodySchema = z.object({
-  body: z.object({ transactionIds: uniqueRecordIds({ min: 1, max: RECONCILIATION_REMOVE_MAX }) }),
-});
+import { reconciliationIdsBodySchema, reconciliationMergeBodySchema } from './reconciliation-schemas';
+
+const idsBodySchema = z.object({ body: reconciliationIdsBodySchema });
 
 export const removeController = createController(idsBodySchema, async ({ user, body }) => ({
   data: await removeTransactions({ userId: user.id, transactionIds: body.transactionIds }),
 }));
 
 export const mergeController = createController(
-  z.object({
-    body: z.object({
-      transactionIds: uniqueRecordIds({ min: RECONCILIATION_MERGE_MIN, max: RECONCILIATION_MERGE_MAX }),
-      survivorId: recordId(),
-    }),
-  }),
+  z.object({ body: reconciliationMergeBodySchema }),
   async ({ user, body }) => ({
     data: await mergeTransactions({
       userId: user.id,

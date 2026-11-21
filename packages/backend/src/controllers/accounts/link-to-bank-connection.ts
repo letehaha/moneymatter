@@ -1,6 +1,7 @@
 import { LINK_RESIDUAL_TARGETS } from '@bt/shared/types';
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
+import { serializeAccount } from '@root/serializers';
 import * as accountsService from '@services/accounts.service';
 import z from 'zod';
 
@@ -26,7 +27,7 @@ export default createController(
 
     return {
       data: {
-        account: result.account,
+        account: serializeAccount(result.account),
         balanceDifference: result.balanceDifference,
         message: 'Account linked successfully.',
       },

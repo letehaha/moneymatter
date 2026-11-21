@@ -1,3 +1,4 @@
+import { USER_EXCHANGE_RATE_SOURCES } from '@bt/shared/types';
 import { ValidationError } from '@js/errors';
 
 import type { BackupFileName } from '../registry';
@@ -17,8 +18,8 @@ const savedAt = ({ row }: { row: Row }): number => (typeof row.date === 'string'
 /**
  * Give every user rate that has no `effectiveDate` the UTC day of its saved `date`, the rule the
  * migration that added the column applies to the rows it finds. Archives written before the column
- * existed (format versions 1 and 2, and version 3 exported earlier) carry no such field, and without it
- * the table's required key would fail the restore. Rows that already have a day are left alone.
+ * existed carry no such field, and without it the table's required key would fail the restore. Rows
+ * that already have a day are left alone.
  *
  * Two rows of one pair that land on the same day collapse to the one saved last, because the pair
  * and day are the table's key.
@@ -47,4 +48,11 @@ export function fillUserRateEffectiveDates({ data }: { data: Map<BackupFileName,
   }
 
   if (latestByKey.size !== rows.length) data.set(FILE_NAME, [...latestByKey.values()]);
+}
+
+/** An archive is untrusted: a rate whose `source` is not one the app writes is restored as the user's own. */
+export function forceKnownUserRateSources({ data }: { data: Map<BackupFileName, Row[]> }): void {
+  for (const row of data.get(FILE_NAME) ?? []) {
+    if (!(USER_EXCHANGE_RATE_SOURCES as readonly unknown[]).includes(row.source)) row.source = 'manual';
+  }
 }

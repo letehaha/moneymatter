@@ -2,6 +2,9 @@ declare const __cents: unique symbol;
 declare const __minorUnits: unique symbol;
 declare const __decimal: unique symbol;
 
+/** Most decimals a currency may carry: report engines and the API hold money as JS numbers. */
+export const MAX_CURRENCY_DECIMALS = 8;
+
 /** Branded type representing a value in cents (integer, e.g. 1550 = $15.50). */
 export type Cents = number & { readonly [__cents]: true };
 

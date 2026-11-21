@@ -1,4 +1,9 @@
-import { SUBSCRIPTION_CANDIDATE_STATUS, SUBSCRIPTION_LINK_STATUS, TRANSACTION_TYPES } from '@bt/shared/types';
+import {
+  SUBSCRIPTION_CANDIDATE_STATUS,
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_LINK_STATUS,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils';
@@ -15,6 +20,7 @@ import {
   computeConfidenceScore,
   computeIntervals,
   computeMedian,
+  detectFixedDayCadence,
   findMostCommonNote,
   groupTransactionsBySignature,
   mapIntervalToFrequency,
@@ -117,6 +123,7 @@ export async function runDetection({ userId }: { userId: number }): Promise<Subs
     where: {
       transactionType: TRANSACTION_TYPES.expense,
       refundLinked: false,
+      paymentParentId: null,
       time: { [Op.gte]: sinceDate },
       note: { [Op.and]: [{ [Op.ne]: null }, { [Op.ne]: '' }] },
     },
@@ -215,14 +222,17 @@ export async function runDetection({ userId }: { userId: number }): Promise<Subs
   for (const candidate of topCandidates) {
     const { group, transactions: txs, confidenceScore, medianIntervalDays } = candidate;
 
-    const amounts = txs.map((tx) => Math.abs(tx.amount));
     const averageAmount = await roundToCurrency({
-      money: Money.fromDecimal(amounts.reduce((s, a) => s + a, 0) / amounts.length),
+      money: Money.sum(txs.map((tx) => Money.fromDecimal(tx.amount).abs())).divide(txs.length),
       userId,
       currencyCode: group.currencyCode,
       mode: 'half-up',
     });
-    const frequency = mapIntervalToFrequency({ medianDays: medianIntervalDays });
+    // A fixed day cadence (every 30 days) wins over the nearest preset, which would drift.
+    const cadence = detectFixedDayCadence({ dates: txs.map((tx) => new Date(tx.time)) });
+    const frequency = cadence
+      ? SUBSCRIPTION_FREQUENCIES.custom
+      : mapIntervalToFrequency({ medianDays: medianIntervalDays });
     const suggestedName = findMostCommonNote({ notes: group.rawNotes }).slice(0, MAX_SUGGESTED_NAME_LENGTH);
 
     // Sort by time descending for sample IDs and lastOccurrenceAt
@@ -234,6 +244,8 @@ export async function runDetection({ userId }: { userId: number }): Promise<Subs
       userId,
       suggestedName,
       detectedFrequency: frequency,
+      detectedIntervalUnit: cadence?.unit ?? null,
+      detectedIntervalCount: cadence?.count ?? null,
       averageAmount,
       currencyCode: group.currencyCode,
       accountId: group.accountId,

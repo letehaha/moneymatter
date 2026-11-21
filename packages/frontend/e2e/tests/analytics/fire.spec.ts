@@ -929,7 +929,8 @@ test.describe('FIRE planner', () => {
 
   test('phone width keeps the key numbers visible without horizontal scroll', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await openFirePage({ page, fire: BASE_FIRE });
+    // Opening Others scrolls its trigger into view, which can push the hero out of the viewport.
+    await openFirePage({ page, fire: BASE_FIRE, others: false });
 
     const months = monthsToTarget({
       balance: BALANCE,
@@ -939,6 +940,7 @@ test.describe('FIRE planner', () => {
     })!;
     await expectHeroEta({ page, months });
     await expect(page.getByText('Time to FIRE', { exact: true })).toBeInViewport();
+    await openOthers({ page });
     await expect(page.getByText(`$${BALANCE / 1_000}K of $1M`).first()).toBeVisible();
     await expect(chipLocator({ page, name: 'Regular' })).toBeVisible();
 

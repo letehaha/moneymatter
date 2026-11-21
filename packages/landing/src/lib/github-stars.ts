@@ -9,12 +9,19 @@ export function getGitHubStarsLabel(): Promise<string | null> {
   starsLabel ??= fetch(`https://api.github.com/repos/${GITHUB_REPO}`, {
     headers: process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {},
   })
-    .then((res) => (res.ok ? res.json() : null))
+    .then((res) => {
+      if (res.ok) return res.json();
+      console.warn(`GitHub stars request failed with status ${res.status}`);
+      return null;
+    })
     .then((repo) =>
       repo?.stargazers_count
         ? new Intl.NumberFormat('en', { notation: 'compact' }).format(repo.stargazers_count)
         : null,
     )
-    .catch(() => null);
+    .catch((error) => {
+      console.warn('GitHub stars request failed:', error);
+      return null;
+    });
   return starsLabel;
 }

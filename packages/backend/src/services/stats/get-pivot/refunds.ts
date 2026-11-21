@@ -2,25 +2,27 @@ import { TRANSACTION_TYPES } from '@bt/shared/types';
 import RefundTransactions from '@models/refund-transactions.model';
 import Tags from '@models/tags.model';
 import { findTransactions } from '@models/transactions-query';
+import { refundShareRefAmount } from '@services/tx-refunds/refund-share';
 import { Op } from 'sequelize';
 
 /** A refund resolved for a whole-transaction dimension (payee / tag). */
 interface WholeTxRefund {
-  /** Payee of the original expense (the side that incurred the spend); null if unassigned. */
+  /** Payee of the pair's leg on the requested side; null if unassigned. */
   payeeId: string | null;
-  /** Tag ids of the original expense. Empty when the caller didn't request tags or it had none. */
+  /** Tag ids of that same leg. Empty when the caller didn't request tags or it had none. */
   tagIds: string[];
   /** Refund magnitude in integer minor units of the base currency; callers subtract it. */
   refundMinor: number;
-  /** The refund tx's own date, so the reduction lands in the bucket the money returned in. */
-  refundTime: Date;
+  /** Date of the leg on the requested side, so the reduction lands in that leg's own bucket. */
+  time: Date;
 }
 
 /**
  * Resolves refunds for the whole-transaction dimensions (payee, tag), which — unlike categories —
- * carry no per-split payee/tag. Each refund is attributed to the *original expense's* payee/tags
- * (the side that actually incurred the spend), so it cancels the same rows the expense filled,
- * mirroring how category netting attributes to the expense leg.
+ * carry no per-split payee/tag. Each refund is attributed to the payee/tags of its leg on `side`
+ * (the report's measure), so it cancels the same rows that leg filled, mirroring the category
+ * netting's `refundSide`. Only refunds whose leg on `side` is among `transactions` are returned:
+ * a leg outside the report filled no row.
  *
  * The original + refund txs are loaded fresh (some sit outside the report window) with only the
  * attributes the caller's dimension needs.
@@ -31,15 +33,18 @@ interface WholeTxRefund {
 export const resolveWholeTxRefunds = async ({
   transactions,
   needTags,
+  side,
   decimals,
 }: {
   transactions: { id: string; refundLinked: boolean }[];
   needTags: boolean;
+  side: TRANSACTION_TYPES;
   /** Decimals of the base currency: the scale the refund magnitudes are at. */
   decimals: number;
 }): Promise<WholeTxRefund[]> => {
   const txIdsWithRefunds = transactions.filter((tx) => tx.refundLinked).map((tx) => tx.id);
   if (txIdsWithRefunds.length === 0) return [];
+  const inScopeTxIds = new Set(transactions.map((tx) => tx.id));
 
   const refunds = await RefundTransactions.findAll({
     where: {
@@ -66,7 +71,7 @@ export const resolveWholeTxRefunds = async ({
       id: { [Op.in]: [...neededTxIds] },
       userId: { [Op.in]: [...new Set(refunds.map((refund) => refund.userId))] },
     },
-    attributes: ['id', 'refAmount', 'transactionType', 'payeeId', 'time'],
+    attributes: ['id', 'amount', 'refAmount', 'transactionType', 'payeeId', 'time'],
     include: needTags ? [{ model: Tags, through: { attributes: [] }, attributes: ['id'], required: false }] : [],
   });
   const byId = new Map(txs.map((tx) => [tx.id, tx]));
@@ -77,16 +82,14 @@ export const resolveWholeTxRefunds = async ({
     const baseTx = byId.get(refund.originalTxId);
     const refundTx = byId.get(refund.refundTxId);
     if (!baseTx || !refundTx) continue;
-    // A refund with no base-currency amount has no magnitude to net.
-    if (refundTx.refAmount === null) continue;
 
-    // Attribute to the expense side of the pair (mirrors the category netting's leg choice).
-    const expenseSide = baseTx.transactionType === TRANSACTION_TYPES.expense ? baseTx : refundTx;
+    const sideTx = baseTx.transactionType === side ? baseTx : refundTx;
+    if (!inScopeTxIds.has(sideTx.id)) continue;
     result.push({
-      payeeId: expenseSide.payeeId,
-      tagIds: needTags ? (expenseSide.tags ?? []).map((tag) => tag.id) : [],
-      refundMinor: refundTx.refAmount.toMinorUnits({ decimals }),
-      refundTime: new Date(refundTx.time),
+      payeeId: sideTx.payeeId,
+      tagIds: needTags ? (sideTx.tags ?? []).map((tag) => tag.id) : [],
+      refundMinor: refundShareRefAmount({ link: refund, refundTx, decimals }).toMinorUnits({ decimals }),
+      time: new Date(sideTx.time),
     });
   }
 

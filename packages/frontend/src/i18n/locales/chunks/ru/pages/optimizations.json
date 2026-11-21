@@ -121,6 +121,7 @@
         "previousYear": "Предыдущий год"
       },
       "includeOutOfWallet": "Включать переводы вне кошелька",
+      "outOfWalletSwitch": "Out-of-wallet transfers",
       "skip": {
         "action": "Пропустить",
         "title": "Пропустить это предложение?",
@@ -134,20 +135,58 @@
         "linkError": "Не удалось связать транзакции",
         "skipSuccess": "Предложение скрыто",
         "skipError": "Не удалось пропустить предложение"
+      },
+      "aiReview": {
+        "label": "AI review",
+        "about": "About AI review",
+        "plusBadge": "Plus",
+        "description": "AI checks each match and shows only the ones that look like real transfers between your accounts.",
+        "cost": "Each scan uses your monthly AI allowance. With your own AI provider, the provider bills it. Choose the model in {link}.",
+        "aiSettingsLink": "AI settings",
+        "openAiSettings": "Open AI settings",
+        "blocked": {
+          "plan": {
+            "title": "AI review is part of Plus",
+            "body": "Or connect your own AI provider in AI settings to use it on any plan."
+          },
+          "allowance": {
+            "pill": "Until {date}",
+            "title": "Monthly AI allowance used",
+            "body": "It resets on {date}. Connect your own AI provider to keep using it now."
+          },
+          "setup": {
+            "pill": "Set up",
+            "title": "No AI model is answering",
+            "body": "Check your AI provider or pick a model for transfer matching."
+          }
+        },
+        "connectOwnModel": "Connect your own model",
+        "reviewing": "AI is checking matches…",
+        "verdict": {
+          "likely": "Likely",
+          "possible": "Possible"
+        },
+        "nudge": "Cut false matches with AI review",
+        "rescanHint": "Review with AI",
+        "rescanHintTooltip": "Many pairs scored below 70%. Scan again with AI review to hide the ones that aren't transfers. Uses your AI allowance.",
+        "rescanBanner": {
+          "title": "Many pairs scored below 70%",
+          "body": "AI review can hide the ones that aren't transfers. Uses your AI allowance."
+        }
       }
     },
     "reconciliation": {
       "title": "Transactions reconciliation",
       "tabs": {
-        "transactions": "Транзакции",
+        "transactions": "Transactions",
         "stuckPending": "Stuck pending",
-        "history": "История"
+        "history": "History"
       },
       "table": {
         "hint": "Select bank transactions to merge duplicates or remove extras"
       },
       "actions": {
-        "merge": "Объединить",
+        "merge": "Merge",
         "remove": "Remove"
       },
       "blockReasons": {
@@ -159,8 +198,8 @@
         "planned": "Planned transactions can't be reconciled.",
         "linkedTransfer": "Linked transfers can't be reconciled. Unlink the transfer first.",
         "refundLinked": "Refund-linked transactions can't be reconciled. Unlink the refund first.",
-        "tooFew": "Select at least 2 transactions to merge.",
-        "tooMany": "Too many transactions selected (merge: up to {mergeMax}, remove: up to {removeMax}).",
+        "tooFew": "Выберите не менее двух транзакций для слияния.",
+        "tooMany": "Выбрано слишком много транзакций (слияние: до {mergeMax}, удаление: до {removeMax}).",
         "differentAccounts": "All transactions must belong to the same account."
       },
       "merge": {
@@ -168,11 +207,11 @@
         "description": "Pick the transaction to keep. The others are removed and can be restored from History.",
         "fields": {
           "payee": "Получатель",
-          "status": "Status",
+          "status": "Статус",
           "time": "Time"
         },
         "status": {
-          "pending": "Ожидает",
+          "pending": "В обработке",
           "booked": "Booked"
         },
         "keep": "Keep",
@@ -183,10 +222,10 @@
       "remove": {
         "title": "Remove {count} transaction? | Remove {count} transactions?",
         "description": "Removed transactions stop counting toward balances and stats. Tracker, group and subscription links are detached. You can restore them from History, but the links won't come back.",
-        "confirm": "Remove"
+        "confirm": "Удалить"
       },
       "restoreDialog": {
-        "title": "Restore {count} transaction? | Restore {count} transactions?",
+        "title": "Восстановить {count} транзакций? | Восстановить {count} транзакций?",
         "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Tracker, group and subscription links detached on removal don't come back.",
         "confirm": "Восстановить"
       },
@@ -196,7 +235,7 @@
         "restored": "Restored {count} transaction | Restored {count} transactions",
         "keptAsBooked": "Marked as booked",
         "checkedWithBank": "Checked with bank",
-        "unexpectedError": "Что-то пошло не так. Попробуйте снова.",
+        "unexpectedError": "Something went wrong. Please try again.",
         "bankCheck": {
           "allBooked": "Your bank booked the transaction | Your bank booked all {count} transactions",
           "someBooked": "Your bank booked {count} transaction | Your bank booked {count} transactions",
@@ -227,14 +266,14 @@
           "category": "Категория",
           "pendingFor": "Pending for",
           "amount": "Сумма",
-          "status": "Status",
+          "status": "Статус",
           "actions": "Действия"
         },
         "pendingDaysShort": "{count}d",
         "status": {
           "tooOld": "Too old to check",
           "tooOldHint": "Your bank only shares about 90 days of history, so this transaction can't be checked. Keep it if the charge happened, remove it if it didn't.",
-          "duplicate": "Возможный дубликат",
+          "duplicate": "Возможно дубликат",
           "duplicateHint": "A booked transaction from the same payee on {date} looks like the same payment. Merge them to keep one.",
           "notFound": "Not found at bank",
           "notFoundHint": "Your bank has no booked copy of this transaction, so it may be a released hold. Keep it if the charge happened, remove it if it didn't."
@@ -248,7 +287,7 @@
           "merge": "Merged",
           "remove": "Removed"
         },
-        "restore": "Восстановить",
+        "restore": "Restore",
         "kept": "Kept",
         "removedRows": "{count} removed transaction | {count} removed transactions"
       }

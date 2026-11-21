@@ -3,7 +3,7 @@ import {
   SUBSCRIPTION_PERIOD_STATUSES,
   type SubscriptionPeriodStatus,
 } from '@bt/shared/types';
-import { centsToApiDecimalOrNull } from '@common/types/money';
+import { type Money, moneyToApiDecimalOrNull } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import Accounts from '@models/accounts.model';
 import Categories from '@models/categories.model';
@@ -11,7 +11,7 @@ import SubscriptionPeriods from '@models/subscription-periods.model';
 import SubscriptionTransactions from '@models/subscription-transactions.model';
 import Subscriptions from '@models/subscriptions.model';
 import { transactionsInclude } from '@models/transactions-query';
-import type { TransactionsAttributes } from '@models/transactions.model';
+import Transactions, { type TransactionsAttributes } from '@models/transactions.model';
 import { applyCachedLogos, enqueueLogoResolution } from '@services/brand-logos';
 import { col, fn, literal, Op } from 'sequelize';
 
@@ -44,6 +44,8 @@ interface SubscriptionBase extends Pick<
   | 'type'
   | 'expectedCurrencyCode'
   | 'frequency'
+  | 'intervalUnit'
+  | 'intervalCount'
   | 'startDate'
   | 'endDate'
   | 'dueDate'
@@ -68,7 +70,7 @@ interface SubscriptionBase extends Pick<
   | 'createdAt'
   | 'updatedAt'
 > {
-  /** Cents-backed Money on the model, surfaced here as a decimal number. */
+  /** Money on the model, surfaced here as a decimal number. */
   expectedAmount: number | null;
   tagIds: string[];
   account: SubscriptionAccount | null;
@@ -120,9 +122,9 @@ interface SubscriptionLinkedTransaction extends Omit<
   'amount' | 'refAmount' | 'commissionRate' | 'refCommissionRate' | 'cashbackAmount'
 > {
   amount: number;
-  refAmount: number | null;
+  refAmount: number;
   commissionRate: number;
-  refCommissionRate: number | null;
+  refCommissionRate: number;
   cashbackAmount: number;
   SubscriptionTransactions: Pick<SubscriptionTransactions, 'matchSource' | 'matchedAt' | 'status'>;
 }
@@ -135,6 +137,7 @@ interface SubscriptionPeriodItem {
   paidAt: Date | null;
   transactionId: string | null;
   transactionAutoCreated: boolean;
+  transactionInTrash: boolean;
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -191,12 +194,13 @@ export const getSubscriptions = async ({
   await backfillLogosForUnresolved({ subscriptions });
 
   const mapped = subscriptions.map((s) => {
-    const plain = s.toJSON() as unknown as Omit<SubscriptionBase, 'tagIds'> & {
+    const plain = s.toJSON() as unknown as Omit<SubscriptionBase, 'tagIds' | 'expectedAmount'> & {
+      expectedAmount: Money | null;
       linkedTransactionsCount: number | string | null;
     };
     return {
       ...plain,
-      expectedAmount: centsToApiDecimalOrNull(plain.expectedAmount),
+      expectedAmount: moneyToApiDecimalOrNull(plain.expectedAmount),
       linkedTransactionsCount: Number(plain.linkedTransactionsCount ?? 0),
     };
   });
@@ -281,6 +285,8 @@ export const getSubscriptions = async ({
       nextDueDate: resolveNextExpectedDate({
         startDate: item.startDate,
         frequency: item.frequency,
+        intervalUnit: item.intervalUnit,
+        intervalCount: item.intervalCount,
         transactions: latestTxTime ? [{ time: latestTxTime }] : [],
         isActive: item.isActive,
         endDate: item.endDate,
@@ -319,6 +325,7 @@ export const getSubscriptionById = async ({
         {
           model: SubscriptionPeriods,
           as: 'periods',
+          include: [{ model: Transactions, as: 'transaction', attributes: ['id', 'deletedAt'], paranoid: false }],
         },
       ],
       order: [[{ model: SubscriptionPeriods, as: 'periods' }, 'dueDate', 'ASC']],
@@ -330,31 +337,39 @@ export const getSubscriptionById = async ({
 
   // toJSON() is untyped; describe the loaded shape (Money fields still boxed,
   // join-table metadata nested under SubscriptionTransactions) so the rest is typed.
-  const raw = subscription.toJSON() as unknown as Omit<SubscriptionBase, 'tagIds'> & {
+  const raw = subscription.toJSON() as unknown as Omit<SubscriptionBase, 'tagIds' | 'expectedAmount'> & {
+    expectedAmount: Money | null;
     transactions?: Array<
       TransactionsAttributes & {
         SubscriptionTransactions: Pick<SubscriptionTransactions, 'matchSource' | 'matchedAt' | 'status'>;
       }
     >;
-    periods?: SubscriptionPeriodItem[];
+    periods?: (Omit<SubscriptionPeriodItem, 'transactionInTrash'> & {
+      transaction?: Pick<Transactions, 'deletedAt'> | null;
+    })[];
   };
 
   const transactions: SubscriptionLinkedTransaction[] = (raw.transactions ?? []).map((tx) => ({
     ...tx,
     amount: tx.amount.toNumber(),
-    refAmount: tx.refAmount?.toNumber() ?? null,
+    refAmount: tx.refAmount.toNumber(),
     commissionRate: tx.commissionRate.toNumber(),
-    refCommissionRate: tx.refCommissionRate?.toNumber() ?? null,
+    refCommissionRate: tx.refCommissionRate.toNumber(),
     cashbackAmount: tx.cashbackAmount.toNumber(),
   }));
 
-  const periods = raw.periods ?? [];
+  const periods: SubscriptionPeriodItem[] = (raw.periods ?? []).map(({ transaction, ...period }) => ({
+    ...period,
+    transactionInTrash: Boolean(transaction?.deletedAt),
+  }));
   // `periods` arrive ordered by dueDate ASC, so the first open one is the earliest.
   const openPeriod = periods.find((p) => OPEN_STATUSES.some((status) => status === p.status));
 
   const nextExpectedDate = resolveNextExpectedDate({
     startDate: raw.startDate,
     frequency: raw.frequency,
+    intervalUnit: raw.intervalUnit,
+    intervalCount: raw.intervalCount,
     transactions: transactions.filter((tx) => !tx.isPlanned),
     isActive: raw.isActive,
     endDate: raw.endDate,
@@ -364,7 +379,7 @@ export const getSubscriptionById = async ({
 
   return {
     ...raw,
-    expectedAmount: centsToApiDecimalOrNull(raw.expectedAmount),
+    expectedAmount: moneyToApiDecimalOrNull(raw.expectedAmount),
     tagIds: await getSubscriptionTagIds({ subscriptionId: id }),
     transactions,
     nextExpectedDate,

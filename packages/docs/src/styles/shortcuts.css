@@ -1,0 +1,162 @@
+:root {
+  --sc-bg: #000;
+  --sc-card: #1c1c1e;
+  --sc-text: #fff;
+  --sc-muted: #8e8e93;
+  --sc-separator: #38383a;
+  --sc-blue: #0a84ff;
+  --sc-blue-tint: rgb(10 132 255 / 0.22);
+  --sc-chip: #2c2c2e;
+}
+
+:root[data-theme='light'] {
+  --sc-bg: #f2f2f7;
+  --sc-card: #fff;
+  --sc-text: #000;
+  --sc-separator: #d1d1d6;
+  --sc-blue: #007aff;
+  --sc-blue-tint: rgb(0 122 255 / 0.12);
+  --sc-chip: #e5e5ea;
+}
+
+.sc-figure {
+  max-width: 24rem;
+  padding: 0.75rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 1.25rem;
+  background: var(--sc-bg);
+  color: var(--sc-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+.sc-figure > * + * {
+  margin-top: 0.75rem;
+}
+.sc-figure figcaption {
+  font-size: var(--sl-text-xs);
+  color: var(--sc-muted);
+  text-align: center;
+}
+
+.sc-card {
+  border-radius: 0.75rem;
+  background: var(--sc-card);
+  overflow: hidden;
+}
+.sc-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.85rem;
+  font-weight: 600;
+}
+.sc-app-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.45rem;
+  background: var(--sl-color-accent);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.sc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  margin-left: 0.85rem;
+  padding: 0.5rem 0.85rem 0.5rem 0;
+  border-top: 1px solid var(--sc-separator);
+}
+.sc-row[data-active] {
+  margin-left: 0;
+  padding-left: 0.85rem;
+  box-shadow: inset 0 0 0 2px var(--sc-blue);
+  border-radius: 0.5rem;
+}
+.sc-row-label {
+  flex: none;
+}
+.sc-row-value {
+  min-width: 0;
+  color: var(--sc-muted);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.sc-row-value[data-set] {
+  color: var(--sc-blue);
+}
+
+.sc-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.4rem;
+  background: var(--sc-blue-tint);
+  color: var(--sc-blue);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sc-token {
+  color: var(--sc-blue);
+  font-weight: 600;
+}
+
+.sc-bar {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  background: var(--sc-card);
+  overflow: hidden;
+}
+.sc-chip {
+  flex: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: var(--sc-chip);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+.sc-chip[data-target] {
+  background: var(--sc-blue-tint);
+  color: var(--sc-blue);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 2px var(--sc-blue);
+}
+.sc-bar-gap {
+  flex: none;
+  color: var(--sc-muted);
+  font-size: 0.8125rem;
+}
+.sc-hint {
+  font-size: 0.75rem;
+  color: var(--sc-muted);
+  text-align: center;
+}
+
+.sc-section-title {
+  padding: 0 0.85rem 0.35rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+.sc-list .sc-row:first-child {
+  border-top: 0;
+}
+.sc-check {
+  color: var(--sc-blue);
+  font-weight: 700;
+}
+.sc-row[data-picked] .sc-row-label {
+  color: var(--sc-blue);
+  font-weight: 600;
+}

@@ -3,6 +3,7 @@ import { createController } from '@controllers/helpers/controller-factory';
 import { setTransferAdjustment } from '@services/investments/portfolios/transfers';
 import { z } from 'zod';
 
+import { transferAdjustmentBodySchema } from './schemas';
 import { serializeTransferResponse } from './serialize-transfer';
 
 const schema = z.object({
@@ -10,9 +11,7 @@ const schema = z.object({
     id: recordId(),
     transferId: recordId(),
   }),
-  body: z.object({
-    isAdjustment: z.boolean(),
-  }),
+  body: transferAdjustmentBodySchema,
 });
 
 export default createController(schema, async ({ user, params, body }) => {

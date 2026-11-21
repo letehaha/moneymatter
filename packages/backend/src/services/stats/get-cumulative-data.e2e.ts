@@ -7,6 +7,9 @@ import * as helpers from '@tests/helpers';
 // reaches into the future would report fewer months than it was asked for.
 const JAN = { from: '2026-01-01', to: '2026-01-31' };
 
+const periodValues = (result: { currentPeriod: { data: { periodValue: number }[] } }) =>
+  result.currentPeriod.data.map((month) => month.periodValue);
+
 describe('GET /stats/cumulative', () => {
   it('excludes planned rows from both the expense and the income cumulative totals', async () => {
     const account = await helpers.createAccount({ raw: true });
@@ -120,6 +123,57 @@ describe('GET /stats/cumulative', () => {
     expect(expenses.currentPeriod.total).toBe(350);
     expect(expenses.currentPeriod.data[0]!.periodValue).toBe(350);
     expect(income.currentPeriod.total).toBe(0);
+  }, 60_000);
+
+  it('nets each side of a cross-month refund in its own transaction month', async () => {
+    const account = await helpers.createAccount({ raw: true });
+
+    const [expenseTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 100,
+        transactionType: TRANSACTION_TYPES.expense,
+        time: '2026-01-10T12:00:00.000Z',
+      }),
+      raw: true,
+    });
+    const [refundTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 30,
+        transactionType: TRANSACTION_TYPES.income,
+        time: '2026-02-05T12:00:00.000Z',
+      }),
+      raw: true,
+    });
+    await helpers.createSingleRefund({ originalTxId: expenseTx.id, refundTxId: refundTx.id });
+    await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: account.id,
+        amount: 500,
+        transactionType: TRANSACTION_TYPES.income,
+        time: '2026-02-15T12:00:00.000Z',
+      }),
+      raw: true,
+    });
+
+    const JAN_FEB = { from: '2026-01-01', to: '2026-02-28' };
+    const FEB = { from: '2026-02-01', to: '2026-02-28' };
+    const expenses = await helpers.getCumulativeData({ ...JAN_FEB, metric: 'expenses', raw: true });
+    const income = await helpers.getCumulativeData({ ...JAN_FEB, metric: 'income', raw: true });
+    const savings = await helpers.getCumulativeData({ ...JAN_FEB, metric: 'savings', raw: true });
+    expect(periodValues(expenses)).toEqual([70, 0]);
+    expect(periodValues(income)).toEqual([0, 500]);
+    expect(periodValues(savings)).toEqual([-70, 500]);
+
+    const januaryExpenses = await helpers.getCumulativeData({ ...JAN, metric: 'expenses', raw: true });
+    expect(januaryExpenses.currentPeriod.total).toBe(70);
+
+    const februaryExpenses = await helpers.getCumulativeData({ ...FEB, metric: 'expenses', raw: true });
+    const februaryIncome = await helpers.getCumulativeData({ ...FEB, metric: 'income', raw: true });
+    expect(februaryExpenses.currentPeriod.total).toBe(0);
+    expect(februaryExpenses.previousPeriod.total).toBe(70);
+    expect(februaryIncome.currentPeriod.total).toBe(500);
   }, 60_000);
 });
 

@@ -2,9 +2,10 @@ import Currencies from '@models/currencies.model';
 import { Op } from 'sequelize';
 
 /**
- * Whether a stored code is custom. An existing row never switches kind: ISO rows are seeded and
- * the custom-code format refuses ISO codes, so a verdict is final and is remembered for the life of
- * the process. A code with no row is not remembered, because a custom row can appear later.
+ * Whether a stored code is custom. An existing row never switches kind: ISO rows are seeded, and
+ * `createCustomCurrency` and restore refuse an ISO code (`currency-codes` or an existing non-custom
+ * row), so a verdict is final and is remembered for the life of the process. A code with no row is
+ * not remembered, because a custom row can appear later.
  */
 const knownKinds = new Map<string, boolean>();
 

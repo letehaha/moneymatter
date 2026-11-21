@@ -29,6 +29,7 @@ import { trackAiUsage } from '@services/ai/track-ai-usage';
 import { applyCategoryDefaultTagsOnAiCategorization } from '@services/categories/default-tags';
 import { sseManager } from '@services/common/sse';
 import { withTransaction } from '@services/common/with-transaction';
+import { syncLegsOfMains } from '@services/transactions/payment-legs';
 import { markConnectionValid } from '@services/user-settings/ai-connections';
 import { getCustomInstructions } from '@services/user-settings/ai-custom-instructions';
 import { generateText } from 'ai';
@@ -293,6 +294,7 @@ const applyCategorizationResults = withTransaction(async function ({
   );
 
   await applyCategoryDefaultTagsOnAiCategorization({ userId, assignments });
+  await syncLegsOfMains({ mainIds: assignments.flatMap((assignment) => assignment.transactionIds) });
 });
 
 /**
@@ -339,6 +341,7 @@ async function applySkipStamps({
       }),
     ),
   );
+  await syncLegsOfMains({ mainIds: skips.map((skip) => skip.transactionId) });
 }
 
 /**

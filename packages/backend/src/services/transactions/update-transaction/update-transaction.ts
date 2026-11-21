@@ -1,6 +1,5 @@
 import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, isTwoLegTransfer } from '@bt/shared/types';
 import { roundToCurrency } from '@common/lib/currency-precision';
-import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
@@ -15,7 +14,13 @@ import { deleteSplitsForTransaction } from '@models/transaction-splits.model';
 import * as Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { getUserDefaultCategory } from '@models/users.model';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import {
+  assertPreSeamManualRow,
+  isManualRowOnSeamAccount,
+  isPreSeamManualRow,
+  SEAM_ACCOUNT_ATTRIBUTES,
+} from '@services/accounts/seam';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
 import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { assertLoanEditAllowed } from '@services/loans/assert-loan-edit-allowed';
@@ -27,17 +32,20 @@ import {
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 import { settlePeriodOnConfirm } from '@services/subscriptions/settle-period-on-match';
 import * as refundsService from '@services/tx-refunds';
+import { validateRefundLinks } from '@services/tx-refunds/validate-refund-links';
 
 import { withTransaction } from '../../common/with-transaction';
 import { calcTransferTransactionRefAmount, createOppositeTransaction } from '../create-transaction';
 import { getWritableTransactionById } from '../get-by-id';
 import { buildManualCategorizationMeta } from '../manual-categorization-meta';
+import { syncPaymentLegs } from '../payment-legs';
 import {
   assertAccountCanHoldPlans,
   assertPlannedFlipAllowed,
   assertPlannedStandalone,
   assertPlannedWriteAllowed,
 } from '../planned-matching/assert-planned-invariants';
+import { roundPositiveAmount } from '../round-positive-amount';
 import { manageSplits } from '../splits';
 import { linkTransactions } from '../transactions-linking';
 import { type UpdateTransactionParams } from '../types';
@@ -62,6 +70,38 @@ const clearOriginalSourceProvider = ({ externalData }: { externalData: Transacti
   externalData?.originalSource
     ? { ...externalData, originalSource: { ...externalData.originalSource, importedFrom: null } }
     : undefined;
+
+// Links saved under looser rules may fail `validateRefundLinks` now, so an edit that leaves
+// refund-relevant state untouched must not be blocked by them.
+const touchesRefundState = ({
+  payload,
+  prevData,
+  baseTransaction,
+}: {
+  payload: UpdateTransactionParams;
+  prevData: Transactions.default;
+  baseTransaction: Transactions.default;
+}) => {
+  const prevSplits = prevData.splits ?? [];
+  const nextSplits = payload.splits ?? [];
+  const splitsChanged =
+    payload.splits !== undefined &&
+    (nextSplits.length !== prevSplits.length ||
+      nextSplits.some(
+        (split) => !prevSplits.some((prev) => prev.categoryId === split.categoryId && prev.amount.equals(split.amount)),
+      ));
+
+  return (
+    payload.refundedByTxIds !== undefined ||
+    payload.refundsTargets !== undefined ||
+    splitsChanged ||
+    (payload.amount !== undefined && !payload.amount.equals(prevData.amount)) ||
+    baseTransaction.currencyCode !== prevData.currencyCode ||
+    (payload.transactionType !== undefined && payload.transactionType !== prevData.transactionType) ||
+    (payload.transferNature !== undefined && payload.transferNature !== prevData.transferNature) ||
+    (payload.isPlanned !== undefined && payload.isPlanned !== prevData.isPlanned)
+  );
+};
 
 export const EXTERNAL_ACCOUNT_RESTRICTED_UPDATION_FIELDS = ['amount', 'time', 'transactionType', 'accountId'];
 
@@ -92,38 +132,49 @@ const validateTransaction = async (
   // field locks stay off until it merges into a real transaction.
   const isExternalAccount = account.type !== ACCOUNT_TYPES.system && !prevData.isPlanned;
 
-  if (isExternalAccount) {
-    if (EXTERNAL_ACCOUNT_RESTRICTED_UPDATION_FIELDS.some((field) => newData[field] !== undefined)) {
+  if (isExternalAccount && EXTERNAL_ACCOUNT_RESTRICTED_UPDATION_FIELDS.some((field) => newData[field] !== undefined)) {
+    if (newData.accountId !== undefined && newData.accountId !== prevData.accountId) {
       throw new ValidationError({
-        message: t({ key: 'transactions.editReadonlyFields' }),
+        message: t({
+          key: isPreSeamManualRow({ account, transaction: prevData })
+            ? 'transactions.moveAcrossBankLinkedAccount'
+            : 'transactions.editReadonlyFields',
+        }),
       });
     }
+    assertPreSeamManualRow({ account, transaction: prevData, nextTime: newData.time });
   }
 
-  if (newData.transactionType && isExternalAccount && newData.transactionType !== prevData.transactionType) {
+  if (
+    newData.transactionType &&
+    isExternalAccount &&
+    newData.transactionType !== prevData.transactionType &&
+    !isPreSeamManualRow({ account, transaction: prevData })
+  ) {
     throw new ValidationError({
       message: t({ key: 'transactions.changeTypeNotAllowed' }),
     });
   }
 
   // Unchecking Planned claims the money has already moved. On a provider account only the
-  // provider gets to make that claim, by syncing the real transaction into this row. A
-  // request that also moves the row elsewhere is judged on where it lands instead, which
-  // the destination check in `updateTransaction` owns.
+  // provider makes that claim, except for a manual row on a seam account: the model hook
+  // admits it before the seam and refuses it from the link day on. A request that also
+  // moves the row is judged on where it lands, which `updateTransaction` checks.
   const isMovingToAnotherAccount = Boolean(newData.accountId && newData.accountId !== prevData.accountId);
 
   if (
     newData.isPlanned === false &&
     prevData.isPlanned &&
     account.type !== ACCOUNT_TYPES.system &&
-    !isMovingToAnotherAccount
+    !isMovingToAnotherAccount &&
+    !isManualRowOnSeamAccount({ account, transaction: prevData })
   ) {
     throw new ValidationError({
       message: t({ key: 'transactions.plannedUnflipOnConnectedAccount' }),
     });
   }
 
-  if (newData.refundedByTxIds !== undefined && newData.refundsTxId !== undefined) {
+  if (newData.refundedByTxIds !== undefined && newData.refundsTargets !== undefined) {
     throw new ValidationError({
       message: t({ key: 'transactions.bothRefundFieldsNotAllowed' }),
     });
@@ -180,7 +231,10 @@ const makeBasicBaseTxUpdation = async (
   });
 
   // Planned rows stay editable like manual ones until they merge — see `validateTransaction`.
-  const isSystemAccount = account?.type === ACCOUNT_TYPES.system || prevData.isPlanned;
+  const isSystemAccount =
+    account?.type === ACCOUNT_TYPES.system ||
+    prevData.isPlanned ||
+    (!!account && isPreSeamManualRow({ account, transaction: prevData }));
 
   // Never update "transactionType" of non-system transactions. Just an additional guard
   const transactionType = isSystemAccount ? newData.transactionType : prevData.transactionType;
@@ -202,7 +256,9 @@ const makeBasicBaseTxUpdation = async (
     // (the row's actual `userId`), not the caller. They differ when a recipient
     // edits an owner-created transaction with `transactionsWriteScope: 'all'`.
     userId: ctx.txCreatorUserId,
-    accountOwnerUserId: ctx.accountOwnerUserId,
+    definitionOwnerUserId: ctx.accountOwnerUserId,
+    // The original currency was checked as visible to the caller, so it rounds with the caller's definition.
+    originalCurrencyOwnerUserId: ctx.callerUserId,
     transactionType,
     paymentType: newData.paymentType,
     accountId: newData.accountId,
@@ -211,6 +267,7 @@ const makeBasicBaseTxUpdation = async (
     currencyCode: prevData.currencyCode,
     refundLinked: prevData.refundLinked,
     isPlanned: newData.isPlanned,
+    excludeFromStats: newData.excludeFromStats,
     originalAmount: newData.originalAmount,
     originalCurrencyCode: newData.originalCurrencyCode,
   };
@@ -270,7 +327,7 @@ const makeBasicBaseTxUpdation = async (
     const staysPlanned = newData.isPlanned ?? prevData.isPlanned;
 
     if (destinationAccount.type !== ACCOUNT_TYPES.system && !staysPlanned) {
-      throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
+      throw new ValidationError({ message: t({ key: 'transactions.moveAcrossBankLinkedAccount' }) });
     }
 
     baseTransactionUpdateParams.accountType = destinationAccount.type;
@@ -295,10 +352,9 @@ const makeBasicBaseTxUpdation = async (
   }
 
   if (defaultUserCurrency.code !== baseTransactionUpdateParams.currencyCode) {
-    // `null` flags the row as missing its base-currency amount (custom currency, no rate yet).
-    baseTransactionUpdateParams.refAmount = await calculateRefAmountOrNull({
+    baseTransactionUpdateParams.refAmount = await calculateRefAmount({
       userId: newData.userId,
-      amountOwnerUserId: ctx.accountOwnerUserId,
+      definitionOwnerUserId: ctx.accountOwnerUserId,
       amount: effectiveAmount,
       baseCode: baseTransactionUpdateParams.currencyCode,
       quoteCode: defaultUserCurrency.code,
@@ -323,58 +379,61 @@ const makeBasicBaseTxUpdation = async (
 
   if (newData.refundedByTxIds !== undefined) {
     const refundsShouldBeRemoved = prevData.refundLinked && newData.refundedByTxIds === null;
-    const refundsShouldBeSetOrOverriden = Array.isArray(newData.refundedByTxIds) && newData.refundedByTxIds.length;
+    const refundedByTxIds = newData.refundedByTxIds ?? [];
 
-    if (refundsShouldBeRemoved || refundsShouldBeSetOrOverriden) {
-      // Remove old refunds first (before update)
+    if (refundsShouldBeRemoved || refundedByTxIds.length) {
       const previousRefunds = await refundsService.getRefundsForTransactionById({
         userId: newData.userId,
         transactionId: newData.id,
       });
+      const previousAsOriginal = previousRefunds.filter((refund) => refund.originalTxId === newData.id);
       await removeRefunds(previousRefunds);
 
-      if (refundsShouldBeRemoved) baseTransactionUpdateParams.refundLinked = false;
-      if (refundsShouldBeSetOrOverriden) {
-        // A repeated id would be rejected by `createSingleRefund`'s already-linked check.
-        const refundedByTxIds = [...new Set(newData.refundedByTxIds!)];
+      baseTransactionUpdateParams.refundLinked = refundedByTxIds.length > 0;
 
-        baseTransactionUpdateParams.refundLinked = true;
-        // Defer refund creation until after transaction is updated
+      if (refundedByTxIds.length) {
+        // Recreated rather than kept so the structural checks run against the updated row;
+        // a re-listed refund keeps its share and split.
         pendingRefundOperation = async () => {
           // Sequential: each link's running-sum check must see the ones created before it.
-          for (const id of refundedByTxIds) {
+          for (const { txId, amount } of refundedByTxIds) {
+            const previousLink = previousAsOriginal.find((refund) => refund.refundTxId === txId);
             await refundsService.createSingleRefund({
               originalTxId: newData.id,
-              refundTxId: id,
+              refundTxId: txId,
               userId: newData.userId,
+              splitId: previousLink?.splitId ?? undefined,
+              amount: amount === undefined ? (previousLink?.amount ?? null) : amount,
             });
           }
         };
       }
     }
-  } else if (newData.refundsTxId !== undefined) {
-    const refundShouldBeRemoved = prevData.refundLinked && newData.refundsTxId === null;
-    const refundShouldBeSetOrOverriden = newData.refundsTxId;
+  } else if (newData.refundsTargets !== undefined) {
+    const refundsTargets = newData.refundsTargets ?? [];
+    const targetsShouldBeRemoved = prevData.refundLinked && newData.refundsTargets === null;
 
-    if (refundShouldBeRemoved || refundShouldBeSetOrOverriden) {
-      // Remove old refunds first (before update)
+    if (targetsShouldBeRemoved || refundsTargets.length) {
       const previousRefunds = await refundsService.getRefundsForTransactionById({
         userId: newData.userId,
         transactionId: newData.id,
       });
       await removeRefunds(previousRefunds);
 
-      if (refundShouldBeRemoved) baseTransactionUpdateParams.refundLinked = false;
-      if (refundShouldBeSetOrOverriden) {
+      if (targetsShouldBeRemoved) baseTransactionUpdateParams.refundLinked = false;
+      if (refundsTargets.length) {
         baseTransactionUpdateParams.refundLinked = true;
-        // Defer refund creation until after transaction is updated
         pendingRefundOperation = async () => {
-          await refundsService.createSingleRefund({
-            originalTxId: newData.refundsTxId!,
-            refundTxId: newData.id,
-            userId: newData.userId,
-            splitId: newData.refundsSplitId ?? undefined,
-          });
+          // Sequential: each link's amount check must see the ones created before it.
+          for (const target of refundsTargets) {
+            await refundsService.createSingleRefund({
+              originalTxId: target.txId,
+              refundTxId: newData.id,
+              userId: newData.userId,
+              splitId: target.splitId ?? undefined,
+              amount: target.amount,
+            });
+          }
         };
       }
     }
@@ -442,7 +501,7 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
     });
   }
 
-  await assertTxWriteAccess({
+  const { ownerUserId: oppositeOwnerUserId } = await assertTxWriteAccess({
     userId,
     tx: oppositeTx,
     notFoundKey: 'transactions.oppositeTransactionNotFound',
@@ -474,18 +533,16 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
 
   if (destinationAccountId && isDestinationAccountChanged) {
     // Since destinationAccountId is changed, we need to change currency too
-    const { currency: oppositeTxCurrency, type: destinationAccountType } = await Accounts.getAccountCurrency({
-      userId,
-      id: destinationAccountId,
-    });
+    const destinationAccount = await Accounts.getAccountCurrency({ userId, id: destinationAccountId });
+    const oppositeTxCurrency = destinationAccount.currency;
 
     // Both ends are judged by the account's current type: the opposite leg may neither
     // leave a bank-linked account nor land on one.
     if (await Accounts.isBankLinkedAccount({ id: oppositeTx.accountId })) {
-      throw new ValidationError({ message: t({ key: 'transactions.editReadonlyFields' }) });
+      throw new ValidationError({ message: t({ key: 'transactions.oppositeLegOnBankAccount' }) });
     }
-    if (destinationAccountType !== ACCOUNT_TYPES.system) {
-      throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
+    if (destinationAccount.type !== ACCOUNT_TYPES.system) {
+      throw new ValidationError({ message: t({ key: 'transactions.moveAcrossBankLinkedAccount' }) });
     }
 
     updateOppositeTxParams = {
@@ -493,6 +550,10 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
       currencyCode: oppositeTxCurrency.code,
     };
   }
+
+  // A moved leg lands on an account of the caller's (looked up by `userId` above). The leg's author may
+  // not hold the account owner's custom currency, so its amounts round at the owner's definition.
+  const destinationOwnerUserId = isDestinationAccountChanged ? userId : oppositeOwnerUserId;
 
   // A base-amount edit must keep the pair in sync. Same-currency legs of a
   // transfer are always equal, so the destination leg mirrors the base amount
@@ -513,13 +574,51 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
     updateOppositeTxParams.amount = impliedDestinationAmount;
   }
 
-  if (updateOppositeTxParams.amount !== undefined) {
+  // An entered destination amount must stay positive; one mirrored from a zero base amount may be zero.
+  if (destinationAmount !== undefined) {
+    updateOppositeTxParams.amount = await roundPositiveAmount({
+      money: destinationAmount,
+      userId: destinationOwnerUserId,
+      currencyCode: updateOppositeTxParams.currencyCode,
+    });
+  } else if (updateOppositeTxParams.amount !== undefined || isDestinationAccountChanged) {
     updateOppositeTxParams.amount = await roundToCurrency({
-      money: updateOppositeTxParams.amount,
-      userId: oppositeTx.userId,
+      money: updateOppositeTxParams.amount ?? oppositeTx.amount,
+      userId: destinationOwnerUserId,
       currencyCode: updateOppositeTxParams.currencyCode,
       mode: 'half-up',
     });
+  }
+
+  // A bank leg keeps its own time and amount: an edit that changes them is refused, and
+  // values only resent unchanged are not copied onto it.
+  if (oppositeTx.accountType !== ACCOUNT_TYPES.system) {
+    const changesBankLeg =
+      (time !== undefined && +time !== +prevData.time) ||
+      (amount !== undefined && !baseTransaction.amount.equals(prevData.amount)) ||
+      (destinationAmount !== undefined && !updateOppositeTxParams.amount?.equals(oppositeTx.amount));
+    if (changesBankLeg) throw new ValidationError({ message: t({ key: 'transactions.oppositeLegOnBankAccount' }) });
+    delete updateOppositeTxParams.time;
+    delete updateOppositeTxParams.amount;
+  }
+
+  // A manual leg on a bank-linked account may only change within its pre-seam history.
+  const changesOppositeLeg =
+    (time !== undefined && +time !== +oppositeTx.time) ||
+    (updateOppositeTxParams.amount !== undefined && !updateOppositeTxParams.amount.equals(oppositeTx.amount));
+  if (oppositeTx.accountType === ACCOUNT_TYPES.system && changesOppositeLeg) {
+    const oppositeAccount = await findOrThrowNotFound({
+      query: Accounts.default.findByPk(oppositeTx.accountId, { attributes: [...SEAM_ACCOUNT_ATTRIBUTES] }),
+      message: t({ key: 'accounts.accountNotFoundForTransaction' }),
+    });
+    if (oppositeAccount.type !== ACCOUNT_TYPES.system) {
+      assertPreSeamManualRow({
+        account: oppositeAccount,
+        transaction: oppositeTx,
+        nextTime: time,
+        isOppositeLeg: true,
+      });
+    }
   }
 
   // Effective post-update amount of the destination leg. Falls back to the
@@ -529,6 +628,7 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
 
   const { oppositeRefAmount, baseTransaction: updatedBaseTransaction } = await calcTransferTransactionRefAmount({
     userId,
+    definitionOwnerUserId: destinationOwnerUserId,
     baseTransaction,
     destinationAmount: effectiveDestinationAmount,
     oppositeTxCurrencyCode: updateOppositeTxParams.currencyCode,
@@ -538,7 +638,10 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
   updateOppositeTxParams.refAmount = oppositeRefAmount;
   baseTransaction = updatedBaseTransaction;
 
-  const destinationTransaction = await Transactions.updateTransactionById(updateOppositeTxParams);
+  const destinationTransaction = await Transactions.updateTransactionById({
+    ...updateOppositeTxParams,
+    definitionOwnerUserId: destinationOwnerUserId,
+  });
 
   return { baseTx: baseTransaction, oppositeTx: destinationTransaction };
 };
@@ -622,7 +725,11 @@ export const updateTransaction = withTransaction(
     payload: UpdateTransactionParams,
   ): Promise<[baseTx: Transactions.default, oppositeTx?: Transactions.default]> => {
     try {
-      await assertCurrencyCodesVisible({ userId: payload.userId, codes: [payload.originalCurrencyCode] });
+      await assertCurrencyCodesVisible({
+        userId: payload.userId,
+        codes: [payload.originalCurrencyCode],
+        allowedWithoutPlan: [payload.originalCurrencyCode],
+      });
 
       // Single fetch + write-authorization gate. `getWritableTransactionById` throws 404
       // when the caller has no claim, 401 when scope: 'own' is violated. Returns a
@@ -630,6 +737,7 @@ export const updateTransaction = withTransaction(
       const { tx: prevData, ctx: authCtx } = await getWritableTransactionById({
         id: payload.id,
         userId: payload.userId,
+        include: Transactions.prepareTXInclude({ includeSplits: true }),
       });
 
       const ctx: UpdateAuthContext = {
@@ -640,6 +748,11 @@ export const updateTransaction = withTransaction(
       };
 
       assertPlannedWriteAllowed({ transaction: prevData, callerUserId: payload.userId });
+
+      // A leg copies its main row, so an edit made here would be overwritten.
+      if (prevData.paymentParentId) {
+        throw new ValidationError({ message: t({ key: 'transactions.paymentLegEditThroughMain' }) });
+      }
 
       if (payload.isPlanned === true && !prevData.isPlanned) {
         await assertPlannedFlipAllowed({ transaction: prevData, callerUserId: payload.userId });
@@ -669,7 +782,7 @@ export const updateTransaction = withTransaction(
       assertSharedWritePhase1Guards({
         isOwner: authCtx.isOwner,
         involvesTransfer: isCreatingTransfer(payload, prevData) || isDiscardingTransfer(payload, prevData),
-        involvesRefund: payload.refundedByTxIds !== undefined || payload.refundsTxId !== undefined,
+        involvesRefund: payload.refundedByTxIds !== undefined || payload.refundsTargets !== undefined,
         changesAccountId: payload.accountId !== undefined && payload.accountId !== prevData.accountId,
       });
 
@@ -764,12 +877,12 @@ export const updateTransaction = withTransaction(
         } else {
           // Update splits. `userId` here is creator metadata stamped on newly
           // inserted split rows — internal lookups inside `manageSplits` are keyed
-          // by `transactionId` only. `categoryOwnerUserId` scopes the category-existence
+          // by `transactionId` only. `accountOwnerUserId` scopes the category-existence
           // check so recipients on shared accounts validate against the owner's set.
           await manageSplits({
             transactionId: baseTransaction.id,
             userId: ctx.callerUserId,
-            categoryOwnerUserId: ctx.accountOwnerUserId,
+            accountOwnerUserId: ctx.accountOwnerUserId,
             splits: payload.splits,
             transactionAmount: baseTransaction.amount,
             transactionCurrencyCode: baseTransaction.currencyCode,
@@ -821,6 +934,17 @@ export const updateTransaction = withTransaction(
       // can settle its period now.
       if (prevData.isPlanned && !baseTransaction.isPlanned) {
         await settlePeriodOnConfirm({ transaction: baseTransaction, userId: ctx.accountOwnerUserId });
+      }
+
+      await syncPaymentLegs({
+        userId: payload.userId,
+        mainTxId: baseTransaction.id,
+        legs: payload.paymentLegs,
+        mainCurrencyChanged: baseTransaction.currencyCode !== prevData.currencyCode,
+      });
+
+      if (touchesRefundState({ payload, prevData, baseTransaction })) {
+        await validateRefundLinks({ userId: ctx.txCreatorUserId, txId: payload.id });
       }
 
       return updatedTransactions;

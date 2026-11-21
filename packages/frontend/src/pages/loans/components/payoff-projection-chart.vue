@@ -21,6 +21,7 @@
             <InputField
               :model-value="customPayment"
               type="number"
+              :decimals="decimals"
               :only-positive="true"
               :aria-label="$t('loans.detail.payoffChart.customPaymentLabel')"
               :placeholder="customPaymentPlaceholder"
@@ -210,7 +211,7 @@ const plannedPayment = computed(() => props.loan.loanDetails.plannedPayment);
 
 const decimals = computed(() => getCurrencyDecimals({ code: currencyCode.value }));
 
-const formatCurrency = (amount: number) => formatAmountByCurrencyCode(amount, currencyCode.value);
+const formatCurrency = (amount: number) => formatAmountByCurrencyCode({ amount, currencyCode: currencyCode.value });
 
 const currencySymbol = computed(() => getCurrencySymbol(currencyCode.value));
 
@@ -353,7 +354,7 @@ const comparisons = computed(() => {
 
     if (baseline) {
       const { savesInterest, costsInterest, faster, slower, sameInterest, sameTime, interestDelta, monthsDelta } =
-        comparePayoffScenarios({ scenario, baseline });
+        comparePayoffScenarios({ scenario, baseline, decimals: decimals.value });
 
       result.push({
         key,

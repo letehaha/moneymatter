@@ -7,7 +7,7 @@
       "organizeButton": "Organisieren",
       "empty": "Noch keine Kategorien. Erstelle deine erste Kategorie, um loszulegen.",
       "categoriesCount": "{n} Kategorie | {n} Kategorien",
-      "organizeHint": "Auf Kategorie ziehen oder hier als Hauptkategorie ablegen.",
+      "organizeHint": "Auf Kategorie ziehen oder hier als Hauptkategorie ablegen",
       "dropToTopLevel": "\"{name}\" hier als Hauptkategorie ablegen",
       "movesQueued": "{n} Verschiebung vorgemerkt | {n} Verschiebungen vorgemerkt",
       "unqueueMove": "Diese Verschiebung entfernen",

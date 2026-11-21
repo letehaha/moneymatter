@@ -1,9 +1,12 @@
-import type { Cents, Decimal, MinorUnits } from '@bt/shared/types';
+import { type Cents, type Decimal, type MinorUnits, MAX_CURRENCY_DECIMALS } from '@bt/shared/types';
 import Big from 'big.js';
 
-const assertDecimals = ({ decimals, caller }: { decimals: number; caller: string }): void => {
+export const assertDecimals = ({ decimals, caller }: { decimals: number; caller: string }): void => {
   if (!Number.isInteger(decimals) || decimals < 0) {
     throw new Error(`${caller}: expected a non-negative integer for decimals, got ${decimals}`);
+  }
+  if (decimals > MAX_CURRENCY_DECIMALS) {
+    throw new Error(`${caller}: ${decimals} decimals exceeds the supported maximum of ${MAX_CURRENCY_DECIMALS}`);
   }
 };
 
@@ -11,7 +14,7 @@ const assertDecimals = ({ decimals, caller }: { decimals: number; caller: string
  * Immutable Money value object backed by big.js for precise arithmetic.
  *
  * Internal representation: actual decimal value (not cents).
- * - `Money.fromCents(1550)` internally stores Big(15.50)
+ * - `Money.fromCents(asCents(1550))` internally stores Big(15.50)
  * - `Money.fromDecimal(15.50)` internally stores Big(15.50)
  * - Both regular transactions and investments produce the same internal representation
  *
@@ -45,9 +48,9 @@ export class Money {
    * Divides by 100 to get the actual decimal value.
    *
    * @example
-   * Money.fromCents(1550) // represents $15.50
+   * Money.fromCents(asCents(1550)) // represents $15.50
    */
-  static fromCents(n: number): Money {
+  static fromCents(n: Cents): Money {
     if (!Number.isFinite(n)) {
       throw new Error(`Money.fromCents: expected finite number, got ${n}`);
     }
@@ -72,6 +75,9 @@ export class Money {
     }
     if (!Number.isInteger(value)) {
       throw new Error(`Money.fromMinorUnits: expected integer, got ${value}`);
+    }
+    if (!Number.isSafeInteger(value)) {
+      throw new Error(`Money.fromMinorUnits: expected a safe integer, got ${value}`);
     }
     return new Money(new Big(value).div(new Big(10).pow(decimals)));
   }
@@ -148,9 +154,9 @@ export class Money {
 
   /**
    * Round to `dp` decimal places using ROUND_HALF_UP.
-   * Defaults to 2 decimal places.
+   * Used for entered amounts; pass the currency's decimals.
    */
-  round(dp = 2): Money {
+  round(dp: number): Money {
     return new Money(this.value.round(dp, Big.roundHalfUp));
   }
 
@@ -158,7 +164,7 @@ export class Money {
    * Round to `dp` decimal places using ROUND_HALF_EVEN (banker's rounding).
    * Used for converted amounts, where ties must not accumulate a bias.
    */
-  roundHalfEven(dp = 2): Money {
+  roundHalfEven(dp: number): Money {
     return new Money(this.value.round(dp, Big.roundHalfEven));
   }
 
@@ -218,8 +224,7 @@ export class Money {
   /**
    * Convert to an integer count of a currency's minor units at its own decimals, rounding excess
    * precision half-up (away from zero on a tie), as `toCents()` does. `toMinorUnits({ decimals: 2 })`
-   * is `toCents()`. Stored amounts are already at their currency's decimals, so rounding only
-   * matters for derived values.
+   * is `toCents()`. Throws when the count is outside the safe integer range rather than lose digits.
    *
    * @example
    * Money.fromDecimal('1.234').toMinorUnits({ decimals: 3 }) // => 1234
@@ -227,8 +232,14 @@ export class Money {
    */
   toMinorUnits({ decimals }: { decimals: number }): MinorUnits {
     assertDecimals({ decimals, caller: 'Money.toMinorUnits' });
+    const minorUnits = this.value.times(new Big(10).pow(decimals)).round(0, Big.roundHalfUp);
+    if (minorUnits.abs().gt(Number.MAX_SAFE_INTEGER)) {
+      throw new Error(
+        `Money.toMinorUnits: ${minorUnits.toFixed()} minor units at ${decimals} decimals exceeds the safe integer range`,
+      );
+    }
     // `+ 0` turns a negative zero (from rounding -0.4 to 0 places) into 0.
-    return (this.value.times(new Big(10).pow(decimals)).round(0, Big.roundHalfUp).toNumber() + 0) as MinorUnits;
+    return (minorUnits.toNumber() + 0) as MinorUnits;
   }
 
   /**
@@ -294,32 +305,10 @@ export function moneyToApiDecimalOrNull(val: Money | string | null | undefined):
 }
 
 /**
- * Convert a Money or an integer cents number (provider minor units that really are cents)
- * to an API-friendly decimal number.
- *
- * Only for values that really are cents (provider minor units). Report engines use
- * `minorUnitsToApiDecimal`; model or raw-row money fields use `moneyToApiDecimal`.
+ * Convert an integer count of minor units at the currency's `decimals` (what the report engines sum
+ * in memory) to an API-friendly decimal number.
  */
-export function centsToApiDecimal(val: Money | number): Decimal {
-  if (Money.isMoney(val)) return val.toNumber();
-  return Money.fromCents(val as number).toNumber();
-}
-
-/**
- * Nullable-field variant of `centsToApiDecimal`: null/undefined pass through as
- * null. Use for optional money fields so serializers don't hand-roll the guard
- * ternary.
- */
-export function centsToApiDecimalOrNull(val: Money | number | null | undefined): Decimal | null {
-  return val == null ? null : centsToApiDecimal(val);
-}
-
-/**
- * Convert a Money or an integer count of minor units at the currency's `decimals` (what the report
- * engines sum in memory) to an API-friendly decimal number. At 2 decimals it equals `centsToApiDecimal`.
- */
-export function minorUnitsToApiDecimal({ value, decimals }: { value: Money | number; decimals: number }): Decimal {
-  if (Money.isMoney(value)) return value.toNumber();
+export function minorUnitsToApiDecimal({ value, decimals }: { value: number; decimals: number }): Decimal {
   return Money.fromMinorUnits({ value, decimals }).toNumber();
 }
 
@@ -328,7 +317,7 @@ export function minorUnitsToApiDecimalOrNull({
   value,
   decimals,
 }: {
-  value: Money | number | null | undefined;
+  value: number | null | undefined;
   decimals: number;
 }): Decimal | null {
   return value == null ? null : minorUnitsToApiDecimal({ value, decimals });
@@ -336,9 +325,3 @@ export function minorUnitsToApiDecimalOrNull({
 
 /** Decimal scale for investment DECIMAL columns (precision: 20, scale: 10). */
 export const INVESTMENT_DECIMAL_SCALE = 10;
-
-/** Equality of two nullable amounts: two missing values are equal, a missing value never equals an amount. */
-export function moneyEqualsOrNull(a: Money | null | undefined, b: Money | null | undefined): boolean {
-  if (a == null || b == null) return a == null && b == null;
-  return a.equals(b);
-}

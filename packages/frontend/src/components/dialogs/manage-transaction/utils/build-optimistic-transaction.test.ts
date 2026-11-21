@@ -32,7 +32,7 @@ describe('buildOptimisticTransaction', () => {
   it('leaves amount and time untouched for a synced transaction', () => {
     const transaction = buildTransaction({ time: new Date('2024-01-01T00:00:00.000Z') });
 
-    const result = buildOptimisticTransaction({ form: buildForm(), transaction, isRecordExternal: true });
+    const result = buildOptimisticTransaction({ form: buildForm(), transaction, isRecordBankLocked: true });
 
     expect(result.amount).toBe(100);
     expect(result.time).toEqual(new Date('2024-01-01T00:00:00.000Z'));
@@ -44,7 +44,7 @@ describe('buildOptimisticTransaction', () => {
     const result = buildOptimisticTransaction({
       form: buildForm({ isPlanned: true }),
       transaction,
-      isRecordExternal: true,
+      isRecordBankLocked: true,
     });
 
     expect(result.amount).toBe(250);
@@ -58,10 +58,30 @@ describe('buildOptimisticTransaction', () => {
     const result = buildOptimisticTransaction({
       form: buildForm({ isPlanned: false }),
       transaction,
-      isRecordExternal: false,
+      isRecordBankLocked: false,
     });
 
     expect(result.isPlanned).toBe(false);
+  });
+
+  it('applies excludeFromStats from the form', () => {
+    const result = buildOptimisticTransaction({
+      form: buildForm({ excludeFromStats: true }),
+      transaction: buildTransaction({ excludeFromStats: false }),
+      isRecordBankLocked: false,
+    });
+
+    expect(result.excludeFromStats).toBe(true);
+  });
+
+  it('clears excludeFromStats when the form flag is unchecked', () => {
+    const result = buildOptimisticTransaction({
+      form: buildForm({ excludeFromStats: false }),
+      transaction: buildTransaction({ excludeFromStats: true }),
+      isRecordBankLocked: false,
+    });
+
+    expect(result.excludeFromStats).toBe(false);
   });
 
   it('carries a complete original-currency pair onto the row', () => {
@@ -70,7 +90,7 @@ describe('buildOptimisticTransaction', () => {
     const result = buildOptimisticTransaction({
       form: buildForm({ originalAmount: 1500, originalCurrency: JPY }),
       transaction,
-      isRecordExternal: false,
+      isRecordBankLocked: false,
     });
 
     expect(result.originalAmount).toBe(1500);
@@ -83,7 +103,7 @@ describe('buildOptimisticTransaction', () => {
     const result = buildOptimisticTransaction({
       form: buildForm({ originalAmount: null, originalCurrency: null }),
       transaction,
-      isRecordExternal: false,
+      isRecordBankLocked: false,
     });
 
     expect(result.originalAmount).toBeNull();
@@ -96,7 +116,7 @@ describe('buildOptimisticTransaction', () => {
     const result = buildOptimisticTransaction({
       form: buildForm({ type: FORM_TYPES.transfer, originalAmount: 9999, originalCurrency: JPY }),
       transaction,
-      isRecordExternal: false,
+      isRecordBankLocked: false,
     });
 
     expect(result.originalAmount).toBe(1500);
@@ -110,7 +130,7 @@ describe('buildOptimisticTransaction', () => {
       location: { latitude: 1, longitude: 2 },
     });
 
-    const untouched = buildOptimisticTransaction({ form: buildForm(), transaction, isRecordExternal: false });
+    const untouched = buildOptimisticTransaction({ form: buildForm(), transaction, isRecordBankLocked: false });
     expect(untouched.externalUrl).toBe('https://a.example/1');
     expect(untouched.externalReference).toBe('A-1');
     expect(untouched.location).toEqual({ latitude: 1, longitude: 2 });
@@ -118,7 +138,7 @@ describe('buildOptimisticTransaction', () => {
     const edited = buildOptimisticTransaction({
       form: buildForm({ externalUrl: '  ', externalReference: ' B-2 ', latitude: null, longitude: null }),
       transaction,
-      isRecordExternal: false,
+      isRecordBankLocked: false,
     });
     expect(edited.externalUrl).toBeNull();
     expect(edited.externalReference).toBe('B-2');

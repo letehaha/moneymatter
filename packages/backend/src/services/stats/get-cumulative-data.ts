@@ -7,6 +7,7 @@ import {
 } from '@bt/shared/types';
 import { expandCategoryIdsWithDescendants } from '@services/categories/category-hierarchy';
 import { getAccessibleCategoryMap } from '@services/categories/get-accessible-category-map.service';
+import { refundLegs } from '@services/stats/category-allocation';
 import { type StatsScopeFilters, buildStatsScopeWhere } from '@services/stats/stats-scope-filters';
 import { statsTransactions } from '@services/stats/stats-transactions';
 import {
@@ -126,6 +127,9 @@ export const getCumulativeData = async ({
   };
 };
 
+// year-monthIndex (0-11)
+const monthKeyFor = ({ time }: { time: Date }) => `${getYear(time)}-${getMonth(time)}`;
+
 async function getPeriodData({
   userId,
   from,
@@ -150,8 +154,6 @@ async function getPeriodData({
   const effectiveToDate = toDate > now ? endOfMonth(now) : toDate;
   const effectiveTo = format(effectiveToDate, 'yyyy-MM-dd');
 
-  // Both directions are always loaded, whatever the metric: a refund pairs an expense with an
-  // income, and netting one side needs the other side in scope.
   const { rows: transactions, refundPairs } = await statsTransactions({
     access: { accessibleTo: userId },
     planned: 'exclude',
@@ -169,7 +171,7 @@ async function getPeriodData({
         ...buildStatsScopeWhere({ accountId, accountIds, payeeIds, excludedPayeeIds, tagIds, excludedTagIds }),
       ],
     },
-    attributes: ['id', 'time', 'refAmount', 'transactionType', 'categoryId', 'refundLinked'],
+    attributes: ['id', 'time', 'amount', 'refAmount', 'transactionType', 'categoryId', 'refundLinked'],
   });
 
   // Build a map of year-month to aggregate values
@@ -177,11 +179,7 @@ async function getPeriodData({
 
   // Aggregate transactions into months
   for (const tx of transactions) {
-    // A row with no base-currency amount (custom currency, no rate yet) is left out of the totals.
-    if (tx.refAmount === null) continue;
-
-    const txTime = new Date(tx.time);
-    const monthKey = `${getYear(txTime)}-${getMonth(txTime)}`; // year-monthIndex (0-11)
+    const monthKey = monthKeyFor({ time: new Date(tx.time) });
 
     if (!monthlyDataMap.has(monthKey)) {
       monthlyDataMap.set(monthKey, { income: 0, expenses: 0 });
@@ -196,18 +194,12 @@ async function getPeriodData({
     }
   }
 
-  // Refunded money was neither spent nor earned: both halves leave in the month the money came
-  // back, which keeps the savings metric (income - expenses) untouched. A pair with only one half
-  // in scope stays gross — subtracting it alone would remove money the report never counted.
-  for (const pair of refundPairs) {
-    if (!pair.expenseInScope || !pair.incomeInScope) continue;
-
-    const refundTime = new Date(pair.time);
-    const monthEntry = monthlyDataMap.get(`${getYear(refundTime)}-${getMonth(refundTime)}`);
-    if (!monthEntry) continue;
-
-    monthEntry.income -= pair.minor;
-    monthEntry.expenses -= pair.minor;
+  // Refunded money was neither spent nor earned. An in-scope side's own tx already filled its month.
+  for (const leg of refundLegs({ pairs: refundPairs, side: TRANSACTION_TYPES.expense })) {
+    monthlyDataMap.get(monthKeyFor({ time: leg.time }))!.expenses += leg.minor;
+  }
+  for (const leg of refundLegs({ pairs: refundPairs, side: TRANSACTION_TYPES.income })) {
+    monthlyDataMap.get(monthKeyFor({ time: leg.time }))!.income += leg.minor;
   }
 
   // Build cumulative data based on metric
@@ -226,7 +218,7 @@ async function getPeriodData({
       break;
     }
 
-    const monthKey = `${getYear(currentMonth)}-${getMonth(currentMonth)}`;
+    const monthKey = monthKeyFor({ time: currentMonth });
     const monthData = monthlyDataMap.get(monthKey) || { income: 0, expenses: 0 };
     // getMonth() returns 0-11, which always maps to a valid MONTH_LABELS index
     const monthLabel = MONTH_LABELS[getMonth(currentMonth)]!;

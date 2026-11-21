@@ -1,4 +1,4 @@
-import { TRACKER_TYPES, type RecordId, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
+import { type RecordId, SHARE_PERMISSIONS, TRACKER_LIMIT_KINDS, TRANSACTION_TYPES } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -9,35 +9,45 @@ import { getResponseInitialState } from './stats';
 const findFood = (categories: Awaited<ReturnType<typeof helpers.getCategoriesList>>) =>
   categories.find((category) => category.key === 'food' && category.parentId === null)!;
 
-/** Runs the flow as a KWD-base user (3 decimals) with a KWD account. */
-const inKwdBook = async (fn: (book: { accountId: RecordId; categoryId: RecordId }) => Promise<void>): Promise<void> => {
-  const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
-
-  await helpers.asUser({
-    cookies: kwdUser.cookies,
-    fn: async () => {
-      await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
-      const account = await helpers.createAccount({
-        payload: helpers.buildAccountPayload({ currencyCode: 'KWD' }),
-        raw: true,
-      });
-      const category = await helpers.addCustomCategory({ name: 'Precision', color: '#AABBCC', raw: true });
-      await fn({ accountId: account.id, categoryId: category.id });
-    },
-  });
+const findLifeGifts = (categories: Awaited<ReturnType<typeof helpers.getCategoriesList>>) => {
+  const life = categories.find((category) => category.key === 'life' && category.parentId === null)!;
+  return categories.find((category) => category.key === 'gifts' && category.parentId === life.id)!;
 };
 
-const expenseOf = ({ accountId, categoryId, amount }: { accountId: RecordId; categoryId: RecordId; amount: number }) =>
-  helpers.createTransaction({
-    payload: helpers.buildTransactionPayload({
-      accountId,
-      categoryId,
-      amount,
-      transactionType: TRANSACTION_TYPES.expense,
-      time: '2025-06-15T10:00:00Z',
-    }),
+const createTrackerWithIncome = async ({
+  limitKind,
+  incomeAmount = 800,
+  expenseAmount = 200,
+}: {
+  limitKind?: TRACKER_LIMIT_KINDS;
+  incomeAmount?: number;
+  expenseAmount?: number;
+}) => {
+  const account = await helpers.createAccount({ raw: true });
+  const [incomeTx] = await helpers.createTransaction({
     raw: true,
+    payload: helpers.buildTransactionPayload({
+      accountId: account.id,
+      amount: incomeAmount,
+      transactionType: TRANSACTION_TYPES.income,
+    }),
   });
+  const [expenseTx] = await helpers.createTransaction({
+    raw: true,
+    payload: helpers.buildTransactionPayload({
+      accountId: account.id,
+      amount: expenseAmount,
+      transactionType: TRANSACTION_TYPES.expense,
+    }),
+  });
+  const tracker = await helpers.createTracker({ name: 'kind', limitAmount: 1000, limitKind, raw: true });
+  await helpers.addTransactionsToTracker({
+    id: tracker.id,
+    payload: { transactionIds: [incomeTx.id, expenseTx.id] },
+  });
+  return (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
+};
+
 describe('Get tracker stats', () => {
   it('successfully returns stats', async () => {
     const [baseTx] = await helpers.createTransaction({ raw: true });
@@ -107,6 +117,40 @@ describe('Get tracker stats', () => {
     expect((await helpers.getTrackerStats({ id: NONEXISTENT_ID, raw: false })).statusCode).toBe(
       ERROR_CODES.NotFoundError,
     );
+  });
+
+  describe('Limit kinds', () => {
+    it.each([TRACKER_LIMIT_KINDS.incomeTarget, TRACKER_LIMIT_KINDS.incomeCap])(
+      'measures %s limits against net income',
+      async (limitKind) => {
+        const stats = await createTrackerWithIncome({ limitKind });
+        expect(stats.summary.utilizationRate).toBe(60);
+      },
+    );
+
+    it('keeps spending limits at 0% while income outweighs expenses', async () => {
+      const stats = await createTrackerWithIncome({});
+      expect(stats.summary.utilizationRate).toBe(0);
+    });
+
+    it('clamps income_target utilization to 0% when expenses exceed income', async () => {
+      const stats = await createTrackerWithIncome({
+        limitKind: TRACKER_LIMIT_KINDS.incomeTarget,
+        incomeAmount: 200,
+        expenseAmount: 500,
+      });
+      expect(stats.summary.balance).toBe(-300);
+      expect(stats.summary.utilizationRate).toBe(0);
+    });
+
+    it('reports income_target utilization above 100% when net income exceeds the limit', async () => {
+      const stats = await createTrackerWithIncome({
+        limitKind: TRACKER_LIMIT_KINDS.incomeTarget,
+        incomeAmount: 1700,
+        expenseAmount: 200,
+      });
+      expect(stats.summary.utilizationRate).toBe(150);
+    });
   });
 
   describe('Refund handling', () => {
@@ -285,7 +329,7 @@ describe('Get tracker stats', () => {
 
       const tracker = await helpers.createTracker({
         name: 'refund-category-tracker-stats',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category.id],
         startDate: '2025-06-01T00:00:00Z',
         endDate: '2025-06-30T23:59:59Z',
@@ -305,7 +349,7 @@ describe('Get tracker stats', () => {
   });
 
   describe('Tracker lines', () => {
-    it('splits category tracker expenses across lines by position', async () => {
+    it('splits rule-linked expenses across lines by position', async () => {
       const account = await helpers.createAccount({ raw: true });
       const [food, coffee, travel, misc] = await Promise.all(
         ['Food', 'Coffee', 'Travel', 'Misc'].map((name) =>
@@ -314,7 +358,7 @@ describe('Get tracker stats', () => {
       );
       const tracker = await helpers.createTracker({
         name: 'lines-category-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [food!.id, coffee!.id, travel!.id, misc!.id],
         raw: true,
       });
@@ -336,6 +380,7 @@ describe('Get tracker stats', () => {
       await createTx({ amount: 50, categoryId: coffee!.id });
       await createTx({ amount: 30, categoryId: misc!.id });
       await createTx({ amount: 20, categoryId: food!.id, transactionType: TRANSACTION_TYPES.income });
+      await helpers.editTracker({ id: tracker.id, params: { rulesEnabled: true } });
 
       const eatingOut = await helpers.createTrackerLine({
         trackerId: tracker.id,
@@ -406,7 +451,7 @@ describe('Get tracker stats', () => {
       expect(stats.otherSpent).toBe(40);
     });
 
-    it('credits each split of a category tracker transaction to its own line', async () => {
+    it('credits a split transaction whole to the line of its primary category', async () => {
       const account = await helpers.createAccount({ raw: true });
       const food = await helpers.addCustomCategory({ name: 'Food', color: '#AABBCC', raw: true });
       const travel = await helpers.addCustomCategory({ name: 'Travel', color: '#AABBCC', raw: true });
@@ -425,7 +470,7 @@ describe('Get tracker stats', () => {
       });
       const tracker = await helpers.createTracker({
         name: 'lines-split-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [food.id, travel.id],
         raw: true,
       });
@@ -443,8 +488,8 @@ describe('Get tracker stats', () => {
       const stats = (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
 
       expect(stats.lines).toEqual([
-        { lineId: foodLine.id, spent: 60 },
-        { lineId: travelLine.id, spent: 40 },
+        { lineId: foodLine.id, spent: 100 },
+        { lineId: travelLine.id, spent: 0 },
       ]);
       const linesTotal = stats.lines.reduce((sum, line) => sum + line.spent, 0);
       expect(linesTotal + stats.otherSpent).toBe(stats.summary.actualExpense);
@@ -489,6 +534,43 @@ describe('Get tracker stats', () => {
 
       expect(stats.summary.actualExpense).toBe(70);
       expect(stats.lines).toEqual([{ lineId: line.id, spent: 70 }]);
+      expect(stats.otherSpent).toBe(0);
+    });
+
+    it("keeps a recipient's expense on the owner's category when the key repeats under another parent", async () => {
+      const tracker = await helpers.createTracker({ name: 'lines-shared-repeated-key', raw: true });
+      const line = await helpers.createTrackerLine({
+        trackerId: tracker.id,
+        payload: { name: 'Gifts', categoryIds: [findLifeGifts(await helpers.getCategoriesList()).id] },
+        raw: true,
+      });
+
+      const recipient = await helpers.provisionSecondUserWithBaseCurrency();
+      await helpers.shareTrackerWith({ trackerId: tracker.id, recipient, permission: SHARE_PERMISSIONS.write });
+      await helpers.asUser({
+        cookies: recipient.cookies,
+        fn: async () => {
+          const account = await helpers.createAccount({ raw: true });
+          const [tx] = await helpers.createTransaction({
+            payload: helpers.buildTransactionPayload({
+              accountId: account.id,
+              amount: 40,
+              categoryId: findLifeGifts(await helpers.getCategoriesList()).id,
+              transactionType: TRANSACTION_TYPES.expense,
+            }),
+            raw: true,
+          });
+          await helpers.addTransactionsToTracker({
+            id: tracker.id,
+            payload: { transactionIds: [tx!.id] },
+            raw: true,
+          });
+        },
+      });
+
+      const stats = (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
+
+      expect(stats.lines).toEqual([{ lineId: line.id, spent: 40 }]);
       expect(stats.otherSpent).toBe(0);
     });
 
@@ -569,61 +651,56 @@ describe('Get tracker stats', () => {
   });
 
   describe('Base currency decimals', () => {
-    it('reports a manual tracker at 3 decimals for a KWD-base user', async () => {
-      await inKwdBook(async ({ accountId, categoryId }) => {
-        const [tx] = await expenseOf({ accountId, categoryId, amount: 1.234 });
-        const tracker = await helpers.createTracker({ name: 'kwd-manual', limitAmount: 10.125, raw: true });
-        await helpers.addTransactionsToTracker({ id: tracker.id, payload: { transactionIds: [tx.id] } });
+    it.each([
+      { kind: 'manual', expense: 1.234, limit: 10.125 },
+      { kind: 'category', expense: 1.234, limit: 10.125 },
+    ])(
+      'reports a $kind tracker of a $expense expense against a $limit limit at KWD decimals',
+      async ({ kind, expense, limit }) => {
+        const currencyCode = 'KWD';
+        const seedAndRead = async () => {
+          await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+          const account = await helpers.createAccount({
+            payload: helpers.buildAccountPayload({ currencyCode }),
+            raw: true,
+          });
+          const category = await helpers.addCustomCategory({ name: 'Precision', color: '#AABBCC', raw: true });
+          const [tx] = await helpers.createTransaction({
+            payload: helpers.buildTransactionPayload({
+              accountId: account.id,
+              categoryId: category.id,
+              amount: expense,
+              transactionType: TRANSACTION_TYPES.expense,
+              time: '2025-06-15T10:00:00Z',
+            }),
+            raw: true,
+          });
+          const tracker =
+            kind === 'manual'
+              ? await helpers.createTracker({ name: 'precision-manual', limitAmount: limit, raw: true })
+              : await helpers.createTracker({
+                  name: 'precision-category',
+                  rulesEnabled: true,
+                  categoryIds: [category.id],
+                  startDate: '2025-06-01T00:00:00Z',
+                  endDate: '2025-06-30T23:59:59Z',
+                  limitAmount: limit,
+                  raw: true,
+                });
+          if (kind === 'manual') {
+            await helpers.addTransactionsToTracker({ id: tracker.id, payload: { transactionIds: [tx.id] } });
+          }
+          return (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
+        };
 
-        const stats = (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
+        const stats = await helpers.asNewUserWithBaseCurrency({ currencyCode, fn: seedAndRead });
 
-        expect(stats.summary.actualExpense).toBe(1.234);
-        expect(stats.summary.balance).toBe(-1.234);
+        expect(stats.summary.actualExpense).toBe(expense);
+        expect(stats.summary.balance).toBe(-expense);
         expect(stats.summary.actualIncome).toBe(0);
-        expect(stats.summary.utilizationRate?.toFixed(2)).toBe(((1.234 / 10.125) * 100).toFixed(2));
-      });
-    });
-
-    it('reports a category tracker at 3 decimals for a KWD-base user', async () => {
-      await inKwdBook(async ({ accountId, categoryId }) => {
-        await expenseOf({ accountId, categoryId, amount: 1.234 });
-        const tracker = await helpers.createTracker({
-          name: 'kwd-category',
-          type: TRACKER_TYPES.category,
-          categoryIds: [categoryId],
-          startDate: '2025-06-01T00:00:00Z',
-          endDate: '2025-06-30T23:59:59Z',
-          limitAmount: 10.125,
-          raw: true,
-        });
-
-        const stats = (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
-
-        expect(stats.summary.actualExpense).toBe(1.234);
-        expect(stats.summary.balance).toBe(-1.234);
-        expect(stats.summary.utilizationRate?.toFixed(2)).toBe(((1.234 / 10.125) * 100).toFixed(2));
-      });
-    });
-
-    it('keeps the 2-decimal values for a 2-decimal base user', async () => {
-      const account = await helpers.createAccount({ raw: true });
-      const [tx] = await helpers.createTransaction({
-        payload: helpers.buildTransactionPayload({
-          accountId: account.id,
-          amount: 1.23,
-          transactionType: TRANSACTION_TYPES.expense,
-        }),
-        raw: true,
-      });
-      const tracker = await helpers.createTracker({ name: 'two-decimals', limitAmount: 10.12, raw: true });
-      await helpers.addTransactionsToTracker({ id: tracker.id, payload: { transactionIds: [tx.id] } });
-
-      const stats = (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
-
-      expect(stats.summary.actualExpense).toBe(1.23);
-      expect(stats.summary.balance).toBe(-1.23);
-      expect(stats.summary.utilizationRate?.toFixed(2)).toBe(((123 / 1012) * 100).toFixed(2));
-    });
+        expect(stats.summary.utilizationRate?.toFixed(2)).toBe(((expense / limit) * 100).toFixed(2));
+      },
+    );
   });
 
   describe('Cross-user isolation', () => {
@@ -631,7 +708,7 @@ describe('Get tracker stats', () => {
       const category = await helpers.addCustomCategory({ name: 'Isolation', color: '#AABBCC', raw: true });
       const categoryBudget = await helpers.createTracker({
         name: 'isolated-category',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category.id],
         raw: true,
       });
@@ -645,9 +722,6 @@ describe('Get tracker stats', () => {
             expect((await helpers.getTrackerById({ id, raw: false })).statusCode).toBe(ERROR_CODES.NotFoundError);
             expect((await helpers.getTrackerStats({ id, raw: false })).statusCode).toBe(ERROR_CODES.NotFoundError);
           }
-          expect((await helpers.getCategoryTrackerTransactions({ id: categoryBudget.id, raw: false })).statusCode).toBe(
-            ERROR_CODES.NotFoundError,
-          );
         },
       });
     });

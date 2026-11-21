@@ -15,7 +15,7 @@ const config: KnipConfig = {
     // Reached only through a test file's `@jest-environment` docblock
     'src/services/budget-plans/periods/new-york-timezone-environment.ts',
   ],
-  ignoreBinaries: ['knip', 'ts-node', 'nodemon', 'cross-env', 'sequelize-cli', 'jest', 'oxlint', 'tsc'],
+  ignoreBinaries: ['knip', 'ts-node', 'nodemon', 'cross-env', 'sequelize-cli', 'jest', 'oxlint', 'tsc', 'vite'],
   ignore: [
     'config/**',
     'src/migrations/*.js',

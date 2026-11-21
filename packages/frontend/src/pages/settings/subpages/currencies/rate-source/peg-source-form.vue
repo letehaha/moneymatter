@@ -39,7 +39,7 @@ import { InfoIcon } from '@lucide/vue';
 import type { RateSourceDraft, RateSourceDraftErrors } from './rate-source-draft';
 import { findOption, useCurrencyOptions } from './use-currency-options';
 
-const props = defineProps<{
+defineProps<{
   /** The custom currency being priced. */
   code: string;
   errors: RateSourceDraftErrors;
@@ -48,5 +48,5 @@ const props = defineProps<{
 
 const model = defineModel<RateSourceDraft['peg']>({ required: true });
 
-const { pegOptions } = useCurrencyOptions({ excludeCode: () => props.code });
+const { pegOptions } = useCurrencyOptions();
 </script>

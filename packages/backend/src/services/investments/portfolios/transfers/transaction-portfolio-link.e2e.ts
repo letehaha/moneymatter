@@ -26,6 +26,36 @@ describe('Transaction ↔ Portfolio link (/transactions/:transactionId/*-portfol
     currencyCode = account.currencyCode;
   });
 
+  describe('Logo', () => {
+    it("returns the linked portfolio's logo", async () => {
+      await helpers.updatePortfolio({ portfolioId: portfolio.id, payload: { logoDomain: 'vanguard.com' } });
+
+      const [expenseTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 500,
+          transactionType: TRANSACTION_TYPES.expense,
+        }),
+        raw: true,
+      });
+      await helpers.linkTransactionToPortfolio({
+        transactionId: expenseTx!.id,
+        payload: { portfolioId: portfolio.id },
+        raw: true,
+      });
+
+      const link = await helpers.getTransactionPortfolioLink({ transactionId: expenseTx!.id, raw: true });
+
+      expect(link.logoDomain).toBe('vanguard.com');
+
+      await helpers.deletePortfolio({ portfolioId: portfolio.id });
+
+      const linkAfterDelete = await helpers.getTransactionPortfolioLink({ transactionId: expenseTx!.id, raw: true });
+
+      expect(linkAfterDelete).toMatchObject({ isPortfolioDeleted: true, logoDomain: 'vanguard.com' });
+    });
+  });
+
   describe('Link', () => {
     it('should link an expense transaction to a portfolio (account → portfolio deposit) and list the transfer', async () => {
       const [expenseTx] = await helpers.createTransaction({
@@ -231,13 +261,8 @@ describe('Transaction ↔ Portfolio link (/transactions/:transactionId/*-portfol
     });
 
     it('should reject linking a transaction in a custom currency, since portfolios are ISO-only', async () => {
-      await helpers.createCustomCurrency({ payload: { code: 'USDT', name: 'Tether', decimals: 6 } });
-      await helpers.editCurrencyExchangeRate({
-        pairs: [
-          { baseCode: 'USDT', quoteCode: global.BASE_CURRENCY_CODE, rate: 4 },
-          { baseCode: global.BASE_CURRENCY_CODE, quoteCode: 'USDT', rate: 0.25 },
-        ],
-        raw: true,
+      await helpers.createCustomCurrency({
+        payload: { code: 'USDT', name: 'Tether', decimals: 6, rate: { value: 4 } },
       });
       const customAccount = await helpers.createAccount({
         payload: helpers.buildAccountPayload({ name: 'Stable', currencyCode: 'USDT', initialBalance: 0 }),
@@ -649,28 +674,31 @@ describe('Transaction ↔ Portfolio link (/transactions/:transactionId/*-portfol
       expect(link.statusCode).toBe(ERROR_CODES.NotFoundError);
     });
 
-    it('should delete a transaction linked to a soft-deleted portfolio', async () => {
+    it('should reject deleting a transaction linked to a soft-deleted portfolio until it is unlinked', async () => {
       const expenseTx = await linkExpenseThenTrashPortfolio();
 
-      const response = await helpers.deleteTransaction({ id: expenseTx.id });
-      expect(response.statusCode).toBe(200);
+      const rejected = await helpers.deleteTransaction({ id: expenseTx.id });
+      expect(rejected.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      expect((await helpers.unlinkTransactionFromPortfolio({ transactionId: expenseTx.id })).statusCode).toBe(204);
+      expect((await helpers.deleteTransaction({ id: expenseTx.id })).statusCode).toBe(200);
 
       const transactions = await helpers.getTransactions({ raw: true });
       expect(transactions.find((t) => t.id === expenseTx.id)).toBeUndefined();
     });
 
-    it('should bulk-delete a transaction linked to a soft-deleted portfolio', async () => {
+    it('should skip a transaction linked to a soft-deleted portfolio in a bulk delete', async () => {
       const expenseTx = await linkExpenseThenTrashPortfolio();
 
       const response = await helpers.bulkDeleteTransactions({ payload: { transactionIds: [expenseTx.id] } });
       expect(response.statusCode).toBe(200);
 
       const result = helpers.extractResponse(response);
-      expect(result.deletedCount).toBe(1);
-      expect(result.deletedIds).toEqual([expenseTx.id]);
+      expect(result.deletedCount).toBe(0);
+      expect(result.skippedIds).toEqual([expenseTx.id]);
 
       const transactions = await helpers.getTransactions({ raw: true });
-      expect(transactions.find((t) => t.id === expenseTx.id)).toBeUndefined();
+      expect(transactions.find((t) => t.id === expenseTx.id)).toBeDefined();
     });
 
     it('should reverse the cash on a soft-deleted portfolio so a later restore shows the pre-link balance', async () => {

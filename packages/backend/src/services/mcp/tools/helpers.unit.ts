@@ -1,10 +1,41 @@
-import { TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
+import { type Entitlements, FEATURES, USER_ROLES } from '@bt/shared/types';
 import { describe, expect, it, jest } from '@jest/globals';
 import { RateLimitService } from '@services/common/rate-limit.service';
 import { RATE_SOURCE_SAVE_LIMIT } from '@services/common/user-rate-limits';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
+import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
 
-import { assertBaseCurrencyUnlocked, assertOriginalCurrencyArgs, enforceUserRateLimit, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  assertNotDemoUser,
+  enforceUserRateLimit,
+  requireFeature,
+  requireScope,
+} from './helpers';
+
+jest.mock('@services/entitlements/resolve-entitlements.service', () => ({ getEntitlementsByUserId: jest.fn() }));
+jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
+jest.mock('@services/common/rate-limit.service', () => ({ RateLimitService: { checkRateLimit: jest.fn() } }));
+
+const mockFeatures = (features: string[]) =>
+  jest.mocked(getEntitlementsByUserId).mockResolvedValueOnce({ features } as unknown as Entitlements);
+
+describe('requireFeature', () => {
+  it('passes when the plan or an active trial includes the feature', async () => {
+    mockFeatures([FEATURES.goals]);
+
+    await expect(requireFeature({ userId: 1, feature: FEATURES.goals })).resolves.toBeUndefined();
+  });
+
+  it.each([{ features: [FEATURES.budget_plan] }, { features: [] }])(
+    'rejects when the feature is not included ($features)',
+    async ({ features }) => {
+      mockFeatures(features);
+
+      await expect(requireFeature({ userId: 1, feature: FEATURES.goals })).rejects.toThrow(/not included/);
+    },
+  );
+});
 
 const authInfoFor = ({ role, scopes, readOnly = false }: { role: string; scopes: string[]; readOnly?: boolean }) => ({
   authInfo: { scopes, extra: { role, readOnly } },
@@ -43,57 +74,20 @@ describe('requireScope', () => {
   });
 });
 
-describe('assertOriginalCurrencyArgs', () => {
-  it('accepts the pair set together, cleared together, or absent', () => {
-    expect(() => assertOriginalCurrencyArgs({ args: {} })).not.toThrow();
-    expect(() =>
-      assertOriginalCurrencyArgs({ args: { originalAmount: 66.42, originalCurrencyCode: 'PLN' } }),
-    ).not.toThrow();
-    expect(() =>
-      assertOriginalCurrencyArgs({ args: { originalAmount: null, originalCurrencyCode: null } }),
-    ).not.toThrow();
+describe('assertNotDemoUser', () => {
+  it('refuses a demo user whatever the scopes and plan', () => {
+    const extra = authInfoFor({ role: USER_ROLES.demo, scopes: ['finance:read'], readOnly: true });
+
+    expect(() => assertNotDemoUser({ extra })).toThrow(/demo mode/);
   });
 
-  it('rejects half a pair', () => {
-    expect(() => assertOriginalCurrencyArgs({ args: { originalAmount: 66.42 } })).toThrow(/together/);
-    expect(() => assertOriginalCurrencyArgs({ args: { originalCurrencyCode: 'PLN' } })).toThrow(/together/);
-    expect(() => assertOriginalCurrencyArgs({ args: { originalAmount: null, originalCurrencyCode: 'PLN' } })).toThrow(
-      /together/,
-    );
-    expect(() => assertOriginalCurrencyArgs({ args: { originalAmount: 66.42, originalCurrencyCode: null } })).toThrow(
-      /together/,
-    );
-  });
-
-  it('treats a zero amount as a set value, not a cleared one', () => {
+  it('lets a common user through, read-only or not', () => {
+    expect(() => assertNotDemoUser({ extra: authInfoFor({ role: USER_ROLES.common, scopes: [] }) })).not.toThrow();
     expect(() =>
-      assertOriginalCurrencyArgs({ args: { originalAmount: 0, originalCurrencyCode: 'PLN' } }),
-    ).not.toThrow();
-    expect(() => assertOriginalCurrencyArgs({ args: { originalAmount: 0 } })).toThrow(/together/);
-  });
-
-  it('rejects the pair on explicit and implicit transfers', () => {
-    const pair = { originalAmount: 66.42, originalCurrencyCode: 'PLN' };
-
-    expect(() =>
-      assertOriginalCurrencyArgs({ args: { ...pair, transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer } }),
-    ).toThrow(/transfer transactions/);
-    for (const transferField of [
-      { destinationAccountId: 1 },
-      { destinationAmount: 30 },
-      { destinationTransactionId: 'a9aad5e3-0000-4000-8000-000000000000' },
-    ]) {
-      expect(() => assertOriginalCurrencyArgs({ args: { ...pair, ...transferField } })).toThrow(
-        /transfer transactions/,
-      );
-    }
-    expect(() =>
-      assertOriginalCurrencyArgs({ args: { ...pair, transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer } }),
+      assertNotDemoUser({ extra: authInfoFor({ role: USER_ROLES.common, scopes: [], readOnly: true }) }),
     ).not.toThrow();
   });
 });
-
-jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
 describe('assertBaseCurrencyUnlocked', () => {
   const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
@@ -117,8 +111,6 @@ describe('assertBaseCurrencyUnlocked', () => {
     await expect(assertBaseCurrencyUnlocked({ userId: 7 })).resolves.toBeUndefined();
   });
 });
-
-jest.mock('@services/common/rate-limit.service', () => ({ RateLimitService: { checkRateLimit: jest.fn() } }));
 
 describe('enforceUserRateLimit', () => {
   const checkRateLimit = jest.mocked(RateLimitService.checkRateLimit);

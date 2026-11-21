@@ -1,0 +1,5 @@
+date,amount,description,category
+2025-12-22,-36.20,Date only: two days before,Groceries
+2025-12-23,-25.00,Date only: day before seam,Dining
+2025-12-24,-31.00,Date only: seam day,Transport
+2025-12-25,-7.50,Date only: day after seam,Groceries

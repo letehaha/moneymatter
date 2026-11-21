@@ -17,10 +17,10 @@
         "balanceTypes": {
           "total": "Total",
           "accounts": "Accounts",
-          "portfolios": "المحافظ",
-          "ventures": "المشاريع",
+          "portfolios": "Portfolios",
+          "ventures": "Ventures",
           "vehicles": "Vehicles",
-          "loans": "القروض"
+          "loans": "Loans"
         },
         "tooltip": {
           "accounts": "Accounts:",
@@ -34,7 +34,7 @@
         "vsPreviousPeriod": "vs previous period",
         "spikePanel": {
           "accounts": "Accounts",
-          "portfolios": "المحافظ",
+          "portfolios": "Portfolios",
           "priceDrivenChange": "Price-driven change — transaction details coming soon",
           "noSignificantTransactions": "No significant transactions for this date.",
           "seeAllTransactions": "See all transactions"
@@ -69,8 +69,8 @@
         "componentsSettings": {
           "description": "Choose which components count toward the Total balance line.",
           "vehicles": "Vehicles",
-          "ventures": "المشاريع",
-          "loans": "القروض",
+          "ventures": "Ventures",
+          "loans": "Loans",
           "loansTooltip": "When on, your outstanding loan balances are subtracted from the total (true net worth). When off, loans are ignored so the total shows assets only.",
           "allIncluded": "All components",
           "excluding": "Excluding {items}"
@@ -81,9 +81,17 @@
       },
       "expensesStructure": {
         "title": "Expenses structure",
+        "incomeTitle": "Income structure",
         "today": "Today",
         "vsPreviousPeriod": "vs previous period",
-        "viewButton": "View"
+        "viewButton": "View",
+        "back": "Back",
+        "openInAnalytics": "Open in Analytics",
+        "metric": {
+          "expenses": "Expenses",
+          "income": "Income"
+        },
+        "seeTransactions": "See transactions"
       },
       "latestTransactions": {
         "title": "Latest transactions",
@@ -121,6 +129,7 @@
         "title": "Categories watchlist",
         "addCategory": "Add category",
         "selectCategories": "Select categories",
+        "showTrend": "Show 6-month trend",
         "sort": {
           "title": "Sort by",
           "custom": "Custom order",
@@ -149,20 +158,21 @@
         "start": "Start",
         "end": "End",
         "growth": "Growth",
+        "changeInPeriod": "Change in {period}",
         "previousPeriodsTrend": "Previous periods trend",
         "excludedTooltip": "Excluded from net worth: {components}",
         "viewHistory": "View history",
         "loadFailed": "Couldn't load net worth data.",
         "components": {
-          "ventures": "المشاريع",
+          "ventures": "Ventures",
           "vehicles": "Vehicles",
-          "loans": "القروض"
+          "loans": "Loans"
         },
         "settings": {
           "title": "Include in net worth",
-          "loans": "القروض",
+          "loans": "Loans",
           "vehicles": "Vehicles",
-          "ventures": "المشاريع"
+          "ventures": "Ventures"
         },
         "trendTooltip": {
           "change": "Change",
@@ -198,9 +208,9 @@
         "buckets": {
           "cash": "Cash",
           "investments": "Investments",
-          "ventures": "المشاريع",
+          "ventures": "Ventures",
           "vehicles": "Vehicles",
-          "loans": "القروض",
+          "loans": "Loans",
           "creditAndOverdrafts": "Credit & overdrafts"
         }
       },
@@ -236,6 +246,7 @@
         },
         "hints": {
           "noHistory": "The comparison appears after your first full month.",
+          "plannedFailed": "Couldn't load planned transactions. The forecast may not include them.",
           "fewMonths": "Average of the {n} full month you have so far. | Average of the {n} full months you have so far."
         },
         "loadFailed": "Couldn't load your spending.",
@@ -250,7 +261,7 @@
         }
       },
       "plannedOverview": {
-        "title": "مخطط له",
+        "title": "Planned",
         "projectedBy": "Projected by {date}",
         "upcoming": "Upcoming · {count}",
         "loadFailed": "Couldn't load planned transactions"
@@ -298,7 +309,10 @@
         "daysLeft": "{count} day left | {count} days left",
         "lastDay": "Last day of the period",
         "empty": "No budget yet",
-        "create": "Set up a budget"
+        "create": "Set up a budget",
+        "sort": {
+          "overspent": "Most overspent first"
+        }
       },
       "trackers": {
         "spentOfLimit": "{spent} of {limit}",
@@ -308,6 +322,28 @@
         "empty": "No trackers yet",
         "ended": "Ended",
         "create": "Create a tracker"
+      },
+      "tagAnalysis": {
+        "title": "Tag analysis",
+        "noTagsTitle": "No tags selected",
+        "noTagsDescription": "Pick the tags to compare in the widget settings.",
+        "ofIncome": "of income",
+        "remaining": "Unallocated",
+        "targetTooltip": "Target: {value}%",
+        "settings": {
+          "tagsLabel": "Tags",
+          "tagsPlaceholder": "Select tags",
+          "targetsLabel": "Targets, %",
+          "targetsNoneSet": "None set",
+          "targetsSetCount": "{set} of {total} set",
+          "targetsEmpty": "Add tags first to set their targets",
+          "targetPlaceholder": "None",
+          "percentBaseLabel": "Percent of",
+          "percentBaseTags": "Selected tags",
+          "percentBaseIncome": "Income",
+          "includeTransfersLabel": "Include transfers",
+          "includeTransfersDescription": "Count transfers to your own accounts and portfolios as spending"
+        }
       },
       "emptyState": "There are no data in selected time interval.",
       "registry": {
@@ -374,6 +410,29 @@
         "trackers": {
           "name": "Trackers",
           "description": "Each active tracker with how much of its limit is used and its net"
+        },
+        "goals": {
+          "name": "Goals",
+          "description": "Progress toward your savings goals",
+          "savedOfTarget": "{saved} of {target}",
+          "empty": {
+            "title": "No active goals",
+            "description": "Set a goal and see how close you are.",
+            "action": "Create a goal"
+          },
+          "locked": {
+            "title": "Goals are locked",
+            "description": "Save toward what matters and see if you're on pace. Available on paid plans.",
+            "action": "Learn more"
+          },
+          "settings": {
+            "showReached": "Show reached goals"
+          },
+          "reachedSection": "Reached"
+        },
+        "tagAnalysis": {
+          "name": "Tag analysis",
+          "description": "See how your spending splits across chosen tags, like needs, wants and savings"
         }
       }
     },
@@ -393,6 +452,8 @@
       "payAction": "Mark paid",
       "listTitle": "Upcoming",
       "dueCount": "{count} due",
+      "daysLate": "{count}d late",
+      "overdueCount": "{count} overdue",
       "nothingDue": "Nothing due in 3 days",
       "overdueHint": "Overdue since {date}",
       "dueSoonHint": "Due in the next 3 days",
@@ -404,13 +465,6 @@
       "loadFailed": "Couldn't load recurring payments"
     },
     "latestRecords": {
-      "config": {
-        "includeScheduled": {
-          "label": "Include scheduled payments",
-          "on": "On",
-          "off": "Off"
-        }
-      },
       "settings": {
         "excludeTitle": "Exclude transactions",
         "excludeTransfersDescription": "Hide transfers between your own accounts",
@@ -419,6 +473,9 @@
         "excludeBalanceAdjustmentsDescription": "Hide balance adjustment transactions",
         "plannedTitle": "Planned transactions",
         "excludePlannedDescription": "Hide pending planned transactions from the list",
+        "scheduledTitle": "Scheduled payments",
+        "excludeScheduledDescription": "Hide upcoming and overdue subscription payments from the list",
+        "scheduledSaveError": "Failed to update scheduled payments setting",
         "nothingExcluded": "Nothing excluded",
         "tagsStyleTitle": "Tags",
         "tagsStyleNames": "Names",
@@ -480,7 +537,8 @@
         "title": "Plan your path to FIRE",
         "description": "Plus feature",
         "action": "Unlock"
-      }
+      },
+      "paceVs": "vs {month}"
     }
   }
 }

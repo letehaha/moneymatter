@@ -1,0 +1,41 @@
+---
+import VariablePill from './variable-pill.astro';
+
+interface Field {
+  label: string;
+  /** Variable shown as a blue pill, e.g. "Amount". */
+  pill?: string;
+  /** Plain value, e.g. an account picked from a list. Empty fields show their label greyed out. */
+  value?: string;
+  /** Outlines the field the current step is about. */
+  active?: boolean;
+}
+
+interface Props {
+  title: string;
+  fields: Field[];
+  caption?: string;
+}
+
+const { title, fields, caption } = Astro.props;
+---
+
+<figure class="sc-figure not-content" role="img" aria-label={`Illustration of the ${title} action in Shortcuts${caption ? `: ${caption}` : ''}`}>
+  <div class="sc-card">
+    <div class="sc-card-head">
+      <span class="sc-app-icon" aria-hidden="true">M</span>
+      <span>{title}</span>
+    </div>
+    {
+      fields.map((field) => (
+        <div class="sc-row" data-active={field.active || undefined}>
+          <span class="sc-row-label">{field.label}</span>
+          <span class="sc-row-value" data-set={field.value ? true : undefined}>
+            {field.pill ? <VariablePill label={field.pill} /> : (field.value ?? field.label)}
+          </span>
+        </div>
+      ))
+    }
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

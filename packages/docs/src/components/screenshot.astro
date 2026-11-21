@@ -8,9 +8,11 @@ interface Props {
   /** Capture instructions, shown only in dev while the image file is missing. */
   hint: string;
   caption?: string;
+  /** Full-screen 3x iPhone capture, shown at ~300px and never cropped as tall. */
+  phone?: boolean;
 }
 
-const { src, alt, hint, caption } = Astro.props;
+const { src, alt, hint, caption, phone } = Astro.props;
 const inPublic = (path: string) => existsSync(join(process.cwd(), 'public', path));
 const lightSrc = inPublic(src) ? src : undefined;
 const dark = src.replace(/\.png$/, '.dark.png');
@@ -21,9 +23,9 @@ const pngSize = (path: string) => {
   return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
 };
 const size = lightSrc ? pngSize(lightSrc) : undefined;
-// Captures are 2x, so the natural display width is half the pixel width.
-const cssWidth = size ? Math.round(size.width / 2) : undefined;
-const tall = size ? size.height / size.width > 2 : false;
+// Desktop captures are 2x, shown at natural size; phone captures are 3x, shown at 3/4 of natural size.
+const cssWidth = size ? Math.round(size.width / (phone ? 4 : 2)) : undefined;
+const tall = size && !phone ? size.height / size.width > 2 : false;
 // Missing screenshots are hidden in production builds so placeholders never reach readers.
 const render = lightSrc || import.meta.env.DEV;
 ---

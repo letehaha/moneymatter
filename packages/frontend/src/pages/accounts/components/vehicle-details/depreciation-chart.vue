@@ -13,7 +13,9 @@
           <ChartTooltipHeader>{{ tooltip.dateLabel }}</ChartTooltipHeader>
           <div class="flex items-center gap-2">
             <span class="size-2 shrink-0 rounded-full" :style="{ backgroundColor: 'var(--primary)' }" />
-            <span class="font-medium tabular-nums">{{ formatAmountByCurrencyCode(tooltip.value, currencyCode) }}</span>
+            <span class="font-medium tabular-nums">{{
+              formatAmountByCurrencyCode({ amount: tooltip.value, currencyCode })
+            }}</span>
           </div>
           <div class="text-card-tooltip-muted mt-0.5 text-xs">
             {{ tooltip.relativeLabel }}

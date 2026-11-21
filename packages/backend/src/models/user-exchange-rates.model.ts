@@ -157,9 +157,9 @@ const disableLiveRates = async ({ userId, baseCode }: { userId: number; baseCode
 
 /**
  * Write a rate that applies from one day on. An existing rate of the same pair and day is replaced
- * and every other day is left alone.
+ * and every other day is left alone. The currencies' live-rate flags are not touched.
  */
-const writeDatedRate = async ({
+export const writeDatedRate = async ({
   userId,
   pairItem,
 }: {

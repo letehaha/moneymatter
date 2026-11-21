@@ -1,0 +1,19 @@
+[
+  {
+    "id": "01a1cf52-7d92-718d-a1f1-77ba1cc5c506",
+    "name": "Brokerage",
+    "userId": 1,
+    "portfolioType": "investment",
+    "description": "Test portfolio description",
+    "displayCurrencyCode": null,
+    "isEnabled": true,
+    "logoDomain": null,
+    "logoInitials": null,
+    "logoColor": null,
+    "logoIcon": null,
+    "logoImageId": null,
+    "createdAt": "2026-11-12T10:34:12.242Z",
+    "updatedAt": "2026-11-12T10:34:12.242Z",
+    "deletedAt": null
+  }
+]

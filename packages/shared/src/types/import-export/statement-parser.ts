@@ -294,6 +294,8 @@ export interface StatementImportSummary {
    */
   merged?: number;
   skipped: number;
+  /** Rows dated from the account's bank seam on, which the bank owns. Optional: retained results predate the field. */
+  skippedAfterBankSeam?: number;
   errors: StatementImportError[];
   newTransactionIds: string[];
   batchId: string;
@@ -315,14 +317,3 @@ export type StatementImportProgress =
   | (StatementImportProgressBase & { status: 'queued' | 'running' })
   | (StatementImportProgressBase & { status: 'completed'; summary: StatementImportSummary })
   | (StatementImportProgressBase & { status: 'failed'; error: string; failure?: ImportJobFailure });
-
-// Re-export old names for backward compatibility during migration
-// TODO: Remove these after full migration
-/** @deprecated Use StatementExtractionResult instead */
-export type PDFExtractionResult = StatementExtractionResult;
-/** @deprecated Use StatementCostEstimate instead */
-export type PDFCostEstimate = StatementCostEstimate;
-/** @deprecated Use StatementExtractRequest instead */
-export type PDFExtractRequest = StatementExtractRequest;
-/** @deprecated Use StatementExtractError instead */
-export type PDFExtractError = StatementExtractError;

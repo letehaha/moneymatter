@@ -164,3 +164,4 @@ export async function createInvestmentTransaction<R extends boolean | undefined 
 - Use Sequelize for all DB operations
 - Always use transactions for multi-step operations (`withTransaction`)
 - Define proper indexes
+- Changing transactions, account balances or balance history: read [ledger-writers.md](./ledger-writers.md) first

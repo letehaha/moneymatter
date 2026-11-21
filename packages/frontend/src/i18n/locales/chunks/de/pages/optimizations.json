@@ -121,9 +121,10 @@
         "previousYear": "Vorheriges Jahr"
       },
       "includeOutOfWallet": "Externe Umbuchungen einschließen",
+      "outOfWalletSwitch": "Externe Umbuchungen",
       "skip": {
-        "action": "Überspringen",
-        "title": "Diesen Vorschlag überspringen?",
+        "action": "Ablehnen",
+        "title": "Diesen Vorschlag ablehnen?",
         "description": "Dieses Paar wird in zukünftigen Suchergebnissen ausgeblendet. Die Transaktionen selbst werden nicht geändert.",
         "dontShowAgain": "Diese Bestätigung nicht mehr anzeigen"
       },
@@ -132,8 +133,46 @@
         "scanError": "Suche nach Umbuchungsvorschlägen fehlgeschlagen",
         "linkSuccess": "Transaktionen als Umbuchung verknüpft",
         "linkError": "Verknüpfung der Transaktionen fehlgeschlagen",
-        "skipSuccess": "Vorschlag verworfen",
-        "skipError": "Vorschlag konnte nicht übersprungen werden"
+        "skipSuccess": "Vorschlag abgelehnt",
+        "skipError": "Vorschlag konnte nicht abgelehnt werden"
+      },
+      "aiReview": {
+        "label": "KI-Überprüfung",
+        "about": "Über die KI-Überprüfung",
+        "plusBadge": "Plus",
+        "description": "Die KI prüft jeden Treffer und zeigt nur diejenigen an, die wie echte Umbuchungen zwischen deinen Konten aussehen.",
+        "cost": "Jeder Scan nutzt dein monatliches KI-Guthaben. Bei einem eigenen KI-Anbieter rechnet dieser direkt ab. Wähle das Modell in {link}.",
+        "aiSettingsLink": "KI-Einstellungen",
+        "openAiSettings": "KI-Einstellungen öffnen",
+        "blocked": {
+          "plan": {
+            "title": "KI-Überprüfung ist Teil von Plus",
+            "body": "Oder verbinde deinen eigenen KI-Anbieter in den KI-Einstellungen, um die Funktion in jedem Tarif zu nutzen."
+          },
+          "allowance": {
+            "pill": "Bis {date}",
+            "title": "Monatliches KI-Guthaben aufgebraucht",
+            "body": "Es wird am {date} zurückgesetzt. Verbinde deinen eigenen KI-Anbieter, um die Funktion sofort weiterzunutzen."
+          },
+          "setup": {
+            "pill": "Einrichten",
+            "title": "Kein KI-Modell antwortet",
+            "body": "Überprüfe deinen KI-Anbieter oder wähle ein Modell für den Umbuchungserkennung aus."
+          }
+        },
+        "connectOwnModel": "Eigenes Modell verbinden",
+        "reviewing": "KI überprüft Treffer...",
+        "verdict": {
+          "likely": "Wahrscheinlich",
+          "possible": "Möglich"
+        },
+        "nudge": "Falsche Treffer mit der KI-Überprüfung reduzieren",
+        "rescanHint": "Mit KI überprüfen",
+        "rescanHintTooltip": "Viele Paare lagen unter 70 %. Scanne erneut mit der KI-Überprüfung, um diejenigen auszublenden, die keine Umbuchungen sind. Verbraucht dein KI-Guthaben.",
+        "rescanBanner": {
+          "title": "Viele Paare lagen unter 70 %",
+          "body": "Die KI-Überprüfung kann diejenigen ausblenden, die keine Umbuchungen sind. Verbraucht dein KI-Guthaben."
+        }
       }
     },
     "reconciliation": {

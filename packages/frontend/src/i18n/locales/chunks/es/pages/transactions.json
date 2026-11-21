@@ -45,10 +45,8 @@
         "exclude": "Excluir",
         "only": "Solo"
       },
-      "noteIncludes": {
-        "label": "La nota incluye (separado por comas):",
-        "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Buscar en notas"
+      "search": {
+        "placeholder": "Buscar notas, beneficiarios y etiquetas"
       },
       "tags": {
         "allTags": "Todas las etiquetas",
@@ -67,9 +65,8 @@
       "menu": {
         "type": "Tipo",
         "tags": "Etiquetas",
-        "budgets": "Presupuestos",
-        "amount": "Rango de importe",
-        "note": "Notas"
+        "budgets": "Rastreadores",
+        "amount": "Rango de importe"
       },
       "transferNature": {
         "label": "Tipos de transferencias",
@@ -89,7 +86,7 @@
     },
     "bulkEdit": {
       "selectAll": "Seleccionar todo",
-      "selectAllShort": "Todas",
+      "selectAllShort": "Todos",
       "cancelSelection": "Cancelar selección",
       "editButton": "Editar",
       "selectedCount": "{count} seleccionadas",
@@ -120,8 +117,18 @@
       "tagModeAdd": "Añadir a etiquetas existentes",
       "tagModeReplace": "Reemplazar todas las etiquetas",
       "tagModeRemove": "Eliminar estas etiquetas",
+      "tagModeAddShort": "Añadir",
+      "tagModeReplaceShort": "Reemplazar",
+      "tagModeRemoveShort": "Eliminar",
+      "tagModeAddHint": "Conserva las etiquetas actuales y añade estas.",
+      "tagModeReplaceHint": "Elimina todas las etiquetas actuales, luego añade estas",
+      "tagModeRemoveHint": "Elimina solamente estas etiquetas. Las otras etiquetas permanecen.",
+      "excludeFromStatsHint": "Al activar mantiene las transacciones seleccionadas fuera de los informes, widgets del tablero, presupuestos y seguimientos. Desactiva las recupera. Los saldos no se verán afectados.",
+      "excludeFromStatsDontChange": "No cambiar estadísticas",
+      "confirmExcludeFromStats": "Excluir de estadísticas",
+      "confirmIncludeInStats": "Incluir en el total",
       "totals": {
-        "income": "Ingreso",
+        "income": "Ingresos",
         "expense": "Gasto",
         "net": "Neto",
         "transfers": "Transferencias"
@@ -160,15 +167,40 @@
         "noGroupsMessage": "Aún no hay grupos de transacciones.",
         "emptyStateHint": "Seleccione transacciones en la página de Transacciones y haga clic en \"Crear grupo\" para empezar.",
         "transactionCountLabel": "transacciones",
-        "deleteError": "Error al eliminar el grupo. Inténtelo de nuevo."
+        "deleteError": "Error al eliminar el grupo. Inténtelo de nuevo.",
+        "loadError": "No se han podido cargar las transacciones",
+        "description": "Agrupar transacciones relacionadas, como un viaje o una cadena de transferencia, y verlas juntos.",
+        "noMatchTitle": "Ningún grupo coincide con su búsqueda",
+        "moreActions": "Más acciones para {name}",
+        "columns": {
+          "name": "Nombre",
+          "transactions": "Transacciones",
+          "date": "Fecha",
+          "net": "Neto"
+        },
+        "sort": {
+          "label": "Ordenar grupos",
+          "dateDesc": "Más nuevos primero",
+          "dateAsc": "Más viejos primero",
+          "nameAsc": "Nombre A–Z",
+          "nameDesc": "Nombre Z–A",
+          "amountDesc": "Neto: de alto a bajo",
+          "amountAsc": "Neto: de bajo a alto"
+        }
       },
       "errors": {
         "nameRequired": "El nombre del grupo es obligatorio",
         "minTransactions": "Seleccione al menos {min} transacciones",
         "alreadyInGroup": "Algunas transacciones seleccionadas ya pertenecen a un grupo",
+        "tooManyTransactions": "A group can hold up to {max} transactions, this would make {count}. Transfers count both sides. Deselect some or split them into several groups.",
+        "alreadyInNamedGroup": "Some selected transactions are already in: {name}. A transaction can only be in one group – remove it from there first.",
         "createFailed": "Error al crear el grupo",
         "addFailed": "Error al añadir transacciones al grupo"
       }
+    },
+    "excludeFromStats": {
+      "label": "Excluir de las estadísticas",
+      "tooltip": "Mantiene esta transacción fuera de los informes analíticos, widgets del tablero, planes de presupuesto y rastreadores. Todavía cuenta para su saldo y permanece en la lista de transacciones."
     },
     "planned": {
       "label": "Planificada",
@@ -215,7 +247,6 @@
       "categorizationSourceValues": {
         "manual": "Manual",
         "ai": "IA",
-        "mcc_rule": "Regla MCC",
         "user_rule": "Regla de usuario",
         "subscription_rule": "Regla de suscripción",
         "payee_rule": "Regla de beneficiario"
@@ -234,14 +265,21 @@
       "externalTooltip": "La selección contiene transacciones sincronizadas con el banco, que no se pueden eliminar.",
       "confirmButton": "Eliminar",
       "confirmTitle": "¿Eliminar {count} transacciones?",
-      "confirmDescription": "Esta acción no se puede deshacer. Se eliminarán ambos lados de las transferencias.",
-      "successMessage": "{count} transacciones eliminadas",
+      "confirmDescription": "Permanecen en la Papelera durante 30 días y puedes restaurarlos hasta entonces. Las transferencias afectan a ambos lados.",
+      "successMessage": "1 transacción movida a la papelera | {count} transacciones movidas a la papelera",
+      "skippedMessage": "1 fue omitida porque está vinculada a un pago, cartera o aventura. | {count} fueron omitidos porque están vinculados a un pago, cartera o aventura.",
+      "noneDeletedMessage": "Nada movido a Papelera: 1 transacción está vinculada a un pago, cartera o aventura. | Nada movido a la papelera: Las transacciones {count} están vinculadas a un pago, cartera o aventura.",
       "unexpectedError": "No se pudieron eliminar las transacciones. Por favor, intente de nuevo."
     },
+    "bankSeamDateError": "This account has been synced with your bank since {date}. Pick an earlier date.",
     "inlineEdit": {
       "saveFailed": "No se pudo guardar {field}. Inténtelo de nuevo.",
       "bankTitle": "Establecido por tu banco",
       "bankDescription": "Fecha, cuenta y cantidad sincronizada desde tu conexión bancaria. Todo lo demás en esta transacción es tuyo para cambiar.",
+      "bankAccountTitle": "Connected to a bank",
+      "bankAccountDescription": "This account is connected to a bank, so the transaction can't be moved to another account. Everything else on it is yours to change.",
+      "manualAfterLinkTitle": "Locked since the bank link",
+      "manualAfterLinkDescription": "This account has been synced with your bank since {date}, so this transaction can't be deleted and its date and amount can no longer change.",
       "managedTitle": "Administrado en otro lugar",
       "managedDescription": "Esta transacción pertenece a un portafolio, inversión, vehículo o préstamo. Cambia desde su propia página para que los balances permanezcan correctos.",
       "gotIt": "Entendido",
@@ -272,6 +310,50 @@
       "deleteTitle": "¿Eliminar la vista “{name}”?",
       "deleteDescription": "Tus transacciones no se han visto afectadas. Esto no se puede deshacer.",
       "filtersCount": "{count} filtro | {count} filtros"
+    },
+    "trashPage": {
+      "title": "Papelera",
+      "description": "Primero, las eliminaciones más recientes. Cada elemento se elimina de forma definitiva al cabo de {days} días. Selecciona uno para ver qué recuperas junto con él.",
+      "expiringBanner": "{count} se eliminará permanentemente dentro de {days}.",
+      "expiringCount": "1 transacción | {count} transacciones",
+      "expiringDays": "1 día | {count} días",
+      "loadError": "No se pudo cargar la Papelera",
+      "emptyTitle": "La papelera esta vacia",
+      "emptyDescription": "Las transacciones eliminadas permanecen aquí por {days} días antes de que sean eliminadas definitivamente.",
+      "daysLeft": "1 día restante | {count} días restantes",
+      "deletedOn": "eliminar {date}",
+      "transferTitle": "Transacciones del {from} al {to}",
+      "unknownAccount": "Cuenta desconocida",
+      "restore": "Restaurar",
+      "deletePermanently": "Eliminar permanentemente",
+      "deleteConfirmTitle": "¿Eliminar permanentemente?",
+      "deleteConfirmDescription": "Esta transacción se eliminará para siempre. Esto no se puede deshacer.",
+      "notifications": {
+        "restored": "Transacción restaurada",
+        "restoreError": "Error al restaurar la transacción",
+        "deleted": "Transacción eliminada permanentemente",
+        "deleteError": "Error al eliminar la transacción",
+        "restoredWithDroppedRefundLinks": "Restaurado. 1 enlace de reembolso no se pudo restaurar porque ya no encaja. | Restaurado. Los enlaces de reembolso de {count} no se pudieron restaurar porque ya no encajan."
+      },
+      "comesBack": {
+        "title": "Regresa con",
+        "basics": "Categoría, nota y beneficiario",
+        "splits": "1 división | {n} divisiones",
+        "tags": "1 etiqueta | {n} etiquetas",
+        "attachments": "1 adjunto | {n} adjuntos",
+        "otherLeg": "Otra pierna: {accountName} · {amountText}",
+        "balance": "El saldo de la cuenta se ha recalculado",
+        "balances": "Ambos saldos son recalculados",
+        "counterpartInTrash": "Vuelve cuando la transacción vinculada es restaurada también.",
+        "links": {
+          "refund": "Enlace de reembolso con \"{name}\"",
+          "tracker": "Rastreador \"{name}\"",
+          "group": "Grupo \"{name}\"",
+          "subscription": "Suscripción \"{name}\"",
+          "subscriptionPeriod": "Pago de suscripción que vence {name}",
+          "unnamed": "Sin título"
+        }
+      }
     }
   },
   "records": {

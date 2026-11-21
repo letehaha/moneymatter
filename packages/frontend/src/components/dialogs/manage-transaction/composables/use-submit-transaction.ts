@@ -3,7 +3,6 @@ import { uploadTransactionAttachment } from '@/api/attachments';
 import { accountToPortfolioTransfer, linkTransactionToPortfolio } from '@/api/portfolios';
 import { OUT_OF_WALLET_ACCOUNT_MOCK, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import { useNotificationCenter } from '@/components/notification-center';
-import { getInvalidationQueryKey } from '@/composable/data-queries/opposite-tx-record';
 import { invalidateTransferRelatedQueries } from '@/composable/data-queries/portfolio-transfers';
 import { i18n } from '@/i18n';
 import { ApiErrorResponseError, extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
@@ -16,6 +15,7 @@ import type { UI_FORM_STRUCT } from '../types';
 import {
   applyOptimisticTransactionUpdate,
   buildOptimisticTransaction,
+  hasPaymentParts,
   prepareTxCreationParams,
   prepareTxUpdationParams,
   rollbackOptimisticUpdate,
@@ -27,10 +27,10 @@ interface SubmitTransactionParams {
   isTransferTx: boolean;
   isCurrenciesDifferent: boolean;
   isOriginalRefundsOverriden: boolean;
-  isRecordExternal: boolean;
+  isRecordBankLocked: boolean;
+  isRecordOnBankAccount: boolean;
   transaction?: TransactionModel;
   linkedTransaction?: TransactionModel | null;
-  oppositeTransaction?: TransactionModel;
   /** Files picked before the row existed; uploaded right after creation. */
   pendingAttachments?: File[];
 }
@@ -55,7 +55,8 @@ export function useSubmitTransaction({
         isTransferTx,
         isCurrenciesDifferent,
         isOriginalRefundsOverriden,
-        isRecordExternal,
+        isRecordBankLocked,
+        isRecordOnBankAccount,
         transaction,
         linkedTransaction,
         pendingAttachments = [],
@@ -124,7 +125,8 @@ export function useSubmitTransaction({
             transaction: transaction!,
             linkedTransaction,
             isTransferTx,
-            isRecordExternal,
+            isRecordBankLocked,
+            isRecordOnBankAccount,
             isCurrenciesDifferent,
             isOriginalRefundsOverriden,
           }),
@@ -133,12 +135,14 @@ export function useSubmitTransaction({
       }
     },
     onMutate: async (params): Promise<OptimisticUpdateContext | undefined> => {
-      const { form, isFormCreation, transaction, isRecordExternal, linkedTransaction, isTransferTx } = params;
+      const { form, isFormCreation, transaction, isRecordBankLocked, linkedTransaction, isTransferTx } = params;
 
       // Only apply optimistic updates for edits (not creation, linking, or portfolio conversion)
       if (isFormCreation || linkedTransaction || !transaction || (isTransferTx && form.toPortfolio)) {
         return undefined;
       }
+      // The optimistic row can't rebuild paymentParts/paymentTotal, so these wait for the refetch.
+      if (hasPaymentParts({ transaction }) || form.paymentLegs?.length) return undefined;
 
       // Cancel any outgoing refetches to prevent overwriting optimistic update
       await queryClient.cancelQueries({ queryKey: [VUE_QUERY_GLOBAL_PREFIXES.transactionChange] });
@@ -147,7 +151,7 @@ export function useSubmitTransaction({
       const updatedTransaction = buildOptimisticTransaction({
         form,
         transaction,
-        isRecordExternal,
+        isRecordBankLocked,
       });
 
       // Apply optimistic update to all relevant caches
@@ -169,22 +173,6 @@ export function useSubmitTransaction({
       // Loan caches need no extra handling: their keys are prefixed with
       // transactionChange, so the blanket invalidation above already covers
       // both the new destination and any previous loan the payment moved off.
-
-      if (params.transaction?.id) {
-        queryClient.invalidateQueries({
-          queryKey: getInvalidationQueryKey(params.transaction.id),
-        });
-      }
-      if (params.oppositeTransaction?.id) {
-        queryClient.invalidateQueries({
-          queryKey: getInvalidationQueryKey(params.oppositeTransaction.id),
-        });
-      }
-      if (params.linkedTransaction?.id) {
-        queryClient.invalidateQueries({
-          queryKey: getInvalidationQueryKey(params.linkedTransaction.id),
-        });
-      }
 
       // Mark onboarding tasks as complete
       const onboardingStore = useOnboardingStore();
@@ -214,7 +202,7 @@ export function useSubmitTransaction({
       }
 
       // Mark link-refund task when refund relationships are set
-      if (params.form.refundsTx || (params.form.refundedByTxs && params.form.refundedByTxs.length > 0)) {
+      if (params.form.refundsTx?.length || params.form.refundedByTxs?.length) {
         onboardingStore.completeTask('link-refund');
       }
 

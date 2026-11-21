@@ -7,20 +7,22 @@ import type {
   TagMappingConfig,
   TransactionImportDetails,
 } from '@bt/shared/types';
-import {
-  ACCOUNT_TYPES,
-  ImportSource,
-  PAYMENT_TYPES,
-  TRANSACTION_TRANSFER_NATURE,
-  TRANSACTION_TYPES,
-} from '@bt/shared/types';
+import { ACCOUNT_TYPES, ImportSource, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
 import { trackImportCompleted } from '@js/utils/posthog';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
-import { getAccountDecimals } from '@services/import-export/core/duplicates/get-account-decimals';
+import {
+  assertBankLinksUnchanged,
+  bankLinkChangedError,
+  excludeSeamAccounts,
+} from '@services/import-export/core/bank-seam';
+import {
+  getAccountDecimals,
+  roundToAccountDecimals,
+} from '@services/import-export/core/duplicates/get-account-decimals';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { ImportJobError } from '@services/import-export/core/queue/import-job-error';
@@ -36,6 +38,8 @@ import { applyPayeeDefaultTags } from '@services/payees/apply-default-tags';
 import { createTransaction } from '@services/transactions';
 import { selectAccountsWithPlannedRows } from '@services/transactions/planned-matching';
 import { v4 as uuidv4 } from 'uuid';
+
+import { dropRowsFromBankSeam } from '../drop-rows-from-bank-seam';
 
 interface ExecuteImportParams {
   userId: number;
@@ -64,6 +68,8 @@ interface ExecuteImportParams {
    * `currentBalance` target / imported rows.
    */
   recalculateBalance?: boolean;
+  /** Rows the review step dropped at a bank seam; a mismatch fails the job. */
+  reviewSkippedAfterBankSeam?: number;
   /**
    * Called with the cumulative `processedCount` after each successfully created
    * transaction so the BullMQ worker can fan progress out over SSE. `totalCount`
@@ -89,7 +95,7 @@ function pickReferenced<T>({ mapping, referenced }: { mapping: Record<string, T>
  */
 async function executeImportImpl({
   userId,
-  validRows,
+  validRows: parsedRows,
   accountMapping,
   categoryMapping,
   tagMapping,
@@ -98,9 +104,19 @@ async function executeImportImpl({
   defaultAccountId,
   defaultCategoryId,
   recalculateBalance = false,
+  reviewSkippedAfterBankSeam,
   onProgress,
   openImportBatch,
 }: ExecuteImportParams): Promise<CsvImportSummary> {
+  const {
+    rows: validRows,
+    droppedCount: skippedAfterBankSeam,
+    seamStartByAccountId,
+  } = await dropRowsFromBankSeam({ userId, rows: parsedRows, accountMapping, defaultAccountId });
+  if (reviewSkippedAfterBankSeam !== undefined && reviewSkippedAfterBankSeam !== skippedAfterBankSeam) {
+    throw bankLinkChangedError();
+  }
+
   const batchId = uuidv4();
   const importDetails: TransactionImportDetails = {
     batchId,
@@ -146,6 +162,7 @@ async function executeImportImpl({
       merged: 0,
       skipped: skipDuplicateIndices.length,
       skippedUnpriceable: skippedUnpriceableCount,
+      skippedAfterBankSeam,
       accountsCreated: 0,
       accountsSkipped: skippedAccountNames.size,
       categoriesCreated: 0,
@@ -213,6 +230,7 @@ async function executeImportImpl({
     resolveCurrencyCode: (accountName) => rowsToImport.find((r) => r.accountName === accountName)?.currencyCode,
     resolveFxDate: () => new Date(),
     defaultAccountId,
+    allowSeamTargets: true,
   });
 
   // Snapshot every pre-existing account the rows will land on (link-existing
@@ -229,9 +247,12 @@ async function executeImportImpl({
     importDetails,
     createdAccountIds: createdAccounts.map((account) => account.accountId),
   });
+  await assertBankLinksUnchanged({ userId, accountIds: capturedAccountIds, seamStartByAccountId });
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
 
-  const plannedMatchAccountIds = await selectAccountsWithPlannedRows({ accountIds: capturedAccountIds });
+  const plannedMatchAccountIds = await selectAccountsWithPlannedRows({
+    accountIds: excludeSeamAccounts({ accountIds: capturedAccountIds, seamStartByAccountId }),
+  });
 
   // Resolve only the entities the surviving rows reference. A mapping entry for a
   // skipped account's value, or one the client kept from an earlier column choice,
@@ -271,7 +292,7 @@ async function executeImportImpl({
 
   // A row amount keeps every digit the file wrote. It is rounded to its account's decimals before it
   // is written and tallied, so the stored amount, the balance tally and the balance hook agree.
-  const decimalsByAccountId = await getAccountDecimals({ accountIds: Array.from(new Set(accountNameToId.values())) });
+  const decimalsByAccountId = await getAccountDecimals({ accountIds: accountNameToId.values() });
 
   // Create transactions
   const errors: ImportError[] = [];
@@ -324,7 +345,7 @@ async function executeImportImpl({
       const rowTagIds = resolveRowTagIds({ tagNames: row.tagNames, tagNameToId });
       const hasImportedTags = rowTagIds.length > 0;
 
-      const rowAmount = Money.fromDecimal(row.amount).round(decimalsByAccountId.get(accountId)!);
+      const rowAmount = roundToAccountDecimals({ decimalsByAccountId, accountId, amount: row.amount });
 
       // Service-layer createTransaction handles refAmount + currency from the
       // account, plus Payee extraction + payee_rule via `rawMerchantName` when
@@ -345,7 +366,6 @@ async function executeImportImpl({
         note: row.description,
         time: new Date(row.date),
         transactionType: row.transactionType === 'income' ? TRANSACTION_TYPES.income : TRANSACTION_TYPES.expense,
-        paymentType: PAYMENT_TYPES.creditCard,
         accountId,
         categoryId: categoryId || undefined,
         accountType: ACCOUNT_TYPES.system,
@@ -473,6 +493,7 @@ async function executeImportImpl({
     merged: mergedCount,
     skipped: skipDuplicateIndices.length,
     skippedUnpriceable: skippedUnpriceableCount,
+    skippedAfterBankSeam,
     accountsCreated,
     accountsSkipped: skippedAccountNames.size,
     categoriesCreated,

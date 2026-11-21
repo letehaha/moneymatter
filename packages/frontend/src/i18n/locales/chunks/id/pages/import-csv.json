@@ -134,7 +134,9 @@
           "noErrors": "Tidak ada error",
           "balanceWarningTitle": "Saldo akun mungkin tidak sinkron",
           "balanceWarningBody": "Transaksi telah diimpor, tetapi beberapa saldo akun tidak dapat diperbarui setelahnya. Tinjau akun-akun ini dan sesuaikan saldonya secara manual jika diperlukan."
-        }
+        },
+        "bankSeamRecalculateHint": "Bank-linked accounts keep the balance their bank reports, so this setting doesn't change them.",
+        "bankSeamRecalculateAllHint": "Opening balance is recalculated automatically for bank-linked accounts."
       },
       "columnMapping": {
         "stepTitle": "Petakan Kolom",
@@ -307,7 +309,8 @@
           "account": "Akun",
           "currency": "Mata Uang",
           "transactionType": "Tipe transaksi",
-          "payee": "Penerima"
+          "payee": "Penerima",
+          "tags": "Tags"
         },
         "dateFormat": {
           "label": "Format tanggal",

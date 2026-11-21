@@ -359,7 +359,7 @@ onUnmounted(() => {
       <div v-else ref="mapContainer" :class="cn(MAP_SIZE_CLASS, 'overflow-hidden rounded-xl')" />
 
       <div
-        class="absolute top-3 left-14 z-[1001] w-[min(20rem,calc(100%-4.5rem))]"
+        class="absolute top-3 left-14 z-1001 w-[min(20rem,calc(100%-4.5rem))]"
         @focusin="isResultsOpen = searchResults.length > 0 || hasSearchFailed"
         @keydown.down.prevent="moveHighlight({ step: 1 })"
         @keydown.up.prevent="moveHighlight({ step: -1 })"
@@ -417,7 +417,7 @@ onUnmounted(() => {
             :class="
               cn(
                 'h-auto w-full flex-col items-start gap-0 rounded-none px-3 py-2 text-left',
-                index === highlightedIndex && 'bg-accent',
+                index === highlightedIndex && 'bg-accent hover:bg-accent',
               )
             "
             @mouseenter="highlightedIndex = index"
@@ -437,7 +437,7 @@ onUnmounted(() => {
           type="button"
           variant="secondary"
           size="icon-sm"
-          class="bg-card absolute right-3 bottom-8 z-[1001] shadow-md"
+          class="bg-card absolute right-3 bottom-8 z-1001 shadow-md"
           :disabled="isLocating"
           :aria-label="$t('dialogs.manageTransaction.form.location.useCurrent')"
           @click="goToBrowserLocation"
@@ -450,7 +450,7 @@ onUnmounted(() => {
     <template #footer>
       <div class="flex w-full items-start justify-between gap-3">
         <div class="min-w-0 flex-1 text-left">
-          <p class="text-muted-foreground line-clamp-2 text-sm break-words">
+          <p class="text-muted-foreground line-clamp-2 text-sm wrap-break-word">
             {{ isResolving ? '—' : (label ?? '—') }}
           </p>
           <p class="text-muted-foreground text-xs tabular-nums">

@@ -73,12 +73,6 @@ export interface EnableBankingAccount {
 
   /** Account holder's postal address */
   postal_address?: PostalAddress;
-
-  /**
-   * Account owner name
-   * @deprecated Use account holder information from other fields
-   */
-  owner_name?: string;
 }
 
 /**

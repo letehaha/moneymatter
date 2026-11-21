@@ -1,9 +1,9 @@
 <script lang="ts" setup>
+import VentureDealLogo from '@/components/common/venture-deal-logo.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useTransactionVentureLink } from '@/composable/data-queries/venture/events';
 import { ROUTES_NAMES } from '@/routes';
 import type { TransactionModel } from '@bt/shared/types';
-import { RocketIcon } from '@lucide/vue';
 import { DialogClose, DialogTitle } from 'reka-ui';
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
@@ -46,7 +46,7 @@ const ventureRoute = computed(() =>
     <div class="px-6 pb-6">
       <div class="bg-muted/30 border-border rounded-lg border p-4">
         <p v-if="ventureLink" class="mb-2 flex items-center gap-1.5 font-medium">
-          <RocketIcon class="text-app-transfer-color size-4 shrink-0" />
+          <VentureDealLogo :deal="{ ...ventureLink, name: ventureLink.dealName }" class="size-5" />
           <span class="truncate">{{ ventureLink.dealName }}</span>
         </p>
         <p class="text-sm">

@@ -1,12 +1,16 @@
 import type { NotificationStruct } from '@/api/notifications';
+import { isHttpsUrl } from '@/common/utils/external-url';
 import { ROUTES_NAMES } from '@/routes/constants';
 import {
+  type GoalReachedNotificationPayload,
   NOTIFICATION_TYPES,
   RESOURCE_TYPES,
   type ShareInvitationNotificationPayload,
   type ShareInvitationSendFailedPayload,
   type ShareLifecycleNotificationPayload,
+  type SystemNotificationPayload,
   type TrackerAiMatchesNotificationPayload,
+  type UnrealizedLossAlertNotificationPayload,
 } from '@bt/shared/types';
 
 /**
@@ -14,8 +18,8 @@ import {
  *
  * `spa` keeps the user inside the app — used for in-app deep-links so globally-mounted
  * dialogs (e.g. accept/decline) can pick up the query param without a full reload.
- * `external` falls back to a full navigation for targets that live outside the SPA router.
- * `null` means "not actionable" — changelog/system entries display content but don't deep-link.
+ * `external` opens in a new tab.
+ * `null` means "not actionable" — changelog entries and system entries without a url don't deep-link.
  */
 type NotificationRoute =
   | {
@@ -131,6 +135,25 @@ export const buildNotificationRoute = (notification: NotificationStruct): Notifi
       };
     }
 
+    case NOTIFICATION_TYPES.goalReached: {
+      const payload = notification.payload as GoalReachedNotificationPayload | undefined;
+      if (!payload?.goalId) return null;
+      return {
+        kind: 'spa',
+        to: { name: ROUTES_NAMES.goalDetails, params: { goalId: payload.goalId } },
+      };
+    }
+
+    case NOTIFICATION_TYPES.unrealizedLossAlert: {
+      const holdings = (notification.payload as UnrealizedLossAlertNotificationPayload | undefined)?.holdings ?? [];
+      const portfolioIds = [...new Set(holdings.map((h) => h.portfolioId))];
+      const [portfolioId] = portfolioIds;
+      if (portfolioId && portfolioIds.length === 1) {
+        return { kind: 'spa', to: { name: ROUTES_NAMES.portfolioDetail, params: { portfolioId } } };
+      }
+      return { kind: 'spa', to: { name: ROUTES_NAMES.investments } };
+    }
+
     case NOTIFICATION_TYPES.plannedConfirmed: {
       const payload = notification.payload as { accountId?: string } | undefined;
       if (!payload?.accountId) return null;
@@ -145,6 +168,12 @@ export const buildNotificationRoute = (notification: NotificationStruct): Notifi
         kind: 'spa',
         to: { name: ROUTES_NAMES.optimizationsReconciliation, query: { tab: 'stuck-pending' } },
       };
+
+    case NOTIFICATION_TYPES.system: {
+      const url = (notification.payload as SystemNotificationPayload | undefined)?.url;
+      if (!url || !isHttpsUrl(url)) return null;
+      return { kind: 'external', href: url };
+    }
 
     default:
       return null;

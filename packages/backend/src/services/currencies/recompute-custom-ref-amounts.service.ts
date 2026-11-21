@@ -1,16 +1,19 @@
 import { TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
-import { Money, moneyEqualsOrNull } from '@common/types/money';
+import { Money } from '@common/types/money';
+import { ExchangeRateUnavailableError } from '@js/errors';
+import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import TransactionSplits from '@models/transaction-splits.model';
 import { findTransactions } from '@models/transactions-query';
 import type Transactions from '@models/transactions.model';
+import UserExchangeRates from '@models/user-exchange-rates.model';
 import { getBaseCurrency } from '@models/users-currencies.model';
 import { remeasureRefBalances } from '@services/accounts/remeasure-ref-balances';
 import { restampRefInitialBalance } from '@services/accounts/restamp-ref-initial-balance';
 import { scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
-import { clearUserRefAmountCacheAfterCommit } from '@services/clear-ref-amount-cache';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
+import { clearRefAmountCache } from '@services/ref-amount-cache';
 import { Op } from 'sequelize';
 
 import { findCustomCurrencyCodes } from './custom-currency-codes';
@@ -109,13 +112,10 @@ const valueTransactions = async ({
             },
           }
         : {}),
-      ...(envelope.onlyMissing ? { refAmountMissing: true } : {}),
     },
   });
 
-  const selected = candidates.filter((tx) =>
-    matchesRowSelectors({ selectors, row: { time: tx.time, refAmountMissing: tx.refAmountMissing } }),
-  );
+  const selected = candidates.filter((tx) => matchesRowSelectors({ selectors, row: { time: tx.time } }));
   if (!selected.length) return { transactionsUpdated: 0, splitsUpdated: 0 };
 
   const anchored = await findAnchoredTransferIds({ userId, baseCurrencyCode, transactions: selected });
@@ -130,9 +130,9 @@ const valueTransactions = async ({
   const ownerByAccountId = new Map(accounts.map((account) => [account.id, account.userId]));
 
   const convert = ({ tx, amount }: { tx: Transactions; amount: Money }) =>
-    calculateRefAmountOrNull({
+    calculateRefAmount({
       userId,
-      amountOwnerUserId: ownerByAccountId.get(tx.accountId) ?? userId,
+      definitionOwnerUserId: ownerByAccountId.get(tx.accountId) ?? userId,
       amount,
       baseCode: currencyCode,
       quoteCode: baseCurrencyCode,
@@ -144,21 +144,22 @@ const valueTransactions = async ({
   let splitsUpdated = 0;
 
   for (const tx of toValue) {
-    const refAmount = await convert({ tx, amount: tx.amount });
-    const refCommissionRate = tx.commissionRate.isZero()
-      ? Money.zero()
-      : await convert({ tx, amount: tx.commissionRate });
+    let refAmount: Money;
+    let refCommissionRate: Money;
+    try {
+      refAmount = await convert({ tx, amount: tx.amount });
+      refCommissionRate = tx.commissionRate.isZero() ? Money.zero() : await convert({ tx, amount: tx.commissionRate });
+    } catch (error) {
+      // The ISO leg of that day has no market rate: the row keeps the amount it was valued with.
+      if (!(error instanceof ExchangeRateUnavailableError)) throw error;
+      logger.warn('No rate to value a custom-currency transaction again; kept its amount', { transactionId: tx.id });
+      continue;
+    }
 
-    if (
-      !moneyEqualsOrNull(refAmount, tx.refAmount) ||
-      !moneyEqualsOrNull(refCommissionRate, tx.refCommissionRate) ||
-      tx.refAmountMissing !== (refAmount === null)
-    ) {
+    if (!refAmount.equals(tx.refAmount) || !refCommissionRate.equals(tx.refCommissionRate)) {
       tx.refAmount = refAmount;
       tx.refCommissionRate = refCommissionRate;
-      // The save skips hooks, which is where the flag normally follows `refAmount`; the hooks would
-      // also move balances that this change does not touch.
-      tx.refAmountMissing = refAmount === null;
+      // Hooks would move balances that this change does not touch.
       await tx.save({ hooks: false });
       transactionsUpdated += 1;
     }
@@ -167,7 +168,7 @@ const valueTransactions = async ({
     for (const split of splits) {
       const splitRefAmount = await convert({ tx, amount: split.amount });
 
-      if (!moneyEqualsOrNull(splitRefAmount, split.refAmount)) {
+      if (!splitRefAmount.equals(split.refAmount)) {
         split.refAmount = splitRefAmount;
         await split.save({ hooks: false });
         splitsUpdated += 1;
@@ -186,22 +187,16 @@ const valueTransactions = async ({
 const valueAccounts = async ({
   userId,
   currencyCodes,
-  fillOnlyCodes,
   remeasureSpot,
 }: {
   userId: number;
   currencyCodes: string[];
-  /** Currencies whose rates only gained a new day: their already valued accounts keep their stamps. */
-  fillOnlyCodes: Set<string>;
   remeasureSpot: boolean;
 }): Promise<number> => {
   const accounts = await Accounts.findAll({ where: { userId, currencyCode: { [Op.in]: currencyCodes } } });
 
   let restamped = 0;
   for (const account of accounts) {
-    // A new day's rate only completes what has no value yet.
-    if (fillOnlyCodes.has(account.currencyCode) && account.refInitialBalance !== null) continue;
-
     if ((await restampRefInitialBalance({ accountId: account.id })) === 'restamped') restamped += 1;
   }
 
@@ -215,21 +210,32 @@ const valueAccounts = async ({
 };
 
 /**
- * Values a user's saved rows in custom currencies again after the rates behind them changed: the
- * `refAmount` and `refCommissionRate` of transactions, the ref amounts of their splits, the
- * `refAmountMissing` flag, the accounts' base-currency balances and the stored balance history.
- *
- * `changes` say which currency changed on which days; a change may name an ISO currency whose manual
- * rate into the base moved. They are expanded first through the user's pegs and stored quotes, so a
- * currency priced through a changed one is valued again for the same days. A `recompute` change
- * values every row of those days; a `fill` change (a rate for a new day) only values rows still
- * waiting for a rate. Each row is converted with the rate in force on its own
- * date, and only a row whose value differs is written. ISO currencies are never valued: their saved
- * transactions keep the base amounts they were saved with. A user with no base currency has nothing
- * to value, and the result is empty.
- *
- * Runs inside the caller's database transaction when there is one, so it sees rates the caller wrote
- * and commits with them. The user's cached converted amounts are dropped after that commit.
+ * A change that starts on or before a currency's earliest stored rate also reaches every day before
+ * it, since those days take the earliest rate.
+ */
+const reachEarlierDays = async ({
+  userId,
+  changes,
+}: {
+  userId: number;
+  changes: CustomRateChange[];
+}): Promise<CustomRateChange[]> =>
+  Promise.all(
+    changes.map(async (change) => {
+      if (change.from === null) return change;
+
+      const earlier = await UserExchangeRates.count({
+        where: { userId, baseCode: change.currencyCode, effectiveDate: { [Op.lt]: change.from } },
+      });
+
+      return earlier ? change : { ...change, from: null };
+    }),
+  );
+
+/**
+ * Values the user's saved custom-currency rows again (transactions, splits, account balances and
+ * history) for the days `changes` name, expanded to the custom currencies valued through a changed
+ * ISO one. Runs in the caller's transaction; ISO rows keep the base amounts they were saved with.
  */
 export const recomputeCustomRefAmounts = withTransaction(
   async ({
@@ -250,7 +256,10 @@ export const recomputeCustomRefAmounts = withTransaction(
 
     // An ISO seed (a manual ISO rate into the base) is expanded too: it reaches the custom
     // currencies pegged to or quoted in it. Only custom codes are valued afterwards.
-    const scope = expandScope({ scope: buildScope({ changes }), edges: await loadDependencyEdges({ userId }) });
+    const scope = expandScope({
+      scope: buildScope({ changes: await reachEarlierDays({ userId, changes }) }),
+      edges: await loadDependencyEdges({ userId }),
+    });
     const customCodes = await findCustomCurrencyCodes({ codes: [...scope.keys()] });
     const currencyCodes = [...scope.keys()].filter(
       (code) => customCodes.has(code.toUpperCase()) && code !== baseCurrency.currency.code,
@@ -270,12 +279,9 @@ export const recomputeCustomRefAmounts = withTransaction(
       splitsUpdated += result.splitsUpdated;
     }
 
-    const fillOnlyCodes = new Set(
-      currencyCodes.filter((code) => scope.get(code)!.every((interval) => interval.mode === 'fill')),
-    );
-    const accountsRestamped = await valueAccounts({ userId, currencyCodes, fillOnlyCodes, remeasureSpot });
+    const accountsRestamped = await valueAccounts({ userId, currencyCodes, remeasureSpot });
 
-    clearUserRefAmountCacheAfterCommit({ userId });
+    await clearRefAmountCache({ userId });
 
     return { currencyCodes, transactionsUpdated, splitsUpdated, accountsRestamped };
   },

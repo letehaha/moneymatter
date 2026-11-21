@@ -1,7 +1,9 @@
 import type { CurrencyMeta } from './currencies';
 import type { EntityLogoFields, EntityLogoPayload } from './entity-logo';
+import type { Decimal } from './money';
 import type { RecordId } from './record-id';
 import type { ResourceShareInfo } from './sharing';
+import type { PAYMENT_TYPES } from './transactions';
 
 export enum ACCOUNT_TYPES {
   system = 'system',
@@ -10,6 +12,7 @@ export enum ACCOUNT_TYPES {
   lunchflow = 'lunchflow', // lunchflow provider connection
   walutomat = 'walutomat', // walutomat provider connection
   simplefin = 'simplefin', // SimpleFIN Bridge provider connection
+  akahu = 'akahu', // Akahu (NZ open banking) provider connection
 }
 
 /**
@@ -21,6 +24,7 @@ export enum BANK_PROVIDER_TYPE {
   LUNCHFLOW = 'lunchflow',
   WALUTOMAT = 'walutomat',
   SIMPLEFIN = 'simplefin',
+  AKAHU = 'akahu',
 }
 
 /**
@@ -97,14 +101,14 @@ export interface AccountExternalData {
     linkedAt: string; // ISO date string
     linkingStrategy: 'forward-only' | 'full-reconciliation';
     balanceReconciliation: {
-      systemBalance: number;
-      externalBalance: number;
-      difference: number;
+      systemBalance: Decimal;
+      externalBalance: Decimal;
+      difference: Decimal;
       adjustmentTransactionId: RecordId | null;
       /** Where the post-link residual goes. Absent means the opening-balance path. */
       residualTarget?: LinkResidualTarget;
-      /** Residual the post-link sync left unexplained, in cents, folded into the opening balance. */
-      absorbedResidual?: number;
+      /** Residual the post-link sync left unexplained, folded into the opening balance. */
+      absorbedResidual?: Decimal;
       /**
        * Set at link time for queue-synced providers, whose residual cannot be
        * measured until the worker persists the sync. The queue's completion
@@ -122,15 +126,17 @@ export interface AccountModel extends EntityLogoFields {
   id: RecordId;
   name: string;
   initialBalance: number;
-  refInitialBalance: number | null;
+  refInitialBalance: number;
   currentBalance: number;
-  refCurrentBalance: number | null;
+  refCurrentBalance: number;
   creditLimit: number;
-  refCreditLimit: number | null;
+  refCreditLimit: number;
   accountCategory: ACCOUNT_CATEGORIES;
+  defaultPaymentType: PAYMENT_TYPES | null;
   currencyCode: string;
   userId: number;
   externalId?: RecordId;
+  externalUrl: string | null;
   status: ACCOUNT_STATUSES;
   excludeFromStats: boolean;
   bankDataProviderConnectionId?: RecordId;
@@ -140,6 +146,7 @@ export interface AccountModel extends EntityLogoFields {
    * to share recipients (who can't reach the owner-scoped connection-details endpoint).
    */
   bankProviderType?: BANK_PROVIDER_TYPE | null;
+  bankSeamAt: string | null;
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
   /** Decimals, symbol and kind of the account currency as the account owner defines them. */
@@ -147,8 +154,8 @@ export interface AccountModel extends EntityLogoFields {
 }
 
 /**
- * Serialized account wire shape (DB → API): every monetary field is a decimal
- * (cents converted on the way out), `id`/`type`/`accountCategory` are plain
+ * Serialized account wire shape (DB → API): every monetary field is a decimal,
+ * `id`/`type`/`accountCategory` are plain
  * strings, and owner-only bank-link metadata is stripped for share recipients.
  * The single source of truth for both the backend serializer's return type and
  * the frontend loan/account response shapes, so the two can't drift.
@@ -157,16 +164,18 @@ export interface AccountApiResponse extends EntityLogoFields {
   id: string;
   name: string;
   initialBalance: number;
-  refInitialBalance: number | null;
+  refInitialBalance: number;
   currentBalance: number;
-  refCurrentBalance: number | null;
+  refCurrentBalance: number;
   creditLimit: number;
-  refCreditLimit: number | null;
+  refCreditLimit: number;
   type: string;
   accountCategory: string;
+  defaultPaymentType: PAYMENT_TYPES | null;
   currencyCode: string;
   userId: number;
   externalId: string | null;
+  externalUrl: string | null;
   status: ACCOUNT_STATUSES;
   excludeFromStats: boolean;
   bankDataProviderConnectionId: string | null;
@@ -174,6 +183,8 @@ export interface AccountApiResponse extends EntityLogoFields {
    *  bank logo without a per-account connection-details lookup (which is owner-scoped
    *  and unreachable for share recipients). */
   bankProviderType: BANK_PROVIDER_TYPE | null;
+  /** Start of the day a manual account was linked to a bank: rows before it stay editable. */
+  bankSeamAt: string | null;
   needsRelink?: boolean;
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
@@ -224,19 +235,23 @@ type NullableBodyPayload = {
 
 export interface CreateAccountBody extends NullableBodyPayload, EntityLogoPayload {
   accountCategory: AccountModel['accountCategory'];
+  defaultPaymentType?: AccountModel['defaultPaymentType'];
   currencyCode: AccountModel['currencyCode'];
   name: AccountModel['name'];
   initialBalance: AccountModel['initialBalance'];
   creditLimit: AccountModel['creditLimit'];
   type?: AccountModel['type'];
+  externalUrl?: string | null;
 }
 
 export interface UpdateAccountBody extends NullableBodyPayload, EntityLogoPayload {
   accountCategory?: AccountModel['accountCategory'];
+  defaultPaymentType?: AccountModel['defaultPaymentType'];
   name?: AccountModel['name'];
   currentBalance?: AccountModel['currentBalance'];
   initialBalance?: AccountModel['initialBalance'];
   creditLimit?: AccountModel['creditLimit'];
   status?: ACCOUNT_STATUSES;
   excludeFromStats?: boolean;
+  externalUrl?: string | null;
 }

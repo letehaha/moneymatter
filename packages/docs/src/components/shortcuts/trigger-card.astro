@@ -1,0 +1,17 @@
+---
+interface Props {
+  /** Wrap tappable parts in braces: "When {Any Card} is tapped". */
+  summary: string;
+}
+
+const { summary } = Astro.props;
+const parts = summary.split(/\{([^}]+)\}/);
+---
+
+<figure class="sc-figure not-content" role="img" aria-label={`Illustration of the automation trigger: ${summary.replace(/[{}]/g, '')}`}>
+  <div class="sc-card">
+    <div class="sc-card-head">
+      <span>{parts.map((part, i) => (i % 2 ? <span class="sc-token">{part}</span> : part))}</span>
+    </div>
+  </div>
+</figure>

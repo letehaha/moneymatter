@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type BankConnection, listConnections } from '@/api/bank-data-providers';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import { getBankInstitutionLogoUrl } from '@/common/utils/find-bank-institution';
+import { getServiceLogoUrl } from '@/common/utils/logo-url';
 import { useIdleEnabled } from '@/composable/use-idle-enabled';
 import { useQuery } from '@tanstack/vue-query';
 import { computed, ref, watch } from 'vue';
@@ -38,8 +38,8 @@ const connection = computed(() => {
 });
 
 const institutionLogoUrl = computed(() => {
-  if (!connection.value?.bankName) return null;
-  return getBankInstitutionLogoUrl({ bankName: connection.value.bankName });
+  if (!connection.value?.bankLogoDomain) return null;
+  return getServiceLogoUrl({ domain: connection.value.bankLogoDomain });
 });
 
 const logoError = ref(false);

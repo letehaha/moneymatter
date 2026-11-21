@@ -9,7 +9,7 @@ jest.mock('@js/utils/logger', () => ({
 }));
 
 import { t } from '@i18n/index';
-import { BadRequestError, ForbiddenError, TooManyRequests } from '@js/errors';
+import { BadGateway, BadRequestError, ForbiddenError, ServiceUnavailableError, TooManyRequests } from '@js/errors';
 
 import { EnableBankingApiClient, classifyAspspError, isAspspDateRangeRejection, safeStringify } from './api-client';
 
@@ -338,5 +338,35 @@ describe('handleApiError', () => {
     expect(() => handleApiError(error)).toThrow(TooManyRequests);
     expect(() => handleApiError(error)).toThrow(t({ key: 'bankDataProviders.enableBanking.rateLimitExceeded' }));
     expect(() => handleApiError(error)).not.toThrow(ForbiddenError);
+  });
+
+  it.each(['ECONNABORTED', 'ECONNRESET'])('throws ServiceUnavailableError for %s with no response', (code) => {
+    const error = Object.assign(new Error('network failure'), {
+      isAxiosError: true,
+      code,
+      config: { url: '/accounts/acc-1/transactions', method: 'get' },
+    });
+
+    expect(() => handleApiError(error)).toThrow(ServiceUnavailableError);
+  });
+
+  it('keeps a non-transient no-response error as BadGateway', () => {
+    const error = Object.assign(new Error('certificate has expired'), {
+      isAxiosError: true,
+      code: 'CERT_HAS_EXPIRED',
+      config: { url: '/accounts/acc-1/transactions', method: 'get' },
+    });
+
+    expect(() => handleApiError(error)).toThrow(BadGateway);
+  });
+
+  it('keeps a 5xx response as BadGateway', () => {
+    const error = Object.assign(new Error('Request failed with status code 503'), {
+      isAxiosError: true,
+      config: { url: '/accounts/acc-1/transactions', method: 'get' },
+      response: { status: 503, data: {} },
+    });
+
+    expect(() => handleApiError(error)).toThrow(BadGateway);
   });
 });

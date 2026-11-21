@@ -9,7 +9,7 @@ import { isRequestWithinAiAllowance, resolveEntitledToServerKeys } from './build
 
 const schema = z.object({
   params: z.object({
-    feature: z.nativeEnum(AI_FEATURE),
+    feature: z.enum(AI_FEATURE),
   }),
   body: z.object({
     // null pins the included server model

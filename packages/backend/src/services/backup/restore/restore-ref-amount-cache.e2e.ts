@@ -1,6 +1,5 @@
 import { type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
 import { beforeEach, describe, expect, it } from '@jest/globals';
-import { RateLimitService } from '@services/common/rate-limit.service';
 import * as helpers from '@tests/helpers';
 
 const FOREIGN_CURRENCY = 'USD';
@@ -31,11 +30,7 @@ const createForeignTransaction = async ({ accountId, amount = AMOUNT }: { accoun
 };
 
 describe('Converted-amount cache across a backup restore', () => {
-  beforeEach(async () => {
-    const user = (await helpers.makeRequest({ method: 'get', url: '/user', raw: true })) as { id: number };
-    await RateLimitService.resetRateLimit(`backup:user:${user.id}`);
-    await RateLimitService.resetRateLimit(`backup-restore:user:${user.id}`);
-  });
+  beforeEach(() => helpers.resetBackupRateLimits());
 
   it('converts with the restored rate instead of a value cached for the same amount, pair and date', async () => {
     await helpers.addUserCurrencies({ currencyCodes: [FOREIGN_CURRENCY], raw: true });

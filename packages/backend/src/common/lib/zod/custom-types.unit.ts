@@ -1,7 +1,15 @@
 import { describe, expect, it } from '@jest/globals';
 import { z } from 'zod';
 
-import { currencyCode, currencyLogoUrl, dateBound, dateRange, isoCurrencyCode, withDateOrder } from './custom-types';
+import {
+  boundedDecimalAmount,
+  currencyCode,
+  dateBound,
+  dateRange,
+  externalUrl,
+  isoCurrencyCode,
+  withDateOrder,
+} from './custom-types';
 
 describe('dateBound', () => {
   describe("precision 'date' (default)", () => {
@@ -256,33 +264,44 @@ describe('isoCurrencyCode', () => {
   });
 });
 
-describe('currencyLogoUrl', () => {
-  const schema = currencyLogoUrl();
-  const LOGO = 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png';
-
-  it('accepts an https URL', () => {
-    expect(schema.parse(LOGO)).toBe(LOGO);
+describe('boundedDecimalAmount', () => {
+  it.each([5e-7, 1e-8, 0.00000123, 1e-18, 12.5, 0])('accepts %p', (value) => {
+    expect(boundedDecimalAmount().safeParse(value).success).toBe(true);
   });
 
-  it('accepts a URL of exactly 2048 characters', () => {
-    const url = `https://example.com/${'a'.repeat(2048 - 'https://example.com/'.length)}`;
+  it.each([1e-19, 1.5e-18])('rejects %p, which has more than 18 decimals', (value) => {
+    expect(boundedDecimalAmount().safeParse(value).success).toBe(false);
+  });
+});
 
-    expect(schema.parse(url)).toBe(url);
+describe('externalUrl', () => {
+  const schema = externalUrl();
+  const nullishSchema = externalUrl().nullish();
+
+  it('accepts http and https URLs including uppercase scheme and 2048-char length', () => {
+    expect(schema.safeParse('https://example.com/portal').success).toBe(true);
+    expect(schema.safeParse('http://localhost:8080/login').success).toBe(true);
+    expect(schema.safeParse('HTTPS://BANK.EXAMPLE/auth').success).toBe(true);
+
+    const prefix = 'https://example.com/';
+    const exactMax = prefix + 'a'.repeat(2048 - prefix.length);
+    expect(exactMax).toHaveLength(2048);
+    expect(schema.safeParse(exactMax).success).toBe(true);
   });
 
-  it('accepts null, which clears the logo', () => {
-    expect(schema.parse(null)).toBeNull();
+  it('supports null and undefined when wrapped with .nullish()', () => {
+    expect(nullishSchema.safeParse(null).success).toBe(true);
+    expect(nullishSchema.safeParse(undefined).success).toBe(true);
   });
 
   it.each([
-    ['an http URL', 'http://example.com/logo.png'],
-    ['a javascript URL', 'javascript:alert(1)'],
-    ['a data URL', 'data:image/png;base64,AAAA'],
-    ['a protocol-relative URL', '//example.com/logo.png'],
-    ['text that is not a URL', 'bitcoin'],
-    ['an empty string', ''],
-    ['a URL of 2049 characters', `https://example.com/${'a'.repeat(2049 - 'https://example.com/'.length)}`],
-  ])('rejects %s', (_label, input) => {
-    expect(schema.safeParse(input).success).toBe(false);
+    { label: 'ftp scheme', value: 'ftp://example.com/file' },
+    { label: 'javascript scheme', value: 'javascript:alert(1)' },
+    { label: 'empty string', value: '' },
+    { label: 'non-URL string', value: 'not-a-url' },
+    { label: 'URL exceeding 2048 characters', value: `https://example.com/${'a'.repeat(2049)}` },
+  ])('rejects $label', ({ value }) => {
+    expect(schema.safeParse(value).success).toBe(false);
+    expect(nullishSchema.safeParse(value).success).toBe(false);
   });
 });

@@ -88,7 +88,7 @@
                 <PencilIcon class="size-4" />
               </Button>
             </DesktopOnlyTooltip>
-            <DesktopOnlyTooltip :content="$t('settings.currencies.rateSource.history.removeButton')">
+            <DesktopOnlyTooltip v-if="canRemove" :content="$t('settings.currencies.rateSource.history.removeButton')">
               <Button
                 type="button"
                 variant="ghost-destructive"
@@ -191,6 +191,8 @@ const { rates, isFetched, isLoadingError, hasNextPage, isFetchingNextPage, fetch
 // a peg overrides every stored row, so those rows are shown but kept read-only.
 const isEditable = computed(() => props.savedSource === 'manual');
 const isPegged = computed(() => props.savedSource === 'peg');
+// A custom currency always keeps at least one rate, so the API refuses to remove the last one.
+const canRemove = computed(() => rates.value.length > 1 || hasNextPage.value);
 
 const note = computed(() => {
   if (isPegged.value) return t('settings.currencies.rateSource.history.peggedNote', { code: props.code });

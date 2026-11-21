@@ -37,19 +37,19 @@ export default class VentureEvents extends Model {
   @Column({ type: DataType.DATEONLY, allowNull: false })
   eventDate!: string;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10, allowNull: true })
+  @MoneyField({ precision: 20, scale: 10, allowNull: true })
   declare grossAmount: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10, allowNull: true })
+  @MoneyField({ precision: 20, scale: 10, allowNull: true })
   declare gpCarryAmount: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10, allowNull: true })
+  @MoneyField({ precision: 20, scale: 10, allowNull: true })
   declare lpNetAmount: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10, allowNull: true })
+  @MoneyField({ precision: 20, scale: 10, allowNull: true })
   declare refAmount: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10, allowNull: true })
+  @MoneyField({ precision: 20, scale: 10, allowNull: true })
   declare navAfter: Money | null;
 
   @Column({ type: DataType.DECIMAL(10, 6), allowNull: true })

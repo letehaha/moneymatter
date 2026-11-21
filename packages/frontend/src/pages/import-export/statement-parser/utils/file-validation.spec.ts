@@ -19,6 +19,12 @@ describe('validateStatementFile', () => {
     });
   });
 
+  it('accepts a non-ASCII text CSV', async () => {
+    const georgian = new File(['თარიღი,დანიშნულება,,GEL\n21/10/2026,"გადახდა - თანხა: GEL14.00",,-14.00\n'], 'bog.csv');
+
+    expect(await validateStatementFile({ file: georgian })).toEqual({ valid: true });
+  });
+
   it('accepts a PDF whose header sits within the first 1024 bytes', async () => {
     const bom = fileOf({ bytes: [0xef, 0xbb, 0xbf, 0x0d, 0x0a, ...PDF_HEADER], name: 'bom.pdf' });
     const lastSlot = fileOf({ bytes: [...Array<number>(1020).fill(0x20), ...PDF_HEADER], name: 'padded.pdf' });

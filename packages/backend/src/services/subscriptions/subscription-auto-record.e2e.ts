@@ -325,17 +325,3 @@ describe('Subscription auto-record cron', () => {
     });
   });
 });
-
-describe('User settings defaultAutoRecord', () => {
-  it('persists subscriptions.defaultAutoRecord across PATCH', async () => {
-    const before = await helpers.getUserSettings({ raw: true });
-    expect(before.subscriptions?.defaultAutoRecord).toBeFalsy();
-
-    await helpers.patchUserSettings({
-      patch: { subscriptions: { defaultAutoRecord: true } },
-    });
-
-    const after = await helpers.getUserSettings({ raw: true });
-    expect(after.subscriptions?.defaultAutoRecord).toBe(true);
-  });
-});

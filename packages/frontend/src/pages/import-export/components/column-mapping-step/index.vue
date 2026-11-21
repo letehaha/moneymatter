@@ -2,7 +2,7 @@
   Map Columns step — the wizard's centerpiece. Two compact, full-width tables:
 
     1. "Columns" (simple fields): status | field | CSV column | example data
-       Rows: Date (required), Amount (required), Description (optional).
+       Rows: Date (required), Amount (required), Description, Payee, Tags (optional).
        A mapped Date row expands in place to the date-format block, which forces
        an explicit day/month-order confirmation before Next unlocks.
 
@@ -221,12 +221,12 @@
         </UiButton>
         <UiButton :disabled="!importStore.isMapStepValid || isAdvancing" @click="handleNext">
           <template v-if="isAdvancing">
-            <LoaderIcon class="mr-2 size-4 animate-spin" />
+            <LoaderIcon class="size-4 animate-spin" />
             {{ $t('pages.importExport.columnMapping.detecting') }}
           </template>
           <template v-else>
             {{ $t('pages.importExport.mapColumns.next') }}
-            <ChevronRightIcon class="ml-1.5 size-4" />
+            <ChevronRightIcon class="size-4" />
           </template>
         </UiButton>
       </div>
@@ -262,6 +262,7 @@ import {
   CategoryOptionValue,
   type CurrencyModel,
   CurrencyOptionValue,
+  TagOptionValue,
   TransactionTypeOptionValue,
 } from '@bt/shared/types';
 import { ChevronRightIcon, LoaderIcon } from '@lucide/vue';
@@ -351,6 +352,7 @@ const columnByField = computed<Record<string, string | null>>(() => {
     amount: mapping.amount,
     description: mapping.description,
     payee: mapping.payee,
+    tags: mapping.tags?.columnName || null,
     category: categoryCol,
     account: accountCol,
     currency: currencyCol,
@@ -397,7 +399,7 @@ const simpleColumns: MappingTableColumn[] = [
 ];
 
 interface SimpleRow {
-  id: 'date' | 'amount' | 'description' | 'payee';
+  id: 'date' | 'amount' | 'description' | 'payee' | 'tags';
   label: string;
   required: boolean;
   value: string | null;
@@ -467,6 +469,20 @@ const simpleRows = computed<SimpleRow[]>(() => [
     }),
     onChange: (value) => {
       importStore.columnMapping.payee = value;
+    },
+  },
+  {
+    id: 'tags',
+    label: t('pages.importExport.mapColumns.fields.tags'),
+    required: false,
+    value: m.value.tags?.columnName ?? null,
+    status: deriveMapRowStatus({
+      hasValue: !!m.value.tags?.columnName,
+      required: false,
+      match: importStore.columnMatch?.tags ?? null,
+    }),
+    onChange: (value) => {
+      importStore.columnMapping.tags = value ? { option: TagOptionValue.mapDataSourceColumn, columnName: value } : null;
     },
   },
 ]);

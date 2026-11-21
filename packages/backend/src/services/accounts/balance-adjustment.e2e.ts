@@ -152,6 +152,38 @@ describe('Balance Adjustment', () => {
     expect((await helpers.getAccount({ id: account.id, raw: true })).currentBalance).toBe(before.currentBalance);
   });
 
+  it('stores a note of the maximum allowed 1000 characters', async () => {
+    const account = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ initialBalance: 100 }),
+      raw: true,
+    });
+    const note = 'a'.repeat(1000);
+
+    const result = await helpers.balanceAdjustment({
+      id: account.id,
+      payload: { targetBalance: asDecimal(200), note },
+      raw: true,
+    });
+
+    expect(result.transaction!.note).toBe(note);
+  });
+
+  it('rejects a note longer than 1000 characters and creates no transaction', async () => {
+    const account = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ initialBalance: 100 }),
+      raw: true,
+    });
+    const rowsBefore = (await helpers.getTransactions({ accountIds: [account.id], raw: true })).length;
+
+    const res = await helpers.balanceAdjustment({
+      id: account.id,
+      payload: { targetBalance: asDecimal(200), note: 'a'.repeat(1001) },
+    });
+
+    expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(await helpers.getTransactions({ accountIds: [account.id], raw: true })).toHaveLength(rowsBefore);
+  });
+
   it('returns 404 when account does not belong to user', async () => {
     const res = await helpers.balanceAdjustment({
       id: generateRandomRecordId(),

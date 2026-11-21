@@ -1,15 +1,24 @@
+import BrandLogo from '@/components/common/brand-logo.vue';
 import CurrencyIcon from '@/components/common/currency-icon.vue';
 import { registerCurrencyDecimals, resetCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useCurrenciesStore } from '@/stores/currencies';
-import type { UserCurrencyModel } from '@bt/shared/types';
+import type { EntityLogoPayload, UserCurrencyModel } from '@bt/shared/types';
 import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-const LOGO = 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png';
+const IMAGE_ID = '00000000-0000-4000-8000-000000000001';
 
-const buildHolding = ({ code, logoUrl = null }: { code: string; logoUrl?: string | null }) =>
-  ({ currencyCode: code, logoUrl }) as UserCurrencyModel;
+const buildHolding = ({ code, logo = {} }: { code: string; logo?: EntityLogoPayload }) =>
+  ({
+    currencyCode: code,
+    logoDomain: null,
+    logoInitials: null,
+    logoColor: null,
+    logoIcon: null,
+    logoImageId: null,
+    ...logo,
+  }) as UserCurrencyModel;
 
 const mountIcon = ({
   code,
@@ -53,38 +62,30 @@ describe('CurrencyIcon', () => {
     await wrapper.find('img').trigger('error');
 
     expect(wrapper.find('img').exists()).toBe(false);
-    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('USD');
+    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('US');
   });
 
-  it('shows the logo of a custom currency that has one', () => {
-    const wrapper = mountIcon({ code: 'BTC', holdings: [buildHolding({ code: 'BTC', logoUrl: LOGO })] });
+  it('draws the uploaded image of a custom currency through BrandLogo', () => {
+    const wrapper = mountIcon({
+      code: 'BTC',
+      holdings: [buildHolding({ code: 'BTC', logo: { logoImageId: IMAGE_ID } })],
+    });
 
-    expect(wrapper.find('img').attributes('src')).toBe(LOGO);
+    expect(wrapper.getComponent(BrandLogo).props()).toMatchObject({ imageId: IMAGE_ID, name: '₿' });
     expect(wrapper.find('[data-testid="currency-icon-monogram"]').exists()).toBe(false);
   });
 
-  it('shows a logo handed in as a prop over the saved one, and none for null', () => {
-    const OTHER = 'https://coin-images.coingecko.com/coins/images/279/large/ethereum.png';
-    const holdings = [buildHolding({ code: 'BTC', logoUrl: LOGO })];
+  it('draws the letters and color the user picked for a custom currency', () => {
+    const wrapper = mountIcon({
+      code: 'BTC',
+      holdings: [buildHolding({ code: 'BTC', logo: { logoInitials: 'B', logoColor: '#f7931a' } })],
+    });
 
-    expect(
-      mountIcon({ code: 'BTC', holdings, props: { logoUrl: OTHER } })
-        .find('img')
-        .attributes('src'),
-    ).toBe(OTHER);
-
-    const cleared = mountIcon({ code: 'BTC', holdings, props: { logoUrl: null } });
-    expect(cleared.find('img').exists()).toBe(false);
-    expect(cleared.get('[data-testid="currency-icon-monogram"]').text()).toBe('₿');
-  });
-
-  it('falls back to the monogram when the logo fails to load', async () => {
-    const wrapper = mountIcon({ code: 'BTC', holdings: [buildHolding({ code: 'BTC', logoUrl: LOGO })] });
-
-    await wrapper.find('img').trigger('error');
-
-    expect(wrapper.find('img').exists()).toBe(false);
-    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('₿');
+    expect(wrapper.getComponent(BrandLogo).props()).toMatchObject({ initials: 'B', color: '#f7931a' });
+    expect(wrapper.get('[data-testid="currency-icon-logo"]').attributes()).toMatchObject({
+      role: 'img',
+      'aria-label': 'BTC',
+    });
   });
 
   it('draws the symbol of a custom currency without a logo as its monogram', () => {
@@ -98,14 +99,26 @@ describe('CurrencyIcon', () => {
   it('draws the code of a custom currency without a symbol or a logo', () => {
     const wrapper = mountIcon({ code: 'USDT', holdings: [buildHolding({ code: 'USDT' })] });
 
-    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('USDT');
+    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('US');
   });
 
   it('shows the monogram, not the flag, for a custom code the user does not hold', () => {
     const wrapper = mountIcon({ code: 'USDT' });
 
     expect(wrapper.find('img').exists()).toBe(false);
-    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('USDT');
+    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('US');
+  });
+
+  it.each([
+    ['size-3.5', 'U', 'text-xs'],
+    ['size-5', 'US', 'text-xs'],
+    ['size-8', 'USD', 'text-sm'],
+  ])('fits the monogram at %s to the characters it has room for, never under 12px', (size, text, fontClass) => {
+    const wrapper = mountIcon({ code: 'USDT', props: { size } });
+    const monogram = wrapper.get('[data-testid="currency-icon-monogram"]');
+
+    expect(monogram.text()).toBe(text);
+    expect(monogram.classes()).toContain(fontClass);
   });
 
   it("uses the owner's definition passed as meta for a custom code outside the registry", () => {
@@ -117,16 +130,14 @@ describe('CurrencyIcon', () => {
     expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('s');
   });
 
-  it('gives a logo that failed another chance when the logo changes', async () => {
-    const wrapper = mountIcon({ code: 'BTC', holdings: [buildHolding({ code: 'BTC', logoUrl: LOGO })] });
-    await wrapper.find('img').trigger('error');
-    expect(wrapper.find('img').exists()).toBe(false);
+  it('follows a logo change in the currency list', async () => {
+    const wrapper = mountIcon({ code: 'BTC', holdings: [buildHolding({ code: 'BTC' })] });
+    expect(wrapper.findComponent(BrandLogo).exists()).toBe(false);
 
-    const nextLogo = 'https://coin-images.coingecko.com/coins/images/2/large/other.png';
-    useCurrenciesStore().currencies = [buildHolding({ code: 'BTC', logoUrl: nextLogo })];
+    useCurrenciesStore().currencies = [buildHolding({ code: 'BTC', logo: { logoDomain: 'bitcoin.org' } })];
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.find('img').attributes('src')).toBe(nextLogo);
+    expect(wrapper.getComponent(BrandLogo).props('domain')).toBe('bitcoin.org');
   });
 
   it('applies the size and the class it is given', () => {

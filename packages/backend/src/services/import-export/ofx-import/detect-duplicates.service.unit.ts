@@ -4,19 +4,22 @@ import { Money } from '@common/types/money';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 const readOfxUpload = jest.fn<() => Promise<OfxParseResult>>();
-const getTransactionsByArrayOfField = jest.fn<() => Promise<FakeTransaction[]>>();
+const findTransactions = jest.fn<() => Promise<FakeTransaction[]>>();
 const findWithFilters = jest.fn<() => Promise<FakeTransaction[]>>();
 
 jest.mock('./upload-cache', () => ({ readOfxUpload: () => readOfxUpload() }));
+jest.mock('@models/transactions-query', () => ({ findTransactions: () => findTransactions() }));
 let mockAccountDecimals = 2;
 jest.mock('@services/import-export/core/duplicates/get-account-decimals', () => ({
   __esModule: true,
+  decimalsOfAccount: jest.requireActual<typeof import('@services/import-export/core/duplicates/get-account-decimals')>(
+    '@services/import-export/core/duplicates/get-account-decimals',
+  ).decimalsOfAccount,
   getAccountDecimals: ({ accountIds }: { accountIds: string[] }) =>
     Promise.resolve(new Map(accountIds.map((id) => [id, mockAccountDecimals]))),
 }));
 jest.mock('@models/transactions.model', () => ({
   __esModule: true,
-  getTransactionsByArrayOfField: () => getTransactionsByArrayOfField(),
   findWithFilters: () => findWithFilters(),
 }));
 
@@ -104,8 +107,8 @@ describe('detectOfxDuplicates', () => {
   beforeEach(() => {
     mockAccountDecimals = 2;
     readOfxUpload.mockReset();
-    getTransactionsByArrayOfField.mockReset();
-    getTransactionsByArrayOfField.mockResolvedValue([]);
+    findTransactions.mockReset();
+    findTransactions.mockResolvedValue([]);
     findWithFilters.mockReset();
     findWithFilters.mockResolvedValue([]);
   });
@@ -113,7 +116,7 @@ describe('detectOfxDuplicates', () => {
   it('matches a FITID-derived originalId with full confidence', async () => {
     readOfxUpload.mockResolvedValue(parsedResult({ originalId: 'fitid-hash' }));
     const existing = transaction({ originalId: 'fitid-hash' });
-    getTransactionsByArrayOfField.mockResolvedValue([
+    findTransactions.mockResolvedValue([
       transaction({ accountId: generateRandomRecordId(), originalId: 'fitid-hash' }),
       existing,
     ]);
@@ -155,7 +158,7 @@ describe('detectOfxDuplicates', () => {
         existingTransaction: expect.objectContaining({ id: matching.id }),
       }),
     ]);
-    expect(getTransactionsByArrayOfField).not.toHaveBeenCalled();
+    expect(findTransactions).not.toHaveBeenCalled();
   });
 
   it('keys a FITID-less row at the account currency decimals', async () => {

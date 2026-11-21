@@ -1,0 +1,264 @@
+---
+import BaseLayout from './base-layout.astro';
+import '@/styles/feature-page.css';
+import LandingHeader from '@/components/landing-header.astro';
+import CtaSection from '@/components/cta-section.astro';
+import LandingFooter from '@/components/landing-footer.astro';
+import ZoomableScreenshot from '@/components/zoomable-screenshot.astro';
+import LucideIcon from '@/components/lucide-icon.astro';
+import FaqAsk from '@/components/faq-ask.vue';
+import FaqDetails from '@/components/faq-details.astro';
+import FeatureCard from '@/components/feature-card.astro';
+import DemoStartButton from '@/components/demo-start-button.astro';
+import { getCollection } from 'astro:content';
+import { getFeaturePage } from '@/lib/features';
+import { FAQ_ASK_STRINGS } from '@/i18n/client';
+import { useI18n } from '@/i18n';
+
+type ScreenshotProps = { name: string; alt: string; width: number; height: number };
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  intro: string;
+  heroScreenshot?: ScreenshotProps;
+  sections: { heading: string; text: string; bullets?: string[]; screenshot?: ScreenshotProps }[];
+  goodToKnow?: string[];
+  faq: { question: string; answer: string }[];
+  guides: { label: string; href: string }[];
+  related: string[];
+}
+
+const { title, description, heading, intro, heroScreenshot, sections, goodToKnow, faq, guides, related } = Astro.props;
+const { t, url, locale, clientProps, localizeGuide } = useI18n(Astro);
+const faqItems = faq.map((item) => ({ question: t(item.question), answer: t(item.answer) }));
+
+const page = getFeaturePage({ href: Astro.url.pathname.replace(/\/$/, '') });
+const relatedPages = related.map((href) => getFeaturePage({ href }));
+
+const flowGuides = await Promise.all(
+  (await getCollection('guides', (guide) => !guide.id.includes('/') && guide.data.related.includes(page.href))).map(
+    async (guide) => ({ label: (await localizeGuide({ guide })).data.title, href: url({ href: `/guides/${guide.id}` }) }),
+  ),
+);
+const guideLists = [
+  { title: t('Step-by-step guides'), icon: 'file-text', items: guides.map((guide) => ({ ...guide, label: t(guide.label) })) },
+  {
+    title: t('Guides that use this feature'),
+    icon: 'route',
+    items: flowGuides,
+  },
+].filter((list) => list.items.length > 0);
+
+let mediaRows = 0;
+const rows = sections.map((section, index) => ({
+  ...section,
+  number: String(index + 1).padStart(2, '0'),
+  flip: section.screenshot ? mediaRows++ % 2 === 1 : false,
+}));
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: t('Features'), item: new URL(url({ href: '/features' }), Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: t(page.label), item: new URL(url({ href: page.href }), Astro.site).href },
+      ],
+    },
+    {
+      '@type': 'FAQPage',
+      ...(locale !== 'en' && { inLanguage: locale }),
+      mainEntity: faqItems.map((item) => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: { '@type': 'Answer', text: item.answer },
+      })),
+    },
+  ],
+};
+---
+
+<BaseLayout title={t(title)} description={t(description)}>
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+  <LandingHeader />
+  <main id="main">
+    <section class="sec fp-hero">
+      <div class="wrap">
+        <nav class="fp-crumbs" aria-label={t('Breadcrumb')}>
+          <ol>
+            <li><a href={url({ href: '/features' })}>{t('Features')}</a></li>
+            <li aria-current="page">{t(page.label)}</li>
+          </ol>
+        </nav>
+        <h1>{t(heading)}</h1>
+        <p class="fp-intro">{t(intro)}</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary btn-lg" href="/sign-up" data-track="landing_cta_clicked" data-track-location="hero"
+            >{t('Try for free')}<svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg
+            ></a
+          >
+          <DemoStartButton location="hero" />
+        </div>
+        <p class="hero-note fp-note">
+          <span set:html={t('<strong>40-day free trial,</strong> no card needed')} /><span
+            >{t('Live demo: no signup required, sample data')}</span
+          >
+        </p>
+        {
+          heroScreenshot && (
+            <figure class="win fp-hero-shot">
+              <div class="shot-bar" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <span>{t(page.label)}</span>
+              </div>
+              <ZoomableScreenshot {...heroScreenshot} alt={t(heroScreenshot.alt)} loading="eager" />
+            </figure>
+          )
+        }
+      </div>
+    </section>
+
+    <section class="sec sec-soft">
+      <div class="wrap">
+        {
+          rows.map((row) => (
+            <div class:list={['fp-row', { 'fp-flip': row.flip, 'fp-text': !row.screenshot }]}>
+              <div class="fp-copy">
+                <h2>
+                  <span class="idx" aria-hidden="true">
+                    {row.number}
+                  </span>
+                  {t(row.heading)}
+                </h2>
+                <p>{t(row.text)}</p>
+                {row.bullets && (
+                  <ul class="ticks">
+                    {row.bullets.map((bullet) => (
+                      <li>
+                        <svg class="ic" aria-hidden="true">
+                          <use href="#i-check" />
+                        </svg>
+                        {t(bullet)}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              {row.screenshot && (
+                <figure class="win fp-media">
+                  <div class="shot-bar" aria-hidden="true">
+                    <i />
+                    <i />
+                    <i />
+                    <span>{t(page.label)}</span>
+                  </div>
+                  <ZoomableScreenshot {...row.screenshot} alt={t(row.screenshot.alt)} />
+                </figure>
+              )}
+            </div>
+          ))
+        }
+
+        {
+          goodToKnow && (
+            <div class="plate fp-know">
+              <h2>{t('Good to know')}</h2>
+              <ul>
+                {goodToKnow.map((item) => (
+                  <li>{t(item)}</li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+      </div>
+    </section>
+
+    <section class="sec fp-faq" id="faq">
+      <div class="wrap">
+        <div class="faq2">
+          <div>
+            <p class="eyebrow">{t('FAQ')}</p>
+            <h2>{t(`${page.label} questions`)}</h2>
+            {
+              guideLists.map((list) => (
+                <div class="plate fp-guides">
+                  <p>{list.title}</p>
+                  <ul>
+                    {list.items.map((guide) => (
+                      <li>
+                        <a href={guide.href}>
+                          <span class="itile sm">
+                            <LucideIcon name={list.icon} class="ic" />
+                          </span>
+                          {guide.label}
+                          <LucideIcon name="arrow-right" class="ic" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            }
+          </div>
+          <div class="faq2-main">
+            <FaqDetails items={faqItems} />
+            <FaqAsk client:visible {...clientProps({ texts: FAQ_ASK_STRINGS })} />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec sec-soft">
+      <div class="wrap">
+        <div class="fp-related-head">
+          <div>
+            <p class="eyebrow">{t('Keep exploring')}</p>
+            <h2>{t('Related features')}</h2>
+          </div>
+          <a class="fp-all" href={url({ href: '/features' })}>{t('Browse all features')}<LucideIcon name="arrow-right" class="ic" /></a>
+        </div>
+        <ul class="fp-cards">
+          {
+            relatedPages.map((item) => (
+              <li>
+                <FeatureCard page={item} />
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <CtaSection />
+  </main>
+  <LandingFooter />
+
+  <dialog id="screenshot-zoom" class="fp-zoom-dialog" aria-label={t('Enlarged screenshot')}>
+    <img alt="" />
+    <button type="button" class="fp-zoom-close" aria-label={t('Close')}><LucideIcon name="x" class="ic" /></button>
+  </dialog>
+</BaseLayout>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('#screenshot-zoom')!;
+  const image = dialog.querySelector('img')!;
+
+  document.querySelectorAll<HTMLButtonElement>('.fp-zoom').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      const shown = [...trigger.querySelectorAll('img')].find((img) => img.checkVisibility())!;
+      image.src = shown.srcset.split(', ').at(-1)!.split(' ')[0];
+      image.alt = shown.alt;
+      dialog.showModal();
+    });
+  });
+
+  dialog.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => image.removeAttribute('src'));
+</script>

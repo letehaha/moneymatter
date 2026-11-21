@@ -12,6 +12,7 @@ import {
   DoorOpenIcon,
   PhoneCallIcon,
   Trash2Icon,
+  Undo2Icon,
   type LucideIcon,
 } from '@lucide/vue';
 import { computed } from 'vue';
@@ -39,6 +40,7 @@ interface EventVisual {
 const EVENT_VISUALS: Record<VENTURE_EVENT_TYPE, EventVisual> = {
   [VENTURE_EVENT_TYPE.initial_investment]: { icon: ArrowDownToLineIcon, tone: 'invest' },
   [VENTURE_EVENT_TYPE.capital_call]: { icon: PhoneCallIcon, tone: 'invest' },
+  [VENTURE_EVENT_TYPE.capital_refund]: { icon: Undo2Icon, tone: 'distribute' },
   [VENTURE_EVENT_TYPE.fee_payment]: { icon: CoinsIcon, tone: 'fee' },
   [VENTURE_EVENT_TYPE.distribution]: { icon: ArrowUpFromLineIcon, tone: 'distribute' },
   [VENTURE_EVENT_TYPE.exit]: { icon: DoorOpenIcon, tone: 'exit' },
@@ -80,19 +82,19 @@ const primaryAmount = computed<{ value: string; label: string } | null>(() => {
   const event = props.event;
   if (event.lpNetAmount !== null && event.lpNetAmount !== undefined) {
     return {
-      value: formatAmountByCurrencyCode(Number(event.lpNetAmount), props.currencyCode),
+      value: formatAmountByCurrencyCode({ amount: Number(event.lpNetAmount), currencyCode: props.currencyCode }),
       label: t('venture.events.lpNet'),
     };
   }
   if (event.navAfter !== null && event.navAfter !== undefined) {
     return {
-      value: formatAmountByCurrencyCode(Number(event.navAfter), props.currencyCode),
+      value: formatAmountByCurrencyCode({ amount: Number(event.navAfter), currencyCode: props.currencyCode }),
       label: t('venture.events.navAfter'),
     };
   }
   if (event.grossAmount !== null && event.grossAmount !== undefined) {
     return {
-      value: formatAmountByCurrencyCode(Number(event.grossAmount), props.currencyCode),
+      value: formatAmountByCurrencyCode({ amount: Number(event.grossAmount), currencyCode: props.currencyCode }),
       label: t('venture.events.gross'),
     };
   }
@@ -149,19 +151,19 @@ const showNav = computed(
           <div v-if="showGross">
             <dt class="text-[10px] tracking-wide uppercase">{{ $t('venture.events.gross') }}</dt>
             <dd class="text-foreground font-medium tabular-nums">
-              {{ formatAmountByCurrencyCode(Number(event.grossAmount), currencyCode) }}
+              {{ formatAmountByCurrencyCode({ amount: Number(event.grossAmount), currencyCode }) }}
             </dd>
           </div>
           <div v-if="showCarry">
             <dt class="text-[10px] tracking-wide uppercase">{{ $t('venture.events.carry') }}</dt>
             <dd class="text-foreground font-medium tabular-nums">
-              {{ formatAmountByCurrencyCode(Number(event.gpCarryAmount), currencyCode) }}
+              {{ formatAmountByCurrencyCode({ amount: Number(event.gpCarryAmount), currencyCode }) }}
             </dd>
           </div>
           <div v-if="showNav">
             <dt class="text-[10px] tracking-wide uppercase">{{ $t('venture.events.navAfter') }}</dt>
             <dd class="text-foreground font-medium tabular-nums">
-              {{ formatAmountByCurrencyCode(Number(event.navAfter), currencyCode) }}
+              {{ formatAmountByCurrencyCode({ amount: Number(event.navAfter), currencyCode }) }}
             </dd>
           </div>
         </dl>

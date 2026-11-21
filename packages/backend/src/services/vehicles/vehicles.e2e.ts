@@ -95,6 +95,51 @@ describe('Vehicles', () => {
     });
   });
 
+  describe('POST /vehicles at the currency decimals', () => {
+    it('refuses a positive purchase price that rounds to nothing', async () => {
+      const usd = await helpers.createVehicle({ ...basePayload({ purchasePrice: 0.004 }), raw: false });
+      expect(usd.statusCode).toBe(422);
+      expect(usd.body.response).toMatchObject({ message: 'The amount is below the smallest unit of USD.' });
+
+      const jpy = await helpers.createVehicle({
+        ...basePayload({ currencyCode: 'JPY', purchasePrice: 0.4 }),
+        raw: false,
+      });
+      expect(jpy.statusCode).toBe(422);
+
+      expect(await helpers.getVehicles({ raw: true })).toEqual([]);
+    });
+
+    it.each([
+      // 1_234_567.4 rounds to 1_234_567; two years at 10% leave 999_999.27, held as 999_999,
+      // and at 20% leave 790_122.88, held as 790_123.
+      { currencyCode: 'JPY', purchasePrice: 1_234_567.4, anchor: 1_234_567, value: 999_999, refreshed: 790_123 },
+      // 1234.5674 rounds to 1234.567; two years at 10% leave 999.99927, held as 999.999,
+      // and at 20% leave 790.12288, held as 790.123.
+      { currencyCode: 'KWD', purchasePrice: 1234.5674, anchor: 1234.567, value: 999.999, refreshed: 790.123 },
+    ])(
+      'depreciates a $currencyCode vehicle bought two years ago at the currency decimals, on create and on refresh',
+      async ({ currencyCode, purchasePrice, anchor, value, refreshed }) => {
+        const vehicle = await helpers.createVehicle({
+          ...basePayload({
+            currencyCode,
+            purchasePrice,
+            purchaseDate: pastDateString({ yearsAgo: 2 }),
+            depreciationPreset: DEPRECIATION_PRESET.custom,
+            customAnnualRatePct: 10,
+          }),
+          raw: true,
+        });
+
+        expect(vehicle.purchasePrice).toBe(anchor);
+        expect(vehicle.account!.currentBalance).toBe(value);
+
+        const updated = await helpers.updateVehicle({ id: vehicle.id, customAnnualRatePct: 20, raw: true });
+        expect(updated.account!.currentBalance).toBe(refreshed);
+      },
+    );
+  });
+
   describe('GET /vehicles', () => {
     it('returns an empty list without vehicles, then the user’s vehicles once created', async () => {
       const emptyList = await helpers.getVehicles({ raw: true });
@@ -196,6 +241,103 @@ describe('Vehicles', () => {
       });
 
       expect(updated.account!.currentBalance).toBeLessThan(initialBalance);
+    });
+  });
+
+  describe('request body validation', () => {
+    it('rejects a create body that breaks a field rule, and keeps the vehicle list empty', async () => {
+      const invalid: Record<string, unknown>[] = [
+        { purchasePrice: 0 },
+        { currencyCode: 'USD1' },
+        { currencyCode: 'ZZZ' },
+        { name: '' },
+        { make: '' },
+        { model: '' },
+        { year: new Date().getFullYear() + 2 },
+        { vehicleClass: 'spaceship' },
+        { purchaseDate: '2024/01/15' },
+        { depreciationPreset: 'turbo' },
+        { customAnnualRatePct: 101 },
+        { salvageFloorPct: -1 },
+        { salvageFloorPct: 101 },
+        { currentMileage: -1 },
+        { currentMileage: 1.5 },
+      ];
+
+      for (const patch of invalid) {
+        const response = await helpers.createVehicle({
+          ...(basePayload() as Parameters<typeof helpers.createVehicle>[0]),
+          ...patch,
+          raw: false,
+        });
+        expect([patch, response.statusCode]).toEqual([patch, 422]);
+      }
+
+      expect(await helpers.getVehicles({ raw: true })).toEqual([]);
+    });
+
+    it('accepts a create body with every optional field, a null trim and a custom rate', async () => {
+      const vehicle = await helpers.createVehicle({
+        ...basePayload({
+          trim: 'XSE',
+          depreciationPreset: DEPRECIATION_PRESET.custom,
+          customAnnualRatePct: 12.5,
+          salvageFloorPct: 20,
+          currentMileage: 42000,
+        }),
+        raw: true,
+      });
+
+      expect(vehicle.trim).toBe('XSE');
+      expect(vehicle.customAnnualRatePct).toBe(12.5);
+      expect(vehicle.salvageFloorPct).toBe(20);
+      expect(vehicle.currentMileage).toBe(42000);
+    });
+
+    it('rejects an update body that breaks a field rule, and leaves the vehicle unchanged', async () => {
+      const vehicle = await helpers.createVehicle({ ...basePayload(), raw: true });
+
+      const invalid: Record<string, unknown>[] = [
+        { name: '' },
+        { make: '' },
+        { year: 1800 },
+        { year: new Date().getFullYear() + 2 },
+        { vehicleClass: 'spaceship' },
+        { depreciationPreset: 'turbo' },
+        { customAnnualRatePct: -1 },
+        { salvageFloorPct: 101 },
+        { currentMileage: -5 },
+        { depreciationPreset: DEPRECIATION_PRESET.custom },
+      ];
+
+      for (const patch of invalid) {
+        const response = await helpers.updateVehicle({ id: vehicle.id, ...patch, raw: false });
+        expect([patch, response.statusCode]).toEqual([patch, 422]);
+      }
+
+      const after = await helpers.getVehicleById({ id: vehicle.id, raw: true });
+      expect(after.make).toBe(vehicle.make);
+      expect(after.year).toBe(vehicle.year);
+      expect(after.account!.name).toBe(vehicle.account!.name);
+    });
+
+    it('updates the editable fields, renames the account and clears nullable ones', async () => {
+      const vehicle = await helpers.createVehicle({ ...basePayload({ trim: 'LE', currentMileage: 1000 }), raw: true });
+
+      const updated = await helpers.updateVehicle({
+        id: vehicle.id,
+        name: 'Family car',
+        trim: null,
+        currentMileage: null,
+        salvageFloorPct: 15,
+        raw: true,
+      });
+
+      expect(updated.account!.name).toBe('Family car');
+      expect(updated.trim).toBeNull();
+      expect(updated.currentMileage).toBeNull();
+      expect(updated.salvageFloorPct).toBe(15);
+      expect(updated.purchasePrice).toBe(vehicle.purchasePrice);
     });
   });
 

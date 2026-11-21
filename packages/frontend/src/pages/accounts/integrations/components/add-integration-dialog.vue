@@ -123,6 +123,11 @@
           @connected="handleProviderConnected"
           @cancel="handleCancel"
         />
+        <AkahuConnector
+          v-else-if="selectedProviderType === BANK_PROVIDER_TYPE.AKAHU"
+          @connected="handleProviderConnected"
+          @cancel="handleCancel"
+        />
       </template>
     </PlanRestricted>
   </ResponsiveDialog>
@@ -151,6 +156,7 @@ import { ChevronRightIcon, InfoIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import AkahuConnector from './akahu-connector.vue';
 import EnableBankingConnector from './enable-banking-connector.vue';
 import LunchFlowConnector from './lunchflow-connector.vue';
 import MonobankConnector from './monobank-connector.vue';

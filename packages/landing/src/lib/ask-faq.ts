@@ -1,3 +1,5 @@
+import { FAQ_ERRORS } from '@/i18n/client';
+
 import { config } from './config';
 import { trackAnalyticsEvent } from './posthog';
 
@@ -11,8 +13,6 @@ export type FaqOutcome = FaqStatus | 'rate_limited' | 'server_error' | 'network'
 export type AskFaqResult = { answer: string } | { error: string };
 
 type FaqApiResponse = { response: { answer: string; status: FaqStatus } };
-
-const SERVER_ERROR_MESSAGE = "Couldn't get an answer right now. Please email support@moneymatter.app.";
 
 export async function askFaq({ question }: { question: string }): Promise<AskFaqResult> {
   const startedAt = Date.now();
@@ -34,7 +34,7 @@ export async function askFaq({ question }: { question: string }): Promise<AskFaq
   } catch (error) {
     console.error('Failed to ask the FAQ assistant:', error);
     track({ outcome: 'network' });
-    return { error: "Couldn't reach the server. Please check your connection and try again." };
+    return { error: FAQ_ERRORS.network };
   }
 
   if (!response.ok) {
@@ -42,9 +42,7 @@ export async function askFaq({ question }: { question: string }): Promise<AskFaq
 
     track({ outcome: isRateLimited ? 'rate_limited' : 'server_error', status: response.status });
     return {
-      error: isRateLimited
-        ? "That's a lot of questions. Please try again in a few minutes, or email support@moneymatter.app."
-        : SERVER_ERROR_MESSAGE,
+      error: isRateLimited ? FAQ_ERRORS.rateLimited : FAQ_ERRORS.server,
     };
   }
 
@@ -59,6 +57,6 @@ export async function askFaq({ question }: { question: string }): Promise<AskFaq
   } catch (error) {
     console.error('Failed to read the FAQ assistant response:', error);
     track({ outcome: 'server_error', status: response.status });
-    return { error: SERVER_ERROR_MESSAGE };
+    return { error: FAQ_ERRORS.server };
   }
 }

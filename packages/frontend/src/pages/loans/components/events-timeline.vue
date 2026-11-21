@@ -69,13 +69,19 @@ function describe(event: LoanEventApi): string {
       return t('loans.detail.events.termChange', { from: event.from ?? NO_VALUE, to: event.to ?? NO_VALUE });
     case 'planned_payment_change':
       return t('loans.detail.events.plannedPaymentChange', {
-        from: event.from === null ? NO_VALUE : formatAmountByCurrencyCode(event.from, props.currencyCode),
-        to: event.to === null ? NO_VALUE : formatAmountByCurrencyCode(event.to, props.currencyCode),
+        from:
+          event.from === null
+            ? NO_VALUE
+            : formatAmountByCurrencyCode({ amount: event.from, currencyCode: props.currencyCode }),
+        to:
+          event.to === null
+            ? NO_VALUE
+            : formatAmountByCurrencyCode({ amount: event.to, currencyCode: props.currencyCode }),
       });
     case 'balance_correction':
       return t('loans.detail.events.balanceCorrection', {
-        from: formatAmountByCurrencyCode(event.from, props.currencyCode),
-        to: formatAmountByCurrencyCode(event.to, props.currencyCode),
+        from: formatAmountByCurrencyCode({ amount: event.from, currencyCode: props.currencyCode }),
+        to: formatAmountByCurrencyCode({ amount: event.to, currencyCode: props.currencyCode }),
       });
     case 'note':
       return event.text;

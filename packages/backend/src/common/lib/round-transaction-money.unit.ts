@@ -43,6 +43,7 @@ describe('roundTransactionMoney', () => {
     const result = await roundTransactionMoney({
       values: { amount: money('1.2345'), commissionRate: money('0.0005'), cashbackAmount: money('0.0004') },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'KWD',
       refCurrencyCode: 'USD',
       originalCurrencyCode: null,
@@ -57,6 +58,7 @@ describe('roundTransactionMoney', () => {
     const result = await roundTransactionMoney({
       values: { refAmount: money('0.025'), refCommissionRate: money('0.035') },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'JPY',
       refCurrencyCode: 'USD',
       originalCurrencyCode: null,
@@ -70,6 +72,7 @@ describe('roundTransactionMoney', () => {
     const result = await roundTransactionMoney({
       values: { amount: money('12.5'), originalAmount: money('1500.6') },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'USD',
       refCurrencyCode: 'USD',
       originalCurrencyCode: 'JPY',
@@ -79,18 +82,23 @@ describe('roundTransactionMoney', () => {
     expect(result.originalAmount!.toNumber()).toBe(1501);
   });
 
-  it('falls back to the account currency for the reference values of a row without a reference currency', async () => {
-    const result = await roundTransactionMoney({
-      values: { amount: money('1.2345'), refAmount: money('1.2345') },
-      userId: USER_ID,
-      currencyCode: 'KWD',
-      refCurrencyCode: undefined,
-      originalCurrencyCode: undefined,
-    });
+  it.each([undefined, null])(
+    'leaves the reference values as given when the reference currency is %s',
+    async (refCurrencyCode) => {
+      const result = await roundTransactionMoney({
+        values: { amount: money('1500.4'), refAmount: money('12.34'), refCommissionRate: money('0.125') },
+        userId: USER_ID,
+        definitionOwnerUserId: USER_ID,
+        currencyCode: 'JPY',
+        refCurrencyCode,
+        originalCurrencyCode: undefined,
+      });
 
-    expect(result.refAmount!.toDecimalString(3)).toBe('1.235');
-    expect(result.refAmount!.toDecimalString(3)).toBe(result.amount!.toDecimalString(3));
-  });
+      expect(result.amount!.toNumber()).toBe(1500);
+      expect(result.refAmount!.toString()).toBe('12.34');
+      expect(result.refCommissionRate!.toString()).toBe('0.125');
+    },
+  );
 
   it('rounds the reference values half-up when the reference currency is the account currency', async () => {
     const result = await roundTransactionMoney({
@@ -101,6 +109,7 @@ describe('roundTransactionMoney', () => {
         refCommissionRate: money('0.025'),
       },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'USD',
       refCurrencyCode: 'USD',
       originalCurrencyCode: null,
@@ -116,6 +125,7 @@ describe('roundTransactionMoney', () => {
     const result = await roundTransactionMoney({
       values: { amount: money('3.456'), originalAmount: null },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'USD',
       refCurrencyCode: 'USD',
       originalCurrencyCode: null,
@@ -131,6 +141,7 @@ describe('roundTransactionMoney', () => {
     const result = await roundTransactionMoney({
       values: { amount: money('0.000406419') },
       userId: USER_ID,
+      definitionOwnerUserId: USER_ID,
       currencyCode: 'BTC',
       refCurrencyCode: 'USD',
       originalCurrencyCode: null,
@@ -147,7 +158,7 @@ describe('roundTransactionMoney', () => {
       const result = await roundTransactionMoney({
         values: { amount: money('1.25'), commissionRate: money('0.00000001') },
         userId: AUTHOR_ID,
-        accountOwnerUserId: OWNER_ID,
+        definitionOwnerUserId: OWNER_ID,
         currencyCode: 'SAT',
         refCurrencyCode: 'USD',
         originalCurrencyCode: null,
@@ -157,23 +168,25 @@ describe('roundTransactionMoney', () => {
       expect(result.commissionRate!.toDecimalString(8)).toBe('0.00000001');
     });
 
-    it("rounds with the author's decimals when no account owner is given", async () => {
+    it("rounds the original amount with the author's decimals", async () => {
       const result = await roundTransactionMoney({
-        values: { amount: money('1.25') },
+        values: { amount: money('1.25'), originalAmount: money('1.25') },
         userId: AUTHOR_ID,
+        definitionOwnerUserId: OWNER_ID,
         currencyCode: 'SAT',
         refCurrencyCode: 'USD',
-        originalCurrencyCode: null,
+        originalCurrencyCode: 'SAT',
       });
 
-      expect(result.amount!.toDecimalString(0)).toBe('1');
+      expect(result.amount!.toDecimalString(8)).toBe('1.25000000');
+      expect(result.originalAmount!.toDecimalString(0)).toBe('1');
     });
 
     it("rounds the reference values to the author's base currency", async () => {
       const result = await roundTransactionMoney({
         values: { amount: money('1.25'), refAmount: money('0.0049') },
         userId: AUTHOR_ID,
-        accountOwnerUserId: OWNER_ID,
+        definitionOwnerUserId: OWNER_ID,
         currencyCode: 'SAT',
         refCurrencyCode: 'USD',
         originalCurrencyCode: null,

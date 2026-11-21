@@ -4,6 +4,7 @@ import { t } from '@i18n/index';
 import VentureDeals from '@models/venture/venture-deals.model';
 import VentureEventLinks from '@models/venture/venture-event-links.model';
 import VentureEvents from '@models/venture/venture-events.model';
+import { serializeLogoFields } from '@root/serializers/logo-fields.serializer';
 
 interface GetTransactionVentureLinkParams {
   userId: number;
@@ -36,5 +37,6 @@ export const getTransactionVentureLink = async ({
     dealId: deal.id,
     dealName: deal.name,
     isDealDeleted: deal.deletedAt != null,
+    ...serializeLogoFields({ entity: deal }),
   };
 };

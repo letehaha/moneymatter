@@ -112,6 +112,46 @@
           "uploadSuccess": "Se cargó correctamente {count} registro de precios | Se cargaron correctamente {count} registros de precios",
           "uploadFailed": "Error en la carga: {error}"
         }
+      },
+      "broadcast": {
+        "title": "Transmitir notificaciones",
+        "description": "Envía una notificación dentro de la aplicación a cada usuario activo en los últimos 30 días, o sólo a los identificadores de usuario y correos electrónicos que listas. Con un enlace, hacer clic en él abre el enlace en una nueva pestaña, y volver a enviar el mismo enlace omite a los usuarios que ya lo obtuvieron.",
+        "fields": {
+          "title": "Título",
+          "titlePlaceholder": "ej. aplicación iOS está en beta pública 📱",
+          "message": "Mensaje",
+          "messagePlaceholder": "Texto opcional mostrado bajo el título",
+          "url": "Enlace",
+          "urlPlaceholder": "https://…  (opcional)",
+          "urlError": "El enlace debe comenzar con https://",
+          "icon": "Icono",
+          "recipients": "Destinatarios",
+          "recipientsPlaceholder": "ID de usuario o correos electrónicos opcionales, separados por comas, por ejemplo, 12, jane@example.com. Vacío = todos los usuarios activos",
+          "recipientsError": "Usar ID de número entero positivo o correos electrónicos válidos, separados por comas"
+        },
+        "icons": {
+          "info": "Info",
+          "announcement": "Anuncio",
+          "success": "Éxito",
+          "warning": "Advertencia"
+        },
+        "button": "Enviar notificación",
+        "confirm": {
+          "title": "¿Enviar a todos los usuarios activos?",
+          "titleSelected": "¿Enviar a {count} usuarios?",
+          "description": "Esto crea una notificación para cada usuario activo en los últimos 30 días. No se puede deshacer.",
+          "descriptionSelected": "Se omiten los IDs y correos electrónicos desconocidos. No se puede deshacer.",
+          "button": "Enviar"
+        },
+        "notifications": {
+          "success": "Notificación enviada a {count} usuarios",
+          "failed": "No se ha podido enviar la notificacion",
+          "noneCreated": "No se enviaron notificaciones: no hay usuarios coincidentes, o ya tienen este enlace"
+        }
+      },
+      "tabs": {
+        "investments": "Inversiones",
+        "notifications": "Notificaciones"
       }
     }
   }

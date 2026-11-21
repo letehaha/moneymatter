@@ -57,12 +57,18 @@
     "typescript": "^5.9.3"
   },
   "overrides": {
+    "exceljs": {
+      "uuid": "^11.1.1"
+    },
     "oxfmt": {
       "tinypool": "2.2.0"
+    },
+    "sequelize": {
+      "uuid": "^11.1.1"
     }
   },
   "volta": {
-    "node": "24.21.0"
+    "node": "24.22.1"
   },
   "//oxlint-pin": "oxlint is pinned to an exact version because packages/backend/lint/transactions-boundary-plugin.mjs uses its jsPlugins API, which is alpha and not covered by semver. Upgrade deliberately and re-verify the boundary rules still load."
 }

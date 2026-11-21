@@ -242,6 +242,27 @@ describe('templateToForm', () => {
     });
 
     expect(form.paymentType?.value).toBe(PAYMENT_TYPES.creditCard);
+    expect(form.paymentTypeUserTouched).toBe(false);
+  });
+
+  it('marks the payment type as chosen when the template pins one', () => {
+    const { form } = templateToForm({
+      template: createTemplate(),
+      current: createCurrentForm(),
+      sources: createSources(),
+    });
+
+    expect(form.paymentTypeUserTouched).toBe(true);
+  });
+
+  it('keeps a payment type the user already chose when the template pins none', () => {
+    const { form } = templateToForm({
+      template: createTemplate({ paymentType: null }),
+      current: createCurrentForm({ paymentTypeUserTouched: true }),
+      sources: createSources(),
+    });
+
+    expect(form.paymentTypeUserTouched).toBe(true);
   });
 
   it('keeps only the tags that still exist', () => {

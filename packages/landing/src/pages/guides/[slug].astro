@@ -1,0 +1,225 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '@/layouts/base-layout.astro';
+import LandingHeader from '@/components/landing-header.astro';
+import CtaSection from '@/components/cta-section.astro';
+import LandingFooter from '@/components/landing-footer.astro';
+import FeatureCard from '@/components/feature-card.astro';
+import { getFeaturePage } from '@/lib/features';
+import '@/styles/feature-page.css';
+import '@/styles/prose-page.css';
+import { useI18n } from '@/i18n';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('guides', (guide) => !guide.id.includes('/'));
+  return guides.map((guide) => ({ params: { slug: guide.id }, props: { guide } }));
+}
+
+const { t, url, locale, localizeGuide } = useI18n(Astro);
+const guide = await localizeGuide({ guide: Astro.props.guide });
+const { title, description, published, updated, related, docs } = guide.data;
+const { Content } = await render(guide);
+
+const relatedPages = related.map((href) => getFeaturePage({ href }));
+
+const lastChange = updated ?? published;
+const pageUrl = new URL(url({ href: `/guides/${Astro.props.guide.id}` }), Astro.site).href;
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      headline: title,
+      description,
+      url: pageUrl,
+      datePublished: published.toISOString(),
+      dateModified: lastChange.toISOString(),
+      author: { '@type': 'Person', name: 'letehaha', url: 'https://github.com/letehaha' },
+      ...(locale !== 'en' && { inLanguage: locale }),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: t('Guides'), item: new URL(url({ href: '/guides' }), Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: title, item: pageUrl },
+      ],
+    },
+  ],
+};
+---
+
+<BaseLayout title={`${title} | MoneyMatter`} description={description}>
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+  <LandingHeader />
+  <main id="main">
+    <div class="wrap">
+      <div class="prose-page">
+        <header class="text-center">
+          <nav aria-label={t('Breadcrumb')} class="fp-crumbs">
+            <ol>
+              <li><a href={url({ href: '/guides' })}>{t('Guides')}</a></li>
+              <li aria-current="page">{title}</li>
+            </ol>
+          </nav>
+          <h1>{title}</h1>
+          <p class="hero-note">
+            {updated ? t('Updated') : t('Published')}{' '}
+            <time datetime={lastChange.toISOString()}>
+              {lastChange.toLocaleDateString(locale === 'en' ? 'en-GB' : locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}
+            </time>
+          </p>
+        </header>
+
+        <article class="guide-body mt-12">
+          <Content />
+        </article>
+
+        <p class="text-muted-foreground mt-12 text-sm">
+          {t('Step-by-step docs:')}{' '}
+          {
+            docs.map((doc, index) => (
+              <>
+                {index > 0 && ', '}
+                <a href={doc.href} class="text-primary-text underline">
+                  {doc.label}
+                </a>
+              </>
+            ))
+          }.
+        </p>
+      </div>
+    </div>
+
+    <section class="sec sec-soft">
+      <div class="wrap">
+        <h2>{t('Features used in this guide')}</h2>
+        <ul class="fp-cards">
+          {
+            relatedPages.map((page) => (
+              <li>
+                <FeatureCard page={page} />
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <CtaSection />
+  </main>
+  <LandingFooter />
+</BaseLayout>
+
+<style>
+  .guide-body {
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.75;
+  }
+
+  .guide-body :global(h2) {
+    margin-top: 3rem;
+    color: var(--fg);
+    font-size: clamp(22px, 2.6vw, 28px);
+    line-height: 1.25;
+  }
+
+  .guide-body :global(h3) {
+    margin-top: 2rem;
+    color: var(--fg);
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .guide-body :global(p),
+  .guide-body :global(ul),
+  .guide-body :global(ol) {
+    margin-top: 1rem;
+  }
+
+  .guide-body :global(ul) {
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+
+  .guide-body :global(ol) {
+    padding-left: 1.25rem;
+    list-style: decimal;
+  }
+
+  .guide-body :global(li) {
+    margin-top: 0.5rem;
+  }
+
+  .guide-body :global(strong) {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .guide-body :global(a) {
+    color: var(--accent-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .guide-body :global(code) {
+    padding: 0.1em 0.35em;
+    border-radius: 6px;
+    background: var(--soft);
+    color: var(--fg);
+    font-family: var(--mono);
+    font-size: 0.875em;
+  }
+
+  .guide-body :global(pre) {
+    margin-top: 1.5rem;
+    padding: 16px 20px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .guide-body :global(pre code) {
+    padding: 0;
+    background: none;
+    color: inherit;
+  }
+
+  .guide-body :global(blockquote) {
+    margin-top: 1.5rem;
+    padding-left: 1rem;
+    border-left: 3px solid var(--accent);
+    color: var(--fg);
+  }
+
+  .guide-body :global(table) {
+    display: block;
+    margin-top: 1.5rem;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+
+  .guide-body :global(th),
+  .guide-body :global(td) {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+
+  .guide-body :global(th) {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .guide-body :global(img) {
+    margin-top: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-card);
+  }
+</style>

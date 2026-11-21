@@ -7,6 +7,7 @@ import TransactionTags from '@models/transaction-tags.model';
 import { findTransactions } from '@models/transactions-query';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
 import { withTransaction } from '@services/common/with-transaction';
+import { syncLegsOfMains } from '@services/transactions/payment-legs';
 import { Op } from 'sequelize';
 
 interface AddTransactionsToTagPayload {
@@ -37,17 +38,19 @@ export const addTransactionsToTag = withTransaction(async (payload: AddTransacti
   if (transactions.length !== transactionIds.length) {
     throw new ValidationError({ message: t({ key: 'tags.someTransactionIdsInvalid' }) });
   }
+  // A leg's tags mirror its main row, so the write lands on the main and syncs down.
+  const mainIds = [...new Set(transactions.map((tx) => tx.paymentParentId ?? tx.id))];
 
   // Filter out transactions that are already tagged
   const existingLinks = await TransactionTags.findAll({
     where: {
       tagId,
-      transactionId: { [Op.in]: transactionIds },
+      transactionId: { [Op.in]: mainIds },
     },
   });
 
   const existingTransactionIds = new Set(existingLinks.map((link) => link.transactionId));
-  const newTransactionIds = transactionIds.filter((id) => !existingTransactionIds.has(id));
+  const newTransactionIds = mainIds.filter((id) => !existingTransactionIds.has(id));
 
   if (newTransactionIds.length > 0) {
     const transactionTags = newTransactionIds.map((transactionId) => ({
@@ -56,6 +59,7 @@ export const addTransactionsToTag = withTransaction(async (payload: AddTransacti
     }));
 
     await TransactionTags.bulkCreate(transactionTags);
+    await syncLegsOfMains({ mainIds: newTransactionIds });
 
     // Emit event for real-time reminders check (handled by event listener)
     eventBus.emit(DOMAIN_EVENTS.TRANSACTIONS_TAGGED, { tagIds: [tagId], userId });
@@ -64,7 +68,7 @@ export const addTransactionsToTag = withTransaction(async (payload: AddTransacti
   return {
     message: t({ key: 'tags.transactionsAddedSuccessfully' }),
     addedCount: newTransactionIds.length,
-    skippedCount: transactionIds.length - newTransactionIds.length,
+    skippedCount: mainIds.length - newTransactionIds.length,
   };
 });
 
@@ -97,13 +101,15 @@ export const removeTransactionsFromTag = withTransaction(async (payload: RemoveT
   if (transactions.length !== transactionIds.length) {
     throw new ValidationError({ message: t({ key: 'tags.someTransactionIdsInvalid' }) });
   }
+  const mainIds = [...new Set(transactions.map((tx) => tx.paymentParentId ?? tx.id))];
 
   const deletedCount = await TransactionTags.destroy({
     where: {
       tagId,
-      transactionId: { [Op.in]: transactionIds },
+      transactionId: { [Op.in]: mainIds },
     },
   });
+  await syncLegsOfMains({ mainIds });
 
   return {
     message: t({ key: 'tags.transactionsRemovedSuccessfully' }),

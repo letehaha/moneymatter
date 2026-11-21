@@ -1,0 +1,296 @@
+{
+  "optimizations": {
+    "title": "Otimizações",
+    "landingDescription": "Ferramentas para organizar e limpar seus dados financeiros.",
+    "backToOptimizations": "Voltar para as otimizações",
+    "cards": {
+      "transfers": {
+        "title": "Identificação de transferências",
+        "description": "Encontre pares de despesa e receita que podem ser transferências entre suas contas e vincule-os automaticamente."
+      },
+      "aiCategorization": {
+        "title": "Categorização com IA",
+        "description": "Deixe a IA categorizar as transações sem categoria e revise as execuções anteriores."
+      },
+      "applyRules": {
+        "title": "Aplicar uma regra a transações anteriores",
+        "description": "Escolha uma das suas automações e rode nas transações que você já tem."
+      },
+      "reconciliation": {
+        "title": "Conciliação",
+        "description": "Mescle transações bancárias duplicadas, remova as erradas e resolva transações pendentes que o banco nunca lançou."
+      }
+    },
+    "aiCategorization": {
+      "title": "Categorização com IA",
+      "description": "Rode a IA nas transações que ainda estão na sua categoria padrão e deixe que ela escolha uma melhor. Você sempre pode mudar a categoria depois.",
+      "tabs": {
+        "categorize": "Categorizar",
+        "history": "Histórico"
+      },
+      "count": {
+        "capNote": "Cada execução cobre as {limit} mais recentes. Rode de novo para cuidar do resto.",
+        "allDoneTitle": "Tudo categorizado",
+        "allDoneDescription": "Nenhuma transação está na sua categoria padrão agora."
+      },
+      "bar": {
+        "uncategorizedCount": "Sem categoria: {count}",
+        "capChip": "{limit} por execução"
+      },
+      "table": {
+        "selectionHint": "Selecione linhas para categorizar só essas.",
+        "loadError": "Não foi possível carregar as transações que aguardam categorização."
+      },
+      "history": {
+        "emptyTitle": "Nenhuma execução da categorização com IA ainda",
+        "emptyDescription": "Depois que você rodar a categorização com IA, cada execução aparece aqui para você revisar o que mudou.",
+        "loadError": "Não foi possível carregar o histórico de execuções.",
+        "runLoadError": "Não foi possível carregar as transações desta execução.",
+        "backToRuns": "Voltar para todas as execuções",
+        "runEmptyTitle": "Nada restou desta execução",
+        "runEmptyDescription": "Todas as transações que esta execução categorizou já foram recategorizadas ou excluídas.",
+        "transactionCount": "{count} transação | {count} transações",
+        "trigger": {
+          "manual": "Manual",
+          "import": "Importação de dados",
+          "sync": "Sincronização bancária",
+          "unknown": "Desconhecida"
+        },
+        "triggerTooltip": {
+          "manual": "Você iniciou esta execução manualmente",
+          "import": "Iniciada automaticamente depois de uma importação de dados",
+          "sync": "Iniciada automaticamente depois de uma sincronização bancária",
+          "unknown": "A origem desta execução não foi registrada"
+        }
+      },
+      "setup": {
+        "title": "Configuração da execução",
+        "model": "Modelo",
+        "notConfigured": "Não configurado",
+        "connection": "Modelo de IA",
+        "limits": "Limites",
+        "limitsSharedKey": "3 execuções por hora",
+        "limitsOwnCredentials": "Ilimitado — roda com a sua própria chave",
+        "changeModel": "Mudar nas configurações de IA",
+        "errorChip": "Problema na configuração de IA",
+        "loadError": "Não foi possível carregar sua configuração de IA."
+      },
+      "run": {
+        "button": "Categorizar com IA (todas)",
+        "categorizeSelected": "Categorizar selecionadas: {count}",
+        "inProgress": "Categorizando...",
+        "progressLabel": "Progresso da categorização com IA",
+        "processed": "{processed} de {total} transações processadas"
+      },
+      "confirm": {
+        "title": "Categorizar todas as transações sem categoria?",
+        "description": "A IA vai analisar {count} transação que ainda está na sua categoria padrão e escolher uma categoria para ela. Você pode mudar depois. | A IA vai analisar {count} transações que ainda estão na sua categoria padrão e escolher uma categoria para cada uma. Você pode mudar qualquer uma delas depois.",
+        "action": "Categorizar todas"
+      },
+      "notifications": {
+        "started": "Categorizando {count} transação com IA | Categorizando {count} transações com IA",
+        "nothingToCategorize": "Tudo já está categorizado — não sobrou nada para a IA fazer",
+        "alreadyRunning": "A categorização com IA já está rodando",
+        "rateLimited": "Você atingiu o limite de categorizações manuais. Tente de novo em {time}.",
+        "failed": "Não foi possível iniciar a categorização com IA"
+      }
+    },
+    "transferSuggestions": {
+      "description": "Encontre transações que deveriam estar vinculadas como transferências entre suas contas",
+      "suggestionsFor": "Sugestões para",
+      "selectExpense": "Selecione uma transação para ver as sugestões",
+      "potentialTransfersFound": "possíveis transferências encontradas",
+      "empty": {
+        "title": "Nenhuma sugestão de transferência encontrada",
+        "description": "Tente ajustar o período"
+      },
+      "initial": {
+        "title": "Encontrar sugestões de transferência",
+        "description": "Analise suas transações para encontrar pares de receita e despesa que deveriam estar vinculados como transferências entre contas"
+      },
+      "scanning": "Analisando transações...",
+      "confirmLink": {
+        "title": "Vincular como transferência?",
+        "description": "As duas transações serão vinculadas como uma transferência entre contas. Isso corrige suas estatísticas e análises, tirando-as dos totais de receitas e despesas."
+      },
+      "presets": {
+        "last3Months": "Últimos 3 meses",
+        "last6Months": "Últimos 6 meses",
+        "lastYear": "Último ano",
+        "thisYear": "Este ano",
+        "previousYear": "Ano anterior"
+      },
+      "includeOutOfWallet": "Incluir transferências para fora da carteira",
+      "outOfWalletSwitch": "Transferências para fora da carteira",
+      "skip": {
+        "action": "Rejeitar",
+        "title": "Rejeitar esta sugestão?",
+        "description": "Este par não vai mais aparecer nas próximas análises. As transações em si não serão alteradas.",
+        "dontShowAgain": "Não mostrar esta confirmação de novo"
+      },
+      "notifications": {
+        "loadError": "Não foi possível carregar mais sugestões",
+        "scanError": "Não foi possível buscar sugestões de transferência",
+        "linkSuccess": "Transações vinculadas como transferência",
+        "linkError": "Não foi possível vincular as transações",
+        "skipSuccess": "Sugestão rejeitada",
+        "skipError": "Não foi possível rejeitar a sugestão"
+      },
+      "aiReview": {
+        "label": "Revisão com IA",
+        "about": "Sobre a revisão com IA",
+        "plusBadge": "Plus",
+        "description": "A IA confere cada par e mostra só os que parecem transferências reais entre suas contas.",
+        "cost": "Cada análise usa a IA incluída no seu plano no mês. Com seu próprio provedor de IA, a cobrança é feita pelo provedor. Escolha o modelo em {link}.",
+        "aiSettingsLink": "Configurações de IA",
+        "openAiSettings": "Abrir configurações de IA",
+        "blocked": {
+          "plan": {
+            "title": "A revisão com IA faz parte do plano Plus",
+            "body": "Ou conecte seu próprio provedor de IA em “Configurações de IA” para usá-la em qualquer plano."
+          },
+          "allowance": {
+            "pill": "Até {date}",
+            "title": "IA incluída do mês esgotada",
+            "body": "Ela é renovada em {date}. Conecte seu próprio provedor de IA para continuar usando agora."
+          },
+          "setup": {
+            "pill": "Configurar",
+            "title": "Nenhum modelo de IA está respondendo",
+            "body": "Confira seu provedor de IA ou escolha um modelo para a identificação de transferências."
+          }
+        },
+        "connectOwnModel": "Conectar seu próprio modelo",
+        "reviewing": "A IA está conferindo os pares...",
+        "verdict": {
+          "likely": "Provável",
+          "possible": "Possível"
+        },
+        "nudge": "Reduza os falsos pares com a revisão com IA",
+        "rescanHint": "Revisar com IA",
+        "rescanHintTooltip": "Muitos pares ficaram abaixo de 70%. Analise de novo com a revisão com IA para ocultar os que não são transferências. Usa a IA incluída no seu plano.",
+        "rescanBanner": {
+          "title": "Muitos pares ficaram abaixo de 70%",
+          "body": "A revisão com IA pode ocultar os que não são transferências. Usa a IA incluída no seu plano."
+        }
+      }
+    },
+    "reconciliation": {
+      "title": "Conciliação de transações",
+      "tabs": {
+        "transactions": "Transações",
+        "stuckPending": "Pendentes travadas",
+        "history": "Histórico"
+      },
+      "table": {
+        "hint": "Selecione transações bancárias para mesclar duplicatas ou remover as que sobram"
+      },
+      "actions": {
+        "merge": "Mesclar",
+        "remove": "Remover"
+      },
+      "blockReasons": {
+        "header": {
+          "merge": "Não é possível mesclar por {count} motivos:",
+          "remove": "Não é possível remover por {count} motivos:"
+        },
+        "notBankConnected": "Só é possível conciliar transações de contas conectadas ao banco.",
+        "planned": "Não é possível conciliar transações agendadas.",
+        "linkedTransfer": "Não é possível conciliar transferências vinculadas. Desvincule a transferência primeiro.",
+        "refundLinked": "Não é possível conciliar transações vinculadas a reembolsos. Desvincule o reembolso primeiro.",
+        "tooFew": "Selecione pelo menos 2 transações para mesclar.",
+        "tooMany": "Muitas transações selecionadas (mesclar: até {mergeMax}, remover: até {removeMax}).",
+        "differentAccounts": "Todas as transações precisam ser da mesma conta."
+      },
+      "merge": {
+        "title": "Mesclar transações",
+        "description": "Escolha a transação que fica. As outras são removidas e podem ser restauradas no “Histórico”.",
+        "fields": {
+          "payee": "Favorecido",
+          "status": "Status",
+          "time": "Horário"
+        },
+        "status": {
+          "pending": "Pendente",
+          "booked": "Lançada"
+        },
+        "keep": "Manter",
+        "remove": "Remover",
+        "sameInAll": "Igual em todas:",
+        "confirm": "Mesclar e remover {count} | Mesclar e remover {count}"
+      },
+      "remove": {
+        "title": "Remover {count} transação? | Remover {count} transações?",
+        "description": "As transações removidas deixam de contar nos saldos e nas estatísticas. Os vínculos com acompanhamentos, grupos e pagamentos recorrentes são desfeitos. Você pode restaurá-las no “Histórico”, mas os vínculos não voltam.",
+        "confirm": "Remover"
+      },
+      "restoreDialog": {
+        "title": "Restaurar {count} transação? | Restaurar {count} transações?",
+        "description": "As transações restauradas voltam a contar nos saldos e nas estatísticas. Se elas foram mescladas, a transação mantida continua, então podem aparecer duplicatas de novo. Os vínculos com acompanhamentos, grupos e pagamentos recorrentes desfeitos na remoção não voltam.",
+        "confirm": "Restaurar"
+      },
+      "notifications": {
+        "removed": "{count} transação removida | {count} transações removidas",
+        "merged": "Mescladas, {count} duplicata removida | Mescladas, {count} duplicatas removidas",
+        "restored": "{count} transação restaurada | {count} transações restauradas",
+        "keptAsBooked": "Marcada como lançada",
+        "checkedWithBank": "Conferida com o banco",
+        "unexpectedError": "Algo deu errado. Tente de novo.",
+        "bankCheck": {
+          "allBooked": "Seu banco lançou a transação | Seu banco lançou todas as {count} transações",
+          "someBooked": "Seu banco lançou {count} transação | Seu banco lançou {count} transações",
+          "noneBooked": "Seu banco ainda não lançou nenhuma delas",
+          "stillPending": "{count} ainda está pendente. | {count} ainda estão pendentes.",
+          "someFailed": "Não foi possível falar com o banco para {count} conta. | Não foi possível falar com o banco para {count} contas."
+        }
+      },
+      "stuckPending": {
+        "loadError": "Não foi possível carregar as transações pendentes travadas.",
+        "emptyTitle": "Nenhuma transação pendente travada",
+        "emptyDescription": "Transações pendentes há mais de 7 dias aparecem aqui para você resolver.",
+        "checkWithBank": "Conferir com o banco",
+        "summaryTooOld": "{count} linha continua pendente depois de uma semana. Ela é antiga demais para conferir com o seu banco. | {count} linhas continuam pendentes depois de uma semana. Elas são antigas demais para conferir com o seu banco.",
+        "checking": "Conferindo com o banco...",
+        "checkAgain": "Conferir de novo",
+        "keepAsBooked": "Manter como lançada",
+        "header": {
+          "title": "{count} transação travada como pendente | {count} transações travadas como pendentes",
+          "description": "Pendente há mais de uma semana em {count} conta. | Pendentes há mais de uma semana em {count} contas.",
+          "titleChecked": "{count} transação ainda pendente | {count} transações ainda pendentes",
+          "descriptionChecked": "Conferidas com o seu banco. Decida o que fazer com cada uma."
+        },
+        "checkFirstHint": "Confira com o seu banco primeiro. As transações que ele lançou desde então saem desta lista.",
+        "columns": {
+          "account": "Conta",
+          "date": "Data",
+          "category": "Categoria",
+          "pendingFor": "Pendente há",
+          "amount": "Valor",
+          "status": "Status",
+          "actions": "Ações"
+        },
+        "pendingDaysShort": "{count} d",
+        "status": {
+          "tooOld": "Antiga demais para conferir",
+          "tooOldHint": "Seu banco só compartilha cerca de 90 dias de histórico, então não é possível conferir esta transação. Mantenha se a cobrança aconteceu; remova se não aconteceu.",
+          "duplicate": "Possível duplicata",
+          "duplicateHint": "Uma transação lançada do mesmo favorecido em {date} parece ser o mesmo pagamento. Mescle as duas para manter só uma.",
+          "notFound": "Não encontrada no banco",
+          "notFoundHint": "Seu banco não tem uma cópia lançada desta transação, então pode ser uma pré-autorização liberada. Mantenha se a cobrança aconteceu; remova se não aconteceu."
+        }
+      },
+      "history": {
+        "loadError": "Não foi possível carregar o histórico de conciliação.",
+        "emptyTitle": "Nenhum histórico de conciliação ainda",
+        "emptyDescription": "As transações mescladas e removidas aparecem aqui para você poder restaurá-las.",
+        "type": {
+          "merge": "Mescladas",
+          "remove": "Removidas"
+        },
+        "restore": "Restaurar",
+        "kept": "Mantida",
+        "removedRows": "{count} transação removida | {count} transações removidas"
+      }
+    }
+  }
+}

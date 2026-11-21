@@ -8,7 +8,7 @@
          line's bottom margin. -->
     <div class="-mb-2 flow-root">
       <div class="float-right mb-2 ml-2 flex h-10 items-center gap-2">
-        <Button variant="secondary" size="sm" :disabled="isResetButtonDisabled" @click="$emit('reset-filters')">
+        <Button variant="secondary" :disabled="isResetButtonDisabled" @click="$emit('reset-filters')">
           {{ $t('transactions.filters.reset') }}
         </Button>
 
@@ -22,11 +22,12 @@
            open so several filters can be toggled in one visit. -->
       <div class="mr-2 mb-2 inline-block align-top">
         <Popover.Popover>
-          <Popover.PopoverTrigger
-            class="border-input bg-input-background hover:bg-accent ring-offset-background focus-visible:ring-ring inline-flex h-10 items-center gap-2 rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-          >
-            {{ $t('transactions.filters.filtersLabel') }}
-            <ChevronDownIcon class="text-muted-foreground size-4" />
+          <Popover.PopoverTrigger as-child>
+            <Button variant="field" class="px-3">
+              <SlidersHorizontalIcon class="text-muted-foreground size-4" />
+              {{ $t('transactions.filters.filtersLabel') }}
+              <ChevronDownIcon class="text-muted-foreground size-4" />
+            </Button>
           </Popover.PopoverTrigger>
 
           <Popover.PopoverContent class="w-48 rounded-md p-1.5" align="start" :side-offset="4">
@@ -46,6 +47,18 @@
             </Button>
           </Popover.PopoverContent>
         </Popover.Popover>
+      </div>
+
+      <!-- Always-visible search. Typing updates the filters; the page applies them debounced. -->
+      <div class="mr-2 mb-2 inline-block w-64 max-w-full align-top">
+        <InputField
+          :model-value="filters.search"
+          type="search"
+          maxlength="200"
+          :placeholder="$t('transactions.filters.search.placeholder')"
+          :aria-label="$t('transactions.filters.search.placeholder')"
+          @update:model-value="emitFilters({ ...filters, search: String($event ?? '') })"
+        />
       </div>
 
       <!-- Always-visible filters -->
@@ -178,14 +191,6 @@
           />
         </div>
 
-        <div v-else-if="filterKey === 'note'" class="w-56">
-          <NoteIncludesFilter
-            compact
-            :note-includes="filters.noteIncludes"
-            @update:note-includes="emitFilters({ ...filters, noteIncludes: $event })"
-          />
-        </div>
-
         <!-- Fused remove segment: overlaps the control's right edge by exactly the
              rounded-md corner radius (10px = -ml-2.5) so the control's rounded
              corners are fully covered and the button's own left border reads as a
@@ -194,9 +199,9 @@
              paint over the overlapping button and swallow the divider. -->
         <Button
           type="button"
-          variant="ghost"
+          variant="field"
           :aria-label="$t('transactions.filters.removeFilter')"
-          class="border-input bg-input-background text-muted-foreground hover:bg-accent hover:text-foreground relative -ml-2.5 h-auto w-7 shrink-0 rounded-none rounded-r-md border px-0 py-0"
+          class="text-muted-foreground hover:text-foreground relative -ml-2.5 h-auto w-7 shrink-0 rounded-none rounded-r-md px-0 py-0"
           @click="removeFilter(filterKey)"
         >
           <XIcon class="size-4" />
@@ -215,8 +220,8 @@ import { FILTER_ICONS } from '@/components/records-filters/filter-icons';
 import { EXTRA_FILTERS, EXTRA_FILTER_KEYS, type ExtraFilterKey } from '@/components/records-filters/filter-registry';
 import AmountRangeFilter from '@/components/records-filters/filters/amount-range-filter.vue';
 import DateRangeFilter from '@/components/records-filters/filters/date-range-filter.vue';
-import NoteIncludesFilter from '@/components/records-filters/filters/note-includes.vue';
 import OperationPills from '@/components/records-filters/filters/operation-pills.vue';
+import InputField from '@/components/fields/input-field.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
 import PayeeMultiSelectField from '@/components/fields/payee-multi-select-field.vue';
 import TrackerMultiSelectField from '@/components/fields/tracker-multi-select-field.vue';
@@ -224,7 +229,7 @@ import TagFilter from '@/components/records-filters/filters/tag-filter.vue';
 import TransactionTypeFilter from '@/components/records-filters/filters/transaction-type-filter.vue';
 import TransferNatureFilter from '@/components/records-filters/filters/transfer-nature-filter.vue';
 import { trackAnalyticsEvent } from '@/lib/posthog';
-import { CheckIcon, ChevronDownIcon, XIcon } from '@lucide/vue';
+import { CheckIcon, ChevronDownIcon, SlidersHorizontalIcon, XIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 

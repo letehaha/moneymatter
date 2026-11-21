@@ -1,7 +1,9 @@
+import { normalizeRecurrence } from '@bt/shared/subscriptions/recurrence';
 import {
   type EntityLogoPayload,
   RemindBeforePreset,
   SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_INTERVAL_UNITS,
   SUBSCRIPTION_PERIOD_STATUSES,
   SUBSCRIPTION_TYPES,
   SubscriptionMatchingRules,
@@ -21,6 +23,7 @@ import {
   assertAmountCurrencyConsistent,
   assertAutoRecordAccountIsManual,
   assertAutoRecordConsistent,
+  assertRecurrenceConsistent,
   findSubscriptionOrThrow,
   validateAccountOwnership,
   validateCategoryOwnership,
@@ -42,6 +45,8 @@ interface UpdateSubscriptionParams extends EntityLogoPayload {
   expectedAmount?: number | null;
   expectedCurrencyCode?: string | null;
   frequency?: SUBSCRIPTION_FREQUENCIES;
+  intervalUnit?: SUBSCRIPTION_INTERVAL_UNITS | null;
+  intervalCount?: number | null;
   startDate?: string;
   endDate?: string | null;
   accountId?: string | null;
@@ -63,7 +68,14 @@ export const updateSubscription = withTransaction(
   async ({ id, userId, tagIds, ...fields }: UpdateSubscriptionParams) => {
     const subscription = await findSubscriptionOrThrow({ id, userId });
 
-    await assertCurrencyCodesVisible({ userId, codes: [fields.expectedCurrencyCode] });
+    await assertCurrencyCodesVisible({
+      userId,
+      codes: [fields.expectedCurrencyCode, ...(fields.matchingRules?.rules.map((rule) => rule.currencyCode) ?? [])],
+      allowedWithoutPlan: [
+        subscription.expectedCurrencyCode,
+        ...subscription.matchingRules.rules.map((rule) => rule.currencyCode),
+      ],
+    });
 
     if (fields.accountId !== undefined && fields.accountId !== null) {
       await validateAccountOwnership({ accountId: fields.accountId, userId });
@@ -117,6 +129,28 @@ export const updateSubscription = withTransaction(
       userId,
     });
 
+    // A partial payload can only be checked against the stored schedule, so the merged
+    // recurrence is validated and normalized here. A step key the payload omits keeps the
+    // stored value only while the subscription stays `custom`.
+    if (fields.frequency !== undefined || fields.intervalUnit !== undefined || fields.intervalCount !== undefined) {
+      const frequency = fields.frequency ?? subscription.frequency;
+      const keepsStoredStep =
+        frequency === SUBSCRIPTION_FREQUENCIES.custom && subscription.frequency === SUBSCRIPTION_FREQUENCIES.custom;
+      const merged = {
+        frequency,
+        intervalUnit:
+          fields.intervalUnit !== undefined ? fields.intervalUnit : keepsStoredStep ? subscription.intervalUnit : null,
+        intervalCount:
+          fields.intervalCount !== undefined
+            ? fields.intervalCount
+            : keepsStoredStep
+              ? subscription.intervalCount
+              : null,
+      };
+      assertRecurrenceConsistent(merged);
+      fields = { ...fields, ...normalizeRecurrence(merged) };
+    }
+
     // Refuse lowering the payment count below the periods already paid/skipped —
     // that history is immutable, so the plan can't shrink beneath it.
     await assertMaxOccurrencesNotBelowConsumed({
@@ -165,27 +199,30 @@ export const updateSubscription = withTransaction(
     const wasInstallment = subscription.type === SUBSCRIPTION_TYPES.installment;
     const previousDueDate = subscription.dueDate;
 
-    // The API exchanges decimals; the DECIMAL column takes a Money (or null
-    // to clear). Convert only when the caller sent the field, so an omitted
-    // expectedAmount leaves the stored amount untouched.
+    // The amount is stored at its currency's decimals, so a currency change re-rounds the stored
+    // amount too. An omitted amount on an unchanged currency stays untouched.
     const { expectedAmount: expectedAmountInput, ...restFields } = fields;
     const expectedCurrencyCode = fields.expectedCurrencyCode ?? subscription.expectedCurrencyCode;
+    const currencyChanged =
+      fields.expectedCurrencyCode != null && fields.expectedCurrencyCode !== subscription.expectedCurrencyCode;
+    let nextAmount: Money | null | undefined;
+    if (expectedAmountInput !== undefined) {
+      nextAmount = expectedAmountInput === null ? null : Money.fromDecimal(expectedAmountInput);
+    } else if (currencyChanged) {
+      nextAmount = subscription.expectedAmount;
+    }
+    if (nextAmount) {
+      // `assertAmountCurrencyConsistent` above already rejects an amount without a currency.
+      nextAmount = await roundToCurrency({
+        money: nextAmount,
+        userId,
+        currencyCode: expectedCurrencyCode!,
+        mode: 'half-up',
+      });
+    }
     await subscription.update({
       ...restFields,
-      ...(expectedAmountInput !== undefined
-        ? {
-            // Stored at the decimals of the currency it is billed in.
-            expectedAmount:
-              expectedAmountInput != null && expectedCurrencyCode
-                ? await roundToCurrency({
-                    money: Money.fromDecimal(expectedAmountInput),
-                    userId,
-                    currencyCode: expectedCurrencyCode,
-                    mode: 'half-up',
-                  })
-                : null,
-          }
-        : {}),
+      ...(nextAmount !== undefined && { expectedAmount: nextAmount }),
     });
 
     // Keep the live schedule in step with an edited due date. Realigning only fires

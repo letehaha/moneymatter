@@ -57,6 +57,7 @@ describe('Bank accounts sync cron', () => {
 
     const after = await helpers.getTransactions({ raw: true });
     expect(after.length).toBe(before.length + 1);
+    expect((await helpers.bankDataProviders.getAccountsSyncStatus({ raw: true })).lastSyncAt).not.toBeNull();
   });
 
   it('syncs at the default hours only, until the user sets their own', async () => {

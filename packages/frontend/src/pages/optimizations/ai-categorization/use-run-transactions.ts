@@ -30,9 +30,6 @@ export function useRunTransactions({ categorizedAt }: { categorizedAt: () => str
         categorizedAt: runAt.value,
         sortBy: sorting.value.sortBy,
         order: sorting.value.order,
-        includeSplits: true,
-        includeTags: true,
-        includeGroups: true,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => {

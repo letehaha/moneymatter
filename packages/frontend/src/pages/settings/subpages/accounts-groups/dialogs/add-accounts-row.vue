@@ -10,17 +10,14 @@ import { toRef } from 'vue';
 const props = defineProps<{ account: AccountModel; checked: boolean; disabled?: boolean; caption?: string }>();
 const emit = defineEmits<{ toggle: [] }>();
 
-const { formatAmountByCurrencyCode } = useFormatCurrency();
+const { formatAccountAmount } = useFormatCurrency();
 const { displayBalance } = useAccountDisplayBalance({ account: toRef(() => props.account) });
 </script>
 
 <template>
   <label
     :class="
-      cn(
-        'flex items-center gap-3 px-3 py-2',
-        disabled ? 'cursor-default opacity-60' : 'hover:bg-muted/50 cursor-pointer',
-      )
+      cn('flex items-center gap-3 px-3 py-2', disabled ? 'cursor-default opacity-60' : 'hover:bg-hover cursor-pointer')
     "
   >
     <Checkbox :model-value="checked" :disabled="disabled" @update:model-value="emit('toggle')" />
@@ -32,7 +29,7 @@ const { displayBalance } = useAccountDisplayBalance({ account: toRef(() => props
     </span>
 
     <span class="text-muted-foreground shrink-0 text-sm tabular-nums">
-      {{ formatAmountByCurrencyCode(displayBalance, account.currencyCode) }}
+      {{ formatAccountAmount({ amount: displayBalance, account }) }}
     </span>
   </label>
 </template>

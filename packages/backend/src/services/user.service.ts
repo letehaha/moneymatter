@@ -2,10 +2,7 @@ import type { RecordId } from '@bt/shared/types';
 import { ACCOUNT_TYPES } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
-import * as Accounts from '@models/accounts.model';
 import * as Currencies from '@models/currencies.model';
-import Holdings from '@models/investments/holdings.model';
-import Portfolios from '@models/investments/portfolios.model';
 import * as Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import * as Users from '@models/users.model';
@@ -13,6 +10,7 @@ import * as Users from '@models/users.model';
 import { withTransaction } from './common/with-transaction';
 import { addUserCurrencies } from './currencies/add-user-currency';
 import { withEffectiveCurrency } from './currencies/effective-currency';
+import { assertCurrencyNotInUse, clearForeignAmountsInCurrency } from './currencies/get-currency-in-use-blockers';
 import { recomputeCustomRefAmounts } from './currencies/recompute-custom-ref-amounts.service';
 import { revalueAccountsInCurrencies } from './user-exchange-rate/revalue-accounts-in-currencies';
 
@@ -161,11 +159,15 @@ export const editUserCurrency = withTransaction(
       });
     }
 
-    // An ISO currency's rate source follows the flag; a custom currency has no market feed.
-    let rateSource: 'provider' | 'manual' | undefined;
-    if (liveRateUpdate !== undefined && !passedCurrency.currency.isCustom) {
-      rateSource = liveRateUpdate ? 'provider' : 'manual';
+    // A custom currency never follows a market; its rate is edited through the rate pairs.
+    if (passedCurrency.currency.isCustom) {
+      throw new ValidationError({
+        message: t({ key: 'currencies.customCurrencyRateViaPairs', variables: { code: currencyCode } }),
+      });
     }
+
+    // An ISO currency's rate source follows the flag.
+    const rateSource = liveRateUpdate === undefined ? undefined : liveRateUpdate ? 'provider' : 'manual';
 
     const result = await UsersCurrencies.updateCurrency({
       userId,
@@ -178,14 +180,9 @@ export const editUserCurrency = withTransaction(
     // `liveRateUpdate` picks between a flat manual rate and per-day market rates for
     // every stored balance row in this currency, so the whole history must be rebuilt.
     if (liveRateUpdate !== undefined && liveRateUpdate !== passedCurrency.liveRateUpdate) {
-      // The flag also decides whether the custom currencies pegged to or quoted in an ISO currency
+      // The flag also decides whether the custom currencies pegged to or quoted in this currency
       // are worth its manual rate or the market's, so what they were valued with is valued again.
-      if (!passedCurrency.currency.isCustom) {
-        await recomputeCustomRefAmounts({
-          userId,
-          changes: [{ currencyCode, from: null, to: null, mode: 'recompute' }],
-        });
-      }
+      await recomputeCustomRefAmounts({ userId, changes: [{ currencyCode, from: null, to: null }] });
 
       await revalueAccountsInCurrencies({ userId, pairs: [{ baseCode: currencyCode, quoteCode: currencyCode }] });
     }
@@ -261,76 +258,20 @@ export const deleteUserCurrency = withTransaction(
       });
     }
 
-    // A custom currency has its own endpoint, which also checks every kind of row that can use it
-    // and removes the global row once nobody holds it.
+    // A custom currency has its own endpoint, which also removes the user's rates for it and the
+    // global row once nobody holds it.
     if (passedCurrency.currency.isCustom) {
       throw new ValidationError({
         message: t({ key: 'currencies.customCurrencyUseCustomEndpoint', variables: { code: currencyCode } }),
       });
     }
 
-    const accounts = await Accounts.getAccountsByCurrency({
+    await assertCurrencyNotInUse({
       userId,
       currencyCode,
+      message: t({ key: 'userCurrencies.currencyInUse', variables: { currencyCode } }),
     });
-
-    if (accounts.length) {
-      throw new ValidationError({
-        message: t({
-          key: 'userCurrencies.cannotDeleteCurrencyWithAccounts',
-          variables: { accountNames: accounts.map((item) => item.name).join(', ') },
-        }),
-        details: {
-          accounts,
-        },
-      });
-    }
-
-    // Holdings own their currency too: refAmount lookups on investment txs
-    // require the link, so disconnect must not leave orphan investments behind.
-    // Include soft-deleted portfolios (trash) so a user can't remove a currency
-    // whose holdings would resurface broken when the portfolio is restored.
-    const userPortfolios = await Portfolios.findAll({
-      where: { userId },
-      paranoid: false,
-      attributes: ['id'],
-      raw: true,
-    });
-
-    if (userPortfolios.length) {
-      const holdingInCurrency = await Holdings.findOne({
-        where: {
-          currencyCode,
-          portfolioId: userPortfolios.map((p) => p.id),
-        },
-        attributes: ['portfolioId'],
-      });
-
-      if (holdingInCurrency) {
-        throw new ValidationError({
-          message: t({
-            key: 'userCurrencies.cannotDeleteCurrencyWithInvestments',
-            variables: { currencyCode },
-          }),
-        });
-      }
-    }
-
-    const defaultCurrency = await UsersCurrencies.getCurrency({
-      userId,
-      isDefaultCurrency: true,
-    });
-
-    if (!defaultCurrency) {
-      throw new UnexpectedError({ message: t({ key: 'userCurrencies.defaultCurrencyNotPresent' }) });
-    }
-
-    await Transactions.updateTransactions(
-      {
-        currencyCode: defaultCurrency.currencyCode,
-      },
-      { userId, currencyCode: passedCurrency.currencyCode },
-    );
+    await clearForeignAmountsInCurrency({ userId, currencyCode });
 
     await UsersCurrencies.deleteCurrency({
       userId,

@@ -8,6 +8,7 @@ import * as UsersCurrencies from '@models/users-currencies.model';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
 import { INVESTMENT_CONVERSION_DECIMALS } from '@services/calculate-ref-amount.utils';
 import { withTransaction } from '@services/common/with-transaction';
+import { addUserCurrencies } from '@services/currencies/add-user-currency';
 import { getHoldingValues } from '@services/investments/holdings/get-holding-values.service';
 import * as userExchangeRateService from '@services/user-exchange-rate';
 
@@ -38,7 +39,7 @@ interface PortfolioSummaryResult {
 /**
  * Resolves the summary's display currency code and the base→display rate for the
  * requested date. Falls back to the base currency when the display currency is
- * unset, equal to base, not connected to the user, or its rate is unavailable.
+ * unset, equal to base, or its rate is unavailable.
  */
 const resolveDisplayCurrency = async ({
   userId,
@@ -57,17 +58,8 @@ const resolveDisplayCurrency = async ({
     return { code: baseCurrencyCode, rate: 1 };
   }
 
-  const connectedCurrency = await UsersCurrencies.getCurrency({ userId, currencyCode: displayCode });
-  if (!connectedCurrency) {
-    logger.warn(
-      'Portfolio displayCurrencyCode is no longer connected to the user; summary falls back to base currency',
-      {
-        portfolioId: portfolio.id,
-        displayCurrencyCode: displayCode,
-      },
-    );
-    return { code: baseCurrencyCode, rate: 1 };
-  }
+  // Idempotent; reconnects an orphaned display currency so the rate lookup can resolve it.
+  await addUserCurrencies([{ userId, currencyCode: displayCode }]);
 
   try {
     const { rate } = await userExchangeRateService.getExchangeRate({

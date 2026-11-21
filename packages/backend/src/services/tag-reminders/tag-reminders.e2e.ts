@@ -1,6 +1,7 @@
 import { NOTIFICATION_TYPES, TAG_REMINDER_FREQUENCIES, TAG_REMINDER_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { beforeEach, describe, expect, it } from '@jest/globals';
+import { ERROR_CODES } from '@js/errors';
 import Notifications from '@models/notifications.model';
 import TagReminders from '@models/tag-reminders.model';
 import Users from '@models/users.model';
@@ -13,6 +14,11 @@ import {
   getDateRangeForScheduledReminder,
   shouldCheckReminderToday,
 } from './check-reminders';
+
+const thresholdOf = (reminder: { settings: unknown }) =>
+  (reminder.settings as { amountThreshold?: number }).amountThreshold;
+
+const payloadWith = (amountThreshold: number) => helpers.buildTagReminderPayload({ settings: { amountThreshold } });
 
 describe('Tag Reminders API', () => {
   describe('POST /tags/:tagId/reminders (createTagReminder)', () => {
@@ -224,6 +230,181 @@ describe('Tag Reminders API', () => {
         raw: false,
       });
       expect(getResponse.statusCode).toBe(404);
+    });
+  });
+
+  describe('request validation', () => {
+    it('rejects a malformed create body and a malformed update body', async () => {
+      const tag = await helpers.createTag({
+        payload: helpers.buildTagPayload({ name: 'Validation Tag' }),
+        raw: true,
+      });
+      const create = (payload: Record<string, unknown>) =>
+        helpers.createTagReminder({ tagId: tag.id, payload: payload as never, raw: false });
+      const valid = helpers.buildTagReminderPayload();
+
+      expect((await create({ ...valid, type: 'weekly' })).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await create({ ...valid, frequency: 'hourly' })).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await create({ ...valid, dayOfMonth: 0 })).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await create({ ...valid, dayOfMonth: 32 })).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await create({ ...valid, dayOfMonth: 1.5 })).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await create({ ...valid, settings: { amountThreshold: 0 } })).statusCode).toBe(
+        ERROR_CODES.ValidationError,
+      );
+      expect((await create({ ...valid, settings: { amountThreshold: -5 } })).statusCode).toBe(
+        ERROR_CODES.ValidationError,
+      );
+      expect((await create({ ...valid, isEnabled: 'yes' })).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await create({ frequency: 'daily' })).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await create({ ...valid, settings: {} })).statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const reminder = await helpers.createTagReminder({ tagId: tag.id, payload: valid, raw: true });
+      const update = (payload: Record<string, unknown>) =>
+        helpers.updateTagReminder({ tagId: tag.id, id: reminder.id, payload: payload as never, raw: false });
+
+      expect((await update({ type: 'weekly' })).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await update({ frequency: 'hourly' })).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await update({ dayOfMonth: 32 })).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await update({ settings: { amountThreshold: 0 } })).statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((await update({ settings: {} })).statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const untouched = await helpers.getReminderById({ tagId: tag.id, id: reminder.id, raw: true });
+      expect(untouched.frequency).toBe(valid.frequency);
+      expect(untouched.dayOfMonth).toBe(valid.dayOfMonth);
+    });
+  });
+
+  describe('amountThreshold in the base currency decimals', () => {
+    const runThresholdFlow = async ({
+      sent,
+      stored,
+      duplicateOf,
+      roundsToZero,
+      updateSent,
+      updateStored,
+    }: {
+      sent: number;
+      stored: number;
+      duplicateOf: number;
+      roundsToZero: number;
+      updateSent: number;
+      updateStored: number;
+    }) => {
+      const tag = await helpers.createTag({
+        payload: helpers.buildTagPayload({ name: 'Threshold Precision Tag' }),
+        raw: true,
+      });
+      const created = await helpers.createTagReminder({ tagId: tag.id, payload: payloadWith(sent), raw: true });
+      expect(thresholdOf(created)).toBe(stored);
+
+      // A threshold that rounds to the stored one is the same reminder.
+      const duplicate = await helpers.createTagReminder({
+        tagId: tag.id,
+        payload: payloadWith(duplicateOf),
+        raw: false,
+      });
+      expect(duplicate.statusCode).toBe(ERROR_CODES.ConflictError);
+
+      const tooSmall = await helpers.createTagReminder({
+        tagId: tag.id,
+        payload: payloadWith(roundsToZero),
+        raw: false,
+      });
+      expect(tooSmall.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const updateTooSmall = await helpers.updateTagReminder({
+        tagId: tag.id,
+        id: created.id,
+        payload: { settings: { amountThreshold: roundsToZero } },
+        raw: false,
+      });
+      expect(updateTooSmall.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      const updated = await helpers.updateTagReminder({
+        tagId: tag.id,
+        id: created.id,
+        payload: { settings: { amountThreshold: updateSent } },
+        raw: true,
+      });
+      expect(thresholdOf(updated)).toBe(updateStored);
+    };
+
+    it('rounds half-up to 2 decimals for a 2-decimal base currency', async () => {
+      await runThresholdFlow({
+        sent: 100.125,
+        stored: 100.13,
+        duplicateOf: 100.129,
+        roundsToZero: 0.004,
+        updateSent: 250.555,
+        updateStored: 250.56,
+      });
+    });
+
+    it('rounds half-up to whole units for a JPY base currency', async () => {
+      await helpers.asNewUserWithBaseCurrency({
+        currencyCode: 'JPY',
+        fn: () =>
+          runThresholdFlow({
+            sent: 1500.5,
+            stored: 1501,
+            duplicateOf: 1500.7,
+            roundsToZero: 0.4,
+            updateSent: 0.5,
+            updateStored: 1,
+          }),
+      });
+    });
+  });
+
+  describe('cross-user isolation', () => {
+    it('shows another user no reminders and refuses every route on a foreign tag or reminder', async () => {
+      const tag = await helpers.createTag({
+        payload: helpers.buildTagPayload({ name: 'Foreign Tag' }),
+        raw: true,
+      });
+      const reminder = await helpers.createTagReminder({
+        tagId: tag.id,
+        payload: helpers.buildTagReminderPayload(),
+        raw: true,
+      });
+
+      const stranger = await helpers.signUpSecondUser();
+      await helpers.asUser({
+        cookies: stranger.cookies,
+        fn: async () => {
+          expect(await helpers.getAllReminders({ raw: true })).toEqual([]);
+          const notFound = ERROR_CODES.NotFoundError;
+          expect((await helpers.getRemindersForTag({ tagId: tag.id, raw: false })).statusCode).toBe(notFound);
+          expect((await helpers.getReminderById({ tagId: tag.id, id: reminder.id, raw: false })).statusCode).toBe(
+            notFound,
+          );
+          expect(
+            (
+              await helpers.createTagReminder({
+                tagId: tag.id,
+                payload: helpers.buildTagReminderPayload({ dayOfMonth: 2 }),
+                raw: false,
+              })
+            ).statusCode,
+          ).toBe(notFound);
+          expect(
+            (
+              await helpers.updateTagReminder({
+                tagId: tag.id,
+                id: reminder.id,
+                payload: { isEnabled: false },
+                raw: false,
+              })
+            ).statusCode,
+          ).toBe(notFound);
+          expect((await helpers.deleteTagReminder({ tagId: tag.id, id: reminder.id, raw: false })).statusCode).toBe(
+            notFound,
+          );
+        },
+      });
+
+      const survivor = await helpers.getReminderById({ tagId: tag.id, id: reminder.id, raw: true });
+      expect(survivor.isEnabled).toBe(true);
     });
   });
 

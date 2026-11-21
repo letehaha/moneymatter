@@ -177,9 +177,7 @@ describe('Loan balance anchor', () => {
   });
 
   describe('cross-currency (FX) recompute', () => {
-    // getExchangeRate truncates USD-pivot rates to 5 decimals (formatRate), so the
-    // spot expectation applies the same truncation the recompute path does.
-    const USD_TO_AED = Math.trunc(AED_PER_USD * 100_000) / 100_000;
+    const USD_TO_AED = AED_PER_USD;
 
     it('pins refCurrentBalance to the spot value after a payment and settles it to zero at zero native outstanding', async () => {
       // The recompute path measures refCurrentBalance as a SPOT conversion of the

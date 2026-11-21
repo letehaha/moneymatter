@@ -472,6 +472,24 @@ describe('Delete custom categories', () => {
     expect(res.statusCode).toEqual(ERROR_CODES.ValidationError);
   });
 
+  it('should return validation error when trying to delete the user default category, with or without a replacement', async () => {
+    const { defaultCategoryId } = await helpers.getUserInfo({ raw: true });
+
+    const withoutReplacement = await helpers.deleteCustomCategory({ categoryId: defaultCategoryId, raw: false });
+    const withReplacement = await helpers.deleteCustomCategory({
+      categoryId: defaultCategoryId,
+      replaceWithCategoryId: rootCategory.id,
+      raw: false,
+    });
+
+    expect(withoutReplacement.statusCode).toEqual(ERROR_CODES.ValidationError);
+    expect(withReplacement.statusCode).toEqual(ERROR_CODES.ValidationError);
+
+    const categories = await helpers.getCategoriesList();
+    expect(categories.find((c) => c.id === defaultCategoryId)).toBeDefined();
+    expect((await helpers.getUserInfo({ raw: true })).defaultCategoryId).toBe(defaultCategoryId);
+  });
+
   it('should return not found error for a non-existent category and validation error for an invalid category id', async () => {
     const nonExistent = await helpers.deleteCustomCategory({
       categoryId: NONEXISTENT_ID,

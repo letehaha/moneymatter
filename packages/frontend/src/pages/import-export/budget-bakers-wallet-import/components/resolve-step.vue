@@ -233,7 +233,7 @@ async function handleContinue() {
     <!-- ==================== FOOTER ==================== -->
     <div class="flex items-center justify-between pt-2">
       <UiButton variant="ghost" @click="store.goBack()">
-        <ChevronLeftIcon class="mr-1.5 size-4" />
+        <ChevronLeftIcon class="size-4" />
         {{ $t('pages.importExport.budgetBakersWalletImport.resolve.footer.back') }}
       </UiButton>
 
@@ -244,7 +244,7 @@ async function handleContinue() {
         @click="handleContinue"
       >
         {{ $t('pages.importExport.budgetBakersWalletImport.resolve.footer.continue') }}
-        <ChevronRightIcon class="ml-1.5 size-4" />
+        <ChevronRightIcon class="size-4" />
       </UiButton>
     </div>
   </div>

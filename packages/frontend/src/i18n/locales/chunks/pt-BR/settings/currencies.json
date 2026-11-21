@@ -1,0 +1,108 @@
+{
+  "settings": {
+    "currencies": {
+      "page": {
+        "title": "Moedas",
+        "description": "Gerencie as moedas que você acompanha e as taxas de câmbio usadas nas suas contas."
+      },
+      "addNew": {
+        "loading": "Carregando...",
+        "selectCurrency": "Escolha uma moeda",
+        "addButton": "Adicionar",
+        "sectionLabel": "Adicionar uma moeda",
+        "successfullyAdded": "Moeda adicionada",
+        "errors": {
+          "addFailed": "Erro inesperado. A moeda não foi adicionada."
+        }
+      },
+      "howItWorks": {
+        "trigger": "Como funciona?",
+        "body": "Sua moeda base é aquela para a qual todos os saldos são convertidos nos totais e relatórios. Cada moeda adicionada é atualizada automaticamente pelas cotações do mercado, ou você pode definir uma taxa personalizada para substituí-las."
+      },
+      "row": {
+        "baseBadge": "Base",
+        "custom": "Personalizada",
+        "live": "Ao vivo",
+        "unused": "Sem uso",
+        "accountsCount": "{count} conta | {count} contas"
+      },
+      "empty": {
+        "title": "Nenhuma outra moeda ainda",
+        "description": "Adicione uma moeda acima para acompanhar saldos e taxas de câmbio junto com sua moeda base."
+      },
+      "exchangeRate": {
+        "disableLiveUpdate": "Desative a atualização ao vivo para definir uma taxa de câmbio personalizada.",
+        "liveUpdateInfo": "Quando ativada, a taxa personalizada é ignorada.",
+        "liveUpdateLabel": "Atualização ao vivo",
+        "ratePlaceholder": "0.00",
+        "saveButton": "Salvar",
+        "successfullyUpdated": "Taxa atualizada",
+        "balancesNotRefreshed": "Saldos de contas que ainda não puderam ser atualizados com a nova taxa: {count}. Eles serão atualizados automaticamente quando houver uma taxa disponível.",
+        "errors": {
+          "unexpectedError": "Erro inesperado",
+          "updateFailed": "Erro inesperado. A moeda não foi atualizada."
+        }
+      },
+      "delete": {
+        "confirmTitle": "Excluir moeda?",
+        "description": "Uma moeda só pode ser excluída ou desconectada se não houver contas nem transações associadas a ela.",
+        "button": "Excluir moeda",
+        "buttonShort": "Excluir",
+        "disabledTooltip": "Não é possível excluir esta moeda porque ela ainda está vinculada a contas.",
+        "successfullyDeleted": "Moeda excluída",
+        "foreignAmountsWarning": "Os valores em moeda estrangeira registrados nesta moeda serão removidos das suas transações. Os valores na moeda da conta continuam iguais.",
+        "inUse": {
+          "title": "Esta moeda ainda está em uso. Remova ou altere estes itens primeiro:",
+          "trashed": "(na lixeira)",
+          "types": {
+            "account": "Contas",
+            "portfolio": "Moeda de exibição da carteira",
+            "holding": "Posições",
+            "portfolioCash": "Saldo em dinheiro da carteira",
+            "portfolioTransfer": "Transferências da carteira",
+            "investmentTransaction": "Transações de investimento",
+            "subscription": "Pagamentos recorrentes",
+            "transactionTemplate": "Modelos de transação",
+            "budget": "Orçamentos",
+            "goal": "Metas",
+            "ventureDeal": "Participações"
+          }
+        },
+        "errors": {
+          "deleteFailed": "Erro inesperado. A moeda não foi excluída."
+        }
+      },
+      "setBase": {
+        "button": "Definir como moeda base",
+        "buttonShort": "Definir como base",
+        "processing": "Processando...",
+        "tooltip": "Marque como moeda base. Todas as estatísticas e informações do painel serão exibidas nesta moeda.\n\nAs transações serão recalculadas pela taxa de câmbio da data em que cada transação foi registrada.",
+        "dialog": {
+          "title": "Alterar a moeda base?",
+          "warningTitle": "Atenção:",
+          "warningText": "Alterar a moeda base deve ser uma decisão muito bem pensada. O ideal é fazer isso só uma vez, mesmo que não haja nenhuma restrição real.",
+          "descriptionText": "Cada vez que você altera a moeda base, todas as transações são recalculadas com as taxas de câmbio históricas. Por causa da aritmética de ponto flutuante e das variações normais entre as cotações da moeda base e da moeda cotada, recálculos repetidos podem gerar pequenas diferenças nos seus valores na moeda base ao longo do tempo. Os valores na moeda base são usados para exibir estatísticas e definir os limites dos seus orçamentos.",
+          "roundingTitle": "Como exatamente o arredondamento é calculado?",
+          "roundingIntro": "As conversões de moeda usam o arredondamento bancário (padrão IEEE 754), também chamado de “arredondamento meio para par”. Isso minimiza os erros de arredondamento acumulados em muitos cálculos.",
+          "roundingHow": "Como funciona:",
+          "roundingRule1": "Quando um valor está exatamente no meio (ex.: 0,5), ele é arredondado para o número par mais próximo",
+          "roundingRule2": "Exemplo: 0.5 → 0, 1.5 → 2, 2.5 → 2, 3.5 → 4",
+          "roundingStandard": "Esse método é recomendado pelas normas contábeis IFRS/GAAP e usado pelos principais sistemas financeiros para evitar distorções sistemáticas nas conversões de moeda.",
+          "untouchedWarning": "O valor original das transações nunca é alterado.",
+          "processingTimeInfo": "Isso pode demorar um pouco se a sua moeda não for muito comum.",
+          "restrictionWarning": "Enquanto o processo estiver em andamento, você não poderá criar contas, transações nem nada que envolva valores.",
+          "confirmation": "Quer mesmo continuar?",
+          "changeButton": "Alterar moeda base",
+          "cancelButton": "Cancelar"
+        },
+        "successMessage": "Moeda base alterada.",
+        "errors": {
+          "changeFailed": "Erro inesperado. Não foi possível alterar a moeda base.",
+          "lockedHousehold": "Você participa de {count} família ativa. Saia dela primeiro em “Configurações → Família”. | Você participa de {count} famílias ativas. Saia delas primeiro em “Configurações → Família”.",
+          "lockedShares": "Você tem {count} compartilhamento de conta ativo. Revogue-o primeiro na conta. | Você tem {count} compartilhamentos de conta ativos. Revogue-os primeiro em cada conta.",
+          "lockedBudgetPlan": "Um plano de orçamento ativo está bloqueando a alteração. Exclua-o primeiro. | {count} planos de orçamento ativos estão bloqueando a alteração. Exclua-os primeiro."
+        }
+      }
+    }
+  }
+}

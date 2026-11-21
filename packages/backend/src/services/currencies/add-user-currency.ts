@@ -4,6 +4,7 @@ import * as UsersCurrencies from '@models/users-currencies.model';
 
 import { withTransaction } from '../common/with-transaction';
 import { assertCurrencyCodesVisible } from './assert-currency-codes-visible';
+import { lockUserCurrencies } from './lock-user-currencies';
 
 export const addUserCurrencies = withTransaction(
   async (
@@ -24,6 +25,8 @@ export const addUserCurrencies = withTransaction(
       userId: currencies[0].userId,
       codes: currencies.map((item) => item.currencyCode),
     });
+
+    await lockUserCurrencies({ userId: currencies[0].userId });
 
     const existingCurrencies = await UsersCurrencies.getCurrencies({
       userId: currencies[0].userId,

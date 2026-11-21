@@ -60,7 +60,18 @@
                 :target-name="targetName"
                 @focus-field="focusField({ field: $event })"
                 @toggle-source="onDraftChange({ next: { ...draft, [$event]: !settings[$event] } })"
-              />
+              >
+                <template v-if="pace || isPaceLoading || isPaceError" #pace>
+                  <FirePace
+                    :pace="pace"
+                    :anchor="paceAnchor"
+                    :earliest-month="earliestAnchorMonth"
+                    :is-error="isPaceError"
+                    @change-anchor="onDraftChange({ next: { ...draft, paceAnchor: $event } })"
+                    @retry="retryPace"
+                  />
+                </template>
+              </FireHero>
               <Callout v-for="callout in callouts" :key="callout.key" :variant="callout.variant">
                 <div class="flex items-start gap-2">
                   <span class="flex-1">
@@ -118,6 +129,7 @@
                 v-if="plan.chart.projection.length > 1 || plan.chart.history.length > 0"
                 :chart="plan.chart"
                 :target-name="targetName"
+                :pace="chartPace"
               />
               <FireMilestones :milestones="plan.milestones" :target-name="targetName" />
             </section>
@@ -171,7 +183,11 @@ import { NotificationType, useNotificationCenter } from '@/components/notificati
 import { FIRE_WIDGET_ID, WIDGET_REGISTRY } from '@/components/widgets/widget-registry';
 import { useUserSettings } from '@/composable/data-queries/user-settings';
 import type { FireWarning } from '@/composable/fire/build-fire-plan';
+import { earliestPaceMonth } from '@/composable/fire/fire-pace';
+import { type FireChartPace, paceTone } from '@/composable/fire/fire-pace-display';
+import { useFirePace } from '@/composable/fire/use-fire-pace';
 import { useFirePlan, useResolvedFireSettings } from '@/composable/fire/use-fire-plan';
+import { useDateLocale } from '@/composable/use-date-locale';
 import { trackAnalyticsEvent } from '@/lib/posthog';
 import { captureException } from '@/lib/sentry';
 import { cn } from '@/lib/utils';
@@ -192,6 +208,7 @@ import FireChart from './components/fire-chart.vue';
 import FireEmptyState from './components/fire-empty-state.vue';
 import FireHero from './components/fire-hero.vue';
 import FireMilestones from './components/fire-milestones.vue';
+import FirePace from './components/fire-pace.vue';
 import FireProgress from './components/fire-progress.vue';
 import FireSkeleton from './components/fire-skeleton.vue';
 import FireTypeChips from './components/fire-type-chips.vue';
@@ -331,6 +348,33 @@ const {
 } = useResolvedFireSettings({ fire: () => draft.value });
 const { plan, isError: isPlanError, refetch: refetchPlan } = useFirePlan({ settings, includeHistory: true });
 const targetName = computed(() => t(`common.fire.targets.${settings.value.targetType}`));
+
+const { format } = useDateLocale();
+const {
+  pace,
+  anchor: paceAnchor,
+  isLoading: isPaceLoading,
+  isError: isPaceError,
+  retry: retryPace,
+} = useFirePace({
+  plan,
+  fire: () => draft.value,
+  history: () => userSettings.value?.fireHistory,
+  enabled: () => !isGated.value,
+});
+const earliestAnchorMonth = computed(() =>
+  earliestPaceMonth({ firstDataDate: plan.value.chart?.history[0]?.date ?? null }),
+);
+const chartPace = computed<FireChartPace | null>(() => {
+  const tone = pace.value ? paceTone({ verdict: pace.value.verdict }) : null;
+  if (!pace.value || !tone) return null;
+  return {
+    forecast: pace.value.forecast,
+    anchorDate: pace.value.anchor.date,
+    anchorLabel: format(pace.value.anchor.date, 'LLL yyyy'),
+    tone,
+  };
+});
 
 const hasError = computed(() => isPlanError.value || isSettingsError.value || isUserSettingsError.value);
 const retry = () => {

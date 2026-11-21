@@ -23,7 +23,7 @@ import {
 } from '@/composable/data-queries/brand-logos';
 import { cn } from '@/lib/utils';
 import { AlertCircleIcon, CheckIcon, SearchIcon } from '@lucide/vue';
-import { useDebounce } from '@vueuse/core';
+import { refDebounced } from '@vueuse/core';
 import { computed, defineAsyncComponent, ref, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -78,7 +78,7 @@ const currentIcon = props.selection?.kind === 'icon' ? props.selection : null;
 const SEARCH_DEBOUNCE_MS = 300;
 
 const searchQuery = ref(props.nameForSearch);
-const debounced = useDebounce(searchQuery, SEARCH_DEBOUNCE_MS);
+const debounced = refDebounced(searchQuery, SEARCH_DEBOUNCE_MS);
 
 const trimmedQuery = computed(() => searchQuery.value.trim());
 const debouncedQuery = computed(() => debounced.value.trim());

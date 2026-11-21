@@ -1,0 +1,120 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'No Google or Facebook trackers: the outside services that see your data',
+    text: 'The cloud version runs no ad networks and no Google or Facebook trackers. A few outside services help run it, each under its own privacy policy. These are the main ones.',
+    bullets: [
+      'Stripe for payments. It handles your card, and MoneyMatter never receives the number',
+      'Resend for sign-in and account emails',
+      'Sentry for crash reports, which include your email. A session with an error can include a replay, with all text masked and media blocked',
+      'PostHog for product analytics tied to your account and email, with no session recording on real accounts. Do Not Track stops the analytics sent from your browser, while the server still records events such as sign-ins',
+      'Your bank data provider, and the AI provider behind the included AI or your own model',
+      'logo.dev receives payee and subscription names when MoneyMatter looks up a logo, and your IP address and the brand domain when a logo loads',
+      'OpenStreetMap receives your IP address when you open the map picker, which is off by default',
+    ],
+  },
+  {
+    heading: 'AES-256-GCM for bank credentials, no end-to-end encryption',
+    text: 'All traffic between your browser and the cloud version uses HTTPS. Bank credentials and your own AI keys are also stored encrypted with AES-256-GCM, so a copy of the database alone does not reveal them. Transactions and balances do not get that layer, because the server has to read them to build your reports. That means MoneyMatter is not end-to-end encrypted.',
+    bullets: ['Bank sync is read-only, and your bank password is never stored', 'Passwords are stored as bcrypt hashes'],
+  },
+  {
+    heading: 'Self-host the budget app to keep your data on your own server',
+    text: 'If you would rather not trust a hosted service, run MoneyMatter on your own server with Docker Compose. A self-hosted install sends no analytics, and Sentry stays off unless you configure it. Bank sync, AI and logos stay off until you add your own keys, and a model on your own network keeps AI in-house too. You can also sign in through your own OpenID Connect provider.',
+  },
+  {
+    heading: 'Sign in with a passkey, Google, GitHub, Apple or a password',
+    text: 'Use any of them, and keep several at once as backups. Think someone has your password? A reset signs you out on all devices and disconnects connected apps, including AI assistants.',
+    screenshot: {
+      name: 'features/settings/login-methods',
+      alt: 'The Login Methods tab showing Google and GitHub with Connect buttons, a password that is set, and one registered passkey',
+      width: 832,
+      height: 835,
+    },
+  },
+  {
+    heading: 'See every device signed in to your account',
+    text: 'The Active Sessions tab lists each browser and device on your account, with its IP address and when it was last active. If one looks wrong, sign it out and change your password. You can also sign out every other session at once.',
+    screenshot: {
+      name: 'features/settings/active-sessions',
+      alt: 'The Active Sessions tab with the current session marked Current, other devices below it, and the Sign out of all other sessions button',
+      width: 832,
+      height: 753,
+    },
+  },
+  {
+    heading: 'Delete your account and financial data yourself',
+    text: 'You do not need to email anyone. The Danger Zone tab lets you wipe all your data and start over with the same login, or delete your account and all its data. Both are permanent, so download a backup or an export first if you might want your records later.',
+    screenshot: {
+      name: 'features/settings/danger-zone',
+      alt: 'The Danger Zone tab with the Wipe all data section and the Delete your account section',
+      width: 872,
+      height: 569,
+    },
+  },
+  {
+    heading: 'Set what Claude or ChatGPT can do with your data',
+    text: 'You can connect Claude, ChatGPT or another assistant to your data over MCP. Read access is always included, and before you approve you choose whether it can also create and edit records, or delete them. Revoke an app in settings when you are done with it.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'MoneyMatter has no published third-party security certification or audit.',
+  'On Plus and during the free trial, AI categorizes new bank transactions automatically, and no single switch turns this off.',
+];
+
+const FAQ = [
+  {
+    question: 'Is MoneyMatter safe for my financial data?',
+    answer:
+      'It protects your login and bank connection, but not against everything. A leaked database does not expose bank credentials or readable passwords, and bank sync cannot move money. A stolen password can still open your account because there is no two-factor authentication, and anyone with access to the server can read your transactions.',
+  },
+  {
+    question: 'Can MoneyMatter see my transactions?',
+    answer:
+      'Yes. Whoever runs the server can access your transactions and balances. On the cloud version that is MoneyMatter, and on a self-hosted install it is you.',
+  },
+  {
+    question: 'Does MoneyMatter support two-factor authentication?',
+    answer:
+      'No. To protect your account without it, sign in with a passkey, or with Google or GitHub, where your own two-factor settings apply. If your account also has a password, that password still works.',
+  },
+  {
+    question: 'Does MoneyMatter send my transactions to AI?',
+    answer:
+      'On Plus and during the trial, yes: new bank transactions go to AI with their amount, currency, account name, date, note and payee, along with your category names. Transactions you add by hand are not sent for categorization automatically, though Smart tracking also checks new and edited transactions if you turn it on. Add your own model, such as an Anthropic, OpenAI or Gemini key or a model on your own computer, and those features use it instead. Budget suggestions always use the included AI.',
+  },
+  {
+    question: 'Is MoneyMatter open source?',
+    answer:
+      'Yes. The code is public on GitHub under the AGPL-3.0 license, so you can read how your data is handled or run the app on your own server.',
+  },
+  {
+    question: 'What happens to my data when I delete my account?',
+    answer:
+      'Your account, login and data are permanently deleted. A subscription you pay for through Stripe is canceled first, and anyone you shared accounts with loses access.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Security and account', href: 'https://docs.moneymatter.app/settings/security-and-account/' },
+  { label: 'General settings', href: 'https://docs.moneymatter.app/settings/general-settings/' },
+  { label: 'Connect Claude or ChatGPT', href: 'https://docs.moneymatter.app/ai/connect-claude-chatgpt-mcp/' },
+];
+
+const RELATED = ['/features/self-hosting', '/features/export-and-backup', '/features/family-sharing'];
+---
+
+<FeatureLayout
+  title="Private Budget App: Security and Privacy | MoneyMatter"
+  description="A private budget app with no ads or data sales. See what is encrypted, which services handle your data, and how to self-host for full control."
+  heading="A private budget app with no ads and no data sales"
+  intro="MoneyMatter is a private budget app with no ads and no data sales, and its source code is public. Use the cloud version and see which services handle your data and what is encrypted, or self-host it and keep your data on your own server."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

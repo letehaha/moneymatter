@@ -2,27 +2,27 @@
   "pages": {
     "importExport": {
       "importHistory": {
-        "pageTitle": "Import history",
-        "pageDescription": "See your past imports and drill into exactly what accounts and transactions each one created.",
-        "loadError": "Couldn't load your import history.",
-        "emptyTitle": "No imports yet",
-        "emptyDescription": "Once you import transactions, they'll show up here.",
-        "emptyAction": "Import data",
-        "transactionCount": "{count} transaction | {count} transactions",
+        "pageTitle": "Historique des imports",
+        "pageDescription": "Consultez vos imports passés et visualisez en détail les comptes et opérations créés par chacun d'eux.",
+        "loadError": "Impossible de charger votre historique des imports.",
+        "emptyTitle": "Aucun import pour le moment",
+        "emptyDescription": "Dès que vous importerez des opérations, elles apparaîtront ici.",
+        "emptyAction": "Importer des données",
+        "transactionCount": "{count} opération | {count} opérations",
         "accountCount": "{count} compte | {count} comptes",
-        "deleteButton": "Delete import",
-        "deleteConfirmTitle": "Delete this import batch?",
-        "deleteConfirmDescription": "This will permanently delete {count} transaction from this import. This action cannot be undone. | This will permanently delete {count} transactions from this import. This action cannot be undone.",
-        "deleteConfirmDescriptionNoTransactions": "The transactions from this import are already deleted. This removes what is left of the import, including any balance adjustment it made to your accounts.",
-        "deleteConfirmCreatedAccountsNote": "Accounts created by this import are also removed if they have no other transactions.",
-        "deleteSuccessMessage": "Deleted {count} transaction | Deleted {count} transactions",
-        "deleteSuccessNoTransactions": "Import deleted",
-        "deleteUnexpectedError": "Something went wrong while deleting the import batch. Please try again.",
-        "deleteLinkedTransfersWarningTitle": "This import is linked to another transaction",
-        "deleteLinkedTransfersCheckbox": "Also delete the linked transfer transaction",
-        "deleteLinkedTransfersDescription": "By default, any transaction linked to this import as a transfer is only unlinked, not deleted. Checking this box will permanently delete it too — this cannot be undone.",
-        "deleteLinkedTransfersConfirmTitle": "Delete the linked transaction too?",
-        "deleteLinkedTransfersConfirmDescription": "You're about to permanently delete a transaction outside this import batch, not just unlink it. This action cannot be undone."
+        "deleteButton": "Supprimer l'import",
+        "deleteConfirmTitle": "Supprimer ce lot d'importation ?",
+        "deleteConfirmDescription": "Cela supprimera définitivement {count} opération issue de cet import. Cette action est irréversible. | Cela supprimera définitivement {count} opérations issues de cet import. Cette action est irréversible.",
+        "deleteConfirmDescriptionNoTransactions": "Les opérations issues de cet import ont déjà été supprimées. Cette action supprime les éléments restants de l'import, y compris les ajustements de solde effectués sur vos comptes.",
+        "deleteConfirmCreatedAccountsNote": "Les comptes créés lors de cet import seront également supprimés s'ils ne contiennent aucune autre opération.",
+        "deleteSuccessMessage": "{count} opération supprimée | {count} opérations supprimées",
+        "deleteSuccessNoTransactions": "Import supprimé",
+        "deleteUnexpectedError": "Une erreur s'est produite lors de la suppression du lot d'importation. Veuillez réessayer.",
+        "deleteLinkedTransfersWarningTitle": "Cet import est lié à une autre opération",
+        "deleteLinkedTransfersCheckbox": "Supprimer également l'opération de virement liée",
+        "deleteLinkedTransfersDescription": "Par défaut, toute opération liée à cet import sous forme de virement est uniquement dissociée, pas supprimée. Cocher cette case la supprimera définitivement — cette action est irréversible.",
+        "deleteLinkedTransfersConfirmTitle": "Supprimer également l'opération liée ?",
+        "deleteLinkedTransfersConfirmDescription": "Vous êtes sur le point de supprimer définitivement une opération externe à ce lot d'importation, et pas seulement de la dissocier. Cette action est irréversible."
       }
     }
   }

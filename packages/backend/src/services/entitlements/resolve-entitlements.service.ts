@@ -92,6 +92,7 @@ export async function resolveEntitlements({ user }: { user: EntitlementUser }): 
     order: [['createdAt', 'DESC']],
   });
   base.subscriptions = subscriptions.map((s) => ({
+    provider: s.provider,
     externalSubscriptionId: s.externalSubscriptionId,
     tier: s.tier,
     status: s.status,

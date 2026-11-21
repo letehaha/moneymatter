@@ -10,6 +10,8 @@ const BASE_SUBSCRIPTION: SubscriptionListItem = {
   expectedAmount: 9.99,
   expectedCurrencyCode: 'USD',
   frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+  intervalUnit: null,
+  intervalCount: null,
   startDate: '2025-01-01',
   endDate: null,
   accountId: null,

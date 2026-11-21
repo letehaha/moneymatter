@@ -52,39 +52,40 @@ const matchIds = ({
   return operator === 'in' ? present : !present;
 };
 
-const resolveAmountCents = ({
+const resolveAmount = ({
   ctx,
   currency,
 }: {
   ctx: AutomationContext;
   currency: AutomationAmountCurrency;
-}): number | null => {
-  if (currency.mode === 'transaction') return ctx.amountCents;
-  if (currency.mode === 'base') return ctx.refAmountCents;
-  return currency.code === ctx.currencyCode ? ctx.amountCents : null;
+}): Money | null => {
+  if (currency.mode === 'transaction') return ctx.amount;
+  if (currency.mode === 'base') return ctx.refAmount;
+  return currency.code === ctx.currencyCode ? ctx.amount : null;
 };
 
+/** Condition bounds are decimals, compared exactly with the amount at its currency's decimals. */
 const compareAmount = ({
-  cents,
+  amount,
   operator,
   value,
 }: {
-  cents: number;
+  amount: Money;
   operator: AutomationAmountOperator;
   value: { min?: number; max?: number };
 }): boolean => {
-  const min = value.min === undefined ? undefined : Money.fromDecimal(value.min).toCents();
-  const max = value.max === undefined ? undefined : Money.fromDecimal(value.max).toCents();
+  const min = value.min === undefined ? undefined : Money.fromDecimal(value.min);
+  const max = value.max === undefined ? undefined : Money.fromDecimal(value.max);
 
   switch (operator) {
     case 'between':
-      return min !== undefined && max !== undefined && cents >= min && cents <= max;
+      return min !== undefined && max !== undefined && amount.gte(min) && amount.lte(max);
     case 'gte':
-      return min !== undefined && cents >= min;
+      return min !== undefined && amount.gte(min);
     case 'lte':
-      return max !== undefined && cents <= max;
+      return max !== undefined && amount.lte(max);
     case 'equals':
-      return min !== undefined && cents === min;
+      return min !== undefined && amount.equals(min);
   }
 };
 
@@ -97,8 +98,8 @@ const evaluateItem = async ({ ctx, item }: { ctx: AutomationContext; item: Autom
     case 'payee':
       return matchIds({ values: ctx.payeeId ? [ctx.payeeId] : [], operator: item.operator, ids: item.value });
     case 'amount': {
-      const cents = resolveAmountCents({ ctx, currency: item.currency });
-      return cents !== null && compareAmount({ cents, operator: item.operator, value: item.value });
+      const amount = resolveAmount({ ctx, currency: item.currency });
+      return amount !== null && compareAmount({ amount, operator: item.operator, value: item.value });
     }
     case 'transactionType':
       return ctx.transactionType === item.value;

@@ -3,18 +3,13 @@
     :to="{ name: ROUTES_NAMES.loanDetail, params: { id: loan.id } }"
     :class="
       cn(
-        'hover:bg-muted/40 focus-visible:ring-ring/40 flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4 @[40rem]/paid-off-list:py-3.5',
+        'hover:bg-hover focus-visible:ring-ring/40 flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4 @[40rem]/paid-off-list:py-3.5',
         'transition-colors focus-visible:ring-2 focus-visible:outline-none',
       )
     "
   >
     <div class="flex min-w-0 flex-1 basis-full items-center gap-3 @[40rem]/paid-off-list:basis-auto">
-      <div
-        :class="cn('flex size-8 shrink-0 items-center justify-center rounded-lg', loanTypeTintedChipClass)"
-        aria-hidden="true"
-      >
-        <component :is="loanTypeIconComponent" class="size-4" stroke-width="2" />
-      </div>
+      <LoanLogo :loan="loan" class="size-8" />
       <div class="min-w-0">
         <div class="flex min-w-0 items-center gap-2">
           <span class="truncate text-sm font-semibold">{{ loan.name }}</span>
@@ -84,6 +79,7 @@
 
 <script setup lang="ts">
 import type { LoanApi } from '@/api/loans';
+import LoanLogo from '@/components/common/loan-logo.vue';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
@@ -94,8 +90,6 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { RouterLink } from 'vue-router';
 
-import { getLoanTypeIcon, getLoanTypeTintedChipClass } from '../loan-type-presentation';
-
 const props = defineProps<{ loan: LoanApi }>();
 
 const { formatAmountByCurrencyCode } = useFormatCurrency();
@@ -105,13 +99,16 @@ const { t } = useI18n();
 const DATE_FORMAT = 'MMM yyyy';
 
 const repaidDisplay = computed(() =>
-  formatAmountByCurrencyCode(props.loan.loanDetails.originalPrincipal, props.loan.currencyCode),
+  formatAmountByCurrencyCode({
+    amount: props.loan.loanDetails.originalPrincipal,
+    currencyCode: props.loan.currencyCode,
+  }),
 );
 
 const interestPaidDisplay = computed(() => {
   const estimatedInterestPaid = props.loan.projection.estimatedInterestPaid;
   if (estimatedInterestPaid === null) return '—';
-  return formatAmountByCurrencyCode(estimatedInterestPaid, props.loan.currencyCode);
+  return formatAmountByCurrencyCode({ amount: estimatedInterestPaid, currencyCode: props.loan.currencyCode });
 });
 
 const openedDisplay = computed(() => formatDate(parseISO(props.loan.loanDetails.startDate), DATE_FORMAT));
@@ -134,10 +131,4 @@ const subLine = computed(() => {
   const lender = props.loan.loanDetails.lenderName;
   return lender ? `${typeLabel} · ${lender}` : `${typeLabel} · ${props.loan.currencyCode}`;
 });
-
-const loanTypeTintedChipClass = computed(() =>
-  getLoanTypeTintedChipClass({ loanType: props.loan.loanDetails.loanType }),
-);
-
-const loanTypeIconComponent = computed(() => getLoanTypeIcon({ loanType: props.loan.loanDetails.loanType }));
 </script>

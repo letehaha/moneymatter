@@ -29,7 +29,8 @@ export type BackupParentScope =
   | 'importBatches'
   | 'budgetPlans'
   | 'budgetLines'
-  | 'trackerLines';
+  | 'trackerLines'
+  | 'goals';
 
 /**
  * How a table's rows are selected for the current user.
@@ -44,7 +45,7 @@ export type BackupDumpScope =
 
 /**
  * How a table's rows are handled on restore. The export path ignores all of
- * these except `stripSecret`/`enrichMccCode`/`single`; the restore path reads them.
+ * these except `stripSecret`/`single`; the restore path reads them.
  * - `insert`: bulkInsert the rows verbatim.
  * - `updateUser`: UPDATE the target Users row with `fields` only.
  * - `zodSettings`: upsert through `ZodSettingsSchema.parse`, never raw JSONB.
@@ -65,14 +66,12 @@ export interface BackupTableDef<Name extends string = BackupFileName> {
   fields?: readonly string[];
   /** Soft-delete model — dumped with `paranoid: false` so trash travels too. */
   paranoid?: boolean;
-  /** Self-referential parent column needing the two-pass restore. */
-  selfRefColumn?: string;
+  /** Self-referential parent columns needing the two-pass restore. */
+  selfRefColumns?: readonly string[];
+  /** Per self-ref column: values written to a row whose parent did not restore. */
+  selfRefOrphanValues?: Record<string, Record<string, unknown>>;
   /** Encrypted blob to blank before writing (undecryptable on another instance). */
   stripSecret?: 'bankCredentials' | 'aiKeys' | 'rateSourceHeaders';
-  /** Attach the MCC's natural `code` so restore can remap the integer `mccId`. */
-  enrichMccCode?: boolean;
-  /** Drop a row on restore whose `currencyCode` isn't seeded on the target instance. */
-  requireSeededCurrency?: boolean;
   /** Drop a row on restore that breaks an app-level rule the DB constraints don't cover. */
   isValidRow?: (params: { row: Record<string, unknown> }) => boolean;
 }
@@ -109,7 +108,6 @@ const TABLE_DEFS = [
     tier: 2,
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
-    requireSeededCurrency: true,
     stripSecret: 'rateSourceHeaders',
   },
   {
@@ -118,7 +116,7 @@ const TABLE_DEFS = [
     tier: 2,
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
-    selfRefColumn: 'parentId',
+    selfRefColumns: ['parentId'],
   },
   {
     fileName: 'tags',
@@ -177,7 +175,7 @@ const TABLE_DEFS = [
     tier: 2,
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
-    selfRefColumn: 'parentGroupId',
+    selfRefColumns: ['parentGroupId'],
   },
   {
     fileName: 'transaction-automations',
@@ -236,14 +234,6 @@ const TABLE_DEFS = [
     tier: 3,
     scope: { strategy: 'viaParent', fk: 'categoryId', parent: 'categories' },
     restoreMode: 'insert',
-  },
-  {
-    fileName: 'user-merchant-category-codes',
-    model: models.UserMerchantCategoryCodes,
-    tier: 3,
-    scope: { strategy: 'userColumn', column: 'userId' },
-    restoreMode: 'insert',
-    enrichMccCode: true,
   },
   {
     fileName: 'user-exchange-rates',
@@ -312,6 +302,13 @@ const TABLE_DEFS = [
     paranoid: true,
     isValidRow: isRestorablePlanRow,
   },
+  {
+    fileName: 'goals',
+    model: models.Goals,
+    tier: 3,
+    scope: { strategy: 'userColumn', column: 'userId' },
+    restoreMode: 'insert',
+  },
 
   // tier 4
   {
@@ -321,7 +318,8 @@ const TABLE_DEFS = [
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
     paranoid: true,
-    selfRefColumn: 'mergedIntoId',
+    selfRefColumns: ['mergedIntoId', 'paymentParentId'],
+    selfRefOrphanValues: { paymentParentId: { paymentAmount: null, paymentLinkSnapshot: null } },
   },
   {
     fileName: 'balances',
@@ -401,6 +399,13 @@ const TABLE_DEFS = [
     restoreMode: 'insert',
   },
   {
+    fileName: 'goal-accounts',
+    model: models.GoalAccounts,
+    tier: 4,
+    scope: { strategy: 'viaParent', fk: 'goalId', parent: 'goals' },
+    restoreMode: 'insert',
+  },
+  {
     fileName: 'tracker-lines',
     model: models.TrackerLines,
     tier: 4,
@@ -440,6 +445,13 @@ const TABLE_DEFS = [
   {
     fileName: 'tracker-categories',
     model: models.TrackerCategories,
+    tier: 5,
+    scope: { strategy: 'viaParent', fk: 'trackerId', parent: 'trackers' },
+    restoreMode: 'insert',
+  },
+  {
+    fileName: 'tracker-tags',
+    model: models.TrackerTags,
     tier: 5,
     scope: { strategy: 'viaParent', fk: 'trackerId', parent: 'trackers' },
     restoreMode: 'insert',
@@ -575,14 +587,9 @@ interface BackupReferenceDef {
  * Global catalog subset embedded under `reference/`. Not owner-scoped: dumped
  * as the exact Securities rows the user's holdings and investment transactions
  * reference (identity only), then resolve-or-create on restore. Prices are NOT
- * dumped — see SecurityPricing in BACKUP_EXCLUDED. The Currencies model is here
- * for the user-defined rows the user holds (the ISO seed is referenced by natural
- * code and is stable across instances).
+ * dumped — see SecurityPricing in BACKUP_EXCLUDED.
  */
-export const REFERENCE_TABLES: readonly BackupReferenceDef[] = [
-  { fileName: 'securities', model: models.Securities },
-  { fileName: 'custom-currencies', model: models.Currencies },
-];
+export const REFERENCE_TABLES: readonly BackupReferenceDef[] = [{ fileName: 'securities', model: models.Securities }];
 
 interface BackupExcludedDef {
   model: AnyModel;
@@ -596,12 +603,13 @@ interface BackupExcludedDef {
  */
 export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
   {
-    model: models.ExchangeRates,
-    reason: 'Global; self-heals via startup backfill (1999→today) plus the daily rate cron.',
+    model: models.Currencies,
+    reason:
+      'Global ISO seed, referenced by natural code. A custom code is a bare stub: its definition travels in users-currencies and restore recreates the stub.',
   },
   {
-    model: models.MerchantCategoryCodes,
-    reason: 'Global seed; user rows carry the natural code for remap on restore.',
+    model: models.ExchangeRates,
+    reason: 'Global; self-heals via startup backfill (1999→today) plus the daily rate cron.',
   },
   { model: models.BrandLogos, reason: 'Global logo cache, re-resolved by domain string.' },
   { model: models.SecurityCurrencyCache, reason: 'Global symbol→currency cache, re-resolved on demand.' },
@@ -613,11 +621,11 @@ export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
   {
     model: models.BillingSubscriptions,
     reason:
-      'Mirror of Stripe, keyed to a Stripe customer — Stripe re-sends it by webhook, restoring it would bind another account.',
+      'Mirror of Stripe and the App Store, keyed to a provider customer — the provider re-sends it, restoring it would bind another account.',
   },
   {
     model: models.BillingWebhookEvents,
-    reason: 'Webhook dedupe markers for a Stripe account, meaningless outside it.',
+    reason: 'Webhook dedupe markers for the Stripe and App Store accounts, meaningless outside them.',
   },
   { model: models.SignupLedger, reason: 'Global signup/trial ledger keyed by email hash, not per-user data.' },
   {

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "01a1cf52-7c13-7052-aef7-a8b1a12d145a",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "name": "Rent",
+    "groupId": null,
+    "sortOrder": 0,
+    "activeFrom": "2026-10-01",
+    "activeUntil": null,
+    "archivedCategoryIds": [],
+    "origin": "manual",
+    "createdAt": "2026-11-12T10:34:11.859Z",
+    "updatedAt": "2026-11-12T10:34:11.859Z"
+  },
+  {
+    "id": "01a1cf52-7c21-70ca-b7e8-9be45e3879ec",
+    "planId": "01a1cf52-7bcf-72e2-b8c7-6a7a756ac248",
+    "name": "Food",
+    "groupId": null,
+    "sortOrder": 1,
+    "activeFrom": "2026-10-01",
+    "activeUntil": null,
+    "archivedCategoryIds": [],
+    "origin": "manual",
+    "createdAt": "2026-11-12T10:34:11.873Z",
+    "updatedAt": "2026-11-12T10:34:11.873Z"
+  }
+]

@@ -3,7 +3,7 @@ import {
   HTTP_RATE_SOURCE_MAX_HEADERS,
   type HttpUrlTemplatePlaceholderName,
 } from '@bt/shared/types';
-import { currencyCode, currencyLogoUrl } from '@common/lib/zod/custom-types';
+import { isoCurrencyCode } from '@common/lib/zod/custom-types';
 import { z } from 'zod';
 
 /** Placeholders an HTTP source URL template may hold, and a sample value for each. */
@@ -118,10 +118,18 @@ const isValidUrlTemplate = (template: string): boolean => {
  * Synced sources store their rates in a fixed ISO currency of the config, whatever the user's base:
  * a base change then needs no re-fetch, because the resolver crosses from the stored quote.
  */
-const quoteCurrencySchema = currencyCode().default(DEFAULT_RATE_SOURCE_QUOTE_CURRENCY);
+const quoteCurrencySchema = isoCurrencyCode().default(DEFAULT_RATE_SOURCE_QUOTE_CURRENCY);
+
+const COIN_LOGO_URL_MAX_LENGTH = 2048;
+
+/** The picked coin's image: an https URL, or `null` to clear the logo image. */
+export const coinLogoUrlSchema = z
+  .url({ protocol: /^https$/ })
+  .max(COIN_LOGO_URL_MAX_LENGTH)
+  .nullable();
 
 export const pegRateSourceConfigSchema = z.strictObject({
-  pegCurrency: currencyCode(),
+  pegCurrency: isoCurrencyCode(),
   factor: z.number().positive().finite(),
 });
 
@@ -188,8 +196,8 @@ export const updateRateSourceBodySchema = z.discriminatedUnion('rateSource', [
   z.strictObject({
     rateSource: z.literal('coingecko'),
     config: coingeckoRateSourceConfigSchema,
-    /** The picked coin's logo; absent keeps the currency's logo, `null` clears it. */
-    logoUrl: currencyLogoUrl().optional(),
+    /** The picked coin's logo; absent keeps the currency's logo, `null` clears its logo image. */
+    logoUrl: coinLogoUrlSchema.optional(),
   }),
   z.strictObject({ rateSource: z.literal('http'), config: httpRateSourceConfigSchema }),
 ]);

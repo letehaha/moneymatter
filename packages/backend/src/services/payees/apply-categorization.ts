@@ -30,7 +30,7 @@ interface ApplyPayeeCategorizationParams {
  *
  * The "overridable" gate looks at the currently-committed `categorizationMeta`
  * (re-fetched, since subscription matching may have run in between): only
- * `mccRule`, `ai`, and `null` get overridden. Higher-precedence sources
+ * `ai` and `null` get overridden. Higher-precedence sources
  * (`manual`, `userRule`, `subscriptionRule`, and an existing `payeeRule`) are
  * left alone.
  *
@@ -52,8 +52,7 @@ export const applyPayeeCategorization = withTransaction(
     if (!latest) return null;
 
     const meta = latest.categorizationMeta ?? null;
-    const overridable =
-      !meta || meta.source === CATEGORIZATION_SOURCE.mccRule || meta.source === CATEGORIZATION_SOURCE.ai;
+    const overridable = !meta || meta.source === CATEGORIZATION_SOURCE.ai;
     if (!overridable) return latest;
 
     const payee = await Payees.findOne({

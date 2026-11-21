@@ -1,0 +1,119 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Automatically categorize the bank transactions you see every month',
+    text: 'Your bank labels the gym membership the same way every month, and your rent shows up as a reference number. Write a rule once and MoneyMatter applies it to each match as it arrives from bank sync or a file import.',
+    bullets: [
+      'Merchant text contains "uber" or "bolt": set the category to Transport',
+      'Amount is exactly 1,200 and the day of the month is 1 to 5: set the category to Rent and the payee to your landlord',
+      'Account is your shared card: add the tag Household',
+    ],
+    screenshot: {
+      name: 'features/automations/automations-list',
+      alt: 'The Automations page listing six rules in priority order, each with its match count, last match date, conditions, actions and an on/off switch',
+      width: 1015,
+      height: 650,
+    },
+  },
+  {
+    heading: 'Match transactions by merchant, amount, account or date',
+    text: 'A rule can check the merchant text or note, the payee, the account, account group or bank connection, the amount, income or expense, and the day of the month. Use up to 10 conditions, and choose whether all of them must match or any one is enough.',
+    bullets: [
+      'One text condition can list several keywords, and upper and lower case are ignored',
+      "Compare an amount in the transaction's currency, your base currency or one specific currency",
+    ],
+    screenshot: {
+      name: 'features/automations/automation-form',
+      alt: 'The Edit automation form for a Monthly rent rule, with note, transaction type, amount and account conditions, set category and set payee actions, and a Preview section',
+      width: 1015,
+      height: 1159,
+    },
+  },
+  {
+    heading: 'Set the category, tags, payee or note automatically',
+    text: "A matching rule can do any combination of these four things. A new note can replace the existing one or go before or after it. When a rule sets the payee on a new transaction, that payee's defaults follow, so the rule does not need to repeat its default category. Rules never change the amount, date or account.",
+    screenshot: {
+      name: 'features/transactions/edit-bank-synced-transaction',
+      alt: 'The Edit Transaction dialog for a bank-synced expense, with Amount, Account, Datetime and Payment type greyed out, while Category, Payee, Tags and Note stay editable',
+      width: 960,
+      height: 724,
+    },
+  },
+  {
+    heading: 'Apply a rule to past transactions after reviewing the matches',
+    text: 'While you build a rule, you can test its conditions against your recent transactions. Once it is saved, apply it to past transactions: a review list shows the transactions it would change, you tick the ones you want, and you confirm.',
+    bullets: [
+      "Categories you set by hand and categories from a subscription stay as they are, and the rule's other actions still apply",
+    ],
+  },
+  {
+    heading: 'Rule order: the first rule that changes a transaction wins',
+    text: 'Rules run from top to bottom, and each new transaction gets one rule. Drag specific rules above general ones, and put everything a transaction needs into the same rule. Each rule shows how many times it has matched and when it last did, so you can spot the ones that never fire, and you can switch one off without deleting it.',
+  },
+  {
+    heading: 'How rules work with payees, subscriptions and AI categorization',
+    text: "A category from a matched subscription comes first. A rule comes next and beats a payee default. AI categorization then handles the rest. During a file import, a category mapped from your file is kept, while the rule's other actions still run.",
+  },
+  {
+    heading: 'Create and edit rules from Claude or ChatGPT',
+    text: 'Connect an AI assistant through the MoneyMatter MCP server, give it edit access, and it can list, preview, create, edit and reorder your rules. Deleting a rule needs one more permission. Describe a rule in a sentence, or ask it to look for duplicates and conflicts in the ones you have. Applying a rule to past transactions stays in the app. Some ChatGPT plans limit custom MCP servers to reading your data.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Transactions you enter by hand do not trigger rules, so if you track everything by hand, rules have nothing to work on. Transfers and planned transactions are skipped too.',
+  'Applying a rule to past transactions cannot be undone. It looks through your 5,000 most recent bank-synced and imported transactions and changes up to 500 at a time.',
+  'Rules cannot split a transaction, mark it as a transfer, or hide or delete it.',
+  'Text conditions use keywords, without regular expressions, and you cannot nest groups of conditions. You can have up to 100 rules.',
+];
+
+const FAQ = [
+  {
+    question: 'Can I automatically categorize bank transactions with rules?',
+    answer:
+      'Yes. Open Automations and create a rule with conditions such as merchant text or amount and a set-category action. It runs on each new transaction from bank sync and from file imports such as CSV, OFX, YNAB, Wallet and Microsoft Money.',
+  },
+  {
+    question: 'Do automation rules apply to existing transactions?',
+    answer:
+      'Only when you ask. A new or edited rule does not touch past transactions by itself. To change them, apply the saved rule and confirm the matches you pick.',
+  },
+  {
+    question: 'What happens if two rules match the same transaction?',
+    answer:
+      'The higher rule in your list wins and the lower one does not run for that transaction, so actions do not stack across rules. If the higher rule would change nothing, for example because a matched subscription already set the category, the next matching rule gets its turn.',
+  },
+  {
+    question: 'Should I use rules or AI categorization?',
+    answer:
+      'Use both: rules for the transactions you can describe exactly, and AI for the rest. Rules need no AI setup or API key. AI categorization needs Plus, or your own model on Essential, and it leaves out any transaction a rule has categorized.',
+  },
+  {
+    question: 'Are automation rules included in every plan?',
+    answer:
+      'Yes. Rules are included on Essential ($5 a month or $30 a year before tax), on Plus ($8 a month or $55 a year before tax) and in the 40-day free trial. Bank sync needs Plus, so on Essential rules run on imported transactions. A self-hosted install has every feature with no plan to buy.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Bank connections', href: 'https://docs.moneymatter.app/import/bank-connections/' },
+  { label: 'Import from CSV', href: 'https://docs.moneymatter.app/import/import-from-csv/' },
+  { label: 'Payees', href: 'https://docs.moneymatter.app/transactions/payees/' },
+];
+
+const RELATED = ['/features/bank-sync', '/features/payees', '/features/ai-categorization'];
+---
+
+<FeatureLayout
+  title="Transaction Categorization Rules for Budgeting | MoneyMatter"
+  description="Transaction categorization rules set the category, tags, payee or note on new bank-synced and imported transactions. Apply them to past ones after review."
+  heading="Transaction categorization rules for bank sync and file imports"
+  intro="Transaction categorization rules let you decide once how to handle a charge you recognize, and MoneyMatter applies that decision each time a bank sync or file import brings in a match. Rules are included on Essential and Plus and in the 40-day free trial."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

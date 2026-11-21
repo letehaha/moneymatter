@@ -1,17 +1,13 @@
 import { getCashFlow } from '@/api/stats';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { useUserSettings } from '@/composable/data-queries/user-settings';
+import { getPrevPeriod, isFullMonthPeriod, isMonthAligned } from '@/composable/use-period-navigation';
 import { useRootStore } from '@/stores';
 import { useQuery } from '@tanstack/vue-query';
 import { storeToRefs } from 'pinia';
 import { type Ref, computed } from 'vue';
 
-import {
-  type CashFlowTotals,
-  computePrevPeriod,
-  computeTrendPeriods,
-  isFullMonthPeriod,
-  sliceCashFlowTotals,
-} from './helpers';
+import { type CashFlowTotals, computeTrendPeriods, sliceCashFlowTotals } from './helpers';
 
 const ZERO_TOTALS: CashFlowTotals = { income: 0, expenses: 0, netFlow: 0, savingsRate: 0 };
 
@@ -43,9 +39,15 @@ export function useCashFlowData({
   const excludedParam = computed(() => (excludedCategoryIds.value.length > 0 ? excludedCategoryIds.value : undefined));
   const excludePlannedParam = computed(() => !includePlanned.value || undefined);
 
-  const isFullMonth = computed(() => isFullMonthPeriod(selectedPeriod()));
-  const prevPeriod = computed(() => computePrevPeriod(selectedPeriod()));
-  const trendPeriods = computed(() => computeTrendPeriods(selectedPeriod()));
+  const { data: userSettings, isPending: isSettingsPending } = useUserSettings();
+  const payday = computed(() => userSettings.value?.payday ?? 1);
+  const isReady = computed(() => isAppInitialized.value && !isSettingsPending.value);
+
+  const isFullMonth = computed(() => isMonthAligned({ period: selectedPeriod(), payday: payday.value }));
+  // A calendar month keeps calendar buckets even when a payday is set.
+  const alignToPayday = computed(() => isFullMonthPeriod({ period: selectedPeriod(), payday: payday.value }));
+  const prevPeriod = computed(() => getPrevPeriod({ period: selectedPeriod(), payday: payday.value }));
+  const trendPeriods = computed(() => computeTrendPeriods({ ...selectedPeriod(), payday: payday.value }));
 
   const trendRange = computed(() => {
     const past = trendPeriods.value.filter((p) => !p.isCurrent);
@@ -58,21 +60,27 @@ export function useCashFlowData({
   const unionRange = computed(() => ({ from: trendRange.value.from, to: selectedPeriod().to }));
 
   const { data: unionData, isFetching: isUnionFetching } = useQuery({
-    queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.widgetCashFlowTrend, periodQueryKey.value, excludedKey.value]),
+    queryKey: computed(() => [
+      ...VUE_QUERY_CACHE_KEYS.widgetCashFlowTrend,
+      periodQueryKey.value,
+      excludedKey.value,
+      payday.value,
+    ]),
     queryFn: () =>
       getCashFlow({
         from: unionRange.value.from,
         to: unionRange.value.to,
         granularity: 'monthly',
+        alignToPayday: alignToPayday.value,
         excludedCategoryIds: excludedParam.value,
         excludePlanned: excludePlannedParam.value,
       }),
     staleTime: Infinity,
     placeholderData: (prev) => prev,
-    enabled: isAppInitialized,
+    enabled: isReady,
   });
 
-  const useExactRanges = computed(() => isAppInitialized.value && !isFullMonth.value);
+  const useExactRanges = computed(() => isReady.value && !isFullMonth.value);
 
   const { data: currentExactData, isFetching: isCurrentFetching } = useQuery({
     queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.widgetCashFlow, periodQueryKey.value, excludedKey.value]),
@@ -134,7 +142,7 @@ export function useCashFlowData({
   const unionPeriods = computed(() => unionData.value?.periods ?? []);
 
   const isFetching = computed(() => isUnionFetching.value || isCurrentFetching.value || isPrevFetching.value);
-  const isInitialLoading = computed(() => isFetching.value && !hasCurrentData.value);
+  const isInitialLoading = computed(() => (isFetching.value || !isReady.value) && !hasCurrentData.value);
   const isCurrentEmpty = computed(
     () => hasCurrentData.value && currentTotals.value.income === 0 && currentTotals.value.expenses === 0,
   );

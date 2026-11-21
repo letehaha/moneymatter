@@ -11,10 +11,11 @@ export interface AutomationContext {
   note: string;
   merchant: string;
   payeeId: RecordId | null;
-  amountCents: number;
+  /** Unsigned magnitude at the transaction currency's decimals. */
+  amount: Money;
   currencyCode: string;
-  /** `null` while a custom currency has no rate: a base-currency amount condition never matches. */
-  refAmountCents: number | null;
+  /** Unsigned magnitude in the base currency. */
+  refAmount: Money;
   transactionType: TRANSACTION_TYPES;
   accountId: RecordId;
   time: Date;
@@ -30,7 +31,7 @@ export interface AutomationResolvers {
 
 export interface AutomationTransactionInput {
   amount: Money;
-  refAmount: Money | null;
+  refAmount: Money;
   note: string | null;
   externalData: Record<string, unknown> | null;
   payeeId: RecordId | null;
@@ -88,7 +89,6 @@ export const buildAutomationContext = ({
   resolvers: AutomationResolvers;
 }): AutomationContext => {
   const { accountId, currencyCode, time } = transaction;
-  const amountCents = transaction.amount.abs().toCents();
 
   let groupIds: Promise<RecordId[]> | undefined;
   let connectionId: Promise<RecordId | null> | undefined;
@@ -98,9 +98,9 @@ export const buildAutomationContext = ({
     note: transaction.note ?? '',
     merchant: extractRawFromTransaction({ externalData: transaction.externalData, note: transaction.note }),
     payeeId: transaction.payeeId,
-    amountCents,
+    amount: transaction.amount.abs(),
     currencyCode,
-    refAmountCents: transaction.refAmount?.abs().toCents() ?? null,
+    refAmount: transaction.refAmount.abs(),
     transactionType: transaction.transactionType,
     accountId,
     time,

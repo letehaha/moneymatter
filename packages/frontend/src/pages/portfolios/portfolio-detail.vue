@@ -25,11 +25,24 @@
         <!-- Title and Actions row -->
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="flex items-center gap-3">
-            <div class="bg-primary/10 flex size-10 items-center justify-center rounded-lg">
-              <BriefcaseIcon class="text-primary-text size-5" />
-            </div>
+            <EditableEntityLogo
+              v-if="portfolio"
+              :entity="portfolio"
+              flow="portfolioLogo"
+              :save="saveLogo"
+              class="size-10"
+            >
+              <PortfolioLogo :portfolio="portfolio" class="size-full" />
+            </EditableEntityLogo>
+            <div v-else-if="isLoading" class="bg-muted size-10 animate-pulse rounded-lg" />
             <div>
-              <h1 v-if="portfolio" class="text-2xl font-semibold tracking-tight">{{ portfolio.name }}</h1>
+              <div v-if="portfolio" class="flex items-center gap-2">
+                <h1 class="text-2xl font-semibold tracking-tight">{{ portfolio.name }}</h1>
+                <ExternalUrlLinkButton
+                  :url="portfolio.externalUrl"
+                  :label="$t('portfolioDetail.actions.openExternalUrl')"
+                />
+              </div>
               <h1 v-else-if="isLoading" class="text-2xl font-semibold tracking-tight">
                 {{ $t('portfolioDetail.loading') }}
               </h1>
@@ -87,13 +100,17 @@
 <script setup lang="ts">
 import PageWrapper from '@/components/common/page-wrapper.vue';
 import ResourceNotFound from '@/components/common/resource-not-found.vue';
+import EditableEntityLogo from '@/components/common/editable-entity-logo.vue';
+import ExternalUrlLinkButton from '@/components/common/external-url-link-button.vue';
+import PortfolioLogo from '@/components/common/portfolio-logo.vue';
 import DeletePortfolioDialog from '@/components/dialogs/delete-portfolio-dialog.vue';
 import EditPortfolioDialog from '@/components/dialogs/edit-portfolio-dialog.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
-import { usePortfolio } from '@/composable/data-queries/portfolios';
+import { usePortfolio, useUpdatePortfolio } from '@/composable/data-queries/portfolios';
 import { isResourceMissingError } from '@/js/errors';
 import { ROUTES_NAMES } from '@/routes/constants';
-import { AlertCircleIcon, BriefcaseIcon, ChevronLeftIcon, PencilIcon, Trash2Icon } from '@lucide/vue';
+import type { NonImageLogoPayload } from '@bt/shared/types';
+import { AlertCircleIcon, ChevronLeftIcon, PencilIcon, Trash2Icon } from '@lucide/vue';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -106,6 +123,10 @@ const router = useRouter();
 const portfolioId = computed(() => String(route.params.portfolioId));
 
 const { data: portfolio, isLoading, isError, error, refetch } = usePortfolio(portfolioId, { retry: false });
+
+const updatePortfolio = useUpdatePortfolio();
+const saveLogo = ({ payload }: { payload: NonImageLogoPayload }) =>
+  updatePortfolio.mutateAsync({ portfolioId: portfolioId.value, ...payload });
 
 const isNotFound = computed(() => isError.value && isResourceMissingError(error.value));
 

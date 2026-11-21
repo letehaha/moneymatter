@@ -9,6 +9,21 @@
         "successNotification": "Nastavenie bolo úspešne aktualizované",
         "errorNotification": "Nastavenie sa nepodarilo aktualizovať"
       },
+      "payday": {
+        "label": "Výplatné obdobie začína",
+        "description": "Deň v mesiaci, ktorým začína vaše výplatné obdobie. Predvolené obdobie na nástenke trvá od tohto dňa do dňa pred ním v nasledujúcom mesiaci.",
+        "placeholder": "Vyberte deň",
+        "successNotification": "Začiatok výplatného obdobia aktualizovaný"
+      },
+      "unrealizedLossAlert": {
+        "label": "Upozornenia na nerealizovanú stratu",
+        "description": "Dostanete jedno upozornenie, keď strata pozície prekročí niektorý z limitov. Kontroluje sa denne po aktualizácii trhových cien; neopakuje sa, kým sa pozícia nezotaví.",
+        "percentLabel": "Percento straty",
+        "percentDescription": "Upozorniť, keď je pozícia pod nákupnou cenou aspoň o toľko.",
+        "amountLabel": "Suma straty",
+        "amountDescription": "Alebo keď strata dosiahne túto sumu vo vašej základnej mene, bez ohľadu na percento.",
+        "successNotification": "Nastavenia upozornení na stratu uložené"
+      },
       "manualTransferMatching": {
         "label": "Priraďovať prevody k manuálnym účtom",
         "description": "Umožnite automaticky rozpoznaným prevodom prepojiť synchronizovanú bankovú transakciu s transakciou, ktorú ste vytvorili ručne.",
@@ -70,6 +85,21 @@
         "successNotification": "Nastavenia výberu účtov aktualizované",
         "errorNotification": "Nastavenia výberu účtov sa nepodarilo aktualizovať"
       },
+      "iosAddExpense": {
+        "label": "iPhone – Pridať výdavok",
+        "description": "Nastavenia skratky Pridať výdavok na iPhone (Siri, Spotlight a tlačidlo Akcia).",
+        "showBankAccounts": {
+          "label": "Zobraziť účty prepojené s bankou",
+          "description": "Predvolene vypnuté: transakcie na účtoch prepojených s bankou sa načítavajú synchronizáciou."
+        },
+        "hiddenCategories": {
+          "label": "Skryté kategórie",
+          "description": "Zaškrtnuté kategórie sa spolu s podkategóriami skryjú v zozname kategórií v skratke.",
+          "placeholder": "Žiadne"
+        },
+        "successNotification": "Nastavenia skratky Pridať výdavok na iPhone sa aktualizovali",
+        "errorNotification": "Nastavenia skratky Pridať výdavok na iPhone sa nepodarilo aktualizovať"
+      },
       "showUpcomingTransactions": {
         "label": "Zobraziť nadchádzajúce transakcie",
         "description": "Pripnite na vrch zoznamu transakcií sekciu s omeškanými pravidelnými platbami a tými, ktoré sú splatné v nasledujúcich 3 dňoch.",
@@ -78,7 +108,7 @@
       },
       "transactionFields": {
         "label": "Voliteľné polia transakcie",
-        "description": "Ďalšie polia zobrazené vo formulári transakcie. Pole, ktoré už má hodnotu, sa zobrazuje vždy.",
+        "description": "Pre tieto polia ponúknite vo formulári transakcie tlačidlo na rýchle pridanie. Pole, ktoré už má hodnotu, sa zobrazuje vždy.",
         "successNotification": "Polia transakcie aktualizované",
         "errorNotification": "Vyskytla sa neočakávaná chyba. Nastavenie sa neuložilo",
         "fields": {

@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/lib/ui/button';
 import { useFormatCurrency } from '@/composable/formatters';
 import { cn } from '@/lib/utils';
-import { TRACKER_TYPES, type TrackerModel, type TrackerStatsResponse, type TrackerLineModel } from '@bt/shared/types';
+import type { TrackerModel, TrackerStatsResponse, TrackerLineModel } from '@bt/shared/types';
 import { LayersIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
@@ -31,13 +31,17 @@ const props = defineProps<{
   canManage: boolean;
 }>();
 
-const { formatBaseCurrency } = useFormatCurrency();
+const { formatBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
 const { deleteLine } = useTrackerLineMutations({ trackerId: () => props.tracker.id });
 
-const rows = computed(() => buildLineRows({ lines: props.tracker.lines, stats: props.stats }));
+const rows = computed(() =>
+  buildLineRows({ lines: props.tracker.lines, stats: props.stats, decimals: baseCurrencyDecimals.value }),
+);
 const otherSpent = computed(() => props.stats?.otherSpent ?? 0);
 const showOther = computed(() => otherSpent.value > 0);
-const totals = computed(() => buildLinesTotals({ rows: rows.value, otherSpent: otherSpent.value }));
+const totals = computed(() =>
+  buildLinesTotals({ rows: rows.value, otherSpent: otherSpent.value, decimals: baseCurrencyDecimals.value }),
+);
 
 const formatSpent = (amount: number) => formatBaseCurrency(amount ? -amount : 0);
 
@@ -85,7 +89,7 @@ const handleDelete = async () => {
       </Button>
     </div>
 
-    <div v-else class="text-sm tabular-nums">
+    <div v-else class="fields-plain text-sm tabular-nums">
       <div
         :class="
           cn(
@@ -143,25 +147,25 @@ const handleDelete = async () => {
 
           <div class="text-muted-foreground mt-0.5 flex min-w-0 text-xs">
             <span class="hidden @min-[650px]/lines:contents">
-              <CategoryChips :categories="row.line.categories" />
+              <CategoryChips :items="row.line.categories" />
             </span>
             <span class="contents @min-[650px]/lines:hidden">
-              <CategoryChips :categories="row.line.categories" collapsed />
+              <CategoryChips :items="row.line.categories" collapsed />
             </span>
           </div>
 
-          <UtilizationBar v-if="stats && row.limit !== null" :rate="row.percent!" class="mt-1.5" />
+          <UtilizationBar v-if="stats && row.limit !== null" :rate="row.percent!" :tracker="tracker" class="mt-1.5" />
         </div>
 
         <div class="hidden justify-end @min-[650px]/lines:flex">
           <LineLimitPopover v-if="canManage" :tracker-id="tracker.id" :line="row.line">
             <Button
-              variant="outline"
-              size="sm"
+              variant="field"
+              size="xs"
               :aria-label="$t('budgets.lines.editLimitAria', { name: row.line.name })"
               :class="
                 cn(
-                  'bg-input-background hover:bg-input-background hover:border-ring h-8 w-auto min-w-24 cursor-text justify-end font-normal tabular-nums',
+                  'w-auto min-w-24 cursor-text justify-end tabular-nums',
                   row.limit === null ? 'text-muted-foreground hover:text-muted-foreground' : 'hover:text-foreground',
                 )
               "
@@ -283,13 +287,7 @@ const handleDelete = async () => {
       </div>
     </div>
 
-    <LineDialog
-      v-if="canManage"
-      v-model:open="isDialogOpen"
-      :tracker-id="tracker.id"
-      :line="dialogLine"
-      :is-category-tracker="tracker.type === TRACKER_TYPES.category"
-    />
+    <LineDialog v-if="canManage" v-model:open="isDialogOpen" :tracker-id="tracker.id" :line="dialogLine" />
 
     <ResponsiveAlertDialog
       v-model:open="isDeleteOpen"

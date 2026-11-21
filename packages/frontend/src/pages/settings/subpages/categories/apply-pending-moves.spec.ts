@@ -1,6 +1,6 @@
 import { type CategoryModel } from '@bt/shared/types';
 
-import { applyPendingMoves, netMoves, sanitizeMoves } from './apply-pending-moves';
+import { applyPendingMoves, netMoves, reorderSiblingIds, sanitizeMoves } from './apply-pending-moves';
 import { category, uuid } from './test-fixtures';
 
 const parentsOf = (categories: CategoryModel[]) => categories.map((c) => [c.name, c.parentId] as const);
@@ -185,5 +185,28 @@ describe('sanitizeMoves', () => {
     const independent = { categoryId: uuid(3), parentId: uuid(1) };
 
     expect(sanitizeMoves({ categories, moves: [noop, independent], maxNesting: MAX_NESTING })).toEqual([independent]);
+  });
+});
+
+describe('reorderSiblingIds', () => {
+  const [a, b, c] = [uuid(1), uuid(2), uuid(3)];
+
+  test.each([
+    ['moves the first sibling after the last', a, c, 'after', [b, c, a]],
+    ['moves the last sibling before the first', c, a, 'before', [c, a, b]],
+    ['places a sibling right after its neighbour', a, b, 'after', [b, a, c]],
+    ['inserts a newly re-parented category without duplicating it', uuid(9), b, 'before', [a, uuid(9), b, c]],
+  ] as const)('%s', (_, draggedId, targetId, position, expected) => {
+    expect(reorderSiblingIds({ siblingIds: [a, b, c], draggedId, targetId, position })).toEqual(expected);
+  });
+
+  test('keeps a single copy when the dragged id is already among the siblings', () => {
+    expect(
+      reorderSiblingIds({ siblingIds: [a, uuid(9), b], draggedId: uuid(9), targetId: a, position: 'before' }),
+    ).toEqual([uuid(9), a, b]);
+  });
+
+  test('returns null when the target is not among the siblings', () => {
+    expect(reorderSiblingIds({ siblingIds: [a, b], draggedId: a, targetId: c, position: 'after' })).toBeNull();
   });
 });
