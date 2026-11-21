@@ -3,20 +3,13 @@ import { useFormatCurrency } from '@/composable';
 import { cn } from '@/lib/utils';
 import { computed } from 'vue';
 
-import { type PanelContext, paceCaptionNumbers, paceStateOf, spendingPace } from '../helpers';
+import { type PanelContext, paceCaptionNumbers, panelPaceOf } from '../helpers';
 
 const props = defineProps<{ context: PanelContext }>();
 
 const { formatBaseCurrency } = useFormatCurrency();
 
-const pace = computed(() => spendingPace({ ...props.context.figures, ...props.context.period }));
-const state = computed(() =>
-  paceStateOf({
-    spentPercent: pace.value.spentPercent,
-    expectedPercent: props.context.pace?.expectedPercent ?? null,
-    isOver: pace.value.spentPercent > 100,
-  }),
-);
+const pace = computed(() => panelPaceOf(props.context));
 
 const SPENT_BAR_CLASS = { over: 'bg-app-expense-color', ahead: 'bg-warning-text', ok: 'bg-success-text' } as const;
 
@@ -24,7 +17,7 @@ const bars = computed(() => [
   {
     labelKey: 'budgetPlans.panel.spent',
     percent: pace.value.spentPercent,
-    class: SPENT_BAR_CLASS[state.value ?? 'ok'],
+    class: SPENT_BAR_CLASS[pace.value.state ?? 'ok'],
   },
   props.context.pace?.basisLabel === 'usual'
     ? {
@@ -36,7 +29,7 @@ const bars = computed(() => [
 ]);
 
 const slowDownPerDay = computed(() => {
-  if (state.value !== 'ahead' || !props.context.pace) return null;
+  if (pace.value.state !== 'ahead' || !props.context.pace) return null;
   return paceCaptionNumbers({
     spent: pace.value.spent,
     funded: pace.value.total,

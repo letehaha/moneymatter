@@ -145,6 +145,61 @@ describe('Budget plan period view: line pace', () => {
     );
   });
 
+  it('ignores a skipped subscription period and falls back to time elapsed', async () => {
+    const { account, planId, current, addLine, fund } = await setup();
+    const { category, line } = await addLine({ name: 'Gym', sortOrder: 0, activeFrom: current.startDate });
+    await fund({ lineId: line.id, period: current, amount: 100 });
+    const subscription = await helpers.createSubscription({
+      name: 'Gym',
+      frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+      startDate: current.startDate,
+      dueDate: current.startDate,
+      accountId: account.id,
+      categoryId: category.id,
+      expectedAmount: 20,
+      expectedCurrencyCode: global.BASE_CURRENCY_CODE,
+      raw: true,
+    });
+    const { periods } = await helpers.getSubscriptionPeriods({ id: subscription.id, raw: true });
+    const due = periods.find((period) => period.dueDate === current.startDate)!;
+    await helpers.skipSubscriptionPeriod({ id: subscription.id, periodId: due.id, raw: true });
+
+    const pace = await paceOf({ planId, period: current, lineId: line.id });
+
+    expect(pace?.basis).toBe('even');
+    expect(Math.abs(pace!.expectedPercent - elapsedPercent({ period: current }))).toBeLessThanOrEqual(0.01);
+  });
+
+  it('keeps the payment of another subscription on the same line when one is skipped', async () => {
+    const { account, planId, current, addLine, fund } = await setup();
+    const { category, line } = await addLine({ name: 'Gym', sortOrder: 0, activeFrom: current.startDate });
+    await fund({ lineId: line.id, period: current, amount: 100 });
+    const subscribe = ({ name }: { name: string }) =>
+      helpers.createSubscription({
+        name,
+        frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+        startDate: current.startDate,
+        dueDate: current.startDate,
+        accountId: account.id,
+        categoryId: category.id,
+        expectedAmount: 20,
+        expectedCurrencyCode: global.BASE_CURRENCY_CODE,
+        raw: true,
+      });
+    await subscribe({ name: 'Gym' });
+    const skipped = await subscribe({ name: 'Pool' });
+    const { periods } = await helpers.getSubscriptionPeriods({ id: skipped.id, raw: true });
+    const due = periods.find((period) => period.dueDate === current.startDate)!;
+    await helpers.skipSubscriptionPeriod({ id: skipped.id, periodId: due.id, raw: true });
+
+    const pace = await paceOf({ planId, period: current, lineId: line.id });
+
+    expect(pace?.basis).toBe('schedule');
+    expect(Math.abs(pace!.expectedPercent - (20 + 0.8 * elapsedPercent({ period: current })))).toBeLessThanOrEqual(
+      0.01,
+    );
+  });
+
   it('falls back to time elapsed with no history and no recurring payments', async () => {
     const { planId, periods, current, addLine, fund } = await setup();
     const { line } = await addLine({ name: 'Books', sortOrder: 0, activeFrom: periods[0]!.startDate });

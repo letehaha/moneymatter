@@ -1,7 +1,7 @@
 import { BudgetPlanLinePace, TRANSACTION_TYPES } from '@bt/shared/types';
 import { toUtcDateString } from '@common/utils/date';
 import BudgetPlans from '@models/budget-plans.model';
-import { scheduleDatesInRange } from '@services/subscriptions/get-upcoming-payments';
+import { unskippedScheduleDates } from '@services/subscriptions/get-upcoming-payments';
 
 import { getPlanDailyActivity } from './activity/get-plan-activity';
 import { FoldedPeriodView, lineOwnerResolver, periodMembership } from './fold/fold-plan';
@@ -62,7 +62,10 @@ const priorSpend = async ({
   return byLine;
 };
 
-/** Minor units per line, expense positive, for every scheduled date of the period, paid ones included. */
+/**
+ * Minor units per line, expense positive, for every scheduled date of the period:
+ * paid ones included, skipped ones left out.
+ */
 const scheduledOccurrences = async ({
   plan,
   start,
@@ -82,6 +85,7 @@ const scheduledOccurrences = async ({
   decimals: number;
 }): Promise<Map<string, { date: string; amount: number }[]>> => {
   const subscriptions = await findPlanSubscriptions({ plan, accountIds: await planAccountIds({ plan }) });
+  const datesOf = await unskippedScheduleDates({ subscriptions, from: start, until: end });
 
   const byLine = new Map<string, { date: string; amount: number }[]>();
   for (const subscription of subscriptions) {
@@ -89,7 +93,7 @@ const scheduledOccurrences = async ({
     const lineId = ownerOf(subscription.categoryId);
     if (lineId === null || !lineIds.has(lineId)) continue;
 
-    const dates = scheduleDatesInRange({ subscription, from: start, until: end });
+    const dates = datesOf.get(subscription.id) ?? [];
     if (!dates.length) continue;
     const amount = await subscriptionAmountInPlanCurrency({
       plan,

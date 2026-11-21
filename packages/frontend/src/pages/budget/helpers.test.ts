@@ -45,6 +45,7 @@ import {
   PACE_TOLERANCE,
   paceCaptionNumbers,
   paceStateOf,
+  panelPaceOf,
   lineIdsWithHistory,
   pickTakeBackLine,
   scheduledForLines,
@@ -1692,18 +1693,18 @@ describe('layoutStateFrom / buildLayoutPayload', () => {
 
 describe('paceStateOf', () => {
   it('is over whenever the line is overspent, pace or not', () => {
-    expect(paceStateOf({ spentPercent: 120, expectedPercent: 90, isOver: true })).toBe('over');
-    expect(paceStateOf({ spentPercent: 120, expectedPercent: null, isOver: true })).toBe('over');
+    expect(paceStateOf({ spentPercent: 120, expectedPercent: 90, available: -1 })).toBe('over');
+    expect(paceStateOf({ spentPercent: 120, expectedPercent: null, available: -1 })).toBe('over');
   });
 
   it('has no state without a pace', () => {
-    expect(paceStateOf({ spentPercent: 90, expectedPercent: null, isOver: false })).toBeNull();
+    expect(paceStateOf({ spentPercent: 90, expectedPercent: null, available: 0 })).toBeNull();
   });
 
   it('is ahead only past the tolerance', () => {
-    expect(paceStateOf({ spentPercent: 40 + PACE_TOLERANCE, expectedPercent: 40, isOver: false })).toBe('ok');
-    expect(paceStateOf({ spentPercent: 40 + PACE_TOLERANCE + 0.1, expectedPercent: 40, isOver: false })).toBe('ahead');
-    expect(paceStateOf({ spentPercent: 10, expectedPercent: 40, isOver: false })).toBe('ok');
+    expect(paceStateOf({ spentPercent: 40 + PACE_TOLERANCE, expectedPercent: 40, available: 0 })).toBe('ok');
+    expect(paceStateOf({ spentPercent: 40 + PACE_TOLERANCE + 0.1, expectedPercent: 40, available: 0 })).toBe('ahead');
+    expect(paceStateOf({ spentPercent: 10, expectedPercent: 40, available: 0 })).toBe('ok');
   });
 });
 
@@ -1777,6 +1778,28 @@ describe('linePaceOf', () => {
     expect(linePaceOf({ line: line({ activity: -250, pace: { basis: 'history', expectedPercent: 40 } }) }).state).toBe(
       'over',
     );
+  });
+});
+
+describe('panelPaceOf', () => {
+  const period = { startDate: '2026-09-01', endDate: '2026-10-01' };
+  const now = new Date(2026, 8, 15);
+
+  it('is over when something was spent with nothing funded', () => {
+    const figures = { carriedIn: 0, assigned: 0, activity: -20, available: -20 };
+    expect(panelPaceOf({ figures, period, pace: null, now }).state).toBe('over');
+  });
+
+  it('is over when a carried-in deficit leaves the line overspent', () => {
+    const figures = { carriedIn: -50, assigned: 100, activity: -80, available: -30 };
+    const pace = { expectedPercent: 70, basisLabel: 'usual' as const };
+    expect(panelPaceOf({ figures, period, pace, now }).state).toBe('over');
+  });
+
+  it('is ahead when a funded line spends past the expected share', () => {
+    const figures = { carriedIn: 0, assigned: 200, activity: -120, available: 80 };
+    const pace = { expectedPercent: 40, basisLabel: 'usual' as const };
+    expect(panelPaceOf({ figures, period, pace, now })).toMatchObject({ spent: 120, total: 200, state: 'ahead' });
   });
 });
 

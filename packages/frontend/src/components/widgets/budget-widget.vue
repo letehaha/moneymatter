@@ -112,7 +112,7 @@ const isAhead = computed(
     paceStateOf({
       spentPercent: spentPercent.value,
       expectedPercent: planPace.value?.expectedPercent ?? null,
-      isOver: isOver.value,
+      available: available.value,
     }) === 'ahead',
 );
 
