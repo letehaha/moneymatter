@@ -53,7 +53,7 @@ A new group stays out of the sidebar until you add an account to it.
 
 ## Add an account to a group
 
-You add accounts from the account itself.
+You can add an account from the account itself. To add several at once, use **Add accounts** in [Manage your groups](#manage-your-groups).
 
 <Steps>
 
@@ -76,26 +76,29 @@ To take an account out of its group, choose **No group** ("Keep this account ung
 
 ## Manage your groups
 
-All your groups are listed in **Settings** → **Accounts groups**. Each row shows the group's logo, name, number of accounts and combined balance. Click a row to expand it.
+All your groups are listed in **Settings** → **Accounts groups** as a tree, with subgroups nested under their parent group. Each row shows the group's logo, name, number of accounts and combined balance. Click a group to expand it and see its accounts. Click an account to open it.
 
-In an expanded group you can:
+Hover over a group to show its pencil and **•••** buttons. On a touch screen, the **•••** button sits at the end of the row. The pencil does the same as **Rename and change logo**. The **•••** menu has:
 
-- **Rename it or change its logo**: edit the **Group name** or the logo and click **Save**.
-- **See its accounts** under **Accounts in this group**. Click an account to open it.
-- **Remove an account from the group**: click the **Remove from group** button next to it, then **Remove**. The account isn't deleted. It only leaves the group.
-- **Delete the group**: click **Delete group**, check the list of accounts that will become ungrouped, and click **Delete group** again to confirm. Your accounts are kept. They simply become ungrouped.
+- **Rename and change logo**: edit the **Group name**, or click the logo to pick a bank logo, initials or a color. Click **Save changes**.
+- **Move to another group**: pick a **Parent group** and click **Move**. Its subgroups and accounts move with it. Pick **No parent** to make it a top-level group.
+- **New subgroup**: enter a name and click **Create subgroup** to create a group inside this one. Subgroups can have their own subgroups.
+- **Add accounts**: tick the accounts you want and click the button that says how many you picked, such as **Add 2 accounts**. An account can be in only one group, so picking one from another group moves it here.
+- **Delete group**: check the list of accounts that will become ungrouped, and click **Delete group** again to confirm. Your accounts are kept. They simply become ungrouped. Any subgroups move up one level.
 
-You can't add accounts to a group from this page. Do that [from the account](#add-an-account-to-a-group).
+To **remove an account from a group**, expand the group, hover over the account and click the **Remove from group** icon button next to it, then **Remove**. On a touch screen the button is always shown at the end of the account row. The account isn't deleted. It only leaves the group.
+
+To move several groups at once, click **Organize** and drag a group onto another to nest it inside. To make a group top-level, drag it onto the bar at the top of the list. Click **Save changes** to apply the moves. **Organize** isn't shown on touch screens. Use **Move to another group** there instead.
 
 <Screenshot
   src="/screenshots/accounts/account-groups-settings.png"
-  alt="The Account groups settings page listing several groups, with one expanded to show the Group name field, the accounts in the group and the Delete group button."
-  hint="Open /settings/accounts with 2–3 groups. Click one group that contains 2 accounts to expand it, showing the Group name field and Save button, the 'Accounts in this group' list and the Delete group button. Crop to the settings card."
+  alt="The Account groups settings page with the Add group and Organize buttons, listing three groups. Day-to-day is expanded to show its two accounts, and its ••• menu is open with Rename and change logo, Move to another group, New subgroup, Add accounts and Delete group."
+  hint="Open /settings/accounts with 3 groups. Click a group that contains 2 accounts to expand it, then click its ••• button so the menu with Rename and change logo, Move to another group, New subgroup, Add accounts and Delete group is open. Crop to the settings card."
 />
 
 ## Groups created by bank connections
 
-When you connect a bank, MoneyMatter creates a group for that connection's accounts. These groups are marked **Created by bank connection** and have a **Manage connection** button.
+When you connect a bank, MoneyMatter creates a group for that connection's accounts. These groups are marked **Synced**, and their **•••** menu has a **Manage connection** item.
 
 The group doesn't represent the connection itself. You can rename it, move accounts in or out, or delete it, and your accounts keep syncing either way. See [bank connections](/import/bank-connections/).
 

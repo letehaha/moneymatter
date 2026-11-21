@@ -12,10 +12,10 @@ A transfer is money moving between your own accounts, for example from your chec
 
 ## Two kinds of transfer
 
-A transfer is one of two kinds. Which one you get depends on whether you pick **Out of Wallet** as one of the accounts:
+A transfer is one of two kinds. Which one you get depends on whether you pick **Out of wallet** as one of the accounts:
 
 - **Between accounts.** Money moves from one of your MoneyMatter accounts to another. The app records it as **two transactions**: an expense on the account the money left and an income on the account it arrived in. The two are paired and act as one transfer.
-- **Out of Wallet.** Money moves to or from somewhere you don't track in MoneyMatter, for example a savings account at another bank that you haven't added. There's no second account to put the other side on, so this is **one transaction**: an expense when money leaves, an income when money arrives.
+- **Out of wallet.** Money moves to or from somewhere you don't track in MoneyMatter, for example a savings account at another bank that you haven't added. There's no second account to put the other side on, so this is **one transaction**: an expense when money leaves, an income when money arrives.
 
 Both kinds show up in the transaction list filters, as **Between accounts** and **Out of wallet**.
 
@@ -58,51 +58,51 @@ For example, you move 500 USD from Checking to a Travel card that holds EUR, and
 
 The second transaction copies the date, note and payment type from the one you entered, and the two stay in sync when you edit them later. **Tags** are the exception: they're saved only on the **From account** side (the account the money left), not on both.
 
-## Out of Wallet transfers
+## Out of wallet transfers
 
-Use **Out of Wallet** when money leaves your tracked accounts or arrives from outside them without being spent or earned. Typical cases are moving savings to an account you don't track in MoneyMatter, or receiving money back from one. The app describes these as transfers "to and from accounts you don't track".
+Use **Out of wallet** when money leaves your tracked accounts or arrives from outside them without being spent or earned. Typical cases are moving savings to an account you don't track in MoneyMatter, or receiving money back from one. The app describes these as transfers "to and from accounts you don't track".
 
 Why not record it as an expense or income? Because it would inflate your spending or your income, when really the money only moved somewhere you aren't tracking.
 
-**Out of Wallet** is the first option in both **From account** and **To account**.
+**Out of wallet** is the first option in both **From account** and **To account**.
 
-- **Money leaving:** pick your account in **From account** and **Out of Wallet** in **To account**. Enter the amount in **Amount**. **Target amount** is turned off. This creates one expense on your account.
-- **Money arriving:** pick **Out of Wallet** in **From account** and your account in **To account**. Enter the amount in **Target amount**. **Amount** is turned off. This creates one income on your account.
+- **Money leaving:** pick your account in **From account** and **Out of wallet** in **To account**. Enter the amount in **Amount**. **Target amount** is turned off. This creates one expense on your account.
+- **Money arriving:** pick **Out of wallet** in **From account** and your account in **To account**. Enter the amount in **Target amount**. **Amount** is turned off. This creates one income on your account.
 
 <Screenshot
   src="/screenshots/transfers-and-refunds/out-of-wallet-option.png"
-  alt="The To account dropdown open on the Transfer tab, with Out of Wallet listed first above the user's accounts and loans."
-  hint="Add transaction, Transfer tab, pick 'Main Checking' in From account, then open the To account dropdown. Crop to the dropdown so 'Out of Wallet' is visible at the top of the list with accounts below it."
+  alt="The To account dropdown open on the Transfer tab, with Out of wallet listed first above the user's accounts and loans."
+  hint="Add transaction, Transfer tab, pick 'Main Checking' in From account, then open the To account dropdown. Crop to the dropdown so 'Out of wallet' is visible at the top of the list with accounts below it."
 />
 
-In the transaction list, an Out of Wallet transfer shows **Out of Wallet** where the other account's name would be.
+In the transaction list, an Out of wallet transfer shows **Out of wallet** where the other account's name would be.
 
-To turn an Out of Wallet transfer back into an ordinary expense or income, open it, select the **Expense** or **Income** tab, pick a category and click **Edit** (the save button at the bottom of the dialog).
+To turn an Out of wallet transfer back into an ordinary expense or income, open it, select the **Expense** or **Income** tab, pick a category and click **Edit** (the save button at the bottom of the dialog).
 
 If you later start tracking the other account, you can join the two records into a regular transfer. See [Link existing transactions](/transfers-and-refunds/link-existing-transactions/).
 
-<Aside type="caution" title="Don't just swap Out of Wallet for an account">
-To turn an Out of Wallet transfer into a transfer between two of your accounts, don't open it and pick one of your accounts in place of **Out of Wallet** in **From account** or **To account**. MoneyMatter doesn't create the other side when you do that, so nothing is recorded on the other account and its balance doesn't change. Instead:
+<Aside type="caution" title="Don't just swap Out of wallet for an account">
+To turn an Out of wallet transfer into a transfer between two of your accounts, don't open it and pick one of your accounts in place of **Out of wallet** in **From account** or **To account**. MoneyMatter doesn't create the other side when you do that, so nothing is recorded on the other account and its balance doesn't change. Instead:
 
 - If the other side is already recorded, use **Link the other side**, as described in [Link existing transactions](/transfers-and-refunds/link-existing-transactions/).
 - If it isn't, first turn the transaction into an ordinary expense or income as described above and save it. Then open it again and [convert it into a transfer](#turn-an-expense-or-income-into-a-transfer).
 </Aside>
 
 <Aside type="note" title="Good to know">
-Some imports, such as the [Microsoft Money import](/import/other-import-sources/#microsoft-money), bring in a transfer as Out of Wallet when its other account isn't part of the import. You can link these to the other side afterwards.
+Some imports, such as the [Microsoft Money import](/import/other-import-sources/#microsoft-money), bring in a transfer as Out of wallet when its other account isn't part of the import. You can link these to the other side afterwards.
 </Aside>
 
 ## How transfers affect balances
 
 Each side of a transfer changes its own account, just like any expense or income. A 500 USD transfer from Checking to Savings takes 500 USD off Checking and adds 500 USD to Savings. With different currencies, each account moves by its own amount in its own currency.
 
-An Out of Wallet transfer only changes the one account it's on.
+An Out of wallet transfer only changes the one account it's on.
 
 ## How transfers affect stats
 
 Transfers are left out of income and expense totals: cash flow, spending by category, and the other reports and widgets that add up what you earned and spent. The exception is a payment to a loan you track: the money leaving your account counts as spending. Moving 1,000 from Checking to Savings doesn't mean you spent 1,000 and earned 1,000, so counting it would make both your spending and your income look bigger than they were.
 
-Out of Wallet transfers are also left out of income and expense totals. Because they do change an account's balance, they still show up in that account's balance and balance history.
+Out of wallet transfers are also left out of income and expense totals. Because they do change an account's balance, they still show up in that account's balance and balance history.
 
 For the full picture of what's counted where, see [How stats are calculated](/stats/how-stats-are-calculated/).
 
@@ -112,8 +112,8 @@ A transfer shows both account names with an arrow between them. On **All Transac
 
 <Screenshot
   src="/screenshots/transfers-and-refunds/transfer-row-in-list.png"
-  alt="Two rows in the transaction list (list view): a transfer from Main Checking to Out of Wallet, and a transfer from Main Checking to Savings with its two amounts."
-  hint="Open /transactions and switch to the list view (left of the two view-toggle icons above the table) so full account names show instead of the table view's truncated Account column. Have one Main Checking to Savings transfer and one Main Checking to Out of Wallet transfer visible next to each other. Crop to just those two rows."
+  alt="Two rows in the transaction list (list view): a transfer from Main Checking to Out of wallet, and a transfer from Main Checking to Savings with its two amounts."
+  hint="Open /transactions and switch to the list view (left of the two view-toggle icons above the table) so full account names show instead of the table view's truncated Account column. Have one Main Checking to Savings transfer and one Main Checking to Out of wallet transfer visible next to each other. Crop to just those two rows."
 />
 
 To find transfers, open the **Filters** menu above the list and add:

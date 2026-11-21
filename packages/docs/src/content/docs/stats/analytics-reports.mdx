@@ -20,38 +20,40 @@ The reports are listed on the left:
 
 On a wide screen, Analytics opens on **Trends Comparison**. Click **Collapse** to shrink the list and give the report more room. On a narrow screen you see the list first; open a report, then click the back arrow (‹) next to the report's title to return. Some controls fold away behind an **Options** or **Filters** button.
 
-Every report follows the rules in [How stats are calculated](/stats/how-stats-are-calculated/). Transfers between your own accounts (except loan payments), **Out of Wallet** transfers and balance adjustments are never income or expenses. Accounts with **Exclude from statistics** on are left out.
+Every report follows the rules in [How stats are calculated](/stats/how-stats-are-calculated/). Transfers between your own accounts (except loan payments), **Out of wallet** transfers and balance adjustments are never income or expenses. Accounts with **Exclude from statistics** on are left out.
 
 ## Trends Comparison
 
-**Answers:** Am I spending more, earning more or saving more than in the previous period?
+**Answers:** Am I spending more or earning more than in the previous period?
 
 <Screenshot
   src="/screenshots/stats/analytics-trends-comparison.png"
-  alt="The Trends Comparison report with the Expenses metric selected, showing the summary cards, the Monthly Comparison chart and the Cumulative Progress chart."
-  hint="Open /analytics/trends-comparison on a wide screen with the default period (last 12 months) and the Expenses metric selected, on a user profile (or demo data) with at least two years of data. Capture the top half of the page including the left navigation, the summary cards, Monthly Comparison and Cumulative Progress."
+  alt="The Trends Comparison report with Expenses selected, showing the total with its change vs previous period, the Category breakdown donut and list, and the Over time bar chart."
+  hint="Open /analytics/trends-comparison on a wide screen with Expenses selected, the Last 12 months period, All categories, By level, and Over time set to Monthly and Per period, on a user profile (or demo data) with at least two years of data. Capture the page including the left navigation, the total, Category breakdown and Over time."
 />
 
 ### Controls
 
-- Period: the last 12 months up to today by default.
-- Metric: **Expenses**, **Income** or **Savings**. Savings is income minus expenses.
-- **Filters**: narrow the report by **Categories**, **Payees** and **Tags** (each can **Include** or **Exclude**) and by **Accounts**. **Reset** clears them.
+- **Expenses** or **Income**: the money the report looks at.
+- Period: the current month by default. Use the arrows to step to the previous or next period, or click the dates to pick a range or a preset such as **Last 12 months**.
+- **All categories**: pick categories to look at, and switch between **Include** and **Exclude**. When you look at one category, the bar shows its parent categories so you can step back up. **Clear** goes back to all categories. **Transactions** opens the matching transactions.
+- **Filters**: narrow the report by **Payees** and **Tags** (each can **Include** or **Exclude**) and by **Accounts**. **Reset** clears them and keeps your categories.
 
 ### What you see
 
-- Summary cards: the total for your metric, the **Previous period** total, and the change **vs previous period**. The previous period is your period moved back by the number of calendar months it touches. For whole months (for example January to December) that is the period just before yours. The default range starts partway through a month, touches 13 months, and so is compared with the range 13 months earlier. For expenses, an increase shows in red.
-- **Monthly Comparison**: a bar for each month, split by category, with the **Average** and **Total**. Click a category in the legend to hide it from the chart, which adds it to your filters. Click a bar (or a segment of a bar) to open the matching transactions. On a touch screen, tap the bar, then tap **View transactions**.
-- **Cumulative Progress**: your running total through the period, drawn against the previous period's. Months that haven't happened yet are never shown.
-- **Category Breakdown**: your top categories, with **View all categories** for the rest. It's hidden when the metric is **Savings**.
+- The total for your period, with the change **vs previous period** and the previous period's total in brackets. For whole months (for example January to December) the previous period is the same number of months just before yours. For any other range it's the same number of days just before. For expenses, an increase shows in red.
+- **Category breakdown**: a donut and a list of your categories, each with its share of the total and its change vs the previous period. The list shows the top 10, with **View all categories** for the rest. **By level** shows one level of categories, each including its subcategories. **Detail** lists every category on its own row. Click a category to look at it alone.
+- **Over time**: **Per period** shows a bar for each month, quarter or year (pick **Monthly**, **Quarterly** or **Yearly**), split by category, with the **Average** and the change from the bar before. **Cumulative** shows your running total month by month, drawn against the same number of months just before. Months that haven't happened yet are never shown. The chart covers your period when it spans 12 months or more, and otherwise the 12 months ending with it.
+- In **Per period**, click a bar to make its month, quarter or year the report's period. On a touch screen, tap the bar, then tap **Show this month** (or **Show quarter**, **Show year**). Unless you're looking at one category or using **Detail**, click a category in the legend to hide it from the report, which updates your category selection. Click a hidden one to show it again.
+- **Transactions**: the 20 largest (**Largest**) or latest (**Recent**) transactions that match the report. On a wide screen it sits beside the report.
 
 <Aside type="note" title="Why numbers on this page can differ">
-The charts don't all count things the same way:
+The total and **Category breakdown** always agree. The **Over time** chart can differ from them:
 
-- **Monthly Comparison** leaves out [savings categories](/stats/how-stats-are-calculated/#savings-categories). The summary cards and **Category Breakdown** count that money as spending.
-- **Monthly Comparison** and **Category Breakdown** count planned transactions. The summary cards and **Cumulative Progress** don't.
-- With a **Categories** filter, [split transactions](/transactions/split-a-transaction/) count differently. The summary cards and **Cumulative Progress** go by each transaction's main category and count its full amount, split parts included. **Category Breakdown** counts each split part under its own category. **Monthly Comparison** counts only the parts in the categories your filter keeps, and with **Include** it also skips a transaction whose main category isn't one you picked.
-- **Monthly Comparison** always shows whole calendar months, so it can include days before your start date and after today. The summary cards and **Category Breakdown** use your exact dates.
+- **Per period** leaves out [savings categories](/stats/how-stats-are-calculated/#savings-categories). The total and **Category breakdown** count that money as spending.
+- The total, **Category breakdown** and **Per period** count planned transactions. **Cumulative** doesn't.
+- When you pick categories, [split transactions](/transactions/split-a-transaction/) count differently. The total and **Category breakdown** count each split part under its own category. **Per period** counts only the parts in the categories you kept, and with **Include** it also skips a transaction whose main category isn't one you picked. **Cumulative** goes by each transaction's main category and counts its full amount, split parts included.
+- **Over time** always shows whole months, and can cover more than your period. The total and **Category breakdown** use your exact dates.
 </Aside>
 
 ## Cash Flow
