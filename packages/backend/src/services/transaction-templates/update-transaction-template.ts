@@ -13,11 +13,15 @@ type UpdateTransactionTemplateParams = UpdateTransactionTemplateBody & { id: Rec
 
 export const updateTransactionTemplate = withTransaction(
   async ({ id, userId, tagIds, ...fields }: UpdateTransactionTemplateParams): Promise<TransactionTemplateModel> => {
-    await assertCurrencyCodesVisible({ userId, codes: [fields.originalCurrencyCode] });
-
     const template = await findOrThrowNotFound({
       query: TransactionTemplates.findOne({ where: { id, userId } }),
       message: t({ key: 'transactionTemplates.notFound' }),
+    });
+
+    await assertCurrencyCodesVisible({
+      userId,
+      codes: [fields.originalCurrencyCode],
+      allowedWithoutPlan: [template.originalCurrencyCode],
     });
 
     const mergedTagIds = tagIds ?? (await loadTemplateTagIds({ templateIds: [id] })).get(id) ?? [];

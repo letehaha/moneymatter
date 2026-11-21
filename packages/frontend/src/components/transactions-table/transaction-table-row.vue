@@ -131,7 +131,9 @@
 
       <!-- Amount (original currency) -->
       <template v-else-if="column.id === TABLE_COLUMN.amount">
-        <span :class="['text-amount tabular-nums', amountColorClass]">{{ formattedAmount }}</span>
+        <span :class="['text-amount tabular-nums', amountColorClass]">
+          <CurrencyAmount :amount="signedAmount(rowAmounts.amount)" :owner="tx" />
+        </span>
       </template>
 
       <!-- Ref amount (base currency) -->
@@ -141,8 +143,11 @@
 
       <!-- Original amount (foreign currency the user paid in) -->
       <template v-else-if="column.id === TABLE_COLUMN.originalAmount">
-        <span v-if="formattedOriginalAmount" class="text-amount text-muted-foreground tabular-nums">
-          {{ formattedOriginalAmount }}
+        <span
+          v-if="tx.originalAmount != null && tx.originalCurrencyCode"
+          class="text-amount text-muted-foreground tabular-nums"
+        >
+          <CurrencyAmount :amount="tx.originalAmount" :owner="{ currencyCode: tx.originalCurrencyCode }" />
         </span>
       </template>
 
@@ -251,6 +256,7 @@ import AccountLogo from '@/components/common/account-logo.vue';
 import BrandLogo from '@/components/common/brand-logo.vue';
 import { toEntityLogoDisplayProps, toLogoDisplayProps, toLogoSelection } from '@/components/common/logo-selection';
 import CategoryCircle from '@/components/common/category-circle.vue';
+import CurrencyAmount from '@/components/common/currency-amount.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Checkbox } from '@/components/lib/ui/checkbox';
@@ -410,19 +416,7 @@ const amountColorClass = computed(() => {
 const signedAmount = (amount: number) => (props.tx.transactionType === TRANSACTION_TYPES.expense ? -amount : amount);
 
 const rowAmounts = computed(() => getPaymentRowAmounts({ transaction: props.tx }));
-const formattedAmount = computed(() =>
-  formatUIAmount(signedAmount(rowAmounts.value.amount), {
-    currency: props.tx.currencyCode,
-    meta: props.tx.currencyMeta,
-  }),
-);
 const formattedRefAmount = computed(() => formatBaseCurrency(signedAmount(rowAmounts.value.refAmount)));
-
-const formattedOriginalAmount = computed(() => {
-  const { originalAmount, originalCurrencyCode } = props.tx;
-  if (originalAmount == null || !originalCurrencyCode) return '';
-  return formatUIAmount(originalAmount, { currency: originalCurrencyCode });
-});
 
 const txTags = computed(() => props.tx.tags ?? []);
 const { setListRef: setTagsListRef, hiddenCount: hiddenTagsCount } = useFittingChips({ items: txTags });

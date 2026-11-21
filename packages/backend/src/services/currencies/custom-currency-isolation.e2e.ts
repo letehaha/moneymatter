@@ -30,8 +30,10 @@ describe('custom currencies stay out of global readers', () => {
   });
 
   it("does not show another user's logo for the same custom code", async () => {
-    const logoUrl = 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png';
-    const updated = await helpers.updateCustomCurrency({ code: CUSTOM_CODE, payload: { logoUrl } });
+    const updated = await helpers.updateCustomCurrency({
+      code: CUSTOM_CODE,
+      payload: { logoInitials: 'B', logoColor: '#f7931a' },
+    });
     expect(updated.statusCode).toBe(200);
 
     const otherUser = await helpers.provisionSecondUserWithBaseCurrency();
@@ -42,16 +44,16 @@ describe('custom currencies stay out of global readers', () => {
           payload: { code: CUSTOM_CODE, name: 'My Bitcoin', decimals: 8, rate: { value: 1 } },
         });
         expect(created.statusCode).toBe(201);
-        expect(created.body.response).toMatchObject({ logoUrl: null });
+        expect(created.body.response).toMatchObject({ logoInitials: null, logoColor: null });
 
         const held = (await helpers.getUserCurrencies()).find((item) => item.currencyCode === CUSTOM_CODE);
-        expect(held!.logoUrl).toBeNull();
-        expect((await helpers.listCustomCurrencies({ raw: true })).map((item) => item.logoUrl)).toEqual([null]);
+        expect(held).toMatchObject({ logoInitials: null, logoColor: null });
+        expect((await helpers.listCustomCurrencies({ raw: true })).map((item) => item.logoInitials)).toEqual([null]);
       },
     });
 
     const owned = (await helpers.getUserCurrencies()).find((item) => item.currencyCode === CUSTOM_CODE);
-    expect(owned!.logoUrl).toBe(logoUrl);
+    expect(owned).toMatchObject({ logoInitials: 'B', logoColor: '#f7931a' });
   });
 
   it('GET /models/currencies lists no custom code for its owner or for any other user', async () => {

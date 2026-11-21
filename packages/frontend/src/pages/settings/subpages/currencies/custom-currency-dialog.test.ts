@@ -1,3 +1,5 @@
+import type { LogoSelection } from '@/components/common/logo-selection';
+import LogoSquareField from '@/components/common/logo-square-field.vue';
 import formsEn from '@/i18n/locales/chunks/en/forms.json';
 import currenciesEn from '@/i18n/locales/chunks/en/settings/currencies.json';
 import { ApiErrorResponseError } from '@/js/errors';
@@ -111,7 +113,22 @@ const submit = async (wrapper: VueWrapper) => {
   await flushPromises();
 };
 
-const TETHER: EditableCustomCurrency = { code: 'USDT', name: 'Tether', symbol: '₮', decimals: 6 };
+const TETHER: EditableCustomCurrency = {
+  code: 'USDT',
+  name: 'Tether',
+  symbol: '₮',
+  decimals: 6,
+  logoDomain: null,
+  logoInitials: null,
+  logoColor: null,
+  logoIcon: null,
+  logoImageId: null,
+};
+
+const pickLogo = async (wrapper: VueWrapper, selection: LogoSelection | null) => {
+  wrapper.getComponent(LogoSquareField).vm.$emit('update:modelValue', selection);
+  await flushPromises();
+};
 
 describe('CustomCurrencyDialog', () => {
   beforeEach(() => {
@@ -154,6 +171,26 @@ describe('CustomCurrencyDialog', () => {
         decimals: 0,
         rate: { value: 0.0006 },
       });
+    });
+
+    it('previews the symbol monogram the currency is drawn with until a logo is picked', async () => {
+      const wrapper = mountDialog();
+
+      await fill(wrapper, { code: 'usdt', name: 'Tether', symbol: '₮' });
+
+      expect(wrapper.get('[data-testid="custom-currency-logo-placeholder"]').text()).toBe('₮');
+    });
+
+    it('sends the logo the user picked', async () => {
+      const wrapper = mountDialog();
+
+      await fill(wrapper, { code: 'SAT', name: 'Satoshi', decimals: '8', rate: '1' });
+      await pickLogo(wrapper, { kind: 'monogram', initials: 'S', color: '#f7931a' });
+      await submit(wrapper);
+
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ code: 'SAT', logoInitials: 'S', logoColor: '#f7931a' }),
+      );
     });
 
     it.each<[string, string]>([
@@ -237,6 +274,18 @@ describe('CustomCurrencyDialog', () => {
       expect(wrapper.find('[data-testid="custom-currency-error"]').text()).toBe('Code is taken');
       expect(mockLoadCurrencies).not.toHaveBeenCalled();
     });
+
+    it('leaves a plan refusal to the API client toast', async () => {
+      mockCreate.mockRejectedValue(
+        new ApiErrorResponseError('plan', { code: API_ERROR_CODES.planRequired, message: 'Upgrade to Plus' }),
+      );
+      const wrapper = mountDialog();
+
+      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6', rate: '1' });
+      await submit(wrapper);
+
+      expect(wrapper.find('[data-testid="custom-currency-error"]').exists()).toBe(false);
+    });
   });
 
   describe('editing', () => {
@@ -250,6 +299,36 @@ describe('CustomCurrencyDialog', () => {
 
       expect(mockUpdate).toHaveBeenCalledWith({ code: 'USDT', name: 'Tether USD', symbol: '₮' });
       expect(mockAddSuccess).toHaveBeenCalledWith('Custom currency updated');
+    });
+
+    it('opens on the stored logo and leaves it alone when untouched', async () => {
+      const wrapper = mountDialog({ currency: { ...TETHER, logoDomain: 'tether.to' } });
+
+      expect(wrapper.getComponent(LogoSquareField).props('modelValue')).toEqual({
+        kind: 'brand',
+        domain: 'tether.to',
+      });
+
+      await submit(wrapper);
+
+      expect(mockUpdate).toHaveBeenCalledWith({ code: 'USDT', name: 'Tether', symbol: '₮' });
+    });
+
+    it('removes a stored image with logoImage null', async () => {
+      const wrapper = mountDialog({ currency: { ...TETHER, logoImageId: '00000000-0000-4000-8000-000000000001' } });
+
+      await pickLogo(wrapper, null);
+      await submit(wrapper);
+
+      expect(mockUpdate).toHaveBeenCalledWith({
+        code: 'USDT',
+        name: 'Tether',
+        symbol: '₮',
+        logoDomain: null,
+        logoInitials: null,
+        logoIcon: null,
+        logoImage: null,
+      });
     });
 
     it('clears the symbol with null', async () => {

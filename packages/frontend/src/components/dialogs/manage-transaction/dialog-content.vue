@@ -1419,7 +1419,7 @@ const paymentTotalLabel = computed(() =>
       mainCurrencyCode: form.value.account?.currencyCode,
       decimals: amountDecimals.value,
     }),
-    { currency: currencyCode.value, meta: form.value.account?.currencyMeta },
+    { currency: currencyCode.value, meta: form.value.account?.currencyMeta, fullPrecision: true },
   ),
 );
 const targetAmountFieldRef = ref<InstanceType<typeof InputField> | null>(null);

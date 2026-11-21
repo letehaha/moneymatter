@@ -725,7 +725,11 @@ export const updateTransaction = withTransaction(
     payload: UpdateTransactionParams,
   ): Promise<[baseTx: Transactions.default, oppositeTx?: Transactions.default]> => {
     try {
-      await assertCurrencyCodesVisible({ userId: payload.userId, codes: [payload.originalCurrencyCode] });
+      await assertCurrencyCodesVisible({
+        userId: payload.userId,
+        codes: [payload.originalCurrencyCode],
+        allowedWithoutPlan: [payload.originalCurrencyCode],
+      });
 
       // Single fetch + write-authorization gate. `getWritableTransactionById` throws 404
       // when the caller has no claim, 401 when scope: 'own' is violated. Returns a

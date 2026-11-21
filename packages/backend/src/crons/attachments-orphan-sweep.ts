@@ -5,6 +5,7 @@ import Payees from '@models/payees.model';
 import Subscriptions from '@models/subscriptions.model';
 import Trackers from '@models/trackers.model';
 import TransactionAttachments from '@models/transaction-attachments.model';
+import UsersCurrencies from '@models/users-currencies.model';
 import { STORAGE_KEY_PATTERN, deleteObject, listObjects, storageKey } from '@services/attachments/storage';
 import { LOGO_IMAGE_KEY_PATTERN } from '@services/logo-images/logo-images.service';
 import { type Model, type ModelStatic, Op } from 'sequelize';
@@ -16,7 +17,15 @@ const MIN_AGE_MS = 24 * 60 * 60 * 1000;
 const LOOKUP_BATCH = 500;
 const MASS_DELETE_MIN_SCANNED = 50;
 
-const LOGO_OWNER_MODELS: ModelStatic<Model>[] = [Trackers, Accounts, AccountGroups, Payees, Subscriptions, Goals];
+const LOGO_OWNER_MODELS: ModelStatic<Model>[] = [
+  Trackers,
+  Accounts,
+  AccountGroups,
+  Payees,
+  Subscriptions,
+  Goals,
+  UsersCurrencies,
+];
 
 const findOrphanAttachmentKeys = async ({ keys }: { keys: string[] }): Promise<string[]> => {
   const orphans: string[] = [];

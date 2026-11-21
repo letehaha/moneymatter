@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable/formatters';
-import { formatTinyUIAmount } from '@/js/helpers';
+import { formatTinyUIAmount, formatUIAmount } from '@/js/helpers';
 import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { cn } from '@/lib/utils';
 import { computed } from 'vue';
@@ -25,7 +25,7 @@ const props = defineProps<{
   tiny?: boolean;
 }>();
 
-const { formatCompactAmount, formatAmountByCurrencyCode } = useFormatCurrency();
+const { formatCompactAmount } = useFormatCurrency();
 
 // A total that renders as zero carries no information, so the row stays clean
 // instead of showing "≈$0.00" for empty or netted-out groups.
@@ -45,7 +45,7 @@ const compact = computed(
     }`,
 );
 const full = computed(
-  () => `${prefix.value}${formatAmountByCurrencyCode({ amount: props.amount, currencyCode: props.currencyCode })}`,
+  () => `${prefix.value}${formatUIAmount(props.amount, { currency: props.currencyCode, fullPrecision: true })}`,
 );
 </script>
 

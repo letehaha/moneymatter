@@ -13,6 +13,7 @@ type Row = Record<string, unknown>;
  * files are the source of truth; the expected decimals below are those cents divided by 100.
  */
 const FIXTURE_DIR = join(__dirname, 'fixtures', 'backup-v1');
+const NO_LOGO = { logoDomain: null, logoInitials: null, logoColor: null, logoIcon: null, logoImageId: null };
 
 async function buildFixtureUpload({ edit }: { edit?: (files: Map<string, Buffer>) => void } = {}): Promise<string> {
   const files = helpers.readBackupFixture({ dir: FIXTURE_DIR });
@@ -124,11 +125,11 @@ describe('Restoring a format version 1 backup (cents to decimals)', () => {
 
     const holdings = helpers.backupRows({ archive: await helpers.exportParsedBackup(), name: 'users-currencies' });
     expect(holdings.length).toBeGreaterThan(0);
-    for (const holding of holdings) expect(holding).toHaveProperty('logoUrl', null);
+    for (const holding of holdings) expect(holding).toMatchObject(NO_LOGO);
 
     const userCurrencies = await helpers.getUserCurrencies();
     expect(userCurrencies.length).toBeGreaterThan(0);
-    for (const item of userCurrencies) expect(item.logoUrl).toBeNull();
+    for (const item of userCurrencies) expect(item).toMatchObject(NO_LOGO);
   });
 
   it('exports the restored ledger as a format version 4 archive that round-trips exactly', async () => {

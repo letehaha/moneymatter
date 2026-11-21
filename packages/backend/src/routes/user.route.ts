@@ -104,7 +104,12 @@ router.post('/currencies', checkBaseCurrencyLock, addUserCurrencies);
 // Custom currencies change which decimals amounts round to, so they sit behind the same
 // base-currency guard as every other write that feeds amounts.
 router.get('/currencies/custom', listCustomCurrencies);
-router.post('/currencies/custom', checkBaseCurrencyLock, createCustomCurrency);
+router.post(
+  '/currencies/custom',
+  requireFeature(FEATURES.custom_currencies),
+  checkBaseCurrencyLock,
+  createCustomCurrency,
+);
 router.put('/currencies/custom/:code', checkBaseCurrencyLock, updateCustomCurrency);
 router.delete('/currencies/custom/:code', checkBaseCurrencyLock, deleteCustomCurrency);
 router.post('/currencies/base', checkBaseCurrencyLock, setBaseUserCurrency);

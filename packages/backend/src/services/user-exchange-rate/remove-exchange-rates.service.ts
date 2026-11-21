@@ -14,7 +14,7 @@ import { revalueAccountsInCurrencies } from './revalue-accounts-in-currencies';
 export const removeUserExchangeRates = withTransaction(
   async ({ userId, pairs }: { userId: number; pairs: UserExchangeRates.ExchangeRatePair[] }) => {
     const codes = pairs.flatMap((pair) => [pair.baseCode, pair.quoteCode]);
-    await assertCurrencyCodesVisible({ userId, codes });
+    await assertCurrencyCodesVisible({ userId, codes, allowedWithoutPlan: codes });
 
     // Serializes removals per user, so two requests that each drop one quote cannot together drop the last.
     await connection.sequelize.query(`SELECT pg_advisory_xact_lock(hashtext('user-exchange-rates'), :userId)`, {

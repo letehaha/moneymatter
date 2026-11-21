@@ -1,4 +1,4 @@
-import { USER_ROLES } from '@bt/shared/types';
+import { FEATURES, USER_ROLES } from '@bt/shared/types';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import * as customCurrencies from '@services/currencies/custom-currencies.service';
 import { captureTools, makeExtra, parseToolResult, type ToolResult } from '@tests/helpers/mcp-tools';
@@ -20,7 +20,7 @@ import { deleteCustomCurrencyTool } from './delete-custom-currency';
 import { listCustomCurrenciesTool } from './list-custom-currencies';
 import { updateCustomCurrencyTool } from './update-custom-currency';
 
-const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
+const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'], features: [FEATURES.custom_currencies] });
 const DELETE = makeExtra({ scopes: ['finance:read', 'finance:delete'] });
 
 const parsed = (result: ToolResult) => parseToolResult({ result });
@@ -39,7 +39,19 @@ describe('list_custom_currencies', () => {
   const tool = captureTools({ register: listCustomCurrenciesTool })[0]!;
 
   it('returns the service result without a scope helper', async () => {
-    const currencies = [{ code: 'PTS', name: 'Points', symbol: null, decimals: 2, logoUrl: null }];
+    const currencies = [
+      {
+        code: 'PTS',
+        name: 'Points',
+        symbol: null,
+        decimals: 2,
+        logoDomain: null,
+        logoInitials: null,
+        logoColor: null,
+        logoIcon: null,
+        logoImageId: null,
+      },
+    ];
     service.listCustomCurrencies.mockResolvedValueOnce(currencies as never);
 
     const result = await tool.handler(makeExtra({ scopes: ['finance:read'], readOnly: true }));
@@ -56,6 +68,18 @@ describe('create_custom_currency', () => {
   it('normalizes the code and accepts a valid definition', () => {
     expect(schema.parse(createInput)).toEqual({ code: 'PTS', name: 'Points', decimals: 2, rate: { value: 0.01 } });
     expect(schema.safeParse({ ...createInput, symbol: null }).success).toBe(true);
+    expect(schema.safeParse({ ...createInput, logoInitials: 'P', logoColor: '#7355be' }).success).toBe(true);
+  });
+
+  it('takes no logo image upload', () => {
+    expect(schema.safeParse({ ...createInput, logoImage: 'data:image/png;base64,AAAA' }).success).toBe(false);
+  });
+
+  it('refuses two logo slots at once in the handler', async () => {
+    await expect(
+      tool.handler({ ...createInput, logoDomain: 'example.com', logoInitials: 'P' }, WRITE),
+    ).rejects.toThrow();
+    expect(service.createCustomCurrency).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -72,7 +96,17 @@ describe('create_custom_currency', () => {
   });
 
   it('calls the service with the user id and the parsed body, and returns the result', async () => {
-    const created = { code: 'PTS', name: 'Points', symbol: null, decimals: 2, logoUrl: null };
+    const created = {
+      code: 'PTS',
+      name: 'Points',
+      symbol: null,
+      decimals: 2,
+      logoDomain: null,
+      logoInitials: null,
+      logoColor: null,
+      logoIcon: null,
+      logoImageId: null,
+    };
     service.createCustomCurrency.mockResolvedValueOnce(created as never);
 
     const result = await tool.handler(createInput, WRITE);
@@ -100,6 +134,13 @@ describe('create_custom_currency', () => {
     expect(service.createCustomCurrency).not.toHaveBeenCalled();
   });
 
+  it('is refused without custom currencies in the plan', async () => {
+    await expect(tool.handler(createInput, makeExtra({ scopes: ['finance:read', 'finance:write'] }))).rejects.toThrow(
+      /not included in your current plan/,
+    );
+    expect(service.createCustomCurrency).not.toHaveBeenCalled();
+  });
+
   it('is refused while the base-currency lock is set', async () => {
     lockCheck.mockResolvedValueOnce(true);
 
@@ -114,21 +155,32 @@ describe('update_custom_currency', () => {
 
   it('accepts a partial update and null to clear the symbol and logo', () => {
     expect(schema.safeParse({ code: 'PTS', name: 'Loyalty points' }).success).toBe(true);
-    expect(schema.safeParse({ code: 'PTS', symbol: null, logoUrl: null }).success).toBe(true);
-    expect(schema.safeParse({ code: 'PTS', logoUrl: 'https://example.com/pts.png' }).success).toBe(true);
+    expect(schema.safeParse({ code: 'PTS', symbol: null, logoDomain: null, logoInitials: null }).success).toBe(true);
+    expect(schema.safeParse({ code: 'PTS', logoDomain: 'example.com' }).success).toBe(true);
   });
 
   it.each([
     { label: 'a missing code', input: { code: undefined, name: 'x' } },
     { label: 'decimals out of range', input: { decimals: -1 } },
-    { label: 'a non-https logo', input: { logoUrl: 'http://example.com/pts.png' } },
+    { label: 'a logo domain with a slash', input: { logoDomain: 'example.com/pts' } },
+    { label: 'a logo image upload', input: { logoImage: 'data:image/png;base64,AAAA' } },
     { label: 'an empty name', input: { name: '' } },
   ])('rejects $label', ({ input }) => {
     expect(schema.safeParse({ code: 'PTS', ...input }).success).toBe(false);
   });
 
   it('splits the code off and passes the rest of the body to the service', async () => {
-    const updated = { code: 'PTS', name: 'Loyalty points', symbol: null, decimals: 2, logoUrl: null };
+    const updated = {
+      code: 'PTS',
+      name: 'Loyalty points',
+      symbol: null,
+      decimals: 2,
+      logoDomain: null,
+      logoInitials: null,
+      logoColor: null,
+      logoIcon: null,
+      logoImageId: null,
+    };
     service.updateCustomCurrency.mockResolvedValueOnce(updated as never);
 
     const result = await tool.handler({ code: 'PTS', name: 'Loyalty points', symbol: null }, WRITE);

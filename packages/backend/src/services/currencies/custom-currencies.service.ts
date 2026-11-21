@@ -15,8 +15,11 @@ import SubscriptionCandidates from '@models/subscription-candidates.model';
 import { findTransactions } from '@models/transactions-query';
 import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
+import { serializeLogoFields } from '@root/serializers/logo-fields.serializer';
+import { applyLogoWrite } from '@services/brand-logos';
 import { insertOrAdopt } from '@services/common/run-in-savepoint';
 import { withTransaction } from '@services/common/with-transaction';
+import { deleteLogoImage } from '@services/logo-images/logo-images.service';
 import cc from 'currency-codes';
 import { Op } from 'sequelize';
 
@@ -47,7 +50,7 @@ const toCustomCurrencyModel = ({
     decimals: effective.decimals,
     symbol: effective.symbol,
     isCustom: true,
-    logoUrl: held.logoUrl,
+    ...serializeLogoFields({ entity: held }),
   };
 };
 
@@ -135,7 +138,19 @@ export const resolveRateQuoteCode = async ({ userId, quoteCode }: { userId: numb
  * the user's own `UsersCurrencies` row, so two users can define the same code differently.
  */
 export const createCustomCurrency = withTransaction(
-  async ({ userId, code, name, decimals, symbol, rate }: CreateCustomCurrencyBody & { userId: number }) => {
+  async ({
+    userId,
+    code,
+    name,
+    decimals,
+    symbol,
+    rate,
+    logoDomain,
+    logoInitials,
+    logoColor,
+    logoIcon,
+    logoImage,
+  }: CreateCustomCurrencyBody & { userId: number }) => {
     await lockUserCurrencies({ userId });
 
     // FOR SHARE keeps `pruneUnusedCustomCurrencies` from deleting the row before the holding insert
@@ -160,6 +175,8 @@ export const createCustomCurrency = withTransaction(
         adopt: () => lockCurrencyRow({ code }),
       }));
 
+    const logoPatch = await applyLogoWrite({ write: { logoDomain, logoInitials, logoColor, logoIcon, logoImage } });
+
     const held = await UsersCurrencies.create({
       userId,
       currencyCode: code,
@@ -169,6 +186,7 @@ export const createCustomCurrency = withTransaction(
       nameOverride: name,
       symbolOverride: symbol ?? null,
       decimalsOverride: decimals,
+      ...logoPatch,
     });
 
     // Written directly: `updateRates` would also switch live rates off on the ISO quote.
@@ -187,7 +205,11 @@ const updateCustomCurrencyImpl = async ({
   name,
   decimals,
   symbol,
-  logoUrl,
+  logoDomain,
+  logoInitials,
+  logoColor,
+  logoIcon,
+  logoImage,
 }: UpdateCustomCurrencyBody & { userId: number; code: string }) => {
   const held = await requireOwnCustomCurrency({ userId, code });
   const current = applyCurrencyOverrides({ currency: held.currency, overrides: held });
@@ -205,11 +227,16 @@ const updateCustomCurrencyImpl = async ({
     await SubscriptionCandidates.destroy({ where: { userId, currencyCode: code } });
   }
 
+  const logoPatch = await applyLogoWrite({
+    write: { logoDomain, logoInitials, logoColor, logoIcon, logoImage },
+    stored: held,
+  });
+
   await held.update({
     ...(name !== undefined && { nameOverride: name }),
     ...(symbol !== undefined && { symbolOverride: symbol }),
     ...(decimals !== undefined && { decimalsOverride: decimals }),
-    ...(logoUrl !== undefined && { logoUrl }),
+    ...logoPatch,
   });
 
   return toCustomCurrencyModel({ currency: held.currency, held });
@@ -230,7 +257,7 @@ export const updateCustomCurrency = async (
 };
 
 const deleteCustomCurrencyInTx = withTransaction(async ({ userId, code }: { userId: number; code: string }) => {
-  await requireOwnCustomCurrency({ userId, code });
+  const held = await requireOwnCustomCurrency({ userId, code });
 
   await assertCurrencyNotInUse({
     userId,
@@ -245,6 +272,7 @@ const deleteCustomCurrencyInTx = withTransaction(async ({ userId, code }: { user
     where: { userId, [Op.or]: [{ baseCode: code }, { quoteCode: code }] },
   });
   await SubscriptionCandidates.destroy({ where: { userId, currencyCode: code } });
+  if (held.logoImageId) await deleteLogoImage({ id: held.logoImageId });
   await UsersCurrencies.destroy({ where: { userId, currencyCode: code } });
   await pruneUnusedCustomCurrencies();
 });

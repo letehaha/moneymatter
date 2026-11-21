@@ -1,8 +1,8 @@
 import type { BackupRestoreWarning } from '@bt/shared/types';
 import { DEACTIVATION_REASON } from '@bt/shared/types';
 import { CURRENCY_CODE_COLUMNS } from '@common/lib/currency-code-columns';
-import { currencyLogoUrl } from '@common/lib/zod/custom-types';
 import { encryptCredentials } from '@services/bank-data-providers/utils/credential-encryption';
+import { LOGO_FIELD_KEYS } from '@services/brand-logos/apply-manual-logo-patch';
 import { copyLogoImageIfPresent } from '@services/logo-images/logo-images.service';
 import { syncRefundLinkedFlags } from '@services/tx-refunds/sync-refund-linked-flags';
 import type { Transaction } from 'sequelize';
@@ -76,16 +76,14 @@ function buildRowOverrides({
     if (resolved) overrides.securityId = resolved;
   }
 
-  // The validated definition replaces the archive's override columns; an ISO row carries none.
-  // Every row gets all four keys, keeping the batch's column set uniform.
+  // The validated definition replaces the archive's override columns; an ISO row carries none,
+  // and no logo either. Every row gets every key, keeping the batch's column set uniform.
   if (def.fileName === 'users-currencies') {
     const definition = ctx.customDefinitions.get(String(row.currencyCode));
     overrides.nameOverride = definition?.name ?? null;
     overrides.symbolOverride = definition?.symbol ?? null;
     overrides.decimalsOverride = definition?.decimals ?? null;
-    // The logo is an https URL on a custom code only; anything else in the archive restores as no logo.
-    const logo = definition ? currencyLogoUrl().safeParse(row.logoUrl) : null;
-    overrides.logoUrl = logo?.success ? logo.data : null;
+    for (const key of LOGO_FIELD_KEYS) overrides[key] = definition ? (row[key] ?? null) : null;
   }
 
   // Bank credentials never travel: re-encrypt an empty stub on THIS instance and
@@ -228,7 +226,7 @@ async function insertTable({
 
     // A logo blob has one owner row, which deletes it on edit or delete, so every
     // restored row gets its own copy. Rollback orphans are left to the orphan sweep.
-    if (hasColumn({ plan, field: 'logoImageId' }) && row.logoImageId != null) {
+    if (hasColumn({ plan, field: 'logoImageId' }) && row.logoImageId != null && overrides.logoImageId !== null) {
       const id = String(row.logoImageId);
       overrides.logoImageId = isUuid(id) ? await copyLogoImageIfPresent({ id }) : null;
     }

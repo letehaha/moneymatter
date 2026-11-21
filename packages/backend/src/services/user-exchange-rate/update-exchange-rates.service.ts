@@ -66,7 +66,7 @@ const replaceCustomRates = async ({
 export const editUserExchangeRates = withTransaction(
   async ({ userId, pairs }: { userId: number; pairs: UserExchangeRates.UpdateExchangeRatePair[] }) => {
     const codes = pairs.flatMap((pair) => [pair.baseCode, pair.quoteCode]);
-    await assertCurrencyCodesVisible({ userId, codes });
+    await assertCurrencyCodesVisible({ userId, codes, allowedWithoutPlan: codes });
 
     const customCodes = await findCustomCurrencyCodes({ codes });
     const customPair = pairs.find((pair) => customCodes.has(pair.baseCode) && customCodes.has(pair.quoteCode));

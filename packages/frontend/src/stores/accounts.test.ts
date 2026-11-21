@@ -106,7 +106,7 @@ describe('useAccountsStore – accountsRecord mirrors the live accounts list', (
       mountStore();
       await flushPromises();
 
-      expect(formatUIAmount(0.12345678, { currency: 'SAT' })).toBe('0.12345678 SAT');
+      expect(formatUIAmount(0.12345678, { currency: 'SAT', fullPrecision: true })).toBe('0.12345678 SAT');
     });
 
     it('does not override a code the viewer defines themselves', async () => {

@@ -69,9 +69,16 @@
           </div>
           <div class="flex items-center gap-3 text-sm">
             <div v-if="ownLegIsIncome" class="h-4 w-16 animate-pulse rounded bg-white/10"></div>
-            <span v-else class="text-amount text-app-expense-color">{{ formattedExpenseAmount }}</span>
+            <span v-else class="text-amount text-app-expense-color"
+              ><CurrencyAmount v-if="transferSourceLeg" :amount="-transferSourceLeg.amount" :owner="transferSourceLeg"
+            /></span>
             <ArrowRight :size="12" class="opacity-40" />
-            <span v-if="ownLegIsIncome" class="text-amount text-app-income-color">{{ formattedIncomeAmount }}</span>
+            <span v-if="ownLegIsIncome" class="text-amount text-app-income-color"
+              ><CurrencyAmount
+                v-if="transferDestinationLeg"
+                :amount="transferDestinationLeg.amount"
+                :owner="transferDestinationLeg"
+            /></span>
             <div v-else class="h-4 w-16 animate-pulse rounded bg-white/10"></div>
           </div>
         </template>
@@ -86,9 +93,16 @@
           </div>
           <!-- Too narrow for one line: amounts drop under the accounts. -->
           <div class="mt-1 flex items-center gap-3 text-sm @lg/tx-record:hidden">
-            <span class="text-amount text-muted-foreground whitespace-nowrap">{{ formattedExpenseAmount }}</span>
+            <span class="text-amount text-muted-foreground whitespace-nowrap"
+              ><CurrencyAmount v-if="transferSourceLeg" :amount="-transferSourceLeg.amount" :owner="transferSourceLeg"
+            /></span>
             <ArrowRight :size="12" class="shrink-0 opacity-40" />
-            <span class="text-amount whitespace-nowrap">{{ formattedIncomeAmount }}</span>
+            <span class="text-amount whitespace-nowrap"
+              ><CurrencyAmount
+                v-if="transferDestinationLeg"
+                :amount="transferDestinationLeg.amount"
+                :owner="transferDestinationLeg"
+            /></span>
           </div>
         </div>
         <template v-else-if="shouldShowGroupedTransfer">
@@ -111,9 +125,16 @@
           </div>
           <!-- Show both amounts on bottom with better spacing and typography -->
           <div class="flex items-center gap-3 text-sm">
-            <span class="text-amount text-app-expense-color whitespace-nowrap">{{ formattedExpenseAmount }}</span>
+            <span class="text-amount text-app-expense-color whitespace-nowrap"
+              ><CurrencyAmount v-if="transferSourceLeg" :amount="-transferSourceLeg.amount" :owner="transferSourceLeg"
+            /></span>
             <ArrowRight :size="12" class="opacity-40" />
-            <span class="text-amount text-app-income-color whitespace-nowrap">{{ formattedIncomeAmount }}</span>
+            <span class="text-amount text-app-income-color whitespace-nowrap"
+              ><CurrencyAmount
+                v-if="transferDestinationLeg"
+                :amount="transferDestinationLeg.amount"
+                :owner="transferDestinationLeg"
+            /></span>
           </div>
         </template>
         <template v-else-if="linkTarget">
@@ -252,9 +273,16 @@
         {{ formateDate(transaction.time) }}
       </div>
       <div class="hidden items-center gap-1.5 text-sm whitespace-nowrap @lg/tx-record:flex">
-        <span class="text-amount text-muted-foreground">{{ formattedExpenseAmount }}</span>
+        <span class="text-amount text-muted-foreground"
+          ><CurrencyAmount v-if="transferSourceLeg" :amount="-transferSourceLeg.amount" :owner="transferSourceLeg"
+        /></span>
         <ArrowRight :size="12" class="shrink-0 opacity-40" />
-        <span class="text-amount">{{ formattedIncomeAmount }}</span>
+        <span class="text-amount"
+          ><CurrencyAmount
+            v-if="transferDestinationLeg"
+            :amount="transferDestinationLeg.amount"
+            :owner="transferDestinationLeg"
+        /></span>
       </div>
     </div>
     <div v-else-if="shouldShowGroupedTransfer || isLoadingGroupedTransfer" class="flex items-start pt-0.5">
@@ -273,7 +301,7 @@
           transaction.transactionType === TRANSACTION_TYPES.expense && 'text-app-expense-color',
         ]"
       >
-        {{ formattedAmount }}
+        <CurrencyAmount :amount="signedRowAmount" :owner="tx" />
       </div>
     </div>
     <div v-else>
@@ -284,7 +312,7 @@
           transaction.transactionType === TRANSACTION_TYPES.expense && 'text-app-expense-color',
         ]"
       >
-        {{ formattedAmount }}
+        <CurrencyAmount :amount="signedRowAmount" :owner="tx" />
       </div>
       <div v-if="formattedPaymentShare" class="text-muted-foreground text-amount text-right text-xs">
         ≈ {{ formattedPaymentShare }}
@@ -302,6 +330,7 @@ import BrandLogo from '@/components/common/brand-logo.vue';
 import { toLogoDisplayProps, toLogoSelection } from '@/components/common/logo-selection';
 import CategoryCircle from '@/components/common/category-circle.vue';
 import DeletedBadge from '@/components/common/deleted-badge.vue';
+import CurrencyAmount from '@/components/common/currency-amount.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { isHttpUrl } from '@/common/utils/external-url';
@@ -543,17 +572,9 @@ const checkedModel = computed({
   },
 });
 
-const formattedAmount = computed(() => {
-  let { amount } = getPaymentRowAmounts({ transaction: transaction.value });
-
-  if (transaction.value.transactionType === TRANSACTION_TYPES.expense) {
-    amount *= -1;
-  }
-
-  return formatUIAmount(amount, {
-    currency: props.tx.currencyCode,
-    meta: props.tx.currencyMeta,
-  });
+const signedRowAmount = computed(() => {
+  const { amount } = getPaymentRowAmounts({ transaction: transaction.value });
+  return transaction.value.transactionType === TRANSACTION_TYPES.expense ? -amount : amount;
 });
 
 // A part shown on its own account, in a currency other than the payment's.
@@ -563,23 +584,5 @@ const formattedPaymentShare = computed(() => {
   if (!own || !isAccountScopedPaymentRow({ transaction: transaction.value }) || own.currencyCode === mainCurrencyCode)
     return '';
   return formatUIAmount(own.paymentAmount, { currency: mainCurrencyCode });
-});
-
-const formattedExpenseAmount = computed(() => {
-  const leg = transferSourceLeg.value;
-  if (!leg) return '';
-  return formatUIAmount(-leg.amount, {
-    currency: leg.currencyCode,
-    meta: leg.currencyMeta,
-  });
-});
-
-const formattedIncomeAmount = computed(() => {
-  const leg = transferDestinationLeg.value;
-  if (!leg) return '';
-  return formatUIAmount(leg.amount, {
-    currency: leg.currencyCode,
-    meta: leg.currencyMeta,
-  });
 });
 </script>

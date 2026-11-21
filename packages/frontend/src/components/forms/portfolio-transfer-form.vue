@@ -350,7 +350,7 @@ const prepareConfirmationData = () => {
 
   if (isLinkExistingTx.value && linkedTransaction.value) {
     const tx = linkedTransaction.value;
-    amount = formatAccountAmount({ amount: tx.amount, account: tx });
+    amount = formatAccountAmount({ amount: tx.amount, account: tx, fullPrecision: true });
     currency = tx.currencyCode;
 
     if (transferType.value === 'portfolio-to-account') {

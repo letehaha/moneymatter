@@ -79,9 +79,21 @@ export default class UsersCurrencies extends Model {
   })
   decimalsOverride!: number | null;
 
-  /** https URL of the image the user picked for a custom currency; `null` draws a monogram. Always `null` on an ISO row. */
-  @Column({ allowNull: true, defaultValue: null, type: DataType.TEXT })
-  logoUrl!: string | null;
+  // The logo of a custom currency; always `null` on an ISO row.
+  @Column({ allowNull: true, type: DataType.STRING(253) })
+  logoDomain!: string | null;
+
+  @Column({ allowNull: true, type: DataType.STRING(16) })
+  logoInitials!: string | null;
+
+  @Column({ allowNull: true, type: DataType.STRING(7) })
+  logoColor!: string | null;
+
+  @Column({ allowNull: true, type: DataType.STRING(64) })
+  logoIcon!: string | null;
+
+  @Column({ allowNull: true, type: DataType.UUID })
+  logoImageId!: string | null;
 
   // Cached decimals (`getCurrencyDecimals`) read `decimalsOverride`, so any change to a row drops them.
   @AfterSave

@@ -34,7 +34,11 @@ export const updateAutomation = withTransaction(
     });
 
     if (conditions) {
-      await assertCurrencyCodesVisible({ userId, codes: collectAutomationCurrencyCodes({ conditions }) });
+      await assertCurrencyCodesVisible({
+        userId,
+        codes: collectAutomationCurrencyCodes({ conditions }),
+        allowedWithoutPlan: collectAutomationCurrencyCodes({ conditions: automation.conditions }),
+      });
     }
 
     const refsRevalidated = Boolean(conditions || actions || isEnabled === true);

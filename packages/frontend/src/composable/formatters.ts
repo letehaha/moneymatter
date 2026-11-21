@@ -80,8 +80,15 @@ export const useFormatCurrency = () => {
     formatShortFiat({ amount, currency: baseCurrency.value?.currency?.code });
 
   /** For amounts on an account or transaction use `formatAccountAmount`, which applies the owner's `currencyMeta`. */
-  const formatAmountByCurrencyCode = ({ amount, currencyCode }: { amount: number; currencyCode: string }) =>
-    formatUIAmount(amount, { currency: currencyCode });
+  const formatAmountByCurrencyCode = ({
+    amount,
+    currencyCode,
+    fullPrecision,
+  }: {
+    amount: number;
+    currencyCode: string;
+    fullPrecision?: boolean;
+  }) => formatUIAmount(amount, { currency: currencyCode, fullPrecision });
 
   /**
    * Currency symbol for a code (e.g. "$", "€"). Defaults to base currency for

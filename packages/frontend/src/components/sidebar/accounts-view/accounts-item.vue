@@ -3,11 +3,10 @@ import AccountLogo from '@/components/common/account-logo.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
-import { useFormatCurrency } from '@/composable';
 import { useAccountAccess } from '@/composable/use-account-access';
 import { useAccountDisplayBalance } from '@/composable/use-account-display-balance';
 import { useSyncStatus } from '@/composable/use-sync-status';
-import { formatCompactUIAmount } from '@/js/helpers';
+import { formatAccountAmount, formatCompactUIAmount } from '@/js/helpers';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { AccountModel } from '@bt/shared/types';
 import { AlertTriangleIcon, HomeIcon, UsersIcon } from '@lucide/vue';
@@ -17,7 +16,6 @@ const props = defineProps<{
   account: AccountModel;
 }>();
 
-const { formatAccountAmount } = useFormatCurrency();
 const { displayBalance } = useAccountDisplayBalance({ account: toRef(() => props.account) });
 
 const { isSharedWithCaller, ownerHandle, isHouseholdGranted } = useAccountAccess(toRef(() => props.account));
@@ -59,7 +57,7 @@ const needsReauth = computed(() => isAccountNeedingReauth(props.account));
             <AlertTriangleIcon class="text-destructive-text size-3.5 shrink-0" />
           </ResponsiveTooltip>
         </div>
-        <DesktopOnlyTooltip :content="formatAccountAmount({ amount: displayBalance, account })">
+        <DesktopOnlyTooltip :content="formatAccountAmount({ amount: displayBalance, account, fullPrecision: true })">
           <span class="text-amount shrink-0 text-sm font-medium" :class="displayBalance < 0 && 'text-destructive-text'">
             {{
               formatCompactUIAmount({

@@ -16,7 +16,7 @@ const schema = z.object({
 export default createController(schema, async ({ user, query }) => {
   const { from, to, date } = query;
 
-  await assertCurrencyCodesVisible({ userId: user.id, codes: [from, to] });
+  await assertCurrencyCodesVisible({ userId: user.id, codes: [from, to], allowedWithoutPlan: [from, to] });
 
   try {
     const data = await userExchangeRateService.getExchangeRate({

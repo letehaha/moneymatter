@@ -7,6 +7,6 @@ export const listCustomCurrenciesTool = defineTool({
   toolset: 'currencies',
   access: 'read',
   description:
-    "List the user's custom currencies (their own units such as points or crypto tokens, not ISO codes). Returns code, name, symbol, decimals and logoUrl for each.",
+    "List the user's custom currencies (their own units such as points or crypto tokens, not ISO codes). Returns code, name, symbol, decimals and the logo fields (logoDomain, logoInitials, logoColor, logoIcon, logoImageId) for each.",
   run: ({ userId }) => listCustomCurrencies({ userId }),
 });

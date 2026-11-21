@@ -1106,7 +1106,11 @@ const assertCustomSchema = async ({
     { table: 'UsersCurrencies', column: 'nameOverride', type: 'character varying', nullable: true },
     { table: 'UsersCurrencies', column: 'symbolOverride', type: 'character varying', nullable: true },
     { table: 'UsersCurrencies', column: 'decimalsOverride', type: 'integer', nullable: true },
-    { table: 'UsersCurrencies', column: 'logoUrl', type: 'text', nullable: true },
+    { table: 'UsersCurrencies', column: 'logoDomain', type: 'character varying', nullable: true },
+    { table: 'UsersCurrencies', column: 'logoInitials', type: 'character varying', nullable: true },
+    { table: 'UsersCurrencies', column: 'logoColor', type: 'character varying', nullable: true },
+    { table: 'UsersCurrencies', column: 'logoIcon', type: 'character varying', nullable: true },
+    { table: 'UsersCurrencies', column: 'logoImageId', type: 'uuid', nullable: true },
   ];
   for (const { table, column, type, nullable } of newColumns) {
     const info = await columnDetails({ sequelize, table, column });
@@ -1195,7 +1199,7 @@ const assertCustomConstraints = async ({ sequelize, step }: { sequelize: Sequeli
 
   const userCurrencyDefaults = await scalar<number>({
     sequelize,
-    sql: `SELECT count(*)::int FROM "UsersCurrencies" WHERE "nameOverride" IS NOT NULL OR "symbolOverride" IS NOT NULL OR "decimalsOverride" IS NOT NULL OR "logoUrl" IS NOT NULL`,
+    sql: `SELECT count(*)::int FROM "UsersCurrencies" WHERE "nameOverride" IS NOT NULL OR "symbolOverride" IS NOT NULL OR "decimalsOverride" IS NOT NULL OR "logoDomain" IS NOT NULL OR "logoInitials" IS NOT NULL OR "logoColor" IS NOT NULL OR "logoIcon" IS NOT NULL OR "logoImageId" IS NOT NULL`,
   });
   check({ ok: userCurrencyDefaults === 0, label: `${step}: existing UsersCurrencies rows have no overrides` });
 

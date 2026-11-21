@@ -263,7 +263,7 @@ const prepareConfirmationData = () => {
 
   if (isLinkMode.value && linkedTransaction.value) {
     const tx = linkedTransaction.value;
-    amount = formatAccountAmount({ amount: tx.amount, account: tx });
+    amount = formatAccountAmount({ amount: tx.amount, account: tx, fullPrecision: true });
     const accountName =
       accountsRecord.value[tx.accountId]?.name || t('forms.directCashTransaction.linkedTransactionLabel');
 

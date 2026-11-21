@@ -1,8 +1,11 @@
+import { FEATURES } from '@bt/shared/types';
 import { isCurrencyCodeFormat, normalizeCurrencyCode } from '@common/lib/currency-code-format';
 import { t } from '@i18n/index';
-import { ValidationError } from '@js/errors';
+import { PlanRequiredError, ValidationError } from '@js/errors';
 import Currencies from '@models/currencies.model';
 import UsersCurrencies from '@models/users-currencies.model';
+import { FEATURE_NOT_IN_PLAN_MESSAGE, hasFeature } from '@services/entitlements/feature-trial.service';
+import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
 import { Op } from 'sequelize';
 
 type CodeInput = string | null | undefined;
@@ -79,25 +82,38 @@ export const buildInvalidCurrencyMessage = ({
  * entries are skipped, so optional fields pass straight in. See `resolveVisibleCurrencies` for the
  * visibility rule.
  *
+ * A custom code then needs the custom currencies plan (402), except the ones in `allowedWithoutPlan`:
+ * every code on a read or a transaction write, the codes an edited row already stores.
+ *
  * Run it before any code reaches a foreign key, `ensureUserCurrencyConnected` or an exchange-rate
  * lookup: the request schema only checks the shape of the code.
  */
 export const assertCurrencyCodesVisible = async ({
   userId,
   codes,
+  allowedWithoutPlan = [],
 }: {
   userId: number;
   codes: readonly CodeInput[];
+  allowedWithoutPlan?: readonly CodeInput[];
 }): Promise<void> => {
-  const { rejected } = await resolveVisibleCurrencies({ userId, codes });
+  const { visible, rejected } = await resolveVisibleCurrencies({ userId, codes });
 
   const [firstRejected] = rejected;
-  if (firstRejected === undefined) return;
+  if (firstRejected !== undefined) {
+    const ownCustomCodes = await getOwnCustomCurrencyCodes({ userId });
 
-  const ownCustomCodes = await getOwnCustomCurrencyCodes({ userId });
+    throw new ValidationError({
+      message: buildInvalidCurrencyMessage({ code: firstRejected, ownCustomCodes }),
+      details: { rejectedCodes: rejected },
+    });
+  }
 
-  throw new ValidationError({
-    message: buildInvalidCurrencyMessage({ code: firstRejected, ownCustomCodes }),
-    details: { rejectedCodes: rejected },
-  });
+  const allowed = new Set(allowedWithoutPlan.filter(Boolean).map((code) => normalizeCurrencyCode(code!)));
+  if (
+    visible.some((row) => row.isCustom && !allowed.has(row.code)) &&
+    !hasFeature({ entitlements: await getEntitlementsByUserId({ userId }), feature: FEATURES.custom_currencies })
+  ) {
+    throw new PlanRequiredError({ message: FEATURE_NOT_IN_PLAN_MESSAGE });
+  }
 };

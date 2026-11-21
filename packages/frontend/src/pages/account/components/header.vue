@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AccountLogo from '@/components/common/account-logo.vue';
+import CurrencyAmount from '@/components/common/currency-amount.vue';
 import ExternalUrlLinkButton from '@/components/common/external-url-link-button.vue';
 import {
   DropdownMenu,
@@ -235,7 +236,7 @@ watch([formEditingPopoverOpen, () => props.account.id], () => {
           @click="adjustmentDialogOpen = true"
         >
           <span class="text-amount text-3xl">
-            {{ toLocalCurrencyNumber(displayBalance, { currency: account.currencyCode, meta: account.currencyMeta }) }}
+            <CurrencyAmount bare :amount="displayBalance" :owner="account" />
             {{ account.currencyCode }}
           </span>
           <span v-if="baseCurrency && account.currencyCode !== baseCurrency.currencyCode" class="text-white opacity-50">
@@ -246,7 +247,7 @@ watch([formEditingPopoverOpen, () => props.account.id], () => {
         </button>
         <div v-else class="flex flex-wrap items-end justify-start gap-2">
           <span class="text-amount text-3xl">
-            {{ toLocalCurrencyNumber(displayBalance, { currency: account.currencyCode, meta: account.currencyMeta }) }}
+            <CurrencyAmount bare responsive :amount="displayBalance" :owner="account" />
             {{ account.currencyCode }}
           </span>
           <span v-if="baseCurrency && account.currencyCode !== baseCurrency.currencyCode" class="text-white opacity-50">

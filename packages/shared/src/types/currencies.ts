@@ -1,3 +1,4 @@
+import type { EntityLogoFields, EntityLogoWritePayload } from './entity-logo';
 import { MAX_CURRENCY_DECIMALS } from './money';
 import type { RecordId } from './record-id';
 import type { UserModel } from './users';
@@ -28,8 +29,6 @@ export const CURRENCY_CODE_PATTERN = new RegExp(`^[A-Z0-9]{${CURRENCY_CODE_MIN_L
 
 export const CUSTOM_CURRENCY_NAME_MAX_LENGTH = 255;
 export const CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH = 8;
-/** Longest logo URL a custom currency stores. */
-export const CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH = 2048;
 export const CUSTOM_CURRENCY_DECIMALS_MIN = 0;
 export const CUSTOM_CURRENCY_DECIMALS_MAX = MAX_CURRENCY_DECIMALS;
 
@@ -59,15 +58,13 @@ export interface CurrencyMeta {
 }
 
 /** A user's custom currency as `/user/currencies/custom` returns it, overrides applied. */
-export interface CustomCurrencyModel extends CurrencyMeta {
+export interface CustomCurrencyModel extends CurrencyMeta, EntityLogoFields {
   code: string;
   name: string;
   isCustom: true;
-  /** https URL of the image the user picked for the currency; `null` draws a monogram instead. */
-  logoUrl: string | null;
 }
 
-export interface CreateCustomCurrencyBody {
+export interface CreateCustomCurrencyBody extends EntityLogoWritePayload {
   code: string;
   name: string;
   /** 0 to `MAX_CURRENCY_DECIMALS`. */
@@ -77,16 +74,15 @@ export interface CreateCustomCurrencyBody {
   rate: { value: number; quoteCode?: string };
 }
 
-export interface UpdateCustomCurrencyBody {
+export interface UpdateCustomCurrencyBody extends EntityLogoWritePayload {
   name?: string;
   /** Changing it is allowed only while none of the user's rows use the currency. */
   decimals?: number;
   symbol?: string | null;
-  /** An https URL, or `null` to clear the logo; absent keeps the stored one. */
-  logoUrl?: string | null;
 }
 
-export interface UserCurrencyModel {
+/** The logo fields carry a custom currency's logo; always `null` on an ISO currency. */
+export interface UserCurrencyModel extends EntityLogoFields {
   id: RecordId;
   userId: number;
   currencyCode: string;
@@ -99,8 +95,6 @@ export interface UserCurrencyModel {
   symbolOverride: string | null;
   /** Raw custom definition: its decimals. `currency` already carries them; always `null` on an ISO currency. */
   decimalsOverride: number | null;
-  /** https URL of the image the user picked for a custom currency; always `null` on an ISO currency. */
-  logoUrl: string | null;
   currency?: CurrencyModel;
   user?: UserModel;
 }

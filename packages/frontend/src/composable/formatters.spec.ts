@@ -37,7 +37,7 @@ describe('useFormatCurrency', () => {
     it("keeps a custom currency's decimals, so a small amount is not rounded away", () => {
       const { formatWholeOrCompactAmount } = useFormatCurrency();
 
-      expect(formatWholeOrCompactAmount({ amount: 0.3, currencyCode: 'BTC' })).toBe('0.30000000 ₿');
+      expect(formatWholeOrCompactAmount({ amount: 0.00012345, currencyCode: 'BTC' })).toBe('0.0001235 ₿');
     });
   });
 

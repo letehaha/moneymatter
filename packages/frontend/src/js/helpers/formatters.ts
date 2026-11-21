@@ -25,6 +25,38 @@ export function toLocalNumber(
   return String(value);
 }
 
+const DISPLAY_SIGNIFICANT_DIGITS = 4;
+const DISPLAY_MIN_FRACTION_DIGITS = 2;
+
+const rendersAsPlainNumber = ({ code, display }: { code: string; display: CurrencyMeta }) =>
+  display.isCustom || !isIntlCurrencyCode({ code });
+
+/**
+ * Fraction digits of a custom currency's amount: 4 significant digits, never fewer than 2 decimals
+ * nor more than the currency carries, trailing zeros trimmed down to 2.
+ * 1 → "1.00", 1.23456789 → "1.235", 0.00012345 → "0.0001235", 1234.5678 → "1,234.57".
+ * `fullPrecision` keeps every digit the currency carries, still trimming trailing zeros.
+ */
+const getCustomFractionDigits = ({
+  value,
+  decimals,
+  fullPrecision = false,
+}: {
+  value: number;
+  decimals: number;
+  fullPrecision?: boolean;
+}): { minimumFractionDigits: number; maximumFractionDigits: number } => {
+  const minimumFractionDigits = Math.min(DISPLAY_MIN_FRACTION_DIGITS, decimals);
+  if (fullPrecision) return { minimumFractionDigits, maximumFractionDigits: decimals };
+  const abs = Math.abs(value);
+  if (!abs || !Number.isFinite(abs)) return { minimumFractionDigits, maximumFractionDigits: minimumFractionDigits };
+  const significantFractionDigits = DISPLAY_SIGNIFICANT_DIGITS - 1 - Math.floor(Math.log10(abs));
+  return {
+    minimumFractionDigits,
+    maximumFractionDigits: Math.min(decimals, Math.max(minimumFractionDigits, significantFractionDigits)),
+  };
+};
+
 function toLocalFiatCurrency(
   value: string | number | undefined | null,
   options: Intl.NumberFormatOptions & {
@@ -32,21 +64,24 @@ function toLocalFiatCurrency(
     meta?: CurrencyMeta | null;
     /** Scale suffix ("k", "M"), placed after the number and before a custom currency's label. */
     suffix?: string;
+    /** Every digit a custom currency carries instead of its shortened display. */
+    fullPrecision?: boolean;
   } = {},
 ): string {
   if (value !== undefined && value !== null) {
-    const { meta, suffix = '', ...intlOptions } = options;
+    const { meta, suffix = '', fullPrecision, ...intlOptions } = options;
     const currency = intlOptions.currency || 'USD';
     const display = resolveCurrencyDisplay({ code: currency, meta });
     const currencyDigits = display.decimals;
-    // A custom code (or one Intl rejects as malformed) renders as a plain number with the
-    // currency's own decimals plus its symbol or code, never in `Intl` currency style: Intl
-    // accepts any three letters ("SAT", "BTC") and would apply its own digits and a `¤` sign.
-    if (display.isCustom || !isIntlCurrencyCode({ code: currency })) {
+    // A custom code (or one Intl rejects as malformed) renders as a plain number plus its symbol
+    // or code, never in `Intl` currency style: Intl accepts any three letters ("SAT", "BTC") and
+    // would apply its own digits and a `¤` sign.
+    if (rendersAsPlainNumber({ code: currency, display })) {
       const label = display.symbol || currency;
+      const digits = getCustomFractionDigits({ value: Number(value), decimals: currencyDigits, fullPrecision });
       return `${toLocalNumber(value, {
-        minimumFractionDigits: intlOptions.minimumFractionDigits ?? currencyDigits,
-        maximumFractionDigits: intlOptions.maximumFractionDigits ?? currencyDigits,
+        minimumFractionDigits: intlOptions.minimumFractionDigits ?? digits.minimumFractionDigits,
+        maximumFractionDigits: intlOptions.maximumFractionDigits ?? digits.maximumFractionDigits,
         useGrouping: intlOptions.useGrouping ?? true,
       })}${suffix} ${label}`;
     }
@@ -77,14 +112,20 @@ export function toLocalCurrencyNumber(
     /** The owner's definition of the currency; its decimals win over the registered ones. */
     meta?: CurrencyMeta | null;
     locale?: Intl.LocalesArgument;
+    /** Every digit a custom currency carries instead of its shortened display. */
+    fullPrecision?: boolean;
   } = {},
 ): string {
-  const { currency, meta, ...numberOptions } = options;
-  const digits = resolveCurrencyDisplay({ code: currency || 'USD', meta }).decimals;
+  const { currency, meta, fullPrecision, ...numberOptions } = options;
+  const code = currency || 'USD';
+  const display = resolveCurrencyDisplay({ code, meta });
+  const digits = rendersAsPlainNumber({ code, display })
+    ? getCustomFractionDigits({ value: Number(value), decimals: display.decimals, fullPrecision })
+    : { minimumFractionDigits: display.decimals, maximumFractionDigits: display.decimals };
   return toLocalNumber(value, {
     ...numberOptions,
-    minimumFractionDigits: numberOptions.minimumFractionDigits ?? digits,
-    maximumFractionDigits: numberOptions.maximumFractionDigits ?? digits,
+    minimumFractionDigits: numberOptions.minimumFractionDigits ?? digits.minimumFractionDigits,
+    maximumFractionDigits: numberOptions.maximumFractionDigits ?? digits.maximumFractionDigits,
   });
 }
 
@@ -242,11 +283,14 @@ export function formatUIAmount(
     currency,
     fractionDigits,
     meta,
+    fullPrecision,
   }: {
     currency?: Intl.NumberFormatOptions['currency'];
     fractionDigits?: number;
     /** The owner's definition of the currency; pass the account's `currencyMeta` for its amounts. */
     meta?: CurrencyMeta | null;
+    /** Every digit a custom currency carries instead of its shortened display. */
+    fullPrecision?: boolean;
   } = {},
 ): string {
   if (!Number.isFinite(value)) return String(value);
@@ -255,6 +299,7 @@ export function formatUIAmount(
   return toLocalFiatCurrency(value || 0, {
     currency,
     meta,
+    fullPrecision,
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   });
@@ -264,7 +309,9 @@ export function formatUIAmount(
 export const formatAccountAmount = ({
   amount,
   account,
+  fullPrecision,
 }: {
   amount: number;
   account: { currencyCode: string; currencyMeta?: CurrencyMeta | null };
-}): string => formatUIAmount(amount, { currency: account.currencyCode, meta: account.currencyMeta });
+  fullPrecision?: boolean;
+}): string => formatUIAmount(amount, { currency: account.currencyCode, meta: account.currencyMeta, fullPrecision });

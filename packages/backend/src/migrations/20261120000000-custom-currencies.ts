@@ -14,7 +14,8 @@ import { dropRealTransactionsViewSql } from './utils/real-transactions-view';
  * - "Currencies" gains "isCustom"; "number" (the ISO numeric code) becomes nullable, because a
  *   custom row has none. A check keeps it required on every row that is not custom.
  * - "UsersCurrencies" gains "nameOverride", "symbolOverride", "decimalsOverride" (0 to 8,
- *   `MAX_CURRENCY_DECIMALS`) and "logoUrl": a custom code's definition is per user.
+ *   `MAX_CURRENCY_DECIMALS`) and "logoDomain", "logoInitials", "logoColor", "logoIcon" and
+ *   "logoImageId": a custom code's definition is per user.
  * - The currency-code columns listed in the frozen `utils/currency-code-columns-20261120.ts` widen from
  *   varchar(3) to varchar(16). Postgres rebuilds the foreign keys that reference
  *   "Currencies"."code" when it changes the type, so no constraint is dropped by hand.
@@ -47,7 +48,11 @@ const upStatements = (): string[] => [
      ADD COLUMN "nameOverride" VARCHAR(255),
      ADD COLUMN "symbolOverride" VARCHAR(8),
      ADD COLUMN "decimalsOverride" INTEGER,
-     ADD COLUMN "logoUrl" TEXT;`,
+     ADD COLUMN "logoDomain" VARCHAR(253),
+     ADD COLUMN "logoInitials" VARCHAR(16),
+     ADD COLUMN "logoColor" VARCHAR(7),
+     ADD COLUMN "logoIcon" VARCHAR(64),
+     ADD COLUMN "logoImageId" UUID;`,
   `ALTER TABLE "UsersCurrencies"
      ADD CONSTRAINT "UsersCurrencies_decimalsOverride_range" CHECK ("decimalsOverride" IS NULL OR "decimalsOverride" BETWEEN 0 AND 8);`,
 
@@ -74,7 +79,11 @@ const downStatements = (): string[] => [
      DROP COLUMN "nameOverride",
      DROP COLUMN "symbolOverride",
      DROP COLUMN "decimalsOverride",
-     DROP COLUMN "logoUrl";`,
+     DROP COLUMN "logoDomain",
+     DROP COLUMN "logoInitials",
+     DROP COLUMN "logoColor",
+     DROP COLUMN "logoIcon",
+     DROP COLUMN "logoImageId";`,
 
   `ALTER TABLE "Currencies" DROP CONSTRAINT "Currencies_number_required_unless_custom";`,
   `ALTER TABLE "Currencies"

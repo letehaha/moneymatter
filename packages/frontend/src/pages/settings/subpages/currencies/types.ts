@@ -1,6 +1,7 @@
-import { UserCurrencyModel } from '@bt/shared/types';
+import type { EntityLogoFields, UserCurrencyModel } from '@bt/shared/types';
 
 export type CurrencyWithExchangeRate = UserCurrencyModel & {
+  name: string;
   rate: number;
   quoteCode: string;
   custom?: boolean;
@@ -9,7 +10,7 @@ export type CurrencyWithExchangeRate = UserCurrencyModel & {
 };
 
 /** What the custom currency dialog edits: a custom currency as the user's currency list carries it. */
-export interface EditableCustomCurrency {
+export interface EditableCustomCurrency extends EntityLogoFields {
   code: string;
   name: string;
   symbol: string | null;

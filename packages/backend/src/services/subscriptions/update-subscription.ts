@@ -71,6 +71,10 @@ export const updateSubscription = withTransaction(
     await assertCurrencyCodesVisible({
       userId,
       codes: [fields.expectedCurrencyCode, ...(fields.matchingRules?.rules.map((rule) => rule.currencyCode) ?? [])],
+      allowedWithoutPlan: [
+        subscription.expectedCurrencyCode,
+        ...subscription.matchingRules.rules.map((rule) => rule.currencyCode),
+      ],
     });
 
     if (fields.accountId !== undefined && fields.accountId !== null) {

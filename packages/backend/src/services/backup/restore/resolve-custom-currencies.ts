@@ -1,8 +1,9 @@
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
-import { createCustomCurrencyBodySchema } from '@common/lib/zod/custom-currency-schemas';
+import { customCurrencyDefinitionSchema } from '@common/lib/zod/custom-currency-schemas';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import Currencies, { customCurrencyStub } from '@models/currencies.model';
+import { EMPTY_LOGO_FIELDS } from '@root/serializers/logo-fields.serializer';
 import { insertOrAdopt } from '@services/common/run-in-savepoint';
 import cc from 'currency-codes';
 import { Op, type Transaction } from 'sequelize';
@@ -15,8 +16,6 @@ export interface CustomCurrencyDefinition {
   decimals: number;
   symbol: string | null;
 }
-
-const definitionSchema = createCustomCurrencyBodySchema.omit({ rate: true });
 
 /**
  * Custom definitions are the `users-currencies` rows with a name or decimals override; 422 unless each
@@ -50,7 +49,7 @@ export const readCustomCurrencyDefinitions = ({
       throw new ValidationError({ message: t({ key: 'currencies.customCurrencyCannotBeBase', variables: { code } }) });
     }
 
-    const parsed = definitionSchema.safeParse({
+    const parsed = customCurrencyDefinitionSchema.safeParse({
       code,
       name: row.nameOverride,
       decimals: row.decimalsOverride,
@@ -104,7 +103,7 @@ export const readCustomCurrencyDefinitions = ({
         nameOverride: null,
         symbolOverride: null,
         decimalsOverride: null,
-        logoUrl: null,
+        ...EMPTY_LOGO_FIELDS,
       });
       heldIsoCodes.add(quote!);
     }

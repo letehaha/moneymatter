@@ -123,7 +123,7 @@ describe('currencies store', () => {
       await store.loadCurrencies();
 
       expect(getCurrencyDecimals({ code: 'USDT' })).toBe(6);
-      expect(formatUIAmount(12.345678, { currency: 'USDT' })).toBe('12.345678 ₮');
+      expect(formatUIAmount(12.345678, { currency: 'USDT', fullPrecision: true })).toBe('12.345678 ₮');
     });
 
     it('forgets a custom currency the reloaded lists no longer carry', async () => {

@@ -42,7 +42,7 @@ type ExistingAccountChange = Extract<AccountBalanceChange, { isNewAccount: false
 
 function formatAmount({ change, amount }: { change: AccountBalanceChange; amount: number }): string {
   const account = accountsRecord.value[change.accountId];
-  if (account) return formatAccountAmount({ amount, account });
+  if (account) return formatAccountAmount({ amount, account, fullPrecision: true });
   return toLocalNumber(amount, { maximumFractionDigits: 2 });
 }
 

@@ -229,11 +229,23 @@ watch(mode, () => {
         </template>
         <template v-else>
           <p class="text-muted-foreground mb-1 text-sm">
-            {{ toLocalCurrencyNumber(displayBalance, { currency: currencyCode, meta: account.currencyMeta }) }}
+            {{
+              toLocalCurrencyNumber(displayBalance, {
+                currency: currencyCode,
+                meta: account.currencyMeta,
+                fullPrecision: true,
+              })
+            }}
             {{ currencyCode }}
             →
             <span class="text-foreground font-medium"
-              >{{ toLocalCurrencyNumber(displayTarget!, { currency: currencyCode, meta: account.currencyMeta }) }}
+              >{{
+                toLocalCurrencyNumber(displayTarget!, {
+                  currency: currencyCode,
+                  meta: account.currencyMeta,
+                  fullPrecision: true,
+                })
+              }}
               {{ currencyCode }}</span
             >
           </p>
@@ -247,6 +259,7 @@ watch(mode, () => {
                     amount: toLocalCurrencyNumber(Math.abs(diff), {
                       currency: currencyCode,
                       meta: account.currencyMeta,
+                      fullPrecision: true,
                     }),
                     currency: currencyCode,
                   })
@@ -254,6 +267,7 @@ watch(mode, () => {
                     amount: toLocalCurrencyNumber(Math.abs(diff), {
                       currency: currencyCode,
                       meta: account.currencyMeta,
+                      fullPrecision: true,
                     }),
                     currency: currencyCode,
                   })

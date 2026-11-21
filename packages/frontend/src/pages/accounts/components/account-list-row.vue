@@ -53,7 +53,7 @@
         class="text-sm font-semibold tabular-nums"
         :class="displayBalance < 0 ? 'text-destructive-text' : 'text-foreground'"
       >
-        {{ formatAccountAmount({ amount: displayBalance, account }) }}
+        <CurrencyAmount :amount="displayBalance" :owner="account" />
       </div>
       <div
         v-if="account.currencyCode !== baseCurrencyCode"
@@ -70,6 +70,7 @@
 <script setup lang="ts">
 import { ACCOUNT_CATEGORIES_TRANSLATION_KEYS } from '@/common/const/account-categories-verbose';
 import AccountLogo from '@/components/common/account-logo.vue';
+import CurrencyAmount from '@/components/common/currency-amount.vue';
 import CurrencyIcon from '@/components/common/currency-icon.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable';
@@ -93,7 +94,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const { formatAccountAmount, formatBaseCurrency } = useFormatCurrency();
+const { formatBaseCurrency } = useFormatCurrency();
 
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const baseCurrencyCode = computed(() => baseCurrency.value?.currency?.code);

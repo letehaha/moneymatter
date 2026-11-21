@@ -1,11 +1,15 @@
 import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
+import { logger } from '@js/utils/logger';
 import Currencies from '@models/currencies.model';
 import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrenciesModel, * as UsersCurrencies from '@models/users-currencies.model';
+import { LOGO_FIELD_KEYS } from '@services/brand-logos/apply-manual-logo-patch';
 import { withTransaction } from '@services/common/with-transaction';
 import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { lockUserCurrencies } from '@services/currencies/lock-user-currencies';
+import { copyLogoImageIfPresent } from '@services/logo-images/logo-images.service';
+import pick from 'lodash/pick';
 import { Op } from 'sequelize';
 
 /**
@@ -91,7 +95,16 @@ export const ensureUserCurrencyConnected = withTransaction(
       nameOverride: ownerRow.nameOverride,
       symbolOverride: ownerRow.symbolOverride,
       decimalsOverride: ownerRow.decimalsOverride,
-      logoUrl: ownerRow.logoUrl,
+      ...pick(ownerRow, LOGO_FIELD_KEYS),
+      // A logo blob has one owner row, which deletes it on edit or delete. A failed copy must not
+      // fail the collaborator's write, so the copy goes without the image.
+      logoImageId: await copyLogoImageIfPresent({ id: ownerRow.logoImageId }).catch((error: unknown) => {
+        logger.error(
+          { message: 'Failed to copy a custom currency logo image', error: error as Error },
+          { code: 'LOGO_IMAGE_COPY_FAILED', logoImageId: ownerRow.logoImageId },
+        );
+        return null;
+      }),
     });
   },
 );

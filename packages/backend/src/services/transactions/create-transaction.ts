@@ -407,7 +407,11 @@ export const createTransaction = withTransaction(
       throw new ValidationError({ message: t({ key: 'transactions.paymentLegsNotAllowed' }) });
     }
 
-    await assertCurrencyCodesVisible({ userId, codes: [payload.originalCurrencyCode] });
+    await assertCurrencyCodesVisible({
+      userId,
+      codes: [payload.originalCurrencyCode],
+      allowedWithoutPlan: [payload.originalCurrencyCode],
+    });
 
     try {
       // Captured before the coercion below, which would hide a non-positive amount from

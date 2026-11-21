@@ -19,7 +19,9 @@ jest.mock('@services/currencies/assert-currency-codes-visible', () => ({
   assertCurrencyCodesVisible: jest.fn(),
 }));
 jest.mock('@services/currencies/lock-user-currencies', () => ({ lockUserCurrencies: jest.fn() }));
+jest.mock('@services/logo-images/logo-images.service', () => ({ copyLogoImageIfPresent: jest.fn() }));
 jest.mock('@i18n/index', () => ({ t: ({ key }: { key: string }) => key }));
+jest.mock('@js/utils/logger', () => ({ logger: { error: jest.fn() } }));
 
 /* eslint-disable import/first */
 import { ValidationError } from '@js/errors';
@@ -28,6 +30,7 @@ import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrenciesModel, * as UsersCurrencies from '@models/users-currencies.model';
 import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { lockUserCurrencies } from '@services/currencies/lock-user-currencies';
+import { copyLogoImageIfPresent } from '@services/logo-images/logo-images.service';
 
 import { ensureUserCurrencyConnected } from './ensure-currency-connected.service';
 /* eslint-enable import/first */
@@ -39,8 +42,13 @@ const OWNER_DEFINITION = {
   nameOverride: 'Sats',
   symbolOverride: 's',
   decimalsOverride: 8,
-  logoUrl: 'https://example.com/sats.png',
+  logoDomain: null,
+  logoInitials: null,
+  logoColor: null,
+  logoIcon: null,
+  logoImageId: '00000000-0000-4000-8000-000000000001',
 };
+const COPIED_IMAGE_ID = '00000000-0000-4000-8000-000000000002';
 
 const findCurrency = Currencies.findByPk as jest.Mock<AnyFn>;
 const findHolding = UsersCurrenciesModel.findOne as jest.Mock<AnyFn>;
@@ -50,6 +58,7 @@ const assertVisible = assertCurrencyCodesVisible as jest.Mock<AnyFn>;
 const findRates = UserExchangeRates.findAll as unknown as jest.Mock<AnyFn>;
 const copyRates = UserExchangeRates.bulkCreate as unknown as jest.Mock<AnyFn>;
 const lockHoldings = lockUserCurrencies as jest.Mock<AnyFn>;
+const copyLogoImage = copyLogoImageIfPresent as jest.Mock<AnyFn>;
 
 const holdingsOf = ({ owner }: { owner: boolean }) =>
   findHolding.mockImplementation(async (options) => {
@@ -69,6 +78,7 @@ describe('ensureUserCurrencyConnected', () => {
       { baseCode: 'SAT', quoteCode: 'USD', rate: 0.0006 },
       { baseCode: 'USD', quoteCode: 'SAT', rate: 1666.67 },
     ]);
+    copyLogoImage.mockResolvedValue(COPIED_IMAGE_ID);
 
     await ensureUserCurrencyConnected({
       userId: COLLABORATOR_ID,
@@ -85,8 +95,13 @@ describe('ensureUserCurrencyConnected', () => {
       nameOverride: OWNER_DEFINITION.nameOverride,
       symbolOverride: OWNER_DEFINITION.symbolOverride,
       decimalsOverride: OWNER_DEFINITION.decimalsOverride,
-      logoUrl: OWNER_DEFINITION.logoUrl,
+      logoDomain: OWNER_DEFINITION.logoDomain,
+      logoInitials: OWNER_DEFINITION.logoInitials,
+      logoColor: OWNER_DEFINITION.logoColor,
+      logoIcon: OWNER_DEFINITION.logoIcon,
+      logoImageId: COPIED_IMAGE_ID,
     });
+    expect(copyLogoImage).toHaveBeenCalledWith({ id: OWNER_DEFINITION.logoImageId });
     expect((findRates.mock.calls[0]![0] as { where: { userId: number } }).where.userId).toBe(OWNER_ID);
     expect(copyRates).toHaveBeenCalledWith([
       { baseCode: 'SAT', quoteCode: 'USD', rate: 0.0006, userId: COLLABORATOR_ID },
@@ -94,6 +109,21 @@ describe('ensureUserCurrencyConnected', () => {
     ]);
     expect(addCurrency).toHaveBeenCalledTimes(1);
     expect(addCurrency).toHaveBeenCalledWith({ userId: COLLABORATOR_ID, currencyCode: 'USD' });
+  });
+
+  it('connects the custom currency without its logo image when copying the image fails', async () => {
+    findCurrency.mockResolvedValue({ code: 'SAT', isCustom: true });
+    holdingsOf({ owner: true });
+    findRates.mockResolvedValue([]);
+    copyLogoImage.mockRejectedValue(new Error('storage unavailable'));
+
+    await ensureUserCurrencyConnected({
+      userId: COLLABORATOR_ID,
+      currencyCode: 'SAT',
+      definitionOwnerUserId: OWNER_ID,
+    });
+
+    expect(createHolding).toHaveBeenCalledWith(expect.objectContaining({ logoImageId: null }));
   });
 
   it('rejects a custom code that neither the user nor the definition owner holds', async () => {

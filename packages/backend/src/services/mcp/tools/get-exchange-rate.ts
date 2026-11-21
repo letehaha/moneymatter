@@ -35,7 +35,7 @@ export const getExchangeRateTool = defineTool({
       };
     }
 
-    await assertCurrencyCodesVisible({ userId, codes: [from, to] });
+    await assertCurrencyCodesVisible({ userId, codes: [from, to], allowedWithoutPlan: [from, to] });
 
     try {
       return await getExchangeRate({

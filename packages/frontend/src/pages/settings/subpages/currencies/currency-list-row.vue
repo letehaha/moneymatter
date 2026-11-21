@@ -1,206 +1,119 @@
 <template>
-  <Collapsible :open="expanded">
-    <component
-      :is="isBase ? 'div' : 'button'"
-      :type="isBase ? undefined : 'button'"
-      :aria-expanded="isBase ? undefined : expanded"
-      :class="
-        cn(
-          'grid w-full grid-cols-[minmax(0,1fr)_14px] items-center gap-3 px-4 py-3 text-left',
-          !isBase &&
-            'hover:bg-hover focus-visible:ring-ring/40 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
-        )
-      "
-      @click="onTriggerClick"
+  <component
+    :is="isBase ? 'div' : 'button'"
+    :type="isBase ? undefined : 'button'"
+    :class="
+      cn(
+        'grid w-full grid-cols-[minmax(0,1fr)_14px] items-center gap-3 px-4 py-3 text-left',
+        !isBase &&
+          'hover:bg-hover focus-visible:ring-ring/40 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
+      )
+    "
+    @click="onTriggerClick"
+  >
+    <div
+      class="flex min-w-0 flex-col gap-2 @[30rem]/currencies:flex-row @[30rem]/currencies:items-center @[30rem]/currencies:gap-3"
     >
-      <div
-        class="flex min-w-0 flex-col gap-2 @[30rem]/currencies:flex-row @[30rem]/currencies:items-center @[30rem]/currencies:gap-3"
-      >
-        <div class="flex min-w-0 items-center gap-3 @[30rem]/currencies:flex-1">
-          <div class="bg-muted flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg">
-            <CurrencyIcon :code="code" size="size-5" />
-          </div>
+      <div class="flex min-w-0 items-center gap-3 @[30rem]/currencies:flex-1">
+        <div class="bg-muted flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg">
+          <CurrencyIcon :code="code" size="size-5" />
+        </div>
 
-          <div class="min-w-0">
-            <div class="flex min-w-0 flex-wrap items-center gap-1.5">
-              <span class="truncate text-sm font-semibold">{{ currencyName }}</span>
+        <div class="min-w-0">
+          <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+            <span class="truncate text-sm font-semibold">{{ currency.name }}</span>
 
+            <span
+              v-if="isBase"
+              class="bg-primary text-primary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold"
+            >
+              {{ $t('settings.currencies.row.baseBadge') }}
+            </span>
+
+            <template v-else>
               <span
-                v-if="isBase"
-                class="bg-primary text-primary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold"
+                :class="
+                  cn(
+                    'shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold',
+                    currency.isCustomCurrency || currency.custom
+                      ? 'bg-primary/15 text-primary-text'
+                      : 'bg-muted text-muted-foreground',
+                  )
+                "
+                :data-testid="currency.isCustomCurrency ? 'custom-currency-badge' : undefined"
               >
-                {{ $t('settings.currencies.row.baseBadge') }}
+                {{ rateKindLabel }}
               </span>
 
-              <template v-else>
-                <span
-                  :class="
-                    cn(
-                      'shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold',
-                      currency.isCustomCurrency || currency.custom
-                        ? 'bg-primary/15 text-primary-text'
-                        : 'bg-muted text-muted-foreground',
-                    )
-                  "
-                  :data-testid="currency.isCustomCurrency ? 'custom-currency-badge' : undefined"
-                >
-                  {{ rateKindLabel }}
-                </span>
-
-                <span
-                  :class="
-                    cn(
-                      'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums',
-                      accountsCount > 0 ? 'bg-muted text-muted-foreground' : 'bg-muted/60 text-muted-foreground/70',
-                    )
-                  "
-                >
-                  {{
-                    accountsCount > 0
-                      ? $t('settings.currencies.row.accountsCount', { count: accountsCount }, accountsCount)
-                      : $t('settings.currencies.row.unused')
-                  }}
-                </span>
-              </template>
-            </div>
-
-            <div class="text-muted-foreground mt-0.5 text-xs tabular-nums">
-              {{ code }}
-            </div>
+              <span
+                :class="
+                  cn(
+                    'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums',
+                    accountsCount > 0 ? 'bg-muted text-muted-foreground' : 'bg-muted/60 text-muted-foreground/70',
+                  )
+                "
+              >
+                {{
+                  accountsCount > 0
+                    ? $t('settings.currencies.row.accountsCount', { count: accountsCount }, accountsCount)
+                    : $t('settings.currencies.row.unused')
+                }}
+              </span>
+            </template>
           </div>
-        </div>
 
-        <div v-if="!isBase" class="pl-12 @[30rem]/currencies:pl-0 @[30rem]/currencies:text-right">
-          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-0.5 @[30rem]/currencies:block">
-            <div class="text-sm font-semibold tabular-nums">
-              <span class="text-muted-foreground text-xs font-normal">1 {{ code }} =</span>
-              {{ rateDisplay }}
-              <span class="text-muted-foreground text-xs font-normal">{{ quoteCode }}</span>
-            </div>
-            <div class="text-sm font-semibold tabular-nums">
-              <span class="text-muted-foreground text-xs font-normal">1 {{ quoteCode }} =</span>
-              {{ quoteRateDisplay }}
-              <span class="text-muted-foreground text-xs font-normal">{{ code }}</span>
-            </div>
+          <div class="text-muted-foreground mt-0.5 text-xs tabular-nums">
+            {{ code }}
           </div>
         </div>
       </div>
 
-      <ChevronDownIcon
-        v-if="!isBase"
-        class="text-muted-foreground size-3.5 transition-transform"
-        :class="{ 'rotate-180': expanded }"
-        aria-hidden="true"
-      />
-      <span v-else class="size-3.5" aria-hidden="true" />
-    </component>
-
-    <CollapsibleContent v-if="!isBase" scroll-into-view>
-      <div class="border-border/60 bg-muted/20 fields-plain border-t px-4 py-4">
-        <ExchangeRateForm
-          :currency="currency"
-          :is-form-disabled="isFormDisabled"
-          @submit="handleSubmit"
-          @trigger-disabled="isFormDisabled = $event"
-        />
-
-        <div class="bg-border/60 my-4 h-px w-full" />
-
-        <div class="flex items-center justify-between gap-3">
-          <Button
-            v-if="currency.isCustomCurrency"
-            variant="outline"
-            size="sm"
-            class="whitespace-nowrap"
-            :disabled="isFormDisabled"
-            data-testid="edit-custom-currency"
-            @click="isEditOpen = true"
-          >
-            <PencilIcon class="size-4" />
-            {{ $t('settings.currencies.row.edit') }}
-          </Button>
-          <SetBaseCurrency
-            v-else
-            :currency="currency"
-            :is-form-disabled="isFormDisabled"
-            @submit="handleSubmit"
-            @trigger-disabled="isFormDisabled = $event"
-          />
-          <DeleteCurrency
-            :currency="currency"
-            :is-form-disabled="isFormDisabled"
-            :is-deletion-disabled="accountsCount > 0"
-            @submit="handleSubmit"
-            @trigger-disabled="isFormDisabled = $event"
-          />
+      <div v-if="!isBase" class="pl-12 @[30rem]/currencies:pl-0 @[30rem]/currencies:text-right">
+        <div class="flex flex-wrap items-baseline gap-x-4 gap-y-0.5 @[30rem]/currencies:block">
+          <div class="text-sm font-semibold tabular-nums">
+            <span class="text-muted-foreground text-xs font-normal">1 {{ code }} =</span>
+            {{ rateDisplay }}
+            <span class="text-muted-foreground text-xs font-normal">{{ quoteCode }}</span>
+          </div>
+          <div class="text-sm font-semibold tabular-nums">
+            <span class="text-muted-foreground text-xs font-normal">1 {{ quoteCode }} =</span>
+            {{ quoteRateDisplay }}
+            <span class="text-muted-foreground text-xs font-normal">{{ code }}</span>
+          </div>
         </div>
       </div>
-    </CollapsibleContent>
-  </Collapsible>
+    </div>
 
-  <CustomCurrencyDialog
-    v-if="editableCurrency"
-    v-model:open="isEditOpen"
-    :currency="editableCurrency"
-    :accounts-count="accountsCount"
-  />
+    <ChevronRightIcon v-if="!isBase" class="text-muted-foreground size-3.5" aria-hidden="true" />
+    <span v-else class="size-3.5" aria-hidden="true" />
+  </component>
 </template>
 
 <script setup lang="ts">
-import { useCurrencyName } from '@/composable';
 import CurrencyIcon from '@/components/common/currency-icon.vue';
-import { Button } from '@/components/lib/ui/button';
 import { toLocalNumber } from '@/js/helpers/formatters';
-import { Collapsible, CollapsibleContent } from '@/components/lib/ui/collapsible';
 import { cn } from '@/lib/utils';
-import { ChevronDownIcon, PencilIcon } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { ChevronRightIcon } from '@lucide/vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import CustomCurrencyDialog from './custom-currency-dialog.vue';
-import ExchangeRateForm from './currency-row/exchange-rate-form.vue';
-import DeleteCurrency from './currency-row/delete-currency.vue';
-import SetBaseCurrency from './currency-row/set-base-currency.vue';
 import { rateDisplayOptions } from './rate-precision';
-import { CurrencyWithExchangeRate, EditableCustomCurrency } from './types';
-import { useRefreshAfterCurrencyChange } from './use-refresh-after-currency-change';
+import { CurrencyWithExchangeRate } from './types';
 
 const props = defineProps<{
   currency: CurrencyWithExchangeRate;
   accountsCount: number;
-  expanded: boolean;
 }>();
 
 const emit = defineEmits<{
-  toggle: [];
-  submit: [];
+  select: [];
 }>();
 
 const { t } = useI18n();
-const refreshAfterChange = useRefreshAfterCurrencyChange();
-const { getCurrencyName } = useCurrencyName();
-
-const isFormDisabled = ref(false);
 
 const isBase = computed(() => props.currency.isDefaultCurrency);
-const isEditOpen = ref(false);
-const editableCurrency = computed<EditableCustomCurrency | null>(() => {
-  const effective = props.currency.currency;
-  if (!effective?.isCustom) return null;
-
-  return { code: effective.code, name: effective.currency, symbol: effective.symbol, decimals: effective.digits };
-});
 const code = computed(() => props.currency.currency?.code ?? '');
 const quoteCode = computed(() => props.currency.quoteCode);
-// A custom currency carries the name its owner gave it; a translated ISO name could shadow it.
-const currencyName = computed(() =>
-  props.currency.isCustomCurrency
-    ? (props.currency.currency?.currency ?? code.value)
-    : getCurrencyName({
-        code: code.value,
-        fallbackName: props.currency.currency?.currency,
-      }),
-);
 
 const RATE_DISPLAY_DECIMALS = 6;
 const formatRate = (value: number) =>
@@ -219,11 +132,6 @@ const quoteRateDisplay = computed(() => formatRate(props.currency.quoteRate));
 
 const onTriggerClick = () => {
   if (isBase.value) return;
-  emit('toggle');
-};
-
-const handleSubmit = () => {
-  emit('submit');
-  void refreshAfterChange();
+  emit('select');
 };
 </script>

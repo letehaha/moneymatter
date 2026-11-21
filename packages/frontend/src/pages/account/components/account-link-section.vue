@@ -293,7 +293,7 @@ const linkingError = computed(() => {
             <div>
               <p class="text-muted-foreground">{{ $t('pages.account.link.systemAccount') }}</p>
               <p class="font-mono">
-                {{ formatAccountAmount({ amount: systemOwnFunds, account }) }}
+                {{ formatAccountAmount({ amount: systemOwnFunds, account, fullPrecision: true }) }}
               </p>
             </div>
             <div>
@@ -303,6 +303,7 @@ const linkingError = computed(() => {
                   formatAmountByCurrencyCode({
                     amount: externalOwnFunds,
                     currencyCode: selectedExternalAccount.currency,
+                    fullPrecision: true,
                   })
                 }}
               </p>
@@ -319,7 +320,7 @@ const linkingError = computed(() => {
                 )
               "
             >
-              {{ formatAccountAmount({ amount: balanceDifference, account }) }}
+              {{ formatAccountAmount({ amount: balanceDifference, account, fullPrecision: true }) }}
             </p>
           </div>
 

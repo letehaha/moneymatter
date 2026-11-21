@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import BrandLogo from '@/components/common/brand-logo.vue';
+import { toLogoDisplayProps, toLogoSelection } from '@/components/common/logo-selection';
 import { resolveCurrencyDisplay } from '@/js/helpers/currency-decimals';
 import { currencyMonogram } from '@/js/helpers/currency-monogram';
 import { getCurrencyIcon } from '@/js/helpers/currencyImage';
@@ -42,20 +44,23 @@ const display = computed(() => resolveCurrencyDisplay({ code: props.code, meta: 
 const isCustom = computed(() => display.value.isCustom);
 
 // The logo belongs to the user's own definition of the code, so only their currency list carries it.
-const logoUrl = computed(() => (isCustom.value ? (currenciesStore.currenciesMap[props.code]?.logoUrl ?? null) : null));
-
-const imageFailed = ref(false);
-
-// A new code or a new logo gets its own chance to load.
-watch([() => props.code, logoUrl], () => {
-  imageFailed.value = false;
+const customLogo = computed(() => {
+  const holding = isCustom.value ? currenciesStore.currenciesMap[props.code] : undefined;
+  return holding ? toLogoSelection(holding) : null;
 });
 
-const imageUrl = computed(() => {
-  if (imageFailed.value || !props.code) return null;
+const flagFailed = ref(false);
 
-  return isCustom.value ? logoUrl.value : getCurrencyIcon(props.code);
-});
+watch(
+  () => props.code,
+  () => {
+    flagFailed.value = false;
+  },
+);
+
+const flagUrl = computed(() =>
+  flagFailed.value || !props.code || isCustom.value ? null : getCurrencyIcon(props.code),
+);
 
 const monogram = computed(() =>
   currencyMonogram({ code: props.code, symbol: display.value.symbol, maxLength: MONOGRAM_MAX_LENGTH[props.size] }),
@@ -63,14 +68,27 @@ const monogram = computed(() =>
 </script>
 
 <template>
+  <span
+    v-if="customLogo"
+    role="img"
+    :aria-label="code"
+    :class="cn('inline-flex shrink-0', attrs.class as string | undefined)"
+    data-testid="currency-icon-logo"
+  >
+    <BrandLogo
+      v-bind="toLogoDisplayProps({ selection: customLogo })"
+      :name="monogram"
+      :class="cn('rounded-full', size)"
+    />
+  </span>
   <img
-    v-if="imageUrl"
-    :src="imageUrl"
+    v-else-if="flagUrl"
+    :src="flagUrl"
     :alt="code"
     :class="cn('shrink-0 rounded-full object-cover', size, attrs.class as string | undefined)"
     loading="lazy"
     data-testid="currency-icon-image"
-    @error="imageFailed = true"
+    @error="flagFailed = true"
   />
   <span
     v-else

@@ -23,14 +23,35 @@
         @blur="touchField('form.code')"
       />
 
-      <InputField
-        v-model="form.name"
-        :label="$t('settings.currencies.custom.nameLabel')"
-        :placeholder="$t('settings.currencies.custom.namePlaceholder')"
-        :error-message="getFieldErrorMessage('form.name')"
-        data-testid="custom-currency-name"
-        @blur="touchField('form.name')"
-      />
+      <div class="flex items-start gap-3">
+        <LogoSquareField
+          v-model="logo"
+          :name-for-search="form.name"
+          :reset-label="$t('common.logo.remove')"
+          :tabs="ALL_LOGO_TABS"
+          :disabled="isPending"
+          align="with-labeled-field"
+        >
+          <template #placeholder>
+            <span
+              class="bg-muted-foreground/15 text-foreground inline-flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-sm leading-none font-semibold tracking-tighter select-none"
+              data-testid="custom-currency-logo-placeholder"
+            >
+              {{ placeholderMonogram }}
+            </span>
+          </template>
+        </LogoSquareField>
+        <div class="min-w-0 flex-1">
+          <InputField
+            v-model="form.name"
+            :label="$t('settings.currencies.custom.nameLabel')"
+            :placeholder="$t('settings.currencies.custom.namePlaceholder')"
+            :error-message="getFieldErrorMessage('form.name')"
+            data-testid="custom-currency-name"
+            @blur="touchField('form.name')"
+          />
+        </div>
+      </div>
 
       <div class="grid grid-cols-2 gap-3">
         <InputField
@@ -115,14 +136,23 @@
 
 <script setup lang="ts">
 import { createCustomCurrency, updateCustomCurrency } from '@/api/currencies';
+import {
+  ALL_LOGO_TABS,
+  type LogoSelection,
+  toLogoPatch,
+  toLogoSelection,
+  toOptionalLogoPayload,
+} from '@/components/common/logo-selection';
+import LogoSquareField from '@/components/common/logo-square-field.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormValidation } from '@/composable/form-validator';
-import { extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
+import { extractApiErrorMessage, isApiErrorWithCode, isHandledByApiClient } from '@/js/errors';
 import { formatUIAmount } from '@/js/helpers';
+import { currencyMonogram } from '@/js/helpers/currency-monogram';
 import { helpers, required } from '@/js/helpers/validators';
 import { useCurrenciesStore } from '@/stores';
 import {
@@ -186,6 +216,12 @@ const buildFormState = (): CustomCurrencyForm => ({
 const form = ref<CustomCurrencyForm>(buildFormState());
 const formError = ref<string | null>(null);
 const blockers = ref<CurrencyInUseBlocker[]>([]);
+const storedLogo = ref<LogoSelection | null>(props.currency ? toLogoSelection(props.currency) : null);
+const logo = ref<LogoSelection | null>(storedLogo.value);
+
+const placeholderMonogram = computed(() =>
+  currencyMonogram({ code: form.value.code, symbol: form.value.symbol, maxLength: 3 }),
+);
 
 const isDecimalsInRange = (value: number | null): value is number =>
   value !== null &&
@@ -203,6 +239,8 @@ const isDecimalsChanged = computed(
 watch(open, (isOpen) => {
   if (!isOpen) return;
   form.value = buildFormState();
+  storedLogo.value = props.currency ? toLogoSelection(props.currency) : null;
+  logo.value = storedLogo.value;
   formError.value = null;
   blockers.value = [];
   resetValidation();
@@ -265,7 +303,7 @@ const previewLabel = computed(() => {
   if (!CURRENCY_CODE_PATTERN.test(code) || !isDecimalsInRange(decimals)) return '';
 
   const meta: CurrencyMeta = { decimals, symbol: symbol.trim() || null, isCustom: true };
-  return formatUIAmount(PREVIEW_AMOUNT, { currency: code, meta });
+  return formatUIAmount(PREVIEW_AMOUNT, { currency: code, meta, fractionDigits: decimals });
 });
 
 const { mutate, isPending } = useMutation({
@@ -278,10 +316,17 @@ const { mutate, isPending } = useMutation({
         code: props.currency.code,
         ...payload,
         ...(isDecimalsChanged.value ? { decimals: decimals! } : {}),
+        ...toLogoPatch({ selection: logo.value, stored: storedLogo.value }),
       });
     }
 
-    return createCustomCurrency({ code, ...payload, decimals: decimals!, rate: { value: rate! } });
+    return createCustomCurrency({
+      code,
+      ...payload,
+      decimals: decimals!,
+      rate: { value: rate! },
+      ...toOptionalLogoPayload({ selection: logo.value }),
+    });
   },
   onSuccess: () => {
     addSuccessNotification(
@@ -293,6 +338,7 @@ const { mutate, isPending } = useMutation({
     void refreshAfterChange();
   },
   onError: (error) => {
+    if (isHandledByApiClient({ error })) return;
     // The API explains the refusal (a decimals change or a code that is taken) in the user's language.
     formError.value =
       extractApiErrorMessage(error) ||

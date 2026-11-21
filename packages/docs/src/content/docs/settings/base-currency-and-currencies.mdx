@@ -57,7 +57,7 @@ Click **How it works?** at the top of the page for a short reminder of how this 
 <Screenshot
   src="/screenshots/settings/currencies-overview.png"
   alt="The Currencies settings page with the base currency (USD) pinned first and two other currencies (EUR, PLN) showing their Live rates and account counts."
-  hint="Open /settings/currencies on an account with base currency EUR, plus USD (live rate, used by at least one account), one currency with a custom rate, and one currency no account uses (Unused badge). Keep all rows collapsed. Show the page header with the Add a currency button and the How it works? link, and every row. Crop to the currencies card."
+  hint="Open /settings/currencies on an account with base currency EUR, plus USD (live rate, used by at least one account), one currency with a custom rate, and one currency no account uses (Unused badge). Keep every dialog closed. Show the page header with the Add a currency button and the How it works? link, and every row. Crop to the currencies card."
 />
 
 ## Add a currency
@@ -89,23 +89,23 @@ If you'd rather use your own rate, for example the one your bank actually charge
 
 <Steps>
 
-1. On the **Currencies** page, click the currency's row to expand it.
+1. On the **Currencies** page, click the currency's row. It opens in a dialog (a drawer on mobile).
 2. Uncheck **Live update**. The two rate fields become editable and a **Save** button appears.
 3. Type the rate in either field: **1 USD =** (how many EUR one dollar buys) or **1 EUR =**. The other fills in automatically.
 4. Click **Save**.
 
 </Steps>
 
-The row now shows a **Custom** badge. Rates must be greater than zero.
+The currency's row now shows a **Custom** badge. Rates must be greater than zero.
 
-In a narrow window, the row's buttons read **Delete** and **Set as base** instead of **Delete currency** and **Set as base currency**.
+In a narrow window, the dialog's buttons read **Delete** and **Set as base** instead of **Delete currency** and **Set as base currency**.
 
-To go back to market rates, expand the row, check **Live update** again and click **Save**. Your custom rate is removed and the row shows **Live** again.
+To go back to market rates, open the currency, check **Live update** again and click **Save**. Your custom rate is removed and the row shows **Live** again.
 
 <Screenshot
   src="/screenshots/settings/custom-exchange-rate.png"
-  alt="An expanded currency row with Live update unchecked, a custom rate typed in, and the Save, Set as base currency and Delete currency buttons."
-  hint="Open /settings/currencies and expand a non-base currency row (for example USD with base EUR). Uncheck Live update and type a new rate in the '1 USD =' field so the inverse fills in and the Save button is enabled. Crop to the expanded row, including the Set as base currency and Delete currency buttons at the bottom."
+  alt="A currency dialog with Live update unchecked, a custom rate typed in, and the Save, Set as base currency and Delete currency buttons."
+  hint="Open /settings/currencies and click a non-base currency row (for example USD with base EUR) to open its dialog. Uncheck Live update and type a new rate in the '1 USD =' field so the inverse fills in and the Save button is enabled. Crop to the dialog, including the Set as base currency and Delete currency buttons at the bottom."
 />
 
 ### What a custom rate changes
@@ -121,7 +121,7 @@ That last row is on purpose: your past spending and income reports stay stable w
 
 <Aside type="note" title="Good to know">
 - **A custom rate applies to every date.** It isn't tied to a day. Say you set 1 USD = 0.90 EUR: every new or edited USD transaction converts at 0.90, even one you back-date to last year.
-- **It's set against your current base currency.** A custom rate only applies when converting into the base currency you set it against. After you change your base currency, most custom rates stop applying and those currencies show **Live** again. They aren't deleted, so if you switch back to your old base currency, they apply again. One exception: if your new base is a currency you had set a custom rate for, your old base currency now uses the reverse of that rate and shows **Custom**. To use market rates for it instead, expand its row, check **Live update** and click **Save**. This also removes the custom rate you'd set for the new base currency, so it won't come back if you switch back later.
+- **It's set against your current base currency.** A custom rate only applies when converting into the base currency you set it against. After you change your base currency, most custom rates stop applying and those currencies show **Live** again. They aren't deleted, so if you switch back to your old base currency, they apply again. One exception: if your new base is a currency you had set a custom rate for, your old base currency now uses the reverse of that rate and shows **Custom**. To use market rates for it instead, open it, check **Live update** and click **Save**. This also removes the custom rate you'd set for the new base currency, so it won't come back if you switch back later.
 - If some balances can't be refreshed with the new rate yet, a warning tells you how many. They update on their own once a rate is available.
 </Aside>
 
@@ -129,7 +129,7 @@ That last row is on purpose: your past spending and income reports stay stable w
 
 <Steps>
 
-1. On the **Currencies** page, expand the currency's row.
+1. On the **Currencies** page, click the currency's row to open it.
 2. Click **Delete currency**.
 3. Confirm in the **Delete currency?** dialog.
 
@@ -149,7 +149,7 @@ Changing your base currency recalculates every converted amount in your account.
 <Steps>
 
 1. On the **Currencies** page, add the new currency if it isn't in your list yet.
-2. Expand its row and click **Set as base currency**.
+2. Click its row and, in the dialog that opens, click **Set as base currency**.
 3. Read the **Change Base Currency?** dialog, then click **Change Base Currency**.
 
 </Steps>
@@ -161,7 +161,7 @@ You can only switch to a currency that MoneyMatter has long-term exchange-rate h
 <Screenshot
   src="/screenshots/settings/change-base-currency-dialog.png"
   alt="The Change Base Currency? confirmation dialog with its warnings and the rounding explanation expanded."
-  hint="Open /settings/currencies, expand a non-base currency row and click Set as base currency. In the Change Base Currency? dialog, expand 'How exactly is rounding calculated?'. Do NOT confirm. Crop to the dialog."
+  hint="Open /settings/currencies, click a non-base currency row and, in its dialog, click Set as base currency. In the Change Base Currency? dialog, expand 'How exactly is rounding calculated?'. Do NOT confirm. Crop to the dialog."
 />
 
 ### What gets recalculated
