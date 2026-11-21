@@ -260,7 +260,7 @@ export const getNetWorthHistory = async ({
         const openingMinorByAccount = new Map(
           accounts
             .filter((a) => a.accountCategory === ACCOUNT_CATEGORIES.loan)
-            .map((a) => [a.id, a.refInitialBalance?.toMinorUnits({ decimals }) ?? 0]),
+            .map((a) => [a.id, a.refInitialBalance.toMinorUnits({ decimals })]),
         );
 
         const series = await getPerAccountBalanceHistory({

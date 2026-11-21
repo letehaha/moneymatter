@@ -164,7 +164,7 @@ const estimatedMinPayment = computed<number | null>(() => {
 
 const estimatedMinPaymentLabel = computed(() => {
   if (estimatedMinPayment.value === null) return null;
-  return formatAmountByCurrencyCode(estimatedMinPayment.value, form.currencyCode || 'USD');
+  return formatAmountByCurrencyCode({ amount: estimatedMinPayment.value, currencyCode: form.currencyCode || 'USD' });
 });
 
 const applyEstimatedMinPayment = () => {

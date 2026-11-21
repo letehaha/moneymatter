@@ -133,7 +133,7 @@ const installmentTotalLabel = computed(() => {
   if (!isInstallment.value) return null;
   const { expectedAmount, maxOccurrences, expectedCurrencyCode } = form.value;
   if (!expectedAmount || !maxOccurrences || !expectedCurrencyCode) return null;
-  return formatAmountByCurrencyCode(expectedAmount * maxOccurrences, expectedCurrencyCode);
+  return formatAmountByCurrencyCode({ amount: expectedAmount * maxOccurrences, currencyCode: expectedCurrencyCode });
 });
 
 const validationRules = computed(() => ({

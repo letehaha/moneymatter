@@ -1,12 +1,9 @@
 import type { RecordId } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
-import Currencies from '@models/currencies.model';
 import Holdings from '@models/investments/holdings.model';
 import InvestmentTransaction from '@models/investments/investment-transaction.model';
 import Securities from '@models/investments/securities.model';
-import UsersCurrencies from '@models/users-currencies.model';
-import { applyCurrencyOverrides } from '@services/currencies/effective-currency';
 import isPlainObject from 'lodash/isPlainObject';
 import omit from 'lodash/omit';
 import { Op } from 'sequelize';
@@ -134,13 +131,7 @@ async function dumpTable({
  * resolves-or-creates by natural key. Prices are not dumped: derived market data
  * the instance refetches, never trusted from an uploaded backup.
  */
-async function dumpReferenceFiles({
-  resolver,
-  userId,
-}: {
-  resolver: ScopeResolver;
-  userId: number;
-}): Promise<BackupFile[]> {
+async function dumpReferenceFiles({ resolver }: { resolver: ScopeResolver }): Promise<BackupFile[]> {
   const portfolioIds = await resolver.getScope({ scope: 'portfolios' });
 
   let securityIds: RecordId[] = [];
@@ -169,38 +160,7 @@ async function dumpReferenceFiles({
     ? await Securities.findAll({ where: { id: { [Op.in]: securityIds } }, raw: true })
     : [];
 
-  const customCurrencies = await dumpCustomCurrencies({ userId });
-
-  return [
-    { path: 'reference/securities.json', rows: securities.length, buffer: toBuffer({ value: securities }) },
-    {
-      path: 'reference/custom-currencies.json',
-      rows: customCurrencies.length,
-      buffer: toBuffer({ value: customCurrencies }),
-    },
-  ];
-}
-
-/**
- * The definitions (code, name, decimals, symbol) of the custom currencies the user holds, as THIS
- * user defined them: their own overrides on top of the global row. The global row carries whoever
- * created the code first, so exporting it would hand one user another user's name, symbol and
- * decimals. A restore on a fresh instance creates the global row from this definition, and on an
- * instance that already has the code the user's own overrides travel in `users-currencies`.
- * Nothing that names a creator travels.
- */
-async function dumpCustomCurrencies({ userId }: { userId: number }): Promise<Row[]> {
-  const held = (await UsersCurrencies.findAll({
-    where: { userId },
-    include: [{ model: Currencies, as: 'currency', where: { isCustom: true }, required: true }],
-    order: [['currencyCode', 'ASC']],
-  })) as (UsersCurrencies & { currency: Currencies })[];
-
-  return held.map((row) => {
-    const { code, name, decimals, symbol } = applyCurrencyOverrides({ currency: row.currency, overrides: row });
-
-    return { code, currency: name, digits: decimals, symbol, isCustom: true };
-  });
+  return [{ path: 'reference/securities.json', rows: securities.length, buffer: toBuffer({ value: securities }) }];
 }
 
 /** Dump every backup file (data + reference) for one user. */
@@ -214,6 +174,6 @@ export async function dumpBackupFiles({ userId }: { userId: number }): Promise<B
     dataFiles.push(await dumpTable({ def, userId, resolver }));
   }
 
-  const referenceFiles = await dumpReferenceFiles({ resolver, userId });
+  const referenceFiles = await dumpReferenceFiles({ resolver });
   return [...dataFiles, ...referenceFiles];
 }

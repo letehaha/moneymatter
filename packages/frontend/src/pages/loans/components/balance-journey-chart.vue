@@ -82,7 +82,7 @@ const { formatAmountByCurrencyCode, getCurrencySymbol } = useFormatCurrency();
 const { format: formatDate } = useDateLocale();
 
 const currencyCode = computed(() => props.loan.currencyCode);
-const formatCurrency = (amount: number) => formatAmountByCurrencyCode(amount, currencyCode.value);
+const formatCurrency = (amount: number) => formatAmountByCurrencyCode({ amount, currencyCode: currencyCode.value });
 const currencySymbol = computed(() => getCurrencySymbol(currencyCode.value));
 
 const startDate = computed(() => parseISO(props.loan.loanDetails.startDate));

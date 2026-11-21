@@ -1,5 +1,4 @@
-import { RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
-import { getCurrencyDecimals } from '@common/lib/currency-precision';
+import { type CurrencyMeta, RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import type { Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
@@ -14,6 +13,7 @@ import TransactionTags from '@models/transaction-tags.model';
 import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { getCategoryPathNames } from '@services/categories/category-hierarchy';
+import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { Op } from 'sequelize';
 
@@ -275,11 +275,10 @@ export async function transformTransactions({
         })
       : '';
 
-  const currencyCodes = [...new Set([...txById.values()].map((tx) => tx.currencyCode))];
-  const decimalsByCurrency = new Map(
-    await Promise.all(currencyCodes.map(async (code) => [code, await getCurrencyDecimals({ userId, code })] as const)),
-  );
-  const decimalsOf = ({ tx }: { tx: Transactions }): number => decimalsByCurrency.get(tx.currencyCode)!;
+  // Rows on other owners' shared accounts follow the owner's definition of the currency.
+  await attachTransactionCurrencyMeta({ transactions: [...txById.values()] });
+  const decimalsOf = ({ tx }: { tx: Transactions }): number =>
+    (tx as Transactions & { currencyMeta: CurrencyMeta }).currencyMeta.decimals;
 
   return transactions.map((tx): TransactionRow => {
     const accountName = resolveAccountName({ id: tx.accountId, context: `transaction ${tx.id}` });
@@ -370,7 +369,7 @@ export async function transformTransactions({
       }),
       amount: tx.amount.toNumber(),
       currency: tx.currencyCode ?? '',
-      amountInBaseCurrency: tx.refAmount?.toNumber() ?? null,
+      amountInBaseCurrency: tx.refAmount.toNumber(),
       baseCurrency: tx.refCurrencyCode ?? '',
       note: tx.note ?? '',
       externalUrl: tx.externalUrl ?? '',

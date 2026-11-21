@@ -5,34 +5,26 @@ import {
   CURRENCY_CODE_COLUMNS_20261120 as CURRENCY_CODE_COLUMNS,
   CURRENCY_CODE_MAX_LENGTH_20261120 as CURRENCY_CODE_MAX_LENGTH,
   ISO_CURRENCY_CODE_LENGTH_20261120 as ISO_CURRENCY_CODE_LENGTH,
-  NULLABLE_REF_COLUMNS_20261120 as NULLABLE_REF_COLUMNS,
 } from './utils/currency-code-columns-20261120';
 import { dropRealTransactionsViewSql } from './utils/real-transactions-view';
 
 /**
  * Schema for per-user custom currencies.
  *
- * - "Currencies" gains "isCustom", "symbol" and "createdByUserId"; "number" (the ISO numeric code)
- *   becomes nullable, because a custom row has none. "createdByUserId" deliberately has no foreign
- *   key: "Currencies" is reference data that must survive a `TRUNCATE "Users" CASCADE`, which a
- *   constraint pointing at "Users" would turn into a wipe of every currency. A check keeps it required on every row that is
- *   not custom, so an ISO code can never lose its number.
- * - "UsersCurrencies" gains "nameOverride", "symbolOverride" and "decimalsOverride" (0 to 8,
- *   `MAX_CURRENCY_DECIMALS`): what the user sees and how many decimals their amounts keep.
+ * - "Currencies" gains "isCustom"; "number" (the ISO numeric code) becomes nullable, because a
+ *   custom row has none. A check keeps it required on every row that is not custom.
+ * - "UsersCurrencies" gains "nameOverride", "symbolOverride", "decimalsOverride" (0 to 8,
+ *   `MAX_CURRENCY_DECIMALS`) and "logoUrl": a custom code's definition is per user.
  * - The currency-code columns listed in the frozen `utils/currency-code-columns-20261120.ts` widen from
  *   varchar(3) to varchar(16). Postgres rebuilds the foreign keys that reference
  *   "Currencies"."code" when it changes the type, so no constraint is dropped by hand.
- * - The base-currency amounts of transactions, splits and accounts become nullable, and
- *   "Transactions"."refAmountMissing" marks a row whose amount could not be converted.
  *
  * `real_transactions` is `SELECT * FROM "Transactions"`, so it is dropped before the column types
- * change and recreated afterwards, which also lets it expose the new column.
+ * change and recreated afterwards.
  *
- * `down` refuses to run while a custom currency, a code longer than three characters, a null
- * base-currency amount or a flagged transaction exists, because narrowing the columns or restoring
- * the NOT NULL constraints would otherwise fail halfway or silently destroy data. Once none
- * exists it reverses every change. The overrides on "UsersCurrencies" are dropped with their
- * columns, including those a user set on an ISO code.
+ * `down` refuses to run while a custom currency or a code longer than three characters exists,
+ * because narrowing the columns would otherwise fail halfway. Once none exists it reverses every
+ * change. The overrides on "UsersCurrencies" are dropped with their columns.
  */
 
 const createRealTransactionsViewSql = `CREATE OR REPLACE VIEW real_transactions AS SELECT * FROM "Transactions" WHERE "isPlanned" = false AND "deletedAt" IS NULL;`;
@@ -47,17 +39,15 @@ const upStatements = (): string[] => [
 
   `ALTER TABLE "Currencies"
      ADD COLUMN "isCustom" BOOLEAN NOT NULL DEFAULT false,
-     ADD COLUMN "symbol" VARCHAR(8),
-     ADD COLUMN "createdByUserId" INTEGER,
      ALTER COLUMN "number" DROP NOT NULL;`,
   `ALTER TABLE "Currencies"
      ADD CONSTRAINT "Currencies_number_required_unless_custom" CHECK ("isCustom" OR "number" IS NOT NULL);`,
-  `CREATE INDEX "currencies_created_by_user_id_idx" ON "Currencies" ("createdByUserId") WHERE "createdByUserId" IS NOT NULL;`,
 
   `ALTER TABLE "UsersCurrencies"
      ADD COLUMN "nameOverride" VARCHAR(255),
      ADD COLUMN "symbolOverride" VARCHAR(8),
-     ADD COLUMN "decimalsOverride" INTEGER;`,
+     ADD COLUMN "decimalsOverride" INTEGER,
+     ADD COLUMN "logoUrl" TEXT;`,
   `ALTER TABLE "UsersCurrencies"
      ADD CONSTRAINT "UsersCurrencies_decimalsOverride_range" CHECK ("decimalsOverride" IS NULL OR "decimalsOverride" BETWEEN 0 AND 8);`,
 
@@ -66,21 +56,11 @@ const upStatements = (): string[] => [
       `ALTER TABLE ${quote(table)} ALTER COLUMN ${quote(column)} TYPE VARCHAR(${CURRENCY_CODE_MAX_LENGTH});`,
   ),
 
-  ...NULLABLE_REF_COLUMNS.map(
-    ({ table, column }) => `ALTER TABLE ${quote(table)} ALTER COLUMN ${quote(column)} DROP NOT NULL;`,
-  ),
-  `ALTER TABLE "Transactions" ADD COLUMN "refAmountMissing" BOOLEAN NOT NULL DEFAULT false;`,
-
   createRealTransactionsViewSql,
 ];
 
 const downStatements = (): string[] => [
   dropRealTransactionsViewSql,
-
-  `ALTER TABLE "Transactions" DROP COLUMN "refAmountMissing";`,
-  ...NULLABLE_REF_COLUMNS.map(
-    ({ table, column }) => `ALTER TABLE ${quote(table)} ALTER COLUMN ${quote(column)} SET NOT NULL;`,
-  ),
 
   ...CURRENCY_CODE_COLUMNS.slice()
     .reverse()
@@ -93,13 +73,11 @@ const downStatements = (): string[] => [
   `ALTER TABLE "UsersCurrencies"
      DROP COLUMN "nameOverride",
      DROP COLUMN "symbolOverride",
-     DROP COLUMN "decimalsOverride";`,
+     DROP COLUMN "decimalsOverride",
+     DROP COLUMN "logoUrl";`,
 
-  `DROP INDEX "currencies_created_by_user_id_idx";`,
   `ALTER TABLE "Currencies" DROP CONSTRAINT "Currencies_number_required_unless_custom";`,
   `ALTER TABLE "Currencies"
-     DROP COLUMN "createdByUserId",
-     DROP COLUMN "symbol",
      DROP COLUMN "isCustom",
      ALTER COLUMN "number" SET NOT NULL;`,
 
@@ -124,14 +102,6 @@ const findDownBlockers = async ({ run }: { run: (sql: string) => Promise<unknown
       blockers.push(`${tooLong} codes longer than ${ISO_CURRENCY_CODE_LENGTH} characters in ${table}.${column}`);
   }
 
-  for (const { table, column } of NULLABLE_REF_COLUMNS) {
-    const missing = await countOf(countSql({ table, where: `${quote(column)} IS NULL` }));
-    if (missing > 0) blockers.push(`${missing} null base-currency amounts in ${table}.${column}`);
-  }
-
-  const flagged = await countOf(countSql({ table: 'Transactions', where: '"refAmountMissing"' }));
-  if (flagged > 0) blockers.push(`${flagged} transactions flagged "refAmountMissing"`);
-
   return blockers;
 };
 
@@ -151,7 +121,7 @@ const runMigration = async ({
       if (blockers.length > 0) {
         throw new Error(
           `Cannot revert 20261120000000-custom-currencies while custom-currency data exists: ${blockers.join('; ')}. ` +
-            'Delete the custom currencies and fill or delete the rows without a base-currency amount first.',
+            'Delete the custom currencies first.',
         );
       }
     }

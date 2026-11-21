@@ -128,6 +128,34 @@ describe('js/helpers/currency-decimals', () => {
       expect(resolveCurrencyDisplay({ code: 'ETH' }).decimals).toBe(DEFAULT_CURRENCY_DECIMALS);
     });
 
+    test('a replacing registration drops codes the new list no longer has', () => {
+      registerCurrencyDecimals({ entries: [{ code: 'GOLD', decimals: 3, isCustom: true, symbol: 'g' }] });
+      registerCurrencyDecimals({ entries: [{ code: 'USD', decimals: 2 }], replace: true });
+
+      expect(resolveCurrencyDisplay({ code: 'GOLD' })).toEqual({
+        decimals: DEFAULT_CURRENCY_DECIMALS,
+        isCustom: true,
+        symbol: null,
+      });
+    });
+
+    test('once the catalogue is loaded, a code it lacks is custom even when Intl accepts it', () => {
+      expect(resolveCurrencyDisplay({ code: 'SAT' }).isCustom).toBe(false);
+
+      registerCurrencyDecimals({ entries: [{ code: 'USD', decimals: 2 }], replace: true });
+
+      expect(resolveCurrencyDisplay({ code: 'SAT' }).isCustom).toBe(true);
+      expect(resolveCurrencyDisplay({ code: 'USD' }).isCustom).toBe(false);
+    });
+
+    test('the owner definitions are replaced, not merged', () => {
+      registerFallbackCurrencyMeta({ entries: [{ code: 'BTC', meta: { decimals: 8, symbol: null, isCustom: true } }] });
+      registerFallbackCurrencyMeta({ entries: [{ code: 'SAT', meta: { decimals: 0, symbol: null, isCustom: true } }] });
+
+      expect(getCurrencyDecimals({ code: 'BTC' })).toBe(DEFAULT_CURRENCY_DECIMALS);
+      expect(getCurrencyDecimals({ code: 'SAT' })).toBe(0);
+    });
+
     test('reset clears the owner definitions too', () => {
       registerFallbackCurrencyMeta({ entries: [{ code: 'BTC', meta: { decimals: 8, symbol: null, isCustom: true } }] });
       resetCurrencyDecimals();

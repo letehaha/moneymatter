@@ -35,10 +35,12 @@
 
       <div class="text-right">
         <p class="text-sm font-semibold">
-          {{ formatAmountByCurrencyCode(Number(balance.availableCash), balance.currencyCode) }}
+          {{
+            formatAmountByCurrencyCode({ amount: Number(balance.availableCash), currencyCode: balance.currencyCode })
+          }}
         </p>
         <p v-if="baseCurrencyCode && balance.currencyCode !== baseCurrencyCode" class="text-muted-foreground text-xs">
-          {{ formatAmountByCurrencyCode(Number(balance.refAvailableCash), baseCurrencyCode) }}
+          {{ formatAmountByCurrencyCode({ amount: Number(balance.refAvailableCash), currencyCode: baseCurrencyCode }) }}
         </p>
       </div>
     </div>

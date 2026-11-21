@@ -9,13 +9,12 @@ import {
   asDecimal,
 } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
-import { afterEach, describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import Transactions from '@models/transactions.model';
-import UsersCurrencies from '@models/users-currencies.model';
 import { redisClient } from '@root/redis-client';
 import { buildLockKey } from '@services/currencies/base-currency-lock';
 import * as helpers from '@tests/helpers';
@@ -737,10 +736,6 @@ describe('SimpleFIN Data Provider E2E', () => {
     describe('with a user-defined currency as the chosen one', () => {
       const CUSTOM_CODE = 'BTC';
 
-      afterEach(async () => {
-        await helpers.removeCustomCurrencyRow({ code: CUSTOM_CODE });
-      });
-
       const connectWithOverride = async () => {
         const connectionId = await connectSimplefin();
         global.mswMockServer.use(
@@ -755,7 +750,15 @@ describe('SimpleFIN Data Provider E2E', () => {
       };
 
       it('rejects a custom currency the user does not hold', async () => {
-        await helpers.seedCustomCurrencyRow({ code: CUSTOM_CODE, name: 'Bitcoin', digits: 8 });
+        const otherUser = await helpers.provisionSecondUserWithBaseCurrency();
+        await helpers.asUser({
+          cookies: otherUser.cookies,
+          fn: () =>
+            helpers.createCustomCurrency({
+              payload: { code: CUSTOM_CODE, name: 'Bitcoin', decimals: 8, rate: { value: 60000 } },
+              raw: true,
+            }),
+        });
 
         const failed = await connectWithOverride();
 
@@ -764,19 +767,9 @@ describe('SimpleFIN Data Provider E2E', () => {
 
       it('connects the account in a custom currency the user holds', async () => {
         const { id: userId } = await helpers.getUserInfo({ raw: true });
-        await helpers.seedCustomCurrencyRow({ code: CUSTOM_CODE, name: 'Bitcoin', digits: 8, createdByUserId: userId });
-        await UsersCurrencies.create({
-          userId,
-          currencyCode: CUSTOM_CODE,
-          isDefaultCurrency: false,
-          liveRateUpdate: false,
-        });
-        const base = global.BASE_CURRENCY.code;
-        await helpers.editUserCurrencyExchangeRate({
-          pairs: [
-            { baseCode: CUSTOM_CODE, quoteCode: base, rate: 60000 },
-            { baseCode: base, quoteCode: CUSTOM_CODE, rate: 1 / 60000 },
-          ],
+        await helpers.createCustomCurrency({
+          payload: { code: CUSTOM_CODE, name: 'Bitcoin', decimals: 8, rate: { value: 60000 } },
+          raw: true,
         });
 
         const response = await connectWithOverride();

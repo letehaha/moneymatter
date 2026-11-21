@@ -65,7 +65,8 @@ export const getTransactionsByTransferId = createController(
       userId,
     });
 
-    // Serialize: convert cents to decimal for API response
+    await attachTransactionCurrencyMeta({ transactions });
+
     return { data: serializeTransactions(transactions) };
   },
 );

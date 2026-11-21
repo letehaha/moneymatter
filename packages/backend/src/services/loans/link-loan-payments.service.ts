@@ -90,6 +90,7 @@ const linkLoanPaymentsImpl = async ({
       // payment's own date. Same-currency returns the amount unchanged.
       const destinationAmount = await calculateRefAmount({
         userId,
+        definitionOwnerUserId: userId,
         amount: tx.amount,
         baseCode: tx.currencyCode,
         quoteCode: loanCurrencyCode,

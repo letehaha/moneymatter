@@ -1,5 +1,6 @@
 import { loadUserData } from '@/api';
 import { ApiErrorResponseError } from '@/js/errors';
+import { resetCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { getSession, signOut } from '@/lib/auth-client';
 import { resetUser } from '@/lib/posthog';
 import { resetQueryCaches } from '@/lib/query-persister';
@@ -14,6 +15,10 @@ import { resetAllDefinedStores } from './setup';
 import { useUserStore } from './user';
 
 vi.mock('./setup', () => ({ resetAllDefinedStores: vi.fn() }));
+vi.mock('@/js/helpers/currency-decimals', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/js/helpers/currency-decimals')>()),
+  resetCurrencyDecimals: vi.fn(),
+}));
 vi.mock('@/routes', () => ({
   ROUTES_NAMES: { signIn: 'auth.sign-in' },
   router: { resolve: () => ({ href: '/sign-in' }) },
@@ -113,7 +118,7 @@ describe('useAuthStore logout', () => {
 
     expect(assign).toHaveBeenCalledWith(url);
     const assignedAt = assign.mock.invocationCallOrder[0]!;
-    for (const cleanup of [resetUser, resetQueryCaches, resetAllDefinedStores]) {
+    for (const cleanup of [resetUser, resetQueryCaches, resetAllDefinedStores, resetCurrencyDecimals]) {
       expect(vi.mocked(cleanup).mock.invocationCallOrder[0]).toBeLessThan(assignedAt);
     }
   });

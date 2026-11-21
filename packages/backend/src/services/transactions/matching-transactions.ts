@@ -19,10 +19,7 @@ type ListFilters = Omit<
   'from' | 'limit' | 'order' | 'sortBy' | 'attributes' | 'isRaw'
 >;
 
-/**
- * `refAmount` is the exact DECIMAL string the raw read returns, `null` for a row with no
- * base-currency value (custom currency, no rate yet).
- */
+/** `refAmount` is the exact DECIMAL string the raw read returns. */
 interface MatchingRow {
   id: string;
   userId: number;
@@ -31,10 +28,8 @@ interface MatchingRow {
   transferNature: TRANSACTION_TRANSFER_NATURE;
   transferId: string | null;
   categoryId: string | null;
-  refAmount: string | null;
+  refAmount: string;
 }
-
-type PricedMatchingRow = MatchingRow & { refAmount: string };
 
 /** Every transaction the list shows for these filters, with the list's visibility scope. */
 const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> => {
@@ -88,9 +83,7 @@ const scopeToCategories = async ({
 
 export const getTransactionsSummary = async (filters: ListFilters): Promise<TransactionsSummaryResponse> => {
   const decimals = await getReportBaseCurrencyDecimals({ userId: filters.userId });
-  // A row with no base-currency amount has no value to total, so it is left out of count and sums.
-  const priced = (await findMatchingRows(filters)).filter((row): row is PricedMatchingRow => row.refAmount !== null);
-  const rows = dedupeTransferLegs(priced);
+  const rows = dedupeTransferLegs(await findMatchingRows(filters));
   // Summed in the base currency's minor units, so the totals are exact integers.
   const minorRows = rows.map((row) => ({
     ...row,

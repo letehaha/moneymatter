@@ -4,21 +4,10 @@ import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-c
 import { IdColumn } from '@common/types/id-column';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
-import { ValidationError } from '@js/errors';
+import { UnexpectedError, ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { Op } from 'sequelize';
-import {
-  Table,
-  Column,
-  Model,
-  ForeignKey,
-  BelongsTo,
-  DataType,
-  AfterSave,
-  AfterDestroy,
-  AfterBulkUpdate,
-  AfterBulkDestroy,
-} from 'sequelize-typescript';
+import { Table, Column, Model, ForeignKey, BelongsTo, DataType, AfterSave, AfterDestroy } from 'sequelize-typescript';
 
 import Currencies, { NON_CURRENCY_CODES } from './currencies.model';
 import Users from './users.model';
@@ -73,15 +62,15 @@ export default class UsersCurrencies extends Model {
   })
   isDefaultCurrency!: boolean;
 
-  /** Display name the user gave the currency; `null` keeps the name from "Currencies". */
+  /** Name of a custom currency as this user defines it; `null` on an ISO row. */
   @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(255) })
   nameOverride!: string | null;
 
-  /** Symbol the user gave the currency; `null` keeps the symbol from "Currencies". */
+  /** Symbol of a custom currency as this user defines it; `null` for none and on an ISO row. */
   @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(8) })
   symbolOverride!: string | null;
 
-  /** Decimals the user's amounts keep in this currency; `null` keeps "Currencies"."digits". */
+  /** Decimals of a custom currency as this user defines it; `null` on an ISO row, which keeps "Currencies"."digits". */
   @Column({
     allowNull: true,
     defaultValue: null,
@@ -99,12 +88,6 @@ export default class UsersCurrencies extends Model {
   @AfterDestroy
   static invalidateDecimalsCacheForRow(instance: UsersCurrencies) {
     invalidateCurrencyDecimalsCache({ userId: instance.userId, code: instance.currencyCode });
-  }
-
-  @AfterBulkUpdate
-  @AfterBulkDestroy
-  static invalidateDecimalsCacheForBulk() {
-    invalidateCurrencyDecimalsCache();
   }
 }
 
@@ -178,7 +161,7 @@ export const addCurrency = async ({
   liveRateUpdate?: boolean;
   isDefaultCurrency?: boolean;
 }) => {
-  await findOrThrowNotFound({
+  const currency = await findOrThrowNotFound({
     query: Currencies.findByPk(currencyCode),
     message: 'Currency with provided code does not exist!',
   });
@@ -188,6 +171,12 @@ export const addCurrency = async ({
     raw: true,
   });
   if (existingCurrency) return existingCurrency;
+
+  if (currency.isCustom) {
+    throw new UnexpectedError({
+      message: `addCurrency cannot hold the custom currency ${currencyCode}; use createCustomCurrency or ensureUserCurrencyConnected`,
+    });
+  }
 
   if (NON_CURRENCY_CODES.includes(currencyCode)) {
     throw new ValidationError({

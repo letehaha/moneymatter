@@ -449,9 +449,7 @@ describe('Change Base Currency', () => {
         amount: Money.fromDecimal(sampleUahTx.amount),
         rate: uahExchangeRate.rate,
       });
-      expect(Money.fromDecimal(sampleUahTx.refAmount!).toDecimalString(2)).toBe(
-        expectedUahRefAmount.toDecimalString(2),
-      );
+      expect(Money.fromDecimal(sampleUahTx.refAmount).toDecimalString(2)).toBe(expectedUahRefAmount.toDecimalString(2));
 
       // Validate EUR transaction calculation using the actual service function
       const expectedEurRefAmount = calculateRefAmountFromParams({
@@ -460,9 +458,7 @@ describe('Change Base Currency', () => {
         amount: Money.fromDecimal(sampleEurTx.amount),
         rate: eurExchangeRate.rate,
       });
-      expect(Money.fromDecimal(sampleEurTx.refAmount!).toDecimalString(2)).toBe(
-        expectedEurRefAmount.toDecimalString(2),
-      );
+      expect(Money.fromDecimal(sampleEurTx.refAmount).toDecimalString(2)).toBe(expectedEurRefAmount.toDecimalString(2));
 
       // Validate USD transaction (should be 1:1)
       expect(sampleUsdTx.refAmount).toEqual(sampleUsdTx.amount);
@@ -632,12 +628,12 @@ describe('Change Base Currency', () => {
       });
 
       expect(tx.refCurrencyCode).toBe('JPY');
-      expect(Money.fromDecimal(tx.refAmount!).toDecimalString(2)).toBe(expectedRefAmount.toDecimalString(2));
+      expect(Money.fromDecimal(tx.refAmount).toDecimalString(2)).toBe(expectedRefAmount.toDecimalString(2));
       expect(Number.isInteger(Number(tx.refAmount))).toBe(true);
 
       const account = (await Accounts.findByPk(usdAccount.id))!;
-      expect(Number.isInteger(account.refInitialBalance!.toNumber())).toBe(true);
-      expect(Number.isInteger(account.refCurrentBalance!.toNumber())).toBe(true);
+      expect(Number.isInteger(account.refInitialBalance.toNumber())).toBe(true);
+      expect(Number.isInteger(account.refCurrentBalance.toNumber())).toBe(true);
 
       const balances = await helpers.getBalanceHistory({ accountId: usdAccount.id, raw: true });
       expect(balances.length).toBeGreaterThan(0);

@@ -46,8 +46,7 @@ const getAverageMonthlyIncome = async ({
 
   let total = Money.zero();
   for (const tx of incomeTxs) {
-    // A row with no base-currency amount yet (custom currency, no rate) is left out of the sum.
-    if (tx.refAmount) total = total.add(tx.refAmount);
+    total = total.add(tx.refAmount);
   }
 
   return total.divide(lookbackMonths);
@@ -153,7 +152,12 @@ const getSubscriptionsSummaryImpl = async ({
       const refAmount = calculateRefAmountFromParams({
         amount: sub.expectedAmount!,
         rate,
-        ...(await getConversionDecimals({ userId, baseCode: currencyCode, quoteCode: baseCurrencyCode })),
+        ...(await getConversionDecimals({
+          userId,
+          definitionOwnerUserId: userId,
+          baseCode: currencyCode,
+          quoteCode: baseCurrencyCode,
+        })),
       });
 
       const multiplier = monthlyMultiplier(sub);

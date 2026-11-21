@@ -40,8 +40,7 @@ const UNIT_STEP_DAYS: Record<SUBSCRIPTION_INTERVAL_UNITS, number> = {
 export interface LinkedPaymentLike {
   id: string;
   amount: number;
-  /** `null` while a custom currency has no rate: the payment counts as 0 in base-currency figures. */
-  refAmount: number | null;
+  refAmount: number;
   currencyCode: string;
   refCurrencyCode: string;
   time: Date | string;
@@ -139,7 +138,7 @@ const settledOnly = <T extends LinkedPaymentLike>({ payments }: { payments: T[] 
   payments.filter((payment) => !payment.isPlanned);
 
 const sumRefAmounts = <T extends LinkedPaymentLike>({ payments }: { payments: T[] }): number =>
-  payments.reduce((sum, payment) => sum + (payment.refAmount ?? 0), 0);
+  payments.reduce((sum, payment) => sum + payment.refAmount, 0);
 
 const hasConvertedPayment = <T extends LinkedPaymentLike>({ payments }: { payments: T[] }): boolean =>
   payments.some((payment) => payment.currencyCode !== payment.refCurrencyCode);
@@ -169,11 +168,9 @@ const buildDrift = <T extends LinkedPaymentLike>({
   latest: T | undefined;
   paymentsCount: number;
 }): LinkedPaymentsDrift | null => {
-  if (!first || !latest || paymentsCount < MIN_PAYMENTS_FOR_DRIFT || !first.refAmount) return null;
+  if (!first || !latest || paymentsCount < MIN_PAYMENTS_FOR_DRIFT || first.refAmount === 0) return null;
   // A subscription rebilled in another currency changed plan, not price.
   if (first.currencyCode !== latest.currencyCode) return null;
-  // Drift compares base-currency amounts, which a payment without a rate does not have.
-  if (latest.refAmount === null) return null;
 
   const percent = Math.round(((latest.refAmount - first.refAmount) / first.refAmount) * 100);
   if (percent === 0) return null;
@@ -268,7 +265,7 @@ export const buildLinkedPaymentsSummary = <T extends LinkedPaymentLike>({
 
     // Heights scale within the charted window only, so an off-window outlier
     // can't flatten the visible bars.
-    const refAmounts = charted.map((payment) => payment.refAmount ?? 0);
+    const refAmounts = charted.map((payment) => payment.refAmount);
     const maxRefAmount = Math.max(0, ...refAmounts);
     const minRefAmount = Math.min(...refAmounts);
     const refRange = maxRefAmount - minRefAmount;
@@ -289,11 +286,11 @@ export const buildLinkedPaymentsSummary = <T extends LinkedPaymentLike>({
       const bar: LinkedPaymentsChartBar = {
         kind: 'payment',
         id: payment.id,
-        heightPct: barHeightPct({ refAmount: payment.refAmount ?? 0 }),
+        heightPct: barHeightPct({ refAmount: payment.refAmount }),
         monthLabel: format(toDate({ time: payment.time }), 'MMM yy'),
         amount: payment.amount,
         currencyCode: payment.currencyCode,
-        refAmount: payment.refAmount ?? 0,
+        refAmount: payment.refAmount,
         refCurrencyCode: payment.refCurrencyCode,
         isLatest: index === charted.length - 1,
       };

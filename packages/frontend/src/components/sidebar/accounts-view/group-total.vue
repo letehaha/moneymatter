@@ -44,7 +44,9 @@ const compact = computed(
         : formatCompactAmount(props.amount, props.currencyCode)
     }`,
 );
-const full = computed(() => `${prefix.value}${formatAmountByCurrencyCode(props.amount, props.currencyCode)}`);
+const full = computed(
+  () => `${prefix.value}${formatAmountByCurrencyCode({ amount: props.amount, currencyCode: props.currencyCode })}`,
+);
 </script>
 
 <template>

@@ -17,7 +17,7 @@ import {
 import { Money } from '@common/types/money';
 import { toMoneyColumnValue } from '@common/types/money-column';
 import { t } from '@i18n/index';
-import { ConflictError, ExchangeRateUnavailableError, ValidationError } from '@js/errors';
+import { ConflictError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
@@ -36,7 +36,6 @@ import UserSettings from '@models/user-settings.model';
 import { getBaseCurrency, updateCurrencies } from '@models/users-currencies.model';
 import { isRevaluedAccount, revalueBalanceHistory } from '@services/balances/revalue-balance-history.service';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
-import { includesCustomCurrencyCode } from '@services/currencies/custom-currency-codes';
 import { buildDailyPairRateResolver, toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
 import { clearRefAmountCache } from '@services/ref-amount-cache';
 import * as userExchangeRateService from '@services/user-exchange-rate';
@@ -358,6 +357,7 @@ const localCalculateRefAmount = async ({
   });
   const decimals = await getConversionDecimals({
     userId: exchangeRateParams.userId,
+    definitionOwnerUserId: exchangeRateParams.userId,
     baseCode: exchangeRateParams.baseCode,
     quoteCode: exchangeRateParams.quoteCode,
   });
@@ -372,27 +372,6 @@ const localCalculateRefAmount = async ({
   }
 
   return refAmount;
-};
-
-/**
- * Like `localCalculateRefAmount`, but a conversion that involves a custom currency and has no
- * rate answers `null` instead of throwing, so one unpriced holding never aborts the whole change:
- * the row keeps a missing base-currency amount until its owner provides a rate. An ISO conversion
- * with no rate keeps throwing, as it always has. A zero amount converts to zero without a rate.
- *
- * Custom legs resolve through `getExchangeRate`, the same path every other write uses: the user's
- * rate in its stored quote currency, crossed into the new base with the ISO resolution of that
- * quote on the row's own date. No rate row is read for rewriting or rewritten.
- */
-const localCalculateRefAmountOrNull = async (params: Parameters<typeof localCalculateRefAmount>[0]) => {
-  try {
-    return await localCalculateRefAmount(params);
-  } catch (error) {
-    if (!(error instanceof ExchangeRateUnavailableError)) throw error;
-    if (!(await includesCustomCurrencyCode({ codes: [params.baseCode, params.quoteCode] }))) throw error;
-
-    return params.amount.isZero() ? Money.zero() : null;
-  }
 };
 
 /**
@@ -422,7 +401,7 @@ async function rebuildTransactions(params: {
 
   for (const tx of transactions) {
     // Calculate new refAmount using the transaction's original date
-    const newRefAmount = await localCalculateRefAmountOrNull({
+    const newRefAmount = await localCalculateRefAmount({
       amount: tx.amount,
       userId,
       baseCode: tx.currencyCode,
@@ -431,9 +410,9 @@ async function rebuildTransactions(params: {
     });
 
     // Calculate new refCommissionRate if commission exists
-    let newRefCommissionRate: Money | null = Money.zero();
+    let newRefCommissionRate: Money = Money.zero();
     if (!tx.commissionRate.isZero()) {
-      newRefCommissionRate = await localCalculateRefAmountOrNull({
+      newRefCommissionRate = await localCalculateRefAmount({
         amount: tx.commissionRate,
         userId,
         baseCode: tx.currencyCode,
@@ -448,8 +427,6 @@ async function rebuildTransactions(params: {
     tx.refAmount = newRefAmount;
     tx.refCommissionRate = newRefCommissionRate;
     tx.refCurrencyCode = newCurrencyCode;
-    // The save below skips hooks, which is where the flag normally follows `refAmount`.
-    tx.refAmountMissing = newRefAmount === null;
     await tx.save({ transaction, hooks: false });
   }
 
@@ -488,16 +465,11 @@ async function rebuildSplitRefAmounts({
   const txById = new Map(transactions.map((tx) => [tx.id, tx]));
   const decimals = await getCurrencyDecimals({ userId, code: newCurrencyCode });
   const allocatedByTxId = new Map<string, Money>();
-  const updates: { id: string; amount: Money | null }[] = [];
+  const updates: { id: string; amount: Money }[] = [];
 
   for (const split of splits) {
     const tx = txById.get(split.transactionId);
     if (!tx || tx.amount.isZero()) continue;
-
-    if (tx.refAmount === null) {
-      updates.push({ id: split.id, amount: null });
-      continue;
-    }
 
     const scaled = (
       tx.currencyCode === newCurrencyCode
@@ -562,7 +534,7 @@ async function recalculateAccounts(params: {
       account.accountCategory !== ACCOUNT_CATEGORIES.vehicle;
     const initialBalanceDate = isBoundaryStamped ? (boundaryByAccountId.get(account.id) ?? today) : today;
 
-    const newRefInitialBalance = await localCalculateRefAmountOrNull({
+    const newRefInitialBalance = await localCalculateRefAmount({
       amount: account.initialBalance,
       userId,
       baseCode: account.currencyCode,
@@ -571,7 +543,7 @@ async function recalculateAccounts(params: {
     });
 
     // Recalculate credit limit (use today's rate)
-    const newRefCreditLimit = await localCalculateRefAmountOrNull({
+    const newRefCreditLimit = await localCalculateRefAmount({
       amount: account.creditLimit,
       userId,
       baseCode: account.currencyCode,
@@ -582,7 +554,7 @@ async function recalculateAccounts(params: {
     // `refCurrentBalance` is a spot measure for every account type: the native
     // balance at today's rate in the new base currency. Reconstructing it from
     // recalculated tx refAmounts would re-derive a blend of historical rates.
-    const newRefCurrentBalance = await localCalculateRefAmountOrNull({
+    const newRefCurrentBalance = await localCalculateRefAmount({
       amount: account.currentBalance,
       userId,
       baseCode: account.currencyCode,
@@ -672,7 +644,7 @@ async function writeMoneyColumn({
 }: {
   table: 'Balances' | 'TransactionSplits';
   column: 'amount' | 'refAmount';
-  rows: { id: string; amount: Money | null }[];
+  rows: { id: string; amount: Money }[];
   transaction: SequelizeTransaction;
 }): Promise<void> {
   for (let offset = 0; offset < rows.length; offset += ROWS_PER_UPDATE) {
@@ -680,7 +652,7 @@ async function writeMoneyColumn({
     const replacements: Record<string, unknown> = {};
     const values = chunk.map((row, index) => {
       replacements[`id${index}`] = row.id;
-      replacements[`amount${index}`] = row.amount === null ? null : toMoneyColumnValue({ money: row.amount });
+      replacements[`amount${index}`] = toMoneyColumnValue({ money: row.amount });
       return `(:id${index}::uuid, :amount${index}::numeric)`;
     });
 
@@ -753,7 +725,12 @@ async function rebuildBalances(params: {
   });
 
   const updates: { id: string; amount: Money }[] = [];
-  const decimals = await getConversionDecimals({ userId, baseCode: oldCurrencyCode, quoteCode: newCurrencyCode });
+  const decimals = await getConversionDecimals({
+    userId,
+    definitionOwnerUserId: userId,
+    baseCode: oldCurrencyCode,
+    quoteCode: newCurrencyCode,
+  });
 
   for (const balance of balances) {
     const rate = resolveRate?.(toDayKey(balance.date)) ?? null;
@@ -1012,7 +989,12 @@ async function convertFireSettingsAmounts({
     quoteCode: newCurrencyCode,
     date: new Date(),
   });
-  const decimals = await getConversionDecimals({ userId, baseCode: oldCurrencyCode, quoteCode: newCurrencyCode });
+  const decimals = await getConversionDecimals({
+    userId,
+    definitionOwnerUserId: userId,
+    baseCode: oldCurrencyCode,
+    quoteCode: newCurrencyCode,
+  });
   const convert = ({ fire: settings }: { fire: FireSettings }): FireSettings => {
     const converted = { ...settings };
     for (const key of FIRE_AMOUNT_KEYS) {

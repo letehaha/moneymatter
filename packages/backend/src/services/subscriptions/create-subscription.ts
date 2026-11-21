@@ -77,7 +77,10 @@ export const createSubscription = withTransaction(
     logoIcon,
     ...rest
   }: CreateSubscriptionParams) => {
-    await assertCurrencyCodesVisible({ userId, codes: [expectedCurrencyCode] });
+    await assertCurrencyCodesVisible({
+      userId,
+      codes: [expectedCurrencyCode, ...matchingRules.rules.map((rule) => rule.currencyCode)],
+    });
 
     if (accountId) {
       await validateAccountOwnership({ accountId, userId });

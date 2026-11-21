@@ -10,8 +10,8 @@
  * VND check that `up` rounds amounts of currencies with fewer than 2 decimals to those decimals.
  *
  * On top of that state it applies the migrations up to the custom-currencies one, runs that one down
- * and up again, and asserts the widened code columns, the new columns and constraints, the nullable
- * base-currency amounts, the view, that the seeded values survive, and that `down` refuses while
+ * and up again, and asserts the widened code columns, the new columns and constraints, the foreign
+ * keys to "Currencies", the view, that the seeded values survive, and that `down` refuses while
  * custom-currency data exists.
  *
  * CI runs it when the migration, its snapshot or this script change (`backend-money-migration` job
@@ -32,7 +32,6 @@ import {
   CURRENCY_CODE_COLUMNS_20261120 as CURRENCY_CODE_COLUMNS,
   CURRENCY_CODE_MAX_LENGTH_20261120 as CURRENCY_CODE_MAX_LENGTH,
   ISO_CURRENCY_CODE_LENGTH_20261120 as ISO_CURRENCY_CODE_LENGTH,
-  NULLABLE_REF_COLUMNS_20261120 as NULLABLE_REF_COLUMNS,
 } from '../src/migrations/utils/currency-code-columns-20261120';
 import {
   MONEY_COLUMNS_20261115 as MONEY_COLUMNS,
@@ -1029,7 +1028,6 @@ interface CodeColumnInfo {
   data_type: string;
   character_maximum_length: number | null;
   is_nullable: string;
-  column_default: string | null;
 }
 
 const columnDetails = async ({
@@ -1042,18 +1040,28 @@ const columnDetails = async ({
   column: string;
 }): Promise<CodeColumnInfo | undefined> => {
   const [rows] = await sequelize.query(
-    `SELECT data_type, character_maximum_length, is_nullable, column_default FROM information_schema.columns
+    `SELECT data_type, character_maximum_length, is_nullable FROM information_schema.columns
      WHERE table_schema = 'public' AND table_name = ${sqlLiteral(table)} AND column_name = ${sqlLiteral(column)}`,
   );
   return (rows as CodeColumnInfo[])[0];
 };
 
-const statementFails = async ({ sequelize, sql }: { sequelize: Sequelize; sql: string }): Promise<boolean> => {
+/** True when `sql` fails with the SQLSTATE `expectedCode`; any other error is rethrown. */
+const statementFails = async ({
+  sequelize,
+  sql,
+  expectedCode,
+}: {
+  sequelize: Sequelize;
+  sql: string;
+  expectedCode: '22001' | '23503' | '23514';
+}): Promise<boolean> => {
   try {
     await sequelize.query(sql);
     return false;
-  } catch {
-    return true;
+  } catch (error) {
+    if ((error as { parent?: { code?: string } }).parent?.code === expectedCode) return true;
+    throw error;
   }
 };
 
@@ -1062,14 +1070,25 @@ const scalar = async <T>({ sequelize, sql }: { sequelize: Sequelize; sql: string
   return Object.values((rows as Record<string, unknown>[])[0]!)[0] as T;
 };
 
+/** Names of the foreign keys that reference "Currencies", sorted. */
+const currencyForeignKeys = async ({ sequelize }: { sequelize: Sequelize }): Promise<string[]> => {
+  const [rows] = await sequelize.query(
+    `SELECT conname FROM pg_constraint WHERE contype = 'f' AND confrelid = '"Currencies"'::regclass ORDER BY conname`,
+  );
+  return (rows as { conname: string }[]).map(({ conname }) => conname);
+};
+
 const assertCustomSchema = async ({
   sequelize,
   state,
   step,
+  foreignKeys,
 }: {
   sequelize: Sequelize;
   state: CustomState;
   step: string;
+  /** The foreign keys to "Currencies" before the migration ran; every step must keep exactly these. */
+  foreignKeys: string[];
 }): Promise<void> => {
   const after = state === 'after';
   const expectedLength = after ? CURRENCY_CODE_MAX_LENGTH : ISO_CURRENCY_CODE_LENGTH;
@@ -1084,12 +1103,10 @@ const assertCustomSchema = async ({
 
   const newColumns: { table: string; column: string; type: string; nullable: boolean }[] = [
     { table: 'Currencies', column: 'isCustom', type: 'boolean', nullable: false },
-    { table: 'Currencies', column: 'symbol', type: 'character varying', nullable: true },
-    { table: 'Currencies', column: 'createdByUserId', type: 'integer', nullable: true },
     { table: 'UsersCurrencies', column: 'nameOverride', type: 'character varying', nullable: true },
     { table: 'UsersCurrencies', column: 'symbolOverride', type: 'character varying', nullable: true },
     { table: 'UsersCurrencies', column: 'decimalsOverride', type: 'integer', nullable: true },
-    { table: 'Transactions', column: 'refAmountMissing', type: 'boolean', nullable: false },
+    { table: 'UsersCurrencies', column: 'logoUrl', type: 'text', nullable: true },
   ];
   for (const { table, column, type, nullable } of newColumns) {
     const info = await columnDetails({ sequelize, table, column });
@@ -1099,37 +1116,10 @@ const assertCustomSchema = async ({
     });
   }
 
-  const refAmountMissing = await columnDetails({ sequelize, table: 'Transactions', column: 'refAmountMissing' });
-  check({
-    ok: !after || refAmountMissing?.column_default === 'false',
-    label: `${step}: Transactions.refAmountMissing defaults to false`,
-  });
-
   const number = await columnDetails({ sequelize, table: 'Currencies', column: 'number' });
   check({
     ok: (number?.is_nullable === 'YES') === after,
     label: `${step}: Currencies.number is ${after ? 'nullable' : 'NOT NULL'}`,
-  });
-
-  for (const { table, column } of NULLABLE_REF_COLUMNS) {
-    const info = await columnDetails({ sequelize, table, column });
-    check({
-      ok: (info?.is_nullable === 'YES') === after,
-      label: `${step}: ${table}.${column} is ${after ? 'nullable' : 'NOT NULL'}`,
-    });
-    check({
-      ok: info?.data_type === 'numeric',
-      label: `${step}: ${table}.${column} stays numeric`,
-    });
-  }
-
-  const [viewColumns] = await sequelize.query(
-    `SELECT column_name FROM information_schema.columns
-     WHERE table_schema = 'public' AND table_name = 'real_transactions' AND column_name = 'refAmountMissing'`,
-  );
-  check({
-    ok: (viewColumns as unknown[]).length === (after ? 1 : 0),
-    label: `${step}: real_transactions ${after ? 'exposes' : 'does not expose'} refAmountMissing`,
   });
 
   const viewCurrency = await columnDetails({ sequelize, table: 'real_transactions', column: 'currencyCode' });
@@ -1138,14 +1128,10 @@ const assertCustomSchema = async ({
     label: `${step}: real_transactions.currencyCode is varchar(${expectedLength})`,
   });
 
-  // The foreign keys that reference "Currencies"."code" survive the type change.
-  const foreignKeys = await scalar<number>({
-    sequelize,
-    sql: `SELECT count(*)::int FROM pg_constraint WHERE contype = 'f' AND confrelid = '"Currencies"'::regclass`,
-  });
+  const currentForeignKeys = await currencyForeignKeys({ sequelize });
   check({
-    ok: foreignKeys >= 1,
-    label: `${step}: foreign keys still reference "Currencies" (${foreignKeys})`,
+    ok: foreignKeys.length > 0 && currentForeignKeys.join() === foreignKeys.join(),
+    label: `${step}: the ${foreignKeys.length} foreign keys to "Currencies" survive the type change (${currentForeignKeys.join(', ')})`,
   });
 };
 
@@ -1165,19 +1151,19 @@ const assertCustomConstraints = async ({ sequelize, step }: { sequelize: Sequeli
     ok: await statementFails({
       sequelize,
       sql: `INSERT INTO "Currencies" (code, currency, digits, "number") VALUES ('NONUM', 'No number', 2, NULL)`,
+      expectedCode: '23514',
     }),
     label: `${step}: a non-custom currency without a number is rejected`,
   });
 
   await sequelize.query(
-    `INSERT INTO "Currencies" (code, currency, digits, "number", "isCustom", symbol)
-     VALUES ('USDT', 'Tether', 6, NULL, true, '₮')`,
+    `INSERT INTO "Currencies" (code, currency, digits, "number", "isCustom") VALUES ('USDT', 'USDT', 8, NULL, true)`,
   );
   const stored = await scalar<string>({
     sequelize,
-    sql: `SELECT "isCustom" || '/' || symbol || '/' || digits FROM "Currencies" WHERE code = 'USDT'`,
+    sql: `SELECT "isCustom" || '/' || digits FROM "Currencies" WHERE code = 'USDT'`,
   });
-  check({ ok: stored === 'true/₮/6', label: `${step}: a 4-letter custom currency is stored (${stored})` });
+  check({ ok: stored === 'true/8', label: `${step}: a 4-letter custom currency is stored (${stored})` });
 
   // A 16-character code fits, a 17-character one does not.
   const longestCode = 'A'.repeat(CURRENCY_CODE_MAX_LENGTH);
@@ -1188,6 +1174,7 @@ const assertCustomConstraints = async ({ sequelize, step }: { sequelize: Sequeli
     ok: await statementFails({
       sequelize,
       sql: `INSERT INTO "Currencies" (code, currency, digits, "number", "isCustom") VALUES ('${longestCode}B', 'Too long', 2, NULL, true)`,
+      expectedCode: '22001',
     }),
     label: `${step}: a ${CURRENCY_CODE_MAX_LENGTH + 1}-character code is rejected`,
   });
@@ -1200,6 +1187,7 @@ const assertCustomConstraints = async ({ sequelize, step }: { sequelize: Sequeli
     ok: await statementFails({
       sequelize,
       sql: `INSERT INTO "ExchangeRates" ("baseCode", "quoteCode", date, rate) VALUES ('NOPE', 'USD', '2026-01-01', 1)`,
+      expectedCode: '23503',
     }),
     label: `${step}: ExchangeRates still rejects a code that is not in "Currencies"`,
   });
@@ -1207,7 +1195,7 @@ const assertCustomConstraints = async ({ sequelize, step }: { sequelize: Sequeli
 
   const userCurrencyDefaults = await scalar<number>({
     sequelize,
-    sql: `SELECT count(*)::int FROM "UsersCurrencies" WHERE "nameOverride" IS NOT NULL OR "symbolOverride" IS NOT NULL OR "decimalsOverride" IS NOT NULL`,
+    sql: `SELECT count(*)::int FROM "UsersCurrencies" WHERE "nameOverride" IS NOT NULL OR "symbolOverride" IS NOT NULL OR "decimalsOverride" IS NOT NULL OR "logoUrl" IS NOT NULL`,
   });
   check({ ok: userCurrencyDefaults === 0, label: `${step}: existing UsersCurrencies rows have no overrides` });
 
@@ -1217,32 +1205,28 @@ const assertCustomConstraints = async ({ sequelize, step }: { sequelize: Sequeli
   });
 
   for (const valid of [0, 8]) {
-    await sequelize.query(
-      `INSERT INTO "UsersCurrencies" ("userId", "currencyCode", "decimalsOverride") VALUES (${userId}, 'USDT', ${valid})`,
-    );
+    check({
+      ok: !(await statementFails({
+        sequelize,
+        sql: `INSERT INTO "UsersCurrencies" ("userId", "currencyCode", "decimalsOverride") VALUES (${userId}, 'USDT', ${valid})`,
+        expectedCode: '23514',
+      })),
+      label: `${step}: decimalsOverride ${valid} is accepted`,
+    });
     await sequelize.query(`DELETE FROM "UsersCurrencies" WHERE "currencyCode" = 'USDT'`);
-    check({ ok: true, label: `${step}: decimalsOverride ${valid} is accepted` });
   }
   for (const invalid of [-1, 9]) {
     check({
       ok: await statementFails({
         sequelize,
         sql: `INSERT INTO "UsersCurrencies" ("userId", "currencyCode", "decimalsOverride") VALUES (${userId}, 'USDT', ${invalid})`,
+        expectedCode: '23514',
       }),
       label: `${step}: decimalsOverride ${invalid} is rejected`,
     });
   }
 
-  // "Currencies" must survive `TRUNCATE "Users" CASCADE` (the e2e suites truncate between tests), so
-  // "createdByUserId" is a plain id without a foreign key.
-  await sequelize.query(`UPDATE "Currencies" SET "createdByUserId" = ${userId} WHERE code = 'USDT'`);
-  const currenciesBefore = await scalar<number>({ sequelize, sql: `SELECT count(*)::int FROM "Currencies"` });
-  await sequelize.query(`TRUNCATE TABLE "Users" CASCADE`);
-  const currenciesAfter = await scalar<number>({ sequelize, sql: `SELECT count(*)::int FROM "Currencies"` });
-  check({
-    ok: currenciesBefore > isoRows && currenciesAfter === currenciesBefore,
-    label: `${step}: truncating "Users" with CASCADE keeps every currency (${currenciesAfter} of ${currenciesBefore})`,
-  });
+  await sequelize.query(`DELETE FROM "Users" WHERE id = ${userId}`);
 
   await sequelize.query(`DELETE FROM "Currencies" WHERE code IN ('USDT', '${longestCode}')`);
 };
@@ -1448,45 +1432,26 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
   await assertRounding({ sequelize, cases: roundingCases, expected: 'decimal', step: 'up-again' });
 
   // ---- custom-currencies migration, on top of the decimal money storage ----
-  await assertCustomSchema({ sequelize, state: 'before', step: 'custom-seed' });
+  const currencyForeignKeyNames = await currencyForeignKeys({ sequelize });
+  await assertCustomSchema({ sequelize, state: 'before', step: 'custom-seed', foreignKeys: currencyForeignKeyNames });
   await umzug.up({ to: CUSTOM_CURRENCIES_MIGRATION_NAME });
-  await assertCustomSchema({ sequelize, state: 'after', step: 'custom-up' });
+  await assertCustomSchema({ sequelize, state: 'after', step: 'custom-up', foreignKeys: currencyForeignKeyNames });
   await assertValues({ sequelize, seeded: afterDown, expected: 'decimal', step: 'custom-up' });
   await assertView({ sequelize, expected: 'decimal', step: 'custom-up' });
   await assertCustomConstraints({ sequelize, step: 'custom-up' });
 
   // down refuses while any custom-currency data exists, and changes nothing.
+  // A 3-character code, so only the custom-row blocker can fire, not the long-code one.
   await sequelize.query(
-    `INSERT INTO "Currencies" (code, currency, digits, "number", "isCustom") VALUES ('USDT', 'Tether', 6, NULL, true)`,
-  );
-  await assertDownRefuses({ sequelize, umzug, expectedMessage: 'custom currencies', step: 'custom-down-custom-row' });
-  await sequelize.query(`DELETE FROM "Currencies" WHERE code = 'USDT'`);
-
-  const refSeeded = seeded.find((row) => row.table === 'Transactions' && row.cents.refAmount !== null)!;
-  await sequelize.query(
-    `UPDATE "Transactions" SET "refAmount" = NULL, "refAmountMissing" = true WHERE ${whereKey({ key: refSeeded.key })}`,
+    `INSERT INTO "Currencies" (code, currency, digits, "number", "isCustom") VALUES ('ZZZ', 'ZZZ', 8, NULL, true)`,
   );
   await assertDownRefuses({
     sequelize,
     umzug,
-    expectedMessage: 'null base-currency amounts',
-    step: 'custom-down-null-ref',
+    expectedMessage: '1 custom currencies in "Currencies"',
+    step: 'custom-down-custom-row',
   });
-  await sequelize.query(
-    `UPDATE "Transactions" SET "refAmount" = 0, "refAmountMissing" = false WHERE ${whereKey({ key: refSeeded.key })}`,
-  );
-
-  const splitSeeded = seeded.find((row) => row.table === 'TransactionSplits')!;
-  await sequelize.query(
-    `UPDATE "TransactionSplits" SET "refAmount" = NULL WHERE ${whereKey({ key: splitSeeded.key })}`,
-  );
-  await assertDownRefuses({
-    sequelize,
-    umzug,
-    expectedMessage: 'TransactionSplits.refAmount',
-    step: 'custom-down-null-split',
-  });
-  await sequelize.query(`UPDATE "TransactionSplits" SET "refAmount" = 0 WHERE ${whereKey({ key: splitSeeded.key })}`);
+  await sequelize.query(`DELETE FROM "Currencies" WHERE code = 'ZZZ'`);
 
   const planSeeded = seeded.find((row) => row.table === 'BudgetPlans')!;
   await sequelize.query(`UPDATE "BudgetPlans" SET "currencyCode" = 'USDTX' WHERE ${whereKey({ key: planSeeded.key })}`);
@@ -1498,23 +1463,18 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
   });
   await sequelize.query(`UPDATE "BudgetPlans" SET "currencyCode" = 'USD' WHERE ${whereKey({ key: planSeeded.key })}`);
 
-  // Put the rows touched above back to the seeded values, then a clean down reverses everything.
-  for (const { row, column } of [
-    { row: refSeeded, column: 'refAmount' },
-    { row: splitSeeded, column: 'refAmount' },
-  ]) {
-    await sequelize.query(
-      `UPDATE ${quote(row.table)} SET ${quote(column)} = ${row.cents[column]}::numeric / 100 WHERE ${whereKey({ key: row.key })}`,
-    );
-  }
-
   await umzug.down();
-  await assertCustomSchema({ sequelize, state: 'before', step: 'custom-down' });
+  await assertCustomSchema({ sequelize, state: 'before', step: 'custom-down', foreignKeys: currencyForeignKeyNames });
   await assertValues({ sequelize, seeded: afterDown, expected: 'decimal', step: 'custom-down' });
   await assertView({ sequelize, expected: 'decimal', step: 'custom-down' });
 
   await umzug.up({ to: CUSTOM_CURRENCIES_MIGRATION_NAME });
-  await assertCustomSchema({ sequelize, state: 'after', step: 'custom-up-again' });
+  await assertCustomSchema({
+    sequelize,
+    state: 'after',
+    step: 'custom-up-again',
+    foreignKeys: currencyForeignKeyNames,
+  });
   await assertValues({ sequelize, seeded: afterDown, expected: 'decimal', step: 'custom-up-again' });
   await assertView({ sequelize, expected: 'decimal', step: 'custom-up-again' });
   await assertCustomConstraints({ sequelize, step: 'custom-up-again' });

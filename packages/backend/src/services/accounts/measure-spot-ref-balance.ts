@@ -1,19 +1,16 @@
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import type Accounts from '@models/accounts.model';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 
 /**
  * Spot-measure an account balance in the owner's base currency: native `amount`
  * converted at the latest rate (`calculateRefAmount` dated today, cache bypassed).
  *
- * - A `Money` is the measured value.
- * - `null` means the account is in a custom currency with no rate: it has no
- *   base-currency value, and the caller stores `null`.
- * - `undefined` means no rate reaches the pair (exotic currency, provider gap,
- *   owner not connected). Callers keep their stored ref value and let the daily
- *   rate-sync remeasure re-anchor it, so a native write never aborts on a missing
- *   rate. Logs once under `ACCOUNT_REF_REMEASURE_FAILED`.
+ * Returns `null` when no rate reaches the pair (exotic currency, provider gap,
+ * owner not connected). Callers keep their stored ref value and let the daily
+ * rate-sync remeasure re-anchor it, so a native write never aborts on a missing
+ * rate. Logs once under `ACCOUNT_REF_REMEASURE_FAILED`.
  */
 export async function measureSpotRefBalance({
   userId,
@@ -26,10 +23,11 @@ export async function measureSpotRefBalance({
   baseCode: string;
   /** Names the calling write path in the failure log. */
   site: string;
-}): Promise<Money | null | undefined> {
+}): Promise<Money | null> {
   try {
-    return await calculateRefAmountOrNull({
+    return await calculateRefAmount({
       userId,
+      definitionOwnerUserId: userId,
       amount,
       baseCode,
       date: new Date(),
@@ -43,18 +41,18 @@ export async function measureSpotRefBalance({
       },
       { code: 'ACCOUNT_REF_REMEASURE_FAILED', userId, baseCode },
     );
-    return undefined;
+    return null;
   }
 }
 
-/** Same rate, date, cache and `null` / `undefined` rules as `measureSpotRefBalance`. */
+/** Same rate, date and cache rules as `measureSpotRefBalance`; `null` means rate unavailable, keep the stored value. */
 export async function measureSpotRefCreditLimit({
   account,
   site,
 }: {
   account: Pick<Accounts, 'userId' | 'creditLimit' | 'currencyCode'>;
   site: string;
-}): Promise<Money | null | undefined> {
+}): Promise<Money | null> {
   if (account.creditLimit.isZero()) return Money.zero();
   return measureSpotRefBalance({
     userId: account.userId,

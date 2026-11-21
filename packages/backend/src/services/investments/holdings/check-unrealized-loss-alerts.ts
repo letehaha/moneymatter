@@ -91,7 +91,12 @@ const checkUser = async ({ userId, config }: { userId: number; config: AlertConf
           ? calculateRefAmountFromParams({
               amount: gain,
               rate: value.baseRate,
-              ...(await getConversionDecimals({ userId, baseCode: value.currencyCode, quoteCode: baseCurrencyCode })),
+              ...(await getConversionDecimals({
+                userId,
+                definitionOwnerUserId: userId,
+                baseCode: value.currencyCode,
+                quoteCode: baseCurrencyCode,
+              })),
             })
               .negate()
               .toNumber()

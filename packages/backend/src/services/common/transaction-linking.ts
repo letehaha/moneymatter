@@ -34,8 +34,7 @@ export interface OriginalTransactionStateSnapshot {
   transferId: string | null;
   categoryId: string | null;
   amount: number;
-  /** `null` when the transaction had no base-currency amount (a custom currency without a rate). */
-  refAmount: number | null;
+  refAmount: number;
   accountId: string;
   transactionType: string;
   paymentType: string;
@@ -51,7 +50,7 @@ export function snapshotOriginalTransactionState(tx: Transactions): OriginalTran
     transferId: tx.transferId,
     categoryId: tx.categoryId,
     amount: tx.amount.toNumber(),
-    refAmount: tx.refAmount?.toNumber() ?? null,
+    refAmount: tx.refAmount.toNumber(),
     accountId: tx.accountId,
     transactionType: tx.transactionType,
     paymentType: tx.paymentType,
@@ -147,6 +146,7 @@ export async function restampForExistingTransaction({
     baseCode: tx.currencyCode,
     quoteCode: refCurrencyCode,
     userId,
+    definitionOwnerUserId: userId,
     date: tx.time,
   });
   return { refCurrencyCode, refAmount };

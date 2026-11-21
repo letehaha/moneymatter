@@ -1,6 +1,6 @@
 /**
- * Frozen snapshot of the currency-code columns and nullable base-currency amount columns that
- * migration `20261120000000-custom-currencies` widens and relaxes.
+ * Frozen snapshot of the currency-code columns that migration `20261120000000-custom-currencies`
+ * widens.
  *
  * The migration reads this list and never `common/lib/currency-code-columns.ts`: that list is live,
  * grows with the schema, and would make this migration alter columns that do not exist yet on a
@@ -43,24 +43,4 @@ export const CURRENCY_CODE_COLUMNS_20261120: readonly CurrencyCodeColumnSpec[] =
   { table: 'VentureDeals', column: 'currencyCode' },
   { table: 'VentureEventLinks', column: 'currencyCode' },
   { table: 'VentureEvents', column: 'currencyCode' },
-];
-
-interface NullableRefColumnSpec {
-  /** SQL table name. */
-  table: string;
-  /** SQL column name. A custom currency without a rate leaves it `NULL`. */
-  column: string;
-}
-
-/**
- * Base-currency amounts that stay `NULL` while a custom currency has no rate to convert through.
- * Every one of them was `NOT NULL` before.
- */
-export const NULLABLE_REF_COLUMNS_20261120: readonly NullableRefColumnSpec[] = [
-  { table: 'Transactions', column: 'refAmount' },
-  { table: 'Transactions', column: 'refCommissionRate' },
-  { table: 'TransactionSplits', column: 'refAmount' },
-  { table: 'Accounts', column: 'refCurrentBalance' },
-  { table: 'Accounts', column: 'refInitialBalance' },
-  { table: 'Accounts', column: 'refCreditLimit' },
 ];

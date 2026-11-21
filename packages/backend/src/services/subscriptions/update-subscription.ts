@@ -68,7 +68,10 @@ export const updateSubscription = withTransaction(
   async ({ id, userId, tagIds, ...fields }: UpdateSubscriptionParams) => {
     const subscription = await findSubscriptionOrThrow({ id, userId });
 
-    await assertCurrencyCodesVisible({ userId, codes: [fields.expectedCurrencyCode] });
+    await assertCurrencyCodesVisible({
+      userId,
+      codes: [fields.expectedCurrencyCode, ...(fields.matchingRules?.rules.map((rule) => rule.currencyCode) ?? [])],
+    });
 
     if (fields.accountId !== undefined && fields.accountId !== null) {
       await validateAccountOwnership({ accountId: fields.accountId, userId });

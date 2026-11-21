@@ -172,9 +172,6 @@ export async function bulkScanTransferRecommendations({
   let results: BulkScanItem[] = [];
 
   for (const expense of eligibleExpenses) {
-    // Matching compares base-currency amounts, so a row still waiting for a custom-currency rate has none to compare.
-    if (!expense.refAmount) continue;
-
     const lower = expense.refAmount.multiply(1 - RECOMMENDATION_PERCENT_RANGE);
     const lowerBound = lower.isNegative() ? Money.zero() : lower;
     const upperBound = expense.refAmount.multiply(1 + RECOMMENDATION_PERCENT_RANGE);
@@ -188,8 +185,6 @@ export async function bulkScanTransferRecommendations({
 
       // Different account
       if (income.accountId === expense.accountId) continue;
-
-      if (!income.refAmount) continue;
 
       // Amount within ±10%
       if (income.refAmount.lessThan(lowerBound) || income.refAmount.greaterThan(upperBound)) continue;

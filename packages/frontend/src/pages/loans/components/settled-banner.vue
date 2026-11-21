@@ -89,13 +89,16 @@ const openedDisplay = computed(() => formatDate(startDate.value, 'MMM yyyy'));
 const closedDisplay = computed(() => (closedDate.value ? formatDate(closedDate.value, 'MMM d, yyyy') : '—'));
 
 const repaidDisplay = computed(() =>
-  formatAmountByCurrencyCode(props.loan.loanDetails.originalPrincipal, props.loan.currencyCode),
+  formatAmountByCurrencyCode({
+    amount: props.loan.loanDetails.originalPrincipal,
+    currencyCode: props.loan.currencyCode,
+  }),
 );
 
 const interestDisplay = computed(() => {
   const interest = props.loan.projection.estimatedInterestPaid;
   if (interest === null) return '—';
-  return formatAmountByCurrencyCode(interest, props.loan.currencyCode);
+  return formatAmountByCurrencyCode({ amount: interest, currencyCode: props.loan.currencyCode });
 });
 
 const durationParts = computed(() =>

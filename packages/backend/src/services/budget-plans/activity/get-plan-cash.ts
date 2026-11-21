@@ -3,10 +3,10 @@ import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
-import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
-import { buildDailyPairRateResolver, toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
+import { getBaseCurrency } from '@models/users-currencies.model';
+import { buildRateForDay } from '@services/balances/revalue-balance-history.service';
+import { toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
 import { getCreditLimitMinorByAccount } from '@services/stats/get-credit-limit-adjustment';
-import { resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
 import { getUserSettings } from '@services/user-settings/get-user-settings';
 import { QueryTypes } from 'sequelize';
 
@@ -24,37 +24,6 @@ interface CashRow {
 
 const decimalToMinor = ({ value, decimals }: { value: string; decimals: number }): number =>
   Money.fromDecimal(value).toMinorUnits({ decimals });
-
-/**
- * The rate Balances revalue uses for a day: the user's manual rate, else the
- * latest stored market rate on or before it. Reads only, never fetches a provider.
- */
-const storedRate = async ({
-  userId,
-  baseCode,
-  quoteCode,
-  date,
-}: {
-  userId: number;
-  baseCode: string;
-  quoteCode: string;
-  date: Date;
-}): Promise<number | null> => {
-  const userCurrency = (await UsersCurrencies.findOne({
-    where: { userId, currencyCode: baseCode },
-    attributes: ['liveRateUpdate'],
-    raw: true,
-  })) as { liveRateUpdate: boolean | null } | null;
-  const custom = await resolveCustomRate({
-    userId,
-    pair: { baseCode, quoteCode },
-    liveRateUpdate: userCurrency?.liveRateUpdate ?? null,
-  });
-  if (custom) return custom.rate;
-
-  const resolve = await buildDailyPairRateResolver({ baseCode, quoteCode, from: date, to: date });
-  return resolve?.(toDayKey(date)) ?? null;
-};
 
 /**
  * Base-currency minor units at `decimals` (converted from the DECIMAL columns at the query boundary) held in the plan's accounts just before the `opening` and
@@ -101,8 +70,8 @@ export const getPlanCash = async ({
       )
       SELECT a.id AS "accountId", a."currencyCode", a."creditLimit" AS "nativeLimit",
              a."currentBalance" - COALESCE(SUM(s."native") FILTER (WHERE s."time" >= ${openingAt}), 0) AS "nativeOpening",
-             COALESCE(a."refCurrentBalance", 0) - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= ${openingAt}), 0) AS "opening",
-             COALESCE(a."refCurrentBalance", 0) - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= ${closingAt}), 0) AS "closing"
+             a."refCurrentBalance" - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= ${openingAt}), 0) AS "opening",
+             a."refCurrentBalance" - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= ${closingAt}), 0) AS "closing"
       FROM "BudgetPlanAccounts" pa
       JOIN "Accounts" a ON a.id = pa."accountId" AND a."excludeFromStats" = false AND a."userId" = :ownerId
       LEFT JOIN signed s ON s."accountId" = a.id
@@ -127,12 +96,15 @@ export const getPlanCash = async ({
       if (row.currencyCode === baseCurrency?.currencyCode)
         return decimalToMinor({ value: row.opening, decimals }) - (limits.get(row.accountId) ?? 0);
 
-      const rate = await storedRate({
-        userId: plan.userId,
-        baseCode: row.currencyCode,
-        quoteCode: baseCurrency!.currencyCode,
-        date: utcInstant({ date: opening }),
+      // The rate Balances revalue uses for the day; it reads stored rates only, never a provider.
+      const openingDate = utcInstant({ date: opening });
+      const rateForDay = await buildRateForDay({
+        account: { id: row.accountId, userId: plan.userId, currencyCode: row.currencyCode },
+        baseCurrencyCode: baseCurrency!.currencyCode,
+        from: openingDate,
+        to: openingDate,
       });
+      const rate = rateForDay?.(toDayKey(openingDate)) ?? null;
       if (rate === null) {
         logger.warn('[Budget plans] No stored rate for an opening balance, using the current-rate value', {
           planId: plan.id,

@@ -15,6 +15,7 @@ const BASE_CURRENCY = 'USD';
 const CODE = 'USDT';
 const NAME = 'Tether';
 const DECIMALS = 6;
+const RATE = '1.5';
 const ACCOUNT_NAME = 'Tether Wallet';
 const AMOUNT = 12.345678;
 const FORMATTED_AMOUNT = '12.345678 USDT';
@@ -38,13 +39,14 @@ test.describe('Custom currencies', () => {
     await loginViaUI({ page, email: creds.email, password: creds.password });
   });
 
-  test('creates a USDT currency from the currencies settings', async ({ page }) => {
+  test('creates a USDT currency with its rate from the currencies settings', async ({ page }) => {
     await page.goto('/settings/currencies');
 
     await page.getByTestId('add-custom-currency').click();
     await dialogField({ page, testId: 'custom-currency-code' }).fill('usdt');
     await dialogField({ page, testId: 'custom-currency-name' }).fill(NAME);
     await dialogField({ page, testId: 'custom-currency-decimals' }).fill(String(DECIMALS));
+    await dialogField({ page, testId: 'custom-currency-rate' }).fill(RATE);
 
     await expect(page.getByTestId('custom-currency-preview')).toHaveText('Example: 1,234.500000 USDT');
 
@@ -54,9 +56,10 @@ test.describe('Custom currencies', () => {
     const row = page.getByRole('button', { name: new RegExp(NAME) });
     await expect(row).toBeVisible();
     await expect(row.getByTestId('custom-currency-badge')).toBeVisible();
+    await expect(row).toContainText(`1 ${CODE} = ${RATE} ${BASE_CURRENCY}`);
   });
 
-  test('a transaction in it shows 6 decimals and the missing-rate badge until a rate exists', async ({ page }) => {
+  test('a transaction in it shows 6 decimals', async ({ page }) => {
     const accountId = extractId(
       await createAccount({ request: api, name: ACCOUNT_NAME, currencyCode: CODE, initialBalance: 0 }),
     );
@@ -64,9 +67,7 @@ test.describe('Custom currencies', () => {
 
     await page.goto('/transactions');
 
-    // The user has no USDT rate, so the entry is saved with its native amount and no base-currency amount.
     await expect(page.getByText(FORMATTED_AMOUNT).first()).toBeVisible();
-    await expect(page.getByTestId('missing-rate-badge').first()).toBeVisible();
   });
 
   test('the decimals are locked while an account holds the currency', async ({ page }) => {

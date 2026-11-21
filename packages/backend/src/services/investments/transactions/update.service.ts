@@ -206,18 +206,21 @@ const updateInvestmentTransactionImpl = async (params: UpdateTransactionParams) 
       calculateRefAmount({
         amount: Money.fromDecimal(amountInSettlement),
         userId,
+        definitionOwnerUserId: userId,
         date: finalDate,
         baseCode: settlement.settlementCurrencyCode,
       }),
       calculateRefAmount({
         amount: Money.fromDecimal(priceInSettlement),
         userId,
+        definitionOwnerUserId: userId,
         date: finalDate,
         baseCode: settlement.settlementCurrencyCode,
       }),
       calculateRefAmount({
         amount: Money.fromDecimal(settlement.settlementFees),
         userId,
+        definitionOwnerUserId: userId,
         date: finalDate,
         baseCode: settlement.settlementCurrencyCode,
       }),

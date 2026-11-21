@@ -1,9 +1,8 @@
-import type { CurrencyInUseDetails, RecordId } from '@bt/shared/types';
-import { ACCOUNT_TYPES, API_ERROR_CODES } from '@bt/shared/types';
+import type { RecordId } from '@bt/shared/types';
+import { ACCOUNT_TYPES } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
 import * as Currencies from '@models/currencies.model';
-import { updateTransactions } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import * as Users from '@models/users.model';
@@ -11,7 +10,7 @@ import * as Users from '@models/users.model';
 import { withTransaction } from './common/with-transaction';
 import { addUserCurrencies } from './currencies/add-user-currency';
 import { withEffectiveCurrency } from './currencies/effective-currency';
-import { getCurrencyInUseBlockers } from './currencies/get-currency-in-use-blockers';
+import { assertCurrencyNotInUse, clearForeignAmountsInCurrency } from './currencies/get-currency-in-use-blockers';
 import { revalueAccountsInCurrencies } from './user-exchange-rate/revalue-accounts-in-currencies';
 
 export const getUser = async (id: number) => {
@@ -159,6 +158,13 @@ export const editUserCurrency = withTransaction(
       });
     }
 
+    // A custom currency never follows a market; its rate is edited through the rate pairs.
+    if (passedCurrency.currency.isCustom) {
+      throw new ValidationError({
+        message: t({ key: 'currencies.customCurrencyRateViaPairs', variables: { code: currencyCode } }),
+      });
+    }
+
     const result = await UsersCurrencies.updateCurrency({
       userId,
       currencyCode,
@@ -243,35 +249,20 @@ export const deleteUserCurrency = withTransaction(
       });
     }
 
-    // A custom currency has its own endpoint, which also checks every kind of row that can use it
-    // and removes the global row once nobody holds it.
+    // A custom currency has its own endpoint, which also removes the user's rates for it and the
+    // global row once nobody holds it.
     if (passedCurrency.currency.isCustom) {
       throw new ValidationError({
         message: t({ key: 'currencies.customCurrencyUseCustomEndpoint', variables: { code: currencyCode } }),
       });
     }
 
-    const blockers = await getCurrencyInUseBlockers({ userId, currencyCode });
-
-    if (blockers.length) {
-      throw new ValidationError({
-        code: API_ERROR_CODES.currencyInUse,
-        message: t({ key: 'userCurrencies.currencyInUse', variables: { currencyCode } }),
-        details: { blockers } satisfies CurrencyInUseDetails,
-      });
-    }
-
-    // Transactions.currencyCode is the account currency, so the account blocker covers it;
-    // only the foreign-amount metadata can still reference this currency.
-    await updateTransactions({
-      planned: 'include',
-      access: { creator: userId },
-      balanceAdjustments: 'include',
-      where: { originalCurrencyCode: currencyCode },
-      values: { originalAmount: null, originalCurrencyCode: null },
-      // Trashed transactions can be restored (reconciliation, bank sync).
-      paranoid: false,
+    await assertCurrencyNotInUse({
+      userId,
+      currencyCode,
+      message: t({ key: 'userCurrencies.currencyInUse', variables: { currencyCode } }),
     });
+    await clearForeignAmountsInCurrency({ userId, currencyCode });
 
     await UsersCurrencies.deleteCurrency({
       userId,

@@ -2,14 +2,14 @@ import { ACCOUNT_TYPES, MAX_PAYMENT_LEGS, TRANSACTION_TRANSFER_NATURE } from '@b
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
-import { ValidationError } from '@js/errors';
+import { UnexpectedError, ValidationError } from '@js/errors';
 import Accounts from '@models/accounts.model';
 import TransactionSplits from '@models/transaction-splits.model';
 import TransactionTags from '@models/transaction-tags.model';
 import { findOneTransaction } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
 import { isPreBookingRow } from '@services/bank-data-providers/enablebanking/utils/transaction-metadata';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
 import { roundPositiveAmount } from '@services/transactions/round-positive-amount';
 import { Op } from 'sequelize';
@@ -75,18 +75,21 @@ const resolvePaymentAmount = async ({
 };
 
 const legRefAmount = ({
-  ownerId,
+  userId,
+  definitionOwnerUserId,
   main,
   amount,
   currencyCode,
 }: {
-  ownerId: number;
+  userId: number;
+  definitionOwnerUserId: number;
   main: Transactions.default;
   amount: Money;
   currencyCode: string;
 }) =>
-  calculateRefAmountOrNull({
-    userId: ownerId,
+  calculateRefAmount({
+    userId,
+    definitionOwnerUserId,
     amount,
     baseCode: currencyCode,
     quoteCode: main.refCurrencyCode,
@@ -134,8 +137,15 @@ const createLeg = async ({
   const leg = await Transactions.createTransaction({
     ...createdLegFields({ main, amount: legAmount }),
     paymentType: account.defaultPaymentType ?? main.paymentType,
-    refAmount: await legRefAmount({ ownerId: userId, main, amount: legAmount, currencyCode: account.currencyCode }),
+    refAmount: await legRefAmount({
+      userId,
+      definitionOwnerUserId: userId,
+      main,
+      amount: legAmount,
+      currencyCode: account.currencyCode,
+    }),
     userId,
+    definitionOwnerUserId: userId,
     accountId,
     currencyCode: account.currencyCode,
     refCurrencyCode: main.refCurrencyCode,
@@ -197,9 +207,11 @@ const assertLegAccounts = async ({ main, legs }: { main: Transactions.default; l
     attributes: ['id', 'userId'],
   });
   const ownerId = accounts.find((account) => account.id === main.accountId)?.userId;
+  if (ownerId === undefined) throw new UnexpectedError({ message: `Account ${main.accountId} does not exist` });
   if (legs.some((leg) => leg.accountId === main.accountId) || accounts.some((account) => account.userId !== ownerId)) {
     throw invalid({ key: 'transactions.paymentLegInvalidAccount' });
   }
+  return ownerId;
 };
 
 /**
@@ -217,12 +229,13 @@ const copyToLegs = async ({
   staleConversions: boolean;
 }) => {
   if (!legs.length) return;
-  await assertLegAccounts({ main, legs: legs.map(({ row }) => row) });
+  // A leg's author may be a collaborator; the account owner's definition of the currency rounds its amounts.
+  const ownerId = await assertLegAccounts({ main, legs: legs.map(({ row }) => row) });
   const tagIds = await getTagIds({ transactionId: main.id });
 
   for (const { row, amount: requestedAmount, paymentAmount } of legs) {
     const amount = requestedAmount
-      ? await roundPositiveAmount({ money: requestedAmount, userId: row.userId, currencyCode: row.currencyCode })
+      ? await roundPositiveAmount({ money: requestedAmount, userId: ownerId, currencyCode: row.currencyCode })
       : row.amount;
     const isLinked = isLinkedLeg(row);
     if (isLinked && row.transactionType !== main.transactionType) {
@@ -240,8 +253,9 @@ const copyToLegs = async ({
     const updated = await Transactions.updateTransactionById({
       id: row.id,
       userId: row.userId,
+      definitionOwnerUserId: ownerId,
       paymentAmount: await resolvePaymentAmount({
-        userId: row.userId,
+        userId: ownerId,
         main,
         currencyCode: row.currencyCode,
         paymentAmount,
@@ -250,7 +264,13 @@ const copyToLegs = async ({
       ...(isLinked ? { ...pickLinkFields({ row: main }), payeeLocked: true } : createdLegFields({ main, amount })),
       ...(!isLinked &&
         refInputsChanged && {
-          refAmount: await legRefAmount({ ownerId: row.userId, main, amount, currencyCode: row.currencyCode }),
+          refAmount: await legRefAmount({
+            userId: row.userId,
+            definitionOwnerUserId: ownerId,
+            main,
+            amount,
+            currencyCode: row.currencyCode,
+          }),
           refCurrencyCode: main.refCurrencyCode,
         }),
     });

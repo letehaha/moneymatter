@@ -75,8 +75,6 @@ const queryActivity = async ({
       UNION ALL
       SELECT s.id, sp.id, s."time", s."transactionType", sp."categoryId", sp."refAmount"
       FROM scoped s JOIN "TransactionSplits" sp ON sp."transactionId" = s.id
-      -- A split with no base-currency amount (custom currency, no rate yet) has no value to count.
-      WHERE sp."refAmount" IS NOT NULL
     ),
     unit_spans AS (
       SELECT u.*,
@@ -118,8 +116,7 @@ const queryActivity = async ({
              CASE WHEN o.id IS NULL THEN u."categoryId"
                   ELSE COALESCE(osp."categoryId", o."categoryId") END AS "categoryId"
       FROM unit_shares u
-      -- An unpriced original (custom currency, no rate) charged nothing, so its refund keeps its own category.
-      LEFT JOIN scoped o ON o.id = u."originalTxId" AND o."refAmount" IS NOT NULL
+      LEFT JOIN scoped o ON o.id = u."originalTxId"
       LEFT JOIN "TransactionSplits" osp ON osp.id = u."refundSplitId"
       UNION ALL
       -- Whatever the shares leave unassigned stays under the refund's own category.

@@ -65,7 +65,7 @@ export const sumBalancesOnDate = ({
   includeCreditLimit,
 }: {
   rows: { accountId: string; amount: number }[];
-  accounts: { id: string; creditLimit: number; refCreditLimit: number | null }[];
+  accounts: { id: string; creditLimit: number; refCreditLimit: number }[];
   includeCreditLimit: boolean;
 }): number => {
   const accountsById = new Map(accounts.map((account) => [account.id, account]));

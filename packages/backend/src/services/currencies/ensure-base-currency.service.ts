@@ -46,7 +46,7 @@ const resolveBaseCurrencyCode = async ({
   });
   if (oldestConnectedCurrency?.currencyCode) return oldestConnectedCurrency.currencyCode;
 
-  return fallbackCurrencyCode ?? null;
+  return fallbackCurrencyCode && !customCodes.includes(fallbackCurrencyCode) ? fallbackCurrencyCode : null;
 };
 
 const ensureUserBaseCurrencyImpl = async ({

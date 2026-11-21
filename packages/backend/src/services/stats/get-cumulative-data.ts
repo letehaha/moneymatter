@@ -179,9 +179,6 @@ async function getPeriodData({
 
   // Aggregate transactions into months
   for (const tx of transactions) {
-    // A row with no base-currency amount (custom currency, no rate yet) is left out of the totals.
-    if (tx.refAmount === null) continue;
-
     const monthKey = monthKeyFor({ time: new Date(tx.time) });
 
     if (!monthlyDataMap.has(monthKey)) {

@@ -165,7 +165,7 @@ export type SubscriptionDetailForMcp = Pick<
       'id' | 'time' | 'currencyCode' | 'note' | 'transactionType' | 'categoryId' | 'accountId'
     > & {
       amount: number;
-      refAmount: number | null;
+      refAmount: number;
       SubscriptionTransactions?: Pick<SubscriptionTransactions, 'matchSource' | 'matchedAt'> | null;
     }
   > | null;

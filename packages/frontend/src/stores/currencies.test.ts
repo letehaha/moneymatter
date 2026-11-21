@@ -125,5 +125,15 @@ describe('currencies store', () => {
       expect(getCurrencyDecimals({ code: 'USDT' })).toBe(6);
       expect(formatUIAmount(12.345678, { currency: 'USDT' })).toBe('12.345678 ₮');
     });
+
+    it('forgets a custom currency the reloaded lists no longer carry', async () => {
+      const store = useCurrenciesStore();
+      await store.loadCurrencies();
+      api.loadUserCurrencies.mockResolvedValue([linked({ id: 1, code: 'USD' })]);
+
+      await store.loadCurrencies({ force: true });
+
+      expect(formatUIAmount(12.345678, { currency: 'USDT' })).toBe('12.35 USDT');
+    });
   });
 });

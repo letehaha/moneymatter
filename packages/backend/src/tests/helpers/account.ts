@@ -356,7 +356,7 @@ export const expectPreSeamHistoryConsistent = async ({
   ]);
   const initialCents = Money.fromDecimal(account.initialBalance).toCents();
   const rate =
-    refRate ?? (initialCents === 0 ? 1 : Money.fromDecimal(account.refInitialBalance!).toCents() / initialCents);
+    refRate ?? (initialCents === 0 ? 1 : Money.fromDecimal(account.refInitialBalance).toCents() / initialCents);
   const signedRows = rows
     .filter((tx) => !tx.isPlanned)
     .map((tx) => ({

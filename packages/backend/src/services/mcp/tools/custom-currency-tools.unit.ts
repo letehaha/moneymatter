@@ -28,7 +28,7 @@ const parsed = (result: ToolResult) => parseToolResult({ result });
 const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
 const service = jest.mocked(customCurrencies);
 
-const createInput = { code: 'pts', name: 'Points', decimals: 2 };
+const createInput = { code: 'pts', name: 'Points', decimals: 2, rate: { value: 0.01 } };
 
 beforeEach(() => {
   jest.resetAllMocks();
@@ -54,7 +54,7 @@ describe('create_custom_currency', () => {
   const schema = tool.config.inputSchema!;
 
   it('normalizes the code and accepts a valid definition', () => {
-    expect(schema.parse(createInput)).toEqual({ code: 'PTS', name: 'Points', decimals: 2 });
+    expect(schema.parse(createInput)).toEqual({ code: 'PTS', name: 'Points', decimals: 2, rate: { value: 0.01 } });
     expect(schema.safeParse({ ...createInput, symbol: null }).success).toBe(true);
   });
 
@@ -64,6 +64,9 @@ describe('create_custom_currency', () => {
     { label: 'decimals out of range', input: { decimals: 99 } },
     { label: 'fractional decimals', input: { decimals: 1.5 } },
     { label: 'a missing name', input: { name: undefined } },
+    { label: 'a missing rate', input: { rate: undefined } },
+    { label: 'a zero rate', input: { rate: { value: 0 } } },
+    { label: 'a malformed quote code', input: { rate: { value: 1, quoteCode: 'U$D' } } },
   ])('rejects $label', ({ input }) => {
     expect(schema.safeParse({ ...createInput, ...input }).success).toBe(false);
   });
@@ -79,6 +82,7 @@ describe('create_custom_currency', () => {
       code: 'PTS',
       name: 'Points',
       decimals: 2,
+      rate: { value: 0.01 },
     });
     expect(parsed(result)).toEqual(created);
   });

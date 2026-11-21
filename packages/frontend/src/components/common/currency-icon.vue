@@ -10,18 +10,20 @@ import { computed, ref, useAttrs, watch } from 'vue';
 defineOptions({ inheritAttrs: false });
 
 /** Tailwind sizing utilities the icon is laid out against. */
-export type CurrencyIconSize = 'size-3.5' | 'size-5' | 'size-8';
+type CurrencyIconSize = 'size-3.5' | 'size-5' | 'size-8';
 
-/** Pixel edge of each size, which the monogram scales its text from. */
-const SIZE_PX: Record<CurrencyIconSize, number> = {
-  'size-3.5': 14,
-  'size-5': 20,
-  'size-8': 32,
+/** Characters of the monogram each size has room for at a legible font size. */
+const MONOGRAM_MAX_LENGTH: Record<CurrencyIconSize, number> = {
+  'size-3.5': 1,
+  'size-5': 2,
+  'size-8': 3,
 };
 
-/** Share of the circle's edge the text takes, by its length: the longer the text, the smaller it gets. */
-const MONOGRAM_FONT_RATIO_BY_LENGTH: Record<number, number> = { 1: 0.6, 2: 0.5, 3: 0.4 };
-const MONOGRAM_FONT_RATIO_LONGEST = 0.34;
+const MONOGRAM_FONT_CLASS: Record<CurrencyIconSize, string> = {
+  'size-3.5': 'text-xs',
+  'size-5': 'text-xs',
+  'size-8': 'text-sm',
+};
 
 const props = withDefaults(
   defineProps<{
@@ -55,13 +57,9 @@ const imageUrl = computed(() => {
   return isCustom.value ? logoUrl.value : getCurrencyIcon(props.code);
 });
 
-const monogram = computed(() => currencyMonogram({ code: props.code, symbol: display.value.symbol }));
-const monogramFontSize = computed(() => {
-  const length = Array.from(monogram.value).length;
-  const ratio = MONOGRAM_FONT_RATIO_BY_LENGTH[length] ?? MONOGRAM_FONT_RATIO_LONGEST;
-
-  return `${SIZE_PX[props.size] * ratio}px`;
-});
+const monogram = computed(() =>
+  currencyMonogram({ code: props.code, symbol: display.value.symbol, maxLength: MONOGRAM_MAX_LENGTH[props.size] }),
+);
 </script>
 
 <template>
@@ -80,12 +78,12 @@ const monogramFontSize = computed(() => {
     :aria-label="code"
     :class="
       cn(
+        MONOGRAM_FONT_CLASS[size],
         'bg-muted-foreground/15 text-foreground inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full leading-none font-semibold tracking-tighter select-none',
         size,
         attrs.class as string | undefined,
       )
     "
-    :style="{ fontSize: monogramFontSize }"
     data-testid="currency-icon-monogram"
   >
     {{ monogram }}

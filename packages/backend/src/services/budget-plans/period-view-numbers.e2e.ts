@@ -699,5 +699,47 @@ describe('Budget plan period view: plan currency decimals', () => {
       expect(pool.flow.leftOver).toBe(60);
       expect(pool.balance.cash).toBe(60);
     });
+
+    it('values a custom-currency opening through its USD quote', async () => {
+      const baseCode = global.BASE_CURRENCY.code;
+      await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+      await helpers.updateUserCurrency({ currency: { currencyCode: 'USD', liveRateUpdate: false }, raw: true });
+      await helpers.editCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'USD', quoteCode: baseCode, rate: 4 },
+          { baseCode, quoteCode: 'USD', rate: 0.25 },
+        ],
+      });
+      await helpers.createCustomCurrency({
+        payload: { code: 'SAT', name: 'Satoshi', decimals: 8, rate: { value: 0.5, quoteCode: 'USD' } },
+        raw: true,
+      });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'SAT', initialBalance: 3 }),
+        raw: true,
+      });
+      const { plan } = await helpers.createBudgetPlan({
+        payload: {
+          accountIds: [account.id],
+          epochDate: helpers.budgetPeriodStart({ monthsAgo: 1 }),
+          poolEnabled: true,
+        },
+        raw: true,
+      });
+      await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 10,
+          transactionType: TRANSACTION_TYPES.income,
+        }),
+        raw: true,
+      });
+      const periods = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
+
+      const { pool } = await view({ planId: plan.id, period: periods[0]! });
+
+      // 3 SAT x 0.5 USD x 4 base per USD; the income after the opening day is not part of it.
+      expect(pool!.flow.leftOver).toBe(6);
+    });
   });
 });

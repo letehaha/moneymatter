@@ -72,14 +72,16 @@ const balancesByCurrency = computed(() => {
 const sortedCurrencies = computed(() => {
   if (!currencies.value) return [];
 
-  return [...currencies.value].sort((a, b) => {
-    const balA = balancesByCurrency.value.get(a.currencyCode) ?? 0;
-    const balB = balancesByCurrency.value.get(b.currencyCode) ?? 0;
-    if (balA !== 0 && balB !== 0) return balB - balA;
-    if (balA !== 0) return -1;
-    if (balB !== 0) return 1;
-    return a.currencyCode.localeCompare(b.currencyCode);
-  });
+  return currencies.value
+    .filter((c) => !c.currency?.isCustom)
+    .sort((a, b) => {
+      const balA = balancesByCurrency.value.get(a.currencyCode) ?? 0;
+      const balB = balancesByCurrency.value.get(b.currencyCode) ?? 0;
+      if (balA !== 0 && balB !== 0) return balB - balA;
+      if (balA !== 0) return -1;
+      if (balB !== 0) return 1;
+      return a.currencyCode.localeCompare(b.currencyCode);
+    });
 });
 
 // Exclude the other field's selection so the same currency can't be picked in both
@@ -94,7 +96,7 @@ const currencyLabel = (currency: UserCurrencyModel) => {
   const code = currency.currency?.code ?? currency.currencyCode;
   const balance = balancesByCurrency.value.get(currency.currencyCode);
   if (balance !== undefined && balance !== 0) {
-    return `${code} (${formatAmountByCurrencyCode(balance, currency.currencyCode)})`;
+    return `${code} (${formatAmountByCurrencyCode({ amount: balance, currencyCode: currency.currencyCode })})`;
   }
   return code;
 };

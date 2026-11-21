@@ -26,7 +26,7 @@ import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { logger } from '@js/utils/logger';
-import Accounts from '@models/accounts.model';
+import Accounts, { getAccountOwnerUserId } from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import Categories from '@models/categories.model';
 import Currencies from '@models/currencies.model';
@@ -152,7 +152,7 @@ export interface TransactionsAttributes {
   id: string;
   amount: Money;
   /** Amount in user's base currency */
-  refAmount: Money | null;
+  refAmount: Money;
   note: string;
   externalUrl: string | null;
   externalReference: string | null;
@@ -190,8 +190,7 @@ export interface TransactionsAttributes {
     originalSource?: { originalId: string; importedFrom: string | null; accountType: ACCOUNT_TYPES };
   } & Record<string, unknown>;
   commissionRate: Money;
-  refCommissionRate: Money | null;
-  refAmountMissing: boolean;
+  refCommissionRate: Money;
   cashbackAmount: Money;
   originalAmount: Money | null;
   originalCurrencyCode: string | null;
@@ -247,8 +246,8 @@ export default class Transactions extends Model {
   declare amount: Money;
 
   // Amount in curreny of account
-  @MoneyField({ allowNull: true, defaultValue: '0' })
-  declare refAmount: Money | null;
+  @MoneyField()
+  declare refAmount: Money;
 
   @Length({ max: 2000 })
   @Column({ allowNull: true, type: DataType.STRING })
@@ -373,16 +372,11 @@ export default class Transactions extends Model {
   @MoneyField()
   declare commissionRate: Money;
 
-  @MoneyField({ allowNull: true, defaultValue: '0' })
-  declare refCommissionRate: Money | null;
+  @MoneyField()
+  declare refCommissionRate: Money;
 
   @MoneyField()
   declare cashbackAmount: Money;
-
-  // `true` while the base-currency amounts are `null` because a custom currency had no rate on the
-  // transaction's date; it drives the review badge and selects the rows a new rate fills.
-  @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
-  refAmountMissing!: boolean;
 
   // Metadata only: no balance, statistics, tracker or budget-plan path reads these. What the user spent in a
   // foreign currency, with its ISO 4217 code. Both hold a value or both stay null.
@@ -467,19 +461,6 @@ export default class Transactions extends Model {
   declare createdAt: Date;
   declare updatedAt: Date;
   declare deletedAt: Date | null;
-
-  /**
-   * `refAmountMissing` follows `refAmount`: a row whose base-currency amount is `null` is flagged,
-   * and a write that gives it a value clears the flag. Deriving it at the model keeps every write
-   * path (manual entry, transfers, imports, a later rate) from setting one without the other.
-   */
-  @BeforeCreate
-  @BeforeUpdate
-  static syncRefAmountMissing(instance: Transactions) {
-    if (instance.isNewRecord || instance.changed('refAmount')) {
-      instance.refAmountMissing = instance.refAmount == null;
-    }
-  }
 
   @BeforeCreate
   @BeforeUpdate
@@ -768,9 +749,8 @@ export default class Transactions extends Model {
     const newRaw = newData as any,
       prevRaw = prevData as any;
     for (const field of MONEY_FIELDS) {
-      // `refAmount` and `refCommissionRate` are `null` while a custom currency has no rate.
-      newRaw[field] = newRaw[field] == null ? null : Money.fromDecimal(newRaw[field]);
-      prevRaw[field] = prevRaw[field] == null ? null : Money.fromDecimal(prevRaw[field]);
+      newRaw[field] = Money.fromDecimal(newRaw[field]);
+      prevRaw[field] = Money.fromDecimal(prevRaw[field]);
     }
 
     const wasPlanned = Boolean(prevData.isPlanned);
@@ -1658,19 +1638,16 @@ type CreateTxOptionalParams = Partial<
 
 export type CreateTransactionPayload = CreateTxRequiredParams &
   CreateTxOptionalParams & {
-    /**
-     * Owner of the account when it differs from `userId` (a collaborator writing on a shared
-     * account). The owner's definition of the currency governs the native amounts.
-     */
-    accountOwnerUserId?: number;
+    /** Owner of the account; its definition of the currency governs the native amounts. */
+    definitionOwnerUserId: number;
   };
 
-export const createTransaction = async ({ userId, accountOwnerUserId, ...rest }: CreateTransactionPayload) => {
+export const createTransaction = async ({ userId, definitionOwnerUserId, ...rest }: CreateTransactionPayload) => {
   const { amount, commissionRate, cashbackAmount, originalAmount, refAmount, refCommissionRate } = rest;
   const rounded = await roundTransactionMoney({
     values: { amount, commissionRate, cashbackAmount, originalAmount, refAmount, refCommissionRate },
     userId,
-    accountOwnerUserId,
+    definitionOwnerUserId,
     currencyCode: rest.currencyCode,
     refCurrencyCode: rest.refCurrencyCode,
     originalCurrencyCode: rest.originalCurrencyCode,
@@ -1687,11 +1664,12 @@ export const createTransaction = async ({ userId, accountOwnerUserId, ...rest }:
 export interface UpdateTransactionByIdParams {
   id: string;
   userId: number;
-  /** Owner of the account when it differs from `userId`; its definition of the currency governs the native amounts. */
-  accountOwnerUserId?: number;
+  /** Owner of the account; its definition of the currency governs the native amounts. Looked up when absent. */
+  definitionOwnerUserId?: number;
+  /** Whose definition of `originalCurrencyCode` rounds `originalAmount`: the caller. Defaults to `userId`. */
+  originalCurrencyOwnerUserId?: number;
   amount?: Money;
-  /** `null` stores a missing base-currency amount (a custom currency without a rate). */
-  refAmount?: Money | null;
+  refAmount?: Money;
   note?: string | null;
   externalUrl?: string | null;
   externalReference?: string | null;
@@ -1728,13 +1706,15 @@ export interface UpdateTransactionByIdParams {
 const roundUpdatePayloadMoney = async ({
   id,
   userId,
-  accountOwnerUserId,
+  definitionOwnerUserId,
+  originalCurrencyOwnerUserId = userId,
   payload,
 }: {
   id: string;
   userId: number;
-  accountOwnerUserId?: number;
-  payload: Omit<UpdateTransactionByIdParams, 'id' | 'userId' | 'accountOwnerUserId'>;
+  definitionOwnerUserId?: number;
+  originalCurrencyOwnerUserId?: number;
+  payload: Omit<UpdateTransactionByIdParams, 'id' | 'userId' | 'definitionOwnerUserId' | 'originalCurrencyOwnerUserId'>;
 }) => {
   const { amount, refAmount, originalAmount } = payload;
 
@@ -1744,26 +1724,30 @@ const roundUpdatePayloadMoney = async ({
 
   const needsStoredRow =
     payload.currencyCode === undefined ||
-    (refAmount !== undefined && refAmount !== null && payload.refCurrencyCode === undefined) ||
+    (definitionOwnerUserId === undefined && payload.accountId === undefined) ||
+    (refAmount !== undefined && payload.refCurrencyCode === undefined) ||
     (originalAmount !== undefined && originalAmount !== null && payload.originalCurrencyCode === undefined);
 
   const stored = needsStoredRow
     ? await Transactions.findOne({
         where: { id, userId },
-        attributes: ['currencyCode', 'refCurrencyCode', 'originalCurrencyCode'],
+        attributes: ['accountId', 'currencyCode', 'refCurrencyCode', 'originalCurrencyCode'],
         paranoid: false,
       })
     : null;
 
   const currencyCode = payload.currencyCode ?? stored?.currencyCode;
 
+  const accountId = payload.accountId ?? stored?.accountId;
+  const ownerUserId = definitionOwnerUserId ?? (accountId ? await getAccountOwnerUserId({ id: accountId }) : undefined);
+
   // No row and no currency: nothing to round against, and the update matches nothing anyway.
-  if (!currencyCode) return {};
+  if (!currencyCode || ownerUserId === undefined) return {};
 
   return roundTransactionMoney({
     values: { amount, refAmount, originalAmount },
-    userId,
-    accountOwnerUserId,
+    userId: originalCurrencyOwnerUserId,
+    definitionOwnerUserId: ownerUserId,
     currencyCode,
     refCurrencyCode: payload.refCurrencyCode ?? stored?.refCurrencyCode,
     originalCurrencyCode: payload.originalCurrencyCode ?? stored?.originalCurrencyCode,
@@ -1771,7 +1755,7 @@ const roundUpdatePayloadMoney = async ({
 };
 
 export const updateTransactionById = async (
-  { id, userId, accountOwnerUserId, ...payload }: UpdateTransactionByIdParams,
+  { id, userId, definitionOwnerUserId, originalCurrencyOwnerUserId, ...payload }: UpdateTransactionByIdParams,
   {
     // For refunds we need to have an option to disable them. Otherwise there will be some kind of
     // deadlock - request stucks forever with no error message. TODO: consider removing this logic at all
@@ -1780,7 +1764,13 @@ export const updateTransactionById = async (
 ) => {
   const where = { id, userId };
 
-  const rounded = await roundUpdatePayloadMoney({ id, userId, accountOwnerUserId, payload });
+  const rounded = await roundUpdatePayloadMoney({
+    id,
+    userId,
+    definitionOwnerUserId,
+    originalCurrencyOwnerUserId,
+    payload,
+  });
 
   await Transactions.update(removeUndefinedKeys({ ...payload, ...rounded }), {
     where,

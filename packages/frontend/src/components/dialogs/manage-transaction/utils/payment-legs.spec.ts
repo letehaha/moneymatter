@@ -1,3 +1,4 @@
+import { registerCurrencyDecimals, resetCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { type AccountModel, type RecordId, type TransactionModel } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
@@ -341,6 +342,21 @@ describe('payment legs helpers', () => {
     expect(getPaymentLegExcessDecimals({ leg: { ...leg, currencyCode: undefined }, mainCurrencyCode: 'JPY' })).toBe(0);
     expect(getPaymentLegExcessDecimals({ leg: { ...leg, isLinked: true }, mainCurrencyCode: 'EUR' })).toBeNull();
     expect(getPaymentLegExcessDecimals({ leg: { ...leg, amount: null }, mainCurrencyCode: 'EUR' })).toBeNull();
+  });
+
+  it("checks a shared account's leg against the owner's decimals, not the viewer's", () => {
+    resetCurrencyDecimals();
+    registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+    const ownerSat = {
+      ...cash,
+      currencyCode: 'SAT',
+      currencyMeta: { decimals: 8, symbol: null, isCustom: true },
+    } as AccountModel;
+    const leg = { account: ownerSat, amount: 0.5, currencyCode: 'SAT' };
+
+    expect(getPaymentLegExcessDecimals({ leg, mainCurrencyCode: 'EUR' })).toBeNull();
+    expect(getPaymentLegExcessDecimals({ leg: { ...leg, account: null }, mainCurrencyCode: 'EUR' })).toBe(0);
+    resetCurrencyDecimals();
   });
 
   it('detects a multi-account transaction', () => {

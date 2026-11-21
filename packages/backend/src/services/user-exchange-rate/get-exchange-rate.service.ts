@@ -7,7 +7,7 @@ import { CacheClient } from '@js/utils/cache';
 import * as Currencies from '@models/currencies.model';
 import * as UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
-import { findCustomCurrencyCodes } from '@services/currencies/custom-currency-codes';
+import { includesCustomCurrencyCode } from '@services/currencies/custom-currency-codes';
 import { formatRate } from '@services/exchange-rates/build-daily-pair-rate-resolver';
 import { API_LAYER_BASE_CURRENCY_CODE } from '@services/exchange-rates/constants';
 import { type RateLookup, resolveUsdRates } from '@services/exchange-rates/resolve-usd-rates';
@@ -65,13 +65,11 @@ export async function getExchangeRate({
 
   // A pair with a custom side never reaches the global cross-rate cache or the 5-decimal market
   // formatting: it resolves from the user's own rates, with the ISO leg left to this function.
-  const customCodes = await findCustomCurrencyCodes({ codes: [pair.baseCode, pair.quoteCode] });
-  if (customCodes.size) {
+  if (await includesCustomCurrencyCode({ codes: [pair.baseCode, pair.quoteCode] })) {
     return resolveCustomPairRate({
       userId,
       pair,
       date,
-      isCustomCode: async (code) => (await findCustomCurrencyCodes({ codes: [code] })).size > 0,
       resolveIsoRate: (isoPair) =>
         getExchangeRate({ userId, date, ...isoPair, bypassCache, requireUserConnection: false }),
     });

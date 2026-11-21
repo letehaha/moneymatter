@@ -3,7 +3,7 @@ import { Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { startOfDay } from 'date-fns';
 
 /**
@@ -45,11 +45,11 @@ export async function writeBankBalanceWithHistory({
   const committed = await Accounts.findByPk(account.id, { attributes: ['id', 'currentBalance', 'creditLimit'] });
   const creditLimit = committed?.creditLimit ?? account.creditLimit;
 
-  // `null` for a custom currency without a rate: the account keeps no base-currency value until one exists.
   const measureSpot = ({ amount }: { amount: Money }) =>
-    calculateRefAmountOrNull({
+    calculateRefAmount({
       amount,
       userId: account.userId,
+      definitionOwnerUserId: account.userId,
       date: today,
       baseCode: account.currencyCode,
       bypassCache: true,
@@ -72,7 +72,7 @@ export async function writeBankBalanceWithHistory({
     currency: account.currencyCode,
     previousCents,
     newCents,
-    refCents: refBalance?.toCents() ?? null,
+    refCents: refBalance.toCents(),
     signFlipped,
     newIsNegative: newCents < 0,
   });
@@ -82,9 +82,6 @@ export async function writeBankBalanceWithHistory({
     refCurrentBalance: refBalance,
     refCreditLimit,
   });
-
-  // No history point to pin while the account has no base-currency value.
-  if (refBalance === null) return;
 
   await Balances.updateAccountBalance({
     accountId: account.id,

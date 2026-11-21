@@ -5,8 +5,9 @@ import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import * as Accounts from '@models/accounts.model';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { assertImportTargetNotBankLinked } from '@services/import-export/core/assert-import-target-not-bank-linked';
 
 interface CreateAccountsIfNeededParams {
@@ -91,6 +92,7 @@ export async function createAccountsIfNeeded({
         message: t({ key: 'importExport.newAccountCurrencyUnknown', variables: { accountName } }),
       });
     }
+    await assertCurrencyCodesVisible({ userId, codes: [currencyCode] });
 
     // The entered balance is written only after every row has committed, so it is checked up front.
     const mapping = accountMapping[accountName];
@@ -104,8 +106,9 @@ export async function createAccountsIfNeeded({
 
     const initialBalance = resolveInitialBalance?.(accountName) ?? Money.zero();
 
-    const refInitialBalance = await calculateRefAmountOrNull({
+    const refInitialBalance = await calculateRefAmount({
       userId,
+      definitionOwnerUserId: userId,
       amount: initialBalance,
       baseCode: currencyCode,
       date: resolveFxDate(accountName),

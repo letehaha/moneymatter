@@ -9,22 +9,32 @@ import { createI18n } from 'vue-i18n';
 import CustomCurrencyDialog from './custom-currency-dialog.vue';
 import type { EditableCustomCurrency } from './types';
 
-const { mockCreate, mockUpdate, mockLoadCurrencies, mockAddSuccess, state } = vi.hoisted(() => ({
+const { mockCreate, mockUpdate, mockLoadCurrencies, mockAddSuccess, mockAddWarning, state } = vi.hoisted(() => ({
   mockCreate: vi.fn(),
   mockUpdate: vi.fn(),
   mockLoadCurrencies: vi.fn(),
   mockAddSuccess: vi.fn(),
-  state: { userCurrencyCodes: [] as string[] },
+  mockAddWarning: vi.fn(),
+  state: {
+    userCurrencies: [] as Array<{ currencyCode: string }>,
+  },
 }));
 
 vi.mock('@/api/currencies', () => ({
   createCustomCurrency: mockCreate,
   updateCustomCurrency: mockUpdate,
+  getBaseCurrencyChangeStatus: vi.fn(),
 }));
 
 vi.mock('@/components/notification-center', () => ({
-  useNotificationCenter: () => ({ addSuccessNotification: mockAddSuccess, addErrorNotification: vi.fn() }),
+  useNotificationCenter: () => ({
+    addSuccessNotification: mockAddSuccess,
+    addWarningNotification: mockAddWarning,
+    addErrorNotification: vi.fn(),
+  }),
 }));
+
+vi.mock('@/lib/sentry', () => ({ captureException: vi.fn() }));
 
 vi.mock('pinia', async (importOriginal) => {
   const original = await importOriginal<typeof import('pinia')>();
@@ -35,7 +45,7 @@ vi.mock('@/stores', async () => {
   const { computed, ref } = await import('vue');
   return {
     useCurrenciesStore: () => ({
-      currencies: computed(() => state.userCurrencyCodes.map((currencyCode) => ({ currencyCode }))),
+      currencies: computed(() => state.userCurrencies),
       isoCurrencies: ref([{ code: 'USD' }, { code: 'EUR' }]),
       loadCurrencies: mockLoadCurrencies,
     }),
@@ -87,12 +97,13 @@ const field = (wrapper: VueWrapper, testId: string) =>
 
 const fill = async (
   wrapper: VueWrapper,
-  values: { code?: string; name?: string; symbol?: string; decimals?: string },
+  values: { code?: string; name?: string; symbol?: string; decimals?: string; rate?: string },
 ) => {
   if (values.code !== undefined) await field(wrapper, 'custom-currency-code').setValue(values.code);
   if (values.name !== undefined) await field(wrapper, 'custom-currency-name').setValue(values.name);
   if (values.symbol !== undefined) await field(wrapper, 'custom-currency-symbol').setValue(values.symbol);
   if (values.decimals !== undefined) await field(wrapper, 'custom-currency-decimals').setValue(values.decimals);
+  if (values.rate !== undefined) await field(wrapper, 'custom-currency-rate').setValue(values.rate);
 };
 
 const submit = async (wrapper: VueWrapper) => {
@@ -105,19 +116,26 @@ const TETHER: EditableCustomCurrency = { code: 'USDT', name: 'Tether', symbol: '
 describe('CustomCurrencyDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    state.userCurrencyCodes = [];
+    state.userCurrencies = [{ currencyCode: 'USD' }];
     mockCreate.mockResolvedValue({});
     mockUpdate.mockResolvedValue({});
+    mockLoadCurrencies.mockResolvedValue(undefined);
   });
 
   describe('creating', () => {
-    it('uppercases the code, sends the definition and refreshes the currency list', async () => {
+    it('uppercases the code, sends the definition with its rate in the base currency and refreshes', async () => {
       const wrapper = mountDialog();
 
-      await fill(wrapper, { code: 'usdt', name: ' Tether ', symbol: '₮', decimals: '6' });
+      await fill(wrapper, { code: 'usdt', name: ' Tether ', symbol: '₮', decimals: '6', rate: '1.0002' });
       await submit(wrapper);
 
-      expect(mockCreate).toHaveBeenCalledWith({ code: 'USDT', name: 'Tether', symbol: '₮', decimals: 6 });
+      expect(mockCreate).toHaveBeenCalledWith({
+        code: 'USDT',
+        name: 'Tether',
+        symbol: '₮',
+        decimals: 6,
+        rate: { value: 1.0002 },
+      });
       expect(mockLoadCurrencies).toHaveBeenCalledWith({ force: true });
       expect(mockAddSuccess).toHaveBeenCalledWith('Custom currency added');
       expect(wrapper.emitted('update:open')?.at(-1)).toEqual([false]);
@@ -126,10 +144,43 @@ describe('CustomCurrencyDialog', () => {
     it('sends no symbol when the field is left empty, and accepts 0 decimals', async () => {
       const wrapper = mountDialog();
 
-      await fill(wrapper, { code: 'SAT', name: 'Satoshi', decimals: '0' });
+      await fill(wrapper, { code: 'SAT', name: 'Satoshi', decimals: '0', rate: '0.0006' });
       await submit(wrapper);
 
-      expect(mockCreate).toHaveBeenCalledWith({ code: 'SAT', name: 'Satoshi', symbol: null, decimals: 0 });
+      expect(mockCreate).toHaveBeenCalledWith({
+        code: 'SAT',
+        name: 'Satoshi',
+        symbol: null,
+        decimals: 0,
+        rate: { value: 0.0006 },
+      });
+    });
+
+    it.each<[string, string]>([
+      ['an empty rate', ''],
+      ['a zero rate', '0'],
+      ['a negative rate', '-1'],
+    ])('refuses %s without calling the API', async (_label, rate) => {
+      const wrapper = mountDialog();
+
+      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6', rate });
+      await submit(wrapper);
+
+      expect(mockCreate).not.toHaveBeenCalled();
+      expect(wrapper.text()).toContain('Enter a rate above 0');
+    });
+
+    it('reports success and closes even when the currency list fails to refresh', async () => {
+      mockLoadCurrencies.mockRejectedValue(new Error('offline'));
+      const wrapper = mountDialog();
+
+      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6', rate: '1' });
+      await submit(wrapper);
+
+      expect(mockAddSuccess).toHaveBeenCalledWith('Custom currency added');
+      expect(wrapper.emitted('update:open')?.at(-1)).toEqual([false]);
+      expect(mockAddWarning).toHaveBeenCalled();
+      expect(wrapper.find('[data-testid="custom-currency-error"]').exists()).toBe(false);
     });
 
     it('previews an amount with the chosen decimals and symbol', async () => {
@@ -140,11 +191,19 @@ describe('CustomCurrencyDialog', () => {
       expect(wrapper.find('[data-testid="custom-currency-preview"]').text()).toBe('Example: 1,234.5000 ₮');
     });
 
-    it.each<[string, { code: string; name: string; decimals: string }, string]>([
-      ['an ISO code', { code: 'USD', name: 'Dollar', decimals: '2' }, 'This is an ISO currency code'],
-      ['a malformed code', { code: 'U', name: 'Tether', decimals: '6' }, 'Use 2 to 16 capital letters or digits'],
-      ['a missing name', { code: 'USDT', name: ' ', decimals: '6' }, 'Enter a name'],
-      ['decimals above 8', { code: 'USDT', name: 'Tether', decimals: '9' }, 'Enter a whole number from 0 to 8'],
+    it.each<[string, { code: string; name: string; decimals: string; rate: string }, string]>([
+      ['an ISO code', { code: 'USD', name: 'Dollar', decimals: '2', rate: '1' }, 'This is an ISO currency code'],
+      [
+        'a malformed code',
+        { code: 'U', name: 'Tether', decimals: '6', rate: '1' },
+        'Use 2 to 16 capital letters or digits',
+      ],
+      ['a missing name', { code: 'USDT', name: ' ', decimals: '6', rate: '1' }, 'Enter a name'],
+      [
+        'decimals above 8',
+        { code: 'USDT', name: 'Tether', decimals: '9', rate: '1' },
+        'Enter a whole number from 0 to 8',
+      ],
     ])('refuses %s without calling the API', async (_label, values, message) => {
       const wrapper = mountDialog();
 
@@ -156,10 +215,10 @@ describe('CustomCurrencyDialog', () => {
     });
 
     it('refuses a code the user already holds', async () => {
-      state.userCurrencyCodes = ['USDT'];
+      state.userCurrencies.push({ currencyCode: 'USDT' });
       const wrapper = mountDialog();
 
-      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6' });
+      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6', rate: '1' });
       await submit(wrapper);
 
       expect(mockCreate).not.toHaveBeenCalled();
@@ -172,7 +231,7 @@ describe('CustomCurrencyDialog', () => {
       );
       const wrapper = mountDialog();
 
-      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6' });
+      await fill(wrapper, { code: 'USDT', name: 'Tether', decimals: '6', rate: '1' });
       await submit(wrapper);
 
       expect(wrapper.find('[data-testid="custom-currency-error"]').text()).toBe('Code is taken');
@@ -204,8 +263,14 @@ describe('CustomCurrencyDialog', () => {
 
     it('sends the new decimals while no account holds the currency', async () => {
       const wrapper = mountDialog({ currency: TETHER, accountsCount: 0 });
+      const warning = () => wrapper.find('[data-testid="custom-currency-decimals-warning"]');
+
+      expect(warning().exists()).toBe(false);
 
       await fill(wrapper, { decimals: '8' });
+
+      expect(warning().text()).toBe(i18n.global.t('settings.currencies.delete.foreignAmountsWarning'));
+
       await submit(wrapper);
 
       expect(mockUpdate).toHaveBeenCalledWith({ code: 'USDT', name: 'Tether', symbol: '₮', decimals: 8 });
@@ -221,12 +286,12 @@ describe('CustomCurrencyDialog', () => {
     });
 
     it('surfaces the API refusal of a decimals change on a currency a transaction still uses', async () => {
-      const message = 'Cannot change the decimals of "USDT": your transactions still use it';
+      const message = 'Cannot change the decimals of "USDT": it is still in use';
       mockUpdate.mockRejectedValue(
         new ApiErrorResponseError(message, {
-          code: API_ERROR_CODES.conflict,
+          code: API_ERROR_CODES.currencyInUse,
           message,
-          details: { usedBy: ['transactions'] },
+          details: { blockers: [{ type: 'goal', id: '1', name: 'Trip' }] },
         }),
       );
       const wrapper = mountDialog({ currency: TETHER, accountsCount: 0 });
@@ -235,6 +300,7 @@ describe('CustomCurrencyDialog', () => {
       await submit(wrapper);
 
       expect(wrapper.find('[data-testid="custom-currency-error"]').text()).toBe(message);
+      expect(wrapper.find('[data-testid="currency-blocker-list"]').text()).toContain('Trip');
       expect(wrapper.emitted('update:open')).toBeUndefined();
     });
   });

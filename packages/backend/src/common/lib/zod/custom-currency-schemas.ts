@@ -23,6 +23,12 @@ export const createCustomCurrencyBodySchema = z
     name: nameSchema,
     decimals: decimalsSchema,
     symbol: symbolSchema.nullish(),
+    rate: z
+      .object({
+        value: z.number().positive(),
+        quoteCode: currencyCode().optional(),
+      })
+      .strict(),
   })
   .strict();
 

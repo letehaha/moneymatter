@@ -5,6 +5,7 @@ import {
   SharePermission,
   TransactionCreatorSnapshot,
 } from '@bt/shared/types';
+import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { CacheClient } from '@js/utils/cache';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
@@ -152,6 +153,7 @@ export const runUserDestroyLifecycle = async ({
     //    the route auth and the tx (concurrent delete from another session).
     const txResult = await runDestroyInTx({ userId, destroyInTx, stampCreatorSnapshot });
     if (!txResult) return false;
+    invalidateCurrencyDecimalsCache({ userId });
 
     const { notificationTargets, householdRevokedTargets, householdOwnerNotifyTargets, ownerSnapshot } = txResult;
 
@@ -246,8 +248,7 @@ const runDestroyInTx = withTransaction(
     const transaction = namespace.get('transaction') as Transaction;
     await destroyInTx({ user, transaction });
 
-    // The destroy removed this user's currency holdings. A custom currency nobody holds any more
-    // goes with them, and one another user still holds stops naming this user as its creator.
+    // The destroy removed this user's currency holdings; a custom currency nobody holds any more goes with them.
     await pruneUnusedCustomCurrencies();
 
     return {

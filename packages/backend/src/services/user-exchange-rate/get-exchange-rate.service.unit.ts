@@ -10,7 +10,7 @@ jest.mock('@models/users-currencies.model', () => ({
 }));
 
 jest.mock('@services/currencies/custom-currency-codes', () => ({
-  findCustomCurrencyCodes: () => Promise.resolve(new Set()),
+  includesCustomCurrencyCode: () => Promise.resolve(false),
 }));
 
 const XOF_PER_USD = { value: 0 };

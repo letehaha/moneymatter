@@ -61,8 +61,7 @@ export interface TransactionSplitModel {
   userId: number;
   categoryId: RecordId;
   amount: number;
-  /** `null` while a custom currency has no rate on the transaction's date. */
-  refAmount: number | null;
+  refAmount: number;
   note: string | null;
   category?: EmbeddedCategoryModel;
   /** Same-currency refunds linked to this split. Set on list reads with `includeRefundedAmount` and on each refund link's `originalTransaction` splits. */
@@ -90,8 +89,8 @@ export interface TransactionLocation {
 export interface TransactionModel {
   id: RecordId;
   amount: number;
-  // Amount in base currency; `null` while a custom currency has no rate on the transaction's date
-  refAmount: number | null;
+  // Amount in base currency
+  refAmount: number;
   note: string;
   /** Link to an order page, booking confirmation, receipt, etc. http(s) only. */
   externalUrl: string | null;
@@ -124,13 +123,11 @@ export interface TransactionModel {
   // hold: boolean;
   // receiptId: RecordId;
   commissionRate: number; // should be comission calculated as refAmount
-  refCommissionRate: number | null; // should be comission calculated as refAmount
+  refCommissionRate: number; // should be comission calculated as refAmount
   cashbackAmount: number; // add to unified
   originalAmount: number | null;
   originalCurrencyCode: string | null;
   refundLinked: boolean;
-  /** `true` while the base-currency amounts could not be computed because a custom currency had no rate on the transaction's date. */
-  refAmountMissing: boolean;
   /** Same-currency refunds linked to this tx, in its currency. Set on list reads with `includeRefundedAmount` and on each refund link's `originalTransaction`. */
   refundedAmount?: number;
   /** Present on the list endpoint only; absent on create/update responses. */

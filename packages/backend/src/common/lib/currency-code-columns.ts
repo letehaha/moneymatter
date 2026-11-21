@@ -1,5 +1,3 @@
-import { CURRENCY_CODE_MAX_LENGTH as SHARED_CURRENCY_CODE_MAX_LENGTH } from '@bt/shared/types';
-
 /**
  * Every column that holds a currency code and is declared `varchar(CURRENCY_CODE_MAX_LENGTH)`.
  * Custom currencies carry codes longer than the ISO 4217 three letters, so the custom-currencies
@@ -13,11 +11,7 @@ import { CURRENCY_CODE_MAX_LENGTH as SHARED_CURRENCY_CODE_MAX_LENGTH } from '@bt
  * codes are not accepted there.
  */
 
-/** Longest currency code, custom or ISO. */
-export const CURRENCY_CODE_MAX_LENGTH = SHARED_CURRENCY_CODE_MAX_LENGTH;
-
-/** Length of the ISO 4217 alphabetic codes the columns were declared with before custom currencies. */
-export const ISO_CURRENCY_CODE_LENGTH = 3;
+export { CURRENCY_CODE_MAX_LENGTH } from '@bt/shared/types';
 
 interface CurrencyCodeColumnSpec {
   /** SQL table name. */
@@ -49,24 +43,4 @@ export const CURRENCY_CODE_COLUMNS: readonly CurrencyCodeColumnSpec[] = [
   { table: 'VentureDeals', column: 'currencyCode' },
   { table: 'VentureEventLinks', column: 'currencyCode' },
   { table: 'VentureEvents', column: 'currencyCode' },
-];
-
-interface NullableRefColumnSpec {
-  /** SQL table name. */
-  table: string;
-  /** SQL column name. A custom currency without a rate leaves it `NULL`. */
-  column: string;
-}
-
-/**
- * Base-currency amounts that stay `NULL` while a custom currency has no rate to convert through.
- * Every one of them was `NOT NULL` before.
- */
-export const NULLABLE_REF_COLUMNS: readonly NullableRefColumnSpec[] = [
-  { table: 'Transactions', column: 'refAmount' },
-  { table: 'Transactions', column: 'refCommissionRate' },
-  { table: 'TransactionSplits', column: 'refAmount' },
-  { table: 'Accounts', column: 'refCurrentBalance' },
-  { table: 'Accounts', column: 'refInitialBalance' },
-  { table: 'Accounts', column: 'refCreditLimit' },
 ];

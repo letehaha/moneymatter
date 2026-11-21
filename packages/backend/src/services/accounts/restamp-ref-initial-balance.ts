@@ -1,11 +1,11 @@
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPES } from '@bt/shared/types';
-import { moneyEqualsOrNull, type Money } from '@common/types/money';
+import type { Money } from '@common/types/money';
 import { ExchangeRateUnavailableError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import { findOneTransaction } from '@models/transactions-query';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { Op } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
@@ -19,8 +19,7 @@ type RestampOutcome = 'restamped' | 'unchanged' | 'skipped' | 'failed';
 
 /**
  * `initialBalance` in the base currency at the rate of the ledger boundary: the earliest
- * transaction's time, or now without one. `null` for a custom currency without a rate at
- * that date; any other missing rate throws.
+ * transaction's time, or now without one. Throws when no rate reaches that date.
  */
 export const measureRefInitialBalanceAtBoundary = async ({
   account,
@@ -30,7 +29,7 @@ export const measureRefInitialBalanceAtBoundary = async ({
   account: Pick<Accounts, 'id' | 'userId' | 'currencyCode'>;
   initialBalance: Money;
   excludeTransactionId?: string;
-}): Promise<Money | null> => {
+}): Promise<Money> => {
   // Account-scoped, never author-scoped: on a shared account a recipient authors rows
   // under their own userId, and an author filter would pick a later boundary.
   // Adjustment rows are ledger rows like any other, so they can be the boundary.
@@ -46,8 +45,9 @@ export const measureRefInitialBalanceAtBoundary = async ({
     order: [['time', 'ASC']],
   });
 
-  return calculateRefAmountOrNull({
+  return calculateRefAmount({
     userId: account.userId,
+    definitionOwnerUserId: account.userId,
     amount: initialBalance,
     baseCode: account.currencyCode,
     date: earliestTx?.time ?? new Date(),
@@ -89,7 +89,7 @@ async function restampRefInitialBalanceImpl({
     return 'skipped';
   }
 
-  let refInitialBalance: Money | null;
+  let refInitialBalance;
   try {
     refInitialBalance = await measureRefInitialBalanceAtBoundary({
       account,
@@ -107,7 +107,7 @@ async function restampRefInitialBalanceImpl({
     return 'failed';
   }
 
-  if (moneyEqualsOrNull(refInitialBalance, account.refInitialBalance)) return 'unchanged';
+  if (refInitialBalance.equals(account.refInitialBalance)) return 'unchanged';
 
   await Accounts.update({ refInitialBalance }, { where: { id: accountId } });
 

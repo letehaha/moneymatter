@@ -2,7 +2,7 @@ import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import Accounts from '@models/accounts.model';
 import Transactions, { getTransactionById } from '@models/transactions.model';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { getTransactions } from '@services/transactions/get-transactions';
 import { addDays, endOfDay, startOfDay, subDays } from 'date-fns';
 
@@ -33,7 +33,7 @@ export async function getTransferRecommendations({
   accountId,
 }: GetTransferRecommendationsParams): Promise<Transactions[]> {
   let searchTransactionType: TRANSACTION_TYPES;
-  let refAmountCenter: Money | null;
+  let refAmountCenter: Money;
   let sourceAccountId: string;
   let sourceCurrencyCode: string;
   let sourceTime: Date;
@@ -81,16 +81,14 @@ export async function getTransferRecommendations({
     sourceCurrencyCode = account.currencyCode;
 
     // Calculate refAmount from the form amount
-    refAmountCenter = await calculateRefAmountOrNull({
+    refAmountCenter = await calculateRefAmount({
       amount: Money.fromDecimal(originAmount!),
       userId,
+      definitionOwnerUserId: userId,
       baseCode: account.currencyCode,
       date: new Date(),
     });
   }
-
-  // Candidates are found by base-currency amount: with none (custom currency, no rate yet) there is nothing to match.
-  if (!refAmountCenter) return [];
 
   // Calculate refAmount range (±10%)
   const lowerBound = refAmountCenter.multiply(1 - RECOMMENDATION_PERCENT_RANGE);
@@ -137,8 +135,8 @@ export async function getTransferRecommendations({
         if (aSameCurrency !== bSameCurrency) return aSameCurrency - bSameCurrency;
 
         // 2. Amount proximity (closer to center = better)
-        const aAmountDiff = a.refAmount ? a.refAmount.subtract(refAmountCenter).abs().toNumber() : Infinity;
-        const bAmountDiff = b.refAmount ? b.refAmount.subtract(refAmountCenter).abs().toNumber() : Infinity;
+        const aAmountDiff = a.refAmount.subtract(refAmountCenter).abs().toNumber();
+        const bAmountDiff = b.refAmount.subtract(refAmountCenter).abs().toNumber();
         if (aAmountDiff !== bAmountDiff) return aAmountDiff - bAmountDiff;
 
         // 3. Date proximity (closer = better)

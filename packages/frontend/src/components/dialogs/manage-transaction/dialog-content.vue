@@ -922,7 +922,10 @@ const validationRules = computed(() => {
   const loanOverpayRule = helpers.withMessage(
     () =>
       t('dialogs.loanPayment.overpayError', {
-        max: formatAmountByCurrencyCode(loanOverpayMax.value, form.value.toAccount?.currencyCode ?? ''),
+        max: formatAmountByCurrencyCode({
+          amount: loanOverpayMax.value,
+          currencyCode: form.value.toAccount?.currencyCode ?? '',
+        }),
       }),
     (value: unknown) => {
       if (value == null || value === '') return true;
@@ -1416,7 +1419,7 @@ const paymentTotalLabel = computed(() =>
       mainCurrencyCode: form.value.account?.currencyCode,
       decimals: amountDecimals.value,
     }),
-    { currency: currencyCode.value },
+    { currency: currencyCode.value, meta: form.value.account?.currencyMeta },
   ),
 );
 const targetAmountFieldRef = ref<InstanceType<typeof InputField> | null>(null);

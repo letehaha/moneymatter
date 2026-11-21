@@ -7,7 +7,8 @@ import TransactionSplits, {
   deleteSplitsForTransaction,
 } from '@models/transaction-splits.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 
 import { SplitInput } from './types';
 import { assertValidSplits } from './validate-splits';
@@ -17,10 +18,9 @@ interface ManageSplitsParams {
   /** Caller's userId. Stamped on newly inserted split rows as creator metadata; also
    *  used to fetch the caller's base currency for refAmount conversion. */
   userId: number;
-  /** UserId that owns the *categories* split rows reference. Caller for owned-account
-   *  writes; account owner for recipient writes on shared accounts. Defaults to `userId`
-   *  for back-compat with non-shared callers. */
-  categoryOwnerUserId?: number;
+  /** Owner of the transaction's account: owns the categories the split rows reference, and its
+   *  definition of the currency rounds the split amounts. */
+  accountOwnerUserId: number;
   splits: SplitInput[];
   transactionAmount: Money;
   transactionCurrencyCode: string;
@@ -70,7 +70,7 @@ const trimSplitsToTotal = ({ splits, total }: { splits: SplitInput[]; total: Mon
 export const manageSplits = async ({
   transactionId,
   userId,
-  categoryOwnerUserId,
+  accountOwnerUserId,
   splits: requestedSplits,
   transactionAmount: requestedTransactionAmount,
   transactionCurrencyCode,
@@ -78,7 +78,7 @@ export const manageSplits = async ({
   transferNature,
 }: ManageSplitsParams): Promise<TransactionSplits[]> => {
   const transactionDecimals = await getCurrencyDecimals({
-    userId: categoryOwnerUserId ?? userId,
+    userId: accountOwnerUserId,
     code: transactionCurrencyCode,
   });
   const transactionAmount = requestedTransactionAmount.round(transactionDecimals);
@@ -131,7 +131,7 @@ export const manageSplits = async ({
     splits,
     transactionAmount,
     minSplitAmount: Money.fromMinorUnits({ value: 1, decimals: transactionDecimals }),
-    categoryOwnerUserId: categoryOwnerUserId ?? userId,
+    categoryOwnerUserId: accountOwnerUserId,
     transferNature: transferNature as Parameters<typeof assertValidSplits>[0]['transferNature'],
   });
 
@@ -142,12 +142,21 @@ export const manageSplits = async ({
   });
 
   const isBaseCurrency = transactionCurrencyCode === baseCurrency.code;
+
+  // The split ref amounts convert with the caller's rates, which a collaborator needs connected first.
+  if (accountOwnerUserId !== userId && !isBaseCurrency) {
+    await ensureUserCurrencyConnected({
+      userId,
+      currencyCode: transactionCurrencyCode,
+      definitionOwnerUserId: accountOwnerUserId,
+    });
+  }
   const baseDecimals = await getCurrencyDecimals({ userId, code: baseCurrency.code });
 
   // Prepare split payloads with calculated refAmounts
   const splitPayloads: CreateSplitPayload[] = await Promise.all(
     splits.map(async (split) => {
-      let refAmount: Money | null = split.amount;
+      let refAmount = split.amount;
 
       // Calculate refAmount if transaction is in a different currency
       if (!isBaseCurrency) {
@@ -155,10 +164,10 @@ export const manageSplits = async ({
           // Use provided refAmount if available
           refAmount = split.refAmount.round(baseDecimals);
         } else {
-          // Calculate refAmount based on exchange rate; `null` for a custom currency without a rate
-          refAmount = await calculateRefAmountOrNull({
+          // Calculate refAmount based on exchange rate
+          refAmount = await calculateRefAmount({
             userId,
-            amountOwnerUserId: categoryOwnerUserId ?? userId,
+            definitionOwnerUserId: accountOwnerUserId,
             amount: split.amount,
             baseCode: transactionCurrencyCode,
             quoteCode: baseCurrency.code,

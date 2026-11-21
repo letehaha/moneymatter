@@ -261,13 +261,8 @@ describe('Transaction ↔ Portfolio link (/transactions/:transactionId/*-portfol
     });
 
     it('should reject linking a transaction in a custom currency, since portfolios are ISO-only', async () => {
-      await helpers.createCustomCurrency({ payload: { code: 'USDT', name: 'Tether', decimals: 6 } });
-      await helpers.editCurrencyExchangeRate({
-        pairs: [
-          { baseCode: 'USDT', quoteCode: global.BASE_CURRENCY_CODE, rate: 4 },
-          { baseCode: global.BASE_CURRENCY_CODE, quoteCode: 'USDT', rate: 0.25 },
-        ],
-        raw: true,
+      await helpers.createCustomCurrency({
+        payload: { code: 'USDT', name: 'Tether', decimals: 6, rate: { value: 4 } },
       });
       const customAccount = await helpers.createAccount({
         payload: helpers.buildAccountPayload({ name: 'Stable', currencyCode: 'USDT', initialBalance: 0 }),

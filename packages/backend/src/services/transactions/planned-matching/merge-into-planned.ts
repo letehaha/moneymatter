@@ -1,7 +1,8 @@
 import { ACCOUNT_TYPES, type TransactionLocation } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { getAccountOwnerUserId } from '@models/accounts.model';
 import Transactions from '@models/transactions.model';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { resolvePayeeForIncomingRow } from '@services/payees/resolve-payee-for-incoming-row';
 
 export interface IncomingTransactionData {
@@ -46,11 +47,13 @@ export const mergeIntoPlanned = async ({
 }): Promise<Transactions> => {
   const commissionRate = incoming.commissionRate ?? Money.zero();
   const isRefCurrency = planned.refCurrencyCode === planned.currencyCode;
+  const definitionOwnerUserId = isRefCurrency ? planned.userId : await getAccountOwnerUserId({ id: planned.accountId });
 
   const refAmount = isRefCurrency
     ? planned.amount
-    : await calculateRefAmountOrNull({
+    : await calculateRefAmount({
         userId: planned.userId,
+        definitionOwnerUserId,
         amount: planned.amount,
         baseCode: planned.currencyCode,
         quoteCode: planned.refCurrencyCode,
@@ -59,8 +62,9 @@ export const mergeIntoPlanned = async ({
 
   const refCommissionRate = isRefCurrency
     ? commissionRate
-    : await calculateRefAmountOrNull({
+    : await calculateRefAmount({
         userId: planned.userId,
+        definitionOwnerUserId,
         amount: commissionRate,
         baseCode: planned.currencyCode,
         quoteCode: planned.refCurrencyCode,

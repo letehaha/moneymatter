@@ -33,7 +33,7 @@ import BalanceAdjustmentDialog from './balance-adjustment-dialog.vue';
 const props = defineProps<{
   account: AccountModel;
 }>();
-const { currenciesMap, baseCurrency } = storeToRefs(useCurrenciesStore());
+const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const { displayBalance, displayRefBalance, projectedBalance, plannedCount, latestPlannedTime, hasPendingPlans } =
   useAccountProjectedBalance({ account: toRef(() => props.account) });
 const accountsStore = useAccountsStore();
@@ -236,7 +236,7 @@ watch([formEditingPopoverOpen, () => props.account.id], () => {
         >
           <span class="text-amount text-3xl">
             {{ toLocalCurrencyNumber(displayBalance, { currency: account.currencyCode, meta: account.currencyMeta }) }}
-            {{ currenciesMap[account.currencyCode]?.currency?.code }}
+            {{ account.currencyCode }}
           </span>
           <span v-if="baseCurrency && account.currencyCode !== baseCurrency.currencyCode" class="text-white opacity-50">
             ~
@@ -247,7 +247,7 @@ watch([formEditingPopoverOpen, () => props.account.id], () => {
         <div v-else class="flex flex-wrap items-end justify-start gap-2">
           <span class="text-amount text-3xl">
             {{ toLocalCurrencyNumber(displayBalance, { currency: account.currencyCode, meta: account.currencyMeta }) }}
-            {{ currenciesMap[account.currencyCode]?.currency?.code }}
+            {{ account.currencyCode }}
           </span>
           <span v-if="baseCurrency && account.currencyCode !== baseCurrency.currencyCode" class="text-white opacity-50">
             ~

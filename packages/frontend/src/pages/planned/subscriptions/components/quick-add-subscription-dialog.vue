@@ -112,7 +112,7 @@ const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
 const installmentTotalLabel = computed(() => {
   const { expectedAmount, maxOccurrences, expectedCurrencyCode } = form.value;
   if (!isInstallment.value || !expectedAmount || !maxOccurrences || !expectedCurrencyCode) return null;
-  return formatAmountByCurrencyCode(expectedAmount * maxOccurrences, expectedCurrencyCode);
+  return formatAmountByCurrencyCode({ amount: expectedAmount * maxOccurrences, currencyCode: expectedCurrencyCode });
 });
 
 const validationRules = computed(() => ({

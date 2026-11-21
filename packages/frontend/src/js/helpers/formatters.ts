@@ -7,7 +7,7 @@ export const formatFiat = (value: unknown): string => Number(value).toFixed(2);
 
 // Module-level so plain helpers, not just composables, follow the user's setting.
 export const currencyDisplayPreference = ref<CurrencyDisplayPreference>('symbol');
-export const numberFormatLocale = ref('en-US');
+const numberFormatLocale = ref('en-US');
 
 export function toLocalNumber(
   value: string | number | undefined | null,
@@ -30,10 +30,12 @@ function toLocalFiatCurrency(
   options: Intl.NumberFormatOptions & {
     /** The owner's definition of the currency (carried by an account or transaction). */
     meta?: CurrencyMeta | null;
+    /** Scale suffix ("k", "M"), placed after the number and before a custom currency's label. */
+    suffix?: string;
   } = {},
 ): string {
   if (value !== undefined && value !== null) {
-    const { meta, ...intlOptions } = options;
+    const { meta, suffix = '', ...intlOptions } = options;
     const currency = intlOptions.currency || 'USD';
     const display = resolveCurrencyDisplay({ code: currency, meta });
     const currencyDigits = display.decimals;
@@ -46,9 +48,9 @@ function toLocalFiatCurrency(
         minimumFractionDigits: intlOptions.minimumFractionDigits ?? currencyDigits,
         maximumFractionDigits: intlOptions.maximumFractionDigits ?? currencyDigits,
         useGrouping: intlOptions.useGrouping ?? true,
-      })} ${label}`;
+      })}${suffix} ${label}`;
     }
-    return toLocalNumber(value, {
+    return `${toLocalNumber(value, {
       ...intlOptions,
       minimumFractionDigits: intlOptions.minimumFractionDigits ?? currencyDigits,
       maximumFractionDigits: intlOptions.maximumFractionDigits ?? currencyDigits,
@@ -56,7 +58,7 @@ function toLocalFiatCurrency(
       currencyDisplay: intlOptions.currencyDisplay ?? currencyDisplayPreference.value,
       useGrouping: intlOptions.useGrouping ?? true,
       style: 'currency',
-    });
+    })}${suffix}`;
   }
   return String(value);
 }
@@ -117,6 +119,7 @@ export function formatLargeNumber(
     // Solana lamports
     lamports?: boolean;
     isFiat?: boolean;
+    meta?: CurrencyMeta | null;
   } = {},
 ) {
   const suffixes = {
@@ -153,16 +156,21 @@ export function formatLargeNumber(
     suffix = suffixes.thousandSuffix;
   }
 
-  const formatterFunc = options.isFiat ? toLocalFiatCurrency : toLocalNumber;
-
   // Fraction digits here are scale digits ("₩12.35k" = ₩12,350), not currency sub-units,
   // so per-currency digit resolution deliberately doesn't apply.
-  const formatted = formatterFunc(localNumber / delimiter, {
+  const digits = {
     maximumFractionDigits: options.maximumFractionDigits ?? 2,
     minimumFractionDigits: options.minimumFractionDigits ?? 0,
-    currency: options.currency,
-  });
-  return `${formatted}${suffix}`;
+  };
+  if (options.isFiat)
+    return toLocalFiatCurrency(localNumber / delimiter, {
+      ...digits,
+      currency: options.currency,
+      meta: options.meta,
+      suffix,
+    });
+
+  return `${toLocalNumber(localNumber / delimiter, digits)}${suffix}`;
 }
 
 const COMPACT_SIGNIFICANT_DIGITS = 3;
@@ -188,13 +196,15 @@ const compactRoundingStep = (abs: number) => (abs >= 1e9 ? 1e7 : abs >= 1e6 ? 1e
 export const formatCompactUIAmount = ({
   amount,
   currency,
+  meta,
   from = 10_000,
 }: {
   amount: number;
   currency?: string;
+  meta?: CurrencyMeta | null;
   from?: number;
 }) => {
-  if (!(Math.abs(amount) >= from)) return formatUIAmount(amount, { currency });
+  if (!(Math.abs(amount) >= from)) return formatUIAmount(amount, { currency, meta });
 
   // Rounds before the suffix is picked, so 999,600 reads "₴1M" rather than "₴1000k".
   const step = compactRoundingStep(Math.abs(amount));
@@ -204,6 +214,7 @@ export const formatCompactUIAmount = ({
   return formatLargeNumber(rounded, {
     isFiat: true,
     currency,
+    meta,
     minimumFractionDigits: 0,
     maximumFractionDigits: abs >= 100_000 && abs < 1_000_000 ? 0 : 2,
   });
@@ -248,3 +259,12 @@ export function formatUIAmount(
     maximumFractionDigits: fractionDigits,
   });
 }
+
+/** An amount in an account's (or transaction's) currency, formatted by the owner's definition of it. */
+export const formatAccountAmount = ({
+  amount,
+  account,
+}: {
+  amount: number;
+  account: { currencyCode: string; currencyMeta?: CurrencyMeta | null };
+}): string => formatUIAmount(amount, { currency: account.currencyCode, meta: account.currencyMeta });

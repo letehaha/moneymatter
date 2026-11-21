@@ -1,22 +1,10 @@
-import { CUSTOM_CURRENCY_DECIMALS_MAX, CUSTOM_CURRENCY_DECIMALS_MIN } from '@bt/shared/types';
 import { ValidationError } from '@js/errors';
 import Currencies from '@models/currencies.model';
 
 import { type ArchiveAnalysis, analyzeArchive } from './analyze-archive';
 import { type ParsedArchive, loadBackupArchive } from './load-archive';
-import { parseCustomCurrencyDefinition } from './resolve-custom-currencies';
+import { type CustomCurrencyDefinition, readCustomCurrencyDefinitions } from './resolve-custom-currencies';
 import { roundMoneyToCurrencyDecimals } from './round-to-currency-decimals';
-
-const findArchiveDecimalsOverride = ({ archive, code }: { archive: ParsedArchive; code: string }): number | null => {
-  const value = (archive.data.get('users-currencies') ?? []).find((row) => row.currencyCode === code)?.decimalsOverride;
-
-  return typeof value === 'number' &&
-    Number.isInteger(value) &&
-    value >= CUSTOM_CURRENCY_DECIMALS_MIN &&
-    value <= CUSTOM_CURRENCY_DECIMALS_MAX
-    ? value
-    : null;
-};
 
 /**
  * Load + analyze a backup archive and round its amounts to their currencies' decimals, throwing a
@@ -24,11 +12,13 @@ const findArchiveDecimalsOverride = ({ archive, code }: { archive: ParsedArchive
  * re-parses because the archive can't ride through Redis) so the two can't drift on the
  * validation contract.
  */
-export async function loadValidatedArchive({
-  fileContent,
-}: {
-  fileContent: string;
-}): Promise<{ archive: ParsedArchive; analysis: ArchiveAnalysis; currencyCodes: Set<string> }> {
+export async function loadValidatedArchive({ fileContent }: { fileContent: string }): Promise<{
+  archive: ParsedArchive;
+  analysis: ArchiveAnalysis;
+  /** Codes a restored row may name: the ISO seed plus the archive's own custom codes. */
+  currencyCodes: Set<string>;
+  customDefinitions: Map<string, CustomCurrencyDefinition>;
+}> {
   const archive = await loadBackupArchive({ fileContent });
   const analysis = analyzeArchive({ archive });
   if (analysis.hardFailReasons.length > 0) {
@@ -36,16 +26,10 @@ export async function loadValidatedArchive({
   }
   const currencies = await Currencies.findAll({ where: { isCustom: false }, attributes: ['code', 'digits'] });
   const digitsByCode = new Map(currencies.map(({ code, digits }) => [code, digits]));
+  const customDefinitions = readCustomCurrencyDefinitions({ archive, isoCodes: new Set(digitsByCode.keys()) });
   // A custom code rounds at the archive's own definition, never at another user's row for the same code.
-  for (const row of archive.reference.customCurrencies) {
-    const definition = parseCustomCurrencyDefinition({ row });
-    if (definition && !digitsByCode.has(definition.code)) {
-      digitsByCode.set(
-        definition.code,
-        findArchiveDecimalsOverride({ archive, code: definition.code }) ?? definition.decimals,
-      );
-    }
-  }
+  for (const { code, decimals } of customDefinitions.values()) digitsByCode.set(code, decimals);
+
   roundMoneyToCurrencyDecimals({ data: archive.data, digitsByCode });
-  return { archive, analysis, currencyCodes: new Set(digitsByCode.keys()) };
+  return { archive, analysis, currencyCodes: new Set(digitsByCode.keys()), customDefinitions };
 }

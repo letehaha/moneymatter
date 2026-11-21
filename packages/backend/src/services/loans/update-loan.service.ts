@@ -101,6 +101,7 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
           ? null
           : await calculateRefAmount({
               userId,
+              definitionOwnerUserId: userId,
               amount: plannedPayment,
               baseCode: loan.account.currencyCode,
               date: now,
@@ -115,6 +116,7 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
         ? null
         : await calculateRefAmount({
             userId,
+            definitionOwnerUserId: userId,
             amount: minPayment,
             baseCode: loan.account.currencyCode,
             date: now,
@@ -191,6 +193,7 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
 
     anchorRefInitialBalance = await calculateRefAmount({
       userId,
+      definitionOwnerUserId: userId,
       amount: anchorInitialBalance,
       baseCode: loan.account.currencyCode,
       date: now,

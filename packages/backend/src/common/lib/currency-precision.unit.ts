@@ -17,7 +17,7 @@ jest.mock('@models/users-currencies.model', () => ({
 }));
 
 /* eslint-disable import/first */
-import { NotFoundError, ValidationError } from '@js/errors';
+import { NotFoundError, UnexpectedError, ValidationError } from '@js/errors';
 import Currencies from '@models/currencies.model';
 import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
 
@@ -81,8 +81,8 @@ describe('currency precision helpers', () => {
       await expect(getCurrencyDecimals({ userId: OTHER_USER_ID, code: 'SAT' })).resolves.toBe(0);
     });
 
-    it('falls back to the global digits for a user who holds no override', async () => {
-      await expect(getCurrencyDecimals({ userId: 3, code: 'SAT' })).resolves.toBe(4);
+    it('throws for a user who holds no definition instead of using the global digits', async () => {
+      await expect(getCurrencyDecimals({ userId: 3, code: 'SAT' })).rejects.toThrow(UnexpectedError);
     });
 
     it('does not look for an override on an ISO currency', async () => {
@@ -104,14 +104,21 @@ describe('currency precision helpers', () => {
 
     it("rounds a conversion's native side with the owner's definition when one is given", async () => {
       await expect(
-        getConversionDecimals({ userId: OTHER_USER_ID, baseCode: 'SAT', quoteCode: 'USD', baseOwnerUserId: USER_ID }),
+        getConversionDecimals({
+          userId: OTHER_USER_ID,
+          baseCode: 'SAT',
+          quoteCode: 'USD',
+          definitionOwnerUserId: USER_ID,
+        }),
       ).resolves.toEqual({ baseDecimals: 8, quoteDecimals: 2 });
       await expect(
-        getConversionDecimals({ userId: OTHER_USER_ID, baseCode: 'SAT', quoteCode: 'USD' }),
-      ).resolves.toEqual({
-        baseDecimals: 0,
-        quoteDecimals: 2,
-      });
+        getConversionDecimals({
+          userId: OTHER_USER_ID,
+          baseCode: 'SAT',
+          quoteCode: 'USD',
+          definitionOwnerUserId: OTHER_USER_ID,
+        }),
+      ).resolves.toEqual({ baseDecimals: 0, quoteDecimals: 2 });
     });
   });
 
@@ -127,16 +134,18 @@ describe('currency precision helpers', () => {
 
   describe('getConversionDecimals', () => {
     it('returns the decimals of both currencies of the conversion', async () => {
-      await expect(getConversionDecimals({ userId: USER_ID, baseCode: 'JPY', quoteCode: 'KWD' })).resolves.toEqual({
+      await expect(
+        getConversionDecimals({ userId: USER_ID, baseCode: 'JPY', quoteCode: 'KWD', definitionOwnerUserId: USER_ID }),
+      ).resolves.toEqual({
         baseDecimals: 0,
         quoteDecimals: 3,
       });
     });
 
     it('rejects an unknown currency instead of falling back to 2 decimals', async () => {
-      await expect(getConversionDecimals({ userId: USER_ID, baseCode: 'USD', quoteCode: 'XXZ' })).rejects.toThrow(
-        NotFoundError,
-      );
+      await expect(
+        getConversionDecimals({ userId: USER_ID, baseCode: 'USD', quoteCode: 'XXZ', definitionOwnerUserId: USER_ID }),
+      ).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -202,13 +211,11 @@ describe('currency precision helpers', () => {
       await expect(getCurrencyDecimals({ userId: USER_ID, code: 'XNN' })).rejects.toThrow('supported maximum of 8');
     });
 
-    it('reads the database once per user and code', async () => {
+    it('reads the database once per ISO code for every user', async () => {
       await getCurrencyDecimals({ userId: USER_ID, code: 'JPY' });
       await getCurrencyDecimals({ userId: USER_ID, code: 'JPY' });
-      expect(Currencies.findOne).toHaveBeenCalledTimes(1);
-
       await getCurrencyDecimals({ userId: 2, code: 'JPY' });
-      expect(Currencies.findOne).toHaveBeenCalledTimes(2);
+      expect(Currencies.findOne).toHaveBeenCalledTimes(1);
     });
 
     it('does not cache an unknown code', async () => {

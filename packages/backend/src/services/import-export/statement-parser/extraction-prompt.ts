@@ -238,6 +238,15 @@ function readTransactionFields({ fields }: { fields: string[] }): TransactionFie
   };
 }
 
+/** An ISO 4217 code or one of the user's own custom codes; anything else from the model is a guess. */
+const isKnownCurrencyCode = ({
+  code,
+  customCurrencyCodes,
+}: {
+  code: string;
+  customCurrencyCodes: ReadonlySet<string>;
+}) => cc.code(code) !== undefined || customCurrencyCodes.has(code);
+
 function readOriginalAmount({
   amountStr,
   currencyStr,
@@ -253,22 +262,32 @@ function readOriginalAmount({
   const originalAmount = parseDecimalAmount({ raw: amountStr });
   const originalCurrencyCode = normalizeCurrencyCode(currencyStr);
 
-  // The model must name an ISO 4217 code or one of the user's own custom codes; anything else is
-  // a guess, and the pair is dropped.
-  const isKnownCode = cc.code(originalCurrencyCode) !== undefined || customCurrencyCodes.has(originalCurrencyCode);
-
-  if (originalAmount === null || originalAmount <= 0 || !isKnownCode) return {};
+  if (
+    originalAmount === null ||
+    originalAmount <= 0 ||
+    !isKnownCurrencyCode({ code: originalCurrencyCode, customCurrencyCodes })
+  )
+    return {};
 
   return { originalAmount, originalCurrencyCode };
 }
 
-/** The model sometimes adds or drops a metadata field, which pushes a date into the currency slot. */
-function readCurrencyCode({ fields }: { fields: string[] }): string | null {
-  const code =
-    fields
-      .slice(1)
-      .map((field) => field.toUpperCase())
-      .find((field) => cc.code(field) !== undefined) ?? null;
+/**
+ * The model sometimes adds or drops a metadata field, which pushes a date into the currency slot.
+ * The slot wins when it holds a known code, so a custom code such as `1234` never reads the account
+ * number as the currency.
+ */
+function readCurrencyCode({
+  fields,
+  customCurrencyCodes,
+}: {
+  fields: string[];
+  customCurrencyCodes: ReadonlySet<string>;
+}): string | null {
+  const candidates = fields.slice(1).map(normalizeCurrencyCode);
+  const isKnown = (code: string) => isKnownCurrencyCode({ code, customCurrencyCodes });
+  const slot = candidates[3];
+  const code = (slot !== undefined && isKnown(slot) ? slot : candidates.find(isKnown)) ?? null;
 
   const currencySlot = fields[4];
   if (currencySlot && currencySlot.toUpperCase() !== code) {
@@ -323,7 +342,7 @@ export function parseAIResponse({
   customCurrencyCodes = [],
 }: {
   response: string;
-  /** Codes of the user's own custom currencies, accepted alongside ISO 4217 as an original currency. */
+  /** Codes of the user's own custom currencies, accepted alongside ISO 4217 codes. */
   customCurrencyCodes?: readonly string[];
 }): AIExtractionOutput | null {
   try {
@@ -349,6 +368,8 @@ export function parseAIResponse({
       return null;
     }
 
+    const customCodeSet = new Set(customCurrencyCodes.map(normalizeCurrencyCode));
+
     // Parse metadata (first line)
     const metadataFields = parseCSVLine({ line: lines[0]! });
     const metadata: AIExtractionOutput['metadata'] = {
@@ -361,12 +382,11 @@ export function parseAIResponse({
               to: metadataFields[3],
             }
           : null,
-      currencyCode: readCurrencyCode({ fields: metadataFields }),
+      currencyCode: readCurrencyCode({ fields: metadataFields, customCurrencyCodes: customCodeSet }),
     };
 
     // Parse transactions (remaining lines)
     const transactions: AIExtractionOutput['transactions'] = [];
-    const customCodeSet = new Set(customCurrencyCodes.map(normalizeCurrencyCode));
     // Counted per reason rather than logged per row, because a big statement from a bad
     // model drops hundreds of rows and a line each would flood the log.
     const droppedByReason = { tooFewColumns: 0, unreadableDate: 0, unusableAmount: 0 };

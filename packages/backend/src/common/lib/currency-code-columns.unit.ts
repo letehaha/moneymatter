@@ -1,18 +1,12 @@
 import { describe, expect, it } from '@jest/globals';
 import { connection } from '@models/connection';
+import { getForeignKeys } from 'sequelize-typescript/dist/associations/foreign-key/foreign-key-service';
 
 import {
   CURRENCY_CODE_COLUMNS_20261120,
   CURRENCY_CODE_MAX_LENGTH_20261120,
-  ISO_CURRENCY_CODE_LENGTH_20261120,
-  NULLABLE_REF_COLUMNS_20261120,
 } from '../../migrations/utils/currency-code-columns-20261120';
-import {
-  CURRENCY_CODE_COLUMNS,
-  CURRENCY_CODE_MAX_LENGTH,
-  ISO_CURRENCY_CODE_LENGTH,
-  NULLABLE_REF_COLUMNS,
-} from './currency-code-columns';
+import { CURRENCY_CODE_COLUMNS, CURRENCY_CODE_MAX_LENGTH } from './currency-code-columns';
 
 // `@models/index` builds the Sequelize instance so each model's attributes are populated.
 // Dummy connection params make construction succeed without touching a database.
@@ -34,6 +28,8 @@ interface AttributeLike {
 }
 
 interface ModelLike {
+  name: string;
+  prototype: object;
   getTableName: () => string | { tableName: string };
   getAttributes: () => Record<string, AttributeLike>;
 }
@@ -78,21 +74,24 @@ describe('CURRENCY_CODE_COLUMNS', () => {
 
     expect(narrow).toEqual([]);
   });
-});
 
-describe('NULLABLE_REF_COLUMNS', () => {
-  it('lists only columns that a model declares nullable', async () => {
+  // `pruneUnusedCustomCurrencies` scans the listed columns before it deletes a custom row, so an unlisted
+  // foreign key to "Currencies" would make that DELETE fail.
+  it('lists every column a model declares as a foreign key to Currencies', async () => {
     const models = await loadModels();
+    const listed = new Set(CURRENCY_CODE_COLUMNS.map(({ table, column }) => `${table}.${column}`));
 
-    const nullable = new Set<string>();
+    const declared: string[] = [];
     for (const model of models) {
-      for (const [name, attribute] of Object.entries(model.getAttributes())) {
-        if (attribute.allowNull === true) nullable.add(`${tableNameOf(model)}.${attribute.field ?? name}`);
+      const attributes = model.getAttributes();
+      for (const { relatedClassGetter, foreignKey } of getForeignKeys(model.prototype) ?? []) {
+        if (relatedClassGetter().name !== 'Currencies') continue;
+        declared.push(`${tableNameOf(model)}.${attributes[foreignKey]?.field ?? foreignKey}`);
       }
     }
 
-    const listed = NULLABLE_REF_COLUMNS.map(({ table, column }) => `${table}.${column}`);
-    expect(listed.filter((entry) => !nullable.has(entry))).toEqual([]);
+    expect(declared.length).toBeGreaterThan(0);
+    expect(declared.filter((entry) => !listed.has(entry))).toEqual([]);
   });
 });
 
@@ -103,8 +102,6 @@ describe('custom-currencies migration snapshot', () => {
   // leave the snapshot alone.
   it('matches the live lists while they have not grown past the migration', () => {
     expect(CURRENCY_CODE_COLUMNS_20261120).toEqual(CURRENCY_CODE_COLUMNS);
-    expect(NULLABLE_REF_COLUMNS_20261120).toEqual(NULLABLE_REF_COLUMNS);
     expect(CURRENCY_CODE_MAX_LENGTH_20261120).toBe(CURRENCY_CODE_MAX_LENGTH);
-    expect(ISO_CURRENCY_CODE_LENGTH_20261120).toBe(ISO_CURRENCY_CODE_LENGTH);
   });
 });

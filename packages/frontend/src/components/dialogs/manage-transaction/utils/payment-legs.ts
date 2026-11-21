@@ -29,10 +29,10 @@ export const getPaymentRowAmounts = ({
   transaction,
 }: {
   transaction: TransactionModel;
-}): { amount: number; refAmount: number | null } => {
+}): { amount: number; refAmount: number } => {
   const { amount, refAmount, paymentTotal } = transaction;
   if (paymentTotal === undefined || !amount) return { amount, refAmount };
-  return { amount: paymentTotal, refAmount: refAmount === null ? null : (refAmount * paymentTotal) / amount };
+  return { amount: paymentTotal, refAmount: (refAmount * paymentTotal) / amount };
 };
 
 export const getPaymentMainCurrencyCode = ({ transaction }: { transaction: TransactionModel }): string =>
@@ -184,7 +184,7 @@ export const getPaymentLegExcessDecimals = ({
   mainCurrencyCode: string | undefined;
 }): number | null => {
   if (leg.isLinked || leg.amount == null) return null;
-  const decimals = getCurrencyDecimals({ code: leg.currencyCode ?? mainCurrencyCode });
+  const decimals = getCurrencyDecimals({ code: leg.currencyCode ?? mainCurrencyCode, meta: leg.account?.currencyMeta });
   return maxDecimalPoints(decimals)(leg.amount) ? null : decimals;
 };
 

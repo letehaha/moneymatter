@@ -1,6 +1,6 @@
 import { CURRENCY_CODE_COLUMNS } from '@common/lib/currency-code-columns';
 import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
-import { connection } from '@models/index';
+import { connection } from '@models/connection';
 import { QueryTypes } from 'sequelize';
 
 /**
@@ -13,23 +13,19 @@ const REFERENCING_COLUMNS = CURRENCY_CODE_COLUMNS.filter(
 );
 
 /**
- * Cleans the global rows of user-defined currencies after a holding goes away.
- *
- * - A custom `Currencies` row that no `UsersCurrencies` row holds any more is deleted, unless a
- *   currency-code column still references it (the foreign key would refuse, and a failed statement
- *   aborts the surrounding transaction).
- * - A row that survives because another user holds it loses `createdByUserId` when its creator no
- *   longer holds it, so the column never names a deleted or departed user.
+ * Deletes every custom `Currencies` row that no `UsersCurrencies` row holds any more, unless a
+ * currency-code column still references it (the foreign key would refuse, and a failed statement
+ * aborts the surrounding transaction).
  *
  * Runs on the ambient transaction. Call it after the holdings are removed: from the user
  * destroy lifecycle (delete and wipe) and from `DELETE /user/currencies/custom/:code`.
  */
 export const pruneUnusedCustomCurrencies = async (): Promise<{ deletedCodes: string[] }> => {
-  // Lock the candidates before judging them. `createCustomCurrency` takes FOR SHARE on the global row
-  // before it inserts a holding, so a holding is either already committed (the recheck below sees it)
-  // or its transaction waits for this one. A DELETE with a NOT EXISTS alone would not close the gap:
-  // under READ COMMITTED a statement that waited on a lock-only conflict never re-runs its subquery.
-  // Ordered by code so two prunes lock in the same order.
+  // Lock the candidates before judging them. `createCustomCurrency` and backup restore take FOR
+  // SHARE on the global row before they insert a holding, so a holding is either already committed
+  // (the recheck below sees it) or its transaction waits for this one. A DELETE with a NOT EXISTS
+  // alone would not close the gap: under READ COMMITTED a statement that waited on a lock-only
+  // conflict never re-runs its subquery. Ordered by code so two prunes lock in the same order.
   const unheldCodes = (await connection.sequelize.query(
     `SELECT c."code" FROM "Currencies" c
      WHERE c."isCustom" = true
@@ -74,16 +70,6 @@ export const pruneUnusedCustomCurrencies = async (): Promise<{ deletedCodes: str
       deletable.forEach((code) => invalidateCurrencyDecimalsCache({ code }));
     }
   }
-
-  await connection.sequelize.query(
-    `UPDATE "Currencies" c SET "createdByUserId" = NULL
-     WHERE c."isCustom" = true
-       AND c."createdByUserId" IS NOT NULL
-       AND NOT EXISTS (
-         SELECT 1 FROM "UsersCurrencies" u
-         WHERE u."currencyCode" = c."code" AND u."userId" = c."createdByUserId"
-       )`,
-  );
 
   return { deletedCodes };
 };

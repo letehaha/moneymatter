@@ -16,7 +16,7 @@ export const formatRate = (rate: number) => Number(rate.toPrecision(12));
 export const toDayKey = (date: Date | string): string =>
   typeof date === 'string' ? date.slice(0, 10) : date.toISOString().slice(0, 10);
 
-type DailyPairRateResolver = (dayKey: string) => number | null;
+export type DailyPairRateResolver = (dayKey: string) => number | null;
 
 /**
  * Per-day `baseCode → quoteCode` rate from the USD-pivot rows: exact day, else the

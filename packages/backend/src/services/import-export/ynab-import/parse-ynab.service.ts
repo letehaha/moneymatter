@@ -423,13 +423,13 @@ function collectAccounts({
   });
 }
 
-const CURRENCY_RE = /\(([A-Z0-9]{2,16})\)/;
+const CURRENCY_RE = /\(([A-Z0-9]{2,16})\)/g;
 const ISO_SHAPED_CODE_RE = /^[A-Z]{3}$/;
 
 /**
- * Reads the `(CODE)` YNAB budgets append to an account name. Three capital letters read as a code
- * whatever they spell; a longer or digit-bearing tag such as `(401K)` or `(JOINT)` counts only when
- * it names one of the user's own custom currencies.
+ * Reads the first `(CODE)` tag of an account name that is a currency. Three capital letters read as
+ * a code whatever they spell; a longer or digit-bearing tag such as `(401K)` or `(JOINT)` counts only
+ * when it names one of the user's own custom currencies.
  */
 function detectCurrencyFromAccountName({
   name,
@@ -438,10 +438,11 @@ function detectCurrencyFromAccountName({
   name: string;
   customCurrencyCodes: readonly string[];
 }): string | null {
-  const code = name.match(CURRENCY_RE)?.[1];
-  if (!code) return null;
+  for (const [, code] of name.matchAll(CURRENCY_RE)) {
+    if (ISO_SHAPED_CODE_RE.test(code!) || customCurrencyCodes.includes(code!)) return code!;
+  }
 
-  return ISO_SHAPED_CODE_RE.test(code) || customCurrencyCodes.includes(code) ? code : null;
+  return null;
 }
 
 export function collectCategories({ transactions }: { transactions: YnabParseTransaction[] }): YnabParseCategory[] {

@@ -159,11 +159,9 @@ const getLinkedTransactionsStats = async ({
 
   // ponytail: matches on the primary categoryId, so a split transaction lands whole in one line.
   // Read the transaction's splits here if trackers need per-split line totals.
-  const expenses = transactions.flatMap((tx) =>
-    tx.transactionType === TRANSACTION_TYPES.expense && tx.refAmount !== null
-      ? [{ categoryId: canonicalize(tx.categoryId), minor: tx.refAmount.toMinorUnits({ decimals }) }]
-      : [],
-  );
+  const expenses = transactions
+    .filter((tx) => tx.transactionType === TRANSACTION_TYPES.expense)
+    .map((tx) => ({ categoryId: canonicalize(tx.categoryId), minor: tx.refAmount.toMinorUnits({ decimals }) }));
   return { ...result, ...splitExpensesByLines({ lines, expenses }) };
 };
 
@@ -236,12 +234,7 @@ const aggregateTransactionStats = ({
   limit: TrackerLimit;
   decimals: number;
 }): StatsResponse => {
-  // A row with no base-currency amount (custom currency, no rate yet) is left out of every figure.
-  const valued = transactions.flatMap((tx) =>
-    tx.refAmount === null ? [] : [{ time: tx.time, transactionType: tx.transactionType, refAmount: tx.refAmount }],
-  );
-
-  const result = valued.reduce((acc, curr) => {
+  const result = transactions.reduce((acc, curr) => {
     const isExpense = curr.transactionType === TRANSACTION_TYPES.expense;
     const refAmount = curr.refAmount.toMinorUnits({ decimals });
 

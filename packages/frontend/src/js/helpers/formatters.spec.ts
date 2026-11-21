@@ -151,7 +151,22 @@ describe('js/helpers/formatters', () => {
 
       test('an ISO currency keeps currency style with its registered decimals', () => {
         registerCurrencyDecimals({ entries: [{ code: 'KWD', decimals: 3, isCustom: false }] });
-        expect(formatUIAmount(1.5, { currency: 'KWD' })).toContain('1.500');
+        expect(formatUIAmount(1.5, { currency: 'KWD' })).toBe(
+          new Intl.NumberFormat('en-US', { style: 'currency', currency: 'KWD', minimumFractionDigits: 3 }).format(1.5),
+        );
+      });
+
+      test('a three-letter code missing from the loaded catalogue renders as custom', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USD', decimals: 2 }], replace: true });
+        expect(formatUIAmount(1.5, { currency: 'ABC' })).toBe('1.50 ABC');
+      });
+
+      test('a compact amount puts the scale suffix before the label', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6, isCustom: true }] });
+        expect(formatCompactUIAmount({ amount: 42_600, currency: 'USDT' })).toBe('42.6k USDT');
+
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6, isCustom: true, symbol: '₮' }] });
+        expect(formatCompactUIAmount({ amount: 42_600, currency: 'USDT' })).toBe('42.6k ₮');
       });
     });
 

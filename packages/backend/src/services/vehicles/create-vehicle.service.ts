@@ -75,6 +75,7 @@ const createVehicleImpl = async (params: CreateVehicleParams) => {
 
   const refCurrentValue = await calculateRefAmount({
     userId,
+    definitionOwnerUserId: userId,
     amount: currentValue,
     baseCode: currencyCode,
     date: now,

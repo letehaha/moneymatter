@@ -5,6 +5,7 @@ export type CurrencyWithExchangeRate = UserCurrencyModel & {
   quoteCode: string;
   custom?: boolean;
   quoteRate: number;
+  isCustomCurrency: boolean;
 };
 
 /** What the custom currency dialog edits: a custom currency as the user's currency list carries it. */

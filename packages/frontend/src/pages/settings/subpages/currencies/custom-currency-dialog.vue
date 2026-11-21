@@ -64,6 +64,25 @@
         }}
       </p>
 
+      <Callout v-if="isDecimalsChanged" data-testid="custom-currency-decimals-warning">
+        <span>{{ $t('settings.currencies.delete.foreignAmountsWarning') }}</span>
+      </Callout>
+
+      <template v-if="!isEditing">
+        <InputField
+          v-model="form.rate"
+          type="number"
+          only-positive
+          :label="$t('settings.currencies.custom.rateLabel')"
+          :placeholder="$t('settings.currencies.custom.ratePlaceholder')"
+          :error-message="getFieldErrorMessage('form.rate')"
+          data-testid="custom-currency-rate"
+          @blur="touchField('form.rate')"
+        />
+
+        <p class="text-muted-foreground -mt-2 text-xs">{{ $t('settings.currencies.custom.createRateHint') }}</p>
+      </template>
+
       <p v-if="previewLabel" class="text-muted-foreground text-sm tabular-nums" data-testid="custom-currency-preview">
         {{ $t('settings.currencies.custom.preview', { value: previewLabel }) }}
       </p>
@@ -71,6 +90,8 @@
       <Callout v-if="formError" variant="destructive" data-testid="custom-currency-error">
         <span>{{ formError }}</span>
       </Callout>
+
+      <CurrencyBlockerList v-if="blockers.length" :blockers="blockers" />
     </form>
 
     <template #footer>
@@ -94,29 +115,34 @@
 
 <script setup lang="ts">
 import { createCustomCurrency, updateCustomCurrency } from '@/api/currencies';
-import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormValidation } from '@/composable/form-validator';
-import { extractApiErrorMessage } from '@/js/errors';
+import { extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
 import { formatUIAmount } from '@/js/helpers';
 import { helpers, required } from '@/js/helpers/validators';
 import { useCurrenciesStore } from '@/stores';
 import {
+  API_ERROR_CODES,
   CURRENCY_CODE_PATTERN,
   CUSTOM_CURRENCY_DECIMALS_MAX,
+  CUSTOM_CURRENCY_DECIMALS_MIN,
   CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH,
+  type CurrencyInUseBlocker,
+  type CurrencyInUseDetails,
   type CurrencyMeta,
 } from '@bt/shared/types';
-import { useMutation, useQueryClient } from '@tanstack/vue-query';
+import { useMutation } from '@tanstack/vue-query';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import CurrencyBlockerList from './currency-blocker-list.vue';
 import type { EditableCustomCurrency } from './types';
+import { useRefreshAfterCurrencyChange } from './use-refresh-after-currency-change';
 
 const props = defineProps<{
   /** The currency being edited; unset creates a new one. */
@@ -135,17 +161,18 @@ interface CustomCurrencyForm {
   name: string;
   symbol: string;
   decimals: number | null;
+  rate: number | null;
 }
 
 const { t } = useI18n();
 const { addSuccessNotification } = useNotificationCenter();
-const queryClient = useQueryClient();
+const refreshAfterChange = useRefreshAfterCurrencyChange();
 const currenciesStore = useCurrenciesStore();
 const { currencies, isoCurrencies } = storeToRefs(currenciesStore);
 
 const isEditing = computed(() => Boolean(props.currency));
 // Decimals are fixed once a row holds an amount in the currency. Accounts are what the page
-// knows about; transactions or templates alone are caught by the API's 409.
+// knows about; the API refuses the change for any other row.
 const isDecimalsLocked = computed(() => isEditing.value && (props.accountsCount ?? 0) > 0);
 
 const buildFormState = (): CustomCurrencyForm => ({
@@ -153,15 +180,31 @@ const buildFormState = (): CustomCurrencyForm => ({
   name: props.currency?.name ?? '',
   symbol: props.currency?.symbol ?? '',
   decimals: props.currency?.decimals ?? null,
+  rate: null,
 });
 
 const form = ref<CustomCurrencyForm>(buildFormState());
 const formError = ref<string | null>(null);
+const blockers = ref<CurrencyInUseBlocker[]>([]);
+
+const isDecimalsInRange = (value: number | null): value is number =>
+  value !== null &&
+  Number.isInteger(value) &&
+  value >= CUSTOM_CURRENCY_DECIMALS_MIN &&
+  value <= CUSTOM_CURRENCY_DECIMALS_MAX;
+
+const isDecimalsChanged = computed(
+  () =>
+    Boolean(props.currency) &&
+    isDecimalsInRange(form.value.decimals) &&
+    form.value.decimals !== props.currency!.decimals,
+);
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
   form.value = buildFormState();
   formError.value = null;
+  blockers.value = [];
   resetValidation();
 });
 
@@ -200,10 +243,12 @@ const validationRules = computed(() => ({
     ),
   },
   decimals: {
-    range: helpers.withMessage(
-      t('settings.currencies.custom.errors.decimalsRange'),
-      (value: number | null) =>
-        value !== null && Number.isInteger(value) && value >= 0 && value <= CUSTOM_CURRENCY_DECIMALS_MAX,
+    range: helpers.withMessage(t('settings.currencies.custom.errors.decimalsRange'), isDecimalsInRange),
+  },
+  rate: {
+    positive: helpers.withMessage(
+      t('settings.currencies.custom.errors.rateRequired'),
+      (value: number | null) => isEditing.value || (value !== null && Number.isFinite(value) && value > 0),
     ),
   },
 }));
@@ -217,46 +262,35 @@ const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFo
 // before saving.
 const previewLabel = computed(() => {
   const { code, symbol, decimals } = form.value;
-  if (!CURRENCY_CODE_PATTERN.test(code) || decimals === null || decimals < 0 || decimals > CUSTOM_CURRENCY_DECIMALS_MAX)
-    return '';
+  if (!CURRENCY_CODE_PATTERN.test(code) || !isDecimalsInRange(decimals)) return '';
 
   const meta: CurrencyMeta = { decimals, symbol: symbol.trim() || null, isCustom: true };
   return formatUIAmount(PREVIEW_AMOUNT, { currency: code, meta });
 });
 
-const refreshAfterChange = async () => {
-  await currenciesStore.loadCurrencies({ force: true });
-  // Accounts and transactions carry the currency's metadata (symbol, name), so they refetch too.
-  queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.allAccounts });
-  queryClient.invalidateQueries({
-    predicate: (query) => query.queryKey.includes(VUE_QUERY_GLOBAL_PREFIXES.transactionChange),
-  });
-  queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.exchangeRates });
-};
-
 const { mutate, isPending } = useMutation({
   mutationFn: () => {
-    const { code, name, symbol, decimals } = form.value;
+    const { code, name, symbol, decimals, rate } = form.value;
     const payload = { name: name.trim(), symbol: symbol.trim() || null };
 
     if (props.currency) {
       return updateCustomCurrency({
         code: props.currency.code,
         ...payload,
-        ...(decimals !== props.currency.decimals && decimals !== null ? { decimals } : {}),
+        ...(isDecimalsChanged.value ? { decimals: decimals! } : {}),
       });
     }
 
-    return createCustomCurrency({ code, ...payload, decimals: decimals! });
+    return createCustomCurrency({ code, ...payload, decimals: decimals!, rate: { value: rate! } });
   },
-  onSuccess: async () => {
-    await refreshAfterChange();
+  onSuccess: () => {
     addSuccessNotification(
       isEditing.value
         ? t('settings.currencies.custom.successfullyUpdated')
         : t('settings.currencies.custom.successfullyCreated'),
     );
     open.value = false;
+    void refreshAfterChange();
   },
   onError: (error) => {
     // The API explains the refusal (a decimals change or a code that is taken) in the user's language.
@@ -265,12 +299,16 @@ const { mutate, isPending } = useMutation({
       (isEditing.value
         ? t('settings.currencies.custom.errors.updateFailed')
         : t('settings.currencies.custom.errors.createFailed'));
+    blockers.value = isApiErrorWithCode(error, API_ERROR_CODES.currencyInUse)
+      ? ((error.data.details as CurrencyInUseDetails | undefined)?.blockers ?? [])
+      : [];
   },
 });
 
 const handleSubmit = () => {
   if (!isFormValid()) return;
   formError.value = null;
+  blockers.value = [];
   mutate();
 };
 </script>

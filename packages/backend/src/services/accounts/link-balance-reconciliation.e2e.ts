@@ -233,14 +233,14 @@ describe('Balance reconciliation when linking account to a bank connection', () 
     // The USD opening balance moved, so its base-currency stamp must be re-derived
     // rather than left on the pre-link value.
     expect(updatedAccount.refInitialBalance).not.toBeNull();
-    expect(updatedAccount.refInitialBalance!.toCents()).not.toBe(preLinkAccount.refInitialBalance!.toCents());
-    expect(updatedAccount.refInitialBalance!.toCents()).toBeGreaterThan(preLinkAccount.refInitialBalance!.toCents());
+    expect(updatedAccount.refInitialBalance.toCents()).not.toBe(preLinkAccount.refInitialBalance.toCents());
+    expect(updatedAccount.refInitialBalance.toCents()).toBeGreaterThan(preLinkAccount.refInitialBalance.toCents());
 
     // The restamp cascade shifts every Balances row, including today's, which
     // the sync pinned to the bank's authoritative balance. It must stay pinned.
     const todayRow = await readTodayBalanceRow({ accountId: account.id });
     expect(todayRow).not.toBeNull();
-    expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance!.toCents());
+    expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance.toCents());
   });
 
   it('rounds the bank balance to the account currency decimals before reconciling', async () => {
@@ -489,7 +489,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       );
 
       const todayRow = await readTodayBalanceRow({ accountId: account.id });
-      expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance!.toCents());
+      expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance.toCents());
     });
 
     it('creates no adjustment row when the synced transactions explain the whole gap', async () => {
@@ -1068,7 +1068,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       );
 
       const todayRow = await readTodayBalanceRow({ accountId: account.id });
-      expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance!.toCents());
+      expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance.toCents());
     });
     // Stored balances include the credit limit, so linking adopts the bank's
     // limit and rebases the stored balance before comparing own funds.

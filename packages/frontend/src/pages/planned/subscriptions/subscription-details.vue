@@ -210,7 +210,7 @@ const KIND_LABEL_KEYS: Record<SUBSCRIPTION_TYPES, string> = {
 const formattedAmount = computed(() => {
   const sub = subscription.value;
   if (!sub?.expectedAmount || !sub.expectedCurrencyCode) return null;
-  return `${getTransactionTypePrefix(sub.transactionType)}${formatAmountByCurrencyCode(sub.expectedAmount, sub.expectedCurrencyCode)}`;
+  return `${getTransactionTypePrefix(sub.transactionType)}${formatAmountByCurrencyCode({ amount: sub.expectedAmount, currencyCode: sub.expectedCurrencyCode })}`;
 });
 
 const remindersSummary = computed(() => {
@@ -287,7 +287,7 @@ const installmentProgress = computed(() => {
   const percent = isCompleted.value ? 100 : total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
   const remainingTotal =
     sub.expectedAmount != null && sub.expectedCurrencyCode != null
-      ? formatAmountByCurrencyCode(remaining * sub.expectedAmount, sub.expectedCurrencyCode)
+      ? formatAmountByCurrencyCode({ amount: remaining * sub.expectedAmount, currencyCode: sub.expectedCurrencyCode })
       : null;
 
   return { total, paid, remaining, percent, remainingTotal };

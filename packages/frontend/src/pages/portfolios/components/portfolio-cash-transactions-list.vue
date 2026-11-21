@@ -59,15 +59,22 @@
         <div class="flex items-center gap-3">
           <div v-if="dp.type === 'exchange' && transfer.toCurrencyCode && transfer.toAmount" class="text-right">
             <p class="text-app-expense-color text-sm font-semibold">
-              -{{ formatAmountByCurrencyCode(Number(transfer.amount), transfer.currencyCode) }}
+              -{{
+                formatAmountByCurrencyCode({ amount: Number(transfer.amount), currencyCode: transfer.currencyCode })
+              }}
             </p>
             <p class="text-app-income-color text-sm font-semibold">
-              +{{ formatAmountByCurrencyCode(Number(transfer.toAmount), transfer.toCurrencyCode) }}
+              +{{
+                formatAmountByCurrencyCode({ amount: Number(transfer.toAmount), currencyCode: transfer.toCurrencyCode })
+              }}
             </p>
           </div>
           <div v-else class="text-right">
             <p class="text-sm font-semibold" :class="dp.amountClass">
-              {{ dp.amountPrefix }}{{ formatAmountByCurrencyCode(Number(transfer.amount), transfer.currencyCode) }}
+              {{ dp.amountPrefix
+              }}{{
+                formatAmountByCurrencyCode({ amount: Number(transfer.amount), currencyCode: transfer.currencyCode })
+              }}
             </p>
           </div>
 

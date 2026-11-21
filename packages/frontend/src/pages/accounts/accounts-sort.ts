@@ -29,12 +29,7 @@ export const accountBaseValue = ({
   account,
   includeCreditLimit,
 }: {
-  account: {
-    currentBalance: number;
-    refCurrentBalance: number | null;
-    creditLimit: number;
-    refCreditLimit: number | null;
-  };
+  account: { currentBalance: number; refCurrentBalance: number; creditLimit: number; refCreditLimit: number };
   includeCreditLimit: boolean;
 }): number =>
   computeAccountDisplayBalances({

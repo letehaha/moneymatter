@@ -82,19 +82,13 @@ export const resolveWholeTxRefunds = async ({
     const baseTx = byId.get(refund.originalTxId);
     const refundTx = byId.get(refund.refundTxId);
     if (!baseTx || !refundTx) continue;
-    // A refund with no base-currency amount has no magnitude to net.
-    if (refundTx.refAmount === null) continue;
 
     const sideTx = baseTx.transactionType === side ? baseTx : refundTx;
     if (!inScopeTxIds.has(sideTx.id)) continue;
     result.push({
       payeeId: sideTx.payeeId,
       tagIds: needTags ? (sideTx.tags ?? []).map((tag) => tag.id) : [],
-      refundMinor: refundShareRefAmount({
-        link: refund,
-        refundTx: { amount: refundTx.amount, refAmount: refundTx.refAmount },
-        decimals,
-      }).toMinorUnits({ decimals }),
+      refundMinor: refundShareRefAmount({ link: refund, refundTx, decimals }).toMinorUnits({ decimals }),
       time: new Date(sideTx.time),
     });
   }

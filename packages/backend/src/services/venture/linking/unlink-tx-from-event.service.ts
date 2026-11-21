@@ -48,7 +48,7 @@ const unlinkTxFromEventImpl = async ({ userId, eventId, linkId }: UnlinkTxFromEv
     userId,
     transferNature: snapshot.transferNature ?? TRANSACTION_TRANSFER_NATURE.not_transfer,
     refCurrencyCode: snapshot.refCurrencyCode,
-    refAmount: snapshot.refAmount === null ? null : Money.fromDecimal(snapshot.refAmount),
+    refAmount: Money.fromDecimal(snapshot.refAmount),
   });
 
   await link.destroy();

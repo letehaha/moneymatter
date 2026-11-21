@@ -27,35 +27,30 @@
 
               <span
                 v-if="isBase"
-                class="bg-primary text-primary-foreground shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                class="bg-primary text-primary-foreground shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold"
               >
                 {{ $t('settings.currencies.row.baseBadge') }}
               </span>
 
               <template v-else>
                 <span
-                  v-if="isCustomCurrency"
-                  class="bg-primary/15 text-primary-text shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold"
-                  data-testid="custom-currency-badge"
-                >
-                  {{ $t('settings.currencies.row.customCurrency') }}
-                </span>
-                <span
-                  v-else
                   :class="
                     cn(
-                      'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold',
-                      currency.custom ? 'bg-primary/15 text-primary-text' : 'bg-muted text-muted-foreground',
+                      'shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold',
+                      currency.isCustomCurrency || currency.custom
+                        ? 'bg-primary/15 text-primary-text'
+                        : 'bg-muted text-muted-foreground',
                     )
                   "
+                  :data-testid="currency.isCustomCurrency ? 'custom-currency-badge' : undefined"
                 >
-                  {{ currency.custom ? $t('settings.currencies.row.custom') : $t('settings.currencies.row.live') }}
+                  {{ rateKindLabel }}
                 </span>
 
                 <span
                   :class="
                     cn(
-                      'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums',
+                      'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium tabular-nums',
                       accountsCount > 0 ? 'bg-muted text-muted-foreground' : 'bg-muted/60 text-muted-foreground/70',
                     )
                   "
@@ -80,10 +75,10 @@
             <div class="text-sm font-semibold tabular-nums">
               <span class="text-muted-foreground text-xs font-normal">1 {{ code }} =</span>
               {{ rateDisplay }}
-              <span class="text-muted-foreground text-xs font-normal">{{ baseCode }}</span>
+              <span class="text-muted-foreground text-xs font-normal">{{ quoteCode }}</span>
             </div>
             <div class="text-sm font-semibold tabular-nums">
-              <span class="text-muted-foreground text-xs font-normal">1 {{ baseCode }} =</span>
+              <span class="text-muted-foreground text-xs font-normal">1 {{ quoteCode }} =</span>
               {{ quoteRateDisplay }}
               <span class="text-muted-foreground text-xs font-normal">{{ code }}</span>
             </div>
@@ -113,7 +108,7 @@
 
         <div class="flex items-center justify-between gap-3">
           <Button
-            v-if="isCustomCurrency"
+            v-if="currency.isCustomCurrency"
             variant="outline"
             size="sm"
             class="whitespace-nowrap"
@@ -152,24 +147,23 @@
 </template>
 
 <script setup lang="ts">
-import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useCurrencyName } from '@/composable';
 import CurrencyIcon from '@/components/common/currency-icon.vue';
 import { Button } from '@/components/lib/ui/button';
 import { toLocalNumber } from '@/js/helpers/formatters';
 import { Collapsible, CollapsibleContent } from '@/components/lib/ui/collapsible';
 import { cn } from '@/lib/utils';
-import { useCurrenciesStore } from '@/stores';
-import { useQueryClient } from '@tanstack/vue-query';
 import { ChevronDownIcon, PencilIcon } from '@lucide/vue';
-import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import CustomCurrencyDialog from './custom-currency-dialog.vue';
 import ExchangeRateForm from './currency-row/exchange-rate-form.vue';
 import DeleteCurrency from './currency-row/delete-currency.vue';
 import SetBaseCurrency from './currency-row/set-base-currency.vue';
+import { rateDisplayOptions } from './rate-precision';
 import { CurrencyWithExchangeRate, EditableCustomCurrency } from './types';
+import { useRefreshAfterCurrencyChange } from './use-refresh-after-currency-change';
 
 const props = defineProps<{
   currency: CurrencyWithExchangeRate;
@@ -182,15 +176,13 @@ const emit = defineEmits<{
   submit: [];
 }>();
 
-const currenciesStore = useCurrenciesStore();
-const { baseCurrency } = storeToRefs(currenciesStore);
-const queryClient = useQueryClient();
+const { t } = useI18n();
+const refreshAfterChange = useRefreshAfterCurrencyChange();
 const { getCurrencyName } = useCurrencyName();
 
 const isFormDisabled = ref(false);
 
 const isBase = computed(() => props.currency.isDefaultCurrency);
-const isCustomCurrency = computed(() => Boolean(props.currency.currency?.isCustom));
 const isEditOpen = ref(false);
 const editableCurrency = computed<EditableCustomCurrency | null>(() => {
   const effective = props.currency.currency;
@@ -199,10 +191,10 @@ const editableCurrency = computed<EditableCustomCurrency | null>(() => {
   return { code: effective.code, name: effective.currency, symbol: effective.symbol, decimals: effective.digits };
 });
 const code = computed(() => props.currency.currency?.code ?? '');
-const baseCode = computed(() => baseCurrency.value?.currency?.code ?? '');
+const quoteCode = computed(() => props.currency.quoteCode);
 // A custom currency carries the name its owner gave it; a translated ISO name could shadow it.
 const currencyName = computed(() =>
-  isCustomCurrency.value
+  props.currency.isCustomCurrency
     ? (props.currency.currency?.currency ?? code.value)
     : getCurrencyName({
         code: code.value,
@@ -210,16 +202,18 @@ const currencyName = computed(() =>
       }),
 );
 
-// A custom currency can be worth a tiny fraction of its quote, so its rate shows more digits.
-const RATE_MAX_FRACTION_DIGITS = 6;
-const CUSTOM_RATE_MAX_FRACTION_DIGITS = 12;
+const RATE_DISPLAY_DECIMALS = 6;
 const formatRate = (value: number) =>
   Number.isFinite(value)
-    ? toLocalNumber(value, {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: isCustomCurrency.value ? CUSTOM_RATE_MAX_FRACTION_DIGITS : RATE_MAX_FRACTION_DIGITS,
-      })
+    ? toLocalNumber(
+        value,
+        rateDisplayOptions({ isCustom: props.currency.isCustomCurrency, isoDecimals: RATE_DISPLAY_DECIMALS }),
+      )
     : '—';
+const rateKindLabel = computed(() => {
+  if (props.currency.isCustomCurrency) return t('settings.currencies.row.customCurrency');
+  return props.currency.custom ? t('settings.currencies.row.custom') : t('settings.currencies.row.live');
+});
 const rateDisplay = computed(() => formatRate(props.currency.rate));
 const quoteRateDisplay = computed(() => formatRate(props.currency.quoteRate));
 
@@ -228,13 +222,8 @@ const onTriggerClick = () => {
   emit('toggle');
 };
 
-// Mirror the previous dialog-close refresh: pull fresh currencies and re-run the
-// exchange-rates query so the row reflects the saved rate (or vanishes on delete).
-const handleSubmit = async () => {
+const handleSubmit = () => {
   emit('submit');
-  await currenciesStore.loadCurrencies({ force: true });
-  queryClient.invalidateQueries({
-    queryKey: VUE_QUERY_CACHE_KEYS.exchangeRates,
-  });
+  void refreshAfterChange();
 };
 </script>

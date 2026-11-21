@@ -5,9 +5,8 @@ import { isRevaluedAccount, scheduleBalanceRevalue } from '@services/balances/re
 import { findCustomCurrencyCodes } from '@services/currencies/custom-currency-codes';
 
 /**
- * The edited codes plus every custom currency the user prices through one of them, however many
- * custom steps away. A custom currency is worth its stored quote times the ISO rate of that quote
- * into the base, so editing the quote's rate moves the custom currency's value as well.
+ * The edited codes plus the user's custom currencies quoted in one of them: a custom currency is worth
+ * its stored rate times its ISO quote's rate into the base, so editing the quote moves it too.
  */
 const withDependentCustomCurrencies = async ({
   userId,
@@ -16,22 +15,14 @@ const withDependentCustomCurrencies = async ({
   userId: number;
   currencyCodes: string[];
 }): Promise<string[]> => {
-  const covered = new Set(currencyCodes);
-  let frontier = currencyCodes;
+  const rows = await UserExchangeRates.findAll({
+    where: { userId, quoteCode: currencyCodes },
+    attributes: ['baseCode'],
+    raw: true,
+  });
+  const customCodes = await findCustomCurrencyCodes({ codes: rows.map((row) => row.baseCode) });
 
-  while (frontier.length) {
-    const rows = await UserExchangeRates.findAll({
-      where: { userId, quoteCode: frontier },
-      attributes: ['baseCode'],
-      raw: true,
-    });
-    const customCodes = await findCustomCurrencyCodes({ codes: rows.map((row) => row.baseCode) });
-
-    frontier = [...customCodes].filter((code) => !covered.has(code));
-    frontier.forEach((code) => covered.add(code));
-  }
-
-  return [...covered];
+  return [...new Set([...currencyCodes, ...customCodes])];
 };
 
 /**

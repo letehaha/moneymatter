@@ -13,6 +13,7 @@ import { roundMoneyValues } from '@common/lib/currency-precision';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
+import { UnexpectedError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import Balances from '@models/balances.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
@@ -25,11 +26,11 @@ interface AccountsAttributes {
   id: string;
   name: string;
   initialBalance: Money;
-  refInitialBalance: Money | null;
+  refInitialBalance: Money;
   currentBalance: Money;
-  refCurrentBalance: Money | null;
+  refCurrentBalance: Money;
   creditLimit: Money;
-  refCreditLimit: Money | null;
+  refCreditLimit: Money;
   type: ACCOUNT_TYPES;
   accountCategory: ACCOUNT_CATEGORIES;
   defaultPaymentType: PAYMENT_TYPES | null;
@@ -78,20 +79,20 @@ export default class Accounts extends Model {
   @MoneyField()
   declare initialBalance: Money;
 
-  @MoneyField({ allowNull: true, defaultValue: '0' })
-  declare refInitialBalance: Money | null;
+  @MoneyField()
+  declare refInitialBalance: Money;
 
   @MoneyField()
   declare currentBalance: Money;
 
-  @MoneyField({ allowNull: true, defaultValue: '0' })
-  declare refCurrentBalance: Money | null;
+  @MoneyField()
+  declare refCurrentBalance: Money;
 
   @MoneyField()
   declare creditLimit: Money;
 
-  @MoneyField({ allowNull: true, defaultValue: '0' })
-  declare refCreditLimit: Money | null;
+  @MoneyField()
+  declare refCreditLimit: Money;
 
   /** Native balance at the start of the bank seam day; null when the account has no seam. */
   @MoneyField({ allowNull: true })
@@ -373,6 +374,14 @@ export const isBankLinkedAccount = async ({ id }: { id: string }) => {
   const account = await Accounts.findByPk(id, { attributes: ['type'] });
 
   return Boolean(account) && account!.type !== ACCOUNT_TYPES.system;
+};
+
+/** Owner of the account, whose definition of its currency governs every amount on it. */
+export const getAccountOwnerUserId = async ({ id }: { id: string }): Promise<number> => {
+  const account = await Accounts.findByPk(id, { attributes: ['userId'] });
+  if (!account) throw new UnexpectedError({ message: `Account ${id} does not exist` });
+
+  return account.userId;
 };
 
 export const getAccountCurrency = async ({ userId, id }: { userId: number; id: string }) => {

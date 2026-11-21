@@ -18,7 +18,7 @@ import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { NON_CURRENCY_CODES } from '@models/currencies.model';
 import Subscriptions from '@models/subscriptions.model';
-import { calculateRefAmountOrNull } from '@root/services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@root/services/calculate-ref-amount.service';
 import { withTransaction } from '@root/services/common/with-transaction';
 import { lockAccountRow } from '@services/accounts/lock-account-row';
 import { restoreRelinkedTransactionsAccountType } from '@services/accounts/restore-relinked-transactions-account-type';
@@ -315,17 +315,19 @@ const createAccountsForConnection = withTransaction(
         });
 
         const now = new Date();
-        const accountRefBalance = await calculateRefAmountOrNull({
+        const accountRefBalance = await calculateRefAmount({
           amount: providerBalance,
           userId,
+          definitionOwnerUserId: userId,
           date: now,
           baseCode: providerAccount.currency,
         });
 
         const refCreditLimit = creditLimit.isPositive()
-          ? await calculateRefAmountOrNull({
+          ? await calculateRefAmount({
               amount: creditLimit,
               userId,
+              definitionOwnerUserId: userId,
               date: now,
               baseCode: providerAccount.currency,
             })

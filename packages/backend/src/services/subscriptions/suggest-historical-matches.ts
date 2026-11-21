@@ -187,6 +187,7 @@ async function filterByCrossCurrencyAmount({
         const converted = await calculateRefAmount({
           amount,
           userId,
+          definitionOwnerUserId: userId,
           date: tx.time,
           baseCode: tx.currencyCode,
           quoteCode: rule.currencyCode,

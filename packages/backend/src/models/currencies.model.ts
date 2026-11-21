@@ -1,3 +1,4 @@
+import { MAX_CURRENCY_DECIMALS } from '@bt/shared/types';
 import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { ValidationError } from '@js/errors';
@@ -54,14 +55,6 @@ export default class Currencies extends Model {
   @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
   isCustom!: boolean;
 
-  /** Currency symbol of a custom code; ISO rows leave it `null`. */
-  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(8) })
-  symbol!: string | null;
-
-  /** User that defined a custom code; `null` for ISO rows. A plain id, not a foreign key: see the migration. */
-  @Column({ allowNull: true, defaultValue: null, type: DataType.INTEGER })
-  createdByUserId!: number | null;
-
   @BelongsToMany(() => Users, {
     as: 'users',
     through: () => UsersCurrencies,
@@ -83,6 +76,18 @@ export default class Currencies extends Model {
     invalidateCurrencyDecimalsCache();
   }
 }
+
+/**
+ * The global row of a custom code. It is only the foreign-key target and carries no user's
+ * definition: each holder's `UsersCurrencies` row is the definition.
+ */
+export const customCurrencyStub = ({ code }: { code: string }) => ({
+  code,
+  currency: code,
+  digits: MAX_CURRENCY_DECIMALS,
+  number: null,
+  isCustom: true,
+});
 
 /**
  * ISO 4217 codes that are not actual currencies (precious metals, testing codes, supranational

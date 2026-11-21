@@ -49,8 +49,7 @@ export interface TransactionRow {
   payee: string;
   amount: number;
   currency: string;
-  /** Empty while a custom currency has no rate on the transaction's date. */
-  amountInBaseCurrency: number | null;
+  amountInBaseCurrency: number;
   baseCurrency: string;
   note: string;
   externalUrl: string;

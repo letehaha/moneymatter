@@ -112,7 +112,7 @@ const confirmDelete = async () => {
                 "
               >
                 {{ tx.transactionType === TRANSACTION_TYPES.income ? '+' : '−' }}
-                {{ formatAmountByCurrencyCode(tx.amount, currencyCode) }}
+                {{ formatAmountByCurrencyCode({ amount: tx.amount, currencyCode }) }}
               </span>
             </div>
             <div class="text-muted-foreground truncate text-xs">

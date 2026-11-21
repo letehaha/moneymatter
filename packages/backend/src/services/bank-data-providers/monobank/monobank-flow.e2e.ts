@@ -590,7 +590,7 @@ describe('Monobank Data Provider E2E', () => {
 
       const created = await Accounts.findByPk(syncedAccounts[0]!.id);
       const creditLimitCents = created!.creditLimit.toCents();
-      const refCreditLimitCents = created!.refCreditLimit!.toCents();
+      const refCreditLimitCents = created!.refCreditLimit.toCents();
 
       expect(creditLimitCents).toBe(200000);
       expect(refCreditLimitCents).not.toBe(creditLimitCents);
@@ -598,10 +598,11 @@ describe('Monobank Data Provider E2E', () => {
       const expected = await calculateRefAmount({
         amount: Money.fromCents(creditLimitCents),
         userId: created!.userId,
+        definitionOwnerUserId: created!.userId,
         date: new Date(),
         baseCode: 'UAH',
       });
-      expect(created!.refCreditLimit!.toNumber()).toEqualRefValue(expected.toNumber());
+      expect(created!.refCreditLimit.toNumber()).toEqualRefValue(expected.toNumber());
     });
 
     it('should set refCreditLimit = 0 when the account has no credit limit', async () => {
@@ -630,7 +631,7 @@ describe('Monobank Data Provider E2E', () => {
 
       const created = await Accounts.findByPk(syncedAccounts[0]!.id);
       expect(created!.creditLimit.toCents()).toBe(0);
-      expect(created!.refCreditLimit!.toCents()).toBe(0);
+      expect(created!.refCreditLimit.toCents()).toBe(0);
     });
 
     it('should update connection lastSyncAt after connecting accounts', async () => {

@@ -203,8 +203,7 @@ async function checkReminder({
     case TAG_REMINDER_TYPES.amountThreshold: {
       // Calculate totals for amount threshold check
       const transactionCount = transactions.length;
-      // Rows with no base-currency amount (custom currency, no rate yet) add nothing to the total.
-      const totalAmount = Money.sum(transactions.flatMap((tx) => (tx.refAmount ? [tx.refAmount] : [])));
+      const totalAmount = Money.sum(transactions.map((tx) => tx.refAmount));
       const transactionIds = transactions.map((tx) => tx.id);
 
       result.transactionCount = transactionCount;

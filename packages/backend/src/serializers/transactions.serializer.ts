@@ -34,8 +34,7 @@ interface TransactionSplitApiResponse {
   id: string;
   categoryId: string;
   amount: number;
-  /** `null` while a custom currency has no rate on the transaction's date. */
-  refAmount: number | null;
+  refAmount: number;
   note: string | null;
   category?: {
     id: string;
@@ -49,10 +48,9 @@ interface TransactionSplitApiResponse {
 export interface TransactionApiResponse {
   id: string;
   amount: number;
-  /** `null` while a custom currency has no rate on the transaction's date; see `refAmountMissing`. */
-  refAmount: number | null;
+  refAmount: number;
   commissionRate: number;
-  refCommissionRate: number | null;
+  refCommissionRate: number;
   cashbackAmount: number;
   originalAmount: number | null;
   originalCurrencyCode: string | null;
@@ -73,8 +71,6 @@ export interface TransactionApiResponse {
   transferId: string | null;
   originalId: string | null;
   refundLinked: boolean;
-  /** `true` while the base-currency amounts could not be computed for a custom currency. */
-  refAmountMissing: boolean;
   /** Set on list reads with `includeRefundedAmount` and on each refund link's `originalTransaction`. */
   refundedAmount?: number;
   /** Present on list reads only. */
@@ -227,7 +223,7 @@ function serializeTransactionSplit(split: SerializableSplit): TransactionSplitAp
     id: split.id,
     categoryId: split.categoryId,
     amount: moneyToApiDecimal(split.amount),
-    refAmount: moneyToApiDecimalOrNull(split.refAmount),
+    refAmount: moneyToApiDecimal(split.refAmount),
     note: split.note,
     ...(split.category && {
       category: {
@@ -270,9 +266,9 @@ export function serializeTransaction(
   return {
     id: tx.id,
     amount: moneyToApiDecimal(tx.amount),
-    refAmount: moneyToApiDecimalOrNull(tx.refAmount),
+    refAmount: moneyToApiDecimal(tx.refAmount),
     commissionRate: moneyToApiDecimal(tx.commissionRate),
-    refCommissionRate: moneyToApiDecimalOrNull(tx.refCommissionRate),
+    refCommissionRate: moneyToApiDecimal(tx.refCommissionRate),
     cashbackAmount: moneyToApiDecimal(tx.cashbackAmount),
     originalAmount: moneyToApiDecimalOrNull(tx.originalAmount),
     originalCurrencyCode: tx.originalCurrencyCode ?? null,
@@ -293,7 +289,6 @@ export function serializeTransaction(
     transferId: tx.transferId,
     originalId: tx.originalId,
     refundLinked: tx.refundLinked,
-    refAmountMissing: tx.refAmountMissing ?? false,
     ...(tx.refundedAmount && { refundedAmount: moneyToApiDecimal(tx.refundedAmount) }),
     isPlanned: tx.isPlanned ?? false,
     excludeFromStats: tx.excludeFromStats ?? false,

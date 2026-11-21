@@ -2,7 +2,6 @@ import { EXCHANGE_RATE_PROVIDER_TYPE } from '@bt/shared/types';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import ExchangeRates from '@models/exchange-rates.model';
 import { connection } from '@models/index';
-import UsersCurrencies from '@models/users-currencies.model';
 import { initializeHistoricalRates } from '@services/exchange-rates/initialize-historical-rates.service';
 import * as helpers from '@tests/helpers';
 import { getCurrencyRatesApiResponseMock } from '@tests/mocks/exchange-rates/data';
@@ -20,19 +19,14 @@ const CUSTOM_CODE = 'BTC';
 
 describe('custom currencies stay out of global readers', () => {
   beforeEach(async () => {
-    const { id: userId } = await helpers.getUserInfo({ raw: true });
-    await helpers.seedCustomCurrencyRow({ code: CUSTOM_CODE, name: 'Bitcoin', digits: 8, createdByUserId: userId });
-    await UsersCurrencies.create({
-      userId,
-      currencyCode: CUSTOM_CODE,
-      isDefaultCurrency: false,
-      liveRateUpdate: false,
+    await helpers.createCustomCurrency({
+      payload: { code: CUSTOM_CODE, name: 'Bitcoin', decimals: 8, rate: { value: 60000 } },
+      raw: true,
     });
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     global.mswMockServer.resetHandlers();
-    await helpers.removeCustomCurrencyRow({ code: CUSTOM_CODE });
   });
 
   it("does not show another user's logo for the same custom code", async () => {
@@ -40,12 +34,12 @@ describe('custom currencies stay out of global readers', () => {
     const updated = await helpers.updateCustomCurrency({ code: CUSTOM_CODE, payload: { logoUrl } });
     expect(updated.statusCode).toBe(200);
 
-    const otherUser = await helpers.signUpSecondUser();
+    const otherUser = await helpers.provisionSecondUserWithBaseCurrency();
     await helpers.asUser({
       cookies: otherUser.cookies,
       fn: async () => {
         const created = await helpers.createCustomCurrency({
-          payload: { code: CUSTOM_CODE, name: 'My Bitcoin', decimals: 8 },
+          payload: { code: CUSTOM_CODE, name: 'My Bitcoin', decimals: 8, rate: { value: 1 } },
         });
         expect(created.statusCode).toBe(201);
         expect(created.body.response).toMatchObject({ logoUrl: null });

@@ -33,8 +33,7 @@ import { Op } from 'sequelize';
 interface AllocatableTransaction {
   id: string;
   amount: Money;
-  /** `null` while a custom currency has no rate: the row contributes to no figure. */
-  refAmount: Money | null;
+  refAmount: Money;
   categoryId: string | null;
   transactionType: TRANSACTION_TYPES;
   time: Date | string;
@@ -92,7 +91,7 @@ export interface CategoryRefundPair {
 
 interface TxEntry {
   amount: Money;
-  refAmount: Money | null;
+  refAmount: Money;
   categoryId: string | null;
   transactionType: TRANSACTION_TYPES;
   time: Date;
@@ -100,7 +99,7 @@ interface TxEntry {
 
 const toTxEntry = (tx: {
   amount: Money;
-  refAmount: Money | null;
+  refAmount: Money;
   categoryId: string | null;
   transactionType: TRANSACTION_TYPES;
   time: Date | string;
@@ -186,9 +185,6 @@ export const resolveRefundPairs = async ({
     const originalTx = txMap.get(refund.originalTxId);
     const refundTx = txMap.get(refund.refundTxId);
     if (!originalTx || !refundTx) continue;
-    // A refund with no base-currency amount has no magnitude to net, and an unpriced original
-    // contributed nothing to net against.
-    if (refundTx.refAmount === null || originalTx.refAmount === null) continue;
 
     // `splitId` always points at a split of the original tx (enforced when the refund is created),
     // so the split's category stands in for the original's on whichever side the original sits.
@@ -208,11 +204,7 @@ export const resolveRefundPairs = async ({
       originalTx.transactionType === TRANSACTION_TYPES.expense ? [original, counterpart] : [counterpart, original];
 
     pairs.push({
-      minor: refundShareRefAmount({
-        link: refund,
-        refundTx: { amount: refundTx.amount, refAmount: refundTx.refAmount },
-        decimals,
-      }).toMinorUnits({ decimals }),
+      minor: refundShareRefAmount({ link: refund, refundTx, decimals }).toMinorUnits({ decimals }),
       expenseTime: expense.time,
       incomeTime: income.time,
       expenseCategoryId: expense.categoryId,
@@ -276,11 +268,10 @@ export const allocateTransaction = ({
 }): { categoryId: string | null; minor: number }[] => {
   if (splits.length === 0) return [{ categoryId, minor }];
 
-  const splitLegs = splits.flatMap((split) =>
-    split.refAmount === null
-      ? []
-      : [{ categoryId: split.categoryId, minor: split.refAmount.toMinorUnits({ decimals }) }],
-  );
+  const splitLegs = splits.map((split) => ({
+    categoryId: split.categoryId,
+    minor: split.refAmount.toMinorUnits({ decimals }),
+  }));
   const primaryMinor = minor - splitLegs.reduce((sum, leg) => sum + leg.minor, 0);
   return primaryMinor > 0 ? [{ categoryId, minor: primaryMinor }, ...splitLegs] : splitLegs;
 };
@@ -307,9 +298,6 @@ export const computeCategoryAllocations = async ({
 
   const base: CategoryAllocationLeg[] = [];
   for (const tx of transactions) {
-    // A row with no base-currency amount (custom currency, no rate yet) is left out of every report.
-    if (tx.refAmount === null) continue;
-
     const time = new Date(tx.time);
     const legs = allocateTransaction({
       minor: tx.refAmount.toMinorUnits({ decimals }),

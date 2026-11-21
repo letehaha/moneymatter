@@ -564,11 +564,7 @@ const getLinkedTransactionsSpendingStats = async ({
   };
 
   const measuresIncome = trackerDetails.limitKind !== TRACKER_LIMIT_KINDS.spending;
-  // A row with no base-currency amount (custom currency, no rate yet) cannot be added to a base-currency
-  // figure, so every tracker aggregate leaves it out.
-  const txDataList: NormalizedTxData[] = transactions.flatMap((tx) => {
-    if (tx.refAmount === null) return [];
-
+  const txDataList: NormalizedTxData[] = transactions.map((tx) => {
     const isExpense = tx.transactionType === TRANSACTION_TYPES.expense;
     const rootCatId = tx.categoryId
       ? canonicalize(getRootCategoryId({ categoryId: tx.categoryId, categoryMap }))

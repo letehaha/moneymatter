@@ -32,7 +32,7 @@
       </Button>
     </div>
 
-    <p v-if="isCustomCurrency" class="text-muted-foreground mt-4 flex items-start gap-1 text-xs leading-5">
+    <p v-if="currency.isCustomCurrency" class="text-muted-foreground mt-4 flex items-start gap-1 text-xs leading-5">
       <InfoIcon class="text-primary-text mt-1 size-3.5 shrink-0" />
       {{ $t('settings.currencies.custom.rateHint', { code: currency.quoteCode }) }}
     </p>
@@ -73,18 +73,13 @@ import { InfoIcon } from '@lucide/vue';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { roundRate } from '../rate-precision';
 import { CurrencyWithExchangeRate } from '../types';
 
-const RATIO_DIGITS = 6;
-// A custom currency can be worth a tiny fraction of its quote, so its inverse keeps significant
-// digits rather than a fixed number of decimals.
-const CUSTOM_RATIO_SIGNIFICANT_DIGITS = 12;
+const RATIO_DECIMALS = 6;
 
-const calculateRatio = ({ value, isCustomCurrency }: { value: number | string; isCustomCurrency: boolean }) => {
-  const num = 1 / Number(value);
-  const result = isCustomCurrency
-    ? Number(num.toPrecision(CUSTOM_RATIO_SIGNIFICANT_DIGITS))
-    : Math.round(num * 10 ** RATIO_DIGITS) / 10 ** RATIO_DIGITS;
+const calculateRatio = ({ value, isCustom }: { value: number | string; isCustom: boolean }) => {
+  const result = roundRate({ value: 1 / Number(value), isCustom, isoDecimals: RATIO_DECIMALS });
 
   return Number.isFinite(result) ? result : 0;
 };
@@ -112,19 +107,14 @@ const notifyIfBalancesNotRefreshed = (failed: number) => {
   }
 };
 
-const isCustomCurrency = computed(() => Boolean(props.currency.currency?.isCustom));
-
-// A custom currency starts without a rate; the fields stay empty until the user enters one.
-const toFieldValue = (value: number): number | string => (Number.isFinite(value) ? value : '');
-
 const form = reactive<{ baseRate: number | string; quoteRate: number | string }>({
-  baseRate: toFieldValue(props.currency.rate),
-  quoteRate: toFieldValue(props.currency.quoteRate),
+  baseRate: props.currency.rate,
+  quoteRate: props.currency.quoteRate,
 });
 const isBaseEditing = ref(false);
 const isQuoteEditing = ref(false);
 // A custom currency has no market rate to follow, so only the user's own rate applies.
-const isLiveRateEnabled = ref<boolean>(!isCustomCurrency.value && !props.currency.custom);
+const isLiveRateEnabled = ref<boolean>(!props.currency.isCustomCurrency && !props.currency.custom);
 
 const isRateChanged = computed(
   () => +props.currency.rate !== +form.baseRate || +props.currency.quoteRate !== +form.quoteRate,
@@ -157,7 +147,7 @@ watch(
   () => form.baseRate,
   (value) => {
     if (isBaseEditing.value) {
-      form.quoteRate = calculateRatio({ value, isCustomCurrency: isCustomCurrency.value });
+      form.quoteRate = calculateRatio({ value, isCustom: props.currency.isCustomCurrency });
     }
   },
 );
@@ -165,7 +155,7 @@ watch(
   () => form.quoteRate,
   (value) => {
     if (isQuoteEditing.value) {
-      form.baseRate = calculateRatio({ value, isCustomCurrency: isCustomCurrency.value });
+      form.baseRate = calculateRatio({ value, isCustom: props.currency.isCustomCurrency });
     }
   },
 );

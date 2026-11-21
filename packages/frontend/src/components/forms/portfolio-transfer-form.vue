@@ -9,7 +9,6 @@ import * as AlertDialog from '@/components/lib/ui/alert-dialog';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import TransactionRecord from '@/components/transactions-list/transaction-record.vue';
-import { useFormatCurrency } from '@/composable';
 import {
   type TransferContext,
   type TransferType,
@@ -22,6 +21,7 @@ import { usePortfolioCurrencySorting } from '@/composable/data-queries/use-portf
 import { usePortfolios } from '@/composable/data-queries/portfolios';
 import { useFormValidation } from '@/composable/form-validator';
 import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
+import { formatAccountAmount, formatUIAmount } from '@/js/helpers';
 import { getCurrencyDecimals, getSmallestCurrencyUnit } from '@/js/helpers/currency-decimals';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import { AccountModel, PortfolioModel, TRANSACTION_TYPES, TransactionModel, UserCurrencyModel } from '@bt/shared/types';
@@ -57,7 +57,6 @@ const { txTargetableSourceAccountsActiveFirst: txTargetableAccountsActiveFirst, 
   storeToRefs(useAccountsStore());
 const { currencies } = storeToRefs(useCurrenciesStore());
 const { data: portfolios } = usePortfolios();
-const { formatAmountByCurrencyCode } = useFormatCurrency();
 
 const createTransferMutation = useCreatePortfolioTransfer();
 const accountToPortfolioMutation = useAccountToPortfolioTransfer();
@@ -193,16 +192,20 @@ const showToAccount = computed(() => transferType.value === 'portfolio-to-accoun
 
 // A transfer to or from an account always moves the account's currency, which a shared account
 // may have outside the viewer's currencies.
-const accountCurrencyCode = computed(() => {
-  if (transferType.value === 'account-to-portfolio') return form.fromAccount?.currencyCode;
-  if (transferType.value === 'portfolio-to-account') return form.toAccount?.currencyCode;
+const transferAccount = computed(() => {
+  if (transferType.value === 'account-to-portfolio') return form.fromAccount;
+  if (transferType.value === 'portfolio-to-account') return form.toAccount;
   return undefined;
 });
+const accountCurrencyCode = computed(() => transferAccount.value?.currencyCode);
 const isAccountTransfer = computed(() => transferType.value !== 'portfolio-to-portfolio');
 const currencyCode = computed(() =>
   isAccountTransfer.value ? accountCurrencyCode.value : form.selectedCurrency?.currencyCode,
 );
-const decimals = computed(() => (currencyCode.value ? getCurrencyDecimals({ code: currencyCode.value }) : undefined));
+const currencyMeta = computed(() => (isAccountTransfer.value ? transferAccount.value?.currencyMeta : undefined));
+const decimals = computed(() =>
+  currencyCode.value ? getCurrencyDecimals({ code: currencyCode.value, meta: currencyMeta.value }) : undefined,
+);
 const currencyDecimal = useCurrencyDecimalRule({ decimals });
 
 const amountLabel = computed(() =>
@@ -215,7 +218,7 @@ const amountLabel = computed(() =>
 const validationRules = computed(() => ({
   amount: {
     required,
-    minValue: minValue(getSmallestCurrencyUnit({ code: currencyCode.value })),
+    minValue: minValue(getSmallestCurrencyUnit({ code: currencyCode.value, meta: currencyMeta.value })),
     currencyDecimal: currencyDecimal.rule.value,
   },
   ...(isAccountTransfer.value ? {} : { selectedCurrency: { required } }),
@@ -347,7 +350,7 @@ const prepareConfirmationData = () => {
 
   if (isLinkExistingTx.value && linkedTransaction.value) {
     const tx = linkedTransaction.value;
-    amount = formatAmountByCurrencyCode(tx.amount, tx.currencyCode);
+    amount = formatAccountAmount({ amount: tx.amount, account: tx });
     currency = tx.currencyCode;
 
     if (transferType.value === 'portfolio-to-account') {
@@ -370,7 +373,7 @@ const prepareConfirmationData = () => {
     }
 
     currency = currencyCode.value ?? '';
-    amount = formatAmountByCurrencyCode(Number(form.amount), currency);
+    amount = formatUIAmount(Number(form.amount), { currency, meta: currencyMeta.value });
   }
 
   confirmDialogData.value = { from: fromName, to: toName, amount, currency, action: getTransferAction() };

@@ -26,10 +26,13 @@ import { withTransaction } from '@services/common/with-transaction';
 import { includesCustomCurrencyCode } from '@services/currencies/custom-currency-codes';
 import {
   buildDailyPairRateResolver,
+  type DailyPairRateResolver,
   MS_PER_DAY,
   toDayKey,
 } from '@services/exchange-rates/build-daily-pair-rate-resolver';
-import { getExchangeRate, resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
+import { resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
+import { findCustomCurrencyQuote } from '@services/user-exchange-rate/resolve-custom-pair-rate';
+import Big from 'big.js';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { QueryTypes } from 'sequelize';
 import { v7 as uuidv7 } from 'uuid';
@@ -169,64 +172,26 @@ const writeBalanceRows = async ({
   );
 };
 
-/** The rate of a custom currency into the base on `day`, or `null` when none reaches that pair. */
-const resolveCustomAccountRate = async ({
-  userId,
-  baseCode,
-  quoteCode,
-  day,
-}: {
-  userId: number;
-  baseCode: string;
-  quoteCode: string;
-  day: Date;
-}): Promise<number | null> => {
-  try {
-    const { rate } = await getExchangeRate({ userId, date: day, baseCode, quoteCode, requireUserConnection: false });
-    return rate;
-  } catch (error) {
-    if (error instanceof ExchangeRateUnavailableError) return null;
-    throw error;
-  }
-};
+type RatedAccount = Pick<Accounts, 'id' | 'userId' | 'currencyCode'>;
 
-const clearBalanceRows = async ({ accountId }: { accountId: string }): Promise<void> => {
-  await connection.sequelize.query(`DELETE FROM "Balances" WHERE "accountId" = :accountId`, {
-    replacements: { accountId },
-  });
-};
-
-type DayRateResolver = (dayKey: string) => number | null | Promise<number | null>;
-
-/** Each day's rate to the owner's base currency, or null when the pair has no stored rate. */
-const buildRateForDay = async ({
+/** Each day's rate of an ISO currency to the owner's base currency, or null when the pair has no stored rate. */
+const buildIsoRateForDay = async ({
   account,
+  currencyCode,
   baseCurrencyCode,
   from,
   to,
 }: {
-  account: Accounts;
+  account: RatedAccount;
+  currencyCode: string;
   baseCurrencyCode: string;
   from: Date;
   to: Date;
-}): Promise<DayRateResolver | null> => {
-  if (account.currencyCode === baseCurrencyCode) return () => 1;
-
-  // A custom currency has no market rate, so each day resolves through the same path a transaction
-  // on that day does: the user's rate in its stored quote currency, crossed into the base with the
-  // ISO resolution of that quote for the day. The 5-decimal market formatting never applies to it.
-  if (await includesCustomCurrencyCode({ codes: [account.currencyCode] })) {
-    return (dayKey) =>
-      resolveCustomAccountRate({
-        userId: account.userId,
-        baseCode: account.currencyCode,
-        quoteCode: baseCurrencyCode,
-        day: dayKeyToDate(dayKey),
-      });
-  }
+}): Promise<DailyPairRateResolver | null> => {
+  if (currencyCode === baseCurrencyCode) return () => 1;
 
   const userCurrency = (await UsersCurrencies.findOne({
-    where: { userId: account.userId, currencyCode: account.currencyCode },
+    where: { userId: account.userId, currencyCode },
     attributes: ['liveRateUpdate'],
     raw: true,
   })) as { liveRateUpdate: boolean | null } | null;
@@ -237,14 +202,14 @@ const buildRateForDay = async ({
     (
       await resolveCustomRate({
         userId: account.userId,
-        pair: { baseCode: account.currencyCode, quoteCode: baseCurrencyCode },
+        pair: { baseCode: currencyCode, quoteCode: baseCurrencyCode },
         liveRateUpdate: userCurrency?.liveRateUpdate ?? null,
       })
     )?.rate ?? null;
   if (flatCustomRate !== null) return () => flatCustomRate;
 
   const resolveRate = await buildDailyPairRateResolver({
-    baseCode: account.currencyCode,
+    baseCode: currencyCode,
     quoteCode: baseCurrencyCode,
     from,
     to,
@@ -253,11 +218,57 @@ const buildRateForDay = async ({
   if (!resolveRate) {
     logger.warn('No stored exchange rate for pair; account left untouched', {
       accountId: account.id,
-      pair: `${account.currencyCode}/${baseCurrencyCode}`,
+      pair: `${currencyCode}/${baseCurrencyCode}`,
     });
   }
 
   return resolveRate;
+};
+
+/**
+ * Each day's rate to the owner's base currency, or null when the pair has no stored rate. A custom
+ * currency is priced the way its transactions are: the user's flat rate in its ISO quote, times that
+ * quote's daily rate to the base.
+ */
+export const buildRateForDay = async ({
+  account,
+  baseCurrencyCode,
+  from,
+  to,
+}: {
+  account: RatedAccount;
+  baseCurrencyCode: string;
+  from: Date;
+  to: Date;
+}): Promise<DailyPairRateResolver | null> => {
+  if (account.currencyCode === baseCurrencyCode) return () => 1;
+  if (!(await includesCustomCurrencyCode({ codes: [account.currencyCode] }))) {
+    return buildIsoRateForDay({ account, currencyCode: account.currencyCode, baseCurrencyCode, from, to });
+  }
+
+  const quote = await findCustomCurrencyQuote({
+    userId: account.userId,
+    code: account.currencyCode,
+    preferredQuoteCode: baseCurrencyCode,
+  });
+  if (!quote) {
+    logger.error('Custom currency has no rate; account left untouched', { accountId: account.id });
+    return null;
+  }
+
+  const resolveIsoRate = await buildIsoRateForDay({
+    account,
+    currencyCode: quote.quoteCode,
+    baseCurrencyCode,
+    from,
+    to,
+  });
+  if (!resolveIsoRate) return null;
+
+  return (dayKey) => {
+    const isoRate = resolveIsoRate(dayKey);
+    return isoRate === null ? null : new Big(quote.rate).times(isoRate).toNumber();
+  };
 };
 
 /**
@@ -281,7 +292,7 @@ const buildDailyRows = async ({
   gridStart: Date;
   gridEnd: Date;
   dailyDeltas: Map<string, Money>;
-  rateForDay: DayRateResolver;
+  rateForDay: DailyPairRateResolver;
   pinnedDayKey?: string;
 }): Promise<{ date: string; amount: Money }[] | null> => {
   const startKey = toDayKey(gridStart);
@@ -294,7 +305,7 @@ const buildDailyRows = async ({
     const dayKey = toDayKey(new Date(time));
     nativeBalance = nativeBalance.add(dailyDeltas.get(dayKey) ?? Money.zero());
 
-    const rate = await rateForDay(dayKey);
+    const rate = rateForDay(dayKey);
     if (rate == null) {
       logger.warn('No exchange rate for day; account left untouched', {
         accountId: account.id,
@@ -319,8 +330,7 @@ const buildDailyRows = async ({
 /**
  * Written directly: `handleAccountChange` would shift the bank-owned rows from the seam on.
  * The native `initialBalance` is always written; `refInitialBalance` only when measured at
- * the ledger boundary (`null` for a custom currency without a rate), otherwise the previous
- * stamp stays until the nightly sweep.
+ * the ledger boundary, otherwise the previous stamp stays until the nightly sweep.
  */
 const writeSeamOpeningBalance = async ({
   account,
@@ -333,7 +343,7 @@ const writeSeamOpeningBalance = async ({
   excludeTransactionId?: string;
   ref: 'measure' | 'no-rate' | 'no-base-currency';
 }) => {
-  let refInitialBalance: Money | null | undefined;
+  let refInitialBalance: Money | null = null;
   let error: Error | undefined;
   if (ref === 'measure') {
     try {
@@ -349,7 +359,7 @@ const writeSeamOpeningBalance = async ({
       { message: 'No base currency for the pre-seam history; refInitialBalance left as it was' },
       { code: 'SEAM_NO_BASE_CURRENCY', accountId: account.id },
     );
-  } else if (refInitialBalance === undefined) {
+  } else if (!refInitialBalance) {
     logger.error(
       { message: 'No rate for the pre-seam history; refInitialBalance stale until the nightly sweep', error },
       { code: 'SEAM_REF_INITIAL_BALANCE_STALE', accountId: account.id },
@@ -357,7 +367,7 @@ const writeSeamOpeningBalance = async ({
   }
 
   await Accounts.update(
-    { initialBalance, ...(refInitialBalance !== undefined ? { refInitialBalance } : {}) },
+    { initialBalance, ...(refInitialBalance ? { refInitialBalance } : {}) },
     { where: { id: account.id } },
   );
 };
@@ -508,15 +518,7 @@ const revalueBalanceHistoryImpl = async ({
     rateForDay,
     pinnedDayKey: toDayKey(today),
   });
-  if (!rows) {
-    if (await includesCustomCurrencyCode({ codes: [account.currencyCode] })) {
-      // Without a rate the day has no base-currency value. Rows left from an earlier base would be
-      // read as amounts in the current one, so the history is cleared until a rate exists.
-      logger.warn('No exchange rate for custom currency; stored history cleared', { accountId });
-      await clearBalanceRows({ accountId });
-    }
-    return 'skipped';
-  }
+  if (!rows) return 'skipped';
 
   await writeBalanceRows({ accountId, fromDay: toDayKey(gridStart), rows });
 

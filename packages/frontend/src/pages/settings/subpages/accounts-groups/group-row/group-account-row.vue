@@ -22,7 +22,7 @@ const props = defineProps<{
   touch: boolean;
 }>();
 
-const { formatAmountByCurrencyCode } = useFormatCurrency();
+const { formatAccountAmount } = useFormatCurrency();
 
 const { displayBalance } = useAccountDisplayBalance({
   account: toRef(() => props.account),
@@ -71,7 +71,7 @@ const { mutate: unlink, isPending } = useUnlinkAccountFromGroup({
     </div>
 
     <span :class="cn(AMOUNT_COLUMN_CLASS, 'text-muted-foreground text-sm tabular-nums')">
-      {{ formatAmountByCurrencyCode(displayBalance, account.currencyCode) }}
+      {{ formatAccountAmount({ amount: displayBalance, account }) }}
     </span>
 
     <Button

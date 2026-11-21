@@ -402,7 +402,7 @@ export const getCombinedBalanceHistory = async ({
             attributes: ['id', 'refInitialBalance'],
           });
           const openingMinorByAccount = new Map(
-            loanAccounts.map((a) => [a.id, a.refInitialBalance?.toMinorUnits({ decimals }) ?? 0]),
+            loanAccounts.map((a) => [a.id, a.refInitialBalance.toMinorUnits({ decimals })]),
           );
 
           return getAggregatedBalanceHistory({

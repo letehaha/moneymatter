@@ -90,7 +90,7 @@ const formatCurrency = (amount: number, currencyCode: string) => {
   if (!userCurrency) {
     return toLocalNumber(amount, { maximumFractionDigits: 2 });
   }
-  return formatAmountByCurrencyCode(amount, userCurrency.currencyCode);
+  return formatAmountByCurrencyCode({ amount, currencyCode: userCurrency.currencyCode });
 };
 
 const toggleSort = (key: HoldingSortKey) => {

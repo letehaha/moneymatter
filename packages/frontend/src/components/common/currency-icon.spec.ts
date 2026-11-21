@@ -53,7 +53,7 @@ describe('CurrencyIcon', () => {
     await wrapper.find('img').trigger('error');
 
     expect(wrapper.find('img').exists()).toBe(false);
-    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('USD');
+    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('US');
   });
 
   it('shows the logo of a custom currency that has one', () => {
@@ -83,14 +83,26 @@ describe('CurrencyIcon', () => {
   it('draws the code of a custom currency without a symbol or a logo', () => {
     const wrapper = mountIcon({ code: 'USDT', holdings: [buildHolding({ code: 'USDT' })] });
 
-    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('USDT');
+    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('US');
   });
 
   it('shows the monogram, not the flag, for a custom code the user does not hold', () => {
     const wrapper = mountIcon({ code: 'USDT' });
 
     expect(wrapper.find('img').exists()).toBe(false);
-    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('USDT');
+    expect(wrapper.get('[data-testid="currency-icon-monogram"]').text()).toBe('US');
+  });
+
+  it.each([
+    ['size-3.5', 'U', 'text-xs'],
+    ['size-5', 'US', 'text-xs'],
+    ['size-8', 'USD', 'text-sm'],
+  ])('fits the monogram at %s to the characters it has room for, never under 12px', (size, text, fontClass) => {
+    const wrapper = mountIcon({ code: 'USDT', props: { size } });
+    const monogram = wrapper.get('[data-testid="currency-icon-monogram"]');
+
+    expect(monogram.text()).toBe(text);
+    expect(monogram.classes()).toContain(fontClass);
   });
 
   it("uses the owner's definition passed as meta for a custom code outside the registry", () => {

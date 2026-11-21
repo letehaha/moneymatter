@@ -8,7 +8,13 @@ import { SplitInput } from './splits/types';
 
 export type CreateTransactionParams = Omit<
   Transactions.CreateTransactionPayload,
-  'refAmount' | 'transferId' | 'currencyCode' | 'refCurrencyCode' | 'accountType' | 'paymentType'
+  | 'refAmount'
+  | 'transferId'
+  | 'currencyCode'
+  | 'refCurrencyCode'
+  | 'accountType'
+  | 'paymentType'
+  | 'definitionOwnerUserId'
 > & {
   /** Falls back to the account's `defaultPaymentType`, then `bankTransfer`. */
   paymentType?: PAYMENT_TYPES;

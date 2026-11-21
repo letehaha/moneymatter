@@ -64,7 +64,7 @@ export const createTransactionTool = defineTool({
       'Amount in the currency the purchase was originally priced in (decimal), e.g. 66.42 for a PLN invoice paid from a UAH account. Informational only: never affects balances. Requires originalCurrencyCode',
     ),
     originalCurrencyCode: shape.originalCurrencyCode.describe(
-      'ISO 4217 code of originalAmount (e.g. "PLN"). Requires originalAmount. Cannot be combined with transfer fields',
+      'Currency of originalAmount: an ISO 4217 code (e.g. "PLN") or one of the user\'s custom currencies. Requires originalAmount. Cannot be combined with transfer fields',
     ),
     paymentLegs: shape.paymentLegs.describe(
       "Pay this income/expense from up to 4 more accounts. Each item is either { accountId, amount } to create a part on another account, or { transactionId } to link an existing transaction as a part (its amount stays). amount is in that account's currency; when it differs from this transaction's currency also pass paymentAmount, the part's value in this transaction's currency. Not allowed for transfers, refunds, planned or category-split transactions",

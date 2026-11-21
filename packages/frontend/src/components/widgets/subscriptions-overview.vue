@@ -198,7 +198,7 @@ const rowHint = ({ status, dueDate }: { status: SubscriptionDueStatus; dueDate: 
 const formatRowAmount = ({ sub }: { sub: SubscriptionListItem }) => {
   if (sub.expectedAmount == null) return '—';
   const amount = sub.expectedCurrencyCode
-    ? formatAmountByCurrencyCode(sub.expectedAmount, sub.expectedCurrencyCode)
+    ? formatAmountByCurrencyCode({ amount: sub.expectedAmount, currencyCode: sub.expectedCurrencyCode })
     : formatBaseCurrency(sub.expectedAmount);
   return `${getTransactionTypePrefix(sub.transactionType)}${amount}`;
 };

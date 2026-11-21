@@ -95,6 +95,7 @@ export async function prepareEventValues(input: PrepareEventValuesInput): Promis
       baseCode: deal.currencyCode,
       quoteCode: refCurrencyCode,
       userId,
+      definitionOwnerUserId: userId,
       date: new Date(eventDate),
     });
 

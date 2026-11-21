@@ -119,7 +119,12 @@ export const loadConversionDecimals = async ({
         async (currencyCode) =>
           [
             currencyCode,
-            await getConversionDecimals({ userId, baseCode: currencyCode, quoteCode: baseCurrencyCode }),
+            await getConversionDecimals({
+              userId,
+              definitionOwnerUserId: userId,
+              baseCode: currencyCode,
+              quoteCode: baseCurrencyCode,
+            }),
           ] as const,
       ),
     ),
@@ -235,28 +240,16 @@ export const loadGoalInsights = async ({
     });
   };
 
-  /** Accounts in a custom currency with no rate yet have no base-currency balance, so their goals get no insights. */
-  const unpricedAccountIds = new Set(
-    accounts
-      .filter((account) => account.refCurrentBalance === null || account.refCreditLimit === null)
-      .map((account) => account.id),
-  );
   const historyByAccount = new Map(
-    accounts.flatMap(({ id, refCurrentBalance, refCreditLimit }) =>
-      refCurrentBalance === null || refCreditLimit === null
-        ? []
-        : [
-            [
-              id,
-              {
-                currentBalance: refCurrentBalance.toNumber(),
-                creditLimit: refCreditLimit.toNumber(),
-                firstDataDate: firstDateByAccount.get(id) ?? null,
-                monthEndBalances: monthEndBalancesOf(id),
-              },
-            ] as const,
-          ],
-    ),
+    accounts.map((account) => [
+      account.id,
+      {
+        currentBalance: account.refCurrentBalance.toNumber(),
+        creditLimit: account.refCreditLimit.toNumber(),
+        firstDataDate: firstDateByAccount.get(account.id) ?? null,
+        monthEndBalances: monthEndBalancesOf(account.id),
+      },
+    ]),
   );
 
   return new Map(
@@ -280,14 +273,6 @@ export const loadGoalInsights = async ({
           goalId: goal.id,
           accountId: rateless.accountId,
           currencyCode: currencyByAccount.get(rateless.accountId),
-        });
-        return [goal.id, null];
-      }
-      const unpriced = links.find(({ accountId }) => unpricedAccountIds.has(accountId));
-      if (unpriced) {
-        logger.warn('[Goals] Insights skipped: linked account has no base-currency balance', {
-          goalId: goal.id,
-          accountId: unpriced.accountId,
         });
         return [goal.id, null];
       }

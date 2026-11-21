@@ -67,7 +67,8 @@
             "transactionTemplate": "Transaction templates",
             "budget": "Budgets",
             "goal": "Goals",
-            "ventureDeal": "Venture deals"
+            "ventureDeal": "Venture deals",
+            "customCurrency": "Custom currencies quoted in it"
           }
         },
         "errors": {
@@ -125,7 +126,10 @@
         "createButton": "Add currency",
         "saveButton": "Save changes",
         "cancelButton": "Cancel",
-        "rateHint": "A custom currency has no market rate. Set its rate against {code} so transactions can be valued in your base currency; without a rate they are saved without a base-currency amount.",
+        "rateHint": "A custom currency has no market rate. The rate you set against {code} values its transactions in your base currency.",
+        "rateLabel": "Rate",
+        "ratePlaceholder": "1.00",
+        "createRateHint": "What one unit of this currency is worth in your base currency. You can change it later from its row.",
         "successfullyCreated": "Custom currency added",
         "successfullyUpdated": "Custom currency updated",
         "errors": {
@@ -136,10 +140,12 @@
           "nameRequired": "Enter a name",
           "symbolTooLong": "Use up to 8 characters",
           "decimalsRange": "Enter a whole number from 0 to 8",
+          "rateRequired": "Enter a rate above 0",
           "createFailed": "Unexpected error. Custom currency is not added.",
           "updateFailed": "Unexpected error. Custom currency is not updated."
         }
-      }
+      },
+      "refreshFailed": "Saved, but the currency list could not refresh. Reload the page if anything looks stale."
     }
   }
 }

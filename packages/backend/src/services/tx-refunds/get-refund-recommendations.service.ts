@@ -2,7 +2,7 @@ import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import Accounts from '@models/accounts.model';
 import { getTransactionById } from '@models/transactions.model';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { getTransactions } from '@services/transactions/get-transactions';
 
 // ±50 in base currency for refund recommendations
@@ -59,7 +59,7 @@ export async function getRefundRecommendations({
   refundPivotTo,
 }: GetRefundRecommendationsParams) {
   let searchTransactionType: TRANSACTION_TYPES;
-  let refAmountCenter: Money | null;
+  let refAmountCenter: Money;
 
   if (transactionId) {
     // Fetch the transaction and derive parameters
@@ -96,16 +96,14 @@ export async function getRefundRecommendations({
     }
 
     // Calculate refAmount from the form amount
-    refAmountCenter = await calculateRefAmountOrNull({
+    refAmountCenter = await calculateRefAmount({
       amount: Money.fromDecimal(originAmount!),
       userId,
+      definitionOwnerUserId: userId,
       baseCode: account.currencyCode,
       date: new Date(),
     });
   }
-
-  // Candidates are found by base-currency amount: with none (custom currency, no rate yet) there is nothing to match.
-  if (!refAmountCenter) return [];
 
   // Calculate refAmount range
   const lowerBound = refAmountCenter.subtract(RECOMMENDATION_REF_AMOUNT_RANGE);

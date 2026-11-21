@@ -67,7 +67,8 @@ const open = defineModel<boolean>('open', { required: true });
 
 const { t } = useI18n();
 const { format } = useDateLocale();
-const { formatAmountByCurrencyCode, formatBaseCurrency, baseCurrencyDecimals } = useFormatCurrency();
+const { formatAmountByCurrencyCode, formatAccountAmount, formatBaseCurrency, baseCurrencyDecimals } =
+  useFormatCurrency();
 const { formatCurrencyLabel } = useCurrencyName();
 const { accountsRecord } = storeToRefs(useAccountsStore());
 const { baseCurrency, systemCurrenciesVerbose } = storeToRefs(useCurrenciesStore());
@@ -172,7 +173,7 @@ const shareLabel = ({ share }: { share: GoalFormState['accounts'][number] }) =>
   formatGoalLinkLabel({
     share,
     currencyCode: accountsRecord.value[share.accountId]?.currencyCode,
-    formatAmount: ({ amount, currencyCode }) => formatAmountByCurrencyCode(amount, currencyCode),
+    formatAmount: ({ amount }) => formatAccountAmount({ amount, account: accountsRecord.value[share.accountId]! }),
   });
 
 const rateToBase = computed(() => {
@@ -188,7 +189,8 @@ const summaryText = computed(() => {
   });
   if (!summary) return null;
 
-  const formatAmount = (amount: number) => formatAmountByCurrencyCode(amount, state.value.currencyCode);
+  const formatAmount = (amount: number) =>
+    formatAmountByCurrencyCode({ amount, currencyCode: state.value.currencyCode });
   const target = formatAmount(state.value.targetAmount!);
   const { targetDate, hasPlannedMonthly, plannedMonthly } = state.value;
   const sentences = [

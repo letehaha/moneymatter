@@ -95,9 +95,9 @@ export async function extractTransactionsWithAI({
     };
   }
 
-  try {
-    const customCurrencyCodes = await getOwnCustomCurrencyCodes({ userId });
+  const customCurrencyCodes = await getOwnCustomCurrencyCodes({ userId });
 
+  try {
     logger.info('[Statement Parser] Starting AI extraction', {
       modelId: aiClient.modelId,
       ...(content.kind === 'text' ? { textLength: content.text.length } : { imageBytes: content.image.length }),

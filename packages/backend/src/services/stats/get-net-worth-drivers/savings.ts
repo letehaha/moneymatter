@@ -5,8 +5,7 @@ import { type PeriodBucket, findBucketIndex } from '@services/stats/utils';
 
 export interface SavingsTransactionRow {
   time: string | Date;
-  /** `null` while a custom currency has no rate: the row is left out of the totals. */
-  refAmount: Money | null;
+  refAmount: Money;
   transactionType: TRANSACTION_TYPES;
 }
 
@@ -47,8 +46,6 @@ export const accumulateSavings = ({
   }));
 
   for (const tx of transactions) {
-    if (tx.refAmount === null) continue;
-
     const bucketIndex = findBucketIndex({ transactionTime: new Date(tx.time), buckets });
     if (bucketIndex === -1) continue;
 

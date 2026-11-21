@@ -27,7 +27,7 @@ import Users from '@models/users.model';
 import { isRevaluedAccount, scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
 import { applyManualLogoPatch } from '@services/brand-logos';
 import { attachEligibleAccounts } from '@services/budget-plans/auto-attach-account';
-import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { releaseIneligibleGoalShares } from '@services/goals/release-ineligible-goal-shares';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
@@ -231,10 +231,9 @@ export const createAccount = withTransaction(
         mode: 'half-up',
       });
 
-      // A custom currency without a rate yields `null` rather than failing the creation; the
-      // stamps are filled in when a rate arrives.
-      const refCreditLimit = await calculateRefAmountOrNull({
+      const refCreditLimit = await calculateRefAmount({
         userId: userId,
+        definitionOwnerUserId: userId,
         amount: creditLimit,
         baseCode: currencyCode,
         date: new Date(),
@@ -244,8 +243,9 @@ export const createAccount = withTransaction(
       // correct stamp. Once transactions older than the account appear (imports,
       // backdated entries), `restampRefInitialBalance` re-derives this at the
       // ledger-boundary date's rate.
-      const refInitialBalance = await calculateRefAmountOrNull({
+      const refInitialBalance = await calculateRefAmount({
         userId,
+        definitionOwnerUserId: userId,
         amount: initialBalance,
         baseCode: currencyCode,
         date: new Date(),
@@ -407,8 +407,8 @@ export const updateAccount = withTransaction(
       payload.creditLimit !== undefined && !payload.creditLimit.equals(accountData.creditLimit);
     // Written only when it moves, so an unrelated edit never re-rounds a stored opening balance.
     let initialBalance: Money | undefined;
-    let refCurrentBalance: Money | null = accountData.refCurrentBalance;
-    let refCreditLimit: Money | null = accountData.refCreditLimit;
+    let refCurrentBalance: Money = accountData.refCurrentBalance;
+    let refCreditLimit: Money = accountData.refCreditLimit;
 
     /**
      * If `currentBalance` is changing, it means user want to change current balance
@@ -430,10 +430,10 @@ export const updateAccount = withTransaction(
     // just-edited rate is observed). Re-measure them together: the card and stats
     // net them as `refCurrentBalance - refCreditLimit`, so they must share a rate.
     if (currentBalanceIsChanging || creditLimitIsChanging) {
-      // `null` for a custom currency without a rate.
       const measureSpot = ({ amount }: { amount: Money }) =>
-        calculateRefAmountOrNull({
+        calculateRefAmount({
           userId: accountData.userId,
+          definitionOwnerUserId: accountData.userId,
           amount,
           baseCode: accountData.currencyCode,
           date: new Date(),

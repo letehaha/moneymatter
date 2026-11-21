@@ -20,7 +20,7 @@ export enum EXCHANGE_RATE_PROVIDER_TYPE {
 }
 
 /** Shortest currency code, ISO 4217 or user-defined. */
-export const CURRENCY_CODE_MIN_LENGTH = 2;
+const CURRENCY_CODE_MIN_LENGTH = 2;
 /** Longest currency code; the width of every currency-code column. */
 export const CURRENCY_CODE_MAX_LENGTH = 16;
 /** Shape of a currency code: uppercase letters and digits. Says nothing about whether the code exists. */
@@ -73,6 +73,8 @@ export interface CreateCustomCurrencyBody {
   /** 0 to `MAX_CURRENCY_DECIMALS`. */
   decimals: number;
   symbol?: string | null;
+  /** What one unit is worth in `quoteCode`, an ISO currency the user holds (default: the base currency). */
+  rate: { value: number; quoteCode?: string };
 }
 
 export interface UpdateCustomCurrencyBody {
@@ -91,11 +93,11 @@ export interface UserCurrencyModel {
   exchangeRate: number;
   liveRateUpdate: boolean;
   isDefaultCurrency: boolean;
-  /** Name the user gave the currency; `null` keeps `currency.currency`. */
+  /** Raw custom definition: its name. `currency` already carries it; always `null` on an ISO currency. */
   nameOverride: string | null;
-  /** Symbol the user gave the currency; `null` keeps `currency.symbol`. */
+  /** Raw custom definition: its symbol. `currency` already carries it; always `null` on an ISO currency. */
   symbolOverride: string | null;
-  /** Decimals the user's amounts keep in this currency (0 to `MAX_CURRENCY_DECIMALS`); `null` keeps `currency.digits`. */
+  /** Raw custom definition: its decimals. `currency` already carries them; always `null` on an ISO currency. */
   decimalsOverride: number | null;
   /** https URL of the image the user picked for a custom currency; always `null` on an ISO currency. */
   logoUrl: string | null;

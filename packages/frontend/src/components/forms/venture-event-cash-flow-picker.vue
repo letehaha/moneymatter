@@ -56,7 +56,9 @@ const selectedIds = computed(() => transactions.value.map((tx) => tx.id));
 
 const { formatAmountByCurrencyCode } = useFormatCurrency();
 const linkedTotal = computed(() => transactions.value.reduce((sum, tx) => sum + Math.abs(Number(tx.amount)), 0));
-const linkedTotalFormatted = computed(() => formatAmountByCurrencyCode(linkedTotal.value, props.currencyCode));
+const linkedTotalFormatted = computed(() =>
+  formatAmountByCurrencyCode({ amount: linkedTotal.value, currencyCode: props.currencyCode }),
+);
 
 const onPickTransaction = (tx: TransactionModel) => {
   if (transactions.value.some((existing) => existing.id === tx.id)) return;

@@ -17,7 +17,9 @@ export const updateGoalTool = defineTool({
   input: {
     goalId: recordId().describe('ID of the goal to update'),
     name: goalFieldsShape.name.optional().describe('New goal name'),
-    currencyCode: goalFieldsShape.currencyCode.optional().describe('New target currency (ISO 4217)'),
+    currencyCode: goalFieldsShape.currencyCode
+      .optional()
+      .describe("New target currency: an ISO 4217 code or one of the user's custom currencies"),
     targetAmount: goalFieldsShape.targetAmount.optional().describe('New target, decimal in the goal currency'),
     targetDate: goalFieldsShape.targetDate.describe('New deadline (yyyy-MM-dd). Pass null to remove it'),
     plannedMonthly: goalFieldsShape.plannedMonthly.describe(

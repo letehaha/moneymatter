@@ -53,16 +53,13 @@
         class="text-sm font-semibold tabular-nums"
         :class="displayBalance < 0 ? 'text-destructive-text' : 'text-foreground'"
       >
-        {{ formatAmountByCurrencyCode(displayBalance, account.currencyCode, account.currencyMeta) }}
+        {{ formatAccountAmount({ amount: displayBalance, account }) }}
       </div>
       <div
         v-if="account.currencyCode !== baseCurrencyCode"
         class="text-muted-foreground mt-0.5 text-[11px] tabular-nums"
       >
-        <template v-if="account.refCurrentBalance === null">{{
-          $t('common.transactions.record.missingRate')
-        }}</template>
-        <template v-else>≈ {{ formatBaseCurrency(displayRefBalance) }}</template>
+        ≈ {{ formatBaseCurrency(displayRefBalance) }}
       </div>
     </div>
 
@@ -96,7 +93,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const { formatAmountByCurrencyCode, formatBaseCurrency } = useFormatCurrency();
+const { formatAccountAmount, formatBaseCurrency } = useFormatCurrency();
 
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const baseCurrencyCode = computed(() => baseCurrency.value?.currency?.code);
