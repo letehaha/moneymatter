@@ -11,8 +11,9 @@ import type {
 
 /**
  * Goal progress math, shared so the server's numbers and the client's What-if re-run agree.
- * Every function takes and returns decimals; the arithmetic runs on integer cents so a
- * division such as `ceil(1.10 / 0.10)` can't land on 12 through float noise.
+ * Every function takes and returns decimals; the arithmetic runs on integer minor units at the
+ * amounts' currency decimals so a division such as `ceil(1.10 / 0.10)` can't land on 12 through
+ * float noise.
  */
 
 export const DAYS_PER_MONTH = 30.44;
@@ -22,17 +23,28 @@ export const FULL_SHARE = 100;
 
 const MS_PER_DAY = 86_400_000;
 
-const toCents = (amount: number) => Math.round(amount * 100);
-const fromCents = (cents: number) => Math.round(cents) / 100;
+const SHARE_DECIMALS = 2;
+
+const toMinor = ({ amount, decimals }: { amount: number; decimals: number }) => Math.round(amount * 10 ** decimals);
+const fromMinor = ({ minor, decimals }: { minor: number; decimals: number }) => Math.round(minor) / 10 ** decimals;
 
 /** Percent shares carry two decimals. */
-export const roundShare = (value: number) => fromCents(toCents(value));
+export const roundShare = (value: number) =>
+  fromMinor({ minor: toMinor({ amount: value, decimals: SHARE_DECIMALS }), decimals: SHARE_DECIMALS });
 
-/** Base-currency decimal to the goal currency, rounded to cents. */
-export function toGoalCurrency(params: { amount: number; rateToBase: number }): number;
-export function toGoalCurrency(params: { amount: number | null; rateToBase: number }): number | null;
-export function toGoalCurrency({ amount, rateToBase }: { amount: number | null; rateToBase: number }) {
-  return amount === null ? null : fromCents(toCents(amount) / rateToBase);
+/** Base-currency decimal to the goal currency, rounded to the goal currency's `decimals`. */
+export function toGoalCurrency(params: { amount: number; rateToBase: number; decimals: number }): number;
+export function toGoalCurrency(params: { amount: number | null; rateToBase: number; decimals: number }): number | null;
+export function toGoalCurrency({
+  amount,
+  rateToBase,
+  decimals,
+}: {
+  amount: number | null;
+  rateToBase: number;
+  decimals: number;
+}) {
+  return amount === null ? null : fromMinor({ minor: (amount * 10 ** decimals) / rateToBase, decimals });
 }
 
 export const median = ({ values }: { values: number[] }): number | null => {
@@ -49,45 +61,71 @@ const daysBetween = ({ from, to }: { from: string; to: string }): number =>
 type AccountValueParams = Pick<GoalAccountHistory, 'sharePercent' | 'fixedAmount' | 'fixedAhead' | 'fixedOthers'> & {
   balance: number;
   creditLimit: number;
+  /** Decimals of the currency the amounts are in. */
+  decimals: number;
 };
 
 /**
  * Of the balance above the credit limit, a fixed amount takes what the fixed amounts ahead of it
  * leave, up to itself; a share takes its percent of what all fixed amounts leave. A negative
- * balance never reduces progress. Unrounded cents.
+ * balance never reduces progress. Unrounded minor units at `decimals`.
  */
-const accountValueCents = ({
+const accountValueMinor = ({
   balance,
   creditLimit,
   sharePercent,
   fixedAmount,
   fixedAhead,
   fixedOthers,
+  decimals,
 }: AccountValueParams): number => {
-  const available = Math.max(0, toCents(balance) - toCents(creditLimit));
-  if (fixedAmount !== null) return Math.min(toCents(fixedAmount), Math.max(0, available - toCents(fixedAhead)));
-  return (Math.max(0, available - toCents(fixedOthers)) * (sharePercent ?? 0)) / FULL_SHARE;
+  const minor = (amount: number) => toMinor({ amount, decimals });
+  const available = Math.max(0, minor(balance) - minor(creditLimit));
+  if (fixedAmount !== null) return Math.min(minor(fixedAmount), Math.max(0, available - minor(fixedAhead)));
+  return (Math.max(0, available - minor(fixedOthers)) * (sharePercent ?? 0)) / FULL_SHARE;
 };
 
-export const accountGoalValue = (params: AccountValueParams): number => fromCents(accountValueCents(params));
+export const accountGoalValue = (params: AccountValueParams): number =>
+  fromMinor({ minor: accountValueMinor(params), decimals: params.decimals });
 
-const goalValueCents = ({
+const goalValueMinor = ({
   accounts,
   balanceOf,
+  decimals,
 }: {
   accounts: GoalAccountHistory[];
   balanceOf: (account: GoalAccountHistory) => number;
+  decimals: number;
 }): number =>
   Math.round(
-    accounts.reduce((sum, account) => sum + accountValueCents({ ...account, balance: balanceOf(account) }), 0),
+    accounts.reduce(
+      (sum, account) => sum + accountValueMinor({ ...account, balance: balanceOf(account), decimals }),
+      0,
+    ),
   );
 
-export const currentGoalValue = ({ accounts }: { accounts: GoalAccountHistory[] }): number =>
-  fromCents(goalValueCents({ accounts, balanceOf: (account) => account.currentBalance }));
+export const currentGoalValue = ({
+  accounts,
+  decimals,
+}: {
+  accounts: GoalAccountHistory[];
+  decimals: number;
+}): number =>
+  fromMinor({
+    minor: goalValueMinor({ accounts, balanceOf: (account) => account.currentBalance, decimals }),
+    decimals,
+  });
 
-const goalMonthEndValues = ({ months, accounts }: Pick<GoalMathInput, 'months' | 'accounts'>): number[] =>
+const goalMonthEndValues = ({
+  months,
+  accounts,
+  decimals,
+}: Pick<GoalMathInput, 'months' | 'accounts' | 'decimals'>): number[] =>
   months.map((_, index) =>
-    fromCents(goalValueCents({ accounts, balanceOf: (account) => account.monthEndBalances[index] ?? 0 })),
+    fromMinor({
+      minor: goalValueMinor({ accounts, balanceOf: (account) => account.monthEndBalances[index] ?? 0, decimals }),
+      decimals,
+    }),
   );
 
 /**
@@ -100,7 +138,8 @@ const historicalPace = ({
   months,
   accounts,
   monthEndValues,
-}: Pick<GoalMathInput, 'today' | 'months' | 'accounts'> & { monthEndValues: number[] }): {
+  decimals,
+}: Pick<GoalMathInput, 'today' | 'months' | 'accounts' | 'decimals'> & { monthEndValues: number[] }): {
   pace: number | null;
   historyMonths: number;
 } => {
@@ -109,23 +148,33 @@ const historicalPace = ({
     null,
   );
   const points = months
-    .map((date, index) => ({ date, cents: toCents(monthEndValues[index] ?? 0) }))
+    .map((date, index) => ({ date, minor: toMinor({ amount: monthEndValues[index] ?? 0, decimals }) }))
     .filter(({ date }) => date < today)
     .slice(-(PACE_WINDOW_MONTHS + 1))
     .filter(({ date }) => !windowStart || date >= windowStart);
 
-  const deltas = points.slice(1).map((point, index) => point.cents - points[index]!.cents);
+  const deltas = points.slice(1).map((point, index) => point.minor - points[index]!.minor);
   if (deltas.length < MIN_HISTORY_MONTHS) return { pace: null, historyMonths: deltas.length };
 
-  return { pace: fromCents(median({ values: deltas })!), historyMonths: deltas.length };
+  return { pace: fromMinor({ minor: median({ values: deltas })!, decimals }), historyMonths: deltas.length };
 };
 
 /** Whole months until `remaining` is covered at `pace`; null when pace doesn't move toward it. */
-export const etaMonths = ({ remaining, pace }: { remaining: number; pace: number | null }): number | null => {
-  const remainingCents = toCents(remaining);
-  if (remainingCents <= 0) return 0;
-  if (pace === null || toCents(pace) <= 0) return null;
-  return Math.ceil(remainingCents / toCents(pace));
+export const etaMonths = ({
+  remaining,
+  pace,
+  decimals,
+}: {
+  remaining: number;
+  pace: number | null;
+  decimals: number;
+}): number | null => {
+  const remainingMinor = toMinor({ amount: remaining, decimals });
+  if (remainingMinor <= 0) return 0;
+  if (pace === null) return null;
+  const paceMinor = toMinor({ amount: pace, decimals });
+  if (paceMinor <= 0) return null;
+  return Math.ceil(remainingMinor / paceMinor);
 };
 
 /**
@@ -136,19 +185,25 @@ export const neededMonthly = ({
   remaining,
   today,
   targetDate,
+  decimals,
 }: {
   remaining: number;
   today: string;
   targetDate: string | null;
+  /** Decimals of the currency `remaining` is in. */
+  decimals: number;
 }): { neededMonthly: number | null; daysLeft: number | null } => {
   if (!targetDate) return { neededMonthly: null, daysLeft: null };
 
   const daysLeft = daysBetween({ from: today, to: targetDate });
-  const remainingCents = Math.max(0, toCents(remaining));
+  const remainingMinor = Math.max(0, toMinor({ amount: remaining, decimals }));
   const averageMonthsLeft = Math.max(0, daysLeft) / DAYS_PER_MONTH;
 
   return {
-    neededMonthly: fromCents(averageMonthsLeft >= 1 ? remainingCents / averageMonthsLeft : remainingCents),
+    neededMonthly: fromMinor({
+      minor: averageMonthsLeft >= 1 ? remainingMinor / averageMonthsLeft : remainingMinor,
+      decimals,
+    }),
     daysLeft,
   };
 };
@@ -197,15 +252,17 @@ const progressStatus = ({
   monthsLeft,
   pace,
   eta,
+  decimals,
 }: {
   hasAccounts: boolean;
   remaining: number;
   monthsLeft: number | null;
   pace: number | null;
   eta: number | null;
+  decimals: number;
 }): GoalProgressStatus => {
   if (!hasAccounts) return 'no_accounts';
-  if (toCents(remaining) <= 0) return 'reached';
+  if (toMinor({ amount: remaining, decimals }) <= 0) return 'reached';
   if (monthsLeft === null) return 'no_date';
   if (monthsLeft < 0) return 'overdue';
   if (pace === null) return 'insufficient_history';
@@ -254,15 +311,18 @@ export const goalMonthlyDemand = (
 };
 
 export const computeGoalProgress = (input: GoalMathInput): GoalProgress => {
-  const { today, months, accounts, targetAmount, targetDate, plannedMonthly } = input;
+  const { today, months, accounts, targetAmount, targetDate, plannedMonthly, decimals } = input;
 
-  const currentValue = currentGoalValue({ accounts });
-  const remaining = fromCents(Math.max(0, toCents(targetAmount) - toCents(currentValue)));
-  const monthEndValues = goalMonthEndValues({ months, accounts });
-  const history = historicalPace({ today, months, accounts, monthEndValues });
+  const currentValue = currentGoalValue({ accounts, decimals });
+  const remaining = fromMinor({
+    minor: Math.max(0, toMinor({ amount: targetAmount, decimals }) - toMinor({ amount: currentValue, decimals })),
+    decimals,
+  });
+  const monthEndValues = goalMonthEndValues({ months, accounts, decimals });
+  const history = historicalPace({ today, months, accounts, monthEndValues, decimals });
   const pace = plannedMonthly ?? history.pace;
-  const needed = neededMonthly({ remaining, today, targetDate });
-  const eta = etaMonths({ remaining, pace });
+  const needed = neededMonthly({ remaining, today, targetDate, decimals });
+  const eta = etaMonths({ remaining, pace, decimals });
   const monthsLeft = targetDate ? wholeMonthsUntil({ today, targetDate }) : null;
 
   return {
@@ -272,6 +332,7 @@ export const computeGoalProgress = (input: GoalMathInput): GoalProgress => {
       monthsLeft,
       pace,
       eta,
+      decimals,
     }),
     currentValue,
     remaining,

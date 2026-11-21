@@ -19,10 +19,12 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { useInvalidateSubscriptionQueries } from '@/composable/data-queries/subscriptions';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { ApiErrorResponseError } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
 import { cn } from '@/lib/utils';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useAccountsStore } from '@/stores';
 import type { AccountModel } from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
@@ -181,13 +183,24 @@ const dialogAmountCurrency = computed(() => {
   return accountCurrencyFor(sub) ?? sub.expectedCurrencyCode ?? null;
 });
 
+const amountDecimals = computed(() => {
+  const sub = activeSubscription.value;
+  const accountId = sub ? (sub.accountId ?? selectedAccountId.value) : null;
+  const account = accountId ? accountsRecord.value[accountId] : undefined;
+  return getCurrencyDecimals({ code: dialogAmountCurrency.value, meta: account?.currencyMeta });
+});
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
+const amountDecimalError = computed(() =>
+  isBooking.value && !currencyDecimal.isValid(amount.value) ? currencyDecimal.message.value : undefined,
+);
+
 const isConfirmDisabled = computed(() => {
   if (isPending.value) return true;
   if (recordMode.value === 'existing') return !selectedLinkedPaymentId.value;
   if (!isBooking.value) return false;
   // Booking against a not-yet-linked account requires picking one.
   if (!hasAccount.value && !selectedAccountId.value) return true;
-  return !amount.value || Number(amount.value) <= 0;
+  return !amount.value || Number(amount.value) <= 0 || !!amountDecimalError.value;
 });
 
 const confirmLabel = computed(() => {
@@ -367,7 +380,7 @@ defineExpose({ triggerPay, isPending });
             </span>
           </div>
           <span class="font-medium whitespace-nowrap">
-            {{ formatAmountByCurrencyCode(candidate.amount, candidate.currencyCode) }}
+            {{ formatAmountByCurrencyCode({ amount: candidate.amount, currencyCode: candidate.currencyCode }) }}
           </span>
         </Label>
       </RadioGroup>
@@ -386,11 +399,11 @@ defineExpose({ triggerPay, isPending });
         <InputField
           v-model="amount"
           type="number"
-          step="0.01"
-          min="0.01"
+          :decimals="amountDecimals"
           only-positive
           :label="$t('dialogs.subscriptionMarkPaid.amountLabel')"
           :placeholder="$t('dialogs.subscriptionMarkPaid.amountPlaceholder')"
+          :error-message="amountDecimalError"
         >
           <template v-if="dialogAmountCurrency" #iconTrailing>
             <span>{{ dialogAmountCurrency }}</span>

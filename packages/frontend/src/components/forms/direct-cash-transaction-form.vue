@@ -13,7 +13,6 @@ import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { Separator } from '@/components/lib/ui/separator';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import TransactionRecord from '@/components/transactions-list/transaction-record.vue';
-import { useFormatCurrency } from '@/composable';
 import {
   useAccountToPortfolioTransfer,
   useCreateDirectCashTransaction,
@@ -22,8 +21,11 @@ import {
 } from '@/composable/data-queries/portfolio-transfers';
 import { usePortfolioCurrencySorting } from '@/composable/data-queries/use-portfolio-currency-sorting';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs';
-import { useAccountsStore, useCurrenciesStore } from '@/stores';
+import { formatAccountAmount, formatUIAmount } from '@/js/helpers';
+import { getCurrencyDecimals, getSmallestCurrencyUnit } from '@/js/helpers/currency-decimals';
+import { useAccountsStore } from '@/stores';
 import type { AccountModel, PortfolioModel, TransactionModel, UserCurrencyModel } from '@bt/shared/types';
 import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { ArrowDownIcon, ArrowUpIcon, X } from '@lucide/vue';
@@ -54,8 +56,6 @@ const accountsStore = useAccountsStore();
 // Loan accounts excluded – money only flows INTO a loan (transfer_to_loan), so they can't be a transfer source.
 const { txTargetableSourceAccountsActiveFirst: txTargetableAccountsActiveFirst, accountsRecord } =
   storeToRefs(accountsStore);
-const { currencies } = storeToRefs(useCurrenciesStore());
-const { formatAmountByCurrencyCode } = useFormatCurrency();
 const { sortedCurrencies, currencyLabel } = usePortfolioCurrencySorting(computed(() => props.portfolioId));
 const { resolveDefaultAccount } = useAccountDropdownPrefs();
 
@@ -115,13 +115,11 @@ const directForm = reactive<{
 const transferForm = reactive<{
   selectedAccount: AccountModel | null;
   amount: string;
-  selectedCurrency: UserCurrencyModel | null;
   date: Date;
   description: string;
 }>({
   selectedAccount: defaultTransferAccount(),
   amount: '',
-  selectedCurrency: null,
   date: new Date(),
   description: '',
 });
@@ -149,9 +147,6 @@ const pickerTransactionType = computed(() => {
   return TRANSACTION_TYPES.income;
 });
 
-// Show currency selector only for withdrawal+transfer (user picks currency from portfolio)
-const showTransferCurrency = computed(() => operationType.value === 'withdrawal' && methodType.value === 'transfer');
-
 // Watchers for resetting state on tab changes
 watch(operationType, () => {
   methodType.value = 'direct';
@@ -171,19 +166,28 @@ watch(methodType, () => {
   }
 });
 
-// Auto-set currency from selected account for deposit+transfer
-watch(
-  () => transferForm.selectedAccount,
-  (account) => {
-    if (operationType.value === 'deposit' && account?.currencyCode) {
-      transferForm.selectedCurrency = currencies.value?.find((c) => c.currencyCode === account.currencyCode) || null;
-    }
-  },
+const directCurrencyCode = computed(() => directForm.selectedCurrency?.currencyCode);
+// A transfer to or from an account always moves the account's currency.
+const transferCurrencyCode = computed(() => transferForm.selectedAccount?.currencyCode);
+const directDecimals = computed(() =>
+  directCurrencyCode.value ? getCurrencyDecimals({ code: directCurrencyCode.value }) : undefined,
 );
+const transferCurrencyMeta = computed(() => transferForm.selectedAccount?.currencyMeta);
+const transferDecimals = computed(() =>
+  transferCurrencyCode.value
+    ? getCurrencyDecimals({ code: transferCurrencyCode.value, meta: transferCurrencyMeta.value })
+    : undefined,
+);
+const directCurrencyDecimal = useCurrencyDecimalRule({ decimals: directDecimals });
+const transferCurrencyDecimal = useCurrencyDecimalRule({ decimals: transferDecimals });
 
 // Validation for direct form
 const directValidationRules = computed(() => ({
-  amount: { required, minValue: minValue(0.01) },
+  amount: {
+    required,
+    minValue: minValue(getSmallestCurrencyUnit({ code: directCurrencyCode.value })),
+    currencyDecimal: directCurrencyDecimal.rule.value,
+  },
   selectedCurrency: { required },
   date: { required },
 }));
@@ -195,12 +199,13 @@ const {
   resetValidation: resetDirectValidation,
 } = useFormValidation(
   { directForm },
-  { directForm: directValidationRules },
+  computed(() => ({ directForm: directValidationRules.value })),
   {},
   {
     customValidationMessages: {
       required: t('forms.directCashTransaction.validation.required'),
       minValue: t('forms.directCashTransaction.validation.minValue'),
+      currencyDecimal: directCurrencyDecimal.message,
     },
   },
 );
@@ -208,8 +213,11 @@ const {
 // Validation for transfer form
 const transferValidationRules = computed(() => ({
   selectedAccount: { required },
-  amount: { required, minValue: minValue(0.01) },
-  ...(showTransferCurrency.value ? { selectedCurrency: { required } } : {}),
+  amount: {
+    required,
+    minValue: minValue(getSmallestCurrencyUnit({ code: transferCurrencyCode.value, meta: transferCurrencyMeta.value })),
+    currencyDecimal: transferCurrencyDecimal.rule.value,
+  },
 }));
 
 const {
@@ -219,12 +227,13 @@ const {
   resetValidation: resetTransferValidation,
 } = useFormValidation(
   { transferForm },
-  { transferForm: transferValidationRules },
+  computed(() => ({ transferForm: transferValidationRules.value })),
   {},
   {
     customValidationMessages: {
       required: t('forms.directCashTransaction.validation.required'),
       minValue: t('forms.directCashTransaction.validation.minValue'),
+      currencyDecimal: transferCurrencyDecimal.message,
     },
   },
 );
@@ -241,7 +250,6 @@ const resetDirectForm = () => {
 const resetTransferForm = () => {
   transferForm.selectedAccount = defaultTransferAccount();
   transferForm.amount = '';
-  transferForm.selectedCurrency = null;
   transferForm.date = new Date();
   transferForm.description = '';
   resetTransferValidation();
@@ -255,7 +263,7 @@ const prepareConfirmationData = () => {
 
   if (isLinkMode.value && linkedTransaction.value) {
     const tx = linkedTransaction.value;
-    amount = formatAmountByCurrencyCode(tx.amount, tx.currencyCode);
+    amount = formatAccountAmount({ amount: tx.amount, account: tx, fullPrecision: true });
     const accountName =
       accountsRecord.value[tx.accountId]?.name || t('forms.directCashTransaction.linkedTransactionLabel');
 
@@ -269,9 +277,10 @@ const prepareConfirmationData = () => {
       toName = accountName;
     }
   } else {
-    const currencyCode =
-      transferForm.selectedCurrency?.currency?.code || transferForm.selectedAccount?.currencyCode || '';
-    amount = formatAmountByCurrencyCode(Number(transferForm.amount), currencyCode);
+    amount = formatUIAmount(Number(transferForm.amount), {
+      currency: transferCurrencyCode.value,
+      meta: transferCurrencyMeta.value,
+    });
     const accountName = transferForm.selectedAccount?.name || '';
 
     if (operationType.value === 'deposit') {
@@ -328,9 +337,6 @@ const onSubmit = async () => {
     } else {
       touchTransferField('transferForm.selectedAccount');
       touchTransferField('transferForm.amount');
-      if (showTransferCurrency.value) {
-        touchTransferField('transferForm.selectedCurrency');
-      }
 
       if (!isTransferFormValid('transferForm')) return;
     }
@@ -365,7 +371,7 @@ const confirmTransfer = async () => {
         portfolioId: props.portfolioId,
         accountId: transferForm.selectedAccount!.id,
         amount: String(transferForm.amount),
-        currencyCode: transferForm.selectedCurrency!.currencyCode,
+        currencyCode: transferForm.selectedAccount!.currencyCode,
         date: transferForm.date.toISOString().split('T')[0]!,
         description: transferForm.description || undefined,
       });
@@ -409,11 +415,7 @@ const isSubmitDisabled = computed(() => {
     return !linkedTransaction.value;
   }
 
-  return (
-    !transferForm.selectedAccount ||
-    !transferForm.amount ||
-    (showTransferCurrency.value && !transferForm.selectedCurrency)
-  );
+  return !transferForm.selectedAccount || !transferForm.amount;
 });
 
 const accountLabel = computed(() =>
@@ -438,11 +440,11 @@ const accountLabel = computed(() =>
           v-model="directForm.amount"
           :label="$t('forms.directCashTransaction.amountLabel')"
           type="number"
-          step="0.01"
-          min="0.01"
+          only-positive
+          :decimals="directDecimals"
           :placeholder="$t('forms.directCashTransaction.amountPlaceholder')"
           :disabled="isAnyMutationPending || disabled"
-          :error="getDirectFieldError('directForm.amount')"
+          :error-message="getDirectFieldError('directForm.amount')"
           @blur="touchDirectField('directForm.amount')"
         />
 
@@ -528,24 +530,12 @@ const accountLabel = computed(() =>
             v-model="transferForm.amount"
             :label="$t('forms.directCashTransaction.amountLabel')"
             type="number"
-            step="0.01"
-            min="0.01"
+            only-positive
+            :decimals="transferDecimals"
             :placeholder="$t('forms.directCashTransaction.amountPlaceholder')"
             :disabled="isAnyMutationPending || disabled"
-            :error="getTransferFieldError('transferForm.amount')"
+            :error-message="getTransferFieldError('transferForm.amount')"
             @blur="touchTransferField('transferForm.amount')"
-          />
-
-          <SelectField
-            v-if="showTransferCurrency"
-            v-model="transferForm.selectedCurrency"
-            :label="$t('forms.directCashTransaction.currencyLabel')"
-            :values="sortedCurrencies"
-            value-key="currencyCode"
-            :label-key="currencyLabel"
-            :placeholder="$t('forms.directCashTransaction.currencyPlaceholder')"
-            :disabled="isAnyMutationPending || disabled"
-            :error-message="getTransferFieldError('transferForm.selectedCurrency')"
           />
 
           <DateField

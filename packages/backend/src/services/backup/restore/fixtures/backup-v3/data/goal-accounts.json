@@ -1,0 +1,16 @@
+[
+  {
+    "goalId": "01a1cf52-7c77-71db-9d7b-6f7a3786259f",
+    "accountId": "01a1cf52-7ba5-74ea-be29-373ee3a75b65",
+    "sharePercent": "100.00",
+    "fixedAmount": null,
+    "fixedPosition": null
+  },
+  {
+    "goalId": "01a1cf52-7c77-71db-9d7b-6f7a37862600",
+    "accountId": "01a1cf52-7b93-74fb-b7c2-131b123c1dee",
+    "sharePercent": null,
+    "fixedAmount": 10015,
+    "fixedPosition": 0
+  }
+]

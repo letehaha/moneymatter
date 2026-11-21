@@ -52,6 +52,8 @@
         },
         "descriptionLabel": "Descrizione (facoltativa)",
         "descriptionPlaceholder": "Una breve descrizione di questo portafoglio...",
+        "externalUrlLabel": "External URL (optional)",
+        "externalUrlPlaceholder": "https://broker.example.com",
         "submitButton": "Crea portafoglio",
         "submitButtonLoading": "Creazione..."
       },

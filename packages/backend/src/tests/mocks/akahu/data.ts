@@ -12,6 +12,7 @@ export const AKAHU_ACCOUNT_1_ID = 'acc_1111111111111111111111111';
 export const AKAHU_ACCOUNT_2_ID = 'acc_2222222222222222222222222';
 export const AKAHU_ACCOUNT_NO_TX_ID = 'acc_3333333333333333333333333';
 export const AKAHU_ACCOUNT_INACTIVE_ID = 'acc_4444444444444444444444444';
+export const AKAHU_ACCOUNT_CREDIT_ID = 'acc_5555555555555555555555555';
 
 const accountBase = (overrides: Partial<AkahuApiAccount>): AkahuApiAccount => ({
   _id: 'acc_x',
@@ -51,6 +52,12 @@ export const getMockedAkahuAccounts = (): AkahuApiAccountsResponse => ({
       _id: AKAHU_ACCOUNT_INACTIVE_ID,
       name: 'Closed Account',
       status: 'INACTIVE',
+    }),
+    accountBase({
+      _id: AKAHU_ACCOUNT_CREDIT_ID,
+      name: 'Credit Card',
+      type: 'CREDITCARD',
+      balance: { available: asDecimal(379.5), current: asDecimal(-120.5), limit: asDecimal(-500), currency: 'NZD' },
     }),
   ],
 });

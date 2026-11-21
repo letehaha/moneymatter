@@ -37,6 +37,34 @@ const runImport = async (payload: Parameters<typeof helpers.executeOfx>[0]['payl
   return helpers.waitForOfxImportCompletion({ jobId });
 };
 
+const buildPreciseOfx = ({ currency, amounts }: { currency: string; amounts: string[] }) =>
+  Buffer.from(
+    [
+      'OFXHEADER:200',
+      'DATA:OFXSGML',
+      'VERSION:203',
+      'ENCODING:UTF-8',
+      'CHARSET:NONE',
+      'COMPRESSION:NONE',
+      '',
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<OFX>',
+      '  <SIGNONMSGSRSV1><SONRS><FI><ORG>Example Bank</ORG><FID>1000</FID></FI></SONRS></SIGNONMSGSRSV1>',
+      '  <BANKMSGSRSV1><STMTTRNRS><STMTRS>',
+      `    <CURDEF>${currency}</CURDEF>`,
+      '    <BANKACCTFROM><BANKID>000003</BANKID><ACCTID>999900004444</ACCTID><ACCTTYPE>CHECKING</ACCTTYPE></BANKACCTFROM>',
+      '    <BANKTRANLIST>',
+      ...amounts.map(
+        (amount, index) =>
+          `<STMTTRN><TRNTYPE>CREDIT</TRNTYPE><DTPOSTED>2026080${index + 1}103000</DTPOSTED><TRNAMT>${amount}</TRNAMT><FITID>precise-${index}</FITID><NAME>Row ${index}</NAME></STMTTRN>`,
+      ),
+      '    </BANKTRANLIST>',
+      '    <LEDGERBAL><BALAMT>100.00</BALAMT><DTASOF>20260803103000</DTASOF></LEDGERBAL>',
+      '  </STMTRS></STMTTRNRS></BANKMSGSRSV1>',
+      '</OFX>',
+    ].join('\n'),
+  );
+
 describe('OFX import HTTP endpoints', () => {
   describe('upload', () => {
     it('parses a sanitized bank fixture and returns an opaque upload', async () => {
@@ -342,6 +370,54 @@ describe('OFX import HTTP endpoints', () => {
         locale: 'en',
       }),
     );
+  });
+  describe('amounts at the account currency decimals', () => {
+    const expectBalanceKept = async ({
+      currencyCode,
+      amount,
+      storedAmount,
+    }: {
+      currencyCode: string;
+      amount: string;
+      storedAmount: number;
+    }) => {
+      await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({
+          name: `OFX precise ${currencyCode}`,
+          currencyCode,
+          initialBalance: 100,
+        }),
+        raw: true,
+      });
+
+      const upload = await helpers.uploadOfx({
+        file: buildPreciseOfx({ currency: currencyCode, amounts: [amount, amount] }),
+      });
+      expect(upload.response).not.toBeNull();
+      const sourceKey = upload.response!.result.accounts[0]!.sourceAccountKey;
+
+      const progress = await runImport({
+        uploadId: upload.response!.uploadId,
+        accountMapping: { [sourceKey]: { action: 'link-existing', accountId: account.id } },
+        skipDuplicateIndices: [],
+        recalculateBalance: false,
+      });
+      helpers.expectOfxCompleted(progress);
+      expect(progress.summary).toMatchObject({ transactionsImported: 2, errors: [] });
+
+      expect(Number((await helpers.getAccount({ id: account.id, raw: true })).currentBalance)).toBe(100);
+      const stored = (await helpers.getTransactions({ raw: true })).filter((tx) => tx.accountId === account.id);
+      expect(stored.map((tx) => tx.amount)).toEqual([storedAmount, storedAmount]);
+    };
+
+    it('keeps a 2-decimal balance when two 12.345 rows are stored as 12.35', async () => {
+      await expectBalanceKept({ currencyCode: 'USD', amount: '12.345', storedAmount: 12.35 });
+    });
+
+    it('keeps a JPY balance when two 1500.5 rows are stored as 1501', async () => {
+      await expectBalanceKept({ currencyCode: 'JPY', amount: '1500.5', storedAmount: 1501 });
+    });
   });
 });
 

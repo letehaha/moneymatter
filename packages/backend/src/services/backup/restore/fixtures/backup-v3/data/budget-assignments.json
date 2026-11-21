@@ -1,0 +1,22 @@
+[
+  {
+    "id": "01a1cf52-7c2f-732f-a9d3-6617bfa251ff",
+    "periodId": "01a1cf52-7bef-73f7-a13c-1a30887dd13c",
+    "lineId": "01a1cf52-7c13-7052-aef7-a8b1a12d145a",
+    "baselineAmount": 80055,
+    "overrideAmount": null,
+    "carryPolicy": null,
+    "createdAt": "2026-11-12T10:34:11.887Z",
+    "updatedAt": "2026-11-12T10:34:11.887Z"
+  },
+  {
+    "id": "01a1cf52-7c45-70a8-bc0c-4e30a45188f0",
+    "periodId": "01a1cf52-7bef-73f7-a13c-1f00f3a8038f",
+    "lineId": "01a1cf52-7c21-70ca-b7e8-9be45e3879ec",
+    "baselineAmount": null,
+    "overrideAmount": 15065,
+    "carryPolicy": null,
+    "createdAt": "2026-11-12T10:34:11.909Z",
+    "updatedAt": "2026-11-12T10:34:11.909Z"
+  }
+]

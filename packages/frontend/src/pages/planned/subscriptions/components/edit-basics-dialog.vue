@@ -18,8 +18,10 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { usePrioritizedCurrencies } from '@/composable/data-queries/prioritized-currencies';
 import { useInvalidateSubscriptionQueries, useResetSubscriptionLogo } from '@/composable/data-queries/subscriptions';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { ApiErrorResponseError } from '@/js/errors';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { helpers, required } from '@/js/helpers/validators';
 import { type CurrencyModel, SUBSCRIPTION_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
 import { useMutation } from '@tanstack/vue-query';
@@ -122,13 +124,16 @@ const selectedCurrency = computed(() => {
   return currencies.value.find((c) => c.code === form.value.expectedCurrencyCode) ?? null;
 });
 
+const amountDecimals = computed(() => getCurrencyDecimals({ code: form.value.expectedCurrencyCode }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
+
 const isIncome = computed(() => props.subscription.transactionType === TRANSACTION_TYPES.income);
 
 const installmentTotalLabel = computed(() => {
   if (!isInstallment.value) return null;
   const { expectedAmount, maxOccurrences, expectedCurrencyCode } = form.value;
   if (!expectedAmount || !maxOccurrences || !expectedCurrencyCode) return null;
-  return formatAmountByCurrencyCode(expectedAmount * maxOccurrences, expectedCurrencyCode);
+  return formatAmountByCurrencyCode({ amount: expectedAmount * maxOccurrences, currencyCode: expectedCurrencyCode });
 });
 
 const validationRules = computed(() => ({
@@ -141,6 +146,7 @@ const validationRules = computed(() => ({
         return value !== null && value > 0;
       },
     ),
+    currencyDecimal: helpers.withMessage(() => currencyDecimal.message.value, currencyDecimal.rule.value),
   },
   expectedCurrencyCode: {
     requiredWithAmount: helpers.withMessage(
@@ -315,6 +321,7 @@ const handleSubmit = async () => {
         <InputField
           v-model.number="form.expectedAmount"
           type="number"
+          :decimals="amountDecimals"
           :label="$t('planned.subscriptions.form.amountLabel')"
           :placeholder="$t('planned.subscriptions.form.amountPlaceholder')"
           :error-message="getFieldErrorMessage('form.expectedAmount')"

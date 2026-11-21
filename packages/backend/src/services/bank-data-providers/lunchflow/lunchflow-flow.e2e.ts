@@ -1174,7 +1174,10 @@ describe('LunchFlow Data Provider E2E', () => {
       // 4. Call connectSelectedAccounts (the auto-matching path — NOT manual link)
       global.mswMockServer.use(
         getLunchFlowTransactionsMock({ accountId: externalAccountId }),
-        getLunchFlowBalanceMock({ accountId: externalAccountId }),
+        getLunchFlowBalanceMock({
+          accountId: externalAccountId,
+          response: { balance: { amount: asDecimal(1600.45), currency: 'USD' } },
+        }),
       );
 
       const { syncedAccounts: secondSelected } = await helpers.bankDataProviders.connectSelectedAccounts({
@@ -1195,6 +1198,14 @@ describe('LunchFlow Data Provider E2E', () => {
       expect(relinked.type).toBe(ACCOUNT_TYPES.lunchflow);
       expect(relinked.bankDataProviderConnectionId).toBe(secondConnect.connectionId);
       expect(relinked.externalId).toBe(externalAccountId);
+
+      const stored = (await Accounts.findByPk(originalAccountId))!;
+      expect(stored.externalData!.bankConnection!.balanceReconciliation).toMatchObject({
+        systemBalance: 1523.45,
+        externalBalance: 1600.45,
+        difference: 77,
+        pendingAbsorb: false,
+      });
     });
 
     it('turns off auto-record on subscriptions booked to an account re-linked by reconnecting', async () => {

@@ -4,7 +4,7 @@ import { createController } from '@controllers/helpers/controller-factory';
 import { createSingleRefund } from '@services/tx-refunds/create-single-refund.service';
 import { z } from 'zod';
 
-import { atLeastOneCentAmountSchema } from '../schemas';
+import { positiveAmountSchema } from '../schemas';
 
 const schema = z.object({
   body: z.object({
@@ -13,7 +13,7 @@ const schema = z.object({
     // Optional: when provided, the refund targets a specific split of the original transaction
     splitId: recordId().optional(),
     // Share of the refund transaction this link covers; omitted means the whole refund
-    amount: atLeastOneCentAmountSchema().optional(),
+    amount: positiveAmountSchema().optional(),
   }),
 });
 

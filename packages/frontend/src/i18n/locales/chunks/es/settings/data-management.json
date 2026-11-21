@@ -36,7 +36,7 @@
         "listDescription": "Importa un archivo .mny de Microsoft Money"
       },
       "messageImport": {
-        "title": "iOS message sync"
+        "title": "Sincronización de mensaje iOS"
       },
       "importHistory": {
         "title": "Historial de importaciones",
@@ -97,9 +97,9 @@
           "clear": "Quitar rango de fechas"
         },
         "accounts": {
-          "label": "Accounts",
+          "label": "Cuentas",
           "helper": "Exportar solo las cuentas seleccionadas con sus transacciones e historial de saldo. Dejar en blanco para exportar todas las cuentas.",
-          "placeholder": "All accounts"
+          "placeholder": "Todas las cuentas"
         },
         "listDescription": "Descarga un zip para hojas de cálculo, impuestos o migración"
       }

@@ -17,7 +17,9 @@
     "loanCategoryImmutable": "Категорию кредитного счёта нельзя изменить.",
     "dedicatedFlowCategoryNotAllowed": "Кредитные счета и счета транспортных средств должны создаваться через специальные эндпоинты, а не через общий эндпоинт счетов.",
     "initialBalanceOnlySystem": "Начальный баланс может быть изменен только для ручных учетных записей",
-    "initialAndCurrentBalanceTogether": "Начальный баланс и текущий баланс не могут быть изменены в одном запросе"
+    "initialAndCurrentBalanceTogether": "Начальный баланс и текущий баланс не могут быть изменены в одном запросе",
+    "onlySystemAccountsCanBeLinked": "Only manually created accounts can be linked to a bank connection.",
+    "bankLinkImportStillRunning": "An import is still running. Wait for it to finish before linking, unlinking, archiving or disconnecting a bank account. If the import stopped, this block clears on its own 3 hours after the import started."
   },
   "balanceAdjustment": {
     "defaultNote": "Корректировка баланса",
@@ -56,6 +58,12 @@
     "cannotCreateWithParams": "Не удалось создать транзакцию с указанными параметрами",
     "idCannotBeChanged": "id нельзя изменить",
     "editReadonlyFields": "Попытка изменить доступные только для чтения поля внешнего счёта",
+    "preSeamTimeOnOrAfterLinkDay": "A manual transaction on a bank-linked account must stay dated before {{date}}, the day the account was linked.",
+    "manualRowOnOrAfterLinkDay": "This transaction is dated on or after {{date}}, the day the account was linked to the bank. From that day on, the bank's records are what counts, so it can't be edited or deleted.",
+    "manualRowOnOrAfterLinkDayCreate": "Your bank owns everything from {{date}} on, so a manual transaction must be dated before {{date}}.",
+    "bulkDeleteBankRowsSelected": "Transactions synced from your bank, and ones dated on or after the day the account was linked, can't be deleted.",
+    "oppositeLegOnBankAccount": "The other side of this transfer is on a bank-linked account, so this change isn't allowed there.",
+    "moveAcrossBankLinkedAccount": "A transaction can't be moved onto or off a bank-linked account. Delete it and add it again on the other account.",
     "changeTypeNotAllowed": "Нельзя изменять \"transactionType\" для несистемного счёта",
     "bothRefundFieldsNotAllowed": "Нельзя одновременно использовать \"refundedByTxIds\" и \"refundsTxId\". Выберите одно из этих полей.",
     "oppositeTransactionNotFound": "Не удалось найти противоположную транзакцию для обновления",
@@ -302,7 +310,8 @@
     "providerTypeMismatch": "Подключение {{connectionId}} относится к провайдеру {{actualType}}, а не {{expectedType}}",
     "providerAlreadyRegistered": "Провайдер {{providerType}} уже зарегистрирован. Нельзя регистрировать дубликаты провайдеров.",
     "providerNotRegistered": "Провайдер {{providerType}} не зарегистрирован. Доступные провайдеры: {{available}}",
-    "unexpected": "Непредвиденная ошибка."
+    "unexpected": "Непредвиденная ошибка.",
+    "clientUpdateRequired": "This version of the app is no longer supported. Please update it from the App Store."
   },
   "validation": {
     "dateInvalid": "\"date\" содержит некорректную дату."
@@ -323,6 +332,7 @@
     "failedToFetchCountries": "Не удалось получить список стран. Проверьте учётные данные.",
     "accountNotLinkedToConnection": "Счёт не найден или не привязан к этому подключению",
     "accountAlreadyConnectedToAnotherConnection": "Account \"{{account}}\" is already connected through \"{{connection}}\". Disconnect it there first.",
+    "accountBalanceUnavailable": "Couldn't get the current balance of {{account}} from the bank. Please try again in a few minutes.",
     "cannotLoadBeforeLinkDate": "Нельзя загружать транзакции до даты привязки счёта ({{linkedAt}}). Счёт был привязан со стратегией \"forward-only\", чтобы предотвратить дублирование данных.",
     "dateRangeExceedsLimit": "Диапазон дат не может превышать 1 год.",
     "fromAfterTo": "Дата \"from\" должна быть раньше даты \"to\"",
@@ -429,7 +439,8 @@
     "transactionTypeValuesNotCovered": "Transaction type column has values not covered by income/expense lists: {{uncovered}}. Found values: {{found}}",
     "selectedAccountNotFound": "The selected account was not found or does not belong to you.",
     "selectedCategoryNotFound": "The selected category was not found or does not belong to you.",
-    "linkedAccountCurrencyMismatch": "Currencies must match to link an existing account: {{mismatches}}. Link an account with the same currency or create a new one."
+    "linkedAccountCurrencyMismatch": "Currencies must match to link an existing account: {{mismatches}}. Link an account with the same currency or create a new one.",
+    "bankLinkChangedSinceReview": "The bank link of an account in this import changed after the review. Go back to the review step and run it again."
   },
   "ofxImport": {
     "noFileUploaded": "No file was uploaded. Send the OFX or QFX file as the raw request body.",

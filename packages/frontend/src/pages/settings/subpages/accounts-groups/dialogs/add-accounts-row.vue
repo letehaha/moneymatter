@@ -10,7 +10,7 @@ import { toRef } from 'vue';
 const props = defineProps<{ account: AccountModel; checked: boolean; disabled?: boolean; caption?: string }>();
 const emit = defineEmits<{ toggle: [] }>();
 
-const { formatAmountByCurrencyCode } = useFormatCurrency();
+const { formatAccountAmount } = useFormatCurrency();
 const { displayBalance } = useAccountDisplayBalance({ account: toRef(() => props.account) });
 </script>
 
@@ -29,7 +29,7 @@ const { displayBalance } = useAccountDisplayBalance({ account: toRef(() => props
     </span>
 
     <span class="text-muted-foreground shrink-0 text-sm tabular-nums">
-      {{ formatAmountByCurrencyCode(displayBalance, account.currencyCode) }}
+      {{ formatAccountAmount({ amount: displayBalance, account }) }}
     </span>
   </label>
 </template>

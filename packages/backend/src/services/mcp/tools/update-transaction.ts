@@ -52,7 +52,7 @@ export const updateTransactionTool = defineTool({
       'Amount in the currency the purchase was originally priced in (decimal), e.g. 66.42 for a PLN invoice paid from a UAH account. Informational only: never affects balances. Requires originalCurrencyCode. Pass null on both to clear',
     ),
     originalCurrencyCode: shape.originalCurrencyCode.describe(
-      'ISO 4217 code of originalAmount (e.g. "PLN"). Requires originalAmount. Cannot be combined with transfer fields',
+      'Currency of originalAmount: an ISO 4217 code (e.g. "PLN") or one of the user\'s custom currencies. Requires originalAmount. Cannot be combined with transfer fields',
     ),
     paymentLegs: shape.paymentLegs.describe(
       "Replace the payment's other accounts (same item shape as create_transaction). Keep a current part by passing its transactionId (see paymentParts in search_transactions), optionally with a new amount unless it is a linked part; an omitted created part is deleted, an omitted linked part becomes a standalone transaction again. Pass null or [] to make it a single-account transaction. Omit to leave the parts unchanged",

@@ -42,7 +42,7 @@ const { formatAmountByCurrencyCode } = useFormatCurrency();
 const formattedAmount = computed<string | null>(() => {
   const { expectedAmount, expectedCurrencyCode } = props.subscription;
   if (!expectedAmount || !expectedCurrencyCode) return null;
-  return formatAmountByCurrencyCode(expectedAmount, expectedCurrencyCode);
+  return formatAmountByCurrencyCode({ amount: expectedAmount, currencyCode: expectedCurrencyCode });
 });
 
 // A finished installment (completedAt set) reads as "Completed", distinct from a

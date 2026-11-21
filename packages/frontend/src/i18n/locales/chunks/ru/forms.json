@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Выберите валюту отображения",
       "displayCurrencyBaseOption": "Базовая валюта ({code})",
       "displayCurrencyDescription": "Стоимость портфеля и статистика конвертируются в эту валюту по текущему обменному курсу.",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Отмена",
       "submitButton": "Сохранить изменения",
       "submitButtonLoading": "Сохранение...",
@@ -137,6 +139,8 @@
       "creditLimitLabel": "Кредитный лимит",
       "creditLimitPlaceholder": "Кредитный лимит",
       "defaultPaymentTypeLabel": "Тип платежа по умолчанию",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Создать",
       "submitButtonLoading": "Создание...",
       "notifications": {
@@ -190,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Введите корректную сумму (не более 2 знаков после запятой)",
-      "mustBePositive": "Сумма должна быть положительной"
+      "mustBePositive": "Сумма должна быть положительной",
+      "httpUrl": "Enter a valid http(s) URL",
+      "maxLength": "Must not exceed {max} characters"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "Исходная валюта",

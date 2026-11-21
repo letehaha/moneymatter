@@ -10,10 +10,10 @@
       "manageBilling": "Administrar la facturación",
       "manageInAppStore": "Administrar en la App Store",
       "currentPlan": "Plan actual",
-      "recommended": "Recommended",
+      "recommended": "Recomendado",
       "previousPlan": "Plan anterior",
       "yourPlan": "Tu plan",
-      "planned": "Planned",
+      "planned": "Planificada",
       "voteOnRoadmap": "Votar en el mapa de ruta",
       "roadmapNote": "Sin cargo. Al votarlo y te avisaremos cuando esté listo.",
       "saveUpTo": "Ahorra hasta {percent}%",
@@ -32,7 +32,7 @@
       "current": {
         "lifetime": "{plan} de por vida",
         "lifetimeMeta": "Todo incluido en Plus. Sin renovación, sin tarjeta ingresada.",
-        "lifetimePurchaseMeta": "No renewal, no card on file.",
+        "lifetimePurchaseMeta": "No hay renovaciones, no hay tarjeta en el archivo.",
         "earlyAdopterNote": "Gracias por estar aquí desde el inicio. Todo en Plus tal y como existe hoy es tuyo para toda la vida. Las características que añadamos a partir de aquí, y cualquier cosa que nos cueste por usuario para funcionar, sera parte de los planes de pago. ¿Quieres aumentar el plan? 50% de descuento en cualquier plan, para siempre, aplicado automáticamente al momento de la compra.",
         "seats": "Un integrante del hogar | {count} integrantes del hogar",
         "subscription": "{tier} · {cycle}",
@@ -62,9 +62,9 @@
       },
       "status": {
         "pastDue": "No se pudo efectuar el pago",
-        "active": "Active",
-        "paused": "Paused",
-        "readOnly": "Read-only",
+        "active": "Activa",
+        "paused": "En pausa",
+        "readOnly": "Solo lectura",
         "trial": "Características Plus",
         "processing": "Procesando",
         "earlyAdopter": "Early Adpoter",
@@ -91,8 +91,8 @@
         "early_adopter": "Early Adopter"
       },
       "cycle": {
-        "month": "Monthly",
-        "year": "Yearly"
+        "month": "Mensual",
+        "year": "Anual"
       },
       "perCycle": {
         "month": "/mes",

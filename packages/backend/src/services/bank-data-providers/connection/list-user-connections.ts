@@ -11,7 +11,7 @@ export const listUserConnections = async ({
 }): Promise<
   (Pick<
     BankDataProviderConnections,
-    'id' | 'providerType' | 'providerName' | 'isActive' | 'lastSyncAt' | 'createdAt'
+    'id' | 'providerType' | 'providerName' | 'externalUrl' | 'isActive' | 'lastSyncAt' | 'createdAt'
   > & { accountsCount: number; bankName: string | null; bankLogoDomain: string | null })[]
 > => {
   const connections = await BankDataProviderConnections.findAll({
@@ -33,6 +33,7 @@ export const listUserConnections = async ({
       id: conn.id,
       providerType: conn.providerType,
       providerName: conn.providerName,
+      externalUrl: conn.externalUrl,
       isActive: conn.isActive,
       lastSyncAt: conn.lastSyncAt,
       accountsCount: conn.accounts?.length || 0,

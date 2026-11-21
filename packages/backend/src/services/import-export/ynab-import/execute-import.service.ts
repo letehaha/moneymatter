@@ -128,9 +128,9 @@ async function executeYnabImportImpl({
   // want to re-import. `alwaysCreate` bypasses the link-existing path entirely;
   // currency comes from the per-account mapping and the starting balance is
   // converted at the earliest CSV date via `initialBalanceFxDate`.
-  const startingBalanceCentsByName = new Map<string, number>();
+  const startingBalanceByName = new Map<string, Money>();
   for (const ynabAccount of importableAccounts) {
-    startingBalanceCentsByName.set(ynabAccount.originalName, Money.fromDecimal(ynabAccount.startingBalance).toCents());
+    startingBalanceByName.set(ynabAccount.originalName, Money.fromDecimal(ynabAccount.startingBalance));
   }
   const { accountNameToId: accountIdByName, accountsCreated } = await createAccountsIfNeeded({
     userId,
@@ -139,7 +139,7 @@ async function executeYnabImportImpl({
     alwaysCreate: true,
     resolveCurrencyCode: (accountName) => accountMapping[accountName]?.currencyCode,
     resolveFxDate: () => initialBalanceFxDate,
-    resolveInitialBalanceCents: (accountName) => startingBalanceCentsByName.get(accountName) ?? 0,
+    resolveInitialBalance: (accountName) => startingBalanceByName.get(accountName) ?? Money.zero(),
   });
   summary.accountsCreated = accountsCreated;
 

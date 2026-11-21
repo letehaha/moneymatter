@@ -76,6 +76,7 @@ export const subscriptionAmountInPlanCurrency = async ({
   try {
     return await calculateRefAmount({
       userId: plan.userId,
+      definitionOwnerUserId: plan.userId,
       amount,
       baseCode: currencyCode,
       quoteCode: plan.currencyCode,

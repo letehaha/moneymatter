@@ -8,6 +8,8 @@ import UiButton from '@/components/lib/ui/button/Button.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useCurrencyName, useFormatCurrency } from '@/composable';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
+import { getCurrencyDecimals, roundToDecimals } from '@/js/helpers/currency-decimals';
 import { useCurrenciesStore } from '@/stores';
 import { type CurrencyModel, LOAN_TYPE, SUPPORTED_LOAN_TYPES } from '@bt/shared/types';
 import { between, helpers, integer, maxLength, required } from '@vuelidate/validators';
@@ -47,12 +49,12 @@ const { t } = useI18n();
 const currenciesStore = useCurrenciesStore();
 const { formatCurrencyLabel } = useCurrencyName();
 const { formatAmountByCurrencyCode } = useFormatCurrency();
-const { baseCurrency, systemCurrenciesVerbose } = storeToRefs(currenciesStore);
+const { baseCurrency, isoCurrenciesVerbose } = storeToRefs(currenciesStore);
 
 const defaultCurrency = computed(
   () =>
-    systemCurrenciesVerbose.value.linked.find((i) => i.code === baseCurrency.value?.currencyCode)?.code ??
-    systemCurrenciesVerbose.value.linked[0]?.code ??
+    isoCurrenciesVerbose.value.linked.find((i) => i.code === baseCurrency.value?.currencyCode)?.code ??
+    isoCurrenciesVerbose.value.linked[0]?.code ??
     '',
 );
 
@@ -124,8 +126,10 @@ const loanTypeOptions = computed(() =>
 
 const selectedLoanType = computed(() => loanTypeOptions.value.find((o) => o.value === form.loanType) ?? null);
 
+const amountDecimals = computed(() => getCurrencyDecimals({ code: form.currencyCode }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
 const selectedCurrency = computed(
-  () => systemCurrenciesVerbose.value.linked.find((item) => item.code === form.currencyCode) ?? null,
+  () => isoCurrenciesVerbose.value.linked.find((item) => item.code === form.currencyCode) ?? null,
 );
 
 const currencyLabel = (item: CurrencyModel): string =>
@@ -160,13 +164,13 @@ const estimatedMinPayment = computed<number | null>(() => {
 
 const estimatedMinPaymentLabel = computed(() => {
   if (estimatedMinPayment.value === null) return null;
-  return formatAmountByCurrencyCode(estimatedMinPayment.value, form.currencyCode || 'USD');
+  return formatAmountByCurrencyCode({ amount: estimatedMinPayment.value, currencyCode: form.currencyCode || 'USD' });
 });
 
 const applyEstimatedMinPayment = () => {
   if (estimatedMinPayment.value === null) return;
-  // Round to 2 decimals – field is for user-quoted amounts, not the raw long-division result.
-  form.minPayment = Math.round(estimatedMinPayment.value * 100) / 100;
+  // Rounded to the currency's decimals – the field holds a quoted amount, not the raw long-division result.
+  form.minPayment = roundToDecimals({ value: estimatedMinPayment.value, decimals: amountDecimals.value });
 };
 
 // Balance above principal is legitimate (negative amortization, capitalized interest) — soft heads-up,
@@ -218,18 +222,22 @@ const startDateNotInFuture = helpers.withMessage(
   (v: unknown) => !(v instanceof Date) || !isValid(v) || format(v, 'yyyy-MM-dd') <= format(new Date(), 'yyyy-MM-dd'),
 );
 
+const currencyDecimalRule = helpers.withMessage(() => currencyDecimal.message.value, currencyDecimal.rule.value);
+
 const validationRules = {
   name: { required: helpers.withMessage(() => t('forms.loan.errors.required'), required), maxLength: maxLength(200) },
   currencyCode: { required: helpers.withMessage(() => t('forms.loan.errors.required'), required) },
   balance: {
     required: helpers.withMessage(() => t('forms.loan.errors.required'), required),
     nonNegative: nonNegativeMoney,
+    currencyDecimal: currencyDecimalRule,
   },
   balanceAsOf: { notInFuture },
   startDate: { notInFuture: startDateNotInFuture },
   originalPrincipal: {
     required: helpers.withMessage(() => t('forms.loan.errors.required'), required),
     positive: positiveMoney,
+    currencyDecimal: currencyDecimalRule,
   },
   interestRate: {
     required: helpers.withMessage(() => t('forms.loan.errors.required'), required),
@@ -245,8 +253,8 @@ const validationRules = {
       (v: unknown) => v === null || v === undefined || (Number(v) >= MIN_TERM_MONTHS && Number(v) <= MAX_TERM_MONTHS),
     ),
   },
-  minPayment: { nonNegative: nonNegativeMoney },
-  plannedPayment: { nonNegative: nonNegativeMoney },
+  minPayment: { nonNegative: nonNegativeMoney, currencyDecimal: currencyDecimalRule },
+  plannedPayment: { nonNegative: nonNegativeMoney, currencyDecimal: currencyDecimalRule },
   paymentDayOfMonth: {
     integer,
     range: helpers.withMessage(
@@ -325,7 +333,7 @@ const submit = () => {
     <SelectField
       v-if="!isEdit"
       :model-value="selectedCurrency"
-      :values="systemCurrenciesVerbose.linked"
+      :values="isoCurrenciesVerbose.linked"
       :label-key="currencyLabel"
       value-key="code"
       :label="$t('forms.loan.currencyLabel')"
@@ -337,6 +345,7 @@ const submit = () => {
       <FormattedAmountField
         v-if="!isEdit"
         v-model="form.originalPrincipal"
+        :decimals="amountDecimals"
         :label="$t('forms.loan.originalPrincipalLabel')"
         :placeholder="$t('forms.loan.originalPrincipalPlaceholder')"
         :error-message="getFieldErrorMessage('form.originalPrincipal')"
@@ -344,6 +353,7 @@ const submit = () => {
       />
       <FormattedAmountField
         v-model="form.balance"
+        :decimals="amountDecimals"
         :label="isEdit ? $t('forms.loan.currentBalanceLabel') : $t('forms.loan.initialBalanceLabel')"
         :placeholder="$t('forms.loan.initialBalancePlaceholder')"
         :error-message="getFieldErrorMessage('form.balance')"
@@ -397,6 +407,7 @@ const submit = () => {
       <InputField
         v-model="form.plannedPayment"
         type="number"
+        :decimals="amountDecimals"
         :label="$t('forms.loan.plannedPaymentLabel')"
         :placeholder="$t('forms.loan.plannedPaymentPlaceholder')"
         :error-message="getFieldErrorMessage('form.plannedPayment')"
@@ -405,6 +416,7 @@ const submit = () => {
       <InputField
         v-model="form.minPayment"
         type="number"
+        :decimals="amountDecimals"
         :label="$t('forms.loan.minPaymentLabel')"
         :placeholder="$t('forms.loan.minPaymentPlaceholder')"
         :error-message="getFieldErrorMessage('form.minPayment')"

@@ -69,6 +69,19 @@ describe('Attachments orphan sweep', () => {
     expect(await storedIds()).toEqual([goal.logoImageId]);
   });
 
+  it("keeps a custom currency's logo", async () => {
+    const currency = await helpers.createCustomCurrency({
+      payload: { code: 'SAT', name: 'Satoshi', decimals: 8, rate: { value: 1 }, logoImage: PNG_1X1_DATA_URL },
+      raw: true,
+    });
+    expect(currency.logoImageId).not.toBeNull();
+
+    const result = await attachmentsOrphanSweepCron.triggerManualSync({ minAgeMs: 0 });
+
+    expect(result).toEqual({ deleted: 0, scanned: 1 });
+    expect(await storedIds()).toEqual([currency.logoImageId]);
+  });
+
   it('leaves a fresh orphan alone under the default minimum age', async () => {
     const account = await helpers.createAccount({ raw: true });
     const orphaned = await attachTo({ accountId: account.id });

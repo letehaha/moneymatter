@@ -1,4 +1,5 @@
 import type { BackupRestoreProgress, BackupRestoreSummary, BackupRestoreWarning } from '@bt/shared/types';
+import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { logger } from '@js/utils/logger';
 import { trackBackupRestored } from '@js/utils/posthog';
 import UserSettings, { type SettingsSchema, ZodSettingsSchema } from '@models/user-settings.model';
@@ -22,6 +23,7 @@ import {
   remapSavedPivotViewIds,
   remapSavedTransactionViewIds,
 } from './remap-embedded-references';
+import { restoreCustomCurrencies } from './resolve-custom-currencies';
 import { resolveSecurities } from './resolve-securities';
 import { insertRestoreTables } from './restore-tables';
 
@@ -162,7 +164,7 @@ export async function restoreUserBackup({
   onProgress?: ProgressCallback;
 }): Promise<BackupRestoreSummary> {
   await onProgress?.({ phase: 'validating' });
-  const { archive, analysis } = await loadValidatedArchive({ fileContent });
+  const { archive, analysis, currencyCodes, customDefinitions } = await loadValidatedArchive({ fileContent });
 
   await onProgress?.({ phase: 'preparing-securities' });
   const securities = await resolveSecurities({ archive, analysis });
@@ -179,11 +181,15 @@ export async function restoreUserBackup({
     destroyInTx: async ({ user, transaction }) => {
       await destroyUserOwnedData({ user });
 
+      await restoreCustomCurrencies({ codes: [...customDefinitions.keys()], transaction });
+
       const tableResult = await insertRestoreTables({
         archive,
         analysis,
         targetUserId: user.id,
         securitiesRemap: securities.remap,
+        currencyCodes,
+        customDefinitions,
         transaction,
         onProgress: ({ tier, table, insertedRows }) => onProgress?.({ phase: 'restoring', tier, table, insertedRows }),
       });
@@ -206,6 +212,10 @@ export async function restoreUserBackup({
   }
 
   await onProgress?.({ phase: 'finalizing' });
+
+  // The restore writes UsersCurrencies without model hooks, and a read during it may have cached
+  // the pre-restore decimals.
+  invalidateCurrencyDecimalsCache({ userId });
 
   // Self-host only: backfill historical prices for the restored securities now
   // that the restore transaction has committed. `runUserDestroyLifecycle` scopes

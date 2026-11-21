@@ -6,6 +6,7 @@ import { removeUndefinedKeys } from '@js/helpers';
 import { serializeAccount, serializeAccounts } from '@root/serializers';
 import * as accountsService from '@services/accounts.service';
 import { assertAccountUpdateAllowed } from '@services/accounts/assert-account-update-allowed';
+import { attachAccountCurrencyMeta } from '@services/currencies/effective-currency';
 import { refreshStaleVehicleValuesForUser } from '@services/vehicles/refresh-vehicle-value.service';
 import { z } from 'zod';
 
@@ -19,7 +20,7 @@ export const getAccounts = createController(z.object({}), async ({ user }) => {
   // breaks the response.
   await refreshStaleVehicleValuesForUser({ userId });
   const accounts = await accountsService.getAccounts({ userId });
-  // Serialize: convert cents to decimal for API response
+  await attachAccountCurrencyMeta({ accounts });
   return { data: serializeAccounts(accounts) };
 });
 
@@ -34,7 +35,7 @@ export const getAccountById = createController(
     const { id: userId } = user;
 
     const account = await accountsService.getAccountById({ userId, id });
-    // Serialize: convert cents to decimal for API response
+    if (account) await attachAccountCurrencyMeta({ accounts: [account] });
     return { data: account ? serializeAccount(account) : null };
   },
 );
@@ -52,6 +53,7 @@ export const createAccount = createController(
       type,
       initialBalance,
       creditLimit,
+      externalUrl,
       logoDomain,
       logoInitials,
       logoColor,
@@ -65,7 +67,6 @@ export const createAccount = createController(
       });
     }
 
-    // Convert decimal amounts to cents
     const account = await accountsService.createAccount({
       accountCategory,
       defaultPaymentType,
@@ -75,13 +76,14 @@ export const createAccount = createController(
       creditLimit: Money.fromDecimal(creditLimit),
       initialBalance: Money.fromDecimal(initialBalance),
       userId,
+      externalUrl,
       logoDomain,
       logoInitials,
       logoColor,
       logoIcon,
     });
 
-    // Serialize: convert cents to decimal for API response
+    if (account) await attachAccountCurrencyMeta({ accounts: [account] });
     return { data: account ? serializeAccount(account) : null };
   },
 );
@@ -105,6 +107,7 @@ export const updateAccount = createController(
       excludeFromStats,
       currentBalance,
       initialBalance,
+      externalUrl,
       logoDomain,
       logoInitials,
       logoColor,
@@ -117,7 +120,6 @@ export const updateAccount = createController(
     // guard lives in `accountsService.updateAccount` (not here) so every caller
     // — HTTP, MCP, internal — is covered, not just this controller.
 
-    // Convert decimal amounts to cents
     const result = await accountsService.updateAccount({
       id,
       userId,
@@ -132,6 +134,7 @@ export const updateAccount = createController(
         initialBalance: initialBalance !== undefined ? Money.fromDecimal(initialBalance) : undefined,
         name,
         creditLimit: creditLimit !== undefined ? Money.fromDecimal(creditLimit) : undefined,
+        externalUrl,
         logoDomain,
         logoInitials,
         logoColor,
@@ -139,7 +142,7 @@ export const updateAccount = createController(
       }),
     });
 
-    // Serialize: convert cents to decimal for API response
+    if (result) await attachAccountCurrencyMeta({ accounts: [result] });
     return { data: result ? serializeAccount(result) : null };
   },
 );

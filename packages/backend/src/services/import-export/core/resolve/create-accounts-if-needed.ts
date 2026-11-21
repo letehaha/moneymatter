@@ -1,4 +1,5 @@
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPES, type AccountMappingValue } from '@bt/shared/types';
+import { assertMoneyWithinMinorUnitRange, getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
@@ -6,6 +7,7 @@ import * as Accounts from '@models/accounts.model';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { assertImportTargetNotBankLinked } from '@services/import-export/core/assert-import-target-not-bank-linked';
 
 interface CreateAccountsIfNeededParams {
@@ -21,8 +23,8 @@ interface CreateAccountsIfNeededParams {
   resolveCurrencyCode: (accountName: string) => string | undefined;
   /** Date used as the fx reference point when computing the ref initial balance. */
   resolveFxDate: (accountName: string) => Date;
-  /** Initial balance in cents for a newly created account. Defaults to 0. */
-  resolveInitialBalanceCents?: (accountName: string) => number;
+  /** Initial balance of a newly created account, rounded to its currency on create. Defaults to 0. */
+  resolveInitialBalance?: (accountName: string) => Money;
   /** Account category for a newly created account. Defaults to general. */
   resolveAccountCategory?: (accountName: string) => ACCOUNT_CATEGORIES;
   /** Local display name for a newly created account. Defaults to the source name. */
@@ -71,7 +73,7 @@ export async function createAccountsIfNeeded({
   accountMapping,
   resolveCurrencyCode,
   resolveFxDate,
-  resolveInitialBalanceCents,
+  resolveInitialBalance,
   resolveAccountCategory,
   resolveAccountName,
   alwaysCreate = false,
@@ -90,12 +92,23 @@ export async function createAccountsIfNeeded({
         message: t({ key: 'importExport.newAccountCurrencyUnknown', variables: { accountName } }),
       });
     }
+    await assertCurrencyCodesVisible({ userId, codes: [currencyCode] });
 
-    const initialBalanceCents = resolveInitialBalanceCents?.(accountName) ?? 0;
-    const initialBalance = initialBalanceCents === 0 ? Money.zero() : Money.fromCents(initialBalanceCents);
+    // The entered balance is written only after every row has committed, so it is checked up front.
+    const mapping = accountMapping[accountName];
+    if (mapping?.action === 'create-new' && mapping.currentBalance != null) {
+      assertMoneyWithinMinorUnitRange({
+        money: Money.fromDecimal(mapping.currentBalance),
+        decimals: await getCurrencyDecimals({ userId, code: currencyCode }),
+        code: currencyCode,
+      });
+    }
+
+    const initialBalance = resolveInitialBalance?.(accountName) ?? Money.zero();
 
     const refInitialBalance = await calculateRefAmount({
       userId,
+      definitionOwnerUserId: userId,
       amount: initialBalance,
       baseCode: currencyCode,
       date: resolveFxDate(accountName),

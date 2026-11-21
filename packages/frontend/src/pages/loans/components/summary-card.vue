@@ -124,11 +124,17 @@ const { t } = useI18n();
 const aprDisplay = computed(() => `${props.loan.loanDetails.interestRate.toFixed(2)}%`);
 
 const outstandingBalanceDisplay = computed(() =>
-  formatAmountByCurrencyCode(outstandingAmount({ balance: props.loan.currentBalance }), props.loan.currencyCode),
+  formatAmountByCurrencyCode({
+    amount: outstandingAmount({ balance: props.loan.currentBalance }),
+    currencyCode: props.loan.currencyCode,
+  }),
 );
 
 const originalPrincipalDisplay = computed(() =>
-  formatAmountByCurrencyCode(props.loan.loanDetails.originalPrincipal, props.loan.currencyCode),
+  formatAmountByCurrencyCode({
+    amount: props.loan.loanDetails.originalPrincipal,
+    currencyCode: props.loan.currencyCode,
+  }),
 );
 
 const termDisplay = computed(() => {

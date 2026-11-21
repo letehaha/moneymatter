@@ -18,6 +18,6 @@ export default createController(schema, async ({ user, query }) => {
     userId,
   });
 
-  // Serialize: convert cents to decimal for API response
+  // Serialize: Money amounts to API decimals
   return { data: serializeRefundTransactions(refunds) };
 });

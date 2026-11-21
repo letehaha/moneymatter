@@ -22,12 +22,14 @@ import type {
   InvestmentImportHolding,
   InvestmentImportWarning,
 } from '@bt/shared/types/investments';
+import { t } from '@i18n/index';
 import { CustomError } from '@js/errors';
 import { logger } from '@js/utils';
 import Holdings from '@models/investments/holdings.model';
 import Portfolios from '@models/investments/portfolios.model';
 import Securities from '@models/investments/securities.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import { findCustomCurrencyCodes } from '@services/currencies/custom-currency-codes';
 import { upsertSecuritiesFromSearch } from '@services/investments/securities-manage';
 import { syncHistoricalPrices } from '@services/investments/securities-price/historical-sync.service';
 import { createInvestmentTransaction } from '@services/investments/transactions/create.service';
@@ -99,6 +101,23 @@ export async function executeInvestmentImport({
 
     const resolvedSecurity = holding.resolvedSecurity;
     const { providerName } = resolvedSecurity;
+
+    // Investments are ISO-only, and a security row is global.
+    const [customCode] = await findCustomCurrencyCodes({
+      codes: [holding.currencyCode, resolvedSecurity.currencyCode],
+    });
+    if (customCode) {
+      logger.warn(`Skipped "${symbol}": custom currency ${customCode}.`);
+      warnings.push({
+        code: 'HOLDING_SETUP_FAILED',
+        params: {
+          symbol,
+          reason: t({ key: 'investments.customCurrencyNotSupported', variables: { code: customCode } }),
+        },
+      });
+      skippedHoldings += 1;
+      continue;
+    }
 
     // Steps 1+2 below all run unguarded queries (`upsertSecuritiesFromSearch`,
     // `addUserCurrencies`, `Holdings.create`) that can throw on FK violations,

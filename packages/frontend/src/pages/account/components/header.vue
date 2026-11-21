@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import AccountLogo from '@/components/common/account-logo.vue';
+import CurrencyAmount from '@/components/common/currency-amount.vue';
+import ExternalUrlLinkButton from '@/components/common/external-url-link-button.vue';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +34,7 @@ import BalanceAdjustmentDialog from './balance-adjustment-dialog.vue';
 const props = defineProps<{
   account: AccountModel;
 }>();
-const { currenciesMap, baseCurrency } = storeToRefs(useCurrenciesStore());
+const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const { displayBalance, displayRefBalance, projectedBalance, plannedCount, latestPlannedTime, hasPendingPlans } =
   useAccountProjectedBalance({ account: toRef(() => props.account) });
 const accountsStore = useAccountsStore();
@@ -47,7 +49,10 @@ const isSystemAccount = computed(() => props.account.type === ACCOUNT_TYPES.syst
 const { formatPlannedDate } = usePlannedDateLabel();
 
 const projectedBalanceDisplay = computed(() =>
-  toLocalCurrencyNumber(projectedBalance.value, { currency: props.account.currencyCode }),
+  toLocalCurrencyNumber(projectedBalance.value, {
+    currency: props.account.currencyCode,
+    meta: props.account.currencyMeta,
+  }),
 );
 const latestPlannedDisplay = computed(() => formatPlannedDate({ time: latestPlannedTime.value }));
 const { isOwner, isSharedWithCaller, ownerHandle, permission, writeScope, isHouseholdGranted } = useAccountAccess(
@@ -155,6 +160,8 @@ watch([formEditingPopoverOpen, () => props.account.id], () => {
           <div v-else class="flex min-w-0 items-center gap-2 text-xl">
             <span class="truncate">{{ account.name }}</span>
           </div>
+
+          <ExternalUrlLinkButton :url="account.externalUrl" :label="$t('pages.account.header.openExternalUrl')" />
         </div>
 
         <div class="flex gap-2">
@@ -229,8 +236,8 @@ watch([formEditingPopoverOpen, () => props.account.id], () => {
           @click="adjustmentDialogOpen = true"
         >
           <span class="text-amount text-3xl">
-            {{ toLocalCurrencyNumber(displayBalance, { currency: account.currencyCode }) }}
-            {{ currenciesMap[account.currencyCode]?.currency?.code }}
+            <CurrencyAmount bare :amount="displayBalance" :owner="account" />
+            {{ account.currencyCode }}
           </span>
           <span v-if="baseCurrency && account.currencyCode !== baseCurrency.currencyCode" class="text-white opacity-50">
             ~
@@ -240,8 +247,8 @@ watch([formEditingPopoverOpen, () => props.account.id], () => {
         </button>
         <div v-else class="flex flex-wrap items-end justify-start gap-2">
           <span class="text-amount text-3xl">
-            {{ toLocalCurrencyNumber(displayBalance, { currency: account.currencyCode }) }}
-            {{ currenciesMap[account.currencyCode]?.currency?.code }}
+            <CurrencyAmount bare responsive :amount="displayBalance" :owner="account" />
+            {{ account.currencyCode }}
           </span>
           <span v-if="baseCurrency && account.currencyCode !== baseCurrency.currencyCode" class="text-white opacity-50">
             ~

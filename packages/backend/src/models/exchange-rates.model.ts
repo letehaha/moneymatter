@@ -1,4 +1,5 @@
 import { EXCHANGE_RATE_PROVIDER_TYPE } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { Table, Column, Model, ForeignKey, DataType } from 'sequelize-typescript';
 
 import Currencies from './currencies.model';
@@ -12,11 +13,11 @@ import Currencies from './currencies.model';
 })
 export default class ExchangeRates extends Model {
   @ForeignKey(() => Currencies)
-  @Column({ allowNull: false, type: DataType.STRING(3), primaryKey: true })
+  @Column({ allowNull: false, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH), primaryKey: true })
   baseCode!: string;
 
   @ForeignKey(() => Currencies)
-  @Column({ allowNull: false, type: DataType.STRING(3), primaryKey: true })
+  @Column({ allowNull: false, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH), primaryKey: true })
   quoteCode!: string;
 
   @Column({ allowNull: false, type: DataType.DATE, primaryKey: true })

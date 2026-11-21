@@ -111,6 +111,6 @@ export const getTransactionGroups = async ({
     transactionCount: Number(group.transactionCount),
     dateFrom: group.dateFrom,
     dateTo: group.dateTo,
-    netRefAmount: Money.fromCents(Number(group.netRefAmount)),
+    netRefAmount: Money.fromDecimal(group.netRefAmount),
   }));
 };

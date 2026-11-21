@@ -373,15 +373,13 @@ describe('CSV import balance recalculation', () => {
       });
     });
 
-    it('recalc ON: a row that fails at the database layer is excluded from the balance and reported in errors', async () => {
+    it('recalc ON: a row that fails on write is excluded from the balance and reported in errors', async () => {
       const { account, balanceBefore } = await createAccountWithBoundaryTx({ boundaryTime: '2024-01-10T12:00:00Z' });
 
       // The middle row's amount parses fine (`parseAmount` has no magnitude
-      // bound and 1e19 is an exact integer float, so `Money.fromCents` accepts
-      // it too) but overflows the BIGINT cents column
-      // (100,000,000,000,000,000.00 → 1e19 cents > the BIGINT max of
-      // 9,223,372,036,854,775,807), so its insert fails at the database layer
-      // and rolls back only itself — the surrounding rows still commit.
+      // bound) but is past the largest amount the currency allows, so its
+      // write is rejected and rolls back only itself — the surrounding rows
+      // still commit.
       const rows: CsvRow[] = [
         {
           date: '2024-01-15',
@@ -393,7 +391,7 @@ describe('CSV import balance recalculation', () => {
         },
         {
           date: '2024-01-16',
-          amount: '100000000000000000.00',
+          amount: '1000000000000000000.00',
           description: 'Overflow row',
           account: 'CSV Acc',
           currency: account.currencyCode,
@@ -464,7 +462,7 @@ describe('CSV import balance recalculation', () => {
     it('recalc ON: a captured account whose only row fails to write still gets a zero-delta summary entry with no balance write', async () => {
       // Account A takes a good row; account B is captured too (its row is not
       // skipped, so it lands in the resolved set) but its only row overflows the
-      // BIGINT cents column and rolls back, leaving B's tally empty. `finalize`
+      // DECIMAL(36,18) money column and rolls back, leaving B's tally empty. `finalize`
       // must still emit B's summary entry off its empty tally — movedCount 0,
       // delta 0, no absorb write — while B's stored balance stays put.
       const accountA = await createAccountWithBoundaryTx({ boundaryTime: '2024-01-10T12:00:00Z' });
@@ -480,10 +478,10 @@ describe('CSV import balance recalculation', () => {
           type: 'income',
         },
         {
-          // 1e17 currency units → 1e19 cents, past the BIGINT max: the insert
-          // fails at the database layer and rolls back only itself.
+          // Past the largest amount the currency allows: the write is rejected
+          // and rolls back only itself.
           date: '2024-01-16',
-          amount: '100000000000000000.00',
+          amount: '1000000000000000000.00',
           description: 'B overflow',
           account: 'B Acc',
           currency: accountB.account.currencyCode,
@@ -636,14 +634,13 @@ describe('CSV import balance recalculation', () => {
       ]);
     });
 
-    it('rejects a create-new currentBalance beyond the integer-cents cap with 422', async () => {
-      // Balances persist as INTEGER cents, so a create-new target past the
-      // ±20,000,000 bound must fail Zod validation synchronously (422) instead of
-      // surfacing as a raw integer-overflow deep inside the async job. The bound
-      // is symmetric, so both signs must be rejected the same way.
+    it('rejects a create-new currentBalance beyond the balance cap with 422', async () => {
+      // A create-new target past the ±1e13 bound must fail Zod validation
+      // synchronously (422) instead of failing deep inside the async job. The
+      // bound is symmetric, so both signs must be rejected the same way.
       for (const [accountName, currentBalance] of [
-        ['Big USD', 20_000_001],
-        ['Big Negative USD', -20_000_001],
+        ['Big USD', 1e13 + 1],
+        ['Big Negative USD', -1e13 - 1],
       ] as const) {
         const response = await helpers.executeImport({
           payload: {
@@ -661,13 +658,13 @@ describe('CSV import balance recalculation', () => {
       }
     });
 
-    it('accepts a create-new currentBalance exactly on the integer-cents cap', async () => {
-      // The cap is inclusive: ±20,000,000 is the last accepted value, so the
+    it('accepts a create-new currentBalance exactly on the balance cap', async () => {
+      // The cap is inclusive: ±1e13 is the last accepted value, so the
       // import must run to completion and leave the account on that exact
       // boundary balance. The account is created in the base currency so the
       // forced `refCurrentBalance` equals the entered value (no FX
       // multiplication that could push the ref side past the cap).
-      for (const currentBalance of [20_000_000, -20_000_000]) {
+      for (const currentBalance of [1e13, -1e13]) {
         const accountName = `Boundary ${currentBalance}`;
         const progress = await runImport({
           fileContent: buildCsv(threeRows({ account: accountName, currency: global.BASE_CURRENCY_CODE })),
@@ -911,6 +908,59 @@ describe('CSV import balance recalculation', () => {
 
       const accounts = await helpers.getAccounts();
       expect(accounts.find((a) => a.name === 'Fresh Acc')).toBeUndefined();
+    });
+  });
+
+  describe('amounts at the account currency decimals', () => {
+    // The reconciler tallies what each row wrote and `finalize` undoes that tally when recalc is off,
+    // so a tally of the unrounded CSV amount (12.345) instead of the stored one (12.35) would leave
+    // the balance off by the rounding difference.
+    const expectBalanceKept = async ({
+      currencyCode,
+      amount,
+      storedAmount,
+    }: {
+      currencyCode: string | null;
+      amount: string;
+      storedAmount: number;
+    }) => {
+      if (currencyCode) await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ ...(currencyCode && { currencyCode }), initialBalance: 100 }),
+        raw: true,
+      });
+
+      const progress = await runImport({
+        fileContent: buildCsv(
+          ['2024-01-15', '2024-01-16'].map((date, index) => ({
+            date,
+            amount,
+            description: `Income ${index}`,
+            account: 'CSV Acc',
+            currency: account.currencyCode,
+            type: 'income' as const,
+          })),
+        ),
+        accountMapping: { 'CSV Acc': { action: 'link-existing', accountId: account.id } },
+        recalculateBalance: false,
+      });
+      expectCsvImportCompleted(progress);
+      expect(progress.summary.imported).toBe(2);
+      expect(progress.summary.errors).toHaveLength(0);
+
+      const after = await helpers.getAccount({ id: account.id, raw: true });
+      expect(Number(after.currentBalance)).toBe(100);
+
+      const stored = (await helpers.getTransactions({ raw: true })).filter((tx) => tx.accountId === account.id);
+      expect(stored.map((tx) => tx.amount)).toEqual([storedAmount, storedAmount]);
+    };
+
+    it.each([
+      { currencyCode: null, amount: '12.345', storedAmount: 12.35 },
+      { currencyCode: 'KWD', amount: '1.2345', storedAmount: 1.235 },
+      { currencyCode: 'JPY', amount: '1500.6', storedAmount: 1501 },
+    ])('keeps the balance when two $amount rows are stored as $storedAmount', async (row) => {
+      await expectBalanceKept(row);
     });
   });
 });

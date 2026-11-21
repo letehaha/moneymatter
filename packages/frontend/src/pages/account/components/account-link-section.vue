@@ -18,6 +18,7 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { ApiErrorResponseError } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
 import { useFormatCurrency } from '@/composable/formatters';
+import { getCurrencyDecimals, trimAmountNoise } from '@/js/helpers/currency-decimals';
 import { cn } from '@/lib/utils';
 import { useAccountsStore } from '@/stores';
 import { AccountModel, type LinkResidualTarget } from '@bt/shared/types';
@@ -32,7 +33,7 @@ const props = defineProps<{
 
 const { t } = useI18n();
 const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
-const { formatAmountByCurrencyCode } = useFormatCurrency();
+const { formatAmountByCurrencyCode, formatAccountAmount } = useFormatCurrency();
 const accountsStore = useAccountsStore();
 const queryClient = useQueryClient();
 
@@ -144,7 +145,12 @@ const externalOwnFunds = computed(() =>
 );
 
 const balanceDifference = computed(() =>
-  selectedExternalAccount.value ? Number((externalOwnFunds.value - systemOwnFunds.value).toFixed(2)) : 0,
+  selectedExternalAccount.value
+    ? trimAmountNoise({
+        value: externalOwnFunds.value - systemOwnFunds.value,
+        decimals: getCurrencyDecimals({ code: props.account.currencyCode, meta: props.account.currencyMeta }),
+      })
+    : 0,
 );
 
 const currencyMismatch = computed(() => {
@@ -261,7 +267,9 @@ const linkingError = computed(() => {
               </template>
               <template v-else-if="hasExternalAccounts">
                 <Select.SelectItem v-for="acc in externalAccounts" :key="acc.externalId" :value="acc.externalId">
-                  {{ acc.name }} ({{ formatAmountByCurrencyCode(acc.balance - acc.creditLimit, acc.currency) }})
+                  {{ acc.name }} ({{
+                    formatAmountByCurrencyCode({ amount: acc.balance - acc.creditLimit, currencyCode: acc.currency })
+                  }})
                 </Select.SelectItem>
               </template>
               <template v-else>
@@ -285,13 +293,19 @@ const linkingError = computed(() => {
             <div>
               <p class="text-muted-foreground">{{ $t('pages.account.link.systemAccount') }}</p>
               <p class="font-mono">
-                {{ formatAmountByCurrencyCode(systemOwnFunds, account.currencyCode) }}
+                {{ formatAccountAmount({ amount: systemOwnFunds, account, fullPrecision: true }) }}
               </p>
             </div>
             <div>
               <p class="text-muted-foreground">{{ $t('pages.account.link.externalAccount') }}</p>
               <p class="font-mono">
-                {{ formatAmountByCurrencyCode(externalOwnFunds, selectedExternalAccount.currency) }}
+                {{
+                  formatAmountByCurrencyCode({
+                    amount: externalOwnFunds,
+                    currencyCode: selectedExternalAccount.currency,
+                    fullPrecision: true,
+                  })
+                }}
               </p>
             </div>
           </div>
@@ -306,7 +320,7 @@ const linkingError = computed(() => {
                 )
               "
             >
-              {{ formatAmountByCurrencyCode(balanceDifference, account.currencyCode) }}
+              {{ formatAccountAmount({ amount: balanceDifference, account, fullPrecision: true }) }}
             </p>
           </div>
 

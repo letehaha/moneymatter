@@ -17,7 +17,8 @@
         "categoryNameTooLong": "Der Kategoriename \"{name}\" ist zu lang ({length} Zeichen); das Maximum beträgt {max}.",
         "payeeNameTooLong": "Der Name des Zahlungsempfängers \"{name}\" ist zu lang ({length} Zeichen); das Maximum beträgt {max}.",
         "accountMappingMissing": "Diese Konten aus der Datei haben keine Zuordnung: {accounts}. Gehe zurück und ordne jedes davon zu.",
-        "linkedAccountNotFound": "Das mit \"{account}\" verknüpfte Konto existiert nicht mehr. Gehe zurück und wähle ein anderes Konto oder erstelle ein neues."
+        "linkedAccountNotFound": "Das mit \"{account}\" verknüpfte Konto existiert nicht mehr. Gehe zurück und wähle ein anderes Konto oder erstelle ein neues.",
+        "bankLinkChanged": "An account's bank link changed after the review. Go back to the review step and run it again."
       },
       "importResults": {
         "findTransfers": "Umbuchungen finden"
@@ -108,6 +109,8 @@
       "renameAria": "Zuordnung umbenennen",
       "deleteAria": "Zuordnung löschen",
       "confirmRenameAria": "Name speichern"
-    }
+    },
+    "bankSeamSkipped": "{count} row dated on or after {date} was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after {date} were skipped: the bank connection already provides transactions from that day.",
+    "bankSeamSkippedNoDate": "{count} row dated on or after the day its account was connected to a bank was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after the day their account was connected to a bank were skipped: the bank connection already provides transactions from that day."
   }
 }

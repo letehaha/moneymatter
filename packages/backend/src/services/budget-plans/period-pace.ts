@@ -39,7 +39,7 @@ const priorSpend = async ({
   timezone: string;
 }): Promise<Map<string, PriorPeriodSpend[]>> => {
   const periods = foldInput.periods.slice(Math.max(0, index - HISTORY_PERIODS), index);
-  const rows = await getPlanDailyActivity({ plan, periods, timezone });
+  const rows = await getPlanDailyActivity({ plan, periods, decimals: foldInput.decimals, timezone });
 
   const byLine = new Map<string, PriorPeriodSpend[]>();
   for (const period of periods) {
@@ -62,7 +62,7 @@ const priorSpend = async ({
   return byLine;
 };
 
-/** Cents per line, expense positive, for every scheduled date of the period, paid ones included. */
+/** Minor units per line, expense positive, for every scheduled date of the period, paid ones included. */
 const scheduledOccurrences = async ({
   plan,
   start,
@@ -70,6 +70,7 @@ const scheduledOccurrences = async ({
   ownerOf,
   lineIds,
   today,
+  decimals,
 }: {
   plan: BudgetPlans;
   start: string;
@@ -77,6 +78,8 @@ const scheduledOccurrences = async ({
   ownerOf: OwnerOf;
   lineIds: Set<string>;
   today: string;
+  /** The plan currency's decimals. */
+  decimals: number;
 }): Promise<Map<string, { date: string; amount: number }[]>> => {
   const subscriptions = await findPlanSubscriptions({ plan, accountIds: await planAccountIds({ plan }) });
 
@@ -96,7 +99,10 @@ const scheduledOccurrences = async ({
     });
     if (!amount) continue;
 
-    byLine.set(lineId, [...(byLine.get(lineId) ?? []), ...dates.map((date) => ({ date, amount: amount.toCents() }))]);
+    byLine.set(lineId, [
+      ...(byLine.get(lineId) ?? []),
+      ...dates.map((date) => ({ date, amount: amount.toMinorUnits({ decimals }) })),
+    ]);
   }
   return byLine;
 };
@@ -124,7 +130,7 @@ export const periodPaces = async ({
   const funded = new Map(
     view.lines
       .map((line) => [line.lineId, Math.max(0, line.carriedIn) + Math.max(0, line.assigned)] as const)
-      .filter(([, cents]) => cents > 0),
+      .filter(([, amount]) => amount > 0),
   );
   if (!view.period.isCurrent || !funded.size) return paces;
 
@@ -146,6 +152,7 @@ export const periodPaces = async ({
         ownerOf: ownerResolverAt({ foldInput, start }),
         lineIds: rest,
         today,
+        decimals: foldInput.decimals,
       })
     : new Map<string, { date: string; amount: number }[]>();
 

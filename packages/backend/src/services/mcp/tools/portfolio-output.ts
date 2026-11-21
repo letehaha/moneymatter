@@ -7,6 +7,7 @@ export function presentPortfolio({ portfolio }: { portfolio: Portfolios }) {
     name: portfolio.name,
     portfolioType: portfolio.portfolioType,
     description: portfolio.description,
+    externalUrl: portfolio.externalUrl,
     isEnabled: portfolio.isEnabled,
     createdAt: portfolio.createdAt,
   };

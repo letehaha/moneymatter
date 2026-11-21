@@ -8,7 +8,7 @@ import { useFormValidation } from '@/composable';
 import { useAdjustAccountBalance } from '@/composable/data-queries/accounts';
 import { useAccountCurrencyCode } from '@/composable/use-account-currency-code';
 import { useAccountDisplayBalance } from '@/composable/use-account-display-balance';
-import { toLocalCurrencyNumber } from '@/js/helpers';
+import { getCurrencyDecimals, toLocalCurrencyNumber, trimAmountNoise } from '@/js/helpers';
 import * as validators from '@/js/helpers/validators';
 import { captureException } from '@/lib/sentry';
 import { cn } from '@/lib/utils';
@@ -48,11 +48,13 @@ const mode = ref<'set-to' | 'adjust-by'>('set-to');
 const form = ref({ amount: null as number | null, note: '', time: new Date() });
 const direction = ref<'income' | 'expense'>('income');
 
+const currencyCode = useAccountCurrencyCode({ account: toRef(() => props.account) });
+const decimals = computed(() => getCurrencyDecimals({ code: currencyCode.value, meta: props.account.currencyMeta }));
+
 const rules = computed(() => ({
   form: {
     amount: {
       required: validators.required,
-      currencyDecimal: validators.currencyDecimal,
       ...(mode.value === 'adjust-by' ? { minValue: validators.minValue(0) } : {}),
     },
     note: {},
@@ -65,23 +67,22 @@ const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFo
   undefined,
   {
     customValidationMessages: {
-      currencyDecimal: t('forms.validators.invalidCurrencyDecimal'),
       minValue: t('forms.validators.mustBePositive'),
     },
   },
 );
-
-const currencyCode = useAccountCurrencyCode({ account: toRef(() => props.account) });
 
 // Actual target balance for the API (always in real currentBalance terms)
 const computedTarget = computed<number | null>(() => {
   if (form.value.amount === null) return null;
   if (mode.value === 'set-to') {
     // User enters in display-balance terms; convert back to actual
-    return hasCreditLimitAdjustment.value ? form.value.amount + props.account.creditLimit : form.value.amount;
+    return hasCreditLimitAdjustment.value
+      ? trimAmountNoise({ value: form.value.amount + props.account.creditLimit, decimals: decimals.value })
+      : form.value.amount;
   }
   const sign = direction.value === 'income' ? 1 : -1;
-  return props.account.currentBalance + sign * form.value.amount;
+  return trimAmountNoise({ value: props.account.currentBalance + sign * form.value.amount, decimals: decimals.value });
 });
 
 // Display target for the preview (what the user sees as the "new balance")
@@ -172,6 +173,7 @@ watch(mode, () => {
       <InputField
         v-model="form.amount"
         type="number"
+        :decimals="decimals"
         :label="mode === 'set-to' ? label('newBalance') : label('amount')"
         :placeholder="mode === 'set-to' ? label('enterTargetBalance') : label('enterAmount')"
         :only-positive="mode === 'adjust-by'"
@@ -227,10 +229,24 @@ watch(mode, () => {
         </template>
         <template v-else>
           <p class="text-muted-foreground mb-1 text-sm">
-            {{ toLocalCurrencyNumber(displayBalance, { currency: currencyCode }) }} {{ currencyCode }}
+            {{
+              toLocalCurrencyNumber(displayBalance, {
+                currency: currencyCode,
+                meta: account.currencyMeta,
+                fullPrecision: true,
+              })
+            }}
+            {{ currencyCode }}
             →
             <span class="text-foreground font-medium"
-              >{{ toLocalCurrencyNumber(displayTarget!, { currency: currencyCode }) }} {{ currencyCode }}</span
+              >{{
+                toLocalCurrencyNumber(displayTarget!, {
+                  currency: currencyCode,
+                  meta: account.currencyMeta,
+                  fullPrecision: true,
+                })
+              }}
+              {{ currencyCode }}</span
             >
           </p>
           <p
@@ -240,11 +256,19 @@ watch(mode, () => {
             {{
               previewType === 'income'
                 ? label('incomeWillBeCreated', {
-                    amount: toLocalCurrencyNumber(Math.abs(diff), { currency: currencyCode }),
+                    amount: toLocalCurrencyNumber(Math.abs(diff), {
+                      currency: currencyCode,
+                      meta: account.currencyMeta,
+                      fullPrecision: true,
+                    }),
                     currency: currencyCode,
                   })
                 : label('expenseWillBeCreated', {
-                    amount: toLocalCurrencyNumber(Math.abs(diff), { currency: currencyCode }),
+                    amount: toLocalCurrencyNumber(Math.abs(diff), {
+                      currency: currencyCode,
+                      meta: account.currencyMeta,
+                      fullPrecision: true,
+                    }),
                     currency: currencyCode,
                   })
             }}

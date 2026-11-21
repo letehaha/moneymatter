@@ -1,4 +1,5 @@
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPES } from '@bt/shared/types';
+import { roundMoneyValues } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
@@ -20,20 +21,34 @@ const createLoanImpl = async (params: CreateLoanParams) => {
     userId,
     name,
     currencyCode,
-    initialBalance,
     loanType,
-    originalPrincipal,
     interestRate,
     termMonths = null,
     startDate,
-    minPayment = null,
-    plannedPayment = null,
     paymentDayOfMonth = null,
     lenderName = null,
     accountNumber = null,
   } = params;
 
   await ensureUserCurrencyConnected({ userId, currencyCode });
+
+  // Every amount of the loan is held at the decimals of its currency.
+  const {
+    initialBalance,
+    originalPrincipal,
+    minPayment = null,
+    plannedPayment = null,
+  } = await roundMoneyValues({
+    values: {
+      initialBalance: params.initialBalance,
+      originalPrincipal: params.originalPrincipal,
+      minPayment: params.minPayment,
+      plannedPayment: params.plannedPayment,
+    },
+    userId,
+    currencyCode,
+    mode: 'half-up',
+  });
 
   const now = new Date();
 
@@ -42,6 +57,7 @@ const createLoanImpl = async (params: CreateLoanParams) => {
   const negativeBalance = initialBalance.negate();
   const refNegativeBalance = await calculateRefAmount({
     userId,
+    definitionOwnerUserId: userId,
     amount: negativeBalance,
     baseCode: currencyCode,
     date: now,
@@ -49,6 +65,7 @@ const createLoanImpl = async (params: CreateLoanParams) => {
 
   const refOriginalPrincipal = await calculateRefAmount({
     userId,
+    definitionOwnerUserId: userId,
     amount: originalPrincipal,
     baseCode: currencyCode,
     date: now,
@@ -57,12 +74,24 @@ const createLoanImpl = async (params: CreateLoanParams) => {
   const refMinPayment =
     minPayment === null
       ? null
-      : await calculateRefAmount({ userId, amount: minPayment, baseCode: currencyCode, date: now });
+      : await calculateRefAmount({
+          userId,
+          definitionOwnerUserId: userId,
+          amount: minPayment,
+          baseCode: currencyCode,
+          date: now,
+        });
 
   const refPlannedPayment =
     plannedPayment === null
       ? null
-      : await calculateRefAmount({ userId, amount: plannedPayment, baseCode: currencyCode, date: now });
+      : await calculateRefAmount({
+          userId,
+          definitionOwnerUserId: userId,
+          amount: plannedPayment,
+          baseCode: currencyCode,
+          date: now,
+        });
 
   const zero = Money.zero();
 

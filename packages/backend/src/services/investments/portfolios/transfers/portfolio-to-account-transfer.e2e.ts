@@ -345,4 +345,59 @@ describe('Portfolio to Account Transfer (POST /investments/portfolios/:id/transf
     // Total wealth should remain unchanged (money just changed placement)
     expect(totalAfter).toBeNumericEqual(totalBefore);
   });
+
+  it('should round the amount once to the account currency and use it on both sides', async () => {
+    const { account: jpyAccount } = await helpers.createAccountWithNewCurrency({ currency: 'JPY' });
+
+    const transfer = await helpers.portfolioToAccountTransfer({
+      portfolioId: portfolio.id,
+      payload: { accountId: jpyAccount.id, amount: '1000.5', currencyCode: 'JPY', date: '2025-06-15' },
+      raw: true,
+    });
+    expect(transfer.amount).toBeNumericEqual(1001);
+
+    const [tx] = await helpers.getTransactions({ accountIds: [jpyAccount.id], raw: true });
+    expect(tx!.amount).toBeNumericEqual(1001);
+
+    const [balance] = await helpers.getPortfolioBalance({ portfolioId: portfolio.id, currencyCode: 'JPY', raw: true });
+    expect(balance!.availableCash).toBeNumericEqual(-1001);
+  });
+
+  it('should reject a currency other than the account currency, with or without an existing transaction', async () => {
+    const { account: eurAccount } = await helpers.createAccountWithNewCurrency({ currency: 'EUR' });
+    const [incomeTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: eurAccount.id,
+        amount: 500,
+        transactionType: TRANSACTION_TYPES.income,
+      }),
+      raw: true,
+    });
+
+    const newTx = await helpers.portfolioToAccountTransfer({
+      portfolioId: portfolio.id,
+      payload: { accountId: eurAccount.id, amount: '500', currencyCode, date: '2025-06-15' },
+    });
+    expect(newTx.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const existingTx = await helpers.portfolioToAccountTransfer({
+      portfolioId: portfolio.id,
+      payload: {
+        accountId: eurAccount.id,
+        amount: '500',
+        currencyCode,
+        date: '2025-06-15',
+        existingTransactionId: incomeTx!.id,
+      },
+    });
+    expect(existingTx.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    expect((await helpers.listPortfolioTransfers({ portfolioId: portfolio.id, raw: true })).data).toEqual([]);
+    const transactions = await helpers.getTransactions({ accountIds: [eurAccount.id], raw: true });
+    expect(transactions).toHaveLength(1);
+    expect(transactions[0]!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
+
+    const [balance] = await helpers.getPortfolioBalance({ portfolioId: portfolio.id, currencyCode, raw: true });
+    expect(balance!.availableCash).toBeNumericEqual(1000);
+  });
 });

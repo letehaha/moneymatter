@@ -85,8 +85,8 @@ export interface LineCandidate {
   id: string;
   /** `Parent › Child`, so the model sees the hierarchy without ids. */
   path: string;
-  /** Spend over the history window on the category and its descendants, as a line on it would cover. */
-  totalCents: number;
+  /** Spend over the history window on the category and its descendants, as a line on it would cover, in minor units at the plan currency's decimals. */
+  totalMinor: number;
 }
 
 interface SuggestedLayout {
@@ -169,7 +169,7 @@ export const sanitizeLayout = ({
   maxLines?: number;
   requireSpend?: boolean;
 }): SuggestedLayout => {
-  const spendById = new Map(candidates.map((candidate) => [candidate.id, candidate.totalCents]));
+  const spendById = new Map(candidates.map((candidate) => [candidate.id, candidate.totalMinor]));
   const { take, overlaps } = createCategoryClaims({ byId });
 
   let lineBudget = maxLines;
@@ -249,6 +249,7 @@ export const organizeLinesWithAi = async ({
   locale,
   currencyCode,
   answers,
+  decimals,
 }: {
   userId: number;
   candidates: LineCandidate[];
@@ -256,8 +257,10 @@ export const organizeLinesWithAi = async ({
   locale: string;
   currencyCode: string;
   answers: BudgetSuggestionAnswers;
+  /** The plan currency's decimals, which `candidates` are in minor units of. */
+  decimals: number;
 }): Promise<{ layout: SuggestedLayout; modelId: string } | null> => {
-  const hasHistory = candidates.some((candidate) => candidate.totalCents > 0);
+  const hasHistory = candidates.some((candidate) => candidate.totalMinor > 0);
   // Spending says how the user lives better than a self-report, so the facts only stand in for it.
   const facts = hasHistory ? [] : userFacts({ answers });
   const focusPaths = candidates
@@ -283,7 +286,7 @@ export const organizeLinesWithAi = async ({
   const prompt = candidates
     .map(
       (candidate) =>
-        `${shortIds.aliasOf({ id: candidate.id })} | ${candidate.path} | ${Money.fromCents(candidate.totalCents).toDecimalString(2)}`,
+        `${shortIds.aliasOf({ id: candidate.id })} | ${candidate.path} | ${Money.fromMinorUnits({ value: candidate.totalMinor, decimals }).toDecimalString(decimals)}`,
     )
     .join('\n');
   for (const spec of await pickModels({ userId })) {

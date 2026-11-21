@@ -1,0 +1,27 @@
+[
+  {
+    "id": "01a1cf52-7e6c-7708-a8f2-2c829b2acf41",
+    "userId": 1,
+    "suggestedName": "NETFLIX.COM PAYMENT",
+    "detectedFrequency": "monthly",
+    "detectedIntervalUnit": null,
+    "detectedIntervalCount": null,
+    "averageAmount": 1599,
+    "currencyCode": "AED",
+    "accountId": "01a1cf52-7ba5-74ea-be29-373ee3a75b65",
+    "sampleTransactionIds": [
+      "01a1cf52-7e52-73bc-92a5-97f7802f5228",
+      "01a1cf52-7e37-776a-901a-211bea94589f",
+      "01a1cf52-7e11-73fc-bdf7-67932a6b5386",
+      "01a1cf52-7df1-7708-93f4-3219ea7ec6d1"
+    ],
+    "occurrenceCount": 4,
+    "confidenceScore": 0.724,
+    "medianIntervalDays": 31,
+    "status": "pending",
+    "subscriptionId": null,
+    "detectedAt": "2026-11-12T10:34:12.460Z",
+    "lastOccurrenceAt": "2026-11-12T10:34:12.424Z",
+    "resolvedAt": null
+  }
+]

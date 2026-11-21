@@ -1,4 +1,5 @@
 import { isApiErrorWithCode } from '@/js/errors';
+import { getCurrencyDecimals } from '@/js/helpers';
 import { neededMonthly, roundShare } from '@bt/shared/goals/goal-math';
 import {
   ACCOUNT_STATUSES,
@@ -82,8 +83,9 @@ const isFixedBelowTarget = ({
   if (!accounts.length || !isPositive(targetAmount)) return false;
   if (accounts.some((share) => share.fixedAmount === null)) return false;
   if (accounts.some((share) => accountsById[share.accountId]?.currencyCode !== state.currencyCode)) return false;
-  const toCents = (amount: number) => Math.round(amount * 100);
-  return accounts.reduce((sum, share) => sum + toCents(share.fixedAmount!), 0) < toCents(targetAmount);
+  const scale = 10 ** getCurrencyDecimals({ code: state.currencyCode });
+  const toMinor = (amount: number) => Math.round(amount * scale);
+  return accounts.reduce((sum, share) => sum + toMinor(share.fixedAmount!), 0) < toMinor(targetAmount);
 };
 
 const isHoldDaysValid = ({ days }: { days: number | null }) =>
@@ -139,15 +141,25 @@ export const sumCountedAmount = ({
   shares,
   accountsById,
   holdersOf,
+  baseDecimals,
 }: {
   shares: GoalAccountShare[];
-  accountsById: Record<string, Pick<AccountModel, 'currentBalance' | 'creditLimit' | 'refCurrentBalance'> | undefined>;
+  accountsById: Record<
+    string,
+    Pick<AccountModel, 'currencyCode' | 'currentBalance' | 'creditLimit' | 'refCurrentBalance'> | undefined
+  >;
   holdersOf: (params: { accountId: RecordId }) => FixedAmountHolder[];
+  baseDecimals: number;
 }) =>
   shares.reduce<number | null>((sum, share) => {
     const account = accountsById[share.accountId];
     if (!account || sum === null) return sum;
-    const counted = countedFromAccount({ account, share, holders: holdersOf({ accountId: share.accountId }) });
+    const counted = countedFromAccount({
+      account,
+      share,
+      holders: holdersOf({ accountId: share.accountId }),
+      baseDecimals,
+    });
     return counted === null ? null : sum + counted;
   }, 0);
 
@@ -214,5 +226,6 @@ export const getGoalFormSummary = ({
   if (remaining <= 0) return { isCovered: true, neededMonthly: null };
 
   const targetDate = state.targetDate ? toDateKey(state.targetDate) : null;
-  return { isCovered: false, neededMonthly: neededMonthly({ remaining, today, targetDate }).neededMonthly };
+  const decimals = getCurrencyDecimals({ code: state.currencyCode });
+  return { isCovered: false, neededMonthly: neededMonthly({ remaining, today, targetDate, decimals }).neededMonthly };
 };

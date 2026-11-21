@@ -68,7 +68,10 @@ const { t } = useI18n();
 const { unarchive, isPending } = useUnarchiveLoan();
 
 const outstandingDisplay = computed(() =>
-  formatAmountByCurrencyCode(outstandingAmount({ balance: props.loan.currentBalance }), props.loan.currencyCode),
+  formatAmountByCurrencyCode({
+    amount: outstandingAmount({ balance: props.loan.currentBalance }),
+    currencyCode: props.loan.currencyCode,
+  }),
 );
 
 const subLine = computed(() => {

@@ -84,21 +84,21 @@ export default class InvestmentTransaction extends Model {
    * associated with the transaction. Calculated as quantity * price + fees for
    * buy/fee/tax and quantity * price - fees for sell/dividend.
    */
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare amount: Money;
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare refAmount: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare fees: Money;
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare refFees: Money;
 
   /**
    * * The quantity of the security involved in the transaction. This is crucial
    * for tracking the changes in holdings as a result of the transaction.
    */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField()
   declare quantity: Money;
 
   /**
@@ -106,9 +106,9 @@ export default class InvestmentTransaction extends Model {
    * This is used to calculate the total transaction amount and update the cost
    * basis of the holding.
    */
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare price: Money;
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare refPrice: Money;
 
   /**
@@ -134,11 +134,11 @@ export default class InvestmentTransaction extends Model {
    * buy — total paid including fee; sell/dividend — received net of fee;
    * fee/tax — amount charged. Cash balance deltas are derived from this value.
    */
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare settlementAmount: Money;
 
   /** Broker fee in `settlementCurrencyCode`. `fees` is this value converted to the security currency at `settlementRate`. */
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare settlementFees: Money;
 
   /**

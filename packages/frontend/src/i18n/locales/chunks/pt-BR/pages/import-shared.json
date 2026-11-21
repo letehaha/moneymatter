@@ -17,7 +17,8 @@
         "categoryNameTooLong": "O nome da categoria “{name}” é longo demais ({length} caracteres); o máximo é {max}.",
         "payeeNameTooLong": "O nome do favorecido “{name}” é longo demais ({length} caracteres); o máximo é {max}.",
         "accountMappingMissing": "Estas contas do arquivo não foram mapeadas: {accounts}. Volte e mapeie cada uma delas.",
-        "linkedAccountNotFound": "A conta vinculada a “{account}” não existe mais. Volte e escolha outra conta ou crie uma nova."
+        "linkedAccountNotFound": "A conta vinculada a “{account}” não existe mais. Volte e escolha outra conta ou crie uma nova.",
+        "bankLinkChanged": "An account's bank link changed after the review. Go back to the review step and run it again."
       },
       "importResults": {
         "findTransfers": "Encontrar transferências"
@@ -108,6 +109,8 @@
       "renameAria": "Renomear mapeamento",
       "deleteAria": "Excluir mapeamento",
       "confirmRenameAria": "Salvar nome"
-    }
+    },
+    "bankSeamSkipped": "{count} row dated on or after {date} was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after {date} were skipped: the bank connection already provides transactions from that day.",
+    "bankSeamSkippedNoDate": "{count} row dated on or after the day its account was connected to a bank was skipped: the bank connection already provides transactions from that day. | {count} rows dated on or after the day their account was connected to a bank were skipped: the bank connection already provides transactions from that day."
   }
 }

@@ -20,7 +20,9 @@ import { Label } from '@/components/lib/ui/label';
 import { Switch } from '@/components/lib/ui/switch';
 import { useCurrencyName, useFormatCurrency } from '@/composable';
 import { useCreateGoal, useGoals, useUpdateGoal } from '@/composable/data-queries/goals';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useDateLocale } from '@/composable/use-date-locale';
+import { getCurrencyDecimals } from '@/js/helpers';
 import { cn } from '@/lib/utils';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import {
@@ -65,7 +67,8 @@ const open = defineModel<boolean>('open', { required: true });
 
 const { t } = useI18n();
 const { format } = useDateLocale();
-const { formatAmountByCurrencyCode, formatBaseCurrency } = useFormatCurrency();
+const { formatAmountByCurrencyCode, formatAccountAmount, formatBaseCurrency, baseCurrencyDecimals } =
+  useFormatCurrency();
 const { formatCurrencyLabel } = useCurrencyName();
 const { accountsRecord } = storeToRefs(useAccountsStore());
 const { baseCurrency, systemCurrenciesVerbose } = storeToRefs(useCurrenciesStore());
@@ -111,9 +114,19 @@ const errors = computed(() =>
     storedTargetDate: props.goal?.targetDate,
   }),
 );
-const hasErrors = computed(() => Object.values(errors.value).some(Boolean));
 const errorFor = (key: keyof GoalFormErrors) =>
   showErrors.value && errors.value[key] ? t(errors.value[key]!) : undefined;
+
+const amountDecimals = computed(() => getCurrencyDecimals({ code: state.value.currencyCode }));
+const currencyDecimal = useCurrencyDecimalRule({ decimals: amountDecimals });
+const isTargetAmountOverDecimals = computed(() => !currencyDecimal.isValid(state.value.targetAmount));
+const isPlannedMonthlyOverDecimals = computed(
+  () => state.value.hasPlannedMonthly && !currencyDecimal.isValid(state.value.plannedMonthly),
+);
+const hasErrors = computed(
+  () =>
+    Object.values(errors.value).some(Boolean) || isTargetAmountOverDecimals.value || isPlannedMonthlyOverDecimals.value,
+);
 
 const currencyError = computed(() =>
   serverError.value?.field === 'currencyCode' && serverError.value.currencyCode === state.value.currencyCode
@@ -149,6 +162,7 @@ const countedBase = computed(() => {
   if (!otherGoals) return null;
   return sumCountedAmount({
     shares: state.value.accounts,
+    baseDecimals: baseCurrencyDecimals.value,
     accountsById: accountsRecord.value,
     holdersOf: ({ accountId }) =>
       getAccountFixedHolders({ goals: otherGoals, accountId, editingGoalId: props.goal?.id }),
@@ -159,7 +173,7 @@ const shareLabel = ({ share }: { share: GoalFormState['accounts'][number] }) =>
   formatGoalLinkLabel({
     share,
     currencyCode: accountsRecord.value[share.accountId]?.currencyCode,
-    formatAmount: ({ amount, currencyCode }) => formatAmountByCurrencyCode(amount, currencyCode),
+    formatAmount: ({ amount }) => formatAccountAmount({ amount, account: accountsRecord.value[share.accountId]! }),
   });
 
 const rateToBase = computed(() => {
@@ -175,7 +189,8 @@ const summaryText = computed(() => {
   });
   if (!summary) return null;
 
-  const formatAmount = (amount: number) => formatAmountByCurrencyCode(amount, state.value.currencyCode);
+  const formatAmount = (amount: number) =>
+    formatAmountByCurrencyCode({ amount, currencyCode: state.value.currencyCode });
   const target = formatAmount(state.value.targetAmount!);
   const { targetDate, hasPlannedMonthly, plannedMonthly } = state.value;
   const sentences = [
@@ -268,9 +283,12 @@ const submit = async () => {
       <div class="grid grid-cols-1 items-start gap-3 @sm/goal-form:grid-cols-2">
         <FormattedAmountField
           v-model="state.targetAmount"
+          :decimals="amountDecimals"
           :label="$t('goals.form.targetAmountLabel')"
           :placeholder="$t('goals.form.targetAmountPlaceholder')"
-          :error-message="errorFor('targetAmount')"
+          :error-message="
+            errorFor('targetAmount') || (isTargetAmountOverDecimals ? currencyDecimal.message.value : undefined)
+          "
           :disabled="isPending"
         />
         <SelectField
@@ -376,9 +394,12 @@ const submit = async () => {
         <FormattedAmountField
           v-if="state.hasPlannedMonthly"
           v-model="state.plannedMonthly"
+          :decimals="amountDecimals"
           :placeholder="$t('goals.form.plannedMonthlyPlaceholder')"
           :aria-label="$t('goals.form.plannedMonthlyLabel')"
-          :error-message="errorFor('plannedMonthly')"
+          :error-message="
+            errorFor('plannedMonthly') || (isPlannedMonthlyOverDecimals ? currencyDecimal.message.value : undefined)
+          "
           :disabled="isPending"
         />
       </div>

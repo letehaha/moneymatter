@@ -1,5 +1,6 @@
 import type { AccountBalanceChange, ImportError, RecordId } from '@bt/shared/types';
 import { isDedicatedFlowAccountCategory } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
@@ -88,9 +89,15 @@ const forceTargetAndRecordEffect = withTransaction(
   }) => {
     const account = await lockAccountRow({ accountId, userId });
     if (!account) throw new ValidationError({ message: `Account with ID ${accountId} not found` });
-    await updateAccount({ id: accountId, userId, currentBalance: targetCurrentBalance });
+    const target = await roundToCurrency({
+      money: targetCurrentBalance,
+      userId,
+      currencyCode: account.currencyCode,
+      mode: 'half-up',
+    });
+    await updateAccount({ id: accountId, userId, currentBalance: target });
     await ImportBatchAccountEffects.update(
-      { absorbedAmount: targetCurrentBalance.subtract(account.currentBalance) },
+      { absorbedAmount: target.subtract(account.currentBalance) },
       { where: { importBatchId, accountId } },
     );
   },

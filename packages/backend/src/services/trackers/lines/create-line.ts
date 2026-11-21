@@ -4,6 +4,7 @@ import TrackerLines from '@models/tracker-lines.model';
 import { withTransaction } from '@services/common/with-transaction';
 
 import { authorizeTrackerAccess } from '../authorize-tracker-access';
+import { roundTrackerLimit } from '../utils/round-tracker-limit';
 import { findLineOrThrow, replaceLineCategories } from './line-helpers';
 
 export const createTrackerLine = withTransaction(
@@ -28,6 +29,8 @@ export const createTrackerLine = withTransaction(
       requiredPermission: SHARE_PERMISSIONS.manage,
     });
 
+    const roundedLimit = await roundTrackerLimit({ ownerUserId, limitAmount });
+
     const maxPosition = await TrackerLines.max<number | null, TrackerLines>('position', {
       where: { trackerId },
     });
@@ -35,7 +38,7 @@ export const createTrackerLine = withTransaction(
     const line = await TrackerLines.create({
       trackerId,
       name,
-      limitAmount: limitAmount ?? null,
+      limitAmount: roundedLimit ?? null,
       position: position ?? (maxPosition ?? -1) + 1,
     });
 

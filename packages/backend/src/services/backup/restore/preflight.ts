@@ -11,7 +11,8 @@ import { loadValidatedArchive } from './load-validated-archive';
 /**
  * Synchronous gate run before enqueuing a restore. Fully validates the upload —
  * base64/zip readability, manifest format version, per-file SHA-256, JSON
- * parseability, and the column tolerance against the live schema — rejecting
+ * parseability, the column tolerance against the live schema, and every amount
+ * against its currency's minor-unit range — rejecting
  * with a 422 (`ValidationError`) and a human-readable reason on any hard
  * failure. Then, like the wipe flow, it requires `acknowledgeSharing` when the
  * user owns shared resources, throwing the same 409 contract

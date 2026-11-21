@@ -1,5 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { VENTURE_DEAL_STATUS, VENTURE_SPV_SUBTYPE, VENTURE_VEHICLE_TYPE } from '@bt/shared/types/venture';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
@@ -62,7 +63,7 @@ export default class VentureDeals extends Model {
 
   @ForeignKey(() => Currencies)
   @Index
-  @Column({ type: DataType.STRING(3), allowNull: false })
+  @Column({ type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH), allowNull: false })
   currencyCode!: string;
 
   @Index
@@ -73,10 +74,10 @@ export default class VentureDeals extends Model {
   })
   status!: VENTURE_DEAL_STATUS;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare principal: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare entryFee: Money;
 
   @Column({ type: DataType.DECIMAL(10, 6), allowNull: false, defaultValue: '0' })

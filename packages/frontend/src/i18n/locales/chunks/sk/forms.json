@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Vyberte zobrazovanú menu",
       "displayCurrencyBaseOption": "Základná mena ({code})",
       "displayCurrencyDescription": "Hodnota portfólia a štatistiky sa prepočítavajú na túto menu podľa aktuálneho výmenného kurzu.",
+      "externalUrlLabel": "Externá URL (voliteľná)",
+      "externalUrlPlaceholder": "https://spojenie.priklad.com",
       "cancelButton": "Zrušiť",
       "submitButton": "Uložiť zmeny",
       "submitButtonLoading": "Ukladanie...",
@@ -137,6 +139,8 @@
       "creditLimitLabel": "Úverový limit",
       "creditLimitPlaceholder": "Úverový limit",
       "defaultPaymentTypeLabel": "Predvolený spôsob platby",
+      "externalUrlLabel": "Externá URL (voliteľná)",
+      "externalUrlPlaceholder": "https://banka.priklad.sk",
       "submitButton": "Vytvoriť",
       "submitButtonLoading": "Vytváranie...",
       "notifications": {
@@ -190,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Zadajte platnú sumu (najviac 2 desatinné miesta)",
-      "mustBePositive": "Suma musí byť kladná"
+      "mustBePositive": "Suma musí byť kladná",
+      "httpUrl": "Zadajte platnú URL adresu vo formáte http(s)",
+      "maxLength": "Nesmie presiahnuť {max} znakov"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "Zdrojová mena",

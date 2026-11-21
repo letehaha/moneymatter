@@ -1,5 +1,6 @@
 import { ACCOUNT_CATEGORIES } from '@bt/shared/types';
-import type { Money } from '@common/types/money';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
+import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import LoanDetails from '@models/loan-details.model';
@@ -11,7 +12,7 @@ import { lockLoanAccountRow, projectLoanOverpay } from '@services/loans/project-
  * both `createOppositeTransaction` and `updateTransaction` delegate here.
  * SELECT ... FOR UPDATE on the loan account row: concurrent payment writes
  * would otherwise each read the same pre-payment balance and jointly overpay.
- * Loan balances are negative cents (liability); income legs add toward zero,
+ * Loan balances are negative (liability); income legs add toward zero,
  * so a positive projected balance means overpay and the write is rejected.
  */
 export const assertLoanPaymentAllowed = async ({
@@ -72,12 +73,13 @@ export const assertLoanPaymentAllowed = async ({
     return;
   }
 
-  let rawProjectedBalance = loanAccount.currentBalance.add(newLegAmount);
-  if (currentLegAmount !== null && isCounted(currentLegDate)) {
-    rawProjectedBalance = rawProjectedBalance.subtract(currentLegAmount);
-  }
-  const { overpaysBy } = projectLoanOverpay({ projectedBalance: rawProjectedBalance });
-  if (overpaysBy.toCents() > 0) {
+  const decimals = await getCurrencyDecimals({ userId: ownerUserId, code: loanAccount.currencyCode });
+  const backedOut = currentLegAmount !== null && isCounted(currentLegDate) ? [currentLegAmount.negate()] : [];
+  // An edit reaches this guard before the write path rounds its amount half-up to the loan currency.
+  const { overpaysBy } = projectLoanOverpay({
+    projectedBalance: Money.sum([loanAccount.currentBalance, newLegAmount.round(decimals), ...backedOut]),
+  });
+  if (overpaysBy.isPositive()) {
     throw new ValidationError({
       message: t({ key: 'transactions.loanPaymentOverpay' }),
     });

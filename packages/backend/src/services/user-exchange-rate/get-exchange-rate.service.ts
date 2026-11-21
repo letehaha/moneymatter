@@ -7,9 +7,12 @@ import { CacheClient } from '@js/utils/cache';
 import * as Currencies from '@models/currencies.model';
 import * as UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
+import { includesCustomCurrencyCode } from '@services/currencies/custom-currency-codes';
 import { formatRate } from '@services/exchange-rates/build-daily-pair-rate-resolver';
 import { API_LAYER_BASE_CURRENCY_CODE } from '@services/exchange-rates/constants';
 import { type RateLookup, resolveUsdRates } from '@services/exchange-rates/resolve-usd-rates';
+
+import { resolveCustomPairRate } from './resolve-custom-pair-rate';
 
 /**
  * Global cache for computed cross-rates.
@@ -59,6 +62,18 @@ export async function getExchangeRate({
   // check or the user's own manual rate. An unconnected base under
   // `requireUserConnection: false` has neither; market cross-rates aren't user-scoped.
   const userConnection = await resolveUserConnection({ userId, code: pair.baseCode, required: requireUserConnection });
+
+  // A pair with a custom side never reaches the global cross-rate cache or the 5-decimal market
+  // formatting: it resolves from the user's own rates, with the ISO leg left to this function.
+  if (await includesCustomCurrencyCode({ codes: [pair.baseCode, pair.quoteCode] })) {
+    return resolveCustomPairRate({
+      userId,
+      pair,
+      date,
+      resolveIsoRate: (isoPair) =>
+        getExchangeRate({ userId, date, ...isoPair, bypassCache, requireUserConnection: false }),
+    });
+  }
 
   if (userConnection) {
     const customRate = await resolveCustomRate({ userId, pair, liveRateUpdate: userConnection.liveRateUpdate });
@@ -144,7 +159,7 @@ export async function resolveCustomRate({
   if (pair.quoteCode !== userDefault.currency.code) return null;
 
   const [userRate] = await UserExchangeRates.getRates({ userId, pair });
-  if (!userRate) return null;
+  if (!userRate || !(userRate.rate > 0)) return null;
 
   return { ...userRate, rate: formatRate(userRate.rate), custom: true };
 }
@@ -204,6 +219,16 @@ async function computeCrossRate({
       rate: formatRate(rateValue(quoteLookup) / rateValue(baseLookup)),
       date: rateDateOf(quoteLookup, date),
     };
+  }
+
+  // A zero row on either leg gives 0 or Infinity, never a usable rate.
+  if (!Number.isFinite(result.rate) || result.rate <= 0) {
+    throw new ExchangeRateUnavailableError({
+      message: t({
+        key: 'currencies.exchangeRateNotAvailable',
+        variables: { baseCode: pair.baseCode, quoteCode: pair.quoteCode, date: date.toISOString() },
+      }),
+    });
   }
 
   const cacheable = baseLookup.kind === 'exact' && quoteLookup.kind === 'exact';

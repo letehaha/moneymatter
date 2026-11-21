@@ -31,19 +31,19 @@ describe('canSuggestOriginalAmount', () => {
 
 describe('resolveSuggestedOriginalAmount', () => {
   it('rounds to a 0-digit currency', () => {
-    expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 123.456, currencyDigits: 0 })).toBe(1235);
+    expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 123.456, decimals: 0 })).toBe(1235);
   });
 
   it('rounds to a 2-digit currency', () => {
-    expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 0.91234, currencyDigits: 2 })).toBe(9.12);
+    expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 0.91234, decimals: 2 })).toBe(9.12);
   });
 
-  it('clamps a 3-digit currency to two decimals', () => {
-    expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 0.376543, currencyDigits: 3 })).toBe(3.77);
+  it('keeps all three decimals of a 3-digit currency', () => {
+    expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 0.376543, decimals: 3 })).toBe(3.765);
   });
 
-  it('falls back to two decimals when the currency carries no digits', () => {
-    expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 0.91234, currencyDigits: undefined })).toBe(9.12);
+  it('keeps the decimals of a high-precision currency', () => {
+    expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 0.000123456789, decimals: 8 })).toBe(0.00123457);
   });
 
   it.each([
@@ -52,6 +52,6 @@ describe('resolveSuggestedOriginalAmount', () => {
     ['NaN', NaN],
     ['Infinity', Infinity],
   ])('returns null for a %s rate', (_label, rate) => {
-    expect(resolveSuggestedOriginalAmount({ amount: 10, rate, currencyDigits: 2 })).toBeNull();
+    expect(resolveSuggestedOriginalAmount({ amount: 10, rate, decimals: 2 })).toBeNull();
   });
 });

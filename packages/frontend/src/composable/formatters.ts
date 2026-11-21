@@ -1,6 +1,16 @@
-import { formatCompactFiat, formatCompactUIAmount, formatShortFiat, formatUIAmount } from '@/js/helpers';
+import {
+  formatAccountAmount,
+  formatCompactFiat,
+  formatCompactUIAmount,
+  formatShortFiat,
+  formatUIAmount,
+  getCurrencyDecimals,
+  isIntlCurrencyCode,
+  resolveCurrencyDisplay,
+} from '@/js/helpers';
 import { useCurrenciesStore } from '@/stores';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const COMPACT_AMOUNT_THRESHOLD = 10_000;
@@ -52,6 +62,9 @@ export const useCurrencyName = () => {
 export const useFormatCurrency = () => {
   const { baseCurrency } = storeToRefs(useCurrenciesStore());
 
+  /** Decimals the base currency's amounts (budgets, reference values) are stored with. */
+  const baseCurrencyDecimals = computed(() => getCurrencyDecimals({ code: baseCurrency.value?.currency?.code }));
+
   const formatBaseCurrency = (amount: number, { fractionDigits }: { fractionDigits?: number } = {}) =>
     formatUIAmount(amount, {
       currency: baseCurrency.value?.currency?.code,
@@ -66,10 +79,16 @@ export const useFormatCurrency = () => {
   const formatShortBaseCurrency = ({ amount }: { amount: number }) =>
     formatShortFiat({ amount, currency: baseCurrency.value?.currency?.code });
 
-  const formatAmountByCurrencyCode = (amount: number, currencyCode: string) =>
-    formatUIAmount(amount, {
-      currency: currencyCode,
-    });
+  /** For amounts on an account or transaction use `formatAccountAmount`, which applies the owner's `currencyMeta`. */
+  const formatAmountByCurrencyCode = ({
+    amount,
+    currencyCode,
+    fullPrecision,
+  }: {
+    amount: number;
+    currencyCode: string;
+    fullPrecision?: boolean;
+  }) => formatUIAmount(amount, { currency: currencyCode, fullPrecision });
 
   /**
    * Currency symbol for a code (e.g. "$", "€"). Defaults to base currency for
@@ -77,6 +96,8 @@ export const useFormatCurrency = () => {
    */
   const getCurrencySymbol = (currencyCode?: string) => {
     const code = currencyCode || baseCurrency.value?.currency?.code || 'USD';
+    const display = resolveCurrencyDisplay({ code });
+    if (display.isCustom || !isIntlCurrencyCode({ code })) return display.symbol || code;
     try {
       // Format a zero amount and extract just the symbol
       const formatted = new Intl.NumberFormat('en-US', {
@@ -98,7 +119,11 @@ export const useFormatCurrency = () => {
   const formatWholeOrCompactAmount = ({ amount, currencyCode }: { amount: number; currencyCode: string }) =>
     Math.abs(amount) >= COMPACT_AMOUNT_THRESHOLD
       ? formatCompactUIAmount({ amount, currency: currencyCode })
-      : formatUIAmount(amount, { currency: currencyCode, fractionDigits: 0 });
+      : formatUIAmount(amount, {
+          currency: currencyCode,
+          // A custom unit can be worth a lot (BTC), so whole units would round its amounts away.
+          fractionDigits: resolveCurrencyDisplay({ code: currencyCode }).isCustom ? undefined : 0,
+        });
 
   /** Full amount with cents below 100k, compact (₴385k, ₴1.24M) from there. */
   const formatCompactLargeBaseCurrency = ({ amount }: { amount: number }) =>
@@ -113,9 +138,11 @@ export const useFormatCurrency = () => {
   };
 
   return {
+    baseCurrencyDecimals,
     formatBaseCurrency,
     formatWholeBaseCurrency,
     formatAmountByCurrencyCode,
+    formatAccountAmount,
     formatCompactAmount,
     formatWholeOrCompactAmount,
     formatCompactLargeBaseCurrency,

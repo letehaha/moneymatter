@@ -61,16 +61,13 @@ export const columnMappingConfigSchema = z.object({
   account: accountOptionSchema,
 });
 
-// Balances persist as INTEGER cents, capping the representable magnitude at
-// ~21.4M currency units. Bounding at the schema turns an over-cap value into a
-// 422 validation message instead of a raw database "integer out of range"
-// failure at the end of the import job.
-const IMPORT_BALANCE_LIMIT = 20_000_000;
+// A coarse bound for every currency. The import checks the per-currency limit
+// (`getMaxAmountForDecimals`, lower for 3+ decimals) when it creates the account.
+const IMPORT_BALANCE_LIMIT = 1e13;
 
 /**
  * Decimal balance a user enters for an import-created account (the
- * `currentBalance` field on both the CSV and Wallet create-new mappings),
- * bounded to what INTEGER-cents storage can represent. `label` prefixes the
+ * `currentBalance` field on the create-new mappings). `label` prefixes the
  * validation message with the field's user-facing name.
  */
 export function boundedImportBalance({ label }: { label: string }): z.ZodNumber {

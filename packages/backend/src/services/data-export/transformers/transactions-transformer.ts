@@ -1,4 +1,5 @@
-import { RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { type CurrencyMeta, RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import type { Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import Categories from '@models/categories.model';
@@ -12,6 +13,7 @@ import TransactionTags from '@models/transaction-tags.model';
 import { findTransactions } from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { getCategoryPathNames } from '@services/categories/category-hierarchy';
+import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { Op } from 'sequelize';
 
@@ -33,8 +35,9 @@ function deriveExportType({ tx }: { tx: Transactions }): 'income' | 'expense' | 
   return tx.transactionType === TRANSACTION_TYPES.income ? 'income' : 'expense';
 }
 
-function fmtAmount({ value }: { value: number }): string {
-  return value.toFixed(2);
+/** An amount in a text column, written at its currency's decimals like the numeric columns. */
+function fmtAmount({ value, decimals }: { value: Money; decimals: number }): string {
+  return value.toDecimalString(decimals);
 }
 
 /**
@@ -44,9 +47,17 @@ function fmtAmount({ value }: { value: number }): string {
  * `"2025-12-04 Chase Checking -45.20 USD"` tells the reader exactly which other
  * row to find without a lookup table.
  */
-function describeTransaction({ tx, accountName }: { tx: Transactions; accountName: string }): string {
+function describeTransaction({
+  tx,
+  accountName,
+  decimals,
+}: {
+  tx: Transactions;
+  accountName: string;
+  decimals: number;
+}): string {
   const date = tx.time instanceof Date ? tx.time.toISOString().slice(0, 10) : String(tx.time).slice(0, 10);
-  const amount = fmtAmount({ value: tx.amount.toNumber() });
+  const amount = fmtAmount({ value: tx.amount, decimals });
   const signed = tx.transactionType === TRANSACTION_TYPES.income ? amount : `-${amount}`;
   return `${date} ${accountName} ${signed} ${tx.currencyCode}`;
 }
@@ -264,6 +275,11 @@ export async function transformTransactions({
         })
       : '';
 
+  // Rows on other owners' shared accounts follow the owner's definition of the currency.
+  await attachTransactionCurrencyMeta({ transactions: [...txById.values()] });
+  const decimalsOf = ({ tx }: { tx: Transactions }): number =>
+    (tx as Transactions & { currencyMeta: CurrencyMeta }).currencyMeta.decimals;
+
   return transactions.map((tx): TransactionRow => {
     const accountName = resolveAccountName({ id: tx.accountId, context: `transaction ${tx.id}` });
     const view = tx.categoryId ? categoryViewById.get(tx.categoryId) : undefined;
@@ -297,7 +313,7 @@ export async function transformTransactions({
               id: s.categoryId,
               context: `transaction ${tx.id} split ${s.id}`,
             });
-            return `${catName}: ${fmtAmount({ value: s.amount.toNumber() })}`;
+            return `${catName}: ${fmtAmount({ value: s.amount, decimals: decimalsOf({ tx }) })}`;
           })
           .join(' | ')
       : '';
@@ -310,9 +326,13 @@ export async function transformTransactions({
           id: original.accountId,
           context: `transaction ${tx.id} refund-of`,
         });
-        const described = describeTransaction({ tx: original, accountName: originalAccountName });
+        const described = describeTransaction({
+          tx: original,
+          accountName: originalAccountName,
+          decimals: decimalsOf({ tx: original }),
+        });
         return link.amount
-          ? [`${described} (${fmtAmount({ value: link.amount.toNumber() })} ${tx.currencyCode})`]
+          ? [`${described} (${fmtAmount({ value: link.amount, decimals: decimalsOf({ tx }) })} ${tx.currencyCode})`]
           : [described];
       })
       .join(' | ');
@@ -325,7 +345,11 @@ export async function transformTransactions({
           id: pair.accountId,
           context: `transaction ${tx.id} transfer-pair`,
         });
-        linkedTransfer = describeTransaction({ tx: pair, accountName: pairAccountName });
+        linkedTransfer = describeTransaction({
+          tx: pair,
+          accountName: pairAccountName,
+          decimals: decimalsOf({ tx: pair }),
+        });
       }
     }
 

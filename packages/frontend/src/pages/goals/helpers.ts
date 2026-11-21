@@ -1,4 +1,4 @@
-import { toLocalCurrencyNumber } from '@/js/helpers';
+import { getCurrencyDecimals, roundToDecimals, toLocalCurrencyNumber } from '@/js/helpers';
 import {
   FULL_SHARE,
   accountGoalValue,
@@ -45,13 +45,15 @@ export const splitGoalSections = <T extends SectionFields>({ goals }: { goals: T
   return sections;
 };
 
-type RateSource = Pick<GoalInsights, 'rateToBase'>;
+type RateSource = Pick<GoalInsights, 'rateToBase' | 'goalDecimals'>;
 
 /** Insights amounts are base-currency decimals; this turns one into the goal currency. Null in, null out. */
 export function toGoalCurrency(params: { amount: number; insights: RateSource }): number;
 export function toGoalCurrency(params: { amount: number | null; insights: RateSource | null }): number | null;
 export function toGoalCurrency({ amount, insights }: { amount: number | null; insights: RateSource | null }) {
-  return insights ? toGoalCurrencyFromBase({ amount, rateToBase: insights.rateToBase }) : null;
+  return insights
+    ? toGoalCurrencyFromBase({ amount, rateToBase: insights.rateToBase, decimals: insights.goalDecimals })
+    : null;
 }
 
 export const getGoalProgress = ({
@@ -224,17 +226,19 @@ export const getAccountFixedHolders = ({
     .map(({ position: _position, ...holder }) => holder);
 
 /**
- * What a share counts from the account now, as a base-currency decimal; null when the account's
- * rate is unknown. A fixed share sits at its `fixedPosition` among `holders`, or after them.
+ * What a share counts from the account now, as a base-currency decimal at `baseDecimals`; null when
+ * the account's rate is unknown. A fixed share sits at its `fixedPosition` among `holders`, or after them.
  */
 export const countedFromAccount = ({
   account,
   share,
   holders,
+  baseDecimals,
 }: {
-  account: Pick<AccountModel, 'currentBalance' | 'creditLimit' | 'refCurrentBalance'>;
+  account: Pick<AccountModel, 'currencyCode' | 'currentBalance' | 'creditLimit' | 'refCurrentBalance'>;
   share: Pick<GoalAccountShare, 'sharePercent' | 'fixedAmount' | 'fixedPosition'>;
   holders: Pick<FixedAmountHolder, 'fixedAmount'>[];
+  baseDecimals: number;
 }): number | null => {
   const position = Math.min(share.fixedPosition ?? holders.length, holders.length);
   const counted = accountGoalValue({
@@ -244,12 +248,16 @@ export const countedFromAccount = ({
     fixedAmount: share.fixedAmount,
     fixedAhead: sumBy(holders.slice(0, position), 'fixedAmount'),
     fixedOthers: sumBy(holders, 'fixedAmount'),
+    decimals: getCurrencyDecimals({ code: account.currencyCode }),
   });
   if (!counted) return 0;
   // A zero base balance against a non-zero own one means the rate is unknown, not zero.
   if (!account.refCurrentBalance) return null;
   // ponytail: the account's base-to-own balance ratio stands in for today's rate
-  return Math.round(((counted * account.refCurrentBalance) / account.currentBalance) * 100) / 100;
+  return roundToDecimals({
+    value: (counted * account.refCurrentBalance) / account.currentBalance,
+    decimals: baseDecimals,
+  });
 };
 
 /** "40%", or the fixed amount in the account's currency; a bare number while that currency is unknown. */

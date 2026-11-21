@@ -13,7 +13,7 @@ import {
   type TRACKER_LIMIT_KINDS,
   ResourceShareInfo,
 } from '@bt/shared/types';
-import { centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
+import { minorUnitsToApiDecimal, moneyToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import type Categories from '@models/categories.model';
 import type Tags from '@models/tags.model';
 import type TrackerLines from '@models/tracker-lines.model';
@@ -85,7 +85,7 @@ export function serializeTrackerLine(line: TrackerLines): TrackerLineResponse {
     id: line.id,
     trackerId: line.trackerId,
     name: line.name,
-    limitAmount: centsToApiDecimalOrNull(line.limitAmount),
+    limitAmount: moneyToApiDecimalOrNull(line.limitAmount),
     position: line.position,
     categories: serializeEmbeddedCategories(line.categories),
   };
@@ -106,7 +106,7 @@ export function serializeTracker(tracker: Trackers & { _shareContext?: TrackerSh
     status: tracker.status,
     startDate: tracker.startDate,
     endDate: tracker.endDate,
-    limitAmount: centsToApiDecimalOrNull(tracker.limitAmount),
+    limitAmount: moneyToApiDecimalOrNull(tracker.limitAmount),
     limitKind: tracker.limitKind,
     rulesEnabled: tracker.rulesEnabled,
     rulesCleanup: tracker.rulesCleanup,
@@ -149,21 +149,30 @@ export function serializeTrackers(
 // ============================================================================
 
 /**
- * Serialize tracker stats to API decimal format
+ * Serialize tracker stats to API decimal format. The sums are minor units at `decimals`.
  */
-export function serializeTrackerStats(stats: StatsResponse): TrackerStatsResponse {
+export function serializeTrackerStats({
+  stats,
+  decimals,
+}: {
+  stats: StatsResponse;
+  decimals: number;
+}): TrackerStatsResponse {
   return {
     summary: {
-      actualIncome: centsToApiDecimal(stats.summary.actualIncome),
-      actualExpense: centsToApiDecimal(stats.summary.actualExpense),
-      balance: centsToApiDecimal(stats.summary.balance),
+      actualIncome: minorUnitsToApiDecimal({ value: stats.summary.actualIncome, decimals }),
+      actualExpense: minorUnitsToApiDecimal({ value: stats.summary.actualExpense, decimals }),
+      balance: minorUnitsToApiDecimal({ value: stats.summary.balance, decimals }),
       utilizationRate: stats.summary.utilizationRate,
       transactionsCount: stats.summary.transactionsCount,
       firstTransactionDate: stats.summary.firstTransactionDate,
       lastTransactionDate: stats.summary.lastTransactionDate,
     },
-    lines: stats.lines.map((line) => ({ lineId: line.lineId, spent: centsToApiDecimal(line.spent) })),
-    otherSpent: centsToApiDecimal(stats.otherSpent),
+    lines: stats.lines.map((line) => ({
+      lineId: line.lineId,
+      spent: minorUnitsToApiDecimal({ value: line.spent, decimals }),
+    })),
+    otherSpent: minorUnitsToApiDecimal({ value: stats.otherSpent, decimals }),
   };
 }
 
@@ -171,41 +180,54 @@ export function serializeTrackerStats(stats: StatsResponse): TrackerStatsRespons
 // Tracker Spending Stats Serializer
 // ============================================================================
 
-function serializeSpendingCategory(
-  item: SpendingStatsResponse['spendingsByCategory'][number],
-): TrackerSpendingByCategoryItem {
+function serializeSpendingCategory({
+  item,
+  decimals,
+}: {
+  item: SpendingStatsResponse['spendingsByCategory'][number];
+  decimals: number;
+}): TrackerSpendingByCategoryItem {
   return {
     categoryId: item.categoryId,
     name: item.name,
     color: item.color,
-    amount: centsToApiDecimal(item.amount),
+    amount: minorUnitsToApiDecimal({ value: item.amount, decimals }),
     ...(item.children?.length && {
-      children: item.children.map(serializeSpendingCategory),
+      children: item.children.map((child) => serializeSpendingCategory({ item: child, decimals })),
     }),
   };
 }
 
-export function serializeTrackerSpendingStats(stats: SpendingStatsResponse): TrackerSpendingStatsResponse {
+export function serializeTrackerSpendingStats({
+  stats,
+  decimals,
+}: {
+  stats: SpendingStatsResponse;
+  decimals: number;
+}): TrackerSpendingStatsResponse {
   return {
-    spendingsByCategory: stats.spendingsByCategory.map(serializeSpendingCategory),
+    spendingsByCategory: stats.spendingsByCategory.map((item) => serializeSpendingCategory({ item, decimals })),
     spendingOverTime: {
       granularity: stats.spendingOverTime.granularity,
       periods: stats.spendingOverTime.periods.map((period) => ({
         periodStart: period.periodStart,
         periodEnd: period.periodEnd,
-        expense: centsToApiDecimal(period.expense),
-        income: centsToApiDecimal(period.income),
+        expense: minorUnitsToApiDecimal({ value: period.expense, decimals }),
+        income: minorUnitsToApiDecimal({ value: period.income, decimals }),
       })),
     },
     spendingsByCurrency: stats.spendingsByCurrency.map((item) => ({
       currencyCode: item.currencyCode,
-      amount: centsToApiDecimal(item.amount),
-      refAmount: centsToApiDecimal(item.refAmount),
+      amount: moneyToApiDecimal(item.amount),
+      refAmount: minorUnitsToApiDecimal({ value: item.refAmount, decimals }),
     })),
-    topPayees: stats.topPayees.map((payee) => ({ ...payee, amount: centsToApiDecimal(payee.amount) })),
+    topPayees: stats.topPayees.map((payee) => ({
+      ...payee,
+      amount: minorUnitsToApiDecimal({ value: payee.amount, decimals }),
+    })),
     biggestDay: stats.biggestDay && {
       date: stats.biggestDay.date,
-      expense: centsToApiDecimal(stats.biggestDay.expense),
+      expense: minorUnitsToApiDecimal({ value: stats.biggestDay.expense, decimals }),
     },
   };
 }

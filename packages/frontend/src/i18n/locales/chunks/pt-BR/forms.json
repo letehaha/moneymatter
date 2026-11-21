@@ -66,6 +66,8 @@
       "displayCurrencyPlaceholder": "Escolha a moeda de exibição",
       "displayCurrencyBaseOption": "Moeda base ({code})",
       "displayCurrencyDescription": "O valor e as estatísticas da carteira são convertidos para esta moeda pela cotação atual.",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://broker.example.com",
       "cancelButton": "Cancelar",
       "submitButton": "Salvar alterações",
       "submitButtonLoading": "Salvando...",
@@ -137,6 +139,8 @@
       "creditLimitLabel": "Limite de crédito",
       "creditLimitPlaceholder": "Limite de crédito",
       "defaultPaymentTypeLabel": "Tipo de pagamento padrão",
+      "externalUrlLabel": "External URL (optional)",
+      "externalUrlPlaceholder": "https://bank.example.com",
       "submitButton": "Criar",
       "submitButtonLoading": "Criando...",
       "notifications": {
@@ -190,7 +194,9 @@
     },
     "validators": {
       "invalidCurrencyDecimal": "Digite um valor válido (até 2 casas decimais)",
-      "mustBePositive": "O valor precisa ser positivo"
+      "mustBePositive": "O valor precisa ser positivo",
+      "httpUrl": "Enter a valid http(s) URL",
+      "maxLength": "Must not exceed {max} characters"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "Moeda de origem",

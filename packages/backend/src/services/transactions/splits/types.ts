@@ -28,5 +28,4 @@ export const SPLIT_ERROR_CODES = {
 } as const;
 
 export const MAX_SPLITS_PER_TRANSACTION = 10;
-export const MIN_SPLIT_AMOUNT = Money.fromCents(1); // 0.01 in decimal
 export const MAX_SPLIT_NOTE_LENGTH = 100;

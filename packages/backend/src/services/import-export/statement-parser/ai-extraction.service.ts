@@ -19,12 +19,13 @@ import {
   hitOutputCeiling,
 } from '@services/ai';
 import { trackAiUsage } from '@services/ai/track-ai-usage';
+import { getOwnCustomCurrencyCodes } from '@services/currencies/assert-currency-codes-visible';
 import { type AIExtractionError, resolveAiExtractionFailure } from '@services/import-export/core/ai-extraction-failure';
 import { type ModelMessage, generateText } from 'ai';
 import { format } from 'date-fns';
 
 import {
-  STATEMENT_EXTRACTION_SYSTEM_PROMPT,
+  buildStatementExtractionSystemPrompt,
   createImageExtractionPrompt,
   createTextExtractionPrompt,
   parseAIResponse,
@@ -94,6 +95,8 @@ export async function extractTransactionsWithAI({
     };
   }
 
+  const customCurrencyCodes = await getOwnCustomCurrencyCodes({ userId });
+
   try {
     logger.info('[Statement Parser] Starting AI extraction', {
       modelId: aiClient.modelId,
@@ -108,7 +111,7 @@ export async function extractTransactionsWithAI({
       finishReason,
     } = await generateText({
       model: aiClient.model,
-      system: STATEMENT_EXTRACTION_SYSTEM_PROMPT,
+      system: buildStatementExtractionSystemPrompt({ customCurrencyCodes }),
       messages: [buildUserMessage({ content, today: todayIn({ timezone }) })],
       abortSignal,
       maxRetries,
@@ -141,7 +144,7 @@ export async function extractTransactionsWithAI({
     }
 
     // Parse AI response
-    const parsed = parseAIResponse({ response: responseText });
+    const parsed = parseAIResponse({ response: responseText, customCurrencyCodes });
 
     if (!parsed) {
       logger.info('[Statement Parser] AI extraction returned failure', {

@@ -18,6 +18,7 @@
         "updateError": "Une erreur est survenue lors de la mise à jour du compte",
         "nameLabel": "Nom du compte",
         "namePlaceholder": "Nom du compte",
+        "openExternalUrl": "Open external link",
         "transferToPortfolio": "Transférer vers le portefeuille",
         "editAccountName": "Modifier le nom du compte",
         "save": "Enregistrer",
@@ -149,7 +150,9 @@
         "residualAdjustmentDescription": "Ajoute une opération d'ajustement de solde à la date d'aujourd'hui. Vos soldes passés restent strictement inchangés.",
         "residualOpeningLabel": "Modifier le solde initial",
         "residualOpeningDescription": "Décale le solde initial du compte de la différence, ajustant ainsi l'ensemble des soldes passés. À choisir s'il manque des opérations au début de l'historique.",
-        "residualHint": "Le montant définitif est fixé après la première synchronisation et peut légèrement différer de cet aperçu."
+        "residualHint": "Le montant définitif est fixé après la première synchronisation et peut légèrement différer de cet aperçu.",
+        "linkFailed": "An error occurred while trying to link account",
+        "refreshFailed": "Account linked, but refreshing your accounts failed. Reload the page if anything looks stale."
       },
       "tabs": {
         "details": "Détails",
@@ -179,6 +182,12 @@
         "editDefaultPaymentType": "Edit default payment type",
         "defaultPaymentTypeUpdateSuccess": "Default payment type updated",
         "defaultPaymentTypeUpdateError": "Failed to update default payment type",
+        "externalUrl": "External URL:",
+        "externalUrlPlaceholder": "https://bank.example.com",
+        "externalUrlNotSet": "Not set",
+        "editExternalUrl": "Edit external URL",
+        "externalUrlUpdateSuccess": "External URL updated",
+        "externalUrlUpdateError": "Failed to update external URL",
         "currency": "Devise :",
         "main": "(principale)",
         "exchangeRate": "Taux de change :",

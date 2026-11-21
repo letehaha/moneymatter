@@ -48,14 +48,14 @@ describe('Editing the opening balance of a foreign-currency account', () => {
 
     const rows = await helpers.getBalanceHistory({ accountId: account.id, raw: true });
 
-    expect(helpers.balanceCentsOn({ rows, date: DEPOSIT_DATE })).toEqualRefValue(
-      HELD_AFTER_EDIT_CENTS * helpers.INR_TO_AED_AT_DEPOSIT,
+    expect(helpers.balanceOn({ rows, date: DEPOSIT_DATE })).toEqualRefValue(
+      (HELD_AFTER_EDIT_CENTS / 100) * helpers.INR_TO_AED_AT_DEPOSIT,
     );
-    expect(helpers.balanceCentsOn({ rows, date: MID_DATE })).toEqualRefValue(
-      HELD_AFTER_EDIT_CENTS * helpers.INR_TO_AED_AFTER,
+    expect(helpers.balanceOn({ rows, date: MID_DATE })).toEqualRefValue(
+      (HELD_AFTER_EDIT_CENTS / 100) * helpers.INR_TO_AED_AFTER,
     );
-    expect(helpers.balanceCentsOn({ rows, date: TODAY })).toEqualRefValue(
-      HELD_AFTER_EDIT_CENTS * helpers.INR_TO_AED_AFTER,
+    expect(helpers.balanceOn({ rows, date: TODAY })).toEqualRefValue(
+      (HELD_AFTER_EDIT_CENTS / 100) * helpers.INR_TO_AED_AFTER,
     );
   });
 });

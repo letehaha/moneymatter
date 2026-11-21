@@ -1,4 +1,5 @@
 import type { RefundRole } from '@/api/transactions';
+import { getCurrencyDecimals, roundToDecimals } from '@/js/helpers/currency-decimals';
 
 import type { RefundWithSplit } from '../types';
 
@@ -15,34 +16,50 @@ interface RefundShareTarget {
 
 type RefundShareError = 'nonPositive' | 'exceedsPurchase';
 
-const ORPHAN_CENT = 0.01;
+/** One minor unit of the refund currency: the stray amount a rate-rounded cap can leave. */
+const orphanUnit = ({ decimals }: { decimals: number }) => 10 ** -decimals;
 
-export const round2 = ({ value }: { value: number }) => Math.round(value * 100) / 100 || 0;
+/** Rounds a share to the refund currency's decimals; `|| 0` turns a NaN share into 0. */
+export const roundShare = ({ value, decimals }: { value: number; decimals: number }) =>
+  roundToDecimals({ value, decimals }) || 0;
+
+const shareRounder =
+  ({ decimals }: { decimals: number }) =>
+  ({ value }: { value: number }) =>
+    roundShare({ value, decimals });
 
 /**
  * One pass in tick order: each target without a set share takes min(what is left, its cap).
- * The last filled target swallows a stray cent left by a rate-rounded cap.
+ * The last filled target swallows a stray minor unit left by a rate-rounded cap.
  */
 export const fillRefundShares = ({
   targets,
   refundAmount,
+  decimals,
 }: {
   targets: RefundShareTarget[];
   refundAmount: number;
+  /** Decimals of the currency the shares are in. */
+  decimals: number;
 }): number[] => {
-  const shares = targets.map((target) => (target.share == null ? null : round2({ value: target.share })));
-  let remaining = round2({ value: refundAmount - shares.reduce<number>((sum, share) => sum + (share ?? 0), 0) });
+  const round = shareRounder({ decimals });
+  const shares = targets.map((target) => (target.share == null ? null : round({ value: target.share })));
+  let remaining = round({ value: refundAmount - shares.reduce<number>((sum, share) => sum + (share ?? 0), 0) });
   const fillIndexes = shares.flatMap((share, index) => (share === null ? [index] : []));
 
   fillIndexes.forEach((index, position) => {
     const { cap, isCapApprox } = targets[index]!;
     const available = Math.max(0, remaining);
-    let share = cap === null ? available : Math.min(available, Math.max(0, round2({ value: cap })));
-    if (position === fillIndexes.length - 1 && isCapApprox && round2({ value: available - share }) <= ORPHAN_CENT) {
+    let share = cap === null ? available : Math.min(available, Math.max(0, round({ value: cap })));
+    if (
+      position === fillIndexes.length - 1 &&
+      isCapApprox &&
+      round({ value: available - share }) <= orphanUnit({ decimals })
+    ) {
       share = available;
     }
     shares[index] = share;
-    remaining = round2({ value: remaining - share });
+    remaining = round({ value: remaining - share });
   });
 
   return shares.map((share) => share ?? 0);
@@ -51,15 +68,19 @@ export const fillRefundShares = ({
 export const validateRefundShares = ({
   targets,
   refundAmount,
+  decimals,
 }: {
   targets: { share: number | null | undefined; cap: number | null; isSameCurrency: boolean }[];
   refundAmount: number;
+  /** Decimals of the refund currency. */
+  decimals: number;
 }) => {
+  const round = shareRounder({ decimals });
   const errors: (RefundShareError | null)[] = targets.map((target) => {
     if (target.share == null) return 'nonPositive';
-    const share = round2({ value: target.share });
+    const share = round({ value: target.share });
     if (share <= 0) return 'nonPositive';
-    if (target.isSameCurrency && target.cap !== null && share > round2({ value: target.cap })) {
+    if (target.isSameCurrency && target.cap !== null && share > round({ value: target.cap })) {
       return 'exceedsPurchase';
     }
     return null;
@@ -69,10 +90,10 @@ export const validateRefundShares = ({
       !target.isSameCurrency &&
       target.cap !== null &&
       target.share != null &&
-      round2({ value: target.share - target.cap }) > ORPHAN_CENT,
+      round({ value: target.share - target.cap }) > orphanUnit({ decimals }),
   );
-  const assigned = round2({ value: targets.reduce((sum, target) => sum + (target.share ?? 0), 0) });
-  const isOverAssigned = assigned > round2({ value: refundAmount });
+  const assigned = round({ value: targets.reduce((sum, target) => sum + (target.share ?? 0), 0) });
+  const isOverAssigned = assigned > round({ value: refundAmount });
 
   return {
     assigned,
@@ -96,19 +117,24 @@ export const refundShareKey = ({ txId, splitId }: { txId: string; splitId?: stri
 export const getRefundTargetCap = ({
   link,
   refundCurrencyCode,
+  decimals,
   savedShares = {},
   convert,
 }: {
   link: RefundWithSplit;
   refundCurrencyCode: string | undefined;
+  /** Decimals of the refund currency. */
+  decimals: number;
   /** This refund's saved shares per `refundShareKey`; `refundedAmount` already includes them. */
   savedShares?: Record<string, number>;
   convert: ConvertAmount;
 }) => {
+  const round = shareRounder({ decimals });
   const tx = link.transaction;
   const base = getRefundTargetBase({ link });
   const purchaseCurrencyCode = tx.currencyCode;
   const isSameCurrency = purchaseCurrencyCode === refundCurrencyCode;
+  const roundPurchase = shareRounder({ decimals: getCurrencyDecimals({ code: purchaseCurrencyCode }) });
 
   const leftOf = ({
     amount,
@@ -118,7 +144,11 @@ export const getRefundTargetCap = ({
     amount: number;
     refundedAmount?: number | null;
     saved: number;
-  }) => Math.max(0, round2({ value: amount - Math.max(0, round2({ value: (refundedAmount ?? 0) - saved })) }));
+  }) =>
+    Math.max(
+      0,
+      roundPurchase({ value: amount - Math.max(0, roundPurchase({ value: (refundedAmount ?? 0) - saved })) }),
+    );
   // Saving replaces every link of this refund, so all its saved shares on the purchase free room,
   // whichever split is picked now.
   const txSaved = Object.entries(savedShares).reduce(
@@ -140,7 +170,7 @@ export const getRefundTargetCap = ({
   const shared = {
     isSameCurrency,
     purchaseAmount: base.amount,
-    refundedByOthers: round2({ value: base.amount - left }),
+    refundedByOthers: roundPurchase({ value: base.amount - left }),
   };
 
   if (isSameCurrency) return { ...shared, cap: left, isCapApprox: false };
@@ -150,8 +180,12 @@ export const getRefundTargetCap = ({
     : null;
   if (converted === null) return { ...shared, cap: null, isCapApprox: true };
 
-  // A remainder that converts below one cent must still be tickable.
-  return { ...shared, cap: left > 0 ? Math.max(ORPHAN_CENT, round2({ value: converted })) : 0, isCapApprox: true };
+  // A remainder that converts below one minor unit must still be tickable.
+  return {
+    ...shared,
+    cap: left > 0 ? Math.max(orphanUnit({ decimals }), round({ value: converted })) : 0,
+    isCapApprox: true,
+  };
 };
 
 /** Unset means "as saved": a saved share is kept, a saved whole-refund link (`null`) is refilled. */
@@ -161,21 +195,26 @@ export const refillRefundLinks = ({
   links,
   refundAmount,
   refundCurrencyCode,
+  decimals,
   savedShares,
   convert,
 }: {
   links: RefundWithSplit[];
   refundAmount: number;
   refundCurrencyCode: string | undefined;
+  /** Decimals of the refund currency. */
+  decimals: number;
   savedShares: Record<string, number>;
   convert: ConvertAmount;
 }): RefundWithSplit[] => {
   const shares = fillRefundShares({
     refundAmount,
+    decimals,
     targets: links.map((link) => {
       const { cap, isCapApprox } = getRefundTargetCap({
         link,
         refundCurrencyCode,
+        decimals,
         savedShares,
         convert,
       });
@@ -193,16 +232,20 @@ export const refillRefundedByLinks = ({
   links,
   purchaseAmount,
   purchaseCurrencyCode,
+  decimals,
 }: {
   links: RefundWithSplit[];
   purchaseAmount: number;
   purchaseCurrencyCode: string | undefined;
+  /** Decimals of the purchase currency. */
+  decimals: number;
 }): RefundWithSplit[] => {
   const isSameCurrency = ({ link }: { link: RefundWithSplit }) =>
     link.transaction.currencyCode === purchaseCurrencyCode;
   const sameCurrencyLinks = links.filter((link) => isSameCurrency({ link }));
   const shares = fillRefundShares({
     refundAmount: purchaseAmount,
+    decimals,
     targets: sameCurrencyLinks.map((link) => ({
       cap: link.transaction.amount,
       share: isRefundShareAdjusted({ link }) ? (link.amount ?? link.transaction.amount) : null,
@@ -221,6 +264,7 @@ export const refillRefundSide = ({
   role,
   amount,
   currencyCode,
+  decimals,
   savedShares,
   convert,
 }: {
@@ -228,16 +272,19 @@ export const refillRefundSide = ({
   role: RefundRole | null;
   amount: number | null | undefined;
   currencyCode: string | undefined;
+  /** Decimals of `currencyCode`, the current transaction's currency. */
+  decimals: number;
   savedShares: Record<string, number> | undefined;
   convert: ConvertAmount;
 }): RefundWithSplit[] => {
   if (!amount || amount <= 0) return links;
   return role === 'original'
-    ? refillRefundedByLinks({ links, purchaseAmount: amount, purchaseCurrencyCode: currencyCode })
+    ? refillRefundedByLinks({ links, purchaseAmount: amount, purchaseCurrencyCode: currencyCode, decimals })
     : refillRefundLinks({
         links,
         refundAmount: amount,
         refundCurrencyCode: currencyCode,
+        decimals,
         savedShares: savedShares ?? {},
         convert,
       });
@@ -247,15 +294,19 @@ export const refillRefundSide = ({
 export const finalizeRefundShares = ({
   links,
   refundAmount,
+  decimals,
 }: {
   links: RefundWithSplit[];
   refundAmount: number | null | undefined;
+  /** Decimals of the refund currency. */
+  decimals: number;
 }): RefundWithSplit[] => {
   const [single] = links;
   if (links.length !== 1 || !single) return links;
   if (
     single.amount == null ||
-    (refundAmount != null && round2({ value: single.amount }) === round2({ value: refundAmount }))
+    (refundAmount != null &&
+      roundShare({ value: single.amount, decimals }) === roundShare({ value: refundAmount, decimals }))
   ) {
     return [{ ...single, amount: null }];
   }

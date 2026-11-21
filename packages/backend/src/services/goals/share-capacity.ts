@@ -19,7 +19,8 @@ import { lockAccountRow } from '@services/accounts/lock-account-row';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
 import { QueryTypes } from 'sequelize';
 
-import { loadHeldFixedAmounts, requireRateToBase } from './goal-insights';
+import { loadConversionDecimals, loadHeldFixedAmounts, requireRateToBase } from './goal-insights';
+import { roundGoalAmount } from './round-goal-amount';
 
 const FULL_SHARE_HUNDREDTHS = 10_000;
 const toHundredths = (percent: number) => Math.round(percent * 100);
@@ -138,8 +139,17 @@ const assertFixedAmountsReachTarget = async ({
       ),
     ),
   );
+  const decimalsByCurrency = await loadConversionDecimals({
+    userId,
+    currencyCodes: [...rateByCurrency.keys()],
+    baseCurrencyCode,
+  });
   const toBase = ({ amount, currencyCode }: { amount: Money; currencyCode: string }) =>
-    calculateRefAmountFromParams({ amount, rate: rateByCurrency.get(currencyCode)! });
+    calculateRefAmountFromParams({
+      amount,
+      rate: rateByCurrency.get(currencyCode)!,
+      ...decimalsByCurrency.get(currencyCode)!,
+    });
 
   const total = shares.reduce(
     (sum, share) =>
@@ -158,7 +168,11 @@ const assertFixedAmountsReachTarget = async ({
     message: t({
       key: 'goals.fixedAmountsBelowTarget',
       variables: {
-        total: toGoalCurrency({ amount: total.toNumber(), rateToBase: rateByCurrency.get(target.currencyCode)! }),
+        total: toGoalCurrency({
+          amount: total.toNumber(),
+          rateToBase: rateByCurrency.get(target.currencyCode)!,
+          decimals: decimalsByCurrency.get(target.currencyCode)!.baseDecimals,
+        }),
         target: target.amount.toNumber(),
         currencyCode: target.currencyCode,
       },
@@ -216,7 +230,7 @@ export const writeGoalShares = async ({
   target: { amount: Money; currencyCode: string };
   shares?: GoalAccountShareInput[];
 }): Promise<void> => {
-  const nextShares: GoalAccountShareInput[] =
+  const sentOrStoredShares: GoalAccountShareInput[] =
     shares ??
     (await GoalAccounts.findAll({ where: { goalId } })).map(({ accountId, sharePercent, fixedAmount }) => ({
       accountId,
@@ -225,7 +239,26 @@ export const writeGoalShares = async ({
     }));
 
   const countsTowardCapacity = GOAL_STATUSES_HOLDING_SHARES.includes(status);
-  const accounts = await assertGoalAccounts({ userId, goalId, shares: nextShares, countsTowardCapacity });
+  const accounts = await assertGoalAccounts({ userId, goalId, shares: sentOrStoredShares, countsTowardCapacity });
+  // A sent fixed amount is entered in its account's currency and rounds half-up to that currency's
+  // decimals. Stored ones are re-checked as they are: the write did not touch them.
+  const currencyByAccount = new Map(accounts.map((account) => [account.id, account.currencyCode]));
+  const nextShares = await Promise.all(
+    sentOrStoredShares.map(async (share) =>
+      !shares || share.fixedAmount == null
+        ? share
+        : {
+            ...share,
+            fixedAmount: (
+              await roundGoalAmount({
+                money: Money.fromDecimal(share.fixedAmount),
+                userId,
+                currencyCode: currencyByAccount.get(share.accountId)!,
+              })
+            ).toNumber(),
+          },
+    ),
+  );
   await assertFixedAmountsReachTarget({ userId, shares: nextShares, accounts, target });
   const positions = countsTowardCapacity ? await placeFixedAmounts({ userId, goalId, shares: nextShares }) : null;
   await GoalAccounts.destroy({ where: { goalId } });

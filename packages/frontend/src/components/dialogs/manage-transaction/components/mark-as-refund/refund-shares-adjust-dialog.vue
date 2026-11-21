@@ -23,7 +23,7 @@ import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
-import { formatCompactUIAmount, formatUIAmount } from '@/js/helpers';
+import { formatCompactUIAmount, formatUIAmount, getCurrencyDecimals } from '@/js/helpers';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { computed, ref, watch } from 'vue';
@@ -49,6 +49,8 @@ const { convert } = useExchangeRates();
 
 const KEY = 'dialogs.manageTransaction.markAsRefund';
 
+const decimals = computed(() => getCurrencyDecimals({ code: props.refundCurrencyCode }));
+
 const drafts = ref<{ value: number | null; isAdjusted: boolean }[]>([]);
 
 watch(isOpen, (open) => {
@@ -58,6 +60,7 @@ watch(isOpen, (open) => {
 const shares = computed(() => {
   const filled = fillRefundShares({
     refundAmount: props.refundAmount,
+    decimals: decimals.value,
     targets: props.rows.map((row, index) => ({
       cap: row.cap,
       isCapApprox: row.isCapApprox,
@@ -70,6 +73,7 @@ const shares = computed(() => {
 const validation = computed(() =>
   validateRefundShares({
     refundAmount: props.refundAmount,
+    decimals: decimals.value,
     targets: props.rows.map((row, index) => ({
       share: shares.value[index],
       cap: row.cap,
@@ -198,6 +202,7 @@ const apply = () => {
           <div class="min-w-0 flex-1">
             <InputField
               type="number"
+              :decimals="decimals"
               only-positive
               trailing-icon-css-class="px-3"
               :class="validation.errors[index] && 'border-destructive'"

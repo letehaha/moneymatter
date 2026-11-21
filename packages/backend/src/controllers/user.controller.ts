@@ -1,5 +1,5 @@
 import { API_ERROR_CODES, DAY_TRIALABLE_FEATURES, UserInfoResponse } from '@bt/shared/types';
-import { currencyCode } from '@common/lib/zod/custom-types';
+import { isoCurrencyCode } from '@common/lib/zod/custom-types';
 import { removeExchangeRatePairsSchema } from '@controllers/currencies/exchange-rate-pairs.schema';
 import {
   deleteUserCurrencyBodySchema,
@@ -149,7 +149,7 @@ export const getUserBaseCurrency = createController(z.object({}), async ({ user 
 export const setBaseUserCurrency = createController(
   z.object({
     body: z.object({
-      currencyCode: currencyCode(),
+      currencyCode: isoCurrencyCode(),
     }),
   }),
   async ({ user, body }) => {

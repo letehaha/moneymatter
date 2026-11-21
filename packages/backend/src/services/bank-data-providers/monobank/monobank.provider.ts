@@ -2,6 +2,7 @@ import type { RecordId } from '@bt/shared/types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import { ExternalMonobankClientInfoResponse } from '@bt/shared/types/external-services';
+import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, ValidationError } from '@js/errors';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
@@ -264,7 +265,8 @@ export class MonobankProvider extends BaseBankDataProvider {
       externalId: account.id,
       name: this.getAccountName(account),
       type: account.type,
-      balance: account.balance,
+      balance: Money.fromCents(account.balance),
+      creditLimit: Money.fromCents(account.creditLimit),
       currency: this.getCurrencyCodeFromMonobank(account.currencyCode),
       metadata: {
         creditLimit: account.creditLimit,

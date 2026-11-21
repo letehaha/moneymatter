@@ -144,7 +144,9 @@ const performLink = async (confirmOverpay = false) => {
 };
 
 const overpayAmountDisplay = computed(() =>
-  overpayDetails.value ? formatAmountByCurrencyCode(overpayDetails.value.overpayBy, props.loan.currencyCode) : '',
+  overpayDetails.value
+    ? formatAmountByCurrencyCode({ amount: overpayDetails.value.overpayBy, currencyCode: props.loan.currencyCode })
+    : '',
 );
 
 watch(

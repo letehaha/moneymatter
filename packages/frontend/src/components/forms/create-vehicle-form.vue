@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { createVehicle } from '@/api/vehicles';
 import { VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
+import { getErrorMessage } from '@/common/utils/error-message';
 import {
   DEPRECIATION_PRESET_TRANSLATION_KEYS,
   VEHICLE_CLASS_TRANSLATION_KEYS,
@@ -14,6 +15,8 @@ import * as Select from '@/components/lib/ui/select';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useCurrencyName } from '@/composable';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { captureException } from '@/lib/sentry';
 import { useCurrenciesStore } from '@/stores';
 import { DEPRECIATION_PRESET, VEHICLE_CLASS } from '@bt/shared/types';
@@ -38,12 +41,12 @@ const queryClient = useQueryClient();
 const currenciesStore = useCurrenciesStore();
 const { addNotification } = useNotificationCenter();
 const { formatCurrencyLabel } = useCurrencyName();
-const { baseCurrency, systemCurrenciesVerbose } = storeToRefs(currenciesStore);
+const { baseCurrency, isoCurrenciesVerbose } = storeToRefs(currenciesStore);
 
 const defaultCurrency = computed(
   () =>
-    systemCurrenciesVerbose.value.linked.find((i) => i.code === baseCurrency.value?.currencyCode)?.code ??
-    systemCurrenciesVerbose.value.linked[0]?.code ??
+    isoCurrenciesVerbose.value.linked.find((i) => i.code === baseCurrency.value?.currencyCode)?.code ??
+    isoCurrenciesVerbose.value.linked[0]?.code ??
     '',
 );
 
@@ -103,12 +106,18 @@ const selectedDepreciationPreset = computed(
 
 const showCustomRate = computed(() => form.depreciationPreset === DEPRECIATION_PRESET.custom);
 
+const currencyDecimal = useCurrencyDecimalRule({ decimals: () => getCurrencyDecimals({ code: form.currencyCode }) });
+
 const validationRules = {
   name: { required },
   make: { required },
   model: { required },
   year: { required, between: between(MIN_YEAR, MAX_YEAR) },
-  purchasePrice: { positive: positiveNumber, maxValue: maxValue(Number.MAX_SAFE_INTEGER) },
+  purchasePrice: {
+    positive: positiveNumber,
+    maxValue: maxValue(Number.MAX_SAFE_INTEGER),
+    currencyDecimal: helpers.withMessage(() => currencyDecimal.message.value, currencyDecimal.rule.value),
+  },
   salvageFloorPct: { required, between: between(0, 100) },
   customAnnualRatePct: {
     requiredIfCustom: requiredIf(() => form.depreciationPreset === DEPRECIATION_PRESET.custom),
@@ -160,7 +169,7 @@ const submit = async () => {
     emit('created');
   } catch (error) {
     addNotification({
-      text: t('forms.createVehicle.notifications.error'),
+      text: getErrorMessage(error, t('forms.createVehicle.notifications.error')),
       type: NotificationType.error,
     });
     captureException({ error, context: { source: 'createVehicleForm' } });
@@ -185,7 +194,7 @@ const submit = async () => {
             <Select.SelectValue />
           </Select.SelectTrigger>
           <Select.SelectContent>
-            <template v-for="item of systemCurrenciesVerbose.linked" :key="item.code">
+            <template v-for="item of isoCurrenciesVerbose.linked" :key="item.code">
               <Select.SelectItem :value="String(item.code)">
                 {{ formatCurrencyLabel({ code: item.code, fallbackName: item.currency }) }}
               </Select.SelectItem>
@@ -235,6 +244,7 @@ const submit = async () => {
     <input-field
       v-model="form.purchasePrice"
       type="number"
+      :decimals="getCurrencyDecimals({ code: form.currencyCode })"
       :label="$t('forms.createVehicle.purchasePriceLabel')"
       :error-message="getFieldErrorMessage('form.purchasePrice')"
       @blur="touchField('form.purchasePrice')"

@@ -6,6 +6,8 @@ import {
   LOAN_TYPE,
   SUPPORTED_LOAN_TYPES,
   VEHICLE_CLASS,
+  type Cents,
+  asCents,
 } from '@bt/shared/types';
 import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE, VENTURE_SPV_SUBTYPE } from '@bt/shared/types/venture';
 import { getTranslatedCategories } from '@common/const/default-categories';
@@ -203,8 +205,8 @@ export async function createAccounts({ userId }: { userId: number }): Promise<Ac
       name: accountConfig.name,
       currencyCode: accountConfig.currency,
       accountCategory: accountConfig.type,
-      initialBalance: Money.fromCents(accountConfig.initialBalance),
-      creditLimit: Money.fromCents(accountConfig.creditLimit || 0),
+      initialBalance: Money.fromCents(asCents(accountConfig.initialBalance)),
+      creditLimit: Money.fromCents(asCents(accountConfig.creditLimit || 0)),
       type: ACCOUNT_TYPES.system,
       logoDomain,
       logoInitials,
@@ -219,9 +221,9 @@ export async function createAccounts({ userId }: { userId: number }): Promise<Ac
 }
 
 /** Rounds a cents amount to the nearest $10 so a derived limit reads as a number a person chose. */
-function roundToNearestTenDollars({ cents }: { cents: number }): number {
+function roundToNearestTenDollars({ cents }: { cents: number }): Cents {
   const step = 1000;
-  return Math.max(step, Math.round(cents / step) * step);
+  return asCents(Math.max(step, Math.round(cents / step) * step));
 }
 
 /**

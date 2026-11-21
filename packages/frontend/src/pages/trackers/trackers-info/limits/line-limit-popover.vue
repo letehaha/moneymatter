@@ -2,12 +2,14 @@
 import ResponsivePopover from '@/components/common/responsive-popover.vue';
 import FormattedAmountField from '@/components/fields/formatted-amount-field.vue';
 import { Button } from '@/components/lib/ui/button';
+import { useFormatCurrency } from '@/composable/formatters';
 import type { TrackerLineModel } from '@bt/shared/types';
 import { nextTick, ref, watch } from 'vue';
 
 import { useTrackerLineMutations } from './use-tracker-line-mutations';
 
 const props = defineProps<{ trackerId: string; line: TrackerLineModel }>();
+const { baseCurrencyDecimals } = useFormatCurrency();
 
 const { updateLine } = useTrackerLineMutations({ trackerId: () => props.trackerId });
 
@@ -46,6 +48,7 @@ const save = async () => {
     <div ref="contentRef" class="grid gap-3">
       <FormattedAmountField
         :model-value="amount"
+        :decimals="baseCurrencyDecimals"
         :label="$t('budgets.lines.columns.limit')"
         :placeholder="$t('budgets.lines.noLimitPlaceholder')"
         @update:model-value="(value) => (amount = value)"

@@ -63,18 +63,18 @@
         "quarterly": "Trimestral",
         "semiAnnual": "Semestral",
         "annual": "Anual",
-        "custom": "Custom",
+        "custom": "Personalizado",
         "every": {
-          "day": "Every day | Every {count} days",
-          "week": "Every week | Every {count} weeks",
-          "month": "Every month | Every {count} months",
-          "year": "Every year | Every {count} years"
+          "day": "Todos los días | Cada {count} días",
+          "week": "Todas las semanas | Cada {count} semanas",
+          "month": "Cada mes | Cada {count} meses",
+          "year": "Cada año | Cada {count} años"
         },
         "units": {
-          "day": "day | days",
-          "week": "week | weeks",
-          "month": "month | months",
-          "year": "year | years"
+          "day": "día | días",
+          "week": "semana | semanas",
+          "month": "mes | meses",
+          "year": "año | años"
         }
       },
       "matchSource": {
@@ -99,11 +99,11 @@
         "amountPlaceholder": "0.00",
         "currencyLabel": "Moneda",
         "frequencyLabel": "Frecuencia",
-        "intervalCountLabel": "Repeat every",
-        "intervalCountPlaceholder": "e.g. 30",
-        "intervalUnitLabel": "Unit",
-        "intervalUnitPlaceholder": "Select a unit",
-        "validationIntervalCount": "Enter a whole number from 1 to {max}",
+        "intervalCountLabel": "Repetir cada",
+        "intervalCountPlaceholder": "ej. 30",
+        "intervalUnitLabel": "Unidad",
+        "intervalUnitPlaceholder": "Seleccionar una unidad",
+        "validationIntervalCount": "Introduce un número entero del 1 al {max}",
         "startDateLabel": "Fecha de inicio",
         "endDateLabel": "Fecha de fin",
         "accountLabel": "Cuenta",
@@ -280,7 +280,7 @@
         "dueOn": "Vence {date}",
         "paidAt": "Pagado {date}",
         "viewTransaction": "Ver transacción",
-        "paymentInTrash": "Payment in Trash",
+        "paymentInTrash": "Pago en Papelera",
         "actions": {
           "markPaid": "Marcar como pagado",
           "skip": "Omitir"

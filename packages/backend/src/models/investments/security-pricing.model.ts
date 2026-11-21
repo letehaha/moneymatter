@@ -53,7 +53,7 @@ export default class SecurityPricing extends Model {
    * financial analysis and reporting as they represent the final price at which the security was traded
    * during the trading session.
    */
-  @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
+  @MoneyField({ precision: 20, scale: 10 })
   declare priceClose: Money;
 
   /**

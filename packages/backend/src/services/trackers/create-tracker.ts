@@ -17,6 +17,7 @@ import { includeCategories, includeTags } from '@services/trackers/get-trackers'
 import { saveTrackerRules } from './rules/save-tracker-rules';
 import { assertSmartTrackingConfig } from './smart-tracking/assert-smart-tracking-config';
 import { enqueueTrackerScan } from './smart-tracking/tracker-scan-queue';
+import { roundTrackerLimit } from './utils/round-tracker-limit';
 
 interface CreateTrackerPayload extends EntityLogoWritePayload {
   id?: string;
@@ -51,13 +52,15 @@ export const createTracker = withTransaction(async (payload: CreateTrackerPayloa
     },
   });
 
+  const limitAmount = await roundTrackerLimit({ ownerUserId: payload.userId, limitAmount: payload.limitAmount });
+
   const tracker = await Trackers.create({
     name: payload.name,
     userId: payload.userId,
     status: payload.status || TRACKER_STATUSES.active,
     startDate: payload.startDate || null,
     endDate: payload.endDate || null,
-    limitAmount: payload.limitAmount ?? null,
+    limitAmount: limitAmount ?? null,
     ...(payload.limitKind && { limitKind: payload.limitKind }),
     rulesEnabled,
     ...(payload.rulesCleanup !== undefined && { rulesCleanup: payload.rulesCleanup }),

@@ -340,7 +340,7 @@
         "outsideSpending": "Spese fuori dalle voci",
         "fromLines": "Dalle voci (riporto restituito / sforamento coperto)",
         "assigned": "Assegnato in questo periodo",
-        "cashHint": "Liquidità nei conti del piano, al netto dei limiti di credito.",
+        "cashHint": "Liquidità nei conti del piano. I limiti di credito vengono sottratti quando l'opzione «Includi i limiti di credito nel saldo» è attiva.",
         "inLinesHint": "Tutto ciò che si trova attualmente nelle voci.",
         "driftHint": "Variazioni di cambio e saldi non spiegati dalle transazioni.",
         "committedLaterHint": "Già assegnato in un periodo successivo.",
@@ -377,6 +377,8 @@
       "pace": "Ritmo di spesa",
       "spent": "Speso",
       "elapsed": "Periodo trascorso",
+      "usuallyByToday": "Di solito entro oggi",
+      "slowDown": "Rallentare a ~{perDay}/giorno per arrivare a fine periodo",
       "spentOfTotal": "{spent} di {total}",
       "daysLeft": "{n} g rimasti",
       "scheduled": "Pianificati",
@@ -431,6 +433,12 @@
       "layoutSaved": "Layout salvato",
       "layoutError": "Impossibile salvare il layout"
     },
+    "pace": {
+      "aheadUsual": "{amount} oltre il ritmo abituale",
+      "aheadEven": "{amount} oltre il ritmo previsto",
+      "aheadUsualPerDay": "{amount} oltre il ritmo abituale · ~{perDay}/giorno disponibili per {count} giorno | {amount} oltre il ritmo abituale · ~{perDay}/giorno disponibili per {count} giorni",
+      "aheadEvenPerDay": "{amount} oltre il ritmo previsto · ~{perDay}/giorno disponibili per {count} giorno | {amount} oltre il ritmo previsto · ~{perDay}/giorno disponibili per {count} giorni"
+    },
     "options": {
       "title": "Opzioni",
       "manageLayout": "Gestisci layout",
@@ -439,7 +447,8 @@
       "rowBarGoal": "Barra dell'obiettivo",
       "rowBarCombined": "Barra combinata",
       "rowBarSplit": "Barre separate",
-      "rowBarNone": "Nessuna barra"
+      "rowBarNone": "Nessuna barra",
+      "paceHint": "Indicazione sul ritmo"
     },
     "goals": {
       "askHint": "Assegnare qui questo importo per restare in linea.",

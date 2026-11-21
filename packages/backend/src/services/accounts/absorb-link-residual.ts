@@ -32,7 +32,7 @@ const sumSignedRealRows = async ({ accountId }: { accountId: string }): Promise<
       transaction: namespace.get('transaction'),
     },
   );
-  return Money.fromCents(Number(row?.signedSum ?? 0));
+  return Money.fromDecimal(row?.signedSum ?? 0);
 };
 
 /**
@@ -84,8 +84,8 @@ export const absorbLinkResidual = withTransaction(
       logger.info('Recorded post-link balance residual as a balance adjustment', {
         accountId,
         userId,
-        signedSumCents: signedSum.toCents(),
-        identityGapCents: identityGap.toCents(),
+        signedSum: signedSum.toNumber(),
+        identityGap: identityGap.toNumber(),
         residualTarget,
         adjustmentTransactionId: adjustment.id,
       });
@@ -125,14 +125,14 @@ export const absorbLinkResidual = withTransaction(
     logger.info('Absorbed post-link balance residual into the opening balance', {
       accountId,
       userId,
-      signedSumCents: signedSum.toCents(),
-      identityGapCents: identityGap.toCents(),
+      signedSum: signedSum.toNumber(),
+      identityGap: identityGap.toNumber(),
       residualTarget,
-      initialBalanceBeforeCents: initialBalanceBefore.toCents(),
-      initialBalanceAfterCents: initialBalanceAfter.toCents(),
+      initialBalanceBefore: initialBalanceBefore.toNumber(),
+      initialBalanceAfter: initialBalanceAfter.toNumber(),
     });
 
-    return { absorbedResidual: identityGap.toCents() };
+    return { absorbedResidual: identityGap.toNumber() };
   },
 );
 
@@ -157,7 +157,7 @@ const absorbIntoNativeOpeningBalance = async ({
   if (gap.isZero()) return {};
 
   await Accounts.update({ initialBalance: account.initialBalance.add(gap) }, { where: { id: accountId, userId } });
-  return { absorbedResidual: gap.toCents() };
+  return { absorbedResidual: gap.toNumber() };
 };
 
 /**

@@ -372,6 +372,7 @@
           "syncFailed": "Не удалось запустить синхронизацию"
         },
         "actions": {
+          "openExternalUrl": "Open external link",
           "renameButton": "Переименовать подключение",
           "disconnectButton": "Отключить интеграцию",
           "manage": "Управление"
@@ -431,6 +432,8 @@
           "title": "Изменить название подключения",
           "description": "Задайте подключению собственное название, чтобы его было легче различать.",
           "label": "Название подключения",
+          "externalUrlLabel": "External URL (optional)",
+          "externalUrlPlaceholder": "https://bridge.example.com",
           "saving": "Сохранение...",
           "save": "Сохранить"
         },

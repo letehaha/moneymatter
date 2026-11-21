@@ -3,6 +3,7 @@
  * Uses CSV format to minimize output tokens
  * Supports PDF, CSV, and TXT input files
  */
+import { normalizeCurrencyCode } from '@common/lib/currency-code-format';
 import { logger } from '@js/utils';
 import { parseDecimalAmount } from '@services/import-export/core/parse/parse-decimal-amount';
 import cc from 'currency-codes';
@@ -77,6 +78,27 @@ becomes one line that keeps the amount and drops what does not map:
   2025-03-04 12:49:08,Groceries,Fresh Market,1115.00,E,,90,,,
 Never emit a line that carries the source's separator or loses the amount, like:
   2025-03-04 12:49:08,Groceries|Card|Fresh Market,E,,90,,,`;
+
+/**
+ * The system prompt for one user. A user who defines custom currencies (USDT, BTC, ...) gets them
+ * named, so the model writes those codes as the statement shows them instead of rewording them
+ * into an ISO code.
+ */
+export function buildStatementExtractionSystemPrompt({
+  customCurrencyCodes = [],
+}: {
+  customCurrencyCodes?: readonly string[];
+} = {}): string {
+  if (customCurrencyCodes.length === 0) return STATEMENT_EXTRACTION_SYSTEM_PROMPT;
+
+  return `${STATEMENT_EXTRACTION_SYSTEM_PROMPT}
+
+CUSTOM CURRENCIES:
+Besides ISO 4217 codes, this user also tracks these currencies: ${customCurrencyCodes.join(', ')}.
+When the statement shows an amount in one of them, write that exact code in currencyCode and
+originalCurrency. Never replace it with a similar ISO code, and never invent a code that is neither
+an ISO 4217 code nor on this list.`;
+}
 
 /**
  * User prompt template for text-based extraction
@@ -216,25 +238,56 @@ function readTransactionFields({ fields }: { fields: string[] }): TransactionFie
   };
 }
 
-function readOriginalAmount({ amountStr, currencyStr }: { amountStr: string; currencyStr: string }): {
+/** An ISO 4217 code or one of the user's own custom codes; anything else from the model is a guess. */
+const isKnownCurrencyCode = ({
+  code,
+  customCurrencyCodes,
+}: {
+  code: string;
+  customCurrencyCodes: ReadonlySet<string>;
+}) => cc.code(code) !== undefined || customCurrencyCodes.has(code);
+
+function readOriginalAmount({
+  amountStr,
+  currencyStr,
+  customCurrencyCodes,
+}: {
+  amountStr: string;
+  currencyStr: string;
+  customCurrencyCodes: ReadonlySet<string>;
+}): {
   originalAmount?: number;
   originalCurrencyCode?: string;
 } {
   const originalAmount = parseDecimalAmount({ raw: amountStr });
-  const originalCurrencyCode = currencyStr.toUpperCase();
+  const originalCurrencyCode = normalizeCurrencyCode(currencyStr);
 
-  if (originalAmount === null || originalAmount <= 0 || cc.code(originalCurrencyCode) === undefined) return {};
+  if (
+    originalAmount === null ||
+    originalAmount <= 0 ||
+    !isKnownCurrencyCode({ code: originalCurrencyCode, customCurrencyCodes })
+  )
+    return {};
 
   return { originalAmount, originalCurrencyCode };
 }
 
-/** The model sometimes adds or drops a metadata field, which pushes a date into the currency slot. */
-function readCurrencyCode({ fields }: { fields: string[] }): string | null {
-  const code =
-    fields
-      .slice(1)
-      .map((field) => field.toUpperCase())
-      .find((field) => cc.code(field) !== undefined) ?? null;
+/**
+ * The model sometimes adds or drops a metadata field, which pushes a date into the currency slot.
+ * The slot wins when it holds a known code, so a custom code such as `1234` never reads the account
+ * number as the currency.
+ */
+function readCurrencyCode({
+  fields,
+  customCurrencyCodes,
+}: {
+  fields: string[];
+  customCurrencyCodes: ReadonlySet<string>;
+}): string | null {
+  const candidates = fields.slice(1).map(normalizeCurrencyCode);
+  const isKnown = (code: string) => isKnownCurrencyCode({ code, customCurrencyCodes });
+  const slot = candidates[3];
+  const code = (slot !== undefined && isKnown(slot) ? slot : candidates.find(isKnown)) ?? null;
 
   const currencySlot = fields[4];
   if (currencySlot && currencySlot.toUpperCase() !== code) {
@@ -284,7 +337,14 @@ function parseCSVLine({ line }: { line: string }): string[] {
 /**
  * Parse CSV response from AI into structured output
  */
-export function parseAIResponse({ response }: { response: string }): AIExtractionOutput | null {
+export function parseAIResponse({
+  response,
+  customCurrencyCodes = [],
+}: {
+  response: string;
+  /** Codes of the user's own custom currencies, accepted alongside ISO 4217 codes. */
+  customCurrencyCodes?: readonly string[];
+}): AIExtractionOutput | null {
   try {
     // Clean up response - remove any markdown code blocks
     let csvContent = response.trim();
@@ -308,6 +368,8 @@ export function parseAIResponse({ response }: { response: string }): AIExtractio
       return null;
     }
 
+    const customCodeSet = new Set(customCurrencyCodes.map(normalizeCurrencyCode));
+
     // Parse metadata (first line)
     const metadataFields = parseCSVLine({ line: lines[0]! });
     const metadata: AIExtractionOutput['metadata'] = {
@@ -320,7 +382,7 @@ export function parseAIResponse({ response }: { response: string }): AIExtractio
               to: metadataFields[3],
             }
           : null,
-      currencyCode: readCurrencyCode({ fields: metadataFields }),
+      currencyCode: readCurrencyCode({ fields: metadataFields, customCurrencyCodes: customCodeSet }),
     };
 
     // Parse transactions (remaining lines)
@@ -375,7 +437,11 @@ export function parseAIResponse({ response }: { response: string }): AIExtractio
         type,
         balance: balance ?? undefined,
         confidence,
-        ...readOriginalAmount({ amountStr: originalAmountStr, currencyStr: originalCurrencyStr }),
+        ...readOriginalAmount({
+          amountStr: originalAmountStr,
+          currencyStr: originalCurrencyStr,
+          customCurrencyCodes: customCodeSet,
+        }),
         externalReference: referenceStr.slice(0, EXTERNAL_REFERENCE_MAX_LENGTH) || undefined,
       });
     }

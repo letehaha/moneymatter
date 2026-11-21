@@ -359,3 +359,68 @@ describe('Goal insights', () => {
     }
   });
 });
+
+describe('Goal insights at the base currency decimals', () => {
+  it('keeps a 3-decimal goal that is a few fils short below its target', async () => {
+    const goal = await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
+      fn: async () => {
+        const account = await createAccount({ initialBalance: 10, currencyCode: 'KWD' });
+        return helpers.createGoal({
+          payload: {
+            accounts: [{ accountId: account.id, sharePercent: 100 }],
+            currencyCode: 'KWD',
+            targetAmount: 10.004,
+          },
+          raw: true,
+        });
+      },
+    });
+
+    expect(goal.insights).toMatchObject({ status: 'no_date', currentValue: 10, remaining: 0.004 });
+    expect(goal.insights!.input.decimals).toBe(3);
+    expect(goal.achievedAt).toBe(null);
+  });
+
+  it('reaches a 3-decimal goal exactly at its target', async () => {
+    const goal = await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
+      fn: async () => {
+        const account = await createAccount({ initialBalance: 10.004, currencyCode: 'KWD' });
+        return helpers.createGoal({
+          payload: {
+            accounts: [{ accountId: account.id, sharePercent: 100 }],
+            currencyCode: 'KWD',
+            targetAmount: 10.004,
+          },
+          raw: true,
+        });
+      },
+    });
+
+    expect(goal.insights).toMatchObject({ status: 'reached', currentValue: 10.004, remaining: 0 });
+    expect(goal.achievedAt).not.toBeNull();
+    expect(goal.achievedAmount).toBe(10.004);
+  });
+
+  it('counts whole units toward a 0-decimal goal', async () => {
+    const goal = await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'JPY',
+      fn: async () => {
+        const account = await createAccount({ initialBalance: 1000, currencyCode: 'JPY' });
+        return helpers.createGoal({
+          payload: {
+            accounts: [{ accountId: account.id, sharePercent: 33.33 }],
+            currencyCode: 'JPY',
+            targetAmount: 1000,
+          },
+          raw: true,
+        });
+      },
+    });
+
+    // 33.33% of 1000 is 333.3, counted as 333 yen.
+    expect(goal.insights).toMatchObject({ currentValue: 333, remaining: 667 });
+    expect(goal.insights!.input.decimals).toBe(0);
+  });
+});

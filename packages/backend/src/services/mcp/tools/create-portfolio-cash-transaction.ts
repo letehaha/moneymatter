@@ -1,4 +1,4 @@
-import { currencyCode, dateString, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
+import { dateString, isoCurrencyCode, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
 import { directCashTransaction } from '@services/investments/portfolios/transfers';
 import { z } from 'zod';
 
@@ -15,7 +15,7 @@ export const createPortfolioCashTransactionTool = defineTool({
     portfolioId: recordId().describe('Portfolio ID (from get_portfolios)'),
     type: z.enum(['deposit', 'withdrawal']).describe('deposit adds cash to the portfolio, withdrawal removes it'),
     amount: positiveAmountString().describe('Amount as a positive decimal string (e.g. "500.00")'),
-    currencyCode: currencyCode().describe('Currency of the cash (ISO 4217, e.g. "USD")'),
+    currencyCode: isoCurrencyCode().describe('Currency of the cash (ISO 4217, e.g. "USD")'),
     date: dateString().describe('Date in YYYY-MM-DD format'),
     description: z.string().optional().describe('Optional note'),
     isAdjustment: z

@@ -2,11 +2,12 @@
 import CurrencyChip from '@/components/common/currency-chip.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
+import { getCurrencyDecimalMessage } from '@/composable/use-currency-decimal-rule';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
-import { formatUIAmount } from '@/js/helpers';
+import { formatUIAmount, getCurrencyDecimals } from '@/js/helpers';
 import { useAccountsStore } from '@/stores';
 import { type AccountModel, MAX_PAYMENT_LEGS, type TRANSACTION_TYPES, type TransactionModel } from '@bt/shared/types';
 import { InfoIcon, Link2OffIcon, LinkIcon, LockIcon, PlusIcon, XIcon } from '@lucide/vue';
@@ -17,6 +18,7 @@ import { useI18n } from 'vue-i18n';
 import type { FormPaymentLeg } from '../types';
 import {
   getPaymentLegAccountId,
+  getPaymentLegExcessDecimals,
   isCrossCurrencyLeg,
   isPaymentLegIncomplete,
   refreshLegPaymentAmount,
@@ -60,6 +62,7 @@ const { accountsRecord } = storeToRefs(useAccountsStore());
 const { convert, ratesMap } = useExchangeRates();
 
 const mainCurrencyCode = computed(() => account.value?.currencyCode);
+const mainDecimals = computed(() => getCurrencyDecimals({ code: mainCurrencyCode.value }));
 const mainLockText = computed(() => props.mainLockedHint ?? t('dialogs.manageTransaction.form.paymentLegs.syncedLock'));
 const mainRemoveText = computed(() =>
   props.isMainAccountLocked
@@ -120,6 +123,7 @@ const setLegAmount = ({ index, value }: { index: number; value: string | number 
       leg: legs.value[index]!,
       amount: toAmount({ value }),
       mainCurrencyCode: mainCurrencyCode.value,
+      decimals: mainDecimals.value,
       convert,
     }),
   });
@@ -178,6 +182,7 @@ const removeLeg = ({ index }: { index: number }) => {
       mainAmount: amount.value,
       legs: legs.value,
       mainCurrencyCode: mainCurrencyCode.value,
+      decimals: mainDecimals.value,
     });
   }
   legs.value = legs.value.filter((_, i) => i !== index);
@@ -193,10 +198,13 @@ const removeMain = () => {
   legs.value = legs.value.filter((_, i) => i !== firstCreatedIndex.value);
 };
 
-const legError = ({ leg }: { leg: FormPaymentLeg }) =>
-  props.showLegErrors && isPaymentLegIncomplete({ leg, mainCurrencyCode: mainCurrencyCode.value })
-    ? t('dialogs.manageTransaction.form.validation.required')
-    : undefined;
+const legError = ({ leg }: { leg: FormPaymentLeg }) => {
+  if (props.showLegErrors && isPaymentLegIncomplete({ leg, mainCurrencyCode: mainCurrencyCode.value })) {
+    return t('dialogs.manageTransaction.form.validation.required');
+  }
+  const excessDecimals = getPaymentLegExcessDecimals({ leg, mainCurrencyCode: mainCurrencyCode.value });
+  return excessDecimals === null ? undefined : getCurrencyDecimalMessage({ t, decimals: excessDecimals });
+};
 
 const RATE_DIGITS = 4;
 const formatRate = ({ rate, from, to }: { rate: number; from: string; to: string }) =>
@@ -350,6 +358,7 @@ defineExpose({
                 class="min-w-0 flex-1 rounded-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
                 :model-value="leg.paymentAmount ?? null"
                 type="number"
+                :decimals="mainDecimals"
                 only-positive
                 :aria-label="
                   $t('dialogs.manageTransaction.form.paymentLegs.convertedAmountLabel', { currency: currencyCode })

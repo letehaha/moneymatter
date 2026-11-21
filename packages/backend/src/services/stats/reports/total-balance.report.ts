@@ -1,3 +1,4 @@
+import { getReportBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { serializeTotalBalance } from '@root/serializers/stats.serializer';
@@ -12,13 +13,17 @@ export const getTotalBalanceReport = async ({ userId, date }: { userId: number; 
     throw new ValidationError({ message: t({ key: 'validation.dateInvalid' }) });
   }
 
-  const settings = await getUserSettings({ userId });
+  const [settings, decimals] = await Promise.all([
+    getUserSettings({ userId }),
+    getReportBaseCurrencyDecimals({ userId }),
+  ]);
 
   const totalBalance = await getTotalBalance({
     userId,
     date,
     includeCreditLimit: settings.includeCreditLimitInStats,
+    decimals,
   });
 
-  return serializeTotalBalance(totalBalance);
+  return serializeTotalBalance({ totalMinor: totalBalance, decimals });
 };

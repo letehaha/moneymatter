@@ -106,6 +106,69 @@ describe('Tracker lines', () => {
     }
   });
 
+  it('rounds a line limit half-up to the base currency decimals', async () => {
+    const category = await addCategory({ name: 'Food' });
+    const tracker = await helpers.createTracker({ name: 'Tracker', raw: true });
+
+    const line = await helpers.createTrackerLine({
+      trackerId: tracker.id,
+      payload: { name: 'Food', limitAmount: 150.545, categoryIds: [category.id] },
+      raw: true,
+    });
+    expect(line.limitAmount).toBe(150.55);
+
+    const updated = await helpers.updateTrackerLine({
+      trackerId: tracker.id,
+      lineId: line.id,
+      payload: { limitAmount: 99.994 },
+      raw: true,
+    });
+    expect(updated.limitAmount).toBe(99.99);
+
+    await helpers.asNewUserWithBaseCurrency({
+      currencyCode: 'KWD',
+      fn: async () => {
+        const kwdCategory = await addCategory({ name: 'Food' });
+        const kwdTracker = await helpers.createTracker({ name: 'Tracker', raw: true });
+        const kwdLine = await helpers.createTrackerLine({
+          trackerId: kwdTracker.id,
+          payload: { name: 'Food', limitAmount: 10.1245, categoryIds: [kwdCategory.id] },
+          raw: true,
+        });
+        expect(kwdLine.limitAmount).toBe(10.125);
+      },
+    });
+  });
+
+  it('refuses a positive line limit that rounds to nothing and leaves the line untouched', async () => {
+    const category = await addCategory({ name: 'Food' });
+    const tracker = await helpers.createTracker({ name: 'Tracker', raw: true });
+
+    const created = await helpers.createTrackerLine({
+      trackerId: tracker.id,
+      payload: { name: 'Food', limitAmount: 0.004, categoryIds: [category.id] },
+      raw: false,
+    });
+    expect(created.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const line = await helpers.createTrackerLine({
+      trackerId: tracker.id,
+      payload: { name: 'Food', limitAmount: 20, categoryIds: [category.id] },
+      raw: true,
+    });
+    const updated = await helpers.updateTrackerLine({
+      trackerId: tracker.id,
+      lineId: line.id,
+      payload: { limitAmount: 0.004 },
+      raw: false,
+    });
+    expect(updated.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const fetched = await helpers.getTrackerById({ id: tracker.id, raw: true });
+    expect(fetched!.lines).toHaveLength(1);
+    expect(fetched!.lines![0]!.limitAmount).toBe(20);
+  });
+
   it('leaves the line untouched when an update is rejected', async () => {
     const category = await addCategory({ name: 'Food' });
     const tracker = await helpers.createTracker({ name: 'Tracker', raw: true });

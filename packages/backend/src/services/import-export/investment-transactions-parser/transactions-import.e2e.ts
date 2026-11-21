@@ -1086,6 +1086,74 @@ describe('Investment transactions AI import — E2E', () => {
       expect(result.warnings.length).toBeGreaterThan(0);
     });
 
+    it('skips a holding in a custom currency with a warning, since investments are ISO-only', async () => {
+      const portfolio = await helpers.createPortfolio({
+        payload: helpers.buildPortfolioPayload({ name: 'Crypto' }),
+        raw: true,
+      });
+      await helpers.createCustomCurrency({
+        payload: { code: 'GOLD', name: 'Gold', decimals: 4, rate: { value: 2 } },
+        raw: true,
+      });
+      const [btc] = await helpers.seedSecurities([{ symbol: 'BTC', name: 'Bitcoin' }]);
+
+      const result = await helpers.investmentImportExecute({
+        payload: {
+          holdings: [
+            {
+              tempId: 'h-1',
+              parsedSymbol: 'BTC',
+              parsedName: null,
+              resolvedSecurity: {
+                securityId: btc!.id,
+                providerSymbol: btc!.providerSymbol,
+                symbol: 'BTC',
+                name: 'Bitcoin',
+                assetClass: btc!.assetClass,
+                providerName: btc!.providerName,
+                currencyCode: btc!.currencyCode,
+                exchangeName: btc!.exchangeName ?? undefined,
+                cryptoCurrencyCode: btc!.cryptoCurrencyCode ?? undefined,
+                alreadyInDb: true,
+              },
+              resolvedConfidence: 'auto',
+              portfolioId: portfolio.id,
+              currencyCode: 'GOLD',
+              hasExistingHolding: false,
+              transactions: [
+                {
+                  tempId: 'tx-1',
+                  date: '2024-01-15',
+                  side: 'buy',
+                  quantity: '0.1',
+                  price: '42000',
+                  fees: '0',
+                  amount: '4200',
+                  possibleDuplicateOf: null,
+                },
+              ],
+            },
+          ],
+          skipTempIds: [],
+        },
+        raw: true,
+      });
+
+      expect(result.createdHoldings).toBe(0);
+      expect(result.createdTransactions).toBe(0);
+      expect(result.skippedHoldings).toBe(1);
+      expect(result.warnings).toEqual([
+        {
+          code: 'HOLDING_SETUP_FAILED',
+          params: {
+            symbol: 'BTC',
+            reason: t({ key: 'investments.customCurrencyNotSupported', variables: { code: 'GOLD' } }),
+          },
+        },
+      ]);
+      expect(await InvestmentTransaction.count({ where: { securityId: btc!.id } })).toBe(0);
+    });
+
     it('imports a multi-holding batch with zero-price rows and a negative-going crypto position', async () => {
       // Three patterns that previously broke the import pipeline:
       //   - zero-price SELL  (lost / burned tokens — proceeds = 0)

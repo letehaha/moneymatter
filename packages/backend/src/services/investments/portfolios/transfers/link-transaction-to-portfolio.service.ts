@@ -11,7 +11,12 @@ import { updatePortfolioBalance } from '@services/investments/portfolios/balance
 import { assertNotInPayment } from '@services/transactions/payment-legs';
 import { format } from 'date-fns';
 
-import { computeRestampForExistingTransaction, findPortfolioOrThrow, negateAmount } from './transfer-validations';
+import {
+  computeRestampForExistingTransaction,
+  findCurrencyOrThrow,
+  findPortfolioOrThrow,
+  negateAmount,
+} from './transfer-validations';
 
 interface LinkTransactionToPortfolioParams {
   userId: number;
@@ -55,6 +60,7 @@ const linkTransactionToPortfolioImpl = async ({
 
   await assertNotInPayment({ transactionIds: [transactionId] });
   await findPortfolioOrThrow({ portfolioId, userId, role: 'generic' });
+  await findCurrencyOrThrow({ currencyCode: tx.currencyCode });
 
   const amount = tx.amount.toDecimalString(10);
   const date = format(tx.time, 'yyyy-MM-dd');
@@ -83,8 +89,8 @@ const linkTransactionToPortfolioImpl = async ({
         transferNature: tx.transferNature,
         transferId: tx.transferId,
         categoryId: tx.categoryId,
-        amount: tx.amount.toCents(),
-        refAmount: tx.refAmount.toCents(),
+        amount: tx.amount.toNumber(),
+        refAmount: tx.refAmount.toNumber(),
         accountId: tx.accountId,
         transactionType: tx.transactionType,
         paymentType: tx.paymentType,

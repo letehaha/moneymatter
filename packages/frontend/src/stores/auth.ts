@@ -5,6 +5,7 @@ import { getDeviceName } from '@/common/utils/device-name';
 import { dismissPersistentNotifications } from '@/components/notification-center';
 import { isMobileSheetOpen } from '@/composable/global-state/mobile-sheet';
 import { OAuthProviderNotConfiguredError, UnexpectedError, isApiErrorWithCode } from '@/js/errors';
+import { resetCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { authClient, getSession, signIn, signOut, signUp } from '@/lib/auth-client';
 import {
   consumeDemoOriginProperties,
@@ -320,6 +321,7 @@ export const useAuthStore = defineStore('auth', () => {
     // persisted store so no financial data survives logout on a shared device.
     await resetQueryCaches(queryClient);
     resetAllDefinedStores();
+    resetCurrencyDecimals();
 
     // The IdP ends its session and sends the user back to the sign-in page.
     if (providerLogoutUrl) {

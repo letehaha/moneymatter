@@ -1,0 +1,18 @@
+[
+  {
+    "id": "01a1cf52-7b2f-7266-8869-6fd43fceeeda",
+    "userId": 1,
+    "settings": {
+      "locale": "en",
+      "onboarding": {
+        "dismissedAt": null,
+        "isDismissed": false,
+        "completedTasks": ["create-category"]
+      },
+      "incomeCategoryIds": ["01a1cf52-7b19-7231-864c-f1474fa83b4a"],
+      "includeCreditLimitInStats": false
+    },
+    "createdAt": "2026-11-12T10:34:11.631Z",
+    "updatedAt": "2026-11-12T10:34:11.771Z"
+  }
+]

@@ -62,6 +62,7 @@ import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useQuery } from '@tanstack/vue-query';
 import { useResizeObserver } from '@vueuse/core';
 import { parseISO } from 'date-fns';
@@ -81,7 +82,7 @@ const { formatAmountByCurrencyCode, getCurrencySymbol } = useFormatCurrency();
 const { format: formatDate } = useDateLocale();
 
 const currencyCode = computed(() => props.loan.currencyCode);
-const formatCurrency = (amount: number) => formatAmountByCurrencyCode(amount, currencyCode.value);
+const formatCurrency = (amount: number) => formatAmountByCurrencyCode({ amount, currencyCode: currencyCode.value });
 const currencySymbol = computed(() => getCurrencySymbol(currencyCode.value));
 
 const startDate = computed(() => parseISO(props.loan.loanDetails.startDate));
@@ -108,13 +109,15 @@ const isLoading = computed(() => balanceHistoryQuery.isLoading.value);
 // anchored at the start date. Absent when the loan has no term.
 const scheduleScenario = computed<PayoffScenario | null>(() => {
   const { originalPrincipal, interestRate, termMonths } = props.loan.loanDetails;
-  const payment = computeMinimumPaymentFromTerm({ principal: originalPrincipal, interestRate, termMonths });
+  const decimals = getCurrencyDecimals({ code: props.loan.currencyCode });
+  const payment = computeMinimumPaymentFromTerm({ principal: originalPrincipal, interestRate, termMonths, decimals });
   if (payment == null) return null;
   return computePayoffScenario({
     balance: originalPrincipal,
     interestRate,
     payment,
     today: startDate.value,
+    decimals,
   });
 });
 

@@ -1,4 +1,4 @@
-import { currencyCode, decimalString, recordId } from '@common/lib/zod/custom-types';
+import { decimalString, isoCurrencyCode, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { updatePortfolioBalance } from '@services/investments/portfolios/balances';
 import { findPortfolioOrThrow } from '@services/investments/portfolios/transfers/transfer-validations';
@@ -11,7 +11,7 @@ export default createController(
     }),
     body: z
       .object({
-        currencyCode: currencyCode(),
+        currencyCode: isoCurrencyCode(),
         availableCashDelta: decimalString().optional(),
         totalCashDelta: decimalString().optional(),
         setAvailableCash: decimalString().optional(),

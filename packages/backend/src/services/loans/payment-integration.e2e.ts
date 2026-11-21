@@ -404,6 +404,38 @@ describe('Loan payment integration', () => {
       expect(reloadedLoan.currentBalance).toBe(0);
     });
 
+    it('accepts PUT whose loan-leg amount only reaches the payoff before rounding to the loan currency', async () => {
+      // Loan owes $1,000. Edit the $300 payment to $1,000.004: stored half-up at 2 decimals it is
+      // exactly $1,000.00, a full payoff, so the overpay check must judge the rounded amount.
+      const { loan, expenseLeg } = await setupLoanPaymentPair({ initialBalance: 1_000, amount: 300 });
+
+      const [, opposite] = await helpers.updateTransaction({
+        id: expenseLeg.id,
+        payload: { destinationAmount: 1_000.004 },
+        raw: true,
+      });
+
+      expect(opposite!.amount).toBe(1_000);
+
+      const reloadedLoan = await helpers.getLoanById({ id: loan.id, raw: true });
+      expect(reloadedLoan.currentBalance).toBe(0);
+    });
+
+    it('rejects PUT whose loan-leg amount still overpays after rounding to the loan currency', async () => {
+      const { loan, expenseLeg } = await setupLoanPaymentPair({ initialBalance: 1_000, amount: 300 });
+
+      const response = await helpers.updateTransaction({
+        id: expenseLeg.id,
+        payload: { destinationAmount: 1_000.006 },
+      });
+
+      expect(response.statusCode).toBe(422);
+      expect(extractError(response).message).toMatch(/overpay|exceed|owed/i);
+
+      const reloadedLoan = await helpers.getLoanById({ id: loan.id, raw: true });
+      expect(reloadedLoan.currentBalance).toBe(-700);
+    });
+
     it('re-points a payment to another loan and moves the balances accordingly', async () => {
       const { loan, expenseLeg } = await setupLoanPaymentPair({ initialBalance: 1_000, amount: 500 });
       const bigLoan = await helpers.createLoan({

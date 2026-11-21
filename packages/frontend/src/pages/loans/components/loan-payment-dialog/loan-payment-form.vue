@@ -21,9 +21,11 @@ import SourceAccountInfoPopover from './source-account-info-popover.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { useFormatCurrency } from '@/composable/formatters';
-import { useAccountsStore, useCategoriesStore, useCurrenciesStore } from '@/stores';
+import { getCurrencyDecimals, getSmallestCurrencyUnit } from '@/js/helpers/currency-decimals';
+import { useAccountsStore, useCategoriesStore } from '@/stores';
 import { AccountModel, type TransactionModel } from '@bt/shared/types';
 import { helpers, minValue, required } from '@vuelidate/validators';
 import { HandCoinsIcon, InfoIcon } from '@lucide/vue';
@@ -46,7 +48,6 @@ const emit = defineEmits<{ 'close-modal': [] }>();
 
 const { t } = useI18n();
 const { txTargetableSourceAccountsActiveFirst, accountsRecord } = storeToRefs(useAccountsStore());
-const { currenciesMap } = storeToRefs(useCurrenciesStore());
 // `useSubmitTransaction`'s prepopulateForm-style fallbacks need a real FormattedCategory even though
 // loan payments are transfers (categoryId stays null on the wire).
 const { formattedCategories } = storeToRefs(useCategoriesStore());
@@ -72,11 +73,14 @@ const form = ref<{
   time: props.transaction ? new Date(props.transaction.time) : new Date(),
 });
 
-const sourceCurrency = computed(() => {
-  const code = form.value.account?.currencyCode;
-  return code ? currenciesMap.value[code]?.currency?.code : undefined;
-});
-const loanCurrency = computed(() => currenciesMap.value[props.loanAccount.currencyCode]?.currency?.code);
+const sourceCurrency = computed(() => form.value.account?.currencyCode);
+const loanCurrency = computed(() => props.loanAccount.currencyCode);
+const sourceMeta = computed(() => form.value.account?.currencyMeta);
+const sourceDecimals = computed(() => getCurrencyDecimals({ code: sourceCurrency.value, meta: sourceMeta.value }));
+const loanDecimals = computed(() =>
+  getCurrencyDecimals({ code: loanCurrency.value, meta: props.loanAccount.currencyMeta }),
+);
+const sourceDecimal = useCurrencyDecimalRule({ decimals: sourceDecimals });
 
 const isCurrenciesDifferent = computed(
   () => !!form.value.account && form.value.account.currencyCode !== props.loanAccount.currencyCode,
@@ -142,14 +146,21 @@ const validationRules = computed(() => {
   const overpayRule = helpers.withMessage(
     () =>
       t('dialogs.loanPayment.overpayError', {
-        max: formatAmountByCurrencyCode(maxLoanPaymentAllowed.value, props.loanAccount.currencyCode),
+        max: formatAmountByCurrencyCode({
+          amount: maxLoanPaymentAllowed.value,
+          currencyCode: props.loanAccount.currencyCode,
+        }),
       }),
     (value: unknown) => {
       // Pre-anchor payments never enter the post-anchor balance sum, so the backend
       // exempts them from the overpay guard — mirror that and let any amount through.
       if (isPreAnchorPayment.value) return true;
       if (value == null || value === '') return true;
-      return !isLoanOverpayment({ amount: Number(value), maxPayment: maxLoanPaymentAllowed.value });
+      return !isLoanOverpayment({
+        amount: Number(value),
+        maxPayment: maxLoanPaymentAllowed.value,
+        decimals: loanDecimals.value,
+      });
     },
   );
 
@@ -157,9 +168,26 @@ const validationRules = computed(() => {
     form: {
       account: { required },
       amount: isCurrenciesDifferent.value
-        ? { required, minValue: minValue(0.01) }
-        : { required, minValue: minValue(0.01), notOverpay: overpayRule },
-      targetAmount: isCurrenciesDifferent.value ? { required, minValue: minValue(0.01), notOverpay: overpayRule } : {},
+        ? {
+            required,
+            minValue: minValue(getSmallestCurrencyUnit({ code: sourceCurrency.value, meta: sourceMeta.value })),
+            currencyDecimal: sourceDecimal.rule.value,
+          }
+        : {
+            required,
+            minValue: minValue(getSmallestCurrencyUnit({ code: sourceCurrency.value, meta: sourceMeta.value })),
+            notOverpay: overpayRule,
+            currencyDecimal: sourceDecimal.rule.value,
+          },
+      targetAmount: isCurrenciesDifferent.value
+        ? {
+            required,
+            minValue: minValue(
+              getSmallestCurrencyUnit({ code: loanCurrency.value, meta: props.loanAccount.currencyMeta }),
+            ),
+            notOverpay: overpayRule,
+          }
+        : {},
     },
   };
 });
@@ -172,6 +200,7 @@ const { isFormValid, getFieldErrorMessage, touchField } = useFormValidation(
     customValidationMessages: {
       required: t('dialogs.manageTransaction.form.validation.required'),
       minValue: t('dialogs.manageTransaction.form.validation.minValue'),
+      currencyDecimal: sourceDecimal.message,
     },
   },
 );
@@ -335,6 +364,7 @@ const unlinkPayment = () => {
           v-model="form.amount"
           :label="$t('dialogs.loanPayment.amountLabel')"
           type="number"
+          :decimals="sourceDecimals"
           only-positive
           :placeholder="$t('dialogs.loanPayment.amountPlaceholder')"
           :disabled="isLoading"
@@ -356,6 +386,7 @@ const unlinkPayment = () => {
           v-model="form.targetAmount"
           :label="$t('dialogs.loanPayment.targetAmountLabel')"
           type="number"
+          :decimals="loanDecimals"
           only-positive
           :placeholder="$t('dialogs.loanPayment.targetAmountPlaceholder')"
           :disabled="isLoading"

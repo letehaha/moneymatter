@@ -1,11 +1,20 @@
-import type { Cents, Decimal } from '@bt/shared/types';
+import { type Cents, type Decimal, type MinorUnits, MAX_CURRENCY_DECIMALS } from '@bt/shared/types';
 import Big from 'big.js';
+
+export const assertDecimals = ({ decimals, caller }: { decimals: number; caller: string }): void => {
+  if (!Number.isInteger(decimals) || decimals < 0) {
+    throw new Error(`${caller}: expected a non-negative integer for decimals, got ${decimals}`);
+  }
+  if (decimals > MAX_CURRENCY_DECIMALS) {
+    throw new Error(`${caller}: ${decimals} decimals exceeds the supported maximum of ${MAX_CURRENCY_DECIMALS}`);
+  }
+};
 
 /**
  * Immutable Money value object backed by big.js for precise arithmetic.
  *
  * Internal representation: actual decimal value (not cents).
- * - `Money.fromCents(1550)` internally stores Big(15.50)
+ * - `Money.fromCents(asCents(1550))` internally stores Big(15.50)
  * - `Money.fromDecimal(15.50)` internally stores Big(15.50)
  * - Both regular transactions and investments produce the same internal representation
  *
@@ -34,13 +43,14 @@ export class Money {
   // ==========================================================================
 
   /**
-   * Create Money from a database INTEGER cents value.
+   * Create Money from an integer cents value: for numbers that really are cents (provider minor
+   * units). Report engines sum in the currency's own minor units: use `fromMinorUnits`.
    * Divides by 100 to get the actual decimal value.
    *
    * @example
-   * Money.fromCents(1550) // represents $15.50
+   * Money.fromCents(asCents(1550)) // represents $15.50
    */
-  static fromCents(n: number): Money {
+  static fromCents(n: Cents): Money {
     if (!Number.isFinite(n)) {
       throw new Error(`Money.fromCents: expected finite number, got ${n}`);
     }
@@ -48,6 +58,28 @@ export class Money {
       throw new Error(`Money.fromCents: expected integer, got ${n}`);
     }
     return new Money(new Big(n).div(100));
+  }
+
+  /**
+   * Create Money from an integer count of a currency's minor units at its own decimals.
+   * `fromMinorUnits({ value, decimals: 2 })` is `fromCents(value)`.
+   *
+   * @example
+   * Money.fromMinorUnits({ value: 1234, decimals: 3 }) // represents 1.234 KWD
+   * Money.fromMinorUnits({ value: 1500, decimals: 0 }) // represents 1500 JPY
+   */
+  static fromMinorUnits({ value, decimals }: { value: number; decimals: number }): Money {
+    assertDecimals({ decimals, caller: 'Money.fromMinorUnits' });
+    if (!Number.isFinite(value)) {
+      throw new Error(`Money.fromMinorUnits: expected finite number, got ${value}`);
+    }
+    if (!Number.isInteger(value)) {
+      throw new Error(`Money.fromMinorUnits: expected integer, got ${value}`);
+    }
+    if (!Number.isSafeInteger(value)) {
+      throw new Error(`Money.fromMinorUnits: expected a safe integer, got ${value}`);
+    }
+    return new Money(new Big(value).div(new Big(10).pow(decimals)));
   }
 
   /**
@@ -122,10 +154,18 @@ export class Money {
 
   /**
    * Round to `dp` decimal places using ROUND_HALF_UP.
-   * Defaults to 2 decimal places.
+   * Used for entered amounts; pass the currency's decimals.
    */
-  round(dp = 2): Money {
+  round(dp: number): Money {
     return new Money(this.value.round(dp, Big.roundHalfUp));
+  }
+
+  /**
+   * Round to `dp` decimal places using ROUND_HALF_EVEN (banker's rounding).
+   * Used for converted amounts, where ties must not accumulate a bias.
+   */
+  roundHalfEven(dp: number): Money {
+    return new Money(this.value.round(dp, Big.roundHalfEven));
   }
 
   // ==========================================================================
@@ -169,7 +209,9 @@ export class Money {
   // ==========================================================================
 
   /**
-   * Convert to integer cents for INTEGER DB columns.
+   * Convert to integer cents, for values that really are cents (provider minor units). Report
+   * engines use `toMinorUnits` at the currency's decimals. Money columns are DECIMAL: write the
+   * `Money` itself (or `toMoneyColumnValue` in raw SQL), never cents.
    * Multiplies by 100 and rounds.
    *
    * @example
@@ -177,6 +219,27 @@ export class Money {
    */
   toCents(): Cents {
     return this.value.times(100).round(0, Big.roundHalfUp).toNumber() as Cents;
+  }
+
+  /**
+   * Convert to an integer count of a currency's minor units at its own decimals, rounding excess
+   * precision half-up (away from zero on a tie), as `toCents()` does. `toMinorUnits({ decimals: 2 })`
+   * is `toCents()`. Throws when the count is outside the safe integer range rather than lose digits.
+   *
+   * @example
+   * Money.fromDecimal('1.234').toMinorUnits({ decimals: 3 }) // => 1234
+   * Money.fromDecimal('1500').toMinorUnits({ decimals: 0 })  // => 1500
+   */
+  toMinorUnits({ decimals }: { decimals: number }): MinorUnits {
+    assertDecimals({ decimals, caller: 'Money.toMinorUnits' });
+    const minorUnits = this.value.times(new Big(10).pow(decimals)).round(0, Big.roundHalfUp);
+    if (minorUnits.abs().gt(Number.MAX_SAFE_INTEGER)) {
+      throw new Error(
+        `Money.toMinorUnits: ${minorUnits.toFixed()} minor units at ${decimals} decimals exceeds the safe integer range`,
+      );
+    }
+    // `+ 0` turns a negative zero (from rounding -0.4 to 0 places) into 0.
+    return (minorUnits.toNumber() + 0) as MinorUnits;
   }
 
   /**
@@ -227,23 +290,37 @@ export class Money {
 }
 
 /**
- * Convert a Money or raw cents integer (from `raw: true` queries) to an API-friendly decimal number.
- * Handles both Money instances (via getter) and raw DB integers (from raw queries).
+ * Convert a Money, or the exact decimal string a `raw: true` query returns for a DECIMAL money
+ * column, to an API-friendly decimal number.
  *
- * Use in serializers when preparing money fields for API responses.
+ * Use in serializers for model money fields, which are `Money` on hydrated rows and strings on raw rows.
  */
-export function centsToApiDecimal(val: Money | number): Decimal {
-  if (Money.isMoney(val)) return val.toNumber();
-  return Money.fromCents(val as number).toNumber();
+export function moneyToApiDecimal(val: Money | string): Decimal {
+  return Money.fromDecimal(val).toNumber();
+}
+
+/** Nullable-field variant of `moneyToApiDecimal`: null/undefined pass through as null. */
+export function moneyToApiDecimalOrNull(val: Money | string | null | undefined): Decimal | null {
+  return val == null ? null : moneyToApiDecimal(val);
 }
 
 /**
- * Nullable-field variant of `centsToApiDecimal`: null/undefined pass through as
- * null. Use for optional money fields so serializers don't hand-roll the guard
- * ternary.
+ * Convert an integer count of minor units at the currency's `decimals` (what the report engines sum
+ * in memory) to an API-friendly decimal number.
  */
-export function centsToApiDecimalOrNull(val: Money | number | null | undefined): Decimal | null {
-  return val == null ? null : centsToApiDecimal(val);
+export function minorUnitsToApiDecimal({ value, decimals }: { value: number; decimals: number }): Decimal {
+  return Money.fromMinorUnits({ value, decimals }).toNumber();
+}
+
+/** Nullable-field variant of `minorUnitsToApiDecimal`: null/undefined pass through as null. */
+export function minorUnitsToApiDecimalOrNull({
+  value,
+  decimals,
+}: {
+  value: number | null | undefined;
+  decimals: number;
+}): Decimal | null {
+  return value == null ? null : minorUnitsToApiDecimal({ value, decimals });
 }
 
 /** Decimal scale for investment DECIMAL columns (precision: 20, scale: 10). */

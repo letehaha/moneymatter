@@ -1,12 +1,10 @@
 /**
  * TagReminders Serializers
  *
- * Handles conversion for the amountThreshold field in reminder settings.
- * amountThreshold is stored as cents in a JSON column (not a @MoneyField column),
- * so explicit conversion is still needed.
+ * Maps reminders from the model to the API. `settings.amountThreshold` lives in a JSON column
+ * (not a @MoneyField column) and is stored as the same decimal the API speaks, in the user's base
+ * currency, so the settings pass through unchanged.
  */
-import { type TagReminderFrequency, type TagReminderSettings, type TagReminderType } from '@bt/shared/types';
-import { Money, centsToApiDecimal } from '@common/types/money';
 import type TagReminders from '@models/tag-reminders.model';
 
 // ============================================================================
@@ -34,76 +32,8 @@ interface TagReminderApiResponse {
 }
 
 // ============================================================================
-// Request Types (API format with decimal input)
-// ============================================================================
-
-interface CreateTagReminderRequest {
-  type: TagReminderType;
-  frequency?: TagReminderFrequency | null;
-  dayOfMonth?: number | null;
-  settings?: {
-    amountThreshold?: number; // decimal from API
-    [key: string]: unknown;
-  };
-  isEnabled?: boolean;
-}
-
-interface UpdateTagReminderRequest {
-  type?: TagReminderType;
-  frequency?: TagReminderFrequency | null;
-  dayOfMonth?: number | null;
-  settings?: {
-    amountThreshold?: number; // decimal from API
-    [key: string]: unknown;
-  };
-  isEnabled?: boolean;
-}
-
-// ============================================================================
-// Internal Types (DB format with CentsAmount)
-// ============================================================================
-
-interface TagReminderSettingsInternal {
-  amountThreshold?: number; // cents for JSONB storage
-  [key: string]: unknown;
-}
-
-interface CreateTagReminderInternal {
-  type: TagReminderType;
-  frequency?: TagReminderFrequency | null;
-  dayOfMonth?: number | null;
-  settings?: TagReminderSettingsInternal;
-  isEnabled?: boolean;
-}
-
-interface UpdateTagReminderInternal {
-  type?: TagReminderType;
-  frequency?: TagReminderFrequency | null;
-  dayOfMonth?: number | null;
-  settings?: TagReminderSettingsInternal;
-  isEnabled?: boolean;
-}
-
-// ============================================================================
 // Serializers (DB → API)
 // ============================================================================
-
-/**
- * Serialize settings, converting amountThreshold from cents to decimal.
- * amountThreshold is stored as cents in JSON, so we use Money.fromCents().
- */
-function serializeSettings(settings: TagReminderSettings): TagReminderSettingsApiResponse {
-  const settingsObj = settings as { amountThreshold?: number; [key: string]: unknown };
-
-  if (settingsObj.amountThreshold !== undefined) {
-    return {
-      ...settingsObj,
-      amountThreshold: centsToApiDecimal(settingsObj.amountThreshold),
-    } as TagReminderSettingsApiResponse;
-  }
-
-  return settingsObj as TagReminderSettingsApiResponse;
-}
 
 /**
  * Serialize a tag reminder from DB format to API response
@@ -116,7 +46,7 @@ export function serializeTagReminder(reminder: TagReminders): TagReminderApiResp
     type: reminder.type,
     frequency: reminder.frequency,
     dayOfMonth: reminder.dayOfMonth,
-    settings: serializeSettings(reminder.settings),
+    settings: reminder.settings as TagReminderSettingsApiResponse,
     isEnabled: reminder.isEnabled,
     lastCheckedAt: reminder.lastCheckedAt,
     lastTriggeredAt: reminder.lastTriggeredAt,
@@ -130,52 +60,4 @@ export function serializeTagReminder(reminder: TagReminders): TagReminderApiResp
  */
 export function serializeTagReminders(reminders: TagReminders[]): TagReminderApiResponse[] {
   return reminders.map(serializeTagReminder);
-}
-
-// ============================================================================
-// Deserializers (API → DB)
-// ============================================================================
-
-/**
- * Deserialize settings, converting amountThreshold from decimal to Money
- */
-function deserializeSettings(settings?: CreateTagReminderRequest['settings']): TagReminderSettingsInternal | undefined {
-  if (!settings) return undefined;
-
-  const { amountThreshold, ...rest } = settings;
-
-  if (amountThreshold !== undefined) {
-    return {
-      ...rest,
-      amountThreshold: Money.fromDecimal(amountThreshold).toCents(),
-    } as TagReminderSettingsInternal;
-  }
-
-  return settings as TagReminderSettingsInternal;
-}
-
-/**
- * Deserialize a create tag reminder request from API decimal format to internal cents format
- */
-export function deserializeCreateTagReminder(req: CreateTagReminderRequest): CreateTagReminderInternal {
-  return {
-    type: req.type,
-    frequency: req.frequency,
-    dayOfMonth: req.dayOfMonth,
-    settings: deserializeSettings(req.settings),
-    isEnabled: req.isEnabled,
-  };
-}
-
-/**
- * Deserialize an update tag reminder request from API decimal format to internal cents format
- */
-export function deserializeUpdateTagReminder(req: UpdateTagReminderRequest): UpdateTagReminderInternal {
-  return {
-    type: req.type,
-    frequency: req.frequency,
-    dayOfMonth: req.dayOfMonth,
-    settings: deserializeSettings(req.settings),
-    isEnabled: req.isEnabled,
-  };
 }

@@ -1,4 +1,4 @@
-import { TRANSACTION_TYPES, asCents } from '@bt/shared/types';
+import { type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
@@ -9,17 +9,17 @@ const createTransactionsToCheck = (overrides: Partial<TransactionToCheck>[] = []
   const defaults: TransactionToCheck[] = [
     {
       date: '2024-01-15 10:30:00',
-      amount: asCents(10050),
+      amount: 100.5,
       type: 'expense',
     },
     {
       date: '2024-01-16 14:20:00',
-      amount: asCents(5000),
+      amount: 50,
       type: 'expense',
     },
     {
       date: '2024-01-17 09:00:00',
-      amount: asCents(250000),
+      amount: 2500,
       type: 'income',
     },
   ];
@@ -102,8 +102,8 @@ describe('Generic Detect Duplicates Service', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0]!.index).toBe(0);
-      expect(result[0]!.incoming.amount).toBe(10050);
-      expect(result[0]!.existing.amount).toBe(10050);
+      expect(result[0]!.incoming.amount).toBe(100.5);
+      expect(result[0]!.existing.amount).toBe(100.5);
     });
 
     it('should detect multiple duplicates', async () => {
@@ -249,11 +249,11 @@ describe('Generic Detect Duplicates Service', () => {
       const transactions: TransactionToCheck[] = [
         {
           date: '2024-01-15 10:30:00',
-          amount: asCents(10050),
+          amount: 100.5,
           type: 'expense',
         },
-        { date: '2024-01-20', amount: asCents(10050), type: 'expense' },
-        { date: '2024-01-31 12:00:00', amount: asCents(5000), type: 'expense' },
+        { date: '2024-01-20', amount: 100.5, type: 'expense' },
+        { date: '2024-01-31 12:00:00', amount: 50, type: 'expense' },
       ];
 
       const result = await detectDuplicates({
@@ -280,9 +280,9 @@ describe('Generic Detect Duplicates Service', () => {
       await helpers.createTransaction({ payload: txPayload, raw: true });
 
       const transactions: TransactionToCheck[] = [
-        { date: '2024-01-31', amount: asCents(1000), type: 'expense' },
-        { date: '2024-02-15', amount: asCents(2000), type: 'expense' },
-        { date: '2024-03-01', amount: asCents(3000), type: 'expense' },
+        { date: '2024-01-31', amount: 10, type: 'expense' },
+        { date: '2024-02-15', amount: 20, type: 'expense' },
+        { date: '2024-03-01', amount: 30, type: 'expense' },
       ];
 
       const result = await detectDuplicates({
@@ -328,14 +328,14 @@ describe('Generic Detect Duplicates Service', () => {
       // Check incoming (preserves original transaction)
       expect(match.incoming).toEqual({
         date: '2024-01-15 10:30:00',
-        amount: 10050,
+        amount: 100.5,
         type: 'expense',
       });
 
       // Check existing
       expect(typeof match.existing.id).toBe('string');
       expect(match.existing.date).toBe('2024-01-15');
-      expect(match.existing.amount).toBe(10050);
+      expect(match.existing.amount).toBe(100.5);
       expect(match.existing.note).toBe('Test note for matching');
 
       const emptyNoteAccount = await helpers.createAccount({ raw: true });
@@ -380,7 +380,7 @@ describe('Generic Detect Duplicates Service', () => {
       const transactions: ExtendedTransaction[] = [
         {
           date: '2024-01-15',
-          amount: asCents(10050),
+          amount: 100.5,
           type: 'expense',
           customField: 'test-value',
           metadata: { source: 'bank-sync' },
@@ -448,6 +448,63 @@ describe('Generic Detect Duplicates Service', () => {
     });
   });
 
+  describe('currency decimals', () => {
+    const createKwdAccount = async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
+      return helpers.createAccount({ payload: helpers.buildAccountPayload({ currencyCode: 'KWD' }), raw: true });
+    };
+
+    const createExpense = ({ accountId, amount }: { accountId: RecordId; amount: number }) =>
+      helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId,
+          amount,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: new Date('2024-01-15').toISOString(),
+        }),
+        raw: true,
+      });
+
+    // Through POST /import/text-source/detect-duplicates, which feeds this matcher
+    const detect = async ({ accountId, amount }: { accountId: RecordId; amount: number }) => {
+      const { duplicates } = await helpers.statementDetectDuplicates({
+        payload: {
+          accountId,
+          transactions: [{ date: '2024-01-15', description: 'Coffee', amount, type: 'expense' }],
+        },
+        raw: true,
+      });
+
+      return duplicates;
+    };
+
+    it('does not flag a KWD 1.234 against an existing 1.231, and flags it against an existing 1.234', async () => {
+      const account = await createKwdAccount();
+
+      await createExpense({ accountId: account.id, amount: 1.231 });
+
+      expect(await detect({ accountId: account.id, amount: 1.234 })).toHaveLength(0);
+
+      await createExpense({ accountId: account.id, amount: 1.234 });
+
+      const result = await detect({ accountId: account.id, amount: 1.234 });
+
+      expect(result).toHaveLength(1);
+      expect(result[0]!.existingTransaction.amount).toBe(1.234);
+    });
+
+    it('rounds an incoming amount to the account currency before it is keyed', async () => {
+      const kwdAccount = await createKwdAccount();
+      const baseAccount = await helpers.createAccount({ raw: true });
+
+      await createExpense({ accountId: kwdAccount.id, amount: 1.235 });
+      await createExpense({ accountId: baseAccount.id, amount: 12.35 });
+
+      expect(await detect({ accountId: kwdAccount.id, amount: 1.2345 })).toHaveLength(1);
+      expect(await detect({ accountId: baseAccount.id, amount: 12.345 })).toHaveLength(1);
+    });
+  });
+
   describe('edge cases', () => {
     it('should handle large number of transactions efficiently', async () => {
       const account = await helpers.createAccount({ raw: true });
@@ -468,7 +525,7 @@ describe('Generic Detect Duplicates Service', () => {
       for (let i = 0; i < 20; i++) {
         transactions.push({
           date: `2024-01-${String(i + 1).padStart(2, '0')}`,
-          amount: asCents(1000 * (i + 1)),
+          amount: 10 * (i + 1),
           type: 'expense',
         });
       }
@@ -497,7 +554,7 @@ describe('Generic Detect Duplicates Service', () => {
         await helpers.createTransaction({ payload: txPayload, raw: true });
       }
 
-      const transactions: TransactionToCheck[] = [{ date: '2024-01-15', amount: asCents(5000), type: 'expense' }];
+      const transactions: TransactionToCheck[] = [{ date: '2024-01-15', amount: 50, type: 'expense' }];
 
       const result = await detectDuplicates({
         userId: account.userId,

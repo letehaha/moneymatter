@@ -40,6 +40,8 @@ interface GetCashFlowParams extends StatsScopeFilters {
   excludePlanned?: boolean;
   /** Starts `monthly` buckets on the user's payday instead of the 1st. */
   alignToPayday?: boolean;
+  /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
+  decimals: number;
 }
 
 type CategoryInfo = AccessibleCategoryInfo;
@@ -125,6 +127,7 @@ export const getCashFlow = withTransaction(
     excludedCategoryIds,
     excludePlanned,
     alignToPayday,
+    decimals,
   }: GetCashFlowParams): Promise<GetCashFlowResponse> => {
     const { savingsCategoryIds, payday } = await getUserSettings({ userId });
     const buckets = generatePeriodBuckets({ from, to, granularity, payday: alignToPayday ? payday : 1 });
@@ -176,6 +179,7 @@ export const getCashFlow = withTransaction(
       // forecast. A plan is an intention of whoever recorded it.
       planned: excludePlanned ? 'exclude' : { visibleTo: userId },
       refunds: 'net',
+      decimals,
       window: { from, to },
       where: {
         [Op.and]: [
@@ -192,7 +196,7 @@ export const getCashFlow = withTransaction(
     });
 
     // Each leg carries its transaction's type, so one call covers both directions.
-    const allocations = await computeCategoryAllocations({ transactions, applyRefunds: false });
+    const allocations = await computeCategoryAllocations({ transactions, applyRefunds: false, decimals });
 
     // Determine which categories to report in the breakdown
     // If specific categories selected, report those exact categories (not aggregated to root)
@@ -236,12 +240,12 @@ export const getCashFlow = withTransaction(
      */
     const applyLeg = ({
       categoryId,
-      cents,
+      minor,
       time,
       isExpense,
     }: {
       categoryId: string | null;
-      cents: number;
+      minor: number;
       time: Date;
       isExpense: boolean;
     }): void => {
@@ -262,9 +266,9 @@ export const getCashFlow = withTransaction(
 
       const periodData = periodDataMap.get(bucketIndex)!;
       if (isExpense) {
-        periodData.expenses += cents;
+        periodData.expenses += minor;
       } else {
-        periodData.income += cents;
+        periodData.income += minor;
       }
 
       if (!aggregationCategoryId) return;
@@ -275,9 +279,9 @@ export const getCashFlow = withTransaction(
       };
 
       if (isExpense) {
-        currentAmounts.expenseAmount += cents;
+        currentAmounts.expenseAmount += minor;
       } else {
-        currentAmounts.incomeAmount += cents;
+        currentAmounts.incomeAmount += minor;
       }
 
       periodData.categories.set(aggregationCategoryId, currentAmounts);
@@ -286,7 +290,7 @@ export const getCashFlow = withTransaction(
     for (const leg of allocations.base) {
       applyLeg({
         categoryId: leg.categoryId,
-        cents: leg.cents,
+        minor: leg.minor,
         time: leg.time,
         isExpense: leg.transactionType === TRANSACTION_TYPES.expense,
       });

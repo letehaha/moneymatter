@@ -209,7 +209,7 @@ const isDataEmpty = computed(() => !isTxFetching.value && pastTransactions.value
           <div class="flex shrink-0 items-center gap-1.5">
             <span class="text-sm font-medium">
               <template v-if="sub.expectedCurrencyCode && sub.expectedAmount != null">
-                {{ formatAmountByCurrencyCode(sub.expectedAmount, sub.expectedCurrencyCode) }}
+                {{ formatAmountByCurrencyCode({ amount: sub.expectedAmount, currencyCode: sub.expectedCurrencyCode }) }}
               </template>
               <template v-else-if="sub.expectedAmount != null">
                 {{ formatBaseCurrency(sub.expectedAmount) }}

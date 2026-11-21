@@ -1,0 +1,32 @@
+[
+  {
+    "id": "01a1cf52-7b2b-7129-adbc-9ed92addd5ac",
+    "userId": 1,
+    "name": "Want",
+    "color": "#16a34a",
+    "icon": "sparkles",
+    "description": "Nice-to-have purchases and discretionary spending",
+    "createdAt": "2026-11-12T10:34:11.627Z",
+    "updatedAt": "2026-11-12T10:34:11.627Z"
+  },
+  {
+    "id": "01a1cf52-7b2b-7129-adbc-a1629a8aecee",
+    "userId": 1,
+    "name": "Need",
+    "color": "#c35a04",
+    "icon": "target",
+    "description": "Important but not urgent expenses",
+    "createdAt": "2026-11-12T10:34:11.627Z",
+    "updatedAt": "2026-11-12T10:34:11.627Z"
+  },
+  {
+    "id": "01a1cf52-7b2b-7129-adbc-a433676f4e75",
+    "userId": 1,
+    "name": "Must",
+    "color": "#c11401",
+    "icon": "circle-alert",
+    "description": "Essential expenses that cannot be avoided",
+    "createdAt": "2026-11-12T10:34:11.627Z",
+    "updatedAt": "2026-11-12T10:34:11.627Z"
+  }
+]

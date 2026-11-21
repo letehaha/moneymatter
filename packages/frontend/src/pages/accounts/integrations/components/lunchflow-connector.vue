@@ -65,7 +65,7 @@
               </div>
               <div class="text-right">
                 <div class="text-sm font-medium">
-                  {{ formatBalance(account.balance, account.currency) }}
+                  {{ formatUIAmount(account.balance, { currency: account.currency }) }}
                 </div>
                 <div class="text-muted-foreground text-xs">{{ account.currency }}</div>
               </div>
@@ -138,7 +138,6 @@
 </template>
 
 <script lang="ts" setup>
-import { numberFormatLocale } from '@/js/helpers/formatters';
 import {
   type AvailableAccount,
   connectProvider,
@@ -152,6 +151,7 @@ import UiButton from '@/components/lib/ui/button/Button.vue';
 import * as Tooltip from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useSyncStatus } from '@/composable/use-sync-status';
+import { formatUIAmount } from '@/js/helpers';
 import { useAccountsStore, useOnboardingStore, useUserStore } from '@/stores';
 import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import { BuildingIcon, ExternalLinkIcon, InfoIcon } from '@lucide/vue';
@@ -251,12 +251,5 @@ const getErrorMessage = (error: unknown): string | undefined => {
   if (apiMessage) return apiMessage;
   if (error instanceof Error && error.message) return error.message;
   return undefined;
-};
-
-const formatBalance = (balance: number, currency: string) => {
-  return new Intl.NumberFormat(numberFormatLocale.value, {
-    style: 'currency',
-    currency,
-  }).format(balance);
 };
 </script>

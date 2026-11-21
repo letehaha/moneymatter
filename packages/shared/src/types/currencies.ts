@@ -1,3 +1,5 @@
+import type { EntityLogoFields, EntityLogoWritePayload } from './entity-logo';
+import { MAX_CURRENCY_DECIMALS } from './money';
 import type { RecordId } from './record-id';
 import type { UserModel } from './users';
 
@@ -18,21 +20,81 @@ export enum EXCHANGE_RATE_PROVIDER_TYPE {
   UNKNOWN = 'unknown',
 }
 
+/** Shortest currency code, ISO 4217 or user-defined. */
+const CURRENCY_CODE_MIN_LENGTH = 2;
+/** Longest currency code; the width of every currency-code column. */
+export const CURRENCY_CODE_MAX_LENGTH = 16;
+/** Shape of a currency code: uppercase letters and digits. Says nothing about whether the code exists. */
+export const CURRENCY_CODE_PATTERN = new RegExp(`^[A-Z0-9]{${CURRENCY_CODE_MIN_LENGTH},${CURRENCY_CODE_MAX_LENGTH}}$`);
+
+export const CUSTOM_CURRENCY_NAME_MAX_LENGTH = 255;
+export const CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH = 8;
+export const CUSTOM_CURRENCY_DECIMALS_MIN = 0;
+export const CUSTOM_CURRENCY_DECIMALS_MAX = MAX_CURRENCY_DECIMALS;
+
 export interface CurrencyModel {
   currency: string;
   digits: number;
-  number: number;
+  /** ISO 4217 numeric code; `null` on a custom currency. */
+  number: number | null;
   code: string;
   isDisabled: boolean;
+  /** `true` for a user-defined code, `false` for the ISO 4217 seed. */
+  isCustom: boolean;
+  /** Symbol of a custom currency; `null` on ISO currencies. */
+  symbol: string | null;
 }
 
-export interface UserCurrencyModel {
+/**
+ * How an amount in a currency is formatted, as the account owner defines it. Accounts and
+ * transactions carry it so a collaborator's UI formats by the account rather than by its own list.
+ */
+export interface CurrencyMeta {
+  /** Decimals the amounts in this currency keep. */
+  decimals: number;
+  /** Symbol of a custom currency; `null` for ISO currencies, which the client formats itself. */
+  symbol: string | null;
+  isCustom: boolean;
+}
+
+/** A user's custom currency as `/user/currencies/custom` returns it, overrides applied. */
+export interface CustomCurrencyModel extends CurrencyMeta, EntityLogoFields {
+  code: string;
+  name: string;
+  isCustom: true;
+}
+
+export interface CreateCustomCurrencyBody extends EntityLogoWritePayload {
+  code: string;
+  name: string;
+  /** 0 to `MAX_CURRENCY_DECIMALS`. */
+  decimals: number;
+  symbol?: string | null;
+  /** What one unit is worth in `quoteCode`, an ISO currency the user holds (default: the base currency). */
+  rate: { value: number; quoteCode?: string };
+}
+
+export interface UpdateCustomCurrencyBody extends EntityLogoWritePayload {
+  name?: string;
+  /** Changing it is allowed only while none of the user's rows use the currency. */
+  decimals?: number;
+  symbol?: string | null;
+}
+
+/** The logo fields carry a custom currency's logo; always `null` on an ISO currency. */
+export interface UserCurrencyModel extends EntityLogoFields {
   id: RecordId;
   userId: number;
   currencyCode: string;
   exchangeRate: number;
   liveRateUpdate: boolean;
   isDefaultCurrency: boolean;
+  /** Raw custom definition: its name. `currency` already carries it; always `null` on an ISO currency. */
+  nameOverride: string | null;
+  /** Raw custom definition: its symbol. `currency` already carries it; always `null` on an ISO currency. */
+  symbolOverride: string | null;
+  /** Raw custom definition: its decimals. `currency` already carries them; always `null` on an ISO currency. */
+  decimalsOverride: number | null;
   currency?: CurrencyModel;
   user?: UserModel;
 }

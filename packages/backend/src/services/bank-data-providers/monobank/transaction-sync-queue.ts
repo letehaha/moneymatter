@@ -557,7 +557,7 @@ async function createMonobankTransaction({
     originalId: data.id,
     note: data.description,
     externalReference: (data.receiptId?.trim() || data.invoiceId?.trim())?.slice(0, 255) || null,
-    amount: Money.fromCents(Math.abs(data.amount)),
+    amount: Money.fromCents(data.amount).abs(),
     time: new Date(data.time * 1000),
     externalData: {
       operationAmount: data.operationAmount,

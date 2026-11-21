@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { useUserSettings } from '@/composable/data-queries/user-settings';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useAnimatedNumber } from '@/composable/use-animated-number';
+import { formatCompactUIAmount } from '@/js/helpers';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import { ACCOUNT_STATUSES, ACCOUNT_TYPES } from '@bt/shared/types';
@@ -27,7 +28,7 @@ const THRESHOLDS = {
 const { accounts, isAccountsFetched } = storeToRefs(useAccountsStore());
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const baseCurrencyCode = computed(() => baseCurrency.value?.currency?.code ?? '');
-const { formatBaseCurrency, formatAmountByCurrencyCode, formatCompactAmount } = useFormatCurrency();
+const { formatBaseCurrency, formatAccountAmount, formatCompactAmount } = useFormatCurrency();
 const { data: userSettings } = useUserSettings();
 
 const creditAccounts = computed(() => {
@@ -165,11 +166,24 @@ const getUtilizationColors = ({ utilization }: { utilization: number }) => {
                 </span>
                 <div class="flex shrink-0 items-center gap-2">
                   <DesktopOnlyTooltip
-                    :content="`${formatAmountByCurrencyCode(account.used, account.currencyCode)} / ${formatAmountByCurrencyCode(account.limit, account.currencyCode)}`"
+                    :content="`${formatAccountAmount({ amount: account.used, account: account.account })} / ${formatAccountAmount({ amount: account.limit, account: account.account })}`"
                   >
                     <span class="text-muted-foreground text-[10px]">
-                      {{ formatCompactAmount(account.used, account.currencyCode) }}
-                      / {{ formatCompactAmount(account.limit, account.currencyCode) }}
+                      {{
+                        formatCompactUIAmount({
+                          amount: account.used,
+                          currency: account.currencyCode,
+                          meta: account.account.currencyMeta,
+                        })
+                      }}
+                      /
+                      {{
+                        formatCompactUIAmount({
+                          amount: account.limit,
+                          currency: account.currencyCode,
+                          meta: account.account.currencyMeta,
+                        })
+                      }}
                     </span>
                   </DesktopOnlyTooltip>
                   <span

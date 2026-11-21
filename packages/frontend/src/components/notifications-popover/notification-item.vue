@@ -227,7 +227,7 @@ const getMessage = (notification: NotificationStruct): string | null => {
     const payload = notification.payload as Partial<GoalReachedNotificationPayload> | undefined;
     if (typeof payload?.achievedAmount === 'number' && payload.currencyCode) {
       return t('notifications.goalReached.message', {
-        amount: formatAmountByCurrencyCode(payload.achievedAmount, payload.currencyCode),
+        amount: formatAmountByCurrencyCode({ amount: payload.achievedAmount, currencyCode: payload.currencyCode }),
       });
     }
   }
@@ -237,7 +237,8 @@ const getMessage = (notification: NotificationStruct): string | null => {
     if (payload?.holdings?.length && currencyCode) {
       return payload.holdings
         .map(({ symbol, lossPercent, lossAmount }) => {
-          const amount = lossAmount === null ? '' : ` · ${formatAmountByCurrencyCode(-lossAmount, currencyCode)}`;
+          const amount =
+            lossAmount === null ? '' : ` · ${formatAmountByCurrencyCode({ amount: -lossAmount, currencyCode })}`;
           const percent = lossPercent.toLocaleString(locale.value, {
             minimumFractionDigits: 1,
             maximumFractionDigits: 1,

@@ -1,6 +1,4 @@
-// Money stores cents, so decimals past the second never survive a save. A 0-digit
-// currency (JPY) rounds tighter still.
-const MAX_SUGGESTION_DIGITS = 2;
+import { roundToDecimals } from '@/js/helpers/currency-decimals';
 
 const isFilled = (value: number | string | null | undefined): boolean =>
   value !== null && value !== undefined && value !== '';
@@ -23,11 +21,6 @@ export const canSuggestOriginalAmount = ({
   return isFilled(amount) && Number.isFinite(Number(amount));
 };
 
-const resolveSuggestionDigits = ({ currencyDigits }: { currencyDigits: number | null | undefined }): number => {
-  if (typeof currencyDigits !== 'number' || !Number.isFinite(currencyDigits)) return MAX_SUGGESTION_DIGITS;
-  return Math.min(Math.max(Math.trunc(currencyDigits), 0), MAX_SUGGESTION_DIGITS);
-};
-
 /**
  * Converted amount rounded to the original currency's own fraction digits, or `null` when
  * the rate is unusable. Writing a NaN instead would read as a filled field and serialize
@@ -36,15 +29,15 @@ const resolveSuggestionDigits = ({ currencyDigits }: { currencyDigits: number | 
 export const resolveSuggestedOriginalAmount = ({
   amount,
   rate,
-  currencyDigits,
+  decimals,
 }: {
   amount: number;
   rate: number | null | undefined;
-  currencyDigits: number | null | undefined;
+  /** Decimals of the original currency. */
+  decimals: number;
 }): number | null => {
   if (typeof rate !== 'number' || !Number.isFinite(rate)) return null;
   if (!Number.isFinite(amount)) return null;
 
-  const factor = 10 ** resolveSuggestionDigits({ currencyDigits });
-  return Math.round(amount * rate * factor) / factor;
+  return roundToDecimals({ value: amount * rate, decimals });
 };

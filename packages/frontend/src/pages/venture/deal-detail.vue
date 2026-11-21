@@ -121,13 +121,13 @@ const onDelete = async () => {
           <div>
             <div class="text-muted-foreground text-xs">{{ $t('venture.deals.principal') }}</div>
             <div class="mt-0.5 text-xl font-medium tabular-nums">
-              {{ formatAmountByCurrencyCode(Number(deal.principal), deal.currencyCode) }}
+              {{ formatAmountByCurrencyCode({ amount: Number(deal.principal), currencyCode: deal.currencyCode }) }}
             </div>
           </div>
           <div>
             <div class="text-muted-foreground text-xs">{{ $t('venture.deals.entryFee') }}</div>
             <div class="mt-0.5 text-xl font-medium tabular-nums">
-              {{ formatAmountByCurrencyCode(Number(deal.entryFee), deal.currencyCode) }}
+              {{ formatAmountByCurrencyCode({ amount: Number(deal.entryFee), currencyCode: deal.currencyCode }) }}
             </div>
           </div>
           <div>

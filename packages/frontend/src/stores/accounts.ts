@@ -9,6 +9,7 @@ import {
 import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import { isBankAccount } from '@/common/utils/bank-row-permissions';
 import { hasAccountWriteAccess } from '@/composable/use-account-access';
+import { registerFallbackCurrencyMeta } from '@/js/helpers/currency-decimals';
 import {
   ACCOUNT_CATEGORIES,
   ACCOUNT_STATUSES,
@@ -47,6 +48,10 @@ export const useAccountsStore = defineStore('accounts', () => {
   // pruned rather than lingering as a ghost consumers can still resolve.
   watch(accounts, (value) => {
     accountsRecord.value = Object.fromEntries((value ?? []).map((acc) => [acc.id, acc]));
+    // A shared account in a custom currency the viewer never defined still has to render as one.
+    registerFallbackCurrencyMeta({
+      entries: (value ?? []).map((acc) => ({ code: acc.currencyCode, meta: acc.currencyMeta })),
+    });
   });
 
   const accountsCurrencyCodes = computed(() => [...new Set(accounts.value?.map((item) => item.currencyCode) ?? [])]);

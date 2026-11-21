@@ -37,9 +37,10 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { useFormValidation } from '@/composable/form-validator';
+import { useCurrencyDecimalRule } from '@/composable/use-currency-decimal-rule';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
-import { formatUIAmount, toLocalCurrencyNumber } from '@/js/helpers';
+import { formatUIAmount, getCurrencyDecimals, toLocalCurrencyNumber } from '@/js/helpers';
 import { flattenCategories } from '@/pages/import-export/utils/flatten-categories';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAccountsStore, useCategoriesStore, useCurrenciesStore, useTagsStore, useUserStore } from '@/stores';
@@ -136,7 +137,13 @@ import {
 } from './helpers';
 import { FORM_TYPES, type FormPaymentLeg, type TransactionPrefill, UI_FORM_STRUCT } from './types';
 import { canSuggestOriginalAmount, resolveSuggestedOriginalAmount } from './utils/suggest-original-amount';
-import { hasPaymentParts, isPaymentLegIncomplete, sumMainWithCreatedLegs, sumPaymentRows } from './utils/payment-legs';
+import {
+  getPaymentLegExcessDecimals,
+  hasPaymentParts,
+  isPaymentLegIncomplete,
+  sumMainWithCreatedLegs,
+  sumPaymentRows,
+} from './utils/payment-legs';
 
 defineOptions({
   name: 'record-form',
@@ -191,7 +198,7 @@ const route = useRoute();
 const { t } = useI18n();
 watch(() => route.path, closeModal);
 
-const { currenciesMap, systemCurrencies } = storeToRefs(useCurrenciesStore());
+const { systemCurrencies } = storeToRefs(useCurrenciesStore());
 const {
   accounts: allAccounts,
   accountsRecord,
@@ -375,6 +382,7 @@ const toggleMultiAccount = () => {
         mainAmount: form.value.amount,
         legs: form.value.paymentLegs ?? [],
         mainCurrencyCode: form.value.account?.currencyCode,
+        decimals: amountDecimals.value,
       });
     }
     form.value.paymentLegs = undefined;
@@ -704,12 +712,21 @@ const isCurrenciesDifferent = computed(() => {
   return form.value.account.currencyCode !== form.value.toAccount.currencyCode;
 });
 
-const currencyCode = computed(() => {
-  const accountCurrencyCode = form.value.account?.currencyCode;
-  if (accountCurrencyCode) {
-    return currenciesMap.value[accountCurrencyCode]?.currency?.code;
-  }
-  return undefined;
+const currencyCode = computed(() => form.value.account?.currencyCode);
+
+// Amount inputs keep only the decimals their currency stores.
+// An account's amounts follow the account owner's definition of its currency (`currencyMeta`),
+// which differs from the viewer's own list when a shared account's code is defined twice.
+const amountDecimals = computed(() =>
+  getCurrencyDecimals({ code: currencyCode.value, meta: form.value.account?.currencyMeta }),
+);
+const targetAmountDecimals = computed(() =>
+  getCurrencyDecimals({ code: form.value.toAccount?.currencyCode, meta: form.value.toAccount?.currencyMeta }),
+);
+const amountDecimalRule = useCurrencyDecimalRule({ decimals: amountDecimals });
+const targetAmountDecimalRule = useCurrencyDecimalRule({ decimals: targetAmountDecimals });
+const originalAmountDecimalRule = useCurrencyDecimalRule({
+  decimals: () => getCurrencyDecimals({ code: form.value.originalCurrency?.code }),
 });
 
 const { formatAmountByCurrencyCode } = useFormatCurrency();
@@ -905,11 +922,18 @@ const validationRules = computed(() => {
   const loanOverpayRule = helpers.withMessage(
     () =>
       t('dialogs.loanPayment.overpayError', {
-        max: formatAmountByCurrencyCode(loanOverpayMax.value, form.value.toAccount?.currencyCode ?? ''),
+        max: formatAmountByCurrencyCode({
+          amount: loanOverpayMax.value,
+          currencyCode: form.value.toAccount?.currencyCode ?? '',
+        }),
       }),
     (value: unknown) => {
       if (value == null || value === '') return true;
-      return !isLoanOverpayment({ amount: Number(value), maxPayment: loanOverpayMax.value });
+      return !isLoanOverpayment({
+        amount: Number(value),
+        maxPayment: loanOverpayMax.value,
+        decimals: targetAmountDecimals.value,
+      });
     },
   );
   // A pre-anchor payment is exempt from the overpay guard on the backend (it never
@@ -924,10 +948,17 @@ const validationRules = computed(() => {
       amount: {
         ...(isAmountRequired.value ? { required: isAmountFilled, minValue: minValue(0) } : {}),
         ...(overpayOnAmount ? { notOverpay: loanOverpayRule } : {}),
+        ...(isAmountRequired.value ? { currencyDecimal: amountDecimalRule.rule.value } : {}),
       },
       targetAmount: {
         ...(isTargetAmountRequired.value ? { required: isAmountFilled, minValue: minValue(0) } : {}),
         ...(overpayOnTarget ? { notOverpay: loanOverpayRule } : {}),
+        ...(isTargetFieldVisible.value && !isTargetAmountFieldDisabled.value
+          ? { targetCurrencyDecimal: targetAmountDecimalRule.rule.value }
+          : {}),
+      },
+      originalAmount: {
+        ...(isTransferTx.value ? {} : { originalCurrencyDecimal: originalAmountDecimalRule.rule.value }),
       },
       category: {
         ...(isTransferTx.value ? {} : { required }),
@@ -1004,6 +1035,9 @@ const { isFormValid, getFieldErrorMessage, touchField } = useFormValidation(
     customValidationMessages: {
       required: t('dialogs.manageTransaction.form.validation.required'),
       minValue: t('dialogs.manageTransaction.form.validation.minValue'),
+      currencyDecimal: amountDecimalRule.message,
+      targetCurrencyDecimal: targetAmountDecimalRule.message,
+      originalCurrencyDecimal: originalAmountDecimalRule.message,
     },
   },
 );
@@ -1011,6 +1045,7 @@ const { isFormValid, getFieldErrorMessage, touchField } = useFormValidation(
 const amountErrorMessage = computed(() => getFieldErrorMessage('form.amount'));
 const categoryErrorMessage = computed(() => getFieldErrorMessage('form.category'));
 const targetAmountErrorMessage = computed(() => getFieldErrorMessage('form.targetAmount'));
+const originalAmountErrorMessage = computed(() => getFieldErrorMessage('form.originalAmount'));
 const timeErrorMessage = computed(() => getFieldErrorMessage('form.time'));
 const noteErrorMessage = computed(() => getFieldErrorMessage('form.note'));
 const externalUrlErrorMessage = computed(() => getFieldErrorMessage('form.externalUrl'));
@@ -1071,7 +1106,7 @@ const suggestedOriginalAmount = computed(() => {
   return resolveSuggestedOriginalAmount({
     amount: Number(form.value.amount),
     rate,
-    currencyDigits: form.value.originalCurrency?.digits,
+    decimals: getCurrencyDecimals({ code: form.value.originalCurrency?.code }),
   });
 });
 
@@ -1100,6 +1135,7 @@ const submit = ({ keepOpen = false }: { keepOpen?: boolean } = {}) => {
   if (isSubmitBlocked.value) return;
   touchField('form.amount');
   touchField('form.targetAmount');
+  touchField('form.originalAmount');
   touchField('form.time');
   touchField('form.category');
   touchField('form.note');
@@ -1108,11 +1144,10 @@ const submit = ({ keepOpen = false }: { keepOpen?: boolean } = {}) => {
 
   if (!isFormValid('form')) return;
   if (
-    form.value.paymentLegs?.some((leg) =>
-      isPaymentLegIncomplete({
-        leg,
-        mainCurrencyCode: form.value.account?.currencyCode,
-      }),
+    form.value.paymentLegs?.some(
+      (leg) =>
+        isPaymentLegIncomplete({ leg, mainCurrencyCode: form.value.account?.currencyCode }) ||
+        getPaymentLegExcessDecimals({ leg, mainCurrencyCode: form.value.account?.currencyCode }) !== null,
     )
   ) {
     showLegErrors.value = true;
@@ -1382,8 +1417,9 @@ const paymentTotalLabel = computed(() =>
       mainAmount: form.value.amount,
       legs: form.value.paymentLegs ?? [],
       mainCurrencyCode: form.value.account?.currencyCode,
+      decimals: amountDecimals.value,
     }),
-    { currency: currencyCode.value },
+    { currency: currencyCode.value, meta: form.value.account?.currencyMeta, fullPrecision: true },
   ),
 );
 const targetAmountFieldRef = ref<InstanceType<typeof InputField> | null>(null);
@@ -1708,7 +1744,9 @@ onUnmounted(() => {
           :suggest-visible="isOriginalAmountSuggestVisible"
           :suggested-amount="suggestedOriginalAmount"
           :suggested-date="form.time"
+          :error-message="originalAmountErrorMessage"
           @apply-suggestion="applySuggestedOriginalAmount"
+          @blur="touchField('form.originalAmount')"
         />
       </FormRow>
       <FormRow v-if="shownFields.excludeFromStats" data-optional-field="excludeFromStats">
@@ -1864,6 +1902,7 @@ onUnmounted(() => {
                   v-model="form.amount"
                   :label="$t('dialogs.manageTransaction.form.amountLabel')"
                   type="number"
+                  :decimals="amountDecimals"
                   :disabled="isFormFieldsDisabled || isAmountFieldDisabled"
                   only-positive
                   :placeholder="$t('dialogs.manageTransaction.form.amountPlaceholder')"
@@ -1994,6 +2033,7 @@ onUnmounted(() => {
                       :label="$t('dialogs.manageTransaction.form.targetAmountLabel')"
                       :placeholder="$t('dialogs.manageTransaction.form.targetAmountPlaceholder')"
                       type="number"
+                      :decimals="targetAmountDecimals"
                       :error-message="targetAmountErrorMessage"
                       @blur="touchField('form.targetAmount')"
                     >
@@ -2099,7 +2139,7 @@ onUnmounted(() => {
                     </span>
                   </span>
                   <span class="text-muted-foreground flex items-center gap-1.5 tabular-nums">
-                    {{ formatUIAmount(splitsTotal, { currency: currencyCode }) }}
+                    {{ formatUIAmount(splitsTotal, { currency: currencyCode, meta: form.account?.currencyMeta }) }}
                     <span aria-hidden="true">·</span>
                     {{ $t('dialogs.manageTransaction.form.editSplit') }}
                   </span>
@@ -2112,6 +2152,7 @@ onUnmounted(() => {
                 v-model="form.splits"
                 :total-amount="form.amount ? Number(form.amount) : null"
                 :currency-code="currencyCode"
+                :currency-meta="form.account?.currencyMeta"
                 :main-category="form.category"
                 :categories="effectiveFormattedCategories"
               />
