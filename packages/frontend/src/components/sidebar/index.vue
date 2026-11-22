@@ -44,7 +44,10 @@ const { isSupportButtonVisible, openSupport } = useSupportButton();
       @reset="resetWidth"
     />
     <CardHeader class="h-14 px-4 py-3">
-      <div class="text-lg font-semibold tracking-tight">MoneyMatter</div>
+      <div class="flex items-center gap-2 text-lg font-semibold tracking-tight">
+        <img src="/img/logo.svg" alt="" class="size-6 shrink-0" />
+        MoneyMatter
+      </div>
     </CardHeader>
     <CardContent class="flex max-h-[calc(100%-56px)] grow flex-col gap-3 px-3 pt-0 pb-3 sm:p-3 sm:pt-0">
       <nav class="relative isolate grid gap-0.5">
