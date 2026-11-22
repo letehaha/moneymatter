@@ -512,5 +512,11 @@
   "contains \"COFFEE\"": "містить \"COFFEE\"",
   "Essential": "Essential",
   "Plus": "Plus",
-  "Premium": "Premium"
+  "Premium": "Premium",
+  "Black Friday": "Чорна п'ятниця",
+  "{percent}% off your first payment, applied at checkout": "Знижка {percent}% на перший платіж, застосовується під час оплати",
+  "Ends {date}": "До {date}",
+  "first year": "перший рік",
+  "Renews at {renew}/year · or <s>{was}</s> <b>{price}</b> first month": "Далі {renew}/рік · або <s>{was}</s> <b>{price}</b> за перший місяць",
+  "Renews at {renew}/year": "Далі {renew}/рік"
 }

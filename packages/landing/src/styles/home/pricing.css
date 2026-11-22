@@ -261,3 +261,72 @@
     flex-direction: row-reverse;
   }
 }
+#pricing {
+  --sale: #e7a33e;
+  --sale-on: #1a1207;
+  --sale-fg: color-mix(in srgb, var(--sale) 30%, var(--fg));
+  --sale-strong: color-mix(in srgb, var(--sale) 75%, var(--fg));
+}
+#pricing:not(.promo-on) .promo-only,
+#pricing.promo-on .regular-only {
+  display: none;
+}
+.promo-pill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 20px;
+  padding: 7px 14px 7px 8px;
+  border: 1px solid color-mix(in srgb, var(--sale) 50%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--sale) 14%, transparent);
+  color: var(--sale-fg);
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.promo-pill-name {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--sale);
+  color: var(--sale-on);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.promo-pill-ends {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sale-strong);
+}
+.tier-price .tier-sale-was {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tier-sale-was s {
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration-thickness: 2px;
+}
+.tier-price .tier-sale-chip {
+  margin-left: auto;
+  align-self: center;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--sale);
+  color: var(--sale-on);
+  font-size: 13px;
+  font-weight: 800;
+}
+.tier-sale-note {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.tier-sale-note b {
+  color: var(--fg);
+}

@@ -3,6 +3,7 @@ import vue from '@astrojs/vue';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'astro/config';
 import { readdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 // URL segment -> BCP 47 code. Mirror changes in the locale regexes of packages/frontend/nginx.conf.
 export const LANDING_LOCALES = { en: 'en', uk: 'uk', es: 'es', it: 'it', de: 'de', fr: 'fr', 'pt-br': 'pt-BR' };
@@ -35,6 +36,7 @@ export default defineConfig({
   ],
   vite: {
     plugins: [tailwindcss()],
+    resolve: { alias: { '@bt/shared': fileURLToPath(new URL('../shared/src', import.meta.url)) } },
     envDir: '../../',
     envPrefix: 'VITE_',
   },

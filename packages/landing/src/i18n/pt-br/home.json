@@ -512,5 +512,11 @@
   "contains \"COFFEE\"": "contém \"COFFEE\"",
   "Essential": "Essential",
   "Plus": "Plus",
-  "Premium": "Premium"
+  "Premium": "Premium",
+  "Black Friday": "Black Friday",
+  "{percent}% off your first payment, applied at checkout": "{percent}% de desconto no seu primeiro pagamento, aplicado no checkout",
+  "Ends {date}": "Termina em {date}",
+  "first year": "primeiro ano",
+  "Renews at {renew}/year · or <s>{was}</s> <b>{price}</b> first month": "Depois {renew}/ano · ou <s>{was}</s> <b>{price}</b> no primeiro mês",
+  "Renews at {renew}/year": "Depois {renew}/ano"
 }

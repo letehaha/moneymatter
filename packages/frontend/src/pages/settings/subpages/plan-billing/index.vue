@@ -107,6 +107,24 @@
         </p>
       </section>
 
+      <section
+        v-if="view.promotion"
+        class="border-warning-text/45 bg-warning-text/10 flex items-center gap-4 rounded-lg border px-4 py-3.5"
+      >
+        <span class="bg-warning-text text-background flex size-10 shrink-0 items-center justify-center rounded-md">
+          <TagIcon class="size-5" />
+        </span>
+        <div class="grid min-w-0 flex-1 gap-0.5">
+          <strong class="font-bold">{{ view.promotion.title }}</strong>
+          <span class="text-muted-foreground text-sm">{{ view.promotion.subtitle }}</span>
+        </div>
+        <span
+          class="bg-warning-text text-background shrink-0 rounded-full px-3 py-1 text-sm font-extrabold tabular-nums"
+        >
+          −{{ view.promotion.percentOff }}%
+        </span>
+      </section>
+
       <div class="flex flex-wrap items-center justify-between gap-2.5">
         <div class="flex flex-wrap items-center gap-2.5">
           <PillTabs v-model="selectedCycle" :items="cycleItems" size="sm" />
@@ -132,6 +150,12 @@
             )
           "
         >
+          <span
+            v-if="card.view?.promotion"
+            class="bg-warning-text text-background absolute -top-2.5 right-4 rounded-full px-2.5 py-0.5 text-xs font-bold"
+          >
+            {{ card.view.promotion.badge }}
+          </span>
           <span
             v-if="card.comingSoon"
             class="bg-muted text-muted-foreground absolute -top-2.5 left-4 rounded-full border px-2 py-0.5 text-[11px] font-semibold"
@@ -159,39 +183,51 @@
             </p>
           </div>
 
-          <template v-if="card.prices">
-            <div>
-              <div class="flex flex-wrap items-baseline gap-1.5">
-                <span class="text-3xl leading-none font-extrabold tracking-tight tabular-nums">
-                  {{ formatUsd(card.prices[selectedCycle]) }}
-                </span>
-                <span class="text-muted-foreground text-sm">
-                  {{ $t(`settings.planBilling.perCycle.${selectedCycle}`) }}
-                </span>
-              </div>
-              <i18n-t
-                :keypath="`settings.planBilling.price.${selectedCycle}Footnote`"
-                tag="p"
-                class="text-muted-foreground mt-1.5 text-xs tabular-nums"
-              >
-                <template #amount>{{
-                  formatUsd(selectedCycle === 'year' ? card.prices.year / 12 : card.prices.year)
-                }}</template>
-                <template #struck>
-                  <s class="opacity-70">{{ formatUsd(card.prices.month * 12) }}</s>
-                </template>
-                <template #save>
-                  <span class="text-success-text font-bold">
-                    {{
-                      $t('settings.planBilling.price.save', {
-                        amount: formatUsd(yearlySavings({ tier: card.tier })),
-                      })
-                    }}
-                  </span>
-                </template>
-              </i18n-t>
+          <div v-if="card.prices && card.view?.promotion">
+            <div class="flex flex-wrap items-baseline gap-2">
+              <span class="text-3xl leading-none font-extrabold tracking-tight tabular-nums">
+                {{ formatUsd(card.view.promotion.price) }}
+              </span>
+              <s class="text-muted-foreground text-lg font-semibold tabular-nums">
+                {{ formatUsd(card.prices[selectedCycle]) }}
+              </s>
+              <span class="text-muted-foreground text-sm">
+                {{ $t(`settings.planBilling.promotion.firstCycle.${selectedCycle}`) }}
+              </span>
             </div>
-          </template>
+            <p class="text-muted-foreground mt-1.5 text-xs tabular-nums">{{ card.view.promotion.renews }}</p>
+          </div>
+          <div v-else-if="card.prices">
+            <div class="flex flex-wrap items-baseline gap-1.5">
+              <span class="text-3xl leading-none font-extrabold tracking-tight tabular-nums">
+                {{ formatUsd(card.prices[selectedCycle]) }}
+              </span>
+              <span class="text-muted-foreground text-sm">
+                {{ $t(`settings.planBilling.perCycle.${selectedCycle}`) }}
+              </span>
+            </div>
+            <i18n-t
+              :keypath="`settings.planBilling.price.${selectedCycle}Footnote`"
+              tag="p"
+              class="text-muted-foreground mt-1.5 text-xs tabular-nums"
+            >
+              <template #amount>{{
+                formatUsd(selectedCycle === 'year' ? card.prices.year / 12 : card.prices.year)
+              }}</template>
+              <template #struck>
+                <s class="opacity-70">{{ formatUsd(card.prices.month * 12) }}</s>
+              </template>
+              <template #save>
+                <span class="text-success-text font-bold">
+                  {{
+                    $t('settings.planBilling.price.save', {
+                      amount: formatUsd(yearlySavings({ tier: card.tier })),
+                    })
+                  }}
+                </span>
+              </template>
+            </i18n-t>
+          </div>
           <div v-else class="opacity-80">
             <span class="text-xl leading-none font-extrabold tracking-tight">
               {{ $t('settings.planBilling.tiers.premium.priceTba') }}
@@ -266,7 +302,8 @@ import { ROUTES_NAMES } from '@/routes/constants';
 import { useUserStore } from '@/stores';
 import { EXTERNAL_URLS } from '@bt/shared/const/external-urls';
 import { API_ERROR_CODES, BILLING_CYCLES, type BillingCycle, type BillingTier } from '@bt/shared/types';
-import { CheckIcon, ClockIcon, LoaderCircleIcon } from '@lucide/vue';
+import { CheckIcon, ClockIcon, LoaderCircleIcon, TagIcon } from '@lucide/vue';
+import { useNow } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -289,6 +326,7 @@ const opening = ref<BillingTier | 'portal' | null>(null);
 const checkoutSucceeded = ref(route.query.checkout === 'success');
 const activationOutcome = ref<'timedOut' | 'unreachable' | null>(null);
 const selectedCycle = ref<BillingCycle>('year');
+const now = useNow({ interval: 60_000 });
 const showReadOnlyHelp = computed(
   () => Boolean(entitlements.value?.readOnly) && !checkoutSucceeded.value && !activationOutcome.value,
 );
@@ -314,6 +352,7 @@ const view = computed(() =>
     trialDaysLeft: trialDaysLeft.value,
     t: translate,
     formatDate,
+    now: now.value,
   }),
 );
 

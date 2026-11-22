@@ -1,6 +1,6 @@
 import { Status } from '@apple/app-store-server-library';
-import { PLANS, STRIPE_PRICE_IDS } from '@bt/shared/types';
-import { afterEach, describe, expect, it } from '@jest/globals';
+import { PLANS, PROMOTIONS, STRIPE_PRICE_IDS } from '@bt/shared/types';
+import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 import type { ErrorResponse } from '@tests/helpers/common';
 import { HttpResponse, http } from 'msw';
@@ -10,6 +10,35 @@ const RETURN_PATH = '/settings/plan-billing';
 const DAY = 24 * 60 * 60 * 1000;
 
 const payload = { tier: 'plus', cycle: 'year' };
+
+const BLACK_FRIDAY = PROMOTIONS.find((promotion) => promotion.id === 'blackFriday2026')!;
+const BEFORE_SALE = new Date(Date.parse(BLACK_FRIDAY.startsAt) - DAY);
+const DURING_SALE = new Date(Date.parse(BLACK_FRIDAY.startsAt) + DAY);
+
+/** Only `Date` is faked, so requests and the DB keep working. */
+const atInstant = async <T>({ now, fn }: { now: Date; fn: () => Promise<T> }): Promise<T> => {
+  jest.useFakeTimers({
+    now,
+    doNotFake: ['setTimeout', 'setInterval', 'setImmediate', 'queueMicrotask', 'nextTick', 'performance'],
+  });
+  try {
+    return await fn();
+  } finally {
+    jest.useRealTimers();
+  }
+};
+
+/** Captures the form body Stripe receives for the checkout session. */
+const captureCheckoutParams = () => {
+  const captured = { params: new URLSearchParams() };
+  global.mswMockServer.use(
+    http.post('https://api.stripe.com/v1/checkout/sessions', async ({ request }) => {
+      captured.params = new URLSearchParams(await request.text());
+      return HttpResponse.json({ id: 'cs_test_promo', object: 'checkout.session', url: CHECKOUT_URL });
+    }),
+  );
+  return captured;
+};
 
 /** Counts the Stripe calls so a guard can be proven to have short-circuited before them. */
 const mockCheckoutSession = () => {
@@ -53,7 +82,7 @@ describe('Billing checkout (POST /billing/checkout)', () => {
       }),
     );
 
-    const res = await helpers.createBillingCheckout({ payload, raw: true });
+    const res = await atInstant({ now: BEFORE_SALE, fn: () => helpers.createBillingCheckout({ payload, raw: true }) });
     expect(res.url).toBe(CHECKOUT_URL);
 
     const params = new URLSearchParams(body);
@@ -171,6 +200,38 @@ describe('Billing checkout (POST /billing/checkout)', () => {
     const res = await helpers.createBillingCheckout({ payload, raw: true });
     expect(res.url).toBe(CHECKOUT_URL);
     expect(calls.count).toBe(1);
+  });
+
+  describe('during a promotion', () => {
+    it('applies the promotion coupon instead of the promotion-code field', async () => {
+      process.env.STRIPE_SECRET_KEY = 'sk_test_key';
+      const captured = captureCheckoutParams();
+
+      await atInstant({ now: DURING_SALE, fn: () => helpers.createBillingCheckout({ payload, raw: true }) });
+      expect(captured.params.get('discounts[0][coupon]')).toBe(BLACK_FRIDAY.stripeCouponId);
+      expect(captured.params.get('discounts[1][coupon]')).toBeNull();
+      expect(captured.params.get('allow_promotion_codes')).toBeNull();
+    });
+
+    it('opens the promotion-code field outside the sale window', async () => {
+      process.env.STRIPE_SECRET_KEY = 'sk_test_key';
+      const captured = captureCheckoutParams();
+
+      await atInstant({ now: BEFORE_SALE, fn: () => helpers.createBillingCheckout({ payload, raw: true }) });
+      expect(captured.params.get('discounts[0][coupon]')).toBeNull();
+      expect(captured.params.get('allow_promotion_codes')).toBe('true');
+    });
+
+    it('keeps the early-adopter coupon without stacking the sale', async () => {
+      process.env.STRIPE_SECRET_KEY = 'sk_test_key';
+      await helpers.setUserBilling({ plan: PLANS.early_adopter });
+      const captured = captureCheckoutParams();
+
+      await atInstant({ now: DURING_SALE, fn: () => helpers.createBillingCheckout({ payload, raw: true }) });
+      expect(captured.params.get('discounts[0][coupon]')).toBe('early_adopter_50');
+      expect(captured.params.get('discounts[1][coupon]')).toBeNull();
+      expect(captured.params.get('allow_promotion_codes')).toBeNull();
+    });
   });
 
   describe('with an App Store subscription', () => {

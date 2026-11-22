@@ -17,6 +17,23 @@
       "voteOnRoadmap": "Vote on the roadmap",
       "roadmapNote": "No charge. Upvote it and we'll let you know when it ships.",
       "saveUpTo": "Save up to {percent}%",
+      "promotion": {
+        "title": "{name}: {percent}% off your first payment",
+        "subtitle": "Applied automatically at checkout, no code needed. Ends {date}.",
+        "badge": "{name} −{percent}%",
+        "firstCycle": {
+          "year": "/ first year",
+          "month": "/ first month"
+        },
+        "renews": {
+          "year": "Then {amount}/year",
+          "month": "Then {amount}/month"
+        },
+        "billedToday": "Billed today: {amount}. Cancel anytime.",
+        "names": {
+          "blackFriday2026": "Black Friday"
+        }
+      },
       "portalFailed": "Could not open the billing portal. Please try again.",
       "pastDueNote": "Your last payment failed. Stripe will retry your card automatically over the next few days. Update your payment method via Manage billing to keep access after {date}.",
       "priceNote": "Prices are in USD, excluding tax. Your local currency and any applicable tax are shown at checkout.",

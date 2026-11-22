@@ -2,10 +2,39 @@
 import '@/styles/home/pricing.css';
 import { GITHUB_URL } from '@/lib/github-api';
 import { useI18n } from '@/i18n';
+import type { BillingCycle, BillingTier } from '@bt/shared/types/billing';
+import { PROMOTIONS, applyPercentOff, getActivePromotion, isPromotionInScope } from '@bt/shared/types/promotions';
 
-const { t } = useI18n(Astro);
+const { t, locale } = useI18n(Astro);
+
+// ponytail: one promotion per build (live now, else the next to start); a later one needs a landing deploy.
+const buildNow = Date.now();
+const nextStart = Math.min(...PROMOTIONS.map((p) => Date.parse(p.startsAt)).filter((start) => start > buildNow));
+const promotion =
+  getActivePromotion({ now: new Date(buildNow) }) ??
+  (Number.isFinite(nextStart) ? getActivePromotion({ now: new Date(nextStart) }) : null);
+const promotionEnds =
+  promotion &&
+  new Intl.DateTimeFormat(locale, { month: 'long', day: 'numeric', timeZone: 'UTC' }).format(new Date(promotion.endsAt));
+
+const usd = (amount: number) => `$${Number.isInteger(amount) ? amount : amount.toFixed(2)}`;
+const discounted = ({ tier, cycle, price }: { tier?: BillingTier; cycle: BillingCycle; price: number }) =>
+  promotion && tier && isPromotionInScope({ promotion, tier, cycle })
+    ? usd(applyPercentOff({ price, percentOff: promotion.percentOff }))
+    : null;
+
+const SALE_TEXT = {
+  pill: '{percent}% off your first payment, applied at checkout',
+  ends: 'Ends {date}',
+  firstYear: 'first year',
+  renews: 'Renews at {renew}/year',
+  renewsWithMonth: 'Renews at {renew}/year · or <s>{was}</s> <b>{price}</b> first month',
+};
+// `i18n:sync` drops strings a build did not render, so these stay translated between sales.
+Object.values(SALE_TEXT).forEach((text) => t(text));
 
 const plans: {
+  tier?: BillingTier;
   name: string;
   tagline: string;
   yearly: number;
@@ -17,6 +46,7 @@ const plans: {
   features: string[];
 }[] = [
   {
+    tier: 'essential',
     name: 'Essential',
     tagline: 'Manual entry and everything that is local math.',
     yearly: 30,
@@ -31,6 +61,7 @@ const plans: {
     ],
   },
   {
+    tier: 'plus',
     name: 'Plus',
     tagline: 'Everything around bring-your-own bank connections.',
     yearly: 55,
@@ -61,14 +92,32 @@ const plans: {
       '10 household seats',
     ],
   },
-];
+].map((plan) => ({
+  ...plan,
+  saleYearly: discounted({ tier: plan.tier, cycle: 'year', price: plan.yearly }),
+  saleMonthly: discounted({ tier: plan.tier, cycle: 'month', price: plan.monthly }),
+}));
 ---
 
-<section class="sec sec-soft" id="pricing">
+<section
+  class="sec sec-soft"
+  id="pricing"
+  data-promo-starts={promotion?.startsAt}
+  data-promo-ends={promotion?.endsAt}
+>
   <div class="wrap">
     <p class="eyebrow">{t('Pricing')}</p>
     <h2>{t('Simple pricing, with 40 days to decide')}</h2>
     <p class="lede">{t('Try every cloud feature for 40 days, no card needed.')}</p>
+    {
+      promotion && (
+        <p class="promo-only promo-pill">
+          <span class="promo-pill-name">{t(promotion.name)}</span>
+          <span>{t(SALE_TEXT.pill, { percent: promotion.percentOff })}</span>
+          <span class="promo-pill-ends">{t(SALE_TEXT.ends, { date: promotionEnds! })}</span>
+        </p>
+      )
+    }
     <div class="tiers">
       {
         plans.map((plan) => (
@@ -79,13 +128,37 @@ const plans: {
               {plan.planned && <span class="tag">{t('Planned')}</span>}
             </div>
             <p class="tier-desc">{t(plan.tagline)}</p>
-            <div class="tier-price">
+            <div class:list={['tier-price', { 'regular-only': plan.saleYearly }]}>
               <strong>${plan.yearly}</strong>
               <span>
                 {t('/year')}<em class="save">{t(`Save $${plan.monthly * 12 - plan.yearly}/yr`)}</em>
                 <small>{t(`or $${plan.monthly}/month`)}</small>
               </span>
             </div>
+            {promotion && plan.saleYearly && (
+              <div class="promo-only">
+                <div class="tier-price">
+                  <strong>{plan.saleYearly}</strong>
+                  <span class="tier-sale-was">
+                    <s>${plan.yearly}</s>
+                    {t(SALE_TEXT.firstYear)}
+                  </span>
+                  <span class="tier-sale-chip">−{promotion.percentOff}%</span>
+                </div>
+                <p
+                  class="tier-sale-note"
+                  set:html={
+                    plan.saleMonthly
+                      ? t(SALE_TEXT.renewsWithMonth, {
+                          renew: `$${plan.yearly}`,
+                          was: `$${plan.monthly}`,
+                          price: plan.saleMonthly,
+                        })
+                      : t(SALE_TEXT.renews, { renew: `$${plan.yearly}` })
+                  }
+                />
+              </div>
+            )}
             {plan.planned ? (
               <button type="button" class="btn btn-quiet" id="premium-early-access">
                 {t('Get early access')}
@@ -169,6 +242,13 @@ const plans: {
 
 <script>
   import { deliverAnalyticsEvent, trackAnalyticsEvent } from '@/lib/posthog';
+
+  const pricing = document.getElementById('pricing');
+  const { promoStarts, promoEnds } = pricing?.dataset ?? {};
+  if (pricing && promoStarts && promoEnds) {
+    const now = Date.now();
+    pricing.classList.toggle('promo-on', Date.parse(promoStarts) <= now && now <= Date.parse(promoEnds));
+  }
 
   const VOTED_KEY = 'premium-early-access';
 

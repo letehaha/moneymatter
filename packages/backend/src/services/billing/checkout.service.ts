@@ -5,6 +5,7 @@ import {
   PLANS,
   Plan,
   STRIPE_PRICE_IDS,
+  getActivePromotion,
   isEntitledSubscription,
   isTerminalStripeStatus,
   isTerminalSubscription,
@@ -22,6 +23,22 @@ export const MANAGED_BY_APP_STORE =
   'Your subscription is billed through the App Store. Manage it in your Apple ID settings.';
 /** Created by hand under this fixed id in both Stripe modes, so no per-mode map. */
 const EARLY_ADOPTER_COUPON_ID = 'early_adopter_50';
+
+/** Coupons never stack: the early-adopter half price outranks any sale. */
+const pickCouponId = ({
+  plan,
+  tier,
+  cycle,
+  now,
+}: {
+  plan: Plan | null;
+  tier: BillingTier;
+  cycle: BillingCycle;
+  now: Date;
+}): string | null =>
+  plan === PLANS.early_adopter
+    ? EARLY_ADOPTER_COUPON_ID
+    : (getActivePromotion({ now, tier, cycle })?.stripeCouponId ?? null);
 
 /**
  * Stripe-hosted checkout with Managed Payments: Stripe is the merchant of record,
@@ -80,6 +97,7 @@ export async function createCheckoutSession({
     }
   }
 
+  const coupon = pickCouponId({ plan, tier, cycle, now: new Date() });
   const session = await getStripeClient().checkout.sessions.create({
     mode: 'subscription',
     line_items: [{ price: priceId, quantity: 1 }],
@@ -88,9 +106,7 @@ export async function createCheckoutSession({
     subscription_data: { metadata: { userId: String(userId) } },
     ...customerParams,
     // Stripe rejects a session that carries both `discounts` and `allow_promotion_codes`.
-    ...(plan === PLANS.early_adopter
-      ? { discounts: [{ coupon: EARLY_ADOPTER_COUPON_ID }] }
-      : { allow_promotion_codes: true }),
+    ...(coupon ? { discounts: [{ coupon }] } : { allow_promotion_codes: true }),
     success_url: `${PLAN_BILLING_URL}?checkout=success`,
     cancel_url: PLAN_BILLING_URL,
   });

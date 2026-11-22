@@ -6,13 +6,17 @@ import {
   PLANS,
   SUBSCRIPTION_STATUSES,
   TRIAL_DAYS,
+  applyPercentOff,
+  getActivePromotion,
   isEntitledSubscription,
   isTerminalSubscription,
   type BillingCycle,
   type BillingSubscriptionSummary,
   type BillingTier,
   type Entitlements,
+  type Promotion,
 } from '@bt/shared/types';
+import { parseISO } from 'date-fns';
 
 const TRIAL_URGENT_DAYS = 7;
 
@@ -54,6 +58,8 @@ interface TierView {
   isCurrent: boolean;
   isRecommended: boolean;
   cta: TierCta;
+  /** First-payment price for the selected cycle. Set only when checkout would apply the promotion. */
+  promotion: { badge: string; price: number; renews: string } | null;
 }
 
 interface TrialProgress {
@@ -72,6 +78,7 @@ export interface PlanBillingViewInput {
   trialDaysLeft: number | null;
   t: Translate;
   formatDate: (iso: string) => string;
+  now: Date;
 }
 
 interface PlanBillingView {
@@ -84,6 +91,7 @@ interface PlanBillingView {
   hasAppStoreSubscription: boolean;
   hasStripeSubscription: boolean;
   tiers: Record<BillingTier, TierView>;
+  promotion: { title: string; subtitle: string; percentOff: number } | null;
 }
 
 export const buildPlanBillingView = ({
@@ -94,6 +102,7 @@ export const buildPlanBillingView = ({
   trialDaysLeft,
   t,
   formatDate,
+  now,
 }: PlanBillingViewInput): PlanBillingView => {
   const tr = (key: string, params?: Record<string, unknown> | number) => t(`settings.planBilling.${key}`, params);
 
@@ -306,13 +315,36 @@ export const buildPlanBillingView = ({
     };
   };
 
-  const tiers = BILLING_TIERS.reduce(
-    (acc, tier) => {
-      acc[tier] = { isCurrent: isCurrent(tier), isRecommended: isRecommended(tier), cta: buildCta(tier) };
-      return acc;
-    },
-    {} as Record<BillingTier, TierView>,
-  );
+  // Checkout is the only path that applies a coupon, and early adopters keep their own.
+  const promotionFor = ({ tier, cta }: { tier: BillingTier; cta: TierCta }): Promotion | null =>
+    cta.action?.kind === 'checkout' && !isEarlyAdopter ? getActivePromotion({ now, tier, cycle: selectedCycle }) : null;
+
+  const entries = BILLING_TIERS.map((tier) => {
+    const cta = buildCta(tier);
+    return { tier, cta, promotion: promotionFor({ tier, cta }) };
+  });
+  const promotionName = (promotion: Promotion) => tr(`promotion.names.${promotion.id}`);
+  const tierView = ({ tier, cta, promotion }: (typeof entries)[number]): TierView => {
+    const view = { isCurrent: isCurrent(tier), isRecommended: isRecommended(tier), cta, promotion: null };
+    if (!promotion) return view;
+
+    const regularPrice = DISPLAY_PRICES[tier][selectedCycle];
+    const price = applyPercentOff({ price: regularPrice, percentOff: promotion.percentOff });
+    return {
+      ...view,
+      cta: { ...cta, note: tr('promotion.billedToday', { amount: formatUsd(price) }) },
+      promotion: {
+        badge: tr('promotion.badge', { name: promotionName(promotion), percent: promotion.percentOff }),
+        price,
+        renews: tr(`promotion.renews.${selectedCycle}`, { amount: formatUsd(regularPrice) }),
+      },
+    };
+  };
+  const tiers = Object.fromEntries(entries.map((entry) => [entry.tier, tierView(entry)])) as Record<
+    BillingTier,
+    TierView
+  >;
+  const shownPromotion = entries.find((entry) => entry.promotion)?.promotion ?? null;
 
   return {
     status: buildStatus(),
@@ -323,5 +355,13 @@ export const buildPlanBillingView = ({
     hasAppStoreSubscription: hasProvider(BILLING_PROVIDERS.apple),
     hasStripeSubscription: hasProvider(BILLING_PROVIDERS.stripe),
     tiers,
+    promotion: shownPromotion && {
+      title: tr('promotion.title', { name: promotionName(shownPromotion), percent: shownPromotion.percentOff }),
+      // The UTC calendar day: a local-time format shows Dec 2 east of UTC for a Dec 1 23:59 UTC end.
+      subtitle: tr('promotion.subtitle', {
+        date: formatDate(parseISO(shownPromotion.endsAt.slice(0, 10)).toISOString()),
+      }),
+      percentOff: shownPromotion.percentOff,
+    },
   };
 };

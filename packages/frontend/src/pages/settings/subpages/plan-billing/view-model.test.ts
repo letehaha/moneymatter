@@ -1,10 +1,13 @@
+import planBillingEn from '@/i18n/locales/chunks/en/settings/plan-billing.json';
+import planBillingUk from '@/i18n/locales/chunks/uk/settings/plan-billing.json';
 import {
+  PROMOTIONS,
   SUBSCRIPTION_STATUSES,
   type BillingSubscriptionSummary,
   type Entitlements,
   type SubscriptionStatus,
 } from '@bt/shared/types';
-import { addDays } from 'date-fns';
+import { addDays, format } from 'date-fns';
 import { describe, expect, it } from 'vitest';
 
 import { buildPlanBillingView, formatUsd, type PlanBillingViewInput } from './view-model';
@@ -42,6 +45,7 @@ const buildView = (overrides: Partial<PlanBillingViewInput> = {}) =>
     trialDaysLeft: null,
     t: (key) => key,
     formatDate: (iso) => iso.slice(0, 10),
+    now: new Date('2020-01-01T00:00:00.000Z'),
     ...overrides,
   });
 
@@ -282,5 +286,76 @@ describe('formatUsd', () => {
   it('drops the cents on a whole amount and keeps them otherwise', () => {
     expect(formatUsd(30)).toBe('$30');
     expect(formatUsd(55 / 12)).toBe('$4.58');
+  });
+});
+
+describe('buildPlanBillingView promotions', () => {
+  const sale = PROMOTIONS.find((promotion) => promotion.id === 'blackFriday2026')!;
+  const duringSale = new Date(Date.parse(sale.startsAt) + 24 * 60 * 60 * 1000);
+  const afterSale = new Date(Date.parse(sale.endsAt) + 1);
+
+  it('discounts the first payment of the selected cycle during the sale', () => {
+    const yearly = buildView({ now: duringSale, selectedCycle: 'year' });
+    expect(yearly.tiers.plus.promotion).toEqual({
+      badge: 'settings.planBilling.promotion.badge',
+      price: 38.5,
+      renews: 'settings.planBilling.promotion.renews.year',
+    });
+    expect(yearly.tiers.essential.promotion?.price).toBe(21);
+    expect(yearly.tiers.plus.cta.note).toBe('settings.planBilling.promotion.billedToday');
+    expect(yearly.promotion).toEqual({
+      title: 'settings.planBilling.promotion.title',
+      subtitle: 'settings.planBilling.promotion.subtitle',
+      percentOff: 30,
+    });
+
+    const monthly = buildView({ now: duringSale, selectedCycle: 'month' });
+    expect(monthly.tiers.plus.promotion?.price).toBe(5.6);
+    expect(monthly.tiers.plus.promotion?.renews).toBe('settings.planBilling.promotion.renews.month');
+  });
+
+  it('ends the banner on the UTC calendar day in any timezone', () => {
+    const view = buildView({
+      now: duringSale,
+      t: (key, params) => `${key}:${typeof params === 'object' ? (params.date ?? '') : ''}`,
+      formatDate: (iso) => format(new Date(iso), 'yyyy-MM-dd'),
+    });
+    expect(view.promotion?.subtitle).toBe(`settings.planBilling.promotion.subtitle:${sale.endsAt.slice(0, 10)}`);
+  });
+
+  it('names every configured promotion in en and uk', () => {
+    for (const promotion of PROMOTIONS) {
+      expect(planBillingEn.settings.planBilling.promotion.names).toHaveProperty(promotion.id);
+      expect(planBillingUk.settings.planBilling.promotion.names).toHaveProperty(promotion.id);
+    }
+  });
+
+  it('shows nothing outside the sale window', () => {
+    const view = buildView({ now: afterSale });
+    expect(view.tiers.plus.promotion).toBeNull();
+    expect(view.promotion).toBeNull();
+  });
+
+  it('skips early adopters, who keep their own coupon', () => {
+    const view = buildView({ now: duringSale, entitlements: buildEntitlements({ plan: 'early_adopter' }) });
+    expect(view.tiers.plus.promotion).toBeNull();
+    expect(view.tiers.essential.promotion).toBeNull();
+    expect(view.promotion).toBeNull();
+  });
+
+  it('skips App Store subscribers and tiers reached through the portal', () => {
+    const appStore = buildView({
+      now: duringSale,
+      entitlements: buildEntitlements({ subscriptions: [buildSubscription({ provider: 'apple' })] }),
+    });
+    expect(appStore.tiers.plus.promotion).toBeNull();
+    expect(appStore.promotion).toBeNull();
+
+    const stripe = buildView({
+      now: duringSale,
+      entitlements: buildEntitlements({ subscriptions: [buildSubscription({ tier: 'essential' })] }),
+    });
+    expect(stripe.tiers.plus.promotion).toBeNull();
+    expect(stripe.promotion).toBeNull();
   });
 });
