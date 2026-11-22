@@ -28,9 +28,10 @@
           :class="
             cn(
               'h-auto w-full justify-start px-3 py-2 text-left font-normal',
-              coin.coinId === selectedCoinId && 'border-primary bg-primary/10',
+              coin.coinId === selectedCoinId && 'border-primary bg-primary/10 hover:bg-primary/15',
             )
           "
+          :aria-pressed="coin.coinId === selectedCoinId"
           :disabled="disabled"
           :data-testid="`rate-source-coin-${coin.coinId}`"
           @click="emit('select', coin)"
@@ -79,10 +80,6 @@ import { computed, ref } from 'vue';
 const SEARCH_DEBOUNCE_MS = 300;
 const SKELETON_ROWS = 3;
 
-/**
- * A CoinGecko coin lookup: a search box and the matching coins to pick from. Shared by the CoinGecko
- * rate source and the logo field of the custom currency dialog.
- */
 defineProps<{
   label: string;
   placeholder: string;

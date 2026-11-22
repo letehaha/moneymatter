@@ -48,8 +48,6 @@ const getCurrencyCodeAttributes = ({ def }: { def: BackupTableDef }): string[] =
     .map(([attrName]) => attrName);
 };
 
-const HTTP_FINGERPRINT_PATTERN = /^[0-9a-f]{64}$/;
-
 const hasColumn = ({ plan, field }: { plan: TableColumnPlan; field: string }): boolean =>
   plan.columns.some((c) => c.field === field);
 
@@ -79,8 +77,7 @@ function buildRowOverrides({
   }
 
   // The validated definition replaces the archive's override and rate-source columns; an ISO row
-  // carries none, no logo either, and its source follows its live-rate flag. Every row gets every
-  // key, keeping the batch's column set uniform.
+  // carries none and no logo either. Every row gets every key, keeping the batch's column set uniform.
   if (def.fileName === 'users-currencies') {
     const definition = ctx.customDefinitions.get(String(row.currencyCode));
     overrides.nameOverride = definition?.name ?? null;
@@ -88,21 +85,10 @@ function buildRowOverrides({
     overrides.decimalsOverride = definition?.decimals ?? null;
     for (const key of LOGO_FIELD_KEYS) overrides[key] = definition ? (row[key] ?? null) : null;
 
-    const setting = definition?.rateSourceSetting ?? {
-      rateSource: row.liveRateUpdate === false ? 'manual' : 'provider',
-      rateSourceConfig: null,
-    };
-    overrides.rateSource = setting.rateSource;
-    overrides.rateSourceConfig = setting.rateSourceConfig;
+    overrides.rateSource = definition?.rateSourceSetting.rateSource ?? 'manual';
+    overrides.rateSourceConfig = definition?.rateSourceSetting.rateSourceConfig ?? null;
     // The request headers never travel: the user enters them again.
     overrides.rateSourceHeadersEncrypted = null;
-    // A SHA-256 hex digest or nothing; without one, stored HTTP rates are matched through the saved config.
-    overrides.rateSourceHttpFingerprint =
-      definition &&
-      typeof row.rateSourceHttpFingerprint === 'string' &&
-      HTTP_FINGERPRINT_PATTERN.test(row.rateSourceHttpFingerprint)
-        ? row.rateSourceHttpFingerprint
-        : null;
   }
 
   // Bank credentials never travel: re-encrypt an empty stub on THIS instance and

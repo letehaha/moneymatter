@@ -171,6 +171,10 @@ export async function restoreUserBackup({
 
   const insertedByTable: Record<string, number> = { ...securities.insertedByTable };
   const warnings = [...analysis.warnings];
+  const headersDropped = [...customDefinitions.values()].filter((definition) => definition.headersDropped).length;
+  if (headersDropped > 0) {
+    warnings.push({ code: 'rate_source_headers_dropped', table: 'users-currencies', count: headersDropped });
+  }
 
   await onProgress?.({ phase: 'wiping' });
   const destroyRan = await runUserDestroyLifecycle({

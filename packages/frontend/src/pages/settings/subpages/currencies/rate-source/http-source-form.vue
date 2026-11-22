@@ -44,51 +44,26 @@
         </p>
       </div>
 
-      <template v-if="savedHeaderNames.length && model.headersMode !== 'replace'">
+      <template v-if="savedHeaderNames.length && model.headersMode === 'keep'">
         <p class="text-sm" data-testid="rate-source-saved-headers">
-          {{
-            model.headersMode === 'clear'
-              ? $t('settings.currencies.rateSource.http.headersWillBeRemoved')
-              : $t('settings.currencies.rateSource.http.savedHeaders', { names: savedHeaderNames.join(', ') })
-          }}
+          {{ $t('settings.currencies.rateSource.http.savedHeaders', { names: savedHeaderNames.join(', ') }) }}
         </p>
+        <Callout v-if="isOriginChanged" variant="warning" data-testid="rate-source-headers-origin-changed">
+          <span>{{ $t('settings.currencies.rateSource.http.headersOriginChanged') }}</span>
+        </Callout>
 
-        <div class="flex flex-wrap gap-2">
+        <div>
           <Button
-            v-if="model.headersMode === 'clear'"
             type="button"
             variant="outline"
             size="sm"
             :disabled="disabled"
-            data-testid="rate-source-keep-headers"
-            @click="updateField({ headersMode: 'keep' })"
+            data-testid="rate-source-replace-headers"
+            @click="startReplacingHeaders"
           >
-            {{ $t('settings.currencies.rateSource.http.keepHeaders') }}
+            <PencilIcon class="size-4" />
+            {{ $t('settings.currencies.rateSource.http.replaceHeaders') }}
           </Button>
-          <template v-else>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              :disabled="disabled"
-              data-testid="rate-source-replace-headers"
-              @click="startReplacingHeaders"
-            >
-              <PencilIcon class="size-4" />
-              {{ $t('settings.currencies.rateSource.http.replaceHeaders') }}
-            </Button>
-            <Button
-              type="button"
-              variant="soft-destructive"
-              size="sm"
-              :disabled="disabled"
-              data-testid="rate-source-clear-headers"
-              @click="updateField({ headersMode: 'clear' })"
-            >
-              <Trash2Icon class="size-4" />
-              {{ $t('settings.currencies.rateSource.http.clearHeaders') }}
-            </Button>
-          </template>
         </div>
       </template>
 
@@ -129,6 +104,13 @@
           </DesktopOnlyTooltip>
         </div>
 
+        <p
+          v-if="savedHeaderNames.length && !getFilledHeaderRows({ http: model }).length"
+          class="text-sm"
+          data-testid="rate-source-headers-removed"
+        >
+          {{ $t('settings.currencies.rateSource.http.headersWillBeRemoved') }}
+        </p>
         <p v-if="errors.headers" class="text-destructive-text text-xs" data-testid="rate-source-headers-error">
           {{ $t(errors.headers) }}
         </p>
@@ -146,7 +128,7 @@
             {{ $t('settings.currencies.rateSource.http.addHeader') }}
           </Button>
           <Button
-            v-if="savedHeaderNames.length"
+            v-if="savedHeaderNames.length && !isOriginChanged"
             type="button"
             variant="ghost"
             size="sm"
@@ -182,7 +164,7 @@
             $t('settings.currencies.rateSource.http.testSuccess', {
               date: testResult.date,
               code,
-              rate: formatTestRate({ rate: testResult.rate }),
+              rate: toLocalNumber(testResult.rate, RATE_DISPLAY_OPTIONS),
               quote: testResult.quoteCurrency,
             })
           }}
@@ -192,8 +174,10 @@
         <p class="font-medium">{{ $t(getTestFailureKey({ reason: testResult.reason })) }}</p>
         <p v-if="testResult.message" class="mt-0.5 text-xs break-words">{{ testResult.message }}</p>
       </Callout>
-      <Callout v-else-if="testError" variant="destructive" data-testid="rate-source-test-error">
-        <span>{{ testError }}</span>
+      <Callout v-else-if="testFailure" variant="destructive" data-testid="rate-source-test-error">
+        <span>
+          {{ extractApiErrorMessage(testFailure) || $t('settings.currencies.rateSource.http.testUnavailable') }}
+        </span>
       </Callout>
     </div>
   </div>
@@ -207,49 +191,66 @@ import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { extractApiErrorMessage } from '@/js/errors';
-import { HTTP_RATE_SOURCE_MAX_HEADERS, type TestCurrencyRateSourceResponse } from '@bt/shared/types';
+import { toLocalNumber } from '@/js/helpers/formatters';
+import { HTTP_RATE_SOURCE_MAX_HEADERS } from '@bt/shared/types';
 import { FlaskConicalIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue';
 import { useMutation } from '@tanstack/vue-query';
-import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { computed } from 'vue';
 
+import { rateDisplayOptions } from '../rate-precision';
 import {
   HTTP_URL_PLACEHOLDERS,
   type HttpHeaderRow,
   type RateSourceDraft,
   type RateSourceDraftErrors,
-  buildTestBody,
+  type SavedRateSource,
+  buildHttpConfig,
   createHeaderRow,
+  getFilledHeaderRows,
+  getSavedHeaderNames,
   getTestFailureKey,
+  isHeadersOriginChanged,
 } from './rate-source-draft';
 import { findOption, useCurrencyOptions } from './use-currency-options';
 
-/** A previewed rate keeps its significant digits: a coin can be worth a tiny fraction of its quote. */
-const TEST_RATE_MAX_FRACTION_DIGITS = 12;
+const RATE_DISPLAY_OPTIONS = rateDisplayOptions({ isCustom: true, isoDecimals: 6 });
 
 const props = defineProps<{
   /** The custom currency being priced. */
   code: string;
-  /** Names of the headers saved on the currency's HTTP source; their values are never available. */
-  savedHeaderNames: string[];
+  saved: SavedRateSource;
   errors: RateSourceDraftErrors;
   disabled?: boolean;
 }>();
 
 const model = defineModel<RateSourceDraft['http']>({ required: true });
 
-const { t } = useI18n();
 const { isoOptions } = useCurrencyOptions();
 
+const savedHeaderNames = computed(() => getSavedHeaderNames({ saved: props.saved }));
+const isOriginChanged = computed(() =>
+  isHeadersOriginChanged({ http: model.value, saved: props.saved, code: props.code }),
+);
 const canTest = computed(() => Boolean(model.value.urlTemplate.trim() && model.value.jsonPath.trim()));
 
-const testResult = ref<TestCurrencyRateSourceResponse | null>(null);
-const testError = ref<string | null>(null);
+// Resetting detaches a preview still in flight, so its answer never shows for settings edited since.
+const {
+  mutate: runTest,
+  isPending: isTesting,
+  data: testResult,
+  error: testFailure,
+  reset: resetTest,
+} = useMutation({
+  mutationFn: () =>
+    testCurrencyRateSource({
+      code: props.code,
+      body: { rateSource: 'http', config: buildHttpConfig({ http: model.value }) },
+    }),
+});
 
 const updateField = (patch: Partial<RateSourceDraft['http']>) => {
   model.value = { ...model.value, ...patch };
-  testResult.value = null;
-  testError.value = null;
+  resetTest();
 };
 
 const startReplacingHeaders = () => updateField({ headersMode: 'replace', headers: [createHeaderRow()] });
@@ -258,22 +259,4 @@ const removeHeader = ({ id }: { id: number }) =>
   updateField({ headers: model.value.headers.filter((row) => row.id !== id) });
 const updateHeader = ({ id, ...patch }: Partial<HttpHeaderRow> & { id: number }) =>
   updateField({ headers: model.value.headers.map((row) => (row.id === id ? { ...row, ...patch } : row)) });
-
-const formatTestRate = ({ rate }: { rate: number }) =>
-  rate.toLocaleString(undefined, { maximumFractionDigits: TEST_RATE_MAX_FRACTION_DIGITS });
-
-const { mutate: runTest, isPending: isTesting } = useMutation({
-  mutationFn: () => testCurrencyRateSource({ code: props.code, body: buildTestBody({ http: model.value }) }),
-  onMutate: () => {
-    testResult.value = null;
-    testError.value = null;
-  },
-  onSuccess: (result) => {
-    testResult.value = result;
-  },
-  // A refused request (the rate limit, a body the API will not take) explains itself.
-  onError: (error) => {
-    testError.value = extractApiErrorMessage(error) || t('settings.currencies.rateSource.http.testUnavailable');
-  },
-});
 </script>

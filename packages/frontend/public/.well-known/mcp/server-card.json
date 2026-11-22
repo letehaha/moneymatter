@@ -1249,7 +1249,7 @@
     {
       "name": "get_currency_rate_history",
       "toolset": "currencies",
-      "description": "List the stored rates of one of the user's custom currencies, latest first: quote currency, rate, effective date, source (manual, coingecko, http), when it was written, and which row is in force now."
+      "description": "List the stored rates of one of the user's custom currencies, latest first: quote currency, rate, effective date, source (initial, manual, coingecko, http), when it was written, and which row is in force now."
     },
     {
       "name": "get_exchange_rate",
@@ -1279,7 +1279,7 @@
     {
       "name": "set_currency_rate_source",
       "toolset": "currencies",
-      "description": "Set how a currency gets its rates. Requires finance:write scope."
+      "description": "Set how one of the user's custom currencies gets its rates. Requires finance:write scope."
     },
     {
       "name": "set_exchange_rates",

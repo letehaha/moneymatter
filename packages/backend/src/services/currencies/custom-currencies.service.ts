@@ -183,7 +183,6 @@ export const createCustomCurrency = withTransaction(
       // A custom currency has no market rate; the user's own rate applies.
       liveRateUpdate: false,
       isDefaultCurrency: false,
-      rateSource: 'manual',
       nameOverride: name,
       symbolOverride: symbol ?? null,
       decimalsOverride: decimals,
@@ -192,11 +191,14 @@ export const createCustomCurrency = withTransaction(
 
     // Written directly: `updateRates` would also switch live rates off on the ISO quote. The first
     // rate also values every day before it.
-    const effectiveDate = toEffectiveDate({ date: new Date() });
-    await UserExchangeRates.bulkCreate([
-      { userId, baseCode: code, quoteCode, rate: rate.value, effectiveDate },
-      { userId, baseCode: quoteCode, quoteCode: code, rate: 1 / rate.value, effectiveDate },
-    ]);
+    await UserExchangeRates.create({
+      userId,
+      baseCode: code,
+      quoteCode,
+      rate: rate.value,
+      effectiveDate: toEffectiveDate({ date: new Date() }),
+      source: 'initial',
+    });
 
     return toCustomCurrencyModel({ currency, held });
   },

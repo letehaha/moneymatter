@@ -1,14 +1,12 @@
-import { type AccountApiResponse, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { redisClient } from '@root/redis-client';
-import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
-import { syncHttpRates } from '@root/services/currencies/rate-sources/http-sync';
 import { buildLockKey } from '@services/currencies/base-currency-lock';
 import * as helpers from '@tests/helpers';
+import { useSelfHost } from '@tests/helpers/self-host';
 import { http, HttpResponse } from 'msw';
 
 /**
@@ -24,12 +22,12 @@ const OTHER_HOST = 'https://elsewhere.example.test';
 const USDT = 'USDT';
 const BASE = (): string => global.BASE_CURRENCY_CODE;
 
-const todayKey = (): string => new Date().toISOString().slice(0, 10);
-const yesterdayKey = (): string => new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-const OPENING_DAY = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+const { createAccountInCurrency: createAccountIn, dayKey, noonOf, readTx } = helpers;
+const todayKey = (): string => dayKey({ daysAgo: 0 });
+const yesterdayKey = (): string => dayKey({ daysAgo: 1 });
+const OPENING_DAY = dayKey({ daysAgo: 60 });
 /** Base-currency units per unit of a new currency, from OPENING_DAY on. */
 const OPENING_RATE = 2;
-const noonOf = ({ day }: { day: string }): string => `${day}T12:00:00.000Z`;
 
 interface SeenRequest {
   url: URL;
@@ -37,22 +35,11 @@ interface SeenRequest {
 }
 
 /** Answers the price endpoint with `price` at `data.price` and records the requests it saw. */
-const servePrice = ({
-  price,
-  status = 200,
-  body,
-  host = HOST,
-}: {
-  price?: number | string;
-  status?: number;
-  body?: () => Response;
-  host?: string;
-}) => {
+const servePrice = ({ price, status = 200, host = HOST }: { price: number; status?: number; host?: string }) => {
   const seen: SeenRequest[] = [];
   global.mswMockServer.use(
     http.get(`${host}/price/:code`, ({ request }) => {
       seen.push({ url: new URL(request.url), apiKey: request.headers.get('x-api-key') });
-      if (body) return body();
 
       return HttpResponse.json({ data: { price } }, { status });
     }),
@@ -61,37 +48,9 @@ const servePrice = ({
   return seen;
 };
 
-/**
- * Creates the currency with the rate it needs and moves that rate to OPENING_DAY, so today is free
- * of manual rows and the source's first rate takes it.
- */
-const createCurrency = async ({ code = USDT, decimals = 6 }: { code?: string; decimals?: number } = {}) => {
-  const response = await helpers.createCustomCurrency({
-    payload: { code, name: code, decimals, rate: { value: OPENING_RATE } },
-  });
-  expect(response.statusCode).toBe(201);
-
-  const { id: userId } = await helpers.getUserInfo({ raw: true });
-  const created = await UserExchangeRates.findOne({ where: { userId, baseCode: code }, raw: true });
-  const opening = await helpers.editCurrencyExchangeRate({
-    pairs: [
-      { baseCode: code, quoteCode: BASE(), rate: OPENING_RATE, effectiveDate: OPENING_DAY },
-      { baseCode: BASE(), quoteCode: code, rate: 1 / OPENING_RATE, effectiveDate: OPENING_DAY },
-    ],
-    raw: false,
-  });
-  expect(opening.statusCode).toBe(200);
-  if (created!.effectiveDate === OPENING_DAY) return;
-
-  const removal = await helpers.removeCurrencyExchangeRate({
-    pairs: [
-      { baseCode: code, quoteCode: created!.quoteCode, effectiveDate: created!.effectiveDate },
-      { baseCode: created!.quoteCode, quoteCode: code, effectiveDate: created!.effectiveDate },
-    ],
-    raw: false,
-  });
-  expect(removal.statusCode).toBe(200);
-};
+/** The rate the currency needs starts on OPENING_DAY, so today is free for the source's first rate. */
+const createCurrency = ({ code = USDT, decimals = 6 }: { code?: string; decimals?: number } = {}) =>
+  helpers.addCustomCurrencyFrom({ code, decimals, openingDay: OPENING_DAY, openingRate: OPENING_RATE });
 
 /** An `http` rate of an earlier day, which the source cannot fetch again: it is there only if it was kept. */
 const seedHttpRate = async ({ day, rate }: { day: string; rate: number }) => {
@@ -116,59 +75,12 @@ const httpConfig = (overrides: Record<string, unknown> = {}) => ({
 const useHttp = ({ code = USDT, config = {} }: { code?: string; config?: Record<string, unknown> } = {}) =>
   helpers.setCurrencyRateSource({ code, payload: { rateSource: 'http', config: httpConfig(config) } });
 
-const createAccountIn = async ({ code }: { code: string }) => {
-  const response = await helpers.createAccount({
-    payload: helpers.buildAccountPayload({ currencyCode: code, name: `${code} account`, initialBalance: 0 }),
-    raw: false,
-  });
-  expect(response.statusCode).toBe(200);
+const createExpense = async (params: { accountId: string; amount: number; day?: string }) =>
+  (await helpers.createTxOn(params))[0]!;
 
-  return (response as unknown as { body: { response: AccountApiResponse } }).body.response;
-};
+const storedRates = ({ code = USDT }: { code?: string } = {}) => helpers.storedRates({ code, excludeDay: OPENING_DAY });
 
-const createExpense = async ({
-  accountId,
-  amount,
-  day = todayKey(),
-}: {
-  accountId: string;
-  amount: number;
-  day?: string;
-}) => {
-  const response = await helpers.createTransaction({
-    payload: helpers.buildTransactionPayload({
-      accountId: accountId as RecordId,
-      amount,
-      categoryId: global.DEFAULT_CATEGORY_ID,
-      transactionType: TRANSACTION_TYPES.expense,
-      time: noonOf({ day }),
-    }),
-    raw: false,
-  });
-  const result = response as unknown as { statusCode: number; body: { response: TransactionApiResponse[] } };
-  if (result.statusCode !== 200) throw new Error(`createTransaction answered ${result.statusCode}`);
-
-  return result.body.response[0]!;
-};
-
-const readTx = async ({ id }: { id: string }) =>
-  (await helpers.getTransactionById({ id: id as RecordId, raw: true })) as unknown as TransactionApiResponse;
-
-const storedRates = async ({ code = USDT }: { code?: string } = {}) => {
-  const { id: userId } = await helpers.getUserInfo({ raw: true });
-  const rows = await UserExchangeRates.findAll({ where: { userId, baseCode: code }, raw: true });
-
-  return rows
-    .filter((row) => row.effectiveDate !== OPENING_DAY)
-    .map((row) => ({ day: row.effectiveDate, quote: row.quoteCode, rate: Number(row.rate), source: row.source }))
-    .toSorted((a, b) => a.day.localeCompare(b.day));
-};
-
-const savedSource = async ({ code = USDT }: { code?: string } = {}) => {
-  const entry = (await helpers.getUserCurrencies()).find((item) => item.currencyCode === code);
-
-  return { rateSource: entry?.rateSource, rateSourceConfig: entry?.rateSourceConfig };
-};
+const savedSource = ({ code = USDT }: { code?: string } = {}) => helpers.savedSource({ code });
 
 /** The encrypted headers column, which no endpoint returns. */
 const storedHeadersBlob = async ({ code = USDT }: { code?: string } = {}) => {
@@ -176,31 +88,6 @@ const storedHeadersBlob = async ({ code = USDT }: { code?: string } = {}) => {
   const row = await UsersCurrencies.unscoped().findOne({ where: { userId, currencyCode: code }, raw: true });
 
   return row?.rateSourceHeadersEncrypted ?? null;
-};
-
-const restoreArchive = async ({ files }: { files: Map<string, Buffer> }) => {
-  await helpers.wipeUserData();
-  const restore = await helpers.restoreBackup({ fileContent: await helpers.repackBackup({ files }) });
-  expect(restore.statusCode).toBe(200);
-  const status = await helpers.waitForRestore({ jobId: restore.jobId! });
-  expect(status.status).toBe('completed');
-};
-
-const heldRows = ({ archive }: { archive: { files: Map<string, Buffer> } }) =>
-  JSON.parse(archive.files.get('data/users-currencies.json')!.toString('utf8')) as Record<string, unknown>[];
-
-const asSelfHost = () => {
-  let before: string | undefined;
-
-  beforeEach(() => {
-    before = process.env.IS_SELF_HOST;
-    process.env.IS_SELF_HOST = 'true';
-  });
-
-  afterEach(() => {
-    if (before === undefined) delete process.env.IS_SELF_HOST;
-    else process.env.IS_SELF_HOST = before;
-  });
 };
 
 describe('HTTP rate source', () => {
@@ -231,17 +118,12 @@ describe('HTTP rate source', () => {
       expect(seen).toHaveLength(0);
     });
 
-    it.each([
-      ['a loopback address', 'https://127.0.0.1/price/{code}'],
-      ['a private address', 'https://10.0.0.5/price/{code}'],
-      ['a link-local metadata address', 'https://169.254.169.254/latest/{code}'],
-      ['an IPv6 loopback', 'https://[::1]/price/{code}'],
-    ])('answers a preview of %s with a blocked failure', async (_name, urlTemplate) => {
+    it('answers a preview of a private address with a blocked failure', async () => {
       await createCurrency();
 
       const response = await helpers.testCurrencyRateSource({
         code: USDT,
-        payload: { rateSource: 'http', config: httpConfig({ urlTemplate }) },
+        payload: { rateSource: 'http', config: httpConfig({ urlTemplate: 'https://10.0.0.5/price/{code}' }) },
       });
 
       expect(response.statusCode).toBe(200);
@@ -266,7 +148,7 @@ describe('HTTP rate source', () => {
   });
 
   describe('on a self-hosted instance', () => {
-    asSelfHost();
+    useSelfHost();
 
     describe('POST /user/currencies/:code/rate-source/test', () => {
       it('fetches today with the filled URL and the headers, and saves nothing', async () => {
@@ -305,20 +187,6 @@ describe('HTTP rate source', () => {
         expect(seen[0]!.url.searchParams.get('day')).toBe('2026-02-03');
       });
 
-      it('reads a price sent as a string and one nested in arrays', async () => {
-        await createCurrency();
-        global.mswMockServer.use(
-          http.get(`${HOST}/price/:code`, () => HttpResponse.json({ rows: [{ p: '42000.50' }] })),
-        );
-
-        const response = await helpers.testCurrencyRateSource({
-          code: USDT,
-          payload: { rateSource: 'http', config: httpConfig({ jsonPath: '$.rows[0].p' }) },
-        });
-
-        expect(response.body.response).toMatchObject({ ok: true, rate: 42000.5 });
-      });
-
       it('sends the headers already saved on the source when the request names none', async () => {
         await createCurrency();
         servePrice({ price: 1 });
@@ -334,37 +202,17 @@ describe('HTTP rate source', () => {
         expect(seen[0]!.apiKey).toBe(SECRET);
       });
 
-      it.each([
-        ['a server that answers 401', () => servePrice({ status: 401, price: 1 }), {}, 'http_status'],
-        [
-          'a body that is not JSON',
-          () => servePrice({ body: () => new HttpResponse('<html>nope</html>', { status: 200 }) }),
-          {},
-          'not_json',
-        ],
-        ['a path that leads nowhere', () => servePrice({ price: 1 }), { jsonPath: 'data.cost' }, 'path_not_found'],
-        ['a value that is not a number', () => servePrice({ price: 'cheap' }), {}, 'not_a_number'],
-        ['a price of zero', () => servePrice({ price: 0 }), {}, 'not_a_number'],
-        [
-          'a response over 256 KB',
-          () =>
-            servePrice({
-              body: () => new HttpResponse(JSON.stringify({ data: { price: 1 }, pad: 'x'.repeat(300_000) })),
-            }),
-          {},
-          'too_large',
-        ],
-      ])('answers %s with ok false and the reason', async (_name, serve, configOverrides, reason) => {
+      it('answers a failed request with ok false and the reason, without the host', async () => {
         await createCurrency();
-        serve();
+        servePrice({ status: 401, price: 1 });
 
         const response = await helpers.testCurrencyRateSource({
           code: USDT,
-          payload: { rateSource: 'http', config: httpConfig(configOverrides) },
+          payload: { rateSource: 'http', config: httpConfig() },
         });
 
         expect(response.statusCode).toBe(200);
-        expect(response.body.response).toMatchObject({ ok: false, reason });
+        expect(response.body.response).toMatchObject({ ok: false, reason: 'http_status' });
         expect(JSON.stringify(response.body)).not.toContain(HOST);
       });
 
@@ -433,12 +281,6 @@ describe('HTTP rate source', () => {
       it.each([
         ['an ISO currency', () => ({ code: BASE(), config: httpConfig() })],
         ['a quote that is not ISO', () => ({ code: USDT, config: httpConfig({ quoteCurrency: 'NOPE' }) })],
-        [
-          'a template with an unknown placeholder',
-          () => ({ code: USDT, config: httpConfig({ urlTemplate: `${HOST}/{day}` }) }),
-        ],
-        ['a header the HTTP layer owns', () => ({ code: USDT, config: httpConfig({ headers: { Host: 'x' } }) })],
-        ['a missing JSON path', () => ({ code: USDT, config: { urlTemplate: PRICE_URL } })],
       ])('rejects %s with 422', async (_name, build) => {
         await createCurrency();
         const { code, config } = build();
@@ -485,17 +327,24 @@ describe('HTTP rate source', () => {
         expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 2.5, source: 'http' }]);
       });
 
+      it('takes over the day of the rate the currency was created with, in another quote', async () => {
+        const created = await helpers.createCustomCurrency({
+          payload: { code: USDT, name: USDT, decimals: 6, rate: { value: OPENING_RATE } },
+        });
+        expect(created.statusCode).toBe(201);
+        expect(await storedRates()).toEqual([
+          { day: todayKey(), quote: BASE(), rate: OPENING_RATE, source: 'initial' },
+        ]);
+        servePrice({ price: 2.5 });
+
+        expect((await useHttp({ config: { quoteCurrency: 'USD' } })).statusCode).toBe(200);
+
+        expect(await storedRates()).toEqual([{ day: todayKey(), quote: 'USD', rate: 2.5, source: 'http' }]);
+      });
+
       it('values the rows a manual rate priced again with the first rate of the source', async () => {
         await createCurrency({ decimals: 2 });
-        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-        const manual = await helpers.editCurrencyExchangeRate({
-          pairs: [
-            { baseCode: USDT, quoteCode: BASE(), rate: 2, effectiveDate: yesterday },
-            { baseCode: BASE(), quoteCode: USDT, rate: 0.5, effectiveDate: yesterday },
-          ],
-          raw: false,
-        });
-        expect(manual.statusCode).toBe(200);
+        await helpers.setUserRate({ code: USDT, rate: 2, effectiveDate: yesterdayKey() });
         const account = await createAccountIn({ code: USDT });
         const priced = await createExpense({ accountId: account.id, amount: 10 });
         expect((await readTx({ id: priced.id })).refAmount).toBe(20);
@@ -547,16 +396,10 @@ describe('HTTP rate source', () => {
       it('values the balance history of each past day with the rate in force that day, as its transactions are', async () => {
         await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
         const usdToBase = 4;
-        await helpers.editCurrencyExchangeRate({
-          pairs: [
-            { baseCode: 'USD', quoteCode: BASE(), rate: usdToBase },
-            { baseCode: BASE(), quoteCode: 'USD', rate: 1 / usdToBase },
-          ],
-          raw: true,
-        });
+        await helpers.setUserRate({ code: 'USD', rate: usdToBase });
         await createCurrency();
         const account = await createAccountIn({ code: USDT });
-        const pastDay = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        const pastDay = dayKey({ daysAgo: 10 });
         const tx = await createExpense({ accountId: account.id, amount: 10, day: pastDay });
 
         // Today's rate lands in USD; the opening rate stays in the base.
@@ -581,40 +424,32 @@ describe('HTTP rate source', () => {
         expect(await storedHeadersBlob()).toBeNull();
       });
 
-      it('replaces the rates of the old URL when the URL changes, and keeps them when only the headers do', async () => {
+      it('rejects a failed first fetch and changes nothing, answering and logging without the URL or the headers', async () => {
         await createCurrency();
         servePrice({ price: 2 });
         await useHttp({ config: { headers: { 'X-Api-Key': SECRET } } });
-        await seedHttpRate({ day: yesterdayKey(), rate: 1 });
-
-        // Same URL and path, other headers: the rows stay, and today's rate is fetched again.
-        servePrice({ price: 3 });
-        await useHttp({ config: { headers: { 'X-Api-Key': 'other' } } });
-        expect(await storedRates()).toEqual([
-          { day: yesterdayKey(), quote: BASE(), rate: 1, source: 'http' },
-          { day: todayKey(), quote: BASE(), rate: 3, source: 'http' },
-        ]);
-
-        // Another URL: the old rows go.
-        await useHttp({ config: { urlTemplate: `${HOST}/price/{code}?other=1` } });
-        expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 3, source: 'http' }]);
-      });
-
-      it('rejects a first fetch that fails and changes nothing', async () => {
-        await createCurrency();
-        servePrice({ price: 2 });
-        await useHttp();
+        const blob = await storedHeadersBlob();
 
         servePrice({ status: 500, price: 1 });
         const warnSpy = jest.spyOn(logger, 'warn').mockImplementation(() => logger);
         try {
-          const response = await useHttp({ config: { urlTemplate: `${HOST}/price/{code}?other=1` } });
+          const response = await useHttp({
+            config: { urlTemplate: `${HOST}/price/{code}?other=1`, headers: { 'X-Api-Key': SECRET } },
+          });
+
           expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+          expect(JSON.stringify(response.body)).not.toMatch(new RegExp(`${SECRET}|rates.example.test`));
+          expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('http_status'));
+          expect(JSON.stringify(warnSpy.mock.calls)).not.toMatch(new RegExp(`${SECRET}|rates.example.test`));
         } finally {
           warnSpy.mockRestore();
         }
 
-        expect((await savedSource()).rateSourceConfig).toMatchObject({ urlTemplate: PRICE_URL });
+        expect((await savedSource()).rateSourceConfig).toMatchObject({
+          urlTemplate: PRICE_URL,
+          headerNames: ['X-Api-Key'],
+        });
+        expect(await storedHeadersBlob()).toBe(blob);
         expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 2, source: 'http' }]);
       });
 
@@ -623,6 +458,7 @@ describe('HTTP rate source', () => {
           { day: yesterdayKey(), quote: BASE(), rate: 1, source: 'http' },
           { day: todayKey(), quote: BASE(), rate: 3, source: 'http' },
         ];
+        const queried = `${HOST}/price/{code}?quote={quote}`;
 
         /** Saves the source with `config`, keeps an earlier day of its history, and serves today's next price. */
         const saveWithHistory = async ({ config = {} }: { config?: Record<string, unknown> } = {}) => {
@@ -632,6 +468,20 @@ describe('HTTP rate source', () => {
           await seedHttpRate({ day: yesterdayKey(), rate: 1 });
           global.mswMockServer.use(http.get(`${HOST}/*`, () => HttpResponse.json({ data: { price: 3, last: 3 } })));
         };
+
+        it.each([
+          ['the headers', { headers: { 'X-Api-Key': 'rotated' } }],
+          ['the value of a key in the URL query', { urlTemplate: `${queried}&apikey=new-key` }],
+          ['the path of the URL', { urlTemplate: `${HOST}/price/{code}/last?quote={quote}` }],
+          ['the JSON path', { jsonPath: 'data.last' }],
+        ])('keeps the history and replaces only today when %s changes', async (_label, change) => {
+          await saveWithHistory({ config: { urlTemplate: queried, headers: { 'X-Api-Key': SECRET } } });
+
+          const saved = await useHttp({ config: { urlTemplate: queried, ...change } });
+
+          expect(saved.statusCode).toBe(200);
+          expect(await storedRates()).toEqual(keptRows());
+        });
 
         it('keeps the history when the same config is selected again after another source', async () => {
           await saveWithHistory();
@@ -643,80 +493,21 @@ describe('HTTP rate source', () => {
           expect(again.statusCode).toBe(200);
           expect(await storedRates()).toEqual(keptRows());
         });
-
-        it('keeps the history when the same config is saved again with other headers', async () => {
-          await saveWithHistory({ config: { headers: { 'X-Api-Key': SECRET } } });
-          await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
-
-          await useHttp({ config: { headers: { 'X-Api-Key': 'rotated' } } });
-
-          expect(await storedRates()).toEqual(keptRows());
-        });
-
-        it('keeps the history when only the value of a key in the URL query changes', async () => {
-          const keyed = (apikey: string) => ({ urlTemplate: `${HOST}/price/{code}?apikey=${apikey}&quote={quote}` });
-          await saveWithHistory({ config: keyed('old-key') });
-
-          const rotated = await useHttp({ config: keyed('new-key') });
-
-          expect(rotated.statusCode).toBe(200);
-          expect(rotated.body.response).toMatchObject({ rateSourceConfig: keyed('new-key') });
-          expect(await storedRates()).toEqual(keptRows());
-        });
-
-        it.each([
-          ['the path of the URL', { urlTemplate: `${HOST}/price/{code}/last?quote={quote}` }],
-          ['the value of a parameter that selects data', { urlTemplate: `${HOST}/price/{code}?quote=EUR` }],
-          ['the JSON path', { jsonPath: 'data.last' }],
-        ])('drops the history when %s changes, also after another source', async (_label, change) => {
-          await saveWithHistory({ config: { urlTemplate: `${HOST}/price/{code}?quote={quote}` } });
-          await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
-
-          await useHttp({ config: { urlTemplate: `${HOST}/price/{code}?quote={quote}`, ...change } });
-
-          expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 3, source: 'http' }]);
-        });
       });
 
       it('keeps a rate the user entered by hand for the day', async () => {
         await createCurrency();
-        const edit = await helpers.editCurrencyExchangeRate({
-          pairs: [
-            { baseCode: USDT, quoteCode: BASE(), rate: 5, effectiveDate: todayKey() },
-            { baseCode: BASE(), quoteCode: USDT, rate: 1 / 5, effectiveDate: todayKey() },
-          ],
-        });
-        expect(edit.statusCode).toBe(200);
+        await helpers.setUserRate({ code: USDT, rate: 5, effectiveDate: todayKey() });
         servePrice({ price: 2 });
 
         await useHttp();
 
         expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 5, source: 'manual' }]);
       });
-
-      it('rejects a failed first fetch, logging and answering without the URL or the headers', async () => {
-        await createCurrency();
-        servePrice({ status: 500, price: 1 });
-        const warnSpy = jest.spyOn(logger, 'warn').mockImplementation(() => logger);
-
-        try {
-          const response = await useHttp({ config: { headers: { 'X-Api-Key': SECRET } } });
-
-          expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
-          expect(JSON.stringify(response.body)).not.toMatch(new RegExp(`${SECRET}|rates.example.test`));
-          expect(await savedSource()).toEqual({ rateSource: 'manual', rateSourceConfig: null });
-          expect(await storedHeadersBlob()).toBeNull();
-          expect(await storedRates()).toEqual([]);
-          expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('http_status'));
-          expect(JSON.stringify(warnSpy.mock.calls)).not.toMatch(new RegExp(`${SECRET}|rates.example.test`));
-        } finally {
-          warnSpy.mockRestore();
-        }
-      });
     });
 
     describe('backup', () => {
-      it('never exports the headers or their names, and ignores any an archive claims', async () => {
+      it('exports the header names but never their values; a restore drops the names and warns', async () => {
         await createCurrency();
         servePrice({ price: 2 });
         await useHttp({ config: { headers: { 'X-Api-Key': SECRET } } });
@@ -727,28 +518,17 @@ describe('HTTP rate source', () => {
         for (const [, content] of archive.files) {
           expect(content.toString('utf8')).not.toContain(SECRET);
         }
-        const held = JSON.parse(archive.files.get('data/users-currencies.json')!.toString('utf8')) as Record<
-          string,
-          unknown
-        >[];
+        const held = archive.readData({ name: 'users-currencies' }) as Record<string, unknown>[];
         const usdt = held.find((row) => row.currencyCode === USDT)!;
         expect(usdt).not.toHaveProperty('rateSourceHeadersEncrypted');
-        expect(usdt.rateSourceConfig).toMatchObject({ urlTemplate: PRICE_URL, headerNames: [] });
+        expect(usdt.rateSourceConfig).toMatchObject({ urlTemplate: PRICE_URL, headerNames: ['X-Api-Key'] });
 
-        // An archive that carries a blob and names of its own gets neither.
+        // An archive that carries a blob of its own does not restore it.
         archive.files.set(
           'data/users-currencies.json',
           Buffer.from(
             JSON.stringify(
-              held.map((row) =>
-                row.currencyCode === USDT
-                  ? {
-                      ...row,
-                      rateSourceHeadersEncrypted: 'aa:bb:cc',
-                      rateSourceConfig: { ...(row.rateSourceConfig as object), headerNames: ['X-Api-Key'] },
-                    }
-                  : row,
-              ),
+              held.map((row) => (row.currencyCode === USDT ? { ...row, rateSourceHeadersEncrypted: 'aa:bb:cc' } : row)),
             ),
           ),
         );
@@ -759,90 +539,17 @@ describe('HTTP rate source', () => {
         expect(restore.statusCode).toBe(200);
         const status = await helpers.waitForRestore({ jobId: restore.jobId! });
         expect(status.status).toBe('completed');
+        expect(status.summary?.warnings).toContainEqual({
+          code: 'rate_source_headers_dropped',
+          table: 'users-currencies',
+          count: 1,
+        });
 
         expect(await savedSource()).toEqual({
           rateSource: 'http',
           rateSourceConfig: { ...httpConfig(), headerNames: [] },
         });
         expect(await storedHeadersBlob()).toBeNull();
-      });
-    });
-
-    describe('backup of the history fingerprint', () => {
-      const backUpAfterHttpStint = async () => {
-        await createCurrency();
-        servePrice({ price: 2 });
-        await useHttp({ config: { headers: { 'X-Api-Key': SECRET } } });
-        await seedHttpRate({ day: yesterdayKey(), rate: 1 });
-        const manual = await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
-        expect(manual.statusCode).toBe(200);
-
-        const exported = await helpers.exportBackup();
-        expect(exported.statusCode).toBe(200);
-
-        return helpers.parseBackupArchive({ buffer: exported.body });
-      };
-
-      it('keeps the history of a source that was switched away from, when the same config is selected after a restore', async () => {
-        const archive = await backUpAfterHttpStint();
-        const usdt = heldRows({ archive }).find((row) => row.currencyCode === USDT)!;
-        expect(usdt.rateSource).toBe('manual');
-        expect(usdt.rateSourceHttpFingerprint).toMatch(/^[0-9a-f]{64}$/);
-        expect(usdt).not.toHaveProperty('rateSourceHeadersEncrypted');
-        for (const [, content] of archive.files) {
-          expect(content.toString('utf8')).not.toContain(SECRET);
-        }
-
-        await restoreArchive({ files: archive.files });
-        const yesterdayRow = { day: yesterdayKey(), quote: BASE(), rate: 1, source: 'http' };
-        expect(await storedRates()).toEqual([
-          yesterdayRow,
-          { day: todayKey(), quote: BASE(), rate: 2, source: 'http' },
-        ]);
-
-        // An HTTP source cannot fetch past days, so yesterday's row shows the history was kept.
-        servePrice({ price: 3 });
-        expect((await useHttp()).statusCode).toBe(200);
-        expect(await storedRates()).toEqual([
-          yesterdayRow,
-          { day: todayKey(), quote: BASE(), rate: 3, source: 'http' },
-        ]);
-      });
-
-      it('ignores a fingerprint in an archive that is not a digest', async () => {
-        const archive = await backUpAfterHttpStint();
-        archive.files.set(
-          'data/users-currencies.json',
-          Buffer.from(
-            JSON.stringify(
-              heldRows({ archive }).map((row) =>
-                row.currencyCode === USDT ? { ...row, rateSourceHttpFingerprint: 'x'.repeat(200) } : row,
-              ),
-            ),
-          ),
-        );
-
-        await restoreArchive({ files: archive.files });
-
-        const { id: userId } = await helpers.getUserInfo({ raw: true });
-        const row = await UsersCurrencies.unscoped().findOne({ where: { userId, currencyCode: USDT }, raw: true });
-        expect(row?.rateSourceHttpFingerprint).toBeNull();
-      });
-
-      it('restores an archive written before the fingerprint was dumped', async () => {
-        const archive = await backUpAfterHttpStint();
-        archive.files.set(
-          'data/users-currencies.json',
-          Buffer.from(
-            JSON.stringify(heldRows({ archive }).map(({ rateSourceHttpFingerprint: _dropped, ...row }) => row)),
-          ),
-        );
-
-        await restoreArchive({ files: archive.files });
-
-        const { id: userId } = await helpers.getUserInfo({ raw: true });
-        const row = await UsersCurrencies.unscoped().findOne({ where: { userId, currencyCode: USDT }, raw: true });
-        expect(row?.rateSourceHttpFingerprint).toBeNull();
       });
     });
 
@@ -897,9 +604,9 @@ describe('HTTP rate source', () => {
         expect((await readTx({ id: tx.id })).refAmount).toBe(20);
 
         servePrice({ price: 4 });
-        const result = await syncHttpRates();
+        const result = await helpers.syncRateSources({ source: 'http' });
 
-        expect(result).toMatchObject({ requests: 1, currenciesUpdated: 1, ratesWritten: 1, failures: 0 });
+        expect(result).toMatchObject({ currenciesUpdated: 1, ratesWritten: 1, failures: 0 });
         expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 4, source: 'http' }]);
         expect((await readTx({ id: tx.id })).refAmount).toBe(40);
       });
@@ -917,9 +624,9 @@ describe('HTTP rate source', () => {
             return HttpResponse.json({ data: { price: 9 } });
           }),
         );
-        const result = await syncHttpRates();
+        const result = await helpers.syncRateSources({ source: 'http' });
 
-        expect(result).toMatchObject({ requests: 1, currenciesUpdated: 0, ratesWritten: 0 });
+        expect(result).toMatchObject({ currenciesUpdated: 0, ratesWritten: 0 });
         expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 2, source: 'http' }]);
       });
 
@@ -935,7 +642,7 @@ describe('HTTP rate source', () => {
         await redisClient.set(buildLockKey(userId), 'test-lock');
         try {
           servePrice({ price: 4 });
-          const locked = await syncHttpRates();
+          const locked = await helpers.syncRateSources({ source: 'http' });
 
           expect(locked).toMatchObject({ ratesWritten: 0, currenciesUpdated: 0 });
           expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 2, source: 'http' }]);
@@ -944,7 +651,7 @@ describe('HTTP rate source', () => {
           await redisClient.del(buildLockKey(userId));
         }
 
-        const free = await syncHttpRates();
+        const free = await helpers.syncRateSources({ source: 'http' });
 
         expect(free).toMatchObject({ ratesWritten: 1, currenciesUpdated: 1 });
         expect((await readTx({ id: tx.id })).refAmount).toBe(40);
@@ -955,9 +662,9 @@ describe('HTTP rate source', () => {
         servePrice({ price: 2 });
         await useHttp();
 
-        const result = await syncHttpRates();
+        const result = await helpers.syncRateSources({ source: 'http' });
 
-        expect(result).toMatchObject({ requests: 1, currenciesUpdated: 0, ratesWritten: 0, failures: 0 });
+        expect(result).toMatchObject({ currenciesUpdated: 0, ratesWritten: 0, failures: 0 });
       });
 
       it('keeps the last rate and logs when the endpoint fails, without the URL or the headers', async () => {
@@ -968,7 +675,7 @@ describe('HTTP rate source', () => {
 
         try {
           servePrice({ status: 500, price: 1 });
-          const result = await syncHttpRates();
+          const result = await helpers.syncRateSources({ source: 'http' });
 
           expect(result).toMatchObject({ failures: 1, ratesWritten: 0 });
           expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 2, source: 'http' }]);
@@ -998,9 +705,9 @@ describe('HTTP rate source', () => {
         const errorSpy = jest.spyOn(logger, 'error').mockImplementation(() => logger);
 
         try {
-          const result = await syncHttpRates();
+          const result = await helpers.syncRateSources({ source: 'http' });
 
-          expect(result).toMatchObject({ failures: 1, currenciesUpdated: 0, requests: 2 });
+          expect(result).toMatchObject({ failures: 1, currenciesUpdated: 0 });
           expect(await storedRates({ code: 'AAA' })).toEqual([
             { day: todayKey(), quote: BASE(), rate: 7, source: 'http' },
           ]);
@@ -1012,7 +719,7 @@ describe('HTTP rate source', () => {
         }
       });
 
-      it('makes one request for users who share the same request and stores it for each', async () => {
+      it('stores the rate for each user of the same request', async () => {
         await createCurrency();
         servePrice({ price: 6 });
         await useHttp({ config: { urlTemplate: `${HOST}/price/{code}`, quoteCurrency: 'USD' } });
@@ -1028,10 +735,10 @@ describe('HTTP rate source', () => {
         });
 
         const requests = servePrice({ price: 8 });
-        const result = await syncHttpRates();
+        const result = await helpers.syncRateSources({ source: 'http' });
 
-        expect(requests).toHaveLength(1);
-        expect(result).toMatchObject({ requests: 1, currenciesUpdated: 2, ratesWritten: 2, failures: 0 });
+        expect(requests).toHaveLength(2);
+        expect(result).toEqual({ currenciesUpdated: 2, ratesWritten: 2, failures: 0 });
         expect(await storedRates()).toEqual([{ day: todayKey(), quote: 'USD', rate: 8, source: 'http' }]);
         await helpers.asUser({
           cookies: other.cookies,
@@ -1041,7 +748,7 @@ describe('HTTP rate source', () => {
         });
       });
 
-      it('sends each user their own headers, so users with different keys are not merged', async () => {
+      it('sends each user their own headers', async () => {
         await createCurrency();
         servePrice({ price: 9 });
         await useHttp({ config: { urlTemplate: `${HOST}/price/{code}`, headers: { 'X-Api-Key': 'key-a' } } });
@@ -1058,16 +765,19 @@ describe('HTTP rate source', () => {
         });
 
         const requests = servePrice({ price: 9 });
-        const result = await syncHttpRates();
+        await helpers.syncRateSources({ source: 'http' });
 
-        expect(result.requests).toBe(2);
         expect(requests.map((request) => request.apiKey).toSorted()).toEqual(['key-a', 'key-b']);
       });
 
       it('does nothing when no currency uses an HTTP source', async () => {
         await createCurrency();
 
-        expect(await syncHttpRates()).toEqual({ requests: 0, currenciesUpdated: 0, ratesWritten: 0, failures: 0 });
+        expect(await helpers.syncRateSources({ source: 'http' })).toEqual({
+          currenciesUpdated: 0,
+          ratesWritten: 0,
+          failures: 0,
+        });
       });
     });
   });

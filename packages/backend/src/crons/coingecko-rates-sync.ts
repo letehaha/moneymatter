@@ -6,8 +6,8 @@ import { createScheduledSync } from './lib/create-scheduled-sync';
 /**
  * Daily rates of the currencies whose rate source is CoinGecko (UTC).
  *
- * Runs just after midnight UTC, so the stored rate of a day is the price at its start, the same
- * point of the day the history backfill stores. A run fetches each coin once for all users, spaced
+ * Runs just after midnight UTC, so the stored rate of a day is close to the price at its start,
+ * the point of the day the history backfill stores. A run fetches each coin once for all users, spaced
  * to stay under the Demo plan's per-minute limit, so the lock outlasts the longest plausible run.
  */
 export const coingeckoRatesSyncCron = createScheduledSync({

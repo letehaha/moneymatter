@@ -39,7 +39,7 @@ An amount with more digits than the currency allows is rounded when you save it.
 
 </Steps>
 
-The currency appears in your list with a **Custom currency** badge, and you can pick it when you create an account or enter an original amount. It starts with a [manual rate](/settings/rate-sources/#manual) set to the rate you entered. To take its rate from somewhere else, [choose a rate source](/settings/rate-sources/).
+The currency appears in your list with a **Custom currency** badge, and you can pick it when you create an account or enter an original amount. It starts on the [Manual](/settings/rate-sources/#manual) source, with the rate you entered as its starting rate. To take its rate from somewhere else, [choose a rate source](/settings/rate-sources/). CoinGecko and HTTP replace the starting rate on the days they fetch.
 
 ## Edit a custom currency
 
@@ -55,7 +55,7 @@ Click the currency's row to open it and click **Delete currency**. Like any curr
 
 A custom currency has no market rate, so its rate comes from its [rate source](/settings/rate-sources/). Every rate is a price in an ISO currency, such as USD or EUR, never in another custom currency.
 
-A custom currency always has at least one rate, so every transaction in it gets a base amount. A transaction dated before the currency's first rate uses that first rate. To value those days differently, add a manual rate with an earlier **Effective from** date.
+A custom currency always has at least one rate, so every transaction in it gets a base amount. A transaction dated before the currency's first rate uses that first rate. To value those days differently, add a manual rate with an earlier **Effective from** date while the currency is on the **Manual** source.
 
 MoneyMatter refuses any change that would leave a custom currency with no rate at all, such as removing its last rate or saving a source that can't fetch a single price. You see an error and nothing changes.
 
@@ -64,8 +64,8 @@ MoneyMatter refuses any change that would leave a custom currency with no rate a
 Transactions in a custom currency follow their rate source, unlike transactions in ISO currencies:
 
 - **Saving or changing the rate source** values your saved transactions in that currency again, with the rate in force on each transaction's date.
-- **Correcting a manual rate,** removing one, or adding a rate for a past date re-values the transactions on the days it covers.
-- **Adding a rate that starts on a later day,** such as the daily price of a synced source, doesn't touch transactions you already saved.
+- **Correcting a rate,** removing one, or adding a rate for a past date re-values the transactions on the days it covers. So does a CoinGecko source filling in past days.
+- **Adding a rate for a new day,** such as today's rate or the daily price of a synced source, doesn't touch transactions you already saved.
 
 Transactions in ISO currencies keep the base amounts they were saved with, as described in [Base currency and currencies](/settings/base-currency-and-currencies/#what-a-custom-rate-changes).
 
@@ -75,7 +75,7 @@ You can [change your base currency](/settings/base-currency-and-currencies/#chan
 
 ## Backups
 
-A [backup](/settings/security-and-account/#backup-and-restore) includes your custom currency definitions (code, name, symbol and decimals), their rate sources and their rates. The values of the request headers of an [HTTP source](/settings/rate-sources/#http) are never included, because they are secrets. After a restore, open the currency and enter the headers again. A backup in which a custom currency has no rate can't be restored.
+A [backup](/settings/security-and-account/#backup-and-restore) includes your custom currency definitions (code, name, symbol and decimals), their rate sources and their rates. An [HTTP source](/settings/rate-sources/#http) keeps its settings and header names, but the header values are never included, because they are secrets. A restore clears the headers and the restore summary shows a warning. Open that currency's rate source settings and enter them again, or its rates stop updating. A backup in which a custom currency has no rate can't be restored.
 
 ## Related
 

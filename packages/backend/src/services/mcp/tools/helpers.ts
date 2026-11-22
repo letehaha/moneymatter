@@ -102,13 +102,21 @@ export async function assertBaseCurrencyUnlocked({ userId }: { userId: number })
 
 /**
  * Draws one call from a per-user budget the REST middleware also enforces, and refuses the call
- * when the budget is spent. Redis being down lets the call through, as the middleware does for
- * these routes: `checkRateLimit` resolves `allowed: true` then.
+ * when the budget is spent. Redis being down lets the call through (`checkRateLimit` resolves
+ * `allowed: true` then) unless `failClosed`, matching the route's own limiter.
  */
-export async function enforceUserRateLimit({ userId, limit }: { userId: number; limit: UserRateLimit }): Promise<void> {
+export async function enforceUserRateLimit({
+  userId,
+  limit,
+  failClosed = false,
+}: {
+  userId: number;
+  limit: UserRateLimit;
+  failClosed?: boolean;
+}): Promise<void> {
   const result = await RateLimitService.checkRateLimit(limit.key({ userId }), limit.windowSeconds, limit.maxAttempts);
 
-  if (!result.allowed) {
+  if (!result.allowed || (failClosed && result.serviceUnavailable)) {
     throw new Error(t({ key: 'middleware.tooManyRequests' }));
   }
 }

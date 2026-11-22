@@ -224,12 +224,6 @@ describe('RateSourceEditor', () => {
       expect(wrapper.find('[data-testid="rate-source-save"]').exists()).toBe(false);
     });
 
-    it('reads a currency with no source set as manual', () => {
-      const wrapper = mountEditor({ currency: buildCurrency({ rateSource: 'provider' }) });
-
-      expect(wrapper.find('[data-testid="manual-form"]').exists()).toBe(true);
-    });
-
     it('asks to save the source before rates can be entered when another source is saved', async () => {
       const wrapper = mountEditor({
         currency: buildCurrency({ rateSource: 'peg', rateSourceConfig: { pegCurrency: 'USD', factor: 1 } }),
@@ -277,29 +271,12 @@ describe('RateSourceEditor', () => {
       expect(wrapper.find('[data-testid="rate-history-note"]').exists()).toBe(false);
     });
 
-    it('reloads after a manual rate is saved and reports it', async () => {
+    it('reports a saved manual rate as a change', async () => {
       const wrapper = mountEditor();
-      await flushPromises();
-      mockLoadHistory.mockClear();
 
       await wrapper.find('[data-testid="manual-form"]').trigger('click');
-      await flushPromises();
 
-      expect(mockLoadHistory).toHaveBeenCalledTimes(1);
-      expect(wrapper.emitted('submit')).toHaveLength(1);
-    });
-
-    it('reloads after the source is saved', async () => {
-      const wrapper = mountEditor();
-      await flushPromises();
-      mockLoadHistory.mockClear();
-
-      await selectTab(wrapper, 'peg');
-      await wrapper.find('[data-testid="rate-source-peg-currency"]').setValue('USD');
-      await setInput(wrapper, 'rate-source-peg-factor', '1');
-      await save(wrapper);
-
-      expect(mockLoadHistory).toHaveBeenCalledTimes(1);
+      expect(wrapper.emitted('changed')).toHaveLength(1);
     });
   });
 
@@ -534,14 +511,31 @@ describe('RateSourceEditor', () => {
         expect('headers' in body.config).toBe(false);
       });
 
-      it('clears the saved headers with an empty object', async () => {
+      it('removes the saved headers when they are replaced with no rows', async () => {
         const wrapper = mountEditor({ currency: savedHttp() });
 
-        await wrapper.find('[data-testid="rate-source-clear-headers"]').trigger('click');
-        expect(wrapper.find('[data-testid="rate-source-saved-headers"]').text()).toContain('will be removed');
+        await wrapper.find('[data-testid="rate-source-replace-headers"]').trigger('click');
+        expect(wrapper.find('[data-testid="rate-source-headers-removed"]').exists()).toBe(true);
         await save(wrapper);
 
         expect(mockUpdate.mock.calls[0]![0].body.config.headers).toEqual({});
+      });
+
+      it('requires replacing them before a URL on another origin is saved, as the API sends them nowhere else', async () => {
+        const wrapper = mountEditor({ currency: savedHttp() });
+
+        await setInput(wrapper, 'rate-source-http-url', 'https://api.other.com/price?id={code}');
+        expect(wrapper.find('[data-testid="rate-source-headers-origin-changed"]').exists()).toBe(true);
+        await save(wrapper);
+        expect(mockUpdate).not.toHaveBeenCalled();
+
+        await wrapper.find('[data-testid="rate-source-replace-headers"]').trigger('click');
+        expect(wrapper.find('[data-testid="rate-source-cancel-replace-headers"]').exists()).toBe(false);
+        await wrapper.find('[data-testid="rate-source-header-row-0"] input').setValue('X-Api-Key');
+        await wrapper.findAll('[data-testid="rate-source-header-row-0"] input')[1]!.setValue('other-secret');
+        await save(wrapper);
+
+        expect(mockUpdate.mock.calls[0]![0].body.config.headers).toEqual({ 'X-Api-Key': 'other-secret' });
       });
 
       it('replaces them with the typed rows', async () => {

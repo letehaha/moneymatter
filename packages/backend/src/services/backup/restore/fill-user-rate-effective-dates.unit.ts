@@ -78,6 +78,7 @@ describe('forceKnownUserRateSources', () => {
     const data = dataOf({
       rows: [
         { baseCode: 'BTC', quoteCode: 'USD', source: 'coingecko' },
+        { baseCode: 'PTS', quoteCode: 'USD', source: 'initial' },
         { baseCode: 'ETH', quoteCode: 'USD', source: 'peg' },
         { baseCode: 'SAT', quoteCode: 'USD', source: { evil: true } },
         { baseCode: 'XAU', quoteCode: 'USD' },
@@ -88,9 +89,61 @@ describe('forceKnownUserRateSources', () => {
 
     expect(data.get('user-exchange-rates')!.map((row) => row.source)).toEqual([
       'coingecko',
+      'initial',
       'manual',
       'manual',
       'manual',
+    ]);
+  });
+
+  const withCustomCurrencies = ({ rates }: { rates: Row[] }) =>
+    new Map<BackupFileName, Row[]>([
+      [
+        'users-currencies',
+        [
+          { currencyCode: 'USD' },
+          { currencyCode: 'EUR' },
+          { currencyCode: 'USDT', nameOverride: 'Tether', decimalsOverride: 6 },
+          { currencyCode: 'PTS', nameOverride: 'Points', decimalsOverride: 0 },
+          { currencyCode: 'BTC', nameOverride: 'Bitcoin', decimalsOverride: 8 },
+        ],
+      ],
+      ['user-exchange-rates', rates],
+    ]);
+
+  it('restores the sole sourceless rate of a custom currency as initial', () => {
+    const data = withCustomCurrencies({
+      rates: [
+        { baseCode: 'USDT', quoteCode: 'USD', effectiveDate: '2026-01-01' },
+        { baseCode: 'USD', quoteCode: 'USDT', effectiveDate: '2026-01-01' },
+      ],
+    });
+
+    forceKnownUserRateSources({ data });
+
+    expect(data.get('user-exchange-rates')!.map((row) => [row.baseCode, row.source])).toEqual([
+      ['USDT', 'initial'],
+      ['USD', 'manual'],
+    ]);
+  });
+
+  it('keeps a sourceless rate manual for an ISO pair or a custom currency with several rates', () => {
+    const data = withCustomCurrencies({
+      rates: [
+        { baseCode: 'EUR', quoteCode: 'USD', effectiveDate: '2026-01-01' },
+        { baseCode: 'PTS', quoteCode: 'USD', effectiveDate: '2026-01-01' },
+        { baseCode: 'PTS', quoteCode: 'EUR', effectiveDate: '2026-02-01' },
+        { baseCode: 'BTC', quoteCode: 'USD', effectiveDate: '2026-01-01', source: 'coingecko' },
+      ],
+    });
+
+    forceKnownUserRateSources({ data });
+
+    expect(data.get('user-exchange-rates')!.map((row) => [row.baseCode, row.source])).toEqual([
+      ['EUR', 'manual'],
+      ['PTS', 'manual'],
+      ['PTS', 'manual'],
+      ['BTC', 'coingecko'],
     ]);
   });
 });

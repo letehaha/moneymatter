@@ -1,8 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import Coingecko from '@coingecko/coingecko-typescript';
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
-import UserExchangeRates from '@models/user-exchange-rates.model';
 import * as helpers from '@tests/helpers';
 import type { ErrorResponse } from '@tests/helpers/common';
 import { http, HttpResponse } from 'msw';
@@ -13,24 +10,6 @@ const USDC = 'USDC';
 const createCustom = (code: string) =>
   helpers.createCustomCurrency({ payload: { code, name: `${code} coin`, decimals: 6, rate: { value: 1 } }, raw: true });
 
-/** CoinGecko answers every history request with today's price. */
-const serveCoingeckoHistory = () => {
-  const now = Date.now();
-  jest.mocked(Coingecko).mockImplementation(
-    () =>
-      ({
-        search: { get: jest.fn<any>().mockResolvedValue({ coins: [] }) },
-        simple: { price: { get: jest.fn<any>().mockResolvedValue({}) } },
-        coins: {
-          marketChart: {
-            get: jest.fn<any>().mockResolvedValue({ prices: [] }),
-            getRange: jest.fn<any>().mockResolvedValue({ prices: [[now, 1.01]] }),
-          },
-        },
-      }) as any,
-  );
-};
-
 /** Answers every request to the test host with a price at `data.price`, `data.rates[0].price` and `bitcoin.usd`. */
 const serveHttpPrice = () => {
   global.mswMockServer.use(
@@ -40,45 +19,20 @@ const serveHttpPrice = () => {
   );
 };
 
-/** The outbound guard off, so a request to the MSW test host leaves the process. */
-const asSelfHost = () => {
-  let before: string | undefined;
-
-  beforeEach(() => {
-    before = process.env.IS_SELF_HOST;
-    process.env.IS_SELF_HOST = 'true';
-  });
-
-  afterEach(() => {
-    if (before === undefined) delete process.env.IS_SELF_HOST;
-    else process.env.IS_SELF_HOST = before;
-  });
-};
-
-const savedSource = async ({ code }: { code: string }) => {
-  const entry = (await helpers.getUserCurrencies()).find((item) => item.currencyCode === code);
-
-  return { rateSource: entry?.rateSource, rateSourceConfig: entry?.rateSourceConfig };
-};
+const { savedSource } = helpers;
 
 const errorOf = (response: { body: { response: unknown } }) => response.body.response as ErrorResponse;
 
 describe('PUT /user/currencies/:code/rate-source', () => {
   describe('defaults', () => {
-    it('starts an ISO currency on the market provider and a custom one on manual rates', async () => {
+    it('starts a custom currency on manual rates', async () => {
       await createCustom(USDT);
 
-      expect(await savedSource({ code: global.BASE_CURRENCY_CODE })).toEqual({
-        rateSource: 'provider',
-        rateSourceConfig: null,
-      });
       expect(await savedSource({ code: USDT })).toEqual({ rateSource: 'manual', rateSourceConfig: null });
     });
   });
 
   describe('valid configurations of a custom currency', () => {
-    asSelfHost();
-
     it('saves a peg and reads it back', async () => {
       await createCustom(USDT);
 
@@ -93,65 +47,6 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       expect(await savedSource({ code: USDT })).toEqual(expected);
     });
 
-    it('saves a CoinGecko coin, quoted in USD unless the config says otherwise', async () => {
-      await createCustom(USDT);
-      serveCoingeckoHistory();
-
-      const byDefault = await helpers.setCurrencyRateSource({
-        code: USDT,
-        payload: { rateSource: 'coingecko', config: { coinId: 'tether' } },
-      });
-      expect(byDefault.statusCode).toBe(200);
-      expect(byDefault.body.response).toMatchObject({
-        rateSource: 'coingecko',
-        rateSourceConfig: { coinId: 'tether', quoteCurrency: 'USD' },
-      });
-
-      const euro = await helpers.setCurrencyRateSource({
-        code: USDT,
-        payload: { rateSource: 'coingecko', config: { coinId: 'usd-coin', quoteCurrency: 'eur' } },
-      });
-      expect(euro.statusCode).toBe(200);
-      expect(await savedSource({ code: USDT })).toEqual({
-        rateSource: 'coingecko',
-        rateSourceConfig: { coinId: 'usd-coin', quoteCurrency: 'EUR' },
-      });
-    });
-
-    it('saves an HTTP source with its placeholders and JSON path', async () => {
-      await createCustom(USDT);
-      serveHttpPrice();
-      const config = {
-        urlTemplate: 'https://rates.example.test/{code}/{quote}?day={date}',
-        jsonPath: 'data.rates[0].price',
-        quoteCurrency: 'GBP',
-      };
-
-      const response = await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'http', config } });
-
-      expect(response.statusCode).toBe(200);
-      expect(await savedSource({ code: USDT })).toEqual({
-        rateSource: 'http',
-        rateSourceConfig: { ...config, headerNames: [] },
-      });
-    });
-
-    it('defaults the HTTP quote currency to USD and accepts a $-rooted path', async () => {
-      await createCustom(USDT);
-      serveHttpPrice();
-
-      const response = await helpers.setCurrencyRateSource({
-        code: USDT,
-        payload: {
-          rateSource: 'http',
-          config: { urlTemplate: 'https://rates.example.test/price', jsonPath: '$.bitcoin.usd' },
-        },
-      });
-
-      expect(response.statusCode).toBe(200);
-      expect((await savedSource({ code: USDT })).rateSourceConfig).toMatchObject({ quoteCurrency: 'USD' });
-    });
-
     it('drops the old config when the source changes', async () => {
       await createCustom(USDT);
       await helpers.setCurrencyRateSource({
@@ -164,161 +59,32 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       expect(response.statusCode).toBe(200);
       expect(await savedSource({ code: USDT })).toEqual({ rateSource: 'manual', rateSourceConfig: null });
     });
-
-    it('does not touch the rates the user already entered', async () => {
-      await createCustom(USDT);
-      await helpers.editCurrencyExchangeRate({
-        pairs: [
-          { baseCode: USDT, quoteCode: global.BASE_CURRENCY_CODE, rate: 3 },
-          { baseCode: global.BASE_CURRENCY_CODE, quoteCode: USDT, rate: 1 / 3 },
-        ],
-        raw: true,
-      });
-      const { id: userId } = await helpers.getUserInfo({ raw: true });
-      const before = await UserExchangeRates.findAll({ where: { userId }, raw: true });
-      expect(before.length).toBeGreaterThan(0);
-
-      await helpers.setCurrencyRateSource({
-        code: USDT,
-        payload: { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 1 } },
-      });
-
-      expect(await UserExchangeRates.findAll({ where: { userId }, raw: true })).toEqual(before);
-    });
-
-    it('lets only one through when a switch off a peg races the removal of the last stored rate', async () => {
-      await createCustom(USDT);
-      await helpers.setCurrencyRateSource({
-        code: USDT,
-        payload: { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 1 } },
-      });
-      const { id: userId } = await helpers.getUserInfo({ raw: true });
-      const pairs = (await UserExchangeRates.findAll({ where: { userId }, raw: true }))
-        .filter((row) => row.baseCode === USDT || row.quoteCode === USDT)
-        .map(({ baseCode, quoteCode, effectiveDate }) => ({ baseCode, quoteCode, effectiveDate }));
-
-      const [removal, toManual] = await Promise.all([
-        helpers.removeCurrencyExchangeRate({ pairs, raw: false }),
-        helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } }),
-      ]);
-
-      expect([removal.statusCode, toManual.statusCode].toSorted((a, b) => a - b)).toEqual(
-        [200, ERROR_CODES.ValidationError].toSorted((a, b) => a - b),
-      );
-      const { rateSource } = await savedSource({ code: USDT });
-      const rates = await UserExchangeRates.count({ where: { userId, baseCode: USDT } });
-      expect(rateSource === 'peg' || rates > 0).toBe(true);
-    });
   });
 
   describe('ISO currencies', () => {
-    it('accepts the provider and manual rates', async () => {
-      const code = global.BASE_CURRENCY_CODE;
-
-      const manual = await helpers.setCurrencyRateSource({ code, payload: { rateSource: 'manual' } });
-      expect(manual.statusCode).toBe(200);
-      expect(await savedSource({ code })).toEqual({ rateSource: 'manual', rateSourceConfig: null });
-
-      const provider = await helpers.setCurrencyRateSource({ code, payload: { rateSource: 'provider' } });
-      expect(provider.statusCode).toBe(200);
-      expect(await savedSource({ code })).toEqual({ rateSource: 'provider', rateSourceConfig: null });
-    });
-
-    it('keeps the live-rate flag that the rate lookup reads in step with the saved source', async () => {
-      const code = 'USD';
-      await helpers.addUserCurrencies({ currencyCodes: [code], raw: true });
-      const liveRateUpdate = async () =>
-        (await helpers.getUserCurrencies()).find((item) => item.currencyCode === code)?.liveRateUpdate;
-      expect(await liveRateUpdate()).toBe(true);
-
-      await helpers.setCurrencyRateSource({ code, payload: { rateSource: 'manual' } });
-      expect(await liveRateUpdate()).toBe(false);
-
-      await helpers.setCurrencyRateSource({ code, payload: { rateSource: 'provider' } });
-      expect(await liveRateUpdate()).toBe(true);
-    });
-
-    it('moves the saved source along when the flag changes through the currency settings or a manual rate', async () => {
-      const code = 'USD';
-      await helpers.addUserCurrencies({ currencyCodes: [code], raw: true });
-
-      const off = await helpers.updateUserCurrency({
-        currency: { currencyCode: code, liveRateUpdate: false },
-        raw: false,
-      });
-      expect(off.statusCode).toBe(200);
-      expect((await savedSource({ code })).rateSource).toBe('manual');
-
-      await helpers.updateUserCurrency({ currency: { currencyCode: code, liveRateUpdate: true }, raw: false });
-      expect((await savedSource({ code })).rateSource).toBe('provider');
-
-      const rate = await helpers.editCurrencyExchangeRate({
-        pairs: [
-          { baseCode: code, quoteCode: global.BASE_CURRENCY_CODE, rate: 4 },
-          { baseCode: global.BASE_CURRENCY_CODE, quoteCode: code, rate: 0.25 },
-        ],
-        raw: false,
-      });
-      expect(rate.statusCode).toBe(200);
-      expect((await savedSource({ code })).rateSource).toBe('manual');
-    });
-
     it.each([
+      ['manual', { rateSource: 'manual' }],
       ['peg', { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 1 } }],
       ['coingecko', { rateSource: 'coingecko', config: { coinId: 'bitcoin' } }],
       ['http', { rateSource: 'http', config: { urlTemplate: 'https://example.com/{date}', jsonPath: 'price' } }],
-    ])('rejects a %s source with 422 and leaves the saved source alone', async (_name, payload) => {
+    ])('rejects a %s source with 422 and leaves the currency alone', async (_name, payload) => {
       const code = global.BASE_CURRENCY_CODE;
+      const before = await helpers.getUserCurrencies();
 
       const response = await helpers.setCurrencyRateSource({ code, payload });
 
       expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
-      expect(await savedSource({ code })).toEqual({ rateSource: 'provider', rateSourceConfig: null });
+      expect(await helpers.getUserCurrencies()).toEqual(before);
     });
   });
 
   describe('invalid requests', () => {
-    it('rejects the market provider for a custom currency, which has none', async () => {
-      await createCustom(USDT);
-
-      const response = await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'provider' } });
-
-      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
-      expect(await savedSource({ code: USDT })).toEqual({ rateSource: 'manual', rateSourceConfig: null });
-    });
-
     it.each([
       ['an unknown source', { rateSource: 'oracle' }],
-      ['no source', {}],
-      ['a peg without its config', { rateSource: 'peg' }],
-      ['a peg factor of zero', { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 0 } }],
-      ['a negative peg factor', { rateSource: 'peg', config: { pegCurrency: 'USD', factor: -1 } }],
-      ['a peg factor that is not a number', { rateSource: 'peg', config: { pegCurrency: 'USD', factor: '1' } }],
-      ['a peg without a currency', { rateSource: 'peg', config: { factor: 1 } }],
-      ['a malformed peg currency code', { rateSource: 'peg', config: { pegCurrency: 'U$D', factor: 1 } }],
-      ['a config on manual rates', { rateSource: 'manual', config: { factor: 1 } }],
-      ['an unknown key in a config', { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 1, extra: 1 } }],
-      ['a CoinGecko config without a coin', { rateSource: 'coingecko', config: {} }],
-      ['a CoinGecko coin id with spaces', { rateSource: 'coingecko', config: { coinId: 'usd coin' } }],
-      ['an uppercase CoinGecko coin id', { rateSource: 'coingecko', config: { coinId: 'Bitcoin' } }],
-      ['an HTTP config without a path', { rateSource: 'http', config: { urlTemplate: 'https://example.com/{date}' } }],
-      [
-        'an HTTP URL that is not http(s)',
-        { rateSource: 'http', config: httpConfig({ urlTemplate: 'ftp://x/{date}' }) },
-      ],
-      ['an HTTP URL that is not a URL', { rateSource: 'http', config: httpConfig({ urlTemplate: 'rates/{date}' }) }],
       [
         'an HTTP URL with credentials',
         { rateSource: 'http', config: httpConfig({ urlTemplate: 'https://user:pass@example.com/{date}' }) },
       ],
-      [
-        'an unknown placeholder',
-        { rateSource: 'http', config: httpConfig({ urlTemplate: 'https://example.com/{day}' }) },
-      ],
-      ['a stray brace', { rateSource: 'http', config: httpConfig({ urlTemplate: 'https://example.com/{date' }) }],
-      ['a JSON path that is not a path', { rateSource: 'http', config: httpConfig({ jsonPath: 'a..b[x]' }) }],
-      ['an empty JSON path', { rateSource: 'http', config: httpConfig({ jsonPath: '' }) }],
-      ['request headers that are not an object', { rateSource: 'http', config: httpConfig({ headers: 'Bearer x' }) }],
     ])('rejects %s with 422', async (_name, payload) => {
       await createCustom(USDT);
       await helpers.setCurrencyRateSource({

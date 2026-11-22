@@ -1,50 +1,12 @@
 import type { CurrencyRateHistoryResponse } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
-import type UserExchangeRates from '@models/user-exchange-rates.model';
 import { toEffectiveDate } from '@models/user-exchange-rates.model';
-import { getBaseCurrency } from '@models/users-currencies.model';
 
-import { countStoredCustomRates, findStoredCustomRate, findStoredPairRate, listStoredCustomRates } from './manual';
+import { countStoredCustomRates, findStoredCustomRate, listStoredCustomRates } from './manual';
 import { findHeldCurrency } from './set-rate-source.service';
 
-type StoredRate = Pick<UserExchangeRates, 'quoteCode' | 'effectiveDate'>;
-
-/**
- * The stored rate that values a custom code in the user's base currency today, as the resolver picks
- * it: none while the code follows a peg; for a manual code the exact pair to the base, if one is
- * stored; otherwise the latest row on or before today, else the earliest row, which values every
- * day before it.
- */
-const findRateInForce = async ({
-  userId,
-  code,
-  rateSource,
-}: {
-  userId: number;
-  code: string;
-  rateSource: string;
-}): Promise<StoredRate | null> => {
-  if (rateSource === 'peg') return null;
-
-  const asOfDate = toEffectiveDate({ date: new Date() });
-
-  if (rateSource === 'manual') {
-    const base = await getBaseCurrency({ userId });
-    const exact = base
-      ? await findStoredPairRate({ userId, baseCode: code, quoteCode: base.currencyCode, asOfDate })
-      : null;
-    if (exact) return exact;
-  }
-
-  return findStoredCustomRate({ userId, baseCode: code, asOfDate });
-};
-
-/**
- * One page of the user's stored rates for a custom currency, latest first. The synced sources write
- * one direction only (`code -> quote`), while the manual editor writes both, so the list holds the
- * rows whose base is the currency. `totalCount` comes with the first page only.
- */
+/** One page of the user's stored rates for a custom currency, latest first; `totalCount` on the first page only. */
 export const listCurrencyRateHistory = async ({
   userId,
   code,
@@ -65,7 +27,10 @@ export const listCurrencyRateHistory = async ({
 
   const [rows, inForce, totalCount] = await Promise.all([
     listStoredCustomRates({ userId, baseCode: code, limit, offset }),
-    findRateInForce({ userId, code, rateSource: held.rateSource }),
+    // A peg prices the currency on its own, so no stored rate is in force while it runs.
+    held.rateSource === 'peg'
+      ? Promise.resolve(null)
+      : findStoredCustomRate({ userId, baseCode: code, asOfDate: toEffectiveDate({ date: new Date() }) }),
     offset === 0 ? countStoredCustomRates({ userId, baseCode: code }) : Promise.resolve(null),
   ]);
 

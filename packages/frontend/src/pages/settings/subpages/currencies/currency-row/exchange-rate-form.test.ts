@@ -1,5 +1,7 @@
 import { deleteCustomRate, editUserCurrenciesExchangeRates } from '@/api/currencies';
 import Checkbox from '@/components/lib/ui/checkbox/Checkbox.vue';
+import { ApiErrorResponseError } from '@/js/errors';
+import { API_ERROR_CODES } from '@bt/shared/types';
 import { flushPromises, mount } from '@vue/test-utils';
 import { addDays, format } from 'date-fns';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -13,11 +15,13 @@ vi.mock('@/api/currencies', () => ({
   editUserCurrenciesExchangeRates: vi.fn(),
 }));
 
+const { mockAddError } = vi.hoisted(() => ({ mockAddError: vi.fn() }));
+
 vi.mock('@/components/notification-center', () => ({
   useNotificationCenter: () => ({
     addSuccessNotification: vi.fn(),
     addWarningNotification: vi.fn(),
-    addErrorNotification: vi.fn(),
+    addErrorNotification: mockAddError,
   }),
 }));
 
@@ -76,13 +80,14 @@ const BTC = {
   isCustomCurrency: true,
 };
 
-const TODAY = format(new Date(), 'yyyy-MM-dd');
+type DatedRate = { quoteCode: string; rate: number; effectiveDate: string };
 
-const mountForm = ({ currency = ISO_PAIR }: { currency?: typeof ISO_PAIR } = {}) => {
+const mountForm = ({ currency = ISO_PAIR, datedRate }: { currency?: typeof ISO_PAIR; datedRate?: DatedRate } = {}) => {
   const wrapper = mount(ExchangeRateForm, {
     props: {
       currency: currency as unknown as CurrencyWithExchangeRate,
       isFormDisabled: false,
+      datedRate,
     },
     global: { plugins: [i18n] },
   });
@@ -151,7 +156,7 @@ describe('ExchangeRateForm', () => {
       expect(wrapper.find('button').attributes('disabled')).toBeUndefined();
     });
 
-    it('saves both legs for today when the date is left alone, and never drops the rate', async () => {
+    it('leaves the day to the API when the date is left on today, and never drops the rate', async () => {
       const { wrapper, baseInput } = mountForm({ currency: CUSTOM_CURRENCY });
 
       await baseInput.trigger('focus');
@@ -160,8 +165,8 @@ describe('ExchangeRateForm', () => {
       await flushPromises();
 
       expect(editUserCurrenciesExchangeRates).toHaveBeenCalledWith([
-        { baseCode: 'SAT', quoteCode: 'USD', rate: 0.0000005, effectiveDate: TODAY },
-        { baseCode: 'USD', quoteCode: 'SAT', rate: 2000000, effectiveDate: TODAY },
+        { baseCode: 'SAT', quoteCode: 'USD', rate: 0.0000005 },
+        { baseCode: 'USD', quoteCode: 'SAT', rate: 2000000 },
       ]);
       expect(deleteCustomRate).not.toHaveBeenCalled();
     });
@@ -185,10 +190,70 @@ describe('ExchangeRateForm', () => {
       expect(wrapper.emitted('submit')).toHaveLength(1);
     });
 
-    it('leaves removing a dated rate to the history list', () => {
-      const { wrapper } = mountForm({ currency: BTC });
+    it('resets to today and the stored rate after a back-dated save', async () => {
+      const { wrapper, baseInput } = mountForm({ currency: BTC });
+      const dateInput = wrapper.find('[data-testid="manual-rate-effective-date"]');
 
-      expect(wrapper.find('[data-testid="manual-rate-remove"]').exists()).toBe(false);
+      await dateInput.setValue(format(addDays(new Date(), -30), 'yyyy-MM-dd'));
+      await baseInput.trigger('focus');
+      await baseInput.setValue('30000');
+      await wrapper.find('button').trigger('click');
+      await flushPromises();
+
+      expect((baseInput.element as HTMLInputElement).value).toBe('40000');
+      expect((dateInput.element as HTMLInputElement).value).toBe(format(new Date(), 'yyyy-MM-dd'));
+      expect(wrapper.find('button').attributes('disabled')).toBeDefined();
+    });
+
+    it('re-seeds the inputs when the rate in force changes under the open form', async () => {
+      const { wrapper, baseInput, quoteInput } = mountForm({ currency: BTC });
+
+      await baseInput.trigger('focus');
+      await baseInput.setValue('45000');
+      await wrapper.setProps({ currency: { ...BTC, rate: 50000, quoteRate: 0.00002 } as never });
+
+      expect((baseInput.element as HTMLInputElement).value).toBe('50000');
+      expect((quoteInput.element as HTMLInputElement).value).toBe('0.00002');
+      expect(wrapper.find('button').attributes('disabled')).toBeDefined();
+    });
+
+    it("shows the API's refusal, such as a source that is not manual", async () => {
+      vi.mocked(editUserCurrenciesExchangeRates).mockRejectedValue(
+        new ApiErrorResponseError('bad', { code: API_ERROR_CODES.validationError, message: 'BTC is not manual' }),
+      );
+      const { wrapper, baseInput } = mountForm({ currency: BTC });
+
+      await baseInput.trigger('focus');
+      await baseInput.setValue('30000');
+      await wrapper.find('button').trigger('click');
+      await flushPromises();
+
+      expect(mockAddError).toHaveBeenCalledWith('BTC is not manual');
+      expect(wrapper.emitted('submit')).toBeUndefined();
+    });
+
+    describe('editing a stored rate', () => {
+      const STORED = { quoteCode: 'EUR', rate: 2, effectiveDate: '2026-10-02' };
+
+      it('starts from the stored rate and writes its quote and day, with no date field', async () => {
+        const { wrapper, baseInput, quoteInput } = mountForm({ currency: BTC, datedRate: STORED });
+
+        expect(wrapper.find('[data-testid="manual-rate-effective-date"]').exists()).toBe(false);
+        expect((baseInput.element as HTMLInputElement).value).toBe('2');
+        expect((quoteInput.element as HTMLInputElement).value).toBe('0.5');
+        expect(wrapper.find('button').attributes('disabled')).toBeDefined();
+
+        await quoteInput.trigger('focus');
+        await quoteInput.setValue('0.125');
+        await wrapper.find('button').trigger('click');
+        await flushPromises();
+
+        expect(editUserCurrenciesExchangeRates).toHaveBeenCalledWith([
+          { baseCode: 'BTC', quoteCode: 'EUR', rate: 8, effectiveDate: '2026-10-02' },
+          { baseCode: 'EUR', quoteCode: 'BTC', rate: 0.125, effectiveDate: '2026-10-02' },
+        ]);
+        expect(wrapper.emitted('submit')).toHaveLength(1);
+      });
     });
   });
 

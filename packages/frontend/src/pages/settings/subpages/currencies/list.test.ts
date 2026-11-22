@@ -63,12 +63,11 @@ vi.mock('./rate-source/rate-source-editor.vue', async () => {
   const { defineComponent, h } = await import('vue');
   return {
     default: defineComponent({
-      emits: ['submit', 'changed'],
+      emits: ['changed'],
       setup:
         (_props, { emit }) =>
         () =>
           h('div', { 'data-testid': 'rate-source-editor' }, [
-            h('button', { 'data-testid': 'rate-source-submit', onClick: () => emit('submit') }),
             h('button', { 'data-testid': 'rate-source-changed', onClick: () => emit('changed') }),
           ]),
     }),
@@ -116,7 +115,7 @@ const userCurrency = ({
   currencyCode: code,
   isDefaultCurrency: isBase,
   currency: { code, currency: name, digits: 2, symbol: null, isCustom, isDisabled: false, number: 0 },
-  rateSource: isCustom ? 'manual' : 'provider',
+  rateSource: 'manual',
   rateSourceConfig: null,
 });
 
@@ -165,20 +164,17 @@ describe('CurrenciesList', () => {
     expect(mockRefresh).toHaveBeenCalledOnce();
   });
 
-  it.each(['rate-source-submit', 'rate-source-changed'])(
-    'keeps a custom currency open and refreshes after its rate editor emits %s',
-    async (testId) => {
-      const wrapper = mountList();
-      await flushPromises();
+  it('keeps a custom currency open and refreshes after its rate editor reports a change', async () => {
+    const wrapper = mountList();
+    await flushPromises();
 
-      await rowButton(wrapper, 'Tether').trigger('click');
-      expect(wrapper.find('[data-testid="rate-form"]').exists()).toBe(false);
-      await wrapper.get(`[data-testid="${testId}"]`).trigger('click');
+    await rowButton(wrapper, 'Tether').trigger('click');
+    expect(wrapper.find('[data-testid="rate-form"]').exists()).toBe(false);
+    await wrapper.get('[data-testid="rate-source-changed"]').trigger('click');
 
-      expect(dialog(wrapper).exists()).toBe(true);
-      expect(mockRefresh).toHaveBeenCalledOnce();
-    },
-  );
+    expect(dialog(wrapper).exists()).toBe(true);
+    expect(mockRefresh).toHaveBeenCalledOnce();
+  });
 
   it('swaps to the custom currency dialog instead of stacking it', async () => {
     const wrapper = mountList();

@@ -23,7 +23,7 @@ export const testCurrencyRateSourceTool = defineTool({
     date: z.iso.date().optional().describe('The day to ask for (YYYY-MM-DD). Defaults to today.'),
   },
   run: async ({ userId, args }) => {
-    await enforceUserRateLimit({ userId, limit: RATE_SOURCE_TEST_LIMIT });
+    await enforceUserRateLimit({ userId, limit: RATE_SOURCE_TEST_LIMIT, failClosed: true });
 
     const { code, config, date } = args;
     const body = testRateSourceBodySchema.parse({ rateSource: 'http', config, date });

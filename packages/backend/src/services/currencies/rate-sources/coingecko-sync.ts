@@ -2,15 +2,12 @@ import type { CoingeckoRateSourceConfig } from '@bt/shared/types';
 import { logger } from '@js/utils';
 import UserExchangeRates, { toEffectiveDate } from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
+import { subDays } from 'date-fns';
+import { literal, Op } from 'sequelize';
 
-import {
-  type CoingeckoDailyRate,
-  fetchCoingeckoHistory,
-  fetchCoingeckoLatestPrices,
-  isCoingeckoRateLimitError,
-} from './coingecko';
+import { fetchCoingeckoHistory, fetchCoingeckoLatestPrices, isCoingeckoRateLimitError } from './coingecko';
 import { coingeckoRateSourceConfigSchema } from './index';
-import { storeSyncedRates } from './store-synced-rates';
+import { storeSyncedRates, type SyncedDailyRate } from './store-synced-rates';
 
 /** The Demo tier allows about 30 calls a minute; a sync leaves this long between two of its calls. */
 const COINGECKO_SYNC_SPACING_MS = 2_500;
@@ -22,6 +19,10 @@ interface Target {
   currencyCode: string;
   /** The settings the target was loaded with: rates fetched for them are stored only while they stand. */
   rateSourceConfig: unknown;
+  /** The newest day stored from this source in the quote currency; `undefined` when there is none. */
+  newestDay: string | undefined;
+  /** It has no rate from this source for yesterday or later, so it is filled from the history. */
+  stale: boolean;
 }
 
 /** The users who take one coin in one quote currency: it is fetched once for all of them. */
@@ -43,13 +44,13 @@ interface CoingeckoSyncResult {
 const groupKey = ({ coinId, quoteCurrency }: { coinId: string; quoteCurrency: string }): string =>
   `${coinId}|${quoteCurrency}`;
 
-const parseConfig = (rateSourceConfig: unknown): CoingeckoRateSourceConfig | null => {
+const parseConfig = ({ rateSourceConfig }: { rateSourceConfig: unknown }): CoingeckoRateSourceConfig | null => {
   const parsed = coingeckoRateSourceConfigSchema.safeParse(rateSourceConfig);
 
   return parsed.success ? parsed.data : null;
 };
 
-const loadGroups = async (): Promise<{ needHistory: CoinGroup[]; needLatest: CoinGroup[] }> => {
+const loadGroups = async (): Promise<CoinGroup[]> => {
   const configured = await UsersCurrencies.findAll({
     where: { rateSource: SOURCE },
     attributes: ['userId', 'currencyCode', 'rateSourceConfig'],
@@ -59,47 +60,55 @@ const loadGroups = async (): Promise<{ needHistory: CoinGroup[]; needLatest: Coi
     ],
     raw: true,
   });
-  const withRates = await UserExchangeRates.findAll({
-    where: { source: SOURCE },
-    attributes: ['userId', 'baseCode', 'quoteCode'],
+  if (!configured.length) return [];
+
+  const newestDays = (await UserExchangeRates.findAll({
+    where: { source: SOURCE, userId: { [Op.in]: [...new Set(configured.map((row) => row.userId))] } },
+    attributes: ['userId', 'baseCode', 'quoteCode', [literal('MAX("effectiveDate")::text'), 'newestDay']],
     group: ['userId', 'baseCode', 'quoteCode'],
     raw: true,
-  });
-  const hasRates = new Set(withRates.map((row) => `${row.userId}|${row.baseCode}|${row.quoteCode}`));
+  })) as unknown as { userId: number; baseCode: string; quoteCode: string; newestDay: string }[];
+  const newestDayOf = new Map(
+    newestDays.map((row) => [`${row.userId}|${row.baseCode}|${row.quoteCode}`, row.newestDay]),
+  );
+  const yesterday = toEffectiveDate({ date: subDays(new Date(), 1) });
 
-  const history = new Map<string, CoinGroup>();
-  const latest = new Map<string, CoinGroup>();
+  const groups = new Map<string, CoinGroup>();
 
   for (const row of configured) {
-    const config = parseConfig(row.rateSourceConfig);
+    const config = parseConfig({ rateSourceConfig: row.rateSourceConfig });
     if (!config) {
       logger.warn(`Skipping the CoinGecko source of ${row.currencyCode} of user ${row.userId}: unreadable config`);
       continue;
     }
 
-    const bucket = hasRates.has(`${row.userId}|${row.currencyCode}|${config.quoteCurrency}`) ? latest : history;
+    const newestDay = newestDayOf.get(`${row.userId}|${row.currencyCode}|${config.quoteCurrency}`);
     const key = groupKey(config);
-    const group = bucket.get(key) ?? { coinId: config.coinId, quoteCurrency: config.quoteCurrency, targets: [] };
+    const group = groups.get(key) ?? { coinId: config.coinId, quoteCurrency: config.quoteCurrency, targets: [] };
     group.targets.push({
       userId: row.userId,
       currencyCode: row.currencyCode,
       rateSourceConfig: row.rateSourceConfig,
+      newestDay,
+      stale: newestDay === undefined || newestDay < yesterday,
     });
-    bucket.set(key, group);
+    groups.set(key, group);
   }
 
-  return { needHistory: [...history.values()], needLatest: [...latest.values()] };
+  return [...groups.values()];
 };
 
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const sleep = ({ ms }: { ms: number }) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /**
  * Daily sync of every user's CoinGecko-sourced currencies. A coin is fetched once per day however
  * many users take it, and each user gets the rate stored in their own configured quote currency.
  *
- * - A currency that has no rates from this source in its quote (a restored backup, say) is
- *   backfilled with the last year instead.
- * - The others get today's price from one batched call per quote currency.
+ * - Today's price comes from one batched call per quote currency.
+ * - A currency whose newest rate from this source in its quote is older than yesterday (none yet,
+ *   or a run was missed) stores it only together with the days it lacks, from the coin's history,
+ *   so a failed history call leaves it to the next run. Days it already holds are left alone. A
+ *   coin with no price today is not fetched for history.
  * - A failed call is logged and leaves the last rate in force; a 429 ends the run, because every
  *   further call would be refused too. The next run starts again.
  */
@@ -107,13 +116,15 @@ export const syncCoingeckoRates = async ({
   spacingMs = COINGECKO_SYNC_SPACING_MS,
 }: { spacingMs?: number } = {}): Promise<CoingeckoSyncResult> => {
   const result: CoingeckoSyncResult = { coinsFetched: 0, currenciesUpdated: 0, ratesWritten: 0, failures: 0 };
-  const { needHistory, needLatest } = await loadGroups();
-  if (!needHistory.length && !needLatest.length) return result;
+  const groups = await loadGroups();
+  if (!groups.length) return result;
+
+  const priced = new Map<CoinGroup, number>();
 
   let requests = 0;
   let rateLimited = false;
   const beforeRequest = async () => {
-    if (requests > 0 && spacingMs > 0) await sleep(spacingMs);
+    if (requests > 0 && spacingMs > 0) await sleep({ ms: spacingMs });
     requests += 1;
   };
 
@@ -128,20 +139,21 @@ export const syncCoingeckoRates = async ({
 
   const store = async ({
     group,
-    rates,
+    ratesOf,
     kind,
   }: {
     group: CoinGroup;
-    rates: CoingeckoDailyRate[];
+    ratesOf: (target: Target) => SyncedDailyRate[];
     kind: 'backfill' | 'daily';
   }) => {
-    for (const { userId, currencyCode, rateSourceConfig } of group.targets) {
+    for (const target of group.targets) {
+      const { userId, currencyCode, rateSourceConfig } = target;
       try {
         const written = await storeSyncedRates({
           userId,
           currencyCode,
           quoteCurrency: group.quoteCurrency,
-          rates,
+          rates: ratesOf(target),
           kind,
           source: SOURCE,
           fetchedWith: { rateSourceConfig },
@@ -154,32 +166,19 @@ export const syncCoingeckoRates = async ({
     }
   };
 
-  for (const group of needHistory) {
-    if (rateLimited) break;
+  const today = toEffectiveDate({ date: new Date() });
 
-    try {
-      await beforeRequest();
-      const rates = await fetchCoingeckoHistory({ coinId: group.coinId, quoteCurrency: group.quoteCurrency });
-      result.coinsFetched += 1;
-      await store({ group, rates, kind: 'backfill' });
-    } catch (error) {
-      fail({ error, what: `history of ${group.coinId}` });
-    }
-  }
-
-  const byQuote = Map.groupBy(needLatest, (group) => group.quoteCurrency);
-  for (const [quoteCurrency, groups] of byQuote) {
+  for (const [quoteCurrency, quoteGroups] of Map.groupBy(groups, (group) => group.quoteCurrency)) {
     if (rateLimited) break;
 
     try {
       const prices = await fetchCoingeckoLatestPrices({
-        coinIds: groups.map((group) => group.coinId),
+        coinIds: quoteGroups.map((group) => group.coinId),
         quoteCurrency,
         beforeRequest,
       });
-      const day = toEffectiveDate({ date: new Date() });
 
-      for (const group of groups) {
+      for (const group of quoteGroups) {
         const rate = prices.get(group.coinId);
         result.coinsFetched += 1;
 
@@ -189,10 +188,35 @@ export const syncCoingeckoRates = async ({
           continue;
         }
 
-        await store({ group, rates: [{ day, rate }], kind: 'daily' });
+        priced.set(group, rate);
+        await store({ group, ratesOf: ({ stale }) => (stale ? [] : [{ day: today, rate }]), kind: 'daily' });
       }
     } catch (error) {
       fail({ error, what: `prices in ${quoteCurrency}` });
+    }
+  }
+
+  for (const group of groups) {
+    if (rateLimited) break;
+    const rate = priced.get(group);
+    if (rate === undefined || !group.targets.some(({ stale }) => stale)) continue;
+
+    try {
+      await beforeRequest();
+      const rates = await fetchCoingeckoHistory({ coinId: group.coinId, quoteCurrency: group.quoteCurrency });
+      await store({
+        group,
+        ratesOf: ({ stale, newestDay }) =>
+          stale
+            ? [
+                ...rates.filter(({ day }) => day < today && (newestDay === undefined || day > newestDay)),
+                { day: today, rate },
+              ]
+            : [],
+        kind: 'backfill',
+      });
+    } catch (error) {
+      fail({ error, what: `history of ${group.coinId}` });
     }
   }
 

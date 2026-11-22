@@ -1,4 +1,5 @@
 import { TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
+import { type ConversionDecimals, getConversionDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { ExchangeRateUnavailableError } from '@js/errors';
 import { logger } from '@js/utils/logger';
@@ -11,9 +12,10 @@ import { getBaseCurrency } from '@models/users-currencies.model';
 import { remeasureRefBalances } from '@services/accounts/remeasure-ref-balances';
 import { restampRefInitialBalance } from '@services/accounts/restamp-ref-initial-balance';
 import { scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
 import { clearRefAmountCache } from '@services/ref-amount-cache';
+import { getExchangeRate } from '@services/user-exchange-rate';
 import { Op } from 'sequelize';
 
 import { findCustomCurrencyCodes } from './custom-currency-codes';
@@ -129,16 +131,51 @@ const valueTransactions = async ({
   });
   const ownerByAccountId = new Map(accounts.map((account) => [account.id, account.userId]));
 
-  const convert = ({ tx, amount }: { tx: Transactions; amount: Money }) =>
-    calculateRefAmount({
-      userId,
-      definitionOwnerUserId: ownerByAccountId.get(tx.accountId) ?? userId,
-      amount,
-      baseCode: currencyCode,
-      quoteCode: baseCurrencyCode,
-      date: tx.time,
-      bypassCache: true,
-    });
+  const rateByDay = new Map<string, Promise<number>>();
+  const decimalsByOwner = new Map<number, Promise<ConversionDecimals>>();
+
+  // The custom side is read by UTC day and the ISO leg by the server's local day, so both form the key.
+  const rateFor = ({ time }: { time: Date }) => {
+    const day = `${time.toISOString().slice(0, 10)}|${time.toDateString()}`;
+    if (!rateByDay.has(day)) {
+      const rate = getExchangeRate({
+        userId,
+        date: new Date(time),
+        baseCode: currencyCode,
+        quoteCode: baseCurrencyCode,
+        bypassCache: true,
+      }).then((result) => result.rate);
+      rateByDay.set(day, rate);
+    }
+    return rateByDay.get(day)!;
+  };
+
+  const decimalsFor = ({ owner }: { owner: number }) => {
+    if (!decimalsByOwner.has(owner)) {
+      const decimals = getConversionDecimals({
+        userId,
+        baseCode: currencyCode,
+        quoteCode: baseCurrencyCode,
+        definitionOwnerUserId: owner,
+      });
+      decimalsByOwner.set(owner, decimals);
+    }
+    return decimalsByOwner.get(owner)!;
+  };
+
+  const convert = async ({ tx, amount }: { tx: Transactions; amount: Money }) => {
+    const rate = await rateFor({ time: tx.time });
+    const decimals = await decimalsFor({ owner: ownerByAccountId.get(tx.accountId) ?? userId });
+    return calculateRefAmountFromParams({ amount, rate, ...decimals });
+  };
+
+  const splitsByTransactionId = new Map<TransactionSplits['transactionId'], TransactionSplits[]>();
+  const splits = await TransactionSplits.findAll({ where: { transactionId: { [Op.in]: toValue.map((tx) => tx.id) } } });
+  for (const split of splits) {
+    const known = splitsByTransactionId.get(split.transactionId) ?? [];
+    known.push(split);
+    splitsByTransactionId.set(split.transactionId, known);
+  }
 
   let transactionsUpdated = 0;
   let splitsUpdated = 0;
@@ -164,8 +201,7 @@ const valueTransactions = async ({
       transactionsUpdated += 1;
     }
 
-    const splits = await TransactionSplits.findAll({ where: { transactionId: tx.id } });
-    for (const split of splits) {
+    for (const split of splitsByTransactionId.get(tx.id) ?? []) {
       const splitRefAmount = await convert({ tx, amount: split.amount });
 
       if (!splitRefAmount.equals(split.refAmount)) {

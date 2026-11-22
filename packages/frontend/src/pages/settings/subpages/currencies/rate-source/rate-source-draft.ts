@@ -1,5 +1,6 @@
 import {
   type CoingeckoRateSourceConfig,
+  type CurrencyRateSource,
   DEFAULT_RATE_SOURCE_QUOTE_CURRENCY,
   HTTP_URL_TEMPLATE_PLACEHOLDER_NAMES,
   type HttpRateSourceConfig,
@@ -7,15 +8,10 @@ import {
   type HttpUrlTemplatePlaceholderName,
   type PegRateSourceConfig,
   type RateSourceTestFailure,
-  type TestCurrencyRateSourceBody,
   type UpdateCurrencyRateSourceBody,
   type UserCurrencyModel,
 } from '@bt/shared/types';
 import { isEqual } from 'lodash-es';
-
-/** Sources a custom currency can be priced by. `provider` is the market feed of ISO currencies only. */
-export const EDITABLE_RATE_SOURCES = ['manual', 'peg', 'coingecko', 'http'] as const;
-export type EditableRateSource = (typeof EDITABLE_RATE_SOURCES)[number];
 
 /** Placeholders an HTTP source URL may hold as written in a template, by name; the API fills them in per request. */
 export const HTTP_URL_PLACEHOLDERS = Object.fromEntries(
@@ -24,9 +20,9 @@ export const HTTP_URL_PLACEHOLDERS = Object.fromEntries(
 
 /**
  * What to do with the headers already saved on an HTTP source. Saved values are never returned, so
- * `keep` leaves them alone, `replace` sends the rows below as the new set and `clear` removes them.
+ * `keep` leaves them alone and `replace` sends the rows as the new set; no rows removes them.
  */
-export type HttpHeadersMode = 'keep' | 'replace' | 'clear';
+export type HttpHeadersMode = 'keep' | 'replace';
 
 export interface HttpHeaderRow {
   id: number;
@@ -35,7 +31,7 @@ export interface HttpHeaderRow {
 }
 
 export interface RateSourceDraft {
-  source: EditableRateSource;
+  source: CurrencyRateSource;
   peg: { pegCurrency: string | null; factor: string };
   /** `logoUrl` is the logo of the coin picked in this editor; `null` while none was, which keeps the saved one. */
   coingecko: { coinId: string; coinLabel: string; quoteCurrency: string; logoUrl: string | null };
@@ -83,10 +79,7 @@ export const buildDraft = ({ saved }: { saved: SavedRateSource }): RateSourceDra
   const http = isHttpConfig(rateSourceConfig) ? rateSourceConfig : null;
 
   return {
-    // A custom currency has no market feed, so an unset source reads as the manual one.
-    source: (EDITABLE_RATE_SOURCES as readonly string[]).includes(saved.rateSource)
-      ? (saved.rateSource as EditableRateSource)
-      : 'manual',
+    source: saved.rateSource,
     peg: { pegCurrency: peg?.pegCurrency ?? null, factor: String(peg?.factor ?? 1) },
     coingecko: {
       coinId: coingecko?.coinId ?? '',
@@ -104,20 +97,15 @@ export const buildDraft = ({ saved }: { saved: SavedRateSource }): RateSourceDra
   };
 };
 
-/**
- * The `headers` field of an HTTP request body: omitted keeps the saved headers, `{}` removes them,
- * an object replaces them. Rows left entirely blank are ignored.
- */
-const buildHeadersField = ({ http }: { http: RateSourceDraft['http'] }): { headers?: Record<string, string> } => {
-  if (http.headersMode === 'keep') return {};
-  if (http.headersMode === 'clear') return { headers: {} };
+/** Header rows with a name or a value; rows left entirely blank are ignored. */
+export const getFilledHeaderRows = ({ http }: { http: RateSourceDraft['http'] }): HttpHeaderRow[] =>
+  http.headers.filter((row) => row.name.trim() || row.value);
 
-  return {
-    headers: Object.fromEntries(
-      http.headers.filter((row) => row.name.trim() || row.value).map((row) => [row.name.trim(), row.value]),
-    ),
-  };
-};
+/** The `headers` field of an HTTP request body: omitted keeps the saved headers, an object replaces them. */
+const buildHeadersField = ({ http }: { http: RateSourceDraft['http'] }): { headers?: Record<string, string> } =>
+  http.headersMode === 'keep'
+    ? {}
+    : { headers: Object.fromEntries(getFilledHeaderRows({ http }).map((row) => [row.name.trim(), row.value])) };
 
 /** The HTTP settings as the API takes them, in a save and in a preview alike. */
 export const buildHttpConfig = ({ http }: { http: RateSourceDraft['http'] }): HttpRateSourceInput => ({
@@ -147,12 +135,6 @@ export const buildRateSourceBody = ({ draft }: { draft: RateSourceDraft }): Upda
   }
 };
 
-/** The body of the preview request: the HTTP settings as typed, today's date. */
-export const buildTestBody = ({ http }: { http: RateSourceDraft['http'] }): TestCurrencyRateSourceBody => ({
-  rateSource: 'http',
-  config: buildHttpConfig({ http }),
-});
-
 /** Whether the draft would change what is saved, so Save stays disabled for an untouched editor. */
 export const isDraftChanged = ({ draft, saved }: { draft: RateSourceDraft; saved: SavedRateSource }): boolean =>
   !isEqual(buildRateSourceBody({ draft }), buildRateSourceBody({ draft: buildDraft({ saved }) }));
@@ -167,6 +149,45 @@ export const isPositiveNumberText = ({ value }: { value: string }): boolean => {
 
 const URL_TEMPLATE_PATTERN = /^https?:\/\/\S+$/i;
 const PLACEHOLDER_PATTERN = /\{([^{}]*)\}/g;
+// Any fixed day: the API fills {date} with one too when it compares origins.
+const ORIGIN_SAMPLE_DATE = '2026-01-01';
+
+const getRequestOrigin = ({
+  urlTemplate,
+  code,
+  quoteCurrency,
+}: {
+  urlTemplate: string;
+  code: string;
+  quoteCurrency: string;
+}): string | null => {
+  const values: Record<string, string> = { date: ORIGIN_SAMPLE_DATE, code, quote: quoteCurrency };
+  const url = urlTemplate.trim().replace(PLACEHOLDER_PATTERN, (_match, name: string) => values[name] ?? '');
+
+  return URL.canParse(url) ? new URL(url).origin : null;
+};
+
+/**
+ * Whether the draft keeps saved headers the API will not send: it sends them only to the origin of
+ * the saved URL, so a draft pointing elsewhere must replace them.
+ */
+export const isHeadersOriginChanged = ({
+  http,
+  saved,
+  code,
+}: {
+  http: RateSourceDraft['http'];
+  saved: SavedRateSource;
+  code: string;
+}): boolean => {
+  const config = saved.rateSourceConfig;
+  if (saved.rateSource !== 'http' || !isHttpConfig(config) || !config.headerNames.length) return false;
+
+  const savedOrigin = getRequestOrigin({ urlTemplate: config.urlTemplate, code, quoteCurrency: config.quoteCurrency });
+  const draftOrigin = getRequestOrigin({ urlTemplate: http.urlTemplate, code, quoteCurrency: http.quoteCurrency });
+
+  return savedOrigin === null || savedOrigin !== draftOrigin;
+};
 
 /** Whether the template is an http(s) URL whose only placeholders are {date}, {code} and {quote}. */
 export const isValidUrlTemplate = ({ value }: { value: string }): boolean => {
@@ -184,7 +205,15 @@ export const isValidUrlTemplate = ({ value }: { value: string }): boolean => {
  * Checks the fields the chosen source needs. The API validates again (the JSON path and the header
  * names in particular), and its message is shown if it refuses what passes here.
  */
-export const validateDraft = ({ draft }: { draft: RateSourceDraft }): RateSourceDraftErrors => {
+export const validateDraft = ({
+  draft,
+  saved,
+  code,
+}: {
+  draft: RateSourceDraft;
+  saved: SavedRateSource;
+  code: string;
+}): RateSourceDraftErrors => {
   const errors: RateSourceDraftErrors = {};
 
   if (draft.source === 'peg') {
@@ -204,8 +233,11 @@ export const validateDraft = ({ draft }: { draft: RateSourceDraft }): RateSource
 
     if (!draft.http.jsonPath.trim()) errors.jsonPath = 'settings.currencies.rateSource.errors.pathRequired';
 
-    if (draft.http.headersMode === 'replace') {
-      const rows = draft.http.headers.filter((row) => row.name.trim() || row.value);
+    if (draft.http.headersMode === 'keep') {
+      if (isHeadersOriginChanged({ http: draft.http, saved, code }))
+        errors.headers = 'settings.currencies.rateSource.http.headersOriginChanged';
+    } else {
+      const rows = getFilledHeaderRows({ http: draft.http });
       if (rows.some((row) => !row.name.trim()))
         errors.headers = 'settings.currencies.rateSource.errors.headerNameRequired';
       else if (new Set(rows.map((row) => row.name.trim().toLowerCase())).size !== rows.length)

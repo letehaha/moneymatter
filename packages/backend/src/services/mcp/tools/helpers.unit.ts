@@ -131,9 +131,14 @@ describe('enforceUserRateLimit', () => {
     );
   });
 
-  it('lets the call through when Redis is down, as the REST middleware does', async () => {
-    checkRateLimit.mockResolvedValueOnce({ allowed: true, serviceUnavailable: true });
+  it('lets the call through when Redis is down, unless the limit fails closed', async () => {
+    checkRateLimit
+      .mockResolvedValueOnce({ allowed: true, serviceUnavailable: true })
+      .mockResolvedValueOnce({ allowed: true, serviceUnavailable: true });
 
     await expect(enforceUserRateLimit({ userId: 7, limit: RATE_SOURCE_SAVE_LIMIT })).resolves.toBeUndefined();
+    await expect(enforceUserRateLimit({ userId: 7, limit: RATE_SOURCE_SAVE_LIMIT, failClosed: true })).rejects.toThrow(
+      /middleware.tooManyRequests/,
+    );
   });
 });

@@ -9,7 +9,7 @@ export const getCurrencyRateHistoryTool = defineTool({
   toolset: 'currencies',
   access: 'read',
   description:
-    "List the stored rates of one of the user's custom currencies, latest first: quote currency, rate, effective date, source (manual, coingecko, http), when it was written, and which row is in force now. The earliest rate also covers every day before it. totalCount comes with the first page only. Refused for an ISO currency.",
+    "List the stored rates of one of the user's custom currencies, latest first: quote currency, rate, effective date, source (initial, manual, coingecko, http), when it was written, and which row is in force now. initial is the rate the currency was created with. The earliest rate also covers every day before it. totalCount comes with the first page only. Refused for an ISO currency.",
   input: {
     code: currencyCode().describe(
       'Code of one of the user\'s custom currencies, such as "PTS". ISO currencies have no history.',

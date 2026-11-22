@@ -143,8 +143,9 @@ test.describe('Custom currencies', () => {
     await expect(rows.last().getByTestId('rate-history-rate')).toHaveText('1 USDT = 2 USD');
 
     await rows.nth(1).getByTestId('rate-history-edit').click();
-    await dialogField({ page, testId: 'edit-dated-rate-base' }).fill('5');
-    await page.getByTestId('edit-dated-rate-save').click();
+    const editDialog = page.getByTestId('edit-dated-rate');
+    await editDialog.locator('input[data-testid="manual-rate-base"], [data-testid="manual-rate-base"] input').fill('5');
+    await editDialog.getByTestId('manual-rate-save').click();
     await waitForSuccessToast({ page });
     await expect(rows.nth(1).getByTestId('rate-history-rate')).toHaveText('1 USDT = 5 USD');
     await expect(rows).toHaveCount(3);

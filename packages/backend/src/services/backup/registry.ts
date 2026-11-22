@@ -71,7 +71,7 @@ export interface BackupTableDef<Name extends string = BackupFileName> {
   /** Per self-ref column: values written to a row whose parent did not restore. */
   selfRefOrphanValues?: Record<string, Record<string, unknown>>;
   /** Encrypted blob to blank before writing (undecryptable on another instance). */
-  stripSecret?: 'bankCredentials' | 'aiKeys' | 'rateSourceHeaders';
+  stripSecret?: 'bankCredentials' | 'aiKeys';
   /** Drop a row on restore that breaks an app-level rule the DB constraints don't cover. */
   isValidRow?: (params: { row: Record<string, unknown> }) => boolean;
 }
@@ -108,7 +108,6 @@ const TABLE_DEFS = [
     tier: 2,
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
-    stripSecret: 'rateSourceHeaders',
   },
   {
     fileName: 'categories',

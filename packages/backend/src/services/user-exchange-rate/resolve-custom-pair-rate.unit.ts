@@ -129,7 +129,7 @@ describe('resolveCustomPairRate', () => {
     setSources({});
   });
 
-  it('uses the rate the user entered for exactly this pair, with its full precision', async () => {
+  it('uses the stored rate of the custom currency in its own quote, with its full precision', async () => {
     storeRates({ 'SAT>USD': 0.00067123456789 });
     const resolveIsoRate = isoRates({});
 
@@ -159,6 +159,12 @@ describe('resolveCustomPairRate', () => {
     });
 
     expect(result.rate).toBeCloseTo(1.1 / 50000, 15);
+  });
+
+  it('prices an ISO-to-custom pair as the inverse of the stored rate, never reading a stored inverse row', async () => {
+    storeRates({ 'SAT>USD': 4, 'USD>SAT': 0.3 });
+
+    expect((await resolvePair({ baseCode: 'USD', quoteCode: 'SAT' })).rate).toBe(0.25);
   });
 
   it('answers with no ISO conversion when both sides are quoted in the same ISO currency', async () => {
@@ -212,14 +218,6 @@ describe('resolveCustomPairRate', () => {
       expect((await resolve('2026-09-09')).rate).toBe(3);
     });
 
-    it('reports the day a rate started as the date it applies from', async () => {
-      storeRates({}, [datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 1, effectiveDate: '2026-03-01' })]);
-
-      const result = await resolvePair({ baseCode: 'USDT', quoteCode: 'USD', date: onDay('2026-05-05') });
-
-      expect(result.date).toEqual(new Date('2026-03-01T00:00:00.000Z'));
-    });
-
     it('takes the earliest rate on a day before the first one', async () => {
       storeRates({}, [
         datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 1.5, effectiveDate: '2026-03-01' }),
@@ -258,19 +256,6 @@ describe('resolveCustomPairRate', () => {
       expect((await resolve('2026-04-01')).rate).toBeCloseTo(0.9 * 0.85, 12);
     });
 
-    it('prefers a rate entered for exactly the pair on that day over crossing the stored quote', async () => {
-      storeRates({}, [
-        datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 1, effectiveDate: '2026-01-01' }),
-        datedRate({ baseCode: 'USDT', quoteCode: 'EUR', value: 0.93, effectiveDate: '2026-02-01' }),
-      ]);
-      const resolveIsoRate = isoRates({ 'USD>EUR': 0.9 });
-      const resolve = (day: string) =>
-        resolvePair({ baseCode: 'USDT', quoteCode: 'EUR', resolveIsoRate, date: onDay(day) });
-
-      expect((await resolve('2026-01-15')).rate).toBe(0.9);
-      expect((await resolve('2026-02-15')).rate).toBe(0.93);
-    });
-
     it('keeps a rate of a thousandth of a cent whole, so a million units convert to exactly one', async () => {
       storeRates({ 'SAT>USD': 0.000001 });
 
@@ -281,9 +266,9 @@ describe('resolveCustomPairRate', () => {
     });
   });
 
-  describe('a currency on a synced source', () => {
-    it.each(['coingecko', 'http'])(
-      'is valued by the %s rates alone, not by a rate quoted in the base entered earlier',
+  describe('whatever the rate source', () => {
+    it.each(['manual', 'coingecko', 'http'])(
+      'values a %s currency by its latest rate on or before the day, in whichever quote it is stored',
       async (rateSource) => {
         storeRates({}, [
           datedRate({ baseCode: 'SAT', quoteCode: 'EUR', value: 2, effectiveDate: '2026-01-01' }),
@@ -300,21 +285,6 @@ describe('resolveCustomPairRate', () => {
         expect(result.rate).toBe(5);
       },
     );
-
-    it('still takes the exact pair rate of a currency on manual rates', async () => {
-      storeRates({}, [
-        datedRate({ baseCode: 'SAT', quoteCode: 'EUR', value: 2, effectiveDate: '2026-01-01' }),
-        datedRate({ baseCode: 'SAT', quoteCode: 'USD', value: 10, effectiveDate: '2026-10-10' }),
-      ]);
-
-      const result = await resolvePair({
-        baseCode: 'SAT',
-        quoteCode: 'EUR',
-        resolveIsoRate: isoRates({ 'USD>EUR': 0.5 }),
-      });
-
-      expect(result.rate).toBe(2);
-    });
   });
 
   describe('a pegged currency', () => {
@@ -378,8 +348,7 @@ describe('resolveCustomPairRate', () => {
   });
 
   describe('loadCustomCurrencyDailyQuote', () => {
-    const load = ({ code, targetCode = 'GBP' }: { code: string; targetCode?: string }) =>
-      loadCustomCurrencyDailyQuote({ userId: 1, code, targetCode });
+    const load = ({ code }: { code: string }) => loadCustomCurrencyDailyQuote({ userId: 1, code });
 
     it('gives each day the rate in force in any quote, and a day before the first the earliest', async () => {
       findRates.mockResolvedValue([
@@ -412,7 +381,7 @@ describe('resolveCustomPairRate', () => {
         setSources({ SAT: { rateSource, rateSourceConfig: {} } });
         const usdToEur = 0.5;
 
-        const quote = await load({ code: 'SAT', targetCode: 'EUR' });
+        const quote = await load({ code: 'SAT' });
 
         for (const day of ['2024-01-01', '2025-06-01', '2025-12-01', '2026-07-01']) {
           const resolved = await resolvePair({

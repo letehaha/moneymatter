@@ -8,7 +8,6 @@
         v-if="editableCurrency"
         :currency="currency"
         :is-form-disabled="isFormDisabled"
-        @submit="refreshAfterChange"
         @changed="refreshAfterChange"
         @trigger-disabled="isFormDisabled = $event"
       />

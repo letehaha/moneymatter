@@ -1,7 +1,6 @@
 /**
  * Per-user budgets shared by the REST middleware (`middlewares/rate-limit.ts`) and the MCP tools
- * (`enforceUserRateLimit`). The key is the one REST has always used, so both paths draw from one
- * counter per user.
+ * (`enforceUserRateLimit`). Both build the same key, so they draw from one counter per user.
  */
 export interface UserRateLimit {
   windowSeconds: number;

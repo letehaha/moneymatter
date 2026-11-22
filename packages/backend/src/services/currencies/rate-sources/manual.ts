@@ -2,9 +2,8 @@ import UserExchangeRates from '@models/user-exchange-rates.model';
 import { Op, type Order } from 'sequelize';
 
 /**
- * Manual rates (and the rows the synced sources write) live in `UserExchangeRates`, one row per pair
- * and start day. A day takes the row that started most recently on or before it, and the one
- * written last when several start on the same day.
+ * The rates of a custom currency live in `UserExchangeRates`, one row per start day in any ISO quote.
+ * A day takes the row that started most recently on or before it.
  */
 const LATEST_FIRST: Order = [
   ['effectiveDate', 'DESC'],
@@ -40,25 +39,6 @@ export const listStoredCustomRates = async ({
 /** How many rates the user stored for a custom code, in any quote. */
 export const countStoredCustomRates = async ({ userId, baseCode }: { userId: number; baseCode: string }) => {
   return UserExchangeRates.count({ where: { userId, baseCode } });
-};
-
-/** The user's stored rate for exactly this pair on a day; `null` before the pair's first rate. */
-export const findStoredPairRate = async ({
-  userId,
-  baseCode,
-  quoteCode,
-  asOfDate,
-}: {
-  userId: number;
-  baseCode: string;
-  quoteCode: string;
-  asOfDate: string;
-}) => {
-  return UserExchangeRates.findOne({
-    where: { userId, baseCode, quoteCode, rate: { [Op.gt]: 0 }, effectiveDate: { [Op.lte]: asOfDate } },
-    order: LATEST_FIRST,
-    raw: true,
-  });
 };
 
 /**

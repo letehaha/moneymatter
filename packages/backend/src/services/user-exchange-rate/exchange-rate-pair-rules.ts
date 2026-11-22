@@ -19,7 +19,8 @@ export const removeExchangeRatePairSchema = z.object({
   baseCode: currencyCode(),
   quoteCode: currencyCode(),
   rate: z.number().optional(),
-  // Removes only the rate that starts on this day; every rate of the pair when omitted.
+  // Removes only the rate that starts on this day. Omitted, it removes the rate of an ISO pair; a pair
+  // with a custom currency always names its day.
   effectiveDate: dateBound().optional(),
 });
 

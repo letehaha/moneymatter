@@ -2,7 +2,7 @@ import { logger } from '@js/utils';
 import { toEffectiveDate } from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
 
-import { buildHttpRateUrl, fetchHttpRate, HttpRateSourceError } from './http';
+import { fetchHttpRate, HttpRateSourceError } from './http';
 import { decryptHttpHeaders } from './http-headers';
 import { storedHttpRateSourceConfigSchema } from './index';
 import { type FetchedWith, storeSyncedRates } from './store-synced-rates';
@@ -10,8 +10,6 @@ import { type FetchedWith, storeSyncedRates } from './store-synced-rates';
 const SOURCE = 'http';
 
 interface HttpSyncResult {
-  /** HTTP calls made: identical requests of several users are made once. */
-  requests: number;
   /** Users' currencies that got a new or changed rate. */
   currenciesUpdated: number;
   ratesWritten: number;
@@ -83,17 +81,15 @@ const logFailure = ({
  * Daily sync of every user's HTTP-sourced currencies: each gets today's rate in its own quote
  * currency.
  *
- * - Requests that are identical (same URL, same headers) are made once for all users that share them.
  * - A failed call is logged and leaves the last rate in force; the run goes on with the others.
  * - A rate the user set by hand for today is not replaced.
  */
 export const syncHttpRates = async (): Promise<HttpSyncResult> => {
-  const result: HttpSyncResult = { requests: 0, currenciesUpdated: 0, ratesWritten: 0, failures: 0 };
+  const result: HttpSyncResult = { currenciesUpdated: 0, ratesWritten: 0, failures: 0 };
   const targets = await loadTargets();
   if (!targets.length) return result;
 
   const day = toEffectiveDate({ date: new Date() });
-  const inFlight = new Map<string, Promise<number>>();
 
   for (const target of targets) {
     const read = readTarget({ target });
@@ -104,22 +100,7 @@ export const syncHttpRates = async (): Promise<HttpSyncResult> => {
     }
 
     try {
-      const url = buildHttpRateUrl({
-        urlTemplate: read.urlTemplate,
-        code: target.currencyCode,
-        quoteCurrency: read.quoteCurrency,
-        day,
-      });
-      const key = JSON.stringify([url, read.jsonPath, Object.entries(read.headers).toSorted()]);
-
-      let request = inFlight.get(key);
-      if (!request) {
-        result.requests += 1;
-        request = fetchHttpRate({ ...read, code: target.currencyCode, day });
-        inFlight.set(key, request);
-      }
-
-      const rate = await request;
+      const rate = await fetchHttpRate({ ...read, code: target.currencyCode, day });
       const written = await storeSyncedRates({
         userId: target.userId,
         currencyCode: target.currencyCode,

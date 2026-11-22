@@ -246,11 +246,7 @@ export const buildRateForDay = async ({
     return buildIsoRateForDay({ account, currencyCode: account.currencyCode, baseCurrencyCode, from, to });
   }
 
-  const quotes = await loadCustomCurrencyDailyQuote({
-    userId: account.userId,
-    code: account.currencyCode,
-    targetCode: baseCurrencyCode,
-  });
+  const quotes = await loadCustomCurrencyDailyQuote({ userId: account.userId, code: account.currencyCode });
   if (!quotes) {
     logger.error('Custom currency has no rate; account left untouched', { accountId: account.id });
     return null;

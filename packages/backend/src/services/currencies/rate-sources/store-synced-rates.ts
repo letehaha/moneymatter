@@ -8,7 +8,6 @@ import { Op } from 'sequelize';
 
 import { isBaseCurrencyChangeLocked } from '../base-currency-lock';
 import { recomputeCustomRefAmounts } from '../recompute-custom-ref-amounts.service';
-import type { CustomRateChange } from '../recompute-scope';
 
 /** One day's rate of a synced source: `day` is the UTC calendar day (`YYYY-MM-DD`). */
 export interface SyncedDailyRate {
@@ -16,8 +15,8 @@ export interface SyncedDailyRate {
   rate: number;
 }
 
-/** The sources that write rates on their own; a rate the user set by hand is `manual`. */
-type SyncedRateSource = Exclude<UserExchangeRateSource, 'manual'>;
+/** The sources that write rates on their own; the user's rates are `manual`, the creation rate `initial`. */
+type SyncedRateSource = Exclude<UserExchangeRateSource, 'manual' | 'initial'>;
 
 /** The saved settings a fetch was made with: the rates are stored only while the currency still has them. */
 export interface FetchedWith {
@@ -61,19 +60,15 @@ const isFetchStillCurrent = async ({
 
 /**
  * Writes the rates a synced source fetched for one user's currency and values the rows they reach
- * again.
+ * again. A currency holds one rate per day, in whatever quote.
  *
- * A day the user set by hand keeps their rate. A day a synced source wrote before is replaced when
- * the price differs (a source the user switched from yields to the one in force). A rate for a new
- * day of a daily run leaves the rows valued before it as they are; a backfill (which writes days
- * that were valued with an earlier rate) values the rows of those days again. Days before the first
- * rate are valued with it, so a backfill that reaches past the first rate values every earlier day
- * again too.
+ * A day that has a `manual` rate keeps it. Any other rate of a day (the creation rate, or a synced
+ * one in this or another quote) gives way to the fetched one. A rate for a new day of a daily run
+ * leaves the rows valued before it as they are; a backfill values the rows of the days it writes
+ * again, and every day before them when it reaches past the first rate.
  *
- * Nothing is written, and 0 comes back, when the user's base currency is being changed (the change
- * rewrites every converted amount, and the next run catches the rates up) or when the currency no
- * longer has the source and settings the rates were fetched with (the user changed them meanwhile,
- * and the rates belong to the old ones).
+ * Nothing is written, and 0 comes back, when the user's base currency is being changed or when the
+ * currency no longer has the source and settings the rates were fetched with.
  */
 export const storeSyncedRates = withTransaction(
   async ({
@@ -82,6 +77,7 @@ export const storeSyncedRates = withTransaction(
     quoteCurrency,
     rates,
     kind,
+    revalue = true,
     source,
     fetchedWith,
   }: {
@@ -91,6 +87,8 @@ export const storeSyncedRates = withTransaction(
     rates: SyncedDailyRate[];
     /** `backfill` writes a series of days; `daily` writes the rate of a new day. */
     kind: 'backfill' | 'daily';
+    /** `false` when the caller values the currency's rows again itself. */
+    revalue?: boolean;
     source: SyncedRateSource;
     fetchedWith: FetchedWith;
   }): Promise<number> => {
@@ -99,28 +97,26 @@ export const storeSyncedRates = withTransaction(
     if (!(await isFetchStillCurrent({ userId, currencyCode, source, fetchedWith }))) return 0;
 
     const existing = await UserExchangeRates.findAll({
-      where: {
-        userId,
-        baseCode: currencyCode,
-        quoteCode: quoteCurrency,
-        effectiveDate: { [Op.in]: rates.map((rate) => rate.day) },
-      },
+      where: { userId, baseCode: currencyCode, effectiveDate: { [Op.in]: rates.map((rate) => rate.day) } },
     });
-    const existingByDay = new Map(existing.map((row) => [row.effectiveDate, row]));
+    const existingByDay = Map.groupBy(existing, (row) => row.effectiveDate);
 
-    const added: string[] = [];
     const replaced: string[] = [];
-    const created: { day: string; rate: number }[] = [];
+    const otherQuoteDays: string[] = [];
+    const created: SyncedDailyRate[] = [];
 
     for (const { day, rate } of rates) {
-      const known = existingByDay.get(day);
+      const rows = existingByDay.get(day) ?? [];
+      if (rows.some((row) => row.source === 'manual')) continue;
+
+      const known = rows.find((row) => row.quoteCode === quoteCurrency);
+      if (rows.some((row) => row !== known)) otherQuoteDays.push(day);
 
       if (!known) {
         created.push({ day, rate });
-        added.push(day);
-      } else if (known.source !== 'manual' && (Number(known.rate) !== rate || known.source !== source)) {
+      } else if (Number(known.rate) !== rate || known.source !== source) {
         // A manual edit of this day may have committed since the read above, so the write itself
-        // leaves a manual row alone. The row takes the tag of the source that now owns its price.
+        // leaves a manual row alone.
         const [updated] = await UserExchangeRates.update(
           { rate, source },
           {
@@ -137,6 +133,18 @@ export const storeSyncedRates = withTransaction(
       }
     }
 
+    if (otherQuoteDays.length) {
+      await UserExchangeRates.destroy({
+        where: {
+          userId,
+          baseCode: currencyCode,
+          quoteCode: { [Op.ne]: quoteCurrency },
+          effectiveDate: { [Op.in]: otherQuoteDays },
+          source: { [Op.ne]: 'manual' },
+        },
+      });
+    }
+
     if (created.length) {
       await UserExchangeRates.bulkCreate(
         created.map(({ day, rate }) => ({
@@ -150,19 +158,13 @@ export const storeSyncedRates = withTransaction(
       );
     }
 
-    const written = [...added, ...replaced].toSorted();
+    const changedDays = [...replaced, ...otherQuoteDays];
+    const written = [...new Set([...created.map(({ day }) => day), ...changedDays])].toSorted();
     if (!written.length) return 0;
+    if (!revalue) return written.length;
 
-    const from = kind === 'backfill' ? written[0]! : replaced.toSorted()[0];
-    if (from === undefined) return written.length;
-
-    const earlierRate = await UserExchangeRates.findOne({
-      where: { userId, baseCode: currencyCode, effectiveDate: { [Op.lt]: from } },
-      attributes: ['effectiveDate'],
-    });
-    const changes: CustomRateChange[] = [{ currencyCode, from: earlierRate ? from : null, to: null }];
-
-    await recomputeCustomRefAmounts({ userId, changes });
+    const from = kind === 'backfill' ? written[0]! : changedDays.toSorted()[0];
+    if (from !== undefined) await recomputeCustomRefAmounts({ userId, changes: [{ currencyCode, from, to: null }] });
 
     return written.length;
   },

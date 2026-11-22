@@ -40,41 +40,18 @@ const HTTP_HEADER_VALUE_PATTERN = /^[\x20-\x7E]*$/;
 const JSON_PATH_MAX_LENGTH = 256;
 const COIN_ID_MAX_LENGTH = 128;
 
-const isKeyChar = (char: string): boolean => /[A-Za-z0-9_-]/.test(char);
+/** A key (with an optional leading dot) or an `[index]`; {@link readJsonPath} walks these. */
+export const JSON_PATH_TOKEN = /\.?([A-Za-z0-9_-]+)|\[(\d+)\]/g;
 
 /**
  * Where the price sits in a JSON response: dot-separated keys and array positions, such as
  * `data.rates[0].price`, `data.rates.0.price` or `$.bitcoin.usd`. A leading `$` is optional.
- *
- * Checked in one left-to-right pass instead of a regular expression: the path comes from the
- * request body, and a pattern that repeats a repeated key class backtracks exponentially on a
- * near-miss. Tokens match what {@link readJsonPath} walks: a key (with an optional leading dot) or
- * an `[index]`.
+ * Valid when the tokens cover the whole path; the unanchored scan stays linear on a near-miss.
  */
 export const isValidJsonPath = (path: string): boolean => {
-  let position = path.startsWith('$') ? 1 : 0;
-  let tokens = 0;
+  const tokens = path.replace(/^\$/, '');
 
-  while (position < path.length) {
-    if (path[position] === '[') {
-      let end = position + 1;
-      while (end < path.length && path[end]! >= '0' && path[end]! <= '9') end += 1;
-      if (end === position + 1 || path[end] !== ']') return false;
-
-      position = end + 1;
-    } else {
-      let end = path[position] === '.' ? position + 1 : position;
-      const keyStart = end;
-      while (end < path.length && isKeyChar(path[end]!)) end += 1;
-      if (end === keyStart) return false;
-
-      position = end;
-    }
-
-    tokens += 1;
-  }
-
-  return tokens > 0;
+  return tokens.length > 0 && tokens.replace(JSON_PATH_TOKEN, '') === '';
 };
 
 /** CoinGecko coin ids are lowercase words joined by dashes, such as `bitcoin` or `usd-coin`. */
@@ -190,7 +167,6 @@ export const storedHttpRateSourceConfigSchema = z.strictObject({
 
 /** The request body of `PUT /user/currencies/:code/rate-source`, one shape per source. */
 export const updateRateSourceBodySchema = z.discriminatedUnion('rateSource', [
-  z.strictObject({ rateSource: z.literal('provider') }),
   z.strictObject({ rateSource: z.literal('manual') }),
   z.strictObject({ rateSource: z.literal('peg'), config: pegRateSourceConfigSchema }),
   z.strictObject({

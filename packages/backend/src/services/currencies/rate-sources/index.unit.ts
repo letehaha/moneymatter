@@ -94,6 +94,10 @@ describe('updateRateSourceBodySchema', () => {
       rateSource: 'peg',
       config: { pegCurrency: 'USD', factor: 1 },
     });
+
+    expect(httpRateSourceConfigSchema.parse({ urlTemplate: 'https://x.io/price', jsonPath: '$.a' }).quoteCurrency).toBe(
+      'USD',
+    );
   });
 
   it('trims the URL template and the JSON path', () => {
@@ -101,12 +105,35 @@ describe('updateRateSourceBodySchema', () => {
     expect(parsed).toMatchObject({ urlTemplate: 'https://x.io/{date}', jsonPath: 'a.b' });
   });
 
+  const httpConfig = { urlTemplate: 'https://x.io/{date}', jsonPath: 'a.b' };
+
   it.each([
+    {},
+    { rateSource: 'provider' },
     { rateSource: 'manual', config: null },
+    { rateSource: 'manual', config: { factor: 1 } },
+    { rateSource: 'peg' },
+    { rateSource: 'peg', config: { factor: 1 } },
+    { rateSource: 'peg', config: { pegCurrency: 'U$D', factor: 1 } },
+    { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 0 } },
+    { rateSource: 'peg', config: { pegCurrency: 'USD', factor: -1 } },
+    { rateSource: 'peg', config: { pegCurrency: 'USD', factor: '1' } },
+    { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 1, extra: 1 } },
     { rateSource: 'peg', config: { pegCurrency: 'USD', factor: Infinity } },
     { rateSource: 'peg', config: { pegCurrency: 'USD', factor: Number.NaN } },
     { rateSource: 'peg', config: { pegCurrency: 'USDT', factor: 1 } },
+    { rateSource: 'coingecko', config: {} },
+    { rateSource: 'coingecko', config: { coinId: 'usd coin' } },
+    { rateSource: 'coingecko', config: { coinId: 'Bitcoin' } },
     { rateSource: 'coingecko', config: { coinId: 'tether', quoteCurrency: 'BTC' } },
+    { rateSource: 'http', config: { urlTemplate: 'https://x.io/{date}' } },
+    { rateSource: 'http', config: { ...httpConfig, urlTemplate: 'ftp://x/{date}' } },
+    { rateSource: 'http', config: { ...httpConfig, urlTemplate: 'rates/{date}' } },
+    { rateSource: 'http', config: { ...httpConfig, urlTemplate: 'https://x.io/{day}' } },
+    { rateSource: 'http', config: { ...httpConfig, urlTemplate: 'https://x.io/{date' } },
+    { rateSource: 'http', config: { ...httpConfig, jsonPath: 'a..b[x]' } },
+    { rateSource: 'http', config: { ...httpConfig, jsonPath: '' } },
+    { rateSource: 'http', config: { ...httpConfig, headers: 'Bearer x' } },
     { rateSource: 'http', config: { urlTemplate: 'https://x.io/{date}', jsonPath: 'a.b', quoteCurrency: 'SAT' } },
     { rateSource: 'coingecko', config: { coinId: 'tether' }, logoUrl: 'http://coin-images.coingecko.com/a.png' },
     { rateSource: 'coingecko', config: { coinId: 'tether' }, logoUrl: 'javascript:alert(1)' },

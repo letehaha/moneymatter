@@ -60,7 +60,7 @@ describe('readCustomCurrencyDefinitions', () => {
   it.each([
     ['an unreadable peg', { rateSource: 'peg', rateSourceConfig: { pegCurrency: 'USD' } }],
     ['a peg to a custom code', { rateSource: 'peg', rateSourceConfig: { pegCurrency: 'SAT', factor: 1 } }],
-    ['the market feed', { rateSource: 'provider', rateSourceConfig: null }],
+    ['the market feed, which is not a custom source', { rateSource: 'provider', rateSourceConfig: null }],
     ['an unknown source', { rateSource: 'oracle', rateSourceConfig: null }],
   ])('refuses %s', (_label, source) => {
     expect(() => read({ holdings: [holding(source)], rates: [rate()] })).toThrow(ValidationError);
@@ -72,7 +72,7 @@ describe('readCustomCurrencyDefinitions', () => {
     expect(() => read({ holdings: [holding(source)], rates: [] })).toThrow(ValidationError);
   });
 
-  it('clears the header names of an HTTP source', () => {
+  it('clears the header names of an HTTP source and flags that they were dropped', () => {
     const config = {
       urlTemplate: 'https://rates.example.com/{code}',
       jsonPath: 'price',
@@ -84,19 +84,47 @@ describe('readCustomCurrencyDefinitions', () => {
       rates: [rate()],
     });
 
-    expect(definitions.get('USDT')?.rateSourceSetting).toEqual({
-      rateSource: 'http',
-      rateSourceConfig: { ...config, headerNames: [] },
+    expect(definitions.get('USDT')).toMatchObject({
+      rateSourceSetting: { rateSource: 'http', rateSourceConfig: { ...config, headerNames: [] } },
+      headersDropped: true,
     });
   });
 
+  it('does not flag an HTTP source that had no headers', () => {
+    const config = { urlTemplate: 'https://rates.example.com/{code}', jsonPath: 'price', quoteCurrency: 'USD' };
+    const definitions = read({
+      holdings: [holding({ rateSource: 'http', rateSourceConfig: config })],
+      rates: [rate()],
+    });
+
+    expect(definitions.get('USDT')?.headersDropped).toBe(false);
+  });
+
   it('keeps rates in several ISO quotes and holds each quote', () => {
-    const archive = archiveOf({ holdings: [holding()], rates: [rate(), rate({ quoteCode: 'EUR' })] });
+    const archive = archiveOf({
+      holdings: [holding()],
+      rates: [rate(), rate({ quoteCode: 'EUR', effectiveDate: '2026-02-01' })],
+    });
 
     readCustomCurrencyDefinitions({ archive, isoCodes: ISO_CODES });
 
     const held = archive.data.get('users-currencies')!.map((row) => row.currencyCode);
     expect(held.toSorted()).toEqual(['EUR', 'USD', 'USDT']);
+  });
+
+  it('drops the rates quoted in a custom currency and keeps its own', () => {
+    const inverse = rate({ baseCode: 'USD', quoteCode: 'USDT', rate: '999' });
+    const archive = archiveOf({ holdings: [holding()], rates: [rate(), inverse] });
+
+    readCustomCurrencyDefinitions({ archive, isoCodes: ISO_CODES });
+
+    expect(archive.data.get('user-exchange-rates')).toEqual([rate()]);
+  });
+
+  it('refuses a custom currency whose only rate is quoted in it', () => {
+    const inverse = rate({ baseCode: 'USD', quoteCode: 'USDT', rate: '2' });
+
+    expect(() => read({ holdings: [holding()], rates: [inverse] })).toThrow(ValidationError);
   });
 
   it('refuses a custom currency without a positive rate of its own', () => {

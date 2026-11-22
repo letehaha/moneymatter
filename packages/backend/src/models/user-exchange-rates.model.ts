@@ -41,8 +41,9 @@ export default class UserExchangeRates extends Model {
   date!: Date;
 
   /**
-   * The calendar day the rate starts to apply. A custom currency is valued with the latest row on or
-   * before the day of the conversion; a pair of ISO currencies has a single row, applied to every day.
+   * The calendar day the rate starts to apply. A custom currency holds at most one row per day, in any
+   * ISO quote, and is valued with the latest row on or before the day of the conversion; a pair of ISO
+   * currencies has a single row, applied to every day.
    */
   @Column({ allowNull: false, type: DataType.DATEONLY, primaryKey: true })
   effectiveDate!: string;
@@ -137,27 +138,14 @@ export type UpdateExchangeRatePair = Pick<UserExchangeRatesAttributes, 'baseCode
   effectiveDate?: string;
 };
 
-/**
- * Stop the user's connected-currency flag from letting the market overwrite a rate they just set. An
- * ISO currency's rate source follows the flag, so it moves to the user's own rates too; a custom
- * currency keeps the source it has.
- */
+/** Stop the user's connected-currency flag from letting the market overwrite a rate they just set. */
 const disableLiveRates = async ({ userId, baseCode }: { userId: number; baseCode: string }): Promise<void> => {
-  const currency = (await Currencies.default.findOne({
-    where: { code: baseCode },
-    raw: true,
-    attributes: ['code', 'isCustom'],
-  }))!;
-
-  await UsersCurrencies.default.update(
-    { liveRateUpdate: false, ...(currency.isCustom ? {} : { rateSource: 'manual' as const }) },
-    { where: { userId, currencyCode: currency.code } },
-  );
+  await UsersCurrencies.default.update({ liveRateUpdate: false }, { where: { userId, currencyCode: baseCode } });
 };
 
 /**
- * Write a rate that applies from one day on. An existing rate of the same pair and day is replaced
- * and every other day is left alone. The currencies' live-rate flags are not touched.
+ * Write a manual rate that applies from one day on. An existing rate of the same pair and day is
+ * replaced (whatever its source) and every other day is left alone. The live-rate flags are not touched.
  */
 export const writeDatedRate = async ({
   userId,
@@ -177,6 +165,11 @@ export const writeDatedRate = async ({
 
   return UserExchangeRates.create({ ...where, rate: pairItem.rate, source: 'manual' }, { returning: true });
 };
+
+export const datedIsoPairError = ({ pair }: { pair: ExchangeRatePair }) =>
+  new ValidationError({
+    message: `The rate of ${pair.baseCode}/${pair.quoteCode} applies to every day: only a pair with a custom currency takes an effective date.`,
+  });
 
 export async function updateRates({
   userId,
@@ -210,11 +203,7 @@ export async function updateRates({
     });
     const isDatedPair = currencies.some((item) => item.isCustom);
 
-    if (pairItem.effectiveDate && !isDatedPair) {
-      throw new ValidationError({
-        message: `The rate of ${pairItem.baseCode}/${pairItem.quoteCode} applies to every day: only a pair with a custom currency takes an effective date.`,
-      });
-    }
+    if (pairItem.effectiveDate && !isDatedPair) throw datedIsoPairError({ pair: pairItem });
 
     const foundItem = isDatedPair
       ? null

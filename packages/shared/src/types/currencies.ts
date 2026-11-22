@@ -82,14 +82,11 @@ export interface UpdateCustomCurrencyBody extends EntityLogoWritePayload {
 }
 
 /**
- * Where a currency's rates come from for one user. `provider` is the market feed of ISO currencies.
- * A custom currency has no market feed and takes `manual`, `peg`, `coingecko` or `http`.
+ * Where a custom currency's rates come from for one user. An ISO currency stays on `manual`: its
+ * live-rate flag picks between the market feed and the user's own rate.
  */
-export const CURRENCY_RATE_SOURCES = ['provider', 'manual', 'peg', 'coingecko', 'http'] as const;
+export const CURRENCY_RATE_SOURCES = ['manual', 'peg', 'coingecko', 'http'] as const;
 export type CurrencyRateSource = (typeof CURRENCY_RATE_SOURCES)[number];
-
-/** Rate sources an ISO currency can take; the others price custom currencies only. */
-export const ISO_CURRENCY_RATE_SOURCES = ['provider', 'manual'] as const satisfies readonly CurrencyRateSource[];
 
 /** Quote currency of the synced sources when the config names none. */
 export const DEFAULT_RATE_SOURCE_QUOTE_CURRENCY = 'USD';
@@ -176,7 +173,7 @@ export type TestCurrencyRateSourceResponse =
 
 /** Body of `PUT /user/currencies/:code/rate-source`. */
 export type UpdateCurrencyRateSourceBody =
-  | { rateSource: 'provider' | 'manual' }
+  | { rateSource: 'manual' }
   | { rateSource: 'peg'; config: PegRateSourceConfig }
   | {
       rateSource: 'coingecko';
@@ -186,9 +183,9 @@ export type UpdateCurrencyRateSourceBody =
     }
   | { rateSource: 'http'; config: HttpRateSourceInput };
 
-/** A currency's saved rate source; the config is `null` for `provider` and `manual`. */
+/** A currency's saved rate source; the config is `null` for `manual`. */
 export type CurrencyRateSourceSetting =
-  | { rateSource: 'provider' | 'manual'; rateSourceConfig: null }
+  | { rateSource: 'manual'; rateSourceConfig: null }
   | { rateSource: 'peg'; rateSourceConfig: PegRateSourceConfig }
   | { rateSource: 'coingecko'; rateSourceConfig: CoingeckoRateSourceConfig }
   | { rateSource: 'http'; rateSourceConfig: HttpRateSourceConfig };
@@ -230,9 +227,9 @@ export interface UserCurrencyModel extends EntityLogoFields {
   symbolOverride: string | null;
   /** Raw custom definition: its decimals. `currency` already carries them; always `null` on an ISO currency. */
   decimalsOverride: number | null;
-  /** Where the currency's rates come from; `provider` until the user picks another source. */
+  /** Where the currency's rates come from; `manual` until the user picks another source for a custom currency. */
   rateSource: CurrencyRateSource;
-  /** Settings of the source; `null` for `provider` and `manual`. */
+  /** Settings of the source; `null` for `manual`. */
   rateSourceConfig: PegRateSourceConfig | CoingeckoRateSourceConfig | HttpRateSourceConfig | null;
   currency?: CurrencyModel;
   user?: UserModel;
@@ -244,8 +241,11 @@ export interface ExchangeRatesModel {
   rate: number;
 }
 
-/** Where a stored user rate came from. */
-export const USER_EXCHANGE_RATE_SOURCES = ['manual', 'coingecko', 'http'] as const;
+/**
+ * Where a stored user rate came from. `initial` is the rate a custom currency was created with: a
+ * synced source may replace it on its day, and a manual edit of that day makes it `manual`.
+ */
+export const USER_EXCHANGE_RATE_SOURCES = ['manual', 'initial', 'coingecko', 'http'] as const;
 export type UserExchangeRateSource = (typeof USER_EXCHANGE_RATE_SOURCES)[number];
 
 export interface UserExchangeRatesModel extends ExchangeRatesModel {

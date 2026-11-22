@@ -9,6 +9,7 @@
         :label="`1 ${currency.currency?.code} =`"
         :placeholder="$t('settings.currencies.exchangeRate.ratePlaceholder')"
         :disabled="isLiveRateEnabled"
+        data-testid="manual-rate-base"
         @focus="onBaseFocus"
       />
       <input-field
@@ -16,13 +17,14 @@
         type="number"
         only-positive
         class="min-w-0 @[26rem]/currencies:flex-1"
-        :label="`1 ${currency.quoteCode} =`"
+        :label="`1 ${quoteCode} =`"
         :placeholder="$t('settings.currencies.exchangeRate.ratePlaceholder')"
         :disabled="isLiveRateEnabled"
+        data-testid="manual-rate-quote"
         @focus="onQuoteFocus"
       />
       <DateField
-        v-if="currency.isCustomCurrency"
+        v-if="currency.isCustomCurrency && !datedRate"
         v-model="effectiveDate"
         mode="date"
         class="min-w-0 @[26rem]/currencies:flex-1"
@@ -36,6 +38,7 @@
         class="min-w-24 shrink-0"
         :disabled="!canSubmit || isFormDisabled"
         :loading="isFormDisabled"
+        data-testid="manual-rate-save"
         @click="onSubmitHandler"
       >
         {{ $t('settings.currencies.exchangeRate.saveButton') }}
@@ -43,11 +46,11 @@
     </div>
 
     <template v-if="currency.isCustomCurrency">
-      <p class="text-muted-foreground mt-4 flex items-start gap-1 text-xs leading-5">
+      <p v-if="!datedRate" class="text-muted-foreground mt-4 flex items-start gap-1 text-xs leading-5">
         <InfoIcon class="text-primary-text mt-1 size-3.5 shrink-0" />
-        {{ $t('settings.currencies.custom.rateHint', { code: currency.quoteCode }) }}
+        {{ $t('settings.currencies.custom.rateHint', { code: quoteCode }) }}
       </p>
-      <p class="text-muted-foreground mt-2 flex items-start gap-1 text-xs leading-5">
+      <p v-if="!datedRate" class="text-muted-foreground mt-2 flex items-start gap-1 text-xs leading-5">
         <InfoIcon class="text-primary-text mt-1 size-3.5 shrink-0" />
         {{ $t('settings.currencies.rateSource.manual.datedHint') }}
       </p>
@@ -85,9 +88,10 @@ import InputField from '@/components/fields/input-field.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import Checkbox from '@/components/lib/ui/checkbox/Checkbox.vue';
 import { useNotificationCenter } from '@/components/notification-center';
-import { API_ERROR_CODES } from '@bt/shared/types';
-import { format, isToday } from 'date-fns';
+import { extractApiErrorMessage } from '@/js/errors';
+import type { CurrencyRateHistoryItem } from '@bt/shared/types';
 import { InfoIcon } from '@lucide/vue';
+import { format, isToday } from 'date-fns';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -99,6 +103,8 @@ const API_DATE_FORMAT = 'yyyy-MM-dd';
 const props = defineProps<{
   currency: CurrencyWithExchangeRate;
   isFormDisabled: boolean;
+  /** A stored rate of a custom currency to edit in place: the write keeps its quote and its day. */
+  datedRate?: Pick<CurrencyRateHistoryItem, 'quoteCode' | 'rate' | 'effectiveDate'>;
 }>();
 
 const emit = defineEmits<{
@@ -109,36 +115,50 @@ const emit = defineEmits<{
 const { addSuccessNotification, addWarningNotification, addErrorNotification } = useNotificationCenter();
 const { t } = useI18n();
 
-// A custom-rate change re-anchors this user's account balances to the new rate.
-// When no market rate is available for an account's currency yet, the backend
-// keeps that account's stale base-currency value and reports it as `failed`; warn
-// the user so the unchanged balance isn't mistaken for the rate not saving.
-const notifyIfBalancesNotRefreshed = (failed: number) => {
+// A rate change re-values account balances; `failed` counts accounts left on their old base value
+// for lack of a market rate, so the unchanged balance is not mistaken for the rate not saving.
+const notifyIfBalancesNotRefreshed = ({ failed }: { failed: number }) => {
   if (failed > 0) {
     addWarningNotification(t('settings.currencies.exchangeRate.balancesNotRefreshed', { count: failed }));
   }
 };
 
-const form = reactive<{ baseRate: number | string; quoteRate: number | string }>({
-  baseRate: props.currency.rate,
-  quoteRate: props.currency.quoteRate,
-});
+const quoteCode = computed(() => props.datedRate?.quoteCode ?? props.currency.quoteCode);
+const savedRates = computed(() =>
+  props.datedRate
+    ? { baseRate: props.datedRate.rate, quoteRate: calculateRatio({ value: props.datedRate.rate, isCustom: true }) }
+    : { baseRate: props.currency.rate, quoteRate: props.currency.quoteRate },
+);
+
+const form = reactive<{ baseRate: number | string; quoteRate: number | string }>({ ...savedRates.value });
 const isBaseEditing = ref(false);
 const isQuoteEditing = ref(false);
 // A custom currency has no market rate to follow, so only the user's own rate applies.
 const isLiveRateEnabled = ref<boolean>(!props.currency.isCustomCurrency && !props.currency.custom);
 
-// A rate of a custom currency starts to apply on a day of its own; today unless the user picks another.
 const effectiveDate = ref(new Date());
 const effectiveDateOptions = { maxDate: new Date() };
-const isDateChanged = computed(() => !isToday(effectiveDate.value));
-// Rates between ISO currencies apply to every day and refuse a date.
-const datedFields = computed(() =>
-  props.currency.isCustomCurrency ? { effectiveDate: format(effectiveDate.value, API_DATE_FORMAT) } : {},
+const isDateChanged = computed(
+  () => props.currency.isCustomCurrency && !props.datedRate && !isToday(effectiveDate.value),
 );
+// Today is left to the API: it dates rates by the UTC day, which the local "today" misses near midnight.
+const datedFields = computed(() => {
+  if (props.datedRate) return { effectiveDate: props.datedRate.effectiveDate };
+  return isDateChanged.value ? { effectiveDate: format(effectiveDate.value, API_DATE_FORMAT) } : {};
+});
+
+// The custom-currency editor stays open across saves: stale inputs would let Save write back a rate
+// that was edited or removed in the history list.
+const resetForm = () => {
+  Object.assign(form, savedRates.value);
+  effectiveDate.value = new Date();
+  isBaseEditing.value = false;
+  isQuoteEditing.value = false;
+};
+watch([() => savedRates.value.baseRate, () => savedRates.value.quoteRate], resetForm);
 
 const isRateChanged = computed(
-  () => +props.currency.rate !== +form.baseRate || +props.currency.quoteRate !== +form.quoteRate,
+  () => +savedRates.value.baseRate !== +form.baseRate || +savedRates.value.quoteRate !== +form.quoteRate,
 );
 const hasRateValue = computed(() => Number(form.baseRate) > 0 && Number(form.quoteRate) > 0);
 
@@ -148,12 +168,9 @@ const shouldShowSaveButton = computed(() => {
   return !isLiveRateEnabled.value || props.currency.custom;
 });
 
-// Live off: only actionable once the rate (or a custom currency's start day) changed and both rates
-// are usable. Live on: Save drops the custom rate.
-const canSubmit = computed(() =>
-  isLiveRateEnabled.value
-    ? true
-    : hasRateValue.value && (isRateChanged.value || (props.currency.isCustomCurrency && isDateChanged.value)),
+// Live on: Save drops the custom rate.
+const canSubmit = computed(
+  () => isLiveRateEnabled.value || (hasRateValue.value && (isRateChanged.value || isDateChanged.value)),
 );
 
 const onBaseFocus = () => {
@@ -189,28 +206,17 @@ watch(
 const deleteExchangeRates = async () => {
   try {
     const { remeasure } = await deleteCustomRate([
-      {
-        baseCode: props.currency.currency!.code,
-        quoteCode: props.currency.quoteCode,
-      },
-      {
-        baseCode: props.currency.quoteCode,
-        quoteCode: props.currency.currency!.code,
-      },
+      { baseCode: props.currency.currency!.code, quoteCode: quoteCode.value },
+      { baseCode: quoteCode.value, quoteCode: props.currency.currency!.code },
     ]);
 
     emit('submit');
 
     addSuccessNotification(t('settings.currencies.exchangeRate.successfullyUpdated'));
-    // Tolerate deploy skew: an older backend without the `remeasure` field returns a
-    // response without it, so guard the access rather than throw in the success path.
-    notifyIfBalancesNotRefreshed(remeasure?.failed ?? 0);
+    // An older backend without the `remeasure` field must not throw in the success path.
+    notifyIfBalancesNotRefreshed({ failed: remeasure?.failed ?? 0 });
   } catch (e: unknown) {
-    if ((e as any)?.data?.code === API_ERROR_CODES.validationError) {
-      addErrorNotification((e as any).data.message);
-      return;
-    }
-    addErrorNotification(t('settings.currencies.exchangeRate.errors.unexpectedError'));
+    addErrorNotification(extractApiErrorMessage(e) || t('settings.currencies.exchangeRate.errors.unexpectedError'));
   }
 };
 
@@ -219,40 +225,32 @@ const updateExchangeRates = async () => {
     const { remeasure } = await editUserCurrenciesExchangeRates([
       {
         baseCode: props.currency.currency!.code,
-        quoteCode: props.currency.quoteCode,
+        quoteCode: quoteCode.value,
         rate: Number(form.baseRate),
         ...datedFields.value,
       },
       {
-        baseCode: props.currency.quoteCode,
+        baseCode: quoteCode.value,
         quoteCode: props.currency.currency!.code,
         rate: Number(form.quoteRate),
         ...datedFields.value,
       },
     ]);
 
+    resetForm();
     emit('submit');
 
     addSuccessNotification(t('settings.currencies.exchangeRate.successfullyUpdated'));
-    // Tolerate deploy skew: an older backend without the `remeasure` field returns a
-    // response without it, so guard the access rather than throw in the success path.
-    notifyIfBalancesNotRefreshed(remeasure?.failed ?? 0);
+    // An older backend without the `remeasure` field must not throw in the success path.
+    notifyIfBalancesNotRefreshed({ failed: remeasure?.failed ?? 0 });
   } catch (e: unknown) {
-    if ((e as any)?.data?.code === API_ERROR_CODES.validationError) {
-      addErrorNotification((e as any).data.message);
-      return;
-    }
-    addErrorNotification(t('settings.currencies.exchangeRate.errors.updateFailed'));
+    addErrorNotification(extractApiErrorMessage(e) || t('settings.currencies.exchangeRate.errors.updateFailed'));
   }
 };
 
 const onSubmitHandler = async () => {
   emit('trigger-disabled', true);
-  if (!isLiveRateEnabled.value && (isRateChanged.value || (props.currency.isCustomCurrency && isDateChanged.value))) {
-    await updateExchangeRates();
-  } else if (isLiveRateEnabled.value) {
-    await deleteExchangeRates();
-  }
+  await (isLiveRateEnabled.value ? deleteExchangeRates() : updateExchangeRates());
   emit('trigger-disabled', false);
 };
 </script>

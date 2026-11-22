@@ -3,7 +3,7 @@ import { createGuardedFetch, isGuardBypassed } from '@common/utils/url-guard';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 
-import { fillUrlTemplate } from './index';
+import { fillUrlTemplate, JSON_PATH_TOKEN } from './index';
 
 const HTTP_SOURCE_TIMEOUT_MS = 5_000;
 const HTTP_SOURCE_MAX_RESPONSE_BYTES = 256 * 1024;
@@ -37,8 +37,6 @@ export const buildHttpRateUrl = ({
   return url;
 };
 
-const PATH_TOKEN = /\.?([A-Za-z0-9_-]+)|\[(\d+)\]/g;
-
 /**
  * Walks `path` (dot-separated keys and array positions, an optional leading `$`) through the parsed
  * JSON. Only own properties are followed, so `constructor` or `__proto__` never resolve. `undefined`
@@ -47,7 +45,7 @@ const PATH_TOKEN = /\.?([A-Za-z0-9_-]+)|\[(\d+)\]/g;
 export const readJsonPath = ({ json, path }: { json: unknown; path: string }): unknown => {
   let current: unknown = json;
 
-  for (const match of path.replace(/^\$/, '').matchAll(PATH_TOKEN)) {
+  for (const match of path.replace(/^\$/, '').matchAll(JSON_PATH_TOKEN)) {
     const key = match[1] ?? match[2]!;
 
     if (typeof current !== 'object' || current === null || !Object.hasOwn(current, key)) return undefined;
@@ -93,7 +91,7 @@ export const extractRate = ({ json, path }: { json: unknown; path: string }): nu
  * Lets go of the rest of a body without waiting for the transport to confirm: a cancel that is
  * awaited can stall behind a server that keeps the connection open, and the answer is known already.
  */
-const discard = (stream: { cancel: () => Promise<void> } | null | undefined): void => {
+const discard = ({ stream }: { stream: { cancel: () => Promise<void> } | null | undefined }): void => {
   stream?.cancel().catch(() => undefined);
 };
 
@@ -104,7 +102,7 @@ const readBodyWithLimit = async ({ response, maxBytes }: { response: Response; m
 
   const declared = Number(response.headers.get('content-length'));
   if (Number.isFinite(declared) && declared > maxBytes) {
-    discard(response.body);
+    discard({ stream: response.body });
     throw tooLarge();
   }
 
@@ -120,7 +118,7 @@ const readBodyWithLimit = async ({ response, maxBytes }: { response: Response; m
 
     received += value.byteLength;
     if (received > maxBytes) {
-      discard(reader);
+      discard({ stream: reader });
       throw tooLarge();
     }
 
@@ -131,7 +129,7 @@ const readBodyWithLimit = async ({ response, maxBytes }: { response: Response; m
 };
 
 // Duck-typed: the abort reason is a DOMException, which is not always an `Error` of this realm.
-const isAbort = (error: unknown): boolean => {
+const isAbort = ({ error }: { error: unknown }): boolean => {
   const name = (error as { name?: unknown } | null)?.name;
 
   return name === 'TimeoutError' || name === 'AbortError';
@@ -183,7 +181,7 @@ export const fetchBody = async ({
       throw new HttpRateSourceError({ reason: 'blocked', message: error.message });
     }
 
-    if (isAbort(error)) {
+    if (isAbort({ error })) {
       throw new HttpRateSourceError({
         reason: 'timeout',
         message: `The server did not answer within ${timeoutMs / 1000} seconds`,
@@ -198,7 +196,7 @@ export const fetchBody = async ({
   }
 
   if (!response.ok) {
-    discard(response.body);
+    discard({ stream: response.body });
     throw new HttpRateSourceError({ reason: 'http_status', message: `The server answered ${response.status}` });
   }
 
@@ -207,7 +205,7 @@ export const fetchBody = async ({
     body = await readBodyWithLimit({ response, maxBytes });
   } catch (error) {
     if (error instanceof HttpRateSourceError) throw error;
-    if (isAbort(error)) {
+    if (isAbort({ error })) {
       throw new HttpRateSourceError({
         reason: 'timeout',
         message: `The server did not finish answering within ${timeoutMs / 1000} seconds`,

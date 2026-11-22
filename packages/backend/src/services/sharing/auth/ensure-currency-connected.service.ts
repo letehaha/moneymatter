@@ -1,4 +1,3 @@
-import type { PegRateSourceConfig } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
@@ -9,9 +8,9 @@ import { LOGO_FIELD_KEYS } from '@services/brand-logos/apply-manual-logo-patch';
 import { withTransaction } from '@services/common/with-transaction';
 import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { lockUserCurrencies } from '@services/currencies/lock-user-currencies';
+import { findPeg } from '@services/currencies/rate-sources/peg';
 import { copyLogoImageIfPresent } from '@services/logo-images/logo-images.service';
 import pick from 'lodash/pick';
-import { Op } from 'sequelize';
 
 /**
  * Idempotently ensure that `currencyCode` is connected to the user and return
@@ -79,7 +78,7 @@ export const ensureUserCurrencyConnected = withTransaction(
     }
 
     const ownerRates = await UserExchangeRates.findAll({
-      where: { userId: ownerRow.userId, [Op.or]: [{ baseCode: currencyCode }, { quoteCode: currencyCode }] },
+      where: { userId: ownerRow.userId, baseCode: currencyCode },
       attributes: ['baseCode', 'quoteCode', 'rate', 'effectiveDate', 'source'],
       raw: true,
     });
@@ -87,9 +86,9 @@ export const ensureUserCurrencyConnected = withTransaction(
 
     // A peg values the currency without stored rows, so its config is copied. A synced source is not:
     // it would fetch on the user's behalf, and its encrypted headers belong to the owner.
-    const isPeg = ownerRow.rateSource === 'peg';
-    const quotes = new Set(ownerRates.filter((rate) => rate.baseCode === currencyCode).map((rate) => rate.quoteCode));
-    if (isPeg) quotes.add((ownerRow.rateSourceConfig as PegRateSourceConfig).pegCurrency);
+    const peg = await findPeg({ userId: ownerRow.userId, code: currencyCode });
+    const quotes = new Set(ownerRates.map((rate) => rate.quoteCode));
+    if (peg) quotes.add(peg.quoteCode);
     for (const quote of quotes) await UsersCurrencies.addCurrency({ userId, currencyCode: quote });
 
     return UsersCurrenciesModel.create({
@@ -100,8 +99,8 @@ export const ensureUserCurrencyConnected = withTransaction(
       nameOverride: ownerRow.nameOverride,
       symbolOverride: ownerRow.symbolOverride,
       decimalsOverride: ownerRow.decimalsOverride,
-      rateSource: isPeg ? 'peg' : 'manual',
-      rateSourceConfig: isPeg ? ownerRow.rateSourceConfig : null,
+      rateSource: peg ? 'peg' : 'manual',
+      rateSourceConfig: peg ? { pegCurrency: peg.quoteCode, factor: peg.factor } : null,
       ...pick(ownerRow, LOGO_FIELD_KEYS),
       // A logo blob has one owner row, which deletes it on edit or delete. A failed copy must not
       // fail the collaborator's write, so the copy goes without the image.

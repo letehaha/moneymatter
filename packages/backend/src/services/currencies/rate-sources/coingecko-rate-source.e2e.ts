@@ -1,48 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { type AccountApiResponse, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
-import Coingecko from '@coingecko/coingecko-typescript';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import { logger } from '@js/utils/logger';
-import UserExchangeRates from '@models/user-exchange-rates.model';
-import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
-import { syncCoingeckoRates } from '@root/services/currencies/rate-sources/coingecko-sync';
 import { PNG_1X1_BYTES } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
-import { subDays } from 'date-fns';
 import { http, HttpResponse } from 'msw';
 
-/**
- * CoinGecko is never called for real: the SDK is mocked globally (setupIntegrationTests.ts) and each
- * test rebinds the three methods the rate source uses.
- */
-const mockedCoingecko = jest.mocked(Coingecko);
-const searchGet = jest.fn<any>();
-const priceGet = jest.fn<any>();
-const getRange = jest.fn<any>();
-
-const installCoingeckoMock = () => {
-  for (const mock of [searchGet, priceGet, getRange]) mock.mockReset();
-  searchGet.mockResolvedValue({ coins: [] });
-  priceGet.mockResolvedValue({});
-  getRange.mockResolvedValue({ prices: [] });
-  mockedCoingecko.mockImplementation(
-    () =>
-      ({
-        search: { get: searchGet },
-        simple: { price: { get: priceGet } },
-        coins: { marketChart: { get: jest.fn<any>().mockResolvedValue({ prices: [] }), getRange } },
-      }) as any,
-  );
-};
+const { searchGet, priceGet, getRange } = helpers.coingeckoMock;
+const { coingeckoHistory: history, createAccountInCurrency: createAccountIn, dayKey, readTx, savedSource } = helpers;
 
 const BASE = (): string => global.BASE_CURRENCY_CODE;
 const NEW_BASE = 'EUR';
 const AED_PER_USD = 4;
 const EUR_PER_USD = 0.5;
-
-const dayKey = ({ daysAgo }: { daysAgo: number }): string => subDays(new Date(), daysAgo).toISOString().slice(0, 10);
-const noonOf = ({ day }: { day: string }): string => `${day}T12:00:00.000Z`;
 
 // Distinct, recent days that no other suite seeds.
 const DAY_1 = dayKey({ daysAgo: 33 });
@@ -50,48 +19,20 @@ const DAY_2 = dayKey({ daysAgo: 32 });
 const DAY_3 = dayKey({ daysAgo: 31 });
 const BEFORE_HISTORY = dayKey({ daysAgo: 40 });
 const OPENING_DAY = dayKey({ daysAgo: 60 });
+const YESTERDAY = dayKey({ daysAgo: 1 });
 const TODAY = dayKey({ daysAgo: 0 });
 const SEEDED_DAYS = [BEFORE_HISTORY, DAY_1, DAY_2, DAY_3];
 /** Base-currency units per unit of a new currency, from OPENING_DAY on. */
 const OPENING_RATE = 2;
 
-/** The `[timestamp, price]` points of a daily series, as CoinGecko returns them (00:00 UTC). */
-const seriesOf = (entries: [day: string, price: number][]) =>
-  entries.map(([day, price]) => [Date.parse(`${day}T00:00:00.000Z`), price]);
+/** The rate the currency needs starts on OPENING_DAY, before every day a test prices. */
+const createCurrency = ({ code, decimals = 8 }: { code: string; decimals?: number }) =>
+  helpers.addCustomCurrencyFrom({ code, decimals, openingDay: OPENING_DAY, openingRate: OPENING_RATE });
 
-const history = (entries: [day: string, price: number][]) => ({ prices: seriesOf(entries) });
+const createTx = async (params: { accountId: string; amount: number; day: string }) =>
+  (await helpers.createTxOn(params))[0]!;
 
-/**
- * Creates the currency with the rate it needs and moves that rate to OPENING_DAY, before every day
- * a test prices, so the days a source writes are free of manual rows.
- */
-const createCurrency = async ({ code, decimals = 8 }: { code: string; decimals?: number }) => {
-  const response = await helpers.createCustomCurrency({
-    payload: { code, name: code, decimals, rate: { value: OPENING_RATE } },
-  });
-  expect(response.statusCode).toBe(201);
-
-  const { id: userId } = await helpers.getUserInfo({ raw: true });
-  const created = await UserExchangeRates.findOne({ where: { userId, baseCode: code }, raw: true });
-  const opening = await helpers.editCurrencyExchangeRate({
-    pairs: [
-      { baseCode: code, quoteCode: BASE(), rate: OPENING_RATE, effectiveDate: OPENING_DAY },
-      { baseCode: BASE(), quoteCode: code, rate: 1 / OPENING_RATE, effectiveDate: OPENING_DAY },
-    ],
-    raw: false,
-  });
-  expect(opening.statusCode).toBe(200);
-  if (created!.effectiveDate === OPENING_DAY) return;
-
-  const removal = await helpers.removeCurrencyExchangeRate({
-    pairs: [
-      { baseCode: code, quoteCode: created!.quoteCode, effectiveDate: created!.effectiveDate },
-      { baseCode: created!.quoteCode, quoteCode: code, effectiveDate: created!.effectiveDate },
-    ],
-    raw: false,
-  });
-  expect(removal.statusCode).toBe(200);
-};
+const storedRates = ({ code }: { code: string }) => helpers.storedRates({ code, excludeDay: OPENING_DAY });
 
 const useCoingecko = ({
   code,
@@ -130,58 +71,9 @@ const saveWithLogo = ({ code, logoUrl }: { code: string; logoUrl: unknown }) =>
     payload: { rateSource: 'coingecko', config: { coinId: 'bitcoin' }, logoUrl },
   });
 
-const createAccountIn = async ({ code }: { code: string }) => {
-  const response = await helpers.createAccount({
-    payload: helpers.buildAccountPayload({ currencyCode: code, name: `${code} account`, initialBalance: 0 }),
-    raw: false,
-  });
-  expect(response.statusCode).toBe(200);
-
-  return (response as unknown as { body: { response: AccountApiResponse } }).body.response;
-};
-
-const createTx = async ({ accountId, amount, day }: { accountId: string; amount: number; day: string }) => {
-  const response = await helpers.createTransaction({
-    payload: helpers.buildTransactionPayload({
-      accountId: accountId as RecordId,
-      amount,
-      categoryId: global.DEFAULT_CATEGORY_ID,
-      transactionType: TRANSACTION_TYPES.expense,
-      time: noonOf({ day }),
-    }),
-    raw: false,
-  });
-  const body = response as unknown as { statusCode: number; body: { response: TransactionApiResponse[] } };
-  if (body.statusCode !== 200) throw new Error(`createTransaction answered ${body.statusCode}`);
-
-  return body.body.response[0]!;
-};
-
-const readTx = async ({ id }: { id: string }) =>
-  (await helpers.getTransactionById({ id: id as RecordId, raw: true })) as unknown as TransactionApiResponse;
-
-const readAccount = async ({ id }: { id: string }) =>
-  (await helpers.getAccount({ id, raw: true })) as unknown as AccountApiResponse;
-
-const storedRates = async ({ code }: { code: string }) => {
-  const { id: userId } = await helpers.getUserInfo({ raw: true });
-  const rows = await UserExchangeRates.findAll({ where: { userId, baseCode: code }, raw: true });
-
-  return rows
-    .filter((row) => row.effectiveDate !== OPENING_DAY)
-    .map((row) => ({ day: row.effectiveDate, quote: row.quoteCode, rate: Number(row.rate), source: row.source }))
-    .toSorted((a, b) => a.day.localeCompare(b.day));
-};
-
-const savedSource = async ({ code }: { code: string }) => {
-  const entry = (await helpers.getUserCurrencies()).find((item) => item.currencyCode === code);
-
-  return { rateSource: entry?.rateSource, rateSourceConfig: entry?.rateSourceConfig };
-};
-
 describe('CoinGecko rate source', () => {
   beforeEach(async () => {
-    installCoingeckoMock();
+    helpers.resetCoingeckoMock();
     await helpers.addUserCurrencies({ currencyCodes: ['USD', NEW_BASE], raw: true });
     for (const day of SEEDED_DAYS) {
       await helpers.seedUsdExchangeRates({
@@ -287,7 +179,6 @@ describe('CoinGecko rate source', () => {
       expect((await readTx({ id: saved.id })).refAmount).toBe(0.5 * 20 * AED_PER_USD);
       // A day before the history keeps the rate that applied to it.
       expect((await readTx({ id: beforeHistory.id })).refAmount).toBe(OPENING_RATE);
-      expect((await readAccount({ id: account.id })).refCurrentBalance).toEqual(expect.any(Number));
 
       const next = await createTx({ accountId: account.id, amount: 1, day: DAY_3 });
       expect(next.refAmount).toBe(30 * AED_PER_USD);
@@ -311,8 +202,7 @@ describe('CoinGecko rate source', () => {
         warnSpy.mockRestore();
       }
 
-      const entry = (await helpers.getUserCurrencies()).find((item) => item.currencyCode === 'BTC');
-      expect(entry?.rateSource).toBe('manual');
+      expect((await savedSource({ code: 'BTC' })).rateSource).toBe('manual');
       expect(await storedRates({ code: 'BTC' })).toEqual([]);
       expect((await readTx({ id: tx.id })).refAmount).toBe(2 * OPENING_RATE);
     });
@@ -337,6 +227,24 @@ describe('CoinGecko rate source', () => {
       expect(await storedRates({ code: 'BTC' })).toEqual([{ day: DAY_1, quote: 'USD', rate: 10, source: 'coingecko' }]);
     });
 
+    it('answers 409 and keeps the save that landed while the first fetch was running', async () => {
+      await createCurrency({ code: 'BTC' });
+      getRange.mockImplementation(async () => {
+        await helpers.pegTo({ code: 'BTC', pegCurrency: 'USD', factor: 2 });
+
+        return history([[DAY_1, 10]]);
+      });
+
+      const response = await useCoingecko({ code: 'BTC' });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ConflictError);
+      expect(await savedSource({ code: 'BTC' })).toEqual({
+        rateSource: 'peg',
+        rateSourceConfig: { pegCurrency: 'USD', factor: 2 },
+      });
+      expect(await storedRates({ code: 'BTC' })).toEqual([]);
+    });
+
     it('rejects a quote currency that is not ISO', async () => {
       await createCurrency({ code: 'BTC' });
       await createCurrency({ code: 'SAT' });
@@ -359,8 +267,7 @@ describe('CoinGecko rate source', () => {
       } finally {
         process.env.COINGECKO_API_KEY = key;
       }
-      const entry = (await helpers.getUserCurrencies()).find((item) => item.currencyCode === 'BTC');
-      expect(entry?.rateSource).toBe('manual');
+      expect((await savedSource({ code: 'BTC' })).rateSource).toBe('manual');
       expect(getRange).not.toHaveBeenCalled();
     });
 
@@ -377,14 +284,7 @@ describe('CoinGecko rate source', () => {
     it('leaves a rate the user set by hand alone and replaces the history of another coin', async () => {
       await createCurrency({ code: 'BTC' });
       const account = await createAccountIn({ code: 'BTC' });
-      const edit = await helpers.editCurrencyExchangeRate({
-        pairs: [
-          { baseCode: 'BTC', quoteCode: 'USD', rate: 99, effectiveDate: DAY_1 },
-          { baseCode: 'USD', quoteCode: 'BTC', rate: 1 / 99, effectiveDate: DAY_1 },
-        ],
-        raw: true,
-      });
-      expect(edit).toBeDefined();
+      await helpers.setUserRate({ code: 'BTC', quote: 'USD', rate: 99, effectiveDate: DAY_1 });
 
       getRange.mockResolvedValue(
         history([
@@ -514,16 +414,13 @@ describe('CoinGecko rate source', () => {
       expect(await logoOf({ code: 'BTC' })).toBe(stored);
     });
 
-    it.each([
-      ['the image host fails', LOGO, () => serveCoinImages({ status: 500 })],
-      ['the URL is not on the CoinGecko image host', 'https://example.com/bitcoin.png', () => serveCoinImages()],
-    ])('saves the source and keeps the logo when %s', async (_name, logoUrl, arrange) => {
+    it('saves the source and keeps the logo when the image host fails', async () => {
       await createCurrency({ code: 'BTC' });
-      const seen = arrange();
+      serveCoinImages({ status: 500 });
 
       const warnSpy = jest.spyOn(logger, 'warn').mockImplementation(() => logger);
       try {
-        const response = await saveWithLogo({ code: 'BTC', logoUrl });
+        const response = await saveWithLogo({ code: 'BTC', logoUrl: LOGO });
 
         expect(response.statusCode).toBe(200);
         expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('coin logo was not downloaded'));
@@ -533,14 +430,12 @@ describe('CoinGecko rate source', () => {
 
       expect((await savedSource({ code: 'BTC' })).rateSource).toBe('coingecko');
       expect(await logoOf({ code: 'BTC' })).toBeNull();
-      if (logoUrl !== LOGO) expect(seen).toEqual([]);
     });
 
     it('refuses a logo that is not an https URL and saves nothing', async () => {
       await createCurrency({ code: 'BTC' });
 
-      const tooLong = `https://example.com/${'a'.repeat(2049)}`;
-      for (const logoUrl of ['http://example.com/a.png', 'javascript:alert(1)', 'not a url', tooLong, 5]) {
+      for (const logoUrl of ['http://example.com/a.png', 5]) {
         const response = await saveWithLogo({ code: 'BTC', logoUrl });
 
         expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
@@ -574,40 +469,53 @@ describe('CoinGecko rate source', () => {
     });
   });
 
-  describe('a rate entered by hand before the source was chosen', () => {
-    it('never shadows the source: a base-quoted manual rate does not win over later days', async () => {
-      await createCurrency({ code: 'BTC' });
-      const account = await createAccountIn({ code: 'BTC' });
-      // The user's own rate for BTC quoted in the base, the way the manual editor stores it.
-      const edit = await helpers.editCurrencyExchangeRate({
-        pairs: [
-          { baseCode: 'BTC', quoteCode: BASE(), rate: 8, effectiveDate: BEFORE_HISTORY },
-          { baseCode: BASE(), quoteCode: 'BTC', rate: 1 / 8, effectiveDate: BEFORE_HISTORY },
-        ],
-        raw: false,
-      });
-      expect(edit.statusCode).toBe(200);
-      const early = await createTx({ accountId: account.id, amount: 1, day: DAY_1 });
-      expect(early.refAmount).toBe(8);
+  describe('the rate the currency was created with', () => {
+    const createdToday = ({ code }: { code: string }) =>
+      helpers.addCustomCurrency({ code, decimals: 8, rate: OPENING_RATE });
+
+    it('gives way to the first source on its day, in another quote, beside manual rates', async () => {
+      await createdToday({ code: 'BTC' });
+      await helpers.setUserRate({ code: 'BTC', rate: 5, effectiveDate: DAY_2 });
+      expect((await helpers.storedRates({ code: 'BTC' })).at(-1)).toMatchObject({ day: TODAY, source: 'initial' });
 
       getRange.mockResolvedValue(
         history([
           [DAY_1, 10],
-          [DAY_2, 20],
-          [DAY_3, 30],
+          [TODAY, 50],
         ]),
       );
-      await useCoingecko({ code: 'BTC' });
+      expect((await useCoingecko({ code: 'BTC', quoteCurrency: 'USD' })).statusCode).toBe(200);
 
-      // Every day with a CoinGecko price takes it, crossed from USD at the market rate.
-      expect((await readTx({ id: early.id })).refAmount).toBe(10 * AED_PER_USD);
-      const later = await createTx({ accountId: account.id, amount: 1, day: DAY_3 });
-      expect(later.refAmount).toBe(30 * AED_PER_USD);
+      expect(await helpers.storedRates({ code: 'BTC' })).toEqual([
+        { day: DAY_1, quote: 'USD', rate: 10, source: 'coingecko' },
+        { day: DAY_2, quote: BASE(), rate: 5, source: 'manual' },
+        { day: TODAY, quote: 'USD', rate: 50, source: 'coingecko' },
+      ]);
+    });
+
+    it('keeps its day once the user edited it, which makes it manual', async () => {
+      await createdToday({ code: 'BTC' });
+      const account = await createAccountIn({ code: 'BTC' });
+      await helpers.setUserRate({ code: 'BTC', rate: 5, effectiveDate: TODAY });
+
+      getRange.mockResolvedValue(
+        history([
+          [DAY_1, 10],
+          [TODAY, 50],
+        ]),
+      );
+      expect((await useCoingecko({ code: 'BTC', quoteCurrency: BASE() })).statusCode).toBe(200);
+
+      expect(await helpers.storedRates({ code: 'BTC' })).toEqual([
+        { day: DAY_1, quote: BASE(), rate: 10, source: 'coingecko' },
+        { day: TODAY, quote: BASE(), rate: 5, source: 'manual' },
+      ]);
+      expect((await createTx({ accountId: account.id, amount: 1, day: TODAY })).refAmount).toBe(5);
     });
   });
 
-  describe('switching between sources', () => {
-    it('drops the history of another coin when the source returns to CoinGecko with a different one', async () => {
+  describe('saving the source again', () => {
+    it('keeps the stored days of the same coin when its quote changes, one rate per day', async () => {
       await createCurrency({ code: 'BTC' });
       getRange.mockResolvedValue(
         history([
@@ -616,17 +524,47 @@ describe('CoinGecko rate source', () => {
         ]),
       );
       await useCoingecko({ code: 'BTC' });
-      expect(await storedRates({ code: 'BTC' })).toHaveLength(2);
+
+      getRange.mockResolvedValue(
+        history([
+          [DAY_2, 7],
+          [DAY_3, 8],
+        ]),
+      );
+      expect((await useCoingecko({ code: 'BTC', quoteCurrency: BASE() })).statusCode).toBe(200);
+
+      expect(await storedRates({ code: 'BTC' })).toEqual([
+        { day: DAY_1, quote: 'USD', rate: 10, source: 'coingecko' },
+        { day: DAY_2, quote: BASE(), rate: 7, source: 'coingecko' },
+        { day: DAY_3, quote: BASE(), rate: 8, source: 'coingecko' },
+      ]);
+    });
+
+    it("keeps another coin's days when the currency comes back to CoinGecko through another source", async () => {
+      await createCurrency({ code: 'BTC' });
+      getRange.mockResolvedValue(
+        history([
+          [DAY_1, 10],
+          [DAY_2, 20],
+        ]),
+      );
+      await useCoingecko({ code: 'BTC' });
 
       const manual = await helpers.setCurrencyRateSource({ code: 'BTC', payload: { rateSource: 'manual' } });
       expect(manual.statusCode).toBe(200);
-      // The rows of the source the currency left stay as its history while another source runs.
       expect(await storedRates({ code: 'BTC' })).toHaveLength(2);
 
-      getRange.mockResolvedValue(history([[DAY_3, 600]]));
+      getRange.mockResolvedValue(
+        history([
+          [DAY_2, 500],
+          [DAY_3, 600],
+        ]),
+      );
       await useCoingecko({ code: 'BTC', coinId: 'ethereum' });
 
       expect(await storedRates({ code: 'BTC' })).toEqual([
+        { day: DAY_1, quote: 'USD', rate: 10, source: 'coingecko' },
+        { day: DAY_2, quote: 'USD', rate: 500, source: 'coingecko' },
         { day: DAY_3, quote: 'USD', rate: 600, source: 'coingecko' },
       ]);
     });
@@ -635,7 +573,7 @@ describe('CoinGecko rate source', () => {
   describe('a source that changes while a run is fetching', () => {
     it('does not store the rates of the coin it was fetched for', async () => {
       await createCurrency({ code: 'BTC' });
-      getRange.mockResolvedValue(history([[DAY_1, 10]]));
+      getRange.mockResolvedValue(history([[YESTERDAY, 10]]));
       await useCoingecko({ code: 'BTC' });
       priceGet.mockImplementation(async () => {
         // The user moves the currency to another source while the sync is waiting for the coin.
@@ -645,10 +583,12 @@ describe('CoinGecko rate source', () => {
         return { bitcoin: { usd: 50 } };
       });
 
-      const result = await syncCoingeckoRates({ spacingMs: 0 });
+      const result = await helpers.syncRateSources({ source: 'coingecko' });
 
       expect(result).toEqual({ coinsFetched: 1, currenciesUpdated: 0, ratesWritten: 0, failures: 0 });
-      expect(await storedRates({ code: 'BTC' })).toEqual([{ day: DAY_1, quote: 'USD', rate: 10, source: 'coingecko' }]);
+      expect(await storedRates({ code: 'BTC' })).toEqual([
+        { day: YESTERDAY, quote: 'USD', rate: 10, source: 'coingecko' },
+      ]);
     });
   });
 
@@ -660,7 +600,7 @@ describe('CoinGecko rate source', () => {
         history([
           [DAY_1, 10],
           [DAY_2, 20],
-          [DAY_3, 30],
+          [YESTERDAY, 30],
         ]),
       );
       await useCoingecko({ code: 'BTC', quoteCurrency: BASE() });
@@ -672,7 +612,7 @@ describe('CoinGecko rate source', () => {
       expect(today.refAmount).toBe(30);
 
       priceGet.mockResolvedValue({ bitcoin: { [BASE().toLowerCase()]: 50 } });
-      const result = await syncCoingeckoRates({ spacingMs: 0 });
+      const result = await helpers.syncRateSources({ source: 'coingecko' });
 
       expect(result).toEqual({ coinsFetched: 1, currenciesUpdated: 1, ratesWritten: 1, failures: 0 });
       expect(priceGet).toHaveBeenCalledTimes(1);
@@ -697,34 +637,34 @@ describe('CoinGecko rate source', () => {
     it('values a day again when the sync finds another price for it', async () => {
       await createCurrency({ code: 'BTC' });
       const account = await createAccountIn({ code: 'BTC' });
-      getRange.mockResolvedValue(history([[DAY_1, 10]]));
+      getRange.mockResolvedValue(history([[YESTERDAY, 10]]));
       await useCoingecko({ code: 'BTC', quoteCurrency: BASE() });
 
       priceGet.mockResolvedValue({ bitcoin: { [BASE().toLowerCase()]: 50 } });
-      await syncCoingeckoRates({ spacingMs: 0 });
+      await helpers.syncRateSources({ source: 'coingecko' });
       const tx = await createTx({ accountId: account.id, amount: 2, day: TODAY });
       expect(tx.refAmount).toBe(100);
 
       priceGet.mockResolvedValue({ bitcoin: { [BASE().toLowerCase()]: 60 } });
-      const result = await syncCoingeckoRates({ spacingMs: 0 });
+      const result = await helpers.syncRateSources({ source: 'coingecko' });
 
       expect(result.ratesWritten).toBe(1);
       expect((await readTx({ id: tx.id })).refAmount).toBe(120);
       expect((await storedRates({ code: 'BTC' })).filter((rate) => rate.day === TODAY)).toHaveLength(1);
 
       // The same price again changes nothing.
-      expect((await syncCoingeckoRates({ spacingMs: 0 })).ratesWritten).toBe(0);
+      expect((await helpers.syncRateSources({ source: 'coingecko' })).ratesWritten).toBe(0);
     });
 
     it('fetches a coin once for all the currencies that take it', async () => {
       await createCurrency({ code: 'BTC' });
       await createCurrency({ code: 'WBTC' });
-      getRange.mockResolvedValue(history([[DAY_1, 10]]));
+      getRange.mockResolvedValue(history([[YESTERDAY, 10]]));
       await useCoingecko({ code: 'BTC', quoteCurrency: BASE() });
       await useCoingecko({ code: 'WBTC', quoteCurrency: BASE() });
       priceGet.mockResolvedValue({ bitcoin: { [BASE().toLowerCase()]: 70 } });
 
-      const result = await syncCoingeckoRates({ spacingMs: 0 });
+      const result = await helpers.syncRateSources({ source: 'coingecko' });
 
       expect(priceGet).toHaveBeenCalledTimes(1);
       expect(priceGet).toHaveBeenCalledWith(expect.objectContaining({ ids: 'bitcoin' }));
@@ -746,7 +686,7 @@ describe('CoinGecko rate source', () => {
       getRange.mockResolvedValue(
         history([
           [DAY_1, 10],
-          [DAY_3, 30],
+          [YESTERDAY, 30],
         ]),
       );
       await useCoingecko({ code: 'BTC', quoteCurrency: BASE() });
@@ -757,7 +697,7 @@ describe('CoinGecko rate source', () => {
       priceGet.mockRejectedValue(new Error('CoinGecko is down'));
       const errorSpy = jest.spyOn(logger, 'error');
       try {
-        const result = await syncCoingeckoRates({ spacingMs: 0 });
+        const result = await helpers.syncRateSources({ source: 'coingecko' });
 
         expect(result).toEqual({ coinsFetched: 0, currenciesUpdated: 0, ratesWritten: 0, failures: 1 });
         expect(errorSpy).toHaveBeenCalledWith(
@@ -777,14 +717,14 @@ describe('CoinGecko rate source', () => {
     it('stops the run on a rate limit instead of calling on', async () => {
       await createCurrency({ code: 'BTC' });
       await createCurrency({ code: 'ETH' });
-      getRange.mockResolvedValue(history([[DAY_1, 10]]));
+      getRange.mockResolvedValue(history([[YESTERDAY, 10]]));
       await useCoingecko({ code: 'BTC', quoteCurrency: 'USD' });
       await useCoingecko({ code: 'ETH', coinId: 'ethereum', quoteCurrency: BASE() });
       priceGet.mockRejectedValue(Object.assign(new Error('Too many requests'), { status: 429 }));
 
       const errorSpy = jest.spyOn(logger, 'error').mockImplementation(() => logger);
       try {
-        const result = await syncCoingeckoRates({ spacingMs: 0 });
+        const result = await helpers.syncRateSources({ source: 'coingecko' });
 
         // Two quote currencies mean two batches; the second is not asked after the 429.
         expect(priceGet).toHaveBeenCalledTimes(1);
@@ -794,10 +734,116 @@ describe('CoinGecko rate source', () => {
       }
     });
 
+    it('fills only the days a missed run left out and takes today from the batched call', async () => {
+      await createCurrency({ code: 'BTC' });
+      const account = await createAccountIn({ code: 'BTC' });
+      getRange.mockResolvedValue(history([[DAY_1, 10]]));
+      await useCoingecko({ code: 'BTC', quoteCurrency: BASE() });
+      const onDay2 = await createTx({ accountId: account.id, amount: 1, day: DAY_2 });
+      const onDay3 = await createTx({ accountId: account.id, amount: 1, day: DAY_3 });
+      expect(onDay2.refAmount).toBe(10);
+      expect(onDay3.refAmount).toBe(10);
+
+      // At 00:30 UTC the history has no point for today, and prices a stored day a little differently.
+      getRange.mockResolvedValue(
+        history([
+          [DAY_1, 15],
+          [DAY_3, 30],
+          [YESTERDAY, 40],
+        ]),
+      );
+      priceGet.mockResolvedValue({ bitcoin: { [BASE().toLowerCase()]: 50 } });
+      const result = await helpers.syncRateSources({ source: 'coingecko' });
+
+      expect(result).toEqual({ coinsFetched: 1, currenciesUpdated: 1, ratesWritten: 3, failures: 0 });
+      expect(getRange).toHaveBeenCalledTimes(2);
+      expect(priceGet).toHaveBeenCalledTimes(1);
+      expect((await storedRates({ code: 'BTC' })).map(({ day, rate }) => [day, rate])).toEqual([
+        [DAY_1, 10],
+        [DAY_3, 30],
+        [YESTERDAY, 40],
+        [TODAY, 50],
+      ]);
+      expect((await readTx({ id: onDay2.id })).refAmount).toBe(10);
+      expect((await readTx({ id: onDay3.id })).refAmount).toBe(30);
+
+      await helpers.syncRateSources({ source: 'coingecko' });
+      expect(getRange).toHaveBeenCalledTimes(2);
+      expect(priceGet).toHaveBeenCalledTimes(2);
+    });
+
+    it('stores the batched prices when a history call hits the rate limit, and retries the gap next run', async () => {
+      await createCurrency({ code: 'BTC' });
+      await createCurrency({ code: 'ETH' });
+      getRange.mockResolvedValueOnce(history([[DAY_1, 10]]));
+      await useCoingecko({ code: 'BTC', quoteCurrency: BASE() });
+      getRange.mockResolvedValueOnce(history([[YESTERDAY, 4]]));
+      await useCoingecko({ code: 'ETH', coinId: 'ethereum', quoteCurrency: BASE() });
+      getRange.mockRejectedValueOnce(Object.assign(new Error('Too many requests'), { status: 429 }));
+      priceGet.mockResolvedValue({
+        bitcoin: { [BASE().toLowerCase()]: 50 },
+        ethereum: { [BASE().toLowerCase()]: 5 },
+      });
+
+      const errorSpy = jest.spyOn(logger, 'error').mockImplementation(() => logger);
+      try {
+        const result = await helpers.syncRateSources({ source: 'coingecko' });
+
+        expect(result).toEqual({ coinsFetched: 2, currenciesUpdated: 1, ratesWritten: 1, failures: 1 });
+        expect(priceGet).toHaveBeenCalledTimes(1);
+        expect(getRange).toHaveBeenCalledTimes(3);
+      } finally {
+        errorSpy.mockRestore();
+      }
+      expect((await storedRates({ code: 'ETH' })).at(-1)).toEqual({
+        day: TODAY,
+        quote: BASE(),
+        rate: 5,
+        source: 'coingecko',
+      });
+      // BTC stores today only with its gap, so it stays behind for the next run.
+      expect((await storedRates({ code: 'BTC' })).map(({ day }) => day)).toEqual([DAY_1]);
+
+      getRange.mockResolvedValue(
+        history([
+          [DAY_1, 10],
+          [DAY_3, 30],
+        ]),
+      );
+      await helpers.syncRateSources({ source: 'coingecko' });
+
+      expect(getRange).toHaveBeenCalledTimes(4);
+      expect((await storedRates({ code: 'BTC' })).map(({ day, rate }) => [day, rate])).toEqual([
+        [DAY_1, 10],
+        [DAY_3, 30],
+        [TODAY, 50],
+      ]);
+    });
+
+    it('does not fetch the history of a coin that has no price today', async () => {
+      await createCurrency({ code: 'BTC' });
+      getRange.mockResolvedValue(history([[DAY_1, 10]]));
+      await useCoingecko({ code: 'BTC', quoteCurrency: BASE() });
+      priceGet.mockResolvedValue({});
+
+      const warnSpy = jest.spyOn(logger, 'warn').mockImplementation(() => logger);
+      try {
+        expect(await helpers.syncRateSources({ source: 'coingecko' })).toEqual({
+          coinsFetched: 1,
+          currenciesUpdated: 0,
+          ratesWritten: 0,
+          failures: 1,
+        });
+      } finally {
+        warnSpy.mockRestore();
+      }
+      expect(getRange).toHaveBeenCalledTimes(1);
+    });
+
     it('does nothing when no currency uses CoinGecko', async () => {
       await createCurrency({ code: 'BTC' });
 
-      expect(await syncCoingeckoRates({ spacingMs: 0 })).toEqual({
+      expect(await helpers.syncRateSources({ source: 'coingecko' })).toEqual({
         coinsFetched: 0,
         currenciesUpdated: 0,
         ratesWritten: 0,

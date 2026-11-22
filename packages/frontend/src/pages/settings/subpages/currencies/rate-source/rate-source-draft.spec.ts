@@ -4,11 +4,11 @@ import {
   type RateSourceDraft,
   buildDraft,
   buildRateSourceBody,
-  buildTestBody,
   createHeaderRow,
   getSavedHeaderNames,
   getTestFailureKey,
   isDraftChanged,
+  isHeadersOriginChanged,
   isPositiveNumberText,
   isValidUrlTemplate,
   validateDraft,
@@ -37,10 +37,6 @@ const draftOf = ({ saved, patch }: { saved: Saved; patch?: (draft: RateSourceDra
 };
 
 describe('buildDraft', () => {
-  it('reads an unset source as manual, since a custom currency has no market feed', () => {
-    expect(buildDraft({ saved: { rateSource: 'provider', rateSourceConfig: null } }).source).toBe('manual');
-  });
-
   it('seeds every form from the saved config', () => {
     expect(buildDraft({ saved: PEG }).peg).toEqual({ pegCurrency: 'USD', factor: '1' });
     expect(buildDraft({ saved: COINGECKO }).coingecko).toMatchObject({ coinId: 'bitcoin', quoteCurrency: 'EUR' });
@@ -129,11 +125,12 @@ describe('buildRateSourceBody', () => {
     expect('headers' in (body as { config: object }).config).toBe(false);
   });
 
-  it('sends an empty object to remove the saved headers', () => {
+  it('sends an empty object to remove the saved headers when no row is filled', () => {
     const draft = draftOf({
       saved: HTTP,
       patch: (item) => {
-        item.http.headersMode = 'clear';
+        item.http.headersMode = 'replace';
+        item.http.headers = [createHeaderRow()];
       },
     });
 
@@ -173,23 +170,59 @@ describe('buildRateSourceBody', () => {
   });
 });
 
-describe('buildTestBody', () => {
-  it('previews the HTTP settings even while another tab is selected, with the same headers rule', () => {
-    const draft = draftOf({
+describe('isHeadersOriginChanged', () => {
+  const withUrl = ({ urlTemplate, quoteCurrency = 'USD' }: { urlTemplate: string; quoteCurrency?: string }) =>
+    draftOf({
       saved: HTTP,
       patch: (item) => {
-        item.source = 'peg';
+        item.http.urlTemplate = urlTemplate;
+        item.http.quoteCurrency = quoteCurrency;
       },
-    });
+    }).http;
 
-    expect(buildTestBody({ http: draft.http })).toEqual({
+  it('is false while the URL keeps the saved origin, whatever its path', () => {
+    const http = withUrl({ urlTemplate: 'https://api.example.com/v2/{code}' });
+
+    expect(isHeadersOriginChanged({ http, saved: HTTP, code: 'BTC' })).toBe(false);
+  });
+
+  it('is true for another host, scheme or port', () => {
+    for (const urlTemplate of [
+      'https://api.other.com/{code}',
+      'http://api.example.com/{code}',
+      'https://api.example.com:8443/{code}',
+    ]) {
+      expect(isHeadersOriginChanged({ http: withUrl({ urlTemplate }), saved: HTTP, code: 'BTC' })).toBe(true);
+    }
+  });
+
+  it('fills the placeholders of each side with its own quote before comparing', () => {
+    const saved: Saved = {
       rateSource: 'http',
-      config: {
-        urlTemplate: 'https://api.example.com/{code}?on={date}',
+      rateSourceConfig: {
+        urlTemplate: 'https://{quote}.example.com/{code}',
         jsonPath: 'data.price',
         quoteCurrency: 'USD',
+        headerNames: ['X-Api-Key'],
       },
-    });
+    };
+
+    expect(
+      isHeadersOriginChanged({ http: withUrl({ urlTemplate: 'https://{quote}.example.com/x' }), saved, code: 'BTC' }),
+    ).toBe(false);
+    expect(
+      isHeadersOriginChanged({
+        http: withUrl({ urlTemplate: 'https://{quote}.example.com/x', quoteCurrency: 'EUR' }),
+        saved,
+        code: 'BTC',
+      }),
+    ).toBe(true);
+  });
+
+  it('is false when nothing is saved to keep', () => {
+    const http = withUrl({ urlTemplate: 'https://api.other.com' });
+
+    expect(isHeadersOriginChanged({ http, saved: MANUAL, code: 'BTC' })).toBe(false);
   });
 });
 
@@ -240,7 +273,7 @@ describe('isDraftChanged', () => {
     const replacing = draftOf({
       saved: HTTP,
       patch: (item) => {
-        item.http.headersMode = 'clear';
+        item.http.headersMode = 'replace';
       },
     });
     expect(isDraftChanged({ draft: replacing, saved: HTTP })).toBe(true);
@@ -261,7 +294,7 @@ describe('isDraftChanged', () => {
 describe('validateDraft', () => {
   it('accepts a complete draft of every source', () => {
     for (const saved of [MANUAL, PEG, COINGECKO, HTTP]) {
-      expect(validateDraft({ draft: buildDraft({ saved }) })).toEqual({});
+      expect(validateDraft({ draft: buildDraft({ saved }), saved, code: 'BTC' })).toEqual({});
     }
   });
 
@@ -274,7 +307,7 @@ describe('validateDraft', () => {
       },
     });
 
-    expect(validateDraft({ draft })).toEqual({
+    expect(validateDraft({ draft, saved: MANUAL, code: 'BTC' })).toEqual({
       pegCurrency: 'settings.currencies.rateSource.errors.pegCurrencyRequired',
       factor: 'settings.currencies.rateSource.errors.factorInvalid',
     });
@@ -288,7 +321,9 @@ describe('validateDraft', () => {
       },
     });
 
-    expect(validateDraft({ draft })).toEqual({ coinId: 'settings.currencies.rateSource.errors.coinRequired' });
+    expect(validateDraft({ draft, saved: MANUAL, code: 'BTC' })).toEqual({
+      coinId: 'settings.currencies.rateSource.errors.coinRequired',
+    });
   });
 
   it('requires the URL and the path of an HTTP source, and an http(s) URL with known placeholders', () => {
@@ -298,7 +333,7 @@ describe('validateDraft', () => {
         item.source = 'http';
       },
     });
-    expect(validateDraft({ draft: blank })).toEqual({
+    expect(validateDraft({ draft: blank, saved: MANUAL, code: 'BTC' })).toEqual({
       urlTemplate: 'settings.currencies.rateSource.errors.urlRequired',
       jsonPath: 'settings.currencies.rateSource.errors.pathRequired',
     });
@@ -309,7 +344,7 @@ describe('validateDraft', () => {
         item.http.urlTemplate = 'https://api.example.com/{currency}';
       },
     });
-    expect(validateDraft({ draft: unknownPlaceholder }).urlTemplate).toBe(
+    expect(validateDraft({ draft: unknownPlaceholder, saved: HTTP, code: 'BTC' }).urlTemplate).toBe(
       'settings.currencies.rateSource.errors.urlInvalid',
     );
   });
@@ -322,7 +357,9 @@ describe('validateDraft', () => {
         item.http.headers = [{ ...createHeaderRow(), name: '', value: 'secret' }];
       },
     });
-    expect(validateDraft({ draft: nameless }).headers).toBe('settings.currencies.rateSource.errors.headerNameRequired');
+    expect(validateDraft({ draft: nameless, saved: HTTP, code: 'BTC' }).headers).toBe(
+      'settings.currencies.rateSource.errors.headerNameRequired',
+    );
 
     const duplicate = draftOf({
       saved: HTTP,
@@ -334,9 +371,24 @@ describe('validateDraft', () => {
         ];
       },
     });
-    expect(validateDraft({ draft: duplicate }).headers).toBe(
+    expect(validateDraft({ draft: duplicate, saved: HTTP, code: 'BTC' }).headers).toBe(
       'settings.currencies.rateSource.errors.headerNameDuplicate',
     );
+  });
+
+  it('requires replacing saved headers kept for a URL on another origin', () => {
+    const draft = draftOf({
+      saved: HTTP,
+      patch: (item) => {
+        item.http.urlTemplate = 'https://api.other.com/{code}';
+      },
+    });
+
+    expect(validateDraft({ draft, saved: HTTP, code: 'BTC' }).headers).toBe(
+      'settings.currencies.rateSource.http.headersOriginChanged',
+    );
+    draft.http.headersMode = 'replace';
+    expect(validateDraft({ draft, saved: HTTP, code: 'BTC' })).toEqual({});
   });
 
   it('does not check the forms of sources that are not selected', () => {
@@ -347,7 +399,7 @@ describe('validateDraft', () => {
       },
     });
 
-    expect(validateDraft({ draft })).toEqual({});
+    expect(validateDraft({ draft, saved: MANUAL, code: 'BTC' })).toEqual({});
   });
 });
 

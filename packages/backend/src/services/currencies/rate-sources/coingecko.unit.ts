@@ -21,7 +21,7 @@ describe('toDailyRates', () => {
     ]);
   });
 
-  it('takes the latest point of a day, which is the live price on the last day', () => {
+  it('takes the latest point of a day', () => {
     expect(
       toDailyRates({
         points: [

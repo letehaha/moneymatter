@@ -1275,6 +1275,11 @@ const assertDownRefuses = async ({
 
 const RATE_KEY = `"userId" = 1 AND "baseCode" = 'USD' AND "quoteCode" = 'EUR'`;
 
+const SOURCE_CUSTOM_CODE = 'RSCUS';
+
+// The foreign keys of "UsersCurrencies" were dropped for the money seed, so the user needs no row.
+const SOURCE_USER_ID = 990001;
+
 const seedUserRates = async ({ sequelize }: { sequelize: Sequelize }): Promise<void> => {
   // The seed has no user or currency parents, which the foreign keys would require.
   const [foreignKeys] = await sequelize.query(
@@ -1290,7 +1295,9 @@ const seedUserRates = async ({ sequelize }: { sequelize: Sequelize }): Promise<v
       (1, 'EUR', 'USD', 1.1,  '2026-03-05 02:00:00+05:00'),
       (2, 'USD', 'EUR', 0.8,  '2026-03-05 00:00:01+00'),
       (1, 'GBP', 'USD', 1.2,  '2026-04-01 08:00:00+00'),
-      (1, 'GBP', 'USD', 1.3,  '2026-04-01 20:00:00+00')`);
+      (1, 'GBP', 'USD', 1.3,  '2026-04-01 20:00:00+00'),
+      (${SOURCE_USER_ID}, '${SOURCE_CUSTOM_CODE}', 'USD', 2, '2026-05-01 10:00:00+00'),
+      (${SOURCE_USER_ID}, 'USD', '${SOURCE_CUSTOM_CODE}', 0.5, '2026-05-01 10:00:00+00')`);
 };
 
 const assertRateSources = async ({
@@ -1330,11 +1337,6 @@ const assertRateSources = async ({
   });
 };
 
-const SOURCE_CUSTOM_CODE = 'RSCUS';
-
-// The foreign keys of "UsersCurrencies" were dropped for the money seed, so the user needs no row.
-const SOURCE_USER_ID = 990001;
-
 const seedUserCurrencies = async ({ sequelize }: { sequelize: Sequelize }): Promise<void> => {
   const userId = SOURCE_USER_ID;
   await sequelize.query(
@@ -1366,15 +1368,14 @@ const assertRateSourceColumns = async ({
   const rateSource = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSource' });
   const config = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSourceConfig' });
   const headers = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSourceHeadersEncrypted' });
-  const fingerprint = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSourceHttpFingerprint' });
   check({
     ok: after
       ? rateSource?.data_type === 'character varying' &&
         rateSource.character_maximum_length === 16 &&
         rateSource.is_nullable === 'NO' &&
-        rateSource.column_default?.startsWith("'provider'") === true
+        rateSource.column_default?.startsWith("'manual'") === true
       : rateSource === undefined,
-    label: `${step}: UsersCurrencies.rateSource is ${after ? "a NOT NULL varchar(16) defaulting to 'provider'" : 'absent'}`,
+    label: `${step}: UsersCurrencies.rateSource is ${after ? "a NOT NULL varchar(16) defaulting to 'manual'" : 'absent'}`,
   });
   check({
     ok: after ? config?.data_type === 'jsonb' && config.is_nullable === 'YES' : config === undefined,
@@ -1384,31 +1385,15 @@ const assertRateSourceColumns = async ({
     ok: after ? headers?.data_type === 'text' && headers.is_nullable === 'YES' : headers === undefined,
     label: `${step}: UsersCurrencies.rateSourceHeadersEncrypted is ${after ? 'a nullable text' : 'absent'}`,
   });
-  check({
-    ok: after
-      ? fingerprint?.data_type === 'character varying' &&
-        fingerprint.character_maximum_length === 64 &&
-        fingerprint.is_nullable === 'YES'
-      : fingerprint === undefined,
-    label: `${step}: UsersCurrencies.rateSourceHttpFingerprint is ${after ? 'a nullable varchar(64)' : 'absent'}`,
-  });
 };
 
 const assertRateSourceValues = async ({ sequelize, step }: { sequelize: Sequelize; step: string }): Promise<void> => {
-  // A currency starts on the market feed; a custom one has none, so it starts on manual rates, and so
-  // does an ISO currency whose live rates the user switched off.
-  check({
-    ok: (await sourceOf({ sequelize, code: 'USD' })) === 'provider',
-    label: `${step}: an existing ISO currency row with live rates is on the provider`,
-  });
-  check({
-    ok: (await sourceOf({ sequelize, code: 'EUR' })) === 'manual',
-    label: `${step}: an existing ISO currency row with live rates off is on manual rates`,
-  });
-  check({
-    ok: (await sourceOf({ sequelize, code: SOURCE_CUSTOM_CODE })) === 'manual',
-    label: `${step}: an existing custom currency row is on manual rates`,
-  });
+  for (const code of ['USD', 'EUR', SOURCE_CUSTOM_CODE]) {
+    check({
+      ok: (await sourceOf({ sequelize, code })) === 'manual',
+      label: `${step}: the existing ${code} row is on manual rates`,
+    });
+  }
   check({
     ok:
       (await scalar<number>({
@@ -1459,6 +1444,17 @@ const assertRateRows = async ({
       label: `${step}: rate ${want.userId} ${want.baseCode}>${want.quoteCode} = ${want.rate}${want.effectiveDate ? ` from ${want.effectiveDate}` : ''} is stored`,
     });
   }
+};
+
+/** The sole rate of a custom currency is the one it was created with; every other existing rate is manual. */
+const assertRateSourceTags = async ({ sequelize, step }: { sequelize: Sequelize; step: string }): Promise<void> => {
+  const [rows] = await sequelize.query(`SELECT "baseCode", "source" FROM "UserExchangeRates"`);
+  const tagged = rows as { baseCode: string; source: string }[];
+
+  check({
+    ok: tagged.every((row) => row.source === (row.baseCode === SOURCE_CUSTOM_CODE ? 'initial' : 'manual')),
+    label: `${step}: the custom currency's rate is initial and every other rate is manual`,
+  });
 };
 
 const assertRateConstraints = async ({ sequelize, step }: { sequelize: Sequelize; step: string }): Promise<void> => {
@@ -1719,16 +1715,11 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
     { userId: 1, baseCode: 'EUR', quoteCode: 'USD', rate: 1.1, effectiveDate: '2026-03-04' },
     { userId: 2, baseCode: 'USD', quoteCode: 'EUR', rate: 0.8, effectiveDate: '2026-03-05' },
     { userId: 1, baseCode: 'GBP', quoteCode: 'USD', rate: 1.3, effectiveDate: '2026-04-01' },
+    // The inverse row quoted in the custom currency is dropped.
+    { userId: SOURCE_USER_ID, baseCode: SOURCE_CUSTOM_CODE, quoteCode: 'USD', rate: 2, effectiveDate: '2026-05-01' },
   ];
   await assertRateRows({ sequelize, expected: expectedAfterUp, step: 'rates-up' });
-  check({
-    ok:
-      (await scalar<number>({
-        sequelize,
-        sql: `SELECT count(*)::int FROM "UserExchangeRates" WHERE "source" <> 'manual'`,
-      })) === 0,
-    label: `rates-up: every existing rate is manual`,
-  });
+  await assertRateSourceTags({ sequelize, step: 'rates-up' });
   await assertRateConstraints({ sequelize, step: 'rates-up' });
 
   // down keeps the latest day of each pair: the June rate replaces the March one.
@@ -1742,6 +1733,7 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
       { userId: 1, baseCode: 'EUR', quoteCode: 'USD', rate: 1.1 },
       { userId: 2, baseCode: 'USD', quoteCode: 'EUR', rate: 0.8 },
       { userId: 1, baseCode: 'GBP', quoteCode: 'USD', rate: 1.3 },
+      { userId: SOURCE_USER_ID, baseCode: SOURCE_CUSTOM_CODE, quoteCode: 'USD', rate: 2 },
     ],
     step: 'rates-down',
   });
@@ -1758,9 +1750,11 @@ const runChecks = async ({ sequelize, migrator }: { sequelize: Sequelize; migrat
       { userId: 1, baseCode: 'EUR', quoteCode: 'USD', rate: 1.1, effectiveDate: '2026-03-04' },
       { userId: 2, baseCode: 'USD', quoteCode: 'EUR', rate: 0.8, effectiveDate: '2026-03-05' },
       { userId: 1, baseCode: 'GBP', quoteCode: 'USD', rate: 1.3, effectiveDate: '2026-04-01' },
+      { userId: SOURCE_USER_ID, baseCode: SOURCE_CUSTOM_CODE, quoteCode: 'USD', rate: 2, effectiveDate: '2026-05-01' },
     ],
     step: 'rates-up-again',
   });
+  await assertRateSourceTags({ sequelize, step: 'rates-up-again' });
 };
 
 /** Runs every cleanup step; a failure is logged and returned, never thrown, so it cannot hide an earlier error. */

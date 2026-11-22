@@ -50,9 +50,27 @@ export function fillUserRateEffectiveDates({ data }: { data: Map<BackupFileName,
   if (latestByKey.size !== rows.length) data.set(FILE_NAME, [...latestByKey.values()]);
 }
 
-/** An archive is untrusted: a rate whose `source` is not one the app writes is restored as the user's own. */
+/**
+ * An archive is untrusted: a rate whose `source` is not one the app writes is restored as the user's own.
+ * A sourceless rate that is the only one of a custom currency is the rate it was created with.
+ */
 export function forceKnownUserRateSources({ data }: { data: Map<BackupFileName, Row[]> }): void {
-  for (const row of data.get(FILE_NAME) ?? []) {
-    if (!(USER_EXCHANGE_RATE_SOURCES as readonly unknown[]).includes(row.source)) row.source = 'manual';
+  const rows = data.get(FILE_NAME) ?? [];
+  const customCodes = new Set(
+    (data.get('users-currencies') ?? [])
+      .filter((row) => row.nameOverride != null || row.decimalsOverride != null)
+      .map((row) => String(row.currencyCode)),
+  );
+  const rowCountByCustomCode = new Map<string, number>();
+  for (const row of rows) {
+    const code = String(row.baseCode);
+    if (customCodes.has(code)) rowCountByCustomCode.set(code, (rowCountByCustomCode.get(code) ?? 0) + 1);
+  }
+
+  for (const row of rows) {
+    if ((USER_EXCHANGE_RATE_SOURCES as readonly unknown[]).includes(row.source)) continue;
+
+    const isCreationRate = row.source == null && rowCountByCustomCode.get(String(row.baseCode)) === 1;
+    row.source = isCreationRate ? 'initial' : 'manual';
   }
 }

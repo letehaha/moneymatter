@@ -2234,7 +2234,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
   describe('Custom currency rate sources', () => {
     const USDT = 'USDT';
 
-    it('restores an archive written before rate sources: the custom currency keeps its own rates, dated the day they were saved', async () => {
+    it('restores an archive written before rate sources: the custom currency keeps its creation rate as initial, dated the day it was saved', async () => {
       await helpers.createCustomCurrency({
         payload: { code: USDT, name: 'Tether', decimals: 6, rate: { value: 3.5 } },
         raw: true,
@@ -2249,9 +2249,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       writeArchiveJson({
         files,
         path: 'data/users-currencies.json',
-        value: holdings.map(
-          ({ rateSource: _source, rateSourceConfig: _config, rateSourceHttpFingerprint: _fingerprint, ...row }) => row,
-        ),
+        value: holdings.map(({ rateSource: _source, rateSourceConfig: _config, ...row }) => row),
       });
       writeArchiveJson({
         files,
@@ -2269,12 +2267,112 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
         rateSourceConfig: null,
       });
       for (const row of held.filter((candidate) => candidate.currencyCode !== USDT)) {
-        expect(row.rateSource).toBe(row.liveRateUpdate ? 'provider' : 'manual');
+        expect(row.rateSource).toBe('manual');
       }
 
       const history = await helpers.getCurrencyRateHistory({ code: USDT, raw: true });
       expect(history.items.map((item) => item.effectiveDate).toSorted()).toEqual(savedDays.toSorted());
-      expect(history.items.every((item) => item.source === 'manual')).toBe(true);
+      expect(history.items.map((item) => item.source)).toEqual(['initial']);
+    });
+
+    it('keeps the creation rate as initial and drops a stored rate quoted in the custom currency', async () => {
+      await helpers.createCustomCurrency({
+        payload: { code: USDT, name: 'Tether', decimals: 6, rate: { value: 4 } },
+        raw: true,
+      });
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+      const rates = readArchiveJson({ files, path: 'data/user-exchange-rates.json' }) as Row[];
+      const forward = rates.find((row) => row.baseCode === USDT)!;
+      expect(forward.source).toBe('initial');
+      expect(rates.some((row) => row.quoteCode === USDT)).toBe(false);
+
+      writeArchiveJson({
+        files,
+        path: 'data/user-exchange-rates.json',
+        value: [...rates, { ...forward, baseCode: forward.quoteCode, quoteCode: USDT, rate: '999' }],
+      });
+
+      const restore = await helpers.restoreBackup({ fileContent: await helpers.repackBackup({ files }) });
+      expect(restore.statusCode).toBe(200);
+      expect((await helpers.waitForRestore({ jobId: restore.jobId! })).status).toBe('completed');
+
+      const history = await helpers.getCurrencyRateHistory({ code: USDT, raw: true });
+      expect(history.items).toEqual([expect.objectContaining({ quoteCode: forward.quoteCode, source: 'initial' })]);
+      const inverse = await helpers.getExchangeRatePair({
+        from: String(forward.quoteCode),
+        to: USDT,
+        date: String(forward.effectiveDate),
+        raw: true,
+      });
+      expect(inverse.rate).toBeCloseTo(0.25, 10);
+
+      const reexported = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
+      const restoredRates = readArchiveJson({
+        files: reexported.files,
+        path: 'data/user-exchange-rates.json',
+      }) as Row[];
+      expect(restoredRates.some((row) => row.quoteCode === USDT)).toBe(false);
+    });
+
+    it('restores an HTTP source without its request headers and warns that they need entering again', async () => {
+      await helpers.createCustomCurrency({
+        payload: { code: USDT, name: 'Tether', decimals: 6, rate: { value: 3.5 } },
+        raw: true,
+      });
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+      const holdings = readArchiveJson({ files, path: 'data/users-currencies.json' }) as Row[];
+      const config = {
+        urlTemplate: 'https://rates.example.com/{code}?day={date}',
+        jsonPath: 'data.price',
+        quoteCurrency: 'USD',
+      };
+      writeArchiveJson({
+        files,
+        path: 'data/users-currencies.json',
+        value: holdings.map((row) =>
+          row.currencyCode === USDT
+            ? { ...row, rateSource: 'http', rateSourceConfig: { ...config, headerNames: ['X-Api-Key'] } }
+            : row,
+        ),
+      });
+
+      const restore = await helpers.restoreBackup({ fileContent: await helpers.repackBackup({ files }) });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+      expect(status.summary?.warnings).toContainEqual({
+        code: 'rate_source_headers_dropped',
+        table: 'users-currencies',
+        count: 1,
+      });
+
+      const held = await helpers.getUserCurrencies();
+      expect(held.find((row) => row.currencyCode === USDT)).toMatchObject({
+        rateSource: 'http',
+        rateSourceConfig: { ...config, headerNames: [] },
+      });
+    });
+
+    it('puts every ISO holding on manual, whatever rate source the archive gives it', async () => {
+      await seedBasicData();
+      const { buffer } = await exportArchive();
+      const { files } = helpers.parseBackupArchive({ buffer });
+      const holdings = readArchiveJson({ files, path: 'data/users-currencies.json' }) as Row[];
+      writeArchiveJson({
+        files,
+        path: 'data/users-currencies.json',
+        value: holdings.map((row) => ({ ...row, rateSource: 'provider', rateSourceConfig: { pegCurrency: 'USD' } })),
+      });
+
+      const restore = await helpers.restoreBackup({ fileContent: await helpers.repackBackup({ files }) });
+      expect(restore.statusCode).toBe(200);
+      expect((await helpers.waitForRestore({ jobId: restore.jobId! })).status).toBe('completed');
+
+      const held = await helpers.getUserCurrencies();
+      expect(held.length).toBeGreaterThan(0);
+      for (const row of held) expect(row).toMatchObject({ rateSource: 'manual', rateSourceConfig: null });
     });
 
     it('rejects a custom currency whose rate source cannot be read (422)', async () => {

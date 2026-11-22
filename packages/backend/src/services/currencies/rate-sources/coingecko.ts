@@ -8,6 +8,8 @@ import {
 import { CoinGeckoDataProvider } from '@services/investments/data-providers/coingecko-provider';
 import { subDays } from 'date-fns';
 
+import type { SyncedDailyRate } from './store-synced-rates';
+
 /**
  * The Demo tier serves a year of daily history. A range wider than 90 days comes back with one
  * point per day, so the backfill always asks for the whole window, whatever the user's oldest row.
@@ -17,16 +19,10 @@ export const COINGECKO_HISTORY_DAYS = 364;
 /** `/simple/price` takes about 500 ids a call; stay well under it. */
 export const COINGECKO_PRICE_BATCH_SIZE = 250;
 
-/** One day's price of a coin: `day` is the UTC calendar day (`YYYY-MM-DD`). */
-export interface CoingeckoDailyRate {
-  day: string;
-  rate: number;
-}
-
 /**
  * The price of each UTC day out of the `[timestampMs, price]` points CoinGecko returns. A daily
- * series has one point per day (its 00:00 UTC price) and the last one is the live price of today,
- * so the latest point of a day is the day's rate. Points without a positive finite price are dropped.
+ * series has one point per day, its 00:00 UTC price, and has no point for a day before about 00:35
+ * UTC of it. A day with several points takes the latest. Points without a positive finite price are dropped.
  */
 export const toDailyRates = ({ points }: { points: ReadonlyArray<ReadonlyArray<number | null> | null> }) => {
   const latestOfDay = new Map<string, { timestamp: number; rate: number }>();
@@ -50,7 +46,7 @@ export const toDailyRates = ({ points }: { points: ReadonlyArray<ReadonlyArray<n
   }
 
   return [...latestOfDay.entries()]
-    .map(([day, { rate }]): CoingeckoDailyRate => ({ day, rate }))
+    .map(([day, { rate }]): SyncedDailyRate => ({ day, rate }))
     .toSorted((a, b) => a.day.localeCompare(b.day));
 };
 
@@ -79,7 +75,7 @@ export const fetchCoingeckoHistory = async ({
   coinId: string;
   quoteCurrency: string;
   now?: Date;
-}): Promise<CoingeckoDailyRate[]> => {
+}): Promise<SyncedDailyRate[]> => {
   const client = createCoingeckoClient({ apiKey: requireCoinGeckoKey() });
   const response = await client.coins.marketChart.getRange(coinId, {
     vs_currency: quoteCurrency.toLowerCase(),

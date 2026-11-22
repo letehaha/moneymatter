@@ -13,6 +13,7 @@ import { recomputeCustomRefAmounts } from '../currencies/recompute-custom-ref-am
 import { assertRemovePairRules } from './exchange-rate-pair-rules';
 import { findCustomCurrencyQuote } from './resolve-custom-pair-rate';
 import { revalueAccountsInCurrencies } from './revalue-accounts-in-currencies';
+import { assertCustomRatesAreManual } from './update-exchange-rates.service';
 
 export const removeUserExchangeRates = withTransaction(
   async ({ userId, pairs }: { userId: number; pairs: UserExchangeRates.ExchangeRatePair[] }) => {
@@ -21,10 +22,29 @@ export const removeUserExchangeRates = withTransaction(
     const codes = pairs.flatMap((pair) => [pair.baseCode, pair.quoteCode]);
     await assertCurrencyCodesVisible({ userId, codes, allowedWithoutPlan: codes });
 
-    // Serializes removals per user, so two requests that each drop one rate cannot together drop the last.
+    const customCodes = await findCustomCurrencyCodes({ codes });
+    const datedIsoPair = pairs.find(
+      (pair) => pair.effectiveDate && !customCodes.has(pair.baseCode) && !customCodes.has(pair.quoteCode),
+    );
+    if (datedIsoPair) throw UserExchangeRates.datedIsoPairError({ pair: datedIsoPair });
+
+    // A custom currency's rates are removed one day at a time; it always keeps a rate.
+    const undatedCode = pairs
+      .filter((pair) => !pair.effectiveDate)
+      .flatMap((pair) => [pair.baseCode, pair.quoteCode])
+      .find((code) => customCodes.has(code));
+    if (undatedCode) {
+      throw new ValidationError({
+        message: t({ key: 'currencies.customCurrencyRemovalNeedsDate', variables: { code: undatedCode } }),
+      });
+    }
+
+    // Serializes removals and rate source changes per user, so two requests that each drop one rate
+    // cannot together drop the last, and the source checked below is the committed one.
     await connection.sequelize.query(`SELECT pg_advisory_xact_lock(hashtext('user-exchange-rates'), :userId)`, {
       replacements: { userId },
     });
+    await assertCustomRatesAreManual({ userId, customCodes });
 
     const plannedChanges = await planRateChanges({ userId, pairs, kind: 'remove' });
 
@@ -34,7 +54,7 @@ export const removeUserExchangeRates = withTransaction(
     });
 
     // A custom currency has no market rate, so its ref amounts exist only while it keeps one of its own.
-    for (const code of await findCustomCurrencyCodes({ codes })) {
+    for (const code of customCodes) {
       if (!(await findCustomCurrencyQuote({ userId, code, date: new Date() }))) {
         throw new ValidationError({ message: t({ key: 'currencies.customCurrencyLastRate', variables: { code } }) });
       }

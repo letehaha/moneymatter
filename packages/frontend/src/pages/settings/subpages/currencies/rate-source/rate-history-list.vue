@@ -47,10 +47,14 @@
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span class="text-sm font-semibold" data-testid="rate-history-day">
-                {{ $t('settings.currencies.rateSource.history.startsOn', { date: formatDay(rate.effectiveDate) }) }}
+                {{
+                  $t('settings.currencies.rateSource.history.startsOn', {
+                    date: formatDay({ day: rate.effectiveDate }),
+                  })
+                }}
               </span>
               <span
-                class="border-border text-muted-foreground inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold"
+                class="border-border text-muted-foreground inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-xs font-semibold"
                 data-testid="rate-history-source"
               >
                 {{ $t(`settings.currencies.rateSource.sources.${rate.source}`) }}
@@ -60,7 +64,7 @@
               </StatusBadge>
             </div>
             <div class="mt-0.5 text-sm tabular-nums" data-testid="rate-history-rate">
-              {{ `1 ${code} = ${formatRate(rate.rate)} ${rate.quoteCode}` }}
+              {{ `1 ${code} = ${formatRate({ value: rate.rate })} ${rate.quoteCode}` }}
             </div>
             <p
               v-if="isEditable && !isQuoteHeld({ quoteCode: rate.quoteCode })"
@@ -120,17 +124,28 @@
       </div>
     </template>
 
-    <EditDatedRate
-      v-if="editingRate"
-      v-model:open="isEditOpen"
-      :code="code"
-      :quote-code="editingRate.quoteCode"
-      :effective-date="editingRate.effectiveDate"
-      :rate="editingRate.rate"
-      :is-form-disabled="isFormDisabled"
-      @submit="handleChanged"
-      @trigger-disabled="emit('trigger-disabled', $event)"
-    />
+    <ResponsiveDialog v-if="editingRate" v-model:open="isEditOpen" dialog-content-class="max-w-md">
+      <template #title>{{ $t('settings.currencies.rateSource.history.editTitle') }}</template>
+      <template #description>
+        {{
+          $t('settings.currencies.rateSource.history.editDescription', {
+            code,
+            date: formatDay({ day: editingRate.effectiveDate }),
+          })
+        }}
+      </template>
+
+      <div class="@container/currencies" data-testid="edit-dated-rate">
+        <ExchangeRateForm
+          :key="editSession"
+          :currency="currency"
+          :dated-rate="editingRate"
+          :is-form-disabled="isFormDisabled"
+          @submit="handleEdited"
+          @trigger-disabled="emit('trigger-disabled', $event)"
+        />
+      </div>
+    </ResponsiveDialog>
     <RemoveDatedRate
       v-if="removingRate"
       v-model:open="isRemoveOpen"
@@ -138,38 +153,40 @@
       :quote-code="removingRate.quoteCode"
       :effective-date="removingRate.effectiveDate"
       :is-form-disabled="isFormDisabled"
-      @submit="handleChanged"
+      @submit="emit('changed')"
       @trigger-disabled="emit('trigger-disabled', $event)"
     />
   </section>
 </template>
 
 <script setup lang="ts">
+import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { StatusBadge } from '@/components/lib/ui/status-badge';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { toLocalNumber } from '@/js/helpers/formatters';
 import { useCurrenciesStore } from '@/stores';
-import type { CurrencyRateHistoryItem } from '@bt/shared/types';
+import type { CurrencyRateHistoryItem, CurrencyRateSource } from '@bt/shared/types';
 import { HistoryIcon, PencilIcon, Trash2Icon } from '@lucide/vue';
 import { format, parseISO } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import RemoveDatedRate from '../currency-row/remove-dated-rate.vue';
-import EditDatedRate from './edit-dated-rate.vue';
-import type { EditableRateSource } from './rate-source-draft';
-import { useInvalidateRateHistory, useRateHistory } from './use-rate-history';
+import ExchangeRateForm from '../currency-row/exchange-rate-form.vue';
+import { rateDisplayOptions } from '../rate-precision';
+import type { CurrencyWithExchangeRate } from '../types';
+import RemoveDatedRate from './remove-dated-rate.vue';
+import { useRateHistory } from './use-rate-history';
 
 const SKELETON_ROWS = 3;
-// A custom currency can be worth a tiny fraction of its quote, so its rate shows more digits.
-const RATE_MAX_FRACTION_DIGITS = 12;
+const RATE_DISPLAY_OPTIONS = rateDisplayOptions({ isCustom: true, isoDecimals: 6 });
 
 const props = defineProps<{
-  code: string;
+  currency: CurrencyWithExchangeRate;
   /** The source saved on the currency, not the one picked in the editor: it decides who owns the rows. */
-  savedSource: EditableRateSource;
+  savedSource: CurrencyRateSource;
   isFormDisabled: boolean;
 }>();
 
@@ -181,10 +198,11 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const { currencies } = storeToRefs(useCurrenciesStore());
-const invalidateRateHistory = useInvalidateRateHistory();
+
+const code = computed(() => props.currency.currencyCode);
 
 const { rates, isFetched, isLoadingError, hasNextPage, isFetchingNextPage, fetchNextPage, refetch } = useRateHistory({
-  code: props.code,
+  code: code.value,
 });
 
 // Only a manual currency's rates are the user's to change. A synced source writes its own days, and
@@ -195,7 +213,7 @@ const isPegged = computed(() => props.savedSource === 'peg');
 const canRemove = computed(() => rates.value.length > 1 || hasNextPage.value);
 
 const note = computed(() => {
-  if (isPegged.value) return t('settings.currencies.rateSource.history.peggedNote', { code: props.code });
+  if (isPegged.value) return t('settings.currencies.rateSource.history.peggedNote', { code: code.value });
   if (!isEditable.value) {
     return t('settings.currencies.rateSource.history.syncedNote', {
       source: t(`settings.currencies.rateSource.sources.${props.savedSource}`),
@@ -209,18 +227,20 @@ const note = computed(() => {
 const heldCodes = computed(() => new Set(currencies.value.map((item) => item.currencyCode)));
 const isQuoteHeld = ({ quoteCode }: { quoteCode: string }) => heldCodes.value.has(quoteCode);
 
-const formatDay = (day: string) => format(parseISO(day), 'PP');
-const formatRate = (value: number) =>
-  value.toLocaleString(undefined, { maximumFractionDigits: RATE_MAX_FRACTION_DIGITS });
+const formatDay = ({ day }: { day: string }) => format(parseISO(day), 'PP');
+const formatRate = ({ value }: { value: number }) => toLocalNumber(value, RATE_DISPLAY_OPTIONS);
 
 // The dialogs stay mounted after closing, with the row they last showed, so they can animate out.
 const editingRate = ref<CurrencyRateHistoryItem | null>(null);
 const removingRate = ref<CurrencyRateHistoryItem | null>(null);
 const isEditOpen = ref(false);
 const isRemoveOpen = ref(false);
+// Each opening mounts a fresh form, so a cancelled edit does not carry into the next one.
+const editSession = ref(0);
 
 const openEdit = ({ rate }: { rate: CurrencyRateHistoryItem }) => {
   editingRate.value = rate;
+  editSession.value += 1;
   isEditOpen.value = true;
 };
 const openRemove = ({ rate }: { rate: CurrencyRateHistoryItem }) => {
@@ -228,8 +248,10 @@ const openRemove = ({ rate }: { rate: CurrencyRateHistoryItem }) => {
   isRemoveOpen.value = true;
 };
 
-const handleChanged = () => {
-  invalidateRateHistory({ code: props.code });
+// Closing unmounts the form before it can emit `trigger-disabled: false`.
+const handleEdited = () => {
+  isEditOpen.value = false;
+  emit('trigger-disabled', false);
   emit('changed');
 };
 </script>

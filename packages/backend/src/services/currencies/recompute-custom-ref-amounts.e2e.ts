@@ -1,111 +1,26 @@
-import {
-  type AccountApiResponse,
-  type RecordId,
-  TRANSACTION_TRANSFER_NATURE,
-  TRANSACTION_TYPES,
-} from '@bt/shared/types';
+import { type RecordId, TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
-import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
 import * as helpers from '@tests/helpers';
-import { subDays } from 'date-fns';
 
 const BASE = (): string => global.BASE_CURRENCY_CODE;
 const MARKET_AED_PER_USD = 4;
 
-const dayKey = ({ daysAgo }: { daysAgo: number }): string => subDays(new Date(), daysAgo).toISOString().slice(0, 10);
-const noonOf = ({ day }: { day: string }): string => `${day}T12:00:00.000Z`;
+const {
+  addCustomCurrency: createCurrency,
+  createAccountInCurrency: createAccountIn,
+  createTxOn: createTx,
+  dayKey,
+  pegTo,
+  readTx,
+  removeUserRate: removeRate,
+  setUserRate: setRate,
+} = helpers;
 
 // Distinct, recent days that no other suite seeds.
 const DAY_1 = dayKey({ daysAgo: 21 });
 const DAY_2 = dayKey({ daysAgo: 20 });
 const DAY_3 = dayKey({ daysAgo: 19 });
-const TODAY = dayKey({ daysAgo: 0 });
 const TOMORROW = dayKey({ daysAgo: -1 });
-
-/** A custom currency's first rate starts today, quoted in the base currency unless `quote` is given. */
-const createCurrency = async ({ code, rate = 1, quote }: { code: string; rate?: number; quote?: string }) => {
-  const response = await helpers.createCustomCurrency({
-    payload: { code, name: code, decimals: 6, rate: { value: rate, ...(quote && { quoteCode: quote }) } },
-  });
-  expect(response.statusCode).toBe(201);
-};
-
-/** The user's rate of `code` into the base from one day on, in both directions as the endpoint requires. */
-const datedRates = ({ code, rate, effectiveDate }: { code: string; rate: number; effectiveDate?: string }) => [
-  { baseCode: code, quoteCode: BASE(), rate, effectiveDate },
-  { baseCode: BASE(), quoteCode: code, rate: 1 / rate, effectiveDate },
-];
-
-const setRate = async ({ code, rate, effectiveDate }: { code: string; rate: number; effectiveDate?: string }) => {
-  const response = await helpers.editCurrencyExchangeRate({
-    pairs: datedRates({ code, rate, effectiveDate }),
-    raw: false,
-  });
-  expect(response.statusCode).toBe(200);
-};
-
-const removeRate = async ({ code, effectiveDate }: { code: string; effectiveDate?: string }) => {
-  const response = await helpers.removeCurrencyExchangeRate({
-    pairs: [
-      { baseCode: code, quoteCode: BASE(), effectiveDate },
-      { baseCode: BASE(), quoteCode: code, effectiveDate },
-    ],
-    raw: false,
-  });
-  expect(response.statusCode).toBe(200);
-};
-
-const pegTo = async ({ code, pegCurrency, factor = 1 }: { code: string; pegCurrency: string; factor?: number }) => {
-  const response = await helpers.setCurrencyRateSource({
-    code,
-    payload: { rateSource: 'peg', config: { pegCurrency, factor } },
-  });
-  expect(response.statusCode).toBe(200);
-};
-
-const createAccountIn = async ({ code }: { code: string }) => {
-  const response = await helpers.createAccount({
-    payload: helpers.buildAccountPayload({ currencyCode: code, name: `${code} account`, initialBalance: 0 }),
-    raw: false,
-  });
-  expect(response.statusCode).toBe(200);
-
-  return (response as unknown as { body: { response: AccountApiResponse } }).body.response;
-};
-
-const createTx = async ({
-  accountId,
-  amount,
-  day = TODAY,
-  extra = {},
-}: {
-  accountId: string;
-  amount: number;
-  day?: string;
-  extra?: Partial<Parameters<typeof helpers.buildTransactionPayload>[0]>;
-}) => {
-  const response = await helpers.createTransaction({
-    payload: helpers.buildTransactionPayload({
-      accountId: accountId as RecordId,
-      amount,
-      categoryId: global.DEFAULT_CATEGORY_ID,
-      transactionType: TRANSACTION_TYPES.expense,
-      time: noonOf({ day }),
-      ...extra,
-    }),
-    raw: false,
-  });
-  const body = response as unknown as { statusCode: number; body: { response: TransactionApiResponse[] } };
-  if (body.statusCode !== 200) throw new Error(`createTransaction answered ${body.statusCode}`);
-
-  return body.body.response;
-};
-
-const readTx = async ({ id }: { id: string }) =>
-  (await helpers.getTransactionById({ id: id as RecordId, raw: true })) as unknown as TransactionApiResponse;
-
-const readAccount = async ({ id }: { id: string }) =>
-  (await helpers.getAccount({ id, raw: true })) as unknown as AccountApiResponse;
 
 describe('Valuing saved rows again after the rates of a custom currency change', () => {
   beforeEach(async () => {
@@ -125,16 +40,17 @@ describe('Valuing saved rows again after the rates of a custom currency change',
       await createCurrency({ code: 'USDT', rate: 4 });
       await setRate({ code: 'USDT', rate: 3, effectiveDate: DAY_1 });
       const usdt = await createAccountIn({ code: 'USDT' });
-      const [first] = await createTx({ accountId: usdt.id, amount: 10, day: DAY_2 });
-      expect(first!.refAmount).toBe(30);
+      const [first] = await createTx({ accountId: usdt.id, amount: 10, day: DAY_2, extra: { commissionRate: 1 } });
+      expect([first!.refAmount, first!.refCommissionRate]).toEqual([30, 3]);
 
       await setRate({ code: 'USDT', rate: 4, effectiveDate: DAY_1 });
 
-      expect((await readTx({ id: first!.id })).refAmount).toBe(40);
+      const corrected = await readTx({ id: first!.id });
+      expect([corrected.refAmount, corrected.refCommissionRate]).toEqual([40, 4]);
       const [second] = await createTx({ accountId: usdt.id, amount: 10, day: DAY_2 });
       expect(second!.refAmount).toBe(40);
       // 20 USDT spent, valued at today's rate: the first one, which starts today.
-      expect((await readAccount({ id: usdt.id })).refCurrentBalance).toBe(-80);
+      expect((await helpers.readAccount({ accountId: usdt.id })).refCurrentBalance).toBe(-80);
     });
 
     it('values the splits of a transaction with it', async () => {
@@ -219,6 +135,20 @@ describe('Valuing saved rows again after the rates of a custom currency change',
     });
   });
 
+  describe('a rate re-quoted in another currency', () => {
+    it('values a transaction priced by the only rate again when that rate is replaced in another quote', async () => {
+      await createCurrency({ code: 'USDT', rate: 3 });
+      const usdt = await createAccountIn({ code: 'USDT' });
+      const [saved] = await createTx({ accountId: usdt.id, amount: 10, day: DAY_2 });
+      expect(saved!.refAmount).toBe(30);
+
+      // Today's rate in USD replaces the rate in the base, which also priced every earlier day.
+      await setRate({ code: 'USDT', quote: 'USD', rate: 2 });
+
+      expect((await readTx({ id: saved!.id })).refAmount).toBe(10 * 2 * MARKET_AED_PER_USD);
+    });
+  });
+
   describe('a rate that starts on a new day', () => {
     it('leaves a transaction that already has a value alone and values the next one at the new rate', async () => {
       await createCurrency({ code: 'USDT', rate: 3 });
@@ -273,11 +203,13 @@ describe('Valuing saved rows again after the rates of a custom currency change',
       await createCurrency({ code: 'USDT', rate: 3 });
       const usdt = await createAccountIn({ code: 'USDT' });
       const usd = await createAccountIn({ code: 'USD' });
+      const funded = await createAccountIn({ code: 'USDT', initialBalance: 100 });
+      expect((await helpers.readAccount({ accountId: funded.id })).refInitialBalance).toBe(300);
       const [saved] = await createTx({ accountId: usdt.id, amount: 10, day: DAY_2 });
       const [iso] = await createTx({ accountId: usd.id, amount: 10, day: DAY_2 });
       expect(saved!.refAmount).toBe(30);
       expect(iso!.refAmount).toBe(40);
-      expect((await readAccount({ id: usdt.id })).refCurrentBalance).toBe(-30);
+      expect((await helpers.readAccount({ accountId: usdt.id })).refCurrentBalance).toBe(-30);
 
       // The market moves after the ISO transaction was saved: that one keeps the amount it was saved with.
       await helpers.seedUsdExchangeRates({
@@ -288,10 +220,21 @@ describe('Valuing saved rows again after the rates of a custom currency change',
 
       expect((await readTx({ id: saved!.id })).refAmount).toBe(10);
       expect((await readTx({ id: iso!.id })).refAmount).toBe(40);
-      expect((await readAccount({ id: usdt.id })).refCurrentBalance).toBe(-10);
+      expect((await helpers.readAccount({ accountId: usdt.id })).refCurrentBalance).toBe(-10);
+      expect((await helpers.readAccount({ accountId: funded.id })).refInitialBalance).toBe(100);
 
       const spendings = (await helpers.getSpendingsByCategories({ raw: true })) as Record<string, { amount: number }>;
       expect(Object.values(spendings).reduce((sum, item) => sum + item.amount, 0)).toBe(50);
+    });
+
+    it('values a currency pegged to the base currency at the transaction amount', async () => {
+      await createCurrency({ code: 'USDT', rate: 7 });
+      await pegTo({ code: 'USDT', pegCurrency: BASE() });
+      const usdt = await createAccountIn({ code: 'USDT' });
+
+      const [created] = await createTx({ accountId: usdt.id, amount: 12.345678, day: DAY_1 });
+
+      expect(created!.refAmount).toBe(12.35);
     });
 
     it('does not value anything again when the saved source is the same', async () => {
@@ -315,14 +258,7 @@ describe('Valuing saved rows again after the rates of a custom currency change',
       const [created] = await createTx({ accountId: usd.id, amount: 10, day: DAY_2 });
       expect(created!.refAmount).toBe(40);
 
-      const response = await helpers.editCurrencyExchangeRate({
-        pairs: [
-          { baseCode: 'USD', quoteCode: BASE(), rate: 5 },
-          { baseCode: BASE(), quoteCode: 'USD', rate: 0.2 },
-        ],
-        raw: false,
-      });
-      expect(response.statusCode).toBe(200);
+      await setRate({ code: 'USD', rate: 5 });
 
       expect((await readTx({ id: created!.id })).refAmount).toBe(40);
     });
@@ -332,14 +268,7 @@ describe('Valuing saved rows again after the rates of a custom currency change',
       await createCurrency({ code: 'SAT', rate: 0.5, quote: 'USD' });
       await pegTo({ code: 'USDT', pegCurrency: 'USD', factor: 2 });
       // A currency on manual rates, whose own rate is quoted in USD.
-      const quoted = await helpers.editCurrencyExchangeRate({
-        pairs: [
-          { baseCode: 'SAT', quoteCode: 'USD', rate: 0.5, effectiveDate: DAY_1 },
-          { baseCode: 'USD', quoteCode: 'SAT', rate: 2, effectiveDate: DAY_1 },
-        ],
-        raw: false,
-      });
-      expect(quoted.statusCode).toBe(200);
+      await setRate({ code: 'SAT', quote: 'USD', rate: 0.5, effectiveDate: DAY_1 });
       const usdt = await createAccountIn({ code: 'USDT' });
       const sat = await createAccountIn({ code: 'SAT' });
       const [pegged] = await createTx({ accountId: usdt.id, amount: 10, day: DAY_2 });
@@ -347,55 +276,27 @@ describe('Valuing saved rows again after the rates of a custom currency change',
       // At the market rate of 4 per USD: 10 * 2 * 4 and 10 * 0.5 * 4.
       expect([pegged!.refAmount, stored!.refAmount]).toEqual([80, 20]);
 
-      const usdRate = (rate: number) => [
-        { baseCode: 'USD', quoteCode: BASE(), rate },
-        { baseCode: BASE(), quoteCode: 'USD', rate: 1 / rate },
-      ];
-      const edit = await helpers.editCurrencyExchangeRate({ pairs: usdRate(5), raw: false });
-      expect(edit.statusCode).toBe(200);
+      await setRate({ code: 'USD', rate: 5 });
 
       expect((await readTx({ id: pegged!.id })).refAmount).toBe(100);
       expect((await readTx({ id: stored!.id })).refAmount).toBe(25);
 
-      const removal = await helpers.removeCurrencyExchangeRate({
-        pairs: [
-          { baseCode: 'USD', quoteCode: BASE() },
-          { baseCode: BASE(), quoteCode: 'USD' },
-        ],
-        raw: false,
-      });
-      expect(removal.statusCode).toBe(200);
+      await removeRate({ code: 'USD' });
 
       expect((await readTx({ id: pegged!.id })).refAmount).toBe(80);
       expect((await readTx({ id: stored!.id })).refAmount).toBe(20);
     });
 
-    it('values a custom currency again when the ISO currency it is pegged to moves between the provider and its manual rate', async () => {
+    it('values a custom currency again when the ISO currency it is pegged to moves between the market and its manual rate', async () => {
       await createCurrency({ code: 'USDT' });
       await pegTo({ code: 'USDT', pegCurrency: 'USD', factor: 2 });
-      const manualUsd = await helpers.editCurrencyExchangeRate({
-        pairs: [
-          { baseCode: 'USD', quoteCode: BASE(), rate: 5 },
-          { baseCode: BASE(), quoteCode: 'USD', rate: 0.2 },
-        ],
-        raw: false,
-      });
-      expect(manualUsd.statusCode).toBe(200);
+      await setRate({ code: 'USD', rate: 5 });
       const usdt = await createAccountIn({ code: 'USDT' });
       const [pegged] = await createTx({ accountId: usdt.id, amount: 10, day: DAY_2 });
       // The manual rate of 5 per USD: 10 * 2 * 5.
       expect(pegged!.refAmount).toBe(100);
 
-      // Through the rate-source endpoint: the market rate of 4 per USD takes over, and back.
-      const toProvider = await helpers.setCurrencyRateSource({ code: 'USD', payload: { rateSource: 'provider' } });
-      expect(toProvider.statusCode).toBe(200);
-      expect((await readTx({ id: pegged!.id })).refAmount).toBe(80);
-
-      const toManual = await helpers.setCurrencyRateSource({ code: 'USD', payload: { rateSource: 'manual' } });
-      expect(toManual.statusCode).toBe(200);
-      expect((await readTx({ id: pegged!.id })).refAmount).toBe(100);
-
-      // Through the live-rate flag of the currency editor.
+      // The market rate of 4 per USD takes over, and back.
       const live = await helpers.updateUserCurrency({
         currency: { currencyCode: 'USD', liveRateUpdate: true },
         raw: false,

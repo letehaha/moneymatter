@@ -166,15 +166,11 @@ export const editUserCurrency = withTransaction(
       });
     }
 
-    // An ISO currency's rate source follows the flag.
-    const rateSource = liveRateUpdate === undefined ? undefined : liveRateUpdate ? 'provider' : 'manual';
-
     const result = await UsersCurrencies.updateCurrency({
       userId,
       currencyCode,
       exchangeRate,
       liveRateUpdate,
-      rateSource,
     });
 
     // `liveRateUpdate` picks between a flat manual rate and per-day market rates for

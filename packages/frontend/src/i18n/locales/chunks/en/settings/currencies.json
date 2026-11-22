@@ -152,7 +152,8 @@
           "manual": "Manual",
           "peg": "Peg",
           "coingecko": "CoinGecko",
-          "http": "HTTP"
+          "http": "HTTP",
+          "initial": "Initial"
         },
         "sourceDescriptions": {
           "manual": "Enter the rates yourself, each from the date it starts to apply.",
@@ -209,8 +210,8 @@
           "savedHeaders": "Saved headers: {names}. Their values are hidden.",
           "headersWillBeRemoved": "The saved headers will be removed when you save.",
           "replaceHeaders": "Replace headers",
-          "clearHeaders": "Remove headers",
           "keepHeaders": "Keep saved headers",
+          "headersOriginChanged": "Saved headers are sent only to the address they were saved for. Replace them to use this URL.",
           "testButton": "Test",
           "testSuccess": "On {date}, 1 {code} = {rate} {quote}",
           "testUnavailable": "The test could not run. Try again in a moment.",
@@ -254,8 +255,7 @@
           "loadFailed": "The rates could not be loaded.",
           "retryButton": "Try again",
           "editTitle": "Edit rate",
-          "editDescription": "Changes the rate of {code} that starts on {date}.",
-          "successfullyUpdated": "Rate updated"
+          "editDescription": "Changes the rate of {code} that starts on {date}."
         }
       },
       "refreshFailed": "Saved, but the currency list could not refresh. Reload the page if anything looks stale."

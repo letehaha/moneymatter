@@ -1,13 +1,13 @@
 import commonEn from '@/i18n/locales/chunks/en/common.json';
 import currenciesEn from '@/i18n/locales/chunks/en/settings/currencies.json';
 import { ApiErrorResponseError } from '@/js/errors';
-import { API_ERROR_CODES, type CurrencyRateHistoryItem } from '@bt/shared/types';
+import { API_ERROR_CODES, type CurrencyRateHistoryItem, type CurrencyRateSource } from '@bt/shared/types';
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
 import { type VueWrapper, flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
 
+import type { CurrencyWithExchangeRate } from '../types';
 import RateHistoryList from './rate-history-list.vue';
-import type { EditableRateSource } from './rate-source-draft';
 import { RATE_HISTORY_PAGE_LIMIT } from './use-rate-history';
 
 const { mockLoad, mockEdit, mockDelete, mockAddSuccess, mockAddError, mockAddWarning } = vi.hoisted(() => ({
@@ -70,7 +70,7 @@ vi.mock('@/components/common/responsive-dialog.vue', async () => {
       name: 'ResponsiveDialogStub',
       props: { open: { type: Boolean, default: false } },
       setup(props, { slots }) {
-        return () => (props.open ? h('div', {}, [slots.default?.(), slots.footer?.()]) : null);
+        return () => (props.open ? h('div', {}, [slots.default?.()]) : null);
       },
     }),
   };
@@ -117,11 +117,20 @@ const buildRate = (patch: Partial<CurrencyRateHistoryItem> = {}): CurrencyRateHi
 const LATEST = buildRate({ rate: 4, effectiveDate: '2026-10-12', isInForce: true });
 const OLDER = buildRate({ rate: 2, effectiveDate: '2026-10-02' });
 
-const mountList = ({ savedSource = 'manual' }: { savedSource?: EditableRateSource } = {}): VueWrapper => {
+const CURRENCY = {
+  currencyCode: 'USDT',
+  currency: { code: 'USDT' },
+  quoteCode: 'USD',
+  rate: 4,
+  quoteRate: 0.25,
+  isCustomCurrency: true,
+} as unknown as CurrencyWithExchangeRate;
+
+const mountList = ({ savedSource = 'manual' }: { savedSource?: CurrencyRateSource } = {}): VueWrapper => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 
   return mount(RateHistoryList, {
-    props: { code: 'USDT', savedSource, isFormDisabled: false },
+    props: { currency: CURRENCY, savedSource, isFormDisabled: false },
     global: { plugins: [i18n, [VueQueryPlugin, { queryClient }]] },
   });
 };
@@ -131,7 +140,7 @@ const mountWith = async ({
   savedSource,
 }: {
   items: CurrencyRateHistoryItem[];
-  savedSource?: EditableRateSource;
+  savedSource?: CurrencyRateSource;
 }) => {
   mockLoad.mockResolvedValue({ items, totalCount: items.length });
   const wrapper = mountList({ savedSource });
@@ -141,6 +150,10 @@ const mountWith = async ({
 };
 
 const rows = (wrapper: VueWrapper) => wrapper.findAll('[data-testid="rate-history-row"]');
+const EDIT_DIALOG = '[data-testid="edit-dated-rate"]';
+const editInput = (wrapper: VueWrapper, testId: string) =>
+  wrapper.find(`${EDIT_DIALOG} input[data-testid="${testId}"], ${EDIT_DIALOG} [data-testid="${testId}"] input`);
+const editSave = (wrapper: VueWrapper) => wrapper.find(`${EDIT_DIALOG} [data-testid="manual-rate-save"]`);
 
 describe('RateHistoryList', () => {
   beforeEach(() => {
@@ -171,6 +184,15 @@ describe('RateHistoryList', () => {
         false,
         false,
       ]);
+    });
+
+    it('labels the rate the currency was created with apart from manual ones, and keeps it editable', async () => {
+      const wrapper = await mountWith({ items: [LATEST, buildRate({ source: 'initial' })] });
+
+      const [manual, initial] = rows(wrapper).map((row) => row.find('[data-testid="rate-history-source"]').text());
+      expect(initial).toBe(currenciesEn.settings.currencies.rateSource.sources.initial);
+      expect(initial).not.toBe(manual);
+      expect(rows(wrapper)[1]!.find('[data-testid="rate-history-edit"]').exists()).toBe(true);
     });
 
     it('shows an empty state when there are no rates', async () => {
@@ -241,44 +263,25 @@ describe('RateHistoryList', () => {
   });
 
   describe('manual source', () => {
-    it('edits a rate through both directions of its pair, with the row’s day, and reloads the list', async () => {
+    it('edits a rate in the rate form, with the row’s quote and day, and closes once it is saved', async () => {
       const wrapper = await mountWith({ items: [LATEST, OLDER] });
 
       await rows(wrapper)[1]!.find('[data-testid="rate-history-edit"]').trigger('click');
-      expect(wrapper.find('[data-testid="edit-dated-rate-save"]').attributes('disabled')).toBeDefined();
+      expect(editInput(wrapper, 'manual-rate-base').element).toHaveProperty('value', '2');
+      expect(editSave(wrapper).attributes('disabled')).toBeDefined();
 
-      await wrapper
-        .find('input[data-testid="edit-dated-rate-base"], [data-testid="edit-dated-rate-base"] input')
-        .setValue('8');
-      expect(wrapper.find('[data-testid="edit-dated-rate-save"]').attributes('disabled')).toBeUndefined();
-      mockLoad.mockClear();
-      await wrapper.find('form').trigger('submit');
+      await editInput(wrapper, 'manual-rate-base').trigger('focus');
+      await editInput(wrapper, 'manual-rate-base').setValue('8');
+      await editSave(wrapper).trigger('click');
       await flushPromises();
 
       expect(mockEdit).toHaveBeenCalledWith([
         { baseCode: 'USDT', quoteCode: 'USD', rate: 8, effectiveDate: '2026-10-02' },
         { baseCode: 'USD', quoteCode: 'USDT', rate: 0.125, effectiveDate: '2026-10-02' },
       ]);
-      expect(mockAddSuccess).toHaveBeenCalledWith('Rate updated');
       expect(wrapper.emitted('changed')).toHaveLength(1);
-      expect(mockLoad).toHaveBeenCalledTimes(1);
-      expect(wrapper.find('form').exists()).toBe(false);
-    });
-
-    it('derives the rate from the opposite direction when that field is typed', async () => {
-      const wrapper = await mountWith({ items: [LATEST] });
-
-      await rows(wrapper)[0]!.find('[data-testid="rate-history-edit"]').trigger('click');
-      await wrapper
-        .find('input[data-testid="edit-dated-rate-quote"], [data-testid="edit-dated-rate-quote"] input')
-        .setValue('0.5');
-      await wrapper.find('form').trigger('submit');
-      await flushPromises();
-
-      expect(mockEdit.mock.calls[0]![0]).toEqual([
-        { baseCode: 'USDT', quoteCode: 'USD', rate: 2, effectiveDate: '2026-10-12' },
-        { baseCode: 'USD', quoteCode: 'USDT', rate: 0.5, effectiveDate: '2026-10-12' },
-      ]);
+      expect(wrapper.emitted('trigger-disabled')?.at(-1)).toEqual([false]);
+      expect(wrapper.find(EDIT_DIALOG).exists()).toBe(false);
     });
 
     it('keeps the dialog open and reports the refusal when the edit fails', async () => {
@@ -288,23 +291,22 @@ describe('RateHistoryList', () => {
       const wrapper = await mountWith({ items: [LATEST] });
 
       await rows(wrapper)[0]!.find('[data-testid="rate-history-edit"]').trigger('click');
-      await wrapper
-        .find('input[data-testid="edit-dated-rate-base"], [data-testid="edit-dated-rate-base"] input')
-        .setValue('9');
-      await wrapper.find('form').trigger('submit');
+      await editInput(wrapper, 'manual-rate-base').trigger('focus');
+      await editInput(wrapper, 'manual-rate-base').setValue('9');
+      await editSave(wrapper).trigger('click');
       await flushPromises();
 
       expect(mockAddError).toHaveBeenCalledWith('Rate refused');
-      expect(wrapper.find('form').exists()).toBe(true);
+      expect(wrapper.find(EDIT_DIALOG).exists()).toBe(true);
       expect(wrapper.emitted('changed')).toBeUndefined();
     });
 
-    it('removes a rate through both directions of its pair, with the row’s day, and reloads the list', async () => {
+    it('removes a rate through both directions of its pair, with the row’s day', async () => {
+      mockDelete.mockResolvedValue({ remeasure: { failed: 2 } });
       const wrapper = await mountWith({ items: [LATEST, OLDER] });
 
       await rows(wrapper)[1]!.find('[data-testid="rate-history-remove"]').trigger('click');
       expect(wrapper.text()).toContain('Removes the rate of USDT that starts on Oct 2, 2026.');
-      mockLoad.mockClear();
       await wrapper.find('[data-testid="confirm"]').trigger('click');
       await flushPromises();
 
@@ -313,8 +315,8 @@ describe('RateHistoryList', () => {
         { baseCode: 'USD', quoteCode: 'USDT', effectiveDate: '2026-10-02' },
       ]);
       expect(mockAddSuccess).toHaveBeenCalledWith('Rate removed');
+      expect(mockAddWarning).toHaveBeenCalledOnce();
       expect(wrapper.emitted('changed')).toHaveLength(1);
-      expect(mockLoad).toHaveBeenCalledTimes(1);
     });
 
     it('offers no remove for the only rate, since a custom currency always keeps one', async () => {

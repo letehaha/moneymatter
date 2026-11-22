@@ -22,12 +22,13 @@ export interface CustomCurrencyDefinition {
   decimals: number;
   symbol: string | null;
   rateSourceSetting: CurrencyRateSourceSetting;
+  /** An HTTP source whose header names came in the archive: their values never travel. */
+  headersDropped: boolean;
 }
 
 /**
- * A custom row's rate source, validated: no market feed, and every quote an ISO code. A row from an
- * archive written before rate sources has none and is on its own rates (`manual`). HTTP header names
- * are cleared because the encrypted headers never travel.
+ * A custom row's rate source, validated: every quote an ISO code. A row from an archive written
+ * before rate sources has none and is on its own rates (`manual`).
  */
 const readRateSourceSetting = ({
   row,
@@ -55,7 +56,7 @@ const readRateSourceSetting = ({
     case 'http': {
       const parsed = storedHttpRateSourceConfigSchema.safeParse(config);
       return parsed.success && isoCodes.has(parsed.data.quoteCurrency)
-        ? { rateSource: 'http', rateSourceConfig: { ...parsed.data, headerNames: [] } }
+        ? { rateSource: 'http', rateSourceConfig: parsed.data }
         : null;
     }
     default:
@@ -66,7 +67,8 @@ const readRateSourceSetting = ({
 /**
  * Custom definitions are the `users-currencies` rows with a name or decimals override; 422 unless each
  * has a valid rate source, rates that quote ISO codes only, and a value: a peg, or a positive rate of
- * its own. An unheld quote (a collaborator's copy) gets a holding added.
+ * its own. Rates quoted in a custom currency are dropped (the resolver derives them from the custom
+ * currency's own rates), and an unheld quote (a collaborator's copy) gets a holding added.
  */
 export const readCustomCurrencyDefinitions = ({
   archive,
@@ -76,7 +78,6 @@ export const readCustomCurrencyDefinitions = ({
   isoCodes: Set<string>;
 }): Map<string, CustomCurrencyDefinition> => {
   const holdings = archive.data.get('users-currencies') ?? [];
-  const rates = archive.data.get('user-exchange-rates') ?? [];
   const definitions = new Map<string, CustomCurrencyDefinition>();
   const rowByCode = new Map<string, Record<string, unknown>>();
 
@@ -115,12 +116,17 @@ export const readCustomCurrencyDefinitions = ({
       });
     }
 
+    const headersDropped =
+      rateSourceSetting.rateSource === 'http' && rateSourceSetting.rateSourceConfig.headerNames.length > 0;
+    if (rateSourceSetting.rateSource === 'http') rateSourceSetting.rateSourceConfig.headerNames = [];
+
     const { name, decimals, symbol } = parsed.data;
-    definitions.set(code, { code, name, decimals, symbol: symbol ?? null, rateSourceSetting });
+    definitions.set(code, { code, name, decimals, symbol: symbol ?? null, rateSourceSetting, headersDropped });
     rowByCode.set(code, row);
   }
 
-  const customPair = rates.find(
+  const archivedRates = archive.data.get('user-exchange-rates') ?? [];
+  const customPair = archivedRates.find(
     (rate) => definitions.has(String(rate.baseCode)) && definitions.has(String(rate.quoteCode)),
   );
   if (customPair) {
@@ -132,13 +138,15 @@ export const readCustomCurrencyDefinitions = ({
     });
   }
 
+  const rates = archivedRates.filter((rate) => !definitions.has(String(rate.quoteCode)));
+  archive.data.set('user-exchange-rates', rates);
+
   const heldIsoCodes = new Set(holdings.map((row) => String(row.currencyCode)).filter((code) => isoCodes.has(code)));
 
   for (const [code, { rateSourceSetting }] of definitions) {
-    const own = rates.filter((rate) => rate.baseCode === code || rate.quoteCode === code);
-    const quotes = new Set(own.map((rate) => String(rate.baseCode === code ? rate.quoteCode : rate.baseCode)));
-    const priced =
-      rateSourceSetting.rateSource === 'peg' || own.some((rate) => rate.baseCode === code && Number(rate.rate) > 0);
+    const own = rates.filter((rate) => rate.baseCode === code);
+    const quotes = new Set(own.map((rate) => String(rate.quoteCode)));
+    const priced = rateSourceSetting.rateSource === 'peg' || own.some((rate) => Number(rate.rate) > 0);
 
     if ([...quotes].some((quote) => !isoCodes.has(quote)) || !priced) {
       throw new ValidationError({

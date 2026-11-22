@@ -39,23 +39,26 @@ const emit = defineEmits<{
 const open = defineModel<boolean>('open', { default: false });
 
 const { t } = useI18n();
-const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
+const { addSuccessNotification, addWarningNotification, addErrorNotification } = useNotificationCenter();
 
 const displayDate = computed(() => format(parseISO(props.effectiveDate), 'PP'));
 
-// Both directions of the pair go together, as the API requires. Only the rate that starts on the
-// row's day is removed; the days it covered fall back to the earlier rate.
+// Only the rate that starts on the row's day is removed; the days it covered fall back to the earlier rate.
 const removeRate = async () => {
   const { code, quoteCode, effectiveDate } = props;
 
   emit('trigger-disabled', true);
   try {
-    await deleteCustomRate([
+    const { remeasure } = await deleteCustomRate([
       { baseCode: code, quoteCode, effectiveDate },
       { baseCode: quoteCode, quoteCode: code, effectiveDate },
     ]);
     open.value = false;
     addSuccessNotification(t('settings.currencies.rateSource.manual.successfullyRemoved'));
+    const failed = remeasure?.failed ?? 0;
+    if (failed > 0) {
+      addWarningNotification(t('settings.currencies.exchangeRate.balancesNotRefreshed', { count: failed }));
+    }
     emit('submit');
   } catch (error) {
     addErrorNotification(

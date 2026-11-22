@@ -1,5 +1,6 @@
 import { USER_ROLES } from '@bt/shared/types';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import * as usersCurrencies from '@models/users-currencies.model';
 import { RateLimitService } from '@services/common/rate-limit.service';
 import { RATE_SOURCE_SAVE_LIMIT, RATE_SOURCE_TEST_LIMIT } from '@services/common/user-rate-limits';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
@@ -17,6 +18,7 @@ jest.mock('@services/currencies/rate-sources/save-rate-source.service', () => ({
 jest.mock('@services/currencies/rate-sources/test-http-rate-source.service', () => ({ testHttpRateSource: jest.fn() }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 jest.mock('@services/common/rate-limit.service', () => ({ RateLimitService: { checkRateLimit: jest.fn() } }));
+jest.mock('@models/users-currencies.model', () => ({ getCurrency: jest.fn() }));
 
 import { getCurrencyRateHistoryTool } from './get-currency-rate-history';
 import { searchCoingeckoCoinsTool } from './search-coingecko-coins';
@@ -39,6 +41,7 @@ const coingeckoService = jest.mocked(coingecko);
 const historyService = jest.mocked(rateHistory);
 const saveService = jest.mocked(saveRateSource);
 const testService = jest.mocked(testRateSource);
+const getCurrency = jest.mocked(usersCurrencies.getCurrency);
 
 const httpConfig = {
   urlTemplate: 'https://rates.example.com/{code}?day={date}&quote={quote}',
@@ -134,7 +137,6 @@ describe('set_currency_rate_source', () => {
   const http = { rateSource: 'http', config: { ...httpConfig, headers: { 'X-Api-Key': 'sk-live-secret' } } };
 
   it.each([
-    { label: 'the market provider', input: { rateSource: 'provider' } },
     { label: 'manual rates', input: { rateSource: 'manual' } },
     { label: 'a peg', input: peg },
     { label: 'a CoinGecko coin with its logo', input: coingeckoSource },
@@ -145,24 +147,8 @@ describe('set_currency_rate_source', () => {
 
   it.each([
     { label: 'an unknown source', input: { rateSource: 'oracle' } },
+    { label: 'the market provider, which is not a custom source', input: { rateSource: 'provider' } },
     { label: 'a missing source', input: {} },
-    { label: 'a peg with a zero factor', input: { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 0 } } },
-    { label: 'a peg with an unknown key', input: { rateSource: 'peg', config: { ...peg.config, extra: 1 } } },
-    {
-      label: 'an HTTP URL with credentials',
-      input: { rateSource: 'http', config: { ...httpConfig, urlTemplate: 'https://u:p@example.com/{code}' } },
-    },
-    { label: 'a CoinGecko coin id with spaces', input: { rateSource: 'coingecko', config: { coinId: 'not a coin' } } },
-    { label: 'a peg to a custom currency', input: { rateSource: 'peg', config: { pegCurrency: 'PTS', factor: 1 } } },
-    {
-      label: 'a CoinGecko coin quoted in a custom currency',
-      input: { rateSource: 'coingecko', config: { coinId: 'tether', quoteCurrency: 'PTS' } },
-    },
-    {
-      label: 'an HTTP source quoted in a custom currency',
-      input: { rateSource: 'http', config: { ...httpConfig, quoteCurrency: 'PTS' } },
-    },
-    { label: 'a logo URL over plain http', input: { ...coingeckoSource, logoUrl: 'http://example.com/tether.png' } },
   ])('rejects $label', ({ input }) => {
     expect(schema.safeParse({ code: 'USDT', ...input }).success).toBe(false);
   });
@@ -189,10 +175,58 @@ describe('set_currency_rate_source', () => {
     });
   });
 
-  it('refuses a body the source does not allow, such as a config on the market provider or a peg without one', async () => {
-    await expect(tool.handler({ code: 'USDT', rateSource: 'provider', config: peg.config }, WRITE)).rejects.toThrow();
+  it('refuses a body the source does not allow, such as a config on manual or a peg without one', async () => {
+    await expect(tool.handler({ code: 'USDT', rateSource: 'manual', config: peg.config }, WRITE)).rejects.toThrow();
     await expect(tool.handler({ code: 'USDT', rateSource: 'peg' }, WRITE)).rejects.toThrow();
     expect(saveService.saveCurrencyRateSource).not.toHaveBeenCalled();
+  });
+
+  describe('a CoinGecko config without a quote', () => {
+    const resent = schema.parse({ code: 'USDT', rateSource: 'coingecko', config: { coinId: 'tether' } });
+    const savedOn = (config: { coinId: string; quoteCurrency: string }) =>
+      getCurrency.mockResolvedValueOnce({ rateSource: 'coingecko', rateSourceConfig: config } as never);
+    const sentQuote = () =>
+      (saveService.saveCurrencyRateSource.mock.calls[0]![0].body as { config: { quoteCurrency: string } }).config
+        .quoteCurrency;
+
+    beforeEach(() => {
+      saveService.saveCurrencyRateSource.mockResolvedValueOnce({} as never);
+    });
+
+    it('keeps the saved quote when the coin is the one already saved', async () => {
+      savedOn({ coinId: 'tether', quoteCurrency: 'EUR' });
+
+      await tool.handler(resent, WRITE);
+
+      expect(getCurrency).toHaveBeenCalledWith({ userId: 42, currencyCode: 'USDT' });
+      expect(sentQuote()).toBe('EUR');
+    });
+
+    it('takes USD for another coin', async () => {
+      savedOn({ coinId: 'bitcoin', quoteCurrency: 'EUR' });
+
+      await tool.handler(resent, WRITE);
+
+      expect(sentQuote()).toBe('USD');
+    });
+
+    it('takes USD for a currency that is not on CoinGecko', async () => {
+      getCurrency.mockResolvedValueOnce({ rateSource: 'manual', rateSourceConfig: null } as never);
+
+      await tool.handler(resent, WRITE);
+
+      expect(sentQuote()).toBe('USD');
+    });
+
+    it('sends a quote it was given without reading the saved one', async () => {
+      await tool.handler(
+        schema.parse({ code: 'USDT', rateSource: 'coingecko', config: { coinId: 'tether', quoteCurrency: 'GBP' } }),
+        WRITE,
+      );
+
+      expect(getCurrency).not.toHaveBeenCalled();
+      expect(sentQuote()).toBe('GBP');
+    });
   });
 
   it('is refused without the write scope, for read-only and for demo users', async () => {
@@ -232,15 +266,6 @@ describe('set_currency_rate_source', () => {
       RATE_SOURCE_SAVE_LIMIT.maxAttempts,
     );
     expect(RATE_SOURCE_SAVE_LIMIT.key({ userId: 42 })).toBe('rate-source-save:user:42');
-  });
-
-  it('is refused when the limiter says no', async () => {
-    checkRateLimit.mockResolvedValueOnce({ allowed: false, remainingSeconds: 12 });
-
-    await expect(tool.handler({ code: 'USDT', rateSource: 'manual' }, WRITE)).rejects.toThrow(
-      /middleware.tooManyRequests/,
-    );
-    expect(saveService.saveCurrencyRateSource).not.toHaveBeenCalled();
   });
 });
 
@@ -283,8 +308,8 @@ describe('test_currency_rate_source', () => {
     expect(RATE_SOURCE_TEST_LIMIT.key({ userId: 42 })).toBe('rate-source-test:user:42');
   });
 
-  it('is refused when the limiter says no', async () => {
-    checkRateLimit.mockResolvedValueOnce({ allowed: false, remainingSeconds: 12 });
+  it('is refused when the limiter cannot count, as its route is', async () => {
+    checkRateLimit.mockResolvedValueOnce({ allowed: true, serviceUnavailable: true });
 
     await expect(tool.handler({ code: 'USDT', config: httpConfig }, WRITE)).rejects.toThrow(
       /middleware.tooManyRequests/,

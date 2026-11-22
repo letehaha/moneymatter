@@ -3,7 +3,7 @@ import { useCurrenciesStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
-export interface CurrencyOption {
+interface CurrencyOption {
   value: string;
   label: string;
 }

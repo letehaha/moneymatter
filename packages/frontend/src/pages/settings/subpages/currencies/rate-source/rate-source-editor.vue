@@ -26,7 +26,7 @@
         v-if="savedSource === 'manual'"
         :currency="currency"
         :is-form-disabled="isFormDisabled"
-        @submit="handleRateSubmit"
+        @submit="emit('changed')"
         @trigger-disabled="emit('trigger-disabled', $event)"
       />
       <p v-else class="text-muted-foreground text-sm" data-testid="rate-source-manual-unsaved">
@@ -53,7 +53,7 @@
       v-else
       v-model="draft.http"
       :code="code"
-      :saved-header-names="savedHeaderNames"
+      :saved="saved"
       :errors="visibleErrors"
       :disabled="isBusy"
     />
@@ -79,10 +79,10 @@
     <div class="bg-border/60 h-px w-full" />
 
     <RateHistoryList
-      :code="code"
+      :currency="currency"
       :saved-source="savedSource"
       :is-form-disabled="isBusy"
-      @changed="emit('submit')"
+      @changed="emit('changed')"
       @trigger-disabled="emit('trigger-disabled', $event)"
     />
   </section>
@@ -94,8 +94,13 @@ import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { useNotificationCenter } from '@/components/notification-center';
-import { API_ERROR_CODES, RATE_SOURCE_TEST_FAILURES, type RateSourceTestFailure } from '@bt/shared/types';
 import { ApiErrorResponseError, extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
+import {
+  API_ERROR_CODES,
+  CURRENCY_RATE_SOURCES,
+  type CurrencyRateSource,
+  RATE_SOURCE_TEST_FAILURES,
+} from '@bt/shared/types';
 import { useMutation } from '@tanstack/vue-query';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -107,17 +112,13 @@ import HttpSourceForm from './http-source-form.vue';
 import PegSourceForm from './peg-source-form.vue';
 import RateHistoryList from './rate-history-list.vue';
 import {
-  EDITABLE_RATE_SOURCES,
-  type EditableRateSource,
   type SavedRateSource,
   buildDraft,
   buildRateSourceBody,
-  getSavedHeaderNames,
   getTestFailureKey,
   isDraftChanged,
   validateDraft,
 } from './rate-source-draft';
-import { useInvalidateRateHistory } from './use-rate-history';
 
 const props = defineProps<{
   currency: CurrencyWithExchangeRate;
@@ -125,36 +126,58 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  /** A manual rate was saved or removed. */
-  submit: [];
-  'trigger-disabled': [value: boolean];
-  /** The source was saved; currencies, rates and the amounts valued by them need a refresh. */
+  /** A rate or the source was saved; currencies, rates and the amounts valued by them need a refresh. */
   changed: [];
+  'trigger-disabled': [value: boolean];
 }>();
 
 const { t } = useI18n();
 const { addSuccessNotification } = useNotificationCenter();
-const invalidateRateHistory = useInvalidateRateHistory();
 
 const code = computed(() => props.currency.currencyCode);
-const saved = computed(() => ({
+const saved = computed<SavedRateSource>(() => ({
   rateSource: props.currency.rateSource,
   rateSourceConfig: props.currency.rateSourceConfig,
 }));
-// A custom currency has no market feed, so one that was never given a source is priced by hand.
-const savedSource = computed<EditableRateSource>(() => buildDraft({ saved: saved.value }).source);
-const savedHeaderNames = computed(() => getSavedHeaderNames({ saved: saved.value }));
+const savedSource = computed(() => saved.value.rateSource);
 
 const draft = reactive(buildDraft({ saved: saved.value }));
 const showErrors = ref(false);
-const saveError = ref<{ message: string; reason?: RateSourceTestFailure } | null>(null);
-const isNotConfigured = ref(false);
+
+const {
+  mutate,
+  isPending,
+  error: saveFailure,
+  reset: clearSaveFailure,
+} = useMutation({
+  mutationFn: () => updateCurrencyRateSource({ code: code.value, body: buildRateSourceBody({ draft }) }),
+  onSuccess: (response) => {
+    resetDraft({ from: { rateSource: response.rateSource, rateSourceConfig: response.rateSourceConfig } });
+    addSuccessNotification(t('settings.currencies.rateSource.successfullySaved'));
+    emit('changed');
+  },
+});
+
+// An instance without a CoinGecko key answers 503; saying so beats a generic failure.
+const isNotConfigured = computed(() =>
+  isApiErrorWithCode(saveFailure.value, API_ERROR_CODES.cryptoProviderNotConfigured),
+);
+// A synced source is saved only once its first fetch brings a rate; an HTTP one says why it did not.
+const saveError = computed(() => {
+  const error = saveFailure.value;
+  if (!error || isNotConfigured.value) return null;
+  const reason = error instanceof ApiErrorResponseError ? error.data?.details?.reason : undefined;
+
+  return {
+    message: extractApiErrorMessage(error) || t('settings.currencies.rateSource.errors.saveFailed'),
+    reason: RATE_SOURCE_TEST_FAILURES.find((item) => item === reason),
+  };
+});
 
 const resetDraft = ({ from = saved.value }: { from?: SavedRateSource } = {}) => {
   Object.assign(draft, buildDraft({ saved: from }));
   showErrors.value = false;
-  saveError.value = null;
-  isNotConfigured.value = false;
+  clearSaveFailure();
 };
 
 // Re-seed the draft whenever the saved source changes, so a saved HTTP source drops the typed
@@ -167,54 +190,23 @@ watch(
 );
 
 const sourceTabs = computed(() =>
-  EDITABLE_RATE_SOURCES.map((value) => ({ value, label: t(`settings.currencies.rateSource.sources.${value}`) })),
+  CURRENCY_RATE_SOURCES.map((value) => ({ value, label: t(`settings.currencies.rateSource.sources.${value}`) })),
 );
 
 const changeSource = (value: string) => {
-  draft.source = value as EditableRateSource;
+  draft.source = value as CurrencyRateSource;
   showErrors.value = false;
-  saveError.value = null;
-  isNotConfigured.value = false;
+  clearSaveFailure();
 };
 
-const errors = computed(() => validateDraft({ draft }));
+const errors = computed(() => validateDraft({ draft, saved: saved.value, code: code.value }));
 const visibleErrors = computed(() => (showErrors.value ? errors.value : {}));
 const isChanged = computed(() => isDraftChanged({ draft, saved: saved.value }));
-
-const { mutate, isPending } = useMutation({
-  mutationFn: () => updateCurrencyRateSource({ code: code.value, body: buildRateSourceBody({ draft }) }),
-  onSuccess: (response) => {
-    resetDraft({ from: { rateSource: response.rateSource, rateSourceConfig: response.rateSourceConfig } });
-    addSuccessNotification(t('settings.currencies.rateSource.successfullySaved'));
-    // A synced source stores rates of its own, and a peg or a switch back to manual changes how the kept ones apply.
-    invalidateRateHistory({ code: code.value });
-    emit('changed');
-  },
-  onError: (error) => {
-    // An instance without a CoinGecko key answers 503; saying so beats a generic failure.
-    if (isApiErrorWithCode(error, API_ERROR_CODES.cryptoProviderNotConfigured)) {
-      isNotConfigured.value = true;
-      return;
-    }
-    // A synced source is saved only once its first fetch brings a rate; an HTTP one says why it did not.
-    const reason = error instanceof ApiErrorResponseError ? error.data?.details?.reason : undefined;
-    saveError.value = {
-      message: extractApiErrorMessage(error) || t('settings.currencies.rateSource.errors.saveFailed'),
-      reason: RATE_SOURCE_TEST_FAILURES.find((item) => item === reason),
-    };
-  },
-});
-
-const handleRateSubmit = () => {
-  invalidateRateHistory({ code: code.value });
-  emit('submit');
-};
 
 const isBusy = computed(() => isPending.value || props.isFormDisabled);
 
 const handleSave = () => {
-  saveError.value = null;
-  isNotConfigured.value = false;
+  clearSaveFailure();
   if (Object.keys(errors.value).length) {
     showErrors.value = true;
     return;
