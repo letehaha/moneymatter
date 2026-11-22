@@ -73,20 +73,20 @@ Per lo stesso motivo, se hai valuta estera, le entrate meno le spese di un mese 
 
 ## Usa un tasso personalizzato solo se vuoi un tasso fisso
 
-Il tasso della tua banca raramente coincide con quello di mercato, quindi potresti voler inserire il tuo. Vai in **Impostazioni** → **Valute**, espandi la riga della valuta, deseleziona **Aggiornamento in tempo reale**, scrivi il tasso in uno dei due campi e clicca **Salva**.
+Il tasso della tua banca raramente coincide con quello di mercato, quindi potresti voler inserire il tuo. Vai in **Impostazioni** → **Valute**, clicca sulla riga della valuta, disattiva **Tasso in tempo reale**, scrivi il tasso in uno dei due campi e clicca **Salva tasso**.
 
-![Una riga PLN espansa nella pagina Currencies, con Live update deselezionato, un tasso personalizzato di 0.25 inserito e il pulsante Save](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
+![La finestra di dialogo PLN nella pagina Currencies, con Live rate disattivato, un tasso personalizzato di 0.25 inserito e il pulsante Save rate](/img/landing/screenshots/features/settings/custom-exchange-rate@2x.webp)
 
 Hai un solo tasso per valuta, senza alcuna data associata:
 
 - Le nuove transazioni e ogni transazione che modifichi e salvi lo usano, anche se datate l'anno scorso. Le transazioni già salvate mantengono i loro importi base finché non le modifichi.
 - I saldi passano a questo tasso appena salvi. Per i conti gestiti manualmente, MoneyMatter ridisegna anche l'intero storico del saldo a quel tasso, quindi il grafico smette di seguire il mercato per quella valuta.
 
-Io lascerei **Aggiornamento in tempo reale** attivo per la maggior parte delle valute. Non puoi impostare un tasso per singolo pagamento, e un trasferimento registra già il tasso reale di ogni cambio. Per tornare indietro, seleziona di nuovo **Aggiornamento in tempo reale** e clicca **Salva**.
+Io lascerei **Tasso in tempo reale** attivo per la maggior parte delle valute. Non puoi impostare un tasso per singolo pagamento, e un trasferimento registra già il tasso reale di ogni cambio. Per tornare indietro, riattiva **Tasso in tempo reale** e conferma con **Usa tasso in tempo reale**.
 
 ## Se cambi paese
 
-Quando cambia la valuta in cui ragioni, cambia la valuta base e mantieni i tuoi dati. Vai in **Impostazioni** → **Valute** e aggiungi la nuova valuta se non è in elenco. Poi espandi la sua riga, clicca **Imposta come valuta di base** e conferma.
+Quando cambia la valuta in cui ragioni, cambia la valuta base e mantieni i tuoi dati. Vai in **Impostazioni** → **Valute** e aggiungi la nuova valuta se non è in elenco. Poi clicca sulla sua riga, quindi su **Imposta come valuta di base** e conferma.
 
 MoneyMatter ricalcola ogni transazione al tasso di mercato della sua data e converte i saldi al tasso di oggi. Gli importi originali restano come li hai inseriti. Prima di iniziare:
 
