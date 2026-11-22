@@ -58,13 +58,14 @@ export const CONDITION_FIELDS = Object.keys(CONDITION_REGISTRY) as AutomationCon
 export type AutomationActionDraft =
   | { type: 'set_category'; categoryId: RecordId | null }
   | { type: 'set_payee'; payeeId: RecordId | null }
-  | Extract<AutomationAction, { type: 'add_tags' } | { type: 'set_note' }>;
+  | Extract<AutomationAction, { type: 'add_tags' } | { type: 'set_note' } | { type: 'exclude_from_stats' }>;
 
 export const ACTION_DEFAULTS: Record<AutomationActionType, () => AutomationActionDraft> = {
   set_category: () => ({ type: 'set_category', categoryId: null }),
   set_payee: () => ({ type: 'set_payee', payeeId: null }),
   add_tags: () => ({ type: 'add_tags', tagIds: [] }),
   set_note: () => ({ type: 'set_note', mode: 'replace', value: '' }),
+  exclude_from_stats: () => ({ type: 'exclude_from_stats' }),
 };
 
 export const ACTION_TYPES = Object.keys(ACTION_DEFAULTS) as AutomationActionType[];

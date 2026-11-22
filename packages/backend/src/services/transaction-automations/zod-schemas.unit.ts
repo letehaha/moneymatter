@@ -52,4 +52,16 @@ describe('transaction automations zod schemas', () => {
     expect(actionsSchema.safeParse([setNote, setNote]).success).toBe(false);
     expect(actionsSchema.safeParse([]).success).toBe(false);
   });
+
+  it('accepts one action of every type, exclude_from_stats included', () => {
+    const id = generateRandomRecordId();
+    const everyType = [
+      { type: 'set_category', categoryId: id },
+      { type: 'add_tags', tagIds: [id] },
+      { type: 'set_payee', payeeId: id },
+      { type: 'set_note', mode: 'replace', value: 'hi' },
+      { type: 'exclude_from_stats' },
+    ];
+    expect(actionsSchema.safeParse(everyType).success).toBe(true);
+  });
 });

@@ -116,6 +116,8 @@ export const actionError = ({
         ? error('automations.editor.errors.noteTooLong', { max: AUTOMATION_LIMITS.maxNoteLength })
         : null;
     }
+    case 'exclude_from_stats':
+      return null;
   }
 };
 

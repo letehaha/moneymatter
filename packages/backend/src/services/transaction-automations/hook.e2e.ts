@@ -375,6 +375,25 @@ describe('Transaction automations hook', () => {
     expect((await helpers.getAutomationById({ id: rule.id }))?.matchCount).toBe(1);
   });
 
+  it('excludes a matching synced row from stats and leaves the rest included', async () => {
+    const rule = await noteRule({
+      name: 'Internal moves',
+      keyword: 'own transfer',
+      actions: [{ type: 'exclude_from_stats' }],
+    });
+
+    await syncLunchFlow({
+      transactions: [
+        buildLunchFlowTx({ description: 'OWN TRANSFER 7710' }),
+        buildLunchFlowTx({ description: 'Coffee 7710' }),
+      ],
+    });
+
+    expect((await txByNote('OWN TRANSFER 7710'))?.excludeFromStats).toBe(true);
+    expect((await txByNote('Coffee 7710'))?.excludeFromStats).toBe(false);
+    expect((await helpers.getAutomationById({ id: rule.id }))?.matchCount).toBe(1);
+  });
+
   it('keeps an explicitly mapped import category but still applies tags and bumps the counter', async () => {
     const account = await helpers.createAccount({ raw: true });
     const token = generateRandomRecordId();

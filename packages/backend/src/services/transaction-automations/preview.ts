@@ -146,6 +146,8 @@ const isSettled = ({
       if (action.mode === 'replace')
         return buildNote({ current: note, mode: action.mode, value: action.value }) === note;
       return action.mode === 'append' ? note.endsWith(action.value.trim()) : note.startsWith(action.value.trim());
+    case 'exclude_from_stats':
+      return row.excludeFromStats;
     default:
       return action satisfies never;
   }
