@@ -569,13 +569,13 @@ type PaceBasisLabel = 'usual' | 'elapsed';
 export const paceStateOf = ({
   spentPercent,
   expectedPercent,
-  isOver,
+  available,
 }: {
   spentPercent: number;
   expectedPercent: number | null;
-  isOver: boolean;
+  available: number;
 }): PaceState | null => {
-  if (isOver) return 'over';
+  if (available < 0) return 'over';
   if (expectedPercent === null) return null;
   return spentPercent - expectedPercent > PACE_TOLERANCE ? 'ahead' : 'ok';
 };
@@ -609,7 +609,27 @@ export const linePaceOf = ({ line }: { line: LineWithPace }) => {
     pace,
     spent,
     funded,
-    state: paceStateOf({ spentPercent, expectedPercent: pace?.expectedPercent ?? null, isOver: line.available < 0 }),
+    state: paceStateOf({ spentPercent, expectedPercent: pace?.expectedPercent ?? null, available: line.available }),
+  };
+};
+
+export const panelPaceOf = ({
+  figures,
+  period,
+  pace,
+  now,
+}: Pick<PanelContext, 'figures' | 'pace'> & {
+  period: Pick<BudgetPlanPeriod, 'startDate' | 'endDate'>;
+  now?: Date;
+}) => {
+  const result = spendingPace({ ...figures, ...period, now });
+  return {
+    ...result,
+    state: paceStateOf({
+      spentPercent: result.spentPercent,
+      expectedPercent: pace?.expectedPercent ?? null,
+      available: figures.available,
+    }),
   };
 };
 

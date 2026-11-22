@@ -40,7 +40,7 @@ Between your bank-connected accounts, MoneyMatter links most transfers for you a
   hint="Open an existing regular expense on a manual account (e.g. a Main Checking purchase) and select the Transfer tab. Crop to the From account field and the Where the money goes panel, showing the 'or' divider, the 'Link the other side' button and the hint 'Already recorded in another account? Join the two records instead.'"
 />
 
-**Link the other side** only appears on a saved transaction that has no other side yet: an ordinary expense or income, or an [Out of Wallet transfer](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers). It isn't there while you're adding a new transaction.
+**Link the other side** only appears on a saved transaction that has no other side yet: an ordinary expense or income, or an [Out of wallet transfer](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers). It isn't there while you're adding a new transaction.
 
 After you pick a transaction, the account and amount fields are locked, because both sides already have their own. To choose a different transaction, click the ✕ on the **Linked transaction** row and pick again.
 
@@ -55,7 +55,7 @@ When you save with a linked transaction, MoneyMatter only saves the link. Any ot
 - **Recommended** shows up to 7 likely matches: transactions on your other accounts whose amount, converted to your [base currency](/settings/base-currency-and-currencies/), is within 10% of this one, dated within 14 days either side. Transactions in the same currency come first, then the closest amounts, then the closest dates.
 - **All transactions** lists the rest. To narrow it down, click the filter icon at the top of the dialog. It opens **Filters**, where you can set **From date**, **To date**, **Amount from** and **Amount to**.
 
-Both sections only list transactions of the opposite type: incomes when you started from an expense, and the other way round. **Recommended** only lists transactions from your other accounts. When you start from an income, **All transactions** can also show expenses from the same account. Don't pick those, because linking them fails: the two sides must be on different accounts. **All transactions** can also include split and planned transactions, which can't be linked either. Picking one fails with "A transaction with splits can't be linked as a transfer." or "A planned transaction can't be linked as a transfer." Transfers, including Out of Wallet ones, and transactions linked as a refund aren't listed. Bank-connected accounts are included.
+Both sections only list transactions of the opposite type: incomes when you started from an expense, and the other way round. **Recommended** only lists transactions from your other accounts. When you start from an income, **All transactions** can also show expenses from the same account. Don't pick those, because linking them fails: the two sides must be on different accounts. **All transactions** can also include split and planned transactions, which can't be linked either. Picking one fails with "A transaction with splits can't be linked as a transfer." or "A planned transaction can't be linked as a transfer." Transfers, including Out of wallet ones, and transactions linked as a refund aren't listed. Bank-connected accounts are included.
 
 <Screenshot
   src="/screenshots/transfers-and-refunds/find-other-side-dialog.png"
@@ -72,7 +72,7 @@ Both sections only list transactions of the opposite type: incomes when you star
 1. In the sidebar, open **Transactions**, then **Optimizations**.
 2. Click the **Transfer matching** card.
 3. Click the button with the calendar icon (it shows the current date range) and pick a range. Presets include **Last 3 months**, **Last 6 months**, **Last year**, **This year** and **Previous year**. The page starts on the last three months.
-4. Optionally switch on **Out-of-wallet transfers**. See [Out of Wallet transactions](#out-of-wallet-transactions).
+4. Optionally switch on **Out-of-wallet transfers**. See [Out of wallet transactions](#out-of-wallet-transactions).
 5. Optionally switch on **AI review** to keep only the pairs that look like real transfers. See **AI review** below.
 6. Click **Scan**.
 
@@ -142,9 +142,9 @@ Click **Reject** if a suggestion isn't a transfer, for example a purchase and a 
 A rejected pair is hidden from Transfer matching for good. Rejecting only affects this page: both transactions stay as they are, and you can still link them from the transaction itself with **Link the other side**, where rejected pairs still show up.
 </Aside>
 
-### Out of Wallet transactions
+### Out of wallet transactions
 
-By default, the scan leaves out transactions recorded as **Out of Wallet**. Tick **Include out-of-wallet transfers** to include them. This is useful when you recorded one side as going to an account you didn't track, and you've since added that account. Linking turns the Out of Wallet transaction into a regular transfer between your two accounts.
+By default, the scan leaves out transactions recorded as **Out of wallet**. Tick **Include out-of-wallet transfers** to include them. This is useful when you recorded one side as going to an account you didn't track, and you've since added that account. Linking turns the Out of wallet transaction into a regular transfer between your two accounts.
 
 ## Rules for linking
 
@@ -152,7 +152,7 @@ Whichever way you link, the two transactions must be:
 
 - **one expense and one income**;
 - **on different accounts**;
-- **not already a transfer**. An Out of Wallet transaction is the exception: linking turns it into a transfer between your accounts;
+- **not already a transfer**. An Out of wallet transaction is the exception: linking turns it into a transfer between your accounts;
 - **not split across categories**. Linking a split transaction fails with "A transaction with splits can't be linked as a transfer." Remove the splits first;
 - **not planned**.
 
